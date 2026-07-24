@@ -472,6 +472,48 @@ uma fonte canônica conforme sua função:
 
 ---
 
+## 🔴 TELEMETRIA DE DECISÃO NUNCA PERSISTE — precisa sessão LOCAL (24/07/2026)
+
+**Achado (usuário, bloco HANDOFF 342):** telemetria de decisão (`decision`/
+`execution`/`outcome` no JSONL, relatório agregado, `decision_summary.py`)
+funciona bem durante a partida, mas **nunca é commitada** — em nenhuma das
+101 partidas do banco atual. `BOT/engine_server/logs/` e
+`scriptis_da_ia/metrics/live_runs/` são `gitignored` por design
+("efêmero"). O próprio CLAUDE.md **manda** ler `metrics/live_runs/live_
+<timestamp>.json` e rodar `decision_summary.py --latest` como passo
+obrigatório após toda partida do bot — mas essa regra aponta pra arquivos
+que somem assim que a sessão/máquina é limpa. Uma sessão remota (nuvem,
+sem acesso ao desktop onde o bot roda) **nunca** tem acesso a essa
+telemetria de partida nenhuma, nem da mais recente. Investigar uma
+partida antiga vira reconstruir a intenção do bot lendo o combat log
+bruto linha a linha, sem nenhum score/candidato/motivo real disponível —
+exatamente o "não está dando muito certo" que motivou este registro.
+
+**Fix proposto (não implementado — precisa acesso local aos arquivos
+gitignored antes de decidir os detalhes):**
+- [ ] Estender `collect_latest_match.py` (mesmo gatilho do auto-collect,
+  no `/outcome`): filtrar as linhas do decision log **pelo `match_id`** da
+  partida (o log efêmero pode acumular várias partidas se o server não
+  for reiniciado) e commitar isso no banco **versionado**, ao lado de
+  `raw/parsed/decks`: `scriptis_da_ia/logs/decisions/<nome_da_partida>
+  .jsonl` (telemetria filtrada) + `_summary.txt` (mesmo formato do
+  `decision_summary.py`, legível).
+- [ ] Atualizar `logs/index.json` com os campos novos (`decision_file`,
+  `decision_summary_file`), mesmo padrão de `log_file`/`parsed_file`.
+- [ ] Atualizar `CLAUDE.md` (seção "Telemetria de decisão — OBRIGATÓRIO")
+  pra apontar pro caminho versionado, não mais o efêmero.
+- [ ] Antes de tudo isso: **inspecionar o formato/tamanho REAL** de um
+  decision log de partida de verdade (só existe no desktop) pra decidir
+  se cabe commitar o JSONL bruto inteiro por partida ou só o resumo
+  destilado — pode ser grande demais pra versionar sem filtro.
+
+**Por que precisa ser sessão LOCAL:** só uma sessão com acesso ao
+filesystem do desktop consegue ler o decision log real (aqui na nuvem as
+pastas efêmeras só têm sobra de testes, nunca partida de verdade) pra
+calibrar o fix antes de implementar.
+
+---
+
 ## 🔴 EFICIÊNCIA DO BOT — baseline percentual e medição pós-fix (17/07/2026)
 
 Não existe hoje uma porcentagem única cientificamente válida de “eficiência”.

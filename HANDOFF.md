@@ -1,5 +1,61 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (342) - Claude (sessao remota web) - gap de agressividade (Mihawk) + achado GRANDE: telemetria de decisao nunca persiste
+
+**1) Gap de agressividade (Mihawk bot n=1, pct_atk_lider 40% vs humano 85,7%,
+blocos 337/338) -- lido o combat log completo linha a linha (sem telemetria
+de decisao disponivel, ver item 2):** achado NAO bate com a leitura simples
+"bot evita o lider". Recontagem dos 10 ataques: o LIDER do bot atacou o
+lider inimigo em 4 de suas 5 proprias oportunidades (**80%**) -- os ataques
+que nao foram no lider foram quase todos de ATACANTES SOBRANDO (Otama,
+Kin'emon) limpando corpos restados/fracos de graca, jogada normal e boa,
+que apenas ADICIONA ao ataque do lider no mesmo turno, nao compete com ele.
+So existe UM caso real de lider desviado: bot jogou uma carta (OP12-037)
+so pra restar o Cracker inimigo e abrir a janela de ataque, entao arriscou
+o proprio ataque do LIDER nessa remocao -- que FALHOU (oponente tinha
+counter na mao), zerando o dano do lider naquele turno. Amostra n=1 e fraca
+demais pra concluir padrao sistemico; precisa ou mais partidas do Mihawk
+ou abrir o codigo de scoring (`decide_don_for_attack`/objective='destroy')
+pra ver se ha vies real em arriscar o ataque do lider numa remocao incerta
+em vez de reservar pra pressao de vida. NAO investigado a fundo ainda --
+ficou pra sessao seguinte.
+
+**2) ACHADO MAIOR (usuario notou primeiro: "a telemetria nao esta dando
+muito certo"): telemetria de decisao NUNCA e persistida, em NENHUMA das
+101 partidas do banco.** Confirmado com `git log --all --diff-filter=A`
+que NENHUM `.jsonl`/`live_runs`/`receipt` jamais foi commitado --
+`BOT/engine_server/logs/` e `scriptis_da_ia/metrics/live_runs/` sao
+gitignored por design ("efemero"). O proprio CLAUDE.md MANDA ler
+`metrics/live_runs/live_<timestamp>.json` e rodar `decision_summary.py
+--latest` (que le de `live_runs/receipt_*.json`) como passo OBRIGATORIO
+apos toda partida do bot -- mas essa regra aponta pra arquivos que somem
+por design assim que a sessao/maquina e limpa. Nesta sessao remota (nuvem)
+em particular, essas pastas NUNCA tiveram dado real (o bot so roda no
+desktop via JOGAR.bat) -- e foi por isso que a investigacao do item 1
+teve que reconstruir a intencao do bot lendo o combat log bruto linha a
+linha, sem nenhum score/candidato/motivo real disponivel.
+
+**Fix proposto (NAO implementado -- usuario pediu pra registrar e deixar
+pra uma sessao LOCAL com acesso real aos arquivos gitignored, pra poder
+inspecionar formato/tamanho real antes de decidir o que commitar):**
+estender `collect_latest_match.py` (mesmo gatilho do auto-collect, no
+`/outcome`) pra filtrar as linhas do decision log PELO `match_id` da
+partida e commitar isso + um resumo legivel (mesmo formato do
+`decision_summary.py`) dentro do banco VERSIONADO
+(`scriptis_da_ia/logs/decisions/<nome_da_partida>.jsonl` +
+`_summary.txt`), junto de raw/parsed/decks -- nao mais so nas pastas
+efemeras. Depois, atualizar o `CLAUDE.md` (secao "Telemetria de decisao
+-- OBRIGATORIO") pra apontar pro caminho versionado. Detalhe registrado
+em TODO.md pra virar item de trabalho rastreavel.
+
+**Por que precisa ser sessao local:** so uma sessao com acesso ao desktop
+consegue ver o FORMATO/TAMANHO real de um decision log de partida de
+verdade (aqui na nuvem so existiam 3 arquivos de sessao efemeros, sobra de
+testes MEUS rodando o server.py, nada de partida real) -- precisa disso
+pra decidir se cabe commitar o jsonl bruto inteiro ou so o resumo
+destilado, e pra testar o filtro por match_id contra dado real (o decision
+log pode acumular varias partidas se o server nao for reiniciado).
+
 ## 2026-07-24 (341) - Claude (sessao remota web) - merge do PR #1 na main + remocao da branch de trabalho
 
 Usuario pediu explicacao do PR #1 (aberto desde 22/07, 53 commits da
