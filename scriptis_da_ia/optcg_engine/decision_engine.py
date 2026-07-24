@@ -3996,6 +3996,7 @@ class EffectExecutor:
                     koados.append(alvo.name[:15])
                     # dispara [On K.O.] do Character K.O.ado (regra K.O. != Trash)
                     self.execute(alvo, 'on_ko', is_opp_turn=False)
+                    self._dispatch_opp_char_ko()
                 if koados:
                     self._cost_logs.append(f'custo: K.O. próprio: {", ".join(koados)}')
             elif ctype == 'trash_own_character':
@@ -4216,6 +4217,41 @@ class EffectExecutor:
                 source, 'when_damage_or_own_char_ko')
             if logs and entry.get('once_per_turn'):
                 source._damage_ko_once_marker = marker
+
+    def _dispatch_opp_char_ko(self) -> None:
+        """
+        Dispara o gatilho generico ``on_opp_char_ko`` -- FASE 1.2 do
+        mapeamento de combos pedido pelo usuario 24/07 ("quando o
+        personagem do OPONENTE e K.O.'d"). Achado real: Kaido OP01-061
+        (lider!) e Rob Lucci OP03-076 tinham esse gatilho no texto oficial,
+        mas o parser derrubava a condicao inteira e o efeito virava
+        incondicional todo turno seu -- bug de regra, nao so de pontuacao.
+
+        Convencao: chamar SEMPRE logo apos `X.execute(victim, 'on_ko', ...)`
+        resolver, na MESMA instancia `X` de EffectExecutor usada nesse
+        execute -- em todo ponto de KO do motor (efeito, combate, blocker
+        reativo, mutuo), `X.me` e o DONO do personagem morto e `X.opp` e o
+        lado OPOSTO (quem observa "o personagem do oponente morreu", do
+        ponto de vista dele). Nao precisa de parametro nenhum por isso.
+        Mesmo padrao de `_dispatch_don_returned`/`_dispatch_damage_or_own_char_ko`
+        (auditoria global: sao os 8 pontos que chamam `.execute(_, 'on_ko')`
+        no motor inteiro).
+        """
+        watcher, victim_owner = self.opp, self.me
+        cards = [watcher.leader, *watcher.field_chars]
+        if watcher.field_stage:
+            cards.append(watcher.field_stage)
+        for source in list(cards):
+            entry = get_card_effects(source.code).get('on_opp_char_ko')
+            if not entry:
+                continue
+            marker = (watcher.global_turn, 'on_opp_char_ko')
+            if (entry.get('once_per_turn')
+                    and getattr(source, '_opp_char_ko_once_marker', None) == marker):
+                continue
+            logs = EffectExecutor(watcher, victim_owner).execute(source, 'on_opp_char_ko')
+            if logs and entry.get('once_per_turn'):
+                source._opp_char_ko_once_marker = marker
 
     # ── Execução de steps individuais ────────────────────────────────────────
 
@@ -5013,6 +5049,7 @@ class EffectExecutor:
                     if action == 'ko':
                         ee_target.execute(target, 'on_ko', is_opp_turn=owner is opp)
                         ee_target._dispatch_damage_or_own_char_ko(owner, target)
+                        ee_target._dispatch_opp_char_ko()
                     remove_by_identity(candidates, target)
                     koed.append(target.name[:15])
             label = 'KO' if action == 'ko' else 'Trash'
@@ -5063,6 +5100,7 @@ class EffectExecutor:
             remove_character_from_field(opp, alvo, 'trash')
             ee_target.execute(alvo, 'on_ko', is_opp_turn=True)
             ee_target._dispatch_damage_or_own_char_ko(opp, alvo)
+            ee_target._dispatch_opp_char_ko()
             return f'KO: {ko_name}'
 
         # ── Bounce ───────────────────────────────────────────────────────────
@@ -5225,6 +5263,7 @@ class EffectExecutor:
                 remove_character_from_field(opp, alvo, 'trash')
                 ee_ko = EffectExecutor(opp, me)
                 ee_ko.execute(alvo, 'on_ko', is_opp_turn=False)
+                ee_ko._dispatch_opp_char_ko()
                 return f'K.O. {alvo.name[:15]} (cost=={alvo.cost}==DON!!)'
             return ''
 
@@ -5274,6 +5313,7 @@ class EffectExecutor:
                     remove_character_from_field(opp, target_opp, 'trash')
                     ee_opp = EffectExecutor(opp, me)
                     ee_opp.execute(target_opp, 'on_ko', is_opp_turn=True)
+                    ee_opp._dispatch_opp_char_ko()
                     # KO self (o proprio character que ativou o efeito)
                     if contains_identity(me.field_chars, card):
                         remove_character_from_field(me, card, 'trash')
@@ -13006,6 +13046,7 @@ class OPTCGMatch:
                         continue
                     remove_character_from_field(opp, alvo_ko, 'trash')
                     ee_ko.execute(alvo_ko, 'on_ko', is_opp_turn=True)
+                    ee_ko._dispatch_opp_char_ko()
                     remove_by_identity(candidatos, alvo_ko)
                     koed.append(alvo_ko.name[:15])
                 fonte.ko_on_opp_blocker_used_this_turn = True
@@ -13156,6 +13197,7 @@ class OPTCGMatch:
                                 if dl_step.get('self_ko') and attacker in p.field_chars:
                                     remove_character_from_field(p, attacker, 'trash')
                                     ee_dmg.execute(attacker, 'on_ko')
+                                    ee_dmg._dispatch_opp_char_ko()
                                     if verbose:
                                         print(f'      💀 {attacker.name[:20]}: K.O. (mill do proprio efeito)')
 
@@ -13191,6 +13233,7 @@ class OPTCGMatch:
                     print(f'      💀 {target.name[:20]} foi KO!')
                 ko_logs = ee_opp.execute(target, 'on_ko', is_opp_turn=True)
                 ee_opp._dispatch_damage_or_own_char_ko(opp, target)
+                ee_opp._dispatch_opp_char_ko()
                 if verbose:
                     for log in ko_logs:
                         if log:

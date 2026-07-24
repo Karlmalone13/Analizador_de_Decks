@@ -9741,7 +9741,7 @@
     "sub_types": "Animal Kingdom Pirates The Four Emperors",
     "attribute": "Strike",
     "effects": {
-      "your_turn": {
+      "on_opp_char_ko": {
         "steps": [
           {
             "action": "add_don",
@@ -16821,20 +16821,20 @@
     "sub_types": "CP9",
     "attribute": "Strike",
     "effects": {
-      "your_turn": {
+      "on_opp_char_ko": {
         "steps": [
           {
             "action": "set_active",
             "target": "leader"
           }
         ],
+        "once_per_turn": true,
         "costs": [
           {
             "type": "trash_from_hand",
             "count": 2
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },

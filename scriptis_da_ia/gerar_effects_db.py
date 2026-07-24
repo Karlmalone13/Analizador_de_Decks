@@ -8408,6 +8408,52 @@ def parse_card_effect(card_text, card_type):
                     if s.get('action') != 'draw'
                 ]
 
+    # Evento parametrizado "quando o personagem do OPONENTE e K.O.'d"
+    # (FASE 1.2 do mapeamento de combos, achado real 24/07: usuario pediu
+    # pra mapear gatilhos que observam uma acao do oponente -- Kaido
+    # OP01-061 (LIDER) e Rob Lucci OP03-076 tinham essa frase no texto
+    # oficial, mas antes deste fix o parser derrubava a condicao inteira
+    # e o efeito virava incondicional todo turno seu ("[Your Turn]" sozinho
+    # reivindicava o bloco). Mesmo padrao ja usado pra when_don_returned/
+    # when_damage_or_own_char_ko: evento dedicado fora do trigger_patterns
+    # generico, disparado pelo motor (_dispatch_opp_char_ko) nos pontos
+    # reais de K.O. (efeito, combate, blocker reativo, mutuo, mill) -- nao
+    # so "em algum momento do turno do oponente" como os genericos.
+    # Rob Lucci tem um custo OPCIONAL antes da frase-gatilho ("You may
+    # trash 2 cards from your hand: When..."), Kaido nao -- grupo 2 cobre
+    # os dois casos.
+    opp_char_ko_m = re.search(
+        r'(?:\[don!! x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
+        r'(?:([a-z][^:]{0,60}?):\s*)?'
+        r"when your opponent.?s character is k\.o\.?'?d[,]\s*(.+?)" + LOOKAHEAD_DELIM,
+        t_low, re.DOTALL | re.IGNORECASE)
+    if opp_char_ko_m:
+        event_body = opp_char_ko_m.group(3).strip()
+        event_steps = parse_block(event_body, 'on_opp_char_ko')
+        if event_steps:
+            event_entry = {'steps': event_steps}
+            if '[once per turn]' in opp_char_ko_m.group(0):
+                event_entry['once_per_turn'] = True
+            if opp_char_ko_m.group(1):
+                event_entry['don_requirement'] = int(opp_char_ko_m.group(1))
+            cost_prefix = opp_char_ko_m.group(2)
+            if cost_prefix:
+                # parse_costs exige o ':' de fechamento no proprio texto
+                # (o regex acima ja consumiu o ':' real como delimitador,
+                # nao sobra no grupo capturado) -- reanexa pra bater com o
+                # padrao esperado (ex: "trash N cards from your hand:").
+                prefix_costs = parse_costs(cost_prefix + ':')
+                if prefix_costs:
+                    event_entry['costs'] = prefix_costs
+            body_conds = parse_conditions(event_body)
+            if body_conds:
+                event_entry['conditions'] = body_conds
+            result['on_opp_char_ko'] = event_entry
+            for generic in ('your_turn', 'opp_turn'):
+                if (generic in result
+                        and result[generic].get('steps') == event_steps):
+                    del result[generic]
+
     # Tags ADJACENTES COLADAS sem barra, ex: "[Opponent's Turn] [On K.O.]
     # efeito" -- diferente do caso "[A]/[B]" (que SAO dois triggers
     # distintos de propósito, mesmo efeito). Aqui e UMA UNICA condicao

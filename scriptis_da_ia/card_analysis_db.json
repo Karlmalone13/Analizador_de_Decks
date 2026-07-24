@@ -13640,7 +13640,7 @@
   "effects": [
    {
     "action": "add_don",
-    "trigger": "your_turn",
+    "trigger": "on_opp_char_ko",
     "don_requirement": 1
    }
   ],
@@ -24685,7 +24685,7 @@
   "effects": [
    {
     "action": "set_active",
-    "trigger": "your_turn",
+    "trigger": "on_opp_char_ko",
     "target": "leader"
    }
   ],

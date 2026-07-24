@@ -1,0 +1,21 @@
+{
+  "trigger_card": "OP01-061",
+  "problem": "Mapeamento de combos pedido pelo usuario (24/07): auditoria ampla achou que o gatilho 'when your opponent's Character is K.O.'d' nao existia no parser. Kaido OP01-061 (LIDER) e Rob Lucci OP03-076 tinham essa frase no texto oficial, mas o efeito virava incondicional 'your_turn' (Kaido: +1 DON todo turno seu; Rob Lucci: lider ativo todo turno seu), perdendo a condicao real por completo -- bug de regra, nao so de pontuacao.",
+  "grammar_family": "'[Your Turn] [Once Per Turn] (custo opcional:)? When your opponent's Character is K.O.'d, [efeito]' -- evento parametrizado dedicado (mesmo padrao ja usado por when_don_returned/when_damage_or_own_char_ko), fora do trigger_patterns generico.",
+  "queries": [
+    "regex \"when your opponent'?s character is k\\.?o'?d\" contra cards_rows.csv inteiro (ignorando variantes _p/_r): OP01-061, OP03-076",
+    "regex ampla \"when (your )?opponent('s)? [a-z ]+\" contra cards_rows.csv inteiro pra achar toda a familia de gatilhos que observam acao do oponente (achado maior, 15+ cartas em varias sub-familias -- este registro cobre so a sub-familia 'personagem K.O.'d')"
+  ],
+  "cards_found": [
+    "OP01-061",
+    "OP03-076"
+  ],
+  "resolution_scope": "global",
+  "decision": "Aprovado pelo usuario em 2026-07-24 (fase 1.2 da ordem de correcao combinada). Novo trigger dedicado 'on_opp_char_ko' em gerar_effects_db.py (evento parametrizado, cobre custo opcional antes do gatilho -- Rob Lucci trash 2 cartas). Motor ganha _dispatch_opp_char_ko() (EffectExecutor) chamado nos 8 pontos reais de K.O. do decision_engine.py (acao 'ko' generica, ko_if_cost_eq_don, ko_battled_opp_char_and_self, ko_on_opp_blocker, mill self_ko, combate) -- auditoria dos 8 pontos confirmada por grep de \".execute(_, 'on_ko')\" no arquivo inteiro.",
+  "validated_by": [
+    "diff_parser.py antes/depois: GANHOU=0, PERDEU=0, MUDOU=2 (exatamente OP01-061 e OP03-076, nenhuma outra carta das 2644 afetada)",
+    "smoke_fast.py: SMOKE FAST OK, incluindo teste de execucao real (Kaido ganha +1 DON quando personagem do oponente e K.O.'d, com e sem o requisito DON!!x1 satisfeito)",
+    "smoke_test.py: TODOS OS TESTES PASSARAM (regressao ampla, area de alto risco -- novo dispatch em 8 pontos do motor)"
+  ],
+  "notes": "Achado MAIOR da mesma auditoria (nao resolvido ainda, registrado a parte no HANDOFF/TODO): pelo menos mais 3 sub-familias do mesmo padrao 'observa acao do oponente/propria' (ativacao de Evento/Blocker, personagem jogado, carta removida/descartada por efeito), ~13 cartas adicionais, incluindo o mesmo bug em cartas que NAO sao lider. Fica pra proximas etapas da ordem de correcao combinada com o usuario."
+}

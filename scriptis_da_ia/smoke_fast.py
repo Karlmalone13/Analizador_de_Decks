@@ -1253,6 +1253,39 @@ def test_don_reserve_for_defense_nao_guarda_mais_que_o_recurso_precisa() -> None
           engine2._don_reserve_for_defense() == 0)
 
 
+def test_on_opp_char_ko_dispara_gatilho_generico() -> None:
+    # FASE 1.2 do mapeamento de combos (usuario, 24/07): "quando o
+    # personagem do OPONENTE e K.O.'d" nao existia como gatilho no parser
+    # -- Kaido OP01-061 (LIDER!) e Rob Lucci OP03-076 perdiam a condicao
+    # inteira e o efeito virava incondicional todo turno seu. Fix:
+    # trigger dedicado 'on_opp_char_ko' (mesmo padrao de when_don_returned/
+    # when_damage_or_own_char_ko) + _dispatch_opp_char_ko() chamado nos 8
+    # pontos reais de K.O. do motor (efeito, combate, blocker reativo,
+    # mutuo, mill).
+    kaido_side = GameState(leader=real_card("OP01-061"), don_available=3, turn=3)
+    kaido_side.leader.don_attached = 1  # [DON!! x1] -- requisito do lider
+    opp_side = GameState(leader=real_card("OP11-062"), turn=3)
+    weak = real_card("OP07-077")
+    opp_side.field_chars = [weak]
+
+    ee = EffectExecutor(kaido_side, opp_side)
+    ee._execute_step({"action": "ko", "count": 1, "target": "opp_character"}, kaido_side.leader)
+    check("Kaido ganha +1 DON quando o personagem do oponente e K.O.'d (com DON!!x1 satisfeito)",
+          kaido_side.don_available == 4)
+    check("o personagem alvo foi de fato removido do campo do oponente",
+          weak not in opp_side.field_chars)
+
+    # controle: SEM o DON!!x1 anexado no lider, a habilidade nao deve disparar.
+    kaido_side2 = GameState(leader=real_card("OP01-061"), don_available=3, turn=3)
+    opp_side2 = GameState(leader=real_card("OP11-062"), turn=3)
+    weak2 = real_card("OP07-077")
+    opp_side2.field_chars = [weak2]
+    ee2 = EffectExecutor(kaido_side2, opp_side2)
+    ee2._execute_step({"action": "ko", "count": 1, "target": "opp_character"}, kaido_side2.leader)
+    check("sem DON!!x1 anexado no lider, Kaido NAO ganha o DON (requisito nao satisfeito)",
+          kaido_side2.don_available == 3)
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -7841,6 +7874,7 @@ def main() -> int:
     test_debuff_power_no_oponente_conta_como_removal()
     test_mapeamento_de_combos_bottom_deck_e_locks_contam_como_removal()
     test_don_reserve_for_defense_nao_guarda_mais_que_o_recurso_precisa()
+    test_on_opp_char_ko_dispara_gatilho_generico()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
     test_search_contextual_evita_congestionar_mao_com_bombas()

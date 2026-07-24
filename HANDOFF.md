@@ -1,5 +1,54 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (351) - Claude (sessao local) - mapeamento de combos AMPLO (20+ cartas) + fase 1.2: gatilho on_opp_char_ko novo (Kaido lider)
+
+Sessao continuou o mapeamento de combos pedido pelo usuario, agora
+cobrindo TODAS as dimensoes pedidas: DON, vida, mao, trash, custo, poder
+(incluindo poder do LIDER), tribo/tipo, cor, "quando restado", "joga
+outra carta", e uma varredura final ampla de qualquer "quando X
+acontece" no texto bruto do banco inteiro. Achado categorico: existe um
+padrao SISTEMICO de bug de regra (nao so pontuacao) em gatilhos que
+observam uma ACAO especifica (do oponente ou propria) -- o parser nao
+tem vocabulario pra isso e o efeito vira incondicional na tag mais ampla
+disponivel (`your_turn`/`opp_turn`/`passive`). **20 cartas confirmadas**,
+incluindo **Kaido OP01-061 (LIDER)** -- "+1 DON quando personagem do
+oponente e K.O.'d" virava "+1 DON todo turno seu, incondicional".
+
+Usuario definiu ordem de correcao (por PADRAO GENERICO, nunca carta por
+carta): Fase 1 = bugs de regra, agrupados em 4 sub-familias (1.1
+ativacao de Evento/Blocker ~8 cartas, 1.2 personagem K.O.'d ~4 cartas
+incl. Kaido, 1.3 personagem jogado ~4 cartas, 1.4 removido/descartado
+por efeito ~3 cartas). Fase 2 = combos de pontuacao, unificados numa
+tabela generica de valor por acao em vez de 14 fixes separados.
+
+**Esta sessao entregou a Fase 1.2** (personagem do oponente K.O.'d):
+- `gerar_effects_db.py`: evento parametrizado dedicado `on_opp_char_ko`
+  (mesmo padrao ja usado por `when_don_returned`/
+  `when_damage_or_own_char_ko` -- fora do `trigger_patterns` generico).
+  Cobre custo OPCIONAL antes do gatilho (Rob Lucci "you may trash 2
+  cards from your hand:").
+- `decision_engine.py`: `EffectExecutor._dispatch_opp_char_ko()` novo,
+  chamado nos **8 pontos reais de K.O. do motor inteiro** (confirmados
+  por grep de `.execute(_, 'on_ko')` -- acao 'ko' generica, `ko_if_cost_
+  eq_don`, `ko_battled_opp_char_and_self`, `ko_on_opp_blocker`, mill
+  self_ko, combate). Auditoria global evitou cobertura parcial.
+
+Validado: `diff_parser.py` GANHOU=0 PERDEU=0 MUDOU=2 (so Kaido e Rob
+Lucci, nenhuma das 2644 cartas restantes afetada). Teste de execucao
+REAL em `smoke_fast.py` (nao so parsing): Kaido ganha +1 DON quando
+personagem do oponente e K.O.'d, com e sem o requisito `DON!!x1`
+satisfeito. `smoke_test.py` = TODOS OS TESTES PASSARAM. Registro em
+`parser_audits/2026-07-24_on_opp_char_ko_gatilho_novo.json`.
+
+**Pendente**: fases 1.1 (Evento/Blocker, maior volume), 1.3 (personagem
+jogado), 1.4 (removido/descartado por efeito), e toda a Fase 2 (~700+
+ocorrencias de combos de pontuacao: DON ~130, vida ~131, mao ~85, trash
+~50, custo ~36, poder ~26, tribo ~28, cor ~22). Lista completa dos 20
+casos de regra e das 16 categorias de pontuacao ficou na conversa com o
+usuario, nao replicada aqui por extensao -- proxima sessao deve pedir
+pro usuario a lista atualizada ou continuar direto pela ordem combinada
+(1.1 -> 1.3 -> 1.4 -> Fase 2).
+
 ## 2026-07-24 (350) - Claude (sessao local) - reserva de DON: vida baixa sozinha nao reserva mais sem ameaca real
 
 Continuacao imediata do bloco 349 -- usuario apontou mais uma coisa depois

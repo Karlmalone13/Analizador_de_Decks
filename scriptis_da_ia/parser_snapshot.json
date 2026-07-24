@@ -6313,7 +6313,7 @@
   }
  },
  "OP01-061": {
-  "your_turn": {
+  "on_opp_char_ko": {
    "don_requirement": 1,
    "once_per_turn": true,
    "steps": [
@@ -10566,7 +10566,7 @@
   }
  },
  "OP03-076": {
-  "your_turn": {
+  "on_opp_char_ko": {
    "costs": [
     {
      "count": 2,

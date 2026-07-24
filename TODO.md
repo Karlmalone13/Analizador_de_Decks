@@ -2,6 +2,31 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 351): mapeamento de combos amplo achou
+> padrão sistêmico de bug de regra — gatilhos que observam uma ação do
+> oponente/própria (não só pontuação) somem no parser, viram efeito
+> incondicional. **20 cartas confirmadas, incluindo o líder Kaido
+> `OP01-061`**. Ordem de correção combinada com o usuário (sempre por
+> padrão genérico, nunca carta por carta):
+> - ✅ **Fase 1.2 feita**: gatilho `on_opp_char_ko` (personagem do
+>   oponente K.O.'d) — Kaido, Rob Lucci. Novo evento parametrizado no
+>   parser + `_dispatch_opp_char_ko()` nos 8 pontos reais de K.O. do
+>   motor. `diff_parser.py` PERDEU=0, `smoke_test.py` 100%.
+> - ⬜ **Fase 1.1**: ativação de Evento/Blocker (~8 cartas: Usopp,
+>   Franky, Gion, Camie, Luffy OP15-119, Crocodile OP01-062, Page One,
+>   Zeff) — maior volume de uma família só.
+> - ⬜ **Fase 1.3**: personagem jogado (~4 cartas: Sugar, Sanji, Bonney,
+>   Boa Hancock OP14-041).
+> - ⬜ **Fase 1.4**: removido/descartado por efeito (~3 cartas:
+>   Crocodile EB02-023, Boa Hancock OP07-038, Kuroobi).
+> - ⬜ **Fase 2**: combos de pontuação (~700+ ocorrências: DON ~130,
+>   vida ~131, mão ~85, trash ~50, custo ~36, poder/líder ~26, tribo
+>   ~28, cor ~22, `play_card` ~117) — trocar as 8 flags fixas do
+>   `avaliar_carta` por tabela genérica de valor por ação, não 14 fixes
+>   separados.
+> **Usuário pediu pra não testar ao vivo/dar push até essas etapas
+> avançarem mais** — não fazer push sozinho sem confirmar.
+
 > 24/07/2026 (bloco HANDOFF 350): mais um ajuste na reserva de DON —
 > vida baixa (≤2/3) reservava DON mesmo com `threat` (ameaça calculada)
 > em 0.0 (oponente sem chance real nenhuma). Achado em 42% dos casos com
