@@ -1,5 +1,50 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (340) - Claude - as 3 falhas cronicas do smoke_test.py corrigidas
+
+Usuário pediu pra investigar as 3 falhas pré-existentes do `smoke_test.py`
+que vinham aparecendo (e sendo ignoradas como "nao-regressao") desde antes
+desta sessão:
+- `substitute_removal com extra_steps compra carta apos trash_self`
+- `substituicao externa usa fonte aliada e preserva alvo filtrado`
+- `OP15-094 protege outro Character Straw Hat Crew trashando a si mesma`
+
+**Causa raiz única para as 3:** `should_pay_removal_substitute(target,
+cost)` -- pra `action == 'trash_self'`, o código fazia `price = saved`
+(o MESMO valor de `target`, a carta sendo protegida) e depois retornava
+`saved > price`. Como `price` e `saved` eram literalmente o mesmo número,
+essa comparação nunca podia ser verdadeira -- `saved > saved` é sempre
+`False`. Qualquer substituição de remoção com custo `trash_self`
+(autoproteção como Thatch OP08-045, ou proteção externa como Zoro
+OP15-094 salvando um aliado) nunca disparava, silenciosamente, desde que
+esse código foi escrito.
+
+Bug tinha 2 formas, dependendo de quem PAGA o custo:
+- **Autoproteção** (a carta se troca por si mesma, ex: Thatch): a carta
+  já seria perdida pela remoção ORIGINAL de qualquer jeito -- substituir
+  só troca COMO ela é perdida (nada → descarte próprio com bônus de
+  `extra_steps`, ex: comprar 1 carta). O preço marginal real é ~0, não o
+  valor da carta inteira.
+- **Proteção externa** (uma carta DIFERENTE se sacrifica pra salvar outra,
+  ex: Zoro salvando um aliado Straw Hat Crew): o preço real é o valor de
+  quem PAGA (o protetor), não de quem é SALVO (o alvo) -- podem ser
+  cartas bem diferentes, mas a função nunca recebia essa distinção.
+
+**Fix:** `should_pay_removal_substitute` ganha parâmetro novo `payer`
+(quem paga o custo, default `None` = autoproteção). Pra `trash_self`:
+se `payer is target` (autoproteção), sempre `True` (preço marginal ~0);
+senão (proteção externa), compara `saved >= valor(payer)` (`>=`, não `>`
+estrito -- cartas de proteção dedicadas são pra usar, empate não deve
+travar). Os 2 call-sites (`try_substitute` autoproteção,
+`_try_external_substitute_from_source` externa) foram atualizados --
+o segundo agora passa `payer=cost_card` (a variável que já existia,
+computada mas nunca usada pra isso).
+
+Validação: `py_compile` limpo. `smoke_test.py` = **0 falhas** (as 3
+crônicas resolvidas, nenhuma nova). `smoke_fast.py` = SMOKE FAST OK, sem
+regressão. Não mexe em parser/card_effects_db, então não precisa de
+registro em `parser_audits/`.
+
 ## 2026-07-24 (339) - Claude - desconto de trigger nunca veta sozinho um ataque legitimo
 
 Continuação da investigação do gap "bot ataca menos que humano" (blocos

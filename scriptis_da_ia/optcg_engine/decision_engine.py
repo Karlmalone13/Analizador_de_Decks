@@ -2296,7 +2296,8 @@ class EffectExecutor:
                     continue
                 cost = step.get('cost', {})
                 cost_card = target if cost.get('action') == 'debuff_power_self' else source
-                if not DecisionEngine(self.me, self.opp).should_pay_removal_substitute(target, cost):
+                if not DecisionEngine(self.me, self.opp).should_pay_removal_substitute(
+                        target, cost, payer=cost_card):
                     continue
                 log = self._pay_substitute_cost(cost, cost_card)
                 if log is None:
@@ -9766,11 +9767,43 @@ class DecisionEngine:
         """A devolucao ativa algum beneficio material no estado atual?"""
         return self.don_return_trigger_value(count) > 0
 
-    def should_pay_removal_substitute(self, target: 'Card', cost: dict) -> bool:
-        """Compara o corpo preservado com o recurso irreversivel da protecao."""
+    def should_pay_removal_substitute(self, target: 'Card', cost: dict,
+                                      payer: 'Card | None' = None) -> bool:
+        """
+        Compara o corpo preservado com o recurso irreversivel da protecao.
+
+        `payer`: quem PAGA o custo -- pode ser diferente de `target` (quem
+        e SALVO) numa substituicao EXTERNA (ex: Zoro se trasha pra salvar
+        um aliado Straw Hat Crew diferente). Default None = autoprotecao
+        (target paga por si mesmo, payer=target).
+
+        Achado real (bug ha muito tempo no banco, achado 24/07): pra
+        action=='trash_self', o preco era fixado em `saved` (o MESMO
+        valor de `target`) -- em autoprotecao isso vira `saved > saved`,
+        SEMPRE falso, entao a substituicao nunca disparava (Thatch OP08-045
+        nunca trocava a remocao por trash_self+draw). Em protecao externa
+        o bug e o mesmo (o preco real e o valor do PAGADOR, nao do alvo
+        salvo -- podem ser cartas bem diferentes).
+        """
         saved = self.analyzer.char_value_score(target)
         action = cost.get('action')
         count = int(cost.get('count', 1) or 1)
+        if action == 'trash_self':
+            pagador = payer if payer is not None else target
+            if pagador is target:
+                # Autoprotecao: a carta ja seria perdida pela remocao
+                # ORIGINAL de qualquer jeito -- substituir so troca COMO
+                # ela e perdida (remocao do oponente sem nada -> descarte
+                # proprio com o bonus dos extra_steps de graca). Preco
+                # marginal e ~0, nao o valor da carta inteira.
+                return True
+            # Protecao externa: o pagador e sacrificado por INTEIRO pra
+            # salvar um alvo DIFERENTE -- so nao vale se o protetor for
+            # nitidamente MAIS valioso que quem esta sendo salvo. >=, nao
+            # > estrito: cartas de protecao dedicadas (ex: Vista OP12-027,
+            # Zoro OP15-094) sao pensadas pra proteger aliados de valor
+            # parecido/maior, empate nao deve travar o efeito.
+            return saved >= self.analyzer.char_value_score(pagador)
         if action in ('return_own_don', 'don_minus'):
             price = self.don_minus_opportunity_cost(count)
             if (self.don_minus_delays_hand_curve(count)
@@ -9778,8 +9811,6 @@ class DecisionEngine:
                 price += 45.0
         elif action == 'rest_don':
             price = self.don_opportunity_cost(count)
-        elif action == 'trash_self':
-            price = saved
         else:
             return True
         return saved > price
