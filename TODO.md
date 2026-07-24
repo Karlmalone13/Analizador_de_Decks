@@ -2,6 +2,17 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 361): Turn Planner Fase B — cobertura
+> COMPLETA de todos os 6 gatilhos de combo mapeados nas fases 1.1-1.4.
+> Faltavam 3: `on_own_effect_removes_char` (bônus em `avaliar_carta`
+> quando o board reage a um KO/bounce meu), `on_own/opp_event_activated`
+> (bônus/penalidade ao jogar EVENT), e `on_hand_card_trashed` (sobe o
+> limiar de "vale pagar" um custo opcional de `trash_from_hand` de 60
+> pra 85 quando há payoff no board). 6 smoke tests novos com cartas
+> reais. `smoke_test.py` 100%. **Fase B está completa** — todos os
+> gatilhos de combo mapeados nesta sessão agora pesam na decisão.
+> Nenhum teste ao vivo nem push ainda.
+
 > 24/07/2026 (bloco HANDOFF 360): Turn Planner Fase B estendida —
 > combos mapeados nas fases 1.1-1.4 (`on_own/opp_char_played`,
 > `on_opp_char_ko`, `when_rested`) agora pesam na ORDEM de

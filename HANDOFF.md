@@ -1,5 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (361) - Claude (sessao local) - Turn Planner fase B: cobertura COMPLETA de todos os gatilhos de combo mapeados (fases 1.1-1.4)
+
+Continuação do bloco 360 — usuário reforçou: "o turner planner tem que
+ser bem completo, envolver todos as possibilidades de combos,
+finalizações, etc." O bloco 360 cobriu `on_own/opp_char_played` e
+`on_opp_char_ko`/`when_rested`; faltavam os 3 gatilhos restantes das
+fases 1.1/1.4. Agora TODOS os 6 gatilhos de combo mapeados nesta sessão
+pesam na decisão, não só na execução:
+
+1. **`_own_effect_removes_char_react_bonus(card)`** (nova,
+   `DecisionEngine`, chamada de `avaliar_carta` quando `has_ko`/
+   `has_bounce`): meu board pode ter um watcher `on_own_effect_removes_char`
+   (fase 1.4 — Crocodile EB02-023 só bounce do oponente; Boa Hancock
+   OP07-038/Shakuyaku OP08-046, qualquer remoção). Escaneia os steps de
+   `card` (`ko`/`bounce`/`trash_character`/`ko_selected`/
+   `place_opp_character_bottom_deck`) e casa `removal_type`/
+   `target_side` do watcher contra o tipo/alvo real do step.
+2. **`_event_activated_react_bonus(card)`** (nova, `DecisionEngine`,
+   chamada de `avaliar_carta` pra qualquer `EVENT`): meu board com
+   `on_own_event_activated` (fase 1.1 — Usopp, Franky, Page One) dá
+   bônus; o board do OPONENTE com `on_opp_event_activated` penaliza
+   (ele reage a MIM jogar um evento). Respeita `conditions` e
+   `don_requirement`.
+3. **`_worth_paying_optional_costs`** (`EffectExecutor`, único ponto de
+   decisão "vale pagar este custo opcional" — usado tanto pelo
+   simulador quanto ao vivo): se meu board tem `on_hand_card_trashed`
+   (fase 1.4 — Kuroobi OP14-045, Wadatsumi OP14-056), o limiar de
+   "vale sacrificar esta carta da mão" sobe de 60 pra 85 — pagar o
+   custo genérico de `trash_from_hand` também aciona esse payoff.
+
+**Validação**: `smoke_fast.py` — 6 checks novos com cartas reais
+(Crocodile+Jinbe pro bounce reativo; Sugar OP10-003+evento genérico
+pro event_activated; Kuroobi mudando o limiar de
+`_worth_paying_optional_costs` de 60 pra 85, comparado com/sem o
+watcher em campo). `smoke_test.py`: TODOS OS TESTES PASSARAM.
+
+**Status final da Fase B**: cobre lookahead de recurso (projeção real
+dos dois lados, bloco 359) + TODOS os 6 gatilhos de combo mapeados nas
+fases 1.1-1.4 influenciando jogadas/ataques/custos opcionais (blocos
+360-361). Não identificado mais nenhum gatilho de combo desta sessão
+sem representação na decisão. Nenhum teste ao vivo nem push ainda.
+
 ## 2026-07-24 (360) - Claude (sessao local) - Turn Planner fase B: combos mapeados (fases 1.1-1.4) agora pesam na ordem de jogadas/ataques
 
 Continuação do bloco 359 — usuário pediu explicitamente: "adicione tb

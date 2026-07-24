@@ -1673,6 +1673,66 @@ def test_turn_planner_fase_b_combos_na_ordem_de_jogadas_e_ataques() -> None:
           eng6._rest_attack_has_material_benefit(issho) is True)
 
 
+def test_turn_planner_fase_b_mais_gatilhos_de_combo_na_decisao() -> None:
+    # FASE B, continuacao (usuario, 24/07: "o turner planner tem que ser
+    # bem completo, envolver TODAS as possibilidades de combos"). Estende
+    # a consciencia de combo pros 3 gatilhos da fase 1.4/1.1 que ainda
+    # faltavam: on_own_effect_removes_char, on_own/opp_event_activated, e
+    # o payoff de on_hand_card_trashed no julgamento de custo opcional.
+
+    # 1) on_own_effect_removes_char (Crocodile EB02-023, so bounce do
+    #    OPONENTE): avaliar Jinbe OP14-049 (bounce opp_character no
+    #    on_play) com Crocodile em campo recebe bonus; carta sem ko/bounce
+    #    nenhum nao recebe.
+    croco = real_card("EB02-023")
+    a = GameState(leader=real_card("OP11-062"), turn=3)
+    a.field_chars = [croco]
+    opp = GameState(leader=real_card("OP11-062"), turn=3)
+    eng = DecisionEngine(a, opp)
+    jinbe = real_card("OP14-049")
+    check("_own_effect_removes_char_react_bonus premia Jinbe (bounce opp) com Crocodile em campo",
+          eng._own_effect_removes_char_react_bonus(jinbe) > 0.0)
+    vanilla = real_card("EB01-005")
+    check("_own_effect_removes_char_react_bonus NAO premia carta sem ko/bounce",
+          eng._own_effect_removes_char_react_bonus(vanilla) == 0.0)
+
+    # 2) on_own_event_activated (Sugar OP10-003, sem condicoes/don_req):
+    #    jogar um EVENT com Sugar em campo recebe bonus; jogar um
+    #    CHARACTER nao (o gatilho e so pra Evento).
+    sugar = real_card("OP10-003")
+    a2 = GameState(leader=real_card("OP11-062"), turn=3)
+    a2.field_chars = [sugar]
+    opp2 = GameState(leader=real_card("OP11-062"), turn=3)
+    eng2 = DecisionEngine(a2, opp2)
+    evento = real_card("EB01-009")
+    check("_event_activated_react_bonus premia jogar EVENT com Sugar (on_own_event_activated) em campo",
+          eng2._event_activated_react_bonus(evento) > 0.0)
+    personagem = real_card("EB01-005")
+    check("_event_activated_react_bonus NAO premia jogar CHARACTER (gatilho e so pra Evento)",
+          eng2._event_activated_react_bonus(personagem) == 0.0)
+
+    # 3) on_hand_card_trashed (Kuroobi OP14-045) torna um custo opcional
+    #    de trash_from_hand mais aceitavel -- carta de trash_value=83
+    #    (EB01-005) fica ACIMA do limiar antigo (60) mas DENTRO do novo
+    #    limiar com o payoff do combo (60+25=85).
+    kuroobi = real_card("OP14-045")
+    a3 = GameState(leader=real_card("OP11-062"), turn=3)
+    a3.field_chars = [kuroobi]
+    a3.hand = [real_card("EB01-005"), real_card("OP02-034")]
+    opp3 = GameState(leader=real_card("OP11-062"), turn=3)
+    ee3 = EffectExecutor(a3, opp3)
+    custos = [{'type': 'trash_from_hand', 'count': 1}]
+    carta_fonte = real_card("OP02-085")
+    check("_worth_paying_optional_costs aceita o custo com o payoff do on_hand_card_trashed (Kuroobi)",
+          ee3._worth_paying_optional_costs(custos, carta_fonte) is True)
+
+    a4 = GameState(leader=real_card("OP11-062"), turn=3)  # SEM Kuroobi
+    a4.hand = [real_card("EB01-005"), real_card("OP02-034")]
+    ee4 = EffectExecutor(a4, opp3)
+    check("_worth_paying_optional_costs recusa o MESMO custo sem o payoff (sem Kuroobi em campo)",
+          ee4._worth_paying_optional_costs(custos, carta_fonte) is False)
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -8290,6 +8350,7 @@ def main() -> int:
     test_turn_planner_fase_a_trigger_don_value_e_score_activate_main()
     test_turn_planner_fase_b_next_turn_readiness_bonus()
     test_turn_planner_fase_b_combos_na_ordem_de_jogadas_e_ataques()
+    test_turn_planner_fase_b_mais_gatilhos_de_combo_na_decisao()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
     test_search_contextual_evita_congestionar_mao_com_bombas()

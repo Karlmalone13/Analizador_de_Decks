@@ -8097,7 +8097,19 @@ class EffectExecutor:
         worst = self._choose_to_trash(self.me.hand)
         if worst is None:
             return False
-        return self._trash_value(worst) <= 60
+        # FASE B do Turn Planner (usuario, 24/07: combos mapeados devem
+        # entrar na decisao). Se meu board tem um watcher on_hand_card_
+        # trashed (fase 1.4, ex: Kuroobi OP14-045 ganha Rush, Wadatsumi
+        # OP14-056 nega efeito proprio) pagar este custo generico de
+        # trash_from_hand TAMBEM aciona esse payoff -- fica mais aceitavel
+        # sacrificar uma carta um pouco mais valiosa.
+        limiar = 60
+        meus = [self.me.leader, *self.me.field_chars]
+        if self.me.field_stage:
+            meus.append(self.me.field_stage)
+        if any(get_card_effects(c.code).get('on_hand_card_trashed') for c in meus):
+            limiar += 25
+        return self._trash_value(worst) <= limiar
 
 
 # ===========================================================================
@@ -9371,6 +9383,92 @@ class DecisionEngine:
                 bonus += self._UNCOVERED_ACTION_VALUE[action]
         return bonus
 
+    def _own_effect_removes_char_react_bonus(self, card: 'Card') -> float:
+        """
+        FASE B do Turn Planner (usuario, 24/07: combos mapeados devem
+        entrar na decisao, "todas as possibilidades"). Meu board pode ter
+        um watcher `on_own_effect_removes_char` (fase 1.4, ex: Crocodile
+        EB02-023 -- so bounce do OPONENTE; Boa Hancock OP07-038/Shakuyaku
+        OP08-046 -- qualquer remocao, qualquer lado) que reage quando MEU
+        proprio efeito remove um Character do campo. `avaliar_carta` ja
+        credita has_ko/has_bounce pelo valor da remocao em si -- nunca
+        pelo watcher reagindo a ela.
+        """
+        meus = [self.me.leader, *self.me.field_chars]
+        if self.me.field_stage:
+            meus.append(self.me.field_stage)
+        watchers = [(c, get_card_effects(c.code).get('on_own_effect_removes_char')) for c in meus]
+        watchers = [(c, w) for c, w in watchers if w]
+        if not watchers:
+            return 0.0
+        effects = get_card_effects(card.code)
+        bonus = 0.0
+        for trig in ('on_play', 'main'):
+            ef = effects.get(trig)
+            if not isinstance(ef, dict):
+                continue
+            for step in ef.get('steps', []):
+                act = step.get('action')
+                if act not in ('ko', 'bounce', 'trash_character', 'ko_selected',
+                               'place_opp_character_bottom_deck'):
+                    continue
+                target = step.get('target', 'opp_character')
+                side = 'own' if target in ('own_character', 'self_character') else 'opp'
+                if act == 'bounce':
+                    rtype = 'bounce'
+                elif act == 'place_opp_character_bottom_deck':
+                    rtype = 'deck_bottom'
+                else:
+                    rtype = 'ko'
+                for _source, w in watchers:
+                    if w.get('removal_type') and w['removal_type'] != rtype:
+                        continue
+                    if w.get('target_side') and w['target_side'] != side:
+                        continue
+                    bonus += 20.0
+        return min(bonus, 40.0)
+
+    def _event_activated_react_bonus(self, card: 'Card') -> float:
+        """
+        FASE B do Turn Planner (usuario, 24/07). Jogar um EVENT pode
+        acionar `on_own_event_activated` (meu board, fase 1.1 -- ex:
+        Usopp, Franky, Page One) ou `on_opp_event_activated` (board do
+        OPONENTE reagindo a MIM jogar um evento -- penaliza, ex: Franky
+        OP01-062).
+        """
+        if card.card_type != 'EVENT':
+            return 0.0
+        bonus = 0.0
+        ee = EffectExecutor(self.me, self.opp)
+        meus = [self.me.leader, *self.me.field_chars]
+        if self.me.field_stage:
+            meus.append(self.me.field_stage)
+        for source in meus:
+            entry = get_card_effects(source.code).get('on_own_event_activated')
+            if not entry:
+                continue
+            req = entry.get('don_requirement', 0)
+            if req and source.don_attached < req:
+                continue
+            conds = entry.get('conditions', {})
+            if not conds or ee._check_conditions(conds, source):
+                bonus += 20.0
+        ee_opp = EffectExecutor(self.opp, self.me)
+        opps = [self.opp.leader, *self.opp.field_chars]
+        if self.opp.field_stage:
+            opps.append(self.opp.field_stage)
+        for source in opps:
+            entry = get_card_effects(source.code).get('on_opp_event_activated')
+            if not entry:
+                continue
+            req = entry.get('don_requirement', 0)
+            if req and source.don_attached < req:
+                continue
+            conds = entry.get('conditions', {})
+            if not conds or ee_opp._check_conditions(conds, source):
+                bonus -= 15.0
+        return bonus
+
     def avaliar_carta(self, card: 'Card', stage_redundancy: bool = True) -> float:
         """
         Avalia o valor situacional de uma carta para jogar/guardar/descartar.
@@ -9506,6 +9604,9 @@ class DecisionEngine:
             s += 20
             if a.field_advantage() < 0: s += 15
             if not self.opp.field_chars: s -= 20
+        if has_ko or has_bounce:
+            s += self._own_effect_removes_char_react_bonus(card)
+        s += self._event_activated_react_bonus(card)
         if has_rest and self._step_condition_currently_holds(
                 card, lambda st: st.get('action') == 'rest_opp_character'):
             # Restar abre personagens para ataque
