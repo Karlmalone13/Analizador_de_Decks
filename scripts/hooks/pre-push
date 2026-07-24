@@ -1,7 +1,8 @@
 #!/bin/sh
-# Bloqueia o push se HANDOFF.md nao foi atualizado desde o que ja esta no
-# remoto. Garante que toda sessao (Claude ou Codex) deixe registro antes de
-# entregar o trabalho para a proxima.
+# Bloqueia o push se HANDOFF.md ou TODO.md nao foram atualizados desde o que
+# ja esta no remoto. Garante que toda sessao (Claude ou Codex) deixe registro
+# (HANDOFF) e mantenha o estado vivo (TODO) antes de entregar o trabalho para
+# a proxima sessao.
 
 remote="$1"
 url="$2"
@@ -17,12 +18,24 @@ while read local_ref local_sha remote_ref remote_sha; do
         continue
     fi
 
-    changed=$(git diff --name-only "$remote_sha" "$local_sha" -- HANDOFF.md)
-    if [ -z "$changed" ]; then
+    handoff_changed=$(git diff --name-only "$remote_sha" "$local_sha" -- HANDOFF.md)
+    if [ -z "$handoff_changed" ]; then
         echo ""
         echo "BLOQUEADO: HANDOFF.md nao foi atualizado nestes commits."
         echo "Antes de dar push, escreva um bloco novo no topo do HANDOFF.md"
         echo "com o que foi feito nesta sessao (veja o formato ja usado no arquivo)."
+        echo ""
+        echo "Para pular esta checagem uma vez (nao recomendado): git push --no-verify"
+        echo ""
+        exit 1
+    fi
+
+    todo_changed=$(git diff --name-only "$remote_sha" "$local_sha" -- TODO.md)
+    if [ -z "$todo_changed" ]; then
+        echo ""
+        echo "BLOQUEADO: TODO.md nao foi atualizado nestes commits."
+        echo "Antes de dar push, reflita no TODO.md o que mudou de estado/pendencia"
+        echo "nesta sessao (mesmo bloco do HANDOFF, resumido para o topo do TODO)."
         echo ""
         echo "Para pular esta checagem uma vez (nao recomendado): git push --no-verify"
         echo ""

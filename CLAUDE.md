@@ -218,9 +218,26 @@ como path pronto.
 Se o log adicionado ao banco veio de uma partida em que o **bot jogou de
 verdade** (não humano vs humano), a tarefa só termina depois de ler o
 resumo de decisões — não é opcional, e não é suficiente só olhar o combat
-log/resultado da partida (pedido do usuário, 23/07: "a leitura da
-telemetria tem que ser obrigatória depois que o log chega no banco",
-depois de repetidas vezes o mesmo tipo de erro passar despercebido).
+log/resultado da partida (pedido do usuário, 23/07 e reforçado 24/07: "a
+leitura da telemetria tem que ser obrigatória depois que o log chega no
+banco", pra garantir que a eficiência do bot é realmente investigada e
+melhorada, não só medida — depois de repetidas vezes o mesmo tipo de erro
+passar despercebido).
+
+**Essa telemetria (`BOT/engine_server/logs/` e
+`scriptis_da_ia/metrics/live_runs/`) é gitignored de propósito — só existe
+no disco local de quem rodou o bot.** Isso significa:
+- Numa sessão **local** (com acesso a esse filesystem): ler é obrigatório
+  e incondicional, sempre que um log de partida do bot for pro banco —
+  nunca pular pra "olhar só o combat log" por conveniência.
+- Numa sessão **remota/nuvem** (sem esse acesso): esses arquivos
+  simplesmente não existem no ambiente. Não dá pra cumprir o passo —
+  **declare isso explicitamente** ("telemetria de decisão indisponível
+  nesta sessão, é gitignored e local-only") em vez de reconstruir a
+  intenção do bot só pelo combat log bruto e reportar como se fosse
+  investigação completa (foi exatamente esse gap que gerou o achado do
+  bloco HANDOFF 342 — a sessão remota teve que adivinhar via combat log
+  cru porque não tinha outro jeito).
 
 **Ordem obrigatória, NUNCA pular direto pro segundo passo** (achado 23/07:
 ler só o resumo decisão-a-decisão dá quadro incompleto e sem prioridade —
@@ -272,13 +289,18 @@ arquivos. Por isso:
 1. Sempre commitar antes de parar (créditos, fim de sessão).
 2. Sempre escrever um bloco novo no topo do [HANDOFF.md](HANDOFF.md) antes
    de parar: o que foi feito, estado atual, o que falta.
-3. Ao assumir uma sessão, ler `HANDOFF.md` + `git log --oneline -10` +
-   `git status` antes de qualquer edição.
+3. Sempre refletir o mesmo delta no topo do [TODO.md](TODO.md) (versão
+   resumida do bloco do HANDOFF — o que foi fechado, o que ficou pendente
+   de validação, o que mudou de prioridade). `TODO.md` não pode ficar
+   parado enquanto o `HANDOFF.md` avança (achado 24/07: `TODO.md` ficou 3
+   dias desatualizado enquanto o `HANDOFF.md` já tinha 4 blocos novos).
+4. Ao assumir uma sessão, ler `HANDOFF.md` + `TODO.md` +
+   `git log --oneline -10` + `git status` antes de qualquer edição.
 
 Isso é reforçado por um **hook de `pre-push`** (`scripts/hooks/pre-push`):
-bloqueia o `git push` se `HANDOFF.md` não tiver sido alterado nos commits
-sendo enviados. `.git/hooks/` não é versionado pelo git, então em cada
-clone/máquina nova é preciso instalar uma vez:
+bloqueia o `git push` se `HANDOFF.md` **ou** `TODO.md` não tiverem sido
+alterados nos commits sendo enviados. `.git/hooks/` não é versionado pelo
+git, então em cada clone/máquina nova é preciso instalar uma vez:
 ```bash
 sh scripts/setup-git-hooks.sh
 ```

@@ -1,5 +1,72 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (343) - Claude (sessao local) - investigacao real da telemetria + decisao sobre o achado do bloco 342
+
+Sessao local pegou o pedido do bloco 342 (telemetria de decisao nunca
+persiste, sessao remota sem acesso aos arquivos gitignored) com acesso de
+verdade a `BOT/engine_server/logs/decisions/` e
+`scriptis_da_ia/metrics/live_runs/`.
+
+**Investigacao feita (dados reais, nao mais especulacao):**
+- Tamanho de 1 decision log de partida real
+  (`decisions_2026-07-23T23.00.46.jsonl`, 218 linhas): 1,43 MB. **91% e
+  `state_before`/`state_after`** (dump completo de mao/board/vida/trash
+  repetido quase identico a cada linha). Gzip reduz pra 35 KB (33x).
+  `decision_summary.py` ja gera um resumo sem esses dumps: 8,7 KB, mesma
+  ordem de grandeza do `parsed/*.json` ja versionado (~22 KB medio).
+- Confirmado que sessoes antigas (pre ~21/07) tinham eventos `execution`
+  sem `match_id` (ficava `null`) -- ja corrigido no schema atual
+  (confirmado em sessao de 23/07, `execution` ja vem com `match_id`), entao
+  o filtro por match_id funciona bem daqui pra frente, sem servir pra
+  backfill de partidas antigas.
+- **Achado lateral relevante pra eficiencia** (nao o foco desta sessao, mas
+  vale registrar): rodei `decision_summary.py --latest` sobre o log real
+  mais recente (`Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17`) e
+  achei um turno LETHAL certificado (`can_lethal=True`, vida do bot em 0,
+  vida do oponente em 3) onde `scored_actions` veio **vazio**, a busca deu
+  timeout (3050ms) e o bot so mandou `end_turn` -- a partida acabou logo
+  depois (derrota). Raro (1 caso em 1932 decisoes de todas as sessoes),
+  mas caro quando acontece. Agregando os 22 `live_runs`: **27 partidas
+  registradas, 0 vitorias, 26 derrotas**, `gate_status` sempre `fail` --
+  numero mais amplo do que o cohort Katakuri (0/4) ja registrado no bloco
+  ~335. Nenhum dos dois foi investigado a fundo ainda, fica pra proxima
+  sessao (usuario decidiu focar a sessao no processo de telemetria, nao no
+  bug em si).
+
+**Decisao do usuario: NAO versionar/commitar telemetria de decisao no
+Git.** A proposta original do bloco 342 (estender `collect_latest_match.py`
+pra gravar `.jsonl`/`.jsonl.gz` + `_summary.txt` no banco versionado) foi
+descartada -- o usuario esclareceu que o objetivo real e mais simples: como
+essa telemetria ja persiste normalmente no disco local de quem roda o bot,
+o gap de verdade era o `CLAUDE.md` nao deixar claro (a) que isso so e
+possivel numa sessao com acesso ao filesystem local, e (b) que a leitura e
+incondicional sempre que um log do bot for pro banco, nao algo que passa
+despercebido.
+
+**Fix aplicado (so `CLAUDE.md`, sem codigo novo):** secao "Telemetria de
+decisao -- OBRIGATORIO" ganhou paragrafo explicito: sessao local le sempre
+(sem excecao), sessao remota/nuvem declara que a telemetria esta
+indisponivel (gitignored, local-only) em vez de reconstruir via combat log
+cru e reportar como investigacao completa -- exatamente o gap que gerou o
+achado do bloco 342.
+
+**Tambem reaplicado nesta sessao** (tinha ficado numa branch que nao foi
+a que virou `main` -- ver nota abaixo): hook de `pre-push`
+(`scripts/hooks/pre-push`) agora exige `TODO.md` atualizado junto do
+`HANDOFF.md`, documentado na secao "Workflow / convencoes" do `CLAUDE.md`.
+
+**Nota de infraestrutura:** esta sessao comecou numa branch antiga
+(`claude/execute-remote-control-3qzqgm`) que ja tinha sido descontinuada --
+o PR #1 foi mergeado na `main` e a branch de trabalho removida por outra
+sessao (bloco 341, remota) enquanto esta sessao ainda estava ativa na
+branch velha. `git checkout main && git pull --ff-only` resolveu; daqui
+pra frente `main` e a unica branch, confirmar isso no inicio de qualquer
+sessao nova.
+
+TODO.md: item "TELEMETRIA DE DECISAO NUNCA PERSISTE" marcado como
+resolvido (🔴 -> ✅), com a decisao e o dado de tamanho/formato registrados
+caso a decisao de versionar mude no futuro.
+
 ## 2026-07-24 (342) - Claude (sessao remota web) - gap de agressividade (Mihawk) + achado GRANDE: telemetria de decisao nunca persiste
 
 **1) Gap de agressividade (Mihawk bot n=1, pct_atk_lider 40% vs humano 85,7%,
