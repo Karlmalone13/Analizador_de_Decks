@@ -9580,6 +9580,41 @@ class DecisionEngine:
 
         return False
 
+    def _max_don_needed_for_reactive_use(self) -> int:
+        """
+        Quanto DON o MELHOR recurso reativo disponivel realmente precisa pra
+        ser usado no turno do oponente -- MAXIMO entre as fontes que
+        genuinamente custam DON (mesmas 2 primeiras de
+        `_has_don_reactive_use`, fonte 3/proxy nao conta aqui porque counter
+        impresso/generico nao custa DON nenhum pra jogar). 0 se nenhuma
+        fonte com custo de DON existe (a reserva nao deveria travar DON
+        nesse caso -- ver fix abaixo em `_don_reserve_for_defense`).
+        """
+        me = self.me
+        maior = 0
+
+        for c in me.hand:
+            if c.card_type != 'EVENT' or '[counter]' not in c.card_text.lower():
+                continue
+            play_cost = effective_hand_play_cost(me, c, self.opp)
+            if play_cost > 0:
+                maior = max(maior, play_cost)
+                continue
+            m = re.search(r'don!!\s*[-x]?\s*(\d+)', c.card_text.lower())
+            if m:
+                maior = max(maior, int(m.group(1)))
+
+        for c in list(me.field_chars) + [me.leader]:
+            effects = get_card_effects(c.code)
+            for timing in ('counter', 'opp_turn'):
+                blk = effects.get(timing)
+                if blk:
+                    req = blk.get('don_requirement', 0)
+                    if req > 0:
+                        maior = max(maior, max(0, req - getattr(c, 'don_attached', 0)))
+
+        return maior
+
     def _don_reserve_for_defense(self) -> int:
         """
         Quantos DON reservar para defesa no turno do oponente.
@@ -9626,6 +9661,18 @@ class DecisionEngine:
         # Pouco counter na mão aumenta o risco de não conseguir defender
         if counters_mao == 0 and my_life <= 3:
             reserva = max(reserva, 1)
+
+        # FIX 24/07 (achado do usuario: "as vezes ele tem 1 evento custo 1
+        # na mao e guarda 4 dons"): os tiers acima (ameaca/vida) escalam a
+        # reserva ate 3-4 DON, mas SEM NENHUM teto ligado ao que o recurso
+        # reativo disponivel REALMENTE custa -- counter impresso (stat na
+        # carta) nao gasta DON nenhum pra usar, e um evento [Counter] com
+        # custo 1 nunca precisa de mais que 1 DON guardado. Reservar mais
+        # que isso e puro desperdicio de poder de ataque (o DON extra nunca
+        # tem uso real na defesa). Teto = o maior custo de DON entre os
+        # recursos reativos que EXISTEM de verdade agora (0 se so existem
+        # counters impressos/genericos, que nao custam DON pra usar).
+        reserva = min(reserva, self._max_don_needed_for_reactive_use())
 
         return min(reserva, don_disp)
 

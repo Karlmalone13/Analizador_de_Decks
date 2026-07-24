@@ -1209,6 +1209,35 @@ def test_mapeamento_de_combos_bottom_deck_e_locks_contam_como_removal() -> None:
           score_com_alvo > score_sem_alvo)
 
 
+def test_don_reserve_for_defense_nao_guarda_mais_que_o_recurso_precisa() -> None:
+    # Achado real 24/07 (usuario: "as vezes ele tem 1 evento custo 1 na mao
+    # e guarda 4 dons"): os tiers de _don_reserve_for_defense (ameaca/vida)
+    # escalavam a reserva ate 3 DON SEM NENHUM teto ligado ao que o recurso
+    # reativo disponivel realmente custa -- reservar mais do que o evento
+    # [Counter] precisa e puro desperdicio de poder de ataque, o DON extra
+    # nunca tem uso real na defesa.
+    evento_barato = real_card("EB01-038")  # custo 1, [Counter] DON!!-1
+    me = GameState(leader=real_card("OP11-062"), don_available=5, turn=5)
+    me.hand = [evento_barato]
+    me.life = [real_card("OP07-077")]  # vida 1 -- ameaca alta, tier antigo reservaria 3
+    opp = GameState(leader=real_card("ST04-001"))
+    engine = DecisionEngine(me, opp)
+    check("evento de custo 1 na mao -- reserva agora fica em 1 (antes reservava ate 3)",
+          engine._don_reserve_for_defense() == 1)
+
+    # controle: SO counter impresso na mao (nao custa DON nenhum pra usar)
+    # -- reserva deve zerar, nao travar DON de ataque a toa.
+    counter_impresso = real_card("ST18-001")  # counter 2000, sem [Counter] de evento
+    me2 = GameState(leader=real_card("OP11-062"), don_available=5, turn=5)
+    me2.hand = [counter_impresso]
+    me2.deck = [real_card("ST18-001") for _ in range(10)] + [real_card("OP07-077") for _ in range(20)]
+    me2.life = [real_card("OP07-077")]
+    opp2 = GameState(leader=real_card("ST04-001"))
+    engine2 = DecisionEngine(me2, opp2)
+    check("so counter impresso na mao (0 DON necessario) -- reserva zera",
+          engine2._don_reserve_for_defense() == 0)
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -7796,6 +7825,7 @@ def main() -> int:
     test_bonus_de_ameaca_critica_exige_chance_real_de_conectar()
     test_debuff_power_no_oponente_conta_como_removal()
     test_mapeamento_de_combos_bottom_deck_e_locks_contam_como_removal()
+    test_don_reserve_for_defense_nao_guarda_mais_que_o_recurso_precisa()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
     test_search_contextual_evita_congestionar_mao_com_bombas()

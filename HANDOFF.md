@@ -1,5 +1,48 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (349) - Claude (sessao local) - reserva de DON pra defesa (etapa 4/4): teto pelo custo REAL do recurso reativo
+
+Continuacao do bloco 348 -- item 4 do pedido do usuario. 1a rodada de
+investigacao (5 "casos" de exclusao de carta pela reserva) foi um
+**falso positivo meu** -- corrigido na conversa, o mecanismo de furar a
+reserva pra jogar carta boa (`_can_spend_reserved_don_for_play`) ja
+funciona. Usuario deu o exemplo real que faltava: "as vezes ele tem 1
+evento custo 1 na mao e guarda 4 dons".
+
+**Causa raiz confirmada**: `_don_reserve_for_defense` escalava a reserva
+por tiers de ameaca/vida (`threat>0.7 -> 3`, `my_life<=2 -> 2`, etc) **sem
+nenhum teto ligado ao que o recurso reativo disponivel realmente custa**.
+Um evento `[Counter]` de custo 1 (ex: EB01-038, `DON!!-1`) so precisa de 1
+DON guardado pra ser usado -- reservar 3-4 e desperdicio puro de poder de
+ataque, o DON extra nunca tem uso real na defesa. Pior: `_has_don_
+reactive_use()` tambem retorna `True` so pela fonte-proxy (15% de counter
+impresso no deck+vida restante) -- COUNTER IMPRESSO NAO CUSTA DON NENHUM
+pra jogar, entao nesse caso a reserva correta e **0**, nao um tier
+baseado em ameaca.
+
+**Fix**: nova funcao `_max_don_needed_for_reactive_use()` -- mesmas 2
+fontes de `_has_don_reactive_use` que genuinamente custam DON (evento
+`[Counter]` com custo/DON!!N proprio; character/leader em campo com
+`don_requirement` em `counter`/`opp_turn`), retorna o MAIOR custo real
+entre elas (0 se so existe a fonte-proxy de counter impresso).
+`_don_reserve_for_defense` agora aplica `reserva = min(reserva,
+_max_don_needed_for_reactive_use())` antes do teto de `don_disp` --
+nunca reserva mais DON do que o melhor recurso reativo disponivel
+realmente precisa.
+
+Validado: evento custo 1 (EB01-038) com vida 1 (tier antigo reservaria
+3) -> reserva agora fica em 1. Mao com so counter impresso (0 DON
+necessario) -> reserva zera (antes reservaria 2-3 por vida baixa). Teste
+novo em `smoke_fast.py`
+(`test_don_reserve_for_defense_nao_guarda_mais_que_o_recurso_precisa`,
+2 asserts). `smoke_fast.py` = SMOKE FAST OK. `smoke_test.py` = TODOS OS
+TESTES PASSARAM.
+
+**As 4 etapas pedidas pelo usuario antes de testar/dar push**: 1
+(mapeamento de combos) e 4 (reserva de DON) feitas. **Faltam 2 (Turn
+Planner) e 3 (`_don_livre_for_plan`)** -- usuario pediu as 4 antes de
+validar ao vivo/push de novo, ainda nao fazer.
+
 ## 2026-07-24 (348) - Claude (sessao local) - mapeamento de combos (etapa 1/4): 3 acoes de controle viravam is_removal
 
 Usuario pediu 4 melhorias antes de testar/dar push de novo: (1) mapear

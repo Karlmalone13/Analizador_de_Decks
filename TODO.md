@@ -2,6 +2,18 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 349): etapa 4/4 do pedido do usuário —
+> `_don_reserve_for_defense` reservava DON por tiers de ameaça/vida (até
+> 3-4) sem teto ligado ao custo REAL do recurso reativo disponível.
+> Usuário: "às vezes tem 1 evento custo 1 na mão e guarda 4 dons". Fix:
+> nova `_max_don_needed_for_reactive_use()` calcula o maior custo de DON
+> entre os recursos reativos reais (evento `[Counter]` com DON próprio,
+> `don_requirement` de personagem/líder) — reserva nunca passa disso
+> (0 se só existe counter impresso, que não custa DON pra usar). Testado,
+> `smoke_test.py` 100%. **Status das 4 etapas pedidas antes de
+> testar/push**: 1 (combos) e 4 (reserva DON) feitas; **faltam 2 (Turn
+> Planner) e 3 (`_don_livre_for_plan`)**.
+
 > 24/07/2026 (bloco HANDOFF 348): usuário pediu 4 melhorias antes de
 > testar/dar push de novo — **1/4 feita** (mapeamento de combos: 114 das
 > 136 ações do banco sem reconhecimento na pontuação; corrigidas as 3 de
