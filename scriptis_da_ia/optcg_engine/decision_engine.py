@@ -8856,6 +8856,46 @@ class DecisionEngine:
                    - self._counter_stat_bonus(card)
                    + self._counter_stat_bonus(card, life_mult=False) * opcao_futura)
 
+    _OPP_POWER_TARGETS = {'opp_character', 'opp_leader', 'opp_leader_or_character',
+                          'all_opp_characters'}
+
+    def _step_condition_currently_holds(self, card: 'Card', step_matches) -> bool:
+        """
+        Generaliza o mecanismo de _conditional_play_card_combo_value pra
+        QUALQUER acao: acha o(s) step(s) de on_play/main da PROPRIA carta
+        que `step_matches(step)` aceita, e checa se a condicao (bloco+step)
+        bate com o estado ATUAL via _check_conditions (read-only, mesma
+        funcao que o motor usa pra executar o efeito de verdade). Usado
+        pelas flags estaticas de avaliar_carta (has_draw/has_ko/etc, que
+        vem de get_card_flags/card_analysis_db e sao CEGAS a condicao) --
+        antes essas flags somavam bonus incondicional mesmo quando o
+        efeito real so dispara sob uma condicao que nao vale agora (achado
+        23/07, pedido do usuario pra generalizar o fix do play_card da
+        Pudding pra qualquer efeito, nao so aquele).
+        Sem NENHUM step com essa acao em on_play/main (a flag pode vir de
+        outro gatilho, tipo on_ko/passive/end_of_turn, que este scan nao
+        cobre) -> True, conservador: mantem o comportamento antigo (sem
+        regressao nas centenas de cartas ja tunadas com esse bonus fixo).
+        """
+        effects = get_card_effects(card.code)
+        ee = EffectExecutor(self.me, self.opp)
+        achou = False
+        for trig in ('on_play', 'main'):
+            ef = effects.get(trig)
+            if not isinstance(ef, dict):
+                continue
+            block_conds = ef.get('conditions', {})
+            block_ok = (not block_conds) or ee._check_conditions(block_conds, card)
+            for step in ef.get('steps', []):
+                if not step_matches(step):
+                    continue
+                achou = True
+                step_conds = step.get('conditions', {})
+                step_ok = (not step_conds) or ee._check_conditions(step_conds, card)
+                if block_ok and step_ok:
+                    return True
+        return not achou
+
     def _conditional_play_card_combo_value(self, card: 'Card') -> float:
         """
         Bonus de avaliar_carta pro passo 'play_card' condicional (jogar
@@ -8971,6 +9011,14 @@ class DecisionEngine:
 
         # Efeitos do banco — flags estruturadas do card_analysis_db (fonte única
         # de classificação; substituiu a detecção frágil por substring no texto).
+        # As flags em si sao ESTATICAS (so dizem "a carta TEM esse tipo de
+        # efeito", nao "a condicao dele vale AGORA") -- cada bonus abaixo so
+        # e concedido se _step_condition_currently_holds confirmar, contra o
+        # estado real, que o step correspondente dispara (ou nao achar
+        # nenhum step condicionado em on_play/main, caso em que mantem o
+        # comportamento antigo). Generalizacao do fix do combo play_card da
+        # Pudding (achado 23/07) pra QUALQUER flag, pedido explicito do
+        # usuario.
         flags = get_card_flags(card.code)
         has_draw   = flags.get('draws', False)
         has_search = flags.get('is_searcher', False)
@@ -8981,26 +9029,43 @@ class DecisionEngine:
         has_givdon = flags.get('gives_don', False)
         has_gainlf = flags.get('gains_life', False)
 
-        if has_draw:   s += 25 + (10 if len(self.me.hand) <= 3 else 0)
-        if has_search: s += 30 + (15 if self.me.turn <= 3 else 0)
-        if has_ko:
+        def _is_ko_removal_step(step):
+            act = step.get('action')
+            if act in ('ko', 'bounce', 'rest_opp_character'):
+                return True
+            return (act in ('debuff_power', 'set_base_power')
+                    and step.get('target') in self._OPP_POWER_TARGETS)
+
+        if has_draw and self._step_condition_currently_holds(
+                card, lambda st: st.get('action') == 'draw'):
+            s += 25 + (10 if len(self.me.hand) <= 3 else 0)
+        if has_search and self._step_condition_currently_holds(
+                card, lambda st: st.get('action') in
+                ('look_top_deck', 'add_to_hand', 'add_from_trash')):
+            s += 30 + (15 if self.me.turn <= 3 else 0)
+        if has_ko and self._step_condition_currently_holds(card, _is_ko_removal_step):
             s += 35
             if a.field_advantage() < 0: s += 25
             # remoção sem alvo vale pouco -- não pontuar KO no vácuo
             if not self.opp.field_chars: s -= 30
-        if has_bounce:
+        if has_bounce and self._step_condition_currently_holds(
+                card, lambda st: st.get('action') == 'bounce'):
             s += 20
             if a.field_advantage() < 0: s += 15
             if not self.opp.field_chars: s -= 20
-        if has_rest:
+        if has_rest and self._step_condition_currently_holds(
+                card, lambda st: st.get('action') == 'rest_opp_character'):
             # Restar abre personagens para ataque
             if a.should_clear_field(): s += 20
             else: s += 10
-        if has_buff:
+        if has_buff and self._step_condition_currently_holds(
+                card, lambda st: st.get('action') == 'buff_power'):
             s += 15
-        if has_givdon:
+        if has_givdon and self._step_condition_currently_holds(
+                card, lambda st: st.get('action') == 'give_don'):
             s += 20
-        if has_gainlf:
+        if has_gainlf and self._step_condition_currently_holds(
+                card, lambda st: st.get('action') in ('gain_life', 'heal')):
             v = 15
             if my_life <= 1:   v += 60
             elif my_life <= 2: v += 35

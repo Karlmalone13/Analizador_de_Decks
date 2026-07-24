@@ -1,5 +1,46 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (327) - Claude - generaliza o guard de condição pra TODAS as flags de avaliar_carta
+
+Pedido do usuário: "precisamos expandir esse fix pra outros efeitos tb não
+só pra play_card" -- o bloco 326 só tinha corrigido o combo `play_card`
+condicional; as outras flags (`has_draw`, `has_ko`/`is_removal`,
+`has_bounce`, `has_rest`, `has_buff`, `has_givdon`, `has_gainlf`)
+continuavam ESTÁTICAS, aplicando o bônus sempre, mesmo quando o step real
+só dispara sob uma condição que não vale agora.
+
+Fix: novo `DecisionEngine._step_condition_currently_holds(card,
+step_matches)` -- generaliza o mecanismo do 326 pra qualquer step (não só
+`play_card`): recebe um predicado (`lambda step: ...`) em vez de fixar a
+action, acha o(s) step(s) de `on_play`/`main` da própria carta que batem, e
+confere a condição (bloco + step) contra o estado ATUAL via
+`_check_conditions` (read-only). Sem NENHUM step com essa ação em
+`on_play`/`main` (a flag pode vir de outro gatilho, tipo `on_ko`/`passive`)
+-> retorna `True`, conservador, mantém o comportamento antigo pras
+centenas de cartas sem condição nenhuma -- zero risco de regressão nesses
+casos. Cada bloco de bônus em `avaliar_carta` agora só soma se esse guard
+confirmar. `has_ko` combina `ko`/`bounce`/`rest_opp_character` E
+`debuff_power`/`set_base_power` com alvo no oponente (mesmo critério que
+`is_removal` já usa em `gerar_card_analysis_db.py`).
+
+Validação: `py_compile` limpo. 3 novos asserts em `smoke_fast.py`
+(`test_step_condition_currently_holds_generaliza_pra_qualquer_flag`):
+confirma que uma carta com draw INCONDICIONAL (EB01-056) continua sempre
+`True` (sem regressão), e que o MESMO bloco condicional da Pudding
+(líder Big Mom Pirates + oponente 6+ DON) que já testava o `play_card`
+também bloqueia/libera corretamente o `draw` dela. `smoke_fast.py` =
+SMOKE FAST OK. `smoke_test.py` (obrigatório, mudança em código
+compartilhado por toda avaliação de cartas): mesmas 3 falhas
+pré-existentes de sempre, sem regressão nova.
+
+Pendente: `is_searcher`/`gains_life` cobrem múltiplas actions
+(`look_top_deck`/`add_to_hand`/`add_from_trash`, `gain_life`/`heal`) --
+o guard aceita qualquer uma bater a condição, não valida se são do MESMO
+combo (ex: um searcher com 2 steps independentes, um condicional e outro
+não, onde só o incondicional dispara -- ainda conta como "achou", correto
+por acidente já que já queríamos True nesse caso). Validação ao vivo
+(próxima partida de Katakuri) ainda pendente pra confirmar impacto real.
+
 ## 2026-07-23 (326) - Claude - avaliar_carta ganha noção de combo play_card condicional
 
 Comparação pedida pelo usuário (bloco 325): analisada a partida

@@ -582,6 +582,36 @@ def test_avaliar_carta_reconhece_combo_play_card_condicional() -> None:
           score_sem_alvo < score_on)
 
 
+def test_step_condition_currently_holds_generaliza_pra_qualquer_flag() -> None:
+    # Achado 23/07 (pedido do usuario): generaliza o guard de condicao do
+    # combo play_card pra QUALQUER flag estatica (draws/kos/bounces/etc).
+    # (a) Carta com draw INCONDICIONAL (EB01-056, sem 'conditions' no
+    # bloco nem no step) -- tem que continuar valendo o bonus sempre,
+    # nao pode regredir pras centenas de cartas sem condicao nenhuma.
+    me = GameState(leader=real_card("OP11-062"), don_available=9)
+    incondicional = real_card("EB01-056")
+    eng = DecisionEngine(me, GameState(leader=real_card("OP14-020")))
+    check("_step_condition_currently_holds mantem True pra draw sem condicao (sem regressao)",
+          eng._step_condition_currently_holds(
+              incondicional, lambda st: st.get("action") == "draw"))
+
+    # (b) Charlotte Pudding: o mesmo bloco condicional (lider Big Mom
+    # Pirates + oponente 6+ DON) tambem tem um step 'draw' -- confirma que
+    # a flag 'draws' dela agora tambem respeita a condicao, nao so o
+    # play_card ja coberto no teste anterior.
+    pudding = real_card("PRB02-010")
+    opp_pouco = GameState(leader=real_card("OP14-020"), don_available=2)
+    eng_off = DecisionEngine(me, opp_pouco)
+    check("_step_condition_currently_holds bloqueia draw condicional da Pudding sem a condicao",
+          not eng_off._step_condition_currently_holds(
+              pudding, lambda st: st.get("action") == "draw"))
+    opp_muito = GameState(leader=real_card("OP14-020"), don_available=6)
+    eng_on = DecisionEngine(me, opp_muito)
+    check("_step_condition_currently_holds libera o draw condicional da Pudding com a condicao ok",
+          eng_on._step_condition_currently_holds(
+              pudding, lambda st: st.get("action") == "draw"))
+
+
 def test_pudding_anexa_don_antes_de_oferecer_activate_main() -> None:
     pudding = real_card("OP11-070")
     pudding._deck_uid = 10
@@ -7374,6 +7404,7 @@ def main() -> int:
     test_katakuri_buff_so_paga_com_impacto_no_combate_e_na_curva()
     test_combat_buff_worth_paying_no_simulador_interno()
     test_avaliar_carta_reconhece_combo_play_card_condicional()
+    test_step_condition_currently_holds_generaliza_pra_qualquer_flag()
     test_pudding_anexa_don_antes_de_oferecer_activate_main()
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()
     test_peek_opp_deck_top_nao_vira_alvo_battlefield_only()
