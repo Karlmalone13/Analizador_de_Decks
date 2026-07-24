@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (334) - Claude - ramp de DON priorizada + causa real do turno 6 achada
+
+Usuario pediu pra corrigir os 3 achados do bloco 333 mais uma mudanca de
+estrategia: priorizar RAMPAR DON pro teto de 10 no inicio do jogo, so
+gastando DON em ganho marginal (peek+buff do Katakuri) livremente quando
+ja existe carta em campo que aproveita `when_don_returned` (ex: ST34-001).
+
+**1) IMPLEMENTADO -- prioridade de ramp:** `_combat_buff_worth_paying`
+ganha um gate novo: sem carta amplificadora em campo E `don_on_field() <
+10`, recusa o gasto marginal a menos que a vida esteja critica (<=2).
+Acima do teto ou com amplificadora em campo, o guard normal
+(`buff_wins_combat`) continua valendo. Escopo: so o padrao "recurso ->
+buff de batalha" (`_combat_buff_worth_paying`) -- NAO se aplica a outros
+custos `don_minus` fora desse padrao (ex: KO do Pekoms, que e remocao
+real, nao ganho marginal). 3 testes novos em `smoke_fast.py` (sem
+amplificador+ramp incompleto = recusa; vida critica = paga; teto
+atingido = paga). `smoke_fast.py` = SMOKE FAST OK, `smoke_test.py`:
+mesmas 3 falhas pre-existentes, sem regressao.
+
+**2) INVESTIGADO A FUNDO -- turno 6 "scored_actions vazio" NAO e excecao
+silenciosa, e TIMEOUT real de busca:** reconstrui o estado exato (mao,
+campo, DON, vida=0) em Python e chamei `_generate_and_score_actions`
+diretamente -- gerou 21 acoes normalmente, sem erro. Isso descartou a
+hipotese de "excecao engolida" (bloco 333, item 3). Voltando pro registro
+bruto do `.jsonl`: o campo `timed_out: True` estava la o tempo todo (nao
+tinha olhado esse campo especifico antes) -- `latency_ms: 3050.562`,
+`selection: "sem acao elegivel"`, `engine_error: None`. A thread da busca
+ainda estava rodando quando o `.join(timeout=...)` desistiu de esperar
+(`sim_bridge.py:choose_action`, default `timeout=4.0`) -- e a UNICA
+ocorrencia de timeout na partida inteira, bate exatamente com o alerta
+`decision_timeouts: 1` do relatorio agregado. Ou seja: o turno 6 nao fez
+nada porque a busca real demorou demais numa posicao complexa (5
+personagens em campo, mao com 9 cartas, 8 DON -- muitas combinacoes),
+nao por bug de logica nem excecao. NAO corrigido ainda -- e um problema
+de PERFORMANCE da busca (line-search/Monte Carlo), nao de decisao errada;
+precisa de decisao do usuario entre so aumentar o timeout (rapido, baixo
+risco, mas atraso maior ao vivo) ou otimizar a busca em posicoes densas
+(mais trabalho, sem atraso).
+
+**3) NAO CORRIGIDO -- turno 4 "travou" tambem NAO e lentidao do engine:**
+checado latency_ms de toda decisao do turno 4 -- nenhuma passa de 500ms.
+A tela travada ("Choose card effect to activate next") que o usuario viu
+nao correlaciona com nenhuma chamada lenta do motor Python. Aponta pro
+mesmo lugar do item 4 abaixo (execucao ao vivo/plugin C#, fora de
+`scriptis_da_ia`), nao pro motor de decisao.
+
+**4) NAO CORRIGIDO -- KO mirando personagem propria (Pekoms destruiu a
+propria Nola):** ja registrado no bloco 333, confirmado que a logica
+Python (`_execute_step`, 'ko') esta correta. Junto com o item 3 acima,
+sao DOIS sinais agora apontando pro codigo C# (`BOT/`) como o lugar
+provavel do bug real -- ainda nao explorado nesta sessao.
+
+Log NAO gerou partida nova nesta sessao (trabalho foi 100% sobre a
+partida ja salva no bloco 333). Pendente: decisao do usuario sobre
+timeout (aumentar vs otimizar) e se abre o codigo C# agora pros itens
+3/4.
+
 ## 2026-07-23 (333) - Claude - Pekoms devolve o proprio DON + 2 bugs graves achados, nao corrigidos
 
 Partida `Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17` (bot=Katakuri

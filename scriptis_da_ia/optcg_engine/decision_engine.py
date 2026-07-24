@@ -7743,6 +7743,19 @@ class EffectExecutor:
         if don_minus_count and de.has_valuable_don_return_trigger(don_minus_count):
             return None  # retorno de DON pode valer mais que o guard simples
 
+        # Prioridade de RAMP (pedido explicito do usuario, 23/07): sem
+        # carta em campo que aproveita a devolucao (when_don_returned,
+        # checado acima) e ainda LONGE do teto de 10 DON, a meta e acumular
+        # DON, nao gastar 1 por vez num ganho marginal (peek+buff de 1000,
+        # por exemplo) -- mesmo que o buff vire ESTE combate especifico.
+        # So libera o gasto marginal se a vida ja esta critica (<=2): ai
+        # defender pesa mais que a curva de ramp. Isso NAO se aplica a
+        # outros custos don_minus fora deste padrao (ex: KO de Pekoms,
+        # remocao real) -- so ao combo "recurso -> buff de batalha" que
+        # este metodo cobre.
+        if don_minus_count and self.me.don_on_field() < 10 and self.me.life_count() > 2:
+            return False
+
         amount = max(s.get('amount', 0) for s in buffs)
         if trigger == 'when_attacking':
             attacker_power = live_attack_power(card)

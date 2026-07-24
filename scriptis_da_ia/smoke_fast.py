@@ -542,6 +542,42 @@ def test_combat_buff_worth_paying_no_simulador_interno() -> None:
           bool(logs3) and me3.don_available == 0 and me3.leader.power_buff == 1000)
 
 
+def test_katakuri_prioriza_rampar_don_sem_carta_amplificadora() -> None:
+    # Pedido explicito do usuario (23/07): "diminuir o uso de retornar
+    # dons no comeco do jogo, se nao o bot nunca chega a 10 dons... quando
+    # tiver carta em campo que retorna don quando um don e retornado, ai
+    # pode usar a vontade, mas enquanto nao tiver isso, a meta tem que ser
+    # rampar don". Sem ST34-001 (ou equivalente when_don_returned) em
+    # campo, gastar 1 DON no peek+buff do lider Katakuri atrasa o teto de
+    # 10 -- so vale a pena com vida critica (<=2), nao so por "vira este
+    # combate especifico".
+    me = GameState(leader=real_card("OP11-062"), don_available=1)
+    me.life = [real_card("OP07-077") for _ in range(4)]  # vida 4, nao critica
+    opp = GameState(leader=real_card("OP14-020"))
+    ee = EffectExecutor(me, opp)
+    logs = ee.execute(me.leader, "when_attacking", battle_defender_power=6000)
+    check("Katakuri NAO gasta DON no buff sem carta amplificadora, ramp longe de 10, vida alta",
+          not logs and me.don_available == 1 and me.leader.power_buff == 0)
+
+    # Vida critica (<=2): defender pesa mais que a curva de ramp, volta a
+    # pagar quando o buff realmente vira o combate.
+    me2 = GameState(leader=real_card("OP11-062"), don_available=1)
+    me2.life = [real_card("OP07-077"), real_card("OP07-077")]  # vida 2
+    ee2 = EffectExecutor(me2, GameState(leader=real_card("OP14-020")))
+    logs2 = ee2.execute(me2.leader, "when_attacking", battle_defender_power=6000)
+    check("Katakuri volta a pagar o buff com vida critica mesmo sem ramp completo",
+          bool(logs2) and me2.don_available == 0 and me2.leader.power_buff == 1000)
+
+    # Ramp ja cumprida (10+ DON no campo): gasto marginal nao atrapalha
+    # mais a curva, guard normal (vira o combate) volta a valer.
+    me3 = GameState(leader=real_card("OP11-062"), don_available=1, don_rested=9)
+    me3.life = [real_card("OP07-077") for _ in range(4)]
+    ee3 = EffectExecutor(me3, GameState(leader=real_card("OP14-020")))
+    logs3 = ee3.execute(me3.leader, "when_attacking", battle_defender_power=6000)
+    check("Katakuri paga o buff normalmente quando o teto de 10 DON ja foi atingido",
+          bool(logs3) and me3.don_rested == 8 and me3.leader.power_buff == 1000)
+
+
 def test_avaliar_carta_reconhece_combo_play_card_condicional() -> None:
     # Achado 23/07 (usuario, "pudding 7 descendo outro bixo"): Charlotte
     # Pudding (PRB02-010) "[On Play] DON!! -2: se seu lider e Big Mom
@@ -7517,6 +7553,7 @@ def main() -> int:
     test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio()
     test_katakuri_buff_so_paga_com_impacto_no_combate_e_na_curva()
     test_combat_buff_worth_paying_no_simulador_interno()
+    test_katakuri_prioriza_rampar_don_sem_carta_amplificadora()
     test_avaliar_carta_reconhece_combo_play_card_condicional()
     test_avaliar_carta_reconhece_combo_buff_com_carta_em_campo()
     test_avaliar_carta_reconhece_combo_de_qualquer_acao_com_carta_em_campo()
