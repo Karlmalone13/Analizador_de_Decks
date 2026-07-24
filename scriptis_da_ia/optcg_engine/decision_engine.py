@@ -12624,48 +12624,88 @@ class OPTCGMatch:
                     total += ax.get('prior_weight', 0) * W['ax_inversion']
         return total
 
+    def _project_next_turn_best_action(self, actor, other):
+        """
+        Projeta o estado de `actor` no INICIO do proximo turno dele (DON
+        refrescado + rampado via a mesma conta de don_phase(), personagens
+        e lider desrestados) e reusa `_generate_and_score_actions` DE
+        VERDADE contra esse estado -- a mesma logica calibrada que decide
+        o jogo real, nao uma tabela nova. Aplica a projecao TEMPORARIAMENTE
+        (muta e desfaz com try/finally) -- seguro mesmo em estado real
+        porque sempre restaura antes de retornar; usado sobretudo contra
+        copias descartaveis de simulacao (`_evaluate_state_v2`).
+
+        Retorna a MELHOR acao ((score, tipo, ...)) que `actor` teria
+        disponivel nesse estado projetado, ou None se score<=0 ou se o
+        DON nao cresce (nada a projetar). Determinístico: mesmo estado de
+        entrada sempre produz a mesma saida (sem Monte Carlo aqui).
+        """
+        ramp = min(2, max(0, actor.don_deck))
+        don_next = actor.don_available + actor.don_rested + ramp
+        if don_next <= actor.don_available:
+            return None
+        old_avail, old_rested = actor.don_available, actor.don_rested
+        old_char_rest = [c.rested for c in actor.field_chars]
+        old_leader_rest = actor.leader.rested if actor.leader else None
+        actor.don_available = don_next
+        actor.don_rested = 0
+        for c in actor.field_chars:
+            c.rested = False
+        if actor.leader:
+            actor.leader.rested = False
+        try:
+            engine = DecisionEngine(actor, other)
+            acts = self._generate_and_score_actions(actor, other, engine)
+        finally:
+            actor.don_available, actor.don_rested = old_avail, old_rested
+            for c, r in zip(actor.field_chars, old_char_rest):
+                c.rested = r
+            if actor.leader is not None:
+                actor.leader.rested = old_leader_rest
+        return acts[0] if acts and acts[0][0] > 0 else None
+
     def _next_turn_readiness_bonus(self, p, opp) -> float:
         """
-        FASE B do plano do Turn Planner (usuario, 24/07: "pensar a frente,
-        se preparar para combos/finalizacao"). `wincon_ready` (em
-        _derived_axes_value) ja cobre "arma carregada" pro eixo bottleneck
-        do PERFIL do deck (reanimacao em massa tipo Five Elders) -- estreito
-        de proposito, so bate quando o deck tem esse padrao especifico
-        catalogado. Este termo e GENERICO: qualquer carta forte na mao que
-        ainda nao cabe no DON de agora, mas cabe (ou quase) no DON
-        PROJETADO do proximo turno, ganha um bonus pequeno e saturado --
-        sem simular o turno seguinte de verdade (SEM deepcopy/Monte Carlo
-        novo, so a projecao aritmetica de ramp: DON!! total em jogo hoje +
-        ate 2 novos do don_deck, mesma conta de don_phase()). Faz a busca
-        do Turn Planner preferir a linha que PRESERVA/desenvolve rumo a
-        proxima jogada forte em vez de gastar tudo em algo marginal agora.
+        FASE B do plano do Turn Planner (usuario, 24/07, reforcado no
+        mesmo dia: "nao pode ser barato, tem que ser algo com mais
+        determinacao... proximo turno vou a X dons, posso fazer isso e
+        aquilo, no turno do oponente ele vai a Y dons, pode fazer isso e
+        aquilo, pode me atacar aqui e ali"). Primeira versao usava so
+        aritmetica de DON contra `avaliar_carta` -- trocada por uma
+        analise REAL dos dois lados via `_project_next_turn_best_action`:
+        reusa o proprio motor de geracao/pontuacao de acoes sob o DON
+        projetado de CADA jogador, sem simular o turno inteiro de verdade
+        (sem deepcopy novo, sem Monte Carlo) -- deterministico.
 
-        Deliberadamente conservador: só considera as poucas cartas mais
-        fortes da mão (top 3 por avaliar_carta) e exige valor mínimo, pra
-        não virar um segundo avaliar_carta escondido nem premiar carta
-        fraca só por estar cara.
+        MEU lado: compara a melhor acao que eu teria HOJE contra a melhor
+        que eu teria com o DON do proximo turno -- o GANHO (nao o valor
+        absoluto, que ja conta duplicado com avaliar_carta/
+        _score_play_action de hoje) vira bonus, saturado.
+
+        Lado do OPONENTE: a melhor acao dele com o DON PROJETADO do turno
+        dele -- se for um ATAQUE forte, penaliza (estou deixando ele numa
+        posicao perigosa pro turno dele). `wincon_ready` (em
+        _derived_axes_value) continua cobrindo separadamente o eixo
+        bottleneck do PERFIL do deck (reanimacao em massa tipo Five
+        Elders) -- este termo aqui e generico, nao especifico desse
+        padrao.
         """
-        if not p.hand:
-            return 0.0
         W = getattr(p, 'eval_weights', None) or EVAL_WEIGHTS
-        don_now = p.don_available
-        don_next = p.don_available + p.don_rested + min(2, max(0, p.don_deck))
-        if don_next <= don_now:
-            return 0.0
-        eng = DecisionEngine(p, opp)
-        candidatos = sorted(p.hand, key=lambda c: eng.avaliar_carta(c), reverse=True)[:3]
         bonus = 0.0
-        for card in candidatos:
-            custo = effective_hand_play_cost(p, card, opp)
-            if custo <= don_now or custo > don_next:
-                continue  # ja jogavel agora (sem espera) OU nem no proximo turno cabe
-            valor = eng.avaliar_carta(card)
-            if valor <= 40.0:
-                continue  # carta fraca nao merece premio de "quase la"
-            gap = custo - don_now
-            proximidade = max(0.0, 1.0 - (gap - 1) / max(1, don_next - don_now))
-            bonus += min(40.0, valor * 0.15) * proximidade
-        return min(bonus, 60.0) * W['next_turn_readiness']
+
+        melhor_proximo = self._project_next_turn_best_action(p, opp)
+        if melhor_proximo is not None:
+            acts_agora = self._generate_and_score_actions(p, opp, DecisionEngine(p, opp))
+            score_agora = acts_agora[0][0] if acts_agora and acts_agora[0][0] > 0 else 0.0
+            ganho = melhor_proximo[0] - score_agora
+            if ganho > 0:
+                bonus += min(60.0, ganho * 0.35)
+
+        ameaca_opp = self._project_next_turn_best_action(opp, p)
+        if ameaca_opp is not None and ameaca_opp[1] == 'attack':
+            bonus -= min(50.0, ameaca_opp[0] * 0.25)
+
+        return bonus * W['next_turn_readiness']
 
     def _evaluate_state_v2(self, p, opp) -> float:
         """

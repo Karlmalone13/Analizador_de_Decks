@@ -2,6 +2,19 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 359): Turn Planner Fase B REFEITA — usuário
+> rejeitou a 1a versão (aritmética "barata"), pediu análise real dos
+> dois lados. Novo `_project_next_turn_best_action(actor, other)`
+> projeta DON refrescado/rampado + personagens desrestados e reusa
+> `_generate_and_score_actions` DE VERDADE (mesmo motor calibrado, sem
+> tabela nova) contra esse estado hipotético — determinístico, sem
+> Monte Carlo, sem deepcopy (muta + restaura com try/finally).
+> `_next_turn_readiness_bonus` usa isso dos dois lados: meu ganho vs
+> ameaça de ataque do oponente no turno projetado dele. Custo ~2.5ms/
+> call (~3x mais caro que a v1, ainda bem dentro do orçamento). 5 smoke
+> tests novos (v1 tinha 3, todos reescritos). `smoke_test.py` 100%.
+> Nenhum teste ao vivo nem push ainda.
+
 > 24/07/2026 (bloco HANDOFF 358): Turn Planner Fase B feita —
 > `_next_turn_readiness_bonus` generaliza o `wincon_ready` existente
 > (que só cobria o eixo bottleneck/reanimação do perfil do deck) pra

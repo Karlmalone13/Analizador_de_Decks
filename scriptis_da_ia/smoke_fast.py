@@ -1541,36 +1541,60 @@ def test_turn_planner_fase_a_trigger_don_value_e_score_activate_main() -> None:
 
 
 def test_turn_planner_fase_b_next_turn_readiness_bonus() -> None:
-    # FASE B do Turn Planner (usuario, 24/07: "pensar a frente... se
-    # preparar para combos, finalizacao"). _next_turn_readiness_bonus
-    # generaliza o 'wincon_ready' existente (que so cobre o eixo bottleneck
-    # do PERFIL do deck) pra QUALQUER carta forte na mao que ainda nao cabe
-    # no DON de agora, mas cabe no DON PROJETADO do proximo turno -- sem
-    # simular o turno seguinte de verdade, so a projecao aritmetica de ramp.
-    opp = GameState(leader=real_card("OP11-062"), turn=3)
-    match = OPTCGMatch((real_card("OP11-062"), []), (opp.leader, []))
+    # FASE B do Turn Planner (usuario, 24/07, reforcado no mesmo dia: "nao
+    # pode ser barato, tem que ser algo com mais determinacao... proximo
+    # turno vou a X dons, posso fazer isso e aquilo, no turno do oponente
+    # ele vai a Y dons, pode fazer isso e aquilo, pode me atacar aqui e
+    # ali"). Substituiu a 1a versao (aritmetica pura contra avaliar_carta)
+    # por _project_next_turn_best_action: projeta DON refrescado/rampado +
+    # personagens/lider desrestados e reusa _generate_and_score_actions DE
+    # VERDADE contra esse estado -- determinístico, sem Monte Carlo, sem
+    # deepcopy (muta e restaura com try/finally).
 
-    # Nusjuro (custo 6, score forte): com 3 DON ativo + 2 restado, don
-    # projetado pro proximo turno = 3+2+2(ramp) = 7 >= 6 -- "quase la".
-    a = GameState(leader=real_card("OP11-062"), turn=3, don_available=3, don_rested=2)
-    a.hand = [real_card("OP13-080")]
-    check("Carta forte fora de alcance AGORA mas dentro do DON projetado do proximo turno recebe bonus",
-          match._next_turn_readiness_bonus(a, opp) > 0.0)
+    # 1) SEM crescimento de DON possivel em NENHUM lado (don_deck=0, sem
+    #    DON restado) -- a projecao dos dois lados retorna None, bonus=0.
+    a0 = GameState(leader=real_card("OP11-062"), turn=3, don_available=3, don_rested=0)
+    a0.don_deck = 0
+    a0.leader.rested = False
+    opp0 = GameState(leader=real_card("OP11-062"), turn=3, don_available=2, don_rested=0)
+    opp0.don_deck = 0
+    opp0.leader.rested = False
+    match0 = OPTCGMatch((a0.leader, []), (opp0.leader, []))
+    check("_project_next_turn_best_action retorna None quando o DON nao cresce",
+          match0._project_next_turn_best_action(a0, opp0) is None)
+    check("Sem crescimento de DON em nenhum lado, bonus e exatamente 0.0",
+          match0._next_turn_readiness_bonus(a0, opp0) == 0.0)
 
-    # controle 1: mesma carta, mas SEM DON restado -- don projetado cai pra
-    # 5, ainda menor que o custo 6 -- nem no proximo turno cabe, sem bonus.
-    a2 = GameState(leader=real_card("OP11-062"), turn=3, don_available=3, don_rested=0)
-    a2.hand = [real_card("OP13-080")]
-    check("Carta fora de alcance MESMO no proximo turno NAO recebe bonus",
-          match._next_turn_readiness_bonus(a2, opp) == 0.0)
+    # 2) Ameaca do OPONENTE: DON dele crescendo (don_rested=6, ramp+2) e o
+    #    lider dele JA restado agora (nao pode atacar hoje) -- a projecao
+    #    desresta e revela uma ameaca de ataque real no turno dele. MEU
+    #    lado sem crescimento (don_deck=0) isola o termo.
+    a1 = GameState(leader=real_card("OP11-062"), turn=3, don_available=2, don_rested=0)
+    a1.don_deck = 0
+    a1.leader.rested = False
+    opp1 = GameState(leader=real_card("OP11-062"), turn=3, don_available=0, don_rested=6)
+    opp1.leader.rested = True
+    match1 = OPTCGMatch((a1.leader, []), (opp1.leader, []))
+    bonus1 = match1._next_turn_readiness_bonus(a1, opp1)
+    check("Ameaca de ataque do oponente no proximo turno dele penaliza o bonus (negativo)",
+          bonus1 < 0.0)
+    check("Estado do oponente e restaurado apos a projecao (don/rested)",
+          opp1.don_available == 0 and opp1.don_rested == 6 and opp1.leader.rested is True)
+    check("Meu estado e restaurado apos a projecao (rested)",
+          a1.leader.rested is False)
 
-    # controle 2: carta ja jogavel AGORA (custo <= don_now) nao e "espera
-    # por combo futuro" -- nao deve receber este bonus (ja conta em outro
-    # lugar, avaliar_carta/_score_play_action).
-    a3 = GameState(leader=real_card("OP11-062"), turn=3, don_available=3, don_rested=2)
-    a3.hand = [real_card("OP02-034")]  # custo 2, ja pagavel com don_now=3
-    check("Carta ja jogavel AGORA nao recebe bonus de 'quase la'",
-          match._next_turn_readiness_bonus(a3, opp) == 0.0)
+    # 3) Determinismo: a mesma entrada sempre produz a mesma saida (sem
+    #    Monte Carlo neste termo).
+    a2 = GameState(leader=real_card("OP11-062"), turn=3, don_available=2, don_rested=0)
+    a2.don_deck = 0
+    a2.leader.rested = False
+    opp2 = GameState(leader=real_card("OP11-062"), turn=3, don_available=0, don_rested=6)
+    opp2.leader.rested = True
+    match2 = OPTCGMatch((a2.leader, []), (opp2.leader, []))
+    bonus2a = match2._next_turn_readiness_bonus(a2, opp2)
+    bonus2b = match2._next_turn_readiness_bonus(a2, opp2)
+    check("_next_turn_readiness_bonus e deterministico (mesma entrada -> mesma saida)",
+          bonus2a == bonus2b)
 
 
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:

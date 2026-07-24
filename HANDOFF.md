@@ -1,5 +1,61 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (359) - Claude (sessao local) - Turn Planner fase B REFEITA: analise real dos dois lados (nao mais aritmetica "barata")
+
+Usuário rejeitou a 1a versão do bloco 358 assim que a viu: "não pode
+ser um sinal barato, tem que ser algo com mais determinação". Pedi
+clarificação (`AskUserQuestion`, dispensada), o usuário explicou com um
+exemplo concreto: "próximo turno vou a 7 dons, posso fazer isso e
+aquilo, no turno do oponente ele vai a tantos dons, pode fazer isso e
+aquilo, pode me atacar aqui e ali" — ou seja: **análise real dos dois
+lados**, não simulação completa (ele mesmo disse "não precisa de fato
+simular"), mas também não uma fórmula aproximada isolada.
+
+**Redesenhado do zero.** `_next_turn_readiness_bonus` (que antes só
+comparava custo de carta × DON projetado via aritmética) foi
+substituído por um novo método `_project_next_turn_best_action(actor,
+other)`: projeta o estado de UM jogador no início do próprio próximo
+turno — DON refrescado + rampado (mesma conta de `don_phase()`:
+`don_available + don_rested + min(2, don_deck)`) e todos os
+personagens/líder DESRESTADOS — aplica isso TEMPORARIAMENTE no estado
+(muta e restaura com `try/finally`) e reusa `_generate_and_score_actions`
+**de verdade** contra esse estado projetado. Não é uma tabela nova: é o
+MESMO motor de decisão calibrado que joga a partida de verdade, só que
+rodado contra um estado hipotético — determinístico (mesma entrada
+sempre produz a mesma saída, sem Monte Carlo neste termo).
+
+`_next_turn_readiness_bonus` agora usa isso dos DOIS lados:
+- **Meu lado**: compara minha melhor ação HOJE vs minha melhor ação com
+  o DON do próximo turno — o GANHO (não o valor absoluto, que já é
+  contado em `avaliar_carta`/`_score_play_action` hoje) vira bônus.
+- **Lado do oponente**: a melhor ação DELE com o DON projetado do turno
+  dele — se for um ATAQUE forte, penaliza (linha que me deixa exposto
+  no turno dele é pior, mesmo que pareça boa agora).
+
+**Custo real medido**: ~2.5ms/call (antes ~0.8ms, ~3x mais caro porque
+agora chama `_generate_and_score_actions` de verdade até 3x — 1x pra
+mim hoje, 1x pra mim projetado, 1x pro oponente projetado). Ainda
+pequeno pro orçamento total: pior caso offline (K=6×S=6=36 avaliações)
+≈ +90ms por passo do Turn Planner; ao vivo (K=2×S=2=4) ≈ +10ms por
+`/decide`, bem dentro do timeout de 4s.
+
+**Validação**: reescrevi os 3 smoke tests do bloco 358 (testavam a
+fórmula antiga, que não existe mais) por 5 novos que testam o
+mecanismo real: `_project_next_turn_best_action` retorna `None` quando
+o DON não cresce (don_deck=0); bônus é exatamente 0.0 quando nenhum
+lado tem crescimento possível; ameaça de ataque do oponente no próximo
+turno DELE penaliza (isolado do meu lado via don_deck=0 no meu); estado
+restaurado corretamente (don/rested) nos dois lados após a projeção;
+determinismo (mesma entrada → mesma saída, chamado 2x). `smoke_test.py`:
+TODOS OS TESTES PASSARAM.
+
+**Lição pra próxima sessão**: quando o usuário pede algo "com mais
+determinação"/análise real, preferir reusar o PRÓPRIO motor de decisão
+já calibrado contra um estado projetado/hipotético (mutação temporária
++ restauração) em vez de inventar uma fórmula aproximada nova — mais
+caro, mas ainda longe de precisar de simulação completa (deepcopy/Monte
+Carlo), e o resultado é mais confiável por reusar lógica já validada.
+
 ## 2026-07-24 (358) - Claude (sessao local) - Turn Planner fase B: bonus generico de "quase la" pra proxima jogada forte (lookahead barato)
 
 Continuação do bloco 357 (Fase A) — usuário aprovou o roteiro de 4
