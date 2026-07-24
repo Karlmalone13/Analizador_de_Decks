@@ -1,5 +1,66 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (345) - Claude (sessao local) - achado real: bot quase nunca counteriza com vida 4-5 (causa de "usa habilidade do lider" + "Pekoms ataca a toa")
+
+Usuario reportou 3 queixas especificas que vinha repetindo ha dias: (1) bot
+usa a habilidade `on_opp_attack` do lider pra se defender em turno de
+transicao MESMO tendo carta pra counterar, e isso esvazia DON; (2) bot
+insiste em jogar Baron Tamago & Pekoms (ST34-005, counter 2000) pro campo
+em vez de guardar como counter; (3) Pekoms ataca "a toa" (sem efeito).
+Pedido: reiniciar o server, jogar uma partida nova, investigar com dado
+real.
+
+**Investigacao** (partida `Charlotte.Katakuri-P_x_Jinbe-B_2026-07-24T11.35.39`,
+mais uma derrota -- `gate_status: fail`, `lethal_certified_summary:
+matches_not_closed_after_lethal: 1`, mesmo padrao do bloco 344): TODAS as
+12 decisoes de `defense/counter` da partida tinham `counter_ids: []`
+(nunca usou counter de carta nenhuma vez). Cruzando com `attacker_power`/
+`defender_power`/hand real: 9 dessas 12 eram oportunidades reais (golpe >
+defesa, counter elegivel na mao), so 3 foram usadas. Rodando a mesma
+contagem nas 19 sessoes anteriores: **58/147 (~40%)** no historico
+completo -- padrao antigo, nao coisa de hoje.
+
+**Causa raiz**: `should_use_counter` (`decision_engine.py:10260`) decide
+counterizar por ganho liquido: `gasto` (custo situacional de perder a
+carta, via `pitch_cost_as_counter`) < `valor_vida` (quanto vale evitar o
+golpe, por nivel de vida). A tabela antiga era
+`{1:250, 2:150, 3:65}.get(my_life, 12.0)` -- com vida 4+ caia pra **12**,
+e o `gasto` REAL de uma carta unica decente (medido contra a MAO real
+dessa partida, mesmo caminho ao vivo `select_counter_cards`) fica em
+**~70-75** com vida 4-5. Ou seja, o bot nunca tinha chance matematica de
+counterizar com vida 4-5 -- nao era so raro, era estruturalmente quase
+impossivel. Sem counter de carta, o bot caia pro fallback mais barato --
+`on_opp_attack` do lider (Katakuri, +1000 poder por 1 DON opcional) --
+consistente com a queixa 1. Com o DON gasto ali, sobrava menos DON pro
+Pekoms pagar o proprio custo do `[When Attacking]` (`DON!!-1`, K.O. de
+personagem <=2000), explicando a queixa 3 (ataca sem o efeito disparar).
+A queixa 2 (insiste em jogar Pekoms pro campo) fica registrada mas **NAO
+investigada** ainda -- fica pra proxima sessao (nao e o mesmo mecanismo
+direto da 1/3, precisa olhar `avaliar_carta`/`_score_play_action` de novo
+com este achado em mente).
+
+**Fix** (`decision_engine.py:10318`): `valor_vida` ganha 2 pontos novos
+(`{1:250, 2:150, 3:65, 4:85, 5:75}.get(my_life, 12.0)`) calibrados contra
+o `gasto` REAL medido, nao estimado. Escopo decidido com o usuario
+(explicitamente conservador): cobre SO o caso de "1 carta barata resolve
+um golpe normal" (~70-75 de gasto) -- golpe grande que exige empilhar 2+
+cartas (~100+ de gasto, tambem visto na mesma partida) continua recusado
+de proposito, nao virou "counteriza sempre". Validado contra as 2 duas
+situacoes REAIS da partida (nao so sintetico): turno 111 do log (vida 4,
+golpe 6000v5000, 1 carta resolve) agora conta; turno 69 (vida 5, golpe
+7000v5000, precisa 2 cartas) continua recusando -- confirmado rodando
+`select_counter_cards` de verdade com o `state_before` gravado.
+
+Teste novo em `smoke_fast.py`
+(`test_should_use_counter_nao_trava_com_vida_alta_em_ataque_real`, 3
+asserts: paga golpe barato vida4, recusa golpe caro vida4, recusa golpe
+que exige empilhar vida5). `smoke_fast.py` = SMOKE FAST OK.
+`smoke_test.py` = TODOS OS TESTES PASSARAM (regressao ampla, mexeu em
+area compartilhada de defesa). **Pendente**: validar ao vivo (contador de
+`gate_status`/win-rate deve comecar a melhorar, mas so confirma com mais
+partidas); investigar a queixa 2 (Pekoms jogado em vez de guardado) numa
+sessao futura.
+
 ## 2026-07-24 (344) - Claude (sessao local) - leitura COMPLETA da telemetria: 0/27 e por que
 
 Cumprindo a regra nova do bloco 343 (leitura de telemetria incondicional em

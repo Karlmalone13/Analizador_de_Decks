@@ -2,6 +2,22 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 345): achado real e fix aplicado — o bot
+> praticamente nunca counterizava com carta enquanto tinha vida 4-5
+> (`should_use_counter` tinha `valor_vida=12` nessa faixa, MENOR que o
+> custo real de qualquer carta útil, ~70-75). Explicava 3 queixas do
+> usuário de uma vez: usar a habilidade do líder pra defender em vez de
+> counter (fallback mais barato), esvaziar DON com isso, e Pekoms
+> (ST34-005) atacar sem efeito (sem DON sobrando pro próprio custo). Fix
+> conservador: cobre só golpe normal resolvido com 1 carta barata (~70-75
+> de gasto), não golpe grande que precisa empilhar 2+ cartas (~100+).
+> Teste novo em `smoke_fast.py`, `smoke_test.py` 100%. **Pendente**:
+> validar ao vivo em mais partidas (win-rate deve subir, mas 1 partida não
+> confirma); investigar a queixa ainda aberta do usuário — bot insiste em
+> JOGAR Pekoms pro campo em vez de guardar como counter (mecanismo
+> diferente, não instigado ainda — provavelmente em `avaliar_carta`/
+> `_score_play_action`).
+
 > 24/07/2026 (bloco HANDOFF 344): leitura COMPLETA de toda a telemetria
 > local (22 `live_runs`, 22 arquivos de decisão, 1932 decisões) confirma e
 > QUANTIFICA o gap de eficiência: nas 21 derrotas com dado completo, o bot

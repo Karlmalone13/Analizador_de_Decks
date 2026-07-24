@@ -2343,5 +2343,30 @@
       "You": "decks/Charlotte.Katakuri-P_2026-07-23T23.12.17.json",
       "Opponent": "decks/Kaido-P_2026-07-23T23.12.17.json"
     }
+  },
+  {
+    "id": "2026-07-24T11.35.39",
+    "friendly_name": "Charlotte.Katakuri-P_x_Jinbe-B",
+    "date": "2026-07-24",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-040",
+      "leader_name": "Jinbe",
+      "slug": "Jinbe-B"
+    },
+    "turns": 9,
+    "winner": "p2",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Jinbe-B_2026-07-24T11.35.39.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Jinbe-B_2026-07-24T11.35.39.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-24T11.35.39.json",
+      "Opponent": "decks/Jinbe-B_2026-07-24T11.35.39.json"
+    }
   }
 ]

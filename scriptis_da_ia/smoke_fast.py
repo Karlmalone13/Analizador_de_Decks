@@ -798,6 +798,59 @@ def test_trigger_risk_penalty_nao_veta_sozinho_ataque_legitimo() -> None:
           ataque is not None and ataque[0] == 50.0)
 
 
+def test_should_use_counter_nao_trava_com_vida_alta_em_ataque_real() -> None:
+    # Achado ao vivo 24/07 (usuario reportou "usa a habilidade do lider pra
+    # se defender em turno de transicao mesmo tendo carta pra counterar,
+    # isso atrapalha ficar com muitos DONs" + "ataques inuteis do Pekoms"):
+    # o degrau antigo de valor_vida ({1:250, 2:150, 3:65}.get(my_life, 12.0))
+    # caia pra 12 com vida 4+ -- e o `gasto` real de counterar (medido pelo
+    # mesmo caminho ao vivo, select_counter_cards, contra a MAO real dessa
+    # partida) fica em ~70-75 pra uma carta unica com vida 4-5, bem acima
+    # de 12. Confirmado no log real: 9 ataques que deveriam counterar com
+    # vida 4-5, so 3 counterados; historico completo (19 sessoes), 58/147
+    # (~40%). Sem counter de carta, o bot caia pro fallback mais barato --
+    # on_opp_attack do lider, +1000 poder por 1 DON opcional -- esvaziando
+    # o DON que faltava depois pro Pekoms (ST34-005) pagar o proprio
+    # DON!!-1 do [When Attacking], atacando "a toa".
+    #
+    # Escopo decidido com o usuario: cobrir SO golpe normal resolvido com 1
+    # carta barata (~70-75 de gasto) -- golpe grande que precisa empilhar
+    # 2+ cartas (~100+ de gasto) continua recusado, de proposito. Os 2
+    # cenarios abaixo replicam as 2 situacoes reais da partida (turnos 111
+    # e 69 do log decisions_2026-07-24T11.21.40.jsonl).
+    barato = real_card("ST18-001")   # counter 2000, mao tem so 1 counter
+    barato._deck_uid = 120
+    caro1 = real_card("PRB02-010")   # counter 1000, cost 7 (dificil de jogar)
+    caro1._deck_uid = 260
+    caro2 = real_card("OP08-069")    # sem counter, so ocupa a mao
+    caro2._deck_uid = 350
+
+    # Threshold testado direto via counter_avail/gasto explicitos (mesma
+    # forma que sim_bridge.select_counter_cards chama de verdade, evita
+    # ruido de avaliar_carta reagir a detalhes do cenario sintetico que nao
+    # importam aqui -- o que muda com o fix e SO o limite por vida).
+    me1 = GameState(leader=real_card("OP11-062"), don_available=0, turn=4)
+    me1.hand = [barato, caro1, caro2]
+    me1.life = [real_card("OP07-077") for _ in range(4)]
+    opp1 = GameState(leader=real_card("ST04-001"))
+    engine1 = DecisionEngine(me1, opp1)
+    # vida 4, gasto=73 (custo real medido no log pra 1 carta barata) -- agora conta.
+    check("vida 4, golpe normal resolvido com 1 carta barata (gasto=73) -- agora conta (antes travava)",
+          engine1.should_use_counter(6000, 5000, counter_avail=2000, gasto=73.0) is True)
+    # vida 4, gasto=100+ (precisaria empilhar 2 cartas caras) -- continua recusando.
+    check("vida 4, golpe que exigiria empilhar cartas caras (gasto=100) -- continua recusando",
+          engine1.should_use_counter(6000, 5000, counter_avail=2000, gasto=100.0) is False)
+
+    me2 = GameState(leader=real_card("OP11-062"), don_available=0, turn=5)
+    me2.hand = [barato, caro1, caro2]
+    me2.life = [real_card("OP07-077") for _ in range(5)]
+    opp2 = GameState(leader=real_card("ST04-001"))
+    engine2 = DecisionEngine(me2, opp2)
+    # vida 5, gasto=100.5 (custo real medido no log pra empilhar 2 cartas) -- continua recusando.
+    check("vida 5, golpe grande que precisa empilhar 2 cartas (gasto=100.5) -- continua recusando",
+          engine2.should_use_counter(7000, 5000, counter_avail=3000, gasto=100.5) is False)
+
+
 def test_attach_don_oferece_opcao_de_poder_de_combate() -> None:
     # Achado real ao vivo 23/07: com 1 DON disponivel e Baron Tamago &
     # Pekoms (ST34-005, 4000 poder, corpo vanilla) + Charlotte Pudding
@@ -7630,6 +7683,7 @@ def main() -> int:
     test_step_condition_currently_holds_generaliza_pra_qualquer_flag()
     test_pudding_anexa_don_antes_de_oferecer_activate_main()
     test_trigger_risk_penalty_nao_veta_sozinho_ataque_legitimo()
+    test_should_use_counter_nao_trava_com_vida_alta_em_ataque_real()
     test_attach_don_oferece_opcao_de_poder_de_combate()
     test_don_minus_when_attacking_nao_devolve_o_proprio_don_do_ataque()
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()

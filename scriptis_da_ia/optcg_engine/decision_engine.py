@@ -10295,12 +10295,34 @@ class DecisionEngine:
 
         # Valor da vida na ESCALA do avaliar_carta (que roda bem mais
         # quente que a de char_value_score usada por life_redirect_cost —
-        # um corpo jogavel de custo 5 avalia 100-150). Curva ingreme de
-        # proposito, casada com o feedback real das duas pontas (11/07):
-        # 4+ vidas = golpe barato de tomar, nao gasta nem carta lixo;
-        # <=2 vidas = countera ate pitchando corpo bom (so nao entrega a
-        # win-con, que avalia acima de 150 com a protecao do GamePlan).
-        valor_vida = {1: 250.0, 2: 150.0, 3: 65.0}.get(my_life, 12.0)
+        # um corpo jogavel de custo 5 avalia 100-150). Curva decrescente de
+        # proposito: <=2 vidas = countera ate pitchando corpo bom (so nao
+        # entrega a win-con, que avalia acima de 150 com a protecao do
+        # GamePlan); vida alta = mais seletivo.
+        #
+        # FIX 24/07 (achado do usuario, partida real Katakuri x Jinbe): o
+        # degrau antigo ({1:250, 2:150, 3:65}.get(my_life, 12.0)) caia de
+        # 65 (vida 3) pra 12 (vida 4+) de uma vez so. Medido contra o
+        # `gasto` REAL de counterar nessa partida (mesmo caminho ao vivo,
+        # `select_counter_cards`): uma carta unica decente custa ~70-75
+        # nessa conta com vida 4-5 (bem mais que os 100+ estimados no
+        # comentario antigo, que nunca foi validado contra numero real) --
+        # 12 ou mesmo um valor intermediario tipo 35 continuava MENOR que
+        # isso, entao o bot seguia nunca counterando com 1 carta so.
+        # Confirmado no log real: 9 ataques que deveriam ser counterados
+        # (poder do golpe > defesa, counter elegivel na mao) com vida 4-5,
+        # so 3 counterados; no historico completo (19 sessoes), 58/147
+        # (~40%). Sem counter de carta, o bot caia pro fallback mais barato
+        # -- a habilidade on_opp_attack do lider (+1000 poder por 1 DON,
+        # opcional) -- esvaziando o DON que faltava depois pros proprios
+        # ataques (ex: Pekoms ST34-005 sem DON pro K.O. do [When
+        # Attacking], atacando "a toa").
+        #
+        # Escopo decidido com o usuario (24/07): cobrir SO o caso de 1
+        # carta barata resolvendo um golpe normal (~70-75 de gasto) — golpes
+        # grandes que exigem empilhar 2+ cartas (~100+ de gasto, visto no
+        # mesmo log) continuam de fora, mudanca conservadora de proposito.
+        valor_vida = {1: 250.0, 2: 150.0, 3: 65.0, 4: 85.0, 5: 75.0}.get(my_life, 12.0)
         # MAO GORDA: com 6+ cartas o valor marginal de cada carta cai (nao
         # da pra jogar tudo) e counter fica proporcionalmente barato —
         # feedback real 12/07: "8 cartas na mao e levando dano toda hora".
