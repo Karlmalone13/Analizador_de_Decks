@@ -11837,6 +11837,48 @@ class OPTCGMatch:
                     score -= max(0, copies - 1) * 30.0
                 if score > 0:
                     acts.append((score, 'attach_don', card, falta, trig))
+
+        # 3) DON pra CRUZAR o poder de combate contra um alvo (achado ao
+        # vivo 23/07): as categorias 1/2 acima so cobrem "desbloquear
+        # habilidade/keyword condicionada a DON" -- nunca "anexar DON num
+        # atacante pra vencer o combate", o uso mais basico de DON no jogo.
+        # Sem isso, um corpo vanilla (sem habilidade condicionada) nunca
+        # virava candidato de attach_don, mesmo quando +1000 decidia um
+        # ataque na hora -- o DON escasso sempre ia pro desbloqueio de
+        # habilidade por falta de concorrencia (caso real: Baron Tamago &
+        # Pekoms 4000 atacou sozinho contra lider 5000 e perdeu, enquanto
+        # o unico DON do turno foi pra Pudding SO pra desbloquear o
+        # activate_main dela, que nem chegou a ser ativado depois). Mesma
+        # regra "empate favorece o atacante": so precisa IGUALAR o alvo,
+        # nao superar. Reaproveita score_attack_target (mesma regua da
+        # geracao real de 'attack') pra nao inventar valor novo.
+        if p.can_attack_this_turn():
+            attackers = [c for c in p.field_chars if character_can_attack_now(c, p, opp)]
+            if not p.leader.rested:
+                attackers.append(p.leader)
+            for att in attackers:
+                atk_now = attack_time_power(att, opp)
+                melhor_score, melhor_falta = 0.0, 0
+                candidatos_alvo = []
+                pode_atacar_leader = (not getattr(att, 'rush_character_only_this_turn', False)
+                                      and not p.cannot_attack_leader_this_turn)
+                if pode_atacar_leader:
+                    candidatos_alvo.append(('leader', None, opp.leader.power))
+                for tgt in opp.rested_chars(att):
+                    candidatos_alvo.append(('character', tgt, tgt.power))
+                for ttype, tgt, alvo_power in candidatos_alvo:
+                    gap = alvo_power - atk_now
+                    if gap <= 0 or gap > p.don_available * 1000:
+                        continue
+                    falta = -(-gap // 1000)  # ceil division
+                    valor = engine.score_attack_target(att, ttype, tgt)
+                    if valor <= 0:
+                        continue
+                    score = valor - falta * DON_COST
+                    if score > melhor_score:
+                        melhor_score, melhor_falta = score, falta
+                if melhor_falta:
+                    acts.append((melhor_score, 'attach_don', att, melhor_falta, 'attack_power'))
         return acts
 
     def _keyword_don_value(self, kw, card, p, opp, priority) -> float:

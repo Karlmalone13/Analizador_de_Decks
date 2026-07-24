@@ -213,6 +213,28 @@ conteúdo bruto num arquivo temporário primeiro e então rodar o comando
 acima nele — nunca pular a etapa de adicionar ao banco só porque não veio
 como path pronto.
 
+### Telemetria de decisão — OBRIGATÓRIO ler quando o log é de partida do bot
+
+Se o log adicionado ao banco veio de uma partida em que o **bot jogou de
+verdade** (não humano vs humano), a tarefa só termina depois de ler o
+resumo de decisões — não é opcional, e não é suficiente só olhar o combat
+log/resultado da partida (pedido do usuário, 23/07: "a leitura da
+telemetria tem que ser obrigatória depois que o log chega no banco",
+depois de repetidas vezes o mesmo tipo de erro passar despercebido).
+
+**Como fazer** (ferramenta já existe, não reinventar):
+```bash
+cd scriptis_da_ia
+python decision_summary.py --latest
+```
+Gera um `.txt` legível ao lado do `receipt_<timestamp>.json` mais recente
+em `metrics/live_runs/` (ou passe `--receipt <path>` pro receipt exato da
+partida) — pra cada decisão do bot, mostra a ação ESCOLHIDA e as melhores
+alternativas descartadas com seus scores. Leia esse arquivo inteiro antes
+de reportar a partida como investigada; é onde bugs de calibração (ex:
+DON anexado numa carta errada porque a alternativa certa nem foi gerada
+como candidata) ficam visíveis sem precisar vasculhar o `.jsonl` na mão.
+
 ## Trabalhando junto com outra IA (Codex ou outra sessão Claude)
 Nenhuma sessão vê o histórico de conversa da outra — só o estado dos
 arquivos. Por isso:

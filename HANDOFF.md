@@ -1,5 +1,67 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (330) - Claude - attach_don ganha categoria de poder de combate + decision_summary.py
+
+Partida `Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26`
+(bot=Katakuri, derrota, ja no bloco 329/`8e77cac`). Usuário reportou 3
+erros: DON anexado na Pudding em vez do Pekoms (atacou 4000 contra 5000),
+líder Katakuri "não ativou" o `when_don_returned` no turno do oponente, e
+Pudding jogada sem usar o efeito.
+
+**Investigado com a telemetria (nova ferramenta usada pela 1a vez, ver
+abaixo):**
+- **Katakuri/ST34-001 (turno do oponente): NÃO é bug.** `when_don_returned`
+  de ST34-001 tem `"owner_turn": "your"` no próprio card_effects_db —
+  só dispara no turno do DONO por design da carta. Funcionou corretamente
+  2x nos turnos do bot (linhas 606-613 e 746-753 do combat log, "Draw 1
+  Rested Don" x2 cada vez).
+- **DON na Pudding em vez do Pekoms: BUG REAL, confirmado com a
+  telemetria exata.** No mesmo `/decide`, `attach_don OP11-070` pontuou
+  15.0 e `attack ST34-005 -> leader` pontuou **-38.8** — o ataque nunca
+  teve chance de competir. Causa raiz: `_generate_attach_don_actions`
+  só gerava candidatos pra "desbloquear habilidade condicionada a DON"
+  (keyword ou `don_requirement` de trigger) -- nunca "anexar DON num
+  atacante pra cruzar o poder de combate contra um alvo", o uso mais
+  básico de DON do jogo. Pekoms (corpo vanilla, sem habilidade
+  condicionada) nunca virava candidato, então o único DON do turno foi
+  pro desbloqueio da Pudding por falta de concorrência -- e pior, a
+  habilidade desbloqueada nem chegou a ser ativada depois (activeDon
+  caiu pra 0 antes da próxima decisão principal), duplo desperdício.
+
+**Fix implementado (aprovado pelo usuário):** nova 3a categoria dentro de
+`_generate_attach_don_actions` -- pra cada atacante elegível, calcula o
+gap de poder contra líder/personagens do oponente (empate favorece quem
+ataca, só precisa igualar), e se o DON disponível fecha esse gap, oferece
+`attach_don` com o motivo `'attack_power'`, pontuado via
+`score_attack_target` (mesma régua já usada na geração real de `attack`)
+menos o custo de oportunidade do DON. Não duplica logica nova de valor,
+só preenche a lacuna de candidato que faltava.
+
+Validação: `py_compile` limpo. 1 novo teste em `smoke_fast.py`
+(`test_attach_don_oferece_opcao_de_poder_de_combate`) reproduzindo o
+cenário exato (Pekoms 4000 + Pudding precisando de DON, líder oponente
+5000, 1 DON disponível) -- confirma que Pekoms agora aparece como
+candidato de `attach_don`. `smoke_fast.py` = SMOKE FAST OK. `smoke_test.py`
+(obrigatório, mexe em geração de ações compartilhada): mesmas 3 falhas
+pré-existentes de sempre, sem regressão nova.
+
+**Segunda parte do pedido: telemetria obrigatória.** Criado
+`scriptis_da_ia/decision_summary.py` -- lê o `receipt_<timestamp>.json`
+mais recente de `metrics/live_runs/` (liga bank_entry_id + decision_log +
+match_id) e escreve um `.txt` legível ao lado dele: pra cada decisão do
+bot, ação escolhida + score + até 3 melhores alternativas descartadas +
+scores. Testado contra a própria partida do Teach -- mostrou exatamente a
+tensão `attach_don Pudding (15.0)` vs `attack Pekoms (-38.8)` que motivou
+o fix acima, sem precisar vasculhar o `.jsonl` na mão. `CLAUDE.md` atualizado
+com uma seção nova ("Telemetria de decisão — OBRIGATÓRIO ler quando o log
+é de partida do bot"): `python decision_summary.py --latest` agora é
+passo obrigatório antes de reportar qualquer partida do bot como
+investigada, não só adicionar o log ao banco.
+
+Pendente: validação ao vivo do fix de `attach_don` (próxima partida) --
+o `decisions_summary` gerado nesta sessão ainda reflete o servidor ANTES
+do fix (`8e77cac`), útil só como prova do bug, não da correção.
+
 ## 2026-07-23 (329) - Claude - combo com campo generaliza de buff pra QUALQUER acao
 
 Usuário reforçou o bloco 328: "não é só buff, tem outros efeitos, como dar

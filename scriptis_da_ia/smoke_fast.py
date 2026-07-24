@@ -693,6 +693,33 @@ def test_pudding_anexa_don_antes_de_oferecer_activate_main() -> None:
           any(a[1] == "activate" and a[2] is pudding for a in actions2))
 
 
+def test_attach_don_oferece_opcao_de_poder_de_combate() -> None:
+    # Achado real ao vivo 23/07: com 1 DON disponivel e Baron Tamago &
+    # Pekoms (ST34-005, 4000 poder, corpo vanilla) + Charlotte Pudding
+    # (OP11-070, precisa de DON pra desbloquear activate_main) em campo,
+    # o unico candidato de attach_don gerado era a Pudding -- Pekoms nunca
+    # aparecia, mesmo +1000 decidindo o ataque contra o lider do oponente
+    # (4000 vs 5000, empate favorece quem ataca). _generate_attach_don_
+    # actions so cobria "desbloquear habilidade condicionada a DON", nunca
+    # "cruzar o poder de combate". Fix: 3a categoria dentro da mesma
+    # funcao, reaproveitando score_attack_target.
+    pekoms = real_card("ST34-005")
+    pekoms._deck_uid = 20
+    pekoms.rested = False
+    pudding = real_card("OP11-070")
+    pudding._deck_uid = 10
+    me = GameState(leader=real_card("OP11-062"), don_available=1, turn=3)
+    me.field_chars = [pekoms, pudding]
+    opp = GameState(leader=real_card("OP16-080"), turn=3)  # Teach, lider 5000
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    actions = match._generate_and_score_actions(me, opp, DecisionEngine(me, opp))
+    attach_candidatos = {a[2].code: a for a in actions if a[1] == "attach_don"}
+    check("attach_don agora tambem oferece Pekoms (poder de combate), nao so a Pudding",
+          "ST34-005" in attach_candidatos)
+    check("attach_don em Pekoms marca o motivo como poder de ataque",
+          attach_candidatos.get("ST34-005", (None,) * 5)[4] == "attack_power")
+
+
 def test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao() -> None:
     # Pedido do usuario 21/07: resolve_reaction() era Teach-cêntrico na
     # conta de CUSTO do redirect (sempre assumia "custo = perder a carta
@@ -7470,6 +7497,7 @@ def main() -> int:
     test_avaliar_carta_reconhece_combo_de_qualquer_acao_com_carta_em_campo()
     test_step_condition_currently_holds_generaliza_pra_qualquer_flag()
     test_pudding_anexa_don_antes_de_oferecer_activate_main()
+    test_attach_don_oferece_opcao_de_poder_de_combate()
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()
     test_peek_opp_deck_top_nao_vira_alvo_battlefield_only()
     test_own_don_e_candidato_prioritario_pra_custo_don_minus()
