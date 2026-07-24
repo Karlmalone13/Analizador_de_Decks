@@ -1,5 +1,23 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (337) - Claude - benchmark humano vs bot de Katakuri
+
+Usuário pediu a métrica do PRÓPRIO deck que ele jogou (Katakuri), pra
+usar como meta do bot alcançar/superar. Criado
+`metrics/katakuri_human_23jul.json` isolando a partida
+`Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2` (usuário
+pilotando Katakuri, vitória).
+
+Comparação (bot n=4 de `katakuri_bot_23jul.json` vs humano n=1):
+`atk_por_turno` 1.15 vs 1.667, `pct_atk_lider` 82.6% vs 70.0%,
+`dano_por_jogo` 2.25 vs 4.0, `counters_arrancados_por_jogo` 2.25 vs 5.0,
+`turnos_passivos_por_jogo` 0.25 vs 0.0, `don_observado_por_ataque` 0.435
+vs 0.4 (surpreendentemente PARECIDO -- o gap real não é quanto DON tem
+anexado quando ataca, é a frequência/qualidade dos ataques em si).
+Amostra do humano é n=1 (intervalo de confiança não é informativo ainda),
+mas serve como primeiro alvo numérico: bot precisa chegar perto de
+dano_por_jogo≈4 e counters_arrancados≈5 pra considerar a lacuna fechada.
+
 ## 2026-07-24 (336) - Claude - order_target_candidates EXCLUI own_* de verdade (achado C#)
 
 Usuário pediu pra abrir o código C# (`BOT/OPTCGBotPlugin/`) pra investigar
