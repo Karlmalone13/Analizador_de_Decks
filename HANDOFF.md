@@ -1,5 +1,44 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (329) - Claude - combo com campo generaliza de buff pra QUALQUER acao
+
+Usuário reforçou o bloco 328: "não é só buff, tem outros efeitos, como dar
+rush, dar blocker, dar don, buff, dar custo extra, double strike, etc."
+Busquei no banco (mesma auditoria global, não só a carta que revelou o
+padrão) e achei, além do `buff_power` já coberto: `set_active` (9 cartas
+reais, ex: OP01-042 Komurasaki "personagem Land of Wano custo≤3 fica
+ativo, se o líder é Kouzuki Oden"), `buff_cost` (OP14-098), `set_base_power`
+(OP16-058), `bounce` mirando personagem próprio (OP07-062, proteção). Os
+grants de keyword puro (`gain_rush`/`gain_blocker`/`gain_double_attack`/
+`gain_unblockable`/`gain_banish`) quase sempre miram a PRÓPRIA carta jogada
+(sem filtro, sem alvo em campo) -- só 1 caso real (`OP12-058`) mira
+`target=selected` (alvo já escolhido antes no mesmo efeito, não um filtro
+de campo) -- não achei nenhum caso real de "conceder Rush a um personagem
+já em campo via filtro" pra generalizar com dado real. Registrado
+honestamente em vez de inventar cobertura sem caso real por trás.
+
+Fix: `_conditional_board_synergy_value` (bloco 328) generalizada --
+`buff_power`/`set_base_power` continuam escalando pelo `amount`; qualquer
+outra ação em `_BOARD_COMBO_ACTION_VALUE` (novo dict: `set_active`,
+`bounce`, `buff_cost`/`debuff_cost`, `grant_ko_immunity_type`, e as
+keywords `gain_rush`/`gain_blocker`/`gain_double_attack`/
+`gain_unblockable`/`gain_banish` — deixadas no dict pra quando/se
+aparecer uma carta real com esse padrão, mesmo sem caso hoje) ganha valor
+fixo por tipo, na mesma régua dos bônus já existentes em `avaliar_carta`
+pra "esta carta TEM o keyword".
+
+Validação: `py_compile` limpo. 1 novo teste em `smoke_fast.py`
+(`test_avaliar_carta_reconhece_combo_de_qualquer_acao_com_carta_em_campo`,
+usando Komurasaki real + Yamato restada em campo + líder sintético
+"Kouzuki Oden" via `mk()` pra bater a condição `leader_is`): score maior
+com líder certo + alvo elegível vs líder errado. `smoke_fast.py` = SMOKE
+FAST OK. `smoke_test.py`: mesmas 3 falhas pré-existentes, sem regressão
+nova.
+
+Servidor ainda NÃO reiniciado -- aguardando confirmação de jogo fechado.
+Blocos 326-329 (Pudding play_card, flags generalizadas, buff de campo,
+generalização pra qualquer ação) todos pendentes de validação ao vivo.
+
 ## 2026-07-23 (328) - Claude - combo com carta JA EM CAMPO (espelho do play_card)
 
 Pedido do usuário: "efeitos que combam com carta na mão (play_card), mas

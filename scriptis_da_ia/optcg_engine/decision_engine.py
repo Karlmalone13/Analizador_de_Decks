@@ -8941,21 +8941,42 @@ class DecisionEngine:
 
     _OWN_BOARD_BUFF_TARGETS = {'own_character', 'select_filtered', 'all_allies'}
 
+    # Valor generico por acao pra steps SEM escala numerica propria (amount)
+    # -- concede um keyword/estado a um personagem PROPRIO ja em campo.
+    # Mesma ordem de grandeza dos bonus ja usados em avaliar_carta pra "esta
+    # carta TEM o keyword" (rush=30, double_attack=25, unblockable=20,
+    # blocker=20/+vida, banish=15) -- reaproveitado aqui pro caso "esta
+    # carta CONCEDE o keyword pra outro personagem em campo".
+    _BOARD_COMBO_ACTION_VALUE = {
+        'gain_rush': 30.0, 'keyword_rush': 30.0,
+        'gain_double_attack': 25.0, 'keyword_double_attack': 25.0,
+        'gain_unblockable': 20.0, 'keyword_unblockable': 20.0,
+        'gain_blocker': 20.0, 'keyword_blocker': 20.0,
+        'gain_banish': 15.0, 'keyword_banish': 15.0,
+        'grant_ko_immunity_type': 20.0,
+        'set_active': 20.0,        # desresta -- pode atacar/bloquear de novo
+        'bounce': 20.0,            # protege da remocao do oponente
+        'buff_cost': 12.0, 'debuff_cost': 12.0,
+    }
+
     def _conditional_board_synergy_value(self, card: 'Card') -> float:
         """
         Espelho de _conditional_play_card_combo_value pro combo com carta
-        JA EM CAMPO (nao na mao), pedido explicito do usuario (23/07): um
-        step 'buff_power' do proprio on_play/main mirando personagem
-        PROPRIO filtrado (target='own_character'/'select_filtered'/
-        'all_allies' + filter_type/filter_names, NAO buff de batalha
-        self/leader -- esse ja tem guard proprio em
-        _combat_buff_worth_paying) so vale a pena se existir ALGUM
-        personagem correspondente em campo AGORA -- exatamente como
-        play_card so vale com alvo na mao. 26 cartas reais no banco com
-        esse padrao (ex: EB03-032 "+2000 pra um 'Charlotte Katakuri' em
-        campo", EB04-040 "+3000 pra um 'Kaido' em campo") -- avaliar_carta
-        so tinha um flat +15 (has_buff), cego a se o combo tem com quem
-        acontecer.
+        JA EM CAMPO (nao na mao), pedido explicito do usuario (23/07,
+        reforcado depois: "nao e so buff, tem rush/blocker/DON/custo extra/
+        double strike tb"). QUALQUER step do proprio on_play/main mirando
+        personagem PROPRIO filtrado (target='own_character'/
+        'select_filtered'/'all_allies' + filter_type/filter_names) so vale
+        a pena se existir ALGUM personagem correspondente em campo AGORA --
+        exatamente como play_card so vale com alvo na mao. Cobre
+        buff_power/set_base_power (escala pelo amount), e qualquer acao de
+        _BOARD_COMBO_ACTION_VALUE (concessao de keyword/estado, valor fixo
+        por tipo). buff_power de batalha (self/leader, battle_only) fica de
+        fora -- guard proprio ja existe em _combat_buff_worth_paying.
+        Achados reais no banco: EB03-032/EB04-040 (buff_power em nome
+        especifico ja em campo), OP01-042 (set_active em personagens
+        rested de tipo+custo, condicionado ao lider), OP14-098 (buff_cost),
+        OP16-058 (set_base_power), OP07-062 (bounce da propria carta).
         """
         from optcg_engine.rules_facade import eligible_cards
         effects = get_card_effects(card.code)
@@ -8969,15 +8990,17 @@ class DecisionEngine:
             if block_conds and not ee._check_conditions(block_conds, card):
                 continue
             for step in ef.get('steps', []):
-                if step.get('action') != 'buff_power':
+                action = step.get('action')
+                escala_por_amount = action in ('buff_power', 'set_base_power')
+                if not escala_por_amount and action not in self._BOARD_COMBO_ACTION_VALUE:
                     continue
                 if step.get('target') not in self._OWN_BOARD_BUFF_TARGETS:
                     continue
-                if step.get('duration') in ('battle_only', 'this_battle'):
+                if action == 'buff_power' and step.get('duration') in ('battle_only', 'this_battle'):
                     continue  # buff so-de-combate, guard proprio ja cobre
                 filtro = step.get('filter_type') or step.get('filter_names') or ''
                 if not filtro:
-                    continue  # sem filtro = "todos os aliados", ja no flat has_buff
+                    continue  # sem filtro = "todos os aliados", ja no flat da flag
                 step_conds = step.get('conditions', {})
                 if step_conds and not ee._check_conditions(step_conds, card):
                     continue
@@ -8986,9 +9009,14 @@ class DecisionEngine:
                     cost_eq=step.get('cost_eq'), cost_lte=step.get('cost_lte'),
                     power_eq=step.get('power_eq'), power_gte=step.get('power_gte'),
                     power_lte=step.get('power_lte'), exclude_card=card)
-                if candidatos:
+                if not candidatos:
+                    continue
+                if escala_por_amount:
                     amount = step.get('amount', 0)
                     bonus += min(60.0, len(candidatos) * (amount / 1000.0) * 8)
+                else:
+                    valor = self._BOARD_COMBO_ACTION_VALUE.get(action, 12.0)
+                    bonus += min(60.0, len(candidatos) * valor)
         return bonus
 
     def avaliar_carta(self, card: 'Card', stage_redundancy: bool = True) -> float:

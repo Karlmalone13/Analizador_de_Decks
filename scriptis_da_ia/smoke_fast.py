@@ -615,6 +615,35 @@ def test_avaliar_carta_reconhece_combo_buff_com_carta_em_campo() -> None:
           score_alvo_errado < score_com_alvo and score_alvo_errado == score_sem_alvo)
 
 
+def test_avaliar_carta_reconhece_combo_de_qualquer_acao_com_carta_em_campo() -> None:
+    # Achado 23/07 (usuario reforcou: "nao e so buff, tem rush/blocker/DON/
+    # custo extra/double strike tb"). Generalizado _conditional_board_
+    # synergy_value pra QUALQUER acao (nao so buff_power) que mire
+    # personagem PROPRIO filtrado ja em campo. Caso real: Komurasaki
+    # (OP01-042) "[On Play] rest_don 3: se o lider e Kouzuki Oden, um
+    # personagem 'Land of Wano' custo<=3 seu fica ATIVO" (set_active) --
+    # so vale a pena com um personagem RESTADO e elegivel em campo.
+    komurasaki = real_card("OP01-042")
+    lider_oden = mk("XLDR", "Kouzuki Oden", card_type="LEADER")
+    yamato = real_card("P-008")  # Land of Wano, custo 3
+    yamato.rested = True
+
+    # (a) Combo LIGADO: lider certo + Yamato restada em campo.
+    me_on = GameState(leader=lider_oden, don_available=3, turn=3)
+    me_on.field_chars = [yamato]
+    eng_on = DecisionEngine(me_on, GameState(leader=real_card("OP14-020")))
+    score_on = eng_on.avaliar_carta(komurasaki)
+
+    # (b) Combo DESLIGADO: lider errado -- condicao 'leader_is' nao bate.
+    me_off = GameState(leader=real_card("OP11-062"), don_available=3, turn=3)
+    me_off.field_chars = [real_card("P-008")]
+    eng_off = DecisionEngine(me_off, GameState(leader=real_card("OP14-020")))
+    score_off = eng_off.avaliar_carta(komurasaki)
+
+    check("avaliar_carta pontua Komurasaki mais alto com lider certo + alvo elegivel em campo",
+          score_on > score_off)
+
+
 def test_step_condition_currently_holds_generaliza_pra_qualquer_flag() -> None:
     # Achado 23/07 (pedido do usuario): generaliza o guard de condicao do
     # combo play_card pra QUALQUER flag estatica (draws/kos/bounces/etc).
@@ -7438,6 +7467,7 @@ def main() -> int:
     test_combat_buff_worth_paying_no_simulador_interno()
     test_avaliar_carta_reconhece_combo_play_card_condicional()
     test_avaliar_carta_reconhece_combo_buff_com_carta_em_campo()
+    test_avaliar_carta_reconhece_combo_de_qualquer_acao_com_carta_em_campo()
     test_step_condition_currently_holds_generaliza_pra_qualquer_flag()
     test_pudding_anexa_don_antes_de_oferecer_activate_main()
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()
