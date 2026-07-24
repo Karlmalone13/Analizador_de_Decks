@@ -1597,6 +1597,82 @@ def test_turn_planner_fase_b_next_turn_readiness_bonus() -> None:
           bonus2a == bonus2b)
 
 
+def test_turn_planner_fase_b_combos_na_ordem_de_jogadas_e_ataques() -> None:
+    # FASE B, extensao pedida pelo usuario 24/07: "adicione tambem...o
+    # entendimento e possibilidades de combos que nos mapeamos" -- os
+    # gatilhos das fases 1.1-1.4 (on_own/opp_char_played, on_opp_char_ko,
+    # when_rested) agora pesam na ORDEM de jogadas/ataques, nao so na
+    # execucao real do efeito quando ele acontece.
+
+    # 1) on_own_char_played (Sanji OP02-026, filtro "sem efeito base",
+    #    condicao chars_lte=3): jogar uma vanilla com Sanji em campo
+    #    recebe bonus; jogar uma carta COM efeito (filtro recusa) nao.
+    sanji = real_card("OP02-026")
+    a = GameState(leader=real_card("OP11-062"), turn=3)
+    a.field_chars = [sanji]
+    opp = GameState(leader=real_card("OP11-062"), turn=3)
+    match = OPTCGMatch((a.leader, []), (opp.leader, []))
+    vanilla = real_card("EB01-005")
+    com_efeito = real_card("OP07-077")
+    check("_char_played_react_bonus premia jogar vanilla com Sanji (on_own_char_played) em campo",
+          match._char_played_react_bonus(vanilla, a, opp) > 0.0)
+    check("_char_played_react_bonus NAO premia carta com efeito base (filtro de Sanji recusa)",
+          match._char_played_react_bonus(com_efeito, a, opp) == 0.0)
+
+    # 2) on_opp_char_played (Sugar OP04-024, condicao leader_type=
+    #    donquixote pirates): penaliza jogar personagem com Sugar do lado
+    #    do OPONENTE e o lider dele batendo a condicao; sem a condicao
+    #    bater (lider generico), nao penaliza.
+    sugar = real_card("OP04-024")
+    a2 = GameState(leader=real_card("OP11-062"), turn=3)
+    opp2 = GameState(leader=mk("OP10-099", "Kid", card_type="LEADER", color="Red",
+                               sub_types="Donquixote Pirates"), turn=3)
+    opp2.field_chars = [sugar]
+    match2 = OPTCGMatch((a2.leader, []), (opp2.leader, []))
+    check("_char_played_react_bonus penaliza quando Sugar do OPONENTE bate a condicao do lider dele",
+          match2._char_played_react_bonus(vanilla, a2, opp2) < 0.0)
+
+    opp3 = GameState(leader=real_card("OP11-062"), turn=3)  # lider SEM o tipo Donquixote Pirates
+    sugar3 = real_card("OP04-024")
+    opp3.field_chars = [sugar3]
+    a3 = GameState(leader=real_card("OP11-062"), turn=3)
+    match3 = OPTCGMatch((a3.leader, []), (opp3.leader, []))
+    check("_char_played_react_bonus NAO penaliza quando a condicao do lider da Sugar nao bate",
+          match3._char_played_react_bonus(vanilla, a3, opp3) == 0.0)
+
+    # 3) on_opp_char_ko (Kaido OP01-061 como lider, don_requirement=1):
+    #    atacar/matar um personagem do oponente com Kaido de DON!! x1
+    #    anexado pontua mais que sem o DON anexado (gatilho nao pronto).
+    opp4 = GameState(leader=real_card("OP11-062"), turn=3)
+    alvo = real_card("EB01-005")  # 3000 power, matavel com don disponivel
+    opp4.field_chars = [alvo]
+    kaido_com_don = real_card("OP01-061")
+    kaido_com_don.don_attached = 1
+    a4 = GameState(leader=kaido_com_don, turn=3, don_available=3)
+    eng4 = DecisionEngine(a4, opp4)
+    score_com_don = eng4.score_attack_target(kaido_com_don, 'character', alvo)
+
+    kaido_sem_don = real_card("OP01-061")
+    a5 = GameState(leader=kaido_sem_don, turn=3, don_available=3)
+    opp5 = GameState(leader=real_card("OP11-062"), turn=3)
+    alvo5 = real_card("EB01-005")
+    opp5.field_chars = [alvo5]
+    eng5 = DecisionEngine(a5, opp5)
+    score_sem_don = eng5.score_attack_target(kaido_sem_don, 'character', alvo5)
+    check("score_attack_target premia matar personagem com Kaido (on_opp_char_ko) PRONTO (DON!!x1 anexado)",
+          score_com_don > score_sem_don)
+
+    # 4) when_rested estruturado (Issho OP14-021, sem condicoes): antes so
+    #    reconhecia via substring no texto cru -- agora checa o trigger
+    #    estruturado direto.
+    issho = real_card("OP14-021")
+    a6 = GameState(leader=real_card("OP11-062"), turn=3)
+    opp6 = GameState(leader=real_card("OP11-062"), turn=3)
+    eng6 = DecisionEngine(a6, opp6)
+    check("_rest_attack_has_material_benefit reconhece when_rested estruturado (Issho OP14-021)",
+          eng6._rest_attack_has_material_benefit(issho) is True)
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -8213,6 +8289,7 @@ def main() -> int:
     test_uncovered_action_value_segunda_passada()
     test_turn_planner_fase_a_trigger_don_value_e_score_activate_main()
     test_turn_planner_fase_b_next_turn_readiness_bonus()
+    test_turn_planner_fase_b_combos_na_ordem_de_jogadas_e_ataques()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
     test_search_contextual_evita_congestionar_mao_com_bombas()

@@ -10340,7 +10340,20 @@ class DecisionEngine:
 
         O buff do proprio combate ja esta em attack_time_power. Peek/reveal
         puro traz informacao, mas nao justifica um ataque que continua abaixo.
+
+        FASE B do Turn Planner (usuario, 24/07): antes so reconhecia o
+        gatilho "quando restado" via SUBSTRING no texto cru (fallback
+        fragil, sem checar condicoes) -- agora checa primeiro o trigger
+        ESTRUTURADO `when_rested` do banco (6 cartas confirmadas, ver
+        TODO.md: OP14-021/027/028/032/035/119), respeitando `conditions`
+        igual a qualquer outro gatilho -- a substring fica so como
+        fallback pra texto que o parser ainda nao capturou.
         """
+        wr = get_card_effects(card.code).get('when_rested')
+        if wr:
+            wr_conds = wr.get('conditions', {})
+            if not wr_conds or EffectExecutor(self.me, self.opp)._check_conditions(wr_conds, card):
+                return True
         wa = get_card_effects(card.code).get('when_attacking')
         if not wa:
             txt = (card.card_text or '').lower()
@@ -10475,6 +10488,26 @@ class DecisionEngine:
             if 'when_attacking' in tgt_effects: s += 35
             if 'activate_main' in tgt_effects:  s += 25
             if 'on_ko' in tgt_effects:          s -= 20  # cuidado: ativa ao morrer
+
+            # FASE B do Turn Planner (usuario, 24/07: combos mapeados
+            # devem entrar na ordem de ataque). Meu proprio board pode
+            # observar "quando o personagem do OPONENTE e K.O.'d"
+            # (on_opp_char_ko, fase 1.2, 24/07 -- ex: Kaido OP01-061,
+            # Rob Lucci OP03-076). Sem isto, matar o alvo certo pra
+            # acionar esse gatilho nunca pesava na escolha de alvo.
+            meus = [self.me.leader, *self.me.field_chars]
+            if self.me.field_stage:
+                meus.append(self.me.field_stage)
+
+            def _on_opp_char_ko_pronto(c):
+                entry = get_card_effects(c.code).get('on_opp_char_ko')
+                if not entry:
+                    return False
+                req = entry.get('don_requirement', 0)
+                return not req or c.don_attached >= req
+
+            if any(_on_opp_char_ko_pronto(c) for c in meus):
+                s += 30
 
             # Custo de perder o Activate Main do ATACANTE: só compensa se o alvo
             # é ameaça grande (poder alto, blocker, rush, gera vantagem).
@@ -11558,6 +11591,62 @@ class OPTCGMatch:
                 return False
         return True
 
+    def _char_played_filter_matches(self, entry, played_card) -> bool:
+        """
+        Mesma logica de filtro de `EffectExecutor._dispatch_char_played_side`
+        (fase 1.3 do mapeamento de combos), duplicada aqui de proposito: a
+        versao do dispatcher EXECUTA o gatilho de verdade durante a
+        partida; esta versao so PREVE se ele vai disparar, pra scoring
+        (decidir se vale jogar `played_card` ANTES de outra coisa). Manter
+        os dois pontos sincronizados se o formato do filtro mudar.
+        """
+        if entry.get('play_filter_no_base_effect') and get_card_effects(played_card.code):
+            return False
+        if entry.get('play_filter_has_trigger') and not played_card.has_trigger:
+            return False
+        cost_gte = entry.get('play_filter_cost_gte')
+        if cost_gte and played_card.cost < cost_gte:
+            return False
+        return True
+
+    def _char_played_react_bonus(self, card, p, opp) -> float:
+        """
+        FASE B do Turn Planner (usuario, 24/07): pontua jogar `card`
+        (CHARACTER) levando em conta quem JA esta em campo e observa
+        "quando um Character e jogado" (on_own_char_played no MEU board,
+        on_opp_char_played no board do OPONENTE -- fase 1.3, 24/07). Flat
+        e generico -- mesma ordem de grandeza dos outros bonus de combo ja
+        calibrados nesta sessao (fase 2, ~15-30), nao tenta calcular o
+        valor exato do efeito reativo (isso o proprio avaliar_carta do
+        source ja credita quando ELE for avaliado).
+        """
+        if card.card_type != 'CHARACTER':
+            return 0.0
+        bonus = 0.0
+        ee = EffectExecutor(p, opp)
+        meus = [p.leader, *p.field_chars]
+        if p.field_stage:
+            meus.append(p.field_stage)
+        for source in meus:
+            entry = get_card_effects(source.code).get('on_own_char_played')
+            if not entry or not self._char_played_filter_matches(entry, card):
+                continue
+            conds = entry.get('conditions', {})
+            if not conds or ee._check_conditions(conds, source):
+                bonus += 25.0
+        ee_opp = EffectExecutor(opp, p)
+        opps = [opp.leader, *opp.field_chars]
+        if opp.field_stage:
+            opps.append(opp.field_stage)
+        for source in opps:
+            entry = get_card_effects(source.code).get('on_opp_char_played')
+            if not entry or not self._char_played_filter_matches(entry, card):
+                continue
+            conds = entry.get('conditions', {})
+            if not conds or ee_opp._check_conditions(conds, source):
+                bonus -= 20.0
+        return bonus
+
     def _score_play_action(self, card, engine) -> float:
         """
         Pontua JOGAR uma carta. Cartas cujo efeito HABILITA o ataque
@@ -11640,6 +11729,16 @@ class OPTCGMatch:
             pior = min(engine.me.field_chars, key=lambda c: c.board_value())
             if card.board_value() <= pior.board_value():
                 return -999.0
+
+        # FASE B do Turn Planner (usuario, 24/07: "adicione tambem... o
+        # entendimento e possibilidades de combos que nos mapeamos"). Ate
+        # aqui, `base` (via avaliar_carta) so olha os efeitos da PROPRIA
+        # carta -- nunca quem JA esta em campo e REAGE a ela ser jogada
+        # (on_own_char_played/on_opp_char_played, fase 1.3 do mapeamento
+        # de combos, 24/07). Sem isto, jogar Sanji OP02-026 ANTES de uma
+        # vanilla nunca pontuava diferente de jogar depois -- a ordem
+        # "ativa o watcher primeiro" nao aparecia em lugar nenhum do score.
+        base += self._char_played_react_bonus(card, engine.me, engine.opp)
 
         # Carta que PRECISA entrar para ativar efeito que ajuda o ataque agora:
         # On Play de remoção/buff/rest/draw, ou rush. Bônus para sair antes do

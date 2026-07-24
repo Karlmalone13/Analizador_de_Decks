@@ -2,6 +2,17 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 360): Turn Planner Fase B estendida —
+> combos mapeados nas fases 1.1-1.4 (`on_own/opp_char_played`,
+> `on_opp_char_ko`, `when_rested`) agora pesam na ORDEM de
+> jogadas/ataques, não só disparam quando executados. Novo
+> `_char_played_react_bonus` (jogar carta que ativa/sofre watcher em
+> campo), `score_attack_target` considera `on_opp_char_ko` pronto
+> (respeitando `don_requirement`), `_rest_attack_has_material_benefit`
+> checa `when_rested` estruturado em vez de só substring frágil. 8
+> smoke tests novos com cartas reais (Sanji, Sugar, Kaido, Issho).
+> `smoke_test.py` 100%. Nenhum teste ao vivo nem push ainda.
+
 > 24/07/2026 (bloco HANDOFF 359): Turn Planner Fase B REFEITA — usuário
 > rejeitou a 1a versão (aritmética "barata"), pediu análise real dos
 > dois lados. Novo `_project_next_turn_best_action(actor, other)`

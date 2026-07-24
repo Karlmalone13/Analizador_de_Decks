@@ -1,5 +1,53 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (360) - Claude (sessao local) - Turn Planner fase B: combos mapeados (fases 1.1-1.4) agora pesam na ordem de jogadas/ataques
+
+Continuação do bloco 359 — usuário pediu explicitamente: "adicione tb
+na fase B, o entendimento e possibilidades de combos (que nós
+mapeamos) assim, o bot poderá melhorar a decisão dele no search, e na
+ordem de cartas jogadas, restadas, atacantes, etc."
+
+**Achado ao auditar**: os gatilhos mapeados nas fases 1.1-1.4 desta
+sessão (`on_own/opp_char_played`, `on_opp_char_ko`, `when_rested`, etc.)
+já disparam corretamente quando o efeito de fato acontece (Fase 1
+garantiu isso) — mas `avaliar_carta`/`score_attack_target` continuavam
+CEGOS pra eles na hora de PONTUAR/ORDENAR: jogar uma carta nunca olhava
+se algo já em campo reage a ela ser jogada, e atacar/matar um alvo
+nunca olhava se meu próprio board reage à K.O. de um personagem do
+oponente. Três correções concretas:
+
+1. **`_char_played_react_bonus(card, p, opp)`** (nova, `OPTCGMatch`,
+   chamada de dentro de `_score_play_action`): antes de jogar um
+   `CHARACTER`, escaneia meu board por `on_own_char_played` (bônus,
+   +25 por watcher que bate o filtro E as condições) e o board do
+   OPONENTE por `on_opp_char_played` (penalidade, -20) — reusa a MESMA
+   lógica de filtro (`play_filter_no_base_effect`/`has_trigger`/
+   `cost_gte`) do dispatcher real da Fase 1.3, e checa `conditions`
+   (ex: `leader_type`) via `_check_conditions`, não só o filtro.
+2. **`score_attack_target`** (branch de atacar Character): agora
+   verifica se meu board tem `on_opp_char_ko` PRONTO (respeitando
+   `don_requirement`, ex: Kaido OP01-061 precisa de `[DON!! x1]`
+   anexado) antes de dar o bônus (+30) — matar o alvo certo pra acionar
+   esse gatilho agora pesa na escolha de alvo.
+3. **`_rest_attack_has_material_benefit`**: antes só reconhecia "vale
+   restar por causa de um gatilho" via SUBSTRING frágil no texto cru
+   (`'when this character becomes rested' in txt`, sem checar
+   condições). Agora checa primeiro o trigger ESTRUTURADO `when_rested`
+   do banco (6 cartas confirmadas: OP14-021/027/028/032/035/119),
+   respeitando `conditions` como qualquer outro gatilho — a substring
+   fica só como fallback.
+
+**Validação**: `smoke_fast.py` — 8 checks novos com cartas reais
+(Sanji OP02-026 premia jogar vanilla, filtro recusa carta com efeito;
+Sugar OP04-024 penaliza só quando a condição `leader_type` do
+oponente bate; Kaido OP01-061 com/sem `[DON!!x1]` anexado muda o
+score de atacar; Issho OP14-021 reconhecido via `when_rested`
+estruturado). `smoke_test.py`: TODOS OS TESTES PASSARAM.
+
+**Status**: Fase B agora cobre lookahead de recurso (bloco 359) +
+combos mapeados influenciando ordem (este bloco). Nenhum teste ao vivo
+nem push ainda.
+
 ## 2026-07-24 (359) - Claude (sessao local) - Turn Planner fase B REFEITA: analise real dos dois lados (nao mais aritmetica "barata")
 
 Usuário rejeitou a 1a versão do bloco 358 assim que a viu: "não pode
