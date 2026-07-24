@@ -1,0 +1,24 @@
+{
+  "trigger_card": "OP02-026",
+  "problem": "Fase 1.3 do mapeamento de combos (usuario, 24/07): gatilho 'when your opponent plays a Character' / 'when you play a Character' nao existia no parser. 5 cartas confirmadas (Sugar OP04-024 -- observa o oponente; Sanji OP02-026, Bonney OP13-100, Boa Hancock OP14-041, Koala OP12-081 -- observam o proprio lado ou tem filtro de custo) caiam em opp_turn/your_turn incondicional, perdendo a condicao real -- bug de regra, nao so de pontuacao.",
+  "grammar_family": "'[tags] When your opponent/you play(s) a Character (with FILTRO)?, [efeito]' -- FILTRO opcional (with no base effect / with a [Trigger] / with a base cost of N or more) vira campo estruturado (play_filter_no_base_effect / play_filter_has_trigger / play_filter_cost_gte), checado pelo dispatcher contra a carta REAL jogada.",
+  "queries": [
+    "regex 'when (your opponent|you) plays? a character' contra cards_rows.csv inteiro: 5 cartas (ver lista acima)"
+  ],
+  "cards_found": [
+    "OP02-026",
+    "OP04-024",
+    "OP12-081",
+    "OP13-100",
+    "OP14-041"
+  ],
+  "resolution_scope": "global",
+  "decision": "Aprovado pelo usuario em 2026-07-24 (fase 1.3 da ordem de correcao combinada). gerar_effects_db.py ganha CHAR_PLAYED_FILTER (filtro opcional pos-'Character') + CHAR_PLAYED_STOP (delimitador de parada que tambem para em '[DON!! xN]', achado real durante a implementacao -- ver notes) + 2 regex parametrizados (on_opp_char_played, on_own_char_played) + _parse_char_played_filter() que traduz o texto do filtro pra campo estruturado. decision_engine.py ganha EffectExecutor._dispatch_char_played(played_card) chamado nos 2 pontos reais onde um CHARACTER e jogado (_play_card do OPTCGMatch e _put_into_play do play_card de efeito) -- checa os play_filter_* contra a carta jogada de verdade antes de disparar.",
+  "validated_by": [
+    "diff_parser.py antes/depois: GANHOU=0, PERDEU=0, MUDOU=5 (as 5 esperadas), nenhuma outra carta das 2644 afetada",
+    "2 REGRESSOES/BUGS PEGOS E CORRIGIDOS DURANTE A PROPRIA VALIDACAO (disciplina do workflow: nunca fechar sem rodar diff_parser.py): (1) Boa Hancock OP14-041 -- o delimitador generico (LOOKAHEAD_DELIM) nao parava em '[DON!!x1]' (sem espaco antes do x, formato usado nesta carta), entao a captura vazava pra dentro da 2a habilidade dela inteira (deal_damage indevido). Fix: CHAR_PLAYED_STOP, delimitador dedicado que tambem reconhece '[don!! xN]' como parada. (2) Koala OP12-081 -- apos o fix anterior (fase 1.1, helper _recover_leading_prose_as_passive), o prefixo de texto solto sem tag (already capturado pela variante em prosa de when_attacking) ficava DUPLICADO como 'passive' tambem. Fix: a checagem de recuperacao agora compara os steps parseados do prefixo contra TODAS as entradas ja existentes em result (nao so your_turn/opp_turn), pulando se ja foi capturado em qualquer lugar.",
+    "smoke_fast.py: SMOKE FAST OK, incluindo teste de execucao real com filtro (Sanji ativa DON quando joga personagem SEM efeito base; NAO dispara quando o personagem jogado TEM efeito base) + teste antigo de Koala (OP12-081, pre-existente desde 16/07) atualizado pra refletir o gatilho real",
+    "smoke_test.py: TODOS OS TESTES PASSARAM (regressao ampla, 2644 cartas)"
+  ],
+  "notes": "Koala OP12-081 tem condicao OR complexa ('custo base>=8 OU jogado via efeito de outra carta') -- so o lado 'custo>=8' e coberto (play_filter_cost_gte), 'jogado via efeito' fica pendente. Boa Hancock OP14-041 tem uma 2a habilidade separada (Amazon Lily/Kuja Pirates on_ko com filtro de tipo+power) que JA NAO era capturada antes deste fix nem depois -- gap pre-existente, fora do escopo desta auditoria, nao regressao."
+}

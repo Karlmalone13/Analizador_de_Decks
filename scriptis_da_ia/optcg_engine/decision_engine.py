@@ -4293,6 +4293,56 @@ class EffectExecutor:
             if logs and entry.get('once_per_turn'):
                 setattr(source, marker_attr, marker)
 
+    def _dispatch_char_played(self, played_card: 'Card') -> None:
+        """
+        Dispara ``on_own_char_played`` (campo de self.me) e
+        ``on_opp_char_played`` (campo de self.opp) quando self.me acaba de
+        jogar `played_card` (CHARACTER) -- FASE 1.3 do mapeamento de
+        combos (usuario, 24/07). 4 cartas confirmadas: Sugar OP04-024
+        (observa o OPONENTE), Sanji OP02-026, Bonney OP13-100, Boa Hancock
+        OP14-041 (observam o PROPRIO lado).
+
+        Filtros no texto da carta observadora (`play_filter_*`) sao
+        checados contra `played_card` antes de disparar -- sem isso a
+        habilidade dispararia pra QUALQUER personagem jogado, nao so os
+        que batem o filtro real (Sanji so reage a personagem SEM efeito
+        base; Bonney so a personagem COM [Trigger]; Koala -- nao coberta
+        ainda, ver parser_audits -- so a personagem de custo 8+).
+        """
+        if played_card.card_type != 'CHARACTER':
+            return
+        self._dispatch_char_played_side(
+            'on_own_char_played', self.me, self.opp,
+            '_own_char_played_once_marker', played_card)
+        self._dispatch_char_played_side(
+            'on_opp_char_played', self.opp, self.me,
+            '_opp_char_played_once_marker', played_card)
+
+    def _dispatch_char_played_side(self, trig_name: str, watcher: 'GameState',
+                                   other: 'GameState', marker_attr: str,
+                                   played_card: 'Card') -> None:
+        cards = [watcher.leader, *watcher.field_chars]
+        if watcher.field_stage:
+            cards.append(watcher.field_stage)
+        for source in list(cards):
+            entry = get_card_effects(source.code).get(trig_name)
+            if not entry:
+                continue
+            if entry.get('play_filter_no_base_effect') and get_card_effects(played_card.code):
+                continue
+            if entry.get('play_filter_has_trigger') and not played_card.has_trigger:
+                continue
+            cost_gte = entry.get('play_filter_cost_gte')
+            if cost_gte and played_card.cost < cost_gte:
+                continue
+            marker = (watcher.global_turn, trig_name)
+            if (entry.get('once_per_turn')
+                    and getattr(source, marker_attr, None) == marker):
+                continue
+            logs = EffectExecutor(watcher, other).execute(source, trig_name)
+            if logs and entry.get('once_per_turn'):
+                setattr(source, marker_attr, marker)
+
     # ── Execução de steps individuais ────────────────────────────────────────
 
     def _resolve_cost_lte(self, step: dict, default=99):
@@ -7224,6 +7274,7 @@ class EffectExecutor:
                     apply_conditional_keyword_passives(me, opp)
                     c.just_played = not (c.has_rush or c.rush_this_turn or c.is_rush_character())
                     c.rush_character_only_this_turn = c.is_rush_character() and not c.is_rush()
+                    self._dispatch_char_played(c)
                 elif c.card_type == 'STAGE':
                     if me.field_stage:
                         me.trash.append(me.field_stage)
@@ -12900,6 +12951,7 @@ class OPTCGMatch:
             apply_conditional_keyword_passives(p, opp)
             card.just_played = not (card.has_rush or card.rush_this_turn or card.is_rush_character())
             card.rush_character_only_this_turn = card.is_rush_character() and not card.is_rush()
+            ee._dispatch_char_played(card)
 
         elif card.card_type == 'EVENT':
             p.trash.append(card)

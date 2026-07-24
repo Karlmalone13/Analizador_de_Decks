@@ -8490,6 +8490,14 @@ def parse_card_effect(card_text, card_type):
         prefix_steps = parse_block(prefixo, 'passive')
         if not prefix_steps:
             return
+        # Achado real (Koala OP12-081): o prefixo tambem pode ja ter sido
+        # capturado por um trigger_pattern SEM tag formal propria (ex: a
+        # variante "when this leader attacks your opponent's leader..." de
+        # when_attacking, que casa em prosa) -- sem essa checagem, os
+        # MESMOS steps ficavam duplicados em 'passive' e no trigger real.
+        if any(entry_existente.get('steps') == prefix_steps
+              for entry_existente in result.values() if isinstance(entry_existente, dict)):
+            return
         entry = {'steps': prefix_steps}
         conds = parse_conditions(prefixo)
         if conds:
@@ -8563,6 +8571,106 @@ def parse_card_effect(card_text, card_type):
                         and result[generic].get('steps') == event_steps):
                     del result[generic]
             _recover_leading_prose_as_passive(own_event_m)
+
+    # Eventos parametrizados "quando um Character e jogado" (FASE 1.3 do
+    # mapeamento de combos, usuario 24/07). 4 cartas confirmadas (Sugar
+    # OP04-024 -- oponente; Sanji OP02-026, Bonney OP13-100, Boa Hancock
+    # OP14-041 -- proprio lado), mesmo padrao das fases 1.1/1.2: cartas
+    # caindo em opp_turn/your_turn/passive incondicional. Filtro opcional
+    # entre "Character" e a virgula/ponto ("with no base effect", "with a
+    # [Trigger]", "with a base cost of N or more") vira campo estruturado
+    # no entry (`play_filter_*`), checado pelo dispatcher contra a carta
+    # REAL que acabou de ser jogada -- sem isso a habilidade dispararia
+    # pra QUALQUER personagem, nao so os que batem o filtro do texto.
+    CHAR_PLAYED_FILTER = r'(?:\s+with\s+([^,.]+?))?'
+    # Igual LOOKAHEAD_DELIM_OU_ONCE, mas tambem para em "[DON!! xN]" --
+    # achado real (Boa Hancock OP14-041): "...draw 1 card. [DON!!x1]
+    # [Once Per Turn] When one of your..." tem uma 2a habilidade logo
+    # depois, sem espaco antes do "x" (formato que a extracao de
+    # don_requirement no INICIO do bloco ja tolera, mas o delimitador de
+    # PARADA generico nao tinha esse caso -- sem isso, a captura vazava
+    # pra dentro da 2a habilidade inteira.
+    CHAR_PLAYED_STOP = (
+        r'(?=(?:^|(?<=[.\n])|(?<=\])|(?<=\)))\s*'
+        r'\[(?:once per turn|don!!\s*x\s*\d+|' + TODAS_TAGS + r')\]|$)'
+    )
+
+    def _parse_char_played_filter(filter_text):
+        if not filter_text:
+            return {}
+        low = filter_text.strip()
+        if 'no base effect' in low:
+            return {'play_filter_no_base_effect': True}
+        if '[trigger]' in low or 'a trigger' in low:
+            return {'play_filter_has_trigger': True}
+        cost_m = re.search(r'a base cost of (\d+) or more', low)
+        if cost_m:
+            return {'play_filter_cost_gte': int(cost_m.group(1))}
+        return {}
+
+    opp_char_played_m = re.search(
+        r'(?:\[don!! x(\d+)\]\s*)?(?:\[opponent.{0,3}s? turn\]\s*)?(?:\[once per turn\]\s*)?'
+        r'(?:this effect can be activated )?'
+        r'when your opponent plays a character' + CHAR_PLAYED_FILTER + r'[,.]\s*(.+?)'
+        + CHAR_PLAYED_STOP,
+        t_low, re.DOTALL | re.IGNORECASE)
+    if opp_char_played_m:
+        event_body = opp_char_played_m.group(3).strip()
+        event_steps = parse_block(event_body, 'on_opp_char_played')
+        if event_steps:
+            event_entry = {'steps': event_steps}
+            if '[once per turn]' in opp_char_played_m.group(0):
+                event_entry['once_per_turn'] = True
+            if opp_char_played_m.group(1):
+                event_entry['don_requirement'] = int(opp_char_played_m.group(1))
+            event_entry.update(_parse_char_played_filter(opp_char_played_m.group(2)))
+            body_conds = parse_conditions(event_body)
+            if body_conds:
+                event_entry['conditions'] = body_conds
+            result['on_opp_char_played'] = event_entry
+            # Remove a copia REDUNDANTE do generico your_turn/opp_turn --
+            # compara so o 1o step (nao a lista inteira): achado real,
+            # Boa Hancock OP14-041, onde o regex generico do
+            # trigger_patterns (sem o novo delimitador CHAR_PLAYED_STOP)
+            # vaza pra dentro da 2a habilidade da carta, entao os steps
+            # NUNCA batem exatamente mesmo sendo o mesmo efeito -- exigir
+            # igualdade exata deixava a copia velha (com o vazamento) viva
+            # ao lado da nova (correta).
+            for generic in ('your_turn', 'opp_turn'):
+                if (generic in result and result[generic].get('steps')
+                        and event_steps
+                        and result[generic]['steps'][0] == event_steps[0]):
+                    del result[generic]
+            _recover_leading_prose_as_passive(opp_char_played_m)
+
+    own_char_played_m = re.search(
+        r'(?:\[don!! x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[opponent.{0,3}s? turn\]\s*)?'
+        r'(?:\[once per turn\]\s*)?'
+        r'(?:this effect can be activated )?'
+        r'when you play a character' + CHAR_PLAYED_FILTER + r'[,.]\s*(.+?)'
+        + CHAR_PLAYED_STOP,
+        t_low, re.DOTALL | re.IGNORECASE)
+    if own_char_played_m:
+        event_body = own_char_played_m.group(3).strip()
+        event_steps = parse_block(event_body, 'on_own_char_played')
+        if event_steps:
+            event_entry = {'steps': event_steps}
+            if '[once per turn]' in own_char_played_m.group(0):
+                event_entry['once_per_turn'] = True
+            if own_char_played_m.group(1):
+                event_entry['don_requirement'] = int(own_char_played_m.group(1))
+            event_entry.update(_parse_char_played_filter(own_char_played_m.group(2)))
+            body_conds = parse_conditions(event_body)
+            if body_conds:
+                event_entry['conditions'] = body_conds
+            result['on_own_char_played'] = event_entry
+            # Mesmo ajuste do bloco opp_char_played acima (Boa Hancock).
+            for generic in ('your_turn', 'opp_turn'):
+                if (generic in result and result[generic].get('steps')
+                        and event_steps
+                        and result[generic]['steps'][0] == event_steps[0]):
+                    del result[generic]
+            _recover_leading_prose_as_passive(own_char_played_m)
 
     # Tags ADJACENTES COLADAS sem barra, ex: "[Opponent's Turn] [On K.O.]
     # efeito" -- diferente do caso "[A]/[B]" (que SAO dois triggers

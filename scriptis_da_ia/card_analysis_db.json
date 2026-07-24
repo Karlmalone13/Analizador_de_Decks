@@ -17268,7 +17268,7 @@
   "effects": [
    {
     "action": "set_don_active",
-    "trigger": "passive"
+    "trigger": "on_own_char_played"
    }
   ],
   "synergy_states": {},
@@ -27778,7 +27778,7 @@
    },
    {
     "action": "rest_opp_character",
-    "trigger": "opp_turn"
+    "trigger": "on_opp_char_played"
    }
   ],
   "synergy_states": {
@@ -72428,7 +72428,7 @@
    },
    {
     "action": "opp_life_to_hand",
-    "trigger": "opp_turn"
+    "trigger": "on_opp_char_played"
    }
   ],
   "synergy_states": {},
@@ -78342,7 +78342,7 @@
   "effects": [
    {
     "action": "give_don",
-    "trigger": "your_turn"
+    "trigger": "on_own_char_played"
    }
   ],
   "synergy_states": {
@@ -81107,12 +81107,7 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "opp_turn"
-   },
-   {
-    "action": "deal_damage",
-    "trigger": "opp_turn",
-    "target": "opponent"
+    "trigger": "on_own_char_played"
    }
   ],
   "synergy_states": {},

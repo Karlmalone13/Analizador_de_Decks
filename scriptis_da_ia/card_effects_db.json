@@ -12008,7 +12008,7 @@
     "sub_types": "Straw Hat Crew",
     "attribute": "Strike",
     "effects": {
-      "passive": {
+      "on_own_char_played": {
         "steps": [
           {
             "action": "set_don_active",
@@ -12016,10 +12016,11 @@
             "up_to": true
           }
         ],
+        "once_per_turn": true,
+        "play_filter_no_base_effect": true,
         "conditions": {
           "chars_lte": 3
-        },
-        "once_per_turn": true
+        }
       }
     }
   },
@@ -18855,22 +18856,17 @@
           }
         ]
       },
-      "opp_turn": {
+      "on_opp_char_played": {
         "steps": [
           {
             "action": "rest_opp_character",
             "count": 1
           }
         ],
+        "once_per_turn": true,
         "conditions": {
           "leader_type": "donquixote pirates"
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ],
-        "once_per_turn": true
+        }
       }
     }
   },
@@ -49381,13 +49377,15 @@
           "chars_gte_cost_filter": 8
         }
       },
-      "opp_turn": {
+      "on_opp_char_played": {
         "steps": [
           {
             "action": "opp_life_to_hand",
             "count": 1
           }
-        ]
+        ],
+        "once_per_turn": true,
+        "play_filter_cost_gte": 8
       }
     }
   },
@@ -53456,7 +53454,7 @@
     "sub_types": "Bonney Pirates Egghead",
     "attribute": "Special",
     "effects": {
-      "your_turn": {
+      "on_own_char_played": {
         "steps": [
           {
             "action": "give_don",
@@ -53464,7 +53462,8 @@
             "rested": true
           }
         ],
-        "once_per_turn": true
+        "once_per_turn": true,
+        "play_filter_has_trigger": true
       }
     }
   },
@@ -55319,20 +55318,13 @@
     "sub_types": "Kuja Pirates The Seven Warlords of the Sea",
     "attribute": "Special",
     "effects": {
-      "opp_turn": {
+      "on_own_char_played": {
         "steps": [
           {
             "action": "draw",
             "count": 1
-          },
-          {
-            "action": "deal_damage",
-            "count": 1,
-            "up_to": true,
-            "target": "opponent"
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },

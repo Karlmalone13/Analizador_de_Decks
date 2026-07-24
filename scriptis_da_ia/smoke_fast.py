@@ -1342,6 +1342,43 @@ def test_on_event_activated_dispara_gatilho_generico() -> None:
           len(c.hand) == mao_antes)  # -1 (evento saiu da mao) +1 (comprou) = mesma contagem
 
 
+def test_on_char_played_dispara_gatilho_generico_com_filtro() -> None:
+    # FASE 1.3 do mapeamento de combos (usuario, 24/07): "quando um
+    # Character e jogado" (proprio ou do oponente) nao existia como
+    # gatilho -- 5 cartas confirmadas (Sugar OP04-024 -- oponente; Sanji
+    # OP02-026, Bonney OP13-100, Boa Hancock OP14-041, Koala OP12-081 --
+    # proprio lado ou filtro de custo). Diferente das fases 1.1/1.2, aqui
+    # varias cartas tem FILTRO sobre qual personagem conta (sem efeito
+    # base, com [Trigger], custo>=N) -- o dispatcher precisa checar isso
+    # contra a carta REAL jogada, senao dispararia pra qualquer uma.
+    # nota: _play_card paga o custo da carta jogada com DON ATIVO, que vira
+    # RESTADO (p.don_rested += play_cost) -- entao o don_rested inicial +
+    # o custo da carta jogada e o total ANTES da habilidade de Sanji
+    # rodar, nao o don_rested inicial sozinho.
+    sanji = real_card("OP02-026")  # so reage a personagem SEM efeito base
+    a = GameState(leader=real_card("OP11-062"), turn=3, don_rested=2)
+    a.field_chars = [sanji]  # 1 personagem em campo -- "3 ou menos" bate
+    vanilla = real_card("EB01-005")  # sem efeito nenhum -- bate o filtro; custo 1
+    a.hand = [vanilla]
+    match = OPTCGMatch((a.leader, []), (a.leader, []))
+    ee = EffectExecutor(a, a)
+    match._play_card(vanilla, a, a, ee, verbose=False)
+    check("Sanji ativa ate 2 DON restados quando joga personagem SEM efeito base",
+          a.don_rested == 1)  # (2 iniciais + 1 do custo da vanilla) - 2 ativados = 1
+
+    # controle: personagem COM efeito base nao deve contar pro filtro de Sanji.
+    sanji2 = real_card("OP02-026")
+    a2 = GameState(leader=real_card("OP11-062"), turn=3, don_rested=2)
+    a2.field_chars = [sanji2]
+    com_efeito = real_card("OP07-077")  # tem efeito (main/trigger) -- NAO bate o filtro; custo 1
+    a2.hand = [com_efeito]
+    match2 = OPTCGMatch((a2.leader, []), (a2.leader, []))
+    ee2 = EffectExecutor(a2, a2)
+    match2._play_card(com_efeito, a2, a2, ee2, verbose=False)
+    check("Sanji NAO dispara com personagem QUE TEM efeito base (filtro recusa)",
+          a2.don_rested == 3)  # so o custo da carta (2+1), nada ativado
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -3623,20 +3660,26 @@ def test_koala_leader_attack_leader_e_opp_plays_character() -> None:
     # normalmente, so faltava o parser aceitar a introducao em prosa) e
     # "[Once Per Turn] This effect can be activated when your opponent
     # plays a Character ..., Your opponent adds 1 card from the top of
-    # their Life cards to their hand." (aproximado pra opp_turn, MESMA
-    # convencao ja usada em OP04-024 pra "when your opponent plays a
-    # Character" -- o engine nao rastreia o evento exato "personagem
-    # jogado", só o turno do oponente. A condicao OR complexa -- custo
-    # base>=8 OU jogado via efeito -- NAO e modelada com precisao,
-    # mesma aproximacao documentada do precedente).
+    # their Life cards to their hand."
+    #
+    # ATUALIZADO 24/07 (FASE 1.3 do mapeamento de combos): a aproximacao
+    # antiga (opp_turn generico, "o engine nao rastreia o evento exato
+    # 'personagem jogado'") foi substituida pelo gatilho dedicado
+    # on_opp_char_played, que agora RASTREIA o evento de verdade (dispara
+    # so quando o oponente joga um Character, nao o turno inteiro) e
+    # aplica o filtro de custo>=8 (play_filter_cost_gte) contra a carta
+    # REAL jogada. A condicao OR complexa (custo base>=8 OU jogado via
+    # efeito) continua so parcialmente modelada -- so o lado "custo>=8" e
+    # coberto, "jogado via efeito de outra carta" fica pendente.
     when_att = get_card_effects("OP12-081").get("when_attacking", {})
     check("OP12-081 parseia when_attacking (sem tag) com chars_gte+cost_filter",
           when_att.get("conditions", {}) == {"chars_gte": 2, "chars_gte_cost_filter": 8}
           and any(s.get("action") == "draw" for s in when_att.get("steps", [])))
-    opp_turn = get_card_effects("OP12-081").get("opp_turn", {})
-    check("OP12-081 parseia a 2a clausula (sem tag) como opp_turn, opp_life_to_hand",
-          any(s.get("action") == "opp_life_to_hand" and s.get("count") == 1
-              for s in opp_turn.get("steps", [])))
+    opp_char_played = get_card_effects("OP12-081").get("on_opp_char_played", {})
+    check("OP12-081 parseia a 2a clausula como on_opp_char_played (evento real), com filtro de custo>=8",
+          opp_char_played.get("play_filter_cost_gte") == 8
+          and any(s.get("action") == "opp_life_to_hand" and s.get("count") == 1
+                  for s in opp_char_played.get("steps", [])))
 
     # Achado irmao (mesma rodada): OP13-108 tinha a mesma clausula de
     # opp_life_to_hand ausente, so que com "from the top of their Life
@@ -7945,6 +7988,7 @@ def main() -> int:
     test_don_reserve_for_defense_nao_guarda_mais_que_o_recurso_precisa()
     test_on_opp_char_ko_dispara_gatilho_generico()
     test_on_event_activated_dispara_gatilho_generico()
+    test_on_char_played_dispara_gatilho_generico_com_filtro()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
     test_search_contextual_evita_congestionar_mao_com_bombas()

@@ -1,5 +1,53 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (353) - Claude (sessao local) - fase 1.3: gatilho on_char_played novo (5 cartas) + 2 bugs pegos na propria validacao
+
+Continuacao do bloco 352 -- Fase 1.3 da ordem de correcao combinada
+(personagem jogado). 5 cartas: Sugar OP04-024 (observa o OPONENTE),
+Sanji OP02-026, Bonney OP13-100, Boa Hancock OP14-041 (observam o
+PROPRIO lado), Koala OP12-081 (filtro de custo>=8).
+
+**Diferenca desta fase**: varias cartas tem FILTRO sobre qual personagem
+conta pro gatilho (Sanji so reage a personagem SEM efeito base; Bonney
+so a personagem COM `[Trigger]`; Koala so a personagem de custo>=8) --
+`gerar_effects_db.py` traduz o filtro do texto pra campo estruturado
+(`play_filter_no_base_effect`/`play_filter_has_trigger`/
+`play_filter_cost_gte`), e `EffectExecutor._dispatch_char_played
+(played_card)` checa esses filtros contra a carta REAL jogada antes de
+disparar -- sem isso a habilidade dispararia pra QUALQUER personagem,
+nao so os que batem o filtro do texto oficial.
+
+**2 bugs reais pegos e corrigidos DURANTE a propria validacao** (rodando
+`diff_parser.py` antes de fechar, disciplina do workflow):
+1. Boa Hancock OP14-041: o delimitador de parada generico nao reconhecia
+   `[DON!!x1]` (sem espaco antes do "x", formato usado nesta carta
+   especificamente) como ponto de parada -- a captura vazava pra dentro
+   da 2a habilidade dela inteira (`deal_damage` indevido bleeding pra
+   dentro do efeito errado). Fix: `CHAR_PLAYED_STOP`, delimitador novo
+   que tambem reconhece `[don!! xN]` (com ou sem espaco) como parada.
+2. Koala OP12-081: depois do fix acima, o helper `_recover_leading_prose_
+   as_passive` (criado na fase 1.1) duplicava uma clausula que JA tinha
+   sido capturada por outro caminho (a variante em prosa de
+   `when_attacking`, sem tag formal) -- ficava tanto em `when_attacking`
+   quanto em `passive`, mesmos steps. Fix: a checagem de recuperacao
+   agora compara contra TODAS as entradas ja existentes em `result`, nao
+   so `your_turn`/`opp_turn`.
+
+Validado: `diff_parser.py` GANHOU=0 PERDEU=0 MUDOU=5 (exatamente as 5
+esperadas). `smoke_fast.py` atualizado (teste antigo de Koala, de 16/07,
+verificava o `opp_turn` aproximado antigo) + teste novo com filtro real
+(Sanji ativa DON com personagem sem efeito base; NAO dispara com
+personagem que TEM efeito). `smoke_test.py` = TODOS OS TESTES PASSARAM.
+Registro em `parser_audits/2026-07-24_on_char_played_gatilho_novo.json`.
+
+**Status das 4 etapas combinadas com o usuario**: ✅ 1.1, ✅ 1.2, ✅ 1.3.
+Falta 1.4 (removido/descartado por efeito, ~3 cartas: Crocodile
+EB02-023, Boa Hancock OP07-038, Kuroobi OP14-045) e a Fase 2 inteira
+(combos de pontuacao). Usuario pediu pra continuar todas sem parar pra
+perguntar, so avisar se surgir duvida real -- nenhuma duvida bloqueante
+apareceu nesta etapa (os 2 bugs acima foram achados E corrigidos dentro
+do proprio fluxo de validacao, sem precisar checar com o usuario).
+
 ## 2026-07-24 (352) - Claude (sessao local) - fase 1.1: gatilho on_event_activated novo (9 cartas) + regressao pega e corrigida na propria validacao
 
 Continuacao do bloco 351 -- Fase 1.1 da ordem de correcao combinada

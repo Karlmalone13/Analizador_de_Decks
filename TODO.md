@@ -2,6 +2,20 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 353): Fase 1.3 feita — gatilho
+> `on_own_char_played`/`on_opp_char_played` (5 cartas: Sugar, Sanji,
+> Bonney, Boa Hancock, Koala), com filtro estruturado sobre qual
+> personagem conta (sem efeito base / com Trigger / custo≥N) checado
+> contra a carta REAL jogada. **2 bugs pegos e corrigidos na própria
+> validação** (`diff_parser.py` antes de fechar): vazamento de captura
+> em Boa Hancock (delimitador não parava em `[DON!!x1]` sem espaço) e
+> duplicata em Koala (helper de recuperação de texto solto não
+> comparava contra todas as entradas já existentes). `smoke_test.py`
+> 100%. **Status das 4 etapas**: ✅ 1.1, ✅ 1.2, ✅ 1.3. Falta ⬜ 1.4
+> (removido/descartado por efeito, ~3 cartas) e ⬜ Fase 2 (combos de
+> pontuação). Usuário pediu pra seguir todas sem parar, só perguntar se
+> houver dúvida real — nenhuma apareceu até agora.
+
 > 24/07/2026 (bloco HANDOFF 352): Fase 1.1 feita — gatilho
 > `on_own_event_activated`/`on_opp_event_activated` (9 cartas: Usopp,
 > Gion, Franky, Camie, Luffy `OP15-119`, Crocodile `OP01-062`, Page One,

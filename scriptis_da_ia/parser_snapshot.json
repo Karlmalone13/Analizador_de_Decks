@@ -7634,11 +7634,12 @@
   }
  },
  "OP02-026": {
-  "passive": {
+  "on_own_char_played": {
    "conditions": {
     "chars_lte": 3
    },
    "once_per_turn": true,
+   "play_filter_no_base_effect": true,
    "steps": [
     {
      "action": "set_don_active",
@@ -11810,28 +11811,23 @@
  },
  "OP04-023": {},
  "OP04-024": {
+  "on_opp_char_played": {
+   "conditions": {
+    "leader_type": "donquixote pirates"
+   },
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "rest_opp_character",
+     "count": 1
+    }
+   ]
+  },
   "on_play": {
    "steps": [
     {
      "action": "rest_opp_character",
      "cost_lte": 4,
-     "count": 1
-    }
-   ]
-  },
-  "opp_turn": {
-   "conditions": {
-    "leader_type": "donquixote pirates"
-   },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
-   "once_per_turn": true,
-   "steps": [
-    {
-     "action": "rest_opp_character",
      "count": 1
     }
    ]
@@ -31297,7 +31293,9 @@
   }
  },
  "OP12-081": {
-  "opp_turn": {
+  "on_opp_char_played": {
+   "once_per_turn": true,
+   "play_filter_cost_gte": 8,
    "steps": [
     {
      "action": "opp_life_to_hand",
@@ -33866,8 +33864,9 @@
   }
  },
  "OP13-100": {
-  "your_turn": {
+  "on_own_char_played": {
    "once_per_turn": true,
+   "play_filter_has_trigger": true,
    "steps": [
     {
      "action": "give_don",
@@ -35058,18 +35057,11 @@
   }
  },
  "OP14-041": {
-  "opp_turn": {
-   "once_per_turn": true,
+  "on_own_char_played": {
    "steps": [
     {
      "action": "draw",
      "count": 1
-    },
-    {
-     "action": "deal_damage",
-     "count": 1,
-     "target": "opponent",
-     "up_to": true
     }
    ]
   }
