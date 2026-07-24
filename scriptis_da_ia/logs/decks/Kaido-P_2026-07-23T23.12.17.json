@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP07-066",
+      "name": "OP07-066",
+      "count": 2
+    },
+    {
+      "code": "ST04-005",
+      "name": "Queen",
+      "count": 2
+    },
+    {
+      "code": "OP08-074",
+      "name": "Black Maria",
+      "count": 2
+    },
+    {
+      "code": "ST04-014",
+      "name": "ST04-014",
+      "count": 1
+    },
+    {
+      "code": "ST04-003",
+      "name": "Kaido",
+      "count": 1
+    },
+    {
+      "code": "ST04-016",
+      "name": "ST04-016",
+      "count": 1
+    },
+    {
+      "code": "OP08-066",
+      "name": "OP08-066",
+      "count": 1
+    },
+    {
+      "code": "ST04-017",
+      "name": "Onigashima Island",
+      "count": 1
+    },
+    {
+      "code": "OP01-119",
+      "name": "OP01-119",
+      "count": 1
+    },
+    {
+      "code": "OP08-076",
+      "name": "OP08-076",
+      "count": 1
+    },
+    {
+      "code": "OP07-077",
+      "name": "OP07-077",
+      "count": 1
+    },
+    {
+      "code": "EB02-035",
+      "name": "EB02-035",
+      "count": 1
+    }
+  ],
+  "total_seen": 15,
+  "leader": "ST04-001"
+}
