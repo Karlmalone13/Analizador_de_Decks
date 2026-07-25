@@ -2,6 +2,37 @@
 
 **Última atualização:** 25 de julho de 2026
 
+## 🟢 REGRA "SEM FUNÇÃO DUPLICADA" registrada + 2 duplicatas reais corrigidas (25/07/2026, bloco 373)
+
+Usuário pediu para caçar OUTRAS "duas funções fazendo a mesma coisa" além
+da orquestração de turno (bloco 372), corrigir, e registrar como
+obrigatoriedade do projeto com leitura obrigatória antes de commit/push.
+
+Achadas e corrigidas 2 duplicatas reais (caminho ao vivo com heurística
+mais pobre que o motor interno já tinha):
+- `DecisionEngine.choose_to_trash` (só ao vivo) → agora delega pra
+  `EffectExecutor._choose_to_trash`/`_trash_value` (protege evento
+  `[Counter]`, carta cara/win-con, reanimável — antes não protegia nada
+  disso no bot ao vivo).
+- `sim_bridge._choose_opp_target_filtered` reimplementava o filtro que
+  `eligible_cards()` (rules_facade) já centraliza — agora delega. Mais
+  2 pontos de `min/max(..., key=board_value)` na mão trocados por
+  `choose_lowest_board_value`/`choose_highest_board_value`.
+
+- [x] Ambas corrigidas, 2 testes novos em `smoke_fast.py` provando
+  divergência real de comportamento (não só "roda sem erro").
+  `smoke_fast.py` + `smoke_test.py` 100%.
+- [x] Regra registrada em
+  [`scriptis_da_ia/REGRA_SEM_DUPLICACAO.md`](scriptis_da_ia/REGRA_SEM_DUPLICACAO.md)
+  — leitura obrigatória, impressa por inteiro pelo hook `pre-commit`
+  (mesmo tratamento do `MEMORY.md`) e referenciada em `CLAUDE.md`.
+- [ ] Não investigado a fundo (fora do escopo desta sessão, região
+  ainda maior do código): `bot_optcgsim.py` (plugin/loop de clique) e
+  `BOT/engine_server/server.py` — o gate mecânico do `pre-commit`
+  (`ENGINE_TOUCHPOINTS`) já cobre novidades futuras nesses arquivos,
+  mas uma varredura retroativa como a feita em `sim_bridge.py` não foi
+  feita neles ainda.
+
 ## 🟢 ReplayMatch.play_turn() DUPLICADO APAGADO — delega 100% pra OPTCGMatch.play_turn() (25/07/2026, bloco 372)
 
 Resolve o achado lateral do bloco 371 (linha abaixo). Usuário perguntou

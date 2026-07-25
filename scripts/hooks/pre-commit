@@ -11,6 +11,7 @@
 # proprio comando `git commit`.
 
 MEMORY_DIR="$HOME/.claude/projects/C--Projetos-TI-analidador-de-decks-optcg/memory"
+REPO_ROOT="$(git rev-parse --show-toplevel)"
 
 echo ""
 echo "=============================================================="
@@ -30,6 +31,21 @@ echo "   -> front-end. Nao otimizar o bot alem disso."
 echo "3. HANDOFF.md: escreva um bloco novo antes do push (hook pre-push)."
 echo "=============================================================="
 echo ""
+
+# Leitura obrigatoria (pedido do usuario, 25/07/2026, blocos 372-373):
+# nao ter 2 motores tambem significa nunca ter 2 funcoes diferentes
+# respondendo a MESMA decisao (achados reais: choose_to_trash duplicado,
+# _choose_opp_target_filtered reimplementando eligible_cards). Ver
+# scriptis_da_ia/REGRA_SEM_DUPLICACAO.md -- impresso por inteiro aqui,
+# mesmo tratamento que MEMORY.md ja recebe.
+if [ -f "$REPO_ROOT/scriptis_da_ia/REGRA_SEM_DUPLICACAO.md" ]; then
+    echo "=============================================================="
+    echo " OBRIGATORIO: scriptis_da_ia/REGRA_SEM_DUPLICACAO.md"
+    echo "=============================================================="
+    cat "$REPO_ROOT/scriptis_da_ia/REGRA_SEM_DUPLICACAO.md"
+    echo "=============================================================="
+    echo ""
+fi
 
 # ── Gate mecanico: "dois motores" ────────────────────────────────────────
 # Pontos de entrada conhecidos do engine unico (decision_engine.py). Se o
@@ -99,7 +115,6 @@ fi
 # evidencia staged de que a mesma gramatica foi buscada no banco inteiro.
 # Caso a busca encontre somente a carta inicial, o registro permite uma
 # correcao isolada, mas deixa explicito que ela veio DEPOIS do censo global.
-REPO_ROOT="$(git rev-parse --show-toplevel)"
 python "$REPO_ROOT/scripts/verify_parser_global_audit.py" || exit 1
 
 exit 0

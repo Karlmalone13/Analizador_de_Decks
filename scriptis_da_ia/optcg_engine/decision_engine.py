@@ -11075,10 +11075,23 @@ class DecisionEngine:
     # ── Helpers ───────────────────────────────────────────────────────────────
 
     def choose_to_trash(self, hand: list) -> 'Optional[Card]':
-        """Escolhe a carta de menor valor situacional para descartar."""
+        """
+        Escolhe a carta de menor valor situacional para descartar --
+        delega pra EffectExecutor._choose_to_trash (fonte unica), que usa
+        _trash_value (avaliar_carta + protecoes especificas: evento-counter
+        com desconto por redundancia, removal/bounce, carta cara/win-con do
+        game_plan, carta que enche o trash pro combo, jogavel neste turno,
+        reanimavel via play_from_trash). Antes desta correcao (25/07) esta
+        funcao reimplementava com so `min(hand, key=self.avaliar_carta)` --
+        divergencia real de "dois motores": o bot AO VIVO (unico chamador,
+        via sim_bridge.py.resolve_prompt_choice) descartava pior do que o
+        motor interno (EffectExecutor, usado por custo trash_from_hand em
+        qualquer efeito/self-play), mesma classe de bug do achado Katakuri
+        OP11-062 (comentario em _combat_buff_worth_paying).
+        """
         if not hand:
             return None
-        return min(hand, key=self.avaliar_carta)
+        return EffectExecutor(self.me, self.opp)._choose_to_trash(hand)
 
 
 

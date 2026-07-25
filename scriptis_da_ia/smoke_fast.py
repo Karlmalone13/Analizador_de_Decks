@@ -8575,6 +8575,7 @@ def main() -> int:
     test_in_any_order_custos_bottom_deck_escolhem_melhor_ordem()
     test_self_play_info_hidden_mascara_counter_e_deck_do_oponente()
     test_check_invariants_unifica_auditoria_no_decision_log()
+    test_sim_bridge_delega_escolha_de_alvo_pro_motor_unico()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -8678,6 +8679,63 @@ def test_check_invariants_unifica_auditoria_no_decision_log() -> None:
     check("decision_log aceita kind='invariant_violation' misturado as outras entradas",
           any(e.get("kind") == "invariant_violation" for e in m.decision_log)
           and len(m.decision_log) >= 2)
+
+
+def test_sim_bridge_delega_escolha_de_alvo_pro_motor_unico() -> None:
+    # Pedido do usuario (25/07): apos apagar a duplicacao de play_turn(),
+    # investigar se existem OUTRAS "duas funcoes tomando a mesma decisao"
+    # -- achadas 2: DecisionEngine.choose_to_trash (so ao vivo, via
+    # sim_bridge.resolve_prompt_choice) reimplementava com
+    # min(hand, key=avaliar_carta) puro, ignorando as protecoes de
+    # EffectExecutor._trash_value (evento [Counter], carta cara, win-con
+    # do game_plan, reanimavel etc.) que o motor JA usa internamente pra
+    # QUALQUER custo trash_from_hand em self-play. E
+    # sim_bridge._choose_opp_target_filtered reimplementava a mao o mesmo
+    # filtro (cost_lte/cost_gte/cost_eq/power_lte/power_gte/rested_only)
+    # que eligible_cards (rules_facade) ja centraliza pro resto do motor.
+    # Ambas corrigidas pra DELEGAR em vez de duplicar.
+    leader = Card(data=CardData(code="SPH-LX", name="Leader", card_type="LEADER",
+                                 color="Black", cost=0, power=5000))
+    me = GameState(leader=leader, don_deck=0)
+    opp_leader = Card(data=CardData(code="SPH-LY", name="LeaderB", card_type="LEADER",
+                                     color="Black", cost=0, power=5000))
+    opp = GameState(leader=opp_leader, don_deck=0)
+    me.don_available = 0
+
+    # Evento [Counter] real (EB01-019, "Off-White") vs personagem vanilla
+    # bem mais forte -- avaliar_carta() puro rankeia o EVENTO como PIOR
+    # (mais descartavel) que o vanilla; _trash_value() PROTEGE o evento
+    # [Counter] (+35, unico na mao) e inverte a escolha.
+    evt = real_card("EB01-019")
+    vanilla = Card(data=CardData(code="ZZZ-DIVERGE", name="Meio Termo",
+                                  card_type="CHARACTER", color="Black",
+                                  cost=6, power=20000))
+    me.hand = [evt, vanilla]
+    eng = DecisionEngine(me, opp)
+    naive_pick = min(me.hand, key=eng.avaliar_carta)
+    check("caso de teste tem divergencia real (naive trashava o evento protegido)",
+          naive_pick is evt)
+    rich_pick = EffectExecutor(me, opp)._choose_to_trash(me.hand)
+    check("_choose_to_trash (motor, rico) protege o evento [Counter]",
+          rich_pick is vanilla)
+    check("DecisionEngine.choose_to_trash (ao vivo) delega pro motor rico, nao repete o naive",
+          eng.choose_to_trash(me.hand) is vanilla)
+
+    # _choose_opp_target_filtered: filtro cost_lte via eligible_cards +
+    # selecao por choose_highest_board_value (rules_facade), nao mais mao.
+    fraco = Card(data=CardData(code="ZZZ-FRACO", name="Fraco", card_type="CHARACTER",
+                                color="Red", cost=2, power=2000))
+    medio = Card(data=CardData(code="ZZZ-MEDIO", name="Medio", card_type="CHARACTER",
+                                color="Red", cost=4, power=6000))
+    caro_fora_do_filtro = Card(data=CardData(code="ZZZ-CARO", name="Caro",
+                                              card_type="CHARACTER", color="Red",
+                                              cost=8, power=12000))
+    candidatos = [fraco, medio, caro_fora_do_filtro]
+    escolhido = sim_bridge._choose_opp_target_filtered(candidatos, {"cost_lte": 5, "action": "ko"})
+    check("_choose_opp_target_filtered exclui alvo fora do cost_lte (delegado a eligible_cards)",
+          escolhido is not caro_fora_do_filtro)
+    check("_choose_opp_target_filtered escolhe o de maior board_value entre os elegiveis",
+          escolhido is medio)
 
 
 if __name__ == "__main__":

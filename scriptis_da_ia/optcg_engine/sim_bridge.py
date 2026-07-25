@@ -32,7 +32,8 @@ from optcg_engine.decision_engine import (
     _load_analysis_db,
     SIMULATED_WIN_SCORE,
 )
-from optcg_engine.rules_facade import choose_highest_board_value
+from optcg_engine.rules_facade import (choose_highest_board_value,
+                                        choose_lowest_board_value, eligible_cards)
 from optcg_engine.opponent_model import OpponentModel
 
 DECKS_DIR = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks")
@@ -1986,33 +1987,28 @@ def _choose_opp_target_filtered(candidates: list, step: dict):
       - power_lte / power_gte
       - rested_only
 
-    Para ação 'ko': prefere alvo de maior board_value (mais ameaçador).
+    Filtragem delegada a eligible_cards (rules_facade, fonte unica -- ate
+    25/07 esta funcao reimplementava o mesmo filtro cost_lte/cost_gte/
+    cost_eq/power_lte/power_gte/rested_only na mao, uma segunda copia da
+    logica que decision_engine.py ja usa em toda parte via
+    eligible_cards() dentro de _execute_step).
+
+    Para ação 'ko': prefere alvo de maior board_value (mais ameaçador) --
+    mesma heuristica de choose_highest_board_value (rules_facade).
     Para ação 'bounce': prefere alvo de maior custo (mais valor devolvido).
     """
     if not candidates:
         return None
 
-    filtered = list(candidates)
-
-    cost_lte = step.get('cost_lte')
-    cost_gte = step.get('cost_gte')
-    cost_eq  = step.get('cost_eq')
-    pwr_lte  = step.get('power_lte')
-    pwr_gte  = step.get('power_gte')
-    rested   = step.get('rested_only', False)
-
-    if cost_lte is not None:
-        filtered = [c for c in filtered if getattr(c, 'cost', 0) <= cost_lte]
-    if cost_gte is not None:
-        filtered = [c for c in filtered if getattr(c, 'cost', 0) >= cost_gte]
-    if cost_eq is not None:
-        filtered = [c for c in filtered if getattr(c, 'cost', 0) == cost_eq]
-    if pwr_lte is not None:
-        filtered = [c for c in filtered if getattr(c, 'power', 0) <= pwr_lte]
-    if pwr_gte is not None:
-        filtered = [c for c in filtered if getattr(c, 'power', 0) >= pwr_gte]
-    if rested:
-        filtered = [c for c in filtered if getattr(c, 'rested', False)]
+    filtered = eligible_cards(
+        candidates,
+        cost_lte=step.get('cost_lte'),
+        cost_gte=step.get('cost_gte'),
+        cost_eq=step.get('cost_eq'),
+        power_lte=step.get('power_lte'),
+        power_gte=step.get('power_gte'),
+        rested_only=step.get('rested_only', False),
+    )
 
     if not filtered:
         return None  # nenhum alvo valido com os filtros → prompt vai ser cancelavel
@@ -2021,7 +2017,7 @@ def _choose_opp_target_filtered(candidates: list, step: dict):
     if action == 'bounce':
         return max(filtered, key=lambda c: getattr(c, 'cost', 0))
     # ko, rest_opp, debuff: prioriza maior ameaça
-    return max(filtered, key=lambda c: c.board_value() if hasattr(c, 'board_value') else 0)
+    return choose_highest_board_value(filtered)
 
 
 def _normalize_prompt(raw: str) -> str:
@@ -2126,8 +2122,7 @@ def resolve_prompt_choice(gs: GameState, opp_gs: GameState,
                         "reason": f"no valid opp target for {action}"}
             if zone == 'own_field':
                 if action in ('trash', 'ko'):
-                    chosen = (min(gs.field_chars, key=lambda c: c.board_value())
-                              if gs.field_chars else None)
+                    chosen = choose_lowest_board_value(gs.field_chars)
                 else:
                     chosen = choose_highest_board_value(gs.field_chars)
                 if chosen:
@@ -2159,7 +2154,7 @@ def resolve_prompt_choice(gs: GameState, opp_gs: GameState,
     if zone == "trash":
         if gs.trash:
             # Engine escolhe melhor carta do trash (maior board_value)
-            best = max(gs.trash, key=lambda c: c.board_value())
+            best = choose_highest_board_value(gs.trash)
             return _card_intent("trash", best, "choose from trash")
         return {"action": "click_button", "prefer": "main", "reason": "trash empty"}
 
@@ -2194,8 +2189,7 @@ def resolve_prompt_choice(gs: GameState, opp_gs: GameState,
     # --- Campo proprio --------------------------------------------------
     if zone == "own_field":
         if "trash" in text:
-            chosen = (min(gs.field_chars, key=lambda c: c.board_value())
-                      if gs.field_chars else None)
+            chosen = choose_lowest_board_value(gs.field_chars)
         else:
             chosen = choose_highest_board_value(gs.field_chars)
         if chosen:

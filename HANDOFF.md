@@ -1,5 +1,76 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-25 (373) - Claude (sessao remota web) - achadas e corrigidas 2 funcoes duplicadas (choose_to_trash, _choose_opp_target_filtered); registrada regra "sem duplicacao" como leitura obrigatoria
+
+Continuacao direta do bloco 372. Usuario pediu para investigar se, alem
+da orquestracao de turno ja corrigida, existiam OUTRAS "duas funcoes
+tomando a mesma decisao" no projeto -- e se sim, corrigir, e DEPOIS
+registrar como obrigatoriedade do projeto (nao ter 2 motores + evitar
+duplicar funcoes), com leitura obrigatoria antes de commit/push.
+
+**Achado 1 -- `DecisionEngine.choose_to_trash(hand)`** (so chamada por
+`sim_bridge.py.resolve_prompt_choice`, caminho AO VIVO): reimplementava
+`min(hand, key=self.avaliar_carta)` puro, enquanto
+`EffectExecutor._choose_to_trash(hand)` (usada internamente por
+QUALQUER custo `trash_from_hand` de efeito, self-play e
+`smoke_test.py`) usa `_trash_value` -- avaliar_carta + protecoes reais
+(evento `[Counter]` com desconto por redundancia, remocao/bounce, carta
+cara/win-con do game_plan, carta que enche o trash pro combo, jogavel
+neste turno, reanimavel via `play_from_trash`). O bot AO VIVO descartava
+PIOR do que o motor interno pra identica situacao -- mesma classe do
+achado Katakuri OP11-062 (comentario ja existente em
+`_combat_buff_worth_paying`), so que invertido (o pobre estava no
+caminho ao vivo, nao no interno). **Fix**: `choose_to_trash` agora
+delega pra `EffectExecutor(self.me, self.opp)._choose_to_trash(hand)`.
+
+**Achado 2 -- `sim_bridge._choose_opp_target_filtered(candidates, step)`**:
+reimplementava na mao o mesmo filtro (`cost_lte`/`cost_gte`/`cost_eq`/
+`power_lte`/`power_gte`/`rested_only`) que `eligible_cards()`
+(`rules_facade.py`) ja centraliza para TODO o resto do motor (usada
+dezenas de vezes dentro de `_execute_step`). **Fix**: delega pra
+`eligible_cards(...)` (filtro) + `choose_highest_board_value(...)`
+(selecao, ja existia, so nao era chamada aqui).
+
+**Achado 3 (menor, mesmo padrao) -- `resolve_prompt_choice`**: 2 pontos
+com `min(gs.field_chars, key=lambda c: c.board_value())` reimplementado
+a mao (zonas `own_field` trash/ko) em vez de `choose_lowest_board_value`
+(`rules_facade.py`, que ja existe EXATAMENTE pra isso, com o mesmo
+comentario de risco: "a execucao tem que escolher a MESMA carta que a
+decisao assumiu" -- achado historico Five Elders 12/07). E um
+`max(gs.trash, key=lambda c: c.board_value())` que devia ser
+`choose_highest_board_value`. Todos os 4 pontos corrigidos.
+
+**Nao mexido / investigado e descartado como falso positivo**: os pares
+`board_value()` (Card, heuristica crua) vs `char_value_score`
+(GameAnalyzer, heuristica rica) e `avaliar_carta` vs `_trash_value` em
+`order_target_candidates`/`sort_key` (sim_bridge.py) -- la o uso de
+heuristica mais simples por zona/contexto e DELIBERADO e documentado
+carta a carta (varios achados historicos ja resolvidos, ex: Empty
+Throne, Imu/Five Elders), nao uma duplicacao acidental. `select_counter_cards`
+(sim_bridge.py) tambem investigado: delega pra `pick_counters`/
+`should_use_counter` no caso do lider, e o eixo "defender personagem" e
+uma decisao genuinamente NOVA (nao duplicada) com raciocinio proprio
+documentado.
+
+**Validado**: 2 testes novos em `smoke_fast.py`
+(`test_sim_bridge_delega_escolha_de_alvo_pro_motor_unico`) provando a
+DIVERGENCIA real de comportamento antes/depois (caso construido com
+evento `[Counter]` real EB01-019 vs personagem vanilla forte -- naive
+trashava o evento protegido, motor rico protege, `choose_to_trash`
+delegado agora bate com o rico; e `_choose_opp_target_filtered`
+excluindo alvo fora do `cost_lte` e escolhendo o de maior
+`board_value`). `smoke_fast.py` + `smoke_test.py` 100% verdes.
+
+**Registro da regra (pedido explicito do usuario)**: criado
+[`scriptis_da_ia/REGRA_SEM_DUPLICACAO.md`](scriptis_da_ia/REGRA_SEM_DUPLICACAO.md)
+-- documenta a regra "1 motor so, zero funcao duplicada", os 3 achados
+acima como exemplos reais, e um checklist de como cacar duplicatas
+antes de aceitar uma funcao de decisao nova. Leitura tornada
+**obrigatoria mecanicamente**: `scripts/hooks/pre-commit` agora imprime
+esse arquivo por inteiro em TODO `git commit` (mesmo tratamento que
+`MEMORY.md` ja recebia). `CLAUDE.md` ganhou um bullet novo na secao de
+regras-chave apontando pra ele.
+
 ## 2026-07-25 (372) - Claude (sessao remota web) - apaga ReplayMatch.play_turn() duplicado, delega 100% pra OPTCGMatch.play_turn()
 
 Continuacao direta do bloco 371. Usuario perguntou por que `ReplayMatch`
