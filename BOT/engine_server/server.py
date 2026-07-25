@@ -670,6 +670,28 @@ def defense(req: DefenseRequest):
                 out["blockerId"] = getattr(blocker, '_deck_uid', 0)
             print(f"[DEF] blocker atk={req.attackerPower} -> "
                   f"{blocker.name if blocker else 'NAO bloqueia'}", flush=True)
+            # Telemetria 24/07 (usuario: "preparar o rastreamento pra
+            # medir tambem as coisas que fizemos hoje"). O caminho
+            # OFFLINE (decision_log de OPTCGMatch) nunca logou blocker/
+            # counter (achado na fase C desta sessao) -- este endpoint
+            # AO VIVO ja logava via _record_aux_decision, mas sem o
+            # detalhe de custo/on_ko que decide QUAL blocker sacrificar.
+            # Expoe char_value_score vs custo efetivo (com on_ko_value
+            # descontado, fase B 24/07) por candidato -- permite medir
+            # se/quando o credito do proprio [On K.O.] de fato mudou a
+            # escolha numa partida real. on_ko_value e a MESMA funcao
+            # reusada por should_use_blocker (decision_engine.py) --
+            # nunca duplicar a conta aqui.
+            from optcg_engine.decision_engine import on_ko_value
+            decision_trace["blocker_candidates"] = [
+                {
+                    "card_uid": getattr(c, '_deck_uid', 0),
+                    "card_code": c.code,
+                    "char_value_score": round(float(engine.analyzer.char_value_score(c)), 4),
+                    "on_ko_value": round(float(on_ko_value(c.code, opp_gs, owner=gs)), 4),
+                }
+                for c in gs.blockers_active()
+            ]
 
         elif req.phase == "counter":
             out["counterIds"] = bridge.select_counter_cards(
@@ -716,6 +738,7 @@ def defense(req: DefenseRequest):
             phase=req.phase, turn=req.state.turnNumber,
             attacker_power=req.attackerPower, defender_power=req.defenderPower,
             defender_id=req.defenderId, actor_code=req.triggerCode,
+            blocker_candidates=decision_trace.get("blocker_candidates", []),
             latency_ms=round((time.perf_counter() - started) * 1000, 3))
 
     except Exception as e:

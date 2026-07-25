@@ -2,6 +2,24 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 367): Telemetria preparada pra medir as
+> mudanças de hoje — `action_score_components` decompõe os novos
+> bônus da fase 2/B (`uncovered_action_value`, `char_played_react_bonus`,
+> `own_effect_removes_char_react_bonus`, `event_activated_react_bonus`,
+> `on_opp_char_ko_ready`); `line_search` ganha
+> `two_turn_lookahead_wins_found`; `/defense` fase "blocker" ganha
+> `blocker_candidates` (char_value_score vs on_ko_value por candidato).
+> **Achado e corrigido no processo**: `_on_ko_upside_value` (bloco 364)
+> era uma reimplementação parcial mais fraca de `on_ko_value` já
+> existente (usada por `select_counter_cards`) — removida a duplicata.
+> `_char_played_react_bonus` (bloco 360) estava na classe errada
+> (`OPTCGMatch` em vez de `DecisionEngine`) — só apareceu ao tentar
+> usar na telemetria (`action_score_components` só tem acesso a
+> `DecisionEngine`). `smoke_test.py` 100% após as correções. Nenhum
+> teste ao vivo ainda — campos novos só aparecem na próxima partida
+> real. **Próximo: Fase D (performance)**, conforme combinado com o
+> usuário.
+
 > 24/07/2026 (bloco HANDOFF 366): Fase C do Turn Planner investigada
 > com partidas reais (não pulada) — ~550 decisões auditadas em 13
 > partidas (Turn Planner geral via `decision_log` + `should_use_blocker`/

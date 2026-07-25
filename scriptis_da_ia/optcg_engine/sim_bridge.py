@@ -30,6 +30,7 @@ from optcg_engine.decision_engine import (
     get_card_effects,
     _load_effects_db,
     _load_analysis_db,
+    SIMULATED_WIN_SCORE,
 )
 from optcg_engine.rules_facade import choose_highest_board_value
 from optcg_engine.opponent_model import OpponentModel
@@ -443,12 +444,25 @@ def choose_action(gs: GameState, opp_gs: GameState,
                         trace_out["counterfactual_basis"] = (
                             "sampled_opponent_model" if model is not None
                             else "masked_public_state")
+                        # Telemetria 24/07 (usuario: medir o que fizemos
+                        # hoje): extra_own_turn_search=True (fase B,
+                        # lookahead de 2 turnos, SO caminho ao vivo) faz
+                        # uma linha valer SIMULATED_WIN_SCORE quando meu
+                        # proprio proximo turno fecha o jogo -- exposto
+                        # aqui pra medir com que frequencia isso acontece
+                        # numa partida real (antes deste bloco, esse sinal
+                        # so existia dentro de search_values, sem contagem
+                        # agregada facil de auditar).
+                        two_turn_wins = sum(
+                            1 for rec in search_records
+                            if rec.get("value", 0) >= SIMULATED_WIN_SCORE * 0.9)
                         trace_out["line_search"] = {
                             "depth": SEARCH_MAX_STEPS,
                             "don_budget_before": gs.don_available,
                             "candidate_count": len(candidatos),
                             "selected": action_to_trace(melhor),
                             "public_state_only": bool(hidden),
+                            "two_turn_lookahead_wins_found": two_turn_wins,
                         }
                     verbo = "refinou" if model is not None else "auditou"
                     print(f"[ENG] busca {verbo}: {melhor[1]} (score imediato {melhor[0]:.1f}, "
@@ -537,6 +551,22 @@ def action_score_components(action: tuple, engine, gs: GameState,
         components["intrinsic_card_value"] = round(float(engine.avaliar_carta(card)), 4)
         components["cheap_redundancy_penalty"] = round(
             float(engine.cheap_board_redundancy_penalty(card)), 4)
+        # Telemetria 24/07 (usuario: "preparar o rastreamento pra medir
+        # tambem as coisas que fizemos hoje"). Componentes ADITIVOS novos
+        # das fases 2 (~32 acoes antes invisiveis + 3a passada com sinal
+        # negativo) e B (combos mapeados influenciando a ordem de
+        # jogadas) que hoje ja somam em avaliar_carta, mas ficavam
+        # escondidos dentro de intrinsic_card_value sem forma de medir
+        # SE/QUANTO cada mecanismo novo contribuiu numa partida real.
+        # Zero mudanca de comportamento -- so decompoe o que ja e somado.
+        components["uncovered_action_value"] = round(
+            float(engine._uncovered_action_value(card)), 4)
+        components["char_played_react_bonus"] = round(
+            float(engine._char_played_react_bonus(card, gs, opp_gs)), 4)
+        components["own_effect_removes_char_react_bonus"] = round(
+            float(engine._own_effect_removes_char_react_bonus(card)), 4)
+        components["event_activated_react_bonus"] = round(
+            float(engine._event_activated_react_bonus(card)), 4)
     effects = get_card_effects(getattr(card, "code", "")) if card is not None else {}
     ramp = sum(int(step.get("count", 1) or 1)
                for block in effects.values() if isinstance(block, dict)
@@ -559,6 +589,22 @@ def action_score_components(action: tuple, engine, gs: GameState,
         components.update({"attack_power_planned": atk,
                            "target_power_before": target_power,
                            "raw_power_gap": atk - target_power})
+        # on_opp_char_ko (fase 1.2) pronto no meu board -- fase B
+        # (24/07) fez isso pesar na escolha de alvo em score_attack_target;
+        # exposto aqui pra medir se de fato influenciou uma partida real.
+        if action[3] == "character" and target is not None:
+            meus = [engine.me.leader, *engine.me.field_chars]
+            if engine.me.field_stage:
+                meus.append(engine.me.field_stage)
+
+            def _pronto(c):
+                entry = get_card_effects(c.code).get('on_opp_char_ko')
+                if not entry:
+                    return False
+                req = entry.get('don_requirement', 0)
+                return not req or c.don_attached >= req
+
+            components["on_opp_char_ko_ready"] = any(_pronto(c) for c in meus)
     return components
 
 

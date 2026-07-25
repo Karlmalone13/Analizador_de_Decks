@@ -9489,6 +9489,70 @@ class DecisionEngine:
                 bonus -= 15.0
         return bonus
 
+    def _char_played_filter_matches(self, entry, played_card) -> bool:
+        """
+        Mesma logica de filtro de `EffectExecutor._dispatch_char_played_side`
+        (fase 1.3 do mapeamento de combos), duplicada aqui de proposito: a
+        versao do dispatcher EXECUTA o gatilho de verdade durante a
+        partida; esta versao so PREVE se ele vai disparar, pra scoring
+        (decidir se vale jogar `played_card` ANTES de outra coisa). Manter
+        os dois pontos sincronizados se o formato do filtro mudar.
+        """
+        if entry.get('play_filter_no_base_effect') and get_card_effects(played_card.code):
+            return False
+        if entry.get('play_filter_has_trigger') and not played_card.has_trigger:
+            return False
+        cost_gte = entry.get('play_filter_cost_gte')
+        if cost_gte and played_card.cost < cost_gte:
+            return False
+        return True
+
+    def _char_played_react_bonus(self, card, p, opp) -> float:
+        """
+        FASE B do Turn Planner (usuario, 24/07): pontua jogar `card`
+        (CHARACTER) levando em conta quem JA esta em campo e observa
+        "quando um Character e jogado" (on_own_char_played no MEU board,
+        on_opp_char_played no board do OPONENTE -- fase 1.3, 24/07). Flat
+        e generico -- mesma ordem de grandeza dos outros bonus de combo ja
+        calibrados nesta sessao (fase 2, ~15-30), nao tenta calcular o
+        valor exato do efeito reativo (isso o proprio avaliar_carta do
+        source ja credita quando ELE for avaliado).
+
+        Movido de OPTCGMatch pra DecisionEngine (24/07, ao preparar
+        telemetria): achado que estava na classe errada -- os 2 metodos
+        irmaos (_own_effect_removes_char_react_bonus/
+        _event_activated_react_bonus) ja viviam aqui, e action_score_components
+        (sim_bridge.py) so tem acesso a um DecisionEngine, nao a um
+        OPTCGMatch inteiro -- quebrava com AttributeError ao tentar
+        expor este bonus na telemetria ao vivo.
+        """
+        if card.card_type != 'CHARACTER':
+            return 0.0
+        bonus = 0.0
+        ee = EffectExecutor(p, opp)
+        meus = [p.leader, *p.field_chars]
+        if p.field_stage:
+            meus.append(p.field_stage)
+        for source in meus:
+            entry = get_card_effects(source.code).get('on_own_char_played')
+            if not entry or not self._char_played_filter_matches(entry, card):
+                continue
+            conds = entry.get('conditions', {})
+            if not conds or ee._check_conditions(conds, source):
+                bonus += 25.0
+        ee_opp = EffectExecutor(opp, p)
+        opps = [opp.leader, *opp.field_chars]
+        if opp.field_stage:
+            opps.append(opp.field_stage)
+        for source in opps:
+            entry = get_card_effects(source.code).get('on_opp_char_played')
+            if not entry or not self._char_played_filter_matches(entry, card):
+                continue
+            conds = entry.get('conditions', {})
+            if not conds or ee_opp._check_conditions(conds, source):
+                bonus -= 20.0
+        return bonus
+
     def avaliar_carta(self, card: 'Card', stage_redundancy: bool = True) -> float:
         """
         Avalia o valor situacional de uma carta para jogar/guardar/descartar.
@@ -10676,38 +10740,6 @@ class DecisionEngine:
 
     # ── Decisões de defesa ────────────────────────────────────────────────────
 
-    def _on_ko_upside_value(self, card: 'Card') -> float:
-        """
-        Item pedido pelo usuario 24/07 ("on_ko do meu proprio personagem
-        como fonte de valor, nao so risco"). `char_value_score`
-        (GameAnalyzer) nunca credita o [On K.O.] da PROPRIA carta --
-        deixar um blocker morrer em combate era tratado como perda pura
-        mesmo quando o K.O. dele dispara um efeito valioso (draw, vida,
-        DON, etc). Usado pra REDUZIR o custo efetivo de SACRIFICAR um
-        personagem (should_use_blocker), nao pra aumentar
-        char_value_score em geral -- um K.O. valioso nao torna a carta
-        mais dificil de perder, torna mais FACIL abrir mao dela.
-        """
-        on_ko = get_card_effects(card.code).get('on_ko')
-        if not on_ko:
-            return 0.0
-        valor = 0.0
-        for step in on_ko.get('steps', []):
-            act = step.get('action')
-            if act == 'draw':
-                valor += 25.0
-            elif act in ('gain_life', 'heal'):
-                valor += 20.0
-            elif act in ('look_top_deck', 'add_to_hand', 'add_from_trash', 'play_from_trash'):
-                valor += 20.0
-            elif act in ('ko', 'bounce', 'debuff_power', 'rest_opp_character'):
-                valor += 20.0
-            else:
-                piso = self._UNCOVERED_ACTION_VALUE.get(act)
-                if piso is not None:
-                    valor += piso
-        return min(valor, 40.0)
-
     def should_use_blocker(self, attacker_power: int) -> 'Optional[Card]':
         """
         Decide se usa blocker e qual usar.
@@ -10740,9 +10772,15 @@ class DecisionEngine:
         # Custo EFETIVO de sacrificar `c` como blocker: char_value_score
         # (quanto vale o corpo) MENOS o proprio [On K.O.] dele (achado
         # 24/07 -- deixar ele morrer nao e perda pura quando o K.O. em si
-        # ja compensa parte do custo, ex: draw/vida/DON).
+        # ja compensa parte do custo, ex: draw/vida/DON). Reusa
+        # `on_ko_value` (modulo, ja usada por select_counter_cards/
+        # redirect_option_value pro MESMO tipo de decisao) em vez de uma
+        # tabela nova -- achado ao preparar telemetria (24/07): a 1a
+        # versao desta funcao reimplementava uma tabela mais fraca sem
+        # perceber que essa ja existia, cobrindo mais tipos de acao e
+        # checando alvos REAIS no campo do oponente pra ko/rest_opp.
         def custo_sacrificio(c):
-            return a.char_value_score(c) - self._on_ko_upside_value(c)
+            return a.char_value_score(c) - on_ko_value(c.code, self.opp, owner=self.me)
 
         # Com 1-2 vidas, sempre usa blocker se tiver
         if my_life <= 2:
@@ -11751,62 +11789,6 @@ class OPTCGMatch:
                 return False
         return True
 
-    def _char_played_filter_matches(self, entry, played_card) -> bool:
-        """
-        Mesma logica de filtro de `EffectExecutor._dispatch_char_played_side`
-        (fase 1.3 do mapeamento de combos), duplicada aqui de proposito: a
-        versao do dispatcher EXECUTA o gatilho de verdade durante a
-        partida; esta versao so PREVE se ele vai disparar, pra scoring
-        (decidir se vale jogar `played_card` ANTES de outra coisa). Manter
-        os dois pontos sincronizados se o formato do filtro mudar.
-        """
-        if entry.get('play_filter_no_base_effect') and get_card_effects(played_card.code):
-            return False
-        if entry.get('play_filter_has_trigger') and not played_card.has_trigger:
-            return False
-        cost_gte = entry.get('play_filter_cost_gte')
-        if cost_gte and played_card.cost < cost_gte:
-            return False
-        return True
-
-    def _char_played_react_bonus(self, card, p, opp) -> float:
-        """
-        FASE B do Turn Planner (usuario, 24/07): pontua jogar `card`
-        (CHARACTER) levando em conta quem JA esta em campo e observa
-        "quando um Character e jogado" (on_own_char_played no MEU board,
-        on_opp_char_played no board do OPONENTE -- fase 1.3, 24/07). Flat
-        e generico -- mesma ordem de grandeza dos outros bonus de combo ja
-        calibrados nesta sessao (fase 2, ~15-30), nao tenta calcular o
-        valor exato do efeito reativo (isso o proprio avaliar_carta do
-        source ja credita quando ELE for avaliado).
-        """
-        if card.card_type != 'CHARACTER':
-            return 0.0
-        bonus = 0.0
-        ee = EffectExecutor(p, opp)
-        meus = [p.leader, *p.field_chars]
-        if p.field_stage:
-            meus.append(p.field_stage)
-        for source in meus:
-            entry = get_card_effects(source.code).get('on_own_char_played')
-            if not entry or not self._char_played_filter_matches(entry, card):
-                continue
-            conds = entry.get('conditions', {})
-            if not conds or ee._check_conditions(conds, source):
-                bonus += 25.0
-        ee_opp = EffectExecutor(opp, p)
-        opps = [opp.leader, *opp.field_chars]
-        if opp.field_stage:
-            opps.append(opp.field_stage)
-        for source in opps:
-            entry = get_card_effects(source.code).get('on_opp_char_played')
-            if not entry or not self._char_played_filter_matches(entry, card):
-                continue
-            conds = entry.get('conditions', {})
-            if not conds or ee_opp._check_conditions(conds, source):
-                bonus -= 20.0
-        return bonus
-
     def _score_play_action(self, card, engine) -> float:
         """
         Pontua JOGAR uma carta. Cartas cujo efeito HABILITA o ataque
@@ -11898,7 +11880,7 @@ class OPTCGMatch:
         # de combos, 24/07). Sem isto, jogar Sanji OP02-026 ANTES de uma
         # vanilla nunca pontuava diferente de jogar depois -- a ordem
         # "ativa o watcher primeiro" nao aparecia em lugar nenhum do score.
-        base += self._char_played_react_bonus(card, engine.me, engine.opp)
+        base += engine._char_played_react_bonus(card, engine.me, engine.opp)
 
         # Carta que PRECISA entrar para ativar efeito que ajuda o ataque agora:
         # On Play de remoção/buff/rest/draw, ou rush. Bônus para sair antes do

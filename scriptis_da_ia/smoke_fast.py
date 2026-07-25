@@ -28,6 +28,7 @@ from optcg_engine.decision_engine import (  # noqa: E402
     is_attack_locked_self,
     is_immune,
     load_cards_db,
+    on_ko_value,
 )
 from optcg_engine import sim_bridge  # noqa: E402
 from optcg_engine.counter_estimation import max_plausible_defense  # noqa: E402
@@ -1611,13 +1612,13 @@ def test_turn_planner_fase_b_combos_na_ordem_de_jogadas_e_ataques() -> None:
     a = GameState(leader=real_card("OP11-062"), turn=3)
     a.field_chars = [sanji]
     opp = GameState(leader=real_card("OP11-062"), turn=3)
-    match = OPTCGMatch((a.leader, []), (opp.leader, []))
+    eng = DecisionEngine(a, opp)
     vanilla = real_card("EB01-005")
     com_efeito = real_card("OP07-077")
     check("_char_played_react_bonus premia jogar vanilla com Sanji (on_own_char_played) em campo",
-          match._char_played_react_bonus(vanilla, a, opp) > 0.0)
+          eng._char_played_react_bonus(vanilla, a, opp) > 0.0)
     check("_char_played_react_bonus NAO premia carta com efeito base (filtro de Sanji recusa)",
-          match._char_played_react_bonus(com_efeito, a, opp) == 0.0)
+          eng._char_played_react_bonus(com_efeito, a, opp) == 0.0)
 
     # 2) on_opp_char_played (Sugar OP04-024, condicao leader_type=
     #    donquixote pirates): penaliza jogar personagem com Sugar do lado
@@ -1628,17 +1629,17 @@ def test_turn_planner_fase_b_combos_na_ordem_de_jogadas_e_ataques() -> None:
     opp2 = GameState(leader=mk("OP10-099", "Kid", card_type="LEADER", color="Red",
                                sub_types="Donquixote Pirates"), turn=3)
     opp2.field_chars = [sugar]
-    match2 = OPTCGMatch((a2.leader, []), (opp2.leader, []))
+    eng2 = DecisionEngine(a2, opp2)
     check("_char_played_react_bonus penaliza quando Sugar do OPONENTE bate a condicao do lider dele",
-          match2._char_played_react_bonus(vanilla, a2, opp2) < 0.0)
+          eng2._char_played_react_bonus(vanilla, a2, opp2) < 0.0)
 
     opp3 = GameState(leader=real_card("OP11-062"), turn=3)  # lider SEM o tipo Donquixote Pirates
     sugar3 = real_card("OP04-024")
     opp3.field_chars = [sugar3]
     a3 = GameState(leader=real_card("OP11-062"), turn=3)
-    match3 = OPTCGMatch((a3.leader, []), (opp3.leader, []))
+    eng3 = DecisionEngine(a3, opp3)
     check("_char_played_react_bonus NAO penaliza quando a condicao do lider da Sugar nao bate",
-          match3._char_played_react_bonus(vanilla, a3, opp3) == 0.0)
+          eng3._char_played_react_bonus(vanilla, a3, opp3) == 0.0)
 
     # 3) on_opp_char_ko (Kaido OP01-061 como lider, don_requirement=1):
     #    atacar/matar um personagem do oponente com Kaido de DON!! x1
@@ -1994,10 +1995,10 @@ def test_on_ko_proprio_reduz_custo_de_sacrificio_no_bloqueio() -> None:
     check("should_use_blocker sacrifica o blocker com on_ko valioso (Marco) em vez do sem on_ko (Perona)",
           escolhido is marco)
 
-    check("_on_ko_upside_value credita o draw 2 do proprio K.O. de Marco",
-          eng._on_ko_upside_value(marco) > 0.0)
-    check("_on_ko_upside_value nao credita nada pra Perona (sem on_ko)",
-          eng._on_ko_upside_value(perona) == 0.0)
+    check("on_ko_value credita o draw 2 do proprio K.O. de Marco",
+          on_ko_value(marco.code, opp, owner=a) > 0.0)
+    check("on_ko_value nao credita nada pra Perona (sem on_ko)",
+          on_ko_value(perona.code, opp, owner=a) == 0.0)
 
 
 def test_uncovered_action_value_terceira_passada_sinal_negativo() -> None:

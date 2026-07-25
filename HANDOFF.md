@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (367) - Claude (sessao local) - telemetria preparada pra medir as mudancas de hoje + achado e corrigido bug de classe (metodo redundante)
+
+Usuário pediu: "mexa na telemetria para preparar o rastreamento dela
+para medir também as coisas que fizemos hj" antes de ir pra Fase D.
+3 mudanças, todas em cima da infraestrutura JÁ EXISTENTE (nenhum
+mecanismo novo de coleta — só expõe o que já é calculado):
+
+**1. `action_score_components` (`sim_bridge.py`)** — decompõe
+`intrinsic_card_value` nos componentes ADITIVOS novos de hoje, que
+ficavam escondidos dentro do total: `uncovered_action_value` (fase 2,
+1a-3a passadas), `char_played_react_bonus`,
+`own_effect_removes_char_react_bonus`, `event_activated_react_bonus`
+(fase B, combos mapeados influenciando a ordem). Pra `attack` contra
+Character, novo campo `on_opp_char_ko_ready` (bool) mostra se o board
+tinha o gatilho pronto quando a escolha de alvo aconteceu.
+
+**2. `line_search` (`sim_bridge.py`, `choose_action`)** — novo campo
+`two_turn_lookahead_wins_found`: conta quantas linhas simuladas
+bateram `SIMULATED_WIN_SCORE` via `extra_own_turn_search=True` (fase
+B, lookahead de 2 turnos só ao vivo) numa decisão real.
+
+**3. `/defense` fase "blocker" (`BOT/engine_server/server.py`)** —
+achado na Fase C (bloco 366): o `decision_log` OFFLINE nunca logava
+blocker/counter, mas o endpoint AO VIVO já logava via
+`_record_aux_decision` — só sem o detalhe de custo/on_ko que decide
+QUAL blocker sacrificar. Novo campo `blocker_candidates`: pra cada
+blocker elegível, `char_value_score` vs `on_ko_value` (o desconto que
+decide a escolha) — permite medir se/quando o crédito do próprio
+`[On K.O.]` mudou a escolha numa partida real.
+
+**Achado e corrigido durante o trabalho**: ao tentar expor o bônus de
+`should_use_blocker` na telemetria, descobri que `_on_ko_upside_value`
+(escrita no bloco 364, hoje) era um método na classe ERRADA
+(`OPTCGMatch`) e — pior — uma **reimplementação parcial e mais fraca**
+de uma função já existente, `on_ko_value(code, opp, owner)` (módulo,
+já usada por `select_counter_cards`/`redirect_option_value` pro MESMO
+tipo de decisão — cobre mais tipos de ação e checa alvos REAIS no
+campo do oponente pra `ko`/`rest_opp_character`, coisa que minha
+versão não fazia). Removida a duplicata, `should_use_blocker` agora
+reusa `on_ko_value` diretamente. Também achei e corrigi
+`_char_played_react_bonus`/`_char_played_filter_matches` (escritos no
+bloco 360) na classe errada (`OPTCGMatch` em vez de `DecisionEngine`,
+diferente dos 2 métodos irmãos) — só apareceu porque
+`action_score_components` só tem acesso a um `DecisionEngine`, não a
+um `OPTCGMatch` inteiro; movidos pra `DecisionEngine` por consistência.
+
+**Validação**: `smoke_fast.py` — 5 testes que exercitam o caminho
+`choose_action`/telemetria quebraram com o bug de classe (achado real,
+não hipotético) e voltaram a passar após a correção; 2 testes
+atualizados pra `on_ko_value` no lugar do método removido. `smoke_test.py`:
+TODOS OS TESTES PASSARAM. `py_compile` limpo em `server.py`.
+
+**Nenhum teste ao vivo ainda** — os campos novos só aparecem na
+próxima partida real rodada com o bot (`metrics/live_runs/live_*.json`
+via `bot_efficiency_report.py`, gitignored/local-only). Próximo passo
+do usuário: Fase D (performance).
+
 ## 2026-07-24 (366) - Claude (sessao local) - Turn Planner fase C: investigada com partidas reais, SEM achado concreto (documentado, nao pulado)
 
 Usuário pediu pra fazer a Fase C do plano do Turn Planner
