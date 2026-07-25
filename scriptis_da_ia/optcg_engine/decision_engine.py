@@ -8392,6 +8392,17 @@ class GameAnalyzer:
     def __init__(self, me: 'GameState', opp: 'GameState'):
         self.me  = me
         self.opp = opp
+        # Cache de _lethal_search por INSTANCIA (fase D, 24/07 -- achado por
+        # profiling real: can_lethal_this_turn chamado 2979x num unico
+        # main_phase, 5M+ chamadas recursivas de search_alloc, ~100s de 104s
+        # do turno inteiro). Seguro: dentro do tempo de vida de UMA instancia
+        # de GameAnalyzer, self.me/self.opp NUNCA sao mutados (e sempre
+        # passada como o MESMO `engine.analyzer` reusado por todos os
+        # candidatos de uma unica chamada de _generate_and_score_actions --
+        # ver score_attack_target/analysis_priority chamando
+        # can_lethal_this_turn() uma vez por candidato de ataque, sempre com
+        # o MESMO resultado dentro dessa janela). None = ainda nao calculado.
+        self._lethal_search_cache = None
 
     # ── Análise do deck (perfil early/mid/late) ──────────────────────────────
 
@@ -8553,6 +8564,11 @@ class GameAnalyzer:
         oponente (ele escolhe livremente blocker/counter por ataque, na ordem
         que mais o favorece)?
 
+        Cacheada por instancia (fase D, 24/07) -- ver comentario em
+        __init__. Chamadas repetidas na MESMA instancia (mesmo estado
+        me/opp, nunca mutado durante a vida da instancia) retornam o
+        resultado ja calculado em vez de refazer a busca recursiva inteira.
+
         Antes, esta funcao so contava NUMERO de ataques >= vida+1, ignorando
         poder/blocker/counter -- superestimava lethal contra qualquer
         oponente com blocker ou counter na mao. Agora simula o pior caso real:
@@ -8578,6 +8594,9 @@ class GameAnalyzer:
              dele chega a 0 E ainda resta pelo menos 1 hit que conecta
              (regra: receber dano com 0 vidas = derrota).
         """
+        if self._lethal_search_cache is not None:
+            return self._lethal_search_cache
+
         opp_life = self.opp.life_count()
         leader_power = self.opp.leader.effective_power(False)
 
@@ -8599,7 +8618,8 @@ class GameAnalyzer:
                 attacker_refs.append(c)
 
         if not ataques:
-            return False, None, None  # sem atacantes disponiveis, nunca fecha o jogo
+            self._lethal_search_cache = (False, None, None)  # sem atacantes disponiveis, nunca fecha o jogo
+            return self._lethal_search_cache
         counters_base = sorted(self.opp_counter_chunks_for_lethal())
         n_blockers = len(self.opp.blockers_active())
         don_total = max(0, self.me.don_available)
@@ -8658,7 +8678,8 @@ class GameAnalyzer:
             return False
 
         ok = search_alloc(0, don_total, [], [])
-        return ok, (list(dons_found) if ok else None), attacker_refs
+        self._lethal_search_cache = (ok, (list(dons_found) if ok else None), attacker_refs)
+        return self._lethal_search_cache
 
     # ── Análise de defesa ────────────────────────────────────────────────────
 
@@ -13046,7 +13067,20 @@ class OPTCGMatch:
         """
         Executa UMA ação no estado dado (real ou cópia). Retorna True se venceu.
         Reúso entre o jogo real e a simulação do planner.
+
+        Invalida o cache de _lethal_search (fase D, 24/07) ANTES de mutar
+        o estado: `engine` (e o GameAnalyzer que ele carrega) é
+        frequentemente reusado por VÁRIAS chamadas de
+        _generate_and_score_actions dentro do MESMO loop de simulação
+        (main_phase/_play_turn_greedy/_simulate_sequence_once), cada uma
+        separada por um _apply_action que muda o board de verdade -- sem
+        isto, a 2a+ chamada no mesmo loop leria um resultado de lethal
+        JÁ DESATUALIZADO (cacheado antes da mutação). `_apply_action` é o
+        ÚNICO ponto que executa ações de verdade (real e simulado), por
+        isso é o lugar certo pra invalidar.
         """
+        if engine is not None and getattr(engine, 'analyzer', None) is not None:
+            engine.analyzer._lethal_search_cache = None
         score, kind, obj, ttype, tgt = action
 
         if kind == 'play':

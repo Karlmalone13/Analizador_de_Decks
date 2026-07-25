@@ -1,5 +1,60 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-25 (368) - Claude (sessao local) - Turn Planner Fase D: cache de _lethal_search (~40x mais rapido no offline) + achado bug de DON pre-existente (nao relacionado)
+
+Fase D do plano (`podemos ir para a D`, apos telemetria do bloco 367).
+Profiling com `cProfile` num turno late-game real (Sanji vs Imu, board
+cheio) mostrou `main_phase()` levando **103.78s** num turno so. Causa:
+`can_lethal_this_turn()` (`GameAnalyzer`) chamado **2979x** dentro de UMA
+chamada de `main_phase`, cada uma disparando `_lethal_search()` →
+`search_alloc()` recursivo (busca bruta de alocacao de DON entre
+atacantes) — **5.060.786 chamadas recursivas**, ~100s dos 103.78s
+(96%). `search_alloc` e' PURO em relacao a `(self.me, self.opp)`
+nao-mutados — o mesmo `GameAnalyzer` (`engine.analyzer`) e' reusado por
+`analysis_priority`/`score_attack_target`/etc. dentro do MESMO batch de
+`_generate_and_score_actions`, sempre com o MESMO resultado, mas sem
+cache nenhum.
+
+**Fix**: cache por INSTANCIA de `GameAnalyzer`
+(`self._lethal_search_cache`, `None` = nao calculado), lido/escrito em
+`_lethal_search()`. Invalidado em `_apply_action` — o UNICO
+choke-point que executa qualquer acao real ou simulada — pra evitar
+que a MESMA instancia de analyzer, reusada entre VARIAS chamadas de
+`_generate_and_score_actions` dentro do mesmo loop
+(`main_phase`/`_play_turn_greedy`/`_simulate_sequence_once`), leia um
+resultado de lethal desatualizado apos uma mutacao real de estado
+(mesma classe de risco do bug de DON-leak do Fase B desta sessao —
+por isso a invalidacao foi feita ANTES de qualquer outra logica, no
+topo de `_apply_action`).
+
+**Numeros**: mesmo turno pesado, antes/depois: **103.78s → 2.583s
+(~40x)**. `smoke_fast.py` e `smoke_test.py` limpos (sem regressao).
+
+**Validacao extra e achado importante**: rodei `audit_replay.py --n 8
+--seed 7` (mesma ferramenta que pegou o DON-leak do Fase B) por
+disciplina — deu **8 anomalias de DON** (sempre no deck Red/Blue
+Aceby, leader Portgas.D.Ace, offset consistente de +1 no somatorio
+disponivel+rested+campo a partir de um certo turno). Pareceu
+suspeito (mesmo padrao do bug anterior), entao ANTES de commitar
+isolei a causa: rodei o MESMO seed com o fix do Fase D em `git
+stash` (ou seja, SEM a mudanca de cache) — **ainda deu 7 anomalias**,
+sempre no MESMO deck (Ace), mesmo padrao de offset. RNG diverge
+levemente com/sem a mudanca (partidas tomam caminhos um pouco
+diferentes), entao o numero exato/turno exato mudam, mas o padrao
+(sempre Ace, sempre pequeno offset positivo persistente) e' o MESMO
+com e sem o cache. **Confirmado: bug de DON pre-existente,
+NAO relacionado ao Fase D** — nao foi investigado a fundo (fora do
+escopo desta fase), registrado como pendencia nova no TODO.md
+("bug de conservacao de DON no deck Ace/Portgas.D.Ace").
+
+**Arquivo tocado**: `scriptis_da_ia/optcg_engine/decision_engine.py`
+(`GameAnalyzer.__init__`, `_lethal_search`, `_apply_action`).
+
+**Status**: Fase D commitada. Sem push (padrao da sessao). Pendente:
+investigar o bug de DON do deck Ace (novo, nao relacionado ao Fase D)
+e calibrar os pesos do Fase B (ja adiado pelo usuario: "os pesos
+iremos calibrar depois").
+
 ## 2026-07-24 (367) - Claude (sessao local) - telemetria preparada pra medir as mudancas de hoje + achado e corrigido bug de classe (metodo redundante)
 
 Usuário pediu: "mexa na telemetria para preparar o rastreamento dela

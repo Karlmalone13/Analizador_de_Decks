@@ -1,6 +1,24 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 24 de julho de 2026
+**Última atualização:** 25 de julho de 2026
+
+> 25/07/2026 (bloco HANDOFF 368): **Turn Planner Fase D fechada** —
+> cache por instância de `GameAnalyzer._lethal_search` (invalidado em
+> `_apply_action`), turno late-game real caiu de 103.78s pra 2.583s
+> (~40x). `smoke_fast`/`smoke_test` 100%. **Achado novo, NÃO
+> relacionado ao Fase D**: `audit_replay.py` mostra um bug de
+> conservação de DON pré-existente, isolado ao deck Red/Blue Aceby
+> (leader Portgas.D.Ace) — offset consistente de +1 no somatório
+> disponível+rested+campo a partir de certo turno em partidas longas
+> (confirmado presente COM e SEM o fix do Fase D via `git stash`,
+> mesmo padrão nos dois casos, então não é a causa). **Pendente
+> investigar**: rodar `audit_replay.py --n 8 --seed 7`, dump completo
+> em `%TEMP%/don_dump_match_N.txt`, focar em qual efeito do
+> Ace/Marco/Newgate/Izo dá DON sem descontar de algum lugar. **Status
+> do plano do Turn Planner: A ✅ B ✅ C ✅ D ✅ — plano completo.**
+> Pendências que sobram: calibrar pesos do Fase B (adiado pelo
+> usuário), bug de DON do deck Ace (novo, acima), nenhum teste ao vivo
+> nem push desde o commit `7b61a26`.
 
 > 24/07/2026 (bloco HANDOFF 367): Telemetria preparada pra medir as
 > mudanças de hoje — `action_score_components` decompõe os novos
