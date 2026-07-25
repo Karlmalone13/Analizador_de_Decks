@@ -1,5 +1,54 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (363) - Claude (sessao local) - lookahead de 2 turnos, SO caminho ao vivo (profiling real primeiro)
+
+Usuário pediu 4 itens: (1) valor de `on_ko` próprio, (2) profiling real
+de ponta a ponta, (3) lookahead multi-turno, (4) fase 2 segunda passada
+dos ~77 tipos de ação de baixo volume. Comecei pelo profiling (2) pra
+informar a decisão do (3) — feito nesta ordem por causa do risco de
+performance.
+
+**Profiling real** (script ad-hoc em scratchpad, não commitado):
+reconstruí uma partida real (`decklists_raw.csv`) e medi os dois
+caminhos num board late-game:
+- **Offline** (`main_phase`, self-play/replay/calibração): até **13.8s
+  por turno** com 5 personagens meus vs 2 do oponente. Confirmado via
+  teste isolado (com a fase B de ontem desligada) que essa explosão
+  O(board²) é **PRÉ-EXISTENTE** — ainda bateu 10.4s sem nenhuma
+  mudança de hoje. Não é regressão, é dívida técnica antiga nunca
+  medida de ponta a ponta.
+- **Ao vivo** (`sim_bridge.choose_action`): **0.11-0.24s** no mesmo
+  tipo de board, contra um timeout real de 4s — folga de ~20-36x.
+
+**Decisão do usuário** (`AskUserQuestion`): lookahead de 2 turnos SÓ no
+caminho ao vivo, que tem a folga; não mexer no offline agora (evita
+piorar a lentidão de self-play que já existe).
+
+**Implementação**: `_simulate_sequence_once`/`_simulate_sequence_values`
+ganham um parâmetro opcional `extra_own_turn_search` (default `False` —
+`main_phase`/offline continuam exatamente como estavam). Quando `True`,
+depois de simular a resposta do oponente (`USE_OPPONENT_RESPONSE_SEARCH`,
+já existia), simula meu PRÓPRIO próximo turno inteiro também, guloso
+(mesmo `_play_turn_greedy` já usado pra resposta — sem Monte Carlo, sem
+aninhar `main_phase`). Se essa linha me leva a vencer dentro do meu
+próprio próximo turno, retorna `SIMULATED_WIN_SCORE` — prova mais forte
+que os termos estáticos (`_next_turn_readiness_bonus`, que só projeta
+DON/melhor ação, nunca joga o turno de verdade). `sim_bridge.choose_action`
+(único chamador ao vivo) passa `extra_own_turn_search=True`.
+
+**Validação de custo**: no board real de fim de jogo usado no
+profiling, com a busca de fato forçada a rodar (`hidden_information_masked=True`),
+`choose_action` levou **0.2s** com o lookahead novo ligado — ainda
+dentro da folga medida antes. `smoke_fast.py` — 2 checks novos (meu
+próprio turno guloso fecha letal via `_play_turn_greedy`; guarda de
+regressão textual confirmando que `choose_action` passa
+`extra_own_turn_search=True`). `smoke_test.py`: TODOS OS TESTES
+PASSARAM.
+
+**Status**: item 2 (profiling) e item 3 (lookahead) feitos. Faltam
+itens 1 (`on_ko` próprio) e 4 (fase 2 segunda passada) — próximos
+blocos.
+
 ## 2026-07-24 (362) - Claude (sessao local) - audit_replay.py consertado + REGRESSAO REAL achada e corrigida na fase B (vazamento de DON)
 
 Usuario pediu pra consertar `audit_replay.py` (achado quebrado na fase

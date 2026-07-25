@@ -13071,22 +13071,36 @@ class OPTCGMatch:
         valores = self._simulate_sequence_values(p, opp, first_action, max_steps, amostras)
         return sum(valores) / len(valores) if valores else -1e9
 
-    def _simulate_sequence_values(self, p, opp, first_action, max_steps=8, amostras=None):
-        """Retorna os valores por amostra Monte Carlo para auditoria do planner."""
+    def _simulate_sequence_values(self, p, opp, first_action, max_steps=8, amostras=None,
+                                   extra_own_turn_search=False):
+        """Retorna os valores por amostra Monte Carlo para auditoria do planner.
+
+        `extra_own_turn_search`: lookahead de 2 turnos meus (ver
+        _simulate_sequence_once) -- SO deve ser True no caminho AO VIVO
+        (sim_bridge.choose_action), que tem folga real de orcamento (medido
+        24/07: 0.11s de 4s num board 5v5). O caminho OFFLINE (main_phase,
+        usado em self-play/replay/calibracao) ja tem explosao O(board²)
+        PRE-EXISTENTE (medido: ate 13.8s por turno late-game) -- adicionar
+        mais um turno de busca ali pioraria isso sem necessidade, decisao
+        do usuario 24/07.
+        """
         old_suppress = self._suppress_replay_log
         self._suppress_replay_log = True
         try:
             if not amostras:
-                return [self._simulate_sequence_once(p, opp, first_action, max_steps, amostra=None)]
+                return [self._simulate_sequence_once(p, opp, first_action, max_steps, amostra=None,
+                                                      extra_own_turn_search=extra_own_turn_search)]
 
             return [
-                self._simulate_sequence_once(p, opp, first_action, max_steps, amostra=amostra)
+                self._simulate_sequence_once(p, opp, first_action, max_steps, amostra=amostra,
+                                             extra_own_turn_search=extra_own_turn_search)
                 for amostra in amostras
             ]
         finally:
             self._suppress_replay_log = old_suppress
 
-    def _simulate_sequence_once(self, p, opp, first_action, max_steps=8, amostra=None):
+    def _simulate_sequence_once(self, p, opp, first_action, max_steps=8, amostra=None,
+                                 extra_own_turn_search=False):
         """
         Uma única rodada de simulação (ver _simulate_sequence para a versão
         agregada com Monte Carlo). `amostra` é uma tupla (hand_sample,
@@ -13165,6 +13179,19 @@ class OPTCGMatch:
         if USE_OPPONENT_RESPONSE_SEARCH:
             if self._play_turn_greedy(opp2, p2):
                 return -SIMULATED_WIN_SCORE   # a resposta dele me mata -> linha ruim
+
+        # LOOKAHEAD de 2 turnos meus, SO caminho ao vivo (usuario 24/07,
+        # decisao apos profiling: offline ja tem explosao O(board²)
+        # pre-existente, ao vivo tem folga real). Depois da resposta do
+        # oponente, simula meu PROPRIO proximo turno inteiro, guloso (mesmo
+        # _play_turn_greedy ja usado pra resposta -- sem Monte Carlo, sem
+        # aninhar main_phase). Se essa linha me leva a vencer dentro do
+        # meu proximo turno, essa e uma prova mais forte que os termos
+        # estaticos de avaliacao (_next_turn_readiness_bonus so projeta
+        # DON/melhor acao, nunca joga o turno de verdade).
+        if extra_own_turn_search:
+            if self._play_turn_greedy(p2, opp2):
+                return SIMULATED_WIN_SCORE   # meu proprio proximo turno fecha o jogo -> linha otima
 
         # config de avaliação POR JOGADOR (p é quem age): permite Imu usar v2 e
         # o oponente v1 na mesma partida — como o sistema per-deck vai operar

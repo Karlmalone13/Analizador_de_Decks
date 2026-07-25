@@ -1943,6 +1943,36 @@ def test_play_turn_greedy_detecta_letal_do_oponente() -> None:
           letal or me.life_count() == 0)
 
 
+def test_lookahead_2_turnos_meu_proprio_turno_greedy_fecha_letal() -> None:
+    # FASE B, ultimo item pedido pelo usuario 24/07 ("lookahead ainda e so
+    # 1 turno... seria o proximo candidato natural"): apos profiling real
+    # (offline ja tem O(board^2) pre-existente, ao vivo tem folga --
+    # 0.2s de 4s num board late-game), usuario decidiu ligar o lookahead
+    # de 2 turnos SO no caminho ao vivo. Mesmo mecanismo ja usado pra
+    # resposta do oponente (_play_turn_greedy), so que agora aplicado ao
+    # MEU proprio lado dentro de _simulate_sequence_once quando
+    # extra_own_turn_search=True.
+    me = GameState(leader=mk("OP10-099", "Kid", power=5000, card_type="LEADER", color="Red"),
+                    don_available=0, don_deck=8, turn=2)
+    ameaca = mk("OP10-111", "Ameaca", power=9000)
+    me.field_chars = [ameaca]
+    opp = GameState(leader=real_card("OP13-079"))
+    opp.life = [real_card("OP13-080")]  # 1 vida so, sem counter na mao
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    letal = match._play_turn_greedy(me, opp)
+    check("meu proprio turno greedy (mesmo mecanismo do lookahead de 2 turnos) fecha LETAL",
+          letal or opp.life_count() == 0)
+
+    # sim_bridge.choose_action deve chamar _simulate_sequence_values com
+    # extra_own_turn_search=True (so caminho ao vivo) -- guarda de
+    # regressao textual simples contra alguem remover o parametro do call
+    # site sem querer.
+    import inspect
+    src = inspect.getsource(sim_bridge.choose_action)
+    check("sim_bridge.choose_action passa extra_own_turn_search=True pro motor",
+          'extra_own_turn_search=True' in src)
+
+
 def test_imu_waits_for_active_elder_attack() -> None:
     me = GameState(leader=real_card("OP13-079"), don_available=8)
     opp = GameState(leader=mk("OP11-021", "Jinbe", card_type="LEADER", color="Green"))
@@ -8358,6 +8388,7 @@ def main() -> int:
     test_ataque_respeita_orcamento_da_jogada_principal_e_don_anexado()
     test_play_turn_greedy_opponent_response()
     test_play_turn_greedy_detecta_letal_do_oponente()
+    test_lookahead_2_turnos_meu_proprio_turno_greedy_fecha_letal()
     test_imu_waits_for_active_elder_attack()
     test_nusjuro_rush_at_trash_7()
     test_nusjuro_rush_known_in_hand_for_planner()

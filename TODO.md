@@ -2,6 +2,21 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 363): Profiling real feito — offline
+> (`main_phase`) tem explosão O(board²) PRÉ-EXISTENTE (até 13.8s/turno
+> late-game, confirmado sem nenhuma mudança de hoje); ao vivo
+> (`choose_action`) tem folga enorme (0.1-0.24s de 4s). Usuário decidiu:
+> lookahead de 2 turnos SÓ no caminho ao vivo
+> (`extra_own_turn_search=True`, default `False` mantém offline
+> intocado) — simula meu próprio próximo turno inteiro via
+> `_play_turn_greedy` (mesmo mecanismo já usado pra resposta do
+> oponente) depois da resposta dele. Validado a 0.2s no board real de
+> profiling. `smoke_test.py` 100%. **Pendente do pedido do usuário
+> (4 itens)**: falta 1) valor de `on_ko` próprio na decisão de
+> bloquear/trocar, e 4) fase 2 segunda passada (~77 ações de baixo
+> volume/ambíguas). Explosão O(board²) offline continua sem tratar —
+> registrada, não é bloqueio pro que foi pedido hoje.
+
 > 24/07/2026 (bloco HANDOFF 362): `audit_replay.py` consertado
 > (`replay_optcg.py._get_engine_match()` faltava 2 atributos numa
 > lista manual de inicializacao). Ao rodar de verdade contra 8

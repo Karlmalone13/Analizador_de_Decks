@@ -415,8 +415,13 @@ def choose_action(gs: GameState, opp_gs: GameState,
                     melhor, melhor_valor = candidatos[0], None
                     search_records = []
                     for cand in candidatos:
+                        # extra_own_turn_search=True: lookahead de 2 turnos
+                        # meus (usuario 24/07, decisao apos profiling --
+                        # so o caminho AO VIVO tem folga de orcamento pra
+                        # isso, ver decision_engine.py/_simulate_sequence_once).
                         valores = match._simulate_sequence_values(
-                            gs, opp_gs, cand, max_steps=SEARCH_MAX_STEPS, amostras=amostras)
+                            gs, opp_gs, cand, max_steps=SEARCH_MAX_STEPS, amostras=amostras,
+                            extra_own_turn_search=True)
                         valor = sum(valores) / len(valores) if valores else -1e9
                         search_records.append({"action": action_to_trace(cand),
                                                "value": round(valor, 4)})
