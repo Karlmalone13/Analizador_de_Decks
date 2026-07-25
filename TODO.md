@@ -1011,6 +1011,23 @@ descrição já registrada em HANDOFF 99/100.
   Ainda assim, o gargalo estrutural continua sendo clonar estados demais dentro
   do planner. Próxima melhoria real deve atacar clone incremental ou cache
   seguro de avaliações por estado, medindo impacto em qualidade de decisão.
+- [x] **Cache de `_lethal_search`** — **implementado (25/07/2026, Fase D,
+  bloco HANDOFF 368).** Turno late-game real: 103.78s → 2.583s (~40x).
+- [ ] **`compute_game_plan_from_cards` sem cache** — re-profiling pós-fix
+  do Fase D (25/07/2026) mostrou essa função como o próximo maior
+  `tottime` isolado depois de `hits_after_best_defense`: 2803 chamadas,
+  0.411s cumtime / 0.229s tottime num turno de 2.316s (~18% do turno).
+  Mesmo padrão do fix de `_lethal_search`: função pura sobre estado
+  não-mutado, chamada repetidamente dentro do mesmo batch de scoring
+  (`_generate_and_score_actions`) sem cache. `_lethal_search` também
+  continua custando ~40% do turno MESMO com cache (0.926s de 2.316s),
+  porque cada branch simulado (`_simulate_sequence_once`) muta o
+  estado de verdade — o cache só evita recomputar dentro do MESMO
+  estado, não entre branches. Baixa prioridade: o essencial já foi
+  resolvido (offline caiu de >100s pra poucos segundos por turno,
+  ao vivo já tinha folga generosa no timeout de 4s antes até do fix).
+  Só atacar se um profiling futuro mostrar isso virando gargalo real de
+  novo (ex: partidas muito mais longas/pesadas que as testadas aqui).
 
 ---
 

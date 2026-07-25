@@ -1,5 +1,42 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-25 (369) - Claude (sessao local) - re-profiling pos-fix do Fase D: proximo gargalo identificado e registrado como divida tecnica (nao implementado)
+
+Usuario pediu "como melhorar a fase D?" apos o bloco 368. Re-rodei o
+mesmo tipo de profiling (`cProfile` num turno pesado real, Sanji vs
+Imu, turno 9) AGORA com o cache de `_lethal_search` ja aplicado, pra
+achar o proximo gargalo real em vez de adivinhar.
+
+**Numeros**: turno mais pesado caiu pra 2.316s (medido dentro do
+profiler). `avaliar_carta` ainda domina (1.615s cumtime, funcao
+central de scoring, dificil de cachear sem risco). `_lethal_search`
+continua custando ~40% do turno (0.926s) MESMO com cache — esperado,
+porque cada branch simulado muta o estado de verdade, entao o cache so
+evita recomputo DENTRO do mesmo estado, nao entre branches
+(`search_alloc` caiu de 5M pra 108.765 chamadas, ganho real mas nao
+zero). Achado novo: `compute_game_plan_from_cards` (2803 chamadas,
+0.411s cumtime, 0.229s tottime — 2o maior tottime da lista) nao tem
+cache nenhum hoje e segue o MESMO padrao seguro que o
+`_lethal_search` (pura sobre estado nao-mutado, chamada repetida no
+mesmo batch de `_generate_and_score_actions`).
+
+**Decisao**: registrar como divida tecnica (TODO.md, secao "Divida
+tecnica ativa — Turn Planner") em vez de implementar agora — usuario
+concordou que o essencial ja foi resolvido (offline caiu de >100s pra
+poucos segundos por turno; caminho ao vivo ja tinha folga generosa no
+timeout de 4s mesmo antes do fix). So atacar se profiling futuro
+mostrar isso virando gargalo real de novo.
+
+Scripts de profiling (`profile_turn_planner.py`,
+`profile_turn_planner_v2.py`) ficaram so no scratchpad, nao commitados
+(descartaveis, mesmo padrao de scripts de auditoria ad-hoc usados a
+sessao inteira).
+
+**Status**: nenhuma mudanca de codigo neste bloco, so documentacao.
+Usuario autorizou push explicitamente ("dê o push para eu poder
+continuar pelo remoto") — primeiro push desde o commit `7b61a26`
+(inicio da sessao).
+
 ## 2026-07-25 (368) - Claude (sessao local) - Turn Planner Fase D: cache de _lethal_search (~40x mais rapido no offline) + achado bug de DON pre-existente (nao relacionado)
 
 Fase D do plano (`podemos ir para a D`, apos telemetria do bloco 367).
