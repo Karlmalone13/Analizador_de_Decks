@@ -9317,6 +9317,12 @@ class DecisionEngine:
         'gain_banish': 15.0,
         'gain_unblockable': 20.0,
         'grant_ko_immunity_type': 15.0,     # protege personagem(ns) proprio(s)
+        # peek_life: informacao pura (olha 1 carta da propria vida), sem
+        # mudanca de estado -- valor baixo, mesma familia do desconto
+        # "info tem retorno decrescente" ja usado em _score_activate_main.
+        # Conferido contra cartas reais (Myskina Olga, Shirley, Aisa): 3
+        # delas tem SO esse step no on_play, hoje pontuam 0.
+        'peek_life': 5.0,
         'negate_effect': 15.0,              # disrupcao/counter-play
         'lock_opp_blocker_turn': 15.0,      # nega blocker do oponente por 1 turno -- tempo forte
         'lock_opp_cannot_be_rested': 10.0,
@@ -9347,6 +9353,20 @@ class DecisionEngine:
         # opp_don_minus: reduz recurso de DON do oponente -- disrupcao de
         # ramp, mesma familia de rest_opp_don/transfer_don.
         'opp_don_minus': 15.0,
+        # ── Terceira passada (24/07): sinal NEGATIVO, primeira vez que
+        # este dicionario carrega valores negativos. Todos os 6 abaixo
+        # foram conferidos contra cartas REAIS do banco antes de decidir
+        # a direcao (nao supostos) -- cada um aparece SEMPRE como custo
+        # tacado depois de um efeito real ja pontuado em outro lugar
+        # (has_search/has_ko/buff_power/etc), nunca como o efeito
+        # principal sozinho. `bonus += valor` ja soma negativo
+        # corretamente (mesmo mecanismo, sem branch novo).
+        'give_don_opp': -20.0,          # da DON pro OPONENTE -- sempre custo
+        'trash_own_life': -15.0,        # trasha a PROPRIA vida -- fica mais perto de perder
+        'self_cant_play': -20.0,        # trava jogar outras cartas este turno
+        'self_cant_take_life': -15.0,   # trava pegar da propria vida este turno
+        'lock_self_character_refresh': -15.0,  # personagem proprio nao desresta no proximo turno
+        'trash_from_hand': -12.0,       # descarta da propria mao (STEP de efeito, nao custo)
     }
 
     def _uncovered_action_value(self, card: 'Card') -> float:

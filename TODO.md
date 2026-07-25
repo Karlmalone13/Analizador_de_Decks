@@ -2,6 +2,20 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 365): Fase 2 terceira passada — primeira
+> vez com valores NEGATIVOS em `_UNCOVERED_ACTION_VALUE`
+> (`give_don_opp`, `trash_own_life`, `self_cant_play`,
+> `self_cant_take_life`, `lock_self_character_refresh`,
+> `trash_from_hand`-como-step), todos conferidos contra cartas reais
+> antes de decidir a direção. `peek_life` ganhou +5 (info pura, antes
+> pontuava 0). `hand_to_deck`/`shuffle_hand_into_deck` continuam fora
+> — pareciam drawback mas cartas reais mostram que são filtro de mão,
+> não custo puro. `smoke_test.py` 100%. **OS 4 ITENS PEDIDOS PELO
+> USUÁRIO 24/07 ESTÃO COMPLETOS** (on_ko próprio, profiling,
+> lookahead multi-turno ao vivo, fase 2 terceira passada). Restam
+> ~65 ações de baixo volume/ambíguas sem direção clara (não
+> revisitadas, baixa prioridade). Nenhum teste ao vivo nem push ainda.
+
 > 24/07/2026 (bloco HANDOFF 364): `on_ko` do PRÓPRIO personagem agora
 > conta como valor (não só risco) na decisão de bloquear. Novo
 > `_on_ko_upside_value` reduz o custo efetivo de sacrificar um blocker

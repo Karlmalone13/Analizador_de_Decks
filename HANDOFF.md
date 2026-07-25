@@ -1,5 +1,54 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (365) - Claude (sessao local) - fase 2 terceira passada: primeiro sinal NEGATIVO em _UNCOVERED_ACTION_VALUE
+
+Último dos 4 itens pedidos pelo usuário 24/07. Revisitei os ~77 tipos
+de ação de baixo volume/ambíguas deixados de fora nas duas passadas
+anteriores (ver bloco 356) — conferindo cada categoria contra CARTAS
+REAIS do banco antes de decidir a direção (nada por suposição).
+
+**Confirmado como companion/cleanup, continua fora** (correto manter
+de fora): `trash_from_deck_top` (26 cartas checadas — sempre
+acompanha um efeito principal já pontuado, ex: `debuff_cost`/`bounce`/`ko`,
+nunca sozinho) e os já conhecidos `deck_bottom_rest`/`trash_rest`/
+`deck_reorder_rest`.
+
+**Corrigido — direção que eu tinha suposto errado numa leitura
+inicial**: `hand_to_deck` e `shuffle_hand_into_deck` pareciam drawback
+à primeira vista, mas cartas reais (Portgas.D.Ace, Nami) mostram
+`draw N` seguido de `hand_to_deck N` — é um filtro de mão (compra
+extra, devolve as piores), não um custo puro. Fiquei de fora por
+ambiguidade real, não erro de leitura. `self_cant_take_life` quase
+virou positivo por associação com Whitebeard (que não perde vida em
+batalha) — conferi o handler real em `decision_engine.py` (linha 7227)
+e é de fato uma restrição self-imposta (`cant_take_life_this_turn`,
+ST15-001 Atmos), não proteção de combate. Direção negativa confirmada.
+
+**Adicionado (primeira vez com valores NEGATIVOS na tabela)**:
+`give_don_opp` (-20, sempre custo pra ativar outro efeito real),
+`trash_own_life` (-15), `self_cant_play` (-20), `self_cant_take_life`
+(-15), `lock_self_character_refresh` (-15), `trash_from_hand` como
+STEP de efeito — não custo, já tratado à parte (-12). Também
+`peek_life` (+5, info pura, 3 cartas reais têm SÓ esse step no
+`on_play` e pontuavam 0 antes). O mecanismo (`bonus +=
+self._UNCOVERED_ACTION_VALUE[action]`) já soma negativo corretamente
+— nenhum branch novo precisou ser escrito. Confirmado que os dois
+outros reusos da tabela (`_trigger_don_value`, `_score_activate_main`,
+ambos usam `max(valor, piso)`) ignoram os negativos com segurança (nunca
+pioram um score por engano).
+
+**Validação**: `smoke_fast.py` — 3 checks novos com cartas reais (Kuro
+OP15-025 `give_don_opp` → -20; Myskina Olga EB02-053 só `peek_life` →
++5; vanilla continua 0.0). `smoke_test.py`: TODOS OS TESTES PASSARAM.
+
+**Status: os 4 itens pedidos pelo usuário 24/07 estão completos.**
+1) `on_ko` próprio (bloco 364). 2) profiling real (bloco 363). 3)
+lookahead multi-turno, só ao vivo (bloco 363). 4) fase 2 terceira
+passada (este bloco). Ainda restam ~65 ações de count baixo/ambíguo
+genuinamente sem direção clara (buff_cost self-target, e a cauda de
+count=1) — não revisitadas, ficam como pendência de baixa prioridade
+igual antes. Nenhum teste ao vivo nem push ainda.
+
 ## 2026-07-24 (364) - Claude (sessao local) - on_ko do PROPRIO personagem vira valor na decisao de bloquear/sacrificar
 
 Continuação do bloco 363 — item 1 dos 4 pedidos pelo usuário 24/07:

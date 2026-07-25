@@ -2000,6 +2000,32 @@ def test_on_ko_proprio_reduz_custo_de_sacrificio_no_bloqueio() -> None:
           eng._on_ko_upside_value(perona) == 0.0)
 
 
+def test_uncovered_action_value_terceira_passada_sinal_negativo() -> None:
+    # FASE 2, TERCEIRA PASSADA (usuario, 24/07: "fase 2 segunda passada
+    # ficou deliberadamente incompleta... so valeria uma 2a passada se
+    # algum combo real aparecer ignorado" -- revisitado a pedido do
+    # usuario). Primeira vez que _UNCOVERED_ACTION_VALUE carrega valores
+    # NEGATIVOS -- 6 acoes conferidas contra cartas REAIS do banco antes
+    # de decidir a direcao: sempre aparecem como custo tacado depois de
+    # um efeito ja pontuado em outro lugar (nunca sozinhas). Tambem
+    # peek_life (positivo, baixo -- info pura).
+    a = GameState(leader=real_card("OP11-062"), turn=3)
+    opp = GameState(leader=real_card("OP11-062"), turn=3)
+    eng = DecisionEngine(a, opp)
+
+    kuro = real_card("OP15-025")  # on_play: give_don_opp + lock_opp_character_refresh
+    check("Kuro (give_don_opp) recebe penalidade -20 pelo custo de dar DON ao oponente",
+          eng._uncovered_action_value(kuro) == -20.0)
+
+    olga = real_card("EB02-053")  # on_play: SO peek_life
+    check("Myskina Olga (so peek_life) recebe bonus baixo +5 (info pura, antes pontuava 0)",
+          eng._uncovered_action_value(olga) == 5.0)
+
+    vanilla = real_card("EB01-005")
+    check("Vanilla sem efeito nenhum continua em 0.0 (sem falso positivo)",
+          eng._uncovered_action_value(vanilla) == 0.0)
+
+
 def test_imu_waits_for_active_elder_attack() -> None:
     me = GameState(leader=real_card("OP13-079"), don_available=8)
     opp = GameState(leader=mk("OP11-021", "Jinbe", card_type="LEADER", color="Green"))
@@ -8417,6 +8443,7 @@ def main() -> int:
     test_play_turn_greedy_detecta_letal_do_oponente()
     test_lookahead_2_turnos_meu_proprio_turno_greedy_fecha_letal()
     test_on_ko_proprio_reduz_custo_de_sacrificio_no_bloqueio()
+    test_uncovered_action_value_terceira_passada_sinal_negativo()
     test_imu_waits_for_active_elder_attack()
     test_nusjuro_rush_at_trash_7()
     test_nusjuro_rush_known_in_hand_for_planner()
