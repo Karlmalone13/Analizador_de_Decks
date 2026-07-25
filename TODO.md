@@ -2,6 +2,44 @@
 
 **Última atualização:** 25 de julho de 2026
 
+## 🔴 BUG DE CONSERVAÇÃO DE DON — investigado a fundo, NÃO resolvido (25/07/2026, bloco 374)
+
+Renomeado de "bug de DON do deck Ace" — reproduzido também numa partida
+SEM Ace (Sanji vs Imu), sempre do lado do Imu. Rastreado até a janela
+"Empty Throne (OP13-099) joga Five-Elders-type de graça" + "Five Elders
+(OP13-082) reanima em massa" — o excesso vira `don_attached` FANTASMA
+num personagem (não sobra solto no banco), valor visto batendo com o
+custo da própria carta numa das reproduções.
+
+**Descartado como causa** (~15 pontos lidos/auditados, matematicamente
+corretos): custo de jogar carta, `rest_don` (2 pontos), `trash_character`/
+`ko`, `play_from_trash`, `_attach_don_for_attack`/`don_needed_for_attack`,
+3 geradores de candidato `attach_don`, `Card`/`GameState.__deepcopy__`,
+`_project_next_turn_best_action` (já deepcopy desde bloco 362).
+
+- [ ] Raiz exata NÃO encontrada. Próximo passo: instrumentar direto no
+  código (prints temporários em `_execute_attack`/`_attach_don_for_attack`/
+  `_execute_step`), não por monkeypatch externo.
+- [ ] **Pré-requisito antes de tentar de novo**: resolver o achado lateral
+  abaixo (não-determinismo) — sem isso, reproduções não são comparáveis.
+
+## 🟡 NÃO-DETERMINISMO NO MOTOR — sobrevive a random.seed() + PYTHONHASHSEED=0 (25/07/2026, bloco 374)
+
+Achado lateral durante a investigação do bug de DON acima: o mesmo
+script, com `random.seed()` fixo E `PYTHONHASHSEED=0`, produziu partidas
+DIFERENTES em duas execuções (call counts diferentes, Empty Throne
+jogando cartas diferentes). Fonte exata não identificada — candidatos:
+desempate por `id()` de objeto em algum sort/set, ou uma instância de
+`random.Random()` não seedada em algum ponto do Turn Planner/Monte Carlo
+(distinta da já conhecida em `sim_bridge.choose_action`).
+
+- [ ] Reduz a confiança de que `audit_replay.py --n N --seed S` reproduz
+  a MESMA partida entre execuções — relevante para qualquer investigação
+  futura baseada em reprodução determinística, e para `tune_weights.py`.
+- [ ] Não investigado ainda: grep por `random.Random(` / `set()` de
+  objetos `Card`/candidatos iterados para desempate dentro de
+  `optcg_engine/`.
+
 ## 🟢 REGRA "SEM FUNÇÃO DUPLICADA" registrada + 2 duplicatas reais corrigidas (25/07/2026, bloco 373)
 
 Usuário pediu para caçar OUTRAS "duas funções fazendo a mesma coisa" além

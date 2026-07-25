@@ -1,5 +1,67 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-25 (374) - Claude (sessao remota web) - bug de conservacao de DON: investigacao aprofundada, NAO resolvido, achado lateral de nao-determinismo
+
+Usuario pediu pra atacar o bug de conservacao de DON registrado nos
+blocos 368/372/373 ("bug do Ace" -- nome impreciso, ver abaixo). Passei
+varias horas de investigacao dirigida por instrumentacao (monkeypatch
+de `EffectExecutor.execute`/`_pay_costs`/`_execute_step` e de ~10
+metodos de `OPTCGMatch` ligados ao Turn Planner) comparando o total
+`don_available + don_rested + field_don` contra `10 - don_deck` apos
+CADA chamada, num script descartavel (nao commitado, ja apagado).
+
+**Reproduzido e confirmado**: o leak NAO e exclusivo do deck Ace --
+reapareceu tambem numa partida Blue/Purple Sanji vs Black Imu (sem Ace
+em nenhum dos dois lados), sempre no lado do Imu. Rastreado ate a
+janela "Empty Throne (Stage, OP13-099) joga um personagem tipo Five
+Elders de graca" + "Five Elders (OP13-082) reanima em massa do trash" --
+o excesso de DON aparece ANEXADO a um personagem (`don_attached`), nao
+sobrando solto no banco; num dos traces o valor batia EXATAMENTE com o
+custo da propria carta (6, igual ao custo de St. Ethanbaron V.
+Nusjuro).
+
+**Descartado como causa** (lido/auditado, matematicamente correto):
+custo de jogar carta (`_play_card`, `p.don_rested += play_cost`),
+`rest_don` (2 pontos, Activate:Main e substituicao), `trash_character`/
+`ko` (usa `remove_character_from_field`, devolve DON corretamente),
+`play_from_trash` (nao mexe em DON), `_attach_don_for_attack`/
+`don_needed_for_attack` (limite `min(p.don_available, ...)` presente),
+geracao de candidatos `attach_don` (3 pontos em
+`_generate_and_score_actions`, todos checam `falta <= p.don_available`
+antes de propor), `Card.__deepcopy__`/`GameState.__deepcopy__` (listas
+manuais conferidas campo a campo, `don_attached` presente na lista),
+`_project_next_turn_best_action` (ja usa deepcopy dedicado desde o
+bloco 362, nao mexe no estado real). `give_don`/`give_don_opp`/
+`add_don`/`set_don_active` tambem conferidos -- nenhuma dessas cartas
+esta neste deck.
+
+**Achado lateral, registrado como pendencia PROPRIA** (nao e o bug de
+DON, mas atrapalhou a caca): o motor tem uma fonte de nao-determinismo
+que sobrevive a `random.seed()` fixo E `PYTHONHASHSEED=0` -- rodei o
+MESMO script duas vezes com os dois fixados e a partida simulada jogou
+diferente nas duas vezes (call counts diferentes, Empty Throne jogando
+cartas diferentes). Fonte exata nao identificada (candidatos: `id()`
+de objeto usado como desempate em algum sort/set, ou uma instancia de
+`random.Random()` nao seedada em algum ponto do Turn Planner/Monte
+Carlo alem do ja conhecido `sim_bridge.choose_action`). Isso reduz a
+confianca de que rodar `audit_replay.py --n N --seed S` duas vezes reproduz
+a MESMA partida exata -- relevante pra qualquer investigacao futura
+baseada em reproducao determinsitica (esta, e tambem calibracao de
+pesos via `tune_weights.py`).
+
+**Nao resolvido**: raiz exata do leak de DON nao encontrada. Proximo
+passo recomendado (nao feito, ficou pra depois): instrumentar
+DIRETAMENTE no codigo (prints temporarios dentro de `_execute_attack`/
+`_attach_don_for_attack`/`_execute_step`, nao por monkeypatch externo)
+bracketing dentro do PROPRIO turno em que a Empty Throne + Five Elders
+roda, junto com fixar a fonte de nao-determinismo PRIMEIRO (senao cada
+tentativa de reproduzir varia).
+
+**Nenhuma mudanca de codigo neste bloco** -- so investigacao/achados,
+sem commit de fix (nao encontrado). Script de trace descartavel,
+apagado ao final (nao commitado, seguindo convencao de scripts de
+auditoria ad-hoc).
+
 ## 2026-07-25 (373) - Claude (sessao remota web) - achadas e corrigidas 2 funcoes duplicadas (choose_to_trash, _choose_opp_target_filtered); registrada regra "sem duplicacao" como leitura obrigatoria
 
 Continuacao direta do bloco 372. Usuario pediu para investigar se, alem
