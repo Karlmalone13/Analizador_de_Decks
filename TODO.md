@@ -2,6 +2,21 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 366): Fase C do Turn Planner investigada
+> com partidas reais (não pulada) — ~550 decisões auditadas em 13
+> partidas (Turn Planner geral via `decision_log` + `should_use_blocker`/
+> `should_use_counter` via monkeypatch temporário, que o log padrão
+> não cobre). **0 achados concretos de bug.** Um "suspeito" inicial de
+> 18 casos era falso-positivo do próprio script de análise (esqueceu
+> de checar `atk_power < def_power`, defesa já suficiente). Fecha como
+> "investigada, sem achado" — scripts de auditoria não commitados
+> (descartáveis, ficaram só em scratchpad), metodologia documentada no
+> HANDOFF 366 pra repetir/estender depois. **Status do plano do Turn
+> Planner**: A ✅, B ✅ (bem além do escopo original), C ✅
+> investigada/fechada, D parcial (profiling feito, correção da
+> lentidão offline pré-existente ainda pendente). Nenhum teste ao vivo
+> nem push ainda.
+
 > 24/07/2026 (bloco HANDOFF 365): Fase 2 terceira passada — primeira
 > vez com valores NEGATIVOS em `_UNCOVERED_ACTION_VALUE`
 > (`give_don_opp`, `trash_own_life`, `self_cant_play`,

@@ -1,5 +1,70 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (366) - Claude (sessao local) - Turn Planner fase C: investigada com partidas reais, SEM achado concreto (documentado, nao pulado)
+
+Usuário pediu pra fazer a Fase C do plano do Turn Planner
+(`C:\Users\arthu\.claude\plans\lively-honking-sedgewick.md`) —
+"qualidade de decisão", que só deveria entrar com achados CONCRETOS
+(nunca uma faxina vaga). Como a Fase A não tinha sobrado nenhum
+achado além do que a Fase B já cobriu, esta sessão investigou do zero
+com partidas reais + auditoria de decisão, em 3 rodadas sucessivas:
+
+**Rodada 1 — Turn Planner geral (`decision_log`, `enable_decision_audit()`)**:
+2 partidas Ace/Ace (seeds 7 e 23), ~49 decisões do Turn Planner
+auditadas. Checagem automática: nenhum caso onde a ação ESCOLHIDA
+tinha `simulated_value` menor que uma alternativa disponível
+(indicaria bug de seleção). Investiguei um padrão que parecia
+suspeito (nunca gerava candidato de ataque contra personagem do
+oponente, mesmo com o campo dele crescendo) — **confirmado que é
+regra correta do jogo** (`rested_chars()`: só pode atacar personagem
+RESTADO ou o líder, nunca um ativo) via inspeção direta de
+`_generate_and_score_actions`, não um bug.
+
+**Rodada 2 — diversidade de arquétipo**: usuário pediu amostra maior.
+6 partidas entre arquétipos bem diferentes (Luffy, Crocodile/Imu,
+Lucy/Vivi, Enel/Nami, Sanji/Bonney) — mais 259 decisões, mesma
+checagem automática, **0 achados** (total ~308 decisões do Turn
+Planner em 8 partidas).
+
+**Rodada 3 — bloqueio/counter especificamente** (usuário pediu foco
+nessa área, que o `decision_log` do Turn Planner NÃO cobre —
+`should_use_blocker`/`should_use_counter` rodam durante a resolução de
+combate e nunca chamam `_log_decision`, blind spot real da
+instrumentação existente). Instrumentei via monkeypatch temporário
+(scripts ad-hoc, não commitados) direto nas duas funções, rodei 5
+partidas (11141 chamadas capturadas — a maioria repetida via
+simulação do Turn Planner, não decisões reais únicas). Refinei pra
+uma análise detalhada numa partida (241 decisões DISTINTAS de
+`should_use_counter`, com `gasto`/`valor_vida`/`total_cobrível`
+explícitos): 80 = counter insuficiente pra fechar o gap (recusa
+correta, regra "nunca counter parcial"), 45 = counter suficiente mas
+caro demais (`gasto >= valor_vida`, recusa correta), 18 = defesa já
+suficiente sem counter (`atk_power < def_power`, recusa correta —
+achado inicialmente como "suspeito" por um bug no MEU classificador,
+que esqueceu de checar esse caso — corrigido durante a própria
+investigação). **0 contradições reais da fórmula da função.**
+
+**Conclusão**: Fase C investigada a fundo (≈550 decisões reais
+auditadas entre Turn Planner geral + bloqueio/counter específico, em
+13 partidas cobrindo a maioria dos arquétipos do formato) — **nenhum
+bug de qualidade de decisão encontrado**, além do que já foi corrigido
+nas fases A/B desta sessão. Fecha como "investigada, sem achado", não
+"pulada" — o padrão de auditoria usado (decision_log + monkeypatch
+temporário em should_use_blocker/should_use_counter) fica registrado
+aqui pra quem quiser repetir/estender no futuro (ex: rodar contra
+mais arquétipos, ou instrumentar outras decisões reativas sem log
+como `try_any_substitute`).
+
+**Nenhum script de auditoria foi commitado** (eram scripts
+descartáveis em scratchpad, não fazem parte do motor) — só o
+resultado e a metodologia ficam documentados aqui.
+
+**Status do plano do Turn Planner**: Fase A ✅, Fase B ✅ (completa e
+estendida bem além do escopo original), Fase C ✅ investigada/fechada
+sem achado, Fase D parcialmente feita (profiling real já rodado no
+bloco 363 — achou a lentidão offline pré-existente, mas a correção em
+si continua pendente). Nenhum teste ao vivo nem push ainda.
+
 ## 2026-07-24 (365) - Claude (sessao local) - fase 2 terceira passada: primeiro sinal NEGATIVO em _UNCOVERED_ACTION_VALUE
 
 Último dos 4 itens pedidos pelo usuário 24/07. Revisitei os ~77 tipos
