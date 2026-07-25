@@ -144,7 +144,7 @@ class _SimDeck(list):
 from optcg_engine.opponent_model import OpponentModel
 from optcg_engine.deck_census import deck_census
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Callable, List, Optional
 from copy import deepcopy
 
 
@@ -14025,9 +14025,13 @@ class OPTCGMatch:
         _log_turn_planner_decision (pedido do usuario 25/07: uma lista so,
         nao um script externo com sua propria checagem). So roda com
         decision_log ativo (mesmo guard das outras 2 funcoes de log) --
-        chamado por ReplayMatch.play_turn(), entao cobre de graca QUALQUER
-        consumidor de self-play (audit_replay.py, baseline_metrics.py,
-        tune_weights.py). So grava entrada quando ACHA violacao -- nunca
+        chamada direto por este proprio play_turn() (ver abaixo), entao
+        cobre de graca QUALQUER consumidor de self-play que passe por ele,
+        direto (audit_card_effects.py, audit_decision_quality.py,
+        baseline_metrics.py, tune_weights.py) ou via
+        ReplayMatch.play_turn() (replay_optcg.py, que desde 25/07 delega
+        inteiro pra ca em vez de reimplementar a orquestracao de turno).
+        So grava entrada quando ACHA violacao -- nunca
         por turno saudavel, pra nao inflar a lista em rodadas de centenas
         de partidas (tune_weights.py).
 
@@ -14343,7 +14347,18 @@ class OPTCGMatch:
             c.just_played = False
         return False
 
-    def play_turn(self, p: GameState, opp: GameState, verbose: bool = False) -> Optional[str]:
+    def play_turn(self, p: GameState, opp: GameState, verbose: bool = False,
+                  post_don_hook: 'Callable[[GameState, GameState], None] | None' = None) -> Optional[str]:
+        """
+        post_don_hook: opcional, chamado logo apos don_phase e antes do
+        main_phase -- unico ponto que replay_optcg.py precisa pra imprimir
+        campo/perfil/postura no meio do turno (pedido do usuario 25/07: sem
+        isso ReplayMatch.play_turn() reimplementava a orquestracao inteira
+        do turno so pra conseguir esse print no meio, causando divergencia
+        real com este metodo -- end_phase()/is_active_turn/
+        pending_play_cost_reductions/deck_out_win_instead_of_loss ficavam
+        de fora do replay). Nao usado no caminho ao vivo nem em simulate().
+        """
         self.global_turn += 1
         p.turn += 1
         p.global_turn = self.global_turn
@@ -14366,14 +14381,16 @@ class OPTCGMatch:
                             extra={'count': drawn})
 
         self.don_phase(p, verbose=verbose)
+        if post_don_hook is not None:
+            post_don_hook(p, opp)
 
         won = self.main_phase(p, opp, verbose=verbose)
         # Invariantes de conservacao (DON/poder/contagem) -- mesmo guard
-        # interno de decision_log ativo; cobre qualquer consumidor que use
-        # OPTCGMatch.play_turn()/simulate() direto (audit_card_effects.py,
-        # audit_decision_quality.py), nao so ReplayMatch (replay_optcg.py
-        # tem a mesma chamada, la com turn explicito por reimplementar a
-        # propria orquestracao de turno).
+        # interno de decision_log ativo; cobre qualquer consumidor deste
+        # metodo (audit_card_effects.py, audit_decision_quality.py,
+        # ReplayMatch.play_turn() via _get_engine_match().play_turn(),
+        # desde que ReplayMatch parou de reimplementar a propria
+        # orquestracao de turno).
         self._check_invariants()
         if won:
             return 'A' if p is self.state_a else 'B'

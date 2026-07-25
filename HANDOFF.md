@@ -1,5 +1,63 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-25 (372) - Claude (sessao remota web) - apaga ReplayMatch.play_turn() duplicado, delega 100% pra OPTCGMatch.play_turn()
+
+Continuacao direta do bloco 371. Usuario perguntou por que `ReplayMatch`
+(replay_optcg.py) tinha seu proprio `play_turn()` "sendo que é para usar
+1 só" (motor unico) -- investigado e confirmado: NAO era so a auditoria
+de invariante que divergia, o metodo inteiro reimplementava a
+orquestracao de turno (refresh/draw/don/main_phase) so pra poder
+imprimir campo/perfil/postura no meio do turno, e por isso faltavam:
+`end_phase()` (nunca era chamado -- efeitos `[End of Your Turn]` e a
+fila `end_of_turn_queue` nunca resolviam no replay!), sync de
+`p.global_turn`/`opp.global_turn`/`is_active_turn`,
+`pending_play_cost_reductions.clear()`, e a checagem especial
+`deck_out_win_instead_of_loss` (lider Nami OP03-040 vence ao invés de
+perder no proprio deck-out). Usuario confirmou: "Não dá para apagar não?
+E usar só 1?".
+
+**Fix**: `OPTCGMatch.play_turn()` (decision_engine.py:14346) ganhou um
+parametro opcional `post_don_hook: Callable[[GameState, GameState], None]
+| None = None`, chamado logo apos `don_phase()` e antes do `main_phase()`
+-- unico ponto que o replay precisava pra injetar o print do campo/perfil
+no MEIO do turno. Nao usado no caminho ao vivo (`sim_bridge.py`/
+`server.py`) nem em `simulate()` -- default `None`, zero mudanca de
+comportamento pra quem nao passa o argumento.
+
+`ReplayMatch.play_turn()` virou wrapper fino de verdade: imprime o
+cabecalho do turno (numero previsto ANTES de chamar o engine, ja que
+`OPTCGMatch.play_turn()` incrementa `global_turn`/`p.turn` logo no topo,
+antes de qualquer efeito colateral observavel), define o hook de
+print/perfil como closure, chama
+`self._get_engine_match().play_turn(p, opp, verbose=True,
+post_don_hook=hook)` uma unica vez, e sincroniza
+`self.global_turn = engine_match.global_turn` no retorno. A propria
+`_check_invariants()` (chamada de dentro de `OPTCGMatch.play_turn()`)
+passou a usar o `global_turn` do proprio motor corretamente -- o bug
+lateral do bloco 371 ("global_turn do OPTCGMatch interno travado em 0 no
+caminho do ReplayMatch") desapareceu de graca, ja que agora
+`ReplayMatch` delega a incrementacao pro motor em vez de ter contador
+proprio duplicado. `_log_event(...)` chamado pelo motor via
+`self.replay_log`/`self._suppress_replay_log` do `engine_match` bypass
+continua no-op (replay_log=None), entao nao duplica print nenhum.
+
+**Validado**: `smoke_fast.py` (todos os testes previos + os 2 novos do
+bloco 371) e `smoke_test.py` (regressao ampla) 100% verdes, zero
+regressao. Rodei uma partida real via `ReplayMatch(...).run()` com
+`enable_decision_audit()` ligado: output visual identico (cabecalho,
+campo ASCII, perfil/fase/postura no mesmo lugar), `global_turn` do
+`ReplayMatch` e do `OPTCGMatch` interno batem exatamente (11 == 11 no
+teste), e as violacoes de invariante continuam sendo detectadas com
+turno/jogador corretos (mesmo bug conhecido de conservacao de DON do
+deck Ace/Imu reapareceu, sem alteracao de comportamento). Rodei tambem
+`audit_replay.py --n 6` direto: 0 excecoes, mesma anomalia conhecida
+detectada, dump de log continua funcionando.
+
+**Nao mexido**: nenhuma logica de carta, nenhum segundo motor criado,
+`OPTCGMatch.simulate()`/caminho ao vivo (`sim_bridge.py`/`server.py`)
+intocados -- `post_don_hook` e um parametro opcional com default `None`,
+invisivel pra quem nao passa.
+
 ## 2026-07-25 (371) - Claude (sessao remota web) - unifica auditoria de invariante (audit_replay.py) no decision_log, SEM tocar write_event/telemetria ao vivo
 
 Usuario pediu unificar telemetria/auditoria (continuacao do bloco 370):

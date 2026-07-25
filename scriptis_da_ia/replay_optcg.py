@@ -289,48 +289,43 @@ class ReplayMatch:
         print(f'\n{C.YELLOW}⚡ {first_name} vai primeiro!{C.RESET}')
 
     def play_turn(self, p, opp):
-        self.global_turn += 1
-        p.turn += 1
-        col = self.col(p)
-
-        sep()
-        print(f'{col}{C.BOLD}TURNO {self.global_turn} '
-              f'(T{p.turn} de {self.name(p).upper()}){C.RESET}')
-        sep()
-
-        # Fases de início: delegadas ao ENGINE (fonte única), com verbose
+        """
+        Wrapper fino sobre OPTCGMatch.play_turn() (fonte unica de
+        orquestracao de turno -- refresh/draw/don/main/end_phase,
+        is_active_turn, pending_play_cost_reductions,
+        deck_out_win_instead_of_loss). Ate 25/07 este metodo reimplementava
+        a orquestracao inteira so pra poder imprimir campo/perfil/postura
+        no meio do turno, e por isso divergia de verdade do engine (faltava
+        end_phase(), sync de is_active_turn/global_turn nos GameState, e a
+        checagem especial do lider Nami OP03-040) -- pedido do usuario
+        (\"Não dá para apagar não? E usar só 1?\"): apagar a duplicata e
+        usar so 1 play_turn(), com o print no meio via post_don_hook.
+        """
         engine_match = self._get_engine_match()
-        engine_match.refresh_phase(p, opp)
-        engine_match.draw_phase(p, verbose=True)
-        engine_match.don_phase(p, verbose=True)
-        print_field(p, col, self.name(p))
+        col = self.col(p)
+        turno_num = engine_match.global_turn + 1
+        turno_jogador = p.turn + 1
 
-        # Perfil do deck + fase da partida + postura (para auditoria)
-        from optcg_engine.decision_engine import DecisionEngine
-        eng = DecisionEngine(p, opp)
-        prof = eng.analyzer.deck_profile_type()
-        fase = eng.analyzer.game_phase()
-        post = eng.posture()
-        prio = eng.analyzer.analysis_priority()
-        print(f'  {C.GRAY}[perfil: {prof} │ fase: {fase} │ postura: {post} │ prioridade: {prio}]{C.RESET}')
+        sep()
+        print(f'{col}{C.BOLD}TURNO {turno_num} '
+              f'(T{turno_jogador} de {self.name(p).upper()}){C.RESET}')
+        sep()
 
-        # LÓGICA delegada ao ENGINE (fonte única).
-        won = self._get_engine_match().main_phase(p, opp, verbose=True)
-        # Invariantes de conservacao (DON/poder/contagem de cartas) -- so
-        # grava algo em decision_log se enable_decision_audit() foi chamado
-        # (mesmo guard interno da funcao). self.global_turn (ReplayMatch, ja
-        # incrementado no topo deste metodo) e passado explicito -- o
-        # global_turn do OPTCGMatch interno fica parado em 0 aqui, pois
-        # ReplayMatch reimplementa a orquestracao de turno em vez de chamar
-        # OPTCGMatch.play_turn() (caracteristica preexistente, nao mexida).
-        self._get_engine_match()._check_invariants(turn=self.global_turn)
-        if won:
-            return 'A' if p is self.state_a else 'B'
-        if not p.deck:
-            return 'B' if p is self.state_a else 'A'
-        if not opp.deck:
-            return 'A' if p is self.state_a else 'B'
-        return None
+        def _post_don_hook(pp, oopp):
+            print_field(pp, col, self.name(pp))
+            # Perfil do deck + fase da partida + postura (para auditoria)
+            from optcg_engine.decision_engine import DecisionEngine
+            eng = DecisionEngine(pp, oopp)
+            prof = eng.analyzer.deck_profile_type()
+            fase = eng.analyzer.game_phase()
+            post = eng.posture()
+            prio = eng.analyzer.analysis_priority()
+            print(f'  {C.GRAY}[perfil: {prof} │ fase: {fase} │ postura: {post} │ '
+                  f'prioridade: {prio}]{C.RESET}')
+
+        result = engine_match.play_turn(p, opp, verbose=True, post_don_hook=_post_don_hook)
+        self.global_turn = engine_match.global_turn
+        return result
 
     def run(self):
         self.setup()

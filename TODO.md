@@ -2,6 +2,30 @@
 
 **Última atualização:** 25 de julho de 2026
 
+## 🟢 ReplayMatch.play_turn() DUPLICADO APAGADO — delega 100% pra OPTCGMatch.play_turn() (25/07/2026, bloco 372)
+
+Resolve o achado lateral do bloco 371 (linha abaixo). Usuário perguntou
+"Não dá para apagar não? E usar só 1?" — investigado e era pior do que
+só o `global_turn` travado: `ReplayMatch.play_turn()` nunca chamava
+`end_phase()` (efeitos `[End of Your Turn]` nunca resolviam no replay),
+nem sincronizava `is_active_turn`/`pending_play_cost_reductions`, nem
+checava `deck_out_win_instead_of_loss` (líder Nami OP03-040).
+
+Fix: `OPTCGMatch.play_turn()` ganhou parâmetro opcional
+`post_don_hook(p, opp)` (default `None`, zero mudança pro caminho ao
+vivo/`simulate()`), chamado entre `don_phase()` e `main_phase()` —
+único ponto que o replay precisava pra imprimir campo/perfil/postura no
+meio do turno. `ReplayMatch.play_turn()` virou wrapper fino: imprime
+cabeçalho, define o hook, chama `OPTCGMatch.play_turn()` uma vez só,
+sincroniza `self.global_turn`. `_check_invariants()` agora usa o
+`global_turn` do motor corretamente (o travamento em 0 sumiu de graça).
+
+- [x] `smoke_fast.py` + `smoke_test.py` 100% verdes, zero regressão.
+- [x] Validado com partida real via `ReplayMatch(...).run()` +
+  `audit_replay.py --n 6`: output visual idêntico, `global_turn`
+  batendo entre `ReplayMatch` e `OPTCGMatch` interno, mesma anomalia
+  conhecida (DON Ace/Imu) detectada sem alteração.
+
 ## 🟢 AUDITORIA DE INVARIANTE UNIFICADA — audit_replay.py migrado pro decision_log (25/07/2026, bloco 371)
 
 Pedido do usuário: "apenas 1 motor, apenas um engine de decisão e apenas
@@ -20,13 +44,9 @@ Validado: 6 checks novos em `smoke_fast.py`, `smoke_test.py` 100%, os 5
 scripts rodados de verdade sem exceção.
 
 - [x] Migração concluída e testada.
-- [ ] Achado lateral (não é bug desta migração): `ReplayMatch` reimplementa
+- [x] Achado lateral (não é bug desta migração): `ReplayMatch` reimplementava
   a própria orquestração de turno em vez de chamar `OPTCGMatch.play_turn()`
-  — o `global_turn` do `OPTCGMatch` interno fica travado em 0 nesse
-  caminho (contornado passando o turno explícito só pro meu novo check;
-  `_log_decision`/`_log_turn_planner_decision` **já tinham** essa mesma
-  limitação antes desta sessão, não corrigida agora — baixa prioridade,
-  registrar caso vire problema real).
+  — **resolvido no bloco 372** (ver acima), apagado de vez.
 
 ## 🟡 SIMULADOR SELF X SELF (front-end) — fundação pronta, falta construir o simulador em si (25/07/2026, bloco 370)
 
