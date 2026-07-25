@@ -1973,6 +1973,33 @@ def test_lookahead_2_turnos_meu_proprio_turno_greedy_fecha_letal() -> None:
           'extra_own_turn_search=True' in src)
 
 
+def test_on_ko_proprio_reduz_custo_de_sacrificio_no_bloqueio() -> None:
+    # Ultimo item pedido pelo usuario 24/07: "on_ko do meu proprio
+    # personagem como fonte de valor, nao so risco -- deixar ele morrer
+    # em combate ativa o proprio [On K.O.] dele como parte da decisao de
+    # bloquear/trocar". char_value_score nunca creditava isso antes --
+    # Marco PRB02-008 (blocker, custo 4, poder 6000, on_ko draw 2) e
+    # Perona EB03-045 (blocker, MESMO custo/poder, sem on_ko) tem
+    # char_value_score quase identico -- so o on_ko de Marco deve
+    # desempatar a favor de sacrifica-lo (perde-lo custa menos, o K.O.
+    # em si compensa parte do valor).
+    marco = real_card("PRB02-008")
+    perona = real_card("EB03-045")
+    a = GameState(leader=real_card("OP11-062"), turn=5)
+    a.life = [real_card("EB01-005")]  # vida 1 -- sempre usa blocker se tiver
+    a.field_chars = [marco, perona]
+    opp = GameState(leader=real_card("OP11-062"), turn=5)
+    eng = DecisionEngine(a, opp)
+    escolhido = eng.should_use_blocker(9000)
+    check("should_use_blocker sacrifica o blocker com on_ko valioso (Marco) em vez do sem on_ko (Perona)",
+          escolhido is marco)
+
+    check("_on_ko_upside_value credita o draw 2 do proprio K.O. de Marco",
+          eng._on_ko_upside_value(marco) > 0.0)
+    check("_on_ko_upside_value nao credita nada pra Perona (sem on_ko)",
+          eng._on_ko_upside_value(perona) == 0.0)
+
+
 def test_imu_waits_for_active_elder_attack() -> None:
     me = GameState(leader=real_card("OP13-079"), don_available=8)
     opp = GameState(leader=mk("OP11-021", "Jinbe", card_type="LEADER", color="Green"))
@@ -8389,6 +8416,7 @@ def main() -> int:
     test_play_turn_greedy_opponent_response()
     test_play_turn_greedy_detecta_letal_do_oponente()
     test_lookahead_2_turnos_meu_proprio_turno_greedy_fecha_letal()
+    test_on_ko_proprio_reduz_custo_de_sacrificio_no_bloqueio()
     test_imu_waits_for_active_elder_attack()
     test_nusjuro_rush_at_trash_7()
     test_nusjuro_rush_known_in_hand_for_planner()

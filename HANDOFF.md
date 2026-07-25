@@ -1,5 +1,50 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (364) - Claude (sessao local) - on_ko do PROPRIO personagem vira valor na decisao de bloquear/sacrificar
+
+Continuação do bloco 363 — item 1 dos 4 pedidos pelo usuário 24/07:
+"`on_ko` do meu próprio personagem como fonte de valor, não só como
+risco — hoje o motor trata 'meu personagem morrer' quase sempre como
+perda; não verifiquei se existe crédito para 'deixar ele morrer em
+combate ativa o próprio `[On K.O.]` dele' como parte da decisão de
+bloquear/trocar."
+
+**Confirmado o gap**: `GameAnalyzer.char_value_score` (usado por
+`should_use_blocker` pra escolher QUAL blocker sacrificar — sempre o de
+MENOR valor) nunca credita o `[On K.O.]` da própria carta. `future_threat_value`
+(função diferente, usada pra priorizar ALVOS de remoção do oponente) já
+tinha um peso pra `on_ko` (+15) — mas isso é sobre o valor de deixar o
+personagem do OPONENTE vivo, não sobre o meu.
+
+**Fix**: novo `DecisionEngine._on_ko_upside_value(card)` — soma o valor
+do próprio `[On K.O.]` (draw=25, gain_life/heal=20, busca=20,
+remoção=20, fallback genérico via `_UNCOVERED_ACTION_VALUE` da fase 2,
+saturado em 40). Usado em `should_use_blocker` pra calcular o
+**custo efetivo de sacrificar** cada blocker candidato
+(`char_value_score(c) - _on_ko_upside_value(c)`), não pra alterar
+`char_value_score` em geral — deliberado: um K.O. valioso não torna a
+carta mais difícil de PROTEGER (ainda vale ter em campo), só torna mais
+FÁCIL abrir mão dela quando ela vai morrer de qualquer jeito
+(bloqueando). Escopo limitado a `should_use_blocker` (a decisão de
+"bloquear/trocar" citada pelo usuário) — `should_pay_removal_substitute`
+(proteção contra remoção do OPONENTE, contexto diferente) ficou de fora
+de propósito, pra não misturar dois tipos de decisão na mesma mudança.
+
+**Achado colateral**: `select_counter_cards` já tinha um mecanismo
+parecido ("ganho líquido com on_ko descontado") — confirma que esse
+padrão (creditar o K.O. próprio ao decidir sacrificar algo) já era
+usado em outro lugar do motor, só não em `should_use_blocker`.
+
+**Validação**: `smoke_fast.py` — 3 checks novos com cartas reais
+(Marco PRB02-008, blocker + `on_ko` draw 2, vs Perona EB03-045, mesmo
+custo/poder, sem `on_ko` — confirma que Marco é escolhido pra
+sacrifício). `smoke_test.py`: TODOS OS TESTES PASSARAM.
+
+**Status dos 4 itens pedidos hoje**: 1) `on_ko` próprio — feito (este
+bloco). 2) profiling real — feito (bloco 363). 3) lookahead multi-turno
+— feito, só ao vivo (bloco 363). Falta: 4) fase 2 segunda passada
+(~77 ações de baixo volume/ambíguas) — próximo bloco.
+
 ## 2026-07-24 (363) - Claude (sessao local) - lookahead de 2 turnos, SO caminho ao vivo (profiling real primeiro)
 
 Usuário pediu 4 itens: (1) valor de `on_ko` próprio, (2) profiling real

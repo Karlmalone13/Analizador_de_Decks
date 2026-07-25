@@ -10656,6 +10656,38 @@ class DecisionEngine:
 
     # ── Decisões de defesa ────────────────────────────────────────────────────
 
+    def _on_ko_upside_value(self, card: 'Card') -> float:
+        """
+        Item pedido pelo usuario 24/07 ("on_ko do meu proprio personagem
+        como fonte de valor, nao so risco"). `char_value_score`
+        (GameAnalyzer) nunca credita o [On K.O.] da PROPRIA carta --
+        deixar um blocker morrer em combate era tratado como perda pura
+        mesmo quando o K.O. dele dispara um efeito valioso (draw, vida,
+        DON, etc). Usado pra REDUZIR o custo efetivo de SACRIFICAR um
+        personagem (should_use_blocker), nao pra aumentar
+        char_value_score em geral -- um K.O. valioso nao torna a carta
+        mais dificil de perder, torna mais FACIL abrir mao dela.
+        """
+        on_ko = get_card_effects(card.code).get('on_ko')
+        if not on_ko:
+            return 0.0
+        valor = 0.0
+        for step in on_ko.get('steps', []):
+            act = step.get('action')
+            if act == 'draw':
+                valor += 25.0
+            elif act in ('gain_life', 'heal'):
+                valor += 20.0
+            elif act in ('look_top_deck', 'add_to_hand', 'add_from_trash', 'play_from_trash'):
+                valor += 20.0
+            elif act in ('ko', 'bounce', 'debuff_power', 'rest_opp_character'):
+                valor += 20.0
+            else:
+                piso = self._UNCOVERED_ACTION_VALUE.get(act)
+                if piso is not None:
+                    valor += piso
+        return min(valor, 40.0)
+
     def should_use_blocker(self, attacker_power: int) -> 'Optional[Card]':
         """
         Decide se usa blocker e qual usar.
@@ -10685,17 +10717,24 @@ class DecisionEngine:
             if opp_life > 2:
                 return None
 
+        # Custo EFETIVO de sacrificar `c` como blocker: char_value_score
+        # (quanto vale o corpo) MENOS o proprio [On K.O.] dele (achado
+        # 24/07 -- deixar ele morrer nao e perda pura quando o K.O. em si
+        # ja compensa parte do custo, ex: draw/vida/DON).
+        def custo_sacrificio(c):
+            return a.char_value_score(c) - self._on_ko_upside_value(c)
+
         # Com 1-2 vidas, sempre usa blocker se tiver
         if my_life <= 2:
-            return min(blockers, key=lambda c: a.char_value_score(c))
+            return min(blockers, key=custo_sacrificio)
 
         # Com 3 vidas, usa se o atacante é forte
         if my_life == 3 and attacker_power >= self.me.leader.power:
-            return min(blockers, key=lambda c: a.char_value_score(c))
+            return min(blockers, key=custo_sacrificio)
 
         # Com 4 vidas e oponente com ≤ 2 vidas: bloqueia apenas atacantes fortes
         if my_life == 4 and opp_life <= 2 and attacker_power >= self.me.leader.power:
-            return min(blockers, key=lambda c: a.char_value_score(c))
+            return min(blockers, key=custo_sacrificio)
 
         return None
 

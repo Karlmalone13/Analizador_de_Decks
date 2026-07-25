@@ -2,6 +2,17 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 364): `on_ko` do PRÓPRIO personagem agora
+> conta como valor (não só risco) na decisão de bloquear. Novo
+> `_on_ko_upside_value` reduz o custo efetivo de sacrificar um blocker
+> em `should_use_blocker` quando o `[On K.O.]` dele compensa (draw,
+> vida, busca, remoção). Testado com Marco PRB02-008 (blocker + K.O.
+> draw 2) vs Perona EB03-045 (mesmo custo/poder, sem K.O.) — Marco é
+> escolhido pro sacrifício. `smoke_test.py` 100%. **3 dos 4 itens
+> pedidos hoje feitos** (on_ko próprio, profiling, lookahead
+> multi-turno). **Falta**: fase 2 segunda passada (~77 ações de baixo
+> volume/ambíguas, ver bloco HANDOFF 356 pra lista completa).
+
 > 24/07/2026 (bloco HANDOFF 363): Profiling real feito — offline
 > (`main_phase`) tem explosão O(board²) PRÉ-EXISTENTE (até 13.8s/turno
 > late-game, confirmado sem nenhuma mudança de hoje); ao vivo
