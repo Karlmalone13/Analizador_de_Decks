@@ -8573,9 +8573,62 @@ def main() -> int:
     test_eb04_011_draw_por_contagem_de_tipo_e_trash_igual()
     test_op04_069_base_power_igual_ao_atacante_do_oponente()
     test_in_any_order_custos_bottom_deck_escolhem_melhor_ordem()
+    test_self_play_info_hidden_mascara_counter_e_deck_do_oponente()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
+
+
+def test_self_play_info_hidden_mascara_counter_e_deck_do_oponente() -> None:
+    # Pedido do usuario (24/07): o self x self (futuro simulador do
+    # front-end) deve se aproximar do ao vivo -- os dois lados nao podem
+    # "espiar" a mao/deck real um do outro. `self_play_info_hidden`
+    # (atributo dinamico novo, default False via getattr, NUNCA setado em
+    # nenhum caminho existente hoje) restringe opp_counter_potential() e
+    # _opp_can_remove_stage() as cartas JA REVELADAS (known_hand_cards()/
+    # known_deck_cards()) -- resto vira estimativa (counter) ou "nao sei,
+    # assume que nao tem" (deck). Flag OFF preserva o comportamento de
+    # sempre (usado pelo bot ao vivo e por toda ferramenta de self-play
+    # existente hoje -- audit_replay.py, baseline_metrics.py, etc).
+    nola_a = real_card("OP15-069")   # counter 2000
+    nola_b = real_card("OP15-069")   # counter 2000
+    me = GameState(leader=mk("SPH-L", "Leader", card_type="LEADER"))
+    opp = GameState(leader=real_card("OP02-093"))
+    opp.hand = [nola_a, nola_b]
+    eng = DecisionEngine(me, opp)
+
+    v_off = eng.analyzer.opp_counter_potential()
+    check("flag OFF (default): soma real da mao inteira (2000+2000=4000), igual a hoje",
+          v_off == 4000)
+
+    opp.self_play_info_hidden = True
+    v_hidden = eng.analyzer.opp_counter_potential()
+    check("flag ON, nada revelado: NAO ve os 2 counters reais (nao e mais 4000)",
+          v_hidden != 4000)
+
+    opp.revealed_to_opponent = {id(nola_a)}
+    v_partial = eng.analyzer.opp_counter_potential()
+    check("flag ON + 1 carta revelada: inclui o valor REAL da revelada (>= 2000)",
+          v_partial >= 2000)
+    opp.self_play_info_hidden = False
+    opp.revealed_to_opponent = set()
+
+    # _opp_can_remove_stage: mesma flag, agora sobre o DECK (texto de OP03-096
+    # remove Stage do oponente com custo <=3 -- carta real, nao sintetica)
+    removedora = real_card("OP03-096")
+    opp2 = GameState(leader=mk("SPH-L2", "Leader", card_type="LEADER"))
+    opp2.deck = [real_card("OP01-016"), removedora, real_card("OP01-024")]
+
+    check("flag OFF: acha a removedora no deck real (igual a hoje)",
+          OPTCGMatch._opp_can_remove_stage(opp2, reach_cost=3) is True)
+
+    opp2.self_play_info_hidden = True
+    check("flag ON, nada revelado do deck: NAO espia (assume que nao tem)",
+          OPTCGMatch._opp_can_remove_stage(opp2, reach_cost=3) is False)
+
+    opp2.revealed_deck = {id(removedora)}
+    check("flag ON + carta revelada de verdade: agora conta",
+          OPTCGMatch._opp_can_remove_stage(opp2, reach_cost=3) is True)
 
 
 if __name__ == "__main__":

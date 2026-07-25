@@ -2,6 +2,36 @@
 
 **Última atualização:** 25 de julho de 2026
 
+## 🟡 SIMULADOR SELF X SELF (front-end) — fundação pronta, falta construir o simulador em si (25/07/2026, bloco 370)
+
+Objetivo do projeto: front-end vai ter um simulador deck-vs-deck (self x
+self) que precisa se aproximar do ao vivo — os dois lados não podem
+"ver" a mão/deck real um do outro, igual o bot ao vivo já não vê (blocos
+300/301).
+
+**Feito (bloco 370):** os 2 únicos vazamentos reais de informação
+encontrados em `decision_engine.py` (`opp_counter_potential` — counter
+da mão; `_opp_can_remove_stage` — texto do deck) agora respeitam um
+atributo novo `opp.self_play_info_hidden` (default ausente/False = 100%
+comportamento de hoje, usado por bot ao vivo e toda ferramenta de
+self-play existente). Quando `True`, usam só o que foi **revelado de
+verdade** (`known_hand_cards`/`known_deck_cards`) + estimativa
+estatística pro resto (mesma infra do `counter_estimation.py`).
+
+- [ ] **Construir o simulador self x self em si** — hoje a flag existe
+  mas ninguém a liga. Precisa de um ponto de entrada (script novo, ou
+  opção nas ferramentas existentes tipo `audit_replay.py`) que, no
+  início da partida, sete `self_play_info_hidden = True` nos DOIS lados
+  (cada `GameState` representando "o outro" pro respectivo dono).
+- [ ] Decidir se as ferramentas de tuning/auditoria já existentes
+  (`baseline_metrics.py`, `tune_weights.py`, `audit_replay.py`) também
+  devem rodar em modo oculto por padrão, ou se ficam como estão
+  (informação cheia, mais determinístico pra tuning) e só o simulador
+  NOVO do front-end usa a flag.
+- [ ] Auditoria feita foi só em `decision_engine.py` — se aparecer
+  comportamento "esperto demais" no self x self depois de ligar a flag,
+  pode haver algum outro vazamento não encontrado nesta varredura.
+
 > 25/07/2026 (bloco HANDOFF 368): **Turn Planner Fase D fechada** —
 > cache por instância de `GameAnalyzer._lethal_search` (invalidado em
 > `_apply_action`), turno late-game real caiu de 103.78s pra 2.583s

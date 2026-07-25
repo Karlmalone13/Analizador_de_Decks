@@ -8479,15 +8479,28 @@ class GameAnalyzer:
         empatado sem margem e falhar contra elas (Teach 5000 e depois 9000
         vs Ethanbaron bufado, mesma partida, duas vezes).
 
-        Se no futuro a mão for oculta de verdade (multiplayer vs humano),
-        voltar à estimativa para os slots desconhecidos, como
-        opp_counter_chunks_for_lethal faz — regra do usuário 07/07: o banco
-        de cartas/efeitos permite estimar a densidade média de counter do
-        formato para os slots que não dá pra ver.
+        Ao vivo a mão já chega mascarada (server.py troca cartas não
+        reveladas por placeholders antes do GameState existir), então somar
+        `self.opp.hand` direto já é seguro — nada muda aqui pra esse
+        caminho. O self-play interno (OPTCGMatch/ReplayMatch) NUNCA passou
+        por essa máscara (usa os objetos Card reais dos dois lados o tempo
+        todo, porque a mecânica real precisa deles) — pedido do usuário
+        (24/07): aproximar o self x self do ao vivo sem duplicar motor.
+        `opp.self_play_info_hidden` (atributo dinâmico, default False via
+        getattr — NUNCA setado hoje em lugar nenhum, só o futuro simulador
+        self x self vai ligar) restringe a soma real às cartas já
+        REVELADAS (`known_hand_cards()`) e completa o resto com a MESMA
+        estimativa estatística que `opp_counter_chunks_for_lethal` já usa
+        de forma conservadora — aqui, porém, soma um valor esperado (não
+        zera), e usa a densidade REAL da decklist do oponente quando
+        disponível (mesmo lookup usado no guard de buff de
+        `resolve_optional_effect`, sim_bridge.py).
         """
+        known_only = getattr(self.opp, 'self_play_info_hidden', False)
+        hand = self.opp.known_hand_cards() if known_only else self.opp.hand
         ee = EffectExecutor(self.opp, self.me)   # perspectiva do DONO da carta
         total = 0
-        for c in self.opp.hand:
+        for c in hand:
             total += getattr(c, 'counter', 0)
             counter_block = get_card_effects(c.code).get('counter', {})
             steps = counter_block.get('steps', [])
@@ -8496,7 +8509,30 @@ class GameAnalyzer:
             if ee._check_conditions(counter_block.get('conditions', {}), c):
                 total += sum(s.get('amount', 0) for s in steps
                             if s.get('action') == 'buff_power')
-        return total
+        if not known_only:
+            return total
+
+        n_unknown = max(0, len(self.opp.hand) - len(hand))
+        from optcg_engine.counter_estimation import estimate_opp_counter
+        from optcg_engine.sim_bridge import deck_cards_for_leader
+        deck1000 = deck2000 = None
+        _deck_opp = (deck_cards_for_leader(self.opp.leader.code)
+                     if self.opp.leader is not None else None)
+        if _deck_opp:
+            deck1000 = sum(1 for c in _deck_opp if getattr(c, 'counter', 0) == 1000)
+            deck2000 = sum(1 for c in _deck_opp if getattr(c, 'counter', 0) >= 2000)
+            visiveis = list(self.opp.trash) + list(self.opp.field_chars) + list(hand)
+            if self.opp.field_stage:
+                visiveis.append(self.opp.field_stage)
+            for c in visiveis:
+                cv = getattr(c, 'counter', 0)
+                if cv == 1000 and deck1000 > 0:
+                    deck1000 -= 1
+                elif cv >= 2000 and deck2000 > 0:
+                    deck2000 -= 1
+        est = estimate_opp_counter(n_unknown, deck_counter_1000=deck1000,
+                                    deck_counter_2000=deck2000)
+        return total + est['expected_counter_value']
 
     def opp_counter_chunks_for_lethal(self) -> list[int]:
         """
@@ -11184,8 +11220,19 @@ class OPTCGMatch:
     @staticmethod
     def _opp_can_remove_stage(opp: GameState, reach_cost: int) -> bool:
         """True se o deck do oponente tem carta que K.O./trasha/devolve um Stage
-        do oponente (= nosso) com alcance de custo >= reach_cost."""
-        for c in opp.deck:
+        do oponente (= nosso) com alcance de custo >= reach_cost.
+
+        Le `opp.deck` inteiro (texto de TODA carta restante) — vazamento
+        real de informacao oculta no self-play (ninguem sabe o conteudo do
+        deck do adversario). `opp.self_play_info_hidden` (mesmo atributo
+        dinamico de opp_counter_potential, default False, nunca setado
+        hoje) restringe a busca as cartas JA REVELADAS
+        (`known_deck_cards()`) — conservador de proposito: se a carta de
+        remocao nao foi vista, assume que nao esta la, igual
+        opp_counter_chunks_for_lethal faz pra counter."""
+        deck = opp.known_deck_cards() if getattr(
+            opp, 'self_play_info_hidden', False) else opp.deck
+        for c in deck:
             t = (c.card_text or '').lower()
             # K.O./trash explicito do "opponent's stage", respeitando filtro de custo
             for mm in re.finditer(r"(k\.?o\.?|trash)[^.]*?opponent's stages?(?:[^.]*?cost of (\d+) or less)?", t):

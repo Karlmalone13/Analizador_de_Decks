@@ -1,5 +1,86 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-25 (370) - Claude (sessao remota web) - self_play_info_hidden: fundacao pro self x self do front-end nao "trapacear" (motor UNICO, zero mudanca pro bot/live)
+
+Usuario conectou o self-play (usado pra testar mudancas sem precisar do
+desktop, ver bloco anterior desta mesma conversa) a um objetivo maior do
+projeto: o front-end vai ter um simulador deck-vs-deck (self x self) e
+ele precisa se aproximar do ao vivo -- o que exige as duas IAs pararem
+de "ver" a mao/vida/deck uma da outra, do jeito que o self-play interno
+faz hoje (informacao 100% cheia dos dois lados, ao contrario do ao vivo,
+que ja mascara a mao/vida do oponente desde os blocos 300/301).
+
+**Exigencia explicita do usuario, checada com cuidado antes de
+implementar**: zero mudanca de comportamento do bot ao vivo, motor
+UNICO (nunca duplicar logica), a mudanca serve SO pro self x self.
+
+**Auditoria (mesmo metodo do bloco 342, agora pra decision_engine.py
+inteiro)**: 47 leituras diretas de `opp.hand`/`opp.life` categorizadas
+por funcao -- maioria e mecanica legitima (`_execute_step`,
+`_execute_attack`, `_put_life`, `target_pool` -- precisam do estado
+real pra mover carta de verdade) ou informacao publica de verdade
+(tamanho de mao/vida, `_check_conditions`/`_step_is_viable`). Achados
+REAIS de vazamento, concentrados em 2 funcoes:
+- `opp_counter_potential()` -- soma o counter real de TODA carta na mao
+  do oponente pra calcular margem de DON no ataque
+  (`don_needed_for_attack`) e desconto no score de ataque no lider
+  (`score_attack_target`). O proprio comentario ja antecipava o gap
+  ("se no futuro a mao for oculta de verdade... voltar a estimativa").
+- `_opp_can_remove_stage()` -- le o TEXTO de toda carta no deck do
+  oponente (`for c in opp.deck`) pra decidir entre a versao cara/barata
+  de um Stage espelhado.
+Vida: limpa (so `.pop()`, mecanica de dano/remocao real). `sim_bridge.py`/
+`opponent_model.py`: ja corretos (Monte Carlo ja usa `known_hand_cards()`/
+`known_life_cards()` desde os blocos 300/301).
+
+**Design descartado**: gatilhar isso via `hidden_information_masked`
+(flag ja existente, setada True no lado do oponente NO CAMINHO AO VIVO
+por `server.py`). Usar essa flag mudaria o bot ao vivo tambem -- ela ja
+vem True la, e ligar o fix nela adicionaria uma estimativa nao-zero pra
+cartas nao reveladas onde hoje conta 0 silenciosamente. Rejeitado por
+violar a exigencia do usuario.
+
+**Fix implementado**: atributo dinamico NOVO e ISOLADO,
+`opp.self_play_info_hidden` (via `getattr(..., False)`, igual o padrao
+ja usado por `hidden_information_masked` -- mas um nome DIFERENTE, nunca
+setado em NENHUM caminho hoje, entao o comportamento de ninguem muda por
+default). As 2 funcoes checam essa flag sozinhas:
+- `opp_counter_potential()`: default (flag ausente) = soma real de
+  `self.opp.hand` inteira, EXATAMENTE como hoje. Com a flag True: soma
+  real so das `known_hand_cards()` (reveladas de verdade nesta partida,
+  via Arlong/peek/etc -- MESMO mecanismo dos blocos 300/301, ja
+  populado corretamente tanto ao vivo quanto no self-play) + estimativa
+  estatistica (`counter_estimation.estimate_opp_counter`, reusa a
+  densidade REAL da decklist do oponente quando disponivel via
+  `deck_cards_for_leader` -- mesma infra do guard de buff do bloco
+  anterior) pro resto.
+- `_opp_can_remove_stage()`: default = varre `opp.deck` inteiro, igual
+  hoje. Com a flag True: so `known_deck_cards()` (reveladas) --
+  conservador de proposito (carta nao vista conta como "nao tem"),
+  mesma filosofia de `opp_counter_potential`.
+
+Nenhuma funcao intermediaria (`don_needed_for_attack`, `score_attack_target`,
+`_place_start_stage`) precisou mudar assinatura -- a flag mora no
+GameState que essas funcoes ja recebem, entao herdam o comportamento
+novo automaticamente quando (e so quando) o futuro simulador self x self
+setar a flag.
+
+**Validado**: `smoke_fast.py` ganhou
+`test_self_play_info_hidden_mascara_counter_e_deck_do_oponente` (6
+checks: flag off = identico a hoje pros 2 casos; flag on sem reveal =
+NAO ve a info real; flag on + revelado de verdade = volta a contar).
+`smoke_fast.py` e `smoke_test.py` 100% (zero regressao). Flag nunca e
+setada em nenhum lugar hoje -- confirmado que bot ao vivo e todas as
+ferramentas de self-play existentes (`audit_replay.py`,
+`baseline_metrics.py`, `tune_weights.py`) continuam com o comportamento
+de sempre, sem tocar em nada.
+
+**PENDENTE (proxima sessao)**: isto e so a FUNDACAO -- ainda falta
+construir o simulador self x self em si (provavelmente um script novo
+ou uma opcao nas ferramentas de self-play existentes) que efetivamente
+SETE `opp.self_play_info_hidden = True` (e o equivalente do outro lado)
+no inicio da partida. Sem esse passo, a flag existe mas nunca e usada.
+
 ## 2026-07-25 (369) - Claude (sessao local) - re-profiling pos-fix do Fase D: proximo gargalo identificado e registrado como divida tecnica (nao implementado)
 
 Usuario pediu "como melhorar a fase D?" apos o bloco 368. Re-rodei o
