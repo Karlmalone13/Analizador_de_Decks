@@ -14014,6 +14014,81 @@ class OPTCGMatch:
     def enable_decision_audit(self):
         """Ativa o log de auditoria de decisão. Chamar antes de setup()/play_turn()."""
         self.decision_log = []
+        self._card_count_baseline = {}
+
+    def _check_invariants(self, turn: 'int | None' = None) -> None:
+        """
+        Verifica invariantes de conservacao (DON, poder, contagem de cartas)
+        apos um turno -- migrado de audit_replay.py (achou o bug real de
+        conservacao de DON do deck Ace, ver TODO.md) pra dentro do motor,
+        unificado na MESMA lista de auditoria de _log_decision/
+        _log_turn_planner_decision (pedido do usuario 25/07: uma lista so,
+        nao um script externo com sua propria checagem). So roda com
+        decision_log ativo (mesmo guard das outras 2 funcoes de log) --
+        chamado por ReplayMatch.play_turn(), entao cobre de graca QUALQUER
+        consumidor de self-play (audit_replay.py, baseline_metrics.py,
+        tune_weights.py). So grava entrada quando ACHA violacao -- nunca
+        por turno saudavel, pra nao inflar a lista em rodadas de centenas
+        de partidas (tune_weights.py).
+
+        NAO migrado: a checagem de 'nao implementado' no texto impresso
+        (audit_replay.py) -- e uma varredura do stdout capturado da
+        partida inteira, natureza diferente de um invariante de estado;
+        continua so no script.
+        """
+        if self.decision_log is None or self._suppress_replay_log:
+            return
+        if not hasattr(self, '_card_count_baseline'):
+            self._card_count_baseline = {}
+        turn = turn if turn is not None else self.global_turn
+        for gs, label in ((self.state_a, 'A'), (self.state_b, 'B')):
+            field_don = sum(c.don_attached for c in gs.field_chars) + gs.leader.don_attached
+            total_don = gs.don_available + gs.don_rested + field_don
+            esperado_don = 10 - gs.don_deck
+            if total_don != esperado_don:
+                # Detalhe de duplicata por REFERENCIA -- foi assim que se
+                # achou o bug de identidade do Card em 29/06/2026 (ver
+                # TODO.md): mesmo objeto Python 2x em field_chars.
+                ids = [id(c) for c in gs.field_chars]
+                dups = [i for i in set(ids) if ids.count(i) > 1]
+                detalhe = (f'available={gs.don_available} rested={gs.don_rested} '
+                           f'field={field_don} soma={total_don} '
+                           f'esperado(10-don_deck)={esperado_don}')
+                if dups:
+                    detalhe += (f' | DUPLICADO NA LISTA field_chars: '
+                                f'{len(dups)} objeto(s) repetido(s), ids={dups}')
+                self.decision_log.append({
+                    'kind': 'invariant_violation',
+                    'turn': turn,
+                    'player': label,
+                    'check': 'don_conservation',
+                    'detail': detalhe,
+                })
+            for c in gs.field_chars + [gs.leader]:
+                if c.effective_power() < 0:
+                    self.decision_log.append({
+                        'kind': 'invariant_violation',
+                        'turn': turn,
+                        'player': label,
+                        'check': 'negative_power',
+                        'detail': f'{c.name} com power negativo ({c.effective_power()})',
+                    })
+            atual = (len(gs.hand) + len(gs.field_chars) + len(gs.deck) + len(gs.trash)
+                     + len(gs.life) + (1 if gs.field_stage else 0))
+            baseline = self._card_count_baseline.get(label)
+            if baseline is None:
+                self._card_count_baseline[label] = atual
+            elif atual != baseline:
+                self.decision_log.append({
+                    'kind': 'invariant_violation',
+                    'turn': turn,
+                    'player': label,
+                    'check': 'card_count',
+                    'detail': (f'total mudou de {baseline} para {atual} '
+                               f'(hand={len(gs.hand)} field={len(gs.field_chars)} '
+                               f'deck={len(gs.deck)} trash={len(gs.trash)} '
+                               f'life={len(gs.life)})'),
+                })
 
     def _log_decision(self, p: GameState, card, trigger: str,
                       decision: str, reason: str):
@@ -14292,7 +14367,15 @@ class OPTCGMatch:
 
         self.don_phase(p, verbose=verbose)
 
-        if self.main_phase(p, opp, verbose=verbose):
+        won = self.main_phase(p, opp, verbose=verbose)
+        # Invariantes de conservacao (DON/poder/contagem) -- mesmo guard
+        # interno de decision_log ativo; cobre qualquer consumidor que use
+        # OPTCGMatch.play_turn()/simulate() direto (audit_card_effects.py,
+        # audit_decision_quality.py), nao so ReplayMatch (replay_optcg.py
+        # tem a mesma chamada, la com turn explicito por reimplementar a
+        # propria orquestracao de turno).
+        self._check_invariants()
+        if won:
             return 'A' if p is self.state_a else 'B'
         self.end_phase(p, opp, verbose=verbose)
         self._log_event(p, 'turn_end', phase='end',

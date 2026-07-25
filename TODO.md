@@ -2,6 +2,32 @@
 
 **Última atualização:** 25 de julho de 2026
 
+## 🟢 AUDITORIA DE INVARIANTE UNIFICADA — audit_replay.py migrado pro decision_log (25/07/2026, bloco 371)
+
+Pedido do usuário: "apenas 1 motor, apenas um engine de decisão e apenas
+uma telemetria". Confirmado 1 motor (`_generate_and_score_actions`
+chamado por ao vivo E self-play). Telemetria: unificadas as 2 partes
+self-play-only (`_log_decision` + checagens do `audit_replay.py`) numa
+lista só (`decision_log`, `kind='invariant_violation'`) — `write_event`/
+`telemetry.py`/`server.py` (ao vivo) **não foram tocados**, de propósito.
+
+`OPTCGMatch._check_invariants()` roda automaticamente (com
+`enable_decision_audit()` ligado) via `ReplayMatch.play_turn()` E
+`OPTCGMatch.play_turn()` — cobre `audit_replay.py`, `baseline_metrics.py`,
+`tune_weights.py`, `audit_card_effects.py`, `audit_decision_quality.py`
+sem exceção. `audit_replay.py` ficou fino (só lê `decision_log`).
+Validado: 6 checks novos em `smoke_fast.py`, `smoke_test.py` 100%, os 5
+scripts rodados de verdade sem exceção.
+
+- [x] Migração concluída e testada.
+- [ ] Achado lateral (não é bug desta migração): `ReplayMatch` reimplementa
+  a própria orquestração de turno em vez de chamar `OPTCGMatch.play_turn()`
+  — o `global_turn` do `OPTCGMatch` interno fica travado em 0 nesse
+  caminho (contornado passando o turno explícito só pro meu novo check;
+  `_log_decision`/`_log_turn_planner_decision` **já tinham** essa mesma
+  limitação antes desta sessão, não corrigida agora — baixa prioridade,
+  registrar caso vire problema real).
+
 ## 🟡 SIMULADOR SELF X SELF (front-end) — fundação pronta, falta construir o simulador em si (25/07/2026, bloco 370)
 
 Objetivo do projeto: front-end vai ter um simulador deck-vs-deck (self x

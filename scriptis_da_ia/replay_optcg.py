@@ -198,6 +198,16 @@ class ReplayMatch:
     def col(self, p): return C.BLUE if p is self.state_a else C.RED
     def name(self, p): return self.name_a if p is self.state_a else self.name_b
 
+    def enable_decision_audit(self):
+        """Delega ao OPTCGMatch interno (fonte unica) -- liga decision_log
+        (decisoes + violacoes de invariante, uma lista so). Chamar antes de
+        run()/play_turn() (mesmo contrato de OPTCGMatch.enable_decision_audit)."""
+        self._get_engine_match().enable_decision_audit()
+
+    @property
+    def decision_log(self):
+        return self._get_engine_match().decision_log
+
     def _get_engine_match(self) -> 'OPTCGMatch':
         """
         Retorna o OPTCGMatch interno usado para delegar fases/main_phase ao
@@ -306,6 +316,14 @@ class ReplayMatch:
 
         # LÓGICA delegada ao ENGINE (fonte única).
         won = self._get_engine_match().main_phase(p, opp, verbose=True)
+        # Invariantes de conservacao (DON/poder/contagem de cartas) -- so
+        # grava algo em decision_log se enable_decision_audit() foi chamado
+        # (mesmo guard interno da funcao). self.global_turn (ReplayMatch, ja
+        # incrementado no topo deste metodo) e passado explicito -- o
+        # global_turn do OPTCGMatch interno fica parado em 0 aqui, pois
+        # ReplayMatch reimplementa a orquestracao de turno em vez de chamar
+        # OPTCGMatch.play_turn() (caracteristica preexistente, nao mexida).
+        self._get_engine_match()._check_invariants(turn=self.global_turn)
         if won:
             return 'A' if p is self.state_a else 'B'
         if not p.deck:

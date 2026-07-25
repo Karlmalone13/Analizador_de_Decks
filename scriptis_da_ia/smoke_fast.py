@@ -8574,6 +8574,7 @@ def main() -> int:
     test_op04_069_base_power_igual_ao_atacante_do_oponente()
     test_in_any_order_custos_bottom_deck_escolhem_melhor_ordem()
     test_self_play_info_hidden_mascara_counter_e_deck_do_oponente()
+    test_check_invariants_unifica_auditoria_no_decision_log()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -8629,6 +8630,54 @@ def test_self_play_info_hidden_mascara_counter_e_deck_do_oponente() -> None:
     opp2.revealed_deck = {id(removedora)}
     check("flag ON + carta revelada de verdade: agora conta",
           OPTCGMatch._opp_can_remove_stage(opp2, reach_cost=3) is True)
+
+
+def test_check_invariants_unifica_auditoria_no_decision_log() -> None:
+    # Pedido do usuario (25/07): unificar as checagens de invariante do
+    # audit_replay.py (conservacao de DON, poder negativo, contagem de
+    # cartas) na MESMA lista de auditoria (decision_log) que ja registra
+    # decisoes (_log_decision/_log_turn_planner_decision) -- uma lista so,
+    # sem mexer em write_event/telemetry.py (ao vivo, intocado). So grava
+    # entrada quando ACHA violacao (nunca por turno saudavel).
+    a = mk("SPCI-LA", "Leader A", card_type="LEADER")
+    b = mk("SPCI-LB", "Leader B", card_type="LEADER")
+    state_a = GameState(leader=a, don_deck=0)
+    state_a.don_available = 10
+    state_b = GameState(leader=b, don_deck=0)
+    state_b.don_available = 10
+    m = OPTCGMatch.__new__(OPTCGMatch)
+    m.state_a = state_a
+    m.state_b = state_b
+    m._suppress_replay_log = False
+    m.enable_decision_audit()
+
+    m._check_invariants(turn=1)
+    check("estado saudavel (A e B configurados): 0 violacoes",
+          not [e for e in m.decision_log if e.get("kind") == "invariant_violation"])
+
+    state_a.don_available = 11
+    m._check_invariants(turn=2)
+    viol = [e for e in m.decision_log if e.get("kind") == "invariant_violation"]
+    check("DON quebrado em A: detectado como don_conservation no turno certo",
+          len(viol) == 1 and viol[0]["check"] == "don_conservation"
+          and viol[0]["turn"] == 2 and viol[0]["player"] == "A")
+    state_a.don_available = 10
+
+    state_a.hand = [real_card("OP01-024")]
+    m._check_invariants(turn=4)   # 1a chamada so estabelece o baseline
+    state_a.hand.append(real_card("OP01-025"))  # carta aparece do nada
+    m._check_invariants(turn=5)
+    viol5 = [e for e in m.decision_log
+             if e.get("kind") == "invariant_violation" and e["turn"] == 5]
+    check("carta surgindo do nada: detectado como card_count",
+          any(v["check"] == "card_count" for v in viol5))
+
+    # decision_log continua mista (kind=turn_planner/(sem kind)/
+    # invariant_violation) SEM quebrar quem ja consome (audit_card_effects.py/
+    # audit_decision_quality.py ja filtram com .get(), padrao preexistente).
+    check("decision_log aceita kind='invariant_violation' misturado as outras entradas",
+          any(e.get("kind") == "invariant_violation" for e in m.decision_log)
+          and len(m.decision_log) >= 2)
 
 
 if __name__ == "__main__":

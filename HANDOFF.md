@@ -1,5 +1,63 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-25 (371) - Claude (sessao remota web) - unifica auditoria de invariante (audit_replay.py) no decision_log, SEM tocar write_event/telemetria ao vivo
+
+Usuario pediu unificar telemetria/auditoria (continuacao do bloco 370):
+"apenas 1 motor, apenas um engine de decisao e apenas uma telemetria".
+Investigado o cenario completo antes de mexer: confirmado 1 motor de
+decisao (`_generate_and_score_actions` chamado tanto por `sim_bridge.py`
+ao vivo quanto pelos metodos internos do `OPTCGMatch` no self-play --
+mesma funcao, prova direta). Telemetria, porem, tinha 3 mecanismos
+diferentes: `write_event`/`telemetry.py` (rico, so ao vivo),
+`enable_decision_audit`/`_log_decision` (self-play, estreito -- so
+"ativar ou pular habilidade"), e os prints avulsos do proprio
+`audit_replay.py` (invariantes de estado: DON/poder/contagem de cartas).
+
+**Descartada a unificacao com `write_event`** (proposta inicial, maior):
+exigiria um serializador GameState->dict novo pra imitar o formato do DTO
+ao vivo, sem necessidade real pro objetivo imediato -- usuario preferiu
+a rota menor: NAO tocar em `write_event`/`server.py` (ao vivo continua
+101% intocado), so fundir as DUAS partes que ja sao self-play-only
+(`_log_decision` + as checagens do `audit_replay.py`) na MESMA lista.
+
+**Fix implementado**: `OPTCGMatch._check_invariants()` (decision_engine.py)
+-- migra as 3 checagens de `audit_replay.py` (conservacao de DON incl.
+deteccao de carta duplicada por referencia, poder nunca negativo,
+conservacao de contagem de cartas com baseline lazy) pra dentro do
+motor, gravando `{'kind': 'invariant_violation', 'turn', 'player',
+'check', 'detail'}` na MESMA `decision_log` que ja recebia
+`_log_decision`/`_log_turn_planner_decision` (lista ja era mista, tinha
+precedente de `kind` opcional filtrado com `.get()` pelos consumidores
+-- zero risco de quebrar `audit_card_effects.py`/`audit_decision_quality.py`,
+confirmado rodando os dois). So grava entrada quando ACHA violacao (nunca
+por turno saudavel -- telemetria cara evitada, pensando em
+`tune_weights.py` rodando centenas de partidas). Chamada automatica em
+2 pontos (cobre TODO consumidor de self-play sem exececao):
+`ReplayMatch.play_turn()` (replay_optcg.py, usa `audit_replay.py`/
+`baseline_metrics.py`/`tune_weights.py`) com o turno explicito (o
+`global_turn` do OPTCGMatch interno fica travado em 0 nesse caminho --
+achado lateral, caracteristica preexistente de ReplayMatch reimplementar
+a propria orquestracao de turno, NAO mexida) e `OPTCGMatch.play_turn()`
+(usado direto por `audit_card_effects.py`/`audit_decision_quality.py`
+via `.simulate()`).
+
+`audit_replay.py` ficou bem mais fino: so liga `enable_decision_audit()`,
+roda as N partidas, filtra `decision_log` por `kind == 'invariant_violation'`
+pra montar a lista de anomalias (preserva o dump em arquivo na 1a
+violacao de DON por partida). Unica checagem NAO migrada, de proposito:
+"nao implementado" no texto impresso -- e varredura de stdout capturado
+da partida inteira, natureza diferente de invariante de GameState,
+continua so no script.
+
+**Validado**: 6 checks novos em smoke_fast.py (estado saudavel = 0
+violacoes; DON quebrado detectado com turno/jogador certos; carta
+surgindo do nada detectada; decision_log mista sem quebrar). Rodei
+`audit_replay.py`/`audit_card_effects.py --decision`/`audit_decision_quality.py`
+de verdade (partidas reais) -- 0 excecao, mesma anomalia real de sempre
+(bug de DON do deck Ace, ainda pendente de investigar a fundo) detectada
+identica a antes da migracao. `smoke_fast.py`/`smoke_test.py` 100%, zero
+regressao. `write_event`/`telemetry.py`/`server.py`: nao tocados.
+
 ## 2026-07-25 (370) - Claude (sessao remota web) - self_play_info_hidden: fundacao pro self x self do front-end nao "trapacear" (motor UNICO, zero mudanca pro bot/live)
 
 Usuario conectou o self-play (usado pra testar mudancas sem precisar do
