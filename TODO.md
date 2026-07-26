@@ -33,6 +33,21 @@ ao vivo não tinha nenhuma das duas.
   calibração/tuning), diferente do orçamento por decisão do caminho ao
   vivo, e já existe uma explosão O(board²) conhecida lá (até 13.8s/turno
   late-game medido antes desta sessão).
+- [ ] **PENDENTE (pedido do usuário, 26/07)**: até agora só validei que a
+  unificação NÃO regride (testes + self-play sintético) e que o caminho
+  ao vivo ganhou a guarda `_is_unsafe_zero_life_leader_attack` + a
+  janela/diversidade de candidatas — não medi se isso muda a EFICÁCIA de
+  verdade em partida real. Validação real exige: (a) uma partida ao vivo
+  (ou lote de partidas) depois desta mudança, (b) ler
+  `metrics/live_runs/live_<timestamp>.json` + `decision_summary.py
+  --latest` (telemetria obrigatória de decisão, ver regra no
+  CLAUDE.md/AGENTS.md) e (c) rodar `bot_efficiency_report.py` com um
+  cohort atualizado, comparando com o histórico anterior a este bloco.
+  Ficar de olho especificamente em quantas vezes
+  `_is_unsafe_zero_life_leader_attack` filtra uma candidata no
+  `trace_out` (hoje não é um campo próprio da telemetria — se o sinal
+  não aparecer implícito o suficiente em `search_values`, considerar
+  adicionar um campo dedicado antes da próxima partida real).
 
 ## 🟢 IMPLEMENTADO: amostragem sequencial/adaptativa (piso 12/teto 24) substitui N fixo=6 (26/07/2026, bloco 381)
 

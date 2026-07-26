@@ -67,6 +67,20 @@ offline.
   pequenos/rapidos) que rode ate o fim sem excecao, pra pegar erros que
   so aparecem num jogo completo (este bloco só foi validado via script
   descartável, não via smoke suite).
+- [ ] **PENDENTE (pedido do usuário, 26/07 -- pergunta direta "melhorou a
+  eficacia? melhorou as decisoes do bot?")**: respondi com honestidade que
+  so validei AUSENCIA de regressao (testes + self-play sintetico), nao
+  medi ganho real de eficacia em partida ao vivo. Falta: (a) partida real
+  pos-unificacao, (b) ler `metrics/live_runs/live_<timestamp>.json` +
+  `decision_summary.py --latest` (obrigatorio por regra do
+  CLAUDE.md/AGENTS.md quando o log e do bot), (c) `bot_efficiency_report.py`
+  com cohort atualizado comparando contra o historico anterior a este
+  bloco. Watch item especifico: quantas vezes
+  `_is_unsafe_zero_life_leader_attack` de fato filtra uma candidata ao
+  vivo -- hoje esse sinal nao tem campo proprio no `trace_out`, so fica
+  implicito em `search_values` (a candidata unsafe nunca vira `melhor`
+  mesmo com valor simulado maior); considerar expor um campo dedicado se
+  precisar auditar isso sem reconstruir a logica na mao.
 
 ## 2026-07-26 (381) - Claude (sessao remota web) - IMPLEMENTADO: amostragem sequencial/adaptativa no Monte Carlo ao vivo (piso 12 / teto 24), substitui N fixo=6
 
