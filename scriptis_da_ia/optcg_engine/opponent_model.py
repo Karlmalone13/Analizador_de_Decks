@@ -106,8 +106,19 @@ class OpponentModel:
         hand_sample -- são certeza, não sorteio. O restante dos slots de
         mão e todos os slots de vida desconhecida são sorteados juntos de
         uma população compartilhada (ver módulo docstring).
+
+        `rng`: default cai no módulo `random` (o gerador global, o MESMO
+        que `random.seed()` controla em todo o resto do motor -- não em
+        `random.Random()` novo, que semeia do relógio/SO e ignora
+        qualquer seed fixado pelo chamador). Achado 26/07: os 2 call
+        sites deste método passavam `random.Random()` explícito, tornando
+        QUALQUER partida com Turn Planner (main_phase, >1 candidato)
+        nao-reprodutivel mesmo com `random.seed()` fixo -- confirmado
+        rodando o mesmo script/seed duas vezes e vendo a partida jogar
+        diferente. `random` (o modulo) responde a `.shuffle()` com a
+        mesma assinatura de uma instancia de `random.Random()`.
         """
-        rng = rng or random.Random()
+        rng = rng or random
 
         known_hand = opp.known_hand_cards()
         known_life = opp.known_life_cards()

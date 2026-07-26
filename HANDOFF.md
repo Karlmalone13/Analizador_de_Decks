@@ -1,5 +1,65 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-25 (377) - Claude (sessao remota web) - RESOLVIDO: nao-determinismo do motor (OpponentModel.sample usava random.Random() novo, ignorava seed)
+
+Usuario pediu pra investigar o achado lateral do bloco 374 (mesmo
+script/seed rodava diferente 2x seguidas). Causa raiz encontrada e
+corrigida.
+
+**Causa raiz**: `OpponentModel.sample()` (`optcg_engine/opponent_model.py`)
+e seus 2 unicos call sites reais (`decision_engine.py` main_phase --
+amostragem Monte Carlo do Turn Planner, chamada TODO turno com mais de
+1 candidato -- e `sim_bridge.py` `choose_action`, caminho ao vivo)
+passavam/usavam como default `rng=random.Random()` -- uma instancia
+NOVA do gerador, semeada do relogio/SO do processo, que **ignora
+completamente qualquer `random.seed()` fixado pelo chamador**. Como
+essa amostragem roda a cada decisao do Turn Planner (nao so 1x por
+partida), qualquer self-play/replay virava nao-reprodutivel mesmo com
+seed fixo -- confirmado rodando o MESMO script com a MESMA seed 2x
+seguidas e comparando o hash SHA256 do log completo da partida (divergia
+antes do fix).
+
+**Fix**: os 2 call sites (`decision_engine.py:13486`,
+`sim_bridge.py:413`) trocaram `rng=random.Random()` por `rng=random`
+(o **modulo**, nao uma instancia nova) -- o modulo `random` E o gerador
+global compartilhado que `random.seed()` de fato controla, o mesmo
+usado por TODO o resto do motor (`random.shuffle(self.me.deck)`,
+`random.choice(...)`, etc. ja usavam o modulo direto, so este ponto
+criava instancia propria). O default interno de `sample()`
+(`rng = rng or random.Random()`) tambem virou `rng = rng or random`,
+por defesa (nenhum call site real hoje depende desse fallback, mas
+evita reintroduzir o mesmo bug se um chamador futuro omitir `rng`).
+
+**Validado**: rodei `audit_replay.py --n 8 --seed 7` 2x seguidas
+(processos separados) -- output **byte-a-byte identico** (`diff`
+vazio), contra divergencia real confirmada antes do fix. Rodei tambem
+um script de trace dedicado (descartavel, apagado) comparando hash
+SHA256 do combat log de uma partida completa via `ReplayMatch` -- 3
+execucoes seguidas, hash identico nas 3. 2 testes novos em
+`smoke_fast.py` (`test_opponent_model_sample_respeita_random_seed_global`)
+travando essa regressao especifica. `smoke_fast.py` + `smoke_test.py`
+100%.
+
+**Efeito colateral esperado, nao um bug**: como a amostragem Monte
+Carlo agora consome o stream global de aleatoriedade (antes nao
+consumia nada dele, por usar instancia separada), o PAREAMENTO de
+decks escolhido por `audit_replay.py`/`tune_weights.py` pra um dado
+`--seed N` MUDOU em relacao a antes do fix (a mesma seed agora produz
+outra sequencia de matchups) -- isso e esperado (mais numeros aleatorios
+sendo consumidos por partida desloca os sorteios seguintes), nao indica
+problema novo. Rodar com uma seed antiga e comparar contra resultados
+registrados de antes deste fix nao e mais valido; qualquer baseline
+anterior a este commit precisa ser re-gerada.
+
+**Achado colateral, NAO corrigido nesta sessao**: com o motor agora
+reprodutivel, `audit_replay.py --n 8 --seed 7` (pos-fix) reexpos o bug
+de conservacao de DON (bloco 374) de forma ESTAVEL, agora no deck
+Red/Blue Ace (Matches 1 e 5 desta seed especifica, +2/+3 DON fantasma
+"anexado em campo"). Como agora e reprodutivel de verdade, a proxima
+tentativa de investigar esse bug pode usar essa seed/matchup exata sem
+o alvo se mover a cada rodada -- pre-requisito que faltava antes,
+resolvido.
+
 ## 2026-07-25 (376) - Claude (sessao remota web) - sincroniza AGENTS.md com CLAUDE.md (estava desatualizado) + extrai 3 skills de workflow
 
 Continuacao da secao "ORGANIZACAO PROFISSIONAL DO CONTEXTO" do TODO.md

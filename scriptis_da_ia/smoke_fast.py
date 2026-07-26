@@ -8576,6 +8576,7 @@ def main() -> int:
     test_self_play_info_hidden_mascara_counter_e_deck_do_oponente()
     test_check_invariants_unifica_auditoria_no_decision_log()
     test_sim_bridge_delega_escolha_de_alvo_pro_motor_unico()
+    test_opponent_model_sample_respeita_random_seed_global()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -8736,6 +8737,44 @@ def test_sim_bridge_delega_escolha_de_alvo_pro_motor_unico() -> None:
           escolhido is not caro_fora_do_filtro)
     check("_choose_opp_target_filtered escolhe o de maior board_value entre os elegiveis",
           escolhido is medio)
+
+
+def test_opponent_model_sample_respeita_random_seed_global() -> None:
+    # Achado 26/07 (usuario pediu pra investigar o nao-determinismo do
+    # motor registrado no bloco HANDOFF 374): OpponentModel.sample() nos
+    # 2 call sites reais (decision_engine.py main_phase, sim_bridge.py
+    # choose_action) passava rng=random.Random() -- uma instancia NOVA,
+    # semeada do relogio/SO, que ignora QUALQUER random.seed() fixado
+    # pelo chamador. Isso tornava main_phase() (Turn Planner, todo turno
+    # com >1 candidato) nao-reprodutivel mesmo com seed fixo -- confirmado
+    # rodando o MESMO script/seed 2x seguidas e vendo o hash do log da
+    # partida inteira divergir. Fix: default (`rng or random`) e os 2
+    # call sites passaram a usar o modulo `random` (o MESMO stream
+    # global que random.seed() controla em todo o resto do motor), nao
+    # uma instancia nova. Validado apos o fix: `audit_replay.py --n 8
+    # --seed 7` rodado 2x produziu output byte-a-byte identico (antes,
+    # cada rodada escolhia decks/jogava turnos diferentes).
+    import random
+    from optcg_engine.opponent_model import OpponentModel
+
+    opp = GameState(leader=mk("SPH-OM", "Leader", card_type="LEADER"))
+    opp.hand = [real_card("OP01-024"), real_card("OP01-025")]
+    opp.deck = [real_card("OP01-016"), real_card("OP01-018"), real_card("OP01-020")]
+    model = OpponentModel(full_decklist=list(opp.hand) + list(opp.deck))
+
+    random.seed(42)
+    hand1, life1 = model.sample(opp)  # sem rng explicito -> usa o default
+    random.seed(42)
+    hand2, life2 = model.sample(opp)
+    check("OpponentModel.sample() (rng default) com a MESMA seed global da o MESMO sorteio",
+          [c.code for c in hand1] == [c.code for c in hand2])
+
+    random.seed(1)
+    hand3, _ = model.sample(opp, rng=random)  # mesma chamada dos 2 call sites reais
+    random.seed(1)
+    hand4, _ = model.sample(opp, rng=random)
+    check("OpponentModel.sample() (rng=random, igual aos call sites reais) tambem reproduz",
+          [c.code for c in hand3] == [c.code for c in hand4])
 
 
 if __name__ == "__main__":

@@ -410,7 +410,11 @@ def choose_action(gs: GameState, opp_gs: GameState,
                 # alternativas contra o MESMO estado publico mascarado, sem
                 # inventar cartas. Fora do live, preservamos Monte Carlo com
                 # o modelo exato ja existente.
-                amostras = ([model.sample(opp_gs, rng=random.Random())
+                # rng=random (modulo, nao random.Random() novo) -- mesmo
+                # achado 26/07 do main_phase (decision_engine.py): consistente
+                # com o resto do motor, mesmo este caminho ao vivo nao
+                # depender de reproducao por seed.
+                amostras = ([model.sample(opp_gs, rng=random)
                              for _ in range(SEARCH_SAMPLES)] if model is not None
                             else None)
                 if model is not None or hidden:

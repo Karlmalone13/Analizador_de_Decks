@@ -18,7 +18,27 @@ duplicada.
   do hook `pre-commit` (nunca esteve coberto pelo gate mecânico antes) —
   fortalece a rede de segurança pra mudanças futuras nesse arquivo.
 
-## 🔴 BUG DE CONSERVAÇÃO DE DON — investigado a fundo, NÃO resolvido (25/07/2026, bloco 374)
+## 🟢 NÃO-DETERMINISMO NO MOTOR — RESOLVIDO (26/07/2026, bloco 377)
+
+Causa raiz encontrada e corrigida: `OpponentModel.sample()` e seus 2
+call sites reais (`decision_engine.py` main_phase, `sim_bridge.py`
+`choose_action`) usavam `rng=random.Random()` — instância NOVA, semeada
+do relógio/SO, que ignora `random.seed()`. Amostragem Monte Carlo do
+Turn Planner roda a cada decisão (não 1x por partida), então qualquer
+self-play virava não-reprodutível mesmo com seed fixo. Fix: os 2 call
+sites + o default interno passaram a usar o **módulo** `random` (o
+gerador global que `random.seed()` de fato controla), não uma instância
+nova — mesmo padrão já usado em todo o resto do motor.
+
+- [x] Validado: `audit_replay.py --n 8 --seed 7` rodado 2x seguidas
+  (processos separados) → output byte-a-byte idêntico (antes divergia).
+  2 testes novos em `smoke_fast.py`. `smoke_fast.py`+`smoke_test.py` 100%.
+- [x] Efeito colateral esperado (não bug): o pareamento de decks pra uma
+  dada seed mudou em relação a antes do fix (Monte Carlo agora consome
+  o stream global) — qualquer baseline/resultado registrado ANTES deste
+  commit não é mais comparável direto, precisa ser re-gerado.
+
+## 🔴 BUG DE CONSERVAÇÃO DE DON — investigado a fundo, NÃO resolvido (25/07/2026, bloco 374; reprodução agora ESTÁVEL, bloco 377)
 
 Renomeado de "bug de DON do deck Ace" — reproduzido também numa partida
 SEM Ace (Sanji vs Imu), sempre do lado do Imu. Rastreado até a janela
@@ -36,25 +56,11 @@ corretos): custo de jogar carta, `rest_don` (2 pontos), `trash_character`/
 - [ ] Raiz exata NÃO encontrada. Próximo passo: instrumentar direto no
   código (prints temporários em `_execute_attack`/`_attach_don_for_attack`/
   `_execute_step`), não por monkeypatch externo.
-- [ ] **Pré-requisito antes de tentar de novo**: resolver o achado lateral
-  abaixo (não-determinismo) — sem isso, reproduções não são comparáveis.
-
-## 🟡 NÃO-DETERMINISMO NO MOTOR — sobrevive a random.seed() + PYTHONHASHSEED=0 (25/07/2026, bloco 374)
-
-Achado lateral durante a investigação do bug de DON acima: o mesmo
-script, com `random.seed()` fixo E `PYTHONHASHSEED=0`, produziu partidas
-DIFERENTES em duas execuções (call counts diferentes, Empty Throne
-jogando cartas diferentes). Fonte exata não identificada — candidatos:
-desempate por `id()` de objeto em algum sort/set, ou uma instância de
-`random.Random()` não seedada em algum ponto do Turn Planner/Monte Carlo
-(distinta da já conhecida em `sim_bridge.choose_action`).
-
-- [ ] Reduz a confiança de que `audit_replay.py --n N --seed S` reproduz
-  a MESMA partida entre execuções — relevante para qualquer investigação
-  futura baseada em reprodução determinística, e para `tune_weights.py`.
-- [ ] Não investigado ainda: grep por `random.Random(` / `set()` de
-  objetos `Card`/candidatos iterados para desempate dentro de
-  `optcg_engine/`.
+- [x] **Pré-requisito resolvido (bloco 377)**: motor agora reprodutível.
+  `audit_replay.py --n 8 --seed 7` pós-fix reexpõe o bug de forma
+  ESTÁVEL no deck Red/Blue Ace (Matches 1 e 5 desta seed específica) —
+  próxima tentativa pode usar essa seed/matchup exata sem o alvo se
+  mover a cada rodada.
 
 ## 🟢 REGRA "SEM FUNÇÃO DUPLICADA" registrada + 2 duplicatas reais corrigidas (25/07/2026, bloco 373)
 

@@ -13483,7 +13483,11 @@ class OPTCGMatch:
             # mesmo corte de custo do TOP_K acima (ver comentario la): S≈3 com
             # a busca de resposta ligada, S=6 (ja validado) sem ela.
             n_monte_carlo = 3 if USE_OPPONENT_RESPONSE_SEARCH else PLANNER_MC_SAMPLES
-            amostras_turno = [model.sample(opp, rng=random.Random()) for _ in range(n_monte_carlo)]
+            # rng=random (modulo, nao random.Random() novo) -- achado 26/07:
+            # random.Random() semeia do SO/relogio, ignora random.seed() e
+            # tornava main_phase() nao-reprodutivel mesmo com seed fixo
+            # (ver opponent_model.py.sample() docstring).
+            amostras_turno = [model.sample(opp, rng=random) for _ in range(n_monte_carlo)]
 
             melhor_acao = None
             melhor_valor = -1e18
