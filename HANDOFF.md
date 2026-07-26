@@ -1,5 +1,58 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-25 (375) - Claude (sessao remota web) - varredura retroativa de "duplicacao de decisao" em bot_optcgsim.py e server.py: RESULTADO LIMPO
+
+Continuacao do bloco 373 (regra sem-duplicacao) -- pendencia registrada
+la ("bot_optcgsim.py e server.py ainda nao passaram pela varredura
+retroativa que sim_bridge.py passou"). Usuario pediu pra fazer agora.
+
+**Metodologia**: leitura manual de todo endpoint/funcao com potencial de
+decisao em `BOT/engine_server/server.py` (`mulligan`, `defense`,
+`choose_target`, `decide`, `_dto_to_gs`, `_resource_snapshot`/
+`_transition_observation`) e em `scriptis_da_ia/bot_optcgsim.py`
+(`_should_use_trigger`, `_resolve_post_deploy`, `_try_deploy_card`,
+`_execute_engine_action`, `_consume_engine_action_locally`, loop
+principal de `play_match`) -- mais um scan mecanico (mesmo espirito do
+`ENGINE_TOUCHPOINTS` do hook `pre-commit`) procurando comparacao
+numerica (`<`,`<=`,`>=`,`>`,`==`) SEM nenhum touchpoint do motor unico
+na mesma linha, nos 2 arquivos inteiros (nao so no diff, ja que nunca
+tinham sido varridos).
+
+**Resultado: LIMPO, nenhuma duplicacao encontrada.**
+- `server.py`: toda decisao real delega pro motor
+  (`DecisionEngine.should_use_blocker`, `bridge.select_counter_cards`,
+  `bridge.resolve_trigger_choice`, `bridge.resolve_reaction`,
+  `bridge.resolve_optional_effect`, `bridge.order_target_candidates`,
+  `bridge.choose_action`, `match._mulligan_decision`). As linhas que o
+  scan mecanico apontou sao todas transporte puro (desempacotar tupla
+  de acao ja decidida, fallback de campo de DTO ausente, alerta de
+  latencia) -- confirma na pratica o que o proprio codigo ja dizia
+  ("server.py = transporte puro").
+- `bot_optcgsim.py`: e um bot standalone SEPARADO do par C#/`server.py`
+  (chama `sim_bridge.choose_action`/`resolve_prompt_choice`/
+  `resolve_trigger_choice` DIRETO, em processo, nunca via HTTP) -- mas
+  mesma regra vale: toda decisao de jogo delega pro `bridge`. As linhas
+  locais sao OCR/sincronizacao de estado (`_lookup_by_name` resolve
+  ambiguidade de OCR por nome+custo, correcao de drift de DON via hover,
+  heuristicas de "parar de tentar" em loop de scan) -- nao decisao de
+  jogo. Achado arquitetural (nao-bug): este bot nunca joga defesa
+  ativa (sempre clica Pass/No no turno do oponente) -- limitacao de
+  escopo documentada no proprio fluxo do arquivo, nao uma segunda
+  heuristica competindo com o motor.
+
+**Fix aplicado (fortalecimento do gate, nao um bug)**: `bot_optcgsim.py`
+NUNCA esteve nas `BRIDGE_FILES` do hook `pre-commit` -- mudancas futuras
+nele nao passavam por NENHUM gate mecanico (so sim_bridge.py/server.py
+eram cobertos). Adicionado a `BRIDGE_FILES`, e `ENGINE_TOUCHPOINTS`
+ganhou `bridge\.` (esse arquivo chama sim_bridge quase sempre via
+`bridge.metodo(...)`, nao importando `DecisionEngine`/`EffectExecutor`
+direto). Nenhuma mudanca de comportamento -- so estende a rede de
+seguranca mecanica pra um arquivo que ja segue a regra na pratica.
+
+**Nenhuma mudanca de codigo em `server.py`/`bot_optcgsim.py`** -- so no
+hook. `smoke_fast.py`/`smoke_test.py` nao afetados (nao tocam nesses
+2 arquivos).
+
 ## 2026-07-25 (374) - Claude (sessao remota web) - bug de conservacao de DON: investigacao aprofundada, NAO resolvido, achado lateral de nao-determinismo
 
 Usuario pediu pra atacar o bug de conservacao de DON registrado nos

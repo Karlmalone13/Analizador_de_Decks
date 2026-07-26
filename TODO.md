@@ -2,6 +2,22 @@
 
 **Última atualização:** 25 de julho de 2026
 
+## 🟢 VARREDURA RETROATIVA bot_optcgsim.py/server.py — RESULTADO LIMPO (25/07/2026, bloco 375)
+
+Pendência do bloco 373 fechada. Leitura manual + scan mecânico dos dois
+arquivos inteiros: **nenhuma duplicação de decisão encontrada** — toda
+decisão real já delega pro motor único (`bridge.*`/`DecisionEngine.*`)
+em ambos. `bot_optcgsim.py` é um bot standalone separado do par
+C#/`server.py` (chama `sim_bridge` direto, sem HTTP), mas segue a mesma
+regra; sua única particularidade é nunca jogar defesa ativa (sempre
+"Pass" no turno do oponente) — limitação de escopo, não heurística
+duplicada.
+
+- [x] Investigado, sem achado de bug.
+- [x] `bot_optcgsim.py` adicionado ao `BRIDGE_FILES`/`ENGINE_TOUCHPOINTS`
+  do hook `pre-commit` (nunca esteve coberto pelo gate mecânico antes) —
+  fortalece a rede de segurança pra mudanças futuras nesse arquivo.
+
 ## 🔴 BUG DE CONSERVAÇÃO DE DON — investigado a fundo, NÃO resolvido (25/07/2026, bloco 374)
 
 Renomeado de "bug de DON do deck Ace" — reproduzido também numa partida
@@ -64,12 +80,8 @@ mais pobre que o motor interno já tinha):
   [`scriptis_da_ia/REGRA_SEM_DUPLICACAO.md`](scriptis_da_ia/REGRA_SEM_DUPLICACAO.md)
   — leitura obrigatória, impressa por inteiro pelo hook `pre-commit`
   (mesmo tratamento do `MEMORY.md`) e referenciada em `CLAUDE.md`.
-- [ ] Não investigado a fundo (fora do escopo desta sessão, região
-  ainda maior do código): `bot_optcgsim.py` (plugin/loop de clique) e
-  `BOT/engine_server/server.py` — o gate mecânico do `pre-commit`
-  (`ENGINE_TOUCHPOINTS`) já cobre novidades futuras nesses arquivos,
-  mas uma varredura retroativa como a feita em `sim_bridge.py` não foi
-  feita neles ainda.
+- [x] `bot_optcgsim.py` e `BOT/engine_server/server.py` — varredura
+  retroativa feita, **resultado limpo** (ver bloco 375 acima).
 
 ## 🟢 ReplayMatch.play_turn() DUPLICADO APAGADO — delega 100% pra OPTCGMatch.play_turn() (25/07/2026, bloco 372)
 
