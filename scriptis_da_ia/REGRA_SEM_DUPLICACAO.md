@@ -82,9 +82,11 @@ rica existir, ou por conveniência local, e nunca foi atualizado depois.
 3. Se `sim_bridge.py`/`server.py`/`bot_optcgsim.py` precisam de uma
    comparação numérica (`<`, `<=`, `>=`, `>`, `==`) pra decidir algo, ela
    PRECISA estar chamando algo de `decision_engine.py` no mesmo trecho
-   — o hook `pre-commit` já bloqueia mecanicamente esse padrão pra
-   `sim_bridge.py`/`server.py` (ver `ENGINE_TOUCHPOINTS` no hook), mas
-   isso é uma rede de segurança, não substitui a pergunta 1.
+   — o hook `pre-commit` já bloqueia mecanicamente esse padrão nos 3
+   arquivos (ver `ENGINE_TOUCHPOINTS`/`BRIDGE_FILES` no hook — varredura
+   retroativa de `bot_optcgsim.py`/`server.py` feita em 25/07/2026,
+   bloco HANDOFF 375, resultado limpo), mas isso é uma rede de
+   segurança, não substitui a pergunta 1.
 4. Se encontrar uma duplicata JÁ existente (não uma nova sendo
    escrita): registre em `HANDOFF.md`/`TODO.md`, corrija delegando pra
    fonte única, adicione teste permanente em `smoke_fast.py` provando a
