@@ -1,5 +1,46 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-26 (379) - Claude (sessao remota web) - sweep de SEARCH_SAMPLES: mantido em 6, achados sobre teto real e sobre "empate tecnico" que amostra nao resolve
+
+Usuario perguntou se dava pra ir subindo o numero de amostras Monte
+Carlo (bloco 378) ate achar o ponto bom de qualidade x tempo de
+resposta. Antes de testar, promovi `SEARCH_TOP_K`/`SEARCH_SAMPLES`/
+`SEARCH_MAX_STEPS` (variaveis LOCAIS de `choose_action`) pra constantes
+de modulo `SEARCH_TOP_K_DEFAULT`/`SEARCH_SAMPLES_DEFAULT`/
+`SEARCH_MAX_STEPS_DEFAULT` (`sim_bridge.py`) -- mesmo padrao ja usado em
+`decision_engine.py` (`PLANNER_MC_SAMPLES`), sem mudar nenhum valor,
+so pra permitir variar de fora (sweep/calibracao futura) sem editar a
+funcao. `smoke_fast.py`/`smoke_test.py` 100% depois do refactor.
+
+**Sweep real** (script descartavel, nao commitado): 320 chamadas de
+`choose_action`, 2 cenarios (um "empate tecnico" com 2-3 candidatos que
+ja mostrava instabilidade com poucas amostras, um board pesado 5v5) x
+8 valores de amostra (2 a 40) x 20 repeticoes, medindo % de vezes que a
+MESMA acao e escolhida (estabilidade) e tempo real.
+
+**Achado 1 -- board pesado, teto real de tempo confirmado**: custo
+escala quase LINEAR com o numero de amostras. N=40 no PIOR CASO chegou
+a **3006ms**, estourando um timeout tipico de 3s. N=20 ja usa quase
+metade do orcamento no pior caso (1479ms). N=6 (valor atual) fica em
+~388ms no pior caso -- folga confortavel.
+
+**Achado 2, mais importante -- mais amostras NAO estabiliza o cenario
+de empate tecnico**: estabilidade NAO sobe de forma consistente com N
+(95% em N=2, cai pra 55% em N=15, sobe pra 70% em N=20, cai de novo pra
+55-60% em N=30/40). Isso indica que aquele cenario especifico e um
+empate DE VERDADE em valor esperado (as duas acoes tem score muito
+proximo mesmo com informacao perfeita sobre a mao do oponente) -- mais
+amostras so ajuda quando existe uma resposta certa sendo obscurecida
+por ruido de amostragem; aqui parece nao ter uma resposta clara, entao
+nenhum N razoavel "resolve" a instabilidade.
+
+**Decisao**: mantido `SEARCH_SAMPLES_DEFAULT=6` -- ja da 100% de
+estabilidade no cenario pesado com folga grande, e subir mais nao
+mostrou melhora confiavel de qualidade no cenario apertado, so mais
+risco de estourar timeout em boards pesados. Nao implementado: nenhuma
+mudanca de valor nesta sessao, so o refactor pra constante de modulo
+(que ja habilita qualquer sweep futuro sem editar codigo de novo).
+
 ## 2026-07-26 (378) - Claude (sessao remota web) - Monte Carlo ao vivo com informacao mascarada: fallback em 3 camadas (lider exato -> mesma cor -> pool generico por cor) + SEARCH_SAMPLES 2->6
 
 Usuario pediu pra melhorar o Monte Carlo do Turn Planner. Investigando,

@@ -2,6 +2,26 @@
 
 **Última atualização:** 26 de julho de 2026
 
+## 🟢 SWEEP DE SEARCH_SAMPLES — mantido em 6, teto real e limite de amostragem encontrados (26/07/2026, bloco 379)
+
+`SEARCH_TOP_K`/`SEARCH_SAMPLES`/`SEARCH_MAX_STEPS` promovidos de
+variável local pra constante de módulo (`*_DEFAULT` em `sim_bridge.py`)
+— permite sweep/calibração futura sem editar a função.
+
+Sweep real (320 chamadas, 2 cenários x 8 valores de amostra): board
+pesado (5v5) escala quase linear, N=40 estourou 3s no pior caso (teto
+real de tempo). Cenário de "empate técnico" mostrou que **mais
+amostras não estabiliza sempre** — quando duas ações têm valor esperado
+genuinamente próximo, nenhum N razoável resolve a instabilidade (não é
+ruído de amostragem, é empate de verdade).
+
+- [x] Mantido `SEARCH_SAMPLES_DEFAULT=6` — melhor ponto encontrado
+  (100% estável no cenário pesado, folga grande de tempo).
+- [ ] Se aparecer decisão inconsistente ao vivo numa situação de score
+  muito próximo, não assumir que é bug — pode ser um empate real em
+  valor esperado (ver achado acima), checar `search_values`/
+  `opponent_model_source` na telemetria antes de investigar mais.
+
 ## 🟢 MONTE CARLO AO VIVO REALMENTE LIGADO — fallback lider→cor→genérico (26/07/2026, bloco 378)
 
 Achado: `sim_bridge.choose_action` (produção, via `/decide`) nunca ligava

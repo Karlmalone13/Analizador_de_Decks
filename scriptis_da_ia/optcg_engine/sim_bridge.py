@@ -39,6 +39,15 @@ from optcg_engine.opponent_model import OpponentModel
 DECKS_DIR = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks")
 CSV_PATH  = _SCRIPTS_DIR / "cards_rows.csv"
 
+# ── Parametros da busca contrafactual de choose_action (item 3 do plano) ──────
+# Promovidos de variavel local pra constante de modulo (26/07) -- permite
+# variar de fora (`sim_bridge.SEARCH_SAMPLES_DEFAULT = N`) pra sweep de
+# calibracao, sem editar a funcao. Mesmo padrao ja usado em
+# decision_engine.py (PLANNER_MC_SAMPLES).
+SEARCH_TOP_K_DEFAULT = 2
+SEARCH_SAMPLES_DEFAULT = 6
+SEARCH_MAX_STEPS_DEFAULT = 4
+
 # ── Carrega banco de cartas uma vez ───────────────────────────────────────────
 # _load_effects_db/_load_analysis_db populam globals do decision_engine e
 # retornam None — ler o global depois de carregar (bug corrigido: _effects_db
@@ -493,19 +502,9 @@ def choose_action(gs: GameState, opp_gs: GameState,
     import time
     result: list = [None]
     exclude_activate_codes = exclude_activate_codes or set()
-    SEARCH_TOP_K = 2
-    # 2 -> 6 (26/07, pedido do usuario): antes do fallback por cor/lider
-    # (opponent_model_for_leader), o caminho AO VIVO com informacao
-    # mascarada nunca ligava o Monte Carlo (model=None sempre), entao
-    # SEARCH_SAMPLES nao tinha efeito nenhum na pratica. Com o Monte Carlo
-    # agora realmente ativo, 2 amostras deixava a escolha instavel entre
-    # chamadas identicas (attack vs play alternando na MESMA situacao, so
-    # por sorte da amostra) -- profiling real confirmou folga enorme de
-    # orcamento mesmo em board pesado (5v5): ~139ms de line_search no pior
-    # caso medido, contra timeout de 3-4s. 6 amostras (~3x o custo, ainda
-    # <500ms no pior caso) reduz bastante essa variancia.
-    SEARCH_SAMPLES = 6
-    SEARCH_MAX_STEPS = 4
+    SEARCH_TOP_K = SEARCH_TOP_K_DEFAULT
+    SEARCH_SAMPLES = SEARCH_SAMPLES_DEFAULT
+    SEARCH_MAX_STEPS = SEARCH_MAX_STEPS_DEFAULT
 
     def _run() -> None:
         try:
