@@ -951,40 +951,49 @@ estatística pro resto (mesma infra do `counter_estimation.py`).
 
 ---
 
-## 🟣 ORGANIZAÇÃO PROFISSIONAL DO CONTEXTO — regras, especificações e skills (17/07/2026)
+## 🟣 ORGANIZAÇÃO PROFISSIONAL DO CONTEXTO — regras, especificações e skills (17/07/2026, avançado 25/07/2026 bloco 376)
 
 Objetivo: reduzir contexto repetido sem esconder decisões arquiteturais em memória
 local ou em prompts enormes. Não mover tudo para skills; cada informação deve ter
 uma fonte canônica conforme sua função:
 
-- [ ] **`AGENTS.md` = constituição curta do projeto:** invariantes obrigatórias,
-  limites de arquitetura, gates de commit e comandos mínimos.
+- [x] **`AGENTS.md` = constituição curta do projeto** — **achado 25/07**: o
+  arquivo já existia (não "não criado" como este item dizia), mas estava
+  dessincronizado do `CLAUDE.md` há semanas — faltavam regra sem-duplicação,
+  regra dos dois-pontos, gate do parser, seções de telemetria/eficiência.
+  Ressincronizado por inteiro; os dois arquivos ganharam nota "Espelho" no
+  topo alertando pra replicar edições futuras nos dois. Não elimina o risco
+  de divergir de novo (isso é o item de de-duplicação abaixo, adiado de
+  propósito), só torna visível.
 - [x] **`specs/` = comportamento verificável:** criada a primeira especificação
   em `specs/metrics-protocol.md`; continuar com especificações pequenas por
   domínio (`engine-rules.md`, `parser-contract.md`, `bot-bridge.md`,
   `metrics-protocol.md`). Cada regra deve apontar para teste/evidência e definir
   entrada, saída, invariantes e critério de aceite. Evitar repetir o `AGENTS.md`.
-- [ ] **Skills = workflows repetitivos, não regras do produto:** começar por
-  `optcg-parser-audit` (censo global → snapshot → fix genérico → diff → gerar DBs →
-  smoke → audit JSON), `optcg-live-log-triage` (preservar log → parsear → comparar
-  bot/humano → localizar bridge/engine) e `optcg-release-handoff` (status → testes →
-  HANDOFF → commit/push).
+- [x] **Skills extraídas (25/07, bloco 376)**: `.claude/skills/optcg-parser-audit`,
+  `.claude/skills/optcg-live-log-triage`, `.claude/skills/optcg-release-handoff`
+  — cada uma aponta de volta pro `AGENTS.md`/`CLAUDE.md`/`TODO.md` pro "porquê",
+  só o "como executar passo a passo" fica na skill.
 - [x] **Scripts determinísticos em vez de instrução textual:** criado
   `scriptis_da_ia/bot_efficiency_report.py`, com cohorts explícitos, bootstrap
   IC95%, proxy opcional e JSON reproduzível. Próximos scripts devem seguir o
   mesmo padrão e ser chamados pelas skills.
 - [ ] **`HANDOFF.md` = deltas recentes:** manter registro cronológico do que mudou,
   evidências e próximo passo; consolidar fatos estáveis nas specs.
-- [ ] **Gate de consistência documental:** antes do push, verificar se `TODO.md`,
-  `HANDOFF.md`, specs afetadas e auditorias refletem o mesmo commit.
+- [x] ~~**Gate de consistência documental**~~ — **descartado pelo usuário
+  25/07** ("acho que esse gate não precisa, não entendi direito o que ele
+  faz"). Não reabrir sem pedido explícito.
 
 ### Ordem recomendada de implantação
 
 1. ~~Criar `specs/metrics-protocol.md` e o script de relatório antes/depois.~~
    **Concluído em 17/07/2026.**
-2. Extrair o workflow estável do parser para `optcg-parser-audit`.
-3. Extrair triagem de combat log para `optcg-live-log-triage`.
-4. Só depois reduzir textos duplicados de `AGENTS.md`/`CLAUDE.md`/`HANDOFF.md`.
+2. ~~Extrair o workflow estável do parser para `optcg-parser-audit`.~~ **Concluído 25/07/2026.**
+3. ~~Extrair triagem de combat log para `optcg-live-log-triage`.~~ **Concluído 25/07/2026.**
+4. **Pendente, de propósito adiado**: reduzir textos duplicados de
+   `AGENTS.md`/`CLAUDE.md`/`HANDOFF.md` (hoje são espelhos quase completos
+   um do outro — funciona, mas ainda tem o risco de divergir nas edições
+   futuras que a nota "Espelho" só mitiga, não elimina).
 
 ---
 

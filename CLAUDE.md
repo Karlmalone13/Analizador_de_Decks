@@ -1,5 +1,12 @@
 # CLAUDE.md — guia para qualquer sessão nova (Claude Code / Codex)
 
+> **Espelho**: este arquivo e [`AGENTS.md`](AGENTS.md) (lido pelo Codex)
+> devem conter as MESMAS regras de projeto — só a moldura muda (nome da
+> ferramenta, caminho da memória local). Se adicionar/editar uma regra
+> aqui, replique a mesma edição lá (achado 25/07/2026: os dois
+> divergiram por meses sem ninguém notar — sessões Codex ficaram sem
+> várias regras que só entravam no `CLAUDE.md`).
+
 ## LEITURA OBRIGATÓRIA ANTES DE QUALQUER COMMIT
 
 > **ESTADO ATUAL OBRIGATORIO - proxy/telemetria (18/07/2026):** antes de

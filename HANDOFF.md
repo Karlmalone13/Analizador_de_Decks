@@ -1,5 +1,53 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-25 (376) - Claude (sessao remota web) - sincroniza AGENTS.md com CLAUDE.md (estava desatualizado) + extrai 3 skills de workflow
+
+Continuacao da secao "ORGANIZACAO PROFISSIONAL DO CONTEXTO" do TODO.md
+(17/07). Usuario pediu pra fazer os 2 primeiros itens (AGENTS.md +
+skills), descartou o 3o (gate de consistencia documental) por nao ter
+entendido bem o proposito.
+
+**Achado antes de mexer**: `AGENTS.md` (lido pelo Codex) **já existia**
+-- o TODO.md registrava "ainda não criado", desatualizado. O achado
+real foi que ele estava DESSINCRONIZADO do `CLAUDE.md` (lido pelo Claude
+Code): faltavam a regra "sem função duplicada" (bloco 373), a regra dos
+dois-pontos (23/07), o gate obrigatório de auditoria do parser, e as
+seções inteiras de "Telemetria de decisão" e "Eficiência agregada"
+(23-24/07) -- ou seja, sessões Codex rodando neste repo estavam vendo
+um conjunto de regras incompleto há semanas, sem ninguém notar (mesmo
+padrão de "duplicação que diverge sem ser pega" do resto da sessão de
+hoje, só que em documentação em vez de código).
+
+**Fix**: `AGENTS.md` reescrito pra espelhar o `CLAUDE.md` inteiro
+(mesmas regras, só a moldura muda -- nome da ferramenta e o caminho da
+memória local, já que Codex não tem o mecanismo de MEMORY.md do Claude
+Code). Os dois arquivos ganharam uma nota no topo ("Espelho") lembrando
+que uma edição num precisa ser replicada no outro -- não elimina o
+risco de divergência futura (isso seria o item 4 do plano do TODO,
+"reduzir textos duplicados", propositalmente adiado pro final), mas
+deixa o risco visível em vez de silencioso.
+
+**Skills extraídas** (`.claude/skills/`, sem rodar o processo completo
+de eval/benchmark do skill-creator -- workflow já totalmente
+especificado pelo próprio TODO.md, não precisava de interview):
+- `optcg-parser-audit` -- fluxo obrigatório de bug de parser (busca
+  global → fix genérico → `diff_parser.py` PERDEU=0 → gerar DBs →
+  registro em `parser_audits/` → smoke tests).
+- `optcg-live-log-triage` -- fluxo obrigatório de combat log novo
+  (banco → telemetria agregada primeiro, decisão-a-decisão depois, só
+  se sessão local → `bot_efficiency_report.py` com números).
+- `optcg-release-handoff` -- checklist de fim de sessão (status real →
+  suíte de teste certa → bloco HANDOFF → delta TODO → commit/push).
+
+Todos apontam de volta pro `AGENTS.md`/`CLAUDE.md`/`TODO.md` pro "porquê"
+em vez de duplicar a prosa -- só o "como executar passo a passo" fica
+na skill.
+
+**Não feito, por decisão do usuário**: item 3 (gate de consistência
+documental antes do push, checando se TODO/HANDOFF/specs refletem o
+mesmo commit) -- usuário achou o propósito confuso, descartado por
+ora. Fica registrado no TODO.md como não-prioridade, não como pendente.
+
 ## 2026-07-25 (375) - Claude (sessao remota web) - varredura retroativa de "duplicacao de decisao" em bot_optcgsim.py e server.py: RESULTADO LIMPO
 
 Continuacao do bloco 373 (regra sem-duplicacao) -- pendencia registrada
