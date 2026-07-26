@@ -1,6 +1,33 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 25 de julho de 2026
+**Última atualização:** 26 de julho de 2026
+
+## 🟢 MONTE CARLO AO VIVO REALMENTE LIGADO — fallback lider→cor→genérico (26/07/2026, bloco 378)
+
+Achado: `sim_bridge.choose_action` (produção, via `/decide`) nunca ligava
+Monte Carlo de verdade — `hidden_information_masked=True` (sempre ao
+vivo) forçava `model=None` antes de tentar qualquer coisa.
+`opponent_model_for_leader` agora tem 3 camadas de fallback (deck real do
+MESMO líder → deck real da MESMA cor → pool genérico por cor, regra dura
+de construção de deck) que nunca exige saber a decklist exata do
+oponente. `SEARCH_SAMPLES` (2→6) também subiu, já que agora realmente
+importa (antes não tinha efeito nenhum no caminho mascarado).
+
+- [x] Implementado e validado (profiling real: ~220-315ms de line_search
+  no pior caso testado, board 5v5, contra timeout de 3-4s — folga
+  grande). 2 testes novos em `smoke_fast.py`, suítes 100%.
+- [ ] **REFINAMENTO FUTURO, NÃO ESQUECER (pedido explícito do usuário)**:
+  a camada 3 (pool genérico por cor) é uniforme — toda carta daquela cor
+  pesa igual, sem favorecer staples de torneio reais sobre cartas nunca
+  jogadas. Precisa de alguma proxy de popularidade pra pesar isso melhor.
+- [ ] Banco `decklists_raw.csv` ainda escasso pras camadas 1/2 (193 decks,
+  só 19 líderes/12 combinações de cor únicas) — enriquecer com mais
+  decks scrapeados melhoraria a precisão das camadas 1/2 sem depender só
+  da camada 3 genérica.
+- [ ] Ainda não testado ao vivo — próxima partida real deve conferir
+  `opponent_model_source` na telemetria (`decision`/`scored_actions` do
+  `/decide`) pra ver qual camada está sendo usada na prática contra
+  oponentes reais.
 
 ## 🟢 VARREDURA RETROATIVA bot_optcgsim.py/server.py — RESULTADO LIMPO (25/07/2026, bloco 375)
 

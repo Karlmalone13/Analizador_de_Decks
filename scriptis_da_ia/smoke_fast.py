@@ -1761,7 +1761,20 @@ def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
           action is not None)
 
 
-def test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado() -> None:
+def test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor() -> None:
+    # Ate 25/07 (achado 26/07, pedido do usuario): `hidden=True` desligava
+    # o Monte Carlo por completo (model=None sempre), caindo pra uma UNICA
+    # simulacao contra o estado publico mascarado, sem amostragem nenhuma.
+    # Fix: opponent_model_for_leader agora tem fallback em 3 camadas (deck
+    # real do MESMO lider -> deck real da MESMA cor -> pool generico por
+    # cor, regra dura de construcao de deck) que NUNCA precisa saber a
+    # decklist EXATA do oponente -- so informacao legitimamente disponivel
+    # (cor do lider + banco de decks reais). Doflamingo (OP04-019,
+    # Green/Purple) tem decks reais da MESMA cor em decklists_raw.csv
+    # (camada 2), entao o Monte Carlo agora liga de verdade mesmo com a
+    # mao do oponente 100% mascarada -- NENHUMA carta oculta especifica e
+    # "adivinhada" (as amostras vem do pool estatistico, nunca dos objetos
+    # UNKNOWN-000 reais que representam a mao verdadeira).
     me = GameState(leader=real_card("OP11-062"), don_available=5, turn=3)
     me.hand = [real_card("ST34-004"), real_card("ST34-005")]
     me.life = [real_card("OP07-077") for _ in range(4)]
@@ -1779,14 +1792,59 @@ def test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado() -> None:
           action is not None)
     check("contrafactual live registra pelo menos duas alternativas simuladas",
           len(trace.get("search_values", [])) >= 2)
-    check("telemetria identifica que a simulacao usou estado publico mascarado",
-          trace.get("counterfactual_basis") == "masked_public_state")
-    check("estado publico mascarado escolhe pela linha, nao so audita score imediato",
-          trace.get("selection") == "masked_public_line_search")
+    check("telemetria identifica que a simulacao usou Monte Carlo (fallback de cor), nao mascarado puro",
+          trace.get("counterfactual_basis") == "sampled_opponent_model")
+    check("com Monte Carlo ligado, a selecao vira busca contrafactual de verdade",
+          trace.get("selection") == "counterfactual_search")
+    check("telemetria expoe qual camada do fallback foi usada (aqui: mesma cor, sem lider exato)",
+          trace.get("opponent_model_source") == "color_match_raw_decklists")
     check("telemetria registra profundidade, orcamento DON e acao da linha",
           trace.get("line_search", {}).get("depth") == 4
           and trace.get("line_search", {}).get("don_budget_before") == 5
           and trace.get("line_search", {}).get("selected") is not None)
+
+
+def test_opponent_model_for_leader_fallback_3_camadas() -> None:
+    # Achado 26/07 (pedido do usuario): banco de decks reais ainda escasso
+    # (19 lideres/12 combinacoes de cor em decklists_raw.csv) -- 3 camadas
+    # de fallback garantem que o Monte Carlo ao vivo SEMPRE tenha algum
+    # pool estatisticamente legitimo, mesmo sem conhecer o lider exato do
+    # oponente, sem NUNCA assumir a decklist exata dele.
+    from optcg_engine import sim_bridge as _sb
+
+    # Camada 2: lider desconhecido, mas cor bate com decks reais do banco
+    # (Green/Purple tem decks reais catalogados -- Doflamingo nao precisa
+    # ser o lider exato, so a cor).
+    model_cor = _sb.opponent_model_for_leader("ZZ99-DESCONHECIDO", "Green Purple")
+    check("camada 2 (mesma cor) acha pool via decklists_raw.csv pra lider desconhecido",
+          model_cor is not None and len(model_cor.full_decklist) > 0)
+    check("fonte registrada como color_match_raw_decklists",
+          _sb.opponent_model_source_for_leader("ZZ99-DESCONHECIDO", "Green Purple")
+          == "color_match_raw_decklists")
+
+    # Camada 3: nem lider nem cor batem com NENHUM deck real conhecido --
+    # usa uma combinacao de cor rara/inventada, garantindo que caia no
+    # pool generico por cor (regra dura de construcao de deck).
+    model_generico = _sb.opponent_model_for_leader("ZZ99-DESCONHECIDO", "Black Green Yellow")
+    check("camada 3 (pool generico por cor) nunca fica sem opcao, mesmo sem deck real conhecido",
+          model_generico is not None and len(model_generico.full_decklist) > 0)
+    check("fonte registrada como generic_color_pool",
+          _sb.opponent_model_source_for_leader("ZZ99-DESCONHECIDO", "Black Green Yellow")
+          == "generic_color_pool")
+    # Nenhuma carta do pool generico deve ter cor FORA das 3 cores do lider
+    # (regra dura do jogo -- nao e palpite, entao tem que ser 100% respeitada).
+    cores_permitidas = {"Black", "Green", "Yellow"}
+    fora_da_cor = [c for c in model_generico.full_decklist
+                   if c.color and not (set(c.color.replace('/', ' ').split()) & cores_permitidas)]
+    check("pool generico nunca inclui carta de cor fora do lider (regra dura do jogo)",
+          fora_da_cor == [])
+
+    # Sem NENHUMA cor informada (edge case defensivo): cai em None, caller
+    # deve degradar pro caminho antigo (masked_public_line_search), nunca
+    # travar/piorar a decisao.
+    model_vazio = _sb.opponent_model_for_leader("ZZ99-DESCONHECIDO", "")
+    check("sem lider nem cor conhecidos, cai em None (nenhuma camada disponivel)",
+          model_vazio is None)
 
 
 def test_search_contextual_evita_congestionar_mao_com_bombas() -> None:
@@ -8436,7 +8494,8 @@ def main() -> int:
     test_turn_planner_fase_b_combos_na_ordem_de_jogadas_e_ataques()
     test_turn_planner_fase_b_mais_gatilhos_de_combo_na_decisao()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
-    test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
+    test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor()
+    test_opponent_model_for_leader_fallback_3_camadas()
     test_search_contextual_evita_congestionar_mao_com_bombas()
     test_plano_katakuri_prefere_rampa_e_bloqueia_desperdicios()
     test_ataque_respeita_orcamento_da_jogada_principal_e_don_anexado()

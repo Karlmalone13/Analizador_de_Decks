@@ -1,5 +1,84 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-26 (378) - Claude (sessao remota web) - Monte Carlo ao vivo com informacao mascarada: fallback em 3 camadas (lider exato -> mesma cor -> pool generico por cor) + SEARCH_SAMPLES 2->6
+
+Usuario pediu pra melhorar o Monte Carlo do Turn Planner. Investigando,
+achei que `sim_bridge.choose_action` (caminho AO VIVO de producao, via
+`server.py` `/decide`) **nunca ligava o Monte Carlo de verdade**: sempre
+que `opp_gs.hidden_information_masked=True` (SEMPRE no `/decide` real),
+o codigo forcava `model=None` antes mesmo de tentar
+`opponent_model_for_leader`, caindo direto num fallback de "1 unica
+simulacao contra o estado publico mascarado, sem amostragem nenhuma".
+`SEARCH_SAMPLES` (a constante que eu ia so aumentar) nao tinha efeito
+NENHUM nesse caminho.
+
+Usuario perguntou por que, apontando a regra de "motor unico" -- expliquei
+que nao e violacao (mesmas funcoes de scoring/simulacao nos dois
+caminhos), o problema real e que `OpponentModel.sample()` exige a
+decklist EXATA do oponente (legitimo offline, onde o mesmo programa
+construiu os 2 decks; NAO legitimo ao vivo contra humano, que o bot
+nao pode assumir que sabe). Usuario propos o design: usar as CORES do
+lider (regra dura de construcao de deck, nunca palpite) + o banco de
+decks reais ja catalogado (`decklists_raw.csv`) como fallback estatistico,
+em vez de desligar o Monte Carlo inteiro.
+
+**Implementado** (`optcg_engine/sim_bridge.py`):
+- `opponent_model_for_leader(leader_code, leader_color='')` (assinatura
+  estendida) agora tem 3 camadas de fallback, cada uma so tenta a proxima
+  se a anterior nao achar nada:
+  1. Deck(s) reais com o MESMO lider -- `.deck` local (ja existia) OU
+     `decklists_raw.csv` (novo, funciona em qualquer sessao -- ao
+     contrario do `.deck` local, que so existe no desktop). Pool
+     normalizado por **frequencia MEDIA** quando ha mais de 1 deck real
+     do mesmo lider (`_representative_decklist`) -- pedido explicito do
+     usuario: juntar decks diferentes sem inflar staples comuns por soma
+     bruta.
+  2. Sem lider exato: deck(s) reais da MESMA combinacao de cor
+     (`decklists_raw.csv`), mesma normalizacao por frequencia.
+  3. Sem nada disso: pool generico (`_generic_pool_for_colors`) com
+     QUALQUER carta do banco inteiro cuja cor seja incolor ou uma das
+     cores do lider -- regra dura do jogo, nao palpite, entao seguro
+     mesmo sem nenhuma referencia real. **Uniforme por ora** (sem peso de
+     popularidade -- ver pendencia registrada abaixo).
+- `sim_bridge.choose_action`: removida a linha que forcava `model=None`
+  quando `hidden=True` -- agora sempre tenta
+  `opponent_model_for_leader(leader_code, leader_color)`, que so retorna
+  `None` de verdade se nem `leader_color` estiver disponivel (edge case
+  raro, DTO ao vivo sempre traz o lider). `trace_out["opponent_model_source"]`
+  novo expõe qual camada foi usada, pra auditoria em partida real (ver
+  `opponent_model_source_for_leader`).
+- `SEARCH_SAMPLES`: 2 -> 6. Com o Monte Carlo agora realmente ativo no
+  caminho mascarado, 2 amostras deixava a escolha instavel entre chamadas
+  IDENTICAS (attack vs play alternando na mesma situacao, so por sorte da
+  amostra) -- profiling real (board 5v5, pior caso testado) mostrou
+  ~139ms de `line_search` com 2 amostras e ~220-315ms com 6, contra
+  timeout de 3-4s por decisao -- folga enorme, decisao consistente depois
+  do bump (mesma situacao passou a escolher sempre a mesma acao nas 5
+  execucoes testadas).
+
+**Cobertura do banco hoje** (`decklists_raw.csv`): 193 decks reais, mas
+so 19 lideres unicos e 12 combinacoes de cor unicas -- usuario ja sabe
+que precisa ser enriquecido (mais decks scrapeados), mas o design em 3
+camadas degrada bem mesmo com banco escasso (camada 3 nunca fica sem
+opcao).
+
+**PENDENCIA REGISTRADA PRA NAO ESQUECER (pedido explicito do usuario)**:
+a camada 3 (pool generico por cor) e **uniforme** -- toda carta daquela
+cor tem peso IGUAL, sem favorecer cartas realmente populares/staples de
+torneio sobre cartas nunca jogadas. Refinamento futuro: usar alguma
+proxy de popularidade (ex: frequencia de aparicao no banco todo, mesmo
+fora da cor exata, ou fonte de meta externa) pra pesar a camada 3. Ver
+TODO.md.
+
+**Validado**: 2 testes novos em `smoke_fast.py`
+(`test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor` --
+reescrito, o antigo assumia que o caminho mascarado NUNCA amostrava;
+`test_opponent_model_for_leader_fallback_3_camadas` -- testa as 3
+camadas isoladamente, incluindo a checagem "nenhuma carta do pool
+generico tem cor fora do lider", regra dura do jogo). `smoke_fast.py` +
+`smoke_test.py` 100%. Profiling manual (nao commitado) validou custo
+real em board pesado antes de subir `SEARCH_SAMPLES`.
+
 ## 2026-07-25 (377) - Claude (sessao remota web) - RESOLVIDO: nao-determinismo do motor (OpponentModel.sample usava random.Random() novo, ignorava seed)
 
 Usuario pediu pra investigar o achado lateral do bloco 374 (mesmo

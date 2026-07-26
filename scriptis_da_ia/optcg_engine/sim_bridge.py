@@ -236,6 +236,7 @@ def can_execute_action(action: tuple, gs: GameState) -> tuple[bool, str]:
 # a tunagem/gauntlet offline ja usa -- muito melhor que nao ter busca nenhuma.
 _leader_deck_index: dict[str, str] | None = None
 _opponent_model_cache: dict[str, Optional[OpponentModel]] = {}
+_opponent_model_source_cache: dict[str, str] = {}
 
 
 def _leader_deck_index_build() -> dict[str, str]:
@@ -279,19 +280,186 @@ def deck_cards_for_leader(leader_code: str) -> Optional[list]:
     return cards
 
 
-def opponent_model_for_leader(leader_code: str) -> Optional[OpponentModel]:
+_RAW_DECKLISTS_PATH = _SCRIPTS_DIR / "decklists_raw.csv"
+_raw_decks_by_leader: dict[str, list] | None = None
+_raw_decks_by_color: dict[str, list] | None = None
+
+
+def _build_raw_decklists_index() -> None:
     """
-    OpponentModel com a decklist REAL do arquivo .deck cujo lider bate com
-    `leader_code`, ou None se nenhum .deck conhecido tiver esse lider (busca
-    fica indisponivel pra esse oponente -- caller deve cair no score imediato,
-    nunca travar/piorar a decisao por falta de modelo).
+    Indexa `decklists_raw.csv` (decks reais de torneio, versionado no repo
+    -- funciona em QUALQUER sessao, diferente de `list_decks()`/`DECKS_DIR`
+    que so existe no desktop local) por codigo de lider e por combinacao de
+    cor. Fallback pro opponent modeling ao vivo quando nao ha um `.deck`
+    local com o lider exato do oponente (achado 26/07: banco de `.deck`
+    locais e ainda mais escasso que este CSV pra qualquer lider fora dos
+    poucos usados pra teste no desktop).
     """
-    if leader_code in _opponent_model_cache:
-        return _opponent_model_cache[leader_code]
-    cards = deck_cards_for_leader(leader_code)
+    global _raw_decks_by_leader, _raw_decks_by_color
+    if _raw_decks_by_leader is not None:
+        return
+    _raw_decks_by_leader = {}
+    _raw_decks_by_color = {}
+    if not _RAW_DECKLISTS_PATH.exists():
+        return
+    import pandas as pd
+    df = pd.read_csv(_RAW_DECKLISTS_PATH)
+    for _url, rows in df.groupby('deck_url'):
+        leader_code = None
+        leader_color = None
+        cards = []
+        for _, row in rows.iterrows():
+            code = str(row['card_code'])
+            data = _cards_db.get(code)
+            if not data:
+                continue
+            card = _make_card(code, data)
+            if card.card_type == 'LEADER':
+                leader_code = code
+                leader_color = card.color
+            else:
+                for _ in range(int(row['qty'])):
+                    cards.append(card)
+        if leader_code is None or not cards:
+            continue
+        _raw_decks_by_leader.setdefault(leader_code, []).append(cards)
+        if leader_color:
+            _raw_decks_by_color.setdefault(leader_color, []).append(cards)
+
+
+def _representative_decklist(deck_lists: list) -> list:
+    """
+    Combina N decks reais (mesmo lider OU mesma combinacao de cor) numa
+    UNICA lista representativa -- pedido do usuario 26/07: juntar decks
+    diferentes sem que uma carta comum vire artificialmente "mais provavel"
+    so por aparecer em varios decks somados (soma bruta infla staples).
+    Pra cada codigo de carta, usa a MEDIA de copias por deck (arredondada,
+    minimo 1 se aparece em pelo menos 1 dos decks) como contagem
+    representativa final -- uma normalizacao por frequencia, nao uma soma.
+    """
+    if not deck_lists:
+        return []
+    n = len(deck_lists)
+    total_by_code: dict = {}
+    card_by_code: dict = {}
+    for deck in deck_lists:
+        for card in deck:
+            total_by_code[card.code] = total_by_code.get(card.code, 0) + 1
+            card_by_code.setdefault(card.code, card)
+    result = []
+    for code, total in total_by_code.items():
+        count = max(1, round(total / n))
+        result.extend([deepcopy(card_by_code[code]) for _ in range(count)])
+    return result
+
+
+_generic_color_pool_cache: dict[frozenset, list] = {}
+
+
+def _generic_pool_for_colors(colors: frozenset) -> list:
+    """
+    Camada 3 do fallback (26/07): quando nao ha NENHUM deck real conhecido
+    (nem do lider exato, nem da mesma combinacao de cor), monta um pool
+    generico com QUALQUER carta do banco inteiro (`cards_rows.csv`) cuja
+    cor seja incolor OU uma das cores do lider. Isso NAO e palpite -- e
+    regra dura de construcao de deck do proprio jogo (nunca pode ter carta
+    fora da cor do lider) -- entao e seguro mesmo sem nenhuma referencia de
+    deck real, so mais impreciso que as camadas 1/2.
+
+    Uniforme por ora (1 copia de cada carta elegivel, sem peso de
+    popularidade/frequencia real de uso) -- REFINAMENTO FUTURO registrado
+    no TODO.md, nao esquecer: uma carta staple de torneio deveria pesar
+    mais que uma nunca jogada, mas hoje as duas entram com peso igual.
+    """
+    if colors in _generic_color_pool_cache:
+        return _generic_color_pool_cache[colors]
+    pool = []
+    for code, data in _cards_db.items():
+        card = _make_card(code, data)
+        if card.card_type == 'LEADER':
+            continue
+        card_color = (card.color or '').strip()
+        if card_color:
+            tokens = {t for t in card_color.replace('/', ' ').split() if t}
+            if not (tokens & colors):
+                continue
+        pool.append(card)
+    _generic_color_pool_cache[colors] = pool
+    return pool
+
+
+def opponent_model_for_leader(leader_code: str, leader_color: str = '') -> Optional[OpponentModel]:
+    """
+    OpponentModel do oponente, com 3 camadas de fallback (pedido do usuario
+    26/07 -- banco de decks reais ainda escasso, 19 lideres/12 combinacoes
+    de cor em `decklists_raw.csv` hoje, ver HANDOFF):
+
+    1. Deck(s) reais com o MESMO codigo de lider -- `.deck` local
+       (`DECKS_DIR`, so existe no desktop) OU `decklists_raw.csv`
+       (versionado, funciona em qualquer sessao). Pool normalizado por
+       frequencia MEDIA quando ha mais de 1 deck real conhecido (ver
+       `_representative_decklist`).
+    2. Sem lider exato: deck(s) reais com a MESMA combinacao de cor
+       (`decklists_raw.csv`), mesma normalizacao por frequencia.
+    3. Sem nada disso: pool generico de qualquer carta do banco cuja cor
+       seja incolor ou uma das cores do lider (regra dura do jogo, nao
+       palpite) -- ver `_generic_pool_for_colors`.
+
+    Retorna None só se nem `leader_code` nem `leader_color` renderem
+    NENHUM pool (nem a camada 3) -- na prática só acontece se
+    `leader_color` vier vazio, já que a camada 3 nunca fica sem opção
+    tendo pelo menos a cor. Caller deve cair pro score imediato/simulação
+    sem amostragem nesse caso raro, nunca travar/piorar a decisão.
+    """
+    cache_key = f'{leader_code}|{leader_color}'
+    if cache_key in _opponent_model_cache:
+        return _opponent_model_cache[cache_key]
+
+    source = 'none'
+    cards = deck_cards_for_leader(leader_code)  # camada 1a: .deck local
+    if cards:
+        source = 'leader_exact_local_deck'
+
+    if not cards:
+        _build_raw_decklists_index()
+        raw_decks = _raw_decks_by_leader.get(leader_code) if _raw_decks_by_leader else None
+        if raw_decks:
+            cards = _representative_decklist(raw_decks)  # camada 1b
+            source = 'leader_exact_raw_decklists'
+
+    if not cards and leader_color:
+        _build_raw_decklists_index()
+        raw_decks = _raw_decks_by_color.get(leader_color) if _raw_decks_by_color else None
+        if raw_decks:
+            cards = _representative_decklist(raw_decks)  # camada 2
+            source = 'color_match_raw_decklists'
+
+    if not cards and leader_color:
+        colors = frozenset(t for t in leader_color.split() if t)
+        if colors:
+            cards = _generic_pool_for_colors(colors)  # camada 3
+            source = 'generic_color_pool'
+
     model = OpponentModel(full_decklist=cards) if cards else None
-    _opponent_model_cache[leader_code] = model
+    _opponent_model_cache[cache_key] = model
+    _opponent_model_source_cache[cache_key] = source
     return model
+
+
+def opponent_model_source_for_leader(leader_code: str, leader_color: str = '') -> str:
+    """
+    Qual camada de fallback (ver `opponent_model_for_leader`) produziu o
+    modelo pra esse lider: `leader_exact_local_deck`, `leader_exact_raw_decklists`,
+    `color_match_raw_decklists`, `generic_color_pool`, ou `none` (nenhum
+    pool disponivel, `leader_color` vazio). Exposto pra telemetria (26/07)
+    -- auditar em partida real se o fallback esta caindo nas camadas mais
+    fracas com frequencia maior do que o esperado, sinal de banco de decks
+    pobre demais pra aquele meta.
+    """
+    cache_key = f'{leader_code}|{leader_color}'
+    if cache_key not in _opponent_model_source_cache:
+        opponent_model_for_leader(leader_code, leader_color)  # popula o cache
+    return _opponent_model_source_cache.get(cache_key, 'none')
 
 
 def choose_action(gs: GameState, opp_gs: GameState,
@@ -326,7 +494,17 @@ def choose_action(gs: GameState, opp_gs: GameState,
     result: list = [None]
     exclude_activate_codes = exclude_activate_codes or set()
     SEARCH_TOP_K = 2
-    SEARCH_SAMPLES = 2
+    # 2 -> 6 (26/07, pedido do usuario): antes do fallback por cor/lider
+    # (opponent_model_for_leader), o caminho AO VIVO com informacao
+    # mascarada nunca ligava o Monte Carlo (model=None sempre), entao
+    # SEARCH_SAMPLES nao tinha efeito nenhum na pratica. Com o Monte Carlo
+    # agora realmente ativo, 2 amostras deixava a escolha instavel entre
+    # chamadas identicas (attack vs play alternando na MESMA situacao, so
+    # por sorte da amostra) -- profiling real confirmou folga enorme de
+    # orcamento mesmo em board pesado (5v5): ~139ms de line_search no pior
+    # caso medido, contra timeout de 3-4s. 6 amostras (~3x o custo, ainda
+    # <500ms no pior caso) reduz bastante essa variancia.
+    SEARCH_SAMPLES = 6
     SEARCH_MAX_STEPS = 4
 
     def _run() -> None:
@@ -393,23 +571,31 @@ def choose_action(gs: GameState, opp_gs: GameState,
                       f"jogou {c.code} custo={c.cost} counter={c.counter} "
                       f"score={a[0]:.1f}", flush=True)
 
-            # ITEM 3 do plano: com >1 candidato de score proximo e decklist
-            # REAL do oponente disponivel (lookup por lider, ver
-            # opponent_model_for_leader), refina a escolha simulando a linha
-            # ate o fim do MEU turno + o turno de resposta dele (mesmo motor
-            # do main_phase offline: _simulate_sequence_values). K/S bem
-            # menores que o offline (2/2 vs 3/3) -- orcamento de /decide e por
-            # ACAO, nao por turno inteiro, mas o board late-game ja mostrou
-            # custo O(board²) no profiling de 14/07.
+            # ITEM 3 do plano: com >1 candidato de score proximo, refina a
+            # escolha simulando a linha ate o fim do MEU turno + o turno de
+            # resposta dele (mesmo motor do main_phase offline:
+            # _simulate_sequence_values). K/S bem menores que o offline
+            # (2/2 vs 3/3) -- orcamento de /decide e por ACAO, nao por turno
+            # inteiro, mas o board late-game ja mostrou custo O(board²) no
+            # profiling de 14/07.
             if len(candidatos) > 1:
                 hidden = getattr(opp_gs, 'hidden_information_masked', False)
-                model = (None if hidden else
-                         opponent_model_for_leader(getattr(opp_gs.leader, 'code', '')))
-                # Ao vivo, a decklist/mao adversaria e oculta. Ainda assim
-                # precisamos de contrafactuais auditaveis: simulamos as
-                # alternativas contra o MESMO estado publico mascarado, sem
-                # inventar cartas. Fora do live, preservamos Monte Carlo com
-                # o modelo exato ja existente.
+                # Ao vivo, a decklist/mao exata do oponente e oculta -- mas
+                # isso NAO precisa desligar o Monte Carlo (achado 26/07,
+                # pedido do usuario: "nao deixar de usar o Monte Carlo, e
+                # sim melhora-lo"). opponent_model_for_leader agora tem
+                # fallback em 3 camadas (deck real do MESMO lider -> deck
+                # real da MESMA cor -> pool generico por cor, regra dura de
+                # construcao de deck) que NUNCA assume conhecer a lista
+                # exata do oponente, so informacao legitimamente disponivel
+                # (cor do lider e o banco de decks reais ja catalogado) --
+                # sem isso, so restava simular contra o estado publico
+                # mascarado sem amostragem nenhuma, que e estritamente mais
+                # pobre pra qualquer lider com pelo menos um deck real
+                # conhecido (mesmo lider ou mesma cor) no banco.
+                model = opponent_model_for_leader(
+                    getattr(opp_gs.leader, 'code', ''),
+                    getattr(opp_gs.leader, 'color', ''))
                 # rng=random (modulo, nao random.Random() novo) -- mesmo
                 # achado 26/07 do main_phase (decision_engine.py): consistente
                 # com o resto do motor, mesmo este caminho ao vivo nao
@@ -449,6 +635,19 @@ def choose_action(gs: GameState, opp_gs: GameState,
                         trace_out["counterfactual_basis"] = (
                             "sampled_opponent_model" if model is not None
                             else "masked_public_state")
+                        # Qual camada de fallback do opponent modeling
+                        # produziu a amostragem (26/07) -- exposto pra
+                        # auditar em partida real se o banco de decks
+                        # reais esta caindo com frequencia nas camadas
+                        # mais fracas (color_match/generic_color_pool)
+                        # pra algum meta especifico, sinal de que vale a
+                        # pena enriquecer decklists_raw.csv com mais
+                        # decks daquele arquetipo/cor.
+                        trace_out["opponent_model_source"] = (
+                            opponent_model_source_for_leader(
+                                getattr(opp_gs.leader, 'code', ''),
+                                getattr(opp_gs.leader, 'color', ''))
+                            if model is not None else 'none')
                         # Telemetria 24/07 (usuario: medir o que fizemos
                         # hoje): extra_own_turn_search=True (fase B,
                         # lookahead de 2 turnos, SO caminho ao vivo) faz
