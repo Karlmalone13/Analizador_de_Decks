@@ -2,6 +2,45 @@
 
 **Última atualização:** 26 de julho de 2026
 
+## 🟢 QUALIDADE (não só estabilidade) do Monte Carlo vs N — sinal real existe, mas é pequeno demais pra mudar o default (26/07/2026, bloco 380)
+
+Usuário questionou o achado do bloco 379: "estabilidade caindo é ruim?"
+levou a "tem que ver se com mais amostras as escolhas foram melhores e
+não as mesmas decisões" — ou seja, medir QUALIDADE contra um gabarito,
+não só auto-consistência (repetir a mesma ação). Método: N=300 (média de
+15 repetições) como gabarito de alto sinal do valor esperado de cada
+candidato no cenário de "empate técnico"; depois, pra cada N pequeno (2 a
+40), 30 repetições medindo accuracy (bateu com o melhor do gabarito?) e
+regret (quanto perdeu vs o melhor do gabarito).
+
+**Gabarito revelou que NÃO é um empate perfeito** — `play` (546.62) é
+realmente um pouco melhor que `attack` (544.65), diferença de ~1.95
+pontos (~0.36% relativo). Accuracy sobe com N (3.3% em N=2/4 → 20% em
+N=6 → oscila → 40% em N=30 → 50% em N=40) e regret médio cai pela
+metade (1.90 em N=2/4 → 0.98 em N=40) — ou seja, **mais amostras SIM
+melhora a qualidade da escolha nesse cenário**, contradizendo a leitura
+anterior (bloco 379) de "empate de verdade, nenhum N resolve". A leitura
+anterior estava certa só na superfície (estabilidade não converge pra
+100% em nenhum N testado) mas errada na causa: não é um empate exato,
+é uma vantagem real só que pequena demais pro nível de ruído por
+amostra — mesmo em N=40 (teto de tempo real) ainda erra a escolha
+metade das vezes.
+
+- [x] Confirmado que existe sinal de qualidade real (não é ruído puro) —
+  accuracy/regret melhoram com N, mesmo que devagar.
+- [ ] **NÃO ESQUECER**: a diferença de EV nesse cenário específico é
+  pequena (~0.36%) — o custo de errar aqui é baixo. Não dá pra
+  generalizar que TODO empate técnico do motor tem stakes baixos assim;
+  só foi medido neste cenário. Se aparecer um caso ao vivo com
+  `search_values` mostrando um gap maior entre os 2 melhores candidatos,
+  vale reavaliar se `SEARCH_SAMPLES_DEFAULT` deveria subir (dentro do
+  teto de tempo do bloco 379) especificamente pra esses casos de gap
+  maior, em vez de usar um N fixo pra tudo.
+- [ ] Script do sweep de qualidade era descartável (não commitado, igual
+  ao do bloco 379) — se precisar reproduzir, reescrever usando
+  `trace_out["search_values"]` (valor por candidato) em vez de só
+  `trace_out["chosen_action"]`, comparando contra um gabarito de N alto.
+
 ## 🟢 SWEEP DE SEARCH_SAMPLES — mantido em 6, teto real e limite de amostragem encontrados (26/07/2026, bloco 379)
 
 `SEARCH_TOP_K`/`SEARCH_SAMPLES`/`SEARCH_MAX_STEPS` promovidos de

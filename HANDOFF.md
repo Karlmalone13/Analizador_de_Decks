@@ -1,5 +1,46 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-26 (380) - Claude (sessao remota web) - qualidade (nao so estabilidade) do Monte Carlo vs N: existe sinal real, mas pequeno demais pra mudar o default
+
+Usuario questionou minha leitura do bloco 379 ("A estabilidade ir
+baixando e ruim?") e depois redirecionou explicitamente: "Tem que ver se
+com mais amostras as escolhas foram melhores e nao as mesmas decisoes".
+O sweep anterior so media auto-consistencia (mesma acao repetida), o
+que nao distingue "empate legitimo em EV" de "estimativa realmente
+ruidosa que as vezes erra pra pior".
+
+**Metodo novo** (script descartavel, nao commitado, mesmo cenario
+"empate tecnico" do bloco 379 -- Katakuri OP11-062 vs Doflamingo
+OP04-019, hidden_information_masked=True): rodei N=300 (media de 15
+repeticoes) como GABARITO de alta fidelidade do valor esperado real de
+cada candidato (`play` ST34-005 vs `attack` no lider). Depois, pra cada
+N pequeno testado no bloco 379 (2 a 40), 30 repeticoes medindo accuracy
+(bateu com o melhor do gabarito?) e regret medio (gabarito[melhor] -
+gabarito[escolhida]) -- usando o GABARITO como regua, nao o valor
+ruidoso da propria rodada.
+
+**Achado principal -- nao e um empate perfeito, e uma vantagem real e
+pequena**: gabarito revelou `play` (546.62) levemente melhor que
+`attack` (544.65), diferenca de so ~1.95 pontos (~0.36% relativo).
+Accuracy sobe com N (3.3% em N=2/4 -> 20% em N=6 -> 30%/26.7%/23.3% em
+N=10/15/20 -> 40% em N=30 -> 50% em N=40) e regret medio cai pela metade
+(1.90 -> 0.98). Ou seja: **mais amostras SIM melhora objetivamente a
+qualidade da escolha**, o que corrige a leitura anterior (bloco 379,
+"empate de verdade, nenhum N razoavel resolve") -- a superficie
+(estabilidade nunca converge pra 100% em N<=40) estava certa, mas a
+causa raiz nao era um empate exato: e um viés real, so que pequeno
+demais pro nivel de ruido por amostra nos N testados, exigindo N muito
+maior que o teto de tempo real (~40, ver bloco 379) pra resolver de
+verdade.
+
+**Decisao**: mantido `SEARCH_SAMPLES_DEFAULT=6` -- o ganho de qualidade
+E real, mas o STAKES desse cenario especifico e baixo (~0.36% de EV em
+jogo), entao nao justifica aproximar do teto de tempo (N=30/40, que
+ainda erra metade das vezes mesmo assim) so por esse caso. Registrado em
+TODO.md (bloco novo) pra nao esquecer: se aparecer um caso ao vivo com
+gap maior entre os 2 melhores `search_values`, vale a pena reavaliar N
+adaptativo por gap, em vez de N fixo pra tudo.
+
 ## 2026-07-26 (379) - Claude (sessao remota web) - sweep de SEARCH_SAMPLES: mantido em 6, achados sobre teto real e sobre "empate tecnico" que amostra nao resolve
 
 Usuario perguntou se dava pra ir subindo o numero de amostras Monte
