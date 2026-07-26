@@ -46,6 +46,20 @@ USE_EVAL_V2 = True    # LIGADA 13/07: validação rigorosa (MC=6, n=50, Imu-v2 v
 # a 6). Knob global — não muda a régua, só o custo da simulação.
 PLANNER_MC_SAMPLES = 6
 
+# ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
+# Promovidos de variavel local do main_phase pra constante de modulo --
+# `_select_search_candidates`/`_select_action_via_search` sao agora a FONTE
+# UNICA usada tanto pelo Turn Planner offline (main_phase) quanto pelo
+# caminho AO VIVO (sim_bridge.choose_action). Pedido explicito do usuario
+# (26/07): "tem que ser o mesmo nos dois" -- antes, o caminho ao vivo tinha
+# seu proprio laco de selecao/amostragem sem a janela de score, sem a
+# diversidade de REMOVE_THREAT e SEM a guarda _is_unsafe_zero_life_leader_attack
+# (que so existia no offline). So o TOP_K (quantas candidatas simular) e o
+# piso/teto de amostras continuam variando por chamador -- isso e orcamento
+# de tempo (recurso), nao politica de decisao.
+SEARCH_MIN_CANDIDATES = 3
+SEARCH_SCORE_WINDOW = 180
+
 # ── busca prof.2 / resposta do oponente (item 3 do PLANO_AVALIACAO_E_BUSCA.md) ─
 # Depois de simular MINHA linha ate o fim do turno, simula o TURNO INTEIRO de
 # resposta do oponente (proprio engine, modo GULOSO -- ver _play_turn_greedy,
@@ -12450,6 +12464,157 @@ class OPTCGMatch:
             and not engine.analyzer.can_lethal_this_turn()
         )
 
+    def _select_search_candidates(self, actions, top_k, priority,
+                                   min_candidates=SEARCH_MIN_CANDIDATES,
+                                   score_window=SEARCH_SCORE_WINDOW):
+        """
+        Recorta, a partir da lista COMPLETA de ações pontuadas
+        (`_generate_and_score_actions`, ordenada por score desc), quais
+        entram na busca Monte Carlo (`_select_action_via_search`). FONTE
+        ÚNICA usada tanto pelo Turn Planner offline (`main_phase`) quanto
+        pelo caminho AO VIVO (`sim_bridge.choose_action`) -- unificação
+        26/07 (pedido do usuário: "tem que ser o mesmo nos dois"). Só
+        `top_k` (quantas candidatas custam simulação) varia por chamador,
+        por orçamento de tempo; a POLÍTICA de quais candidatas valem a
+        pena comparar (janela de score, diversidade em REMOVE_THREAT) é
+        idêntica nos dois lugares.
+
+        `actions` já deve vir filtrada pelo chamador por qualquer critério
+        de ELEGIBILIDADE que só faça sentido nesse contexto (ex.: ao vivo,
+        tipo executável pelo plugin / ativação já recusada este turno) --
+        esta função só decide QUANTAS e QUAIS das elegíveis entram na
+        comparação, não filtra elegibilidade.
+        """
+        if not actions:
+            return []
+        top_score = actions[0][0]
+        candidatas = [
+            acao for idx, acao in enumerate(actions[:top_k])
+            if acao[0] >= 0
+            and (idx < min_candidates or acao[0] >= top_score - score_window)
+        ]
+        if priority == 'REMOVE_THREAT':
+            # A remoção de uma ameaça crítica pode receber score imediato
+            # muito alto (ex.: Roger/Shanks), estreitando demais a janela.
+            # Mantém essa pressão, mas garante diversidade para a
+            # simulação comparar pelo menos algumas linhas de
+            # desenvolvimento.
+            seen_candidate_ids = {id(acao) for acao in candidatas}
+
+            def include_best_kind(kind: str, limit: int):
+                current = sum(1 for acao in candidatas if acao[1] == kind)
+                for acao in actions:
+                    if current >= limit:
+                        break
+                    if acao[0] < 0 or acao[1] != kind or id(acao) in seen_candidate_ids:
+                        continue
+                    candidatas.append(acao)
+                    seen_candidate_ids.add(id(acao))
+                    current += 1
+
+            include_best_kind('play', 1)
+            include_best_kind('activate', 1)
+            candidatas.sort(key=lambda acao: acao[0], reverse=True)
+        return candidatas
+
+    def _select_action_via_search(self, p, opp, engine, candidatas, model,
+                                   max_steps, extra_own_turn_search,
+                                   samples_min, samples_max, batch_size,
+                                   z_threshold=2.0, rng=random):
+        """
+        Dado um conjunto de candidatas JÁ recortado (`_select_search_candidates`,
+        `len(candidatas) >= 2`), decide a melhor via Monte Carlo. FONTE ÚNICA
+        usada tanto pelo Turn Planner offline (`main_phase`) quanto pelo
+        caminho AO VIVO (`sim_bridge.choose_action`) -- unificação 26/07
+        (pedido do usuário: receio de "o bot receber dois comandos de
+        decisão diferentes... tem que ser o mesmo nos dois"). Antes, cada
+        lado tinha seu próprio laço reimplementado à mão, com resultado
+        parecido mas NÃO idêntico -- o offline tinha janela/diversidade de
+        candidatas e a guarda `_is_unsafe_zero_life_leader_attack`; o
+        caminho ao vivo não tinha NENHuma das duas.
+
+        Amostragem SEQUENCIAL em lotes: para no PISO (`samples_min`) assim
+        que a diferença de valor entre as 2 melhores candidatas fica
+        estatisticamente clara (teste pareado, mesmas amostras nos dois
+        lados via CRN), só sobe até o TETO (`samples_max`) quando o gap
+        ainda não é confiável (achado 26/07 do sweep de qualidade: mais
+        amostras melhora objetivamente a escolha, mas só vale gastar
+        quando o gap não está resolvido). `samples_min == samples_max`
+        degenera num N FIXO clássico (1 lote só, sem teste de
+        significância) -- é assim que o offline chama hoje, preservando
+        seu comportamento/custo atual byte a byte; o caminho ao vivo usa
+        piso/teto de verdade (12/24).
+
+        Retorna (melhor_action_ou_None, melhor_valor, search_records,
+        amostras_usadas, sim_values_by_id). `melhor` vem `None` só se
+        TODAS as candidatas forem descartadas pela guarda de segurança
+        (nenhuma linha vencedora encontrada pra um ataque arriscado ao
+        líder com vida 0) -- o chamador decide o que fazer nesse caso
+        (offline: encerra o planejamento do turno; ao vivo: mantém o
+        fallback de score imediato já calculado antes desta busca).
+        """
+        if model is None:
+            # Sem modelo de oponente disponível (só acontece no caminho ao
+            # vivo, quando nenhuma camada de fallback de `opponent_model_for_leader`
+            # tem pool -- líder E cor totalmente desconhecidos): 1 simulação
+            # determinística contra o estado público, sem amostragem.
+            melhor, melhor_valor = None, None
+            search_records = []
+            sim_values = {}
+            for cand in candidatas:
+                valores = self._simulate_sequence_values(
+                    p, opp, cand, max_steps=max_steps, amostras=None,
+                    extra_own_turn_search=extra_own_turn_search)
+                valor = sum(valores) / len(valores) if valores else -1e9
+                search_records.append({"action": cand, "value": valor})
+                sim_values[id(cand)] = {'avg': valor, 'wins': 0, 'samples': 0}
+                if melhor_valor is None or valor > melhor_valor:
+                    melhor_valor = valor
+                    melhor = cand
+            return melhor, melhor_valor, search_records, 0, sim_values
+
+        pairwise = len(candidatas) == 2
+        valores_por_cand: list = [[] for _ in candidatas]
+        n_coletadas = 0
+        while n_coletadas < samples_max:
+            batch = min(batch_size, samples_max - n_coletadas)
+            novas_amostras = [model.sample(opp, rng=rng) for _ in range(batch)]
+            for i, cand in enumerate(candidatas):
+                valores_por_cand[i].extend(
+                    self._simulate_sequence_values(
+                        p, opp, cand, max_steps=max_steps, amostras=novas_amostras,
+                        extra_own_turn_search=extra_own_turn_search))
+            n_coletadas += batch
+            if n_coletadas < samples_min:
+                continue
+            if not pairwise:
+                break
+            deltas = [a - b for a, b in zip(valores_por_cand[0], valores_por_cand[1])]
+            media = sum(deltas) / len(deltas)
+            if len(deltas) > 1:
+                var = sum((d - media) ** 2 for d in deltas) / (len(deltas) - 1)
+                stderr = (var / len(deltas)) ** 0.5
+            else:
+                stderr = 0.0
+            if stderr == 0.0 or abs(media) > z_threshold * stderr:
+                break
+
+        melhor, melhor_valor = None, None
+        search_records = []
+        sim_values = {}
+        for i, cand in enumerate(candidatas):
+            valores = valores_por_cand[i]
+            valor = sum(valores) / len(valores) if valores else -1e9
+            wins = sum(1 for v in valores if v >= SIMULATED_WIN_SCORE)
+            search_records.append({"action": cand, "value": valor})
+            sim_values[id(cand)] = {'avg': valor, 'wins': wins, 'samples': len(valores)}
+            if self._is_unsafe_zero_life_leader_attack(cand, p, opp, engine) and wins == 0:
+                continue
+            if melhor_valor is None or valor > melhor_valor:
+                melhor_valor = valor
+                melhor = cand
+        return melhor, melhor_valor, search_records, n_coletadas, sim_values
+
     def _generate_and_score_actions(self, p, opp, engine):
         """
         Gera TODAS as ações possíveis no estado atual e as pontua.
@@ -13397,8 +13562,6 @@ class OPTCGMatch:
         # amostras") quando a busca de resposta esta ativa; K=6/S=6 (validado
         # em 13/07 sem a resposta) continua valendo com a flag desligada.
         TOP_K = 3 if USE_OPPONENT_RESPONSE_SEARCH else 6
-        MIN_PLANNER_CANDIDATES = 3
-        PLANNER_SCORE_WINDOW = 180
         n = 0
 
         while n < MAX_ACOES:
@@ -13431,42 +13594,11 @@ class OPTCGMatch:
             # TURN PLANNER: para as TOP_K ações candidatas, simula a linha de jogo
             # resultante e escolhe a que leva ao MELHOR estado de fim de turno.
             # (Em vez de escolher gulosamente a de maior score imediato.)
-            #
-            # As N amostras Monte Carlo do oponente são geradas UMA VEZ por
-            # turno (aqui), não uma vez por candidata -- o estado observável
-            # de `opp` é o mesmo para todas as TOP_K candidatas neste ponto
-            # (nenhuma delas foi aplicada ainda), então gerar 6x N amostras
-            # do zero seria 6x mais caro sem nenhum ganho de fidelidade.
-            # Reusar as mesmas N amostras também torna a comparação entre
-            # candidatas pareada (mesma "versão do oponente" testada contra
-            # cada uma), reduzindo ruído Monte Carlo na escolha final.
-            top_score = actions[0][0]
-            candidatas = [
-                acao for idx, acao in enumerate(actions[:TOP_K])
-                if acao[0] >= 0
-                and (idx < MIN_PLANNER_CANDIDATES or acao[0] >= top_score - PLANNER_SCORE_WINDOW)
-            ]
-            if priority == 'REMOVE_THREAT':
-                # A remocao de uma ameaca critica pode receber score imediato
-                # muito alto (ex.: Roger/Shanks), estreitando demais a janela.
-                # Mantem essa pressao, mas garante diversidade para a simulacao
-                # comparar pelo menos algumas linhas de desenvolvimento.
-                seen_candidate_ids = {id(acao) for acao in candidatas}
-
-                def include_best_kind(kind: str, limit: int):
-                    current = sum(1 for acao in candidatas if acao[1] == kind)
-                    for acao in actions:
-                        if current >= limit:
-                            break
-                        if acao[0] < 0 or acao[1] != kind or id(acao) in seen_candidate_ids:
-                            continue
-                        candidatas.append(acao)
-                        seen_candidate_ids.add(id(acao))
-                        current += 1
-
-                include_best_kind('play', 1)
-                include_best_kind('activate', 1)
-                candidatas.sort(key=lambda acao: acao[0], reverse=True)
+            # Selecao/busca unificadas (26/07, pedido do usuario: "tem que
+            # ser o mesmo nos dois") -- MESMAS funcoes usadas pelo caminho
+            # AO VIVO (sim_bridge.choose_action), so o TOP_K/piso/teto de
+            # amostras (orcamento de tempo) diferem por chamador.
+            candidatas = self._select_search_candidates(actions, TOP_K, priority)
             if len(candidatas) == 1:
                 melhor_acao = candidatas[0]
                 if self._is_unsafe_zero_life_leader_attack(melhor_acao, p, opp, engine):
@@ -13482,30 +13614,29 @@ class OPTCGMatch:
             model = self.model_for_a if p is self.state_a else self.model_for_b
             # mesmo corte de custo do TOP_K acima (ver comentario la): S≈3 com
             # a busca de resposta ligada, S=6 (ja validado) sem ela.
+            #
+            # N FIXO (samples_min == samples_max == batch_size): o offline
+            # ainda NAO usa amostragem adaptativa -- roda em regime de
+            # THROUGHPUT total (ate 30 sub-decisoes/turno, muitos turnos,
+            # muitos jogos de self-play/calibracao), diferente do orcamento
+            # POR DECISAO do caminho ao vivo. Ja existe explosao O(board²)
+            # conhecida ali (medido: ate 13.8s/turno late-game) -- ligar
+            # piso/teto de verdade aqui exige medir o custo total de um
+            # jogo de self-play primeiro (pendente, ver TODO.md), nao so
+            # trocar o numero. `_select_action_via_search` com min==max
+            # degenera exatamente no comportamento fixo de sempre (1 lote
+            # so, sem teste de significancia).
             n_monte_carlo = 3 if USE_OPPONENT_RESPONSE_SEARCH else PLANNER_MC_SAMPLES
             # rng=random (modulo, nao random.Random() novo) -- achado 26/07:
             # random.Random() semeia do SO/relogio, ignora random.seed() e
             # tornava main_phase() nao-reprodutivel mesmo com seed fixo
             # (ver opponent_model.py.sample() docstring).
-            amostras_turno = [model.sample(opp, rng=random) for _ in range(n_monte_carlo)]
-
-            melhor_acao = None
-            melhor_valor = -1e18
-            sim_values = {}
-            for cand in candidatas:
-                valores = self._simulate_sequence_values(p, opp, cand, amostras=amostras_turno)
-                valor = sum(valores) / len(valores) if valores else -1e9
-                wins = sum(1 for v in valores if v >= SIMULATED_WIN_SCORE)
-                sim_values[id(cand)] = {
-                    'avg': valor,
-                    'wins': wins,
-                    'samples': len(valores),
-                }
-                if self._is_unsafe_zero_life_leader_attack(cand, p, opp, engine) and wins == 0:
-                    continue
-                if valor > melhor_valor:
-                    melhor_valor = valor
-                    melhor_acao = cand
+            melhor_acao, melhor_valor, _records, _n_amostras, sim_values = (
+                self._select_action_via_search(
+                    p, opp, engine, candidatas, model,
+                    max_steps=8, extra_own_turn_search=False,
+                    samples_min=n_monte_carlo, samples_max=n_monte_carlo,
+                    batch_size=n_monte_carlo, rng=random))
 
             if melhor_acao is None:
                 break

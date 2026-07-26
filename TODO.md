@@ -2,16 +2,50 @@
 
 **Última atualização:** 26 de julho de 2026
 
+## 🟢 IMPLEMENTADO: Turn Planner offline e busca ao vivo unificados numa função só (26/07/2026, bloco 382)
+
+Usuário temia "o bot receber dois comandos de decisão diferentes... tem
+que ser o mesmo nos dois" entre `main_phase` (offline) e
+`sim_bridge.choose_action` (ao vivo). Investigação confirmou: o laço
+externo ("dado candidatas pontuadas, amostra e escolhe a melhor") estava
+duplicado com comportamento DIFERENTE — offline tinha janela de score,
+diversidade em `REMOVE_THREAT` e a guarda `_is_unsafe_zero_life_leader_attack`;
+ao vivo não tinha nenhuma das duas.
+
+- [x] Unificado em 2 métodos novos de `OPTCGMatch` (`decision_engine.py`):
+  `_select_search_candidates` e `_select_action_via_search` — FONTE
+  ÚNICA chamada pelos dois caminhos agora. `sim_bridge._adaptive_counterfactual_search`
+  (bloco 381) foi apagada; virou `_select_action_via_search` com
+  `samples_min==samples_max` pro offline (N fixo, byte-idêntico ao
+  comportamento antigo) e piso=12/teto=24 de verdade pro caminho ao vivo.
+- [x] Validado: `smoke_fast.py`/`smoke_test.py` 100% + 4 partidas reais de
+  self-play (`OPTCGMatch.simulate()`, decks de `decklists_raw.csv`) até o
+  fim sem exceção, 3-8s/partida — sem regressão de tempo no offline.
+- [ ] **PENDENTE**: nenhum smoke suite roda `simulate()`/self-play real
+  de ponta a ponta hoje — só mecânica isolada. Validação desta unificação
+  foi só via script descartável (não commitado). Vale adicionar 1 teste
+  leve de regressão (1-2 partidas reais rápidas até o fim) pra pegar
+  erros que só aparecem num jogo completo.
+- [ ] **PENDENTE**: medir se vale ligar amostragem adaptativa de verdade
+  no offline também (hoje só usa o N fixo). Precisa medir custo total de
+  um jogo de self-play inteiro primeiro — offline roda em regime de
+  THROUGHPUT (até 30 sub-decisões/turno, muitos jogos de
+  calibração/tuning), diferente do orçamento por decisão do caminho ao
+  vivo, e já existe uma explosão O(board²) conhecida lá (até 13.8s/turno
+  late-game medido antes desta sessão).
+
 ## 🟢 IMPLEMENTADO: amostragem sequencial/adaptativa (piso 12/teto 24) substitui N fixo=6 (26/07/2026, bloco 381)
 
 Usuário pediu pra implementar uma melhoria de verdade em cima do achado
 do bloco 380 (abaixo). `SEARCH_SAMPLES_DEFAULT` fixo foi substituído por
-`_adaptive_counterfactual_search` (`sim_bridge.py`): amostra em lotes e
-para no PISO (`SEARCH_SAMPLES_MIN_DEFAULT=12`) assim que a diferença de
-valor entre as 2 candidatas é estatisticamente clara (teste pareado com
-CRN), só sobe pro TETO (`SEARCH_SAMPLES_MAX_DEFAULT=24`) quando o gap
-ainda não é confiável — gasta menos orçamento em decisões óbvias, mais
-em empates genuínos.
+amostragem sequencial em lotes: para no PISO (`SEARCH_SAMPLES_MIN_DEFAULT=12`)
+assim que a diferença de valor entre as 2 candidatas é estatisticamente
+clara (teste pareado com CRN), só sobe pro TETO
+(`SEARCH_SAMPLES_MAX_DEFAULT=24`) quando o gap ainda não é confiável —
+gasta menos orçamento em decisões óbvias, mais em empates genuínos.
+(Nota pós-bloco 382: a implementação foi movida de `sim_bridge._adaptive_counterfactual_search`
+pra `OPTCGMatch._select_action_via_search` em `decision_engine.py`,
+unificada com o Turn Planner offline — ver seção acima.)
 
 - [x] Implementado e testado (2 testes novos em `smoke_fast.py`, suítes
   100%). Validado com piso=12 após descobrir que piso=4/8 sofria de

@@ -1888,9 +1888,14 @@ def test_busca_adaptativa_ao_vivo_respeita_piso_e_teto() -> None:
 
 def test_adaptive_counterfactual_search_para_cedo_e_no_teto() -> None:
     # Prova isolada (sem depender do motor de jogo real) do mecanismo em si
-    # (achado 26/07, bloco 380): usa um `match` falso que devolve valores
-    # SINTETICOS por candidata, pra controlar exatamente o ruido/gap e
-    # verificar as 2 pontas do comportamento adaptativo:
+    # (achado 26/07, bloco 380/381): `_select_action_via_search` mora em
+    # `OPTCGMatch` (decision_engine.py) -- unificacao 26/07, FONTE UNICA
+    # usada tanto pelo Turn Planner offline (main_phase) quanto pelo
+    # caminho ao vivo (sim_bridge.choose_action). Aqui usamos um `self`
+    # falso (so com `_simulate_sequence_values`/`_is_unsafe_zero_life_leader_attack`
+    # sinteticos) chamando o metodo NAO-ligado da classe real, pra
+    # controlar exatamente o ruido/gap e verificar as 2 pontas do
+    # comportamento adaptativo:
     #  (a) gap grande e SEM ruido (2 candidatas com valor constante,
     #      bem separado) -- para no PISO (SEARCH_SAMPLES_MIN_DEFAULT),
     #      sem gastar o teto inteiro.
@@ -1905,7 +1910,7 @@ def test_adaptive_counterfactual_search_para_cedo_e_no_teto() -> None:
         def sample(self, opp_gs, rng):
             return object()
 
-    class _FakeMatchValoresFixos:
+    class _FakeSelfValoresFixos:
         """Sem ruido nenhum: cada candidata sempre devolve o MESMO valor,
         nao importa a amostra -- simula uma decisao cujo resultado nao
         depende da mao oculta do oponente (gap limpo)."""
@@ -1917,12 +1922,15 @@ def test_adaptive_counterfactual_search_para_cedo_e_no_teto() -> None:
             for i, cand in enumerate(candidatos):
                 self._indice_por_id[id(cand)] = i
 
-        def _simulate_sequence_values(self, gs, opp_gs, cand, max_steps, amostras,
+        def _simulate_sequence_values(self, p, opp, cand, max_steps, amostras,
                                        extra_own_turn_search):
             idx = self._indice_por_id[id(cand)]
             return [self._valor_por_indice[idx]] * len(amostras)
 
-    class _FakeMatchRuidoso:
+        def _is_unsafe_zero_life_leader_attack(self, action, p, opp, engine):
+            return False  # guarda de seguranca testada separadamente
+
+    class _FakeSelfRuidoso:
         """Mesma media pras 2 candidatas, mas com ruido MAIOR que o gap --
         nenhum lote deveria conseguir separar as duas com confianca."""
         def __init__(self, seed):
@@ -1933,19 +1941,22 @@ def test_adaptive_counterfactual_search_para_cedo_e_no_teto() -> None:
             for i, cand in enumerate(candidatos):
                 self._indice_por_id[id(cand)] = i
 
-        def _simulate_sequence_values(self, gs, opp_gs, cand, max_steps, amostras,
+        def _simulate_sequence_values(self, p, opp, cand, max_steps, amostras,
                                        extra_own_turn_search):
             idx = self._indice_por_id[id(cand)]
             base = 500.0 + (0.5 if idx == 0 else -0.5)  # gap real de so 1.0
             return [base + self._rng.uniform(-200.0, 200.0) for _ in amostras]
 
+        def _is_unsafe_zero_life_leader_attack(self, action, p, opp, engine):
+            return False
+
     candidatos_fake = [(100.0, "attack", None), (10.0, "play", None)]
 
-    match_limpo = _FakeMatchValoresFixos({0: 1000.0, 1: 10.0})
-    match_limpo.registrar(candidatos_fake)
-    melhor, valor, records, n_usadas = sim_bridge._adaptive_counterfactual_search(
-        gs=None, opp_gs=None, match=match_limpo, candidatos=candidatos_fake,
-        model=_FakeModel(), max_steps=4,
+    self_limpo = _FakeSelfValoresFixos({0: 1000.0, 1: 10.0})
+    self_limpo.registrar(candidatos_fake)
+    melhor, valor, records, n_usadas, _sim_values = OPTCGMatch._select_action_via_search(
+        self_limpo, p=None, opp=None, engine=None, candidatas=candidatos_fake,
+        model=_FakeModel(), max_steps=4, extra_own_turn_search=False,
         samples_min=sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT,
         samples_max=sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT,
         batch_size=sim_bridge.SEARCH_SAMPLES_BATCH_DEFAULT,
@@ -1955,11 +1966,11 @@ def test_adaptive_counterfactual_search_para_cedo_e_no_teto() -> None:
     check("gap limpo: escolhe a candidata de maior valor sintetico",
           melhor is candidatos_fake[0])
 
-    match_ruidoso = _FakeMatchRuidoso(seed=42)
-    match_ruidoso.registrar(candidatos_fake)
-    _, _, _, n_usadas_ruidoso = sim_bridge._adaptive_counterfactual_search(
-        gs=None, opp_gs=None, match=match_ruidoso, candidatos=candidatos_fake,
-        model=_FakeModel(), max_steps=4,
+    self_ruidoso = _FakeSelfRuidoso(seed=42)
+    self_ruidoso.registrar(candidatos_fake)
+    _, _, _, n_usadas_ruidoso, _sim_values2 = OPTCGMatch._select_action_via_search(
+        self_ruidoso, p=None, opp=None, engine=None, candidatas=candidatos_fake,
+        model=_FakeModel(), max_steps=4, extra_own_turn_search=False,
         samples_min=sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT,
         samples_max=sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT,
         batch_size=sim_bridge.SEARCH_SAMPLES_BATCH_DEFAULT,

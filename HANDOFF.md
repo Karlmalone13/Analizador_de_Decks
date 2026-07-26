@@ -1,5 +1,73 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-26 (382) - Claude (sessao remota web) - UNIFICADO: Turn Planner offline e busca ao vivo agora sao a MESMA funcao (decision_engine.py), nao duas implementacoes paralelas
+
+Usuario, apos o bloco 381 (amostragem adaptativa so no caminho ao vivo),
+levantou uma preocupacao arquitetural direta: risco de "o bot receber
+dois comandos de decisao diferentes... uma decisao no ao vivo e outra no
+offline, tem que ser o mesmo nos dois". Investiguei antes de propor
+qualquer coisa: `_generate_and_score_actions`/`_simulate_sequence_values`
+ja eram compartilhadas, mas o LACO EXTERNO ("dado candidatas pontuadas,
+amostra e escolhe a melhor") estava reimplementado duas vezes, com
+comportamento DIFERENTE:
+- `main_phase` (offline): janela de score (`PLANNER_SCORE_WINDOW=180`),
+  diversidade extra em `REMOVE_THREAT`, N fixo (`PLANNER_MC_SAMPLES`), e a
+  guarda `_is_unsafe_zero_life_leader_attack` (nunca ataca o lider com
+  vida 0 do oponente sem lethal garantido/linha vencedora).
+- `sim_bridge.choose_action` (ao vivo): SEM janela/diversidade, amostragem
+  adaptativa (bloco 381), e **SEM** a guarda de seguranca -- gap real,
+  pre-existente, nao introduzido nesta sessao.
+
+**Implementado** (usuario confirmou explicitamente: unificar, com o
+offline priorizando ZERO regressao de custo antes de qualquer ganho de
+qualidade): 2 metodos novos em `OPTCGMatch` (`decision_engine.py`),
+FONTE UNICA usada pelos dois caminhos:
+- `_select_search_candidates(actions, top_k, priority, ...)` -- recorte
+  de candidatas (janela de score + diversidade REMOVE_THREAT), extraido
+  do `main_phase` original byte a byte.
+- `_select_action_via_search(p, opp, engine, candidatas, model, ...,
+  samples_min, samples_max, batch_size, z_threshold)` -- amostragem +
+  escolha da melhor + guarda de seguranca, absorvendo tanto o laco antigo
+  do `main_phase` quanto `sim_bridge._adaptive_counterfactual_search`
+  (bloco 381, apagada, o codigo dela virou este metodo). Com
+  `samples_min == samples_max == batch_size` degenera exatamente no N
+  fixo classico (1 lote so, sem teste de significancia) -- e assim que
+  o offline chama hoje (`n_monte_carlo` como sempre), byte-identico ao
+  comportamento anterior. O caminho ao vivo continua com piso=12/teto=24
+  de verdade (bloco 381).
+
+`main_phase` e `sim_bridge.choose_action` foram reescritos pra chamar
+esses 2 metodos em vez de reimplementar a logica -- `sim_bridge.py` perde
+~90 linhas de decisao duplicada (mesmo padrao de refactors anteriores:
+`choose_to_trash`, `_choose_opp_target_filtered`). Efeito colateral bom:
+o caminho ao vivo ganha de graca a janela de score/diversidade E a guarda
+`_is_unsafe_zero_life_leader_attack` que antes so existia offline.
+
+**Validacao**: `smoke_fast.py`/`smoke_test.py` 100% (o teste isolado do
+mecanismo adaptativo, bloco 381, foi reescrito pra chamar
+`OPTCGMatch._select_action_via_search` nao-ligado com um `self` falso, em
+vez da funcao solta que foi apagada). **Achado no processo**: nenhum dos
+2 smoke suites de fato exercitava `main_phase`/self-play real
+(`OPTCGMatch.simulate()`) -- so testam mecanica isolada. Rodei um script
+ad-hoc (nao commitado) com 4 partidas reais de `decklists_raw.csv` via
+`simulate()`: todas terminaram com vencedor definido, sem excecao,
+3-8s/partida (12-13 turnos) -- nenhuma regressao de tempo visivel no
+offline.
+
+- [x] Unificacao implementada e validada (2 suites + 4 partidas reais).
+- [ ] **PENDENTE (registrado no bloco 381, ainda nao feito)**: medir se
+  vale ligar amostragem adaptativa de verdade no offline tambem (hoje so
+  usa o N fixo via `samples_min==samples_max`) -- precisa medir custo
+  total de um jogo de self-play inteiro antes de mudar o numero, dado o
+  regime de THROUGHPUT (30 sub-decisoes/turno, muitos jogos), diferente
+  do orcamento por decisao do caminho ao vivo.
+- [ ] Nenhum smoke suite roda `OPTCGMatch.simulate()`/self-play real de
+  ponta a ponta -- so testes unitarios/cenarios isolados. Vale considerar
+  adicionar 1 teste leve de regressao (1-2 partidas reais, decks
+  pequenos/rapidos) que rode ate o fim sem excecao, pra pegar erros que
+  so aparecem num jogo completo (este bloco só foi validado via script
+  descartável, não via smoke suite).
+
 ## 2026-07-26 (381) - Claude (sessao remota web) - IMPLEMENTADO: amostragem sequencial/adaptativa no Monte Carlo ao vivo (piso 12 / teto 24), substitui N fixo=6
 
 Usuario pediu pra IMPLEMENTAR uma melhoria concreta em cima do achado do

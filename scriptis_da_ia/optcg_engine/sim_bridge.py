@@ -499,67 +499,6 @@ def opponent_model_source_for_leader(leader_code: str, leader_color: str = '') -
     return _opponent_model_source_cache.get(cache_key, 'none')
 
 
-def _adaptive_counterfactual_search(gs, opp_gs, match, candidatos, model,
-                                     max_steps, samples_min, samples_max,
-                                     batch_size, z_threshold, rng):
-    """
-    Amostragem Monte Carlo SEQUENCIAL em lotes pras (ate SEARCH_TOP_K, hoje
-    2) candidatas de maior score imediato: gasta o MINIMO de amostras
-    suficiente pra separar as duas com confianca estatistica, ate um teto de
-    seguranca (achado 26/07, bloco 380 -- ver TODO.md/HANDOFF.md: mais
-    amostras melhora objetivamente a qualidade da escolha, mas so vale a
-    pena gastar quando o gap ainda nao esta resolvido; board com 2
-    candidatas bem separadas ja fica estavel com poucas amostras, empate
-    tecnico de verdade precisa de mais).
-
-    Teste pareado usa as MESMAS amostras dos 2 lados em cada lote (CRN --
-    ja usado antes numa unica leva fixa, agora por lote) pra reduzir ruido:
-    delta_i = valor_candidata_0(amostra_i) - valor_candidata_1(amostra_i).
-    Para assim que |media(delta)| > z_threshold * erro_padrao(delta), ou ao
-    atingir samples_max. Com mais de 2 candidatas (SEARCH_TOP_K > 2 numa
-    config futura) nao ha teste pareado simples -- usa so samples_min, sem
-    early stop, preservando o comportamento antigo pra esse caso raro.
-
-    Retorna (melhor_action, melhor_valor, search_records, amostras_usadas).
-    """
-    pairwise = len(candidatos) == 2
-    valores_por_cand: list = [[] for _ in candidatos]
-    n_coletadas = 0
-    while n_coletadas < samples_max:
-        batch = min(batch_size, samples_max - n_coletadas)
-        novas_amostras = [model.sample(opp_gs, rng=rng) for _ in range(batch)]
-        for i, cand in enumerate(candidatos):
-            valores_por_cand[i].extend(
-                match._simulate_sequence_values(
-                    gs, opp_gs, cand, max_steps=max_steps, amostras=novas_amostras,
-                    extra_own_turn_search=True))
-        n_coletadas += batch
-        if n_coletadas < samples_min:
-            continue
-        if not pairwise:
-            break
-        deltas = [a - b for a, b in zip(valores_por_cand[0], valores_por_cand[1])]
-        media = sum(deltas) / len(deltas)
-        if len(deltas) > 1:
-            var = sum((d - media) ** 2 for d in deltas) / (len(deltas) - 1)
-            stderr = (var / len(deltas)) ** 0.5
-        else:
-            stderr = 0.0
-        if stderr == 0.0 or abs(media) > z_threshold * stderr:
-            break
-
-    melhor, melhor_valor = candidatos[0], None
-    search_records = []
-    for i, cand in enumerate(candidatos):
-        valores = valores_por_cand[i]
-        valor = sum(valores) / len(valores) if valores else -1e9
-        search_records.append({"action": action_to_trace(cand), "value": round(valor, 4)})
-        if melhor_valor is None or valor > melhor_valor:
-            melhor_valor = valor
-            melhor = cand
-    return melhor, melhor_valor, search_records, n_coletadas
-
-
 def choose_action(gs: GameState, opp_gs: GameState,
                   match, timeout: float = 4.0,
                   allowed_types: Optional[set] = None,
@@ -602,13 +541,18 @@ def choose_action(gs: GameState, opp_gs: GameState,
         try:
             phase_started = time.perf_counter()
             engine = DecisionEngine(gs, opp_gs)
+            # priority computado sempre (nao so quando trace_out existe) --
+            # `_select_search_candidates` (unificacao 26/07) precisa dele
+            # pra decidir a diversidade de candidatas em REMOVE_THREAT,
+            # igual ao Turn Planner offline (main_phase).
+            priority = engine.analyzer.analysis_priority()
             if trace_out is not None:
                 # priority/can_lethal ao vivo (19/07): fecha o cruzamento
                 # "esse turno certificou lethal e o jogo terminou logo em
                 # seguida?" direto no JSONL de producao -- sem precisar
                 # reconstruir estado de combat log (que sofre o corte do
                 # AutoSaved). Calculado uma vez, antes do resto da busca.
-                trace_out["priority"] = engine.analyzer.analysis_priority()
+                trace_out["priority"] = priority
                 trace_out["can_lethal"] = engine.analyzer.can_lethal_this_turn()
                 trace_out["opp_combo_threat"] = engine.analyzer.opp_combo_threat()
             actions = match._generate_and_score_actions(gs, opp_gs, engine)
@@ -624,21 +568,23 @@ def choose_action(gs: GameState, opp_gs: GameState,
             if actions:
                 print(f"[ENG] top3: {[(a[0],a[1]) for a in actions[:3]]}", flush=True)
 
-            # Coleta os candidatos ELEGIVEIS (score>=0, tipo executavel, nao
-            # recusado este turno) na ordem do score imediato -- antes so o
-            # PRIMEIRO era guardado; agora ate SEARCH_TOP_K ficam disponiveis
-            # pra busca (item 3), sem mudar QUEM e elegivel.
-            candidatos = []
+            # Candidatas ELEGIVEIS (score>=0, tipo executavel pelo plugin,
+            # nao recusadas este turno), na ordem do score imediato --
+            # SEM cap aqui: `_select_search_candidates` (decision_engine.py,
+            # unificacao 26/07, pedido do usuario "tem que ser o mesmo nos
+            # dois") decide quantas/quais entram na busca, exatamente com a
+            # MESMA janela de score/diversidade que o Turn Planner offline
+            # (main_phase) usa -- so o SEARCH_TOP_K (orcamento de tempo)
+            # e proprio do caminho ao vivo.
+            candidatos_elegiveis = []
             for a in actions:
                 if a[0] < 0:
                     break
                 if a[1] == 'activate' and len(a) > 2 and getattr(a[2], 'code', None) in exclude_activate_codes:
                     continue
                 if allowed_types is None or a[1] in allowed_types:
-                    candidatos.append(a)
-                    if len(candidatos) >= SEARCH_TOP_K:
-                        break
-            if not candidatos:
+                    candidatos_elegiveis.append(a)
+            if not candidatos_elegiveis:
                 if trace_out is not None:
                     trace_out["selection"] = "no_eligible_action"
                 return
@@ -648,10 +594,10 @@ def choose_action(gs: GameState, opp_gs: GameState,
             # thread), o CALLER ja tem uma acao valida -- nunca cai pra
             # end_turn por causa do custo da busca (server.py trata None como
             # "encerra o turno", pior que o score imediato de sempre).
-            result[0] = candidatos[0]
+            result[0] = candidatos_elegiveis[0]
             if trace_out is not None:
                 trace_out["selection"] = "immediate_score"
-            a = candidatos[0]
+            a = candidatos_elegiveis[0]
             # Diagnostico de gerenciamento de mao (08/07: usuario reportou o
             # bot jogando cartas de counter alto custo 1-2 ate ficar sem mao)
             # -- so loga quando a mao ja esta fina (<=3 ANTES desta jogada),
@@ -661,6 +607,9 @@ def choose_action(gs: GameState, opp_gs: GameState,
                 print(f"[PLAY] mao fina ({len(gs.hand)} cartas): "
                       f"jogou {c.code} custo={c.cost} counter={c.counter} "
                       f"score={a[0]:.1f}", flush=True)
+
+            candidatos = match._select_search_candidates(
+                candidatos_elegiveis, SEARCH_TOP_K, priority)
 
             # ITEM 3 do plano: com >1 candidato de score proximo, refina a
             # escolha simulando a linha ate o fim do MEU turno + o turno de
@@ -687,109 +636,105 @@ def choose_action(gs: GameState, opp_gs: GameState,
                 model = opponent_model_for_leader(
                     getattr(opp_gs.leader, 'code', ''),
                     getattr(opp_gs.leader, 'color', ''))
-                # rng=random (modulo, nao random.Random() novo) -- mesmo
-                # achado 26/07 do main_phase (decision_engine.py): consistente
-                # com o resto do motor, mesmo este caminho ao vivo nao
-                # depender de reproducao por seed.
                 if model is not None or hidden:
-                    if model is not None:
-                        # Amostragem SEQUENCIAL/ADAPTATIVA (26/07, achado
-                        # 380): em vez de um N fixo, para assim que a
-                        # diferenca de valor entre as candidatas fica
-                        # estatisticamente clara, ou ao atingir o teto de
-                        # seguranca -- ver _adaptive_counterfactual_search.
-                        melhor, melhor_valor, search_records, n_amostras = (
-                            _adaptive_counterfactual_search(
-                                gs, opp_gs, match, candidatos, model,
-                                max_steps=SEARCH_MAX_STEPS,
-                                samples_min=SEARCH_SAMPLES_MIN,
-                                samples_max=SEARCH_SAMPLES_MAX,
-                                batch_size=SEARCH_SAMPLES_BATCH,
-                                z_threshold=SEARCH_SAMPLES_Z,
-                                rng=random))
+                    # _select_action_via_search (decision_engine.py) e a
+                    # FONTE UNICA usada tanto aqui quanto no Turn Planner
+                    # offline (main_phase) -- unificacao 26/07 (pedido do
+                    # usuario: receio de "o bot receber dois comandos de
+                    # decisao diferentes... tem que ser o mesmo nos dois").
+                    # Ganha de brinde a guarda _is_unsafe_zero_life_leader_attack,
+                    # que antes so existia no offline. Amostragem
+                    # SEQUENCIAL/ADAPTATIVA (piso/teto): para no piso assim
+                    # que o gap de valor fica estatisticamente claro, so
+                    # sobe ate o teto quando o gap ainda nao e confiavel
+                    # (achado do sweep de qualidade, bloco 380). Sem model
+                    # (masked_public_line_search), a funcao cai sozinha
+                    # numa simulacao deterministica sem amostragem -- rng=
+                    # random (modulo, nao random.Random() novo, achado
+                    # 26/07) so importa quando model existe.
+                    melhor, melhor_valor, records, n_amostras, _sim_values = (
+                        match._select_action_via_search(
+                            gs, opp_gs, engine, candidatos, model,
+                            max_steps=SEARCH_MAX_STEPS, extra_own_turn_search=True,
+                            samples_min=SEARCH_SAMPLES_MIN, samples_max=SEARCH_SAMPLES_MAX,
+                            batch_size=SEARCH_SAMPLES_BATCH, z_threshold=SEARCH_SAMPLES_Z,
+                            rng=random))
+                    search_records = [
+                        {"action": action_to_trace(rec["action"]), "value": round(rec["value"], 4)}
+                        for rec in records
+                    ]
+                    if melhor is None:
+                        # TODAS as candidatas foram descartadas pela guarda
+                        # de seguranca (ataque ao lider com vida 0 sem
+                        # lethal garantido nem linha vencedora simulada) --
+                        # mantem o fallback de score imediato ja setado
+                        # acima (candidatos_elegiveis[0]), nunca sobrescreve
+                        # com None (server.py trataria como "encerra o
+                        # turno", pior que o score imediato de sempre).
+                        if trace_out is not None:
+                            trace_out["selection"] = "immediate_score_all_candidates_unsafe"
                     else:
-                        # masked_public_line_search: sem model nao ha o que
-                        # amostrar -- 1 simulacao deterministica contra o
-                        # estado publico mascarado (comportamento antigo,
-                        # amostragem adaptativa nao se aplica aqui).
-                        melhor, melhor_valor = candidatos[0], None
-                        search_records = []
-                        for cand in candidatos:
-                            # extra_own_turn_search=True: lookahead de 2 turnos
-                            # meus (usuario 24/07, decisao apos profiling --
-                            # so o caminho AO VIVO tem folga de orcamento pra
-                            # isso, ver decision_engine.py/_simulate_sequence_once).
-                            valores = match._simulate_sequence_values(
-                                gs, opp_gs, cand, max_steps=SEARCH_MAX_STEPS, amostras=None,
-                                extra_own_turn_search=True)
-                            valor = sum(valores) / len(valores) if valores else -1e9
-                            search_records.append({"action": action_to_trace(cand),
-                                                   "value": round(valor, 4)})
-                            if melhor_valor is None or valor > melhor_valor:
-                                melhor_valor = valor
-                                melhor = cand
-                        n_amostras = 0
-                    # A linha mascarada agora PODE escolher: todas as
-                    # candidatas usam exatamente o mesmo estado PUBLICO e
-                    # nenhuma carta UNKNOWN ganha texto/counter inventado.
-                    # Isso permite preservar orcamento/curva e comparar a
-                    # sequencia inteira, em vez de ficar preso ao score da
-                    # primeira acao. A base deixa explicito o limite da prova.
-                    result[0] = melhor
-                    if trace_out is not None:
-                        trace_out["selection"] = (
-                            "counterfactual_search" if model is not None
-                            else "masked_public_line_search")
-                        trace_out["search_values"] = search_records
-                        trace_out["counterfactual_basis"] = (
-                            "sampled_opponent_model" if model is not None
-                            else "masked_public_state")
-                        # Qual camada de fallback do opponent modeling
-                        # produziu a amostragem (26/07) -- exposto pra
-                        # auditar em partida real se o banco de decks
-                        # reais esta caindo com frequencia nas camadas
-                        # mais fracas (color_match/generic_color_pool)
-                        # pra algum meta especifico, sinal de que vale a
-                        # pena enriquecer decklists_raw.csv com mais
-                        # decks daquele arquetipo/cor.
-                        trace_out["opponent_model_source"] = (
-                            opponent_model_source_for_leader(
-                                getattr(opp_gs.leader, 'code', ''),
-                                getattr(opp_gs.leader, 'color', ''))
-                            if model is not None else 'none')
-                        # Quantas amostras a busca sequencial/adaptativa
-                        # realmente gastou nesta decisao (26/07, achado 380)
-                        # -- 0 no caminho masked_public_line_search (sem
-                        # model, nao ha amostragem). Auditar em partida real
-                        # se o teto SEARCH_SAMPLES_MAX_DEFAULT esta sendo
-                        # atingido com frequencia (sinal de muitas decisoes
-                        # genuinamente proximas) ou se a maioria para logo
-                        # no minimo (sinal de que a maioria das decisoes
-                        # ja e clara, orcamento sobrando pra subir o teto).
-                        trace_out["adaptive_samples_used"] = n_amostras
-                        # Telemetria 24/07 (usuario: medir o que fizemos
-                        # hoje): extra_own_turn_search=True (fase B,
-                        # lookahead de 2 turnos, SO caminho ao vivo) faz
-                        # uma linha valer SIMULATED_WIN_SCORE quando meu
-                        # proprio proximo turno fecha o jogo -- exposto
-                        # aqui pra medir com que frequencia isso acontece
-                        # numa partida real (antes deste bloco, esse sinal
-                        # so existia dentro de search_values, sem contagem
-                        # agregada facil de auditar).
-                        two_turn_wins = sum(
-                            1 for rec in search_records
-                            if rec.get("value", 0) >= SIMULATED_WIN_SCORE * 0.9)
-                        trace_out["line_search"] = {
-                            "depth": SEARCH_MAX_STEPS,
-                            "don_budget_before": gs.don_available,
-                            "candidate_count": len(candidatos),
-                            "selected": action_to_trace(melhor),
-                            "public_state_only": bool(hidden),
-                            "two_turn_lookahead_wins_found": two_turn_wins,
-                        }
-                    verbo = "refinou" if model is not None else "auditou"
-                    print(f"[ENG] busca {verbo}: {melhor[1]} (score imediato {melhor[0]:.1f}, "
-                          f"valor simulado {melhor_valor:.1f}, amostras={n_amostras})", flush=True)
+                        # A linha mascarada agora PODE escolher: todas as
+                        # candidatas usam exatamente o mesmo estado PUBLICO e
+                        # nenhuma carta UNKNOWN ganha texto/counter inventado.
+                        # Isso permite preservar orcamento/curva e comparar a
+                        # sequencia inteira, em vez de ficar preso ao score da
+                        # primeira acao. A base deixa explicito o limite da prova.
+                        result[0] = melhor
+                        if trace_out is not None:
+                            trace_out["selection"] = (
+                                "counterfactual_search" if model is not None
+                                else "masked_public_line_search")
+                            trace_out["search_values"] = search_records
+                            trace_out["counterfactual_basis"] = (
+                                "sampled_opponent_model" if model is not None
+                                else "masked_public_state")
+                            # Qual camada de fallback do opponent modeling
+                            # produziu a amostragem (26/07) -- exposto pra
+                            # auditar em partida real se o banco de decks
+                            # reais esta caindo com frequencia nas camadas
+                            # mais fracas (color_match/generic_color_pool)
+                            # pra algum meta especifico, sinal de que vale a
+                            # pena enriquecer decklists_raw.csv com mais
+                            # decks daquele arquetipo/cor.
+                            trace_out["opponent_model_source"] = (
+                                opponent_model_source_for_leader(
+                                    getattr(opp_gs.leader, 'code', ''),
+                                    getattr(opp_gs.leader, 'color', ''))
+                                if model is not None else 'none')
+                            # Quantas amostras a busca sequencial/adaptativa
+                            # realmente gastou nesta decisao (26/07, achado 380)
+                            # -- 0 no caminho masked_public_line_search (sem
+                            # model, nao ha amostragem). Auditar em partida real
+                            # se o teto SEARCH_SAMPLES_MAX_DEFAULT esta sendo
+                            # atingido com frequencia (sinal de muitas decisoes
+                            # genuinamente proximas) ou se a maioria para logo
+                            # no minimo (sinal de que a maioria das decisoes
+                            # ja e clara, orcamento sobrando pra subir o teto).
+                            trace_out["adaptive_samples_used"] = n_amostras
+                            # Telemetria 24/07 (usuario: medir o que fizemos
+                            # hoje): extra_own_turn_search=True (fase B,
+                            # lookahead de 2 turnos, SO caminho ao vivo) faz
+                            # uma linha valer SIMULATED_WIN_SCORE quando meu
+                            # proprio proximo turno fecha o jogo -- exposto
+                            # aqui pra medir com que frequencia isso acontece
+                            # numa partida real (antes deste bloco, esse sinal
+                            # so existia dentro de search_values, sem contagem
+                            # agregada facil de auditar).
+                            two_turn_wins = sum(
+                                1 for rec in search_records
+                                if rec.get("value", 0) >= SIMULATED_WIN_SCORE * 0.9)
+                            trace_out["line_search"] = {
+                                "depth": SEARCH_MAX_STEPS,
+                                "don_budget_before": gs.don_available,
+                                "candidate_count": len(candidatos),
+                                "selected": action_to_trace(melhor),
+                                "public_state_only": bool(hidden),
+                                "two_turn_lookahead_wins_found": two_turn_wins,
+                            }
+                        verbo = "refinou" if model is not None else "auditou"
+                        print(f"[ENG] busca {verbo}: {melhor[1]} (score imediato {melhor[0]:.1f}, "
+                              f"valor simulado {melhor_valor:.1f}, amostras={n_amostras})", flush=True)
             if trace_out is not None:
                 finished_at = time.perf_counter()
                 trace_out["latency_segments_ms"] = {
