@@ -1,5 +1,66 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-26 (381) - Claude (sessao remota web) - IMPLEMENTADO: amostragem sequencial/adaptativa no Monte Carlo ao vivo (piso 12 / teto 24), substitui N fixo=6
+
+Usuario pediu pra IMPLEMENTAR uma melhoria concreta em cima do achado do
+bloco 380 (mais amostras melhora qualidade, mas so vale a pena quando o
+gap ainda nao esta resolvido). Antes so tinha ficado registrado como
+"refinamento futuro" -- agora implementado.
+
+**O que mudou** (`sim_bridge.py`): `choose_action` nao usa mais um N fixo
+de amostras Monte Carlo pra toda decisao. Nova funcao
+`_adaptive_counterfactual_search` amostra em ate 2 lotes (piso=12,
+teto=24, ambos configuraveis via `SEARCH_SAMPLES_MIN_DEFAULT`/
+`SEARCH_SAMPLES_MAX_DEFAULT`/`SEARCH_SAMPLES_BATCH_DEFAULT`) e para no
+PISO assim que a diferenca de valor entre as 2 candidatas (teste pareado,
+CRN -- mesmas amostras nos 2 lados) fica estatisticamente clara
+(`|media(delta)| > 2*erro_padrao(delta)`); so sobe pro TETO quando o gap
+ainda nao e confiavel. So se aplica ao caminho com `model` (Monte Carlo de
+verdade); o fallback `masked_public_line_search` (sem model) continua
+com 1 simulacao deterministica, sem amostragem, como antes.
+
+**Calibracao do piso, achado importante durante a implementacao**: testei
+piso=4 primeiro (generalizando o `SEARCH_SAMPLES_DEFAULT=6` antigo pra
+baixo) e descobri que com tao poucas amostras o teste pareado "confirmava"
+significancia por PURO RUIDO na maioria das vezes (poucos graus de
+liberdade tornam o erro-padrao estimado dele mesmo muito instavel) --
+o cenario de empate tecnico (bloco 380) parava quase sempre no piso=4,
+escolhendo `attack` quase sempre, quando o gabarito de N=300 tinha
+mostrado que `play` e a real melhor ~50% das vezes. Subindo o piso pra 12
+(testado tambem 8, intermediario) resolveu: agora metade das chamadas do
+cenario de empate tecnico ficam no piso e metade sobem pro teto, e a
+acao realmente melhor (`play`) passa a ser escolhida com frequencia bem
+maior (4/20 num teste rapido, contra quase nunca em piso=4).
+
+**Validacao de tempo real**: rodei o cenario de "empate tecnico" (achado
+380) 20x com a calibracao final -- tempo medio 192.9ms, maximo 489.6ms,
+30-50% das chamadas param no piso (12), o resto sobe pro teto (24). Ainda
+MUITO longe do timeout de 3-4s. Custo pior-caso estimado pra board pesado
+(5v5, ~51ms/amostra medido no bloco 379): piso=12 ~= 612ms, teto=24 ~=
+1.22s -- dentro da margem segura, abaixo do N=30 (1.49-1.77s) e N=40
+(2.04-3.01s, estourava) medidos no bloco 379.
+
+**Testes novos em `smoke_fast.py`** (2, ambos passam, suites 100%):
+- `test_busca_adaptativa_ao_vivo_respeita_piso_e_teto` -- decisao real
+  (2 ataques concorrentes contra Doflamingo mascarado) fica dentro de
+  `[SEARCH_SAMPLES_MIN_DEFAULT, SEARCH_SAMPLES_MAX_DEFAULT]`.
+- `test_adaptive_counterfactual_search_para_cedo_e_no_teto` -- prova
+  ISOLADA do mecanismo (match falso com valores sinteticos, sem depender
+  do motor de jogo real): gap limpo/sem ruido para exatamente no piso;
+  gap real pequeno + ruido grande (empate tecnico sintetico) vai exatamente
+  ate o teto. Nota de processo: uma primeira tentativa de provar "para
+  cedo" com um cenario de jogo REAL (ataque quase letal) falhou -- descobri
+  que aquele cenario tem variancia genuina alta (resultado depende de
+  contra-ataque/counter possivel na mao oculta do oponente), entao
+  corretamente NAO para cedo. Serviu de licao: cenarios de jogo real quase
+  sempre tem alguma variancia de verdade: a prova limpa do mecanismo
+  precisa de valores sinteticos controlados, nao de um cenario "que parece
+  obvio".
+
+Registrado em TODO.md: `SEARCH_TOP_K_DEFAULT` continua em 2 (o teste
+pareado so cobre 2 candidatas; >2 cairia num caminho sem early-stop, sem
+uso hoje mas documentado na funcao).
+
 ## 2026-07-26 (380) - Claude (sessao remota web) - qualidade (nao so estabilidade) do Monte Carlo vs N: existe sinal real, mas pequeno demais pra mudar o default
 
 Usuario questionou minha leitura do bloco 379 ("A estabilidade ir

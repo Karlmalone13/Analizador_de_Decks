@@ -41,12 +41,40 @@ CSV_PATH  = _SCRIPTS_DIR / "cards_rows.csv"
 
 # ── Parametros da busca contrafactual de choose_action (item 3 do plano) ──────
 # Promovidos de variavel local pra constante de modulo (26/07) -- permite
-# variar de fora (`sim_bridge.SEARCH_SAMPLES_DEFAULT = N`) pra sweep de
+# variar de fora (`sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT = N`) pra sweep de
 # calibracao, sem editar a funcao. Mesmo padrao ja usado em
 # decision_engine.py (PLANNER_MC_SAMPLES).
 SEARCH_TOP_K_DEFAULT = 2
-SEARCH_SAMPLES_DEFAULT = 6
 SEARCH_MAX_STEPS_DEFAULT = 4
+
+# Amostragem SEQUENCIAL/ADAPTATIVA (26/07, acha 380): sweep de qualidade
+# mostrou que mais amostras SIM melhora a escolha (accuracy sobe, regret cai
+# com N), mas o board pesado (2 candidatas bem separadas) ja fica 100%
+# estavel com poucas amostras -- usar um N fixo pra tudo desperdica
+# orcamento onde a decisao ja e clara e nao gasta o suficiente onde e um
+# empate genuino. Em vez de N fixo, amostra em LOTES e para assim que a
+# diferenca de valor entre as 2 melhores candidatas fica estatisticamente
+# clara (teste pareado, mesmas amostras nos dois lados via CRN -- ja usado
+# antes, so que numa unica leva fixa), ate um teto de seguranca.
+#
+# Calibracao do piso (26/07): testado com piso=4 primeiro, mas com tao
+# poucas amostras a variancia da media e do erro-padrao e ela propria muito
+# ruidosa (poucos graus de liberdade) -- o teste pareado "confirmava"
+# significancia por PURO RUIDO na maioria das chamadas do cenario de
+# empate tecnico, escolhendo a MESMA acao de sempre (`attack`) em vez de
+# realmente decidir entre as duas. Testado empiricamente piso=4 (~90% para
+# no piso, quase nunca acha a `play` que o gabarito de N=300 mostrou ser a
+# real melhor), piso=8 (parecido) e piso=12 (bem mais equilibrado: cerca de
+# metade das chamadas para no piso, metade sobe pro teto, e a acao
+# realmente melhor segundo o gabarito passa a ser escolhida com frequencia
+# muito maior). Ficou em piso=12/teto=24 com 1 lote unico de cada
+# (2 niveis: rapido=12, dificil=24) -- simples de auditar e ainda dentro
+# do orcamento de tempo real (~51ms/amostra no pior caso medido, board
+# pesado: 24 amostras ~= 1.2s, longe do teto de 3-4s do timeout).
+SEARCH_SAMPLES_MIN_DEFAULT = 12
+SEARCH_SAMPLES_BATCH_DEFAULT = 12
+SEARCH_SAMPLES_MAX_DEFAULT = 24
+SEARCH_SAMPLES_Z_DEFAULT = 2.0
 
 # ── Carrega banco de cartas uma vez ───────────────────────────────────────────
 # _load_effects_db/_load_analysis_db populam globals do decision_engine e
@@ -471,6 +499,67 @@ def opponent_model_source_for_leader(leader_code: str, leader_color: str = '') -
     return _opponent_model_source_cache.get(cache_key, 'none')
 
 
+def _adaptive_counterfactual_search(gs, opp_gs, match, candidatos, model,
+                                     max_steps, samples_min, samples_max,
+                                     batch_size, z_threshold, rng):
+    """
+    Amostragem Monte Carlo SEQUENCIAL em lotes pras (ate SEARCH_TOP_K, hoje
+    2) candidatas de maior score imediato: gasta o MINIMO de amostras
+    suficiente pra separar as duas com confianca estatistica, ate um teto de
+    seguranca (achado 26/07, bloco 380 -- ver TODO.md/HANDOFF.md: mais
+    amostras melhora objetivamente a qualidade da escolha, mas so vale a
+    pena gastar quando o gap ainda nao esta resolvido; board com 2
+    candidatas bem separadas ja fica estavel com poucas amostras, empate
+    tecnico de verdade precisa de mais).
+
+    Teste pareado usa as MESMAS amostras dos 2 lados em cada lote (CRN --
+    ja usado antes numa unica leva fixa, agora por lote) pra reduzir ruido:
+    delta_i = valor_candidata_0(amostra_i) - valor_candidata_1(amostra_i).
+    Para assim que |media(delta)| > z_threshold * erro_padrao(delta), ou ao
+    atingir samples_max. Com mais de 2 candidatas (SEARCH_TOP_K > 2 numa
+    config futura) nao ha teste pareado simples -- usa so samples_min, sem
+    early stop, preservando o comportamento antigo pra esse caso raro.
+
+    Retorna (melhor_action, melhor_valor, search_records, amostras_usadas).
+    """
+    pairwise = len(candidatos) == 2
+    valores_por_cand: list = [[] for _ in candidatos]
+    n_coletadas = 0
+    while n_coletadas < samples_max:
+        batch = min(batch_size, samples_max - n_coletadas)
+        novas_amostras = [model.sample(opp_gs, rng=rng) for _ in range(batch)]
+        for i, cand in enumerate(candidatos):
+            valores_por_cand[i].extend(
+                match._simulate_sequence_values(
+                    gs, opp_gs, cand, max_steps=max_steps, amostras=novas_amostras,
+                    extra_own_turn_search=True))
+        n_coletadas += batch
+        if n_coletadas < samples_min:
+            continue
+        if not pairwise:
+            break
+        deltas = [a - b for a, b in zip(valores_por_cand[0], valores_por_cand[1])]
+        media = sum(deltas) / len(deltas)
+        if len(deltas) > 1:
+            var = sum((d - media) ** 2 for d in deltas) / (len(deltas) - 1)
+            stderr = (var / len(deltas)) ** 0.5
+        else:
+            stderr = 0.0
+        if stderr == 0.0 or abs(media) > z_threshold * stderr:
+            break
+
+    melhor, melhor_valor = candidatos[0], None
+    search_records = []
+    for i, cand in enumerate(candidatos):
+        valores = valores_por_cand[i]
+        valor = sum(valores) / len(valores) if valores else -1e9
+        search_records.append({"action": action_to_trace(cand), "value": round(valor, 4)})
+        if melhor_valor is None or valor > melhor_valor:
+            melhor_valor = valor
+            melhor = cand
+    return melhor, melhor_valor, search_records, n_coletadas
+
+
 def choose_action(gs: GameState, opp_gs: GameState,
                   match, timeout: float = 4.0,
                   allowed_types: Optional[set] = None,
@@ -503,8 +592,11 @@ def choose_action(gs: GameState, opp_gs: GameState,
     result: list = [None]
     exclude_activate_codes = exclude_activate_codes or set()
     SEARCH_TOP_K = SEARCH_TOP_K_DEFAULT
-    SEARCH_SAMPLES = SEARCH_SAMPLES_DEFAULT
     SEARCH_MAX_STEPS = SEARCH_MAX_STEPS_DEFAULT
+    SEARCH_SAMPLES_MIN = SEARCH_SAMPLES_MIN_DEFAULT
+    SEARCH_SAMPLES_MAX = SEARCH_SAMPLES_MAX_DEFAULT
+    SEARCH_SAMPLES_BATCH = SEARCH_SAMPLES_BATCH_DEFAULT
+    SEARCH_SAMPLES_Z = SEARCH_SAMPLES_Z_DEFAULT
 
     def _run() -> None:
         try:
@@ -599,26 +691,44 @@ def choose_action(gs: GameState, opp_gs: GameState,
                 # achado 26/07 do main_phase (decision_engine.py): consistente
                 # com o resto do motor, mesmo este caminho ao vivo nao
                 # depender de reproducao por seed.
-                amostras = ([model.sample(opp_gs, rng=random)
-                             for _ in range(SEARCH_SAMPLES)] if model is not None
-                            else None)
                 if model is not None or hidden:
-                    melhor, melhor_valor = candidatos[0], None
-                    search_records = []
-                    for cand in candidatos:
-                        # extra_own_turn_search=True: lookahead de 2 turnos
-                        # meus (usuario 24/07, decisao apos profiling --
-                        # so o caminho AO VIVO tem folga de orcamento pra
-                        # isso, ver decision_engine.py/_simulate_sequence_once).
-                        valores = match._simulate_sequence_values(
-                            gs, opp_gs, cand, max_steps=SEARCH_MAX_STEPS, amostras=amostras,
-                            extra_own_turn_search=True)
-                        valor = sum(valores) / len(valores) if valores else -1e9
-                        search_records.append({"action": action_to_trace(cand),
-                                               "value": round(valor, 4)})
-                        if melhor_valor is None or valor > melhor_valor:
-                            melhor_valor = valor
-                            melhor = cand
+                    if model is not None:
+                        # Amostragem SEQUENCIAL/ADAPTATIVA (26/07, achado
+                        # 380): em vez de um N fixo, para assim que a
+                        # diferenca de valor entre as candidatas fica
+                        # estatisticamente clara, ou ao atingir o teto de
+                        # seguranca -- ver _adaptive_counterfactual_search.
+                        melhor, melhor_valor, search_records, n_amostras = (
+                            _adaptive_counterfactual_search(
+                                gs, opp_gs, match, candidatos, model,
+                                max_steps=SEARCH_MAX_STEPS,
+                                samples_min=SEARCH_SAMPLES_MIN,
+                                samples_max=SEARCH_SAMPLES_MAX,
+                                batch_size=SEARCH_SAMPLES_BATCH,
+                                z_threshold=SEARCH_SAMPLES_Z,
+                                rng=random))
+                    else:
+                        # masked_public_line_search: sem model nao ha o que
+                        # amostrar -- 1 simulacao deterministica contra o
+                        # estado publico mascarado (comportamento antigo,
+                        # amostragem adaptativa nao se aplica aqui).
+                        melhor, melhor_valor = candidatos[0], None
+                        search_records = []
+                        for cand in candidatos:
+                            # extra_own_turn_search=True: lookahead de 2 turnos
+                            # meus (usuario 24/07, decisao apos profiling --
+                            # so o caminho AO VIVO tem folga de orcamento pra
+                            # isso, ver decision_engine.py/_simulate_sequence_once).
+                            valores = match._simulate_sequence_values(
+                                gs, opp_gs, cand, max_steps=SEARCH_MAX_STEPS, amostras=None,
+                                extra_own_turn_search=True)
+                            valor = sum(valores) / len(valores) if valores else -1e9
+                            search_records.append({"action": action_to_trace(cand),
+                                                   "value": round(valor, 4)})
+                            if melhor_valor is None or valor > melhor_valor:
+                                melhor_valor = valor
+                                melhor = cand
+                        n_amostras = 0
                     # A linha mascarada agora PODE escolher: todas as
                     # candidatas usam exatamente o mesmo estado PUBLICO e
                     # nenhuma carta UNKNOWN ganha texto/counter inventado.
@@ -647,6 +757,16 @@ def choose_action(gs: GameState, opp_gs: GameState,
                                 getattr(opp_gs.leader, 'code', ''),
                                 getattr(opp_gs.leader, 'color', ''))
                             if model is not None else 'none')
+                        # Quantas amostras a busca sequencial/adaptativa
+                        # realmente gastou nesta decisao (26/07, achado 380)
+                        # -- 0 no caminho masked_public_line_search (sem
+                        # model, nao ha amostragem). Auditar em partida real
+                        # se o teto SEARCH_SAMPLES_MAX_DEFAULT esta sendo
+                        # atingido com frequencia (sinal de muitas decisoes
+                        # genuinamente proximas) ou se a maioria para logo
+                        # no minimo (sinal de que a maioria das decisoes
+                        # ja e clara, orcamento sobrando pra subir o teto).
+                        trace_out["adaptive_samples_used"] = n_amostras
                         # Telemetria 24/07 (usuario: medir o que fizemos
                         # hoje): extra_own_turn_search=True (fase B,
                         # lookahead de 2 turnos, SO caminho ao vivo) faz
@@ -669,7 +789,7 @@ def choose_action(gs: GameState, opp_gs: GameState,
                         }
                     verbo = "refinou" if model is not None else "auditou"
                     print(f"[ENG] busca {verbo}: {melhor[1]} (score imediato {melhor[0]:.1f}, "
-                          f"valor simulado {melhor_valor:.1f})", flush=True)
+                          f"valor simulado {melhor_valor:.1f}, amostras={n_amostras})", flush=True)
             if trace_out is not None:
                 finished_at = time.perf_counter()
                 trace_out["latency_segments_ms"] = {

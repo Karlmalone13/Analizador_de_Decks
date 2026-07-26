@@ -2,6 +2,33 @@
 
 **Última atualização:** 26 de julho de 2026
 
+## 🟢 IMPLEMENTADO: amostragem sequencial/adaptativa (piso 12/teto 24) substitui N fixo=6 (26/07/2026, bloco 381)
+
+Usuário pediu pra implementar uma melhoria de verdade em cima do achado
+do bloco 380 (abaixo). `SEARCH_SAMPLES_DEFAULT` fixo foi substituído por
+`_adaptive_counterfactual_search` (`sim_bridge.py`): amostra em lotes e
+para no PISO (`SEARCH_SAMPLES_MIN_DEFAULT=12`) assim que a diferença de
+valor entre as 2 candidatas é estatisticamente clara (teste pareado com
+CRN), só sobe pro TETO (`SEARCH_SAMPLES_MAX_DEFAULT=24`) quando o gap
+ainda não é confiável — gasta menos orçamento em decisões óbvias, mais
+em empates genuínos.
+
+- [x] Implementado e testado (2 testes novos em `smoke_fast.py`, suítes
+  100%). Validado com piso=12 após descobrir que piso=4/8 sofria de
+  "confirmação por ruído" (poucos graus de liberdade tornam o teste
+  pareado não-confiável) — ver bloco 381 do HANDOFF pro detalhe.
+- [x] Tempo real validado: cenário de empate técnico (bloco 380) ~193ms
+  médio/490ms máximo com a nova calibração — longe do timeout de 3-4s.
+  Pior caso estimado pra board pesado: teto=24 ~1.22s, ainda seguro.
+- [ ] **NÃO ESQUECER**: `SEARCH_TOP_K_DEFAULT=2` — o teste pareado só
+  cobre exatamente 2 candidatas. Se algum dia SEARCH_TOP_K subir (>2
+  candidatas na busca), o caminho adaptativo cai num modo sem
+  early-stop (usa só o piso, sem parar antes) — documentado na função,
+  mas nunca testado de verdade porque hoje sempre são só 2.
+- [ ] Validar em partida real (telemetria `adaptive_samples_used`) se a
+  distribuição piso/teto observada ao vivo bate com o que foi medido
+  offline (~30-50% no piso no cenário de empate técnico testado).
+
 ## 🟢 QUALIDADE (não só estabilidade) do Monte Carlo vs N — sinal real existe, mas é pequeno demais pra mudar o default (26/07/2026, bloco 380)
 
 Usuário questionou o achado do bloco 379: "estabilidade caindo é ruim?"
@@ -28,14 +55,10 @@ metade das vezes.
 
 - [x] Confirmado que existe sinal de qualidade real (não é ruído puro) —
   accuracy/regret melhoram com N, mesmo que devagar.
-- [ ] **NÃO ESQUECER**: a diferença de EV nesse cenário específico é
-  pequena (~0.36%) — o custo de errar aqui é baixo. Não dá pra
-  generalizar que TODO empate técnico do motor tem stakes baixos assim;
-  só foi medido neste cenário. Se aparecer um caso ao vivo com
-  `search_values` mostrando um gap maior entre os 2 melhores candidatos,
-  vale reavaliar se `SEARCH_SAMPLES_DEFAULT` deveria subir (dentro do
-  teto de tempo do bloco 379) especificamente pra esses casos de gap
-  maior, em vez de usar um N fixo pra tudo.
+- [x] **RESOLVIDO pelo bloco 381**: em vez de reavaliar um N fixo maior
+  caso a caso, implementada amostragem sequencial/adaptativa que já
+  gasta mais orçamento automaticamente quando o gap é pequeno — ver
+  seção "IMPLEMENTADO" acima.
 - [ ] Script do sweep de qualidade era descartável (não commitado, igual
   ao do bloco 379) — se precisar reproduzir, reescrever usando
   `trace_out["search_values"]` (valor por candidato) em vez de só

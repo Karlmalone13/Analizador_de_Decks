@@ -1802,6 +1802,8 @@ def test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor() -> None:
           trace.get("line_search", {}).get("depth") == 4
           and trace.get("line_search", {}).get("don_budget_before") == 5
           and trace.get("line_search", {}).get("selected") is not None)
+    check("amostragem adaptativa (26/07, achado 380) respeita o piso configurado",
+          trace.get("adaptive_samples_used", 0) >= sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT)
 
 
 def test_opponent_model_for_leader_fallback_3_camadas() -> None:
@@ -1845,6 +1847,125 @@ def test_opponent_model_for_leader_fallback_3_camadas() -> None:
     model_vazio = _sb.opponent_model_for_leader("ZZ99-DESCONHECIDO", "")
     check("sem lider nem cor conhecidos, cai em None (nenhuma camada disponivel)",
           model_vazio is None)
+
+
+def test_busca_adaptativa_ao_vivo_respeita_piso_e_teto() -> None:
+    # Achado 26/07 (bloco 380, pedido do usuario: "ver se com mais amostras
+    # as escolhas foram melhores, nao so as mesmas"): a amostragem
+    # sequencial (_adaptive_counterfactual_search) troca N fixo por um
+    # piso/teto -- este teste so garante que uma decisao AO VIVO real
+    # (2 ataques concorrentes, ambos dependentes da mao oculta do
+    # oponente) fica dentro dos limites configurados e escolhe uma acao
+    # valida. A garantia de que o mecanismo realmente PARA CEDO quando o
+    # gap e limpo (sem ruido) e vai ate o teto quando e ruidoso/proximo
+    # esta isolada em test_adaptive_counterfactual_search_para_cedo_e_no_teto
+    # (usa valores sinteticos deterministicos -- um cenario de jogo real
+    # quase sempre tem variancia genuina vinda da mao oculta do
+    # oponente, entao nao serve pra provar o caso "zero ruido").
+    me = GameState(leader=mk("OP10-099", "Kid", power=5000, card_type="LEADER", color="Red"),
+                    don_available=0, don_deck=8, turn=2)
+    ameaca = mk("OP10-111", "Ameaca", power=9000)
+    me.field_chars = [ameaca]
+    opp = GameState(leader=real_card("OP04-019"), turn=2)  # Doflamingo, Green/Purple
+    opp.life = [real_card("OP13-080")]
+    opp.hand = [mk("UNKNOWN-000", "Carta oculta") for _ in range(3)]
+    opp.hidden_information_masked = True
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    trace = {}
+    action = sim_bridge.choose_action(
+        me, opp, match, timeout=5.0,
+        allowed_types={"play", "attack", "attach_don", "activate"},
+        trace_out=trace)
+    check("busca adaptativa ao vivo retorna uma acao valida",
+          action is not None)
+    check("Monte Carlo ligado (fallback de cor do Doflamingo)",
+          trace.get("counterfactual_basis") == "sampled_opponent_model")
+    n_usadas = trace.get("adaptive_samples_used")
+    check("amostragem adaptativa respeita piso e teto configurados",
+          n_usadas is not None
+          and sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT <= n_usadas <= sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT)
+
+
+def test_adaptive_counterfactual_search_para_cedo_e_no_teto() -> None:
+    # Prova isolada (sem depender do motor de jogo real) do mecanismo em si
+    # (achado 26/07, bloco 380): usa um `match` falso que devolve valores
+    # SINTETICOS por candidata, pra controlar exatamente o ruido/gap e
+    # verificar as 2 pontas do comportamento adaptativo:
+    #  (a) gap grande e SEM ruido (2 candidatas com valor constante,
+    #      bem separado) -- para no PISO (SEARCH_SAMPLES_MIN_DEFAULT),
+    #      sem gastar o teto inteiro.
+    #  (b) 2 candidatas com valores RUIDOSOS que se sobrepoem (nenhum gap
+    #      estatisticamente confiavel) -- vai ate o TETO
+    #      (SEARCH_SAMPLES_MAX_DEFAULT), exatamente o caso do cenario real
+    #      de "empate tecnico" (gap real pequeno demais pro nivel de
+    #      ruido por amostra).
+    import random as _random_mod
+
+    class _FakeModel:
+        def sample(self, opp_gs, rng):
+            return object()
+
+    class _FakeMatchValoresFixos:
+        """Sem ruido nenhum: cada candidata sempre devolve o MESMO valor,
+        nao importa a amostra -- simula uma decisao cujo resultado nao
+        depende da mao oculta do oponente (gap limpo)."""
+        def __init__(self, valor_por_indice):
+            self._valor_por_indice = valor_por_indice
+            self._indice_por_id = {}
+
+        def registrar(self, candidatos):
+            for i, cand in enumerate(candidatos):
+                self._indice_por_id[id(cand)] = i
+
+        def _simulate_sequence_values(self, gs, opp_gs, cand, max_steps, amostras,
+                                       extra_own_turn_search):
+            idx = self._indice_por_id[id(cand)]
+            return [self._valor_por_indice[idx]] * len(amostras)
+
+    class _FakeMatchRuidoso:
+        """Mesma media pras 2 candidatas, mas com ruido MAIOR que o gap --
+        nenhum lote deveria conseguir separar as duas com confianca."""
+        def __init__(self, seed):
+            self._rng = _random_mod.Random(seed)
+            self._indice_por_id = {}
+
+        def registrar(self, candidatos):
+            for i, cand in enumerate(candidatos):
+                self._indice_por_id[id(cand)] = i
+
+        def _simulate_sequence_values(self, gs, opp_gs, cand, max_steps, amostras,
+                                       extra_own_turn_search):
+            idx = self._indice_por_id[id(cand)]
+            base = 500.0 + (0.5 if idx == 0 else -0.5)  # gap real de so 1.0
+            return [base + self._rng.uniform(-200.0, 200.0) for _ in amostras]
+
+    candidatos_fake = [(100.0, "attack", None), (10.0, "play", None)]
+
+    match_limpo = _FakeMatchValoresFixos({0: 1000.0, 1: 10.0})
+    match_limpo.registrar(candidatos_fake)
+    melhor, valor, records, n_usadas = sim_bridge._adaptive_counterfactual_search(
+        gs=None, opp_gs=None, match=match_limpo, candidatos=candidatos_fake,
+        model=_FakeModel(), max_steps=4,
+        samples_min=sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT,
+        samples_max=sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT,
+        batch_size=sim_bridge.SEARCH_SAMPLES_BATCH_DEFAULT,
+        z_threshold=sim_bridge.SEARCH_SAMPLES_Z_DEFAULT, rng=_random_mod)
+    check("gap limpo (sem ruido): busca adaptativa PARA NO PISO, nao gasta o teto",
+          n_usadas == sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT)
+    check("gap limpo: escolhe a candidata de maior valor sintetico",
+          melhor is candidatos_fake[0])
+
+    match_ruidoso = _FakeMatchRuidoso(seed=42)
+    match_ruidoso.registrar(candidatos_fake)
+    _, _, _, n_usadas_ruidoso = sim_bridge._adaptive_counterfactual_search(
+        gs=None, opp_gs=None, match=match_ruidoso, candidatos=candidatos_fake,
+        model=_FakeModel(), max_steps=4,
+        samples_min=sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT,
+        samples_max=sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT,
+        batch_size=sim_bridge.SEARCH_SAMPLES_BATCH_DEFAULT,
+        z_threshold=sim_bridge.SEARCH_SAMPLES_Z_DEFAULT, rng=_random_mod)
+    check("gap real pequeno + ruido grande (empate tecnico sintetico): busca vai ATE O TETO",
+          n_usadas_ruidoso == sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT)
 
 
 def test_search_contextual_evita_congestionar_mao_com_bombas() -> None:
@@ -8496,6 +8617,8 @@ def main() -> int:
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor()
     test_opponent_model_for_leader_fallback_3_camadas()
+    test_busca_adaptativa_ao_vivo_respeita_piso_e_teto()
+    test_adaptive_counterfactual_search_para_cedo_e_no_teto()
     test_search_contextual_evita_congestionar_mao_com_bombas()
     test_plano_katakuri_prefere_rampa_e_bloqueia_desperdicios()
     test_ataque_respeita_orcamento_da_jogada_principal_e_don_anexado()
