@@ -125,6 +125,14 @@ tempo. Checado a cada frame antes de qualquer leitura de estado do jogo —
 funciona mesmo com o bot pausado no meio de uma ação. O log confirma com
 `[Bot] ATIVADO`/`[Bot] DESATIVADO (Shift+B)`.
 
+**Shift+P**: troca qual lado (P1 "You"/baixo ou P2 "Opponent"/cima) o bot
+controla (`BotPlayerIndex`, `BotDriver.cs`) — Solo vs Self não tem tela de
+cara-ou-coroa, os dois lados já ficam fixos desde o início da partida, e
+isso é o jeito de escolher se o bot joga primeiro (ímpar) ou segundo
+(par), ou simplesmente qual lado é seu e qual é do bot. Seguro trocar a
+qualquer momento (o driver lê o valor fresco todo frame). Log confirma
+com `[Bot] agora controla P<N> (Shift+P)`.
+
 ## Recompilar o plugin (após editar os .cs)
 
 ```cmd

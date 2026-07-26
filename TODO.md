@@ -2,6 +2,12 @@
 
 **Última atualização:** 26 de julho de 2026
 
+## ✅ doc: `BOT/README.md` passou a documentar Shift+P (bloco 383)
+
+Fix pontual, sem pendência — Shift+P (troca de lado que o bot controla)
+já existia no código (`BotDriver.cs`) mas só aparecia no GUI label
+in-game, não no README. Documentado ao lado do Shift+B.
+
 ## 🟢 IMPLEMENTADO: Turn Planner offline e busca ao vivo unificados numa função só (26/07/2026, bloco 382)
 
 Usuário temia "o bot receber dois comandos de decisão diferentes... tem

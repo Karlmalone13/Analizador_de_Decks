@@ -1,5 +1,18 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-26 (383) - Claude (sessao remota web) - doc: BOT/README.md nao documentava Shift+P (troca de lado)
+
+Preparando o usuario pra jogar ao vivo contra o bot (sessao remota, sem
+acesso ao ambiente local dele), instrui que "bot joga de baixo, humano de
+cima" como se fosse fixo. Usuario corrigiu: ja existe um atalho Shift+P
+que troca `BotPlayerIndex` (`BotDriver.cs`) a qualquer momento, entao o
+lado nao importa. Conferido no codigo -- existe mesmo (`SwapSideKey =
+KeyCode.P`, comentario ja documentava o motivo: Solo vs Self nao tem tela
+de cara-ou-coroa, os 2 lados ficam fixos desde o inicio, isso e o jeito
+de simular o bot indo primeiro/segundo). So NAO estava no
+`BOT/README.md` (so o GUI label in-game mencionava). Documentado ao lado
+do Shift+B ja existente.
+
 ## 2026-07-26 (382) - Claude (sessao remota web) - UNIFICADO: Turn Planner offline e busca ao vivo agora sao a MESMA funcao (decision_engine.py), nao duas implementacoes paralelas
 
 Usuario, apos o bloco 381 (amostragem adaptativa so no caminho ao vivo),
