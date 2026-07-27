@@ -1,5 +1,63 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-26 (384) - Claude (sessao remota web) - EM ABERTO: usuario reportou bot so passando o turno ao vivo, apos blocos 381/382 -- investigacao pendente, migrando pra sessao LOCAL
+
+**Sintoma relatado pelo usuario**: jogando ao vivo contra o bot (Solo vs
+Self, depois de subir o codigo dos blocos 381/382 -- amostragem
+adaptativa + unificacao Turn Planner), o bot esta so passando o turno
+(end_turn), sem jogar/atacar.
+
+**Investigacao feita nesta sessao (remota, sem acesso ao ambiente local
+do usuario -- nao consegui rodar nada na maquina dele nem ver o log
+real)**:
+- Revisei o diff inteiro de `sim_bridge.choose_action` pos-unificacao
+  (blocos 381/382) procurando bug logico -- nao achei nenhum.
+- Simulei `sim_bridge.choose_action` turno a turno com DECKS REAIS
+  (`decklists_raw.csv`, via `build_real_deck`), aplicando a acao de
+  verdade no estado a cada chamada (igual o `server.py` faria apos o
+  clique do plugin). Resultado: motor jogou `activate` (1 candidato),
+  depois `attack` com busca contrafatual funcionando
+  (`amostras=12`, `selection=counterfactual_search`), e corretamente
+  terminou o turno so quando NENHUMA acao restante tinha score >= 0
+  (`no_eligible_action` correto, nao bug). NAO reproduzi "so passa o
+  turno sem motivo" nesse teste sintetico.
+- Suspeita mais provavel (nao confirmada): o `server.py` do usuario
+  pode nao ter sido reiniciado DEPOIS do `git pull` que trouxe os blocos
+  381/382 (ele relatou "nao lembro" se reiniciou). Pode tambem ser algo
+  especifico do deck/board real dele que o teste sintetico nao cobriu.
+
+**Bloqueio**: essa sessao e remota (container isolado, sem rede ate a
+maquina Windows do usuario) -- nao consigo executar `git pull`, matar o
+processo antigo do `server.py`, nem ler `BOT/engine_server/logs/` daí.
+Passei os comandos pro usuario rodar manualmente (matar processo na
+porta 8765, git pull, rodar `smoke_fast.py` como pre-flight, subir
+`server.py` de novo), mas ele teve dificuldade colando blocos
+multi-linha no PowerShell dele (PSReadLine desabilitado por deteccao de
+leitor de tela faz o terminal juntar as linhas coladas numa so). Decidiu
+migrar pra uma sessao LOCAL (Claude Code na maquina dele) pra executar
+isso direto, em vez de continuar via comandos ditados por uma sessao
+remota.
+
+**Pendente pra sessao local que pegar isso**:
+1. Confirmar que `git log -1 --oneline` mostra um commit >= `e771003`
+   (ou mais novo) DEPOIS de reiniciar o `server.py`.
+2. Rodar `smoke_fast.py` como pre-flight (deve terminar `SMOKE FAST OK`).
+3. Reproduzir a partida e capturar a saida do `server.py` no momento em
+   que o bot passa o turno -- especialmente a linha `[ENG] N acoes |
+   hand=... don=... turn=...` e qualquer `[ENG-ERR]` (excecao
+   silenciosa). Isso e o dado que falta pra saber se e:
+   - `no_eligible_action` genuino (nada com score>=0 -- pode ser
+     legitimo dependendo do estado, ou sinal de bug na pontuacao pra
+     aquele deck/situacao especifica);
+   - excecao dentro de `_select_search_candidates`/
+     `_select_action_via_search`/`_generate_and_score_actions` (checar
+     `trace_out["engine_error"]` ou o log `[ENG-ERR]` no console);
+   - ou servidor rodando codigo VELHO (nao reiniciado apos o pull).
+4. Se for log de partida completo (combat log), seguir o workflow padrao
+   do projeto: `parse_combat_log.py --add-to-db` + ler telemetria
+   (`decision_summary.py`/`metrics/live_runs/`) antes de reportar como
+   investigado -- ver regra no topo do `CLAUDE.md`/`AGENTS.md`.
+
 ## 2026-07-26 (383) - Claude (sessao remota web) - doc: BOT/README.md nao documentava Shift+P (troca de lado)
 
 Preparando o usuario pra jogar ao vivo contra o bot (sessao remota, sem

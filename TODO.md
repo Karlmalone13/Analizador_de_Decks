@@ -2,6 +2,29 @@
 
 **Última atualização:** 26 de julho de 2026
 
+## 🔴 URGENTE / EM ABERTO: bot só passando o turno ao vivo (bloco 384)
+
+Usuário reportou, jogando contra o bot depois dos blocos 381/382, que o
+bot só passa o turno (`end_turn`), sem jogar/atacar. Sessão remota
+(sem acesso à máquina do usuário) testou `choose_action` com decks reais
+turno a turno e NÃO reproduziu — motor jogou normalmente
+(`activate`/`attack` com busca contrafatual, `amostras=12`). Suspeita
+maior: `server.py` do usuário pode não ter sido reiniciado depois do
+`git pull` que trouxe 381/382.
+
+- [ ] **PRÓXIMO PASSO (sessão local)**: capturar a saída do `server.py`
+  no momento em que o bot passa o turno — a linha `[ENG] N acoes | ...`
+  e qualquer `[ENG-ERR]`. Ver bloco 384 do `HANDOFF.md` pro contexto
+  completo da investigação já feita (não repetir do zero).
+- [ ] Confirmar `git log -1 --oneline` >= `e771003` DEPOIS de reiniciar
+  o servidor (script de reinício está no bloco 384 do HANDOFF, ou pedir
+  pro usuário rodar os comandos manualmente linha a linha).
+- [ ] Se confirmar que é `no_eligible_action` genuíno (não bug de
+  execução/exceção), investigar se é a pontuação (`_generate_and_score_actions`)
+  que está zerando ações elegíveis nalgum estado específico do deck real
+  do usuário — meu teste sintético só cobriu 2 decks aleatórios de
+  `decklists_raw.csv`, não o deck real dele.
+
 ## ✅ doc: `BOT/README.md` passou a documentar Shift+P (bloco 383)
 
 Fix pontual, sem pendência — Shift+P (troca de lado que o bot controla)
