@@ -956,6 +956,12 @@ def test_don_minus_when_attacking_nao_devolve_o_proprio_don_do_ataque() -> None:
     me = GameState(leader=real_card("OP11-062"), don_available=0, don_rested=1)
     me.field_chars = [pekoms]
     opp = GameState(leader=real_card("OP16-080"))
+    # Alvo real do 'ko' (power_lte=2000) pra este teste continuar exercitando
+    # o mecanismo de FONTE do custo don_minus (o que ele mede), nao a
+    # viabilidade em si -- achado 26/07 (bloco HANDOFF 372): sem isso, o fix
+    # de _step_is_viable (nao pagar custo de efeito sem alvo real) tornava
+    # este 'ko' inviavel e o teste parava de exercitar o cenario pretendido.
+    opp.field_chars = [mk("PKMT1", "Alvo fraco", power=1000)]
     ee = EffectExecutor(me, opp)
     ee.execute(pekoms, "when_attacking")
     check("Pekoms mantem o DON anexado quando existe outra fonte pra pagar o proprio custo",

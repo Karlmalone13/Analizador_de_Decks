@@ -2,6 +2,30 @@
 
 **Última atualização:** 26 de julho de 2026
 
+> 26/07/2026 (bloco HANDOFF 372): **Bug estrutural achado e corrigido**
+> em `_step_is_viable` (decision_engine.py) — código morto (`return`
+> preso dentro de um `if` inserido depois, nunca alcançado) fazia TODA
+> a família `ko`/`rest_opp_character`/`debuff_power`/`debuff_cost`/
+> `bounce`/`lock_opp_character_refresh`/`lock_opp_character_attack`/
+> `place_opp_character_bottom_deck` (895 ocorrências no banco de
+> efeitos) sempre "viável" mesmo sem NENHUM alvo elegível no campo do
+> oponente. Achado investigando reclamação do usuário sobre o Krieg
+> ("não usou o efeito nenhuma vez") — na verdade o engine ESCOLHEU
+> ativar o efeito do líder corretamente (confirmado no combat log,
+> "Rest Sengoku"), só que cedo demais nos primeiros turnos não havia
+> alvo válido ainda (exige DON≥2 no character do oponente). Mas a
+> investigação revelou esse bug bem maior por trás. Fix: move o
+> `return` pro lugar certo + trata 2 casos que a checagem genérica não
+> cobria (`target=opp_leader`/`opp_leader_or_character` sempre viável,
+> `alt_target` como fallback quando o alvo primário não existe).
+> `smoke_fast`/`smoke_test` 100% (achou e corrigiu 6 falhas reais no
+> processo — todas casos legítimos que só "funcionavam" antes por
+> acidente do bug). **Pendente**: validar ao vivo com qualquer deck
+> que tenha cartas dessas 8 ações. **"Não entende sinergias/combos"
+> continua pendente** — isso é diferente (scoring/priorização entre
+> cartas, não viabilidade de alvo) e precisa de exemplo concreto do
+> usuário pra investigar.
+
 > 26/07/2026 (bloco HANDOFF 371): **Item 1 do bloco 370 corrigido**
 > (loop travado de `once_per_turn`) — causa real era mais funda que o
 > guard do BotDriver.cs: `_dedupe_scored_actions` agrupava 2 cópias

@@ -1,5 +1,80 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-26 (372) - Claude (sessao local) - bug estrutural achado em _step_is_viable: codigo morto tornava 895 ocorrencias no banco sempre "viaveis" mesmo sem alvo real
+
+Usuario testou o fix do bloco 371 (Krieg vs Jinbe) e reportou: "o Bot
+não sabe jogar de krieg, não usou o efeito dele nenhuma vez... não
+entende sinergias e combos". Investiguei o log de decisoes da mesma
+partida (session `2026-07-26T22.56.08`, match `b80dc495`).
+
+**Achado real**: o `activate` do lider Krieg (OP15-001, `rest_opp_character`
+com `don_attached_gte=2`) FOI escolhido pelo engine nos turnos 2,3,4,5 (score
+100, mais alto que attack) -- nao e verdade que o bot "nunca tentou".
+Cruzando com o combat log real, achei UMA linha confirmando execucao
+correta: `[You] Krieg: Rest Sengoku` (turno tardio, quando o oponente
+finalmente tinha um Character com 2+ DON anexado). Nos turnos 2-5 o
+oponente nao tinha nenhum alvo valido ainda (cedo demais pra 2+ DON
+anexado num Character so) -- entao pareceu pro usuario que "nada
+aconteceu", mas isso e esperado dado o texto da carta.
+
+**Só que investigando MAIS FUNDO achei um bug estrutural sério em
+`_step_is_viable` (decision_engine.py, ~linha 1784)**: o bloco que
+checa `eligible_cards(opp.field_chars, ...)` pra `ko`,
+`rest_opp_character`, `debuff_power`, `debuff_cost`, `bounce`,
+`lock_opp_character_refresh`, `lock_opp_character_attack`,
+`place_opp_character_bottom_deck` calculava `candidates` mas o
+`return bool(candidates)` ficava PRESO dentro do bloco
+`if a == 'play_from_life_top':` inserido logo depois (codigo morto,
+inalcancavel por causa do `return top.card_type == 'CHARACTER'` uma
+linha antes). Resultado: TODA essa familia de acoes sempre caia no
+fallback `return True` do fim da funcao, mesmo com ZERO alvo elegivel
+no campo do oponente. **895 ocorrencias no `card_effects_db.json`**
+usam essas 8 acoes -- o bug afeta qualquer carta desse tipo, nao so
+Krieg. Isso e provavelmente uma fatia real do "nao entende sinergias"
+que o usuario reportou de forma generica: o bot podia considerar
+viavel (e as vezes pagar custo por) um efeito que nao faria NADA por
+falta de alvo, em qualquer carta com essas 8 acoes.
+
+**Fix**: movido o `return bool(candidates)` pra dentro do `if a in
+(...)` de origem (nao mais codigo morto). Adicionado tratamento pra
+2 casos que a checagem generica nao cobria (achados ao rodar
+`smoke_fast`/`smoke_test`, que quebraram 6 checks reais na primeira
+tentativa):
+1. `target in ('opp_leader', 'opp_leader_or_character')` -- lider
+   sempre existe, sempre viavel (mesma regra ja usada por
+   `negate_effect` logo abaixo). Sem isso, OP05-099/OP15-059
+   (`debuff_power` target=opp_leader_or_character) ficavam inviaveis
+   quando o oponente nao tinha Character nenhum, mesmo o lider sendo
+   alvo valido.
+2. `alt_target` (ex: OP03-096 "K.O. Character custo 0, ou o Stage se
+   nao houver") -- sem alvo primario, ainda e viavel se o
+   `alt_target` existir (o fallback ja acontecia em `_execute_step`,
+   so a viabilidade nao sabia disso e abortava ANTES do fallback
+   rodar).
+Um teste (`test_don_minus_when_attacking_...`) tinha setup sintetico
+sem NENHUM Character do oponente pro `ko` do Pekoms -- corrigido pra
+incluir um alvo real, ja que o teste mede a FONTE do pagamento de
+custo, nao a viabilidade (o cenario "sem alvo" so "funcionava" antes
+por acidente do bug).
+
+`smoke_fast`/`smoke_test` 100% depois do fix completo (2 rodadas:
+achou 6 falhas reais na 1a, todas por casos legitimos que a checagem
+generica nao cobria, corrigidas na 2a).
+
+**Sobre "não entende sinergias e combos" (mais amplo)**: esse achado
+cobre viabilidade de EXECUCAO de um efeito ja escrito (tem alvo? vale
+a pena?), nao entendimento de SINERGIA entre cartas (ex: jogar X
+porque combina com Y no campo) -- isso e outro tipo de problema
+(scoring/priorizacao, nao viabilidade) e precisa de exemplo concreto
+do usuario pra investigar direito. Fica pendente ate ter um log/caso
+especifico.
+
+**Status**: codigo alterado (`decision_engine.py`), 1 teste ajustado
+em `smoke_fast.py`. Nenhum teste ao vivo ainda deste fix -- proximo
+passo e testar de novo com decks que tenham cartas dessas 8 acoes
+(qualquer deck com remoção condicional deve servir, nao precisa ser
+Krieg especificamente).
+
 ## 2026-07-26 (371) - Claude (sessao local) - corrige o loop travado do bloco 370 (item 1): exclude_failed_actions, antes do dedupe
 
 Continuacao do bloco 370 (pedido do usuario: "registra tudo primeiro,

@@ -1798,8 +1798,50 @@ class EffectExecutor:
                     return False
                 cost_lte = self._resolve_cost_lte(step, default=None)
                 return cost_lte is None or stage.cost <= cost_lte
+            # Alvo e o LIDER (sempre existe) ou "lider OU personagem" -- o
+            # lider sozinho ja cobre a viabilidade, mesma regra do
+            # negate_effect logo abaixo (ex: OP05-099, debuff_power
+            # target=opp_leader_or_character).
+            if step.get('target') in ('opp_leader', 'opp_leader_or_character'):
+                return True
             from optcg_engine.rules_facade import eligible_cards
             cost_lte = self._resolve_cost_lte(step, default=None)
+            # Achado real 26/07 (bloco HANDOFF 372, Krieg OP15-001 -- usuario
+            # reportou "nao entende o efeito do lider"): este bloco calculava
+            # cost_lte/candidates mas NUNCA os usava -- o return ficava preso
+            # dentro do `if a == 'play_from_life_top'` logo abaixo (bloco
+            # inserido DEPOIS deste sem ajustar o fluxo), tornando o check de
+            # candidatos codigo morto e caindo no fallback `return True` do
+            # fim da funcao. Na pratica, TODA a familia (ko/rest_opp_character/
+            # debuff_power/debuff_cost/bounce/lock_opp_character_refresh/
+            # lock_opp_character_attack/place_opp_character_bottom_deck --
+            # 895 ocorrencias no banco de efeitos) sempre era "viavel" mesmo
+            # SEM nenhum alvo elegivel no campo do oponente (ex: Krieg exige
+            # don_attached_gte=2, quase nunca satisfeito no early game).
+            candidates = eligible_cards(
+                opp.field_chars,
+                cost_lte=cost_lte,
+                cost_eq=step.get('cost_eq'),
+                power_lte=step.get('power_lte'),
+                don_attached_gte=step.get('don_attached_gte'),
+                rested_only=step.get('rested_only', False),
+                active_only=(a == 'rest_opp_character'),
+                filter_text=step.get('filter_type', ''),
+                exclude_name=step.get('exclude', ''),
+            )
+            if candidates:
+                return True
+            # alt_target (ex: OP03-096 "K.O. 1 Character custo 0, ou o
+            # Stage se nao houver"): sem candidato no alvo primario, ainda
+            # e viavel se o alvo alternativo existir -- _execute_step ja
+            # faz esse fallback, a viabilidade so precisa reconhecer o
+            # mesmo caminho (senao aborta ANTES do fallback rodar).
+            if step.get('alt_target') == 'opp_stage':
+                stage = getattr(opp, 'field_stage', None)
+                if stage is not None:
+                    alt_cost_lte = step.get('alt_cost_lte')
+                    return alt_cost_lte is None or stage.cost <= alt_cost_lte
+            return False
 
         if a == 'play_from_life_top':
             if not me.life:
@@ -1814,18 +1856,6 @@ class EffectExecutor:
             if step.get('cost_lte') is not None and top.cost > step['cost_lte']:
                 return False
             return top.card_type == 'CHARACTER'
-            candidates = eligible_cards(
-                opp.field_chars,
-                cost_lte=cost_lte,
-                cost_eq=step.get('cost_eq'),
-                power_lte=step.get('power_lte'),
-                don_attached_gte=step.get('don_attached_gte'),
-                rested_only=step.get('rested_only', False),
-                active_only=(a == 'rest_opp_character'),
-                filter_text=step.get('filter_type', ''),
-                exclude_name=step.get('exclude', ''),
-            )
-            return bool(candidates)
         # negate_effect: alvo pode ser opp_leader (sempre existe -- viavel),
         # opp_leader_or_character (idem, lider sempre cobre) ou opp_character
         # (precisa de personagem elegivel, mesmo filtro dos outros acima).
