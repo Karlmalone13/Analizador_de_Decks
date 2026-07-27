@@ -1,5 +1,82 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-27 (374) - Claude (sessao local) - bug real achado e corrigido: is_active_turn NUNCA era setado no caminho ao vivo -- Katakuri pagava don_minus toda vez que o oponente atacava, mesmo ja vencendo o combate
+
+Usuario reportou ao vivo (partida Katakuri x Portgas.D.Ace, log
+`2026-07-27T00.26.21_p4`, 11 turnos, log salvo/GameOver real): "katakuri
+ficou ativando efeito de -don toda hora e ficou sem don o jogo todo".
+
+**Investigacao**: telemetria confirmou -- `future_state_delta_by_decisions`
+mostra `don_diff` caindo cada vez mais negativo com o tempo (-0.128 apos
+1 decisao, -0.393 apos 3, -0.683 apos 5). No log de decisoes, 16
+ofertas de reacao (custo opcional do `on_opp_attack` do lider Katakuri
+OP11-062, `don_minus` -> +1000 power + peek), **14 aceitas**. Cruzando
+`attacker_power`/`defender_power` de cada uma: em 8 delas o Katakuri
+(defensor) JA ESTAVA VENCENDO o combate SEM buff nenhum (ex: atk=5000,
+def=6000) -- pagar DON ali e puro desperdicio, nao muda nada.
+
+**Root cause**: `GameState.is_active_turn` tem default `True`
+(dataclass puro) e **NUNCA era setado em NENHUM caminho ao vivo**
+(`server.py`/`sim_bridge.py` -- confirmado por grep, zero atribuicoes).
+Isso quebra qualquer checagem `timing=='your'/'opponent'` no motor --
+especificamente `don_return_trigger_value` (ST34-001, carta do proprio
+deck do Katakuri, "+2 DON se >=1 DON voltar, SO no MEU turno") sempre
+lia `is_active_turn=True` MESMO durante o turno do oponente
+(`on_opp_attack`), entao `has_valuable_don_return_trigger` retornava
+True incorretamente, o guard fino "so paga se o buff VIRA o combate"
+(`_combat_buff_worth_paying`/vira_defendendo) era PULADO por inteiro,
+e caia no fallback generico `_worth_paying_optional_costs` que sempre
+diz True pra custo de recurso puro (don_minus). Resultado: Katakuri
+pagava a habilidade TODA vez que era atacado, tivesse ST34-001 em campo
+(tem 1 copia no deck), vencendo o combate ou nao.
+
+**Fix** (3 pontos, is_active_turn setado explicitamente onde antes
+ficava no default errado):
+1. `server.py` `/decide`: `gs.is_active_turn=True`,
+   `opp_gs.is_active_turn=False` (sempre o proprio turno).
+2. `server.py` `/defense`: `blocker`/`counter`/`trigger` sempre turno
+   do oponente (False/True); `optional` sempre proprio turno
+   (True/False); `reaction` fica ambiguo aqui (pode ser ataque proprio
+   OU defesa) -- resolvido no ponto 3.
+3. `sim_bridge.py` `resolve_optional_effect`: quando `actor_defending`
+   e conhecido (vem de `defender_uid`, ja calculado em
+   `resolve_reaction`), corrige `gs.is_active_turn`/`opp_gs.is_active_turn`
+   ANTES de qualquer checagem de timing rodar -- fonte de verdade unica,
+   nao precisa adivinhar por fase.
+
+2 testes novos em `smoke_fast.py`
+(`test_is_active_turn_corrigido_evita_don_minus_desnecessario`):
+confirma que Katakuri NAO paga defendendo com combate ja ganho (antes
+do fix seria True, bug reproduzido), e que AINDA PODE pagar atacando
+de verdade com o ramp de ST34-001 (nao super-corrigiu pro lado
+oposto). `smoke_fast`/`smoke_test` 100%.
+
+**Achado extra, NAO corrigido ainda**: no MESMO log, turno da derrota
+(linha 920 do combat log), o bot planejou um ataque de lider pra 8000
+(2 DON anexados + o proprio buff de combate do Katakuri, empatando com
+o Ace do oponente a 8000 -- empate favorece o atacante, decisao correta
+na hora de planejar, `attack_power_planned=8000` no decision log).
+MAS o custo `Minus 1 Don` da propria habilidade do Katakuri (quando
+ataca) nao tinha NENHUMA outra fonte de DON disponivel (0 DON ativo
+sobrando apos o attach) e teve que comer 1 dos 2 DON recem-anexados,
+resultando em ataque real de SO 6000 -- "Attack Fails" contra o Ace de
+8000, Katakuri quase morreu (foi pra 1 de vida). O SCORING
+(`attack_power_planned=8000`) nao previu que o proprio custo da
+habilidade ia corroer o buff que ela mesma constroi quando nao sobra
+NENHUM don alternativo pra pagar -- mesma familia do bug ja documentado
+do Pekoms (`test_don_minus_when_attacking_nao_devolve_o_proprio_don_do_ataque`),
+mas aquele fix (fonte 4, ultimo recurso) nao ajuda quando literalmente
+nao existe fonte 1/2/3 disponivel. **Pendente**: o Turn Planner
+precisa simular o pagamento do proprio custo ANTES de reportar
+`attack_power_planned`, nao assumir que attach+buff sempre empilham
+por completo.
+
+**Status**: fix de is_active_turn commitado com testes. O achado do
+attach+custo (paragrafo acima) fica registrado como pendencia nova,
+nao investigado a fundo ainda (precisa achar onde `attack_power_planned`
+e calculado no Turn Planner e simular o _pay_costs do proprio ataque
+antes de reportar o numero).
+
 ## 2026-07-27 (373) - Claude (sessao local) - achado agregado: loop da Charlotte Pudding (peek_opp_deck_top) recorrente em 6+ partidas historicas, 2 fixes anteriores (21/07, 22/07) nao resolveram -- log de diagnostico adicionado
 
 Usuario pediu pra investigar "sinergia/combo" em partidas que ele

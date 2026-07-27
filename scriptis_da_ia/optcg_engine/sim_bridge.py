@@ -1215,6 +1215,17 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
     from optcg_engine.decision_engine import get_card_effects, EffectExecutor
     ee = EffectExecutor(gs, opp_gs)
 
+    # Achado real 27/07 (bloco HANDOFF 374, Katakuri OP11-062 pagando
+    # don_minus toda vez que o oponente ataca): server.py nao sabe, so pela
+    # fase "reaction", se e o bot atacando (proprio turno) ou defendendo
+    # (turno do oponente) -- fica com is_active_turn=True default. Aqui a
+    # gente JA sabe a resposta certa via defender_uid (actor_defending),
+    # entao corrige antes de qualquer checagem 'timing==your/opponent'
+    # (ex: when_don_returned de ST34-001) usar o valor errado.
+    if actor_defending is not None:
+        gs.is_active_turn = not actor_defending
+        opp_gs.is_active_turn = actor_defending
+
     if not actor_code:
         return ee._worth_paying_optional_costs(
             [{'type': 'trash_from_hand'}], card=None)

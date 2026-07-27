@@ -2568,5 +2568,105 @@
       "You": "decks/Krieg-RG_2026-07-26T23.35.09_p2.json",
       "Opponent": "decks/Jinbe-B_2026-07-26T23.35.09_p2.json"
     }
+  },
+  {
+    "id": "2026-07-27T00.26.21",
+    "friendly_name": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB",
+    "date": "2026-07-27",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-002",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-RB"
+    },
+    "turns": 0,
+    "winner": "p2",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-27T00.26.21.json",
+      "Opponent": "decks/Portgas.D.Ace-RB_2026-07-27T00.26.21.json"
+    }
+  },
+  {
+    "id": "2026-07-27T00.26.21_p2",
+    "friendly_name": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB",
+    "date": "2026-07-27",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-002",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-RB"
+    },
+    "turns": 0,
+    "winner": null,
+    "log_file": "raw/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p2.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p2.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-27T00.26.21_p2.json",
+      "Opponent": "decks/Portgas.D.Ace-RB_2026-07-27T00.26.21_p2.json"
+    }
+  },
+  {
+    "id": "2026-07-27T00.26.21_p3",
+    "friendly_name": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB",
+    "date": "2026-07-27",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-002",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-RB"
+    },
+    "turns": 0,
+    "winner": null,
+    "log_file": "raw/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p3.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p3.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-27T00.26.21_p3.json",
+      "Opponent": "decks/Portgas.D.Ace-RB_2026-07-27T00.26.21_p3.json"
+    }
+  },
+  {
+    "id": "2026-07-27T00.26.21_p4",
+    "friendly_name": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB",
+    "date": "2026-07-27",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-002",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-RB"
+    },
+    "turns": 11,
+    "winner": null,
+    "log_file": "raw/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-27T00.26.21_p4.json",
+      "Opponent": "decks/Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json"
+    }
   }
 ]

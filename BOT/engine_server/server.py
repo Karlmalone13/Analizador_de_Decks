@@ -686,6 +686,19 @@ def defense(req: DefenseRequest):
         bridge = _get_bridge()
         gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
         opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
+        # is_active_turn (ver /decide acima pro achado completo): blocker/
+        # counter/trigger so existem quando o OPONENTE ataca (nunca meu
+        # turno); optional e "custo no proprio turno do bot" (docstring da
+        # fase, sempre meu turno). "reaction" cobre os dois sentidos (bot
+        # atacando OU defendendo) -- fica com o default (True) aqui e
+        # resolve_reaction/resolve_optional_effect corrigem via
+        # actor_defending (defender_uid ja sabe distinguir, ver sim_bridge).
+        if req.phase in ("blocker", "counter", "trigger"):
+            gs.is_active_turn = False
+            opp_gs.is_active_turn = True
+        elif req.phase == "optional":
+            gs.is_active_turn = True
+            opp_gs.is_active_turn = False
 
         out = {"blockerId": 0, "counterIds": [], "useTrigger": False, "useReaction": False}
         decision_trace = {}
@@ -922,6 +935,16 @@ def decide(state: GameStateDto):
         match  = _get_match()
         gs     = _dto_to_gs(state.bot, state.turnNumber)
         opp_gs = _dto_to_gs(state.opp, state.turnNumber, hide_hidden=True)
+        # GameState.is_active_turn tem default True (classe pura, sem saber
+        # de HTTP) -- achado real 27/07 (bloco HANDOFF 374, Katakuri
+        # OP11-062 pagando don_minus toda vez que o oponente ataca, mesmo
+        # ja vencendo o combate sem buff): _dto_to_gs NUNCA setava isso, e
+        # nenhum outro caminho ao vivo tambem -- toda checagem de
+        # `timing == 'your'/'opponent'` (ex: when_don_returned de ST34-001,
+        # own_turn_only) sempre lia True pros DOIS lados, mesmo durante o
+        # turno do oponente. /decide so roda no MEU turno.
+        gs.is_active_turn = True
+        opp_gs.is_active_turn = False
 
         # So tipos que o plugin sabe executar — os demais sao pulados pelo
         # bridge em vez de encerrar o turno. exclude_activate_codes: ativacoes

@@ -8387,6 +8387,52 @@ def test_big_mom_optional_zero_parser_order_and_don_synergy() -> None:
               actor_defending=False))
 
 
+def test_is_active_turn_corrigido_evita_don_minus_desnecessario() -> None:
+    # Achado real 27/07 (bloco HANDOFF 374, usuario: "katakuri ficou
+    # ativando efeito de -don toda hora e ficou sem don o jogo todo").
+    # GameState.is_active_turn tem default True (classe pura) e NUNCA era
+    # setado no caminho ao vivo (server.py) -- toda checagem
+    # 'timing==your'/'opponent' (ex: when_don_returned do ST34-001, "+2 DON
+    # se >=1 DON voltar, SO no meu turno") sempre lia True mesmo durante o
+    # turno do OPONENTE, fazendo has_valuable_don_return_trigger relaxar o
+    # guard de "buff so vale se vira o combate" -- Katakuri pagava
+    # don_minus MESMO ja vencendo o combate sem o buff (defensor 6000 >
+    # atacante 5000, buff totalmente desnecessario).
+    kata_def = real_card("OP11-062")
+    st34001 = real_card("ST34-001")  # tem when_don_returned, owner_turn='your'
+    me_def = GameState(leader=kata_def, don_available=3, turn=4)
+    me_def.field_chars = [st34001]
+    me_def.hand = []
+    opp_def = GameState(leader=mk("KDOPP", "Opp", card_type="LEADER"), turn=4)
+    # actor_defending=True: bot esta DEFENDENDO (turno do oponente) -- com
+    # o fix, is_active_turn vira False e o when_don_returned de ST34-001
+    # (owner_turn='your') NAO se aplica, entao o guard "buff vira o
+    # combate?" roda de verdade: defensor 6000 ja ganha de 5000 sem buff.
+    check("Katakuri NAO paga don_minus defendendo com combate ja ganho (is_active_turn correto)",
+          sim_bridge.resolve_optional_effect(
+              me_def, opp_def, actor_code="OP11-062",
+              attacker_power=5000, defender_power=6000,
+              actor_defending=True) is False)
+
+    # Mesma carta, mas agora ATACANDO de verdade (proprio turno) contra um
+    # defensor forte demais pro buff de +1000 sozinho virar o combate
+    # (8000 > 5000+1000) -- SEM o ramp de ST34-001 isso seria recusado
+    # (buff nao muda o resultado). COM ST34-001 e is_active_turn correto
+    # (True, e realmente meu turno), o ramp liquido (+2 DON por -1 DON) e
+    # legitimamente lucrativo por si so, independente do buff de combate.
+    kata_atk = real_card("OP11-062")
+    st34001b = real_card("ST34-001")
+    me_atk = GameState(leader=kata_atk, don_available=3, turn=4)
+    me_atk.field_chars = [st34001b]
+    me_atk.hand = []
+    opp_atk = GameState(leader=mk("KAOPP", "Opp", card_type="LEADER"), turn=4)
+    check("Katakuri PODE pagar don_minus atacando com ST34-001 (ramp liquido positivo, meu turno de verdade)",
+          sim_bridge.resolve_optional_effect(
+              me_atk, opp_atk, actor_code="OP11-062",
+              attacker_power=5000, defender_power=8000,
+              actor_defending=False) is True)
+
+
 def test_exclude_failed_actions_evita_loop_travado_em_activate() -> None:
     # Achado real 26/07 (bloco HANDOFF 370, log 22.24.06, match b3484a93 --
     # Barba Negra OP09-093 custo 10): 2 copias da mesma carta em campo, a
@@ -8424,6 +8470,7 @@ def test_exclude_failed_actions_evita_loop_travado_em_activate() -> None:
 
 def main() -> int:
     test_big_mom_optional_zero_parser_order_and_don_synergy()
+    test_is_active_turn_corrigido_evita_don_minus_desnecessario()
     test_hidden_info_honesta_e_teto_counter_real()
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()

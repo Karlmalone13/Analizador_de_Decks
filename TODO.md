@@ -2,6 +2,30 @@
 
 **Última atualização:** 27 de julho de 2026
 
+> 27/07/2026 (bloco HANDOFF 374): **Bug real corrigido** —
+> `GameState.is_active_turn` nunca era setado no caminho ao vivo
+> (default `True` sempre, nos dois lados). Quebrava qualquer lógica
+> `timing='your'/'opponent'` — especificamente o guard "só paga
+> don_minus se o buff vira o combate" do líder Katakuri era pulado
+> inteiro sempre que ST34-001 (carta do próprio deck, ramp de DON "só
+> no meu turno") estava em campo, porque o motor achava que era sempre
+> o turno do bot. Resultado real reportado pelo usuário: Katakuri
+> pagando `-1 DON` toda vez que era atacado, mesmo já vencendo o
+> combate sem precisar do buff — ficou sem DON a partida inteira.
+> Corrigido em 3 pontos (`/decide`, `/defense` por fase,
+> `resolve_optional_effect` via `actor_defending`). 2 testes novos,
+> `smoke_fast`/`smoke_test` 100%. **Achado extra, ainda pendente**: no
+> mesmo log, o Turn Planner planejou um ataque de líder pra 8000 power
+> (2 DON anexados + buff próprio) mas o custo `Minus 1 Don` da
+> habilidade comeu 1 dos DON recém-anexados (não sobrava outra fonte),
+> resultando em ataque real de só 6000 contra o líder do oponente a
+> 8000 — "Attack Fails", Katakuri quase morreu. `attack_power_planned`
+> não simula o próprio custo da habilidade antes de reportar o número.
+> Mesma família do bug já documentado do Pekoms, mas sem fonte
+> alternativa de DON o fix antigo não ajuda. Precisa investigar onde o
+> Turn Planner calcula `attack_power_planned` pra simular o
+> `_pay_costs` antes.
+
 > 27/07/2026 (bloco HANDOFF 373): **Achado agregado sobre "não entende
 > sinergia"** — escaneei os 25 arquivos de decision log históricos
 > procurando o padrão "mesma ação escolhida 3x+ no mesmo turno": achei

@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Portgas D. Ace",
+          "code": "OP13-002"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 0,
+  "turns": []
+}
