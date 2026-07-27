@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP07-046",
+      "name": "Sengoku",
+      "count": 3
+    },
+    {
+      "code": "EB01-023",
+      "name": "EB01-023",
+      "count": 2
+    },
+    {
+      "code": "OP14-049",
+      "name": "OP14-049",
+      "count": 2
+    },
+    {
+      "code": "OP08-047",
+      "name": "OP08-047",
+      "count": 1
+    },
+    {
+      "code": "OP07-045",
+      "name": "Jinbe",
+      "count": 1
+    },
+    {
+      "code": "OP07-040",
+      "name": "OP07-040",
+      "count": 1
+    },
+    {
+      "code": "OP07-051",
+      "name": "Boa Hancock",
+      "count": 1
+    },
+    {
+      "code": "ST17-002",
+      "name": "ST17-002",
+      "count": 1
+    },
+    {
+      "code": "OP15-047",
+      "name": "OP15-047",
+      "count": 1
+    },
+    {
+      "code": "OP14-042",
+      "name": "OP14-042",
+      "count": 1
+    },
+    {
+      "code": "OP14-050",
+      "name": "OP14-050",
+      "count": 1
+    }
+  ],
+  "total_seen": 15,
+  "leader": "OP14-040"
+}

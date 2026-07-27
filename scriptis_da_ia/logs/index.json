@@ -2518,5 +2518,55 @@
       "You": "decks/Kaido-P_2026-07-26T22.24.06_p3.json",
       "Opponent": "decks/Marshall.D.Teach-BY_2026-07-26T22.24.06_p3.json"
     }
+  },
+  {
+    "id": "2026-07-26T23.35.09",
+    "friendly_name": "Krieg-RG_x_Jinbe-B",
+    "date": "2026-07-26",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-040",
+      "leader_name": "Jinbe",
+      "slug": "Jinbe-B"
+    },
+    "turns": 1,
+    "winner": "p2",
+    "log_file": "raw/Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09.log",
+    "parsed_file": "parsed/Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09.json",
+    "deck_files": {
+      "You": "decks/Krieg-RG_2026-07-26T23.35.09.json",
+      "Opponent": "decks/Jinbe-B_2026-07-26T23.35.09.json"
+    }
+  },
+  {
+    "id": "2026-07-26T23.35.09_p2",
+    "friendly_name": "Krieg-RG_x_Jinbe-B",
+    "date": "2026-07-26",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-040",
+      "leader_name": "Jinbe",
+      "slug": "Jinbe-B"
+    },
+    "turns": 9,
+    "winner": null,
+    "log_file": "raw/Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09_p2.log",
+    "parsed_file": "parsed/Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09_p2.json",
+    "deck_files": {
+      "You": "decks/Krieg-RG_2026-07-26T23.35.09_p2.json",
+      "Opponent": "decks/Jinbe-B_2026-07-26T23.35.09_p2.json"
+    }
   }
 ]

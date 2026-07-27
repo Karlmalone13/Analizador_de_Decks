@@ -1,0 +1,51 @@
+{
+  "cards": [
+    {
+      "code": "OP15-023",
+      "name": "Arlong",
+      "count": 3
+    },
+    {
+      "code": "OP15-017",
+      "name": "OP15-017",
+      "count": 2
+    },
+    {
+      "code": "OP13-040",
+      "name": "OP13-040",
+      "count": 2
+    },
+    {
+      "code": "OP12-027",
+      "name": "Koushirou",
+      "count": 1
+    },
+    {
+      "code": "OP15-028",
+      "name": "Meowban Brothers",
+      "count": 1
+    },
+    {
+      "code": "OP15-007",
+      "name": "OP15-007",
+      "count": 1
+    },
+    {
+      "code": "EB04-004",
+      "name": "Zeff",
+      "count": 1
+    },
+    {
+      "code": "OP15-037",
+      "name": "OP15-037",
+      "count": 1
+    },
+    {
+      "code": "OP15-009",
+      "name": "OP15-009",
+      "count": 1
+    }
+  ],
+  "total_seen": 13,
+  "leader": "OP15-001"
+}

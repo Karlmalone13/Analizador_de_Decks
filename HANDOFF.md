@@ -61,6 +61,17 @@ investigar, sem relacao com este fix.
 passo e validar contra o jogo real (Barba Negra, cenario de 2 copias
 de custo 10).
 
+**Validacao ao vivo parcial (mesmo dia, apos restart do servidor no
+commit `e5b6b0c`)**: partida Krieg vs Jinbe (log `23.35.09_p2`, 9
+turnos) rodou 100% execution_success, 0 `failed`, 0
+`stuck_executions`, nenhuma ocorrencia de "acao repetida"/"estado
+inalterado" no `LogOutput.log` do plugin -- o sintoma do loop nao
+reapareceu nesta sessao. **Nao e uma prova completa**: esse deck nao
+tem 2 copias identicas de uma carta com `[Activate: Main]` em campo
+simultaneamente, entao nao re-exercita o cenario exato do OP09-093.
+Ainda falta validar especificamente com Barba Negra de novo antes de
+fechar o item 1 como resolvido com confianca alta.
+
 ## 2026-07-26 (370) - Claude (sessao local) - primeiro teste ao vivo pos-Fase D: 2 bugs de execucao achados (loop travado de once_per_turn + efeito da Linlin nao dispara) + overplay de custo 1 confirmado com numero
 
 Usuario rodou 3 partidas ao vivo (Katakuri x2, Barba Negra x1) contra o

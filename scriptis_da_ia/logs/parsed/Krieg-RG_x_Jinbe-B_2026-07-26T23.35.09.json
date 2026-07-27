@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Krieg",
+          "code": "OP15-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Jinbe",
+          "code": "OP14-040"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 1,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP14-050",
+            "OP07-045",
+            "OP08-047",
+            "OP14-049",
+            "OP15-052"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP12-027",
+            "OP15-009",
+            "OP14-036",
+            "OP13-040",
+            "OP15-037"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    }
+  ]
+}
