@@ -644,7 +644,22 @@ namespace OPTCGBotPlugin
             }
 
             // ...e se ainda travado, cancela
-            Plugin.Log.LogWarning("[Bot] efeito pendente sem alvo viavel — Cancel");
+            // Achado 26/07 (bloco HANDOFF 373, Charlotte Pudding OP11-070
+            // "peek_opp_deck_top" -- loop recorrente confirmado em 6+
+            // partidas historicas MESMO apos os fixes de 21/07 e 22/07
+            // acima): hipotese e que este Cancel reverte a acao INTEIRA
+            // (incluindo o custo rest_self ja pago), entao a carta nunca
+            // fica "rested" de verdade e o engine reoferece a mesma
+            // ativacao pra sempre. Log extra aqui (uso unico, ainda nao
+            // confirmado ao vivo) pra achar a causa exata na proxima vez
+            // que reproduzir: UsesV3/remaining ajudam a saber se o efeito
+            // realmente precisava de candidato ou se CollectTargetCandidates
+            // nunca soube modelar um "reveal" sem escolha real.
+            Plugin.Log.LogWarning(
+                $"[Bot] efeito pendente sem alvo viavel — Cancel " +
+                $"(actor={BotExecutor.ActorCode(gls)}, usesV3={gls.acaActive?.UsesV3()}, " +
+                $"remaining={BotExecutor.RemainingV3Targets(gls)}, " +
+                $"step={gls.acaActive?.iActionStep}, state={gls.e_CurrentState})");
             BotExecutor.CancelPendingAction(gls);
             _pendingRef = null;
             _cooldown = 1f;

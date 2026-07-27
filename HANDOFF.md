@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-27 (373) - Claude (sessao local) - achado agregado: loop da Charlotte Pudding (peek_opp_deck_top) recorrente em 6+ partidas historicas, 2 fixes anteriores (21/07, 22/07) nao resolveram -- log de diagnostico adicionado
+
+Usuario pediu pra investigar "sinergia/combo" em partidas que ele
+ganhou (bot perdeu). Escaneei programaticamente TODOS os 25 arquivos
+de decision log historicos (nao so os do dia) procurando o padrao
+"mesma (tipo, card_uid) escolhida 3x+ no mesmo turno" -- 20 ocorrencias
+achadas, TODAS envolvendo `activate OP11-070` (Charlotte Pudding,
+`peek_opp_deck_top`, custo `rest_self`) exceto 1 (o proprio OP09-093
+do bloco 371/372).
+
+**Achado real, mais serio que Krieg**: o loop da Pudding acontece em
+**praticamente TODO turno em que ela esta em campo**, em pelo menos 6
+partidas historicas espalhadas por 20/07, 21/07 e 22/07 (Katakuri e o
+deck mais jogado, Pudding tem 4 copias no deck) -- nao e um caso raro.
+Achei DUAS tentativas anteriores de correcao no historico do git
+(`846652f` 21/07 "candidatos pendentes buscam de novo se esgotarem" e
+`bae86b6` 22/07 "ConfirmRevealedCard handler"), e MESMO ASSIM o loop
+reproduziu de novo numa sessao APOS os dois fixes (log
+`2026-07-22T21.14.23`, partida `fa0204574c344d35a35f84313e8dc8e7`,
+turno 5) -- confirma que nenhum dos dois realmente resolveu a causa
+raiz.
+
+**Hipotese (nao confirmada ao vivo ainda)**: `peek_opp_deck_top` e um
+reveal PURO sem escolha real (olhar 1 carta do topo do deck do
+oponente) -- `CollectTargetCandidates` provavelmente nunca acha
+candidato nenhum pra esse tipo de efeito (nao ha nada pra "selecionar"),
+entao `HandlePendingAction` (BotDriver.cs) cai no fallback final
+`BotExecutor.CancelPendingAction(gls)` ("efeito pendente sem alvo
+viavel"). Se Cancel reverte a acao INTEIRA (incluindo o custo
+`rest_self` ja pago), a carta nunca fica de fato "rested" pro jogo, e
+o engine reoferece a mesma ativacao pra sempre -- mesma familia do
+bug do bloco 371 (acao "sent" que nao muda o estado real), causa raiz
+diferente (aqui e o proprio Cancel do plugin desfazendo o custo, nao
+uma janela de UI sem handler).
+
+**Acao tomada**: adicionado log de diagnostico no fallback de Cancel
+(`BotDriver.cs`, ~linha 646) -- registra `actorCode`, `usesV3`,
+`remaining` (V3 targets faltando), `iActionStep` e `e_CurrentState`
+no exato momento do Cancel. Plugin recompilado e reinstalado
+(`setup_bepinex.bat`, jogo fechado e reaberto pelo usuario). **Proximo
+teste ao vivo com Katakuri/Pudding em campo deve finalmente mostrar a
+causa exata** (se `remaining` bate 0 mas ainda cai no Cancel, o bug e
+no proprio fluxo de confirmacao V3; se `remaining` nunca chega a 0,
+o bug e em como `RemainingV3Targets`/`CollectTargetCandidates` modela
+um reveal sem escolha).
+
+**Nota**: o fix de hoje (bloco 371, `exclude_failed_actions`) ja
+deve LIMITAR o estrago desse loop especifico (1 tentativa
+falha/turno em vez de 3-4), mesmo sem resolver a causa raiz -- mas
+so vale pra sessoes rodando com o commit do fix (a partir de
+`e5b6b0c`), os logs historicos analisados aqui sao todos anteriores.
+
+**Status**: 1 log de diagnostico adicionado (`BotDriver.cs`), sem
+mudanca de comportamento. Nao commitado ainda -- fazendo isso no
+proximo passo desta sessao. Pendente: teste ao vivo com Katakuri
+pra capturar o log e achar a causa raiz de verdade.
+
 ## 2026-07-26 (372) - Claude (sessao local) - bug estrutural achado em _step_is_viable: codigo morto tornava 895 ocorrencias no banco sempre "viaveis" mesmo sem alvo real
 
 Usuario testou o fix do bloco 371 (Krieg vs Jinbe) e reportou: "o Bot

@@ -1,6 +1,25 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 26 de julho de 2026
+**Última atualização:** 27 de julho de 2026
+
+> 27/07/2026 (bloco HANDOFF 373): **Achado agregado sobre "não entende
+> sinergia"** — escaneei os 25 arquivos de decision log históricos
+> procurando o padrão "mesma ação escolhida 3x+ no mesmo turno": achei
+> 20 ocorrências, quase todas (19/20) do MESMO bug — `activate`
+> Charlotte Pudding (OP11-070, `peek_opp_deck_top`) travando em loop.
+> Acontece em praticamente TODO turno com ela em campo, confirmado em
+> 6+ partidas históricas (20-22/07). **Duas tentativas de correção
+> anteriores** (commits `846652f` 21/07 e `bae86b6` 22/07) não
+> resolveram — o loop reproduziu de novo DEPOIS dos dois fixes.
+> Hipótese: `peek_opp_deck_top` é um reveal sem escolha real, e o
+> fallback de `CancelPendingAction` (BotDriver.cs) reverte a ativação
+> inteira incluindo o custo `rest_self` já pago, deixando a carta
+> sempre "reativável". **Ação**: log de diagnóstico adicionado no
+> ponto do Cancel, plugin recompilado e reinstalado. **Pendente**:
+> teste ao vivo com Katakuri pra capturar o log e achar a causa raiz
+> definitiva (2 tentativas anteriores já falharam sem esse log).
+> Bot vs bot automático (pedido do usuário) e loop de N partidas
+> automáticas continuam pendentes pra depois da investigação de combo.
 
 > 26/07/2026 (bloco HANDOFF 372): **Bug estrutural achado e corrigido**
 > em `_step_is_viable` (decision_engine.py) — código morto (`return`
