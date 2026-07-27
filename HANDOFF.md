@@ -1,5 +1,66 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-26 (371) - Claude (sessao local) - corrige o loop travado do bloco 370 (item 1): exclude_failed_actions, antes do dedupe
+
+Continuacao do bloco 370 (pedido do usuario: "registra tudo primeiro,
+anotando as pendencias, ai pode corrigir esse loop travado").
+
+**Root cause real (mais fundo do que parecia)**: nao e so o guard do
+BotDriver.cs sem fallback. `_dedupe_scored_actions` (decision_engine.py)
+agrupa candidatas de `activate` pela ASSINATURA da carta (codigo, power,
+custo, rested, `_am_used_turn`) — NAO por `card_uid`. Com 2 copias
+IDENTICAS de OP09-093 em campo, as duas colapsam numa UNICA acao
+candidata, sempre representada pela MESMA instancia (a de menor indice
+no campo). Reproduzi isso com um teste isolado
+(`test_exclude_failed_actions_evita_loop_travado_em_activate`,
+smoke_fast.py): com 2 copias frescas em campo, `_generate_and_score_actions`
+so produz UMA candidata `activate` — a 2a copia nunca chega a aparecer
+como opcao propria. Por isso "esqueceu de usar o efeito do segundo Barba
+10" nao era so falha de confirmacao: o gerador nunca ofereceu a 2a copia
+pra comecar, dedupe ou nao.
+
+**Fix (2 camadas, testadas)**:
+1. `server.py`: novo `_failed_actions_this_turn` (mesmo padrao do
+   `_declined_optional` ja existente pra custo opcional recusado) --
+   quando `/execution` recebe `status="failed"`, guarda a chave
+   `(type, card_code, card_uid, target_uid, turno)` da acao que nao
+   mudou o estado. `/decide` passa o subconjunto do turno atual pro
+   bridge.
+2. `sim_bridge.choose_action` ganha `exclude_failed_actions` -- filtra
+   candidatos DEPOIS do dedupe (cobre qualquer tipo de acao) E extrai os
+   uids de `activate` reprovados pra passar como `exclude_activate_uids`
+   direto pra `_generate_and_score_actions` (decision_engine.py), ANTES
+   do dedupe -- e o que garante que a 2a copia sobra como candidata
+   unica e vira a nova representante, em vez de a acao inteira
+   desaparecer da lista.
+
+Teste isolado (`smoke_fast.py`, novo) reproduz exatamente o cenario
+(2 copias de OP09-093, uma marcada como falha) sem depender do jogo
+real: confirma que a copia marcada nunca e reescolhida e que a 2a copia
+passa a ficar disponivel em vez do turno esvaziar pra `attack`.
+`smoke_fast.py` E `smoke_test.py` (regressao ampla, `_generate_and_score_actions`
+e chamada em ~13 lugares) 100% depois do fix.
+
+**Nao resolvido nesta sessao (fora de escopo do loop travado)**: a
+causa exata de por que o CLIQUE de `activate` nao mudou o estado do
+jogo real na primeira tentativa (turno 6, log 22.24.06) continua
+desconhecida -- pode ser um `GameplayState` sem handler no
+`BotDriver.cs` (mesmo padrao do fix do `ConfirmRevealedCard`, ver
+comentario la) ou outra causa Unity-side. O fix desta sessao torna o
+SINTOMA (turno inteiro perdido) tratavel independente da causa --
+qualquer acao que falhe assim agora so sai da lista de candidatos, nao
+trava o turno todo -- mas nao impede a falha de acontecer. Se
+reaparecer em teste ao vivo, os itens 2 e 3 do bloco 370 (efeito da
+Linlin nao dispara, overplay de custo 1) continuam pendentes de
+investigar, sem relacao com este fix.
+
+**Status**: codigo alterado (`BOT/engine_server/server.py`,
+`scriptis_da_ia/optcg_engine/sim_bridge.py`,
+`scriptis_da_ia/optcg_engine/decision_engine.py`), teste novo em
+`smoke_fast.py`. Nenhum teste ao vivo ainda desta correcao -- proximo
+passo e validar contra o jogo real (Barba Negra, cenario de 2 copias
+de custo 10).
+
 ## 2026-07-26 (370) - Claude (sessao local) - primeiro teste ao vivo pos-Fase D: 2 bugs de execucao achados (loop travado de once_per_turn + efeito da Linlin nao dispara) + overplay de custo 1 confirmado com numero
 
 Usuario rodou 3 partidas ao vivo (Katakuri x2, Barba Negra x1) contra o

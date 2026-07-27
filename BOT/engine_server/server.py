@@ -132,6 +132,19 @@ _match  = None   # OPTCGMatch: maquinaria de regras usada por choose_action
 # passa a excluir do proximo /decide desse mesmo turno, deixando o Turn
 # Planner cair pra proxima acao da lista.
 _declined_optional: set[tuple[str, int]] = set()
+
+# ── Ações enviadas ao jogo e confirmadas SEM efeito neste turno ───────────────
+# Achado real 26/07 (log 22.24.06, match b3484a93 -- Barba Negra OP09-093,
+# turno 6): mesmo mecanismo do _declined_optional acima, mas para quando a
+# ação FOI enviada (não recusada por custo) e o próximo estado estável do
+# jogo real confirmou que nada mudou (ver /execution abaixo, status="failed").
+# Sem isso, a mesma 'activate' (mesmo card_uid) era reoferecida com o MESMO
+# score alto até o guard "ação repetida 3x" do BotDriver.cs encerrar o turno
+# inteiro -- 1 ação quebrada queimava o turno todo (sem outros ataques/jogadas)
+# em vez de só sair da lista de candidatos. Chave: (type, card_code, card_uid,
+# target_uid, turno) -- inclui card_uid porque o bug real era a 2ª cópia da
+# mesma carta (uid diferente) nunca chegar a ser tentada.
+_failed_actions_this_turn: set[tuple] = set()
 _live_match_id = new_decision_id()
 _match_has_decisions = False
 _match_has_outcome = False
@@ -524,6 +537,19 @@ def execution(report: ExecutionReport):
         # da Unity, nunca no mesmo terminal do proxy.
         print(f"[ALERTA] execucao falhou (decisionId={report.decisionId[:8]}): "
               f"{report.error or 'sem motivo informado'}", flush=True)
+        # Achado real 26/07 (bloco HANDOFF 370, OP09-093): registra a acao
+        # que FALHOU pra /decide excluir da proxima escolha ESTE turno (ver
+        # _failed_actions_this_turn acima) -- sem isso o Turn Planner
+        # reoferecia a mesma 'activate' ate o guard do BotDriver.cs
+        # encerrar o turno inteiro. So se aplica a decisoes de main (com
+        # "turn" no contexto -- decisoes auxiliares de mulligan/defense nao
+        # usam esse mecanismo hoje).
+        turn = context.get("turn")
+        ca = context.get("chosen_action") or {}
+        if turn is not None and ca.get("type"):
+            fail_key = (ca.get("type"), ca.get("card_code"),
+                       ca.get("card_uid", 0), ca.get("target_uid", 0))
+            _failed_actions_this_turn.add((fail_key, turn))
     return {"ok": True}
 
 
@@ -628,6 +654,7 @@ def mulligan(req: MulliganRequest):
         # excluida no turno N de TODAS as partidas seguintes do mesmo
         # processo (o set e chaveado por (codigo, turno), sem nocao de jogo).
         _declined_optional.clear()
+        _failed_actions_this_turn.clear()
         _match_memory.reset()  # reveals sao por partida
         match = _get_match()
         hand_cards = [c for c in (_make(d) for d in req.hand) if c]
@@ -862,6 +889,7 @@ def decide(state: GameStateDto):
             "state_before": state_before,
             "chosen_action": trace.get("chosen_action"),
             "attack_quality": trace.get("attack_quality"),
+            "turn": state.turnNumber,
         }
         # Marcadores AO VIVO (19/07): antes so apareciam rodando
         # bot_efficiency_report.py depois da partida. "sem acao elegivel"
@@ -901,10 +929,15 @@ def decide(state: GameStateDto):
         # sem isso o Turn Planner reoferece a mesma 'activate' de score alto
         # pra sempre, sem nunca cair pra proxima acao da lista.
         excluir = {code for (code, t) in _declined_optional if t == state.turnNumber}
+        # Acoes ja enviadas e confirmadas SEM efeito neste turno (ver
+        # _failed_actions_this_turn acima) -- mesmo raciocinio do excluir
+        # de cima, agora pra acoes que FORAM tentadas e nao mudaram o jogo.
+        excluir_falhas = {key for (key, t) in _failed_actions_this_turn if t == state.turnNumber}
         action = bridge.choose_action(gs, opp_gs, match, timeout=3.0,
                                       allowed_types={"play", "attack",
                                                      "attach_don", "activate"},
                                       exclude_activate_codes=excluir,
+                                      exclude_failed_actions=excluir_falhas,
                                       trace_out=trace)
 
         if action is None:

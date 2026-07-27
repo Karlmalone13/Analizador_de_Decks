@@ -2,6 +2,26 @@
 
 **Última atualização:** 26 de julho de 2026
 
+> 26/07/2026 (bloco HANDOFF 371): **Item 1 do bloco 370 corrigido**
+> (loop travado de `once_per_turn`) — causa real era mais funda que o
+> guard do BotDriver.cs: `_dedupe_scored_actions` agrupava 2 cópias
+> idênticas de OP09-093 numa única candidata `activate` (por
+> assinatura da carta, não por `card_uid`), então a 2ª cópia nunca
+> era sequer OFERECIDA como opção. Fix em 2 camadas: `server.py`
+> rastreia ações que falharam confirmação este turno
+> (`_failed_actions_this_turn`, mesmo padrão do `_declined_optional`
+> já existente), e `decision_engine.py`/`sim_bridge.py` excluem essas
+> instâncias ANTES do dedupe (não só depois), deixando a cópia
+> saudável virar candidata. Teste novo em `smoke_fast.py` reproduz o
+> cenário sem depender do jogo real. `smoke_fast`/`smoke_test` 100%.
+> **Pendente**: causa exata do clique não mudar o estado do jogo real
+> na 1ª tentativa continua desconhecida (Unity-side, não investigada
+> — o fix trata o sintoma/turno perdido, não essa causa). **Itens 2 e
+> 3 do bloco 370 continuam pendentes**: efeito da Charlotte Linlin
+> (ST34-004) não resolve após custo opcional, e overplay de carta
+> custo 1 (51.9% das jogadas). **Próximo passo: validar este fix ao
+> vivo** (Barba Negra, cenário de 2 cópias custo 10).
+
 > 26/07/2026 (bloco HANDOFF 370): **Primeiro teste ao vivo pós-Fase D** —
 > 3 partidas (Katakuri x2, Barba Negra x1). 2 bugs de execução achados,
 > não relacionados ao Fase D (pré-existentes, só apareceram agora por

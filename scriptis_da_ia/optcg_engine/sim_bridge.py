@@ -297,6 +297,7 @@ def choose_action(gs: GameState, opp_gs: GameState,
                   match, timeout: float = 4.0,
                   allowed_types: Optional[set] = None,
                   exclude_activate_codes: Optional[set] = None,
+                  exclude_failed_actions: Optional[set] = None,
                   trace_out: Optional[dict] = None) -> Optional[tuple]:
     """
     Pede ao engine a melhor ação para o estado atual.
@@ -318,12 +319,28 @@ def choose_action(gs: GameState, opp_gs: GameState,
     score alto na próxima chamada, porque nada no estado mudou, e é
     reoferecida indefinidamente, travando o turno em loop sem nunca
     tentar a próxima ação da lista.
+
+    exclude_failed_actions: tuplas (type, card_code, card_uid, target_uid)
+    de ações que foram ENVIADAS ao jogo real e cujo próximo estado estável
+    confirmou SEM mudança (ver /execution status="failed" em server.py).
+    Achado real 26/07 (log 22.24.06, match b3484a93 -- Barba Negra
+    OP09-093): mesmo mecanismo do exclude_activate_codes acima, mas pra
+    quando a ação FOI oferecida e o clique foi enviado, e mesmo assim o
+    jogo não mudou (custo já pago silenciosamente rejeitado, alvo
+    inexistente que trava a UI, etc. -- causa exata não instrumentada
+    ainda). Sem isso o Turn Planner reoferecia a MESMA activate (mesmo
+    card_uid) 4x seguidas até o guard do BotDriver.cs ("ação repetida 3x")
+    encerrar o turno inteiro sem nenhum outro ataque/jogada — 1 instância
+    quebrada queimava o turno todo em vez de só ficar de fora da escolha.
+    Chave inclui card_uid (não só código) porque o bug real era: a 2ª
+    cópia da mesma carta (uid diferente) nunca chegava a ser tentada.
     """
     import random
     import threading
     import time
     result: list = [None]
     exclude_activate_codes = exclude_activate_codes or set()
+    exclude_failed_actions = exclude_failed_actions or set()
     SEARCH_TOP_K = 2
     SEARCH_SAMPLES = 2
     SEARCH_MAX_STEPS = 4
@@ -341,7 +358,18 @@ def choose_action(gs: GameState, opp_gs: GameState,
                 trace_out["priority"] = engine.analyzer.analysis_priority()
                 trace_out["can_lethal"] = engine.analyzer.can_lethal_this_turn()
                 trace_out["opp_combo_threat"] = engine.analyzer.opp_combo_threat()
-            actions = match._generate_and_score_actions(gs, opp_gs, engine)
+            # uids de 'activate' com falha confirmada este turno: passa pra
+            # GERACAO (nao so pro filtro de candidatos abaixo) porque
+            # _dedupe_scored_actions agrupa copias identicas da mesma carta
+            # numa unica candidata -- filtrar so depois do dedupe perde a
+            # 2a copia junto com a que falhou (ver docstring em
+            # _generate_and_score_actions).
+            exclude_activate_uids = {
+                fail_key[2] for fail_key in exclude_failed_actions
+                if fail_key[0] == 'activate'
+            }
+            actions = match._generate_and_score_actions(
+                gs, opp_gs, engine, exclude_activate_uids=exclude_activate_uids)
             generated_at = time.perf_counter()
             if trace_out is not None:
                 trace_out["scored_actions"] = [
@@ -364,6 +392,20 @@ def choose_action(gs: GameState, opp_gs: GameState,
                     break
                 if a[1] == 'activate' and len(a) > 2 and getattr(a[2], 'code', None) in exclude_activate_codes:
                     continue
+                # (type, card_code, card_uid, target_uid): ação já enviada
+                # ao jogo real este turno e confirmada SEM efeito -- ver
+                # docstring exclude_failed_actions acima.
+                if exclude_failed_actions:
+                    card_a = a[2] if len(a) > 2 else None
+                    target_a = a[4] if len(a) > 4 else None
+                    fail_key = (
+                        a[1],
+                        getattr(card_a, 'code', None),
+                        getattr(card_a, '_deck_uid', 0) if card_a is not None else 0,
+                        getattr(target_a, '_deck_uid', 0) if target_a is not None else 0,
+                    )
+                    if fail_key in exclude_failed_actions:
+                        continue
                 if allowed_types is None or a[1] in allowed_types:
                     candidatos.append(a)
                     if len(candidatos) >= SEARCH_TOP_K:

@@ -8381,6 +8381,41 @@ def test_big_mom_optional_zero_parser_order_and_don_synergy() -> None:
               actor_defending=False))
 
 
+def test_exclude_failed_actions_evita_loop_travado_em_activate() -> None:
+    # Achado real 26/07 (bloco HANDOFF 370, log 22.24.06, match b3484a93 --
+    # Barba Negra OP09-093 custo 10): 2 copias da mesma carta em campo, a
+    # ativacao da 1a copia (uid 101) foi enviada ao jogo real e o proximo
+    # estado estavel NAO mudou (server.py reporta status="failed"). Sem o
+    # filtro exclude_failed_actions, /decide reoferecia a MESMA activate
+    # (mesmo card_uid) com o mesmo score alto ate o guard "acao repetida 3x"
+    # do BotDriver.cs encerrar o turno inteiro -- a 2a copia (uid 102) nunca
+    # chegava a ser tentada. Aqui reproduz so a camada de filtragem
+    # (sim_bridge.choose_action), sem depender do jogo real.
+    teach1 = real_card("OP09-093"); teach1._deck_uid = 101
+    teach2 = real_card("OP09-093"); teach2._deck_uid = 102
+    me = GameState(leader=real_card("OP16-080"), turn=6)
+    me.is_active_turn = True
+    me.field_chars = [teach1, teach2]
+    opp = GameState(leader=real_card("OP04-019"), turn=6)
+    opp.field_chars = [real_card("OP04-006")]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+
+    baseline = sim_bridge.choose_action(
+        me, opp, match, timeout=3.0, allowed_types={"activate"})
+    check("sem exclusao, activate de OP09-093 e oferecido (baseline)",
+          baseline is not None and baseline[1] == "activate"
+          and getattr(baseline[2], "code", None) == "OP09-093")
+
+    fail_key = ("activate", "OP09-093", 101, 0)
+    filtrada = sim_bridge.choose_action(
+        me, opp, match, timeout=3.0, allowed_types={"activate"},
+        exclude_failed_actions={fail_key})
+    check("com a 1a copia (uid 101) marcada como falha, ela NUNCA e reescolhida",
+          filtrada is None or getattr(filtrada[2], "_deck_uid", None) != 101)
+    check("a 2a copia (uid 102) fica disponivel em vez de travar o turno",
+          filtrada is not None and getattr(filtrada[2], "_deck_uid", None) == 102)
+
+
 def main() -> int:
     test_big_mom_optional_zero_parser_order_and_don_synergy()
     test_hidden_info_honesta_e_teto_counter_real()
@@ -8573,6 +8608,7 @@ def main() -> int:
     test_eb04_011_draw_por_contagem_de_tipo_e_trash_igual()
     test_op04_069_base_power_igual_ao_atacante_do_oponente()
     test_in_any_order_custos_bottom_deck_escolhem_melhor_ordem()
+    test_exclude_failed_actions_evita_loop_travado_em_activate()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

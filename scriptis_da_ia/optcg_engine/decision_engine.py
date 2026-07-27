@@ -12390,12 +12390,25 @@ class OPTCGMatch:
             and not engine.analyzer.can_lethal_this_turn()
         )
 
-    def _generate_and_score_actions(self, p, opp, engine):
+    def _generate_and_score_actions(self, p, opp, engine, exclude_activate_uids=None):
         """
         Gera TODAS as ações possíveis no estado atual e as pontua.
         Retorna lista de (score, tipo, dados) ordenada por score desc.
 
         Ações: ('play', card) | ('activate', source) | ('attack', attacker, ttype, tgt)
+
+        exclude_activate_uids: card_uids cuja ativação foi ENVIADA ao jogo
+        real este turno e confirmada SEM efeito (ver exclude_failed_actions
+        em sim_bridge.choose_action / _failed_actions_this_turn em
+        server.py). Achado real 26/07 (bloco HANDOFF 370, OP09-093 x2 em
+        campo): _dedupe_scored_actions (abaixo) agrupa múltiplas cópias da
+        MESMA carta com o MESMO estado (código/power/custo/rested/
+        _am_used_turn) numa única ação candidata — sem excluir a cópia que
+        falhou ANTES do dedupe, filtrar depois (só no sim_bridge) não
+        adianta: a cópia que falhou já é a única representante da dupla no
+        candidato final, e a 2ª cópia nunca aparece pra ocupar o lugar
+        dela. Filtrar aqui, na fonte, deixa a 2ª cópia sobrar como única
+        candidata e virar a nova representante do dedupe.
         """
         actions = []
         a = engine.analyzer
@@ -12585,6 +12598,11 @@ class OPTCGMatch:
             # bot. Vale para qualquer activate, com ou sem once_per_turn —
             # o estado do jogo e a verdade (loops do Laffitte/Devon 06/07).
             if getattr(src, '_am_used_turn', -1) == p.turn:
+                continue
+            # Instancia especifica cuja ativacao ja foi tentada e o jogo
+            # real confirmou SEM efeito este turno (ver docstring acima) --
+            # exclui ANTES do dedupe pra 2a copia poder virar candidata.
+            if exclude_activate_uids and getattr(src, '_deck_uid', 0) in exclude_activate_uids:
                 continue
             # [DON!! xN] e requisito de estado, nao custo pago durante a
             # ativacao. Sem o DON ja anexado, o bot deve primeiro gerar a
