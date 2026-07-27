@@ -22,6 +22,7 @@ from optcg_engine.decision_engine import (  # noqa: E402
     _make_card,
     apply_conditional_keyword_passives,
     consume_play_cost_reductions,
+    don_needed_for_attack,
     effective_counter,
     effective_hand_play_cost,
     get_card_effects,
@@ -8433,6 +8434,46 @@ def test_is_active_turn_corrigido_evita_don_minus_desnecessario() -> None:
               actor_defending=False) is True)
 
 
+def test_don_needed_for_attack_reserva_custo_do_proprio_buff() -> None:
+    # Achado real 27/07 (bloco HANDOFF 374, mesma partida Katakuri x Ace):
+    # attack_time_power ja soma o +1000 do [When Attacking] do Katakuri
+    # como se fosse de graca. O bloco tem custo don_minus=1 -- na PIOR
+    # hipotese (sem outra fonte de DON) esse custo come 1 DON recem-
+    # anexado pra pagar o proprio buff: liquido ZERO, nao o +1000 que o
+    # planejamento assumia. Partida real: anexou 2 (5000->7000, planejado
+    # 8000 com buff), custo comeu 1, atacou com so 6000 e perdeu pro
+    # lider do oponente a 8000. Fix: assume o pior caso direto no calculo
+    # do deficit (ignora a contribuicao do buff self-canibalizavel) em
+    # vez de tentar prever "sobra folga?" -- essa previsao colide com o
+    # teto de DON disponivel bem no caso que importa (don_minus_count=1,
+    # sempre capado ao mesmo valor de antes do fix).
+    kata = real_card("OP11-062")
+    kata.don_attached = 0
+    opp = GameState(leader=mk("KADEF", "Opp", power=8000, card_type="LEADER"))
+    engine_dummy = DecisionEngine(GameState(leader=kata, don_available=5), opp)
+
+    # Com DON de sobra (5 disponiveis): precisa de 3 no pior caso (deficit
+    # cru de 3000 ignorando o buff incerto), nao mais os 2 que o calculo
+    # antigo achava suficiente contando com o buff de graca.
+    me_com_folga = GameState(leader=kata, don_available=5)
+    precisa_com_folga = don_needed_for_attack(
+        kata, 'leader', None, me_com_folga, opp, engine_dummy)
+    check("com DON de sobra, exige 3 (pior caso) em vez de 2 (buff assumido de graca)",
+          precisa_com_folga == 3)
+
+    # Com exatamente o minimo antigo (2) disponivel: nao tem 3, usa TODO
+    # o disponivel -- mesmo resultado numerico de antes do fix (2), mas
+    # agora e porque faltou DON de verdade, nao porque o calculo confiou
+    # no buff de graca.
+    kata2 = real_card("OP11-062")
+    kata2.don_attached = 0
+    me_sem_folga = GameState(leader=kata2, don_available=2)
+    precisa_sem_folga = don_needed_for_attack(
+        kata2, 'leader', None, me_sem_folga, opp, engine_dummy)
+    check("com so 2 DON disponiveis, usa todo o disponivel (nao ha o suficiente pro pior caso)",
+          precisa_sem_folga == 2)
+
+
 def test_exclude_failed_actions_evita_loop_travado_em_activate() -> None:
     # Achado real 26/07 (bloco HANDOFF 370, log 22.24.06, match b3484a93 --
     # Barba Negra OP09-093 custo 10): 2 copias da mesma carta em campo, a
@@ -8471,6 +8512,7 @@ def test_exclude_failed_actions_evita_loop_travado_em_activate() -> None:
 def main() -> int:
     test_big_mom_optional_zero_parser_order_and_don_synergy()
     test_is_active_turn_corrigido_evita_don_minus_desnecessario()
+    test_don_needed_for_attack_reserva_custo_do_proprio_buff()
     test_hidden_info_honesta_e_teto_counter_real()
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()

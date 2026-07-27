@@ -51,25 +51,46 @@ do fix seria True, bug reproduzido), e que AINDA PODE pagar atacando
 de verdade com o ramp de ST34-001 (nao super-corrigiu pro lado
 oposto). `smoke_fast`/`smoke_test` 100%.
 
-**Achado extra, NAO corrigido ainda**: no MESMO log, turno da derrota
-(linha 920 do combat log), o bot planejou um ataque de lider pra 8000
-(2 DON anexados + o proprio buff de combate do Katakuri, empatando com
-o Ace do oponente a 8000 -- empate favorece o atacante, decisao correta
-na hora de planejar, `attack_power_planned=8000` no decision log).
-MAS o custo `Minus 1 Don` da propria habilidade do Katakuri (quando
-ataca) nao tinha NENHUMA outra fonte de DON disponivel (0 DON ativo
-sobrando apos o attach) e teve que comer 1 dos 2 DON recem-anexados,
-resultando em ataque real de SO 6000 -- "Attack Fails" contra o Ace de
-8000, Katakuri quase morreu (foi pra 1 de vida). O SCORING
-(`attack_power_planned=8000`) nao previu que o proprio custo da
-habilidade ia corroer o buff que ela mesma constroi quando nao sobra
-NENHUM don alternativo pra pagar -- mesma familia do bug ja documentado
-do Pekoms (`test_don_minus_when_attacking_nao_devolve_o_proprio_don_do_ataque`),
+**Achado extra, TAMBEM corrigido nesta sessao (continuacao, mesmo
+bloco)**: no MESMO log, turno da derrota (linha 920 do combat log), o
+bot planejou um ataque de lider pra 8000 (2 DON anexados + o proprio
+buff de combate do Katakuri, empatando com o Ace do oponente a 8000 --
+empate favorece o atacante, decisao correta na hora de planejar,
+`attack_power_planned=8000` no decision log). MAS o custo `Minus 1 Don`
+da propria habilidade do Katakuri (quando ataca) nao tinha NENHUMA
+outra fonte de DON disponivel (0 DON ativo sobrando apos o attach) e
+teve que comer 1 dos 2 DON recem-anexados, resultando em ataque real
+de SO 6000 -- "Attack Fails" contra o Ace de 8000, Katakuri quase
+morreu (foi pra 1 de vida). Mesma familia do bug ja documentado do
+Pekoms (`test_don_minus_when_attacking_nao_devolve_o_proprio_don_do_ataque`),
 mas aquele fix (fonte 4, ultimo recurso) nao ajuda quando literalmente
-nao existe fonte 1/2/3 disponivel. **Pendente**: o Turn Planner
-precisa simular o pagamento do proprio custo ANTES de reportar
-`attack_power_planned`, nao assumir que attach+buff sempre empilham
-por completo.
+nao existe fonte 1/2/3 disponivel.
+
+**Fix**: `don_needed_for_attack` (decision_engine.py) calculava o
+deficit de DON contando com o buff do proprio `[When Attacking]` como
+se fosse de graca. Tentei primeiro "reservar 1 DON extra SE nao sobrar
+folga", mas essa previsao colide exatamente com o teto de DON
+disponivel pra `don_minus_count=1` (o caso real do Katakuri) --
+sempre dava o MESMO resultado capado de antes do fix, matematicamente
+inerte. Fix certo: assume o PIOR CASO direto no calculo do deficit
+(ignora a contribuicao do buff self-canibalizavel, ate o limite do que
+o proprio custo poderia comer) -- se sobrar DON de outra fonte de
+verdade, o ataque so sai com poder extra (sobra inofensiva); se nao
+sobrar, pelo menos o calculo pede a quantidade CERTA de DON pra
+cobrir o pior cenario, em vez de confiar num buff que pode nao se
+sustentar. 2 testes novos (`test_don_needed_for_attack_reserva_custo_do_proprio_buff`)
+confirmam: com DON de sobra, exige 3 (nao 2, o buff nao conta mais de
+graca); com so 2 disponiveis, usa o que tem (mesmo numero de antes,
+mas agora por falta real de DON, nao por confianca indevida no buff).
+`smoke_fast`/`smoke_test` 100%.
+
+**Pendente**: mesmo com o fix, se o bot literalmente nao tiver DON
+suficiente pra cobrir o pior caso (como na partida real, so 2
+disponiveis contra os 3 necessarios), o ataque ainda sai declarado com
+DON insuficiente -- decidir se vale a pena atacar de qualquer jeito
+(pressao) ou nao atacar quando o deficit no pior caso nao fecha e
+decisao de SCORING (nao deste calculo de attach), fica pra investigar
+se aparecer de novo ao vivo.
 
 **Status**: fix de is_active_turn commitado com testes. O achado do
 attach+custo (paragrafo acima) fica registrado como pendencia nova,

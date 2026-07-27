@@ -1616,8 +1616,36 @@ def don_needed_for_attack(attacker: 'Card', ttype: str, tgt: 'Optional[Card]',
         alvo_power = tgt.power if tgt else 0
     atk = attack_time_power(attacker, opp)
 
-    falta_base = alvo_power - atk
+    # Achado real 27/07 (bloco HANDOFF 374, Katakuri OP11-062 x Ace):
+    # attack_time_power ja soma o buff_power do proprio [When Attacking]
+    # (ex: +1000 do Katakuri) como se fosse de graca. Se esse bloco tem
+    # custo don_minus, na PIOR hipotese (sem DON sobrando de outra fonte)
+    # o custo come um DON recem-anexado pra pagar o proprio buff -- perde
+    # 1000 de poder (DON) pra "ganhar" 1000 (buff), liquido ZERO, nao o
+    # +1000 assumido no planejamento. Resultado real: anexou 2 DON
+    # (5000->7000, planejado 8000 com buff), o custo comeu 1 (->6000),
+    # ataque saiu 2000 abaixo do planejado e perdeu pro lider do oponente
+    # (8000). Em vez de tentar prever se vai sobrar folga (calculo que
+    # colide com o teto de DON disponivel exatamente no caso que importa,
+    # don_minus_count=1), assume o PIOR CASO direto: ignora a contribuicao
+    # do buff self-canibalizavel no deficit, garantindo DON suficiente
+    # mesmo se o custo comer o proprio ganho. Se sobrar DON de outra
+    # fonte de verdade, o ataque so sai com poder EXTRA (sobra inofensiva).
+    wa = get_card_effects(attacker.code).get('when_attacking')
+    buff_liquido_incerto = 0
+    if isinstance(wa, dict):
+        self_buff_amount = sum(
+            int(s.get('amount', 0) or 0) for s in wa.get('steps', [])
+            if s.get('action') == 'buff_power' and s.get('target') in ('self', ''))
+        don_minus_count = sum(
+            int(c.get('count', 1) or 1) for c in wa.get('costs', [])
+            if c.get('type') == 'don_minus')
+        if self_buff_amount and don_minus_count:
+            buff_liquido_incerto = min(self_buff_amount, don_minus_count * 1000)
+
+    falta_base = alvo_power - (atk - buff_liquido_incerto)
     need_base = (falta_base + 999) // 1000 if falta_base > 0 else 0
+
     if need_base >= p.don_available:
         return min(p.don_available, need_base)
 
