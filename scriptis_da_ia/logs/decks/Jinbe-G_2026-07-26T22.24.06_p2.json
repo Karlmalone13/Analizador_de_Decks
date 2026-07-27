@@ -1,0 +1,56 @@
+{
+  "cards": [
+    {
+      "code": "OP06-035",
+      "name": "Hody Jones",
+      "count": 2
+    },
+    {
+      "code": "OP11-031",
+      "name": "Jinbe",
+      "count": 2
+    },
+    {
+      "code": "OP13-040",
+      "name": "OP13-040",
+      "count": 2
+    },
+    {
+      "code": "OP11-029",
+      "name": "Charlotte Praline",
+      "count": 2
+    },
+    {
+      "code": "OP06-032",
+      "name": "Hammond",
+      "count": 1
+    },
+    {
+      "code": "ST24-004",
+      "name": "ST24-004",
+      "count": 1
+    },
+    {
+      "code": "EB04-018",
+      "name": "EB04-018",
+      "count": 1
+    },
+    {
+      "code": "OP06-033",
+      "name": "OP06-033",
+      "count": 1
+    },
+    {
+      "code": "OP06-025",
+      "name": "Camie",
+      "count": 1
+    },
+    {
+      "code": "EB04-020",
+      "name": "EB04-020",
+      "count": 1
+    }
+  ],
+  "total_seen": 14,
+  "leader": "OP11-021"
+}

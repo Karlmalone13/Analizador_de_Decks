@@ -1,0 +1,36 @@
+{
+  "cards": [
+    {
+      "code": "ST04-003",
+      "name": "Kaido",
+      "count": 3
+    },
+    {
+      "code": "OP11-070",
+      "name": "Charlotte Pudding",
+      "count": 2
+    },
+    {
+      "code": "OP01-114",
+      "name": "OP01-114",
+      "count": 2
+    },
+    {
+      "code": "EB02-035",
+      "name": "Sanji & Pudding",
+      "count": 1
+    },
+    {
+      "code": "OP08-074",
+      "name": "Black Maria",
+      "count": 1
+    },
+    {
+      "code": "OP07-066",
+      "name": "OP07-066",
+      "count": 1
+    }
+  ],
+  "total_seen": 10,
+  "leader": "ST04-001"
+}

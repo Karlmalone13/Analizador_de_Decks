@@ -1,0 +1,925 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Kaido",
+          "code": "ST04-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Marshall D. Teach",
+          "code": "OP16-080"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 12,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "EB02-035",
+            "ST04-003",
+            "ST04-003",
+            "OP08-074"
+          ],
+          "board": [
+            "OP11-070"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP09-093",
+            "OP16-110",
+            "OP09-093",
+            "OP16-104",
+            "OP09-095"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP09-093",
+            "OP09-093",
+            "OP16-104",
+            "OP16-104"
+          ],
+          "board": [
+            "OP16-110",
+            "OP09-095"
+          ],
+          "trash": [],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "EB02-035",
+            "ST04-003",
+            "ST04-003",
+            "OP08-074"
+          ],
+          "trash": [],
+          "board": [
+            "OP11-070"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST04-017",
+          "card_name": "Onigashima Island",
+          "effects": [
+            "Rest Onigashima Island [\"ST04-017\">ST04-017]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "EB02-035",
+            "ST04-003",
+            "ST04-003",
+            "OP08-074"
+          ],
+          "board": [
+            "OP11-070"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP09-093",
+            "OP09-093",
+            "OP16-104",
+            "OP16-104",
+            "OP16-110"
+          ],
+          "trash": [
+            "OP09-096",
+            "OP09-096",
+            "OP09-086"
+          ],
+          "board": [
+            "OP16-110",
+            "OP09-095"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Doc Q [\"OP16-109\">OP16-109]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-109",
+          "card_name": "Doc Q",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP09-093",
+            "OP09-093",
+            "OP16-104",
+            "OP16-104",
+            "OP16-119"
+          ],
+          "board": [
+            "OP16-110",
+            "OP09-095",
+            "OP16-109",
+            "OP16-110"
+          ],
+          "trash": [
+            "OP09-096",
+            "OP09-096",
+            "OP09-086"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "EB02-035",
+            "ST04-003",
+            "ST04-003",
+            "OP08-074",
+            "ST04-003"
+          ],
+          "trash": [],
+          "board": [
+            "OP11-070"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB02-035",
+          "card_name": "Sanji & Pudding",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "ST04-017",
+          "card_name": "Onigashima Island",
+          "effects": [
+            "Rest Onigashima Island [\"ST04-017\">ST04-017]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST04-001",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Laffitte [\"OP09-095\">OP09-095]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST04-003",
+            "ST04-003",
+            "OP08-074",
+            "ST04-003",
+            "OP07-066"
+          ],
+          "board": [
+            "OP11-070",
+            "EB02-035"
+          ],
+          "trash": [],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "OP09-093",
+            "OP09-093",
+            "OP16-104",
+            "OP16-104",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-096",
+            "OP09-096",
+            "OP09-086",
+            "OP09-095"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-109",
+            "OP16-110"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-104",
+          "card_name": "Catarina Devon",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-096",
+          "card_name": "This is MY AGE!!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Fullalead [\"OP09-099\">OP09-099]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-066"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP09-093",
+            "OP09-093",
+            "OP16-104",
+            "OP16-119"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-109",
+            "OP16-110",
+            "OP16-104"
+          ],
+          "trash": [
+            "OP09-096",
+            "OP09-096",
+            "OP09-086",
+            "OP09-095",
+            "OP09-096",
+            "OP12-112",
+            "OP16-108"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "ST04-003",
+            "ST04-003",
+            "OP08-074",
+            "ST04-003"
+          ],
+          "trash": [
+            "OP07-066"
+          ],
+          "board": [
+            "OP11-070",
+            "EB02-035"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST04-003",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 5 Don",
+            "Destroy Catarina Devon [\"OP16-104\">OP16-104]",
+            "Give Kaido [\"ST04-003\">ST04-003] Rush"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST04-017",
+          "card_name": "Onigashima Island",
+          "effects": [
+            "Rest Onigashima Island [\"ST04-017\">ST04-017]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-104"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-003",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST04-003",
+            "ST04-003",
+            "OP08-074",
+            "OP11-070"
+          ],
+          "board": [
+            "OP11-070",
+            "EB02-035",
+            "ST04-003"
+          ],
+          "trash": [
+            "OP07-066"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "OP09-093",
+            "OP09-093",
+            "OP16-119",
+            "OP09-086"
+          ],
+          "trash": [
+            "OP09-096",
+            "OP09-096",
+            "OP09-086",
+            "OP09-095",
+            "OP09-096",
+            "OP12-112",
+            "OP16-108",
+            "OP16-104",
+            "OP16-104"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-109",
+            "OP16-110"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP09-093",
+            "OP09-093",
+            "OP16-119",
+            "OP09-086",
+            "OP06-115"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-109",
+            "OP16-110"
+          ],
+          "trash": [
+            "OP09-096",
+            "OP09-096",
+            "OP09-086",
+            "OP09-095",
+            "OP09-096",
+            "OP12-112",
+            "OP16-108",
+            "OP16-104",
+            "OP16-104"
+          ],
+          "life": 2
+        },
+        "You": {
+          "hand": [
+            "ST04-003",
+            "ST04-003",
+            "OP08-074",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP07-066"
+          ],
+          "board": [
+            "OP11-070",
+            "EB02-035",
+            "ST04-003"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST04-003",
+            "ST04-003",
+            "OP08-074",
+            "OP11-070",
+            "OP01-114"
+          ],
+          "board": [
+            "OP11-070",
+            "EB02-035",
+            "ST04-003"
+          ],
+          "trash": [
+            "OP07-066"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "OP09-093",
+            "OP09-093",
+            "OP16-119",
+            "OP09-086",
+            "OP06-115"
+          ],
+          "trash": [
+            "OP09-096",
+            "OP09-096",
+            "OP09-086",
+            "OP09-095",
+            "OP09-096",
+            "OP12-112",
+            "OP16-108",
+            "OP16-104",
+            "OP16-104"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-109",
+            "OP16-110"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Nullify effects of Kaido [\"ST04-001\">ST04-001]",
+            "Kaido [\"ST04-003\">ST04-003] can't attack next turn",
+            "Nullify effects of Kaido [\"ST04-003\">ST04-003] until next turn end!"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Jesus Burgess [\"OP09-086\">OP09-086]",
+            "<b>Reveal and Draw Marshall D. Teach [\"OP16-119\">OP16-119]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-070"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP09-093",
+            "OP16-119",
+            "OP06-115",
+            "OP16-109",
+            "OP16-119"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-109",
+            "OP16-110",
+            "OP09-093"
+          ],
+          "trash": [
+            "OP09-096",
+            "OP09-096",
+            "OP09-086",
+            "OP09-095",
+            "OP09-096",
+            "OP12-112",
+            "OP16-108",
+            "OP16-104",
+            "OP16-104",
+            "OP09-086"
+          ],
+          "life": 2
+        },
+        "You": {
+          "hand": [
+            "ST04-003",
+            "ST04-003",
+            "OP08-074",
+            "OP01-114"
+          ],
+          "trash": [
+            "OP07-066",
+            "OP11-070"
+          ],
+          "board": [
+            "OP11-070",
+            "EB02-035",
+            "ST04-003"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP08-074",
+          "card_name": "Black Maria",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB02-035",
+          "to_name": "Sanji & Pudding",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji & Pudding",
+          "attacker_code": "EB02-035",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP09-093",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST04-001",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST04-001",
+          "to_name": "Kaido",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST04-001",
+          "to_name": "Kaido",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST04-001",
+          "to_name": "Kaido",
+          "total": 4
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST04-001",
+          "to_name": "Kaido",
+          "total": 5
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST04-001",
+          "to_name": "Kaido",
+          "total": 6
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST04-001",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 7 Don",
+            "Trash 1 Life"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST04-017",
+          "card_name": "Onigashima Island",
+          "effects": [
+            "Rest Onigashima Island [\"ST04-017\">ST04-017]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST04-003",
+            "ST04-003",
+            "OP01-114",
+            "OP01-114"
+          ],
+          "board": [
+            "OP11-070",
+            "EB02-035",
+            "ST04-003",
+            "OP08-074"
+          ],
+          "trash": [
+            "OP07-066",
+            "OP11-070"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "OP09-093",
+            "OP16-119",
+            "OP06-115",
+            "OP16-109",
+            "OP16-119",
+            "OP09-095"
+          ],
+          "trash": [
+            "OP09-096",
+            "OP09-096",
+            "OP09-086",
+            "OP09-095",
+            "OP09-096",
+            "OP12-112",
+            "OP16-108",
+            "OP16-104",
+            "OP16-104",
+            "OP09-086",
+            "OP16-116"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-109",
+            "OP16-110",
+            "OP09-093"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Doc Q [\"OP16-109\">OP16-109]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-119",
+            "OP06-115",
+            "OP16-109",
+            "OP16-119",
+            "OP16-119",
+            "OP16-109"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-109",
+            "OP16-110",
+            "OP09-093",
+            "OP09-093"
+          ],
+          "trash": [
+            "OP09-096",
+            "OP09-096",
+            "OP09-086",
+            "OP09-095",
+            "OP09-096",
+            "OP12-112",
+            "OP16-108",
+            "OP16-104",
+            "OP16-104",
+            "OP09-086",
+            "OP16-116",
+            "OP09-095"
+          ],
+          "life": 0
+        },
+        "You": {
+          "hand": [
+            "ST04-003",
+            "ST04-003",
+            "OP01-114",
+            "OP01-114"
+          ],
+          "trash": [
+            "OP07-066",
+            "OP11-070"
+          ],
+          "board": [
+            "OP11-070",
+            "EB02-035",
+            "ST04-003",
+            "OP08-074"
+          ],
+          "life": 4
+        }
+      }
+    }
+  ]
+}

@@ -1,6 +1,30 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 25 de julho de 2026
+**Última atualização:** 26 de julho de 2026
+
+> 26/07/2026 (bloco HANDOFF 370): **Primeiro teste ao vivo pós-Fase D** —
+> 3 partidas (Katakuri x2, Barba Negra x1). 2 bugs de execução achados,
+> não relacionados ao Fase D (pré-existentes, só apareceram agora por
+> ser o primeiro volume de jogo com esses decks):
+> 1. **Prioridade alta, em correção agora**: loop travado de
+>    `once_per_turn` em `activate_main` — bot reoferece/reescolhe uma
+>    habilidade `[Activate: Main]` já usada no turno (OP09-093, Barba
+>    Negra custo 10) em vez de reconhecer que já foi gasta, até travar
+>    a execução e perder o turno inteiro (nenhum ataque declarado — é
+>    isso que pareceu "esqueceu de dar alvo no líder"). 2ª cópia da
+>    carta nunca chega a ativar.
+> 2. **Pendente investigar**: efeito on_play de Charlotte Linlin
+>    (ST34-004) não resolve após pagar o custo opcional `don_minus`
+>    (Minus 4 Don loga, mas nem o debuff nem o gain_life aparecem no
+>    combat log nem geram decisão de alvo). Root cause diferente do
+>    item 1.
+> 3. **Pendente investigar**: overplay de carta custo 1 confirmado com
+>    número (51.9% das 27 jogadas do dia foram custo 1) — pode ser peso
+>    de curva/ramp desbalanceado no scorer.
+>
+> `gate_status: fail` nos 3 jogos, `bot_confusion` subindo
+> (6→11→16 acumulado), 1 lethal certificado que não fechou a partida.
+> Ver bloco HANDOFF 370 pros detalhes/evidência completa.
 
 > 25/07/2026 (bloco HANDOFF 368): **Turn Planner Fase D fechada** —
 > cache por instância de `GameAnalyzer._lethal_search` (invalidado em

@@ -1,0 +1,945 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Marshall D. Teach",
+          "code": "OP16-080"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Linlin [\"ST34-004\">ST34-004]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-078",
+            "ST34-003",
+            "OP11-067",
+            "OP11-070",
+            "ST34-004"
+          ],
+          "board": [
+            "OP11-070"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-110",
+            "OP16-119",
+            "EB04-058",
+            "OP09-093",
+            "OP06-115"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-119",
+            "EB04-058",
+            "OP09-093",
+            "OP06-115",
+            "OP16-116"
+          ],
+          "board": [
+            "OP16-110"
+          ],
+          "trash": [],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "OP15-078",
+            "ST34-003",
+            "OP11-067",
+            "OP11-070",
+            "ST34-004"
+          ],
+          "trash": [],
+          "board": [
+            "OP11-070"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-078",
+          "card_name": "Mamaragan",
+          "effects": [
+            "Minus 2 Don",
+            "Draw 1 Card",
+            "Rest Vasco Shot [\"OP16-110\">OP16-110]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-003",
+            "OP11-067",
+            "OP11-070",
+            "ST34-004",
+            "ST34-005"
+          ],
+          "board": [
+            "ST34-005"
+          ],
+          "trash": [
+            "OP11-070",
+            "OP15-078"
+          ],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-119",
+            "EB04-058",
+            "OP09-093",
+            "OP06-115",
+            "OP16-116",
+            "OP09-095"
+          ],
+          "trash": [
+            "OP16-109"
+          ],
+          "board": [
+            "OP16-110"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Fullalead [\"OP09-099\">OP09-099]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-119",
+            "EB04-058",
+            "OP09-093",
+            "OP06-115",
+            "OP16-116",
+            "OP09-086"
+          ],
+          "board": [
+            "OP16-110",
+            "OP09-095"
+          ],
+          "trash": [
+            "OP16-109"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "ST34-003",
+            "OP11-067",
+            "OP11-070",
+            "ST34-004",
+            "ST34-005",
+            "ST34-002"
+          ],
+          "trash": [
+            "OP11-070",
+            "OP15-078"
+          ],
+          "board": [
+            "ST34-005"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Baron Tamago & Pekoms",
+          "attacker_code": "ST34-005",
+          "target": "Laffitte [\"OP09-095\">OP09-095]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": [
+            "Minus 1 Don",
+            "Destroy Laffitte [\"OP09-095\">OP09-095]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Cracker [\"ST34-002\">ST34-002]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Pudding [\"PRB02-010\">PRB02-010]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-003",
+            "OP11-067",
+            "ST34-004",
+            "ST34-005",
+            "ST34-002",
+            "ST34-002",
+            "PRB02-010"
+          ],
+          "board": [
+            "ST34-005",
+            "OP11-070",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP11-070",
+            "OP15-078"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-119",
+            "EB04-058",
+            "OP09-093",
+            "OP06-115",
+            "OP16-116",
+            "OP09-086",
+            "OP09-095",
+            "OP16-104"
+          ],
+          "trash": [
+            "OP16-109",
+            "OP09-095",
+            "OP12-112"
+          ],
+          "board": [
+            "OP16-110"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-086",
+          "card_name": "Jesus Burgess",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Jesus Burgess [\"OP09-086\">OP09-086]",
+            "<b>Reveal and Draw Marshall D. Teach [\"OP09-093\">OP09-093]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Shiryu [\"OP16-108\">OP16-108]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Baron Tamago & Pekoms [\"ST34-005\">ST34-005]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-119",
+            "EB04-058",
+            "OP09-093",
+            "OP06-115",
+            "OP16-116",
+            "OP16-104",
+            "OP09-093",
+            "OP16-108"
+          ],
+          "board": [
+            "OP16-110",
+            "OP09-086",
+            "OP09-095"
+          ],
+          "trash": [
+            "OP16-109",
+            "OP09-095",
+            "OP12-112",
+            "OP09-086"
+          ],
+          "life": 2
+        },
+        "You": {
+          "hand": [
+            "ST34-003",
+            "OP11-067",
+            "ST34-004",
+            "ST34-005",
+            "ST34-002",
+            "ST34-002",
+            "PRB02-010"
+          ],
+          "trash": [
+            "OP11-070",
+            "OP15-078",
+            "ST34-005"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-002",
+          "card_name": "Charlotte Cracker",
+          "effects": [
+            "Destroy Laffitte [\"OP09-095\">OP09-095]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-003",
+            "OP11-067",
+            "ST34-004",
+            "ST34-005",
+            "ST34-002",
+            "PRB02-010",
+            "OP11-070"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070",
+            "ST34-002"
+          ],
+          "trash": [
+            "OP11-070",
+            "OP15-078",
+            "ST34-005"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-119",
+            "EB04-058",
+            "OP09-093",
+            "OP06-115",
+            "OP16-116",
+            "OP09-093",
+            "OP16-108",
+            "OP09-096"
+          ],
+          "trash": [
+            "OP16-109",
+            "OP09-095",
+            "OP12-112",
+            "OP09-086",
+            "OP09-095",
+            "OP16-104",
+            "OP16-110"
+          ],
+          "board": [
+            "OP09-086"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Added card to top of Life from Hand"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash This is MY AGE!!!! [\"OP09-096\">OP09-096]",
+            "<b>Reveal and Draw Vasco Shot [\"OP16-110\">OP16-110]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Charlotte Cracker [\"ST34-002\">ST34-002]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jesus Burgess",
+          "attacker_code": "OP09-086",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "EB04-058",
+            "OP09-093",
+            "OP06-115",
+            "OP16-116",
+            "OP09-093",
+            "OP16-108",
+            "OP09-096",
+            "OP16-110"
+          ],
+          "board": [
+            "OP09-086",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP16-109",
+            "OP09-095",
+            "OP12-112",
+            "OP09-086",
+            "OP09-095",
+            "OP16-104",
+            "OP16-110",
+            "OP09-096"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "ST34-003",
+            "OP11-067",
+            "ST34-004",
+            "ST34-005",
+            "ST34-002",
+            "PRB02-010",
+            "OP11-070",
+            "ST34-004"
+          ],
+          "trash": [
+            "OP11-070",
+            "OP15-078",
+            "ST34-005",
+            "ST34-002"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-002",
+          "card_name": "Charlotte Cracker",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-110"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-003",
+            "OP11-067",
+            "ST34-004",
+            "PRB02-010",
+            "OP11-070",
+            "ST34-004",
+            "ST34-001"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070",
+            "ST34-002",
+            "ST34-005"
+          ],
+          "trash": [
+            "OP11-070",
+            "OP15-078",
+            "ST34-005",
+            "ST34-002"
+          ],
+          "life": 3
+        },
+        "Opponent": {
+          "hand": [
+            "EB04-058",
+            "OP09-093",
+            "OP06-115",
+            "OP16-116",
+            "OP09-093",
+            "OP16-108",
+            "OP09-096"
+          ],
+          "trash": [
+            "OP16-109",
+            "OP09-095",
+            "OP12-112",
+            "OP09-086",
+            "OP09-095",
+            "OP16-104",
+            "OP16-110",
+            "OP09-096",
+            "OP16-110"
+          ],
+          "board": [
+            "OP09-086",
+            "OP16-119"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP16-116",
+          "card_name": "ZEHAHAHAHA",
+          "effects": [
+            "Rest 8 Don",
+            "Deploy Marshall D. Teach [\"OP09-093\">OP09-093]",
+            "Send 1 Life to Hand"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Nullify effects of Charlotte Katakuri [\"OP11-062\">OP11-062]",
+            "Charlotte Cracker [\"ST34-002\">ST34-002] can't attack next turn",
+            "Nullify effects of Charlotte Cracker [\"ST34-002\">ST34-002] until next turn end!"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-096",
+          "card_name": "This is MY AGE!!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Doc Q [\"OP16-109\">OP16-109]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-003"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jesus Burgess",
+          "attacker_code": "OP09-086",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-119",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "EB04-058",
+            "OP09-093",
+            "OP06-115",
+            "OP16-108",
+            "OP16-119",
+            "OP16-109"
+          ],
+          "board": [
+            "OP09-086",
+            "OP16-119",
+            "OP09-093"
+          ],
+          "trash": [
+            "OP16-109",
+            "OP09-095",
+            "OP12-112",
+            "OP09-086",
+            "OP09-095",
+            "OP16-104",
+            "OP16-110",
+            "OP09-096",
+            "OP16-110",
+            "OP16-116",
+            "OP09-096",
+            "OP09-099",
+            "EB04-058"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "OP11-067",
+            "ST34-004",
+            "PRB02-010",
+            "OP11-070",
+            "ST34-004",
+            "ST34-001",
+            "ST18-001",
+            "OP08-069",
+            "ST34-005"
+          ],
+          "trash": [
+            "OP11-070",
+            "OP15-078",
+            "ST34-005",
+            "ST34-002",
+            "ST34-003"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070",
+            "ST34-002",
+            "ST34-005"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-067",
+          "card_name": "Charlotte Katakuri",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "ST34-003",
+          "card_name": "Charlotte Brulee",
+          "effects": [
+            "<b>Reveal and Draw Baron Tamago & Pekoms [\"ST34-005\">ST34-005]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST34-005",
+          "to_name": "Baron Tamago & Pekoms",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP09-093",
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-004",
+            "PRB02-010",
+            "OP11-070",
+            "ST34-004",
+            "ST34-001",
+            "ST18-001",
+            "OP08-069",
+            "ST34-005",
+            "ST34-005"
+          ],
+          "board": [
+            "OP11-070",
+            "ST34-002",
+            "ST34-005",
+            "OP11-067",
+            "ST34-003"
+          ],
+          "trash": [
+            "OP11-070",
+            "OP15-078",
+            "ST34-005",
+            "ST34-002",
+            "ST34-003",
+            "OP11-070"
+          ],
+          "life": 0
+        },
+        "Opponent": {
+          "hand": [
+            "EB04-058",
+            "OP09-093",
+            "OP06-115",
+            "OP16-108",
+            "OP16-119",
+            "OP16-109"
+          ],
+          "trash": [
+            "OP16-109",
+            "OP09-095",
+            "OP12-112",
+            "OP09-086",
+            "OP09-095",
+            "OP16-104",
+            "OP16-110",
+            "OP09-096",
+            "OP16-110",
+            "OP16-116",
+            "OP09-096",
+            "OP09-099",
+            "EB04-058"
+          ],
+          "board": [
+            "OP09-086",
+            "OP16-119",
+            "OP09-093"
+          ],
+          "life": 3
+        }
+      }
+    }
+  ]
+}

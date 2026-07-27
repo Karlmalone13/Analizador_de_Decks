@@ -1,5 +1,73 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-26 (370) - Claude (sessao local) - primeiro teste ao vivo pos-Fase D: 2 bugs de execucao achados (loop travado de once_per_turn + efeito da Linlin nao dispara) + overplay de custo 1 confirmado com numero
+
+Usuario rodou 3 partidas ao vivo (Katakuri x2, Barba Negra x1) contra o
+proprio bot via Solo vs Self com troca de lado por Shift+P. Reportou 3
+sintomas; investiguei cruzando `decisions_2026-07-26T21.31.41.jsonl`
+com os combat logs brutos em `E:\Games\OnePieceSimulador\...\CombatLogs\`
+(telemetria lida na ordem obrigatoria: `live_runs/live_*.json` primeiro,
+`decision_summary.py --latest` depois).
+
+**1. Bug real e prioritario -- loop travado em `activate_main`
+`once_per_turn` (Barba Negra, OP09-093 custo 10, deck
+Marshall.D.Teach-BY, match_id `b3484a93eb1c4b3e9341da1e0ba806ee`,
+turno 6).** Jogou a 2a copia (uid -110) mas o scorer continuou
+oferecendo `activate OP09-093 uid=-120` (a 1a copia, JA ativada nesse
+turno) como melhor jogada -- escolheu a mesma acao 4x seguidas, todas
+"sent" sem mudar o estado, ate o executor travar:
+`estado inalterado no proximo main state estavel` (2x) e
+`acao repetida 3x sem mudanca de estado` (hard fail, forca fim de
+turno). A 2a copia nunca ativou, e por o turno inteiro ter sido
+queimado no loop, **nenhum ataque foi declarado nesse turno**
+(explica o "esqueceu de dar alvo no lider" -- nao e alvo faltando, e
+turno inteiro perdido). Todas as 5 falhas de execucao do dia (`main`
+kind) vieram desse mesmo loop, um so root cause. **Prioridade alta --
+proximo passo desta sessao: investigar o rastreamento de
+`once_per_turn` em `decision_engine.py` (provavelmente a geracao de
+acoes nao esta marcando a instancia como "ja ativada" ou nao esta
+filtrando reofertas quando a acao nao muda estado).**
+
+**2. Achado, nao investigado a fundo -- efeito da Charlotte Linlin
+(ST34-004) nao resolve (Katakuri, match_id
+`d562751f2e25460f99bc86155fe63c03`, dentro de um dos jogos
+`_p2`).** Log bruto mostra `Deploy Charlotte Linlin` ->
+`Charlotte Linlin: Minus 4 Don` -> direto pro proximo evento (ataque
+do lider) -- sem nenhuma linha de resolucao do `set_base_power`
+(zerar power de 1 personagem inimigo) nem do `gain_life` (revelar
+topo do deck). No log de decisoes, as unicas decisoes `target`
+associadas a essa jogada sao `target_order` de alocacao de DON (bate
+com o Minus 4 Don visto no log), nenhuma decisao de "escolher
+personagem inimigo alvo". O efeito on_play parece nao estar sendo
+disparado depois do pagamento do custo opcional -- **pendente
+investigar** (nao e o mesmo bug do item 1, root cause diferente,
+possivelmente om_play com custo opcional `don_minus` nao encadeando
+pros steps do efeito).
+
+**3. Overplay de custo 1 -- confirmado com numero, nao so
+impressao.** Contagem das 27 acoes `play` do dia por custo real da
+carta (via `card_effects_db.json`): custo 1 = 14 (51.9%), custo 4 = 6
+(22.2%), custo 10 = 3 (11.1%), custo 3 = 2, custo 8 = 1, custo 0 = 1.
+Mais da metade das jogadas do dia foram cartas de custo 1. Causa
+ainda nao investigada (pode ser peso de curva/ramp desbalanceado ou
+cost-1 aparecendo como "sempre viavel" no scorer) -- **pendente**.
+
+**Contexto de telemetria**: `gate_status: fail` nos 3 jogos hoje,
+`bot_confusion` subindo (6 -> 11 -> 16 acumulado, todos
+`no_eligible_action` exceto 1 `stuck_execution` que e o item 1).
+`lethal_certified_summary` mostra 1 partida com lethal certificado que
+**nao fechou** -- plausivelmente correlacionado com os itens 1 e 2
+(execucao incompleta custando o fechamento do jogo). As mudancas desta
+sessao (Fase D, bloco 368/369) foram so de performance -- os 2 bugs
+acima sao pre-existentes, so apareceram agora por ser o primeiro teste
+ao vivo com Katakuri/Barba Negra em volume.
+
+**Status**: nenhuma mudanca de codigo neste bloco, so
+investigacao/registro (pedido explicito do usuario: "registra tudo
+primeiro, anotando as pendencias, ai pode corrigir"). Logs ja
+salvos no banco via auto-collect (`logs/index.json`,
+6 entradas de 2026-07-26). Proximo passo: corrigir o item 1.
+
 ## 2026-07-25 (369) - Claude (sessao local) - re-profiling pos-fix do Fase D: proximo gargalo identificado e registrado como divida tecnica (nao implementado)
 
 Usuario pediu "como melhorar a fase D?" apos o bloco 368. Re-rodei o
