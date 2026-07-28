@@ -170,6 +170,39 @@ def _pre_turn_snapshot(turns: list, idx: int, meta: dict) -> dict:
     return current
 
 
+def _apply_rested_counts(board: list, rested_counts: dict) -> None:
+    """
+    Achado 28/07 (bloco HANDOFF 391): sem isso, TODO personagem de um
+    board reconstruido nasce `rested=False` (default do dataclass Card)
+    -- e como so pode declarar ataque contra o lider OU um personagem
+    REALMENTE rested (`opp.rested_chars`), e so pode BLOQUEAR com um
+    personagem REALMENTE ativo (`blockers_active`, regra do jogo), a
+    comparacao IA-vs-humano (alvo de ataque OU decisao de bloquear)
+    nunca refletia a legalidade real sem esse dado.
+    `parse_combat_log.py` rastreia active/rested por simulacao
+    incremental (Deploy/attacking/efeitos) e grava a contagem em
+    `snapshot[lado]['rested']` -- aplicado aqui nas N primeiras copias de
+    cada code (sem identidade de instancia no schema, e uma aproximacao
+    razoavel: qual copia especifica virou rested nao importa pra
+    legalidade de alvo/bloqueio, so quantas estao).
+
+    Achado 28/07 parte 2 (bloco HANDOFF 392, investigando ORDEM DE
+    DEFESA): esta funcao so era aplicada ao board do OPONENTE
+    (`board_o`) -- suficiente pra comparar ALVO de ataque (o atacante
+    reconstroi o board do defensor como "oponente"), mas invalido pra
+    comparar a decisao de BLOQUEAR do proprio defensor, que precisa
+    reconstruir o defensor como jogador ATIVO (pra ter a mao real dele)
+    -- nesse caso o board dele passa pelo caminho `board_a`, que nao
+    tinha o mesmo tratamento. Generalizado pra os DOIS lados.
+    """
+    remaining = dict(rested_counts or {})
+    for card in board:
+        n = remaining.get(card.code, 0)
+        if n > 0:
+            card.rested = True
+            remaining[card.code] = n - 1
+
+
 def build_game_states(turn_data: dict, meta: dict, active_player_name: str,
                       snapshot: dict | None = None):
     """
@@ -194,6 +227,7 @@ def build_game_states(turn_data: dict, meta: dict, active_player_name: str,
     leader_active = make_leader_card(active_meta['leader'].get('code', ''))
     hand_a   = [make_card_from_code(c) for c in active_snap.get('hand', [])]
     board_a  = [make_card_from_code(c) for c in active_snap.get('board', [])]
+    _apply_rested_counts(board_a, active_snap.get('rested', {}))
     trash_a  = [make_card_from_code(c) for c in active_snap.get('trash', [])]
     stage_a  = make_card_from_code(active_snap.get('stage')) if active_snap.get('stage') else None
     life_cnt_a = active_snap.get('life', 4)
@@ -215,24 +249,7 @@ def build_game_states(turn_data: dict, meta: dict, active_player_name: str,
     # Oponente
     leader_opp = make_leader_card(opp_meta['leader'].get('code', ''))
     board_o  = [make_card_from_code(c) for c in opp_snap.get('board', [])]
-    # Achado 28/07 (bloco HANDOFF 391): sem isso, TODO personagem do
-    # oponente nasce `rested=False` (default do dataclass Card) -- e como
-    # so pode declarar ataque contra o lider OU um personagem REALMENTE
-    # rested (`opp.rested_chars`, regra do jogo), a comparacao IA-vs-humano
-    # de alvo (lider vs personagem) nunca conseguia gerar um ataque de
-    # personagem, virando SEMPRE "lider" independente do que a IA faria de
-    # verdade. `parse_combat_log.py` agora rastreia active/rested por
-    # simulacao incremental (Deploy/attacking/efeitos) e grava a contagem
-    # em `snapshot[lado]['rested']` -- aplicado aqui nas N primeiras copias
-    # de cada code (sem identidade de instancia no schema, e uma
-    # aproximacao razoavel: qual copia especifica virou rested nao importa
-    # pra legalidade de alvo, so quantas estao).
-    _rested_left = dict(opp_snap.get('rested', {}))
-    for _card in board_o:
-        _n = _rested_left.get(_card.code, 0)
-        if _n > 0:
-            _card.rested = True
-            _rested_left[_card.code] = _n - 1
+    _apply_rested_counts(board_o, opp_snap.get('rested', {}))
     trash_o  = [make_card_from_code(c) for c in opp_snap.get('trash', [])]
     stage_o  = make_card_from_code(opp_snap.get('stage')) if opp_snap.get('stage') else None
     life_cnt_o = opp_snap.get('life', 4)

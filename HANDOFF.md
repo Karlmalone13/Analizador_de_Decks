@@ -1,5 +1,96 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-28 (393) - Claude (sessao remota web) - investigacao de "ordem de defesa" (bloqueio/counter): bug real na reconstrucao (rested so aplicado a 1 dos 2 lados) + achado forte de banco de dados (Blocker faltando em varias cartas, confirmado no log real)
+
+Usuario pediu pra investigar a "ordem de defesa" apos o achado de ataque
+do bloco 392. Interpretacao: comparar as decisoes de DEFESA (bloquear
+com Blocker, usar Counter) que o motor tomaria (`should_use_blocker`,
+`should_use_counter`, `decision_engine.py` ~linha 10884/11070) contra o
+que o jogador real fez nos logs, mesma metodologia das investigacoes
+anteriores.
+
+**Achado 1 -- real, sem ressalva (dados puros do log, sem reconstrucao)**:
+vencedores DEFENDEM mais ativamente que perdedores, nao só atacam
+melhor (bloco 392 já mostrava isso do lado do ataque):
+| métrica (defendendo) | Vencedores | Perdedores |
+|---|---|---|
+| % bloqueado | 10,2% | 7,4% |
+| % counterado (≥1 carta) | 37,6% | 29,3% |
+| cartas de counter/ataque | 0,39 | 0,38 |
+| % que ainda assim acertou | 43,5% | 54,7% |
+
+**Achado 2 -- bug real encontrado ao construir a comparacao** (antes de
+qualquer numero IA-vs-humano fazer sentido): `_apply_rested_counts`
+(criada no bloco 392) só era chamada no board do OPONENTE (`board_o`)
+dentro de `build_game_states`. Pra avaliar a decisao de BLOQUEIO do
+próprio DEFENSOR, é preciso reconstruí-lo como jogador "ativo" (pra
+pegar a mão real dele via `active_snap`) -- nesse papel o board dele
+passa pelo caminho `board_a`, que NUNCA tinha recebido o mesmo
+tratamento. Sem o fix, TODO personagem do defensor aparecia "ativo"
+(`rested=False` default), inflando artificialmente quantas vezes a IA
+"queria bloquear" (confirmado: 169→95 casos após consertar, quase
+metade eram artefato). **Fix**: extraída `_apply_rested_counts(board,
+rested_counts)` como função única, chamada nos DOIS lados
+(`board_a` e `board_o`). `smoke_fast.py` + `smoke_test.py` 100% depois.
+Reflete tambem nos numeros do bloco 392 (recalculados: concordância de
+alvo de ataque caiu de 58,4% pra 52,3%, mais precisa agora que o board
+do PRÓPRIO atacante também respeita rested -- corrigido nos dois
+lugares ao mesmo tempo, não é uma regressão).
+
+**Achado 3 -- descoberta de banco de dados, não é bug de scoring**:
+investigando os 75 casos "humano bloqueou, IA não queria" (mesmo após o
+fix acima), 47/75 (63%) são porque a carta que bloqueou de verdade no
+log **não tem a keyword `[Blocker]` no nosso banco**
+(`card_effects_db.json`/`cards_rows.csv`), mesmo aparecendo
+"X Blocks" no log cru — ou seja, o jogo real deixou bloquear, nosso
+banco diz que a carta não pode. Dois tipos de causa raiz distintos,
+confirmados carta a carta:
+1. **Texto da carta no `cards_rows.csv` simplesmente não tem `[Blocker]`
+   nenhuma parte do `card_text`** (Trafalgar Law `OP10-119`, Killer
+   `ST36-002`, Basil Hawkins `OP10-109`, Morgan `OP15-017`) -- parece
+   gap na FONTE (scrape incompleto), não bug de grammar do parser
+   (`gerar_effects_db.py` não tem o que extrair se o texto não chegou).
+2. **Blocker CONDICIONAL, o parser não tem gramática pra isso**: St.
+   Marcus Mars `OP13-091` e St. Topman Warcury `OP13-089` ("If you have
+   7+ cards in your trash... gains [Blocker]"), Shiryu `PRB02-015`
+   ("If your Leader has the Blackbeard Pirates type... gains
+   [Blocker]") -- o texto TEM a keyword, mas condicionada a
+   trash-count/leader-type, e o parser só suporta keyword condicional
+   por DON!! anexado (`don_conditional_keywords`), não por essas outras
+   condições.
+
+**NÃO fiz**: não toquei em `cards_rows.csv`/`gerar_effects_db.py`/
+`card_effects_db.json` -- exige o gate de auditoria global do parser
+(CLAUDE.md, "busque a mesma gramática em todo o banco antes de
+corrigir") e uma decisão de escopo (fix pontual nesses ~10 codes vs.
+adicionar suporte genérico a Blocker condicional por trash/leader-type,
+que provavelmente cobre mais cartas no banco inteiro, não só as que
+apareceram nesses logs). Registrado como pendência real, não estimado
+"achado menor".
+
+**Resultado final, LIMPO** (excluindo os 47 casos de artefato de banco):
+- Bloqueio: concordância sobe pra ~89,8% (123/1209 divergências reais,
+  não 170) -- e a direção fica ainda mais clara: **95 casos "IA queria
+  bloquear, humano não" contra só 28 genuínos "humano bloqueou, IA
+  não queria"** (3,4x).
+- Counter (não afetado pelo bug de Blocker -- não depende de board):
+  concordância 62% (750/1209); direção **300 "IA queria counterar,
+  humano não" contra 159 "humano counterou, IA não queria"** (~1,9x).
+- **Conclusão coerente com o achado de ataque do bloco 392**: em
+  ambos os eixos (bloquear E counterar), a IA tende a ser MAIS
+  defensiva que o jogador real -- consistente com vencedores reais
+  defendendo mais que perdedores (achado 1), mas a IA parece
+  super-corrigir na direção certa. Mesma cautela de sempre: usa
+  `should_use_blocker`/`should_use_counter` isolados, não o Turn
+  Planner completo ao vivo, e `atk_power`/`def_power` são estimados
+  (poder base + último DON total anexado visto no log antes do ataque,
+  sem capturar buffs de efeito) -- aproximação, não exata.
+
+Nenhum peso de scoring de defesa foi ajustado. Fica pra decisão do
+usuário: (a) se/como calibrar `should_use_blocker`/`should_use_counter`
+com base nisso, e (b) se quer que eu prossiga corrigindo o gap de
+Blocker no banco (achado 3, escopo separado com seu próprio gate).
+
 ## 2026-07-28 (392) - Claude (sessao remota web) - parse_combat_log.py passa a rastrear active/rested do oponente (simulacao incremental) + comparacao de ALVO de ataque (lider vs personagem) fica valida pela primeira vez + achado especifico forte em Imu-B
 
 Usuario pediu duas coisas na mesma mensagem: (1) varrer os logs comparando
