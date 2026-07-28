@@ -496,10 +496,81 @@ def detectar_vencedor(log_path, p1_name: str, p2_name: str) -> str | None:
     return None
 
 
-def add_to_db(log_path: str, data: dict, decks: dict):
+# `You` = Lps_Players[0] = P1 (baixo), `Opponent` = P2 (cima) -- ver
+# BotDriver.cs (comentario "Lado do bot em Lps_Players: 0 = 'You' =
+# baixo (LoadMyDeck), 1 = 'Opponent' = cima"). O plugin loga essa troca
+# como texto puro ("[Bot] agora controla P1 (Shift+P)"), sem timestamp
+# proprio de partida -- so da pra saber o estado ATUAL do toggle, nao
+# reconstruir o historico por partida se Shift+P foi apertado varias
+# vezes na mesma sessao do jogo.
+_BOT_SIDE_BY_PLAYER_INDEX = {'1': 'You', '2': 'Opponent'}
+
+
+def detectar_lado_bot_via_bepinex_log(log_output_path) -> str | None:
+    """
+    Le o `LogOutput.log` do BepInEx (plugin do bot) e descobre qual lado
+    (`You`/`Opponent`) o bot estava controlando -- pedido explicito do
+    usuario 28/07 (bloco HANDOFF 388): "nao trate eu como o vencedor,
+    quero que leia se o Shift+P esta em P1 ou P2 pra identificar o bot"
+    -- em vez de assumir que o usuario sempre venceu (heuristica
+    anterior, valida so como fallback quando este dado nao existe).
+
+    Pega a ULTIMA ocorrencia de "agora controla P<N>" no arquivo inteiro
+    -- reflete o estado mais recente do toggle Shift+P. Limitacao
+    conhecida: se o LogOutput.log acumular VARIAS partidas com trocas de
+    lado no meio, isso so da o estado FINAL, nao por partida -- o
+    arquivo nao tem timestamp correlacionavel com o combat log oficial.
+    Se o usuario trocar de lado no meio de uma sessao de partidas, rode
+    isso logo apos cada partida (antes de reabrir o jogo/trocar de novo)
+    pra nao perder a correlacao.
+
+    Retorna 'You', 'Opponent', ou None (arquivo nao encontrado, ou
+    nenhuma troca de lado registrada nele -- BotDriver.cs comeca em
+    BotPlayerIndex=0 ('You') por padrao, mas so registra Shift+P
+    EFETIVAMENTE apertado, entao "nenhuma linha" nao prova que e 'You',
+    so que nao sabemos -- fica None de proposito, sem assumir).
+    """
+    try:
+        text = Path(log_output_path).read_text(encoding='utf-8', errors='ignore')
+    except (FileNotFoundError, OSError):
+        return None
+
+    lado = None
+    for line in text.splitlines():
+        m = re.search(r'agora controla P([12])', line)
+        if m:
+            lado = _BOT_SIDE_BY_PLAYER_INDEX.get(m.group(1))
+    return lado
+
+
+def _bot_side_to_p1_p2(bepinex_log_path, p1_name: str, p2_name: str) -> str | None:
+    """Converte o `You`/`Opponent` de `detectar_lado_bot_via_bepinex_log`
+    pra 'p1'/'p2' (mesma convencao de `winner`). None se o caminho nao
+    foi dado ou a deteccao falhou -- NAO assume nada nesse caso."""
+    if not bepinex_log_path:
+        return None
+    lado = detectar_lado_bot_via_bepinex_log(bepinex_log_path)
+    if lado is None:
+        return None
+    if lado == p1_name:
+        return 'p1'
+    if lado == p2_name:
+        return 'p2'
+    return None
+
+
+def add_to_db(log_path: str, data: dict, decks: dict, bepinex_log_path=None):
     """
     Copia o .log para logs/raw/, salva o JSON em logs/parsed/,
     salva os decks em logs/decks/ e atualiza o index.json.
+
+    `bepinex_log_path`: caminho opcional pro `LogOutput.log` do BepInEx
+    (mesma sessao do jogo) -- se dado, detecta qual lado (`You`/
+    `Opponent`) o bot estava controlando via Shift+P
+    (`detectar_lado_bot_via_bepinex_log`) e grava em `bot_side`
+    ('p1'/'p2'). Sem isso, `bot_side` fica None -- NAO assume mais que
+    o usuario e sempre o vencedor (pedido explicito 28/07, bloco
+    HANDOFF 388).
     """
     DB_ROOT.mkdir(parents=True, exist_ok=True)
     (DB_ROOT / 'raw').mkdir(exist_ok=True)
@@ -567,6 +638,7 @@ def add_to_db(log_path: str, data: dict, decks: dict):
                'slug': slug2},
         'turns': data['total_turns'],
         'winner': detectar_vencedor(log_path, p1d['name'], p2d['name']),
+        'bot_side': _bot_side_to_p1_p2(bepinex_log_path, p1d['name'], p2d['name']),
         'log_file': f'raw/{friendly_stem}.log',
         'parsed_file': f'parsed/{friendly_stem}.json',
         'deck_files': deck_files,
@@ -814,6 +886,12 @@ def main():
                     help='Adicionar esta partida ao banco (logs/)')
     ap.add_argument('--list-db', action='store_true',
                     help='Listar partidas no banco')
+    ap.add_argument('--bepinex-log', default=None,
+                    help='Caminho pro LogOutput.log do BepInEx (mesma sessao) -- '
+                         'detecta qual lado (You/Opponent) o bot controlava via '
+                         'Shift+P, gravado em bot_side no index.json. Sem isso, '
+                         'bot_side fica None (nao assume mais que o usuario '
+                         'venceu -- pedido 28/07, bloco HANDOFF 388).')
     args = ap.parse_args()
 
     if args.list_db:
@@ -844,7 +922,7 @@ def main():
             print_summary(data, decks)
 
         if args.add_to_db:
-            add_to_db(log_file, data, decks)
+            add_to_db(log_file, data, decks, bepinex_log_path=args.bepinex_log)
 
 
 if __name__ == '__main__':

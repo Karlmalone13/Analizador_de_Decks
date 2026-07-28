@@ -1,5 +1,61 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-28 (389) - Claude (sessao remota web) - identifica o lado do bot via Shift+P (LogOutput.log do BepInEx) em vez de assumir "vencedor = usuario"
+
+Usuario corrigiu a premissa usada nos blocos 387/388: "não trate eu
+como o vencedor, quero que leia se o Shift+P está em P1 ou P2 pra
+identificar o bot" -- em vez de inferir o humano pelo vencedor
+(estimativa razoavel dada a info disponivel na hora, mas o usuario
+quer o dado de verdade daqui pra frente).
+
+**Implementado** (`parse_combat_log.py`):
+- `detectar_lado_bot_via_bepinex_log(log_output_path)`: le o
+  `LogOutput.log` do BepInEx e acha a ULTIMA ocorrencia de "agora
+  controla P1/P2" (a mensagem que `BotDriver.cs` ja imprime a cada
+  Shift+P -- `Plugin.Log.LogWarning($"[Bot] agora controla
+  P{BotPlayerIndex + 1}...")`). P1=`You` (Lps_Players[0], baixo),
+  P2=`Opponent` (cima), conforme o comentario ja existente no
+  `BotDriver.cs`. Retorna `None` se o arquivo nao existir ou nao tiver
+  NENHUMA troca registrada -- nao assume o default (BotPlayerIndex=0)
+  porque so registra Shift+P EFETIVAMENTE apertado, sem certeza do
+  estado antes da primeira troca.
+- `add_to_db()` ganhou o parametro opcional `bepinex_log_path` -- se
+  dado, grava `bot_side` ('p1'/'p2') no index.json. CLI:
+  `--bepinex-log <caminho>`.
+- **Limitacao conhecida, documentada no docstring**: o `LogOutput.log`
+  nao tem timestamp correlacionavel com o combat log oficial -- se o
+  usuario trocar de lado no meio de uma SESSAO com varias partidas, a
+  deteccao so reflete o estado FINAL do arquivo, nao por partida. Pra
+  ficar preciso, rodar `--add-to-db --bepinex-log` logo apos CADA
+  partida, antes de trocar de lado de novo ou fechar o jogo.
+
+**Validado** com `LogOutput.log` SINTETICO (nao tenho o arquivo real
+--sessao remota, sem acesso ao BepInEx do usuario): 3 cenarios (troca
+pra P2, arquivo inexistente, arquivo sem nenhuma troca registrada) +
+fluxo completo `add_to_db` com `bepinex_log_path` de verdade, gravando
+`bot_side` corretamente no index.json (testado e limpo depois, nao
+ficou no banco real). **Nunca testado contra um `LogOutput.log` real**
+-- precisa validar numa sessao LOCAL com o arquivo de verdade a
+primeira vez que for usado pra valer.
+
+`smoke_fast.py` 100% (arquivo nao coberto por smoke test dedicado,
+mas nao quebra nada existente -- `--list-db` continua funcionando,
+114 partidas).
+
+**Consequencia pra `compare_vs_human.py`**: a partir de agora, quem
+quiser identificar o lado HUMANO de um log deve olhar `bot_side` no
+`logs/index.json` (quando presente -- só existe pra logs adicionados
+com `--bepinex-log`) e usar o OUTRO lado como humano, não mais assumir
+"vencedor = humano" (isso era so uma estimativa razoável dado o que
+tínhamos disponível nos blocos 387/388, não uma regra pra manter).
+Documentado em `FERRAMENTAS.md`.
+
+**Pendente**: todos os 114 logs já bancos foram adicionados ANTES
+dessa feature existir — nenhum tem `bot_side` (fica `None` pra sempre
+nesses, o `LogOutput.log` daquelas sessões provavelmente nem existe
+mais). Só logs NOVOS, adicionados com `--bepinex-log` a partir de
+agora, terão esse dado.
+
 ## 2026-07-28 (388) - Claude (sessao remota web) - 3 melhorias implementadas em compare_vs_human.py/parse_combat_log.py + investigacao da "supervalorizacao de play": maior parte era rotulagem, sobrou 1 achado real (mas sutil) sobre preservar counter em vida baixa
 
 Continuação do bloco 387 (usuário pediu pra implementar as alternativas

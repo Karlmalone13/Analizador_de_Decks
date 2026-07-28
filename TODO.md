@@ -2,6 +2,32 @@
 
 **Última atualização:** 28 de julho de 2026
 
+## 🟢 IMPLEMENTADO: identifica lado do bot via Shift+P em vez de assumir vencedor (28/07/2026, bloco 389)
+
+Usuário pediu explicitamente pra não tratar "vencedor" como proxy de
+"humano" — quer o dado real do Shift+P (`BotDriver.cs` já loga "agora
+controla P1/P2" no `LogOutput.log` do BepInEx a cada toggle).
+
+- [x] `parse_combat_log.py` ganhou `detectar_lado_bot_via_bepinex_log`
+  + `--bepinex-log <caminho>` — grava `bot_side` ('p1'/'p2') no
+  `index.json` quando dado. Testado com arquivo sintético (3 cenários)
+  + fluxo completo de `add_to_db`.
+- [ ] **PENDENTE, importante**: nunca testado contra um `LogOutput.log`
+  REAL (sessão remota não tem acesso). Validar na próxima partida ao
+  vivo — rodar `--add-to-db --bepinex-log "caminho\LogOutput.log"`
+  logo após a partida e conferir se `bot_side` bate com o que você
+  sabe que jogou.
+- [ ] **PENDENTE**: os 114 logs já banco não têm `bot_side` (feature
+  não existia quando foram adicionados) — ficam `None` pra sempre,
+  a não ser que o `LogOutput.log` daquelas sessões ainda exista em
+  algum lugar. Só logs novos, adicionados com `--bepinex-log` a partir
+  de agora, terão esse dado.
+- [ ] **PENDENTE**: `LogOutput.log` não tem timestamp correlacionável
+  com o combat log oficial — se trocar de lado no meio de uma sessão
+  com várias partidas, só reflete o estado FINAL do arquivo. Rodar
+  `--add-to-db --bepinex-log` logo após CADA partida (antes de trocar
+  de lado de novo) pra manter a correlação certa.
+
 ## 🟡 PENDENTE DE CALIBRAÇÃO (não bug): desconto de counter em vida baixa pode estar subcalibrado (28/07/2026, bloco 388)
 
 Achado real investigando o padrão "vencedor passa o turno, IA queria

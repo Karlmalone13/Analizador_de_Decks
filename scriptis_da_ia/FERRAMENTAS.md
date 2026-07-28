@@ -16,10 +16,18 @@
   Aponta `DIVERGENCIA` quando nenhuma ação exata do humano aparece no
   top-K da IA. **Foi assim que achamos o bug real de `ST22-015`
   (bloco HANDOFF 386) — é a ferramenta certa pra "por que o bot não
-  jogou como eu jogaria".**
+  jogou como eu jogaria".** `--summary` aceita `--player` (filtra por
+  um lado só) e mostra `miss_patterns` agregados (todos os misses, não
+  só os 12 primeiros).
+  **Identificar quem é o humano**: usar `bot_side` do `logs/index.json`
+  (quando presente — grava só se o log foi adicionado com
+  `--bepinex-log`), NÃO mais assumir "vencedor = humano" (pedido
+  28/07, bloco HANDOFF 388) — `bot_side='p1'` significa que o humano é
+  `p2` (e vice-versa). Sem `bot_side` conhecido, não dá pra saber quem
+  é quem com confiança.
   ```
   python compare_vs_human.py logs/parsed/<arquivo>.json --player <nome_do_lado>
-  python compare_vs_human.py logs/parsed <pasta ou arquivo> --summary   # agregado
+  python compare_vs_human.py logs/parsed <pasta ou arquivo> --summary --player <nome_do_lado>
   ```
 - **`audit_human_patterns.py`** — extrai padrões de pilotagem humana
   agregados de vários logs parseados (ordem de jogada, combos, uso de
@@ -113,9 +121,15 @@
 - **`parse_combat_log.py`** — converte 1 combat log em JSON
   estruturado + gerencia o banco (`logs/{raw,parsed,decks}/` +
   `logs/index.json`). **Uso obrigatório sempre que um combat log
-  chegar** (`--add-to-db`), ver skill `optcg-live-log-triage`.
+  chegar** (`--add-to-db`), ver skill `optcg-live-log-triage`. Grava
+  `winner` (detecção automática, último ataque antes de `GameOver`/
+  `Quits!` — não confiar no `winner` cosmético que o simulador às vezes
+  deixa `null`) e, se `--bepinex-log` for dado, `bot_side` (`p1`/`p2`,
+  lido do `LogOutput.log` do BepInEx via o toggle Shift+P — **não
+  assume mais que o usuário é sempre o vencedor**, pedido 28/07).
   ```
   python parse_combat_log.py partida.log --add-to-db
+  python parse_combat_log.py partida.log --add-to-db --bepinex-log "E:\...\BepInEx\LogOutput.log"
   python parse_combat_log.py --list-db
   ```
 - **`importar_logs_autosaved.py`** — converte os `.log` da pasta
