@@ -1,5 +1,80 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-28 (388) - Claude (sessao remota web) - 3 melhorias implementadas em compare_vs_human.py/parse_combat_log.py + investigacao da "supervalorizacao de play": maior parte era rotulagem, sobrou 1 achado real (mas sutil) sobre preservar counter em vida baixa
+
+Continuação do bloco 387 (usuário pediu pra implementar as alternativas
+catalogadas e investigar o padrão "vencedor usa o board, IA queria
+jogar carta").
+
+**3 melhorias implementadas** (das 6 catalogadas — as outras 3 ficaram
+de fora, ver "não implementado" abaixo):
+
+1. **Rótulo `activate`→`play` normalizado pra EVENT** (`compare_vs_human.py`,
+   `_normalize_kind_for_card`): resolveu a causa raiz do padrão
+   investigado — 3 dos 7 casos originais de "supervalorização de play"
+   eram exatamente esse artefato (`OP16-116`, outro EVENT igual ao
+   `ST22-015` do bloco 386). Confirmado: a "DIVERGENCIA" falsa no T10
+   do log Katakuri x Ace sumiu depois do fix.
+2. **Categorização automática de misses** (`miss_patterns`, Counter
+   agregando TODOS os misses por `(tipos_do_humano, tipo_top_da_IA)`,
+   não só os 12 primeiros como antes) — exposta no `--summary` e
+   aceita `--player` agora (antes só funcionava sem filtro).
+3. **Detecção de vencedor real em `parse_combat_log.py`**
+   (`detectar_vencedor`, mesma heurística validada no bloco 387: último
+   ataque antes de `GameOver`/quem desistiu em `Quits!`) — chamada
+   automaticamente em `add_to_db()` (novos logs já vêm com `winner`
+   preenchido, não mais sempre `None`). Rodei um backfill nos logs já
+   banco: 48 entradas ganharam `winner` que antes era `None` (42 já
+   tinham, vindo de telemetria via outro caminho — não sobrescritas;
+   24 continuam sem dado suficiente, provavelmente logs incompletos).
+
+**Investigação re-rodada com os 90 matches de vencedor conhecido**
+(198 comparações válidas, antes eram 193 com a heurística manual do
+bloco 387): top1 exact 59.6%, **top1 kind 91.4%**, top5 exact 91.4%,
+top5 kind 95.5% — melhorou depois do fix de rótulo (era top1 exact
+62.7%/top5 exact 90.7% antes, mas numa amostra menor/diferente).
+
+**O padrão original quase desapareceu**: de 7 casos "humano usa board,
+IA quer play" caiu pra 1 depois do fix de rótulo. **Mas apareceu um
+padrão novo, mais interessante**: `humano passou o turno` enquanto a
+IA top-1 queria jogar uma carta (4 casos). Investigado a fundo em 1
+partida real (`Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27`,
+T2/T4/T6, MESMA partida): o vencedor (Katakuri) segurou `ST34-002`
+(Charlotte Cracker, counter 1000) e `ST34-005` (Baron Tamago & Pekoms,
+**counter 2000**) na mão por 3 turnos seguidos SEM jogar, enquanto a
+própria vida dele caía de 5→3→**1** (o oponente continuava com vida
+cheia, 5). Isso é comportamento CORRETO de um jogador real: segurar
+counter alto quando a vida está crítica, não desenvolver board que não
+ajuda a sobreviver o próximo ataque.
+
+**O motor JÁ TEM esse mecanismo** (`_score_play_action`, desconto de
+counter escalado por `my_life`: `v *= 4.0` quando `my_life <= 1`) — não
+é um recurso faltando do zero, é possivelmente **subcalibrado**: mesmo
+com o desconto de 4x aplicado, `ST34-005`/`ST34-002` ainda pontuavam
+180-265 como jogar, alto o suficiente pra aparecer no top-3 acima de
+"passar". **Decisão: NÃO ajustei o multiplicador** com base nesta ÚNICA
+partida — mexer nesse peso é trabalho de calibração de verdade
+(`tune_weights.py`/`baseline_metrics.py`, gauntlet inteiro, critério
+MAXIMIN sem regressão), exatamente o tipo de "corrigir com base em 1
+log só" que o próprio projeto pede pra evitar (ver bloco 386, mesma
+lição). Registrado como pendência de calibração no TODO.md, não como
+bug corrigido.
+
+**Não implementado ainda** (das 6 alternativas do bloco 387, maiores/
+mais arriscadas pra fazer às pressas):
+- **Comparação por sequência** (aplicar a ação real e reavaliar o
+  próximo passo, em vez de só a 1ª decisão do turno) — exigiria mutar o
+  `GameState` reconstruído corretamente via `EffectExecutor`/
+  `_apply_action` de verdade, risco real de introduzir bug sutil na
+  MESMA ferramenta cuja função é ser confiável. Melhor escopar/testar
+  com calma numa sessão dedicada a isso.
+- **Pipeline real com Monte Carlo** (`_select_search_candidates`/
+  `_select_action_via_search` em vez de score imediato puro) — precisa
+  construir um `OpponentModel` real a partir do deck revelado
+  (`logs/decks/*.json` já existe, dá pra usar), não implementado ainda.
+- **Fallback do turno 1** — continua com o mesmo fallback "imperfeito"
+  documentado antes; não mexido.
+
 ## 2026-07-28 (387) - Claude (sessao remota web) - compare_vs_human.py rodado em TODOS os logs (achado: rotulo You/Opponent NAO identifica o bot de forma confiavel, por causa do Shift+P) + catalogo de ferramentas novo
 
 Usuario pediu (apos o achado do bloco 386) pra rodar a mesma comparacao

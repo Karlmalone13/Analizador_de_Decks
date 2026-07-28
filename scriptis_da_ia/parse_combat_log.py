@@ -450,6 +450,52 @@ def _save_index(idx: list):
     )
 
 
+def detectar_vencedor(log_path, p1_name: str, p2_name: str) -> str | None:
+    """
+    Detecta quem venceu a partida a partir do combat log CRU, sem
+    confiar no campo `winner` que o proprio simulador as vezes deixa
+    None (achado 28/07, bloco HANDOFF 387 -- o `winner` do index.json e
+    cosmetico/nao confiavel na maioria dos logs desta fonte). Heuristica:
+    o ultimo ATAQUE registrado antes do fim da partida geralmente e o
+    golpe que fecha o jogo (o lado que ataca vence); se alguem desistiu
+    (`Quits!`), esse lado perdeu. Validada manualmente contra 2 casos
+    confirmados (ver HANDOFF 386/387) antes de virar heuristica padrao.
+
+    Retorna 'p1'/'p2' (mesma convencao ja usada por
+    importar_logs_autosaved.py) ou None se nao conseguir determinar.
+    """
+    try:
+        text = Path(log_path).read_text(encoding='utf-8', errors='ignore')
+    except (FileNotFoundError, OSError):
+        return None
+
+    def _to_p1_p2(bracket_label: str) -> str | None:
+        if bracket_label == p1_name:
+            return 'p1'
+        if bracket_label == p2_name:
+            return 'p2'
+        return None
+
+    for line in text.splitlines():
+        m = re.match(r'\[(.+?)\] Quits!', line)
+        if m:
+            loser = _to_p1_p2(m.group(1))
+            if loser == 'p1':
+                return 'p2'
+            if loser == 'p2':
+                return 'p1'
+            return None
+
+    last_attacker = None
+    for line in text.splitlines():
+        m = re.match(r'\[(.+?)\] .+ attacking ', line)
+        if m:
+            last_attacker = m.group(1)
+    if last_attacker:
+        return _to_p1_p2(last_attacker)
+    return None
+
+
 def add_to_db(log_path: str, data: dict, decks: dict):
     """
     Copia o .log para logs/raw/, salva o JSON em logs/parsed/,
@@ -520,7 +566,7 @@ def add_to_db(log_path: str, data: dict, decks: dict):
                'leader_name': p2d['leader'].get('name', ''),
                'slug': slug2},
         'turns': data['total_turns'],
-        'winner': None,
+        'winner': detectar_vencedor(log_path, p1d['name'], p2d['name']),
         'log_file': f'raw/{friendly_stem}.log',
         'parsed_file': f'parsed/{friendly_stem}.json',
         'deck_files': deck_files,

@@ -836,7 +836,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 11,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.log",
     "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
     "deck_files": {
@@ -861,7 +861,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 20,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.log",
     "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
     "deck_files": {
@@ -886,7 +886,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 11,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.log",
     "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
     "deck_files": {
@@ -911,7 +911,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 22,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.log",
     "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
     "deck_files": {
@@ -936,7 +936,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 11,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.log",
     "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
     "deck_files": {
@@ -961,7 +961,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 9,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.log",
     "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.json",
     "deck_files": {
@@ -986,7 +986,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 11,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.log",
     "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.json",
     "deck_files": {
@@ -1011,7 +1011,7 @@
       "slug": "Imu-B"
     },
     "turns": 11,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.log",
     "parsed_file": "parsed/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json",
     "deck_files": {
@@ -1036,7 +1036,7 @@
       "slug": "Imu-B"
     },
     "turns": 13,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.log",
     "parsed_file": "parsed/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json",
     "deck_files": {
@@ -1061,7 +1061,7 @@
       "slug": "Imu-B"
     },
     "turns": 7,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T21.41.10.log",
     "parsed_file": "parsed/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T21.41.10.json",
     "deck_files": {
@@ -1111,7 +1111,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 11,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.log",
     "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json",
     "deck_files": {
@@ -1136,7 +1136,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 9,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.log",
     "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.json",
     "deck_files": {
@@ -1161,7 +1161,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 9,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.log",
     "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.json",
     "deck_files": {
@@ -1186,7 +1186,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 7,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30.log",
     "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30.json",
     "deck_files": {
@@ -1211,7 +1211,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 9,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.log",
     "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.json",
     "deck_files": {
@@ -1236,7 +1236,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 18,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.log",
     "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
     "deck_files": {
@@ -1261,7 +1261,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 9,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.25.08.log",
     "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.25.08.json",
     "deck_files": {
@@ -1286,7 +1286,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 9,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T15.27.45.log",
     "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T15.27.45.json",
     "deck_files": {
@@ -1311,7 +1311,7 @@
       "slug": "Krieg-RG"
     },
     "turns": 9,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Krieg-RG_2026-07-12T23.03.36.log",
     "parsed_file": "parsed/Imu-B_x_Krieg-RG_2026-07-12T23.03.36.json",
     "deck_files": {
@@ -1336,7 +1336,7 @@
       "slug": "Krieg-RG"
     },
     "turns": 16,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Krieg-RG_2026-07-12T23.09.31.log",
     "parsed_file": "parsed/Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
     "deck_files": {
@@ -1361,7 +1361,7 @@
       "slug": "Eustass.Captain.Kid-Y"
     },
     "turns": 11,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50.log",
     "parsed_file": "parsed/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50.json",
     "deck_files": {
@@ -1386,7 +1386,7 @@
       "slug": "Kaido-P"
     },
     "turns": 11,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Kaido-P_2026-07-13T21.01.22.log",
     "parsed_file": "parsed/Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
     "deck_files": {
@@ -1411,7 +1411,7 @@
       "slug": "Jinbe-G"
     },
     "turns": 9,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Jinbe-G_2026-07-13T22.54.47.log",
     "parsed_file": "parsed/Imu-B_x_Jinbe-G_2026-07-13T22.54.47.json",
     "deck_files": {
@@ -1436,7 +1436,7 @@
       "slug": "Jewelry.Bonney-G"
     },
     "turns": 11,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.log",
     "parsed_file": "parsed/Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
     "deck_files": {
@@ -1461,7 +1461,7 @@
       "slug": "Jewelry.Bonney-G"
     },
     "turns": 9,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39.log",
     "parsed_file": "parsed/Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39.json",
     "deck_files": {
@@ -1486,7 +1486,7 @@
       "slug": "Donquixote.Doflamingo-GP"
     },
     "turns": 9,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32.log",
     "parsed_file": "parsed/Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32.json",
     "deck_files": {
@@ -1511,7 +1511,7 @@
       "slug": "Eustass.Captain.Kid-Y"
     },
     "turns": 9,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.log",
     "parsed_file": "parsed/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.json",
     "deck_files": {
@@ -1536,7 +1536,7 @@
       "slug": "Eustass.Captain.Kid-Y"
     },
     "turns": 9,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T02.34.18.log",
     "parsed_file": "parsed/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T02.34.18.json",
     "deck_files": {
@@ -1561,7 +1561,7 @@
       "slug": "Imu-B"
     },
     "turns": 10,
-    "winner": null,
+    "winner": "p1",
     "log_file": "raw/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.02.31.log",
     "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.02.31.json",
     "deck_files": {
@@ -1586,7 +1586,7 @@
       "slug": "Imu-B"
     },
     "turns": 8,
-    "winner": null,
+    "winner": "p1",
     "log_file": "raw/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.39.23.log",
     "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.39.23.json",
     "deck_files": {
@@ -1611,7 +1611,7 @@
       "slug": "Imu-B"
     },
     "turns": 10,
-    "winner": null,
+    "winner": "p1",
     "log_file": "raw/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T13.08.24.log",
     "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T13.08.24.json",
     "deck_files": {
@@ -1636,7 +1636,7 @@
       "slug": "Imu-B"
     },
     "turns": 10,
-    "winner": null,
+    "winner": "p1",
     "log_file": "raw/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T14.16.10.log",
     "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T14.16.10.json",
     "deck_files": {
@@ -1661,7 +1661,7 @@
       "slug": "Imu-B"
     },
     "turns": 9,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.10.05.log",
     "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.10.05.json",
     "deck_files": {
@@ -1686,7 +1686,7 @@
       "slug": "Imu-B"
     },
     "turns": 21,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.log",
     "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.json",
     "deck_files": {
@@ -1711,7 +1711,7 @@
       "slug": "Eustass.Captain.Kid-Y"
     },
     "turns": 12,
-    "winner": null,
+    "winner": "p1",
     "log_file": "raw/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T15.17.58_p2.log",
     "parsed_file": "parsed/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T15.17.58_p2.json",
     "deck_files": {
@@ -1736,7 +1736,7 @@
       "slug": "Krieg-RG"
     },
     "turns": 10,
-    "winner": null,
+    "winner": "p1",
     "log_file": "raw/Eustass.Captain.Kid-Y_x_Krieg-RG_2026-07-14T17.11.29.log",
     "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Krieg-RG_2026-07-14T17.11.29.json",
     "deck_files": {
@@ -1761,7 +1761,7 @@
       "slug": "Jinbe-G"
     },
     "turns": 11,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.log",
     "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.json",
     "deck_files": {
@@ -1786,7 +1786,7 @@
       "slug": "Smoker-B"
     },
     "turns": 13,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.log",
     "parsed_file": "parsed/Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
     "deck_files": {
@@ -1836,7 +1836,7 @@
       "slug": "Charlotte.Katakuri-P"
     },
     "turns": 12,
-    "winner": null,
+    "winner": "p1",
     "log_file": "raw/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27_p2.log",
     "parsed_file": "parsed/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27_p2.json",
     "deck_files": {
@@ -2111,7 +2111,7 @@
       "slug": "Smoker-B"
     },
     "turns": 11,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.log",
     "parsed_file": "parsed/Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.json",
     "deck_files": {
@@ -2286,7 +2286,7 @@
       "slug": "Dracule.Mihawk-G"
     },
     "turns": 12,
-    "winner": null,
+    "winner": "p1",
     "log_file": "raw/Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.log",
     "parsed_file": "parsed/Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json",
     "deck_files": {
@@ -2436,7 +2436,7 @@
       "slug": "Charlotte.Katakuri-P"
     },
     "turns": 10,
-    "winner": null,
+    "winner": "p1",
     "log_file": "raw/Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.10.06_p2.log",
     "parsed_file": "parsed/Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.10.06_p2.json",
     "deck_files": {
@@ -2486,7 +2486,7 @@
       "slug": "Charlotte.Katakuri-P"
     },
     "turns": 10,
-    "winner": null,
+    "winner": "p1",
     "log_file": "raw/Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.24.06_p2.log",
     "parsed_file": "parsed/Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.24.06_p2.json",
     "deck_files": {
@@ -2511,7 +2511,7 @@
       "slug": "Marshall.D.Teach-BY"
     },
     "turns": 12,
-    "winner": null,
+    "winner": "p1",
     "log_file": "raw/Kaido-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06_p3.log",
     "parsed_file": "parsed/Kaido-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06_p3.json",
     "deck_files": {
@@ -2561,7 +2561,7 @@
       "slug": "Jinbe-B"
     },
     "turns": 9,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09_p2.log",
     "parsed_file": "parsed/Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09_p2.json",
     "deck_files": {
@@ -2611,7 +2611,7 @@
       "slug": "Portgas.D.Ace-RB"
     },
     "turns": 0,
-    "winner": null,
+    "winner": "p1",
     "log_file": "raw/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p2.log",
     "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p2.json",
     "deck_files": {
@@ -2636,7 +2636,7 @@
       "slug": "Portgas.D.Ace-RB"
     },
     "turns": 0,
-    "winner": null,
+    "winner": "p1",
     "log_file": "raw/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p3.log",
     "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p3.json",
     "deck_files": {
@@ -2661,7 +2661,7 @@
       "slug": "Portgas.D.Ace-RB"
     },
     "turns": 11,
-    "winner": null,
+    "winner": "p2",
     "log_file": "raw/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.log",
     "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json",
     "deck_files": {

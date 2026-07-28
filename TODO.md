@@ -2,6 +2,45 @@
 
 **Última atualização:** 28 de julho de 2026
 
+## 🟡 PENDENTE DE CALIBRAÇÃO (não bug): desconto de counter em vida baixa pode estar subcalibrado (28/07/2026, bloco 388)
+
+Achado real investigando o padrão "vencedor passa o turno, IA queria
+jogar" (1 partida, Katakuri segurou counter 1000/2000 por 3 turnos com
+vida caindo 5→3→1). O mecanismo de desconto já existe
+(`_score_play_action`, `v *= 4.0` quando `my_life <= 1`), mas mesmo
+descontado as cartas ainda pontuavam 180-265 pra jogar — alto o
+suficiente pra bater "passar". **NÃO ajustado** — precisa de calibração
+de verdade (`tune_weights.py`/`baseline_metrics.py`, gauntlet inteiro,
+critério MAXIMIN sem regressão), não um palpite baseado numa partida só.
+
+- [ ] Rodar `tune_weights.py` (ou um teste pareado tipo
+  `measure_lethal_don_fix.py`) especificamente no multiplicador de
+  desconto de counter por `my_life`, comparando um valor maior contra
+  o gauntlet inteiro antes de mudar.
+- [ ] Juntar mais exemplos reais desse padrão antes de decidir a
+  magnitude certa (só 1 partida investigada a fundo até agora).
+
+## 🟢 IMPLEMENTADO: 3 melhorias em compare_vs_human.py/parse_combat_log.py (28/07/2026, bloco 388)
+
+- [x] Rótulo `activate`→`play` normalizado pra cartas EVENT (resolveu
+  3 dos 7 casos originais de "supervalorização de play" — era
+  rotulagem, não bug de scoring).
+- [x] Categorização automática de misses (`miss_patterns`, todos os
+  misses agregados por padrão, não só os 12 primeiros) + `--summary`
+  agora aceita `--player`.
+- [x] `parse_combat_log.py` detecta o vencedor de verdade
+  (`detectar_vencedor`) e preenche `winner` em `add_to_db()` — antes
+  sempre `None` nesse caminho. Backfill rodado: 48 entradas antigas
+  ganharam `winner` (42 já tinham de outra fonte, não sobrescritas; 24
+  continuam sem dado suficiente).
+- [ ] **NÃO implementado ainda** (maiores, escopo pra outra sessão):
+  comparação por sequência (aplicar ação real + reavaliar próximo
+  passo), pipeline real com Monte Carlo na comparação (precisa
+  `OpponentModel` do deck revelado em `logs/decks/`), fallback do
+  turno 1 continua imperfeito. Ver bloco 388 do HANDOFF pro motivo de
+  cada um não ter sido feito agora (risco de bug sutil numa ferramenta
+  cuja função é ser confiável, melhor escopar com calma).
+
 ## 🟢 compare_vs_human.py rodado em TODOS os logs banco (28/07/2026, bloco 387)
 
 Resultado agregado (só turnos do lado VENCEDOR, detectado por

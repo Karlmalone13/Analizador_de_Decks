@@ -20,6 +20,7 @@ import sys
 import json
 import argparse
 import copy
+from collections import Counter
 from pathlib import Path
 
 ENGINE_DIR = Path(__file__).parent / 'optcg_engine'
@@ -299,10 +300,27 @@ def _card_label(code: str) -> str:
     return f'{code}  {d.get("name", "")[:25]}' if d else code
 
 
+def _normalize_kind_for_card(kind: str, card_code: str) -> str:
+    """
+    O log do simulador rotula a resolução de um EVENT como `activate`
+    (ex: ST22-015/OP16-116), mas o motor sempre trata isso como `play`
+    (a carta sai da mão, resolve, e vai pro trash -- não fica em campo
+    pra ser ativada de novo, diferente de um Character/Stage com
+    activate_main). Sem essa normalização, a comparação acusa
+    DIVERGENCIA falsa mesmo quando a IA escolheu exatamente a MESMA
+    carta que o humano (achado 28/07, bloco HANDOFF 386/387 -- 3 dos 7
+    casos de "possível supervalorização de play" eram só esse rótulo).
+    """
+    if kind == 'activate' and (CARDS_DB.get(card_code) or {}).get('type') == 'EVENT':
+        return 'play'
+    return kind
+
+
 def _human_action_key(action: dict) -> tuple[str, str]:
     kind = action.get('type', '')
     if kind in ('play', 'activate'):
-        return kind, action.get('card') or ''
+        card = action.get('card') or ''
+        return _normalize_kind_for_card(kind, card), card
     if kind == 'attack':
         return kind, action.get('attacker_code') or action.get('attacker') or ''
     if kind == 'attach_don':
@@ -332,7 +350,13 @@ def _ai_match_label(ai_action: dict, human_keys: set[tuple[str, str]],
     return 'miss'
 
 
-def summarize_human_vs_ai(data: dict, top_k: int = 5) -> dict:
+def summarize_human_vs_ai(data: dict, top_k: int = 5, player: str | None = None) -> dict:
+    """
+    `player`: se dado, so soma turnos DESSE jogador (ex: o vencedor da
+    partida, ver `detectar_vencedor` -- achado 28/07 que o campo
+    `winner`/rotulo You-Opponent nao sao confiaveis, ver bloco HANDOFF
+    387). None (default) processa TODOS os turnos, como antes.
+    """
     meta = data['meta']
     stats = {
         'turns': 0,
@@ -342,15 +366,24 @@ def summarize_human_vs_ai(data: dict, top_k: int = 5) -> dict:
         'topk_exact': 0,
         'topk_kind': 0,
         'misses': [],
+        # Categorizacao automatica (achado 28/07, bloco HANDOFF 387):
+        # o --summary so mostrava os primeiros 12 misses crus -- agrupar
+        # por (tipos de acao do humano no turno, tipo que a IA sugeriu
+        # no topo) revela padroes recorrentes sem ler exemplo por
+        # exemplo. Chave = (tuple ordenada de tipos do humano, tipo do
+        # top-1 da IA); conta TODOS os misses, nao so os primeiros 12.
+        'miss_patterns': Counter(),
     }
     for idx, turn in enumerate(data.get('turns', [])):
-        player = turn.get('player')
-        if not player:
+        turn_player = turn.get('player')
+        if not turn_player:
+            continue
+        if player and turn_player != player:
             continue
         stats['turns'] += 1
         human_keys, human_kinds = _human_turn_keys(turn.get('actions', []))
         snap = _pre_turn_snapshot(data['turns'], idx, meta)
-        ai_actions = get_ai_actions(turn, meta, player, snapshot=snap)
+        ai_actions = get_ai_actions(turn, meta, turn_player, snapshot=snap)
         if not ai_actions or 'error' in ai_actions[0]:
             stats['errors'] += 1
             continue
@@ -365,14 +398,17 @@ def summarize_human_vs_ai(data: dict, top_k: int = 5) -> dict:
             stats['topk_exact'] += 1
         if any(label in ('exact', 'kind') for label in labels):
             stats['topk_kind'] += 1
-        elif len(stats['misses']) < 12:
-            stats['misses'].append({
-                'turn': turn.get('turn'),
-                'player': player,
-                'human': sorted(human_keys),
-                'ai_top': [_ai_action_key(a) + (a.get('score'),)
-                           for a in ai_actions[:top_k]],
-            })
+        else:
+            ai_top_type = ai_actions[0]['type'] if ai_actions else 'none'
+            stats['miss_patterns'][(tuple(sorted(human_kinds)), ai_top_type)] += 1
+            if len(stats['misses']) < 12:
+                stats['misses'].append({
+                    'turn': turn.get('turn'),
+                    'player': turn_player,
+                    'human': sorted(human_keys),
+                    'ai_top': [_ai_action_key(a) + (a.get('score'),)
+                               for a in ai_actions[:top_k]],
+                })
     return stats
 
 
@@ -499,11 +535,13 @@ def main():
             'topk_kind': 0,
         }
         misses = []
+        total_miss_patterns = Counter()
         for path in paths:
             data = json.loads(path.read_text(encoding='utf-8'))
-            stats = summarize_human_vs_ai(data, top_k=args.top_k)
+            stats = summarize_human_vs_ai(data, top_k=args.top_k, player=args.player)
             for key in total:
                 total[key] += stats[key]
+            total_miss_patterns.update(stats['miss_patterns'])
             for miss in stats['misses']:
                 if len(misses) < 12:
                     miss = dict(miss)
@@ -513,10 +551,16 @@ def main():
         turns = max(1, total['turns'])
         print(f'\n{DIVIDER}')
         print(f'  Logs: {len(paths)} | turnos: {total["turns"]} | erros: {total["errors"]}')
+        if args.player:
+            print(f'  Filtrado por jogador: {args.player}')
         print(f'  top1 exact: {total["top1_exact"]}/{turns}')
         print(f'  top1 kind : {total["top1_kind"]}/{turns}')
         print(f'  top{args.top_k} exact: {total["topk_exact"]}/{turns}')
         print(f'  top{args.top_k} kind : {total["topk_kind"]}/{turns}')
+        if total_miss_patterns:
+            print('\n  Padroes de divergencia (humano fez X, IA topo sugeriu Y), mais comuns primeiro:')
+            for (human_types, ai_type), count in total_miss_patterns.most_common(15):
+                print(f'    {count:3d}x  humano={list(human_types)}  ia_top={ai_type}')
         if misses:
             print('\n  Amostras sem match no top K:')
             for miss in misses:
