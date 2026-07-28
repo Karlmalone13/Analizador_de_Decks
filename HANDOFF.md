@@ -1,5 +1,40 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-28 (385) - Claude (sessao local) - merge com a sessao remota (blocos 375-384) + resposta parcial ao bloco 384 (EM ABERTO: "bot so passando o turno")
+
+`git push` bloqueado pelo hook: `origin/main` tinha divergido, 17
+commits novos da sessao remota (blocos 375-384, unificacao do Turn
+Planner offline/ao-vivo + amostragem Monte Carlo adaptativa) que esta
+sessao local nao conhecia (trabalhou em paralelo, mesma base
+`6c68ef6`). `git merge origin/main` deu conflito em 5 arquivos
+(`decision_engine.py`, `sim_bridge.py`, `smoke_fast.py`, HANDOFF.md,
+TODO.md) -- todos resolvidos MANTENDO os dois lados (nenhum trabalho
+descartado): `_generate_and_score_actions` ganhou o parametro novo
+`exclude_activate_uids` (bloco 371 local) EM CIMA dos 2 metodos novos
+`_select_search_candidates`/`_select_action_via_search` (unificacao
+remota); `choose_action` (sim_bridge.py) manteve `exclude_failed_actions`
+(bloco 371) usando as constantes novas `SEARCH_*_DEFAULT` (remota);
+listas de teste em `smoke_fast.py` e blocos de HANDOFF/TODO só
+precisaram concatenar (mesma cauda, cada lado so acrescentou no topo).
+`smoke_fast.py`/`smoke_test.py` 100% depois do merge.
+
+**Resposta parcial ao bloco 384 (EM ABERTO: bot so passando o turno
+apos a unificacao)**: esta sessao rodou VARIAS partidas ao vivo hoje
+(26-27/07, Krieg, Katakuri x Ace, Katakuri x Jinbe) -- mas com o
+codigo local de ANTES deste merge (sem a unificacao dos blocos
+381/382 ainda aplicada), entao **NAO e uma confirmacao de que o bug
+do 384 sumiu** -- so confirma que o codigo local (pre-unificacao)
+jogava normal (nunca so passou o turno sem motivo). A suspeita mais
+provavel do bloco 384 (server.py rodando codigo velho, nao
+reiniciado apos o pull) bate com um padrao ja visto varias vezes
+nesta sessao local -- os fixes de hoje (blocos 371/372/374) so
+tiveram efeito real DEPOIS de matar e subir o `server.py` de novo a
+cada mudanca em `decision_engine.py`/`sim_bridge.py`/`server.py`.
+**Pendente de verdade**: rodar uma partida ao vivo AGORA, com o
+`server.py` reiniciado neste commit merged (unificacao + fixes de
+hoje juntos), pra confirmar que o sintoma do 384 nao aparece com o
+codigo final.
+
 ## 2026-07-27 (374) - Claude (sessao local) - bug real achado e corrigido: is_active_turn NUNCA era setado no caminho ao vivo -- Katakuri pagava don_minus toda vez que o oponente atacava, mesmo ja vencendo o combate
 
 Usuario reportou ao vivo (partida Katakuri x Portgas.D.Ace, log
@@ -369,6 +404,872 @@ investigacao/registro (pedido explicito do usuario: "registra tudo
 primeiro, anotando as pendencias, ai pode corrigir"). Logs ja
 salvos no banco via auto-collect (`logs/index.json`,
 6 entradas de 2026-07-26). Proximo passo: corrigir o item 1.
+
+## 2026-07-26 (384) - Claude (sessao remota web) - EM ABERTO: usuario reportou bot so passando o turno ao vivo, apos blocos 381/382 -- investigacao pendente, migrando pra sessao LOCAL
+
+**Sintoma relatado pelo usuario**: jogando ao vivo contra o bot (Solo vs
+Self, depois de subir o codigo dos blocos 381/382 -- amostragem
+adaptativa + unificacao Turn Planner), o bot esta so passando o turno
+(end_turn), sem jogar/atacar.
+
+**Investigacao feita nesta sessao (remota, sem acesso ao ambiente local
+do usuario -- nao consegui rodar nada na maquina dele nem ver o log
+real)**:
+- Revisei o diff inteiro de `sim_bridge.choose_action` pos-unificacao
+  (blocos 381/382) procurando bug logico -- nao achei nenhum.
+- Simulei `sim_bridge.choose_action` turno a turno com DECKS REAIS
+  (`decklists_raw.csv`, via `build_real_deck`), aplicando a acao de
+  verdade no estado a cada chamada (igual o `server.py` faria apos o
+  clique do plugin). Resultado: motor jogou `activate` (1 candidato),
+  depois `attack` com busca contrafatual funcionando
+  (`amostras=12`, `selection=counterfactual_search`), e corretamente
+  terminou o turno so quando NENHUMA acao restante tinha score >= 0
+  (`no_eligible_action` correto, nao bug). NAO reproduzi "so passa o
+  turno sem motivo" nesse teste sintetico.
+- Suspeita mais provavel (nao confirmada): o `server.py` do usuario
+  pode nao ter sido reiniciado DEPOIS do `git pull` que trouxe os blocos
+  381/382 (ele relatou "nao lembro" se reiniciou). Pode tambem ser algo
+  especifico do deck/board real dele que o teste sintetico nao cobriu.
+
+**Bloqueio**: essa sessao e remota (container isolado, sem rede ate a
+maquina Windows do usuario) -- nao consigo executar `git pull`, matar o
+processo antigo do `server.py`, nem ler `BOT/engine_server/logs/` daí.
+Passei os comandos pro usuario rodar manualmente (matar processo na
+porta 8765, git pull, rodar `smoke_fast.py` como pre-flight, subir
+`server.py` de novo), mas ele teve dificuldade colando blocos
+multi-linha no PowerShell dele (PSReadLine desabilitado por deteccao de
+leitor de tela faz o terminal juntar as linhas coladas numa so). Decidiu
+migrar pra uma sessao LOCAL (Claude Code na maquina dele) pra executar
+isso direto, em vez de continuar via comandos ditados por uma sessao
+remota.
+
+**Pendente pra sessao local que pegar isso**:
+1. Confirmar que `git log -1 --oneline` mostra um commit >= `e771003`
+   (ou mais novo) DEPOIS de reiniciar o `server.py`.
+2. Rodar `smoke_fast.py` como pre-flight (deve terminar `SMOKE FAST OK`).
+3. Reproduzir a partida e capturar a saida do `server.py` no momento em
+   que o bot passa o turno -- especialmente a linha `[ENG] N acoes |
+   hand=... don=... turn=...` e qualquer `[ENG-ERR]` (excecao
+   silenciosa). Isso e o dado que falta pra saber se e:
+   - `no_eligible_action` genuino (nada com score>=0 -- pode ser
+     legitimo dependendo do estado, ou sinal de bug na pontuacao pra
+     aquele deck/situacao especifica);
+   - excecao dentro de `_select_search_candidates`/
+     `_select_action_via_search`/`_generate_and_score_actions` (checar
+     `trace_out["engine_error"]` ou o log `[ENG-ERR]` no console);
+   - ou servidor rodando codigo VELHO (nao reiniciado apos o pull).
+4. Se for log de partida completo (combat log), seguir o workflow padrao
+   do projeto: `parse_combat_log.py --add-to-db` + ler telemetria
+   (`decision_summary.py`/`metrics/live_runs/`) antes de reportar como
+   investigado -- ver regra no topo do `CLAUDE.md`/`AGENTS.md`.
+
+## 2026-07-26 (383) - Claude (sessao remota web) - doc: BOT/README.md nao documentava Shift+P (troca de lado)
+
+Preparando o usuario pra jogar ao vivo contra o bot (sessao remota, sem
+acesso ao ambiente local dele), instrui que "bot joga de baixo, humano de
+cima" como se fosse fixo. Usuario corrigiu: ja existe um atalho Shift+P
+que troca `BotPlayerIndex` (`BotDriver.cs`) a qualquer momento, entao o
+lado nao importa. Conferido no codigo -- existe mesmo (`SwapSideKey =
+KeyCode.P`, comentario ja documentava o motivo: Solo vs Self nao tem tela
+de cara-ou-coroa, os 2 lados ficam fixos desde o inicio, isso e o jeito
+de simular o bot indo primeiro/segundo). So NAO estava no
+`BOT/README.md` (so o GUI label in-game mencionava). Documentado ao lado
+do Shift+B ja existente.
+
+## 2026-07-26 (382) - Claude (sessao remota web) - UNIFICADO: Turn Planner offline e busca ao vivo agora sao a MESMA funcao (decision_engine.py), nao duas implementacoes paralelas
+
+Usuario, apos o bloco 381 (amostragem adaptativa so no caminho ao vivo),
+levantou uma preocupacao arquitetural direta: risco de "o bot receber
+dois comandos de decisao diferentes... uma decisao no ao vivo e outra no
+offline, tem que ser o mesmo nos dois". Investiguei antes de propor
+qualquer coisa: `_generate_and_score_actions`/`_simulate_sequence_values`
+ja eram compartilhadas, mas o LACO EXTERNO ("dado candidatas pontuadas,
+amostra e escolhe a melhor") estava reimplementado duas vezes, com
+comportamento DIFERENTE:
+- `main_phase` (offline): janela de score (`PLANNER_SCORE_WINDOW=180`),
+  diversidade extra em `REMOVE_THREAT`, N fixo (`PLANNER_MC_SAMPLES`), e a
+  guarda `_is_unsafe_zero_life_leader_attack` (nunca ataca o lider com
+  vida 0 do oponente sem lethal garantido/linha vencedora).
+- `sim_bridge.choose_action` (ao vivo): SEM janela/diversidade, amostragem
+  adaptativa (bloco 381), e **SEM** a guarda de seguranca -- gap real,
+  pre-existente, nao introduzido nesta sessao.
+
+**Implementado** (usuario confirmou explicitamente: unificar, com o
+offline priorizando ZERO regressao de custo antes de qualquer ganho de
+qualidade): 2 metodos novos em `OPTCGMatch` (`decision_engine.py`),
+FONTE UNICA usada pelos dois caminhos:
+- `_select_search_candidates(actions, top_k, priority, ...)` -- recorte
+  de candidatas (janela de score + diversidade REMOVE_THREAT), extraido
+  do `main_phase` original byte a byte.
+- `_select_action_via_search(p, opp, engine, candidatas, model, ...,
+  samples_min, samples_max, batch_size, z_threshold)` -- amostragem +
+  escolha da melhor + guarda de seguranca, absorvendo tanto o laco antigo
+  do `main_phase` quanto `sim_bridge._adaptive_counterfactual_search`
+  (bloco 381, apagada, o codigo dela virou este metodo). Com
+  `samples_min == samples_max == batch_size` degenera exatamente no N
+  fixo classico (1 lote so, sem teste de significancia) -- e assim que
+  o offline chama hoje (`n_monte_carlo` como sempre), byte-identico ao
+  comportamento anterior. O caminho ao vivo continua com piso=12/teto=24
+  de verdade (bloco 381).
+
+`main_phase` e `sim_bridge.choose_action` foram reescritos pra chamar
+esses 2 metodos em vez de reimplementar a logica -- `sim_bridge.py` perde
+~90 linhas de decisao duplicada (mesmo padrao de refactors anteriores:
+`choose_to_trash`, `_choose_opp_target_filtered`). Efeito colateral bom:
+o caminho ao vivo ganha de graca a janela de score/diversidade E a guarda
+`_is_unsafe_zero_life_leader_attack` que antes so existia offline.
+
+**Validacao**: `smoke_fast.py`/`smoke_test.py` 100% (o teste isolado do
+mecanismo adaptativo, bloco 381, foi reescrito pra chamar
+`OPTCGMatch._select_action_via_search` nao-ligado com um `self` falso, em
+vez da funcao solta que foi apagada). **Achado no processo**: nenhum dos
+2 smoke suites de fato exercitava `main_phase`/self-play real
+(`OPTCGMatch.simulate()`) -- so testam mecanica isolada. Rodei um script
+ad-hoc (nao commitado) com 4 partidas reais de `decklists_raw.csv` via
+`simulate()`: todas terminaram com vencedor definido, sem excecao,
+3-8s/partida (12-13 turnos) -- nenhuma regressao de tempo visivel no
+offline.
+
+- [x] Unificacao implementada e validada (2 suites + 4 partidas reais).
+- [ ] **PENDENTE (registrado no bloco 381, ainda nao feito)**: medir se
+  vale ligar amostragem adaptativa de verdade no offline tambem (hoje so
+  usa o N fixo via `samples_min==samples_max`) -- precisa medir custo
+  total de um jogo de self-play inteiro antes de mudar o numero, dado o
+  regime de THROUGHPUT (30 sub-decisoes/turno, muitos jogos), diferente
+  do orcamento por decisao do caminho ao vivo.
+- [ ] Nenhum smoke suite roda `OPTCGMatch.simulate()`/self-play real de
+  ponta a ponta -- so testes unitarios/cenarios isolados. Vale considerar
+  adicionar 1 teste leve de regressao (1-2 partidas reais, decks
+  pequenos/rapidos) que rode ate o fim sem excecao, pra pegar erros que
+  so aparecem num jogo completo (este bloco só foi validado via script
+  descartável, não via smoke suite).
+- [ ] **PENDENTE (pedido do usuário, 26/07 -- pergunta direta "melhorou a
+  eficacia? melhorou as decisoes do bot?")**: respondi com honestidade que
+  so validei AUSENCIA de regressao (testes + self-play sintetico), nao
+  medi ganho real de eficacia em partida ao vivo. Falta: (a) partida real
+  pos-unificacao, (b) ler `metrics/live_runs/live_<timestamp>.json` +
+  `decision_summary.py --latest` (obrigatorio por regra do
+  CLAUDE.md/AGENTS.md quando o log e do bot), (c) `bot_efficiency_report.py`
+  com cohort atualizado comparando contra o historico anterior a este
+  bloco. Watch item especifico: quantas vezes
+  `_is_unsafe_zero_life_leader_attack` de fato filtra uma candidata ao
+  vivo -- hoje esse sinal nao tem campo proprio no `trace_out`, so fica
+  implicito em `search_values` (a candidata unsafe nunca vira `melhor`
+  mesmo com valor simulado maior); considerar expor um campo dedicado se
+  precisar auditar isso sem reconstruir a logica na mao.
+
+## 2026-07-26 (381) - Claude (sessao remota web) - IMPLEMENTADO: amostragem sequencial/adaptativa no Monte Carlo ao vivo (piso 12 / teto 24), substitui N fixo=6
+
+Usuario pediu pra IMPLEMENTAR uma melhoria concreta em cima do achado do
+bloco 380 (mais amostras melhora qualidade, mas so vale a pena quando o
+gap ainda nao esta resolvido). Antes so tinha ficado registrado como
+"refinamento futuro" -- agora implementado.
+
+**O que mudou** (`sim_bridge.py`): `choose_action` nao usa mais um N fixo
+de amostras Monte Carlo pra toda decisao. Nova funcao
+`_adaptive_counterfactual_search` amostra em ate 2 lotes (piso=12,
+teto=24, ambos configuraveis via `SEARCH_SAMPLES_MIN_DEFAULT`/
+`SEARCH_SAMPLES_MAX_DEFAULT`/`SEARCH_SAMPLES_BATCH_DEFAULT`) e para no
+PISO assim que a diferenca de valor entre as 2 candidatas (teste pareado,
+CRN -- mesmas amostras nos 2 lados) fica estatisticamente clara
+(`|media(delta)| > 2*erro_padrao(delta)`); so sobe pro TETO quando o gap
+ainda nao e confiavel. So se aplica ao caminho com `model` (Monte Carlo de
+verdade); o fallback `masked_public_line_search` (sem model) continua
+com 1 simulacao deterministica, sem amostragem, como antes.
+
+**Calibracao do piso, achado importante durante a implementacao**: testei
+piso=4 primeiro (generalizando o `SEARCH_SAMPLES_DEFAULT=6` antigo pra
+baixo) e descobri que com tao poucas amostras o teste pareado "confirmava"
+significancia por PURO RUIDO na maioria das vezes (poucos graus de
+liberdade tornam o erro-padrao estimado dele mesmo muito instavel) --
+o cenario de empate tecnico (bloco 380) parava quase sempre no piso=4,
+escolhendo `attack` quase sempre, quando o gabarito de N=300 tinha
+mostrado que `play` e a real melhor ~50% das vezes. Subindo o piso pra 12
+(testado tambem 8, intermediario) resolveu: agora metade das chamadas do
+cenario de empate tecnico ficam no piso e metade sobem pro teto, e a
+acao realmente melhor (`play`) passa a ser escolhida com frequencia bem
+maior (4/20 num teste rapido, contra quase nunca em piso=4).
+
+**Validacao de tempo real**: rodei o cenario de "empate tecnico" (achado
+380) 20x com a calibracao final -- tempo medio 192.9ms, maximo 489.6ms,
+30-50% das chamadas param no piso (12), o resto sobe pro teto (24). Ainda
+MUITO longe do timeout de 3-4s. Custo pior-caso estimado pra board pesado
+(5v5, ~51ms/amostra medido no bloco 379): piso=12 ~= 612ms, teto=24 ~=
+1.22s -- dentro da margem segura, abaixo do N=30 (1.49-1.77s) e N=40
+(2.04-3.01s, estourava) medidos no bloco 379.
+
+**Testes novos em `smoke_fast.py`** (2, ambos passam, suites 100%):
+- `test_busca_adaptativa_ao_vivo_respeita_piso_e_teto` -- decisao real
+  (2 ataques concorrentes contra Doflamingo mascarado) fica dentro de
+  `[SEARCH_SAMPLES_MIN_DEFAULT, SEARCH_SAMPLES_MAX_DEFAULT]`.
+- `test_adaptive_counterfactual_search_para_cedo_e_no_teto` -- prova
+  ISOLADA do mecanismo (match falso com valores sinteticos, sem depender
+  do motor de jogo real): gap limpo/sem ruido para exatamente no piso;
+  gap real pequeno + ruido grande (empate tecnico sintetico) vai exatamente
+  ate o teto. Nota de processo: uma primeira tentativa de provar "para
+  cedo" com um cenario de jogo REAL (ataque quase letal) falhou -- descobri
+  que aquele cenario tem variancia genuina alta (resultado depende de
+  contra-ataque/counter possivel na mao oculta do oponente), entao
+  corretamente NAO para cedo. Serviu de licao: cenarios de jogo real quase
+  sempre tem alguma variancia de verdade: a prova limpa do mecanismo
+  precisa de valores sinteticos controlados, nao de um cenario "que parece
+  obvio".
+
+Registrado em TODO.md: `SEARCH_TOP_K_DEFAULT` continua em 2 (o teste
+pareado so cobre 2 candidatas; >2 cairia num caminho sem early-stop, sem
+uso hoje mas documentado na funcao).
+
+## 2026-07-26 (380) - Claude (sessao remota web) - qualidade (nao so estabilidade) do Monte Carlo vs N: existe sinal real, mas pequeno demais pra mudar o default
+
+Usuario questionou minha leitura do bloco 379 ("A estabilidade ir
+baixando e ruim?") e depois redirecionou explicitamente: "Tem que ver se
+com mais amostras as escolhas foram melhores e nao as mesmas decisoes".
+O sweep anterior so media auto-consistencia (mesma acao repetida), o
+que nao distingue "empate legitimo em EV" de "estimativa realmente
+ruidosa que as vezes erra pra pior".
+
+**Metodo novo** (script descartavel, nao commitado, mesmo cenario
+"empate tecnico" do bloco 379 -- Katakuri OP11-062 vs Doflamingo
+OP04-019, hidden_information_masked=True): rodei N=300 (media de 15
+repeticoes) como GABARITO de alta fidelidade do valor esperado real de
+cada candidato (`play` ST34-005 vs `attack` no lider). Depois, pra cada
+N pequeno testado no bloco 379 (2 a 40), 30 repeticoes medindo accuracy
+(bateu com o melhor do gabarito?) e regret medio (gabarito[melhor] -
+gabarito[escolhida]) -- usando o GABARITO como regua, nao o valor
+ruidoso da propria rodada.
+
+**Achado principal -- nao e um empate perfeito, e uma vantagem real e
+pequena**: gabarito revelou `play` (546.62) levemente melhor que
+`attack` (544.65), diferenca de so ~1.95 pontos (~0.36% relativo).
+Accuracy sobe com N (3.3% em N=2/4 -> 20% em N=6 -> 30%/26.7%/23.3% em
+N=10/15/20 -> 40% em N=30 -> 50% em N=40) e regret medio cai pela metade
+(1.90 -> 0.98). Ou seja: **mais amostras SIM melhora objetivamente a
+qualidade da escolha**, o que corrige a leitura anterior (bloco 379,
+"empate de verdade, nenhum N razoavel resolve") -- a superficie
+(estabilidade nunca converge pra 100% em N<=40) estava certa, mas a
+causa raiz nao era um empate exato: e um viés real, so que pequeno
+demais pro nivel de ruido por amostra nos N testados, exigindo N muito
+maior que o teto de tempo real (~40, ver bloco 379) pra resolver de
+verdade.
+
+**Decisao**: mantido `SEARCH_SAMPLES_DEFAULT=6` -- o ganho de qualidade
+E real, mas o STAKES desse cenario especifico e baixo (~0.36% de EV em
+jogo), entao nao justifica aproximar do teto de tempo (N=30/40, que
+ainda erra metade das vezes mesmo assim) so por esse caso. Registrado em
+TODO.md (bloco novo) pra nao esquecer: se aparecer um caso ao vivo com
+gap maior entre os 2 melhores `search_values`, vale a pena reavaliar N
+adaptativo por gap, em vez de N fixo pra tudo.
+
+## 2026-07-26 (379) - Claude (sessao remota web) - sweep de SEARCH_SAMPLES: mantido em 6, achados sobre teto real e sobre "empate tecnico" que amostra nao resolve
+
+Usuario perguntou se dava pra ir subindo o numero de amostras Monte
+Carlo (bloco 378) ate achar o ponto bom de qualidade x tempo de
+resposta. Antes de testar, promovi `SEARCH_TOP_K`/`SEARCH_SAMPLES`/
+`SEARCH_MAX_STEPS` (variaveis LOCAIS de `choose_action`) pra constantes
+de modulo `SEARCH_TOP_K_DEFAULT`/`SEARCH_SAMPLES_DEFAULT`/
+`SEARCH_MAX_STEPS_DEFAULT` (`sim_bridge.py`) -- mesmo padrao ja usado em
+`decision_engine.py` (`PLANNER_MC_SAMPLES`), sem mudar nenhum valor,
+so pra permitir variar de fora (sweep/calibracao futura) sem editar a
+funcao. `smoke_fast.py`/`smoke_test.py` 100% depois do refactor.
+
+**Sweep real** (script descartavel, nao commitado): 320 chamadas de
+`choose_action`, 2 cenarios (um "empate tecnico" com 2-3 candidatos que
+ja mostrava instabilidade com poucas amostras, um board pesado 5v5) x
+8 valores de amostra (2 a 40) x 20 repeticoes, medindo % de vezes que a
+MESMA acao e escolhida (estabilidade) e tempo real.
+
+**Achado 1 -- board pesado, teto real de tempo confirmado**: custo
+escala quase LINEAR com o numero de amostras. N=40 no PIOR CASO chegou
+a **3006ms**, estourando um timeout tipico de 3s. N=20 ja usa quase
+metade do orcamento no pior caso (1479ms). N=6 (valor atual) fica em
+~388ms no pior caso -- folga confortavel.
+
+**Achado 2, mais importante -- mais amostras NAO estabiliza o cenario
+de empate tecnico**: estabilidade NAO sobe de forma consistente com N
+(95% em N=2, cai pra 55% em N=15, sobe pra 70% em N=20, cai de novo pra
+55-60% em N=30/40). Isso indica que aquele cenario especifico e um
+empate DE VERDADE em valor esperado (as duas acoes tem score muito
+proximo mesmo com informacao perfeita sobre a mao do oponente) -- mais
+amostras so ajuda quando existe uma resposta certa sendo obscurecida
+por ruido de amostragem; aqui parece nao ter uma resposta clara, entao
+nenhum N razoavel "resolve" a instabilidade.
+
+**Decisao**: mantido `SEARCH_SAMPLES_DEFAULT=6` -- ja da 100% de
+estabilidade no cenario pesado com folga grande, e subir mais nao
+mostrou melhora confiavel de qualidade no cenario apertado, so mais
+risco de estourar timeout em boards pesados. Nao implementado: nenhuma
+mudanca de valor nesta sessao, so o refactor pra constante de modulo
+(que ja habilita qualquer sweep futuro sem editar codigo de novo).
+
+## 2026-07-26 (378) - Claude (sessao remota web) - Monte Carlo ao vivo com informacao mascarada: fallback em 3 camadas (lider exato -> mesma cor -> pool generico por cor) + SEARCH_SAMPLES 2->6
+
+Usuario pediu pra melhorar o Monte Carlo do Turn Planner. Investigando,
+achei que `sim_bridge.choose_action` (caminho AO VIVO de producao, via
+`server.py` `/decide`) **nunca ligava o Monte Carlo de verdade**: sempre
+que `opp_gs.hidden_information_masked=True` (SEMPRE no `/decide` real),
+o codigo forcava `model=None` antes mesmo de tentar
+`opponent_model_for_leader`, caindo direto num fallback de "1 unica
+simulacao contra o estado publico mascarado, sem amostragem nenhuma".
+`SEARCH_SAMPLES` (a constante que eu ia so aumentar) nao tinha efeito
+NENHUM nesse caminho.
+
+Usuario perguntou por que, apontando a regra de "motor unico" -- expliquei
+que nao e violacao (mesmas funcoes de scoring/simulacao nos dois
+caminhos), o problema real e que `OpponentModel.sample()` exige a
+decklist EXATA do oponente (legitimo offline, onde o mesmo programa
+construiu os 2 decks; NAO legitimo ao vivo contra humano, que o bot
+nao pode assumir que sabe). Usuario propos o design: usar as CORES do
+lider (regra dura de construcao de deck, nunca palpite) + o banco de
+decks reais ja catalogado (`decklists_raw.csv`) como fallback estatistico,
+em vez de desligar o Monte Carlo inteiro.
+
+**Implementado** (`optcg_engine/sim_bridge.py`):
+- `opponent_model_for_leader(leader_code, leader_color='')` (assinatura
+  estendida) agora tem 3 camadas de fallback, cada uma so tenta a proxima
+  se a anterior nao achar nada:
+  1. Deck(s) reais com o MESMO lider -- `.deck` local (ja existia) OU
+     `decklists_raw.csv` (novo, funciona em qualquer sessao -- ao
+     contrario do `.deck` local, que so existe no desktop). Pool
+     normalizado por **frequencia MEDIA** quando ha mais de 1 deck real
+     do mesmo lider (`_representative_decklist`) -- pedido explicito do
+     usuario: juntar decks diferentes sem inflar staples comuns por soma
+     bruta.
+  2. Sem lider exato: deck(s) reais da MESMA combinacao de cor
+     (`decklists_raw.csv`), mesma normalizacao por frequencia.
+  3. Sem nada disso: pool generico (`_generic_pool_for_colors`) com
+     QUALQUER carta do banco inteiro cuja cor seja incolor ou uma das
+     cores do lider -- regra dura do jogo, nao palpite, entao seguro
+     mesmo sem nenhuma referencia real. **Uniforme por ora** (sem peso de
+     popularidade -- ver pendencia registrada abaixo).
+- `sim_bridge.choose_action`: removida a linha que forcava `model=None`
+  quando `hidden=True` -- agora sempre tenta
+  `opponent_model_for_leader(leader_code, leader_color)`, que so retorna
+  `None` de verdade se nem `leader_color` estiver disponivel (edge case
+  raro, DTO ao vivo sempre traz o lider). `trace_out["opponent_model_source"]`
+  novo expõe qual camada foi usada, pra auditoria em partida real (ver
+  `opponent_model_source_for_leader`).
+- `SEARCH_SAMPLES`: 2 -> 6. Com o Monte Carlo agora realmente ativo no
+  caminho mascarado, 2 amostras deixava a escolha instavel entre chamadas
+  IDENTICAS (attack vs play alternando na mesma situacao, so por sorte da
+  amostra) -- profiling real (board 5v5, pior caso testado) mostrou
+  ~139ms de `line_search` com 2 amostras e ~220-315ms com 6, contra
+  timeout de 3-4s por decisao -- folga enorme, decisao consistente depois
+  do bump (mesma situacao passou a escolher sempre a mesma acao nas 5
+  execucoes testadas).
+
+**Cobertura do banco hoje** (`decklists_raw.csv`): 193 decks reais, mas
+so 19 lideres unicos e 12 combinacoes de cor unicas -- usuario ja sabe
+que precisa ser enriquecido (mais decks scrapeados), mas o design em 3
+camadas degrada bem mesmo com banco escasso (camada 3 nunca fica sem
+opcao).
+
+**PENDENCIA REGISTRADA PRA NAO ESQUECER (pedido explicito do usuario)**:
+a camada 3 (pool generico por cor) e **uniforme** -- toda carta daquela
+cor tem peso IGUAL, sem favorecer cartas realmente populares/staples de
+torneio sobre cartas nunca jogadas. Refinamento futuro: usar alguma
+proxy de popularidade (ex: frequencia de aparicao no banco todo, mesmo
+fora da cor exata, ou fonte de meta externa) pra pesar a camada 3. Ver
+TODO.md.
+
+**Validado**: 2 testes novos em `smoke_fast.py`
+(`test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor` --
+reescrito, o antigo assumia que o caminho mascarado NUNCA amostrava;
+`test_opponent_model_for_leader_fallback_3_camadas` -- testa as 3
+camadas isoladamente, incluindo a checagem "nenhuma carta do pool
+generico tem cor fora do lider", regra dura do jogo). `smoke_fast.py` +
+`smoke_test.py` 100%. Profiling manual (nao commitado) validou custo
+real em board pesado antes de subir `SEARCH_SAMPLES`.
+
+## 2026-07-25 (377) - Claude (sessao remota web) - RESOLVIDO: nao-determinismo do motor (OpponentModel.sample usava random.Random() novo, ignorava seed)
+
+Usuario pediu pra investigar o achado lateral do bloco 374 (mesmo
+script/seed rodava diferente 2x seguidas). Causa raiz encontrada e
+corrigida.
+
+**Causa raiz**: `OpponentModel.sample()` (`optcg_engine/opponent_model.py`)
+e seus 2 unicos call sites reais (`decision_engine.py` main_phase --
+amostragem Monte Carlo do Turn Planner, chamada TODO turno com mais de
+1 candidato -- e `sim_bridge.py` `choose_action`, caminho ao vivo)
+passavam/usavam como default `rng=random.Random()` -- uma instancia
+NOVA do gerador, semeada do relogio/SO do processo, que **ignora
+completamente qualquer `random.seed()` fixado pelo chamador**. Como
+essa amostragem roda a cada decisao do Turn Planner (nao so 1x por
+partida), qualquer self-play/replay virava nao-reprodutivel mesmo com
+seed fixo -- confirmado rodando o MESMO script com a MESMA seed 2x
+seguidas e comparando o hash SHA256 do log completo da partida (divergia
+antes do fix).
+
+**Fix**: os 2 call sites (`decision_engine.py:13486`,
+`sim_bridge.py:413`) trocaram `rng=random.Random()` por `rng=random`
+(o **modulo**, nao uma instancia nova) -- o modulo `random` E o gerador
+global compartilhado que `random.seed()` de fato controla, o mesmo
+usado por TODO o resto do motor (`random.shuffle(self.me.deck)`,
+`random.choice(...)`, etc. ja usavam o modulo direto, so este ponto
+criava instancia propria). O default interno de `sample()`
+(`rng = rng or random.Random()`) tambem virou `rng = rng or random`,
+por defesa (nenhum call site real hoje depende desse fallback, mas
+evita reintroduzir o mesmo bug se um chamador futuro omitir `rng`).
+
+**Validado**: rodei `audit_replay.py --n 8 --seed 7` 2x seguidas
+(processos separados) -- output **byte-a-byte identico** (`diff`
+vazio), contra divergencia real confirmada antes do fix. Rodei tambem
+um script de trace dedicado (descartavel, apagado) comparando hash
+SHA256 do combat log de uma partida completa via `ReplayMatch` -- 3
+execucoes seguidas, hash identico nas 3. 2 testes novos em
+`smoke_fast.py` (`test_opponent_model_sample_respeita_random_seed_global`)
+travando essa regressao especifica. `smoke_fast.py` + `smoke_test.py`
+100%.
+
+**Efeito colateral esperado, nao um bug**: como a amostragem Monte
+Carlo agora consome o stream global de aleatoriedade (antes nao
+consumia nada dele, por usar instancia separada), o PAREAMENTO de
+decks escolhido por `audit_replay.py`/`tune_weights.py` pra um dado
+`--seed N` MUDOU em relacao a antes do fix (a mesma seed agora produz
+outra sequencia de matchups) -- isso e esperado (mais numeros aleatorios
+sendo consumidos por partida desloca os sorteios seguintes), nao indica
+problema novo. Rodar com uma seed antiga e comparar contra resultados
+registrados de antes deste fix nao e mais valido; qualquer baseline
+anterior a este commit precisa ser re-gerada.
+
+**Achado colateral, NAO corrigido nesta sessao**: com o motor agora
+reprodutivel, `audit_replay.py --n 8 --seed 7` (pos-fix) reexpos o bug
+de conservacao de DON (bloco 374) de forma ESTAVEL, agora no deck
+Red/Blue Ace (Matches 1 e 5 desta seed especifica, +2/+3 DON fantasma
+"anexado em campo"). Como agora e reprodutivel de verdade, a proxima
+tentativa de investigar esse bug pode usar essa seed/matchup exata sem
+o alvo se mover a cada rodada -- pre-requisito que faltava antes,
+resolvido.
+
+## 2026-07-25 (376) - Claude (sessao remota web) - sincroniza AGENTS.md com CLAUDE.md (estava desatualizado) + extrai 3 skills de workflow
+
+Continuacao da secao "ORGANIZACAO PROFISSIONAL DO CONTEXTO" do TODO.md
+(17/07). Usuario pediu pra fazer os 2 primeiros itens (AGENTS.md +
+skills), descartou o 3o (gate de consistencia documental) por nao ter
+entendido bem o proposito.
+
+**Achado antes de mexer**: `AGENTS.md` (lido pelo Codex) **já existia**
+-- o TODO.md registrava "ainda não criado", desatualizado. O achado
+real foi que ele estava DESSINCRONIZADO do `CLAUDE.md` (lido pelo Claude
+Code): faltavam a regra "sem função duplicada" (bloco 373), a regra dos
+dois-pontos (23/07), o gate obrigatório de auditoria do parser, e as
+seções inteiras de "Telemetria de decisão" e "Eficiência agregada"
+(23-24/07) -- ou seja, sessões Codex rodando neste repo estavam vendo
+um conjunto de regras incompleto há semanas, sem ninguém notar (mesmo
+padrão de "duplicação que diverge sem ser pega" do resto da sessão de
+hoje, só que em documentação em vez de código).
+
+**Fix**: `AGENTS.md` reescrito pra espelhar o `CLAUDE.md` inteiro
+(mesmas regras, só a moldura muda -- nome da ferramenta e o caminho da
+memória local, já que Codex não tem o mecanismo de MEMORY.md do Claude
+Code). Os dois arquivos ganharam uma nota no topo ("Espelho") lembrando
+que uma edição num precisa ser replicada no outro -- não elimina o
+risco de divergência futura (isso seria o item 4 do plano do TODO,
+"reduzir textos duplicados", propositalmente adiado pro final), mas
+deixa o risco visível em vez de silencioso.
+
+**Skills extraídas** (`.claude/skills/`, sem rodar o processo completo
+de eval/benchmark do skill-creator -- workflow já totalmente
+especificado pelo próprio TODO.md, não precisava de interview):
+- `optcg-parser-audit` -- fluxo obrigatório de bug de parser (busca
+  global → fix genérico → `diff_parser.py` PERDEU=0 → gerar DBs →
+  registro em `parser_audits/` → smoke tests).
+- `optcg-live-log-triage` -- fluxo obrigatório de combat log novo
+  (banco → telemetria agregada primeiro, decisão-a-decisão depois, só
+  se sessão local → `bot_efficiency_report.py` com números).
+- `optcg-release-handoff` -- checklist de fim de sessão (status real →
+  suíte de teste certa → bloco HANDOFF → delta TODO → commit/push).
+
+Todos apontam de volta pro `AGENTS.md`/`CLAUDE.md`/`TODO.md` pro "porquê"
+em vez de duplicar a prosa -- só o "como executar passo a passo" fica
+na skill.
+
+**Não feito, por decisão do usuário**: item 3 (gate de consistência
+documental antes do push, checando se TODO/HANDOFF/specs refletem o
+mesmo commit) -- usuário achou o propósito confuso, descartado por
+ora. Fica registrado no TODO.md como não-prioridade, não como pendente.
+
+## 2026-07-25 (375) - Claude (sessao remota web) - varredura retroativa de "duplicacao de decisao" em bot_optcgsim.py e server.py: RESULTADO LIMPO
+
+Continuacao do bloco 373 (regra sem-duplicacao) -- pendencia registrada
+la ("bot_optcgsim.py e server.py ainda nao passaram pela varredura
+retroativa que sim_bridge.py passou"). Usuario pediu pra fazer agora.
+
+**Metodologia**: leitura manual de todo endpoint/funcao com potencial de
+decisao em `BOT/engine_server/server.py` (`mulligan`, `defense`,
+`choose_target`, `decide`, `_dto_to_gs`, `_resource_snapshot`/
+`_transition_observation`) e em `scriptis_da_ia/bot_optcgsim.py`
+(`_should_use_trigger`, `_resolve_post_deploy`, `_try_deploy_card`,
+`_execute_engine_action`, `_consume_engine_action_locally`, loop
+principal de `play_match`) -- mais um scan mecanico (mesmo espirito do
+`ENGINE_TOUCHPOINTS` do hook `pre-commit`) procurando comparacao
+numerica (`<`,`<=`,`>=`,`>`,`==`) SEM nenhum touchpoint do motor unico
+na mesma linha, nos 2 arquivos inteiros (nao so no diff, ja que nunca
+tinham sido varridos).
+
+**Resultado: LIMPO, nenhuma duplicacao encontrada.**
+- `server.py`: toda decisao real delega pro motor
+  (`DecisionEngine.should_use_blocker`, `bridge.select_counter_cards`,
+  `bridge.resolve_trigger_choice`, `bridge.resolve_reaction`,
+  `bridge.resolve_optional_effect`, `bridge.order_target_candidates`,
+  `bridge.choose_action`, `match._mulligan_decision`). As linhas que o
+  scan mecanico apontou sao todas transporte puro (desempacotar tupla
+  de acao ja decidida, fallback de campo de DTO ausente, alerta de
+  latencia) -- confirma na pratica o que o proprio codigo ja dizia
+  ("server.py = transporte puro").
+- `bot_optcgsim.py`: e um bot standalone SEPARADO do par C#/`server.py`
+  (chama `sim_bridge.choose_action`/`resolve_prompt_choice`/
+  `resolve_trigger_choice` DIRETO, em processo, nunca via HTTP) -- mas
+  mesma regra vale: toda decisao de jogo delega pro `bridge`. As linhas
+  locais sao OCR/sincronizacao de estado (`_lookup_by_name` resolve
+  ambiguidade de OCR por nome+custo, correcao de drift de DON via hover,
+  heuristicas de "parar de tentar" em loop de scan) -- nao decisao de
+  jogo. Achado arquitetural (nao-bug): este bot nunca joga defesa
+  ativa (sempre clica Pass/No no turno do oponente) -- limitacao de
+  escopo documentada no proprio fluxo do arquivo, nao uma segunda
+  heuristica competindo com o motor.
+
+**Fix aplicado (fortalecimento do gate, nao um bug)**: `bot_optcgsim.py`
+NUNCA esteve nas `BRIDGE_FILES` do hook `pre-commit` -- mudancas futuras
+nele nao passavam por NENHUM gate mecanico (so sim_bridge.py/server.py
+eram cobertos). Adicionado a `BRIDGE_FILES`, e `ENGINE_TOUCHPOINTS`
+ganhou `bridge\.` (esse arquivo chama sim_bridge quase sempre via
+`bridge.metodo(...)`, nao importando `DecisionEngine`/`EffectExecutor`
+direto). Nenhuma mudanca de comportamento -- so estende a rede de
+seguranca mecanica pra um arquivo que ja segue a regra na pratica.
+
+**Nenhuma mudanca de codigo em `server.py`/`bot_optcgsim.py`** -- so no
+hook. `smoke_fast.py`/`smoke_test.py` nao afetados (nao tocam nesses
+2 arquivos).
+
+## 2026-07-25 (374) - Claude (sessao remota web) - bug de conservacao de DON: investigacao aprofundada, NAO resolvido, achado lateral de nao-determinismo
+
+Usuario pediu pra atacar o bug de conservacao de DON registrado nos
+blocos 368/372/373 ("bug do Ace" -- nome impreciso, ver abaixo). Passei
+varias horas de investigacao dirigida por instrumentacao (monkeypatch
+de `EffectExecutor.execute`/`_pay_costs`/`_execute_step` e de ~10
+metodos de `OPTCGMatch` ligados ao Turn Planner) comparando o total
+`don_available + don_rested + field_don` contra `10 - don_deck` apos
+CADA chamada, num script descartavel (nao commitado, ja apagado).
+
+**Reproduzido e confirmado**: o leak NAO e exclusivo do deck Ace --
+reapareceu tambem numa partida Blue/Purple Sanji vs Black Imu (sem Ace
+em nenhum dos dois lados), sempre no lado do Imu. Rastreado ate a
+janela "Empty Throne (Stage, OP13-099) joga um personagem tipo Five
+Elders de graca" + "Five Elders (OP13-082) reanima em massa do trash" --
+o excesso de DON aparece ANEXADO a um personagem (`don_attached`), nao
+sobrando solto no banco; num dos traces o valor batia EXATAMENTE com o
+custo da propria carta (6, igual ao custo de St. Ethanbaron V.
+Nusjuro).
+
+**Descartado como causa** (lido/auditado, matematicamente correto):
+custo de jogar carta (`_play_card`, `p.don_rested += play_cost`),
+`rest_don` (2 pontos, Activate:Main e substituicao), `trash_character`/
+`ko` (usa `remove_character_from_field`, devolve DON corretamente),
+`play_from_trash` (nao mexe em DON), `_attach_don_for_attack`/
+`don_needed_for_attack` (limite `min(p.don_available, ...)` presente),
+geracao de candidatos `attach_don` (3 pontos em
+`_generate_and_score_actions`, todos checam `falta <= p.don_available`
+antes de propor), `Card.__deepcopy__`/`GameState.__deepcopy__` (listas
+manuais conferidas campo a campo, `don_attached` presente na lista),
+`_project_next_turn_best_action` (ja usa deepcopy dedicado desde o
+bloco 362, nao mexe no estado real). `give_don`/`give_don_opp`/
+`add_don`/`set_don_active` tambem conferidos -- nenhuma dessas cartas
+esta neste deck.
+
+**Achado lateral, registrado como pendencia PROPRIA** (nao e o bug de
+DON, mas atrapalhou a caca): o motor tem uma fonte de nao-determinismo
+que sobrevive a `random.seed()` fixo E `PYTHONHASHSEED=0` -- rodei o
+MESMO script duas vezes com os dois fixados e a partida simulada jogou
+diferente nas duas vezes (call counts diferentes, Empty Throne jogando
+cartas diferentes). Fonte exata nao identificada (candidatos: `id()`
+de objeto usado como desempate em algum sort/set, ou uma instancia de
+`random.Random()` nao seedada em algum ponto do Turn Planner/Monte
+Carlo alem do ja conhecido `sim_bridge.choose_action`). Isso reduz a
+confianca de que rodar `audit_replay.py --n N --seed S` duas vezes reproduz
+a MESMA partida exata -- relevante pra qualquer investigacao futura
+baseada em reproducao determinsitica (esta, e tambem calibracao de
+pesos via `tune_weights.py`).
+
+**Nao resolvido**: raiz exata do leak de DON nao encontrada. Proximo
+passo recomendado (nao feito, ficou pra depois): instrumentar
+DIRETAMENTE no codigo (prints temporarios dentro de `_execute_attack`/
+`_attach_don_for_attack`/`_execute_step`, nao por monkeypatch externo)
+bracketing dentro do PROPRIO turno em que a Empty Throne + Five Elders
+roda, junto com fixar a fonte de nao-determinismo PRIMEIRO (senao cada
+tentativa de reproduzir varia).
+
+**Nenhuma mudanca de codigo neste bloco** -- so investigacao/achados,
+sem commit de fix (nao encontrado). Script de trace descartavel,
+apagado ao final (nao commitado, seguindo convencao de scripts de
+auditoria ad-hoc).
+
+## 2026-07-25 (373) - Claude (sessao remota web) - achadas e corrigidas 2 funcoes duplicadas (choose_to_trash, _choose_opp_target_filtered); registrada regra "sem duplicacao" como leitura obrigatoria
+
+Continuacao direta do bloco 372. Usuario pediu para investigar se, alem
+da orquestracao de turno ja corrigida, existiam OUTRAS "duas funcoes
+tomando a mesma decisao" no projeto -- e se sim, corrigir, e DEPOIS
+registrar como obrigatoriedade do projeto (nao ter 2 motores + evitar
+duplicar funcoes), com leitura obrigatoria antes de commit/push.
+
+**Achado 1 -- `DecisionEngine.choose_to_trash(hand)`** (so chamada por
+`sim_bridge.py.resolve_prompt_choice`, caminho AO VIVO): reimplementava
+`min(hand, key=self.avaliar_carta)` puro, enquanto
+`EffectExecutor._choose_to_trash(hand)` (usada internamente por
+QUALQUER custo `trash_from_hand` de efeito, self-play e
+`smoke_test.py`) usa `_trash_value` -- avaliar_carta + protecoes reais
+(evento `[Counter]` com desconto por redundancia, remocao/bounce, carta
+cara/win-con do game_plan, carta que enche o trash pro combo, jogavel
+neste turno, reanimavel via `play_from_trash`). O bot AO VIVO descartava
+PIOR do que o motor interno pra identica situacao -- mesma classe do
+achado Katakuri OP11-062 (comentario ja existente em
+`_combat_buff_worth_paying`), so que invertido (o pobre estava no
+caminho ao vivo, nao no interno). **Fix**: `choose_to_trash` agora
+delega pra `EffectExecutor(self.me, self.opp)._choose_to_trash(hand)`.
+
+**Achado 2 -- `sim_bridge._choose_opp_target_filtered(candidates, step)`**:
+reimplementava na mao o mesmo filtro (`cost_lte`/`cost_gte`/`cost_eq`/
+`power_lte`/`power_gte`/`rested_only`) que `eligible_cards()`
+(`rules_facade.py`) ja centraliza para TODO o resto do motor (usada
+dezenas de vezes dentro de `_execute_step`). **Fix**: delega pra
+`eligible_cards(...)` (filtro) + `choose_highest_board_value(...)`
+(selecao, ja existia, so nao era chamada aqui).
+
+**Achado 3 (menor, mesmo padrao) -- `resolve_prompt_choice`**: 2 pontos
+com `min(gs.field_chars, key=lambda c: c.board_value())` reimplementado
+a mao (zonas `own_field` trash/ko) em vez de `choose_lowest_board_value`
+(`rules_facade.py`, que ja existe EXATAMENTE pra isso, com o mesmo
+comentario de risco: "a execucao tem que escolher a MESMA carta que a
+decisao assumiu" -- achado historico Five Elders 12/07). E um
+`max(gs.trash, key=lambda c: c.board_value())` que devia ser
+`choose_highest_board_value`. Todos os 4 pontos corrigidos.
+
+**Nao mexido / investigado e descartado como falso positivo**: os pares
+`board_value()` (Card, heuristica crua) vs `char_value_score`
+(GameAnalyzer, heuristica rica) e `avaliar_carta` vs `_trash_value` em
+`order_target_candidates`/`sort_key` (sim_bridge.py) -- la o uso de
+heuristica mais simples por zona/contexto e DELIBERADO e documentado
+carta a carta (varios achados historicos ja resolvidos, ex: Empty
+Throne, Imu/Five Elders), nao uma duplicacao acidental. `select_counter_cards`
+(sim_bridge.py) tambem investigado: delega pra `pick_counters`/
+`should_use_counter` no caso do lider, e o eixo "defender personagem" e
+uma decisao genuinamente NOVA (nao duplicada) com raciocinio proprio
+documentado.
+
+**Validado**: 2 testes novos em `smoke_fast.py`
+(`test_sim_bridge_delega_escolha_de_alvo_pro_motor_unico`) provando a
+DIVERGENCIA real de comportamento antes/depois (caso construido com
+evento `[Counter]` real EB01-019 vs personagem vanilla forte -- naive
+trashava o evento protegido, motor rico protege, `choose_to_trash`
+delegado agora bate com o rico; e `_choose_opp_target_filtered`
+excluindo alvo fora do `cost_lte` e escolhendo o de maior
+`board_value`). `smoke_fast.py` + `smoke_test.py` 100% verdes.
+
+**Registro da regra (pedido explicito do usuario)**: criado
+[`scriptis_da_ia/REGRA_SEM_DUPLICACAO.md`](scriptis_da_ia/REGRA_SEM_DUPLICACAO.md)
+-- documenta a regra "1 motor so, zero funcao duplicada", os 3 achados
+acima como exemplos reais, e um checklist de como cacar duplicatas
+antes de aceitar uma funcao de decisao nova. Leitura tornada
+**obrigatoria mecanicamente**: `scripts/hooks/pre-commit` agora imprime
+esse arquivo por inteiro em TODO `git commit` (mesmo tratamento que
+`MEMORY.md` ja recebia). `CLAUDE.md` ganhou um bullet novo na secao de
+regras-chave apontando pra ele.
+
+## 2026-07-25 (372) - Claude (sessao remota web) - apaga ReplayMatch.play_turn() duplicado, delega 100% pra OPTCGMatch.play_turn()
+
+Continuacao direta do bloco 371. Usuario perguntou por que `ReplayMatch`
+(replay_optcg.py) tinha seu proprio `play_turn()` "sendo que é para usar
+1 só" (motor unico) -- investigado e confirmado: NAO era so a auditoria
+de invariante que divergia, o metodo inteiro reimplementava a
+orquestracao de turno (refresh/draw/don/main_phase) so pra poder
+imprimir campo/perfil/postura no meio do turno, e por isso faltavam:
+`end_phase()` (nunca era chamado -- efeitos `[End of Your Turn]` e a
+fila `end_of_turn_queue` nunca resolviam no replay!), sync de
+`p.global_turn`/`opp.global_turn`/`is_active_turn`,
+`pending_play_cost_reductions.clear()`, e a checagem especial
+`deck_out_win_instead_of_loss` (lider Nami OP03-040 vence ao invés de
+perder no proprio deck-out). Usuario confirmou: "Não dá para apagar não?
+E usar só 1?".
+
+**Fix**: `OPTCGMatch.play_turn()` (decision_engine.py:14346) ganhou um
+parametro opcional `post_don_hook: Callable[[GameState, GameState], None]
+| None = None`, chamado logo apos `don_phase()` e antes do `main_phase()`
+-- unico ponto que o replay precisava pra injetar o print do campo/perfil
+no MEIO do turno. Nao usado no caminho ao vivo (`sim_bridge.py`/
+`server.py`) nem em `simulate()` -- default `None`, zero mudanca de
+comportamento pra quem nao passa o argumento.
+
+`ReplayMatch.play_turn()` virou wrapper fino de verdade: imprime o
+cabecalho do turno (numero previsto ANTES de chamar o engine, ja que
+`OPTCGMatch.play_turn()` incrementa `global_turn`/`p.turn` logo no topo,
+antes de qualquer efeito colateral observavel), define o hook de
+print/perfil como closure, chama
+`self._get_engine_match().play_turn(p, opp, verbose=True,
+post_don_hook=hook)` uma unica vez, e sincroniza
+`self.global_turn = engine_match.global_turn` no retorno. A propria
+`_check_invariants()` (chamada de dentro de `OPTCGMatch.play_turn()`)
+passou a usar o `global_turn` do proprio motor corretamente -- o bug
+lateral do bloco 371 ("global_turn do OPTCGMatch interno travado em 0 no
+caminho do ReplayMatch") desapareceu de graca, ja que agora
+`ReplayMatch` delega a incrementacao pro motor em vez de ter contador
+proprio duplicado. `_log_event(...)` chamado pelo motor via
+`self.replay_log`/`self._suppress_replay_log` do `engine_match` bypass
+continua no-op (replay_log=None), entao nao duplica print nenhum.
+
+**Validado**: `smoke_fast.py` (todos os testes previos + os 2 novos do
+bloco 371) e `smoke_test.py` (regressao ampla) 100% verdes, zero
+regressao. Rodei uma partida real via `ReplayMatch(...).run()` com
+`enable_decision_audit()` ligado: output visual identico (cabecalho,
+campo ASCII, perfil/fase/postura no mesmo lugar), `global_turn` do
+`ReplayMatch` e do `OPTCGMatch` interno batem exatamente (11 == 11 no
+teste), e as violacoes de invariante continuam sendo detectadas com
+turno/jogador corretos (mesmo bug conhecido de conservacao de DON do
+deck Ace/Imu reapareceu, sem alteracao de comportamento). Rodei tambem
+`audit_replay.py --n 6` direto: 0 excecoes, mesma anomalia conhecida
+detectada, dump de log continua funcionando.
+
+**Nao mexido**: nenhuma logica de carta, nenhum segundo motor criado,
+`OPTCGMatch.simulate()`/caminho ao vivo (`sim_bridge.py`/`server.py`)
+intocados -- `post_don_hook` e um parametro opcional com default `None`,
+invisivel pra quem nao passa.
+
+## 2026-07-25 (371) - Claude (sessao remota web) - unifica auditoria de invariante (audit_replay.py) no decision_log, SEM tocar write_event/telemetria ao vivo
+
+Usuario pediu unificar telemetria/auditoria (continuacao do bloco 370):
+"apenas 1 motor, apenas um engine de decisao e apenas uma telemetria".
+Investigado o cenario completo antes de mexer: confirmado 1 motor de
+decisao (`_generate_and_score_actions` chamado tanto por `sim_bridge.py`
+ao vivo quanto pelos metodos internos do `OPTCGMatch` no self-play --
+mesma funcao, prova direta). Telemetria, porem, tinha 3 mecanismos
+diferentes: `write_event`/`telemetry.py` (rico, so ao vivo),
+`enable_decision_audit`/`_log_decision` (self-play, estreito -- so
+"ativar ou pular habilidade"), e os prints avulsos do proprio
+`audit_replay.py` (invariantes de estado: DON/poder/contagem de cartas).
+
+**Descartada a unificacao com `write_event`** (proposta inicial, maior):
+exigiria um serializador GameState->dict novo pra imitar o formato do DTO
+ao vivo, sem necessidade real pro objetivo imediato -- usuario preferiu
+a rota menor: NAO tocar em `write_event`/`server.py` (ao vivo continua
+101% intocado), so fundir as DUAS partes que ja sao self-play-only
+(`_log_decision` + as checagens do `audit_replay.py`) na MESMA lista.
+
+**Fix implementado**: `OPTCGMatch._check_invariants()` (decision_engine.py)
+-- migra as 3 checagens de `audit_replay.py` (conservacao de DON incl.
+deteccao de carta duplicada por referencia, poder nunca negativo,
+conservacao de contagem de cartas com baseline lazy) pra dentro do
+motor, gravando `{'kind': 'invariant_violation', 'turn', 'player',
+'check', 'detail'}` na MESMA `decision_log` que ja recebia
+`_log_decision`/`_log_turn_planner_decision` (lista ja era mista, tinha
+precedente de `kind` opcional filtrado com `.get()` pelos consumidores
+-- zero risco de quebrar `audit_card_effects.py`/`audit_decision_quality.py`,
+confirmado rodando os dois). So grava entrada quando ACHA violacao (nunca
+por turno saudavel -- telemetria cara evitada, pensando em
+`tune_weights.py` rodando centenas de partidas). Chamada automatica em
+2 pontos (cobre TODO consumidor de self-play sem exececao):
+`ReplayMatch.play_turn()` (replay_optcg.py, usa `audit_replay.py`/
+`baseline_metrics.py`/`tune_weights.py`) com o turno explicito (o
+`global_turn` do OPTCGMatch interno fica travado em 0 nesse caminho --
+achado lateral, caracteristica preexistente de ReplayMatch reimplementar
+a propria orquestracao de turno, NAO mexida) e `OPTCGMatch.play_turn()`
+(usado direto por `audit_card_effects.py`/`audit_decision_quality.py`
+via `.simulate()`).
+
+`audit_replay.py` ficou bem mais fino: so liga `enable_decision_audit()`,
+roda as N partidas, filtra `decision_log` por `kind == 'invariant_violation'`
+pra montar a lista de anomalias (preserva o dump em arquivo na 1a
+violacao de DON por partida). Unica checagem NAO migrada, de proposito:
+"nao implementado" no texto impresso -- e varredura de stdout capturado
+da partida inteira, natureza diferente de invariante de GameState,
+continua so no script.
+
+**Validado**: 6 checks novos em smoke_fast.py (estado saudavel = 0
+violacoes; DON quebrado detectado com turno/jogador certos; carta
+surgindo do nada detectada; decision_log mista sem quebrar). Rodei
+`audit_replay.py`/`audit_card_effects.py --decision`/`audit_decision_quality.py`
+de verdade (partidas reais) -- 0 excecao, mesma anomalia real de sempre
+(bug de DON do deck Ace, ainda pendente de investigar a fundo) detectada
+identica a antes da migracao. `smoke_fast.py`/`smoke_test.py` 100%, zero
+regressao. `write_event`/`telemetry.py`/`server.py`: nao tocados.
+
+## 2026-07-25 (370) - Claude (sessao remota web) - self_play_info_hidden: fundacao pro self x self do front-end nao "trapacear" (motor UNICO, zero mudanca pro bot/live)
+
+Usuario conectou o self-play (usado pra testar mudancas sem precisar do
+desktop, ver bloco anterior desta mesma conversa) a um objetivo maior do
+projeto: o front-end vai ter um simulador deck-vs-deck (self x self) e
+ele precisa se aproximar do ao vivo -- o que exige as duas IAs pararem
+de "ver" a mao/vida/deck uma da outra, do jeito que o self-play interno
+faz hoje (informacao 100% cheia dos dois lados, ao contrario do ao vivo,
+que ja mascara a mao/vida do oponente desde os blocos 300/301).
+
+**Exigencia explicita do usuario, checada com cuidado antes de
+implementar**: zero mudanca de comportamento do bot ao vivo, motor
+UNICO (nunca duplicar logica), a mudanca serve SO pro self x self.
+
+**Auditoria (mesmo metodo do bloco 342, agora pra decision_engine.py
+inteiro)**: 47 leituras diretas de `opp.hand`/`opp.life` categorizadas
+por funcao -- maioria e mecanica legitima (`_execute_step`,
+`_execute_attack`, `_put_life`, `target_pool` -- precisam do estado
+real pra mover carta de verdade) ou informacao publica de verdade
+(tamanho de mao/vida, `_check_conditions`/`_step_is_viable`). Achados
+REAIS de vazamento, concentrados em 2 funcoes:
+- `opp_counter_potential()` -- soma o counter real de TODA carta na mao
+  do oponente pra calcular margem de DON no ataque
+  (`don_needed_for_attack`) e desconto no score de ataque no lider
+  (`score_attack_target`). O proprio comentario ja antecipava o gap
+  ("se no futuro a mao for oculta de verdade... voltar a estimativa").
+- `_opp_can_remove_stage()` -- le o TEXTO de toda carta no deck do
+  oponente (`for c in opp.deck`) pra decidir entre a versao cara/barata
+  de um Stage espelhado.
+Vida: limpa (so `.pop()`, mecanica de dano/remocao real). `sim_bridge.py`/
+`opponent_model.py`: ja corretos (Monte Carlo ja usa `known_hand_cards()`/
+`known_life_cards()` desde os blocos 300/301).
+
+**Design descartado**: gatilhar isso via `hidden_information_masked`
+(flag ja existente, setada True no lado do oponente NO CAMINHO AO VIVO
+por `server.py`). Usar essa flag mudaria o bot ao vivo tambem -- ela ja
+vem True la, e ligar o fix nela adicionaria uma estimativa nao-zero pra
+cartas nao reveladas onde hoje conta 0 silenciosamente. Rejeitado por
+violar a exigencia do usuario.
+
+**Fix implementado**: atributo dinamico NOVO e ISOLADO,
+`opp.self_play_info_hidden` (via `getattr(..., False)`, igual o padrao
+ja usado por `hidden_information_masked` -- mas um nome DIFERENTE, nunca
+setado em NENHUM caminho hoje, entao o comportamento de ninguem muda por
+default). As 2 funcoes checam essa flag sozinhas:
+- `opp_counter_potential()`: default (flag ausente) = soma real de
+  `self.opp.hand` inteira, EXATAMENTE como hoje. Com a flag True: soma
+  real so das `known_hand_cards()` (reveladas de verdade nesta partida,
+  via Arlong/peek/etc -- MESMO mecanismo dos blocos 300/301, ja
+  populado corretamente tanto ao vivo quanto no self-play) + estimativa
+  estatistica (`counter_estimation.estimate_opp_counter`, reusa a
+  densidade REAL da decklist do oponente quando disponivel via
+  `deck_cards_for_leader` -- mesma infra do guard de buff do bloco
+  anterior) pro resto.
+- `_opp_can_remove_stage()`: default = varre `opp.deck` inteiro, igual
+  hoje. Com a flag True: so `known_deck_cards()` (reveladas) --
+  conservador de proposito (carta nao vista conta como "nao tem"),
+  mesma filosofia de `opp_counter_potential`.
+
+Nenhuma funcao intermediaria (`don_needed_for_attack`, `score_attack_target`,
+`_place_start_stage`) precisou mudar assinatura -- a flag mora no
+GameState que essas funcoes ja recebem, entao herdam o comportamento
+novo automaticamente quando (e so quando) o futuro simulador self x self
+setar a flag.
+
+**Validado**: `smoke_fast.py` ganhou
+`test_self_play_info_hidden_mascara_counter_e_deck_do_oponente` (6
+checks: flag off = identico a hoje pros 2 casos; flag on sem reveal =
+NAO ve a info real; flag on + revelado de verdade = volta a contar).
+`smoke_fast.py` e `smoke_test.py` 100% (zero regressao). Flag nunca e
+setada em nenhum lugar hoje -- confirmado que bot ao vivo e todas as
+ferramentas de self-play existentes (`audit_replay.py`,
+`baseline_metrics.py`, `tune_weights.py`) continuam com o comportamento
+de sempre, sem tocar em nada.
+
+**PENDENTE (proxima sessao)**: isto e so a FUNDACAO -- ainda falta
+construir o simulador self x self em si (provavelmente um script novo
+ou uma opcao nas ferramentas de self-play existentes) que efetivamente
+SETE `opp.self_play_info_hidden = True` (e o equivalente do outro lado)
+no inicio da partida. Sem esse passo, a flag existe mas nunca e usada.
 
 ## 2026-07-25 (369) - Claude (sessao local) - re-profiling pos-fix do Fase D: proximo gargalo identificado e registrado como divida tecnica (nao implementado)
 

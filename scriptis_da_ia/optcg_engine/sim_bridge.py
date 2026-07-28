@@ -32,11 +32,49 @@ from optcg_engine.decision_engine import (
     _load_analysis_db,
     SIMULATED_WIN_SCORE,
 )
-from optcg_engine.rules_facade import choose_highest_board_value
+from optcg_engine.rules_facade import (choose_highest_board_value,
+                                        choose_lowest_board_value, eligible_cards)
 from optcg_engine.opponent_model import OpponentModel
 
 DECKS_DIR = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks")
 CSV_PATH  = _SCRIPTS_DIR / "cards_rows.csv"
+
+# ── Parametros da busca contrafactual de choose_action (item 3 do plano) ──────
+# Promovidos de variavel local pra constante de modulo (26/07) -- permite
+# variar de fora (`sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT = N`) pra sweep de
+# calibracao, sem editar a funcao. Mesmo padrao ja usado em
+# decision_engine.py (PLANNER_MC_SAMPLES).
+SEARCH_TOP_K_DEFAULT = 2
+SEARCH_MAX_STEPS_DEFAULT = 4
+
+# Amostragem SEQUENCIAL/ADAPTATIVA (26/07, acha 380): sweep de qualidade
+# mostrou que mais amostras SIM melhora a escolha (accuracy sobe, regret cai
+# com N), mas o board pesado (2 candidatas bem separadas) ja fica 100%
+# estavel com poucas amostras -- usar um N fixo pra tudo desperdica
+# orcamento onde a decisao ja e clara e nao gasta o suficiente onde e um
+# empate genuino. Em vez de N fixo, amostra em LOTES e para assim que a
+# diferenca de valor entre as 2 melhores candidatas fica estatisticamente
+# clara (teste pareado, mesmas amostras nos dois lados via CRN -- ja usado
+# antes, so que numa unica leva fixa), ate um teto de seguranca.
+#
+# Calibracao do piso (26/07): testado com piso=4 primeiro, mas com tao
+# poucas amostras a variancia da media e do erro-padrao e ela propria muito
+# ruidosa (poucos graus de liberdade) -- o teste pareado "confirmava"
+# significancia por PURO RUIDO na maioria das chamadas do cenario de
+# empate tecnico, escolhendo a MESMA acao de sempre (`attack`) em vez de
+# realmente decidir entre as duas. Testado empiricamente piso=4 (~90% para
+# no piso, quase nunca acha a `play` que o gabarito de N=300 mostrou ser a
+# real melhor), piso=8 (parecido) e piso=12 (bem mais equilibrado: cerca de
+# metade das chamadas para no piso, metade sobe pro teto, e a acao
+# realmente melhor segundo o gabarito passa a ser escolhida com frequencia
+# muito maior). Ficou em piso=12/teto=24 com 1 lote unico de cada
+# (2 niveis: rapido=12, dificil=24) -- simples de auditar e ainda dentro
+# do orcamento de tempo real (~51ms/amostra no pior caso medido, board
+# pesado: 24 amostras ~= 1.2s, longe do teto de 3-4s do timeout).
+SEARCH_SAMPLES_MIN_DEFAULT = 12
+SEARCH_SAMPLES_BATCH_DEFAULT = 12
+SEARCH_SAMPLES_MAX_DEFAULT = 24
+SEARCH_SAMPLES_Z_DEFAULT = 2.0
 
 # ── Carrega banco de cartas uma vez ───────────────────────────────────────────
 # _load_effects_db/_load_analysis_db populam globals do decision_engine e
@@ -235,6 +273,7 @@ def can_execute_action(action: tuple, gs: GameState) -> tuple[bool, str]:
 # a tunagem/gauntlet offline ja usa -- muito melhor que nao ter busca nenhuma.
 _leader_deck_index: dict[str, str] | None = None
 _opponent_model_cache: dict[str, Optional[OpponentModel]] = {}
+_opponent_model_source_cache: dict[str, str] = {}
 
 
 def _leader_deck_index_build() -> dict[str, str]:
@@ -278,19 +317,186 @@ def deck_cards_for_leader(leader_code: str) -> Optional[list]:
     return cards
 
 
-def opponent_model_for_leader(leader_code: str) -> Optional[OpponentModel]:
+_RAW_DECKLISTS_PATH = _SCRIPTS_DIR / "decklists_raw.csv"
+_raw_decks_by_leader: dict[str, list] | None = None
+_raw_decks_by_color: dict[str, list] | None = None
+
+
+def _build_raw_decklists_index() -> None:
     """
-    OpponentModel com a decklist REAL do arquivo .deck cujo lider bate com
-    `leader_code`, ou None se nenhum .deck conhecido tiver esse lider (busca
-    fica indisponivel pra esse oponente -- caller deve cair no score imediato,
-    nunca travar/piorar a decisao por falta de modelo).
+    Indexa `decklists_raw.csv` (decks reais de torneio, versionado no repo
+    -- funciona em QUALQUER sessao, diferente de `list_decks()`/`DECKS_DIR`
+    que so existe no desktop local) por codigo de lider e por combinacao de
+    cor. Fallback pro opponent modeling ao vivo quando nao ha um `.deck`
+    local com o lider exato do oponente (achado 26/07: banco de `.deck`
+    locais e ainda mais escasso que este CSV pra qualquer lider fora dos
+    poucos usados pra teste no desktop).
     """
-    if leader_code in _opponent_model_cache:
-        return _opponent_model_cache[leader_code]
-    cards = deck_cards_for_leader(leader_code)
+    global _raw_decks_by_leader, _raw_decks_by_color
+    if _raw_decks_by_leader is not None:
+        return
+    _raw_decks_by_leader = {}
+    _raw_decks_by_color = {}
+    if not _RAW_DECKLISTS_PATH.exists():
+        return
+    import pandas as pd
+    df = pd.read_csv(_RAW_DECKLISTS_PATH)
+    for _url, rows in df.groupby('deck_url'):
+        leader_code = None
+        leader_color = None
+        cards = []
+        for _, row in rows.iterrows():
+            code = str(row['card_code'])
+            data = _cards_db.get(code)
+            if not data:
+                continue
+            card = _make_card(code, data)
+            if card.card_type == 'LEADER':
+                leader_code = code
+                leader_color = card.color
+            else:
+                for _ in range(int(row['qty'])):
+                    cards.append(card)
+        if leader_code is None or not cards:
+            continue
+        _raw_decks_by_leader.setdefault(leader_code, []).append(cards)
+        if leader_color:
+            _raw_decks_by_color.setdefault(leader_color, []).append(cards)
+
+
+def _representative_decklist(deck_lists: list) -> list:
+    """
+    Combina N decks reais (mesmo lider OU mesma combinacao de cor) numa
+    UNICA lista representativa -- pedido do usuario 26/07: juntar decks
+    diferentes sem que uma carta comum vire artificialmente "mais provavel"
+    so por aparecer em varios decks somados (soma bruta infla staples).
+    Pra cada codigo de carta, usa a MEDIA de copias por deck (arredondada,
+    minimo 1 se aparece em pelo menos 1 dos decks) como contagem
+    representativa final -- uma normalizacao por frequencia, nao uma soma.
+    """
+    if not deck_lists:
+        return []
+    n = len(deck_lists)
+    total_by_code: dict = {}
+    card_by_code: dict = {}
+    for deck in deck_lists:
+        for card in deck:
+            total_by_code[card.code] = total_by_code.get(card.code, 0) + 1
+            card_by_code.setdefault(card.code, card)
+    result = []
+    for code, total in total_by_code.items():
+        count = max(1, round(total / n))
+        result.extend([deepcopy(card_by_code[code]) for _ in range(count)])
+    return result
+
+
+_generic_color_pool_cache: dict[frozenset, list] = {}
+
+
+def _generic_pool_for_colors(colors: frozenset) -> list:
+    """
+    Camada 3 do fallback (26/07): quando nao ha NENHUM deck real conhecido
+    (nem do lider exato, nem da mesma combinacao de cor), monta um pool
+    generico com QUALQUER carta do banco inteiro (`cards_rows.csv`) cuja
+    cor seja incolor OU uma das cores do lider. Isso NAO e palpite -- e
+    regra dura de construcao de deck do proprio jogo (nunca pode ter carta
+    fora da cor do lider) -- entao e seguro mesmo sem nenhuma referencia de
+    deck real, so mais impreciso que as camadas 1/2.
+
+    Uniforme por ora (1 copia de cada carta elegivel, sem peso de
+    popularidade/frequencia real de uso) -- REFINAMENTO FUTURO registrado
+    no TODO.md, nao esquecer: uma carta staple de torneio deveria pesar
+    mais que uma nunca jogada, mas hoje as duas entram com peso igual.
+    """
+    if colors in _generic_color_pool_cache:
+        return _generic_color_pool_cache[colors]
+    pool = []
+    for code, data in _cards_db.items():
+        card = _make_card(code, data)
+        if card.card_type == 'LEADER':
+            continue
+        card_color = (card.color or '').strip()
+        if card_color:
+            tokens = {t for t in card_color.replace('/', ' ').split() if t}
+            if not (tokens & colors):
+                continue
+        pool.append(card)
+    _generic_color_pool_cache[colors] = pool
+    return pool
+
+
+def opponent_model_for_leader(leader_code: str, leader_color: str = '') -> Optional[OpponentModel]:
+    """
+    OpponentModel do oponente, com 3 camadas de fallback (pedido do usuario
+    26/07 -- banco de decks reais ainda escasso, 19 lideres/12 combinacoes
+    de cor em `decklists_raw.csv` hoje, ver HANDOFF):
+
+    1. Deck(s) reais com o MESMO codigo de lider -- `.deck` local
+       (`DECKS_DIR`, so existe no desktop) OU `decklists_raw.csv`
+       (versionado, funciona em qualquer sessao). Pool normalizado por
+       frequencia MEDIA quando ha mais de 1 deck real conhecido (ver
+       `_representative_decklist`).
+    2. Sem lider exato: deck(s) reais com a MESMA combinacao de cor
+       (`decklists_raw.csv`), mesma normalizacao por frequencia.
+    3. Sem nada disso: pool generico de qualquer carta do banco cuja cor
+       seja incolor ou uma das cores do lider (regra dura do jogo, nao
+       palpite) -- ver `_generic_pool_for_colors`.
+
+    Retorna None só se nem `leader_code` nem `leader_color` renderem
+    NENHUM pool (nem a camada 3) -- na prática só acontece se
+    `leader_color` vier vazio, já que a camada 3 nunca fica sem opção
+    tendo pelo menos a cor. Caller deve cair pro score imediato/simulação
+    sem amostragem nesse caso raro, nunca travar/piorar a decisão.
+    """
+    cache_key = f'{leader_code}|{leader_color}'
+    if cache_key in _opponent_model_cache:
+        return _opponent_model_cache[cache_key]
+
+    source = 'none'
+    cards = deck_cards_for_leader(leader_code)  # camada 1a: .deck local
+    if cards:
+        source = 'leader_exact_local_deck'
+
+    if not cards:
+        _build_raw_decklists_index()
+        raw_decks = _raw_decks_by_leader.get(leader_code) if _raw_decks_by_leader else None
+        if raw_decks:
+            cards = _representative_decklist(raw_decks)  # camada 1b
+            source = 'leader_exact_raw_decklists'
+
+    if not cards and leader_color:
+        _build_raw_decklists_index()
+        raw_decks = _raw_decks_by_color.get(leader_color) if _raw_decks_by_color else None
+        if raw_decks:
+            cards = _representative_decklist(raw_decks)  # camada 2
+            source = 'color_match_raw_decklists'
+
+    if not cards and leader_color:
+        colors = frozenset(t for t in leader_color.split() if t)
+        if colors:
+            cards = _generic_pool_for_colors(colors)  # camada 3
+            source = 'generic_color_pool'
+
     model = OpponentModel(full_decklist=cards) if cards else None
-    _opponent_model_cache[leader_code] = model
+    _opponent_model_cache[cache_key] = model
+    _opponent_model_source_cache[cache_key] = source
     return model
+
+
+def opponent_model_source_for_leader(leader_code: str, leader_color: str = '') -> str:
+    """
+    Qual camada de fallback (ver `opponent_model_for_leader`) produziu o
+    modelo pra esse lider: `leader_exact_local_deck`, `leader_exact_raw_decklists`,
+    `color_match_raw_decklists`, `generic_color_pool`, ou `none` (nenhum
+    pool disponivel, `leader_color` vazio). Exposto pra telemetria (26/07)
+    -- auditar em partida real se o fallback esta caindo nas camadas mais
+    fracas com frequencia maior do que o esperado, sinal de banco de decks
+    pobre demais pra aquele meta.
+    """
+    cache_key = f'{leader_code}|{leader_color}'
+    if cache_key not in _opponent_model_source_cache:
+        opponent_model_for_leader(leader_code, leader_color)  # popula o cache
+    return _opponent_model_source_cache.get(cache_key, 'none')
 
 
 def choose_action(gs: GameState, opp_gs: GameState,
@@ -341,21 +547,29 @@ def choose_action(gs: GameState, opp_gs: GameState,
     result: list = [None]
     exclude_activate_codes = exclude_activate_codes or set()
     exclude_failed_actions = exclude_failed_actions or set()
-    SEARCH_TOP_K = 2
-    SEARCH_SAMPLES = 2
-    SEARCH_MAX_STEPS = 4
+    SEARCH_TOP_K = SEARCH_TOP_K_DEFAULT
+    SEARCH_MAX_STEPS = SEARCH_MAX_STEPS_DEFAULT
+    SEARCH_SAMPLES_MIN = SEARCH_SAMPLES_MIN_DEFAULT
+    SEARCH_SAMPLES_MAX = SEARCH_SAMPLES_MAX_DEFAULT
+    SEARCH_SAMPLES_BATCH = SEARCH_SAMPLES_BATCH_DEFAULT
+    SEARCH_SAMPLES_Z = SEARCH_SAMPLES_Z_DEFAULT
 
     def _run() -> None:
         try:
             phase_started = time.perf_counter()
             engine = DecisionEngine(gs, opp_gs)
+            # priority computado sempre (nao so quando trace_out existe) --
+            # `_select_search_candidates` (unificacao 26/07) precisa dele
+            # pra decidir a diversidade de candidatas em REMOVE_THREAT,
+            # igual ao Turn Planner offline (main_phase).
+            priority = engine.analyzer.analysis_priority()
             if trace_out is not None:
                 # priority/can_lethal ao vivo (19/07): fecha o cruzamento
                 # "esse turno certificou lethal e o jogo terminou logo em
                 # seguida?" direto no JSONL de producao -- sem precisar
                 # reconstruir estado de combat log (que sofre o corte do
                 # AutoSaved). Calculado uma vez, antes do resto da busca.
-                trace_out["priority"] = engine.analyzer.analysis_priority()
+                trace_out["priority"] = priority
                 trace_out["can_lethal"] = engine.analyzer.can_lethal_this_turn()
                 trace_out["opp_combo_threat"] = engine.analyzer.opp_combo_threat()
             # uids de 'activate' com falha confirmada este turno: passa pra
@@ -382,11 +596,15 @@ def choose_action(gs: GameState, opp_gs: GameState,
             if actions:
                 print(f"[ENG] top3: {[(a[0],a[1]) for a in actions[:3]]}", flush=True)
 
-            # Coleta os candidatos ELEGIVEIS (score>=0, tipo executavel, nao
-            # recusado este turno) na ordem do score imediato -- antes so o
-            # PRIMEIRO era guardado; agora ate SEARCH_TOP_K ficam disponiveis
-            # pra busca (item 3), sem mudar QUEM e elegivel.
-            candidatos = []
+            # Candidatas ELEGIVEIS (score>=0, tipo executavel pelo plugin,
+            # nao recusadas este turno), na ordem do score imediato --
+            # SEM cap aqui: `_select_search_candidates` (decision_engine.py,
+            # unificacao 26/07, pedido do usuario "tem que ser o mesmo nos
+            # dois") decide quantas/quais entram na busca, exatamente com a
+            # MESMA janela de score/diversidade que o Turn Planner offline
+            # (main_phase) usa -- so o SEARCH_TOP_K (orcamento de tempo)
+            # e proprio do caminho ao vivo.
+            candidatos_elegiveis = []
             for a in actions:
                 if a[0] < 0:
                     break
@@ -407,10 +625,8 @@ def choose_action(gs: GameState, opp_gs: GameState,
                     if fail_key in exclude_failed_actions:
                         continue
                 if allowed_types is None or a[1] in allowed_types:
-                    candidatos.append(a)
-                    if len(candidatos) >= SEARCH_TOP_K:
-                        break
-            if not candidatos:
+                    candidatos_elegiveis.append(a)
+            if not candidatos_elegiveis:
                 if trace_out is not None:
                     trace_out["selection"] = "no_eligible_action"
                 return
@@ -420,10 +636,10 @@ def choose_action(gs: GameState, opp_gs: GameState,
             # thread), o CALLER ja tem uma acao valida -- nunca cai pra
             # end_turn por causa do custo da busca (server.py trata None como
             # "encerra o turno", pior que o score imediato de sempre).
-            result[0] = candidatos[0]
+            result[0] = candidatos_elegiveis[0]
             if trace_out is not None:
                 trace_out["selection"] = "immediate_score"
-            a = candidatos[0]
+            a = candidatos_elegiveis[0]
             # Diagnostico de gerenciamento de mao (08/07: usuario reportou o
             # bot jogando cartas de counter alto custo 1-2 ate ficar sem mao)
             # -- so loga quando a mao ja esta fina (<=3 ANTES desta jogada),
@@ -434,81 +650,133 @@ def choose_action(gs: GameState, opp_gs: GameState,
                       f"jogou {c.code} custo={c.cost} counter={c.counter} "
                       f"score={a[0]:.1f}", flush=True)
 
-            # ITEM 3 do plano: com >1 candidato de score proximo e decklist
-            # REAL do oponente disponivel (lookup por lider, ver
-            # opponent_model_for_leader), refina a escolha simulando a linha
-            # ate o fim do MEU turno + o turno de resposta dele (mesmo motor
-            # do main_phase offline: _simulate_sequence_values). K/S bem
-            # menores que o offline (2/2 vs 3/3) -- orcamento de /decide e por
-            # ACAO, nao por turno inteiro, mas o board late-game ja mostrou
-            # custo O(board²) no profiling de 14/07.
+            candidatos = match._select_search_candidates(
+                candidatos_elegiveis, SEARCH_TOP_K, priority)
+
+            # ITEM 3 do plano: com >1 candidato de score proximo, refina a
+            # escolha simulando a linha ate o fim do MEU turno + o turno de
+            # resposta dele (mesmo motor do main_phase offline:
+            # _simulate_sequence_values). K/S bem menores que o offline
+            # (2/2 vs 3/3) -- orcamento de /decide e por ACAO, nao por turno
+            # inteiro, mas o board late-game ja mostrou custo O(board²) no
+            # profiling de 14/07.
             if len(candidatos) > 1:
                 hidden = getattr(opp_gs, 'hidden_information_masked', False)
-                model = (None if hidden else
-                         opponent_model_for_leader(getattr(opp_gs.leader, 'code', '')))
-                # Ao vivo, a decklist/mao adversaria e oculta. Ainda assim
-                # precisamos de contrafactuais auditaveis: simulamos as
-                # alternativas contra o MESMO estado publico mascarado, sem
-                # inventar cartas. Fora do live, preservamos Monte Carlo com
-                # o modelo exato ja existente.
-                amostras = ([model.sample(opp_gs, rng=random.Random())
-                             for _ in range(SEARCH_SAMPLES)] if model is not None
-                            else None)
+                # Ao vivo, a decklist/mao exata do oponente e oculta -- mas
+                # isso NAO precisa desligar o Monte Carlo (achado 26/07,
+                # pedido do usuario: "nao deixar de usar o Monte Carlo, e
+                # sim melhora-lo"). opponent_model_for_leader agora tem
+                # fallback em 3 camadas (deck real do MESMO lider -> deck
+                # real da MESMA cor -> pool generico por cor, regra dura de
+                # construcao de deck) que NUNCA assume conhecer a lista
+                # exata do oponente, so informacao legitimamente disponivel
+                # (cor do lider e o banco de decks reais ja catalogado) --
+                # sem isso, so restava simular contra o estado publico
+                # mascarado sem amostragem nenhuma, que e estritamente mais
+                # pobre pra qualquer lider com pelo menos um deck real
+                # conhecido (mesmo lider ou mesma cor) no banco.
+                model = opponent_model_for_leader(
+                    getattr(opp_gs.leader, 'code', ''),
+                    getattr(opp_gs.leader, 'color', ''))
                 if model is not None or hidden:
-                    melhor, melhor_valor = candidatos[0], None
-                    search_records = []
-                    for cand in candidatos:
-                        # extra_own_turn_search=True: lookahead de 2 turnos
-                        # meus (usuario 24/07, decisao apos profiling --
-                        # so o caminho AO VIVO tem folga de orcamento pra
-                        # isso, ver decision_engine.py/_simulate_sequence_once).
-                        valores = match._simulate_sequence_values(
-                            gs, opp_gs, cand, max_steps=SEARCH_MAX_STEPS, amostras=amostras,
-                            extra_own_turn_search=True)
-                        valor = sum(valores) / len(valores) if valores else -1e9
-                        search_records.append({"action": action_to_trace(cand),
-                                               "value": round(valor, 4)})
-                        if melhor_valor is None or valor > melhor_valor:
-                            melhor_valor = valor
-                            melhor = cand
-                    # A linha mascarada agora PODE escolher: todas as
-                    # candidatas usam exatamente o mesmo estado PUBLICO e
-                    # nenhuma carta UNKNOWN ganha texto/counter inventado.
-                    # Isso permite preservar orcamento/curva e comparar a
-                    # sequencia inteira, em vez de ficar preso ao score da
-                    # primeira acao. A base deixa explicito o limite da prova.
-                    result[0] = melhor
-                    if trace_out is not None:
-                        trace_out["selection"] = (
-                            "counterfactual_search" if model is not None
-                            else "masked_public_line_search")
-                        trace_out["search_values"] = search_records
-                        trace_out["counterfactual_basis"] = (
-                            "sampled_opponent_model" if model is not None
-                            else "masked_public_state")
-                        # Telemetria 24/07 (usuario: medir o que fizemos
-                        # hoje): extra_own_turn_search=True (fase B,
-                        # lookahead de 2 turnos, SO caminho ao vivo) faz
-                        # uma linha valer SIMULATED_WIN_SCORE quando meu
-                        # proprio proximo turno fecha o jogo -- exposto
-                        # aqui pra medir com que frequencia isso acontece
-                        # numa partida real (antes deste bloco, esse sinal
-                        # so existia dentro de search_values, sem contagem
-                        # agregada facil de auditar).
-                        two_turn_wins = sum(
-                            1 for rec in search_records
-                            if rec.get("value", 0) >= SIMULATED_WIN_SCORE * 0.9)
-                        trace_out["line_search"] = {
-                            "depth": SEARCH_MAX_STEPS,
-                            "don_budget_before": gs.don_available,
-                            "candidate_count": len(candidatos),
-                            "selected": action_to_trace(melhor),
-                            "public_state_only": bool(hidden),
-                            "two_turn_lookahead_wins_found": two_turn_wins,
-                        }
-                    verbo = "refinou" if model is not None else "auditou"
-                    print(f"[ENG] busca {verbo}: {melhor[1]} (score imediato {melhor[0]:.1f}, "
-                          f"valor simulado {melhor_valor:.1f})", flush=True)
+                    # _select_action_via_search (decision_engine.py) e a
+                    # FONTE UNICA usada tanto aqui quanto no Turn Planner
+                    # offline (main_phase) -- unificacao 26/07 (pedido do
+                    # usuario: receio de "o bot receber dois comandos de
+                    # decisao diferentes... tem que ser o mesmo nos dois").
+                    # Ganha de brinde a guarda _is_unsafe_zero_life_leader_attack,
+                    # que antes so existia no offline. Amostragem
+                    # SEQUENCIAL/ADAPTATIVA (piso/teto): para no piso assim
+                    # que o gap de valor fica estatisticamente claro, so
+                    # sobe ate o teto quando o gap ainda nao e confiavel
+                    # (achado do sweep de qualidade, bloco 380). Sem model
+                    # (masked_public_line_search), a funcao cai sozinha
+                    # numa simulacao deterministica sem amostragem -- rng=
+                    # random (modulo, nao random.Random() novo, achado
+                    # 26/07) so importa quando model existe.
+                    melhor, melhor_valor, records, n_amostras, _sim_values = (
+                        match._select_action_via_search(
+                            gs, opp_gs, engine, candidatos, model,
+                            max_steps=SEARCH_MAX_STEPS, extra_own_turn_search=True,
+                            samples_min=SEARCH_SAMPLES_MIN, samples_max=SEARCH_SAMPLES_MAX,
+                            batch_size=SEARCH_SAMPLES_BATCH, z_threshold=SEARCH_SAMPLES_Z,
+                            rng=random))
+                    search_records = [
+                        {"action": action_to_trace(rec["action"]), "value": round(rec["value"], 4)}
+                        for rec in records
+                    ]
+                    if melhor is None:
+                        # TODAS as candidatas foram descartadas pela guarda
+                        # de seguranca (ataque ao lider com vida 0 sem
+                        # lethal garantido nem linha vencedora simulada) --
+                        # mantem o fallback de score imediato ja setado
+                        # acima (candidatos_elegiveis[0]), nunca sobrescreve
+                        # com None (server.py trataria como "encerra o
+                        # turno", pior que o score imediato de sempre).
+                        if trace_out is not None:
+                            trace_out["selection"] = "immediate_score_all_candidates_unsafe"
+                    else:
+                        # A linha mascarada agora PODE escolher: todas as
+                        # candidatas usam exatamente o mesmo estado PUBLICO e
+                        # nenhuma carta UNKNOWN ganha texto/counter inventado.
+                        # Isso permite preservar orcamento/curva e comparar a
+                        # sequencia inteira, em vez de ficar preso ao score da
+                        # primeira acao. A base deixa explicito o limite da prova.
+                        result[0] = melhor
+                        if trace_out is not None:
+                            trace_out["selection"] = (
+                                "counterfactual_search" if model is not None
+                                else "masked_public_line_search")
+                            trace_out["search_values"] = search_records
+                            trace_out["counterfactual_basis"] = (
+                                "sampled_opponent_model" if model is not None
+                                else "masked_public_state")
+                            # Qual camada de fallback do opponent modeling
+                            # produziu a amostragem (26/07) -- exposto pra
+                            # auditar em partida real se o banco de decks
+                            # reais esta caindo com frequencia nas camadas
+                            # mais fracas (color_match/generic_color_pool)
+                            # pra algum meta especifico, sinal de que vale a
+                            # pena enriquecer decklists_raw.csv com mais
+                            # decks daquele arquetipo/cor.
+                            trace_out["opponent_model_source"] = (
+                                opponent_model_source_for_leader(
+                                    getattr(opp_gs.leader, 'code', ''),
+                                    getattr(opp_gs.leader, 'color', ''))
+                                if model is not None else 'none')
+                            # Quantas amostras a busca sequencial/adaptativa
+                            # realmente gastou nesta decisao (26/07, achado 380)
+                            # -- 0 no caminho masked_public_line_search (sem
+                            # model, nao ha amostragem). Auditar em partida real
+                            # se o teto SEARCH_SAMPLES_MAX_DEFAULT esta sendo
+                            # atingido com frequencia (sinal de muitas decisoes
+                            # genuinamente proximas) ou se a maioria para logo
+                            # no minimo (sinal de que a maioria das decisoes
+                            # ja e clara, orcamento sobrando pra subir o teto).
+                            trace_out["adaptive_samples_used"] = n_amostras
+                            # Telemetria 24/07 (usuario: medir o que fizemos
+                            # hoje): extra_own_turn_search=True (fase B,
+                            # lookahead de 2 turnos, SO caminho ao vivo) faz
+                            # uma linha valer SIMULATED_WIN_SCORE quando meu
+                            # proprio proximo turno fecha o jogo -- exposto
+                            # aqui pra medir com que frequencia isso acontece
+                            # numa partida real (antes deste bloco, esse sinal
+                            # so existia dentro de search_values, sem contagem
+                            # agregada facil de auditar).
+                            two_turn_wins = sum(
+                                1 for rec in search_records
+                                if rec.get("value", 0) >= SIMULATED_WIN_SCORE * 0.9)
+                            trace_out["line_search"] = {
+                                "depth": SEARCH_MAX_STEPS,
+                                "don_budget_before": gs.don_available,
+                                "candidate_count": len(candidatos),
+                                "selected": action_to_trace(melhor),
+                                "public_state_only": bool(hidden),
+                                "two_turn_lookahead_wins_found": two_turn_wins,
+                            }
+                        verbo = "refinou" if model is not None else "auditou"
+                        print(f"[ENG] busca {verbo}: {melhor[1]} (score imediato {melhor[0]:.1f}, "
+                              f"valor simulado {melhor_valor:.1f}, amostras={n_amostras})", flush=True)
             if trace_out is not None:
                 finished_at = time.perf_counter()
                 trace_out["latency_segments_ms"] = {
@@ -2039,33 +2307,28 @@ def _choose_opp_target_filtered(candidates: list, step: dict):
       - power_lte / power_gte
       - rested_only
 
-    Para ação 'ko': prefere alvo de maior board_value (mais ameaçador).
+    Filtragem delegada a eligible_cards (rules_facade, fonte unica -- ate
+    25/07 esta funcao reimplementava o mesmo filtro cost_lte/cost_gte/
+    cost_eq/power_lte/power_gte/rested_only na mao, uma segunda copia da
+    logica que decision_engine.py ja usa em toda parte via
+    eligible_cards() dentro de _execute_step).
+
+    Para ação 'ko': prefere alvo de maior board_value (mais ameaçador) --
+    mesma heuristica de choose_highest_board_value (rules_facade).
     Para ação 'bounce': prefere alvo de maior custo (mais valor devolvido).
     """
     if not candidates:
         return None
 
-    filtered = list(candidates)
-
-    cost_lte = step.get('cost_lte')
-    cost_gte = step.get('cost_gte')
-    cost_eq  = step.get('cost_eq')
-    pwr_lte  = step.get('power_lte')
-    pwr_gte  = step.get('power_gte')
-    rested   = step.get('rested_only', False)
-
-    if cost_lte is not None:
-        filtered = [c for c in filtered if getattr(c, 'cost', 0) <= cost_lte]
-    if cost_gte is not None:
-        filtered = [c for c in filtered if getattr(c, 'cost', 0) >= cost_gte]
-    if cost_eq is not None:
-        filtered = [c for c in filtered if getattr(c, 'cost', 0) == cost_eq]
-    if pwr_lte is not None:
-        filtered = [c for c in filtered if getattr(c, 'power', 0) <= pwr_lte]
-    if pwr_gte is not None:
-        filtered = [c for c in filtered if getattr(c, 'power', 0) >= pwr_gte]
-    if rested:
-        filtered = [c for c in filtered if getattr(c, 'rested', False)]
+    filtered = eligible_cards(
+        candidates,
+        cost_lte=step.get('cost_lte'),
+        cost_gte=step.get('cost_gte'),
+        cost_eq=step.get('cost_eq'),
+        power_lte=step.get('power_lte'),
+        power_gte=step.get('power_gte'),
+        rested_only=step.get('rested_only', False),
+    )
 
     if not filtered:
         return None  # nenhum alvo valido com os filtros → prompt vai ser cancelavel
@@ -2074,7 +2337,7 @@ def _choose_opp_target_filtered(candidates: list, step: dict):
     if action == 'bounce':
         return max(filtered, key=lambda c: getattr(c, 'cost', 0))
     # ko, rest_opp, debuff: prioriza maior ameaça
-    return max(filtered, key=lambda c: c.board_value() if hasattr(c, 'board_value') else 0)
+    return choose_highest_board_value(filtered)
 
 
 def _normalize_prompt(raw: str) -> str:
@@ -2179,8 +2442,7 @@ def resolve_prompt_choice(gs: GameState, opp_gs: GameState,
                         "reason": f"no valid opp target for {action}"}
             if zone == 'own_field':
                 if action in ('trash', 'ko'):
-                    chosen = (min(gs.field_chars, key=lambda c: c.board_value())
-                              if gs.field_chars else None)
+                    chosen = choose_lowest_board_value(gs.field_chars)
                 else:
                     chosen = choose_highest_board_value(gs.field_chars)
                 if chosen:
@@ -2212,7 +2474,7 @@ def resolve_prompt_choice(gs: GameState, opp_gs: GameState,
     if zone == "trash":
         if gs.trash:
             # Engine escolhe melhor carta do trash (maior board_value)
-            best = max(gs.trash, key=lambda c: c.board_value())
+            best = choose_highest_board_value(gs.trash)
             return _card_intent("trash", best, "choose from trash")
         return {"action": "click_button", "prefer": "main", "reason": "trash empty"}
 
@@ -2247,8 +2509,7 @@ def resolve_prompt_choice(gs: GameState, opp_gs: GameState,
     # --- Campo proprio --------------------------------------------------
     if zone == "own_field":
         if "trash" in text:
-            chosen = (min(gs.field_chars, key=lambda c: c.board_value())
-                      if gs.field_chars else None)
+            chosen = choose_lowest_board_value(gs.field_chars)
         else:
             chosen = choose_highest_board_value(gs.field_chars)
         if chosen:

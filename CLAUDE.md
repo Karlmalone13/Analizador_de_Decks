@@ -1,5 +1,12 @@
 # CLAUDE.md — guia para qualquer sessão nova (Claude Code / Codex)
 
+> **Espelho**: este arquivo e [`AGENTS.md`](AGENTS.md) (lido pelo Codex)
+> devem conter as MESMAS regras de projeto — só a moldura muda (nome da
+> ferramenta, caminho da memória local). Se adicionar/editar uma regra
+> aqui, replique a mesma edição lá (achado 25/07/2026: os dois
+> divergiram por meses sem ninguém notar — sessões Codex ficaram sem
+> várias regras que só entravam no `CLAUDE.md`).
+
 ## LEITURA OBRIGATÓRIA ANTES DE QUALQUER COMMIT
 
 > **ESTADO ATUAL OBRIGATORIO - proxy/telemetria (18/07/2026):** antes de
@@ -54,6 +61,16 @@ completos):
   de carta no bot. Sem dois motores. Ver `memory/feedback_dois_motores.md`.
 - **Objetivo do bot**: captar logs contra humanos → validar engine → front-end.
   Não otimizar o bot além disso. Ver `memory/project_objetivo_bot.md`.
+- **Sem função duplicada** (extensão da regra "sem dois motores", pedido do
+  usuário 25/07/2026): nunca ter duas funções diferentes respondendo à MESMA
+  decisão do jogo (o que jogar/descartar/qual alvo escolher/vale pagar um
+  custo). Leitura **obrigatória** antes de qualquer commit/push que toque
+  `decision_engine.py`, `sim_bridge.py`, `server.py`, `replay_optcg.py` ou
+  `bot_optcgsim.py`:
+  [`scriptis_da_ia/REGRA_SEM_DUPLICACAO.md`](scriptis_da_ia/REGRA_SEM_DUPLICACAO.md)
+  (impresso por inteiro pelo hook `pre-commit`, mesmo tratamento do
+  `MEMORY.md`) — tem os casos reais já achados/corrigidos e como caçar
+  duplicatas novas antes de aceitar uma função de decisão nova.
 
 ---
 

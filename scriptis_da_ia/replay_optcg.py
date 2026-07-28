@@ -198,6 +198,16 @@ class ReplayMatch:
     def col(self, p): return C.BLUE if p is self.state_a else C.RED
     def name(self, p): return self.name_a if p is self.state_a else self.name_b
 
+    def enable_decision_audit(self):
+        """Delega ao OPTCGMatch interno (fonte unica) -- liga decision_log
+        (decisoes + violacoes de invariante, uma lista so). Chamar antes de
+        run()/play_turn() (mesmo contrato de OPTCGMatch.enable_decision_audit)."""
+        self._get_engine_match().enable_decision_audit()
+
+    @property
+    def decision_log(self):
+        return self._get_engine_match().decision_log
+
     def _get_engine_match(self) -> 'OPTCGMatch':
         """
         Retorna o OPTCGMatch interno usado para delegar fases/main_phase ao
@@ -279,40 +289,43 @@ class ReplayMatch:
         print(f'\n{C.YELLOW}⚡ {first_name} vai primeiro!{C.RESET}')
 
     def play_turn(self, p, opp):
-        self.global_turn += 1
-        p.turn += 1
-        col = self.col(p)
-
-        sep()
-        print(f'{col}{C.BOLD}TURNO {self.global_turn} '
-              f'(T{p.turn} de {self.name(p).upper()}){C.RESET}')
-        sep()
-
-        # Fases de início: delegadas ao ENGINE (fonte única), com verbose
+        """
+        Wrapper fino sobre OPTCGMatch.play_turn() (fonte unica de
+        orquestracao de turno -- refresh/draw/don/main/end_phase,
+        is_active_turn, pending_play_cost_reductions,
+        deck_out_win_instead_of_loss). Ate 25/07 este metodo reimplementava
+        a orquestracao inteira so pra poder imprimir campo/perfil/postura
+        no meio do turno, e por isso divergia de verdade do engine (faltava
+        end_phase(), sync de is_active_turn/global_turn nos GameState, e a
+        checagem especial do lider Nami OP03-040) -- pedido do usuario
+        (\"Não dá para apagar não? E usar só 1?\"): apagar a duplicata e
+        usar so 1 play_turn(), com o print no meio via post_don_hook.
+        """
         engine_match = self._get_engine_match()
-        engine_match.refresh_phase(p, opp)
-        engine_match.draw_phase(p, verbose=True)
-        engine_match.don_phase(p, verbose=True)
-        print_field(p, col, self.name(p))
+        col = self.col(p)
+        turno_num = engine_match.global_turn + 1
+        turno_jogador = p.turn + 1
 
-        # Perfil do deck + fase da partida + postura (para auditoria)
-        from optcg_engine.decision_engine import DecisionEngine
-        eng = DecisionEngine(p, opp)
-        prof = eng.analyzer.deck_profile_type()
-        fase = eng.analyzer.game_phase()
-        post = eng.posture()
-        prio = eng.analyzer.analysis_priority()
-        print(f'  {C.GRAY}[perfil: {prof} │ fase: {fase} │ postura: {post} │ prioridade: {prio}]{C.RESET}')
+        sep()
+        print(f'{col}{C.BOLD}TURNO {turno_num} '
+              f'(T{turno_jogador} de {self.name(p).upper()}){C.RESET}')
+        sep()
 
-        # LÓGICA delegada ao ENGINE (fonte única).
-        won = self._get_engine_match().main_phase(p, opp, verbose=True)
-        if won:
-            return 'A' if p is self.state_a else 'B'
-        if not p.deck:
-            return 'B' if p is self.state_a else 'A'
-        if not opp.deck:
-            return 'A' if p is self.state_a else 'B'
-        return None
+        def _post_don_hook(pp, oopp):
+            print_field(pp, col, self.name(pp))
+            # Perfil do deck + fase da partida + postura (para auditoria)
+            from optcg_engine.decision_engine import DecisionEngine
+            eng = DecisionEngine(pp, oopp)
+            prof = eng.analyzer.deck_profile_type()
+            fase = eng.analyzer.game_phase()
+            post = eng.posture()
+            prio = eng.analyzer.analysis_priority()
+            print(f'  {C.GRAY}[perfil: {prof} │ fase: {fase} │ postura: {post} │ '
+                  f'prioridade: {prio}]{C.RESET}')
+
+        result = engine_match.play_turn(p, opp, verbose=True, post_don_hook=_post_don_hook)
+        self.global_turn = engine_match.global_turn
+        return result
 
     def run(self):
         self.setup()

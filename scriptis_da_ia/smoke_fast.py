@@ -1768,7 +1768,20 @@ def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
           action is not None)
 
 
-def test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado() -> None:
+def test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor() -> None:
+    # Ate 25/07 (achado 26/07, pedido do usuario): `hidden=True` desligava
+    # o Monte Carlo por completo (model=None sempre), caindo pra uma UNICA
+    # simulacao contra o estado publico mascarado, sem amostragem nenhuma.
+    # Fix: opponent_model_for_leader agora tem fallback em 3 camadas (deck
+    # real do MESMO lider -> deck real da MESMA cor -> pool generico por
+    # cor, regra dura de construcao de deck) que NUNCA precisa saber a
+    # decklist EXATA do oponente -- so informacao legitimamente disponivel
+    # (cor do lider + banco de decks reais). Doflamingo (OP04-019,
+    # Green/Purple) tem decks reais da MESMA cor em decklists_raw.csv
+    # (camada 2), entao o Monte Carlo agora liga de verdade mesmo com a
+    # mao do oponente 100% mascarada -- NENHUMA carta oculta especifica e
+    # "adivinhada" (as amostras vem do pool estatistico, nunca dos objetos
+    # UNKNOWN-000 reais que representam a mao verdadeira).
     me = GameState(leader=real_card("OP11-062"), don_available=5, turn=3)
     me.hand = [real_card("ST34-004"), real_card("ST34-005")]
     me.life = [real_card("OP07-077") for _ in range(4)]
@@ -1786,14 +1799,200 @@ def test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado() -> None:
           action is not None)
     check("contrafactual live registra pelo menos duas alternativas simuladas",
           len(trace.get("search_values", [])) >= 2)
-    check("telemetria identifica que a simulacao usou estado publico mascarado",
-          trace.get("counterfactual_basis") == "masked_public_state")
-    check("estado publico mascarado escolhe pela linha, nao so audita score imediato",
-          trace.get("selection") == "masked_public_line_search")
+    check("telemetria identifica que a simulacao usou Monte Carlo (fallback de cor), nao mascarado puro",
+          trace.get("counterfactual_basis") == "sampled_opponent_model")
+    check("com Monte Carlo ligado, a selecao vira busca contrafactual de verdade",
+          trace.get("selection") == "counterfactual_search")
+    # Achado 28/07 (merge local): a camada exata depende de dados LOCAIS
+    # (E:\...\Decks\*.deck, layer 1, checado ANTES do decklists_raw.csv) --
+    # numa sessao local com o jogo instalado, Doflamingo pode ter deck real
+    # cacheado la (leader_exact_local_deck), enquanto o container remoto
+    # (sem acesso a esse disco) so via ate a camada 2 (color_match). As
+    # duas sao Monte Carlo de verdade sobre dado real -- so a camada muda
+    # por maquina, entao aceita qualquer uma das duas com dado real.
+    check("telemetria expoe qual camada do fallback foi usada (dado real, nao generico/none)",
+          trace.get("opponent_model_source") in
+          ("leader_exact_local_deck", "leader_exact_raw_decklists",
+           "color_match_raw_decklists"))
     check("telemetria registra profundidade, orcamento DON e acao da linha",
           trace.get("line_search", {}).get("depth") == 4
           and trace.get("line_search", {}).get("don_budget_before") == 5
           and trace.get("line_search", {}).get("selected") is not None)
+    check("amostragem adaptativa (26/07, achado 380) respeita o piso configurado",
+          trace.get("adaptive_samples_used", 0) >= sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT)
+
+
+def test_opponent_model_for_leader_fallback_3_camadas() -> None:
+    # Achado 26/07 (pedido do usuario): banco de decks reais ainda escasso
+    # (19 lideres/12 combinacoes de cor em decklists_raw.csv) -- 3 camadas
+    # de fallback garantem que o Monte Carlo ao vivo SEMPRE tenha algum
+    # pool estatisticamente legitimo, mesmo sem conhecer o lider exato do
+    # oponente, sem NUNCA assumir a decklist exata dele.
+    from optcg_engine import sim_bridge as _sb
+
+    # Camada 2: lider desconhecido, mas cor bate com decks reais do banco
+    # (Green/Purple tem decks reais catalogados -- Doflamingo nao precisa
+    # ser o lider exato, so a cor).
+    model_cor = _sb.opponent_model_for_leader("ZZ99-DESCONHECIDO", "Green Purple")
+    check("camada 2 (mesma cor) acha pool via decklists_raw.csv pra lider desconhecido",
+          model_cor is not None and len(model_cor.full_decklist) > 0)
+    check("fonte registrada como color_match_raw_decklists",
+          _sb.opponent_model_source_for_leader("ZZ99-DESCONHECIDO", "Green Purple")
+          == "color_match_raw_decklists")
+
+    # Camada 3: nem lider nem cor batem com NENHUM deck real conhecido --
+    # usa uma combinacao de cor rara/inventada, garantindo que caia no
+    # pool generico por cor (regra dura de construcao de deck).
+    model_generico = _sb.opponent_model_for_leader("ZZ99-DESCONHECIDO", "Black Green Yellow")
+    check("camada 3 (pool generico por cor) nunca fica sem opcao, mesmo sem deck real conhecido",
+          model_generico is not None and len(model_generico.full_decklist) > 0)
+    check("fonte registrada como generic_color_pool",
+          _sb.opponent_model_source_for_leader("ZZ99-DESCONHECIDO", "Black Green Yellow")
+          == "generic_color_pool")
+    # Nenhuma carta do pool generico deve ter cor FORA das 3 cores do lider
+    # (regra dura do jogo -- nao e palpite, entao tem que ser 100% respeitada).
+    cores_permitidas = {"Black", "Green", "Yellow"}
+    fora_da_cor = [c for c in model_generico.full_decklist
+                   if c.color and not (set(c.color.replace('/', ' ').split()) & cores_permitidas)]
+    check("pool generico nunca inclui carta de cor fora do lider (regra dura do jogo)",
+          fora_da_cor == [])
+
+    # Sem NENHUMA cor informada (edge case defensivo): cai em None, caller
+    # deve degradar pro caminho antigo (masked_public_line_search), nunca
+    # travar/piorar a decisao.
+    model_vazio = _sb.opponent_model_for_leader("ZZ99-DESCONHECIDO", "")
+    check("sem lider nem cor conhecidos, cai em None (nenhuma camada disponivel)",
+          model_vazio is None)
+
+
+def test_busca_adaptativa_ao_vivo_respeita_piso_e_teto() -> None:
+    # Achado 26/07 (bloco 380, pedido do usuario: "ver se com mais amostras
+    # as escolhas foram melhores, nao so as mesmas"): a amostragem
+    # sequencial (_adaptive_counterfactual_search) troca N fixo por um
+    # piso/teto -- este teste so garante que uma decisao AO VIVO real
+    # (2 ataques concorrentes, ambos dependentes da mao oculta do
+    # oponente) fica dentro dos limites configurados e escolhe uma acao
+    # valida. A garantia de que o mecanismo realmente PARA CEDO quando o
+    # gap e limpo (sem ruido) e vai ate o teto quando e ruidoso/proximo
+    # esta isolada em test_adaptive_counterfactual_search_para_cedo_e_no_teto
+    # (usa valores sinteticos deterministicos -- um cenario de jogo real
+    # quase sempre tem variancia genuina vinda da mao oculta do
+    # oponente, entao nao serve pra provar o caso "zero ruido").
+    me = GameState(leader=mk("OP10-099", "Kid", power=5000, card_type="LEADER", color="Red"),
+                    don_available=0, don_deck=8, turn=2)
+    ameaca = mk("OP10-111", "Ameaca", power=9000)
+    me.field_chars = [ameaca]
+    opp = GameState(leader=real_card("OP04-019"), turn=2)  # Doflamingo, Green/Purple
+    opp.life = [real_card("OP13-080")]
+    opp.hand = [mk("UNKNOWN-000", "Carta oculta") for _ in range(3)]
+    opp.hidden_information_masked = True
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    trace = {}
+    action = sim_bridge.choose_action(
+        me, opp, match, timeout=5.0,
+        allowed_types={"play", "attack", "attach_don", "activate"},
+        trace_out=trace)
+    check("busca adaptativa ao vivo retorna uma acao valida",
+          action is not None)
+    check("Monte Carlo ligado (fallback de cor do Doflamingo)",
+          trace.get("counterfactual_basis") == "sampled_opponent_model")
+    n_usadas = trace.get("adaptive_samples_used")
+    check("amostragem adaptativa respeita piso e teto configurados",
+          n_usadas is not None
+          and sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT <= n_usadas <= sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT)
+
+
+def test_adaptive_counterfactual_search_para_cedo_e_no_teto() -> None:
+    # Prova isolada (sem depender do motor de jogo real) do mecanismo em si
+    # (achado 26/07, bloco 380/381): `_select_action_via_search` mora em
+    # `OPTCGMatch` (decision_engine.py) -- unificacao 26/07, FONTE UNICA
+    # usada tanto pelo Turn Planner offline (main_phase) quanto pelo
+    # caminho ao vivo (sim_bridge.choose_action). Aqui usamos um `self`
+    # falso (so com `_simulate_sequence_values`/`_is_unsafe_zero_life_leader_attack`
+    # sinteticos) chamando o metodo NAO-ligado da classe real, pra
+    # controlar exatamente o ruido/gap e verificar as 2 pontas do
+    # comportamento adaptativo:
+    #  (a) gap grande e SEM ruido (2 candidatas com valor constante,
+    #      bem separado) -- para no PISO (SEARCH_SAMPLES_MIN_DEFAULT),
+    #      sem gastar o teto inteiro.
+    #  (b) 2 candidatas com valores RUIDOSOS que se sobrepoem (nenhum gap
+    #      estatisticamente confiavel) -- vai ate o TETO
+    #      (SEARCH_SAMPLES_MAX_DEFAULT), exatamente o caso do cenario real
+    #      de "empate tecnico" (gap real pequeno demais pro nivel de
+    #      ruido por amostra).
+    import random as _random_mod
+
+    class _FakeModel:
+        def sample(self, opp_gs, rng):
+            return object()
+
+    class _FakeSelfValoresFixos:
+        """Sem ruido nenhum: cada candidata sempre devolve o MESMO valor,
+        nao importa a amostra -- simula uma decisao cujo resultado nao
+        depende da mao oculta do oponente (gap limpo)."""
+        def __init__(self, valor_por_indice):
+            self._valor_por_indice = valor_por_indice
+            self._indice_por_id = {}
+
+        def registrar(self, candidatos):
+            for i, cand in enumerate(candidatos):
+                self._indice_por_id[id(cand)] = i
+
+        def _simulate_sequence_values(self, p, opp, cand, max_steps, amostras,
+                                       extra_own_turn_search):
+            idx = self._indice_por_id[id(cand)]
+            return [self._valor_por_indice[idx]] * len(amostras)
+
+        def _is_unsafe_zero_life_leader_attack(self, action, p, opp, engine):
+            return False  # guarda de seguranca testada separadamente
+
+    class _FakeSelfRuidoso:
+        """Mesma media pras 2 candidatas, mas com ruido MAIOR que o gap --
+        nenhum lote deveria conseguir separar as duas com confianca."""
+        def __init__(self, seed):
+            self._rng = _random_mod.Random(seed)
+            self._indice_por_id = {}
+
+        def registrar(self, candidatos):
+            for i, cand in enumerate(candidatos):
+                self._indice_por_id[id(cand)] = i
+
+        def _simulate_sequence_values(self, p, opp, cand, max_steps, amostras,
+                                       extra_own_turn_search):
+            idx = self._indice_por_id[id(cand)]
+            base = 500.0 + (0.5 if idx == 0 else -0.5)  # gap real de so 1.0
+            return [base + self._rng.uniform(-200.0, 200.0) for _ in amostras]
+
+        def _is_unsafe_zero_life_leader_attack(self, action, p, opp, engine):
+            return False
+
+    candidatos_fake = [(100.0, "attack", None), (10.0, "play", None)]
+
+    self_limpo = _FakeSelfValoresFixos({0: 1000.0, 1: 10.0})
+    self_limpo.registrar(candidatos_fake)
+    melhor, valor, records, n_usadas, _sim_values = OPTCGMatch._select_action_via_search(
+        self_limpo, p=None, opp=None, engine=None, candidatas=candidatos_fake,
+        model=_FakeModel(), max_steps=4, extra_own_turn_search=False,
+        samples_min=sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT,
+        samples_max=sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT,
+        batch_size=sim_bridge.SEARCH_SAMPLES_BATCH_DEFAULT,
+        z_threshold=sim_bridge.SEARCH_SAMPLES_Z_DEFAULT, rng=_random_mod)
+    check("gap limpo (sem ruido): busca adaptativa PARA NO PISO, nao gasta o teto",
+          n_usadas == sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT)
+    check("gap limpo: escolhe a candidata de maior valor sintetico",
+          melhor is candidatos_fake[0])
+
+    self_ruidoso = _FakeSelfRuidoso(seed=42)
+    self_ruidoso.registrar(candidatos_fake)
+    _, _, _, n_usadas_ruidoso, _sim_values2 = OPTCGMatch._select_action_via_search(
+        self_ruidoso, p=None, opp=None, engine=None, candidatas=candidatos_fake,
+        model=_FakeModel(), max_steps=4, extra_own_turn_search=False,
+        samples_min=sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT,
+        samples_max=sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT,
+        batch_size=sim_bridge.SEARCH_SAMPLES_BATCH_DEFAULT,
+        z_threshold=sim_bridge.SEARCH_SAMPLES_Z_DEFAULT, rng=_random_mod)
+    check("gap real pequeno + ruido grande (empate tecnico sintetico): busca vai ATE O TETO",
+          n_usadas_ruidoso == sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT)
 
 
 def test_search_contextual_evita_congestionar_mao_com_bombas() -> None:
@@ -8566,7 +8765,10 @@ def main() -> int:
     test_turn_planner_fase_b_combos_na_ordem_de_jogadas_e_ataques()
     test_turn_planner_fase_b_mais_gatilhos_de_combo_na_decisao()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
-    test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
+    test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor()
+    test_opponent_model_for_leader_fallback_3_camadas()
+    test_busca_adaptativa_ao_vivo_respeita_piso_e_teto()
+    test_adaptive_counterfactual_search_para_cedo_e_no_teto()
     test_search_contextual_evita_congestionar_mao_com_bombas()
     test_plano_katakuri_prefere_rampa_e_bloqueia_desperdicios()
     test_ataque_respeita_orcamento_da_jogada_principal_e_don_anexado()
@@ -8704,9 +8906,208 @@ def main() -> int:
     test_op04_069_base_power_igual_ao_atacante_do_oponente()
     test_in_any_order_custos_bottom_deck_escolhem_melhor_ordem()
     test_exclude_failed_actions_evita_loop_travado_em_activate()
+    test_self_play_info_hidden_mascara_counter_e_deck_do_oponente()
+    test_check_invariants_unifica_auditoria_no_decision_log()
+    test_sim_bridge_delega_escolha_de_alvo_pro_motor_unico()
+    test_opponent_model_sample_respeita_random_seed_global()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
+
+
+def test_self_play_info_hidden_mascara_counter_e_deck_do_oponente() -> None:
+    # Pedido do usuario (24/07): o self x self (futuro simulador do
+    # front-end) deve se aproximar do ao vivo -- os dois lados nao podem
+    # "espiar" a mao/deck real um do outro. `self_play_info_hidden`
+    # (atributo dinamico novo, default False via getattr, NUNCA setado em
+    # nenhum caminho existente hoje) restringe opp_counter_potential() e
+    # _opp_can_remove_stage() as cartas JA REVELADAS (known_hand_cards()/
+    # known_deck_cards()) -- resto vira estimativa (counter) ou "nao sei,
+    # assume que nao tem" (deck). Flag OFF preserva o comportamento de
+    # sempre (usado pelo bot ao vivo e por toda ferramenta de self-play
+    # existente hoje -- audit_replay.py, baseline_metrics.py, etc).
+    nola_a = real_card("OP15-069")   # counter 2000
+    nola_b = real_card("OP15-069")   # counter 2000
+    me = GameState(leader=mk("SPH-L", "Leader", card_type="LEADER"))
+    opp = GameState(leader=real_card("OP02-093"))
+    opp.hand = [nola_a, nola_b]
+    eng = DecisionEngine(me, opp)
+
+    v_off = eng.analyzer.opp_counter_potential()
+    check("flag OFF (default): soma real da mao inteira (2000+2000=4000), igual a hoje",
+          v_off == 4000)
+
+    opp.self_play_info_hidden = True
+    v_hidden = eng.analyzer.opp_counter_potential()
+    check("flag ON, nada revelado: NAO ve os 2 counters reais (nao e mais 4000)",
+          v_hidden != 4000)
+
+    opp.revealed_to_opponent = {id(nola_a)}
+    v_partial = eng.analyzer.opp_counter_potential()
+    check("flag ON + 1 carta revelada: inclui o valor REAL da revelada (>= 2000)",
+          v_partial >= 2000)
+    opp.self_play_info_hidden = False
+    opp.revealed_to_opponent = set()
+
+    # _opp_can_remove_stage: mesma flag, agora sobre o DECK (texto de OP03-096
+    # remove Stage do oponente com custo <=3 -- carta real, nao sintetica)
+    removedora = real_card("OP03-096")
+    opp2 = GameState(leader=mk("SPH-L2", "Leader", card_type="LEADER"))
+    opp2.deck = [real_card("OP01-016"), removedora, real_card("OP01-024")]
+
+    check("flag OFF: acha a removedora no deck real (igual a hoje)",
+          OPTCGMatch._opp_can_remove_stage(opp2, reach_cost=3) is True)
+
+    opp2.self_play_info_hidden = True
+    check("flag ON, nada revelado do deck: NAO espia (assume que nao tem)",
+          OPTCGMatch._opp_can_remove_stage(opp2, reach_cost=3) is False)
+
+    opp2.revealed_deck = {id(removedora)}
+    check("flag ON + carta revelada de verdade: agora conta",
+          OPTCGMatch._opp_can_remove_stage(opp2, reach_cost=3) is True)
+
+
+def test_check_invariants_unifica_auditoria_no_decision_log() -> None:
+    # Pedido do usuario (25/07): unificar as checagens de invariante do
+    # audit_replay.py (conservacao de DON, poder negativo, contagem de
+    # cartas) na MESMA lista de auditoria (decision_log) que ja registra
+    # decisoes (_log_decision/_log_turn_planner_decision) -- uma lista so,
+    # sem mexer em write_event/telemetry.py (ao vivo, intocado). So grava
+    # entrada quando ACHA violacao (nunca por turno saudavel).
+    a = mk("SPCI-LA", "Leader A", card_type="LEADER")
+    b = mk("SPCI-LB", "Leader B", card_type="LEADER")
+    state_a = GameState(leader=a, don_deck=0)
+    state_a.don_available = 10
+    state_b = GameState(leader=b, don_deck=0)
+    state_b.don_available = 10
+    m = OPTCGMatch.__new__(OPTCGMatch)
+    m.state_a = state_a
+    m.state_b = state_b
+    m._suppress_replay_log = False
+    m.enable_decision_audit()
+
+    m._check_invariants(turn=1)
+    check("estado saudavel (A e B configurados): 0 violacoes",
+          not [e for e in m.decision_log if e.get("kind") == "invariant_violation"])
+
+    state_a.don_available = 11
+    m._check_invariants(turn=2)
+    viol = [e for e in m.decision_log if e.get("kind") == "invariant_violation"]
+    check("DON quebrado em A: detectado como don_conservation no turno certo",
+          len(viol) == 1 and viol[0]["check"] == "don_conservation"
+          and viol[0]["turn"] == 2 and viol[0]["player"] == "A")
+    state_a.don_available = 10
+
+    state_a.hand = [real_card("OP01-024")]
+    m._check_invariants(turn=4)   # 1a chamada so estabelece o baseline
+    state_a.hand.append(real_card("OP01-025"))  # carta aparece do nada
+    m._check_invariants(turn=5)
+    viol5 = [e for e in m.decision_log
+             if e.get("kind") == "invariant_violation" and e["turn"] == 5]
+    check("carta surgindo do nada: detectado como card_count",
+          any(v["check"] == "card_count" for v in viol5))
+
+    # decision_log continua mista (kind=turn_planner/(sem kind)/
+    # invariant_violation) SEM quebrar quem ja consome (audit_card_effects.py/
+    # audit_decision_quality.py ja filtram com .get(), padrao preexistente).
+    check("decision_log aceita kind='invariant_violation' misturado as outras entradas",
+          any(e.get("kind") == "invariant_violation" for e in m.decision_log)
+          and len(m.decision_log) >= 2)
+
+
+def test_sim_bridge_delega_escolha_de_alvo_pro_motor_unico() -> None:
+    # Pedido do usuario (25/07): apos apagar a duplicacao de play_turn(),
+    # investigar se existem OUTRAS "duas funcoes tomando a mesma decisao"
+    # -- achadas 2: DecisionEngine.choose_to_trash (so ao vivo, via
+    # sim_bridge.resolve_prompt_choice) reimplementava com
+    # min(hand, key=avaliar_carta) puro, ignorando as protecoes de
+    # EffectExecutor._trash_value (evento [Counter], carta cara, win-con
+    # do game_plan, reanimavel etc.) que o motor JA usa internamente pra
+    # QUALQUER custo trash_from_hand em self-play. E
+    # sim_bridge._choose_opp_target_filtered reimplementava a mao o mesmo
+    # filtro (cost_lte/cost_gte/cost_eq/power_lte/power_gte/rested_only)
+    # que eligible_cards (rules_facade) ja centraliza pro resto do motor.
+    # Ambas corrigidas pra DELEGAR em vez de duplicar.
+    leader = Card(data=CardData(code="SPH-LX", name="Leader", card_type="LEADER",
+                                 color="Black", cost=0, power=5000))
+    me = GameState(leader=leader, don_deck=0)
+    opp_leader = Card(data=CardData(code="SPH-LY", name="LeaderB", card_type="LEADER",
+                                     color="Black", cost=0, power=5000))
+    opp = GameState(leader=opp_leader, don_deck=0)
+    me.don_available = 0
+
+    # Evento [Counter] real (EB01-019, "Off-White") vs personagem vanilla
+    # bem mais forte -- avaliar_carta() puro rankeia o EVENTO como PIOR
+    # (mais descartavel) que o vanilla; _trash_value() PROTEGE o evento
+    # [Counter] (+35, unico na mao) e inverte a escolha.
+    evt = real_card("EB01-019")
+    vanilla = Card(data=CardData(code="ZZZ-DIVERGE", name="Meio Termo",
+                                  card_type="CHARACTER", color="Black",
+                                  cost=6, power=20000))
+    me.hand = [evt, vanilla]
+    eng = DecisionEngine(me, opp)
+    naive_pick = min(me.hand, key=eng.avaliar_carta)
+    check("caso de teste tem divergencia real (naive trashava o evento protegido)",
+          naive_pick is evt)
+    rich_pick = EffectExecutor(me, opp)._choose_to_trash(me.hand)
+    check("_choose_to_trash (motor, rico) protege o evento [Counter]",
+          rich_pick is vanilla)
+    check("DecisionEngine.choose_to_trash (ao vivo) delega pro motor rico, nao repete o naive",
+          eng.choose_to_trash(me.hand) is vanilla)
+
+    # _choose_opp_target_filtered: filtro cost_lte via eligible_cards +
+    # selecao por choose_highest_board_value (rules_facade), nao mais mao.
+    fraco = Card(data=CardData(code="ZZZ-FRACO", name="Fraco", card_type="CHARACTER",
+                                color="Red", cost=2, power=2000))
+    medio = Card(data=CardData(code="ZZZ-MEDIO", name="Medio", card_type="CHARACTER",
+                                color="Red", cost=4, power=6000))
+    caro_fora_do_filtro = Card(data=CardData(code="ZZZ-CARO", name="Caro",
+                                              card_type="CHARACTER", color="Red",
+                                              cost=8, power=12000))
+    candidatos = [fraco, medio, caro_fora_do_filtro]
+    escolhido = sim_bridge._choose_opp_target_filtered(candidatos, {"cost_lte": 5, "action": "ko"})
+    check("_choose_opp_target_filtered exclui alvo fora do cost_lte (delegado a eligible_cards)",
+          escolhido is not caro_fora_do_filtro)
+    check("_choose_opp_target_filtered escolhe o de maior board_value entre os elegiveis",
+          escolhido is medio)
+
+
+def test_opponent_model_sample_respeita_random_seed_global() -> None:
+    # Achado 26/07 (usuario pediu pra investigar o nao-determinismo do
+    # motor registrado no bloco HANDOFF 374): OpponentModel.sample() nos
+    # 2 call sites reais (decision_engine.py main_phase, sim_bridge.py
+    # choose_action) passava rng=random.Random() -- uma instancia NOVA,
+    # semeada do relogio/SO, que ignora QUALQUER random.seed() fixado
+    # pelo chamador. Isso tornava main_phase() (Turn Planner, todo turno
+    # com >1 candidato) nao-reprodutivel mesmo com seed fixo -- confirmado
+    # rodando o MESMO script/seed 2x seguidas e vendo o hash do log da
+    # partida inteira divergir. Fix: default (`rng or random`) e os 2
+    # call sites passaram a usar o modulo `random` (o MESMO stream
+    # global que random.seed() controla em todo o resto do motor), nao
+    # uma instancia nova. Validado apos o fix: `audit_replay.py --n 8
+    # --seed 7` rodado 2x produziu output byte-a-byte identico (antes,
+    # cada rodada escolhia decks/jogava turnos diferentes).
+    import random
+    from optcg_engine.opponent_model import OpponentModel
+
+    opp = GameState(leader=mk("SPH-OM", "Leader", card_type="LEADER"))
+    opp.hand = [real_card("OP01-024"), real_card("OP01-025")]
+    opp.deck = [real_card("OP01-016"), real_card("OP01-018"), real_card("OP01-020")]
+    model = OpponentModel(full_decklist=list(opp.hand) + list(opp.deck))
+
+    random.seed(42)
+    hand1, life1 = model.sample(opp)  # sem rng explicito -> usa o default
+    random.seed(42)
+    hand2, life2 = model.sample(opp)
+    check("OpponentModel.sample() (rng default) com a MESMA seed global da o MESMO sorteio",
+          [c.code for c in hand1] == [c.code for c in hand2])
+
+    random.seed(1)
+    hand3, _ = model.sample(opp, rng=random)  # mesma chamada dos 2 call sites reais
+    random.seed(1)
+    hand4, _ = model.sample(opp, rng=random)
+    check("OpponentModel.sample() (rng=random, igual aos call sites reais) tambem reproduz",
+          [c.code for c in hand3] == [c.code for c in hand4])
 
 
 if __name__ == "__main__":

@@ -46,6 +46,20 @@ USE_EVAL_V2 = True    # LIGADA 13/07: validação rigorosa (MC=6, n=50, Imu-v2 v
 # a 6). Knob global — não muda a régua, só o custo da simulação.
 PLANNER_MC_SAMPLES = 6
 
+# ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
+# Promovidos de variavel local do main_phase pra constante de modulo --
+# `_select_search_candidates`/`_select_action_via_search` sao agora a FONTE
+# UNICA usada tanto pelo Turn Planner offline (main_phase) quanto pelo
+# caminho AO VIVO (sim_bridge.choose_action). Pedido explicito do usuario
+# (26/07): "tem que ser o mesmo nos dois" -- antes, o caminho ao vivo tinha
+# seu proprio laco de selecao/amostragem sem a janela de score, sem a
+# diversidade de REMOVE_THREAT e SEM a guarda _is_unsafe_zero_life_leader_attack
+# (que so existia no offline). So o TOP_K (quantas candidatas simular) e o
+# piso/teto de amostras continuam variando por chamador -- isso e orcamento
+# de tempo (recurso), nao politica de decisao.
+SEARCH_MIN_CANDIDATES = 3
+SEARCH_SCORE_WINDOW = 180
+
 # ── busca prof.2 / resposta do oponente (item 3 do PLANO_AVALIACAO_E_BUSCA.md) ─
 # Depois de simular MINHA linha ate o fim do turno, simula o TURNO INTEIRO de
 # resposta do oponente (proprio engine, modo GULOSO -- ver _play_turn_greedy,
@@ -144,7 +158,7 @@ class _SimDeck(list):
 from optcg_engine.opponent_model import OpponentModel
 from optcg_engine.deck_census import deck_census
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Callable, List, Optional
 from copy import deepcopy
 
 
@@ -8537,15 +8551,28 @@ class GameAnalyzer:
         empatado sem margem e falhar contra elas (Teach 5000 e depois 9000
         vs Ethanbaron bufado, mesma partida, duas vezes).
 
-        Se no futuro a mão for oculta de verdade (multiplayer vs humano),
-        voltar à estimativa para os slots desconhecidos, como
-        opp_counter_chunks_for_lethal faz — regra do usuário 07/07: o banco
-        de cartas/efeitos permite estimar a densidade média de counter do
-        formato para os slots que não dá pra ver.
+        Ao vivo a mão já chega mascarada (server.py troca cartas não
+        reveladas por placeholders antes do GameState existir), então somar
+        `self.opp.hand` direto já é seguro — nada muda aqui pra esse
+        caminho. O self-play interno (OPTCGMatch/ReplayMatch) NUNCA passou
+        por essa máscara (usa os objetos Card reais dos dois lados o tempo
+        todo, porque a mecânica real precisa deles) — pedido do usuário
+        (24/07): aproximar o self x self do ao vivo sem duplicar motor.
+        `opp.self_play_info_hidden` (atributo dinâmico, default False via
+        getattr — NUNCA setado hoje em lugar nenhum, só o futuro simulador
+        self x self vai ligar) restringe a soma real às cartas já
+        REVELADAS (`known_hand_cards()`) e completa o resto com a MESMA
+        estimativa estatística que `opp_counter_chunks_for_lethal` já usa
+        de forma conservadora — aqui, porém, soma um valor esperado (não
+        zera), e usa a densidade REAL da decklist do oponente quando
+        disponível (mesmo lookup usado no guard de buff de
+        `resolve_optional_effect`, sim_bridge.py).
         """
+        known_only = getattr(self.opp, 'self_play_info_hidden', False)
+        hand = self.opp.known_hand_cards() if known_only else self.opp.hand
         ee = EffectExecutor(self.opp, self.me)   # perspectiva do DONO da carta
         total = 0
-        for c in self.opp.hand:
+        for c in hand:
             total += getattr(c, 'counter', 0)
             counter_block = get_card_effects(c.code).get('counter', {})
             steps = counter_block.get('steps', [])
@@ -8554,7 +8581,30 @@ class GameAnalyzer:
             if ee._check_conditions(counter_block.get('conditions', {}), c):
                 total += sum(s.get('amount', 0) for s in steps
                             if s.get('action') == 'buff_power')
-        return total
+        if not known_only:
+            return total
+
+        n_unknown = max(0, len(self.opp.hand) - len(hand))
+        from optcg_engine.counter_estimation import estimate_opp_counter
+        from optcg_engine.sim_bridge import deck_cards_for_leader
+        deck1000 = deck2000 = None
+        _deck_opp = (deck_cards_for_leader(self.opp.leader.code)
+                     if self.opp.leader is not None else None)
+        if _deck_opp:
+            deck1000 = sum(1 for c in _deck_opp if getattr(c, 'counter', 0) == 1000)
+            deck2000 = sum(1 for c in _deck_opp if getattr(c, 'counter', 0) >= 2000)
+            visiveis = list(self.opp.trash) + list(self.opp.field_chars) + list(hand)
+            if self.opp.field_stage:
+                visiveis.append(self.opp.field_stage)
+            for c in visiveis:
+                cv = getattr(c, 'counter', 0)
+                if cv == 1000 and deck1000 > 0:
+                    deck1000 -= 1
+                elif cv >= 2000 and deck2000 > 0:
+                    deck2000 -= 1
+        est = estimate_opp_counter(n_unknown, deck_counter_1000=deck1000,
+                                    deck_counter_2000=deck2000)
+        return total + est['expected_counter_value']
 
     def opp_counter_chunks_for_lethal(self) -> list[int]:
         """
@@ -11097,10 +11147,23 @@ class DecisionEngine:
     # ── Helpers ───────────────────────────────────────────────────────────────
 
     def choose_to_trash(self, hand: list) -> 'Optional[Card]':
-        """Escolhe a carta de menor valor situacional para descartar."""
+        """
+        Escolhe a carta de menor valor situacional para descartar --
+        delega pra EffectExecutor._choose_to_trash (fonte unica), que usa
+        _trash_value (avaliar_carta + protecoes especificas: evento-counter
+        com desconto por redundancia, removal/bounce, carta cara/win-con do
+        game_plan, carta que enche o trash pro combo, jogavel neste turno,
+        reanimavel via play_from_trash). Antes desta correcao (25/07) esta
+        funcao reimplementava com so `min(hand, key=self.avaliar_carta)` --
+        divergencia real de "dois motores": o bot AO VIVO (unico chamador,
+        via sim_bridge.py.resolve_prompt_choice) descartava pior do que o
+        motor interno (EffectExecutor, usado por custo trash_from_hand em
+        qualquer efeito/self-play), mesma classe de bug do achado Katakuri
+        OP11-062 (comentario em _combat_buff_worth_paying).
+        """
         if not hand:
             return None
-        return min(hand, key=self.avaliar_carta)
+        return EffectExecutor(self.me, self.opp)._choose_to_trash(hand)
 
 
 
@@ -11242,8 +11305,19 @@ class OPTCGMatch:
     @staticmethod
     def _opp_can_remove_stage(opp: GameState, reach_cost: int) -> bool:
         """True se o deck do oponente tem carta que K.O./trasha/devolve um Stage
-        do oponente (= nosso) com alcance de custo >= reach_cost."""
-        for c in opp.deck:
+        do oponente (= nosso) com alcance de custo >= reach_cost.
+
+        Le `opp.deck` inteiro (texto de TODA carta restante) — vazamento
+        real de informacao oculta no self-play (ninguem sabe o conteudo do
+        deck do adversario). `opp.self_play_info_hidden` (mesmo atributo
+        dinamico de opp_counter_potential, default False, nunca setado
+        hoje) restringe a busca as cartas JA REVELADAS
+        (`known_deck_cards()`) — conservador de proposito: se a carta de
+        remocao nao foi vista, assume que nao esta la, igual
+        opp_counter_chunks_for_lethal faz pra counter."""
+        deck = opp.known_deck_cards() if getattr(
+            opp, 'self_play_info_hidden', False) else opp.deck
+        for c in deck:
             t = (c.card_text or '').lower()
             # K.O./trash explicito do "opponent's stage", respeitando filtro de custo
             for mm in re.finditer(r"(k\.?o\.?|trash)[^.]*?opponent's stages?(?:[^.]*?cost of (\d+) or less)?", t):
@@ -12448,6 +12522,157 @@ class OPTCGMatch:
             and not engine.analyzer.can_lethal_this_turn()
         )
 
+    def _select_search_candidates(self, actions, top_k, priority,
+                                   min_candidates=SEARCH_MIN_CANDIDATES,
+                                   score_window=SEARCH_SCORE_WINDOW):
+        """
+        Recorta, a partir da lista COMPLETA de ações pontuadas
+        (`_generate_and_score_actions`, ordenada por score desc), quais
+        entram na busca Monte Carlo (`_select_action_via_search`). FONTE
+        ÚNICA usada tanto pelo Turn Planner offline (`main_phase`) quanto
+        pelo caminho AO VIVO (`sim_bridge.choose_action`) -- unificação
+        26/07 (pedido do usuário: "tem que ser o mesmo nos dois"). Só
+        `top_k` (quantas candidatas custam simulação) varia por chamador,
+        por orçamento de tempo; a POLÍTICA de quais candidatas valem a
+        pena comparar (janela de score, diversidade em REMOVE_THREAT) é
+        idêntica nos dois lugares.
+
+        `actions` já deve vir filtrada pelo chamador por qualquer critério
+        de ELEGIBILIDADE que só faça sentido nesse contexto (ex.: ao vivo,
+        tipo executável pelo plugin / ativação já recusada este turno) --
+        esta função só decide QUANTAS e QUAIS das elegíveis entram na
+        comparação, não filtra elegibilidade.
+        """
+        if not actions:
+            return []
+        top_score = actions[0][0]
+        candidatas = [
+            acao for idx, acao in enumerate(actions[:top_k])
+            if acao[0] >= 0
+            and (idx < min_candidates or acao[0] >= top_score - score_window)
+        ]
+        if priority == 'REMOVE_THREAT':
+            # A remoção de uma ameaça crítica pode receber score imediato
+            # muito alto (ex.: Roger/Shanks), estreitando demais a janela.
+            # Mantém essa pressão, mas garante diversidade para a
+            # simulação comparar pelo menos algumas linhas de
+            # desenvolvimento.
+            seen_candidate_ids = {id(acao) for acao in candidatas}
+
+            def include_best_kind(kind: str, limit: int):
+                current = sum(1 for acao in candidatas if acao[1] == kind)
+                for acao in actions:
+                    if current >= limit:
+                        break
+                    if acao[0] < 0 or acao[1] != kind or id(acao) in seen_candidate_ids:
+                        continue
+                    candidatas.append(acao)
+                    seen_candidate_ids.add(id(acao))
+                    current += 1
+
+            include_best_kind('play', 1)
+            include_best_kind('activate', 1)
+            candidatas.sort(key=lambda acao: acao[0], reverse=True)
+        return candidatas
+
+    def _select_action_via_search(self, p, opp, engine, candidatas, model,
+                                   max_steps, extra_own_turn_search,
+                                   samples_min, samples_max, batch_size,
+                                   z_threshold=2.0, rng=random):
+        """
+        Dado um conjunto de candidatas JÁ recortado (`_select_search_candidates`,
+        `len(candidatas) >= 2`), decide a melhor via Monte Carlo. FONTE ÚNICA
+        usada tanto pelo Turn Planner offline (`main_phase`) quanto pelo
+        caminho AO VIVO (`sim_bridge.choose_action`) -- unificação 26/07
+        (pedido do usuário: receio de "o bot receber dois comandos de
+        decisão diferentes... tem que ser o mesmo nos dois"). Antes, cada
+        lado tinha seu próprio laço reimplementado à mão, com resultado
+        parecido mas NÃO idêntico -- o offline tinha janela/diversidade de
+        candidatas e a guarda `_is_unsafe_zero_life_leader_attack`; o
+        caminho ao vivo não tinha NENHuma das duas.
+
+        Amostragem SEQUENCIAL em lotes: para no PISO (`samples_min`) assim
+        que a diferença de valor entre as 2 melhores candidatas fica
+        estatisticamente clara (teste pareado, mesmas amostras nos dois
+        lados via CRN), só sobe até o TETO (`samples_max`) quando o gap
+        ainda não é confiável (achado 26/07 do sweep de qualidade: mais
+        amostras melhora objetivamente a escolha, mas só vale gastar
+        quando o gap não está resolvido). `samples_min == samples_max`
+        degenera num N FIXO clássico (1 lote só, sem teste de
+        significância) -- é assim que o offline chama hoje, preservando
+        seu comportamento/custo atual byte a byte; o caminho ao vivo usa
+        piso/teto de verdade (12/24).
+
+        Retorna (melhor_action_ou_None, melhor_valor, search_records,
+        amostras_usadas, sim_values_by_id). `melhor` vem `None` só se
+        TODAS as candidatas forem descartadas pela guarda de segurança
+        (nenhuma linha vencedora encontrada pra um ataque arriscado ao
+        líder com vida 0) -- o chamador decide o que fazer nesse caso
+        (offline: encerra o planejamento do turno; ao vivo: mantém o
+        fallback de score imediato já calculado antes desta busca).
+        """
+        if model is None:
+            # Sem modelo de oponente disponível (só acontece no caminho ao
+            # vivo, quando nenhuma camada de fallback de `opponent_model_for_leader`
+            # tem pool -- líder E cor totalmente desconhecidos): 1 simulação
+            # determinística contra o estado público, sem amostragem.
+            melhor, melhor_valor = None, None
+            search_records = []
+            sim_values = {}
+            for cand in candidatas:
+                valores = self._simulate_sequence_values(
+                    p, opp, cand, max_steps=max_steps, amostras=None,
+                    extra_own_turn_search=extra_own_turn_search)
+                valor = sum(valores) / len(valores) if valores else -1e9
+                search_records.append({"action": cand, "value": valor})
+                sim_values[id(cand)] = {'avg': valor, 'wins': 0, 'samples': 0}
+                if melhor_valor is None or valor > melhor_valor:
+                    melhor_valor = valor
+                    melhor = cand
+            return melhor, melhor_valor, search_records, 0, sim_values
+
+        pairwise = len(candidatas) == 2
+        valores_por_cand: list = [[] for _ in candidatas]
+        n_coletadas = 0
+        while n_coletadas < samples_max:
+            batch = min(batch_size, samples_max - n_coletadas)
+            novas_amostras = [model.sample(opp, rng=rng) for _ in range(batch)]
+            for i, cand in enumerate(candidatas):
+                valores_por_cand[i].extend(
+                    self._simulate_sequence_values(
+                        p, opp, cand, max_steps=max_steps, amostras=novas_amostras,
+                        extra_own_turn_search=extra_own_turn_search))
+            n_coletadas += batch
+            if n_coletadas < samples_min:
+                continue
+            if not pairwise:
+                break
+            deltas = [a - b for a, b in zip(valores_por_cand[0], valores_por_cand[1])]
+            media = sum(deltas) / len(deltas)
+            if len(deltas) > 1:
+                var = sum((d - media) ** 2 for d in deltas) / (len(deltas) - 1)
+                stderr = (var / len(deltas)) ** 0.5
+            else:
+                stderr = 0.0
+            if stderr == 0.0 or abs(media) > z_threshold * stderr:
+                break
+
+        melhor, melhor_valor = None, None
+        search_records = []
+        sim_values = {}
+        for i, cand in enumerate(candidatas):
+            valores = valores_por_cand[i]
+            valor = sum(valores) / len(valores) if valores else -1e9
+            wins = sum(1 for v in valores if v >= SIMULATED_WIN_SCORE)
+            search_records.append({"action": cand, "value": valor})
+            sim_values[id(cand)] = {'avg': valor, 'wins': wins, 'samples': len(valores)}
+            if self._is_unsafe_zero_life_leader_attack(cand, p, opp, engine) and wins == 0:
+                continue
+            if melhor_valor is None or valor > melhor_valor:
+                melhor_valor = valor
+                melhor = cand
+        return melhor, melhor_valor, search_records, n_coletadas, sim_values
+
     def _generate_and_score_actions(self, p, opp, engine, exclude_activate_uids=None):
         """
         Gera TODAS as ações possíveis no estado atual e as pontua.
@@ -13413,8 +13638,6 @@ class OPTCGMatch:
         # amostras") quando a busca de resposta esta ativa; K=6/S=6 (validado
         # em 13/07 sem a resposta) continua valendo com a flag desligada.
         TOP_K = 3 if USE_OPPONENT_RESPONSE_SEARCH else 6
-        MIN_PLANNER_CANDIDATES = 3
-        PLANNER_SCORE_WINDOW = 180
         n = 0
 
         while n < MAX_ACOES:
@@ -13447,42 +13670,11 @@ class OPTCGMatch:
             # TURN PLANNER: para as TOP_K ações candidatas, simula a linha de jogo
             # resultante e escolhe a que leva ao MELHOR estado de fim de turno.
             # (Em vez de escolher gulosamente a de maior score imediato.)
-            #
-            # As N amostras Monte Carlo do oponente são geradas UMA VEZ por
-            # turno (aqui), não uma vez por candidata -- o estado observável
-            # de `opp` é o mesmo para todas as TOP_K candidatas neste ponto
-            # (nenhuma delas foi aplicada ainda), então gerar 6x N amostras
-            # do zero seria 6x mais caro sem nenhum ganho de fidelidade.
-            # Reusar as mesmas N amostras também torna a comparação entre
-            # candidatas pareada (mesma "versão do oponente" testada contra
-            # cada uma), reduzindo ruído Monte Carlo na escolha final.
-            top_score = actions[0][0]
-            candidatas = [
-                acao for idx, acao in enumerate(actions[:TOP_K])
-                if acao[0] >= 0
-                and (idx < MIN_PLANNER_CANDIDATES or acao[0] >= top_score - PLANNER_SCORE_WINDOW)
-            ]
-            if priority == 'REMOVE_THREAT':
-                # A remocao de uma ameaca critica pode receber score imediato
-                # muito alto (ex.: Roger/Shanks), estreitando demais a janela.
-                # Mantem essa pressao, mas garante diversidade para a simulacao
-                # comparar pelo menos algumas linhas de desenvolvimento.
-                seen_candidate_ids = {id(acao) for acao in candidatas}
-
-                def include_best_kind(kind: str, limit: int):
-                    current = sum(1 for acao in candidatas if acao[1] == kind)
-                    for acao in actions:
-                        if current >= limit:
-                            break
-                        if acao[0] < 0 or acao[1] != kind or id(acao) in seen_candidate_ids:
-                            continue
-                        candidatas.append(acao)
-                        seen_candidate_ids.add(id(acao))
-                        current += 1
-
-                include_best_kind('play', 1)
-                include_best_kind('activate', 1)
-                candidatas.sort(key=lambda acao: acao[0], reverse=True)
+            # Selecao/busca unificadas (26/07, pedido do usuario: "tem que
+            # ser o mesmo nos dois") -- MESMAS funcoes usadas pelo caminho
+            # AO VIVO (sim_bridge.choose_action), so o TOP_K/piso/teto de
+            # amostras (orcamento de tempo) diferem por chamador.
+            candidatas = self._select_search_candidates(actions, TOP_K, priority)
             if len(candidatas) == 1:
                 melhor_acao = candidatas[0]
                 if self._is_unsafe_zero_life_leader_attack(melhor_acao, p, opp, engine):
@@ -13498,26 +13690,29 @@ class OPTCGMatch:
             model = self.model_for_a if p is self.state_a else self.model_for_b
             # mesmo corte de custo do TOP_K acima (ver comentario la): S≈3 com
             # a busca de resposta ligada, S=6 (ja validado) sem ela.
+            #
+            # N FIXO (samples_min == samples_max == batch_size): o offline
+            # ainda NAO usa amostragem adaptativa -- roda em regime de
+            # THROUGHPUT total (ate 30 sub-decisoes/turno, muitos turnos,
+            # muitos jogos de self-play/calibracao), diferente do orcamento
+            # POR DECISAO do caminho ao vivo. Ja existe explosao O(board²)
+            # conhecida ali (medido: ate 13.8s/turno late-game) -- ligar
+            # piso/teto de verdade aqui exige medir o custo total de um
+            # jogo de self-play primeiro (pendente, ver TODO.md), nao so
+            # trocar o numero. `_select_action_via_search` com min==max
+            # degenera exatamente no comportamento fixo de sempre (1 lote
+            # so, sem teste de significancia).
             n_monte_carlo = 3 if USE_OPPONENT_RESPONSE_SEARCH else PLANNER_MC_SAMPLES
-            amostras_turno = [model.sample(opp, rng=random.Random()) for _ in range(n_monte_carlo)]
-
-            melhor_acao = None
-            melhor_valor = -1e18
-            sim_values = {}
-            for cand in candidatas:
-                valores = self._simulate_sequence_values(p, opp, cand, amostras=amostras_turno)
-                valor = sum(valores) / len(valores) if valores else -1e9
-                wins = sum(1 for v in valores if v >= SIMULATED_WIN_SCORE)
-                sim_values[id(cand)] = {
-                    'avg': valor,
-                    'wins': wins,
-                    'samples': len(valores),
-                }
-                if self._is_unsafe_zero_life_leader_attack(cand, p, opp, engine) and wins == 0:
-                    continue
-                if valor > melhor_valor:
-                    melhor_valor = valor
-                    melhor_acao = cand
+            # rng=random (modulo, nao random.Random() novo) -- achado 26/07:
+            # random.Random() semeia do SO/relogio, ignora random.seed() e
+            # tornava main_phase() nao-reprodutivel mesmo com seed fixo
+            # (ver opponent_model.py.sample() docstring).
+            melhor_acao, melhor_valor, _records, _n_amostras, sim_values = (
+                self._select_action_via_search(
+                    p, opp, engine, candidatas, model,
+                    max_steps=8, extra_own_turn_search=False,
+                    samples_min=n_monte_carlo, samples_max=n_monte_carlo,
+                    batch_size=n_monte_carlo, rng=random))
 
             if melhor_acao is None:
                 break
@@ -14043,6 +14238,85 @@ class OPTCGMatch:
     def enable_decision_audit(self):
         """Ativa o log de auditoria de decisão. Chamar antes de setup()/play_turn()."""
         self.decision_log = []
+        self._card_count_baseline = {}
+
+    def _check_invariants(self, turn: 'int | None' = None) -> None:
+        """
+        Verifica invariantes de conservacao (DON, poder, contagem de cartas)
+        apos um turno -- migrado de audit_replay.py (achou o bug real de
+        conservacao de DON do deck Ace, ver TODO.md) pra dentro do motor,
+        unificado na MESMA lista de auditoria de _log_decision/
+        _log_turn_planner_decision (pedido do usuario 25/07: uma lista so,
+        nao um script externo com sua propria checagem). So roda com
+        decision_log ativo (mesmo guard das outras 2 funcoes de log) --
+        chamada direto por este proprio play_turn() (ver abaixo), entao
+        cobre de graca QUALQUER consumidor de self-play que passe por ele,
+        direto (audit_card_effects.py, audit_decision_quality.py,
+        baseline_metrics.py, tune_weights.py) ou via
+        ReplayMatch.play_turn() (replay_optcg.py, que desde 25/07 delega
+        inteiro pra ca em vez de reimplementar a orquestracao de turno).
+        So grava entrada quando ACHA violacao -- nunca
+        por turno saudavel, pra nao inflar a lista em rodadas de centenas
+        de partidas (tune_weights.py).
+
+        NAO migrado: a checagem de 'nao implementado' no texto impresso
+        (audit_replay.py) -- e uma varredura do stdout capturado da
+        partida inteira, natureza diferente de um invariante de estado;
+        continua so no script.
+        """
+        if self.decision_log is None or self._suppress_replay_log:
+            return
+        if not hasattr(self, '_card_count_baseline'):
+            self._card_count_baseline = {}
+        turn = turn if turn is not None else self.global_turn
+        for gs, label in ((self.state_a, 'A'), (self.state_b, 'B')):
+            field_don = sum(c.don_attached for c in gs.field_chars) + gs.leader.don_attached
+            total_don = gs.don_available + gs.don_rested + field_don
+            esperado_don = 10 - gs.don_deck
+            if total_don != esperado_don:
+                # Detalhe de duplicata por REFERENCIA -- foi assim que se
+                # achou o bug de identidade do Card em 29/06/2026 (ver
+                # TODO.md): mesmo objeto Python 2x em field_chars.
+                ids = [id(c) for c in gs.field_chars]
+                dups = [i for i in set(ids) if ids.count(i) > 1]
+                detalhe = (f'available={gs.don_available} rested={gs.don_rested} '
+                           f'field={field_don} soma={total_don} '
+                           f'esperado(10-don_deck)={esperado_don}')
+                if dups:
+                    detalhe += (f' | DUPLICADO NA LISTA field_chars: '
+                                f'{len(dups)} objeto(s) repetido(s), ids={dups}')
+                self.decision_log.append({
+                    'kind': 'invariant_violation',
+                    'turn': turn,
+                    'player': label,
+                    'check': 'don_conservation',
+                    'detail': detalhe,
+                })
+            for c in gs.field_chars + [gs.leader]:
+                if c.effective_power() < 0:
+                    self.decision_log.append({
+                        'kind': 'invariant_violation',
+                        'turn': turn,
+                        'player': label,
+                        'check': 'negative_power',
+                        'detail': f'{c.name} com power negativo ({c.effective_power()})',
+                    })
+            atual = (len(gs.hand) + len(gs.field_chars) + len(gs.deck) + len(gs.trash)
+                     + len(gs.life) + (1 if gs.field_stage else 0))
+            baseline = self._card_count_baseline.get(label)
+            if baseline is None:
+                self._card_count_baseline[label] = atual
+            elif atual != baseline:
+                self.decision_log.append({
+                    'kind': 'invariant_violation',
+                    'turn': turn,
+                    'player': label,
+                    'check': 'card_count',
+                    'detail': (f'total mudou de {baseline} para {atual} '
+                               f'(hand={len(gs.hand)} field={len(gs.field_chars)} '
+                               f'deck={len(gs.deck)} trash={len(gs.trash)} '
+                               f'life={len(gs.life)})'),
+                })
 
     def _log_decision(self, p: GameState, card, trigger: str,
                       decision: str, reason: str):
@@ -14297,7 +14571,18 @@ class OPTCGMatch:
             c.just_played = False
         return False
 
-    def play_turn(self, p: GameState, opp: GameState, verbose: bool = False) -> Optional[str]:
+    def play_turn(self, p: GameState, opp: GameState, verbose: bool = False,
+                  post_don_hook: 'Callable[[GameState, GameState], None] | None' = None) -> Optional[str]:
+        """
+        post_don_hook: opcional, chamado logo apos don_phase e antes do
+        main_phase -- unico ponto que replay_optcg.py precisa pra imprimir
+        campo/perfil/postura no meio do turno (pedido do usuario 25/07: sem
+        isso ReplayMatch.play_turn() reimplementava a orquestracao inteira
+        do turno so pra conseguir esse print no meio, causando divergencia
+        real com este metodo -- end_phase()/is_active_turn/
+        pending_play_cost_reductions/deck_out_win_instead_of_loss ficavam
+        de fora do replay). Nao usado no caminho ao vivo nem em simulate().
+        """
         self.global_turn += 1
         p.turn += 1
         p.global_turn = self.global_turn
@@ -14320,8 +14605,18 @@ class OPTCGMatch:
                             extra={'count': drawn})
 
         self.don_phase(p, verbose=verbose)
+        if post_don_hook is not None:
+            post_don_hook(p, opp)
 
-        if self.main_phase(p, opp, verbose=verbose):
+        won = self.main_phase(p, opp, verbose=verbose)
+        # Invariantes de conservacao (DON/poder/contagem) -- mesmo guard
+        # interno de decision_log ativo; cobre qualquer consumidor deste
+        # metodo (audit_card_effects.py, audit_decision_quality.py,
+        # ReplayMatch.play_turn() via _get_engine_match().play_turn(),
+        # desde que ReplayMatch parou de reimplementar a propria
+        # orquestracao de turno).
+        self._check_invariants()
+        if won:
             return 'A' if p is self.state_a else 'B'
         self.end_phase(p, opp, verbose=verbose)
         self._log_event(p, 'turn_end', phase='end',
