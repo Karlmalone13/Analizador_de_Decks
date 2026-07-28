@@ -2,6 +2,46 @@
 
 **Última atualização:** 28 de julho de 2026
 
+## 🟢 compare_vs_human.py rodado em TODOS os logs banco (28/07/2026, bloco 387)
+
+Resultado agregado (só turnos do lado VENCEDOR, detectado por
+heurística de último-ataque/Quits — ver bloco 387 do HANDOFF pro
+método, `winner` do index.json é cosmético): 343 turnos, 150 erros de
+reconstrução (concentrados em logs antigos de Imu), 193 comparações
+válidas. **top1 exact 62.7%, top5 exact 90.7%** — o Turn Planner bate
+com o vencedor na grande maioria dos casos; a percepção de "joga muito
+mal" provavelmente vem dos casos dramáticos isolados (como o ST22-015)
+ou de decisões fora do escopo desta comparação (defesa, mulligan,
+sequenciamento multi-ação por turno).
+
+- [x] Achado importante registrado: rótulo `You`/`Opponent` NÃO
+  identifica o bot de forma confiável entre sessões (Shift+P troca o
+  lado) — qualquer análise futura precisa detectar o VENCEDOR (última
+  ação de ataque antes de GameOver/Quits), não assumir o rótulo.
+- [ ] **PENDENTE, o mais concreto**: padrão de divergência mais comum
+  (7/193) é vencedor fazendo `activate+attach_don+attack` (usa o board
+  já existente) enquanto a IA top-1 sugeria `play` (desenvolver mão).
+  Não investigado a fundo — precisa achar exemplos específicos e ver
+  se é super-valorização genérica de desenvolvimento vs capitalizar
+  ataque, ou caso a caso.
+- [ ] **PENDENTE**: alternativas de melhoria pro `compare_vs_human.py`
+  catalogadas no bloco 387 do HANDOFF (comparação por sequência em vez
+  de 1 decisão por turno, usar o pipeline real com Monte Carlo em vez
+  de só score imediato, corrigir rótulo activate/play de EVENT,
+  registrar vencedor explicitamente no parse do log). Nenhuma
+  implementada ainda — são só alternativas catalogadas, priorizar
+  antes de implementar.
+
+## 📚 Catálogo de ferramentas criado: `scriptis_da_ia/FERRAMENTAS.md` (28/07/2026, bloco 387)
+
+Usuário relatou não lembrar que `compare_vs_human.py` existia — criado
+documento resumindo as ~49 ferramentas Python do projeto por propósito
+(comparação com humano, eficiência, parser, banco de logs, replay,
+análise de deck, backend, bot ao vivo, testes, ML experimental) com
+tabela de "qual ferramenta usar quando". Manter atualizado quando uma
+ferramenta nova for criada — é fácil esquecer o que já existe numa base
+de ~50 scripts.
+
 ## 🟢 IMPLEMENTADO: play_card aninhado agora credita o valor de quem é trazido (28/07/2026, bloco 386)
 
 Usuário pediu método concreto pra "bot joga mal": comparar Turn Planner

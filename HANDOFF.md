@@ -1,5 +1,110 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-28 (387) - Claude (sessao remota web) - compare_vs_human.py rodado em TODOS os logs (achado: rotulo You/Opponent NAO identifica o bot de forma confiavel, por causa do Shift+P) + catalogo de ferramentas novo
+
+Usuario pediu (apos o achado do bloco 386) pra rodar a mesma comparacao
+em TODOS os logs banco, mais alternativas pra melhorar
+`compare_vs_human.py`, mais um documento catalogando as ferramentas do
+projeto (relatou nao lembrar que `compare_vs_human.py` existia).
+
+**Achado metodologico importante, ANTES da varredura**: tentei
+determinar quem e o "vencedor humano" em cada log assumindo
+`You`=bot/`Opponent`=humano (convencao usada no log do bloco 386,
+confirmada la por outros HANDOFFs). Ao testar em mais logs, achei
+contra-exemplos claros (ex: `Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T13.57.47.log`
+termina com `[Opponent] Quits!` logo apos Katakuri -- o deck do BOT
+documentado extensivamente no projeto -- levar o hit final do lado
+"Opponent"). Como o usuario tem um atalho Shift+P que troca qual lado o
+bot controla a qualquer momento (`BotDriver.cs`), o rotulo You/Opponent
+NAO e uma constante confiavel atraves de sessoes diferentes -- as vezes
+"You" e o bot, as vezes e o usuario. Perguntei ao usuario como resolver;
+resposta: "eu ganhei todas as partidas que joguei, so olhar o deck
+vencedor" -- ou seja, nao precisa identificar humano/bot, so precisa
+identificar QUEM VENCEU (o campo `winner` do index.json e cosmetico/
+nao confiavel, ja documentado antes).
+
+**Deteccao de vencedor implementada** (script descartavel, nao
+commitado): heuristica = ultimo ataque registrado antes de `GameOver`
+(o lado ATACANTE venceu) ou, se existir, o lado que deu `Quits!` (esse
+lado perdeu). Validada contra os 2 casos ja confirmados manualmente
+(log do Ace do bloco 386, log do Mihawk acima) antes de rodar em tudo.
+71 grupos de partida (agrupando arquivos `_pN` fragmentados pelo
+autosave, pegando o de mais turnos como representante) -> 67 resolvidos
+(94%), 46 vitorias do lado "Opponent", 21 do lado "You" -- varios dos
+"You" batem com datas/decks de sessoes de teste/depuracao documentadas
+no proprio HANDOFF (ex: Jinbe x Katakuri 26/07, mesmo dia da investigacao
+do bug is_active_turn), entao provavelmente nao sao partidas onde o
+usuario jogava pra valer.
+
+**Resultado agregado, comparando SO os turnos do lado VENCEDOR contra o
+Turn Planner** (343 turnos do vencedor, 150 erros de reconstrucao --
+concentrados nos logs mais antigos de Imu, cobertura de snapshot ruim,
+achado ja conhecido do bloco anterior de eficiencia -- restam 193
+comparacoes validas):
+- top1 exact: 121/193 (62.7%) -- a sugestao NUMERO 1 da IA bate exatamente
+  com a jogada do vencedor.
+- top1 kind : mais 29.0% bate pelo menos o TIPO de acao (56/193).
+- top5 exact: 175/193 (**90.7%**) -- a jogada do vencedor aparece em
+  algum lugar do top-5 da IA na grande maioria das vezes.
+- **Padrao de divergencia mais comum** (7 ocorrencias, o maior grupo):
+  vencedor fez `activate + attach_don + attack` (usa o que ja tem em
+  campo + ataca) mas o top-1 da IA sugeria `play` (desenvolver mao) --
+  sinal de que o motor pode estar super-valorizando desenvolver board
+  vs capitalizar um ataque com o que ja esta em campo, em pelo menos
+  alguns estados. NAO investigado a fundo ainda (registrado no TODO.md).
+
+**Leitura honesta**: 90.7% de acerto no top-5 é um resultado bom, nao
+"o bot joga muito mal" de forma ampla -- a percepcao do usuario
+provavelmente vem dos poucos casos dramaticos (como o ST22-015) ou de
+decisoes que este metodo NAO cobre (bloqueio/defesa, mulligan,
+sequenciamento de MULTIPLAS acoes dentro do mesmo turno -- ver
+alternativas abaixo).
+
+**Alternativas levantadas pra melhorar `compare_vs_human.py`** (nao
+implementadas, so catalogadas -- pedido explicito do usuario era
+"alternativas", nao implementacao):
+1. **Comparacao por SEQUENCIA, nao só a 1a decisão do turno**: hoje o
+   tool reconstrói o estado de INÍCIO do turno e compara com TODAS as
+   ações do humano naquele turno como um conjunto (`human_keys`) -- não
+   aplica a ação escolhida e reavalia o próximo passo (como o
+   `main_phase`/`choose_action` reais fazem, ação por ação). Um turno
+   com 3 ações do vencedor só é validado pela 1ª comparação.
+2. **Usar o pipeline REAL de busca, não só score imediato**: a
+   comparação chama `_generate_and_score_actions` puro (score
+   heurístico imediato), nunca `_select_search_candidates`/
+   `_select_action_via_search` (a busca Monte Carlo real que
+   `choose_action`/`main_phase` usam desde os blocos 381/382) -- uma
+   divergência no score imediato pode desaparecer depois do refino por
+   simulação, ou vice-versa. Comparar com o pipeline completo seria
+   mais fiel ao que o bot realmente faria ao vivo.
+3. **Rótulo `activate` vs `play` de EVENT resolvido**: o parser do log
+   rotula a resolução de um EVENT como `activate` (mesmo quando o motor
+   trata como `play`), gerando falso-positivo de divergência (visto no
+   T10 do bloco 386, mesmo após o fix de scoring). Tratar como
+   equivalentes na comparação.
+4. **Robustez do snapshot de início de turno**: `_pre_turn_snapshot`
+   tem fallback "imperfeito" documentado pro T1 de cada log (sem turno
+   anterior pra basear) -- é a maior fonte dos 150 erros/reconstruções
+   ruins na varredura completa, concentrado nos logs mais antigos.
+5. **Categorização automática de misses** (feita manualmente nesta
+   sessão via script descartável): o `--summary` hoje só mostra os
+   primeiros 12 misses crus; agrupar por `(tipo_de_ação_humano,
+   tipo_sugerido_pela_IA)` como fiz aqui revela padrões recorrentes bem
+   mais rápido que ler exemplo por exemplo.
+6. **Registrar explicitamente quem é o vencedor/humano no log**, em vez
+   de inferir por rótulo -- resolveria de vez a ambiguidade do Shift+P
+   (ex: campo novo no `parse_combat_log.py --add-to-db`, preenchido
+   pelo usuário ou inferido pela heurística de último-ataque acima e
+   gravado permanentemente).
+
+**Catálogo de ferramentas criado**: `scriptis_da_ia/FERRAMENTAS.md` --
+lista resumida das ~49 ferramentas Python do projeto + o bot ao vivo,
+organizadas por PROPÓSITO (comparação com humano, medição de
+eficiência, parser, banco de logs, replay, análise estática, backend,
+bot ao vivo, testes, ML experimental), com uma tabela de "qual
+ferramenta usar quando" no fim. Motivo: usuário relatou não lembrar que
+`compare_vs_human.py` existia antes desta sessão.
+
 ## 2026-07-28 (386) - Claude (sessao remota web) - achado real + fix generico: play_card aninhado no proprio efeito (ex: ST22-015 -> Edward Newgate de graca) nao creditava o valor de quem e trazido
 
 Usuario, apos reclamar "o bot joga muito mal, e se troca de lider piora",
