@@ -8937,6 +8937,7 @@ def main() -> int:
     test_check_invariants_unifica_auditoria_no_decision_log()
     test_sim_bridge_delega_escolha_de_alvo_pro_motor_unico()
     test_opponent_model_sample_respeita_random_seed_global()
+    test_parse_combat_log_rastreia_rested_active_do_oponente()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -9135,6 +9136,53 @@ def test_opponent_model_sample_respeita_random_seed_global() -> None:
     hand4, _ = model.sample(opp, rng=random)
     check("OpponentModel.sample() (rng=random, igual aos call sites reais) tambem reproduz",
           [c.code for c in hand3] == [c.code for c in hand4])
+
+
+def test_parse_combat_log_rastreia_rested_active_do_oponente() -> None:
+    """
+    Achado 28/07 (bloco HANDOFF 391): a comparacao IA-vs-humano de ALVO de
+    ataque (lider vs personagem) so e valida se o motor souber quais
+    personagens do oponente estao rested no snapshot -- so pode declarar
+    ataque contra o lider ou um personagem REALMENTE rested
+    (`opp.rested_chars`). O snapshot original (Hand/Board/Trash/Life que o
+    proprio simulador imprime) nunca teve esse dado. `parse_combat_log.py`
+    agora reconstroi via simulacao incremental (Deploy entra rested por
+    padrao, atacar resta o atacante, refresh no inicio do proprio turno,
+    efeitos "Rest X" no texto livre), com reconciliacao contra o board
+    REAL a cada turno. Este teste usa um log real ja no banco (nao
+    sintetico) e trava os valores exatos ja conferidos manualmente.
+    """
+    import parse_combat_log as pcl
+
+    data, _lines = pcl.parse_log(
+        "logs/raw/Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.log"
+    )
+    turns = data["turns"]
+
+    # Turno 2 (Opponent): Otama + Kin'emon acabaram de ser deployados
+    # (sem Rush) -- as duas entram rested.
+    snap_t2 = turns[1]["snapshot"]["Opponent"]
+    check("rested: Deploy sem Rush entra rested (turno 2, Opponent)",
+          snap_t2["rested"] == {"OP07-022": 1, "ST32-001": 1})
+
+    # Turno 4 (Opponent, turno seguinte DELE): refresh reativou o
+    # OP07-022 antigo; a copia NOVA de ST32-001 (deployada este turno) e
+    # OP12-034 (recem deployado) continuam rested.
+    snap_t4 = turns[3]["snapshot"]["Opponent"]
+    check("rested: refresh no proprio turno reativa personagens antigos",
+          "OP07-022" not in snap_t4["rested"])
+    check("rested: personagem novo/recem-deployado neste turno segue rested",
+          snap_t4["rested"] == {"ST32-001": 1, "OP12-034": 1})
+
+    # Turno 6 (Opponent), lado "You": estado congelado do ULTIMO turno de
+    # "You" (turno 5) -- ST34-003 (deployado num turno anterior) refrescou
+    # no inicio do turno 5 e nao atacou (quem atacou foi o proprio LIDER,
+    # Charlotte Katakuri ["OP11-062"], que nao entra em board_state por
+    # design -- alvo de ataque nunca depende do rested do LIDER). So
+    # ST34-002 (deployado NESTE turno) fica rested.
+    snap_t6_you = turns[5]["snapshot"]["You"]
+    check("rested: personagem recem-deployado fica rested; lider atacando nao afeta board_state",
+          snap_t6_you["rested"] == {"ST34-002": 1})
 
 
 if __name__ == "__main__":

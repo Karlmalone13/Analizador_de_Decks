@@ -2,6 +2,48 @@
 
 **Última atualização:** 28 de julho de 2026
 
+## 🟢 IMPLEMENTADO: parse_combat_log.py rastreia active/rested do oponente (28/07/2026, bloco 392)
+
+Sem isso, a comparação IA-vs-humano de ALVO de ataque (líder vs
+personagem) era inválida — todo personagem do oponente nascia "ativo"
+por padrão na reconstrução, e a regra do jogo só permite atacar o líder
+OU um personagem REALMENTE rested, então a IA nunca conseguia sugerir
+legalmente um ataque em personagem (dava "100% prefere líder", artefato
+de ferramenta, não achado real).
+
+- [x] `parse_combat_log.py`: rastreio incremental (Deploy entra rested,
+  atacar resta o atacante, refresh no início do próprio turno, efeitos
+  "Rest X"/"Destroy X" no texto livre) + reconciliação contra o board
+  real a cada turno (nunca gera contagem maior que a real, mesmo com
+  verbo de remoção não coberto).
+- [x] Reparse retroativo: 84/114 raw logs ainda presentes reparseados
+  (30 mais antigos usam caminho `autosaved_log` sem raw neste ambiente —
+  ficam sem o dado novo). Validado como aditivo puro (dry-run + diff)
+  antes de sobrescrever os JSON git-tracked.
+- [x] `compare_vs_human.py` (`build_game_states`) aplica a contagem nas
+  N primeiras cópias de cada code no board do oponente reconstruído.
+- [x] Teste permanente em `smoke_fast.py`
+  (`test_parse_combat_log_rastreia_rested_active_do_oponente`, log real,
+  não sintético). `smoke_fast.py` + `smoke_test.py` 100%.
+- [x] Resultado (comparação de alvo agora válida): 689 turnos, 1114
+  pares mesmo-atacante — concordância de alvo 58,4%. Dos 463
+  desacordos, 82% são "humano foi na cara, IA queria trocar" (só 18% o
+  oposto) — bate com vencedores atacando o líder 83% vs 62% dos
+  perdedores (achado já registrado antes, ver bloco 392 do HANDOFF).
+- [x] **Achado forte específico em Imu-B** (pedido do usuário pra
+  aprofundar nesse líder — pior recorte da base, 6V/29D): 38% de TODOS
+  os desacordos da base inteira vêm só de partidas com Imu-B, 79% deles
+  "líder Imu foi na cara, IA queria trocar". Conferido manualmente
+  contra o log cru (não é falso positivo do rastreio novo).
+- [ ] **NÃO implementado**: nenhum ajuste de peso de scoring de ataque
+  em cima disso — mesma cautela anti-overfitting do bloco 391 (a
+  comparação usa `_generate_and_score_actions` isolado, não o Turn
+  Planner com Monte Carlo completo que roda ao vivo). Fica pra decisão
+  do usuário se/como calibrar.
+- [ ] 30 logs sem raw local (caminho `autosaved_log`) continuam sem
+  `rested` — só logs com raw disponível neste ambiente foram
+  reparseados.
+
 ## 🟢 IMPLEMENTADO: identifica lado do bot via Shift+P em vez de assumir vencedor (28/07/2026, bloco 389)
 
 Usuário pediu explicitamente pra não tratar "vencedor" como proxy de

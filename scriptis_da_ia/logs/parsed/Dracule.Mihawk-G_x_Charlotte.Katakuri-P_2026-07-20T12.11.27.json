@@ -47,7 +47,10 @@
             "OP14-023"
           ],
           "trash": [],
-          "life": 5
+          "life": 5,
+          "rested": {
+            "OP14-023": 1
+          }
         },
         "Opponent": {
           "hand": [
@@ -81,7 +84,10 @@
             "OP14-023"
           ],
           "trash": [],
-          "life": 5
+          "life": 5,
+          "rested": {
+            "OP14-023": 1
+          }
         },
         "Opponent": {
           "hand": [
@@ -153,7 +159,10 @@
             "OP14-023"
           ],
           "trash": [],
-          "life": 5
+          "life": 5,
+          "rested": {
+            "OP14-023": 1
+          }
         },
         "Opponent": {
           "hand": [
@@ -191,7 +200,10 @@
             "OP14-023"
           ],
           "trash": [],
-          "life": 5
+          "life": 5,
+          "rested": {
+            "OP14-023": 1
+          }
         },
         "Opponent": {
           "hand": [
@@ -285,7 +297,11 @@
             "OP10-030"
           ],
           "trash": [],
-          "life": 5
+          "life": 5,
+          "rested": {
+            "OP14-023": 1,
+            "OP10-030": 1
+          }
         },
         "Opponent": {
           "hand": [
@@ -327,7 +343,11 @@
             "OP10-030"
           ],
           "trash": [],
-          "life": 5
+          "life": 5,
+          "rested": {
+            "OP14-023": 1,
+            "OP10-030": 1
+          }
         },
         "Opponent": {
           "hand": [

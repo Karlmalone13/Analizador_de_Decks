@@ -36,7 +36,34 @@
           ]
         }
       ],
-      "snapshot": {}
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-084",
+            "OP16-093",
+            "OP16-093",
+            "OP13-084",
+            "OP13-099"
+          ],
+          "board": [],
+          "trash": [
+            "OP13-091"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "PRB02-015",
+            "OP16-108",
+            "OP16-102",
+            "OP16-109",
+            "OP16-110"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
     },
     {
       "turn": 2,
@@ -51,7 +78,39 @@
           "effects": []
         }
       ],
-      "snapshot": {}
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "PRB02-015",
+            "OP16-108",
+            "OP16-102",
+            "OP16-109",
+            "PRB02-015"
+          ],
+          "board": [
+            "OP16-110"
+          ],
+          "trash": [],
+          "life": 4,
+          "rested": {
+            "OP16-110": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-084",
+            "OP16-093",
+            "OP16-093",
+            "OP13-084",
+            "OP13-099"
+          ],
+          "trash": [
+            "OP13-091"
+          ],
+          "board": [],
+          "life": 4
+        }
+      }
     },
     {
       "turn": 3,
@@ -71,7 +130,46 @@
           ]
         }
       ],
-      "snapshot": {}
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-084",
+            "OP16-093",
+            "OP13-084",
+            "OP16-093",
+            "OP13-083"
+          ],
+          "board": [
+            "OP16-093"
+          ],
+          "trash": [
+            "OP13-091",
+            "OP13-099",
+            "OP13-082"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-093": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "PRB02-015",
+            "OP16-108",
+            "OP16-102",
+            "OP16-109",
+            "PRB02-015"
+          ],
+          "trash": [],
+          "board": [
+            "OP16-110"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-110": 1
+          }
+        }
+      }
     },
     {
       "turn": 4,
@@ -98,7 +196,47 @@
           "effects": []
         }
       ],
-      "snapshot": {}
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "PRB02-015",
+            "OP16-108",
+            "OP16-102",
+            "OP16-109",
+            "OP09-084"
+          ],
+          "board": [
+            "OP16-110",
+            "PRB02-015"
+          ],
+          "trash": [],
+          "life": 4,
+          "rested": {
+            "PRB02-015": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-084",
+            "OP13-084",
+            "OP16-093",
+            "OP13-083"
+          ],
+          "trash": [
+            "OP13-091",
+            "OP13-099",
+            "OP13-082",
+            "OP16-093"
+          ],
+          "board": [
+            "OP16-093"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-093": 1
+          }
+        }
+      }
     },
     {
       "turn": 5,
@@ -118,7 +256,50 @@
           ]
         }
       ],
-      "snapshot": {}
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-084",
+            "OP13-083",
+            "OP13-098",
+            "OP13-083"
+          ],
+          "board": [
+            "OP16-093",
+            "OP16-093"
+          ],
+          "trash": [
+            "OP13-091",
+            "OP13-099",
+            "OP13-082",
+            "OP16-093",
+            "OP14-096",
+            "OP13-084"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-093": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "PRB02-015",
+            "OP16-108",
+            "OP16-102",
+            "OP16-109",
+            "OP09-084"
+          ],
+          "trash": [],
+          "board": [
+            "OP16-110",
+            "PRB02-015"
+          ],
+          "life": 4,
+          "rested": {
+            "PRB02-015": 1
+          }
+        }
+      }
     },
     {
       "turn": 6,
@@ -150,7 +331,52 @@
           "effects": []
         }
       ],
-      "snapshot": {}
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "PRB02-015",
+            "OP16-108",
+            "OP16-102",
+            "OP16-109",
+            "P-100"
+          ],
+          "board": [
+            "OP16-110",
+            "PRB02-015",
+            "OP09-084"
+          ],
+          "trash": [],
+          "life": 4,
+          "rested": {
+            "OP09-084": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-084",
+            "OP13-083",
+            "OP13-098",
+            "OP13-083",
+            "OP13-096"
+          ],
+          "trash": [
+            "OP13-091",
+            "OP13-099",
+            "OP13-082",
+            "OP16-093",
+            "OP14-096",
+            "OP13-084"
+          ],
+          "board": [
+            "OP16-093",
+            "OP16-093"
+          ],
+          "life": 3,
+          "rested": {
+            "OP16-093": 1
+          }
+        }
+      }
     },
     {
       "turn": 7,
@@ -175,7 +401,56 @@
           ]
         }
       ],
-      "snapshot": {}
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-084",
+            "OP13-083",
+            "OP13-098",
+            "OP13-083",
+            "OP13-089"
+          ],
+          "board": [
+            "OP16-093",
+            "OP16-093",
+            "OP13-091"
+          ],
+          "trash": [
+            "OP13-091",
+            "OP13-099",
+            "OP13-082",
+            "OP16-093",
+            "OP14-096",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP13-096"
+          ],
+          "life": 3,
+          "rested": {
+            "OP13-091": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "PRB02-015",
+            "OP16-108",
+            "OP16-102",
+            "OP16-109",
+            "P-100"
+          ],
+          "trash": [],
+          "board": [
+            "OP16-110",
+            "PRB02-015",
+            "OP09-084"
+          ],
+          "life": 4,
+          "rested": {
+            "OP09-084": 1
+          }
+        }
+      }
     },
     {
       "turn": 8,
@@ -224,7 +499,57 @@
           "countered_by": []
         }
       ],
-      "snapshot": {}
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "PRB02-015",
+            "OP16-108",
+            "OP16-102",
+            "OP16-109",
+            "P-100"
+          ],
+          "board": [
+            "OP16-110",
+            "PRB02-015",
+            "OP09-084",
+            "OP16-107"
+          ],
+          "trash": [],
+          "life": 4,
+          "rested": {
+            "OP09-084": 1,
+            "OP16-107": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-084",
+            "OP13-083",
+            "OP13-098",
+            "OP13-083",
+            "OP13-089",
+            "OP14-096",
+            "OP13-080"
+          ],
+          "trash": [
+            "OP13-091",
+            "OP13-099",
+            "OP13-082",
+            "OP16-093",
+            "OP14-096",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP13-096",
+            "OP13-091"
+          ],
+          "board": [
+            "OP16-093",
+            "OP16-093"
+          ],
+          "life": 1
+        }
+      }
     },
     {
       "turn": 9,
@@ -267,7 +592,64 @@
           ]
         }
       ],
-      "snapshot": {}
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-084",
+            "OP13-083",
+            "OP13-098",
+            "OP13-083",
+            "OP13-080",
+            "OP16-093"
+          ],
+          "board": [
+            "OP16-093",
+            "OP13-089"
+          ],
+          "trash": [
+            "OP13-091",
+            "OP13-099",
+            "OP13-082",
+            "OP16-093",
+            "OP14-096",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP13-096",
+            "OP13-091",
+            "OP16-093",
+            "OP14-096"
+          ],
+          "life": 1,
+          "rested": {
+            "OP16-093": 1,
+            "OP13-089": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "PRB02-015",
+            "OP16-108",
+            "OP16-102",
+            "P-100",
+            "OP09-093"
+          ],
+          "trash": [
+            "OP16-109",
+            "OP16-110",
+            "PRB02-015"
+          ],
+          "board": [
+            "OP09-084",
+            "OP16-107"
+          ],
+          "life": 4,
+          "rested": {
+            "OP09-084": 1,
+            "OP16-107": 1
+          }
+        }
+      }
     },
     {
       "turn": 10,
@@ -331,7 +713,66 @@
           ]
         }
       ],
-      "snapshot": {}
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "PRB02-015",
+            "OP16-108",
+            "OP16-102",
+            "P-100",
+            "OP09-095"
+          ],
+          "board": [
+            "OP09-084",
+            "OP16-107",
+            "OP09-093"
+          ],
+          "trash": [
+            "OP16-109",
+            "OP16-110",
+            "PRB02-015"
+          ],
+          "life": 4,
+          "rested": {
+            "OP09-084": 1,
+            "OP16-107": 1,
+            "OP09-093": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-084",
+            "OP13-098"
+          ],
+          "trash": [
+            "OP13-091",
+            "OP13-099",
+            "OP13-082",
+            "OP16-093",
+            "OP14-096",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP13-096",
+            "OP13-091",
+            "OP16-093",
+            "OP14-096",
+            "OP13-083",
+            "OP13-083",
+            "OP16-093",
+            "OP13-080"
+          ],
+          "board": [
+            "OP16-093",
+            "OP13-089"
+          ],
+          "life": 1,
+          "rested": {
+            "OP16-093": 1,
+            "OP13-089": 1
+          }
+        }
+      }
     },
     {
       "turn": 11,
@@ -378,7 +819,67 @@
           "effects": []
         }
       ],
-      "snapshot": {}
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-084",
+            "OP13-098",
+            "OP13-083"
+          ],
+          "board": [
+            "OP16-093",
+            "OP13-089",
+            "OP13-089"
+          ],
+          "trash": [
+            "OP13-091",
+            "OP13-099",
+            "OP13-082",
+            "OP16-093",
+            "OP14-096",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP13-096",
+            "OP13-091",
+            "OP16-093",
+            "OP14-096",
+            "OP13-083",
+            "OP13-083",
+            "OP16-093",
+            "OP13-080"
+          ],
+          "life": 0,
+          "rested": {
+            "OP16-093": 1,
+            "OP13-089": 2
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "PRB02-015",
+            "OP16-108",
+            "P-100"
+          ],
+          "trash": [
+            "OP16-109",
+            "OP16-110",
+            "PRB02-015",
+            "OP16-102",
+            "OP16-107",
+            "OP09-095"
+          ],
+          "board": [
+            "OP09-084",
+            "OP09-093"
+          ],
+          "life": 4,
+          "rested": {
+            "OP09-084": 1,
+            "OP09-093": 1
+          }
+        }
+      }
     },
     {
       "turn": 12,
@@ -445,100 +946,723 @@
           "countered_by": []
         }
       ],
-      "snapshot": {}
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-082",
+            "OP16-093",
+            "OP13-096",
+            "OP13-084",
+            "OP13-091"
+          ],
+          "board": [],
+          "trash": [
+            "OP13-096",
+            "OP13-083",
+            "OP13-086",
+            "OP14-096"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-103",
+            "OP09-099",
+            "OP16-102",
+            "OP16-109",
+            "OP09-095"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
     },
     {
       "turn": 13,
-      "player": "You",
-      "card_drawn": null,
-      "don_drawn": 0,
-      "actions": [],
-      "snapshot": {}
-    },
-    {
-      "turn": 14,
       "player": "Opponent",
       "card_drawn": null,
-      "don_drawn": 0,
-      "actions": [],
-      "snapshot": {}
-    },
-    {
-      "turn": 15,
-      "player": "You",
-      "card_drawn": null,
-      "don_drawn": 0,
-      "actions": [],
-      "snapshot": {}
-    },
-    {
-      "turn": 16,
-      "player": "Opponent",
-      "card_drawn": null,
-      "don_drawn": 0,
+      "don_drawn": 2,
       "actions": [
         {
-          "type": "activate",
-          "card": "OP16-103",
-          "card_name": "Van Augur",
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
           "effects": [
-            "Draw 1 Card",
-            "Buff Imu [\"OP13-079\">OP13-079] -3000"
+            "Rest 1 Don",
+            "Rest Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Marshall D. Teach [\"OP09-093\">OP09-093]</b>"
           ]
         }
       ],
-      "snapshot": {}
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-103",
+            "OP09-099",
+            "OP16-102",
+            "OP16-109",
+            "OP16-103",
+            "OP09-093"
+          ],
+          "board": [
+            "OP09-095"
+          ],
+          "trash": [],
+          "life": 4,
+          "rested": {
+            "OP09-095": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-082",
+            "OP16-093",
+            "OP13-096",
+            "OP13-084",
+            "OP13-091"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP13-083",
+            "OP13-086",
+            "OP14-096"
+          ],
+          "board": [],
+          "life": 4
+        }
+      }
     },
     {
-      "turn": 17,
+      "turn": 14,
       "player": "You",
       "card_drawn": null,
-      "don_drawn": 0,
-      "actions": [],
-      "snapshot": {}
-    },
-    {
-      "turn": 18,
-      "player": "Opponent",
-      "card_drawn": null,
-      "don_drawn": 0,
-      "actions": [],
-      "snapshot": {}
-    },
-    {
-      "turn": 19,
-      "player": "You",
-      "card_drawn": null,
-      "don_drawn": 0,
-      "actions": [],
-      "snapshot": {}
-    },
-    {
-      "turn": 20,
-      "player": "Opponent",
-      "card_drawn": null,
-      "don_drawn": 0,
+      "don_drawn": 2,
       "actions": [
         {
-          "type": "activate",
-          "card": "OP16-080",
-          "card_name": "Marshall D. Teach",
+          "type": "play",
+          "card": "OP16-093",
+          "card_name": "Bartholomew Kuma",
           "effects": [
-            "Trash Avalo Pizarro [\"OP16-102\">OP16-102]",
-            "Target of Attack changed to Vasco Shot [\"OP16-110\">OP16-110]"
+            "Draw 2 Card",
+            "Trash Ground Death [\"OP14-096\">OP14-096]",
+            "Trash St. Mjosgard [\"OP13-092\">OP13-092]",
+            "Attach 1 Rested Don to Bartholomew Kuma [\"OP16-093\">OP16-093]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Laffitte [\"OP09-095\">OP09-095]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-082",
+            "OP13-096",
+            "OP13-084",
+            "OP13-091",
+            "OP13-092"
+          ],
+          "board": [
+            "OP16-093"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP13-083",
+            "OP13-086",
+            "OP14-096",
+            "OP14-096",
+            "OP13-092"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-093": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-103",
+            "OP09-099",
+            "OP16-102",
+            "OP16-109",
+            "OP16-103",
+            "OP09-093"
+          ],
+          "trash": [
+            "OP09-095"
+          ],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Shiryu [\"OP16-108\">OP16-108]",
+            "<b>Reveal and Draw Catarina Devon [\"OP09-084\">OP09-084]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-103",
+          "card_name": "Van Augur",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-103",
+            "OP16-102",
+            "OP16-109",
+            "OP09-093",
+            "OP09-084"
+          ],
+          "board": [
+            "OP16-103"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP16-108"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-103": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-082",
+            "OP13-096",
+            "OP13-084",
+            "OP13-091",
+            "OP13-092",
+            "OP13-086"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP13-083",
+            "OP13-086",
+            "OP14-096",
+            "OP14-096",
+            "OP13-092"
+          ],
+          "board": [
+            "OP16-093"
+          ],
+          "life": 3,
+          "rested": {
+            "OP16-093": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-091",
+          "card_name": "St. Marcus Mars",
+          "effects": [
+            "Trash Five Elders [\"OP13-082\">OP13-082]",
+            "Destroy Van Augur [\"OP16-103\">OP16-103]"
           ]
         },
         {
           "type": "activate",
-          "card": "OP16-110",
-          "card_name": "Vasco Shot",
+          "card": "OP13-079",
+          "card_name": "Imu",
           "effects": [
-            "Draw 1 Card",
-            "Rest St. Marcus Mars [\"OP13-091\">OP13-091]"
+            "Trash St. Mjosgard [\"OP13-092\">OP13-092]",
+            "Draw 1 Card"
           ]
         }
       ],
-      "snapshot": {}
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-096",
+            "OP13-084",
+            "OP13-086",
+            "OP13-080",
+            "OP16-093"
+          ],
+          "board": [
+            "OP16-093",
+            "OP13-091"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP13-083",
+            "OP13-086",
+            "OP14-096",
+            "OP14-096",
+            "OP13-092",
+            "OP13-082",
+            "OP13-092"
+          ],
+          "life": 3,
+          "rested": {
+            "OP13-091": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-103",
+            "OP16-102",
+            "OP16-109",
+            "OP09-093",
+            "OP09-084",
+            "OP16-104"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP16-108",
+            "OP16-103"
+          ],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 17,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-104",
+          "card_name": "Catarina Devon",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP13-091",
+          "countered_by": [
+            "OP16-093",
+            "OP13-086"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-103",
+            "OP16-102",
+            "OP16-109",
+            "OP09-093",
+            "OP09-084"
+          ],
+          "board": [
+            "OP16-104",
+            "OP16-110"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP16-108",
+            "OP16-103"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-104": 1,
+            "OP16-110": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-096",
+            "OP13-084",
+            "OP13-080"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP13-083",
+            "OP13-086",
+            "OP14-096",
+            "OP14-096",
+            "OP13-092",
+            "OP13-082",
+            "OP13-092",
+            "OP16-093",
+            "OP13-086"
+          ],
+          "board": [
+            "OP16-093",
+            "OP13-091"
+          ],
+          "life": 3,
+          "rested": {
+            "OP13-091": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 18,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-084",
+          "card_name": "St. Shepherd Ju Peter",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-096",
+            "OP13-080",
+            "OP13-089"
+          ],
+          "board": [
+            "OP16-093",
+            "OP13-091",
+            "OP13-084"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP13-083",
+            "OP13-086",
+            "OP14-096",
+            "OP14-096",
+            "OP13-092",
+            "OP13-082",
+            "OP13-092",
+            "OP16-093",
+            "OP13-086"
+          ],
+          "life": 3,
+          "rested": {
+            "OP13-084": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-103",
+            "OP16-102",
+            "OP16-109",
+            "OP09-093",
+            "OP09-084"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP16-108",
+            "OP16-103"
+          ],
+          "board": [
+            "OP16-104",
+            "OP16-110"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-104": 1,
+            "OP16-110": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 19,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Marshall D. Teach [\"P-100\">P-100]",
+            "<b>Reveal and Draw Laffitte [\"OP09-095\">OP09-095]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Sanjuan Wolf [\"OP16-106\">OP16-106]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-106",
+          "card_name": "Sanjuan Wolf",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-104",
+          "to_name": "Catarina Devon",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Catarina Devon",
+          "attacker_code": "OP16-104",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP13-091",
+          "countered_by": [
+            "OP13-089",
+            "OP13-080"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP16-104",
+          "card_name": "Catarina Devon",
+          "effects": [
+            "Buff Self 2000"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-103",
+            "OP16-102",
+            "OP16-109",
+            "OP09-093",
+            "OP09-084"
+          ],
+          "board": [
+            "OP16-104",
+            "OP16-110",
+            "OP09-095",
+            "OP16-106"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP16-108",
+            "OP16-103",
+            "P-100"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-104": 1,
+            "OP09-095": 1,
+            "OP16-106": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-096",
+            "OP13-098"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP13-083",
+            "OP13-086",
+            "OP14-096",
+            "OP14-096",
+            "OP13-092",
+            "OP13-082",
+            "OP13-092",
+            "OP16-093",
+            "OP13-086",
+            "OP13-089",
+            "OP13-080"
+          ],
+          "board": [
+            "OP16-093",
+            "OP13-091",
+            "OP13-084"
+          ],
+          "life": 2,
+          "rested": {
+            "OP13-084": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "St. Shepherd Ju Peter",
+          "attacker_code": "OP13-084",
+          "target": "Laffitte [\"OP09-095\">OP09-095]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Bartholomew Kuma",
+          "attacker_code": "OP16-093",
+          "target": "Laffitte [\"OP09-095\">OP09-095]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP13-083",
+          "card_name": "St. Jaygarcia Saturn",
+          "effects": [
+            "<b>Reveal and Draw St. Marcus Mars [\"OP13-091\">OP13-091]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-096",
+            "OP13-098",
+            "OP13-091"
+          ],
+          "board": [
+            "OP16-093",
+            "OP13-091",
+            "OP13-084",
+            "OP13-083"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP13-083",
+            "OP13-086",
+            "OP14-096",
+            "OP14-096",
+            "OP13-092",
+            "OP13-082",
+            "OP13-092",
+            "OP16-093",
+            "OP13-086",
+            "OP13-089",
+            "OP13-080"
+          ],
+          "life": 2,
+          "rested": {
+            "OP16-093": 1,
+            "OP13-084": 1,
+            "OP13-083": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-103",
+            "OP16-109",
+            "OP09-093",
+            "OP09-084",
+            "OP16-103"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP16-108",
+            "OP16-103",
+            "P-100",
+            "OP16-102",
+            "OP16-110",
+            "OP09-095"
+          ],
+          "board": [
+            "OP16-104",
+            "OP16-106"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-104": 1,
+            "OP16-106": 1
+          }
+        }
+      }
     }
   ]
 }

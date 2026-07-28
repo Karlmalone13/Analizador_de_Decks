@@ -215,6 +215,24 @@ def build_game_states(turn_data: dict, meta: dict, active_player_name: str,
     # Oponente
     leader_opp = make_leader_card(opp_meta['leader'].get('code', ''))
     board_o  = [make_card_from_code(c) for c in opp_snap.get('board', [])]
+    # Achado 28/07 (bloco HANDOFF 391): sem isso, TODO personagem do
+    # oponente nasce `rested=False` (default do dataclass Card) -- e como
+    # so pode declarar ataque contra o lider OU um personagem REALMENTE
+    # rested (`opp.rested_chars`, regra do jogo), a comparacao IA-vs-humano
+    # de alvo (lider vs personagem) nunca conseguia gerar um ataque de
+    # personagem, virando SEMPRE "lider" independente do que a IA faria de
+    # verdade. `parse_combat_log.py` agora rastreia active/rested por
+    # simulacao incremental (Deploy/attacking/efeitos) e grava a contagem
+    # em `snapshot[lado]['rested']` -- aplicado aqui nas N primeiras copias
+    # de cada code (sem identidade de instancia no schema, e uma
+    # aproximacao razoavel: qual copia especifica virou rested nao importa
+    # pra legalidade de alvo, so quantas estao).
+    _rested_left = dict(opp_snap.get('rested', {}))
+    for _card in board_o:
+        _n = _rested_left.get(_card.code, 0)
+        if _n > 0:
+            _card.rested = True
+            _rested_left[_card.code] = _n - 1
     trash_o  = [make_card_from_code(c) for c in opp_snap.get('trash', [])]
     stage_o  = make_card_from_code(opp_snap.get('stage')) if opp_snap.get('stage') else None
     life_cnt_o = opp_snap.get('life', 4)

@@ -44,6 +44,119 @@ def _load_cards_csv() -> dict:
     return _CARDS_CSV
 
 
+# Cache do banco de analise (tem has_rush -- cards_rows.csv nao tem esse dado)
+_CARDS_ANALYSIS_DB: dict | None = None
+
+def _load_cards_analysis_db() -> dict:
+    global _CARDS_ANALYSIS_DB
+    if _CARDS_ANALYSIS_DB is not None:
+        return _CARDS_ANALYSIS_DB
+    db_path = Path(__file__).parent / 'card_analysis_db.json'
+    _CARDS_ANALYSIS_DB = {}
+    if db_path.exists():
+        with open(db_path, encoding='utf-8') as f:
+            _CARDS_ANALYSIS_DB = json.loads(f.read())
+    return _CARDS_ANALYSIS_DB
+
+
+def _has_rush(code: str) -> bool:
+    return bool(_load_cards_analysis_db().get(code, {}).get('has_rush'))
+
+
+# ---------------------------------------------------------------------------
+# Rastreio de active/rested por personagem (achado 28/07, bloco HANDOFF 391:
+# a comparacao IA-vs-humano de ALVO de ataque -- lider vs personagem -- so e
+# valida se o motor souber quais personagens do oponente estao REALMENTE
+# rested no snapshot, ja que so pode declarar ataque contra o lider ou um
+# personagem rested (rules_facade/decision_engine: `opp.rested_chars(att)`).
+# O snapshot original (Hand/Board/Trash/Life que o proprio simulador
+# imprime) NUNCA teve esse dado -- so lista codes. Reconstruido aqui via
+# simulacao incremental (Deploy/attacking/efeitos "Rest X"/"Destroy X" no
+# log), com RECONCILIACAO contra o board REAL a cada turno pra nao deixar
+# o rastreio "solto" divergir sem controle (nem todo verbo de remocao de
+# campo esta coberto -- a reconciliacao clampa/completa pelo board de
+# verdade, entao um verbo faltando so custa precisao, nunca gera contagem
+# maior que a real).
+# ---------------------------------------------------------------------------
+
+def _board_add(board_state: dict, side: str, code: str, rested: bool) -> None:
+    board_state.setdefault(side, []).append({'code': code, 'rested': rested})
+
+
+def _board_rest_one(board_state: dict, side: str, code: str) -> bool:
+    """Restaura UMA copia ativa de `code` no lado `side` (custo de atacar)."""
+    for e in board_state.get(side, []):
+        if e['code'] == code and not e['rested']:
+            e['rested'] = True
+            return True
+    return False
+
+
+def _board_rest_one_any_side(board_state: dict, p1: str, p2: str, code: str) -> bool:
+    """Restaura UMA copia ativa de `code` em QUALQUER lado (efeito de texto
+    livre nao diz de quem e o alvo -- pode ser custo no proprio lider/
+    personagem, ou remocao no lado oponente)."""
+    for side in (p1, p2):
+        if _board_rest_one(board_state, side, code):
+            return True
+    return False
+
+
+def _board_remove_one(board_state: dict, side: str, code: str) -> bool:
+    lst = board_state.get(side, [])
+    for i, e in enumerate(lst):
+        if e['code'] == code:
+            lst.pop(i)
+            return True
+    return False
+
+
+def _board_remove_one_any_side(board_state: dict, p1: str, p2: str, code: str) -> bool:
+    for side in (p1, p2):
+        if _board_remove_one(board_state, side, code):
+            return True
+    return False
+
+
+def _rest_and_remove_codes_in_text(text: str) -> tuple[list[str], list[str]]:
+    """Acha codes restados e removidos num texto livre de efeito (`fx` de
+    RE_EFFECT). Retorna (codes_restados, codes_removidos)."""
+    rested = [m.group(1) for m in _RE_REST_VERB.finditer(text)]
+    removed = [m.group(1) for m in _RE_REMOVE_VERB.finditer(text)]
+    return rested, removed
+
+
+def _reconcile_board_state(board_state: dict, side: str, real_board_codes: list[str]) -> None:
+    """Corrige o rastreio incremental pelo board REAL deste snapshot (autoridade
+    final) -- adiciona copias nao detectadas como ativas (default conservador,
+    igual ao comportamento antes deste rastreio existir) e remove excesso
+    (prioriza remover as ATIVAS extras, preservando a informacao de rested
+    que de fato foi detectada)."""
+    real_counts = Counter(real_board_codes)
+    lst = board_state.setdefault(side, [])
+    tracked_counts = Counter(e['code'] for e in lst)
+
+    for code, real_n in real_counts.items():
+        tracked_n = tracked_counts.get(code, 0)
+        if tracked_n < real_n:
+            for _ in range(real_n - tracked_n):
+                lst.append({'code': code, 'rested': False})
+
+    for code in list(tracked_counts):
+        real_n = real_counts.get(code, 0)
+        tracked_n = tracked_counts[code]
+        if tracked_n <= real_n:
+            continue
+        idxs = [i for i, e in enumerate(lst) if e['code'] == code]
+        idxs.sort(key=lambda i: lst[i]['rested'])  # ativas (False) primeiro
+        for i in sorted(idxs[:tracked_n - real_n], reverse=True):
+            lst.pop(i)
+
+
+def _board_rested_counts(board_state: dict, side: str) -> dict:
+    return dict(Counter(e['code'] for e in board_state.get(side, []) if e['rested']))
+
+
 def _color_abbrev(color_str: str) -> str:
     """'Black Yellow' -> 'BY', 'Blue Red' -> 'RB' (ordem canonica)."""
     colors = [c.strip() for c in color_str.split() if c.strip()]
@@ -99,6 +212,17 @@ RE_FAILS    = re.compile(r'^Attack Fails')
 RE_DISCARD  = re.compile(r'^\[(.+?)\] Discard (.+?) ' + _CR + r' for Counter')
 RE_EFFECT   = re.compile(r'^\[(.+?)\] (.+?) ' + _CR + r': (.+)')
 RE_END      = re.compile(r'^\[(.+?)\] End Turn')
+# Linha narrativa solta (sem ":"), diferente de RE_EFFECT -- registra saida
+# de campo por K.O. Usada pra reconciliar o rastreio de rested/active
+# (ver _rest_target_codes/_removed_target_codes).
+RE_DESTROYED = re.compile(r'^\[(.+?)\] (.+?) ' + _CR + r' Destroyed\b')
+# Dentro do texto livre de um efeito (`fx` de RE_EFFECT) ou de uma linha
+# "X attacking Y", acha codes de carta RESTADOS/REMOVIDOS por verbo. O
+# `_CR` exige o padrao LETRAS-DIGITOS (ex: OP14-020), entao nunca casa
+# "Rest 1 Don"/"Rest Don [\"Don\">Don]" (sem hifen+digito) -- sem risco de
+# confundir rest de DON com rest de carta.
+_RE_REST_VERB    = re.compile(r'Rest (?:up to \d+ )?.+?' + _CR)
+_RE_REMOVE_VERB  = re.compile(r'(?:Destroy|K\.O\.|Return|Bounce|Trash) (?:up to \d+ )?.+?' + _CR)
 # Tag do jogador nestas 4 vem VAZIA (`[] Hand: [...]`) na maioria dos
 # snapshots do jogo -- achado 14/07 ao construir o comparador de decisao
 # humana: `(.+?)` (1+ char) nunca casava `[]`, entao _collect_snap parava
@@ -236,11 +360,17 @@ def parse_log(log_path: str) -> tuple:
 
     # 3. Parsear blocos
     parsed_turns = []
+    board_state = {p1: [], p2: []}
     for t_idx, block in enumerate(turn_blocks):
         player  = block['player']
         blines  = block['lines']
         actions = []
         don_drawn, card_drawn, current_attack = 0, None, None
+
+        # Refresh Phase: personagens do proprio jogador ativo voltam a ficar
+        # ativos no inicio do turno dele (o lado oponente NAO refresca agora).
+        for e in board_state.get(player, []):
+            e['rested'] = False
 
         for line in blines:
             if line.startswith('RZ1') or not line:
@@ -259,6 +389,8 @@ def parse_log(log_path: str) -> tuple:
                 current_attack = None
                 actions.append({'type': 'play', 'card': m.group(3),
                                 'card_name': m.group(2), 'effects': []})
+                _board_add(board_state, player, m.group(3),
+                          rested=not _has_rush(m.group(3)))
                 continue
 
             m = RE_ATTACH.match(line)
@@ -282,6 +414,11 @@ def parse_log(log_path: str) -> tuple:
                                       'damage': None, 'blocked_by': None,
                                       'countered_by': []}
                     actions.append(current_attack)
+                    # Atacar e o custo -- rests o proprio atacante (se for o
+                    # lider atacando, nao ha entrada em board_state pra ele,
+                    # sem-efeito por design: alvo de ataque nunca depende do
+                    # rested do LIDER).
+                    _board_rest_one(board_state, player, m.group(3))
                 continue
 
             m = RE_BLOCKS.match(line)
@@ -302,6 +439,11 @@ def parse_log(log_path: str) -> tuple:
                 current_attack['result'] = 'blocked'
                 current_attack = None; continue
 
+            m = RE_DESTROYED.match(line)
+            if m:
+                _board_remove_one(board_state, m.group(1), m.group(3))
+                continue
+
             m = RE_EFFECT.match(line)
             if m and m.group(1) == player:
                 src_name, src_code, fx = m.group(2), m.group(3), m.group(4)
@@ -316,6 +458,11 @@ def parse_log(log_path: str) -> tuple:
                 else:
                     actions.append({'type': 'activate', 'card': src_code,
                                     'card_name': src_name, 'effects': [fx]})
+                rest_codes, remove_codes = _rest_and_remove_codes_in_text(fx)
+                for code in rest_codes:
+                    _board_rest_one_any_side(board_state, p1, p2, code)
+                for code in remove_codes:
+                    _board_remove_one_any_side(board_state, p1, p2, code)
                 continue
 
         # Fecha ataque pendente ao fim do turno (acertou sem linha "hit for N")
@@ -327,6 +474,15 @@ def parse_log(log_path: str) -> tuple:
                      or RE_TRASH.match(l) or RE_LIFE.match(l)]
                     + block['snap_lines'])
         snap = _parse_snap(all_snap, p1, p2, known_codes)
+
+        # Reconcilia o rastreio active/rested pelo board REAL (autoridade)
+        # e anexa `rested` (contagem por code) ao snapshot de cada lado.
+        for side in (p1, p2):
+            _reconcile_board_state(board_state, side,
+                                   snap.get(side, {}).get('board', []))
+            counts = _board_rested_counts(board_state, side)
+            if counts:
+                snap.setdefault(side, {})['rested'] = counts
 
         parsed_turns.append({
             'turn': t_idx + 1,

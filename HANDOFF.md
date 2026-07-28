@@ -1,5 +1,106 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-28 (392) - Claude (sessao remota web) - parse_combat_log.py passa a rastrear active/rested do oponente (simulacao incremental) + comparacao de ALVO de ataque (lider vs personagem) fica valida pela primeira vez + achado especifico forte em Imu-B
+
+Usuario pediu duas coisas na mesma mensagem: (1) varrer os logs comparando
+padroes de ATAQUE (pedido anterior), e (2) implementar o rastreio
+active/rested que eu tinha sinalizado como bloqueio real da comparacao de
+ALVO (lider vs personagem) no bloco anterior desta sessao (nao commitado
+ainda, so reportado no chat).
+
+**Problema**: o snapshot que `parse_combat_log.py` sempre extraiu do log
+(Hand/Board/Trash/Life, direto do dump do proprio simulador) nunca teve
+o estado active/rested de cada personagem -- so lista de codes. A regra
+do jogo so permite declarar ataque contra o LIDER ou um personagem
+REALMENTE rested (`opp.rested_chars(att)`, `decision_engine.py`
+~linha 12889). Sem esse dado, toda reconstrucao de estado (`compare_vs_human.py`)
+tratava TODO personagem do oponente como ativo por padrao (`rested: bool
+= False` no dataclass `Card`) -- ou seja, o motor NUNCA conseguia gerar
+legalmente um ataque em personagem nessa comparacao, o que inflava
+artificialmente "IA sempre prefere lider" pra 100% (confirmado e
+reportado no chat ANTES deste commit, nao vira "achado" nenhum ate
+aqui -- era limite de ferramenta, nao comportamento real do bot).
+
+**Implementado** (`parse_combat_log.py`):
+- Rastreio incremental de active/rested por simulacao, turno a turno,
+  junto com o parsing ja existente das acoes: `Deploy` entra rested por
+  padrao (`not _has_rush(code)`, novo helper que le `has_rush` de
+  `card_analysis_db.json`, carregado sob demanda); `attacking` resta o
+  proprio ATACANTE (custo de atacar); refresh no INICIO do proprio turno
+  reativa todo o board desse jogador (o lado oponente nao refresca
+  agora); nova regex `RE_DESTROYED` (linha narrativa solta "X Destroyed",
+  nunca capturada antes) remove do rastreio; texto livre de efeito (`fx`
+  de `RE_EFFECT`, ex: "Rest Dracule Mihawk [...]", "Destroy Perona
+  [...]") e varrido por verbo (`_RE_REST_VERB`/`_RE_REMOVE_VERB`) pra
+  restar/remover em QUALQUER lado (custo no proprio lider/personagem OU
+  remocao no lado oponente).
+- **Reconciliacao obrigatoria a cada turno** (`_reconcile_board_state`)
+  contra o board REAL do snapshot (autoridade final): completa copias nao
+  detectadas como ativas (default conservador, igual ao comportamento de
+  ANTES desse rastreio existir) e remove excesso (prioriza remover as
+  ATIVAS extras, preservando a informacao de rested que foi de fato
+  detectada). Isso significa que um verbo de remocao nao coberto custa
+  precisao, nunca gera contagem maior que a real -- a contagem final NUNCA excede o board
+  real.
+- Contagem final gravada em `snapshot[lado]['rested'] = {code: count}`
+  (so anexado quando >0 -- aditivo, nao quebra nenhum consumidor
+  existente que so olha hand/board/trash/life).
+- `compare_vs_human.py` (`build_game_states`) agora aplica essa contagem
+  nas N primeiras copias de cada code no board do OPONENTE reconstruido
+  (sem identidade de instancia no schema -- aproximacao razoavel, ja que
+  qual copia especifica virou rested nao importa pra legalidade de alvo,
+  so quantas).
+
+**Reparse retroativo**: rodei `parse_combat_log.py` de novo sobre os 84
+raw logs ainda presentes em `logs/raw/` (30 entradas mais antigas usam o
+caminho de ingestao `autosaved_log`/`original_file`, sem raw
+correspondente neste ambiente -- puladas, ficam sem o dado novo). Validado
+ANTES de sobrescrever os JSON git-tracked: dry-run em 10 arquivos,
+diff estrutural com `rested` removido == arquivo original em TODOS os 10
+(aditivo puro, confirmado antes de rodar nos 84).
+
+**Teste permanente** (`smoke_fast.py`,
+`test_parse_combat_log_rastreia_rested_active_do_oponente`): usa um log
+real ja no banco (nao sintetico) e trava os valores exatos: Deploy sem
+Rush entra rested; refresh no proprio turno reativa personagem antigo;
+personagem novo continua rested; lider atacando NAO afeta board_state
+(por design). `smoke_fast.py` E `smoke_test.py` inteiros rodados depois
+do reparse -- 100% (mudança em area compartilhada/parser, gauntlet amplo
+conforme CLAUDE.md).
+
+**Resultado da comparacao de alvo (agora valida)**: script descartavel em
+`/tmp` (nao commitado), 689 turnos com ataque humano real, 1114 pares
+"mesmo atacante, IA tambem pontuou um ataque pra ele":
+- Antes do fix: IA preferia lider 100% das vezes (artefato, invalido).
+- Depois do fix: IA prefere lider 44.6% / personagem 55.4% -- muito mais
+  plausivel. Concordancia de alvo (mesmo atacante) 58.4% (651/1114).
+- Direcao dos 463 desacordos: **378 (82%) sao "humano foi na cara
+  (lider), IA queria trocar (personagem)"**; so 85 (18%) sao o oposto.
+  Bate com o achado de vencedor-vs-perdedor ja registrado (bloco
+  anterior desta sessao, nao numerado em HANDOFF ainda por ter sido so
+  investigacao de chat): vencedores atacam o lider 83% das vezes contra
+  62% dos perdedores, e anexam ~28% mais DON por ataque.
+
+**Achado especifico forte em Imu-B** (pedido do usuario pra aprofundar
+nesse lider, que tem o pior recorte da base: 6 vitorias contra 29
+derrotas): **178 dos 463 desacordos totais (38%) sao de partidas com
+Imu-B**, e 140/178 (79%) sao "humano atacou com o proprio LIDER Imu
+(OP13-079) na cara, IA queria redirecionar pra trocar com um personagem
+rested do oponente". Conferido manualmente contra o log cru (nao e falso
+positivo do rastreio novo): no caso especifico auditado
+(`Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.02.31.json`, turno 6),
+existiam DUAS copias rested legitimas no board do oponente naquele
+momento exato (`OP10-111`/`OP10-109`, confirmado no snapshot
+reconstruido) -- a IA via a opcao de trocar E preferia, o jogador real
+foi na cara mesmo assim.
+
+**NAO fiz** (fica pra decisao do usuario, mesma cautela anti-overfitting
+do bloco 391): nao mudei nenhum peso de scoring de ataque em cima disso.
+E um achado real e bem grande (38% de TODOS os desacordos da base
+inteira vem so de Imu-B), mas a comparacao ainda usa `_generate_and_score_actions`
+isolado (nao o Turn Planner com Monte Carlo completo que roda ao vivo) --
+mesma ressalva ja documentada pro resto de `compare_vs_human.py`.
+
 ## 2026-07-28 (391) - Claude (sessao remota web) - corrige cancelamento perfeito no desconto de counter em vida baixa (era a causa real da "subcalibracao" do bloco 388) + valida com 29 estados reais, nao 1 partida
 
 Usuario pediu explicitamente pra nao aceitar minha cautela anterior
