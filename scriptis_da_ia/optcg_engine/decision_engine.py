@@ -11970,6 +11970,57 @@ class OPTCGMatch:
         if ramp_amount:
             base += engine.ramp_curve_value(ramp_amount)
 
+        # Valor de QUALQUER play_card aninhado no proprio efeito desta carta
+        # (ex: ST22-015 "I Am Whitebeard!!" jogando Edward Newgate de graca,
+        # alem de buff+life-to-hand) -- achado real 27/07 (partida Katakuri
+        # x Ace, investigacao pedida pelo usuario comparando o Turn Planner
+        # com o humano vencedor): ate aqui `base` (avaliar_carta) so credita
+        # bonus de FLAG generico e fixo (is_searcher etc) pro proprio efeito
+        # de "jogar outra carta" -- nunca o valor REAL de QUEM esta sendo
+        # trazido. Resultado: jogar ST22-015 pontuava 140, MENOS DA METADE
+        # de jogar Edward Newgate direto (280), mesmo ST22-015 trazendo o
+        # MESMO Newgate DE GRACA (sem custo de mao) mais 2 bonus extra (buff
+        # de lider, life-to-hand) -- o humano achou essa linha, o Turn
+        # Planner nunca considerou. Fix generico (nao hardcoded pra
+        # ST22-015): qualquer step play_card na propria carta credita o
+        # valor da MELHOR carta elegivel na mao que bate o filtro, reusando
+        # eligible_cards (rules_facade) -- mesmo filtro que a EXECUCAO real
+        # do GRUPO 2 de play_card ja usa (_execute_step), sem duplicar logica
+        # de match.
+        from optcg_engine.rules_facade import eligible_cards
+        melhor_play_card_valor = 0.0
+        if engine._effect_conditions_met(card):
+            for block in effects.values():
+                if not isinstance(block, dict):
+                    continue
+                for step in block.get('steps', []):
+                    if step.get('action') != 'play_card':
+                        continue
+                    cost_lte = step.get('cost_lte')
+                    if cost_lte == 'don_count_self':
+                        cost_lte = engine.me.don_available + engine.me.don_rested
+                    elegiveis = eligible_cards(
+                        [c for c in engine.me.hand if c is not card],
+                        cost_lte=cost_lte,
+                        cost_eq=step.get('cost_eq'),
+                        power_lte=step.get('power_lte'),
+                        power_gte=step.get('power_gte'),
+                        power_eq=step.get('power_eq'),
+                        has_trigger=step.get('has_trigger', False),
+                        filter_text=step.get('filter_type', ''),
+                        name_or_code=step.get('filter_names') or step.get('filter_name', ''),
+                        color=step.get('color', ''),
+                        exclude_name=step.get('exclude', ''),
+                    )
+                    card_type_wanted = (step.get('card_type') or 'CHARACTER').upper()
+                    for candidate in elegiveis:
+                        if candidate.card_type.upper() != card_type_wanted:
+                            continue
+                        melhor_play_card_valor = max(melhor_play_card_valor,
+                                                      engine.avaliar_carta(candidate))
+        if melhor_play_card_valor:
+            base += min(melhor_play_card_valor * 0.75, 400)
+
         # Contra-parte do bônus de counter em avaliar_carta: aquele bônus
         # existe pra contexto "vale manter essa carta na mão" (ex: _trash_value).
         # Jogar a carta FAZ O OPOSTO — ela sai da mão e perde o valor de counter

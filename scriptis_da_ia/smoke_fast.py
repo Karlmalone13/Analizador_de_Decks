@@ -1995,6 +1995,32 @@ def test_adaptive_counterfactual_search_para_cedo_e_no_teto() -> None:
           n_usadas_ruidoso == sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT)
 
 
+def test_play_card_aninhado_credita_valor_da_carta_trazida() -> None:
+    # Achado real 27/07 (pedido do usuario: comparar o Turn Planner com o
+    # humano vencedor num log real via compare_vs_human.py, partida
+    # Katakuri x Ace). ST22-015 "I Am Whitebeard!!" (EVENT, custo 8) joga
+    # Edward Newgate DE GRACA (play_card filter_name=edward.newgate) +
+    # buff de lider +2000 + life-to-hand. Antes do fix, `_score_play_action`
+    # so dava um bonus de FLAG generico (fixo) pro proprio efeito de "jogar
+    # outra carta" -- ST22-015 pontuava 140, MENOS DA METADE de jogar
+    # Edward Newgate direto (280), mesmo trazendo o MESMO Newgate de graca
+    # mais 2 bonus extra. O humano jogou ST22-015; o Turn Planner nunca
+    # considerou essa linha no top 5.
+    me = GameState(leader=real_card("OP13-002"), don_available=10, turn=5)  # Portgas D. Ace (Whitebeard Pirates); Newgate custa 10
+    whitebeard_event = real_card("ST22-015")
+    newgate = real_card("OP13-042")
+    me.hand = [whitebeard_event, newgate]
+    opp = GameState(leader=real_card("OP11-062"), turn=5)
+    engine = DecisionEngine(me, opp)
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    actions = match._generate_and_score_actions(me, opp, engine)
+    scores = {a[2].code: a[0] for a in actions if a[1] == 'play' and len(a) > 2}
+    check("ST22-015 e Edward Newgate aparecem como candidatas de play",
+          'ST22-015' in scores and 'OP13-042' in scores)
+    check("jogar ST22-015 (deploy Newgate de graca + buff + life-to-hand) pontua MAIS que jogar Newgate direto",
+          scores.get('ST22-015', -1) > scores.get('OP13-042', 1e9))
+
+
 def test_search_contextual_evita_congestionar_mao_com_bombas() -> None:
     me = GameState(leader=real_card("OP11-062"), don_available=4,
                    don_rested=0, turn=3)
@@ -8769,6 +8795,7 @@ def main() -> int:
     test_opponent_model_for_leader_fallback_3_camadas()
     test_busca_adaptativa_ao_vivo_respeita_piso_e_teto()
     test_adaptive_counterfactual_search_para_cedo_e_no_teto()
+    test_play_card_aninhado_credita_valor_da_carta_trazida()
     test_search_contextual_evita_congestionar_mao_com_bombas()
     test_plano_katakuri_prefere_rampa_e_bloqueia_desperdicios()
     test_ataque_respeita_orcamento_da_jogada_principal_e_don_anexado()

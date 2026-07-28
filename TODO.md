@@ -2,6 +2,41 @@
 
 **Última atualização:** 28 de julho de 2026
 
+## 🟢 IMPLEMENTADO: play_card aninhado agora credita o valor de quem é trazido (28/07/2026, bloco 386)
+
+Usuário pediu método concreto pra "bot joga mal": comparar Turn Planner
+vs jogada vencedora do humano num log real (`compare_vs_human.py`, já
+existia no repo). Achado real na partida Katakuri x Ace (T10): `ST22-015`
+("I Am Whitebeard!!") joga Edward Newgate de graça + buff + life-to-hand,
+mas pontuava 140 — menos da metade de jogar Newgate direto (280). Causa:
+`_score_play_action` só credita bônus de flag genérico pro efeito "jogar
+outra carta", nunca o valor real de quem é trazido (gap que já existia
+resolvido em `_score_activate_main`, nunca replicado aqui).
+
+- [x] Fix genérico implementado (não hardcoded pra ST22-015): credita
+  `min(valor_da_melhor_carta_elegivel * 0.75, 400)`, reusando
+  `eligible_cards` (mesmo filtro da execução real). ST22-015 sobe pra
+  305 (acima de Newgate direto). Teste novo em `smoke_fast.py`,
+  `compare_vs_human.py --summary` rodado nos 114 logs sem exceção nova.
+- [ ] **PENDENTE, cosmético**: `compare_vs_human.py` ainda acusa
+  "DIVERGENCIA" no T10 mesmo com o fix — rotulagem, não bug de decisão.
+  O parser do log registra a jogada como 2 `activate` separados
+  (`ST22-015`, `OP13-042`), o motor trata como 1 `play` só (resto é
+  cascata automática) — `_ai_match_label`/`_human_action_key` comparam
+  `(type, card)` literal e nunca batem `play` com `activate` da mesma
+  jogada real. Se for mexer em `compare_vs_human.py` de novo, considerar
+  tratar EVENT resolvido (que o log rotula "activate") como equivalente
+  a `play` na comparação.
+- [ ] **PENDENTE (maior, registrado explicitamente)**: esse foi UM
+  achado de UM log. O usuário quer o bot jogando "parecido/idêntico" ao
+  humano — isso pede repetir esse MESMO método
+  (`compare_vs_human.py --player <vencedor>`) em MAIS logs onde o
+  humano venceu, catalogar os padrões de divergência recorrentes (não
+  só scoring de carta — pode ter padrão em ordem de ataque, uso de
+  DON, decisão de bloqueio), e só então generalizar mais fixes — nunca
+  copiar uma linha específica de 1 partida (overfitting), sempre a
+  FORMA do problema.
+
 > 28/07/2026 (bloco HANDOFF 385): merge com a sessão remota (blocos
 > 375-384) depois de divergência no push — resolvido mantendo os dois
 > lados (unificação do Turn Planner + fixes de hoje). Ver bloco 385 do

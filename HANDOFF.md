@@ -1,5 +1,80 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-28 (386) - Claude (sessao remota web) - achado real + fix generico: play_card aninhado no proprio efeito (ex: ST22-015 -> Edward Newgate de graca) nao creditava o valor de quem e trazido
+
+Usuario, apos reclamar "o bot joga muito mal, e se troca de lider piora",
+pediu um metodo concreto: pegar um log real (humano venceu, bot nunca
+perdeu pro humano) e comparar o Turn Planner com a jogada VENCEDORA do
+humano turno a turno. Achei que `compare_vs_human.py` (ferramenta ja
+existente no repo, nao usada nesta sessao ate agora) faz exatamente isso
+-- reconstroi o estado real de CADA turno a partir do log parseado e
+roda `_generate_and_score_actions` pra comparar com o que o humano
+realmente fez.
+
+**Log usado**: `Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json`
+(bot=Katakuri perdeu pro humano=Ace, confirmado no raw log -- Katakuri
+levou 3 hits seguidos e GameOver). Rodei `--player Opponent` (lado do
+Ace, o vencedor).
+
+**Divergencia real achada no T10**: humano ativou `ST22-015` ("I Am
+Whitebeard!!", EVENT custo 8) -- efeito: buff +2000 no lider, joga
+Edward Newgate DE GRACA (`play_card` filter_name=edward.newgate), e
+life-to-hand. O Turn Planner nem considerava essa linha no top 5;
+achei que `ST22-015` pontuava **140**, MENOS DA METADE de jogar Edward
+Newgate DIRETO da mao (**280**) -- mesmo ST22-015 trazendo o MESMO
+Newgate de graca (sem custo de mao) MAIS 2 bonus extra (buff de lider,
+life-to-hand). Deveria pontuar mais, nao menos.
+
+**Causa raiz**: `_score_play_action` (decision_engine.py) so credita
+bonus de FLAG generico e FIXO (is_searcher, draws, etc) pro proprio
+efeito de "esta carta joga outra carta" -- nunca o valor REAL de QUEM
+esta sendo trazido. Esse tipo de credito recursivo ja existia em
+`_score_activate_main` (pra habilidades recorrentes de carta em campo),
+mas nunca foi replicado pra `_score_play_action` (decidir se vale jogar
+uma carta da MAO pela primeira vez). Confirmado que nao e bug de
+UMA carta so: qualquer carta cujo proprio efeito tenha um step
+`play_card` sofre o mesmo desconto.
+
+**Fix generico** (nao hardcoded pra ST22-015): novo bloco em
+`_score_play_action` que, pra QUALQUER step `play_card` nos proprios
+efeitos da carta, acha a melhor carta elegivel na mao via
+`eligible_cards` (rules_facade -- MESMO filtro que a EXECUCAO real do
+GRUPO 2 de play_card ja usa em `_execute_step`, sem duplicar logica de
+match) e credita `min(valor * 0.75, 400)` no score de jogar a carta-
+fonte. Gated por `engine._effect_conditions_met(card)` (mesma guarda ja
+usada em outros pontos do motor pra nao creditar efeito condicional que
+nao vai disparar). Resultado real: ST22-015 sobe de 140 pra **305**,
+agora ACIMA de jogar Newgate direto (280) -- exatamente a linha que o
+humano escolheu.
+
+**Validacao**:
+- Teste novo em `smoke_fast.py`
+  (`test_play_card_aninhado_credita_valor_da_carta_trazida`), cenario
+  sintetico reproduzindo Ace + ST22-015 + Newgate em mao com DON
+  suficiente pros dois (10). `smoke_fast`/`smoke_test` 100%.
+- `compare_vs_human.py --summary` rodado nos 114 logs parseados
+  inteiros (1611 turnos) sem nenhuma excecao nova -- confirma que o fix
+  nao quebrou a reconstrucao/scoring de nenhum outro log historico.
+- Divergencia de T10 resolvida (ST22-015 agora e o top-1). Nota: a
+  ferramenta ainda acusa "DIVERGENCIA" nesse turno por um motivo
+  DIFERENTE, cosmetico -- o parser do log rotula a jogada como 2 acoes
+  `activate` separadas (`ST22-015` e `OP13-042`), enquanto o motor trata
+  como 1 unica decisao `play` (o resto e resolucao automatica em
+  cascata) -- `_human_action_key`/`_ai_action_key` comparam por
+  `(type, card)` literal, entao `('play','ST22-015')` nunca bate com
+  `('activate','ST22-015')` mesmo sendo a MESMA jogada real. Nao e bug
+  de decisao, e rotulagem da ferramenta de comparacao -- registrado
+  como pendencia leve no TODO.md, nao corrigido aqui (fora do escopo do
+  achado de scoring).
+
+**O que NAO foi feito, de proposito**: calibrar/hardcodar pra "imitar"
+essa UNICA partida. O usuario pediu calibracao apos comparacao -- o fix
+acima e GENERICO (cobre qualquer carta com play_card aninhado, nao so
+ST22-015) e resolve a causa estrutural, em vez de forcar o motor a
+copiar uma linha especifica de um unico jogo (isso seria overfitting,
+contra o proprio roadmap do projeto de "tunar por volume de
+simulacao", nao por 1 partida).
+
 ## 2026-07-28 (385) - Claude (sessao local) - merge com a sessao remota (blocos 375-384) + resposta parcial ao bloco 384 (EM ABERTO: "bot so passando o turno")
 
 `git push` bloqueado pelo hook: `origin/main` tinha divergido, 17
