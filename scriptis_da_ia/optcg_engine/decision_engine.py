@@ -46,6 +46,18 @@ USE_EVAL_V2 = True    # LIGADA 13/07: validação rigorosa (MC=6, n=50, Imu-v2 v
 # a 6). Knob global — não muda a régua, só o custo da simulação.
 PLANNER_MC_SAMPLES = 6
 
+# Componente de counter em `_counter_stat_bonus` (rede de segurança na mão
+# vs jogar a carta). Promovido de literal solto pra constante nomeada
+# (28/07, bloco HANDOFF 390) -- achado real via `compare_vs_human.py` em
+# 20 partidas distintas (não 1 log só): jogadores reais SEGURAM cartas de
+# counter>=1000 quando a vida está crítica (<=2) em 69% dos casos onde o
+# Turn Planner sugeria jogar essa carta como topo, mas o desconto atual
+# (15 * multiplicador de vida) nunca chega perto dos scores reais (200-540)
+# que essas cartas atingem -- na prática, não muda a decisão quase nunca.
+# Ver TODO.md pra validação/calibração em andamento antes de mudar este
+# valor.
+COUNTER_STAT_VALUE_PER_1000 = 15
+
 # ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
 # Promovidos de variavel local do main_phase pra constante de modulo --
 # `_select_search_candidates`/`_select_action_via_search` sao agora a FONTE
@@ -9218,7 +9230,7 @@ class DecisionEngine:
         if card.counter <= 0:
             return 0.0
         my_life = self.me.life_count()
-        v = card.counter / 1000 * 15
+        v = card.counter / 1000 * COUNTER_STAT_VALUE_PER_1000
         if life_mult:
             if my_life <= 1: v *= 4.0
             elif my_life <= 2: v *= 2.5
@@ -12032,17 +12044,26 @@ class OPTCGMatch:
         # avaliar_carta e pontuavam artificialmente alto pra JOGAR, esvaziando
         # a mão de counters — 2x Doc Q + 1x Baby 5 jogados em 2 turnos, bot
         # terminou o resto da partida sem nenhum counter na mão.
-        if card.counter > 0:
-            my_life = engine.me.life_count()
-            v = card.counter / 1000 * 15
-            if my_life <= 1: v *= 4.0
-            elif my_life <= 2: v *= 2.5
-            elif my_life <= 3: v *= 1.5
-            counters_em_mao = sum(1 for c in engine.me.hand
-                                  if c.counter > 0 and c is not card)
-            if counters_em_mao >= 4: v *= 0.4
-            elif counters_em_mao >= 2: v *= 0.7
-            base -= v
+        #
+        # Achado 28/07 (bloco HANDOFF 390): esta formula estava DUPLICADA à
+        # mão aqui, byte a byte igual a `_counter_stat_bonus` (avaliar_carta)
+        # -- corrigido pra chamar o método único, sem mudar o valor (mesmo
+        # resultado, só elimina o risco de as duas derivarem sem querer).
+        #
+        # Achado 28/07 parte 2 (bloco HANDOFF 391, comparação sistemática em
+        # 20 partidas reais distintas via compare_vs_human.py -- não 1 log
+        # só, pedido explícito do usuário): `base` já é
+        # `engine.avaliar_carta(card)`, que POR SUA VEZ já soma
+        # `_counter_stat_bonus(card)` (linha ~9762). Subtrair o MESMO valor
+        # de novo aqui não é um desconto -- é um cancelamento perfeito,
+        # independente da magnitude da constante (confirmado testando
+        # COUNTER_STAT_VALUE_PER_1000 em 15/30/45/60/90/120 contra 29 estados
+        # reais: 0/29 mudaram de sugestão, scores idênticos byte a byte em
+        # qualquer valor testado). Pra o desconto realmente existir, precisa
+        # subtrair o bônus DUAS vezes: uma pra anular o crédito que
+        # avaliar_carta somou, outra como a penalidade de fato por abrir mão
+        # da carta como counter garantido.
+        base -= 2 * engine._counter_stat_bonus(card)
 
         # GamePlan fase 2 (HANDOFF #119/#120): DON!! não é perdido entre
         # turnos (refresh no início do turno devolve TUDO que foi anexado,

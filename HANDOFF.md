@@ -1,5 +1,77 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-28 (391) - Claude (sessao remota web) - corrige cancelamento perfeito no desconto de counter em vida baixa (era a causa real da "subcalibracao" do bloco 388) + valida com 29 estados reais, nao 1 partida
+
+Usuario pediu explicitamente pra nao aceitar minha cautela anterior
+("seria calibrar com base numa unica partida") sem checar os varios
+logs disponiveis primeiro: **"Quero que olhe isso pq temos varios
+logs, tenho certeza que isso nao acontece so em uma partida"**.
+
+**Investigacao (antes de qualquer mudanca de valor):**
+- Scan sistematico em TODOS os 114 logs parseados (nao so o log do
+  Katakuri do bloco 388): reconstroi pre-turn snapshot de cada turno,
+  filtra vida<=2, pega a sugestao top-1 do Turn Planner, filtra pra
+  `type=='play'` com carta de counter>=1000. Achado: 130 turnos com
+  vida critica, 29 desses com carta de counter alto como sugestao top,
+  **20-21 dessas 29 (~69-72%) SEGURADAS (nao jogadas) pelo jogador real
+  vencedor** -- em ~20 partidas distintas, jogadores diferentes
+  (`Sebs#6211`, `Proxh#4377`, `Metalbeard#6700`, e as convencoes
+  You/Opponent do bot), datas diferentes. Padrao real e sistemico, nao
+  overfit em 1 log -- confirma a suspeita do usuario com numero.
+- Testei `COUNTER_STAT_VALUE_PER_1000` (constante nova, extraida do
+  literal `15` que estava solto dentro de `_counter_stat_bonus`) em
+  15/30/45/60/90/120 contra os 29 estados reais: **0/29 mudaram de
+  sugestao em QUALQUER valor testado**, com scores IDENTICOS byte a
+  byte entre value=15 e value=500 num caso de debug direto
+  (`ST34-002` = 265.0 nos dois). Isso não é "desconto pequeno demais" —
+  é o desconto não fazer NADA.
+- Causa raiz: `_score_play_action` faz `base = engine.avaliar_carta(card)`,
+  que por sua vez JA soma `_counter_stat_bonus(card)` (linha ~9762,
+  contexto "vale manter na mao"). O "desconto" (linha ~12052, refatorado
+  no bloco 390 de copia-colada pra chamada unica, SEM mudar
+  comportamento naquele momento) subtraia o MESMO valor de volta --
+  cancelamento perfeito, independente da magnitude da constante. Por
+  isso testar 15/30/45/60/90/120 nao mudou nada: o termo simplesmente
+  se anula antes de chegar no resultado final.
+
+**Fix** (`decision_engine.py`, `_score_play_action`, ~linha 12052→12066):
+```python
+# antes (cancelamento perfeito, no-op independente da constante):
+base -= engine._counter_stat_bonus(card)
+# depois (anula o credito de avaliar_carta + aplica a penalidade real):
+base -= 2 * engine._counter_stat_bonus(card)
+```
+
+**Validacao** (script descartavel em `/tmp`, nao commitado -- reconstroi
+os mesmos 29 estados reais, roda `get_ai_actions` antes/depois do fix
+comparando por `(arquivo, turno, carta)`):
+- **3/29 flips**: a sugestao top deixou de ser "jogar a carta de
+  counter" e virou outra coisa. As 3 flippadas eram TODAS casos onde o
+  jogador real vencedor tinha SEGURADO a carta -- direcao certa, o fix
+  aproxima a IA da decisao real vencedora exatamente nos casos onde
+  divergia.
+- Nos 26 estados restantes (18 held + 8 played), o score de "jogar"
+  caiu de verdade (deltas de -15 a -60 entre before/after) -- o
+  desconto agora tem efeito mensuravel.
+- **Nenhum caso "played" virou "held" incorretamente** nessa amostra --
+  sem sinal de overcorrecao (a IA nao passou a recusar jogar cartas que
+  o humano realmente jogou).
+- `smoke_fast.py`: 100% apos o fix, sem regressao.
+
+**Nao feito** (fica pendente, registrado no TODO.md): validacao via
+self-play/gauntlet completo (`baseline_metrics.py`) -- inutilizavel
+nesta sessao remota (path Windows hardcoded pros decks). Se uma sessao
+local rodar antes/depois do fix, confirmar que o resultado agregado nao
+piora.
+
+**Correcao de framing**: o TODO.md tinha essa pendencia registrada como
+"desconto pode estar subcalibrado, precisa de tune_weights.py" (bloco
+388) -- isso estava impreciso em dois pontos: (1) nao era questao de
+magnitude, era cancelamento; (2) `tune_weights.py` nem se aplica aqui,
+so tunable `EVAL_WEIGHTS`/`evaluate_state_v2` (camada de avaliacao
+holistica, diferente da pontuacao por acao onde esse bug vivia).
+Framing corrigido no TODO.md.
+
 ## 2026-07-28 (389) - Claude (sessao remota web) - identifica o lado do bot via Shift+P (LogOutput.log do BepInEx) em vez de assumir "vencedor = usuario"
 
 Usuario corrigiu a premissa usada nos blocos 387/388: "não trate eu

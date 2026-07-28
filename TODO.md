@@ -28,23 +28,45 @@ controla P1/P2" no `LogOutput.log` do BepInEx a cada toggle).
   `--add-to-db --bepinex-log` logo após CADA partida (antes de trocar
   de lado de novo) pra manter a correlação certa.
 
-## 🟡 PENDENTE DE CALIBRAÇÃO (não bug): desconto de counter em vida baixa pode estar subcalibrado (28/07/2026, bloco 388)
+## 🟢 CORRIGIDO: desconto de counter em vida baixa era um cancelamento perfeito, não "subcalibrado" (28/07/2026, bloco 391)
 
-Achado real investigando o padrão "vencedor passa o turno, IA queria
-jogar" (1 partida, Katakuri segurou counter 1000/2000 por 3 turnos com
-vida caindo 5→3→1). O mecanismo de desconto já existe
-(`_score_play_action`, `v *= 4.0` quando `my_life <= 1`), mas mesmo
-descontado as cartas ainda pontuavam 180-265 pra jogar — alto o
-suficiente pra bater "passar". **NÃO ajustado** — precisa de calibração
-de verdade (`tune_weights.py`/`baseline_metrics.py`, gauntlet inteiro,
-critério MAXIMIN sem regressão), não um palpite baseado numa partida só.
+A pendência do bloco 388 (abaixo, framing antigo mantido riscado pra
+histórico) estava **errada no diagnóstico**: não era questão de
+magnitude pequena — era um bug de cancelamento. `_score_play_action`
+faz `base = engine.avaliar_carta(card)`, que JÁ soma
+`_counter_stat_bonus(card)` (linha ~9762). O "desconto" em
+`_score_play_action` (linha ~12052) subtraía esse MESMO valor de volta
+— cancelamento perfeito, **independente da magnitude da constante**.
+Confirmado testando `COUNTER_STAT_VALUE_PER_1000` em 15/30/45/60/90/120
+contra 29 estados reais: 0/29 mudaram de sugestão, scores idênticos
+byte a byte em qualquer valor.
 
-- [ ] Rodar `tune_weights.py` (ou um teste pareado tipo
-  `measure_lethal_don_fix.py`) especificamente no multiplicador de
-  desconto de counter por `my_life`, comparando um valor maior contra
-  o gauntlet inteiro antes de mudar.
-- [ ] Juntar mais exemplos reais desse padrão antes de decidir a
-  magnitude certa (só 1 partida investigada a fundo até agora).
+Usuário pediu explicitamente pra não calibrar em cima de 1 partida só
+("tenho certeza que isso não acontece só em uma partida") — scan
+sistemático em TODOS os 114 logs confirmou: 130 turnos com vida<=2, 29
+com carta de counter>=1000 como topo da IA, 20-21 desses (~69-72%,
+número varia um pouco por causa de reprocessamento) SEGURADOS (não
+jogados) pelo jogador real vencedor, em ~20 partidas distintas,
+jogadores diferentes, datas diferentes.
+
+- [x] Fix: `base -= 2 * engine._counter_stat_bonus(card)` (anula o
+  crédito de `avaliar_carta` + aplica a penalidade real de fato).
+- [x] Validado nos MESMOS 29 estados reais (antes/depois do fix, script
+  descartável, não commitado): 3/29 flips de "topo = jogar a carta de
+  counter" pra outra ação — as 3 flippadas eram TODAS casos onde o
+  humano vencedor tinha SEGURADO a carta (direção certa). As 26
+  restantes (18 held + 8 played) tiveram score reduzido de verdade
+  (deltas de -15 a -60), sem nenhum caso "played" virando "held"
+  incorretamente (sem overcorreção visível nessa amostra).
+- [x] `smoke_fast.py` 100% após o fix.
+- [ ] Não validado via self-play/gauntlet completo (`baseline_metrics.py`
+  não roda nesta sessão remota — path Windows hardcoded pra decks).
+  Se possível numa sessão local, rodar antes/depois pra confirmar que
+  não piora resultado agregado.
+
+<!-- histórico (framing superado, ver correção acima):
+🟡 PENDENTE DE CALIBRAÇÃO (não bug): desconto de counter em vida baixa
+pode estar subcalibrado (28/07/2026, bloco 388) -->
 
 ## 🟢 IMPLEMENTADO: 3 melhorias em compare_vs_human.py/parse_combat_log.py (28/07/2026, bloco 388)
 
