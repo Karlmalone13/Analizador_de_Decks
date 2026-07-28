@@ -1,0 +1,29 @@
+{
+  "trigger_card": "OP13-091",
+  "problem": "Investigando 'ordem de defesa' (bloco HANDOFF 393), 47/75 casos de 'humano bloqueou, IA nao recomendaria' na comparacao vs logs reais eram porque a carta que bloqueou de verdade no log cru nao tem a keyword [Blocker] no nosso banco. Busca global por 'gains? [Blocker]' em cards_rows.csv achou 83 cartas (nao so as 3 vistas nos logs), com 4 causas raiz distintas.",
+  "grammar_family": "'If <condicao>, this Character gains [Blocker]' com pelo menos 6 formas de <condicao> sem grammar nenhuma (presenca por nome sem a palavra Character/type, presenca de carta nomeada 'on your field' incluindo Stages, presenca de OUTRA copia da mesma carta 'other than this Character', filtro de COR+tipo com exclusao de self); [Opponent's Turn] gain_blocker vivendo no bloco 'opp_turn' (nao 'passive'), nunca escaneado por apply_conditional_keyword_passives; reminder text padrao do keyword nativo ('(After your opponent declares an attack, you may rest this card to make it the new target of the attack.)') casando com o regex generico de custo 'rest this (card|character|stage|leader)', gerando um custo fantasma rest_self em ~30 cartas; e 4 cartas (Trafalgar Law OP10-119, Killer ST36-002, Basil Hawkins OP10-109, Morgan OP15-017) com [Blocker] ausente do card_text NA FONTE (cards_rows.csv), apesar de bloquearem de verdade nos combat logs reais.",
+  "queries": [
+    "regex 'gains?\\s*\\[Blocker\\]' (case-insensitive) contra cards_rows.csv inteiro (4257 linhas): 83 cartas (contando reprints/alt-arts)",
+    "amostra classificada manualmente por forma de condicao: has_named_character sem 'Character' (1), has_named_card_on_field/Stage (1), has_other_named/mesma-carta (1 + OP13-009 Curly Dadan achada de bonus com o MESMO bug em gain_double_attack), chars_gte com cor+exclude_self (3: OP10-108/OP11-065/OP11-096, + OP10-053 com o mesmo bug de exclude_self faltando), opp_turn nao escaneado (2: OP15-011/ST31-003), custo fantasma rest_self (~30 cartas afetadas pela mesma causa), texto-fonte sem [Blocker] nenhum (4)",
+    "cross-check contra combat logs reais em logs/parsed/*.json: confirmado 'X Blocks' em log cru para Trafalgar Law OP10-119, Killer ST36-002, Basil Hawkins OP10-109, Morgan OP15-017 -- nenhum tinha [Blocker] no card_text da fonte"
+  ],
+  "cards_found": [
+    "OP13-091",
+    "EB02-012", "EB02-033", "OP04-005", "OP10-108", "OP11-065", "OP11-096",
+    "OP10-053", "OP13-009", "OP15-011", "ST31-003",
+    "EB04-056", "OP02-031", "OP02-074", "OP04-059", "OP04-071", "OP05-062",
+    "OP05-086", "OP06-010", "OP06-054", "OP06-072", "OP06-113", "OP07-030",
+    "OP11-057", "OP12-066", "OP13-112", "OP15-068", "ST25-002", "ST25-005",
+    "ST27-004",
+    "OP10-119", "ST36-002", "OP10-109", "OP15-017"
+  ],
+  "resolution_scope": "global",
+  "decision": "gerar_effects_db.py: (1) parse_costs() agora remove o reminder text padrao do [Blocker] ANTES de qualquer regex de custo rodar (fix generico -- protege qualquer carta com esse texto exato, nao so as ~30 achadas); (2) parse_conditions() ganhou has_other_named ('[Nome] other than this Character', espelha no_other_named existente mas com PRESENCA em vez de AUSENCIA), has_named_card_on_field ('[Nome] on your field', cobre Stages), e chars_gte_color_filter+chars_gte_exclude_self (cor + 'other than [Nome]/this Character' combinados com o chars_gte_type_filter ja existente -- side-effect: corrigiu tambem OP10-053/OP13-009 que ja usavam 'other than' mas sem a exclusao aplicada). decision_engine.py: _check_conditions ganhou os 2 condicionais novos + o filtro de cor/exclude_self no branch chars_gte ja existente; apply_conditional_keyword_passives agora TAMBEM escaneia steps do bloco 'opp_turn' (nao so 'passive') para _KEYWORD_GRANTS, usando as conditions PROPRIAS desse bloco (nao as de 'passive', que podem nao existir na mesma carta). cards_rows.csv: as 4 cartas com [Blocker] ausente da fonte ganharam o prefixo '[Blocker] (reminder text)' -- correcao pontual de dado (nao e bug de grammar do parser, o texto simplesmente nao chegou do scrape), edicao surgical (Edit tool, string exata) para nao reescrever o CSV inteiro via csv.DictWriter (primeira tentativa gerou um diff de 8500+ linhas por normalizacao de quoting/encoding do proprio pandas/csv -- revertida).",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=32 (as 32 cartas esperadas -- 28 so de gerar_effects_db.py, +4 da correcao de cards_rows.csv), nenhuma outra carta das 4257 linhas/2644 cartas unicas afetada",
+    "gerar_dbs.py rodado (unica porta de geracao) -- card_effects_db.json e card_analysis_db.json regenerados juntos, sanidade das 8 cartas-chave OK",
+    "smoke_fast.py: nova test_blocker_condicional_auditoria_global_28_07 (12 asserts) -- custo fantasma removido, has_other_named liga/desliga com/sem outra copia (Kung Fu Jugon), has_named_card_on_field liga so com Stage nomeado em campo (Klabautermann/Merry Go), chars_gte_color_filter+exclude_self liga so com OUTRO character da cor/tipo (Scratchmen Apoo), opp_turn scan liga Blocker condicional sob essa tag (Pearl), as 4 cartas de fonte corrigida agora tem Blocker nativo -- SMOKE FAST OK",
+    "smoke_test.py: TODOS OS TESTES PASSARAM (regressao ampla, area compartilhada de grammar de efeitos)"
+  ],
+  "notes": "Eustass Kid OP10-099 e Enel OP15-060 tambem apareceram na busca inicial por 'gains [Blocker]' mas sao mecanicas DIFERENTES (concessao TEMPORARIA/a OUTRO character via [End of Your Turn]/[Activate: Main], nao passiva estatica condicional em si mesmo) -- fora do escopo desta auditoria, nao regressao, ja se comportavam assim antes. card_analysis_db.json tambem mostrou um diff grande de normalizacao de quebra de linha (\\r\\n -> \\n) alem das mudancas de conteudo -- confirmado como artefato pre-existente do pipeline (pandas.read_csv normaliza newlines), reproduzivel independente desta auditoria, nao introduzido por ela."
+}

@@ -1,5 +1,100 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-28 (394) - Claude (sessao remota web) - corrige o gap de [Blocker] condicional (auditoria global, 32 cartas) + números REAIS pós-fix da "ordem de defesa" (corrige a estimativa especulativa do bloco 393) + calibração NÃO aplicada (achado ambíguo, ver abaixo)
+
+Usuário pediu "corrija o gap e depois calibre" em resposta ao achado 3
+do bloco 393. Segui o skill `optcg-parser-audit` (gate obrigatório).
+
+**Busca global** (antes de tocar em qualquer coisa): regex `gains?
+\[Blocker\]` em `cards_rows.csv` inteiro (4257 linhas) achou **83
+cartas**, não as 3 vistas nos logs — 4 causas raiz distintas, todas
+generalizadas pela FORMA (não hardcoded pros codes que revelaram cada
+uma):
+
+1. **Custo fantasma `rest_self`** (~30 cartas: OP05-062, OP11-065,
+   OP11-096, OP12-066, OP13-112, ST25-002 etc.): o reminder text padrão
+   do keyword `[Blocker]` ("(After your opponent declares an attack,
+   you may rest this card to make it the new target of the attack.)")
+   casava com o regex genérico de custo `rest this
+   (card|character|stage|leader)` em `parse_costs()`. Sem consumidor
+   lendo isso hoje (não mudava comportamento), mas dado errado. Fix:
+   `parse_costs()` remove esse texto ANTES de qualquer regex de custo.
+2. **6 condições sem gramática nenhuma**: `has_other_named` ("[Nome]
+   other than this Character" — Kung Fu Jugon OP04-005, espelha
+   `no_other_named` já existente mas com PRESENÇA em vez de AUSÊNCIA),
+   `has_named_card_on_field` ("[Nome] on your field", cobre Stages —
+   Klabautermann EB02-033/Merry Go), `chars_gte_color_filter` +
+   `chars_gte_exclude_self` (cor + "other than [Nome]" — Scratchmen Apoo
+   OP10-108, Charlotte Anana OP11-065, Ripper OP11-096). **Bônus**: a
+   mesma generalização corrigiu um bug LATENTE pré-existente em OP10-053
+   (Bian) e OP13-009 (Curly Dadan) — ambos já usavam "other than" mas
+   sem a exclusão de self aplicada, então contavam a si mesmos e a
+   condição virava sempre-verdadeira.
+3. **`gain_blocker` sob a tag `[Opponent's Turn]`** (bloco `opp_turn`,
+   não `passive`): Pearl OP15-011 e Brook ST31-003 já tinham a condição
+   corretamente parseada, mas `apply_conditional_keyword_passives` só
+   escaneava `passive.steps`. Fix: também escaneia `steps_opp_turn`,
+   usando as `conditions` PRÓPRIAS desse bloco (não as de `passive`, que
+   pode nem existir na mesma carta).
+4. **Texto-fonte sem `[Blocker]` nenhum** (Trafalgar Law OP10-119,
+   Killer ST36-002, Basil Hawkins OP10-109, Morgan OP15-017): confirmado
+   nos combat logs reais que bloqueiam de verdade, mas o `card_text` no
+   `cards_rows.csv` simplesmente não tem a keyword em lugar nenhum — gap
+   de fonte (scrape incompleto), não de gramática. Corrigido com edição
+   CIRÚRGICA (`Edit` por string exata, não reescrita via `csv.DictWriter`
+   — primeira tentativa gerou um diff de 8500+ linhas por normalização
+   de quoting do pandas/csv, revertida; a edição final ficou em 4
+   inserções/4 deleções).
+
+**Validado**: `diff_parser.py` GANHOU=0 PERDEU=0 MUDOU=32 (as 32
+esperadas, mais nenhuma das 4257 linhas/2644 cartas únicas). `gerar_dbs.py`
+rodado (única porta de geração). `smoke_fast.py` ganhou
+`test_blocker_condicional_auditoria_global_28_07` (12 asserts, cobre
+todas as formas novas + as 4 cartas de fonte corrigida).
+`smoke_test.py` inteiro 100% (área compartilhada de grammar de efeitos).
+Registro em `scriptis_da_ia/parser_audits/2026-07-28_blocker_condicional_e_reminder_text_como_custo_fantasma.json`.
+
+**Correção importante do bloco 393**: os números "89,8%/95 vs 28"
+reportados ali eram uma ESTIMATIVA (subtraindo os 47 casos "artefato de
+banco" da contagem antiga, sem reprocessar de verdade). Rodei a
+comparação de novo com o fix REAL aplicado — os números verdadeiros são
+diferentes (menos otimistas que a estimativa, porque a maioria dos 47
+casos tinha a carta com suporte a Blocker condicional mas a CONDIÇÃO
+não estava satisfeita naquele estado exato do jogo, então o desacordo
+persiste corretamente):
+
+- Bloqueio: 85,0% de concordância (1028/1209) — **109 "IA queria
+  bloquear, humano não" contra 72 "humano bloqueou, IA não queria"**
+  (~1,5x, não os 3,4x estimados).
+- Counter (inalterado pelo fix de Blocker, não depende de board): 62%
+  (750/1209) — **304 "IA queria counterar" contra 159 "humano
+  counterou, IA não queria"** (~1,9x, igual ao bloco 393).
+
+**Calibração: NÃO aplicada — achado genuinamente ambíguo, não decidi
+sozinho.** Investigando os 109 casos "IA queria bloquear, humano não":
+63/109 (58%) acontecem com vida≤2, onde `should_use_blocker` tem uma
+regra INCONDICIONAL ("com 1-2 vidas, sempre usa blocker se tiver",
+`decision_engine.py` ~linha 10922) — bloqueia sempre que há bloqueador
+disponível, sem avaliar se o ataque é grande o suficiente pra valer o
+custo do bloqueador. Isso parece o ponto óbvio pra afrouxar... EXCETO
+que o achado 1 do bloco 393 (dado puro do log, sem reconstrução) mostra
+**vencedores bloqueiam MAIS que perdedores** (10,2% vs 7,4%) — ou seja,
+o viés "bloquear mais" já está correlacionado com VENCER na base real,
+não é obviamente um erro. Reduzir a agressividade de
+`should_use_blocker` pra "parecer mais com o jogador médio" poderia
+piorar o bot em vez de melhorar, já que o jogador médio (incluindo
+perdedores) bloqueia MENOS que o vencedor médio — não há evidência de
+que a IA estar ainda mais agressiva que o vencedor médio seja um erro,
+pode ser só uma extrapolação correta da mesma tendência. Sem
+validação via self-play real (`baseline_metrics.py` não roda nesta
+sessão remota) pra desempatar "mais agressivo que o vencedor médio" é
+melhor ou pior, não ajustei nenhuma constante. Fica pra decisão do
+usuário: (a) aceitar o fix do banco como o entregável desta rodada, sem
+mexer em pesos; (b) pedir uma calibração específica mesmo sem
+validação via self-play (aceitando o risco); ou (c) esperar acesso a
+uma sessão local pra rodar `baseline_metrics.py`/gauntlet antes de
+decidir.
+
 ## 2026-07-28 (393) - Claude (sessao remota web) - investigacao de "ordem de defesa" (bloqueio/counter): bug real na reconstrucao (rested so aplicado a 1 dos 2 lados) + achado forte de banco de dados (Blocker faltando em varias cartas, confirmado no log real)
 
 Usuario pediu pra investigar a "ordem de defesa" apos o achado de ataque

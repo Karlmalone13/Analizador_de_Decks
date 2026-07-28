@@ -394,18 +394,43 @@ def parse_conditions(text):
                     conds['chars_gte_type_filter'] = m_dn.group(2).strip()
                     conds['chars_gte_distinct_names'] = True
                 else:
-                    # "if you have a/an [Tipo] type Character" -- EXISTENCIA
-                    # simples (singular, sem numero, sem "with N power/cost
-                    # or more" depois) -- equivalente a chars_gte=1 com
-                    # filtro de tipo. Achado 19/07, OP16-076, unica carta no
-                    # banco com essa forma exata: condicao inteira sumia,
-                    # buff disparava sempre.
-                    m_exist = re.search(
-                        r'if you have an? [\[{"]([^\]}"]+)[\]}"] type character\b'
-                        r'(?! with)', t)
-                    if m_exist:
+                    # "if you have a [Cor] "[Tipo]" type Character other
+                    # than [Nome]" -- adjetivo de COR entre "a" e o tipo, +
+                    # exclusao explicita da propria carta (achado 28/07,
+                    # bloco HANDOFF 393, auditoria global de [Blocker]
+                    # condicional: Scratchmen Apoo OP10-108, Charlotte
+                    # Anana OP11-065, Ripper OP11-096). Checado ANTES do
+                    # m_exist generico (que nao aceita cor entre "a" e o
+                    # tipo, nem sabe excluir self).
+                    m_color_excl = re.search(
+                        r'if you have an? (red|green|blue|purple|black|yellow) '
+                        r'[\[{"]([^\]}"]+)[\]}"] type character other than '
+                        r'\[([^\]]+)\]', t)
+                    if m_color_excl:
                         conds['chars_gte'] = 1
-                        conds['chars_gte_type_filter'] = m_exist.group(1).strip()
+                        conds['chars_gte_type_filter'] = m_color_excl.group(2).strip()
+                        conds['chars_gte_color_filter'] = m_color_excl.group(1).strip()
+                        conds['chars_gte_exclude_self'] = True
+                    else:
+                        # "if you have a/an [Tipo] type Character" -- EXISTENCIA
+                        # simples (singular, sem numero, sem "with N power/cost
+                        # or more" depois) -- equivalente a chars_gte=1 com
+                        # filtro de tipo. Achado 19/07, OP16-076, unica carta no
+                        # banco com essa forma exata: condicao inteira sumia,
+                        # buff disparava sempre.
+                        m_exist = re.search(
+                            r'if you have an? [\[{"]([^\]}"]+)[\]}"] type character\b'
+                            r'(?! with)', t)
+                        if m_exist:
+                            conds['chars_gte'] = 1
+                            conds['chars_gte_type_filter'] = m_exist.group(1).strip()
+                            # "other than [Nome]" tambem pode vir sem adjetivo
+                            # de cor (achado 28/07, Kung Fu Jugon-style sem cor
+                            # ja coberto por has_other_named, mas type+exclude
+                            # sem cor tambem existe -- guarda igual).
+                            tail_excl = t[m_exist.end():m_exist.end() + 30]
+                            if 'other than' in tail_excl:
+                                conds['chars_gte_exclude_self'] = True
 
     # "if you have N or more rested Characters" -- conta PROPRIOS Characters
     # que estao rested, distinto de chars_gte (que conta todos). OP09-033.
@@ -656,6 +681,42 @@ def parse_conditions(text):
     m = re.search(r'(?:if|and) you have an? \[([^\]]+)\] character\b', t)
     if m: conds['has_named_character'] = m.group(1).strip()
 
+    # "if you have a/an [Nome] other than this Character" -- presenca de
+    # OUTRA copia (por nome) alem da propria carta -- achado 28/07 (bloco
+    # HANDOFF 393, auditoria global de [Blocker] condicional): distinto de
+    # has_named_character (que NAO exclui self, trivialmente verdadeiro
+    # quando o Nome e o proprio nome da carta -- ex: Kung Fu Jugon
+    # OP04-005 "if you have a [Kung Fu Jugon] other than this Character").
+    # Espelha no_other_named (ja existente, checa AUSENCIA com a mesma
+    # exclusao de self), so que a condicao aqui e de PRESENCA.
+    m_other_named = re.search(r'if you have an? \[([^\]]+)\] other than this character\b', t)
+    if m_other_named:
+        conds['has_other_named'] = m_other_named.group(1).strip()
+
+    # "if you have [Nome] on your field" -- presenca de uma carta NOMEADA
+    # em qualquer zona de campo (Character OU Stage -- achado 28/07,
+    # Klabautermann EB02-033: "if you have [Merry Go] on your field",
+    # Merry Go e um Stage, nao um Character -- has_named_character so
+    # cobre field_chars). Sem "a/an" antes do nome (distingue de
+    # has_named_character, que exige "a/an ... Character").
+    if 'has_other_named' not in conds:
+        m_on_field = re.search(r'if you have \[([^\]]+)\] on your field\b', t)
+        if m_on_field:
+            conds['has_named_card_on_field'] = m_on_field.group(1).strip()
+
+    # "if you have a/an [Nome]," -- presenca simples por nome, variante SEM
+    # a palavra "Character"/"type" depois do colchete (achado 28/07,
+    # Gaimon EB02-012: "If you have a [Sarfunkel], this Character gains
+    # [Blocker]." -- Sarfunkel e um Character, mesma semantica de
+    # has_named_character, so falta a palavra "Character" no texto).
+    # Guard: so se nao bateu nenhuma variante mais especifica acima
+    # (evita colidir com "other than"/"on your field").
+    if ('has_named_character' not in conds and 'has_other_named' not in conds
+            and 'has_named_card_on_field' not in conds):
+        m_simple_comma = re.search(r'if you have an? \[([^\]]+)\](?!\s+other than)\s*,', t)
+        if m_simple_comma:
+            conds['has_named_character'] = m_simple_comma.group(1).strip()
+
     # "if you have [Nome1] and [Nome2]" -- presenca de DOIS characters
     # nomeados (ambos exigidos), sem "a ... Character" entre eles (achado
     # 19/07, OP15-064 Kotori/OP15-072 Hotori, familia com nomes cruzados
@@ -851,6 +912,27 @@ def parse_costs(text):
     # forma exata: o atalho numerico de DON usa "①" em vez de "(1)",
     # nenhum regex de custo reconhecia o simbolo, custo inteiro sumia.
     t = re.sub(r'[①-⑳]', lambda m: f'({ord(m.group(0)) - 0x2460 + 1})', t)
+
+    # Reminder text PADRAO do keyword [Blocker] ("(After your opponent
+    # declares an attack, you may rest this card to make it the new
+    # target of the attack.)") -- achado 28/07 (bloco HANDOFF 393,
+    # investigando "ordem de defesa"): quando a carta ganha [Blocker] de
+    # forma CONDICIONAL ("If <condicao>, this Character gains [Blocker].
+    # (reminder...)"), esse texto de regra pura -- nao um custo de
+    # verdade -- casava com o regex generico `rest this
+    # (card|character|stage|leader)` mais abaixo, gerando um
+    # `{'type': 'rest_self'}` fantasma no bloco passive de ~30 cartas
+    # (OP05-062, OP11-065, OP11-096, OP12-066, OP13-112, OP15-068,
+    # ST25-002 e outras -- varredura global, ver parser_audits/). Sem
+    # nenhum consumidor lendo `passive['costs']` no motor hoje isso nao
+    # mudava comportamento, mas e dado errado -- removido ANTES de
+    # qualquer regex de custo rodar, generico pra qualquer card_text que
+    # contenha esse reminder exato (nao so os que tem Blocker
+    # condicional).
+    t = re.sub(
+        r'\(after your opponent declares an attack,\s*you may rest this card '
+        r'to make it the new target of the attack\.?\)',
+        '', t)
 
     # "you may trash any number of [filtro]? cards from your hand" --
     # custo de contagem VARIAVEL (0..N elegiveis), companheiro do step

@@ -2142,7 +2142,10 @@
           {
             "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "has_named_character": "sarfunkel"
+        }
       }
     }
   },
@@ -2778,7 +2781,10 @@
           {
             "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "has_named_card_on_field": "merry go"
+        }
       }
     }
   },
@@ -7941,12 +7947,7 @@
         "conditions": {
           "has_named_character": "jewelry bonney",
           "life_lte": 0
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -12141,12 +12142,7 @@
         ],
         "conditions": {
           "has_named_character": "kouzuki oden"
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -13332,11 +13328,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          }
-        ],
-        "costs": [
-          {
-            "type": "rest_self"
           }
         ]
       }
@@ -18343,11 +18334,9 @@
             "action": "gain_blocker"
           }
         ],
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        "conditions": {
+          "has_other_named": "kung fu jugon"
+        }
       }
     }
   },
@@ -19940,9 +19929,6 @@
         ],
         "costs": [
           {
-            "type": "rest_self"
-          },
-          {
             "type": "don_minus",
             "count": 1,
             "optional": true
@@ -20386,9 +20372,6 @@
           }
         ],
         "costs": [
-          {
-            "type": "rest_self"
-          },
           {
             "type": "don_minus",
             "count": 1,
@@ -23713,12 +23696,7 @@
         ],
         "conditions": {
           "don_on_field_gte": 10
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -24410,12 +24388,7 @@
         ],
         "conditions": {
           "trash_gte": 10
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -25690,12 +25663,7 @@
         ],
         "conditions": {
           "leader_type": "film"
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -26994,12 +26962,7 @@
         ],
         "conditions": {
           "hand_lte": 4
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -27578,12 +27541,7 @@
         "conditions": {
           "don_fewer_than_opp_by_gte": 2,
           "leader_type": "germa 66"
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -28843,13 +28801,9 @@
         ],
         "conditions": {
           "chars_gte": 1,
-          "chars_gte_type_filter": "shandian warrior"
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+          "chars_gte_type_filter": "shandian warrior",
+          "chars_gte_exclude_self": true
+        }
       }
     }
   },
@@ -29889,12 +29843,7 @@
         ],
         "conditions": {
           "has_named_character": "camie"
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -41366,7 +41315,8 @@
         ],
         "conditions": {
           "chars_gte": 1,
-          "chars_gte_type_filter": "the tontattas"
+          "chars_gte_type_filter": "the tontattas",
+          "chars_gte_exclude_self": true
         }
       }
     }
@@ -43074,7 +43024,13 @@
           {
             "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "chars_gte": 1,
+          "chars_gte_type_filter": "supernovas",
+          "chars_gte_color_filter": "yellow",
+          "chars_gte_exclude_self": true
+        }
       }
     }
   },
@@ -43104,6 +43060,13 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
           }
         ]
       }
@@ -43459,6 +43422,13 @@
             "count": 1,
             "up_to": false,
             "face": "down"
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
           }
         ]
       }
@@ -45086,12 +45056,7 @@
         ],
         "conditions": {
           "hand_lte": 4
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -45355,11 +45320,12 @@
             "action": "gain_blocker"
           }
         ],
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        "conditions": {
+          "chars_gte": 1,
+          "chars_gte_type_filter": "big mom pirates",
+          "chars_gte_color_filter": "purple",
+          "chars_gte_exclude_self": true
+        }
       }
     }
   },
@@ -46260,11 +46226,12 @@
             "action": "gain_blocker"
           }
         ],
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        "conditions": {
+          "chars_gte": 1,
+          "chars_gte_type_filter": "navy",
+          "chars_gte_color_filter": "black",
+          "chars_gte_exclude_self": true
+        }
       }
     }
   },
@@ -48935,12 +48902,7 @@
         ],
         "conditions": {
           "events_in_trash_gte": 4
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -50771,7 +50733,8 @@
         ],
         "conditions": {
           "chars_gte": 1,
-          "chars_gte_type_filter": "mountain bandits"
+          "chars_gte_type_filter": "mountain bandits",
+          "chars_gte_exclude_self": true
         }
       }
     }
@@ -53773,12 +53736,7 @@
         ],
         "conditions": {
           "don_attached_total_gte": 2
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -58464,6 +58422,13 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
       }
     }
   },
@@ -60085,12 +60050,7 @@
         ],
         "conditions": {
           "don_on_field_lte": 6
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -76802,12 +76762,7 @@
         "conditions": {
           "chars_gte": 2,
           "chars_gte_cost_filter": 5
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -76924,12 +76879,7 @@
         "conditions": {
           "chars_gte": 2,
           "chars_gte_cost_filter": 5
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -77262,12 +77212,7 @@
         ],
         "conditions": {
           "leader_type": "blackbeard pirates"
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -78627,12 +78572,7 @@
         ],
         "conditions": {
           "don_attached_total_gte": 3
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        }
       }
     }
   },
@@ -79379,6 +79319,13 @@
         "conditions": {
           "opp_life_lte": 3
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
       }
     }
   },

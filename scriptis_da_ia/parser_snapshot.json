@@ -1336,6 +1336,9 @@
  },
  "EB02-012": {
   "passive": {
+   "conditions": {
+    "has_named_character": "sarfunkel"
+   },
    "steps": [
     {
      "action": "gain_blocker"
@@ -1741,6 +1744,9 @@
  },
  "EB02-033": {
   "passive": {
+   "conditions": {
+    "has_named_card_on_field": "merry go"
+   },
    "steps": [
     {
      "action": "gain_blocker"
@@ -5235,11 +5241,6 @@
     "has_named_character": "jewelry bonney",
     "life_lte": 0
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "gain_blocker"
@@ -7708,11 +7709,6 @@
    "conditions": {
     "has_named_character": "kouzuki oden"
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "gain_blocker"
@@ -8427,11 +8423,6 @@
  },
  "OP02-074": {
   "passive": {
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "gain_blocker"
@@ -11511,11 +11502,9 @@
  },
  "OP04-005": {
   "passive": {
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
+   "conditions": {
+    "has_other_named": "kung fu jugon"
+   },
    "steps": [
     {
      "action": "gain_blocker"
@@ -12510,9 +12499,6 @@
   "on_opp_attack": {
    "costs": [
     {
-     "type": "rest_self"
-    },
-    {
      "count": 1,
      "optional": true,
      "type": "don_minus"
@@ -12821,9 +12807,6 @@
  "OP04-071": {
   "on_opp_attack": {
    "costs": [
-    {
-     "type": "rest_self"
-    },
     {
      "count": 1,
      "optional": true,
@@ -14972,11 +14955,6 @@
    "conditions": {
     "don_on_field_gte": 10
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "gain_blocker"
@@ -15405,11 +15383,6 @@
    "conditions": {
     "trash_gte": 10
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "gain_blocker"
@@ -16212,11 +16185,6 @@
    "conditions": {
     "leader_type": "film"
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "gain_blocker"
@@ -17032,11 +17000,6 @@
    "conditions": {
     "hand_lte": 4
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "gain_blocker"
@@ -17418,11 +17381,6 @@
     "don_fewer_than_opp_by_gte": 2,
     "leader_type": "germa 66"
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "gain_blocker"
@@ -18231,13 +18189,9 @@
   "passive": {
    "conditions": {
     "chars_gte": 1,
+    "chars_gte_exclude_self": true,
     "chars_gte_type_filter": "shandian warrior"
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "gain_blocker"
@@ -18882,11 +18836,6 @@
    "conditions": {
     "has_named_character": "camie"
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "gain_blocker"
@@ -26215,6 +26164,7 @@
   "passive": {
    "conditions": {
     "chars_gte": 1,
+    "chars_gte_exclude_self": true,
     "chars_gte_type_filter": "the tontattas"
    },
    "steps": [
@@ -27319,6 +27269,12 @@
  },
  "OP10-108": {
   "passive": {
+   "conditions": {
+    "chars_gte": 1,
+    "chars_gte_color_filter": "yellow",
+    "chars_gte_exclude_self": true,
+    "chars_gte_type_filter": "supernovas"
+   },
    "steps": [
     {
      "action": "gain_blocker"
@@ -27333,6 +27289,13 @@
      "action": "attack_life",
      "count": 1,
      "up_to": true
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
     }
    ]
   },
@@ -27587,6 +27550,13 @@
      "face": "down",
      "source": "deck_top",
      "up_to": false
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
     }
    ]
   }
@@ -28583,11 +28553,6 @@
    "conditions": {
     "hand_lte": 4
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "gain_blocker"
@@ -28763,11 +28728,12 @@
  "OP11-064": {},
  "OP11-065": {
   "passive": {
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
+   "conditions": {
+    "chars_gte": 1,
+    "chars_gte_color_filter": "purple",
+    "chars_gte_exclude_self": true,
+    "chars_gte_type_filter": "big mom pirates"
+   },
    "steps": [
     {
      "action": "gain_blocker"
@@ -29327,11 +29293,12 @@
  },
  "OP11-096": {
   "passive": {
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
+   "conditions": {
+    "chars_gte": 1,
+    "chars_gte_color_filter": "black",
+    "chars_gte_exclude_self": true,
+    "chars_gte_type_filter": "navy"
+   },
    "steps": [
     {
      "action": "gain_blocker"
@@ -31024,11 +30991,6 @@
    "conditions": {
     "events_in_trash_gte": 4
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "gain_blocker"
@@ -32177,6 +32139,7 @@
   "passive": {
    "conditions": {
     "chars_gte": 1,
+    "chars_gte_exclude_self": true,
     "chars_gte_type_filter": "mountain bandits"
    },
    "steps": [
@@ -34047,11 +34010,6 @@
    "conditions": {
     "don_attached_total_gte": 2
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "gain_blocker"
@@ -37147,6 +37105,13 @@
      "rested": true
     }
    ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
+    }
+   ]
   }
  },
  "OP15-018": {
@@ -38203,11 +38168,6 @@
    "conditions": {
     "don_on_field_lte": 6
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "gain_blocker"
@@ -48644,11 +48604,6 @@
     "chars_gte": 2,
     "chars_gte_cost_filter": 5
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "buff_cost",
@@ -48733,11 +48688,6 @@
     "chars_gte": 2,
     "chars_gte_cost_filter": 5
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "buff_cost",
@@ -48971,11 +48921,6 @@
    "conditions": {
     "leader_type": "blackbeard pirates"
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "buff_cost_per_count",
@@ -49831,11 +49776,6 @@
    "conditions": {
     "don_attached_total_gte": 3
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "steps": [
     {
      "action": "buff_power",
@@ -50315,6 +50255,13 @@
      "dest": "life_top",
      "source": "deck_top",
      "up_to": true
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
     }
    ]
   },

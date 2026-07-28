@@ -3299,6 +3299,22 @@ class EffectExecutor:
                 tipos = type_filter if isinstance(type_filter, list) else [type_filter]
                 matching = [c for c in me.field_chars
                             if any(tp.lower() in (c.sub_types or '').lower() for tp in tipos)]
+                # 'chars_gte_color_filter' -- "a [Cor] [Tipo] type Character"
+                # (achado 28/07, bloco HANDOFF 393: Scratchmen Apoo OP10-108,
+                # Charlotte Anana OP11-065, Ripper OP11-096). 'chars_gte_
+                # exclude_self' -- "...other than [Nome]"/"other than this
+                # Character": exclui a propria `card` que carrega a condicao
+                # (mesma exclusao de no_other_named, mas contando PRESENCA em
+                # vez de ausencia -- sem isso a carta contava a si mesma e a
+                # condicao virava sempre-verdadeira). Ambos combinam com
+                # qualquer chars_gte_type_filter existente, nao so os casos
+                # novos -- generaliza pra qualquer carta que use as duas
+                # clausulas juntas.
+                color_filter = conds.get('chars_gte_color_filter')
+                if color_filter:
+                    matching = [c for c in matching if c.color.lower() == color_filter.lower()]
+                if conds.get('chars_gte_exclude_self'):
+                    matching = [c for c in matching if c is not card]
                 if conds.get('chars_gte_distinct_names'):
                     # "N [Tipo] type Characters with DIFFERENT card names"
                     # -- conta NOMES UNICOS entre os que batem o tipo, nao
@@ -3443,6 +3459,29 @@ class EffectExecutor:
             # a propria carta e checa AUSENCIA).
             needle = conds['has_named_character'].lower()
             if not any(needle in c.name.lower() for c in me.field_chars):
+                return False
+        if 'has_other_named' in conds:
+            # "if you have a [Nome] other than this Character" -- presenca
+            # de OUTRA copia (por nome) alem da propria `card` (achado
+            # 28/07, bloco HANDOFF 393: Kung Fu Jugon OP04-005). Distinto
+            # de has_named_character (nao exclui self -- daria sempre
+            # verdadeiro quando o Nome e o proprio nome da carta). Espelha
+            # no_other_named (mesma exclusao, condicao invertida: aqui
+            # exige PRESENCA, la exige AUSENCIA).
+            needle_other = conds['has_other_named'].lower()
+            if not any(c is not card and needle_other in c.name.lower()
+                       for c in me.field_chars):
+                return False
+        if 'has_named_card_on_field' in conds:
+            # "if you have [Nome] on your field" -- presenca de uma carta
+            # nomeada em QUALQUER zona de campo (Character OU Stage --
+            # achado 28/07, Klabautermann EB02-033: "[Merry Go]" e um
+            # Stage, has_named_character so cobre field_chars).
+            needle_field = conds['has_named_card_on_field'].lower()
+            candidatos_campo = list(me.field_chars)
+            if me.field_stage is not None:
+                candidatos_campo.append(me.field_stage)
+            if not any(needle_field in c.name.lower() for c in candidatos_campo):
                 return False
         if 'has_named_characters' in conds:
             # "if you have [Nome1] and [Nome2]" -- AMBOS precisam estar em
@@ -9086,6 +9125,22 @@ def apply_conditional_keyword_passives(gs: 'GameState', opp: 'GameState') -> Non
         # (OP15-070/071).
         base_power_group_grants = [s for s in steps_opp_turn
                                     if s.get('action') == 'set_base_power_group_opp_turn']
+        # Keyword granted sob a tag "[Opponent's Turn]" (bloco 'opp_turn',
+        # nao 'passive') -- achado 28/07 (bloco HANDOFF 393, auditoria
+        # global de [Blocker] condicional): Pearl OP15-011 e Brook ST31-003
+        # tem "[Opponent's Turn] If <condicao>, this Character gains
+        # [Blocker]" -- o parser ja capturava certo sob 'opp_turn', mas
+        # este loop so olhava 'steps' (de 'passive') pra _KEYWORD_GRANTS,
+        # nunca 'steps_opp_turn'. Pratico: bloquear so importa durante o
+        # turno do OPONENTE de qualquer forma (blockers_active() so e
+        # consultado quando o oponente ataca), entao nao precisa de guarda
+        # de timing extra alem da condicao do proprio bloco -- CONDICAO
+        # PROPRIA (opp_turn_block), nao a de 'passive' (podem ser blocos
+        # totalmente separados, sem 'passive' nenhum nestas 2 cartas).
+        opp_turn_grants = [s for s in steps_opp_turn if s.get('action') in _KEYWORD_GRANTS]
+        if opp_turn_grants and ee._check_conditions(opp_turn_block.get('conditions', {}), c):
+            for s in opp_turn_grants:
+                setattr(c, _KEYWORD_GRANTS[s['action']], True)
         if not (grants or aura_grants or rush_aura_grants or named_kw_grants
                 or base_power_group_grants):
             continue

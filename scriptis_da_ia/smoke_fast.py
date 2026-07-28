@@ -8938,6 +8938,7 @@ def main() -> int:
     test_sim_bridge_delega_escolha_de_alvo_pro_motor_unico()
     test_opponent_model_sample_respeita_random_seed_global()
     test_parse_combat_log_rastreia_rested_active_do_oponente()
+    test_blocker_condicional_auditoria_global_28_07()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -9136,6 +9137,100 @@ def test_opponent_model_sample_respeita_random_seed_global() -> None:
     hand4, _ = model.sample(opp, rng=random)
     check("OpponentModel.sample() (rng=random, igual aos call sites reais) tambem reproduz",
           [c.code for c in hand3] == [c.code for c in hand4])
+
+
+def test_blocker_condicional_auditoria_global_28_07() -> None:
+    """
+    Achado 28/07 (bloco HANDOFF 393): investigando "ordem de defesa",
+    achei 83 cartas com [Blocker] concedido condicionalmente na varredura
+    global do texto ("gains [Blocker]") -- destas, ~30 tinham a condicao
+    corretamente parseada mas um custo FANTASMA `rest_self` (o reminder
+    text padrao do keyword, "(After your opponent declares an attack,
+    you may rest this card...)", casava com o regex generico de custo);
+    6 tinham a condicao INTEIRA faltando (`has_other_named`/
+    `has_named_card_on_field`/`chars_gte_color_filter`+
+    `chars_gte_exclude_self`, formas novas de condicao); 2
+    (Pearl OP15-011, Brook ST31-003) tem o gain_blocker sob a tag
+    "[Opponent's Turn]" (bloco 'opp_turn', nao 'passive') --
+    apply_conditional_keyword_passives so escaneava 'passive'; e 4
+    cartas (Trafalgar Law OP10-119, Killer ST36-002, Basil Hawkins
+    OP10-109, Morgan OP15-017) simplesmente NAO tinham [Blocker] em
+    lugar nenhum do card_text na fonte (cards_rows.csv), apesar de
+    bloquearem de verdade nos combat logs reais -- confirmado e
+    corrigido na fonte.
+    """
+    # 1. Custo fantasma removido (reminder text nao e mais lido como custo)
+    check("OP13-091 (Mars) passive NAO tem custo fantasma rest_self",
+          'costs' not in get_card_effects("OP13-091").get("passive", {}))
+
+    # 2. has_other_named -- Kung Fu Jugon OP04-005: so ganha Blocker com
+    # OUTRA copia de si mesmo em campo (nao a propria carta).
+    jugon1 = real_card("OP04-005")
+    me_1 = GameState(leader=mk("XBK1LD", "Lider", card_type="LEADER"))
+    me_1.field_chars = [jugon1]
+    apply_conditional_keyword_passives(me_1, GameState(leader=mk("XBK1OPP", "Opp", card_type="LEADER")))
+    check("Kung Fu Jugon SOZINHO (sem outra copia) NAO ganha Blocker", not jugon1.has_blocker)
+
+    jugon_a, jugon_b = real_card("OP04-005"), real_card("OP04-005")
+    me_2 = GameState(leader=mk("XBK2LD", "Lider", card_type="LEADER"))
+    me_2.field_chars = [jugon_a, jugon_b]
+    apply_conditional_keyword_passives(me_2, GameState(leader=mk("XBK2OPP", "Opp", card_type="LEADER")))
+    check("Kung Fu Jugon COM outra copia em campo ganha Blocker", jugon_a.has_blocker and jugon_b.has_blocker)
+
+    # 3. has_named_card_on_field -- Klabautermann EB02-033: Blocker so com
+    # [Merry Go] (um STAGE, nao Character) em campo.
+    klabau1 = real_card("EB02-033")
+    me_3 = GameState(leader=mk("XBK3LD", "Lider", card_type="LEADER"))
+    me_3.field_chars = [klabau1]
+    apply_conditional_keyword_passives(me_3, GameState(leader=mk("XBK3OPP", "Opp", card_type="LEADER")))
+    check("Klabautermann SEM Merry Go em campo NAO ganha Blocker", not klabau1.has_blocker)
+
+    klabau2 = real_card("EB02-033")
+    me_4 = GameState(leader=mk("XBK4LD", "Lider", card_type="LEADER"))
+    me_4.field_chars = [klabau2]
+    me_4.field_stage = real_card("EB02-041")  # Merry Go (041), Stage
+    apply_conditional_keyword_passives(me_4, GameState(leader=mk("XBK4OPP", "Opp", card_type="LEADER")))
+    check("Klabautermann COM Merry Go (Stage) em campo ganha Blocker", klabau2.has_blocker)
+
+    # 4. chars_gte_color_filter + chars_gte_exclude_self -- Scratchmen Apoo
+    # OP10-108: Blocker so com OUTRO Character amarelo tipo Supernovas
+    # (nao ele mesmo, que tambem e amarelo/Supernovas).
+    apoo1 = real_card("OP10-108")
+    me_5 = GameState(leader=mk("XBK5LD", "Lider", card_type="LEADER"))
+    me_5.field_chars = [apoo1]
+    apply_conditional_keyword_passives(me_5, GameState(leader=mk("XBK5OPP", "Opp", card_type="LEADER")))
+    check("Scratchmen Apoo SOZINHO (so ele mesmo bate o filtro) NAO ganha Blocker",
+          not apoo1.has_blocker)
+
+    apoo2 = real_card("OP10-108")
+    outro_amarelo_supernova = real_card("OP10-099")  # Eustass Kid (099), amarelo/Supernovas
+    me_6 = GameState(leader=mk("XBK6LD", "Lider", card_type="LEADER"))
+    me_6.field_chars = [apoo2, outro_amarelo_supernova]
+    apply_conditional_keyword_passives(me_6, GameState(leader=mk("XBK6OPP", "Opp", card_type="LEADER")))
+    check("Scratchmen Apoo COM outro Character amarelo/Supernovas ganha Blocker",
+          apoo2.has_blocker)
+
+    # 5. gain_blocker sob "[Opponent's Turn]" (bloco opp_turn, nao passive)
+    # -- Pearl OP15-011: Blocker so se o Lider tiver o tipo East Blue.
+    pearl1 = real_card("OP15-011")
+    me_7 = GameState(leader=mk("XBK7LD", "Nao East Blue", card_type="LEADER", sub_types="Big Mom Pirates"))
+    me_7.field_chars = [pearl1]
+    apply_conditional_keyword_passives(me_7, GameState(leader=mk("XBK7OPP", "Opp", card_type="LEADER")))
+    check("Pearl com Lider SEM tipo East Blue NAO ganha Blocker", not pearl1.has_blocker)
+
+    pearl2 = real_card("OP15-011")
+    me_8 = GameState(leader=mk("XBK8LD", "East Blue Leader", card_type="LEADER", sub_types="East Blue"))
+    me_8.field_chars = [pearl2]
+    apply_conditional_keyword_passives(me_8, GameState(leader=mk("XBK8OPP", "Opp", card_type="LEADER")))
+    check("Pearl com Lider East Blue ganha Blocker (bloco opp_turn agora escaneado)",
+          pearl2.has_blocker)
+
+    # 6. Texto-fonte corrigido -- 4 cartas sem [Blocker] nenhum no
+    # card_text (confirmado nos combat logs reais que bloqueiam de
+    # verdade): agora nativas (keyword_blocker), sem precisar de condicao.
+    for code in ("OP10-119", "ST36-002", "OP10-109", "OP15-017"):
+        carta = real_card(code)
+        check(f"{code} agora tem [Blocker] nativo (fonte corrigida)", carta.has_blocker)
 
 
 def test_parse_combat_log_rastreia_rested_active_do_oponente() -> None:

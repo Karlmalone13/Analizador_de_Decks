@@ -2,36 +2,58 @@
 
 **Última atualização:** 28 de julho de 2026
 
-## 🔴 PENDENTE (achado real, não corrigido): banco de cartas sem `[Blocker]` em pelo menos 10 codes (28/07/2026, bloco 393)
+## 🟡 PENDENTE DE DECISÃO DO USUÁRIO: calibrar should_use_blocker/should_use_counter? achado ambíguo (28/07/2026, bloco 394)
 
-Investigando "ordem de defesa" (bloqueio/counter), achei que 47/75 casos
-de "humano bloqueou, IA não recomendaria" eram artefato de banco: a
-carta bloqueou de verdade no log cru (`"X Blocks"`), mas nosso
-`card_effects_db.json` não tem `keyword_blocker` pra ela. Dois tipos de
-causa raiz:
+Com os números REAIS pós-fix do gap de Blocker (ver item abaixo): IA
+mais "defensiva" que o jogador real em bloqueio (109 "IA queria
+bloquear, humano não" vs 72 no sentido oposto, ~1,5x) e counter (304 vs
+159, ~1,9x). MAS o dado puro do log (sem reconstrução, bloco 393) já
+mostra que VENCEDORES bloqueiam/counteram mais que PERDEDORES — ou
+seja, "a IA é mais agressiva na defesa que o jogador médio" não é
+obviamente um bug, pode ser só uma extrapolação correta da mesma
+tendência que já favorece vencedores. 63/109 dos casos de bloqueio
+acontecem na regra incondicional de `should_use_blocker` pra vida≤2
+("sempre bloqueia se tiver bloqueador", `decision_engine.py` ~linha
+10922) — o ponto óbvio pra afrouxar, mas SEM evidência de que afrouxar
+melhoraria o bot (poderia piorar).
 
-- [ ] **Gap de fonte** (texto no `cards_rows.csv` não tem `[Blocker]`
-  em nenhum lugar do `card_text`): `OP10-119` (Trafalgar Law),
-  `ST36-002` (Killer), `OP10-109` (Basil Hawkins), `OP15-017` (Morgan).
-  Provavelmente precisa corrigir o texto na fonte (`cards_rows.csv`),
-  não é bug de grammar do parser.
-- [ ] **Blocker CONDICIONAL sem suporte no parser** (texto TEM
-  `[Blocker]`, mas condicionado a algo que não é DON!! anexado):
-  `OP13-091` (St. Marcus Mars, "7+ cartas no trash"), `OP13-089` (St.
-  Topman Warcury, mesma condição), `PRB02-015` (Shiryu, "Líder tem tipo
-  Blackbeard Pirates"). O parser só suporta keyword condicional por
-  DON!! (`don_conditional_keywords`) — precisaria generalizar pra
-  outras condições (trash count, leader type), não hardcoded pra essas
-  3 cartas.
-- [ ] **Antes de corrigir**: seguir o gate de auditoria global do
-  parser (CLAUDE.md) — buscar a MESMA gramática (Blocker condicional)
-  em todo o banco, não só nessas 3 cartas achadas por coincidência nos
-  logs que temos.
-- [ ] Decisão de escopo pendente do usuário: corrigir só esses ~10
-  codes pontualmente, ou implementar suporte genérico a Blocker
-  condicional (provavelmente cobre mais cartas no banco inteiro).
+- [ ] Decisão pendente: (a) aceitar o fix do banco como entregável sem
+  mexer em pesos; (b) calibrar mesmo sem validação via self-play
+  (aceitando o risco de piorar); (c) esperar sessão local rodar
+  `baseline_metrics.py`/gauntlet antes de decidir.
+- [ ] Se calibrar: `baseline_metrics.py` não roda nesta sessão remota
+  (path Windows hardcoded pros decks) — precisa adaptar pra
+  `decklists_raw.csv`-based decks (like used earlier nesta sessão pra
+  validação self-play) ou rodar numa sessão local.
 
-## 🟢 IMPLEMENTADO: investigação de "ordem de defesa" (bloqueio/counter) + fix de reconstrução (28/07/2026, bloco 393)
+## 🟢 CORRIGIDO: gap de [Blocker] condicional — auditoria global, 32 cartas (28/07/2026, bloco 394)
+
+Busca global (`gains? \[Blocker\]` em `cards_rows.csv` inteiro) achou 83
+cartas, não as 3 vistas nos logs. 4 causas raiz distintas, todas
+corrigidas pela FORMA (não hardcoded pros codes que revelaram cada
+uma) — ver `scriptis_da_ia/parser_audits/2026-07-28_blocker_condicional_e_reminder_text_como_custo_fantasma.json`
+pro detalhe completo:
+
+- [x] Custo fantasma `rest_self` (reminder text do keyword casando com
+  o regex de custo) — ~30 cartas, `parse_costs()` corrigido.
+- [x] 6 condições novas: `has_other_named`, `has_named_card_on_field`,
+  `chars_gte_color_filter`+`chars_gte_exclude_self` — cobriu também 2
+  bugs LATENTES pré-existentes (OP10-053, OP13-009) que já usavam
+  "other than" sem a exclusão de self aplicada.
+- [x] `gain_blocker` sob a tag `[Opponent's Turn]` (bloco `opp_turn`)
+  nunca era escaneado por `apply_conditional_keyword_passives` — agora
+  é (Pearl OP15-011, Brook ST31-003).
+- [x] 4 cartas com `[Blocker]` ausente do `card_text` na FONTE
+  (`cards_rows.csv`), confirmado nos logs reais que bloqueiam de
+  verdade: Trafalgar Law OP10-119, Killer ST36-002, Basil Hawkins
+  OP10-109, Morgan OP15-017 — corrigido com edição cirúrgica (4
+  inserções/4 deleções no CSV, não reescrita inteira).
+- [x] `diff_parser.py` GANHOU=0 PERDEU=0 MUDOU=32 (esperado).
+  `gerar_dbs.py` rodado. `smoke_fast.py` ganhou
+  `test_blocker_condicional_auditoria_global_28_07` (12 asserts).
+  `smoke_test.py` 100%.
+
+## 🟢 investigação de "ordem de defesa" (bloqueio/counter) + fix de reconstrução (28/07/2026, blocos 393/394)
 
 - [x] Achado real (dados puros do log, sem reconstrução): vencedores
   bloqueiam mais (10,2% vs 7,4%), counteram mais (37,6% vs 29,3%) e
@@ -45,13 +67,15 @@ causa raiz:
   `smoke_fast.py`/`smoke_test.py` 100%.
 - [x] Números de ataque do bloco 392 recalculados com o fix (mais
   precisos agora): concordância de alvo caiu de 58,4% pra 52,3%.
-- [x] Resultado limpo (excluindo os 47 casos de artefato de banco):
-  bloqueio 89,8% de concordância (95 "IA queria bloquear, humano não"
-  vs só 28 genuínos no sentido oposto); counter 62% de concordância
-  (300 "IA queria counterar" vs 159 no sentido oposto). Em ambos os
-  eixos, a IA tende a ser MAIS defensiva que o jogador real.
-- [ ] Nenhum peso de scoring foi ajustado — decisão do usuário se/como
-  calibrar.
+- [x] **Números REAIS pós-fix do gap de Blocker** (corrigindo a
+  ESTIMATIVA especulativa do bloco 393, que tinha subtraído os 47 casos
+  "artefato" sem reprocessar de verdade): bloqueio 85,0% de concordância
+  (109 "IA queria bloquear, humano não" vs 72 no sentido oposto, ~1,5x —
+  não os 3,4x estimados); counter 62% (inalterado pelo fix de Blocker,
+  não depende de board — 304 vs 159, ~1,9x). Em ambos os eixos, a IA
+  tende a ser MAIS defensiva que o jogador real.
+- [ ] Nenhum peso de scoring foi ajustado — achado ambíguo, ver item
+  no topo deste arquivo.
 
 ## 🟢 IMPLEMENTADO: parse_combat_log.py rastreia active/rested do oponente (28/07/2026, bloco 392)
 
