@@ -58,6 +58,19 @@ PLANNER_MC_SAMPLES = 6
 # valor.
 COUNTER_STAT_VALUE_PER_1000 = 15
 
+# Score-base de atacar o LIDER (vida normal, sem lethal), usado em
+# score_attack_target. Extraido de literal solto (29/07, bloco HANDOFF 395
+# -- pedido do usuario pra calibrar decisoes rumo ao % do vencedor real,
+# depois de validar via self-play pareado nos 5 lideres com log real
+# confiavel: Imu-B, Dracule.Mihawk-G, Portgas.D.Ace-RB, Jinbe-B,
+# Jewelry.Bonney-G). Achado: com o valor antigo (100), o bot atacava o
+# lider MENOS que o vencedor real em 4/5 lideres (ex: Bonney 59% vs 100%
+# real) -- o baseline flat de 100 perdia facil pra `target.board_value()
+# * 15` de qualquer personagem razoavel em campo, MESMO quando o
+# vencedor real prefere ir na cara. Ver TODO.md pro valor final e a
+# comparacao pareada que validou.
+ATTACK_LEADER_BASE_SCORE = 100
+
 # ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
 # Promovidos de variavel local do main_phase pra constante de modulo --
 # `_select_search_candidates`/`_select_action_via_search` sao agora a FONTE
@@ -10802,7 +10815,7 @@ class DecisionEngine:
             # blockers/counters suficientes, atacar leader ainda e pressao,
             # mas nao deve soterrar as outras acoes.
             lethal_now = a.can_lethal_this_turn()
-            s = 100
+            s = ATTACK_LEADER_BASE_SCORE
             if opp_life == 1:
                 s = 500 if lethal_now else 220
             if opp_life == 0:
