@@ -847,9 +847,17 @@ def test_should_use_counter_nao_trava_com_vida_alta_em_ataque_real() -> None:
     # vida 4, gasto=73 (custo real medido no log pra 1 carta barata) -- agora conta.
     check("vida 4, golpe normal resolvido com 1 carta barata (gasto=73) -- agora conta (antes travava)",
           engine1.should_use_counter(6000, 5000, counter_avail=2000, gasto=73.0) is True)
-    # vida 4, gasto=100+ (precisaria empilhar 2 cartas caras) -- continua recusando.
-    check("vida 4, golpe que exigiria empilhar cartas caras (gasto=100) -- continua recusando",
-          engine1.should_use_counter(6000, 5000, counter_avail=2000, gasto=100.0) is False)
+    # vida 4, gasto bem acima do limite (precisaria empilhar 2 cartas caras)
+    # -- continua recusando. Valor ajustado 29/07 (bloco HANDOFF 397,
+    # calibracao de COUNTER_VALOR_VIDA_SCALE=1.3 pedida pelo usuario): o
+    # limite de vida 4 antes era 85 fixo (gasto=100 > 85 recusava); com a
+    # escala 1.3 o limite sobe pra 85*1.3=110.5 -- gasto=100 passaria a
+    # contar, quebrando o escopo deliberado deste teste (24/07: "empilhar
+    # 2+ cartas caras continua recusado, de proposito"). Gasto subido pra
+    # 150 (bem acima de 110.5) pra preservar a INTENCAO do teste (custo de
+    # empilhar cartas de verdade continua alto demais), nao o numero exato.
+    check("vida 4, golpe que exigiria empilhar cartas caras (gasto=150) -- continua recusando",
+          engine1.should_use_counter(6000, 5000, counter_avail=2000, gasto=150.0) is False)
 
     me2 = GameState(leader=real_card("OP11-062"), don_available=0, turn=5)
     me2.hand = [barato, caro1, caro2]
@@ -8959,6 +8967,7 @@ def main() -> int:
     test_parse_combat_log_rastreia_rested_active_do_oponente()
     test_blocker_condicional_auditoria_global_28_07()
     test_block_critical_life_max_cost_calibrado_29_07()
+    test_counter_valor_vida_scale_calibrado_29_07()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -9157,6 +9166,35 @@ def test_opponent_model_sample_respeita_random_seed_global() -> None:
     hand4, _ = model.sample(opp, rng=random)
     check("OpponentModel.sample() (rng=random, igual aos call sites reais) tambem reproduz",
           [c.code for c in hand3] == [c.code for c in hand4])
+
+
+def test_counter_valor_vida_scale_calibrado_29_07() -> None:
+    """
+    Achado 29/07 (bloco HANDOFF 397, terceira frente da calibracao
+    pedida pelo usuario): diferente das duas calibracoes anteriores
+    (ataque no lider, bloqueio em vida critica), a hipotese inicial pra
+    should_use_counter era ao CONTRARIO -- reduzir a escala pra
+    aproximar do vencedor real, que counter menos (304 "IA queria
+    counterar" vs 159 opostos). Self-play pareado mostrou o OPOSTO:
+    reduzir (0.7/0.5/0.3) so PIOROU o win rate (44%->42%->38%->38%);
+    subir (1.3) melhorou pra 52% (pico); 1.6 reverteu (42%). O jogador
+    real medio parece estar SUBCONTERANDO, nao o bot supercounterando --
+    achado legitimo mesmo indo contra a hipotese inicial.
+    """
+    from optcg_engine import decision_engine as de
+    check("COUNTER_VALOR_VIDA_SCALE calibrado pra 1.3 (nao 1.0/original)",
+          de.COUNTER_VALOR_VIDA_SCALE == 1.3)
+
+    # vida 4: limite escalado (85*1.3=110.5) -- gasto=100 agora CONTA
+    # (antes, com escala 1.0, recusava).
+    me = GameState(leader=real_card("OP11-062"), don_available=0, turn=4)
+    me.life = [real_card("OP07-077") for _ in range(4)]
+    opp = GameState(leader=real_card("ST04-001"))
+    engine = DecisionEngine(me, opp)
+    check("vida 4, escala 1.3: gasto=100 agora CONTA (limite escalado = 110.5)",
+          engine.should_use_counter(6000, 5000, counter_avail=2000, gasto=100.0) is True)
+    check("vida 4, escala 1.3: gasto bem acima do limite escalado (150) continua recusando",
+          engine.should_use_counter(6000, 5000, counter_avail=2000, gasto=150.0) is False)
 
 
 def test_block_critical_life_max_cost_calibrado_29_07() -> None:

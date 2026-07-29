@@ -98,12 +98,19 @@ BLOCK_CRITICAL_LIFE_MAX_COST = 150
 # Fator de escala sobre a tabela `valor_vida` de should_use_counter
 # (terceira frente do pedido do usuario, bloco HANDOFF 397 -- mesma
 # metodologia dos blocos 395/396). Self-play vs vencedores reais achou
-# o bot counterando ~1,9x mais que o vencedor (304 "IA queria counterar"
-# vs 159 opostos, bloco 394). 1.0 = tabela original (250/150/65/85/75),
-# sem mudanca. Multiplica TODOS os degraus por igual em vez de tunar 5
-# valores independentes -- 1 parametro so, calibrado via self-play
-# pareado (ver TODO.md pro valor final).
-COUNTER_VALOR_VIDA_SCALE = 1.0
+# o bot counterando ~1,9x mais que o vencedor real (304 "IA queria
+# counterar" vs 159 opostos, bloco 394) -- hipotese inicial era que
+# reduzir a escala aproximaria do vencedor.
+#
+# Achado CONTRA a hipotese, via self-play PAREADO (mesma seed/matchups
+# dos blocos 395/396): reduzir a escala (0.7/0.5/0.3) so PIOROU o win
+# rate agregado (44%/42%/38%/38%, baseline 1.0=44%), mesmo reduzindo a
+# taxa de counter de verdade (31,3%->22,4%) -- diferente do bloqueio
+# (bloco 396), aqui o jogador real medio parece estar SUBCONTERANDO, nao
+# o bot supercounterando. Testando pra CIMA em vez de baixo: 1.3=52%
+# (pico), 1.6=42% (reverte). 1.3 bate o proprio baseline de 1.0,
+# confirmando que a direcao certa era o oposto da hipotese inicial.
+COUNTER_VALOR_VIDA_SCALE = 1.3
 
 # ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
 # Promovidos de variavel local do main_phase pra constante de modulo --

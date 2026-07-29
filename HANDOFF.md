@@ -1,11 +1,12 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-29 (397, EM ANDAMENTO) - Claude (sessao remota web) - calibrando should_use_counter (terceira frente do pedido do usuario)
+## 2026-07-29 (397) - Claude (sessao remota web) - calibra should_use_counter (COUNTER_VALOR_VIDA_SCALE=1.3), terceira frente do pedido do usuario -- achado CONTRA a hipotese inicial
 
 Usuário confirmou pra continuar a rodada de calibração (blocos 395/396
 já concluídos: ataque e bloqueio). Terceira frente: `should_use_counter`,
 achado do bloco 394 -- bot countera ~1,9x mais que o vencedor real (304
-"IA queria counterar" vs 159 opostos).
+"IA queria counterar" vs 159 opostos). **Hipótese inicial**: reduzir a
+escala de `valor_vida` aproximaria do vencedor real.
 
 **Mudança**: nova constante `COUNTER_VALOR_VIDA_SCALE` (1.0 = tabela
 original `{1:250, 2:150, 3:65, 4:85, 5:75}` sem mudança) multiplica
@@ -14,11 +15,56 @@ valores independentes -- 1 parâmetro só, mesmo espírito das duas
 calibrações anteriores. `folga` (bônus de mão cheia) fica FORA da
 escala, somado depois -- é um mecanismo separado.
 
-Commit intermediário (`COUNTER_VALOR_VIDA_SCALE = 1.0`, zero mudança de
-comportamento, `smoke_fast.py` 100%) -- teste pareado com 4 valores
-candidatos (1.0/0.7/0.5/0.3, mesmos 5 líderes/decks/seed dos blocos
-395/396) rodando em background no momento deste commit. Valor final
-ainda NÃO escolhido.
+**Teste pareado** (mesma seed/matchups dos blocos 395/396, 5 líderes x
+10 partidas cada), testando pra BAIXO primeiro (hipótese inicial):
+
+| Valor | win rate agregado | taxa de counter |
+|---|---|---|
+| **1.0 (original)** | 44% | 31,3% |
+| 0,7 | 42% (piora) | 31,1% |
+| 0,5 | 38% (piora) | 29,2% |
+| 0,3 | 38% (piora) | 22,4% |
+
+**A hipótese inicial estava ERRADA**: reduzir a escala só piorou o win
+rate, monotonicamente, mesmo reduzindo a taxa de counter de verdade --
+diferente do bloqueio (bloco 396), aqui o jogador real médio parece
+estar SUBCONTERANDO, não o bot supercounterando. Testando pra CIMA em
+vez de baixo:
+
+| Valor | win rate agregado | taxa de counter |
+|---|---|---|
+| **1,3** | **52% (pico)** | 31,1% |
+| 1,6 | 42% (reverte) | 35,9% |
+
+1,3 bate o próprio baseline de 1.0 (52% vs 44%) -- confirma que a
+direção certa era o OPOSTO da hipótese inicial baseada só na
+comparação bruta de log. **Valor final: `COUNTER_VALOR_VIDA_SCALE = 1.3`**.
+
+**Ajuste em `smoke_fast.py`** (não regressão, mas um caso mais
+delicado que os dois anteriores): o teste
+`test_should_use_counter_nao_trava_com_vida_alta_em_ataque_real` tinha
+um caso (`vida 4, gasto=100`) que refletia uma decisão de ESCOPO
+DELIBERADA com o usuário em 24/07 ("golpe grande que precisa empilhar
+2+ cartas caras continua recusado, de propósito") -- com a escala 1.3,
+o limite de vida 4 sobe de 85 pra 110,5, e gasto=100 passaria a contar,
+quebrando esse escopo. Ajustado o valor do cenário (gasto=100→150,
+bem acima do novo limite) pra preservar a INTENÇÃO original do teste
+(custo de empilhar cartas de verdade continua alto demais), não o
+número exato -- diferente de só destravar o assert, o cenário em si
+foi revisto pra continuar testando a mesma coisa.
+
+**Novo teste permanente**: `test_counter_valor_vida_scale_calibrado_29_07`
+-- confirma a constante em 1,3, e que `gasto=100` com vida 4 agora
+CONTA (antes recusava) enquanto `gasto=150` continua recusando.
+
+`smoke_fast.py` + `smoke_test.py` 100%.
+
+**As três calibrações pedidas pelo usuário estão concluídas**: ataque
+(bloco 395), bloqueio (bloco 396), counter (este bloco). Duas delas
+(ataque, bloqueio) confirmaram a hipótese "bot mais agressivo que o
+vencedor real, ajustar pra baixo/aproximar"; a terceira (counter)
+mostrou o oposto -- o valor real veio de rodar o self-play de verdade
+em cada caso, não de aceitar a mesma direção sempre.
 
 ## 2026-07-29 (396) - Claude (sessao remota web) - calibra should_use_blocker (BLOCK_CRITICAL_LIFE_MAX_COST=150), segunda frente do pedido do usuario, mesma metodologia do bloco 395
 

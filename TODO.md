@@ -2,16 +2,31 @@
 
 **Última atualização:** 29 de julho de 2026
 
-## 🟡 EM ANDAMENTO: calibrar should_use_counter (29/07/2026, bloco 397)
+## 🟢 IMPLEMENTADO: COUNTER_VALOR_VIDA_SCALE calibrado (1.3) via self-play pareado — achado CONTRA a hipótese inicial (29/07/2026, bloco 397)
 
 Terceira frente do pedido do usuário (mesma metodologia dos blocos
-395/396). Usuário confirmou continuar a rodada.
+395/396). Hipótese inicial (reduzir a escala, já que o bot countera
+mais que o vencedor real) estava ERRADA — self-play mostrou o oposto.
 
-- [x] Nova constante `COUNTER_VALOR_VIDA_SCALE` (1.0 = comportamento
-  antigo preservado, zero mudança) — multiplica a tabela `valor_vida`
-  inteira por igual.
-- [ ] Teste pareado (1.0/0.7/0.5/0.3, mesmos 5 líderes/decks/seed dos
-  blocos 395/396) rodando — valor final AINDA NÃO escolhido.
+- [x] Nova constante `COUNTER_VALOR_VIDA_SCALE` — multiplica a tabela
+  `valor_vida` inteira por igual.
+- [x] Teste pareado pra baixo (1.0/0,7/0,5/0,3): win rate agregado
+  44%/42%/38%/38% — reduzir SÓ piorou, mesmo reduzindo a taxa de
+  counter de verdade (31,3%→22,4%). Diferente do bloqueio: aqui o
+  jogador real médio está SUBCONTERANDO, não o bot supercounterando.
+- [x] Teste pareado pra cima (1,3/1,6): win rate 52% (pico)/42%
+  (reverte). **1,3 bate o próprio baseline de 1.0** (52% vs 44%).
+  Valor final aplicado.
+- [x] Ajuste em `smoke_fast.py` (caso delicado): um teste refletia uma
+  decisão de escopo deliberada com o usuário (24/07 — "empilhar 2+
+  cartas caras continua recusado"). Cenário revisado (gasto 100→150)
+  pra preservar essa intenção sob a nova escala, não só destravar o
+  assert.
+- [x] Novo teste permanente (`test_counter_valor_vida_scale_calibrado_29_07`).
+  `smoke_fast.py`/`smoke_test.py` 100%.
+
+**As três calibrações pedidas concluídas**: ataque (bloco 395, 100→400),
+bloqueio (bloco 396, None→150), counter (este bloco, 1.0→1.3).
 
 ## 🟢 IMPLEMENTADO: BLOCK_CRITICAL_LIFE_MAX_COST calibrado (150) via self-play pareado (29/07/2026, bloco 396)
 
