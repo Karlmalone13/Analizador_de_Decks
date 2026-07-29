@@ -149,10 +149,21 @@ ATTACK_MARGIN_DON_FRACTION = 0.7
 # incluindo o proprio lider Jinbe-B (OP14-040), que e o UNICO caso sem
 # once_per_turn no banco -- sem esse cap E sem desconto proprio no
 # score, o bot ativava em TODO turno proprio sem excecao (self-play:
-# 4,9/jogo) vs vencedores reais em 2,0/jogo. 60 = valor DEFAULT
-# (checkpoint de comportamento identico ao fallback antigo) ate o
-# self-play calibrar o valor final -- ver TODO.md.
-GIVE_DON_RESTED_BASE_SCORE = 60
+# 4,9/jogo) vs vencedores reais em 2,0/jogo.
+#
+# Teste pareado (10 valores, 5 lideres/decks/seed=7, 10 partidas/valor):
+# confirmado que NENHUM dos outros 4 lideres do pool tem carta com
+# give_don no deck (0 cartas) -- so Jinbe-B e realmente afetado pela
+# constante, entao a oscilacao de win rate dos outros 4 e ruido puro,
+# nao efeito real. Olhando so Jinbe-B: ativacoes/jogo 60->5,1,
+# 45->5,2, 30->5,0, 15->4,8, 0->3,9, -5->3,9, -8->2,8, **-10->2,2**
+# (mais perto do alvo real 2,0, diff 0,2), -12->1,2, -15->0,5
+# (undershoot, mesmo tipo de risco de "corrigir demais" ja visto em
+# ATTACK_MARGIN_DON_FRACTION=0.3). **-10** tambem da o MELHOR win rate
+# de Jinbe-B entre os valores proximos do alvo (60% vs 30% no
+# baseline=60) -- ganha nos dois eixos, sem precisar escolher entre
+# eles. Valor final aplicado.
+GIVE_DON_RESTED_BASE_SCORE = -10
 
 # ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
 # Promovidos de variavel local do main_phase pra constante de modulo --

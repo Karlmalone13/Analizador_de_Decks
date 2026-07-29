@@ -1,6 +1,6 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-29 (399, EM ANDAMENTO) - Claude (sessao remota web) - investigando activate:main e resolve_reaction por lider: achado 1 (parser bug real, Mihawk-G) corrigido
+## 2026-07-29 (399) - Claude (sessao remota web) - investigando activate:main e resolve_reaction por lider: Jinbe-B (score) e Mihawk-G (parser) corrigidos
 
 Usuário pediu pra seguir com os 2 itens que ficaram pendentes (bloco
 398): `activate:main` por líder e `resolve_reaction`/redirect. Também
@@ -9,26 +9,39 @@ uma regra/calibração específica de carta ou líder (em vez de decidir
 sozinho e seguir).
 
 **Achado 1 — Jinbe-B (OP14-040) super-ativa o próprio Activate:Main
-(EM CALIBRAÇÃO)**: (trash 1 da mão → 2 DON *rested*, sem
-`once_per_turn`): self-play instrumentado mostrou o bot ativando em
-TODOS os turnos próprios sem exceção (média 4,9/jogo, bate a suspeita
-anterior de 5,6/jogo), vs vencedores reais em 2,0/jogo. Não é spam
-dentro do mesmo turno (nunca mais de 1x/turno) — é ativação
-incondicional todo turno. Causa raiz: `_score_activate_main` não tinha
-categoria própria pra `give_don` (a ação caía no fallback genérico de
-60, sem refletir que o DON é *rested* — delayed, só ajuda o PRÓXIMO
-turno, diferente de `add_don`/`set_don_active`, que dão DON *ativo*
-imediato e corretamente pontuam 90).
+(CONCLUÍDO)**: (trash 1 da mão → 2 DON *rested*, sem `once_per_turn`):
+self-play instrumentado mostrou o bot ativando em TODOS os turnos
+próprios sem exceção (média 4,9/jogo, bate a suspeita anterior de
+5,6/jogo), vs vencedores reais em 2,0/jogo. Não é spam dentro do mesmo
+turno (nunca mais de 1x/turno) — é ativação incondicional todo turno.
+Causa raiz: `_score_activate_main` não tinha categoria própria pra
+`give_don` (a ação caía no fallback genérico de 60, sem refletir que o
+DON é *rested* — delayed, só ajuda o PRÓXIMO turno, diferente de
+`add_don`/`set_don_active`, que dão DON *ativo* imediato e corretamente
+pontuam 90).
 
 Escopo maior do que só Jinbe-B: auditado o banco inteiro, `give_don`
 aparece em **49 cartas**, TODAS com `rested=True` (nenhuma dá DON ativo
 via essa ação) — o fix é genérico (categoria nova por AÇÃO, não
 hardcoded a nenhuma carta), Jinbe-B só é o caso mais visível por ser
 habilidade de LÍDER (sempre em campo) e o ÚNICO sem `once_per_turn` no
-banco. Nova constante `GIVE_DON_RESTED_BASE_SCORE`, default=60
-(checkpoint, comportamento idêntico ao fallback antigo,
-`smoke_fast.py` 100%). Teste pareado (60/45/30/15/0/-15, mesmos 5
-líderes/decks/seed) rodando em background no momento deste commit.
+banco. Nova constante `GIVE_DON_RESTED_BASE_SCORE`.
+
+Self-play pareado (10 valores — 60/45/30/15/0/-5/-8/-10/-12/-15,
+mesmos 5 líderes/decks/seed=7, 10 partidas/valor): confirmado que
+NENHUM dos outros 4 líderes do pool tem carta com `give_don` no deck
+(0 cartas) — só Jinbe-B é realmente afetado, a oscilação de win rate
+dos outros 4 é ruído puro. Olhando só Jinbe-B: ativações/jogo caem de
+5,1 (valor 60) até 0,5 (valor -15), passando por **2,2 em -10** — o
+mais perto do alvo real (2,0). **-10** também dá o melhor win rate de
+Jinbe-B entre os valores próximos do alvo (60% vs 30% no baseline) —
+ganha nos dois eixos ao mesmo tempo, sem precisar escolher entre eles
+(valores mais negativos como -15 chegam a 70% de win rate mas
+undershoot o alvo de ativação pra 0,5 — mesmo risco de "corrigir
+demais" já visto em `ATTACK_MARGIN_DON_FRACTION=0.3`, não escolhido).
+Valor final aplicado: **-10**. Novo teste permanente
+(`test_give_don_rested_base_score_calibrado_29_07`).
+`smoke_fast.py`/`smoke_test.py` 100%.
 
 **Achado 2 — Mihawk-G (OP14-020) sub-ativa (CORRIGIDO, bug de parser
 real)**: self-play mostrava 1,1/jogo vs vencedores reais 5,4/jogo.
@@ -59,9 +72,9 @@ separada, não resolvida nesta rodada.
 existe, effect-aware, cobre Teach/Doflamingo/Kid/EB01-038 com custos
 diferentes). Investigação de calibração ainda em andamento.
 
-Commit intermediário: fix do parser (achado 2) já commitado; achado 1
-(Jinbe-B) e a investigação de resolve_reaction seguem sem mudança de
-código até decisão do usuário / conclusão da investigação.
+Título do bloco atualizado: os 2 achados de activate:main (Jinbe-B e
+Mihawk-G) estão CONCLUÍDOS. Falta só `resolve_reaction`/redirect pra
+fechar os 2 itens pedidos pelo usuário nesta rodada.
 
 ## 2026-07-29 (398) - Claude (sessao remota web) - calibrando mais alvos apos as 3 primeiras frentes: extensao do cost-check de bloqueio (vida 3/4) + ATTACK_MARGIN_DON_FRACTION (DON por ataque)
 

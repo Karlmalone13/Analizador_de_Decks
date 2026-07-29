@@ -16,17 +16,20 @@ sempre que aparecer uma regra/calibração específica de carta/líder.
   1,1→1,6 ativações/jogo (melhora real, vencedores reais=5,4 — gap
   residual provavelmente é prioridade/score no Turn Planner, não mais
   condição; fica pendente).
-- [ ] Jinbe-B (OP14-040) super-ativa Activate:Main (trash 1 mão → 2 DON
-  rested, sem once_per_turn): ativa TODO turno sem exceção (4,9/jogo)
+- [x] Jinbe-B (OP14-040) super-ativa Activate:Main (trash 1 mão → 2 DON
+  rested, sem once_per_turn): ativava TODO turno sem exceção (4,9/jogo)
   vs vencedores reais 2,0/jogo. Causa: `give_don` caía no fallback
   genérico de `_score_activate_main` (base=60), sem refletir que o DON
   é *rested* (delayed), diferente de `add_don`/`set_don_active` (DON
   ativo imediato, base=90 correto). Escopo real: 49 cartas no banco
   usam `give_don` (todas rested=True) — fix é por AÇÃO, não hardcoded
-  a Jinbe. Nova constante `GIVE_DON_RESTED_BASE_SCORE`, default=60
-  (checkpoint, zero mudança, `smoke_fast.py` 100%). Teste pareado
-  (60/45/30/15/0/-15, mesmos 5 líderes/decks/seed) rodando em
-  background — decidir valor final quando terminar.
+  a Jinbe (confirmado: nenhum outro líder do pool de teste tem carta
+  com `give_don`). Nova constante `GIVE_DON_RESTED_BASE_SCORE`. Teste
+  pareado (10 valores, mesmos 5 líderes/decks/seed): **-10** dá 2,2
+  ativações/jogo (mais perto do alvo real 2,0) E o melhor win rate de
+  Jinbe-B entre os candidatos próximos do alvo (60% vs 30% baseline) —
+  valor final aplicado. Novo teste permanente.
+  `smoke_fast.py`/`smoke_test.py` 100%.
 - [ ] `resolve_reaction`/redirect: lido `sim_bridge.py`, função já
   existe e é effect-aware (Teach/Doflamingo/Kid/EB01-038). Investigação
   de calibração ainda em andamento.

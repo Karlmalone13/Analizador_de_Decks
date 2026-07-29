@@ -8761,6 +8761,41 @@ def test_attack_margin_don_fraction_calibrado_29_07() -> None:
           precisa == 2)
 
 
+def test_give_don_rested_base_score_calibrado_29_07() -> None:
+    """
+    Achado 29/07 (bloco HANDOFF 399): investigando activate:main por
+    lider, achei que `give_don` (49 cartas no banco, TODAS rested=True,
+    incluindo o lider Jinbe-B OP14-040) nao tinha categoria propria em
+    _score_activate_main -- caia no fallback generico (60), sem refletir
+    que o DON e RESTADO (delayed, so ajuda no proximo turno), diferente
+    de add_don/set_don_active (DON ativo imediato, base=90). Jinbe-B e o
+    UNICO caso sem once_per_turn no banco -- sem desconto proprio,
+    ativava em TODO turno sem excecao (self-play: 4,9/jogo) vs
+    vencedores reais em 2,0/jogo. Self-play pareado (10 valores, 5
+    lideres/decks/seed=7): -10 da 2,2 ativacoes/jogo (mais perto do
+    alvo real 2,0) E o melhor win rate de Jinbe-B entre os candidatos
+    proximos do alvo (60% vs 30% no baseline=60) -- confirmado que
+    nenhum outro lider do pool tem carta com give_don (a oscilacao dos
+    outros 4 e ruido, nao efeito real da constante).
+    """
+    from optcg_engine import decision_engine as de
+
+    check("GIVE_DON_RESTED_BASE_SCORE calibrado pra -10 (nao 60/fallback generico)",
+          de.GIVE_DON_RESTED_BASE_SCORE == -10)
+
+    a = GameState(leader=real_card("OP11-062"), turn=3)
+    opp = GameState(leader=real_card("OP11-062"), turn=3)
+    match = OPTCGMatch((a.leader, []), (opp.leader, []))
+    fonte = real_card("OP14-040")
+    am_give_don = {'steps': [{'action': 'give_don', 'count': 2, 'rested': True}],
+                   'costs': [{'type': 'trash_from_hand', 'count': 1}]}
+    a.hand = [mk("XGD1", "Carta na mao")]
+    score = match._score_activate_main(fonte, am_give_don, a, opp, 'DEVELOP', engine=None)
+    check("_score_activate_main usa GIVE_DON_RESTED_BASE_SCORE (-10) como base pra give_don, "
+          "nao o antigo fallback generico fixo de 60",
+          score < 0)
+
+
 def test_exclude_failed_actions_evita_loop_travado_em_activate() -> None:
     # Achado real 26/07 (bloco HANDOFF 370, log 22.24.06, match b3484a93 --
     # Barba Negra OP09-093 custo 10): 2 copias da mesma carta em campo, a
@@ -8801,6 +8836,7 @@ def main() -> int:
     test_is_active_turn_corrigido_evita_don_minus_desnecessario()
     test_don_needed_for_attack_reserva_custo_do_proprio_buff()
     test_attack_margin_don_fraction_calibrado_29_07()
+    test_give_don_rested_base_score_calibrado_29_07()
     test_hidden_info_honesta_e_teto_counter_real()
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
