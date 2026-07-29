@@ -2,6 +2,17 @@
 
 **Última atualização:** 29 de julho de 2026
 
+## 🟡 EM ANDAMENTO: calibrar should_use_counter (29/07/2026, bloco 397)
+
+Terceira frente do pedido do usuário (mesma metodologia dos blocos
+395/396). Usuário confirmou continuar a rodada.
+
+- [x] Nova constante `COUNTER_VALOR_VIDA_SCALE` (1.0 = comportamento
+  antigo preservado, zero mudança) — multiplica a tabela `valor_vida`
+  inteira por igual.
+- [ ] Teste pareado (1.0/0.7/0.5/0.3, mesmos 5 líderes/decks/seed dos
+  blocos 395/396) rodando — valor final AINDA NÃO escolhido.
+
 ## 🟢 IMPLEMENTADO: BLOCK_CRITICAL_LIFE_MAX_COST calibrado (150) via self-play pareado (29/07/2026, bloco 396)
 
 Segunda frente do pedido do usuário (mesma metodologia do bloco 395).

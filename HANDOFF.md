@@ -1,5 +1,25 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-29 (397, EM ANDAMENTO) - Claude (sessao remota web) - calibrando should_use_counter (terceira frente do pedido do usuario)
+
+Usuário confirmou pra continuar a rodada de calibração (blocos 395/396
+já concluídos: ataque e bloqueio). Terceira frente: `should_use_counter`,
+achado do bloco 394 -- bot countera ~1,9x mais que o vencedor real (304
+"IA queria counterar" vs 159 opostos).
+
+**Mudança**: nova constante `COUNTER_VALOR_VIDA_SCALE` (1.0 = tabela
+original `{1:250, 2:150, 3:65, 4:85, 5:75}` sem mudança) multiplica
+TODOS os degraus da tabela `valor_vida` por igual, em vez de tunar 5
+valores independentes -- 1 parâmetro só, mesmo espírito das duas
+calibrações anteriores. `folga` (bônus de mão cheia) fica FORA da
+escala, somado depois -- é um mecanismo separado.
+
+Commit intermediário (`COUNTER_VALOR_VIDA_SCALE = 1.0`, zero mudança de
+comportamento, `smoke_fast.py` 100%) -- teste pareado com 4 valores
+candidatos (1.0/0.7/0.5/0.3, mesmos 5 líderes/decks/seed dos blocos
+395/396) rodando em background no momento deste commit. Valor final
+ainda NÃO escolhido.
+
 ## 2026-07-29 (396) - Claude (sessao remota web) - calibra should_use_blocker (BLOCK_CRITICAL_LIFE_MAX_COST=150), segunda frente do pedido do usuario, mesma metodologia do bloco 395
 
 Continuação direta do bloco 395: usuário pediu pra calibrar TODAS as

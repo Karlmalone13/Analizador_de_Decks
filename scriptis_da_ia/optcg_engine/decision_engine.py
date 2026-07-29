@@ -95,6 +95,16 @@ ATTACK_LEADER_BASE_SCORE = 400
 # um palpite.
 BLOCK_CRITICAL_LIFE_MAX_COST = 150
 
+# Fator de escala sobre a tabela `valor_vida` de should_use_counter
+# (terceira frente do pedido do usuario, bloco HANDOFF 397 -- mesma
+# metodologia dos blocos 395/396). Self-play vs vencedores reais achou
+# o bot counterando ~1,9x mais que o vencedor (304 "IA queria counterar"
+# vs 159 opostos, bloco 394). 1.0 = tabela original (250/150/65/85/75),
+# sem mudanca. Multiplica TODOS os degraus por igual em vez de tunar 5
+# valores independentes -- 1 parametro so, calibrado via self-play
+# pareado (ver TODO.md pro valor final).
+COUNTER_VALOR_VIDA_SCALE = 1.0
+
 # ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
 # Promovidos de variavel local do main_phase pra constante de modulo --
 # `_select_search_candidates`/`_select_action_via_search` sao agora a FONTE
@@ -11232,6 +11242,7 @@ class DecisionEngine:
         # grandes que exigem empilhar 2+ cartas (~100+ de gasto, visto no
         # mesmo log) continuam de fora, mudanca conservadora de proposito.
         valor_vida = {1: 250.0, 2: 150.0, 3: 65.0, 4: 85.0, 5: 75.0}.get(my_life, 12.0)
+        valor_vida *= COUNTER_VALOR_VIDA_SCALE
         # MAO GORDA: com 6+ cartas o valor marginal de cada carta cai (nao
         # da pra jogar tudo) e counter fica proporcionalmente barato —
         # feedback real 12/07: "8 cartas na mao e levando dano toda hora".
