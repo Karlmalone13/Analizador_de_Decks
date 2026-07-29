@@ -79,15 +79,21 @@ COUNTER_STAT_VALUE_PER_1000 = 15
 ATTACK_LEADER_BASE_SCORE = 400
 
 # Teto de custo pra bloquear INCONDICIONALMENTE com vida critica (<=2) em
-# should_use_blocker. Ate 29/07 (bloco HANDOFF 395) essa regra bloqueava
-# SEMPRE que houvesse um blocker disponivel, sem nenhum check de custo/
-# beneficio (diferente de should_use_counter, que ja pesa
+# should_use_blocker. Ate 29/07 (bloco HANDOFF 395/396) essa regra
+# bloqueava SEMPRE que houvesse um blocker disponivel, sem nenhum check
+# de custo/beneficio (diferente de should_use_counter, que ja pesa
 # pitch_cost_as_counter vs o valor da vida) -- achado real via self-play
 # vs vencedores reais: bot bloqueia mais que o vencedor em ~1,5x (109
-# "IA queria bloquear" vs 72 opostos). None = sem teto (comportamento
-# antigo, sempre bloqueia) -- valor finito habilita o cost-check.
-# Calibrado via self-play pareado, ver TODO.md pro valor final.
-BLOCK_CRITICAL_LIFE_MAX_COST = None
+# "IA queria bloquear" vs 72 opostos).
+#
+# Calibrado via self-play PAREADO (mesma seed/matchups do bloco 395, 5
+# lideres x 10 partidas cada) testando None/150/100/60: win rate
+# agregado 52%/52%/46%/50%, taxa de bloqueio em vida<=2 11,9%/8,9%/
+# 5,5%/~0%. 150 empata o win rate do baseline (None) SEM regredir,
+# reduzindo o bloqueio incondicional de verdade -- 100 e 60 JA pioram o
+# win rate (restritivo demais, board fica exposto). 150 e o pico, nao
+# um palpite.
+BLOCK_CRITICAL_LIFE_MAX_COST = 150
 
 # ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
 # Promovidos de variavel local do main_phase pra constante de modulo --

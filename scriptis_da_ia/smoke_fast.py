@@ -5900,6 +5900,17 @@ def test_pos_keyword_generico_e_ko_reativo_st10_006() -> None:
     me = GameState(leader=mk("STLDR", "Lider", card_type="LEADER"), turn=3, don_available=5)
     me.field_chars = [atacante_char]
     opp = GameState(leader=mk("STOPPL", "Lider Opp", card_type="LEADER"), turn=3)
+    # 3 vidas (nao 0): usa o branch "vida==3 e atacante forte" de
+    # should_use_blocker, sem o cost-check de BLOCK_CRITICAL_LIFE_MAX_COST
+    # (achado ao recalibrar 29/07, bloco HANDOFF 396 -- com vida<=2 e
+    # cost-check ativo, o blocker de 12000 de poder deste teste
+    # (char_value_score=180, > o teto calibrado de 150) deixava de ser
+    # escolhido, quebrando o teste de ponta a ponta abaixo por um motivo
+    # nao relacionado ao proprio teste). O que este teste verifica (K.O.
+    # reativo apos o oponente ativar Blocker) e independente de QUAL
+    # branch de vida escolheu o blocker -- so precisa que o blocker seja
+    # de fato usado.
+    opp.life = [real_card("OP07-077") for _ in range(3)]
     # power > 11000 pra SOBREVIVER ao combate normal (isola o efeito do
     # K.O. reativo, que deve mirar OUTRO Character, nao o blocker).
     blocker_char = mk("STBLK", "Blocker", power=12000, cost=5)
@@ -8947,6 +8958,7 @@ def main() -> int:
     test_opponent_model_sample_respeita_random_seed_global()
     test_parse_combat_log_rastreia_rested_active_do_oponente()
     test_blocker_condicional_auditoria_global_28_07()
+    test_block_critical_life_max_cost_calibrado_29_07()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -9145,6 +9157,46 @@ def test_opponent_model_sample_respeita_random_seed_global() -> None:
     hand4, _ = model.sample(opp, rng=random)
     check("OpponentModel.sample() (rng=random, igual aos call sites reais) tambem reproduz",
           [c.code for c in hand3] == [c.code for c in hand4])
+
+
+def test_block_critical_life_max_cost_calibrado_29_07() -> None:
+    """
+    Achado 29/07 (bloco HANDOFF 395/396): usuario pediu pra calibrar as
+    decisoes do bot rumo ao % dos vencedores reais. should_use_blocker
+    bloqueava SEMPRE com vida<=2 (sem check de custo/beneficio nenhum,
+    diferente de should_use_counter). Self-play pareado vs vencedores
+    reais mostrou o bot bloqueando ~1,5x mais que o vencedor. Fix:
+    BLOCK_CRITICAL_LIFE_MAX_COST (calibrado pra 150 via self-play
+    pareado, 5 lideres reais -- ver TODO.md) só bloqueia
+    incondicionalmente se o custo do blocker mais barato couber no teto.
+    """
+    from optcg_engine import decision_engine as de
+
+    # Blocker barato (board_value baixo -> custo_sacrificio < 150):
+    # ainda bloqueia com vida critica.
+    barato = mk("XBC1", "Blocker Barato", power=3000, card_type="CHARACTER")
+    barato.has_blocker = True
+    me_barato = GameState(leader=mk("XBC1LD", "Lider", card_type="LEADER"), turn=3)
+    me_barato.field_chars = [barato]
+    opp_barato = GameState(leader=mk("XBC1OPP", "Opp", card_type="LEADER"))
+    eng_barato = DecisionEngine(me_barato, opp_barato)
+    check("BLOCK_CRITICAL_LIFE_MAX_COST: blocker barato AINDA bloqueia com vida critica",
+          eng_barato.should_use_blocker(9000) is barato)
+
+    # Blocker caro (board_value alto -> custo_sacrificio > 150): NAO
+    # bloqueia mais incondicionalmente (antes desta calibracao, sempre
+    # bloqueava independente do custo).
+    caro = mk("XBC2", "Blocker Caro", power=12000, card_type="CHARACTER")
+    caro.has_blocker = True
+    me_caro = GameState(leader=mk("XBC2LD", "Lider", card_type="LEADER"), turn=3)
+    me_caro.field_chars = [caro]
+    opp_caro = GameState(leader=mk("XBC2OPP", "Opp", card_type="LEADER"))
+    eng_caro = DecisionEngine(me_caro, opp_caro)
+    check("BLOCK_CRITICAL_LIFE_MAX_COST: blocker caro NAO bloqueia mais incondicionalmente com vida critica",
+          eng_caro.should_use_blocker(9000) is None)
+
+    check("BLOCK_CRITICAL_LIFE_MAX_COST calibrado pra 150 (nao None/sem teto)",
+          de.BLOCK_CRITICAL_LIFE_MAX_COST == 150)
 
 
 def test_blocker_condicional_auditoria_global_28_07() -> None:

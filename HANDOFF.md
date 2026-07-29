@@ -1,6 +1,6 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-29 (396, EM ANDAMENTO) - Claude (sessao remota web) - calibrando should_use_blocker (segunda frente do pedido do usuario, mesma metodologia do bloco 395)
+## 2026-07-29 (396) - Claude (sessao remota web) - calibra should_use_blocker (BLOCK_CRITICAL_LIFE_MAX_COST=150), segunda frente do pedido do usuario, mesma metodologia do bloco 395
 
 Continuação direta do bloco 395: usuário pediu pra calibrar TODAS as
 decisões rumo ao % dos vencedores reais, não só o ataque. Segunda
@@ -9,20 +9,50 @@ vida<=2" (identificada no bloco 394 como o maior contribuinte dos casos
 "IA queria bloquear, humano não" -- 63/109).
 
 **Mudança**: nova constante `BLOCK_CRITICAL_LIFE_MAX_COST` (perto de
-`ATTACK_LEADER_BASE_SCORE`, decision_engine.py) -- quando `None`
-(default atual, ZERO mudança de comportamento), preserva a regra antiga
-(sempre bloqueia). Quando um valor finito, só bloqueia
-incondicionalmente com vida<=2 se `custo_sacrificio(melhor_blocker) <=
-BLOCK_CRITICAL_LIFE_MAX_COST` -- adiciona um check de custo/benefício
-real, no mesmo espírito do que `should_use_counter` já faz
-(`pitch_cost_as_counter` vs `valor_vida`), mas que `should_use_blocker`
-nunca teve.
+`ATTACK_LEADER_BASE_SCORE`, decision_engine.py) -- quando `None`,
+preserva a regra antiga (sempre bloqueia). Quando um valor finito, só
+bloqueia incondicionalmente com vida<=2 se
+`custo_sacrificio(melhor_blocker) <= BLOCK_CRITICAL_LIFE_MAX_COST` --
+adiciona um check de custo/benefício real, no mesmo espírito do que
+`should_use_counter` já faz (`pitch_cost_as_counter` vs `valor_vida`),
+mas que `should_use_blocker` nunca teve.
 
-Este é um commit intermediário (`BLOCK_CRITICAL_LIFE_MAX_COST = None`,
-zero mudança de comportamento, `smoke_fast.py` 100%) -- teste pareado
-com 4 valores candidatos (None/150/100/60, mesmos 5 líderes/decks/seed
-do bloco 395) rodando em background no momento deste commit. Valor
-final ainda NÃO escolhido.
+**Teste pareado** (mesma seed/matchups do bloco 395, 5 líderes x 10
+partidas cada = 50 jogos por valor, monkeypatch observando
+`should_use_blocker` em uso real):
+
+| Valor | win rate agregado | bloqueios em vida≤2 |
+|---|---|---|
+| None (original) | 52% | 3406/28679 (11,9%) |
+| **150** | **52% (empata)** | **2222/24976 (8,9%)** |
+| 100 | 46% (piora) | 1471/26748 (5,5%) |
+| 60 | 50% (piora) | 6/22154 (~0%) |
+
+150 empata o win rate do baseline SEM regredir, reduzindo o bloqueio
+incondicional de verdade (11,9%→8,9%). 100 e 60 já pioram o win rate --
+restritivo demais, o board fica exposto sem necessidade. **Valor final:
+`BLOCK_CRITICAL_LIFE_MAX_COST = 150`**.
+
+**Ajuste em `smoke_fast.py`** (não regressão, mesma classe de problema
+do bloco 395): o teste de ponta a ponta do K.O. reativo em
+"oponente ativa Blocker" (ST10-006) usava um cenário com vida=0 e um
+blocker de 12000 de poder (`char_value_score=180`, agora acima do teto
+de 150) -- o blocker deixava de ser escolhido, quebrando um teste que
+na verdade não testa `should_use_blocker` em si, só precisa que ALGUM
+blocker seja usado. Corrigido: vida ajustada pra 3 (usa o branch
+"vida==3 e atacante forte", sem o cost-check novo), preservando o
+propósito original do teste.
+
+**Novo teste permanente**: `test_block_critical_life_max_cost_calibrado_29_07`
+-- blocker barato ainda bloqueia com vida crítica, blocker caro não
+bloqueia mais incondicionalmente, constante calibrada confirmada em 150.
+
+`smoke_fast.py` + `smoke_test.py` 100%.
+
+**Duas calibrações pedidas pelo usuário concluídas** (ataque no bloco
+395, defesa neste bloco). `should_use_counter` ainda não calibrado --
+fica pra decisão do usuário se quer continuar essa rodada ou considerar
+encerrada por agora.
 
 ## 2026-07-29 (395) - Claude (sessao remota web) - calibra ATTACK_LEADER_BASE_SCORE (100→400) via self-play pareado com decks reais, rumo ao % de ataque-no-lider dos vencedores reais
 

@@ -2,17 +2,27 @@
 
 **Última atualização:** 29 de julho de 2026
 
-## 🟡 EM ANDAMENTO: calibrar should_use_blocker (29/07/2026, bloco 396)
+## 🟢 IMPLEMENTADO: BLOCK_CRITICAL_LIFE_MAX_COST calibrado (150) via self-play pareado (29/07/2026, bloco 396)
 
 Segunda frente do pedido do usuário (mesma metodologia do bloco 395).
 
-- [x] Nova constante `BLOCK_CRITICAL_LIFE_MAX_COST` (None = comportamento
-  antigo preservado, zero mudança). Quando finito, exige
-  `custo_sacrificio(melhor) <= valor` mesmo com vida<=2 (antes: sempre
-  bloqueava, sem check nenhum).
-- [ ] Teste pareado (None/150/100/60, mesmos 5 líderes/decks/seed do
-  bloco 395) rodando — valor final AINDA NÃO escolhido.
-- [ ] `should_use_counter`: ainda não iniciado.
+- [x] Nova constante `BLOCK_CRITICAL_LIFE_MAX_COST`. Quando finito,
+  exige `custo_sacrificio(melhor) <= valor` mesmo com vida<=2 (antes:
+  sempre bloqueava, sem check nenhum).
+- [x] Teste pareado (None/150/100/60, mesmos 5 líderes/decks/seed do
+  bloco 395): win rate 52%/52%/46%/50%, bloqueios em vida≤2
+  11,9%/8,9%/5,5%/~0%. **150** empata o win rate do baseline sem
+  regredir, reduzindo o bloqueio incondicional de verdade — 100 e 60
+  já pioram o win rate. Valor final aplicado.
+- [x] Ajuste em `smoke_fast.py` (não regressão): teste de ponta a ponta
+  do K.O. reativo (ST10-006) tinha vida=0 no cenário sintético,
+  calibrado pro comportamento antigo — ajustado pra vida=3 (branch sem
+  o cost-check novo), preservando o propósito original do teste.
+- [x] Novo teste permanente (`test_block_critical_life_max_cost_calibrado_29_07`).
+  `smoke_fast.py`/`smoke_test.py` 100%.
+- [ ] `should_use_counter`: ainda não iniciado — decisão do usuário se
+  quer continuar essa rodada de calibração ou considerar encerrada.
+  Duas calibrações pedidas (ataque + defesa) já concluídas.
 
 ## 🟢 IMPLEMENTADO: ATTACK_LEADER_BASE_SCORE calibrado 100→400 via self-play pareado (29/07/2026, bloco 395)
 
