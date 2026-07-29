@@ -3296,6 +3296,12 @@ class EffectExecutor:
         if not conds:
             return True
 
+        # "if it is your Nth turn or later" (achado 29/07, OP15-058 Enel) --
+        # me.turn e o contador POR-JOGADOR (incrementado so no proprio
+        # turno, distinto do global_turn compartilhado), exatamente a
+        # semantica de "seu Nth turno".
+        if 'turn_gte' in conds and me.turn < conds['turn_gte']:
+            return False
         if 'life_lte' in conds and me.life_count() > conds['life_lte']:
             return False
         if 'life_gte' in conds and me.life_count() < conds['life_gte']:

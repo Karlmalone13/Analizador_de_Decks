@@ -2,7 +2,33 @@
 
 **Última atualização:** 29 de julho de 2026
 
-## 🟡 EM ANDAMENTO: investigando activate:main e resolve_reaction por líder (29/07/2026, bloco 399)
+## 🟡 EM ANDAMENTO: pente-fino texto-real vs efeito-parseado nos 17 líderes do pool de decks reais (29/07/2026, bloco 400)
+
+Usuário pediu (1) continuar `resolve_reaction`/redirect e (2) auditar
+cada um dos 17 líderes do pool real (`decklists_raw.csv`) comparando
+texto real vs efeito parseado, pra confirmar que o bot entende cada
+habilidade.
+
+- [x] Enel (OP15-058, líder MAIS comum do pool, 56/161 decks): 2 bugs
+  reais no próprio Activate:Main — condição "second turn or later"
+  ausente (disponível já no turno 1), e `give_don` sempre emitido ANTES
+  de `add_don` na ordem de steps (bug de ORDEM, não de conteúdo) — como
+  o executor roda em ordem de lista, o DON dado nunca existia ainda,
+  virando no-op silencioso no efeito principal da carta. Fix genérico
+  em `gerar_effects_db.py` (nova condição `turn_gte` via tabela de
+  ordinais; `parse_give_don` reescrito pra ordenar steps por posição
+  textual, não pela ordem em que o código checa os regexes). Auditoria
+  global: só Enel tinha os 2 padrões. `diff_parser.py` PERDEU=0
+  MUDOU=1. Novo teste permanente. `smoke_fast.py`/`smoke_test.py` 100%.
+- [ ] Nami (OP11-041): suspeita de trigger reativo ("quando uma carta é
+  removida da Life") sendo tratado como check incondicional todo turno
+  — ainda não confirmado a fundo.
+- [ ] Luffy (OP13-001): suspeita de escala variável "for every DON
+  rested this way" achatada num buff fixo, e condição "5 ou menos DON
+  ativo" ausente — maior suspeita dos 3, ainda não confirmado.
+- [ ] `resolve_reaction`/redirect: ainda não retomado nesta rodada.
+
+## 🟡 EM ANDAMENTO (fechado no bloco 399): investigando activate:main e resolve_reaction por líder (29/07/2026, bloco 399)
 
 Usuário pediu pra seguir com os 2 itens pendentes (bloco 398) e avisar
 sempre que aparecer uma regra/calibração específica de carta/líder.

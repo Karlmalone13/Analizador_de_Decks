@@ -2373,6 +2373,54 @@ def test_krieg_rest_opp_requires_2_don_attached() -> None:
     check("Krieg NAO resta o alvo com DON insuficiente", not alvo_invalido.rested)
 
 
+def test_enel_don_ramp_ordem_textual_e_turn_gte() -> None:
+    # Achado 29/07 (pente-fino nos 17 lideres do pool de decks reais):
+    # Enel (OP15-058), o LIDER MAIS COMUM do pool (56/161 decks), tinha 2
+    # bugs reais no proprio Activate:Main. Texto: "If it is your second
+    # turn or later, add up to 1 DON active, add up to 4 additional DON
+    # rested. Then, give up to 4 rested DON to 1 of your Characters."
+    # (1) condicao "second turn or later" nao era parseada (disponivel
+    # ja no turno 1). (2) parse_give_don sempre emitia give_don ANTES de
+    # add_don (ordem fixa de codigo, nao textual) -- como o executor roda
+    # steps em ORDEM DE LISTA, o give tentava mover DON que ainda nao
+    # existia no banco, virando no-op silencioso; o efeito principal da
+    # carta (dar DON pra um personagem) nunca disparava de verdade.
+    am = get_card_effects("OP15-058").get("activate_main", {})
+    check("OP15-058 parseia turn_gte=2 (condicao 'second turn or later')",
+          am.get("conditions", {}).get("turn_gte") == 2)
+    acoes = [s.get("action") for s in am.get("steps", [])]
+    check("OP15-058 ordena os steps na ordem TEXTUAL real (add, add, give -- nao give primeiro)",
+          acoes == ["add_don", "add_don", "give_don"])
+
+    # Execucao real: turno 1 -- condicao falha, nada acontece.
+    enel = real_card("OP15-058")
+    fraco = mk("XEN1", "Fraco", power=1000, cost=2, color="Yellow")
+    me_t1 = GameState(leader=enel, turn=1, don_available=0, don_rested=0)
+    me_t1.field_chars = [fraco]
+    opp_t1 = GameState(leader=mk("XEN1OPP", "Opp", power=9000, card_type="LEADER"), turn=1)
+    log_t1 = EffectExecutor(me_t1, opp_t1).execute(enel, "activate_main")
+    check("Execucao real: turno 1, condicao turn_gte=2 falha -- efeito NAO dispara",
+          log_t1 == [] and fraco.don_attached == 0 and me_t1.don_available == 0)
+
+    # Execucao real: turno 2 -- condicao passa, add_don roda ANTES do
+    # give_don, entao o DON restado (4) existe de verdade quando o give
+    # tenta transferir. give_don escolhe o alvo de MAIOR power (Enel
+    # lider, 5000, bate o personagem fraco de 1000) -- confirma que o
+    # DON chega em ALGUEM de verdade, nao mais um no-op silencioso.
+    enel2 = real_card("OP15-058")
+    fraco2 = mk("XEN2", "Fraco", power=1000, cost=2, color="Yellow")
+    me_t2 = GameState(leader=enel2, turn=2, don_available=0, don_rested=0)
+    me_t2.field_chars = [fraco2]
+    opp_t2 = GameState(leader=mk("XEN2OPP", "Opp", power=9000, card_type="LEADER"), turn=2)
+    EffectExecutor(me_t2, opp_t2).execute(enel2, "activate_main")
+    check("Execucao real: turno 2, o lider (maior power) recebe DON de verdade (ordem correta -- nao mais no-op)",
+          enel2.don_attached == 4 and fraco2.don_attached == 0)
+    check("Execucao real: don_available reflete o DON ATIVO adicionado (add_don sem rested)",
+          me_t2.don_available == 1)
+    check("Execucao real: don_rested zerado (os 4 rested foram todos transferidos pro personagem)",
+          me_t2.don_rested == 0)
+
+
 def test_kid_leader_set_active_respects_cost_range() -> None:
     # Achado 14/07 via audit_leader_and_goal.py: o end_of_turn do lider do
     # Kid (OP10-099, "Supernovas type Characters with a cost of 3 to 8")
@@ -8908,6 +8956,7 @@ def main() -> int:
     test_nusjuro_rush_known_in_hand_for_planner()
     test_jinbe_grants_play_turn_character_attack()
     test_krieg_rest_opp_requires_2_don_attached()
+    test_enel_don_ramp_ordem_textual_e_turn_gte()
     test_kid_leader_set_active_respects_cost_range()
     test_lock_opp_character_refresh_variantes_de_fraseado()
     test_rest_opp_alvo_misto_character_ou_don()

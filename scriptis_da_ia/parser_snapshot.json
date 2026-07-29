@@ -37902,19 +37902,22 @@
  },
  "OP15-058": {
   "activate_main": {
+   "conditions": {
+    "turn_gte": 2
+   },
    "once_per_turn": true,
    "steps": [
-    {
-     "action": "give_don",
-     "count": 4,
-     "rested": true
-    },
     {
      "action": "add_don",
      "count": 1
     },
     {
      "action": "add_don",
+     "count": 4,
+     "rested": true
+    },
+    {
+     "action": "give_don",
      "count": 4,
      "rested": true
     }

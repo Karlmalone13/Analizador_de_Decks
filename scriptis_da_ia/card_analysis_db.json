@@ -87308,15 +87308,15 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "add_don",
+    "trigger": "activate_main"
+   },
+   {
+    "action": "add_don",
+    "trigger": "activate_main"
+   },
+   {
     "action": "give_don",
-    "trigger": "activate_main"
-   },
-   {
-    "action": "add_don",
-    "trigger": "activate_main"
-   },
-   {
-    "action": "add_don",
     "trigger": "activate_main"
    }
   ],

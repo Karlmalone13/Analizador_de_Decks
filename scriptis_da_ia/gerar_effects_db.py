@@ -80,12 +80,29 @@ def split_then_if(block_text):
     return block_text, None
 
 
+_ORDINAL_WORDS = {
+    'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 5,
+    'sixth': 6, 'seventh': 7, 'eighth': 8, 'ninth': 9, 'tenth': 10,
+}
+
+
 def parse_conditions(text):
     conds = {}
     t = text.lower()
 
     if re.search(r'when your number of life cards becomes 0', t):
         conds['life_lte'] = 0
+
+    # "If it is your Nth turn or later" -- gate de numero de turno (achado
+    # 29/07, OP15-058 Enel: "if it is your second turn or later", condicao
+    # inteira ausente, o Activate:Main ficava disponivel ja no turno 1,
+    # antes mesmo do primeiro Refresh Phase acontecer). Generico pra
+    # qualquer ordinal (nao so "second") via _ORDINAL_WORDS -- unica carta
+    # no banco hoje usa "second", mas a forma cobre "third"/"fourth"/etc
+    # se aparecer em carta futura.
+    m = re.search(r'if it is your (\w+) turn or later', t)
+    if m and m.group(1) in _ORDINAL_WORDS:
+        conds['turn_gte'] = _ORDINAL_WORDS[m.group(1)]
 
     # Existencia de Character no campo do oponente com custo exato.
     # Ex.: EB01-045 Brook: o Rush so existe se houver Character custo 0.
@@ -4143,6 +4160,24 @@ def parse_set_base_power(text):
 def parse_give_don(text):
     steps = []
     t = text.lower()
+    # Ramp/give (add_don, set_don_active, give_don) sao emparelhados por
+    # ORDEM TEXTUAL (posicao da clausula no texto), nao pela ordem em que
+    # este arquivo checa os padroes -- achado 29/07 (investigando por que
+    # o bot Enel/OP15-058 nao aplicava o buff de DON pra um personagem):
+    # o texto real e "add 1 DON ativo, add 4 DON restado. THEN give ate 4
+    # DON restado pra 1 personagem" -- o DON dado precisa existir (ser
+    # adicionado) ANTES de poder ser transferido. Como o executor roda
+    # `steps` em ORDEM DE LISTA (decision_engine.py, `for step in
+    # steps_all`), emitir give ANTES do add faz o give tentar mover DON
+    # que ainda nao esta no banco (0 disponivel na pratica), e o add
+    # rodar depois deixa o DON parado no banco, nunca chegando no
+    # personagem -- efeito principal da carta virava no-op silencioso.
+    # Cada step de ramp/give agora carrega a posicao da clausula que o
+    # gerou; ordenados por posicao ao final desta secao (sem alterar
+    # nenhuma OUTRA logica -- locks/etc abaixo continuam na ordem em que
+    # ja apareciam, so o trio give/add/set_active passa a respeitar a
+    # ordem real do texto quando mais de um aparece na mesma carta).
+    ramp_steps = []  # (posicao, step)
 
     # Dar/anexar DON — distinguir alvo (aliado vs oponente) e se o DON
     # retirado do banco e especificamente RESTED (qualificador explicito no
@@ -4162,7 +4197,7 @@ def parse_give_don(text):
         step = {'action': 'give_don_opp' if to_opp else 'give_don', 'count': cnt}
         if is_rested:
             step['rested'] = True
-        steps.append(step)
+        ramp_steps.append((m_tgt_first.start(), step))
 
     # "of your opponent's" (ou so "of your") pode aparecer ENTRE o numero e
     # "(rested )?don!! cards" -- achado 15/07 via audit_parser_coverage.py:
@@ -4208,7 +4243,7 @@ def parse_give_don(text):
         m_name_recv = re.search(r'to \d+ of your \[([^\]]+)\] cards?', clause)
         if m_name_recv and not to_opp:
             step['target_name'] = m_name_recv.group(1).strip()
-        steps.append(step)
+        ramp_steps.append((m.start(), step))
 
     # Aceleração REAL: adicionar DON do seu deck de DON ao seu campo (ramp)
     if 'from your don!! deck' in t:
@@ -4218,7 +4253,7 @@ def parse_give_don(text):
             step = {'action': 'add_don', 'count': int(m2.group(1))}
             if m2.group(3) and m2.group(3).startswith('rest'):
                 step['rested'] = True
-            steps.append(step)
+            ramp_steps.append((m2.start(), step))
 
     # Reativar DON (set as active) = aceleração
     m = re.search(r'set (up to )?(\d+)? ?(?:of your )?don!! cards?.* as active', t)
@@ -4228,7 +4263,9 @@ def parse_give_don(text):
             step['up_to'] = True
         if 'at the end of this turn' in m.group(0) or 'at the end of this turn' in t[max(0, m.start() - 20):m.end() + 40]:
             step['timing'] = 'end_of_turn'
-        steps.append(step)
+        ramp_steps.append((m.start(), step))
+
+    steps.extend(step for _, step in sorted(ramp_steps, key=lambda x: x[0]))
 
     if re.search(r'at the end of this turn, return don!! cards from your field to your don!! deck until you have the same number of don!! cards on your field as your opponent', t):
         steps.append({'action': 'return_don_until_match_opp', 'timing': 'end_of_turn'})

@@ -1,5 +1,84 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-29 (400, EM ANDAMENTO) - Claude (sessao remota web) - pente-fino texto-real vs efeito-parseado nos 17 lideres do pool de decks reais: Enel (OP15-058) corrigido, 2 candidatos fortes (Nami, Luffy 001) ainda em investigacao
+
+Usuário pediu (1) continuar `resolve_reaction`/redirect e (2) um
+"pente fino" nos líderes -- comparar texto real da carta vs efeito
+parseado vs comportamento do bot, líder por líder, pra confirmar que o
+bot entende cada habilidade. Escopo: os 17 líderes distintos do pool de
+decks reais (`decklists_raw.csv`, a mesma base usada em todo self-play
+desta sessão) -- não o roster inteiro do jogo, já que testar líderes
+sem deck real nesse pool não teria como validar via self-play de
+qualquer forma.
+
+**Achado 1 — Enel (OP15-058), CORRIGIDO**: é o líder MAIS COMUM do pool
+(56/161 decks reais). Texto: "If it is your second turn or later, add
+up to 1 DON!! active, add up to 4 additional DON!! rested. Then, give
+up to 4 rested DON!! cards to 1 of your Characters." Dois bugs reais:
+
+1. Condição "second turn or later" **não era parseada** -- habilidade
+   ficava disponível já no turno 1.
+2. `parse_give_don` (gerar_effects_db.py) **sempre emitia o step
+   `give_don` ANTES dos steps `add_don`**, numa ordem FIXA de código
+   (checava o padrão "give" primeiro), independente da ordem REAL no
+   texto. Como o executor roda `steps` em ordem de LISTA
+   (`decision_engine.py`, `for step in steps_all`), o `give_don`
+   tentava mover DON *rested* que ainda não existia no banco (0
+   disponível), e os 2 `add_don` rodavam DEPOIS deixando o DON parado
+   no banco geral -- o efeito PRINCIPAL da carta (reforçar um
+   personagem/líder com até +8000 de power) nunca disparava de
+   verdade, virava no-op silencioso mesmo quando ativada.
+
+Fix genérico (não hardcoded a Enel), seguido o workflow
+`optcg-parser-audit`: (1) nova condição `turn_gte` em `parse_conditions`
+via tabela de ordinais (`first`..`tenth`), habilitada no engine via
+`_check_conditions` (`me.turn` -- contador POR-JOGADOR, distinto do
+`global_turn` compartilhado); (2) `parse_give_don` reescrito pra
+rastrear a POSIÇÃO textual de cada step de ramp/give e emitir os steps
+ORDENADOS por posição, não pela ordem em que o código checa os regexes
+-- qualquer carta futura com give/add/set misturados em qualquer ordem
+sai correta agora. Auditoria global: só Enel tem "turn or later" (1
+carta) e só Enel tem add/set textualmente antes do give (1 carta) --
+registro em
+`scriptis_da_ia/parser_audits/2026-07-29_ramp_give_don_ordem_textual_e_turn_gte.json`.
+`diff_parser.py` PERDEU=0 MUDOU=1. Novo teste permanente
+(`test_enel_don_ramp_ordem_textual_e_turn_gte`, inclui execução real
+turno 1 vs turno 2). `smoke_fast.py`/`smoke_test.py` 100%.
+
+**Achado 2 — Nami (OP11-041), EM INVESTIGAÇÃO (não corrigido ainda)**:
+texto do `your_turn`: "This effect can be activated when a card is
+removed from your or your opponent's Life cards. If you have 7 or less
+cards in your hand, draw 1 card." O efeito parseado só tem a condição
+`hand_lte: 7` num bloco `your_turn` genérico -- a janela de ativação
+real ("quando uma carta é removida da Life", ou seja, um TRIGGER
+reativo a dano/perda de vida, não um check incondicional todo turno)
+não parece estar capturada em lugar nenhum. Se confirmado, o bot pode
+estar comprando carta em turnos onde nenhuma Life foi removida
+(sobre-disparo). Ainda não confirmado a fundo nem corrigido -- precisa
+checar se existe algum mecanismo equivalente (`on_damage_to_life` ou
+similar) que já cubra isso via outro caminho antes de tratar como bug.
+
+**Achado 3 — Luffy (OP13-001), EM INVESTIGAÇÃO (não corrigido ainda)**:
+texto do `on_opp_attack`: "If you have 5 or less active DON!! cards,
+you may rest any number of your DON!! cards. For every DON!! card
+rested this way, this Leader or up to 1 of your Straw Hat Crew type
+Characters gains +2000 power during this battle." Parseado como um
+buff FIXO de 2000 (`count: 1`) sem a condição "5 ou menos DON ativo" e
+sem a escala VARIÁVEL "for every DON rested this way" (parece
+achatado, não usa o padrão `buff_power_per_count` que outras cartas
+desta sessão já usam pra esse tipo de escala, ex: Lucy OP15-002).
+Também não está claro se a escolha de alvo (Líder OU Straw Hat Crew
+Character) está coberta. Maior suspeita de bug real dos 3, mas ainda
+não confirmado a fundo nem corrigido.
+
+**`resolve_reaction`/redirect**: ainda não retomado nesta rodada --
+prioridade foi o pente-fino pedido. Fica pendente pro próximo passo,
+junto com Nami e Luffy(001).
+
+Commit intermediário: achado 1 (Enel) já commitado e validado; achados
+2 e 3 (Nami, Luffy 001) e a investigação de resolve_reaction seguem sem
+mudança de código até confirmação mais profunda.
+
 ## 2026-07-29 (399) - Claude (sessao remota web) - investigando activate:main e resolve_reaction por lider: Jinbe-B (score) e Mihawk-G (parser) corrigidos
 
 Usuário pediu pra seguir com os 2 itens que ficaram pendentes (bloco
