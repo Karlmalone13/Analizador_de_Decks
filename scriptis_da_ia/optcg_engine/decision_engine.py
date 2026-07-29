@@ -121,8 +121,22 @@ COUNTER_VALOR_VIDA_SCALE = 1.3
 # (bloco 394) -- essa margem "gratis" e o unico lugar no calculo de DON
 # por ataque com um numero solto pra reduzir (o resto da funcao e
 # deficit OBRIGATORIO, nao ha o que cortar ali sem quebrar ataques que
-# precisam do DON pra passar). Ver TODO.md pro valor final.
-ATTACK_MARGIN_DON_FRACTION = 1.0
+# precisam do DON pra passar).
+#
+# Teste pareado (8 valores, 5 lideres/decks/seed=7, 50 partidas/valor,
+# bloco HANDOFF 398, 29/07): win rate ficou ruidoso com esse tamanho de
+# amostra (40%-60% sem tendencia clara) -- decisao pelo alvo real, nao
+# pelo pico de win rate. DON/ataque agregado dos vencedores reais
+# (5 lideres, logs/index.json) = 129/132 = 0.977. **0.7** da DON/ataque
+# agregado = 1.128 (o mais perto do alvo real -- diff 0.15, o 2o melhor
+# foi 0.4 com diff 0.31) SEM regredir o win rate (50% vs 52% baseline,
+# dentro do ruido). Confirmado por um cross-check independente: nos SEUS
+# jogos reais de Imu, vitorias tem DON/ataque=1.31 vs derrotas=0.38 --
+# valores baixos (0.3 e abaixo) reproduzem o padrao de DERROTA, nao de
+# vitoria, entao NAO foram escolhidos apesar do pico de win rate ruidoso
+# em 0.3 (60%, cercado por vizinhos piores -- sinal de ruido, nao
+# tendencia real).
+ATTACK_MARGIN_DON_FRACTION = 0.7
 
 # ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
 # Promovidos de variavel local do main_phase pra constante de modulo --

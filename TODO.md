@@ -2,7 +2,7 @@
 
 **Última atualização:** 29 de julho de 2026
 
-## 🟡 EM ANDAMENTO: mais alvos de calibração após as 3 primeiras frentes (29/07/2026, bloco 398)
+## 🟢 IMPLEMENTADO: mais alvos de calibração após as 3 primeiras frentes (29/07/2026, bloco 398)
 
 Usuário pediu pra continuar calibrando os itens citados como pendentes:
 activate:main, DON/ataque, EVAL_WEIGHTS/tune_weights.py, outros branches
@@ -18,11 +18,22 @@ de `should_use_blocker`, resolve_reaction.
   mesmos 5 líderes/decks/seed, 50 partidas/variante): COM extensão 52%
   (26/50) vs SEM 42% (21/50) — bate baseline em 4/5 líderes. Mantida.
   Novo teste permanente. `smoke_fast.py`/`smoke_test.py` 100%.
-- [ ] Nova constante `ATTACK_MARGIN_DON_FRACTION` (escala a margem de
+- [x] Nova constante `ATTACK_MARGIN_DON_FRACTION` (escala a margem de
   DON "grátis" anexada além do déficit obrigatório em
-  `don_needed_for_attack`) — zero mudança de comportamento com 1.0
-  (default atual, `smoke_fast.py` 100%). Ainda NÃO validado via
-  self-play — fila depois do teste de bloqueio acima.
+  `don_needed_for_attack`). Teste pareado com 8 valores (1.0 a 0.0, mesmos
+  5 líderes/decks/seed): win rate ficou ruidoso nesse tamanho de amostra
+  (40%-60%, sem tendência clara) — decisão pelo alvo real, não pelo pico.
+  DON/ataque agregado dos vencedores reais = 0,977; **0.7** dá o valor
+  mais próximo (1,128, diff 0,15) sem regredir o win rate (50% vs 52%).
+  Confirmado por cross-check independente pedido pelo usuário (jogos
+  reais de Imu: vitória=1,31 DON/ataque vs derrota=0,38 — descarta o pico
+  ruidoso em 0.3, que reproduzia o padrão de DERROTA). Valor final: 0.7.
+  Novo teste permanente. `smoke_fast.py`/`smoke_test.py` 100%.
+
+**As 4 frentes de calibração concluídas nesta sessão**: ataque (bloco
+395), bloqueio crítico + extensão vida 3/4 (blocos 396/398), counter
+(bloco 397), margem de DON por ataque (bloco 398).
+
 - [ ] `activate:main` por líder: maior evidência (ex: Mihawk bot=1.4/jogo
   vs real=5.4; Jinbe-B bot=5.6 vs real=2.0), mas NÃO é um parâmetro
   único — precisa investigação qualitativa por carta/líder. Não

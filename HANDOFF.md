@@ -1,6 +1,6 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-29 (398, EM ANDAMENTO) - Claude (sessao remota web) - calibrando mais alvos apos as 3 primeiras frentes: extensao do cost-check de bloqueio (vida 3/4) + ATTACK_MARGIN_DON_FRACTION (DON por ataque)
+## 2026-07-29 (398) - Claude (sessao remota web) - calibrando mais alvos apos as 3 primeiras frentes: extensao do cost-check de bloqueio (vida 3/4) + ATTACK_MARGIN_DON_FRACTION (DON por ataque)
 
 Usuário pediu pra continuar calibrando os itens que eu tinha listado
 como pendentes (activate:main, DON/ataque, EVAL_WEIGHTS/tune_weights.py,
@@ -29,18 +29,56 @@ power=12000 -- `custo_sacrificio` desse blocker sintético é exatamente
 150, na borda inclusiva do teto, então o teste continua passando sem
 ajuste). `smoke_fast.py`/`smoke_test.py` 100%.
 
-**`ATTACK_MARGIN_DON_FRACTION`** (nova constante,
+**`ATTACK_MARGIN_DON_FRACTION` — CONCLUÍDO** (nova constante,
 `don_needed_for_attack`): DON por ataque não tem um único literal solto
 pra calibrar (é um algoritmo, não uma tabela) -- exceto a "margem de
 pressão grátis" (DON ocioso anexado além do déficit obrigatório pra
 passar o alvo), que agora escala por essa fração (1.0 = comportamento
-original). `smoke_fast.py` 100% (zero mudança com 1.0). Teste pareado
-(1.0/0.7/0.5/0.3, mesmos 5 líderes/decks/seed) rodando em background no
-momento deste commit.
+original).
 
-Commit intermediário: extensão do blocker JÁ validada e finalizada;
-`ATTACK_MARGIN_DON_FRACTION` ainda com default 1.0 (comportamento antigo
-preservado) até o self-play decidir o valor final.
+Teste pareado com **8 valores** (1.0/0.7/0.5/0.4/0.3/0.2/0.1/0.0, mesmos
+5 líderes/decks/seed=7, 50 partidas/valor): o win rate agregado ficou
+**ruidoso** nesse tamanho de amostra (40%-60%, sem tendência clara —
+40%/42%/46%/50%/52%/52%/54%/60% espalhados sem ordem monotônica). Por
+isso a decisão NÃO foi pelo pico de win rate (0.3, 60%) e sim pelo alvo
+real: DON/ataque agregado dos vencedores reais (5 líderes, mesma base de
+`logs/index.json` do bloco 394) = 129/132 = **0,977**. Comparando os 8
+valores testados contra esse alvo, **0.7** dá o DON/ataque mais próximo
+(1,128, diff 0,15 — o 2º melhor foi 0.4 com diff 0,31), SEM regredir o
+win rate (50% vs 52% baseline, dentro do ruído de 50 jogos).
+
+**Cross-check independente, a pedido do usuário** ("compare os Imus que
+perderam com ele" — comparar as vitórias reais do usuário de Imu contra
+as derrotas): script novo (`imu_won_vs_lost.py`) cruzou `logs/index.json`
+(campo `winner`) com `logs/parsed/*.json` para todas as 41 partidas de
+Imu no banco (6 vitórias + 29 derrotas com dados válidos, 2 registros
+sem `id`/dados descartados). Achado forte e consistente:
+
+| métrica | VITÓRIA (n=6) | DERROTA (n=29) |
+|---|---|---|
+| DON por ataque | **1,31** | **0,38** |
+| ataques ao líder/jogo | 6,67 | 4,07 |
+| % dos meus ataques bloqueados | 18,2% | 52,0% |
+| % dos meus ataques counterados | 14,5% | 39,7% |
+
+Vitórias de Imu anexam ~3,4x mais DON por ataque que derrotas. Isso
+reforça a escolha de 0.7 (DON/ataque agregado 1,128, perto do padrão real
+de VITÓRIA de Imu especificamente, 1,31) e **descarta** o pico ruidoso em
+0.3 (DON/ataque=0,387 -- quase idêntico ao padrão real de DERROTA de Imu,
+0,38). Valor final aplicado: **0.7**.
+
+Novo teste permanente `test_attack_margin_don_fraction_calibrado_29_07`
+em `smoke_fast.py` (cenário com counter real na mão do oponente pra
+exercitar a margem escalada: 4000 de counter → margem crua 4 → com 0.7
+vira 2). `smoke_fast.py`/`smoke_test.py` 100%.
+
+**As 4 frentes de calibração pedidas concluídas nesta sessão**: ataque
+(bloco 395), bloqueio crítico + extensão vida 3/4 (blocos 396/398),
+counter (bloco 397), margem de DON por ataque (bloco 398). Restam (não
+iniciados): `activate:main` por líder (não é 1 parâmetro, precisa
+investigação qualitativa por carta) e `resolve_reaction`/redirect.
+`tune_weights.py`/`EVAL_WEIGHTS` deprioritizado (sistema separado,
+Imu-específico, sem evidência de miscalibração).
 
 ## 2026-07-29 (397) - Claude (sessao remota web) - calibra should_use_counter (COUNTER_VALOR_VIDA_SCALE=1.3), terceira frente do pedido do usuario -- achado CONTRA a hipotese inicial
 

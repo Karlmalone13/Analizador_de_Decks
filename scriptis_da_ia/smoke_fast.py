@@ -8726,6 +8726,39 @@ def test_don_needed_for_attack_reserva_custo_do_proprio_buff() -> None:
           precisa_sem_folga == 2)
 
 
+def test_attack_margin_don_fraction_calibrado_29_07() -> None:
+    """
+    Achado 29/07 (bloco HANDOFF 398): quarta frente da calibracao pedida
+    pelo usuario. ATTACK_MARGIN_DON_FRACTION escala a margem de DON
+    "gratis" (alem do deficit obrigatorio) anexada quando o oponente tem
+    counter real na mao. Self-play pareado (8 valores, 5 lideres/decks/
+    seed=7, 50 partidas/valor) mostrou win rate ruidoso nesse tamanho de
+    amostra -- decisao pelo alvo real: DON/ataque agregado dos vencedores
+    reais (5 lideres) = 0.977. 0.7 da o mais perto (1.128, diff 0.15) sem
+    regredir o win rate (50% vs 52% baseline). Confirmado por cross-check
+    independente (jogos reais de Imu: vitoria=1.31 DON/ataque, derrota=
+    0.38 -- valores mais baixos reproduziam o padrao de DERROTA).
+    """
+    from optcg_engine import decision_engine as de
+
+    check("ATTACK_MARGIN_DON_FRACTION calibrado pra 0.7 (nao 1.0/original)",
+          de.ATTACK_MARGIN_DON_FRACTION == 0.7)
+
+    atacante = mk("XDF1", "Atacante", power=8000, card_type="CHARACTER")
+    opp = GameState(leader=mk("XDF1OPP", "Opp", power=8000, card_type="LEADER"))
+    carta_counter = Card(data=CardData(code="XDF1C", name="Counter", card_type="CHARACTER",
+                                        color="Black", power=1000, cost=1, counter=4000))
+    opp.hand = [carta_counter]
+    me = GameState(leader=mk("XDF1LD", "Lider", card_type="LEADER"), don_available=10)
+    engine_dummy = DecisionEngine(me, opp)
+
+    precisa = don_needed_for_attack(atacante, 'leader', None, me, opp, engine_dummy)
+    # deficit base = 0 (empate de poder); margem sem escala seria 4 (4000
+    # de counter / 1000); com a fracao 0.7, vira int(4 * 0.7) = 2.
+    check("margem de DON escalada por ATTACK_MARGIN_DON_FRACTION=0.7 (2, nao 4)",
+          precisa == 2)
+
+
 def test_exclude_failed_actions_evita_loop_travado_em_activate() -> None:
     # Achado real 26/07 (bloco HANDOFF 370, log 22.24.06, match b3484a93 --
     # Barba Negra OP09-093 custo 10): 2 copias da mesma carta em campo, a
@@ -8765,6 +8798,7 @@ def main() -> int:
     test_big_mom_optional_zero_parser_order_and_don_synergy()
     test_is_active_turn_corrigido_evita_don_minus_desnecessario()
     test_don_needed_for_attack_reserva_custo_do_proprio_buff()
+    test_attack_margin_don_fraction_calibrado_29_07()
     test_hidden_info_honesta_e_teto_counter_real()
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
