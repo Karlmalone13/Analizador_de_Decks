@@ -842,16 +842,38 @@ def parse_conditions(text):
     # "if there is a Character with a cost of N [or with a cost of M or
     # more]" -- condicao de EXISTENCIA sobre QUALQUER Character no jogo
     # (qualquer lado do campo), distinta de chars_gte (que conta o proprio
-    # campo do jogador). Dois padroes: simples "cost of N" e composto
-    # "cost of N or with a cost of M or more". 14 cards no banco
-    # (ex: OP14-098 Crescent Cutlass).
+    # campo do jogador). TRES padroes, checados em ordem (o composto
+    # primeiro, por ser mais especifico):
+    #   1. composto: "cost of N or with a cost of M or more" -> exato N OU
+    #      minimo M (14 cards no banco, ex: OP14-098 Crescent Cutlass).
+    #   2. minimo unico: "cost of N or more" (sem o "with a cost of"
+    #      repetido do composto) -> so board_has_cost_gte. Achado 29/07,
+    #      investigando por que o bot ativa o Activate:Main do lider
+    #      Mihawk-G (OP14-020, "If there is a Character with a cost of 5
+    #      or more...") muito menos que jogadores reais: o regex antigo so
+    #      reconhecia o padrao composto ou o exato simples, e "cost of N or
+    #      more" sem a segunda clausula caia no grupo 1 (exato) porque o
+    #      grupo opcional inteiro simplesmente nao casava, IGNORANDO o "or
+    #      more" que sobrava no texto. Resultado: qualquer personagem de
+    #      custo N+1 em diante deixava de contar, restringindo MUITO a
+    #      condicao real da carta (custo 5 OU MAIS). Mesmo bug em OP10-058
+    #      ("cost of 8 or more") e OP11-095 ("cost of 9 or more") --
+    #      auditoria global achou essas 3, nenhuma outra carta do banco usa
+    #      esse padrao existencial simples de minimo.
+    #   3. exato simples: "cost of N" sem "or more"/"or with" nenhum.
     m = re.search(
-        r'if there is a character with a cost of (\d+)'
-        r'(?: or with a cost of (\d+) or more)?', t)
+        r'if there is a character with a cost of (\d+) or with a cost of (\d+) or more', t)
     if m:
         conds['board_has_cost'] = [int(m.group(1))]
-        if m.group(2):
-            conds['board_has_cost_gte'] = int(m.group(2))
+        conds['board_has_cost_gte'] = int(m.group(2))
+    else:
+        m = re.search(r'if there is a character with a cost of (\d+) or more', t)
+        if m:
+            conds['board_has_cost_gte'] = int(m.group(1))
+        else:
+            m = re.search(r'if there is a character with a cost of (\d+)', t)
+            if m:
+                conds['board_has_cost'] = [int(m.group(1))]
 
     # "if there are N or more Characters with a (base) cost of M or more"
     # -- CONTAGEM (nao so existencia de 1, distinto de board_has_cost_gte

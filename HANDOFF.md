@@ -1,5 +1,60 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-29 (399, EM ANDAMENTO) - Claude (sessao remota web) - investigando activate:main e resolve_reaction por lider: achado 1 (parser bug real, Mihawk-G) corrigido
+
+Usuário pediu pra seguir com os 2 itens que ficaram pendentes (bloco
+398): `activate:main` por líder e `resolve_reaction`/redirect. Também
+pediu explicitamente pra avisar sempre que a investigação apontar pra
+uma regra/calibração específica de carta ou líder (em vez de decidir
+sozinho e seguir).
+
+**Achado 1 — Jinbe-B (OP14-040) super-ativa o próprio Activate:Main**
+(trash 1 da mão → 2 DON *rested*, sem `once_per_turn`): self-play
+instrumentado mostrou o bot ativando em TODOS os turnos próprios sem
+exceção (média 4,9/jogo, bate a suspeita anterior de 5,6/jogo), vs
+vencedores reais em 2,0/jogo. Não é spam dentro do mesmo turno (nunca
+mais de 1x/turno) — é ativação incondicional todo turno. Causa raiz:
+`_score_activate_main` não tem categoria própria pra `give_don` (a ação
+cai no fallback genérico de 60, sem refletir que o DON é *rested* —
+delayed, só ajuda o PRÓXIMO turno, diferente de `add_don`/
+`set_don_active`, que dão DON *ativo* imediato e corretamente pontuam
+90). Isso é uma decisão de design de heurística nova (não uma
+calibração de constante existente) — **reportado ao usuário antes de
+implementar qualquer fix**, não decidido sozinho.
+
+**Achado 2 — Mihawk-G (OP14-020) sub-ativa (CORRIGIDO, bug de parser
+real)**: self-play mostrava 1,1/jogo vs vencedores reais 5,4/jogo.
+Investigando a fundo (self-play instrumentado em
+`_should_activate_main`), achei que a condição real da carta ("If there
+is a Character with a cost of 5 or **more**...") estava parseada como
+`board_has_cost: [5]` (EXATO), não `board_has_cost_gte: 5` (MÍNIMO) —
+qualquer personagem de custo 6+ em campo não contava. Isso é bug de
+**parser**, não de heurística — seguido o workflow obrigatório
+(`optcg-parser-audit`): auditoria global achou mais 2 cartas com o
+mesmo padrão de fraseado (`OP10-058`, `OP11-095`), regex de
+`board_has_cost` em `gerar_effects_db.py` reescrito em 3 ramos
+(composto/mínimo-único/exato), `diff_parser.py` PERDEU=0 MUDOU=3
+(exatamente as 3 esperadas), registro em
+`scriptis_da_ia/parser_audits/2026-07-29_board_has_cost_existencial_or_more_sem_composto.json`,
+`smoke_fast.py`/`smoke_test.py` 100% (1 teste antigo ajustado --
+`test_rebecca_reveal_play_pair_condicional`, OP10-058, refletia o valor
+ANTIGO/errado da condição).
+
+Confirmado via self-play pós-fix: ativação de OP14-020 subiu de 1,1
+para **1,6/jogo** (melhora real, +45%) — mas ainda longe do alvo real
+(5,4/jogo). O gap residual provavelmente é prioridade/score no Turn
+Planner (base=90 pra DON ramp pode ainda perder demais pra outras
+ações), não mais um problema de condição — fica como pendência
+separada, não resolvida nesta rodada.
+
+**`resolve_reaction`/redirect**: lido `sim_bridge.py` (função já
+existe, effect-aware, cobre Teach/Doflamingo/Kid/EB01-038 com custos
+diferentes). Investigação de calibração ainda em andamento.
+
+Commit intermediário: fix do parser (achado 2) já commitado; achado 1
+(Jinbe-B) e a investigação de resolve_reaction seguem sem mudança de
+código até decisão do usuário / conclusão da investigação.
+
 ## 2026-07-29 (398) - Claude (sessao remota web) - calibrando mais alvos apos as 3 primeiras frentes: extensao do cost-check de bloqueio (vida 3/4) + ATTACK_MARGIN_DON_FRACTION (DON por ataque)
 
 Usuário pediu pra continuar calibrando os itens que eu tinha listado

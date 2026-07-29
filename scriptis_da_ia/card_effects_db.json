@@ -41474,9 +41474,7 @@
           }
         ],
         "conditions": {
-          "board_has_cost": [
-            8
-          ]
+          "board_has_cost_gte": 8
         }
       }
     }
@@ -46193,9 +46191,7 @@
             "target": "opp_character",
             "cost_lte": 7,
             "conditions": {
-              "board_has_cost": [
-                9
-              ]
+              "board_has_cost_gte": 9
             }
           }
         ],
@@ -54619,9 +54615,7 @@
             "action": "self_cant_play",
             "scope": "chars",
             "conditions": {
-              "board_has_cost": [
-                5
-              ]
+              "board_has_cost_gte": 5
             }
           },
           {
@@ -54629,9 +54623,7 @@
             "count": 3,
             "up_to": true,
             "conditions": {
-              "board_has_cost": [
-                5
-              ]
+              "board_has_cost_gte": 5
             }
           }
         ],

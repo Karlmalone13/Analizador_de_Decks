@@ -26250,9 +26250,7 @@
  "OP10-058": {
   "on_play": {
    "conditions": {
-    "board_has_cost": [
-     8
-    ]
+    "board_has_cost_gte": 8
    },
    "steps": [
     {
@@ -29280,9 +29278,7 @@
     {
      "action": "ko",
      "conditions": {
-      "board_has_cost": [
-       9
-      ]
+      "board_has_cost_gte": 9
      },
      "cost_lte": 7,
      "count": 1,
@@ -34595,18 +34591,14 @@
     {
      "action": "self_cant_play",
      "conditions": {
-      "board_has_cost": [
-       5
-      ]
+      "board_has_cost_gte": 5
      },
      "scope": "chars"
     },
     {
      "action": "set_don_active",
      "conditions": {
-      "board_has_cost": [
-       5
-      ]
+      "board_has_cost_gte": 5
      },
      "count": 3,
      "up_to": true

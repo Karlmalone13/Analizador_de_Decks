@@ -2,6 +2,32 @@
 
 **Última atualização:** 29 de julho de 2026
 
+## 🟡 EM ANDAMENTO: investigando activate:main e resolve_reaction por líder (29/07/2026, bloco 399)
+
+Usuário pediu pra seguir com os 2 itens pendentes (bloco 398) e avisar
+sempre que aparecer uma regra/calibração específica de carta/líder.
+
+- [x] Mihawk-G (OP14-020) sub-ativa Activate:Main — **bug de parser
+  real**, não heurística: "cost of 5 or more" parseado como EXATO
+  (`board_has_cost:[5]`) em vez de MÍNIMO (`board_has_cost_gte:5`).
+  Auditoria global achou +2 cartas (OP10-058, OP11-095). Regex
+  corrigido, registro em `parser_audits/`, `diff_parser.py` PERDEU=0
+  MUDOU=3, `smoke_fast.py`/`smoke_test.py` 100%. Self-play pós-fix:
+  1,1→1,6 ativações/jogo (melhora real, vencedores reais=5,4 — gap
+  residual provavelmente é prioridade/score no Turn Planner, não mais
+  condição; fica pendente).
+- [ ] Jinbe-B (OP14-040) super-ativa Activate:Main (trash 1 mão → 2 DON
+  rested, sem once_per_turn): ativa TODO turno sem exceção (4,9/jogo)
+  vs vencedores reais 2,0/jogo. Causa: `give_don` cai no fallback
+  genérico de `_score_activate_main` (base=60), sem refletir que o DON
+  é *rested* (delayed), diferente de `add_don`/`set_don_active` (DON
+  ativo imediato, base=90 correto). **Reportado ao usuário antes de
+  decidir o fix** — é heurística nova, não calibração de constante
+  existente. Aguardando decisão.
+- [ ] `resolve_reaction`/redirect: lido `sim_bridge.py`, função já
+  existe e é effect-aware (Teach/Doflamingo/Kid/EB01-038). Investigação
+  de calibração ainda em andamento.
+
 ## 🟢 IMPLEMENTADO: mais alvos de calibração após as 3 primeiras frentes (29/07/2026, bloco 398)
 
 Usuário pediu pra continuar calibrando os itens citados como pendentes:

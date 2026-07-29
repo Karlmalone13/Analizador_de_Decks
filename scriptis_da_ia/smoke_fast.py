@@ -4840,8 +4840,10 @@ def test_rebecca_reveal_play_pair_condicional() -> None:
     # incondicional); manter os 3 steps sob a MESMA condicao de bloco e o
     # comportamento correto e consistente com o resto do parser.
     on_play = get_card_effects("OP10-058").get("on_play", {})
-    check("OP10-058 parseia os 2 plays (reveal-pair) alem do draw, todos sob board_has_cost:[8]",
-          on_play.get("conditions", {}).get("board_has_cost") == [8]
+    check("OP10-058 parseia os 2 plays (reveal-pair) alem do draw, todos sob "
+          "board_has_cost_gte:8 (achado 29/07, parser_audits/2026-07-29: "
+          "'cost of 8 or more' e MINIMO, nao exato -- board_has_cost:[8] era bug)",
+          on_play.get("conditions", {}).get("board_has_cost_gte") == 8
           and any(s.get("action") == "play_card" and s.get("cost_lte") == 7
                   and s.get("filter_type") == "dressrosa" and s.get("exclude") == "rebecca"
                   for s in on_play.get("steps", []))
