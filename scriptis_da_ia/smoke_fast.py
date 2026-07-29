@@ -8968,6 +8968,7 @@ def main() -> int:
     test_blocker_condicional_auditoria_global_28_07()
     test_block_critical_life_max_cost_calibrado_29_07()
     test_counter_valor_vida_scale_calibrado_29_07()
+    test_block_critical_life_max_cost_estendido_vida_3_4_29_07()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -9235,6 +9236,56 @@ def test_block_critical_life_max_cost_calibrado_29_07() -> None:
 
     check("BLOCK_CRITICAL_LIFE_MAX_COST calibrado pra 150 (nao None/sem teto)",
           de.BLOCK_CRITICAL_LIFE_MAX_COST == 150)
+
+
+def test_block_critical_life_max_cost_estendido_vida_3_4_29_07() -> None:
+    """
+    Achado 29/07 (bloco HANDOFF 398): os branches vida==3 e vida==4 de
+    should_use_blocker ja tinham uma condicao ("atacante forte"), mas
+    NENHUM cost-check no blocker em si -- diferente do branch vida<=2,
+    que ja usava BLOCK_CRITICAL_LIFE_MAX_COST desde o bloco 396. Estendido
+    o mesmo teto pros dois branches. Validado via self-play pareado (5
+    lideres/decks/seed=7, 50 partidas por variante): COM extensao 52%
+    (26/50) vs SEM extensao 42% (21/50) -- bate o baseline em 4/5 lideres.
+    """
+    from optcg_engine import decision_engine as de
+
+    leader_forte = mk("XBC3LD", "Lider", card_type="LEADER", power=5000)
+
+    # vida==3, atacante forte, blocker CARO (custo_sacrificio > 150):
+    # antes da extensao, bloqueava incondicionalmente; agora nao mais.
+    caro3 = mk("XBC3A", "Blocker Caro", power=13000, card_type="CHARACTER")
+    caro3.has_blocker = True
+    me3 = GameState(leader=leader_forte, turn=3)
+    me3.field_chars = [caro3]
+    me3.life = [real_card("OP07-077") for _ in range(3)]
+    opp3 = GameState(leader=mk("XBC3OPP", "Opp", card_type="LEADER"))
+    eng3 = DecisionEngine(me3, opp3)
+    check("vida==3 + atacante forte + blocker caro: NAO bloqueia mais incondicionalmente",
+          eng3.should_use_blocker(9000) is None)
+
+    # vida==3, atacante forte, blocker BARATO: continua bloqueando.
+    barato3 = mk("XBC3B", "Blocker Barato", power=3000, card_type="CHARACTER")
+    barato3.has_blocker = True
+    me3b = GameState(leader=leader_forte, turn=3)
+    me3b.field_chars = [barato3]
+    me3b.life = [real_card("OP07-077") for _ in range(3)]
+    opp3b = GameState(leader=mk("XBC3BOPP", "Opp", card_type="LEADER"))
+    eng3b = DecisionEngine(me3b, opp3b)
+    check("vida==3 + atacante forte + blocker barato: ainda bloqueia",
+          eng3b.should_use_blocker(9000) is barato3)
+
+    # vida==4, opp vida<=2, atacante forte, blocker CARO: mesma extensao.
+    caro4 = mk("XBC4A", "Blocker Caro", power=13000, card_type="CHARACTER")
+    caro4.has_blocker = True
+    me4 = GameState(leader=leader_forte, turn=3)
+    me4.field_chars = [caro4]
+    me4.life = [real_card("OP07-077") for _ in range(4)]
+    opp4 = GameState(leader=mk("XBC4OPP", "Opp", card_type="LEADER"))
+    opp4.life = [real_card("OP07-077") for _ in range(2)]
+    eng4 = DecisionEngine(me4, opp4)
+    check("vida==4 + opp vida<=2 + atacante forte + blocker caro: NAO bloqueia mais incondicionalmente",
+          eng4.should_use_blocker(9000) is None)
 
 
 def test_blocker_condicional_auditoria_global_28_07() -> None:

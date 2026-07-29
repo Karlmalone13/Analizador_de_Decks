@@ -11061,7 +11061,10 @@ class DecisionEngine:
         # Com 3 vidas, usa se o atacante é forte -- mesmo teto de custo de
         # vida<=2 (29/07, bloco HANDOFF 398: generaliza o cost-check pros
         # outros niveis de vida que ja tinham condicao de "atacante forte"
-        # mas nenhum check de custo do blocker em si).
+        # mas nenhum check de custo do blocker em si). Validado via self-play
+        # pareado (5 lideres/decks/seed=7, 50 partidas por variante): COM
+        # extensao 52% (26/50) vs SEM extensao 42% (21/50) -- bate o baseline
+        # em 4/5 lideres, valor final aplicado.
         if my_life == 3 and attacker_power >= self.me.leader.power:
             melhor = min(blockers, key=custo_sacrificio)
             if (BLOCK_CRITICAL_LIFE_MAX_COST is None

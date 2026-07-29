@@ -11,12 +11,13 @@ de `should_use_blocker`, resolve_reaction.
 - [x] `tune_weights.py`/`EVAL_WEIGHTS`: investigado e DEPRIORIZADO —
   sistema separado (Imu-específico, baselines hardcoded, path Windows).
   Sem evidência direta de miscalibração. Não avançado.
-- [ ] Extensão do cost-check de bloqueio (`BLOCK_CRITICAL_LIFE_MAX_COST`,
+- [x] Extensão do cost-check de bloqueio (`BLOCK_CRITICAL_LIFE_MAX_COST`,
   já calibrado em 150 no bloco 396) pros branches `my_life==3`/`==4` de
   `should_use_blocker` (antes só tinham condição de "atacante forte",
   sem cost-check no blocker em si). Teste pareado (com vs sem extensão,
-  mesmos 5 líderes/decks/seed) — checar resultado antes de decidir se
-  fica.
+  mesmos 5 líderes/decks/seed, 50 partidas/variante): COM extensão 52%
+  (26/50) vs SEM 42% (21/50) — bate baseline em 4/5 líderes. Mantida.
+  Novo teste permanente. `smoke_fast.py`/`smoke_test.py` 100%.
 - [ ] Nova constante `ATTACK_MARGIN_DON_FRACTION` (escala a margem de
   DON "grátis" anexada além do déficit obrigatório em
   `don_needed_for_attack`) — zero mudança de comportamento com 1.0
