@@ -2,6 +2,33 @@
 
 **Última atualização:** 29 de julho de 2026
 
+## 🟡 EM ANDAMENTO: mais alvos de calibração após as 3 primeiras frentes (29/07/2026, bloco 398)
+
+Usuário pediu pra continuar calibrando os itens citados como pendentes:
+activate:main, DON/ataque, EVAL_WEIGHTS/tune_weights.py, outros branches
+de `should_use_blocker`, resolve_reaction.
+
+- [x] `tune_weights.py`/`EVAL_WEIGHTS`: investigado e DEPRIORIZADO —
+  sistema separado (Imu-específico, baselines hardcoded, path Windows).
+  Sem evidência direta de miscalibração. Não avançado.
+- [ ] Extensão do cost-check de bloqueio (`BLOCK_CRITICAL_LIFE_MAX_COST`,
+  já calibrado em 150 no bloco 396) pros branches `my_life==3`/`==4` de
+  `should_use_blocker` (antes só tinham condição de "atacante forte",
+  sem cost-check no blocker em si). Teste pareado (com vs sem extensão,
+  mesmos 5 líderes/decks/seed) — checar resultado antes de decidir se
+  fica.
+- [ ] Nova constante `ATTACK_MARGIN_DON_FRACTION` (escala a margem de
+  DON "grátis" anexada além do déficit obrigatório em
+  `don_needed_for_attack`) — zero mudança de comportamento com 1.0
+  (default atual, `smoke_fast.py` 100%). Ainda NÃO validado via
+  self-play — fila depois do teste de bloqueio acima.
+- [ ] `activate:main` por líder: maior evidência (ex: Mihawk bot=1.4/jogo
+  vs real=5.4; Jinbe-B bot=5.6 vs real=2.0), mas NÃO é um parâmetro
+  único — precisa investigação qualitativa por carta/líder. Não
+  iniciado.
+- [ ] `resolve_reaction`/redirect: candidato citado, não investigado
+  ainda.
+
 ## 🟢 IMPLEMENTADO: COUNTER_VALOR_VIDA_SCALE calibrado (1.3) via self-play pareado — achado CONTRA a hipótese inicial (29/07/2026, bloco 397)
 
 Terceira frente do pedido do usuário (mesma metodologia dos blocos

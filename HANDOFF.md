@@ -1,5 +1,38 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-29 (398, EM ANDAMENTO) - Claude (sessao remota web) - calibrando mais alvos apos as 3 primeiras frentes: extensao do cost-check de bloqueio (vida 3/4) + ATTACK_MARGIN_DON_FRACTION (DON por ataque)
+
+Usuário pediu pra continuar calibrando os itens que eu tinha listado
+como pendentes (activate:main, DON/ataque, EVAL_WEIGHTS/tune_weights.py,
+outros branches de should_use_blocker, resolve_reaction). Progresso
+desta rodada:
+
+**`tune_weights.py`/`EVAL_WEIGHTS`**: investigado e DEPRIORIZADO --
+sistema separado, focado só no líder Imu, com baselines hardcoded e o
+mesmo `load_sim_deck` (path Windows) das ferramentas antigas. Adaptar
+seria um projeto à parte, sem evidência direta (diferente dos 3 alvos
+já calibrados) de que essa camada esteja mal calibrada. Não avançado
+nesta sessão.
+
+**Extensão do cost-check de bloqueio pra vida==3/vida==4**: esses 2
+branches de `should_use_blocker` já tinham uma condição (atacante
+forte), mas nenhum cost-check no blocker em si -- estendido
+`BLOCK_CRITICAL_LIFE_MAX_COST` (já calibrado em 150 no bloco 396) pra
+esses branches também. Teste pareado (com vs sem a extensão, mesmos 5
+líderes/decks/seed) rodando em background no momento deste commit.
+
+**`ATTACK_MARGIN_DON_FRACTION`** (nova constante,
+`don_needed_for_attack`): DON por ataque não tem um único literal solto
+pra calibrar (é um algoritmo, não uma tabela) -- exceto a "margem de
+pressão grátis" (DON ocioso anexado além do déficit obrigatório pra
+passar o alvo), que agora escala por essa fração (1.0 = comportamento
+original). `smoke_fast.py` 100% (zero mudança com 1.0). Ainda NÃO
+testado via self-play -- fila depois do teste de bloqueio em
+andamento (evitar rodar 2 simulações pesadas em paralelo).
+
+Commit intermediário, ambas mudanças com default = comportamento
+antigo preservado onde aplicável.
+
 ## 2026-07-29 (397) - Claude (sessao remota web) - calibra should_use_counter (COUNTER_VALOR_VIDA_SCALE=1.3), terceira frente do pedido do usuario -- achado CONTRA a hipotese inicial
 
 Usuário confirmou pra continuar a rodada de calibração (blocos 395/396

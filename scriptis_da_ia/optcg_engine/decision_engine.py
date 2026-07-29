@@ -112,6 +112,18 @@ BLOCK_CRITICAL_LIFE_MAX_COST = 150
 # confirmando que a direcao certa era o oposto da hipotese inicial.
 COUNTER_VALOR_VIDA_SCALE = 1.3
 
+# Fracao do DON ocioso ("margem de pressao gratis") de fato anexada em
+# don_needed_for_attack, alem do deficit base obrigatorio pra passar o
+# alvo. 1.0 = comportamento original (usa TODO o DON livre disponivel
+# como margem). Quarta frente da calibracao pedida pelo usuario (blocos
+# 395-397): self-play vs vencedores reais achou o bot anexando mais DON
+# por ataque que o vencedor real em TODOS os 5 lideres com log confiavel
+# (bloco 394) -- essa margem "gratis" e o unico lugar no calculo de DON
+# por ataque com um numero solto pra reduzir (o resto da funcao e
+# deficit OBRIGATORIO, nao ha o que cortar ali sem quebrar ataques que
+# precisam do DON pra passar). Ver TODO.md pro valor final.
+ATTACK_MARGIN_DON_FRACTION = 1.0
+
 # ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
 # Promovidos de variavel local do main_phase pra constante de modulo --
 # `_select_search_candidates`/`_select_action_via_search` sao agora a FONTE
@@ -1756,7 +1768,10 @@ def don_needed_for_attack(attacker: 'Card', ttype: str, tgt: 'Optional[Card]',
     # DON esta OCIOSO — anexar e pressao gratis (força o oponente a pagar
     # mais counter para negar; visto em partida real 06/07: bot passou o
     # turno com 1 DON parado e atacou 5000 seco em vez de 6000).
-    return need_base + min(need_margem, livre_para_margem)
+    # ATTACK_MARGIN_DON_FRACTION (< 1.0): reduz quanto dessa margem "gratis"
+    # e de fato anexada, sem tocar no deficit base (need_base, obrigatorio).
+    margem = int(min(need_margem, livre_para_margem) * ATTACK_MARGIN_DON_FRACTION)
+    return need_base + margem
 
 
 def remove_by_identity(lst: list, obj) -> bool:
@@ -11043,13 +11058,24 @@ class DecisionEngine:
                 return melhor
             return None
 
-        # Com 3 vidas, usa se o atacante é forte
+        # Com 3 vidas, usa se o atacante é forte -- mesmo teto de custo de
+        # vida<=2 (29/07, bloco HANDOFF 398: generaliza o cost-check pros
+        # outros niveis de vida que ja tinham condicao de "atacante forte"
+        # mas nenhum check de custo do blocker em si).
         if my_life == 3 and attacker_power >= self.me.leader.power:
-            return min(blockers, key=custo_sacrificio)
+            melhor = min(blockers, key=custo_sacrificio)
+            if (BLOCK_CRITICAL_LIFE_MAX_COST is None
+                    or custo_sacrificio(melhor) <= BLOCK_CRITICAL_LIFE_MAX_COST):
+                return melhor
+            return None
 
         # Com 4 vidas e oponente com ≤ 2 vidas: bloqueia apenas atacantes fortes
         if my_life == 4 and opp_life <= 2 and attacker_power >= self.me.leader.power:
-            return min(blockers, key=custo_sacrificio)
+            melhor = min(blockers, key=custo_sacrificio)
+            if (BLOCK_CRITICAL_LIFE_MAX_COST is None
+                    or custo_sacrificio(melhor) <= BLOCK_CRITICAL_LIFE_MAX_COST):
+                return melhor
+            return None
 
         return None
 
