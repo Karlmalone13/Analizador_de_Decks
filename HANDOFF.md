@@ -8,19 +8,27 @@ pediu explicitamente pra avisar sempre que a investigação apontar pra
 uma regra/calibração específica de carta ou líder (em vez de decidir
 sozinho e seguir).
 
-**Achado 1 — Jinbe-B (OP14-040) super-ativa o próprio Activate:Main**
-(trash 1 da mão → 2 DON *rested*, sem `once_per_turn`): self-play
-instrumentado mostrou o bot ativando em TODOS os turnos próprios sem
-exceção (média 4,9/jogo, bate a suspeita anterior de 5,6/jogo), vs
-vencedores reais em 2,0/jogo. Não é spam dentro do mesmo turno (nunca
-mais de 1x/turno) — é ativação incondicional todo turno. Causa raiz:
-`_score_activate_main` não tem categoria própria pra `give_don` (a ação
-cai no fallback genérico de 60, sem refletir que o DON é *rested* —
-delayed, só ajuda o PRÓXIMO turno, diferente de `add_don`/
-`set_don_active`, que dão DON *ativo* imediato e corretamente pontuam
-90). Isso é uma decisão de design de heurística nova (não uma
-calibração de constante existente) — **reportado ao usuário antes de
-implementar qualquer fix**, não decidido sozinho.
+**Achado 1 — Jinbe-B (OP14-040) super-ativa o próprio Activate:Main
+(EM CALIBRAÇÃO)**: (trash 1 da mão → 2 DON *rested*, sem
+`once_per_turn`): self-play instrumentado mostrou o bot ativando em
+TODOS os turnos próprios sem exceção (média 4,9/jogo, bate a suspeita
+anterior de 5,6/jogo), vs vencedores reais em 2,0/jogo. Não é spam
+dentro do mesmo turno (nunca mais de 1x/turno) — é ativação
+incondicional todo turno. Causa raiz: `_score_activate_main` não tinha
+categoria própria pra `give_don` (a ação caía no fallback genérico de
+60, sem refletir que o DON é *rested* — delayed, só ajuda o PRÓXIMO
+turno, diferente de `add_don`/`set_don_active`, que dão DON *ativo*
+imediato e corretamente pontuam 90).
+
+Escopo maior do que só Jinbe-B: auditado o banco inteiro, `give_don`
+aparece em **49 cartas**, TODAS com `rested=True` (nenhuma dá DON ativo
+via essa ação) — o fix é genérico (categoria nova por AÇÃO, não
+hardcoded a nenhuma carta), Jinbe-B só é o caso mais visível por ser
+habilidade de LÍDER (sempre em campo) e o ÚNICO sem `once_per_turn` no
+banco. Nova constante `GIVE_DON_RESTED_BASE_SCORE`, default=60
+(checkpoint, comportamento idêntico ao fallback antigo,
+`smoke_fast.py` 100%). Teste pareado (60/45/30/15/0/-15, mesmos 5
+líderes/decks/seed) rodando em background no momento deste commit.
 
 **Achado 2 — Mihawk-G (OP14-020) sub-ativa (CORRIGIDO, bug de parser
 real)**: self-play mostrava 1,1/jogo vs vencedores reais 5,4/jogo.

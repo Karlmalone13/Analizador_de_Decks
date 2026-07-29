@@ -138,6 +138,22 @@ COUNTER_VALOR_VIDA_SCALE = 1.3
 # tendencia real).
 ATTACK_MARGIN_DON_FRACTION = 0.7
 
+# Score-base de _score_activate_main pra acao `give_don` (DON RESTADO
+# -- so ajuda a partir do PROXIMO turno, distinto de add_don/
+# set_don_active, que dao DON ATIVO imediato e tem categoria propria,
+# base=90). Achado 29/07 (investigacao de activate:main por lider,
+# bloco 399): `give_don` nao tinha categoria propria em
+# _score_activate_main -- caia no fallback generico (60, sem nenhum
+# desconto por ser DON delayed). Isso e usado por 49 cartas no banco
+# (TODAS com rested=True -- nao existe give_don com DON ativo),
+# incluindo o proprio lider Jinbe-B (OP14-040), que e o UNICO caso sem
+# once_per_turn no banco -- sem esse cap E sem desconto proprio no
+# score, o bot ativava em TODO turno proprio sem excecao (self-play:
+# 4,9/jogo) vs vencedores reais em 2,0/jogo. 60 = valor DEFAULT
+# (checkpoint de comportamento identico ao fallback antigo) ate o
+# self-play calibrar o valor final -- ver TODO.md.
+GIVE_DON_RESTED_BASE_SCORE = 60
+
 # ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
 # Promovidos de variavel local do main_phase pra constante de modulo --
 # `_select_search_candidates`/`_select_action_via_search` sao agora a FONTE
@@ -12512,6 +12528,10 @@ class OPTCGMatch:
             if src is getattr(p, 'field_stage', None) and best_saved_don >= 3:
                 base += min(best_saved_don * 80, 520)
                 base += min(best_play_value * 0.20, 180)
+        elif any(a == 'give_don' for a in actions_list):
+            # DON RESTADO (delayed) -- distinto de add_don/set_don_active
+            # (base=90, DON ATIVO imediato). Ver GIVE_DON_RESTED_BASE_SCORE.
+            base = GIVE_DON_RESTED_BASE_SCORE
         elif any(a in ('rest_opp', 'rest_opp_character', 'ko', 'ko_opp',
                        'ko_if_cost_eq_don', 'debuff_power', 'debuff_cost',
                        'bounce', 'place_opp_character_bottom_deck',

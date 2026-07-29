@@ -18,12 +18,15 @@ sempre que aparecer uma regra/calibração específica de carta/líder.
   condição; fica pendente).
 - [ ] Jinbe-B (OP14-040) super-ativa Activate:Main (trash 1 mão → 2 DON
   rested, sem once_per_turn): ativa TODO turno sem exceção (4,9/jogo)
-  vs vencedores reais 2,0/jogo. Causa: `give_don` cai no fallback
+  vs vencedores reais 2,0/jogo. Causa: `give_don` caía no fallback
   genérico de `_score_activate_main` (base=60), sem refletir que o DON
   é *rested* (delayed), diferente de `add_don`/`set_don_active` (DON
-  ativo imediato, base=90 correto). **Reportado ao usuário antes de
-  decidir o fix** — é heurística nova, não calibração de constante
-  existente. Aguardando decisão.
+  ativo imediato, base=90 correto). Escopo real: 49 cartas no banco
+  usam `give_don` (todas rested=True) — fix é por AÇÃO, não hardcoded
+  a Jinbe. Nova constante `GIVE_DON_RESTED_BASE_SCORE`, default=60
+  (checkpoint, zero mudança, `smoke_fast.py` 100%). Teste pareado
+  (60/45/30/15/0/-15, mesmos 5 líderes/decks/seed) rodando em
+  background — decidir valor final quando terminar.
 - [ ] `resolve_reaction`/redirect: lido `sim_bridge.py`, função já
   existe e é effect-aware (Teach/Doflamingo/Kid/EB01-038). Investigação
   de calibração ainda em andamento.
