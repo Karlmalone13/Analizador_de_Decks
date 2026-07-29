@@ -67,9 +67,16 @@ COUNTER_STAT_VALUE_PER_1000 = 15
 # lider MENOS que o vencedor real em 4/5 lideres (ex: Bonney 59% vs 100%
 # real) -- o baseline flat de 100 perdia facil pra `target.board_value()
 # * 15` de qualquer personagem razoavel em campo, MESMO quando o
-# vencedor real prefere ir na cara. Ver TODO.md pro valor final e a
-# comparacao pareada que validou.
-ATTACK_LEADER_BASE_SCORE = 100
+# vencedor real prefere ir na cara.
+#
+# Calibrado via self-play PAREADO (mesma seed/matchups, 5 lideres x 10
+# partidas cada, decks reais de decklists_raw.csv) testando 100/175/250/
+# 400/600: win rate agregado 36%/44%/46%/52%/36% -- pico claro em 400
+# (%lider foi de 76,2% pra 87,2%, bem perto do real 84,1%; DON/ataque
+# tambem caiu de 1,9 pra 1,8 como efeito colateral, sem precisar mexer
+# nisso separado). 600 ja reverte (win rate cai pra 36%, igual ao valor
+# original) -- 400 e o valor validado, nao um palpite.
+ATTACK_LEADER_BASE_SCORE = 400
 
 # ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
 # Promovidos de variavel local do main_phase pra constante de modulo --

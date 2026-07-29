@@ -1,6 +1,6 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-29 (395, EM ANDAMENTO) - Claude (sessao remota web) - calibrando decisoes do bot rumo ao % dos vencedores reais, via self-play pareado com decks reais (decklists_raw.csv)
+## 2026-07-29 (395) - Claude (sessao remota web) - calibra ATTACK_LEADER_BASE_SCORE (100→400) via self-play pareado com decks reais, rumo ao % de ataque-no-lider dos vencedores reais
 
 Usuario pediu explicitamente pra calibrar (nao so medir) as decisoes do
 bot rumo a porcentagem dos vencedores reais, depois do achado do bloco
@@ -32,28 +32,52 @@ insuficiente, descartada da comparação):
 Padrão consistente: bot ataca o líder MENOS que o vencedor real em 4/5
 casos, e anexa mais DON por ataque em TODOS os 5 casos.
 
-**Calibração em andamento**: `ATTACK_LEADER_BASE_SCORE` (extraído do
-literal `100` solto em `score_attack_target`, `decision_engine.py`) --
-hipótese: o baseline flat de ataque no líder perde fácil pra
-`target.board_value() * 15` de qualquer personagem razoável em campo,
-mesmo quando o vencedor real prefere ir na cara; se corrigir isso
-também deve reduzir o DON/ataque como efeito colateral (personagens
-costumam precisar de mais DON pra passar que o líder). Testando 3
-valores candidatos (100/175/250) via self-play PAREADO (mesma seed,
-mesmos matchups nos 3, 10 partidas x 5 líderes cada) -- rodando em
-background no momento deste commit, resultado e valor final ainda
-NÃO decididos. Este é um commit intermediário (só a extração de
-literal pra constante nomeada, ZERO mudança de comportamento,
-`smoke_fast.py` 100%) pra não perder trabalho caso a sessão seja
-interrompida de novo (já aconteceu 1x hoje, processo em background
-morreu silenciosamente no meio de uma simulação anterior).
+**Calibração**: `ATTACK_LEADER_BASE_SCORE` (extraído do literal `100`
+solto em `score_attack_target`, `decision_engine.py`) -- hipótese: o
+baseline flat de ataque no líder perde fácil pra `target.board_value()
+* 15` de qualquer personagem razoável em campo, mesmo quando o
+vencedor real prefere ir na cara; se corrigir isso também deveria
+reduzir o DON/ataque como efeito colateral (personagens costumam
+precisar de mais DON pra passar que o líder).
 
-**Próximo bloco** deve trazer: o valor final escolhido pra
-`ATTACK_LEADER_BASE_SCORE` com a validação pareada completa, e o
-início da calibração de `should_use_blocker`/`should_use_counter`
-(mesma pedido do usuário, ainda não iniciada -- alvo identificado: a
-regra incondicional "sempre bloqueia com vida<=2" em
-`should_use_blocker`, ~linha 10922).
+**Teste pareado** (mesma seed/matchups nos 5 valores testados, decks
+reais de `decklists_raw.csv`, 5 líderes x 10 partidas cada = 50 jogos
+por valor, agregado dos 5 líderes):
+
+| Valor | win rate agregado | %líder agregado | DON/atk agregado |
+|---|---|---|---|
+| 100 (original) | 36% | 76,2% | 1,9 |
+| 175 | 44% | 77,8% | 1,9 |
+| 250 | 46% | 81,9% | 1,6 |
+| **400** | **52% (pico)** | **87,2%** | **1,8** |
+| 600 | 36% (reverte) | 86,9% | 1,6 |
+
+Real agregado (referência): %líder=84,1%, DON/atk=1,0.
+
+400 é o pico claro da curva -- melhora win rate, %líder (bem perto do
+real) E DON/ataque (como efeito colateral, sem calibração separada,
+confirmando a hipótese) simultaneamente, nos 5 líderes. 600 já reverte
+o win rate pro mesmo patamar do valor original (100) -- não adianta
+subir mais. **Valor final: `ATTACK_LEADER_BASE_SCORE = 400`**.
+
+**Ajuste em `smoke_fast.py`**: `test_trigger_risk_penalty_nao_veta_sozinho_ataque_legitimo`
+falhou depois da mudança -- não regressão, o cenário sintético (15
+vidas artificiais) tinha sido calibrado pro baseline ANTIGO de 100 (a
+única forma de forçar o teto de "desconto de trigger nunca passa de
+metade do valor bruto" a disparar de verdade). Com base=400, vida\*8=120
+não supera mais 400/2=200, o teto simplesmente não era mais exercitado
+pelo cenário antigo. Corrigido calculando a vida mínima necessária a
+partir de `ATTACK_LEADER_BASE_SCORE` (não mais hardcoded), preservando
+o proposito original do teste (provar que o teto existe) em vez de só
+ajustar o número esperado.
+
+`smoke_fast.py` + `smoke_test.py` 100% depois do ajuste.
+
+**Próximo bloco** deve trazer: calibração de
+`should_use_blocker`/`should_use_counter` (mesmo pedido do usuário,
+ainda não iniciada -- alvo identificado: a regra incondicional "sempre
+bloqueia com vida<=2" em `should_use_blocker`, ~linha 10922), usando a
+mesma metodologia de self-play pareado.
 
 ## 2026-07-28 (394) - Claude (sessao remota web) - corrige o gap de [Blocker] condicional (auditoria global, 32 cartas) + números REAIS pós-fix da "ordem de defesa" (corrige a estimativa especulativa do bloco 393) + calibração NÃO aplicada (achado ambíguo, ver abaixo)
 

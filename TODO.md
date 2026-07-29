@@ -2,7 +2,7 @@
 
 **Última atualização:** 29 de julho de 2026
 
-## 🟡 EM ANDAMENTO: calibrar decisões do bot rumo ao % dos vencedores reais (29/07/2026, bloco 395)
+## 🟢 IMPLEMENTADO: ATTACK_LEADER_BASE_SCORE calibrado 100→400 via self-play pareado (29/07/2026, bloco 395)
 
 Usuário decidiu (resolve a pendência do bloco 394): calibrar de verdade,
 usando self-play pareado com decks reais (`decklists_raw.csv`) como
@@ -14,17 +14,22 @@ validação, não só teoria/dado de log.
 - [x] Self-play bot vs pool de 161 decks reais comparado aos vencedores
   reais (5 líderes com amostra confiável): bot ataca o líder MENOS que
   o vencedor real em 4/5 casos, anexa mais DON por ataque em todos os 5.
-- [ ] `ATTACK_LEADER_BASE_SCORE` (extraído do literal `100` em
-  `score_attack_target`): teste pareado rodando (100/175/250, mesma
-  seed/matchups, 5 líderes x 10 partidas cada) — valor final AINDA NÃO
-  escolhido.
+- [x] `ATTACK_LEADER_BASE_SCORE` (extraído do literal `100` em
+  `score_attack_target`): teste pareado com 5 valores (100/175/250/
+  400/600, mesma seed/matchups, 5 líderes x 10 partidas cada). Pico
+  claro em **400** — win rate agregado 36%→52%, %líder 76,2%→87,2%
+  (perto do real 84,1%), DON/ataque 1,9→1,8 (efeito colateral, sem
+  calibração separada). 600 reverte pro win rate original — não vale
+  subir mais. Valor final aplicado.
+- [x] Ajuste em `smoke_fast.py` (não regressão): cenário sintético do
+  teste de teto de desconto-de-trigger foi calibrado pro baseline
+  antigo (100) — recalcula a vida mínima a partir de
+  `ATTACK_LEADER_BASE_SCORE` em vez de hardcoded.
+  `smoke_fast.py`/`smoke_test.py` 100%.
 - [ ] `should_use_blocker`/`should_use_counter`: ainda não iniciado.
   Alvo identificado — regra incondicional "sempre bloqueia com
   vida<=2" em `should_use_blocker` (~linha 10922, `decision_engine.py`).
-- [ ] Commit final (valor escolhido + validação completa) pendente —
-  este é um checkpoint intermediário só pra não perder a extração de
-  constante caso a sessão seja interrompida de novo (já aconteceu 1x
-  nesta mesma investigação, processo em background morreu sem erro).
+  Mesma metodologia (self-play pareado com os mesmos 5 líderes/decks).
 
 ## 🟡 PENDENTE DE DECISÃO DO USUÁRIO: calibrar should_use_blocker/should_use_counter? achado ambíguo (28/07/2026, bloco 394)
 

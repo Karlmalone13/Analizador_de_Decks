@@ -779,6 +779,7 @@ def test_trigger_risk_penalty_nao_veta_sozinho_ataque_legitimo() -> None:
     # nao protegido pelo piso que so o LIDER do bot tem (max(s,15)). Fix:
     # o desconto de trigger agora e limitado a metade do valor do proprio
     # ataque -- nunca consegue sozinho virar um ataque bom em ataque ruim.
+    from optcg_engine import decision_engine as de
     pekoms = real_card("ST34-005")
     pekoms._deck_uid = 170
     pekoms.rested = False
@@ -787,17 +788,24 @@ def test_trigger_risk_penalty_nao_veta_sozinho_ataque_legitimo() -> None:
     me.field_chars = [pekoms]
     me.life = [real_card("OP07-077") for _ in range(4)]  # vida propria OK, evita postura DEFENSIVE artificial
     opp = GameState(leader=real_card("ST04-001"))  # Kaido, lider 5000
-    # 15 vidas (irreal, so pra forcar o desconto de trigger MUITO alem da
-    # metade do valor do ataque -- vida*8=120 > score_attack_target cru
-    # de 100). Sem teto, isso viraria -20 (vetado). Com teto (metade do
-    # valor cru), fica em 50 -- prova que o desconto nunca consegue
-    # sozinho inverter um ataque legitimo, so reduzi-lo.
-    opp.life = [real_card("OP07-077") for _ in range(15)]
+    # Vida artificial (irreal) escolhida pra forcar o desconto de trigger
+    # (vida*8) MUITO alem da metade do valor bruto do ataque
+    # (ATTACK_LEADER_BASE_SCORE, calibrado pra 400 no bloco HANDOFF 395
+    # via self-play pareado -- ver decision_engine.py). Precisa de
+    # vida*8 > ATTACK_LEADER_BASE_SCORE/2 pra realmente exercitar o teto
+    # (achado ao recalibrar 29/07: as 15 vidas antigas, calibradas pro
+    # baseline velho de 100, deixaram de forcar o teto quando o baseline
+    # subiu pra 400 -- 15*8=120 nao supera mais 400/2=200, entao o
+    # desconto passava direto SEM ser limitado, e o teste falhava nao
+    # por regressao, so porque o cenario sintetico ficou desatualizado).
+    # +5 de vida de folga sobre o minimo matematico garante a margem.
+    vida_min_pra_estourar_teto = (de.ATTACK_LEADER_BASE_SCORE // 2 // 8) + 5
+    opp.life = [real_card("OP07-077") for _ in range(vida_min_pra_estourar_teto)]
     match = OPTCGMatch((me.leader, []), (opp.leader, []))
     actions = match._generate_and_score_actions(me, opp, DecisionEngine(me, opp))
     ataque = next((a for a in actions if a[1] == "attack" and a[2] is pekoms), None)
     check("Pekoms empatando com o lider (ataque legitimo) nao fica com score negativo mesmo com desconto de trigger enorme",
-          ataque is not None and ataque[0] == 50.0)
+          ataque is not None and ataque[0] == de.ATTACK_LEADER_BASE_SCORE / 2)
 
 
 def test_should_use_counter_nao_trava_com_vida_alta_em_ataque_real() -> None:
