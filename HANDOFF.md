@@ -1,5 +1,60 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-29 (395, EM ANDAMENTO) - Claude (sessao remota web) - calibrando decisoes do bot rumo ao % dos vencedores reais, via self-play pareado com decks reais (decklists_raw.csv)
+
+Usuario pediu explicitamente pra calibrar (nao so medir) as decisoes do
+bot rumo a porcentagem dos vencedores reais, depois do achado do bloco
+394 (bot ataca lider MENOS que vencedor real em 4/5 lideres com log
+confiavel, e anexa mais DON por ataque). Antes de mudar qualquer peso,
+construi infraestrutura de validacao real (nao so teoria):
+
+**Validado**: `ReplayMatch`/`audit_replay.py` de fato delega 100% pro
+motor de producao real (`OPTCGMatch.play_turn`), confirmado lendo o
+codigo e rodando 3 partidas reais aqui mesmo (0 excecoes). `decklists_raw.csv`
+(161 decks reais de torneio, versionado no repo) permite self-play sem
+depender de `load_sim_deck` (path Windows, so existe localmente).
+
+**Self-play bot vs pool de 161 decks reais, comparado com vencedores
+reais dos logs** (só os 5 líderes com amostra >=2 partidas reais
+confiáveis -- Imu-B, Dracule.Mihawk-G, Portgas.D.Ace-RB, Jinbe-B,
+Jewelry.Bonney-G; Enel-P/Enel-Y/Lucy-RB/Nami-BY tem só 1 partida real
+cada em formato `autosaved` legado, sem ataques registrados -- amostra
+insuficiente, descartada da comparação):
+
+| Líder | win rate bot | %líder BOT | %líder REAL | DON/atk BOT | DON/atk REAL |
+|---|---|---|---|---|---|
+| Imu-B | 50% | 67,7% | 72,7% | 1,9 | 1,3 |
+| Dracule.Mihawk-G | 60% | 69,4% | 90,3% | 2,0 | 1,1 |
+| Portgas.D.Ace-RB | 30% | 81,6% | 92,3% | 1,8 | 0,5 |
+| Jinbe-B | 10% | 72,2% | 90,5% | 1,7 | 0,6 |
+| Jewelry.Bonney-G | 50% | 59,1% | 100,0% | 1,4 | 0,3 |
+
+Padrão consistente: bot ataca o líder MENOS que o vencedor real em 4/5
+casos, e anexa mais DON por ataque em TODOS os 5 casos.
+
+**Calibração em andamento**: `ATTACK_LEADER_BASE_SCORE` (extraído do
+literal `100` solto em `score_attack_target`, `decision_engine.py`) --
+hipótese: o baseline flat de ataque no líder perde fácil pra
+`target.board_value() * 15` de qualquer personagem razoável em campo,
+mesmo quando o vencedor real prefere ir na cara; se corrigir isso
+também deve reduzir o DON/ataque como efeito colateral (personagens
+costumam precisar de mais DON pra passar que o líder). Testando 3
+valores candidatos (100/175/250) via self-play PAREADO (mesma seed,
+mesmos matchups nos 3, 10 partidas x 5 líderes cada) -- rodando em
+background no momento deste commit, resultado e valor final ainda
+NÃO decididos. Este é um commit intermediário (só a extração de
+literal pra constante nomeada, ZERO mudança de comportamento,
+`smoke_fast.py` 100%) pra não perder trabalho caso a sessão seja
+interrompida de novo (já aconteceu 1x hoje, processo em background
+morreu silenciosamente no meio de uma simulação anterior).
+
+**Próximo bloco** deve trazer: o valor final escolhido pra
+`ATTACK_LEADER_BASE_SCORE` com a validação pareada completa, e o
+início da calibração de `should_use_blocker`/`should_use_counter`
+(mesma pedido do usuário, ainda não iniciada -- alvo identificado: a
+regra incondicional "sempre bloqueia com vida<=2" em
+`should_use_blocker`, ~linha 10922).
+
 ## 2026-07-28 (394) - Claude (sessao remota web) - corrige o gap de [Blocker] condicional (auditoria global, 32 cartas) + números REAIS pós-fix da "ordem de defesa" (corrige a estimativa especulativa do bloco 393) + calibração NÃO aplicada (achado ambíguo, ver abaixo)
 
 Usuário pediu "corrija o gap e depois calibre" em resposta ao achado 3

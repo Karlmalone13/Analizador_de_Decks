@@ -1,6 +1,30 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 28 de julho de 2026
+**Última atualização:** 29 de julho de 2026
+
+## 🟡 EM ANDAMENTO: calibrar decisões do bot rumo ao % dos vencedores reais (29/07/2026, bloco 395)
+
+Usuário decidiu (resolve a pendência do bloco 394): calibrar de verdade,
+usando self-play pareado com decks reais (`decklists_raw.csv`) como
+validação, não só teoria/dado de log.
+
+- [x] Validado: `ReplayMatch`/`audit_replay.py` delega 100% pro motor
+  real (`OPTCGMatch.play_turn`), 3 partidas de teste rodadas aqui, 0
+  exceções.
+- [x] Self-play bot vs pool de 161 decks reais comparado aos vencedores
+  reais (5 líderes com amostra confiável): bot ataca o líder MENOS que
+  o vencedor real em 4/5 casos, anexa mais DON por ataque em todos os 5.
+- [ ] `ATTACK_LEADER_BASE_SCORE` (extraído do literal `100` em
+  `score_attack_target`): teste pareado rodando (100/175/250, mesma
+  seed/matchups, 5 líderes x 10 partidas cada) — valor final AINDA NÃO
+  escolhido.
+- [ ] `should_use_blocker`/`should_use_counter`: ainda não iniciado.
+  Alvo identificado — regra incondicional "sempre bloqueia com
+  vida<=2" em `should_use_blocker` (~linha 10922, `decision_engine.py`).
+- [ ] Commit final (valor escolhido + validação completa) pendente —
+  este é um checkpoint intermediário só pra não perder a extração de
+  constante caso a sessão seja interrompida de novo (já aconteceu 1x
+  nesta mesma investigação, processo em background morreu sem erro).
 
 ## 🟡 PENDENTE DE DECISÃO DO USUÁRIO: calibrar should_use_blocker/should_use_counter? achado ambíguo (28/07/2026, bloco 394)
 
