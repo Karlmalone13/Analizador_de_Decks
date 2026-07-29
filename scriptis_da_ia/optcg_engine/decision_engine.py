@@ -78,6 +78,17 @@ COUNTER_STAT_VALUE_PER_1000 = 15
 # original) -- 400 e o valor validado, nao um palpite.
 ATTACK_LEADER_BASE_SCORE = 400
 
+# Teto de custo pra bloquear INCONDICIONALMENTE com vida critica (<=2) em
+# should_use_blocker. Ate 29/07 (bloco HANDOFF 395) essa regra bloqueava
+# SEMPRE que houvesse um blocker disponivel, sem nenhum check de custo/
+# beneficio (diferente de should_use_counter, que ja pesa
+# pitch_cost_as_counter vs o valor da vida) -- achado real via self-play
+# vs vencedores reais: bot bloqueia mais que o vencedor em ~1,5x (109
+# "IA queria bloquear" vs 72 opostos). None = sem teto (comportamento
+# antigo, sempre bloqueia) -- valor finito habilita o cost-check.
+# Calibrado via self-play pareado, ver TODO.md pro valor final.
+BLOCK_CRITICAL_LIFE_MAX_COST = None
+
 # ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
 # Promovidos de variavel local do main_phase pra constante de modulo --
 # `_select_search_candidates`/`_select_action_via_search` sao agora a FONTE
@@ -10998,9 +11009,16 @@ class DecisionEngine:
         def custo_sacrificio(c):
             return a.char_value_score(c) - on_ko_value(c.code, self.opp, owner=self.me)
 
-        # Com 1-2 vidas, sempre usa blocker se tiver
+        # Com 1-2 vidas, usa o blocker de menor custo -- mas so se o custo
+        # couber no teto (BLOCK_CRITICAL_LIFE_MAX_COST), quando definido.
+        # None preserva o comportamento antigo (sempre bloqueia, sem
+        # check de custo).
         if my_life <= 2:
-            return min(blockers, key=custo_sacrificio)
+            melhor = min(blockers, key=custo_sacrificio)
+            if (BLOCK_CRITICAL_LIFE_MAX_COST is None
+                    or custo_sacrificio(melhor) <= BLOCK_CRITICAL_LIFE_MAX_COST):
+                return melhor
+            return None
 
         # Com 3 vidas, usa se o atacante é forte
         if my_life == 3 and attacker_power >= self.me.leader.power:

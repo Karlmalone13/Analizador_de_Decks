@@ -1,5 +1,29 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-29 (396, EM ANDAMENTO) - Claude (sessao remota web) - calibrando should_use_blocker (segunda frente do pedido do usuario, mesma metodologia do bloco 395)
+
+Continuação direta do bloco 395: usuário pediu pra calibrar TODAS as
+decisões rumo ao % dos vencedores reais, não só o ataque. Segunda
+frente: `should_use_blocker`'s regra incondicional "sempre bloqueia com
+vida<=2" (identificada no bloco 394 como o maior contribuinte dos casos
+"IA queria bloquear, humano não" -- 63/109).
+
+**Mudança**: nova constante `BLOCK_CRITICAL_LIFE_MAX_COST` (perto de
+`ATTACK_LEADER_BASE_SCORE`, decision_engine.py) -- quando `None`
+(default atual, ZERO mudança de comportamento), preserva a regra antiga
+(sempre bloqueia). Quando um valor finito, só bloqueia
+incondicionalmente com vida<=2 se `custo_sacrificio(melhor_blocker) <=
+BLOCK_CRITICAL_LIFE_MAX_COST` -- adiciona um check de custo/benefício
+real, no mesmo espírito do que `should_use_counter` já faz
+(`pitch_cost_as_counter` vs `valor_vida`), mas que `should_use_blocker`
+nunca teve.
+
+Este é um commit intermediário (`BLOCK_CRITICAL_LIFE_MAX_COST = None`,
+zero mudança de comportamento, `smoke_fast.py` 100%) -- teste pareado
+com 4 valores candidatos (None/150/100/60, mesmos 5 líderes/decks/seed
+do bloco 395) rodando em background no momento deste commit. Valor
+final ainda NÃO escolhido.
+
 ## 2026-07-29 (395) - Claude (sessao remota web) - calibra ATTACK_LEADER_BASE_SCORE (100→400) via self-play pareado com decks reais, rumo ao % de ataque-no-lider dos vencedores reais
 
 Usuario pediu explicitamente pra calibrar (nao so medir) as decisoes do

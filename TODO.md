@@ -2,6 +2,18 @@
 
 **Última atualização:** 29 de julho de 2026
 
+## 🟡 EM ANDAMENTO: calibrar should_use_blocker (29/07/2026, bloco 396)
+
+Segunda frente do pedido do usuário (mesma metodologia do bloco 395).
+
+- [x] Nova constante `BLOCK_CRITICAL_LIFE_MAX_COST` (None = comportamento
+  antigo preservado, zero mudança). Quando finito, exige
+  `custo_sacrificio(melhor) <= valor` mesmo com vida<=2 (antes: sempre
+  bloqueava, sem check nenhum).
+- [ ] Teste pareado (None/150/100/60, mesmos 5 líderes/decks/seed do
+  bloco 395) rodando — valor final AINDA NÃO escolhido.
+- [ ] `should_use_counter`: ainda não iniciado.
+
 ## 🟢 IMPLEMENTADO: ATTACK_LEADER_BASE_SCORE calibrado 100→400 via self-play pareado (29/07/2026, bloco 395)
 
 Usuário decidiu (resolve a pendência do bloco 394): calibrar de verdade,
