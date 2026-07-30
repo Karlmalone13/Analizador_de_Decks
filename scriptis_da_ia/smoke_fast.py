@@ -2608,6 +2608,57 @@ def test_luffy_st08_001_on_any_char_ko_ambos_os_lados() -> None:
           luffy.don_attached == 2)
 
 
+def test_trafalgar_law_001_bounce_condicao_e_filtro_de_cor() -> None:
+    # Achado 30/07 (revisao de TODOS os lideres do jogo): Trafalgar Law
+    # (OP01-002), "[Activate:Main] [Once Per Turn] (2): If you have 5
+    # Characters, return 1 of your Characters to your hand. Then, play up
+    # to 1 Character with a cost of 5 or less from your hand that is a
+    # different color than the returned Character." -- 3 lacunas reais:
+    # (1) condicao "se tiver 5 personagens" ausente; (2) o passo de
+    # devolver 1 personagem a mao sumia por completo; (3) o filtro "cor
+    # diferente do devolvido" tambem sumia -- so sobrava "jogue 1
+    # personagem custo<=5", sem bounce nem restricao de cor. Mesmo fix
+    # generico tambem corrigiu EB01-020 (achado de bonus, mesma forma).
+    am = get_card_effects("OP01-002").get("activate_main", {})
+    acoes = [s.get("action") for s in am.get("steps", [])]
+    check("OP01-002 parseia bounce (own_character) ANTES do play_card",
+          acoes == ["bounce", "play_card"])
+    # chars_gte=5 gate o EFEITO INTEIRO uma unica vez (entry-level, checado
+    # por execute() antes do loop de steps) -- NAO por-step: o proprio
+    # bounce reduz o campo de 5 para 4, entao um re-check por-step da MESMA
+    # condicao no play_card falharia depois do bounce ja ter mudado o
+    # estado que ela consulta (achado 30/07, so' descoberto ao rodar o
+    # teste de execucao real abaixo -- ver fix em gerar_effects_db.py na
+    # secao "Condicao depois do delimitador de CUSTO").
+    check("OP01-002 parseia chars_gte=5 no nivel do entry (gate unico)",
+          am.get("conditions", {}).get("chars_gte") == 5
+          and not any("conditions" in s for s in am.get("steps", [])))
+    check("OP01-002 parseia exclude_color_of_selected no play_card",
+          am["steps"][1].get("exclude_color_of_selected") is True)
+
+    # Execucao real: campo com 5 personagens (satisfaz chars_gte=5). O
+    # mais FRACO (board_value minimo) e devolvido pelo bounce -- aqui,
+    # deliberadamente de cor Red. Mao tem 2 candidatos: um Red (MESMA cor
+    # do devolvido, deve ser EXCLUIDO) e um Green (cor diferente, deve
+    # ser escolhido).
+    law = real_card("OP01-002")
+    fraco_red = mk("XTL1", "Fraco Red", power=1000, cost=2, color="Red")
+    outros_campo = [mk(f"XTL{i}", f"Campo{i}", power=5000, cost=4, color="Green") for i in range(2, 6)]
+    me = GameState(leader=law, turn=5, don_available=4, don_rested=0)
+    me.field_chars = [fraco_red] + outros_campo
+    candidato_red = mk("XTLHR", "Candidato Red", power=4000, cost=4, color="Red")
+    candidato_green = mk("XTLHG", "Candidato Green", power=4000, cost=4, color="Green")
+    me.hand = [candidato_red, candidato_green]
+    opp = GameState(leader=mk("XTLOPP", "Opp", card_type="LEADER"), turn=5)
+    EffectExecutor(me, opp).execute(law, "activate_main")
+    check("Execucao real: o mais fraco (Red) foi devolvido a mao",
+          fraco_red in me.hand and fraco_red not in me.field_chars)
+    check("Execucao real: o candidato da MESMA cor (Red) NAO foi jogado (ainda na mao)",
+          candidato_red in me.hand)
+    check("Execucao real: o candidato de cor DIFERENTE (Green) foi jogado (saiu da mao, entrou em campo)",
+          candidato_green not in me.hand and candidato_green in me.field_chars)
+
+
 def test_kid_leader_set_active_respects_cost_range() -> None:
     # Achado 14/07 via audit_leader_and_goal.py: o end_of_turn do lider do
     # Kid (OP10-099, "Supernovas type Characters with a cost of 3 to 8")
@@ -3154,7 +3205,7 @@ def test_descarte_mao_oponente_variantes_e_escolha_cega() -> None:
 
     law = get_card_effects("ST10-010").get("on_play", {})
     check("ST10-010 recupera On Play, gate 7 e custo DON -1",
-          law.get("steps", [{}])[0].get("conditions", {}).get("opp_hand_gte") == 7
+          law.get("conditions", {}).get("opp_hand_gte") == 7
           and law.get("steps", [{}])[0].get("chosen_by") == "effect_owner_blind"
           and law.get("costs", [{}])[0].get("type") == "don_minus")
 
@@ -3649,9 +3700,8 @@ def test_custo_composto_trash_para_fundo() -> None:
                        if c.get("type") == "place_from_trash_bottom_deck").get("count") == 2)
 
     shira_entry = get_card_effects("OP05-082")["activate_main"]
-    check("Shirahoshi limita apenas o descarte a opp_hand_gte=6",
-          not shira_entry.get("conditions")
-          and shira_entry["steps"][0].get("conditions", {}).get("opp_hand_gte") == 6)
+    check("Shirahoshi limita o descarte a opp_hand_gte=6 (gate unico, checado 1x antes do custo/steps)",
+          shira_entry.get("conditions", {}).get("opp_hand_gte") == 6)
 
     mansherry = real_card("OP05-088")
     target = mk("XREC", "Alvo Preto", cost=4, color="Black")
@@ -5125,9 +5175,9 @@ def test_gain_life_hand_filtro_ignorado_e_st13003_fonte_combinada() -> None:
     am = get_card_effects("ST13-003").get("activate_main", {})
     check("ST13-003 parseia o bloco DON!!x2/Activate:Main inteiro (antes ausente)",
           am.get("don_requirement") == 2 and am.get("once_per_turn")
+          and am.get("conditions", {}).get("life_lte") == 0
           and any(s.get("action") == "gain_life" and s.get("source") == "hand_or_trash"
                   and s.get("count") == 2 and s.get("cost_eq") == 5
-                  and s.get("conditions", {}).get("life_lte") == 0
                   for s in am.get("steps", [])))
 
     # Execucao real: mao com 1 Character custo 5 e 1 custo 3 -- so o de
@@ -5300,7 +5350,7 @@ def test_play_card_power_lte_e_no_base_effect_e_chars_lte_power() -> None:
           any(s.get("action") == "lock_opp_character_attack" and s.get("cost_lte") == 5
               for s in get_card_effects("OP15-097").get("main", {}).get("steps", [])))
     check("EB04-045 parseia condicao NOVA board_chars_cost_gte_count",
-          get_card_effects("EB04-045").get("activate_main", {}).get("steps", [{}])[0]
+          get_card_effects("EB04-045").get("activate_main", {})
           .get("conditions", {}).get("board_chars_cost_gte_count") == {"count_gte": 2, "cost_gte": 8})
     check("EB02-022 parseia chars_lte=2 com chars_lte_power_filter=5000",
           get_card_effects("EB02-022").get("on_play", {}).get("conditions", {}) ==
@@ -5911,8 +5961,8 @@ def test_don_on_field_zero_or_gte_2_cartas() -> None:
     # DESCONECTADOS (0 OU N+), distinta de um intervalo (gte+lte com AND
     # excluiria justamente o 0). A condicao inteira ficava ausente, o
     # add_don disparava sempre, independente da contagem real de DON.
-    check("OP05-060 parseia don_on_field_zero_or_gte=3 (condicao por-step, apos custo ':')",
-          get_card_effects("OP05-060").get("activate_main", {}).get("steps", [{}])[0]
+    check("OP05-060 parseia don_on_field_zero_or_gte=3 (condicao no nivel do entry, apos custo ':')",
+          get_card_effects("OP05-060").get("activate_main", {})
           .get("conditions", {}) == {"don_on_field_zero_or_gte": 3})
     check("ST10-002 parseia don_on_field_zero_or_gte=8 (condicao no nivel do entry)",
           get_card_effects("ST10-002").get("activate_main", {}).get("conditions", {}) ==
@@ -7822,7 +7872,7 @@ def test_lote_8_op09_051_a_op10_080() -> None:
     # OP09-092: condicao "mao pelo menos 3 menor que a do oponente" --
     # mesma familia de don_fewer_than_opp_by_gte, aplicada a mao.
     check("OP09-092 parseia condicao hand_fewer_than_opp_by_gte=3",
-          get_card_effects("OP09-092")["activate_main"]["steps"][0]["conditions"]
+          get_card_effects("OP09-092")["activate_main"]["conditions"]
           == {"hand_fewer_than_opp_by_gte": 3})
     teach = real_card("OP09-092")
     me_teach = GameState(leader=mk("TCHLDR", "Lider", card_type="LEADER"))
@@ -7935,7 +7985,7 @@ def test_lote_9_op15_020_a_op16_038() -> None:
     # tambem ganha power_lte=5000 no alvo.
     check("OP15-064 parseia has_named_characters=[satori,hotori] + power_lte=5000",
           get_card_effects("OP15-064")["activate_main"]["steps"][0]["power_lte"] == 5000
-          and get_card_effects("OP15-064")["activate_main"]["steps"][0]["conditions"]
+          and get_card_effects("OP15-064")["activate_main"]["conditions"]
           == {"has_named_characters": ["satori", "hotori"]})
     kotori = real_card("OP15-064")
     kotori.don_attached = 2
@@ -8008,7 +8058,7 @@ def test_lote_9_op15_020_a_op16_038() -> None:
 
     # OP16-012: condicao "10 DON!! no campo" (eliptica, "and have" sem "you").
     check("OP16-012 parseia don_on_field_gte=10 (elipse 'and have')",
-          get_card_effects("OP16-012")["on_play"]["steps"][0]["conditions"]["don_on_field_gte"] == 10)
+          get_card_effects("OP16-012")["on_play"]["conditions"]["don_on_field_gte"] == 10)
 
     # OP16-017: alvo errado (opp_character) corrigido pra self + condicao
     # negada tipo+custo.
@@ -8045,7 +8095,7 @@ def test_lote_9_op15_020_a_op16_038() -> None:
     # diferentes" ausente.
     entry_038b = get_card_effects("OP16-038")["main"]
     check("OP16-038 parseia chars_gte=5 com chars_gte_distinct_names=True",
-          entry_038b["steps"][0]["conditions"]
+          entry_038b["conditions"]
           == {"chars_gte": 5, "chars_gte_type_filter": "impel down", "chars_gte_distinct_names": True})
     me_038b = GameState(leader=mk("L038B", "Lider", card_type="LEADER"))
     impel_a = mk("IM1", "Impel A", cost=2, sub_types="Impel Down")
@@ -8056,11 +8106,11 @@ def test_lote_9_op15_020_a_op16_038() -> None:
     me_038b.field_chars = [impel_a, impel_b, impel_a_dup, impel_c, impel_d]
     ee_038b = EffectExecutor(me_038b, GameState(leader=mk("O038B", "Opp", card_type="LEADER")))
     check("Execucao real: OP16-038 com so 4 NOMES unicos (5 cartas, 1 duplicada), condicao falha",
-          not ee_038b._check_conditions(entry_038b["steps"][0]["conditions"], me_038b.leader))
+          not ee_038b._check_conditions(entry_038b["conditions"], me_038b.leader))
     impel_e = mk("IM5", "Impel E", cost=2, sub_types="Impel Down")
     me_038b.field_chars.append(impel_e)
     check("Execucao real: OP16-038 com 5 NOMES unicos de verdade, condicao passa",
-          ee_038b._check_conditions(entry_038b["steps"][0]["conditions"], me_038b.leader))
+          ee_038b._check_conditions(entry_038b["conditions"], me_038b.leader))
 
     # OP08-006 (achado extra via diff_parser): presenca NO TRASH, nao no
     # campo -- mesma familia de has_named_characters, mas trash.
@@ -9149,6 +9199,7 @@ def main() -> int:
     test_shanks_001_on_opp_attack_prosa_reconhecida()
     test_buggy_041_on_own_char_ko_com_filtro_de_tipo()
     test_luffy_st08_001_on_any_char_ko_ambos_os_lados()
+    test_trafalgar_law_001_bounce_condicao_e_filtro_de_cor()
     test_kid_leader_set_active_respects_cost_range()
     test_lock_opp_character_refresh_variantes_de_fraseado()
     test_rest_opp_alvo_misto_character_ou_don()

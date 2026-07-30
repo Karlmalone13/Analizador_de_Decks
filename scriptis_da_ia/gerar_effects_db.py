@@ -371,6 +371,19 @@ def parse_conditions(text):
     m = re.search(r'if you have (\d+) or less characters?(?! with)', t)
     if m: conds['chars_lte'] = int(m.group(1))
 
+    # "if you have N Characters" -- SEM qualificador "or more"/"or less"
+    # (achado 30/07, Trafalgar Law OP01-002, unica carta no banco com essa
+    # forma exata). Tratado como chars_gte=N: o campo tem teto de 5
+    # personagens no jogo real (ja imposto pelo engine em varios pontos,
+    # ex: troca por campo cheio em play_card), entao "ter N Characters"
+    # com N=5 (o unico caso que aparece hoje) e equivalente na pratica a
+    # "5 ou mais" -- nunca existe "mais que o teto" pra distinguir os
+    # dois. Testado DEPOIS de chars_gte/chars_lte (mais especificos, com
+    # "or more"/"or less" explicito) pra nao roubar o match deles.
+    if 'chars_gte' not in conds and 'chars_lte' not in conds:
+        m = re.search(r'if you have (\d+) characters?(?! with)(?!\s*or)', t)
+        if m: conds['chars_gte'] = int(m.group(1))
+
     # "if you have N or less Characters with M power or more" -- mesmo
     # chars_lte, mas so conta Characters que batem o filtro de power
     # (achado 16/07, EB02-022/OP10-010). O '(?! with)' acima excluia esta
@@ -2639,6 +2652,24 @@ def parse_bounce(text):
             r'return up to (\d+) of your characters? to the owner.?s hand', t)
         if m_plain_own:
             steps.append({'action': 'bounce', 'count': int(m_plain_own.group(1)),
+                          'target': 'own_character'})
+
+    # Variante EXATA (sem "up to", devolucao OBRIGATORIA, nao opcional):
+    # "return N of your Characters to your hand" -- achado 30/07,
+    # Trafalgar Law OP01-002 e EB01-020 (mesma forma, achado de bonus).
+    # Distinta das variantes "up to" acima (escolhas 0..N). "to your hand"
+    # (nao "the owner's hand") tambem aceito -- equivalente pra bounce
+    # PROPRIO (o dono e sempre voce). Lookahead negativo pro ':' --
+    # "return N of your Characters to the owner's hand:" e a forma do
+    # CUSTO (custo antes de ':', ja capturado por parse_costs em
+    # return_own_character_to_hand -- OP09-030/OP10-022/OP13-031, achado
+    # ao validar este fix: sem o lookahead, o mesmo texto do CUSTO virava
+    # TAMBEM um step duplicado no corpo do efeito).
+    if not steps:
+        m_exact_own = re.search(
+            r'return (\d+) of your characters? to (?:your|the owner.?s) hand(?!\s*:)', t)
+        if m_exact_own:
+            steps.append({'action': 'bounce', 'count': int(m_exact_own.group(1)),
                           'target': 'own_character'})
 
     return steps
@@ -5215,6 +5246,13 @@ def parse_play_generic(text):
             excl_m = re.search(r'other than [\[{]([a-z][a-z0-9 .\'()\-]+)[\]}]', janela)
             if excl_m:
                 step['exclude'] = excl_m.group(1).strip()
+            # "that is a different color than the returned Character"
+            # (achado 30/07, Trafalgar Law OP01-002, unica carta no banco):
+            # exclui candidatos da MESMA cor que a carta salva por um step
+            # de bounce ANTERIOR no mesmo bloco (self._last_selected no
+            # engine, ver action=='bounce'/'play_card').
+            if re.search(r'different color than the returned character', janela):
+                step['exclude_color_of_selected'] = True
             # "from your hand or trash" -- fonte flexivel, nao so a mao.
             if 'from your hand or trash' in janela:
                 step['source_alt'] = 'trash'
@@ -8508,11 +8546,17 @@ def parse_card_effect(card_text, card_type):
             if re.match(r'\s*if\b', benefit, re.IGNORECASE):
                 benefit_conds = parse_conditions(benefit)
                 if benefit_conds:
-                    for s in steps:
-                        s['conditions'] = benefit_conds
-                    # Condicoes antes do ':' continuam sendo gates globais;
-                    # a condicao do beneficio deixa de contaminar o entry.
-                    conds = parse_conditions(cost_prefix)
+                    # C e uma condicao UNICA que gate o beneficio INTEIRO (nao
+                    # uma por clausula, diferente do split_then_if acima) --
+                    # entry['conditions'] ja e checado uma vez por execute()
+                    # antes do loop de steps, entao anexar por-step aqui e
+                    # redundante quando nenhum step muda o recurso, e ERRADO
+                    # quando um step ANTERIOR muda o recurso que a MESMA
+                    # condicao consulta (ex: chars_gte apos um bounce reduzir
+                    # o campo -- achado 30/07, Trafalgar Law OP01-002: o
+                    # re-check por-step falhava mesmo com o gate original
+                    # satisfeito). Condicoes antes do ':' continuam valendo.
+                    conds = {**parse_conditions(cost_prefix), **benefit_conds}
 
         # DON x requisito antes do trigger. Usa a posição real do match (m.start)
         # em vez de reconstruir o nome — assim funciona para [Activate: Main],

@@ -1,6 +1,6 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-30 (401, EM ANDAMENTO) - Claude (sessao remota web) - revisao de TODOS os lideres do jogo (135, nao so os 17 do pool real): 3/6 achados corrigidos (Shanks, Buggy, Luffy ST08-001)
+## 2026-07-30 (401, EM ANDAMENTO) - Claude (sessao remota web) - revisao de TODOS os lideres do jogo (135, nao so os 17 do pool real): 4/6 achados corrigidos (Shanks, Buggy, Luffy ST08-001, Trafalgar Law)
 
 Usuário pediu pra revisar TODOS os líderes do jogo (135 códigos base
 únicos em `cards_rows.csv`, não só os 17 do pool de decks reais do
@@ -10,8 +10,8 @@ capturada, escala "for every/each" sem step correspondente, devolver-
 personagem-à-mão sem step de bounce, 2+ tags formais distintas com
 menos blocos parseados) e revisão manual dos casos suspeitos. 6
 achados confirmados; usuário pediu pra implementar todos. Progresso
-desta rodada: **3 implementados** (família de gatilho reativo K.O./
-ataque em prosa), **3 ainda pendentes** (Trafalgar Law, Boa Hancock,
+desta rodada: **4 implementados** (família de gatilho reativo K.O./
+ataque em prosa + Trafalgar Law), **2 ainda pendentes** (Boa Hancock,
 Koala — conteúdo de efeito incompleto, não classificação de gatilho).
 
 **Contexto importante**: os 3 primeiros achados tocam a MESMA classe de
@@ -56,12 +56,47 @@ Registro em
 execução real: filtro de tipo positivo/negativo pro Buggy, disparo nos
 dois lados pro Luffy). `smoke_fast.py`/`smoke_test.py` 100%.
 
+**Achado 4 — Trafalgar Law (OP01-002), CORRIGIDO**: faltavam 3 coisas —
+a condição "se tiver 5 personagens" (contagem exata, sem "or more/
+less" — novo ramo em `parse_conditions`, reaproveita `chars_gte`), o
+passo de devolver 1 personagem à mão (novo padrão exato de bounce em
+`parse_bounce`, com negative lookahead `(?!\s*:)` pra não colidir com o
+mesmo texto usado como CUSTO em 3 cartas já corretas — OP09-030/
+OP10-022/OP13-031), e o filtro "cor diferente do devolvido"
+(`exclude_color_of_selected`, novo em `parse_play_generic` + engine:
+`self._last_selected = target` após bounce, mesmo padrão "SaveTargetName"
+já usado por buff_power/play_from_deck/negate_effect). Achado de bônus:
+`EB01-020` tem a mesma forma (bounce + play + cor diferente) e foi
+corrigido de graça.
+
+**Bug estrutural extra descoberto ao testar Trafalgar Law com execução
+real (não só parse-level)**: o mecanismo genérico "condição depois do
+delimitador de custo" (`gerar_effects_db.py`, `[custo]: If C, efeito`)
+anexava a condição a CADA step individualmente, em vez de uma vez só no
+nível do entry. Pra Trafalgar Law isso quebrava o `play_card`: o bounce
+já reduzia o campo de 5→4 Characters, e o RE-CHECK per-step da mesma
+`chars_gte: 5` no play_card falhava — mesmo o gate original (antes de
+qualquer step rodar) tendo sido satisfeito. Fix: a condição do
+benefício agora é fundida no nível do entry (`conds = {**cost_prefix_conds,
+**benefit_conds}`), já que `execute()` (decision_engine.py ~2246) já
+checa `ef_data['conditions']` UMA VEZ antes do loop de steps — mover
+pra lá é estritamente mais correto e não muda nada pras ~150 cartas que
+passam por esse mecanismo (a maioria com 1 step só, ou condição que não
+depende de recurso mutado por step anterior). 8 testes existentes em
+`smoke_fast.py` que checavam a condição no lugar errado (por-step)
+precisaram ser atualizados pro lugar certo (entry-level): OP09-092,
+OP15-064, OP16-012, OP16-038, ST10-010, ST13-003, EB04-045, OP05-060,
+OP05-082 (Shirahoshi).
+
+Registro em
+`scriptis_da_ia/parser_audits/2026-07-30_trafalgar_law_bounce_e_condicao_por_step_vs_entry.json`.
+`diff_parser.py` PERDEU=0 MUDOU=152 (2 de gramática nova + 150 de
+relocação estrutural da mesma condição, sem mudar valores).
+`smoke_fast.py`/`smoke_test.py` 100%.
+
 **Ainda pendentes desta revisão** (conteúdo de efeito incompleto, não
 classificação de gatilho — usuário já pediu pra implementar, só não
 foi feito ainda nesta rodada):
-- **Trafalgar Law (OP01-002)**: falta o passo de devolver 1 personagem
-  à mão, a condição "se tiver 5 personagens", e o filtro "cor diferente
-  do devolvido".
 - **Boa Hancock (OP14-041)**: a segunda habilidade inteira (Amazon
   Lily/Kuja Pirates 5000+ power K.O.'d → rouba carta da Life do
   oponente) está completamente ausente do JSON parseado.
@@ -69,7 +104,7 @@ foi feito ainda nesta rodada):
   joga personagem custo≥8" OU "oponente joga personagem via efeito de
   outro personagem") — só a primeira metade foi capturada.
 
-`resolve_reaction`/redirect segue pendente, depois destes 3.
+`resolve_reaction`/redirect segue pendente, depois destes 2.
 
 ## 2026-07-29 (400) - Claude (sessao remota web) - pente-fino texto-real vs efeito-parseado nos 17 lideres do pool de decks reais: Enel, Luffy(001) e Nami corrigidos
 

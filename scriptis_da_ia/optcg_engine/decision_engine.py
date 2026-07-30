@@ -5720,6 +5720,13 @@ class EffectExecutor:
                     'bounce', 'opp' if target_owner is opp else 'own')
                 remove_by_identity(candidates, target)
                 bounced.append(target.name[:15])
+                # Memoria (SaveTargetName, mesmo padrao ja usado por
+                # buff_power/play_from_deck/negate_effect): um step
+                # POSTERIOR no MESMO bloco pode referenciar "the returned
+                # Character" (ex: Trafalgar Law OP01-002, "play up to 1
+                # Character... that is a different color than the
+                # returned Character" -- achado 30/07).
+                self._last_selected = target
             out = []
             if bounced: out.append(f'bounce: {", ".join(bounced)}')
             if immune_skipped: out.append(f'imune: {", ".join(immune_skipped)}')
@@ -7875,6 +7882,16 @@ class EffectExecutor:
             if step.get('filter_no_effect'):
                 elegiveis = [c for c in elegiveis
                              if not get_card_effects(c.code)]
+            # "that is a different color than the returned Character"
+            # (achado 30/07, Trafalgar Law OP01-002) -- exclui candidatos
+            # da MESMA cor que a carta salva pelo step de bounce anterior
+            # no mesmo bloco (self._last_selected, ver action=='bounce').
+            # Sem self._last_selected (bounce nao rodou por algum motivo),
+            # nao filtra nada -- conservador, nao trava o play inteiro por
+            # falta de memoria.
+            if step.get('exclude_color_of_selected') and self._last_selected is not None:
+                cor_excluida = self._last_selected.color
+                elegiveis = [c for c in elegiveis if c.color != cor_excluida]
 
             if not elegiveis:
                 return ''

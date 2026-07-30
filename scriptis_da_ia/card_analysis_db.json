@@ -825,6 +825,11 @@
     "trigger": "trigger"
    },
    {
+    "action": "bounce",
+    "trigger": "main",
+    "target": "own_character"
+   },
+   {
     "action": "play_card",
     "trigger": "main",
     "cost_lte": 2
@@ -842,10 +847,10 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": false,
+  "bounces": true,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -11112,6 +11117,11 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "bounce",
+    "trigger": "activate_main",
+    "target": "own_character"
+   },
+   {
     "action": "play_card",
     "trigger": "activate_main",
     "cost_lte": 5
@@ -11124,10 +11134,10 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": false,
+  "bounces": true,
   "gives_don": false,
   "power_buff": false,
   "heals": false,

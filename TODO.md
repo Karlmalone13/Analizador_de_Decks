@@ -23,14 +23,26 @@ revisão manual; usuário pediu pra implementar todos.
   "[Your Turn]".
   `diff_parser.py` PERDEU=0 MUDOU=5. 3 novos testes permanentes.
   `smoke_fast.py`/`smoke_test.py` 100%.
-- [ ] Trafalgar Law (OP01-002): falta passo de devolver personagem à
-  mão, condição "5 personagens", filtro "cor diferente do devolvido".
+- [x] Trafalgar Law (OP01-002): passo de bounce, condição "5
+  personagens" (exata) e filtro "cor diferente do devolvido"
+  implementados. Bônus: EB01-020 (mesma forma) corrigido de graça.
+  **Descoberto de brinde**: bug estrutural no mecanismo genérico
+  "condição depois do delimitador de custo" (`[custo]: If C, efeito`)
+  — anexava a condição a CADA step em vez de 1x no entry; o próprio
+  bounce mudava o recurso (contagem de Characters) que o play_card
+  re-checava depois, quebrando o play_card mesmo com o gate original
+  satisfeito. Corrigido pra nível de entry (`execute()` já checa 1x
+  antes do loop de steps) — mais correto pras ~150 cartas que passam
+  por esse mecanismo, sem mudar comportamento de nenhuma. 8 testes
+  existentes precisaram apontar pro lugar certo (entry, não per-step).
+  `diff_parser.py` PERDEU=0 MUDOU=152 (2 gramática nova + 150
+  relocação). `smoke_fast.py`/`smoke_test.py` 100%.
 - [ ] Boa Hancock (OP14-041): segunda habilidade inteira (Amazon Lily/
   Kuja Pirates K.O.'d → rouba Life do oponente) ausente do parseado.
 - [ ] Koala (OP12-081): gatilho é um OU de 2 condições, só a primeira
   metade foi capturada.
 - [ ] `resolve_reaction`/redirect: ainda não retomado — fica por
-  último, depois desses 3.
+  último, depois desses 2.
 
 ## 🟢 IMPLEMENTADO (bloco 400): pente-fino texto-real vs efeito-parseado nos 17 líderes do pool de decks reais (29/07/2026)
 
