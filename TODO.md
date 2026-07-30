@@ -2,11 +2,12 @@
 
 **Última atualização:** 30 de julho de 2026
 
-## 🟡 EM ANDAMENTO: revisão de TODOS os líderes do jogo (135, não só os 17 do pool real) (30/07/2026, bloco 401)
+## 🟢 IMPLEMENTADO: revisão de TODOS os líderes do jogo (135, não só os 17 do pool real) (30/07/2026, bloco 401)
 
 Usuário pediu pra revisar TODOS os líderes (não só os 17 com deck real
 no pool de self-play). 6 achados confirmados via varredura automática +
-revisão manual; usuário pediu pra implementar todos.
+revisão manual; usuário pediu pra implementar todos. **Os 6 foram
+implementados nesta rodada.**
 
 - [x] Shanks (OP09-001): "this effect can be activated when your
   opponent attacks" reconhecido como sinônimo em prosa de
@@ -51,10 +52,21 @@ revisão manual; usuário pediu pra implementar todos.
   fora de escopo. `diff_parser.py` PERDEU=0 MUDOU=3.
   `smoke_fast.py`/`smoke_test.py` 100%. `parser_snapshot.json`
   re-gerado (recuperou re-snapshot que faltou no item anterior).
-- [ ] Koala (OP12-081): gatilho é um OU de 2 condições, só a primeira
-  metade foi capturada.
-- [ ] `resolve_reaction`/redirect: ainda não retomado — fica por
-  último, depois deste 1.
+- [x] Koala (OP12-081): gatilho OU de 2 condições ("custo≥8" OU "jogado
+  via efeito de outra carta") — novo campo genérico `play_filter_or`
+  (lista de filtros alternativos) + novo parâmetro `via_effect` em
+  `_dispatch_char_played` (True quando vem de `_put_into_play`/efeito de
+  outra carta, False/default em `_play_card`/jogada normal). Não afeta
+  Sugar/Sanji/Bonney/Boa Hancock (mesma família, comportamento AND
+  preservado quando não há OR). `diff_parser.py` PERDEU=0 MUDOU=1.
+  `smoke_fast.py`/`smoke_test.py` 100% (3 cenários reais).
+  `parser_snapshot.json` re-gerado.
+
+**Revisão dos 135 líderes ENCERRADA — 6/6 corrigidos.** Próximos
+passos: (1) retomar `resolve_reaction`/redirect; (2) ler/cruzar
+`IA_Compendium/ONE_PIECE_AI_COMPENDIUM_Volume_1.pdf` (documento de
+estratégia por deck mencionado pelo usuário, ainda não aberto nesta
+sessão) contra os achados desta revisão.
 
 ## 🟢 IMPLEMENTADO (bloco 400): pente-fino texto-real vs efeito-parseado nos 17 líderes do pool de decks reais (29/07/2026)
 

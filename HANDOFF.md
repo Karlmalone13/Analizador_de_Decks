@@ -1,6 +1,6 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-30 (401, EM ANDAMENTO) - Claude (sessao remota web) - revisao de TODOS os lideres do jogo (135, nao so os 17 do pool real): 5/6 achados corrigidos (Shanks, Buggy, Luffy ST08-001, Trafalgar Law, Boa Hancock)
+## 2026-07-30 (401, COMPLETA) - Claude (sessao remota web) - revisao de TODOS os lideres do jogo (135, nao so os 17 do pool real): 6/6 achados corrigidos
 
 Usuário pediu pra revisar TODOS os líderes do jogo (135 códigos base
 únicos em `cards_rows.csv`, não só os 17 do pool de decks reais do
@@ -9,10 +9,9 @@ gatilho reativo em prosa sem condição, limiar de DON sem condição
 capturada, escala "for every/each" sem step correspondente, devolver-
 personagem-à-mão sem step de bounce, 2+ tags formais distintas com
 menos blocos parseados) e revisão manual dos casos suspeitos. 6
-achados confirmados; usuário pediu pra implementar todos. Progresso
-desta rodada: **5 implementados** (família de gatilho reativo K.O./
-ataque em prosa + Trafalgar Law + Boa Hancock), **1 ainda pendente**
-(Koala — conteúdo de efeito incompleto, não classificação de gatilho).
+achados confirmados; usuário pediu pra implementar todos. **Os 6 foram
+implementados nesta rodada** (família de gatilho reativo K.O./ataque em
+prosa + Trafalgar Law + Boa Hancock + Koala).
 
 **Contexto importante**: os 3 primeiros achados tocam a MESMA classe de
 bug do "mapeamento de combos" original (HANDOFF blocos 351-354, 24/07)
@@ -138,14 +137,36 @@ Corrigir exigiria propagar `is_my_turn` por ~15 pontos de criação de
 Sugar/Sanji/Bonney) — avaliado fora de escopo desta rodada (risco maior
 que o benefício de 1 carta com gating parcial).
 
-**Ainda pendente desta revisão** (conteúdo de efeito incompleto, não
-classificação de gatilho — usuário já pediu pra implementar, só não
-foi feito ainda nesta rodada):
-- **Koala (OP12-081)**: o gatilho é um OU entre duas condições ("oponente
-  joga personagem custo≥8" OU "oponente joga personagem via efeito de
-  outro personagem") — só a primeira metade foi capturada.
+**Achado 6 — Koala (OP12-081), CORRIGIDO**: o gatilho é um OU entre
+duas condições — "This effect can be activated when your opponent
+plays a Character with a base cost of 8 or more, **or** when your
+opponent plays a Character using a Character's effect" — mas só a
+primeira metade (`play_filter_cost_gte: 8`) era capturada; a segunda
+(jogado via efeito de OUTRA carta, não da mão) era descartada em
+silêncio, disparando com menos frequência que o texto real. Novo campo
+genérico `play_filter_or` (lista de filtros ALTERNATIVOS, dispara se
+qualquer um bater) no mecanismo `on_opp_char_played`/`on_own_char_played`
+existente + novo parâmetro `via_effect` em `_dispatch_char_played`,
+propagado como `True` em `_put_into_play` (carta entrando em campo pela
+resolução de OUTRA habilidade) e `False` (default) em `_play_card`
+(jogada normal da Main Phase/Counter). Novo helper estático
+`_char_played_filter_matches` unifica a checagem AND de sempre com a
+nova OR, sem duplicar lógica nem afetar as outras 4 cartas da família
+(Sugar, Sanji, Bonney, Boa Hancock).
 
-`resolve_reaction`/redirect segue pendente, depois deste último.
+Registro em
+`scriptis_da_ia/parser_audits/2026-07-30_koala_012_081_play_filter_or_via_effect.json`.
+`diff_parser.py` PERDEU=0 MUDOU=1. `smoke_fast.py`/`smoke_test.py` 100%
+(3 cenários reais: custo≥8 via mão dispara; custo baixo via efeito de
+outra carta dispara; custo baixo E via mão normal NÃO dispara).
+`parser_snapshot.json` re-gerado.
+
+**Revisão dos 135 líderes ENCERRADA — 6/6 achados corrigidos.** Próximos
+passos combinados com o usuário: (1) retomar `resolve_reaction`/redirect
+(pendente desde o bloco 400); (2) ler/cruzar
+`IA_Compendium/ONE_PIECE_AI_COMPENDIUM_Volume_1.pdf` (mencionado pelo
+usuário como referência de estratégia por deck, ainda não aberto nesta
+sessão) contra os achados desta revisão.
 
 ## 2026-07-29 (400) - Claude (sessao remota web) - pente-fino texto-real vs efeito-parseado nos 17 lideres do pool de decks reais: Enel, Luffy(001) e Nami corrigidos
 

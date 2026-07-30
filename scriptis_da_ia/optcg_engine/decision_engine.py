@@ -4714,7 +4714,7 @@ class EffectExecutor:
             if logs and entry.get('once_per_turn'):
                 setattr(source, marker_attr, marker)
 
-    def _dispatch_char_played(self, played_card: 'Card') -> None:
+    def _dispatch_char_played(self, played_card: 'Card', via_effect: bool = False) -> None:
         """
         Dispara ``on_own_char_played`` (campo de self.me) e
         ``on_opp_char_played`` (campo de self.opp) quando self.me acaba de
@@ -4727,21 +4727,44 @@ class EffectExecutor:
         checados contra `played_card` antes de disparar -- sem isso a
         habilidade dispararia pra QUALQUER personagem jogado, nao so os
         que batem o filtro real (Sanji so reage a personagem SEM efeito
-        base; Bonney so a personagem COM [Trigger]; Koala -- nao coberta
-        ainda, ver parser_audits -- so a personagem de custo 8+).
+        base; Bonney so a personagem COM [Trigger]).
+
+        `via_effect`: True quando `played_card` entrou em campo pela
+        resolucao de OUTRA carta (`_put_into_play`, chamado de dentro de
+        `_execute_step` pro action `play_card`), False quando foi uma
+        jogada normal da Main Phase/Counter (`_play_card`, decisao direta
+        do turno). Achado 30/07 (Koala OP12-081): "This effect can be
+        activated when your opponent plays a Character with a base cost
+        of 8 or more, OR when your opponent plays a Character using a
+        Character's effect" -- OU de 2 condicoes distintas, a 2a
+        checando COMO a carta foi jogada, nao um atributo da carta em si.
         """
         if played_card.card_type != 'CHARACTER':
             return
         self._dispatch_char_played_side(
             'on_own_char_played', self.me, self.opp,
-            '_own_char_played_once_marker', played_card)
+            '_own_char_played_once_marker', played_card, via_effect)
         self._dispatch_char_played_side(
             'on_opp_char_played', self.opp, self.me,
-            '_opp_char_played_once_marker', played_card)
+            '_opp_char_played_once_marker', played_card, via_effect)
+
+    @staticmethod
+    def _char_played_filter_matches(filt: dict, played_card: 'Card',
+                                     via_effect: bool) -> bool:
+        if filt.get('play_filter_no_base_effect') and get_card_effects(played_card.code):
+            return False
+        if filt.get('play_filter_has_trigger') and not played_card.has_trigger:
+            return False
+        cost_gte = filt.get('play_filter_cost_gte')
+        if cost_gte and played_card.cost < cost_gte:
+            return False
+        if filt.get('play_filter_via_effect') and not via_effect:
+            return False
+        return True
 
     def _dispatch_char_played_side(self, trig_name: str, watcher: 'GameState',
                                    other: 'GameState', marker_attr: str,
-                                   played_card: 'Card') -> None:
+                                   played_card: 'Card', via_effect: bool = False) -> None:
         cards = [watcher.leader, *watcher.field_chars]
         if watcher.field_stage:
             cards.append(watcher.field_stage)
@@ -4749,12 +4772,13 @@ class EffectExecutor:
             entry = get_card_effects(source.code).get(trig_name)
             if not entry:
                 continue
-            if entry.get('play_filter_no_base_effect') and get_card_effects(played_card.code):
-                continue
-            if entry.get('play_filter_has_trigger') and not played_card.has_trigger:
-                continue
-            cost_gte = entry.get('play_filter_cost_gte')
-            if cost_gte and played_card.cost < cost_gte:
+            # play_filter_or: lista de filtros ALTERNATIVOS (Koala) -- basta
+            # UM bater. Sem isso, a carta inteira usa a si mesma como o
+            # unico filtro (comportamento AND de sempre, ja que so ha 1
+            # alternativa possivel).
+            alternativas = entry.get('play_filter_or') or [entry]
+            if not any(self._char_played_filter_matches(alt, played_card, via_effect)
+                       for alt in alternativas):
                 continue
             marker = (watcher.global_turn, trig_name)
             if (entry.get('once_per_turn')
@@ -7810,7 +7834,7 @@ class EffectExecutor:
                     apply_conditional_keyword_passives(me, opp)
                     c.just_played = not (c.has_rush or c.rush_this_turn or c.is_rush_character())
                     c.rush_character_only_this_turn = c.is_rush_character() and not c.is_rush()
-                    self._dispatch_char_played(c)
+                    self._dispatch_char_played(c, via_effect=True)
                 elif c.card_type == 'STAGE':
                     if me.field_stage:
                         me.trash.append(me.field_stage)

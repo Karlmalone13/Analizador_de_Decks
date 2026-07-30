@@ -4689,16 +4689,23 @@ def test_koala_leader_attack_leader_e_opp_plays_character() -> None:
     # on_opp_char_played, que agora RASTREIA o evento de verdade (dispara
     # so quando o oponente joga um Character, nao o turno inteiro) e
     # aplica o filtro de custo>=8 (play_filter_cost_gte) contra a carta
-    # REAL jogada. A condicao OR complexa (custo base>=8 OU jogado via
-    # efeito) continua so parcialmente modelada -- so o lado "custo>=8" e
-    # coberto, "jogado via efeito de outra carta" fica pendente.
+    # REAL jogada.
+    #
+    # ATUALIZADO 30/07 (revisao de TODOS os lideres): a condicao OR
+    # ("...with a base cost of 8 or more, OR ... using a Character's
+    # effect") agora e modelada por completo via play_filter_or (lista de
+    # filtros alternativos, dispara se qualquer um bater) + um novo
+    # parametro via_effect em _dispatch_char_played, propagado por
+    # _put_into_play (resolucao de OUTRA carta) como True e por
+    # _play_card (Main Phase/Counter normal) como False (default).
     when_att = get_card_effects("OP12-081").get("when_attacking", {})
     check("OP12-081 parseia when_attacking (sem tag) com chars_gte+cost_filter",
           when_att.get("conditions", {}) == {"chars_gte": 2, "chars_gte_cost_filter": 8}
           and any(s.get("action") == "draw" for s in when_att.get("steps", [])))
     opp_char_played = get_card_effects("OP12-081").get("on_opp_char_played", {})
-    check("OP12-081 parseia a 2a clausula como on_opp_char_played (evento real), com filtro de custo>=8",
-          opp_char_played.get("play_filter_cost_gte") == 8
+    check("OP12-081 parseia a 2a clausula como on_opp_char_played com play_filter_or (custo>=8 OU via_effect)",
+          opp_char_played.get("play_filter_or") ==
+          [{"play_filter_cost_gte": 8}, {"play_filter_via_effect": True}]
           and any(s.get("action") == "opp_life_to_hand" and s.get("count") == 1
                   for s in opp_char_played.get("steps", [])))
 
@@ -4719,6 +4726,41 @@ def test_koala_leader_attack_leader_e_opp_plays_character() -> None:
     log = EffectExecutor(me, opp).execute(koala, "when_attacking")
     check("Execucao real: com 2+ Characters de custo>=8, o draw dispara",
           any("comprou" in x for x in log))
+
+    # Execucao real do 2o efeito (on_opp_char_played, OR de 2 condicoes):
+    # dispara com custo>=8 (via mao normal) OU com custo baixo mas jogado
+    # via efeito de outra carta -- e NAO dispara se nenhuma das 2 bater.
+    opp_life1 = mk("XKOL1", "OppVida1", cost=1)
+    opp_life2 = mk("XKOL2", "OppVida2", cost=1)
+    opp_hand = mk("XKOHAND", "MaoOpp", cost=1)
+
+    # _dispatch_char_played e chamado no EffectExecutor cujo .me e QUEM
+    # JOGOU a carta (mesma convencao de _put_into_play/_play_card) -- pra
+    # testar "o OPONENTE de Koala joga um Character", o construtor e
+    # EffectExecutor(quem_jogou, koala_side), nao o contrario.
+    koala_a = GameState(leader=real_card("OP12-081"), turn=4)
+    player_a = GameState(leader=mk("XKOOPPA", "Opp", card_type="LEADER"), turn=4,
+                          life=[opp_life1], hand=[opp_hand])
+    caro = mk("XKOCARO", "Caro", cost=8)
+    EffectExecutor(player_a, koala_a)._dispatch_char_played(caro, via_effect=False)
+    check("Koala DISPARA: Character custo>=8 jogado normalmente (mao)",
+          len(player_a.life) == 0)
+
+    koala_b = GameState(leader=real_card("OP12-081"), turn=4)
+    player_b = GameState(leader=mk("XKOOPPB", "Opp", card_type="LEADER"), turn=4,
+                          life=[opp_life2], hand=[opp_hand])
+    barato_via_efeito = mk("XKOBAR", "Barato", cost=1)
+    EffectExecutor(player_b, koala_b)._dispatch_char_played(barato_via_efeito, via_effect=True)
+    check("Koala DISPARA: Character custo baixo, mas jogado via efeito de outra carta",
+          len(player_b.life) == 0)
+
+    koala_c = GameState(leader=real_card("OP12-081"), turn=4)
+    player_c = GameState(leader=mk("XKOOPPC", "Opp", card_type="LEADER"), turn=4,
+                          life=[mk("XKOL3", "OppVida3", cost=1)], hand=[opp_hand])
+    barato_normal = mk("XKOBAR2", "Barato2", cost=1)
+    EffectExecutor(player_c, koala_c)._dispatch_char_played(barato_normal, via_effect=False)
+    check("Koala NAO dispara: Character custo baixo E jogado normalmente (nenhuma das 2 condicoes bate)",
+          len(player_c.life) == 1)
 
 
 def test_shirahoshi_turn_life_face_up_substitute_e_no_other_named() -> None:

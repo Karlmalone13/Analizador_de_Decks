@@ -31183,7 +31183,14 @@
  "OP12-081": {
   "on_opp_char_played": {
    "once_per_turn": true,
-   "play_filter_cost_gte": 8,
+   "play_filter_or": [
+    {
+     "play_filter_cost_gte": 8
+    },
+    {
+     "play_filter_via_effect": true
+    }
+   ],
    "steps": [
     {
      "action": "opp_life_to_hand",

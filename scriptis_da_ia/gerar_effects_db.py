@@ -8958,10 +8958,23 @@ def parse_card_effect(card_text, card_type):
             return {'play_filter_cost_gte': int(cost_m.group(1))}
         return {}
 
+    # "..., or when your opponent plays a Character using a Character's
+    # effect" -- achado 30/07 (Koala OP12-081): OU entre 2 condicoes de
+    # gatilho distintas (nao 2 filtros da MESMA carta jogada, como
+    # CHAR_PLAYED_FILTER cobre) -- a 2a metade checa COMO a carta foi
+    # jogada (via efeito de outra carta), nao um atributo dela. So a
+    # variante "using a character's effect" tem card real confirmado
+    # ate agora; generico o bastante pra outras cartas com a MESMA frase
+    # exata reaproveitarem sem mudanca.
+    CHAR_PLAYED_OR_VIA_EFFECT = (
+        r"(?:,\s*or\s+when your opponent plays a character"
+        r"\s+using a character.?s effect)?"
+    )
     opp_char_played_m = re.search(
         r'(?:\[don!!\s*x(\d+)\]\s*)?(?:\[opponent.{0,3}s? turn\]\s*)?(?:\[once per turn\]\s*)?'
         r'(?:this effect can be activated )?'
-        r'when your opponent plays a character' + CHAR_PLAYED_FILTER + r'[,.]\s*(.+?)'
+        r'when your opponent plays a character' + CHAR_PLAYED_FILTER
+        + CHAR_PLAYED_OR_VIA_EFFECT + r'[,.]\s*(.+?)'
         + CHAR_PLAYED_STOP,
         t_low, re.DOTALL | re.IGNORECASE)
     if opp_char_played_m:
@@ -8973,7 +8986,14 @@ def parse_card_effect(card_text, card_type):
                 event_entry['once_per_turn'] = True
             if opp_char_played_m.group(1):
                 event_entry['don_requirement'] = int(opp_char_played_m.group(1))
-            event_entry.update(_parse_char_played_filter(opp_char_played_m.group(2)))
+            primeiro_filtro = _parse_char_played_filter(opp_char_played_m.group(2))
+            if 'using a character' in opp_char_played_m.group(0):
+                event_entry['play_filter_or'] = [
+                    primeiro_filtro or {},
+                    {'play_filter_via_effect': True},
+                ]
+            else:
+                event_entry.update(primeiro_filtro)
             body_conds = parse_conditions(event_body)
             if body_conds:
                 event_entry['conditions'] = body_conds
