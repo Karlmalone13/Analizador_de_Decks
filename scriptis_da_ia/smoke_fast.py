@@ -2522,6 +2522,92 @@ def test_nami_041_life_removed_recently_aproxima_gatilho_reativo() -> None:
           len(me.hand) == 4)
 
 
+def test_shanks_001_on_opp_attack_prosa_reconhecida() -> None:
+    # Achado 29/07 (revisao de TODOS os lideres do jogo): Shanks
+    # (OP09-001), "[Once Per Turn] This effect can be activated when your
+    # opponent attacks. Give up to 1 of your opponent's Leader or
+    # Character cards -1000 power during this turn." -- a frase em prosa
+    # (sem tag formal "[On Your Opponent's Attack]") nao era reconhecida
+    # como sinonimo, caia no fallback generico de 'passive' (recalculado
+    # incondicionalmente todo turno em vez de so durante o ataque do
+    # oponente). Mesmo fix generico tambem corrigiu OP16-048 (mesma frase
+    # exata, achado de bonus na auditoria global).
+    am = get_card_effects("OP09-001").get("on_opp_attack", {})
+    check("OP09-001 classificado como on_opp_attack (nao mais passive)",
+          bool(am.get("steps")))
+    check("OP09-001 preserva once_per_turn (tag precedia a frase-gatilho em prosa)",
+          am.get("once_per_turn") is True)
+    check("OP09-001 nao sobra mais como 'passive' (bloco generico removido)",
+          "passive" not in get_card_effects("OP09-001"))
+
+
+def test_buggy_041_on_own_char_ko_com_filtro_de_tipo() -> None:
+    # Achado 29/07 (revisao de TODOS os lideres do jogo): Buggy
+    # (OP16-041), "This effect can be activated when your {Impel Down}
+    # type Character card is removed from the field" -- caia em 'passive'
+    # incondicional (recalculado todo turno, sem checar se um Impel Down
+    # de verdade foi K.O.'d). Novo evento on_own_char_ko (espelho de
+    # on_opp_char_ko, mas watcher=dono da vitima) com victim_type_filter,
+    # disparado nos mesmos 8 pontos reais de K.O. do motor.
+    am = get_card_effects("OP16-041").get("on_own_char_ko", {})
+    check("OP16-041 classificado como on_own_char_ko com victim_type_filter=impel down",
+          am.get("victim_type_filter") == "impel down" and am.get("once_per_turn") is True)
+
+    buggy = real_card("OP16-041")
+    buggy.don_attached = 1  # satisfaz o don_requirement do [DON!! X1]
+    prisioneiro = mk("XBGPRIS", "Prisoner of Impel Down", cost=3)
+    me = GameState(leader=buggy, turn=3, hand=[prisioneiro])
+    opp = GameState(leader=mk("XBGOPP", "Opp", card_type="LEADER"), turn=3)
+    eng = DecisionEngine(me, opp)
+    ee = EffectExecutor(me, opp)
+
+    impel_down_char = mk("XBGID", "Impel Down Guy", sub_types="Impel Down")
+    outro_tipo_char = mk("XBGOT", "Outro Tipo", sub_types="Whitebeard Pirates")
+
+    ee._dispatch_own_char_ko(outro_tipo_char)
+    check("Buggy NAO dispara (mao inalterada) quando a vitima e de outro tipo",
+          len(me.hand) == 1)
+
+    ee._dispatch_own_char_ko(impel_down_char)
+    check("Buggy DISPARA (joga o Prisoner of Impel Down) quando a vitima E do tipo Impel Down",
+          len(me.hand) == 0)
+
+
+def test_luffy_st08_001_on_any_char_ko_ambos_os_lados() -> None:
+    # Achado 29/07 (revisao de TODOS os lideres do jogo): Luffy
+    # (ST08-001), "[Your Turn] When a Character is K.O.'d, give up to 1
+    # rested DON!! card to this Leader." -- sem qualificador "your"/"your
+    # opponent's" (ambigo, deveria contar QUALQUER K.O., dos dois lados).
+    # Caia em your_turn incondicional (dava DON todo turno, sem nenhum
+    # personagem realmente ter sido K.O.'d). Novo evento on_any_char_ko,
+    # terceira variante da familia, notifica os DOIS lados.
+    am = get_card_effects("ST08-001").get("on_any_char_ko", {})
+    check("ST08-001 classificado como on_any_char_ko (nao mais your_turn incondicional)",
+          bool(am.get("steps")))
+
+    luffy = real_card("ST08-001")
+    me = GameState(leader=luffy, turn=3, don_available=0, don_rested=2)
+    # opp com power BEM maior que o de Luffy (5000) -- garante deficit
+    # real, senao give_don calcula "necessario=0" (Luffy ja venceria sem
+    # DON) e nao transfere nada, independente do dispatcher disparar.
+    opp = GameState(leader=mk("XLFOPP", "Opp", power=9000, card_type="LEADER"), turn=3)
+    ee = EffectExecutor(me, opp)
+
+    # K.O. de um personagem MEU -- dispara (qualquer lado conta).
+    meu_char = mk("XLFM", "Meu Char")
+    ee._dispatch_any_char_ko(meu_char)
+    check("ST08-001 dispara com K.O. do MEU lado (Luffy recebe DON restado)",
+          luffy.don_attached == 1 and me.don_rested == 1)
+
+    # K.O. de um personagem do OPONENTE -- tambem dispara (mesmo evento,
+    # segundo watcher da mesma chamada), sem once_per_turn no texto real
+    # (permite disparar de novo).
+    opp_char = mk("XLFO", "Char do Opp")
+    ee._dispatch_any_char_ko(opp_char)
+    check("ST08-001 tambem dispara com K.O. do lado do OPONENTE",
+          luffy.don_attached == 2)
+
+
 def test_kid_leader_set_active_respects_cost_range() -> None:
     # Achado 14/07 via audit_leader_and_goal.py: o end_of_turn do lider do
     # Kid (OP10-099, "Supernovas type Characters with a cost of 3 to 8")
@@ -9060,6 +9146,9 @@ def main() -> int:
     test_enel_don_ramp_ordem_textual_e_turn_gte()
     test_luffy_001_rest_any_don_escala_buff_e_condicao_don_lte()
     test_nami_041_life_removed_recently_aproxima_gatilho_reativo()
+    test_shanks_001_on_opp_attack_prosa_reconhecida()
+    test_buggy_041_on_own_char_ko_com_filtro_de_tipo()
+    test_luffy_st08_001_on_any_char_ko_ambos_os_lados()
     test_kid_leader_set_active_respects_cost_range()
     test_lock_opp_character_refresh_variantes_de_fraseado()
     test_rest_opp_alvo_misto_character_ou_don()

@@ -1372,7 +1372,7 @@
     "sub_types": "Animal",
     "attribute": "Strike",
     "effects": {
-      "passive": {
+      "on_any_char_ko": {
         "steps": [
           {
             "action": "draw",
@@ -36268,7 +36268,7 @@
     "sub_types": "The Four Emperors Red-Haired Pirates",
     "attribute": "Slash",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "debuff_power",
@@ -63063,7 +63063,7 @@
     "sub_types": "Buggy Pirates Impel Down",
     "attribute": "Slash",
     "effects": {
-      "passive": {
+      "on_own_char_ko": {
         "steps": [
           {
             "action": "play_card",
@@ -63072,6 +63072,7 @@
             "filter_name": "prisoner of impel down"
           }
         ],
+        "victim_type_filter": "impel down",
         "once_per_turn": true,
         "don_requirement": 1
       }
@@ -63256,6 +63257,15 @@
         "conditions": {
           "leader_type": "impel down"
         },
+        "once_per_turn": true
+      },
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "gain_blocker",
+            "duration": "this_turn"
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -71414,7 +71424,7 @@
     "sub_types": "Straw Hat Crew",
     "attribute": "Strike",
     "effects": {
-      "your_turn": {
+      "on_any_char_ko": {
         "steps": [
           {
             "action": "give_don",

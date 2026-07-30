@@ -1,0 +1,26 @@
+{
+  "trigger_card": "OP09-001",
+  "problem": "Revisao pedida pelo usuario de TODOS os lideres do jogo (nao so os 17 do pool de decks reais). Achado o mesmo padrao sistemico do 'mapeamento de combos' original (HANDOFF blocos 351-354, 24/07, declarado COMPLETO na epoca) em 3 formas de gatilho reativo em PROSA que aquela varredura nao cobriu: (1) Shanks OP09-001, 'This effect can be activated when your opponent attacks' -- categoria de COMBATE (nem KO nem play nem evento), nenhuma das 4 fases (1.1-1.4) cobria. (2) Buggy OP16-041, 'when your {Impel Down} type Character card is removed from the field' -- parecido com Fase 1.4 (on_own_effect_removes_char), mas ESSA so cobre remocao PELO PROPRIO EFEITO do jogador; Buggy nao especifica autor, precisa disparar com QUALQUER causa (mais proximo de K.O. em geral). (3) Luffy ST08-001, 'When a Character is K.O.'d' -- sem qualificador 'your'/'your opponent's' (ambiguo, deveria contar qualquer lado); Fase 1.2 (on_opp_char_ko) so cobre o personagem do OPONENTE especificamente. Todas as 3 caiam em passive/your_turn incondicional (recalculado todo turno, nao so quando o evento real acontece).",
+  "grammar_family": "3 variantes distintas da familia 'gatilho reativo em prosa' (sem tag formal bracket): (a) 'this effect can be activated when your opponent attacks' (combate); (b) 'this effect can be activated when your {Tipo} type Character card is removed from the field' (K.O. do PROPRIO lado, com filtro de tipo na vitima); (c) 'when a character is k.o.'d' (K.O. de QUALQUER lado, sem qualificador).",
+  "queries": [
+    "regex 'this effect can be activated when your opponent attacks' no cards_rows.csv inteiro: OP09-001 (lider) + OP16-048 (nao-lider, achado de bonus) -- 2 cartas.",
+    "regex 'this effect can be activated when your \\{Tipo\\} type character.*is removed from the field' no cards_rows.csv inteiro: so OP16-041 (1 carta).",
+    "regex 'when a character is k\\.o\\.'d' (sem 'your'/'your opponent's' antes) no cards_rows.csv inteiro: ST08-001 (lider) + EB01-047 (nao-lider, achado de bonus) -- 2 cartas."
+  ],
+  "cards_found": [
+    "OP09-001",
+    "OP16-048",
+    "OP16-041",
+    "ST08-001",
+    "EB01-047"
+  ],
+  "resolution_scope": "global",
+  "decision": "3 mecanismos novos GENERICOS (nao hardcoded aos lideres que revelaram o bug), seguindo o EXATO template ja estabelecido pelo 'mapeamento de combos' (evento dedicado fora do trigger_patterns generico, disparado pelo motor nos pontos reais do evento, nao 'em algum momento do turno'): (1) nova entrada em on_opp_attack (parser) reconhecendo a frase em prosa como sinonimo da tag formal '[On Your Opponent's Attack]' -- reaproveita o mecanismo JA EXISTENTE (on_opp_attack), sem dispatcher novo no engine. (2) novo evento on_own_char_ko (espelho de on_opp_char_ko, mas o WATCHER e o DONO do personagem morto) com victim_type_filter opcional, disparado nos MESMOS 8 pontos reais de K.O. do motor que ja chamam _dispatch_opp_char_ko(). (3) novo evento on_any_char_ko (notifica os DOIS lados, sem qualificador), disparado nos MESMOS 8 pontos. Ambos os novos dispatchers (2 e 3) recebem a VITIMA como parametro (novo -- on_opp_char_ko nao precisava disso, nenhuma das 2 cartas confirmadas la tinha filtro de tipo na vitima).",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=5 (OP09-001, OP16-048, OP16-041, OP16-048 duplicado no MUDOU por causa da 2a mudanca no mesmo commit, ST08-001, EB01-047 -- todas as 5 mudancas sao os achados esperados)",
+    "gerar_dbs.py rodado sem erro",
+    "smoke_fast.py: SMOKE FAST OK (3 novos testes: on_opp_attack reclassificado com once_per_turn preservado; on_own_char_ko com filtro de tipo positivo/negativo real; on_any_char_ko disparando pros dois lados)",
+    "smoke_test.py: TODOS OS TESTES PASSARAM"
+  ],
+  "notes": "ESCOPO CONHECIDO documentado no proprio codigo (comentarios em _dispatch_own_char_ko/_dispatch_any_char_ko, decision_engine.py): (a) Buggy/on_own_char_ko so cobre K.O. de fato, nao bounce/deck-bottom via outros efeitos (remove_character_from_field com destino!='trash') -- estender exigiria refactor maior (~19 pontos de chamada da funcao pura, sem acesso ao lado oposto); (b) Luffy/on_any_char_ko nao filtra por '[Your Turn]' (dispara mesmo se o K.O. aconteceu no turno do oponente) -- mesmo criterio de aceitar melhora parcial sobre o bug antigo sem reivindicar fidelidade 100% ao texto, ja usado pela Fase 1.1 original (Event/Blocker, tambem parcial). Parte de uma revisao maior pedida pelo usuario (revisar TODOS os lideres do jogo, nao so os 17 do pool de decks reais) -- ainda restam 3 achados adicionais desta mesma revisao (Trafalgar Law OP01-002, Boa Hancock OP14-041, Koala OP12-081) a implementar em commit separado."
+}

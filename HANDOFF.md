@@ -1,5 +1,76 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-30 (401, EM ANDAMENTO) - Claude (sessao remota web) - revisao de TODOS os lideres do jogo (135, nao so os 17 do pool real): 3/6 achados corrigidos (Shanks, Buggy, Luffy ST08-001)
+
+Usuário pediu pra revisar TODOS os líderes do jogo (135 códigos base
+únicos em `cards_rows.csv`, não só os 17 do pool de decks reais do
+bloco 400). Rodei varreduras automáticas (efeito totalmente ausente,
+gatilho reativo em prosa sem condição, limiar de DON sem condição
+capturada, escala "for every/each" sem step correspondente, devolver-
+personagem-à-mão sem step de bounce, 2+ tags formais distintas com
+menos blocos parseados) e revisão manual dos casos suspeitos. 6
+achados confirmados; usuário pediu pra implementar todos. Progresso
+desta rodada: **3 implementados** (família de gatilho reativo K.O./
+ataque em prosa), **3 ainda pendentes** (Trafalgar Law, Boa Hancock,
+Koala — conteúdo de efeito incompleto, não classificação de gatilho).
+
+**Contexto importante**: os 3 primeiros achados tocam a MESMA classe de
+bug do "mapeamento de combos" original (HANDOFF blocos 351-354, 24/07)
+que foi declarado COMPLETO na época — mas cobriu só 4 famílias
+específicas de gatilho (on_event_activated, on_opp_char_ko, on_char_played,
+on_own_effect_removes_char/on_hand_card_trashed). As 3 formas abaixo
+usam grafia diferente das 4 famílias e escaparam daquela varredura.
+
+**Achado 1 — Shanks (OP09-001), CORRIGIDO**: "This effect can be
+activated when your opponent attacks" caía em `passive` incondicional
+(recalculado todo turno). Reconhecido como sinônimo em prosa da tag
+formal `[On Your Opponent's Attack]` — reaproveita o mecanismo
+`on_opp_attack` já existente, sem dispatcher novo no engine. Achado de
+bônus: `OP16-048` (não-líder) tem a MESMA frase exata e foi corrigido
+de graça pelo mesmo fix genérico.
+
+**Achado 2 — Buggy (OP16-041), CORRIGIDO**: "This effect can be
+activated when your {Impel Down} type Character card is removed from
+the field" caía em `passive` incondicional. Novo evento `on_own_char_ko`
+(espelho de `on_opp_char_ko`, mas o WATCHER é o DONO do personagem
+morto) com `victim_type_filter` opcional, disparado nos MESMOS 8 pontos
+reais de K.O. do motor que já chamam `_dispatch_opp_char_ko()`.
+**Escopo conhecido, documentado no código**: o texto diz "removed from
+the field" (genérico), mas o dispatcher só cobre K.O. de fato — bounce/
+deck-bottom via outros efeitos não dispara ainda (estender exigiria
+refactor maior em `remove_character_from_field`, ~19 pontos de chamada,
+avaliado fora de escopo desta rodada).
+
+**Achado 3 — Luffy (ST08-001), CORRIGIDO**: "When a Character is
+K.O.'d" (sem qualificador "your"/"your opponent's") caía em `your_turn`
+incondicional. Novo evento `on_any_char_ko` (terceira variante da
+família, notifica os DOIS lados), disparado nos mesmos 8 pontos.
+**Escopo conhecido**: não filtra por "[Your Turn]" (dispara mesmo se o
+K.O. aconteceu no turno do oponente) — mesmo critério de melhora
+parcial já aceito pela Fase 1.1 original. Achado de bônus: `EB01-047`
+(não-líder) tem a mesma forma exata, corrigido de graça.
+
+Registro em
+`scriptis_da_ia/parser_audits/2026-07-30_gatilhos_reativos_ko_ataque_em_prosa_nao_cobertos.json`.
+`diff_parser.py` PERDEU=0 MUDOU=5. 3 novos testes permanentes (parse +
+execução real: filtro de tipo positivo/negativo pro Buggy, disparo nos
+dois lados pro Luffy). `smoke_fast.py`/`smoke_test.py` 100%.
+
+**Ainda pendentes desta revisão** (conteúdo de efeito incompleto, não
+classificação de gatilho — usuário já pediu pra implementar, só não
+foi feito ainda nesta rodada):
+- **Trafalgar Law (OP01-002)**: falta o passo de devolver 1 personagem
+  à mão, a condição "se tiver 5 personagens", e o filtro "cor diferente
+  do devolvido".
+- **Boa Hancock (OP14-041)**: a segunda habilidade inteira (Amazon
+  Lily/Kuja Pirates 5000+ power K.O.'d → rouba carta da Life do
+  oponente) está completamente ausente do JSON parseado.
+- **Koala (OP12-081)**: o gatilho é um OU entre duas condições ("oponente
+  joga personagem custo≥8" OU "oponente joga personagem via efeito de
+  outro personagem") — só a primeira metade foi capturada.
+
+`resolve_reaction`/redirect segue pendente, depois destes 3.
+
 ## 2026-07-29 (400) - Claude (sessao remota web) - pente-fino texto-real vs efeito-parseado nos 17 lideres do pool de decks reais: Enel, Luffy(001) e Nami corrigidos
 
 Usuário pediu (1) continuar `resolve_reaction`/redirect e (2) um

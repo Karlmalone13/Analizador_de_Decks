@@ -4317,6 +4317,8 @@ class EffectExecutor:
                     # dispara [On K.O.] do Character K.O.ado (regra K.O. != Trash)
                     self.execute(alvo, 'on_ko', is_opp_turn=False)
                     self._dispatch_opp_char_ko()
+                    self._dispatch_own_char_ko(alvo)
+                    self._dispatch_any_char_ko(alvo)
                 if koados:
                     self._cost_logs.append(f'custo: K.O. próprio: {", ".join(koados)}')
             elif ctype == 'trash_own_character':
@@ -4572,6 +4574,98 @@ class EffectExecutor:
             logs = EffectExecutor(watcher, victim_owner).execute(source, 'on_opp_char_ko')
             if logs and entry.get('once_per_turn'):
                 source._opp_char_ko_once_marker = marker
+
+    def _dispatch_own_char_ko(self, victim: 'Card | None' = None) -> None:
+        """
+        Dispara ``on_own_char_ko`` -- espelho de `_dispatch_opp_char_ko`,
+        mas o WATCHER e o DONO do personagem morto (nao o lado oposto).
+        Achado 29/07 (pente-fino nos lideres, Buggy OP16-041: "This effect
+        can be activated when your {Impel Down} type Character card is
+        removed from the field"). Chamado nos MESMOS 8 pontos reais de
+        K.O. do motor que ja chamam `_dispatch_opp_char_ko()` (mesma
+        convencao, mesmo self.me/self.opp da chamada de on_ko).
+
+        `victim` (opcional): a carta K.O.'ada, usada pra checar
+        `victim_type_filter` (ex: Buggy exige que a VITIMA seja do tipo
+        "Impel Down" -- diferente de `on_opp_char_ko`, cujas 2 cartas
+        confirmadas ate agora nao tinham filtro de tipo na vitima).
+        Chamadores que nao tem a carta a mao (nenhum hoje) passam None --
+        nesse caso, cartas com `victim_type_filter` simplesmente nunca
+        disparam (conservador, nao dispara sem confirmar o filtro).
+
+        ESCOPO CONHECIDO (documentado, nao e bug): o texto real diz
+        "removed from the field" (generico), mas este dispatcher so cobre
+        K.O. (a causa mais comum na pratica) -- remocao por bounce/deck-
+        bottom via outros efeitos (`remove_character_from_field(...,
+        'hand'|'deck_bottom')`) NAO dispara este evento ainda. Estender
+        pra cobrir esses pontos tambem exigiria acesso ao lado oposto
+        dentro de `remove_character_from_field` (funcao pura, sem
+        `opp`), um refactor maior que tocaria ~19 pontos de chamada --
+        avaliado como fora de escopo desta rodada (ver parser_audits/).
+        """
+        watcher = self.me
+        cards = [watcher.leader, *watcher.field_chars]
+        if watcher.field_stage:
+            cards.append(watcher.field_stage)
+        for source in list(cards):
+            entry = get_card_effects(source.code).get('on_own_char_ko')
+            if not entry:
+                continue
+            victim_filter = entry.get('victim_type_filter')
+            if victim_filter:
+                if victim is None:
+                    continue
+                from optcg_engine.rules_facade import card_matches_filter
+                if not card_matches_filter(victim, victim_filter):
+                    continue
+            marker = (watcher.global_turn, 'on_own_char_ko')
+            if (entry.get('once_per_turn')
+                    and getattr(source, '_own_char_ko_once_marker', None) == marker):
+                continue
+            logs = EffectExecutor(self.me, self.opp).execute(source, 'on_own_char_ko')
+            if logs and entry.get('once_per_turn'):
+                source._own_char_ko_once_marker = marker
+
+    def _dispatch_any_char_ko(self, victim: 'Card | None' = None) -> None:
+        """
+        Dispara ``on_any_char_ko`` -- terceira variante da familia (junto
+        de on_opp_char_ko/on_own_char_ko), pra gatilhos QUE NAO
+        ESPECIFICAM o lado ("When a Character is K.O.'d", sem "your" nem
+        "your opponent's"). Achado 29/07 (pente-fino nos lideres, Luffy
+        ST08-001, unica carta no banco: "[Your Turn] When a Character is
+        K.O.'d, give up to 1 rested DON!! card to this Leader."). Notifica
+        os DOIS lados (qualquer K.O., de qualquer personagem).
+
+        ESCOPO CONHECIDO: a tag "[Your Turn]" do texto original sugere que
+        o gatilho so deveria contar durante o PROPRIO turno do watcher,
+        mas este dispatcher nao filtra por isso ainda (dispara pros dois
+        lados sempre que QUALQUER K.O. acontece, independente de turno) --
+        mesmo criterio de escopo parcial ja aceito pra Buggy (estritamente
+        melhor que o bug antigo, sem reivindicar cobertura 100% fiel ao
+        texto).
+        """
+        for watcher, other in ((self.me, self.opp), (self.opp, self.me)):
+            cards = [watcher.leader, *watcher.field_chars]
+            if watcher.field_stage:
+                cards.append(watcher.field_stage)
+            for source in list(cards):
+                entry = get_card_effects(source.code).get('on_any_char_ko')
+                if not entry:
+                    continue
+                victim_filter = entry.get('victim_type_filter')
+                if victim_filter:
+                    if victim is None:
+                        continue
+                    from optcg_engine.rules_facade import card_matches_filter
+                    if not card_matches_filter(victim, victim_filter):
+                        continue
+                marker = (watcher.global_turn, 'on_any_char_ko')
+                if (entry.get('once_per_turn')
+                        and getattr(source, '_any_char_ko_once_marker', None) == marker):
+                    continue
+                logs = EffectExecutor(watcher, other).execute(source, 'on_any_char_ko')
+                if logs and entry.get('once_per_turn'):
+                    source._any_char_ko_once_marker = marker
 
     def _dispatch_event_activated(self) -> None:
         """
@@ -5528,6 +5622,8 @@ class EffectExecutor:
                         ee_target.execute(target, 'on_ko', is_opp_turn=owner is opp)
                         ee_target._dispatch_damage_or_own_char_ko(owner, target)
                         ee_target._dispatch_opp_char_ko()
+                        ee_target._dispatch_own_char_ko(target)
+                        ee_target._dispatch_any_char_ko(target)
                     self._dispatch_own_effect_removes_char(
                         'ko' if action == 'ko' else 'trash',
                         'opp' if owner is opp else 'own')
@@ -5582,6 +5678,8 @@ class EffectExecutor:
             ee_target.execute(alvo, 'on_ko', is_opp_turn=True)
             ee_target._dispatch_damage_or_own_char_ko(opp, alvo)
             ee_target._dispatch_opp_char_ko()
+            ee_target._dispatch_own_char_ko(alvo)
+            ee_target._dispatch_any_char_ko(alvo)
             self._dispatch_own_effect_removes_char('ko', 'opp')
             return f'KO: {ko_name}'
 
@@ -5748,6 +5846,8 @@ class EffectExecutor:
                 ee_ko = EffectExecutor(opp, me)
                 ee_ko.execute(alvo, 'on_ko', is_opp_turn=False)
                 ee_ko._dispatch_opp_char_ko()
+                ee_ko._dispatch_own_char_ko(alvo)
+                ee_ko._dispatch_any_char_ko(alvo)
                 self._dispatch_own_effect_removes_char('ko', 'opp')
                 return f'K.O. {alvo.name[:15]} (cost=={alvo.cost}==DON!!)'
             return ''
@@ -5799,6 +5899,8 @@ class EffectExecutor:
                     ee_opp = EffectExecutor(opp, me)
                     ee_opp.execute(target_opp, 'on_ko', is_opp_turn=True)
                     ee_opp._dispatch_opp_char_ko()
+                    ee_opp._dispatch_own_char_ko(target_opp)
+                    ee_opp._dispatch_any_char_ko(target_opp)
                     # KO self (o proprio character que ativou o efeito)
                     if contains_identity(me.field_chars, card):
                         remove_character_from_field(me, card, 'trash')
@@ -14396,6 +14498,8 @@ class OPTCGMatch:
                     remove_character_from_field(opp, alvo_ko, 'trash')
                     ee_ko.execute(alvo_ko, 'on_ko', is_opp_turn=True)
                     ee_ko._dispatch_opp_char_ko()
+                    ee_ko._dispatch_own_char_ko(alvo_ko)
+                    ee_ko._dispatch_any_char_ko(alvo_ko)
                     remove_by_identity(candidatos, alvo_ko)
                     koed.append(alvo_ko.name[:15])
                 fonte.ko_on_opp_blocker_used_this_turn = True
@@ -14547,6 +14651,8 @@ class OPTCGMatch:
                                     remove_character_from_field(p, attacker, 'trash')
                                     ee_dmg.execute(attacker, 'on_ko')
                                     ee_dmg._dispatch_opp_char_ko()
+                                    ee_dmg._dispatch_own_char_ko(attacker)
+                                    ee_dmg._dispatch_any_char_ko(attacker)
                                     if verbose:
                                         print(f'      💀 {attacker.name[:20]}: K.O. (mill do proprio efeito)')
 
@@ -14583,6 +14689,8 @@ class OPTCGMatch:
                 ko_logs = ee_opp.execute(target, 'on_ko', is_opp_turn=True)
                 ee_opp._dispatch_damage_or_own_char_ko(opp, target)
                 ee_opp._dispatch_opp_char_ko()
+                ee_opp._dispatch_own_char_ko(target)
+                ee_opp._dispatch_any_char_ko(target)
                 if verbose:
                     for log in ko_logs:
                         if log:

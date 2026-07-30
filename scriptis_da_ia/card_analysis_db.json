@@ -1976,7 +1976,7 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "passive"
+    "trigger": "on_any_char_ko"
    }
   ],
   "synergy_states": {},
@@ -53293,7 +53293,7 @@
   "effects": [
    {
     "action": "debuff_power",
-    "trigger": "passive",
+    "trigger": "on_opp_attack",
     "target": "opp_leader_or_character"
    }
   ],
@@ -91842,7 +91842,7 @@
   "effects": [
    {
     "action": "play_card",
-    "trigger": "passive",
+    "trigger": "on_own_char_ko",
     "don_requirement": 1,
     "cost_lte": 99
    }
@@ -92128,6 +92128,10 @@
    {
     "action": "gain_blocker",
     "trigger": "on_play"
+   },
+   {
+    "action": "gain_blocker",
+    "trigger": "on_opp_attack"
    }
   ],
   "synergy_states": {},
@@ -104642,7 +104646,7 @@
   "effects": [
    {
     "action": "give_don",
-    "trigger": "your_turn"
+    "trigger": "on_any_char_ko"
    }
   ],
   "synergy_states": {},

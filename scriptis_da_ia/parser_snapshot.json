@@ -856,7 +856,7 @@
   }
  },
  "EB01-047": {
-  "passive": {
+  "on_any_char_ko": {
    "once_per_turn": true,
    "steps": [
     {
@@ -22966,7 +22966,7 @@
   }
  },
  "OP09-001": {
-  "passive": {
+  "on_opp_attack": {
    "once_per_turn": true,
    "steps": [
     {
@@ -40173,7 +40173,7 @@
   }
  },
  "OP16-041": {
-  "passive": {
+  "on_own_char_ko": {
    "don_requirement": 1,
    "once_per_turn": true,
    "steps": [
@@ -40183,7 +40183,8 @@
      "count": 1,
      "filter_name": "prisoner of impel down"
     }
-   ]
+   ],
+   "victim_type_filter": "impel down"
   }
  },
  "OP16-042": {
@@ -40269,6 +40270,15 @@
   }
  },
  "OP16-048": {
+  "on_opp_attack": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "gain_blocker",
+     "duration": "this_turn"
+    }
+   ]
+  },
   "on_play": {
    "conditions": {
     "leader_type": "impel down"
@@ -45246,7 +45256,7 @@
   }
  },
  "ST08-001": {
-  "your_turn": {
+  "on_any_char_ko": {
    "steps": [
     {
      "action": "give_don",

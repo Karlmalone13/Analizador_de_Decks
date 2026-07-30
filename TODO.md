@@ -1,8 +1,38 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 29 de julho de 2026
+**Última atualização:** 30 de julho de 2026
 
-## 🟢 IMPLEMENTADO: pente-fino texto-real vs efeito-parseado nos 17 líderes do pool de decks reais (29/07/2026, bloco 400)
+## 🟡 EM ANDAMENTO: revisão de TODOS os líderes do jogo (135, não só os 17 do pool real) (30/07/2026, bloco 401)
+
+Usuário pediu pra revisar TODOS os líderes (não só os 17 com deck real
+no pool de self-play). 6 achados confirmados via varredura automática +
+revisão manual; usuário pediu pra implementar todos.
+
+- [x] Shanks (OP09-001): "this effect can be activated when your
+  opponent attacks" reconhecido como sinônimo em prosa de
+  `[On Your Opponent's Attack]` (reaproveita `on_opp_attack`
+  existente). Bônus: OP16-048 (não-líder, mesma frase) corrigido de
+  graça.
+- [x] Buggy (OP16-041): novo evento `on_own_char_ko` (espelho de
+  `on_opp_char_ko`, watcher=dono da vítima) com `victim_type_filter`.
+  Disparado nos 8 pontos reais de K.O. do motor. Escopo conhecido: só
+  cobre K.O., não bounce/deck-bottom (documentado no código).
+- [x] Luffy (ST08-001): novo evento `on_any_char_ko` (notifica os dois
+  lados, sem qualificador de lado). Bônus: EB01-047 (não-líder, mesma
+  forma) corrigido de graça. Escopo conhecido: não filtra por
+  "[Your Turn]".
+  `diff_parser.py` PERDEU=0 MUDOU=5. 3 novos testes permanentes.
+  `smoke_fast.py`/`smoke_test.py` 100%.
+- [ ] Trafalgar Law (OP01-002): falta passo de devolver personagem à
+  mão, condição "5 personagens", filtro "cor diferente do devolvido".
+- [ ] Boa Hancock (OP14-041): segunda habilidade inteira (Amazon Lily/
+  Kuja Pirates K.O.'d → rouba Life do oponente) ausente do parseado.
+- [ ] Koala (OP12-081): gatilho é um OU de 2 condições, só a primeira
+  metade foi capturada.
+- [ ] `resolve_reaction`/redirect: ainda não retomado — fica por
+  último, depois desses 3.
+
+## 🟢 IMPLEMENTADO (bloco 400): pente-fino texto-real vs efeito-parseado nos 17 líderes do pool de decks reais (29/07/2026)
 
 Usuário pediu (1) continuar `resolve_reaction`/redirect e (2) auditar
 cada um dos 17 líderes do pool real (`decklists_raw.csv`) comparando

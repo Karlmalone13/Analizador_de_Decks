@@ -8342,6 +8342,19 @@ def parse_card_effect(card_text, card_type):
         # conditions roda sobre o bloco inteiro depois).
         ('when_attacking',ABERTURA + r"when this leader attacks your opponent.?s leader[^.]*?[,]\s*(.+?)" + LOOKAHEAD_DELIM_OU_ONCE),
         ('on_opp_attack', ABERTURA + r"\[on your opponent.{0,3}s? attack\](.+?)" + LOOKAHEAD_DELIM),
+        # Variante SEM tag formal: "This effect can be activated when your
+        # opponent attacks. [efeito]" (achado 29/07, Shanks OP09-001, unica
+        # carta no banco com essa frase exata). Mesmo sinonimo em prosa ja
+        # aceito pra when_attacking (OP12-081, "when this leader attacks...")
+        # -- sem isto, o bloco caia no fallback generico de passive
+        # (recalculado incondicionalmente todo turno, nao so quando o
+        # oponente de fato ataca).
+        # Grupo capturado inclui o "[Once Per Turn]" PRECEDENTE (se houver)
+        # -- ordem invertida do usual (tag ANTES da frase-gatilho em prosa,
+        # nao depois): sem isso, once_per_turn some (o check `'[once per
+        # turn]' in block` so acha a tag se ela estiver DENTRO do bloco
+        # capturado, mesma convencao de qualquer outro bloco tag-based).
+        ('on_opp_attack', ABERTURA + r"((?:\[once per turn\]\s*)?this effect can be activated when your opponent attacks[.]\s*.+?)" + LOOKAHEAD_DELIM_OU_ONCE),
         ('on_ko',         ABERTURA + r'\[on k\.o\.\](.+?)' + LOOKAHEAD_DELIM),
         # 'when_rested' precede 'your_turn' pra ser testado primeiro: captura
         # o padrao "[Your Turn] When this Character becomes rested, [efeito]"
@@ -8658,6 +8671,73 @@ def parse_card_effect(card_text, card_type):
                 event_entry['conditions'] = body_conds
             result['on_opp_char_ko'] = event_entry
             for generic in ('your_turn', 'opp_turn'):
+                if (generic in result
+                        and result[generic].get('steps') == event_steps):
+                    del result[generic]
+
+    # Evento parametrizado "quando MEU PROPRIO personagem (de um tipo) e
+    # K.O.'d" -- espelho de on_opp_char_ko, mas o lado observado e o
+    # PROPRIO (achado 29/07, Buggy OP16-041, unica carta no banco: "This
+    # effect can be activated when your {Impel Down} type Character card
+    # is removed from the field"). Escopo: o texto diz "removed from the
+    # field" (generico), mas o engine so dispara em K.O. de fato (ver
+    # comentario em _dispatch_own_char_ko, decision_engine.py) -- ainda
+    # assim estritamente melhor que o bug antigo (passive incondicional
+    # todo turno).
+    own_char_ko_m = re.search(
+        r'(?:\[don!! x(\d+)\]\s*)?(?:\[once per turn\]\s*)?'
+        r'this effect can be activated when your '
+        r'(?:\{([^}]+)\}|\[([^\]]+)\]|"([^"]+)") type character (?:card )?'
+        r'is removed from the field[.]\s*(.+?)' + LOOKAHEAD_DELIM_OU_ONCE,
+        t_low, re.DOTALL | re.IGNORECASE)
+    if own_char_ko_m:
+        event_body = own_char_ko_m.group(5).strip()
+        event_steps = parse_block(event_body, 'on_own_char_ko')
+        if event_steps:
+            event_entry = {
+                'steps': event_steps,
+                'victim_type_filter': (own_char_ko_m.group(2) or own_char_ko_m.group(3)
+                                       or own_char_ko_m.group(4)).strip(),
+            }
+            if '[once per turn]' in own_char_ko_m.group(0):
+                event_entry['once_per_turn'] = True
+            if own_char_ko_m.group(1):
+                event_entry['don_requirement'] = int(own_char_ko_m.group(1))
+            body_conds = parse_conditions(event_body)
+            if body_conds:
+                event_entry['conditions'] = body_conds
+            result['on_own_char_ko'] = event_entry
+            for generic in ('your_turn', 'opp_turn', 'passive'):
+                if (generic in result
+                        and result[generic].get('steps') == event_steps):
+                    del result[generic]
+
+    # Evento parametrizado "quando UM personagem (qualquer lado, sem
+    # qualificador "your"/"your opponent's") e K.O.'d" -- terceira
+    # variante da familia (junto de on_opp_char_ko/on_own_char_ko).
+    # Achado 29/07, Luffy ST08-001, unica carta no banco: "[Your Turn]
+    # When a Character is K.O.'d, give up to 1 rested DON!! card to this
+    # Leader." Ancorado em "when A character" (artigo indefinido) pra nao
+    # colidir com "your"/"your opponent's"/"{Tipo}" das 2 variantes
+    # acima, que sao mais especificas e ja tratadas separadamente.
+    any_char_ko_m = re.search(
+        r'(?:\[don!! x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
+        r"when a character is k\.o\.?'?d[,]\s*(.+?)" + LOOKAHEAD_DELIM,
+        t_low, re.DOTALL | re.IGNORECASE)
+    if any_char_ko_m:
+        event_body = any_char_ko_m.group(2).strip()
+        event_steps = parse_block(event_body, 'on_any_char_ko')
+        if event_steps:
+            event_entry = {'steps': event_steps}
+            if '[once per turn]' in any_char_ko_m.group(0):
+                event_entry['once_per_turn'] = True
+            if any_char_ko_m.group(1):
+                event_entry['don_requirement'] = int(any_char_ko_m.group(1))
+            body_conds = parse_conditions(event_body)
+            if body_conds:
+                event_entry['conditions'] = body_conds
+            result['on_any_char_ko'] = event_entry
+            for generic in ('your_turn', 'opp_turn', 'passive'):
                 if (generic in result
                         and result[generic].get('steps') == event_steps):
                     del result[generic]
