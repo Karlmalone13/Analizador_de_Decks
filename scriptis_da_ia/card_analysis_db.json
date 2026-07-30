@@ -56720,7 +56720,7 @@
   "effects": [
    {
     "action": "add_don",
-    "trigger": "opp_turn"
+    "trigger": "on_own_char_ko"
    }
   ],
   "synergy_states": {},
@@ -60362,7 +60362,7 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "opp_turn"
+    "trigger": "on_own_char_ko"
    },
    {
     "action": "buff_cost",
@@ -81123,6 +81123,12 @@
   "sub_types": "Kuja Pirates The Seven Warlords of the Sea",
   "attribute": "Special",
   "effects": [
+   {
+    "action": "deal_damage",
+    "trigger": "on_own_char_ko",
+    "don_requirement": 1,
+    "target": "opponent"
+   },
    {
     "action": "draw",
     "trigger": "on_own_char_played"

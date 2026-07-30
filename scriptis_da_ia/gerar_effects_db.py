@@ -8275,7 +8275,7 @@ def parse_card_effect(card_text, card_type):
     # do t_low pra nao ser tambem capturado pelos consumidores de 'passive'
     # mais abaixo (fallback/segmento-solto/pos-keyword-reminder).
     dmg_life_m = re.search(
-        r'(?:\[don!! x(\d+)\]\s*)?'
+        r'(?:\[don!!\s*x(\d+)\]\s*)?'
         r"when (?:(?:this character|this leader)'?s attack deals|you deal) "
         r"damage to (?:your opponent'?s|the opponent'?s) life,?\s*"
         r'(?:you may )?trash (\d+) cards? from the top of your deck\.?'
@@ -8564,7 +8564,7 @@ def parse_card_effect(card_text, card_type):
         don_req = 0
         trigger_pos = m.start()
         pre_trigger = t_low[:trigger_pos]
-        don_m = re.search(r'\[don!! x(\d+)\]', pre_trigger[-50:])
+        don_m = re.search(r'\[don!!\s*x(\d+)\]', pre_trigger[-50:])
         if don_m:
             don_req = int(don_m.group(1))
         if (not don_req and trigger_name == 'activate_main'
@@ -8647,7 +8647,7 @@ def parse_card_effect(card_text, card_type):
     # limiar de base power. A redacao e unica hoje (OP13-002), mas o entry
     # parametrizado evita fundir este draw ao [On Your Opponent's Attack].
     damage_or_ko_m = re.search(
-        r'(?:\[don!! x(\d+)\]\s*)?(?:\[once per turn\]\s*)?'
+        r'(?:\[don!!\s*x(\d+)\]\s*)?(?:\[once per turn\]\s*)?'
         r'when you take damage or your character with (\d+) base power or more '
         r'is k\.o\.?[,.]?\s*(.+?)' + LOOKAHEAD_DELIM,
         t_low, re.DOTALL | re.IGNORECASE)
@@ -8688,7 +8688,7 @@ def parse_card_effect(card_text, card_type):
     # trash 2 cards from your hand: When..."), Kaido nao -- grupo 2 cobre
     # os dois casos.
     opp_char_ko_m = re.search(
-        r'(?:\[don!! x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
+        r'(?:\[don!!\s*x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
         r'(?:([a-z][^:]{0,60}?):\s*)?'
         r"when your opponent.?s character is k\.o\.?'?d[,]\s*(.+?)" + LOOKAHEAD_DELIM,
         t_low, re.DOTALL | re.IGNORECASE)
@@ -8728,21 +8728,39 @@ def parse_card_effect(card_text, card_type):
     # comentario em _dispatch_own_char_ko, decision_engine.py) -- ainda
     # assim estritamente melhor que o bug antigo (passive incondicional
     # todo turno).
+    # Achado 30/07 (Boa Hancock OP14-041): grafia diferente da mesma
+    # familia -- "when one of your {TipoA} or {TipoB} type Characters
+    # with N base power or more is K.O.'d [efeito]" (sem a tag formal
+    # "this effect can be activated", com LISTA de tipos via "or" e um
+    # filtro extra de power minimo na vitima, e "is K.O.'d" no lugar de
+    # "is removed from the field"). Generalizado (nao hardcoded pra Boa
+    # Hancock): aceita 1+ tipos via "or" (mesmo idioma de parenteses/
+    # colchetes/aspas ja usado em chars_gte_type_filter) e o filtro de
+    # power e opcional.
+    _KO_TYPE_ITEM = r'(?:\{[^}]+\}|\[[^\]]+\]|"[^"]+")'
     own_char_ko_m = re.search(
-        r'(?:\[don!! x(\d+)\]\s*)?(?:\[once per turn\]\s*)?'
-        r'this effect can be activated when your '
-        r'(?:\{([^}]+)\}|\[([^\]]+)\]|"([^"]+)") type character (?:card )?'
-        r'is removed from the field[.]\s*(.+?)' + LOOKAHEAD_DELIM_OU_ONCE,
+        r'(?:\[don!!\s*x(\d+)\]\s*)?(?:\[once per turn\]\s*)?'
+        r'(?:this effect can be activated when your|when (?:one of )?your) '
+        r'(' + _KO_TYPE_ITEM + r'(?:\s+or\s+' + _KO_TYPE_ITEM + r')*)'
+        r' type characters?(?: card)?'
+        r'(?: with (\d+)(?:\s+base)? power or more)?'
+        r'(?: is removed from the field| is k\.o\.?\'?d)[,.]?\s*(.+?)'
+        + LOOKAHEAD_DELIM_OU_ONCE,
         t_low, re.DOTALL | re.IGNORECASE)
     if own_char_ko_m:
-        event_body = own_char_ko_m.group(5).strip()
+        event_body = own_char_ko_m.group(4).strip()
         event_steps = parse_block(event_body, 'on_own_char_ko')
         if event_steps:
+            tipos = [g for grupo in
+                     re.findall(r'\{([^}]+)\}|\[([^\]]+)\]|"([^"]+)"',
+                                own_char_ko_m.group(2))
+                     for g in grupo if g]
             event_entry = {
                 'steps': event_steps,
-                'victim_type_filter': (own_char_ko_m.group(2) or own_char_ko_m.group(3)
-                                       or own_char_ko_m.group(4)).strip(),
+                'victim_type_filter': tipos if len(tipos) > 1 else tipos[0].strip(),
             }
+            if own_char_ko_m.group(3):
+                event_entry['victim_power_gte'] = int(own_char_ko_m.group(3))
             if '[once per turn]' in own_char_ko_m.group(0):
                 event_entry['once_per_turn'] = True
             if own_char_ko_m.group(1):
@@ -8765,7 +8783,7 @@ def parse_card_effect(card_text, card_type):
     # colidir com "your"/"your opponent's"/"{Tipo}" das 2 variantes
     # acima, que sao mais especificas e ja tratadas separadamente.
     any_char_ko_m = re.search(
-        r'(?:\[don!! x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
+        r'(?:\[don!!\s*x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
         r"when a character is k\.o\.?'?d[,]\s*(.+?)" + LOOKAHEAD_DELIM,
         t_low, re.DOTALL | re.IGNORECASE)
     if any_char_ko_m:
@@ -8839,7 +8857,7 @@ def parse_card_effect(card_text, card_type):
     # "[tags] This effect can be activated when your opponent activates
     # X. [efeito]" (Camie -- delimitador '.', nao ',').
     opp_event_m = re.search(
-        r'(?:\[don!! x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
+        r'(?:\[don!!\s*x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
         r'(?:this effect can be activated )?'
         r'when your opponent activates ' + EVENT_ACTIVATED_TARGET + r'[,.]\s*(.+?)'
         + LOOKAHEAD_DELIM,
@@ -8852,7 +8870,7 @@ def parse_card_effect(card_text, card_type):
     opp_event_inv_m = None
     if not opp_event_m and 'when your opponent activates' in t_low:
         opp_event_inv_m = re.search(
-            r'(?:\[don!! x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
+            r'(?:\[don!!\s*x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
             r'(.+?)\s+when your opponent activates ' + EVENT_ACTIVATED_TARGET + r'\.',
             t_low, re.DOTALL | re.IGNORECASE)
     for m, body_group in ((opp_event_m, 2), (opp_event_inv_m, 2)):
@@ -8881,7 +8899,7 @@ def parse_card_effect(card_text, card_type):
     # Forma "When you activate X, [efeito]" (lado proprio -- Crocodile,
     # Page One).
     own_event_m = re.search(
-        r'(?:\[don!! x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
+        r'(?:\[don!!\s*x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
         r'when you activate ' + EVENT_ACTIVATED_TARGET + r'[,.]\s*(.+?)'
         + LOOKAHEAD_DELIM,
         t_low, re.DOTALL | re.IGNORECASE)
@@ -8941,7 +8959,7 @@ def parse_card_effect(card_text, card_type):
         return {}
 
     opp_char_played_m = re.search(
-        r'(?:\[don!! x(\d+)\]\s*)?(?:\[opponent.{0,3}s? turn\]\s*)?(?:\[once per turn\]\s*)?'
+        r'(?:\[don!!\s*x(\d+)\]\s*)?(?:\[opponent.{0,3}s? turn\]\s*)?(?:\[once per turn\]\s*)?'
         r'(?:this effect can be activated )?'
         r'when your opponent plays a character' + CHAR_PLAYED_FILTER + r'[,.]\s*(.+?)'
         + CHAR_PLAYED_STOP,
@@ -8976,7 +8994,7 @@ def parse_card_effect(card_text, card_type):
             _recover_leading_prose_as_passive(opp_char_played_m)
 
     own_char_played_m = re.search(
-        r'(?:\[don!! x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[opponent.{0,3}s? turn\]\s*)?'
+        r'(?:\[don!!\s*x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[opponent.{0,3}s? turn\]\s*)?'
         r'(?:\[once per turn\]\s*)?'
         r'(?:this effect can be activated )?'
         r'when you play a character' + CHAR_PLAYED_FILTER + r'[,.]\s*(.+?)'
@@ -9127,7 +9145,7 @@ def parse_card_effect(card_text, card_type):
         eh_ruido = (
             'also treat this card' in segmento_solto
             or 'you may have any number of this card' in segmento_solto
-            or re.fullmatch(r'(\[don!! x\d+\]\s*)+', segmento_solto or '')
+            or re.fullmatch(r'(\[don!!\s*x\d+\]\s*)+', segmento_solto or '')
         )
         if ('when_don_returned' in result
                 and re.search(r'when\s+(?:a|\d+\s+or more)\s+don!!', segmento_solto)):
@@ -9209,7 +9227,7 @@ def parse_card_effect(card_text, card_type):
                 # '[DON!! x1] All of your Characters gain +1 cost' antes de
                 # um [Your Turn] formal -- sem isto, o segmento solto nunca
                 # recebia don_requirement por ter um trigger formal depois).
-                don_solto_m = re.match(r'^\[don!! x(\d+)\]', segmento_solto, re.IGNORECASE)
+                don_solto_m = re.match(r'^\[don!!\s*x(\d+)\]', segmento_solto, re.IGNORECASE)
                 if don_solto_m:
                     solto_entry['don_requirement'] = int(don_solto_m.group(1))
                 if 'passive' in result:
@@ -9269,7 +9287,7 @@ def parse_card_effect(card_text, card_type):
                     pos_kw_entry['costs'] = pos_kw_costs
                 if '[once per turn]' in segmento_pos_kw:
                     pos_kw_entry['once_per_turn'] = True
-                don_pos_m = re.match(r'^\[don!! x(\d+)\]', segmento_pos_kw, re.IGNORECASE)
+                don_pos_m = re.match(r'^\[don!!\s*x(\d+)\]', segmento_pos_kw, re.IGNORECASE)
                 if don_pos_m:
                     pos_kw_entry['don_requirement'] = int(don_pos_m.group(1))
                 if 'passive' in result:
@@ -9343,7 +9361,7 @@ def parse_card_effect(card_text, card_type):
                 # 'gains +N power/cost'. Ex: OP08-093 X.Drake '[DON!! x1]
                 # This Character gains +2 cost' so deveria valer +2 cost
                 # enquanto a carta tem 1 DON!! anexado, nao permanentemente.
-                don_fb_m = re.match(r'^\[don!! x(\d+)\]', t_low.strip(), re.IGNORECASE)
+                don_fb_m = re.match(r'^\[don!!\s*x(\d+)\]', t_low.strip(), re.IGNORECASE)
                 if don_fb_m:
                     entry['don_requirement'] = int(don_fb_m.group(1))
                 result['passive'] = entry
@@ -9357,7 +9375,7 @@ def parse_card_effect(card_text, card_type):
             return 0
         # olha os ~60 chars antes da keyword por um [DON!! ×N] e 'gains'
         janela = t_low[max(0, idx-60):idx]
-        m = re.search(r'\[don!! x(\d+)\]', janela)
+        m = re.search(r'\[don!!\s*x(\d+)\]', janela)
         if m and ('gain' in janela or 'gains' in janela):
             return int(m.group(1))
         return 0

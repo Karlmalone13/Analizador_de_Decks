@@ -37,12 +37,24 @@ revisão manual; usuário pediu pra implementar todos.
   existentes precisaram apontar pro lugar certo (entry, não per-step).
   `diff_parser.py` PERDEU=0 MUDOU=152 (2 gramática nova + 150
   relocação). `smoke_fast.py`/`smoke_test.py` 100%.
-- [ ] Boa Hancock (OP14-041): segunda habilidade inteira (Amazon Lily/
-  Kuja Pirates K.O.'d → rouba Life do oponente) ausente do parseado.
+- [x] Boa Hancock (OP14-041): segunda habilidade (Amazon Lily/Kuja
+  Pirates 5000+ power K.O.'d → dano ao oponente via deal_damage, "the
+  owner's hand" = mão do PRÓPRIO oponente, não roubo) implementada.
+  `on_own_char_ko` generalizado pra aceitar lista de tipos (OR) +
+  `victim_power_gte`. **Bug de brinde**: tag `[DON!!x1]` sem espaço
+  quebrava don_requirement em ~16 regex do parser inteiro (só esta
+  carta usa essa grafia das 218 com a tag) — tolerância a espaço
+  aplicada globalmente. Escopo conhecido não corrigido: tag
+  "[Opponent's Turn]" na 1ª habilidade (draw ao jogar Character) ainda
+  não filtra por turno (dispara em qualquer turno) — exigiria propagar
+  `is_my_turn` por ~15 pontos que também afetam Sugar/Sanji/Bonney,
+  fora de escopo. `diff_parser.py` PERDEU=0 MUDOU=3.
+  `smoke_fast.py`/`smoke_test.py` 100%. `parser_snapshot.json`
+  re-gerado (recuperou re-snapshot que faltou no item anterior).
 - [ ] Koala (OP12-081): gatilho é um OU de 2 condições, só a primeira
   metade foi capturada.
 - [ ] `resolve_reaction`/redirect: ainda não retomado — fica por
-  último, depois desses 2.
+  último, depois deste 1.
 
 ## 🟢 IMPLEMENTADO (bloco 400): pente-fino texto-real vs efeito-parseado nos 17 líderes do pool de decks reais (29/07/2026)
 

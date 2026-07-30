@@ -38483,7 +38483,7 @@
     "sub_types": "Straw Hat Crew",
     "attribute": "",
     "effects": {
-      "opp_turn": {
+      "on_own_char_ko": {
         "steps": [
           {
             "action": "add_don",
@@ -38491,11 +38491,7 @@
             "rested": true
           }
         ],
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ]
+        "victim_type_filter": "straw hat crew"
       }
     }
   },
@@ -40961,17 +40957,18 @@
     "sub_types": "Straw Hat Crew Dressrosa",
     "attribute": "Ranged",
     "effects": {
-      "opp_turn": {
+      "on_own_char_ko": {
         "steps": [
           {
             "action": "draw",
             "count": 1
           }
         ],
+        "victim_type_filter": "dressrosa",
+        "once_per_turn": true,
         "conditions": {
           "hand_lte": 5
-        },
-        "once_per_turn": true
+        }
       },
       "passive": {
         "steps": [
@@ -55207,6 +55204,23 @@
     "sub_types": "Kuja Pirates The Seven Warlords of the Sea",
     "attribute": "Special",
     "effects": {
+      "on_own_char_ko": {
+        "steps": [
+          {
+            "action": "deal_damage",
+            "count": 1,
+            "up_to": true,
+            "target": "opponent"
+          }
+        ],
+        "victim_type_filter": [
+          "amazon lily",
+          "kuja pirates"
+        ],
+        "victim_power_gte": 5000,
+        "once_per_turn": true,
+        "don_requirement": 1
+      },
       "on_own_char_played": {
         "steps": [
           {

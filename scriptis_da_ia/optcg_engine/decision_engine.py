@@ -4588,10 +4588,13 @@ class EffectExecutor:
         `victim` (opcional): a carta K.O.'ada, usada pra checar
         `victim_type_filter` (ex: Buggy exige que a VITIMA seja do tipo
         "Impel Down" -- diferente de `on_opp_char_ko`, cujas 2 cartas
-        confirmadas ate agora nao tinham filtro de tipo na vitima).
+        confirmadas ate agora nao tinham filtro de tipo na vitima) e
+        `victim_power_gte` (achado 30/07, Boa Hancock OP14-041: "with
+        5000 base power or more" -- `victim.power` ja e o BASE power,
+        buffs vivem isolados em `power_buff`/`effective_power()`).
         Chamadores que nao tem a carta a mao (nenhum hoje) passam None --
-        nesse caso, cartas com `victim_type_filter` simplesmente nunca
-        disparam (conservador, nao dispara sem confirmar o filtro).
+        nesse caso, cartas com qualquer filtro de vitima simplesmente
+        nunca disparam (conservador, nao dispara sem confirmar o filtro).
 
         ESCOPO CONHECIDO (documentado, nao e bug): o texto real diz
         "removed from the field" (generico), mas este dispatcher so cobre
@@ -4612,11 +4615,15 @@ class EffectExecutor:
             if not entry:
                 continue
             victim_filter = entry.get('victim_type_filter')
-            if victim_filter:
+            victim_power_gte = entry.get('victim_power_gte')
+            if victim_filter or victim_power_gte:
                 if victim is None:
                     continue
-                from optcg_engine.rules_facade import card_matches_filter
-                if not card_matches_filter(victim, victim_filter):
+                if victim_filter:
+                    from optcg_engine.rules_facade import card_matches_filter
+                    if not card_matches_filter(victim, victim_filter):
+                        continue
+                if victim_power_gte and victim.power < victim_power_gte:
                     continue
             marker = (watcher.global_turn, 'on_own_char_ko')
             if (entry.get('once_per_turn')

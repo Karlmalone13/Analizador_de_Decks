@@ -2573,6 +2573,56 @@ def test_buggy_041_on_own_char_ko_com_filtro_de_tipo() -> None:
           len(me.hand) == 0)
 
 
+def test_boa_hancock_014_041_on_own_char_ko_com_filtro_de_tipo_e_power() -> None:
+    # Achado 30/07 (revisao de TODOS os lideres do jogo): Boa Hancock
+    # (OP14-041), "[DON!!x1] [Once Per Turn] When one of your {Amazon
+    # Lily} or {Kuja Pirates} type Characters with 5000 base power or
+    # more is K.O.'d, add up to 1 card from the top of your opponent's
+    # Life cards to the owner's hand" -- a habilidade INTEIRA estava
+    # ausente do JSON parseado (2 lacunas: gramatica diferente da familia
+    # on_own_char_ko ja existente -- "when one of your" em vez de "this
+    # effect can be activated when your", LISTA de 2 tipos via "or", e um
+    # filtro extra de power minimo na vitima -- e a tag "[DON!!x1]" SEM
+    # espaco antes do "x1", que nenhuma das ~217 outras cartas com essa
+    # tag usa, quebrando don_requirement em silencio). "Add up to 1 card
+    # from the top of your opponent's Life cards to the owner's hand" e
+    # a MESMA regra de dano direto de sempre (a vida sempre pertence ao
+    # proprio dono -- "the owner's hand" = a mao do OPONENTE, nao um
+    # roubo de carta), reaproveitando deal_damage (achado 15/07, familia
+    # OP16-116).
+    am = get_card_effects("OP14-041").get("on_own_char_ko", {})
+    check("OP14-041 classificado como on_own_char_ko com 2 tipos (OR) + power_gte=5000",
+          am.get("victim_type_filter") == ["amazon lily", "kuja pirates"]
+          and am.get("victim_power_gte") == 5000
+          and am.get("once_per_turn") is True
+          and am.get("don_requirement") == 1
+          and am.get("steps", [{}])[0].get("action") == "deal_damage")
+
+    hancock = real_card("OP14-041")
+    hancock.don_attached = 1  # satisfaz [DON!!x1]
+    vida1 = mk("XBHL1", "Vida1", cost=1)
+    vida2 = mk("XBHL2", "Vida2", cost=1)
+    me = GameState(leader=hancock, turn=3, life=[vida1, vida2])
+    opp = GameState(leader=mk("XBHOPP", "Opp", card_type="LEADER"), turn=3,
+                     life=[mk("XBHOL1", "OppVida", cost=1)])
+    ee = EffectExecutor(me, opp)
+
+    fraca = mk("XBHF", "Kuja Fraca", sub_types="Kuja Pirates", power=4000)
+    ee._dispatch_own_char_ko(fraca)
+    check("Boa Hancock NAO dispara: vitima do tipo certo mas power < 5000",
+          len(opp.life) == 1)
+
+    errado_tipo = mk("XBHT", "Amazon Cara", sub_types="Whitebeard Pirates", power=6000)
+    ee._dispatch_own_char_ko(errado_tipo)
+    check("Boa Hancock NAO dispara: vitima com power>=5000 mas tipo errado",
+          len(opp.life) == 1)
+
+    forte = mk("XBHS", "Amazon Lily Forte", sub_types="Amazon Lily", power=5000)
+    ee._dispatch_own_char_ko(forte)
+    check("Boa Hancock DISPARA: vitima do tipo certo (Amazon Lily) E power>=5000 (dano ao oponente)",
+          len(opp.life) == 0)
+
+
 def test_luffy_st08_001_on_any_char_ko_ambos_os_lados() -> None:
     # Achado 29/07 (revisao de TODOS os lideres do jogo): Luffy
     # (ST08-001), "[Your Turn] When a Character is K.O.'d, give up to 1
@@ -9198,6 +9248,7 @@ def main() -> int:
     test_nami_041_life_removed_recently_aproxima_gatilho_reativo()
     test_shanks_001_on_opp_attack_prosa_reconhecida()
     test_buggy_041_on_own_char_ko_com_filtro_de_tipo()
+    test_boa_hancock_014_041_on_own_char_ko_com_filtro_de_tipo_e_power()
     test_luffy_st08_001_on_any_char_ko_ambos_os_lados()
     test_trafalgar_law_001_bounce_condicao_e_filtro_de_cor()
     test_kid_leader_set_active_respects_cost_range()

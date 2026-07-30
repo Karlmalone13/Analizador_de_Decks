@@ -1,6 +1,6 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-30 (401, EM ANDAMENTO) - Claude (sessao remota web) - revisao de TODOS os lideres do jogo (135, nao so os 17 do pool real): 4/6 achados corrigidos (Shanks, Buggy, Luffy ST08-001, Trafalgar Law)
+## 2026-07-30 (401, EM ANDAMENTO) - Claude (sessao remota web) - revisao de TODOS os lideres do jogo (135, nao so os 17 do pool real): 5/6 achados corrigidos (Shanks, Buggy, Luffy ST08-001, Trafalgar Law, Boa Hancock)
 
 Usuário pediu pra revisar TODOS os líderes do jogo (135 códigos base
 únicos em `cards_rows.csv`, não só os 17 do pool de decks reais do
@@ -10,9 +10,9 @@ capturada, escala "for every/each" sem step correspondente, devolver-
 personagem-à-mão sem step de bounce, 2+ tags formais distintas com
 menos blocos parseados) e revisão manual dos casos suspeitos. 6
 achados confirmados; usuário pediu pra implementar todos. Progresso
-desta rodada: **4 implementados** (família de gatilho reativo K.O./
-ataque em prosa + Trafalgar Law), **2 ainda pendentes** (Boa Hancock,
-Koala — conteúdo de efeito incompleto, não classificação de gatilho).
+desta rodada: **5 implementados** (família de gatilho reativo K.O./
+ataque em prosa + Trafalgar Law + Boa Hancock), **1 ainda pendente**
+(Koala — conteúdo de efeito incompleto, não classificação de gatilho).
 
 **Contexto importante**: os 3 primeiros achados tocam a MESMA classe de
 bug do "mapeamento de combos" original (HANDOFF blocos 351-354, 24/07)
@@ -94,17 +94,58 @@ Registro em
 relocação estrutural da mesma condição, sem mudar valores).
 `smoke_fast.py`/`smoke_test.py` 100%.
 
-**Ainda pendentes desta revisão** (conteúdo de efeito incompleto, não
+**Achado 5 — Boa Hancock (OP14-041), CORRIGIDO**: a segunda habilidade
+inteira ("[DON!!x1] [Once Per Turn] When one of your {Amazon Lily} or
+{Kuja Pirates} type Characters with 5000 base power or more is K.O.'d,
+add up to 1 card from the top of your opponent's Life cards to the
+owner's hand") estava completamente ausente do JSON parseado — 2 causas
+raiz. (1) Gramática nova: `on_own_char_ko` (mecanismo criado no Achado 2
+acima, pro Buggy) só aceitava "this effect can be activated when your
+{1 Tipo}... is removed from the field"; Boa Hancock usa "when one of
+your" (sem tag formal), **2 tipos via "or"**, um **filtro extra de
+power mínimo na vítima** ("with N base power or more") e "is K.O.'d" em
+vez de "is removed from the field". Generalizado (não hardcoded):
+`victim_type_filter` agora aceita lista (OR) quando há 2+ tipos, novo
+campo `victim_power_gte`; motor (`_dispatch_own_char_ko`) checa os dois
+contra a vítima (`victim.power` já é BASE power — buffs vivem isolados
+em `power_buff`). (2) **Bug sistêmico extra**: a tag `[DON!!x1]` (SEM
+espaço antes do "x1") não batia com NENHUM dos ~16 regex
+`\[don!! x(\d+)\]` (espaço obrigatório) espalhados pelo parser inteiro
+— confirmado que das 218 cartas com essa tag no jogo, só Boa Hancock
+usa essa grafia sem espaço, mas o fix (tolerar `\s*`) foi aplicado nas
+16 ocorrências, já que é a mesma fragilidade em qualquer uma delas.
+"Add up to 1 card from the top of your opponent's Life cards to the
+owner's hand" reaproveita `deal_damage` (a vida sempre pertence ao
+próprio dono — não é um "roubo", é a mesma regra de dano direto de
+sempre, achado 15/07 família OP16-116).
+
+Registro em
+`scriptis_da_ia/parser_audits/2026-07-30_boa_hancock_on_own_char_ko_lista_de_tipos_power_e_tag_don_sem_espaco.json`.
+`diff_parser.py` PERDEU=0 MUDOU=3 (só OP14-041 ganhou conteúdo; a
+tolerância de espaço no DON não afetou nenhuma das outras 217 cartas
+com a tag, confirmando que só ampliou o match sem regressão).
+`smoke_fast.py`/`smoke_test.py` 100% (1 novo teste: filtro de tipo E
+power checados independentemente, 3 cenários). `parser_snapshot.json`
+re-gerado (também recuperou o re-snapshot que faltou depois do Achado
+4/Trafalgar Law).
+
+**Escopo NÃO investigado (documentado, não é regressão)**: a tag
+"[Opponent's Turn]" na PRIMEIRA habilidade de Boa Hancock ("draw 1 card
+quando você joga um Character") continua sendo descartada — a
+habilidade dispara em qualquer turno, não só no turno do oponente.
+Corrigir exigiria propagar `is_my_turn` por ~15 pontos de criação de
+`EffectExecutor` que chamam `_dispatch_char_played` (usado também por
+Sugar/Sanji/Bonney) — avaliado fora de escopo desta rodada (risco maior
+que o benefício de 1 carta com gating parcial).
+
+**Ainda pendente desta revisão** (conteúdo de efeito incompleto, não
 classificação de gatilho — usuário já pediu pra implementar, só não
 foi feito ainda nesta rodada):
-- **Boa Hancock (OP14-041)**: a segunda habilidade inteira (Amazon
-  Lily/Kuja Pirates 5000+ power K.O.'d → rouba carta da Life do
-  oponente) está completamente ausente do JSON parseado.
 - **Koala (OP12-081)**: o gatilho é um OU entre duas condições ("oponente
   joga personagem custo≥8" OU "oponente joga personagem via efeito de
   outro personagem") — só a primeira metade foi capturada.
 
-`resolve_reaction`/redirect segue pendente, depois destes 2.
+`resolve_reaction`/redirect segue pendente, depois deste último.
 
 ## 2026-07-29 (400) - Claude (sessao remota web) - pente-fino texto-real vs efeito-parseado nos 17 lideres do pool de decks reais: Enel, Luffy(001) e Nami corrigidos
 
