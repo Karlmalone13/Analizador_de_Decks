@@ -58,26 +58,43 @@ estar comprando carta em turnos onde nenhuma Life foi removida
 checar se existe algum mecanismo equivalente (`on_damage_to_life` ou
 similar) que já cubra isso via outro caminho antes de tratar como bug.
 
-**Achado 3 — Luffy (OP13-001), EM INVESTIGAÇÃO (não corrigido ainda)**:
-texto do `on_opp_attack`: "If you have 5 or less active DON!! cards,
-you may rest any number of your DON!! cards. For every DON!! card
-rested this way, this Leader or up to 1 of your Straw Hat Crew type
-Characters gains +2000 power during this battle." Parseado como um
-buff FIXO de 2000 (`count: 1`) sem a condição "5 ou menos DON ativo" e
-sem a escala VARIÁVEL "for every DON rested this way" (parece
-achatado, não usa o padrão `buff_power_per_count` que outras cartas
-desta sessão já usam pra esse tipo de escala, ex: Lucy OP15-002).
-Também não está claro se a escolha de alvo (Líder OU Straw Hat Crew
-Character) está coberta. Maior suspeita de bug real dos 3, mas ainda
-não confirmado a fundo nem corrigido.
+**Achado 3 — Luffy (OP13-001), CORRIGIDO**: texto do `on_opp_attack`:
+"If you have 5 or less active DON!! cards, you may rest any number of
+your DON!! cards. For every DON!! card rested this way, this Leader or
+up to 1 of your Straw Hat Crew type Characters gains +2000 power during
+this battle." 3 lacunas reais: (1) condição "5 ou menos DON ativo"
+ausente; (2) custo "rest ANY NUMBER of DON" (quantidade variável) não
+existia como mecanismo; (3) o buff virava FIXO (+2000, sem escalar) e
+sem a opção de alvo "este Líder" (só personagem filtrado).
 
-**`resolve_reaction`/redirect**: ainda não retomado nesta rodada --
-prioridade foi o pente-fino pedido. Fica pendente pro próximo passo,
-junto com Nami e Luffy(001).
+Usuário pediu pra implementar. Fix genérico, reaproveitando o padrão já
+estabelecido por `trash_any_from_hand`/`bounce_any_own_character`: (1)
+nova condição `don_lte` (espelha `don_gte` já existente); (2) novo
+custo `rest_any_don` -- resta TODO o DON ativo (greedy, mesma
+aproximação já aceita pras 2 famílias irmãs: efeito reativo em combate,
+sem valor em manter DON parado no turno do oponente); (3) novo `source`
+`rested_don_this_effect` em `buff_power_per_count`, e o `target`
+`leader_or_character` ganhou suporte a `filter_type` opcional (filtra
+só o lado Character, o Líder sempre elegível). Novo padrão em
+`parse_block` reconhece a ordem invertida "for every X, [alvo] gains"
+(distinta da ordem já coberta "gains ... for every X"). Auditoria
+global: só Luffy(001) tem os 3 padrões (1 carta cada). Registro em
+`scriptis_da_ia/parser_audits/2026-07-29_luffy_001_rest_any_don_don_lte.json`.
+`diff_parser.py` PERDEU=0 MUDOU=1. Novo teste permanente
+(`test_luffy_001_rest_any_don_escala_buff_e_condicao_don_lte`, inclui
+execução real condição falha vs passa, e prova que o filtro de tipo
+exclui um distrator de poder MAIOR que não é Straw Hat Crew).
+`smoke_fast.py`/`smoke_test.py` 100%.
 
-Commit intermediário: achado 1 (Enel) já commitado e validado; achados
-2 e 3 (Nami, Luffy 001) e a investigação de resolve_reaction seguem sem
-mudança de código até confirmação mais profunda.
+**`resolve_reaction`/redirect**: ainda não retomado -- usuário pediu
+pra revisar TODOS os líderes do jogo (não só os 17 do pool de decks
+reais) antes de voltar pra isso.
+
+Commit: achados 1 (Enel) e 3 (Luffy) já commitados e validados. Achado
+2 (Nami) ainda pendente -- exige plumbing novo de engine (trigger
+reativo a remoção de Life), maior que os outros 2. Próximo passo:
+Nami, depois revisão de TODOS os líderes do jogo, depois
+`resolve_reaction`.
 
 ## 2026-07-29 (399) - Claude (sessao remota web) - investigando activate:main e resolve_reaction por lider: Jinbe-B (score) e Mihawk-G (parser) corrigidos
 

@@ -20,13 +20,25 @@ habilidade.
   textual, não pela ordem em que o código checa os regexes). Auditoria
   global: só Enel tinha os 2 padrões. `diff_parser.py` PERDEU=0
   MUDOU=1. Novo teste permanente. `smoke_fast.py`/`smoke_test.py` 100%.
+- [x] Luffy (OP13-001): condição "5 ou menos DON ativo" ausente
+  (`don_lte`, novo), custo "rest ANY NUMBER of DON" não existia
+  (`rest_any_don`, novo), buff virava FIXO em vez de escalar (novo
+  `source=rested_don_this_effect` em `buff_power_per_count`, `target`
+  `leader_or_character` ganhou `filter_type`). Auditoria global: só
+  Luffy(001) tem os 3 padrões. `diff_parser.py` PERDEU=0 MUDOU=1. Novo
+  teste permanente. `smoke_fast.py`/`smoke_test.py` 100%.
 - [ ] Nami (OP11-041): suspeita de trigger reativo ("quando uma carta é
   removida da Life") sendo tratado como check incondicional todo turno
-  — ainda não confirmado a fundo.
-- [ ] Luffy (OP13-001): suspeita de escala variável "for every DON
-  rested this way" achatada num buff fixo, e condição "5 ou menos DON
-  ativo" ausente — maior suspeita dos 3, ainda não confirmado.
-- [ ] `resolve_reaction`/redirect: ainda não retomado nesta rodada.
+  — confirmado real (mais 2 cartas com o mesmo padrão: OP08-105,
+  OP12-099), mas exige plumbing NOVO de engine (flag "vida removida
+  neste turno", `your_turn` hoje só dispara 1x no início do turno via
+  `apply_your_turn_buffs`, não é orientado a evento) — maior que os
+  outros 2, ainda não implementado.
+- [ ] Revisar TODOS os líderes do jogo (não só os 17 do pool de decks
+  reais) — pedido novo do usuário, após Nami. Escopo ainda não
+  levantado (quantos líderes existem no total em `cards_rows.csv`).
+- [ ] `resolve_reaction`/redirect: ainda não retomado — fica por último,
+  depois da revisão de todos os líderes.
 
 ## 🟡 EM ANDAMENTO (fechado no bloco 399): investigando activate:main e resolve_reaction por líder (29/07/2026, bloco 399)
 

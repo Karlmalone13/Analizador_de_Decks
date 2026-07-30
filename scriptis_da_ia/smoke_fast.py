@@ -2421,6 +2421,61 @@ def test_enel_don_ramp_ordem_textual_e_turn_gte() -> None:
           me_t2.don_rested == 0)
 
 
+def test_luffy_001_rest_any_don_escala_buff_e_condicao_don_lte() -> None:
+    # Achado 29/07 (pente-fino nos 17 lideres do pool de decks reais):
+    # Luffy (OP13-001), texto "[DON!! x1] [On Your Opponent's Attack] If
+    # you have 5 or less active DON!! cards, you may rest any number of
+    # your DON!! cards. For every DON!! card rested this way, this
+    # Leader or up to 1 of your 'Straw Hat Crew' type Characters gains
+    # +2000 power during this battle." -- 3 bugs reais: (1) condicao "5
+    # ou menos DON ativo" ausente (habilidade sempre disponivel); (2)
+    # custo "rest ANY NUMBER of DON" (quantidade variavel) nao existia
+    # como mecanismo -- nenhum regex reconhecia; (3) o buff virava FIXO
+    # (+2000, count=1) em vez de escalar pelo numero de DON restado, e o
+    # alvo "this Leader OR personagem filtrado" nao existia (so
+    # personagem filtrado, sem opcao de lider).
+    am = get_card_effects("OP13-001").get("on_opp_attack", {})
+    check("OP13-001 parseia don_lte=5 (condicao '5 ou menos DON ativo')",
+          am.get("conditions", {}).get("don_lte") == 5)
+    check("OP13-001 parseia custo rest_any_don (quantidade variavel)",
+          any(c.get("type") == "rest_any_don" for c in am.get("costs", [])))
+    step = am.get("steps", [{}])[0]
+    check("OP13-001 parseia buff_power_per_count com source=rested_don_this_effect",
+          step.get("action") == "buff_power_per_count"
+          and step.get("source") == "rested_don_this_effect"
+          and step.get("amount_per") == 2000
+          and step.get("target") == "leader_or_character"
+          and step.get("filter_type") == "straw hat crew")
+
+    # Execucao real: condicao falha (DON ativo > 5) -- nao ativa.
+    luffy1 = real_card("OP13-001")
+    luffy1.don_attached = 1
+    me1 = GameState(leader=luffy1, turn=3, don_available=6, don_rested=0)
+    opp1 = GameState(leader=mk("XL1OPP", "Opp", power=8000, card_type="LEADER"), turn=3)
+    log1 = EffectExecutor(me1, opp1).execute(luffy1, "on_opp_attack")
+    check("Execucao real: DON ativo=6 (> don_lte=5) -- condicao falha, efeito NAO dispara",
+          log1 == [] and me1.don_available == 6 and luffy1.power_buff == 0)
+
+    # Execucao real: condicao passa (DON ativo=3 <= 5). Restou TODO o DON
+    # ativo (greedy), buff escala 3*2000=6000. Alvo: entre o Lider
+    # (5000 de poder) e o Straw Hat Crew fraco (4000), o Lider vence --
+    # o distrator de poder MAIOR (9000) fica de FORA por nao ser Straw
+    # Hat Crew, provando que o filtro de tipo realmente restringe so o
+    # lado Character (o Lider e sempre elegivel, sem filtro).
+    luffy2 = real_card("OP13-001")
+    luffy2.don_attached = 1
+    distrator = mk("XL2D", "Distrator forte (nao Straw Hat)", power=9000, sub_types="")
+    strawhat_fraco = mk("XL2S", "Strawhat fraco", power=4000, sub_types="Straw Hat Crew")
+    me2 = GameState(leader=luffy2, turn=3, don_available=3, don_rested=0)
+    me2.field_chars = [distrator, strawhat_fraco]
+    opp2 = GameState(leader=mk("XL2OPP", "Opp", power=8000, card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(luffy2, "on_opp_attack")
+    check("Execucao real: DON ativo=3 (<= 5) -- resta TODO o DON ativo (greedy)",
+          me2.don_available == 0 and me2.don_rested == 3)
+    check("Execucao real: buff escala 3 DON restado * 2000 = 6000, vai pro Lider (nao pro distrator fora do filtro)",
+          luffy2.power_buff == 6000 and distrator.power_buff == 0 and strawhat_fraco.power_buff == 0)
+
+
 def test_kid_leader_set_active_respects_cost_range() -> None:
     # Achado 14/07 via audit_leader_and_goal.py: o end_of_turn do lider do
     # Kid (OP10-099, "Supernovas type Characters with a cost of 3 to 8")
@@ -8957,6 +9012,7 @@ def main() -> int:
     test_jinbe_grants_play_turn_character_attack()
     test_krieg_rest_opp_requires_2_don_attached()
     test_enel_don_ramp_ordem_textual_e_turn_gte()
+    test_luffy_001_rest_any_don_escala_buff_e_condicao_don_lte()
     test_kid_leader_set_active_respects_cost_range()
     test_lock_opp_character_refresh_variantes_de_fraseado()
     test_rest_opp_alvo_misto_character_ou_don()

@@ -2302,6 +2302,9 @@ class EffectExecutor:
         # (achado 19/07, P-059): atributo PROPRIO, nao self._last_moved_
         # count, pelo mesmo motivo (reset acontece antes do loop de steps).
         self._last_cost_bounce_any_count = 0
+        # Mesma armadilha, agora pro custo rest_any_don (achado 29/07,
+        # OP13-001 Luffy): atributo PROPRIO, mesmo motivo.
+        self._last_cost_rest_any_don_count = 0
         if not self._pay_costs(ef_data.get('costs', []), card):
             return []
 
@@ -3325,6 +3328,8 @@ class EffectExecutor:
             return False
         if 'don_gte' in conds and me.don_available < conds['don_gte']:
             return False
+        if 'don_lte' in conds and me.don_available > conds['don_lte']:
+            return False
         # "if your Leader is active/rested" -- condicao POR-STEP (nao de
         # bloco inteiro), achada 19/07 em OP04-017 (2o de 2 debuffs
         # sequenciais no mesmo Counter, so aplica se o Leader estiver
@@ -3920,6 +3925,24 @@ class EffectExecutor:
                 self._last_cost_bounce_any_count = len(bounced)
                 if bounced:
                     self._cost_logs.append(f'custo: devolveu do campo: {", ".join(bounced)}')
+            elif ctype == 'rest_any_don':
+                # "you may rest ANY NUMBER of your DON!! cards" -- quantidade
+                # VARIAVEL (0 ate o total ativo), companheiro de
+                # buff_power_per_count/source=rested_don_this_effect. Achado
+                # 29/07, OP13-001 Luffy, unica carta no banco. Greedy (resta
+                # TODO o DON ativo): condicao do bloco ja exige "5 ou menos
+                # DON ativo" (don_lte) pra sequer chegar aqui, e o efeito e
+                # reativo em [On Your Opponent's Attack] -- nao ha valor em
+                # manter DON ativo parado durante o turno do OPONENTE (nao e
+                # usado pra bloquear/counterar), entao restar tudo pro buff
+                # de combate e estritamente melhor, mesma aproximacao ja
+                # aceita pra trash_any_from_hand/bounce_any_own_character.
+                rested_count = self.me.don_available
+                self.me.don_rested += rested_count
+                self.me.don_available = 0
+                self._last_cost_rest_any_don_count = rested_count
+                if rested_count:
+                    self._cost_logs.append(f'custo: restou {rested_count} DON!! ativo')
             elif ctype == 'trash_typed_hand_or_named_hand_field':
                 from optcg_engine.rules_facade import eligible_cards
 
@@ -6437,6 +6460,13 @@ class EffectExecutor:
                 n = getattr(self, '_last_cost_trash_any_count', 0)
             elif source == 'bounced_own_this_effect':
                 n = getattr(self, '_last_cost_bounce_any_count', 0)
+            elif source == 'rested_don_this_effect':
+                # Achado 29/07, OP13-001 Luffy: "for every DON!! card rested
+                # this way" -- contagem do custo VARIAVEL rest_any_don pago
+                # NESTE efeito, mesma familia de trashed_hand_this_effect/
+                # bounced_own_this_effect (nao o total de DON rested no
+                # banco -- isso ja e o source='rested_don').
+                n = getattr(self, '_last_cost_rest_any_don_count', 0)
             elif source == 'life_top_revealed_cost':
                 # "reveal up to 1 card from the top of your Life cards.
                 # This Character gains +N power per M cost on the
@@ -6458,8 +6488,19 @@ class EffectExecutor:
             elif target == 'leader':
                 me.leader.power_buff += amount
             elif target == 'leader_or_character':
-                best = max(me.field_chars + [me.leader],
-                           key=lambda c: c.effective_power(True)) if me.field_chars else me.leader
+                # filter_type (achado 29/07, OP13-001 Luffy: "this Leader or
+                # up to 1 of your [Tipo] type Characters") filtra so o lado
+                # CHARACTER -- o Leader e sempre elegivel, sem filtro de
+                # tipo (o texto nunca restringe o Leader por tipo aqui).
+                filter_type = step.get('filter_type', '')
+                if filter_type:
+                    from optcg_engine.rules_facade import card_matches_filter
+                    candidatos_char = [c for c in me.field_chars
+                                       if card_matches_filter(c, filter_type)]
+                else:
+                    candidatos_char = list(me.field_chars)
+                pool = candidatos_char + [me.leader]
+                best = max(pool, key=lambda c: c.effective_power(True))
                 best.power_buff += amount
             elif target in ('all_allies', 'all_allies_and_leader'):
                 for c in me.field_chars:

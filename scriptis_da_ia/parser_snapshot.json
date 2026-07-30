@@ -31991,15 +31991,24 @@
  },
  "OP13-001": {
   "on_opp_attack": {
+   "conditions": {
+    "don_lte": 5
+   },
+   "costs": [
+    {
+     "type": "rest_any_don"
+    }
+   ],
    "don_requirement": 1,
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 2000,
-     "count": 1,
+     "action": "buff_power_per_count",
+     "amount_per": 2000,
+     "count_per": 1,
      "duration": "battle_only",
      "filter_type": "straw hat crew",
-     "target": "select_filtered"
+     "source": "rested_don_this_effect",
+     "target": "leader_or_character"
     }
    ]
   }

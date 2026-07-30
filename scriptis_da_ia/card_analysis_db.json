@@ -74135,10 +74135,10 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "buff_power",
+    "action": "buff_power_per_count",
     "trigger": "on_opp_attack",
     "don_requirement": 1,
-    "target": "select_filtered"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -74153,7 +74153,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,

@@ -1,0 +1,22 @@
+{
+  "trigger_card": "OP13-001",
+  "problem": "Pente-fino nos 17 lideres do pool de decks reais (pedido do usuario, continuacao do bloco 400). Luffy (OP13-001, 5 decks no pool) tinha 3 lacunas no proprio on_opp_attack: '[DON!! x1] [On Your Opponent's Attack] If you have 5 or less active DON!! cards, you may rest any number of your DON!! cards. For every DON!! card rested this way, this Leader or up to 1 of your \"Straw Hat Crew\" type Characters gains +2000 power during this battle.' (1) A condicao 'if you have 5 or less active DON!! cards' nao era parseada -- a habilidade ficava sempre disponivel, mesmo com DON de sobra. (2) O custo 'rest ANY NUMBER of your DON!! cards' (quantidade VARIAVEL, 0..N) nao existia como mecanismo no parser -- nenhum regex reconhecia esse padrao. (3) O beneficio 'For every DON!! card rested this way, [alvo] gains +2000 power' virava um buff FIXO (+2000, count=1, sem escalar pela quantidade de DON restado) porque nenhum padrao reconhecia a ORDEM INVERTIDA da clausula ('for every X, [alvo] gains' em vez de '[alvo] gains ... for every X', que e a ordem coberta pelos padroes dinamicos existentes). O alvo tambem estava incompleto: so 'personagem filtrado por tipo' (select_filtered), sem a opcao 'este Lider'.",
+  "grammar_family": "(1) 'if you have N or less active DON!! cards' -- condicao oposta a don_gte (ja existente), nunca implementada. (2) 'you may rest any number of your DON!! cards' -- custo de contagem VARIAVEL analogo a trash_any_from_hand/bounce_any_own_character (ja existentes), mas pra DON em vez de mao/campo. (3) 'For every DON!! card rested this way, [alvo] gains +N power during this battle' -- mesma familia dos combos custo-variavel+buff-escalado ja tratados em parse_block (any_trash_buff_m/any_bounce_buff_m), mas com a ORDEM DAS CLAUSULAS invertida (\"for every X, gains\" em vez de \"gains ... for every X\") e um alvo composto ('this Leader OR personagem filtrado por tipo', nao coberto por nenhum target existente de buff_power_per_count).",
+  "queries": [
+    "regex 'if you have (\\d+) or less active don!! cards?' no cards_rows.csv inteiro: so OP13-001 (1 carta).",
+    "regex 'you may rest any number of your don!{0,2}\\s*cards?' no cards_rows.csv inteiro: so OP13-001 (1 carta).",
+    "regex 'for every don!{0,2}\\s*cards? rested this way' no cards_rows.csv inteiro: so OP13-001 (1 carta)."
+  ],
+  "cards_found": [
+    "OP13-001"
+  ],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "3 mecanismos novos GENERICOS (nao hardcoded ao Luffy), reaproveitando o padrao ja estabelecido pelas familias trash_any_from_hand/bounce_any_own_character: (1) condicao don_lte em parse_conditions (espelha don_gte), habilitada no engine via _check_conditions (me.don_available <= don_lte). (2) custo rest_any_don em parse_costs -- resta TODO o DON ativo (greedy, mesma aproximacao ja aceita pras 2 familias irmas: efeito reativo em combate, sem valor em manter DON ativo parado durante o turno do oponente), rastreado via _last_cost_rest_any_don_count (reset antes do loop de steps, mesmo padrao de _last_cost_trash_any_count/_last_cost_bounce_any_count). (3) novo source='rested_don_this_effect' em buff_power_per_count (le esse contador), e o target 'leader_or_character' ganhou suporte a filter_type opcional (filtra so o lado Character -- o Lider e sempre elegivel, sem filtro de tipo). Novo padrao em parse_block reconhece a ordem invertida 'for every DON rested this way, [alvo] gains +N power' e emite o step corretamente com o target/filtro certos.",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=1 (so OP13-001)",
+    "gerar_dbs.py + snapshot_parser.py rodados sem erro",
+    "smoke_fast.py: SMOKE FAST OK (novo teste test_luffy_001_rest_any_don_escala_buff_e_condicao_don_lte, inclui execucao real condicao falha vs passa, e prova que o filtro de tipo exclui um distrator de poder MAIOR que nao e Straw Hat Crew)",
+    "smoke_test.py: TODOS OS TESTES PASSARAM"
+  ],
+  "notes": "Segundo dos 2 achados que o usuario pediu pra implementar nesta rodada (o primeiro foi Enel/OP15-058, bloco 400). Nami (OP11-041) permanece como achado 2 do mesmo pente-fino, ainda nao corrigido -- exige plumbing novo de engine (trigger reativo a remocao de Life, nao so parser), registrado separadamente em HANDOFF.md/TODO.md. Usuario tambem pediu, apos esses 2 fixes, revisar TODOS os lideres do jogo (nao so os 17 do pool de decks reais)."
+}

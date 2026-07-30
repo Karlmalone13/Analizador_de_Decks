@@ -195,6 +195,14 @@ def parse_conditions(text):
         m = re.search(r'if you have (\d+) or more active don!! cards?', t)
         if m: conds['don_gte'] = int(m.group(1))
 
+    # "if you have N or less active DON!! cards" -- oposto de don_gte
+    # (DON ativo/disponivel = me.don_available). Achado 29/07, OP13-001
+    # Luffy, unica carta no banco com essa forma exata: condicao inteira
+    # ausente, a habilidade (rest DON pra buff escalado) ficava sempre
+    # disponivel, mesmo com DON de sobra.
+    m = re.search(r'if you have (\d+) or less active don!! cards?', t)
+    if m: conds['don_lte'] = int(m.group(1))
+
     # "if you have activated/played an Event with a base cost of N or
     # more during this turn" -- rastreamento de EVENTO ativado NESTE
     # turno especifico (distinto de events_in_trash_gte, que so conta
@@ -992,6 +1000,13 @@ def parse_costs(text):
         elif desc == 'event or stage':
             cost_any['card_types'] = ['EVENT', 'STAGE']
         costs.append(cost_any)
+
+    # "you may rest any number of your DON!! cards" -- custo de contagem
+    # VARIAVEL (0..N DON ativo), companheiro do step buff_power_per_count/
+    # source=rested_don_this_effect. Achado 29/07, OP13-001 Luffy, unica
+    # carta no banco com essa forma exata.
+    if re.search(r'you may rest any number of your don!{0,2}\s*cards?', t):
+        costs.append({'type': 'rest_any_don'})
 
     # "you may return any number of Characters on your field to the
     # owner's hand" -- custo de contagem VARIAVEL (0..N proprios
@@ -6597,6 +6612,41 @@ def parse_block(block_text, trigger_name):
         return [{'action': 'buff_power_per_count',
                 'amount_per': int(any_bounce_buff_m.group(2)), 'count_per': 1,
                 'source': 'bounced_own_this_effect', 'target': 'leader_or_character',
+                'duration': 'battle_only'}]
+
+    # "you may rest any number of your DON!! cards. For every DON!! card
+    # rested this way, [target] gains +N power during this battle" --
+    # mesma familia dos 2 combos acima (custo variavel + buff escalado
+    # por contagem), mas com a ORDEM DAS CLAUSULAS invertida ("for every
+    # X, gains" em vez de "gains ... for every X") e o alvo pode ser
+    # "this Leader or up to 1 of your [Tipo] type Characters" (filtro de
+    # tipo SO no lado Character -- o Leader sempre elegivel, sem filtro).
+    # Achado 29/07, OP13-001 Luffy, unica carta no banco com essa forma
+    # exata: nenhum regex reconhecia "rest any number of DON" como custo
+    # nem a escala "for every DON rested this way" -- o buff virava fixo
+    # (+2000, sem escalar).
+    any_rest_don_buff_m = re.search(
+        r'you may rest any number of your don!{0,2}\s*cards?\.\s*'
+        r'for every don!{0,2}\s*cards? rested this way,\s*'
+        r'(this leader or up to \d+ of your (?:\[([^\]]+)\]|"([^"]+)"|\{([^}]+)\}) type characters?'
+        r'|this leader|this character) '
+        r'gains? \+(\d+) power during this battle',
+        block_text.lower())
+    if any_rest_don_buff_m:
+        alvo_txt = any_rest_don_buff_m.group(1)
+        filter_type = (any_rest_don_buff_m.group(2) or any_rest_don_buff_m.group(3)
+                       or any_rest_don_buff_m.group(4))
+        amount = int(any_rest_don_buff_m.group(5))
+        if alvo_txt.startswith('this leader or'):
+            step = {'action': 'buff_power_per_count', 'amount_per': amount, 'count_per': 1,
+                    'source': 'rested_don_this_effect', 'target': 'leader_or_character',
+                    'duration': 'battle_only'}
+            if filter_type:
+                step['filter_type'] = filter_type.strip()
+            return [step]
+        target_rd = 'leader' if alvo_txt == 'this leader' else 'self'
+        return [{'action': 'buff_power_per_count', 'amount_per': amount, 'count_per': 1,
+                'source': 'rested_don_this_effect', 'target': target_rd,
                 'duration': 'battle_only'}]
 
     # "Your opponent may trash N card(s) from the top of their Life

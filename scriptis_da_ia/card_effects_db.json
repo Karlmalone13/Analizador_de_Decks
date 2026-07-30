@@ -50494,12 +50494,21 @@
       "on_opp_attack": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 2000,
-            "target": "select_filtered",
+            "action": "buff_power_per_count",
+            "amount_per": 2000,
+            "count_per": 1,
+            "source": "rested_don_this_effect",
+            "target": "leader_or_character",
             "duration": "battle_only",
-            "count": 1,
             "filter_type": "straw hat crew"
+          }
+        ],
+        "conditions": {
+          "don_lte": 5
+        },
+        "costs": [
+          {
+            "type": "rest_any_don"
           }
         ],
         "don_requirement": 1
