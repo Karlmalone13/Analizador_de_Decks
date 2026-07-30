@@ -2,6 +2,33 @@
 
 **Última atualização:** 30 de julho de 2026
 
+## 🟢 IMPLEMENTADO: IA_Compendium virou referência OBRIGATÓRIA (30/07/2026, bloco 402)
+
+Usuário pediu explicitamente pra tornar `IA_Compendium/` referência
+obrigatória, pra garantir que o bot "sabe o que cada líder faz".
+
+- [x] Extraído/mapeado `ONE_PIECE_AI_COMPENDIUM_Volume_1.docx`/`.pdf`
+  pra `IA_Compendium/RESUMO_ESTRATEGICO.md` (git-diffável/grepável).
+  Catálogo de 60 decks (Seção 8) mapeado pra códigos reais de carta
+  (53/60 únicos, 7 com candidatos ambíguos marcados explicitamente).
+- [x] Nova regra OBRIGATÓRIA em `CLAUDE.md`/`AGENTS.md` ("Referência
+  estratégica obrigatória"): ler o resumo antes de auditar/tunar
+  comportamento de líder, ou mexer em `decision_engine.py`/
+  `deck_analyzer.py`/`deck_profile.py`/`compute_game_plan`. Documenta o
+  limite do próprio compêndio (preliminar, será refinado) e que líderes
+  antigos (OP01-002, ST08-001) não estão no catálogo.
+- [x] Cross-check real dos 6 achados do bloco 401 contra o catálogo:
+  Shanks, Buggy, Boa Hancock, Koala **batem** com a diretriz de IA do
+  catálogo (Boa Hancock quase literalmente — catálogo previu
+  "manipular Life" e foi exatamente a 2ª habilidade que faltava).
+  Trafalgar Law (OP01-002) e Luffy (ST08-001) não têm linha no catálogo
+  (líderes antigos demais pra "Recommended Decks" da época) — sem
+  divergência real encontrada nesta rodada.
+- [ ] Se um Volume 2 (análise individual por deck) chegar, atualizar
+  `RESUMO_ESTRATEGICO.md` e a regra em `CLAUDE.md`/`AGENTS.md`.
+
+`resolve_reaction`/redirect segue pendente (adiado há 2 sessões).
+
 ## 🟢 IMPLEMENTADO: revisão de TODOS os líderes do jogo (135, não só os 17 do pool real) (30/07/2026, bloco 401)
 
 Usuário pediu pra revisar TODOS os líderes (não só os 17 com deck real

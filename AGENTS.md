@@ -163,6 +163,43 @@ correção ainda pendente, ver [HANDOFF.md](HANDOFF.md)).
 Referências oficiais das regras (manual, playsheet) em
 [_referencias/regras_do_jogo/](_referencias/regras_do_jogo/).
 
+## Referência estratégica obrigatória: IA_Compendium
+
+> **OBRIGATÓRIO** (pedido do usuário, 30/07/2026): antes de auditar,
+> tunar ou revisar o comportamento estratégico do bot pra um líder/
+> arquétipo específico — revisão "pente-fino" texto-real vs efeito-
+> parseado vs comportamento (como a dos blocos 400-401), ajuste de
+> heurísticas de `decision_engine.py` (Turn Planner, scores de ataque/
+> bloqueio/counter), ou qualquer trabalho em `deck_analyzer.py`/
+> `deck_profile.py`/`compute_game_plan` — leia
+> [`IA_Compendium/RESUMO_ESTRATEGICO.md`](IA_Compendium/RESUMO_ESTRATEGICO.md)
+> (extraído/mapeado de `ONE_PIECE_AI_COMPENDIUM_Volume_1.docx`/`.pdf`, que
+> continuam na mesma pasta como fonte original). Motivo explícito do
+> usuário: mesmo com esse documento existindo há dias, "o bot ainda
+> parece que não entende" o que cada líder faz — a leitura deste resumo
+> junto da auditoria de efeito-parseado é o mecanismo pra fechar essa
+> lacuna, não só medir eficiência agregada sem saber o PORQUÊ.
+>
+> Uso prático: pra cada líder em escopo, confira a linha correspondente
+> na Seção 8 do resumo (catálogo de 60 decks, já mapeado pra códigos
+> reais de carta) — arquétipo preliminar + "diretriz inicial pra IA" —
+> contra o `game_plan`/arquétipo que o motor realmente usa e contra o
+> comportamento observado em self-play/replay. Registre qualquer
+> divergência do MESMO jeito que achados de parser (`HANDOFF.md`/
+> `TODO.md`, teste permanente em `smoke_fast.py`/`smoke_test.py` quando
+> a divergência for corrigível em código).
+>
+> **Limite explícito do documento** (citação direta, Seção 8): "Arquétipos
+> e comportamento da IA são interpretações preliminares e serão
+> refinados nos volumes de decks" — é um PONTO DE PARTIDA pra comparação,
+> não a verdade absoluta sobre cada deck. Divergência entre o catálogo e
+> o bot pode significar bug no bot OU que o catálogo precisa de
+> refinamento — registre os dois lados quando houver dúvida real. Vários
+> líderes antigos/básicos (ex: OP01-002 Trafalgar Law, ST08-001 Luffy)
+> não aparecem no catálogo de 60 "Recommended Decks" — pra esses, não há
+> comparação disponível ainda, e isso deve ser dito explicitamente em vez
+> de forçar uma correspondência inexistente.
+
 ## Estado do projeto / o que falta
 Ver [TODO.md](TODO.md) (lista viva, atualizada por sessão) para: buracos de
 mecânica conhecidos e priorizados, problemas abertos do replay, dívida

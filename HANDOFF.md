@@ -1,5 +1,99 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-30 (402) - Claude (sessao remota web) - IA_Compendium virou referencia OBRIGATORIA (CLAUDE.md/AGENTS.md) + cross-check dos 6 achados do bloco 401
+
+Usuário pediu explicitamente: "vamos resolver essa questão de IA
+compendium, preciso que ela vire 'obrigatória como referência' pq
+preciso ter certeza de que o Bot sabe o que cada líder faz". O
+documento (`IA_Compendium/ONE_PIECE_AI_COMPENDIUM_Volume_1.docx`/`.pdf`,
+mencionado pelo usuário há 2 sessões, nunca lido até agora) é um
+compêndio estratégico geral (10 princípios de "como pensar
+estrategicamente", tabela de 8 arquétipos, arquitetura de IA sugerida —
+interfaces, busca com informação oculta, self-play, explicabilidade — e
+um **catálogo de 60 decks** da página oficial "Recommended Decks", cada
+um com arquétipo preliminar + 1 frase de "diretriz inicial pra IA").
+Não é, como eu supunha antes de ler, um manual carta-a-carta — é mais
+alto nível, mas o catálogo de 60 decks é diretamente comparável contra
+o `game_plan` real do motor.
+
+**O que foi feito:**
+
+1. **Extraído e mapeado pra `IA_Compendium/RESUMO_ESTRATEGICO.md`**
+   (novo arquivo, git-diffável/grepável — os `.docx`/`.pdf` continuam
+   como fonte original na mesma pasta, mas não são mais lidos direto em
+   rotina). O catálogo de 60 decks (Seção 8) foi mapeado pra **códigos
+   reais de carta** via `cards_rows.csv` (nome+cor) — o documento
+   original só tinha nome+cor, sem código. 53/60 resolveram pra um
+   único código; 7 ficaram com 2+ candidatos ambíguos (mesmo nome+cor
+   duas vezes no jogo) e foram marcados explicitamente como "desambiguar
+   antes de usar" em vez de eu forçar um palpite.
+
+2. **Nova regra OBRIGATÓRIA em `CLAUDE.md` e `AGENTS.md`** (seção
+   "Referência estratégica obrigatória: IA_Compendium", idêntica nos 2
+   arquivos, só a moldura muda): antes de auditar/tunar comportamento
+   estratégico do bot pra um líder (revisões "pente-fino" como as dos
+   blocos 400-401), mexer em `decision_engine.py` (Turn Planner, scores
+   de ataque/bloqueio/counter) ou em `deck_analyzer.py`/`deck_profile.py`/
+   `compute_game_plan`, é obrigatório ler o `RESUMO_ESTRATEGICO.md` e
+   comparar a linha do líder (arquétipo + diretriz) contra o
+   comportamento real do motor, registrando divergências do mesmo jeito
+   que achados de parser. A regra também documenta o limite do próprio
+   documento (é preliminar, "será refinado em volumes futuros" — não é
+   verdade absoluta) e o fato de que líderes antigos/básicos (ex:
+   OP01-002, ST08-001) não aparecem no catálogo de 60, então não há
+   comparação disponível pra eles ainda.
+
+3. **Cross-check real dos 6 achados do bloco 401** contra o catálogo
+   (usando `get_card_effects` pra ver o efeito REAL parseado, não só a
+   descrição):
+   - **Shanks (OP09-001)** — catálogo diz "Balanced midrange... ajustar
+     postura, usar poder pra neutralizar ataques". Efeito real:
+     `on_opp_attack` debuffa -1000 power no atacante uma vez por turno.
+     **Bate** — é literalmente "usar poder pra neutralizar ataques".
+   - **Buggy (OP16-041)** — catálogo diz "Swarm/cheat... chegar ao
+     payoff sem perder tempo". Efeito real: quando um Impel Down
+     próprio morre, joga "Prisoner of Impel Down" da mão de graça
+     (`cost_lte: 99` = sem limite de custo). **Bate** — é o mecanismo
+     "cheat" descrito (colocar carta em campo fora do custo normal).
+   - **Boa Hancock (OP14-041)** — catálogo diz "Trigger/Value...
+     modelar probabilidades de Trigger e **manipular Life quando
+     possível**". Efeito real (a 2ª habilidade que eu tinha acabado de
+     implementar do zero na sessão anterior): quando um Amazon
+     Lily/Kuja Pirates 5000+ power é K.O.'d, manipula a Life do
+     oponente (`deal_damage`). **Bate quase palavra-por-palavra** — o
+     catálogo previu exatamente a habilidade que a auditoria de parser
+     achou faltando, sem eu ter usado o catálogo pra achar o bug (achei
+     via varredura de gramática) — isso é uma validação forte de que o
+     fix estava certo E de que o catálogo é útil de verdade, não só
+     enfeite.
+   - **Koala (OP12-081)** — catálogo diz "Revolutionary/Control...
+     converter diferenças de custo/poder em remoções eficientes".
+     Efeito real: pune o oponente por jogar Character custo≥8 (OU via
+     efeito de outra carta — o OR que eu tinha acabado de consertar),
+     tomando 1 carta da Life dele. **Bate** — o fix do OR fecha
+     exatamente a lacuna que fazia o bot punir MENOS esse "converter
+     diferença de custo" do que devia.
+   - **Luffy (ST08-001)** e **Trafalgar Law (OP01-002)** — **não
+     aparecem no catálogo de 60** (líderes antigos/starters demais pra
+     estarem na página oficial "Recommended Decks" da época). Sem
+     comparação disponível — declarado explicitamente em vez de forçar
+     correspondência. (Curiosidade: as OUTRAS 2 versões de Trafalgar Law
+     que ESTÃO no catálogo, OP14-001 e OP10-022, são ambas tageadas
+     "Toolbox" — a mecânica de OP01-002, trocar 1 personagem fraco por
+     um jogável de graça, é consistente com esse tema mesmo sem código
+     exato no catálogo.)
+
+**Resultado**: 4/6 achados do bloco 401 têm confirmação direta no
+catálogo estratégico (a diretriz da IA bate com o efeito real, incluindo
+Boa Hancock batendo quase literalmente); 2/6 não têm comparação
+disponível por serem líderes fora do catálogo — nenhuma divergência
+real encontrada nesta rodada.
+
+**Pendente**: retomar `resolve_reaction`/redirect (adiado há 2 sessões).
+Se um Volume 2 (análise individual por deck, mencionado na Seção 9 do
+documento como "próximo volume") chegar, atualizar
+`RESUMO_ESTRATEGICO.md` e a regra em `CLAUDE.md`/`AGENTS.md`.
+
 ## 2026-07-30 (401, COMPLETA) - Claude (sessao remota web) - revisao de TODOS os lideres do jogo (135, nao so os 17 do pool real): 6/6 achados corrigidos
 
 Usuário pediu pra revisar TODOS os líderes do jogo (135 códigos base
