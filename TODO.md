@@ -2,7 +2,7 @@
 
 **Última atualização:** 29 de julho de 2026
 
-## 🟡 EM ANDAMENTO: pente-fino texto-real vs efeito-parseado nos 17 líderes do pool de decks reais (29/07/2026, bloco 400)
+## 🟢 IMPLEMENTADO: pente-fino texto-real vs efeito-parseado nos 17 líderes do pool de decks reais (29/07/2026, bloco 400)
 
 Usuário pediu (1) continuar `resolve_reaction`/redirect e (2) auditar
 cada um dos 17 líderes do pool real (`decklists_raw.csv`) comparando
@@ -27,16 +27,25 @@ habilidade.
   `leader_or_character` ganhou `filter_type`). Auditoria global: só
   Luffy(001) tem os 3 padrões. `diff_parser.py` PERDEU=0 MUDOU=1. Novo
   teste permanente. `smoke_fast.py`/`smoke_test.py` 100%.
-- [ ] Nami (OP11-041): suspeita de trigger reativo ("quando uma carta é
-  removida da Life") sendo tratado como check incondicional todo turno
-  — confirmado real (mais 2 cartas com o mesmo padrão: OP08-105,
-  OP12-099), mas exige plumbing NOVO de engine (flag "vida removida
-  neste turno", `your_turn` hoje só dispara 1x no início do turno via
-  `apply_your_turn_buffs`, não é orientado a evento) — maior que os
-  outros 2, ainda não implementado.
+- [x] Nami (OP11-041): trigger reativo ("quando uma carta é removida
+  da Life") era tratado como check incondicional todo turno — confirmado
+  real (mais 2 cartas: OP08-105 variante só-oponente, OP12-099 mesma
+  forma). Exigiu ESTADO NOVO no engine (não só parser): `GameState`
+  ganhou `life_count_snapshot_mine`/`life_count_snapshot_opp`
+  (propagados em `clone()`), comparados a cada `apply_your_turn_buffs`
+  contra a snapshot da vez anterior (aproximação do gatilho reativo real
+  — `your_turn` só dispara 1x no início do turno, antes de qualquer
+  combate próprio). Novas condições `life_removed_recently`/
+  `opp_life_removed_recently`. `diff_parser.py` PERDEU=0 MUDOU=3. Novo
+  teste permanente (3 checagens: sem baseline, vida inalterada, vida do
+  oponente reduzida). `smoke_fast.py`/`smoke_test.py` 100%.
+
+**Os 3 achados pedidos (Enel, Luffy, Nami) concluídos.** Próximo passo
+pedido pelo usuário:
+
 - [ ] Revisar TODOS os líderes do jogo (não só os 17 do pool de decks
-  reais) — pedido novo do usuário, após Nami. Escopo ainda não
-  levantado (quantos líderes existem no total em `cards_rows.csv`).
+  reais) — escopo ainda não levantado (quantos líderes existem no total
+  em `cards_rows.csv`).
 - [ ] `resolve_reaction`/redirect: ainda não retomado — fica por último,
   depois da revisão de todos os líderes.
 

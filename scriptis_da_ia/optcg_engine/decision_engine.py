@@ -879,6 +879,22 @@ class GameState:
     cannot_attack_leader_this_turn: bool = False
     cant_take_life_this_turn: bool = False  # ST15-001 Atmos: "cannot add Life cards to your hand using your own effects this turn"
     face_up_life_to_deck: bool = False      # ST13-003 Luffy Leader: face-up life cards go to BOTTOM of deck instead of hand when damaged
+    # Snapshot da CONTAGEM de Life (minha e do oponente) na ULTIMA vez que
+    # apply_your_turn_buffs rodou pra este jogador -- -1 = nunca rodou
+    # ainda (sem baseline, condicao de "vida removida" default False).
+    # Achado 29/07 (pente-fino nos lideres, Nami OP11-041): "This effect
+    # can be activated when a card is removed from your or your
+    # opponent's Life cards" e um gatilho REATIVO que o engine nao
+    # suporta de verdade (your_turn so dispara 1x, no INICIO do main_phase,
+    # antes de qualquer combate do proprio turno acontecer) -- a
+    # aproximacao possivel e "alguma Life mudou (diminuiu) desde a
+    # ULTIMA vez que este check rodou pra mim", que cobre o caso real
+    # mais comum (dano recebido no turno do OPONENTE, entre meu ultimo
+    # check e este). Comparado e ATUALIZADO em apply_your_turn_buffs, NAO
+    # em _check_conditions (que precisa ficar um predicado puro, sem
+    # side-effect, pra nao quebrar branches simulados do Turn Planner).
+    life_count_snapshot_mine: int = -1
+    life_count_snapshot_opp: int = -1
     is_first: bool = True
     # Estatísticas
     dmg_dealt: int = 0
@@ -963,6 +979,8 @@ class GameState:
         novo.cant_play_chars_this_turn = self.cant_play_chars_this_turn
         novo.cant_play_cost_gte = self.cant_play_cost_gte
         novo.cannot_attack_leader_this_turn = self.cannot_attack_leader_this_turn
+        novo.life_count_snapshot_mine = self.life_count_snapshot_mine
+        novo.life_count_snapshot_opp = self.life_count_snapshot_opp
         novo.is_first = self.is_first
 
         novo.dmg_dealt = self.dmg_dealt
@@ -3240,6 +3258,20 @@ class EffectExecutor:
             c.cost_buff = 0
             c.cost_buff_permanent = 0
 
+        # "Vida removida desde o ultimo check" (achado 29/07, Nami OP11-041
+        # e familia) -- calculado ANTES de checar qualquer condicao (pra
+        # refletir o que mudou desde a ULTIMA vez que rodou pra este
+        # jogador, tipicamente durante o turno anterior do oponente), e a
+        # snapshot so e ATUALIZADA no fim desta funcao -- _check_conditions
+        # continua um predicado puro, sem side-effect (branches simulados
+        # do Turn Planner nao podem mutar a snapshot do estado real).
+        self._vida_minha_removida_desde_ultimo_check = (
+            self.me.life_count_snapshot_mine != -1
+            and len(self.me.life) < self.me.life_count_snapshot_mine)
+        self._vida_opp_removida_desde_ultimo_check = (
+            self.me.life_count_snapshot_opp != -1
+            and len(self.opp.life) < self.me.life_count_snapshot_opp)
+
         for source in sources:
             effects = get_card_effects(source.code)
             for trigger in ('your_turn', 'passive'):
@@ -3281,6 +3313,12 @@ class EffectExecutor:
                     log = self._execute_step(step, source)
                     if log:
                         logs.append(log)
+
+        # Atualiza a snapshot pro PROXIMO check (depois de usar a antiga
+        # acima pra decidir "mudou desde a ultima vez") -- vira a nova
+        # baseline pro proximo turno deste jogador.
+        self.me.life_count_snapshot_mine = len(self.me.life)
+        self.me.life_count_snapshot_opp = len(self.opp.life)
 
         return logs
 
@@ -3329,6 +3367,18 @@ class EffectExecutor:
         if 'don_gte' in conds and me.don_available < conds['don_gte']:
             return False
         if 'don_lte' in conds and me.don_available > conds['don_lte']:
+            return False
+        # "vida removida desde o ultimo check" (achado 29/07, Nami OP11-041
+        # e familia) -- aproximacao do gatilho reativo real (ver comentario
+        # em apply_your_turn_buffs/GameState.life_count_snapshot_*). Default
+        # False se o atributo nao existe (contexto fora de
+        # apply_your_turn_buffs, ex: chamada isolada em teste).
+        if conds.get('life_removed_recently') and not (
+                getattr(self, '_vida_minha_removida_desde_ultimo_check', False)
+                or getattr(self, '_vida_opp_removida_desde_ultimo_check', False)):
+            return False
+        if conds.get('opp_life_removed_recently') and not getattr(
+                self, '_vida_opp_removida_desde_ultimo_check', False):
             return False
         # "if your Leader is active/rested" -- condicao POR-STEP (nao de
         # bloco inteiro), achada 19/07 em OP04-017 (2o de 2 debuffs

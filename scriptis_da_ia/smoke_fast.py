@@ -2476,6 +2476,52 @@ def test_luffy_001_rest_any_don_escala_buff_e_condicao_don_lte() -> None:
           luffy2.power_buff == 6000 and distrator.power_buff == 0 and strawhat_fraco.power_buff == 0)
 
 
+def test_nami_041_life_removed_recently_aproxima_gatilho_reativo() -> None:
+    # Achado 29/07 (pente-fino nos lideres, 3o achado): Nami (OP11-041,
+    # 2o lider mais comum do pool, 29/161 decks), texto do your_turn:
+    # "This effect can be activated when a card is removed from your or
+    # your opponent's Life cards. If you have 7 or less cards in your
+    # hand, draw 1 card." O gatilho reativo ("quando uma carta e
+    # removida da Life") era descartado por completo -- so o
+    # hand_lte=7 sobrevivia, virando um draw incondicional todo turno.
+    # Fix: your_turn so dispara 1x no INICIO do main_phase (antes de
+    # qualquer combate do PROPRIO turno) -- o engine nao tem trigger
+    # orientado a evento pra isso. Aproximacao: snapshot da contagem de
+    # Life (minha e do oponente) a cada apply_your_turn_buffs, condicao
+    # passa se ALGUMA diminuiu desde o ULTIMO check pra este jogador
+    # (cobre o caso real mais comum: dano recebido no turno anterior do
+    # oponente). Mesmo achado tambem corrigiu OP08-105 (so-oponente,
+    # opp_life_removed_recently) e OP12-099 (mesma forma de Nami).
+    am = get_card_effects("OP11-041").get("your_turn", {})
+    check("OP11-041 parseia life_removed_recently=True (gatilho reativo capturado)",
+          am.get("conditions", {}).get("life_removed_recently") is True)
+
+    nami = real_card("OP11-041")
+    me = GameState(leader=nami, turn=1, hand=[mk(f"XNH{i}", f"H{i}") for i in range(3)],
+                   deck=[mk("XNDECK", "Topo do Deck")])
+    opp = GameState(leader=mk("XNOPP", "Opp", card_type="LEADER"), turn=1)
+    opp.life = [real_card("OP07-077") for _ in range(4)]
+
+    # 1o check (sem baseline ainda, life_count_snapshot_*==-1): condicao
+    # NAO pode passar (nao ha "desde a ultima vez" pra comparar) -- nao
+    # dispara mesmo com hand<=7.
+    EffectExecutor(me, opp).apply_your_turn_buffs()
+    check("1o check (sem baseline): NAO dispara -- ainda nao ha 'ultima vez' pra comparar",
+          len(me.hand) == 3)
+
+    # Nada mudou na vida entre os 2 checks -- ainda NAO dispara.
+    EffectExecutor(me, opp).apply_your_turn_buffs()
+    check("2o check, vida INALTERADA desde o 1o: ainda NAO dispara",
+          len(me.hand) == 3)
+
+    # Vida do OPONENTE diminui (simula dano recebido no turno dele) --
+    # PROXIMO check deve disparar (Nami cobre AMBOS os lados).
+    opp.life.pop()
+    EffectExecutor(me, opp).apply_your_turn_buffs()
+    check("3o check, vida do OPONENTE diminuiu desde o ultimo check: dispara (draw)",
+          len(me.hand) == 4)
+
+
 def test_kid_leader_set_active_respects_cost_range() -> None:
     # Achado 14/07 via audit_leader_and_goal.py: o end_of_turn do lider do
     # Kid (OP10-099, "Supernovas type Characters with a cost of 3 to 8")
@@ -9013,6 +9059,7 @@ def main() -> int:
     test_krieg_rest_opp_requires_2_don_attached()
     test_enel_don_ramp_ordem_textual_e_turn_gte()
     test_luffy_001_rest_any_don_escala_buff_e_condicao_don_lte()
+    test_nami_041_life_removed_recently_aproxima_gatilho_reativo()
     test_kid_leader_set_active_respects_cost_range()
     test_lock_opp_character_refresh_variantes_de_fraseado()
     test_rest_opp_alvo_misto_character_ou_don()

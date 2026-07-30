@@ -104,6 +104,23 @@ def parse_conditions(text):
     if m and m.group(1) in _ORDINAL_WORDS:
         conds['turn_gte'] = _ORDINAL_WORDS[m.group(1)]
 
+    # "This effect can be activated when a card is removed from your or
+    # your opponent's Life cards" / "...from your opponent's Life cards"
+    # (variante so-oponente) -- gatilho REATIVO a remocao de Life (achado
+    # 29/07, Nami OP11-041 e familia -- OP08-105 so-oponente, OP12-099
+    # mesma forma de Nami). O engine nao tem um trigger de verdade
+    # orientado a evento pra isso (your_turn so dispara 1x, no INICIO do
+    # main_phase) -- aproximado como "alguma Life mudou desde o ULTIMO
+    # check pra este jogador" (ver GameState.life_count_snapshot_*/
+    # apply_your_turn_buffs em decision_engine.py). Checa a variante "your
+    # or your opponent's" (mais especifica) ANTES da so-oponente, senao
+    # "your opponent's life cards" (substring da primeira) sempre
+    # casaria e a variante ampla nunca seria distinguida.
+    if re.search(r"when a card is removed from your or your opponent.?s life cards", t):
+        conds['life_removed_recently'] = True
+    elif re.search(r"when a card is removed from your opponent.?s life cards", t):
+        conds['opp_life_removed_recently'] = True
+
     # Existencia de Character no campo do oponente com custo exato.
     # Ex.: EB01-045 Brook: o Rush so existe se houver Character custo 0.
     m = re.search(r'if your opponent has a character with a cost of (\d+)(?! or)', t)

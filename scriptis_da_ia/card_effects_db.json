@@ -35729,6 +35729,9 @@
             "then_trash": 1
           }
         ],
+        "conditions": {
+          "opp_life_removed_recently": true
+        },
         "once_per_turn": true,
         "don_requirement": 1
       },
@@ -44614,6 +44617,7 @@
           }
         ],
         "conditions": {
+          "life_removed_recently": true,
           "hand_lte": 7
         },
         "once_per_turn": true
@@ -49890,7 +49894,10 @@
             "action": "draw",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "life_removed_recently": true
+        }
       }
     }
   },

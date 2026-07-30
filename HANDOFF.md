@@ -1,6 +1,6 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-29 (400, EM ANDAMENTO) - Claude (sessao remota web) - pente-fino texto-real vs efeito-parseado nos 17 lideres do pool de decks reais: Enel (OP15-058) corrigido, 2 candidatos fortes (Nami, Luffy 001) ainda em investigacao
+## 2026-07-29 (400) - Claude (sessao remota web) - pente-fino texto-real vs efeito-parseado nos 17 lideres do pool de decks reais: Enel, Luffy(001) e Nami corrigidos
 
 Usuário pediu (1) continuar `resolve_reaction`/redirect e (2) um
 "pente fino" nos líderes -- comparar texto real da carta vs efeito
@@ -45,18 +45,35 @@ registro em
 (`test_enel_don_ramp_ordem_textual_e_turn_gte`, inclui execução real
 turno 1 vs turno 2). `smoke_fast.py`/`smoke_test.py` 100%.
 
-**Achado 2 — Nami (OP11-041), EM INVESTIGAÇÃO (não corrigido ainda)**:
-texto do `your_turn`: "This effect can be activated when a card is
-removed from your or your opponent's Life cards. If you have 7 or less
-cards in your hand, draw 1 card." O efeito parseado só tem a condição
-`hand_lte: 7` num bloco `your_turn` genérico -- a janela de ativação
-real ("quando uma carta é removida da Life", ou seja, um TRIGGER
-reativo a dano/perda de vida, não um check incondicional todo turno)
-não parece estar capturada em lugar nenhum. Se confirmado, o bot pode
-estar comprando carta em turnos onde nenhuma Life foi removida
-(sobre-disparo). Ainda não confirmado a fundo nem corrigido -- precisa
-checar se existe algum mecanismo equivalente (`on_damage_to_life` ou
-similar) que já cubra isso via outro caminho antes de tratar como bug.
+**Achado 2 — Nami (OP11-041), CORRIGIDO**: texto do `your_turn`: "This
+effect can be activated when a card is removed from your or your
+opponent's Life cards. If you have 7 or less cards in your hand, draw 1
+card." O gatilho reativo era descartado por completo -- só a condição
+`hand_lte: 7` sobrevivia, virando draw incondicional todo turno mesmo
+sem nenhuma Life ter mudado. Auditoria global achou mais 2 cartas com a
+mesma família: `OP08-105` (variante só-oponente) e `OP12-099` (mesma
+forma exata de Nami).
+
+Diferente dos outros 2 achados, este exigiu ESTADO NOVO no engine (não
+só parser): `your_turn` só é avaliado 1x, no INÍCIO do `main_phase`
+(`apply_your_turn_buffs`), ANTES de qualquer combate do PRÓPRIO turno
+-- o engine não tem um trigger de verdade orientado a evento pra "Life
+removida". Aproximação implementada: `GameState` ganhou
+`life_count_snapshot_mine`/`life_count_snapshot_opp` (propagados em
+`clone()`), atualizados no FIM de cada `apply_your_turn_buffs`; a
+condição compara contra a snapshot da vez ANTERIOR (calculada ANTES do
+loop de triggers, nunca dentro de `_check_conditions` -- que precisa
+continuar um predicado PURO, sem side-effect, pra não corromper
+branches simulados do Turn Planner). Duas condições novas em
+`parse_conditions`/`_check_conditions`: `life_removed_recently`
+(qualquer lado, Nami/OP12-099) e `opp_life_removed_recently` (só
+oponente, OP08-105). Auditoria global: 3 cartas ao todo. Registro em
+`scriptis_da_ia/parser_audits/2026-07-29_nami_041_life_removed_recently_gatilho_reativo.json`.
+`diff_parser.py` PERDEU=0 MUDOU=3. Novo teste permanente
+(`test_nami_041_life_removed_recently_aproxima_gatilho_reativo`, 3
+checagens reais via `apply_your_turn_buffs`: sem baseline não dispara,
+vida inalterada não dispara, vida do OPONENTE reduzida entre checks
+dispara). `smoke_fast.py`/`smoke_test.py` 100%.
 
 **Achado 3 — Luffy (OP13-001), CORRIGIDO**: texto do `on_opp_attack`:
 "If you have 5 or less active DON!! cards, you may rest any number of
@@ -86,15 +103,11 @@ execução real condição falha vs passa, e prova que o filtro de tipo
 exclui um distrator de poder MAIOR que não é Straw Hat Crew).
 `smoke_fast.py`/`smoke_test.py` 100%.
 
-**`resolve_reaction`/redirect**: ainda não retomado -- usuário pediu
-pra revisar TODOS os líderes do jogo (não só os 17 do pool de decks
-reais) antes de voltar pra isso.
-
-Commit: achados 1 (Enel) e 3 (Luffy) já commitados e validados. Achado
-2 (Nami) ainda pendente -- exige plumbing novo de engine (trigger
-reativo a remoção de Life), maior que os outros 2. Próximo passo:
-Nami, depois revisão de TODOS os líderes do jogo, depois
-`resolve_reaction`.
+**Os 3 achados pedidos nesta rodada (Enel, Luffy, Nami) estão
+CONCLUÍDOS**, cada um commitado e validado separadamente. Próximo passo
+pedido pelo usuário: revisar TODOS os líderes do jogo (não só os 17 do
+pool de decks reais) -- escopo ainda não levantado. Depois disso,
+`resolve_reaction`/redirect (ainda não retomado nesta rodada).
 
 ## 2026-07-29 (399) - Claude (sessao remota web) - investigando activate:main e resolve_reaction por lider: Jinbe-B (score) e Mihawk-G (parser) corrigidos
 

@@ -1,0 +1,23 @@
+{
+  "trigger_card": "OP11-041",
+  "problem": "Pente-fino nos 17 lideres do pool de decks reais (continuacao). Nami (OP11-041, 2o lider mais comum do pool, 29/161 decks), texto do your_turn: 'This effect can be activated when a card is removed from your or your opponent's Life cards. If you have 7 or less cards in your hand, draw 1 card.' O gatilho reativo ('quando uma carta e removida da Life') era descartado por completo -- so a condicao hand_lte=7 sobrevivia, virando um draw incondicional TODO turno, mesmo sem nenhuma vida ter mudado. Auditoria global achou mais 2 cartas com a mesma familia de gatilho: OP08-105 (variante so-oponente: 'When a card is removed from your opponent's Life cards') e OP12-099 (mesma forma exata de Nami).",
+  "grammar_family": "'This effect can be activated when a card is removed from your or your opponent's Life cards' / 'When a card is removed from your opponent's Life cards' (variante so-oponente) -- gatilho REATIVO a remocao de Life, nunca antes reconhecido pelo parser (a clausula inteira era ignorada, sobrando so as demais condicoes do bloco).",
+  "queries": [
+    "regex \"when a card is removed from your or your opponent.?s life cards\" no cards_rows.csv inteiro: OP11-041, OP12-099 (2 cartas).",
+    "regex \"when a card is removed from your opponent.?s life cards\" (variante estrita, so-oponente) no cards_rows.csv inteiro: OP08-105 (1 carta, alem das 2 acima que tambem contem 'your opponent's life cards' como substring -- verificado que a variante mais especifica 'your or your opponent's' e testada PRIMEIRO no parser pra nao confundir as duas)."
+  ],
+  "cards_found": [
+    "OP11-041",
+    "OP12-099",
+    "OP08-105"
+  ],
+  "resolution_scope": "global",
+  "decision": "Problema de fundo maior que um regex: o engine nao tem um trigger de verdade orientado a EVENTO pra 'quando uma Life e removida' -- o bloco your_turn so e avaliado 1x, no INICIO do main_phase (apply_your_turn_buffs), ANTES de qualquer combate do PROPRIO turno acontecer (entao a remocao so pode ter vindo do turno ANTERIOR do oponente, ou de um custo/efeito ja resolvido antes deste check). Aproximacao adotada: snapshot da contagem de Life de AMBOS os lados (GameState.life_count_snapshot_mine/life_count_snapshot_opp, propagados em clone()), atualizado no FIM de cada apply_your_turn_buffs; a condicao compara contra a snapshot da vez ANTERIOR (calculada ANTES do loop de triggers, nunca dentro de _check_conditions -- que precisa continuar um predicado puro, sem side-effect, pra nao corromper branches simulados do Turn Planner). Duas condicoes novas: life_removed_recently (qualquer lado, Nami/OP12-099) e opp_life_removed_recently (so oponente, OP08-105), extraidas em parse_conditions e checadas em EffectExecutor._check_conditions.",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=3 (OP11-041, OP08-105, OP12-099)",
+    "gerar_dbs.py + snapshot_parser.py rodados sem erro",
+    "smoke_fast.py: SMOKE FAST OK (novo teste test_nami_041_life_removed_recently_aproxima_gatilho_reativo, 3 checagens reais via apply_your_turn_buffs: sem baseline nao dispara, vida inalterada nao dispara, vida do OPONENTE reduzida entre checks dispara)",
+    "smoke_test.py: TODOS OS TESTES PASSARAM"
+  ],
+  "notes": "Terceiro e ultimo dos achados desta rodada do pente-fino nos 17 lideres do pool de decks reais (bloco 400/401) -- fecha os 2 fixes que o usuario pediu pra implementar (Enel/OP15-058 e Luffy/OP13-001 ja commitados antes; este e o 3o, Nami/OP11-041 + familia). Diferenca de escopo: este e o UNICO dos 3 que exigiu adicionar ESTADO NOVO ao GameState (snapshot de vida), nao so regex/acao nova -- os outros 2 (Enel, Luffy) foram resolvidos inteiramente dentro do parser + acoes/condicoes ja compativeis com o modelo de estado existente. Usuario pediu, apos este fix, revisar TODOS os lideres do jogo (nao so os 17 do pool de decks reais) antes de voltar pra resolve_reaction/redirect."
+}

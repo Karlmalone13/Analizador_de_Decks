@@ -22594,6 +22594,9 @@
    ]
   },
   "your_turn": {
+   "conditions": {
+    "opp_life_removed_recently": true
+   },
    "don_requirement": 1,
    "once_per_turn": true,
    "steps": [
@@ -28285,7 +28288,8 @@
   },
   "your_turn": {
    "conditions": {
-    "hand_lte": 7
+    "hand_lte": 7,
+    "life_removed_recently": true
    },
    "once_per_turn": true,
    "steps": [
@@ -31615,6 +31619,9 @@
  },
  "OP12-099": {
   "your_turn": {
+   "conditions": {
+    "life_removed_recently": true
+   },
    "steps": [
     {
      "action": "draw",
