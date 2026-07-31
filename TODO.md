@@ -2,6 +2,28 @@
 
 **Última atualização:** 30 de julho de 2026
 
+## 🟡 PARCIALMENTE RESOLVIDO: Mihawk-G (OP14-020) gap residual de ativação (30/07/2026, bloco 405)
+
+Self-play instrumentado (20 partidas, `decklists_raw.csv`, seed=7)
+confirmou o baseline (1,75 ativações/jogo) e achou a causa: `base=90`
+FLAT pra `set_don_active` não escalava pelo DON realmente RESTADO
+disponível pra converter (`min(count, don_rested)`) — com
+`don_rested=0` (86% dos pontos de decisão capturados), a ativação não
+faz nada de útil mas pontuava cheio mesmo assim.
+
+- [x] Fix: soma `min(count, don_rested) * 25` no score de
+  `set_don_active` (generalizado pras 11 cartas do banco que usam essa
+  ação, não só Mihawk). Validado: **1,75 → 2,10 ativações/jogo (+20%)**.
+  Novo teste permanente. `smoke_fast.py`/`smoke_test.py` 100%.
+- [ ] **Ainda longe do alvo (5,4/jogo)**: mesmo pós-fix, 86% dos pontos
+  de decisão continuam com `don_rested=0` — a ativação só fica boa
+  DEPOIS de outro custo já ter restado DON no mesmo turno, e o Turn
+  Planner raramente chega nesse estado antes de decidir. Suspeita:
+  problema de SEQUENCIAMENTO (não re-explorar "pagar custos/jogar
+  primeiro, ativar depois" com frequência suficiente), não mais um
+  problema de score isolado — mudança bem maior no Turn Planner,
+  registrada como pendência separada, não investigada a fundo ainda.
+
 ## 🟢 DOCUMENTAÇÃO CORRIGIDA: should_use_blocker/should_use_counter já estava calibrado (30/07/2026, bloco 404)
 
 Usuário pediu pra eu procurar a próxima frente; escaneei o TODO/HANDOFF

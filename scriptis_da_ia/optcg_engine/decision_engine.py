@@ -12767,6 +12767,26 @@ class OPTCGMatch:
                 base += 60
         elif any(a in ('add_don', 'set_don_active') for a in actions_list):
             base = 90    # ramp de DON
+            # set_don_active (11 cartas no banco, todas 'up_to') desresta
+            # DON que JA existe -- o ganho real e limitado por quanto DON
+            # restado ha pra converter, NUNCA o valor cheio de 90 quando
+            # don_rested < count. Achado 30/07 (Mihawk-G OP14-020,
+            # investigando gap residual de ativacao pos-fix de condicao):
+            # a base FLAT de 90 nao refletia essa variacao -- com pouco
+            # DON restado (comum no early/mid game), don_opportunity_cost
+            # do custo rest_don(1) ja consumia quase todo o base=90,
+            # deixando o score liquido perto de zero SEMPRE, mesmo nos
+            # turnos em que don_rested>=count (ganho liquido real de ate
+            # +2 DON utilizavel this turn, ativacao claramente boa).
+            # Generico: soma o ganho real (min(count pedido, don_rested)
+            # * valor-unidade de DON, mesma escala de DON_COST=25 usada
+            # em todo o resto do motor pra "quanto vale 1 DON agora") em
+            # cima do base fixo -- nao substitui o base=90 (que ja cobre
+            # add_don, cujo ganho NAO depende de don_rested existente).
+            for step in steps:
+                if step.get('action') == 'set_don_active':
+                    ganho_real = min(step.get('count', 1), p.don_rested)
+                    base += ganho_real * 25
         elif any(a in ('play_card',) for a in actions_list):
             base = 110   # jogar carta grátis
             best_play_value = 0.0

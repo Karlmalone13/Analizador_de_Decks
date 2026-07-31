@@ -1,5 +1,67 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-30 (405) - Claude (sessao remota web) - Mihawk-G (OP14-020): gap residual de ativacao parcialmente fechado (score de set_don_active nao escalava por DON restado)
+
+Usuário pediu pra puxar a segunda frente que eu tinha listado (a
+primeira, should_use_blocker/counter, já estava resolvida — bloco 404):
+o gap residual de ativação do Mihawk-G, registrado no bloco 399 como
+"provavelmente prioridade/score no Turn Planner, não mais um problema
+de condição".
+
+**Metodologia**: construí um script de instrumentação (não permanente,
+só pra esta investigação — `investigate_mihawk.py`, scratchpad)
+monkey-patchando `OPTCGMatch._generate_and_score_actions` pra capturar,
+toda vez que a ativação de Mihawk-G (OP14-020) aparece como candidata,
+o score dela vs o score/tipo da ação que venceu, e `don_rested` no
+momento da decisão. Rodei 20 partidas reais (`decklists_raw.csv`,
+seed=7, mesma metodologia self-play pareado já usada nesta sessão) como
+baseline: **1,75 ativações/jogo** (bate a suspeita anterior de
+1,6/jogo), contra o alvo real de vencedores (5,4/jogo).
+
+**Achado**: `score_mihawk` média = 38,0 (nunca passava de 65) em 25 mil
+pontos de decisão capturados. Causa: `set_don_active` (o "set up to 3
+of your DON!! cards as active" do Mihawk — 11 cartas no banco usam essa
+ação em `activate_main`, todas com `up_to=True`) tinha o MESMO `base`
+FLAT de 90 que `add_don`, em `_score_activate_main`
+(`decision_engine.py`). Mas o ganho REAL de `set_don_active` é limitado
+por quanto DON já está RESTADO pra converter (`min(count, don_rested)`)
+— diferente de `add_don`, cujo ganho não depende de nenhum recurso
+pré-existente. Com `don_rested=0` (**86% dos pontos de decisão
+capturados**), a ativação não faz absolutamente nada de útil, mas ainda
+pontuava o `base=90` cheio antes do desconto (já corretamente calculado
+via `don_opportunity_cost(1)`, ~25-115) — o score líquido ficava sempre
+baixo (média 38), MESMO nos ~14% dos casos com DON restado de verdade,
+onde a ativação é claramente boa (ganho líquido de até +2 DON
+utilizável no turno).
+
+**Fix**: soma `min(count, don_rested) * 25` (mesma escala de valor de
+DON usada no resto do motor) em cima do `base=90`, só quando o step é
+`set_don_active` — `add_don` continua com o `base=90` flat, sem
+mudança. Generalizado pras 11 cartas que usam essa ação, não hardcoded
+a Mihawk.
+
+**Validado via self-play pós-fix** (mesmas 20 partidas/seed=7):
+ativações subiram de **1,75 para 2,10/jogo** (+20%, melhora real e
+mensurável) — mas **ainda longe do alvo de 5,4/jogo**. O motivo
+residual, também confirmado pelos dados capturados: mesmo depois do
+fix, **86% dos pontos de decisão continuam com `don_rested=0`** — a
+ativação só fica realmente valiosa DEPOIS que outro custo já restou DON
+no mesmo turno, e o Turn Planner raramente chega nesse estado antes de
+avaliar a ativação. Isso é mais provavelmente um problema de
+**sequenciamento** (o planner não reexplora "pagar custos/jogar
+personagens primeiro, ativar Mihawk depois" com frequência suficiente)
+do que um problema isolado de score — **registrado como pendência
+separada, não resolvido nesta rodada** (mudar a exploração do Turn
+Planner é uma mudança bem maior/mais arriscada que calibrar uma
+constante, e eu queria confirmar com o usuário antes de mexer nisso).
+
+`smoke_fast.py`/`smoke_test.py` 100% (novo teste permanente
+`test_set_don_active_score_escala_por_don_rested_30_07`, prova a escala
+75 = 3 DON restado × 25). Nenhuma mudança de parser (não precisou de
+`diff_parser.py`/registro em `parser_audits/` — é calibração pura de
+`decision_engine.py`, mesmo tipo de mudança que
+`GIVE_DON_RESTED_BASE_SCORE`).
+
 ## 2026-07-30 (404) - Claude (sessao remota web) - "proxima frente": should_use_blocker/should_use_counter ja estava resolvido, TODO.md so nao refletia
 
 Usuário pediu pra eu mesmo procurar a próxima frente de trabalho.

@@ -9242,6 +9242,51 @@ def test_give_don_rested_base_score_calibrado_29_07() -> None:
           score < 0)
 
 
+def test_set_don_active_score_escala_por_don_rested_30_07() -> None:
+    """
+    Achado 30/07 (retomando o gap residual do bloco 399, Mihawk-G
+    OP14-020): ativacao subiu de 1,1 pra 1,6/jogo apos o fix de parser
+    (condicao board_has_cost_gte), mas o alvo real dos vencedores e
+    5,4/jogo -- suspeita registrada era prioridade/score no Turn
+    Planner. Self-play instrumentado (20 partidas, hook em
+    _generate_and_score_actions) confirmou: score_mihawk media so 38,0
+    (nunca passava de 65), porque `set_don_active` (11 cartas no banco,
+    todas 'up_to') tinha o MESMO base FLAT de 90 que add_don, mas o
+    ganho REAL de "set up to N DON active" e limitado por quanto DON ja
+    esta RESTADO (min(N, don_rested)) -- com don_rested=0 (86% dos
+    pontos de decisao capturados), a ativacao nao faz NADA de util, mas
+    ainda pontuava base=90 cheio antes do desconto de
+    don_opportunity_cost(1) (que ja e corretamente calculado, ~25-115).
+    Fix genérico: soma min(count, don_rested)*25 (mesma escala de DON
+    usada no resto do motor) em cima do base, sem tocar em add_don
+    (cujo ganho NAO depende de don_rested existente).
+
+    Validado via self-play pos-fix: ativacoes de OP14-020 subiram de
+    1,75 pra 2,10/jogo (+20%, mesmas 20 partidas/seed=7) -- melhora
+    real, mas ainda longe do alvo de 5,4/jogo. Residual: 86% dos pontos
+    de decisao tem don_rested=0 (a ativacao so fica boa DEPOIS de outro
+    custo já ter restado DON no mesmo turno) -- pode ser um problema de
+    SEQUENCIAMENTO do Turn Planner (nao re-explorar "jogar/pagar custos
+    primeiro, ativar depois"), nao mais um problema de score isolado.
+    Registrado como pendencia separada, fora de escopo desta rodada.
+    """
+    mihawk = real_card("OP14-020")
+    am = get_card_effects("OP14-020")["activate_main"]
+
+    a_sem_rested = GameState(leader=mihawk, turn=5, don_available=3, don_rested=0)
+    opp = GameState(leader=mk("XMHOPP", "Opp", card_type="LEADER"), turn=5)
+    match = OPTCGMatch((a_sem_rested.leader, []), (opp.leader, []))
+    score_sem_rested = match._score_activate_main(mihawk, am, a_sem_rested, opp, 'DEVELOP', engine=None)
+
+    a_com_rested = GameState(leader=real_card("OP14-020"), turn=5, don_available=3, don_rested=3)
+    score_com_rested = match._score_activate_main(mihawk, am, a_com_rested, opp, 'DEVELOP', engine=None)
+
+    check("set_don_active: score COM 3 DON restado (ganho real=3) e maior que SEM DON restado",
+          score_com_rested > score_sem_rested)
+    check("set_don_active: diferenca bate a escala esperada (3 * 25 = 75)",
+          abs((score_com_rested - score_sem_rested) - 75) < 1e-6)
+
+
 def test_exclude_failed_actions_evita_loop_travado_em_activate() -> None:
     # Achado real 26/07 (bloco HANDOFF 370, log 22.24.06, match b3484a93 --
     # Barba Negra OP09-093 custo 10): 2 copias da mesma carta em campo, a
@@ -9283,6 +9328,7 @@ def main() -> int:
     test_don_needed_for_attack_reserva_custo_do_proprio_buff()
     test_attack_margin_don_fraction_calibrado_29_07()
     test_give_don_rested_base_score_calibrado_29_07()
+    test_set_don_active_score_escala_por_don_rested_30_07()
     test_hidden_info_honesta_e_teto_counter_real()
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
