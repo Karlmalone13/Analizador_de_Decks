@@ -2,6 +2,21 @@
 
 **Última atualização:** 30 de julho de 2026
 
+## 🟢 DOCUMENTAÇÃO CORRIGIDA: should_use_blocker/should_use_counter já estava calibrado (30/07/2026, bloco 404)
+
+Usuário pediu pra eu procurar a próxima frente; escaneei o TODO/HANDOFF
+inteiros e apresentei 2 candidatos (Mihawk-G residual e a "decisão
+pendente" de calibração do bloco 394). Usuário escolheu a segunda —
+investigação mostrou que **já estava resolvida** (blocos 396-398
+calibraram exatamente isso via self-play pareado), só o `TODO.md` nunca
+foi atualizado pra fechar aquela seção. Corrigido (ver seção do bloco
+394 mais abaixo, agora marcada 🟢 RESOLVIDO). Nenhuma mudança de código.
+
+Candidato ainda genuinamente aberto, se o usuário quiser continuar:
+**Mihawk-G (OP14-020)**, gap residual de ativação de Activate:Main
+(1,6 vs 5,4/jogo dos vencedores reais — bloco 399, suspeita de
+prioridade/score no Turn Planner, nunca investigado a fundo).
+
 ## 🟢 IMPLEMENTADO: resolve_reaction/redirect RETOMADO E FECHADO (30/07/2026, bloco 403)
 
 Auditados os 4 únicos redirects do banco. Teach/Doflamingo/EB01-038 já
@@ -326,8 +341,27 @@ validação, não só teoria/dado de log.
   vida<=2" em `should_use_blocker` (~linha 10922, `decision_engine.py`).
   Mesma metodologia (self-play pareado com os mesmos 5 líderes/decks).
 
-## 🟡 PENDENTE DE DECISÃO DO USUÁRIO: calibrar should_use_blocker/should_use_counter? achado ambíguo (28/07/2026, bloco 394)
+## 🟢 RESOLVIDO (texto desta seção estava desatualizado): should_use_blocker/should_use_counter FORAM calibrados nos blocos 396-398 (28-29/07/2026, bloco 394 original)
 
+> **Achado 30/07 ao revisitar esta seção**: o texto abaixo (original do
+> bloco 394) ficou parado dizendo "decisão pendente" mesmo depois da
+> decisão ter sido tomada e EXECUTADA em blocos posteriores — o usuário
+> escolheu a opção (b)/self-play pareado (ver abertura do bloco 395:
+> "Usuário decidiu... calibrar de verdade, usando self-play pareado com
+> decks reais"), e os blocos 396/397/398 fizeram exatamente isso pros 2
+> itens citados aqui. Confirmado lendo o código atual
+> (`decision_engine.py`): `BLOCK_CRITICAL_LIFE_MAX_COST = 150` (bloco
+> 396) e a regra incondicional "sempre bloqueia com vida≤2" citada
+> abaixo **não existe mais** — `should_use_blocker` (~linha 11353) já
+> tem cost-check (`custo_sacrificio(melhor) <= BLOCK_CRITICAL_LIFE_MAX_COST`)
+> pra vida≤2, ESTENDIDO pra vida==3 e vida==4 no bloco 398 (validado via
+> self-play pareado, 52% vs 42% win rate). `COUNTER_VALOR_VIDA_SCALE =
+> 1.3` (bloco 397) já está aplicado em `should_use_counter` (~linha
+> 11580). Ambos os itens desta seção estão FECHADOS — apagar/arquivar
+> esta seção era o certo, mantida aqui só como registro de que a
+> "pendência" listada abaixo já não reflete o estado real do código.
+
+Texto original (histórico, não mais válido — mantido só pra contexto):
 Com os números REAIS pós-fix do gap de Blocker (ver item abaixo): IA
 mais "defensiva" que o jogador real em bloqueio (109 "IA queria
 bloquear, humano não" vs 72 no sentido oposto, ~1,5x) e counter (304 vs
@@ -339,16 +373,11 @@ tendência que já favorece vencedores. 63/109 dos casos de bloqueio
 acontecem na regra incondicional de `should_use_blocker` pra vida≤2
 ("sempre bloqueia se tiver bloqueador", `decision_engine.py` ~linha
 10922) — o ponto óbvio pra afrouxar, mas SEM evidência de que afrouxar
-melhoraria o bot (poderia piorar).
-
-- [ ] Decisão pendente: (a) aceitar o fix do banco como entregável sem
-  mexer em pesos; (b) calibrar mesmo sem validação via self-play
-  (aceitando o risco de piorar); (c) esperar sessão local rodar
-  `baseline_metrics.py`/gauntlet antes de decidir.
-- [ ] Se calibrar: `baseline_metrics.py` não roda nesta sessão remota
-  (path Windows hardcoded pros decks) — precisa adaptar pra
-  `decklists_raw.csv`-based decks (like used earlier nesta sessão pra
-  validação self-play) ou rodar numa sessão local.
+melhoraria o bot (poderia piorar). ~~Decisão pendente: (a) aceitar o fix
+do banco como entregável sem mexer em pesos; (b) calibrar mesmo sem
+validação via self-play; (c) esperar sessão local rodar
+`baseline_metrics.py`/gauntlet antes de decidir.~~ (b) foi a escolhida e
+executada.
 
 ## 🟢 CORRIGIDO: gap de [Blocker] condicional — auditoria global, 32 cartas (28/07/2026, bloco 394)
 

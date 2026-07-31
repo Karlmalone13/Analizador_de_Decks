@@ -1,5 +1,44 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-30 (404) - Claude (sessao remota web) - "proxima frente": should_use_blocker/should_use_counter ja estava resolvido, TODO.md so nao refletia
+
+Usuário pediu pra eu mesmo procurar a próxima frente de trabalho.
+Escaneei `TODO.md`/`HANDOFF.md` inteiros e apresentei 2 candidatos reais
+e em aberto (via `AskUserQuestion`): (1) o gap residual de ativação do
+Mihawk-G (OP14-020, bloco 399 — parser já corrigido, mas ainda 1,6 vs
+5,4/jogo dos vencedores reais, suspeita de prioridade/score no Turn
+Planner) e (2) a "decisão pendente" registrada no bloco 394 sobre
+calibrar `should_use_blocker`/`should_use_counter`. Usuário escolheu a
+(2).
+
+**Investigação mostrou que (2) já estava FECHADA** — só o `TODO.md`
+nunca foi atualizado pra refletir isso. Bloco 395 já registrava "usuário
+decidiu calibrar de verdade via self-play pareado" (resolvendo a
+pendência do 394), e os blocos 396/397/398 (todos ANTES desta sessão
+começar a conversar comigo, mas dentro da mesma sessão de trabalho)
+executaram exatamente essa calibração:
+
+- `BLOCK_CRITICAL_LIFE_MAX_COST = 150` (bloco 396) — confirmado presente
+  em `decision_engine.py`, consumido em `should_use_blocker` (~linha
+  11353) pra vida≤2, ESTENDIDO pra vida==3/vida==4 no bloco 398
+  (validado via self-play pareado, 52% vs 42% win rate). A regra
+  incondicional "sempre bloqueia com vida≤2" que o bloco 394 apontava
+  como "o ponto óbvio pra afrouxar, mas sem evidência" **não existe
+  mais** — já tem cost-check.
+- `COUNTER_VALOR_VIDA_SCALE = 1.3` (bloco 397) — confirmado presente e
+  aplicado em `should_use_counter` (~linha 11580).
+
+Ou seja: a "decisão pendente" do bloco 394 (a/b/c) já foi tomada (opção
+"calibrar de verdade") e EXECUTADA — só ninguém voltou pra fechar
+aquela seção específica do `TODO.md` depois. Corrigido: seção do bloco
+394 marcada como 🟢 RESOLVIDO, com nota explicando a causa da
+desatualização (texto original preservado abaixo, riscado, pra manter o
+histórico).
+
+**Nenhuma mudança de código nesta rodada** — só documentação
+(`TODO.md`). Próximo passo real, se o usuário quiser continuar:
+Mihawk-G (candidato 1 acima), que segue genuinamente em aberto.
+
 ## 2026-07-30 (403) - Claude (sessao remota web) - retomado resolve_reaction/redirect: Kid (ST36-005) tinha 2 abilities de graca por bug de parser (custo + tag sem "your")
 
 Usuário pediu pra confirmar se o bot entende cada líder/deck (cross-check
