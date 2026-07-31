@@ -995,8 +995,17 @@ def test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao() -> 
     # mas paga com 1 DON -- a conta antiga ignorava isso e usava o custo
     # de carta mesmo assim (ou bloqueava por "mao pequena" quando a mao
     # tinha so 1 carta, mesmo sem NENHUMA carta envolvida no custo real).
-    # Kid (ST36-005) tem o redirect via bloco 'passive', SEM custo nenhum
-    # -- deveria custar 0, nunca o fallback de 25.
+    # Kid (ST36-005): ATUALIZADO 30/07 -- o redirect na verdade TEM custo
+    # real ("turn 1 card from the top or bottom of your Life Cards
+    # face-down", achado ao retomar resolve_reaction/redirect; antes
+    # sumia por completo por um bug de parser, ver
+    # test_kid_st36_005_redirect_custo_top_or_bottom_e_tag_sem_your()).
+    # Mas resolve_reaction() nao tem uma regra de preco pra
+    # turn_life_face_up/down (so trash_from_hand e don_minus/rest_don
+    # incrementam custo_carta) -- o valor continua 0.0 aqui, so que agora
+    # por decisao explicita de nao precificar esse custo (impacto real
+    # quase sempre zero: a carta de vida normalmente ja esta face-down
+    # por padrao), nao porque a carta "nao tem custo nenhum".
     me_doffy = GameState(leader=real_card("OP14-060"), don_available=2)
     me_doffy.hand = [real_card("ST18-001")]  # mao "pequena" nao deve bloquear (custo e DON)
     opp = GameState(leader=real_card("OP14-020"))
@@ -1018,7 +1027,7 @@ def test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao() -> 
     with contextlib.redirect_stdout(buf2):
         sim_bridge.resolve_reaction(me_kid, opp, atk_power=7000, def_power=2000,
                                      defender_uid=0, actor_code="ST36-005")
-    check("Kid (redirect sem custo nenhum) loga custo_carta=0.0, nao o fallback de 25",
+    check("Kid (turn_life_face_down nao precificado) loga custo_carta=0.0, nao o fallback de 25",
           "custo_carta=0.0" in buf2.getvalue())
 
 
@@ -2621,6 +2630,66 @@ def test_boa_hancock_014_041_on_own_char_ko_com_filtro_de_tipo_e_power() -> None
     ee._dispatch_own_char_ko(forte)
     check("Boa Hancock DISPARA: vitima do tipo certo (Amazon Lily) E power>=5000 (dano ao oponente)",
           len(opp.life) == 0)
+
+
+def test_kid_st36_005_redirect_custo_top_or_bottom_e_tag_sem_your() -> None:
+    # Achado 30/07 (retomada de resolve_reaction/redirect): Kid (ST36-005),
+    # "[On Opponent's Attack][Once Per Turn] You may turn 1 card from the
+    # top or bottom of your Life Cards face-down: Change the target of
+    # that attack..." e "[Activate: Main][Once Per Turn] You may turn 1
+    # card from the top or bottom of your Life Cards face-up: Give up to
+    # 1 rested DON!! card to your Leader." -- 3 lacunas reais, todas
+    # generalizadas (nao hardcoded a Kid): (1) a tag "[On Opponent's
+    # Attack]" (sem "your") nao batia com NENHUM regex/TODAS_TAGS da
+    # familia on_opp_attack (as outras 48 cartas do banco usam "[On Your
+    # Opponent's Attack]") -- o bloco inteiro virava 'passive'
+    # incondicional (o mecanismo de segmento_solto engolia a habilidade
+    # inteira, por nao reconhecer a tag como a "1a tag formal" do texto);
+    # (2) o custo "turn 1 card from the TOP OR BOTTOM ... face-X" (unica
+    # carta no banco com a escolha de posicao, as ~30 outras da familia
+    # so tem "top") sumia por completo -- as DUAS habilidades de Kid
+    # ficavam de graca pro resolve_reaction/_worth_paying_optional_costs;
+    # (3) apos o fix de (1), o mesmo texto virava DUPLICADO em
+    # on_opp_attack E passive simultaneamente (a tag virou reconhecida
+    # pelo trigger_pattern especifico, mas TODAS_TAGS -- lista MESTRE
+    # usada por primeira_tag_m -- ainda nao reconhecia "your" opcional,
+    # entao o mecanismo de segmento_solto capturava o texto de novo como
+    # orfao) -- corrigido tolerando "your" opcional tambem em TODAS_TAGS.
+    am = get_card_effects("ST36-005").get("activate_main", {})
+    oa = get_card_effects("ST36-005").get("on_opp_attack", {})
+    check("ST36-005 classifica o redirect como on_opp_attack (nao passive), sem duplicar",
+          "passive" not in get_card_effects("ST36-005")
+          and oa.get("steps", [{}])[0].get("action") == "redirect_attack_target")
+    check("ST36-005 parseia os 2 custos turn_life_face_X com position=top_or_bottom",
+          am.get("costs") == [{"type": "turn_life_face_up", "position": "top_or_bottom"}]
+          and oa.get("costs") == [{"type": "turn_life_face_down", "position": "top_or_bottom"}])
+
+    # Execucao real do _pay_costs: com uma carta de vida JA no estado
+    # desejado, o custo escolhe ELA (custo real = zero, nada muda de
+    # verdade) em vez de virar arbitrariamente a do topo.
+    kid = real_card("ST36-005")
+    ja_face_up = mk("XKDL1", "Vida1", cost=1)
+    ja_face_up.life_face_up = True
+    outras = [mk(f"XKDL{i}", f"Vida{i}", cost=1) for i in range(2, 5)]
+    me = GameState(leader=kid, life=[ja_face_up] + outras)
+    opp = GameState(leader=mk("XKDOPP", "Opp", card_type="LEADER"))
+    ok_pay = EffectExecutor(me, opp)._pay_costs(
+        [{"type": "turn_life_face_up", "position": "top_or_bottom"}], kid)
+    check("Execucao real: custo top_or_bottom prefere a carta JA face-up (custo real zero)",
+          ok_pay and ja_face_up.life_face_up is True
+          and all(not c.life_face_up for c in outras))
+
+    # Sem nenhuma carta no estado desejado (todas comecam face-down por
+    # padrao, nenhuma ja face-up), cai no fallback de sempre (topo).
+    top_card = mk("XKDL2TOP", "VidaTopo", cost=1)
+    me2 = GameState(leader=real_card("ST36-005"),
+                     life=[mk("XKDL20", "Vida0", cost=1),
+                           mk("XKDL21", "Vida1", cost=1), top_card])
+    ok_pay2 = EffectExecutor(me2, GameState(leader=mk("XKDOPP2", "Opp", card_type="LEADER")))._pay_costs(
+        [{"type": "turn_life_face_up", "position": "top_or_bottom"}], me2.leader)
+    check("Execucao real: sem carta ja no estado certo, vira a do TOPO (fallback de sempre)",
+          ok_pay2 and top_card.life_face_up is True
+          and all(not c.life_face_up for c in me2.life if c is not top_card))
 
 
 def test_luffy_st08_001_on_any_char_ko_ambos_os_lados() -> None:
@@ -9291,6 +9360,7 @@ def main() -> int:
     test_shanks_001_on_opp_attack_prosa_reconhecida()
     test_buggy_041_on_own_char_ko_com_filtro_de_tipo()
     test_boa_hancock_014_041_on_own_char_ko_com_filtro_de_tipo_e_power()
+    test_kid_st36_005_redirect_custo_top_or_bottom_e_tag_sem_your()
     test_luffy_st08_001_on_any_char_ko_ambos_os_lados()
     test_trafalgar_law_001_bounce_condicao_e_filtro_de_cor()
     test_kid_leader_set_active_respects_cost_range()

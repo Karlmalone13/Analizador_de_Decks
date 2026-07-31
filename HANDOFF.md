@@ -1,5 +1,80 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-30 (403) - Claude (sessao remota web) - retomado resolve_reaction/redirect: Kid (ST36-005) tinha 2 abilities de graca por bug de parser (custo + tag sem "your")
+
+Usuário pediu pra confirmar se o bot entende cada líder/deck (cross-check
+do bloco 402 já feito) e depois retomar `resolve_reaction`/redirect
+(pendente desde o bloco 399, 29/07 — "investigação de calibração ainda
+em andamento").
+
+**Cross-check líder/deck (bloco 402, antes de retomar redirect)**: rodei
+o classificador de arquétipo (`deck_profile.py`) nos 18 líderes reais do
+pool e cruzei contra `RESUMO_ESTRATEGICO.md`. Achado: o Enel (OP15-058,
+70/193 decks — o MAIS jogado do pool) tem o efeito do líder corretamente
+modelado (ciclo `add_don`+`give_don`, já confirmado no bloco 400), mas o
+classificador de arquétipo do deck (4 eixos: Aggro/Controle/Tempo-Ramp/
+Vida) coloca Ramp por ÚLTIMO (26%) com Aggro/Controle quase empatados
+(37%/36,5%). Usuário esclareceu: o deck do Enel genuinamente "faz um
+pouco de tudo" e o líder gera ramp — o mix espalhado é fiel ao deck, não
+um erro de leitura. Investigação adicional achou que o ÚNICO consumidor
+de `archetype.dominante` no motor (`decision_engine.py` ~13829, gate de
+"o oponente é Controle?" pra decidir se vale segurar pra combo) usa uma
+comparação BINÁRIA de string, jogando fora toda a nuância do `mix` — num
+empate técnico como o do Enel, isso vira um cara-ou-coroa. **Decisão do
+usuário: deixar como está por enquanto** (baixo impacto agregado, só 1
+ponto de consumo) — registrado aqui como conhecimento, não é bug
+corrigido nesta rodada.
+
+**`resolve_reaction`/redirect — RETOMADO E CONCLUÍDO**: auditados os 4
+únicos redirects do banco (Teach OP16-080, Doflamingo OP14-060, Kid
+ST36-005, EB01-038). Teach/Doflamingo/EB01-038 já estavam corretos
+(custos: trash com filtro Trigger, don_minus opcional, don_minus
+opcional). **Kid (ST36-005) tinha 3 bugs reais, todos generalizados**:
+
+1. Tag "[On Opponent's Attack]" SEM "your" (única carta no banco — as
+   outras 48 da família usam "[On Your Opponent's Attack]") não batia
+   com nenhum regex/constante da família `on_opp_attack` — o bloco
+   inteiro caía no mecanismo de "segmento solto" (texto órfão antes da
+   1ª tag reconhecida), virando `passive` incondicional em vez de
+   `on_opp_attack` de verdade.
+2. O custo real de AMBAS as habilidades — "turn 1 card from the **top
+   or bottom** of your Life Cards face-down/up" — sumia por completo. O
+   regex de `turn_life_face_X` só aceitava "top", não a variante "top OR
+   bottom" que Kid usa nas 2 habilidades. As DUAS habilidades de Kid
+   (o redirect E o ramp de DON) rodavam de graça — o próprio código de
+   `resolve_reaction` tinha um comentário explícito assumindo "ou
+   nenhum custo — Kid", quando na verdade era o bug de parser.
+3. Ao corrigir (1) isoladamente, o texto ficou DUPLICADO em
+   `on_opp_attack` E `passive` ao mesmo tempo — a lista MESTRE
+   `TODAS_TAGS` (usada pelo mecanismo de segmento solto) ainda só
+   aceitava "your" obrigatório, então precisou do MESMO fix nos 2
+   pontos (regex específico + lista mestre), não só um.
+
+Fix: tag "your" opcional nos 2 pontos; custo `turn_life_face_X` ganhou
+campo `position: top_or_bottom` quando a carta oferece a escolha;
+`_pay_costs` (decision_engine.py) prefere virar uma carta de vida que JÁ
+está no estado desejado (custo real = zero) em vez de sempre a do topo,
+caindo no fallback de sempre (topo) só quando nenhuma já serve.
+`resolve_reaction` (sim_bridge.py) não precisou mudar de comportamento —
+`turn_life_face_up/down` continua sem entrar na conta de custo (decisão
+deliberada, documentada: o impacto real é quase sempre zero dado o novo
+`_pay_costs` preferir o no-op).
+
+Registro em
+`scriptis_da_ia/parser_audits/2026-07-30_kid_st36_005_redirect_top_or_bottom_e_tag_sem_your.json`.
+`diff_parser.py` PERDEU=0 MUDOU=1. Novo teste permanente
+(`test_kid_st36_005_redirect_custo_top_or_bottom_e_tag_sem_your`, parse +
+execução real: prefere carta já no estado certo, cai no fallback do topo
+sem candidato). Teste antigo
+(`test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao`)
+teve comentário/mensagem atualizados pra não afirmar mais que Kid "não
+tem custo nenhum". `smoke_fast.py`/`smoke_test.py` 100%.
+`parser_snapshot.json` re-gerado.
+
+**Item `resolve_reaction`/redirect fechado.** `resolve_optional_effect`
+(fallback pra reações que não são redirect de verdade) não foi
+reauditado — fica pendente se o usuário quiser aprofundar mais.
+
 ## 2026-07-30 (402) - Claude (sessao remota web) - IA_Compendium virou referencia OBRIGATORIA (CLAUDE.md/AGENTS.md) + cross-check dos 6 achados do bloco 401
 
 Usuário pediu explicitamente: "vamos resolver essa questão de IA

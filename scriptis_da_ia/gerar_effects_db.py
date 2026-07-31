@@ -1214,14 +1214,26 @@ def parse_costs(text):
     # tolerava o literal "1 card" singular). count so entra no dict
     # quando >1, preservando o formato exato ja usado pelas cartas com
     # N=1 (comportamento antigo intacto).
+    #
+    # "top OR BOTTOM" (achado 30/07, ST36-005 Kid, unica carta no banco
+    # com essa variante nas DUAS habilidades -- "you may turn 1 card from
+    # the top or bottom of your Life Cards face-down/face-up:"): o custo
+    # inteiro sumia (nenhuma das 2 habilidades de Kid tinha 'costs'),
+    # fazendo resolve_reaction/_worth_paying_optional_costs tratarem o
+    # redirect e o ramp de DON dele como de graca. 'position' so entra no
+    # dict quando a carta oferece a escolha top/bottom, preservando o
+    # formato exato ja usado pelas ~30 cartas so-topo (comportamento
+    # antigo intacto).
     m_face_cost = re.search(
-        r'you may turn (\d+) cards? from the top of your life cards face-(up|down)\s*:',
+        r'you may turn (\d+) cards? from the top (?:(or bottom) )?of your life cards face-(up|down)\s*:',
         t
     )
     if m_face_cost:
-        cost_face = {'type': f'turn_life_face_{m_face_cost.group(2)}'}
+        cost_face = {'type': f'turn_life_face_{m_face_cost.group(3)}'}
         if int(m_face_cost.group(1)) > 1:
             cost_face['count'] = int(m_face_cost.group(1))
+        if m_face_cost.group(2):
+            cost_face['position'] = 'top_or_bottom'
         costs.append(cost_face)
 
     # Custo de K.O. de um Character PROPRIO (distinto de trash_self: o alvo
@@ -8338,7 +8350,17 @@ def parse_card_effect(card_text, card_type):
     # parava em um subconjunto proprio, causando vazamento entre blocos (ex:
     # [Your Turn] vazava pra dentro de [Opponent's Turn] porque a lista de
     # parada do your_turn nao incluia opponent's turn).
-    TODAS_TAGS = r"on play|activate:?\s*main|when attacking|on your opponent.{0,3}s? attack|on k\.o\.|your turn|opponent.{0,3}s? turn|trigger|counter|end of your turn|on block|main|blocker|rush|double attack|banish|unblockable"
+    # "your" opcional antes de "opponent...attack" -- achado 30/07,
+    # ST36-005 Kid, unica carta no banco com a tag "[On Opponent's
+    # Attack]" (sem "your"). TODAS_TAGS e a lista MESTRE de tags
+    # reconhecidas (usada por primeira_tag_m/LOOKAHEAD_DELIM/etc) -- sem
+    # o "your" opcional aqui tambem (nao so no trigger_pattern especifico
+    # de on_opp_attack), a tag inteira ficava invisivel pra "qual e a
+    # PRIMEIRA tag formal do texto", fazendo o mecanismo de segmento_solto
+    # (texto ANTES da 1a tag reconhecida) engolir a habilidade inteira
+    # como passive incondicional, duplicando o mesmo redirect que o
+    # trigger_pattern especifico ja capturava certo em on_opp_attack.
+    TODAS_TAGS = r"on play|activate:?\s*main|when attacking|on (?:your )?opponent.{0,3}s? attack|on k\.o\.|your turn|opponent.{0,3}s? turn|trigger|counter|end of your turn|on block|main|blocker|rush|double attack|banish|unblockable"
 
     # Delimitador de bloco só conta quando a tag aparece no INICIO de uma frase
     # (inicio do texto, ou logo apos um '.' ou quebra de linha, com espaco
@@ -8379,7 +8401,13 @@ def parse_card_effect(card_text, card_type):
         # que segue a virgula fica dentro do bloco capturado (parse_
         # conditions roda sobre o bloco inteiro depois).
         ('when_attacking',ABERTURA + r"when this leader attacks your opponent.?s leader[^.]*?[,]\s*(.+?)" + LOOKAHEAD_DELIM_OU_ONCE),
-        ('on_opp_attack', ABERTURA + r"\[on your opponent.{0,3}s? attack\](.+?)" + LOOKAHEAD_DELIM),
+        # "your" opcional antes de "opponent" -- achado 30/07, ST36-005
+        # Kid, unica carta no banco com a tag "[On Opponent's Attack]"
+        # (sem "your"; as outras 48 cartas da familia usam "[On Your
+        # Opponent's Attack]"). Sem o "your" opcional, o bloco inteiro
+        # caia no catch-all generico 'passive' (recalculado incondicional,
+        # em vez de disparar so na janela real de ataque do oponente).
+        ('on_opp_attack', ABERTURA + r"\[on (?:your )?opponent.{0,3}s? attack\](.+?)" + LOOKAHEAD_DELIM),
         # Variante SEM tag formal: "This effect can be activated when your
         # opponent attacks. [efeito]" (achado 29/07, Shanks OP09-001, unica
         # carta no banco com essa frase exata). Mesmo sinonimo em prosa ja

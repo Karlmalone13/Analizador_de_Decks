@@ -4401,11 +4401,22 @@ class EffectExecutor:
                 if len(self.me.life) < count:
                     return False
                 desired_face_up = (ctype == 'turn_life_face_up')
-                alvos = self.me.life[-count:]
+                if cost.get('position') == 'top_or_bottom':
+                    # "from the top OR BOTTOM" (achado 30/07, ST36-005 Kid,
+                    # unica carta no banco com a escolha de posicao) --
+                    # prefere uma carta que JA esta no estado desejado (o
+                    # verdadeiro custo de virar e zero: nada muda de
+                    # verdade), so mexe numa carta que muda de estado se
+                    # NENHUMA ja estiver no estado certo.
+                    ja_no_estado = [c for c in self.me.life if c.life_face_up == desired_face_up]
+                    alvos = (ja_no_estado[:count] if len(ja_no_estado) >= count
+                             else self.me.life[-count:])
+                else:
+                    alvos = self.me.life[-count:]
                 for alvo in alvos:
                     alvo.life_face_up = desired_face_up
                 face = 'face-up' if desired_face_up else 'face-down'
-                self._cost_logs.append(f'custo: virou {count} carta(s) da vida do topo {face}')
+                self._cost_logs.append(f'custo: virou {count} carta(s) da vida {face}')
         return True
 
     def _return_don_to_deck(self, count: int, estado: 'GameState' = None,

@@ -79350,12 +79350,24 @@
             "rested": true
           }
         ],
+        "costs": [
+          {
+            "type": "turn_life_face_up",
+            "position": "top_or_bottom"
+          }
+        ],
         "once_per_turn": true
       },
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "redirect_attack_target"
+          }
+        ],
+        "costs": [
+          {
+            "type": "turn_life_face_down",
+            "position": "top_or_bottom"
           }
         ],
         "once_per_turn": true

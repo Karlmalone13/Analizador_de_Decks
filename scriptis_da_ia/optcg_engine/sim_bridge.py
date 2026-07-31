@@ -1379,10 +1379,18 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
             custo_carta += min((ee._trash_value(h) for h in pool), default=25.0)
         elif ctype in ('don_minus', 'rest_don'):
             custo_carta += DON_COST * c.get('count', 1)
-        # outros tipos de custo (ex: rest_self, ou nenhum custo — Kid):
+        # outros tipos de custo (ex: rest_self, turn_life_face_up/down --
+        # Kid ST36-005 paga com isso, achado 30/07 ao retomar
+        # resolve_reaction/redirect: o custo sumia por completo antes por
+        # um bug de parser, ver parser_audits/2026-07-30_kid_st36_005):
         # sem preco de oportunidade relevante pra essa conta, mesmo
         # criterio de _worth_paying_optional_costs pra custos de RECURSO
         # puros (sempre pagavel se o resto do fluxo ja validou que da).
+        # Decisao deliberada de nao precificar turn_life_face_X aqui: o
+        # impacto real e quase sempre zero (_pay_costs prefere virar uma
+        # carta de vida que JA esta no estado desejado, custo real
+        # nenhum), entao um preco de oportunidade > 0 superestimaria o
+        # custo na maioria das partidas.
 
     # O que o redirect SALVA: o alvo original deixa de tomar o golpe
     defender_char = next((c for c in gs.field_chars

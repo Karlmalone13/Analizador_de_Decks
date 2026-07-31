@@ -2,6 +2,42 @@
 
 **Última atualização:** 30 de julho de 2026
 
+## 🟢 IMPLEMENTADO: resolve_reaction/redirect RETOMADO E FECHADO (30/07/2026, bloco 403)
+
+Auditados os 4 únicos redirects do banco. Teach/Doflamingo/EB01-038 já
+estavam corretos. **Kid (ST36-005) tinha 3 bugs reais**:
+
+- [x] Tag "[On Opponent's Attack]" sem "your" (única carta no banco)
+  não era reconhecida pela família `on_opp_attack` — caía em `passive`
+  incondicional.
+- [x] Custo real das DUAS habilidades de Kid ("turn 1 card from the
+  **top or bottom** of your Life Cards face-X") sumia por completo — o
+  regex só aceitava "top". Ambas rodavam de graça.
+- [x] Após corrigir a tag isoladamente, o texto duplicava em
+  `on_opp_attack` E `passive` — a lista mestre `TODAS_TAGS` também
+  precisava do "your" opcional, não só o regex específico.
+
+Fix: tag tolerante em 2 pontos; custo ganhou `position: top_or_bottom`;
+`_pay_costs` prefere virar uma carta de vida já no estado desejado
+(custo real zero) antes de cair no fallback do topo. `resolve_reaction`
+não mudou de comportamento (decisão deliberada, documentada).
+`diff_parser.py` PERDEU=0 MUDOU=1. Novo teste permanente + teste antigo
+corrigido (não afirma mais que Kid "não tem custo nenhum").
+`smoke_fast.py`/`smoke_test.py` 100%.
+
+**Cross-check líder/deck adicional (Enel, antes de retomar redirect)**:
+usuário confirmou que o mix de arquétipo espalhado do Enel (Aggro 37% /
+Controle 36,5% / Ramp 26%) é fiel ao deck real dele ("faz um pouco de
+tudo"), não um erro. Achado residual: o único consumidor de
+`archetype.dominante` no motor usa comparação binária de string, sem
+olhar a margem — vira cara-ou-coroa em empates técnicos como esse.
+**Usuário decidiu deixar como está por enquanto** (baixo impacto, só 1
+ponto de consumo) — registrado, não corrigido.
+
+Nenhum item pendente desta rodada. `resolve_optional_effect` (fallback
+de reações não-redirect) não foi reauditado — fica como possível
+próximo passo se o usuário quiser aprofundar.
+
 ## 🟢 IMPLEMENTADO: IA_Compendium virou referência OBRIGATÓRIA (30/07/2026, bloco 402)
 
 Usuário pediu explicitamente pra tornar `IA_Compendium/` referência

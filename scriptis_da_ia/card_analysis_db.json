@@ -116181,7 +116181,7 @@
    },
    {
     "action": "redirect_attack_target",
-    "trigger": "passive"
+    "trigger": "on_opp_attack"
    }
   ],
   "synergy_states": {},
