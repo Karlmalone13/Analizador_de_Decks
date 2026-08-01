@@ -9404,6 +9404,75 @@ def test_drawbacks_self_generalizados_no_activate_main_01_08() -> None:
           score_zoro_com_alvo < score_zoro_sem_alvo)
 
 
+def test_remocao_controle_escala_por_valor_do_alvo_01_08() -> None:
+    """
+    Achado 01/08, continuacao da auditoria "sequencia errada no Turn
+    Planner": a categoria "remocao/controle" inteira de _score_
+    activate_main (rest_opp/rest_opp_character/ko/ko_opp/debuff_power/
+    debuff_cost/bounce/place_opp_character_bottom_deck/lock_opp_
+    character_attack -- 9 acoes, so negate_effect ja escalava por valor)
+    pontuava base=100 FLAT pra QUALQUER alvo -- remover um vanilla fraco
+    valia o MESMO que remover o maior blocker do oponente. Afeta 90+
+    cartas do banco (nao so os 15 lideres do levantamento inicial).
+
+    Fix: reusa o mesmo formato ja calibrado do negate_effect (-60 sem
+    alvo de valor, 100+min(valor*0.3,70) com alvo), delegando o alvo
+    elegivel a eligible_cards (mesmos filtros de cost_lte/power_lte/etc
+    ja usados na execucao real via sim_bridge._choose_opp_target_
+    filtered) e o valor a GameAnalyzer.char_value_score (mesma metrica
+    ja usada em play_from_trash pra avaliar alvo de reanimacao).
+
+    Cuidado testado explicitamente: 'bounce'/'ko' com target=self/own_
+    character (ex: OP01-002 Trafalgar Law bounce a PROPRIA carta, combo
+    de re-trigger, nao remocao) NAO deve escalar pelo campo do oponente
+    -- fica no base=100 antigo, sem regressao.
+    """
+    kuro = real_card("OP03-021")  # rest_opp_character, cost_lte=5
+    am_kuro = get_card_effects("OP03-021")["activate_main"]
+    p_kuro = GameState(leader=mk("XRMLDR", "Lider", card_type="LEADER"), turn=5, don_available=2)
+    p_kuro.field_chars = [kuro]
+    match = OPTCGMatch((p_kuro.leader, []), (mk("XRMOPP", "Opp", card_type="LEADER"), []))
+
+    opp_sem_alvo = GameState(leader=mk("XRMOPP0", "Opp", card_type="LEADER"), turn=5)
+    engine_sem = DecisionEngine(p_kuro, opp_sem_alvo)
+    score_sem_alvo = match._score_activate_main(kuro, am_kuro, p_kuro, opp_sem_alvo, 'DEVELOP', engine=engine_sem)
+    check("remocao/controle: sem NENHUM alvo elegivel no campo do oponente, "
+          "score fica NEGATIVO (nao ativar no vazio) em vez do base=100 antigo",
+          score_sem_alvo < 0)
+
+    opp_fraco = GameState(leader=mk("XRMOPP1", "Opp", card_type="LEADER"), turn=5)
+    opp_fraco.field_chars = [mk("XRMFRACO", "Fraco", cost=2, power=1000)]
+    engine_fraco = DecisionEngine(p_kuro, opp_fraco)
+    score_fraco = match._score_activate_main(kuro, am_kuro, p_kuro, opp_fraco, 'DEVELOP', engine=engine_fraco)
+
+    opp_forte = GameState(leader=mk("XRMOPP2", "Opp", card_type="LEADER"), turn=5)
+    opp_forte.field_chars = [mk("XRMFORTE", "Forte", cost=5, power=9000)]
+    engine_forte = DecisionEngine(p_kuro, opp_forte)
+    score_forte = match._score_activate_main(kuro, am_kuro, p_kuro, opp_forte, 'DEVELOP', engine=engine_forte)
+
+    check("remocao/controle: alvo FORTE (9000 power) pontua MAIS que alvo FRACO "
+          "(1000 power) -- antes do fix, os dois pontuavam o MESMO base=100 flat",
+          score_forte > score_fraco)
+    check("remocao/controle: alvo fraco ainda pontua acima do piso de 'sem alvo'",
+          score_fraco > score_sem_alvo)
+
+    # Guarda de regressao: bounce self-target (combo de auto-devolver, ex:
+    # OP01-002) NAO deve escalar pelo campo do oponente -- fica no
+    # base=100 flat de sempre, com ou sem alvo forte no campo do oponente.
+    am_self_bounce = {'steps': [{'action': 'bounce', 'count': 1, 'target': 'own_character'}],
+                      'costs': []}
+    p_self = GameState(leader=mk("XSBLDR", "Lider", card_type="LEADER"), turn=5, don_available=2)
+    src_self = mk("XSBSRC", "Fonte", cost=3, power=5000)
+    p_self.field_chars = [src_self]
+    engine_self_sem = DecisionEngine(p_self, opp_sem_alvo)
+    score_self_sem = match._score_activate_main(src_self, am_self_bounce, p_self, opp_sem_alvo, 'DEVELOP', engine=engine_self_sem)
+    engine_self_forte = DecisionEngine(p_self, opp_forte)
+    score_self_forte = match._score_activate_main(src_self, am_self_bounce, p_self, opp_forte, 'DEVELOP', engine=engine_self_forte)
+    check("bounce self-target (own_character): score IGUAL com/sem alvo forte no "
+          "campo do oponente -- nao e removal, nao deve reagir ao campo alheio",
+          abs(score_self_sem - score_self_forte) < 1e-6)
+
+
 def test_exclude_failed_actions_evita_loop_travado_em_activate() -> None:
     # Achado real 26/07 (bloco HANDOFF 370, log 22.24.06, match b3484a93 --
     # Barba Negra OP09-093 custo 10): 2 copias da mesma carta em campo, a
@@ -9650,6 +9719,7 @@ def main() -> int:
     test_op04_069_base_power_igual_ao_atacante_do_oponente()
     test_in_any_order_custos_bottom_deck_escolhem_melhor_ordem()
     test_drawbacks_self_generalizados_no_activate_main_01_08()
+    test_remocao_controle_escala_por_valor_do_alvo_01_08()
     test_exclude_failed_actions_evita_loop_travado_em_activate()
     test_self_play_info_hidden_mascara_counter_e_deck_do_oponente()
     test_check_invariants_unifica_auditoria_no_decision_log()

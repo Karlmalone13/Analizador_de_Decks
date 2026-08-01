@@ -12349,6 +12349,88 @@ class OPTCGMatch:
             targets.extend(getattr(opp, 'field_chars', []))
         return max((self._negate_effect_target_value(t) for t in targets), default=0.0)
 
+    # Actions da categoria "remocao/controle" cujo alvo e SEMPRE o oponente
+    # (confirmado nos steps reais do banco: nunca aparecem com target=self/
+    # own_character). 'target' ausente no step tambem conta como oponente
+    # implicito (convencao ja usada pela execucao real, ex: OP06-020 rest_
+    # opp_character sem chave 'target').
+    _REMOCAO_ACOES_ALVO_OPONENTE_IMPLICITO = (
+        'rest_opp', 'rest_opp_character', 'ko_opp', 'ko_if_cost_eq_don',
+        'debuff_power', 'debuff_cost', 'place_opp_character_bottom_deck',
+        'lock_opp_character_attack',
+    )
+    # 'ko' e 'bounce' TEM variantes que alvejam o PROPRIO campo (ex: OP01-002
+    # bounce target=own_character -- devolve a propria carta pra mao, combo
+    # de re-trigger, NAO remocao; OP04-079 ko target=self_character --
+    # sacrificio). Só entram na conta de valor quando o target do step diz
+    # explicitamente que e o oponente -- caso contrario ficam de fora
+    # (mantem o base=100 flat antigo pra esses casos, sem risco de regressao).
+    _REMOCAO_ACOES_ALVO_OPONENTE_EXPLICITO = ('ko', 'bounce')
+
+    def _best_removal_target_value(self, opp, steps, engine) -> float:
+        """
+        Valor do MELHOR alvo elegivel do oponente entre os steps de
+        remocao/controle deste bloco (mesmos filtros de alvo usados na
+        execucao real -- cost_lte/cost_gte/cost_eq/power_lte/power_gte/
+        don_attached_gte/rested_only/filter_type -- delegados a
+        eligible_cards, fonte unica, igual sim_bridge._choose_opp_target_
+        filtered ja faz pro lado da execucao).
+
+        Simplificacao consciente (achado 01/08, categoria "remocao/
+        controle" tem 90+ cartas no banco, nao só os 15 lideres do
+        levantamento inicial): usa o MELHOR alvo unico mesmo quando o step
+        pede count>1 (ex: OP06-117 ko count=99 cost_lte=2, ST05-011 rest_
+        opp_character count=2) -- subestima levemente o valor de efeitos
+        em area, mas evita inflar o score por somatorio sem calibracao
+        própria ainda. Tambem nao distingue remocao PERMANENTE (ko/bounce/
+        place_bottom_deck) de temporaria (debuff_power/debuff_cost/rest) --
+        os 2 ja compartilhavam o mesmo base=100 flat antes deste fix; essa
+        diferenciacao fica pra uma proxima passada se algum caso real pedir.
+        """
+        from optcg_engine.rules_facade import eligible_cards
+        melhor = 0.0
+        for step in steps:
+            action = step.get('action')
+            tgt = step.get('target')
+            if action in self._REMOCAO_ACOES_ALVO_OPONENTE_IMPLICITO:
+                if tgt not in (None, 'opp_character', 'all_opp_characters', 'opp', 'opponent'):
+                    continue
+            elif action in self._REMOCAO_ACOES_ALVO_OPONENTE_EXPLICITO:
+                if tgt not in ('opp_character', 'all_opp_characters'):
+                    continue
+            else:
+                continue
+            filtrados = eligible_cards(
+                opp.field_chars,
+                cost_lte=step.get('cost_lte'), cost_gte=step.get('cost_gte'),
+                cost_eq=step.get('cost_eq'),
+                power_lte=step.get('power_lte'), power_gte=step.get('power_gte'),
+                don_attached_gte=step.get('don_attached_gte'),
+                rested_only=step.get('rested_only', False),
+                filter_text=step.get('filter_type') or step.get('filter_types') or '',
+            )
+            for c in filtrados:
+                valor = engine.analyzer.char_value_score(c)
+                melhor = max(melhor, valor)
+        return melhor
+
+    def _has_opponent_targeted_removal_step(self, steps) -> bool:
+        """Existe pelo menos 1 step de remocao/controle cujo alvo declarado
+        e o oponente (independente de haver alvo ELEGIVEL agora)? Usado
+        pra decidir se o bloco entra na escala por valor ou fica no
+        base=100 antigo (bloco que só tem bounce/ko self-target, ex:
+        OP01-002 -- combo de auto-devolver, nao remocao de verdade)."""
+        for step in steps:
+            action = step.get('action')
+            tgt = step.get('target')
+            if action in self._REMOCAO_ACOES_ALVO_OPONENTE_IMPLICITO:
+                if tgt in (None, 'opp_character', 'all_opp_characters', 'opp', 'opponent'):
+                    return True
+            elif action in self._REMOCAO_ACOES_ALVO_OPONENTE_EXPLICITO:
+                if tgt in ('opp_character', 'all_opp_characters'):
+                    return True
+        return False
+
     def _stage_play_saves_don_for_card(self, p, card) -> int:
         stage = getattr(p, 'field_stage', None)
         if stage is None or getattr(stage, 'rested', False):
@@ -12832,6 +12914,19 @@ class OPTCGMatch:
                     for s in steps if s.get('action') == 'negate_effect'
                 )
                 base = -60 if negate_value <= 0 else 100 + min(negate_value, 70)
+            elif engine is not None and self._has_opponent_targeted_removal_step(steps):
+                # Achado 01/08 (generalizando o mesmo bug do negate_effect
+                # pro resto da categoria "remocao/controle"): as outras 9
+                # acoes (rest_opp/rest_opp_character/ko/ko_opp/debuff_power/
+                # debuff_cost/bounce/place_opp_character_bottom_deck/
+                # lock_opp_character_attack) pontuavam base=100 FLAT
+                # independente do alvo real ser uma ameaca grande (blocker
+                # caro, double attack) ou um vanilla fraco -- a IA nao
+                # discriminava QUAL Character do oponente valia a pena
+                # remover. Mesma escala/formato ja usado pro negate_effect
+                # (-60 sem alvo de valor, 100+min(valor,70) com alvo).
+                alvo_valor = self._best_removal_target_value(opp, steps, engine)
+                base = -60 if alvo_valor <= 0 else 100 + min(alvo_valor * 0.3, 70)
         elif any(a == 'play_from_trash' for a in actions_list):
             # Achado real 09/07 (Five Elders OP13-082 nunca ativava, mesmo
             # com o board quase morrendo e a lixeira cheia de alvos

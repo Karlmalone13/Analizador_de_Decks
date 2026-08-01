@@ -30,15 +30,40 @@ real no banco** (não estão no pool de 18 líderes com partidas reais), sem
 alvo de comparação humana disponível. `smoke_fast.py`/`smoke_test.py`
 100%, sem mudança de parser.
 
-**Pendente, decisão explícita do usuário antes de mexer**: a categoria
-inteira "remoção/controle" (`rest_opp_character`/`ko`/`debuff_power`/
-`debuff_cost`/`bounce`/etc, `base=100` flat pra TODAS, só `negate_effect`
-escala por valor real do alvo) é uma classe MAIOR do mesmo bug — afeta 15
-líderes (`EB01-040`, `EB03-001`, `EB04-001`, `OP01-002`, `OP02-093`,
-`OP03-021`, `OP06-020`, `OP08-002`, `OP08-021`, `OP14-079`, `OP15-001`,
-`P-076`, `ST03-001`, `ST06-001`, `ST10-001`), mas só 1 (`OP14-079`
-Crocodile) está no pool real e mesmo esse não tem logs — qualquer fix aí
-só seria validável por auto-consistência. Não implementado ainda.
+**Resolvido no bloco 408** (usuário pediu "pode ir por aí"): a categoria
+inteira "remoção/controle" agora escala por valor real do alvo. Ver
+seção própria abaixo.
+
+## 🟢 Categoria "remoção/controle" (90+ cartas) escala por valor real do alvo, não base=100 flat (01/08/2026, bloco 408)
+
+Escopo real maior que o levantamento inicial do bloco 407: buscando
+`target` em TODO o banco (não só líderes), `rest_opp`/`rest_opp_
+character`/`ko`/`ko_opp`/`debuff_power`/`debuff_cost`/`bounce`/`place_
+opp_character_bottom_deck`/`lock_opp_character_attack` aparecem em
+**90+ cartas** (maioria Characters, não só líderes). Todas pontuavam
+`base=100` flat — remover um vanilla fraco valia o mesmo que remover o
+maior blocker do oponente.
+
+- [x] Fix genérico: `_best_removal_target_value`/`_has_opponent_
+  targeted_removal_step` (novos em `OPTCGMatch`), delegando filtro de
+  alvo a `eligible_cards` (mesma fonte da execução real) e valor a
+  `GameAnalyzer.char_value_score`. Mesmo formato do `negate_effect`
+  (`-60` sem alvo de valor, `100+min(valor*0.3,70)` com alvo).
+- [x] Cuidado que evitou regressão real: `bounce`/`ko` com variante
+  self-target (`OP01-002` bounce a própria carta — combo de re-trigger,
+  NÃO remoção) só escala quando o `target` do step diz explicitamente
+  `opp_character`/`all_opp_characters` — as outras 7 ações (nunca
+  observadas com variante própria no banco) tratam `target` ausente
+  como oponente implícito.
+- [x] Validado: `smoke_fast.py` (4 checks: sem alvo→negativo, forte>fraco,
+  fraco>sem-alvo, guarda de regressão pro bounce self-target) +
+  `smoke_test.py` completo, **0 regressões** nos ~1500 testes existentes
+  (inclui testes que já tocavam `OP01-002`/`ST03-001`/`ST06-001`/
+  `ST10-001`, entre outras cartas afetadas).
+- [x] Sem baseline humano disponível pra nenhuma carta desta categoria
+  (só `OP14-079` está no pool real de 18 líderes, e mesmo esse sem
+  logs) — validação é só por auto-consistência/testes de unidade,
+  declarado explicitamente.
 
 ## 🟢 Mihawk-G (OP14-020): 2 causas reais corrigidas, alvo de "5,4/jogo" reconsiderado (30/07/2026, blocos 405-406)
 

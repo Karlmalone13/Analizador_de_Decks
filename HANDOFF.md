@@ -1,5 +1,69 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-01 (408) - Claude (sessao remota web) - Categoria "remocao/controle" inteira (90+ cartas) agora escala por valor real do alvo, nao base=100 flat
+
+Usuário pediu explicitamente "pode ir por aí" pra pendência deixada em
+aberto no bloco 407 (a categoria maior, não implementada ainda por
+prudência dado o blast radius).
+
+**Escopo real maior do que o levantamento inicial**: buscando por
+`target` nos steps de `activate_main` de TODO o banco (não só os 15
+líderes achados antes — a busca anterior tinha sido restrita sem
+querer), a categoria "remoção/controle" (`rest_opp`, `rest_opp_
+character`, `ko`, `ko_opp`, `ko_if_cost_eq_don`, `debuff_power`,
+`debuff_cost`, `bounce`, `place_opp_character_bottom_deck`, `lock_opp_
+character_attack`) aparece em **90+ cartas** (a maioria Characters com
+`activate_main` próprio, não só líderes). Todas as 9 ações (exceto
+`negate_effect`, que já escalava via `_best_negate_effect_target_value`)
+pontuavam `base=100` **FLAT**, independente do alvo real ser um vanilla
+fraco ou o maior blocker/double-attack do campo do oponente — a IA não
+discriminava QUAL Character valia a pena remover/travar.
+
+**Achado que exigiu cuidado extra** (evitou uma regressão real):
+`bounce` e `ko` têm variantes que alvejam o PRÓPRIO campo, não o do
+oponente — ex: `OP01-002` Trafalgar Law (`bounce target=own_character`,
+devolve a PRÓPRIA carta pra mão, combo de re-trigger, não remoção),
+`OP04-079` (`ko target=self_character`, sacrifício). Aplicar a escala
+por "valor do campo do oponente" nesses casos teria penalizado cartas de
+combo legítimo como se fossem remoção sem alvo. Fix: só escala quando o
+`target` do step diz explicitamente `opp_character`/`all_opp_
+characters` (pras 2 ações com variante própria) ou está ausente/opp
+(pras outras 7, que nunca apareceram com variante própria nos dados
+reais do banco).
+
+**Fix**: 2 helpers novos em `OPTCGMatch`
+(`_best_removal_target_value`/`_has_opponent_targeted_removal_step`),
+delegando o filtro de alvo elegível a `eligible_cards` (mesmos campos —
+`cost_lte`/`cost_gte`/`cost_eq`/`power_lte`/`power_gte`/`don_attached_
+gte`/`rested_only`/`filter_type` — já usados na execução real via
+`sim_bridge._choose_opp_target_filtered`, fonte única, sem reimplementar
+filtro) e o valor do alvo a `GameAnalyzer.char_value_score` (mesma
+métrica já usada em `play_from_trash` pra avaliar alvo de reanimação).
+Mesmo formato do `negate_effect`: `-60` sem alvo de valor no campo,
+`100 + min(valor*0.3, 70)` com alvo.
+
+**Simplificações conscientes, documentadas no código** (não escondidas):
+usa o MELHOR alvo único mesmo quando o step pede `count>1` (efeitos em
+área tipo `OP06-117` `ko count=99 cost_lte=2` ficam subestimados, não
+inflados); não distingue remoção PERMANENTE (`ko`/`bounce`/`place_
+bottom_deck`) de TEMPORÁRIA (`debuff_power`/`debuff_cost`/`rest_opp_
+character`) — os 2 já compartilhavam o mesmo `base=100` antes deste fix,
+então não é uma regressão, mas fica como possível refinamento futuro se
+algum caso real pedir.
+
+**Validação**: só `OP14-079` Crocodile está no pool real de 18 líderes
+com dados, e mesmo esse não tem logs reais no banco (confirmado no
+bloco 407) — sem baseline humano pra nenhuma carta desta categoria.
+Validação foi via `smoke_fast.py` (4 checks novos: sem alvo → negativo;
+alvo fraco vs forte → forte pontua mais; alvo fraco ainda > sem alvo;
+guarda de regressão explícita provando que `bounce` self-target — caso
+`OP01-002` — NÃO reage ao campo do oponente, mantém o `base=100` antigo)
+e `smoke_test.py` completo — **0 regressões nos ~1500 testes
+existentes**, incluindo os testes já existentes que tocam várias das
+cartas afetadas (`OP01-002`, `ST03-001`, `ST06-001`, `ST10-001`, etc.).
+
+Sem mudança de parser. `HANDOFF.md`/`TODO.md` atualizados.
+
 ## 2026-08-01 (407) - Claude (sessao remota web) - Auditoria "outros efeitos com a mesma sequencia errada": achadas e corrigidas 3 cartas com drawback proprio nunca descontado em activate_main
 
 Usuário pediu 2 coisas depois do bloco 406: (1) confirmar se a redução de
