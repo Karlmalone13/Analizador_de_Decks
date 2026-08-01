@@ -1,6 +1,44 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 30 de julho de 2026
+**Última atualização:** 1 de agosto de 2026
+
+## 🟢 Auditoria "outros efeitos com sequência errada no Turn Planner": 3 cartas com drawback nunca descontado, corrigidas (01/08/2026, bloco 407)
+
+Confirmado pro usuário: a redução de ativações desperdiçadas do Mihawk-G
+(bloco 406) foi de **40,6% → 20,0%** (queda de ~51% relativa, passa dos
+"mais de 20%" pedidos).
+
+Auditoria por analogia (mesma classe de bug do `self_cant_play` do
+Mihawk-G — drawback próprio dentro do PRÓPRIO `activate_main` nunca
+descontado do score) achou 3 cartas:
+
+- [x] **`OP06-020` Hody Jones** (`self_cant_take_life`): tabela
+  `_UNCOVERED_ACTION_VALUE` já tinha `-15` calibrado, mas nunca era
+  consultada (bloco cai direto em "remoção/controle", `base=100`, sem
+  passar pelo fallback que lê essa tabela). Fix: desconta os -15 direto.
+- [x] **`OP04-090` Luffy** (`lock_self_character_refresh`): mesma tabela,
+  mesmo problema (só era lida via `max()` no fallback — nunca REDUZ o
+  score). Fix: desconta `min(board_value(src)*6, 70)`.
+- [x] **`OP12-020` Zoro** (`lock_self_attack_opp_chars_cost_lte`): nem
+  estava na tabela. Fix: desconta `min(melhor_alvo_elegivel*0.3, 50)` só
+  quando o oponente TEM Character(s) de custo≤7 em campo (sem alvo, sem
+  penalidade).
+
+Validado só via `smoke_fast.py` (3 testes de magnitude EXATA, comparação
+controlada com/sem o step de drawback) — **nenhuma das 3 cartas tem log
+real no banco** (não estão no pool de 18 líderes com partidas reais), sem
+alvo de comparação humana disponível. `smoke_fast.py`/`smoke_test.py`
+100%, sem mudança de parser.
+
+**Pendente, decisão explícita do usuário antes de mexer**: a categoria
+inteira "remoção/controle" (`rest_opp_character`/`ko`/`debuff_power`/
+`debuff_cost`/`bounce`/etc, `base=100` flat pra TODAS, só `negate_effect`
+escala por valor real do alvo) é uma classe MAIOR do mesmo bug — afeta 15
+líderes (`EB01-040`, `EB03-001`, `EB04-001`, `OP01-002`, `OP02-093`,
+`OP03-021`, `OP06-020`, `OP08-002`, `OP08-021`, `OP14-079`, `OP15-001`,
+`P-076`, `ST03-001`, `ST06-001`, `ST10-001`), mas só 1 (`OP14-079`
+Crocodile) está no pool real e mesmo esse não tem logs — qualquer fix aí
+só seria validável por auto-consistência. Não implementado ainda.
 
 ## 🟢 Mihawk-G (OP14-020): 2 causas reais corrigidas, alvo de "5,4/jogo" reconsiderado (30/07/2026, blocos 405-406)
 

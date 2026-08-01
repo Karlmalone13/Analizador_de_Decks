@@ -1,5 +1,72 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-01 (407) - Claude (sessao remota web) - Auditoria "outros efeitos com a mesma sequencia errada": achadas e corrigidas 3 cartas com drawback proprio nunca descontado em activate_main
+
+Usuário pediu 2 coisas depois do bloco 406: (1) confirmar se a redução de
+ativações desperdiçadas do Mihawk-G passou de 20% — **confirmado: 13/32
+(40,6%) → 5/25 (20,0%), queda de 20,6 pontos percentuais / ~51% relativa**,
+bate o "mais de 20%" pedido; (2) verificar se existem OUTROS efeitos na
+mesma classe de bug (drawback próprio dentro do próprio `activate_main`
+nunca descontado do score) em outras cartas do banco.
+
+**Achei 3**: `OP06-020` Hody Jones (`self_cant_take_life` — não pode
+adicionar carta de Life à mão via efeito próprio neste turno, junto do
+benefício `rest_opp_character`), `OP04-090` Monkey.D.Luffy
+(`lock_self_character_refresh` — o PRÓPRIO character trava sem desrestar
+na próxima Refresh Phase, junto de `set_active`), `OP12-020` Roronoa Zoro
+(`lock_self_attack_opp_chars_cost_lte` — líder não pode atacar Characters
+de custo≤7 neste turno, junto de `set_active`). Confirmei os 3 textos
+reais em `cards_rows.csv` antes de mexer.
+
+**Causa raiz mais sutil que o `self_cant_play` do Mihawk**: a tabela
+`_UNCOVERED_ACTION_VALUE` JÁ tinha entrada NEGATIVA pra 2 dos 3
+(`self_cant_take_life: -15`, `lock_self_character_refresh: -15`), mas essa
+tabela só é consumida dentro do fallback genérico de `_score_activate_main`
+via `base = max(base, piso*3)` — um `max()` NUNCA reduz o piso, só eleva; e
+quando o bloco cai numa categoria explícita ANTES do fallback (caso do
+Hody: `rest_opp_character` cai em "remoção/controle", `base=100` direto),
+o fallback nem roda, então a tabela nunca é sequer consultada. Resultado:
+nenhuma das 3 cartas descontava qualquer coisa do próprio drawback, na
+prática — mesmo tendo o valor já calibrado numa tabela, há meses.
+
+**Fix genérico** (3 blocos dedicados em `_score_activate_main`, mesmo
+lugar do fix do `self_cant_play`): `self_cant_take_life` desconta o -15 já
+calibrado (custo pequeno e fixo — só precisava parar de ser ignorado).
+`lock_self_character_refresh` desconta `min(src.board_value()*6, 70)` —
+escala pelo valor do PRÓPRIO character travado (mesma família de peso do
+`place_self_bottom_deck` já existente, um pouco mais leve pq o character
+continua em campo, só não age por ~1 ciclo). `lock_self_attack_opp_chars_
+cost_lte` desconta `min(melhor_alvo_elegivel*0.3, 50)` SE o oponente tiver
+Character(s) de custo≤7 em campo (sem alvo elegível, o drawback é de
+graça — não penaliza).
+
+**Sem dados de log reais pra nenhuma das 3** (Hody Jones, Luffy OP04-090 e
+Zoro OP12-020 não estão no pool de 18 líderes com logs reais no banco —
+`logs/index.json` conferido) — validação foi só via `smoke_fast.py`, com
+3 testes de magnitude EXATA (comparação controlada com/sem o step de
+drawback no mesmo bloco sintético, não estimativa): Hody bate a diferença
+de -15 exata; Luffy bate `board_value()*6` exata; Zoro cai quando há alvo
+elegível vs não cai sem alvo. `smoke_fast.py` e `smoke_test.py` 100%
+(nenhuma regressão nos ~˜1500 testes existentes).
+
+**Ainda em aberto, não implementado** (reportar antes de decidir, pedido
+implícito do usuário nesta sessão de não fazer mudanças amplas sem
+avisar): a categoria "remoção/controle" inteira (`rest_opp`,
+`rest_opp_character`, `ko`, `ko_opp`, `ko_if_cost_eq_don`, `debuff_power`,
+`debuff_cost`, `bounce`, `place_opp_character_bottom_deck`,
+`lock_opp_character_attack` — TODAS com `base=100` flat, só `negate_effect`
+tem escala por valor real do alvo via `_best_negate_effect_target_value`)
+é uma classe MAIOR do mesmo bug — 15 líderes usam essas ações em
+`activate_main` (`EB01-040`, `EB03-001`, `EB04-001`, `OP01-002`,
+`OP02-093`, `OP03-021`, `OP06-020`, `OP08-002`, `OP08-021`, `OP14-079`,
+`OP15-001`, `P-076`, `ST03-001`, `ST06-001`, `ST10-001`). Só `OP14-079`
+Crocodile está no pool real de 18 líderes, e mesmo esse não tem logs reais
+no banco — qualquer fix aqui só seria validável por auto-consistência
+(não repetir o bug de ativar sem olhar o valor do alvo), não por
+comparação com humano. Não mexi nisso ainda — é bem mais amplo (15
+líderes vs 3) e merece uma decisão explícita antes de tocar numa função
+tão compartilhada.
+
 ## 2026-07-30 (406) - Claude (sessao remota web) - Mihawk-G (OP14-020) continuacao: achada uma 2a causa real (self_cant_play nunca penalizado) alem do gap de sequenciamento
 
 Usuário pediu explicitamente "continue investigando" (2x) depois do

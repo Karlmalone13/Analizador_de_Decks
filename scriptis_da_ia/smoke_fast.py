@@ -9326,6 +9326,84 @@ def test_set_don_active_score_escala_por_don_rested_30_07() -> None:
           score_mao_cheia < score_mao_vazia)
 
 
+def test_drawbacks_self_generalizados_no_activate_main_01_08() -> None:
+    """
+    Achado 01/08 (continuando a auditoria "outros efeitos com a mesma
+    sequencia errada" pedida pelo usuario apos os 2 fixes do Mihawk-G):
+    procurando outras cartas com um drawback proprio DENTRO do PROPRIO
+    activate_main (mesmo padrao do self_cant_play de OP14-020), achei 3:
+    OP06-020 Hody Jones (self_cant_take_life), OP04-090 Luffy
+    (lock_self_character_refresh), OP12-020 Zoro
+    (lock_self_attack_opp_chars_cost_lte). As 3 tinham o drawback
+    completamente IGNORADO no score real: _UNCOVERED_ACTION_VALUE ja tinha
+    entrada NEGATIVA pras 2 primeiras, mas so era lida via max() no
+    fallback generico do _score_activate_main (nunca reduz o piso, so
+    eleva) -- e nem entrava quando o bloco caia numa categoria explicita
+    ANTES do fallback (caso do Hody: rest_opp_character cai em "remocao/
+    controle", que nunca olha essa tabela). Fix: 3 descontos dedicados,
+    reaproveitando a mesma logica ja calibrada pro self_cant_play do
+    Mihawk-G (board_value/char_value_score do alvo real, nao flat cego).
+    """
+    match = OPTCGMatch(
+        (real_card("OP06-020"), []), (mk("XDBOPP", "Opp", card_type="LEADER"), []))
+
+    # Hody Jones (OP06-020): self_cant_take_life e um custo pequeno e fixo
+    # (ja calibrado em -15 na tabela). Comparacao controlada: mesmo bloco,
+    # com e sem o step de drawback -- a diferenca tem que bater os -15.
+    hody = real_card("OP06-020")
+    p_hody = GameState(leader=hody, turn=5, don_available=2, don_rested=0)
+    opp_hody = GameState(leader=mk("XDBOPP", "Opp", card_type="LEADER"), turn=5)
+    opp_hody.field_chars = [mk("XDBTGT", "Alvo", cost=3, power=4000)]
+    am_hody_com = {'steps': [{'action': 'rest_opp_character', 'count': 1, 'cost_lte': 3},
+                             {'action': 'self_cant_take_life'}],
+                   'costs': [{'type': 'rest_self'}]}
+    am_hody_sem = {'steps': [{'action': 'rest_opp_character', 'count': 1, 'cost_lte': 3}],
+                   'costs': [{'type': 'rest_self'}]}
+    score_hody_com = match._score_activate_main(hody, am_hody_com, p_hody, opp_hody, 'DEVELOP', engine=None)
+    score_hody_sem = match._score_activate_main(hody, am_hody_sem, p_hody, opp_hody, 'DEVELOP', engine=None)
+    check("Hody Jones (self_cant_take_life): drawback agora desconta exatamente "
+          "os -15 ja calibrados na tabela (antes do fix, diferenca era 0)",
+          abs((score_hody_sem - score_hody_com) - 15.0) < 1e-6)
+
+    # Luffy (OP04-090): lock_self_character_refresh escala com o board_value
+    # do PROPRIO character (src) -- corpo caro trava mais do que corpo fraco.
+    # Comparacao controlada: mesmo bloco, com e sem o step de drawback.
+    luffy = real_card("OP04-090")
+    p_luffy = GameState(leader=mk("XLFLDR", "Lider", card_type="LEADER"), turn=6, don_available=1)
+    p_luffy.field_chars = [luffy]
+    opp_luffy = GameState(leader=mk("XLFOPP", "Opp", card_type="LEADER"), turn=6)
+    am_luffy_com = {'steps': [{'action': 'set_active', 'target': 'self'},
+                              {'action': 'lock_self_character_refresh', 'count': 1,
+                               'target': 'this_card'}],
+                    'costs': [{'type': 'place_from_trash_bottom_deck', 'count': 7}]}
+    am_luffy_sem = {'steps': [{'action': 'set_active', 'target': 'self'}],
+                    'costs': [{'type': 'place_from_trash_bottom_deck', 'count': 7}]}
+    score_luffy_com = match._score_activate_main(luffy, am_luffy_com, p_luffy, opp_luffy, 'DEVELOP', engine=None)
+    score_luffy_sem = match._score_activate_main(luffy, am_luffy_sem, p_luffy, opp_luffy, 'DEVELOP', engine=None)
+    esperado = min(luffy.board_value() * 6, 70)
+    check("Luffy (lock_self_character_refresh): drawback desconta board_value*6 "
+          "(cap 70) do PROPRIO character travado, antes o desconto era 0",
+          abs((score_luffy_sem - score_luffy_com) - esperado) < 1e-6)
+
+    # Zoro (OP12-020): lock_self_attack_opp_chars_cost_lte so penaliza
+    # quando o oponente TEM alvo elegivel (cost<=7) -- sem alvo, drawback e
+    # de graca (nao deveria penalizar).
+    zoro = real_card("OP12-020")
+    am_zoro = get_card_effects("OP12-020")["activate_main"]
+    p_zoro = GameState(leader=zoro, turn=6, don_available=3)
+    opp_com_alvo = GameState(leader=mk("XZROPP1", "Opp", card_type="LEADER"), turn=6)
+    opp_com_alvo.field_chars = [mk("XZRTGT", "Alvo", cost=5, power=6000)]
+    score_zoro_com_alvo = match._score_activate_main(zoro, am_zoro, p_zoro, opp_com_alvo, 'DEVELOP', engine=None)
+
+    opp_sem_alvo = GameState(leader=mk("XZROPP2", "Opp", card_type="LEADER"), turn=6)
+    opp_sem_alvo.field_chars = [mk("XZRTGT2", "AlvoCaro", cost=9, power=8000)]
+    score_zoro_sem_alvo = match._score_activate_main(zoro, am_zoro, p_zoro, opp_sem_alvo, 'DEVELOP', engine=None)
+
+    check("Zoro (lock_self_attack_opp_chars_cost_lte): com alvo elegivel (cost<=7) "
+          "no campo do oponente, score cai em relacao a sem alvo elegivel",
+          score_zoro_com_alvo < score_zoro_sem_alvo)
+
+
 def test_exclude_failed_actions_evita_loop_travado_em_activate() -> None:
     # Achado real 26/07 (bloco HANDOFF 370, log 22.24.06, match b3484a93 --
     # Barba Negra OP09-093 custo 10): 2 copias da mesma carta em campo, a
@@ -9571,6 +9649,7 @@ def main() -> int:
     test_eb04_011_draw_por_contagem_de_tipo_e_trash_igual()
     test_op04_069_base_power_igual_ao_atacante_do_oponente()
     test_in_any_order_custos_bottom_deck_escolhem_melhor_ordem()
+    test_drawbacks_self_generalizados_no_activate_main_01_08()
     test_exclude_failed_actions_evita_loop_travado_em_activate()
     test_self_play_info_hidden_mascara_counter_e_deck_do_oponente()
     test_check_invariants_unifica_auditoria_no_decision_log()

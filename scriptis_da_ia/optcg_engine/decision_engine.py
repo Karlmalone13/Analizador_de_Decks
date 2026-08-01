@@ -13027,6 +13027,43 @@ class OPTCGMatch:
                     perdidas += engine.avaliar_carta(c)
             base -= perdidas * 0.5
 
+        # Penalizacoes de AUTO-TRAVA adicionais (achado 01/08, generalizando
+        # o self_cant_play do Mihawk-G pras outras 3 cartas do banco com o
+        # MESMO padrao -- drawback proprio dentro do PROPRIO activate_main
+        # que nunca era descontado do score real): self_cant_take_life
+        # (OP06-020 Hody Jones), lock_self_character_refresh (OP04-090
+        # Luffy), lock_self_attack_opp_chars_cost_lte (OP12-020 Zoro).
+        # _UNCOVERED_ACTION_VALUE ja tinha entrada NEGATIVA pras 2 primeiras,
+        # mas so era consumida via max() no fallback generico (nunca reduz
+        # o piso, so eleva) -- e nem entrava quando o bloco caia numa
+        # categoria explicita antes do fallback (caso do Hody: 'rest_opp_
+        # character' cai em "remocao/controle", que nunca olha essa
+        # tabela). Na pratica NENHUMA das 3 descontava nada.
+        if any(s.get('action') == 'self_cant_take_life' for s in steps):
+            base += DecisionEngine._UNCOVERED_ACTION_VALUE['self_cant_take_life']
+
+        if any(s.get('action') == 'lock_self_character_refresh' for s in steps):
+            # o proprio src fica rested ate a refresh phase SEGUINTE a
+            # proxima (pula 1 untap) -- board perdido por ~1 ciclo inteiro
+            # (nao pode bloquear a resposta do oponente nem atacar no
+            # proximo turno proprio), mesma familia de peso de
+            # place_self_bottom_deck (board_value*8, cap 80) mas um pouco
+            # mais leve pq o character CONTINUA no campo (ainda ocupa
+            # espaco/ameaca visivel, so nao AGE por um tempo).
+            base -= min(src.board_value() * 6, 70)
+
+        if any(s.get('action') == 'lock_self_attack_opp_chars_cost_lte' for s in steps):
+            lim = next((s.get('cost_lte', 0) for s in steps
+                        if s.get('action') == 'lock_self_attack_opp_chars_cost_lte'),
+                       0)
+            alvos = [c for c in opp.field_chars if c.cost <= lim]
+            if alvos:
+                melhor = max(
+                    (engine.analyzer.char_value_score(c) if engine is not None
+                     else c.board_value())
+                    for c in alvos)
+                base -= min(melhor * 0.3, 50)
+
         # Ajustes por prioridade
         if priority == 'LETHAL':
             base -= 30   # prefere atacar quando pode ganhar
