@@ -2,27 +2,38 @@
 
 **Última atualização:** 30 de julho de 2026
 
-## 🟡 PARCIALMENTE RESOLVIDO: Mihawk-G (OP14-020) gap residual de ativação (30/07/2026, bloco 405)
+## 🟢 Mihawk-G (OP14-020): 2 causas reais corrigidas, alvo de "5,4/jogo" reconsiderado (30/07/2026, blocos 405-406)
 
-Self-play instrumentado (20 partidas, `decklists_raw.csv`, seed=7)
-confirmou o baseline (1,75 ativações/jogo) e achou a causa: `base=90`
-FLAT pra `set_don_active` não escalava pelo DON realmente RESTADO
-disponível pra converter (`min(count, don_rested)`) — com
-`don_rested=0` (86% dos pontos de decisão capturados), a ativação não
-faz nada de útil mas pontuava cheio mesmo assim.
+Self-play instrumentado (20-15 partidas, `decklists_raw.csv`) achou e
+corrigiu 2 causas reais do gap de ativação:
 
-- [x] Fix: soma `min(count, don_rested) * 25` no score de
-  `set_don_active` (generalizado pras 11 cartas do banco que usam essa
-  ação, não só Mihawk). Validado: **1,75 → 2,10 ativações/jogo (+20%)**.
-  Novo teste permanente. `smoke_fast.py`/`smoke_test.py` 100%.
-- [ ] **Ainda longe do alvo (5,4/jogo)**: mesmo pós-fix, 86% dos pontos
-  de decisão continuam com `don_rested=0` — a ativação só fica boa
-  DEPOIS de outro custo já ter restado DON no mesmo turno, e o Turn
-  Planner raramente chega nesse estado antes de decidir. Suspeita:
-  problema de SEQUENCIAMENTO (não re-explorar "pagar custos/jogar
-  primeiro, ativar depois" com frequência suficiente), não mais um
-  problema de score isolado — mudança bem maior no Turn Planner,
-  registrada como pendência separada, não investigada a fundo ainda.
+- [x] **Causa 1 (bloco 405)**: `set_don_active` pontuava `base=90` FLAT
+  sem escalar pelo DON realmente RESTADO disponível
+  (`min(count, don_rested)`). Fix generalizado pras 11 cartas do banco
+  que usam essa ação. Validado: 1,75 → 2,10 ativações/jogo (+20%).
+- [x] **Causa 2 (bloco 406, achada ao continuar investigando)**:
+  filtrando só decisões REAIS (211 de 25 mil eram reais, resto era
+  simulação interna), achei que ~40% das ativações reais aconteciam com
+  `don_rested=0` (benefício ZERO) E mão ainda com 5-9 cartas jogáveis —
+  `self_cant_play` (único caso no banco dentro do próprio
+  `activate_main`) nunca era penalizado. Fix: mesmo peso já calibrado
+  pro `self_cant_play` de `on_play` (`perdidas * 0.5`). Validado:
+  ativações desperdiçadas caíram de 13/32 (40%) pra 5/25 (20%).
+- [x] **Investigado e descartado como bug real**: a reserva de DON pra
+  ações 'activate' futuras (`_don_livre_for_plan`) já existe e protege
+  corretamente — quando `don_rested>=1` de verdade, a ativação compete
+  bem (topo da lista 54-58% das vezes). O gap residual é tensão real de
+  economia de DON do deck, não um problema de busca/sequenciamento do
+  Turn Planner.
+- [x] **Alvo "5,4 ativações/jogo" (dos logs humanos) reconsiderado**:
+  não é mais tratado como alvo cego — jogadores reais provavelmente
+  ativam por hábito (custo baixo) sem pesar o custo de travar a mão. As
+  2 correções tornam o bot mais criterioso (menos ativações
+  desperdiçadas), o que é o resultado certo mesmo que a contagem bruta
+  não convirja pro número humano.
+
+`smoke_fast.py`/`smoke_test.py` 100% (teste expandido com o cenário de
+`self_cant_play`). Sem mudança de parser em nenhum dos 2 fixes.
 
 ## 🟢 DOCUMENTAÇÃO CORRIGIDA: should_use_blocker/should_use_counter já estava calibrado (30/07/2026, bloco 404)
 

@@ -9263,12 +9263,32 @@ def test_set_don_active_score_escala_por_don_rested_30_07() -> None:
 
     Validado via self-play pos-fix: ativacoes de OP14-020 subiram de
     1,75 pra 2,10/jogo (+20%, mesmas 20 partidas/seed=7) -- melhora
-    real, mas ainda longe do alvo de 5,4/jogo. Residual: 86% dos pontos
-    de decisao tem don_rested=0 (a ativacao so fica boa DEPOIS de outro
-    custo já ter restado DON no mesmo turno) -- pode ser um problema de
-    SEQUENCIAMENTO do Turn Planner (nao re-explorar "jogar/pagar custos
-    primeiro, ativar depois"), nao mais um problema de score isolado.
-    Registrado como pendencia separada, fora de escopo desta rodada.
+    real, mas ainda longe do alvo de 5,4/jogo.
+
+    CONTINUACAO (mesmo dia, pedido do usuario "continue investigando"):
+    filtrando so decisoes REAIS (nao as ~25 mil simulacoes internas do
+    Turn Planner por jogo -- 211 chamadas reais em 20 jogos), achei que
+    79% delas tem don_rested=0 (a ativacao so fica boa DEPOIS de outro
+    custo ja ter restado DON no mesmo turno) E que, quando don_rested
+    SOBE, don_available cai pra ~1 (o DON foi gasto em outras jogadas
+    antes) -- tensao real de economia de DON, nao um bug de busca (a
+    reserva _don_livre_for_plan ja protege DON pra 'activate' com
+    score>=0). MAS instrumentando ATIVACOES reais de verdade
+    (_apply_action), achei um problema DIFERENTE e real: ~40% das
+    ativacoes aconteciam com don_rested=0 (BENEFICIO ZERO de
+    set_don_active) e a mao ainda com 5-9 cartas jogaveis -- a IA
+    travava "nao pode jogar Character cards este turno" (self_cant_play,
+    unica carta no banco com esse padrao dentro do PROPRIO
+    activate_main) sem ganhar NADA em troca, e sem esse custo nunca
+    entrar no score. Fix: mesmo criterio/peso ja usado pro self_cant_play
+    de ON_PLAY em avaliar_carta (perdidas*0.5, soma o avaliar_carta de
+    cada carta da mao que seria bloqueada). Validado: ativacoes
+    "desperdicadas" (don_rested=0 com mao>=3) cairam de 13/32 pra 5/25
+    nas mesmas 15 partidas -- melhora real de QUALIDADE (menos
+    ativacoes inuteis), mesmo que a CONTAGEM bruta de ativacoes/jogo
+    tenha oscilado (nao e mais o alvo certo perseguir 5,4/jogo as cegas
+    -- pode refletir humanos ativando por habito sem pesar o custo real
+    de nao poder jogar a mao, nao necessariamente jogada OTIMA).
     """
     mihawk = real_card("OP14-020")
     am = get_card_effects("OP14-020")["activate_main"]
@@ -9285,6 +9305,25 @@ def test_set_don_active_score_escala_por_don_rested_30_07() -> None:
           score_com_rested > score_sem_rested)
     check("set_don_active: diferenca bate a escala esperada (3 * 25 = 75)",
           abs((score_com_rested - score_sem_rested) - 75) < 1e-6)
+
+    # self_cant_play (activate_main): mao cheia de personagens BONS e
+    # baratos (jogaveis com o DON disponivel) deve penalizar o score,
+    # mesmo com don_rested=0 -- a ativacao trava o resto da mao de graca.
+    bons = [mk(f"XMHC{i}", f"Bom{i}", cost=2, power=5000) for i in range(4)]
+    a_mao_cheia = GameState(leader=real_card("OP14-020"), turn=5,
+                            don_available=8, don_rested=0, hand=bons)
+    opp_mc = GameState(leader=mk("XMHOPP2", "Opp", card_type="LEADER"), turn=5)
+    engine_mc = DecisionEngine(a_mao_cheia, opp_mc)
+    score_mao_cheia = match._score_activate_main(mihawk, am, a_mao_cheia, opp_mc, 'DEVELOP', engine=engine_mc)
+
+    a_mao_vazia = GameState(leader=real_card("OP14-020"), turn=5,
+                            don_available=8, don_rested=0, hand=[])
+    engine_mv = DecisionEngine(a_mao_vazia, opp_mc)
+    score_mao_vazia = match._score_activate_main(mihawk, am, a_mao_vazia, opp_mc, 'DEVELOP', engine=engine_mv)
+
+    check("self_cant_play (activate_main): score com mao cheia de personagens bons "
+          "e MENOR que com mao vazia (trava o resto da mao sem ganho de don_rested=0)",
+          score_mao_cheia < score_mao_vazia)
 
 
 def test_exclude_failed_actions_evita_loop_travado_em_activate() -> None:

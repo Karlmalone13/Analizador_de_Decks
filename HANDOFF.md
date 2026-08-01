@@ -1,5 +1,68 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-30 (406) - Claude (sessao remota web) - Mihawk-G (OP14-020) continuacao: achada uma 2a causa real (self_cant_play nunca penalizado) alem do gap de sequenciamento
+
+Usuário pediu explicitamente "continue investigando" (2x) depois do
+bloco 405 (fix de `set_don_active` escalando por `don_rested`, +20% de
+ativação mas ainda longe do alvo de 5,4/jogo, com hipótese de
+"sequenciamento do Turn Planner").
+
+**Refinei a instrumentação** pra separar decisões REAIS das ~25 mil
+simulações internas do Turn Planner por rodada de 20 jogos (só 211 eram
+reais). Achado 1 (a hipótese de sequenciamento, mais precisa agora):
+79% das decisões reais têm `don_rested=0` (mão ainda cheia, ~1,4
+personagens em campo — a ativação está sendo avaliada ANTES do bot
+jogar as cartas do turno). Quando `don_rested>=1` de verdade, a
+ativação COMPETE bem (topo da lista 54-58% das vezes). E quando
+`don_rested` sobe, `don_available` cai pra ~1 (o DON já foi gasto em
+outras jogadas) — **isso não é um bug de busca**: `_don_livre_for_plan`
+já reserva DON pra ações 'activate' com score≥0 (achado real 14/07,
+documentado no próprio código) — é uma tensão real de economia de DON
+neste deck específico, não um caminho de exploração que falta.
+
+**Achado 2 (novo, mais concreto)**: instrumentando as ATIVAÇÕES reais
+de verdade (não candidatas — execuções via `_apply_action`), achei que
+**~40% delas aconteciam com `don_rested=0`** (benefício ZERO de
+`set_don_active`, já que "up to 3" de 0 disponível = nada) **E a mão
+ainda com 5-9 cartas jogáveis**. A IA travava "não pode jogar Character
+cards este turno" (`self_cant_play`, único caso no banco inteiro dentro
+do PRÓPRIO `activate_main` — as outras ~217 ocorrências de
+`self_cant_play` são custo de ramp de DON, `self_cant_play` dentro de
+`on_play` já tinha penalização própria) sem ganhar absolutamente nada
+em troca, e esse custo nunca entrava no score.
+
+**Fix 2**: reusa o MESMO critério/peso já calibrado pro `self_cant_play`
+de `on_play` (em `avaliar_carta`, achado de sessão anterior) — soma o
+`avaliar_carta` de cada carta da mão que seria bloqueada, desconta
+`perdidas * 0.5` do score de `_score_activate_main`. Generalizado (não
+hardcoded a Mihawk): dispara pra qualquer `activate_main` futuro com o
+mesmo padrão.
+
+**Validado via self-play pós-fix** (15 partidas, matchups diferentes do
+run anterior por causa de RNG compartilhado entre escolha de deck e
+resolução de partida — não comparável 1:1 em win rate, mas o padrão de
+QUALIDADE é comparável): ativações "desperdiçadas" (`don_rested=0` com
+mão≥3 cartas jogáveis) caíram de **13/32 (40%) para 5/25 (20%)** —
+melhora real de qualidade. A contagem bruta de ativações/jogo oscilou
+entre as duas rodadas (2,13 → 1,67) — **isso é esperado e correto**:
+menos ativações totais, mas menos delas são desperdício.
+
+**Reflexão importante que muda o objetivo**: perseguir literalmente
+"5,4 ativações/jogo" (o número dos logs humanos) deixou de fazer
+sentido como alvo cego — é bem possível que jogadores reais ativem essa
+habilidade por hábito (custo baixo, "por que não") sem pesar
+corretamente o custo de travar o resto da mão, especialmente quando
+`don_rested=0`. As duas correções desta investigação (30/07, blocos 405
+e 406) tornam o bot mais criterioso, não necessariamente mais parecido
+com o número bruto dos humanos — e isso é o resultado certo dado o que
+os dados mostraram, não uma calibração incompleta.
+
+`smoke_fast.py`/`smoke_test.py` 100% (teste
+`test_set_don_active_score_escala_por_don_rested_30_07` expandido com o
+cenário de `self_cant_play`: mão cheia de personagens bons pontua MENOS
+que mão vazia, mesmo com `don_rested=0` nos dois). Sem mudança de
+parser.
+
 ## 2026-07-30 (405) - Claude (sessao remota web) - Mihawk-G (OP14-020): gap residual de ativacao parcialmente fechado (score de set_don_active nao escalava por DON restado)
 
 Usuário pediu pra puxar a segunda frente que eu tinha listado (a

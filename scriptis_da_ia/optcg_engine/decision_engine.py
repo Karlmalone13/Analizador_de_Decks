@@ -12999,6 +12999,34 @@ class OPTCGMatch:
                         and GameAnalyzer(p, opp).game_phase() == 'early'):
                     base -= 35
 
+        # Penalizacao de AUTO-TRAVA (achado 30/07, Mihawk-G OP14-020 --
+        # unica carta no banco com self_cant_play dentro do PROPRIO
+        # activate_main, mas generico pra qualquer carta futura com o
+        # mesmo padrao): ativar travava "nao pode jogar Character cards
+        # este turno", mas esse custo nunca era descontado do score --
+        # self-play instrumentado achou ativacoes reais com don_rested=0
+        # (beneficio ZERO de set_don_active) e a mao ainda com 5-9
+        # cartas jogaveis, um desperdicio duplo (nem ganha DON de verdade
+        # nem deixa jogar o resto da mao). Mesmo criterio/peso ja usado
+        # pro self_cant_play de ON_PLAY em avaliar_carta (perdidas*0.5).
+        if engine is not None and any(s.get('action') == 'self_cant_play' for s in steps):
+            scope = next((s.get('scope', 'chars') for s in steps
+                          if s.get('action') == 'self_cant_play'), 'chars')
+            gte = next((s.get('cost_gte', 0) for s in steps
+                        if s.get('action') == 'self_cant_play'), 0)
+            perdidas = 0.0
+            for c in p.hand:
+                if c.card_type not in ('CHARACTER', 'EVENT', 'STAGE'):
+                    continue
+                if effective_hand_play_cost(p, c, opp) > p.don_available:
+                    continue   # nao jogaria mesmo (sem DON) -- nao conta como perda
+                bloqueada = (scope == 'hand'
+                             or (c.card_type == 'CHARACTER'
+                                 and (gte == 0 or c.cost >= gte)))
+                if bloqueada:
+                    perdidas += engine.avaliar_carta(c)
+            base -= perdidas * 0.5
+
         # Ajustes por prioridade
         if priority == 'LETHAL':
             base -= 30   # prefere atacar quando pode ganhar
