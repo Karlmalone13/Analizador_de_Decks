@@ -9749,6 +9749,9 @@ def main() -> int:
     test_score_give_don_considera_sinergia_com_ataque()
     test_gain_double_attack_respeita_target_leader_e_selecionado()
     test_score_play_prioriza_carta_que_buffa_ataque_do_lider_hoje()
+    test_order_target_candidates_select_grant_rush_ignora_rested_ja_atacou()
+    test_score_attack_target_double_attack_banish_priorizam_a_vida()
+    test_order_target_candidates_debuff_on_play_coordena_com_ataque_disponivel()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -10443,6 +10446,113 @@ def test_gain_double_attack_respeita_target_leader_e_selecionado() -> None:
     ee4.execute(prometheus, "activate_main")
     check("Prometheus: Double Attack vai pra Charlotte Linlin selecionada, nao pro Prometheus",
           linlin.double_attack_this_turn and not prometheus.double_attack_this_turn)
+
+
+def test_order_target_candidates_select_grant_rush_ignora_rested_ja_atacou() -> None:
+    """
+    Achado real 02/08 (usuario, log Portgas.D.Ace-R x Portgas.D.Ace-R
+    2026-08-02T13.18.18, "Faca a comparacao das jogadas de novo"): o
+    fix de just_played/not-rested pra select_grant_rush (decision_engine.py)
+    so cobria a simulacao interna (_execute_step/_step_is_viable) -- ao
+    vivo, o alvo de verdade e escolhido por order_target_candidates
+    (sim_bridge.py), que nao conhecia essa regra e caia no heuristico
+    generico own_board (menor valor primeiro), escolhendo a Vista ja
+    restada (atacou este turno, deployada 2 turnos antes) em vez do
+    Edward Newgate recem-jogado no mesmo turno -- ativacao once_per_turn
+    do lider desperdicada de novo, apesar do fix anterior.
+    """
+    ace = real_card("OP16-001")
+    ace._deck_uid = 1
+    vista = real_card("OP16-011")
+    vista._deck_uid = 280
+    vista.rested = True
+    vista.just_played = False
+    newgate = real_card("OP16-003")
+    newgate._deck_uid = 370
+    newgate.rested = False
+    newgate.just_played = True
+    me = GameState(leader=ace)
+    me.field_chars = [vista, newgate]
+    opp = GameState(leader=real_card("OP14-079"))
+    cands = [{"id": 280, "zone": "own_board", "code": "OP16-011"},
+             {"id": 370, "zone": "own_board", "code": "OP16-003"}]
+    order = sim_bridge.order_target_candidates(me, opp, cands, actor_code="OP16-001")
+    check("select_grant_rush ao vivo prioriza o recem-jogado ativo (Newgate) sobre o ja restado (Vista)",
+          bool(order) and order[0] == 370)
+
+
+def test_score_attack_target_double_attack_banish_priorizam_a_vida() -> None:
+    """
+    Achado real 02/08 (usuario, log Portgas.D.Ace-R x Portgas.D.Ace-R
+    2026-08-02T13.18.18): o lider com Double Attack (concedido pelo
+    Edward Newgate) atacou um Character em vez da vida do oponente --
+    score_attack_target nunca considerava a keyword do PROPRIO atacante
+    ao pontuar o alvo 'leader' (so olhava a keyword do alvo quando o
+    alvo era um Character, pra priorizar ameacas a matar). Double
+    Attack/Banish so valem em dobro contra a vida, nunca contra um
+    Character -- sem bonus, o score de atacar o lider podia perder pra
+    um Character com score de remocao mais alto.
+    """
+    ace_leader = real_card("OP16-001")  # 5000 de poder
+    opp_leader = real_card("OP14-079")  # 5000 de poder
+    atacante_normal = real_card("OP16-011")  # Vista, 8000 de poder
+    atacante_normal.rested = False
+    me = GameState(leader=ace_leader, don_available=0)
+    me.life = [real_card("OP07-077") for _ in range(3)]
+    opp = GameState(leader=opp_leader)
+    opp.life = [real_card("OP07-077") for _ in range(3)]
+    engine = DecisionEngine(me, opp)
+    score_base = engine.score_attack_target(atacante_normal, "leader", None)
+
+    atacante_da = real_card("OP16-011")
+    atacante_da.rested = False
+    atacante_da.has_double_attack = True
+    score_da = engine.score_attack_target(atacante_da, "leader", None)
+    check("Double Attack no atacante aumenta o score de atacar o lider",
+          score_da > score_base + 50)
+
+    atacante_banish = real_card("OP16-011")
+    atacante_banish.rested = False
+    atacante_banish.has_banish = True
+    score_banish = engine.score_attack_target(atacante_banish, "leader", None)
+    check("Banish no atacante aumenta o score de atacar o lider",
+          score_banish > score_base + 35)
+
+
+def test_order_target_candidates_debuff_on_play_coordena_com_ataque_disponivel() -> None:
+    """
+    Achado real 02/08 (usuario, log Portgas.D.Ace-R x Portgas.D.Ace-R
+    2026-08-02T13.18.18): o debuff [On Play] do Edward Newgate (-6000,
+    this_turn) mirou um Character do oponente qualquer, nao o que o
+    lider (8000 de poder) ia atacar depois -- actor_debuff_swing em
+    order_target_candidates so coordenava com um ataque em andamento
+    (attacker_power>0, ex: Nosjuro [When Attacking]), nunca com um
+    ataque ainda NAO declarado que vai acontecer mais tarde no mesmo
+    turno (attacker_power==0, efeito de on_play resolve antes de
+    qualquer ataque ser escolhido). Fix: fora de janela de ataque,
+    projeta se o debuff destrava algum dos MEUS atacantes disponiveis
+    (mesmo principio de "lookahead reusa o motor real").
+    """
+    ace = real_card("OP16-001")
+    ace._deck_uid = 1
+    ace.base_power_override = 8000
+    ace.rested = False
+    me = GameState(leader=ace, don_available=0)
+    opp_leader = real_card("OP14-079")
+    alvo_flip = real_card("OP16-011")  # Vista, 8000 -- debuff (-6000) = 2000, MEU lider (8000) mata
+    alvo_flip._deck_uid = 100
+    alvo_flip.rested = False
+    alvo_forte = real_card("OP16-003")  # base 10000 -- override pra 20000, debuff (-6000) = 14000, NAO fecha contra meu 8000
+    alvo_forte.base_power_override = 20000
+    alvo_forte._deck_uid = 200
+    alvo_forte.rested = False
+    opp = GameState(leader=opp_leader)
+    opp.field_chars = [alvo_flip, alvo_forte]
+    cands = [{"id": 100, "zone": "opp_board", "code": "OP16-011"},
+             {"id": 200, "zone": "opp_board", "code": "OP16-003"}]
+    order = sim_bridge.order_target_candidates(me, opp, cands, actor_code="OP16-003")
+    check("debuff on_play prioriza o alvo que meu ataque disponivel consegue fechar",
+          bool(order) and order[0] == 100)
 
 
 def test_worth_paying_optional_costs_recusa_reveal_from_hand_impagavel() -> None:

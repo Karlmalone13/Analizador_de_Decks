@@ -1,5 +1,96 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-02 (421) - Claude (sessao local) - "duas fontes de verdade" achada e corrigida: order_target_candidates (sim_bridge.py) nao conhecia regras que ja existiam em decision_engine.py
+
+Usuario pediu nova comparacao decisao-a-decisao (log
+`Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T13.18.18`, ja banco, bot
+jogando como p1, perdeu) contra 4 observacoes especificas: (a) alvo do
+debuff do Newgate nao coordenado com o ataque planejado; (b) Double
+Attack/Unblockable/Banish deveriam priorizar a vida do oponente; (c)
+habilidade do lider nao deu Rush ao Newgate (deu a Vista ja restada);
+(d) stage nao usou o give_don.
+
+**Achado raiz, comum a (a) e (c)**: o fix de `just_played`/`not rested`
+pra `select_grant_rush` (blocos 419-420) so cobria a SIMULACAO interna
+do motor (`_execute_step`/`_step_is_viable`, `decision_engine.py`). Ao
+VIVO, o jogo abre um prompt de escolha de alvo no cliente, resolvido por
+um endpoint TOTALMENTE separado -- `order_target_candidates`
+(`sim_bridge.py`), que reordena candidatos por heuristica generica de
+zona (own_board = "menor valor primeiro", pensado pra sacrificio) sem
+conhecer NADA da semantica de `select_grant_rush`. Classica violacao da
+regra "sem duas fontes de verdade" (`REGRA_SEM_DUPLICACAO.md`): duas
+funcoes decidindo a MESMA coisa (qual alvo escolher), uma corrigida e
+outra nao.
+
+**(c) Rush foi pra Vista (ja restada, atacou este turno) em vez de
+Newgate (recem-jogado, ativo)** -- confirmado via JSONL (`decisions_
+2026-08-02T13.04.06.jsonl`, idx 141): `state_before` mostra Newgate
+com `justPlayed=true, rested=false` e Vista com `justPlayed=false,
+rested=true` no exato momento da decisao, engine ja rodando no commit
+com o fix (`8e9d7b6`) -- prova que o bug estava na ORDENACAO do alvo ao
+vivo, nao na logica de decisao. **Fix**: extrai o criterio pra 2 funcoes
+top-level reutilizaveis em `decision_engine.py`
+(`character_needs_rush`/`character_needs_rush_character`), usadas agora
+nos 3 lugares que precisam dele (`_execute_step`, `_step_is_viable`, e o
+novo caso em `order_target_candidates` que detecta quando o ator tem um
+step `select_grant_rush(_character)` e prioriza candidatos elegiveis por
+maior valor, inelegiveis sempre por ultimo).
+
+**(a) Debuff [On Play] do Newgate (-6000) mirou um Character qualquer
+do oponente, nao a Vista que o lider ia atacar depois** -- a logica
+`actor_debuff_swing` (bloco de 14/07, Nosjuro) ja existia mas so
+coordenava com um ataque JA EM ANDAMENTO (`attacker_power>0`,
+`[When Attacking]`); um debuff de `[On Play]` resolve ANTES de qualquer
+ataque ser declarado neste turno, entao essa coordenacao nunca disparava
+-- caia no fallback generico (maior valor entre nao-restados). **Fix**:
+estendida pra tambem cobrir `attacker_power==0`, projetando se o debuff
+destrava algum dos MEUS atacantes disponiveis agora
+(`character_can_attack_now` + `debuff_flips_attack_in_my_favor`, ja
+existentes -- mesmo principio da memoria "lookahead precisa reusar motor
+real": projeta estado, reusa o motor de verdade, sem formula aproximada
+nova).
+
+**(b) Double Attack nao priorizou a vida** -- confirmado via JSONL (idx
+138): `score_attack_target` ja pontuava atacar o lider (276) MAIOR que
+atacar o Character (187), mas a selecao final usa
+`counterfactual_search` (busca com lookahead), que escolheu o Character
+mesmo assim -- possivelmente correto (oponente ja tinha usado um Counter
+event no mesmo turno) e nao investigado a fundo por falta de evidencia
+clara de erro nesse ponto especifico. O que ERA claramente um bug:
+`score_attack_target` nunca somava NENHUM bonus pela keyword do proprio
+ATACANTE (Double Attack/Banish) ao pontuar o alvo `leader` -- so olhava
+Unblockable. Double Attack/Banish so valem em dobro contra vida, nunca
+contra Character. **Fix**: +60 (Double Attack) / +45 (Banish) no score
+de atacar o lider quando o atacante tem a keyword.
+
+**(d) Stage nao usou give_don**: investigado e NAO e bug nesta partida
+-- Moby Dick foi avaliado (score -10, correto) porque nada se
+beneficiaria de 1 DON RESTADO nesse momento (Newgate sem Rush ainda nao
+podia atacar, lider ja tinha decidido seu ataque). O fix de sinergia do
+bloco 419 so bonifica quando o DON de fato destrava algo real.
+
+**Validado**: 3 testes novos reproduzindo os 3 cenarios reais (Rush ao
+vivo pra Vista vs Newgate, score de ataque ao lider com Double Attack/
+Banish, debuff pre-ataque coordenando com meu atacante disponivel).
+`smoke_fast.py` OK, `smoke_test.py` (suite ampla, obrigatoria por tocar
+`order_target_candidates`/`score_attack_target`, logica compartilhada
+por dezenas de cartas) -- TODOS OS TESTES PASSARAM.
+`audit_replay.py --n 20 --seed 7`: 20 partidas, **0 excecoes, 0
+anomalias**.
+
+Nao mexeu em `gerar_effects_db.py`/`card_effects_db.json` -- sem
+registro de auditoria de parser necessario neste bloco.
+
+`server.py` precisa reiniciar (mudanca em `decision_engine.py` e
+`sim_bridge.py`).
+
+**Pendente/nao resolvido**: (b) so recebeu o fix estrutural
+(bonus por keyword do atacante); a questao mais profunda de se
+`counterfactual_search` esta subvalorizando o ataque quase-letal ao
+lider quando o oponente pode counterar segue sem investigacao — proxima
+sessao que tiver outro log parecido deve conferir se o bonus de +60/+45
+foi suficiente ou se a busca ainda prefere o Character.
+
 ## 2026-08-02 (420) - Claude (sessao local) - bug real de execucao corrigido (gain_double_attack ignorava target) + fix de sequenciamento (play antes de attack) que motivou a investigacao
 
 Usuario pediu pra comparar as proprias decisoes (jogou Ace manualmente

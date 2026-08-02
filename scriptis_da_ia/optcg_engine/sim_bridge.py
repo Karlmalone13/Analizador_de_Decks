@@ -26,6 +26,7 @@ from optcg_engine.decision_engine import (
     CardData,
     DecisionEngine,
     attack_time_power,
+    character_can_attack_now,
     effective_hand_play_cost,
     get_card_effects,
     _load_effects_db,
@@ -1909,6 +1910,33 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             if actor_debuff_swing:
                 break
 
+    # O ator esta concedendo Rush (select_grant_rush/select_grant_rush_
+    # character)? O jogo oferece TODO personagem que casa o filtro de tipo/
+    # nome como alvo clicavel, sem saber que a concessao so tem efeito real
+    # em quem ENTROU EM CAMPO NESTE TURNO e ainda nao esta restado --
+    # decision_engine.py ja aplica essa regra na execucao simulada
+    # (character_needs_rush/character_needs_rush_character, achado usuario
+    # 02/08), mas esse endpoint decidia a ordem sozinho, caindo no
+    # heuristico generico own_board ("menor valor primeiro", pensado pra
+    # sacrificio) -- escolhia o personagem mais fraco/ja inutil em vez do
+    # unico que de fato aproveitava a Rush. Achado real 02/08 (partida ao
+    # vivo, log Portgas.D.Ace-R x Portgas.D.Ace-R): lider deu Rush pra Vista
+    # ja restada em vez de Edward Newgate, recem-jogado no mesmo turno.
+    actor_grant_rush_check = None
+    if actor_code:
+        from optcg_engine.decision_engine import (character_needs_rush,
+                                                   character_needs_rush_character)
+        for block in get_card_effects(actor_code).values():
+            for s in block.get('steps', []):
+                if s.get('action') == 'select_grant_rush':
+                    actor_grant_rush_check = character_needs_rush
+                    break
+                if s.get('action') == 'select_grant_rush_character':
+                    actor_grant_rush_check = character_needs_rush_character
+                    break
+            if actor_grant_rush_check is not None:
+                break
+
     # O ator resolvendo e um AUTO-BUFF de poder fixo em "seu lider OU seu
     # personagem" (ex: Sanjuan Wolf on-KO: "up to 1 of your Leader or
     # Character's power becomes 7000")? Lider e personagem competem pelo
@@ -2111,6 +2139,32 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             eh_alvo_do_meu_ataque = attacker_power > 0 and defender_uid and card and cand.get('id') == defender_uid
             if eh_alvo_do_meu_ataque and engine.debuff_flips_attack_in_my_favor(card.effective_power(False), actor_debuff_amount, attacker_power):
                 return (-1, 0)
+
+            # FORA de uma janela de ataque (attacker_power==0 -- ex: [On
+            # Play] do Edward Newgate, resolvido antes de qualquer ataque
+            # ser declarado neste turno): nao ha "defensor deste ataque"
+            # ainda, mas ja sabemos QUAIS dos meus personagens/lider podem
+            # atacar este turno -- se o debuff derruba este alvo pra <= o
+            # poder de algum deles, o debuff paga a mesma coisa que o caso
+            # em-janela acima, so que projetado pra frente em vez de reagir
+            # a um ataque ja declarado (mesmo principio da memoria
+            # "lookahead precisa reusar motor real": projeta estado, reusa
+            # o motor de ataque de verdade, sem formula aproximada
+            # separada). Achado real 02/08 (partida ao vivo, log
+            # Portgas.D.Ace-R x Portgas.D.Ace-R): Newgate debuffou -6000 num
+            # personagem qualquer em vez da Vista 8000 que o lider (8000 +
+            # Double Attack) ia atacar no mesmo turno -- se tivesse mirado a
+            # Vista, o ataque conectava e valia 2 vidas em vez de falhar.
+            if attacker_power == 0 and card is not None:
+                meus_atacantes = [c for c in ([engine.me.leader] + engine.me.field_chars)
+                                  if character_can_attack_now(c, engine.me, engine.opp)]
+                debuffado = card.effective_power(False) - actor_debuff_amount
+                flips = any(engine.debuff_flips_attack_in_my_favor(
+                    card.effective_power(False), actor_debuff_amount,
+                    attack_time_power(atc, engine.opp)) for atc in meus_atacantes)
+                if flips:
+                    return (-1, -debuffado)
+
             rested = bool(getattr(card, 'rested', False)) if card else True
             valor = engine.analyzer.char_value_score(card) if card else 0
             return (0 if not rested else 1, -valor)
@@ -2225,6 +2279,13 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if zone == 'own_trash':
             return (2, -(engine.avaliar_carta(card) if card else 0))
         if zone == 'own_board':
+            if actor_grant_rush_check is not None:
+                # Elegivel (just_played, nao restado, ainda sem a keyword)
+                # primeiro, por maior valor; inelegivel sempre por ultimo
+                # (clicar nele so desperdicaria a concessao once_per_turn).
+                elegivel = bool(card) and actor_grant_rush_check(card)
+                return (3 if elegivel else 8,
+                        -(engine.analyzer.char_value_score(card) if card else 0))
             if attacker_power > 0 and actor_is_redirect:
                 # ganho liquido caso a caso; desempate: maior poder segura
                 # golpes maiores

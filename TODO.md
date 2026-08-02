@@ -2,6 +2,31 @@
 
 **Última atualização:** 2 de agosto de 2026
 
+> 02/08/2026 (bloco 421): **"Duas fontes de verdade" achada e corrigida**
+> — `order_target_candidates` (`sim_bridge.py`, resolve prompts de alvo
+> AO VIVO) não conhecia regras que já existiam em `decision_engine.py`
+> (simulação interna). (1) Rush ainda ia pra um personagem já restado
+> (Vista) em vez do recém-jogado (Newgate) mesmo com o fix dos blocos
+> 419-420 — porque esse fix só cobria a simulação, não a ordenação de
+> alvo ao vivo. Fix: critério extraído pra 2 funções compartilhadas
+> (`character_needs_rush`/`character_needs_rush_character`), reusadas
+> nos 3 lugares que precisam dele. (2) Debuff `[On Play]` do Newgate
+> (-6000) não coordenava com o ataque planejado no mesmo turno — a
+> lógica que já existia (Nosjuro, 14/07) só cobria debuffs `[When
+> Attacking]` já em janela de ataque declarada. Fix: estendida pra
+> projetar, fora de janela de ataque, se o debuff destrava algum
+> atacante disponível. (3) `score_attack_target` nunca somava bônus pela
+> keyword do PRÓPRIO atacante (Double Attack/Banish) ao pontuar o
+> líder como alvo — só valem em dobro contra vida, nunca contra
+> Character. Fix: +60/+45. Um 4º ponto reportado (stage não deu DON)
+> **não era bug** — score -10 correto, nada se beneficiava do DON
+> restado naquele momento específico. 3 testes novos, `smoke_fast.py`/
+> `smoke_test.py` 100%, `audit_replay.py --n 20 --seed 7`: 0 exceções, 0
+> anomalias. **Pendente**: se `counterfactual_search` ainda prefere
+> atacar Character mesmo com os bônus novos quando o oponente pode
+> counterar o ataque ao líder — não investigado a fundo, log futuro
+> parecido deve conferir. Ver bloco 421 do HANDOFF.
+
 > 02/08/2026 (bloco 420): **2 bugs reais corrigidos, achados comparando
 > decisões do usuário com as do bot (mirror match Ace x Ace)** — (1)
 > `gain_double_attack` ignorava `target` por completo, sempre aplicando

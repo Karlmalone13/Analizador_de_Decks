@@ -850,6 +850,22 @@ class Card:
         return v
 
 
+def character_needs_rush(c: 'Card') -> bool:
+    """Rush so importa pra quem ENTROU EM CAMPO NESTE TURNO (just_played) e
+    ainda nao tem a permissao -- um Character de turno anterior ja ataca
+    normal sem Rush, e um ja rested nao ataca de novo de qualquer forma
+    (correcao do usuario 02/08). Fonte unica: usado tanto pela execucao real
+    (_execute_step/select_grant_rush) quanto pela decisao (_step_is_viable)
+    quanto pela ordenacao de alvo ao vivo (sim_bridge.order_target_candidates)
+    -- sem isto, o jogo ao vivo concedia Rush a personagens ja restados via
+    um heuristico de ordenacao generico que nao conhece essa regra."""
+    return c.just_played and not c.rested and not c.is_rush()
+
+
+def character_needs_rush_character(c: 'Card') -> bool:
+    return c.just_played and not c.rested and not c.is_rush_character()
+
+
 @dataclass
 class GameState:
     leader: Card
@@ -2167,10 +2183,8 @@ class EffectExecutor:
         # ativacao once_per_turn desperdicada por inteiro).
         if a in ('select_grant_rush', 'select_grant_rush_character'):
             from optcg_engine.rules_facade import eligible_cards
-            is_rush_attr = 'is_rush' if a == 'select_grant_rush' else 'is_rush_character'
-
-            def _precisa_de_rush(c):
-                return c.just_played and not c.rested and not getattr(c, is_rush_attr)()
+            _precisa_de_rush = (character_needs_rush if a == 'select_grant_rush'
+                               else character_needs_rush_character)
 
             if a == 'select_grant_rush' and step.get('filter_name'):
                 pool_nome = eligible_cards(me.field_chars, name_or_code=step.get('filter_name', ''))
@@ -8133,7 +8147,7 @@ class EffectExecutor:
                 me.field_chars,
                 filter_text=step.get('filter_type', ''),
                 name_or_code=step.get('filter_name', ''),
-            ) if c.just_played and not c.rested and not c.is_rush_character()]
+            ) if character_needs_rush_character(c)]
             granted = []
             for _ in range(min(count, len(candidates))):
                 target = choose_highest_board_value(candidates)
@@ -8205,8 +8219,7 @@ class EffectExecutor:
             # (OP16-011), deployada 2 turnos antes e ja rested por ter
             # atacado neste mesmo turno -- ativacao do lider (once_per_turn)
             # totalmente desperdicada, nenhum efeito real.
-            def _precisa_de_rush(c):
-                return c.just_played and not c.rested and not c.is_rush()
+            _precisa_de_rush = character_needs_rush
             if step.get('filter_name'):
                 pool_nome = [c for c in eligible_cards(me.field_chars, name_or_code=step.get('filter_name', ''))
                             if _precisa_de_rush(c)]
@@ -11336,6 +11349,20 @@ class DecisionEngine:
             # oponente tem blockers (passa onde os outros seriam interceptados).
             if (attacker.has_unblockable or attacker.unblockable_this_turn) and self.opp.blockers_active():
                 s += 40
+
+            # Double Attack/Banish só compõem valor de verdade contra a VIDA
+            # (2 cartas de vida em vez de 1 / vida trashed em vez de ir pra
+            # mão do oponente, negando trigger) -- contra um Character são
+            # irrelevantes (Character não tem "vida dupla"). Sem isto, um
+            # atacante com essas keywords pontuava o líder igual a um
+            # atacante comum e podia preferir atacar um Character só porque
+            # este tinha score de remoção mais alto (achado real 02/08, log
+            # Portgas.D.Ace-R x Portgas.D.Ace-R: líder com Double Attack via
+            # Edward Newgate [OP16-003] atacou um Character em vez da vida).
+            if attacker.is_double_attack():
+                s += 60
+            if attacker.has_banish or attacker.banish_this_turn:
+                s += 45
 
             # Custo de perder o Activate Main: desconta, salvo se for letal
             if activate_cost > 0 and opp_life > 1:
