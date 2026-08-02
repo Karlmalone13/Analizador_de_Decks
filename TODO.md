@@ -2,6 +2,22 @@
 
 **Última atualização:** 2 de agosto de 2026
 
+> 02/08/2026 (bloco 417): **Bug real corrigido (fecha o achado do
+> bloco 416)** — bot ao vivo aceitava custos `reveal_from_hand`
+> (ex: Edward Newgate, "revele 2 Character 8000 power") sem checar
+> se existiam cartas suficientes na mão — `_worth_paying_optional_costs`
+> (a decisão de aceitar) nunca validava isso, só `_pay_costs` (o
+> momento de pagar) validava, tarde demais pro caminho ao vivo. Caso
+> real: mão só tinha 1/2 cartas válidas, jogo travou pedindo "Select 2
+> More Friendly Targets" que nunca completava (confirmado na
+> telemetria: 2 decisões `target` idênticas, 34s de intervalo real).
+> Fix: `_reveal_from_hand_matches` extraída como fonte única, reusada
+> nos dois lugares. 2 testes novos, `smoke_fast.py`/`smoke_test.py`
+> 100%. **Pendente**: não foi feita auditoria exaustiva se outros
+> tipos de custo fora de `_SACRIFICE_COST_TYPES` têm o mesmo gap — só
+> `reveal_from_hand` foi confirmado (achado de 1 log real). `server.py`
+> precisa reiniciar. Ver bloco 417 do HANDOFF.
+
 > 02/08/2026 (bloco 416): **Achado novo, NÃO investigado a fundo** —
 > seleção de MÚLTIPLOS alvos amigos trava/repete. Usuário reportou
 > (screenshot) turno 7 preso em "Select 2 More Friendly Targets"

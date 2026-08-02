@@ -1949,6 +1949,40 @@ class EffectExecutor:
     def reset_once_per_turn(self):
         self._once_used.clear()
 
+    def _reveal_from_hand_matches(self, cost: dict) -> list:
+        """
+        Cartas da mao que casam o filtro de um custo `reveal_from_hand`
+        (tipo/power_eq/card_type). Extraido de `_pay_costs` (02/08) pra
+        virar FONTE UNICA reusada tambem por `_worth_paying_optional_costs`
+        -- antes so `_pay_costs` checava se existiam candidatos suficientes
+        (no momento de PAGAR); `_worth_paying_optional_costs` (a decisao de
+        ACEITAR o custo opcional, chamada pelo caminho ao vivo via
+        `resolve_optional_effect`) nunca validava isso, so julgava se o
+        efeito tinha alvo. Achado real 02/08 (log Portgas.D.Ace-R x
+        Crocodile-B, 2026-08-02): Edward Newgate (OP16-003) "reveal 2
+        Character cards com 8000 power" foi ACEITO pelo bot ao vivo com so
+        1 carta na mao batendo o filtro (Marco, OP16-014) -- custo
+        impagavel, o jogo ficou preso pedindo "Select 2 More Friendly
+        Targets" que nunca completava (nao existe 2a carta valida).
+
+        filter_type pode ser uma LISTA (OR de N tipos, achado 19/07,
+        OP14-105: "reveal 3 {Amazon Lily} or {Kuja Pirates} type cards
+        from your hand") -- string unica preserva o comportamento antigo.
+        """
+        filter_type_raw = cost.get('filter_type') or ''
+        tipos_reveal = ([_norm_type_text(x) for x in filter_type_raw]
+                        if isinstance(filter_type_raw, list)
+                        else [_norm_type_text(filter_type_raw)])
+        power_eq = cost.get('power_eq')
+        card_type_req = cost.get('card_type')
+        return [
+            c for c in self.me.hand
+            if (not any(tipos_reveal) or any(
+                tp and tp in _norm_type_text(c.sub_types or '') for tp in tipos_reveal))
+            and (power_eq is None or c.power == power_eq)
+            and (not card_type_req or c.card_type == card_type_req)
+        ]
+
     def _step_is_viable(self, step: dict, card: Card) -> bool:
         """
         Diz se um step PRODUZIRÁ efeito real no estado atual. Usado para não
@@ -3921,23 +3955,7 @@ class EffectExecutor:
                 # -- so exige TER as cartas na mao, nao remove nada
                 # (revelar != trashar/descartar).
                 count = cost.get('count', 1)
-                # filter_type pode ser uma LISTA (OR de N tipos, achado
-                # 19/07, OP14-105: "reveal 3 {Amazon Lily} or {Kuja
-                # Pirates} type cards from your hand") -- string unica
-                # preserva o comportamento antigo.
-                filter_type_raw = cost.get('filter_type') or ''
-                tipos_reveal = ([_norm_type_text(x) for x in filter_type_raw]
-                                if isinstance(filter_type_raw, list)
-                                else [_norm_type_text(filter_type_raw)])
-                power_eq = cost.get('power_eq')
-                card_type_req = cost.get('card_type')
-                matches = [
-                    c for c in self.me.hand
-                    if (not any(tipos_reveal) or any(
-                        tp and tp in _norm_type_text(c.sub_types or '') for tp in tipos_reveal))
-                    and (power_eq is None or c.power == power_eq)
-                    and (not card_type_req or c.card_type == card_type_req)
-                ]
+                matches = self._reveal_from_hand_matches(cost)
                 if len(matches) < count:
                     return False
                 self._cost_logs.append(f'custo: revelou {count} carta(s) '
@@ -8581,7 +8599,20 @@ class EffectExecutor:
         Custos de RECURSO (rest_self/rest_don/don_minus) não entram nessa
         conta -- já são filtrados por pagabilidade antes de chegar aqui;
         só custos de SACRIFÍCIO (mão/campo/vida) exigem julgamento de valor.
+
+        reveal_from_hand NÃO é recurso (não gasta nada) nem estava na
+        tabela de sacrifício, mas ainda EXIGE ter N cartas específicas na
+        mão -- nunca era checado aqui (só em `_pay_costs`, no momento de
+        pagar de verdade). Achado real 02/08: o caminho ao vivo aceitava o
+        custo achando "de graça" mesmo sem cartas suficientes, travando o
+        jogo pedindo alvos que não existem (ver `_reveal_from_hand_matches`).
         """
+        for c in costs:
+            if c.get('type') != 'reveal_from_hand':
+                continue
+            if len(self._reveal_from_hand_matches(c)) < c.get('count', 1):
+                return False
+
         if not any(c.get('type') in self._SACRIFICE_COST_TYPES for c in costs):
             return True
 

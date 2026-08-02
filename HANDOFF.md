@@ -1,5 +1,60 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-02 (417) - Claude (sessao local) - bug real corrigido: bot aceitava custo reveal_from_hand impagavel, travava pedindo alvo que nao existe (achado do bloco 416, investigado e fechado)
+
+Continuacao direta do bloco 416 (achado registrado sem diagnostico
+fechado). Investigado a fundo.
+
+**Causa raiz confirmada**: `resolve_optional_effect` (sim_bridge.py,
+caminho AO VIVO) decide aceitar/recusar um custo opcional checando
+SO se o EFEITO tem alvo valido (`_step_is_viable` no step de
+beneficio) -- nunca checa se o proprio CUSTO pode ser pago.
+`_worth_paying_optional_costs` (decision_engine.py, EffectExecutor --
+"fonte unica" declarada no proprio docstring pra essa decisao) tinha
+um gap real: `reveal_from_hand` (custo "revele N cartas com filtro
+X da mao") NAO esta em `_SACRIFICE_COST_TYPES`, entao a funcao
+retornava `True` de cara (`if not any(... SACRIFICE...): return True`)
+sem NUNCA verificar se existem N cartas na mao batendo o filtro.
+
+**Caso real**: Edward Newgate (OP16-003), on_play "you may reveal 2
+Character cards com 8000 power: -6000 power num personagem do
+oponente". Mao do bot no momento: Marco (OP16-014, 8000 power --
+UNICO match) + Luffy (OP16-015, 6000 power -- nao bate). O bot
+aceitou o custo (achando "de graca", ha alvo pro debuff) com so 1/2
+cartas necessarias -- o jogo real ficou preso pedindo "Select 2 More
+Friendly Targets", nunca completava (2a carta valida nao existe).
+Confirmado na telemetria: 2 decisoes `target` identicas (mesmos
+candidatos), 34s de intervalo REAL entre elas, antes do bot desistir
+e seguir pra outra acao sem o debuff nunca acontecer (nenhuma linha
+de log do -6000 power na partida real).
+
+**Achado curioso**: `_pay_costs` (mesma classe `EffectExecutor`) JA
+tinha essa checagem certa (`if len(matches) < count: return False`,
+usada pelo simulador interno no momento de PAGAR) -- so
+`_worth_paying_optional_costs` (a decisao de ACEITAR, usada pelo
+caminho ao vivo ANTES do jogo real pedir a selecao) nunca validava a
+mesma coisa. Motor unico em teoria, mas a checagem de payability so
+existia num dos dois pontos.
+
+**Fix**: extraida `_reveal_from_hand_matches(cost)` de dentro de
+`_pay_costs` pra metodo compartilhado (fonte unica de verdade, regra
+"sem duplicacao"), reusada tanto em `_pay_costs` quanto em
+`_worth_paying_optional_costs` (checagem nova, antes do early-return
+de sacrificio: para QUALQUER custo `reveal_from_hand` na lista, se
+nao existem cartas suficientes, recusa direto).
+
+**Validado**: 2 testes novos (`test_worth_paying_optional_costs_recusa_reveal_from_hand_impagavel`)
+reproduzem o caso exato (Newgate + Marco+Luffy -> recusa; Newgate +
+2x Marco -> aceita). `smoke_fast.py`/`smoke_test.py` 100%.
+
+**Nao investigado**: se outros custos fora de `_SACRIFICE_COST_TYPES`
+tem o MESMO gap (aceitos sem checar payability real) -- so
+`reveal_from_hand` foi confirmado e corrigido neste bloco (achado
+concreto de 1 log real), nao uma auditoria exaustiva de todos os
+tipos de custo do banco.
+
+`server.py` precisa reiniciar antes do proximo teste ao vivo.
+
 ## 2026-08-02 (416) - Claude (sessao local) - achado novo, NAO investigado a fundo: selecao de MULTIPLOS alvos amigos trava/repete (Edward Newgate, custo reveal_from_hand=2)
 
 Nova partida (Portgas.D.Ace-R x Crocodile-B, 2026-08-02T01.59.52, 13

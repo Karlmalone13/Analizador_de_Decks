@@ -9745,6 +9745,7 @@ def main() -> int:
     test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno()
     test_apply_winner_grava_bot_side_da_fonte_autoritativa()
     test_attach_don_margem_seguranca_em_empate_com_don_ocioso()
+    test_worth_paying_optional_costs_recusa_reveal_from_hand_impagavel()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -10291,6 +10292,46 @@ def test_attach_don_margem_seguranca_em_empate_com_don_ocioso() -> None:
           reserva > 0)
     check("empate + evento [Counter] na mao: margem NUNCA gasta a reserva de defesa",
           margem2 <= max(0, 3 - reserva))
+
+
+def test_worth_paying_optional_costs_recusa_reveal_from_hand_impagavel() -> None:
+    """
+    Achado real 02/08 (usuario, log Portgas.D.Ace-R x Crocodile-B
+    2026-08-02T01.59.52): turno 7, Edward Newgate (OP16-003) deployado,
+    on_play "you may reveal 2 Character cards com 8000 power: -6000 power
+    num personagem do oponente" -- o bot ao vivo ACEITOU o custo com so 1
+    carta na mao batendo o filtro (Marco, OP16-014, unico 8000 power) e o
+    jogo travou pedindo "Select 2 More Friendly Targets" que nunca
+    completava (nao existe 2a carta valida) -- screenshot do usuario
+    mostrando a tela presa nesse prompt.
+
+    `_worth_paying_optional_costs` (fonte unica de "vale pagar esse custo
+    opcional", usada por `execute()` E por `resolve_optional_effect()` ao
+    vivo) nunca checava se um custo `reveal_from_hand` era PAGAVEL --
+    so `_pay_costs` checava isso, no momento de pagar de verdade (tarde
+    demais pro caminho ao vivo, que precisa decidir aceitar/recusar
+    ANTES do jogo real pedir a selecao). Fix: `_reveal_from_hand_matches`
+    extraida como fonte unica, reusada nos dois lugares.
+    """
+    newgate = real_card("OP16-003")
+    marco = real_card("OP16-014")   # 8000 power -- unico que bate o filtro
+    luffy = real_card("OP16-015")   # 6000 power -- nao bate
+
+    me = GameState(leader=real_card("OP16-001"))
+    opp = GameState(leader=real_card("OP14-079"))
+    opp.field_chars = [real_card("OP14-096")]  # alvo valido pro debuff (nao e o gargalo)
+    ee = EffectExecutor(me, opp)
+    from optcg_engine.decision_engine import get_card_effects
+    am = get_card_effects("OP16-003")["on_play"]
+
+    me.hand = [marco, luffy]
+    check("reveal_from_hand impagavel (so 1/2 cartas validas): _worth_paying_optional_costs recusa",
+          ee._worth_paying_optional_costs(am["costs"], newgate) is False)
+
+    marco2 = real_card("OP16-014")
+    me.hand = [marco, marco2, luffy]
+    check("reveal_from_hand pagavel (2/2 cartas validas): _worth_paying_optional_costs aceita",
+          ee._worth_paying_optional_costs(am["costs"], newgate) is True)
 
 
 def test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno() -> None:
