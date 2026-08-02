@@ -1,5 +1,49 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-02 (413) - Claude (sessao local) - collect_latest_match.py agora grava bot_side automaticamente em TODO log coletado, sem depender de Shift+P
+
+Usuario pediu pra "garantir que nosso programa identifique se o bot é
+P1 ou P2" -- a feature do bloco 389 (`--bepinex-log`, escaneia
+`LogOutput.log` procurando "agora controla P1/P2") so funciona se o
+Shift+P foi apertado ao menos 1x na sessao, e e manual (precisa passar
+o flag toda vez). Achei uma fonte MELHOR ja existente e nao usada:
+`BotDriver.cs` manda `bot_seat` ("p1"/"p2", de `BotPlayerIndex`, default
+0=P1) pro endpoint `/outcome` em TODA partida via `ReportOutcome` (nao
+depende de Shift+P ter sido apertado -- e o estado real do bot, sempre
+conhecido) -- `server.py` ja repassava esse dado pra
+`collect_latest_match.py` (`_apply_winner`), mas a funcao SO usava pra
+calcular `winner`, nunca gravava `bot_side` no index.
+
+**Fix**: `_apply_winner` (collect_latest_match.py) agora grava
+`item["bot_side"] = bot_seat` sempre (nao so quando `result` e
+win/loss). Como isso roda automaticamente no fluxo padrao (`/outcome` ->
+`BOT_AUTO_COLLECT=1` -> `collect_latest()` -> `_apply_winner`), TODO log
+coletado ao vivo daqui pra frente ja sai do banco com `bot_side`
+correto, sem precisar rodar `--bepinex-log` manualmente nem depender de
+Shift+P.
+
+**Diferenca da feature do bloco 389**: aquela continua util como
+fallback pra logs adicionados manualmente fora do fluxo `/outcome` (ex:
+reconstruindo o banco a partir de logs antigos ja no disco), mas o
+caminho automatico agora tem prioridade e nao tem a limitacao de
+depender do toggle.
+
+2 testes novos em `smoke_fast.py`
+(`test_apply_winner_grava_bot_side_da_fonte_autoritativa`): bot_seat=p2
+com vitoria grava bot_side=p2/winner=p2; bot_seat=p1 (default) com
+derrota grava bot_side=p1/winner=p2 (o outro lado). `smoke_fast.py`
+100%.
+
+**Pendente**: os logs ja no banco de ANTES deste fix (incluindo os
+coletados pelo fluxo automatico antes de hoje) continuam com
+`bot_side=null` -- so logs novos, coletados a partir de agora, tem o
+campo preenchido. Nao fiz backfill retroativo (o dado nao existe nos
+logs antigos, so seria possivel se o `LogOutput.log` daquela sessao
+ainda existisse no disco, caso a caso).
+
+`server.py` reiniciado neste commit (PID 1652) -- fixes deste bloco e
+do 412 (Rush) agora ativos pro proximo teste ao vivo.
+
 ## 2026-08-02 (412) - Claude (sessao local) - bug real corrigido: select_grant_rush/select_grant_rush_character concedia Rush a personagens que nao se beneficiavam (nao entraram em campo este turno)
 
 Usuario observou, na mesma partida do bloco 411 (Portgas.D.Ace-R x

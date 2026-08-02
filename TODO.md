@@ -2,6 +2,18 @@
 
 **Última atualização:** 2 de agosto de 2026
 
+> 02/08/2026 (bloco 413): **`bot_side` agora automático** —
+> `collect_latest_match.py` (`_apply_winner`) já recebia `bot_seat`
+> (fonte autoritativa, de `BotDriver.cs`/`BotPlayerIndex`, sempre
+> conhecida) em todo `/outcome`, mas só usava pra calcular `winner`,
+> nunca gravava `bot_side` no index. Corrigido — todo log coletado ao
+> vivo daqui pra frente já sai do banco com `bot_side` correto, sem
+> precisar do `--bepinex-log` manual (feature do bloco 389, que só
+> funcionava se Shift+P tivesse sido apertado). 2 testes novos,
+> `smoke_fast.py` 100%. Logs já no banco de antes deste fix continuam
+> com `bot_side=null` (sem backfill retroativo). `server.py` reiniciado
+> (PID 1652) com este fix + o do bloco 412 (Rush) ativos.
+
 > 02/08/2026 (bloco 412): **Bug real corrigido** — `select_grant_rush`/
 > `select_grant_rush_character` (lider Ace OP16-001 e outras cartas da
 > mesma família) concediam Rush sem checar se o alvo realmente se

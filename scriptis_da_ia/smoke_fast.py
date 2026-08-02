@@ -9743,6 +9743,7 @@ def main() -> int:
     test_counter_valor_vida_scale_calibrado_29_07()
     test_block_critical_life_max_cost_estendido_vida_3_4_29_07()
     test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno()
+    test_apply_winner_grava_bot_side_da_fonte_autoritativa()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -10201,6 +10202,36 @@ def test_parse_combat_log_rastreia_rested_active_do_oponente() -> None:
     snap_t6_you = turns[5]["snapshot"]["You"]
     check("rested: personagem recem-deployado fica rested; lider atacando nao afeta board_state",
           snap_t6_you["rested"] == {"ST34-002": 1})
+
+
+def test_apply_winner_grava_bot_side_da_fonte_autoritativa() -> None:
+    """
+    Achado real 02/08 (usuario pediu pra garantir que o programa identifica
+    se o bot e P1 ou P2): `BotDriver.cs` (BotPlayerIndex, default 0=P1) ja
+    manda `bot_seat` pro `/outcome` em TODA partida (nao depende de
+    Shift+P ter sido apertado nesta sessao -- e a fonte autoritativa,
+    distinta do scan de `LogOutput.log` que so pega TROCAS de lado).
+    `_apply_winner` (collect_latest_match.py) ja recebia esse dado mas so
+    usava pra calcular `winner`, nunca gravava `bot_side` no index. Fix:
+    agora grava os dois.
+    """
+    import collect_latest_match as clm
+
+    # bot_seat=p2 (bot controlava o lado "Opponent"), resultado win.
+    index = [{"id": "X1", "winner": None, "bot_side": None}]
+    clm._apply_winner(index, "X1", "win", bot_seat="p2")
+    check("_apply_winner grava bot_side=p2 quando bot_seat=p2",
+          index[0]["bot_side"] == "p2")
+    check("_apply_winner: bot venceu como p2 -> winner=p2",
+          index[0]["winner"] == "p2")
+
+    # bot_seat=p1 (default), resultado loss -> winner deve ser o outro lado.
+    index2 = [{"id": "X2", "winner": None, "bot_side": None}]
+    clm._apply_winner(index2, "X2", "loss", bot_seat="p1")
+    check("_apply_winner grava bot_side=p1 quando bot_seat=p1 (default)",
+          index2[0]["bot_side"] == "p1")
+    check("_apply_winner: bot perdeu como p1 -> winner=p2 (o outro lado)",
+          index2[0]["winner"] == "p2")
 
 
 def test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno() -> None:

@@ -79,7 +79,8 @@ def _validate_bank_entry(combat_log: Path, index: list, db_root: Path = DB_ROOT)
 
 def _apply_winner(index: list, entry_id: str, result: str,
                   bot_seat: str = "p1") -> None:
-    """Preenche o 'winner' do index a partir do resultado da telemetria.
+    """Preenche 'winner' e 'bot_side' do index a partir do resultado da
+    telemetria.
 
     O combat log baixado pelo jogo e cortado antes das linhas finais
     (Downloaded the Combat Log!/GameOver) -- parse_combat_log.py nao tem
@@ -89,15 +90,27 @@ def _apply_winner(index: list, entry_id: str, result: str,
     bot=p1 SEMPRE e invertia o vencedor quando o bot controlava o outro
     lado (achado real 22/07: Kid x Katakuri, bot=Katakuri=[Opponent]
     perdeu 6-0 e o index registrou winner=p2).
+
+    `bot_seat` vem de `BotDriver.cs` (`BotPlayerIndex`, enviado sempre no
+    GameOver via ReportOutcome) -- e a fonte de verdade AUTORITATIVA
+    (default 0=P1, so muda via Shift+P), disponivel em TODA partida, sem
+    depender do usuario ter apertado Shift+P nesta sessao. Achado real
+    02/08: esta funcao ja recebia esse dado (so pra calcular `winner`) mas
+    nunca gravava `bot_side` no index -- quem quisesse saber o lado do bot
+    tinha que rodar `--bepinex-log` manualmente (so funciona se Shift+P
+    foi apertado ao menos 1x, ver `detectar_lado_bot_via_bepinex_log` em
+    parse_combat_log.py). Agora todo log coletado automaticamente (via
+    /outcome, BOT_AUTO_COLLECT=1, o caminho padrao) ja sai com `bot_side`
+    correto, sem esse requisito.
     """
-    if result not in {"win", "loss"}:
-        return
     if bot_seat not in {"p1", "p2"}:
         bot_seat = "p1"
     opp_seat = "p2" if bot_seat == "p1" else "p1"
     for item in index:
         if item.get("id") == entry_id:
-            item["winner"] = bot_seat if result == "win" else opp_seat
+            item["bot_side"] = bot_seat
+            if result in {"win", "loss"}:
+                item["winner"] = bot_seat if result == "win" else opp_seat
             return
 
 
