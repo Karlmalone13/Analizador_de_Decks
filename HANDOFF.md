@@ -1,5 +1,79 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-02 (415) - Claude (sessao local) - performance da busca ao vivo: ~25% mais rapido, 2 causas reais achadas por profiling (nao chute)
+
+Usuario reportou "hora que demora demais" nas decisoes do bot ao vivo
+(bate com os timeouts de 3s ja vistos nos blocos 411/414). Pedido
+explicito: investigar a causa raiz em vez de cortar qualidade
+(reduzir amostras Monte Carlo/profundidade) -- ofereci as 2 opcoes,
+usuario escolheu investigar.
+
+**Metodologia**: reconstrui o estado real de uma decisao que deu
+timeout de verdade (turno 6, log Portgas.D.Ace-R x Crocodile-B
+02/08, board com 4+2 personagens) a partir do `state_before` do
+JSONL de decisoes, chamando `_select_action_via_search` direto (sem
+o wrapper de thread do `sim_bridge.choose_action`, que esconderia o
+trabalho do profiler) com `cProfile`. Baseline: **12 amostras
+levaram 5.8s** (bem acima dos ~51ms/amostra estimados em bloco
+anterior -- confirma que board late-game realmente explode custo).
+
+**Achado 1 -- `GameState.__deepcopy__` esquecia `full_deck_plan`/
+`full_deck_profile`**: a funcao ja compartilhava `full_deck_census`
+por referencia (comentario explicito "invariante, seta 1x no setup")
+mas nao fazia o mesmo pros outros 2 campos igualmente invariantes
+(setados 1x em `server.py:_dto_to_gs` ou `OPTCGMatch.setup()`, nunca
+mutados depois -- confirmado por grep). Resultado: QUALQUER clone do
+Turn Planner (que acontece dezenas/centenas de vezes por decisao,
+simulando turnos) perdia o cache e forcava `compute_game_plan()` a
+cair no fallback caro (escanear deck+mao+trash+vida inteiros +
+`compute_game_plan_from_cards`) de novo. Profiling mostrou 4331
+chamadas so nisso pra 12 amostras. **Fix**: `__deepcopy__` ganhou as
+2 linhas faltando, mesmo padrao do `full_deck_census` (referencia
+compartilhada, seguro porque nunca muda).
+
+**Achado 2 -- `posture()` nunca era cacheada, ~3000 chamadas
+redundantes**: chamada 1x por CARTA avaliada (`avaliar_carta`)
+dentro do MESMO estado (mesma decisao), sempre recomputando do zero
+(`deck_profile_type`/`game_phase`/`can_lethal_this_turn`/
+`opp_lethal_threat`/`field_advantage`, cada uma com custo real).
+**Fix**: cache por instancia de `DecisionEngine`
+(`self._posture_cache`), invalidado explicitamente no topo de
+`_generate_and_score_actions` -- **cuidado de correcao importante**:
+`engine` e reutilizado pelo CHAMADOR (`main_phase`/
+`_play_turn_greedy`) ao longo de VARIAS acoes aplicadas em sequencia
+no mesmo turno (cada uma muta p/opp de verdade) -- cachear sem
+invalidar deixaria a postura da 1a acao presa pro resto do turno,
+mesmo com vida/DON/board diferentes depois. Resolvido resetando o
+cache 1x por ciclo de pontuacao (a cada chamada de
+`_generate_and_score_actions`, que e exatamente onde `posture()` e
+lido em cadeia por `avaliar_carta`).
+
+**Resultado medido**: mesma decisao real, mesmo cProfile -> **5.8s
+-> 4.37s (~25% mais rapido)**, sem mudar NENHUM valor de scoring
+(so evita trabalho redundante). `compute_game_plan_from_cards` caiu
+de 4331 pra ~1886 chamadas (resto e legitimamente do lado do
+oponente, que nunca tem `full_deck_plan` -- hide_hidden=True por
+design, bot nao conhece o deck completo dele).
+
+**Validado**: `smoke_fast.py`/`smoke_test.py` 100% (2 rodadas
+completas, incluindo apos o fix de invalidacao do cache) +
+`audit_replay.py --n 6 --seed 3` (6 partidas reais, 0 excecoes, 0
+anomalias -- confirma que `__deepcopy__` continua conservando DON
+corretamente, ja que a area estava sob suspeita nos blocos 374/410).
+
+**Nao investigado/pendente**: `_trash_value` (EffectExecutor)
+constroi uma `DecisionEngine` nova a cada carta avaliada pra
+descarte (nao reaproveita `self`, que e de OUTRA classe -- legitimo,
+mas `_choose_to_trash` chama isso em loop sobre a mao inteira,
+oportunidade de cache adicional nao explorada ainda, registrada como
+pendencia). Board ainda mais cheio (mid/late-game real) pode
+continuar batendo no timeout de 3s mesmo com esse ganho -- proxima
+partida ao vivo e o teste real.
+
+`server.py` **precisa reiniciar** antes do proximo teste ao vivo
+(varias mudancas em `decision_engine.py` hoje: Rush x2, DON de
+margem, e agora as 2 otimizacoes deste bloco).
+
 ## 2026-08-02 (414) - Claude (sessao local) - 2 bugs reais corrigidos: select_grant_rush tambem cego na DECISAO (nao so execucao) + attach_don nunca considerado em empate exato
 
 Partida ao vivo nova (Portgas.D.Ace-R x Crocodile-B, 2026-08-02, 13

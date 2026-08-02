@@ -2,6 +2,29 @@
 
 **Última atualização:** 2 de agosto de 2026
 
+> 02/08/2026 (bloco 415): **Performance da busca ao vivo, ~25% mais
+> rápida, achada por profiling real (não chute)** — usuário pediu pra
+> investigar a lentidão em vez de cortar qualidade (amostras/
+> profundidade). 2 causas reais: (1) `GameState.__deepcopy__`
+> esquecia de propagar `full_deck_plan`/`full_deck_profile` (cache
+> invariante, só o `full_deck_census` era propagado) — qualquer clone
+> do Turn Planner (dezenas/centenas por decisão) perdia o cache e
+> escaneava o deck inteiro de novo; 4331 chamadas evitáveis numa
+> decisão real. (2) `posture()` nunca era cacheada — ~3000 chamadas
+> redundantes recomputando o mesmo resultado dentro do mesmo estado.
+> Fix com cuidado de correção: cache invalidado 1x por ciclo de
+> pontuação (`_generate_and_score_actions`), não pela vida inteira da
+> instância, porque `engine` é reutilizado ao longo de várias ações
+> que mutam o estado no mesmo turno. Medido: mesma decisão real,
+> mesmo profiler, 5.8s → 4.37s. `smoke_fast.py`/`smoke_test.py` 100%
+> + `audit_replay.py --n 6` (0 anomalias, confirma DON ainda
+> conservado no `__deepcopy__` corrigido). **Pendente**: `_trash_value`
+> ainda constrói uma `DecisionEngine` nova por carta avaliada em loop
+> (mais uma oportunidade de cache, não explorada). Board muito cheio
+> pode continuar batendo no timeout de 3s mesmo com o ganho — validar
+> na próxima partida ao vivo. `server.py` precisa reiniciar. Ver
+> bloco 415 do HANDOFF.
+
 > 02/08/2026 (bloco 414): **2 bugs reais corrigidos** — (1)
 > `select_grant_rush` continuava cego mesmo depois do fix do bloco 412:
 > a camada de EXECUÇÃO estava corrigida, mas `_should_activate_main`

@@ -993,6 +993,20 @@ class GameState:
         # inteiro a cada clone do Turn Planner (economiza ~0.1ms por clone
         # sem risco de corrupcao, confirmado por leitura de todos os call sites).
         novo.full_deck_census = self.full_deck_census
+        # full_deck_plan/full_deck_profile: MESMO padrao acima (invariantes,
+        # setados 1x no setup -- server.py:_dto_to_gs ou
+        # OPTCGMatch.setup(), nunca mutados depois, confirmado por grep em
+        # todo o arquivo). Achado real 02/08 (usuario pediu pra investigar
+        # lentidao da busca ao vivo): faltavam aqui -- getattr(novo,
+        # 'full_deck_plan', None) sempre voltava None em QUALQUER clone
+        # (Turn Planner clona o estado dezenas/centenas de vezes por
+        # decisao), forcando compute_game_plan() a cair no fallback caro
+        # (escanear deck+mao+trash+vida inteiros + compute_game_plan_from_cards)
+        # de novo a CADA clone -- profiling de 1 decisao real (12 amostras)
+        # mostrou 4331 chamadas a compute_game_plan_from_cards, 0.7-1.3s
+        # (de 5.8s totais) so nisso.
+        novo.full_deck_plan = getattr(self, 'full_deck_plan', None)
+        novo.full_deck_profile = getattr(self, 'full_deck_profile', None)
         novo.revealed_to_opponent = set(self.revealed_to_opponent)
         novo.revealed_life = set(self.revealed_life)
         novo.revealed_deck = set(self.revealed_deck)
@@ -9645,6 +9659,14 @@ class DecisionEngine:
         # também precisa saber que o blocker/rush DO OPONENTE está ativo.
         apply_conditional_keyword_passives(me, opp)
         apply_conditional_keyword_passives(opp, me)
+        # Cache de posture() (achado real 02/08, investigando lentidao da
+        # busca ao vivo): self.me/self.opp nunca sao reatribuidos depois do
+        # __init__ (avaliar_carta so PONTUA, nunca executa/muta o board), e
+        # posture() e chamada uma vez por CARTA avaliada dentro do MESMO
+        # estado -- profiling de 1 decisao real mostrou ~3000 chamadas
+        # redundantes (~1.3-1.4s de 5.8s totais) recomputando o MESMO
+        # resultado sempre que a instancia nao muda de estado.
+        self._posture_cache = None
 
     # ── Postura ──────────────────────────────────────────────────────────────
 
@@ -9658,7 +9680,20 @@ class DecisionEngine:
           * aggressive: pressiona em todas as fases (busca dano cedo)
           * control: segue a fase (early desenvolve, mid controla, late finaliza)
           * midrange: equilíbrio pela fase
+
+        Cacheada por instancia (ver __init__): self.me/self.opp sao fixos
+        depois do construtor, entao o resultado nao muda entre chamadas da
+        MESMA instancia -- so invalida ao criar um DecisionEngine novo pra
+        um estado novo (padrao ja usado em qualquer ponto do engine que
+        recria `engine = DecisionEngine(p, opp)` por simulacao/step).
         """
+        if self._posture_cache is not None:
+            return self._posture_cache
+        resultado = self._posture_uncached()
+        self._posture_cache = resultado
+        return resultado
+
+    def _posture_uncached(self) -> str:
         a = self.analyzer
         profile = a.deck_profile_type()   # aggressive / control / midrange
         phase   = a.game_phase()          # early / mid / late (pelos DON)
@@ -13483,6 +13518,17 @@ class OPTCGMatch:
         """
         actions = []
         a = engine.analyzer
+
+        # Invalida o cache de posture() (achado real 02/08, otimizacao de
+        # performance): `engine` e reutilizado pelo CHAMADOR (main_phase/
+        # _play_turn_greedy) ao longo de VARIAS acoes aplicadas em sequencia
+        # dentro do mesmo turno, cada uma mutando p/opp (jogar carta, atacar,
+        # etc.) -- sem invalidar aqui, a postura calculada ANTES da 1a acao
+        # ficaria presa pelo resto do turno, mesmo com vida/DON/board
+        # diferentes depois. Reset 1x por CICLO de pontuacao (aqui), nao por
+        # avaliar_carta (o cache ainda serve pra evitar recomputar dentro do
+        # MESMO ciclo, so nao atravessa mutacao de estado).
+        engine._posture_cache = None
 
         # PRIORIDADE DE ANÁLISE (cascata de inclinação): o modo dominante ajusta
         # os pesos das ações, respeitando a ordem do documento sem bloquear.
