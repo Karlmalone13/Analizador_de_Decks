@@ -6919,7 +6919,28 @@ class EffectExecutor:
                 targets = [c for c in targets if target_name in c.name.lower()]
             transferido = 0
             if targets:
-                best = max(targets, key=lambda c: c.effective_power(True))
+                # Entre quem pode de fato ATACAR AINDA NESTE TURNO (lider
+                # ainda ativo, ou Character apto via character_can_attack_
+                # now -- cobre Rush), o DON!! muda o resultado do combate
+                # de hoje: maximiza poder normalmente. Se NINGUEM pode
+                # atacar mais este turno, o DON e so investimento
+                # PERMANENTE -- prefere o LIDER (ataca praticamente todo
+                # turno, nunca sai de campo) a um Character fragil que
+                # pode ser K.O.'d e levar o DON junto. Sem isto,
+                # max(effective_power) comparava poder bruto sem saber se
+                # o alvo sequer podia usar o DON hoje -- achado real 02/08
+                # (usuario, log Portgas.D.Ace-R x Portgas.D.Ace-R
+                # 2026-08-02T16.38.43): Izo (on_play give_don rested=true)
+                # deu o proprio DON pra si mesmo (recem-jogado, sem Rush,
+                # nao podia atacar nem hoje) so por ter mais poder impresso
+                # que o lider ja restado, quando o lider era o destino de
+                # valor permanente mais seguro.
+                podem_atacar_agora = [
+                    c for c in targets
+                    if (c is me.leader and not c.rested)
+                    or (c is not me.leader and character_can_attack_now(c, me, opp))]
+                pool = podem_atacar_agora or ([me.leader] if me.leader in targets else targets)
+                best = max(pool, key=lambda c: c.effective_power(True))
                 # "up to N" e um TETO que o jogador escolhe (0..N), nao uma
                 # ordem fixa de sempre dar N -- achado 15/07 (usuario): o
                 # motor sempre tentava dar o maximo do texto, mesmo quando

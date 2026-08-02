@@ -2824,5 +2824,31 @@
       "You": "decks/Portgas.D.Ace-R_2026-08-02T13.18.18.json",
       "Opponent": "decks/Portgas.D.Ace-R_2026-08-02T13.18.18.json"
     }
+  },
+  {
+    "id": "2026-08-02T16.38.43",
+    "friendly_name": "Portgas.D.Ace-R_x_Portgas.D.Ace-R",
+    "date": "2026-08-02",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "turns": 9,
+    "winner": "p2",
+    "bot_side": "p1",
+    "log_file": "raw/Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T16.38.43.log",
+    "parsed_file": "parsed/Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T16.38.43.json",
+    "deck_files": {
+      "You": "decks/Portgas.D.Ace-R_2026-08-02T16.38.43.json",
+      "Opponent": "decks/Portgas.D.Ace-R_2026-08-02T16.38.43.json"
+    }
   }
 ]

@@ -9752,6 +9752,8 @@ def main() -> int:
     test_order_target_candidates_select_grant_rush_ignora_rested_ja_atacou()
     test_score_attack_target_double_attack_banish_priorizam_a_vida()
     test_order_target_candidates_debuff_on_play_coordena_com_ataque_disponivel()
+    test_give_don_prefere_lider_a_character_recem_jogado_sem_uso_hoje()
+    test_order_target_candidates_give_don_prefere_lider_ao_vivo()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -10553,6 +10555,52 @@ def test_order_target_candidates_debuff_on_play_coordena_com_ataque_disponivel()
     order = sim_bridge.order_target_candidates(me, opp, cands, actor_code="OP16-003")
     check("debuff on_play prioriza o alvo que meu ataque disponivel consegue fechar",
           bool(order) and order[0] == 100)
+
+
+def test_give_don_prefere_lider_a_character_recem_jogado_sem_uso_hoje() -> None:
+    """
+    Achado real 02/08 (usuario, log Portgas.D.Ace-R x Portgas.D.Ace-R
+    2026-08-02T16.38.43): Izo (EB01-002, on_play "give up to 1 Rested
+    DON!!") deu o proprio DON pra SI MESMO -- recem-jogado, sem Rush, nao
+    podia atacar nem hoje nem breve -- so porque `max(effective_power)`
+    comparava poder bruto sem checar se o alvo sequer USA o DON este
+    turno. O lider ja tinha atacado (rested) mas continua sendo o
+    destino de valor permanente mais seguro (ataca todo turno, nunca sai
+    de campo) contra um Character fragil que pode ser K.O.'d e levar o
+    DON junto. Fix: entre quem PODE atacar ainda hoje, maximiza poder
+    (normal); se ninguem pode, prefere o LIDER.
+    """
+    ace = real_card("OP16-001")
+    ace.rested = True   # ja atacou este turno
+    izo = real_card("EB01-002")
+    izo.just_played = True
+    izo.rested = False  # entrou ativo, so nao pode atacar sem Rush
+    me = GameState(leader=ace, don_rested=1, don_available=0)
+    me.field_chars = [izo]
+    opp = GameState(leader=real_card("OP02-001"))  # 6000 de poder -- forca deficit>0 pro lider (5000 vs 6000)
+    ee = EffectExecutor(me, opp)
+    ee.execute(izo, "on_play")
+    check("give_don (rested) vai pro lider ja restado, nao pro Character recem-jogado",
+          ace.don_attached == 1 and izo.don_attached == 0)
+
+
+def test_order_target_candidates_give_don_prefere_lider_ao_vivo() -> None:
+    """Mesmo achado do teste acima, versao ao vivo (order_target_candidates)."""
+    ace = real_card("OP16-001")
+    ace._deck_uid = 1
+    ace.rested = True
+    izo = real_card("EB01-002")
+    izo._deck_uid = 50
+    izo.just_played = True
+    izo.rested = False
+    me = GameState(leader=ace)
+    me.field_chars = [izo]
+    opp = GameState(leader=real_card("OP14-079"))
+    cands = [{"id": 50, "zone": "own_board", "code": "EB01-002"},
+             {"id": 1, "zone": "own_leader", "code": "OP16-001"}]
+    order = sim_bridge.order_target_candidates(me, opp, cands, actor_code="EB01-002")
+    check("give_don ao vivo prioriza o lider ao inves do Character recem-jogado",
+          bool(order) and order[0] == 1)
 
 
 def test_worth_paying_optional_costs_recusa_reveal_from_hand_impagavel() -> None:

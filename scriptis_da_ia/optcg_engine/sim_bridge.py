@@ -2238,7 +2238,18 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             # pra qualquer corpo, em vez do lider.
             desperdicado = (getattr(live, 'just_played', False)
                             or getattr(live, 'rested', False))
-            return (3, 1 if desperdicado else 0, -p)
+            if desperdicado:
+                # Dentro do grupo que nao aproveita o DON HOJE, o valor vira
+                # so investimento PERMANENTE -- prefere o LIDER (ataca
+                # praticamente todo turno, nunca sai de campo) a um
+                # Character fragil que pode ser K.O.'d e levar o DON junto,
+                # em vez de decidir por poder bruto (achado real 02/08,
+                # mesmo caso do fix em decision_engine.py/action
+                # 'give_don': Izo deu o proprio DON pra si mesmo, recem-
+                # jogado sem Rush, so por ter mais poder impresso que o
+                # lider ja restado).
+                return (3, 1, 0 if zone == 'own_leader' else 1, -p)
+            return (3, 0, 0, -p)
         # Contexto de ataque: alvo original sempre por ULTIMO, em qualquer zona
         # (so faz sentido pra uma habilidade de redirect de verdade -- ver
         # actor_is_redirect acima)

@@ -2,6 +2,33 @@
 
 **Última atualização:** 2 de agosto de 2026
 
+> 02/08/2026 (bloco 422): **`give_don` corrigido — dava o DON pro alvo
+> de maior PODER bruto, sem checar se ele podia usar o DON este turno**.
+> Izo (EB01-002, on_play "dá 1 DON restado") deu o próprio DON pra si
+> mesmo (recém-jogado, sem Rush, não podia atacar nem hoje) em vez do
+> líder já restado, só por ter mais poder impresso — quando o líder é o
+> destino de valor permanente mais seguro (ataca todo turno, nunca sai
+> de campo). Fix: entre quem pode atacar ainda hoje, maximiza poder
+> (normal); se ninguém pode, prefere o líder. Corrigido nos 2 lugares
+> (execução + ordenação de alvo ao vivo — mesmo padrão "duas fontes de
+> verdade" do bloco 421). Um 2º ponto reportado (DON parado no fim do
+> turno) **não é bug** — o ataque "seco" já era vitória garantida pelo
+> que o bot sabia (empate favorece o atacante); só perdeu pra um Counter
+> vindo de informação ESCONDIDA (mão do oponente). Fica registrado como
+> pendência de investigação, não uma correção. 2 testes novos,
+> `smoke_fast.py`/`smoke_test.py` 100%. `audit_replay.py --n 20 --seed
+> 11`: 0 exceções, 23 anomalias de DON — todas no matchup pré-existente
+> "Black Imu + Empty Throne" (blocos 374/377/410/420), confirmado sem
+> relação com o fix de hoje. Ver bloco 422 do HANDOFF.
+>
+> **Pendência nova**: investigar se vale a pena ensinar o motor a tratar
+> um ataque "empatado, sem margem" como arriscado quando
+> `opp_counter_potential()` é > 0 mesmo com a mão mascarada (ex: usar
+> densidade média de counter do deck do oponente, já existe uma
+> estimativa estatística equivalente em `counter_estimation.py` usada
+> em outro lugar) — isso pode reduzir esse tipo de "ataque seco perde
+> pra counter escondido" sem exigir informação que o bot não tem.
+
 > 02/08/2026 (bloco 421): **"Duas fontes de verdade" achada e corrigida**
 > — `order_target_candidates` (`sim_bridge.py`, resolve prompts de alvo
 > AO VIVO) não conhecia regras que já existiam em `decision_engine.py`

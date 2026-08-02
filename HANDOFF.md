@@ -1,5 +1,60 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-02 (422) - Claude (sessao local) - give_don dava o DON pro alvo de MAIOR PODER bruto, sem checar se ele podia usar o DON este turno
+
+Usuario reportou nova partida (log `Portgas.D.Ace-R_x_Portgas.D.Ace-R_
+2026-08-02T16.38.43`, ja banco, bot p1, perdeu) com 2 observacoes: (1)
+lider atacou 5000 seco, perdeu pra um Counter escondido, depois jogou
+Monkey D. Garp (custo 1) e passou o turno com DON sobrando parado; (2)
+lider atacou 5000, depois jogou Izo (EB01-002, "on play: da 1 DON!!
+restado"), e o DON foi pro PROPRIO Izo -- recem-jogado, sem Rush, nao
+podia atacar nem hoje -- em vez do lider (correto seria: jogar Izo,
+dar o DON pro lider, so entao atacar).
+
+**Item 1 (DON parado no fim do turno): investigado, NAO e bug.** O
+ataque do lider (5000 vs lider do oponente, tambem 5000) ja era vitoria
+garantida PELO QUE O BOT SABIA -- empate favorece o atacante. O
+oponente so venceu porque descartou uma carta da MAO (Namule) pra
+Counter +2000, informacao ESCONDIDA (mao do oponente chega mascarada
+pro bot ao vivo, `server.py` ja substitui cartas nao reveladas por
+placeholder antes do GameState existir -- `opp_counter_potential()` so
+soma o que e realmente conhecido). Depois do Garp, nenhum atacante
+sobrava pros DON restantes (lider ja restado, Garp sem Rush) -- troca
+legitima sob incerteza, nao bug. Registrado como pendencia de
+investigacao futura (ver TODO), nao corrigido.
+
+**Item 2: bug real, confirmado e corrigido.** `give_don`
+(`decision_engine.py`, acao usada por ~50+ cartas) escolhia o alvo via
+`max(effective_power)` entre TODOS os candidatos (proprio campo +
+lider), sem checar se aquele alvo sequer USA o DON este turno. Izo
+(7000 de poder, recem-jogado sem Rush) "ganhava" contra o lider
+(5000, ja restado por ter atacado) so por ter mais poder impresso --
+mesmo o lider sendo o destino de valor PERMANENTE mais seguro (ataca
+praticamente todo turno, nunca sai de campo, ao contrario de um
+Character que pode ser K.O.'d e levar o DON junto).
+
+**Fix**: entre quem PODE atacar ainda hoje (lider ainda ativo, ou
+Character via `character_can_attack_now` -- cobre Rush), maximiza
+poder normalmente (sem mudanca de comportamento); se NINGUEM pode,
+prefere o LIDER especificamente, nao o maior poder bruto. Corrigido
+nos DOIS lugares que decidem esse alvo -- MESMO padrao de "duas fontes
+de verdade" do bloco 421: execucao real (`_execute_step`) E a
+ordenacao de alvo ao vivo (`sim_bridge.order_target_candidates`, que ja
+tinha uma tentativa de deprioritizar "just_played ou rested" mas caia
+em poder bruto quando os DOIS lados do desempate estavam nessa
+categoria, exatamente o caso do Izo vs lider ja restado).
+
+**Validado**: 2 testes novos (execucao + ao vivo) reproduzindo o
+cenario exato do log (Izo recem-jogado vs lider ja restado).
+`smoke_fast.py`/`smoke_test.py` 100%. `audit_replay.py --n 20 --seed
+11`: 0 excecoes; **23 anomalias de conservacao de DON encontradas, TODAS
+no matchup "Black Imu + Empty Throne"** (mesmo bug pre-existente dos
+blocos 374/377/410/420, confirmado via dump que nao envolve Izo/
+give_don/OP16-001 em nenhuma das ocorrencias) -- nao e regressao de
+hoje.
+
+`server.py` reiniciado apos o fix (PID novo, porta 8765).
+
 ## 2026-08-02 (421) - Claude (sessao local) - "duas fontes de verdade" achada e corrigida: order_target_candidates (sim_bridge.py) nao conhecia regras que ja existiam em decision_engine.py
 
 Usuario pediu nova comparacao decisao-a-decisao (log
