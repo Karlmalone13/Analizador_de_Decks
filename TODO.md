@@ -2,6 +2,33 @@
 
 **Última atualização:** 1 de agosto de 2026
 
+## 🟢 Investigação NEGATIVA: sequenciamento do Turn Planner e timing de reserva de DON (01/08/2026, bloco 409)
+
+Pedido do usuário: checar se existe bug REAL de ordem/timing dentro do
+turno (distinto dos bugs de magnitude/drawback já corrigidos nos blocos
+407-408) e se a reserva de DON (`_don_livre_for_plan`) funciona de
+verdade na prática.
+
+- [x] **Sequenciamento** (carta com buff/rush/double-attack pro próprio
+  lado aplicada DEPOIS de já ter atacado no mesmo turno, desperdiçando o
+  benefício): 0 casos em 10/10 partidas reais de self-play instrumentado
+  (65 cartas do banco têm esse padrão de efeito, nenhuma pegou o padrão
+  de ordem errada na amostra).
+- [x] **Timing de reserva de DON** (carta que `_don_livre_for_plan`
+  reservou DON pra jogar/ativar, mas que não foi de fato aplicada no
+  mesmo turno por falta de DON): 0 casos em 10/10 partidas.
+- [x] Contexto: sequenciamento JÁ foi bug real e documentado (bloco 25,
+  01/07 — planner só via a 1ª ação do turno), corrigido arquiteturalmente
+  depois (`main_phase` em loop + lookahead `max_steps=8` via Monte Carlo
+  + `_don_livre_for_plan` desde 14/07). A investigação não achou
+  regressão nem caso novo não coberto.
+- [x] **Limitação declarada**: amostra pequena (~20 partidas no total,
+  não exaustiva), só cobre os 2 padrões específicos pedidos — não é
+  garantia formal de zero bugs de sequenciamento em qualquer cenário.
+
+Sem mudança de código (investigação pura). Scripts de instrumentação não
+commitados (descartáveis, scratchpad da sessão).
+
 ## 🟢 Auditoria "outros efeitos com sequência errada no Turn Planner": 3 cartas com drawback nunca descontado, corrigidas (01/08/2026, bloco 407)
 
 Confirmado pro usuário: a redução de ativações desperdiçadas do Mihawk-G

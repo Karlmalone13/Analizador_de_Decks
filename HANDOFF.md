@@ -1,5 +1,75 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-01 (409) - Claude (sessao remota web) - Investigacao NEGATIVA (resultado limpo): sequenciamento do Turn Planner e timing de reserva de DON nao mostraram bug em ~20 partidas reais
+
+Usuário pediu explicitamente pra investigar 2 frentes deixadas em aberto
+na resposta ao bloco 408: (1) "sequência do turno planner" de verdade
+(ordem/timing de ações dentro do turno, DISTINTO dos bugs de
+magnitude/drawback já corrigidos nos blocos 407-408) e (2) se a reserva
+de DON (`_don_livre_for_plan`) realmente cumpre o que promete na
+prática.
+
+**Contexto histórico relevante, achado relendo o próprio HANDOFF antes
+de investigar**: sequenciamento JÁ foi um bug real e documentado (bloco
+25, 01/07 — a arquitetura original só considerava a 1ª ação do turno).
+Foi corrigido arquiteturalmente depois: `main_phase` hoje roda em loop
+(reavalia do zero após CADA ação aplicada, não é mais decisão única por
+turno) e `_select_action_via_search`/`_simulate_sequence_once` simulam
+linhas de até `max_steps=8` a partir de cada uma das TOP_K candidatas
+antes de escolher a 1ª ação a aplicar de verdade — ou seja, já existe
+lookahead multi-ação embutido, não é busca puramente gulosa passo a
+passo. `_don_livre_for_plan` (14/07) reserva DON pra ações `play`/
+`activate` com score≥0 antes de deixar um ataque anexar DON demais.
+
+**Metodologia**: 2 scripts de instrumentação (não permanentes, não
+commitados — descartáveis, no scratchpad da sessão), self-play com
+decks REAIS variados (`decklists_raw.csv`, sementes diferentes de todos
+os runs anteriores desta sessão pra não repetir os mesmos matchups):
+
+1. **Sequenciamento**: hook em `_apply_action` (só decisões REAIS,
+   `is_real = p is self.state_a or p is self.state_b`) capturando a
+   sequência ORDENADA de ações aplicadas por turno. Verifica se alguma
+   carta com `on_play`/`activate_main` concedendo `buff_power`/
+   `gain_rush`/`select_grant_rush*`/`gain_double_attack`/`select_grant_
+   double_attack`/`grant_can_attack_active_turn`/`select_grant_can_
+   attack_active_turn` pro PRÓPRIO lado (65 cartas do banco têm esse
+   padrão) foi aplicada DEPOIS de já ter atacado no mesmo turno
+   (desperdiçando o benefício que só ajudaria um ataque ainda não
+   feito).
+2. **Timing de DON**: hook em `_don_livre_for_plan` (recomputa o mesmo
+   cálculo de "planejado" que a função original faz, pra saber QUAIS
+   cartas foram reservadas) e em `_apply_action` (pra saber o que
+   realmente foi jogado/ativado). Ao fim de cada turno, verifica se
+   alguma carta que foi reservada (apareceu no cálculo com score≥0)
+   NÃO foi de fato jogada/ativada no mesmo turno — sinal de que a
+   reserva não gerou o resultado pretendido.
+
+**Resultado: limpo nas duas frentes.** ~20 partidas reais cobertas no
+total (1ª rodada, 11 sequencing + 7 don_timing, sem achados observados
+mas SEM persistência incremental — perdida ao interromper os processos
+por lentidão, retrabalho descartado; 2ª rodada, refeita com salvamento
+incremental após cada partida pra não perder dado de novo: **10/10
+sequencing + 10/10 don_timing, 0 exceções, 0 casos** de qualquer um dos
+2 padrões investigados). `sequencing_achados.json`/`don_timing_
+achados.json` = `[]` nas duas.
+
+**Leitura**: isso é evidência de que a arquitetura ATUAL (loop de
+re-scoring + lookahead de `max_steps=8` via Monte Carlo + reserva
+`_don_livre_for_plan`) resolve na prática o problema que motivou o bug
+de 01/07 — não achei regressão nem caso novo não coberto pelo
+mecanismo existente. **Não é prova formal de ausência de bugs**
+(amostra pequena — 20 partidas não é exaustivo —, e só testa os 2
+padrões específicos pedidos: enabler-após-ataque e reserva-não-cumprida;
+outros tipos de erro de ordem poderiam existir e não seriam pegos por
+este teste). Registrando como investigação NEGATIVA de propósito —
+resultado "não achei bug" é informação válida (evita que uma sessão
+futura reabra a mesma suspeita do zero sem saber que já foi checada),
+não motivo pra omitir do handoff.
+
+Nenhuma mudança de código neste bloco — só investigação. Scripts de
+instrumentação ficaram no scratchpad da sessão (não commitados, mesma
+convenção dos scripts de instrumentação usados nos blocos 405-406).
+
 ## 2026-08-01 (408) - Claude (sessao remota web) - Categoria "remocao/controle" inteira (90+ cartas) agora escala por valor real do alvo, nao base=100 flat
 
 Usuário pediu explicitamente "pode ir por aí" pra pendência deixada em
