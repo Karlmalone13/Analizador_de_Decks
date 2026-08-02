@@ -1,5 +1,73 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-02 (414) - Claude (sessao local) - 2 bugs reais corrigidos: select_grant_rush tambem cego na DECISAO (nao so execucao) + attach_don nunca considerado em empate exato
+
+Partida ao vivo nova (Portgas.D.Ace-R x Crocodile-B, 2026-08-02, 13
+turnos, bot perdeu). Usuario reportou 3 observacoes: (1) "bot ta usando
+o efeito do ace mesmo sem alvo" (2) "bot passou com 3 dons em pe,
+poderia ter atacado 8000" (3) "acertou o efeito apenas no turno 7".
+
+**Achado 1 -- select_grant_rush tambem cego na camada de DECISAO (nao
+so execucao)**: o fix do bloco 412 so corrigiu `_execute_step`/
+`_step_is_viable` (a EXECUCAO nao faz mais nada sem alvo just_played).
+Mas a funcao que decide se "activate" sequer aparece como candidata
+pontuavel (`_should_activate_main`, chamada por
+`_generate_and_score_actions`) NUNCA tinha um caso pra
+`select_grant_rush`/`select_grant_rush_character` -- caia no fallback
+generico "ativa por omissao, custo ja validado". Resultado real: o
+lider Ace foi oferecido/pontuado (score fixo 90.0) em TODOS os 7 turnos
+da partida, so achando alvo de verdade no turno 7 (confirma a
+observacao 3 do usuario). **Fix**: `_should_activate_main` ganhou um
+caso novo pra essa familia, reusando `_step_is_viable` (mesmo criterio
+just_played/not rested/not is_rush*()) em vez de duplicar a logica.
+
+**Achado 2 -- attach_don nunca oferecido em empate exato, mesmo com DON
+sem NENHUM outro uso**: turno 2, Ace(5000) ia atacar o lider do
+oponente(5000) -- empate exato. `_generate_attach_don_actions` (secao 3,
+"DON pra cruzar poder de combate") so gera candidato quando `gap>0`
+(atacante PERDENDO); com `gap<=0` (empate/ja vencendo) sempre pulava,
+assumindo "empate ja favorece o atacante, nao precisa de nada". Mas a
+mao inteira custava >=4 e so havia 3 DON -- **zero uso alternativo pros
+3 DON**, e um empate tem margem ZERO contra QUALQUER Counter do
+oponente (que jogou varios na mesma partida). Usuario perguntou por que
+o DON ficou "reservado pra counter" se nao havia evento counter nem
+habilidade -- investigado e CONFIRMADO que nao havia reserva
+deliberada nenhuma: o DON simplesmente nunca virava candidato porque o
+`gap<=0` cortava tudo antes, nao por escolha de guardar recurso.
+
+**Correcao do usuario durante a investigacao**: eventos `[Counter]`
+CUSTAM DON!! pra ativar (confirmado relendo `try_counter_event_ko_attacker`
+-- `effective_hand_play_cost`/`don_available` check), diferente do stat
+Counter impresso em Character (so descarta, sem custo). Minha primeira
+tentativa de "DON ocioso" ignorava isso -- corrigido pra usar
+`_don_reserve_for_defense()` (fonte unica ja existente, cobre
+exatamente esse caso) subtraida do disponivel ANTES de calcular a
+sobra elegivel pra margem.
+
+**Fix**: `_generate_attach_don_actions`, quando `gap==0` (empate
+exato) E existe sobra de DON depois da reserva de defesa (`don_sobra =
+don_available - _don_reserve_for_defense()`) E nenhuma carta da mao
+cabe nessa sobra, considera anexar ate 2 DON de margem de seguranca
+(valor descontado 0.3x do que o gap>0 usa -- e seguro opcional, nao o
+que decide o combate). A reserva de defesa NUNCA e tocada pela margem.
+
+**Validado**: 2 testes novos em `smoke_fast.py`
+(`test_attach_don_margem_seguranca_em_empate_com_don_ocioso`,
+`test_select_grant_rush_...` ja existia do bloco 412, sem mudanca) --
+cenario do log real (sem counter na mao, gera candidato de 2 DON) e
+cenario com evento Counter + ameaca real (reserva > 0, margem nunca
+excede a sobra). `smoke_fast.py`/`smoke_test.py` 100%, sem regressao.
+
+**Nao investigado/pendente**: o achado separado da telemetria
+(`lethal_certified` no turno 6 nao fechou a partida) nao foi
+aprofundado -- meu palpite e que e o MESMO padrao sistemico (ataque
+"certificado" nao pondera Counters possiveis do oponente), mas nao
+confirmei linha a linha. Fica registrado como suspeita, nao como
+achado fechado.
+
+`server.py` **NAO foi reiniciado** neste bloco (fixes ainda nao
+testados ao vivo) -- reiniciar antes do proximo teste.
+
 ## 2026-08-02 (413) - Claude (sessao local) - collect_latest_match.py agora grava bot_side automaticamente em TODO log coletado, sem depender de Shift+P
 
 Usuario pediu pra "garantir que nosso programa identifique se o bot é

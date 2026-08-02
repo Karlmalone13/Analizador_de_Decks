@@ -2,6 +2,28 @@
 
 **Última atualização:** 2 de agosto de 2026
 
+> 02/08/2026 (bloco 414): **2 bugs reais corrigidos** — (1)
+> `select_grant_rush` continuava cego mesmo depois do fix do bloco 412:
+> a camada de EXECUÇÃO estava corrigida, mas `_should_activate_main`
+> (decide se "activate" aparece como candidata) nunca tinha caso pra
+> essa família, oferecia o líder Ace com score fixo 90.0 em TODOS os 7
+> turnos de uma partida real, só achando alvo de verdade no turno 7.
+> Fix reusa `_step_is_viable`. (2) `attach_don` nunca era oferecido em
+> EMPATE EXATO ("empate favorece o atacante" = "não precisa de nada"),
+> mesmo quando o DON disponível não tinha NENHUM outro uso no turno
+> (mão toda cara demais) — 3 DON ficaram parados achando a vitória já
+> garantida, sem margem nenhuma contra Counter do oponente (que tinha
+> vários). Fix: em empate exato + DON sobrando após reserva de defesa +
+> nenhuma carta jogável, considera até 2 DON de margem (0.3x do valor
+> cheio). Reserva de defesa (`_don_reserve_for_defense`, já cobre
+> eventos `[Counter]` na mão) nunca é tocada pela margem — correção do
+> usuário durante a investigação. 2 testes novos, `smoke_fast.py`/
+> `smoke_test.py` 100%. **Pendente**: achado da telemetria (lethal
+> certificado no turno 6 não fechou a partida) não foi aprofundado,
+> suspeita de ser o mesmo padrão sistêmico (ataque "certo" não pondera
+> Counter possível do oponente). `server.py` **precisa reiniciar** antes
+> do próximo teste ao vivo. Ver bloco 414 do HANDOFF.
+
 > 02/08/2026 (bloco 413): **`bot_side` agora automático** —
 > `collect_latest_match.py` (`_apply_winner`) já recebia `bot_seat`
 > (fonte autoritativa, de `BotDriver.cs`/`BotPlayerIndex`, sempre

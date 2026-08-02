@@ -9744,6 +9744,7 @@ def main() -> int:
     test_block_critical_life_max_cost_estendido_vida_3_4_29_07()
     test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno()
     test_apply_winner_grava_bot_side_da_fonte_autoritativa()
+    test_attach_don_margem_seguranca_em_empate_com_don_ocioso()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -10232,6 +10233,64 @@ def test_apply_winner_grava_bot_side_da_fonte_autoritativa() -> None:
           index2[0]["bot_side"] == "p1")
     check("_apply_winner: bot perdeu como p1 -> winner=p2 (o outro lado)",
           index2[0]["winner"] == "p2")
+
+
+def test_attach_don_margem_seguranca_em_empate_com_don_ocioso() -> None:
+    """
+    Achado real 02/08 (usuario, log Portgas.D.Ace-R x Crocodile-B
+    2026-08-02, turno 2): Ace (5000) ia atacar o lider do oponente,
+    tambem 5000 -- EMPATE EXATO. A regra "empate favorece o atacante" ja
+    garante a vitoria HOJE sem anexar nada, entao `_generate_attach_don_actions`
+    nunca considerava attach_don quando `gap<=0` -- os 3 DON disponiveis
+    (mao inteira custava >=4, nada jogavel) ficaram parados o turno
+    inteiro, sem NENHUM uso possivel, mesmo o combate tendo margem ZERO
+    contra qualquer Counter do oponente (que tinha varios na partida).
+
+    Fix: quando o gap e EXATAMENTE 0 e o DON disponivel (depois de
+    reservar pra defesa) nao tem nenhuma carta jogavel na mao, considera
+    anexar ate 2 DON de margem de seguranca (valor descontado, 0.3x).
+    Correcao do usuario durante a investigacao: DON PRECISA continuar
+    reservado se houver evento [Counter] na mao que pode ser necessario
+    pra defesa -- a margem NUNCA pode gastar a reserva
+    (_don_reserve_for_defense), so a sobra genuina.
+    """
+    ace = real_card("OP16-001")
+    croc = real_card("OP14-079")
+
+    # Caso do log real: turno 2, sem evento [Counter] na mao, sem ameaca
+    # calculada -- toda a sobra de DON deveria virar candidata de margem.
+    me = GameState(leader=ace, don_available=3, turn=2)
+    opp = GameState(leader=croc)
+    me.hand = [mk("H1", "Barato", cost=6), mk("H2", "Barato2", cost=4),
+               mk("H3", "Barato3", cost=5), mk("H4", "Barato4", cost=5),
+               mk("H5", "Barato5", cost=8), mk("H6", "Barato6", cost=4)]
+    engine = DecisionEngine(me, opp)
+    match = OPTCGMatch((ace, []), (croc, []))
+    acts = match._generate_attach_don_actions(me, opp, engine)
+    attach_leader = [a for a in acts if a[1] == "attach_don" and a[2] is ace]
+    check("empate + DON ocioso (sem counter na mao): gera candidato attach_don pro lider",
+          bool(attach_leader))
+    check("empate + DON ocioso: anexa ate 2 DON de margem (nao mais que a sobra)",
+          bool(attach_leader) and attach_leader[0][3] == 2)
+
+    # Mesmo cenario, mas com um evento [Counter] de verdade na mao e ameaca
+    # real do oponente -- a reserva de defesa deve tirar DON da margem
+    # disponivel (nunca usar o que esta reservado).
+    me2 = GameState(leader=real_card("OP16-001"), don_available=3, turn=2, life=[mk("L1","L",cost=1)])
+    opp2 = GameState(leader=real_card("OP14-079"))
+    opp2.field_chars = [mk("OT1", "AmeacaOpp", power=9000, cost=6)]
+    counter_event = real_card("EB01-019")
+    me2.hand = [counter_event]
+    engine2 = DecisionEngine(me2, opp2)
+    match2 = OPTCGMatch((me2.leader, []), (opp2.leader, []))
+    reserva = engine2._don_reserve_for_defense()
+    acts2 = match2._generate_attach_don_actions(me2, opp2, engine2)
+    attach2 = [a for a in acts2 if a[1] == "attach_don"]
+    margem2 = attach2[0][3] if attach2 else 0
+    check("empate + evento [Counter] na mao + ameaca real: reserva > 0 (nao ignora o achado do usuario)",
+          reserva > 0)
+    check("empate + evento [Counter] na mao: margem NUNCA gasta a reserva de defesa",
+          margem2 <= max(0, 3 - reserva))
 
 
 def test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno() -> None:

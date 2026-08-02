@@ -12321,6 +12321,27 @@ class OPTCGMatch:
                 return False, 'efeito sobre oponente: nenhum personagem alvo disponível'
             return True, 'alvo disponível no campo oponente'
 
+        # select_grant_rush/select_grant_rush_character — so vale ativar se
+        # existir um alvo PROPRIO que realmente se beneficia (entrou em
+        # campo ESTE turno, just_played, ainda sem a permissao). Achado
+        # real 02/08 (usuario, log Portgas.D.Ace-R x Crocodile-B
+        # 2026-08-02): sem este caso, a acao caia no fallback generico
+        # "ativa por omissao" e o lider Ace (OP16-001) era oferecido/
+        # pontuado com score fixo TODO turno, mesmo sem nenhum Character
+        # recem-deployado -- o fix anterior (bloco 412) so corrigiu a
+        # EXECUCAO (_execute_step/_step_is_viable) pra nao fazer nada
+        # nesse caso, mas a DECISAO de ativar (aqui, o gate real que
+        # decide se a acao aparece como candidata) continuava cega ao
+        # alvo. Reusa _step_is_viable (mesmo criterio just_played/not
+        # rested/not is_rush*()) em vez de duplicar a logica.
+        if any(a in ('select_grant_rush', 'select_grant_rush_character') for a in actions):
+            dummy_ee = EffectExecutor(p, opp)
+            passos_rush = [s for s in steps
+                          if s.get('action') in ('select_grant_rush', 'select_grant_rush_character')]
+            if not any(dummy_ee._step_is_viable(s, src) for s in passos_rush):
+                return False, 'select_grant_rush: nenhum Character recem-deployado sem a permissao'
+            return True, 'select_grant_rush: alvo recem-deployado disponivel'
+
         # DON ramp — sempre vale
         if any(a in ('add_don', 'set_don_active') for a in actions):
             return True, 'benefício DON ramp'
@@ -13739,6 +13760,19 @@ class OPTCGMatch:
         # nao superar. Reaproveita score_attack_target (mesma regua da
         # geracao real de 'attack') pra nao inventar valor novo.
         if p.can_attack_this_turn():
+            # DON verdadeiramente OCIOSO este turno: sobra DEPOIS de reservar
+            # pra defesa (_don_reserve_for_defense -- ja cobre evento
+            # [Counter] na mao, que PRECISA de DON!! pra ativar durante o
+            # turno do oponente, distinto do stat Counter impresso que so
+            # descarta, correcao do usuario 02/08) E nenhuma carta da mao
+            # cabe nessa sobra. So essa fatia sobrando e elegivel pra margem
+            # de seguranca abaixo -- nunca a reserva de defesa em si. Mesma
+            # fonte de _don_reserve_for_defense/_can_play_card ja usada pra
+            # gerar 'play' mais acima nesta funcao, nao duplica regra.
+            don_reserve = engine._don_reserve_for_defense()
+            don_sobra = max(0, p.don_available - don_reserve)
+            don_idle = don_sobra > 0 and not any(
+                engine._can_play_card(c, don_usable=don_sobra) for c in p.hand)
             attackers = [c for c in p.field_chars if character_can_attack_now(c, p, opp)]
             if not p.leader.rested:
                 attackers.append(p.leader)
@@ -13754,13 +13788,35 @@ class OPTCGMatch:
                     candidatos_alvo.append(('character', tgt, tgt.power))
                 for ttype, tgt, alvo_power in candidatos_alvo:
                     gap = alvo_power - atk_now
-                    if gap <= 0 or gap > p.don_available * 1000:
+                    if gap > 0 and gap <= p.don_available * 1000:
+                        falta = -(-gap // 1000)  # ceil division
+                        valor = engine.score_attack_target(att, ttype, tgt)
+                        if valor <= 0:
+                            continue
+                        score = valor - falta * DON_COST
+                    elif gap == 0 and don_idle:
+                        # Empate exato: "empate favorece o atacante" ja
+                        # garante a vitoria do combate HOJE, sem anexar
+                        # nada -- mas margem ZERO quebra com QUALQUER
+                        # Counter do oponente. Sem custo de oportunidade
+                        # real (DON idle), reforcar ate 2 DON e estritamente
+                        # melhor que deixar parado. Achado real 02/08
+                        # (usuario, log Portgas.D.Ace-R x Crocodile-B,
+                        # turno 2): Ace(5000) empatava com o lider do
+                        # oponente(5000), 3 DON idle (mao so custava >=4)
+                        # nunca viravam candidato porque o gap<=0 cortava
+                        # tudo antes -- ficaram parados o turno inteiro.
+                        # Valor descontado (0.3x, nao o cheio do gap>0):
+                        # e seguro opcional, nao o que decide o combate.
+                        # Nunca usa a reserva de defesa (don_sobra, nao
+                        # p.don_available).
+                        falta = min(don_sobra, 2)
+                        valor = engine.score_attack_target(att, ttype, tgt)
+                        if valor <= 0:
+                            continue
+                        score = valor * 0.3
+                    else:
                         continue
-                    falta = -(-gap // 1000)  # ceil division
-                    valor = engine.score_attack_target(att, ttype, tgt)
-                    if valor <= 0:
-                        continue
-                    score = valor - falta * DON_COST
                     if score > melhor_score:
                         melhor_score, melhor_falta = score, falta
                 if melhor_falta:
