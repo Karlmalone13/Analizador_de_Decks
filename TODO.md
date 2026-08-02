@@ -2,6 +2,29 @@
 
 **Última atualização:** 2 de agosto de 2026
 
+> 02/08/2026 (bloco 420): **2 bugs reais corrigidos, achados comparando
+> decisões do usuário com as do bot (mirror match Ace x Ace)** — (1)
+> `gain_double_attack` ignorava `target` por completo, sempre aplicando
+> na própria carta-fonte mesmo quando o texto dizia "Your Leader
+> gains..." (Edward Newgate, Flame Emperor, Buggy) ou selecionava outro
+> personagem por nome (Twin Jet Pistol, Prometheus) — auditoria global
+> achou 5 cartas erradas de 15 no banco. Fix no executor (suporte a
+> `target='leader'/'selected'`, reusa o padrão do `gain_rush`) + parser
+> (nova regex pra "your leader gains... double attack" + `type`/
+> `characters` viraram opcionais em `select_grant_double_attack`).
+> Registro em `parser_audits/`. (2) Mesmo com o efeito corrigido, o
+> motor ainda atacaria antes de jogar Newgate — `_score_play_action`
+> nunca considerava que uma passiva `[Your Turn]` que buffa o líder só
+> vale a pena HOJE se jogada antes do ataque. Fix: bonus quando o líder
+> ainda pode atacar (score de jogar Newgate subiu de ~230 pra 432,
+> agora compete com o ataque de ~376; fica em 82, sem bonus, quando o
+> líder já atacou). 4 testes novos, `smoke_fast.py`/`smoke_test.py`
+> 100%. **`audit_replay.py` reproduziu 3 anomalias de conservação de
+> DON** (deck Imu + Empty Throne + Five Elders) — confirmado ser o bug
+> PRÉ-EXISTENTE dos blocos 374/377/410 (nenhuma mudança de hoje toca
+> mecânica de DON), não uma regressão nova. `server.py` precisa
+> reiniciar. Ver bloco 420 do HANDOFF.
+
 > 02/08/2026 (bloco 419): **Fix aplicado — item 1 do bloco 418**. Score
 > de `give_don` (stage Moby Dick/qualquer carta com essa ação) agora
 > soma +130 quando fecha um deficit real de poder contra o líder do

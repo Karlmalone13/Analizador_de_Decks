@@ -1,5 +1,81 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-02 (420) - Claude (sessao local) - bug real de execucao corrigido (gain_double_attack ignorava target) + fix de sequenciamento (play antes de attack) que motivou a investigacao
+
+Usuario pediu pra comparar as proprias decisoes (jogou Ace manualmente
+numa partida espelho Ace x Ace, venceu) com as do bot (jogou o outro
+Ace, perdeu) -- log `Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T12.30.45`
+ja banco.
+
+**Achado principal da comparacao**: usuario sempre jogava Edward
+Newgate (OP16-003) ANTES de atacar; o bot atacou 2x (Izou + o proprio
+lider) ANTES de jogar o MESMO Newgate no mesmo turno. Prova concreta
+no log real: o ataque do usuario saiu com 8000 de poder e **2 de dano**
+(linha 741-742 do combat log) -- confirma que Newgate da +2000 de
+poder E Double Attack de verdade pro lider, "[Your Turn] Your Leader
+gains [Double Attack] and +2000 power", ativo TODO turno em que esta
+em campo (nao so on-play).
+
+**Achado 1 (bug de EXECUCAO, mais serio do que a comparacao original
+sugeria)**: testando o efeito isolado no motor, `power_buff` ia certo
+pro lider mas `has_double_attack` ia pra propria Newgate -- o step
+`gain_double_attack` NUNCA olhava pra um campo `target` (nem o parser
+capturava um), sempre aplicando na carta-fonte. Auditoria global (regra
+obrigatoria do projeto) achou 15 cartas com `gain_double_attack` no
+banco -- 9 corretas (dizem "this Character" explicitamente, target=self
+ja era certo), **5 erradas**: OP16-003 Edward Newgate, OP03-016 Flame
+Emperor (mesmo padrao "your Leader gains... Double Attack"), EB02-018
+Buggy ("up to 1 of your Leader gains..."), OP16-039 Gum-Gum Twin Jet
+Pistol e ST07-013 Prometheus (essas 2 usam "cards" em vez de
+"characters" + sem a palavra "type", regex antiga de
+`select_grant_double_attack` exigia os dois literalmente).
+
+**Fix**: (a) executor (`decision_engine.py`) -- `gain_double_attack`
+ganhou suporte a `target='leader'`/`target='selected'`, reusando o
+MESMO padrao ja existente em `gain_rush`; (b) parser
+(`gerar_effects_db.py`) -- nova regex `m_leader_da` pra "(up to N of)
+your leader gains... double attack" (cobre as 3 cartas de lider); `type`
+virou opcional e `cards` aceito como alternativa a `characters` em
+`select_grant_double_attack` (cobre as 2 cartas de selecao por nome).
+Registro obrigatorio em `parser_audits/2026-08-02_gain_double_attack_ignorava_target_leader_ou_selecionado.json`.
+`diff_parser.py`: PERDEU=0, MUDOU=5 (exatamente as 5 cartas).
+
+**Achado 2 (a causa raiz do problema de SEQUENCIAMENTO que motivou
+tudo)**: mesmo com o efeito corrigido, o motor ainda atacaria antes de
+jogar Newgate, porque `_score_play_action` nunca considerava que uma
+passiva `[Your Turn]` que buffa o lider so vale a pena HOJE se jogada
+ANTES do ataque -- o score de "jogar Newgate" (~230, valor real visto
+no log) nunca competia com "atacar" (~376). **Fix**: bonus em
+`_score_play_action` quando o lider AINDA pode atacar este turno
+(checado via `character_can_attack_now`) e a carta tem
+`your_turn`/`buff_power`|`gain_double_attack` com `target='leader'` --
+zero bonus se o lider ja atacou (rested), evitando inflar o score sem
+sinergia real. Mesmo estilo do bonus ja existente pro win-con do
+GamePlan (+600, "joga a bomba antes do ataque competir pela vez").
+Medido: score de jogar Newgate subiu de ~232 pra **432** com o lider
+podendo atacar (agora bate/supera um ataque tipico de ~376), e fica em
+82 (sem bonus) quando o lider ja atacou -- comportamento correto nos
+dois casos.
+
+**Validado**: 4 testes novos (2 pro bug de execucao/parser, 2 pro
+sequenciamento) reproduzindo os cenarios exatos do log real (Newgate,
+Buggy, Twin Jet Pistol, Prometheus + comparacao score antes/depois do
+lider atacar). `smoke_fast.py`/`smoke_test.py` 100%.
+
+**`audit_replay.py --n 6 --seed 17` reproduziu 3 anomalias de
+conservacao de DON, NAO relacionadas a este bloco**: deck Black Imu
+com "The Empty Throne" + "Five Elders" -- exatamente o padrao ja
+documentado e NUNCA totalmente resolvido nos blocos 374/377/410 (bug
+de DON fantasma, causa raiz nunca encontrada apesar de auditoria
+extensa). Confirmado que nenhuma mudanca de hoje toca mecanica de
+transferencia de DON (as 3 mudancas deste bloco + do bloco 419 sao
+todas de SCORING/preferencia de decisao, nao de execucao de custo) --
+reproducao e coincidencia de ter caido nesse matchup especifico na
+seed 17, nao regressao nova. Segue como pendencia separada, ja
+rastreada.
+
+`server.py` precisa reiniciar (mudanca em `decision_engine.py`).
+
 ## 2026-08-02 (419) - Claude (sessao local) - fix aplicado no item 1 do bloco 418: score de give_don (stage/DON restado) agora considera sinergia com ataque na mesma janela
 
 Continuacao direta do bloco 418, item 1 (score fixo -10 do stage Moby

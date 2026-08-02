@@ -2307,6 +2307,7 @@
         "steps": [
           {
             "action": "gain_double_attack",
+            "target": "leader",
             "duration": "this_turn"
           }
         ],
@@ -15014,7 +15015,7 @@
           },
           {
             "action": "gain_double_attack",
-            "duration": "this_turn"
+            "target": "leader"
           }
         ],
         "conditions": {
@@ -61862,7 +61863,8 @@
             "duration": "this_turn"
           },
           {
-            "action": "gain_double_attack"
+            "action": "gain_double_attack",
+            "target": "leader"
           }
         ]
       }
@@ -62931,7 +62933,9 @@
       "main": {
         "steps": [
           {
-            "action": "gain_double_attack",
+            "action": "select_grant_double_attack",
+            "count": 1,
+            "filter_type": "monkey.d.luffy",
             "duration": "this_turn"
           },
           {
@@ -71192,7 +71196,9 @@
       "activate_main": {
         "steps": [
           {
-            "action": "gain_double_attack",
+            "action": "select_grant_double_attack",
+            "count": 1,
+            "filter_type": "charlotte linlin",
             "duration": "this_turn"
           }
         ],

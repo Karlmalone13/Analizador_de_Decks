@@ -9747,6 +9747,8 @@ def main() -> int:
     test_attach_don_margem_seguranca_em_empate_com_don_ocioso()
     test_worth_paying_optional_costs_recusa_reveal_from_hand_impagavel()
     test_score_give_don_considera_sinergia_com_ataque()
+    test_gain_double_attack_respeita_target_leader_e_selecionado()
+    test_score_play_prioriza_carta_que_buffa_ataque_do_lider_hoje()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -10349,6 +10351,98 @@ def test_score_give_don_considera_sinergia_com_ataque() -> None:
     score3 = match._score_activate_main(stage, am_stage, me3, opp3, priority="AGGRESSIVE", engine=engine3)
     check("give_don desbloqueia don_requirement de when_attacking (Vista): score > -10",
           score3 > -10.0)
+
+
+def test_score_play_prioriza_carta_que_buffa_ataque_do_lider_hoje() -> None:
+    """
+    Achado real 02/08 (usuario, mirror match Ace x Ace, comparando
+    decisao-a-decisao com o bot): o humano jogou Edward Newgate ANTES de
+    atacar (lider saiu com +2000/poder e Double Attack real, 2 de dano);
+    o bot atacou 2x ANTES de jogar o MESMO Newgate no mesmo turno,
+    perdendo o bonus. `_score_play_action` nunca considerava que uma
+    passiva [Your Turn] que buffa o lider so vale a pena HOJE se jogada
+    ANTES do ataque -- o score de 'play Newgate' (~230, real do log)
+    nunca competia com 'attack' (~376), entao o ataque sempre saia
+    primeiro. Fix: bonus quando o lider ainda pode atacar este turno,
+    zero bonus se ja atacou (rested) -- o buff so serviria pro futuro
+    nesse caso, sem soar como "vale mais jogar agora".
+    """
+    ace = real_card("OP16-001")
+    newgate = real_card("OP16-003")
+    me = GameState(leader=ace, turn=8, don_available=2)
+    me.hand = [newgate]
+    opp = GameState(leader=real_card("OP14-079"))
+    match = OPTCGMatch((ace, []), (real_card("OP14-079"), []))
+    engine = DecisionEngine(me, opp)
+    score_pode_atacar = match._score_play_action(newgate, engine)
+
+    ace2 = real_card("OP16-001")
+    ace2.rested = True
+    newgate2 = real_card("OP16-003")
+    me2 = GameState(leader=ace2, turn=8, don_available=2)
+    me2.hand = [newgate2]
+    opp2 = GameState(leader=real_card("OP14-079"))
+    engine2 = DecisionEngine(me2, opp2)
+    score_ja_atacou = match._score_play_action(newgate2, engine2)
+
+    check("play Newgate com lider AINDA podendo atacar: score bem maior (bonus aplicado)",
+          score_pode_atacar > score_ja_atacou + 200)
+    check("play Newgate com lider AINDA podendo atacar: score compete/supera um ataque tipico (~376)",
+          score_pode_atacar > 376)
+
+
+def test_gain_double_attack_respeita_target_leader_e_selecionado() -> None:
+    """
+    Achado real 02/08 (auditoria global do parser, disparada pela
+    comparacao decisao-a-decisao com o usuario -- log de mirror match
+    Ace x Ace: o humano jogou Edward Newgate ANTES de atacar e o
+    ataque do lider saiu com 8000 de poder e 2 de dano, Double Attack
+    de verdade). No motor, `gain_double_attack` SEMPRE aplicava na
+    propria carta-fonte, mesmo com o texto dizendo "Your Leader gains
+    [Double Attack]" (Newgate/Flame Emperor/Buggy) ou "Up to 1 of your
+    [Nome] cards gains [Double Attack]" (Twin Jet Pistol/Prometheus,
+    selecao por nome que a regex antiga nao capturava por exigir a
+    palavra "type" e "characters" literalmente).
+    """
+    ace = real_card("OP16-001")
+    newgate = real_card("OP16-003")
+    me = GameState(leader=ace)
+    me.field_chars = [newgate]
+    opp = GameState(leader=real_card("OP14-079"))
+    ee = EffectExecutor(me, opp)
+    ee.execute(newgate, "your_turn")
+    check("Edward Newgate: Double Attack vai pro lider, nao pra propria carta",
+          ace.has_double_attack and not newgate.has_double_attack)
+
+    ace2 = real_card("OP16-001")
+    buggy = real_card("EB02-018")
+    me2 = GameState(leader=ace2)
+    me2.field_chars = [buggy]
+    opp2 = GameState(leader=real_card("OP14-079"))
+    ee2 = EffectExecutor(me2, opp2)
+    ee2.execute(buggy, "on_play")
+    check("Buggy: Double Attack vai pro lider (so este turno)",
+          ace2.double_attack_this_turn and not buggy.double_attack_this_turn)
+
+    evento = real_card("OP16-039")
+    luffy_char = real_card("EB02-061")
+    me3 = GameState(leader=real_card("OP16-001"))
+    me3.field_chars = [luffy_char]
+    opp3 = GameState(leader=real_card("OP14-079"))
+    ee3 = EffectExecutor(me3, opp3)
+    ee3.execute(evento, "main")
+    check("Twin Jet Pistol: Double Attack vai pro Luffy selecionado, nao pro evento",
+          luffy_char.double_attack_this_turn and not evento.double_attack_this_turn)
+
+    prometheus = real_card("ST07-013")
+    linlin = real_card("EB03-034")
+    me4 = GameState(leader=real_card("OP16-001"))
+    me4.field_chars = [prometheus, linlin]
+    opp4 = GameState(leader=real_card("OP14-079"))
+    ee4 = EffectExecutor(me4, opp4)
+    ee4.execute(prometheus, "activate_main")
+    check("Prometheus: Double Attack vai pra Charlotte Linlin selecionada, nao pro Prometheus",
+          linlin.double_attack_this_turn and not prometheus.double_attack_this_turn)
 
 
 def test_worth_paying_optional_costs_recusa_reveal_from_hand_impagavel() -> None:

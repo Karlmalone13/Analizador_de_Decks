@@ -7873,17 +7873,45 @@ def parse_block(block_text, trigger_name):
                      else 'grant_unblockable_aura_named')
         steps.append({'action': acao_aura, 'filter_name': kw_nome})
 
-    # "Up to N of your [Tipo]/{Tipo} type Characters gains [Double
+    # "(Up to 1 of) your Leader gains [Double Attack]" -- alvo e o LIDER,
+    # nao a propria carta-fonte (fallback abaixo, sempre self). Achado
+    # real 02/08 (auditoria global do parser, investigando Edward Newgate
+    # OP16-003 "[Your Turn] Your Leader gains [Double Attack] and +2000
+    # power" -- o buff_power irmao no MESMO step ja capturava
+    # target='leader' certinho, gain_double_attack nunca capturava target
+    # nenhum, entao a EXECUCAO sempre aplicava na propria carta-fonte em
+    # vez do lider). Censo global: 3 cartas com essa forma -- OP16-003
+    # Edward Newgate, OP03-016 Flame Emperor ("your Leader gains [Double
+    # Attack] and +3000 power"), EB02-018 Buggy ("up to 1 of your Leader
+    # gains [Double Attack]", "up to 1 de" antes de "Leader" por causa do
+    # "[Buggy]" ser plural na regra oficial de nomeação, mas o alvo
+    # continua sendo o UNICO lider, sem selecao real).
+    m_leader_da = (None if m_mass_grant_named else re.search(
+        r'(?:up to \d+ of )?your leader gains?\s*\[?double attack\]?', t))
+    if m_leader_da:
+        step = {'action': 'gain_double_attack', 'target': 'leader'}
+        tail = t[m_leader_da.end():m_leader_da.end() + 30]
+        if 'during this turn' in tail:
+            step['duration'] = 'this_turn'
+        steps.append(step)
+
+    # "Up to N of your [Tipo]/{Tipo} type Characters/cards gains [Double
     # Attack]" -- SELECAO de Character DIFERENTE, mesma classe de bug ja
     # corrigida pra Blocker/Rush (select_grant_blocker/select_grant_rush).
     # Achado 17/07, familia de 2 (EB03-050, OP04-115): auto-concessao
     # (gain_double_attack, sem selecao) em vez de escolher OUTRO character
-    # por tipo.
-    m_select_da = (None if m_mass_grant_named else re.search(
+    # por tipo. "type" apos o [Nome] e "cards" no lugar de "characters"
+    # sao ambos OPCIONAIS (achado 02/08, mesma auditoria: OP16-039
+    # "Up to 1 of your [Monkey.D.Luffy] cards gains [Double Attack]" e
+    # ST07-013 "Up to 1 of your [Charlotte Linlin] cards gains [Double
+    # Attack]" usam "cards" sem "type" -- a regex antiga exigia os dois
+    # literalmente, entao nenhuma das duas cartas nomeadas era capturada,
+    # caindo no fallback self de sempre).
+    m_select_da = (None if (m_mass_grant_named or m_leader_da) else re.search(
         r'up to (\d+) of your '
         r'(?:(black|red|blue|green|yellow|purple)\s+)?'
-        r'(?:[\[{"]([a-z][a-z0-9 .\'-]+)[\]}"]\s+type\s+)?'
-        r'characters?'
+        r'(?:[\[{"]([a-z][a-z0-9 .\'-]+)[\]}"]\s+(?:type\s+)?)?'
+        r'(?:characters?|cards?)'
         # Filtro de CUSTO opcional ("with a cost of N" -- achado 19/07,
         # OP07-009 Dogura & Magura: "up to 1 of your red Characters with a
         # cost of 1 gains [Double Attack]" -- cor+custo sem tipo, unica
@@ -7904,7 +7932,7 @@ def parse_block(block_text, trigger_name):
         if 'during this turn' in tail:
             step['duration'] = 'this_turn'
         steps.append(step)
-    elif not m_mass_grant_named:
+    elif not m_mass_grant_named and not m_leader_da:
         m_da = re.search(r'gains?\s+\[double attack\]', t)
         if 'gain_double_attack' not in _lista_choice_keywords and (m_da or '[double attack]' in _lista_txt):
             step = {'action': 'gain_double_attack'}

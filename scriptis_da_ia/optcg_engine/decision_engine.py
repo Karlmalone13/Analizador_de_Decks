@@ -8261,10 +8261,29 @@ class EffectExecutor:
                 granted.append(target.name[:15])
             return f'ganhou Banish: {", ".join(granted)}' if granted else ''
         if action == 'gain_double_attack':
+            # target='leader'/'selected': mesmo padrao ja usado em
+            # gain_rush (linha ~8093) -- "Your Leader gains [Double
+            # Attack]" (achado real 02/08, Edward Newgate OP16-003 +
+            # Flame Emperor OP03-016 + Buggy EB02-018, auditoria global
+            # do parser): o motor SEMPRE aplicava Double Attack na
+            # propria carta-fonte, mesmo com o texto explicito dizendo
+            # "Your Leader gains..." -- o buff_power irmao no MESMO
+            # step ja tinha target='leader' capturado certo (Newgate:
+            # "+2000 power" ia pro lider certinho), so gain_double_attack
+            # ignorava target por completo, sempre `card` (self).
+            alvo_target = step.get('target')
+            if alvo_target == 'leader':
+                alvo = me.leader
+            elif alvo_target == 'selected':
+                alvo = self._last_selected
+            else:
+                alvo = card
+            if alvo is None:
+                return ''
             if step.get('duration') == 'this_turn':
-                card.double_attack_this_turn = True
+                alvo.double_attack_this_turn = True
                 return 'ganhou Double Attack (so este turno)'
-            card.has_double_attack = True
+            alvo.has_double_attack = True
             return 'ganhou Double Attack'
         if action == 'select_grant_double_attack':
             # "Up to N of your [Tipo] type Characters gains [Double
@@ -12712,6 +12731,29 @@ class OPTCGMatch:
                                                       engine.avaliar_carta(candidate))
         if melhor_play_card_valor:
             base += min(melhor_play_card_valor * 0.75, 400)
+
+        # Passiva [Your Turn] que buffa o LIDER (buff_power/gain_double_attack,
+        # target='leader') so vale a pena no ataque de HOJE se a carta for
+        # jogada ANTES do lider atacar -- depois que ele ja atacou (rested),
+        # o buff so serve pros PROXIMOS turnos. Achado real 02/08 (usuario,
+        # mirror match Ace x Ace, comparando decisao-a-decisao): o humano
+        # jogou Edward Newgate (OP16-003) ANTES de atacar, o ataque do lider
+        # saiu com +2000 de poder e Double Attack de verdade (2 de dano); o
+        # bot atacou 2x (outro character + o proprio lider) ANTES de jogar
+        # o MESMO Newgate no mesmo turno, perdendo o bonus nos dois ataques
+        # -- a pontuacao de 'play' (230) nunca refletia esse ganho, entao
+        # 'attack' (376, ja maior por si so) sempre saia primeiro. Mesmo
+        # padrao ja usado acima pro win-con do GamePlan (+600): joga a carta
+        # que HABILITA o ataque ANTES do ataque competir pela vez.
+        yt_steps = effects.get('your_turn', {}).get('steps', []) if isinstance(effects.get('your_turn'), dict) else []
+        yt_leader_buff = sum(s.get('amount', 0) for s in yt_steps
+                             if s.get('action') == 'buff_power' and s.get('target') == 'leader')
+        yt_leader_da = any(s.get('action') == 'gain_double_attack' and s.get('target') == 'leader'
+                           for s in yt_steps)
+        if (yt_leader_buff or yt_leader_da) and character_can_attack_now(engine.me.leader, engine.me, engine.opp):
+            base += min(yt_leader_buff * 0.1, 150)
+            if yt_leader_da:
+                base += 200  # Double Attack dobra o dano -- vale mais que so o poder
 
         # Contra-parte do bônus de counter em avaliar_carta: aquele bônus
         # existe pra contexto "vale manter essa carta na mão" (ex: _trash_value).

@@ -1,0 +1,679 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Portgas D. Ace",
+          "code": "OP16-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Portgas D. Ace",
+          "code": "OP16-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 8,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-016",
+          "card_name": "Monkey D. Garp",
+          "effects": [
+            "<b>Reveal and Draw Edward Newgate [\"OP16-003\">OP16-003]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-016",
+            "OP14-018",
+            "OP16-017",
+            "EB01-002",
+            "OP16-003"
+          ],
+          "board": [
+            "OP13-016"
+          ],
+          "trash": [],
+          "life": 5,
+          "rested": {
+            "OP13-016": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-016",
+            "OP14-018",
+            "OP16-017",
+            "EB01-002",
+            "OP16-003"
+          ],
+          "trash": [],
+          "board": [
+            "OP13-016"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-011",
+            "OP16-003",
+            "OP16-005",
+            "EB01-002",
+            "OP10-005",
+            "OP16-014"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "OP13-016",
+            "OP14-018",
+            "OP16-017",
+            "EB01-002",
+            "OP16-003"
+          ],
+          "trash": [],
+          "board": [
+            "OP13-016"
+          ],
+          "life": 5,
+          "rested": {
+            "OP13-016": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-021",
+          "card_name": "Moby Dick",
+          "effects": [
+            "Added 1 Cards to Hand",
+            "Trash Moby Dick [\"OP16-021\">OP16-021]",
+            "Attach 1 Rested Don to Monkey D. Garp [\"OP13-016\">OP13-016]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-016",
+          "to_name": "Monkey D. Garp",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-016",
+          "to_name": "Monkey D. Garp",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Garp",
+          "attacker_code": "OP13-016",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-005"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-016",
+            "OP14-018",
+            "OP16-017",
+            "EB01-002",
+            "OP16-003",
+            "OP16-015"
+          ],
+          "board": [
+            "OP13-016"
+          ],
+          "trash": [
+            "OP16-021"
+          ],
+          "life": 5,
+          "rested": {
+            "OP13-016": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-011",
+            "OP16-003",
+            "EB01-002",
+            "OP10-005",
+            "OP16-014",
+            "OP16-017"
+          ],
+          "trash": [
+            "OP16-005"
+          ],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-017",
+          "card_name": "LittleOars Jr.",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-011",
+            "OP16-003",
+            "EB01-002",
+            "OP10-005",
+            "OP16-014",
+            "OP10-005"
+          ],
+          "board": [
+            "OP16-017"
+          ],
+          "trash": [
+            "OP16-005"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-017": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-016",
+            "OP14-018",
+            "OP16-017",
+            "EB01-002",
+            "OP16-003",
+            "OP16-015",
+            "OP16-005"
+          ],
+          "trash": [
+            "OP16-021"
+          ],
+          "board": [
+            "OP13-016"
+          ],
+          "life": 4,
+          "rested": {
+            "OP13-016": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP10-005"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-015",
+          "card_name": "Monkey D. Luffy",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP13-016",
+          "card_name": "Monkey D. Garp",
+          "effects": [
+            "<b>Reveal and Draw Edward Newgate [\"OP16-003\">OP16-003]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP14-018",
+            "OP16-017",
+            "EB01-002",
+            "OP16-003",
+            "OP16-005",
+            "OP16-004",
+            "OP16-003"
+          ],
+          "board": [
+            "OP13-016",
+            "OP16-015",
+            "OP13-016"
+          ],
+          "trash": [
+            "OP16-021"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-015": 1,
+            "OP13-016": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-011",
+            "OP16-003",
+            "EB01-002",
+            "OP16-014",
+            "OP10-005"
+          ],
+          "trash": [
+            "OP16-005",
+            "OP10-005"
+          ],
+          "board": [
+            "OP16-017"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-017": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-005"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-017",
+          "to_name": "LittleOars Jr.",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "LittleOars Jr.",
+          "attacker_code": "OP16-017",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-017"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "EB01-002",
+          "card_name": "Izou",
+          "effects": [
+            "Attach 1 Rested Don to Izou [\"EB01-002\">EB01-002]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-011",
+            "OP16-003",
+            "OP16-014",
+            "OP10-005",
+            "OP16-118"
+          ],
+          "board": [
+            "OP16-017",
+            "EB01-002"
+          ],
+          "trash": [
+            "OP16-005",
+            "OP10-005"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-017": 1,
+            "EB01-002": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP14-018",
+            "EB01-002",
+            "OP16-003",
+            "OP16-004",
+            "OP16-003"
+          ],
+          "trash": [
+            "OP16-021",
+            "OP16-005",
+            "OP16-017"
+          ],
+          "board": [
+            "OP13-016",
+            "OP16-015",
+            "OP13-016"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-015": 1,
+            "OP13-016": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB01-002",
+          "card_name": "Izou",
+          "effects": [
+            "Attach 1 Rested Don to Monkey D. Garp [\"OP13-016\">OP13-016]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-016",
+          "to_name": "Monkey D. Garp",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-016",
+          "to_name": "Monkey D. Garp",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Garp",
+          "attacker_code": "OP13-016",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP10-005"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP16-015",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-004"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP14-018",
+            "OP16-003",
+            "OP16-004",
+            "OP16-003",
+            "OP16-004"
+          ],
+          "board": [
+            "OP13-016",
+            "OP16-015",
+            "OP13-016",
+            "EB01-002"
+          ],
+          "trash": [
+            "OP16-021",
+            "OP16-005",
+            "OP16-017"
+          ],
+          "life": 4,
+          "rested": {
+            "OP13-016": 1,
+            "OP16-015": 1,
+            "EB01-002": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-003",
+            "OP16-014",
+            "OP16-118"
+          ],
+          "trash": [
+            "OP16-005",
+            "OP10-005",
+            "OP16-011",
+            "OP10-005",
+            "OP16-004"
+          ],
+          "board": [
+            "OP16-017",
+            "EB01-002"
+          ],
+          "life": 3,
+          "rested": {
+            "OP16-017": 1,
+            "EB01-002": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "EB01-002",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-003",
+          "card_name": "Edward Newgate",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "LittleOars Jr.",
+          "attacker_code": "OP16-017",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-004"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Edward Newgate [\"OP16-003\">OP16-003] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP16-003",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-014",
+            "OP16-118",
+            "OP13-016"
+          ],
+          "board": [
+            "OP16-017",
+            "EB01-002",
+            "OP16-003"
+          ],
+          "trash": [
+            "OP16-005",
+            "OP10-005",
+            "OP16-011",
+            "OP10-005",
+            "OP16-004"
+          ],
+          "life": 3,
+          "rested": {
+            "OP16-017": 1,
+            "EB01-002": 1,
+            "OP16-003": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP14-018",
+            "OP16-003",
+            "OP16-003",
+            "EB01-002",
+            "OP16-011"
+          ],
+          "trash": [
+            "OP16-021",
+            "OP16-005",
+            "OP16-017",
+            "OP16-004",
+            "OP16-004"
+          ],
+          "board": [
+            "OP13-016",
+            "OP16-015",
+            "OP13-016",
+            "EB01-002"
+          ],
+          "life": 2,
+          "rested": {
+            "OP13-016": 1,
+            "OP16-015": 1,
+            "EB01-002": 1
+          }
+        }
+      }
+    }
+  ]
+}
