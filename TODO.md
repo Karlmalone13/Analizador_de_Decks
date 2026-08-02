@@ -2,6 +2,14 @@
 
 **Última atualização:** 1 de agosto de 2026
 
+> 01/08/2026 (bloco 410): bug de conservação de DON — achado 1 bypass
+> real da função centralizada de remoção de campo (`OP06-033`, corrigido),
+> mas NÃO é a causa raiz do leak original (Empty Throne + Five Elders).
+> Teste de reprodução com a seed antiga saiu limpo, mas é inconclusivo
+> (pareamento de deck mudou desde então). Causa raiz continua
+> desconhecida — próximo passo é instrumentação direta, não auditoria
+> estática. Ver bloco 410 do HANDOFF.
+
 ## 🟢 Investigação NEGATIVA: sequenciamento do Turn Planner e timing de reserva de DON (01/08/2026, bloco 409)
 
 Pedido do usuário: checar se existe bug REAL de ordem/timing dentro do
@@ -1104,7 +1112,7 @@ nova — mesmo padrão já usado em todo o resto do motor.
   o stream global) — qualquer baseline/resultado registrado ANTES deste
   commit não é mais comparável direto, precisa ser re-gerado.
 
-## 🔴 BUG DE CONSERVAÇÃO DE DON — investigado a fundo, NÃO resolvido (25/07/2026, bloco 374; reprodução agora ESTÁVEL, bloco 377)
+## 🔴 BUG DE CONSERVAÇÃO DE DON — 1 bypass real corrigido, causa raiz original AINDA NÃO encontrada (25/07/2026, bloco 374; reprodução ESTÁVEL, bloco 377; auditoria estática, bloco 410)
 
 Renomeado de "bug de DON do deck Ace" — reproduzido também numa partida
 SEM Ace (Sanji vs Imu), sempre do lado do Imu. Rastreado até a janela
@@ -1119,14 +1127,29 @@ corretos): custo de jogar carta, `rest_don` (2 pontos), `trash_character`/
 3 geradores de candidato `attach_don`, `Card`/`GameState.__deepcopy__`,
 `_project_next_turn_best_action` (já deepcopy desde bloco 362).
 
-- [ ] Raiz exata NÃO encontrada. Próximo passo: instrumentar direto no
-  código (prints temporários em `_execute_attack`/`_attach_don_for_attack`/
-  `_execute_step`), não por monkeypatch externo.
-- [x] **Pré-requisito resolvido (bloco 377)**: motor agora reprodutível.
-  `audit_replay.py --n 8 --seed 7` pós-fix reexpõe o bug de forma
-  ESTÁVEL no deck Red/Blue Ace (Matches 1 e 5 desta seed específica) —
-  próxima tentativa pode usar essa seed/matchup exata sem o alvo se
-  mover a cada rodada.
+- [x] **Achado real, mas NÃO é a causa raiz original (bloco 410)**:
+  `_pay_costs`, custo `trash_typed_hand_or_named_hand_field` (único uso
+  no banco: `OP06-033` Vander Decken IX) removia Character do campo via
+  `remove_by_identity` direto, sem passar pela função centralizada
+  `remove_character_from_field` — se a carta trashada tivesse DON!!
+  anexado, ficava fantasma nela. Corrigido. `OP06-033` não está no deck
+  Ace que reproduzia o leak original, então é achado colateral.
+- [ ] **Teste de reprodução pós-fix, inconclusivo (bloco 410)**:
+  `audit_replay.py --n 8 --seed 7` (mesma seed do bloco 377) → 0
+  anomalias. NÃO é prova — a seed 7 hoje produz pareamentos diferentes
+  dos originais (muita coisa mudou desde 25/07, desloca os sorteios).
+  Tentativa de `--n 30 --seed 7` pra amostra maior foi cancelada por
+  demora (~40-45min estimado) antes de terminar.
+- [ ] Raiz exata do leak original NÃO encontrada. Auditoria estática
+  (bloco 410) esgotou os pontos que dá pra achar sem rodar instrumentado
+  — combate, KO por efeito, substituições, `play_from_trash` já passam
+  todos pela função centralizada corretamente. Próximo passo real:
+  instrumentar direto no código (prints temporários em
+  `_execute_attack`/`_attach_don_for_attack`/`_execute_step`) no turno
+  exato em que Empty Throne + Five Elders roda — precisa achar uma seed
+  NOVA que reproduza esse matchup, já que a seed 7 não bate mais.
+- [x] **Pré-requisito resolvido (bloco 377)**: motor agora reprodutível
+  (fixado o non-determinismo de `OpponentModel.sample`).
 
 ## 🟢 REGRA "SEM FUNÇÃO DUPLICADA" registrada + 2 duplicatas reais corrigidas (25/07/2026, bloco 373)
 

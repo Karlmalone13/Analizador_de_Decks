@@ -4021,11 +4021,20 @@ class EffectExecutor:
                                           else item[1].board_value() * 10))
                     if zone == 'hand':
                         remove_by_identity(self.me.hand, chosen)
+                        self.me.trash.append(chosen)
                     elif chosen is self.me.field_stage:
                         self.me.field_stage = None
+                        self.me.trash.append(chosen)
                     else:
-                        remove_by_identity(self.me.field_chars, chosen)
-                    self.me.trash.append(chosen)
+                        # remove_character_from_field ja devolve DON!! anexado
+                        # ao banco (rested) e ja poe a carta no trash -- nao
+                        # remover na mao com remove_by_identity aqui (achado
+                        # 01/08, investigando o bug de conservacao de DON:
+                        # este era o unico ponto que ainda tirava um
+                        # Character do campo sem passar pela funcao
+                        # centralizada, vazando DON!! fantasma se a carta
+                        # trashada tivesse DON anexado).
+                        remove_character_from_field(self.me, chosen, 'trash')
                     unique = [item for item in unique if item[1] is not chosen]
                 self._cost_logs.append(f'custo: trashou {count} carta(s) por tipo/nome')
             elif ctype == 'life_to_hand':

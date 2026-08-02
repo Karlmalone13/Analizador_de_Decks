@@ -1,5 +1,63 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-01 (410) - Claude (sessao local) - 1 bypass real corrigido no bug de conservacao de DON (bloco 374/377), causa raiz do leak original AINDA NAO encontrada
+
+Usuario pediu pra investigar o bug de conservacao de DON (registrado nos
+blocos 374/377, NAO resolvido -- DON "fantasma" aparecendo anexado a um
+personagem, rastreado ate a janela Empty Throne OP13-099 + Five Elders
+OP13-082 reanimando em massa, causa raiz nunca encontrada apesar de ~15
+pontos auditados).
+
+**Metodologia**: auditoria estatica de todo ponto que toca `don_attached`
+ou remove um Character do campo (`decision_engine.py`) -- combate
+(`_execute_attack`, KO em batalha), KO/remocao por efeito de carta
+(`action in ('ko','trash_character')`), substituicoes
+(`try_any_substitute`/`_pay_substitute_cost`/`try_counter_event_ko_attacker`),
+`play_from_trash` (mecanismo exato do Five Elders), geracao de candidatos
+`attach_don`. A funcao `remove_character_from_field` (linha 1877) e o
+UNICO ponto que deveria remover um Character do campo -- ela devolve
+`don_attached` pro banco (`don_rested`) e zera o campo antes de mover pro
+destino; qualquer remocao que bypassa essa funcao vaza o DON anexado (fica
+preso na carta) e deixa o campo dessincronizado do banco.
+
+**Achado real, mas NAO e a causa raiz original**: `_pay_costs`, custo
+`trash_typed_hand_or_named_hand_field` (unico usuario no banco:
+`OP06-033` Vander Decken IX) removia o Character escolhido do campo via
+`remove_by_identity(self.me.field_chars, chosen)` direto, sem passar por
+`remove_character_from_field` -- se a carta trashada por esse custo
+tivesse DON!! anexado, o DON ficava fantasma nela (nunca voltava pro
+banco). **Fix**: agora chama `remove_character_from_field(self.me,
+chosen, 'trash')` (que ja poe a carta no trash sozinha, removido o
+`self.me.trash.append(chosen)` duplicado desse branch).
+`smoke_fast.py` 100%, sem regressao.
+
+**Por que NAO e a causa raiz**: `OP06-033` nao esta no deck Ace Red/Blue
+que reproduzia o leak original (bloco 377, seed 7, Matches 1 e 5) --
+achado colateral, nao o bug relatado.
+
+**Teste de reproducao, inconclusivo**: rodei `audit_replay.py --n 8
+--seed 7` (a mesma seed que reproduzia o bug em 25/07) -- **0 anomalias**
+de `don_conservation` nas 8 partidas. NAO e prova de que o bug sumiu: o
+proprio bloco 377 documenta que a seed 7 hoje produz pareamentos de deck
+DIFERENTES dos originais (qualquer mudanca que consome mais numeros
+aleatorios desloca os sorteios seguintes, e muita coisa mudou desde
+25/07 -- unificacao do Turn Planner, fix de `is_active_turn`, etc.) --
+Ace apareceu nos Matches 2 e 5 desta rodada (nao 1 e 5), nao e o mesmo
+cenario exato. Tentei rodar `--n 30 --seed 7` pra aumentar a amostra
+(~40-45min estimado, 8 partidas levaram ~12min), mas o usuario pediu pra
+cancelar por demora -- processo morto (`taskkill`), sem resultado.
+
+**Nao resolvido**: causa raiz do leak original continua desconhecida.
+Todos os pontos revisados (combate, KO por efeito, substituicoes,
+`play_from_trash`) ja passam pela funcao centralizada corretamente --
+auditoria estatica esgotou o que da pra achar sem rodar o codigo
+instrumentado. **Proximo passo recomendado (nao feito)**: o mesmo do
+bloco 374 -- instrumentar DIRETO no codigo (prints temporarios em
+`_execute_attack`/`_attach_don_for_attack`/`_execute_step`) especifico no
+turno em que Empty Throne + Five Elders roda, com uma seed que reproduza
+esse matchup exato de novo (precisa achar uma seed nova, ja que a 7 nao
+bate mais com o Ace vs algo-com-Five-Elders/Empty-Throne).
+
 ## 2026-08-01 (409) - Claude (sessao remota web) - Investigacao NEGATIVA (resultado limpo): sequenciamento do Turn Planner e timing de reserva de DON nao mostraram bug em ~20 partidas reais
 
 Usuário pediu explicitamente pra investigar 2 frentes deixadas em aberto
