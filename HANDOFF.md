@@ -1,5 +1,66 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-02 (411) - Claude (sessao local) - bloco 384 ("bot so passando o turno") NAO reproduziu ao vivo com server.py reiniciado; achado NOVO: busca ao vivo bate no timeout de 3s 5x numa unica partida
+
+Pendencia direta do bloco 385 (nunca cumprida ate agora): rodar uma
+partida ao vivo com o `server.py` reiniciado no commit merged, pra
+confirmar se o sintoma do bloco 384 ainda aparece. Matei o processo
+antigo (PID 11992, rodando codigo de antes de TODOS os merges de hoje)
+e subi de novo em `10a59a8`. Partida real jogada (Katakuri vs Ace,
+10 turnos, log `2026-08-01T23.56.56`), banco atualizado via
+`parse_combat_log.py --add-to-db` (ja tinha sido auto-coletado; so
+faltou `bot_side` -- `LogOutput.log` nao tinha nenhum Shift+P registrado
+nesta sessao, `detectar_lado_bot_via_bepinex_log` retornou `None`
+corretamente, comportamento esperado documentado no bloco 389).
+
+**Telemetria lida na ordem obrigatoria** (`live_2026-08-01T23.56.59.json`
+primeiro, depois `decision_summary.py --latest`):
+
+**Bloco 384 NAO reproduziu**: `decision_summary` mostra `activate`/`play`/
+`attack` em praticamente todo turno (turno 3 teve 4 sub-decisoes, turno
+4 teve 5, turno 5 teve 5) -- o bot jogou a partida inteira normalmente,
+nunca ficou parado. As 5 ocorrencias de `bot_confusion.no_eligible_action`
+que a princípio pareciam confirmar o bug (mesmo numero, mesma janela de
+turnos 1-5) sao FALSO ALARME meu: sao exatamente 1 por turno proprio do
+bot (turnos 1 a 5, 5 turnos proprios num jogo de 10), e representam o
+sinal CORRETO de "acabaram as acoes, encerra o turno" -- confirmado lendo
+`sim_bridge.py` linha 629-632 (`if not candidatos_elegiveis: ...
+selection=no_eligible_action; return`) -- so dispara quando a lista de
+candidatos elegiveis esta genuinamente vazia, apos excluir opcionais ja
+recusados/falhos este turno. Nao e o "bot travado" do bloco 384.
+
+**Achado novo, real**: 5 timeouts de busca (`timed_out=True`, latencia
+~3014-3039ms, timeout configurado em 3.0s em `server.py`), todos em
+`decision_kind='main'`, turnos 3 (2x), 4 (2x) e 5 (1x) -- exatamente o
+meio de jogo, quando o board fica mais complexo (mais candidatos pra
+`_select_action_via_search` simular). **Nao vira "sem acao elegivel"**:
+confirmado em `sim_bridge.py` linha 634-641, o fallback de score
+IMEDIATO (`result[0] = candidatos_elegiveis[0]`) e setado ANTES da busca
+Monte Carlo rodar -- se o timeout de 3s bater, a thread continua rodando
+em background (daemon, nunca morta) mas o `result[0]` ja tem uma acao
+valida, so SEM o refino da simulacao/contrafactual. Ou seja: a decisao
+sai de qualidade inferior (score imediato puro, sem lookahead) nesses 5
+momentos, mas o bot nunca "so passa o turno" por causa disso -- os dois
+sintomas sao independentes, o achado deste bloco separa eles.
+
+**Nao investigado**: por que a busca demora >3s especificamente nesses
+5 pontos (board mais cheio? mais candidatos no `SEARCH_TOP_K`? mais
+amostras adaptativas subindo ate o teto?) -- fica como item de
+performance/tuning novo, registrado no TODO.md, nao e bug de
+correcao (o fallback ja protege contra o pior caso).
+
+Partida terminou com derrota do bot (0 vitorias, 1 derrota) -- n=1, sem
+sinal estatistico usavel.
+
+**Fix aplicado no mesmo bloco** (achado durante a investigacao do bug de
+conservacao de DON, separado): `_pay_costs`, custo
+`trash_typed_hand_or_named_hand_field` (unico uso: `OP06-033` Vander
+Decken IX) bypassava `remove_character_from_field` ao remover Character
+do campo -- corrigido, DON!! anexado agora volta pro banco
+corretamente. Nao e a causa raiz do leak original (blocos 374/377,
+deck Ace) -- `OP06-033` nao esta nesse deck. `smoke_fast.py` 100%.
+Commit `10a59a8`, ja pushado.
+
 ## 2026-08-01 (410) - Claude (sessao local) - 1 bypass real corrigido no bug de conservacao de DON (bloco 374/377), causa raiz do leak original AINDA NAO encontrada
 
 Usuario pediu pra investigar o bug de conservacao de DON (registrado nos

@@ -889,28 +889,43 @@ resolvido em `_score_activate_main`, nunca replicado aqui).
 > (6→11→16 acumulado), 1 lethal certificado que não fechou a partida.
 > Ver bloco HANDOFF 370 pros detalhes/evidência completa.
 
-## 🔴 URGENTE / EM ABERTO: bot só passando o turno ao vivo (bloco 384)
+## 🟢 RESOLVIDO NA PRÁTICA: bot só passando o turno ao vivo (bloco 384; confirmado bloco 411)
 
 Usuário reportou, jogando contra o bot depois dos blocos 381/382, que o
-bot só passa o turno (`end_turn`), sem jogar/atacar. Sessão remota
-(sem acesso à máquina do usuário) testou `choose_action` com decks reais
-turno a turno e NÃO reproduziu — motor jogou normalmente
-(`activate`/`attack` com busca contrafatual, `amostras=12`). Suspeita
-maior: `server.py` do usuário pode não ter sido reiniciado depois do
-`git pull` que trouxe 381/382.
+bot só passa o turno (`end_turn`), sem jogar/atacar. Suspeita maior:
+`server.py` do usuário não tinha sido reiniciado depois do `git pull`.
 
-- [ ] **PRÓXIMO PASSO (sessão local)**: capturar a saída do `server.py`
-  no momento em que o bot passa o turno — a linha `[ENG] N acoes | ...`
-  e qualquer `[ENG-ERR]`. Ver bloco 384 do `HANDOFF.md` pro contexto
-  completo da investigação já feita (não repetir do zero).
-- [ ] Confirmar `git log -1 --oneline` >= `e771003` DEPOIS de reiniciar
-  o servidor (script de reinício está no bloco 384 do HANDOFF, ou pedir
-  pro usuário rodar os comandos manualmente linha a linha).
-- [ ] Se confirmar que é `no_eligible_action` genuíno (não bug de
-  execução/exceção), investigar se é a pontuação (`_generate_and_score_actions`)
-  que está zerando ações elegíveis nalgum estado específico do deck real
-  do usuário — meu teste sintético só cobriu 2 decks aleatórios de
-  `decklists_raw.csv`, não o deck real dele.
+- [x] **Confirmado ao vivo (02/08/2026, bloco 411)**: matei o `server.py`
+  antigo (rodando código de antes de todos os merges) e subi de novo em
+  `10a59a8`. Partida real (Katakuri vs Ace, 10 turnos) — bot jogou
+  `activate`/`play`/`attack` normalmente em quase todo turno, nunca
+  travou. As 5 ocorrências de `no_eligible_action` na telemetria são o
+  sinal CORRETO de "acabou as ações, encerra o turno" (1 por turno
+  próprio, confirmado no código `sim_bridge.py:629-632` — só dispara com
+  lista de candidatos genuinamente vazia), não o bug relatado.
+- [x] **Achado novo, separado (bloco 411)**: a busca ao vivo bateu no
+  timeout de 3s **5 vezes** nesta única partida, todas nos turnos 3-5
+  (meio de jogo). Não causa "sem ação" — existe fallback de score
+  imediato ANTES da busca Monte Carlo rodar (`sim_bridge.py:634-641`),
+  então o bot sempre manda uma ação válida, só sem o refino de
+  simulação/contrafactual nesses momentos. Ver item novo abaixo.
+
+## 🟡 NOVO (02/08/2026, bloco 411): busca ao vivo bate no timeout de 3s com frequência real — degrada pra score imediato sem refino
+
+Numa única partida real (10 turnos), 5 timeouts de busca
+(`timed_out=True`, latência ~3014-3039ms contra o timeout de 3.0s
+configurado em `server.py`), concentrados nos turnos 3-5 (meio de jogo,
+board mais cheio/mais candidatos). Não é bug de correção (o fallback de
+score imediato já protege contra "sem ação"), mas é perda real de
+qualidade de decisão nesses momentos — a IA decide sem o lookahead
+Monte Carlo que normalmente teria.
+
+- [ ] Investigar por que a busca demora >3s especificamente nesses
+  pontos (board mais cheio? mais candidatos em `SEARCH_TOP_K`? amostragem
+  adaptativa subindo até o teto com frequência?).
+- [ ] Juntar mais partidas reais antes de decidir se vale subir o
+  timeout, reduzir `SEARCH_SAMPLES_MAX`/`SEARCH_TOP_K`, ou otimizar o
+  hot path — 1 partida não é amostra suficiente pra calibrar nada.
 
 ## ✅ doc: `BOT/README.md` passou a documentar Shift+P (bloco 383)
 
