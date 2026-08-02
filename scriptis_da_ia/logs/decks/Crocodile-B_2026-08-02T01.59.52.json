@@ -1,0 +1,76 @@
+{
+  "cards": [
+    {
+      "code": "OP14-120",
+      "name": "Crocodile",
+      "count": 4
+    },
+    {
+      "code": "OP14-099",
+      "name": "OP14-099",
+      "count": 4
+    },
+    {
+      "code": "OP14-096",
+      "name": "OP14-096",
+      "count": 4
+    },
+    {
+      "code": "OP14-083",
+      "name": "Miss Wednesday",
+      "count": 4
+    },
+    {
+      "code": "OP14-090",
+      "name": "OP14-090",
+      "count": 4
+    },
+    {
+      "code": "OP14-087",
+      "name": "Miss Valentine (Mikita)",
+      "count": 4
+    },
+    {
+      "code": "OP14-086",
+      "name": "Miss Doublefinger (Zala)",
+      "count": 3
+    },
+    {
+      "code": "OP05-094",
+      "name": "OP05-094",
+      "count": 3
+    },
+    {
+      "code": "OP14-084",
+      "name": "Miss All Sunday",
+      "count": 3
+    },
+    {
+      "code": "OP14-091",
+      "name": "OP14-091",
+      "count": 3
+    },
+    {
+      "code": "OP15-092",
+      "name": "OP15-092",
+      "count": 2
+    },
+    {
+      "code": "OP14-088",
+      "name": "OP14-088",
+      "count": 2
+    },
+    {
+      "code": "OP14-094",
+      "name": "OP14-094",
+      "count": 2
+    },
+    {
+      "code": "OP14-085",
+      "name": "OP14-085",
+      "count": 1
+    }
+  ],
+  "total_seen": 43,
+  "leader": "OP14-079"
+}

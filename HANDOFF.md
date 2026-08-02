@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-02 (416) - Claude (sessao local) - achado novo, NAO investigado a fundo: selecao de MULTIPLOS alvos amigos trava/repete (Edward Newgate, custo reveal_from_hand=2)
+
+Nova partida (Portgas.D.Ace-R x Crocodile-B, 2026-08-02T01.59.52, 13
+turnos, bot perdeu de novo -- log banco, `bot_side=p1` gravado
+automatico via bloco 413). Usuario reportou por screenshot: turno 7,
+apos `[You] Deploy Edward Newgate ["OP16-003"]`, a tela ficou presa
+em "Select 2 More Friendly Targets" (custo do proprio Newgate --
+`reveal_from_hand: count=2, power_eq=8000, card_type=CHARACTER`) --
+"quando 2 efeitos ativam ao mesmo tempo, o bot nao sabe escolher
+ORDEM".
+
+**Evidencia concreta na telemetria**: 3 decisoes `decision_kind=target`
+seguidas no turno 7, com a EXATA MESMA lista de candidatos
+(`own_hand`/`own_board`/`own_trash`, mesmos `target_id`), em
+timestamps 04:57:21, 04:57:55, 04:58:55 -- **34s e 60s de intervalo
+real** entre elas. Isso NAO e latencia do motor (teto medido e 3s,
+ver blocos 411/414/415) -- e tempo de espera/repeticao real,
+consistente com o prompt de selecao MULTIPLA precisando ser respondido
+de novo repetidas vezes em vez de resolver numa unica leva.
+
+**NAO investigado a fundo neste bloco** (faltou tempo/escopo -- fica
+pendente pra proxima sessao): a causa exata (fluxo de
+`/choose_target` no `server.py`/plugin C# pra selecao de N alvos de
+uma vez, ou se e um problema do lado do BotDriver.cs que so sabe
+escolher 1 por vez e reenvia a mesma pergunta) nao foi lida linha a
+linha. Registrado com a evidencia concreta acima pra nao perder o
+achado, mas SEM diagnostico fechado -- proxima sessao deve comecar
+lendo `server.py` no endpoint de `/choose_target`/selecao multipla e
+o lado C# (`BotDriver.cs`) que trata prompts com "Select N More
+Targets" antes de tentar qualquer fix.
+
+Lado positivo confirmado: so **1 timeout** nesta partida (vs 3-5 antes
+do fix de performance do bloco 415) -- latencia media caiu de
+370-440ms pra 253ms, p95 de ~3000ms pra 1911ms. O fix de performance
+esta funcionando na pratica.
+
 ## 2026-08-02 (415) - Claude (sessao local) - performance da busca ao vivo: ~25% mais rapido, 2 causas reais achadas por profiling (nao chute)
 
 Usuario reportou "hora que demora demais" nas decisoes do bot ao vivo

@@ -2,6 +2,20 @@
 
 **Última atualização:** 2 de agosto de 2026
 
+> 02/08/2026 (bloco 416): **Achado novo, NÃO investigado a fundo** —
+> seleção de MÚLTIPLOS alvos amigos trava/repete. Usuário reportou
+> (screenshot) turno 7 preso em "Select 2 More Friendly Targets"
+> (custo do Edward Newgate, `reveal_from_hand=2`). Telemetria confirma:
+> 3 decisões `target` seguidas com a MESMA lista de candidatos, 34s e
+> 60s de intervalo REAL entre elas (não é latência do motor, teto é
+> 3s). Causa exata não lida ainda — próxima sessão deve começar pelo
+> endpoint `/choose_target` em `server.py` e o lado C#
+> (`BotDriver.cs`) que trata prompts "Select N More Targets", antes de
+> tentar fix. Ver bloco 416 do HANDOFF. Lado positivo: só 1 timeout
+> nessa partida (vs 3-5 antes), confirma que o fix de performance do
+> bloco 415 funcionou na prática (latência p95 caiu de ~3000ms pra
+> 1911ms).
+
 > 02/08/2026 (bloco 415): **Performance da busca ao vivo, ~25% mais
 > rápida, achada por profiling real (não chute)** — usuário pediu pra
 > investigar a lentidão em vez de cortar qualidade (amostras/

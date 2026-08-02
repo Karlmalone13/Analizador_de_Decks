@@ -1,0 +1,1422 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Portgas D. Ace",
+          "code": "OP16-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Crocodile",
+          "code": "OP14-079"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 13,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-010",
+          "card_name": "Namule",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP10-005",
+            "EB01-002",
+            "OP16-021",
+            "OP16-014"
+          ],
+          "board": [
+            "OP16-010"
+          ],
+          "trash": [],
+          "life": 5,
+          "rested": {
+            "OP16-010": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP14-120",
+            "OP14-099",
+            "OP14-086",
+            "OP14-099",
+            "OP14-086"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP14-099",
+          "card_name": "Disappointed?",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Ground Death [\"OP14-096\">OP14-096]</b>",
+            "Trash 2 Remaining Cards",
+            "Rest 1 Don",
+            "<b>Reveal and Draw Miss Wednesday [\"OP14-083\">OP14-083]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP14-120",
+            "OP14-086",
+            "OP14-086",
+            "OP14-120",
+            "OP14-096",
+            "OP14-083"
+          ],
+          "board": [],
+          "trash": [
+            "OP14-099",
+            "OP05-094",
+            "OP14-083",
+            "OP14-099",
+            "OP14-083",
+            "OP14-099"
+          ],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "OP10-005",
+            "EB01-002",
+            "OP16-021",
+            "OP16-014"
+          ],
+          "trash": [],
+          "board": [
+            "OP16-010"
+          ],
+          "life": 5,
+          "rested": {
+            "OP16-010": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP16-010",
+          "to_name": "Namule",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Namule",
+          "attacker_code": "OP16-010",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-086"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP10-005",
+            "EB01-002",
+            "OP16-021",
+            "OP16-014",
+            "OP16-017"
+          ],
+          "board": [
+            "OP16-010"
+          ],
+          "trash": [],
+          "life": 5,
+          "rested": {
+            "OP16-010": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP14-120",
+            "OP14-086",
+            "OP14-120",
+            "OP14-096",
+            "OP14-083",
+            "OP14-083"
+          ],
+          "trash": [
+            "OP14-099",
+            "OP05-094",
+            "OP14-083",
+            "OP14-099",
+            "OP14-083",
+            "OP14-099",
+            "OP14-086"
+          ],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-083",
+          "card_name": "Miss Wednesday",
+          "effects": [
+            "Trash Miss Wednesday [\"OP14-083\">OP14-083]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Crocodile",
+          "attacker_code": "OP14-079",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-017"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP14-083",
+          "card_name": "Miss Wednesday",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP14-120",
+            "OP14-086",
+            "OP14-120",
+            "OP14-096",
+            "OP15-092"
+          ],
+          "board": [
+            "OP14-083"
+          ],
+          "trash": [
+            "OP14-099",
+            "OP05-094",
+            "OP14-083",
+            "OP14-099",
+            "OP14-083",
+            "OP14-099",
+            "OP14-086",
+            "OP14-083"
+          ],
+          "life": 4,
+          "rested": {
+            "OP14-083": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP10-005",
+            "EB01-002",
+            "OP16-021",
+            "OP16-014"
+          ],
+          "trash": [
+            "OP16-017"
+          ],
+          "board": [
+            "OP16-010"
+          ],
+          "life": 5,
+          "rested": {
+            "OP16-010": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP16-010",
+          "to_name": "Namule",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Namule",
+          "attacker_code": "OP16-010",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-086"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-021",
+          "card_name": "Moby Dick",
+          "effects": [
+            "Added 1 Cards to Hand"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-016",
+          "card_name": "Monkey D. Garp",
+          "effects": [
+            "<b>Reveal and Draw Thatch [\"OP16-005\">OP16-005]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP10-005",
+            "EB01-002",
+            "OP16-014",
+            "OP16-021",
+            "OP16-005"
+          ],
+          "board": [
+            "OP16-010",
+            "OP13-016"
+          ],
+          "trash": [
+            "OP16-017"
+          ],
+          "life": 5,
+          "rested": {
+            "OP16-010": 1,
+            "OP13-016": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP14-120",
+            "OP14-120",
+            "OP14-096",
+            "OP15-092",
+            "OP14-120"
+          ],
+          "trash": [
+            "OP14-099",
+            "OP05-094",
+            "OP14-083",
+            "OP14-099",
+            "OP14-083",
+            "OP14-099",
+            "OP14-086",
+            "OP14-083",
+            "OP14-086"
+          ],
+          "board": [
+            "OP14-083"
+          ],
+          "life": 3,
+          "rested": {
+            "OP14-083": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-087",
+          "card_name": "Miss Valentine (Mikita)",
+          "effects": [
+            "<b>Reveal and Draw Miss Doublefinger (Zala) [\"OP14-086\">OP14-086]</b>",
+            "Trash 3 Remaining Cards"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP14-086",
+          "card_name": "Miss Doublefinger (Zala)",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-079",
+          "card_name": "Crocodile",
+          "effects": [
+            "Destroy Miss Valentine (Mikita) [\"OP14-087\">OP14-087]",
+            "Namule [\"OP16-010\">OP16-010] Cost -10",
+            "Trash 2 Cards from Deck"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-083",
+          "card_name": "Miss Wednesday",
+          "effects": [
+            "Trash Miss Wednesday [\"OP14-083\">OP14-083]",
+            "Buff Namule [\"OP16-010\">OP16-010] -3000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Crocodile",
+          "attacker_code": "OP14-079",
+          "target": "Namule [\"OP16-010\">OP16-010]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP14-120",
+            "OP14-120",
+            "OP14-096",
+            "OP15-092",
+            "OP14-120"
+          ],
+          "board": [
+            "OP14-086"
+          ],
+          "trash": [
+            "OP14-099",
+            "OP05-094",
+            "OP14-083",
+            "OP14-099",
+            "OP14-083",
+            "OP14-099",
+            "OP14-086",
+            "OP14-083",
+            "OP14-086",
+            "OP14-084",
+            "OP14-090",
+            "OP14-085",
+            "OP14-088",
+            "OP14-096",
+            "OP14-087",
+            "OP14-083"
+          ],
+          "life": 3,
+          "rested": {
+            "OP14-086": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP10-005",
+            "EB01-002",
+            "OP16-014",
+            "OP16-021",
+            "OP16-005"
+          ],
+          "trash": [
+            "OP16-017",
+            "OP16-010"
+          ],
+          "board": [
+            "OP13-016"
+          ],
+          "life": 5,
+          "rested": {
+            "OP13-016": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB01-002",
+          "card_name": "Izou",
+          "effects": [
+            "Attach 1 Rested Don to Portgas D. Ace [\"OP16-001\">OP16-001]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP10-005",
+            "OP16-014",
+            "OP16-021",
+            "OP16-005",
+            "OP16-017"
+          ],
+          "board": [
+            "OP13-016",
+            "EB01-002"
+          ],
+          "trash": [
+            "OP16-017",
+            "OP16-010"
+          ],
+          "life": 5,
+          "rested": {
+            "EB01-002": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP14-120",
+            "OP14-120",
+            "OP14-096",
+            "OP15-092",
+            "OP14-120",
+            "OP14-091"
+          ],
+          "trash": [
+            "OP14-099",
+            "OP05-094",
+            "OP14-083",
+            "OP14-099",
+            "OP14-083",
+            "OP14-099",
+            "OP14-086",
+            "OP14-083",
+            "OP14-086",
+            "OP14-084",
+            "OP14-090",
+            "OP14-085",
+            "OP14-088",
+            "OP14-096",
+            "OP14-087",
+            "OP14-083",
+            "OP15-092",
+            "OP05-094"
+          ],
+          "board": [
+            "OP14-086"
+          ],
+          "life": 2,
+          "rested": {
+            "OP14-086": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-084",
+          "card_name": "Miss All Sunday",
+          "effects": [
+            "Deployed Miss Goldenweek (Marianne) [\"OP14-085\">OP14-085] from Trash",
+            "Deployed Miss Valentine (Mikita) [\"OP14-087\">OP14-087] from Trash"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-087",
+          "card_name": "Miss Valentine (Mikita)",
+          "effects": [
+            "<b>Reveal and Draw Mr. 2 Bon Clay (Bentham) [\"OP14-091\">OP14-091]</b>",
+            "Trash 3 Remaining Cards"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-079",
+          "card_name": "Crocodile",
+          "effects": [
+            "Destroy Miss Goldenweek (Marianne) [\"OP14-085\">OP14-085]",
+            "Izou [\"EB01-002\">EB01-002] Cost -10",
+            "Trash 2 Cards from Deck"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-085",
+          "card_name": "Miss Goldenweek (Marianne)",
+          "effects": [
+            "Draw 2 Card",
+            "Trash Miss All Sunday [\"OP14-084\">OP14-084]",
+            "Trash Crocodile [\"OP14-120\">OP14-120]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Crocodile",
+          "attacker_code": "OP14-079",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-005"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Miss Doublefinger (Zala)",
+          "attacker_code": "OP14-086",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP14-120",
+            "OP14-096",
+            "OP15-092",
+            "OP14-120",
+            "OP14-091",
+            "OP14-091",
+            "OP14-094"
+          ],
+          "board": [
+            "OP14-086",
+            "OP14-084",
+            "OP14-087"
+          ],
+          "trash": [
+            "OP14-099",
+            "OP05-094",
+            "OP14-083",
+            "OP14-099",
+            "OP14-083",
+            "OP14-099",
+            "OP14-086",
+            "OP14-083",
+            "OP14-086",
+            "OP14-084",
+            "OP14-090",
+            "OP14-088",
+            "OP14-096",
+            "OP14-083",
+            "OP15-092",
+            "OP05-094",
+            "OP14-099",
+            "OP14-088",
+            "OP14-087",
+            "OP05-094",
+            "OP14-090",
+            "OP14-085",
+            "OP14-084",
+            "OP14-120"
+          ],
+          "life": 2,
+          "rested": {
+            "OP14-086": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP16-014",
+            "OP16-021",
+            "OP16-017",
+            "OP16-015"
+          ],
+          "trash": [
+            "OP16-017",
+            "OP16-010",
+            "OP10-005",
+            "OP16-005"
+          ],
+          "board": [
+            "OP13-016",
+            "EB01-002"
+          ],
+          "life": 4,
+          "rested": {
+            "EB01-002": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "EB01-002",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-014",
+          "card_name": "Marco",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP13-016",
+          "to_name": "Monkey D. Garp",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Garp",
+          "attacker_code": "OP13-016",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-094"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-091"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Marco [\"OP16-014\">OP16-014] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marco",
+          "attacker_code": "OP16-014",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-021",
+            "OP16-017",
+            "OP16-015",
+            "OP16-017"
+          ],
+          "board": [
+            "OP13-016",
+            "EB01-002",
+            "OP16-014"
+          ],
+          "trash": [
+            "OP16-017",
+            "OP16-010",
+            "OP10-005",
+            "OP16-005"
+          ],
+          "life": 4,
+          "rested": {
+            "OP13-016": 1,
+            "EB01-002": 1,
+            "OP16-014": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP14-120",
+            "OP15-092",
+            "OP14-120",
+            "OP14-091",
+            "OP14-087"
+          ],
+          "trash": [
+            "OP14-099",
+            "OP05-094",
+            "OP14-083",
+            "OP14-099",
+            "OP14-083",
+            "OP14-099",
+            "OP14-086",
+            "OP14-083",
+            "OP14-086",
+            "OP14-084",
+            "OP14-090",
+            "OP14-088",
+            "OP14-096",
+            "OP14-083",
+            "OP15-092",
+            "OP05-094",
+            "OP14-099",
+            "OP14-088",
+            "OP14-087",
+            "OP05-094",
+            "OP14-090",
+            "OP14-085",
+            "OP14-084",
+            "OP14-120",
+            "OP14-096",
+            "OP14-094",
+            "OP14-091"
+          ],
+          "board": [
+            "OP14-086",
+            "OP14-084",
+            "OP14-087"
+          ],
+          "life": 1,
+          "rested": {
+            "OP14-086": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-120",
+          "card_name": "Crocodile",
+          "effects": [
+            "Izou [\"EB01-002\">EB01-002] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Miss Valentine (Mikita)",
+          "attacker_code": "OP14-087",
+          "target": "Monkey D. Garp [\"OP13-016\">OP13-016]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-079",
+          "card_name": "Crocodile",
+          "effects": [
+            "Destroy Miss Valentine (Mikita) [\"OP14-087\">OP14-087]",
+            "Marco [\"OP16-014\">OP16-014] Cost -10",
+            "Trash 2 Cards from Deck"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-084",
+          "to_name": "Miss All Sunday",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Miss All Sunday",
+          "attacker_code": "OP14-084",
+          "target": "Marco [\"OP16-014\">OP16-014]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Miss Doublefinger (Zala)",
+          "attacker_code": "OP14-086",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Crocodile",
+          "attacker_code": "OP14-079",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-017"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP14-120",
+            "OP15-092",
+            "OP14-120",
+            "OP14-091",
+            "OP14-087"
+          ],
+          "board": [
+            "OP14-086",
+            "OP14-084",
+            "OP14-120"
+          ],
+          "trash": [
+            "OP14-099",
+            "OP05-094",
+            "OP14-083",
+            "OP14-099",
+            "OP14-083",
+            "OP14-099",
+            "OP14-086",
+            "OP14-083",
+            "OP14-086",
+            "OP14-084",
+            "OP14-090",
+            "OP14-088",
+            "OP14-096",
+            "OP14-083",
+            "OP15-092",
+            "OP05-094",
+            "OP14-099",
+            "OP14-088",
+            "OP14-087",
+            "OP05-094",
+            "OP14-090",
+            "OP14-085",
+            "OP14-084",
+            "OP14-120",
+            "OP14-096",
+            "OP14-094",
+            "OP14-091",
+            "OP14-094",
+            "OP14-091",
+            "OP14-087"
+          ],
+          "life": 1,
+          "rested": {
+            "OP14-086": 1,
+            "OP14-084": 1,
+            "OP14-120": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP16-015"
+          ],
+          "trash": [
+            "OP16-017",
+            "OP16-010",
+            "OP10-005",
+            "OP16-005",
+            "OP16-021",
+            "OP13-016",
+            "OP16-017",
+            "OP14-018",
+            "OP16-017"
+          ],
+          "board": [
+            "EB01-002",
+            "OP16-014"
+          ],
+          "life": 3,
+          "rested": {
+            "EB01-002": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-087"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marco",
+          "attacker_code": "OP16-014",
+          "target": "Miss Doublefinger (Zala) [\"OP14-086\">OP14-086]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "EB01-002",
+          "card_name": "Izou",
+          "effects": [
+            "Attach 1 Rested Don to Izou [\"EB01-002\">EB01-002]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-015"
+          ],
+          "board": [
+            "EB01-002",
+            "OP16-014",
+            "EB01-002"
+          ],
+          "trash": [
+            "OP16-017",
+            "OP16-010",
+            "OP10-005",
+            "OP16-005",
+            "OP16-021",
+            "OP13-016",
+            "OP16-017",
+            "OP14-018",
+            "OP16-017"
+          ],
+          "life": 3,
+          "rested": {
+            "OP16-014": 1,
+            "EB01-002": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP14-120",
+            "OP15-092",
+            "OP14-120",
+            "OP14-091"
+          ],
+          "trash": [
+            "OP14-099",
+            "OP05-094",
+            "OP14-083",
+            "OP14-099",
+            "OP14-083",
+            "OP14-099",
+            "OP14-086",
+            "OP14-083",
+            "OP14-086",
+            "OP14-084",
+            "OP14-090",
+            "OP14-088",
+            "OP14-096",
+            "OP14-083",
+            "OP15-092",
+            "OP05-094",
+            "OP14-099",
+            "OP14-088",
+            "OP14-087",
+            "OP05-094",
+            "OP14-090",
+            "OP14-085",
+            "OP14-084",
+            "OP14-120",
+            "OP14-096",
+            "OP14-094",
+            "OP14-091",
+            "OP14-094",
+            "OP14-091",
+            "OP14-087",
+            "OP14-087",
+            "OP14-086"
+          ],
+          "board": [
+            "OP14-084",
+            "OP14-120"
+          ],
+          "life": 1,
+          "rested": {
+            "OP14-084": 1,
+            "OP14-120": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Crocodile",
+          "attacker_code": "OP14-120",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-079",
+          "card_name": "Crocodile",
+          "effects": [
+            "Destroy Crocodile [\"OP14-120\">OP14-120]",
+            "Izou [\"EB01-002\">EB01-002] Cost -10",
+            "Trash 2 Cards from Deck"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-120",
+          "card_name": "Crocodile",
+          "effects": [
+            "Trash Crocodile [\"OP14-120\">OP14-120]",
+            "Deploy Crocodile [\"OP14-120\">OP14-120]",
+            "Marco [\"OP16-014\">OP16-014] can't attack next turn",
+            "Draw 1 Card",
+            "Izou [\"EB01-002\">EB01-002] can't attack next turn",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Crocodile",
+          "attacker_code": "OP14-079",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP14-120",
+          "card_name": "Crocodile",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Miss All Sunday",
+          "attacker_code": "OP14-084",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-092",
+            "OP14-091",
+            "OP14-087",
+            "OP14-096",
+            "OP14-090"
+          ],
+          "board": [
+            "OP14-084",
+            "OP14-120",
+            "OP14-120"
+          ],
+          "trash": [
+            "OP14-099",
+            "OP05-094",
+            "OP14-083",
+            "OP14-099",
+            "OP14-083",
+            "OP14-099",
+            "OP14-086",
+            "OP14-083",
+            "OP14-086",
+            "OP14-084",
+            "OP14-090",
+            "OP14-088",
+            "OP14-096",
+            "OP14-083",
+            "OP15-092",
+            "OP05-094",
+            "OP14-099",
+            "OP14-088",
+            "OP14-087",
+            "OP05-094",
+            "OP14-090",
+            "OP14-085",
+            "OP14-084",
+            "OP14-120",
+            "OP14-096",
+            "OP14-094",
+            "OP14-091",
+            "OP14-094",
+            "OP14-091",
+            "OP14-087",
+            "OP14-087",
+            "OP14-086",
+            "OP14-090",
+            "OP14-096",
+            "OP14-120"
+          ],
+          "life": 1,
+          "rested": {
+            "OP14-084": 1,
+            "OP14-120": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP16-014",
+            "OP16-015"
+          ],
+          "trash": [
+            "OP16-017",
+            "OP16-010",
+            "OP10-005",
+            "OP16-005",
+            "OP16-021",
+            "OP13-016",
+            "OP16-017",
+            "OP14-018",
+            "OP16-017",
+            "OP16-015",
+            "OP16-003"
+          ],
+          "board": [
+            "EB01-002",
+            "OP16-014",
+            "EB01-002"
+          ],
+          "life": 0,
+          "rested": {
+            "OP16-014": 1,
+            "EB01-002": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-090"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-003",
+          "card_name": "Edward Newgate",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "EB01-002",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Marco [\"OP16-014\">OP16-014] Rush"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-014",
+            "OP16-015"
+          ],
+          "board": [
+            "EB01-002",
+            "OP16-014",
+            "EB01-002",
+            "OP16-003"
+          ],
+          "trash": [
+            "OP16-017",
+            "OP16-010",
+            "OP10-005",
+            "OP16-005",
+            "OP16-021",
+            "OP13-016",
+            "OP16-017",
+            "OP14-018",
+            "OP16-017",
+            "OP16-015",
+            "OP16-003"
+          ],
+          "life": 0,
+          "rested": {
+            "EB01-002": 1,
+            "OP16-003": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-092",
+            "OP14-091",
+            "OP14-087"
+          ],
+          "trash": [
+            "OP14-099",
+            "OP05-094",
+            "OP14-083",
+            "OP14-099",
+            "OP14-083",
+            "OP14-099",
+            "OP14-086",
+            "OP14-083",
+            "OP14-086",
+            "OP14-084",
+            "OP14-090",
+            "OP14-088",
+            "OP14-096",
+            "OP14-083",
+            "OP15-092",
+            "OP05-094",
+            "OP14-099",
+            "OP14-088",
+            "OP14-087",
+            "OP05-094",
+            "OP14-090",
+            "OP14-085",
+            "OP14-084",
+            "OP14-120",
+            "OP14-096",
+            "OP14-094",
+            "OP14-091",
+            "OP14-094",
+            "OP14-091",
+            "OP14-087",
+            "OP14-087",
+            "OP14-086",
+            "OP14-090",
+            "OP14-096",
+            "OP14-120",
+            "OP14-090",
+            "OP14-096"
+          ],
+          "board": [
+            "OP14-084",
+            "OP14-120",
+            "OP14-120"
+          ],
+          "life": 1,
+          "rested": {
+            "OP14-084": 1,
+            "OP14-120": 1
+          }
+        }
+      }
+    }
+  ]
+}
