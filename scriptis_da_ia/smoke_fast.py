@@ -9746,6 +9746,7 @@ def main() -> int:
     test_apply_winner_grava_bot_side_da_fonte_autoritativa()
     test_attach_don_margem_seguranca_em_empate_com_don_ocioso()
     test_worth_paying_optional_costs_recusa_reveal_from_hand_impagavel()
+    test_score_give_don_considera_sinergia_com_ataque()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -10292,6 +10293,62 @@ def test_attach_don_margem_seguranca_em_empate_com_don_ocioso() -> None:
           reserva > 0)
     check("empate + evento [Counter] na mao: margem NUNCA gasta a reserva de defesa",
           margem2 <= max(0, 3 - reserva))
+
+
+def test_score_give_don_considera_sinergia_com_ataque() -> None:
+    """
+    Achado real 02/08 (usuario, log Portgas.D.Ace-R x Crocodile-B
+    2026-08-02T09.41.46): o stage Moby Dick (OP16-021, "[Activate:Main]
+    give up to 1 rested DON!! to your Leader/Character", SEM custo)
+    aparecia como candidato em TODO turno com score FIXO -10.0
+    (GIVE_DON_RESTED_BASE_SCORE) -- nunca considerando sinergia com um
+    ataque na mesma janela. Turno 2: dar o DON ao lider teria fechado um
+    deficit de poder contra o lider do oponente. Turno 4: dar o DON ao
+    Vista (OP16-011, when_attacking "KO ate 2 Characters power<=2000",
+    don_requirement=1) teria desbloqueado o efeito inteiro (nao apenas
+    poder -- por isso o delta de attack_time_power sozinho nao bastava,
+    precisou checar don_requirement direto).
+    """
+    stage = real_card("OP16-021")
+    am_stage = get_card_effects("OP16-021")["activate_main"]
+
+    # Caso 1: lider ja vencendo confortavel (7000 vs 5000) -- sem deficit,
+    # sem bonus (mantem o -10 conservador de sempre).
+    ace = real_card("OP16-001")
+    ace.don_attached = 2
+    opp_forte = real_card("OP14-079")
+    me1 = GameState(leader=ace, turn=2, don_rested=0)
+    opp1 = GameState(leader=opp_forte)
+    match = OPTCGMatch((ace, []), (opp_forte, []))
+    engine1 = DecisionEngine(me1, opp1)
+    check("give_don sem deficit/sem don_requirement: mantem -10 (sem sinergia)",
+          match._score_activate_main(stage, am_stage, me1, opp1, priority="AGGRESSIVE", engine=engine1) == -10.0)
+
+    # Caso 2: lider (5000) vs lider adversario de 6000 impresso -- deficit
+    # de 1000, 1 DON fecha -- bonus de deficit.
+    ace2 = real_card("OP16-001")
+    opp_6000 = real_card("OP02-001")  # Edward Newgate leader, 6000 power
+    me2 = GameState(leader=ace2, turn=2, don_rested=0)
+    opp2 = GameState(leader=opp_6000)
+    engine2 = DecisionEngine(me2, opp2)
+    score2 = match._score_activate_main(stage, am_stage, me2, opp2, priority="AGGRESSIVE", engine=engine2)
+    check("give_don fecha deficit real contra o lider do oponente: score > -10",
+          score2 > -10.0)
+
+    # Caso 3: Vista pronto pra atacar, sem DON anexado, don_requirement=1
+    # do proprio when_attacking (KO, nao afeta poder -- exige checagem
+    # direta do don_requirement, nao so o delta de attack_time_power).
+    vista = real_card("OP16-011")
+    vista.rested = False
+    vista.just_played = False
+    me3 = GameState(leader=real_card("OP16-001"), turn=4, don_rested=0)
+    me3.field_chars = [vista]
+    opp3 = GameState(leader=real_card("OP14-079"))
+    opp3.field_chars = [real_card("OP14-091")]
+    engine3 = DecisionEngine(me3, opp3)
+    score3 = match._score_activate_main(stage, am_stage, me3, opp3, priority="AGGRESSIVE", engine=engine3)
+    check("give_don desbloqueia don_requirement de when_attacking (Vista): score > -10",
+          score3 > -10.0)
 
 
 def test_worth_paying_optional_costs_recusa_reveal_from_hand_impagavel() -> None:

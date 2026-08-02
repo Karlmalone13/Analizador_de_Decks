@@ -250,6 +250,22 @@ namespace OPTCGBotPlugin
                 return;
             }
 
+            // 2+ cartas dispararam gatilho ao mesmo tempo (ex: 2 copias de
+            // Izou reagindo ao mesmo ataque) -- o jogo espera o jogador
+            // clicar em QUAL delas resolve primeiro antes de acaActive ser
+            // definido (ver BotExecutor.IsOfferingActionChoiceOrder).
+            // Achado real 02/08 (usuario, partida ao vivo): sem este bloco
+            // o bot ficava parado indefinidamente ate o usuario clicar
+            // manualmente. Cartas envolvidas tem efeitos independentes --
+            // qualquer ordem valida desbloqueia, sem precisar do engine.
+            if (!gls.bOpponentResolving && !gls.bForcingOpponentAction
+                && BotExecutor.IsOfferingActionChoiceOrder(gls, gls.Lps_Players[BotPlayerIndex]))
+            {
+                BotExecutor.ResolveActionChoiceOrder(gls);
+                _cooldown = 0.8f;
+                return;
+            }
+
             // Efeito pendente (On Play do bot, efeito do lider ao tomar dano,
             // etc.) — vale nos DOIS turnos
             if (gls.acaActive != null && !gls.bOpponentResolving && !gls.bForcingOpponentAction)

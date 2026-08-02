@@ -2746,5 +2746,31 @@
       "You": "decks/Portgas.D.Ace-R_2026-08-02T01.59.52.json",
       "Opponent": "decks/Crocodile-B_2026-08-02T01.59.52.json"
     }
+  },
+  {
+    "id": "2026-08-02T09.41.46",
+    "friendly_name": "Portgas.D.Ace-R_x_Crocodile-B",
+    "date": "2026-08-02",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-079",
+      "leader_name": "Crocodile",
+      "slug": "Crocodile-B"
+    },
+    "turns": 11,
+    "winner": "p2",
+    "bot_side": "p1",
+    "log_file": "raw/Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T09.41.46.log",
+    "parsed_file": "parsed/Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T09.41.46.json",
+    "deck_files": {
+      "You": "decks/Portgas.D.Ace-R_2026-08-02T09.41.46.json",
+      "Opponent": "decks/Crocodile-B_2026-08-02T09.41.46.json"
+    }
   }
 ]

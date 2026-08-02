@@ -13056,6 +13056,47 @@ class OPTCGMatch:
             # DON RESTADO (delayed) -- distinto de add_don/set_don_active
             # (base=90, DON ATIVO imediato). Ver GIVE_DON_RESTED_BASE_SCORE.
             base = GIVE_DON_RESTED_BASE_SCORE
+            # Sinergia com um ataque na MESMA janela (achado real 02/08,
+            # usuario, log Portgas.D.Ace-R x Crocodile-B): o -10 flat nunca
+            # considerava que o DON extra pode (a) fechar um deficit real
+            # de poder contra o lider do oponente, ou (b) desbloquear o
+            # proprio `don_requirement` de um `when_attacking` que o alvo
+            # ainda nao atingia -- turno 2 (deficit contra o lider) e turno
+            # 4 (Vista OP16-011, "KO ate 2 Characters power<=2000",
+            # `don_requirement:1`) perderam valor real por causa disso. Usa
+            # a MESMA escolha de alvo que a execucao real faz (maior
+            # effective_power entre campo ativo+lider, ver
+            # action=='give_don' em _execute_step) pra nao divergir "dois
+            # motores". `attack_time_power` (delta antes/depois) so cobre
+            # `when_attacking` que MEXE em poder (buff_power/set_base_power)
+            # -- Vista e KO puro, sem ganho de poder nenhum, entao o
+            # don_requirement precisa ser checado DIRETO (nao inferido pelo
+            # delta), senao o caso mais valioso (desbloquear um efeito
+            # inteiro, nao so poder) nunca pontua.
+            if engine is not None:
+                for step in steps:
+                    if step.get('action') != 'give_don':
+                        continue
+                    count = step.get('count', 1)
+                    candidatos_alvo = [c for c in p.field_chars if not c.rested] + [p.leader]
+                    target_name = (step.get('target_name') or '').lower()
+                    if target_name:
+                        candidatos_alvo = [c for c in candidatos_alvo if target_name in c.name.lower()]
+                    if not candidatos_alvo:
+                        continue
+                    melhor = max(candidatos_alvo, key=lambda c: c.effective_power(True))
+                    if not character_can_attack_now(melhor, p, opp):
+                        continue
+                    antes = attack_time_power(melhor, opp)
+                    deficit_lider = opp.leader.power - antes
+                    if 0 < deficit_lider <= count * 1000:
+                        base += 130  # fecha o deficit contra o lider do oponente
+                    wa = get_card_effects(melhor.code).get('when_attacking')
+                    if isinstance(wa, dict):
+                        req = wa.get('don_requirement', 0)
+                        don_atual = getattr(melhor, 'don_attached', 0)
+                        if req and don_atual < req <= don_atual + count:
+                            base += 100  # desbloqueia o when_attacking inteiro
         elif any(a in ('rest_opp', 'rest_opp_character', 'ko', 'ko_opp',
                        'ko_if_cost_eq_don', 'debuff_power', 'debuff_cost',
                        'bounce', 'place_opp_character_bottom_deck',

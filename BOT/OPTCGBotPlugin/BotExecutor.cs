@@ -37,6 +37,58 @@ namespace OPTCGBotPlugin
         private static readonly MethodInfo _mLastDrawnCard =
             AccessTools.Method(typeof(GameplayLogicScript), "LastDrawnCard");
 
+        // Ordem de ativacao quando 2+ cartas disparam gatilho ao mesmo tempo
+        // (ex: 2 copias de Izou reagindo ao mesmo ataque do oponente). O jogo
+        // enfileira TODAS em acaPending (publico) e deixa acaActive (publico)
+        // vazio ate o jogador clicar numa das cartas destacadas em
+        // lgo_ActionChoices (privado) pra escolher qual resolve primeiro --
+        // so DEPOIS desse clique e que gls.acaActive != null e o resto do
+        // driver (HandlePendingAction etc.) passa a agir. Achado real 02/08
+        // (usuario, partida ao vivo): sem nenhum handler pra este estado
+        // especifico, o bot ficava parado indefinidamente ate o usuario
+        // clicar manualmente. Mesmo padrao de reflexao ja usado acima pros
+        // outros metodos privados do jogo.
+        private static readonly FieldInfo _fActionChoices =
+            AccessTools.Field(typeof(GameplayLogicScript), "lgo_ActionChoices");
+        private static readonly MethodInfo _mClickActionChoice =
+            AccessTools.Method(typeof(GameplayLogicScript), "HandleMouseClickCardMakingActionChoice");
+
+        // True se o jogo esta esperando o jogador escolher QUAL de varias
+        // acoes pendentes (acaPending) resolver primeiro -- acaActive ainda
+        // null, lgo_ActionChoices ja populado com as cartas clicaveis, E a
+        // 1a opcao pertence ao PROPRIO bot (nunca clicar na escolha do
+        // humano -- as cartas so aparecem juntas em lgo_ActionChoices
+        // quando sao do MESMO dono, confirmado no decompilado, entao 1
+        // checagem basta pra saber de quem e a decisao inteira).
+        public static bool IsOfferingActionChoiceOrder(GameplayLogicScript gls, PlayerState botPs)
+        {
+            if (gls.acaActive != null) return false;
+            var choices = _fActionChoices.GetValue(gls) as List<GameObject>;
+            if (choices == null || choices.Count == 0) return false;
+            try { return gls.FindCardOwner(choices[0]) == botPs; }
+            catch { return false; }
+        }
+
+        // Resolve a ordem clicando na PRIMEIRA opcao disponivel. As cartas
+        // que disparam gatilho ao mesmo tempo tem efeitos INDEPENDENTES
+        // (cada uma resolve seu proprio custo/alvo depois, via
+        // HandlePendingAction normal) -- a ORDEM entre elas raramente muda o
+        // resultado (2 copias da mesma carta, ou efeitos que nao interagem
+        // entre si), entao nao vale a pena consultar o engine so pra isso;
+        // qualquer ordem valida desbloqueia o jogo. Retorna false se a lista
+        // sumiu entre a checagem e o clique (condicao de corrida rara).
+        public static bool ResolveActionChoiceOrder(GameplayLogicScript gls)
+        {
+            var choices = _fActionChoices.GetValue(gls) as List<GameObject>;
+            if (choices == null || choices.Count == 0) return false;
+            var escolhido = choices[0];
+            _mClickActionChoice.Invoke(gls, new object[] { escolhido });
+            Plugin.Log.LogInfo(
+                $"[Bot] ordem de ativacao (2+ gatilhos simultaneos): escolheu {CodeOf(escolhido)} "
+                + $"(1a de {choices.Count} opcoes)");
+            return true;
+        }
+
         public static GameObject? Attacker(GameplayLogicScript gls)
             => _fAttacker.GetValue(gls) as GameObject;
 

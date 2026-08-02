@@ -1,5 +1,175 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-02 (419) - Claude (sessao local) - fix aplicado no item 1 do bloco 418: score de give_don (stage/DON restado) agora considera sinergia com ataque na mesma janela
+
+Continuacao direta do bloco 418, item 1 (score fixo -10 do stage Moby
+Dick nunca considerava sinergia com ataque). Fix implementado e
+validado.
+
+**Fix**: `_score_activate_main` (decision_engine.py), branch
+`give_don`, ganhou 2 sinais novos SOMADOS ao `GIVE_DON_RESTED_BASE_SCORE`
+base (-10), usando a MESMA escolha de alvo que a execucao real faz
+(maior `effective_power` entre campo ativo + lider, evita "dois
+motores"):
+1. **Deficit contra o lider do oponente**: se o alvo escolhido pode
+   atacar este turno e `opp.leader.power - attack_time_power(alvo,
+   opp)` e um deficit positivo que o DON dado fecha (`<= count*1000`),
+   +130.
+2. **Desbloqueio de `don_requirement`**: se o alvo tem `when_attacking`
+   com `don_requirement` que o DON dado atinge pela primeira vez
+   (`don_atual < req <= don_atual + count`), +100 -- checado DIRETO no
+   `don_requirement`, NAO inferido pelo delta de `attack_time_power`,
+   porque esse delta so enxerga ganho de PODER (buff_power/
+   set_base_power) -- o caso real do Vista (OP16-011) e um `when_attacking`
+   de KO puro, sem ganho de poder nenhum, e so pontuou depois dessa
+   correcao (1a tentativa, usando so o delta de poder, ficou em -10.0
+   pro Vista -- corrigido no mesmo bloco antes de fechar).
+
+**Validado**: 3 testes novos
+(`test_score_give_don_considera_sinergia_com_ataque`) cobrindo os 2
+casos reais do usuario (lider fechando deficit de 1000 contra lider
+adversario de 6000 impresso -> score>-10; Vista desbloqueando o proprio
+`when_attacking` -> score>-10) + 1 caso de controle (ja vencendo
+confortavel, sem deficit nem don_requirement -> mantem -10, nao
+inventa bonus onde nao tem). `smoke_fast.py`/`smoke_test.py` 100% +
+`audit_replay.py --n 5 --seed 11` (5 partidas reais, 0 excecoes, 0
+anomalias).
+
+**Pendente, nao resolvido neste bloco** (itens 3/4/5 do bloco 418):
+lentidao de `/choose_target` (Luffy/Marco/Newgate, mesmo padrao dos 2
+Izou), Namule turno 2 (custo pagavel + alvo valido mas o KO nunca
+aconteceu, hipotese C# nao confirmada), comparacao do turno 3 contra o
+que o usuario sugeriu. Fix do plugin C# (2+ gatilhos simultaneos,
+bloco 418 parte 1) tambem continua SEM confirmacao ao vivo.
+
+**Decisao de push**: usuario pediu pra commitar/pushar tudo (fix do
+give_don deste bloco + o fix do C# do bloco 418, ja compilado mas sem
+confirmacao ao vivo) de forma que de pra continuar numa sessao remota
+pelo celular -- prioriza estado sincronizado no GitHub sobre esperar
+mais 1 rodada de teste ao vivo do fix do C#. Registrado explicitamente
+aqui pra quem pegar a proxima sessao (incluindo uma sessao remota sem
+acesso ao jogo real) saber que o fix do plugin ainda precisa de
+confirmacao ao vivo antes de considerar aquele item fechado.
+
+`server.py` **precisa reiniciar** por causa deste bloco (mudanca
+so em `decision_engine.py`, mesmo arquivo do bloco 418 que ja exigia
+restart -- reiniciar 1x cobre os dois).
+
+## 2026-08-02 (418) - Claude (sessao local) - fix ao vivo do plugin C#: 2+ gatilhos simultaneos + nova rodada de achados do usuario (5 pontos, 1 confirmado com causa raiz + fix pendente, 1 confirmado nao-bug, 1 padrao de lentidao recorrente, 1 em aberto)
+
+**Parte 1 -- fix do plugin C# (BotDriver.cs/BotExecutor.cs), ja testado
+compilando, AINDA NAO confirmado ao vivo pelo usuario**: usuario
+reportou que quando 2+ cartas disparam gatilho ao mesmo tempo (ex: 2
+copias de Izou reagindo ao mesmo ataque), o bot ficava parado --
+"os efeitos so ativaram porque eu mesmo cliquei na ordem de selecao".
+Investigado no decompilado oficial (`_referencias/simulador-oficial/`):
+o jogo enfileira TODAS as acoes simultaneas em `acaPending` (campo
+publico) e deixa `acaActive` (publico) VAZIO ate o jogador clicar numa
+das cartas destacadas em `lgo_ActionChoices` (privado) -- so DEPOIS
+desse clique e que o resto do driver (`HandlePendingAction` etc.) tem
+o que processar. Confirmado por grep: **zero linhas** no plugin
+tratavam esse estado especifico antes deste bloco.
+
+Fix: `BotExecutor.IsOfferingActionChoiceOrder`/`ResolveActionChoiceOrder`
+(reflexao via Harmony `AccessTools`, mesmo padrao ja usado pros outros
+metodos privados do jogo) -- detecta `acaActive==null` +
+`lgo_ActionChoices` populado + 1a opcao pertence ao PROPRIO bot (nunca
+clica na escolha do humano), clica a 1a opcao disponivel (cartas que
+disparam junto tem efeitos independentes, ordem raramente importa,
+nao vale gastar uma chamada ao engine so pra isso). `BotDriver.cs`
+ganhou o bloco novo ANTES do check de `acaActive != null` existente.
+**Compilado com `dotnet build` (0 erros)**, plugin recompilado e
+instalado via `setup_bepinex.ps1`. **NAO commitado ainda** -- por
+convencao do projeto, fix de plugin ao vivo so commita depois de
+confirmado funcionando numa partida real (o usuario ainda nao
+reportou o resultado desse teste especifico quando pediu pra seguir
+pra outros achados).
+
+**Parte 2 -- nova partida real** (Portgas.D.Ace-R x Crocodile-B,
+2026-08-02T09.41.46, 11 turnos, bot perdeu -- log e telemetria ja no
+banco). Usuario levantou 5 pontos, investigados um a um:
+
+1. **CONFIRMADO, causa raiz achada, fix AINDA NAO aplicado** -- turnos
+   2 e 4, o mesmo padrao: `activate` do stage Moby Dick (OP16-021,
+   "[Activate:Main] give up to 1 rested DON!! to your Leader/Character",
+   SEM custo nenhum) aparece como candidato em TODO turno mas com score
+   FIXO **-10.0** (`GIVE_DON_RESTED_BASE_SCORE`, decision_engine.py:166,
+   calibrado numa sessao anterior via self-play pra impedir Jinbe-B de
+   "super-ativar" a propria habilidade do lider -- achado por grep no
+   HANDOFF, nao documentado com numero de bloco nesta sessao). Esse -10
+   flat NUNCA considera sinergia com um ataque na mesma janela: turno 2,
+   dar o DON extra pro lider teria feito o ataque sair 8000 em vez de
+   7000; turno 4, dar o DON pro Vista (OP16-011) teria (a) subido o
+   poder do ataque E (b) desbloqueado o proprio `when_attacking` do
+   Vista ("KO ate 2 Characters power<=2000", `don_requirement: 1` --
+   SO dispara com >=1 DON anexado). Confirmado lendo `state_before` de
+   AMBOS os turnos: `activate OP16-021` sempre no candidatos com
+   score=-10.0 exato, nunca varia com o contexto.
+   **Fix proposto (nao aplicado ainda neste bloco)**: escore de
+   `give_don` precisa reconhecer quando o alvo (lider ou Character)
+   esta prestes a atacar neste MESMO turno e o DON extra (a) fecha um
+   deficit de poder real (mesmo raciocinio ja usado em
+   `don_needed_for_attack`/margem de seguranca de empate, blocos
+   414/415 de ontem) ou (b) desbloqueia um `don_requirement` de um
+   efeito `when_attacking` que ainda nao foi atingido -- nesses casos
+   o score deveria ficar POSITIVO, nao o -10 generico.
+
+2. **CONFIRMADO, NAO e bug** -- turno 5, usuario perguntou por que o
+   bot nao atacou com Vista. `state_before` mostra
+   `Vista.cantAttack: True` -- travado por efeito do oponente
+   (Crocodile) naquele turno especifico. Comportamento correto, nada a
+   corrigir.
+
+3. **CONFIRMADO, mesmo padrao de lentidao ja achado antes (2 Izou,
+   bloco anterior; Edward Newgate, bloco 416/417)** -- usuario reportou
+   Luffy (`on_opp_attack`), Marco (`on_ko`) e Newgate demorando muito
+   pra "decidir" se ativa. Medido: a DECISAO em si e instantanea
+   (2-4ms de latencia registrada por chamada) -- a demora real (dezenas
+   de segundos, as vezes 60-70s entre decisoes consecutivas de defesa)
+   acontece DEPOIS, na resolucao visual/selecao de alvo. Mesma causa
+   suspeita de sempre: `/choose_target` manda a lista INTEIRA de
+   candidatos (todas as zonas, 70+ itens) em vez de filtrar pros alvos
+   realmente validos do efeito especifico -- ainda nao confirmado line-
+   a-line no codigo (`order_target_candidates`/`CollectTargetCandidates`),
+   so a correlacao temporal. Proximo passo real: ler esses dois pontos
+   e ver se da pra filtrar a lista ANTES de mandar pro engine ordenar,
+   em vez de ordenar 70+ itens genericos toda vez.
+
+4. **EM ABERTO, NAO investigado a fundo** -- turno 2, o Namule
+   (OP16-010) foi jogado com custo `reveal_from_hand: count=1,
+   power_eq=8000` pagavel de verdade (Curiel, OP16-004, 8000 de poder,
+   estava na mao) e alvo valido pro proprio KO
+   (`ko: target=opp_character, power_lte=2000` -- Miss Valentine,
+   OP14-087, exatamente 2000 de poder, ja em campo do oponente). Ainda
+   assim, nenhuma linha de "reveal"/"KO" aparece no combat log real, e
+   NENHUMA decisao `defense`/`optional` (accept/decline) aparece no
+   JSONL pra esse ponto -- diferente do padrao esperado (deveria passar
+   por `resolve_optional_effect`, a mesma funcao corrigida no bloco
+   417 pra Edward Newgate). Hipotese nao confirmada: talvez
+   `reveal_from_hand` nao dispare a tela de "downside offer"
+   (Cancel/UseOnPlay) no lado C# (`IsOfferingDownside`/
+   `IsOptionalHandTrashCost` em BotExecutor.cs), pulando direto pra
+   selecao de alvo sem NUNCA consultar `resolve_optional_effect` --
+   nesse caso o fix do bloco 417 nunca seria exercitado nesse fluxo
+   especifico. Precisa ler o C# (BotExecutor.cs) e/ou reproduzir com
+   log mais detalhado antes de tentar qualquer fix.
+
+5. **Ponto do usuario sobre o turno 3** ("eu teria atacado com o Namule
+   na Miss Valentine, e teria descido o Luffy custo 4") -- lido como
+   sugestao do que o USUARIO faria diferente, nao necessariamente um
+   bug apontado. Nao investigado a fundo neste bloco (registrar aqui
+   pra nao perder, mas sem comparacao feita contra o que o bot
+   realmente escolheu no turno 3 -- ver `decision_summary` do log
+   09.41.46 se for revisitar).
+
+**Proximo passo combinado com o usuario**: comecar corrigindo o item 1
+(score do `give_don`/stage), depois commit+push cobrindo tudo (fix do
+C# da parte 1 incluso, ja que compilou e nao ha motivo pra segurar
+alem do teste ao vivo pendente -- decisao tomada considerando que o
+usuario pediu push "de forma que consiga seguir pela sessao remota do
+celular", ou seja, prioriza estado sincronizado no remoto sobre
+esperar mais 1 confirmacao ao vivo).
+
 ## 2026-08-02 (417) - Claude (sessao local) - bug real corrigido: bot aceitava custo reveal_from_hand impagavel, travava pedindo alvo que nao existe (achado do bloco 416, investigado e fechado)
 
 Continuacao direta do bloco 416 (achado registrado sem diagnostico

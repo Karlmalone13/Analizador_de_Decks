@@ -2,6 +2,48 @@
 
 **Última atualização:** 2 de agosto de 2026
 
+> 02/08/2026 (bloco 419): **Fix aplicado — item 1 do bloco 418**. Score
+> de `give_don` (stage Moby Dick/qualquer carta com essa ação) agora
+> soma +130 quando fecha um deficit real de poder contra o líder do
+> oponente, e +100 quando desbloqueia um `don_requirement` de
+> `when_attacking` que o alvo ainda não atingia (checado direto, não
+> pelo delta de poder — o caso real do Vista é KO puro, sem ganho de
+> poder, só pontuou depois de checar o `don_requirement` na marra). 3
+> testes novos, `smoke_fast.py`/`smoke_test.py` 100% +
+> `audit_replay.py --n 5` (0 anomalias). **Ainda pendentes do bloco
+> 418**: lentidão de `/choose_target` (item 3), Namule turno 2 não
+> investigado (item 4), comparação do turno 3 (item 5), e — importante
+> pra quem pegar a sessão remota — **o fix do plugin C# (2+ gatilhos
+> simultâneos) segue sem confirmação ao vivo**, só compilou limpo.
+> `server.py` precisa reiniciar. Ver bloco 419 do HANDOFF.
+
+> 02/08/2026 (bloco 418): **Fix do plugin C# pendente de teste ao
+> vivo** — 2+ cartas disparando gatilho ao mesmo tempo travavam o bot
+> (ex: 2 Izou) porque nenhum código tratava o estado
+> `acaActive==null`+`lgo_ActionChoices` populado (jogo esperando qual
+> ativa primeiro). Fix em `BotExecutor.cs`/`BotDriver.cs` via reflexão
+> Harmony, clica a 1ª opção (efeitos independentes, ordem não importa).
+> Compilado (0 erros), instalado, **ainda não confirmado numa partida
+> real**. **5 novos achados de uma partida real** (Ace x Crocodile,
+> 09.41.46): (1) **causa raiz confirmada, fix pendente** — `activate`
+> do stage Moby Dick (dar 1 DON restado) sempre pontua -10 fixo
+> (`GIVE_DON_RESTED_BASE_SCORE`), nunca considera sinergia com um
+> ataque na mesma janela (turno 2: teria dado 8000 em vez de 7000;
+> turno 4: teria desbloqueado o `when_attacking` do Vista,
+> `don_requirement:1`, "KO até 2 personagens ≤2000"). (2) turno 5 não
+> atacou com Vista — **confirmado não-bug**, `cantAttack:True` por
+> efeito do oponente. (3) Luffy/Marco/Newgate "demoram pra decidir" —
+> decisão é instantânea (2-4ms), a demora real é na resolução de alvo
+> depois — mesmo padrão de `/choose_target` sem filtro já suspeito
+> antes (2 Izou, Newgate), ainda não confirmado linha a linha. (4) **em
+> aberto** — Namule turno 2, custo pagável e alvo válido pro KO, mas
+> nem `defense`/`optional` decision aparece no log nem o KO aconteceu —
+> hipótese não confirmada: `reveal_from_hand` pode nem passar pela
+> tela de aceitar/recusar no C#, pulando o fix do bloco 417. (5) turno
+> 3, comentário do usuário sobre o que ele faria diferente — não
+> comparado contra a decisão real do bot ainda. Ver bloco 418 do
+> HANDOFF pro detalhe completo de cada item.
+
 > 02/08/2026 (bloco 417): **Bug real corrigido (fecha o achado do
 > bloco 416)** — bot ao vivo aceitava custos `reveal_from_hand`
 > (ex: Edward Newgate, "revele 2 Character 8000 power") sem checar
