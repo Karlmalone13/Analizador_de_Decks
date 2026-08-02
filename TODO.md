@@ -1,6 +1,20 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 1 de agosto de 2026
+**Última atualização:** 2 de agosto de 2026
+
+> 02/08/2026 (bloco 412): **Bug real corrigido** — `select_grant_rush`/
+> `select_grant_rush_character` (lider Ace OP16-001 e outras cartas da
+> mesma família) concediam Rush sem checar se o alvo realmente se
+> beneficiava. Achado ao vivo (usuário): Ace deu Rush pra Vista já
+> `rested` (tinha atacado no mesmo turno) e deployada 2 turnos antes —
+> ativação `once_per_turn` totalmente desperdiçada. Critério certo
+> (correção do usuário): Rush só importa pra quem `just_played` (entrou
+> em campo ESTE turno) — um Character antigo, mesmo ativo, já ataca
+> normal sem precisar de Rush. Fix em `_execute_step` (2 pontos) +
+> `_step_is_viable` (nova branch, antes caía no fallback "sempre
+> viável"). 3 testes existentes ajustados (não setavam `just_played`
+> explicitamente) + 1 teste novo reproduzindo o cenário exato do log.
+> `smoke_fast.py`/`smoke_test.py` 100%. Ver bloco 412 do HANDOFF.
 
 > 01/08/2026 (bloco 410): bug de conservação de DON — achado 1 bypass
 > real da função centralizada de remoção de campo (`OP06-033`, corrigido),

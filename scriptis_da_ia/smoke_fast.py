@@ -6190,6 +6190,11 @@ def test_select_grant_rush_6_cartas() -> None:
     luffy_char = mk("RSA", "Monkey.D.Luffy Fraco", power=3000)
     wb_fraco = mk("RSB", "WB Fraco", power=5000, sub_types="Whitebeard Pirates")
     wb_forte = mk("RSC", "WB Forte", power=9000, sub_types="Whitebeard Pirates")
+    # just_played=True: Rush so importa pra quem entrou em campo este turno
+    # (achado 02/08) -- os 3 simulam personagens recem-deployados, o
+    # diferenciador do teste e o filtro de nome/tipo/power, nao just_played.
+    for c in (luffy_char, wb_fraco, wb_forte):
+        c.just_played = True
     me = GameState(leader=ace, turn=3)
     me.field_chars = [luffy_char, wb_fraco, wb_forte]
     opp = GameState(leader=mk("RSOPP", "Opp", card_type="LEADER"), turn=3)
@@ -6203,6 +6208,10 @@ def test_select_grant_rush_6_cartas() -> None:
     sanji = real_card("PRB01-001")
     com_on_play = real_card("EB01-015")
     sem_efeito = real_card("EB01-005")
+    # just_played=True: mesmo achado 02/08, o diferenciador do teste e o
+    # filter_no_tag (presenca de [On Play]), nao just_played.
+    com_on_play.just_played = True
+    sem_efeito.just_played = True
     me2 = GameState(leader=sanji, turn=3)
     me2.field_chars = [com_on_play, sem_efeito]
     opp2 = GameState(leader=mk("SNOPP", "Opp", card_type="LEADER"), turn=3)
@@ -8192,6 +8201,9 @@ def test_lote_9_op15_020_a_op16_038() -> None:
     # concedido.
     risky = real_card("OP15-093")
     luffy_alvo = mk("LFY1", "Monkey.D.Luffy", cost=5, attribute="Strike")
+    # just_played=True: mesmo achado 02/08 (select_grant_rush_character
+    # tambem so concede a quem entrou em campo este turno).
+    luffy_alvo.just_played = True
     me_rb = GameState(leader=mk("RBLDR", "Lider", card_type="LEADER"))
     me_rb.field_chars = [risky, luffy_alvo]
     me_rb.trash = [mk(f"TR{i}", "Lixo", cost=1) for i in range(15)]
@@ -9730,6 +9742,7 @@ def main() -> int:
     test_block_critical_life_max_cost_calibrado_29_07()
     test_counter_valor_vida_scale_calibrado_29_07()
     test_block_critical_life_max_cost_estendido_vida_3_4_29_07()
+    test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -10188,6 +10201,62 @@ def test_parse_combat_log_rastreia_rested_active_do_oponente() -> None:
     snap_t6_you = turns[5]["snapshot"]["You"]
     check("rested: personagem recem-deployado fica rested; lider atacando nao afeta board_state",
           snap_t6_you["rested"] == {"ST34-002": 1})
+
+
+def test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno() -> None:
+    """
+    Achado real 02/08 (correcao do usuario, log Portgas.D.Ace-R x
+    Charlotte.Katakuri-P 2026-08-01): o lider Ace (OP16-001,
+    select_grant_rush) deu Rush pra Vista (OP16-011) DEPOIS dela ja ter
+    atacado e ficado rested no MESMO turno -- Vista tinha sido deployada 2
+    turnos antes, entao nem sequer era just_played. Ativacao once_per_turn
+    totalmente desperdicada, zero efeito real.
+
+    Rush so muda alguma coisa pra quem ENTROU EM CAMPO NESTE turno
+    (just_played) e ainda nao tem a permissao -- um Character de turno
+    anterior ja ataca normal sem Rush (nao e mais just_played), e um ja
+    rested nao ataca de novo de qualquer forma.
+    """
+    ace = real_card("OP16-001")
+    step = {"action": "select_grant_rush", "count": 1,
+            "filter_type": "whitebeard pirates", "power_gte": 8000,
+            "duration": "this_turn"}
+
+    # Caso real do log: Vista de turno anterior, ja rested por ter atacado
+    # este turno -- nao deveria nem aparecer como viavel/pontuavel.
+    vista_velha = real_card("OP16-011")
+    vista_velha.rested = True
+    vista_velha.just_played = False
+    me = GameState(leader=ace)
+    me.field_chars = [vista_velha]
+    opp = GameState(leader=mk("VOPP", "Opp", card_type="LEADER"))
+    ee = EffectExecutor(me, opp)
+    check("select_grant_rush: Vista rested de turno anterior -- NAO viavel",
+          ee._step_is_viable(step, ace) is False)
+    log = ee._execute_step(step, ace)
+    check("select_grant_rush: execucao nao concede Rush a Vista rested (no-op)",
+          not vista_velha.has_rush and not vista_velha.rush_this_turn and log == "")
+
+    # Mesma Vista, mas ATIVA (nao rested) e de turno anterior (nao
+    # just_played) -- tambem nao precisa de Rush, ja ataca normal.
+    vista_ativa_velha = real_card("OP16-011")
+    vista_ativa_velha.rested = False
+    vista_ativa_velha.just_played = False
+    me.field_chars = [vista_ativa_velha]
+    check("select_grant_rush: Vista ativa mas de turno anterior -- NAO viavel (nao precisa)",
+          ee._step_is_viable(step, ace) is False)
+
+    # Contraste: Vista recem-deployada este turno (just_played=True, ainda
+    # nao atacou) -- este e o unico caso que realmente se beneficia.
+    vista_nova = real_card("OP16-011")
+    vista_nova.rested = False
+    vista_nova.just_played = True
+    me.field_chars = [vista_nova]
+    check("select_grant_rush: Vista recem-deployada este turno -- viavel",
+          ee._step_is_viable(step, ace) is True)
+    log2 = ee._execute_step(step, ace)
+    check("select_grant_rush: execucao concede Rush a Vista recem-deployada",
+          vista_nova.rush_this_turn and "Vista" in log2)
 
 
 if __name__ == "__main__":

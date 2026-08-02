@@ -1,5 +1,75 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-02 (412) - Claude (sessao local) - bug real corrigido: select_grant_rush/select_grant_rush_character concedia Rush a personagens que nao se beneficiavam (nao entraram em campo este turno)
+
+Usuario observou, na mesma partida do bloco 411 (Portgas.D.Ace-R x
+Charlotte.Katakuri-P, 2026-08-01), que o lider bot "nao soube utilizar o
+efeito do lider no timing certo". Investigacao inicial errou o lider
+(analisei Katakuri, mas o BOT jogava de ACE -- usuario corrigiu). Refeita
+com o lider certo.
+
+**Lider correto**: Portgas.D.Ace (OP16-001), `activate_main` ->
+`select_grant_rush`: da Rush a um Character Whitebeard Pirates (ou Luffy
+nomeado) com power>=8000, once_per_turn, sem custo.
+
+**Achado real no combat log**: a habilidade foi usada 2x. A 1a vez
+(linha 426, mesmo turno do deploy de Vista) foi PERFEITA -- deploy,
+concede Rush, ataca no mesmo turno. A 2a vez (linha 606) foi
+DESPERDICADA POR INTEIRO: Vista tinha sido deployada 2 turnos antes E JA
+TINHA ATACADO neste mesmo turno (rested, linha 561) quando o bot
+ativou a habilidade e deu Rush pra ela de novo -- zero efeito, a
+ativacao once_per_turn (recurso limitado do turno) foi jogada fora.
+
+**Correcao do usuario, importante**: minha primeira hipotese usou
+`active_only` (so exclui rested) como filtro -- o usuario corrigiu:
+"rush só importa para cartas que entram no turno, se a carta já estava
+lá antes, o rush não faz efeito". Ou seja, o criterio certo NAO e
+"nao esta rested", e sim `just_played` (entrou em campo ESTE turno) --
+um Character de turno anterior, mesmo ATIVO, ja pode atacar normal sem
+Rush nenhum (nao tem mais "doenca de invocacao"), entao conceder Rush
+pra ele tambem e no-op, so que menos obvio que o caso rested.
+
+**Root cause**: `select_grant_rush`/`select_grant_rush_character`
+(`_execute_step`, decision_engine.py) escolhiam o alvo elegivel de MAIOR
+`board_value` sem NENHUM filtro de `just_played`/`rested` -- podiam
+escolher um alvo antigo so por ter board_value maior, mesmo com um alvo
+recem-deployado disponivel (ou, como no log real, escolher o UNICO alvo
+existente mesmo ele nao se beneficiando em nada).
+
+**Fix** (2 pontos de execucao + viabilidade, mesma logica pra nao
+duplicar):
+1. `_execute_step`, `select_grant_rush`: candidatos filtrados por
+   `c.just_played and not c.rested and not c.is_rush()` antes de
+   `choose_highest_board_value`.
+2. `_execute_step`, `select_grant_rush_character`: mesmo filtro, usando
+   `is_rush_character()`.
+3. `_step_is_viable`: nova branch pra `select_grant_rush`/
+   `select_grant_rush_character` -- so viavel se existir >=1 candidato
+   que passe no mesmo filtro `just_played`/`not rested`/`not is_rush*()`
+   (antes caia no fallback generico "acao desconhecida = sempre viavel",
+   entao a ativacao aparecia como score>0 mesmo sem NENHUM alvo real).
+
+**Regressao pega e corrigida**: 3 testes existentes em `smoke_fast.py`
+quebraram no 1o `active_only` (depois no criterio certo `just_played`)
+porque construiam Characters via `mk()` sem setar `just_played=True`
+explicitamente (default `False` no dataclass) -- os testes simulavam
+"personagens recem-deployados este turno" implicitamente, sem marcar o
+flag. Corrigido setando `just_played=True` nos 3 (o diferenciador de
+cada teste continua sendo nome/tipo/power ou `filter_no_tag`, nao
+`just_played`).
+
+**Teste novo**: `test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno`
+reproduz os 3 cenarios do log real (Vista rested de turno anterior ->
+nao viavel/no-op; Vista ativa mas de turno anterior -> tambem nao
+viavel, nao precisa; Vista recem-deployada este turno -> viavel,
+concede). `smoke_fast.py` + `smoke_test.py` 100%, sem outra regressao.
+
+**Nao investigado/pendente**: se vale a pena tambem revisar
+`grant_rush_character_type`/`gain_rush_character` (mesma familia, ja
+tinham uso de `just_played` em alguns pontos mas nao auditados a fundo
+neste bloco) -- nao mostraram sintoma no log real desta partida, deixado
+de fora do escopo por ora.
+
 ## 2026-08-02 (411) - Claude (sessao local) - bloco 384 ("bot so passando o turno") NAO reproduziu ao vivo com server.py reiniciado; achado NOVO: busca ao vivo bate no timeout de 3s 5x numa unica partida
 
 Pendencia direta do bloco 385 (nunca cumprida ate agora): rodar uma

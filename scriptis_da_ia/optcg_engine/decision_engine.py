@@ -2104,6 +2104,43 @@ class EffectExecutor:
         if a == 'return_don_until_match_opp':
             return me.don_on_field() > opp.don_on_field()
 
+        # select_grant_rush/select_grant_rush_character: so viavel se existir
+        # pelo menos 1 Character PROPRIO elegivel que ENTROU EM CAMPO NESTE
+        # TURNO (just_played) e ainda nao tem a permissao -- Rush so importa
+        # pra pular a "doenca de invocacao" de quem acabou de entrar; um
+        # Character de turno anterior ja ataca normal sem Rush, e um ja
+        # rested nao ataca de novo de qualquer forma (correcao do usuario
+        # 02/08: "rush só importa para cartas que entram no turno, se a
+        # carta já estava lá antes, o rush não faz efeito"; mesmo criterio
+        # do fix em _execute_step). Sem esta checagem, a ativacao aparecia
+        # como viavel/pontuada mesmo sem NENHUM alvo que se beneficiasse
+        # (achado real, lider Ace OP16-001 dando Rush pra Vista, deployada
+        # 2 turnos antes e ja rested por ter atacado este turno --
+        # ativacao once_per_turn desperdicada por inteiro).
+        if a in ('select_grant_rush', 'select_grant_rush_character'):
+            from optcg_engine.rules_facade import eligible_cards
+            is_rush_attr = 'is_rush' if a == 'select_grant_rush' else 'is_rush_character'
+
+            def _precisa_de_rush(c):
+                return c.just_played and not c.rested and not getattr(c, is_rush_attr)()
+
+            if a == 'select_grant_rush' and step.get('filter_name'):
+                pool_nome = eligible_cards(me.field_chars, name_or_code=step.get('filter_name', ''))
+                pool_tipo = eligible_cards(
+                    me.field_chars,
+                    filter_text=step.get('filter_type', ''),
+                    power_gte=step.get('power_gte'),
+                )
+                return any(_precisa_de_rush(c) for c in list(pool_nome) + list(pool_tipo))
+            candidates = eligible_cards(
+                me.field_chars,
+                cost_lte=step.get('cost_lte'),
+                filter_text=step.get('filter_type', ''),
+                name_or_code=step.get('filter_name', ''),
+                exclude_name=step.get('exclude', ''),
+            )
+            return any(_precisa_de_rush(c) for c in candidates)
+
         # Default: sem material a checar (buff próprio, keyword, add_don,
         # gain_life do deck, etc) = sempre viável.
         return True
@@ -8057,11 +8094,14 @@ class EffectExecutor:
         if action == 'select_grant_rush_character':
             from optcg_engine.rules_facade import choose_highest_board_value, eligible_cards
             count = step.get('count', 1)
-            candidates = eligible_cards(
+            # Mesmo achado do select_grant_rush (02/08) -- Rush: Character
+            # so importa pra quem entrou em campo NESTE turno (just_played)
+            # e ainda nao tem a permissao de nenhuma fonte.
+            candidates = [c for c in eligible_cards(
                 me.field_chars,
                 filter_text=step.get('filter_type', ''),
                 name_or_code=step.get('filter_name', ''),
-            )
+            ) if c.just_played and not c.rested and not c.is_rush_character()]
             granted = []
             for _ in range(min(count, len(candidates))):
                 target = choose_highest_board_value(candidates)
@@ -8119,24 +8159,41 @@ class EffectExecutor:
             # filter_no_tag (AND, nao OR).
             from optcg_engine.rules_facade import choose_highest_board_value, eligible_cards
             count = step.get('count', 1)
+            # Rush so importa pra quem ENTROU EM CAMPO NESTE TURNO
+            # (just_played) e ainda nao tem Rush por nenhuma fonte -- e o
+            # unico caso em que a "doenca de invocacao" existe (comprehensive
+            # rules: "This card can attack the turn it's played"). Um
+            # Character de turnos anteriores ja pode atacar normalmente sem
+            # Rush nenhum (nao e mais just_played), e um ja rested nao ataca
+            # de novo de qualquer forma -- os dois casos tornam a concessao
+            # um no-op. Achado real 02/08 (correcao do usuario: "rush só
+            # importa para cartas que entram no turno, se a carta já estava
+            # lá antes, o rush não faz efeito"; log Portgas.D.Ace-R x
+            # Charlotte.Katakuri-P, 2026-08-01): Ace deu Rush pra Vista
+            # (OP16-011), deployada 2 turnos antes e ja rested por ter
+            # atacado neste mesmo turno -- ativacao do lider (once_per_turn)
+            # totalmente desperdicada, nenhum efeito real.
+            def _precisa_de_rush(c):
+                return c.just_played and not c.rested and not c.is_rush()
             if step.get('filter_name'):
-                pool_nome = eligible_cards(me.field_chars, name_or_code=step.get('filter_name', ''))
-                pool_tipo = eligible_cards(
+                pool_nome = [c for c in eligible_cards(me.field_chars, name_or_code=step.get('filter_name', ''))
+                            if _precisa_de_rush(c)]
+                pool_tipo = [c for c in eligible_cards(
                     me.field_chars,
                     filter_text=step.get('filter_type', ''),
                     power_gte=step.get('power_gte'),
-                )
+                ) if _precisa_de_rush(c)]
                 candidates = list(pool_nome)
                 for c in pool_tipo:
                     if not contains_identity(candidates, c):
                         candidates.append(c)
             else:
-                candidates = eligible_cards(
+                candidates = [c for c in eligible_cards(
                     me.field_chars,
                     cost_lte=step.get('cost_lte'),
                     filter_text=step.get('filter_type', ''),
                     exclude_name=step.get('exclude', ''),
-                )
+                ) if _precisa_de_rush(c)]
                 filter_no_tag = step.get('filter_no_tag')
                 if filter_no_tag:
                     candidates = [
