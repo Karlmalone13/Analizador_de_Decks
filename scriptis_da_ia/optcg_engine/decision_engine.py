@@ -1176,7 +1176,14 @@ class GameState:
         return [c for c in self.field_chars if c.rested]
 
     def counter_in_hand(self) -> int:
-        return sum(effective_counter(c, self) for c in self.hand if effective_counter(c, self) > 0)
+        # Achado real 03/08 (usuario pediu pra investigar avaliar_carta/
+        # _trash_value, hot spots do profiling pos-fix do bloco 426):
+        # `effective_counter(c, self)` era chamado 2x por carta (uma vez no
+        # filtro `if`, outra na soma) -- profiling confirmou 94% das
+        # chamadas de effective_counter (115636/122388 numa partida real)
+        # vinham daqui. Calcula 1x por carta e reusa.
+        valores = [effective_counter(c, self) for c in self.hand]
+        return sum(v for v in valores if v > 0)
 
     def blockers_active(self) -> List[Card]:
         elegiveis = [c for c in self.field_chars
@@ -2087,9 +2094,28 @@ class EffectExecutor:
         self._once_used: set = set()  # (card_code, trigger)
         self._last_selected: Optional[Card] = None  # ver execute()
         self._is_my_turn = True  # ver execute() (contexto do [Your Turn][On Play])
+        self._decision_engine_cache: Optional['DecisionEngine'] = None
 
     def reset_once_per_turn(self):
         self._once_used.clear()
+
+    def _de(self) -> 'DecisionEngine':
+        """
+        DecisionEngine(self.me, self.opp) cacheado por instancia -- achado
+        real 03/08 (usuario pediu pra investigar hot spots de performance,
+        pos-fix do bloco 426): `_trash_value` criava um DecisionEngine NOVO
+        a CADA carta comparada em `_choose_to_trash` (`min(hand, key=self.
+        _trash_value)`), o que invalidava o cache de instancia de
+        `posture()`/`_lethal_search()` (que so ajuda DENTRO da vida de UMA
+        instancia) a cada carta -- profiling real mostrou 8102 recomputos
+        de `_posture_uncached` numa unica partida, a maioria vindo daqui.
+        Seguro reusar: `self.me`/`self.opp` sao fixos depois do construtor
+        (mesmo invariante ja documentado em DecisionEngine.posture()),
+        EffectExecutor tambem nunca reatribui os dois depois do __init__.
+        """
+        if self._decision_engine_cache is None:
+            self._decision_engine_cache = DecisionEngine(self.me, self.opp)
+        return self._decision_engine_cache
 
     def _reveal_from_hand_matches(self, cost: dict) -> list:
         """
@@ -2622,7 +2648,7 @@ class EffectExecutor:
                     continue
 
                 cost = step.get('cost', {})
-                if not DecisionEngine(self.me, self.opp).should_pay_removal_substitute(card, cost):
+                if not self._de().should_pay_removal_substitute(card, cost):
                     continue
                 log = self._pay_substitute_cost(cost, card)
                 if log is None:
@@ -2744,7 +2770,7 @@ class EffectExecutor:
                     continue
                 cost = step.get('cost', {})
                 cost_card = target if cost.get('action') == 'debuff_power_self' else source
-                if not DecisionEngine(self.me, self.opp).should_pay_removal_substitute(
+                if not self._de().should_pay_removal_substitute(
                         target, cost, payer=cost_card):
                     continue
                 log = self._pay_substitute_cost(cost, cost_card)
@@ -8612,7 +8638,7 @@ class EffectExecutor:
         if card is None:
             return 10**9
 
-        value = DecisionEngine(self.me, self.opp).avaliar_carta(card)
+        value = self._de().avaliar_carta(card)
         text = (card.card_text or '').lower()
         flags = get_card_flags(card.code)
 
@@ -8749,7 +8775,7 @@ class EffectExecutor:
 
         don_minus_count = sum(int(c.get('count', 1) or 1) for c in costs
                               if c.get('type') == 'don_minus')
-        de = DecisionEngine(self.me, self.opp)
+        de = self._de()
         if don_minus_count and de.has_valuable_don_return_trigger(don_minus_count):
             return None  # retorno de DON pode valer mais que o guard simples
 

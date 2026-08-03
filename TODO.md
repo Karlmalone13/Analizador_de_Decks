@@ -2,6 +2,24 @@
 
 **Última atualização:** 3 de agosto de 2026
 
+> 03/08/2026 (bloco 427): **Mais 2 achados de performance — -21,5% em
+> cima do bloco 426 (total -45,6% desde a linha de base original)**.
+> `GameState.counter_in_hand()` chamava `effective_counter(c, self)` 2x
+> por carta (filtro `if` + soma) — 94% de todas as chamadas de
+> `effective_counter` numa partida real vinham só daqui. E
+> `EffectExecutor._trash_value`/`should_pay_removal_substitute`/
+> `has_valuable_don_return_trigger` recriavam `DecisionEngine(self.me,
+> self.opp)` do zero em CADA carta comparada em `_choose_to_trash`,
+> zerando o cache de instância de `posture()`/`_lethal_search()` a cada
+> chamada. Fixes: computa `effective_counter` 1x e reusa; novo
+> `EffectExecutor._de()` cacheia o `DecisionEngine` por instância (mesmo
+> invariante de `posture()`: `me`/`opp` fixos depois do construtor).
+> Validado: `smoke_fast.py`/`smoke_test.py` 100% (2 testes novos),
+> `audit_replay.py --seed 11` e `--seed 23` 0 anomalias/0 exceções (sem
+> regressão do bloco 425), reprofiling da mesma partida 7.25s → 5.69s.
+> Pendente: medir ao vivo se isso já elimina os timeouts de 3s do bloco
+> 411. Ver bloco 427 do HANDOFF.
+
 > 03/08/2026 (bloco 426): **`full_deck_plan`/`full_deck_census`/
 > `full_deck_profile` nunca populados em `ReplayMatch` nem no lado
 > oculto (oponente) ao vivo — -30,7% no tempo de partida real medido

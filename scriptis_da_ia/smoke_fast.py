@@ -421,6 +421,67 @@ def test_populate_full_deck_knowledge_reusada_por_replaymatch_e_lado_oculto_03_0
           compute_game_plan(match.state_a) is match.state_a.full_deck_plan)
 
 
+def test_counter_in_hand_avalia_effective_counter_1x_por_carta_03_08() -> None:
+    """
+    Achado real 03/08 (usuario pediu pra investigar hot spots de
+    performance de avaliar_carta/_trash_value, apos o fix de cache do
+    bloco 426): `counter_in_hand` chamava `effective_counter(c, self)`
+    DUAS vezes por carta da mao (uma no filtro `if`, outra na soma) --
+    profiling real confirmou 94% de TODAS as chamadas de
+    effective_counter numa partida (115636/122388) vinham so daqui.
+    Corrigido pra computar 1x e reusar. Este teste trava o numero de
+    chamadas via monkeypatch, nao so o resultado (que ja era correto
+    antes -- o bug era so de performance, nao de valor).
+    """
+    import optcg_engine.decision_engine as de_mod
+
+    p = GameState(leader=mk("XCIH1", "Lider", card_type="LEADER"), turn=3)
+    p.hand = [
+        Card(data=CardData(code=f"XCIH{i}", name=f"Evento{i}", card_type="EVENT",
+                            color="Black", cost=2, counter=1000))
+        for i in range(3)
+    ]
+
+    original = de_mod.effective_counter
+    chamadas = {"n": 0}
+
+    def contador(card, gs):
+        chamadas["n"] += 1
+        return original(card, gs)
+
+    de_mod.effective_counter = contador
+    try:
+        total = p.counter_in_hand()
+    finally:
+        de_mod.effective_counter = original
+
+    check("counter_in_hand: resultado correto (soma dos counters da mao)",
+          total == 3000)
+    check("counter_in_hand: effective_counter chamado exatamente 1x por carta (nao 2x)",
+          chamadas["n"] == len(p.hand))
+
+
+def test_effect_executor_de_cacheado_por_instancia_03_08() -> None:
+    """
+    Achado real 03/08 (mesma investigacao do teste acima): `_trash_value`/
+    `should_pay_removal_substitute` criavam um `DecisionEngine(self.me,
+    self.opp)` NOVO a cada chamada -- `_choose_to_trash` (`min(hand,
+    key=self._trash_value)`) descartava o cache de instancia de
+    `posture()`/`_lethal_search()` a CADA carta comparada, mesmo com
+    `me`/`opp` identicos durante toda a comparacao. Fix: `EffectExecutor.
+    _de()` cacheia o DecisionEngine por instancia (mesmo invariante ja
+    usado por `posture()`: me/opp fixos depois do construtor). Este teste
+    trava a IDENTIDADE do objeto retornado, nao so que ele funciona.
+    """
+    p = GameState(leader=mk("XDEC1", "Lider", card_type="LEADER"), turn=3)
+    opp = GameState(leader=mk("XDEC2", "Opp", card_type="LEADER"), turn=3)
+    ee = EffectExecutor(p, opp)
+    de1 = ee._de()
+    de2 = ee._de()
+    check("EffectExecutor._de(): mesma instancia de DecisionEngine reusada (nao recriada)",
+          de1 is de2)
+
+
 def test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo() -> None:
     # Deadlock real (log 13.08.24): "adia ciclo do lider: atacar com chars
     # ativos antes de trashar" so olhava LEGALIDADE (character_can_attack_now),
@@ -9589,6 +9650,8 @@ def main() -> int:
     test_salvar_blocker_desconta_on_ko_e_ataques_restantes()
     test_full_deck_census_populado_offline_e_ao_vivo()
     test_populate_full_deck_knowledge_reusada_por_replaymatch_e_lado_oculto_03_08()
+    test_counter_in_hand_avalia_effective_counter_1x_por_carta_03_08()
+    test_effect_executor_de_cacheado_por_instancia_03_08()
     test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo()
     test_don_reservado_para_ativar_wincon_em_campo()
     test_opp_combo_threat_detects_five_elders_style_reanimation()

@@ -1,5 +1,74 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-03 (427) - Claude (sessao remota web) - 2 achados de performance a mais (counter_in_hand com dupla avaliacao, DecisionEngine recriado a cada carta em _trash_value): -21,5% em cima do fix do bloco 426 (total -45,6% desde a linha de base original)
+
+Continuação direta da sessão do bloco 426. Usuário perguntou se ainda
+dava pra melhorar mais e pediu pra investigar especificamente as duas
+cadeias mais caras do reprofiling pós-426: `avaliar_carta` (2.94s
+cumulativo) e `_trash_value`/`_choose_to_trash` (2.46s/2.05s
+cumulativo). Mesmo método: reprofiling com `cProfile` na mesma partida/
+seed, agora olhando `print_stats`/`print_callers` das funções
+específicas em vez do top-35 geral.
+
+**Achado 1 — `counter_in_hand()` avaliava `effective_counter` 2x por
+carta** (`decision_engine.py`, `GameState.counter_in_hand`):
+```python
+return sum(effective_counter(c, self) for c in self.hand if effective_counter(c, self) > 0)
+```
+`effective_counter(c, self)` aparece duas vezes na mesma linha — uma no
+filtro do `if`, outra na soma — recomputando o mesmo valor pra cada
+carta da mão. `stats.print_callers('effective_counter')` confirmou: 94%
+de TODAS as chamadas de `effective_counter` numa partida real
+(115636 de 122388) vinham só desta linha. Fix: computa a lista de
+valores 1x, filtra depois (`[effective_counter(c, self) for c in
+self.hand]` seguido de `sum(v for v in valores if v > 0)`).
+
+**Achado 2 — `_trash_value` recriava `DecisionEngine(self.me, self.opp)`
+do zero em CADA carta comparada** (`EffectExecutor._trash_value`,
+chamada via `_choose_to_trash`: `min(hand, key=self._trash_value)`).
+`posture()`/`_lethal_search()` (em `DecisionEngine`) já são cacheados
+POR INSTÂNCIA — mas esse cache só ajuda enquanto a instância vive.
+Criar uma instância nova a cada carta (mesmo padrão em mais 3 pontos:
+`should_pay_removal_substitute` x2, `has_valuable_don_return_trigger`)
+zera esse cache a cada chamada, mesmo com `self.me`/`self.opp`
+idênticos durante toda a comparação de `_choose_to_trash` — profiling
+mostrava 8102 recomputos de `_posture_uncached` numa única partida, boa
+parte vindo daqui. Fix: `EffectExecutor._de()` (novo método) cacheia o
+`DecisionEngine` por instância — seguro pelo MESMO invariante já
+documentado em `posture()` (`self.me`/`self.opp` fixos depois do
+construtor, nunca reatribuídos). Os 4 pontos que criavam
+`DecisionEngine(self.me, self.opp)` agora chamam `self._de()`.
+
+**Validação**:
+- `smoke_fast.py`/`smoke_test.py`: 100%, 0 falhas. 2 testes novos
+  (trava a CONTAGEM de chamadas de `effective_counter` via monkeypatch,
+  e a IDENTIDADE do `DecisionEngine` cacheado — não só o resultado, que
+  já era correto antes; os dois bugs eram só de performance).
+- `audit_replay.py --n 20 --seed 11` e `--seed 23`: 0 anomalias, 0
+  exceções nos dois (sem regressão do bug de DON do bloco 425). Pairing
+  de matchups mudou de novo sob os mesmos seeds — esperado (mesmo efeito
+  colateral já documentado nos blocos 377/425: mudar decisão real muda
+  quantos `random()` são consumidos por turno).
+- Reprofiling da MESMA partida real (mesmo seed, mesmo matchup):
+  **7.25s → 5.69s (-21,5%)**. `avaliar_carta` cumulativo: 2.94s → 1.97s.
+  `_trash_value`: 2.46s → 0.92s (-63%). `_choose_to_trash`: 2.05s →
+  0.71s (-65%). `effective_counter`: 122388 → 55859 chamadas (-54%).
+  **Total acumulado desde a linha de base original (antes de
+  QUALQUER fix desta sessão): 10.46s → 5.69s, -45,6%.**
+
+**Pendente**: ainda restam hot spots legítimos (não bugs de
+recomputação óbvios) — `avaliar_carta` (maior cumtime isolado, 1.97s),
+`_generate_and_score_actions` (3.7s cumtime, mas é o laço principal de
+scoring, trabalho esperado), `_evaluate_state_v2`/
+`_project_next_turn_best_action` (Turn Planner, ~1.2s cada). Não
+investigado se há mais recomputação evitável ali — próxima sessão que
+for atrás de mais performance deve perfilar essas cadeias
+especificamente antes de mexer, mesmo método usado aqui
+(`cProfile` + `print_callers` na função suspeita, não só o top-N geral).
+Também pendente: medir ao vivo (telemetria `decision_timeouts`) se os 2
+fixes de performance (426+427) já eliminam os timeouts de 3s do bloco
+411 ou só reduzem a frequência.
+
 ## 2026-08-03 (426) - Claude (sessao remota web) - full_deck_plan/census/profile nunca populado em ReplayMatch nem no lado oculto do oponente ao vivo: -30% no tempo de partida real (profiling), achado direto do pedido "acha que podemos melhorar esse Monte Carlo?"
 
 Continuação da mesma sessão do bloco 425 (bug de DON). Depois de fechar
