@@ -866,6 +866,65 @@ def character_needs_rush_character(c: 'Card') -> bool:
     return c.just_played and not c.rested and not c.is_rush_character()
 
 
+# Gatilhos que so resolvem DENTRO de uma janela de ataque/combate --
+# mesma lista usada por sim_bridge.order_target_candidates pra filtrar
+# quais blocos de efeito sao RELEVANTES pro contexto atual (achado real
+# 20/07: cartas dual-mode tinham os blocos de [Counter] e [Main]
+# misturados nas deteccoes de zona quando so um dos dois resolvia de
+# verdade). Fonte unica -- nao duplicar esta lista em outro arquivo.
+COMBAT_ONLY_TRIGGERS = {'counter', 'when_attacking', 'on_opp_attack'}
+
+_HAND_ONLY_COST_TYPES = {'trash_from_hand', 'reveal_from_hand', 'trash_any_from_hand'}
+_ORTHOGONAL_COST_TYPES = {'don_minus', 'rest_don', 'rest_self', 'trash_self'}
+_NO_ZONE_TARGETS = {'self', 'own_play_self', 'this_card'}
+_SAFE_NO_TARGET_ACTIONS = {
+    'draw', 'gain_life', 'add_don', 'set_don_active', 'immunity',
+    'set_active', 'buff_cost', 'debuff_cost', 'substitute_removal',
+    'activate_main_effect',
+}
+
+
+def actor_effect_is_hand_cost_only(actor_code: str, in_combat: bool) -> bool:
+    """True quando TODOS os blocos de efeito relevantes do ator (filtrados
+    por janela de combate, ver COMBAT_ONLY_TRIGGERS) so tem custo de mao
+    (trash/reveal_from_hand) e nenhum step pede selecao de campo/oponente
+    -- usado por sim_bridge.order_target_candidates pra saber quando e
+    seguro EXCLUIR (nao so deprioritizar) qualquer zona que nao seja
+    own_hand/DON dos candidatos de alvo ao vivo.
+
+    CONSERVADOR de proposito: exige 'target' EXPLICITO em self/own_play_
+    self/this_card, OU a acao estar na allowlist _SAFE_NO_TARGET_ACTIONS
+    -- NAO trata target=None generico como seguro (varias acoes como
+    play_from_trash/add_from_trash/look_top_deck/
+    place_opp_character_bottom_deck escondem selecao real de outra zona
+    -- trash/topo do deck/campo do oponente -- no NOME da acao, nao no
+    campo 'target'). Achado real 02/08 (telemetria, log
+    Portgas.D.Ace-R x Crocodile-B 2026-08-02T09.41.46): decisoes de alvo
+    pro Luffy OP16-015 (custo SO de mao) chegavam com 65-73 candidatos
+    (todas as zonas do jogo, porque CollectTargetCandidates/C# manda tudo
+    e essa distincao nunca existia) -- correlacionado com ~27-31s de
+    atraso por decisao (bot clicando candidato por candidato, cooldown de
+    0.8s cada, ate acertar a mao por sorte)."""
+    effects = get_card_effects(actor_code)
+    blocks = [v for k, v in effects.items()
+              if isinstance(v, dict)
+              and (k in COMBAT_ONLY_TRIGGERS) == in_combat]
+    tem_custo_mao = False
+    for block in blocks:
+        for cost in block.get('costs', []):
+            ctype = cost.get('type')
+            if ctype in _HAND_ONLY_COST_TYPES:
+                tem_custo_mao = True
+            elif ctype is not None and ctype not in _ORTHOGONAL_COST_TYPES:
+                return False
+        for s in block.get('steps', []):
+            tgt, act = s.get('target'), s.get('action')
+            seguro = tgt in _NO_ZONE_TARGETS or (tgt is None and act in _SAFE_NO_TARGET_ACTIONS)
+            if not seguro:
+                return False
+    return tem_custo_mao
+
+
 @dataclass
 class GameState:
     leader: Card

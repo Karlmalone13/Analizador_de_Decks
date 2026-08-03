@@ -2032,6 +2032,33 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if alvos_bf and all(t in _BATTLEFIELD_TARGETS for t in alvos_bf):
             actor_battlefield_only = True
 
+    # O ator SO tem custo de MAO (reveal/trash_from_hand) e nenhum step com
+    # target de campo/opp (ex: Luffy OP16-015 "[On Opponent's Attack] DON!!
+    # -0, Trash 1 [8000] card: this Leader's power becomes 7000" -- target=
+    # 'self', SEM selecao nenhuma no efeito em si, so na MAO pra pagar o
+    # custo)? Entao nenhuma outra zona (own_board/opp_board/trash/deck/
+    # leader/stage) e alvo valido -- exclusao DURA, mesmo padrao de
+    # actor_opp_only (linha ~2347), NAO so deprioridade. Sem isto,
+    # CollectTargetCandidates manda as 65-73 cartas de TODAS as zonas
+    # (deck+trash+mao+campo+lider+stage dos dois lados) porque a acao real
+    # (pagar custo de mao) nunca era reconhecida como "so mao" -- o bot
+    # clicava candidato por candidato (~0.8s de cooldown cada) ate acertar
+    # a mao por sorte, medido em ~27-31s de atraso por decisao (achado real
+    # via telemetria, log Portgas.D.Ace-R x Crocodile-B 2026-08-02T09.41.46,
+    # bloco HANDOFF 418 item 3 -- correlacao > causa confirmada agora).
+    # CONSERVADOR: so aplica quando NENHUM step do bloco pede selecao de
+    # campo/oponente (target fora de self/None) e NENHUM outro custo e de
+    # tipo desconhecido pra esta regra (ex: Edward Newgate tem
+    # reveal_from_hand JUNTO com debuff_power target=opp_character -- os
+    # DOIS custos ficam na mesma pergunta ao vivo, entao NAO pode excluir
+    # opp_board aqui, senao quebra o alvo real do efeito).
+    # Classificacao (allowlist conservadora, custo x zona) vive em
+    # decision_engine.py -- fonte unica, nao duplicar a regua aqui.
+    from optcg_engine.decision_engine import actor_effect_is_hand_cost_only
+    actor_hand_cost_only = (
+        bool(actor_code) and not (actor_opp_only or actor_battlefield_only)
+        and actor_effect_is_hand_cost_only(actor_code, attacker_power > 0))
+
     # O ator tem CUSTO "trash 1 Character seu OU 1 carta da mao"
     # (trash_char_or_hand — ex: draw do lider Imu)? Entao own_board e
     # own_hand competem pelo MESMO papel (o que doi menos perder) e a
@@ -2346,6 +2373,16 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     _OWN_TARGET_ZONES = {'own_hand', 'own_board', 'own_trash', 'own_leader', 'own_stage'}
     if actor_opp_only:
         candidates = [c for c in candidates if c.get('zone') not in _OWN_TARGET_ZONES]
+
+    # actor_hand_cost_only: SO own_hand (a selecao real) e as zonas de DON
+    # (custo DON!!-N ortogonal, sempre valido) sobrevivem -- mesma logica
+    # de exclusao dura do actor_opp_only acima, ver comentario na deteccao.
+    _HAND_COST_ALLOWED_ZONES = {
+        'own_hand', 'own_don', 'own_don_rested',
+        'own_don_attached', 'own_don_attached_used',
+    }
+    if actor_hand_cost_only:
+        candidates = [c for c in candidates if c.get('zone') in _HAND_COST_ALLOWED_ZONES]
 
     return [c.get('id') for c in sorted(candidates, key=sort_key)]
 

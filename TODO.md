@@ -2,6 +2,30 @@
 
 **Última atualização:** 2 de agosto de 2026
 
+> 02/08/2026 (bloco 423): **Bloco 418 fechado — causa raiz da lentidão
+> de `/choose_target` confirmada e corrigida**. Decisões de alvo pra
+> cartas com custo só de mão (ex: Luffy OP16-015) chegavam com 65-73
+> candidatos (todas as zonas do jogo), correlacionado com ~27-31s de
+> atraso por decisão — `order_target_candidates` nunca reconhecia "só
+> precisa de 1 carta da mão" pra excluir o resto. Fix: exclusão dura
+> (mesmo padrão do `actor_opp_only`) restrita a uma allowlist estrita de
+> ações comprovadamente auto-contidas — 34 cartas do banco se
+> beneficiam. 3 testes novos cobrindo o caso positivo (Luffy) e dois
+> casos negativos (Newgate com target de campo, GERMA 66 com
+> `play_from_trash` sem `target` explícito) pra não excluir zona que o
+> efeito realmente precisa. O outro ponto pendente (turno 3, "atacaria
+> Miss Valentine + jogaria Luffy") foi confirmado **não-bug** — a
+> escolha do bot (pressionar vida em vez de matar um corpo já "gasto")
+> é defensável. `smoke_fast.py`/`smoke_test.py` 100%.
+>
+> **Bissecção confirmou**: uma anomalia de DON nova em
+> `audit_replay.py --n 20 --seed 23` (Red/Blue Ace x Blue/Purple Sanji)
+> NÃO é regressão deste fix — reproduz idêntica no commit anterior
+> (`f239823`). O bug de conservação de DON pré-existente (antes só
+> documentado em Black Imu + Empty Throne) também afeta decks Red/Blue
+> Ace — escopo mais amplo do que se sabia, causa raiz ainda não
+> encontrada. Ver bloco 423 do HANDOFF.
+
 > 02/08/2026 (bloco 422): **`give_don` corrigido — dava o DON pro alvo
 > de maior PODER bruto, sem checar se ele podia usar o DON este turno**.
 > Izo (EB01-002, on_play "dá 1 DON restado") deu o próprio DON pra si

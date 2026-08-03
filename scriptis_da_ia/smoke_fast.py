@@ -9754,6 +9754,7 @@ def main() -> int:
     test_order_target_candidates_debuff_on_play_coordena_com_ataque_disponivel()
     test_give_don_prefere_lider_a_character_recem_jogado_sem_uso_hoje()
     test_order_target_candidates_give_don_prefere_lider_ao_vivo()
+    test_order_target_candidates_custo_so_de_mao_exclui_outras_zonas()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -10601,6 +10602,64 @@ def test_order_target_candidates_give_don_prefere_lider_ao_vivo() -> None:
     order = sim_bridge.order_target_candidates(me, opp, cands, actor_code="EB01-002")
     check("give_don ao vivo prioriza o lider ao inves do Character recem-jogado",
           bool(order) and order[0] == 1)
+
+
+def test_order_target_candidates_custo_so_de_mao_exclui_outras_zonas() -> None:
+    """
+    Achado real (telemetria, log Portgas.D.Ace-R x Crocodile-B
+    2026-08-02T09.41.46, bloco HANDOFF 418 item 3): decisoes de alvo pro
+    Luffy OP16-015 ("[On Opponent's Attack] Trash 1 [8000] card from
+    hand: this Leader's power becomes 7000", custo SO de mao, efeito
+    target=self sem selecao nenhuma) chegavam com 65-73 candidatos --
+    TODAS as zonas do jogo (deck+trash+mao+campo+lider+stage dos dois
+    lados), porque CollectTargetCandidates (C#) manda tudo e
+    order_target_candidates nunca reconhecia esse padrao como "so mao"
+    pra excluir o resto. O bot clicava candidato por candidato (~0.8s de
+    cooldown) ate acertar a mao por sorte -- correlacionado com ~27-31s
+    de atraso por decisao. Fix: exclusao DURA quando o ator so tem custo
+    de mao e nenhum step pede selecao de campo/oponente (mesmo padrao ja
+    usado por actor_opp_only).
+    """
+    me = GameState(leader=real_card("OP16-001"), don_available=1)
+    opp = GameState(leader=real_card("OP14-079"))
+    cands = [
+        {"id": 1, "zone": "own_hand", "code": "OP16-014"},
+        {"id": 2, "zone": "own_hand", "code": "OP16-017"},
+        {"id": 3, "zone": "own_board", "code": "OP16-011"},
+        {"id": 4, "zone": "opp_board", "code": "OP16-011"},
+        {"id": 5, "zone": "own_trash", "code": "OP16-005"},
+        {"id": 6, "zone": "top_deck", "code": "OP16-004"},
+        {"id": 7, "zone": "own_don", "code": ""},
+    ]
+    order = sim_bridge.order_target_candidates(
+        me, opp, cands, attacker_power=5000, actor_code="OP16-015")
+    check("custo so-de-mao (Luffy) exclui campo/trash/deck, mantem so mao+DON",
+          set(order) == {1, 2, 7})
+
+    # Newgate (OP16-003) tem custo de mao JUNTO com um target de campo
+    # (debuff_power target=opp_character) -- NAO pode excluir opp_board,
+    # senao quebra a selecao real do efeito.
+    cands_newgate = [
+        {"id": 1, "zone": "own_hand", "code": "OP16-014"},
+        {"id": 4, "zone": "opp_board", "code": "OP16-011"},
+        {"id": 5, "zone": "own_trash", "code": "OP16-005"},
+    ]
+    order2 = sim_bridge.order_target_candidates(
+        me, opp, cands_newgate, actor_code="OP16-003")
+    check("custo de mao JUNTO com target de campo (Newgate) NAO exclui opp_board",
+          4 in order2)
+
+    # GERMA 66 (EB02-039): custo de mao + play_from_trash (target=None no
+    # banco, mas a acao PRECISA de own_trash -- armadilha real que a
+    # allowlist estrita evita). NAO pode excluir own_trash.
+    cands_germa = [
+        {"id": 1, "zone": "own_hand", "code": "OP16-014"},
+        {"id": 5, "zone": "own_trash", "code": "OP16-005"},
+    ]
+    order3 = sim_bridge.order_target_candidates(
+        me, opp, cands_germa, actor_code="EB02-039")
+    check("custo de mao + play_from_trash (target=None, GERMA 66) NAO exclui own_trash",
+          5 in order3)
 
 
 def test_worth_paying_optional_costs_recusa_reveal_from_hand_impagavel() -> None:

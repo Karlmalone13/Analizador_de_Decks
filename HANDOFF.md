@@ -1,5 +1,68 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-02 (423) - Claude (sessao local) - bloco 418 fechado: causa raiz da lentidao de /choose_target confirmada e corrigida (item 3) + turno 3 confirmado nao-bug (item 5)
+
+Retomou as 2 pendencias abertas do bloco 418 (usuario pediu "faz o 5",
+que agrupava os 2 ultimos pontos nao fechados daquele bloco).
+
+**Item 3 (lentidao recorrente de `/choose_target`): causa raiz
+confirmada com dados, nao so correlacao.** Medi diretamente na
+telemetria do log `Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T09.41.46`
+(`decisions_2026-08-02T09.00.37.jsonl`): decisoes `kind=target` pro
+Luffy (OP16-015, `[On Opponent's Attack]` custo SO de mao "Trash 1
+[8000] card") chegavam com **65-73 candidatos** -- literalmente toda
+zona do jogo (deck+trash+mao+campo+lider+stage dos DOIS lados) --
+correlacionado DIRETAMENTE com **~27-31s de atraso** antes da proxima
+decisao real, dezenas de vezes ao longo da partida. `CollectTargetCandidates`
+(C#, `BotExecutor.cs`) manda tudo de proposito ("bot = olhos", nao
+decide nada); o gap era `order_target_candidates` (Python) nunca
+reconhecer "este efeito so precisa de 1 carta da mao" pra EXCLUIR o
+resto -- so deprioriza, nunca corta, pra esse padrao.
+
+**Fix**: nova deteccao `actor_hand_cost_only` (mesmo padrao de exclusao
+DURA ja usado por `actor_opp_only`) -- quando o ator so tem custo
+`trash_from_hand`/`reveal_from_hand`/`trash_any_from_hand` E nenhum step
+pede selecao de campo/oponente, restringe candidatos a `own_hand` +
+zonas de DON. **CONSERVADOR de proposito**: varri as 124 cartas do banco
+que bateriam nesse padrao usando so o campo `target`, e achei que
+`target=None` NAO significa "sem selecao" pra varias acoes
+(`play_from_trash`, `add_from_trash`, `look_top_deck`,
+`place_opp_character_bottom_deck`, `rest_opp_character`, etc. --
+escondem selecao de outra zona no NOME da acao, nao no campo `target`,
+mesma armadilha que motivou o `_implied_target` ja existente pra
+char/leader). Troquei pra uma ALLOWLIST estrita de acoes
+comprovadamente auto-contidas (`draw`, `gain_life`, `add_don`,
+`set_don_active`, `buff_power`/`set_base_power` com target=self,
+`immunity`, etc.) -- reduziu de 124 pra **34 cartas** realmente seguras,
+confirmado lendo o texto completo de 8 delas. 3 testes novos: Luffy
+(exclusao aplicada), Edward Newgate (custo de mao JUNTO com target de
+campo -- NAO pode excluir opp_board, senao quebra o efeito real) e
+GERMA 66/EB02-039 (`play_from_trash` com target=None -- prova que a
+allowlist estrita evita excluir own_trash por engano).
+
+**Item 5 (turno 3, "eu teria atacado a Miss Valentine e descido o
+Luffy custo 4"): investigado, confirmado NAO-BUG.** Miss Valentine
+(OP14-087) ja tinha resolvido seu unico efeito (busca on_play, sem
+ameaca futura) -- score baixo (80) pra mata-la esta correto, matar um
+corpo "gasto" vale pouco vs pressionar vida (368). Luffy custo 4 FOI
+considerado (score 45, `play OP16-015` aparece nos `scored_actions`)
+mas perdeu legitimamente pros ataques/DON, que valiam muito mais
+naquele momento -- nao ha play de Luffy melhor disponivel que o motor
+tenha ignorado. Escolha do bot defensavel.
+
+**Validado**: `smoke_fast.py`/`smoke_test.py` 100%. Fiz **bissecao**
+com `git stash` pra confirmar que uma anomalia de DON nova aparecendo
+em `audit_replay.py --n 20 --seed 23` (Match 11, Red/Blue Aceby x
+Blue/Purple Sanjiby, T10) NAO e regressao deste bloco -- rodei o MESMO
+seed no commit anterior (f239823, antes deste fix) e a anomalia
+reproduz IDENTICA (mesmos numeros exatos: available=1 rested=4 field=14
+soma=19). Confirma que o bug de conservacao de DON pre-existente
+(antes documentado so em Black Imu + Empty Throne, blocos 374/377/410/
+420/422) tambem afeta decks Red/Blue Ace -- escopo mais amplo do que
+se sabia, causa raiz ainda nao encontrada, mesma pendencia de sempre.
+
+`server.py` reiniciado apos o fix.
+
 ## 2026-08-02 (422) - Claude (sessao local) - give_don dava o DON pro alvo de MAIOR PODER bruto, sem checar se ele podia usar o DON este turno
 
 Usuario reportou nova partida (log `Portgas.D.Ace-R_x_Portgas.D.Ace-R_
