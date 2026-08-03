@@ -1,6 +1,19 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 2 de agosto de 2026
+**Última atualização:** 3 de agosto de 2026
+
+> 03/08/2026 (bloco 425): **Bug de conservação de DON — causa raiz
+> FINALMENTE encontrada e corrigida**, pendente desde 25/07 (blocos
+> 374/377/410/420/422/423). `OpponentModel.sample()` nunca fazia
+> `deepcopy` das cartas da amostra fictícia do oponente (apesar da
+> própria docstring prometer isso) — mutações durante simulação de
+> turno de resposta completo (`_play_turn_greedy`) vazavam pro deck
+> REAL do oponente (mesmos objetos Card, referência compartilhada).
+> Fix + achado colateral (`_SimDeck` bypassado por 5 pontos que usavam
+> `remove_by_identity` em vez de `.pop()`, corrigido com `pop_by_
+> identity`). Validado: `audit_replay.py --n 20 --seed 11` — 23
+> anomalias → 0, 0 exceções. `smoke_fast.py`/`smoke_test.py` 100%. Ver
+> seção própria abaixo e bloco 425 do HANDOFF.
 
 > 02/08/2026 (bloco 424): **Partida nova (Ace x Kid) confirma os 4
 > fixes de hoje funcionando ao vivo** (Izo deu DON pro líder, Rush foi
@@ -1383,44 +1396,53 @@ nova — mesmo padrão já usado em todo o resto do motor.
   o stream global) — qualquer baseline/resultado registrado ANTES deste
   commit não é mais comparável direto, precisa ser re-gerado.
 
-## 🔴 BUG DE CONSERVAÇÃO DE DON — 1 bypass real corrigido, causa raiz original AINDA NÃO encontrada (25/07/2026, bloco 374; reprodução ESTÁVEL, bloco 377; auditoria estática, bloco 410)
+## 🟢 BUG DE CONSERVAÇÃO DE DON — CAUSA RAIZ ENCONTRADA E CORRIGIDA (03/08/2026, bloco 425)
 
-Renomeado de "bug de DON do deck Ace" — reproduzido também numa partida
-SEM Ace (Sanji vs Imu), sempre do lado do Imu. Rastreado até a janela
-"Empty Throne (OP13-099) joga Five-Elders-type de graça" + "Five Elders
-(OP13-082) reanima em massa" — o excesso vira `don_attached` FANTASMA
-num personagem (não sobra solto no banco), valor visto batendo com o
-custo da própria carta numa das reproduções.
+Pendente desde 25/07/2026 (bloco 374), reproduzido estável no 377,
+auditoria estática esgotada no 410, escopo ampliado (Red/Blue Ace
+também) nos blocos 420/422/423 — nenhuma sessão anterior tinha rodado a
+instrumentação direta que o próprio bloco 374 já recomendava. Esta
+sessão rodou.
 
-**Descartado como causa** (~15 pontos lidos/auditados, matematicamente
-corretos): custo de jogar carta, `rest_don` (2 pontos), `trash_character`/
-`ko`, `play_from_trash`, `_attach_don_for_attack`/`don_needed_for_attack`,
-3 geradores de candidato `attach_don`, `Card`/`GameState.__deepcopy__`,
-`_project_next_turn_best_action` (já deepcopy desde bloco 362).
-
-- [x] **Achado real, mas NÃO é a causa raiz original (bloco 410)**:
-  `_pay_costs`, custo `trash_typed_hand_or_named_hand_field` (único uso
-  no banco: `OP06-033` Vander Decken IX) removia Character do campo via
-  `remove_by_identity` direto, sem passar pela função centralizada
-  `remove_character_from_field` — se a carta trashada tivesse DON!!
-  anexado, ficava fantasma nela. Corrigido. `OP06-033` não está no deck
-  Ace que reproduzia o leak original, então é achado colateral.
-- [ ] **Teste de reprodução pós-fix, inconclusivo (bloco 410)**:
-  `audit_replay.py --n 8 --seed 7` (mesma seed do bloco 377) → 0
-  anomalias. NÃO é prova — a seed 7 hoje produz pareamentos diferentes
-  dos originais (muita coisa mudou desde 25/07, desloca os sorteios).
-  Tentativa de `--n 30 --seed 7` pra amostra maior foi cancelada por
-  demora (~40-45min estimado) antes de terminar.
-- [ ] Raiz exata do leak original NÃO encontrada. Auditoria estática
-  (bloco 410) esgotou os pontos que dá pra achar sem rodar instrumentado
-  — combate, KO por efeito, substituições, `play_from_trash` já passam
-  todos pela função centralizada corretamente. Próximo passo real:
-  instrumentar direto no código (prints temporários em
-  `_execute_attack`/`_attach_don_for_attack`/`_execute_step`) no turno
-  exato em que Empty Throne + Five Elders roda — precisa achar uma seed
-  NOVA que reproduza esse matchup, já que a seed 7 não bate mais.
-- [x] **Pré-requisito resolvido (bloco 377)**: motor agora reprodutível
-  (fixado o non-determinismo de `OpponentModel.sample`).
+- [x] **Causa raiz real**: `OpponentModel.sample()` (`opponent_model.py`)
+  nunca fazia `deepcopy` das cartas da amostra fictícia do oponente,
+  apesar da própria docstring prometer isso ("objetos distintos... não
+  compartilhadas entre chamadas") — retornava referências RASAS pro
+  `full_decklist`, que compartilha os MESMOS objetos Card do deck REAL do
+  oponente. Qualquer mutação numa simulação de turno de resposta completo
+  (`_play_turn_greedy`, usado por `USE_OPPONENT_RESPONSE_SEARCH`) vazava
+  permanentemente pro deck real — só virava "DON!! fantasma" visível
+  turnos depois, quando a MESMA carta física fosse comprada/jogada de
+  verdade. Fix: `sample()` agora faz `deepcopy` de cada carta retornada.
+- [x] **Achado colateral real (mas insuficiente sozinho)**: `_SimDeck`
+  (clona o deck sem deepcopiar tudo, usado por `_simulate_sequence_once`)
+  só protegia remoção via `.pop()` — 5 pontos (`add_to_hand`-busca,
+  `trash_from_looked_deck`, `search_deck`, `play_from_deck`, escolha de
+  Stage inicial) removiam via `remove_by_identity`/`del`, bypassando essa
+  proteção. Corrigido com `pop_by_identity` (nova função), mas sozinho
+  NÃO resolveu o caso observado (Empty Throne joga do hand, não do
+  deck) — mantido por ser o mesmo padrão de risco, defesa em profundidade.
+- [x] **Causa raiz #3, a mais impactante das 3**: mesmo com os 2 fixes
+  acima, `audit_replay.py --n 20 --seed 23` ainda dava 10 anomalias.
+  `_simulate_sequence_once` fazia `opp2.deck = list(_opp_deck)` (cópia
+  RASA, comentário dizia "opp não age durante a simulação" — falso
+  sempre que `USE_OPPONENT_RESPONSE_SEARCH=True`, o default: `_play_
+  turn_greedy(opp2, p2)` roda o turno de resposta INTEIRO do oponente,
+  incluindo `draw_phase` que faz `opp2.deck.pop()` sem proteção nenhuma
+  numa lista comum, vazando o objeto real do deck do oponente). Fix:
+  `opp2.deck = _SimDeck(_opp_deck)`, mesmo wrapper já usado em `p2.deck`.
+- [x] **Validado (com os 3 fixes juntos)**: `audit_replay.py --n 20
+  --seed 11` (mesma seed estável desde o bloco 377/422): **23 → 0
+  anomalias**. `audit_replay.py --n 20 --seed 23` (a seed que expôs a
+  causa #3): **10 → 0 anomalias**. 0 exceções nas duas, 40 partidas
+  reais no total. `smoke_fast.py`/`smoke_test.py` 100% (teste novo
+  isolando `_SimDeck` real).
+- [x] **Por que a auditoria estática nunca achou**: a mutação em si
+  (`attach_don`, `play_card`, `draw_phase`, etc.) está correta — o bug é
+  o objeto manipulado ser compartilhado com o estado real, não a lógica
+  de mutação. Só apareceu rastreando `id()` de cartas específicas turno
+  a turno via instrumentação direta, e precisou de 2 seeds diferentes
+  pra expor as 3 causas (a 1ª seed só bateu na causa #2).
 
 ## 🟢 REGRA "SEM FUNÇÃO DUPLICADA" registrada + 2 duplicatas reais corrigidas (25/07/2026, bloco 373)
 

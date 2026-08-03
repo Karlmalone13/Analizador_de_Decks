@@ -29,6 +29,7 @@ cópia física do baralho) — ver `OpponentModel.sample()`.
 """
 import random
 from collections import Counter
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -135,8 +136,29 @@ class OpponentModel:
         n_slots = n_hand_unknown + n_life_unknown
         sorteadas = pool[:n_slots]
 
-        hand_sample = list(known_hand) + sorteadas[:n_hand_unknown]
-        life_sample = list(known_life) + sorteadas[n_hand_unknown:n_hand_unknown + n_life_unknown]
+        # deepcopy em CADA carta da amostra (achado real 03/08, causa raiz
+        # do bug de conservacao de DON pendente desde os blocos 374/377/
+        # 410/420/422/423): a docstring deste metodo ja PROMETIA "objetos
+        # distintos por amostra... nao compartilhadas entre chamadas", mas
+        # a implementacao nunca copiava nada -- `pool`/`sorteadas` sao só
+        # referencias RASAS (list slice/append) pras MESMAS instancias de
+        # `self.full_decklist`, que por sua vez e `list(gs.deck)` (mesma
+        # rasa) do deck REAL construido 1x no setup (OPTCGMatch.__init__/
+        # ReplayMatch.__init__). Qualquer simulacao que MUTE uma carta da
+        # amostra (attach_don, just_played, rested, power_buff -- todos
+        # legitimos dentro de uma linha simulada de turno completo via
+        # _play_turn_greedy, nao so leitura de power/counter como o
+        # comentario antigo em _simulate_sequence_once assumia) vazava
+        # essa mutacao pro objeto REAL do deck, permanentemente -- so
+        # aparecia como "DON!! fantasma" turnos depois, quando a MESMA
+        # carta fosse comprada/jogada de verdade. Confirmado via
+        # instrumentacao direta: St. Ethanbaron V. Nusjuro corrompida
+        # (don_attached=1) ainda no deck/mao REAL do Imu no turno 3,
+        # antes de qualquer ativacao real de Empty Throne -- so podia ter
+        # vindo de uma amostra Monte Carlo simulada (nunca aplicada de
+        # verdade) que jogou essa carta hipoteticamente.
+        hand_sample = [deepcopy(c) for c in known_hand] + [deepcopy(c) for c in sorteadas[:n_hand_unknown]]
+        life_sample = [deepcopy(c) for c in known_life] + [deepcopy(c) for c in sorteadas[n_hand_unknown:n_hand_unknown + n_life_unknown]]
 
         return hand_sample, life_sample
 

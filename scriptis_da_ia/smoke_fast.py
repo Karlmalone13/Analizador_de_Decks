@@ -9735,6 +9735,7 @@ def main() -> int:
     test_exclude_failed_actions_evita_loop_travado_em_activate()
     test_self_play_info_hidden_mascara_counter_e_deck_do_oponente()
     test_check_invariants_unifica_auditoria_no_decision_log()
+    test_pop_by_identity_evita_vazamento_de_don_via_simdeck_03_08()
     test_sim_bridge_delega_escolha_de_alvo_pro_motor_unico()
     test_opponent_model_sample_respeita_random_seed_global()
     test_parse_combat_log_rastreia_rested_active_do_oponente()
@@ -9858,6 +9859,66 @@ def test_check_invariants_unifica_auditoria_no_decision_log() -> None:
     check("decision_log aceita kind='invariant_violation' misturado as outras entradas",
           any(e.get("kind") == "invariant_violation" for e in m.decision_log)
           and len(m.decision_log) >= 2)
+
+
+def test_pop_by_identity_evita_vazamento_de_don_via_simdeck_03_08() -> None:
+    """
+    Achado 03/08 -- causa raiz FINALMENTE encontrada do bug de conservacao
+    de DON que persistia desde os blocos 374/377/410/420/422/423 (auditoria
+    estatica extensa nunca achou, precisou de instrumentacao direta).
+
+    _SimDeck (usado por _simulate_sequence_once pra clonar o deck sem
+    deepcopiar ~82 Cards a cada simulacao do Turn Planner) so protege
+    contra corrupcao quando a remocao usa `.pop()` (unico metodo
+    sobrescrito, faz deepcopy sob demanda). `play_from_deck`/`search_deck`/
+    o `add_to_hand` de busca/`trash_from_looked_deck` removiam do deck via
+    `remove_by_identity` (usa `del lst[i]`, NUNCA `.pop()`) -- durante
+    simulacao, isso retornava/reusava o objeto Card ORIGINAL (mesma
+    referencia do deck REAL, ja que _SimDeck so envolve a LISTA — os
+    elementos dentro sao as MESMAS instancias ate serem retiradas via
+    `.pop()`), que ia pro campo/mao SIMULADOS mas continuava sendo, por
+    identidade, o MESMO objeto do deck real -- qualquer DON!! anexado a
+    ele numa linha hipotetica (nunca realmente jogada) vazava
+    permanentemente pro estado real, so aparecendo como "DON fantasma"
+    turnos depois, quando essa MESMA carta fosse comprada/jogada de
+    verdade. Confirmado via instrumentacao direta (self-play real,
+    `audit_replay.py --n 20 --seed 11`, 23 anomalias -- St. Ethanbaron V.
+    Nusjuro corrompida AINDA NO DECK real no turno 3, antes de qualquer
+    ativacao real de Empty Throne).
+
+    Este teste reproduz o mecanismo direto (sem partida completa nem
+    Monte Carlo real): monta um `_SimDeck` compartilhando o MESMO objeto
+    Card de uma lista "deck real", executa `play_from_deck` (a acao que
+    primeiro expos o bug), anexa DON ao personagem resultante (simulando
+    uma linha hipotetica que nunca e aplicada de verdade), e confirma que
+    o objeto original (que ainda representaria essa carta no deck REAL)
+    NAO foi contaminado.
+    """
+    from optcg_engine.decision_engine import _SimDeck
+
+    original_char = mk("XSIMDK1", "AlvoDeck", cost=3, power=5000)
+    deck_real = [original_char]
+
+    p = GameState(leader=mk("XSIMLD1", "Lider", card_type="LEADER"), turn=3)
+    p.deck = _SimDeck(deck_real)  # mesmo mecanismo usado por _simulate_sequence_once
+    opp = GameState(leader=mk("XSIMOP1", "Opp", card_type="LEADER"), turn=3)
+
+    ee = EffectExecutor(p, opp)
+    step = {"action": "play_from_deck", "count": 1, "cost_lte": 99}
+    src = mk("XSIMSRC1", "Fonte", card_type="EVENT")
+    ee._execute_step(step, src)
+
+    check("play_from_deck (via _SimDeck): personagem entrou em campo",
+          len(p.field_chars) == 1)
+    if p.field_chars:
+        jogado = p.field_chars[0]
+        check("play_from_deck (via _SimDeck): objeto jogado NAO e o mesmo do deck 'real' "
+              "original (pop_by_identity deep-copiou, evitando aliasing)",
+              jogado is not original_char)
+        jogado.don_attached = 3  # simula DON anexado numa linha hipotetica
+        check("play_from_deck (via _SimDeck): mutar don_attached do jogado NAO contamina "
+              "o objeto original que ainda representa a carta no deck REAL (bug pre-fix: vazava)",
+              original_char.don_attached == 0)
 
 
 def test_sim_bridge_delega_escolha_de_alvo_pro_motor_unico() -> None:

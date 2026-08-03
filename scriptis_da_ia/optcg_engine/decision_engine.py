@@ -1963,6 +1963,43 @@ def contains_identity(lst: list, obj) -> bool:
     return any(x is obj for x in lst)
 
 
+def pop_by_identity(lst: list, obj: 'Card') -> 'Card':
+    """
+    Remove `obj` de `lst` por identidade e RETORNA o objeto efetivamente
+    removido -- via `lst.pop(idx)`, nunca `del lst[idx]`/`remove_by_identity`.
+
+    Achado real 03/08 (bug de conservacao de DON, blocos 374/377/410/420/
+    422/423 -- causa raiz nunca encontrada apesar de auditoria extensa):
+    `_SimDeck` (linha ~261, usado por `_simulate_sequence_once` pra clonar
+    o deck sem deepcopiar ~82 Cards) so protege contra corrupcao quando a
+    remocao usa `.pop()` (unico metodo sobrescrito, faz deepcopy sob
+    demanda). `play_from_deck`/`search_deck`/o `add_to_hand` de busca/
+    `trash_from_looked_deck` removiam do deck via `remove_by_identity`
+    (usa `del lst[i]`, NUNCA `.pop()`) -- durante simulacao do Turn
+    Planner, isso retornava/reusava o objeto Card ORIGINAL (mesma
+    referencia do deck REAL, ja que `_SimDeck` so envolve a LISTA, os
+    elementos dentro sao as MESMAS instancias ate serem retiradas via
+    `.pop()`), que entao ia pro campo/mao SIMULADOS mas TAMBEM continuava
+    sendo, por identidade, o mesmo objeto do deck real -- qualquer DON!!
+    anexado a ele numa linha hipotetica (nunca realmente jogada) vazava
+    permanentemente pro estado real, aparecendo como "DON fantasma" so
+    quando essa MESMA carta fosse comprada/jogada de verdade turnos
+    depois. Confirmado via instrumentacao direta (script descartavel):
+    `St. Ethanbaron V. Nusjuro` corrompida (`don_attached=1`) AINDA NO
+    DECK real no turno 3, antes de qualquer ativacao real de Empty
+    Throne -- so podia ter vindo de uma simulacao (Monte Carlo) que
+    jogou essa carta hipoteticamente e nunca desfez a mutacao.
+
+    Fonte unica: qualquer remocao de `me.deck`/`p.deck`/`opp.deck` que
+    precise do objeto removido (pra por em field_chars/hand/trash) deve
+    usar esta funcao, nunca `remove_by_identity` direto no deck.
+    """
+    for i, x in enumerate(lst):
+        if x is obj:
+            return lst.pop(i)
+    raise ValueError('pop_by_identity: objeto nao encontrado na lista')
+
+
 def remove_character_from_field(owner: 'GameState', card: 'Card', destino: str = 'trash') -> None:
     """
     Remove `card` de owner.field_chars e move pro destino indicado:
@@ -5214,7 +5251,11 @@ class EffectExecutor:
                     remove_by_identity(filtered, best)
 
             for c in taken:
-                remove_by_identity(me.deck, c)
+                # pop_by_identity (nao remove_by_identity) -- ver docstring
+                # dela: respeita o deepcopy-on-pop de _SimDeck durante
+                # simulacao do Turn Planner, evita vazar DON!! fantasma
+                # pro objeto real do deck (achado 03/08).
+                c = pop_by_identity(me.deck, c)
                 me.hand.append(c)
                 if step.get('revealed_to_opponent') is True:
                     me.revealed_to_opponent.add(id(c))
@@ -5254,7 +5295,9 @@ class EffectExecutor:
             for _ in range(min(count, len(candidates))):
                 worst = min(candidates, key=lambda c: c.board_value())
                 remove_by_identity(candidates, worst)
-                remove_by_identity(me.deck, worst)
+                # pop_by_identity, nao remove_by_identity -- ver docstring
+                # (respeita deepcopy-on-pop de _SimDeck, achado 03/08).
+                worst = pop_by_identity(me.deck, worst)
                 me.trash.append(worst)
                 trashed.append(worst.name[:15])
             names = ', '.join(trashed)
@@ -5276,7 +5319,9 @@ class EffectExecutor:
             for _ in range(min(count, len(candidates))):
                 best = max(candidates, key=self._trash_value)
                 remove_by_identity(candidates, best)
-                remove_by_identity(me.deck, best)
+                # pop_by_identity, nao remove_by_identity -- ver docstring
+                # (respeita deepcopy-on-pop de _SimDeck, achado 03/08).
+                best = pop_by_identity(me.deck, best)
                 me.hand.append(best)
                 if step.get('revealed_to_opponent'):
                     me.revealed_to_opponent.add(id(best))
@@ -7215,7 +7260,19 @@ class EffectExecutor:
             played = []
             for _ in range(min(count, len(candidates))):
                 best = max(candidates, key=lambda x: x.board_value())
-                remove_by_identity(me.deck, best)
+                remove_by_identity(candidates, best)
+                # pop_by_identity, nao remove_by_identity -- ver docstring
+                # (respeita deepcopy-on-pop de _SimDeck durante simulacao
+                # do Turn Planner; achado 03/08, causa raiz do bug de
+                # conservacao de DON que persistia desde os blocos 374/377/
+                # 410/420/422/423 -- Character jogado do deck via ESTA
+                # acao entrava em campo com a MESMA referencia do deck
+                # real, vazando DON!! anexado numa linha simulada/nunca
+                # jogada de verdade pro estado real). Remove de `candidates`
+                # ANTES (por identidade do objeto ORIGINAL) -- depois do
+                # pop, `best` vira outra instancia (a copia), que nao
+                # bateria mais no `candidates` original.
+                best = pop_by_identity(me.deck, best)
                 if len(me.field_chars) >= 5:
                     worst = min(me.field_chars, key=lambda x: x.board_value())
                     remove_character_from_field(me, worst, 'trash')
@@ -7223,7 +7280,6 @@ class EffectExecutor:
                 apply_conditional_keyword_passives(me, opp)
                 best.just_played = not (best.has_rush or best.rush_this_turn or best.is_rush_character())
                 best.rush_character_only_this_turn = best.is_rush_character() and not best.is_rush()
-                remove_by_identity(candidates, best)
                 played.append(best.name[:15])
                 # Grava pra um step POSTERIOR no mesmo bloco poder alvejar
                 # "that Character" (ex: OP12-058 Whitebeard, "gains [Rush]"
@@ -12014,7 +12070,11 @@ class OPTCGMatch:
                 usar_barato = True
 
         best = barato if usar_barato else caro
-        remove_by_identity(p.deck, best)
+        # pop_by_identity, nao remove_by_identity -- consistencia defensiva
+        # com o resto das remocoes de .deck (ver docstring de
+        # pop_by_identity, achado 03/08) -- este ponto so roda 1x no setup
+        # real, mas mesma fonte unica pra qualquer remocao de zona deck.
+        best = pop_by_identity(p.deck, best)
         p.field_stage = best
 
     @staticmethod
@@ -14595,7 +14655,22 @@ class OPTCGMatch:
         p.deck = _p_deck
         opp.deck = _opp_deck
         p2.deck = _SimDeck(_p_deck)   # lazy copy-on-pop (ver _SimDeck no topo)
-        opp2.deck = list(_opp_deck)   # lista rasa -- opp nao age, sem risco
+        # _SimDeck (nao list() rasa) -- achado real 03/08, causa raiz #3 do
+        # mesmo bug de conservacao de DON (blocos 374/377/410/420/422/423,
+        # ver bloco 425): o comentario antigo aqui ("opp nao age durante a
+        # simulacao do turno ativo, entao nenhuma carta sai do deck dele")
+        # e FALSO sempre que USE_OPPONENT_RESPONSE_SEARCH=True (default) --
+        # `_play_turn_greedy(opp2, p2)`, chamado logo abaixo neste mesmo
+        # metodo, roda o TURNO INTEIRO de resposta do oponente (refresh_
+        # phase/draw_phase/don_phase/main_phase greedy), incluindo
+        # `opp2.deck.pop()` de verdade no draw_phase. Com `list(_opp_deck)`
+        # (lista rasa comum), esse `.pop()` retornava a MESMA referencia de
+        # Card do deck REAL do oponente, sem NENHUMA protecao de deepcopy
+        # -- qualquer mutacao durante o turno guloso simulado (jogar carta,
+        # anexar DON, etc.) vazava permanentemente pro deck real. Mesmo
+        # padrao ja resolvido pra p2.deck (_SimDeck), so faltava aplicar
+        # aqui tambem.
+        opp2.deck = _SimDeck(_opp_deck)
 
         if amostra is not None:
             # Substitui mão e vida REAIS de opp2 pela amostra Monte Carlo

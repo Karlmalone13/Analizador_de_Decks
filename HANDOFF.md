@@ -1,5 +1,129 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-03 (425) - Claude (sessao remota web) - CAUSA RAIZ FINALMENTE ENCONTRADA E CORRIGIDA: bug de conservacao de DON pendente desde os blocos 374/377/410/420/422/423
+
+Usuário pediu pra investigar "a questão dos DONs" (o item mais crítico do
+levantamento de pendências pedido na mensagem anterior). Auditoria estática
+já tinha esgotado o que dava pra achar sem rodar instrumentado (registrado
+explicitamente no bloco 410) — desta vez fiz a instrumentação direta
+recomendada, seguindo o pedido do usuário até o fim.
+
+**Metodologia**: reproduzi a EXATA seed/matchup que já tinha mostrado o bug
+de forma estável (`audit_replay.py --n 20 --seed 11`, 23 anomalias,
+`Black Imu + Empty Throne` — mesma seed do bloco 377/422). Escrevi um
+script de instrumentação (descartável, scratchpad) que replica a mesma
+sequência de partidas (mesmo seed, mesma ordem de `random.sample` pras
+decks) e hookea `_apply_action` pra computar o invariante de DON
+(`don_available + don_rested + field_don` vs `10 - don_deck`) **após CADA
+ação aplicada**, não só 1x por turno como `_check_invariants` — isso
+identificou a ação EXATA (não só o turno) onde o total virava 11 em vez de
+10 pela primeira vez.
+
+**Achado 1 (real, mas insuficiente sozinho)**: `_SimDeck` (usado por
+`_simulate_sequence_once` pra clonar o deck sem deepcopiar ~82 Cards a
+cada simulação do Turn Planner) só protege contra corrupção quando a
+remoção usa `.pop()` (único método sobrescrito, faz deepcopy sob
+demanda) — mas 5 pontos do motor removiam do deck via `remove_by_identity`
+(usa `del lst[i]`, NUNCA `.pop()`): a busca de `add_to_hand`, `trash_
+from_looked_deck`, `search_deck`, `play_from_deck`, e a escolha do Stage
+inicial. Corrigido com uma função nova, `pop_by_identity` (mesma
+assinatura de `remove_by_identity`, mas via `lst.pop(idx)` — respeita o
+deepcopy-on-pop do `_SimDeck`). **Validado isoladamente** (teste novo,
+`_SimDeck` real + `play_from_deck`), mas rodar `audit_replay.py --n 20
+--seed 11` de novo deu as **MESMAS 23 anomalias, idênticas** — esse não
+era o mecanismo real por trás do caso observado (Empty Throne joga do
+**hand**, não do deck, via a ação `play_card`, que nunca passa por
+`_SimDeck`).
+
+**Achado 2 — CAUSA RAIZ REAL**: `OpponentModel.sample()`
+(`opponent_model.py`), usado pelo Turn Planner pra sortear uma mão/vida
+fictícia plausível do OPONENTE em toda decisão com Monte Carlo. A própria
+docstring da função já PROMETIA "objetos distintos por amostra... não
+compartilhadas entre chamadas" — mas a implementação nunca fazia esse
+deepcopy: `pool`/`sorteadas`/`hand_sample`/`life_sample` eram só listas
+NOVAS contendo as MESMAS referências de `self.full_decklist`, que por sua
+vez é `list(gs.deck)` (cópia rasa) do deck REAL, montado 1x no setup
+(`OPTCGMatch.__init__`/`ReplayMatch.__init__`). O comentário em
+`_simulate_sequence_once` que justificava reusar a amostra entre
+candidatas TOP_K ("seguro porque `should_use_blocker`/`should_use_counter`
+só leem power/counter, nunca mutam o Card") estava incompleto — não
+considerava que `_play_turn_greedy` (simulação do turno de RESPOSTA
+inteiro do oponente, `USE_OPPONENT_RESPONSE_SEARCH`) roda o motor de
+verdade sobre essa mão fictícia, podendo `play_card`/`attach_don`/setar
+`just_played`/etc. numa carta da amostra. Qualquer mutação dessas
+vazava PERMANENTEMENTE pro objeto real do deck do oponente (mesma
+referência!) — só aparecia como "DON!! fantasma" turnos depois, quando
+essa MESMA carta física fosse comprada/jogada de verdade. Confirmado via
+instrumentação: `St. Ethanbaron V. Nusjuro` corrompida (`don_attached=1`)
+**ainda no deck/mão REAL do Imu no turno 3**, antes de qualquer ativação
+real de Empty Throne — só podia ter vindo de uma amostra Monte Carlo
+simulada (nunca aplicada de verdade).
+
+**Fix**: `OpponentModel.sample()` agora faz `deepcopy` de cada carta
+retornada (`hand_sample`/`life_sample`), cumprindo a promessa que a
+própria docstring já fazia. Custo desprezível (5-10 cartas por amostra,
+chamada por decisão, não por simulação individual).
+
+**Validado**:
+- `smoke_fast.py`/`smoke_test.py` 100% (novo teste
+  `test_pop_by_identity_evita_vazamento_de_don_via_simdeck_03_08`,
+  reproduz o mecanismo do Achado 1 isoladamente com `_SimDeck` real).
+- `audit_replay.py --n 20 --seed 11` (a MESMA seed que reproduzia 23
+  anomalias de forma estável desde o bloco 377): **23 → 0 anomalias**,
+  0 exceções. Os pareamentos de deck mudaram entre as rodadas pré/pós-fix
+  (esperado — o fix muda decisões reais do motor, que consomem
+  aleatoriedade de forma diferente durante o jogo, deslocando os sorteios
+  seguintes de `random.sample` — mesmo efeito colateral já documentado no
+  bloco 377 quando o non-determinismo foi corrigido).
+**Achado 3 — SEGUNDA causa raiz real, a mais impactante das 3**: rodar
+`audit_replay.py --n 20 --seed 23` (matchup Red/Blue Ace, achado
+originalmente no bloco 423) DEPOIS dos Achados 1+2 ainda deu **10
+anomalias** — os Achados 1+2 eram reais mas não fechavam o bug inteiro.
+Reinstrumentei especificamente essa seed/matchup e achei uma TERCEIRA
+fonte do MESMO padrão (objeto do deck real compartilhado com uma
+simulação que o muta): em `_simulate_sequence_once`, logo abaixo do
+`_SimDeck` do Achado 1, `opp2.deck = list(_opp_deck)` — uma cópia RASA
+comum, com o comentário "opp não age durante a simulação do turno ativo,
+então nenhuma carta sai do deck dele". **Esse comentário é falso** sempre
+que `USE_OPPONENT_RESPONSE_SEARCH=True` (o default do motor, não uma
+flag rara): `_play_turn_greedy(opp2, p2)`, chamado logo abaixo neste
+mesmo método pra simular a RESPOSTA do oponente, roda o turno inteiro
+dele — `refresh_phase`/`draw_phase`/`don_phase`/main_phase guloso — e
+`draw_phase` faz `opp2.deck.pop()` de verdade. Como `opp2.deck` era uma
+lista comum (não `_SimDeck`), esse `.pop()` retornava a MESMA referência
+de `Card` do deck REAL do oponente, sem NENHUMA proteção — qualquer
+mutação durante esse turno guloso simulado (jogar carta, anexar DON)
+vazava pro deck real. Essa é a fonte DOMINANTE (roda em toda simulação,
+não só quando uma amostra específica é reusada) — explica por que o
+Achado 2 sozinho não bastou.
+
+**Fix 3**: `opp2.deck = _SimDeck(_opp_deck)` (mesmo wrapper já usado pra
+`p2.deck`), em vez de `list(_opp_deck)`.
+
+**Validação final, com os 3 fixes juntos**:
+- `smoke_fast.py`/`smoke_test.py` 100% (3 rodadas, uma por fix).
+- `audit_replay.py --n 20 --seed 11`: 23 → 0 anomalias (ainda 0 depois
+  do Fix 3, reconfirmado — não regrediu).
+- `audit_replay.py --n 20 --seed 23`: 10 → 0 anomalias (a seed que
+  expôs o Achado 3).
+- 0 exceções nas duas seeds, 40 partidas reais no total entre as
+  rodadas de validação desta sessão.
+
+**Por que a auditoria estática (5+ sessões, ~15 pontos revisados) nunca
+achou isso**: nenhuma das 3 causas está num ponto óbvio de busca por
+"onde `don_attached` é mutado" — a mutação em si acontece em código
+totalmente genérico e correto (`attach_don`, `play_card`, `draw_phase`,
+etc.); o bug real é que o OBJETO manipulado não devia ser compartilhado
+com o estado real, não que a lógica de mutação estivesse errada. Só
+apareceu com instrumentação DIRETA rastreando `id()` de cartas
+específicas turno a turno, exatamente o método que o bloco 374 já
+recomendava e nenhuma sessão anterior tinha executado até o fim — e
+precisou de DUAS seeds diferentes pra expor as 3 causas (a primeira seed
+só bateu no Achado 2; só a segunda expôs o Achado 3).
+
+`decision_engine.py`, `opponent_model.py`, `smoke_fast.py` modificados.
+Sem mudança de parser.
+
 ## 2026-08-02 (424) - Claude (sessao local) - nova partida (Ace x Kid): fixes de hoje confirmados funcionando ao vivo; achado novo (nao corrigido) -- busca do Turn Planner estoura timeout de 3s em turnos de board complexo
 
 Log `Portgas.D.Ace-R_x_Eustass.Captain.Kid-Y_2026-08-02T23.52.21` banco
