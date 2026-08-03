@@ -21,6 +21,7 @@ from optcg_engine.decision_engine import (  # noqa: E402
     OPTCGMatch,
     _make_card,
     apply_conditional_keyword_passives,
+    compute_game_plan,
     consume_play_cost_reductions,
     don_needed_for_attack,
     effective_counter,
@@ -372,6 +373,52 @@ def test_full_deck_census_populado_offline_e_ao_vivo() -> None:
     census = deck_census(cards)
     check("deck_cards_for_leader + deck_census populam o mesmo formato usado ao vivo",
           census.get("total") == 50)
+
+
+def test_populate_full_deck_knowledge_reusada_por_replaymatch_e_lado_oculto_03_08() -> None:
+    """
+    Achado real 03/08 (usuario perguntou se dava pra melhorar o Monte
+    Carlo, bloco HANDOFF 426): OPTCGMatch.__init__ ja populava
+    full_deck_census/full_deck_plan/full_deck_profile (teste acima), mas
+    ReplayMatch.__init__ (replay_optcg.py, usada por audit_replay.py e
+    smoke_test.py) NUNCA populava nada -- profiling real (cProfile numa
+    partida inteira de self-play) mostrou compute_game_plan_from_cards
+    consumindo 26% do tempo total, recalculado do zero em CADA clone do
+    Turn Planner porque o cache (`p.full_deck_plan`) nunca era alimentado
+    na origem. Fix: logica extraida pra populate_full_deck_knowledge,
+    reusada por OPTCGMatch.__init__, ReplayMatch.__init__ (decklist real)
+    e server.py:_dto_to_gs no lado hide_hidden do oponente (decklist
+    APROXIMADA via opponent_model_for_leader, mesmo fallback em 3 camadas
+    do bloco 378). Este teste cobre os dois usos que OPTCGMatch nao
+    cobre: ReplayMatch e a funcao compartilhada em si.
+    """
+    from optcg_engine.decision_engine import populate_full_deck_knowledge
+
+    cards = [real_card("OP13-079") for _ in range(10)]
+    leader = real_card("OP13-082")  # qualquer lider real serve de placeholder
+    gs = GameState(leader=leader, deck=[])
+    check("populate_full_deck_knowledge: full_deck_plan comeca None antes da chamada (sanity)",
+          getattr(gs, 'full_deck_plan', None) is None)
+    populate_full_deck_knowledge(gs, cards, leader.code)
+    check("populate_full_deck_knowledge: full_deck_census populado",
+          gs.full_deck_census is not None)
+    check("populate_full_deck_knowledge: full_deck_plan populado",
+          gs.full_deck_plan is not None)
+
+    import replay_optcg
+    deck_a = (real_card("OP13-079"), [real_card("OP13-082") for _ in range(2)]
+              + [mk(f"XREP{i}", f"Filler{i}", cost=(i % 5) + 1) for i in range(48)], None)
+    deck_b = (mk("OP10-099", "Kid", card_type="LEADER", color="Red"),
+              [mk(f"XREP2{i}", f"Filler2{i}", cost=(i % 5) + 1) for i in range(50)], None)
+    match = replay_optcg.ReplayMatch(deck_a, deck_b)
+    check("ReplayMatch.__init__ agora popula full_deck_census pros dois lados",
+          match.state_a.full_deck_census is not None
+          and match.state_b.full_deck_census is not None)
+    check("ReplayMatch.__init__ agora popula full_deck_plan pros dois lados",
+          match.state_a.full_deck_plan is not None
+          and match.state_b.full_deck_plan is not None)
+    check("compute_game_plan(state_a) usa o cache (nao recalcula das zonas)",
+          compute_game_plan(match.state_a) is match.state_a.full_deck_plan)
 
 
 def test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo() -> None:
@@ -9541,6 +9588,7 @@ def main() -> int:
     test_execucao_play_card_prioriza_wincon_sobre_searcher()
     test_salvar_blocker_desconta_on_ko_e_ataques_restantes()
     test_full_deck_census_populado_offline_e_ao_vivo()
+    test_populate_full_deck_knowledge_reusada_por_replaymatch_e_lado_oculto_03_08()
     test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo()
     test_don_reservado_para_ativar_wincon_em_campo()
     test_opp_combo_threat_detects_five_elders_style_reanimation()

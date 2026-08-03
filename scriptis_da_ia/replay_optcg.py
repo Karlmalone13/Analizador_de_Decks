@@ -21,7 +21,8 @@ from collections import Counter
 from copy import deepcopy
 from optcg_engine.decision_engine import (
     load_cards_db, build_real_deck, validar_deck,
-    Card, GameState, DecisionEngine, EffectExecutor, OPTCGMatch
+    Card, GameState, DecisionEngine, EffectExecutor, OPTCGMatch,
+    populate_full_deck_knowledge
 )
 
 # ── Cores terminal ─────────────────────────────────────────────────────────────
@@ -172,6 +173,20 @@ class ReplayMatch:
                                   deck=[deepcopy(c) for c in cards_a])
         self.state_b = GameState(leader=deepcopy(leader_b),
                                   deck=[deepcopy(c) for c in cards_b])
+
+        # full_deck_census/full_deck_plan/full_deck_profile: achado real
+        # 03/08 (usuario investigando lentidao/timeout da busca, bloco
+        # HANDOFF 426) -- ReplayMatch nunca populava esses campos (so
+        # OPTCGMatch.__init__ fazia), entao TODA partida rodada via
+        # ReplayMatch (audit_replay.py, smoke_test.py, qualquer self-play/
+        # calibracao) caia no fallback caro de compute_game_plan/
+        # deck_profile_for em CADA clone do Turn Planner, profiling real
+        # mostrou 26% do tempo de uma partida so nisso. Mesma logica de
+        # OPTCGMatch.__init__, agora compartilhada via
+        # populate_full_deck_knowledge (decision_engine.py).
+        populate_full_deck_knowledge(self.state_a, cards_a, leader_a.code)
+        populate_full_deck_knowledge(self.state_b, cards_b, leader_b.code)
+
         self.stage_a = deepcopy(stage_a)
         self.stage_b = deepcopy(stage_b)
         self.name_a = name_a

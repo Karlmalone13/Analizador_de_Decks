@@ -2,6 +2,31 @@
 
 **Última atualização:** 3 de agosto de 2026
 
+> 03/08/2026 (bloco 426): **`full_deck_plan`/`full_deck_census`/
+> `full_deck_profile` nunca populados em `ReplayMatch` nem no lado
+> oculto (oponente) ao vivo — -30,7% no tempo de partida real medido
+> por profiling**. Usuário perguntou se dava pra melhorar o Monte
+> Carlo; profiling (`cProfile` em partida real de self-play) achou
+> `compute_game_plan_from_cards` consumindo 26% do tempo total —
+> deveria rodar 1x/partida (cache dedicado já existe), mas o cache
+> nunca era POPULADO em `ReplayMatch.__init__` (usada por
+> `audit_replay.py`/`smoke_test.py`) nem em `server.py:_dto_to_gs` pro
+> lado `hide_hidden` do oponente (só o lado próprio populava, achado
+> 14/07). Efeito colateral pior que performance: `posture()` do
+> oponente SIMULADO (durante `USE_OPPONENT_RESPONSE_SEARCH`, ligado por
+> padrão) sempre degradava pra 'midrange', nunca lia o perfil real do
+> deck dele. Fix: lógica extraída pra `populate_full_deck_knowledge`
+> (`decision_engine.py`), reusada por `OPTCGMatch.__init__`,
+> `ReplayMatch.__init__` (decklist real) e `_dto_to_gs` lado oculto
+> (decklist aproximada, mesmo fallback em 3 camadas do bloco 378 já
+> usado pro `OpponentModel`). Validado: `smoke_fast.py`/`smoke_test.py`
+> 100%, `audit_replay.py --n 20 --seed 11` 0 anomalias/0 exceções
+> (sem regressão do bloco 425), reprofiling da mesma partida 10.46s →
+> 7.25s. **Nota**: isso é sobre velocidade/cache do motor, NÃO é a
+> mesma pendência do `IA_Compendium` (bot "não entende" o líder —
+> fidelidade de arquétipo, não performance) — não confundir. Ver bloco
+> 426 do HANDOFF.
+
 > 03/08/2026 (bloco 425): **Bug de conservação de DON — causa raiz
 > FINALMENTE encontrada e corrigida**, pendente desde 25/07 (blocos
 > 374/377/410/420/422/423). `OpponentModel.sample()` nunca fazia
@@ -1179,7 +1204,7 @@ bot só passa o turno (`end_turn`), sem jogar/atacar. Suspeita maior:
   então o bot sempre manda uma ação válida, só sem o refino de
   simulação/contrafactual nesses momentos. Ver item novo abaixo.
 
-## 🟡 NOVO (02/08/2026, bloco 411): busca ao vivo bate no timeout de 3s com frequência real — degrada pra score imediato sem refino
+## 🟡 PARCIAL (02/08/2026, bloco 411; causa parcial corrigida 03/08, bloco 426): busca ao vivo bate no timeout de 3s com frequência real — degrada pra score imediato sem refino
 
 Numa única partida real (10 turnos), 5 timeouts de busca
 (`timed_out=True`, latência ~3014-3039ms contra o timeout de 3.0s
@@ -1189,12 +1214,23 @@ score imediato já protege contra "sem ação"), mas é perda real de
 qualidade de decisão nesses momentos — a IA decide sem o lookahead
 Monte Carlo que normalmente teria.
 
-- [ ] Investigar por que a busca demora >3s especificamente nesses
-  pontos (board mais cheio? mais candidatos em `SEARCH_TOP_K`? amostragem
+- [x] **Causa parcial encontrada e corrigida (03/08, bloco 426)**:
+  `full_deck_plan`/`full_deck_census`/`full_deck_profile` do lado do
+  oponente nunca eram populados ao vivo (só o lado próprio), forçando
+  `compute_game_plan`/`posture()` a recalcular do zero em toda simulação
+  do turno de resposta do oponente — 26% do tempo de uma partida real de
+  self-play nisso (profiling). Fix: `populate_full_deck_knowledge`
+  reusada em `_dto_to_gs` (decklist aproximada via
+  `opponent_model_for_leader`). Reprofiling da mesma partida: -30,7% no
+  tempo total. Ainda não medido ao vivo (telemetria `decision_timeouts`)
+  se isso sozinho já elimina os timeouts de 3s ou só reduz a frequência
+  — próxima partida real deve conferir.
+- [ ] Se ainda bater timeout depois deste fix: investigar mais
+  (board mais cheio? mais candidatos em `SEARCH_TOP_K`? amostragem
   adaptativa subindo até o teto com frequência?).
 - [ ] Juntar mais partidas reais antes de decidir se vale subir o
   timeout, reduzir `SEARCH_SAMPLES_MAX`/`SEARCH_TOP_K`, ou otimizar o
-  hot path — 1 partida não é amostra suficiente pra calibrar nada.
+  hot path ainda mais.
 
 ## ✅ doc: `BOT/README.md` passou a documentar Shift+P (bloco 383)
 

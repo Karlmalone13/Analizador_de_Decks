@@ -550,6 +550,36 @@ def compute_game_plan(p: 'GameState') -> dict:
     return compute_game_plan_from_cards(zonas)
 
 
+def populate_full_deck_knowledge(state: 'GameState', cards: list, leader_code: str) -> None:
+    """
+    Popula full_deck_census/full_deck_plan/full_deck_profile de `state` a
+    partir de uma decklist COMPLETA conhecida (`cards`) -- extraido de
+    OPTCGMatch.__init__ (achado 14/07, comentário original preservado nos
+    3 campos abaixo) pra ser reusado tanto por ReplayMatch.__init__
+    (replay_optcg.py, nunca populava) quanto por server.py:_dto_to_gs no
+    lado hide_hidden do oponente (achado 03/08, bloco HANDOFF 426):
+    `cards` pode ser a decklist REAL (OPTCGMatch/ReplayMatch, que conhecem
+    os dois decks completos) ou a decklist APROXIMADA do fallback em 3
+    camadas de `opponent_model_for_leader` (sim_bridge.py) quando o
+    oponente é genuinamente oculto -- mesma aproximação já usada pro
+    Monte Carlo do OpponentModel, nenhuma informação nova exposta.
+
+    Sem isso, `compute_game_plan`/`deck_profile_for` caem no fallback caro
+    (recalculado em TODO clone do Turn Planner, não só 1x por partida) e
+    `posture()` sempre degrada pra 'midrange' (achado 14/07) -- pra
+    QUALQUER deck, inclusive o do oponente durante a simulação do turno de
+    resposta dele (USE_OPPONENT_RESPONSE_SEARCH).
+    """
+    state.full_deck_census = deck_census(cards)
+    state.full_deck_plan = compute_game_plan_from_cards(cards)
+    if _build_profile_from_codes is not None:
+        try:
+            state.full_deck_profile = _build_profile_from_codes(
+                [c.code for c in cards] + [leader_code])
+        except Exception:
+            state.full_deck_profile = None
+
+
 def deck_profile_for(p: 'GameState') -> dict | None:
     """
     Perfil do deck (arquetipo + eixos derivados) do jogador p -- MODULE-LEVEL
@@ -11955,39 +11985,20 @@ class OPTCGMatch:
         self.state_b = GameState(leader=deepcopy(leader_b),
                                  deck=[deepcopy(c) for c in cards_b])
 
-        # full_deck_census (curva completa do deck, base do posture()
-        # aggressive/control/midrange): achado 14/07 (pedido do usuario --
-        # parar de so consertar o Imu) -- este campo NUNCA era populado em
-        # lugar nenhum do motor (so em replay_optcg.py, uma ferramenta de
-        # visualizacao isolada). posture() SEMPRE caia no fallback 'midrange'
-        # pra QUALQUER deck, sempre, offline e ao vivo -- a logica aggressive/
-        # control ja existia e ja era boa (curva calibrada com decks reais do
-        # Limitless), so nunca recebia dado nenhum. Aqui e trivial: a decklist
-        # completa ja e conhecida (cards_a/cards_b).
-        self.state_a.full_deck_census = deck_census(cards_a)
-        self.state_b.full_deck_census = deck_census(cards_b)
-
-        # full_deck_plan (win_con_code/don_target/trash_target) e
-        # full_deck_profile (arquetipo+eixos+papeis, deck_profile.py):
-        # MESMO principio do census acima, pedido explicito do usuario
-        # 14/07 -- "o bot tem que ler arquetipo/papeis/eixos antes da
-        # partida e guardar na memoria pra toda decisao lembrar", como um
-        # jogador humano conhece o proprio deck desde o T1, nao so o que ja
-        # comprou. Calculado UMA VEZ do deck INTEIRO (cards_a/cards_b, ja
-        # conhecidos aqui), nao das zonas reveladas -- compute_game_plan/
-        # deck_profile_for preferem esses campos quando presentes (ver
-        # docstrings). Custo desprezivel (~50 cartas, 1x por partida).
-        self.state_a.full_deck_plan = compute_game_plan_from_cards(cards_a)
-        self.state_b.full_deck_plan = compute_game_plan_from_cards(cards_b)
-        if _build_profile_from_codes is not None:
-            try:
-                self.state_a.full_deck_profile = _build_profile_from_codes(
-                    [c.code for c in cards_a] + [leader_a.code])
-                self.state_b.full_deck_profile = _build_profile_from_codes(
-                    [c.code for c in cards_b] + [leader_b.code])
-            except Exception:
-                self.state_a.full_deck_profile = None
-                self.state_b.full_deck_profile = None
+        # full_deck_census/full_deck_plan/full_deck_profile: achado 14/07
+        # (pedido do usuario -- parar de so consertar o Imu) -- nenhum
+        # desses campos era populado em lugar nenhum do motor real,
+        # posture() sempre caia no fallback 'midrange' e compute_game_plan
+        # sempre recalculava do zero. Extraido pra populate_full_deck_knowledge
+        # (achado 03/08, bloco 426) pra ser reusado tambem por
+        # ReplayMatch.__init__ (replay_optcg.py) e por server.py:_dto_to_gs
+        # no lado hide_hidden do oponente -- nenhum dos dois populava isso
+        # antes, forcando o fallback caro em TODO clone do Turn Planner
+        # durante a simulacao do turno de resposta do oponente
+        # (USE_OPPONENT_RESPONSE_SEARCH), alem de qualquer self-play/
+        # auditoria via ReplayMatch.
+        populate_full_deck_knowledge(self.state_a, cards_a, leader_a.code)
+        populate_full_deck_knowledge(self.state_b, cards_b, leader_b.code)
 
         if random.random() < 0.5:
             self.state_a.is_first = True

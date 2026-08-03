@@ -1,5 +1,96 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-03 (426) - Claude (sessao remota web) - full_deck_plan/census/profile nunca populado em ReplayMatch nem no lado oculto do oponente ao vivo: -30% no tempo de partida real (profiling), achado direto do pedido "acha que podemos melhorar esse Monte Carlo?"
+
+Continuação da mesma sessão do bloco 425 (bug de DON). Depois de fechar
+aquele achado, o usuário perguntou se dava pra melhorar o Monte Carlo —
+sugeri investigar por que a busca ao vivo bate no timeout de 3s (TODO.md,
+achado do bloco 411, nunca investigado a fundo) antes de mexer em
+qualquer coisa. Usuário pediu pra investigar, depois pediu pra
+implementar o fix encontrado.
+
+**Método**: profiling real com `cProfile` em cima de uma partida inteira
+de self-play (`ReplayMatch`, mesmos decks/seed usados na validação do
+bloco 425), script descartável em
+`/tmp/.../scratchpad/profile_search.py` (não commitado).
+
+**Achado**: `compute_game_plan_from_cards` sozinha consumia 2.7s de
+10.46s de partida (26% do tempo total), maior hot spot isolado do
+profile inteiro. Essa função deveria rodar 1x por partida — existe cache
+dedicado (`p.full_deck_plan`, checado no topo de `compute_game_plan`) e
+o `__deepcopy__` de `GameState` já propaga esse campo pro clone (fix do
+achado de 02/08, comentário na linha ~1083 do `decision_engine.py`). O
+problema: herdar `None` continua sendo `None` — o cache nunca era
+POPULADO na origem em dois lugares:
+
+1. **`ReplayMatch.__init__`** (`replay_optcg.py`, usada por
+   `audit_replay.py`, `smoke_test.py`, qualquer self-play/calibração)
+   monta `state_a`/`state_b` direto via `GameState(...)`, nunca chamando
+   a população que `OPTCGMatch.__init__` já fazia
+   (`full_deck_census`/`full_deck_plan`/`full_deck_profile`,
+   achado 14/07). Sem isso, TODA partida de self-play cai no fallback
+   caro (escanear deck+mão+trash+vida+campo, `get_card_effects` carta a
+   carta) em CADA um dos dezenas/centenas de clones que o Turn Planner
+   cria por decisão — não 1x por partida, N vezes por decisão.
+
+2. **`server.py:_dto_to_gs`** (caminho AO VIVO, `BOT/engine_server/`):
+   o bloco que popula esses 3 campos só rodava com `not hide_hidden` —
+   ou seja, só pro lado do PRÓPRIO bot, nunca pro lado do oponente. Como
+   `USE_OPPONENT_RESPONSE_SEARCH=True` por padrão simula o turno de
+   resposta INTEIRO do oponente em cada amostra Monte Carlo, toda vez
+   que essa simulação avalia algo do "game plan" do oponente (inclusive
+   `posture()` — usada pra decidir COMO o oponente simulado joga) caía
+   no mesmo fallback caro, e pior: `posture()` sempre degradava pra
+   'midrange' pro oponente simulado, mesmo quando existe um deck real
+   conhecido pro líder/cor dele (a mesma regressão do achado 14/07, só
+   que nunca corrigida pro lado oculto). Isso é uma perda de QUALIDADE
+   da simulação de resposta do oponente, não só de velocidade — o motor
+   sempre assumia que qualquer oponente é midrange ao simular a resposta
+   dele, mesmo pra decks aggro/control conhecidos.
+
+**Fix**: extraída a lógica de população (antes duplicada dentro de
+`OPTCGMatch.__init__`) pra uma função nova, `populate_full_deck_knowledge`
+(`decision_engine.py`, logo após `compute_game_plan`) — reusada nos 3
+lugares:
+- `OPTCGMatch.__init__` (comportamento idêntico, só sem duplicar código).
+- `ReplayMatch.__init__` (`replay_optcg.py`) — agora populada com a
+  decklist REAL completa (mesma que o construtor já recebe).
+- `server.py:_dto_to_gs`, lado `hide_hidden=True` (oponente) — populada
+  com a decklist APROXIMADA de `bridge.opponent_model_for_leader`
+  (fallback em 3 camadas já existente desde o bloco 378: líder exato →
+  mesma cor → pool genérico) — a MESMA aproximação já usada pro
+  `OpponentModel`/Monte Carlo, nenhuma informação nova exposta ao bot.
+
+**Validação**:
+- `smoke_fast.py` + `smoke_test.py`: 100%, 0 falhas.
+- `audit_replay.py --n 20 --seed 11`: 0 anomalias, 0 exceções (mesmo
+  resultado do bloco 425 — confirma que o fix não regride conservação de
+  DON nem nenhum outro invariante).
+- Reprofiling da MESMA partida (mesmo seed, mesmo matchup, mesma
+  sequência de random): **10.46s → 7.25s, -30.7%** de tempo total.
+  `compute_game_plan_from_cards`/`compute_game_plan` somem do top-35 do
+  profile (deixaram de ser hot spot). `avaliar_carta` (maior função por
+  cumtime) caiu de 4.98s pra 2.94s cumulativos — boa parte do ganho vem
+  de dentro dela, que consulta `compute_game_plan`/`deck_profile_for`
+  múltiplas vezes por carta avaliada.
+
+**Nota honesta**: essa investigação/fix é sobre EFICIÊNCIA (orçamento de
+tempo da busca, incluindo pro lado do oponente simulado), não é a mesma
+coisa que a pendência do `IA_Compendium` ("bot ainda parece que não
+entende" o líder — Seção 8 do compêndio vs `game_plan` real). Usuário
+perguntou explicitamente se as duas coisas eram a mesma causa; resposta
+registrada aqui pra não confundir sessões futuras: **não são** — uma é
+velocidade/cache do motor, a outra é fidelidade da heurística de
+arquétipo por líder. Esta sessão resolveu só a primeira.
+
+**Pendente**: `_dto_to_gs` ainda recalcula `populate_full_deck_knowledge`
+do zero a CADA `/decide` (mesmo custo que o lado próprio já pagava antes
+deste fix, não é regressão nova) — daria pra cachear por
+`leader_code|color` no módulo `sim_bridge.py` (mesmo padrão de
+`_opponent_model_cache`) se o profiling ao vivo real mostrar que ainda
+vale a pena depois deste fix. Não implementado agora (medir primeiro,
+não otimizar no escuro).
+
 ## 2026-08-03 (425) - Claude (sessao remota web) - CAUSA RAIZ FINALMENTE ENCONTRADA E CORRIGIDA: bug de conservacao de DON pendente desde os blocos 374/377/410/420/422/423
 
 Usuário pediu pra investigar "a questão dos DONs" (o item mais crítico do

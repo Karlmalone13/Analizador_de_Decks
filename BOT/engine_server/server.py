@@ -385,34 +385,40 @@ def _dto_to_gs(player: PlayerDto, turn: int, hide_hidden: bool = False):
     gs.turn          = turn
     gs.global_turn   = turn
 
-    # full_deck_census (curva completa, base do posture() aggressive/control/
-    # midrange): achado 14/07 -- nunca era populado ao vivo, entao posture()
-    # sempre caia no fallback 'midrange' pra QUALQUER deck (Kid, Imu, tanto
-    # faz). Mesmo lookup lider->arquivo .deck ja usado pra OpponentModel
-    # (bridge.opponent_model_for_leader) -- aproximacao (nao garante bater se
-    # o usuario customizar a lista), mas e a MESMA decklist que ja usamos pra
-    # tudo mais. Sem match (lider desconhecido) fica None -- posture() ja
-    # degrada pra 'midrange' nesse caso, comportamento antigo preservado.
-    if gs.leader is not None and not hide_hidden:
-        cards = bridge.deck_cards_for_leader(gs.leader.code)
+    # full_deck_census/full_deck_plan/full_deck_profile: achado 14/07 (lado
+    # proprio) -- nunca era populado ao vivo, entao posture() sempre caia
+    # no fallback 'midrange' pra QUALQUER deck (Kid, Imu, tanto faz) e
+    # compute_game_plan recalculava do zero. Lado proprio usa a decklist
+    # EXATA (bridge.deck_cards_for_leader). Sem match (lider desconhecido)
+    # fica tudo None -- fallbacks antigos preservados (posture() degrada
+    # pra 'midrange', compute_game_plan recalcula das zonas reveladas).
+    #
+    # Lado OCULTO (hide_hidden=True, o oponente): achado real 03/08
+    # (usuario pediu pra investigar lentidao/timeout da busca ao vivo,
+    # bloco HANDOFF 426) -- este lado NUNCA tentava popular nada (nem
+    # aproximado), sempre None. Isso nao so forcava o fallback caro em
+    # TODA simulacao do turno de resposta do oponente
+    # (USE_OPPONENT_RESPONSE_SEARCH, ligado por padrao -- profiling real
+    # mostrou 26% do tempo de uma partida so em compute_game_plan_from_cards
+    # recalculado a cada clone), como fazia posture() do oponente simulado
+    # sempre degradar pra 'midrange' (nunca aggressive/control), mesmo
+    # quando ha um deck real conhecido pro lider/cor dele. Corrigido
+    # reusando a MESMA decklist aproximada (fallback em 3 camadas: lider
+    # exato -> mesma cor -> pool generico) que `opponent_model_for_leader`
+    # ja constroi pro OpponentModel/Monte Carlo -- nenhuma informacao nova
+    # exposta, so reaproveitando o que ja era permitido inferir.
+    if gs.leader is not None:
+        cards = None
+        if not hide_hidden:
+            cards = bridge.deck_cards_for_leader(gs.leader.code)
+        else:
+            model = bridge.opponent_model_for_leader(
+                gs.leader.code, getattr(gs.leader, 'color', ''))
+            if model is not None:
+                cards = model.full_decklist
         if cards:
-            from optcg_engine.decision_engine import (
-                deck_census, compute_game_plan_from_cards)
-            gs.full_deck_census = deck_census(cards)
-            # full_deck_plan (win-con/trash_target) e full_deck_profile
-            # (arquetipo+eixos+papeis) UMA VEZ do deck INTEIRO -- pedido do
-            # usuario 14/07: o bot deve ler isso antes da partida e lembrar
-            # em TODA decisao, como um jogador humano conhece o proprio
-            # deck desde o T1 (nao so o que ja comprou). compute_game_plan/
-            # deck_profile_for (decision_engine.py) preferem estes campos
-            # quando presentes.
-            gs.full_deck_plan = compute_game_plan_from_cards(cards)
-            try:
-                from deck_profile import build_profile_from_codes
-                gs.full_deck_profile = build_profile_from_codes(
-                    [c.code for c in cards] + [gs.leader.code])
-            except Exception:
-                gs.full_deck_profile = None
+            from optcg_engine.decision_engine import populate_full_deck_knowledge
+            populate_full_deck_knowledge(gs, cards, gs.leader.code)
 
     return gs
 
