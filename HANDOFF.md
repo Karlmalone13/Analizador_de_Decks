@@ -1,5 +1,49 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-02 (424) - Claude (sessao local) - nova partida (Ace x Kid): fixes de hoje confirmados funcionando ao vivo; achado novo (nao corrigido) -- busca do Turn Planner estoura timeout de 3s em turnos de board complexo
+
+Log `Portgas.D.Ace-R_x_Eustass.Captain.Kid-Y_2026-08-02T23.52.21` banco
+(bot p1, perdeu, 11 turnos). Primeira partida de hoje contra um
+oponente DIFERENTE do mirror Ace x Ace usado pra achar/validar os fixes
+anteriores.
+
+**Fixes de hoje confirmados no combat log real**: linha 441 "Izou:
+Attach 1 Rested Don to Portgas D. Ace" (deu pro LIDER, nao pra si
+mesma -- fix do bloco 422 funcionando); linha 574 "Portgas D. Ace: Give
+Vista Rush" (deu Rush pra Vista que tinha ACABADO de entrar no mesmo
+turno -- fix dos blocos 419-421 funcionando, nao repetiu o bug do
+Newgate). Nenhuma regressao visivel dos ultimos 4 blocos.
+
+**Achado novo, NAO corrigido**: telemetria mostrou
+`decision_timeouts: 7` (`gate_status: fail`), latencia p95=3050ms
+(acima do gate de 3000ms) -- ausente nas partidas anteriores de hoje.
+Investiguei com cProfile antes de assumir regressao: reconstrui o
+`state_before` exato de uma das decisoes que estourou (turno 4, mao=5,
+board=[Izo]) e chamei `/decide` fora do servidor, com warm-up pra
+excluir custo de import. Busca (`_select_action_via_search` ->
+`_simulate_sequence_once` x5) realmente leva **~3.0-3.5s** pra esse
+board especifico -- nao e ruido de medicao. **Bissecao com `git
+worktree` no commit `8e9d7b6` (ANTES de todos os fixes de hoje,
+blocos 419-423)**: rodei o EXATO MESMO `state_before` la e o timeout
+**reproduz identico** ("[ALERTA] busca do Turn Planner nao terminou a
+tempo"). Confirma que esse board especifico (mao=5 incluindo 2x Vista,
+Izo em campo) ja era lento ANTES de qualquer mudanca desta sessao --
+achado novo por medicao direta, nao regressao.
+
+Profile aponta a maior fatia do tempo em `avaliar_carta` (chamada
+milhares de vezes dentro de `_score_play_action`/`score_attack_target`/
+`_generate_attach_don_actions`, plausivelmente amplificado pelas ~5
+amostras do `_simulate_sequence_once` dentro da busca contrafactual) e
+`don_opportunity_cost` (610 chamadas pra so 5 cartas na mao). Pendencia
+de performance pra proxima sessao que for atras disso: perfilar
+`avaliar_carta`/`don_opportunity_cost` especificamente (nao so
+deepcopy/posture, ja resolvidos no bloco de perf anterior) pra achar se
+ha recomputo evitavel dentro do loop de `_simulate_sequence_once`.
+
+Nao ha codigo pra commitar deste bloco alem do log banco (`logs/
+index.json` + raw/parsed/decks) -- nenhum bug de decisao confirmado
+pra corrigir, so o achado de performance documentado acima.
+
 ## 2026-08-02 (423) - Claude (sessao local) - bloco 418 fechado: causa raiz da lentidao de /choose_target confirmada e corrigida (item 3) + turno 3 confirmado nao-bug (item 5)
 
 Retomou as 2 pendencias abertas do bloco 418 (usuario pediu "faz o 5",

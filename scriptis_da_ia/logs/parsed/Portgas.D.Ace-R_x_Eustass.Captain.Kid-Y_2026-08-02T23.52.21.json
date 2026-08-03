@@ -1,0 +1,1011 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Portgas D. Ace",
+          "code": "OP16-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Eustass \"Captain\" Kid",
+          "code": "OP10-099"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-004",
+            "OP14-018",
+            "OP10-005",
+            "OP16-118",
+            "OP16-005"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP10-112",
+            "ST36-005",
+            "OP10-111",
+            "ST36-002",
+            "ST36-003"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-111",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "<b>Reveal and Draw Basil Hawkins [\"OP10-109\">OP10-109]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP10-112",
+            "ST36-005",
+            "ST36-002",
+            "ST36-003",
+            "P-088",
+            "OP10-109"
+          ],
+          "board": [
+            "OP10-111"
+          ],
+          "trash": [],
+          "life": 5,
+          "rested": {
+            "OP10-111": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP16-004",
+            "OP14-018",
+            "OP10-005",
+            "OP16-118",
+            "OP16-005"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP10-005",
+          "card_name": "Sanji",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-004",
+            "OP14-018",
+            "OP16-118",
+            "OP16-005",
+            "EB01-002"
+          ],
+          "board": [
+            "OP10-005"
+          ],
+          "trash": [],
+          "life": 5,
+          "rested": {
+            "OP10-005": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP10-112",
+            "ST36-005",
+            "ST36-002",
+            "ST36-003",
+            "P-088",
+            "OP10-109",
+            "OP10-111"
+          ],
+          "trash": [],
+          "board": [
+            "OP10-111"
+          ],
+          "life": 4,
+          "rested": {
+            "OP10-111": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-109",
+          "card_name": "Basil Hawkins",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-004"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-099",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Life Face Up",
+            "Set Basil Hawkins [\"OP10-109\">OP10-109] to Active",
+            "Basil Hawkins [\"OP10-109\">OP10-109] Gains Blocker"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP10-112",
+            "ST36-005",
+            "ST36-002",
+            "ST36-003",
+            "P-088",
+            "OP10-111",
+            "ST36-004"
+          ],
+          "board": [
+            "OP10-111",
+            "OP10-109"
+          ],
+          "trash": [],
+          "life": 4,
+          "rested": {
+            "OP10-109": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP14-018",
+            "OP16-118",
+            "OP16-005",
+            "EB01-002"
+          ],
+          "trash": [
+            "OP16-004"
+          ],
+          "board": [
+            "OP10-005"
+          ],
+          "life": 5,
+          "rested": {
+            "OP10-005": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST36-004"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "EB01-002",
+          "card_name": "Izou",
+          "effects": [
+            "Attach 1 Rested Don to Portgas D. Ace [\"OP16-001\">OP16-001]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji",
+          "attacker_code": "OP10-005",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP10-109",
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP14-018",
+            "OP16-118",
+            "OP16-005",
+            "OP16-015"
+          ],
+          "board": [
+            "OP10-005",
+            "EB01-002"
+          ],
+          "trash": [
+            "OP16-004",
+            "EB01-002"
+          ],
+          "life": 4,
+          "rested": {
+            "OP10-005": 1,
+            "EB01-002": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP10-112",
+            "ST36-005",
+            "ST36-002",
+            "ST36-003",
+            "P-088",
+            "OP10-111"
+          ],
+          "trash": [
+            "ST36-004",
+            "OP10-109"
+          ],
+          "board": [
+            "OP10-111"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST36-005",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Sanji [\"OP10-005\">OP10-005]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP10-112",
+            "ST36-002",
+            "ST36-003",
+            "P-088",
+            "OP10-111",
+            "OP10-119"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-005"
+          ],
+          "trash": [
+            "ST36-004",
+            "OP10-109"
+          ],
+          "life": 4,
+          "rested": {
+            "ST36-005": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP16-118",
+            "OP16-005",
+            "OP16-015",
+            "OP16-011"
+          ],
+          "trash": [
+            "OP16-004",
+            "EB01-002",
+            "OP14-018",
+            "OP10-005"
+          ],
+          "board": [
+            "EB01-002"
+          ],
+          "life": 4,
+          "rested": {
+            "EB01-002": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "EB01-002",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP10-111"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "P-088"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-011",
+          "card_name": "Vista",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Vista [\"OP16-011\">OP16-011] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-118",
+            "OP16-005",
+            "OP16-015",
+            "OP16-011",
+            "OP16-017"
+          ],
+          "board": [
+            "EB01-002",
+            "OP16-011"
+          ],
+          "trash": [
+            "OP16-004",
+            "EB01-002",
+            "OP14-018",
+            "OP10-005"
+          ],
+          "life": 4,
+          "rested": {
+            "EB01-002": 1,
+            "OP16-011": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP10-112",
+            "ST36-002",
+            "ST36-003",
+            "OP10-119",
+            "ST36-003"
+          ],
+          "trash": [
+            "ST36-004",
+            "OP10-109",
+            "OP10-111",
+            "P-088"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-005"
+          ],
+          "life": 3,
+          "rested": {
+            "ST36-005": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-112",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Rest Eustass \"Captain\" Kid [\"OP10-112\">OP10-112]",
+            "Trash 1 Life"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST36-005",
+          "target": "Izou [\"EB01-002\">EB01-002]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP10-099",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Life Face Up",
+            "Set Eustass \"Captain\" Kid [\"OP10-112\">OP10-112] to Active",
+            "Eustass \"Captain\" Kid [\"OP10-112\">OP10-112] Gains Blocker"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST36-002",
+            "ST36-003",
+            "OP10-119",
+            "ST36-003",
+            "OP10-111"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-005",
+            "OP10-112"
+          ],
+          "trash": [
+            "ST36-004",
+            "OP10-109",
+            "OP10-111",
+            "P-088"
+          ],
+          "life": 3,
+          "rested": {
+            "ST36-005": 1,
+            "OP10-112": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP16-005",
+            "OP16-015",
+            "OP16-011",
+            "OP16-017"
+          ],
+          "trash": [
+            "OP16-004",
+            "EB01-002",
+            "OP14-018",
+            "OP10-005",
+            "OP16-118",
+            "OP16-118",
+            "EB01-002"
+          ],
+          "board": [
+            "OP16-011"
+          ],
+          "life": 3,
+          "rested": {
+            "OP16-011": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST36-003"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP10-112",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-011",
+          "card_name": "Vista",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Vista [\"OP16-011\">OP16-011] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-015",
+          "card_name": "Monkey D. Luffy",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-005",
+            "OP16-017",
+            "OP16-005",
+            "OP13-016"
+          ],
+          "board": [
+            "OP16-011",
+            "OP16-011",
+            "OP16-015"
+          ],
+          "trash": [
+            "OP16-004",
+            "EB01-002",
+            "OP14-018",
+            "OP10-005",
+            "OP16-118",
+            "OP16-118",
+            "EB01-002"
+          ],
+          "life": 3,
+          "rested": {
+            "OP16-011": 2,
+            "OP16-015": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST36-002",
+            "ST36-003",
+            "OP10-119",
+            "OP10-111",
+            "OP11-101"
+          ],
+          "trash": [
+            "ST36-004",
+            "OP10-109",
+            "OP10-111",
+            "P-088",
+            "ST36-003"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-005",
+            "OP10-112"
+          ],
+          "life": 2,
+          "rested": {
+            "ST36-005": 1,
+            "OP10-112": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-111",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-111",
+          "to_name": "Monkey D. Luffy",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-111",
+          "to_name": "Monkey D. Luffy",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP10-111",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-016"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST36-005",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-005"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-112",
+          "target": "Vista [\"OP16-011\">OP16-011]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST36-002",
+          "card_name": "Killer",
+          "effects": [
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-101",
+          "card_name": "Capone \"Gang\" Bege",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP10-112",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Killer [\"ST36-002\">ST36-002]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-099",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Life Face Up",
+            "Set Eustass \"Captain\" Kid [\"OP10-112\">OP10-112] to Active",
+            "Eustass \"Captain\" Kid [\"OP10-112\">OP10-112] Gains Blocker"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST36-003",
+            "OP10-119",
+            "OP10-111",
+            "P-088"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-005",
+            "OP10-112",
+            "ST36-002",
+            "OP11-101"
+          ],
+          "trash": [
+            "ST36-004",
+            "OP10-109",
+            "OP10-111",
+            "P-088",
+            "ST36-003",
+            "ST36-002"
+          ],
+          "life": 3,
+          "rested": {
+            "OP10-111": 1,
+            "ST36-005": 1,
+            "OP10-112": 1,
+            "OP11-101": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP16-017",
+            "OP16-005"
+          ],
+          "trash": [
+            "OP16-004",
+            "EB01-002",
+            "OP14-018",
+            "OP10-005",
+            "OP16-118",
+            "OP16-118",
+            "EB01-002",
+            "OP13-016",
+            "OP16-014",
+            "OP16-005",
+            "OP16-011"
+          ],
+          "board": [
+            "OP16-011",
+            "OP16-015"
+          ],
+          "life": 2,
+          "rested": {
+            "OP16-011": 1,
+            "OP16-015": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Eustass \"Captain\" Kid [\"ST36-005\">ST36-005]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP16-015",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST36-003"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP10-112",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-017",
+          "card_name": "LittleOars Jr.",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-005",
+          "card_name": "Thatch",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give LittleOars Jr. [\"OP16-017\">OP16-017] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "LittleOars Jr.",
+          "attacker_code": "OP16-017",
+          "target": "Eustass \"Captain\" Kid [\"ST36-005\">ST36-005]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "P-088"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-014"
+          ],
+          "board": [
+            "OP16-011",
+            "OP16-015",
+            "OP16-017",
+            "OP16-005"
+          ],
+          "trash": [
+            "OP16-004",
+            "EB01-002",
+            "OP14-018",
+            "OP10-005",
+            "OP16-118",
+            "OP16-118",
+            "EB01-002",
+            "OP13-016",
+            "OP16-014",
+            "OP16-005",
+            "OP16-011"
+          ],
+          "life": 2,
+          "rested": {
+            "OP16-011": 1,
+            "OP16-015": 1,
+            "OP16-017": 1,
+            "OP16-005": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP10-119",
+            "OP10-111"
+          ],
+          "trash": [
+            "ST36-004",
+            "OP10-109",
+            "OP10-111",
+            "P-088",
+            "ST36-003",
+            "ST36-002",
+            "ST36-003",
+            "P-088"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-005",
+            "OP10-112",
+            "ST36-002",
+            "OP11-101"
+          ],
+          "life": 3,
+          "rested": {
+            "OP10-111": 1,
+            "ST36-005": 1,
+            "OP10-112": 1,
+            "OP11-101": 1
+          }
+        }
+      }
+    }
+  ]
+}

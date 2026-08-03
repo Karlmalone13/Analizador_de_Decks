@@ -2,6 +2,20 @@
 
 **Última atualização:** 2 de agosto de 2026
 
+> 02/08/2026 (bloco 424): **Partida nova (Ace x Kid) confirma os 4
+> fixes de hoje funcionando ao vivo** (Izo deu DON pro líder, Rush foi
+> pra Vista recém-jogada) — nenhuma regressão visível. **Achado novo,
+> NÃO corrigido**: a busca do Turn Planner estourou o timeout de 3s 7x
+> nesta partida (`decision_timeouts` na telemetria, ausente nas
+> partidas anteriores). Investigado com cProfile + bissecção via `git
+> worktree`: **confirmado pré-existente** (reproduz idêntico no commit
+> de antes de todos os fixes de hoje) — não é regressão, é um board
+> específico (mão=5 com 2x Vista, Izo em campo) que já era lento.
+> Maior parte do tempo em `avaliar_carta`/`don_opportunity_cost`
+> chamadas repetidas dentro da busca contrafactual. Pendência de
+> performance registrada pra próxima sessão que for atrás disso. Ver
+> bloco 424 do HANDOFF.
+
 > 02/08/2026 (bloco 423): **Bloco 418 fechado — causa raiz da lentidão
 > de `/choose_target` confirmada e corrigida**. Decisões de alvo pra
 > cartas com custo só de mão (ex: Luffy OP16-015) chegavam com 65-73
