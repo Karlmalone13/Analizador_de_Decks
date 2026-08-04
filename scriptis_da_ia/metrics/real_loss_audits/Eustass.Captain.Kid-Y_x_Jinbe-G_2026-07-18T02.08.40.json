@@ -1,0 +1,221 @@
+{
+  "parsed_file": "Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.json",
+  "bot_side": "You",
+  "bot_leader": "Eustass \"Captain\" Kid",
+  "opp_leader": "Jinbe",
+  "turnos_auditados": 5,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP12-117",
+          "card_name": "Slam Gibson",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Kamakiri\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: Portgas.D.Ac, Sanji (Alter\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 2 DON -> Joga: Portgas.D.Ace - ST13-010 (Repr (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] You may trash this Character: Reveal 1 card from the top of your Life car...\u001b[0m\n    ⚙ ativou [Activate:Main] de Portgas.D.Ace - ST13-0\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "P-088",
+          "card_name": "Trafalgar Law",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "P-063"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Shiryu (Full Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: Nico Robin (, Charlotte Am\n  > gastou 1 DON -> Joga: Jewelry Bonney (OP15-105) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: If your Character with 7000 base power or less would be removed from the field by your opp...\u001b[0m\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Arlong [\"OP15-023\">OP15-023]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP10-111",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "<b>Reveal and Draw Trafalgar Law [\"P-088\">P-088]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-101",
+          "card_name": "Capone \"Gang\" Bege",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "P-088",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP06-032"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Donquixote Doflamingo\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Trafalgar Law - P-08 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Eustass\"Captain\"Kid  (5000pwr) ataca Charlotte Praline\n      🛡 Counter! +2000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: Kuzan, Sanji (Alter\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ficou(ram) ativo(s): Trafalgar Law \u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP10-119",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Added card to top of Life from Hand",
+            "Attach 1 Rested Don to Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Portgas.D.Ace - PRB02-018 (Alt\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Trafalgar Law - P-08 (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Capone\"Gang\"Bege (10 (1000pwr) ataca Shirahoshi (030)\n      💀 Shirahoshi (030) foi KO!\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: Kamakiri, Charlotte Am\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ficou(ram) ativo(s): Trafalgar Law \u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "P-088",
+          "to_name": "Trafalgar Law",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "P-088",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "OP10-119",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP11-029",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP06-033"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 6,
+          "to": "OP10-111",
+          "to_name": "Monkey D. Luffy",
+          "total": 6
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP10-111",
+          "target": "Hody Jones [\"OP06-035\">OP06-035]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-030"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-101",
+          "to_name": "Capone \"Gang\" Bege",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Capone \"Gang\" Bege",
+          "attacker_code": "OP11-101",
+          "target": "Shirahoshi [\"OP11-030\">OP11-030]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Shiryu (Full Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Trafalgar Law - OP10 (9000pwr) ataca Jinbe (031) (Alterna\n      🛡 Blocker! Charlotte Praline intercepta\n      💀 Charlotte Praline foi KO!\n    Trafalgar Law - P-08 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Monkey.D.Luffy (111) (2000pwr) ataca Shirahoshi (030)\n      💀 Shirahoshi (030) foi KO!\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: Ulti, Catarina Dev\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ficou(ram) ativo(s): Trafalgar Law \u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+    }
+  ]
+}

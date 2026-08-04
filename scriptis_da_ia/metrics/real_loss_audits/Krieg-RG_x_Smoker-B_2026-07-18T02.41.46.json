@@ -1,0 +1,293 @@
+{
+  "parsed_file": "Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+  "bot_side": "You",
+  "bot_leader": "Krieg",
+  "opp_leader": "Smoker",
+  "turnos_auditados": 6,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP15-026",
+          "card_name": "Jango",
+          "effects": [
+            "<b>Reveal and Draw Kuro [\"OP15-025\">OP15-025]</b>",
+            "Trash Jango [\"OP15-026\">OP15-026]",
+            "Attach 1 Rested Don to Sengoku [\"ST19-002\">ST19-002]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-040",
+          "card_name": "I Know You're Strong... So I'll Go All Out",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST06-006"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Jango (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 {East Blue} type card ...\u001b[0m\n    Jango (2000pwr) ataca Sengoku - ST19-002 (\n      💀 Sengoku - ST19-002 ( foi KO!\n    ⚙ ativou [Activate:Main] de Jango\n      ↳ custo: trashou Jango (ele mesmo)\n      ↳ deu 0 DON ao character do oponente\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Brannew [\"OP03-089\">OP03-089]",
+            "Attach 1 Rested Don to Morgan [\"OP15-017\">OP15-017]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-026",
+          "card_name": "Jango",
+          "effects": [
+            "Trash Jango [\"OP15-026\">OP15-026]",
+            "Attach 1 Rested Don to Brannew [\"OP03-089\">OP03-089]"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Krieg (OP15-001) (Al (5000pwr) ataca Brannew (Reprint)\n      💀 Brannew (Reprint) foi KO!\n  > gastou 1 DON -> Joga: The Outcome Will Tell Us Who's (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 5 cards from the top of your deck; reveal up to 1 {East Blue} type card oth...\u001b[0m\n    ⚙ ativou [Activate:Main] de Jango\n      ↳ custo: trashou Jango (ele mesmo)\n      ↳ deu 0 DON ao character do oponente\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP15-025",
+          "card_name": "Kuro",
+          "effects": [
+            "Attach 1 Rested Don to Tashigi [\"ST19-003\">ST19-003]",
+            "Attach 1 Rested Don to Tashigi [\"ST19-003\">ST19-003]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Tashigi [\"ST19-003\">ST19-003]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB01-049"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: The Outcome Will Tell Us Who's (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 5 cards from the top of your deck; reveal up to 1 {East Blue} type card oth...\u001b[0m\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Kuro",
+          "attacker_code": "OP15-025",
+          "target": "Tashigi [\"ST19-003\">ST19-003]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-025",
+          "card_name": "Kuro",
+          "effects": [
+            "Attach 1 Rested Don to Issho [\"OP03-078\">OP03-078]",
+            "Attach 1 Rested Don to Issho [\"OP03-078\">OP03-078]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Issho [\"OP03-078\">OP03-078]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Kuro (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n  > gastou 1 DON -> Joga: The Outcome Will Tell Us Who's (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 5 cards from the top of your deck; reveal up to 1 {East Blue} type card oth...\u001b[0m\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP15-025",
+          "to_name": "Kuro",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuro",
+          "attacker_code": "OP15-025",
+          "target": "Issho [\"OP03-078\">OP03-078]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP02-114"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP15-025",
+          "to_name": "Kuro",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuro",
+          "attacker_code": "OP15-025",
+          "target": "Issho [\"OP03-078\">OP03-078]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB02-044"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Issho [\"OP03-078\">OP03-078]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Kuro (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Kuro (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Koby (OP15-009) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: If your Character with 7000 base power or less would be removed from the field by your opp...\u001b[0m\n"
+    },
+    {
+      "turn": 13,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Kuzan [\"OP02-096\">OP02-096]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP05-091",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuro",
+          "attacker_code": "OP15-025",
+          "target": "Kuzan [\"OP02-096\">OP02-096]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-025",
+          "card_name": "Kuro",
+          "effects": [
+            "Attach 1 Rested Don to Hina [\"ST06-008\">ST06-008]",
+            "Attach 1 Rested Don to Hina [\"ST06-008\">ST06-008]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Hina [\"ST06-008\">ST06-008]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-037",
+          "card_name": "The Outcome Will Tell Us Who's Strong and Who's Weak",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Gin [\"OP15-007\">OP15-007]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuro",
+          "attacker_code": "OP15-025",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Kuro (Alternate Art) (7000pwr) ataca Rebecca (Reprint)\n      💀 Rebecca (Reprint) foi KO!\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Kuro (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n  > gastou 1 DON -> Joga: The Outcome Will Tell Us Who's (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 5 cards from the top of your deck; reveal up to 1 {East Blue} type card oth...\u001b[0m\n"
+    }
+  ]
+}

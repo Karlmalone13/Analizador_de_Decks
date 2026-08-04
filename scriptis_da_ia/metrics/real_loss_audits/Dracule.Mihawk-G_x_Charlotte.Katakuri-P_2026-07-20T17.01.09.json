@@ -1,0 +1,312 @@
+{
+  "parsed_file": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T17.01.09.json",
+  "bot_side": "You",
+  "bot_leader": "Dracule Mihawk",
+  "opp_leader": "Charlotte Katakuri",
+  "turnos_auditados": 4,
+  "turnos": [
+    {
+      "turn": 3,
+      "error": "'>' not supported between instances of 'int' and 'str'",
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP14-023",
+          "card_name": "Kikunojo",
+          "effects": [
+            "Set Kikunojo [\"OP14-023\">OP14-023] to Active"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ]
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP01-055",
+          "card_name": "You Can Be My Samurai!!!",
+          "effects": [
+            "Rest Perona [\"OP12-034\">OP12-034]",
+            "Rest Kikunojo [\"OP14-023\">OP14-023]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST32-001",
+          "card_name": "Kin'emon",
+          "effects": [
+            "Rest Don [\"Don\">Don]",
+            "Draw 2 Card",
+            "Trash Trafalgar Law [\"OP13-031\">OP13-031]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-023",
+          "card_name": "Kikunojo",
+          "effects": [
+            "Set Kikunojo [\"OP14-023\">OP14-023] to Active"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Concelot\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 1 DON -> Joga: Otama (Parallel) (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 green [Land of Wano] t...\u001b[0m\n    ↳ [Otama (Parallel)] olhou 5 do topo -> pegou: Uta (061) (Mang\n    ↳ [Otama (Parallel)] 4 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: Kin'emon (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may rest 1 of your (Slash) attribute Leaders or DON!! cards: Draw 2 cards an...\u001b[0m\n    ↳ [Kin'emon] comprou: Arlong, Sarfunkel (e trashou: Smoker - OP1)\n"
+    },
+    {
+      "turn": 7,
+      "error": "'>' not supported between instances of 'int' and 'str'",
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "ST32-003",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Deploy Smoker [\"OP10-030\">OP10-030]",
+            "Draw 1 Card",
+            "Trash You Can Be My Samurai!!! [\"OP01-055\">OP01-055]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Dracule Mihawk [\"ST32-003\">ST32-003]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kikunojo",
+          "attacker_code": "OP14-023",
+          "target": "Baron Tamago & Pekoms [\"ST34-005\">ST34-005]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-023",
+          "card_name": "Kikunojo",
+          "effects": [
+            "Set Kikunojo [\"OP14-023\">OP14-023] to Active"
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP14-119",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Baron Tamago & Pekoms [\"ST34-005\">ST34-005] can't be rested until next turn ends"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Dracule Mihawk [\"OP14-119\">OP14-119]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kin'emon",
+          "attacker_code": "ST32-001",
+          "target": "Charlotte Brulee [\"ST34-003\">ST34-003]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kikunojo",
+          "attacker_code": "OP14-023",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-070"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP10-030",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "PRB02-010"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "ST32-003",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-002",
+            "ST18-001"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST32-003",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Perona [\"OP12-034\">OP12-034]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-023",
+          "card_name": "Kikunojo",
+          "effects": [
+            "Set Kikunojo [\"OP14-023\">OP14-023] to Active"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Jinbe (027)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Dracule Mihawk\n    Dracule Mihawk (8000pwr) ataca Leader\n      [quando restou] comprou: Roronoa Zoro (e trashou: Jinbe (027))\n      🛡 Counter! +4000 -> defesa 9000\n      ✗ Ataque bloqueado (8000 < 9000)\n    Smoker - OP10-030 (S (7000pwr) ataca Leader\n      💥 DANO (BANISH)! vida -> trash: 1\n  > gastou 1 DON -> Joga: You Can Be My Samurai!! (Repri (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Characters: Draw 2 cards.Disclaimer: This card was reprinted...\u001b[0m\n    ↳ [You Can Be My Samura] custo: restou aliado: Kikunojo - OP14, Kin'emon\n    ↳ [You Can Be My Samura] comprou: Shirahoshi (, Sanji (Alter\n    Dracule Mihawk - OP1 (6000pwr) ataca Charlotte Brulee\n      💀 Charlotte Brulee foi KO!\n  \u001b[90m[end] Kikunojo - OP14-02 ficou ativo\u001b[0m\n"
+    }
+  ]
+}

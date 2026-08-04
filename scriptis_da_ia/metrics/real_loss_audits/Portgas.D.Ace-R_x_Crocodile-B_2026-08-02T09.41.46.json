@@ -1,0 +1,243 @@
+{
+  "parsed_file": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T09.41.46.json",
+  "bot_side": "You",
+  "bot_leader": "Portgas D. Ace",
+  "opp_leader": "Crocodile",
+  "turnos_auditados": 5,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP16-010",
+          "card_name": "Namule",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Roronoa Zoro\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Namule (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may reveal 1 Character card with 8000 power from your hand: K.O. up to 1 of ...\u001b[0m\n    ↳ [Namule] custo: revelou 1 carta(s) com tipo \n    ↳ [Namule] KO: Miss.Valentine(\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-088"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP16-010",
+          "to_name": "Namule",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP16-010",
+          "to_name": "Namule",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Namule",
+          "attacker_code": "OP16-010",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-083",
+            "OP14-088"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Morley\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 2 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Namule (2000pwr) ataca Miss.Valentine(Mikit\n      🛡 Counter! +1000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n    Portgas.D.Ace (001)  (7000pwr) ataca Leader\n      🛡 Counter! +3000 -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP16-011",
+          "card_name": "Vista",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Vista [\"OP16-011\">OP16-011] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-085"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Dr.Hiriluk\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 2 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Portgas.D.Ace (001)  (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-086"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-014",
+          "card_name": "Marco",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Marco [\"OP16-014\">OP16-014] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marco",
+          "attacker_code": "OP16-014",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-015",
+          "card_name": "Monkey D. Luffy",
+          "effects": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Dr.Hiriluk\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 1 DON em Vista para ligar [when_attacking]\n    Vista (9000pwr) ataca Leader\n      ↳ [when attacking] KO: Miss.Valentine(\n      💥 DANO! vida do oponente: 2\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Monkey.D.Garp (Alternate Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader is [Sabo], [Portgas.D.Ace] or [Monkey.D.Luffy], look at 4 cards f...\u001b[0m\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP16-003",
+          "card_name": "Edward Newgate",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Vista [\"OP16-011\">OP16-011] Rush"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-015",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP16-015",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-091"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Caesar Clown (006)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Monkey.D.Luffy (Alte\n    Monkey.D.Luffy (Alte (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n      ⚡ [trigger] comprou: Ms. All Sund, Mr.4(Babe) (e trashou: Mr.2.Bon.Kur)\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Vista (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n      ⚡ [trigger] olhou 3 do topo -> pegou: Mr.5(Gem); trash resto: Monkey.D.Luf, Mr.2.Bon.Kur\n"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "parsed_file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30.json",
+  "bot_side": "You",
+  "bot_leader": "Imu",
+  "opp_leader": "Marshall D. Teach",
+  "turnos_auditados": 3,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP13-086",
+          "card_name": "St. Shalria",
+          "effects": [
+            "<b>Reveal and Draw St. Shepherd Ju Peter [\"OP13-084\">OP13-084]</b>",
+            "Trash 2 Remaining Cards",
+            "Trash St. Topman Warcury [\"OP13-089\">OP13-089]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: The Five Elders Are at Your Se\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (6000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Zehahahahaha! (\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: Never Existed..\n    ↳ [The Five Elders Are ] trash resto: The Five Eld, St. Jaygarci\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: St. Ethanbar\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-104"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-098",
+          "card_name": "...Never Existed...",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Shirahoshi (OP05-082) (Reprint\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Zehahahahaha! (\n      🛡 Counter! +4000 -> defesa 9000\n      ✗ Ataque bloqueado (7000 < 9000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: St. Ethanbar\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+            "Deploy St. Shepherd Ju Peter [\"OP13-084\">OP13-084]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-093",
+          "card_name": "Bartholomew Kuma",
+          "effects": [
+            "Draw 2 Card",
+            "Trash St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+            "Trash St. Marcus Mars [\"OP13-091\">OP13-091]",
+            "Attach 1 Rested Don to St. Shalria [\"OP13-086\">OP13-086]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Jesus Burgess [\"OP09-086\">OP09-086]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-102"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: St. Shepherd Ju Peter (Alterna\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (6000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Zehahahahaha! (\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: The Five Eld\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: Five Elders (Al\n    ↳ [The Five Elders Are ] trash resto: St. Topman W, St. Ethanbar\n"
+    }
+  ]
+}

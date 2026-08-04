@@ -1,0 +1,194 @@
+{
+  "parsed_file": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.json",
+  "bot_side": "You",
+  "bot_leader": "Imu",
+  "opp_leader": "Eustass \"Captain\" Kid",
+  "turnos_auditados": 4,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-079",
+          "to_name": "Imu",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP13-098",
+          "card_name": "...Never Existed...",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: The Five Elders Are at Your Se\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Monkey.D.Luffy (111)\n      💀 Monkey.D.Luffy (111) foi KO!\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: Saint Shalria\n    ↳ [The Five Elders Are ] trash resto: Mary Geoise , St. Shepherd\n  > gastou 1 DON -> Joga: Saint Shalria (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" ty...\u001b[0m\n    ↳ [Saint Shalria] olhou 3 do topo -> pegou: The Five Elders\n    ↳ [Saint Shalria] trash resto: Ground Death, St. Shepherd\n    ↳ [Saint Shalria] descartou da mão: St. Jaygarci\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: St. Marcus M\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+            "Deploy St. Jaygarcia Saturn [\"OP13-083\">OP13-083]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-083",
+          "card_name": "St. Jaygarcia Saturn",
+          "effects": [
+            "<b>Reveal and Draw St. Topman Warcury [\"OP13-089\">OP13-089]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-079",
+          "to_name": "Imu",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "ST36-002",
+          "countered_by": [
+            "OP10-114"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Never Existed... in the First \u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: St. Topman W\n  > gastou 1 DON -> Joga: Ground Death (Alternate Art) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Don!! cards: Negate the effect of up to 1 of your opponent's...\u001b[0m\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+            "Deploy St. Marcus Mars [\"OP13-091\">OP13-091]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-086",
+          "card_name": "St. Shalria",
+          "effects": [
+            "<b>Reveal and Draw Five Elders [\"OP13-082\">OP13-082]</b>",
+            "Trash 2 Remaining Cards",
+            "Trash The Holy Land Mary Geoise [\"OP05-097\">OP05-097]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-083",
+          "to_name": "St. Jaygarcia Saturn",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP10-114"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "ST36-002",
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Ground Death (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em St. Jaygarcia Saturn\n    St. Jaygarcia Saturn (6000pwr) ataca Killer\n      💀 Killer foi KO!\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 5\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: Saint Shalri\n  > gastou 1 DON -> Joga: Saint Shalria (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" ty...\u001b[0m\n    ↳ [Saint Shalria] olhou 3 do topo -> pegou: The Five Elders\n    ↳ [Saint Shalria] trash resto: Shirahoshi (, St. Marcus M\n    ↳ [Saint Shalria] descartou da mão: Mary Geoise \n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+            "Deploy St. Shepherd Ju Peter [\"OP13-084\">OP13-084]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-083",
+          "card_name": "St. Jaygarcia Saturn",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Monkey D. Luffy [\"OP10-111\">OP10-111]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "ST36-002",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Marcus Mars",
+          "attacker_code": "OP13-091",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Saint Shalria\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em St. Jaygarcia Saturn\n    St. Jaygarcia Saturn (6000pwr) ataca Killer\n      💀 Killer foi KO!\n    anexou 1 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (6000pwr) ataca Killer\n      💀 Killer foi KO!\n    St. Marcus Mars (Par (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 6\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: Five Elders \n"
+    }
+  ]
+}

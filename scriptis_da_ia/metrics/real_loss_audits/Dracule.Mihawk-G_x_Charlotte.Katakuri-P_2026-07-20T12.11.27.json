@@ -1,0 +1,111 @@
+{
+  "parsed_file": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27.json",
+  "bot_side": "You",
+  "bot_leader": "Dracule Mihawk",
+  "opp_leader": "Charlotte Katakuri",
+  "turnos_auditados": 2,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 2,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kikunojo",
+          "attacker_code": "OP14-023",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-023",
+          "card_name": "Kikunojo",
+          "effects": [
+            "Set Kikunojo [\"OP14-023\">OP14-023] to Active"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Bepo\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 1 DON -> Joga: Otama (Parallel) (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 green [Land of Wano] t...\u001b[0m\n    ↳ [Otama (Parallel)] olhou 5 do topo -> pegou: Baby 5 (OP04-03\n    ↳ [Otama (Parallel)] 4 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: Baby 5 (OP04-032) (Reprint) (1000pwr) [CHARACTER]\n    \u001b[90mefeito: [End of Your Turn] You may trash this Character: Set up to 2 of your DON!! cards as active...\u001b[0m\n  \u001b[90m[end] custo: trashou Baby 5 (OP04-032)  (ele mesmo)\u001b[0m\n  \u001b[90m[end] reativou 2 DON\u001b[0m\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP10-030",
+          "card_name": "Smoker",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Smoker [\"OP10-030\">OP10-030]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kikunojo",
+          "attacker_code": "OP14-023",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-023",
+          "card_name": "Kikunojo",
+          "effects": [
+            "Set Kikunojo [\"OP14-023\">OP14-023] to Active"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Koushirou\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 1 DON -> Joga: Otama (Parallel) (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 green [Land of Wano] t...\u001b[0m\n    ↳ [Otama (Parallel)] olhou 5 do topo -> pegou: Donquixote Dofl\n    ↳ [Otama (Parallel)] 4 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: Donquixote Doflamingo (028) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate:Main] You may trash this Character: K.O. up to 1 of your opponent's rested Chara...\u001b[0m\n"
+    }
+  ]
+}

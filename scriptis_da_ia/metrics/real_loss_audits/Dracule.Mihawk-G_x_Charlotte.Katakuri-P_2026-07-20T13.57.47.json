@@ -1,0 +1,240 @@
+{
+  "parsed_file": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T13.57.47.json",
+  "bot_side": "You",
+  "bot_leader": "Dracule Mihawk",
+  "opp_leader": "Charlotte Katakuri",
+  "turnos_auditados": 4,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP12-034",
+          "to_name": "Perona",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Perona",
+          "attacker_code": "OP12-034",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Capone\"Gang\"Bege\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 2 DON -> Joga: Capone\"Gang\"Bege (1000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] (After your opponent declares an attack, you may rest this card to make it the n...\u001b[0m\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "ST32-001",
+          "card_name": "Kin'emon",
+          "effects": [
+            "Rest Don [\"Don\">Don]",
+            "Draw 2 Card",
+            "Trash Roronoa Zoro [\"ST32-005\">ST32-005]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP12-034",
+          "card_name": "Perona",
+          "effects": [
+            "<b>Reveal and Draw Law & Bepo [\"ST24-004\">ST24-004]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP01-055",
+          "card_name": "You Can Be My Samurai!!!",
+          "effects": [
+            "Rest Perona [\"OP12-034\">OP12-034]",
+            "Rest Perona [\"OP12-034\">OP12-034]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST18-001"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Jean Bart\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Perona (Alternate Ar (2000pwr) ataca Charlotte Pudding (A\n      🛡 Counter! +4000 -> defesa 4000\n      ✗ Ataque bloqueado (2000 < 4000)\n    Dracule Mihawk - OP1 (6000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n  > gastou 1 DON -> Joga: Kin'emon (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may rest 1 of your (Slash) attribute Leaders or DON!! cards: Draw 2 cards an...\u001b[0m\n    ↳ [Kin'emon] comprou: Vander Decke, Monkey.D.Luf (e trashou: Jean Bart)\n  > gastou 1 DON -> Joga: Roronoa Zoro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Rush:Character] (This card can attack Characters on the turn in which it is played.) [On ...\u001b[0m\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP13-031",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Return Perona [\"OP12-034\">OP12-034] to Hand",
+            "Deploy Perona [\"OP14-033\">OP14-033]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-033",
+          "card_name": "Perona",
+          "effects": [
+            "Charlotte Pudding [\"OP11-070\">OP11-070] can't be rested until next turn ends",
+            "Charlotte Pudding [\"OP11-070\">OP11-070] can't be rested until next turn ends"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "PRB02-010",
+            "PRB02-010"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Donquixote Doflamingo\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Kin'emon (2000pwr) ataca Charlotte Pudding (A\n      🛡 Counter! +3000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n    Perona (Alternate Ar (2000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n    Dracule Mihawk - OP1 (6000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n  > gastou 1 DON -> Joga: Roronoa Zoro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Rush:Character] (This card can attack Characters on the turn in which it is played.) [On ...\u001b[0m\n  > gastou 1 DON -> Joga: Kikunojo - OP14-023 (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [End of Your Turn] Set this Character as active.\u001b[0m\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "ST32-003",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Deploy Kouzuki Oden [\"ST32-002\">ST32-002]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST32-002",
+          "card_name": "Kouzuki Oden",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "ST32-001",
+          "to_name": "Kin'emon",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kin'emon",
+          "attacker_code": "ST32-001",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-069"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kouzuki Oden",
+          "attacker_code": "ST32-002",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "OP13-031",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Kouzuki Oden [\"ST32-002\">ST32-002]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Arlong\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Trafalgar Law (SP) (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Kouzuki Oden (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      🛡 Counter! +3000 -> defesa 8000\n      ✗ Ataque bloqueado (6000 < 8000)\n  > gastou 1 DON -> Joga: Otama (Parallel) (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 green [Land of Wano] t...\u001b[0m\n    ↳ [Otama (Parallel)] olhou 5 do topo -> pegou: Monkey.D.Luffy \n    ↳ [Otama (Parallel)] 4 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: Perona (Alternate Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader has the (Slash) attribute, look at 5 cards from the top of your d...\u001b[0m\n"
+    }
+  ]
+}

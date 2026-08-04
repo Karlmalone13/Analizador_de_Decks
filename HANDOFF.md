@@ -1,5 +1,46 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (439) - Claude (sessao remota web) - Nova ferramenta permanente: audit_real_losses.py -- reconstroi derrota real e pergunta pro motor de hoje o que ele faria
+
+Usuario propos um exercicio (forcar as proprias decisoes vencedoras
+dele contra o bot ate o bot vencer) -- investiguei e sinalizei o
+problema real (decisao de humano so faz sentido pra mao/estado que ele
+realmente teve, forcar a mesma decisao numa partida com draws
+diferentes pode nao fazer sentido). Usuario concordou em pivotar,
+pedindo especificamente pra registrar a ferramenta que sairia disso
+pra "nao esquecermos que ela existe e podermos sempre estar usando".
+
+**Nova ferramenta**: `scriptis_da_ia/audit_real_losses.py`. Pega uma
+derrota REAL do bot contra humano (banco de logs), reconstroi o estado
+do jogo (mao/campo/DON/vida) em cada turno do bot a partir do snapshot
+do log, e pergunta pro motor de HOJE (via `OPTCGMatch.play_turn()`
+real, fonte unica, sem duplicar decisao) o que ele faria -- compara
+com o que o bot fez de verdade na epoca. Documentacao completa +
+limitacoes honestas (DON reconstruido e best-effort, deck restante e
+composicao real mas ordem embaralhada, lideres sem decklist real no
+banco -- Teach/Krieg/Kid confirmados ausentes -- caem num deck
+generico da mesma cor, mao do oponente entra com info completa, 1o
+turno de cada jogador pulado) registradas **em CLAUDE.md E AGENTS.md**
+(secao nova "Auditoria de derrotas reais contra humano", espelhada
+identica nos dois arquivos, regra do topo do CLAUDE.md).
+
+**Validacao da ferramenta em si**: piloto em 20 partidas (0 erros, 104
+turnos), depois rodada completa nas 59 derrotas reais disponiveis no
+banco -- **59/59 processadas, 268 turnos auditados, so 2 com erro
+interno** (capturado sem derrubar a auditoria, cada turno tem seu
+proprio try/except). Relatorios salvos em
+`scriptis_da_ia/metrics/real_loss_audits/*.json` (1 por partida,
+commitados -- 632K no total).
+
+**Pendente, proximo passo natural (nao feito ainda)**: os 268 turnos
+gerados sao dados brutos -- ainda faltam triagem (comparar narrativa
+de hoje vs acao historica, separar "motor ja mudou de decisao" de
+"motor repete a mesma escolha que perdeu") e investigacao dos casos
+onde o motor de hoje ainda repete uma decisao que historicamente
+perdeu. Isso e trabalho de proxima sessao/proxima rodada, nao
+executado neste bloco -- a entrega desta rodada foi CONSTRUIR e
+VALIDAR a ferramenta, registrada pra nunca ser esquecida/reinventada.
+
 ## 2026-08-04 (438) - Claude (sessao remota web) - Fecha a auditoria do bloco 434: mais 5 pontos com o mesmo bug de power_buff corrigidos, validados com gauntlet N=30
 
 Continuacao direta da auditoria pendente do bloco 434 (mesmo padrao

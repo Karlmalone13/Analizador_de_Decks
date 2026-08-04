@@ -2,6 +2,19 @@
 
 **Última atualização:** 4 de agosto de 2026
 
+> 04/08/2026 (bloco 439): **nova ferramenta permanente**
+> `scriptis_da_ia/audit_real_losses.py` — reconstrói o estado de uma
+> derrota REAL do bot contra humano turno a turno e pergunta pro motor
+> de hoje o que ele faria, comparando com o que aconteceu de verdade.
+> Registrada em CLAUDE.md **e** AGENTS.md (seção nova, espelhada) pra
+> nenhuma sessão futura esquecer/reinventar. Validada: 59/59 derrotas
+> reais processadas, 268 turnos, só 2 com erro interno (não derrubou a
+> auditoria). Relatórios em `metrics/real_loss_audits/*.json`
+> (commitados). **Próximo passo pendente, não feito ainda**: triar os
+> 268 turnos — separar "motor já mudou de decisão" (bom sinal) de
+> "motor repete a mesma escolha que perdeu" (achado real, investigar).
+> Ver bloco 439 do HANDOFF.
+
 > 04/08/2026 (bloco 438): **encerra a auditoria do bloco 434** — os 6
 > pontos sinalizados com o mesmo padrão "power sem power_buff" foram
 > todos resolvidos: 1 falso positivo (~7184, já usava

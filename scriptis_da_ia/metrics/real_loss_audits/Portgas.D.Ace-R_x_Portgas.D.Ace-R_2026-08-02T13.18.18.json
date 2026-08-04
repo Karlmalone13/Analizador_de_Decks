@@ -1,0 +1,193 @@
+{
+  "parsed_file": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T13.18.18.json",
+  "bot_side": "You",
+  "bot_leader": "Portgas D. Ace",
+  "opp_leader": "Portgas D. Ace",
+  "turnos_auditados": 4,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP16-010",
+          "to_name": "Namule",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Namule",
+          "attacker_code": "OP16-010",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-017"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Lim\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 2 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Portgas.D.Ace (001)  (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP16-010",
+          "to_name": "Namule",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Namule",
+          "attacker_code": "OP16-010",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-010"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Raise Max\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      ↳ [on opp attack: Monkey.D.Luffy ] custo: trashou da mão: Vista\n      ↳ [on opp attack: Monkey.D.Luffy ] base power de Monkey.D.Luffy  virou 7000\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Raise Max (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate:Main] You may place this Character at the bottom of the owner's deck: Give up to...\u001b[0m\n    ⚙ ativou [Activate:Main] de Raise Max\n      ↳ custo: Raise Max foi para o fundo do deck\n      ↳ -3000 power em: Monkey.D.Luffy \n    anexou 1 DON em Namule\n    Namule (3000pwr) ataca Monkey.D.Luffy (Alte\n      ↳ [on opp attack: Monkey.D.Luffy ] custo: trashou da mão: Vista\n      ↳ [on opp attack: Monkey.D.Luffy ] base power de Monkey.D.Luffy  virou 7000\n      🛡 Counter! +1000 -> defesa 4000\n      ✗ Ataque bloqueado (3000 < 4000)\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP16-011",
+          "card_name": "Vista",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-021",
+          "card_name": "Moby Dick",
+          "effects": [
+            "Added 1 Cards to Hand"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Vista [\"OP16-011\">OP16-011] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-005"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Shanks - P-083 (Reprint)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      ↳ [on opp attack: Monkey.D.Luffy ] custo: trashou da mão: Thatch\n      ↳ [on opp attack: Monkey.D.Luffy ] base power de Monkey.D.Luffy  virou 7000\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Moby Dick (Alternate Art) (0pwr) [STAGE]\n    \u001b[90mefeito: [On Play] If your Leader has the {Whitebeard Pirates} type, look at 3 cards from the top o...\u001b[0m\n    ↳ [Moby Dick (Alternate] olhou 3 do topo -> pegou: Hiking Bear\n    ↳ [Moby Dick (Alternate] 2 carta(s) no fundo do deck\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP16-003",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Buff Portgas D. Ace [\"OP16-118\">OP16-118] -6000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Vista [\"OP16-011\">OP16-011]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-005"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Vista [\"OP16-011\">OP16-011] Rush"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Uta\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      ↳ [on opp attack: Monkey.D.Luffy ] custo: trashou da mão: Thatch\n      ↳ [on opp attack: Monkey.D.Luffy ] base power de Monkey.D.Luffy  virou 7000\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Vista (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  > gastou 1 DON -> Joga: Monkey.D.Garp (Alternate Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader is [Sabo], [Portgas.D.Ace] or [Monkey.D.Luffy], look at 4 cards f...\u001b[0m\n"
+    }
+  ]
+}

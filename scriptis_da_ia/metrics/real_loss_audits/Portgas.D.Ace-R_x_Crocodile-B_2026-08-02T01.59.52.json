@@ -1,0 +1,274 @@
+{
+  "parsed_file": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T01.59.52.json",
+  "bot_side": "You",
+  "bot_leader": "Portgas D. Ace",
+  "opp_leader": "Crocodile",
+  "turnos_auditados": 6,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP16-010",
+          "to_name": "Namule",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Namule",
+          "attacker_code": "OP16-010",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-086"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Sunny-Kun\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Moby Dick (Alternate Art) (0pwr) [STAGE]\n    \u001b[90mefeito: [On Play] If your Leader has the {Whitebeard Pirates} type, look at 3 cards from the top o...\u001b[0m\n    ↳ [Moby Dick (Alternate] olhou 3 do topo -> pegou: Jewelry Bonney \n    ↳ [Moby Dick (Alternate] 2 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: Jewelry Bonney (EB04-002) (Alt (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 4 cards from the top of your deck; reveal up to 1 {Egghead} or {Straw Ha...\u001b[0m\n    ↳ [Jewelry Bonney (EB04] olhou 4 do topo -> nada para pegar\n    ↳ [Jewelry Bonney (EB04] 3 carta(s) no fundo do deck\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP16-010",
+          "to_name": "Namule",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Namule",
+          "attacker_code": "OP16-010",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-086"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-021",
+          "card_name": "Moby Dick",
+          "effects": [
+            "Added 1 Cards to Hand"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-016",
+          "card_name": "Monkey D. Garp",
+          "effects": [
+            "<b>Reveal and Draw Thatch [\"OP16-005\">OP16-005]</b>"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Hack\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Namule (2000pwr) ataca Ms. Wednesday\n      🛡 Counter! +2000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n    Portgas.D.Ace (001)  (5000pwr) ataca Ms. Wednesday\n      💀 Ms. Wednesday foi KO!\n  > gastou 1 DON -> Joga: Moby Dick (Alternate Art) (0pwr) [STAGE]\n    \u001b[90mefeito: [On Play] If your Leader has the {Whitebeard Pirates} type, look at 3 cards from the top o...\u001b[0m\n    ↳ [Moby Dick (Alternate] olhou 3 do topo -> pegou: Douglas Bullet\n    ↳ [Moby Dick (Alternate] 2 carta(s) no fundo do deck\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "EB01-002",
+          "card_name": "Izou",
+          "effects": [
+            "Attach 1 Rested Don to Portgas D. Ace [\"OP16-001\">OP16-001]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Izo\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Moby Dick (Alternate Art) (0pwr) [STAGE]\n    \u001b[90mefeito: [On Play] If your Leader has the {Whitebeard Pirates} type, look at 3 cards from the top o...\u001b[0m\n    ↳ [Moby Dick (Alternate] olhou 3 do topo -> pegou: Monkey.D.Luffy \n    ↳ [Moby Dick (Alternate] 2 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: Izo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may reveal 1 Character card with 8000 power from your hand: Draw 1 card.\u001b[0m\n    ↳ [Izo] custo: revelou 1 carta(s) com tipo \n    ↳ [Izo] comprou: Monkey.D.Luf\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "EB01-002",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-014",
+          "card_name": "Marco",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP13-016",
+          "to_name": "Monkey D. Garp",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Garp",
+          "attacker_code": "OP13-016",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-094"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-091"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Marco [\"OP16-014\">OP16-014] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marco",
+          "attacker_code": "OP16-014",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Edward.Newgate - ST15-002 (Rep\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Izo (7000pwr) ataca Leader\n      🛡 Counter! +3000 -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n  > gastou 1 DON -> Joga: Moby Dick (Alternate Art) (0pwr) [STAGE]\n    \u001b[90mefeito: [On Play] If your Leader has the {Whitebeard Pirates} type, look at 3 cards from the top o...\u001b[0m\n    ↳ [Moby Dick (Alternate] olhou 3 do topo -> pegou: Jozu\n    ↳ [Moby Dick (Alternate] 2 carta(s) no fundo do deck\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-087"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marco",
+          "attacker_code": "OP16-014",
+          "target": "Miss Doublefinger (Zala) [\"OP14-086\">OP14-086]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "EB01-002",
+          "card_name": "Izou",
+          "effects": [
+            "Attach 1 Rested Don to Izou [\"EB01-002\">EB01-002]"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Jozu\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Izo\n    Izo (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n    ⚡ anexou 1 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Marco (Alternate Art (8000pwr) ataca Leader\n"
+    },
+    {
+      "turn": 13,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-090"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-003",
+          "card_name": "Edward Newgate",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "EB01-002",
+          "target": "Crocodile [\"OP14-079\">OP14-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Marco [\"OP16-014\">OP16-014] Rush"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Uta (003) (SP)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Izo\n    Izo (8000pwr) ataca Leader\n      🛡 Counter! +4000 -> defesa 9000\n      ✗ Ataque bloqueado (8000 < 9000)\n    Marco (Alternate Art (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n      ⚡ [trigger] olhou 3 do topo -> pegou: Mr.4(Babe); trash resto: Miss.Goldenw, Mr.2.Bon.Kur\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Izo (7000pwr) ataca Leader\n"
+    }
+  ]
+}

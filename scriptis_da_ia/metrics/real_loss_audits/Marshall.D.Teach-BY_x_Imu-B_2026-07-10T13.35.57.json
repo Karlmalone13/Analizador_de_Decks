@@ -1,0 +1,198 @@
+{
+  "parsed_file": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json",
+  "bot_side": "You",
+  "bot_leader": "Marshall D. Teach",
+  "opp_leader": "Imu",
+  "turnos_auditados": 5,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Shiryu [\"OP16-108\">OP16-108]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-109",
+          "card_name": "Doc Q",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-091"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n  > gastou 1 DON -> Joga: Doc Q (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] If your Leader has the {Blackbeard Pirates} type, draw 1 card and K.O. up to 2 o...\u001b[0m\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "St. Topman Warcury [\"OP13-089\">OP13-089]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Marshall D. Teach [\"OP09-093\">OP09-093]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-109",
+          "card_name": "Doc Q",
+          "effects": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Blocker! St. Topman Warcury ( intercepta\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n  > gastou 1 DON -> Joga: Black Vortex (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the {Blackbeard Pirates} type, add up to 1 card with a [Trigger]...\u001b[0m\n    ↳ [Black Vortex] recuperou do trash: Shiryu (Full Ar\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "St. Marcus Mars [\"OP13-091\">OP13-091]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Laffitte",
+          "attacker_code": "OP09-095",
+          "target": "St. Marcus Mars [\"OP13-091\">OP13-091]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-089"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Blocker! St. Marcus Mars (Par intercepta\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n  > gastou 1 DON -> Joga: Black Vortex (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the {Blackbeard Pirates} type, add up to 1 card with a [Trigger]...\u001b[0m\n    ↳ [Black Vortex] recuperou do trash: Shiryu (Full Ar\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "St. Marcus Mars [\"OP13-091\">OP13-091]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Marshall D. Teach [\"OP16-119\">OP16-119]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Added card to top of Life from Hand"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 4 DON em Laffitte (Reprint) para ligar [attack_power]\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    Laffitte (Reprint) (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP13-089",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Doc Q",
+          "attacker_code": "OP16-109",
+          "target": "St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-093"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-119",
+          "target": "St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP13-091",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP12-112",
+          "card_name": "Baby 5",
+          "effects": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Blocker! St. Topman Warcury ( intercepta\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Marshall.D.Teach (11 (10000pwr) ataca Leader\n      🛡 Blocker! St. Marcus Mars (Par intercepta\n      💀 St. Marcus Mars (Par foi KO!\n  > gastou 1 DON -> Joga: Black Vortex (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the {Blackbeard Pirates} type, add up to 1 card with a [Trigger]...\u001b[0m\n    ↳ [Black Vortex] recuperou do trash: Shiryu (Full Ar\n"
+    }
+  ]
+}

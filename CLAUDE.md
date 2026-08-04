@@ -359,3 +359,57 @@ git, então em cada clone/máquina nova é preciso instalar uma vez:
 sh scripts/setup-git-hooks.sh
 ```
 Para pular a checagem numa emergência (não recomendado): `git push --no-verify`.
+
+## Auditoria de derrotas reais contra humano — ferramenta permanente
+
+> **Registro obrigatório de existência** (pedido do usuário, 04/08/2026):
+> ferramenta criada nesta sessão, `scriptis_da_ia/audit_real_losses.py`.
+> Sessões futuras devem SABER que ela existe e usá-la — não reinventar.
+
+**O que faz**: pega uma derrota REAL do bot contra humano (banco de logs,
+seção acima), reconstrói o estado do jogo (mão/campo/DON/vida) em cada
+turno do bot a partir do snapshot do log, e pergunta pro motor de HOJE
+(`decision_engine.py`, via `OPTCGMatch.play_turn()` real — não duplica
+decisão) o que ele faria. Salva um relatório por partida em
+`scriptis_da_ia/metrics/real_loss_audits/<nome_do_log>.json` com a ação
+histórica vs a narrativa do motor atual, turno a turno.
+
+**Por que existe**: em vez de calibrar só contra self-play (decks de
+`decklists_raw.csv` jogando contra si mesmos), usa pressão adversarial
+REAL de humano — mais direto pra achar o que ainda falta pro bot vencer
+partida de gente de verdade. Nasceu de uma ideia do usuário (forçar as
+próprias decisões vencedoras dele contra o bot) que esbarrou num
+problema real (decisão de humano só faz sentido pra mão/estado que ele
+realmente teve) — a versão que ficou usa o HISTÓRICO como estado de
+partida real, não como script fixo de decisões.
+
+**Uso**:
+```bash
+cd scriptis_da_ia
+python audit_real_losses.py --list                 # lista derrotas reais disponiveis
+python audit_real_losses.py --log <caminho.json>    # audita 1 partida
+python audit_real_losses.py --all [--limit N]       # audita todas (ou as N primeiras)
+```
+
+**Limitações honestas, documentadas no topo do próprio arquivo** (leia
+antes de confiar cegamente num relatório): `don_available` é
+reconstrução best-effort (soma custo conhecido de play/activate/
+attach_don, pode divergir em jogos longos); deck restante é uma
+COMPOSIÇÃO real (mesmo líder em `decklists_raw.csv`) mas ORDEM
+embaralhada, não a ordem real; se o líder não tem decklist real no
+banco (Marshall D. Teach/Krieg/Kid confirmados ausentes), cai num deck
+genérico da mesma cor, mais fraco; mão do oponente entra com informação
+COMPLETA (mesmo padrão do self-play hoje, não mascarada como o caminho
+ao vivo) — o motor aqui tem MAIS informação do oponente que o bot real
+teve, então resultado tende a ficar "melhor" que o bot real conseguiria
+nessa exata situação, nunca pior; primeiro turno de cada jogador é
+pulado (sem snapshot "antes" pra reconstruir).
+
+**Como usar o resultado**: NÃO é uma verdade absoluta, é uma segunda
+opinião pra comparar contra o que aconteceu de verdade. Onde a
+narrativa de hoje diverge da ação histórica, investigar se é (a) um fix
+já feito nesta ou em sessão anterior explicando a diferença (bom sinal,
+documentar), ou (b) o motor de hoje repete a MESMA escolha que perdeu a
+partida — aí sim, achado real, investigar causa raiz igual qualquer
+outro bug desta sessão (trace instrumentado, fix cirúrgico, validar com
+`smoke_fast.py`/`smoke_test.py` + gauntlet antes de aceitar).

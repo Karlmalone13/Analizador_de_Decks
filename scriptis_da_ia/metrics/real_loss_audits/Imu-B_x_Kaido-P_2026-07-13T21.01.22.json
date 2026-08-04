@@ -1,0 +1,328 @@
+{
+  "parsed_file": "Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
+  "bot_side": "You",
+  "bot_leader": "Imu",
+  "opp_leader": "Kaido",
+  "turnos_auditados": 5,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP16-093",
+          "card_name": "Bartholomew Kuma",
+          "effects": [
+            "Draw 2 Card",
+            "Trash St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+            "Trash St. Marcus Mars [\"OP13-091\">OP13-091]",
+            "Attach 1 Rested Don to Imu [\"OP13-079\">OP13-079]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Marcus Mars [\"OP13-091\">OP13-091]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: St. Ethanbaron V. Nusjuro (Par\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Tony Tony.Chopper (0\n      💀 Tony Tony.Chopper (0 foi KO!\n  > gastou 3 DON -> Joga: Bartholomew Kuma (093) (4000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Draw 2 cards and trash 2 cards from your hand. Then, give up to 1 rested DON!! c...\u001b[0m\n    ↳ [Bartholomew Kuma (09] comprou: St. Marcus M, St. Ethanbar (e trashou: St. Marcus M, St. Ethanbar)\n    ↳ [Bartholomew Kuma (09] +0 DON\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Marcus Mar\n      ↳ comprou: The Five Eld\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+            "Deploy St. Jaygarcia Saturn [\"OP13-083\">OP13-083]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-083",
+          "card_name": "St. Jaygarcia Saturn",
+          "effects": [
+            "<b>Reveal and Draw St. Jaygarcia Saturn [\"OP13-083\">OP13-083]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Topman Warcury [\"OP13-089\">OP13-089]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-086",
+          "card_name": "St. Shalria",
+          "effects": [
+            "<b>Reveal and Draw ...Never Existed... [\"OP13-098\">OP13-098]</b>",
+            "Trash 2 Remaining Cards",
+            "Trash St. Mjosgard [\"OP13-092\">OP13-092]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-079",
+          "to_name": "Imu",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP07-066",
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: The Five Elders Are at Your Se\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: St. Shepherd Ju\n    ↳ [The Five Elders Are ] trash resto: St. Ethanbar, Shirahoshi (\n    ⚡ anexou 1 DON em Bartholomew Kuma (09 para ligar [attack_power]\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Bartholomew Kuma (09 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Jaygarcia \n      ↳ comprou: Never Existe\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+            "Deploy St. Jaygarcia Saturn [\"OP13-083\">OP13-083]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Shalria [\"OP13-086\">OP13-086]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-092",
+          "card_name": "St. Mjosgard",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST04-005"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: St. Marcus Mars (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Bartholomew Kuma (09\n    Bartholomew Kuma (09 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    St. Jaygarcia Saturn (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: Saint Shalri\n  > gastou 1 DON -> Joga: Saint Shalria (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" ty...\u001b[0m\n    ↳ [Saint Shalria] olhou 3 do topo -> pegou: Five Elders (Al\n    ↳ [Saint Shalria] trash resto: Ground Death, St. Ethanbar\n    ↳ [Saint Shalria] descartou da mão: St. Jaygarci\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-083",
+          "to_name": "St. Jaygarcia Saturn",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Sanji & Pudding [\"EB02-035\">EB02-035]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP01-114"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-083",
+          "to_name": "St. Jaygarcia Saturn",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Sanji & Pudding [\"EB02-035\">EB02-035]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-093",
+          "card_name": "Bartholomew Kuma",
+          "effects": [
+            "Draw 2 Card",
+            "Trash The Holy Land Mary Geoise [\"OP05-097\">OP05-097]",
+            "Trash St. Shepherd Ju Peter [\"OP13-084\">OP13-084]",
+            "Attach 1 Rested Don to Imu [\"OP13-079\">OP13-079]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Mjosgard [\"OP13-092\">OP13-092]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Saint Shalria\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 1 DON em Bartholomew Kuma (09 para ligar [attack_power]\n    St. Jaygarcia Saturn (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    St. Jaygarcia Saturn (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Mjosgard\n      ↳ comprou: The Five Eld\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Bartholomew Kuma (09 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: St. Marcus Mars\n    ↳ [The Five Elders Are ] trash resto: St. Jaygarci, Ground Death\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "ST04-005",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-093",
+          "to_name": "Bartholomew Kuma",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Bartholomew Kuma",
+          "attacker_code": "OP16-093",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-066"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP16-093",
+          "to_name": "Bartholomew Kuma",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Bartholomew Kuma",
+          "attacker_code": "OP16-093",
+          "target": "Queen [\"ST04-005\">ST04-005]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP08-074"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+            "Deploy St. Topman Warcury [\"OP13-089\">OP13-089]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Jaygarcia Saturn [\"OP13-083\">OP13-083]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-096",
+          "card_name": "The Five Elders... Are At Your Service",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw St. Topman Warcury [\"OP13-089\">OP13-089]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: After All These Years I'm Losi\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Leader\n      🛡 Blocker! Queen intercepta\n      💀 Queen foi KO!\n    St. Jaygarcia Saturn (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    St. Jaygarcia Saturn (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n    anexou 1 DON em Bartholomew Kuma (09\n    Bartholomew Kuma (09 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character St. Jaygarcia \n      ↳ comprou: Never Existe\n"
+    }
+  ]
+}

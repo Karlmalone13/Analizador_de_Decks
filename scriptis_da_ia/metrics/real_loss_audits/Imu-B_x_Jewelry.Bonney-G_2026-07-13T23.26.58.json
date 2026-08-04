@@ -1,0 +1,212 @@
+{
+  "parsed_file": "Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
+  "bot_side": "You",
+  "bot_leader": "Imu",
+  "opp_leader": "Jewelry Bonney",
+  "turnos_auditados": 5,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP13-079",
+          "to_name": "Imu",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Five Elders (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Ethanbaron\n      ↳ comprou: Shirahoshi (\n  > gastou 1 DON -> Joga: Shirahoshi (OP05-082) (Reprint (0pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate:Main] You may rest this Character and place 2 cards from your trash at the botto...\u001b[0m\n    ⚙ ativou [Activate:Main] de Shirahoshi (OP05-082) \n      ↳ custo: restou Shirahoshi (OP05-0\n      ↳ custo: fundo do deck (do trash): St. Ethanbaron, St. Ethanbaron\n      ↳ oponente descartou: Urouge (Repr\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+            "Deploy St. Jaygarcia Saturn [\"OP13-083\">OP13-083]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-083",
+          "card_name": "St. Jaygarcia Saturn",
+          "effects": [
+            "<b>Reveal and Draw ...Never Existed... [\"OP13-098\">OP13-098]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Topman Warcury [\"OP13-089\">OP13-089]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-096",
+          "card_name": "Ground Death",
+          "effects": [
+            "Rest 1 Don",
+            "Rest 1 Don"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-021"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Never Existed... in the First \u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Urouge (Reprint)\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Marcus Mar\n      ↳ comprou: St. Jaygarci\n  > gastou 2 DON -> Joga: Saint Mjosgard (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If you have 3 or less Life cards, play up to 1 \"Mary Geoise\" type Stage card wit...\u001b[0m\n    ↳ [Saint Mjosgard] jogou do trash: Mary Geoise (Re\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP13-091",
+          "card_name": "St. Marcus Mars",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Jaygarcia Saturn [\"OP13-083\">OP13-083]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-096",
+          "card_name": "Ground Death",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-021"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Five Elders (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em St. Jaygarcia Saturn\n    St. Jaygarcia Saturn (6000pwr) ataca Jewelry Bonney - OP0\n      🛡 Counter! +1000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character St. Jaygarcia \n      ↳ comprou: St. Shepherd\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-079",
+          "to_name": "Imu",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Jewelry Bonney [\"OP07-026\">OP07-026]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP05-030"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-091",
+          "card_name": "St. Marcus Mars",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Five Elders (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Eustass\"Captain\"Kid \n      🛡 Blocker! Urouge (Reprint) intercepta\n      💀 Urouge (Reprint) foi KO!\n    St. Marcus Mars (Par (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Topman War\n      ↳ comprou: St. Shepherd\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP13-082",
+          "card_name": "Five Elders",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Topman Warcury [\"OP13-089\">OP13-089]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Saint Shalria\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Blocker! Urouge (Reprint) intercepta\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    St. Marcus Mars (Par (5000pwr) ataca Urouge (Reprint)\n      💀 Urouge (Reprint) foi KO!\n  > gastou 1 DON -> Joga: Saint Shalria (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" ty...\u001b[0m\n    ↳ [Saint Shalria] olhou 3 do topo -> pegou: St. Topman Warc\n    ↳ [Saint Shalria] trash resto: Saint Shalri, Shirahoshi (\n    ↳ [Saint Shalria] descartou da mão: St. Topman W\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: The Five Eld\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: St. Shepherd Ju\n    ↳ [The Five Elders Are ] trash resto: The Empty Th, St. Marcus M\n"
+    }
+  ]
+}

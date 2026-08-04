@@ -1,0 +1,217 @@
+{
+  "parsed_file": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.31.57.json",
+  "bot_side": "You",
+  "bot_leader": "Dracule Mihawk",
+  "opp_leader": "Charlotte Katakuri",
+  "turnos_auditados": 3,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP14-023",
+          "card_name": "Kikunojo",
+          "effects": [
+            "Set Kikunojo [\"OP14-023\">OP14-023] to Active"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-039",
+          "card_name": "Coffin Boat",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Gyro\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n  > gastou 1 DON -> Joga: Kin'emon (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may rest 1 of your (Slash) attribute Leaders or DON!! cards: Draw 2 cards an...\u001b[0m\n    ↳ [Kin'emon] comprou: Shanks (028), Dracule Miha (e trashou: Perona - OP1)\n  > gastou 1 DON -> Joga: Gyro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Rest up to 1 of your opponent's Characters with a cost of 3 or less.\u001b[0m\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP14-033",
+          "card_name": "Perona",
+          "effects": [
+            "Nola [\"OP15-069\">OP15-069] can't be rested until next turn ends"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Perona [\"OP14-033\">OP14-033]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "PRB02-010"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kikunojo",
+          "attacker_code": "OP14-023",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "PRB02-010"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-039",
+          "card_name": "Coffin Boat",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-023",
+          "card_name": "Kikunojo",
+          "effects": [
+            "Set Kikunojo [\"OP14-023\">OP14-023] to Active"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Komurasaki\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Kikunojo - OP14-023 (2000pwr) ataca Nola\n      🛡 Counter! +2000 -> defesa 4000\n      ✗ Ataque bloqueado (2000 < 4000)\n    Dracule Mihawk - OP1 (6000pwr) ataca Nola\n      💀 Nola foi KO!\n  > gastou 1 DON -> Joga: Kin'emon (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may rest 1 of your (Slash) attribute Leaders or DON!! cards: Draw 2 cards an...\u001b[0m\n    ↳ [Kin'emon] comprou: Roronoa Zoro, Enel (e trashou: Perona - OP1)\n  \u001b[90m[end] Kikunojo - OP14-02 ficou ativo\u001b[0m\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 2,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP12-034",
+          "card_name": "Perona",
+          "effects": [
+            "<b>Reveal and Draw Dracule Mihawk [\"ST32-003\">ST32-003]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST32-001",
+          "card_name": "Kin'emon",
+          "effects": [
+            "Rest Don [\"Don\">Don]",
+            "Draw 2 Card",
+            "Trash Kin'emon [\"ST32-001\">ST32-001]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kikunojo",
+          "attacker_code": "OP14-023",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Perona",
+          "attacker_code": "OP14-033",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST18-001"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-039",
+          "card_name": "Coffin Boat",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-023",
+          "card_name": "Kikunojo",
+          "effects": [
+            "Set Kikunojo [\"OP14-023\">OP14-023] to Active"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Gyro\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Kikunojo - OP14-023 (2000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n    Perona - OP14-033 (A (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n  > gastou 1 DON -> Joga: Kin'emon (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may rest 1 of your (Slash) attribute Leaders or DON!! cards: Draw 2 cards an...\u001b[0m\n    ↳ [Kin'emon] comprou: Kawamatsu, Raizo (Repri (e trashou: Kawamatsu)\n    ⚙ ativou [Activate:Main] de Dracule Mihawk - OP14-\n      ↳ custo: restou 1 DON\n      ↳ auto-restrição: não pode jogar mais este turno\n      ↳ reativou 2 DON\n  \u001b[90m[end] Kikunojo - OP14-02 ficou ativo\u001b[0m\n"
+    }
+  ]
+}

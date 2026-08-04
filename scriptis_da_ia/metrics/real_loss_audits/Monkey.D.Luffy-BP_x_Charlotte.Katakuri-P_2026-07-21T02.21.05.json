@@ -1,0 +1,227 @@
+{
+  "parsed_file": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",
+  "bot_side": "You",
+  "bot_leader": "Monkey D. Luffy",
+  "opp_leader": "Charlotte Katakuri",
+  "turnos_auditados": 5,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "ST17-005",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP11-040\">OP11-040]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP11-040\">OP11-040]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP11-040",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Monkey.D.Luffy (040) (6000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n  > gastou 2 DON -> Joga: Marshall.D.Teach - ST17-005 (P (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] [Once Per Turn] You may place 1 card from your hand at the top of your de...\u001b[0m\n    Buggy - ST17-003 (Re (2000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "ST17-005",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP11-040\">OP11-040]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP11-040\">OP11-040]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "ST17-003",
+          "to_name": "Buggy",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Buggy",
+          "attacker_code": "ST17-003",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP11-040",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Monkey.D.Luffy (040) (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 2 DON -> Joga: Marshall.D.Teach - ST17-005 (P (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] [Once Per Turn] You may place 1 card from your hand at the top of your de...\u001b[0m\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP11-080",
+          "card_name": "Gear 2",
+          "effects": [
+            "Rest 1 Don",
+            "Rest 2 Don"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "ST17-005",
+          "to_name": "Marshall D. Teach",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "ST17-005",
+          "target": "Charlotte Cracker [\"ST34-002\">ST34-002]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST17-005",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP11-040\">OP11-040]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP11-040\">OP11-040]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP11-040",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 2 DON em Marshall.D.Teach - S para ligar [attack_power]\n    Monkey.D.Luffy (040) (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Marshall.D.Teach - S (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP11-040",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "<b>Reveal and Draw Sanji [\"OP07-064\">OP07-064]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP08-069",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Minus 1 Don",
+            "Trash Sanji [\"OP07-064\">OP07-064]",
+            "Add card to top of Life from Deck",
+            "Add Charlotte Pudding [\"OP11-070\">OP11-070] to top of Life"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP11-040",
+          "target": "Charlotte Pudding [\"PRB02-010\">PRB02-010]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Monkey.D.Luffy (040)\n    Monkey.D.Luffy (040) (7000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP11-040",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "<b>Reveal and Draw Gum-Gum Red Roc [\"OP04-056\">OP04-056]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-067",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Set Charlotte Linlin [\"OP08-069\">OP08-069] to Active"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-040",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-040",
+          "to_name": "Monkey D. Luffy",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP08-069",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP11-040",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-070",
+            "PRB02-010",
+            "ST34-005"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Monkey.D.Luffy (040)\n    Monkey.D.Luffy (040) (7000pwr) ataca Leader\n      🛡 Counter! +3000 -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n    Charlotte Linlin (Pa (9000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n"
+    }
+  ]
+}

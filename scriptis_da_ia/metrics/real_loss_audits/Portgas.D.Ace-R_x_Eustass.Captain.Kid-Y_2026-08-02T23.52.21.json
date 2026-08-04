@@ -1,0 +1,258 @@
+{
+  "parsed_file": "Portgas.D.Ace-R_x_Eustass.Captain.Kid-Y_2026-08-02T23.52.21.json",
+  "bot_side": "You",
+  "bot_leader": "Portgas D. Ace",
+  "opp_leader": "Eustass \"Captain\" Kid",
+  "turnos_auditados": 5,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP10-005",
+          "card_name": "Sanji",
+          "effects": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Shanks - OP09-004 (Reprint)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Monkey.D.Luffy (111)\n      💀 Monkey.D.Luffy (111) foi KO!\n  > gastou 3 DON -> Joga: Sanji (Parallel) (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [Your Turn] This Character gains +3000 power. [On K.O.] Draw 1 card.\u001b[0m\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST36-004"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "EB01-002",
+          "card_name": "Izou",
+          "effects": [
+            "Attach 1 Rested Don to Portgas D. Ace [\"OP16-001\">OP16-001]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji",
+          "attacker_code": "OP10-005",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP10-109",
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Sanji (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Sanji (Parallel) (6000pwr) ataca Basil Hawkins - OP10\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Portgas.D.Ace (001)  (5000pwr) ataca Basil Hawkins - OP10\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 2 DON -> Joga: Sanji (Parallel) (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate:Main] [Once Per Turn] You may add 1 card from your Life area to your hand: This ...\u001b[0m\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "EB01-002",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP10-111"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "P-088"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-011",
+          "card_name": "Vista",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Vista [\"OP16-011\">OP16-011] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: LittleOars Jr. (Full Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Izo (7000pwr) ataca Leader\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      💥 DANO! vida do oponente: 3\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: LittleOars Jr. (Full Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: If your Character with 6000 base power would be removed from the field by your opponent's ...\u001b[0m\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST36-003"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP10-112",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-011",
+          "card_name": "Vista",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Vista [\"OP16-011\">OP16-011] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-015",
+          "card_name": "Monkey D. Luffy",
+          "effects": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Inazuma\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Vista\n    Vista (9000pwr) ataca Leader\n      ↳ [when attacking] KO: Monkey.D.Luffy \n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      💥 DANO! vida do oponente: 2\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Eustass \"Captain\" Kid [\"ST36-005\">ST36-005]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP16-015",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST36-003"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP10-112",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-017",
+          "card_name": "LittleOars Jr.",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-005",
+          "card_name": "Thatch",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give LittleOars Jr. [\"OP16-017\">OP16-017] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "LittleOars Jr.",
+          "attacker_code": "OP16-017",
+          "target": "Eustass \"Captain\" Kid [\"ST36-005\">ST36-005]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "P-088"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Thatch\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Vista\n    Vista (9000pwr) ataca Eustass\"Captain\"Kid\n      ↳ [when attacking] KO: Capone\"Gang\"Beg, Monkey.D.Luffy \n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      🛡 Blocker! Killer intercepta\n      💀 Killer foi KO!\n    Monkey.D.Luffy (Alte (6000pwr) ataca Leader\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    ⚡ anexou 1 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Portgas.D.Ace (001)  (6000pwr) ataca Leader\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      💥 DANO! vida do oponente: 2\n"
+    }
+  ]
+}

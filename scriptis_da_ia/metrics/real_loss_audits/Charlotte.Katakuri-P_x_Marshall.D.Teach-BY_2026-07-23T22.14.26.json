@@ -1,0 +1,182 @@
+{
+  "parsed_file": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26.json",
+  "bot_side": "You",
+  "bot_leader": "Charlotte Katakuri",
+  "opp_leader": "Marshall D. Teach",
+  "turnos_auditados": 4,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 2,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Nola\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Charlotte Katakuri (\n    Charlotte Katakuri ( (7000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Shiryu (Full Ar\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP07-077",
+          "card_name": "We're Going to Claim the One Piece!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Charlotte Brulee [\"ST34-003\">ST34-003]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST34-003",
+          "card_name": "Charlotte Brulee",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Pudding [\"OP11-070\">OP11-070]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Cracker [\"ST34-002\">ST34-002]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-070",
+          "to_name": "Charlotte Pudding",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Baron Tamago & Pekoms",
+          "attacker_code": "ST34-005",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": [
+            "Minus 1 Don",
+            "Destroy Laffitte [\"OP09-095\">OP09-095]"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Amatsuki Toki\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Charlotte Katakuri (\n    Charlotte Katakuri ( (7000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    anexou 1 DON em Baron Tamago & Pekom\n    Baron Tamago & Pekom (5000pwr) ataca Leader\n      ↳ [when attacking] custo: devolveu 1 DON ao deck\n      ↳ [when attacking] KO: Laffitte (Repri\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "ST34-001",
+          "card_name": "Charlotte Katakuri",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-104"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Sakazuki (Manga)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Charlotte Katakuri (\n    Charlotte Katakuri ( (7000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    ⚡ anexou 1 DON em Charlotte Pudding (A para ligar [activate_main]\n    ⚙ ativou [Activate:Main] de Charlotte Pudding (Alt\n      ↳ custo: restou Charlotte Pudding \n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "PRB02-010",
+          "card_name": "Charlotte Pudding",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "ST34-001",
+          "target": "Jesus Burgess [\"OP09-086\">OP09-086]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Jesus Burgess [\"OP09-086\">OP09-086]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP09-086"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Kaku (059)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Charlotte Katakuri\n    Charlotte Katakuri (8000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Black Vortex\n"
+    }
+  ]
+}
