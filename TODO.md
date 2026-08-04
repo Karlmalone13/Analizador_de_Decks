@@ -2,6 +2,19 @@
 
 **Última atualização:** 4 de agosto de 2026
 
+> 04/08/2026 (bloco 440): **primeira triagem dos 268 turnos** (nova
+> ferramenta `triage_real_losses.py`, registrada em CLAUDE.md/AGENTS.md).
+> Achado forte: 92% da "divergência" é o motor de hoje atacando o líder
+> MUITO mais que o histórico, correlacionado (212/238) com logs
+> **anteriores a 29/07** — confirma em dado REAL o fix
+> `ATTACK_LEADER_BASE_SCORE` (bloco 395). Zero casos de atacar menos
+> (sem regressão). **Bug achado e corrigido na própria ferramenta**:
+> `DonEstimator` não contava efeitos "Activate N Don"
+> (`set_don_active`, mecânica central do Mihawk) — corrigido, re-rodado
+> nas 59 partidas, 0 erros. **Pendente**: ~20 turnos residuais não
+> explicados pelo fix de 29/07 — próximo passo é investigar se são
+> achado real. Ver bloco 440 do HANDOFF.
+
 > 04/08/2026 (bloco 439): **nova ferramenta permanente**
 > `scriptis_da_ia/audit_real_losses.py` — reconstrói o estado de uma
 > derrota REAL do bot contra humano turno a turno e pergunta pro motor

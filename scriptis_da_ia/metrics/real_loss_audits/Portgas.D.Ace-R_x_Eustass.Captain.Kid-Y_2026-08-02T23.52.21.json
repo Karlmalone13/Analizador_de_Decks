@@ -26,11 +26,11 @@
           "effects": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Shanks - OP09-004 (Reprint)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Monkey.D.Luffy (111)\n      💀 Monkey.D.Luffy (111) foi KO!\n  > gastou 3 DON -> Joga: Sanji (Parallel) (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [Your Turn] This Character gains +3000 power. [On K.O.] Draw 1 card.\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Franky (014)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Monkey.D.Luffy (111)\n      💀 Monkey.D.Luffy (111) foi KO!\n  > gastou 3 DON -> Joga: Sanji (Parallel) (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [Your Turn] This Character gains +3000 power. [On K.O.] Draw 1 card.\u001b[0m\n"
     },
     {
       "turn": 5,
-      "don_available_estimado": 0,
+      "don_available_estimado": 1,
       "historical_actions": [
         {
           "type": "attack",
@@ -63,11 +63,11 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Sanji (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Sanji (Parallel) (6000pwr) ataca Basil Hawkins - OP10\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Portgas.D.Ace (001)  (5000pwr) ataca Basil Hawkins - OP10\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 2 DON -> Joga: Sanji (Parallel) (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate:Main] [Once Per Turn] You may add 1 card from your Life area to your hand: This ...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Monkey.D.Garp (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Sanji (Parallel)\n    Sanji (Parallel) (7000pwr) ataca Leader\n      🛡 Counter! +3000 -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n    Portgas.D.Ace (001)  (5000pwr) ataca Basil Hawkins - OP10\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n"
     },
     {
       "turn": 7,
-      "don_available_estimado": 1,
+      "don_available_estimado": 0,
       "historical_actions": [
         {
           "type": "attack",
@@ -120,11 +120,11 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: LittleOars Jr. (Full Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Izo (7000pwr) ataca Leader\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      💥 DANO! vida do oponente: 3\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: LittleOars Jr. (Full Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: If your Character with 6000 base power would be removed from the field by your opponent's ...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Ace & Sabo & Luffy (Alternate \u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Izo (7000pwr) ataca Leader\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      💥 DANO! vida do oponente: 3\n    ⚡ anexou 2 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Portgas.D.Ace (001)  (7000pwr) ataca Leader\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      🛡 Counter! +3000 -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n"
     },
     {
       "turn": 9,
-      "don_available_estimado": 1,
+      "don_available_estimado": 0,
       "historical_actions": [
         {
           "type": "attack",
@@ -181,7 +181,7 @@
           "effects": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Inazuma\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Vista\n    Vista (9000pwr) ataca Leader\n      ↳ [when attacking] KO: Monkey.D.Luffy \n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      💥 DANO! vida do oponente: 2\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Thatch\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Vista (8000pwr) ataca Leader\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      💥 DANO! vida do oponente: 2\n    ⚡ anexou 2 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Portgas.D.Ace (001)  (7000pwr) ataca Eustass\"Captain\"Kid\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      🛡 Counter! +1000 -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n"
     },
     {
       "turn": 11,
@@ -252,7 +252,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Thatch\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Vista\n    Vista (9000pwr) ataca Eustass\"Captain\"Kid\n      ↳ [when attacking] KO: Capone\"Gang\"Beg, Monkey.D.Luffy \n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      🛡 Blocker! Killer intercepta\n      💀 Killer foi KO!\n    Monkey.D.Luffy (Alte (6000pwr) ataca Leader\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    ⚡ anexou 1 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Portgas.D.Ace (001)  (6000pwr) ataca Leader\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      💥 DANO! vida do oponente: 2\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Lindbergh\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Vista\n    Vista (9000pwr) ataca Eustass\"Captain\"Kid\n      ↳ [when attacking] KO: Capone\"Gang\"Beg, Monkey.D.Luffy \n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      🛡 Blocker! Killer intercepta\n      💀 Killer foi KO!\n    Monkey.D.Luffy (Alte (6000pwr) ataca Leader\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    ⚡ anexou 1 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Portgas.D.Ace (001)  (6000pwr) ataca Leader\n      ↳ [on opp attack: Eustass\"Captain] custo: virou 1 carta(s) da vida face-down\n      💥 DANO! vida do oponente: 2\n"
     }
   ]
 }

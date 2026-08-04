@@ -1,5 +1,60 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (440) - Claude (sessao remota web) - Primeira triagem dos 268 turnos: confirma o fix ATTACK_LEADER_BASE_SCORE em dado REAL + corrige um bug no proprio estimador de DON da ferramenta
+
+Continuacao direta do bloco 439 (usuario pediu pra comecar a triagem).
+
+**Nova ferramenta companheira**: `scriptis_da_ia/triage_real_losses.py`
+-- le todos os relatorios de `metrics/real_loss_audits/*.json` e
+classifica cada turno em `MATCH` (motor de hoje repete a decisao
+historica) vs `DIVERGE` (heuristico, baseado em texto -- so prioriza
+leitura manual). Registrado em CLAUDE.md/AGENTS.md (espelhado), mesma
+secao do bloco 439.
+
+**Bug achado na PROPRIA ferramenta, corrigido antes de tirar
+conclusao**: primeira rodada da triagem (268 turnos) deu 97.8%
+DIVERGE -- investigando, descobri que 91% dos DIVERGE eram o motor de
+hoje atacando o LIDER mais que o historico, o que fazia sentido (ver
+abaixo), MAS um segundo padrao (motor de hoje ativa MENOS Activate:Main
+que o historico) levantou suspeita. Investigando um caso (Dracule
+Mihawk OP14-020, mesmo lider do bloco 436), achei: o `DonEstimator` de
+`audit_real_losses.py` nao contava efeitos tipo "Activate N Don"
+(`set_don_active` -- exatamente a mecanica de reciclagem de DON que a
+secao 10 do IA_Compendium ja documentou como o proprio game plan desse
+lider), deixando `don_available` artificialmente baixo pra decks
+construidos em torno dessa mecanica. Corrigido: soma de volta qualquer
+"Activate N Don"/"Activate Don" achado no texto dos efeitos de
+QUALQUER acao (nao so o custo). Re-rodei a auditoria completa (59
+partidas) com o fix -- **0 erros** (antes tinha 2).
+
+**Resultado da triagem, apos o fix**:
+
+| Categoria | Qtd | % |
+|---|---:|---:|
+| MATCH | 4 | 1,5% |
+| DIVERGE | 264 | 98,5% |
+
+Do bucket DIVERGE: **244/264 (92%) sao o motor de hoje atacando o
+LIDER mais vezes que o historico** -- e isso correlaciona fortemente
+(212/238 antes do fix de DON) com logs **ANTERIORES a 29/07** (a data
+exata do fix `ATTACK_LEADER_BASE_SCORE`, bloco HANDOFF 395). Isso e
+uma confirmacao REAL (nao so self-play) de que aquele fix funciona --
+achado novo, direto do banco de derrotas reais. **Zero casos de atacar
+o lider MENOS** que o historico (nenhuma regressao nessa frente).
+
+**Residuo nao explicado**: ~20 turnos (de 268) com a MESMA contagem de
+ataque ao lider mas outras diferencas (cartas jogadas/ativadas
+diferentes) -- 9 ainda mostram `hist_activates > hoje_activates`
+mesmo apos o fix do DonEstimator. Inspecionei os 4 casos MATCH (motor
+repete decisao historica de verdade): pelo menos 1 examinado em
+detalhe parece jogada razoavel nos dois lados (ataca personagem, joga
+seguidor), sem indicio obvio de bug.
+
+**Pendente, proximo passo natural (nao feito ainda)**: aprofundar nos
+~20 turnos residuais (conferir se sao achado real ou mais uma
+limitacao da ferramenta, tipo o bug do DonEstimator ja achado hoje) e
+nos 4 MATCH restantes ainda nao lidos manualmente.
+
 ## 2026-08-04 (439) - Claude (sessao remota web) - Nova ferramenta permanente: audit_real_losses.py -- reconstroi derrota real e pergunta pro motor de hoje o que ele faria
 
 Usuario propos um exercicio (forcar as proprias decisoes vencedoras

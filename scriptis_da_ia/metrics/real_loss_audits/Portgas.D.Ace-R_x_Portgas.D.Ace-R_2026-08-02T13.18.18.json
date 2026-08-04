@@ -39,11 +39,11 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Lim\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 2 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Portgas.D.Ace (001)  (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Sugar\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 2 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Portgas.D.Ace (001)  (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n"
     },
     {
       "turn": 5,
-      "don_available_estimado": 0,
+      "don_available_estimado": 1,
       "historical_actions": [
         {
           "type": "attach_don",
@@ -82,7 +82,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Raise Max\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      ↳ [on opp attack: Monkey.D.Luffy ] custo: trashou da mão: Vista\n      ↳ [on opp attack: Monkey.D.Luffy ] base power de Monkey.D.Luffy  virou 7000\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Raise Max (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate:Main] You may place this Character at the bottom of the owner's deck: Give up to...\u001b[0m\n    ⚙ ativou [Activate:Main] de Raise Max\n      ↳ custo: Raise Max foi para o fundo do deck\n      ↳ -3000 power em: Monkey.D.Luffy \n    anexou 1 DON em Namule\n    Namule (3000pwr) ataca Monkey.D.Luffy (Alte\n      ↳ [on opp attack: Monkey.D.Luffy ] custo: trashou da mão: Vista\n      ↳ [on opp attack: Monkey.D.Luffy ] base power de Monkey.D.Luffy  virou 7000\n      🛡 Counter! +1000 -> defesa 4000\n      ✗ Ataque bloqueado (3000 < 4000)\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Monkey.D.Luffy\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Portgas.D.Ace (001) \n    Portgas.D.Ace (001)  (6000pwr) ataca Leader\n      ↳ [on opp attack: Monkey.D.Luffy ] custo: trashou da mão: Vista\n      ↳ [on opp attack: Monkey.D.Luffy ] base power de Monkey.D.Luffy  virou 7000\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n"
     },
     {
       "turn": 7,
@@ -135,7 +135,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Shanks - P-083 (Reprint)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      ↳ [on opp attack: Monkey.D.Luffy ] custo: trashou da mão: Thatch\n      ↳ [on opp attack: Monkey.D.Luffy ] base power de Monkey.D.Luffy  virou 7000\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Moby Dick (Alternate Art) (0pwr) [STAGE]\n    \u001b[90mefeito: [On Play] If your Leader has the {Whitebeard Pirates} type, look at 3 cards from the top o...\u001b[0m\n    ↳ [Moby Dick (Alternate] olhou 3 do topo -> pegou: Hiking Bear\n    ↳ [Moby Dick (Alternate] 2 carta(s) no fundo do deck\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Bepo\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      ↳ [on opp attack: Monkey.D.Luffy ] custo: trashou da mão: Thatch\n      ↳ [on opp attack: Monkey.D.Luffy ] base power de Monkey.D.Luffy  virou 7000\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Moby Dick (Alternate Art) (0pwr) [STAGE]\n    \u001b[90mefeito: [On Play] If your Leader has the {Whitebeard Pirates} type, look at 3 cards from the top o...\u001b[0m\n    ↳ [Moby Dick (Alternate] olhou 3 do topo -> pegou: Jinbe - ST10-00\n    ↳ [Moby Dick (Alternate] 2 carta(s) no fundo do deck\n"
     },
     {
       "turn": 9,
@@ -187,7 +187,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Uta\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      ↳ [on opp attack: Monkey.D.Luffy ] custo: trashou da mão: Thatch\n      ↳ [on opp attack: Monkey.D.Luffy ] base power de Monkey.D.Luffy  virou 7000\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Vista (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  > gastou 1 DON -> Joga: Monkey.D.Garp (Alternate Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader is [Sabo], [Portgas.D.Ace] or [Monkey.D.Luffy], look at 4 cards f...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Tony Tony.Chopper\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      ↳ [on opp attack: Monkey.D.Luffy ] custo: trashou da mão: Thatch\n      ↳ [on opp attack: Monkey.D.Luffy ] base power de Monkey.D.Luffy  virou 7000\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Vista (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  > gastou 1 DON -> Joga: Monkey.D.Garp (Alternate Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader is [Sabo], [Portgas.D.Ace] or [Monkey.D.Luffy], look at 4 cards f...\u001b[0m\n"
     }
   ]
 }

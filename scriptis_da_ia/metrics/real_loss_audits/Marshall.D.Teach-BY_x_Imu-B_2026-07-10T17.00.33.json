@@ -171,7 +171,7 @@
           "effects": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n  > gastou 4 DON -> Joga: Catarina Devon (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [When Attacking] Select up to 1 of your opponent's Characters. This Character's base power...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 4 DON -> Joga: Catarina Devon (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [When Attacking] Select up to 1 of your opponent's Characters. This Character's base power...\u001b[0m\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n"
     },
     {
       "turn": 11,

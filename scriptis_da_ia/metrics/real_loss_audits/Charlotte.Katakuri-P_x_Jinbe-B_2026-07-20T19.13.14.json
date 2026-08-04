@@ -28,7 +28,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Miss.Goldenweek(Marianne)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Charlotte Katakuri ( (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 2 DON -> Joga: Miss.Goldenweek(Marianne) (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader's type includes \"Baroque Works\", up to 1 of your opponent's Chara...\u001b[0m\n  > gastou 1 DON -> Joga: Charlotte Brulee (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 {Big Mom Pirates} type...\u001b[0m\n    ↳ [Charlotte Brulee] olhou 3 do topo -> pegou: Streusen\n    ↳ [Charlotte Brulee] 2 carta(s) no fundo do deck\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Buggy (051) (Manga)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Charlotte Katakuri ( (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 3 DON -> Joga: Buggy (051) (Manga) (4000pwr) [CHARACTER]\n    \u001b[90mefeito: [When Attacking] If you have 3 or less Life cards, add up to 1 DON!! card from your DON!! ...\u001b[0m\n"
     },
     {
       "turn": 5,
@@ -89,7 +89,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Donquixote Doflamingo (Paralle\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 1 DON em Baron Tamago & Pekom para ligar [attack_power]\n  > gastou 1 DON -> Joga: Charlotte Brulee (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 {Big Mom Pirates} type...\u001b[0m\n    ↳ [Charlotte Brulee] olhou 3 do topo -> nada para pegar\n    ↳ [Charlotte Brulee] 2 carta(s) no fundo do deck\n    Baron Tamago & Pekom (5000pwr) ataca Leader\n      ↳ [when attacking] custo: devolveu 1 DON ao deck\n      ↳ [when attacking] KO: Sengoku - OP07-\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Charlotte Katakuri ( (6000pwr) ataca Chew\n      💀 Chew foi KO!\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Trafalgar Law (OP05-069) (Mang\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 1 DON em Baron Tamago & Pekom para ligar [attack_power]\n    Baron Tamago & Pekom (5000pwr) ataca Leader\n      ↳ [when attacking] custo: devolveu 1 DON ao deck\n      ↳ [when attacking] KO: Sengoku - OP07-\n      ✗ Ataque bloqueado (4000 < 5000)\n  > gastou 1 DON -> Joga: We're Going to Claim the One P (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the [Animal Kingdom Pirates] or [Big Mom Pirates] type, look at ...\u001b[0m\n    ↳ [We're Going to Claim] olhou 5 do topo -> pegou: Ulti (Parallel)\n    ↳ [We're Going to Claim] 4 carta(s) no fundo do deck\n    Charlotte Katakuri ( (6000pwr) ataca Chew\n      💀 Chew foi KO!\n"
     },
     {
       "turn": 7,
@@ -161,7 +161,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Wire\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 1 DON em Baron Tamago & Pekom para ligar [attack_power]\n    Baron Tamago & Pekom (5000pwr) ataca Jinbe (045) (Paralle\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Charlotte Katakuri ( (6000pwr) ataca Chew\n      💀 Chew foi KO!\n    anexou 1 DON em Charlotte Brulee\n    Charlotte Brulee (3000pwr) ataca Chew\n      💀 Chew foi KO!\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Scopper Gaban\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 1 DON em Baron Tamago & Pekom para ligar [attack_power]\n    Baron Tamago & Pekom (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Charlotte Katakuri ( (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n    anexou 1 DON em Charlotte Brulee\n    Charlotte Brulee (3000pwr) ataca Chew\n      🛡 Counter! +1000 -> defesa 4000\n      ✗ Ataque bloqueado (3000 < 4000)\n"
     },
     {
       "turn": 9,
@@ -193,7 +193,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Gladius\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Charlotte Katakuri (\n    Charlotte Katakuri ( (7000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Gild Tesoro\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Charlotte Katakuri (\n    Charlotte Katakuri ( (7000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n"
     }
   ]
 }

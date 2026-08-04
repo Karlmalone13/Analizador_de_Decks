@@ -224,7 +224,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Kuro (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Kuro (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Koby (OP15-009) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: If your Character with 7000 base power or less would be removed from the field by your opp...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Kuro (Alternate Art) (7000pwr) ataca Kuzan (OP02-096) (Re\n      💀 Kuzan (OP02-096) (Re foi KO!\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Kuro (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  > gastou 1 DON -> Joga: Koby (OP15-009) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: If your Character with 7000 base power or less would be removed from the field by your opp...\u001b[0m\n"
     },
     {
       "turn": 13,
@@ -287,7 +287,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Kuro (Alternate Art) (7000pwr) ataca Rebecca (Reprint)\n      💀 Rebecca (Reprint) foi KO!\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Kuro (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n  > gastou 1 DON -> Joga: The Outcome Will Tell Us Who's (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 5 cards from the top of your deck; reveal up to 1 {East Blue} type card oth...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Kuro (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Kuro (Alternate Art) (7000pwr) ataca Rebecca (Reprint)\n      💀 Rebecca (Reprint) foi KO!\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: The Outcome Will Tell Us Who's (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 5 cards from the top of your deck; reveal up to 1 {East Blue} type card oth...\u001b[0m\n"
     }
   ]
 }

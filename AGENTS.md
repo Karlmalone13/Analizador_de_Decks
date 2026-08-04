@@ -395,17 +395,22 @@ python audit_real_losses.py --all [--limit N]       # audita todas (ou as N prim
 
 **Limitações honestas, documentadas no topo do próprio arquivo** (leia
 antes de confiar cegamente num relatório): `don_available` é
-reconstrução best-effort (soma custo conhecido de play/activate/
-attach_don, pode divergir em jogos longos); deck restante é uma
-COMPOSIÇÃO real (mesmo líder em `decklists_raw.csv`) mas ORDEM
-embaralhada, não a ordem real; se o líder não tem decklist real no
-banco (Marshall D. Teach/Krieg/Kid confirmados ausentes), cai num deck
-genérico da mesma cor, mais fraco; mão do oponente entra com informação
-COMPLETA (mesmo padrão do self-play hoje, não mascarada como o caminho
-ao vivo) — o motor aqui tem MAIS informação do oponente que o bot real
-teve, então resultado tende a ficar "melhor" que o bot real conseguiria
-nessa exata situação, nunca pior; primeiro turno de cada jogador é
-pulado (sem snapshot "antes" pra reconstruir).
+reconstrução best-effort (soma `don_drawn` por turno, subtrai custo
+conhecido de play/activate/attach_don, SOMA de volta qualquer efeito
+tipo "Activate N Don"/`set_don_active` achado no texto do efeito —
+achado real 04/08, deck do Mihawk OP14-020 depende MUITO dessa
+mecânica de reciclar DON, sem contar isso o estimador ficava
+artificialmente baixo — mesmo assim pode divergir em jogos longos);
+deck restante é uma COMPOSIÇÃO real (mesmo líder em
+`decklists_raw.csv`) mas ORDEM embaralhada, não a ordem real; se o
+líder não tem decklist real no banco (Marshall D. Teach/Krieg/Kid
+confirmados ausentes), cai num deck genérico da mesma cor, mais fraco;
+mão do oponente entra com informação COMPLETA (mesmo padrão do
+self-play hoje, não mascarada como o caminho ao vivo) — o motor aqui
+tem MAIS informação do oponente que o bot real teve, então resultado
+tende a ficar "melhor" que o bot real conseguiria nessa exata situação,
+nunca pior; primeiro turno de cada jogador é pulado (sem snapshot
+"antes" pra reconstruir).
 
 **Como usar o resultado**: NÃO é uma verdade absoluta, é uma segunda
 opinião pra comparar contra o que aconteceu de verdade. Onde a
@@ -415,3 +420,18 @@ documentar), ou (b) o motor de hoje repete a MESMA escolha que perdeu a
 partida — aí sim, achado real, investigar causa raiz igual qualquer
 outro bug desta sessão (trace instrumentado, fix cirúrgico, validar com
 `smoke_fast.py`/`smoke_test.py` + gauntlet antes de aceitar).
+
+**Triagem em lote**: `scriptis_da_ia/triage_real_losses.py` lê todos os
+relatórios de `metrics/real_loss_audits/*.json` e classifica cada turno
+em `MATCH` (motor de hoje repete a decisão histórica — candidato a
+achado real) vs `DIVERGE` (heurístico, baseado em texto — só prioriza o
+que merece leitura manual, não é veredito automático). Achado real
+04/08 (primeira rodada, 268 turnos das 59 derrotas do banco): 92% da
+divergência era o motor de hoje atacando o LÍDER muito mais que o
+histórico, e ISSO correlaciona fortemente (212/238 casos) com logs
+ANTERIORES a 29/07 — a data exata do fix `ATTACK_LEADER_BASE_SCORE`
+(bloco HANDOFF 395). Ou seja: confirmação em dado REAL (não só
+self-play) de que esse fix funciona. Zero casos de atacar o líder
+MENOS que o histórico (nenhuma regressão nessa frente). Sobrou um
+resíduo pequeno (~20 turnos de 268) não explicado por esse fix —
+próxima sessão pode aprofundar aí antes de assumir bug novo.

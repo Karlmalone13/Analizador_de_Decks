@@ -28,7 +28,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Gastino\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 3 DON -> Joga: Gastino (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Place up to 1 of your opponent's Characters with a cost of 3 or less at the top ...\u001b[0m\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Jinbe\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 3 DON -> Joga: X.Drake (Reprint) (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] You may rest this Character: If the number of your Life cards is equal to...\u001b[0m\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
     },
     {
       "turn": 5,
@@ -63,7 +63,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Boa Hancock - OP14-112 (SP)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 3 DON -> Joga: X.Drake (Reprint) (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] You may rest this Character: If the number of your Life cards is equal to...\u001b[0m\n    ⚙ ativou [Activate:Main] de X.Drake (Reprint)\n      ↳ custo: restou X.Drake (Reprint)\n      ↳ restou: St. Jaygarcia S\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ficou(ram) ativo(s): X.Drake (Repri\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Zeus (SP)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 2 DON -> Joga: Zeus (SP) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may add 1 card from the top or bottom of your Life cards to your hand: K.O. ...\u001b[0m\n    ↳ [Zeus (SP)] custo: pegou da Life: Monkey.D.Garp (\n    ↳ [Zeus (SP)] KO: St. Jaygarcia S\n  > gastou 1 DON -> Joga: Monkey.D.Garp (Parallel) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 [Sabo], [Portgas.D.Ace...\u001b[0m\n    ↳ [Monkey.D.Garp (Paral] olhou 5 do topo -> nada para pegar\n    ↳ [Monkey.D.Garp (Paral] 4 carta(s) no fundo do deck\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
     },
     {
       "turn": 7,
@@ -97,7 +97,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Charlotte Praline\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: Nico Robin (, Laffitte\n  > gastou 1 DON -> Joga: Laffitte (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] K.O. up to 1 of your opponent's Characters with a cost of 4 or less. [Trigger] A...\u001b[0m\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Kuzan\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: S-Shark, Fugetsu Omus\n    ⚡ anexou 1 DON em Eustass\"Captain\"Kid  para ligar [attack_power]\n    Eustass\"Captain\"Kid  (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
     },
     {
       "turn": 9,
@@ -130,7 +130,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Nico Robin (055) (SP)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Eustass\"Captain\"Kid \n    Eustass\"Captain\"Kid  (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: Shura, Raki\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Stussy (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Eustass\"Captain\"Kid \n    Eustass\"Captain\"Kid  (6000pwr) ataca St. Ethanbaron V. Nu\n      💀 St. Ethanbaron V. Nu foi KO!\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: Bobbin the D, Shimotsuki U\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
     }
   ]
 }

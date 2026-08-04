@@ -44,11 +44,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Donquixote Doflaming (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Sugar - OP10-065 (SP) (1000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] Rest 1 of your DON!! cards and you may rest this Character: Look at 5 car...\u001b[0m\n    ⚙ ativou [Activate:Main] de Baby 5 (OP05-034) (Rep\n      ↳ custo: restou Baby 5 (OP05-034) \n      ↳ custo: restou 1 DON\n  \u001b[90m[end] reativou 2 DON\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Donquixote Doflaming (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚙ ativou [Activate:Main] de Baby 5 (OP05-034) (Rep\n      ↳ custo: restou Baby 5 (OP05-034) \n      ↳ custo: restou 1 DON\n  > gastou 1 DON -> Joga: Sugar - OP10-065 (SP) (1000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] Rest 1 of your DON!! cards and you may rest this Character: Look at 5 car...\u001b[0m\n    ⚙ ativou [Activate:Main] de Sugar - OP10-065 (SP)\n      ↳ custo: restou 1 DON\n  \u001b[90m[end] reativou 2 DON\u001b[0m\n"
     },
     {
       "turn": 5,
-      "don_available_estimado": 2,
+      "don_available_estimado": 3,
       "historical_actions": [
         {
           "type": "attack",
@@ -75,11 +75,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Donquixote Doflaming (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Sugar - OP10-065 (SP) (1000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] Rest 1 of your DON!! cards and you may rest this Character: Look at 5 car...\u001b[0m\n    ⚙ ativou [Activate:Main] de Sugar - OP10-065 (SP)\n      ↳ custo: restou 1 DON\n  \u001b[90m[end] reativou 2 DON\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Donquixote Doflaming\n    Donquixote Doflaming (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 1 DON -> Joga: Sugar - OP10-065 (SP) (1000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] Rest 1 of your DON!! cards and you may rest this Character: Look at 5 car...\u001b[0m\n    ⚙ ativou [Activate:Main] de Sugar - OP10-065 (SP)\n      ↳ custo: restou 1 DON\n  \u001b[90m[end] reativou 2 DON\u001b[0m\n"
     },
     {
       "turn": 7,
-      "don_available_estimado": 1,
+      "don_available_estimado": 3,
       "historical_actions": [
         {
           "type": "play",
@@ -141,11 +141,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Vergo (Alternate Art (7000pwr) ataca Leader\n      ↳ [when attacking] custo: devolveu 1 DON ao deck\n      ↳ [when attacking] -2000 power em: Baron Tamago & \n      💥 DANO! vida do oponente: 4\n    Donquixote Doflaming (5000pwr) ataca Baron Tamago & Pekom\n      💀 Baron Tamago & Pekom foi KO!\n  > gastou 1 DON -> Joga: Sugar - OP10-065 (SP) (1000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] Rest 1 of your DON!! cards and you may rest this Character: Look at 5 car...\u001b[0m\n  \u001b[90m[end] reativou 1 DON\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Vergo (Alternate Art\n    Vergo (Alternate Art (8000pwr) ataca Leader\n      ↳ [when attacking] custo: devolveu 1 DON ao deck\n      ↳ [when attacking] -2000 power em: Baron Tamago & \n      💥 DANO! vida do oponente: 4\n    Donquixote Doflaming (5000pwr) ataca Baron Tamago & Pekom\n      💀 Baron Tamago & Pekom foi KO!\n  > gastou 1 DON -> Joga: Sugar - OP10-065 (SP) (1000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] Rest 1 of your DON!! cards and you may rest this Character: Look at 5 car...\u001b[0m\n    ⚙ ativou [Activate:Main] de Sugar - OP10-065 (SP)\n      ↳ custo: restou 1 DON\n  \u001b[90m[end] reativou 2 DON\u001b[0m\n"
     },
     {
       "turn": 9,
-      "don_available_estimado": 1,
+      "don_available_estimado": 2,
       "historical_actions": [
         {
           "type": "play",
@@ -185,11 +185,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Donquixote Doflaming (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚙ ativou [Activate:Main] de Sugar - OP10-065 (SP)\n      ↳ custo: restou 1 DON\n    anexou 1 DON em Sugar - OP10-065 (SP\n    Sugar - OP10-065 (SP (2000pwr) ataca Charlotte Brulee\n      💀 Charlotte Brulee foi KO!\n  \u001b[90m[end] reativou 1 DON\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Donquixote Doflaming\n    Donquixote Doflaming (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    ⚙ ativou [Activate:Main] de Sugar - OP10-065 (SP)\n      ↳ custo: restou 1 DON\n    anexou 1 DON em Sugar - OP10-065 (SP\n    Sugar - OP10-065 (SP (2000pwr) ataca Charlotte Brulee\n      💀 Charlotte Brulee foi KO!\n  \u001b[90m[end] reativou 1 DON\u001b[0m\n"
     },
     {
       "turn": 11,
-      "don_available_estimado": 1,
+      "don_available_estimado": 2,
       "historical_actions": [
         {
           "type": "play",
@@ -240,7 +240,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Vergo (Alternate Art (7000pwr) ataca Leader\n      ↳ [when attacking] custo: devolveu 1 DON ao deck\n      ↳ [when attacking] -2000 power em: Baron Tamago & \n      💥 DANO! vida do oponente: 2\n    Donquixote Doflaming (9000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n    Donquixote Doflaming (5000pwr) ataca Baron Tamago & Pekom\n      💀 Baron Tamago & Pekom foi KO!\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Donquixote Doflaming (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    anexou 1 DON em Vergo (Alternate Art\n    Vergo (Alternate Art (8000pwr) ataca Leader\n      ↳ [when attacking] custo: devolveu 1 DON ao deck\n      ↳ [when attacking] -2000 power em: Baron Tamago & \n      💥 DANO! vida do oponente: 1\n    anexou 1 DON em Donquixote Doflaming\n    Donquixote Doflaming (10000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n"
     }
   ]
 }

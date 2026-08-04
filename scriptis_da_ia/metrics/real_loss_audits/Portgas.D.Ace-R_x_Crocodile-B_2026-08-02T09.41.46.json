@@ -33,7 +33,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Roronoa Zoro\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Namule (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may reveal 1 Character card with 8000 power from your hand: K.O. up to 1 of ...\u001b[0m\n    ↳ [Namule] custo: revelou 1 carta(s) com tipo \n    ↳ [Namule] KO: Miss.Valentine(\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Tony Tony.Chopper (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Namule (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may reveal 1 Character card with 8000 power from your hand: K.O. up to 1 of ...\u001b[0m\n    ↳ [Namule] custo: revelou 1 carta(s) com tipo \n    ↳ [Namule] KO: Miss.Valentine(\n"
     },
     {
       "turn": 5,
@@ -79,7 +79,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Morley\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 2 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Namule (2000pwr) ataca Miss.Valentine(Mikit\n      🛡 Counter! +1000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n    Portgas.D.Ace (001)  (7000pwr) ataca Leader\n      🛡 Counter! +3000 -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Dice\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 2 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Portgas.D.Ace (001)  (7000pwr) ataca Leader\n      🛡 Counter! +3000 -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n    Namule (2000pwr) ataca Miss.Valentine(Mikit\n      🛡 Counter! +1000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n"
     },
     {
       "turn": 7,
@@ -131,11 +131,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Dr.Hiriluk\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 2 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Portgas.D.Ace (001)  (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Portgas.D.Ace\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 2 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Portgas.D.Ace (001)  (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n"
     },
     {
       "turn": 9,
-      "don_available_estimado": 0,
+      "don_available_estimado": 1,
       "historical_actions": [
         {
           "type": "attack",
@@ -180,11 +180,11 @@
           "effects": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Dr.Hiriluk\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 1 DON em Vista para ligar [when_attacking]\n    Vista (9000pwr) ataca Leader\n      ↳ [when attacking] KO: Miss.Valentine(\n      💥 DANO! vida do oponente: 2\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Monkey.D.Garp (Alternate Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader is [Sabo], [Portgas.D.Ace] or [Monkey.D.Luffy], look at 4 cards f...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Bluejam\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Vista (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Monkey.D.Garp (Alternate Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader is [Sabo], [Portgas.D.Ace] or [Monkey.D.Luffy], look at 4 cards f...\u001b[0m\n"
     },
     {
       "turn": 11,
-      "don_available_estimado": 1,
+      "don_available_estimado": 0,
       "historical_actions": [
         {
           "type": "play",
@@ -237,7 +237,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Caesar Clown (006)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Monkey.D.Luffy (Alte\n    Monkey.D.Luffy (Alte (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n      ⚡ [trigger] comprou: Ms. All Sund, Mr.4(Babe) (e trashou: Mr.2.Bon.Kur)\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Vista (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n      ⚡ [trigger] olhou 3 do topo -> pegou: Mr.5(Gem); trash resto: Monkey.D.Luf, Mr.2.Bon.Kur\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Emporio.Ivankov\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Monkey.D.Luffy (Alte\n    Monkey.D.Luffy (Alte (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n    ⚡ anexou 1 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Vista (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n    Portgas.D.Ace (001)  (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n"
     }
   ]
 }

@@ -40,6 +40,7 @@ import contextlib
 import io
 import json
 import os
+import re
 import random
 from copy import deepcopy
 
@@ -161,6 +162,25 @@ class DonEstimator:
                 self.pool[player] = max(0, self.pool[player] - custo)
             elif t == 'attach_don':
                 self.pool[player] = max(0, self.pool[player] - int(act.get('amount', 0) or 0))
+            # Achado real 04/08 (triagem de real_loss_audits, Dracule
+            # Mihawk OP14-020): efeitos tipo "set_don_active"/"add_don"
+            # DEVOLVEM DON pro pool ativo sem ser um don_drawn novo (ex:
+            # Mihawk "ative ate 3 DON!!") -- sem contar isso, o estimador
+            # ficava artificialmente baixo em decks construidos em torno
+            # dessa mecanica (confirmado no guia externo do Mihawk, secao
+            # 10 do IA_Compendium: reciclagem de DON e o proprio game
+            # plan), fazendo a reconstrucao parecer "sem DON pra nada"
+            # numa mao que na vida real tinha DON de sobra. O parser do
+            # log so registra o texto do EFEITO (nao um campo estruturado
+            # por acao), entao conta as ocorrencias literais de
+            # "Activate N Don"/"Activate Don" nos efeitos de QUALQUER
+            # acao (play/activate), nao so 'activate'.
+            for logline in act.get('effects', []) or []:
+                m = re.search(r'Activate (\d+) Don', logline)
+                if m:
+                    self.pool[player] += int(m.group(1))
+                elif re.search(r'Activate Don\b', logline):
+                    self.pool[player] += 1
 
     def available(self, player):
         return self.pool.get(player, 0)

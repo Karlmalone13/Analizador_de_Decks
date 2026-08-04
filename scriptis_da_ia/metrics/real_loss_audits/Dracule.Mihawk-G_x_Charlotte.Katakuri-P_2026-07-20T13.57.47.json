@@ -37,7 +37,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Capone\"Gang\"Bege\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 2 DON -> Joga: Capone\"Gang\"Bege (1000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] (After your opponent declares an attack, you may rest this card to make it the n...\u001b[0m\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Bingoh\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 1 DON -> Joga: Otama (Parallel) (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 green [Land of Wano] t...\u001b[0m\n    ↳ [Otama (Parallel)] olhou 5 do topo -> pegou: Kouzuki Hiyori\n    ↳ [Otama (Parallel)] 4 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: Kouzuki Hiyori (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader is [Kouzuki Oden], draw 1 card. [Activate: Main] You may trash th...\u001b[0m\n"
     },
     {
       "turn": 5,
@@ -91,7 +91,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Jean Bart\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Perona (Alternate Ar (2000pwr) ataca Charlotte Pudding (A\n      🛡 Counter! +4000 -> defesa 4000\n      ✗ Ataque bloqueado (2000 < 4000)\n    Dracule Mihawk - OP1 (6000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n  > gastou 1 DON -> Joga: Kin'emon (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may rest 1 of your (Slash) attribute Leaders or DON!! cards: Draw 2 cards an...\u001b[0m\n    ↳ [Kin'emon] comprou: Vander Decke, Monkey.D.Luf (e trashou: Jean Bart)\n  > gastou 1 DON -> Joga: Roronoa Zoro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Rush:Character] (This card can attack Characters on the turn in which it is played.) [On ...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Otama\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Dracule Mihawk - OP1 (6000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n  > gastou 2 DON -> Joga: Otama (0pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] You may rest this Character: Rest up to 1 of your opponent's DON!! cards ...\u001b[0m\n"
     },
     {
       "turn": 7,
@@ -136,7 +136,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Donquixote Doflamingo\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Kin'emon (2000pwr) ataca Charlotte Pudding (A\n      🛡 Counter! +3000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n    Perona (Alternate Ar (2000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n    Dracule Mihawk - OP1 (6000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n  > gastou 1 DON -> Joga: Roronoa Zoro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Rush:Character] (This card can attack Characters on the turn in which it is played.) [On ...\u001b[0m\n  > gastou 1 DON -> Joga: Kikunojo - OP14-023 (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [End of Your Turn] Set this Character as active.\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Jango\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Kin'emon (2000pwr) ataca Charlotte Pudding (A\n      🛡 Counter! +3000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n    Perona (Alternate Ar (2000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n    Dracule Mihawk - OP1 (6000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n  > gastou 1 DON -> Joga: Roronoa Zoro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Rush:Character] (This card can attack Characters on the turn in which it is played.) [On ...\u001b[0m\n  > gastou 1 DON -> Joga: Kikunojo - OP14-023 (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [End of Your Turn] Set this Character as active.\u001b[0m\n"
     },
     {
       "turn": 9,
@@ -234,7 +234,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Arlong\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Trafalgar Law (SP) (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Kouzuki Oden (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      🛡 Counter! +3000 -> defesa 8000\n      ✗ Ataque bloqueado (6000 < 8000)\n  > gastou 1 DON -> Joga: Otama (Parallel) (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 green [Land of Wano] t...\u001b[0m\n    ↳ [Otama (Parallel)] olhou 5 do topo -> pegou: Monkey.D.Luffy \n    ↳ [Otama (Parallel)] 4 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: Perona (Alternate Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader has the (Slash) attribute, look at 5 cards from the top of your d...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Heat\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Trafalgar Law (SP) (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Kouzuki Oden (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  > gastou 1 DON -> Joga: Perona (Alternate Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader has the (Slash) attribute, look at 5 cards from the top of your d...\u001b[0m\n    Dracule Mihawk - OP1 (6000pwr) ataca Uso-Hachi (Reprint)\n      🛡 Counter! +4000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 1 DON -> Joga: Roronoa Zoro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Rush:Character] (This card can attack Characters on the turn in which it is played.) [On ...\u001b[0m\n"
     }
   ]
 }

@@ -26,11 +26,11 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 2 DON -> Joga: Koushirou (1000pwr) [CHARACTER]\n    \u001b[90mefeito: If your (Slash) attribute Character with a cost of 5 or less other than this Character wou...\u001b[0m\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Meowban Brothers (2000pwr) ataca Sengoku - OP07-046 (\n      💀 Sengoku - OP07-046 ( foi KO!\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 2 DON -> Joga: Koushirou (1000pwr) [CHARACTER]\n    \u001b[90mefeito: If your (Slash) attribute Character with a cost of 5 or less other than this Character wou...\u001b[0m\n    Meowban Brothers (2000pwr) ataca Sengoku - OP07-046 (\n      🛡 Counter! +1000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n"
     },
     {
       "turn": 5,
-      "don_available_estimado": 0,
+      "don_available_estimado": 1,
       "historical_actions": [
         {
           "type": "play",
@@ -51,7 +51,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 2 DON -> Joga: Koushirou (1000pwr) [CHARACTER]\n    \u001b[90mefeito: If your (Slash) attribute Character with a cost of 5 or less other than this Character wou...\u001b[0m\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 1 DON em Krieg (OP15-001) (Al para ligar [attack_power]\n    Krieg (OP15-001) (Al (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n"
     },
     {
       "turn": 7,
