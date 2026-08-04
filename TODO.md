@@ -2,6 +2,22 @@
 
 **Última atualização:** 4 de agosto de 2026
 
+> 04/08/2026 (bloco 431): **Calibração do combo de reanimação do Imu
+> (Five Elders) — bug histórico CONFIRMADO já corrigido** por sessões
+> anteriores (commits `87ad7b3` 12/07 e `d063ec3` 14/07). Análise de 35
+> jogos reais do banco (6 vitórias/29 derrotas): TODAS as derrotas
+> mostram Five Elders sendo trashado como custo/descarte colateral
+> (custo do líder Imu, ou perdido em buscas tipo St. Shalria) — 0 dessas
+> derrotas é depois dos 2 commits acima. Reconstruí os cenários exatos
+> com `GameState`/`EffectExecutor` reais e confirmei que o motor de HOJE
+> protege Five Elders corretamente nos dois pontos (trash_value=397,
+> busca escolhe Five Elders sobre outras cartas). **Yamato/Crocodile/
+> Lucci não são decks de reanimação em massa** (confirmado via
+> `card_effects_db.json`/`compute_game_plan` — só recursão de alvo
+> único, bate com o catálogo do IA_Compendium). **Moria** tem recursão
+> incremental (não bomba), **Perona** não tem líder funcional no banco.
+> Nenhum fix de código necessário. Ver bloco 431 do HANDOFF.
+
 > 04/08/2026 (bloco 430): pequeno fechamento do bloco 429 — generalizado
 > também o strip de texto "this character cannot attack unless" pra
 > aceitar "leader" (2 pontos residuais em `gerar_effects_db.py`, mesma

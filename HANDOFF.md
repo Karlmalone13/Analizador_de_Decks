@@ -1,5 +1,109 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (431) - Claude (sessao remota web) - Calibracao de combos de reanimacao: bug historico do Five Elders (Imu) CONFIRMADO JA CORRIGIDO por sessoes anteriores; Yamato/Crocodile/Lucci nao sao decks de reanimacao (premissa incorreta); Moria/Perona sem dados suficientes
+
+Usuario pediu pra calibrar o combo de reanimacao usando o banco de logs:
+pegar 1 partida vencedora de Imu e comparar com TODAS as perdidas, e
+tambem calibrar os combos de Yamato/Crocodile/Lucci/Moria/Perona.
+
+**Metodologia**: `logs/index.json` tem 41 jogos com Imu, 35 com `winner`
+valido -- 6 vitorias, 29 derrotas (do ponto de vista de quem jogava
+Imu, independente de ser bot ou humano piloteando; `parse_combat_log.py`
+documenta que essa distincao NAO e reconstruivel de forma confiavel a
+partir do combat log sozinho, so via `LogOutput.log` do BepInEx, que e
+gitignored/local-only -- declarado explicitamente, nao inventei o dado).
+Programaticamente extraidos todos os eventos envolvendo Five Elders
+(OP13-082) de cada partida (turno, tipo de acao, efeitos).
+
+**Achado no padrao historico (TODAS as 29 derrotas)**: nunca aparece o
+combo completo (Empty Throne -> ativar Five Elders -> 5 reanimacoes) —
+em vez disso, Five Elders aparece sendo TRASHADO como custo/descarte
+colateral: (a) custo da propria habilidade do lider Imu
+(`trash_char_or_hand`, filtro Celestial Dragons, pra comprar 1 carta) —
+turno 1 em varias derrotas; (b) perdido em buscas (`look_top_deck` +
+`add_to_hand` com filtro Celestial Dragons, ex: St. Shalria OP13-086,
+"The Five Elders... Are At Your Service" OP13-096) — o buscador mantinha
+outra carta e mandava Five Elders pro `trash_rest`. Em contraste, 3 das
+6 VITORIAS mostram o combo completo disparando (Empty Throne -> Five
+Elders -> "Deployed X from Trash" x5).
+
+**Validacao contra o codigo de HOJE (nao so leitura de log)**:
+reconstrui os 2 cenarios exatos (mao real do turno 1 de uma derrota
+pro custo do lider; St. Shalria revelando Five Elders + Marcus Mars
+pra uma busca) como `GameState`/`EffectExecutor` reais e rodei
+`_trash_value`/`_choose_to_trash`/`execute()` de hoje contra eles.
+**Resultado: o motor de HOJE protege Five Elders corretamente nos dois
+casos** (`_trash_value` = 397 pra Five Elders vs 41-206 pro resto da
+mao; a busca da Shalria escolhe Five Elders sobre Marcus Mars). Cruzando
+com `git log`, os 2 fixes responsaveis ja existem: commit `87ad7b3`
+(12/07/2026 13:40, busca do searcher passou a usar `_trash_value` em
+vez de `avaliar_carta` cru) e commit `d063ec3` (14/07/2026 16:00,
+`full_deck_plan`/`win_con_code` passou a ser populado SEMPRE ao vivo,
+nao so depois de boa parte do deck ja ter sido revelado). TODAS as 29
+derrotas do banco sao de ANTES desses 2 commits (09/07 a 14/07 ate
+14:16, nunca depois das 16:00). **Conclusao: o bug que o usuario queria
+calibrar ja foi corrigido em sessoes anteriores** -- validado agora com
+reproducao concreta contra o codigo atual, nao so por inspecao.
+
+**Residual de baixa confianca, NAO tratado como bug**: 2 derrotas
+mostram "Deploy Five Elders" via Empty Throne sem ativacao de Five
+Elders na sequencia. Investigado 1 caso em detalhe (log completo,
+2026-07-09T17.22.22, turno 11): o jogador (Imu) estava em 1 de vida,
+jogou Empty Throne + Ground Death no MESMO turno (4 DON gastos), e o
+log termina logo depois (`total_turns=11`) -- o oponente
+provavelmente fechou a partida no turno seguinte antes de haver
+outra chance de ativar Five Elders. Padrao de "sem tempo", nao de
+decisao ruim -- nao virou item de TODO.
+
+**Yamato/Crocodile/Lucci/Moria/Perona -- dados e premissa checados**:
+- `logs/index.json`: 2 jogos Yamato, 3 Crocodile, 1 Moria, 0 Lucci, 0
+  Perona -- nenhum desses tem volume suficiente pra uma comparacao
+  vitoria/derrota como a de Imu (35 jogos).
+- `decklists_raw.csv`: só existem 2 decklists reais de Crocodile;
+  nenhuma de Yamato/Lucci/Moria/Perona.
+- Busquei em `card_effects_db.json` por qualquer carta com
+  `play_from_trash`/`add_from_trash` de count>=2 condicionada a
+  `leader_is` desses 5 lideres -- **0 resultados** (só Imu/Five Elders
+  tem esse padrao no banco inteiro). Também busquei sem o filtro de
+  count, olhando os próprios líderes:
+  - **Crocodile** (`compute_game_plan_from_cards` rodado nos 2 decks
+    reais): `win_con_code=None` -- as únicas cartas de recursão do deck
+    são de alvo ÚNICO (Ms. All Sunday play_from_trash count=1, Mr.4
+    add_from_trash count=1, Crocodile-OP14-120 reanima a si mesmo no
+    próprio KO). **Não é um deck de reanimação em massa** -- bate com o
+    catálogo do IA_Compendium ("Cost control", não "Recursion").
+  - **Yamato** (OP16-079 líder): só concede Rush (passiva), zero
+    recursão. Compêndio já classificava como "Trash/Tempo", não
+    reanimação.
+  - **Lucci** (OP07-079 líder): `when_attacking` debuff_cost via
+    trash_from_deck_top -- zero recursão.
+  - **Gecko Moria** (2 versões, OP06-080/OP14-080): OP06-080 tem
+    recursão de ALVO ÚNICO por ataque (`when_attacking play_from_trash
+    count=1`, filtro Thriller Bark Pirates) -- incremental, não bomba
+    tipo Five Elders. OP14-080 não tem NENHUMA recursão na própria
+    carta de líder -- o "Trigger/Recursion" do compêndio provavelmente
+    vem de personagens Trigger do deck de 40 cartas, que não temos
+    decklist real pra conferir.
+  - **Perona**: não existe líder funcional no banco -- `OP06-021_p2`
+    aparece tagueado como "Leader" em `cards_rows.csv`, mas é o MESMO
+    código de personagem já auditado no bloco 429 (Perona
+    "Choose one", ativa/pontua como Character normalmente); provável
+    erro de dado na fonte raspada, não uma 2ª carta real. Compêndio
+    também não lista Perona como líder catalogado.
+
+**Nenhum fix de código nesta sessão** -- a investigação veio limpa em
+todos os pontos: o bug pedido já estava corrigido, e a premissa de
+"mais decks de reanimação" não se sustentou pra 3 dos 5 líderes
+citados (Yamato/Crocodile/Lucci), com os outros 2 (Moria/Perona) sem
+dado suficiente pra ir além disso remotamente.
+
+**Pendente pra quem tiver acesso local/partida real**: (1) calibrar
+Moria de verdade exige uma decklist real de 40 cartas (não temos
+nenhuma) pra achar as cartas Trigger de recursão que o compêndio
+menciona; (2) o residual de "Five Elders deployado sem ativar" merece
+1-2 partidas novas de Imu pra confirmar que é mesmo só falta de tempo,
+não reaparece com mais amostra.
+
 ## 2026-08-04 (430) - Claude (sessao remota web) - fechamento do bloco 429: generaliza tambem o strip de texto de "cannot attack unless" pra "leader" (0 cartas afetadas hoje, so blindagem)
 
 Usuario perguntou "tem mais alguma coisa de mecanica pra corrigir" -- ao
