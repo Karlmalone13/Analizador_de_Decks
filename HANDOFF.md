@@ -1,5 +1,78 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-03 (428) - Claude (sessao remota web) - Motor era CEGO a efeitos "Choose one" (choice) em toda funcao de SCORING: 23 cartas no banco (4 lideres, personagens, eventos) pontuavam como se o efeito nao fizesse nada -- fix generico em ~15 pontos
+
+Usuário pediu pra investigar "se o bot sabe o que cada líder e deck faz,
+testando se ele consegue ativar o efeito do líder" -- follow-up direto da
+pendência do `IA_Compendium` (CLAUDE.md: "o bot ainda parece que não
+entende" o líder).
+
+**Achado**: cruzei `card_effects_db.json` com `cards_rows.csv` (135
+líderes únicos) -- 0 líderes com `[Activate: Main]` no texto cru falharam
+o parse (nenhuma lacuna de parser). Mas 3 líderes (Perona OP06-021,
+Vegapunk OP07-097, King OP08-057) têm `activate_main` com `steps` VAZIO
+-- não é bug de parser: o efeito real é "Choose one" (ramificado),
+guardado corretamente na chave `choice` (lista de ramos alternativos),
+não em `steps`. A EXECUÇÃO já sabe resolver `choice` (`execute()`,
+`_resolve_choice`). O problema: **toda função de SCORING** (decide se
+vale ativar/jogar/atacar) só lia `bloco.get('steps', [])` direto --
+`choice` sempre virava lista vazia, fazendo o motor pontuar esses
+efeitos como se não fizessem NADA (`_score_activate_main` caía no piso
+genérico 60 pra King, em vez do valor real de "compre 1 carta" = 170).
+
+**Busquei a mesma gramática no banco inteiro** (regra do CLAUDE.md, não
+só nas 3 cartas que revelaram o bug): **23 cartas** (líderes,
+personagens, eventos) têm `choice` sem `steps` em 5 gatilhos —
+`on_play` (8), `main`/evento (8), `activate_main` (4, incluindo
+personagem Catarina Devon OP09-084), `when_attacking` (2, incluindo
+líder Queen OP04-040), `on_ko` (1, Pedro OP08-030).
+
+**Fix**: novo helper `resolve_choice_for_scoring(block, card, me, opp)`
+(decision_engine.py, perto de `on_ko_value`) — retorna `steps` diretos
+quando existem, ou resolve o melhor ramo de `choice` via
+`EffectExecutor._resolve_choice` (MESMA heurística que a execução real
+já usa). Aplicado em ~15 pontos, um por gatilho/função afetada:
+- `activate_main`: `_should_activate_main`, `_score_activate_main`,
+  `_activate_main_value`, `_stage_play_saves_don_for_card` (stage),
+  a leitura de `am_steps`/`recupera_trash` em `_score_play_action`,
+  `_trigger_don_value`, `step_actions` em `_generate_attach_don_actions`.
+- `on_play`/`main` (família avaliar_carta): `_step_condition_currently_holds`,
+  `_conditional_play_card_combo_value`, `_conditional_board_synergy_value`,
+  `_uncovered_action_value`, `_own_effect_removes_char_react_bonus`, o
+  guard `op_block.get('steps')`/`self_cant_play` e os 2 pontos de
+  `main_steps` (EVENT) em `_score_play_action`.
+- `when_attacking`: `_rest_activates_effect`, `_rest_only_attack_value`,
+  `_rest_attack_has_material_benefit`.
+- `on_ko`: `on_ko_value` refatorada (não tem Card ao vivo, só `code` —
+  pontua CADA ramo do `choice` com a mesma tabela e usa o de maior
+  valor, sem filtro de viabilidade material real).
+- Bônus: `_tem_futuro` (trash_value) tratava um personagem com
+  `activate_main`/`when_attacking` só-`choice` (ex: Catarina Devon) como
+  "sem efeito futuro" (score -999, trasha primeiro) -- corrigido pra
+  checar `choice` também na presença.
+
+**Validação**: `smoke_fast.py`/`smoke_test.py` 100% (6 testes novos —
+`resolve_choice_for_scoring` isolado, `_score_activate_main` pro King
+não fica mais no piso 60, `on_ko_value` pro Pedro não fica mais em 0.0).
+`audit_replay.py --seed 11` e `--seed 23`: 0 anomalias/0 exceções nos
+dois (sem regressão do bug de DON, blocos 425-427).
+
+**Nota honesta**: isso NÃO é a mesma coisa que a pendência do
+`IA_Compendium` (fidelidade de arquétipo/game_plan por líder) -- é uma
+lacuna mais básica e mais generalizada: o motor achava que 23 cartas com
+efeito real "Choose one" simplesmente não faziam nada. Resolve
+diretamente o teste pedido ("o bot consegue ativar o efeito do líder")
+pros 4 líderes afetados (Perona/Vegapunk/King/Queen), mas não fecha a
+auditoria completa de fidelidade estratégica por líder do compêndio.
+
+**Pendente**: nenhum dos 16 decks de `decklists_raw.csv` usa os líderes
+afetados (Perona/Vegapunk/King/Queen), então a validação de self-play
+não exercitou esses casos em partida real de ponta a ponta -- só os
+testes unitários isolados (com dados reais das cartas) confirmam o
+fix. Próxima sessão com log real desses líderes deve conferir a
+telemetria de decisão pra ver se `activate`/`when_attacking` de fato
+aparece com o score correto ao vivo.
+
 ## 2026-08-03 (427) - Claude (sessao remota web) - 2 achados de performance a mais (counter_in_hand com dupla avaliacao, DecisionEngine recriado a cada carta em _trash_value): -21,5% em cima do fix do bloco 426 (total -45,6% desde a linha de base original)
 
 Continuação direta da sessão do bloco 426. Usuário perguntou se ainda

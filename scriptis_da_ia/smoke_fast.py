@@ -31,6 +31,7 @@ from optcg_engine.decision_engine import (  # noqa: E402
     is_immune,
     load_cards_db,
     on_ko_value,
+    resolve_choice_for_scoring,
 )
 from optcg_engine import sim_bridge  # noqa: E402
 from optcg_engine.counter_estimation import max_plausible_defense  # noqa: E402
@@ -480,6 +481,75 @@ def test_effect_executor_de_cacheado_por_instancia_03_08() -> None:
     de2 = ee._de()
     check("EffectExecutor._de(): mesma instancia de DecisionEngine reusada (nao recriada)",
           de1 is de2)
+
+
+def test_resolve_choice_for_scoring_03_08() -> None:
+    """
+    Achado real 03/08 (usuário pediu pra investigar se o bot sabe ativar
+    o efeito de cada líder, testando ativação de líder): TODA função de
+    scoring do motor lia `bloco.get('steps', [])` direto -- pra "Choose
+    one" (guardado em `bloco['choice']`, não em `steps`), isso sempre
+    vinha vazio. `resolve_choice_for_scoring` (decision_engine.py) é o
+    helper compartilhado que resolve os dois casos.
+    """
+    p = GameState(leader=mk("XRCS1", "Lider", card_type="LEADER"), turn=3)
+    opp = GameState(leader=mk("XRCS2", "Opp", card_type="LEADER"), turn=3)
+    card = mk("XRCS3", "Carta", card_type="CHARACTER")
+
+    bloco_com_steps = {"steps": [{"action": "draw", "count": 1}]}
+    check("resolve_choice_for_scoring: steps diretos passam sem alteracao",
+          resolve_choice_for_scoring(bloco_com_steps, card, p, opp) == bloco_com_steps["steps"])
+
+    bloco_so_choice = {"choice": [[{"action": "draw", "count": 1}],
+                                  [{"action": "debuff_power", "amount": 1000, "target": "opp_character"}]]}
+    resolvido = resolve_choice_for_scoring(bloco_so_choice, card, p, opp)
+    check("resolve_choice_for_scoring: 'Choose one' sem steps proprio resolve pra um ramo real (nao vazio)",
+          bool(resolvido))
+    check("resolve_choice_for_scoring: ramo resolvido e um dos ramos do choice",
+          resolvido in bloco_so_choice["choice"])
+
+    bloco_vazio = {}
+    check("resolve_choice_for_scoring: bloco sem steps nem choice retorna lista vazia (nao quebra)",
+          resolve_choice_for_scoring(bloco_vazio, card, p, opp) == [])
+
+
+def test_score_activate_main_resolve_choice_lider_king_03_08() -> None:
+    """
+    Achado real 03/08: o líder King (OP08-057) tem `[Activate: Main]`
+    "Choose one: draw 1 (se mão<=5) OU debuff_cost no oponente" -- o
+    parser guarda isso em `choice`, não em `steps` (correto). Antes do
+    fix, `_score_activate_main` só lia `am.get('steps', [])` -- vazio
+    pra King -- e caía sempre no piso genérico (60), mesmo a opção real
+    (compre 1 carta) valendo 170 na tabela de categorias da própria
+    função. Este teste trava que o score deixou de ser o piso genérico.
+    """
+    am = get_card_effects("OP08-057").get("activate_main")
+    check("King (OP08-057): activate_main tem 'choice' e NÃO tem 'steps' próprio (setup do achado)",
+          bool(am.get("choice")) and not am.get("steps"))
+
+    match = OPTCGMatch((real_card("OP08-057"), []), (mk("XKING_OPP", "Opp", card_type="LEADER"), []))
+    p = match.state_a
+    opp = match.state_b
+    p.hand = []       # hand_lte 5 satisfeito -- so pra deixar a condicao do bloco fora do caminho
+    p.don_available = 3
+
+    score = match._score_activate_main(p.leader, am, p, opp, priority="DEVELOP")
+    check("_score_activate_main (King): score reflete a categoria 'draw' (>=150), não o piso genérico antigo (60)",
+          score >= 150)
+
+
+def test_on_ko_value_resolve_choice_pedro_03_08() -> None:
+    """
+    Achado real 03/08: Pedro (OP08-030) tem `[On K.O.]` "Choose one: rest
+    1 DON!! do oponente OU KO até 1 personagem custo<=6 restado do
+    oponente" -- guardado em `choice`, sem `steps` próprio. Antes do
+    fix, `on_ko_value` só lia `.get('steps', [])` -- vazio -- e
+    retornava 0.0 SEMPRE pra Pedro, mesmo ele tendo um efeito real (usado
+    p/ escolher sacrifícios via redirect). Trava que deixou de ser 0.
+    """
+    valor = on_ko_value("OP08-030")
+    check("on_ko_value (Pedro, 'Choose one' sem steps próprio): não é mais 0.0 (bug antigo)",
+          valor > 0.0)
 
 
 def test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo() -> None:
@@ -9652,6 +9722,9 @@ def main() -> int:
     test_populate_full_deck_knowledge_reusada_por_replaymatch_e_lado_oculto_03_08()
     test_counter_in_hand_avalia_effective_counter_1x_por_carta_03_08()
     test_effect_executor_de_cacheado_por_instancia_03_08()
+    test_resolve_choice_for_scoring_03_08()
+    test_score_activate_main_resolve_choice_lider_king_03_08()
+    test_on_ko_value_resolve_choice_pedro_03_08()
     test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo()
     test_don_reservado_para_ativar_wincon_em_campo()
     test_opp_combo_threat_detects_five_elders_style_reanimation()

@@ -1717,6 +1717,39 @@ def _on_ko_play_card_value(step: dict, owner: 'Optional[GameState]') -> float:
     return min(30.0, 12.0 + melhor.board_value() * 2.0)
 
 
+def resolve_choice_for_scoring(block: dict, card: 'Card', me: 'GameState', opp: 'GameState') -> list:
+    """
+    Steps 'efetivos' de um bloco de efeito PRA FINS DE AVALIAÇÃO (scoring/
+    viabilidade), não execução: `block['steps']` diretos quando existem,
+    ou -- se vazios e o bloco usa "Choose one" (`choice`, uma lista de
+    ramos alternativos) -- os steps do ramo de maior valor heurístico
+    entre os viáveis agora, via `EffectExecutor._resolve_choice` (MESMA
+    função que a execução real já usa pra resolver a escolha de verdade,
+    sem duplicar heurística).
+
+    Achado real 03/08 (usuário pediu pra investigar se o bot sabe ativar
+    o efeito de cada líder/deck, testando ativação de líder): toda função
+    de scoring do motor (`_score_activate_main`, as flags condicionais de
+    `avaliar_carta`, `_rest_only_attack_value`, etc.) lia `bloco.get(
+    'steps', [])` direto -- pra QUALQUER carta cujo efeito seja "Choose
+    one" (guardado em `choice`, não em `steps`), isso sempre vinha vazio,
+    fazendo o motor pontuar a ativação/carta como se o efeito não
+    fizesse NADA. Achado no banco inteiro (não só líder): 23 cartas
+    (líderes, personagens, eventos) em 5 gatilhos diferentes
+    (`on_play`/`main`/`activate_main`/`when_attacking`/`on_ko`) têm esse
+    padrão -- ex: líder Perona OP06-021, Vegapunk OP07-097, King
+    OP08-057 (activate_main pontuava 60 fixo em vez do valor real de
+    "compre 1 carta"/"jogue carta de graça").
+    """
+    steps = block.get('steps')
+    if steps:
+        return steps
+    choice = block.get('choice')
+    if not choice:
+        return []
+    return EffectExecutor(me, opp)._resolve_choice(choice, card, block.get('choice_chooser', 'self'))
+
+
 def on_ko_value(code: str, opp: 'Optional[GameState]' = None,
                 owner: 'Optional[GameState]' = None) -> float:
     """
@@ -1732,54 +1765,73 @@ def on_ko_value(code: str, opp: 'Optional[GameState]' = None,
     `owner` (opcional): GameState de quem é dono da carta — usado só para
     validar play_card/play_from_trash contra a mão/trash reais dele (ver
     `_on_ko_play_card_value`). Sem `owner`, mantém o bônus fixo antigo.
+
+    `choice` (achado real 03/08): esta função só recebe `code` (não uma
+    instância de Card), então não dá pra reusar `resolve_choice_for_scoring`
+    (que precisa de um Card pra checar `conditions` via `_check_conditions`
+    de verdade). Pra "Choose one" (ex: Pedro OP08-030), pontua CADA ramo
+    com a MESMA tabela abaixo e usa o de maior valor -- sem filtrar por
+    viabilidade material (não temos o board ao vivo aqui do jeito que
+    `_resolve_choice` tem), então superestima um pouco vs. a escolha real
+    do jogo, mas é estritamente melhor que tratar o efeito como 0 (o
+    comportamento antigo, que ignorava `choice` por completo).
     """
-    steps = get_card_effects(code).get('on_ko', {}).get('steps', [])
-    total = 0.0
-    for step in steps:
-        action = step.get('action', '')
-        count = int(step.get('count', 1) or 1)
-        if action in ('ko', 'trash'):
-            if opp is None:
-                total += 30 * count
-            else:
-                total += 30 * min(count, _step_matching_targets(step, opp.field_chars))
-        elif action in ('draw', 'draw_cards'):
-            total += 15 * count
-        elif action in ('rest_opp', 'rest_opp_character'):
-            # restar personagem do oponente nega um ataque/bloqueio — tempo
-            # real (partida 04/07: Vasco Shot era o sacrificio certo)
-            if opp is None:
-                total += 25 * count
-            else:
-                total += 25 * min(count, _step_matching_targets(step, opp.field_chars))
-        elif action in ('play_card', 'play_from_trash'):
-            total += _on_ko_play_card_value(step, owner)
-        elif action == 'debuff_power':
-            # enfraquece o oponente -- so vale se sobrar alvo que AINDA vai
-            # agir este turno (duration tipicamente 'this_turn'). Achado
-            # 07/07: caia no fallback generico (+8) e perdia pro play_card
-            # do Pizarro mesmo sem alvo real, e depois de corrigido ainda
-            # empatava (23 vs 23) com set_base_power do Sanjuan Wolf, um
-            # efeito bem mais forte -- os dois ficavam invisiveis aqui.
-            amount = step.get('amount', 0) or 0
-            peso = 12 + min(amount / 1000 * 4, 20)
-            if opp is None:
-                total += peso
-            else:
-                tem_char_ativo = any(not getattr(c, 'rested', False) for c in opp.field_chars)
-                tem_lider_ativo = opp.leader is not None and not getattr(opp.leader, 'rested', False)
-                if tem_char_ativo or tem_lider_ativo:
+    def _score_steps(steps: list) -> float:
+        total = 0.0
+        for step in steps:
+            action = step.get('action', '')
+            count = int(step.get('count', 1) or 1)
+            if action in ('ko', 'trash'):
+                if opp is None:
+                    total += 30 * count
+                else:
+                    total += 30 * min(count, _step_matching_targets(step, opp.field_chars))
+            elif action in ('draw', 'draw_cards'):
+                total += 15 * count
+            elif action in ('rest_opp', 'rest_opp_character'):
+                # restar personagem do oponente nega um ataque/bloqueio — tempo
+                # real (partida 04/07: Vasco Shot era o sacrificio certo)
+                if opp is None:
+                    total += 25 * count
+                else:
+                    total += 25 * min(count, _step_matching_targets(step, opp.field_chars))
+            elif action in ('play_card', 'play_from_trash'):
+                total += _on_ko_play_card_value(step, owner)
+            elif action == 'debuff_power':
+                # enfraquece o oponente -- so vale se sobrar alvo que AINDA vai
+                # agir este turno (duration tipicamente 'this_turn'). Achado
+                # 07/07: caia no fallback generico (+8) e perdia pro play_card
+                # do Pizarro mesmo sem alvo real, e depois de corrigido ainda
+                # empatava (23 vs 23) com set_base_power do Sanjuan Wolf, um
+                # efeito bem mais forte -- os dois ficavam invisiveis aqui.
+                amount = step.get('amount', 0) or 0
+                peso = 12 + min(amount / 1000 * 4, 20)
+                if opp is None:
                     total += peso
-        elif action in ('set_base_power', 'buff_power') and 'opp' not in (step.get('target') or ''):
-            # buff/fixa poder do NOSSO lado -- swing ofensivo real (ex:
-            # Sanjuan Wolf: ate 1 dos nossos vira 7000 de poder este turno)
-            amount = step.get('amount', 0) or 0
-            total += 15 + min(amount / 1000 * 3, 25)
-        elif action in ('life_to_hand', 'send_life_to_hand'):
-            total += 10
-        else:
-            total += 8
-    return total
+                else:
+                    tem_char_ativo = any(not getattr(c, 'rested', False) for c in opp.field_chars)
+                    tem_lider_ativo = opp.leader is not None and not getattr(opp.leader, 'rested', False)
+                    if tem_char_ativo or tem_lider_ativo:
+                        total += peso
+            elif action in ('set_base_power', 'buff_power') and 'opp' not in (step.get('target') or ''):
+                # buff/fixa poder do NOSSO lado -- swing ofensivo real (ex:
+                # Sanjuan Wolf: ate 1 dos nossos vira 7000 de poder este turno)
+                amount = step.get('amount', 0) or 0
+                total += 15 + min(amount / 1000 * 3, 25)
+            elif action in ('life_to_hand', 'send_life_to_hand'):
+                total += 10
+            else:
+                total += 8
+        return total
+
+    on_ko_effects = get_card_effects(code).get('on_ko', {})
+    steps = on_ko_effects.get('steps')
+    if steps:
+        return _score_steps(steps)
+    choice = on_ko_effects.get('choice')
+    if choice:
+        return max((_score_steps(opt if isinstance(opt, list) else [opt]) for opt in choice), default=0.0)
+    return 0.0
 
 
 def redirect_option_value(card: 'Card', atk_power: int,
@@ -10072,7 +10124,12 @@ class DecisionEngine:
                 continue
             block_conds = ef.get('conditions', {})
             block_ok = (not block_conds) or ee._check_conditions(block_conds, card)
-            for step in ef.get('steps', []):
+            # Achado real 03/08: `ef.get('steps', [])` vinha vazio pra
+            # "Choose one" (guardado em `choice`) -- sem isso, `achou`
+            # nunca virava True pra essas cartas e a flag caia sempre no
+            # fallback permissivo abaixo (correto por acidente, nao por
+            # ter checado a condicao de verdade).
+            for step in resolve_choice_for_scoring(ef, card, self.me, self.opp):
                 if not step_matches(step):
                     continue
                 achou = True
@@ -10108,7 +10165,10 @@ class DecisionEngine:
             block_conds = ef.get('conditions', {})
             if block_conds and not ee._check_conditions(block_conds, card):
                 continue
-            for step in ef.get('steps', []):
+            # Achado real 03/08: resolve "Choose one" (choice) quando
+            # `steps` vem vazio -- mesmo padrao do fix em
+            # _step_condition_currently_holds acima.
+            for step in resolve_choice_for_scoring(ef, card, self.me, self.opp):
                 if step.get('action') != 'play_card':
                     continue
                 step_conds = step.get('conditions', {})
@@ -10175,7 +10235,8 @@ class DecisionEngine:
             block_conds = ef.get('conditions', {})
             if block_conds and not ee._check_conditions(block_conds, card):
                 continue
-            for step in ef.get('steps', []):
+            # Achado real 03/08: resolve "Choose one" quando `steps` vazio.
+            for step in resolve_choice_for_scoring(ef, card, self.me, self.opp):
                 action = step.get('action')
                 escala_por_amount = action in ('buff_power', 'set_base_power')
                 if not escala_por_amount and action not in self._BOARD_COMBO_ACTION_VALUE:
@@ -10312,7 +10373,10 @@ class DecisionEngine:
             block_conds = ef.get('conditions', {})
             if block_conds and not ee._check_conditions(block_conds, card):
                 continue
-            for step in ef.get('steps', []):
+            # Achado real 03/08: resolve "Choose one" quando `steps` vazio
+            # -- este e o catch-all generico, o mais impactado das 4
+            # funcoes da familia avaliar_carta pra "Choose one" invisivel.
+            for step in resolve_choice_for_scoring(ef, card, self.me, self.opp):
                 action = step.get('action')
                 if action not in self._UNCOVERED_ACTION_VALUE or action in vistos:
                     continue
@@ -10347,7 +10411,8 @@ class DecisionEngine:
             ef = effects.get(trig)
             if not isinstance(ef, dict):
                 continue
-            for step in ef.get('steps', []):
+            # Achado real 03/08: resolve "Choose one" quando `steps` vazio.
+            for step in resolve_choice_for_scoring(ef, card, self.me, self.opp):
                 act = step.get('action')
                 if act not in ('ko', 'bounce', 'trash_character', 'ko_selected',
                                'place_opp_character_bottom_deck'):
@@ -11393,12 +11458,15 @@ class DecisionEngine:
         effects = get_card_effects(card.code)
         wa = effects.get('when_attacking')
         if wa:
-            steps = wa.get('steps', [])
-            # Sem steps parseados (so texto cru): mantem comportamento antigo,
-            # nao ha como checar viabilidade sem estrutura. _step_is_viable e
-            # metodo de EffectExecutor, nao de DecisionEngine -- instancia
-            # local so pra essa checagem (mesmo padrao usado em
-            # _should_activate_main).
+            # Achado real 03/08: resolve "Choose one" (choice) quando
+            # `steps` vem vazio -- Queen OP04-040 (lider) e Yosaku & Johnny
+            # (personagem) tem when_attacking assim. Sem isso vazio =
+            # "sem estrutura", cai no fallback permissivo True por
+            # acidente em vez de checar viabilidade de verdade.
+            steps = resolve_choice_for_scoring(wa, card, self.me, self.opp)
+            # Ainda sem steps (texto cru sem parse nenhum, nem choice):
+            # mantem comportamento antigo, nao ha como checar viabilidade
+            # sem estrutura.
             if not steps:
                 return True
             ee = EffectExecutor(self.me, self.opp)
@@ -11426,9 +11494,15 @@ class DecisionEngine:
         """
         effects = get_card_effects(attacker.code)
         wa = effects.get('when_attacking')
-        if not wa or not wa.get('steps'):
+        if not wa:
             return 40.0
-        actions = [s.get('action') for s in wa['steps']]
+        # Achado real 03/08: resolve "Choose one" quando `steps` vem vazio
+        # -- sem isso, Queen OP04-040 caia sempre no piso 40 generico em
+        # vez do valor real da opcao (ex: ko/rest_opp = 120).
+        steps = resolve_choice_for_scoring(wa, attacker, self.me, self.opp)
+        if not steps:
+            return 40.0
+        actions = [s.get('action') for s in steps]
         if any(x in ('ko', 'rest_opp', 'debuff_power', 'bounce') for x in actions):
             valor = 120
             if self.opp.field_chars: valor += 30
@@ -11465,7 +11539,8 @@ class DecisionEngine:
             return ('when this character becomes rested' in txt
                     or 'if this character is rested' in txt
                     or 'while this character is rested' in txt)
-        steps = wa.get('steps', [])
+        # Achado real 03/08: resolve "Choose one" quando `steps` vem vazio.
+        steps = resolve_choice_for_scoring(wa, card, self.me, self.opp)
         if not steps:
             return False
         informational_or_combat_only = {
@@ -11666,7 +11741,10 @@ class DecisionEngine:
         # DON parado e nada mais pra fazer com ele.
         if not any(c.get('type') == 'rest_self' for c in am.get('costs', [])):
             return 0.0
-        steps = am.get('steps', [])
+        # Achado real 03/08: resolve "Choose one" quando `steps` vazio --
+        # sem isso, Catarina Devon (OP09-084, activate_main via choice)
+        # sempre caia no piso 40 em vez de reconhecer a opcao de busca/draw.
+        steps = resolve_choice_for_scoring(am, card, self.me, self.opp)
         actions = [s.get('action') for s in steps]
         if any(x in ('draw', 'look_top_deck', 'add_to_hand') for x in actions):
             return 70.0
@@ -11868,8 +11946,14 @@ class DecisionEngine:
         # +35 abaixo; Shalria de 0 poder so tinha on_play.)
         if not self.body_provides_defense(card):
             _eff = get_card_effects(card.code)
-            _tem_futuro = bool(_eff.get('when_attacking', {}).get('steps')
-                               or _eff.get('activate_main', {}).get('steps'))
+            _wa = _eff.get('when_attacking', {})
+            _am = _eff.get('activate_main', {})
+            # Achado real 03/08: `.get('steps')` sozinho vinha vazio pra
+            # "Choose one" (choice) -- Catarina Devon (activate_main) caia
+            # como "sem efeito futuro" (score -999, trasha primeiro) mesmo
+            # tendo uma opcao real disponivel.
+            _tem_futuro = bool(_wa.get('steps') or _wa.get('choice')
+                               or _am.get('steps') or _am.get('choice'))
             if not _tem_futuro:
                 return -999.0
         perda = self.analyzer.char_value_score(card)
@@ -12467,7 +12551,12 @@ class OPTCGMatch:
             if not dummy_ee._check_conditions(conds, src):
                 return False, 'condições do efeito não satisfeitas (board/estado)'
 
-        steps = am.get('steps', [])
+        # Achado real 03/08: `am.get('steps', [])` vinha vazio pra
+        # QUALQUER efeito "Choose one" (guardado em `am['choice']`, não em
+        # `steps`) -- Perona OP06-021, Vegapunk OP07-097, King OP08-057.
+        # `resolve_choice_for_scoring` resolve pro mesmo formato que a
+        # execução real usa.
+        steps = resolve_choice_for_scoring(am, src, p, opp)
         actions = [s.get('action') for s in steps]
         costs = am.get('costs', [])
 
@@ -12807,13 +12896,17 @@ class OPTCGMatch:
                     return True
         return False
 
-    def _stage_play_saves_don_for_card(self, p, card) -> int:
+    def _stage_play_saves_don_for_card(self, p, card, opp=None) -> int:
         stage = getattr(p, 'field_stage', None)
         if stage is None or getattr(stage, 'rested', False):
             return 0
         effects = get_card_effects(stage.code)
         am = effects.get('activate_main', {})
-        steps = am.get('steps', [])
+        # Achado real 03/08: resolve "Choose one" quando `steps` vazio
+        # (nenhuma stage do banco tem esse padrao hoje, mas a mesma
+        # gramatica pode aparecer -- fix generico, nao so pras 23 cartas
+        # ja encontradas).
+        steps = resolve_choice_for_scoring(am, stage, p, opp if opp is not None else p)
         if not any(s.get('action') == 'play_card' for s in steps):
             return 0
         costs = am.get('costs', [])
@@ -12864,7 +12957,7 @@ class OPTCGMatch:
         ANTES dos ataques. Cartas só-desenvolvimento (blocker defensivo, vanilla)
         pontuam como dev e saem DEPOIS dos ataques (regra de ordem do usuário).
         """
-        stage_saves = self._stage_play_saves_don_for_card(engine.me, card)
+        stage_saves = self._stage_play_saves_don_for_card(engine.me, card, opp=engine.opp)
         if stage_saves >= 3:
             return -999.0
 
@@ -13055,7 +13148,8 @@ class OPTCGMatch:
         # em campo para acumular esse valor nos turnos seguintes.
         if 'activate_main' in effects and card.card_type == 'CHARACTER':
             am = effects['activate_main']
-            am_steps = am.get('steps', [])
+            # Achado real 03/08: resolve "Choose one" quando `steps` vazio.
+            am_steps = resolve_choice_for_scoring(am, card, engine.me, engine.opp)
             recupera_trash = next((s for s in am_steps if s.get('action') == 'play_from_trash'), None)
             if recupera_trash:
                 ft = (recupera_trash.get('filter_type') or '').lower()
@@ -13079,10 +13173,12 @@ class OPTCGMatch:
         # que eu QUERERIA jogar antes de travar, penaliza — para o planner preferir
         # jogá-las primeiro (ou só ativar o combo quando a mão já foi gasta).
         op = effects.get('on_play')
-        if op and any(s.get('action') == 'self_cant_play' for s in op.get('steps', [])):
-            scope = next((s.get('scope', 'chars') for s in op['steps']
+        # Achado real 03/08: resolve "Choose one" quando `steps` vazio.
+        op_steps_resolved = resolve_choice_for_scoring(op, card, engine.me, engine.opp) if op else []
+        if any(s.get('action') == 'self_cant_play' for s in op_steps_resolved):
+            scope = next((s.get('scope', 'chars') for s in op_steps_resolved
                           if s.get('action') == 'self_cant_play'), 'chars')
-            gte = next((s.get('cost_gte', 0) for s in op['steps']
+            gte = next((s.get('cost_gte', 0) for s in op_steps_resolved
                         if s.get('action') == 'self_cant_play'), 0)
             me = engine.me
             don_usable = me.don_available
@@ -13110,7 +13206,12 @@ class OPTCGMatch:
         # nunca ativar no vácuo), cobre qualquer evento/step, não uma carta.
         if card.card_type == 'EVENT':
             main = effects.get('main', {})
-            main_steps = main.get('steps', [])
+            # Achado real 03/08: resolve "Choose one" quando `steps` vazio
+            # -- sem isso, 8 EVENTs no banco (ex: "I Bid 500 Million!!"
+            # OP05-096) pulavam este bloco de gate/valor inteiro (nem
+            # bloqueio de "sem alvo" nem ajuste de valor), porque
+            # `main_steps` vinha sempre [] pra um "Choose one".
+            main_steps = resolve_choice_for_scoring(main, card, engine.me, engine.opp)
             if main_steps:
                 if not self._effect_costs_affordable_now(main.get('costs', []),
                                                          engine.me, card):
@@ -13173,7 +13274,8 @@ class OPTCGMatch:
         # uma stage genuinamente melhor continua podendo entrar.
         if card.card_type == 'EVENT':
             main = effects.get('main', {})
-            main_steps = main.get('steps', [])
+            # Achado real 03/08: resolve "Choose one" quando `steps` vazio.
+            main_steps = resolve_choice_for_scoring(main, card, engine.me, engine.opp)
             if main_steps and any(s.get('action') == 'negate_effect' for s in main_steps):
                 negate_value = max(
                     self._best_negate_effect_target_value(engine.opp, s.get('target'))
@@ -13199,11 +13301,16 @@ class OPTCGMatch:
         # descido com vida 4 e trash sem alvo, 2 DON num vanilla de 0 poder.
         if card.card_type == 'CHARACTER':
             op_block = effects.get('on_play', {})
-            if op_block.get('steps'):
+            # Achado real 03/08: resolve "Choose one" quando `steps` vazio
+            # -- sem isso, os 8 personagens com on_play via `choice` (ex:
+            # Viola EB01-052, Trafalgar Law EB02-045) nunca disparavam
+            # este guard, mesmo com um corpo fraco e nenhum alvo real.
+            op_steps_v = resolve_choice_for_scoring(op_block, card, engine.me, engine.opp)
+            if op_steps_v:
                 ee_viab = EffectExecutor(engine.me, engine.opp)
                 op_vivo = (ee_viab._check_conditions(op_block.get('conditions', {}), card)
                            and any(ee_viab._step_is_viable(s, card)
-                                   for s in op_block['steps']))
+                                   for s in op_steps_v))
                 if not op_vivo:
                     base -= 40 if card.power > 0 else 90
 
@@ -13227,7 +13334,10 @@ class OPTCGMatch:
         Permite que a ativação compita com plays e ataques no Turn Planner,
         em vez de sempre disparar no início do turno.
         """
-        steps = am.get('steps', [])
+        # Achado real 03/08 (mesmo de _should_activate_main): sem resolver
+        # `choice`, Perona/Vegapunk/King caiam sempre no piso generico (60)
+        # em vez do valor real da opção (ex: "compre 1 carta" = 170).
+        steps = resolve_choice_for_scoring(am, src, p, opp)
         actions_list = [s.get('action') for s in steps]
         costs = am.get('costs', [])
         custo_don = sum(c.get('count', 0) for c in costs if c.get('type') == 'rest_don')
@@ -14101,7 +14211,8 @@ class OPTCGMatch:
                 score = valor - engine.don_opportunity_cost(falta)
                 # Fontes repetidas de informacao nao justificam prender um
                 # DON em cada copia. A primeira ainda pode usar DON ocioso.
-                step_actions = [s.get('action') for s in ef.get('steps', [])]
+                # Achado real 03/08: resolve "Choose one" quando `steps` vazio.
+                step_actions = [s.get('action') for s in resolve_choice_for_scoring(ef, card, p, opp)]
                 if step_actions and all(a in ('peek_opp_deck_top', 'look_top_deck')
                                         for a in step_actions):
                     copies = sum(1 for c in p.field_chars if c.code == card.code)
@@ -14209,7 +14320,8 @@ class OPTCGMatch:
 
     def _trigger_don_value(self, trig, ef, card, p, opp, priority) -> float:
         """Valor de ligar um gatilho condicional a DON, pelo que o efeito faz."""
-        steps = ef.get('steps', [])
+        # Achado real 03/08: resolve "Choose one" quando `steps` vazio.
+        steps = resolve_choice_for_scoring(ef, card, p, opp)
         actions = [s.get('action') for s in steps]
         valor = 0
         # 'rest_opp_character' (nome real da action -- achado 24/07, auditoria

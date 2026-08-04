@@ -2,6 +2,27 @@
 
 **Última atualização:** 3 de agosto de 2026
 
+> 03/08/2026 (bloco 428): **Motor cego a efeitos "Choose one" (`choice`)
+> em TODA função de scoring — 23 cartas (4 líderes, personagens,
+> eventos) pontuavam como se o efeito não fizesse nada**. Usuário pediu
+> pra testar se o bot sabe ativar o efeito de cada líder. Achado: 3
+> líderes (Perona OP06-021, Vegapunk OP07-097, King OP08-057) têm
+> `activate_main` "Choose one" guardado em `choice` (não `steps`) —
+> parser está CORRETO, execução já resolve `choice`, mas toda função de
+> SCORING (`_score_activate_main`, etc.) só lia `steps` direto, sempre
+> vazio pra essas cartas — `_score_activate_main` pontuava King com o
+> piso genérico 60 em vez do valor real (170, "compre 1 carta"). Busca
+> no banco inteiro achou o MESMO padrão em 23 cartas / 5 gatilhos
+> (`on_play`, `main`/evento, `activate_main`, `when_attacking` — inclui
+> líder Queen OP04-040 —, `on_ko` — Pedro OP08-030). Fix genérico: novo
+> helper `resolve_choice_for_scoring` aplicado em ~15 funções de scoring
+> (não só nas cartas que revelaram o bug). Validado: `smoke_fast.py`/
+> `smoke_test.py` 100% (6 testes novos), `audit_replay.py --seed 11` e
+> `--seed 23` 0 anomalias/0 exceções. **Pendente**: nenhum deck de
+> `decklists_raw.csv` usa os líderes afetados — falta validação de
+> self-play/telemetria ao vivo com esses líderes. Ver bloco 428 do
+> HANDOFF.
+
 > 03/08/2026 (bloco 427): **Mais 2 achados de performance — -21,5% em
 > cima do bloco 426 (total -45,6% desde a linha de base original)**.
 > `GameState.counter_in_hand()` chamava `effective_counter(c, self)` 2x
