@@ -1,5 +1,64 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (432) - Claude (sessao remota web) - Comparacao de performance bot-Imu vitoria vs derrota: numeros reais gerados, sem evidencia de bug novo alem do ja corrigido no bloco 431
+
+Continuacao direta do bloco 431. Usuario pediu pra comparar a
+PERFORMANCE (nao so o combo especifico) entre partidas de Imu vencidas
+e perdidas, e calibrar se necessario.
+
+**Correcao de classificacao**: separei corretamente bot (`player: "You"`)
+de humano (`player: "Opponent"`/nome real) pilotando Imu -- convencao ja
+usada no manifesto existente `metrics/bot_efficiency_cohorts.json`
+("human_before"/"bot_before"). Isso muda o quadro do bloco 431 (que
+misturava os dois lados): **bot pilotando Imu = 1 vitoria / 25 derrotas**
+no banco (humano pilotando Imu = 5/4, bem mais equilibrado).
+
+**Numeros reais** (`bot_efficiency_report.py --manifest
+metrics/imu_win_vs_loss_04_08.json`, novo cohort commitado):
+
+| métrica | vitória (n=1) | derrota (n=25) |
+|---|---:|---:|
+| ataques/turno | 1,50 | 1,15 |
+| % ataques no líder | 66,7% | 54,3% |
+| dano/partida | 5,0 | 1,84 |
+| counters arrancados/partida | 1,0 | 3,04 |
+| turnos passivos/partida | 0 | 0,56 |
+| DON médio por ataque | 1,11 | 0,26 |
+
+n=1 no lado vitoria = confianca estatistica baixissima, sinalizado
+explicitamente ao usuario.
+
+**Validacao contra o codigo de HOJE** (nao so historico): rodei 8
+partidas self-play frescas (seed=11, Imu vs pool misto de
+`decklists_raw.csv`, instrumentando `_execute_attack` via monkeypatch
+pra capturar `don_attached` real por ataque). Resultado: **2
+vitorias/8 derrotas (25%)**, DON medio por ataque agregado 0,83 (melhor
+que o 0,26 historico, mas variando de 0,30 a 2,00 conforme o
+adversario).
+
+**Conclusao, sem fix aplicado**: nao achei evidencia de bug NOVO alem
+do ja corrigido no bloco 431. O padrao observado (menos dano, DON por
+ataque mais baixo em alguns matchups) e CONSISTENTE com o proprio game
+plan do Imu (IA_Compendium: "trash control... negar recursao
+adversaria", arquetipo de controle) enfrentando decks mais rapidos
+(Red/Blue Ace, Green Mihawk) no pool de teste -- segurar DON pra
+defesa/counter pode ser a jogada CORRETA desse arquetipo, nao um
+defeito, e sem telemetria de decisao (gitignored/local, indisponivel
+nesta sessao remota) nao da pra distinguir "matchup ruim" de "decisao
+ruim" com confianca. Registrado explicitamente pra nao forcar uma
+calibracao sem evidencia solida o suficiente.
+
+**Pendente (proximos passos concretos, nao executados ainda)**:
+1. Gauntlet controlado (mais partidas self-play, adversarios fixos,
+   seeds pareadas) pra separar matchup de decisao com significancia
+   estatistica real -- viavel remotamente, usuario ainda nao confirmou
+   se quer que eu monte.
+2. Partida real nova com telemetria de decisao -- unica forma de
+   auditar decisao-a-decisao de verdade, exige sessao local.
+
+Artefato novo: `metrics/imu_win_vs_loss_04_08.json` (cohort bot-Imu
+win/loss, reproduzivel via `bot_efficiency_report.py --manifest`).
+
 ## 2026-08-04 (431) - Claude (sessao remota web) - Calibracao de combos de reanimacao: bug historico do Five Elders (Imu) CONFIRMADO JA CORRIGIDO por sessoes anteriores; Yamato/Crocodile/Lucci nao sao decks de reanimacao (premissa incorreta); Moria/Perona sem dados suficientes
 
 Usuario pediu pra calibrar o combo de reanimacao usando o banco de logs:

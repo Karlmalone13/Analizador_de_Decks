@@ -2,6 +2,20 @@
 
 **Última atualização:** 4 de agosto de 2026
 
+> 04/08/2026 (bloco 432): comparação de performance bot-Imu vitória vs
+> derrota (`bot_efficiency_report.py`, cohort novo
+> `metrics/imu_win_vs_loss_04_08.json`) — bot pilotando Imu = 1
+> vitória/25 derrotas no banco (vs 5/4 quando humano pilotava). DON
+> médio por ataque: 1,11 (vitória, n=1 baixa confiança) vs 0,26
+> (derrota). Validado contra o código de HOJE via 8 partidas self-play
+> frescas: 2/8 vitórias (25%), DON por ataque agregado 0,83. **Sem fix
+> aplicado** — padrão é consistente com o game plan de controle do Imu
+> vs matchups mais rápidos, não há evidência forte de bug novo (e sem
+> telemetria de decisão nesta sessão remota não dá pra confirmar). Two
+> próximos passos concretos registrados (gauntlet controlado; partida
+> real com telemetria) — nenhum executado ainda, aguardando decisão do
+> usuário. Ver bloco 432 do HANDOFF.
+
 > 04/08/2026 (bloco 431): **Calibração do combo de reanimação do Imu
 > (Five Elders) — bug histórico CONFIRMADO já corrigido** por sessões
 > anteriores (commits `87ad7b3` 12/07 e `d063ec3` 14/07). Análise de 35

@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "description": "Cohort bot-piloted Imu (You) win vs loss, sessao 04/08/2026 - comparacao de performance/eficiencia pedida pelo usuario.",
+  "cohorts": [
+    {
+      "label": "bot_imu_win",
+      "leader_code": "OP13-079",
+      "matches": [
+        {
+          "file": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T15.17.58_p2.json",
+          "player": "You"
+        }
+      ]
+    },
+    {
+      "label": "bot_imu_loss",
+      "leader_code": "OP13-079",
+      "matches": [
+        {
+          "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.25.08.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T15.27.45.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Krieg-RG_2026-07-12T23.03.36.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Jinbe-G_2026-07-13T22.54.47.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.json",
+          "player": "You"
+        },
+        {
+          "file": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T02.34.18.json",
+          "player": "You"
+        }
+      ]
+    }
+  ]
+}
