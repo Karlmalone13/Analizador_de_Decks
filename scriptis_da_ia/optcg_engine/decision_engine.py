@@ -1572,6 +1572,21 @@ def is_attack_locked_self(card: 'Card', owner: 'GameState', opp: 'GameState') ->
 
     effects = get_card_effects(card.code)
     passive = effects.get('passive', {})
+    # Achado real 03/08 (mesma investigacao do 'cannot attack' de lider):
+    # `passive.conditions` (condicao do BLOCO inteiro, ex: Monkey.D.Luffy
+    # OP11-058 "If you have 5+ cards in hand, this Character cannot
+    # attack" -- vira {'hand_gte': 5} no nivel do bloco, nao dentro do
+    # step) nunca era checado aqui pro step 'cannot_attack_self' simples
+    # (so 'cannot_attack_self_unless' tinha condicao, embutida no PROPRIO
+    # step). Resultado: Luffy(058) ficava travado pra atacar SEMPRE, mesmo
+    # com mao < 5 (quando a trava real do jogo nao se aplica) -- o oposto
+    # do bug do lider (aqui trava DEMAIS, la nao travava nada). Reusa
+    # EffectExecutor._check_conditions (fonte unica ja usada em todo o
+    # resto do motor) em vez de reimplementar mais um vocabulario de
+    # condicoes ad-hoc aqui.
+    block_conds = passive.get('conditions', {})
+    if block_conds and not EffectExecutor(owner, opp)._check_conditions(block_conds, card):
+        passive = {}  # condicao do bloco nao satisfeita -- nenhum step dele se aplica agora
     for step in passive.get('steps', []):
         action = step.get('action')
         if action == 'cannot_attack_self':
@@ -9324,7 +9339,15 @@ class GameAnalyzer:
 
     def my_attack_power(self) -> int:
         """Poder total de ataque disponível (sem DON)."""
-        total = attack_time_power(self.me.leader, self.opp) if not self.me.leader.rested and not self.me.cannot_attack_leader_this_turn else 0
+        # Achado real 03/08 (mesma investigacao do 'cannot attack' de
+        # lider ignorado): faltava is_attack_locked_self aqui -- um lider
+        # com "This Leader cannot attack" (Vegapunk, Iceburg, etc.) tinha
+        # o poder dele somado ao potencial ofensivo mesmo sem poder atacar
+        # de verdade.
+        pode_lider_atacar = (not self.me.leader.rested
+                             and not self.me.cannot_attack_leader_this_turn
+                             and not is_attack_locked_self(self.me.leader, self.me, self.opp))
+        total = attack_time_power(self.me.leader, self.opp) if pode_lider_atacar else 0
         for c in self.me.field_chars:
             if character_can_attack_now(c, self.me, self.opp):
                 total += attack_time_power(c, self.opp)
@@ -9448,7 +9471,12 @@ class GameAnalyzer:
     def opp_attack_count(self) -> int:
         """Quantos personagens o oponente pode atacar no próximo turno."""
         count = sum(1 for c in self.opp.field_chars if not c.rested)
-        if not self.opp.leader.rested:
+        # Achado real 03/08: o lider do oponente entrava na conta so por
+        # nao estar restado, ignorando "This Leader cannot attack"
+        # (Vegapunk, Iceburg, etc.) -- superestimava a ameaca de ataque
+        # dele (bot ficava defensivo demais contra um lider que fisicamente
+        # nao pode atacar).
+        if not self.opp.leader.rested and not is_attack_locked_self(self.opp.leader, self.opp, self.me):
             count += 1
         return count
 
@@ -14006,7 +14034,16 @@ class OPTCGMatch:
         if p.can_attack_this_turn():
             attackers = [c for c in p.field_chars
                          if character_can_attack_now(c, p, opp)]
-            if not p.leader.rested:
+            # Achado real 03/08 (usuario pediu pra investigar a restricao
+            # "cannot attack" ignorada, apos o teste de ativacao do lider
+            # Vegapunk): o lider entrava na lista de atacantes so checando
+            # `not p.leader.rested`, nunca passando por
+            # `character_can_attack_now`/`is_attack_locked_self` -- mesma
+            # checagem que field_chars ja usa. Qualquer lider com "This
+            # Leader cannot attack" (Iceburg, Nefeltari Vivi, Rebecca x2,
+            # Vegapunk, Shirahoshi) gerava e pontuava uma acao de ataque
+            # que o jogo real recusaria.
+            if character_can_attack_now(p.leader, p, opp):
                 attackers.append(p.leader)
             for att in attackers:
                 # Buff opcional com DON-minus so entra no poder planejado se
@@ -14249,7 +14286,11 @@ class OPTCGMatch:
             don_idle = don_sobra > 0 and not any(
                 engine._can_play_card(c, don_usable=don_sobra) for c in p.hand)
             attackers = [c for c in p.field_chars if character_can_attack_now(c, p, opp)]
-            if not p.leader.rested:
+            # Achado real 03/08: mesmo fix do outro ponto de geracao de
+            # atacantes -- o lider precisa passar por
+            # character_can_attack_now (cannot_attack_self incluso), nao
+            # so checar `rested`.
+            if character_can_attack_now(p.leader, p, opp):
                 attackers.append(p.leader)
             for att in attackers:
                 atk_now = attack_time_power(att, opp)

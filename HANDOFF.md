@@ -1,5 +1,94 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (429) - Claude (sessao remota web) - "This Leader cannot attack" era 100% ignorado pelo motor (parser E engine): 6 lideres reais atacavam apesar do proprio texto proibir -- + bug irmao (Luffy 058 travado DEMAIS)
+
+Usuario pediu confirmacao de que o bot "entende e consegue ativar o efeito
+do lider" (follow-up do bloco 428). Ao validar Vegapunk (OP07-097) via
+`_generate_and_score_actions` (pipeline real, nao chamada isolada),
+percebi que o motor gerava e pontuava uma acao de ATACAR com o lider dele
+(score 368 no cenario de teste) apesar do texto dizer explicitamente
+"This Leader cannot attack." Usuario confirmou que existiam outras
+cartas com essa restricao e pediu pra investigar.
+
+**Causa raiz — 3 camadas, TODAS corrigidas juntas (nenhuma sozinha
+bastava)**:
+
+1. **Parser, gate** (`gerar_effects_db.py`, ~linha 7362): o `if` que
+   decide se chama `parse_lock_attack(t)` exigia `'opponent' in t` OU o
+   substring literal `'this character cannot attack' in t` -- Vegapunk
+   nao tem "opponent" no texto E diz "leader", nao "character", entao a
+   funcao de parsing nem era CHAMADA.
+2. **Parser, regex interno** (`gerar_effects_db.py`, ~linha 3218): mesmo
+   se chamada, o regex de deteccao dentro de `parse_lock_attack` so
+   casava `'this character cannot attack'`, nunca `'this leader cannot
+   attack'`.
+3. **Motor** (`decision_engine.py`): mesmo com o parser corrigido, 4
+   funcoes adicionavam o lider como atacante/no calculo de ameaca so
+   checando `not leader.rested`, NUNCA chamando
+   `is_attack_locked_self`/`character_can_attack_now` (que ja existiam e
+   ja eram usados pra field_chars): os 2 pontos de geracao de candidato
+   de ataque em `_generate_and_score_actions`, `my_attack_power()`
+   (potencial ofensivo proprio) e `opp_attack_count()` (ameaca do
+   oponente, usada por `opp_lethal_threat`/`_rest_only_attack_value`).
+
+**Busca no banco inteiro** (36 cartas com "cannot attack" em algum lugar
+do texto, classificadas manualmente): achou **6 lideres reais** com
+"This Leader cannot attack." literal, todos sem NENHUM `passive`
+estruturado -- Iceburg OP03-058, Nefeltari Vivi OP04-001, Rebecca
+OP04-039, Vegapunk OP07-097, Shirahoshi OP11-022, Rebecca OP15-039.
+
+**Risco pego durante a propria auditoria (nao um bug separado, um erro
+de generalizacao que o `diff_parser.py` pegou antes de commitar)**:
+ampliar o regex pra "leader" sem cuidado capturava Roronoa Zoro
+(OP12-020, lider) como self-lock espurio -- o texto dele tambem tem
+"this Leader cannot attack", mas e uma restricao de ALVO ("...your
+opponent's Characters with cost<=7", ja coberta por
+`lock_self_attack_opp_chars_cost_lte`), nao um lock completo. Corrigido
+com um 2o lookahead negativo excluindo "your opponent".
+
+**Bug irmao, direcao OPOSTA, achado na mesma varredura** (buscando
+`cannot_attack_self` + `passive.conditions` simultaneos no banco
+inteiro): Monkey.D.Luffy (OP11-058), "If you have 5+ cards in hand, this
+Character cannot attack.", tem a condicao no NIVEL DO BLOCO
+(`passive.conditions = {hand_gte: 5}`), nao embutida no step (diferente
+de `cannot_attack_self_unless`, que ja tinha condicao propria checada).
+`is_attack_locked_self` nunca olhava pra `passive.conditions` no branch
+do `cannot_attack_self` simples -- Luffy(058) ficava travado pra atacar
+SEMPRE, mesmo com mao<5 (o oposto do bug dos lideres: aqui trava
+demais). Fix reusa `EffectExecutor._check_conditions` (fonte unica,
+mesmo vocabulario ja usado em todo o resto do motor) em vez de mais uma
+reimplementacao ad-hoc.
+
+**Validacao**:
+- `diff_parser.py` (rodada final): GANHOU=0, PERDEU=0, MUDOU=6 (exatamente
+  os 6 lideres, nenhuma das outras 30 cartas com "cannot attack" mudou --
+  Zoro incluso, confirmando a exclusao funcionou).
+- `gerar_dbs.py`: 2644 cartas sincronizadas.
+- `smoke_fast.py`/`smoke_test.py`: 100% (7 testes novos -- parser produz
+  o passive certo, `is_attack_locked_self`/`character_can_attack_now`
+  travam Vegapunk, `_generate_and_score_actions` nao oferece mais o
+  ataque, Zoro NAO fica falsamente travado, Luffy(058) trava SO com
+  mao>=5).
+- `audit_replay.py --seed 11` e `--seed 23`: 0 anomalias/0 excecoes nos
+  dois (sem regressao dos bugs de DON/performance/choice dos blocos
+  425-428).
+- Registro obrigatorio em `scriptis_da_ia/parser_audits/
+  2026-08-04_lideres_this_leader_cannot_attack_ignorado.json`.
+
+**Nota**: `card_analysis_db.json` regenerado tem um diff grande (1224
+linhas) alem das 6 mudancas reais -- e so normalizacao de quebra de
+linha (`\r\n` -> `\n`) no campo `text` de varias cartas, efeito colateral
+de rodar o gerador neste ambiente Linux (arquivo committado antes vinha
+de ambiente Windows/CRLF), nao uma regressao de conteudo (conferido
+manualmente, so os 6 lideres ganham `cannot_attack_self` de verdade).
+`parser_snapshot.json` NAO foi re-commitado nesta sessao (regeneracao
+local mostrou um diff de ~100k linhas por reordenacao de chaves/
+formatacao, tambem cosmetico, mas grande demais pra misturar no commit
+sem investigar a fundo) -- `diff_parser.py` ja validou contra o
+snapshot EXISTENTE (ainda valido como baseline "antes" do fix), entao
+isso nao bloqueia nada; so significa que o proximo fix de parser vai
+comparar contra o snapshot pre-este-bloco tambem, o que continua correto.
+
 ## 2026-08-03 (428) - Claude (sessao remota web) - Motor era CEGO a efeitos "Choose one" (choice) em toda funcao de SCORING: 23 cartas no banco (4 lideres, personagens, eventos) pontuavam como se o efeito nao fizesse nada -- fix generico em ~15 pontos
 
 Usuário pediu pra investigar "se o bot sabe o que cada líder e deck faz,

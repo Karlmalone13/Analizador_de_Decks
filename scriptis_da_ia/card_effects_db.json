@@ -16270,6 +16270,13 @@
             "optional": true
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "cannot_attack_self"
+          }
+        ]
       }
     }
   },
@@ -18201,6 +18208,13 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "cannot_attack_self"
+          }
+        ]
       }
     }
   },
@@ -19328,6 +19342,13 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "cannot_attack_self"
+          }
+        ]
       }
     }
   },
@@ -31856,6 +31877,13 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "cannot_attack_self"
+          }
+        ]
       }
     }
   },
@@ -44004,6 +44032,13 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "cannot_attack_self"
+          }
+        ]
       }
     }
   },
@@ -59066,6 +59101,13 @@
             "type": "return_own_character_to_hand",
             "count": 1,
             "filter_type": "dressrosa"
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "cannot_attack_self"
           }
         ]
       }

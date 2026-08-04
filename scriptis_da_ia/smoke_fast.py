@@ -21,6 +21,7 @@ from optcg_engine.decision_engine import (  # noqa: E402
     OPTCGMatch,
     _make_card,
     apply_conditional_keyword_passives,
+    character_can_attack_now,
     compute_game_plan,
     consume_play_cost_reductions,
     don_needed_for_attack,
@@ -550,6 +551,93 @@ def test_on_ko_value_resolve_choice_pedro_03_08() -> None:
     valor = on_ko_value("OP08-030")
     check("on_ko_value (Pedro, 'Choose one' sem steps próprio): não é mais 0.0 (bug antigo)",
           valor > 0.0)
+
+
+def test_lider_cannot_attack_respeitado_03_08() -> None:
+    """
+    Achado real 03/08 (usuário testou ativação de líder e notou que o bot
+    ainda gerava/pontuava uma ação de ATACAR com o líder de Vegapunk
+    OP07-097, apesar do texto "This Leader cannot attack."). Causa raiz
+    em 2 camadas, as duas corrigidas juntas (o fix isolado de qualquer
+    uma sozinha NÃO bastava, confirmado via diff_parser.py entre os 2
+    commits desta investigação):
+
+    1. Parser (gerar_effects_db.py): tanto o GATE que decide se chama
+       `parse_lock_attack` quanto o regex de detecção DENTRO da função só
+       reconheciam "this CHARACTER cannot attack", nunca "this LEADER
+       cannot attack" -- Vegapunk (e mais 5 líderes reais do banco:
+       Iceburg OP03-058, Nefeltari Vivi OP04-001, Rebecca OP04-039,
+       Shirahoshi OP11-022, Rebecca OP15-039) ficavam sem NENHUM
+       `passive` estruturado.
+    2. Motor (decision_engine.py): a geração de candidatos de ataque
+       (`_generate_and_score_actions`, 2 pontos) e `my_attack_power`/
+       `opp_attack_count` adicionavam o líder à lista de atacantes só
+       checando `not leader.rested`, nunca chamando
+       `is_attack_locked_self`/`character_can_attack_now` (que já eram
+       usados pra field_chars) -- mesmo com o parser corrigido, o motor
+       continuaria oferecendo o ataque sem essa 2ª parte do fix.
+
+    Roronoa Zoro (OP12-020, líder) também tem "cannot attack" no texto,
+    mas é uma restrição de ALVO ("cannot attack your opponent's
+    Characters with cost<=7"), não um self-lock -- teste negativo
+    confirma que ele NÃO é falsamente travado (achado ao ampliar o
+    regex pra "leader": a 1ª versão do fix capturava Zoro por engano,
+    pego pelo diff_parser.py antes de commitar).
+    """
+    vegapunk = real_card("OP07-097")
+    check("Vegapunk (OP07-097): parser agora produz passive.cannot_attack_self",
+          get_card_effects("OP07-097").get("passive", {}).get("steps") == [{"action": "cannot_attack_self"}])
+
+    me_vp = GameState(leader=vegapunk, turn=3)
+    opp_vp = GameState(leader=mk("VPOPP", "Opp", card_type="LEADER"))
+    check("is_attack_locked_self: Vegapunk travado",
+          is_attack_locked_self(vegapunk, me_vp, opp_vp))
+    check("character_can_attack_now: Vegapunk NÃO pode ser oferecido como atacante",
+          not character_can_attack_now(vegapunk, me_vp, opp_vp))
+
+    match_vp = OPTCGMatch((vegapunk, []), (mk("VPOPP2", "Opp", card_type="LEADER"), []))
+    match_vp.state_a.turn = 3
+    match_vp.state_a.hand = [mk("XEGG", "Egghead", cost=4, sub_types="Egghead")]
+    match_vp.state_a.life = [mk(f"VPL{i}", f"V{i}", card_type="CHARACTER") for i in range(4)]
+    match_vp.state_b.life = [mk(f"VPOL{i}", f"V{i}", card_type="CHARACTER") for i in range(4)]
+    engine_vp = DecisionEngine(match_vp.state_a, match_vp.state_b)
+    acts_vp = match_vp._generate_and_score_actions(match_vp.state_a, match_vp.state_b, engine_vp)
+    check("_generate_and_score_actions: NENHUMA ação 'attack' com o líder Vegapunk é gerada",
+          not any(a[1] == "attack" and a[2] is match_vp.state_a.leader for a in acts_vp))
+
+    # Negativo: Zoro (restrição de ALVO, não self-lock) NÃO deve ficar travado.
+    zoro = real_card("OP12-020")
+    me_zoro = GameState(leader=zoro, turn=3)
+    opp_zoro = GameState(leader=mk("ZOROPP", "Opp", card_type="LEADER"))
+    check("Roronoa Zoro (OP12-020): restrição de alvo NÃO é confundida com self-lock",
+          not is_attack_locked_self(zoro, me_zoro, opp_zoro))
+
+
+def test_is_attack_locked_self_respeita_condicao_do_bloco_03_08() -> None:
+    """
+    Achado real 03/08 (mesma investigação, achado ao auditar TODO o banco
+    pelo padrão `cannot_attack_self` + `passive.conditions` simultâneos):
+    Monkey.D.Luffy (OP11-058) tem "If you have 5 or more cards in your
+    hand, this Character cannot attack." -- a condição fica no NÍVEL DO
+    BLOCO (`passive.conditions = {'hand_gte': 5}`), não embutida no step
+    (diferente de `cannot_attack_self_unless`, que já tinha sua própria
+    condição por-step checada). `is_attack_locked_self` nunca olhava pra
+    `passive.conditions` no branch do `cannot_attack_self` simples --
+    Luffy(058) ficava travado pra atacar SEMPRE, mesmo com mão < 5
+    (direção OPOSTA ao bug dos líderes: aqui trava demais).
+    """
+    luffy058 = real_card("OP11-058")
+    opp_l058 = GameState(leader=mk("L058OPP", "Opp", card_type="LEADER"))
+
+    me_mao_cheia = GameState(leader=mk("L058LDR1", "Lider", card_type="LEADER"))
+    me_mao_cheia.hand = [mk(f"H{i}", f"Carta{i}", cost=1) for i in range(5)]
+    check("Luffy(058) com mão>=5: condição do bloco satisfeita, travado de verdade",
+          is_attack_locked_self(luffy058, me_mao_cheia, opp_l058))
+
+    me_mao_fina = GameState(leader=mk("L058LDR2", "Lider", card_type="LEADER"))
+    me_mao_fina.hand = [mk("H0", "Carta0", cost=1)]
+    check("Luffy(058) com mão<5: condição do bloco NÃO satisfeita, NÃO travado (bug antigo travava sempre)",
+          not is_attack_locked_self(luffy058, me_mao_fina, opp_l058))
 
 
 def test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo() -> None:
@@ -9725,6 +9813,8 @@ def main() -> int:
     test_resolve_choice_for_scoring_03_08()
     test_score_activate_main_resolve_choice_lider_king_03_08()
     test_on_ko_value_resolve_choice_pedro_03_08()
+    test_lider_cannot_attack_respeitado_03_08()
+    test_is_attack_locked_self_respeita_condicao_do_bloco_03_08()
     test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo()
     test_don_reservado_para_ativar_wincon_em_campo()
     test_opp_combo_threat_detects_five_elders_style_reanimation()

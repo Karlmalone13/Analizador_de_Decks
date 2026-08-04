@@ -3202,8 +3202,30 @@ def parse_lock_attack(text):
     # frase de ataque (distinto de lock_opp_attack_unless_pays, que e sobre
     # o oponente pagar um custo por ataque; aqui e sobre o ESTADO DO BOARD
     # permitir ou nao o proprio ataque, sem custo nenhum envolvido).
-    if re.search(r'this character cannot attack(?! a leader)', t):
-        unless_m = re.search(r'this character cannot attack unless ([^.]+)', t)
+    #
+    # "character|leader" (achado real 03/08, investigacao pedida pelo
+    # usuario testando ativacao de lider -- Vegapunk OP07-097): o regex so
+    # cobria "this CHARACTER cannot attack", nunca "this LEADER cannot
+    # attack" -- mesma gramatica, so o substantivo muda. Busca no banco
+    # inteiro achou 6 lideres com essa frase LITERAL (nenhum com a
+    # variante 'unless' hoje: Iceburg OP03-058, Nefeltari Vivi OP04-001,
+    # Rebecca OP04-039, Vegapunk OP07-097, Shirahoshi OP11-022, Rebecca
+    # OP15-039) -- todos ficavam sem NENHUM passivo estruturado
+    # (`passive` ausente do banco), entao o motor gerava e pontuava uma
+    # acao de ATAQUE pro lider deles como se ele pudesse atacar
+    # normalmente (is_attack_locked_self nunca via `cannot_attack_self`
+    # pra checar).
+    #
+    # Segundo lookahead " your opponent" (achado no mesmo diff_parser.py
+    # rodado apos o fix acima): ampliar pra "leader" tambem capturava
+    # OP12-020 Zoro (lider), "this Leader cannot attack YOUR OPPONENT'S
+    # Characters with a base cost of 7 or less" -- mecanica DIFERENTE
+    # (restricao de ALVO, ja coberta a parte por
+    # parse_lock_self_attack_cost/lock_self_attack_opp_chars_cost_lte),
+    # nao um self-lock completo. Sem o lookahead, Zoro ganhava um
+    # cannot_attack_self espurio DUPLICADO em cima do step correto.
+    if re.search(r'this (?:character|leader) cannot attack(?! a leader| your opponent)', t):
+        unless_m = re.search(r'this (?:character|leader) cannot attack unless ([^.]+)', t)
         if unless_m:
             cond_texto = unless_m.group(1).strip()
             cond_estruturada = parse_conditions(cond_texto)
@@ -7337,8 +7359,15 @@ def parse_block(block_text, trigger_name):
     # activate...blocker...during this turn") e a variante PERSISTENTE da
     # trava de Blocker (Limejuice/Kuzan) -- distinta da transitoria acima,
     # que exige "during this battle" e já foi tratada primeiro.
+    # Achado real 03/08: este GATE (decide se vale a pena chamar
+    # parse_lock_attack) tinha o MESMO hardcode em "character" que a
+    # funcao interna ja tinha antes do fix -- Vegapunk ("This Leader
+    # cannot attack.", sem nenhuma mencao a "opponent") nunca disparava
+    # este if, entao parse_lock_attack nunca era nem CHAMADA pra ele
+    # (o fix dentro da funcao sozinho nao bastava).
     if (('cannot attack' in t or 'cannot be rested' in t or 'can attack unless' in t)
-            and ('opponent' in t or 'this character cannot attack' in t)) or \
+            and ('opponent' in t or 'this character cannot attack' in t
+                 or 'this leader cannot attack' in t)) or \
        ('blocker' in t and 'cannot activate' in t and 'during this turn' in t):
         steps.extend(parse_lock_attack(t))
 

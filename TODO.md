@@ -1,6 +1,30 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 3 de agosto de 2026
+**Última atualização:** 4 de agosto de 2026
+
+> 04/08/2026 (bloco 429): **"This Leader cannot attack" era 100% ignorado
+> (parser E engine) — 6 líderes reais atacavam apesar do próprio texto
+> proibir**. Usuário pediu confirmação de que o bot ativa efeito de líder
+> (bloco 428); validando Vegapunk (OP07-097) via `_generate_and_score_actions`
+> real, o motor ainda gerava/pontuava um ataque com o líder dele. Causa
+> raiz em 3 camadas: (1) parser — o *gate* que decide se chama
+> `parse_lock_attack` exigia "opponent" no texto OU "this character
+> cannot attack" literal, nunca "this leader"; (2) parser — o regex
+> interno tinha o mesmo hardcode; (3) motor — `_generate_and_score_actions`
+> (2 pontos), `my_attack_power()` e `opp_attack_count()` adicionavam o
+> líder como atacante só checando `not rested`, nunca chamando
+> `is_attack_locked_self`/`character_can_attack_now` (já usados pra
+> field_chars). Busca no banco inteiro achou 6 líderes afetados (Iceburg,
+> Nefeltari Vivi, Rebecca x2, Vegapunk, Shirahoshi). Bônus: achado um bug
+> IRMÃO na direção oposta — Monkey.D.Luffy (OP11-058) ficava travado pra
+> atacar SEMPRE (mesmo com mão<5, quando a restrição real não vale) porque
+> `is_attack_locked_self` ignorava condição no NÍVEL DO BLOCO
+> (`passive.conditions`), só olhava condição por-step. Validado:
+> `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=6 (exatamente os 6 líderes),
+> `smoke_fast.py`/`smoke_test.py` 100% (7 testes novos), `audit_replay.py`
+> --seed 11 e --seed 23 0 anomalias/0 exceções. Registro obrigatório em
+> `scriptis_da_ia/parser_audits/2026-08-04_lideres_this_leader_cannot_attack_ignorado.json`.
+> Ver bloco 429 do HANDOFF.
 
 > 03/08/2026 (bloco 428): **Motor cego a efeitos "Choose one" (`choice`)
 > em TODA função de scoring — 23 cartas (4 líderes, personagens,
