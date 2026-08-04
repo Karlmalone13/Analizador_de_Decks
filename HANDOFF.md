@@ -1,5 +1,29 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (437) - Claude (sessao remota web) - Fecha pendencia do bloco 436: motor JA diferencia rest_opp_character de ko/bounce -- sem bug
+
+Continuacao direta do pendente registrado no bloco 436 ("o motor
+precisa diferenciar 'descansar personagem do oponente' de K.O./remocao
+permanente"). Auditei `avaliar_carta` (`decision_engine.py`, ~linha
+10673-10725) especificamente pra essa familia de acoes.
+
+**Resultado: ja diferencia, corretamente.** `_is_ko_removal_step`
+agrupa `ko`/`bounce`/`rest_opp_character`/etc so pro GATE de
+viabilidade (calcular se o card_analysis_db flag `has_ko` bate com um
+step de fato jogavel agora) -- o VALOR concedido e calculado em blocos
+SEPARADOS: `ko` da +35 (+25 extra se `field_advantage()<0`, -30 se
+campo do oponente vazio), `bounce` da +20 (+15/-20 nas mesmas
+condicoes), `rest_opp_character` da so **+20 se
+`should_clear_field()` senao +10** -- claramente mais baixo que ko e
+bounce, sem nenhum bonus extra de field_advantage (`_own_effect_
+removes_char_react_bonus` so se aplica a `has_ko`/`has_bounce`, NAO a
+`has_rest`). Ou seja: cartas tipo Carrot/Jewelry Bonney (que restam,
+nao removem) ja sao avaliadas como mais fracas que K.O./bounce reais,
+o oposto do que a hipotese do bloco 436 levantava como risco.
+
+**Conclusao: sem fix.** Pendencia fechada -- o Mihawk-style "trava por
+descanso" nao tem gap de avaliacao nesse ponto especifico do motor.
+
 ## 2026-08-04 (436) - Claude (sessao remota web) - Adiciona guia de deck externo (Cards Realm) do Mihawk ao IA_Compendium, corrige resumo impreciso da secao 8
 
 Usuario pediu explicitamente pra adicionar o guia

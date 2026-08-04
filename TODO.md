@@ -2,6 +2,13 @@
 
 **Última atualização:** 4 de agosto de 2026
 
+> 04/08/2026 (bloco 437): **fecha a pendência do bloco 436** — auditei
+> `avaliar_carta` especificamente pra `rest_opp_character` (trava tipo
+> Carrot/Jewelry Bonney) vs `ko`/`bounce`. Motor **já diferencia
+> corretamente**: rest dá só +10/+20, bem abaixo de ko (+35, até +60
+> com bônus) e bounce (+20, até +35). Sem bug, sem fix. Ver bloco 437
+> do HANDOFF.
+
 > 04/08/2026 (bloco 436): adicionada **nova seção 10** no
 > `IA_Compendium/RESUMO_ESTRATEGICO.md` — guia de deck externo (Cards
 > Realm) do Mihawk, colado pelo usuário (fetch direto bloqueado pela
