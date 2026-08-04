@@ -11612,7 +11612,12 @@ class DecisionEngine:
 
         if target_type == 'leader':
             don_disp  = self.me.don_available
-            leader_power = self.opp.leader.power
+            # +power_buff: mesmo achado do bloco HANDOFF 434
+            # (don_needed_for_attack) -- lider com defesa reativa/buff
+            # ja ativo (ex: Lucy OP15-002) ficava invisivel aqui tb,
+            # inflando pode_passar/passa_sem_don com o poder BASE em vez
+            # do poder real de defesa (o que _execute_attack de fato usa).
+            leader_power = self.opp.leader.power + self.opp.leader.power_buff
 
             # REGRA DURA (validada com o usuário):
             # Ataque ao líder só vale se:
@@ -11689,8 +11694,12 @@ class DecisionEngine:
             # alcanca-lo. Um [When Attacking] util pode justificar declarar
             # um ataque, mas deve usar outro alvo alcancavel (inclusive o
             # Leader), nunca um Character maior que atacante + DON disponivel.
-            passa_sem_don = atk_power >= target.power
-            passa_com_don = (atk_power + don_disp * 1000) >= target.power
+            # +power_buff: mesmo achado do bloco 434/leader acima -- alvo
+            # com buff de poder ja ativo (battle_only ou nao) precisa da
+            # mesma conta que _execute_attack usa de verdade.
+            target_power = target.power + target.power_buff
+            passa_sem_don = atk_power >= target_power
+            passa_com_don = (atk_power + don_disp * 1000) >= target_power
             pode_matar    = passa_sem_don or passa_com_don
 
             if not pode_matar:
@@ -11699,7 +11708,7 @@ class DecisionEngine:
             # Valor do alvo (quão importante é removê-lo) — só chega aqui
             # quando o ataque TEM chance real de matar (com ou sem DON).
             s = target.board_value() * 15
-            don_needed = max(0, (target.power - atk_power + 999) // 1000)
+            don_needed = max(0, (target_power - atk_power + 999) // 1000)
             s -= self.don_opportunity_cost(don_needed)
 
             # Alvo COM EFEITO vale matar mesmo com poder baixo/0 (regra do usuário)
@@ -13486,7 +13495,11 @@ class OPTCGMatch:
                     if not character_can_attack_now(melhor, p, opp):
                         continue
                     antes = attack_time_power(melhor, opp)
-                    deficit_lider = opp.leader.power - antes
+                    # +power_buff: mesmo achado do bloco 434 -- sem isso o
+                    # bonus de "fecha o deficit" pode disparar mesmo quando
+                    # o lider tem buff de defesa ativo e o DON extra nao
+                    # basta de verdade.
+                    deficit_lider = (opp.leader.power + opp.leader.power_buff) - antes
                     if 0 < deficit_lider <= count * 1000:
                         base += 130  # fecha o deficit contra o lider do oponente
                     wa = get_card_effects(melhor.code).get('when_attacking')
@@ -14079,8 +14092,12 @@ class OPTCGMatch:
                 if pode_atacar_leader and not p.cannot_attack_leader_this_turn:
                     s_leader = engine.score_attack_target(att, 'leader', None)
                     atk_now = atk_now_for_budget
-                    if (atk_now < opp.leader.power
-                            and atk_now + attack_don_budget * 1000 < opp.leader.power
+                    # +power_buff: mesmo achado do bloco 434 (re-check
+                    # redundante de score_attack_target, precisa da MESMA
+                    # conta pra nao divergir).
+                    leader_power_now = opp.leader.power + opp.leader.power_buff
+                    if (atk_now < leader_power_now
+                            and atk_now + attack_don_budget * 1000 < leader_power_now
                             and not engine._rest_attack_has_material_benefit(att)):
                         s_leader = -999
                     if s_leader > -500:
@@ -14134,8 +14151,10 @@ class OPTCGMatch:
                         continue
                     s_char = engine.score_attack_target(att, 'character', tgt)
                     atk_now = atk_now_for_budget
-                    if (atk_now < tgt.power
-                            and atk_now + attack_don_budget * 1000 < tgt.power):
+                    # +power_buff: mesmo achado do bloco 434.
+                    tgt_power_now = tgt.power + tgt.power_buff
+                    if (atk_now < tgt_power_now
+                            and atk_now + attack_don_budget * 1000 < tgt_power_now):
                         s_char = -999
                     if s_char > -500:
                         s_char += self._human_pattern_bonus(p, 'attack', att)
@@ -14312,10 +14331,13 @@ class OPTCGMatch:
                 candidatos_alvo = []
                 pode_atacar_leader = (not getattr(att, 'rush_character_only_this_turn', False)
                                       and not p.cannot_attack_leader_this_turn)
+                # +power_buff nos dois casos: mesmo achado do bloco 434
+                # (esse bloco calcula "melhor_falta" de DON pro attach_don,
+                # e um buff ja ativo no alvo mudava o gap real).
                 if pode_atacar_leader:
-                    candidatos_alvo.append(('leader', None, opp.leader.power))
+                    candidatos_alvo.append(('leader', None, opp.leader.power + opp.leader.power_buff))
                 for tgt in opp.rested_chars(att):
-                    candidatos_alvo.append(('character', tgt, tgt.power))
+                    candidatos_alvo.append(('character', tgt, tgt.power + tgt.power_buff))
                 for ttype, tgt, alvo_power in candidatos_alvo:
                     gap = alvo_power - atk_now
                     if gap > 0 and gap <= p.don_available * 1000:

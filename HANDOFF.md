@@ -1,5 +1,64 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (438) - Claude (sessao remota web) - Fecha a auditoria do bloco 434: mais 5 pontos com o mesmo bug de power_buff corrigidos, validados com gauntlet N=30
+
+Continuacao direta da auditoria pendente do bloco 434 (mesmo padrao
+"power sem power_buff" em outros pontos de scoring). Revisei os 6
+pontos sinalizados um por um:
+
+- **Linha ~7184** (`_execute_step`, escolha de alvo pra `give_don`
+  proprio): **falso positivo** -- usa `card.effective_power(True)`,
+  que ja soma `power_buff` internamente (`rules_facade.
+  effective_card_power`, linha 40). Sem bug.
+- **5 pontos reais** (mesmo bug do `don_needed_for_attack` do bloco
+  434, so em OUTRAS funcoes do mesmo pipeline de ataque):
+  1. `score_attack_target` branch `leader` (~11615) -- `leader_power`
+     usado pro gate `pode_passar`/`passa_sem_don`/`passa_com_don`.
+  2. `score_attack_target` branch `character` (~11697-11707) --
+     `target_power` usado pro gate `pode_matar` E pro calculo de
+     `don_needed`.
+  3. `_score_activate_main`, bonus de `give_don` que fecha deficit
+     contra o lider (~13498) -- `deficit_lider`.
+  4. `_generate_and_score_actions`, re-check redundante pos-
+     `score_attack_target` (~14095 lider, ~14154 character) -- MESMO
+     gate calculado de novo, precisa da mesma conta pra nao divergir.
+  5. `_generate_and_score_actions`, segundo bloco (candidatos de
+     `attach_don`, ~14335/14337) -- `alvo_power`/`gap` usado pra decidir
+     `melhor_falta` de DON.
+
+Todos corrigidos somando `power_buff` do alvo (lider ou character),
+espelhando o mesmo padrao ja usado em `_execute_attack`/
+`defender_power_now`/`don_needed_for_attack` (434). `smoke_fast.py`/
+`smoke_test.py` 100% limpos.
+
+**Validacao empirica** (gauntlet N=30, 210 partidas, MESMO metodo do
+434 -- nao repetir o erro do N=10 ambiguo):
+
+| Adversário | pós-434 (N=30) | pós-438 (N=30) |
+|---|---:|---:|
+| Enel | 30,0% | 26,7% |
+| Nami | 53,3% | 56,7% |
+| Ace | 43,3% | **53,3%** |
+| Mihawk | 16,7% | 16,7% |
+| Lucy | 26,7% | 33,3% |
+| Luffy-Amarelo | 46,7% | 36,7% |
+| Espelho | 33,3% | 33,3% |
+| **TOTAL** | 35,7% | **36,7%** |
+
+Resultado limpo desta vez -- sem nenhum mergulho tipo o "Lucy 0%" do
+N=10 anterior. Total estavel/levemente positivo (35,7%→36,7%), DON/atk
+1,22→1,26 (segue perto do alvo real de vitoria, 1,31, bloco 398). Ace
+melhorou mais ainda (43,3%→53,3%), Mihawk ficou EXATAMENTE igual
+(16,7%, esse matchup nao tinha esse bug especifico atuando -- bate com
+o achado do bloco 435, que ja tinha descartado decisao ruim ali).
+Luffy-Amarelo caiu (46,7%→36,7%) e Enel um pouco (30%→26,7%) -- dentro
+do que o bloco 398 ja classificou como ruido nesse tamanho de amostra
+(N=50 la, N=30 aqui, ainda mais sujeito a variancia).
+
+**Decisao: FIX MANTIDO e commitado.** Auditoria do bloco 434 encerrada
+-- os 6 pontos sinalizados foram todos resolvidos (1 falso positivo, 5
+corrigidos e validados).
+
 ## 2026-08-04 (437) - Claude (sessao remota web) - Fecha pendencia do bloco 436: motor JA diferencia rest_opp_character de ko/bounce -- sem bug
 
 Continuacao direta do pendente registrado no bloco 436 ("o motor

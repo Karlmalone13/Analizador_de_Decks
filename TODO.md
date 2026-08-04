@@ -2,6 +2,19 @@
 
 **Última atualização:** 4 de agosto de 2026
 
+> 04/08/2026 (bloco 438): **encerra a auditoria do bloco 434** — os 6
+> pontos sinalizados com o mesmo padrão "power sem power_buff" foram
+> todos resolvidos: 1 falso positivo (~7184, já usava
+> `effective_power()`) e 5 corrigidos de verdade (`score_attack_target`
+> líder/character, bônus de `give_don` fecha-deficit, re-check
+> redundante em `_generate_and_score_actions`, candidatos de
+> `attach_don`). `smoke_fast.py`/`smoke_test.py` 100%. **Validado com
+> gauntlet N=30 direto** (sem repetir o susto do N=10 do bloco 434):
+> total 35,7%→36,7% estável, DON/atk 1,22→1,26, Ace melhorou mais
+> (43,3%→53,3%), Mihawk idêntico (16,7% — confirma o bloco 435, não
+> tinha esse bug atuando ali). **Fix mantido e commitado.** Ver bloco
+> 438 do HANDOFF.
+
 > 04/08/2026 (bloco 437): **fecha a pendência do bloco 436** — auditei
 > `avaliar_carta` especificamente pra `rest_opp_character` (trava tipo
 > Carrot/Jewelry Bonney) vs `ko`/`bounce`. Motor **já diferencia
