@@ -1,5 +1,83 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (434) - Claude (sessao remota web) - Corrige `don_needed_for_attack` (ignorava power_buff do alvo) -- ACHADO REAL, nao so "matchup dificil" como concluido no bloco 433
+
+**Retifica a conclusao do bloco 433.** Usuario questionou o "sem fix"
+("acho que essa calibragem de DON nao esta boa, concorda?") apontando que
+Enel/Nami deveriam ganhar mais. Investiguei especificamente o caso Lucy
+(pedido do usuario, "pode ser") com replay verbose + trace instrumentado
+de `don_needed_for_attack` -- e ACHOU um bug real, nao just "dial ja
+calibrado reagindo a matchup dificil" como o bloco 433 concluiu.
+
+**O bug**: `don_needed_for_attack` (decision_engine.py, ~linha 1957-1971)
+lia `alvo_power = opp.leader.power` (so o stat parado da carta) --
+enquanto o combate REAL (`_execute_attack`, `defend_power =
+opp.leader.power + opp.leader.power_buff`) e `defender_power_now` ja
+somavam `power_buff` corretamente ha tempos. Trace instrumentado (seed
+1002, derrota de Imu vs Lucy) confirmou: o lider da Lucy (OP15-002,
+"[On Your Opponent's Attack] pode trashar Event/Stage da mao: +1000
+poder nesta batalha") tinha defesa REAL crescendo (6000→7000→9000→10000
+ao longo da partida) enquanto `alvo_power` no calculo de deficit ficava
+travado em 5000 (base) o jogo INTEIRO -- o motor achava que já empatava
+sem DON nenhum, todo ataque do lider do Imu saia seco e apanhava.
+Mesma familia de gap ja documentada pra `opp_counter_potential()`
+(achado 07/07): defesa que só aparece no momento do combate precisa ser
+antecipada, não só o stat parado.
+
+**Fix**: soma `power_buff` nos dois casos (`opp.leader.power_buff` e
+`tgt.power_buff`), espelhando exatamente o padrao ja usado em
+`_execute_attack`/`defender_power_now`. Teste permanente novo
+`test_don_needed_for_attack_conta_power_buff_do_alvo_04_08`
+(`smoke_fast.py`). `smoke_fast.py`/`smoke_test.py` 100% limpos.
+
+**Validacao empirica -- historia completa (usuario pediu pra nao confiar
+só no N pequeno)**:
+- Re-rodei o gauntlet do bloco 433 (N=10/adversario) com o fix: total
+  34,3%→28,6%, e **Lucy especificamente foi de 20% pra 0%** -- resultado
+  ambiguo, levantou a hipotese de que a defesa REATIVA da Lucy (pode
+  descartar QUALQUER numero de cartas, escala com a mao dela) tornaria
+  "perseguir" o power_buff dela com DON um investimento sem fim.
+- Usuario pediu explicitamente validacao com N maior antes de decidir
+  (AskUserQuestion, "Rodar mais partidas (30/adversario)").
+- **N=30/adversario (210 partidas)**: resultado bem mais claro --
+  `TOTAL win_rate=35,7%` (baseline pre-fix: 34,3% -- estavel, dentro do
+  ruido) e **`Lucy=26,7%`** (não 0% -- confirma que o N=10 foi ruido
+  puro). Redistribuicao clara: os matchups que motivaram a investigacao
+  melhoraram MUITO (`Ace 10%→43,3%`, `Luffy-Y 30%→46,7%`, `Mihawk
+  10%→16,7%`, `Lucy 20%→26,7%`), custando um pouco dos matchups ja
+  fortes (`Enel 60%→30%`, `Nami 70%→53,3%`, `Mirror 40%→33,3%`). DON/atk
+  total foi de 1,14 pra 1,22 -- mais perto do alvo real de vitoria do
+  Imu (1,31, bloco 398).
+
+| Adversário | pré-fix (N=10) | pós-fix (N=10) | pós-fix (N=30) |
+|---|---:|---:|---:|
+| Enel | 60,0% | 30,0% | 30,0% |
+| Nami | 70,0% | 50,0% | 53,3% |
+| Ace | 10,0% | 30,0% | **43,3%** |
+| Mihawk | 10,0% | 30,0% | 16,7% |
+| Lucy | 20,0% | 0,0% | 26,7% |
+| Luffy-Amarelo | 30,0% | 20,0% | 46,7% |
+| Espelho | 40,0% | 40,0% | 33,3% |
+| **TOTAL** | 34,3% | 28,6% | **35,7%** |
+
+**Decisao: FIX MANTIDO e commitado.** N=30 mostra o efeito liquido
+estavel/levemente positivo no agregado, com melhora forte e consistente
+justamente nos matchups mais ruins que motivaram a investigacao (Ace,
+Luffy-Amarelo) -- Mihawk continua o mais fraco do roster (16,7%), mas
+sem nenhum matchup mais catastrofico (10% ou menos). `gauntlet_matchup.py`
+com `N_SEEDS=30` (era 10 -- o proprio N=10 se provou ruidoso demais pra
+decidir, igual o bloco 398 ja tinha encontrado com win rate puro).
+
+**Pendente, NAO tocado nesta sessao** (auditoria a parte, mais ampla):
+o mesmo padrao "power sem power_buff" aparece solto em varios outros
+pontos de scoring/planejamento em `decision_engine.py` (linhas ~7184,
+~11601, ~11678-11736, ~13475, ~14068-14144, ~14302-14304) -- a maioria
+dentro de funcoes JA calibradas via self-play pareado nos blocos 394-398
+(ATTACK_LEADER_BASE_SCORE, BLOCK_CRITICAL_LIFE_MAX_COST, etc.). Mexer
+nelas sem a MESMA validacao rigorosa (self-play pareado, alvo real de
+DON/ataque, nao so win rate bruto) arrisca regredir essa tunagem --
+fica registrado pra uma auditoria dedicada, não um fix as-cegas.
+
 ## 2026-08-04 (433) - Claude (sessao remota web) - Gauntlet controlado Imu vs roster real: sinal forte e reproduzivel (Ace/Mihawk/Lucy), mas investigacao aponta pra matchup desfavoravel, nao bug novo
 
 Continuacao direta do bloco 432 (usuario confirmou "pode fazer, acho

@@ -9485,6 +9485,40 @@ def test_attack_margin_don_fraction_calibrado_29_07() -> None:
           precisa == 2)
 
 
+def test_don_needed_for_attack_conta_power_buff_do_alvo_04_08() -> None:
+    """
+    Achado 04/08 (investigacao Lucy no gauntlet controlado, bloco HANDOFF
+    434): `don_needed_for_attack` lia so `opp.leader.power`/`tgt.power`
+    (stat parado), ignorando `power_buff` -- enquanto o combate REAL
+    (`_execute_attack`, `defend_power = opp.leader.power +
+    opp.leader.power_buff`) e `defender_power_now` ja somavam os dois
+    corretamente. Reproduzido via replay verbose instrumentado: Imu (Alt
+    Art, 5000 base) atacava o lider da Lucy (que bufa a propria defesa
+    trashando Event/Stage da mao, "[On Your Opponent's Attack] ... +1000
+    power nesta batalha") e o motor calculava `need=0` (achava que 5000
+    bastava) mesmo com a defesa real ja em 6000-9000 -- toda vez o ataque
+    saia seco, sem NENHUM DON, e apanhava. Corrigido somando power_buff
+    dos dois lados (leader e character), mesmo padrao ja usado em
+    `_execute_attack`/`defender_power_now`.
+    """
+    atacante = mk("XPB1", "Atacante", power=5000, card_type="CHARACTER")
+    opp_leader = mk("XPB1OPP", "Opp Lider", power=5000, card_type="LEADER")
+    opp_leader.power_buff = 2000  # defesa "nesta batalha" ja ativa (ex: Lucy)
+    opp = GameState(leader=opp_leader)
+    me = GameState(leader=mk("XPB1LD", "Lider", card_type="LEADER"), don_available=10)
+    engine_dummy = DecisionEngine(me, opp)
+
+    precisa = don_needed_for_attack(atacante, 'leader', None, me, opp, engine_dummy)
+    check("don_needed_for_attack conta power_buff do lider-alvo (precisa >= 2, nao 0)",
+          precisa >= 2)
+
+    opp_char = mk("XPB1CHR", "Opp Char", power=4000, card_type="CHARACTER")
+    opp_char.power_buff = 3000
+    precisa_char = don_needed_for_attack(atacante, 'character', opp_char, me, opp, engine_dummy)
+    check("don_needed_for_attack conta power_buff do character-alvo (precisa >= 2, nao 0)",
+          precisa_char >= 2)
+
+
 def test_give_don_rested_base_score_calibrado_29_07() -> None:
     """
     Achado 29/07 (bloco HANDOFF 399): investigando activate:main por
@@ -9791,6 +9825,7 @@ def main() -> int:
     test_is_active_turn_corrigido_evita_don_minus_desnecessario()
     test_don_needed_for_attack_reserva_custo_do_proprio_buff()
     test_attack_margin_don_fraction_calibrado_29_07()
+    test_don_needed_for_attack_conta_power_buff_do_alvo_04_08()
     test_give_don_rested_base_score_calibrado_29_07()
     test_set_don_active_score_escala_por_don_rested_30_07()
     test_hidden_info_honesta_e_teto_counter_real()

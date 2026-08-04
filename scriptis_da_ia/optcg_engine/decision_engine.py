@@ -1954,10 +1954,24 @@ def don_needed_for_attack(attacker: 'Card', ttype: str, tgt: 'Optional[Card]',
     """
     if p.don_available <= 0:
         return 0
+    # Achado 04/08 (investigacao Lucy no gauntlet, bloco HANDOFF 434):
+    # faltava somar power_buff -- exatamente o que o combate REAL usa em
+    # defend_power (_execute_attack, mais abaixo) e o que
+    # defender_power_now ja soma corretamente. Sem isso, um lider com
+    # buff de defesa ATIVO (ex: Lucy OP15-002, "[On Your Opponent's
+    # Attack] trash Event/Stage da mao: +1000 power nesta batalha")
+    # ficava invisivel pro calculo de deficit -- o motor achava que
+    # bastava empatar no poder BASE (aqui sempre 5000, nunca mudava no
+    # trace) enquanto o combate real comparava contra o poder JA
+    # bufado (6000-10000 na partida investigada), garantindo que TODO
+    # ataque saia sem DON nenhum e apanhe. Mesmo padrao de
+    # `opp_counter_potential()` (achado 07/07): defesa que so aparece
+    # no momento do combate precisa ser antecipada aqui, nao só o stat
+    # parado da carta.
     if ttype == 'leader':
-        alvo_power = opp.leader.power
+        alvo_power = opp.leader.power + opp.leader.power_buff
     else:
-        alvo_power = tgt.power if tgt else 0
+        alvo_power = (tgt.power + tgt.power_buff) if tgt else 0
     atk = attack_time_power(attacker, opp)
 
     # Achado real 27/07 (bloco HANDOFF 374, Katakuri OP11-062 x Ace):

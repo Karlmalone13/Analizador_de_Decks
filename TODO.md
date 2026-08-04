@@ -2,7 +2,26 @@
 
 **Última atualização:** 4 de agosto de 2026
 
-> 04/08/2026 (bloco 433): **Gauntlet controlado Imu vs 7 decks reais do
+> 04/08/2026 (bloco 434): **RETIFICA o bloco 433** — não era só
+> "matchup difícil", era bug real. `don_needed_for_attack`
+> (`decision_engine.py`) ignorava `power_buff` do alvo (lider/character)
+> ao calcular deficit de poder pro ataque, enquanto o combate real já
+> somava isso há tempos — confirmado via trace instrumentado contra a
+> defesa reativa da Lucy (OP15-002). **Fix aplicado e MANTIDO** (2
+> linhas + teste permanente novo em `smoke_fast.py`,
+> `smoke_fast.py`/`smoke_test.py` 100%). Validação em 2 rodadas: N=10
+> deu resultado ambíguo (Lucy caiu pra 0%, usuário pediu mais seeds via
+> AskUserQuestion) — **N=30 (210 partidas) confirmou efeito líquido
+> estável/positivo**: total 34,3%→35,7%, com Ace (10%→43,3%) e
+> Luffy-Amarelo (30%→46,7%) melhorando muito, Mihawk (10%→16,7%) e Lucy
+> (20%→26,7%) melhorando também, custando um pouco de Enel/Nami/Espelho
+> (já fortes). `gauntlet_matchup.py` agora usa `N_SEEDS=30` (era 10,
+> ruidoso demais). **Pendente, não tocado**: mesmo padrão "power sem
+> power_buff" aparece em outros pontos de scoring já calibrados
+> (blocos 394-398) — precisa de auditoria própria, não fix às cegas.
+> Ver bloco 434 do HANDOFF.
+
+> 04/08/2026 (bloco 433, RETIFICADO pelo bloco 434): **Gauntlet controlado Imu vs 7 decks reais do
 > meta** (`gauntlet_matchup.py`, novo, reusável — 70 partidas self-play,
 > seeds fixas) confirma sinal forte: Imu vence Enel (60%)/Nami (70%),
 > os 2 decks mais jogados do meta real, mas perde muito pra Ace (10%),

@@ -59,7 +59,7 @@ ROSTER_NAMES = {
 }
 FIXED_NAME = 'Black Imuby Spence Gibson'
 FIXED_MIRROR_NAME = 'Black Imuby Adderall'
-N_SEEDS = 10
+N_SEEDS = 30
 OUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                          'metrics', 'gauntlet_imu_04_08.json')
 
