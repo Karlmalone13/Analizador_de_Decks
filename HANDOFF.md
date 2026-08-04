@@ -1,5 +1,39 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (435) - Claude (sessao remota web) - Investiga Mihawk (pior matchup pos-fix, 16,7%) via IA_Compendium + replay verbose -- sem bug novo achado
+
+Usuario perguntou se o Mihawk (ainda o pior matchup do roster apos o
+fix do bloco 434) tinha uma lacuna de "entendimento de game plan"
+(hipotese levantada por causa da coincidencia de ruido Lucy/Mihawk no
+N=10, ja esclarecida como ruido). Investigacao pedida seguindo a regra
+do CLAUDE.md (IA_Compendium antes de auditar comportamento por lider).
+
+**Achado no catalogo**: linha 16 (`OP14-020`, Dracule Mihawk-Verde)
+descreve o efeito do lider como "corta o campo e sustenta pressao" --
+mas o texto REAL da carta (`[Activate:Main] rest 1 carta: se ha
+Character custo>=5, ative ate 3 DON!!, depois nao pode jogar Character
+esse turno`) e um motor de RAMP/reciclagem de DON, sem NENHUMA remocao
+de personagem envolvida. **Divergencia catalogo vs carta real
+registrada** (o proprio documento avisa que arquetipos/diretrizes sao
+preliminares) -- nao e bug do bot, e imprecisao do resumo do catalogo.
+
+**Replay verbose de uma derrota apertada** (seed 21, `dmg_fixo=5
+dmg_opp=5`, corrida disputada): DON/ataque do Imu nesse jogo especifico
+ja saudavel (1,29, nada de fome de DON -- o fix do 434 esta funcionando
+aqui tambem). O jogo terminou com os DOIS lideres chegando a 0 de vida
+quase juntos (Imu derrubou Mihawk pra 0 no proprio turno; Mihawk
+(que jogou primeiro) teve o proximo ataque e fechou com Shanks
+bufado a 16000pwr). Sem sinal de decisao ruim nesse replay especifico
+-- parece corrida legitima decidida por quem jogou primeiro (Mihawk
+teve a iniciativa), nao um defeito identificavel.
+
+**Conclusao: sem fix aplicado.** Nao achei evidencia de bug novo pro
+Mihawk especificamente alem do que o bloco 434 ja corrigiu (que tambem
+beneficiou esse matchup, 10%→16,7%). Fica registrado que o catalogo
+tem uma descricao imprecisa pra essa carta, mas isso nao afeta o
+comportamento do bot (o motor le o `card_text`/efeito parseado real,
+nao o resumo do catalogo).
+
 ## 2026-08-04 (434) - Claude (sessao remota web) - Corrige `don_needed_for_attack` (ignorava power_buff do alvo) -- ACHADO REAL, nao so "matchup dificil" como concluido no bloco 433
 
 **Retifica a conclusao do bloco 433.** Usuario questionou o "sem fix"

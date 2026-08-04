@@ -2,6 +2,16 @@
 
 **Última atualização:** 4 de agosto de 2026
 
+> 04/08/2026 (bloco 435): investigação do Mihawk (pior matchup pós-fix,
+> 16,7%) via IA_Compendium + replay verbose — **sem bug novo achado**.
+> Catálogo (linha 16, `OP14-020`) descreve o efeito do líder como
+> "corta o campo", mas o texto real da carta é só ramp/reciclagem de
+> DON, sem remoção nenhuma — divergência catálogo-vs-carta registrada
+> (imprecisão do resumo, não bug do bot). Replay de uma derrota apertada
+> mostrou DON/ataque já saudável (fix do 434 ajudando aqui também) e uma
+> corrida legítima decidida por quem jogou primeiro, não decisão ruim.
+> Ver bloco 435 do HANDOFF.
+
 > 04/08/2026 (bloco 434): **RETIFICA o bloco 433** — não era só
 > "matchup difícil", era bug real. `don_needed_for_attack`
 > (`decision_engine.py`) ignorava `power_buff` do alvo (lider/character)
