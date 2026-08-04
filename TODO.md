@@ -2,6 +2,17 @@
 
 **Última atualização:** 4 de agosto de 2026
 
+> 04/08/2026 (bloco 445): investigado o item aberto "consciência de
+> combos estratégicos do oponente" (`opp_combo_threat`/PREVENT_COMBO,
+> nunca calibrado formalmente). Dispara **208x em 15 partidas**
+> (Enel vs Imu) — limiar `magnitude>=2` é bem mais permissivo do que
+> parecia. Teste pareado (N=25, atual vs desligado) mostrou impacto
+> **praticamente nulo** no win rate real (Enel/Nami idênticos, Ace só
+> 1/25 partida mudou) — nem ajuda nem atrapalha nestes 3 matchups.
+> **Sem fix aplicado**, achado honesto/inconclusivo. Próximo passo
+> (não feito): testar contra adversário com mais counter/blocker, ou
+> isolar o turno exato do combo de verdade. Ver bloco 445 do HANDOFF.
+
 > 04/08/2026 (bloco 444): **item 6 fechado** (último dos itens 4-6
 > pedidos pelo usuário) — threat-assessment de efeitos "rest"/"freeze"
 > do oponente (tipo Carrot/`lock_opp_character_refresh`, 153 cartas).

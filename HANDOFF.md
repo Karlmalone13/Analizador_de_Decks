@@ -1,5 +1,53 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (445) - Claude (sessao remota web) - PREVENT_COMBO dispara MUITO mais que o esperado, mas desligar nao muda o resultado (teste pareado)
+
+Usuario pediu pra nao mexer no achado do Katakuri (bloco 444, orcamento
+de DON entre atacantes) e investigar outra coisa -- escolhi o item
+aberto do TODO "consciencia de combos estrategicos do oponente"
+(`opp_combo_threat`/`PREVENT_COMBO`, implementado 19/07 mas nunca
+formalmente calibrado).
+
+**Achado 1 (frequencia)**: instrumentei `analysis_priority()` numa
+partida real self-play (Enel vs Imu, que tem Five Elders reanimando
+ate 5 corpos) -- `PREVENT_COMBO` disparou **208 vezes em so 15
+partidas** (contando cada chamada, nao decisoes distintas -- mas ainda
+assim uma frequencia bem mais alta que "aviso de virada iminente").
+Causa: o limiar `magnitude>=2` conta QUALQUER momento em que o trash
+do Imu tenha >=2 corpos qualificados pro Five Elders reanimar --
+quase o jogo inteiro uma vez que o trash acumula, nao so o momento
+critico logo antes do combo de verdade acontecer.
+
+**Achado 2 (teste pareado, decisivo)**: rodei self-play pareado (mesmas
+seeds, N=25 por adversario) comparando o comportamento ATUAL
+(`magnitude>=2` ativo) vs DESLIGADO (`opp_combo_threat` sempre retorna
+magnitude=0, nunca prioriza PREVENT_COMBO) em 3 matchups reais (Enel,
+Nami, Ace vs Imu):
+
+| Adversário | Atual (opp vence) | Desligado (opp vence) |
+|---|---:|---:|
+| Enel | 60,0% | 60,0% |
+| Nami | 56,0% | 56,0% |
+| Ace | 56,0% | 60,0% |
+
+Enel e Nami: **resultado IDENTICO** (mesmo self-play deterministico,
+0 partidas mudaram de vencedor) -- desligar o mecanismo inteiro nao
+mudou NADA. Ace: só 1 partida de 25 mudou.
+
+**Conclusao**: apesar de disparar constantemente, `PREVENT_COMBO` tem
+impacto praticamente NULO no resultado real contra esses 3 adversarios
+-- nem ajuda nem atrapalha de forma mensuravel. Isso pode significar
+(a) os pesos (150/80/0,8) sao fracos demais pra mudar qualquer decisao
+de verdade (redundante com outros termos de score que ja empurram pro
+mesmo lado), ou (b) esses 3 decks especificos nao tem pontos de decisao
+onde isso pesaria (o game plan deles ja e parecido com o que
+PREVENT_COMBO incentivaria). **Sem fix aplicado** -- achado
+inconclusive mas honesto: nao ha evidencia de dano nem de beneficio
+real nestes 3 matchups. Testar contra um adversario com counter/blocker
+abundante (onde "guardar recurso" faria mais diferenca) ou isolar o
+turno exato do combo de verdade (Five Elders jogado) e o proximo passo
+natural, nao feito nesta rodada por tempo.
+
 ## 2026-08-04 (444) - Claude (sessao remota web) - Item 6 fechado: threat-assessment de efeitos "rest"/"freeze" do oponente -- sem gap acionavel
 
 Continuacao do pedido do usuario ("pode continuar" apos o bloco 443).
