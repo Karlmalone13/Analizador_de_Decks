@@ -2,6 +2,20 @@
 
 **Última atualização:** 4 de agosto de 2026
 
+> 04/08/2026 (bloco 436): adicionada **nova seção 10** no
+> `IA_Compendium/RESUMO_ESTRATEGICO.md` — guia de deck externo (Cards
+> Realm) do Mihawk, colado pelo usuário (fetch direto bloqueado pela
+> política de rede da sessão em 4 domínios testados). Corrige o
+> resumo impreciso da linha 16/seção 8 ("corta o campo" → na real é
+> **rest/tempo control**, trava descansando peças próprias E do
+> oponente, sem K.O.). Confirmado que o deck do gauntlet
+> ("Green Mihawkby Phi Nguyen") tem o mesmo núcleo do guia — lista
+> competitiva real. **Pendente registrado, não investigado**: motor
+> precisa diferenciar "descansar oponente" (tempo) de remoção
+> permanente ao avaliar Carrot/Jewelry Bonney/Hody Jones-like effects.
+> Usuário quer expandir essa seção com mais líderes/decks do mesmo
+> site. Ver bloco 436 do HANDOFF.
+
 > 04/08/2026 (bloco 435): investigação do Mihawk (pior matchup pós-fix,
 > 16,7%) via IA_Compendium + replay verbose — **sem bug novo achado**.
 > Catálogo (linha 16, `OP14-020`) descreve o efeito do líder como

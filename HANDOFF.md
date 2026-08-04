@@ -1,5 +1,50 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (436) - Claude (sessao remota web) - Adiciona guia de deck externo (Cards Realm) do Mihawk ao IA_Compendium, corrige resumo impreciso da secao 8
+
+Usuario pediu explicitamente pra adicionar o guia
+(cardsrealm.com/pt-pt/articles/guia-de-deck-op15-dracule-mihawk) como
+fonte extra no `IA_Compendium`, depois de eu sinalizar (bloco 435) que
+o resumo do catalogo pra Mihawk ("corta o campo") nao batia com o texto
+real da carta. Fetch direto do site bloqueado pela politica de rede da
+sessao (403 em cardsrealm.com, limitlesstcg.com, onepiece.gg,
+onepiece-cardgame.com -- reportado, nao contornado) -- usuario colou o
+conteudo completo do artigo na conversa.
+
+**Nova secao 10** em `IA_Compendium/RESUMO_ESTRATEGICO.md` (secoes 9/10
+reordenadas pra manter numeracao sequencial -- HANDOFF.md:2305 ja
+referenciava "Secao 9" pro stub de proximo volume, preservado no lugar
+certo). Conteudo: arquetipo REAL do Mihawk (`OP14-020`) e rest/tempo
+control -- o lider e o deck inteiro giram em torno de DESCANSAR cartas
+(proprias E do oponente), nao remove-las (sem K.O.) -- corrige a linha
+16 da secao 8, que dizia "corta o campo" (impreciso, nao errado a
+ponto de invalidar o "sustenta pressao", so comprimido demais).
+Documentado: habilidade do lider, linhas de jogo por fase
+(early=consistencia, mid=trava a mesa do oponente, late=fechadores que
+reforcam a MESMA logica de rest), decklist real citada no guia (Jc
+Samson, campeao de torneio).
+
+**Comparacao com o deck do gauntlet**: o "Green Mihawkby Phi Nguyen"
+usado nos blocos 433-435 tem o MESMO nucleo do guia (Perona x4, Kid &
+Killer x4, ambas Jewelry Bonney, Tashigi, Trafalgar Law, Shanks,
+Mihawk OP14-119 x2, Law & Bepo x4, Carrot, Coffin Boat) -- confirma que
+e uma lista competitiva real do arquetipo certo, so difere em alguns
+tech slots (falta Laboon/Smoker/Hody Jones, tem Karmic
+Punishment/Zoro SP/Paradise Waterfall/Spiderweb no lugar).
+
+**Pendente, registrado mas NAO investigado**: o motor precisa
+diferenciar "descansar personagem do oponente" (tempo, reversivel) de
+K.O./remocao permanente ao avaliar efeitos tipo Carrot/Jewelry
+Bonney/Hody Jones -- o replay verbose do bloco 435 nao checou
+especificamente isso, so confirmou que o DON por ataque ja esta
+saudavel pos-fix (434). Proxima investigacao possivel, nao conclusao
+fechada.
+
+**Usuario sinalizou querer expandir esta secao com mais lideres/decks
+do mesmo site** -- fica registrado o padrao: fetch direto bloqueado,
+entao precisa colar o conteudo na conversa (ou eu uso WebSearch pra
+achar so metadados/snippets, sem o texto completo).
+
 ## 2026-08-04 (435) - Claude (sessao remota web) - Investiga Mihawk (pior matchup pos-fix, 16,7%) via IA_Compendium + replay verbose -- sem bug novo achado
 
 Usuario perguntou se o Mihawk (ainda o pior matchup do roster apos o

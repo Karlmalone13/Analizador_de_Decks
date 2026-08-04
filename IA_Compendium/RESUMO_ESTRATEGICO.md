@@ -249,7 +249,7 @@ a crença; busca interrompida por orçamento → indicar baixa confiança.
 | 13 | Jewelry Bonney — Vermelho/Amarelo | `EB04-001` | Leader power/Aggro | Forma Nika aumenta o poder do Líder pra vencer | Concentrar recursos em ataques decisivos, calcular Counter adversário |
 | 14 | Nefeltari Vivi — Vermelho/Azul | `EB03-001` ou `OP04-001` (2 candidatos) | Rush/Power reduction | Combina Rush com redução de poder | Reduzir alvos pra remover enquanto mantém dano no Líder |
 | 15 | Trafalgar Law — Vermelho | `OP14-001` | Toolbox/Tempo | Manipula o poder dos aliados com Chambres | Escolher alvos que transformem efeitos de poder em vantagem de ações |
-| 16 | Dracule Mihawk — Verde | `OP14-020` | Midrange | Efeito do Líder corta o campo e sustenta pressão | Planejar ativação do Líder e ataques em personagens descansados |
+| 16 | Dracule Mihawk — Verde | `OP14-020` | Rest/Tempo control (refinado, ver §10) | Efeito do Líder gira em torno de DESCANSAR cartas (próprias E do oponente), não remover — "corta o campo" do resumo original é impreciso | Planejar ativação do Líder junto com o pacote de rest próprio/travas no oponente (ver §10 pra decklist e linhas de jogo reais) |
 | 17 | Jinbe — Azul | `OP14-040` | Aggro | Ataques grandes e ritmo ofensivo | Priorizar dano e desenvolvimento que mantenha mão suficiente |
 | 18 | Boa Hancock — Azul/Amarelo | `OP14-041` | Trigger/Value | Explora Trigger e flexibilidade de duas cores | Modelar probabilidades de Trigger, manipular Life quando possível |
 | 19 | Donquixote Doflamingo — Roxo | `OP14-060` | Defesa/Controle | Amarra o oponente em um plano defensivo | Negar ataques eficientes, vencer por vantagem acumulada |
@@ -312,3 +312,89 @@ derivada. Matchups e pesos numéricos só serão classificados como empíricos
 quando houver dados ou simulações suficientes." — ainda não recebido/lido
 nesta sessão (30/07/2026). Se chegar, atualizar este arquivo e a regra em
 `CLAUDE.md`/`AGENTS.md`.
+
+## 10. Fontes externas — deck guides da comunidade
+
+> **Camada de confiança**: distinta de `official`/`derived`/`empirical`/
+> `learned` (seção 3) — isto é fonte **`community`**, escrita por
+> jogadores competitivos (não Bandai, não este projeto). Útil pra
+> entender plano de jogo/linhas reais com mais profundidade que o
+> catálogo da seção 8 (que é só arquétipo+1 frase), mas sujeito a viés
+> de autor/meta local. Adicionado a pedido do usuário (04/08/2026),
+> depois de investigação real do matchup Imu-vs-Mihawk apontar que o
+> resumo da seção 8 pra Mihawk era impreciso. Fetch direto do site
+> (`cardsrealm.com`) bloqueado pela política de rede das sessões
+> remotas deste projeto — conteúdo abaixo foi colado pelo usuário
+> diretamente na conversa, não lido pela IA via ferramenta de web.
+> **Plano**: usuário quer expandir esta seção com mais líderes/decks do
+> mesmo site conforme forem necessários — seguir o mesmo template
+> (fonte+data+URL, resumo do plano por fase, decklist real quando
+> disponível, comparação com o deck usado em `decklists_raw.csv` se
+> houver).
+
+### Dracule Mihawk (OP14-020) — Verde
+
+- **Fonte**: Cards Realm, "Guia de Deck OP15: Dracule Mihawk", Pedro
+  Braga (revisão Tabata Marques), publicado 21/04/2026.
+  <https://onepiece.cardsrealm.com/pt-pt/articles/guia-de-deck-op15-dracule-mihawk>
+- **Líder**: `OP14-020`, Verde, 5000 poder, 5 vidas, atributo Slash
+  (+1000 poder contra líder com atributo Slash). Habilidade: 1x/turno,
+  ao virar (rest) uma carta própria — personagem, Stage ou DON!! —, SE
+  houver personagem de custo 5+ em campo, ativa até 3 DON!!, depois não
+  pode jogar personagens naquele turno.
+- **Arquétipo real (corrige a linha 16 da seção 8)**: não é remoção de
+  mesa ("corta o campo"). É um deck de **rest/tempo control**
+  construído em torno de GOSTAR de virar cartas — tanto as próprias
+  (o líder, e peças como Laboon OP15-035/Tashigi OP14-029 que
+  convertem "virar 1-2 cartas" em proteção pro board) quanto as do
+  oponente (Jewelry Bonney OP07-026, Carrot OP08-023, Hody Jones
+  OP06-035, Trafalgar Law OP13-031, Shanks OP14-027, Dracule Mihawk
+  OP14-119, Law & Bepo ST24-004 — todos travam/descansam peças
+  adversárias, sem K.O.). O plano não é "esvaziar o campo do
+  oponente", é "negar as ações dele enquanto o líder converte o
+  próprio descanso em mais DON!! e pressão".
+- **Linhas de jogo por fase**:
+  - **Early**: buscar consistência (Jewelry Bonney ST02-007, Perona
+    OP12-034, Kid & Killer ST24-002) — prioridade é garantir a peça de
+    custo 5+ que liga o líder pros turnos seguintes, não pressão
+    imediata.
+  - **Mid**: travar a mesa do oponente (Jewelry Bonney OP07-026,
+    Carrot OP08-023) pra atacar a cara sem reação; Smoker OP10-030
+    ativa DON!! sem perder ritmo; Trafalgar Law OP13-031 recicla
+    searchers/reorganiza mão e campo.
+  - **Late**: fechadores que reforçam a MESMA lógica (não mudam de
+    plano) — Shanks OP14-027 (trava alvo ao ser virado + debuff geral
+    no turno do oponente), Dracule Mihawk OP14-119 (trava peça +
+    defesa via descarte), Law & Bepo ST24-004 (trava + buff se oponente
+    tem descansados), Hody Jones OP06-035 (Rush 8000, descansa
+    personagens/DON!! do oponente ao entrar — o "finalizador" que pula
+    defesas).
+- **Decklist citada no guia** (Jc Samson, campeão de torneio nas
+  Filipinas): 4 Laboon OP15-035, 4 Perona OP12-034, 3 Scratchmen Apoo
+  EB01-015, 1 Jewelry Bonney ST02-007, 4 Kid & Killer ST24-002, 3
+  Tashigi OP14-029, 2 Jewelry Bonney OP12-118, 2 Smoker OP10-030, 3
+  Carrot OP08-023, 2 Jewelry Bonney OP07-026, 3 Trafalgar Law OP13-031,
+  2 Shanks OP14-027, 1 Hody Jones OP06-035, 2 Dracule Mihawk OP14-119,
+  4 Law & Bepo ST24-004; eventos: 3 "I Know You're Strong...", 2 Demon
+  Aura Nine Sword Style, 2 The Billion-fold World Trichiliocosm; stage:
+  1 Coffin Boat OP14-039.
+- **Comparação com o deck usado no gauntlet** (`decklists_raw.csv`,
+  "Green Mihawkby Phi Nguyen", usado nos blocos 433-435): MESMO núcleo
+  (Perona x4, Kid & Killer x4, ambas Jewelry Bonney OP07-026/ST02-007,
+  Tashigi, Trafalgar Law, Shanks, Dracule Mihawk OP14-119 x2, Law &
+  Bepo x4, Carrot, Coffin Boat, os mesmos 2 eventos principais) —
+  confirma que o deck usado no self-play É uma lista competitiva real
+  do mesmo arquétipo, não uma lista fraca/atípica. Difere em tech
+  slots: falta Laboon (proteção) e Smoker/Hody Jones (habilitador de
+  DON!!/fechador), tem no lugar Karmic Punishment, Roronoa Zoro
+  PRB02-006 (SP), Paradise Waterfall, Spiderweb — uma variante real de
+  outro jogador (Phi Nguyen), não a mesma lista exata do guia.
+- **Implicação pra auditoria do bot** (não investigado ainda, próximo
+  passo se for continuar esta linha): o motor precisa diferenciar
+  "descansar personagem do oponente" (tempo, reversível no refresh
+  dele) de K.O./remoção permanente ao avaliar o valor de efeitos como
+  os de Carrot/Jewelry Bonney/Hody Jones, e o replay verbose do bloco
+  435 não checou especificamente se o Imu reconhece e reage a esse tipo
+  de trava (só confirmou que o DON por ataque já está saudável
+  pós-fix). Fica como possível próxima investigação, não uma conclusão
+  fechada.
