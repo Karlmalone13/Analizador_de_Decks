@@ -2,6 +2,16 @@
 
 **Última atualização:** 4 de agosto de 2026
 
+> 04/08/2026 (bloco 443): **item 5** (Mihawk, mais dado) — +60 seeds
+> focados (sem log real desse matchup no banco), combinado N=90:
+> **24,4% de vitória** (bem melhor que os 16,7% isolados de N=30),
+> DON/atk 1,54 saudável. Confirma que era parcialmente ruído — Mihawk
+> segue o matchup mais difícil, mas não catastrófico. **Katakuri**: li
+> 2 dos 18 casos residuais do bloco 442, ambos parecem trade-offs de
+> orçamento de DON legítimos, não bug claro (16 casos ainda não lidos).
+> **Item 6 (threat-assessment de efeitos "rest" do oponente) não
+> iniciado** — pendente. Ver bloco 443 do HANDOFF.
+
 > 04/08/2026 (bloco 442): **RETIFICA o achado do bloco 440/441**. Lendo
 > os turnos residuais manualmente, achei 2 bugs em
 > `triage_real_losses.py` (detecção de ataque ao líder buscava a

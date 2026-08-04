@@ -1,5 +1,50 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (443) - Claude (sessao remota web) - Item 5 (Mihawk, amostra maior) e leitura de 2 casos do resíduo Katakuri -- sem bug confirmado, item 6 nao iniciado
+
+Continuacao do pedido do usuario ("continua pro 5 depois faz o
+katakuri", apos a retificacao do bloco 442).
+
+**Item 5 (Mihawk -- reunir mais dado antes de descartar)**: sem log
+real de Imu vs Mihawk no banco (confirmado -- so existem partidas de
+Mihawk piloto/oponente contra Teach e Katakuri, nunca contra Imu).
+Rodei mais 60 seeds de self-play focado (seeds 2000-2059, distintas
+das 1000-1029 do gauntlet original) especificamente nesse matchup:
+**17/60 = 28,3%**, bem mais alto que os 16,7% (N=30) anteriores.
+Combinado (N=90 total): **22/90 = 24,4%** de vitoria, dano medio 3,97,
+DON/ataque 1,54 (saudavel, acima do alvo real 1,31). Confirma o que já
+se suspeitava: o 16,7% isolado era parcialmente ruido de amostra
+pequena -- Mihawk continua o matchup mais dificil do roster, mas nao
+tao catastrofico quanto pareceu antes. Sem fix aplicado (nem evidencia
+de bug, so matchup genuinamente dificil).
+
+**Katakuri (achado novo do bloco 442, "ataca menos" concentrado
+nesse lider)**: li 2 dos 18 casos manualmente.
+1. `Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T17.01.09`
+   turno 9: historico manda Kikunojo com 3 DON pra atacar, mas o
+   ataque e bloqueado/counterado (perdido). Motor de hoje NAO manda
+   Kikunojo/Kin'emon atacar -- usa os dois como custo (rest) de "You
+   Can Be My Samurai!!" (compra 2 cartas) em vez disso. Parece linha
+   alternativa DEFENSAVEL (nao gastar recurso num ataque previsivelmente
+   inutil), nao um erro obvio.
+2. `Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05`
+   turno 5: historico ataca com Buggy (2000pwr + 3 DON = empata 5000
+   do lider) E com Luffy. Motor de hoje só ataca com Luffy (2 DON) e
+   usa o DON restante (so 1, apos jogar Marshall D. Teach por 2) pra
+   NAO alcancar o custo de 3 que Buggy precisava. Parece
+   troca de orcamento de DON entre 3 opcoes (atacar com Luffy + jogar
+   Teach + tentar Buggy), nao claramente um erro -- so nao investigado
+   se a alocacao ESCOLHIDA e de fato a melhor.
+
+**Conclusao Katakuri**: nos 2 casos lidos, NADA aponta claramente pra
+bug -- parecem trade-offs de orcamento de DON legitimos, nao decisao
+obviamente pior. Fica em aberto se algum dos outros 16 casos revela
+algo mais claro -- nao lido ainda.
+
+**Item 6 (threat-assessment de efeitos "rest" do oponente, tipo
+Carrot/Jewelry Bonney/Hody Jones do guia do Mihawk) NAO iniciado
+nesta rodada** -- pendente pra proxima sessao.
+
 ## 2026-08-04 (442) - Claude (sessao remota web) - RETIFICA o achado principal do bloco 440/441: deteccao de ataque ao lider na triagem tinha 2 bugs, numeros reais sao bem mais fracos
 
 Continuacao direta da leitura manual dos ~20 turnos residuais (pedido
