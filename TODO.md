@@ -2,6 +2,13 @@
 
 **Última atualização:** 4 de agosto de 2026
 
+> 04/08/2026 (bloco 430): pequeno fechamento do bloco 429 — generalizado
+> também o strip de texto "this character cannot attack unless" pra
+> aceitar "leader" (2 pontos residuais em `gerar_effects_db.py`, mesma
+> gramática, ainda hardcoded). **0 cartas afetadas hoje** (nenhum líder
+> usa a forma condicional "unless" no banco atual) — puramente
+> preventivo. Ver bloco 430 do HANDOFF.
+
 > 04/08/2026 (bloco 429): **"This Leader cannot attack" era 100% ignorado
 > (parser E engine) — 6 líderes reais atacavam apesar do próprio texto
 > proibir**. Usuário pediu confirmação de que o bot ativa efeito de líder

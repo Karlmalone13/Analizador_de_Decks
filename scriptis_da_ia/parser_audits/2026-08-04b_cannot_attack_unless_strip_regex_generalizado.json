@@ -1,0 +1,20 @@
+{
+  "trigger_card": "OP07-097",
+  "problem": "Follow-up direto do registro 2026-08-04_lideres_this_leader_cannot_attack_ignorado.json (mesmo bloco HANDOFF 429): ao revisar a mesma gramatica pra fechar o achado por completo, notei que os 2 pontos que REMOVEM a clausula 'this character cannot attack unless [cond]' do texto (pra extrair `parse_conditions` do restante do bloco sem duplicar a condicao no nivel do entry) ainda so reconheciam 'character', nunca 'leader' -- mesmo hardcode do bug original, so que numa etapa de limpeza de texto, nao na deteccao principal (essa ja tinha sido generalizada no commit anterior).",
+  "grammar_family": "Mesma familia 'this character|leader cannot attack unless [condicao]' do registro anterior. Nenhum lider real do banco usa a variante CONDICIONAL hoje (os 6 lideres achados na auditoria global anterior -- Iceburg, Nefeltari Vivi, Rebecca x2, Vegapunk, Shirahoshi -- usam todos a forma incondicional simples 'This Leader cannot attack.', sem 'unless'), entao esta mudanca e puramente preventiva/generica: fecha a mesma classe de bug pra QUALQUER lider futuro que use a forma condicional, sem esperar uma carta real revelar de novo.",
+  "queries": [
+    "grep 'this character cannot attack unless' em gerar_effects_db.py inteiro (fora do fix ja aplicado na deteccao principal) -- achou 2 ocorrencias remanescentes (linhas ~9297 e ~9430, ambas no mesmo padrao de limpeza-antes-de-parse_conditions). Confirmado via diff_parser.py que NENHUMA carta do banco atual usa 'leader...cannot attack unless' (0 cartas afetadas, output identico byte a byte ao card_effects_db.json ja commitado no bloco anterior)."
+  ],
+  "cards_found": [
+    "OP07-097"
+  ],
+  "resolution_scope": "global",
+  "decision": "Os 2 regex de limpeza ('this character cannot attack unless [^.]+\\.?') viraram 'this (?:character|leader) cannot attack unless [^.]+\\.?', mesma forma ja usada na deteccao principal (parse_lock_attack) desde o fix anterior. Zero mudanca de comportamento hoje (confirmado via diff_parser.py: GANHOU=0/PERDEU=0/MUDOU=6, exatamente os mesmos 6 lideres do registro anterior, nenhuma carta nova afetada) -- e so consistencia/blindagem pra nao reabrir o mesmo tipo de investigacao se um lider futuro usar a forma condicional.",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=6 (identico ao resultado do registro anterior -- confirma 0 impacto novo)",
+    "gerar_dbs.py rodado sem erro (2644 cartas sincronizadas)",
+    "git diff --stat card_effects_db.json/card_analysis_db.json contra o HEAD ja commitado: vazio (byte-identico)",
+    "smoke_fast.py: SMOKE FAST OK"
+  ],
+  "notes": "Registro pequeno e deliberadamente separado do anterior (2026-08-04_lideres_this_leader_cannot_attack_ignorado.json) porque o hook de pre-commit exige um arquivo NOVO por commit que toque gerar_effects_db.py -- nao da pra reusar o registro ja commitado. Sem card_found real novo; trigger_card aponta pra Vegapunk (OP07-097) por ser a mesma investigacao original, nao porque essa carta especifica precisasse deste ajuste."
+}

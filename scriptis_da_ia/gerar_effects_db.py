@@ -9293,8 +9293,14 @@ def parse_card_effect(card_text, card_type):
                 # for adicionado ao mesmo bloco no futuro).
                 unless_steps = [s for s in solto_steps if s.get('action') == 'cannot_attack_self_unless' and 'conditions' in s]
                 if unless_steps:
+                    # "character|leader" (achado 04/08, mesma generalizacao
+                    # do gate/regex principal de cannot_attack_self em
+                    # parse_lock_attack -- nenhum lider usa a variante
+                    # 'unless' hoje, mas o strip aqui precisa acompanhar a
+                    # mesma gramatica pra nao vazar a condicao duplicada se
+                    # um lider futuro usar esse padrao).
                     segmento_solto = re.sub(
-                        r'this character cannot attack unless [^.]+\.?',
+                        r'this (?:character|leader) cannot attack unless [^.]+\.?',
                         '', segmento_solto, flags=re.IGNORECASE
                     ).strip()
 
@@ -9426,8 +9432,10 @@ def parse_card_effect(card_text, card_type):
                 t_low_para_conds = t_low
                 unless_steps_fb = [s for s in fallback_steps if s.get('action') == 'cannot_attack_self_unless' and 'conditions' in s]
                 if unless_steps_fb:
+                    # "character|leader" -- mesmo achado 04/08 do ponto
+                    # gemeo acima (segmento_solto).
                     t_low_para_conds = re.sub(
-                        r'this character cannot attack unless [^.]+\.?',
+                        r'this (?:character|leader) cannot attack unless [^.]+\.?',
                         '', t_low_para_conds, flags=re.IGNORECASE
                     ).strip()
 

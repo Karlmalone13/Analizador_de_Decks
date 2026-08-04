@@ -1,5 +1,24 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (430) - Claude (sessao remota web) - fechamento do bloco 429: generaliza tambem o strip de texto de "cannot attack unless" pra "leader" (0 cartas afetadas hoje, so blindagem)
+
+Usuario perguntou "tem mais alguma coisa de mecanica pra corrigir" -- ao
+reler a mesma gramatica do bloco 429 pra responder com precisao, achei 2
+pontos residuais em `gerar_effects_db.py` (~9297, ~9430) que REMOVEM a
+clausula "this character cannot attack unless [condicao]" do texto antes
+de extrair `parse_conditions` do resto do bloco (evita duplicar a
+condicao no nivel do entry) -- ainda so reconheciam "character", mesmo
+hardcode do bug original, so numa etapa de limpeza, nao na deteccao
+principal (essa ja generalizada no bloco 429). Generalizado pra
+"character|leader" nos dois pontos. **Zero cartas afetadas hoje**
+(nenhum lider real usa a forma condicional "unless" -- confirmado via
+`diff_parser.py`: GANHOU=0/PERDEU=0/MUDOU=6, EXATAMENTE os mesmos 6
+lideres do bloco 429, `card_effects_db.json`/`card_analysis_db.json`
+byte-identicos ao HEAD ja commitado) -- e puramente preventivo, fecha a
+mesma classe de bug pra um lider futuro que use essa forma sem precisar
+de outra investigacao. `smoke_fast.py`/`smoke_test.py`: 100%. Registro
+em `scriptis_da_ia/parser_audits/2026-08-04b_cannot_attack_unless_strip_regex_generalizado.json`.
+
 ## 2026-08-04 (429) - Claude (sessao remota web) - "This Leader cannot attack" era 100% ignorado pelo motor (parser E engine): 6 lideres reais atacavam apesar do proprio texto proibir -- + bug irmao (Luffy 058 travado DEMAIS)
 
 Usuario pediu confirmacao de que o bot "entende e consegue ativar o efeito
