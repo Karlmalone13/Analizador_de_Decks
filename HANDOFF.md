@@ -1,5 +1,72 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (433) - Claude (sessao remota web) - Gauntlet controlado Imu vs roster real: sinal forte e reproduzivel (Ace/Mihawk/Lucy), mas investigacao aponta pra matchup desfavoravel, nao bug novo
+
+Continuacao direta do bloco 432 (usuario confirmou "pode fazer, acho
+que vai ajudar"). Rodei o gauntlet controlado sugerido: deck de Imu
+fixo (`Black Imuby Spence Gibson`) vs 7 adversarios reais de
+`decklists_raw.csv` (escolhidos por prevalencia real no meta: Enel 70
+decks, Nami 30, Ace 19, Mihawk 16, Lucy 16, Luffy-Amarelo 8,
+Rosinante 6 -- Rosinante falhou validacao de deck e foi excluido) +
+espelho Imu, 10 seeds fixas por adversario (1000-1009), 70 partidas
+self-play total. Ferramenta nova, reusavel: `gauntlet_matchup.py`
+(commit `04b03df`).
+
+**Resultado** (`metrics/gauntlet_imu_04_08.json`):
+
+| Adversário | WinRate | Dano/jogo | DON/atk | Atk/turno | Turnos |
+|---|---:|---:|---:|---:|---:|
+| Enel | 60,0% | 4,30 | 1,38 | 0,79 | 11,3 |
+| Nami | 70,0% | 4,30 | 1,09 | 0,92 | 12,2 |
+| Ace | **10,0%** | 1,80 | 1,56 | 0,64 | 11,0 |
+| Mihawk | **10,0%** | 1,80 | 0,74 | 1,06 | 13,7 |
+| Lucy | 20,0% | 2,00 | 0,49 | 0,97 | 12,3 |
+| Luffy-Amarelo | 30,0% | 3,20 | 1,54 | 0,77 | 11,4 |
+| Espelho (Imu) | 40,0% | 2,90 | 1,21 | 0,78 | 11,3 |
+| **TOTAL** | 34,3% | 2,90 | 1,14 | 0,85 | — |
+
+Sinal muito mais forte e reproduzivel que a comparacao historica do
+bloco 432 (n=1 vitoria real): Imu vence folgado contra os 2 decks MAIS
+jogados do meta real (Enel, Nami) mas perde muito contra Ace/Mihawk
+(10% cada) e Lucy (20%).
+
+**Investigacao qualitativa** (replay verbose, seed=1000, Imu x Ace,
+derrota 0-5): Imu ataca o lider adversario repetidas vezes anexando
+so 1 DON, mesmo tendo 4-10 DON ativos parados no campo (nada mais pra
+gastar naquele turno), e apanha de Counter (`Ground Death`, `...Never
+Existed...`, +2000/+4000) quase toda vez -- enquanto o board de Ace
+cresce (Yamato, Ace, St. Ethanbaron, Edward.Newgate ate 15000pwr) ate
+fechar. A primeira vista parece "DON desperdicado", mas
+**`ATTACK_MARGIN_DON_FRACTION=0.7`** (a constante que rege exatamente
+essa margem "seco vs counter") **ja foi calibrada e cross-validada
+deliberadamente no bloco 398 (29/07)** contra DON/ataque real de
+vitorias (1,31) vs derrotas (0,38) em 5 lideres incluindo o proprio
+Imu -- e o padrao visto aqui bate EXATAMENTE com esse sinal ja
+conhecido: DON/ataque nas derrotas de Ace (seeds individuais: 0,67 a
+2,50, maioria abaixo de 1,7) e mais baixo que na unica vitoria de Ace
+(seed 2: 1,86). Ou seja, o motor esta se comportando como o dial ja
+tunado manda -- reservar/nao forcar DON demais num ataque "seco" que
+ainda assim seria bloqueado -- nao um bug novo isolado desse matchup.
+
+**Conclusao, sem fix aplicado**: o padrao observado (Ace/Mihawk/Lucy
+ruins, Enel/Nami/espelho bons) e consistente com dificuldade de
+matchup real -- decks agressivos/densos em Counter batendo o plano de
+controle/reanimacao do Imu (IA_Compendium confirma arquetipo de
+controle) -- reforcada pela mesma calibracao ja validada com dados
+reais, nao uma decisao nova pra corrigir. **Recomendacao explicita:
+NAO mexer em `ATTACK_MARGIN_DON_FRACTION`/`_don_reserve_for_defense`**
+por causa so deste gauntlet -- ao contrario do bloco 398 (que tinha
+log real dos 5 lideres pra cross-validar contra), nao existe partida
+real de Imu vs Ace/Mihawk/Lucy no banco pra confirmar se o win rate de
+10% eh o teto real do matchup ou se da pra melhorar; mexer as cegas
+arrisca regredir os matchups ja calibrados (Enel/Nami/os outros 3
+lideres do bloco 398).
+
+**Pendente**: se aparecer log real de partida (bot ou humano) contra
+Ace/Red-Blue, Mihawk/Green ou Lucy/Red-Blue, comparar DON/ataque e
+qualidade de decisao real contra este gauntlet antes de considerar
+qualquer ajuste.
+
 ## 2026-08-04 (432) - Claude (sessao remota web) - Comparacao de performance bot-Imu vitoria vs derrota: numeros reais gerados, sem evidencia de bug novo alem do ja corrigido no bloco 431
 
 Continuacao direta do bloco 431. Usuario pediu pra comparar a

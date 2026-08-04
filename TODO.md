@@ -2,6 +2,20 @@
 
 **Última atualização:** 4 de agosto de 2026
 
+> 04/08/2026 (bloco 433): **Gauntlet controlado Imu vs 7 decks reais do
+> meta** (`gauntlet_matchup.py`, novo, reusável — 70 partidas self-play,
+> seeds fixas) confirma sinal forte: Imu vence Enel (60%)/Nami (70%),
+> os 2 decks mais jogados do meta real, mas perde muito pra Ace (10%),
+> Mihawk (10%) e Lucy (20%). Replay verbose de uma derrota de Ace
+> mostrou Imu atacando "seco" (1 DON) contra Counters grandes enquanto
+> DON sobrava parado — mas a constante que rege essa margem
+> (`ATTACK_MARGIN_DON_FRACTION=0.7`) já foi calibrada/cross-validada
+> com dados reais no bloco 398 (29/07) e o padrão bate com o já
+> conhecido. **Sem fix aplicado** — conclusão é dificuldade de matchup
+> real (aggro/counter-denso vs controle do Imu), não bug novo.
+> Recomendação explícita: não mexer na constante sem log real desses
+> matchups específicos pra cross-validar. Ver bloco 433 do HANDOFF.
+
 > 04/08/2026 (bloco 432): comparação de performance bot-Imu vitória vs
 > derrota (`bot_efficiency_report.py`, cohort novo
 > `metrics/imu_win_vs_loss_04_08.json`) — bot pilotando Imu = 1

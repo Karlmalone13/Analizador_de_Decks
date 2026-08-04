@@ -1,0 +1,646 @@
+{
+  "Enel": [
+    {
+      "seed": 0,
+      "fixo_won": false,
+      "dmg_fixo": 0,
+      "dmg_opp": 5,
+      "turnos": 8,
+      "ataques_fixo": 3,
+      "don_medio": 0.3333333333333333
+    },
+    {
+      "seed": 1,
+      "fixo_won": true,
+      "dmg_fixo": 6,
+      "dmg_opp": 3,
+      "turnos": 11,
+      "ataques_fixo": 9,
+      "don_medio": 2.6666666666666665
+    },
+    {
+      "seed": 2,
+      "fixo_won": true,
+      "dmg_fixo": 6,
+      "dmg_opp": 3,
+      "turnos": 13,
+      "ataques_fixo": 13,
+      "don_medio": 1.6153846153846154
+    },
+    {
+      "seed": 3,
+      "fixo_won": false,
+      "dmg_fixo": 2,
+      "dmg_opp": 5,
+      "turnos": 9,
+      "ataques_fixo": 5,
+      "don_medio": 1.6
+    },
+    {
+      "seed": 4,
+      "fixo_won": true,
+      "dmg_fixo": 6,
+      "dmg_opp": 4,
+      "turnos": 12,
+      "ataques_fixo": 11,
+      "don_medio": 1.6363636363636365
+    },
+    {
+      "seed": 5,
+      "fixo_won": true,
+      "dmg_fixo": 6,
+      "dmg_opp": 4,
+      "turnos": 12,
+      "ataques_fixo": 11,
+      "don_medio": 0.6363636363636364
+    },
+    {
+      "seed": 6,
+      "fixo_won": false,
+      "dmg_fixo": 4,
+      "dmg_opp": 5,
+      "turnos": 13,
+      "ataques_fixo": 10,
+      "don_medio": 1.9
+    },
+    {
+      "seed": 7,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 8,
+      "ataques_fixo": 5,
+      "don_medio": 0.8
+    },
+    {
+      "seed": 8,
+      "fixo_won": true,
+      "dmg_fixo": 6,
+      "dmg_opp": 4,
+      "turnos": 13,
+      "ataques_fixo": 10,
+      "don_medio": 1.9
+    },
+    {
+      "seed": 9,
+      "fixo_won": true,
+      "dmg_fixo": 6,
+      "dmg_opp": 4,
+      "turnos": 14,
+      "ataques_fixo": 16,
+      "don_medio": 0.75
+    }
+  ],
+  "Nami": [
+    {
+      "seed": 0,
+      "fixo_won": true,
+      "dmg_fixo": 4,
+      "dmg_opp": 4,
+      "turnos": 11,
+      "ataques_fixo": 8,
+      "don_medio": 1.0
+    },
+    {
+      "seed": 1,
+      "fixo_won": true,
+      "dmg_fixo": 5,
+      "dmg_opp": 3,
+      "turnos": 11,
+      "ataques_fixo": 11,
+      "don_medio": 0.6363636363636364
+    },
+    {
+      "seed": 2,
+      "fixo_won": true,
+      "dmg_fixo": 6,
+      "dmg_opp": 2,
+      "turnos": 15,
+      "ataques_fixo": 15,
+      "don_medio": 1.6
+    },
+    {
+      "seed": 3,
+      "fixo_won": false,
+      "dmg_fixo": 3,
+      "dmg_opp": 5,
+      "turnos": 13,
+      "ataques_fixo": 11,
+      "don_medio": 1.3636363636363635
+    },
+    {
+      "seed": 4,
+      "fixo_won": false,
+      "dmg_fixo": 4,
+      "dmg_opp": 5,
+      "turnos": 13,
+      "ataques_fixo": 14,
+      "don_medio": 1.3571428571428572
+    },
+    {
+      "seed": 5,
+      "fixo_won": true,
+      "dmg_fixo": 5,
+      "dmg_opp": 2,
+      "turnos": 12,
+      "ataques_fixo": 16,
+      "don_medio": 0.6875
+    },
+    {
+      "seed": 6,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 9,
+      "ataques_fixo": 5,
+      "don_medio": 0.6
+    },
+    {
+      "seed": 7,
+      "fixo_won": true,
+      "dmg_fixo": 4,
+      "dmg_opp": 2,
+      "turnos": 13,
+      "ataques_fixo": 9,
+      "don_medio": 1.2222222222222223
+    },
+    {
+      "seed": 8,
+      "fixo_won": true,
+      "dmg_fixo": 6,
+      "dmg_opp": 3,
+      "turnos": 13,
+      "ataques_fixo": 12,
+      "don_medio": 1.5833333333333333
+    },
+    {
+      "seed": 9,
+      "fixo_won": true,
+      "dmg_fixo": 5,
+      "dmg_opp": 4,
+      "turnos": 12,
+      "ataques_fixo": 12,
+      "don_medio": 0.8333333333333334
+    }
+  ],
+  "Ace": [
+    {
+      "seed": 0,
+      "fixo_won": false,
+      "dmg_fixo": 0,
+      "dmg_opp": 5,
+      "turnos": 10,
+      "ataques_fixo": 6,
+      "don_medio": 0.6666666666666666
+    },
+    {
+      "seed": 1,
+      "fixo_won": false,
+      "dmg_fixo": 3,
+      "dmg_opp": 5,
+      "turnos": 14,
+      "ataques_fixo": 9,
+      "don_medio": 1.3333333333333333
+    },
+    {
+      "seed": 2,
+      "fixo_won": true,
+      "dmg_fixo": 4,
+      "dmg_opp": 3,
+      "turnos": 13,
+      "ataques_fixo": 14,
+      "don_medio": 1.8571428571428572
+    },
+    {
+      "seed": 3,
+      "fixo_won": false,
+      "dmg_fixo": 3,
+      "dmg_opp": 5,
+      "turnos": 13,
+      "ataques_fixo": 9,
+      "don_medio": 1.5555555555555556
+    },
+    {
+      "seed": 4,
+      "fixo_won": false,
+      "dmg_fixo": 2,
+      "dmg_opp": 5,
+      "turnos": 11,
+      "ataques_fixo": 6,
+      "don_medio": 1.6666666666666667
+    },
+    {
+      "seed": 5,
+      "fixo_won": false,
+      "dmg_fixo": 2,
+      "dmg_opp": 5,
+      "turnos": 13,
+      "ataques_fixo": 6,
+      "don_medio": 2.5
+    },
+    {
+      "seed": 6,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 9,
+      "ataques_fixo": 6,
+      "don_medio": 1.5
+    },
+    {
+      "seed": 7,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 10,
+      "ataques_fixo": 5,
+      "don_medio": 1.4
+    },
+    {
+      "seed": 8,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 10,
+      "ataques_fixo": 6,
+      "don_medio": 2.1666666666666665
+    },
+    {
+      "seed": 9,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 7,
+      "ataques_fixo": 4,
+      "don_medio": 1.0
+    }
+  ],
+  "Mihawk": [
+    {
+      "seed": 0,
+      "fixo_won": false,
+      "dmg_fixo": 2,
+      "dmg_opp": 5,
+      "turnos": 14,
+      "ataques_fixo": 17,
+      "don_medio": 0.5294117647058824
+    },
+    {
+      "seed": 1,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 14,
+      "ataques_fixo": 18,
+      "don_medio": 0.7777777777777778
+    },
+    {
+      "seed": 2,
+      "fixo_won": true,
+      "dmg_fixo": 6,
+      "dmg_opp": 3,
+      "turnos": 13,
+      "ataques_fixo": 13,
+      "don_medio": 1.7692307692307692
+    },
+    {
+      "seed": 3,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 11,
+      "ataques_fixo": 9,
+      "don_medio": 0.5555555555555556
+    },
+    {
+      "seed": 4,
+      "fixo_won": false,
+      "dmg_fixo": 2,
+      "dmg_opp": 5,
+      "turnos": 13,
+      "ataques_fixo": 11,
+      "don_medio": 1.0909090909090908
+    },
+    {
+      "seed": 5,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 11,
+      "ataques_fixo": 9,
+      "don_medio": 0.1111111111111111
+    },
+    {
+      "seed": 6,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 15,
+      "ataques_fixo": 16,
+      "don_medio": 0.375
+    },
+    {
+      "seed": 7,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 14,
+      "ataques_fixo": 19,
+      "don_medio": 0.47368421052631576
+    },
+    {
+      "seed": 8,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 14,
+      "ataques_fixo": 11,
+      "don_medio": 1.0
+    },
+    {
+      "seed": 9,
+      "fixo_won": false,
+      "dmg_fixo": 2,
+      "dmg_opp": 4,
+      "turnos": 18,
+      "ataques_fixo": 26,
+      "don_medio": 0.6923076923076923
+    }
+  ],
+  "Lucy": [
+    {
+      "seed": 0,
+      "fixo_won": true,
+      "dmg_fixo": 5,
+      "dmg_opp": 4,
+      "turnos": 17,
+      "ataques_fixo": 32,
+      "don_medio": 0.5625
+    },
+    {
+      "seed": 1,
+      "fixo_won": false,
+      "dmg_fixo": 3,
+      "dmg_opp": 5,
+      "turnos": 14,
+      "ataques_fixo": 13,
+      "don_medio": 0.8461538461538461
+    },
+    {
+      "seed": 2,
+      "fixo_won": false,
+      "dmg_fixo": 0,
+      "dmg_opp": 5,
+      "turnos": 10,
+      "ataques_fixo": 12,
+      "don_medio": 0.0
+    },
+    {
+      "seed": 3,
+      "fixo_won": false,
+      "dmg_fixo": 2,
+      "dmg_opp": 5,
+      "turnos": 9,
+      "ataques_fixo": 5,
+      "don_medio": 0.8
+    },
+    {
+      "seed": 4,
+      "fixo_won": false,
+      "dmg_fixo": 0,
+      "dmg_opp": 5,
+      "turnos": 9,
+      "ataques_fixo": 6,
+      "don_medio": 0.3333333333333333
+    },
+    {
+      "seed": 5,
+      "fixo_won": false,
+      "dmg_fixo": 2,
+      "dmg_opp": 5,
+      "turnos": 13,
+      "ataques_fixo": 14,
+      "don_medio": 0.2857142857142857
+    },
+    {
+      "seed": 6,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 9,
+      "ataques_fixo": 5,
+      "don_medio": 0.2
+    },
+    {
+      "seed": 7,
+      "fixo_won": true,
+      "dmg_fixo": 5,
+      "dmg_opp": 4,
+      "turnos": 17,
+      "ataques_fixo": 21,
+      "don_medio": 0.8571428571428571
+    },
+    {
+      "seed": 8,
+      "fixo_won": false,
+      "dmg_fixo": 2,
+      "dmg_opp": 5,
+      "turnos": 12,
+      "ataques_fixo": 9,
+      "don_medio": 0.0
+    },
+    {
+      "seed": 9,
+      "fixo_won": false,
+      "dmg_fixo": 0,
+      "dmg_opp": 5,
+      "turnos": 13,
+      "ataques_fixo": 11,
+      "don_medio": 1.0
+    }
+  ],
+  "Luffy-Y": [
+    {
+      "seed": 0,
+      "fixo_won": false,
+      "dmg_fixo": 2,
+      "dmg_opp": 5,
+      "turnos": 10,
+      "ataques_fixo": 8,
+      "don_medio": 0.5
+    },
+    {
+      "seed": 1,
+      "fixo_won": false,
+      "dmg_fixo": 2,
+      "dmg_opp": 5,
+      "turnos": 12,
+      "ataques_fixo": 11,
+      "don_medio": 0.18181818181818182
+    },
+    {
+      "seed": 2,
+      "fixo_won": false,
+      "dmg_fixo": 3,
+      "dmg_opp": 5,
+      "turnos": 14,
+      "ataques_fixo": 10,
+      "don_medio": 1.9
+    },
+    {
+      "seed": 3,
+      "fixo_won": false,
+      "dmg_fixo": 3,
+      "dmg_opp": 5,
+      "turnos": 9,
+      "ataques_fixo": 5,
+      "don_medio": 2.4
+    },
+    {
+      "seed": 4,
+      "fixo_won": false,
+      "dmg_fixo": 0,
+      "dmg_opp": 5,
+      "turnos": 7,
+      "ataques_fixo": 4,
+      "don_medio": 1.5
+    },
+    {
+      "seed": 5,
+      "fixo_won": true,
+      "dmg_fixo": 6,
+      "dmg_opp": 3,
+      "turnos": 12,
+      "ataques_fixo": 13,
+      "don_medio": 0.9230769230769231
+    },
+    {
+      "seed": 6,
+      "fixo_won": true,
+      "dmg_fixo": 6,
+      "dmg_opp": 3,
+      "turnos": 14,
+      "ataques_fixo": 14,
+      "don_medio": 2.2142857142857144
+    },
+    {
+      "seed": 7,
+      "fixo_won": false,
+      "dmg_fixo": 3,
+      "dmg_opp": 5,
+      "turnos": 12,
+      "ataques_fixo": 9,
+      "don_medio": 0.6666666666666666
+    },
+    {
+      "seed": 8,
+      "fixo_won": true,
+      "dmg_fixo": 6,
+      "dmg_opp": 3,
+      "turnos": 15,
+      "ataques_fixo": 12,
+      "don_medio": 2.6666666666666665
+    },
+    {
+      "seed": 9,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 9,
+      "ataques_fixo": 5,
+      "don_medio": 2.4
+    }
+  ],
+  "Mirror": [
+    {
+      "seed": 0,
+      "fixo_won": true,
+      "dmg_fixo": 5,
+      "dmg_opp": 2,
+      "turnos": 9,
+      "ataques_fixo": 8,
+      "don_medio": 1.375
+    },
+    {
+      "seed": 1,
+      "fixo_won": true,
+      "dmg_fixo": 5,
+      "dmg_opp": 1,
+      "turnos": 9,
+      "ataques_fixo": 8,
+      "don_medio": 1.625
+    },
+    {
+      "seed": 2,
+      "fixo_won": true,
+      "dmg_fixo": 5,
+      "dmg_opp": 2,
+      "turnos": 11,
+      "ataques_fixo": 11,
+      "don_medio": 1.5454545454545454
+    },
+    {
+      "seed": 3,
+      "fixo_won": false,
+      "dmg_fixo": 3,
+      "dmg_opp": 5,
+      "turnos": 11,
+      "ataques_fixo": 9,
+      "don_medio": 0.4444444444444444
+    },
+    {
+      "seed": 4,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 11,
+      "ataques_fixo": 6,
+      "don_medio": 1.5
+    },
+    {
+      "seed": 5,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 11,
+      "ataques_fixo": 9,
+      "don_medio": 0.1111111111111111
+    },
+    {
+      "seed": 6,
+      "fixo_won": true,
+      "dmg_fixo": 5,
+      "dmg_opp": 4,
+      "turnos": 14,
+      "ataques_fixo": 11,
+      "don_medio": 1.9090909090909092
+    },
+    {
+      "seed": 7,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 10,
+      "ataques_fixo": 6,
+      "don_medio": 0.8333333333333334
+    },
+    {
+      "seed": 8,
+      "fixo_won": false,
+      "dmg_fixo": 2,
+      "dmg_opp": 5,
+      "turnos": 16,
+      "ataques_fixo": 14,
+      "don_medio": 0.7857142857142857
+    },
+    {
+      "seed": 9,
+      "fixo_won": false,
+      "dmg_fixo": 1,
+      "dmg_opp": 5,
+      "turnos": 11,
+      "ataques_fixo": 6,
+      "don_medio": 2.0
+    }
+  ]
+}
