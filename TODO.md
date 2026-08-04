@@ -2,6 +2,18 @@
 
 **Última atualização:** 4 de agosto de 2026
 
+> 04/08/2026 (bloco 444): **item 6 fechado** (último dos itens 4-6
+> pedidos pelo usuário) — threat-assessment de efeitos "rest"/"freeze"
+> do oponente (tipo Carrot/`lock_opp_character_refresh`, 153 cartas).
+> Não existe modelo preditivo (diferente de Counter/Blocker, que têm
+> sinal visível), mas validado em self-play real (Imu x Mihawk) que a
+> execução REATIVA funciona certo e o bot não desperdiça ação tentando
+> usar um personagem congelado — segue o plano com outros recursos.
+> **Sem bug confirmado.** Itens 4-6 do pedido original encerrados
+> nesta sessão. Pendente não-prioritário: 16 dos 18 casos residuais do
+> Katakuri (bloco 442/443) ainda não lidos manualmente. Ver bloco 444
+> do HANDOFF.
+
 > 04/08/2026 (bloco 443): **item 5** (Mihawk, mais dado) — +60 seeds
 > focados (sem log real desse matchup no banco), combinado N=90:
 > **24,4% de vitória** (bem melhor que os 16,7% isolados de N=30),

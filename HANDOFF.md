@@ -1,5 +1,51 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (444) - Claude (sessao remota web) - Item 6 fechado: threat-assessment de efeitos "rest"/"freeze" do oponente -- sem gap acionavel
+
+Continuacao do pedido do usuario ("pode continuar" apos o bloco 443).
+Investigado: o motor tem alguma forma de reconhecer/reagir quando o
+OPONENTE usa efeitos que travam/congelam personagens do BOT (tipo
+Carrot OP08-023, ou o mecanismo geral `lock_opp_character_refresh`,
+153 cartas no banco)?
+
+**Achado estrutural**: NAO existe um modelo PREDITIVO pra isso (tipo
+`opp_counter_potential()`/`opp.blockers_active()` que ja existem pra
+Counter/Blocker) -- e faz sentido: Counter tem stat impresso e Blocker
+e keyword visivel no campo, ambos estimaveis mesmo com a mao do
+oponente parcialmente oculta; um efeito de "travar personagem" 1x
+geralmente vem de EVENT/CHARACTER na mao, sem sinal visivel
+equivalente pra antecipar antes de acontecer.
+
+**Validacao pratica (self-play real Imu x Mihawk, deck real com
+Carrot)**: busquei ate achar o efeito disparando de verdade (raro nos
+primeiros ~20 seeds testados por falta de alvo valido -- Carrot exige
+um Character do oponente JA RESTADO, custo<=7, entao so dispara com
+alvo disponivel). Achado em multiplos seeds (13 de 40 testados) o
+efeito similar `lock_opp_character_refresh` disparando de verdade
+(evento "I Know You're Strong...", nao Carrot em si, mas mesma acao):
+travou "St. Ethanbaron" (personagem ja restado do Imu) por mais 1
+ciclo. No turno seguinte do Imu, o motor simplesmente NAO tentou usar
+esse personagem (correto, ja que ele nao desrestou) e seguiu o plano
+com os outros recursos (Empty Throne, Five Elders) normalmente -- sem
+desperdicio de acao tentando usar o personagem congelado, sem sinal de
+decisao ruim.
+
+**Conclusao: sem bug confirmado, item fechado.** A execucao REATIVA
+(quando o efeito de fato acontece) esta correta e registrada em log
+(`congelou (nao desvira no proximo refresh): X`); nao ha modelo
+preditivo pra isso, mas isso parece aceitavel dado que a informacao
+pra prever esse tipo de efeito (na mao oculta do oponente) e
+estruturalmente mais dificil de estimar que Counter/Blocker. Nao
+prioritario pra investigacao futura sem evidencia concreta de que
+esteja custando partidas reais.
+
+**Itens 4-6 do pedido original do usuario ("investigue de 4-6")
+encerrados nesta sessao**: item 4 (residuo Katakuri, 2/18 casos lidos,
+sem bug), item 5 (Mihawk, amostra combinada N=90, 24,4%), item 6
+(threat-assessment de rest/freeze, sem gap acionavel). Fica pendente,
+nao prioritario: os 16 casos restantes do residuo Katakuri, caso
+alguem queira aprofundar mais.
+
 ## 2026-08-04 (443) - Claude (sessao remota web) - Item 5 (Mihawk, amostra maior) e leitura de 2 casos do resíduo Katakuri -- sem bug confirmado, item 6 nao iniciado
 
 Continuacao do pedido do usuario ("continua pro 5 depois faz o
