@@ -2,6 +2,20 @@
 
 **Última atualização:** 4 de agosto de 2026
 
+> 04/08/2026 (bloco 442): **RETIFICA o achado do bloco 440/441**. Lendo
+> os turnos residuais manualmente, achei 2 bugs em
+> `triage_real_losses.py` (detecção de ataque ao líder buscava a
+> string literal "Leader", que o log nunca usa; e um segundo bug de
+> case-sensitivity em `card_type`). Números corretos: motor ataca líder
+> **mais** em 132 casos (não 246), **menos** em 44 (não zero — a
+> "sem regressão" reportada antes estava errada), igual em 87. O sinal
+> do fix de 29/07 ainda existe mas é bem mais fraco/ruidoso que os
+> "92% confirmação limpa" anunciados antes. **Novo achado não
+> investigado**: 18 dos 44 casos de "ataca menos" envolvem partidas do
+> líder Charlotte Katakuri — pista pra próxima sessão. Ver bloco 442
+> do HANDOFF pra lição aprendida (validar ferramenta de medição contra
+> caso manual antes de aceitar percentual agregado).
+
 > 04/08/2026 (bloco 441): investigando o resíduo do bloco 440 (caso
 > Bartholomew Kuma), achei bug **conceitual** no `DonEstimator` — DON
 > gasto em play/activate NÃO é perda permanente (desresta sozinho no

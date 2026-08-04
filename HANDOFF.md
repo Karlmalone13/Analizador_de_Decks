@@ -1,5 +1,58 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (442) - Claude (sessao remota web) - RETIFICA o achado principal do bloco 440/441: deteccao de ataque ao lider na triagem tinha 2 bugs, numeros reais sao bem mais fracos
+
+Continuacao direta da leitura manual dos ~20 turnos residuais (pedido
+do usuario, "investigue de 4-6"). Primeiro caso lido (Katakuri x
+Jinbe, turno 3) mostrou o historico atacando "Jinbe [\"OP14-040\">
+OP14-040]" -- percebi que OP14-040 e o CODIGO DO LIDER Jinbe, nao um
+personagem, e isso deveria ter contado como `hist_leader_atk=1`, mas
+o relatorio mostrava 0.
+
+**2 bugs achados em `triage_real_losses.py`**:
+1. `parse_historical` detectava ataque ao lider procurando a string
+   literal `"Leader"` no campo `target` -- mas o log historico NUNCA
+   usa essa palavra, sempre nome+codigo real da carta (mesmo quando o
+   alvo E o lider). `hist_leader_atk` ficava artificialmente preso
+   perto de 0 quase sempre.
+2. Corrigindo o #1 (extrair o codigo do alvo e checar `card_type==
+   'LEADER'`), o numero NAO MUDOU -- segundo bug: `cards_rows.csv` tem
+   grafia inconsistente pra `card_type` (285 linhas "Leader", so 3
+   "LEADER"), e a comparacao original era case-sensitive, batendo em
+   quase nenhum lider de verdade.
+
+**Numeros corretos apos os 2 fixes** (mesmos 268 turnos, sem re-rodar
+`audit_real_losses.py` -- so a triagem em si mudou):
+
+| | bloco 440/441 (com bug) | corrigido |
+|---|---:|---:|
+| motor ataca lider MAIS | 246 | 132 |
+| motor ataca lider MENOS | 0 | **44** |
+| mesma contagem | 20 | 87 |
+
+O sinal do fix `ATTACK_LEADER_BASE_SCORE` (bloco 395) ainda existe
+(124 casos de "mais" concentrados em logs pre-29/07 vs so 8 pos-fix),
+mas e MUITO mais fraco e ruidoso do que "92%, confirmacao limpa"
+reportado antes -- e o "zero regressao" estava simplesmente ERRADO.
+
+**Novo achado real, nao investigado a fundo ainda**: dos 44 casos de
+"ataca menos", 18 (41%) envolvem partidas do lider Charlotte Katakuri
+-- pode ser sinal real de um problema especifico de Katakuri (prefere
+atacar personagem quando deveria pressionar o lider) ou so ruido da
+reconstrucao (compra diferente dentro do turno). Registrado como
+proximo passo, nao investigado nesta sessao (tempo).
+
+**Licao pra sessoes futuras**: reportei o achado do bloco 440/441 como
+"confirmacao forte em dado real" sem antes conferir a logica de
+deteccao contra um caso manual conhecido -- o numero agregado bateu
+com a expectativa (fix real de 29/07 deveria mesmo aumentar ataque ao
+lider), o que tornou o bug mais dificil de notar por confirmar o que
+eu ja esperava ver. So foi pego por acaso, lendo os residuos um por
+um a pedido do usuario. Fica reforcado: sempre validar a FERRAMENTA de
+medicao contra 1-2 casos conhecidos manualmente antes de aceitar um
+percentual agregado como achado, mesmo (especialmente) quando o numero
+bate com a hipotese que voce ja tinha.
+
 ## 2026-08-04 (441) - Claude (sessao remota web) - Corrige bug conceitual no DonEstimator (DON de custo NAO e gasto permanente) -- o "achado" do Kuma nao jogado era bug da FERRAMENTA, nao do bot
 
 Continuacao direta do bloco 440 (usuario pediu pra investigar o

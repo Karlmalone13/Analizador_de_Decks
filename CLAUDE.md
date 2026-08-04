@@ -427,17 +427,36 @@ outro bug desta sessão (trace instrumentado, fix cirúrgico, validar com
 relatórios de `metrics/real_loss_audits/*.json` e classifica cada turno
 em `MATCH` (motor de hoje repete a decisão histórica — candidato a
 achado real) vs `DIVERGE` (heurístico, baseado em texto — só prioriza o
-que merece leitura manual, não é veredito automático). Achado real
-04/08 (268 turnos das 59 derrotas do banco, número estável antes/depois
-do fix do `DonEstimator` abaixo): ~92% da divergência é o motor de hoje
-atacando o LÍDER muito mais que o histórico, e ISSO correlaciona
-fortemente (246/266 casos) com logs ANTERIORES a 29/07 — a data exata
-do fix `ATTACK_LEADER_BASE_SCORE` (bloco HANDOFF 395). Ou seja:
-confirmação em dado REAL (não só self-play) de que esse fix funciona.
-Zero casos de atacar o líder MENOS que o histórico (nenhuma regressão
-nessa frente). Sobra um resíduo pequeno (~20 turnos de 268) — pelo
-menos parte é artefato de normalização de nome na própria triagem
-("Imu" vs "Imu (Alternate Art)"), não bug do motor; o caso mais
-promissor investigado a fundo (Bartholomew Kuma não jogado hoje) virou
-o achado do `DonEstimator` acima, não um bug do bot. Próxima sessão
-pode ler manualmente o resíduo restante antes de assumir bug novo.
+que merece leitura manual, não é veredito automático).
+
+> **RETIFICAÇÃO 04/08 (mesmo dia)**: o achado original desta seção
+> ("92% da divergência é o motor atacando mais, zero casos de atacar
+> menos, correlação de 246/266 com pre-29/07") estava **inflado por um
+> bug na própria triagem**, achado ao ler os ~20 turnos residuais
+> manualmente (pedido do usuário). `parse_historical` detectava ataque
+> ao líder procurando a string literal `"Leader"` no campo `target` do
+> log — mas o log histórico NUNCA usa essa palavra, sempre o
+> nome+código real da carta (ex: `Marshall D. Teach ["OP16-080">
+> OP16-080]`), mesmo quando o alvo É o líder. Resultado:
+> `hist_leader_atk` ficava artificialmente preso perto de 0 quase
+> sempre, inflando o "motor ataca mais" pra quase todo caso e
+> escondendo qualquer caso real de "motor ataca menos". Um SEGUNDO bug
+> (case-sensitivity: `card_type=='LEADER'` só batia 3 de 288 líderes no
+> CSV, o resto é `'Leader'`) fez a primeira tentativa de fix não mudar
+> nada, até ser pego também. Corrigido: extrai o código real do alvo e
+> confere contra o card_type verdadeiro (case-insensitive) de
+> `cards_rows.csv`.
+>
+> **Números corretos, mesmos 268 turnos**: 132 casos de ataque a MAIS
+> que o histórico, **44 casos de ataque a MENOS** (não zero — a
+> "ausência de regressão" reportada antes estava errada), 87 com a
+> mesma contagem. O sinal ainda existe (mais casos de "mais" que de
+> "menos", concentrado em logs pre-29/07: 124 "mais" pre-fix vs 8
+> pós-fix), mas é MUITO mais fraco e ruidoso do que o "92%,
+> confirmação limpa" reportado antes. Os 44 casos de "ataca menos" tem
+> uma concentração real (18/44) em partidas do líder Charlotte Katakuri
+> — não investigado a fundo ainda, fica registrado como pista pra
+> próxima sessão. Lição: SEMPRE conferir a lógica de detecção contra
+> um caso conhecido manualmente antes de reportar um percentual
+> agregado como achado — não confiar só no output agregado bater com a
+> expectativa.

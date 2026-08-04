@@ -53,13 +53,37 @@ def parse_engine_narrative(text: str) -> dict:
             'n_attacks_total': len(attacks)}
 
 
-def parse_historical(actions: list) -> dict:
+RE_TARGET_CODE = re.compile(r'">(.+?)\]')
+
+
+def _is_leader_target(target: str, leader_codes: set) -> bool:
+    """Achado real 04/08 (bug na propria triagem, achado auditando o
+    residuo): o log historico NUNCA registra o alvo como a string
+    literal "Leader" -- usa o NOME+CODIGO real da carta (ex:
+    'Marshall D. Teach [\"OP16-080\">OP16-080]'), mesmo quando o alvo E
+    o lider do oponente. O check antigo (`'Leader' in target`) dava
+    SEMPRE False pra ataques reais ao lider, inflando artificialmente
+    hist_leader_atk pra 0 -- fazia hoje_leader_atk>hist_leader_atk
+    parecer um sinal forte quando na real boa parte era esse bug.
+    Corrigido: extrai o CODIGO do alvo e confere se e um LEADER de
+    verdade (`cards_db`/card_type), nao um match de string ingenuo."""
+    if not target:
+        return False
+    if 'Leader' in target:  # mantem compat com qualquer formato que use a palavra
+        return True
+    m = RE_TARGET_CODE.search(target)
+    if not m:
+        return False
+    return m.group(1) in leader_codes
+
+
+def parse_historical(actions: list, leader_codes: set) -> dict:
     plays = {_norm(a['card_name']) for a in actions
              if a.get('type') == 'play' and a.get('card_name')}
     activates = {_norm(a['card_name']) for a in actions
                  if a.get('type') == 'activate' and a.get('card_name')}
     atks = [a for a in actions if a.get('type') == 'attack']
-    n_leader_atk = sum(1 for a in atks if 'Leader' in (a.get('target') or ''))
+    n_leader_atk = sum(1 for a in atks if _is_leader_target(a.get('target'), leader_codes))
     n_char_atk = len(atks) - n_leader_atk
     return {'plays': plays, 'activates': activates,
             'n_leader_atk': n_leader_atk, 'n_char_atk': n_char_atk,
@@ -81,11 +105,21 @@ def classify(hist: dict, hoje: dict) -> str:
     return 'DIVERGE'
 
 
+def _all_leader_codes() -> set:
+    import pandas as pd
+    df = pd.read_csv('cards_rows.csv')
+    # card_type tem grafia inconsistente no CSV ("Leader" pra 285 linhas,
+    # "LEADER" so pra 3) -- comparacao tinha que ser case-insensitive,
+    # senao a maioria dos lideres reais nao entra no set.
+    return set(df.loc[df['card_type'].str.upper() == 'LEADER', 'id'])
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--show-matches', type=int, default=0)
     args = ap.parse_args()
 
+    leader_codes = _all_leader_codes()
     counts = {'MATCH': 0, 'DIVERGE': 0, 'ERROR': 0, 'SKIPPED': 0}
     matches = []
     diverges = []
@@ -101,7 +135,7 @@ def main():
             if 'engine_hoje_narrativa' not in t:
                 counts['SKIPPED'] += 1
                 continue
-            hist = parse_historical(t['historical_actions'])
+            hist = parse_historical(t['historical_actions'], leader_codes)
             hoje = parse_engine_narrative(t['engine_hoje_narrativa'])
             label = classify(hist, hoje)
             counts[label] += 1
