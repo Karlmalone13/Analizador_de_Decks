@@ -7,7 +7,7 @@
   "turnos": [
     {
       "turn": 3,
-      "don_available_estimado": 0,
+      "don_available_estimado": 1,
       "historical_actions": [
         {
           "type": "activate",
@@ -42,11 +42,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n  > gastou 1 DON -> Joga: Fullalead (Reprint) (0pwr) [STAGE]\n    \u001b[90mefeito: [Activate: Main] You may trash 1 card from your hand and rest this Stage: Look at 3 cards ...\u001b[0m\n    ⚙ ativou [Activate:Main] de Fullalead (Reprint)\n      ↳ custo: restou Fullalead (Reprint\n      ↳ custo: trashou da mão: Shiryu (Full Ar\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n  > gastou 1 DON -> Joga: Fullalead (Reprint) (0pwr) [STAGE]\n    \u001b[90mefeito: [Activate: Main] You may trash 1 card from your hand and rest this Stage: Look at 3 cards ...\u001b[0m\n    ⚙ ativou [Activate:Main] de Fullalead (Reprint)\n      ↳ custo: restou Fullalead (Reprint\n      ↳ custo: trashou da mão: Shiryu (Full Ar\n"
     },
     {
       "turn": 5,
-      "don_available_estimado": 0,
+      "don_available_estimado": 1,
       "historical_actions": [
         {
           "type": "play",
@@ -65,11 +65,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Marshall.D.Teach (08\n    Marshall.D.Teach (08 (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n"
     },
     {
       "turn": 7,
-      "don_available_estimado": 0,
+      "don_available_estimado": 1,
       "historical_actions": [
         {
           "type": "attack",
@@ -116,7 +116,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n  > gastou 1 DON -> Joga: Fullalead (Reprint) (0pwr) [STAGE]\n    \u001b[90mefeito: [Activate: Main] You may trash 1 card from your hand and rest this Stage: Look at 3 cards ...\u001b[0m\n    ⚙ ativou [Activate:Main] de Fullalead (Reprint)\n      ↳ custo: restou Fullalead (Reprint\n      ↳ custo: trashou da mão: Jesus Burgess (\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 3 DON em Vasco Shot para ligar [attack_power]\n    anexou 1 DON em Marshall.D.Teach (08\n    Marshall.D.Teach (08 (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Vasco Shot (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n  > gastou 1 DON -> Joga: Fullalead (Reprint) (0pwr) [STAGE]\n    \u001b[90mefeito: [Activate: Main] You may trash 1 card from your hand and rest this Stage: Look at 3 cards ...\u001b[0m\n    ⚙ ativou [Activate:Main] de Fullalead (Reprint)\n      ↳ custo: restou Fullalead (Reprint\n      ↳ custo: trashou da mão: Jesus Burgess (\n"
     },
     {
       "turn": 9,
@@ -171,7 +171,7 @@
           "effects": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 4 DON -> Joga: Catarina Devon (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [When Attacking] Select up to 1 of your opponent's Characters. This Character's base power...\u001b[0m\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 9 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 6 DON -> Joga: Shiryu (Full Art) (8000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 card from your hand: Add up to 1 {Blackbeard Pirates} type card ...\u001b[0m\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n  > gastou 1 DON -> Joga: Doc Q (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] If your Leader has the {Blackbeard Pirates} type, draw 1 card and K.O. up to 2 o...\u001b[0m\n  > gastou 1 DON -> Joga: Fullalead (Reprint) (0pwr) [STAGE]\n    \u001b[90mefeito: [Activate: Main] You may trash 1 card from your hand and rest this Stage: Look at 3 cards ...\u001b[0m\n    ⚙ ativou [Activate:Main] de Fullalead (Reprint)\n      ↳ custo: restou Fullalead (Reprint\n      ↳ custo: trashou da mão: Shiryu (Full Ar\n"
     },
     {
       "turn": 11,
@@ -217,7 +217,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n  > gastou 1 DON -> Joga: Black Vortex (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the {Blackbeard Pirates} type, add up to 1 card with a [Trigger]...\u001b[0m\n    ↳ [Black Vortex] recuperou do trash: Bartholomew Kum\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 11 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 10 DON -> Joga: Marshall.D.Teach - OP09-093 (R (12000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker][Activate: Main] [Once Per Turn] If your Leader has the \"Blackbeard Pirates\" type...\u001b[0m\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n"
     },
     {
       "turn": 13,
@@ -296,7 +296,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Blocker! St. Topman Warcury ( intercepta\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Catarina Devon (5000pwr) ataca Leader\n      ↳ [when attacking] base power de Catarina Devon virou 5000 (selected_opp_character)\n      🛡 Blocker! St. Marcus Mars (Par intercepta\n      💀 St. Marcus Mars (Par foi KO!\n    Marshall.D.Teach - O (12000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 13 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 8 DON -> Joga: Marshall.D.Teach (119) (Altern (10000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; add up to 1 card to the top of your L...\u001b[0m\n    ⚡ anexou 4 DON em Laffitte (Reprint) para ligar [attack_power]\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Blocker! St. Topman Warcury ( intercepta\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Laffitte (Reprint) (5000pwr) ataca Leader\n      🛡 Blocker! St. Marcus Mars (Par intercepta\n      💀 St. Marcus Mars (Par foi KO!\n    Catarina Devon (5000pwr) ataca Leader\n      ↳ [when attacking] base power de Catarina Devon virou 5000 (selected_opp_character)\n      💥 DANO! vida do oponente: 3\n      ⚡ [trigger] olhou 3 do topo -> pegou: Five Elders (Al; trash resto: St. Jaygarci, St. Shepherd\n    Marshall.D.Teach - O (12000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n      ⚡ [trigger] olhou 3 do topo -> pegou: Never Existed..; trash resto: St. Ethanbar, Ground Death\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n"
     }
   ]
 }

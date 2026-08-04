@@ -141,49 +141,40 @@ def _remaining_deck(full_cards, seen_codes_with_qty):
 
 class DonEstimator:
     """Reconstrução best-effort de don_available por jogador, turno a
-    turno, a partir do stream de ações do log (ver limitações no topo)."""
+    turno, a partir do stream de ações do log (ver limitações no topo).
+
+    Achado real 04/08 (investigando Bartholomew Kuma OP16-093 nao jogado
+    hoje mas jogado no historico, Imu x Jinbe 2026-07-13T22.54.47):
+    DON gasto como CUSTO de play/activate (rest_don) NAO e uma perda
+    permanente -- regra real do jogo: rest a no ato, mas DESRESTA
+    sozinho no refresh phase do PROXIMO turno do dono (igual qualquer
+    outra carta descansada). A versao anterior deste estimador subtraia
+    esses custos de play/activate como se fossem gasto definitivo (like
+    uma mana pool que so encolhe), o que ficava sistematicamente baixo
+    demais -- conferido contra o log real: turno 1 (don_drawn=1, gastou
+    1 em Saint Shalria) + turno 3 (don_drawn=2) = 3 DON acumulados, e o
+    historico JOGOU Bartholomew Kuma custo 3 no turno 3 -- só bate com
+    "todo play/activate cost refresca", nao com "gasto e permanente".
+    Unico DON que realmente FICA PRESO fora do pool geral e o anexado
+    via `attach_don` (gruda no personagem ate ele sair de campo, nao
+    volta sozinho no refresh -- aproximacao aceita aqui: nao rastreia
+    DON que retorna quando o personagem e K.O.'d/bounced, ver
+    limitacoes no topo do arquivo)."""
 
     def __init__(self):
-        self.pool = {}
+        self.drawn = {}
+        self.attached = {}
 
     def apply_turn(self, player, turn, cards_db):
-        self.pool.setdefault(player, 0)
-        self.pool[player] += turn.get('don_drawn', 0) or 0
+        self.drawn.setdefault(player, 0)
+        self.attached.setdefault(player, 0)
+        self.drawn[player] += turn.get('don_drawn', 0) or 0
         for act in turn.get('actions', []):
-            t = act.get('type')
-            if t == 'play':
-                data = cards_db.get(act.get('card', ''), {})
-                self.pool[player] = max(0, self.pool[player] - int(data.get('cost', 0) or 0))
-            elif t == 'activate':
-                effects = get_card_effects(act.get('card', ''))
-                am = effects.get('activate_main', {})
-                custo = sum(c.get('count', 0) for c in am.get('costs', [])
-                            if c.get('type') == 'rest_don')
-                self.pool[player] = max(0, self.pool[player] - custo)
-            elif t == 'attach_don':
-                self.pool[player] = max(0, self.pool[player] - int(act.get('amount', 0) or 0))
-            # Achado real 04/08 (triagem de real_loss_audits, Dracule
-            # Mihawk OP14-020): efeitos tipo "set_don_active"/"add_don"
-            # DEVOLVEM DON pro pool ativo sem ser um don_drawn novo (ex:
-            # Mihawk "ative ate 3 DON!!") -- sem contar isso, o estimador
-            # ficava artificialmente baixo em decks construidos em torno
-            # dessa mecanica (confirmado no guia externo do Mihawk, secao
-            # 10 do IA_Compendium: reciclagem de DON e o proprio game
-            # plan), fazendo a reconstrucao parecer "sem DON pra nada"
-            # numa mao que na vida real tinha DON de sobra. O parser do
-            # log so registra o texto do EFEITO (nao um campo estruturado
-            # por acao), entao conta as ocorrencias literais de
-            # "Activate N Don"/"Activate Don" nos efeitos de QUALQUER
-            # acao (play/activate), nao so 'activate'.
-            for logline in act.get('effects', []) or []:
-                m = re.search(r'Activate (\d+) Don', logline)
-                if m:
-                    self.pool[player] += int(m.group(1))
-                elif re.search(r'Activate Don\b', logline):
-                    self.pool[player] += 1
+            if act.get('type') == 'attach_don':
+                self.attached[player] += int(act.get('amount', 0) or 0)
 
     def available(self, player):
-        return self.pool.get(player, 0)
+        return max(0, self.drawn.get(player, 0) - self.attached.get(player, 0))
 
 
 def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False):

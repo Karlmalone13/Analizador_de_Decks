@@ -1,5 +1,66 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-04 (441) - Claude (sessao remota web) - Corrige bug conceitual no DonEstimator (DON de custo NAO e gasto permanente) -- o "achado" do Kuma nao jogado era bug da FERRAMENTA, nao do bot
+
+Continuacao direta do bloco 440 (usuario pediu pra investigar o
+residuo). Investigando o caso mais promissor (Bartholomew Kuma
+OP16-093 jogado no historico mas nao hoje, Imu x Jinbe
+2026-07-13T22.54.47, turno 3): achei que o `DonEstimator` tinha um
+erro conceitual, nao so um efeito faltando.
+
+**O bug**: DON gasto como CUSTO de `play`/`activate` (rest_don) NAO e
+perda permanente -- regra real do jogo: fica descansado, mas
+DESRESTA SOZINHO no refresh phase do PROXIMO turno do dono (igual
+qualquer carta descansada). O estimador (blocos 439/440) tratava esse
+gasto como uma mana pool que so encolhe, subtraindo pra sempre.
+Conferido contra o log real: turno 1 (don_drawn=1, gastou 1 em Saint
+Shalria) + turno 3 (don_drawn=2) = 3 DON acumulados -- e o historico
+JOGOU Kuma custo 3 no turno 3. So bate com "todo play/activate cost
+refresca", nao com "gasto e definitivo". Unico DON que REALMENTE fica
+preso fora do pool geral e o anexado via `attach_don` (gruda no
+personagem ate ele sair de campo).
+
+**Fix**: `DonEstimator` reescrito -- `don_available = soma de
+don_drawn de todos os turnos do jogador - soma de attach_don ainda
+"presos"`. Removida a logica de subtrair custo de play/activate (e o
+patch do bloco 440 que somava "Activate N Don" de volta -- ficou
+redundante/pode double-count sob o modelo novo, ja que o refresh e
+assumido automatico). Re-rodei as 59 partidas -- **0 erros**.
+
+**Confirmacao direta**: com o fix, o motor de hoje PASSA A JOGAR
+Bartholomew Kuma no MESMO turno que o historico, na MESMA partida que
+motivou a investigacao -- e o mesmo padrao se generalizou pra outras
+partidas de Imu que tambem tinham esse card no residuo (bloco 440),
+confirmando que era mesmo um bug da ferramenta, nao um achado real
+sobre o bot.
+
+**Resultado final da triagem, apos o fix**:
+
+| Categoria | Qtd | % |
+|---|---:|---:|
+| MATCH | 2 | 0,7% |
+| DIVERGE | 266 | 99,3% |
+
+Do DIVERGE: 246/266 (92,5%) continuam sendo o motor atacando o lider
+mais que o historico (mesma confirmacao do fix `ATTACK_LEADER_BASE_
+SCORE` do bloco 440, numero estavel). **20 turnos residuais** (mesma
+contagem de ataque ao lider, outras diferencas) -- pelo menos 4 desses
+sao só um artefato de normalizacao da propria triagem (nome "Imu" no
+log historico vs "Imu (Alternate Art)" na narrativa do motor, cortado
+em pontos diferentes pelo `_norm()` de `triage_real_losses.py` --
+mesma carta, falso positivo de divergencia, nao investigado a fundo
+pra corrigir o normalizador em si, registrado como limitacao
+conhecida da heuristica).
+
+**Conclusao desta rodada**: nenhum bug NOVO confirmado no motor de
+decisao em si -- o unico candidato forte investigado (Kuma) se
+resolveu como bug da ferramenta de auditoria, nao do bot. Isso E um
+resultado valido (nao e "nao achei nada" por falta de esforco -- foi
+investigado a fundo, causa raiz real encontrada e corrigida, so que na
+camada errada). Residuo de 20 turnos (parte artefato de nomenclatura)
+fica pra uma proxima rodada de leitura manual, sem prioridade alta
+dado o que ja foi descartado.
+
 ## 2026-08-04 (440) - Claude (sessao remota web) - Primeira triagem dos 268 turnos: confirma o fix ATTACK_LEADER_BASE_SCORE em dado REAL + corrige um bug no proprio estimador de DON da ferramenta
 
 Continuacao direta do bloco 439 (usuario pediu pra comecar a triagem).

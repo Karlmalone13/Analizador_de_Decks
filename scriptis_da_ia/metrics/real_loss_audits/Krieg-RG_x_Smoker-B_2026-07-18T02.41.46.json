@@ -7,7 +7,7 @@
   "turnos": [
     {
       "turn": 3,
-      "don_available_estimado": 1,
+      "don_available_estimado": 0,
       "historical_actions": [
         {
           "type": "play",
@@ -47,11 +47,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Jango (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 {East Blue} type card ...\u001b[0m\n    Jango (2000pwr) ataca Sengoku - ST19-002 (\n      💀 Sengoku - ST19-002 ( foi KO!\n    ⚙ ativou [Activate:Main] de Jango\n      ↳ custo: trashou Jango (ele mesmo)\n      ↳ deu 0 DON ao character do oponente\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 3 DON em Jango para ligar [attack_power]\n    Jango (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n"
     },
     {
       "turn": 5,
-      "don_available_estimado": 1,
+      "don_available_estimado": 0,
       "historical_actions": [
         {
           "type": "play",
@@ -82,11 +82,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Krieg (OP15-001) (Al (5000pwr) ataca Brannew (Reprint)\n      💀 Brannew (Reprint) foi KO!\n  > gastou 1 DON -> Joga: The Outcome Will Tell Us Who's (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 5 cards from the top of your deck; reveal up to 1 {East Blue} type card oth...\u001b[0m\n    ⚙ ativou [Activate:Main] de Jango\n      ↳ custo: trashou Jango (ele mesmo)\n      ↳ deu 0 DON ao character do oponente\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 4 DON -> Joga: Arlong (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Up to 2 of your opponent's rested cards will not become active in your opponent'...\u001b[0m\n    Krieg (OP15-001) (Al (5000pwr) ataca Brannew (Reprint)\n      💀 Brannew (Reprint) foi KO!\n    ⚙ ativou [Activate:Main] de Jango\n      ↳ custo: trashou Jango (ele mesmo)\n      ↳ deu 0 DON ao character do oponente\n    ⚙ ativou [Activate:Main] de Arlong\n      ↳ deu 0 DON ao character do oponente\n"
     },
     {
       "turn": 7,
-      "don_available_estimado": 1,
+      "don_available_estimado": 2,
       "historical_actions": [
         {
           "type": "play",
@@ -118,7 +118,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: The Outcome Will Tell Us Who's (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 5 cards from the top of your deck; reveal up to 1 {East Blue} type card oth...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 1 DON em Krieg (OP15-001) (Al para ligar [attack_power]\n    anexou 2 DON em Krieg (OP15-001) (Al\n    Krieg (OP15-001) (Al (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n  > gastou 1 DON -> Joga: The Outcome Will Tell Us Who's (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 5 cards from the top of your deck; reveal up to 1 {East Blue} type card oth...\u001b[0m\n"
     },
     {
       "turn": 9,
@@ -162,7 +162,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Kuro (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n  > gastou 1 DON -> Joga: The Outcome Will Tell Us Who's (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 5 cards from the top of your deck; reveal up to 1 {East Blue} type card oth...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 7 DON -> Joga: Kuro (Alternate Art) (7000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] [On Play] Give up to 2 DON!! cards from your opponent's cost area to 1 of your o...\u001b[0m\n    ↳ [Kuro (Alternate Art)] deu 0 DON ao character do oponente\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Kuro (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n"
     },
     {
       "turn": 11,
@@ -224,11 +224,11 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Kuro (Alternate Art) (7000pwr) ataca Kuzan (OP02-096) (Re\n      💀 Kuzan (OP02-096) (Re foi KO!\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Kuro (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  > gastou 1 DON -> Joga: Koby (OP15-009) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: If your Character with 7000 base power or less would be removed from the field by your opp...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 10 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 7 DON -> Joga: Kuro (Alternate Art) (7000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] [On Play] Give up to 2 DON!! cards from your opponent's cost area to 1 of your o...\u001b[0m\n    ↳ [Kuro (Alternate Art)] deu 0 DON ao character do oponente\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Kuro (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n    anexou 2 DON em Kuro (Alternate Art)\n    Kuro (Alternate Art) (9000pwr) ataca Issho (SP)\n      🛡 Counter! +1000 -> defesa 10000\n      ✗ Ataque bloqueado (9000 < 10000)\n"
     },
     {
       "turn": 13,
-      "don_available_estimado": 1,
+      "don_available_estimado": 2,
       "historical_actions": [
         {
           "type": "attack",
@@ -287,7 +287,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Kuro (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Kuro (Alternate Art) (7000pwr) ataca Rebecca (Reprint)\n      💀 Rebecca (Reprint) foi KO!\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: The Outcome Will Tell Us Who's (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 5 cards from the top of your deck; reveal up to 1 {East Blue} type card oth...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Krieg (OP15-001) (Al (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Kuro (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n    anexou 1 DON em Kuro (Alternate Art)\n    Kuro (Alternate Art) (8000pwr) ataca Rebecca (Reprint)\n      💀 Rebecca (Reprint) foi KO!\n  > gastou 1 DON -> Joga: The Outcome Will Tell Us Who's (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 5 cards from the top of your deck; reveal up to 1 {East Blue} type card oth...\u001b[0m\n"
     }
   ]
 }

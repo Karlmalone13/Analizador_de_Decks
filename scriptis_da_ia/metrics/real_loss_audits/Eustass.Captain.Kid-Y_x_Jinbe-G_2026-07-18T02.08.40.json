@@ -35,7 +35,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Charlotte Galette\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Eustass\"Captain\"Kid  (5000pwr) ataca Shirahoshi (030)\n      💀 Shirahoshi (030) foi KO!\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: Gan.Fall, Kouzuki Oden\n  > gastou 2 DON -> Joga: Charlotte Galette (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] (After your opponent declares an attack, you may rest this card to make it the n...\u001b[0m\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Roronoa Zoro (113)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: Tonoyasu, Zeus\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 2 DON -> Joga: Tonoyasu (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate:Main] You may trash this Character: Up to 1 of your [Land of Wano] type Leader o...\u001b[0m\n    ⚙ ativou [Activate:Main] de Tonoyasu\n      ↳ custo: trashou Tonoyasu (ele mesmo)\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
     },
     {
       "turn": 5,
@@ -67,11 +67,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Inazuma\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: Absalom, Sanji (Alter\n  > gastou 1 DON -> Joga: Jewelry Bonney (OP15-105) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: If your Character with 7000 base power or less would be removed from the field by your opp...\u001b[0m\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Bartholomew Kuma\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: Caribou, Marguerite\n  > gastou 1 DON -> Joga: Jewelry Bonney (OP15-105) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: If your Character with 7000 base power or less would be removed from the field by your opp...\u001b[0m\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
     },
     {
       "turn": 7,
-      "don_available_estimado": 1,
+      "don_available_estimado": 0,
       "historical_actions": [
         {
           "type": "attach_don",
@@ -117,11 +117,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Trafalgar Law (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Trafalgar Law - P-08 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: Jewelry Bonn, Gan.Fall\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ficou(ram) ativo(s): Trafalgar Law \u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Belo Betty\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 4 DON -> Joga: Killer (6000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] (After your opponent declares an attack, you may rest this card to make it the n...\u001b[0m\n    ↳ [Killer] +1 vida (deck_top->life_top)\n    Trafalgar Law - P-08 (5000pwr) ataca Charlotte Praline\n      🛡 Counter! +2000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Eustass\"Captain\"Kid  (5000pwr) ataca Charlotte Praline\n      💀 Charlotte Praline foi KO!\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ficou(ram) ativo(s): Trafalgar Law \u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
     },
     {
       "turn": 9,
-      "don_available_estimado": 0,
+      "don_available_estimado": 1,
       "historical_actions": [
         {
           "type": "play",
@@ -133,11 +133,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Otama (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Trafalgar Law - P-08 (5000pwr) ataca Shirahoshi (030)\n      💀 Shirahoshi (030) foi KO!\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 2 DON -> Joga: Otama (Alternate Art) (0pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] You may rest this Character and add 1 card from the top or bottom of your...\u001b[0m\n    ⚙ ativou [Activate:Main] de Otama (Alternate Art)\n      ↳ custo: restou Otama (Alternate A\n      ↳ custo: pegou da Life: Bartolomeo\n      ↳ +3000 power em leader_or_character\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ficou(ram) ativo(s): Trafalgar Law \u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Belo Betty\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Trafalgar Law - P-08 (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Monkey.D.Luffy (111) (2000pwr) ataca Shirahoshi (030)\n      💀 Shirahoshi (030) foi KO!\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: Monkey.D.Luf, Mont Blanc C\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ficou(ram) ativo(s): Trafalgar Law \u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
     },
     {
       "turn": 11,
-      "don_available_estimado": 1,
+      "don_available_estimado": 0,
       "historical_actions": [
         {
           "type": "attach_don",
@@ -215,7 +215,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Satori (Reprint)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Trafalgar Law - OP10 (9000pwr) ataca Jinbe (031) (Alterna\n      🛡 Blocker! Charlotte Praline intercepta\n      💀 Charlotte Praline foi KO!\n    Trafalgar Law - P-08 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Monkey.D.Luffy (111) (2000pwr) ataca Shirahoshi (030)\n      💀 Shirahoshi (030) foi KO!\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Eustass\"Captain\n    ↳ [Bartolomeo] comprou: Avalo Pizarr, Yamato (Repr\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ficou(ram) ativo(s): Trafalgar Law \u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Kouzuki Momonosuke\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 4 DON -> Joga: Killer (6000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] (After your opponent declares an attack, you may rest this card to make it the n...\u001b[0m\n    ↳ [Killer] +1 vida (deck_top->life_top)\n    Trafalgar Law - P-08 (5000pwr) ataca Leader\n      🛡 Blocker! Charlotte Praline intercepta\n      🛡 Counter! +2000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Trafalgar Law - OP10 (9000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Monkey.D.Luffy (111) (2000pwr) ataca Shirahoshi (030)\n      🛡 Counter! +3000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Capone\"Gang\"Bege (10 (1000pwr) ataca Shirahoshi (030)\n      💀 Shirahoshi (030) foi KO!\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ficou(ram) ativo(s): Trafalgar Law \u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
     }
   ]
 }

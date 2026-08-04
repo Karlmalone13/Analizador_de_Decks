@@ -7,7 +7,7 @@
   "turnos": [
     {
       "turn": 3,
-      "don_available_estimado": 2,
+      "don_available_estimado": 1,
       "historical_actions": [
         {
           "type": "activate",
@@ -36,7 +36,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Shirahoshi (OP05-082) (Reprint\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Ethanbaron\n      ↳ comprou: Ground Death\n    anexou 1 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Five Elders (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Ethanbaron\n      ↳ comprou: Five Elders \n"
     },
     {
       "turn": 5,
@@ -91,7 +91,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: St. Marcus Mars (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Marcus Mar\n      ↳ comprou: After All Th\n  > gastou 2 DON -> Joga: Saint Mjosgard (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If you have 3 or less Life cards, play up to 1 \"Mary Geoise\" type Stage card wit...\u001b[0m\n    ↳ [Saint Mjosgard] jogou do trash: Mary Geoise (Re\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: The Five Elders Are at Your Se\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Urouge (Reprint)\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Ground Death (Alternate Art) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Don!! cards: Negate the effect of up to 1 of your opponent's...\u001b[0m\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Marcus Mar\n      ↳ comprou: Shirahoshi (\n  > gastou 1 DON -> Joga: Saint Mjosgard (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If you have 3 or less Life cards, play up to 1 \"Mary Geoise\" type Stage card wit...\u001b[0m\n    ↳ [Saint Mjosgard] jogou do trash: Mary Geoise (Re\n"
     },
     {
       "turn": 7,
@@ -133,11 +133,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Saint Shalria\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    St. Jaygarcia Saturn (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Saint Shalria (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" ty...\u001b[0m\n    ↳ [Saint Shalria] olhou 3 do topo -> pegou: Five Elders (Al\n    ↳ [Saint Shalria] trash resto: St. Jaygarci, Five Elders \n    ↳ [Saint Shalria] descartou da mão: St. Marcus M\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: Never Existe\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Never Existed... in the First \u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em St. Jaygarcia Saturn\n    St. Jaygarcia Saturn (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Blocker! Urouge (Reprint) intercepta\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character St. Jaygarcia \n      ↳ comprou: Ground Death\n  > gastou 1 DON -> Joga: Ground Death (Alternate Art) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Don!! cards: Negate the effect of up to 1 of your opponent's...\u001b[0m\n"
     },
     {
       "turn": 9,
-      "don_available_estimado": 1,
+      "don_available_estimado": 0,
       "historical_actions": [
         {
           "type": "attach_don",
@@ -174,7 +174,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Never Existed... in the First \u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em St. Marcus Mars (Par\n    St. Marcus Mars (Par (6000pwr) ataca Leader\n      🛡 Blocker! Urouge (Reprint) intercepta\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Imu (Alternate Art) (5000pwr) ataca Urouge (Reprint)\n      💀 Urouge (Reprint) foi KO!\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character St. Marcus Mar\n      ↳ comprou: St. Jaygarci\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: After All These Years I'm Losi\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Blocker! Urouge (Reprint) intercepta\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    St. Marcus Mars (Par (5000pwr) ataca Urouge (Reprint)\n      💀 Urouge (Reprint) foi KO!\n  > gastou 6 DON -> Joga: St. Marcus Mars (Parallel) (5000pwr) [CHARACTER]\n    \u001b[90mefeito: If you have 7 or more cards in your trash, this Character cannot be removed from the field...\u001b[0m\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character St. Marcus Mar\n      ↳ comprou: Never Existe\n"
     },
     {
       "turn": 11,
@@ -206,7 +206,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: After All These Years I'm Losi\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Eustass\"Captain\"Kid \n      🛡 Blocker! Urouge (Reprint) intercepta\n      💀 Urouge (Reprint) foi KO!\n    St. Marcus Mars (Par (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character St. Marcus Mar\n      ↳ comprou: Saint Shalri\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Five Elders (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚙ ativou [Activate:Main] de The Empty Throne\n      ↳ custo: restou The Empty Throne\n      ↳ custo: restou 3 DON\n      ↳ jogou (grátis): St. Marcus Mars\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Blocker! Urouge (Reprint) intercepta\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    St. Marcus Mars (Par (5000pwr) ataca Urouge (Reprint)\n      💀 Urouge (Reprint) foi KO!\n  > gastou 4 DON -> Joga: St. Topman Warcury (Parallel) (5000pwr) [CHARACTER]\n    \u001b[90mefeito: If you have 7 or more cards in your trash, this Character cannot be removed from the field...\u001b[0m\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Topman War\n      ↳ comprou: The Five Eld\n"
     }
   ]
 }

@@ -50,11 +50,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Donquixote Doflamingo (029)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n      ⚡ [trigger] jogou Who's.Who (grátis, do trigger)\n  > gastou 1 DON -> Joga: Kin'emon (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may rest 1 of your (Slash) attribute Leaders or DON!! cards: Draw 2 cards an...\u001b[0m\n    ↳ [Kin'emon] comprou: Aladine, Scaled Neptu (e trashou: Perona - OP1)\n  > gastou 1 DON -> Joga: Roronoa Zoro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Rush:Character] (This card can attack Characters on the turn in which it is played.) [On ...\u001b[0m\n  > gastou 1 DON -> Joga: Kikunojo - OP14-023 (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [End of Your Turn] Set this Character as active.\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Shishilian\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: Kin'emon (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may rest 1 of your (Slash) attribute Leaders or DON!! cards: Draw 2 cards an...\u001b[0m\n    ↳ [Kin'emon] comprou: Pearl, Roronoa Zoro (e trashou: Perona - OP1)\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n  > gastou 2 DON -> Joga: Pearl (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] (After your opponent declares an attack, you may rest this card to make it the n...\u001b[0m\n"
     },
     {
       "turn": 5,
-      "don_available_estimado": 0,
+      "don_available_estimado": 1,
       "historical_actions": [
         {
           "type": "play",
@@ -124,11 +124,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Dosun\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Dracule Mihawk - OP1\n    Dracule Mihawk - OP1 (7000pwr) ataca Leader\n      🛡 Counter! +3000 -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n  > gastou 1 DON -> Joga: Kin'emon (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may rest 1 of your (Slash) attribute Leaders or DON!! cards: Draw 2 cards an...\u001b[0m\n    ↳ [Kin'emon] comprou: Perona (Para, Kouzuki Momo (e trashou: Perona - OP1)\n  > gastou 1 DON -> Joga: Kouzuki Momonosuke (0pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate:Main] (1) (You may rest the specified number of DON!! cards in your cost area) Y...\u001b[0m\n    Kikunojo - OP14-023 (2000pwr) ataca Nola\n      🛡 Counter! +1000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n  \u001b[90m[end] Kikunojo - OP14-02 ficou ativo\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Bepo\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: Kin'emon (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may rest 1 of your (Slash) attribute Leaders or DON!! cards: Draw 2 cards an...\u001b[0m\n    ↳ [Kin'emon] comprou: Basil Hawkin, Meowban Brot (e trashou: Perona - OP1)\n    anexou 1 DON em Kikunojo - OP14-023\n    Kikunojo - OP14-023 (3000pwr) ataca Nola\n      🛡 Counter! +2000 -> defesa 4000\n      ✗ Ataque bloqueado (3000 < 4000)\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  \u001b[90m[end] Kikunojo - OP14-02 ficou ativo\u001b[0m\n"
     },
     {
       "turn": 7,
-      "don_available_estimado": 0,
+      "don_available_estimado": 2,
       "historical_actions": [
         {
           "type": "play",
@@ -211,7 +211,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Roronoa Zoro (036)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 3 DON em Kikunojo - OP14-023 para ligar [attack_power]\n    Kikunojo - OP14-023 (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Perona - OP14-033 (A (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n      ⚡ [trigger] jogou Who's.Who (grátis, do trigger)\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  \u001b[90m[end] Kikunojo - OP14-02 ficou ativo\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Monkey.D.Luffy (P-061)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Kikunojo - OP14-023 (2000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n    Perona - OP14-033 (A (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    ⚙ ativou [Activate:Main] de Dracule Mihawk - OP14-\n      ↳ custo: restou 1 DON\n      ↳ auto-restrição: não pode jogar mais este turno\n      ↳ reativou 1 DON\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n  \u001b[90m[end] Kikunojo - OP14-02 ficou ativo\u001b[0m\n"
     }
   ]
 }

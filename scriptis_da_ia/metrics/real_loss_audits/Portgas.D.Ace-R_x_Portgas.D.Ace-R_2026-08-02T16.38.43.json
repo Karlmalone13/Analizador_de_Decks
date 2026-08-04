@@ -7,7 +7,7 @@
   "turnos": [
     {
       "turn": 3,
-      "don_available_estimado": 1,
+      "don_available_estimado": 0,
       "historical_actions": [
         {
           "type": "attack",
@@ -30,7 +30,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Ain\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Monkey.D.Garp (Alternate Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader is [Sabo], [Portgas.D.Ace] or [Monkey.D.Luffy], look at 4 cards f...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Tony Tony.Chopper\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 3 DON -> Joga: Tony Tony.Chopper (4000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Play up to 1 [Animal] type Character card with 3000 power or less from your hand...\u001b[0m\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n"
     },
     {
       "turn": 5,
@@ -71,7 +71,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Vegapunk (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Portgas.D.Ace (001) \n    Portgas.D.Ace (001)  (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n    anexou 1 DON em Monkey.D.Garp (Alter\n    Monkey.D.Garp (Alter (3000pwr) ataca Sanji (Parallel)\n      🛡 Counter! +2000 -> defesa 5000\n      ✗ Ataque bloqueado (3000 < 5000)\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Moda (Pirate Foil)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 5 DON -> Joga: Izo (7000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Give up to 1 rested DON!! card to your Leader or 1 of your Characters.[On Your O...\u001b[0m\n    ↳ [Izo] +0 DON\n    Portgas.D.Ace (001)  (5000pwr) ataca Sanji (Parallel)\n      💀 Sanji (Parallel) foi KO!\n      ↳ [on KO] comprou: Outlook III\n"
     },
     {
       "turn": 7,
@@ -124,7 +124,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Masked Deuce (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 2 DON -> Joga: Masked Deuce (Alternate Art) (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [DON!! x2] [When Attacking] K.O. up to 1 of your opponent's Characters with 2000 power or ...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Speed Jil (Dash Pack)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 2 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Portgas.D.Ace (001)  (7000pwr) ataca Leader\n      🛡 Counter! +4000 -> defesa 9000\n      ✗ Ataque bloqueado (7000 < 9000)\n"
     },
     {
       "turn": 9,
@@ -157,7 +157,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Namule\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Sanji (Parallel)\n      🛡 Counter! +3000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Monkey.D.Garp (Alternate Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader is [Sabo], [Portgas.D.Ace] or [Monkey.D.Luffy], look at 4 cards f...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Monkey.D.Luffy (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Portgas.D.Ace (001) \n    Portgas.D.Ace (001)  (6000pwr) ataca Sanji (Parallel)\n      🛡 Counter! +4000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 1 DON -> Joga: Monkey.D.Garp (Alternate Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader is [Sabo], [Portgas.D.Ace] or [Monkey.D.Luffy], look at 4 cards f...\u001b[0m\n"
     }
   ]
 }

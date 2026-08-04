@@ -7,7 +7,7 @@
   "turnos": [
     {
       "turn": 3,
-      "don_available_estimado": 1,
+      "don_available_estimado": 0,
       "historical_actions": [
         {
           "type": "play",
@@ -31,11 +31,11 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Ground Death (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Saint Shalria (0pwr) ataca Doc Q\n      🛡 Counter! +2000 -> defesa 2000\n      ✗ Ataque bloqueado (0 < 2000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: Shirahoshi (\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Mary Geoise (Reprint)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Leader\n      🛡 Counter! +4000 -> defesa 9000\n      ✗ Ataque bloqueado (7000 < 9000)\n    Saint Shalria (0pwr) ataca Doc Q\n      🛡 Counter! +2000 -> defesa 2000\n      ✗ Ataque bloqueado (0 < 2000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: The Five Eld\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: Saint Shalria\n    ↳ [The Five Elders Are ] trash resto: Shirahoshi (, St. Ethanbar\n"
     },
     {
       "turn": 5,
-      "don_available_estimado": 0,
+      "don_available_estimado": 1,
       "historical_actions": [
         {
           "type": "activate",
@@ -79,11 +79,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Never Existed... in the First \u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    anexou 1 DON em Bartholomew Kuma (09\n    Bartholomew Kuma (09 (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: Never Existe\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Five Elders (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 3 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (8000pwr) ataca Leader\n      🛡 Counter! +4000 -> defesa 9000\n      ✗ Ataque bloqueado (8000 < 9000)\n    anexou 1 DON em Bartholomew Kuma (09\n    Bartholomew Kuma (09 (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: Five Elders \n"
     },
     {
       "turn": 7,
-      "don_available_estimado": 0,
+      "don_available_estimado": 2,
       "historical_actions": [
         {
           "type": "attack",
@@ -121,11 +121,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Shirahoshi (OP05-082) (Reprint\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    anexou 1 DON em Bartholomew Kuma (09\n    Bartholomew Kuma (09 (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão Shirahoshi (OP\n      ↳ comprou: Never Existe\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: St. Topman Warcury (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 4 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (9000pwr) ataca Leader\n      🛡 Counter! +6000 -> defesa 11000\n      ✗ Ataque bloqueado (9000 < 11000)\n    anexou 1 DON em Bartholomew Kuma (09\n    Bartholomew Kuma (09 (5000pwr) ataca Leader\n"
     },
     {
       "turn": 9,
-      "don_available_estimado": 0,
+      "don_available_estimado": 6,
       "historical_actions": [
         {
           "type": "attack",
@@ -162,7 +162,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Saint Shalria\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    anexou 1 DON em Bartholomew Kuma (09\n    Bartholomew Kuma (09 (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão Saint Shalria\n      ↳ comprou: The Five Eld\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Never Existed... in the First \u001b[0m\n  \u001b[93mDON!! +2 rampados │ 9 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Leader\n      🛡 Counter! +4000 -> defesa 9000\n      ✗ Ataque bloqueado (7000 < 9000)\n    anexou 1 DON em Bartholomew Kuma (09\n    Bartholomew Kuma (09 (5000pwr) ataca Leader\n"
     }
   ]
 }

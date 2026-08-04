@@ -395,13 +395,17 @@ python audit_real_losses.py --all [--limit N]       # audita todas (ou as N prim
 
 **Limitações honestas, documentadas no topo do próprio arquivo** (leia
 antes de confiar cegamente num relatório): `don_available` é
-reconstrução best-effort (soma `don_drawn` por turno, subtrai custo
-conhecido de play/activate/attach_don, SOMA de volta qualquer efeito
-tipo "Activate N Don"/`set_don_active` achado no texto do efeito —
-achado real 04/08, deck do Mihawk OP14-020 depende MUITO dessa
-mecânica de reciclar DON, sem contar isso o estimador ficava
-artificialmente baixo — mesmo assim pode divergir em jogos longos);
-deck restante é uma COMPOSIÇÃO real (mesmo líder em
+reconstrução best-effort — `don_drawn` acumulado de todos os turnos do
+jogador MENOS `attach_don` ainda "preso" num personagem (achado real
+04/08: DON gasto em play/activate NÃO é perda permanente, desresta
+sozinho no refresh do turno seguinte do dono, igual qualquer carta
+descansada — versão anterior deste estimador subtraía esses custos
+como gasto definitivo, achando "sem DON pra nada" numa mão que
+historicamente tinha DON de sobra; confirmado revertendo esse erro
+conceitual: o motor de hoje passou a jogar exatamente a mesma carta
+cara que o histórico jogava no mesmo turno) — mesmo assim pode
+divergir em jogos longos (DON que retorna ao ser removido do campo via
+K.O./bounce não é rastreado); deck restante é uma COMPOSIÇÃO real (mesmo líder em
 `decklists_raw.csv`) mas ORDEM embaralhada, não a ordem real; se o
 líder não tem decklist real no banco (Marshall D. Teach/Krieg/Kid
 confirmados ausentes), cai num deck genérico da mesma cor, mais fraco;
@@ -426,12 +430,16 @@ relatórios de `metrics/real_loss_audits/*.json` e classifica cada turno
 em `MATCH` (motor de hoje repete a decisão histórica — candidato a
 achado real) vs `DIVERGE` (heurístico, baseado em texto — só prioriza o
 que merece leitura manual, não é veredito automático). Achado real
-04/08 (primeira rodada, 268 turnos das 59 derrotas do banco): 92% da
-divergência era o motor de hoje atacando o LÍDER muito mais que o
-histórico, e ISSO correlaciona fortemente (212/238 casos) com logs
-ANTERIORES a 29/07 — a data exata do fix `ATTACK_LEADER_BASE_SCORE`
-(bloco HANDOFF 395). Ou seja: confirmação em dado REAL (não só
-self-play) de que esse fix funciona. Zero casos de atacar o líder
-MENOS que o histórico (nenhuma regressão nessa frente). Sobrou um
-resíduo pequeno (~20 turnos de 268) não explicado por esse fix —
-próxima sessão pode aprofundar aí antes de assumir bug novo.
+04/08 (268 turnos das 59 derrotas do banco, número estável antes/depois
+do fix do `DonEstimator` abaixo): ~92% da divergência é o motor de hoje
+atacando o LÍDER muito mais que o histórico, e ISSO correlaciona
+fortemente (246/266 casos) com logs ANTERIORES a 29/07 — a data exata
+do fix `ATTACK_LEADER_BASE_SCORE` (bloco HANDOFF 395). Ou seja:
+confirmação em dado REAL (não só self-play) de que esse fix funciona.
+Zero casos de atacar o líder MENOS que o histórico (nenhuma regressão
+nessa frente). Sobra um resíduo pequeno (~20 turnos de 268) — pelo
+menos parte é artefato de normalização de nome na própria triagem
+("Imu" vs "Imu (Alternate Art)"), não bug do motor; o caso mais
+promissor investigado a fundo (Bartholomew Kuma não jogado hoje) virou
+o achado do `DonEstimator` acima, não um bug do bot. Próxima sessão
+pode ler manualmente o resíduo restante antes de assumir bug novo.

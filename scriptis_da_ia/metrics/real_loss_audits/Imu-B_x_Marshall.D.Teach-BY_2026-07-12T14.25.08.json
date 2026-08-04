@@ -37,7 +37,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: St. Marcus Mars (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Zehahahahaha! (\n      🛡 Counter! +4000 -> defesa 9000\n      ✗ Ataque bloqueado (7000 < 9000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Topman War\n      ↳ comprou: Shirahoshi (\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: St. Jaygarcia Saturn (Parallel\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Zehahahahaha! (\n      🛡 Counter! +4000 -> defesa 9000\n      ✗ Ataque bloqueado (7000 < 9000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Topman War\n      ↳ comprou: Never Existe\n"
     },
     {
       "turn": 5,
@@ -87,11 +87,11 @@
           "effects": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: St. Jaygarcia Saturn (Parallel\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Zehahahahaha! (\n      🛡 Counter! +4000 -> defesa 9000\n      ✗ Ataque bloqueado (7000 < 9000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Jaygarcia \n      ↳ comprou: Saint Shalri\n  > gastou 1 DON -> Joga: Saint Shalria (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" ty...\u001b[0m\n    ↳ [Saint Shalria] olhou 3 do topo -> pegou: St. Jaygarcia S\n    ↳ [Saint Shalria] trash resto: St. Ethanbar, Ground Death\n    ↳ [Saint Shalria] descartou da mão: St. Jaygarci\n  > gastou 2 DON -> Joga: Saint Mjosgard (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If you have 3 or less Life cards, play up to 1 \"Mary Geoise\" type Stage card wit...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: St. Ethanbaron V. Nusjuro (Par\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Zehahahahaha! (\n      🛡 Counter! +4000 -> defesa 9000\n      ✗ Ataque bloqueado (7000 < 9000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Ethanbaron\n      ↳ comprou: Ground Death\n  > gastou 1 DON -> Joga: Ground Death (Alternate Art) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Don!! cards: Negate the effect of up to 1 of your opponent's...\u001b[0m\n    ↳ [Ground Death (Altern] custo: restou 2 DON\n    ↳ [Ground Death (Altern] negou o efeito de Vasco Shot\n"
     },
     {
       "turn": 7,
-      "don_available_estimado": 1,
+      "don_available_estimado": 3,
       "historical_actions": [
         {
           "type": "activate",
@@ -131,11 +131,11 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: The Empty Throne\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (6000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Zehahahahaha! (\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Mjosgard\n      ↳ comprou: St. Topman W\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Five Elders (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 4 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (9000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Zehahahahaha! (\n"
     },
     {
       "turn": 9,
-      "don_available_estimado": 0,
+      "don_available_estimado": 3,
       "historical_actions": [
         {
           "type": "attack",
@@ -181,7 +181,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: The Five Elders Are at Your Se\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em St. Jaygarcia Saturn\n    St. Jaygarcia Saturn (6000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Zehahahahaha! (\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    St. Marcus Mars (Par (5000pwr) ataca Leader\n      🛡 Counter You're the One Who: +3000 power | custo: trashou da mao: You're the One  -> defesa 8000\n      ✗ Ataque bloqueado (5000 < 8000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Mjosgard\n      ↳ comprou: Saint Mjosga\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: Five Elders (Al\n    ↳ [The Five Elders Are ] trash resto: Saint Shalri, St. Jaygarci\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: St. Marcus Mars (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 9 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 6 DON em St. Jaygarcia Saturn\n    St. Jaygarcia Saturn (11000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Zehahahahaha! (\n"
     }
   ]
 }

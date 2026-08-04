@@ -39,7 +39,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Monkey.D.Garp\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Moby Dick (Alternate Art) (0pwr) [STAGE]\n    \u001b[90mefeito: [On Play] If your Leader has the {Whitebeard Pirates} type, look at 3 cards from the top o...\u001b[0m\n    ↳ [Moby Dick (Alternate] olhou 3 do topo -> pegou: Monkey.D.Luffy \n    ↳ [Moby Dick (Alternate] 2 carta(s) no fundo do deck\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Saga\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Portgas.D.Ace (001) \n    Portgas.D.Ace (001)  (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 1 DON -> Joga: Moby Dick (Alternate Art) (0pwr) [STAGE]\n    \u001b[90mefeito: [On Play] If your Leader has the {Whitebeard Pirates} type, look at 3 cards from the top o...\u001b[0m\n    ↳ [Moby Dick (Alternate] olhou 3 do topo -> pegou: Curiel\n    ↳ [Moby Dick (Alternate] 2 carta(s) no fundo do deck\n"
     },
     {
       "turn": 5,
@@ -91,11 +91,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Roronoa Zoro\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Namule (2000pwr) ataca Ms. Wednesday\n      💀 Ms. Wednesday foi KO!\n  > gastou 1 DON -> Joga: Moby Dick (Alternate Art) (0pwr) [STAGE]\n    \u001b[90mefeito: [On Play] If your Leader has the {Whitebeard Pirates} type, look at 3 cards from the top o...\u001b[0m\n    ↳ [Moby Dick (Alternate] olhou 3 do topo -> pegou: Ace & Sabo & Lu\n    ↳ [Moby Dick (Alternate] 2 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: Ace & Sabo & Luffy (Alternate  (1000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] You may give 1 of your active DON!! cards to 1 of your Leader or Characte...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Jewelry Bonney (EB04-002) (Alt\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Namule (2000pwr) ataca Ms. Wednesday\n      🛡 Counter! +2000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n  > gastou 1 DON -> Joga: Moby Dick (Alternate Art) (0pwr) [STAGE]\n    \u001b[90mefeito: [On Play] If your Leader has the {Whitebeard Pirates} type, look at 3 cards from the top o...\u001b[0m\n    ↳ [Moby Dick (Alternate] olhou 3 do topo -> pegou: Shanks (002)\n    ↳ [Moby Dick (Alternate] 2 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: Jewelry Bonney (EB04-002) (Alt (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 4 cards from the top of your deck; reveal up to 1 {Egghead} or {Straw Ha...\u001b[0m\n    ↳ [Jewelry Bonney (EB04] olhou 4 do topo -> nada para pegar\n    ↳ [Jewelry Bonney (EB04] 3 carta(s) no fundo do deck\n"
     },
     {
       "turn": 7,
-      "don_available_estimado": 0,
+      "don_available_estimado": 1,
       "historical_actions": [
         {
           "type": "play",
@@ -116,7 +116,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Pell\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Moby Dick (Alternate Art) (0pwr) [STAGE]\n    \u001b[90mefeito: [On Play] If your Leader has the {Whitebeard Pirates} type, look at 3 cards from the top o...\u001b[0m\n    ↳ [Moby Dick (Alternate] olhou 3 do topo -> pegou: Helmeppo\n    ↳ [Moby Dick (Alternate] 2 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: Helmeppo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Up to 1 of your Leader or Character cards gains +1000 power during this turn.\u001b[0m\n    ↳ [Helmeppo] +1000 power em leader_or_character\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Yasopp (Reprint)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Moby Dick (Alternate Art) (0pwr) [STAGE]\n    \u001b[90mefeito: [On Play] If your Leader has the {Whitebeard Pirates} type, look at 3 cards from the top o...\u001b[0m\n    ↳ [Moby Dick (Alternate] olhou 3 do topo -> pegou: Chess\n    ↳ [Moby Dick (Alternate] 2 carta(s) no fundo do deck\n"
     },
     {
       "turn": 9,
@@ -188,11 +188,11 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Usopp (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Izo (7000pwr) ataca Leader\n      🛡 Counter! +3000 -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n  > gastou 1 DON -> Joga: Moby Dick (Alternate Art) (0pwr) [STAGE]\n    \u001b[90mefeito: [On Play] If your Leader has the {Whitebeard Pirates} type, look at 3 cards from the top o...\u001b[0m\n    ↳ [Moby Dick (Alternate] olhou 3 do topo -> pegou: Izo\n    ↳ [Moby Dick (Alternate] 2 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: Izo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may reveal 1 Character card with 8000 power from your hand: Draw 1 card.\u001b[0m\n    ↳ [Izo] custo: revelou 1 carta(s) com tipo \n    ↳ [Izo] comprou: Trafalgar La\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Usopp\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Portgas.D.Ace (001) \n    Portgas.D.Ace (001)  (7000pwr) ataca Leader\n      🛡 Counter! +3000 -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n    Izo (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n  > gastou 1 DON -> Joga: Moby Dick (Alternate Art) (0pwr) [STAGE]\n    \u001b[90mefeito: [On Play] If your Leader has the {Whitebeard Pirates} type, look at 3 cards from the top o...\u001b[0m\n    ↳ [Moby Dick (Alternate] olhou 3 do topo -> pegou: Curiel\n    ↳ [Moby Dick (Alternate] 2 carta(s) no fundo do deck\n"
     },
     {
       "turn": 11,
-      "don_available_estimado": 1,
+      "don_available_estimado": 0,
       "historical_actions": [
         {
           "type": "attack",
@@ -225,7 +225,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Ace & Sabo & Luffy (Alternate \u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Portgas.D.Ace (001) \n    Portgas.D.Ace (001)  (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Izo (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n    Marco (Alternate Art (8000pwr) ataca Leader\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Curly.Dadan\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Izo\n    Izo (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n    Marco (Alternate Art (8000pwr) ataca Leader\n      🛡 Counter! +5000 -> defesa 10000\n      ✗ Ataque bloqueado (8000 < 10000)\n    ⚡ anexou 1 DON em Portgas.D.Ace (001)  para ligar [attack_power]\n    Portgas.D.Ace (001)  (6000pwr) ataca Leader\n"
     },
     {
       "turn": 13,
@@ -268,7 +268,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Doll (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Izo\n    Izo (8000pwr) ataca Leader\n      🛡 Counter! +4000 -> defesa 9000\n      ✗ Ataque bloqueado (8000 < 9000)\n    Marco (Alternate Art (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n    Izo (7000pwr) ataca Leader\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Jinbe\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Izo\n    Izo (9000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n      ⚡ [trigger] comprou: Miss.Goldenw, Ms. All Sund (e trashou: Mr.2.Bon.Kur)\n    anexou 1 DON em Marco (Alternate Art\n    Marco (Alternate Art (9000pwr) ataca Leader\n      🛡 Counter! +5000 -> defesa 10000\n      ✗ Ataque bloqueado (9000 < 10000)\n    Izo (7000pwr) ataca Leader\n"
     }
   ]
 }

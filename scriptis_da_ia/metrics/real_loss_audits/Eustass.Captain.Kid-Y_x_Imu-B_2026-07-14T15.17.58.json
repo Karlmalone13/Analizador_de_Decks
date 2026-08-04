@@ -36,7 +36,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Edison\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Eustass\"Captain\"Kid  (5000pwr) ataca Monkey.D.Luffy (111)\n      🔁 Jewelry Bonney (OP evitou K.O./remoção comprando da vida: St. Topman Warc\n  > gastou 1 DON -> Joga: Ground Death (Alternate Art) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Don!! cards: Negate the effect of up to 1 of your opponent's...\u001b[0m\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: S-Bear\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 3 DON -> Joga: S-Bear (4000pwr) [CHARACTER]\n    \u001b[90mefeito: [Trigger] You may trash 1 card from your hand: If you have 2 or less Life cards, play this...\u001b[0m\n  > gastou 4 DON -> Joga: St. Jaygarcia Saturn (Parallel (5000pwr) [CHARACTER]\n    \u001b[90mefeito: If you have 7 or more cards in your trash, this Character cannot be removed from the field...\u001b[0m\n    ↳ [St. Jaygarcia Saturn] olhou 5 do topo -> nada para pegar\n    ↳ [St. Jaygarcia Saturn] 4 carta(s) no fundo do deck\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
     },
     {
       "turn": 14,
@@ -80,7 +80,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Roronoa Zoro (Full Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: Ground Death (Alternate Art) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Don!! cards: Negate the effect of up to 1 of your opponent's...\u001b[0m\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Boa Marigold\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 6 DON -> Joga: St. Ethanbaron V. Nusjuro (Par (5000pwr) [CHARACTER]\n    \u001b[90mefeito: If you have 7 or more cards in your trash, this Character cannot be removed from the field...\u001b[0m\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
     },
     {
       "turn": 16,
@@ -132,11 +132,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Kouzuki Hiyori\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    St. Jaygarcia Saturn (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Eustass\"Captain\"Kid  (5000pwr) ataca Monkey.D.Luffy (111)\n      🔁 Jewelry Bonney (OP evitou K.O./remoção comprando da vida: Saint Shalria\n  > gastou 1 DON -> Joga: Ground Death (Alternate Art) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Don!! cards: Negate the effect of up to 1 of your opponent's...\u001b[0m\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Boa Marigold\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em St. Jaygarcia Saturn\n    St. Jaygarcia Saturn (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    anexou 1 DON em Eustass\"Captain\"Kid \n    Eustass\"Captain\"Kid  (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 5 DON -> Joga: Boa Marigold (5000pwr) [CHARACTER]\n    \u001b[90mefeito: If you have 2 or less Life cards, this Character gains [Blocker]. [Trigger] If your Leader...\u001b[0m\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
     },
     {
       "turn": 18,
-      "don_available_estimado": 1,
+      "don_available_estimado": 0,
       "historical_actions": [
         {
           "type": "activate",
@@ -207,7 +207,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Braham\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    St. Ethanbaron V. Nu (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    St. Topman Warcury ( (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> nada para pegar\n    ↳ [The Five Elders Are ] trash resto: Charlotte Op, Edison\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: S-Bear\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 10 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 10 DON -> Joga: Five Elders (Alternate Art) (12000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] If your Leader is [Imu], you may rest 1 of your DON!! cards and trash 1 c...\u001b[0m\n    St. Ethanbaron V. Nu (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    St. Topman Warcury ( (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Eustass\"Captain\"Kid  (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
     },
     {
       "turn": 20,
@@ -312,7 +312,7 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Kouzuki Hiyori\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    St. Ethanbaron V. Nu (5000pwr) ataca Leader\n      ↳ [when attacking] -2000 power em: Trafalgar Law -\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚡ anexou 2 DON em Eustass\"Captain\"Kid  para ligar [attack_power]\n    Eustass\"Captain\"Kid  (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Sentomaru\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 4 DON em St. Ethanbaron V. Nu\n    St. Ethanbaron V. Nu (9000pwr) ataca Leader\n      ↳ [when attacking] -2000 power em: Trafalgar Law -\n      💥 DANO! vida do oponente: 2\n    ⚡ anexou 2 DON em Eustass\"Captain\"Kid  para ligar [attack_power]\n    Eustass\"Captain\"Kid  (7000pwr) ataca Leader\n      🛡 Counter! +3000 -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n  > gastou 2 DON -> Joga: Sentomaru (1000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] (After your opponent declares an attack, you may rest this card to make it the n...\u001b[0m\n  \u001b[90m[end] custo: virou 1 carta(s) da vida face-up\u001b[0m\n  \u001b[90m[end] ganhou Blocker\u001b[0m\n"
     }
   ]
 }

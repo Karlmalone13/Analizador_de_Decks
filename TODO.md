@@ -2,6 +2,20 @@
 
 **Última atualização:** 4 de agosto de 2026
 
+> 04/08/2026 (bloco 441): investigando o resíduo do bloco 440 (caso
+> Bartholomew Kuma), achei bug **conceitual** no `DonEstimator` — DON
+> gasto em play/activate NÃO é perda permanente (desresta sozinho no
+> refresh do próximo turno; só `attach_don` fica preso de verdade).
+> Reescrito, re-rodado (0 erros). **Confirmado**: motor de hoje passa a
+> jogar o Kuma no mesmo turno que o histórico após o fix — era bug da
+> FERRAMENTA, não do bot. Resultado final: MATCH 0,7%, DIVERGE 99,3%
+> (92,5% ainda é o padrão já confirmado do fix `ATTACK_LEADER_BASE_
+> SCORE`). 20 turnos residuais sobram, parte é artefato de
+> normalização de nome (Imu vs Imu Alternate Art) na própria
+> ferramenta de triagem, não bug do motor. **Nenhum bug novo
+> confirmado no motor nesta rodada** — investigação real, causa raiz
+> achada, só que na camada da ferramenta. Ver bloco 441 do HANDOFF.
+
 > 04/08/2026 (bloco 440): **primeira triagem dos 268 turnos** (nova
 > ferramenta `triage_real_losses.py`, registrada em CLAUDE.md/AGENTS.md).
 > Achado forte: 92% da "divergência" é o motor de hoje atacando o líder

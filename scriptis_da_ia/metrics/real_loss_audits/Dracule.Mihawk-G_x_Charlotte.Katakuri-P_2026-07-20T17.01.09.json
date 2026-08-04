@@ -7,7 +7,7 @@
   "turnos": [
     {
       "turn": 3,
-      "don_available_estimado": 1,
+      "don_available_estimado": 0,
       "historical_actions": [
         {
           "type": "play",
@@ -42,11 +42,11 @@
           "countered_by": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Ryuma\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Perona (Alternate Ar (2000pwr) ataca Charlotte Pudding (A\n      🛡 Counter! +3000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n  > gastou 1 DON -> Joga: Kin'emon (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may rest 1 of your (Slash) attribute Leaders or DON!! cards: Draw 2 cards an...\u001b[0m\n    ↳ [Kin'emon] comprou: Donquixote D, Hody & Hyouz (e trashou: Smoker - OP1)\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Law & Bepo\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Dracule Mihawk - OP1\n    Dracule Mihawk - OP1 (7000pwr) ataca Leader\n      🛡 Counter! +3000 -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n    Perona (Alternate Ar (2000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n  > gastou 1 DON -> Joga: Kin'emon (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may rest 1 of your (Slash) attribute Leaders or DON!! cards: Draw 2 cards an...\u001b[0m\n    ↳ [Kin'emon] comprou: Otama (Paral, Jewelry Bonn (e trashou: Smoker - OP1)\n  > gastou 1 DON -> Joga: Otama (Parallel) (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 green [Land of Wano] t...\u001b[0m\n    ↳ [Otama (Parallel)] olhou 5 do topo -> pegou: Monkey.D.Luffy \n    ↳ [Otama (Parallel)] 4 carta(s) no fundo do deck\n"
     },
     {
       "turn": 5,
-      "don_available_estimado": 0,
+      "don_available_estimado": 1,
       "historical_actions": [
         {
           "type": "activate",
@@ -101,7 +101,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Yamato\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 1 DON -> Joga: Otama (Parallel) (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 green [Land of Wano] t...\u001b[0m\n    ↳ [Otama (Parallel)] olhou 5 do topo -> pegou: Sunny-Kun\n    ↳ [Otama (Parallel)] 4 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: Kin'emon (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may rest 1 of your (Slash) attribute Leaders or DON!! cards: Draw 2 cards an...\u001b[0m\n    ↳ [Kin'emon] comprou: Fisher Tiger, Silvers Rayl (e trashou: Smoker - OP1)\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Buggy (031)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: Otama (Parallel) (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 green [Land of Wano] t...\u001b[0m\n    ↳ [Otama (Parallel)] olhou 5 do topo -> pegou: Roronoa Zoro (0\n    ↳ [Otama (Parallel)] 4 carta(s) no fundo do deck\n    Dracule Mihawk - OP1 (6000pwr) ataca Baron Tamago & Pekom\n      🛡 Counter! +3000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 1 DON -> Joga: Kin'emon (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may rest 1 of your (Slash) attribute Leaders or DON!! cards: Draw 2 cards an...\u001b[0m\n    ↳ [Kin'emon] comprou: Monkey.D.Luf, Bunkov (e trashou: Buggy (031))\n"
     },
     {
       "turn": 7,
@@ -186,7 +186,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Brook (OP15-032) (Alternate Ar\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Dracule Mihawk - OP1 (6000pwr) ataca Baron Tamago & Pekom\n      🛡 Counter! +3000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 1 DON -> Joga: Otama (Parallel) (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 green [Land of Wano] t...\u001b[0m\n    ↳ [Otama (Parallel)] olhou 5 do topo -> pegou: Brook (035)\n    ↳ [Otama (Parallel)] 4 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: You Can Be My Samurai!! (Repri (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Characters: Draw 2 cards.Disclaimer: This card was reprinted...\u001b[0m\n    ↳ [You Can Be My Samura] custo: restou aliado: Otama (Parallel, Kikunojo - OP14\n    ↳ [You Can Be My Samura] comprou: Yamato (OP01, Momoo\n    Kin'emon (2000pwr) ataca Charlotte Brulee\n      💀 Charlotte Brulee foi KO!\n  \u001b[90m[end] Kikunojo - OP14-02 ficou ativo\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Inuarashi\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 3 DON em Kikunojo - OP14-023 para ligar [attack_power]\n    Kikunojo - OP14-023 (5000pwr) ataca Baron Tamago & Pekom\n      🛡 Counter! +2000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Kin'emon (2000pwr) ataca Charlotte Brulee\n      🛡 Counter! +1000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n  \u001b[90m[end] Kikunojo - OP14-02 ficou ativo\u001b[0m\n"
     },
     {
       "turn": 9,
@@ -308,7 +308,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[90mComprou: Purinpurin\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Smoker - OP10-030 (S\n    Smoker - OP10-030 (S (8000pwr) ataca Leader\n      🛡 Counter! +4000 -> defesa 9000\n      ✗ Ataque bloqueado (8000 < 9000)\n    Dracule Mihawk (7000pwr) ataca Baron Tamago & Pekom\n      [quando restou] comprou: Kouzuki Suki (e trashou: Purinpurin)\n      💀 Baron Tamago & Pekom foi KO!\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n  > gastou 1 DON -> Joga: You Can Be My Samurai!! (Repri (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Characters: Draw 2 cards.Disclaimer: This card was reprinted...\u001b[0m\n    ↳ [You Can Be My Samura] custo: restou aliado: Kikunojo - OP14, Kin'emon\n    ↳ [You Can Be My Samura] comprou: Momoo, Donquixote R\n  \u001b[90m[end] Kikunojo - OP14-02 ficou ativo\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Hody Jones\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Dracule Mihawk\n    Dracule Mihawk (8000pwr) ataca Leader\n      [quando restou] comprou: Usopp (e trashou: Usopp)\n      🛡 Counter! +4000 -> defesa 9000\n      ✗ Ataque bloqueado (8000 < 9000)\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n    Smoker - OP10-030 (S (7000pwr) ataca Baron Tamago & Pekom\n      💀 Baron Tamago & Pekom foi KO!\n  > gastou 1 DON -> Joga: You Can Be My Samurai!! (Repri (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Characters: Draw 2 cards.Disclaimer: This card was reprinted...\u001b[0m\n    ↳ [You Can Be My Samura] custo: restou aliado: Kikunojo - OP14, Kin'emon\n    ↳ [You Can Be My Samura] comprou: Monkey.D.Luf, Eric\n  \u001b[90m[end] Kikunojo - OP14-02 ficou ativo\u001b[0m\n"
     }
   ]
 }

@@ -7,7 +7,7 @@
   "turnos": [
     {
       "turn": 3,
-      "don_available_estimado": 0,
+      "don_available_estimado": 1,
       "historical_actions": [
         {
           "type": "activate",
@@ -44,7 +44,7 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n  > gastou 1 DON -> Joga: Doc Q (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] If your Leader has the {Blackbeard Pirates} type, draw 1 card and K.O. up to 2 o...\u001b[0m\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n  > gastou 1 DON -> Joga: Doc Q (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] If your Leader has the {Blackbeard Pirates} type, draw 1 card and K.O. up to 2 o...\u001b[0m\n"
     },
     {
       "turn": 5,
@@ -83,11 +83,11 @@
           "effects": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Blocker! St. Topman Warcury ( intercepta\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n  > gastou 1 DON -> Joga: Black Vortex (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the {Blackbeard Pirates} type, add up to 1 card with a [Trigger]...\u001b[0m\n    ↳ [Black Vortex] recuperou do trash: Shiryu (Full Ar\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Marshall.D.Teach (08\n    Marshall.D.Teach (08 (6000pwr) ataca Leader\n      🛡 Blocker! St. Topman Warcury ( intercepta\n      💀 St. Topman Warcury ( foi KO!\n      ↳ [on KO] comprou: St. Topman W\n    ⚡ anexou 4 DON em Laffitte (Reprint) para ligar [attack_power]\n    Laffitte (Reprint) (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n"
     },
     {
       "turn": 7,
-      "don_available_estimado": 0,
+      "don_available_estimado": 2,
       "historical_actions": [
         {
           "type": "attack",
@@ -112,11 +112,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Blocker! St. Marcus Mars (Par intercepta\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n  > gastou 1 DON -> Joga: Black Vortex (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the {Blackbeard Pirates} type, add up to 1 card with a [Trigger]...\u001b[0m\n    ↳ [Black Vortex] recuperou do trash: Shiryu (Full Ar\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Blocker! St. Marcus Mars (Par intercepta\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚡ anexou 4 DON em Laffitte (Reprint) para ligar [attack_power]\n    Laffitte (Reprint) (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n  > gastou 1 DON -> Joga: Black Vortex (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the {Blackbeard Pirates} type, add up to 1 card with a [Trigger]...\u001b[0m\n    ↳ [Black Vortex] recuperou do trash: Shiryu (Full Ar\n"
     },
     {
       "turn": 9,
-      "don_available_estimado": 0,
+      "don_available_estimado": 1,
       "historical_actions": [
         {
           "type": "attack",
@@ -147,11 +147,11 @@
           ]
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 4 DON em Laffitte (Reprint) para ligar [attack_power]\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    Laffitte (Reprint) (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 9 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 4 DON em Laffitte (Reprint) para ligar [attack_power]\n    anexou 2 DON em Laffitte (Reprint)\n    Laffitte (Reprint) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    anexou 1 DON em Marshall.D.Teach (08\n    Marshall.D.Teach (08 (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  > gastou 1 DON -> Joga: Black Vortex (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the {Blackbeard Pirates} type, add up to 1 card with a [Trigger]...\u001b[0m\n    ↳ [Black Vortex] recuperou do trash: Shiryu (Full Ar\n"
     },
     {
       "turn": 11,
-      "don_available_estimado": 1,
+      "don_available_estimado": 0,
       "historical_actions": [
         {
           "type": "attack",
@@ -192,7 +192,7 @@
           "effects": []
         }
       ],
-      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Blocker! St. Topman Warcury ( intercepta\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Marshall.D.Teach (11 (10000pwr) ataca Leader\n      🛡 Blocker! St. Marcus Mars (Par intercepta\n      💀 St. Marcus Mars (Par foi KO!\n  > gastou 1 DON -> Joga: Black Vortex (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the {Blackbeard Pirates} type, add up to 1 card with a [Trigger]...\u001b[0m\n    ↳ [Black Vortex] recuperou do trash: Shiryu (Full Ar\n"
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 11 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 10 DON -> Joga: Marshall.D.Teach - OP09-093 (R (12000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker][Activate: Main] [Once Per Turn] If your Leader has the \"Blackbeard Pirates\" type...\u001b[0m\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Blocker! St. Topman Warcury ( intercepta\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Marshall.D.Teach (11 (10000pwr) ataca Leader\n      🛡 Blocker! St. Marcus Mars (Par intercepta\n      💀 St. Marcus Mars (Par foi KO!\n    ⚙ ativou [Activate:Main] de Marshall.D.Teach - OP0\n      ↳ negou o efeito do lider Imu (Alternate Art\n      ↳ negou o efeito de St. Ethanbaron V. \n      ↳ travou (não pode atacar): St. Ethanbaron \n  > gastou 1 DON -> Joga: Black Vortex (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the {Blackbeard Pirates} type, add up to 1 card with a [Trigger]...\u001b[0m\n    ↳ [Black Vortex] recuperou do trash: Shiryu (Full Ar\n"
     }
   ]
 }
