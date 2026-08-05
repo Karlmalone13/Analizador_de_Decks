@@ -79421,5 +79421,3054 @@
         "once_per_turn": true
       }
     }
+  },
+  "OP17-001": {
+    "name": "Edward Newgate",
+    "type": "LEADER",
+    "cost": 0,
+    "power": 5000,
+    "counter": 0,
+    "life": 5,
+    "color": "Red",
+    "sub_types": "Four Emperors/Whitebeard Pirates",
+    "attribute": "Special",
+    "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 4000,
+            "target": "leader_or_character",
+            "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
+  },
+  "OP17-002": {
+    "name": "Atmos",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 6000,
+    "counter": 0,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Whitebeard Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "self",
+            "duration": "this_turn"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-003": {
+    "name": "Izo",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 6000,
+    "counter": 0,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Land of Wano/Whitebeard Pirates",
+    "attribute": "Special",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 6000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          }
+        ],
+        "conditions": {
+          "leader_is": "edward.newgate"
+        }
+      }
+    }
+  },
+  "OP17-004": {
+    "name": "Inuarashi & Nekomamushi",
+    "type": "CHARACTER",
+    "cost": 3,
+    "power": 2000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Minks/Land of Wano/Whitebeard Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "select_grant_rush",
+            "count": 1,
+            "filter_type": "land of wano",
+            "duration": "this_turn"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-005": {
+    "name": "Edward.Newgate",
+    "type": "CHARACTER",
+    "cost": 10,
+    "power": 12000,
+    "counter": 0,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "The Four Emperors/Whitebeard Pirates",
+    "attribute": "Special",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "amount": 8000,
+            "target": "leader",
+            "filter_type": "on play",
+            "duration": "until_opp_turn_end"
+          },
+          {
+            "action": "debuff_cost",
+            "amount": 4,
+            "target": "own_play_self"
+          }
+        ],
+        "conditions": {
+          "opp_char_power_gte": 10000
+        }
+      }
+    }
+  },
+  "OP17-006": {
+    "name": "Kingdew",
+    "type": "CHARACTER",
+    "cost": 7,
+    "power": 8000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Whitebeard Pirates",
+    "attribute": "",
+    "effects": {}
+  },
+  "OP17-007": {
+    "name": "Kouzuki Oden",
+    "type": "CHARACTER",
+    "cost": 7,
+    "power": 8000,
+    "counter": 0,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Land of Wano/Kouzuki Clan/Whitebeard Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_type": "land of wano",
+            "power_lte": 6000
+          }
+        ],
+        "conditions": {
+          "leader_is": "edward newgate"
+        }
+      }
+    }
+  },
+  "OP17-008": {
+    "name": "Jozu",
+    "type": "CHARACTER",
+    "cost": 0,
+    "power": 8000,
+    "counter": 0,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Whitebeard Pirates",
+    "attribute": "",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "amount": 8000,
+            "target": "leader",
+            "filter_type": "edward.newgate",
+            "duration": "until_opp_turn_end"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-009": {
+    "name": "Haruta",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Whitebeard Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "power_lte": 2000
+          },
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "self",
+            "duration": "this_turn"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-012": {
+    "name": "Blenheim",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 1000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Whitebeard Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-013": {
+    "name": "Portgas.D.Ace",
+    "type": "CHARACTER",
+    "cost": 6,
+    "power": 6000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Whitebeard Pirates",
+    "attribute": "Special",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 6000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          },
+          {
+            "action": "debuff_cost",
+            "amount": 2,
+            "target": "own_play_self"
+          }
+        ],
+        "conditions": {
+          "leader_is": "edward.newgate",
+          "opp_char_power_gte": 10000
+        }
+      }
+    }
+  },
+  "OP17-015": {
+    "name": "Marco",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Whitebeard Pirates",
+    "attribute": "Special",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "trash_self"
+            },
+            "no_filter": true
+          }
+        ]
+      }
+    }
+  },
+  "OP17-016": {
+    "name": "Rakuyo",
+    "type": "CHARACTER",
+    "cost": 3,
+    "power": 2000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Whitebeard Pirates",
+    "attribute": "",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 2,
+            "target": "opp_character",
+            "power_lte": 2000
+          }
+        ]
+      }
+    }
+  },
+  "OP17-019": {
+    "name": "I Don't Have time to Chat with Snot-Nosed Brats",
+    "type": "EVENT",
+    "cost": 1,
+    "power": 0,
+    "counter": 0,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "The Four Emperors/Whitebeard Pirates",
+    "attribute": "",
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 5
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": true
+          },
+          {
+            "action": "deck_bottom_rest"
+          },
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "leader",
+            "duration": "this_turn"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-020": {
+    "name": "Shanks",
+    "type": "LEADER",
+    "cost": 0,
+    "power": 5000,
+    "counter": 0,
+    "life": 5,
+    "color": "Green",
+    "sub_types": "The Four Emperors/Red-Haired Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "lock_opp_character_refresh",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          },
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
+  },
+  "OP17-021": {
+    "name": "Crone Oli",
+    "type": "CHARACTER",
+    "cost": 1,
+    "power": 0,
+    "counter": 2000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Red-Haired Pirates Allies",
+    "attribute": "",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "rest_own_card",
+              "count": 1
+            }
+          }
+        ],
+        "conditions": {
+          "self_type": "red-haired pirates"
+        }
+      }
+    }
+  },
+  "OP17-022": {
+    "name": "Shanks",
+    "type": "CHARACTER",
+    "cost": 10,
+    "power": 12000,
+    "counter": 0,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "The Four Emperors/Red-Haired Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_rush"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-024": {
+    "name": "Howling Gab",
+    "type": "CHARACTER",
+    "cost": 8,
+    "power": 8000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Red-Haired Pirates",
+    "attribute": "",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_banish"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-025": {
+    "name": "Building Snake",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Red-Haired Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 6,
+            "rested_only": true
+          },
+          {
+            "action": "give_don",
+            "count": 1,
+            "rested": true
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
+  },
+  "OP17-026": {
+    "name": "Fugar",
+    "type": "CHARACTER",
+    "cost": 1,
+    "power": 2000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Red-Haired Pirates Allies",
+    "attribute": "Slash",
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 2
+          },
+          {
+            "action": "draw",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "leader_type": "red-haired pirates"
+        }
+      }
+    }
+  },
+  "OP17-027": {
+    "name": "Benn Beckman",
+    "type": "CHARACTER",
+    "cost": 7,
+    "power": 9000,
+    "counter": 0,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Red-Haired Pirates",
+    "attribute": "Ranged",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 2
+          },
+          {
+            "action": "draw",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "leader_type": "red-haired pirates"
+        }
+      }
+    }
+  },
+  "OP17-028": {
+    "name": "Bonk Punch & Monster",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 3000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Animal/Red-Haired Pirates",
+    "attribute": "Strike",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-029": {
+    "name": "Hongo",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 4000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Red-Haired Pirates",
+    "attribute": "Strike",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-030": {
+    "name": "Monkey.D.Luffy",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "East Blue/Straw Hat Crew",
+    "attribute": "Strike",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
+          },
+          {
+            "action": "gain_rush",
+            "duration": "this_turn"
+          }
+        ],
+        "conditions": {
+          "hand_lte": 5
+        },
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
+  },
+  "OP17-031": {
+    "name": "Yasopp",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Red-Haired Pirates",
+    "attribute": "Ranged",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 8
+          },
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character"
+          },
+          {
+            "action": "draw",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "OP17-032": {
+    "name": "Limejuice",
+    "type": "CHARACTER",
+    "cost": 1,
+    "power": 2000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Red-Haired Pirates",
+    "attribute": "",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 3
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": true
+          },
+          {
+            "action": "deck_bottom_rest"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-033": {
+    "name": "Lucky.Roux",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Red-Haired Pirates",
+    "attribute": "",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 3
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": true
+          },
+          {
+            "action": "deck_bottom_rest"
+          },
+          {
+            "action": "rest_opp_character",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_self"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-034": {
+    "name": "Rockstar",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Red-Haired Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "amount": 6000,
+            "target": "leader",
+            "filter_type": "red-haired pirates",
+            "duration": "until_opp_turn_end"
+          },
+          {
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
+  },
+  "OP17-035": {
+    "name": "Roronoa Zoro",
+    "type": "CHARACTER",
+    "cost": 7,
+    "power": 8000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "East Blue/Straw Hat Crew",
+    "attribute": "Slash",
+    "effects": {}
+  },
+  "OP17-036": {
+    "name": "Withdraw Now And Allow Me To Save Face",
+    "type": "EVENT",
+    "cost": 1,
+    "power": 0,
+    "counter": 0,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "The Four Emperors/Red-Haired Pirates",
+    "attribute": "",
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 2,
+            "target": "opp_character",
+            "cost_lte": 6,
+            "rested_only": true
+          },
+          {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 6
+          },
+          {
+            "action": "buff_power",
+            "amount": 4000,
+            "target": "self",
+            "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 6
+          }
+        ]
+      }
+    }
+  },
+  "OP17-037": {
+    "name": "Are You That Afraid of the New Era?!!",
+    "type": "EVENT",
+    "cost": 1,
+    "power": 0,
+    "counter": 0,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "The Four Emperors/Red-Haired Pirates",
+    "attribute": "",
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 5
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": true
+          },
+          {
+            "action": "deck_bottom_rest"
+          },
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "leader_or_character",
+            "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "OP17-038": {
+    "name": "I Think He's Seen An Ugly Future",
+    "type": "EVENT",
+    "cost": 0,
+    "power": 0,
+    "counter": 0,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Red-Haired Pirates",
+    "attribute": "",
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 1
+          },
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "leader_or_character",
+            "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 4
+          },
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "OP17-039": {
+    "name": "Rocks.D.Xebec",
+    "type": "LEADER",
+    "cost": 0,
+    "power": 5000,
+    "counter": 0,
+    "life": 5,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "reveal_deck_top_conditional",
+            "return_to": "top",
+            "condition": {
+              "revealed_card_type": "rocks pirates"
+            },
+            "on_match_steps": [
+              {
+                "action": "draw",
+                "count": 2
+              }
+            ]
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "OP17-040": {
+    "name": "Edward.Newgate",
+    "type": "CHARACTER",
+    "cost": 6,
+    "power": 8000,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "Special",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          },
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "leader",
+            "duration": "battle_only"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
+  },
+  "OP17-041": {
+    "name": "Wang Zhi",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 6000,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "Strike",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-042": {
+    "name": "Kaido",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 6000,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "Strike",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-043": {
+    "name": "Ganzui",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 7000,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "Special",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "trash_from_hand",
+              "count": 2
+            }
+          }
+        ]
+      }
+    }
+  },
+  "OP17-044": {
+    "name": "Captain John",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 6000,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "Special",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1,
+            "then_trash": 1
+          }
+        ],
+        "conditions": {
+          "leader_type_includes": "rocks pirates"
+        },
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-045": {
+    "name": "Kyo",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 4000,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "trash_from_hand",
+              "count": 2
+            },
+            "no_filter": true
+          }
+        ]
+      }
+    }
+  },
+  "OP17-046": {
+    "name": "Gloriosa",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 1000,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Amazon Lily/Rocks Pirates",
+    "attribute": "Wisdom",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-048": {
+    "name": "Shiki",
+    "type": "CHARACTER",
+    "cost": 7,
+    "power": 9000,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 3000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
+  },
+  "OP17-049": {
+    "name": "Charlotte Linlin",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 7000,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "Special",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 2
+          },
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "leader_or_character",
+            "duration": "battle_only"
+          },
+          {
+            "action": "opp_trash_from_hand",
+            "count": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
+  },
+  "OP17-050": {
+    "name": "Streusen",
+    "type": "CHARACTER",
+    "cost": 1,
+    "power": 2000,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 2
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": false
+          },
+          {
+            "action": "deck_reorder_rest"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-051": {
+    "name": "Jinbe",
+    "type": "CHARACTER",
+    "cost": 7,
+    "power": 8000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Fish-Man/Impel Down/The Sun Pirates",
+    "attribute": "",
+    "effects": {}
+  },
+  "OP17-052": {
+    "name": "Don Marlon",
+    "type": "CHARACTER",
+    "cost": 3,
+    "power": 5000,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "Ranged",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "add_from_trash",
+            "count": 1,
+            "color": "blue"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-053": {
+    "name": "Barbell",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 7000,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Fish-Man/Rocks Pirates",
+    "attribute": "Strike",
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "self",
+            "duration": "this_turn"
+          },
+          {
+            "action": "opp_place_hand_bottom_deck",
+            "count": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
+  },
+  "OP17-054": {
+    "name": "Miss Buckingham Stussy",
+    "type": "CHARACTER",
+    "cost": 3,
+    "power": 5000,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "Wisdom",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_end_phase",
+            "cost_lte": 6
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 3
+          }
+        ]
+      }
+    }
+  },
+  "OP17-055": {
+    "name": "There's No Authority in the World That Lasts Forever!!!",
+    "type": "EVENT",
+    "cost": 0,
+    "power": 0,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "",
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "own_character",
+            "duration": "battle_only"
+          },
+          {
+            "action": "gain_unblockable",
+            "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "OP17-056": {
+    "name": "Rocks Pirates",
+    "type": "EVENT",
+    "cost": 0,
+    "power": 0,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "",
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 6
+          },
+          {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "own_character",
+            "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 5
+          }
+        ]
+      }
+    }
+  },
+  "OP17-057": {
+    "name": "Fullalead",
+    "type": "STAGE",
+    "cost": 1,
+    "power": 0,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "",
+    "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "own_character",
+            "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          },
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "OP17-058": {
+    "name": "There's No Authority in the World That Lasts Forever!!!",
+    "type": "EVENT",
+    "cost": 0,
+    "power": 0,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "",
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "own_character",
+            "duration": "battle_only"
+          },
+          {
+            "action": "gain_unblockable",
+            "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "OP17-059": {
+    "name": "Kaido",
+    "type": "LEADER",
+    "cost": 0,
+    "power": 5000,
+    "counter": 0,
+    "life": 5,
+    "color": "Purple",
+    "sub_types": "The Four Emperors/Animal Kingdom Pirates",
+    "attribute": "Special",
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 2000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ],
+        "once_per_turn": true
+      },
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 2000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
+  },
+  "OP17-060": {
+    "name": "Ulti & Page One",
+    "type": "CHARACTER",
+    "cost": 6,
+    "power": 6000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "Animal Kingdom Pirates",
+    "attribute": "Strike",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "power_lte": 3000
+          }
+        ],
+        "conditions": {
+          "leader_type": "animal kingdom pirates"
+        }
+      }
+    }
+  },
+  "OP17-061": {
+    "name": "Lead Performers",
+    "type": "CHARACTER",
+    "cost": 9,
+    "power": 11000,
+    "counter": 0,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "Fish-Man/Animal Kingdom Pirates",
+    "attribute": "Strike",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_names": [
+              "king",
+              "queen",
+              "jack"
+            ]
+          },
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "conditions": {
+          "leader_type": "animal kingdom pirates"
+        },
+        "costs": [
+          {
+            "type": "trash_self"
+          },
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      }
+    }
+  },
+  "OP17-062": {
+    "name": "Kaido",
+    "type": "CHARACTER",
+    "cost": 10,
+    "power": 12000,
+    "counter": 0,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "The Four Emperors/Animal Kingdom Pirates",
+    "attribute": "Strike",
+    "effects": {
+      "when_don_returned": {
+        "steps": [
+          {
+            "action": "add_don",
+            "count": 1
+          },
+          {
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "return_count_gte": 1,
+        "owner_turn": "your",
+        "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-063": {
+    "name": "Kaido",
+    "type": "CHARACTER",
+    "cost": 10,
+    "power": 12000,
+    "counter": 0,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "The Four Emperors/Animal Kingdom Pirates",
+    "attribute": "Strike",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "negate_effect",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 6,
+            "duration": "this_turn"
+          }
+        ],
+        "conditions": {
+          "just_played": true
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
+  },
+  "OP17-064": {
+    "name": "King",
+    "type": "CHARACTER",
+    "cost": 9,
+    "power": 10000,
+    "counter": 0,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "Lunarian/Animal Kingdom Pirates",
+    "attribute": "Special",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-065": {
+    "name": "Queen",
+    "type": "CHARACTER",
+    "cost": 9,
+    "power": 10000,
+    "counter": 0,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "Animal Kingdom Pirates",
+    "attribute": "Strike",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_banish"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-066": {
+    "name": "Kurozumi Orochi",
+    "type": "CHARACTER",
+    "cost": 1,
+    "power": 0,
+    "counter": 2000,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "Land of Wano/Kurozumi Clan",
+    "attribute": "Wisdom",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 2,
+            "then_trash": 1
+          }
+        ],
+        "conditions": {
+          "other_char_cost_gte": 10
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      }
+    }
+  },
+  "OP17-068": {
+    "name": "Sasaki",
+    "type": "CHARACTER",
+    "cost": 3,
+    "power": 4000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "Animal Kingdom Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "add_don",
+            "count": 2,
+            "rested": true
+          }
+        ],
+        "conditions": {
+          "leader_type": "animal kingdom pirates"
+        },
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 2
+          }
+        ]
+      }
+    }
+  },
+  "OP17-071": {
+    "name": "Who's.Who",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 3000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "Animal Kingdom Pirates/Former CP9",
+    "attribute": "Slash",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 2,
+            "target": "opp_character",
+            "cost_lte": 2
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      }
+    }
+  },
+  "OP17-072": {
+    "name": "Black Maria",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 1000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "Animal Kingdom Pirates",
+    "attribute": "Special",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-073": {
+    "name": "Basil Hawkins",
+    "type": "CHARACTER",
+    "cost": 3,
+    "power": 1000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "Animal Kingdom Pirates/Hawkins Pirates",
+    "attribute": "Wish",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "add_don",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "leader_type": "animal kingdom pirates"
+        },
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "OP17-074": {
+    "name": "Yamato",
+    "type": "CHARACTER",
+    "cost": 3,
+    "power": 1000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "Land of Wano",
+    "attribute": "Strike",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-075": {
+    "name": "X. Drake",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 2000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "Navy/Drake Pirates/Animal Kingdom Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1,
+            "chosen_by": "effect_owner_blind"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 2,
+            "optional": true
+          }
+        ]
+      }
+    }
+  },
+  "OP17-078": {
+    "name": "Drunken Dragon Bagua",
+    "type": "EVENT",
+    "cost": 2,
+    "power": 0,
+    "counter": 0,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "The Four Emperors/Animal Kingdom Pirates",
+    "attribute": "",
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 4000,
+            "target": "leader_or_character",
+            "duration": "battle_only"
+          },
+          {
+            "action": "add_don",
+            "count": 3,
+            "rested": true
+          }
+        ],
+        "conditions": {
+          "leader_type": "animal kingdom pirates"
+        },
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
+          },
+          {
+            "type": "trash_from_hand",
+            "count": 2
+          }
+        ]
+      }
+    }
+  },
+  "OP17-079": {
+    "name": "Monkey.D.Luffy",
+    "type": "LEADER",
+    "cost": 0,
+    "power": 5000,
+    "counter": 0,
+    "life": 5,
+    "color": "Black",
+    "sub_types": "Elbaf/Four Emperors/Straw Hat Crew",
+    "attribute": "Strike",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-080": {
+    "name": "Usopp",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 2000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Elbaph/Straw Hat Crew",
+    "attribute": "Ranged",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 3
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": true,
+            "filter_type": "elbaph",
+            "cost_gte": 12
+          },
+          {
+            "action": "trash_rest"
+          },
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "self",
+            "duration": "this_turn"
+          }
+        ],
+        "conditions": {
+          "board_has_cost_gte": 12
+        }
+      }
+    }
+  },
+  "OP17-081": {
+    "name": "Gerd",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 3000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Giant/Elbaph/New Giant Warrior Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 12,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ],
+        "conditions": {
+          "leader_type": "elbaph"
+        },
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "OP17-082": {
+    "name": "Sanji",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 2000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Elbaph/Straw Hat Crew",
+    "attribute": "Strike",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 2,
+            "then_trash": 2
+          },
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "self",
+            "duration": "this_turn"
+          }
+        ],
+        "conditions": {
+          "board_has_cost_gte": 12
+        }
+      }
+    }
+  },
+  "OP17-083": {
+    "name": "Jinbe",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 2000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Fish-Man/Elbaph/Straw Hat Crew",
+    "attribute": "Strike",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "self",
+            "duration": "this_turn"
+          },
+          {
+            "action": "gain_blocker"
+          }
+        ],
+        "conditions": {
+          "board_has_cost_gte": 12
+        }
+      }
+    }
+  },
+  "OP17-084": {
+    "name": "Tony Tony.Chopper",
+    "type": "CHARACTER",
+    "cost": 1,
+    "power": 2000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Animal/Elbaph/Straw Hat Crew",
+    "attribute": "Strike",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "select_grant_unblockable_turn",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "board_has_cost_gte": 12
+        }
+      }
+    }
+  },
+  "OP17-085": {
+    "name": "Dorry",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 5000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Giant/Elbaph/Giant Warrior Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "self_cant_play",
+            "scope": "chars"
+          },
+          {
+            "action": "buff_cost",
+            "amount": 12,
+            "target": "self",
+            "duration": "permanent"
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 5,
+            "filter_name": "on play",
+            "source_alt": "trash"
+          }
+        ],
+        "conditions": {
+          "leader_type": "elbaph"
+        }
+      }
+    }
+  },
+  "OP17-086": {
+    "name": "Nami",
+    "type": "CHARACTER",
+    "cost": 1,
+    "power": 2000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Elbaph/Straw Hat Crew",
+    "attribute": "Special",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1,
+            "filter_type": "elbaph"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-087": {
+    "name": "Nico Robin",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 2000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Elbaph/Straw Hat Crew",
+    "attribute": "Strike",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "self",
+            "duration": "this_turn"
+          },
+          {
+            "action": "debuff_power",
+            "amount": 3000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          }
+        ],
+        "conditions": {
+          "board_has_cost_gte": 12
+        }
+      }
+    }
+  },
+  "OP17-089": {
+    "name": "Jaguar D. Saul",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 6000,
+    "counter": 0,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Giants/Elbaph/Former Navy",
+    "attribute": "Strike",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 3
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": true,
+            "filter_type": "elbaph"
+          },
+          {
+            "action": "trash_rest"
+          },
+          {
+            "action": "buff_cost",
+            "amount": 12,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-090": {
+    "name": "Franky",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 2000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Elbaph/Straw Hat Crew",
+    "attribute": "Strike",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 2
+          },
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "self",
+            "duration": "this_turn"
+          }
+        ],
+        "conditions": {
+          "board_has_cost_gte": 12
+        }
+      }
+    }
+  },
+  "OP17-091": {
+    "name": "Brook",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 2000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Elbaph/Straw Hat Crew",
+    "attribute": "Slash",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "self",
+            "duration": "this_turn"
+          },
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "board_has_cost_gte": 12
+        }
+      }
+    }
+  },
+  "OP17-092": {
+    "name": "Brogy",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 5000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Giant/Elbaph/Giant Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "self_cant_play",
+            "scope": "chars"
+          },
+          {
+            "action": "buff_cost",
+            "amount": 12,
+            "target": "self",
+            "duration": "permanent"
+          },
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 5,
+            "filter_name": "dorry"
+          }
+        ],
+        "conditions": {
+          "leader_type": "elbaph"
+        }
+      }
+    }
+  },
+  "OP17-093": {
+    "name": "Monkey.D.Luffy",
+    "type": "CHARACTER",
+    "cost": 8,
+    "power": 8000,
+    "counter": 0,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Straw Hat Crew/Four Emperors/Elbaf",
+    "attribute": "Strike",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          },
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 2
+          },
+          {
+            "action": "gain_rush"
+          }
+        ],
+        "conditions": {
+          "board_has_cost_gte": 12
+        }
+      }
+    }
+  },
+  "OP17-094": {
+    "name": "Rodo",
+    "type": "CHARACTER",
+    "cost": 1,
+    "power": 2000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Giant/Elbaph/New Giant Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 12,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ],
+        "conditions": {
+          "leader_type": "elbaph"
+        }
+      }
+    }
+  },
+  "OP17-095": {
+    "name": "Roronoa Zoro",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 2000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Elbaph/Straw Hat Crew",
+    "attribute": "Slash",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "self",
+            "duration": "this_turn"
+          },
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "trash_to_deck_bottom",
+              "count": 3
+            }
+          }
+        ],
+        "conditions": {
+          "board_has_cost_gte": 12
+        }
+      }
+    }
+  },
+  "OP17-098": {
+    "name": "Gum-Gum Kong Pistol",
+    "type": "EVENT",
+    "cost": 1,
+    "power": 0,
+    "counter": 0,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Elbaph/The Four Emperors/Straw Hat Crew",
+    "attribute": "",
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 2,
+            "target": "opp_character",
+            "cost_lte": 6
+          },
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "leader",
+            "duration": "battle_only"
+          }
+        ],
+        "conditions": {
+          "board_has_cost_gte": 12
+        },
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 6
+          }
+        ]
+      }
+    }
+  },
+  "OP17-099": {
+    "name": "Charlotte Linlin",
+    "type": "LEADER",
+    "cost": 0,
+    "power": 5000,
+    "counter": 0,
+    "life": 5,
+    "color": "Yellow",
+    "sub_types": "The Four Emperors/Big Mom Pirates",
+    "attribute": "Special",
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          },
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1,
+            "chosen_by": "effect_owner_blind"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-101": {
+    "name": "Caribou",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Supernovas/Caribou Pirates",
+    "attribute": "Special",
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 5
+          },
+          {
+            "action": "debuff_power",
+            "amount": 3000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
+  },
+  "OP17-102": {
+    "name": "Charlotte Oven",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 4000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Big Mom Pirates",
+    "attribute": "Punch",
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          },
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "power_lte": 4000,
+            "exclude": "charlotte oven"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-103": {
+    "name": "Charlotte Katakuri",
+    "type": "CHARACTER",
+    "cost": 6,
+    "power": 4000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Big Mom Pirates",
+    "attribute": "Punch",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 3000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          },
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "conditions": {
+          "leader_type": "big mom pirates",
+          "your_turn_only": true
+        }
+      }
+    }
+  },
+  "OP17-104": {
+    "name": "Charlotte Cracker",
+    "type": "CHARACTER",
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Big Mom Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          },
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "conditions": {
+          "leader_type": "big mom pirates",
+          "your_turn_only": true
+        },
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
+          }
+        ]
+      }
+    }
+  },
+  "OP17-105": {
+    "name": "Charlotte Chiffon",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 0,
+    "counter": 1000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Firetank Pirates/Former Big Mom Pirates",
+    "attribute": "Wisdom",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "OP17-106": {
+    "name": "Charlotte Smoothie",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 4000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Big Mom Pirates",
+    "attribute": "Special",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          },
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          },
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
+          }
+        ],
+        "conditions": {
+          "your_turn_only": true
+        }
+      }
+    }
+  },
+  "OP17-107": {
+    "name": "Charlotte Daifuku",
+    "type": "CHARACTER",
+    "cost": 3,
+    "power": 4000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Big Mom Pirates",
+    "attribute": "Wisdom",
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-108": {
+    "name": "Charlotte Brulee",
+    "type": "CHARACTER",
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Big Mom Pirates",
+    "attribute": "Special",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-109": {
+    "name": "Charlotte Pudding",
+    "type": "CHARACTER",
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Big Mom Pirates",
+    "attribute": "Wisdom",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 5
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": true,
+            "filter_type": "big mom pirates"
+          },
+          {
+            "action": "deck_bottom_rest"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "OP17-110": {
+    "name": "Charlotte Perospero",
+    "type": "CHARACTER",
+    "cost": 7,
+    "power": 4000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Big Mom Pirates",
+    "attribute": "Wisdom",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          },
+          {
+            "action": "gain_rush"
+          }
+        ],
+        "conditions": {
+          "your_turn_only": true
+        }
+      }
+    }
+  },
+  "OP17-111": {
+    "name": "Charlotte Mont-d'or",
+    "type": "CHARACTER",
+    "cost": 3,
+    "power": 4000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Big Mom Pirates",
+    "attribute": "Wisdom",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 2,
+            "target": "opp_character",
+            "cost_lte": 1
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-112": {
+    "name": "Charlotte Linlin",
+    "type": "CHARACTER",
+    "cost": 10,
+    "power": 12000,
+    "counter": 0,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "The Four Emperors/Big Mom Pirates",
+    "attribute": "Special",
+    "effects": {
+      "your_turn": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          },
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          },
+          {
+            "action": "deal_damage",
+            "count": 1,
+            "up_to": true,
+            "target": "opponent"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-113": {
+    "name": "Streusen",
+    "type": "CHARACTER",
+    "cost": 1,
+    "power": 2000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Big Mom Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 3
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": true
+          },
+          {
+            "action": "deck_bottom_rest"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-114": {
+    "name": "The 3 Sweet Commanders",
+    "type": "CHARACTER",
+    "cost": 6,
+    "power": 4000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Big Mom Pirates",
+    "attribute": "Slash/Special/Punch",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          },
+          {
+            "action": "debuff_power",
+            "amount": 3000,
+            "target": "opp_character",
+            "duration": "this_turn",
+            "count": 2
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          },
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
+          }
+        ],
+        "conditions": {
+          "your_turn_only": true
+        }
+      }
+    }
+  },
+  "OP17-115": {
+    "name": "There's Still A Code Of Honour? You Clowns!",
+    "type": "EVENT",
+    "cost": 1,
+    "power": 0,
+    "counter": 0,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "The Four Emperors/Big Mom Pirates",
+    "attribute": "",
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 4000,
+            "target": "self",
+            "duration": "battle_only"
+          },
+          {
+            "action": "gain_unblockable",
+            "duration": "this_turn"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-116": {
+    "name": "Fulgora",
+    "type": "EVENT",
+    "cost": 1,
+    "power": 0,
+    "counter": 0,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "The Four Emperors/Big Mom Pirates",
+    "attribute": "",
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_stage",
+            "cost_lte": 99
+          },
+          {
+            "action": "buff_power",
+            "amount": 4000,
+            "target": "leader_or_character",
+            "duration": "battle_only"
+          }
+        ],
+        "conditions": {
+          "chars_gte": 2
+        },
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
+          }
+        ]
+      }
+    }
+  },
+  "OP17-117": {
+    "name": "Maser Saber",
+    "type": "EVENT",
+    "cost": 1,
+    "power": 0,
+    "counter": 0,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Four Emperors/Big Mom Pirates",
+    "attribute": "",
+    "effects": {
+      "counter": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "self",
+            "duration": "battle_only"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-118": {
+    "name": "Rocks.D.Xebec",
+    "type": "CHARACTER",
+    "cost": 10,
+    "power": 12000,
+    "counter": 0,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Rocks Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          },
+          {
+            "action": "play_card",
+            "count": 2,
+            "cost_lte": 99,
+            "filter_type": "rocks pirates"
+          }
+        ]
+      }
+    }
+  },
+  "OP17-119": {
+    "name": "Loki",
+    "type": "CHARACTER",
+    "cost": 6,
+    "power": 8000,
+    "counter": 0,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Giant/Elbaf",
+    "attribute": "Strike",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "self",
+            "duration": "this_turn"
+          },
+          {
+            "action": "buff_cost",
+            "amount": 12,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ]
+      }
+    }
   }
 }

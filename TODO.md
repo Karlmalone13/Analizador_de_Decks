@@ -2,6 +2,28 @@
 
 **Última atualização:** 5 de agosto de 2026
 
+> 05/08/2026 (bloco 447): **Branch remota trazida pra `main`** (23
+> commits) — bug histórico de conservação de DON confirmado resolvido
+> (`audit_replay.py --n 20`: 0 anomalias, incluindo Black Imu). **OP17
+> ingerido pela primeira vez** (103 cartas, transcritas manualmente das
+> imagens do jogo — nem Supabase nem a API optcgapi.com têm o set ainda).
+> 100/103 já parseiam com a gramática existente (3 vanillas corretamente
+> vazias). **Pendências reais**: (1) 1 bug de classificação achado em
+> OP17-005 (cláusulas condicional/incondicional misturadas no mesmo
+> bloco) — não corrigido, precisa de auditoria global da mesma forma;
+> (2) as ~95 cartas restantes só tiveram cobertura checada, não
+> corretude semântica linha a linha; (3) não verificado se mecânicas
+> novas do set (gatilho "Character custo 12+", seleção coletiva
+> [King]/[Queen]/[Jack]) têm suporte real em `_execute_step` ou geram
+> step ignorado silenciosamente. Ver bloco 447 do HANDOFF.
+>
+> **Teste pareado do achado do bloco 446 (efeito habilitador jogado
+> depois do último ataque) tentado e abandonado** — script travou
+> consumindo CPU por >20min sem terminar 1 partida sequer (monkeypatch
+> forçando score máximo o tempo todo provavelmente inflou demais a
+> busca contrafactual). Matado, apagado, sem conclusão — achado do
+> bloco 446 continua nem confirmado nem descartado.
+
 > 05/08/2026 (bloco 446): investigado sequenciamento DENTRO do turno
 > (atacar vs blocker vs ramp vs ativação, pedido do usuário). Self-play
 > instrumentado, 80 jogos/976 turnos: ramp de uso imediato e

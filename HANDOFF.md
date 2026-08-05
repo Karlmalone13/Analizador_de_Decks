@@ -1,5 +1,87 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-05 (447) - Claude (sessao local) - merge da branch remota pra main + ingestao inicial do set OP17 (103 cartas, transcricao manual) + tentativa fracassada de teste pareado de sequenciamento
+
+**Parte 1 -- merge**: trouxe `claude/execute-remote-control-3qzqgm` (23 commits,
+blocos 425-446) pra `main` via fast-forward limpo (branch era descendente
+direto, sem divergencia). Validado antes do push: `smoke_fast.py`/
+`smoke_test.py` 100%, `audit_replay.py --n 20 --seed 31`: **0 excecoes, 0
+anomalias** (incluindo matchups Black Imu -- confirma que o bug historico
+de conservacao de DON dos blocos 374/377/410/420/422/423 foi mesmo
+resolvido). Push feito, `server.py` reiniciado.
+
+**Parte 2 -- OP17 (pedido do usuario, "mapeia as cartas novas da op17")**:
+103 cartas do OP17 ja instaladas no simulador (confirmado via pasta
+`Cards/OP17/*.jpg`), mas ZERO no projeto (`cards_rows.csv`/
+`card_effects_db.json`/`card_analysis_db.json`). Investigado: a API
+externa que o projeto usa (optcgapi.com, mesmo dominio ja em
+`cards_rows.csv`) tambem NAO tem OP17 ainda (`/api/allSets/` confirma que
+para no OP-16) -- sem fonte de dado estruturada disponivel. Unica opcao:
+ler cada imagem manualmente (visao) e transcrever. Usuario confirmou
+("continuar as 103") apos eu avisar o tamanho do trabalho.
+
+Transcrevi as 103 cartas (nome, custo, poder, cor, tipo, sub_types,
+attribute, counter, life, texto completo do efeito) em
+`scriptis_da_ia/op17_cards_rows.csv`, anexado a `cards_rows.csv`. Rodei
+`gerar_dbs.py` (2644 -> 2747 cartas) sem tocar em `gerar_effects_db.py` --
+a gramatica JA EXISTENTE reconheceu efeito em **100 das 103** cartas (as
+3 restantes -- Kingdew OP17-006, Zoro OP17-035, Jinbe OP17-051 -- sao
+vanillas de verdade, sem texto, entao vazio esta certo). `diff_parser.py`:
+GANHOU=0, PERDEU=0 (nenhuma carta pre-existente afetada) -- rodei
+`snapshot_parser.py` pra realinhar o baseline (que estava desatualizado
+desde o merge da parte 1, MUDOU=6 antes disso, MUDOU=0 depois).
+
+**Achado real, NAO corrigido**: spot-check de 8 cartas achou 1 bug de
+classificacao -- OP17-005 (Edward.Newgate) tem 2 clausulas independentes
+(`-4 cost SE oponente tem 10000+ poder` + `[On Play] lider vira 8000`) e o
+parser colocou as DUAS no mesmo bloco `passive`, com a condicao do
+`-4 cost` vazando pro `[On Play]` tambem (que deveria ser incondicional).
+Registrado em `parser_audits/2026-08-05_op17_ingestao_inicial_do_set_novo.json`
+como pendencia -- corrigir direito exige a auditoria global normal
+(buscar essa MESMA forma -- 2 clausulas competindo por bloco/condicao --
+em todo o banco), fora do orcamento desta sessao. As outras ~95 cartas
+NAO foram lidas uma a uma pra confirmar corretude, so cobertura
+(bloco existe ou nao).
+
+**IMPORTANTE -- erro cometido e corrigido na hora**: tentei "atualizar"
+`parser_snapshot.json` com um `shutil.copy` direto de `card_effects_db.json`
+por cima -- formato ERRADO (snapshot precisa do formato completo com
+name/type/cost/etc, nao so o dict de effects), quase corrompendo o
+baseline de regressao do parser pro projeto inteiro. Revertido na hora via
+`git checkout -- parser_snapshot.json` antes de qualquer commit, e refeito
+certo com `snapshot_parser.py` (o script dedicado que ja existia). Nao
+teve nenhum efeito permanente, mas fica registrado -- **nunca copiar
+`card_effects_db.json` por cima de `parser_snapshot.json` diretamente**.
+
+`smoke_fast.py`/`smoke_test.py` 100% apos a ingestao completa.
+**Pendente, nao feito**: (1) corrigir OP17-005 e auditar a mesma forma
+globalmente; (2) ler as ~95 cartas restantes pra confirmar corretude
+semantica, nao so cobertura; (3) confirmar se mecanicas novas do OP17
+(gatilho "Character com custo 12+ em campo", selecao [King]/[Queen]/[Jack]
+por nome coletivo) tem suporte real em `decision_engine.py`
+(`_execute_step`) ou so geraram um step com action desconhecida que o
+motor ignora silenciosamente -- nao verificado. (4) Fonte dos dados e
+transcricao MANUAL (nao Supabase/optcgapi.com) -- se o Supabase for
+atualizado com OP17 oficial, considerar substituir pra evitar erro de
+transcricao propagado.
+
+**Parte 3 -- tentativa fracassada, sem resultado**: usuario pediu o
+teste pareado do achado do bloco 446 (~115 casos de efeito habilitador
+jogado depois do ultimo ataque). Escrevi um script (`git stash`-style,
+monkeypatch forcando `_score_play_action` a retornar 1.000.000 pra
+qualquer carta habilitadora, comparando self-play baseline vs forcado,
+mesmas seeds). **O script nunca terminou uma unica partida** -- rodou
+>20 minutos de CPU ativo (confirmado via `Get-Process`, CPU subindo,
+sem travar de verdade) sem imprimir nada, provavel efeito colateral do
+monkeypatch na busca contrafactual (forcar o score maximo O TEMPO TODO,
+nao so na 1a avaliacao, pode ter inflado MUITO o espaco de branches que
+`_simulate_sequence_once` explora). Matei os processos, apaguei o script
+(nunca commitado). **Sem conclusao sobre o achado do bloco 446** -- fica
+exatamente onde estava (nao confirmado como perda real, nem descartado).
+Se retomar: desenhar um teste mais barato (ex: so forcar a ordem no
+PRIMEIRO turno relevante de cada jogo, nao em toda avaliacao da busca
+inteira) antes de rodar de novo.
+
 ## 2026-08-05 (446) - Claude (sessao remota web) - Auditoria de SEQUENCIAMENTO dentro do turno (atacar vs blocker vs ramp vs ativacao)
 
 Pedido do usuario: investigar se o bot joga as cartas na ORDEM certa
