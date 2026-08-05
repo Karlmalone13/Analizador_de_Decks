@@ -1,5 +1,58 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-05 (449) - Claude (sessao remota web) - Teste pareado BARATO do achado do bloco 446/448 (Marco/Ohm/Satori) -- efeito real mas DEPENDENTE de deck, nao uniforme
+
+Retomei o item deixado pendente no bloco 447 Parte 3 (teste pareado do
+"efeito habilitador jogado depois do ultimo ataque" travou >20min sem
+terminar 1 partida, monkeypatch de score dentro da busca Monte Carlo
+completa explodiu o espaco de branches). Redesenho mais barato, exatamente
+como sugerido la: em vez de inflar o score DENTRO da busca recursiva,
+substitui `OPTCGMatch.main_phase` inteiro por um loop guloso simples
+(sem Monte Carlo, sem busca de resposta) -- IDENTICO nos dois lados do
+teste, exceto que a variante 'forcado' faz a jogada habilitadora (mesmo
+criterio do `habilita_ataque` real) furar a fila antes do 1o ataque do
+turno, quando disponivel. O(1) por decisao -- rodou 10 matchups x 60
+seeds x 2 variantes em **1min45s** (vs >20min sem terminar da tentativa
+anterior).
+
+**Achado real (achado ao comparar N=25 vs N=60, padrao estavel -- nao
+ruido de seed)**: o efeito de forcar a ordem NAO e uniforme, depende
+muito do deck:
+- **Enel se beneficia MUITO** em todos os 3 matchups: 70%→95%, 80%→92%,
+  52%→63% (win rate).
+- **Nami/Ace pioram bastante contra Mihawk**: 38%→17% e 40%→23%.
+- **Imu fica proximo de neutro** depois de um fix de metodologia (ver
+  abaixo): pequenas quedas em geral.
+
+**Correcao de metodologia no meio do teste**: a 1a rodada (sem guarda
+de LETHAL) mostrava quedas MUITO piores pro Imu (45%→16-20% contra
+Mihawk) -- ao investigar, o forcado nao respeitava a mesma guarda que o
+`main_phase` real tem (`priority != 'LETHAL'` antes de qualquer bypass
+de ordem), entao sabotava ataques QUE JA FECHAVAM A PARTIDA em favor de
+jogar a carta habilitadora. Corrigido (adicionado o mesmo guard), os
+numeros do Imu ficaram bem mais proximos de neutro -- mas Enel/Nami/Ace
+mantiveram o mesmo padrao, confirmando que aquele pedaco especifico e
+real, nao artefato do bug de metodologia.
+
+**Limitacao honesta, explicita**: este teste substitui o Turn Planner
+Monte Carlo real por uma politica gulosa simplificada NOS DOIS lados --
+mede "ajuda uma politica gulosa simplificada", nao replica com fidelidade
+o motor de producao completo (TOP_K + simulacao + busca de resposta).
+Tambem forca QUALQUER jogada habilitadora disponivel (score>=0),
+independente da magnitude do score -- nao testa um empurrao modesto, so
+o extremo "sempre antes, sem excecao" (exceto LETHAL). Serve como sinal
+direcional barato, nao como validacao definitiva do motor real.
+
+**Conclusao**: NAO existe um veredito simples "forcar ordem sempre
+ajuda" ou "nunca ajuda" -- e dependente de deck/matchup, com Enel se
+beneficiando MUITO e Nami/Ace contra Mihawk piorando bastante. Isso
+sugere que qualquer fix futuro no `habilita_ataque`/scoring de ordem
+real precisa ser calibrado por deck (ou pelo menos validado contra
+multiplos arquetipos), nao um bonus fixo universal maior. **Sem fix
+aplicado no motor de producao** -- script fica em scratchpad, nao
+commitado (ferramenta descartavel de teste, nao permanente como
+`audit_real_losses.py`).
+
 ## 2026-08-05 (448) - Claude (sessao remota web) - Auditoria global do achado OP17-005: causa raiz era bug de DADO (backslash-n literal), nao de gramatica -- 65 cartas corrigidas
 
 Usuario pediu pra auditar globalmente e corrigir o achado registrado no

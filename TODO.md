@@ -2,6 +2,18 @@
 
 **Última atualização:** 5 de agosto de 2026
 
+> 05/08/2026 (bloco 449): **teste pareado BARATO** do achado do bloco
+> 446/448 (Marco/Ohm/Satori jogados depois do último ataque) — a
+> tentativa anterior (447 Parte 3) travou >20min; redesenho substitui
+> `main_phase` por loop guloso simples (sem Monte Carlo) nos dois lados,
+> rodou 10 matchups x 60 seeds x 2 variantes em 1min45s. **Achado real,
+> mas DEPENDENTE de deck**: Enel se beneficia MUITO forçando a ordem
+> (70%→95%, 80%→92%, 52%→63% win rate), Nami/Ace pioram bastante contra
+> Mihawk (38%→17%, 40%→23%), Imu fica quase neutro. Não existe veredito
+> uniforme — qualquer fix futuro no bônus de ordem precisa ser calibrado
+> por deck, não um valor fixo universal. **Sem fix aplicado**, script
+> descartável não commitado. Ver bloco 449 do HANDOFF.
+
 > 05/08/2026 (bloco 448): **auditoria global do bloco 447 concluída**.
 > Causa raiz do bug do OP17-005 não era gramática — era um `\n` literal
 > (2 caracteres, não quebra de linha real) na transcrição manual do
