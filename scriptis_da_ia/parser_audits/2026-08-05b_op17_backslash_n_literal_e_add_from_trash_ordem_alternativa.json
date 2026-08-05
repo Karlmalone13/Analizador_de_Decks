@@ -1,0 +1,33 @@
+{
+  "trigger_card": "OP17-005",
+  "problem": "Investigando o achado registrado no bloco anterior (2026-08-05_op17_ingestao_inicial_do_set_novo.json), a causa raiz NAO era um gap de gramatica em gerar_effects_db.py -- era um bug de TRANSCRICAO DE DADO: a ingestao manual das 103 cartas do OP17 usou o texto LITERAL de 2 caracteres backslash+n ('\\\\n', nao uma quebra de linha real) para separar clausulas dentro de card_text. O ABERTURA lookbehind que todo o mecanismo de deteccao de blocos/tags usa (trigger_patterns loop E primeira_tag_m/segmento_solto) exige '.'/quebra de linha REAL/']'/')' imediatamente antes de uma tag -- um literal backslash+n nao bate NENHUMA dessas alternativas, entao a tag [On Play] (ou qualquer outra) ficava INVISIVEL pro parser inteiro, e o texto caia no fallback generico de 'passive' sem nenhuma tag, fundindo as 2 clausulas independentes (a do custo condicional + a do efeito com tag) numa unica entry, com a condicao da 1a vazando pra 2a.",
+  "grammar_family": "literal backslash-n (2 chars, nao quebra de linha real) separando clausulas -- afeta QUALQUER mecanismo de split (trigger_patterns, segmento_solto, fallback sem tag), nao um mecanismo especifico.",
+  "queries": [
+    "cards_rows.csv inteiro: df['card_text'].str.contains(r'\\\\\\\\n') -- 72 cartas, TODAS OP17 (0 no resto do banco de 2644 cartas pre-existentes, confirmando que e um artefato desta ingestao, nao um padrao pre-existente).",
+    "Das 72, 70 tem o backslash-n imediatamente ANTES de um '[Tag]' (quebra de deteccao de tag confirmada por teste direto do regex ABERTURA); as outras 2 (OP17-095, OP17-099) tem o backslash-n em outro ponto do texto.",
+    "Fix: substituido o literal '\\\\n' por quebra de linha REAL nas 72 linhas de cards_rows.csv E op17_cards_rows.csv (normalizacao de dado, ZERO mudanca em gerar_effects_db.py para este ponto).",
+    "Resultado apos o fix de dado: diff_parser.py GANHOU=0 PERDEU=0 MUDOU=65 -- 65 cartas OP17 passaram a separar corretamente blocos que antes vinham fundidos num 'passive' unico (on_play, activate_main, on_ko, opp_turn, end_of_turn, trigger, counter, when_attacking agora aparecem como entries proprias). As outras ~5-7 nao mudaram o JSON final apesar de terem o artefato (a fusao acabou nao alterando o resultado, ex: unico step sem condicao pra vazar)."
+  ],
+  "cards_found": [
+    "OP17-003", "OP17-005", "OP17-009", "OP17-012", "OP17-013", "OP17-015", "OP17-019",
+    "OP17-022", "OP17-024", "OP17-025", "OP17-026", "OP17-027", "OP17-028", "OP17-029",
+    "OP17-030", "OP17-031", "OP17-033", "OP17-036", "OP17-037", "OP17-038", "OP17-040",
+    "OP17-041", "OP17-042", "OP17-043", "OP17-044", "OP17-045", "OP17-046", "OP17-048",
+    "OP17-049", "OP17-053", "OP17-054", "OP17-055", "OP17-056", "OP17-058", "OP17-061",
+    "OP17-062", "OP17-063", "OP17-064", "OP17-065", "OP17-071", "OP17-072", "OP17-074",
+    "OP17-078", "OP17-080", "OP17-081", "OP17-082", "OP17-085", "OP17-087", "OP17-089",
+    "OP17-090", "OP17-091", "OP17-092", "OP17-093", "OP17-095", "OP17-098", "OP17-099",
+    "OP17-101", "OP17-102", "OP17-103", "OP17-104", "OP17-106", "OP17-108", "OP17-109",
+    "OP17-110", "OP17-111", "OP17-112", "OP17-114", "OP17-115", "OP17-116", "OP17-117",
+    "OP17-118", "OP17-119"
+  ],
+  "resolution_scope": "global",
+  "decision": "(1) FIX DE DADO (nao de codigo): normalizado o literal '\\\\n' para quebra de linha real nas 72 linhas afetadas de cards_rows.csv e op17_cards_rows.csv -- resolve 65 cartas, incluindo a OP17-005 que motivou o achado original. (2) FIX GENERICO DE CODIGO, separado: ao investigar o residuo, achei que OP17-081 (Gerd) tinha uma variante de ORDEM de clausula em 'add up to N ... from your trash to your hand' que parse_add_from_trash nao aceitava -- 'other than [X]' pode vir ANTES de 'from your trash' (OP05-091 Rebecca, ja suportado) OU DEPOIS de 'from your trash' e ANTES de 'to your hand' (OP17-081, forma nova). Censo global confirmou OP17-081 como UNICA carta nessa 2a ordem (isolated_after_global_scan PARA ESTE SUB-PONTO especifico, mesmo que o 'decision' geral seja 'global' pelo achado 1). Generalizado o regex e o gate ('from your trash to your hand' in t) em gerar_effects_db.py pra aceitar ambas as ordens, sem hardcode do nome Gerd. (3) NAO CORRIGIDO, registrado como pendencia: OP17-095 (Roronoa Zoro) ainda funde 2 clausulas independentes sem tag nenhuma (buff condicional a 'Character custo 12+' + substitute_removal incondicional) porque o fallback sem-tag tem um guard deliberado (`is_substitute_fb`) que PULA o split_then_if quando o bloco contem substitute_ko/substitute_removal -- esse guard protege ATE 38 cartas no banco inteiro (censo rodado), entao mexer nele exige investigacao propria e dedicada, fora do orcamento desta sessao. Confirmado via censo que a FORMA exata de OP17-095 (clausula anterior + 'if one/any of your characters would be removed from the field') e unica no banco -- isolated_after_global_scan para este ponto, mas o CONSERTO real depende de entender o guard maior primeiro.",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=65 (fix de dado) + regenerado de novo apos o fix de add_from_trash (MUDOU continua 65, mesmo conjunto de cartas, OP17-081 ganhou o bloco on_play que faltava sem alterar nenhuma OUTRA carta)",
+    "Censo direto (script ad-hoc): 0 cartas fora do OP17 tem o literal backslash-n; 1 carta (OP17-081) tem a ordem alternativa de 'other than [X]' em add_from_trash; 1 carta (OP17-095) tem a forma exata do gap residual do substitute",
+    "smoke_fast.py: SMOKE FAST OK",
+    "smoke_test.py: TODOS OS TESTES PASSARAM"
+  ],
+  "notes": "Pendente para sessao futura: (a) investigar o guard `is_substitute_fb` (linha ~9469 de gerar_effects_db.py) a fundo -- ele existe pra proteger substitute_ko/substitute_removal de split_then_if, mas isso deixa QUALQUER clausula condicional anterior vazar pro substitute quando as duas vem sem tag formal (38 cartas passam por esse fallback hoje, so 1 -- OP17-095 -- comprovadamente tem esse formato de 2 clausulas independentes; as outras 37 nao foram auditadas uma a uma pra confirmar se sofrem do mesmo vazamento ou se sao de fato uma clausula so). (b) OP17-081 e OP17-095 sao os unicos 2 do lote de 72 com backslash-n que NAO ficaram 100% corretos so com o fix de dado -- todas as outras 70 ficaram."
+}

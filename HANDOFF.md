@@ -1,5 +1,64 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-05 (448) - Claude (sessao remota web) - Auditoria global do achado OP17-005: causa raiz era bug de DADO (backslash-n literal), nao de gramatica -- 65 cartas corrigidas
+
+Usuario pediu pra auditar globalmente e corrigir o achado registrado no
+bloco 447 (OP17-005: cláusula condicional de custo vazando pro `[On
+Play]` incondicional no mesmo bloco `passive`). Segui o gate do parser
+(`scriptis_da_ia/AGENTS.md`/`CLAUDE.md`, "auditoria global antes de
+corrigir").
+
+**Causa raiz real, diferente do suspeitado**: nao e gap de gramatica em
+`gerar_effects_db.py` -- a ingestao manual do OP17 (bloco 447) usou o
+texto LITERAL de 2 caracteres `\n` (barra + letra n, NAO uma quebra de
+linha de verdade) pra separar clausulas dentro de `card_text`. O
+lookbehind `ABERTURA` que TODO o mecanismo de deteccao de tag/bloco usa
+(`trigger_patterns`, `primeira_tag_m`/`segmento_solto`) exige
+`.`/quebra de linha REAL/`]`/`)` imediatamente antes de uma tag -- um
+`\n` literal nao bate nenhuma alternativa, entao a tag (`[On Play]` etc)
+ficava INVISIVEL pro parser inteiro, e o texto caia no fallback
+generico de `passive` sem tag nenhuma, fundindo as clausulas.
+
+**Escala real**: censo em `cards_rows.csv` inteiro (2747 cartas) achou
+**72 cartas com esse artefato, 100% delas no OP17** (0 no resto do
+banco pre-existente, confirma que e artefato desta ingestao, nao um
+padrao antigo). Das 72, 70 tinham o `\n` literal colado direto antes de
+um `[Tag]` (quebra de deteccao confirmada por teste direto do regex).
+
+**Fix 1 (dado, nao codigo)**: normalizado `\n` literal -> quebra de
+linha real nas 72 linhas de `cards_rows.csv` e `op17_cards_rows.csv`.
+`diff_parser.py`: GANHOU=0, PERDEU=0, **MUDOU=65** -- 65 cartas OP17
+passaram a separar corretamente blocos que vinham fundidos (`on_play`,
+`activate_main`, `on_ko`, `opp_turn`, `end_of_turn`, `trigger`,
+`counter`, `when_attacking` agora aparecem como entries proprias em vez
+de tudo em `passive`).
+
+**Fix 2 (codigo genérico, achado auditando o residuo)**: OP17-081
+(Gerd) ainda ficava sem nenhum step de `add_from_trash` mesmo depois do
+fix de dado -- `parse_add_from_trash` exige o literal grudado "from
+your trash to your hand", mas Gerd tem "from your trash **other than
+[Gerd]** to your hand" (a exclusao de nome entre as duas metades da
+frase, ordem que so `OP05-091 Rebecca` -- com "other than" ANTES de
+"from your trash" -- ja cobria). Censo confirmou Gerd como UNICA carta
+nessa 2a ordem no banco inteiro -- generalizado o regex e o gate (nao
+hardcoded pro nome "Gerd") pra aceitar as duas ordens.
+
+**NAO corrigido, registrado como pendencia**: OP17-095 (Roronoa Zoro)
+ainda funde 2 clausulas independentes sem tag nenhuma (buff condicional
+a "Character custo 12+" + `substitute_removal` incondicional) porque o
+fallback sem-tag tem um guard deliberado (`is_substitute_fb`, linha
+~9469) que PULA o `split_then_if` quando o bloco contem
+substitute_ko/substitute_removal -- esse guard protege **ate 38
+cartas** no banco inteiro (censo rodado), entao mexer nele exige
+investigacao propria dedicada, fora do orcamento desta sessao. A FORMA
+exata de OP17-095 e unica no banco (confirmado), mas o CONSERTO
+depende de entender o guard maior primeiro -- registrado, nao forcado.
+
+Registro completo em
+`parser_audits/2026-08-05b_op17_backslash_n_literal_e_add_from_trash_ordem_alternativa.json`.
+`snapshot_parser.py` realinhou o baseline. `smoke_fast.py`/
+`smoke_test.py` 100%.
+
 ## 2026-08-05 (447) - Claude (sessao local) - merge da branch remota pra main + ingestao inicial do set OP17 (103 cartas, transcricao manual) + tentativa fracassada de teste pareado de sequenciamento
 
 **Parte 1 -- merge**: trouxe `claude/execute-remote-control-3qzqgm` (23 commits,

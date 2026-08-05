@@ -79486,7 +79486,7 @@
     "sub_types": "Land of Wano/Whitebeard Pirates",
     "attribute": "Special",
     "effects": {
-      "passive": {
+      "on_play": {
         "steps": [
           {
             "action": "debuff_power",
@@ -79535,15 +79535,18 @@
     "sub_types": "The Four Emperors/Whitebeard Pirates",
     "attribute": "Special",
     "effects": {
-      "passive": {
+      "on_play": {
         "steps": [
           {
             "action": "set_base_power",
             "amount": 8000,
             "target": "leader",
-            "filter_type": "on play",
             "duration": "until_opp_turn_end"
-          },
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
           {
             "action": "debuff_cost",
             "amount": 4,
@@ -79630,14 +79633,18 @@
     "sub_types": "Whitebeard Pirates",
     "attribute": "Slash",
     "effects": {
-      "opp_turn": {
+      "on_play": {
         "steps": [
           {
             "action": "ko",
             "count": 1,
             "target": "opp_character",
             "power_lte": 2000
-          },
+          }
+        ]
+      },
+      "opp_turn": {
+        "steps": [
           {
             "action": "buff_power",
             "amount": 3000,
@@ -79679,14 +79686,21 @@
     "sub_types": "Whitebeard Pirates",
     "attribute": "Special",
     "effects": {
-      "passive": {
+      "on_play": {
         "steps": [
           {
             "action": "debuff_power",
             "amount": 6000,
             "target": "opp_character",
             "duration": "this_turn"
-          },
+          }
+        ],
+        "conditions": {
+          "leader_is": "edward.newgate"
+        }
+      },
+      "passive": {
+        "steps": [
           {
             "action": "debuff_cost",
             "amount": 2,
@@ -79694,7 +79708,6 @@
           }
         ],
         "conditions": {
-          "leader_is": "edward.newgate",
           "opp_char_power_gte": 10000
         }
       }
@@ -79711,6 +79724,21 @@
     "sub_types": "Whitebeard Pirates",
     "attribute": "Special",
     "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "filter_self": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -79758,6 +79786,16 @@
     "sub_types": "The Four Emperors/Whitebeard Pirates",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "leader",
+            "duration": "this_turn"
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -79771,12 +79809,6 @@
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "buff_power",
-            "amount": 1000,
-            "target": "leader",
-            "duration": "this_turn"
           }
         ]
       }
@@ -79852,6 +79884,15 @@
     "sub_types": "The Four Emperors/Red-Haired Pirates",
     "attribute": "Slash",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -79872,6 +79913,14 @@
     "sub_types": "Red-Haired Pirates",
     "attribute": "",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -79892,6 +79941,16 @@
     "sub_types": "Red-Haired Pirates",
     "attribute": "Slash",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "give_don",
+            "count": 1,
+            "rested": true
+          }
+        ],
+        "once_per_turn": true
+      },
       "on_ko": {
         "steps": [
           {
@@ -79900,14 +79959,8 @@
             "target": "opp_character",
             "cost_lte": 6,
             "rested_only": true
-          },
-          {
-            "action": "give_don",
-            "count": 1,
-            "rested": true
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -79928,15 +79981,19 @@
             "action": "rest_opp_character",
             "count": 1,
             "cost_lte": 2
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ],
         "conditions": {
           "leader_type": "red-haired pirates"
         }
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          }
+        ]
       }
     }
   },
@@ -79951,7 +80008,7 @@
     "sub_types": "Red-Haired Pirates",
     "attribute": "Ranged",
     "effects": {
-      "passive": {
+      "on_play": {
         "steps": [
           {
             "action": "rest_opp_character",
@@ -79979,6 +80036,17 @@
     "sub_types": "Animal/Red-Haired Pirates",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 6,
+            "rested_only": true
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -79999,6 +80067,20 @@
     "sub_types": "Red-Haired Pirates",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 2,
+            "cost_lte": 2
+          },
+          {
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -80022,24 +80104,28 @@
       "on_play": {
         "steps": [
           {
-            "action": "set_don_active",
-            "count": 1,
-            "up_to": true
-          },
-          {
             "action": "gain_rush",
             "duration": "this_turn"
           }
         ],
-        "conditions": {
-          "hand_lte": 5
-        },
         "costs": [
           {
             "type": "rest_don",
             "count": 1
           }
+        ]
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
+          }
         ],
+        "conditions": {
+          "hand_lte": 5
+        },
         "once_per_turn": true
       }
     }
@@ -80063,13 +80149,17 @@
             "cost_lte": 8
           },
           {
+            "action": "draw",
+            "count": 1
+          }
+        ]
+      },
+      "end_of_turn": {
+        "steps": [
+          {
             "action": "set_active",
             "count": 1,
             "target": "own_character"
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ]
       }
@@ -80128,7 +80218,11 @@
           },
           {
             "action": "deck_bottom_rest"
-          },
+          }
+        ]
+      },
+      "on_opp_attack": {
+        "steps": [
           {
             "action": "rest_opp_character",
             "count": 1
@@ -80195,6 +80289,16 @@
     "sub_types": "The Four Emperors/Red-Haired Pirates",
     "attribute": "",
     "effects": {
+      "counter": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 4000,
+            "target": "self",
+            "duration": "battle_only"
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -80208,12 +80312,6 @@
             "action": "rest_opp_character",
             "count": 1,
             "cost_lte": 6
-          },
-          {
-            "action": "buff_power",
-            "amount": 4000,
-            "target": "self",
-            "duration": "battle_only"
           }
         ],
         "costs": [
@@ -80236,6 +80334,22 @@
     "sub_types": "The Four Emperors/Red-Haired Pirates",
     "attribute": "",
     "effects": {
+      "counter": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "leader_or_character",
+            "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -80249,18 +80363,6 @@
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "buff_power",
-            "amount": 3000,
-            "target": "leader_or_character",
-            "duration": "battle_only"
-          }
-        ],
-        "costs": [
-          {
-            "type": "rest_don",
-            "count": 1
           }
         ]
       }
@@ -80277,12 +80379,8 @@
     "sub_types": "Red-Haired Pirates",
     "attribute": "",
     "effects": {
-      "main": {
+      "counter": {
         "steps": [
-          {
-            "action": "rest_opp_character",
-            "count": 1
-          },
           {
             "action": "buff_power",
             "amount": 3000,
@@ -80292,12 +80390,22 @@
         ],
         "costs": [
           {
-            "type": "rest_don",
-            "count": 4
-          },
-          {
             "type": "trash_from_hand",
             "count": 1
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 4
           }
         ]
       }
@@ -80398,6 +80506,23 @@
     "sub_types": "Rocks Pirates",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 3000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 3,
+            "filter_type": "rocks pirates"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -80418,6 +80543,16 @@
     "sub_types": "Rocks Pirates",
     "attribute": "Special",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "amount": 6000,
+            "target": "leader",
+            "duration": "until_opp_turn_end"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -80442,7 +80577,7 @@
     "sub_types": "Rocks Pirates",
     "attribute": "Special",
     "effects": {
-      "passive": {
+      "activate_main": {
         "steps": [
           {
             "action": "draw",
@@ -80450,9 +80585,6 @@
             "then_trash": 1
           }
         ],
-        "conditions": {
-          "leader_type_includes": "rocks pirates"
-        },
         "costs": [
           {
             "type": "rest_self"
@@ -80472,6 +80604,14 @@
     "sub_types": "Rocks Pirates",
     "attribute": "Slash",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -80497,6 +80637,15 @@
     "sub_types": "Amazon Lily/Rocks Pirates",
     "attribute": "Wisdom",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 5
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -80517,7 +80666,24 @@
     "sub_types": "Rocks Pirates",
     "attribute": "Slash",
     "effects": {
-      "passive": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 3000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      },
+      "on_opp_attack": {
         "steps": [
           {
             "action": "debuff_power",
@@ -80554,14 +80720,18 @@
             "count": 2
           },
           {
+            "action": "opp_trash_from_hand",
+            "count": 2
+          }
+        ]
+      },
+      "on_opp_attack": {
+        "steps": [
+          {
             "action": "buff_power",
             "amount": 1000,
             "target": "leader_or_character",
             "duration": "battle_only"
-          },
-          {
-            "action": "opp_trash_from_hand",
-            "count": 2
           }
         ],
         "costs": [
@@ -80648,17 +80818,13 @@
     "sub_types": "Fish-Man/Rocks Pirates",
     "attribute": "Strike",
     "effects": {
-      "on_ko": {
+      "activate_main": {
         "steps": [
           {
             "action": "buff_power",
             "amount": 3000,
             "target": "self",
             "duration": "this_turn"
-          },
-          {
-            "action": "opp_place_hand_bottom_deck",
-            "count": 2
           }
         ],
         "costs": [
@@ -80668,6 +80834,14 @@
           }
         ],
         "once_per_turn": true
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "opp_place_hand_bottom_deck",
+            "count": 2
+          }
+        ]
       }
     }
   },
@@ -80690,6 +80864,15 @@
             "duration": "until_opp_end_phase",
             "cost_lte": 6
           }
+        ]
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_end_phase"
+          }
         ],
         "costs": [
           {
@@ -80711,14 +80894,18 @@
     "sub_types": "Rocks Pirates",
     "attribute": "",
     "effects": {
-      "main": {
+      "counter": {
         "steps": [
           {
             "action": "buff_power",
             "amount": 2000,
             "target": "own_character",
             "duration": "battle_only"
-          },
+          }
+        ]
+      },
+      "main": {
+        "steps": [
           {
             "action": "gain_unblockable",
             "duration": "this_turn"
@@ -80744,6 +80931,16 @@
     "sub_types": "Rocks Pirates",
     "attribute": "",
     "effects": {
+      "counter": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "own_character",
+            "duration": "battle_only"
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -80751,12 +80948,6 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 6
-          },
-          {
-            "action": "buff_power",
-            "amount": 2000,
-            "target": "own_character",
-            "duration": "battle_only"
           }
         ],
         "costs": [
@@ -80811,14 +81002,18 @@
     "sub_types": "Rocks Pirates",
     "attribute": "",
     "effects": {
-      "main": {
+      "counter": {
         "steps": [
           {
             "action": "buff_power",
             "amount": 2000,
             "target": "own_character",
             "duration": "battle_only"
-          },
+          }
+        ]
+      },
+      "main": {
+        "steps": [
           {
             "action": "gain_unblockable",
             "duration": "this_turn"
@@ -80922,16 +81117,6 @@
       "on_play": {
         "steps": [
           {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 99,
-            "filter_names": [
-              "king",
-              "queen",
-              "jack"
-            ]
-          },
-          {
             "action": "gain_life",
             "source": "deck_top",
             "dest": "life_top",
@@ -80944,12 +81129,28 @@
         },
         "costs": [
           {
-            "type": "trash_self"
-          },
-          {
             "type": "don_minus",
             "count": 1,
             "optional": true
+          }
+        ]
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_names": [
+              "king",
+              "queen",
+              "jack"
+            ]
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_self"
           }
         ]
       }
@@ -81002,7 +81203,7 @@
     "sub_types": "The Four Emperors/Animal Kingdom Pirates",
     "attribute": "Strike",
     "effects": {
-      "passive": {
+      "activate_main": {
         "steps": [
           {
             "action": "negate_effect",
@@ -81037,6 +81238,23 @@
     "sub_types": "Lunarian/Animal Kingdom Pirates",
     "attribute": "Special",
     "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "leader_or_character",
+            "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -81057,6 +81275,27 @@
     "sub_types": "Animal Kingdom Pirates",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 2,
+            "duration": "until_opp_end_phase",
+            "cost_lte": 5
+          },
+          {
+            "action": "draw",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -81147,11 +81386,6 @@
             "count": 2,
             "target": "opp_character",
             "cost_lte": 2
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "source": "self"
           }
         ],
         "costs": [
@@ -81159,6 +81393,15 @@
             "type": "don_minus",
             "count": 1,
             "optional": true
+          }
+        ]
+      },
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
           }
         ]
       }
@@ -81175,6 +81418,23 @@
     "sub_types": "Animal Kingdom Pirates",
     "attribute": "Special",
     "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "leader_or_character",
+            "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -81225,6 +81485,14 @@
     "sub_types": "Land of Wano",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "add_don",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -81274,14 +81542,18 @@
     "sub_types": "The Four Emperors/Animal Kingdom Pirates",
     "attribute": "",
     "effects": {
-      "main": {
+      "counter": {
         "steps": [
           {
             "action": "buff_power",
             "amount": 4000,
             "target": "leader_or_character",
             "duration": "battle_only"
-          },
+          }
+        ]
+      },
+      "main": {
+        "steps": [
           {
             "action": "add_don",
             "count": 3,
@@ -81335,7 +81607,7 @@
     "sub_types": "Elbaph/Straw Hat Crew",
     "attribute": "Ranged",
     "effects": {
-      "passive": {
+      "on_play": {
         "steps": [
           {
             "action": "look_top_deck",
@@ -81345,12 +81617,15 @@
             "action": "add_to_hand",
             "count": 1,
             "revealed_to_opponent": true,
-            "filter_type": "elbaph",
-            "cost_gte": 12
+            "filter_type": "elbaph"
           },
           {
             "action": "trash_rest"
-          },
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
           {
             "action": "buff_power",
             "amount": 3000,
@@ -81375,6 +81650,22 @@
     "sub_types": "Giant/Elbaph/New Giant Warrior Pirates",
     "attribute": "Slash",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "add_from_trash",
+            "count": 1,
+            "exclude_name": "gerd",
+            "cost_lte": 8
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -81386,13 +81677,7 @@
         ],
         "conditions": {
           "leader_type": "elbaph"
-        },
-        "costs": [
-          {
-            "type": "trash_from_hand",
-            "count": 1
-          }
-        ]
+        }
       }
     }
   },
@@ -81407,13 +81692,17 @@
     "sub_types": "Elbaph/Straw Hat Crew",
     "attribute": "Strike",
     "effects": {
-      "passive": {
+      "on_play": {
         "steps": [
           {
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
           {
             "action": "buff_power",
             "amount": 3000,
@@ -81491,29 +81780,33 @@
     "sub_types": "Giant/Elbaph/Giant Warrior Pirates",
     "attribute": "Slash",
     "effects": {
-      "passive": {
+      "on_play": {
         "steps": [
           {
             "action": "self_cant_play",
             "scope": "chars"
           },
           {
-            "action": "buff_cost",
-            "amount": 12,
-            "target": "self",
-            "duration": "permanent"
-          },
-          {
             "action": "play_card",
             "count": 1,
             "cost_lte": 5,
-            "filter_name": "on play",
+            "filter_name": "brogy",
             "source_alt": "trash"
           }
         ],
         "conditions": {
           "leader_type": "elbaph"
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 12,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ]
       }
     }
   },
@@ -81556,18 +81849,25 @@
     "sub_types": "Elbaph/Straw Hat Crew",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 3000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          }
+        ],
+        "conditions": {
+          "board_has_cost_gte": 12
+        }
+      },
       "passive": {
         "steps": [
           {
             "action": "buff_power",
             "amount": 3000,
             "target": "self",
-            "duration": "this_turn"
-          },
-          {
-            "action": "debuff_power",
-            "amount": 3000,
-            "target": "opp_character",
             "duration": "this_turn"
           }
         ],
@@ -81588,7 +81888,7 @@
     "sub_types": "Giants/Elbaph/Former Navy",
     "attribute": "Strike",
     "effects": {
-      "passive": {
+      "on_play": {
         "steps": [
           {
             "action": "look_top_deck",
@@ -81602,7 +81902,11 @@
           },
           {
             "action": "trash_rest"
-          },
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
           {
             "action": "buff_cost",
             "amount": 12,
@@ -81624,14 +81928,21 @@
     "sub_types": "Elbaph/Straw Hat Crew",
     "attribute": "Strike",
     "effects": {
-      "passive": {
+      "on_play": {
         "steps": [
           {
             "action": "ko",
             "count": 1,
             "target": "opp_character",
             "cost_lte": 2
-          },
+          }
+        ],
+        "conditions": {
+          "board_has_cost_gte": 12
+        }
+      },
+      "passive": {
+        "steps": [
           {
             "action": "buff_power",
             "amount": 3000,
@@ -81656,6 +81967,17 @@
     "sub_types": "Elbaph/Straw Hat Crew",
     "attribute": "Slash",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "board_has_cost_gte": 12
+        }
+      },
       "passive": {
         "steps": [
           {
@@ -81663,10 +81985,6 @@
             "amount": 3000,
             "target": "self",
             "duration": "this_turn"
-          },
-          {
-            "action": "opp_trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -81686,17 +82004,11 @@
     "sub_types": "Giant/Elbaph/Giant Pirates",
     "attribute": "Slash",
     "effects": {
-      "passive": {
+      "on_play": {
         "steps": [
           {
             "action": "self_cant_play",
             "scope": "chars"
-          },
-          {
-            "action": "buff_cost",
-            "amount": 12,
-            "target": "self",
-            "duration": "permanent"
           },
           {
             "action": "play_from_trash",
@@ -81708,6 +82020,16 @@
         "conditions": {
           "leader_type": "elbaph"
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 12,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ]
       }
     }
   },
@@ -81722,7 +82044,7 @@
     "sub_types": "Straw Hat Crew/Four Emperors/Elbaf",
     "attribute": "Strike",
     "effects": {
-      "passive": {
+      "on_play": {
         "steps": [
           {
             "action": "draw",
@@ -81732,7 +82054,11 @@
             "action": "play_from_trash",
             "count": 1,
             "cost_lte": 2
-          },
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
           {
             "action": "gain_rush"
           }
@@ -81793,7 +82119,8 @@
             "cost": {
               "action": "trash_to_deck_bottom",
               "count": 3
-            }
+            },
+            "no_filter": true
           }
         ],
         "conditions": {
@@ -81813,6 +82140,16 @@
     "sub_types": "Elbaph/The Four Emperors/Straw Hat Crew",
     "attribute": "",
     "effects": {
+      "counter": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "leader",
+            "duration": "battle_only"
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -81820,12 +82157,6 @@
             "count": 2,
             "target": "opp_character",
             "cost_lte": 6
-          },
-          {
-            "action": "buff_power",
-            "amount": 3000,
-            "target": "leader",
-            "duration": "battle_only"
           }
         ],
         "conditions": {
@@ -81883,16 +82214,21 @@
       "activate_main": {
         "steps": [
           {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 5
-          },
-          {
             "action": "debuff_power",
             "amount": 3000,
             "target": "opp_character",
             "duration": "this_turn"
+          }
+        ],
+        "once_per_turn": true
+      },
+      "trigger": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 5
           }
         ],
         "costs": [
@@ -81900,8 +82236,7 @@
             "type": "trash_from_hand",
             "count": 1
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -81919,15 +82254,19 @@
       "on_ko": {
         "steps": [
           {
-            "action": "play_card",
-            "count": 1,
-            "source": "self"
-          },
-          {
             "action": "play_from_trash",
             "count": 1,
             "power_lte": 4000,
             "exclude": "charlotte oven"
+          }
+        ]
+      },
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
           }
         ]
       }
@@ -81953,11 +82292,6 @@
             "duration": "this_turn"
           },
           {
-            "action": "play_card",
-            "count": 1,
-            "source": "self"
-          },
-          {
             "action": "gain_life",
             "source": "deck_top",
             "dest": "life_top",
@@ -81969,6 +82303,15 @@
           "leader_type": "big mom pirates",
           "your_turn_only": true
         }
+      },
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          }
+        ]
       }
     }
   },
@@ -81986,11 +82329,6 @@
       "on_play": {
         "steps": [
           {
-            "action": "play_card",
-            "count": 1,
-            "source": "self"
-          },
-          {
             "action": "gain_life",
             "source": "deck_top",
             "dest": "life_top",
@@ -82006,6 +82344,15 @@
           {
             "type": "rest_don",
             "count": 2
+          }
+        ]
+      },
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
           }
         ]
       }
@@ -82053,11 +82400,6 @@
       "on_play": {
         "steps": [
           {
-            "action": "play_card",
-            "count": 1,
-            "source": "self"
-          },
-          {
             "action": "gain_life",
             "source": "deck_top",
             "dest": "life_top",
@@ -82078,6 +82420,15 @@
         "conditions": {
           "your_turn_only": true
         }
+      },
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          }
+        ]
       }
     }
   },
@@ -82114,6 +82465,15 @@
     "sub_types": "Big Mom Pirates",
     "attribute": "Special",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 6
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -82137,6 +82497,20 @@
       "on_play": {
         "steps": [
           {
+            "action": "draw",
+            "count": 3
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
+      "trigger": {
+        "steps": [
+          {
             "action": "look_top_deck",
             "count": 5
           },
@@ -82148,12 +82522,6 @@
           },
           {
             "action": "deck_bottom_rest"
-          }
-        ],
-        "costs": [
-          {
-            "type": "trash_from_hand",
-            "count": 1
           }
         ]
       }
@@ -82175,7 +82543,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "source": "self"
+            "cost_lte": 6,
+            "filter_type": "big mom pirates"
           },
           {
             "action": "gain_rush"
@@ -82184,6 +82553,15 @@
         "conditions": {
           "your_turn_only": true
         }
+      },
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          }
+        ]
       }
     }
   },
@@ -82205,7 +82583,11 @@
             "count": 2,
             "target": "opp_character",
             "cost_lte": 1
-          },
+          }
+        ]
+      },
+      "trigger": {
+        "steps": [
           {
             "action": "play_card",
             "count": 1,
@@ -82226,7 +82608,7 @@
     "sub_types": "The Four Emperors/Big Mom Pirates",
     "attribute": "Special",
     "effects": {
-      "your_turn": {
+      "on_play": {
         "steps": [
           {
             "action": "draw",
@@ -82303,11 +82685,6 @@
             "count": 2
           },
           {
-            "action": "play_card",
-            "count": 1,
-            "source": "self"
-          },
-          {
             "action": "gain_life",
             "source": "deck_top",
             "dest": "life_top",
@@ -82324,6 +82701,15 @@
         "conditions": {
           "your_turn_only": true
         }
+      },
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          }
+        ]
       }
     }
   },
@@ -82338,14 +82724,18 @@
     "sub_types": "The Four Emperors/Big Mom Pirates",
     "attribute": "",
     "effects": {
-      "main": {
+      "counter": {
         "steps": [
           {
             "action": "buff_power",
             "amount": 4000,
             "target": "self",
             "duration": "battle_only"
-          },
+          }
+        ]
+      },
+      "main": {
+        "steps": [
           {
             "action": "gain_unblockable",
             "duration": "this_turn"
@@ -82365,14 +82755,8 @@
     "sub_types": "The Four Emperors/Big Mom Pirates",
     "attribute": "",
     "effects": {
-      "main": {
+      "counter": {
         "steps": [
-          {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_stage",
-            "cost_lte": 99
-          },
           {
             "action": "buff_power",
             "amount": 4000,
@@ -82382,7 +82766,17 @@
         ],
         "conditions": {
           "chars_gte": 2
-        },
+        }
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_stage",
+            "cost_lte": 99
+          }
+        ],
         "costs": [
           {
             "type": "rest_don",
@@ -82426,7 +82820,7 @@
     "sub_types": "Rocks Pirates",
     "attribute": "Slash",
     "effects": {
-      "passive": {
+      "on_play": {
         "steps": [
           {
             "action": "draw",

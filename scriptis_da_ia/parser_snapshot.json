@@ -41907,7 +41907,7 @@
   }
  },
  "OP17-003": {
-  "passive": {
+  "on_play": {
    "conditions": {
     "leader_is": "edward.newgate"
    },
@@ -41934,18 +41934,21 @@
   }
  },
  "OP17-005": {
-  "passive": {
-   "conditions": {
-    "opp_char_power_gte": 10000
-   },
+  "on_play": {
    "steps": [
     {
      "action": "set_base_power",
      "amount": 8000,
      "duration": "until_opp_turn_end",
-     "filter_type": "on play",
      "target": "leader"
-    },
+    }
+   ]
+  },
+  "passive": {
+   "conditions": {
+    "opp_char_power_gte": 10000
+   },
+   "steps": [
     {
      "action": "debuff_cost",
      "amount": 4,
@@ -41985,14 +41988,18 @@
   }
  },
  "OP17-009": {
-  "opp_turn": {
+  "on_play": {
    "steps": [
     {
      "action": "ko",
      "count": 1,
      "power_lte": 2000,
      "target": "opp_character"
-    },
+    }
+   ]
+  },
+  "opp_turn": {
+   "steps": [
     {
      "action": "buff_power",
      "amount": 3000,
@@ -42012,10 +42019,9 @@
   }
  },
  "OP17-013": {
-  "passive": {
+  "on_play": {
    "conditions": {
-    "leader_is": "edward.newgate",
-    "opp_char_power_gte": 10000
+    "leader_is": "edward.newgate"
    },
    "steps": [
     {
@@ -42023,7 +42029,14 @@
      "amount": 6000,
      "duration": "this_turn",
      "target": "opp_character"
-    },
+    }
+   ]
+  },
+  "passive": {
+   "conditions": {
+    "opp_char_power_gte": 10000
+   },
+   "steps": [
     {
      "action": "debuff_cost",
      "amount": 2,
@@ -42033,6 +42046,21 @@
   }
  },
  "OP17-015": {
+  "on_ko": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "trash_from_hand"
+    }
+   ],
+   "steps": [
+    {
+     "action": "play_from_trash",
+     "count": 1,
+     "filter_self": true
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42071,7 +42099,11 @@
     },
     {
      "action": "deck_bottom_rest"
-    },
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
     {
      "action": "buff_power",
      "amount": 1000,
@@ -42119,6 +42151,15 @@
   }
  },
  "OP17-022": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "set_don_active",
+     "count": 2,
+     "up_to": true
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42128,6 +42169,14 @@
   }
  },
  "OP17-024": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "rest_opp_character",
+     "count": 1
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42137,8 +42186,17 @@
   }
  },
  "OP17-025": {
-  "on_ko": {
+  "activate_main": {
    "once_per_turn": true,
+   "steps": [
+    {
+     "action": "give_don",
+     "count": 1,
+     "rested": true
+    }
+   ]
+  },
+  "on_ko": {
    "steps": [
     {
      "action": "ko",
@@ -42146,16 +42204,19 @@
      "count": 1,
      "rested_only": true,
      "target": "opp_character"
-    },
-    {
-     "action": "give_don",
-     "count": 1,
-     "rested": true
     }
    ]
   }
  },
  "OP17-026": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "draw",
+     "count": 1
+    }
+   ]
+  },
   "when_attacking": {
    "conditions": {
     "leader_type": "red-haired pirates"
@@ -42165,16 +42226,12 @@
      "action": "rest_opp_character",
      "cost_lte": 2,
      "count": 1
-    },
-    {
-     "action": "draw",
-     "count": 1
     }
    ]
   }
  },
  "OP17-027": {
-  "passive": {
+  "on_play": {
    "conditions": {
     "leader_type": "red-haired pirates"
    },
@@ -42191,6 +42248,17 @@
   }
  },
  "OP17-028": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "ko",
+     "cost_lte": 6,
+     "count": 1,
+     "rested_only": true,
+     "target": "opp_character"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42200,6 +42268,20 @@
   }
  },
  "OP17-029": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "rest_opp_character",
+     "cost_lte": 2,
+     "count": 2
+    },
+    {
+     "action": "set_don_active",
+     "count": 1,
+     "up_to": true
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42209,23 +42291,27 @@
   }
  },
  "OP17-030": {
-  "on_play": {
+  "activate_main": {
    "conditions": {
     "hand_lte": 5
    },
-   "costs": [
-    {
-     "count": 1,
-     "type": "rest_don"
-    }
-   ],
    "once_per_turn": true,
    "steps": [
     {
      "action": "set_don_active",
      "count": 1,
      "up_to": true
-    },
+    }
+   ]
+  },
+  "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "rest_don"
+    }
+   ],
+   "steps": [
     {
      "action": "gain_rush",
      "duration": "this_turn"
@@ -42234,17 +42320,21 @@
   }
  },
  "OP17-031": {
+  "end_of_turn": {
+   "steps": [
+    {
+     "action": "set_active",
+     "count": 1,
+     "target": "own_character"
+    }
+   ]
+  },
   "on_play": {
    "steps": [
     {
      "action": "rest_opp_character",
      "cost_lte": 8,
      "count": 1
-    },
-    {
-     "action": "set_active",
-     "count": 1,
-     "target": "own_character"
     },
     {
      "action": "draw",
@@ -42272,12 +42362,20 @@
   }
  },
  "OP17-033": {
-  "on_play": {
+  "on_opp_attack": {
    "costs": [
     {
      "type": "trash_self"
     }
    ],
+   "steps": [
+    {
+     "action": "rest_opp_character",
+     "count": 1
+    }
+   ]
+  },
+  "on_play": {
    "steps": [
     {
      "action": "look_top_deck",
@@ -42290,10 +42388,6 @@
     },
     {
      "action": "deck_bottom_rest"
-    },
-    {
-     "action": "rest_opp_character",
-     "count": 1
     }
    ]
   }
@@ -42319,6 +42413,16 @@
  },
  "OP17-035": {},
  "OP17-036": {
+  "counter": {
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 4000,
+     "duration": "battle_only",
+     "target": "self"
+    }
+   ]
+  },
   "main": {
    "costs": [
     {
@@ -42338,24 +42442,28 @@
      "action": "rest_opp_character",
      "cost_lte": 6,
      "count": 1
-    },
-    {
-     "action": "buff_power",
-     "amount": 4000,
-     "duration": "battle_only",
-     "target": "self"
     }
    ]
   }
  },
  "OP17-037": {
-  "main": {
+  "counter": {
    "costs": [
     {
      "count": 1,
      "type": "rest_don"
     }
    ],
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 3000,
+     "duration": "battle_only",
+     "target": "leader_or_character"
+    }
+   ]
+  },
+  "main": {
    "steps": [
     {
      "action": "look_top_deck",
@@ -42368,23 +42476,13 @@
     },
     {
      "action": "deck_bottom_rest"
-    },
-    {
-     "action": "buff_power",
-     "amount": 3000,
-     "duration": "battle_only",
-     "target": "leader_or_character"
     }
    ]
   }
  },
  "OP17-038": {
-  "main": {
+  "counter": {
    "costs": [
-    {
-     "count": 4,
-     "type": "rest_don"
-    },
     {
      "count": 1,
      "type": "trash_from_hand"
@@ -42392,14 +42490,24 @@
    ],
    "steps": [
     {
-     "action": "rest_opp_character",
-     "count": 1
-    },
-    {
      "action": "buff_power",
      "amount": 3000,
      "duration": "battle_only",
      "target": "leader_or_character"
+    }
+   ]
+  },
+  "main": {
+   "costs": [
+    {
+     "count": 4,
+     "type": "rest_don"
+    }
+   ],
+   "steps": [
+    {
+     "action": "rest_opp_character",
+     "count": 1
     }
    ]
   }
@@ -42456,6 +42564,23 @@
   }
  },
  "OP17-042": {
+  "on_play": {
+   "costs": [
+    {
+     "count": 3,
+     "filter_type": "rocks pirates",
+     "type": "reveal_from_hand"
+    }
+   ],
+   "steps": [
+    {
+     "action": "debuff_power",
+     "amount": 3000,
+     "duration": "this_turn",
+     "target": "opp_character"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42465,6 +42590,16 @@
   }
  },
  "OP17-043": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "set_base_power",
+     "amount": 6000,
+     "duration": "until_opp_turn_end",
+     "target": "leader"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42478,10 +42613,7 @@
   }
  },
  "OP17-044": {
-  "passive": {
-   "conditions": {
-    "leader_type_includes": "rocks pirates"
-   },
+  "activate_main": {
    "costs": [
     {
      "type": "rest_self"
@@ -42497,6 +42629,14 @@
   }
  },
  "OP17-045": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "draw",
+     "count": 1
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42511,6 +42651,15 @@
   }
  },
  "OP17-046": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 5,
+     "count": 1
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42520,7 +42669,24 @@
   }
  },
  "OP17-048": {
-  "passive": {
+  "on_opp_attack": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "trash_from_hand"
+    }
+   ],
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "debuff_power",
+     "amount": 3000,
+     "duration": "this_turn",
+     "target": "opp_character"
+    }
+   ]
+  },
+  "when_attacking": {
    "costs": [
     {
      "count": 1,
@@ -42539,7 +42705,7 @@
   }
  },
  "OP17-049": {
-  "on_play": {
+  "on_opp_attack": {
    "costs": [
     {
      "count": 1,
@@ -42549,14 +42715,18 @@
    "once_per_turn": true,
    "steps": [
     {
-     "action": "draw",
-     "count": 2
-    },
-    {
      "action": "buff_power",
      "amount": 1000,
      "duration": "battle_only",
      "target": "leader_or_character"
+    }
+   ]
+  },
+  "on_play": {
+   "steps": [
+    {
+     "action": "draw",
+     "count": 2
     },
     {
      "action": "opp_trash_from_hand",
@@ -42596,7 +42766,7 @@
   }
  },
  "OP17-053": {
-  "on_ko": {
+  "activate_main": {
    "costs": [
     {
      "count": 1,
@@ -42610,7 +42780,11 @@
      "amount": 3000,
      "duration": "this_turn",
      "target": "self"
-    },
+    }
+   ]
+  },
+  "on_ko": {
+   "steps": [
     {
      "action": "opp_place_hand_bottom_deck",
      "count": 2
@@ -42619,13 +42793,22 @@
   }
  },
  "OP17-054": {
-  "on_play": {
+  "activate_main": {
    "costs": [
     {
      "count": 3,
      "type": "rest_don"
     }
    ],
+   "steps": [
+    {
+     "action": "lock_opp_character_attack",
+     "count": 1,
+     "duration": "until_opp_end_phase"
+    }
+   ]
+  },
+  "on_play": {
    "steps": [
     {
      "action": "lock_opp_character_attack",
@@ -42637,6 +42820,16 @@
   }
  },
  "OP17-055": {
+  "counter": {
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 2000,
+     "duration": "battle_only",
+     "target": "own_character"
+    }
+   ]
+  },
   "main": {
    "costs": [
     {
@@ -42646,12 +42839,6 @@
    ],
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 2000,
-     "duration": "battle_only",
-     "target": "own_character"
-    },
-    {
      "action": "gain_unblockable",
      "duration": "this_turn"
     }
@@ -42659,6 +42846,16 @@
   }
  },
  "OP17-056": {
+  "counter": {
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 2000,
+     "duration": "battle_only",
+     "target": "own_character"
+    }
+   ]
+  },
   "main": {
    "costs": [
     {
@@ -42672,12 +42869,6 @@
      "cost_lte": 6,
      "count": 1,
      "target": "opp_character"
-    },
-    {
-     "action": "buff_power",
-     "amount": 2000,
-     "duration": "battle_only",
-     "target": "own_character"
     }
    ]
   }
@@ -42704,6 +42895,16 @@
   }
  },
  "OP17-058": {
+  "counter": {
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 2000,
+     "duration": "battle_only",
+     "target": "own_character"
+    }
+   ]
+  },
   "main": {
    "costs": [
     {
@@ -42712,12 +42913,6 @@
     }
    ],
    "steps": [
-    {
-     "action": "buff_power",
-     "amount": 2000,
-     "duration": "battle_only",
-     "target": "own_character"
-    },
     {
      "action": "gain_unblockable",
      "duration": "this_turn"
@@ -42779,18 +42974,10 @@
   }
  },
  "OP17-061": {
-  "on_play": {
-   "conditions": {
-    "leader_type": "animal kingdom pirates"
-   },
+  "activate_main": {
    "costs": [
     {
      "type": "trash_self"
-    },
-    {
-     "count": 1,
-     "optional": true,
-     "type": "don_minus"
     }
    ],
    "steps": [
@@ -42803,7 +42990,21 @@
       "queen",
       "jack"
      ]
-    },
+    }
+   ]
+  },
+  "on_play": {
+   "conditions": {
+    "leader_type": "animal kingdom pirates"
+   },
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
+   "steps": [
     {
      "action": "gain_life",
      "count": 1,
@@ -42840,7 +43041,7 @@
   }
  },
  "OP17-063": {
-  "passive": {
+  "activate_main": {
    "conditions": {
     "just_played": true
    },
@@ -42864,6 +43065,23 @@
   }
  },
  "OP17-064": {
+  "on_opp_attack": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "trash_from_hand"
+    }
+   ],
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 2000,
+     "duration": "battle_only",
+     "target": "leader_or_character"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42873,6 +43091,27 @@
   }
  },
  "OP17-065": {
+  "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
+   "steps": [
+    {
+     "action": "lock_opp_character_attack",
+     "cost_lte": 5,
+     "count": 2,
+     "duration": "until_opp_end_phase"
+    },
+    {
+     "action": "draw",
+     "count": 1
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42937,7 +43176,11 @@
      "cost_lte": 2,
      "count": 2,
      "target": "opp_character"
-    },
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
     {
      "action": "play_card",
      "count": 1,
@@ -42947,6 +43190,23 @@
   }
  },
  "OP17-072": {
+  "on_opp_attack": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "trash_from_hand"
+    }
+   ],
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 1000,
+     "duration": "battle_only",
+     "target": "leader_or_character"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42975,6 +43235,14 @@
   }
  },
  "OP17-074": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "add_don",
+     "count": 1
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -43002,6 +43270,16 @@
   }
  },
  "OP17-078": {
+  "counter": {
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 4000,
+     "duration": "battle_only",
+     "target": "leader_or_character"
+    }
+   ]
+  },
   "main": {
    "conditions": {
     "leader_type": "animal kingdom pirates"
@@ -43017,12 +43295,6 @@
     }
    ],
    "steps": [
-    {
-     "action": "buff_power",
-     "amount": 4000,
-     "duration": "battle_only",
-     "target": "leader_or_character"
-    },
     {
      "action": "add_don",
      "count": 3,
@@ -43041,10 +43313,7 @@
   }
  },
  "OP17-080": {
-  "passive": {
-   "conditions": {
-    "board_has_cost_gte": 12
-   },
+  "on_play": {
    "steps": [
     {
      "action": "look_top_deck",
@@ -43052,14 +43321,20 @@
     },
     {
      "action": "add_to_hand",
-     "cost_gte": 12,
      "count": 1,
      "filter_type": "elbaph",
      "revealed_to_opponent": true
     },
     {
      "action": "trash_rest"
-    },
+    }
+   ]
+  },
+  "passive": {
+   "conditions": {
+    "board_has_cost_gte": 12
+   },
+   "steps": [
     {
      "action": "buff_power",
      "amount": 3000,
@@ -43070,16 +43345,26 @@
   }
  },
  "OP17-081": {
-  "passive": {
-   "conditions": {
-    "leader_type": "elbaph"
-   },
+  "on_play": {
    "costs": [
     {
      "count": 1,
      "type": "trash_from_hand"
     }
    ],
+   "steps": [
+    {
+     "action": "add_from_trash",
+     "cost_lte": 8,
+     "count": 1,
+     "exclude_name": "gerd"
+    }
+   ]
+  },
+  "passive": {
+   "conditions": {
+    "leader_type": "elbaph"
+   },
    "steps": [
     {
      "action": "buff_cost",
@@ -43091,16 +43376,20 @@
   }
  },
  "OP17-082": {
-  "passive": {
-   "conditions": {
-    "board_has_cost_gte": 12
-   },
+  "on_play": {
    "steps": [
     {
      "action": "draw",
      "count": 2,
      "then_trash": 2
-    },
+    }
+   ]
+  },
+  "passive": {
+   "conditions": {
+    "board_has_cost_gte": 12
+   },
+   "steps": [
     {
      "action": "buff_power",
      "amount": 3000,
@@ -43142,7 +43431,7 @@
   }
  },
  "OP17-085": {
-  "passive": {
+  "on_play": {
    "conditions": {
     "leader_type": "elbaph"
    },
@@ -43152,17 +43441,21 @@
      "scope": "chars"
     },
     {
+     "action": "play_card",
+     "cost_lte": 5,
+     "count": 1,
+     "filter_name": "brogy",
+     "source_alt": "trash"
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
      "action": "buff_cost",
      "amount": 12,
      "duration": "permanent",
      "target": "self"
-    },
-    {
-     "action": "play_card",
-     "cost_lte": 5,
-     "count": 1,
-     "filter_name": "on play",
-     "source_alt": "trash"
     }
    ]
   }
@@ -43185,6 +43478,19 @@
   }
  },
  "OP17-087": {
+  "on_play": {
+   "conditions": {
+    "board_has_cost_gte": 12
+   },
+   "steps": [
+    {
+     "action": "debuff_power",
+     "amount": 3000,
+     "duration": "this_turn",
+     "target": "opp_character"
+    }
+   ]
+  },
   "passive": {
    "conditions": {
     "board_has_cost_gte": 12
@@ -43195,18 +43501,12 @@
      "amount": 3000,
      "duration": "this_turn",
      "target": "self"
-    },
-    {
-     "action": "debuff_power",
-     "amount": 3000,
-     "duration": "this_turn",
-     "target": "opp_character"
     }
    ]
   }
  },
  "OP17-089": {
-  "passive": {
+  "on_play": {
    "steps": [
     {
      "action": "look_top_deck",
@@ -43220,7 +43520,11 @@
     },
     {
      "action": "trash_rest"
-    },
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
     {
      "action": "buff_cost",
      "amount": 12,
@@ -43231,7 +43535,7 @@
   }
  },
  "OP17-090": {
-  "passive": {
+  "on_play": {
    "conditions": {
     "board_has_cost_gte": 12
    },
@@ -43241,7 +43545,14 @@
      "cost_lte": 2,
      "count": 1,
      "target": "opp_character"
-    },
+    }
+   ]
+  },
+  "passive": {
+   "conditions": {
+    "board_has_cost_gte": 12
+   },
+   "steps": [
     {
      "action": "buff_power",
      "amount": 3000,
@@ -43252,6 +43563,17 @@
   }
  },
  "OP17-091": {
+  "on_play": {
+   "conditions": {
+    "board_has_cost_gte": 12
+   },
+   "steps": [
+    {
+     "action": "opp_trash_from_hand",
+     "count": 1
+    }
+   ]
+  },
   "passive": {
    "conditions": {
     "board_has_cost_gte": 12
@@ -43262,16 +43584,12 @@
      "amount": 3000,
      "duration": "this_turn",
      "target": "self"
-    },
-    {
-     "action": "opp_trash_from_hand",
-     "count": 1
     }
    ]
   }
  },
  "OP17-092": {
-  "passive": {
+  "on_play": {
    "conditions": {
     "leader_type": "elbaph"
    },
@@ -43281,25 +43599,26 @@
      "scope": "chars"
     },
     {
-     "action": "buff_cost",
-     "amount": 12,
-     "duration": "permanent",
-     "target": "self"
-    },
-    {
      "action": "play_from_trash",
      "cost_lte": 5,
      "count": 1,
      "filter_name": "dorry"
     }
    ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "buff_cost",
+     "amount": 12,
+     "duration": "permanent",
+     "target": "self"
+    }
+   ]
   }
  },
  "OP17-093": {
-  "passive": {
-   "conditions": {
-    "board_has_cost_gte": 12
-   },
+  "on_play": {
    "steps": [
     {
      "action": "draw",
@@ -43309,7 +43628,14 @@
      "action": "play_from_trash",
      "cost_lte": 2,
      "count": 1
-    },
+    }
+   ]
+  },
+  "passive": {
+   "conditions": {
+    "board_has_cost_gte": 12
+   },
+   "steps": [
     {
      "action": "gain_rush"
     }
@@ -43348,12 +43674,23 @@
      "cost": {
       "action": "trash_to_deck_bottom",
       "count": 3
-     }
+     },
+     "no_filter": true
     }
    ]
   }
  },
  "OP17-098": {
+  "counter": {
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 3000,
+     "duration": "battle_only",
+     "target": "leader"
+    }
+   ]
+  },
   "main": {
    "conditions": {
     "board_has_cost_gte": 12
@@ -43370,12 +43707,6 @@
      "cost_lte": 6,
      "count": 2,
      "target": "opp_character"
-    },
-    {
-     "action": "buff_power",
-     "amount": 3000,
-     "duration": "battle_only",
-     "target": "leader"
     }
    ]
   }
@@ -43400,24 +43731,28 @@
  },
  "OP17-101": {
   "activate_main": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "debuff_power",
+     "amount": 3000,
+     "duration": "this_turn",
+     "target": "opp_character"
+    }
+   ]
+  },
+  "trigger": {
    "costs": [
     {
      "count": 1,
      "type": "trash_from_hand"
     }
    ],
-   "once_per_turn": true,
    "steps": [
     {
      "action": "ko",
      "cost_lte": 5,
      "count": 1,
-     "target": "opp_character"
-    },
-    {
-     "action": "debuff_power",
-     "amount": 3000,
-     "duration": "this_turn",
      "target": "opp_character"
     }
    ]
@@ -43427,15 +43762,19 @@
   "on_ko": {
    "steps": [
     {
-     "action": "play_card",
-     "count": 1,
-     "source": "self"
-    },
-    {
      "action": "play_from_trash",
      "count": 1,
      "exclude": "charlotte oven",
      "power_lte": 4000
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "play_card",
+     "count": 1,
+     "source": "self"
     }
    ]
   }
@@ -43454,16 +43793,20 @@
      "target": "opp_character"
     },
     {
-     "action": "play_card",
-     "count": 1,
-     "source": "self"
-    },
-    {
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
      "source": "deck_top",
      "up_to": true
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "play_card",
+     "count": 1,
+     "source": "self"
     }
    ]
   }
@@ -43482,16 +43825,20 @@
    ],
    "steps": [
     {
-     "action": "play_card",
-     "count": 1,
-     "source": "self"
-    },
-    {
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
      "source": "deck_top",
      "up_to": true
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "play_card",
+     "count": 1,
+     "source": "self"
     }
    ]
   }
@@ -43526,11 +43873,6 @@
    ],
    "steps": [
     {
-     "action": "play_card",
-     "count": 1,
-     "source": "self"
-    },
-    {
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
@@ -43540,6 +43882,15 @@
     {
      "action": "opp_trash_from_hand",
      "count": 1
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "play_card",
+     "count": 1,
+     "source": "self"
     }
    ]
   }
@@ -43562,6 +43913,15 @@
      "action": "keyword_blocker"
     }
    ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "rest_opp_character",
+     "cost_lte": 6,
+     "count": 1
+    }
+   ]
   }
  },
  "OP17-109": {
@@ -43572,6 +43932,14 @@
      "type": "trash_from_hand"
     }
    ],
+   "steps": [
+    {
+     "action": "draw",
+     "count": 3
+    }
+   ]
+  },
+  "trigger": {
    "steps": [
     {
      "action": "look_top_deck",
@@ -43597,11 +43965,21 @@
    "steps": [
     {
      "action": "play_card",
+     "cost_lte": 6,
      "count": 1,
-     "source": "self"
+     "filter_type": "big mom pirates"
     },
     {
      "action": "gain_rush"
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "play_card",
+     "count": 1,
+     "source": "self"
     }
    ]
   }
@@ -43614,7 +43992,11 @@
      "cost_lte": 1,
      "count": 2,
      "target": "opp_character"
-    },
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
     {
      "action": "play_card",
      "count": 1,
@@ -43624,7 +44006,7 @@
   }
  },
  "OP17-112": {
-  "your_turn": {
+  "on_play": {
    "steps": [
     {
      "action": "draw",
@@ -43688,11 +44070,6 @@
      "target": "opp_character"
     },
     {
-     "action": "play_card",
-     "count": 1,
-     "source": "self"
-    },
-    {
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
@@ -43700,17 +44077,30 @@
      "up_to": true
     }
    ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "play_card",
+     "count": 1,
+     "source": "self"
+    }
+   ]
   }
  },
  "OP17-115": {
-  "main": {
+  "counter": {
    "steps": [
     {
      "action": "buff_power",
      "amount": 4000,
      "duration": "battle_only",
      "target": "self"
-    },
+    }
+   ]
+  },
+  "main": {
+   "steps": [
     {
      "action": "gain_unblockable",
      "duration": "this_turn"
@@ -43719,10 +44109,20 @@
   }
  },
  "OP17-116": {
-  "main": {
+  "counter": {
    "conditions": {
     "chars_gte": 2
    },
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 4000,
+     "duration": "battle_only",
+     "target": "leader_or_character"
+    }
+   ]
+  },
+  "main": {
    "costs": [
     {
      "count": 2,
@@ -43735,12 +44135,6 @@
      "cost_lte": 99,
      "count": 1,
      "target": "opp_stage"
-    },
-    {
-     "action": "buff_power",
-     "amount": 4000,
-     "duration": "battle_only",
-     "target": "leader_or_character"
     }
    ]
   }
@@ -43758,7 +44152,7 @@
   }
  },
  "OP17-118": {
-  "passive": {
+  "on_play": {
    "steps": [
     {
      "action": "draw",

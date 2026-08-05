@@ -6379,12 +6379,24 @@ def parse_add_from_trash(text):
 
     # Aceita: "add up to N <descrição> from your trash to your hand"
     # A <descrição> pode ser [tipo], "tipo" type, "Character cards with cost...", etc.
-    m = re.search(r'add up to (\d+) (.+?) from your trash to your hand', t)
+    # "other than [X]" pode vir em DUAS posicoes (mesma clausula, ordem
+    # diferente): antes de "from your trash" (OP05-091 Rebecca, "...cost of
+    # 3 to 7 other than [Rebecca] from your trash to your hand") -- ja
+    # coberto por desc/other_than_m abaixo -- OU depois de "from your
+    # trash" (OP17-081 Gerd, unica carta nessa ordem apos censo global:
+    # "...cost of 8 or less from your trash other than [Gerd] to your
+    # hand"). Sem o grupo opcional aqui, a 2a ordem quebrava o regex
+    # inteiro (exigia o literal "from your trash to your hand" grudado) e
+    # o add_from_trash nunca virava step nenhum. Concatena o trecho
+    # capturado de volta em `desc` pra reusar o MESMO other_than_m abaixo,
+    # sem duplicar logica de extracao.
+    m = re.search(
+        r'add up to (\d+) (.+?) from your trash(?: (other than \[[^\]]+\]))? to your hand', t)
     if not m:
         return steps
 
     count = int(m.group(1))
-    desc = m.group(2)
+    desc = m.group(2) + (' ' + m.group(3) if m.group(3) else '')
 
     step = {'action': 'add_from_trash', 'count': count}
 
@@ -7607,7 +7619,13 @@ def parse_block(block_text, trigger_name):
             steps.append({'action': 'trash_from_deck_top', 'count': int(m_trash_deck.group(1))})
 
     # Add from trash
-    if 'from your trash to your hand' in t:
+    # Gate flexivel o bastante pra aceitar "other than [X]" entre "from
+    # your trash" e "to your hand" (OP17-081 Gerd, unica carta nessa
+    # ordem) alem do literal grudado "from your trash to your hand" --
+    # mesmo censo/fix de parse_add_from_trash acima, sem isso o gate
+    # rejeitava a chamada antes mesmo do regex interno rodar.
+    if ('from your trash to your hand' in t
+            or re.search(r'from your trash other than \[[^\]]+\] to your hand', t)):
         _add_trash_steps = parse_add_from_trash(t)
         # "Add up to N ... from your trash to your hand. Then, play up to
         # N ... from your hand [rested]" (ex: OP05-091 Rebecca e familia

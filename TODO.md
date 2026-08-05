@@ -2,6 +2,21 @@
 
 **Última atualização:** 5 de agosto de 2026
 
+> 05/08/2026 (bloco 448): **auditoria global do bloco 447 concluída**.
+> Causa raiz do bug do OP17-005 não era gramática — era um `\n` literal
+> (2 caracteres, não quebra de linha real) na transcrição manual do
+> OP17, quebrando a detecção de tag pra QUALQUER bloco. Achado em **72
+> cartas** (100% OP17, 0 no resto do banco). **Fix de dado**: `\n`
+> literal → quebra real nas 72 linhas — resolve **65 cartas** (`diff_parser`
+> GANHOU=0 PERDEU=0 MUDOU=65). **Fix genérico de código**: `parse_add_from_trash`
+> não aceitava "other than [X]" depois de "from your trash" (só antes) —
+> generalizado, 1 carta beneficiada (Gerd OP17-081) após censo global.
+> **Pendência nova, não corrigida**: OP17-095 ainda funde 2 cláusulas
+> independentes por causa de um guard (`is_substitute_fb`) que protege
+> até 38 cartas no banco — mexer nele precisa de investigação própria,
+> registrado pra sessão futura. `smoke_fast`/`smoke_test` 100%. Ver
+> bloco 448 do HANDOFF e `parser_audits/2026-08-05b_...json`.
+
 > 05/08/2026 (bloco 447): **Branch remota trazida pra `main`** (23
 > commits) — bug histórico de conservação de DON confirmado resolvido
 > (`audit_replay.py --n 20`: 0 anomalias, incluindo Black Imu). **OP17
