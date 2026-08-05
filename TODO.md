@@ -2,6 +2,20 @@
 
 **Última atualização:** 5 de agosto de 2026
 
+> 05/08/2026 (bloco 453): fechados **3 dos 5 achados de mecânica NOVA**
+> que faltavam do bloco 450 — Rockstar (OP17-034, nova condição
+> `opp_leader_power_gte` — poder do LÍDER DO OPONENTE, nunca existia),
+> Kaido+Xebec (OP17-063/OP17-118, 2 sub-mecânicas de counter em mão:
+> `buff_hand_counter_no_counter` em massa e
+> `buff_own_hand_counter_if_no_others` self-referencial) e
+> `leader_is_or_type` + filtro de alvo com 2 tipos OR (OP17-003/004/007
+> — achado durante o censo: o regex genérico do 2º tipo também pegava
+> ST12-003 por engano, "Slash" ali é ATRIBUTO não TYPE — corrigido com
+> lookahead negativo antes de commitar). `diff_parser` MUDOU=6, 0
+> regressões, `smoke_fast`/`smoke_test` 100% (2 testes novos). **Faltam
+> D, J** do bloco 450 (bug de timing/ordem de step) — não tocados. Ver
+> bloco 453 do HANDOFF e `parser_audits/2026-08-05f_...json`.
+
 > 05/08/2026 (bloco 452): fechados os 3 achados **baratos/isolados**
 > restantes do bloco 450 — Blenheim (OP17-012, "play card" genérico sem
 > "Character"), Don Marlon (OP17-052, custo exato faltando em

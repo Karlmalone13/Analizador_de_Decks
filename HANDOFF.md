@@ -1,5 +1,53 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-05 (453) - Claude (sessao remota web) - Fecha 3 dos 5 achados de mecanica NOVA restantes do bloco 450 (Rockstar, Kaido/Xebec, leader-is-or-type)
+
+Continuacao do bloco 450/451/452 -- usuario confirmou ("Sim") e depois
+pediu explicitamente ("Salva e da o push e vamos fazer essas novas
+mecanicas") pra avancar nos achados que exigem mecanica nova no engine
+(nao so regex de parser).
+
+- **(C) OP17-034 Rockstar**: condicao sobre o poder do **LIDER DO
+  OPONENTE** nunca existia (so havia `leader_power_gte/lte` do proprio
+  lider). Nova condicao `opp_leader_power_gte`, checada em
+  `_check_conditions` contra `opp.leader.power`. Censo: unica carta no
+  banco com esse padrao.
+- **(H) OP17-063 Kaido + OP17-118 Xebec**: 2 sub-mecanicas distintas de
+  counter em mao, nenhuma existia. Kaido = aura em massa ("Character
+  cards in your hand without a Counter" ganham +1000, fonte e a
+  passiva do proprio Kaido em campo) -> `buff_hand_counter_no_counter`.
+  Xebec = self-referencial ("this card in your hand" ganha +2000 SE
+  nenhuma OUTRA carta na mao tem counter) -> `buff_own_hand_counter_if_no_others`.
+  Ambos lidos em `effective_counter()` (extensao do calculo ja
+  existente pra `set_hand_counter_by_power`/OP16-118, sem duplicar
+  logica de decisao).
+- **(A) leader_is_or_type + filtro de alvo com 2 tipos**: nova condicao
+  `leader_is_or_type` ("your leader is [Nome] or has {Tipo} type" --
+  OR real, distinto de exigir os dois) resolve OP17-003/OP17-007
+  (Kouzuki Oden, mesmo padrao nas duas). Filtro de ALVO com 2 tipos
+  encadeados por "or" na mesma clausula resolvido em dois lugares:
+  `select_grant_rush` (OP17-004, Inuarashi & Nekomamushi) e
+  `parse_play_generic` (OP17-007) -- ambos combinam em lista (OR,
+  `eligible_cards`/`card_matches_filter` ja tratam lista como OR).
+  **Cuidado descoberto no censo**: o regex generico de 2o-tipo em
+  `parse_play_generic` tambem capturava ST12-003 ("[Muggy Kingdom]
+  type or \"Slash\" attribute Character card") -- ali "Slash" e um
+  ATRIBUTO (campo que `eligible_cards` nunca checa), nao um 2o TYPE;
+  vira ruido em vez de OR real. Corrigido com lookahead negativo
+  `(?!\s*attribute)`, confirmado via `diff_parser.py` que ST12-003
+  saiu do MUDOU depois do ajuste.
+
+`diff_parser.py`: GANHOU=0, PERDEU=0, MUDOU=6 (OP17-003/004/007/034/
+063/118). `smoke_fast.py` (2 testes novos:
+`test_opp_leader_power_gte_rockstar_05_08`,
+`test_kaido_op17_063_e_xebec_op17_118_hand_counter_05_08`, alem dos
+2 do bloco 451 ja existentes)/`smoke_test.py`: 100%. Registro em
+`parser_audits/2026-08-05f_rockstar_kaido_xebec_leader_or_type.json`.
+
+**Ficam pendentes** os achados D (gatilho reativo fundido em on_play,
+bug de timing) e J (inversoes de ordem de step, pelo menos OP17-036/065)
+do bloco 450 -- nao tocados nesta sessao.
+
 ## 2026-08-05 (452) - Claude (sessao remota web) - Fecha os 3 achados de MENOR risco do bloco 450 (Blenheim, Don Marlon, Ulti & Page One)
 
 Continuacao do bloco 450/451 -- usuario confirmou ("Sim") fechar os

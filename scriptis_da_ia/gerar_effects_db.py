@@ -605,8 +605,22 @@ def parse_conditions(text):
         m = re.search(r'if your deck has (\d+) cards?(?! or)', t)
         if m: conds['deck_lte'] = int(m.group(1))
 
-    m = re.search(r'if your leader is \[([^\]]+)\]', t)
-    if m: conds['leader_is'] = m.group(1)
+    # "if your Leader is [Nomeado] or has the {Tipo} type" -- OR entre
+    # lider NOMEADO e um tipo generico (arquetipo que aceita OUTROS
+    # lideres do mesmo tipo, nao so o nomeado). Achado 05/08, censo
+    # global achou 2 cartas -- OP17-003 (Izo) e OP17-007 (Kouzuki Oden).
+    # Checado ANTES do leader_is puro abaixo (senao a clausula inteira
+    # ficaria com so a metade nomeada, perdendo o OR).
+    m_or = re.search(
+        r'if your leader is \[([^\]]+)\] or has (?:the )?\{([^}]+)\} type', t)
+    if m_or:
+        conds['leader_is_or_type'] = {
+            'name': m_or.group(1).strip(),
+            'type': m_or.group(2).strip(),
+        }
+    else:
+        m = re.search(r'if your leader is \[([^\]]+)\]', t)
+        if m: conds['leader_is'] = m.group(1)
 
     m = re.search(r"if your leader(?:'s|\u2019s)? type includes? [\"'\u2019]?([^\"'\u2019\n,]+)[\"'\u2019]?", t)
     if m: conds['leader_type_includes'] = m.group(1).strip()
@@ -854,6 +868,12 @@ def parse_conditions(text):
     # detectar Leader debuffado a 0 (ex: OP15-013 Pincers, "0 power or less").
     m = re.search(r'if your leader has (\d+) power or less', t)
     if m: conds['leader_power_lte'] = int(m.group(1))
+
+    # "if your OPPONENT's Leader has N power or more" -- distinto de
+    # leader_power_gte (que e sobre o PROPRIO lider). Achado 05/08,
+    # OP17-034 Rockstar, unica carta no banco com essa forma exata.
+    m = re.search(r"if your opponent.?s leader has (\d+) power or more", t)
+    if m: conds['opp_leader_power_gte'] = int(m.group(1))
 
     # "this Character is rested" -- auto-referencia ao estado da PROPRIA
     # carta (distinto de leader_state, que e sobre o Leader). Achado 05/08,
@@ -5247,6 +5267,25 @@ def parse_play_generic(text):
                 janela)
                 or re.search(r'type including "([a-z][a-z0-9 .\'-]+)"', janela)
                 or re.search(r'type including [\[{]([a-z][a-z0-9 .\'-]+)[\]}]', janela))
+            # 2o tipo ENCADEADO por " or " logo apos o 1o (delimitador pode
+            # ser MISTO -- chaves no 1o, aspas no 2o, ou qualquer combinacao,
+            # achado real: "a type including {Land of Wano} or \"Whitebeard
+            # Pirates\""). filter_type vira LISTA (OR, mesma convencao ja
+            # usada em rest_opp_character/select_grant_rush). Achado 05/08,
+            # OP17-007 (Kouzuki Oden), unica carta no banco com essa forma.
+            # Lookahead negativo pra "attribute" e OBRIGATORIO: ST12-003 tem
+            # forma parecida ("[Muggy Kingdom] type or \"Slash\" attribute
+            # Character card") mas o 2o alvo ali e um ATRIBUTO (campo que
+            # card_matches_filter/eligible_cards nao checa), nao um 2o TYPE
+            # -- sem essa checagem o parser criava um OR incorreto incluindo
+            # "slash" como se fosse type/sub_type, achado ao rodar
+            # diff_parser.py e ver ST12-003 mudar sem motivo (nao fazia
+            # parte da auditoria OP17 que motivou esse fix).
+            type_m2 = None
+            if type_m:
+                type_m2 = re.search(
+                    r'^\s*or ["\[{]([a-z][a-z0-9 .\'-]+)["\]}](?!\s*attribute)',
+                    janela[type_m.end():])
             color_m = re.search(r'play up to \d+ (black|red|blue|green|yellow|purple)', janela)
             # cost_lte DINAMICO: "with a cost equal to or less than the
             # number of DON!! cards on your/your opponent's field" --
@@ -5274,7 +5313,10 @@ def parse_play_generic(text):
                 step['cost_eq'] = cost_eq_val
                 del step['cost_lte']   # exato substitui o limite generico, nao soma
             if type_m:
-                step['filter_type'] = type_m.group(1).strip()
+                if type_m2:
+                    step['filter_type'] = [type_m.group(1).strip(), type_m2.group(1).strip()]
+                else:
+                    step['filter_type'] = type_m.group(1).strip()
             else:
                 # Filtro por NOME PRÓPRIO (sem "type" depois, ex: "Play up
                 # to 1 [Gaimon] from your hand" -- carta especifica, nao
@@ -7420,6 +7462,35 @@ def parse_block(block_text, trigger_name):
             'to_value': int(m_hand_counter.group(2)),
         })
 
+    # "All Character cards in your hand without a Counter have a +N
+    # Counter" -- estatica de MASSA (todo Character da mao sem counter
+    # impresso ganha +N), distinta do hand_counter acima (que e por
+    # POWER exato, nao por "sem counter"). Achado 05/08, OP17-063 Kaido
+    # LIDER, unica carta no banco -- consumida em effective_counter()
+    # (mesmo ponto/escopo estreito do set_hand_counter_by_power).
+    m_hand_counter_no = re.search(
+        r'all character cards in your hand without a counter '
+        r'have a \+(\d+) counter', t)
+    if m_hand_counter_no:
+        steps.append({
+            'action': 'buff_hand_counter_no_counter',
+            'amount': int(m_hand_counter_no.group(1)),
+        })
+
+    # "If you only have Characters without a Counter, this card in your
+    # hand has a +N Counter" -- variante SELF (so a propria carta ganha,
+    # condicionado a NENHUM outro Character da mao ter counter impresso),
+    # distinta da variante de MASSA acima (que concede pra TODOS). Achado
+    # 05/08, OP17-118 Rocks.D.Xebec, unica carta no banco.
+    m_self_hand_counter = re.search(
+        r'if you only have characters without a counter, this card '
+        r'in your hand has a \+(\d+) counter', t)
+    if m_self_hand_counter:
+        steps.append({
+            'action': 'buff_own_hand_counter_if_no_others',
+            'amount': int(m_self_hand_counter.group(1)),
+        })
+
     # "When your opponent activates a [Blocker], K.O. up to N of your
     # opponent's Characters with X power or less" -- reativo NOVO
     # (achado 17/07, ST10-006, unica carta no banco): mesma JANELA de
@@ -7832,12 +7903,26 @@ def parse_block(block_text, trigger_name):
         if m_select_rush_generic:
             clause = m_select_rush_generic.group('clause')
             step = {'action': 'select_grant_rush', 'count': int(m_select_rush_generic.group(1))}
+            # 2 tipos ENCADEADOS por "or" ("up to N of your {Tipo A} type
+            # Characters or up to M of your Characters with a type
+            # including "Tipo B" gains [Rush]") -- OR real de ALVO, nao
+            # AND: filter_type vira LISTA (eligible_cards/card_matches_
+            # filter ja tratam lista como OR, mesma convencao usada em
+            # rest_opp_character/filter_types). Achado 05/08, OP17-004
+            # (Inuarashi & Nekomamushi), unica carta no banco com essa
+            # forma exata -- antes so o 1o tipo sobrevivia, o 2o (dentro
+            # de `clause`) nunca era extraido porque o codigo so olhava
+            # pra "type including" quando o 1o tipo ESTAVA AUSENTE.
+            tipos = []
             if m_select_rush_generic.group(2):
-                step['filter_type'] = m_select_rush_generic.group(2).strip()
-            else:
-                type_m = re.search(r'type including "([a-z][a-z0-9 .\'-]+)"', clause)
-                if type_m:
-                    step['filter_type'] = type_m.group(1).strip()
+                tipos.append(m_select_rush_generic.group(2).strip())
+            type_m2 = re.search(r'type including "([a-z][a-z0-9 .\'-]+)"', clause)
+            if type_m2:
+                tipos.append(type_m2.group(1).strip())
+            if len(tipos) > 1:
+                step['filter_type'] = tipos
+            elif tipos:
+                step['filter_type'] = tipos[0]
             cost_m = re.search(r'with a cost of (\d+) or less', clause)
             if cost_m:
                 step['cost_lte'] = int(cost_m.group(1))

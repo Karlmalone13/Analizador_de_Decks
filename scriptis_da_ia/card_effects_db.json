@@ -79573,7 +79573,10 @@
           }
         ],
         "conditions": {
-          "leader_is": "edward.newgate"
+          "leader_is_or_type": {
+            "name": "edward.newgate",
+            "type": "land of wano"
+          }
         }
       },
       "passive": {
@@ -79601,7 +79604,10 @@
           {
             "action": "select_grant_rush",
             "count": 1,
-            "filter_type": "land of wano",
+            "filter_type": [
+              "land of wano",
+              "whitebeard pirates"
+            ],
             "duration": "this_turn"
           }
         ]
@@ -79672,12 +79678,18 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99,
-            "filter_type": "land of wano",
+            "filter_type": [
+              "land of wano",
+              "whitebeard pirates"
+            ],
             "power_lte": 6000
           }
         ],
         "conditions": {
-          "leader_is": "edward newgate"
+          "leader_is_or_type": {
+            "name": "edward newgate",
+            "type": "land of wano"
+          }
         }
       }
     }
@@ -80368,6 +80380,9 @@
             "up_to": true
           }
         ],
+        "conditions": {
+          "opp_leader_power_gte": 6000
+        },
         "once_per_turn": true
       }
     }
@@ -81376,6 +81391,14 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_hand_counter_no_counter",
+            "amount": 1000
+          }
+        ]
       }
     }
   },
@@ -82989,6 +83012,14 @@
             "count": 2,
             "cost_lte": 99,
             "filter_type": "rocks pirates"
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_own_hand_counter_if_no_others",
+            "amount": 2000
           }
         ]
       }

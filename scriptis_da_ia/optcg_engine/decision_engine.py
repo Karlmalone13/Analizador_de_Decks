@@ -462,6 +462,23 @@ def effective_counter(card: 'Card', owner: 'GameState') -> int:
             if (s.get('action') == 'set_hand_counter_by_power'
                     and card.power == s.get('power_eq')):
                 return s.get('to_value', base)
+            # "All Character cards in your hand without a Counter have a
+            # +N Counter" (achado 05/08, OP17-063 Kaido LIDER) -- MASSA,
+            # qualquer Character da mao com counter impresso 0.
+            if (s.get('action') == 'buff_hand_counter_no_counter'
+                    and card.card_type == 'CHARACTER' and base == 0):
+                return base + s.get('amount', 0)
+    # "If you only have Characters without a Counter, this card in your
+    # hand has a +N Counter" (achado 05/08, OP17-118 Rocks.D.Xebec) --
+    # SELF, condicionado a NENHUM OUTRO Character da mao ter counter
+    # impresso (usa `.counter` cru dos outros, nao effective_counter, pra
+    # nao recursar).
+    own_passive = get_card_effects(card.code).get('passive', {})
+    for s in own_passive.get('steps', []):
+        if s.get('action') == 'buff_own_hand_counter_if_no_others' and base == 0:
+            outros = [c for c in owner.hand if c is not card and c.card_type == 'CHARACTER']
+            if all(c.counter == 0 for c in outros):
+                return base + s.get('amount', 0)
     return base
 
 
@@ -3901,6 +3918,15 @@ class EffectExecutor:
         if 'leader_is' in conds:
             if conds['leader_is'].lower() not in me.leader.name.lower():
                 return False
+        # "if your Leader is [Nomeado] OR has {Tipo} type" -- OR entre as
+        # duas alternativas (distinto de leader_is puro acima, que perdia
+        # a metade do tipo). Achado 05/08, OP17-003/007.
+        if 'leader_is_or_type' in conds:
+            alvo = conds['leader_is_or_type']
+            nome_ok = alvo['name'].lower() in me.leader.name.lower()
+            tipo_ok = _norm_type_text(alvo['type']) in _norm_type_text(me.leader.sub_types)
+            if not (nome_ok or tipo_ok):
+                return False
         if 'opp_leader_attribute' in conds:
             opp_attr = (getattr(opp.leader, 'attribute', '') or '').lower()
             if conds['opp_leader_attribute'].lower() not in opp_attr:
@@ -4061,6 +4087,12 @@ class EffectExecutor:
         if 'leader_power_gte' in conds and me.leader.effective_power(True) < conds['leader_power_gte']:
             return False
         if 'leader_power_lte' in conds and me.leader.effective_power(True) > conds['leader_power_lte']:
+            return False
+        # "if your OPPONENT's Leader has N power or more" -- distinto do
+        # par acima (que e sobre o PROPRIO lider). Achado 05/08, OP17-034
+        # Rockstar, unica carta no banco.
+        if ('opp_leader_power_gte' in conds
+                and opp.leader.effective_power(True) < conds['opp_leader_power_gte']):
             return False
         if ('leader_name_includes' in conds
                 and conds['leader_name_includes'].lower() not in me.leader.name.lower()):

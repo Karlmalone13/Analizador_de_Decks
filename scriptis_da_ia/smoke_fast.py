@@ -60,6 +60,7 @@ def mk(
     color: str = "Black",
     attribute: str = "",
     has_trigger: bool = False,
+    counter: int = 0,
 ) -> Card:
     return Card(
         data=CardData(
@@ -72,6 +73,7 @@ def mk(
             sub_types=sub_types,
             attribute=attribute,
             has_trigger=has_trigger,
+            counter=counter,
         )
     )
 
@@ -10066,6 +10068,8 @@ def main() -> int:
     test_give_don_prefere_lider_a_character_recem_jogado_sem_uso_hoje()
     test_order_target_candidates_give_don_prefere_lider_ao_vivo()
     test_order_target_candidates_custo_so_de_mao_exclui_outras_zonas()
+    test_opp_leader_power_gte_rockstar_05_08()
+    test_kaido_op17_063_e_xebec_op17_118_hand_counter_05_08()
     test_taunt_force_opp_attack_self_05_08()
     test_luffy_op17_079_aura_blocker_custo_12_05_08()
     print()
@@ -11129,6 +11133,61 @@ def test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno() -> Non
     log2 = ee._execute_step(step, ace)
     check("select_grant_rush: execucao concede Rush a Vista recem-deployada",
           vista_nova.rush_this_turn and "Vista" in log2)
+
+
+def test_opp_leader_power_gte_rockstar_05_08() -> None:
+    """
+    Achado real 05/08 (auditoria OP17): Rockstar (OP17-034) condiciona o
+    Activate:Main a "if your opponent's Leader has 6000 power or more" --
+    condicao nova (`opp_leader_power_gte`, distinta de `leader_power_gte`
+    que e sobre o PROPRIO lider), ausente do parser E do engine ate agora.
+    """
+    rockstar = real_card("OP17-034")
+    fraco = GameState(leader=mk("FRACOL", "Fraco", card_type="LEADER", power=4000))
+    forte = GameState(leader=mk("FORTEL", "Forte", card_type="LEADER", power=6000))
+    me = GameState(leader=mk("MEL", "Me", card_type="LEADER"), field_chars=[rockstar])
+    ee_fraco = EffectExecutor(me, fraco)
+    ee_forte = EffectExecutor(me, forte)
+    conds = get_card_effects("OP17-034")["activate_main"]["conditions"]
+    check("Rockstar: NAO ativa contra lider fraco (4000 < 6000)",
+          ee_fraco._check_conditions(conds, rockstar) is False)
+    check("Rockstar: ativa contra lider forte (6000 >= 6000)",
+          ee_forte._check_conditions(conds, rockstar) is True)
+
+
+def test_kaido_op17_063_e_xebec_op17_118_hand_counter_05_08() -> None:
+    """
+    Achado real 05/08 (auditoria OP17): duas estaticas de counter em mao
+    novas, ambas antes ausentes de effective_counter().
+    - Kaido (OP17-063, LIDER em campo): "All Character cards in your
+      hand without a Counter have a +1000 Counter" -- MASSA, qualquer
+      Character da mao com counter impresso 0 ganha +1000.
+    - Rocks.D.Xebec (OP17-118, na propria mao): "If you only have
+      Characters without a Counter, this card in your hand has a +2000
+      Counter" -- SELF, condicionado a NENHUM outro Character da mao ter
+      counter impresso.
+    """
+    kaido = real_card("OP17-063")
+    sem_counter = mk("SC", "SemCounter", card_type="CHARACTER")
+    com_counter = mk("CC", "ComCounter", card_type="CHARACTER", counter=1000)
+    me = GameState(leader=mk("MEL", "Me", card_type="LEADER"),
+                   field_chars=[kaido], hand=[sem_counter, com_counter])
+    check("Kaido em campo: Character sem counter na mao ganha +1000",
+          effective_counter(sem_counter, me) == 1000)
+    check("Kaido em campo: Character que JA tem counter impresso fica igual",
+          effective_counter(com_counter, me) == 1000)
+
+    xebec = real_card("OP17-118")
+    outro_sem = mk("OS", "OutroSemCounter", card_type="CHARACTER")
+    outro_com = mk("OC", "OutroComCounter", card_type="CHARACTER", counter=2000)
+    me_so_sem = GameState(leader=mk("MEL2", "Me", card_type="LEADER"),
+                          hand=[xebec, outro_sem])
+    check("Xebec: mao so tem Characters sem counter -- Xebec ganha +2000",
+          effective_counter(xebec, me_so_sem) == 2000)
+    me_com_outro = GameState(leader=mk("MEL3", "Me", card_type="LEADER"),
+                             hand=[xebec, outro_com])
+    check("Xebec: existe OUTRO Character com counter na mao -- Xebec NAO ganha",
+          effective_counter(xebec, me_com_outro) == 0)
 
 
 def test_taunt_force_opp_attack_self_05_08() -> None:

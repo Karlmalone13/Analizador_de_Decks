@@ -118759,6 +118759,10 @@
     "trigger": "activate_main",
     "cost_lte": 6,
     "target": "opp_character"
+   },
+   {
+    "action": "buff_hand_counter_no_counter",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -120882,6 +120886,10 @@
     "action": "play_card",
     "trigger": "on_play",
     "cost_lte": 99
+   },
+   {
+    "action": "buff_own_hand_counter_if_no_others",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
