@@ -1,5 +1,72 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-05 (446) - Claude (sessao remota web) - Auditoria de SEQUENCIAMENTO dentro do turno (atacar vs blocker vs ramp vs ativacao)
+
+Pedido do usuario: investigar se o bot joga as cartas na ORDEM certa
+dentro do mesmo turno (ex: atacar primeiro e descer blocker por
+ultimo, jogar ramp de DON antes de atacar, ativar efeito no momento
+certo). Nao mexi em codigo do engine -- so instrumentei e medi.
+
+**Contexto de codigo (achado por leitura, nao novo)**: `_score_play_action`
+ja tem um bonus dedicado `habilita_ataque` (+60, "prioriza sair antes
+dos ataques") pra cartas cujo On Play removeria/bufaria/tem Rush/
+`[When Attacking]` -- e ha pelo menos 2 fixes reais documentados em
+sessoes anteriores exatamente nesse tema (Edward Newgate OP16-003,
+02/08: bot atacava 2x antes de jogar o buff de lider, perdendo o bonus
+nos dois ataques; GamePlan fase 2, +600: forca a carta-bomba tipo Five
+Elders a sair ANTES do DON virar margem de ataque). Ou seja, isso ja
+foi tunado ativamente, nao e greenfield.
+
+**Metodologia**: script novo (scratchpad, nao commitado -- so o
+achado importa) roda self-play verbose (`ReplayMatch`/`play_turn`) em
+5 decks reais (Imu/Enel/Nami/Ace/Mihawk) x todos os pares x 8 seeds =
+80 jogos, 976 turnos, parseando a narrativa verbose turno-a-turno na
+ORDEM real de impressao (= ordem real de execucao).
+
+**Achado 1 (ramp de uso imediato -- `set_don_active` no on_play)**: SO
+1 ocorrencia em 976 turnos de ramp resolvido DEPOIS do ultimo ataque
+do turno. Sem problema. (Nota tecnica: a 1a rodada do script achou 20,
+100% da mesma carta, Kid & Killer ST24-002 -- bug do PROPRIO script de
+auditoria, nao do engine: seu `set_don_active` fica no bloco
+`on_opp_attack` (defensivo, dispara no turno do OPONENTE), nao
+`on_play` -- corrigido restringindo a deteccao ao bloco certo, mesma
+categoria de erro ja cometida e corrigida no bloco 442.)
+
+**Achado 2 (Activate:Main habilitador depois do ultimo ataque)**: 0
+ocorrencias em 976 turnos. Nenhum efeito de Activate:Main que
+buffa/remove saiu tarde demais pra ajudar combate.
+
+**Achado 3 (carta so-dev jogada ANTES de qualquer ataque, competindo
+por DON)**: 86 ocorrencias brutas, mas so ~24-37% delas tinham ALGUM
+ataque no mesmo turno que de fato anexou DON (nos outros casos os
+ataques foram "secos" por escolha, entao o dev nao tirou nada de
+ninguem). Nas que tinham, os valores anexados eram pequenos (1-3 DON) --
+sem evidencia de ataque que ficou sem margem por causa disso.
+
+**Achado 4 (mais forte -- carta com efeito habilitador tipo Newgate
+jogada DEPOIS do ultimo ataque)**: replicando o MESMO teste que
+`_score_play_action` usa pro bonus `habilita_ataque` (on_play com
+kos/is_removal/bounces/power_buff/rests_opponent, ou has_rush, ou
+`[When Attacking]`) -- 115 ocorrencias (~11,8% dos turnos) DEPOIS do
+ultimo ataque, concentradas em poucas cartas recorrentes: Marco
+(Alternate Art, OP03-013, on-play K.O. ≤3000 power) 26x, Ohm
+(Alternate Art) 22x, Satori 11x, Zeus (SP)/Garp 9x cada. Isso E
+estruturalmente parecido com a classe de bug ja corrigida (Newgate),
+mas **nao confirmado como perda real**: o print verbose nao mostra se
+o alvo removido era de fato um blocker que teria bloqueado o ataque
+anterior, nem se matar DEPOIS (com informacao do resultado do combate)
+foi a escolha certa pra aquele turno especifico. Precisa de
+instrumentacao mais funda (estado completo antes/depois, nao so a
+narrativa) ou um teste pareado (forcar a ordem invertida em self-play
+e medir dano/vitorias) pra confirmar se e desperdicio de verdade antes
+de mexer em codigo.
+
+**Conclusao**: sequenciamento de ramp e de Activate:Main esta solido
+(quase 0 violacoes). O ponto que sobra pra investigar de verdade e o
+Achado 4 (remocao/buff on-play saindo depois do ultimo ataque, ~115
+casos, cartas concentradas) -- reportado ao usuario como pendencia,
+nao vira fix nesta sessao (analise sem confirmacao de dano real ainda).
+
 ## 2026-08-04 (445) - Claude (sessao remota web) - PREVENT_COMBO dispara MUITO mais que o esperado, mas desligar nao muda o resultado (teste pareado)
 
 Usuario pediu pra nao mexer no achado do Katakuri (bloco 444, orcamento

@@ -1,6 +1,21 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 4 de agosto de 2026
+**Última atualização:** 5 de agosto de 2026
+
+> 05/08/2026 (bloco 446): investigado sequenciamento DENTRO do turno
+> (atacar vs blocker vs ramp vs ativação, pedido do usuário). Self-play
+> instrumentado, 80 jogos/976 turnos: ramp de uso imediato e
+> Activate:Main habilitador estão sólidos (quase 0 violações de ordem).
+> Achado que sobra: **~115 casos (11,8% dos turnos)** de carta com
+> efeito on-play habilitador (K.O./buff/bounce, mesmo critério do bônus
+> real `habilita_ataque`) jogada DEPOIS do último ataque do turno —
+> mesma classe do bug já corrigido do Edward Newgate (bloco 02/08), mas
+> **não confirmado como perda real** (não dá pra saber pela narrativa
+> verbose se o alvo removido bloquearia o ataque anterior). Cartas
+> concentradas: Marco (Alternate Art) 26x, Ohm (Alternate Art) 22x,
+> Satori 11x. **Sem fix aplicado** — precisa de instrumentação mais
+> funda ou teste pareado (ordem forçada) antes de mexer em código. Ver
+> bloco 446 do HANDOFF.
 
 > 04/08/2026 (bloco 445): investigado o item aberto "consciência de
 > combos estratégicos do oponente" (`opp_combo_threat`/PREVENT_COMBO,
