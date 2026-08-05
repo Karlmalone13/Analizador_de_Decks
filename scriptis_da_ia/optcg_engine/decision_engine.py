@@ -919,7 +919,7 @@ def character_needs_rush_character(c: 'Card') -> bool:
 # 20/07: cartas dual-mode tinham os blocos de [Counter] e [Main]
 # misturados nas deteccoes de zona quando so um dos dois resolvia de
 # verdade). Fonte unica -- nao duplicar esta lista em outro arquivo.
-COMBAT_ONLY_TRIGGERS = {'counter', 'when_attacking', 'on_opp_attack'}
+COMBAT_ONLY_TRIGGERS = {'counter', 'when_attacking', 'on_opp_attack', 'leader_battle_reactive'}
 
 _HAND_ONLY_COST_TYPES = {'trash_from_hand', 'reveal_from_hand', 'trash_any_from_hand'}
 _ORTHOGONAL_COST_TYPES = {'don_minus', 'rest_don', 'rest_self', 'trash_self'}
@@ -2659,7 +2659,7 @@ class EffectExecutor:
         # DEFENDENDO, não pra quem está usando o próprio gatilho de ataque.
         # Mesma pergunta feita ao vivo via resolve_optional_effect em
         # sim_bridge.py.
-        if trigger in ('when_attacking', 'on_opp_attack'):
+        if trigger in ('when_attacking', 'on_opp_attack', 'leader_battle_reactive'):
             combat_verdict = self._combat_buff_worth_paying(
                 card, ef_data, trigger, battle_defender_power)
             if combat_verdict is not None:
@@ -15450,6 +15450,28 @@ class OPTCGMatch:
                 if log:
                     print(f'      ↳ [when attacking] {log}')
 
+        # "leader_battle_reactive": habilidade (do proprio LIDER ou de
+        # QUALQUER Character em campo) que reage quando O LIDER ataca ou e
+        # atacado -- distinta de when_attacking (que so roda pra quem de
+        # fato ataca, nunca pra um Character espectador) e de on_opp_attack
+        # (que roda pra qualquer carta do defensor, mas sem saber se o
+        # ALVO real foi o lider). So dispara aqui quando quem ataca de
+        # fato E o lider; a metade "e atacado" dispara mais abaixo, no
+        # bloco de on_opp_attack, gatilhada por target_type=='leader'.
+        # Achado 05/08 (Edward.Newgate OP17-040, habilidade PROPRIA da
+        # carta reage ao combate do LIDER, nao ao proprio; Portgas.D.Ace
+        # OP03-001, LIDER, onde fonte==lider coincide com o proprio
+        # atacante/alvo -- varrer [p.leader]+p.field_chars cobre os dois
+        # sem duplicar codigo por tipo de carta).
+        if attacker is p.leader:
+            for fonte in [p.leader] + list(p.field_chars):
+                lb_logs = ee.execute(fonte, 'leader_battle_reactive',
+                                     battle_defender_power=defender_power_now)
+                if verbose:
+                    for log in lb_logs:
+                        if log:
+                            print(f'      ↳ [lider ataca: {fonte.name[:15]}] {log}')
+
         # Executa [On Your Opponent's Attack] -- gatilho do DEFENSOR,
         # reage à declaração do ataque (qualquer Character/Leader dele
         # pode ter essa habilidade, não só o alvo). Achado 27/06: a tag
@@ -15467,6 +15489,19 @@ class OPTCGMatch:
                 for log in oa_logs:
                     if log:
                         print(f'      ↳ [on opp attack: {reagente.name[:15]}] {log}')
+
+        # Metade "e atacado" de leader_battle_reactive (ver comentario
+        # acima, ao lado de when_attacking): so quando o ALVO real deste
+        # ataque e o lider (nao qualquer Character do defensor).
+        if target_type == 'leader':
+            for fonte in [opp.leader] + list(opp.field_chars):
+                lb_logs = ee_react.execute(
+                    fonte, 'leader_battle_reactive', battle_attacker=attacker,
+                    battle_defender_power=opp.leader.power + opp.leader.power_buff)
+                if verbose:
+                    for log in lb_logs:
+                        if log:
+                            print(f'      ↳ [lider e atacado: {fonte.name[:15]}] {log}')
 
         atk_power = live_attack_power(attacker)
         damage    = 2 if attacker.is_double_attack() else 1

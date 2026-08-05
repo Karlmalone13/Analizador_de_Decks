@@ -1,5 +1,57 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-05 (454) - Claude (sessao remota web) - Fecha os 2 ULTIMOS achados do bloco 450 (leader_battle_reactive + ordem de steps) -- auditoria OP17 CONCLUIDA (10/10)
+
+Usuario confirmou ("Sim") continuar com os achados D e J, ultimos
+pendentes do bloco 450/2026-08-05c (auditoria completa das 103 cartas do
+OP17, iniciada ha 5 blocos).
+
+- **(D) OP17-040 Edward.Newgate**: "[Once Per Turn] When your Leader
+  attacks or is attacked, [efeito]" -- gatilho reativo sem tag formal,
+  fundido dentro do [On Play] anterior (LOOKAHEAD_DELIM de on_play nao
+  para em "[Once Per Turn]" solto), disparando (e comprando junto) na
+  hora de JOGAR a carta em vez de na batalha do lider. Censo achou mais 1
+  carta com a MESMA clausula, ja quebrada ha muito mais tempo por motivo
+  diferente: **OP03-001 (Portgas.D.Ace, LIDER)** caia inteiro em
+  'passive' e NUNCA disparava. Tentativa inicial de resolver so
+  duplicando a entry em 'when_attacking'+'on_opp_attack' (reaproveitando
+  100% da resolucao existente) foi **corrigida antes de commitar** ao
+  perceber que isso so e correto quando a FONTE da habilidade e o proprio
+  lider (OP03-001) -- Newgate (OP17-040) concede a habilidade ao lider
+  sem precisar ser quem ataca/e atacado, entao a duplicacao simples nunca
+  dispararia quando o lider ataca sozinho. Fix definitivo: trigger
+  dedicado `leader_battle_reactive`, com 2 pontos NOVOS em
+  `_execute_attack` (quando `attacker is p.leader` / quando
+  `target_type=='leader'`), varrendo `[dono.leader]+dono.field_chars` nos
+  dois casos -- cobre fonte lider OU character sem duplicar codigo.
+  Propagado pros 3 lugares que ja tratam when_attacking/on_opp_attack
+  como grupo (`COMBAT_ONLY_TRIGGERS`, gate de worth-paying em
+  decision_engine.py, e os 2 espelhos em sim_bridge.py/caminho ao vivo).
+- **(J) Ordem de steps**: `EffectExecutor.execute` roda a lista de steps
+  SEQUENCIALMENTE -- a ordem do JSON e a ordem de execucao REAL, nao so
+  estetica. "Rest up to N of your opponent's Characters. Then, K.O. up
+  to M of your opponent's RESTED Characters..." saia com o K.O.
+  (rested_only) ANTES do proprio rest_opp_character que gera o alvo --
+  bug de jogo real: o efeito nao enxergava quem ELE MESMO tinha acabado
+  de restar. Censo achou **5 cartas** -- OP04-038, OP10-024, OP10-041,
+  OP12-029 (**todas PRE-EXISTENTES**) + OP17-036. Fix: troca pontual de
+  posicao (generico pro PAR de acoes, condicionado ao texto). Sub-achado
+  em OP17-065 (Queen, "Draw 1. Then, ... cannot attack") recebeu o mesmo
+  tratamento, mas sem efeito de jogo confirmado (so consistencia) -- a
+  familia mais ampla "draw N. Then, [...]" tem 40+ cartas com acoes
+  diferentes, fora do escopo desta troca pontual (registrado como
+  pendencia).
+
+`diff_parser.py`: GANHOU=0, PERDEU=0, MUDOU=8 nesta leva (OP03-001,
+OP04-038, OP10-024, OP10-041, OP12-029, OP17-036, OP17-040, OP17-065).
+`smoke_fast.py` (2 testes novos, incluindo um que prova o EFEITO DE JOGO
+real do fix J via execucao completa, nao so leitura do JSON)/
+`smoke_test.py`: 100%. Registro em
+`parser_audits/2026-08-05g_leader_battle_reactive_e_ordem_de_steps.json`.
+
+**Bloco 450 (auditoria completa OP17) FECHADO: 10/10 achados resolvidos**
+entre os blocos 451-454.
+
 ## 2026-08-05 (453) - Claude (sessao remota web) - Fecha 3 dos 5 achados de mecanica NOVA restantes do bloco 450 (Rockstar, Kaido/Xebec, leader-is-or-type)
 
 Continuacao do bloco 450/451/452 -- usuario confirmou ("Sim") e depois

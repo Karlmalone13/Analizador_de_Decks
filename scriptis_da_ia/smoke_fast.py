@@ -10072,6 +10072,8 @@ def main() -> int:
     test_kaido_op17_063_e_xebec_op17_118_hand_counter_05_08()
     test_taunt_force_opp_attack_self_05_08()
     test_luffy_op17_079_aura_blocker_custo_12_05_08()
+    test_leader_battle_reactive_newgate_op17_040_e_ace_op03_001_05_08()
+    test_ordem_de_steps_rest_antes_de_ko_rested_e_draw_antes_de_lock_05_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -11267,6 +11269,132 @@ def test_luffy_op17_079_aura_blocker_custo_12_05_08() -> None:
           gigante.has_blocker is True)
     check("Luffy OP17-079: character custo 4 NAO ganha has_blocker",
           pequeno.has_blocker is False)
+
+
+def test_leader_battle_reactive_newgate_op17_040_e_ace_op03_001_05_08() -> None:
+    """
+    Achado real 05/08 (bloco 450, item D): "When your/this Leader attacks
+    or is attacked" e um gatilho BIDIRECIONAL sem tag formal -- vira o
+    trigger dedicado `leader_battle_reactive`, disparado em 2 pontos
+    proprios de `_execute_attack` (attacker is p.leader / target_type ==
+    'leader'), varrendo [dono.leader] + dono.field_chars nos dois casos.
+    Cobre os 2 casos reais do banco: OP03-001 (Portgas.D.Ace, LIDER, fonte
+    == quem ataca/e atacado -- antes caia em 'passive' e NUNCA disparava)
+    e OP17-040 (Edward.Newgate, CHARACTER que concede a habilidade ao
+    LIDER sem precisar ser quem ataca/e atacado -- antes ficava fundido
+    dentro do [On Play], disparando ao JOGAR a carta em vez de na batalha
+    do lider). O caso C abaixo prova por que nao dava pra so duplicar em
+    when_attacking/on_opp_attack: a fonte (Newgate) nao e quem ataca.
+    """
+    # Caso A: MEU lider (tipo Rocks Pirates) ataca -- dispara (+3000).
+    me = GameState(leader=mk("RKL-A", "Lider Rocks", card_type="LEADER",
+                             sub_types="Rocks Pirates", power=5000),
+                  field_chars=[real_card("OP17-040")], turn=2,
+                  hand=[mk("FIL-A1", "Filler"), mk("FIL-A2", "Filler2")])
+    opp = GameState(leader=mk("OPPL-A", "Opp", card_type="LEADER", power=5000), turn=2)
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    eng = DecisionEngine(me, opp)
+    match._execute_attack(me.leader, "leader", None, me, opp, eng, verbose=False)
+    check("OP17-040: lider Rocks Pirates ataca -- ability dispara (+3000 no lider)",
+          me.leader.power_buff == 3000)
+
+    # Caso B: MEU lider SEM o tipo exigido -- nao dispara mesmo atacando.
+    me_b = GameState(leader=mk("RKL-B", "Lider Generico", card_type="LEADER",
+                               sub_types="Worst Generation", power=5000),
+                     field_chars=[real_card("OP17-040")], turn=2,
+                     hand=[mk("FIL-B1", "Filler"), mk("FIL-B2", "Filler2")])
+    opp_b = GameState(leader=mk("OPPL-B", "Opp", card_type="LEADER", power=5000), turn=2)
+    match_b = OPTCGMatch((me_b.leader, []), (opp_b.leader, []))
+    eng_b = DecisionEngine(me_b, opp_b)
+    match_b._execute_attack(me_b.leader, "leader", None, me_b, opp_b, eng_b, verbose=False)
+    check("OP17-040: lider SEM tipo Rocks Pirates -- ability NAO dispara",
+          me_b.leader.power_buff == 0)
+
+    # Caso C: um Character (nao o lider) ataca -- ability NAO dispara,
+    # mesmo com Newgate em campo e o lider tendo o tipo certo (o texto
+    # exige que seja o PROPRIO LIDER quem ataca).
+    me_c = GameState(leader=mk("RKL-C", "Lider Rocks", card_type="LEADER",
+                               sub_types="Rocks Pirates", power=5000), turn=2,
+                     hand=[mk("FIL-C1", "Filler"), mk("FIL-C2", "Filler2")])
+    outro_atacante = mk("OUTRO-C", "Outro atacante", power=4000, cost=4)
+    me_c.field_chars = [real_card("OP17-040"), outro_atacante]
+    opp_c = GameState(leader=mk("OPPL-C", "Opp", card_type="LEADER", power=5000), turn=2)
+    match_c = OPTCGMatch((me_c.leader, []), (opp_c.leader, []))
+    eng_c = DecisionEngine(me_c, opp_c)
+    match_c._execute_attack(outro_atacante, "leader", None, me_c, opp_c, eng_c, verbose=False)
+    check("OP17-040: OUTRO Character ataca (nao o lider) -- ability NAO dispara",
+          me_c.leader.power_buff == 0)
+
+    # Caso D: MEU lider e ATACADO (metade "is attacked", reage na defesa).
+    me_d = GameState(leader=mk("RKL-D", "Lider Rocks", card_type="LEADER",
+                               sub_types="Rocks Pirates", power=5000), turn=2,
+                     field_chars=[real_card("OP17-040")],
+                     hand=[mk("FIL-D1", "Filler"), mk("FIL-D2", "Filler2")])
+    atacante_opp = mk("OPPATK-D", "Atacante Oponente", power=9000, cost=5)
+    opp_d = GameState(leader=mk("OPPL-D", "Opp", card_type="LEADER", power=5000), turn=2,
+                      field_chars=[atacante_opp])
+    match_d = OPTCGMatch((opp_d.leader, []), (me_d.leader, []))
+    eng_d = DecisionEngine(opp_d, me_d)
+    match_d._execute_attack(atacante_opp, "leader", None, opp_d, me_d, eng_d, verbose=False)
+    check("OP17-040: MEU lider e atacado -- ability dispara na defesa (+3000)",
+          me_d.leader.power_buff == 3000)
+
+    # OP03-001 (Portgas.D.Ace, LIDER): mesma clausula bidirecional, fonte
+    # == o proprio lider (custo de contagem variavel -- trash_any_from_hand
+    # nunca entra no guard de valor de sacrificio, sempre "vale a pena",
+    # greedy trasha os 2 Events da mao e escala o buff por eles).
+    ace = real_card("OP03-001")
+    me_e = GameState(leader=ace, turn=2,
+                     hand=[mk("EVT-E1", "Evento1", card_type="EVENT"),
+                           mk("EVT-E2", "Evento2", card_type="EVENT")])
+    opp_e = GameState(leader=mk("OPPL-E", "Opp", card_type="LEADER", power=5000), turn=2)
+    match_e = OPTCGMatch((me_e.leader, []), (opp_e.leader, []))
+    eng_e = DecisionEngine(me_e, opp_e)
+    match_e._execute_attack(me_e.leader, "leader", None, me_e, opp_e, eng_e, verbose=False)
+    check("OP03-001: lider ataca -- buff_power_per_count escala com os Events trashados (2*1000=2000)",
+          ace.power_buff == 2000)
+
+
+def test_ordem_de_steps_rest_antes_de_ko_rested_e_draw_antes_de_lock_05_08() -> None:
+    """
+    Achado real 05/08 (bloco 450, item J): a ordem dos steps no JSON e a
+    ordem de EXECUCAO real (EffectExecutor.execute roda a lista
+    sequencialmente) -- `parse_block` agrupa por familia de acao, nao pela
+    ordem do texto original, entao pares como "Rest up to N of your
+    opponent's Characters. Then, K.O. up to M of your opponent's RESTED
+    Characters..." saiam INVERTIDOS (o step de K.O., rested_only=True,
+    ficava ANTES do proprio rest_opp_character que gera o alvo elegivel).
+    Censo global achou 5 cartas com essa forma -- OP04-038, OP10-024,
+    OP10-041, OP12-029 (todas PRE-EXISTENTES) + OP17-036. Prova aqui que a
+    ordem corrigida tem efeito REAL de jogo (nao so cosmetico): com 1
+    Character ATIVO + 1 ja restado (ambos custo <=6), o rest_opp_character
+    da propria carta resta o ativo, e o K.O.(rested_only, count=2)
+    enxerga os DOIS depois -- se a ordem estivesse errada (K.O. antes do
+    rest), o ativo nunca seria elegivel a tempo e sobreviveria ao efeito.
+    """
+    carta = real_card("OP17-036")
+    me = GameState(leader=mk("RKO-L", "Lider", card_type="LEADER"), turn=2,
+                  don_available=6, don_rested=0, hand=[carta])
+    ativo = mk("RKO-A", "Ativo", power=3000, cost=5)
+    ja_rested = mk("RKO-B", "Ja rested", power=3000, cost=6)
+    ja_rested.rested = True
+    opp = GameState(leader=mk("RKO-OPPL", "Opp", card_type="LEADER"), turn=2,
+                    field_chars=[ativo, ja_rested])
+    EffectExecutor(me, opp).execute(carta, "main")
+    check("OP17-036: rest_opp_character da propria carta resta o Character ativo",
+          ativo.rested is True)
+    check("OP17-036: K.O.(rested_only) enxerga os 2 (o recem-restado + o ja restado), ambos K.O.'d",
+          ativo not in opp.field_chars and ja_rested not in opp.field_chars)
+
+    # Familia draw+lock (OP17-065): so consistencia com o texto -- sem
+    # impacto de jogo confirmado (draw nao interfere no alvo do lock, ver
+    # comentario no parser sobre o motivo de nao generalizar pra toda a
+    # familia "draw N. Then, [...]", que tem 40+ cartas com acoes bem
+    # diferentes na clausula seguinte).
+    ef_queen = get_card_effects("OP17-065").get("on_play", {})
+    acoes = [s.get("action") for s in ef_queen.get("steps", [])]
+    check("OP17-065: 'draw' aparece ANTES de 'lock_opp_character_attack' (ordem do texto)",
+          acoes == ["draw", "lock_opp_character_attack"])
 
 
 if __name__ == "__main__":

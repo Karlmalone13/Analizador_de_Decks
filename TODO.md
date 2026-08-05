@@ -2,6 +2,25 @@
 
 **Última atualização:** 5 de agosto de 2026
 
+> 05/08/2026 (bloco 454): fechados os **2 ÚLTIMOS achados do bloco 450**
+> — auditoria completa do OP17 (10/10) **CONCLUÍDA**. (D) OP17-040
+> Edward.Newgate: "When your Leader attacks or is attacked" (reativo
+> BIDIRECIONAL sem tag formal) estava fundido dentro do [On Play],
+> disparando ao JOGAR a carta em vez de na batalha do líder — vira
+> trigger dedicado `leader_battle_reactive` (2 pontos novos em
+> `_execute_attack`), não uma duplicação simples em when_attacking/
+> on_opp_attack (essa abordagem inicial foi corrigida antes de commitar —
+> só funciona quando a fonte É o líder, não quando um CHARACTER concede a
+> habilidade a ele, como Newgate). Bônus: OP03-001 (Portgas.D.Ace, LÍDER)
+> tinha a MESMA cláusula, caía em 'passive' e nunca disparava — corrigido
+> junto. (J) Ordem de steps É a ordem de execução real (não cosmética) —
+> "Rest ... Then, K.O. ... rested ..." saía com o K.O. ANTES do rest que
+> gera o alvo, bug de jogo real. 5 cartas achadas — OP04-038, OP10-024,
+> OP10-041, OP12-029 (**pré-existentes**) + OP17-036. Sub-achado OP17-065
+> (draw/lock) mesmo tratamento, sem efeito de jogo confirmado. `diff_parser`
+> MUDOU=8, 0 regressões, `smoke_fast`/`smoke_test` 100% (2 testes novos).
+> Ver bloco 454 do HANDOFF e `parser_audits/2026-08-05g_...json`.
+
 > 05/08/2026 (bloco 453): fechados **3 dos 5 achados de mecânica NOVA**
 > que faltavam do bloco 450 — Rockstar (OP17-034, nova condição
 > `opp_leader_power_gte` — poder do LÍDER DO OPONENTE, nunca existia),

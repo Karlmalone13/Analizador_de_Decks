@@ -8514,6 +8514,48 @@ def parse_block(block_text, trigger_name):
         steps.append({'action': 'opp_play_card', 'count': int(m_opp_play.group(1)),
                       'cost_lte': int(m_opp_play.group(2))})
 
+    # Ordem textual vs ordem de despacho (achado 05/08, bloco 450 item J):
+    # a cadeia de sub-parsers acima roda numa ordem FIXA (agrupada por
+    # familia de acao), nao na ordem em que as clausulas aparecem no texto
+    # da carta -- normalmente inofensivo (efeitos independentes), mas
+    # "Rest up to N of your opponent's Characters. Then, K.O. up to M of
+    # your opponent's RESTED Characters..." e um caso onde a ordem de
+    # EXECUCAO importa de verdade: o step de K.O. (rested_only=True, gerado
+    # cedo na cadeia) ficava ANTES do rest_opp_character (gerado tarde),
+    # entao o proprio efeito nao enxergava o personagem que ELE MESMO
+    # acabou de restar -- so via quem ja estava restado ANTES do efeito
+    # rodar (custo real a menos do que o texto garante). Censo global
+    # ("rest up to... opponent... then... k.o... rested") achou 5 cartas --
+    # OP04-038, OP10-024, OP10-041, OP12-029 (PRE-EXISTENTES) + OP17-036.
+    # Troca pontual (so essas 2 posicoes, generico pro par de acoes, nao
+    # pra numeros/cartas especificas), condicionada ao texto confirmar essa
+    # ordem (nao mexe em cartas onde o K.O. de fato vem primeiro).
+    if re.search(r"rest up to \d+ of your opponent.?s[^.]*?\.\s*then,?\s*k\.?o\.?[^.]*?rested", t):
+        idx_ko = next((i for i, s in enumerate(steps)
+                       if s.get('action') == 'ko' and s.get('rested_only')), None)
+        idx_rest = next((i for i, s in enumerate(steps)
+                         if s.get('action') == 'rest_opp_character'), None)
+        if idx_ko is not None and idx_rest is not None and idx_ko < idx_rest:
+            steps[idx_ko], steps[idx_rest] = steps[idx_rest], steps[idx_ko]
+
+    # "Draw N card(s). Then, [...] cannot attack..." -- mesma classe do
+    # achado acima, mas aqui SEM impacto de jogo confirmado (draw e o lock
+    # de ataque nao dependem um do outro) -- fix so por CONSISTENCIA com o
+    # texto/telemetria (ordem de execucao ainda e a ordem real de steps).
+    # Censo pela forma EXATA ("draw N. then... cannot attack") achou so
+    # OP17-065 (Queen) -- a familia mais ampla "draw N. Then, [qualquer
+    # coisa]" tem 40+ cartas no banco com VARIAS acoes diferentes na
+    # clausula seguinte (cada uma com sua propria posicao na cadeia de
+    # despacho, correta ou nao) -- fora do escopo desta troca pontual,
+    # generalizar pra toda essa familia exigiria auditar cada uma
+    # individualmente, nao reordenar as cegas.
+    if re.search(r"draw \d+ cards?\.\s*then,.*cannot attack", t):
+        idx_draw = next((i for i, s in enumerate(steps) if s.get('action') == 'draw'), None)
+        idx_lock = next((i for i, s in enumerate(steps)
+                         if s.get('action') == 'lock_opp_character_attack'), None)
+        if idx_draw is not None and idx_lock is not None and idx_lock < idx_draw:
+            steps[idx_draw], steps[idx_lock] = steps[idx_lock], steps[idx_draw]
+
     # Memoria de alvo entre steps (SaveTargetName, 28/06/2026): a ordem de
     # despacho dos sub-parsers acima NAO segue a ordem do texto original
     # (ex: select_unblockable_turn e chamado antes de power_buff), o que
@@ -8988,6 +9030,79 @@ def parse_card_effect(card_text, card_type):
                     s for s in defensive.get('steps', [])
                     if s.get('action') != 'draw'
                 ]
+
+    # "[Once Per Turn] When your/this Leader (with a type including X)?
+    # attacks OR is attacked, [efeito]" -- gatilho BIDIRECIONAL sobre o
+    # COMBATE DO LIDER, sem tag formal propria. Vira um trigger DEDICADO
+    # ('leader_battle_reactive') em vez de reaproveitar when_attacking/
+    # on_opp_attack: essas 2 tags disparam pra QUEM DE FATO ataca/e alvo
+    # (quando_attacking so roda pro atacante literal; on_opp_attack roda
+    # pra qualquer carta do defensor, mas SEM saber se o ALVO real foi o
+    # lider). A frase aqui pode vir da FONTE do proprio lider (OP03-001,
+    # onde source==lider==atacante/alvo sempre bate por coincidencia) OU
+    # de um CHARACTER em campo concedendo a habilidade AO lider (OP17-040,
+    # Edward.Newgate NAO precisa ser quem ataca/e atacado -- a duplicacao
+    # simples quase foi commitada assim e teria ficado muda sempre que o
+    # lider ataca sozinho ou e alvo direto sem Newgate estar batalhando).
+    # Engine dispara em 2 pontos dedicados de _execute_attack: quando
+    # attacker is p.leader (leader ataca) e quando target_type=='leader'
+    # (lider e o alvo), varrendo [dono.leader] + dono.field_chars nos dois
+    # casos -- funciona pra fonte lider OU character, sem duplicar codigo.
+    # Achado 05/08 (bloco 450, item D): OP17-040 tinha essa clausula
+    # reativa FUNDIDA dentro do bloco [On Play] anterior -- LOOKAHEAD_DELIM
+    # (usado por on_play) nao para em "[Once Per Turn]" solto (so
+    # LOOKAHEAD_DELIM_OU_ONCE para), entao o buff (que so devia disparar em
+    # BATALHA do lider) virava parte do on_play, disparando (e comprando
+    # junto) na hora de JOGAR a carta. Censo global por "attacks or is
+    # attacked" achou mais 1 carta com a MESMA forma, ja quebrada ha muito
+    # mais tempo por um motivo diferente: OP03-001 (Portgas.D.Ace, LIDER,
+    # sem tag [On Play] nenhuma pra brigar) caia inteiro em 'passive'
+    # (nunca dispara -- 'passive' so alimenta auras estaticas/keyword
+    # grants, nao resolucao reativa de combate).
+    leader_battle_m = re.search(
+        r'(?:\[once per turn\]\s*)?when (?:this|your) leader'
+        r'(?:\s+with a type including ["\[{]([a-z][a-z0-9 .\'-]+)["\]}])?'
+        r'\s+attacks or is attacked[,]?\s*(.+?)' + LOOKAHEAD_DELIM,
+        t_low, re.DOTALL | re.IGNORECASE)
+    if leader_battle_m:
+        event_body_raw = leader_battle_m.group(2).strip()
+        # "you may trash N cards from your hand TO ACTIVATE THIS EFFECT."
+        # -- mesma semantica de custo do padrao usual "...from your hand:",
+        # so que o delimitador e uma frase em vez de ':' (achado 05/08,
+        # OP17-040, unica carta no banco com essa frase exata -- normaliza
+        # pro delimitador ja suportado por parse_costs em vez de duplicar
+        # a regex la).
+        event_body = re.sub(r'\s*to activate this effect[.]?\s*', ': ', event_body_raw, count=1)
+        event_steps = parse_block(event_body, 'leader_battle_reactive')
+        if event_steps:
+            event_entry = {'steps': event_steps}
+            body_conds = parse_conditions(event_body)
+            if leader_battle_m.group(1):
+                body_conds['leader_type_includes'] = leader_battle_m.group(1).strip()
+            if body_conds:
+                event_entry['conditions'] = body_conds
+            event_costs = parse_costs(event_body)
+            if event_costs:
+                event_entry['costs'] = event_costs
+            if '[once per turn]' in leader_battle_m.group(0):
+                event_entry['once_per_turn'] = True
+            result['leader_battle_reactive'] = event_entry
+
+            # Sem tag formal entre "[On Play] Draw 1 card." e a clausula
+            # reativa seguinte, o extrator generico de on_play (LOOKAHEAD_
+            # DELIM, que nao para em "[Once Per Turn]" solto) engole o
+            # resto do texto -- remove so a copia exata que pertence ao
+            # novo evento bidirecional (mesma tecnica ja usada acima pra
+            # damage_or_ko_m/draw).
+            on_play_entry = result.get('on_play')
+            if on_play_entry:
+                antes = on_play_entry.get('steps', [])
+                restantes = [s for s in antes if s not in event_steps]
+                if len(restantes) != len(antes):
+                    on_play_entry['steps'] = restantes
+                    on_play_entry.pop('once_per_turn', None)
+                    if not restantes:
+                        del result['on_play']
 
     # Evento parametrizado "quando o personagem do OPONENTE e K.O.'d"
     # (FASE 1.2 do mapeamento de combos, achado real 24/07: usuario pediu

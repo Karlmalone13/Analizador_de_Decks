@@ -1528,7 +1528,8 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
     # Katakuri OP11-062): mesmo tipo de gatilho de custo opcional que
     # resolve sozinho durante o combate, sem scoring previo -- ver
     # comentario espelhado em execute() (decision_engine.py).
-    for trig in ('on_play', 'main', 'activate_main', 'when_attacking', 'on_opp_attack'):
+    for trig in ('on_play', 'main', 'activate_main', 'when_attacking', 'on_opp_attack',
+                 'leader_battle_reactive'):
         ef = effects.get(trig)
         if not ef:
             continue
@@ -1550,7 +1551,7 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
         # contexto de combate real (attacker_power>0, vindo da janela de
         # reacao) E quando o bloco nao tem outro step material alem do
         # buff/peek -- efeito com K.O./draw/etc continua na regua ampla.
-        if trig in ('when_attacking', 'on_opp_attack'):
+        if trig in ('when_attacking', 'on_opp_attack', 'leader_battle_reactive'):
             buffs = [s for s in steps
                      if s.get('action') == 'buff_power'
                      and s.get('target') in ('self', 'leader')
@@ -1840,7 +1841,7 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     # ataque/counter" (ver actor_is_redirect acima) -- reusa aqui pra
     # filtrar quais blocos contam. Usado por TODAS as deteccoes de alvo
     # abaixo que escaneiam "todos os blocos" da carta.
-    _COMBAT_ONLY_TRIGGERS = {'counter', 'when_attacking', 'on_opp_attack'}
+    _COMBAT_ONLY_TRIGGERS = {'counter', 'when_attacking', 'on_opp_attack', 'leader_battle_reactive'}
 
     def _relevant_blocks(code: str, in_combat: bool):
         items = get_card_effects(code).items()

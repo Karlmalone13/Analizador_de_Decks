@@ -14626,7 +14626,7 @@
     "sub_types": "Whitebeard Pirates",
     "attribute": "Special",
     "effects": {
-      "passive": {
+      "leader_battle_reactive": {
         "steps": [
           {
             "action": "buff_power_per_count",
@@ -19289,32 +19289,32 @@
       "main": {
         "steps": [
           {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 6
+          },
+          {
             "action": "ko",
             "count": 1,
             "target": "opp_character",
             "cost_lte": 6,
             "rested_only": true
-          },
-          {
-            "action": "rest_opp_character",
-            "count": 1,
-            "cost_lte": 6
           }
         ]
       },
       "counter": {
         "steps": [
           {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 6
+          },
+          {
             "action": "ko",
             "count": 1,
             "target": "opp_character",
             "cost_lte": 6,
             "rested_only": true
-          },
-          {
-            "action": "rest_opp_character",
-            "count": 1,
-            "cost_lte": 6
           }
         ]
       }
@@ -40500,16 +40500,16 @@
       "on_play": {
         "steps": [
           {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 5
+          },
+          {
             "action": "ko",
             "count": 1,
             "target": "opp_character",
             "cost_lte": 3,
             "rested_only": true
-          },
-          {
-            "action": "rest_opp_character",
-            "count": 1,
-            "cost_lte": 5
           }
         ],
         "conditions": {
@@ -40995,16 +40995,16 @@
       "main": {
         "steps": [
           {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 6
+          },
+          {
             "action": "ko",
             "count": 1,
             "target": "opp_character",
             "cost_lte": 5,
             "rested_only": true
-          },
-          {
-            "action": "rest_opp_character",
-            "count": 1,
-            "cost_lte": 6
           }
         ]
       }
@@ -47805,16 +47805,16 @@
       "on_play": {
         "steps": [
           {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 2
+          },
+          {
             "action": "ko",
             "count": 1,
             "target": "opp_character",
             "cost_lte": 1,
             "rested_only": true
-          },
-          {
-            "action": "rest_opp_character",
-            "count": 1,
-            "cost_lte": 2
           }
         ]
       }
@@ -80423,16 +80423,16 @@
       "main": {
         "steps": [
           {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 6
+          },
+          {
             "action": "ko",
             "count": 2,
             "target": "opp_character",
             "cost_lte": 6,
             "rested_only": true
-          },
-          {
-            "action": "rest_opp_character",
-            "count": 1,
-            "cost_lte": 6
           }
         ],
         "costs": [
@@ -80584,12 +80584,25 @@
           {
             "action": "draw",
             "count": 1
-          },
+          }
+        ]
+      },
+      "leader_battle_reactive": {
+        "steps": [
           {
             "action": "buff_power",
             "amount": 3000,
             "target": "leader",
             "duration": "battle_only"
+          }
+        ],
+        "conditions": {
+          "leader_type_includes": "rocks pirates"
+        },
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
           }
         ],
         "once_per_turn": true
@@ -81453,14 +81466,14 @@
       "on_play": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1
+          },
+          {
             "action": "lock_opp_character_attack",
             "count": 2,
             "duration": "until_opp_end_phase",
             "cost_lte": 5
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ],
         "costs": [
