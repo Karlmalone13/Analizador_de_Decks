@@ -2,6 +2,17 @@
 
 **Última atualização:** 5 de agosto de 2026
 
+> 05/08/2026 (bloco 452): fechados os 3 achados **baratos/isolados**
+> restantes do bloco 450 — Blenheim (OP17-012, "play card" genérico sem
+> "Character"), Don Marlon (OP17-052, custo exato faltando em
+> `add_from_trash` — achou 2 cartas pré-existentes de bônus: Mr.1
+> Daz.Bonez, Saint Mjosgard) e Ulti & Page One (OP17-060, faltava a
+> palavra "card" após "DON!!"). Escopo do achado F reduzido de propósito
+> (não fiz o filtro Event/Character — tentativa inicial afetaria 25
+> cartas de uma vez, revertido). `diff_parser` MUDOU=5, 0 regressões,
+> `smoke_fast`/`smoke_test` 100%. **Faltam A, C, D, H, J** do bloco 450
+> (mecânica nova, maior escopo) — não tocados. Ver bloco 452 do HANDOFF.
+
 > 05/08/2026 (bloco 451): implementados os 2 achados de **maior
 > impacto** do bloco 450. **Taunt** ("opponent cannot attack any card
 > other than [Nome]") — afeta Eustass Kid (OP01-051, meta) e Captain

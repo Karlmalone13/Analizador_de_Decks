@@ -12996,6 +12996,7 @@
           {
             "action": "add_from_trash",
             "count": 1,
+            "cost_eq": 1,
             "color": "blue"
           }
         ]
@@ -24487,6 +24488,7 @@
           {
             "action": "add_from_trash",
             "count": 1,
+            "cost_eq": 1,
             "color": "black"
           }
         ],
@@ -79748,6 +79750,16 @@
     "sub_types": "Whitebeard Pirates",
     "attribute": "Slash",
     "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_eq": 1,
+            "filter_type": "whitebeard pirates"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -80933,6 +80945,7 @@
           {
             "action": "add_from_trash",
             "count": 1,
+            "cost_eq": 0,
             "color": "blue"
           }
         ]
@@ -81230,6 +81243,10 @@
             "count": 1,
             "target": "opp_character",
             "power_lte": 3000
+          },
+          {
+            "action": "add_don",
+            "count": 1
           }
         ],
         "conditions": {

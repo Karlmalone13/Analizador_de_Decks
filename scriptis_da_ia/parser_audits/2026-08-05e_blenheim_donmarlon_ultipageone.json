@@ -1,0 +1,19 @@
+{
+  "trigger_card": "OP17-012",
+  "problem": "Continuacao do bloco 2026-08-05c (auditoria OP17): fecha os 3 achados de MENOR risco/esforco que ainda restavam sem fix -- (B) OP17-012 Blenheim, (F) OP17-052 Don Marlon, (G) OP17-060 Ulti & Page One. Os outros 5 achados do mesmo bloco (A, C, D, H, J) continuam pendentes, exigem mecanica nova de maior escopo.",
+  "grammar_family": "3 familias distintas, cada uma com seu proprio censo global.",
+  "queries": [
+    "(B) parse_play_generic exigia 'Character card'/'Stage card'/'type card'/'[Nome]' logo apos 'play up to N' -- 'play up to 1 CARD' generico (sem nenhuma dessas palavras, o tipo vem em clausula separada 'and a type including X') nunca batia. Censo: unica carta no banco (OP17-012). Fix: nova alternativa 'cards?' generica, adicionada por ULTIMO na alternancia (prioridade mais baixa, so dispara se as mais especificas nao baterem antes na mesma posicao).",
+    "(F) parse_add_from_trash tinha cost_lte ('or less') e a faixa ('to'), mas nao custo EXATO ('cost of N' sem 'or less'/'to'). Censo (buscando SO em add_from_trash, nao a familia inteira de 'cost of N' que e ampla demais): achou 4 cartas -- OP02-063 (Mr.1 Daz.Bonez, PRE-EXISTENTE), OP05-089 (Saint Mjosgard, PRE-EXISTENTE), OP17-012 (Blenheim, mesmo commit do achado B) e OP17-052 (Don Marlon). NAO fiz o filtro de tipo de carta (Event vs Character) que tambem estava no achado F original -- tentativa inicial de generalizar 'Character'/'Event'/'Stage' como filtro afetou 25 cartas de uma vez (a palavra 'Character' aparece na maioria das descricoes de add_from_trash), risco/esforco desproporcional pra 1 carta isolada -- revertido, fica registrado como pendencia menor (nao a mais).",
+    "(G) 'add up to N DON!! from your DON!! deck' (sem a palavra 'card(s)' apos DON!!) nunca batia o regex de add_don, que exigia 'don!! cards?' literal. Censo: unica carta no banco (OP17-060). Fix: 'cards?' virou opcional (nao removido, so nao-obrigatorio) na mesma regex."
+  ],
+  "cards_found": ["OP17-012", "OP02-063", "OP05-089", "OP17-052", "OP17-060"],
+  "resolution_scope": "global",
+  "decision": "3 fixes aplicados, todos reusando vocabulario/acoes ja existentes (nenhuma mecanica nova no engine, so regex do parser). Achado F reduzido de escopo deliberadamente (so custo exato, nao o filtro de tipo de carta) apos o censo mostrar que generalizar o filtro de tipo afetaria 25 cartas de uma vez -- risco desproporcional pra uma pendencia de severidade baixa (fica registrado como pendencia residual, nao a maior).",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=5 (soma dos 3 fixes + as 2 cartas pre-existentes bonus do achado F)",
+    "smoke_fast.py: SMOKE FAST OK",
+    "smoke_test.py: TODOS OS TESTES PASSARAM"
+  ],
+  "notes": "Pendencia residual do achado F (menor severidade, nao corrigida): add_from_trash ainda nao filtra por TIPO DE CARTA (Event/Character/Stage) -- Don Marlon (OP17-052) pode recuperar um Character/Stage do trash quando o texto pede especificamente um Event. eligible_cards() nao tem parametro de card_type nenhum hoje; adicionar exigiria ou um novo parametro compartilhado (risco pra muitos call sites) ou um post-filter local so em add_from_trash (mais seguro, mas precisa reler as ~25 cartas que tem 'Character'/'Event'/'Stage' na descricao pra confirmar se o filtro esperado bate em cada uma antes de generalizar de verdade -- fora do orcamento desta sessao). Os achados A, C, D, H, J do bloco 2026-08-05c continuam pendentes, sem mudanca."
+}

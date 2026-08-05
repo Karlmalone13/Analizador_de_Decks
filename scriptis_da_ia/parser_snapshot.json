@@ -8215,6 +8215,7 @@
     {
      "action": "add_from_trash",
      "color": "blue",
+     "cost_eq": 1,
      "count": 1
     }
    ]
@@ -15462,6 +15463,7 @@
     {
      "action": "add_from_trash",
      "color": "black",
+     "cost_eq": 1,
      "count": 1
     }
    ]
@@ -42069,6 +42071,16 @@
   }
  },
  "OP17-012": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "play_card",
+     "cost_eq": 1,
+     "count": 1,
+     "filter_type": "whitebeard pirates"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42869,6 +42881,7 @@
     {
      "action": "add_from_trash",
      "color": "blue",
+     "cost_eq": 0,
      "count": 1
     }
    ]
@@ -43081,6 +43094,10 @@
      "count": 1,
      "power_lte": 3000,
      "target": "opp_character"
+    },
+    {
+     "action": "add_don",
+     "count": 1
     }
    ]
   }

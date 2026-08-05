@@ -4401,7 +4401,11 @@ def parse_give_don(text):
     # Aceleração REAL: adicionar DON do seu deck de DON ao seu campo (ramp)
     if 'from your don!! deck' in t:
         for m2 in re.finditer(
-                r'add(?: up to)? (\d+) (additional )?don!! cards?'
+                # "cards?" agora OPCIONAL (achado 05/08, OP17-060 Ulti &
+                # Page One, unica carta no banco): "add up to 1 DON!! from
+                # your DON!! deck" (sem a palavra "card(s)" apos DON!!)
+                # nunca batia -- efeito inteiro sumia.
+                r'add(?: up to)? (\d+) (additional )?don!!\s*(?:cards?)?'
                 r'(?: from your don!! deck)?(?: and (set it as active|rest (?:it|them)))?', t):
             step = {'action': 'add_don', 'count': int(m2.group(1))}
             if m2.group(3) and m2.group(3).startswith('rest'):
@@ -5134,7 +5138,16 @@ def parse_play_generic(text):
         r'(?:(?:character|stage) cards?'        # "Character card"/"Stage card" (forma original)
         r'|type cards?'                          # "[Tipo] type card" generico, sem a palavra Character/Stage
         r'|characters?\b(?!\s*card)'              # "red Character"/"Character with..." sem "card" depois
-        r'|[\[{][a-z][a-z0-9 .\'-]+[\]}](?!\s+type))',  # "[Nome]" carta especifica por nome, nao tipo
+        r'|[\[{][a-z][a-z0-9 .\'-]+[\]}](?!\s+type)'  # "[Nome]" carta especifica por nome, nao tipo
+        r'|cards?\b)',                           # "card"/"cards" GENERICO (nem Character/Stage/tipo/nome
+        # vem colado) -- filtro de cost/tipo vem em clausula separada na
+        # mesma frase. ULTIMA alternativa (prioridade mais baixa: so
+        # dispara se nenhuma das mais especificas acima bater primeiro na
+        # mesma posicao). Achado 05/08, OP17-012 (Blenheim, unica carta no
+        # banco): "[On K.O.] Play up to 1 card with a cost of 1 and a type
+        # including "Whitebeard Pirates" from your hand" nunca virava step
+        # nenhum -- "card" sozinho nao batia em nenhuma das 4 formas
+        # anteriores.
         t)
     # Exclusao de DECK/trash olha so a JANELA PROXIMA da clausula "play up
     # to..." (curto alcance: clausula anterior conectada por ":" ou inicio
@@ -6489,6 +6502,14 @@ def parse_add_from_trash(text):
         cost_m = re.search(r'cost of (\d+) or less', desc)
         if cost_m:
             step['cost_lte'] = int(cost_m.group(1))
+        else:
+            # custo EXATO, sem "or less"/"to" (achado 05/08, OP17-052 Don
+            # Marlon, unica carta no banco: "Add up to 1 Blue Event with a
+            # cost of 0 from your trash to your hand" -- sem filtro
+            # nenhum de custo antes, podia trazer QUALQUER Event do trash).
+            cost_eq_m = re.search(r'cost of (\d+)(?! or)(?! to)', desc)
+            if cost_eq_m:
+                step['cost_eq'] = int(cost_eq_m.group(1))
 
     # filtro de cor (ex: "black Character card", achado 15/07) -- cor vem
     # como primeira palavra da descricao, antes de "character"/"leader".

@@ -1,5 +1,35 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-05 (452) - Claude (sessao remota web) - Fecha os 3 achados de MENOR risco do bloco 450 (Blenheim, Don Marlon, Ulti & Page One)
+
+Continuacao do bloco 450/451 -- usuario confirmou ("Sim") fechar os
+achados baratos/isolados que restavam.
+
+- **(B) OP17-012 Blenheim**: `[On K.O.] Play up to 1 CARD ...` (card
+  generico, tipo vem em clausula separada) nunca virava step --
+  `parse_play_generic` so aceitava "Character card"/"Stage card"/"type
+  card"/"[Nome]". Nova alternativa `cards?` generica, ULTIMA na
+  alternancia (prioridade mais baixa).
+- **(F, escopo reduzido) OP17-052 Don Marlon**: custo EXATO ("cost of
+  N", sem "or less") faltava em `parse_add_from_trash`. Censo achou
+  **2 cartas PRE-EXISTENTES de bonus**: Mr.1 (Daz.Bonez, OP02-063) e
+  Saint Mjosgard (OP05-089). **Nao fiz** o filtro de tipo de carta
+  (Event vs Character) que tambem fazia parte do achado F original --
+  tentativa inicial afetou 25 cartas de uma vez (a palavra "Character"
+  aparece na maioria das descricoes), revertido por risco
+  desproporcional pra 1 carta isolada de severidade baixa -- fica
+  pendencia residual, documentada.
+- **(G) OP17-060 Ulti & Page One**: "add up to 1 DON!! from your DON!!
+  deck" (sem a palavra "card(s)") nunca batia o regex de `add_don` --
+  "cards?" virou opcional na mesma regex.
+
+`diff_parser.py`: GANHOU=0, PERDEU=0, MUDOU=5. `smoke_fast.py`/
+`smoke_test.py`: 100%. Registro em
+`parser_audits/2026-08-05e_blenheim_donmarlon_ultipageone.json`.
+
+**Ficam pendentes** os achados A, C, D, H, J do bloco 450 (mecanica
+nova de maior escopo, nao tocados).
+
 ## 2026-08-05 (451) - Claude (sessao remota web) - Implementa os 2 achados de MAIOR impacto do bloco 450: taunt (Eustass Kid/Captain John) e aura de Blocker do lider Luffy
 
 Usuario confirmou ("Sim") pra continuar e resolver os achados de maior

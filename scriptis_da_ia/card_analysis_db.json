@@ -116642,6 +116642,10 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "play_card",
+    "trigger": "on_ko"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -118614,6 +118618,10 @@
     "trigger": "on_play",
     "power_lte": 3000,
     "target": "opp_character"
+   },
+   {
+    "action": "add_don",
+    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
