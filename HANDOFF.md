@@ -1,5 +1,85 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-05 (450) - Claude (sessao remota web) - Auditoria texto x mecanica das 103 cartas do OP17 -- 7 bugs GENERICOS corrigidos (varios PRE-EXISTENTES), 10 achados registrados sem fix
+
+Pedido do usuario: "confira os textos e mecanicas das cartas de op17".
+Pendencia explicita desde o bloco 447: so 8/103 cartas tinham sido lidas
+manualmente pra corretude (o resto so teve COBERTURA checada). Li as
+103 uma a uma (texto vs `card_effects_db.json`) nesta sessao.
+
+**Padrao que se repetiu o tempo todo**: quase todo bug achado NAO era
+exclusivo do OP17 -- um censo global (`cards_rows.csv` inteiro, nao so
+OP17) quase sempre achava a MESMA forma em cartas PRE-EXISTENTES,
+silenciosamente quebradas desde antes desta sessao. Isso confirma que
+a auditoria valeu a pena ir alem das 103 cartas do pedido original.
+
+### 7 fixes GENERICOS aplicados (todos com censo global ANTES de mexer, `diff_parser` PERDEU=0, `smoke_fast`/`smoke_test` 100% apos cada um):
+
+1. **`[Rush:Character]` sem espaco apos ':'** -- tag inteira ficava
+   invisivel (a carta nunca ganhava a habilidade de atacar Characters no
+   turno em que entra). 5 cartas: OP17-003/027/048 + **PRE-EXISTENTES**
+   ST32-004 (Silvers Rayleigh) e ST32-005 (Roronoa Zoro). Fix: normaliza
+   `t_low` no topo de `parse_card_effect` (1 linha, corrige TODOS os
+   consumidores de uma vez).
+2. **"Rest ALL of your opponent's Characters"** (palavra "all", nenhum
+   padrao aceitava isso, so numero) -- efeito inteiro sumia. 2 cartas:
+   OP17-022 (Shanks) + **PRE-EXISTENTE** OP06-041 (The Ark Noah).
+3. **"Set ... with a type including X as active"** (ordem "type
+   including X" em vez de "X" type) -- filtro de tipo sumia. 1 carta:
+   OP17-031 (Yasopp), isolada apos censo.
+4. **"Place ALL of your opponent's Characters ... bottom of deck"** --
+   mesma familia do achado 2. 1 carta: OP17-041 (Wang Zhi), isolada.
+5. **Custo EXATO ("cost of N", sem "or less") em
+   place_opp_character_bottom_deck`** -- filtro sumia. 2 cartas: OP17-041
+   + **PRE-EXISTENTE** OP11-056 (Brook). Bug em DOIS pontos: o parser
+   (sem `cost_eq`) E o EXECUTOR (`decision_engine.py`, `cost_eq` nunca
+   repassado pro `eligible_cards` -- mesmo padrao ja documentado no
+   `parser_audits/README.md`).
+6. **"Your opponent chooses one:" com bullet "-" em vez de "•"** -- bug
+   SEMANTICO serio: as 3 cartas aplicavam AMBOS os efeitos da escolha
+   incondicionalmente (ex: "draw 2" E "oponente descarta 2" ao mesmo
+   tempo, em vez de UM ou outro). 3 cartas, todas OP17: 049/099/112.
+7. **"rest N of your DON!! cards AND this Character"** (ordem invertida
+   do padrao ja suportado "rest this Character and N DON!!") -- **bug de
+   REGRA**, nao so cobertura: a habilidade disparava sem restar a propria
+   carta, um custo real a menos do que o texto exige. Censo achou **8
+   cartas, 7 PRE-EXISTENTES**: EB02-025 (Donquixote Rosinante), OP09-095
+   (Laffitte), OP10-065 (Sugar), OP11-025 (Ishilly), OP11-030
+   (Shirahoshi), OP12-028 (Kouzuki Hiyori), ST23-004 (Monkey.D.Luffy) +
+   OP17-054 (Miss Buckingham Stussy). Este e o achado de MAIOR impacto
+   real da sessao -- varias sao cartas jogaveis de verdade.
+
+### 10 achados registrados, NAO corrigidos (documentados no parser_audits, exigem mecanica NOVA -- mais caro/arriscado que os 7 acima, que so reusaram vocabulario ja existente):
+
+- **A** OP17-004/007: condicao "leader is [Nomeado] OR has {Tipo} type"
+  e filtro "type A or type B" so capturam a 1a alternativa, perdem o OR.
+- **B** OP17-012 (Blenheim): "[On K.O.] Play up to 1 CARD ... from your
+  hand" (card generico, nao "Character card") nunca vira step.
+- **C** OP17-034 (Rockstar): condicao "if your OPPONENT's leader has N
+  power or more" nao existe em lugar nenhum do parser.
+- **D** OP17-040 (Edward.Newgate): "[Once Per Turn] When your Leader
+  attacks OR is attacked" (prosa) foi fundido no `on_play` -- buff
+  dispara na hora ERRADA (ao jogar, nao quando o lider ataca/e atacado).
+- **E** OP17-044 (Captain John) + **OP01-051 (Eustass Kid, carta de
+  META conhecida)**: "opponent cannot attack any card other than
+  [Nome]" -- mecanica de "taunt" inteira ausente. **ALTO IMPACTO.**
+- **F** OP17-052: `add_from_trash` sem `cost_eq` nem filtro Event/Character.
+- **G** OP17-060: "add DON!! from your DON!! deck and set active" (falta
+  a palavra "card") nunca produz step nenhum.
+- **H** OP17-063 (Kaido)/OP17-118 (Xebec): "All Character cards in your
+  hand without a Counter have +N Counter" -- modificador de mao ausente.
+- **I** **OP17-079 (Monkey.D.Luffy, LIDER)**: "All of your characters
+  with a cost of 12 or more gain [Blocker]" -- aura continua condicionada
+  a custo, ausente por completo (so existe `select_grant_blocker`,
+  selecao pontual de N, nao "todos que baterem a condicao, sempre").
+  **ALTO IMPACTO** -- e a propria habilidade do lider, afeta toda
+  partida com ele.
+- **J** Inversao de ORDEM de steps em pelo menos 2 cartas (OP17-036,
+  OP17-065) -- JSON produz ordem diferente da frase original.
+
+Registro completo em
+`parser_audits/2026-08-05c_auditoria_op17_texto_x_mecanica_confere_todas_103.json`.
+
 ## 2026-08-05 (449) - Claude (sessao remota web) - Teste pareado BARATO do achado do bloco 446/448 (Marco/Ohm/Satori) -- efeito real mas DEPENDENTE de deck, nao uniforme
 
 Retomei o item deixado pendente no bloco 447 Parte 3 (teste pareado do

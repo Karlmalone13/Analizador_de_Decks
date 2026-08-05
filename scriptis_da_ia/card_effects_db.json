@@ -2557,6 +2557,9 @@
           {
             "type": "rest_don",
             "count": 1
+          },
+          {
+            "type": "rest_self"
           }
         ]
       }
@@ -23549,6 +23552,11 @@
             "action": "place_opp_character_bottom_deck",
             "count": 99,
             "cost_lte": 2
+          },
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 99,
+            "cost_lte": 2
           }
         ]
       },
@@ -26626,6 +26634,14 @@
     "sub_types": "Fish-Man Island",
     "attribute": "",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 99
+          }
+        ]
+      },
       "trigger": {
         "steps": [
           {
@@ -38973,6 +38989,9 @@
           {
             "type": "rest_don",
             "count": 1
+          },
+          {
+            "type": "rest_self"
           }
         ]
       }
@@ -41683,6 +41702,9 @@
           {
             "type": "rest_don",
             "count": 1
+          },
+          {
+            "type": "rest_self"
           }
         ]
       }
@@ -44130,6 +44152,9 @@
           {
             "type": "rest_don",
             "count": 1
+          },
+          {
+            "type": "rest_self"
           }
         ],
         "once_per_turn": true
@@ -44263,6 +44288,9 @@
           {
             "type": "rest_don",
             "count": 1
+          },
+          {
+            "type": "rest_self"
           }
         ]
       }
@@ -45006,7 +45034,8 @@
         "steps": [
           {
             "action": "place_opp_character_bottom_deck",
-            "count": 1
+            "count": 1,
+            "cost_eq": 1
           }
         ]
       },
@@ -47738,6 +47767,9 @@
           {
             "type": "rest_don",
             "count": 1
+          },
+          {
+            "type": "rest_self"
           }
         ]
       }
@@ -76491,6 +76523,9 @@
           {
             "type": "rest_don",
             "count": 1
+          },
+          {
+            "type": "rest_self"
           }
         ]
       }
@@ -78726,6 +78761,16 @@
             "cost_lte": 2
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush_character"
+          }
+        ],
+        "conditions": {
+          "leader_attribute": "slash"
+        }
       }
     }
   },
@@ -78751,6 +78796,13 @@
         "conditions": {
           "leader_attribute": "slash"
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_rush_character"
+          }
+        ]
       }
     }
   },
@@ -79498,6 +79550,13 @@
         "conditions": {
           "leader_is": "edward.newgate"
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_rush_character"
+          }
+        ]
       }
     }
   },
@@ -79887,6 +79946,10 @@
       "on_play": {
         "steps": [
           {
+            "action": "rest_opp_character",
+            "count": 99
+          },
+          {
             "action": "set_don_active",
             "count": 2,
             "up_to": true
@@ -80022,6 +80085,13 @@
         "conditions": {
           "leader_type": "red-haired pirates"
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_rush_character"
+          }
+        ]
       }
     }
   },
@@ -80159,7 +80229,8 @@
           {
             "action": "set_active",
             "count": 1,
-            "target": "own_character"
+            "target": "own_character",
+            "filter_type": "red-haired pirates"
           }
         ]
       }
@@ -80486,6 +80557,21 @@
     "sub_types": "Rocks Pirates",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 99,
+            "cost_eq": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -80699,6 +80785,13 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_rush_character"
+          }
+        ]
       }
     }
   },
@@ -80714,16 +80807,21 @@
     "attribute": "Special",
     "effects": {
       "on_play": {
-        "steps": [
-          {
-            "action": "draw",
-            "count": 2
-          },
-          {
-            "action": "opp_trash_from_hand",
-            "count": 2
-          }
-        ]
+        "choice": [
+          [
+            {
+              "action": "draw",
+              "count": 2
+            }
+          ],
+          [
+            {
+              "action": "opp_trash_from_hand",
+              "count": 2
+            }
+          ]
+        ],
+        "choice_chooser": "opponent"
       },
       "on_opp_attack": {
         "steps": [
@@ -80878,6 +80976,9 @@
           {
             "type": "rest_don",
             "count": 3
+          },
+          {
+            "type": "rest_self"
           }
         ]
       }
@@ -82183,20 +82284,25 @@
     "attribute": "Special",
     "effects": {
       "when_attacking": {
-        "steps": [
-          {
-            "action": "gain_life",
-            "source": "deck_top",
-            "dest": "life_top",
-            "count": 1,
-            "up_to": true
-          },
-          {
-            "action": "opp_trash_from_hand",
-            "count": 1,
-            "chosen_by": "effect_owner_blind"
-          }
-        ]
+        "choice": [
+          [
+            {
+              "action": "gain_life",
+              "source": "deck_top",
+              "dest": "life_top",
+              "count": 1,
+              "up_to": true
+            }
+          ],
+          [
+            {
+              "action": "opp_trash_from_hand",
+              "count": 1,
+              "chosen_by": "effect_owner_blind"
+            }
+          ]
+        ],
+        "choice_chooser": "opponent"
       }
     }
   },
@@ -82609,24 +82715,24 @@
     "attribute": "Special",
     "effects": {
       "on_play": {
-        "steps": [
-          {
-            "action": "draw",
-            "count": 1
-          },
-          {
-            "action": "gain_life",
-            "source": "deck_top",
-            "dest": "life_top",
-            "count": 1,
-            "up_to": true
-          },
-          {
-            "action": "deal_damage",
-            "count": 1,
-            "up_to": true,
-            "target": "opponent"
-          }
+        "choice": [
+          [
+            {
+              "action": "gain_life",
+              "source": "deck_top",
+              "dest": "life_top",
+              "count": 1,
+              "up_to": true
+            }
+          ],
+          [
+            {
+              "action": "deal_damage",
+              "count": 1,
+              "up_to": true,
+              "target": "opponent"
+            }
+          ]
         ]
       }
     }

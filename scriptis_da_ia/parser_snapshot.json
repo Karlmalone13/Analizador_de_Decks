@@ -1598,6 +1598,9 @@
     {
      "count": 1,
      "type": "rest_don"
+    },
+    {
+     "type": "rest_self"
     }
    ],
    "steps": [
@@ -14869,6 +14872,11 @@
      "action": "place_opp_character_bottom_deck",
      "cost_lte": 2,
      "count": 99
+    },
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 2,
+     "count": 99
     }
    ]
   }
@@ -16811,6 +16819,14 @@
   }
  },
  "OP06-041": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "rest_opp_character",
+     "count": 99
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -24659,6 +24675,9 @@
     {
      "count": 1,
      "type": "rest_don"
+    },
+    {
+     "type": "rest_self"
     }
    ],
    "steps": [
@@ -26390,6 +26409,9 @@
     {
      "count": 1,
      "type": "rest_don"
+    },
+    {
+     "type": "rest_self"
     }
    ],
    "steps": [
@@ -27975,6 +27997,9 @@
     {
      "count": 1,
      "type": "rest_don"
+    },
+    {
+     "type": "rest_self"
     }
    ],
    "once_per_turn": true,
@@ -28046,6 +28071,9 @@
     {
      "count": 1,
      "type": "rest_don"
+    },
+    {
+     "type": "rest_self"
     }
    ],
    "steps": [
@@ -28518,6 +28546,7 @@
    "steps": [
     {
      "action": "place_opp_character_bottom_deck",
+     "cost_eq": 1,
      "count": 1
     }
    ]
@@ -30235,6 +30264,9 @@
     {
      "count": 1,
      "type": "rest_don"
+    },
+    {
+     "type": "rest_self"
     }
    ],
    "steps": [
@@ -41919,6 +41951,13 @@
      "target": "opp_character"
     }
    ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_rush_character"
+    }
+   ]
   }
  },
  "OP17-004": {
@@ -42154,6 +42193,10 @@
   "on_play": {
    "steps": [
     {
+     "action": "rest_opp_character",
+     "count": 99
+    },
+    {
      "action": "set_don_active",
      "count": 2,
      "up_to": true
@@ -42245,6 +42288,13 @@
      "count": 1
     }
    ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_rush_character"
+    }
+   ]
   }
  },
  "OP17-028": {
@@ -42325,6 +42375,7 @@
     {
      "action": "set_active",
      "count": 1,
+     "filter_type": "red-haired pirates",
      "target": "own_character"
     }
    ]
@@ -42555,6 +42606,21 @@
   }
  },
  "OP17-041": {
+  "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "trash_from_hand"
+    }
+   ],
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_eq": 1,
+     "count": 99
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42686,6 +42752,13 @@
     }
    ]
   },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_rush_character"
+    }
+   ]
+  },
   "when_attacking": {
    "costs": [
     {
@@ -42723,16 +42796,21 @@
    ]
   },
   "on_play": {
-   "steps": [
-    {
-     "action": "draw",
-     "count": 2
-    },
-    {
-     "action": "opp_trash_from_hand",
-     "count": 2
-    }
-   ]
+   "choice": [
+    [
+     {
+      "action": "draw",
+      "count": 2
+     }
+    ],
+    [
+     {
+      "action": "opp_trash_from_hand",
+      "count": 2
+     }
+    ]
+   ],
+   "choice_chooser": "opponent"
   }
  },
  "OP17-050": {
@@ -42798,6 +42876,9 @@
     {
      "count": 3,
      "type": "rest_don"
+    },
+    {
+     "type": "rest_self"
     }
    ],
    "steps": [
@@ -43713,20 +43794,25 @@
  },
  "OP17-099": {
   "when_attacking": {
-   "steps": [
-    {
-     "action": "gain_life",
-     "count": 1,
-     "dest": "life_top",
-     "source": "deck_top",
-     "up_to": true
-    },
-    {
-     "action": "opp_trash_from_hand",
-     "chosen_by": "effect_owner_blind",
-     "count": 1
-    }
-   ]
+   "choice": [
+    [
+     {
+      "action": "gain_life",
+      "count": 1,
+      "dest": "life_top",
+      "source": "deck_top",
+      "up_to": true
+     }
+    ],
+    [
+     {
+      "action": "opp_trash_from_hand",
+      "chosen_by": "effect_owner_blind",
+      "count": 1
+     }
+    ]
+   ],
+   "choice_chooser": "opponent"
   }
  },
  "OP17-101": {
@@ -44007,24 +44093,24 @@
  },
  "OP17-112": {
   "on_play": {
-   "steps": [
-    {
-     "action": "draw",
-     "count": 1
-    },
-    {
-     "action": "gain_life",
-     "count": 1,
-     "dest": "life_top",
-     "source": "deck_top",
-     "up_to": true
-    },
-    {
-     "action": "deal_damage",
-     "count": 1,
-     "target": "opponent",
-     "up_to": true
-    }
+   "choice": [
+    [
+     {
+      "action": "gain_life",
+      "count": 1,
+      "dest": "life_top",
+      "source": "deck_top",
+      "up_to": true
+     }
+    ],
+    [
+     {
+      "action": "deal_damage",
+      "count": 1,
+      "target": "opponent",
+      "up_to": true
+     }
+    ]
    ]
   }
  },
@@ -50733,6 +50819,9 @@
     {
      "count": 1,
      "type": "rest_don"
+    },
+    {
+     "type": "rest_self"
     }
    ],
    "steps": [
@@ -52184,6 +52273,16 @@
      "count": 2
     }
    ]
+  },
+  "passive": {
+   "conditions": {
+    "leader_attribute": "slash"
+   },
+   "steps": [
+    {
+     "action": "gain_rush_character"
+    }
+   ]
   }
  },
  "ST32-005": {
@@ -52196,6 +52295,13 @@
      "action": "rest_opp_character",
      "cost_lte": 2,
      "count": 1
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_rush_character"
     }
    ]
   }

@@ -34705,6 +34705,11 @@
     "cost_lte": 2
    },
    {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "trigger",
+    "cost_lte": 2
+   },
+   {
     "action": "place_all_character_bottom_deck",
     "trigger": "main",
     "cost_lte": 3
@@ -39261,6 +39266,10 @@
   "attribute": "",
   "effects": [
    {
+    "action": "rest_opp_character",
+    "trigger": "on_play"
+   },
+   {
     "action": "play_card",
     "trigger": "trigger"
    }
@@ -39277,9 +39286,9 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -115265,6 +115274,10 @@
     "action": "rest_opp_character",
     "trigger": "on_play",
     "cost_lte": 2
+   },
+   {
+    "action": "gain_rush_character",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {
@@ -115310,6 +115323,10 @@
     "action": "rest_opp_character",
     "trigger": "on_play",
     "cost_lte": 2
+   },
+   {
+    "action": "keyword_rush_character",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {
@@ -116329,6 +116346,10 @@
     "action": "debuff_power",
     "trigger": "on_play",
     "target": "opp_character"
+   },
+   {
+    "action": "keyword_rush_character",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {
@@ -116929,6 +116950,10 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "rest_opp_character",
+    "trigger": "on_play"
+   },
+   {
     "action": "set_don_active",
     "trigger": "on_play"
    },
@@ -116944,9 +116969,9 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -117126,6 +117151,10 @@
    {
     "action": "draw",
     "trigger": "on_play"
+   },
+   {
+    "action": "keyword_rush_character",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {
@@ -117791,6 +117820,10 @@
   "attribute": "Strike",
   "effects": [
    {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "on_play"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -117802,7 +117835,7 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": true,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
   "rests_opponent": false,
   "bounces": false,
@@ -118052,6 +118085,10 @@
     "action": "debuff_power",
     "trigger": "on_opp_attack",
     "target": "opp_character"
+   },
+   {
+    "action": "keyword_rush_character",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -120533,10 +120570,6 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "draw",
-    "trigger": "on_play"
-   },
-   {
     "action": "gain_life",
     "trigger": "on_play"
    },
@@ -120554,7 +120587,7 @@
   },
   "text": "[Your Turn] The base power of all of your Characters with a Trigger and 4000 base power becomes 8000.\n[On Play] Draw 1 card, then choose one:\n- Add up to 1 card from the top of your deck to the top of your Life cards.\n- Add up to 1 card from the top of your opponent's Life cards to the owner's hand.",
   "is_searcher": false,
-  "draws": true,
+  "draws": false,
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,

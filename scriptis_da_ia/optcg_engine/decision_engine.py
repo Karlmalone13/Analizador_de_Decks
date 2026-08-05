@@ -7795,6 +7795,7 @@ class EffectExecutor:
             cands = eligible_cards(
                 opp.field_chars,
                 cost_lte=step.get('cost_lte'),
+                cost_eq=step.get('cost_eq'),
                 power_lte=step.get('power_lte'),
                 filter_text=step.get('filter_type', ''),
             )

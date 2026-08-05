@@ -2,6 +2,27 @@
 
 **Última atualização:** 5 de agosto de 2026
 
+> 05/08/2026 (bloco 450): **auditoria completa das 103 cartas do OP17**
+> (texto vs mecânica), pendência aberta desde o bloco 447. **7 bugs
+> genéricos corrigidos** (censo global antes de cada um, `diff_parser`
+> PERDEU=0): `[Rush:Character]` sem espaço, "rest ALL"/"place ALL" sem
+> suporte a "all", `type including X` faltando em `set_active`, custo
+> exato (`cost_eq`) faltando no parser E no executor de
+> `place_opp_character_bottom_deck`, bullet "-" não reconhecido em
+> "opponent chooses one" (bug sério: os 2 efeitos aplicavam juntos em
+> vez de escolher 1), e o maior — "rest N DON!! **and this Character**"
+> (ordem invertida) fazia a habilidade disparar **sem restar a própria
+> carta** (custo real a menos). A maioria dos bugs afetava cartas
+> **PRÉ-EXISTENTES** também (7 cartas jogáveis de verdade: Rosinante,
+> Laffitte, Sugar, Ishilly, Shirahoshi, Kouzuki Hiyori, Luffy ST23-004),
+> não só a transcrição manual do OP17. **10 achados registrados, SEM
+> fix** (exigem mecânica nova, mais arriscado) — destaque pros 2 de
+> maior impacto: Eustass Kid (OP01-051, carta de meta) e o líder
+> Monkey.D.Luffy (OP17-079) têm mecânicas centrais (taunt / aura de
+> Blocker em massa) **completamente ausentes**. `smoke_fast`/`smoke_test`
+> 100%. Ver bloco 450 do HANDOFF e
+> `parser_audits/2026-08-05c_...json` pra lista completa.
+
 > 05/08/2026 (bloco 449): **teste pareado BARATO** do achado do bloco
 > 446/448 (Marco/Ohm/Satori jogados depois do último ataque) — a
 > tentativa anterior (447 Parte 3) travou >20min; redesenho substitui

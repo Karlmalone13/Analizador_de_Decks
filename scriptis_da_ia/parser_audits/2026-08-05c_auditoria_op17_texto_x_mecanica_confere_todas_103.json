@@ -1,0 +1,45 @@
+{
+  "trigger_card": "OP17-003",
+  "problem": "Pendencia registrada em 2026-08-05_op17_ingestao_inicial_do_set_novo.json: so 8/103 cartas tinham sido lidas manualmente pra corretude semantica (as outras so tiveram COBERTURA checada -- bloco existe ou nao). Esta sessao leu as 103 cartas uma a uma (texto vs JSON parseado) e comparou contra a mecanica esperada.",
+  "grammar_family": "multiplas familias distintas, cada uma com seu proprio censo global (ver 'queries') -- nao e 1 bug so.",
+  "queries": [
+    "[Rush:Character] sem espaco apos ':' (grafia 'Rush:Character' em vez de 'Rush: Character'): censo global achou 5 cartas -- OP17-003/027/048 + PRE-EXISTENTES ST32-004/005 (Silvers Rayleigh, Roronoa Zoro). Fix: normaliza t_low no topo de parse_card_effect (1 linha, cobre TODOS os consumidores desse texto de uma vez).",
+    "'Rest ALL of your opponent's Characters' (palavra 'all', nao um numero): censo achou 2 cartas -- OP17-022 (Shanks) + PRE-EXISTENTE OP06-041 (The Ark Noah). Fix: novo ramo em parse_rest_opp + gate atualizado.",
+    "'Set up to N of your Characters WITH A TYPE INCLUDING X as active' (ordem 'type including X' em vez de '\"X\" type'): censo achou 1 carta -- OP17-031 (Yasopp), forma isolada apos scan. Fix: 3a alternativa no regex type_m de parse_set_active.",
+    "'Place ALL of your opponent's Characters ... bottom of deck' (mesma familia do 'rest all'): censo achou 1 carta -- OP17-041 (Wang Zhi), isolada. Fix: aceita 'all' alem do digito no loop de parse_place_bottom.",
+    "Custo EXATO ('a cost of N', sem 'or less'/'or more') em place_opp_character_bottom_deck: censo achou 2 cartas -- OP17-041 + PRE-EXISTENTE OP11-056 (Brook). Fix: cost_eq adicionado em extract_filters (parser) E no proprio executor _execute_step (decision_engine.py linha ~7796, cost_eq nunca era repassado pro eligible_cards -- MESMO padrao documentado no README deste diretorio, secao 'padrao transversal').",
+    "'Your opponent chooses one:' com bullet '-' (hifen) em vez de '•': censo achou 3 cartas, TODAS OP17 (049/099/112) -- as 3 tinham AMBOS os efeitos da escolha aplicando incondicionalmente (bug semantico serio: 'draw 2' E 'opponent trashes 2' ao mesmo tempo, em vez de UM ou outro). Fix: split de bullet aceita '-' logo apos quebra de linha, alem de '•'.",
+    "'rest N of your DON!! cards AND this Character' (ordem INVERTIDA do padrao ja suportado 'rest this Character and N of your DON!!'): censo global achou 8 cartas -- 7 PRE-EXISTENTES (EB02-025 Donquixote Rosinante, OP09-095 Laffitte, OP10-065 Sugar, OP11-025 Ishilly, OP11-030 Shirahoshi, OP12-028 Kouzuki Hiyori, ST23-004 Monkey.D.Luffy) + OP17-054 (Miss Buckingham Stussy). TODAS estavam SEM o custo rest_self -- a habilidade disparava sem restar a propria carta, custo real a menos do que o texto exige (bug de regra, nao so cobertura). Fix: novo bloco apos o rest_don generico, detectando 'and this character/card/stage' na cauda do match."
+  ],
+  "cards_found": [
+    "OP17-003",
+    "OP17-027",
+    "OP17-048",
+    "ST32-004",
+    "ST32-005",
+    "OP17-022",
+    "OP06-041",
+    "OP17-031",
+    "OP17-041",
+    "OP11-056",
+    "OP17-049",
+    "OP17-099",
+    "OP17-112",
+    "EB02-025",
+    "OP09-095",
+    "OP10-065",
+    "OP11-025",
+    "OP11-030",
+    "OP12-028",
+    "ST23-004",
+    "OP17-054"
+  ],
+  "resolution_scope": "global",
+  "decision": "Todos os 7 achados acima foram CORRIGIDOS de forma generica nesta sessao (nenhum hardcoded pro nome da carta que revelou o bug) -- em TODOS os casos o censo global confirmou o alcance real (varios sao PRE-EXISTENTES, nao artefato da transcricao manual do OP17) antes de mexer no codigo. Ver HANDOFF bloco 450 pro detalhamento completo, incluindo os achados NAO corrigidos nesta sessao (documentados abaixo em 'notes' -- exigem mecanica nova no engine, mais arriscados/caros pra fazer com pressa).",
+  "validated_by": [
+    "diff_parser.py apos TODOS os 7 fixes: GANHOU=0, PERDEU=0, MUDOU=22 (soma de todos os cards corrigidos) -- snapshot_parser.py realinhado, MUDOU=0 depois",
+    "smoke_fast.py: SMOKE FAST OK (rodado apos cada fix incremental, nao so no fim)",
+    "smoke_test.py: TODOS OS TESTES PASSARAM"
+  ],
+  "notes": "ACHADOS REAIS, NAO CORRIGIDOS nesta sessao -- documentados pro usuario decidir prioridade, cada um exigindo mecanica NOVA no parser E/OU no engine (mais caro/arriscado que os 7 fixes acima, que so reusaram vocabulario ja existente): (A) OP17-004/007: condicao 'leader is [Nomeado] OR has {Tipo} type' e filtro de alvo 'type A or type B' so capturam a 1a alternativa, perdendo o OR inteiro -- precisa de um novo campo tipo 'leader_is_or_type' checado em ~4-5 pontos distintos do engine. (B) OP17-012 (Blenheim): '[On K.O.] Play up to 1 CARD with a cost of 1 and a type including X from your hand' nunca vira step nenhum -- parse_play_generic so reconhece 'Character card'/'Stage card'/'[Nome]', nao 'card' generico com o tipo vindo depois. (C) OP17-034 (Rockstar): condicao 'if your OPPONENT's leader has N power or more' nao existe em NENHUM lugar do parser (so leader_power_gte do PROPRIO jogador existe) -- precisa de condicao nova ponta a ponta. (D) OP17-040 (Edward.Newgate): '[Once Per Turn] When your Leader ... attacks OR is attacked' (prosa, sem tag formal dupla) foi fundido dentro do bloco on_play -- o buff dispara na hora errada (ao jogar a carta, nao quando o lider ataca/e atacado). (E) OP17-044 (Captain John) + OP01-051 (Eustass Kid, carta de meta conhecida): 'your opponent cannot attack any card other than [Nome]' -- mecanica de 'taunt' inteira ausente, nenhuma acao/lock existe pra isso hoje; ALTO IMPACTO (Eustass Kid e jogavel de verdade). (F) OP17-052 (Don Marlon): add_from_trash sem cost_eq nem filtro de tipo de carta (Event vs Character). (G) OP17-060 (Ulti & Page One): 'add up to 1 DON!! from your DON!! deck and set it as active' (falta a palavra 'card' apos DON!!) nunca produz step nenhum. (H) OP17-063 (Kaido)/OP17-118 (Rocks.D.Xebec): 'All Character cards in your hand without a Counter have a +N Counter' -- modificador de mao inteiro ausente. (I) OP17-079 (Monkey.D.Luffy, LIDER): 'All of your characters with a cost of 12 or more gain [Blocker]' -- aura continua condicionada a custo, ausente por completo (so existe select_grant_blocker, que e SELECAO pontual de ate N, nao 'TODOS que bater a condicao, sempre'); ALTO IMPACTO por ser a propria habilidade do lider, afeta toda partida com esse lider. (J) Inversao de ORDEM dentro da lista de steps em pelo menos 2 cartas (OP17-036, OP17-065) -- o JSON produz os steps em ordem diferente da frase original ('Draw 1. Then, X' virou [X, draw] no parsed) -- pode importar pra efeitos onde a ORDEM de execucao afeta o resultado (ex: revelar oponente vs decidir antes)."
+}

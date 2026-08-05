@@ -1436,6 +1436,19 @@ def parse_costs(text):
     m = re.search(r'rest (?:this (?:card|character|stage) and )?(\d+) of your don!!', t)
     if m:
         costs.append({'type': 'rest_don', 'count': int(m.group(1))})
+        # Ordem INVERTIDA do composto do comentario acima: "rest N of your
+        # DON!! cards AND this Character/Card/Stage" (self-rest depois do
+        # DON, nao antes) -- achado 05/08 auditando OP17-054: censo global
+        # achou 9 cartas (8 PRE-EXISTENTES: EB02-025, OP09-095, OP10-065,
+        # OP11-025, OP11-030, OP12-028, ST23-004, + OP17-054) com essa
+        # ordem, TODAS silenciosamente sem o rest_self -- a habilidade
+        # disparava sem restar a propria carta, um custo real a menos do
+        # que o texto exige. So dispara se o `m` acima NAO ja veio do ramo
+        # "rest this X and N of your don" (senao duplicaria rest_self).
+        if not re.match(r'rest this (?:card|character|stage) and', t):
+            tail_self = t[m.end():m.end() + 30]
+            if re.search(r'^\s*(?:cards? )?and this (?:character|card|stage)\b', tail_self):
+                costs.append({'type': 'rest_self'})
         # Continuacao COMPOSTA "... and return N of your Characters other
         # than this Character to the owner's hand" (achado 17/07,
         # ST22-005, unica carta no banco) -- 2o custo distinto,
@@ -2410,6 +2423,14 @@ def parse_place_bottom(text):
         cost_m = re.search(r'(?:base )?cost of (\d+) or less', clause)
         if cost_m:
             f['cost_lte'] = int(cost_m.group(1))
+        else:
+            # custo EXATO, sem "or less"/"or more" (achado 05/08, OP11-056
+            # Brook -- ja existia, silencioso, antes do OP17 -- e OP17-041
+            # Wang Zhi: "with a base cost of N" sozinho nunca tinha filtro
+            # de custo nenhum, deixando a remocao mirar QUALQUER custo).
+            cost_eq_m = re.search(r'(?:base )?cost of (\d+)(?! or)', clause)
+            if cost_eq_m:
+                f['cost_eq'] = int(cost_eq_m.group(1))
         power_m = re.search(r'(\d+) (?:base )?power or less', clause)
         if power_m:
             f['power_lte'] = int(power_m.group(1))
@@ -2450,9 +2471,13 @@ def parse_place_bottom(text):
     # aceito como sinonimo de "place" (achado 16/07, EB01-028: "[Trigger]
     # Return up to 1 Character with a cost of 3 or less to the bottom of
     # the owner's deck" -- mesmo verbo generico do jogo pra essa remocao,
-    # so que usa "return" em vez de "place").
+    # so que usa "return" em vez de "place"). "all" aceito alem de um
+    # numero (achado 05/08, OP17-041 Wang Zhi, unica carta no banco --
+    # "place ALL of your opponent's Characters... bottom of..." nunca
+    # batia porque so o digito era aceito; count=99 e a mesma convencao
+    # ja usada no branch 'own' logo acima e em outras acoes "todos").
     for m in re.finditer(
-        r"(?:place|return|and) (?:up to )?(\d+) (of your opponent'?s )?characters?"
+        r"(?:place|return|and) (?:up to )?(all|\d+) (of your opponent'?s )?characters?"
         r"(?P<clause>[^.]*?)"
         r"(?=and up to \d+ characters?\b|bottom of (?:the owner.?s|your) deck)",
         t
@@ -2462,7 +2487,8 @@ def parse_place_bottom(text):
             prefix = t[max(0, m.start() - 12):m.start()]
             if 'of your' in prefix or 'of you' in prefix:
                 continue
-        step = {'action': 'place_opp_character_bottom_deck', 'count': int(m.group(1))}
+        count = 99 if m.group(1) == 'all' else int(m.group(1))
+        step = {'action': 'place_opp_character_bottom_deck', 'count': count}
         step.update(extract_filters(m.group('clause')))
         steps.append(step)
 
@@ -2699,6 +2725,18 @@ def parse_rest_opp(text):
         steps.append({'action': 'rest_opp_leader'})
         return steps
 
+    # "Rest ALL of your opponent's Characters" -- sem numero (distinto de
+    # "rest up to N"/"rest N" abaixo, que exigem um digito). Achado 05/08
+    # auditando OP17-022 (Shanks): a clausula inteira ficava ausente do
+    # parseado porque NENHUM padrao abaixo aceita a palavra "all" no lugar
+    # de um numero. Censo global achou 2 cartas -- OP06-041 (The Ark Noah)
+    # JA EXISTIA no banco antes do OP17 e tinha o MESMO gap silencioso.
+    # count=99 e a mesma convencao ja usada em outras acoes "todos" deste
+    # parser (ex: trash_character count=99 em Five Elders).
+    if re.search(r"rest all of your opponent.{0,10}characters?\b", t):
+        steps.append({'action': 'rest_opp_character', 'count': 99})
+        return steps
+
     # Alvo MISTO "DON!! cards or Characters" (DON mencionado PRIMEIRO) +
     # filtro de custo opcional na alternativa Character (achado 17/07,
     # EB03-061 Uta, unica carta no banco com essa ordem). CHECADO ANTES
@@ -2909,8 +2947,14 @@ def parse_set_active(text):
             else:
                 step['target'] = 'own_character'
 
+            # "X" type / [X] type (ordem tipo-depois-do-nome) OU "a type
+            # including X" (ordem invertida, "type" vem ANTES do nome) --
+            # achado 05/08, OP17-031 Yasopp, unica carta no banco com essa
+            # 2a ordem dentro de set_active especificamente (a frase em si
+            # e comum no resto do parser, so faltava aqui).
             type_m = (re.search(r'"([a-z][a-z0-9 .\'-]+)"\s+type', desc)
-                      or re.search(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+type', desc))
+                      or re.search(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+type', desc)
+                      or re.search(r'type including ["\[{]([a-z][a-z0-9 .\'-]+)["\]}]', desc))
             if type_m:
                 step['filter_type'] = type_m.group(1).strip()
             else:
@@ -6964,7 +7008,14 @@ def parse_block(block_text, trigger_name):
                 }]
 
     if re.search(r'choose(?:s)? one\s*:', block_text, re.IGNORECASE):
-        opcoes_raw = re.split(r'[•\u2022]', block_text)
+        # Bullet "-" (hifen no inicio de linha, seguido de espaco) alem do
+        # "bullet" oficial (\u2022) -- achado 05/08, 3 cartas OP17 (todas
+        # transcricao manual, nunca vindas do Supabase/optcgapi) usam "-"
+        # em vez do bullet pra marcar cada opcao. O lookbehind exige "-"
+        # logo apos uma quebra de linha (nao no meio de uma
+        # palavra/intervalo com hifen, ex: nome composto ou "cost of 3-5")
+        # -- sem essa ancoragem quebraria qualquer hifen normal em outra carta.
+        opcoes_raw = re.split(r'[•\u2022]|(?<=\n)-\s+', block_text)
         # primeiro item e o texto antes do primeiro bullet (geralmente so
         # 'Choose one:' e eventual condicao -- nao e uma opcao)
         opcoes_raw = [o.strip() for o in opcoes_raw[1:] if o.strip()]
@@ -7243,7 +7294,7 @@ def parse_block(block_text, trigger_name):
     # Tambem aceita "your opponent rests N" (verbo conjugado, PRB02-005).
     # "rest your opponent's leader" (sem numero, alvo fixo -- achado
     # 19/07, OP16-039) tambem tolerado.
-    if (('rest up to' in t or re.search(r'rests? \d+', t)
+    if (('rest up to' in t or re.search(r'rests? \d+', t) or 'rest all' in t
          or "rest your opponent's leader" in t or 'rest your opponents leader' in t)
             and 'opponent' in t):
         steps.extend(parse_rest_opp(t))
@@ -8345,6 +8396,18 @@ def parse_card_effect(card_text, card_type):
     # abertura/parada de bloco que assumem exatamente 0 ou 1 espaco.
     t = re.sub(r'[ \t]{2,}', ' ', t)
     t_low = t.lower()
+    # Normaliza "[Rush:Character]" (sem espaco apos o ':') pra
+    # "[rush: character]" (COM espaco) -- a convencao que todo o resto do
+    # parser ja espera (substring check em keyword_don_req/passive_steps,
+    # regexes de gain_rush_character etc). Achado 05/08: 5 cartas no banco
+    # INTEIRO tem essa grafia sem espaco -- 3 do OP17 (Izo, Benn Beckman,
+    # Shiki) e 2 PRE-EXISTENTES (ST32-004 Silvers Rayleigh, ST32-005
+    # Roronoa Zoro, vindas do Supabase/optcgapi antes da ingestao manual)
+    # -- confirma que e uma variante de grafia real do jogo, nao um
+    # artefato so da transcricao do OP17. Sem isso, a tag inteira ficava
+    # invisivel: a carta nunca ganhava has_rush_character, o bot nunca
+    # sabia que podia atacar Characters no turno em que ela entra.
+    t_low = re.sub(r'\[rush:\s*character\]', '[rush: character]', t_low)
     result = {}
 
     # "When this Character's/Leader's attack deals damage to your opponent's
