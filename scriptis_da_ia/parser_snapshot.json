@@ -6152,6 +6152,17 @@
      "count": 1
     }
    ]
+  },
+  "opp_turn": {
+   "conditions": {
+    "self_rested": true
+   },
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "force_opp_attack_self"
+    }
+   ]
   }
  },
  "OP01-052": {
@@ -13791,6 +13802,9 @@
    ]
   },
   "opp_turn": {
+   "conditions": {
+    "self_rested": true
+   },
    "steps": [
     {
      "action": "immunity",
@@ -34706,6 +34720,9 @@
  },
  "OP14-026": {
   "opp_turn": {
+   "conditions": {
+    "self_rested": true
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -34718,6 +34735,9 @@
  },
  "OP14-027": {
   "opp_turn": {
+   "conditions": {
+    "self_rested": true
+   },
    "steps": [
     {
      "action": "debuff_power",
@@ -42692,6 +42712,17 @@
      "then_trash": 1
     }
    ]
+  },
+  "passive": {
+   "conditions": {
+    "leader_type_includes": "rocks pirates",
+    "self_rested": true
+   },
+   "steps": [
+    {
+     "action": "force_opp_attack_self"
+    }
+   ]
   }
  },
  "OP17-045": {
@@ -43388,7 +43419,8 @@
   "passive": {
    "steps": [
     {
-     "action": "gain_blocker"
+     "action": "grant_blocker_aura",
+     "cost_gte": 12
     }
    ]
   }
@@ -46265,6 +46297,9 @@
  },
  "ST02-014": {
   "your_turn": {
+   "conditions": {
+    "self_rested": true
+   },
    "don_requirement": 1,
    "steps": [
     {

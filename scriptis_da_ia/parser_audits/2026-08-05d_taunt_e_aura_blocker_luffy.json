@@ -1,0 +1,19 @@
+{
+  "trigger_card": "OP01-051",
+  "problem": "Pendencias de MAIOR IMPACTO registradas no bloco anterior (2026-08-05c), pedido do usuario pra corrigir: (E) 'your opponent cannot attack any card other than the Character [Nome]' (taunt) inteiramente ausente do parser/engine -- afeta Eustass Kid (OP01-051, carta de meta conhecida) e Captain John (OP17-044); (I) 'All of your characters with a cost of N or more gain [Blocker]' (aura continua de Blocker por LIDER) tambem ausente -- afeta o lider Monkey.D.Luffy (OP17-079).",
+  "grammar_family": "duas mecanicas distintas, cada uma com seu proprio censo global.",
+  "queries": [
+    "'your opponent cannot attack any (?:card|character) other than the character': censo achou 2 cartas -- OP01-051 (5 impressoes) e OP17-044. Em ambas o [Nome] e sempre a PROPRIA carta.",
+    "'(?:if|and) this character is rested' (condicao par da mecanica de taunt, mas GENERICA -- qualquer efeito condicionado a self restado): censo achou 15 linhas/varias cartas -- alem das 2 do taunt, tambem corrigiu (bonus, mesmo commit) 3 cartas PRE-EXISTENTES que disparavam incondicionalmente por falta dessa condicao: OP04-119 (Donquixote Rosinante), OP14-026 (Kouzuki Oden), OP14-027 (Shanks).",
+    "'all of your characters with a cost of (\\\\d+) or more gains? \\\\[?blocker\\\\]?': censo achou 1 carta -- OP17-079 (Monkey.D.Luffy, LIDER), isolada."
+  ],
+  "cards_found": ["OP01-051", "OP17-044", "OP04-119", "OP14-026", "OP14-027", "OP17-079"],
+  "resolution_scope": "global",
+  "decision": "Ambas mecanicas implementadas ponta a ponta (parser + engine), nao so parser: (1) TAUNT: novo step 'force_opp_attack_self' (parse_block, generico, sem hardcode de nome -- a auto-referencia e sempre a propria carta) + nova condicao 'self_rested' (parse_conditions + _check_conditions) + nova funcao `active_taunt_character(defender, attacker)` (decision_engine.py, reusa `EffectExecutor._check_conditions` como fonte unica) chamada nos 3 pontos que decidem 'o que posso atacar/e lethal possivel': `_generate_and_score_actions` (2x, ataque real E orcamento de attach_don) e `_lethal_search` (senao lethal ficaria superestimado quando o taunt bloqueia o lider) -- REGRA_SEM_DUPLICACAO respeitada, todos os 3 pontos chamam a MESMA funcao. (2) AURA DE BLOCKER: novo step 'grant_blocker_aura' (parse_block, mesmo padrao ja usado por grant_rush_aura pra 'all of your [cor] characters custo N+ gain [Rush]', so sem filtro de cor) + aplicado em `apply_conditional_keyword_passives` (mesma funcao/fonte unica que ja aplica rush_aura_grants, chamada em todo DecisionEngine.__init__).",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=7 (soma dos 2 achados + as 3 cartas bonus do self_rested)",
+    "smoke_fast.py: 2 testes NOVOS e permanentes -- test_taunt_force_opp_attack_self_05_08 (Kid restado+1 DON = taunt ativo, nenhum ataque mira lider/outro character, so o taunter; sem DON = taunt desliga, lider volta a ser alvo valido) e test_luffy_op17_079_aura_blocker_custo_12_05_08 (character custo 12 ganha has_blocker via aura, custo 4 nao ganha). SMOKE FAST OK.",
+    "smoke_test.py: TODOS OS TESTES PASSARAM"
+  ],
+  "notes": "Limitacao aceita conscientemente: grant_blocker_aura e GRANT-ONLY (mesma limitacao ja documentada e aceita em grant_rush_aura) -- nao revoga has_blocker se o custo de uma carta cair abaixo do limiar depois de ja ter sido concedido (nenhum efeito no banco reduz custo de character hoje, so aumenta -- ex: familia Elbaph com '+12 cost' -- entao a limitacao nunca se materializa na pratica atual, mas fica registrada como premissa). Os 8 achados restantes do bloco 2026-08-05c (A, B, C, D, F, G, H, J) continuam pendentes, nao tocados nesta sessao."
+}

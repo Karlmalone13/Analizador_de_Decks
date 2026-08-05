@@ -13196,6 +13196,11 @@
     "action": "play_card",
     "trigger": "activate_main",
     "cost_lte": 3
+   },
+   {
+    "action": "force_opp_attack_self",
+    "trigger": "opp_turn",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {
@@ -117953,6 +117958,10 @@
    {
     "action": "draw",
     "trigger": "activate_main"
+   },
+   {
+    "action": "force_opp_attack_self",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -119208,7 +119217,7 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "gain_blocker",
+    "action": "grant_blocker_aura",
     "trigger": "passive"
    }
   ],
@@ -119218,7 +119227,7 @@
   "draws": false,
   "has_counter_value": false,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,

@@ -1,5 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-05 (451) - Claude (sessao remota web) - Implementa os 2 achados de MAIOR impacto do bloco 450: taunt (Eustass Kid/Captain John) e aura de Blocker do lider Luffy
+
+Usuario confirmou ("Sim") pra continuar e resolver os achados de maior
+impacto do bloco 450 (itens E e I, ambos "mecanica inteira ausente").
+
+**Taunt** ("your opponent cannot attack any card other than [Nome]") --
+afeta **Eustass Kid (OP01-051, carta de meta conhecida)** e Captain John
+(OP17-044). Implementado ponta a ponta:
+- Parser: novo step `force_opp_attack_self` (generico, sem hardcode de
+  nome -- [Nome] e sempre auto-referencia) + nova condicao `self_rested`
+  ("if/and this character is rested"). Censo da condicao achou **3
+  cartas PRE-EXISTENTES de bonus** que disparavam INCONDICIONALMENTE ate
+  agora por falta dela: Donquixote Rosinante (OP04-119), Kouzuki Oden
+  (OP14-026), Shanks (OP14-027).
+- Engine: nova funcao `active_taunt_character(defensor, atacante)`
+  (fonte unica, reusa `_check_conditions`) chamada nos 3 pontos que
+  decidem "o que posso atacar/e lethal possivel":
+  `_generate_and_score_actions` (2x -- geracao real de ataque E
+  orcamento de attach_don) e `_lethal_search` (senao lethal ficaria
+  superestimado quando o taunt bloqueia acesso ao lider).
+  REGRA_SEM_DUPLICACAO respeitada -- os 3 pontos chamam a MESMA funcao.
+
+**Aura de Blocker do lider** ("All of your characters with a cost of N
+or more gain [Blocker]") -- afeta **Monkey.D.Luffy (OP17-079, LIDER)**,
+a propria habilidade central dele estava vazia. Novo step
+`grant_blocker_aura` (mesmo padrao ja usado por `grant_rush_aura`, so
+sem filtro de cor), aplicado em `apply_conditional_keyword_passives`
+(mesma funcao/fonte unica que ja aplica as outras auras condicionais).
+
+**2 testes NOVOS e permanentes** em `smoke_fast.py`:
+`test_taunt_force_opp_attack_self_05_08` (Kid restado+1 DON = taunt
+ativo, nenhum ataque mira lider/outro character; sem DON = taunt
+desliga) e `test_luffy_op17_079_aura_blocker_custo_12_05_08` (custo 12
+ganha has_blocker, custo 4 nao ganha).
+
+`diff_parser.py`: GANHOU=0, PERDEU=0, MUDOU=7. `smoke_fast.py`/
+`smoke_test.py`: 100%. Registro completo em
+`parser_audits/2026-08-05d_taunt_e_aura_blocker_luffy.json`.
+
+**Ficam pendentes** os outros 8 achados do bloco 450 (A, B, C, D, F, G,
+H, J) -- nao tocados nesta sessao, menor impacto/mais isolados.
+
 ## 2026-08-05 (450) - Claude (sessao remota web) - Auditoria texto x mecanica das 103 cartas do OP17 -- 7 bugs GENERICOS corrigidos (varios PRE-EXISTENTES), 10 achados registrados sem fix
 
 Pedido do usuario: "confira os textos e mecanicas das cartas de op17".

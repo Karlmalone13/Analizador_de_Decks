@@ -1668,6 +1668,33 @@ def character_can_attack_now(card: 'Card', owner: 'GameState', opp: 'GameState')
     return True
 
 
+def active_taunt_character(defender: 'GameState', attacker_side: 'GameState') -> 'Card | None':
+    """Retorna o Character do `defender` com `force_opp_attack_self` ativo
+    AGORA (condicoes + don_requirement batendo) -- se existir, QUALQUER
+    ataque de `attacker_side` neste momento so pode mirar essa carta
+    (nem o Leader, nem outro Character). Achado 05/08 (Eustass Kid
+    OP01-051, Captain John OP17-044, mecanica de "taunt" antes ausente
+    do engine). Fonte unica: reusa `EffectExecutor._check_conditions`
+    (mesmo predicado usado por qualquer outro efeito condicional), nao
+    reimplementa a checagem de condicao a mao."""
+    ee = EffectExecutor(defender, attacker_side)
+    for c in defender.field_chars:
+        effects = get_card_effects(c.code)
+        for block in effects.values():
+            if not isinstance(block, dict):
+                continue
+            if not any(s.get('action') == 'force_opp_attack_self'
+                       for s in block.get('steps', [])):
+                continue
+            don_req = block.get('don_requirement', 0)
+            if don_req and getattr(c, 'don_attached', 0) < don_req:
+                continue
+            if not ee._check_conditions(block.get('conditions', {}), c):
+                continue
+            return c
+    return None
+
+
 def _step_matching_targets(step: dict, chars: list) -> int:
     """Quantos personagens de `chars` passam nos FILTROS do step
     (cost_lte/gte/eq, power_lte/gte, rested_only, filter_type)."""
@@ -3721,6 +3748,17 @@ class EffectExecutor:
             quer_ativo = conds['leader_state'] == 'active'
             if me.leader.rested == quer_ativo:
                 return False
+        # "if this Character is rested" -- auto-referencia ao estado da
+        # PROPRIA carta (`card`, nao o Leader -- distinto de leader_state
+        # acima). Achado 05/08 (Eustass Kid OP01-051/Captain John OP17-044,
+        # mecanica de "taunt"): tambem corrige, de bonus, 3 cartas
+        # pre-existentes (OP04-119 Donquixote Rosinante, OP14-026 Kouzuki
+        # Oden, OP14-027 Shanks) cujo `[Opponent's Turn] If this Character
+        # is rested, ...` disparava INCONDICIONALMENTE ate agora -- a
+        # condicao nunca era checada porque parse_conditions tambem nao
+        # extraia essa frase (fix no mesmo commit).
+        if conds.get('self_rested') and not card.rested:
+            return False
         if conds.get('has_don_attached'):
             attached = getattr(me.leader, 'don_attached', 0) + sum(
                 getattr(c, 'don_attached', 0) for c in me.field_chars)
@@ -9554,6 +9592,16 @@ class GameAnalyzer:
         if self._lethal_search_cache is not None:
             return self._lethal_search_cache
 
+        # Taunt (Eustass Kid OP01-051, Captain John OP17-044): enquanto
+        # ativo, NENHUM ataque meu pode mirar o Leader do oponente --
+        # lethal via dano de vida fica impossivel, nao importa o poder
+        # disponivel. Fonte unica: mesma active_taunt_character usada na
+        # geracao real de acoes de ataque (_generate_and_score_actions/
+        # _generate_attach_don_actions), REGRA_SEM_DUPLICACAO.
+        if active_taunt_character(self.opp, self.me) is not None:
+            self._lethal_search_cache = (False, None, None)
+            return self._lethal_search_cache
+
         opp_life = self.opp.life_count()
         leader_power = self.opp.leader.effective_power(False)
 
@@ -9908,6 +9956,10 @@ def apply_conditional_keyword_passives(gs: 'GameState', opp: 'GameState') -> Non
         # mesma ideia de aura_grants, mas filtro de COR+CUSTO (nao tipo) e
         # concede [Rush] nativo (has_rush), nao "Rush: Character".
         rush_aura_grants = [s for s in steps if s.get('action') == 'grant_rush_aura']
+        # "All of your characters with a cost of N or more gain [Blocker]"
+        # (achado 05/08, OP17-079 Monkey.D.Luffy LIDER) -- mesma ideia de
+        # rush_aura_grants, mas SEM filtro de cor e concede has_blocker.
+        blocker_aura_grants = [s for s in steps if s.get('action') == 'grant_blocker_aura']
         # "All of your [Nome] cards and this Character gain [Unblockable]/
         # [Double Attack]" -- aura por NOME (achado 19/07, OP15-070 Fuza/
         # OP15-071 Holly), SEMPRE inclui a propria carta-fonte (mesmo que
@@ -9939,8 +9991,8 @@ def apply_conditional_keyword_passives(gs: 'GameState', opp: 'GameState') -> Non
         if opp_turn_grants and ee._check_conditions(opp_turn_block.get('conditions', {}), c):
             for s in opp_turn_grants:
                 setattr(c, _KEYWORD_GRANTS[s['action']], True)
-        if not (grants or aura_grants or rush_aura_grants or named_kw_grants
-                or base_power_group_grants):
+        if not (grants or aura_grants or rush_aura_grants or blocker_aura_grants
+                or named_kw_grants or base_power_group_grants):
             continue
         if not ee._check_conditions(passive.get('conditions', {}), c):
             continue
@@ -9966,6 +10018,12 @@ def apply_conditional_keyword_passives(gs: 'GameState', opp: 'GameState') -> Non
                 if cost_gte is not None and target.cost < cost_gte:
                     continue
                 target.has_rush = True
+        for s in blocker_aura_grants:
+            cost_gte_b = s.get('cost_gte')
+            for target in gs.field_chars:
+                if cost_gte_b is not None and target.cost < cost_gte_b:
+                    continue
+                target.has_blocker = True
         for s in named_kw_grants:
             campo = ('has_unblockable' if s['action'] == 'grant_unblockable_aura_named'
                      else 'has_double_attack')
@@ -14060,6 +14118,12 @@ class OPTCGMatch:
         attack_don_budget = max(0, p.don_available - planned_play_cost)
 
         if p.can_attack_this_turn():
+            # "Taunt" (Eustass Kid OP01-051, Captain John OP17-044): se o
+            # OPONENTE tem uma carta com force_opp_attack_self ativa agora,
+            # QUALQUER ataque meu so pode mirar essa carta especifica --
+            # calculado 1x aqui, aplicado nos dois loops de alvo abaixo
+            # (lider e character).
+            taunt_alvo = active_taunt_character(opp, p)
             attackers = [c for c in p.field_chars
                          if character_can_attack_now(c, p, opp)]
             # Achado real 03/08 (usuario pediu pra investigar a restricao
@@ -14088,7 +14152,11 @@ class OPTCGMatch:
                     atk_now_for_budget = live_attack_power(att)
                 # [Rush: Character] restringe o alvo a Characters do
                 # oponente neste turno -- nao gera a opcao de atacar o Leader.
-                pode_atacar_leader = not getattr(att, 'rush_character_only_this_turn', False)
+                # Taunt (taunt_alvo != None): lider NUNCA pode ser o alvo do
+                # taunt, entao a opcao de atacar o lider some por completo
+                # enquanto o taunt estiver ativo.
+                pode_atacar_leader = (not getattr(att, 'rush_character_only_this_turn', False)
+                                      and taunt_alvo is None)
                 # alvo líder
                 if pode_atacar_leader and not p.cannot_attack_leader_this_turn:
                     s_leader = engine.score_attack_target(att, 'leader', None)
@@ -14146,6 +14214,11 @@ class OPTCGMatch:
                 # alvos personagem
                 cost_lock = getattr(att, 'cannot_attack_opp_chars_cost_lte', -1)
                 for tgt in opp.rested_chars(att):
+                    # Taunt: so a carta com force_opp_attack_self ativo pode
+                    # ser mirada enquanto ele estiver ativo -- qualquer outro
+                    # Character do oponente fica fora de alcance.
+                    if taunt_alvo is not None and tgt is not taunt_alvo:
+                        continue
                     # Auto-restricao de alvo (OP12-020): nao pode atacar
                     # Characters do oponente com custo <= N neste turno.
                     if cost_lock >= 0 and tgt.cost <= cost_lock:
@@ -14326,18 +14399,27 @@ class OPTCGMatch:
             # so checar `rested`.
             if character_can_attack_now(p.leader, p, opp):
                 attackers.append(p.leader)
+            # Taunt (mesmo achado/mesma fonte unica de _generate_and_score_
+            # actions -- REGRA_SEM_DUPLICACAO: os dois pontos de geracao de
+            # alvo de ataque tem que concordar, senao o orcamento de DON
+            # calculado aqui pode mirar uma carta que o outro ponto nunca
+            # deixaria atacar de verdade).
+            taunt_alvo = active_taunt_character(opp, p)
             for att in attackers:
                 atk_now = attack_time_power(att, opp)
                 melhor_score, melhor_falta = 0.0, 0
                 candidatos_alvo = []
                 pode_atacar_leader = (not getattr(att, 'rush_character_only_this_turn', False)
-                                      and not p.cannot_attack_leader_this_turn)
+                                      and not p.cannot_attack_leader_this_turn
+                                      and taunt_alvo is None)
                 # +power_buff nos dois casos: mesmo achado do bloco 434
                 # (esse bloco calcula "melhor_falta" de DON pro attach_don,
                 # e um buff ja ativo no alvo mudava o gap real).
                 if pode_atacar_leader:
                     candidatos_alvo.append(('leader', None, opp.leader.power + opp.leader.power_buff))
                 for tgt in opp.rested_chars(att):
+                    if taunt_alvo is not None and tgt is not taunt_alvo:
+                        continue
                     candidatos_alvo.append(('character', tgt, tgt.power + tgt.power_buff))
                 for ttype, tgt, alvo_power in candidatos_alvo:
                     gap = alvo_power - atk_now

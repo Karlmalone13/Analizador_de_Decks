@@ -9470,6 +9470,17 @@
           }
         ],
         "once_per_turn": true
+      },
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "force_opp_attack_self"
+          }
+        ],
+        "conditions": {
+          "self_rested": true
+        },
+        "don_requirement": 1
       }
     }
   },
@@ -21878,7 +21889,10 @@
             "imm_type": "ko",
             "source": "any"
           }
-        ]
+        ],
+        "conditions": {
+          "self_rested": true
+        }
       }
     }
   },
@@ -54809,7 +54823,10 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "self_rested": true
+        }
       }
     }
   },
@@ -54841,7 +54858,10 @@
             "target": "all_opp_characters",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "self_rested": true
+        }
       }
     }
   },
@@ -69098,6 +69118,9 @@
             "duration": "this_turn"
           }
         ],
+        "conditions": {
+          "self_rested": true
+        },
         "don_requirement": 1
       }
     }
@@ -80676,6 +80699,17 @@
             "type": "rest_self"
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "force_opp_attack_self"
+          }
+        ],
+        "conditions": {
+          "leader_type_includes": "rocks pirates",
+          "self_rested": true
+        }
       }
     }
   },
@@ -81691,7 +81725,8 @@
       "passive": {
         "steps": [
           {
-            "action": "gain_blocker"
+            "action": "grant_blocker_aura",
+            "cost_gte": 12
           }
         ]
       }

@@ -855,6 +855,18 @@ def parse_conditions(text):
     m = re.search(r'if your leader has (\d+) power or less', t)
     if m: conds['leader_power_lte'] = int(m.group(1))
 
+    # "this Character is rested" -- auto-referencia ao estado da PROPRIA
+    # carta (distinto de leader_state, que e sobre o Leader). Achado 05/08,
+    # par com a mecanica force_opp_attack_self (parse_block) -- Eustass Kid
+    # OP01-051 e Captain John OP17-044 condicionam o "taunt" a estarem
+    # restados. Aceita "if this character is rested" (clausula isolada) OU
+    # "and this character is rested" (2a clausula de uma condicao composta,
+    # ex: Captain John "If your Leader's type includes X AND this Character
+    # is rested") -- NUNCA "when this character is rested" (gatilho
+    # reativo distinto, ja tratado em outro lugar/nao modelado aqui).
+    if re.search(r'(?:if|and) this character is rested\b', t):
+        conds['self_rested'] = True
+
     # "if your opponent has a Character with N power or more" -- existe
     # Character no campo do OPONENTE com power >= N (distinto de
     # other_char_power_gte, que e sobre o PROPRIO campo). Aceita as 2 ordens
@@ -6716,6 +6728,21 @@ def parse_block(block_text, trigger_name):
     lugar de entry['steps'], preservando o contrato de 'steps' para todo
     o resto do parser (cada item de 'steps' sempre tem 'action').
     """
+    # "your opponent cannot attack any card/character other than the
+    # Character [Nome]" -- mecanica de "taunt" (forca TODOS os ataques do
+    # oponente pra esta carta especifica). Achado 05/08 auditando OP17-044
+    # (Captain John): mecanica inteira ausente do parser. Censo global:
+    # so 2 cartas -- OP01-051 Eustass Kid (carta de meta conhecida,
+    # "[DON!! x1] [Opponent's Turn] If this Character is rested, ...") e
+    # OP17-044 (condicionado a leader_type + self rested). Em AMBAS o
+    # "[Nome]" e sempre a PROPRIA carta (auto-referencia) -- nao precisa
+    # extrair/validar o nome, so detectar a forma. Condicoes da mesma
+    # sentenca (self_rested, leader_type, etc) sao extraidas por
+    # parse_conditions no CALLER (mesmo texto de bloco), nao aqui.
+    if re.search(r'your opponent cannot attack any (?:card|character) '
+                 r'other than the character', block_text.lower()):
+        return [{'action': 'force_opp_attack_self'}]
+
     # "you may trash any number of [filtro]? cards from your hand. Your
     # Leader (or 1 of your Characters)?/This Leader/This Character gains
     # +N power during this battle for every card trashed" -- buff
@@ -7914,6 +7941,21 @@ def parse_block(block_text, trigger_name):
     # custo), OP07-103/OP15-055 (so tipo), OP12-012 (tipo via "type
     # including", com "other than [Nome]" de auto-exclusao E duracao
     # 'until_opp_end_phase' em vez de 'this_turn').
+    # "All of your characters with a cost of N or more gain [Blocker]" --
+    # AURA continua (nao selecao pontual de ate N), condicionada a custo,
+    # sem filtro de cor. Achado 05/08, OP17-079 (Monkey.D.Luffy, LIDER):
+    # a propria habilidade do lider ficava vazia (so casava o m_select_
+    # blocker abaixo, que exige "up to N", nunca "all"). Censo global:
+    # unica carta no banco com essa forma exata. Mesmo padrao ja usado
+    # por grant_rush_aura (m_mass_grant_rush acima), sem o filtro de cor
+    # (nao existe nesta carta) nem exclude_self (e habilidade de LIDER,
+    # nunca se auto-inclui).
+    m_mass_grant_blocker = re.search(
+        r'all of your characters? with a cost of (\d+) or more gains? \[?blocker\]?', t)
+    if m_mass_grant_blocker:
+        steps.append({'action': 'grant_blocker_aura',
+                      'cost_gte': int(m_mass_grant_blocker.group(1))})
+
     m_select_blocker = re.search(
         r'up to (\d+) of your '
         r'(?:[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+type\s+)?'
@@ -7944,6 +7986,8 @@ def parse_block(block_text, trigger_name):
         elif 'the end of your opponent' in tail:
             step['duration'] = 'until_opp_turn_end'
         steps.append(step)
+    elif m_mass_grant_blocker:
+        pass  # ja resolvido pelo grant_blocker_aura acima -- nao duplica com self-grant
     else:
         m_b = re.search(r'gains?\s+\[blocker\]', t)
         if 'gain_blocker' not in _lista_choice_keywords and (m_b or '[blocker]' in _lista_txt):

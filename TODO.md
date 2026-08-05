@@ -2,6 +2,21 @@
 
 **Última atualização:** 5 de agosto de 2026
 
+> 05/08/2026 (bloco 451): implementados os 2 achados de **maior
+> impacto** do bloco 450. **Taunt** ("opponent cannot attack any card
+> other than [Nome]") — afeta Eustass Kid (OP01-051, meta) e Captain
+> John (OP17-044) — novo `force_opp_attack_self` + `self_rested`
+> (bônus: corrige 3 cartas pré-existentes que disparavam
+> incondicionalmente — Rosinante, Kouzuki Oden, Shanks) +
+> `active_taunt_character()` chamada nos 3 pontos que decidem
+> ataque/lethal. **Aura de Blocker do líder Luffy** (OP17-079) — a
+> habilidade central dele estava vazia — novo `grant_blocker_aura`
+> (mesmo padrão de `grant_rush_aura`). 2 testes novos permanentes em
+> `smoke_fast.py`. `diff_parser` MUDOU=7, 0 regressões,
+> `smoke_fast`/`smoke_test` 100%. **Faltam 8 achados** do bloco 450 (A,
+> B, C, D, F, G, H, J), menor impacto — não tocados. Ver bloco 451 do
+> HANDOFF e `parser_audits/2026-08-05d_...json`.
+
 > 05/08/2026 (bloco 450): **auditoria completa das 103 cartas do OP17**
 > (texto vs mecânica), pendência aberta desde o bloco 447. **7 bugs
 > genéricos corrigidos** (censo global antes de cada um, `diff_parser`

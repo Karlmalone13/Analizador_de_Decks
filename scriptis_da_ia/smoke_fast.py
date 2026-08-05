@@ -20,6 +20,7 @@ from optcg_engine.decision_engine import (  # noqa: E402
     GameState,
     OPTCGMatch,
     _make_card,
+    active_taunt_character,
     apply_conditional_keyword_passives,
     character_can_attack_now,
     compute_game_plan,
@@ -10065,6 +10066,8 @@ def main() -> int:
     test_give_don_prefere_lider_a_character_recem_jogado_sem_uso_hoje()
     test_order_target_candidates_give_don_prefere_lider_ao_vivo()
     test_order_target_candidates_custo_so_de_mao_exclui_outras_zonas()
+    test_taunt_force_opp_attack_self_05_08()
+    test_luffy_op17_079_aura_blocker_custo_12_05_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -11126,6 +11129,85 @@ def test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno() -> Non
     log2 = ee._execute_step(step, ace)
     check("select_grant_rush: execucao concede Rush a Vista recem-deployada",
           vista_nova.rush_this_turn and "Vista" in log2)
+
+
+def test_taunt_force_opp_attack_self_05_08() -> None:
+    """
+    Achado real 05/08 (auditoria texto x mecanica das 103 cartas OP17,
+    pedido do usuario): a mecanica de "taunt" ("your opponent cannot
+    attack any card other than [Nome]") estava COMPLETAMENTE ausente do
+    parser e do engine -- afeta Eustass Kid (OP01-051, carta de meta
+    conhecida) e Captain John (OP17-044). Kid so ativa com [DON!! x1]
+    anexado e restado; Captain John precisa do lider ter o tipo certo E
+    estar restado. Fix: novo step 'force_opp_attack_self' (parser) +
+    'self_rested' como condicao (parser+engine) + `active_taunt_
+    character()` (engine, fonte unica usada nos 2 pontos de geracao de
+    alvo de ataque E em `_lethal_search`, REGRA_SEM_DUPLICACAO).
+    """
+    kid = real_card("OP01-051")
+    kid.rested = True
+    kid.don_attached = 1
+    outro_char = mk("OUTROC", "Outro Personagem", power=3000, cost=2)
+    outro_char.rested = True  # elegivel como alvo normal, SE nao houvesse taunt
+
+    match = OPTCGMatch(
+        (mk("KIDL", "Kid Leader", card_type="LEADER"), []),
+        (mk("ATKL", "Atacante Leader", card_type="LEADER"), []),
+    )
+    defensor = match.state_a
+    atacante = match.state_b
+    defensor.field_chars = [kid, outro_char]
+    atacante.field_chars = [real_card("OP12-020")]  # qualquer atacante valido
+    for c in atacante.field_chars:
+        c.rested = False
+        c.just_played = False
+    atacante.don_available = 5
+    atacante.turn = 2  # can_attack_this_turn() exige turn > 1
+
+    taunt = active_taunt_character(defensor, atacante)
+    check("active_taunt_character: Kid restado + 1 DON detectado como taunt ativo",
+          taunt is kid)
+
+    engine = DecisionEngine(atacante, defensor)
+    acts = match._generate_and_score_actions(atacante, defensor, engine)
+    ataques = [a for a in acts if a[1] == "attack"]
+    check("com taunt ativo, NENHUM ataque mira o lider do defensor",
+          not any(a[3] == "leader" for a in ataques))
+    check("com taunt ativo, NENHUM ataque mira 'outro_char' (so o taunter)",
+          not any(a[3] == "character" and a[4] is outro_char for a in ataques))
+    check("com taunt ativo, todo ataque de character mira o proprio Kid",
+          all(a[4] is kid for a in ataques if a[3] == "character"))
+
+    # Negativo: sem DON anexado, a condicao de Kid nao bate -- taunt
+    # desliga e os alvos normais voltam a ficar disponiveis.
+    kid.don_attached = 0
+    check("sem DON!! anexado, active_taunt_character nao detecta Kid",
+          active_taunt_character(defensor, atacante) is None)
+    acts2 = match._generate_and_score_actions(atacante, defensor, engine)
+    ataques2 = [a for a in acts2 if a[1] == "attack"]
+    check("sem taunt, ataque ao lider do defensor volta a ser gerado",
+          any(a[3] == "leader" for a in ataques2))
+
+
+def test_luffy_op17_079_aura_blocker_custo_12_05_08() -> None:
+    """
+    Achado real 05/08 (mesma auditoria OP17): o lider Monkey.D.Luffy
+    (OP17-079, "All of your characters with a cost of 12 or more gain
+    [Blocker]") ficava com o `passive` VAZIO de efeito real -- so uma
+    aura continua de custo (`grant_blocker_aura`, novo, mesmo padrao ja
+    usado por `grant_rush_aura`) resolve. Confirma que personagens de
+    custo >= 12 ganham has_blocker e os de custo < 12 NAO ganham.
+    """
+    luffy = real_card("OP17-079")
+    gigante = mk("GIGA", "Gigante", cost=12, power=12000)
+    pequeno = mk("PEQ", "Pequeno", cost=4, power=4000)
+    opp = GameState(leader=mk("OPPL", "Opp", card_type="LEADER"))
+    me = GameState(leader=luffy, field_chars=[gigante, pequeno])
+    apply_conditional_keyword_passives(me, opp)
+    check("Luffy OP17-079: character custo 12 ganha has_blocker via aura",
+          gigante.has_blocker is True)
+    check("Luffy OP17-079: character custo 4 NAO ganha has_blocker",
+          pequeno.has_blocker is False)
 
 
 if __name__ == "__main__":
