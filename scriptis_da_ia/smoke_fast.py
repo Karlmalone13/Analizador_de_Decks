@@ -10074,6 +10074,7 @@ def main() -> int:
     test_luffy_op17_079_aura_blocker_custo_12_05_08()
     test_leader_battle_reactive_newgate_op17_040_e_ace_op03_001_05_08()
     test_ordem_de_steps_rest_antes_de_ko_rested_e_draw_antes_de_lock_05_08()
+    test_vazamento_de_condicao_pro_substitute_ko_removal_06_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -11395,6 +11396,75 @@ def test_ordem_de_steps_rest_antes_de_ko_rested_e_draw_antes_de_lock_05_08() -> 
     acoes = [s.get("action") for s in ef_queen.get("steps", [])]
     check("OP17-065: 'draw' aparece ANTES de 'lock_opp_character_attack' (ordem do texto)",
           acoes == ["draw", "lock_opp_character_attack"])
+
+
+def test_vazamento_de_condicao_pro_substitute_ko_removal_06_08() -> None:
+    """
+    Achado real 06/08 (investigando o guard `is_substitute_fb`, pendencia
+    registrada em 2026-08-05b_...json). Quando um bloco sem tag formal (ou
+    com "[Once Per Turn]" colado ANTES da 2a clausula, quebrando a
+    adjacencia que o split de clausulas exige) mistura um substitute_ko/
+    substitute_removal com OUTRO step independente, `try_substitute()`
+    aplicava a 'conditions' do BLOCO INTEIRO (extraida do texto todo) pra
+    gatear TAMBEM o substitute -- que deve ser sempre auto-contido
+    (dispara quando o proprio "if X would be removed/K.O.'d" ocorre, nunca
+    preso a condicao de uma clausula alheia). Censo global achou 5 cartas
+    -- OP04-038 nao, mas OP07-029, OP14-034, ST15-005, ST25-003
+    (PRE-EXISTENTES) + OP17-095 (achado original).
+
+    Tentativa inicial de fix no PARSER (mover a 'conditions' do entry pros
+    steps NAO-substitute) foi REVERTIDA -- quebrava
+    `apply_conditional_keyword_passives` (que gateia gain_blocker/
+    gain_rush pela 'conditions' do NIVEL DO ENTRY, nao por step) pra
+    OP07-029/ST15-005: mover a condicao pra outro lugar do JSON deixava
+    esse consumidor sem nada pra ler, tornando o Blocker/Rush incondicional
+    por engano. Fix correto fica no CONSUMIDOR (`try_substitute`, so
+    aplica 'conditions' do bloco quando o substitute e o UNICO step) --
+    ZERO mudanca no JSON, os outros consumidores continuam lendo a MESMA
+    'conditions' de sempre.
+    """
+    # OP17-095: substitute dispara mesmo SEM Character custo 12+ no campo
+    # (a condicao board_has_cost_gte=12 e do buff, nao do substitute).
+    zoro = real_card("OP17-095")
+    me_z = GameState(leader=mk("ZR-L", "Lider", card_type="LEADER"), turn=2,
+                     field_chars=[zoro],
+                     trash=[mk("ZR-T1", "Trash1"), mk("ZR-T2", "Trash2"), mk("ZR-T3", "Trash3")])
+    opp_z = GameState(leader=mk("ZR-OPPL", "Opp", card_type="LEADER"), turn=2)
+    log_z = EffectExecutor(me_z, opp_z).try_substitute(zoro, "bounce")
+    check("OP17-095: substitute dispara SEM Character custo 12+ no campo (condicao era do buff, nao do substitute)",
+          log_z is not None)
+
+    # OP07-029: substitute dispara mesmo com lider SEM tipo Supernovas (a
+    # condicao leader_type=supernovas e do [Blocker], nao do substitute).
+    hawkins = real_card("OP07-029")
+    me_h = GameState(leader=mk("HK-L", "Lider Generico", card_type="LEADER",
+                               sub_types="East Blue"), turn=2, field_chars=[hawkins])
+    opp_char = mk("HK-OPPC", "OppChar", power=1000)
+    opp_h = GameState(leader=mk("HK-OPPL", "Opp", card_type="LEADER"), turn=2,
+                      field_chars=[opp_char])
+    log_h = EffectExecutor(me_h, opp_h).try_substitute(hawkins, "bounce")
+    check("OP07-029: substitute dispara mesmo com lider SEM tipo Supernovas (condicao era do Blocker, nao do substitute)",
+          log_h is not None)
+
+    # A MESMA condicao continua gateando o Blocker de verdade -- prova que
+    # o fix vive so em try_substitute(), sem vazar pro outro consumidor
+    # (apply_conditional_keyword_passives, que le a 'conditions' do JSON
+    # sem alteracao nenhuma).
+    hawkins_sem = real_card("OP07-029")
+    me_hs = GameState(leader=mk("HK-L2", "Lider Generico2", card_type="LEADER",
+                                sub_types="East Blue"), field_chars=[hawkins_sem])
+    opp_hs = GameState(leader=mk("HK-OPPL2", "Opp", card_type="LEADER"))
+    apply_conditional_keyword_passives(me_hs, opp_hs)
+    check("OP07-029: gain_blocker CONTINUA gateado por leader_type=supernovas (fix nao vazou pra la)",
+          hawkins_sem.has_blocker is False)
+
+    hawkins_com = real_card("OP07-029")
+    me_hc = GameState(leader=mk("HK-L3", "Lider Supernovas", card_type="LEADER",
+                                sub_types="Supernovas"), field_chars=[hawkins_com])
+    opp_hc = GameState(leader=mk("HK-OPPL3", "Opp", card_type="LEADER"))
+    apply_conditional_keyword_passives(me_hc, opp_hc)
+    check("OP07-029: COM lider Supernovas, gain_blocker ativa normalmente",
+          hawkins_com.has_blocker is True)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,67 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-06 (455) - Claude (sessao remota web) - Investiga e fecha o guard `is_substitute_fb` (pendencia do bloco 448) -- fix no CONSUMIDOR, nao no parser
+
+Usuario pediu "e agora falta o quê?" apos o bloco 454; escolhi a
+pendencia mais antiga/maior impacto ainda aberta: o guard
+`is_substitute_fb` (`gerar_effects_db.py`), registrado como pendencia em
+`2026-08-05b_op17_backslash_n_literal_e_add_from_trash_ordem_alternativa.json`
+desde o bloco 448, protegendo ate 38 cartas do fallback sem tag formal.
+
+**Achado real**: quando um bloco sem tag formal (ou com "[Once Per Turn]"
+colado ANTES da 2a clausula) mistura um `substitute_ko`/
+`substitute_removal` com OUTRO step independente (ex: OP17-095 Roronoa
+Zoro, "If Character custo 12+, ganha +3000 power. If um dos seus
+Characters seria removido, voce pode..."), a 'conditions' do BLOCO
+INTEIRO (extraida do texto todo, sem separar as 2 clausulas) vazava e
+gateava TAMBEM o substitute -- que deve ser sempre auto-contido (seu
+proprio "if X would be removed/K.O.'d" ja e o gatilho, nunca deveria
+ficar preso a condicao de uma clausula alheia). Censo global (qualquer
+entry com substitute + outro step) achou **5 cartas** -- 4
+**PRE-EXISTENTES** (OP07-029 Basil Hawkins, OP14-034 Monkey.D.Luffy,
+ST15-005 Portgas.D.Ace, ST25-003 Crocodile & Mihawk) + OP17-095 (achado
+original).
+
+**1a tentativa (revertida)**: mover a 'conditions' do NIVEL DO ENTRY pra
+cada step NAO-substitute, no PARSER. Corrigia OP17-095/OP07-029/ST15-005
+mas QUEBRAVA OP14-034/ST25-003 (a condicao vazada ali, `self_type`, nao
+vinha de clausula nenhuma -- vinha do PROPRIO texto do substitute,
+redundante com `filter_type` que `_apply_substitute_target_filters` ja
+capturava). Corrigido o suficiente pra passar em todos os 5 (drop quando
+redundante com o `filter_type` do proprio substitute) -- mas essa versao
+QUEBRAVA OUTRO consumidor: `apply_conditional_keyword_passives`
+(gain_blocker/gain_rush) le a 'conditions' do NIVEL DO ENTRY, nao por
+step -- mover a condicao pra outro lugar do JSON deixava o Blocker de
+OP07-029/Rush de ST15-005 SEM gate nenhum (ativaria sempre, regressao
+real). **Revertido por completo** -- `gerar_effects_db.py` e os 2 JSONs
+voltaram ao estado do commit anterior, ZERO mudanca no parser.
+
+**Fix real, no CONSUMIDOR**: `try_substitute()` (`decision_engine.py`) —
+so aplica a 'conditions' do bloco como gate do substitute quando o
+substitute e o UNICO step do bloco (mesmo principio ja usado por
+`_source_conditions_met_for_substitute`, o irmao de substituicao
+EXTERNA, que ja descarta `self_type`/`self_power_base_*` por serem
+redundantes com o filtro). Como a estrutura do JSON NAO mudou, os outros
+consumidores (`apply_conditional_keyword_passives`,
+`apply_your_turn_buffs`) continuam lendo a MESMA 'conditions' de sempre,
+sem regressao.
+
+`smoke_fast.py` (1 teste novo, 4 asserts: substitute dispara sem a
+condicao vazada em OP17-095/OP07-029 + a MESMA condicao continua
+gateando o Blocker de verdade via `apply_conditional_keyword_passives`,
+provando que o fix nao vazou pro outro consumidor)/`smoke_test.py`: 100%.
+**Sem `parser_audits/` novo** -- nenhum arquivo de parser/DB foi tocado
+neste commit (fix 100% em `decision_engine.py`), o gate de auditoria
+global nao se aplica.
+
+**Pendencia residual, nao investigada**: `_try_external_substitute_from_source`/
+`_source_conditions_met_for_substitute` (protecao EXTERNA, uma carta
+protegendo OUTRA) tem o MESMO tipo de gap em teoria (so descarta
+self_type-family, nao "substitute e o unico step") -- nenhuma carta
+REAL confirmada com esse padrao ainda (os 5 achados sao todos
+autoprotecao), fica registrado como candidato pra censo futuro se
+aparecer um caso real.
+
 ## 2026-08-05 (454) - Claude (sessao remota web) - Fecha os 2 ULTIMOS achados do bloco 450 (leader_battle_reactive + ordem de steps) -- auditoria OP17 CONCLUIDA (10/10)
 
 Usuario confirmou ("Sim") continuar com os achados D e J, ultimos

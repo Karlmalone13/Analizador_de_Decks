@@ -2762,8 +2762,32 @@ class EffectExecutor:
                 # Filtro de alvo: self_type (sub_types) ou self_name (nome
                 # proprio) -- quando presentes, restringem quais cards desse
                 # arquetipo podem usar o substituto.
+                #
+                # Vazamento de condicao de uma clausula IRMA (achado 06/08,
+                # censo global): quando o bloco combina o substitute com
+                # OUTRO(S) step(s) independente(s) sem tag formal separando
+                # as duas clausulas (ex: OP17-095 "if Character custo 12+,
+                # ganha +3000 power. If ONE OF YOUR Characters would be
+                # removed..." -- ou OP07-029/ST15-005, "[Blocker]"/"[Rush]"
+                # condicionado a leader_type seguido de "[Once Per Turn] If
+                # this Character would be removed..." com a tag colada
+                # ENTRE o ponto e o "if", quebrando a adjacencia que o
+                # split de clausulas exige), a 'conditions' do BLOCO
+                # pertence a essa clausula IRMA -- nunca ao substitute em
+                # si, que ja e auto-contido (seu proprio "if X would be
+                # K.O.'d/removed" ja foi reconhecido na hora de virar
+                # step). Aplicar 'conditions' do bloco aqui so faz sentido
+                # quando o substitute e o UNICO step do bloco (ai a
+                # condicao so pode ser dele mesmo) -- mesmo principio ja
+                # usado por `_source_conditions_met_for_substitute`
+                # (substituto EXTERNO, concedido por outra carta) ao
+                # descartar self_type/self_power_base_* antes de checar.
+                outros_steps_no_bloco = [
+                    s for s in block.get('steps', [])
+                    if s is not step and s.get('action') not in
+                    ('substitute_ko', 'substitute_removal', 'substitute_rest')]
                 conds = dict(block.get('conditions', {}))
-                if not self._check_conditions(conds, card):
+                if not outros_steps_no_bloco and not self._check_conditions(conds, card):
                     continue
                 filter_type = step.get('filter_type', '')
                 if filter_type and filter_type.lower() not in card.sub_types.lower():

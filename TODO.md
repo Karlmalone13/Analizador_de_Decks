@@ -1,6 +1,23 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 5 de agosto de 2026
+**Última atualização:** 6 de agosto de 2026
+
+> 06/08/2026 (bloco 455): **fechada a pendência do guard `is_substitute_fb`**
+> (registrada desde o bloco 448, protegia até 38 cartas). Quando um bloco
+> sem tag formal mistura um `substitute_ko`/`substitute_removal` com OUTRO
+> step independente, a 'conditions' do BLOCO INTEIRO vazava e gateava
+> TAMBÉM o substitute (que deve ser sempre auto-contido). Censo achou 5
+> cartas — OP07-029, OP14-034, ST15-005, ST25-003 (**pré-existentes**) +
+> OP17-095 (achado original). **1ª tentativa de fix no PARSER foi
+> REVERTIDA** — quebrava `apply_conditional_keyword_passives` (gateia
+> gain_blocker/gain_rush pela 'conditions' do NÍVEL DO ENTRY, não por
+> step) para OP07-029/ST15-005. Fix real ficou no CONSUMIDOR
+> (`try_substitute()`, decision_engine.py) — zero mudança no parser/JSON.
+> `smoke_fast`/`smoke_test` 100% (1 teste novo, 4 asserts, prova que o fix
+> não vazou pro outro consumidor). Sem `parser_audits/` novo (nenhum
+> arquivo de parser tocado). **Pendência residual**: proteção EXTERNA
+> (`_try_external_substitute_from_source`) tem gap teórico similar, sem
+> carta real confirmada ainda. Ver bloco 455 do HANDOFF.
 
 > 05/08/2026 (bloco 454): fechados os **2 ÚLTIMOS achados do bloco 450**
 > — auditoria completa do OP17 (10/10) **CONCLUÍDA**. (D) OP17-040
