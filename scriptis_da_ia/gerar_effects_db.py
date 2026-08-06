@@ -8543,18 +8543,30 @@ def parse_block(block_text, trigger_name):
     # de ataque nao dependem um do outro) -- fix so por CONSISTENCIA com o
     # texto/telemetria (ordem de execucao ainda e a ordem real de steps).
     # Censo pela forma EXATA ("draw N. then... cannot attack") achou so
-    # OP17-065 (Queen) -- a familia mais ampla "draw N. Then, [qualquer
-    # coisa]" tem 40+ cartas no banco com VARIAS acoes diferentes na
-    # clausula seguinte (cada uma com sua propria posicao na cadeia de
-    # despacho, correta ou nao) -- fora do escopo desta troca pontual,
-    # generalizar pra toda essa familia exigiria auditar cada uma
-    # individualmente, nao reordenar as cegas.
+    # OP17-065 (Queen).
     if re.search(r"draw \d+ cards?\.\s*then,.*cannot attack", t):
         idx_draw = next((i for i, s in enumerate(steps) if s.get('action') == 'draw'), None)
         idx_lock = next((i for i, s in enumerate(steps)
                          if s.get('action') == 'lock_opp_character_attack'), None)
         if idx_draw is not None and idx_lock is not None and idx_lock < idx_draw:
             steps[idx_draw], steps[idx_lock] = steps[idx_lock], steps[idx_draw]
+
+    # "Draw N card(s). Then, [...] place ... at the bottom of the owner's
+    # deck." -- mesma classe (achado 06/08, auditoria completa da familia
+    # "draw N. Then, [...]": censo global achou 40+ cartas nessa forma no
+    # total, revistas UMA A UMA -- 39/40 ja tinham 'draw' corretamente
+    # ANTES da 2a acao no JSON de saida, so ST22-017 (Fire Fist) tinha
+    # 'place_opp_character_bottom_deck' saindo ANTES do 'draw' apesar do
+    # texto dizer "Draw 1 card. Then, place..."). Sem impacto de jogo
+    # confirmado aqui tambem (draw nao afeta qual Character e elegivel pra
+    # ir pro fundo do deck do dono) -- fix por consistencia, mesma tecnica
+    # pontual de troca de posicao.
+    if re.search(r"draw \d+ cards?\.\s*then,.*bottom of the owner.?s deck", t):
+        idx_draw2 = next((i for i, s in enumerate(steps) if s.get('action') == 'draw'), None)
+        idx_bottom = next((i for i, s in enumerate(steps)
+                           if s.get('action') == 'place_opp_character_bottom_deck'), None)
+        if idx_draw2 is not None and idx_bottom is not None and idx_bottom < idx_draw2:
+            steps[idx_draw2], steps[idx_bottom] = steps[idx_bottom], steps[idx_draw2]
 
     # Memoria de alvo entre steps (SaveTargetName, 28/06/2026): a ordem de
     # despacho dos sub-parsers acima NAO segue a ordem do texto original

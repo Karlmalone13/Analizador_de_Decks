@@ -76407,13 +76407,13 @@
       "main": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1
+          },
+          {
             "action": "place_opp_character_bottom_deck",
             "count": 1,
             "cost_lte": 5
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ],
         "costs": [

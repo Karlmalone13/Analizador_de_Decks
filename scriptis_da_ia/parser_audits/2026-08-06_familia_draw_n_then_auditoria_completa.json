@@ -1,0 +1,20 @@
+{
+  "trigger_card": "ST22-017",
+  "problem": "Fecha a pendencia deixada em aberto no bloco 454 (registro 2026-08-05g_...json): a familia mais ampla 'Draw N cards. Then, [...]' (censada mas nao auditada carta por carta na sessao anterior, so o par draw+lock_opp_character_attack de OP17-065 tinha sido corrigido). Usuario pediu explicitamente pra continuar essa auditoria.",
+  "grammar_family": "'draw N cards?\\. then,' seguido de qualquer 2a clausula -- mesma familia de bug de ORDEM (parse_block despacha sub-parsers numa ordem FIXA por familia de acao, nao pela ordem textual do bloco).",
+  "queries": [
+    "Censo global (regex 'draw \\d+ cards?\\.\\s*then,' em cards_rows.csv, case-insensitive): 49 linhas (incluindo alt-arts/reprints), 44 codigos-base unicos. Cada um foi lido individualmente (texto real vs ordem de acoes no card_effects_db.json atual).",
+    "39/44 codigos-base JA tinham 'draw' corretamente na 1a posicao (ordem de despacho coincidia com a ordem textual por acaso, ou o sub-parser da 2a clausula ja roda DEPOIS de parse_draw na cadeia) -- nenhuma mudanca necessaria: EB03-003, EB04-038, OP03-012, OP03-097, OP04-053, OP05-059, OP07-096, OP07-107, OP08-056, OP09-089, OP10-058, OP10-061, OP10-082, OP10-088, OP12-078, OP12-099, OP13-054, OP15-056, OP15-074, OP15-076, OP15-077, OP15-078 (2 blocos, main E counter, ambos ja corretos por motivos diferentes -- no counter o draw E a 2a clausula, entao vem DEPOIS do buff por design), OP15-103, OP15-106, OP15-117, PRB02-010, ST06-015, ST14-016, ST31-001, ST31-002, ST36-003, OP17-065 (ja corrigido no bloco 454).",
+    "1/44 tinha inversao real: ST22-017 (Fire Fist) -- texto '...Draw 1 card. Then, place up to 1 Character with a cost of 5 or less at the bottom of the owner's deck.' saia como [place_opp_character_bottom_deck, draw] em vez de [draw, place_opp_character_bottom_deck]. Mesma classe do achado de OP17-065 (draw+lock) -- SEM impacto de jogo confirmado (draw nao afeta elegibilidade do Character movido pro fundo do deck), fix por consistencia com a ordem real de execucao.",
+    "Achado colateral, FORA DO ESCOPO desta troca pontual (nao corrigido): OP13-102 tem um bloco 'trigger' com 'Draw 1 card AND rest up to 1...' -- conjuncao 'and' (simultaneidade), nao 'Then,' (sequencia) -- gramatica DIFERENTE da que este censo mirou, precisaria do seu proprio censo/decisao se vale a pena reordenar (nenhum dos dois lados depende do outro semanticamente, mesmo caso de baixo risco/baixo valor)."
+  ],
+  "cards_found": ["ST22-017"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "1 fix aplicado (troca pontual de posicao draw/place_opp_character_bottom_deck, condicionada ao texto confirmar essa ordem -- mesma tecnica ja usada pro par rest/ko e draw/lock do bloco 454). As outras 38 cartas da familia NAO precisavam de fix (ja corretas) -- confirmado individualmente, nao por amostragem.",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=15 (14 do bloco 454 ainda no MUDOU por causa do snapshot antigo + ST22-017 novo)",
+    "smoke_fast.py: SMOKE FAST OK (1 teste novo adicionado a test_ordem_de_steps_rest_antes_de_ko_rested_e_draw_antes_de_lock_05_08)",
+    "smoke_test.py: TODOS OS TESTES PASSARAM"
+  ],
+  "notes": "Com este fix, a familia 'draw N. Then, [...]' esta INTEGRALMENTE auditada (44/44 codigos-base revisados individualmente) -- fecha a pendencia residual registrada no bloco 454/2026-08-05g. Pendencia nova e MENOR registrada acima (OP13-102, forma 'and' em vez de 'then,') -- nao investigada, baixa prioridade (sem dependencia semantica entre as 2 clausulas)."
+}

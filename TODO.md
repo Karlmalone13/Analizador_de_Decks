@@ -2,6 +2,21 @@
 
 **Última atualização:** 6 de agosto de 2026
 
+> 06/08/2026 (bloco 456): **auditoria COMPLETA da família "Draw N. Then,
+> [...]"** — fecha a pendência residual deixada em aberto no bloco 454
+> (só o par draw+lock de OP17-065 tinha sido corrigido; a família mais
+> ampla tinha sido censada mas não auditada carta por carta). Leu as 44
+> cartas-base do censo uma a uma: **39/44 já corretas**, **1 inversão
+> real** — ST22-017 (Fire Fist), "Draw 1 card. Then, place... at the
+> bottom of the owner's deck" saía com `place_opp_character_bottom_deck`
+> ANTES do `draw`. Fix pontual (mesma técnica do bloco 454), sem impacto
+> de jogo confirmado (consistência com a ordem real de execução).
+> Achado colateral fora do escopo: OP13-102 usa "and" (simultaneidade),
+> não "then," (sequência) — pendência menor separada, não corrigida.
+> `diff_parser` MUDOU=15 (14 do bloco 454 + ST22-017), 0 regressões,
+> `smoke_fast`/`smoke_test` 100%. Ver bloco 456 do HANDOFF e
+> `parser_audits/2026-08-06_familia_draw_n_then_auditoria_completa.json`.
+
 > 06/08/2026 (bloco 455): **fechada a pendência do guard `is_substitute_fb`**
 > (registrada desde o bloco 448, protegia até 38 cartas). Quando um bloco
 > sem tag formal mistura um `substitute_ko`/`substitute_removal` com OUTRO

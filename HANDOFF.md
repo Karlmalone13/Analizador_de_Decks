@@ -1,5 +1,43 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-06 (456) - Claude (sessao remota web) - Auditoria COMPLETA da familia "Draw N. Then, [...]" -- fecha a pendencia residual do bloco 454
+
+Usuario escolheu explicitamente essa opcao (dentre as pendencias
+listadas no fim do bloco 455) via `AskUserQuestion`. Continuacao direta
+do achado J do bloco 450/454 (draw+lock em OP17-065): o bloco 454 tinha
+censado a familia mais ampla ("Draw N cards. Then, [...]", 40+ cartas)
+mas **nao tinha auditado carta por carta**, so registrado como
+pendencia.
+
+**Trabalho**: leu as 44 cartas-base do censo (49 linhas incluindo alt-
+arts/reprints) uma a uma, comparando texto real vs ordem de acoes no
+`card_effects_db.json` atual. **39/44 ja estavam corretas** (ordem de
+despacho do parser coincidia com a ordem textual, seja por acaso ou
+porque o sub-parser da 2a clausula ja roda depois de `parse_draw` na
+cadeia). **1 inversao real achada**: ST22-017 (Fire Fist) -- "Draw 1
+card. Then, place up to 1 Character... at the bottom of the owner's
+deck" saia como `[place_opp_character_bottom_deck, draw]` em vez de
+`[draw, place_opp_character_bottom_deck]`. Mesma classe do achado de
+OP17-065 (sem impacto de jogo confirmado -- draw nao afeta elegibilidade
+do Character movido pro fundo do deck), fix por consistencia usando a
+MESMA tecnica de troca pontual (condicionada ao texto, generico pro par
+de acoes).
+
+**Achado colateral, fora do escopo, nao corrigido**: OP13-102 tem um
+bloco `[Trigger]` com "Draw 1 card AND rest up to 1..." -- conjuncao
+"and" (simultaneidade), gramatica DIFERENTE da que este censo mirou
+("then," = sequencia). Registrado como pendencia menor separada.
+
+`diff_parser.py`: GANHOU=0, PERDEU=0, MUDOU=15 (14 do bloco 454 + ST22-017
+novo). `smoke_fast.py` (1 teste novo, adicionado a
+`test_ordem_de_steps_rest_antes_de_ko_rested_e_draw_antes_de_lock_05_08`)/
+`smoke_test.py`: 100%. Registro em
+`parser_audits/2026-08-06_familia_draw_n_then_auditoria_completa.json`.
+
+**Com este fix, a familia "draw N. Then, [...]" esta INTEGRALMENTE
+auditada** (44/44 codigos-base revisados individualmente, nao por
+amostragem).
+
 ## 2026-08-06 (455) - Claude (sessao remota web) - Investiga e fecha o guard `is_substitute_fb` (pendencia do bloco 448) -- fix no CONSUMIDOR, nao no parser
 
 Usuario pediu "e agora falta o quê?" apos o bloco 454; escolhi a

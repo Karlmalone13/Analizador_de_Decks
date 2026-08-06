@@ -11388,14 +11388,21 @@ def test_ordem_de_steps_rest_antes_de_ko_rested_e_draw_antes_de_lock_05_08() -> 
           ativo not in opp.field_chars and ja_rested not in opp.field_chars)
 
     # Familia draw+lock (OP17-065): so consistencia com o texto -- sem
-    # impacto de jogo confirmado (draw nao interfere no alvo do lock, ver
-    # comentario no parser sobre o motivo de nao generalizar pra toda a
-    # familia "draw N. Then, [...]", que tem 40+ cartas com acoes bem
-    # diferentes na clausula seguinte).
+    # impacto de jogo confirmado (draw nao interfere no alvo do lock).
     ef_queen = get_card_effects("OP17-065").get("on_play", {})
     acoes = [s.get("action") for s in ef_queen.get("steps", [])]
     check("OP17-065: 'draw' aparece ANTES de 'lock_opp_character_attack' (ordem do texto)",
           acoes == ["draw", "lock_opp_character_attack"])
+
+    # Auditoria completa da familia "draw N. Then, [...]" (06/08): censo
+    # global achou 40+ cartas com essa forma no total, revistas uma a
+    # uma -- 39/40 ja tinham 'draw' corretamente ANTES da 2a acao, so
+    # ST22-017 (Fire Fist) tinha 'place_opp_character_bottom_deck' saindo
+    # ANTES do 'draw' apesar do texto ("Draw 1 card. Then, place...").
+    ef_fire_fist = get_card_effects("ST22-017").get("main", {})
+    acoes_ff = [s.get("action") for s in ef_fire_fist.get("steps", [])]
+    check("ST22-017: 'draw' aparece ANTES de 'place_opp_character_bottom_deck' (ordem do texto)",
+          acoes_ff == ["draw", "place_opp_character_bottom_deck"])
 
 
 def test_vazamento_de_condicao_pro_substitute_ko_removal_06_08() -> None:

@@ -111971,13 +111971,13 @@
     "target": "opp_character"
    },
    {
+    "action": "draw",
+    "trigger": "main"
+   },
+   {
     "action": "place_opp_character_bottom_deck",
     "trigger": "main",
     "cost_lte": 5
-   },
-   {
-    "action": "draw",
-    "trigger": "main"
    }
   ],
   "synergy_states": {
