@@ -165,6 +165,33 @@ ATTACK_MARGIN_DON_FRACTION = 0.7
 # eles. Valor final aplicado.
 GIVE_DON_RESTED_BASE_SCORE = -10
 
+# Bonus somado a _score_play_action quando a carta "habilita ataque"
+# (K.O./remocao/buff/rush/draw/busca/rest_opponent/when_attacking/
+# activate_main) -- prioriza jogar ANTES de atacar no mesmo turno pra
+# ativar o efeito a tempo. Promovido de literal `+60` inline pra
+# constante nomeada (06/08) -- valor MANTIDO em 60 nesta extracao
+# (refactor puro, smoke_fast/smoke_test 100%, zero mudanca de
+# comportamento); calibracao real via self-play EM ANDAMENTO, ver
+# pendencia no TODO.md/HANDOFF.md.
+#
+# Achado do bloco 449 (05/08): um teste pareado com politica GULOSA
+# simplificada (nao o Turn Planner real -- substituia main_phase inteiro
+# por "sempre jogar habilitador antes do 1o ataque, sem competir por
+# score") mostrou efeito FORTE mas NAO uniforme por deck -- Enel se
+# beneficia muito (+25-32pp de win rate em 3 matchups), Nami/Ace pioram
+# bastante contra Mihawk (-21pp/-17pp), Imu fica perto de neutro. Esse
+# teste NAO calibrou a constante real (bypassava o score, nao testava
+# valores diferentes de bonus).
+#
+# Calibracao real EM ANDAMENTO (06/08, self-play pareado com o MOTOR de
+# producao via `OPTCGMatch`/`ReplayMatch`, mesma metodologia de
+# gauntlet_matchup.py -- 4 lideres do achado do bloco 449: Enel, Nami,
+# Ace, Imu, cada um vs Mihawk + Enel tambem vs Nami, N=15 seeds/matchup,
+# testando 0/60/120). Resultado ainda nao analisado nesta sessao -- este
+# comentario sera atualizado com os numeros reais e o valor final assim
+# que o sweep terminar.
+HABILITA_ATAQUE_BONUS = 60
+
 # ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
 # Promovidos de variavel local do main_phase pra constante de modulo --
 # `_select_search_candidates`/`_select_action_via_search` sao agora a FONTE
@@ -13353,7 +13380,7 @@ class OPTCGMatch:
                 base += 30
 
         if habilita_ataque:
-            base += 60   # prioriza sair antes dos ataques
+            base += HABILITA_ATAQUE_BONUS   # prioriza sair antes dos ataques
 
         # Penalização de AUTO-TRAVA (parte b): se jogar esta carta me trava de
         # jogar mais neste turno (self_cant_play no on_play), e ainda tenho cartas

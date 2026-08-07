@@ -2,6 +2,17 @@
 
 **Última atualização:** 6 de agosto de 2026
 
+> 06/08/2026 (bloco 459, PARCIAL): **calibração de `HABILITA_ATAQUE_BONUS`
+> EM ANDAMENTO** — pendência do bloco 449 (teste com política gulosa
+> simplificada achou efeito forte mas dependente de deck, sem calibrar a
+> constante real). Extraída de literal `+60` pra constante nomeada
+> (refactor puro, valor mantido, `smoke_fast` 100%) — **commitado**.
+> Sweep de self-play com o MOTOR DE PRODUÇÃO real (não a política gulosa
+> do 449) rodando em background: Enel/Nami/Ace/Imu vs Mihawk + Enel vs
+> Nami, N=15 seeds, valores 0/60/120. **PENDENTE: ler o resultado,
+> decidir o valor final, atualizar o comentário da constante com números
+> reais, commit separado.** Ver bloco 459 do HANDOFF.
+
 > 06/08/2026 (bloco 458): **confirma e fecha o gap da PROTEÇÃO EXTERNA**
 > de substitute (pendência teórica registrada no bloco 455).
 > `_source_conditions_met_for_substitute()` (protetor ≠ protegido) não

@@ -1,5 +1,30 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-06 (459, PARCIAL -- ver TODO.md) - Claude (sessao remota web) - Inicia calibracao real de HABILITA_ATAQUE_BONUS (pendencia do bloco 449) -- extracao commitada, sweep de self-play EM ANDAMENTO
+
+Usuario pediu pra continuar com "calibração do bônus de sequenciamento"
+(pendencia deixada em aberto no bloco 449: o teste com politica gulosa
+simplificada achou efeito FORTE mas dependente de deck, sem calibrar a
+constante real de producao).
+
+**Feito nesta parte**: literal `+60` inline em `_score_play_action`
+(decision_engine.py) extraido pra `HABILITA_ATAQUE_BONUS` (constante de
+modulo, mesmo padrao de `ATTACK_LEADER_BASE_SCORE`/
+`BLOCK_CRITICAL_LIFE_MAX_COST` etc.) -- refactor puro, valor MANTIDO em
+60, `smoke_fast.py` 100% (confirma zero mudanca de comportamento).
+
+**Em andamento (script descartavel, NAO commitado -- fica no scratchpad
+da sessao, mesma convencao do bloco 449)**: sweep de self-play PAREADO
+usando o MOTOR DE PRODUCAO de verdade (`OPTCGMatch`/`ReplayMatch`, mesma
+metodologia de `gauntlet_matchup.py` -- diferente do bloco 449, que
+usava uma politica gulosa simplificada que NAO testava a constante
+real). Matchups: Enel vs Mihawk/Nami, Nami vs Mihawk, Ace vs Mihawk, Imu
+vs Mihawk (os 4 lideres do achado original do bloco 449) -- N=15
+seeds/matchup, valores testados 0/60/120. Resultado ainda NAO analisado
+-- proxima sessao (ou continuacao desta) deve ler o output, decidir o
+valor final, atualizar o comentario da constante com os numeros reais
+(mesmo padrao de documentacao dos blocos 395-398), e comitar separado.
+
 ## 2026-08-06 (458) - Claude (sessao remota web) - Confirma e fecha o gap da PROTECAO EXTERNA de substitute (pendencia teorica do bloco 455)
 
 Usuario pediu pra continuar com "proteção externa" (dentre as pendencias
