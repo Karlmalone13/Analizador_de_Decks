@@ -11404,6 +11404,20 @@ def test_ordem_de_steps_rest_antes_de_ko_rested_e_draw_antes_de_lock_05_08() -> 
     check("ST22-017: 'draw' aparece ANTES de 'place_opp_character_bottom_deck' (ordem do texto)",
           acoes_ff == ["draw", "place_opp_character_bottom_deck"])
 
+    # Variante por CONJUNCAO "Draw N and [efeito]" (nao "Then,", achado
+    # 06/08): censo achou 9 cartas -- OP13-102, OP14-002, OP14-038,
+    # OP14-049, OP16-109, OP16-110, OP17-027, OP17-031 (todas
+    # PRE-EXISTENTES) + o alvo original desta checagem. 'draw' e sempre a
+    # 1a clausula gramatical nessa forma -- fix generico move o step de
+    # draw pra posicao 0 do entry.
+    for code, trig in [("OP13-102", "activate_main"), ("OP14-002", "when_attacking"),
+                       ("OP14-038", "main"), ("OP16-110", "on_ko"),
+                       ("OP17-027", "on_play"), ("OP17-031", "on_play")]:
+        ef = get_card_effects(code).get(trig, {})
+        primeira_acao = (ef.get("steps") or [{}])[0].get("action")
+        check(f"{code} [{trig}]: 'draw' e o PRIMEIRO step (era 'Draw N and [efeito]' invertido)",
+              primeira_acao == "draw")
+
 
 def test_vazamento_de_condicao_pro_substitute_ko_removal_06_08() -> None:
     """

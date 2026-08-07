@@ -1,0 +1,21 @@
+{
+  "trigger_card": "OP13-102",
+  "problem": "Continuacao explicita pedida pelo usuario: fecha a pendencia menor registrada em 2026-08-06_familia_draw_n_then_auditoria_completa.json (achado colateral, na epoca fora do escopo) -- OP13-102 tem um bloco [Trigger] com 'Draw 1 card AND rest up to 1...' (conjuncao 'and', nao 'Then,' sequencial). Mesma classe de bug de ORDEM (parse_block despacha sub-parsers numa ordem FIXA por familia de acao, nao pela ordem textual), so que a gramatica gatilho e diferente.",
+  "grammar_family": "'draw N cards? and [efeito]' (conjuncao, nao 'Then,').",
+  "queries": [
+    "Censo global (regex 'draw \\d+ cards?\\s+and\\b', cards_rows.csv): 217 ocorrencias brutas -- a MAIORIA (156) e o idioma atomico 'draw N and trash 1 card from your hand' (ja parseado como UM UNICO step 'draw' com sub-campo 'then_trash', nao 2 steps separados -- nunca sofre bug de ordem, excluido do censo refinado).",
+    "Censo refinado (excluindo o idioma atomico acima): 61 ocorrencias / 33 codigos-base unicos. Lidos individualmente (texto vs ordem de acoes no card_effects_db.json atual).",
+    "9 cartas com a forma EXATA 'Draw N and [efeito]' como clausula UNICA (draw gramaticalmente PRIMEIRO, sem outra clausula-step competindo pela posicao 0 -- condicoes/custos antes dela nao contam como step) tinham 'draw' saindo DEPOIS do efeito no JSON: OP13-102 (achado original, 2 blocos: activate_main E trigger), OP14-002, OP14-038, OP14-049, OP16-109, OP16-110, OP17-027, OP17-031 -- TODAS PRE-EXISTENTES.",
+    "1 carta adicional achada com o MESMO padrao mas estrutura de texto mais complexa (3 clausulas: 'Draw N and [X]. Then, [Y]'): EB02-024 (Sogeking) -- 'draw' tambem saia depois do 'X' (bounce), corrigido pelo mesmo fix generico. Achado COLATERAL nesta carta, fora do escopo de ORDEM: a clausula do meio ('place 2 cards from your hand at the bottom of your deck in any order') nao vira step NENHUM no JSON -- gap de COBERTURA, nao de ordem, registrado como pendencia separada, NAO corrigido aqui.",
+    "As outras ~24 cartas do censo refinado ja tinham 'draw' corretamente posicionado (nenhuma mudanca) -- verificadas individualmente, nao por amostragem."
+  ],
+  "cards_found": ["OP13-102", "OP14-002", "OP14-038", "OP14-049", "OP16-109", "OP16-110", "OP17-027", "OP17-031", "EB02-024"],
+  "resolution_scope": "global",
+  "decision": "1 fix generico aplicado: quando o texto do bloco bate 'draw N cards? and [efeito]' (excluindo o idioma atomico de draw+trash-from-hand) e o step 'draw' nao esta na posicao 0, move ele pra la (draw e sempre a 1a clausula gramatical nesta forma, confirmado carta por carta -- nao uma troca de posicao entre um PAR fixo de acoes como nos fixes anteriores, generaliza melhor pra qualquer efeito 'X' que venha depois do 'and'). Sem impacto de jogo confirmado em nenhuma das 9 (rest_opp_character/ko/bounce nao dependem do que foi comprado pelo draw, nem draw depende do alvo escolhido) -- fix por consistencia com a ordem real de execucao, mesma familia dos achados de OP17-065/ST22-017.",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=25 (15 dos blocos 454/456 ainda no MUDOU por causa do snapshot antigo + 10 novos: EB02-024, OP13-102, OP14-002, OP14-038, OP14-049, OP14-088, OP16-109, OP16-110, OP17-027, OP17-031)",
+    "smoke_fast.py: SMOKE FAST OK (6 testes novos, um por carta representativa)",
+    "smoke_test.py: TODOS OS TESTES PASSARAM"
+  ],
+  "notes": "Com este fix, as DUAS variantes da familia 'draw N [conector] [...]' (sequencial com 'Then,' e simultanea com 'and') estao integralmente auditadas. Pendencia NOVA registrada, nao corrigida: EB02-024 (Sogeking) tem uma clausula inteira ('place 2 cards from your hand at the bottom of your deck in any order') que nunca vira step -- gap de cobertura do parser, precisa de investigacao propria (nao e bug de ordem, e ausencia total do efeito)."
+}

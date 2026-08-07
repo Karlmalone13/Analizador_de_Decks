@@ -3691,14 +3691,14 @@
   "attribute": "Ranged",
   "effects": [
    {
+    "action": "draw",
+    "trigger": "on_play"
+   },
+   {
     "action": "bounce",
     "trigger": "on_play",
     "cost_lte": 1,
     "target": "opp_character"
-   },
-   {
-    "action": "draw",
-    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
@@ -78482,13 +78482,13 @@
     "cost_lte": 3
    },
    {
+    "action": "draw",
+    "trigger": "trigger"
+   },
+   {
     "action": "rest_opp_character",
     "trigger": "trigger",
     "cost_lte": 3
-   },
-   {
-    "action": "draw",
-    "trigger": "trigger"
    }
   ],
   "synergy_states": {
@@ -79425,14 +79425,14 @@
   "attribute": "Strike",
   "effects": [
    {
+    "action": "draw",
+    "trigger": "when_attacking"
+   },
+   {
     "action": "ko",
     "trigger": "when_attacking",
     "power_lte": 3000,
     "target": "opp_character"
-   },
-   {
-    "action": "draw",
-    "trigger": "when_attacking"
    }
   ],
   "synergy_states": {},
@@ -81029,13 +81029,13 @@
     "target": "leader"
    },
    {
+    "action": "draw",
+    "trigger": "main"
+   },
+   {
     "action": "rest_opp_character",
     "trigger": "main",
     "power_lte": 7000
-   },
-   {
-    "action": "draw",
-    "trigger": "main"
    }
   ],
   "synergy_states": {
@@ -81510,14 +81510,14 @@
   "attribute": "Strike",
   "effects": [
    {
+    "action": "draw",
+    "trigger": "on_play"
+   },
+   {
     "action": "bounce",
     "trigger": "on_play",
     "cost_lte": 7,
     "target": "opp_character"
-   },
-   {
-    "action": "draw",
-    "trigger": "on_play"
    },
    {
     "action": "gain_rush",
@@ -83215,14 +83215,14 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "draw",
+    "trigger": "on_ko"
+   },
+   {
     "action": "ko",
     "trigger": "on_ko",
     "cost_lte": 1,
     "target": "opp_stage"
-   },
-   {
-    "action": "draw",
-    "trigger": "on_ko"
    }
   ],
   "synergy_states": {},
@@ -94925,14 +94925,14 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "draw",
+    "trigger": "on_ko"
+   },
+   {
     "action": "ko",
     "trigger": "on_ko",
     "cost_lte": 1,
     "target": "opp_character"
-   },
-   {
-    "action": "draw",
-    "trigger": "on_ko"
    },
    {
     "action": "activate_main_effect",
@@ -94979,13 +94979,13 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "draw",
+    "trigger": "on_ko"
+   },
+   {
     "action": "rest_opp_character",
     "trigger": "on_ko",
     "cost_lte": 6
-   },
-   {
-    "action": "draw",
-    "trigger": "on_ko"
    },
    {
     "action": "activate_main_effect",
@@ -117154,11 +117154,11 @@
   "attribute": "Ranged",
   "effects": [
    {
-    "action": "rest_opp_character",
+    "action": "draw",
     "trigger": "on_play"
    },
    {
-    "action": "draw",
+    "action": "rest_opp_character",
     "trigger": "on_play"
    },
    {
@@ -117353,13 +117353,13 @@
   "attribute": "Ranged",
   "effects": [
    {
+    "action": "draw",
+    "trigger": "on_play"
+   },
+   {
     "action": "rest_opp_character",
     "trigger": "on_play",
     "cost_lte": 8
-   },
-   {
-    "action": "draw",
-    "trigger": "on_play"
    },
    {
     "action": "set_active",

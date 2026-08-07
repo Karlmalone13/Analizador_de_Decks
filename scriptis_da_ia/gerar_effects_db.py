@@ -8568,6 +8568,33 @@ def parse_block(block_text, trigger_name):
         if idx_draw2 is not None and idx_bottom is not None and idx_bottom < idx_draw2:
             steps[idx_draw2], steps[idx_bottom] = steps[idx_bottom], steps[idx_draw2]
 
+    # "Draw N card(s) AND [efeito]" -- variante por CONJUNCAO (nao "Then,",
+    # achado 06/08, continuacao da auditoria da familia "draw N. Then/and,
+    # [...]": pedido explicito do usuario pra fechar essa variante depois
+    # de fechar a de "Then,"). Mesmo bug de despacho (rest_opp_character/
+    # ko/bounce geram step ANTES de parse_draw na cadeia interna,
+    # independente da ordem textual). Censo global ("draw \d+ cards? and",
+    # excluindo o idioma atomico 'draw N and trash 1 card from your hand'
+    # -- esse vira um UNICO step com sub-campo `then_trash`, nao 2 steps
+    # separados, entao nunca sofre desse bug) achou 217 ocorrencias brutas,
+    # a maioria (156) sendo exatamente esse idioma atomico ja tratado
+    # certo. Das 61 restantes (33 codigos-base unicos), 9 tinham a MESMA
+    # forma exata "Draw N and [efeito]" como clausula UNICA (sem clausula
+    # anterior competindo pela posicao 0) com 'draw' saindo DEPOIS do
+    # efeito -- OP13-102, OP14-002, OP14-038, OP14-049, OP16-109,
+    # OP16-110, OP17-027, OP17-031 (todas PRE-EXISTENTES) -- fix generico:
+    # quando o padrao bate, 'draw' sempre deveria ser o PRIMEIRO step do
+    # entry (e gramaticalmente a 1a clausula em TODAS as 9 -- condicoes/
+    # custos antes dela nao contam como step). Sem impacto de jogo
+    # confirmado em nenhuma (rest_opp_character/ko/bounce nao dependem do
+    # que foi comprado, nem draw depende do alvo escolhido) -- fix por
+    # consistencia, mesma familia de achado que OP17-065/ST22-017.
+    if (re.search(r"draw \d+ cards?\s+and\s+", t)
+            and not re.search(r"draw \d+ cards?\s+and\s+trash \d+ cards? from your hand\b", t)):
+        idx_draw3 = next((i for i, s in enumerate(steps) if s.get('action') == 'draw'), None)
+        if idx_draw3 is not None and idx_draw3 > 0:
+            steps.insert(0, steps.pop(idx_draw3))
+
     # Memoria de alvo entre steps (SaveTargetName, 28/06/2026): a ordem de
     # despacho dos sub-parsers acima NAO segue a ordem do texto original
     # (ex: select_unblockable_turn e chamado antes de power_buff), o que

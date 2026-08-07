@@ -2,6 +2,24 @@
 
 **Última atualização:** 6 de agosto de 2026
 
+> 06/08/2026 (bloco 457): **fecha a variante "Draw N AND [...]"**
+> (conjunção, não "Then,") — última pendência da família de ordem de
+> steps, pedido explícito do usuário. Censo refinado (excluindo o idioma
+> atômico "draw N and trash 1 card from your hand", já tratado certo
+> como 1 step só): 61 ocorrências / 33 códigos-base, lidas
+> individualmente. **9 cartas com inversão real** — OP13-102 (achado
+> original), OP14-002, OP14-038, OP14-049, OP16-109, OP16-110, OP17-027,
+> OP17-031 (pré-existentes) + EB02-024. Fix genérico: 'draw' sempre move
+> pra posição 0 quando o padrão bate (confirmado ser sempre a 1ª
+> cláusula gramatical nessa forma). Sem impacto de jogo confirmado.
+> **Achado colateral não corrigido**: EB02-024 tem uma cláusula inteira
+> ("place 2 cards... at the bottom of your deck") que nunca vira step —
+> gap de COBERTURA, não de ordem, pendência nova registrada. `diff_parser`
+> MUDOU=25 (15 anteriores + 10 novos), 0 regressões, `smoke_fast`(6 testes
+> novos)/`smoke_test` 100%. **Com isso, as duas variantes da família
+> "draw N [conector] [...]" estão integralmente auditadas.** Ver bloco
+> 457 do HANDOFF e `parser_audits/2026-08-06b_familia_draw_n_and_conjuncao.json`.
+
 > 06/08/2026 (bloco 456): **auditoria COMPLETA da família "Draw N. Then,
 > [...]"** — fecha a pendência residual deixada em aberto no bloco 454
 > (só o par draw+lock de OP17-065 tinha sido corrigido; a família mais

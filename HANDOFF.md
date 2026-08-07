@@ -1,5 +1,39 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-06 (457) - Claude (sessao remota web) - Fecha a variante "Draw N AND [...]" (conjuncao) -- ultima pendencia da familia de ordem de steps
+
+Usuario pediu explicitamente "resolva primeiro essa questão do 'e'" (a
+pendencia menor deixada no bloco 456: OP13-102 usa "Draw 1 card AND rest
+up to 1..." em vez de "Then,"). Mesma tecnica de auditoria: censo global
+por "draw \d+ cards? and" (217 ocorrencias brutas -- a maioria, 156, e o
+idioma atomico "draw N and trash 1 card from your hand", ja tratado
+certo como UM step so com sub-campo `then_trash`, nunca sofre esse bug).
+Refinando pra excluir esse idioma: 61 ocorrencias / 33 codigos-base,
+lidas individualmente.
+
+**9 cartas com inversao real** -- OP13-102 (achado original, 2 blocos),
+OP14-002, OP14-038, OP14-049, OP16-109, OP16-110, OP17-027, OP17-031
+(todas PRE-EXISTENTES) + EB02-024 (achada durante o censo, estrutura de
+3 clausulas). Fix GENERICO (diferente dos anteriores, que trocavam
+posicao de um PAR fixo de acoes): quando o texto bate "draw N and
+[efeito]" e 'draw' nao esta na posicao 0 do entry, move ele pra la --
+'draw' e sempre a 1a clausula gramatical nessa forma, confirmado carta
+por carta. Sem impacto de jogo confirmado (mesma familia de OP17-065/
+ST22-017, so consistencia).
+
+**Achado colateral, NAO corrigido**: EB02-024 (Sogeking) tem uma
+clausula inteira ("place 2 cards from your hand at the bottom of your
+deck in any order") que nunca vira step nenhum -- gap de COBERTURA do
+parser (nao e bug de ordem), registrado como pendencia nova separada.
+
+`diff_parser.py`: GANHOU=0, PERDEU=0, MUDOU=25 (15 dos blocos 454/456 +
+10 novos). `smoke_fast.py` (6 testes novos)/`smoke_test.py`: 100%.
+Registro em `parser_audits/2026-08-06b_familia_draw_n_and_conjuncao.json`.
+
+**Com este fix, as DUAS variantes da familia "draw N [conector] [...]"**
+(sequencial "Then," E simultanea "and") **estao integralmente
+auditadas.**
+
 ## 2026-08-06 (456) - Claude (sessao remota web) - Auditoria COMPLETA da familia "Draw N. Then, [...]" -- fecha a pendencia residual do bloco 454
 
 Usuario escolheu explicitamente essa opcao (dentre as pendencias

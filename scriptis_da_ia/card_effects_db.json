@@ -2511,14 +2511,14 @@
       "on_play": {
         "steps": [
           {
+            "action": "draw",
+            "count": 2
+          },
+          {
             "action": "bounce",
             "count": 1,
             "target": "opp_character",
             "cost_lte": 1
-          },
-          {
-            "action": "draw",
-            "count": 2
           }
         ]
       }
@@ -53500,13 +53500,13 @@
       "trigger": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1
+          },
+          {
             "action": "rest_opp_character",
             "count": 1,
             "cost_lte": 3
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ]
       }
@@ -54137,14 +54137,14 @@
       "when_attacking": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1
+          },
+          {
             "action": "ko",
             "count": 1,
             "target": "opp_character",
             "power_lte": 3000
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ],
         "conditions": {
@@ -55208,13 +55208,13 @@
       "main": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1
+          },
+          {
             "action": "rest_opp_character",
             "count": 1,
             "power_lte": 7000
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ],
         "costs": [
@@ -55562,14 +55562,14 @@
       "on_play": {
         "steps": [
           {
+            "action": "draw",
+            "count": 2
+          },
+          {
             "action": "bounce",
             "count": 1,
             "target": "opp_character",
             "cost_lte": 7
-          },
-          {
-            "action": "draw",
-            "count": 2
           }
         ],
         "costs": [
@@ -56799,14 +56799,14 @@
       "on_ko": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1
+          },
+          {
             "action": "ko",
             "count": 1,
             "target": "opp_stage",
             "cost_lte": 1
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ],
         "conditions": {
@@ -65294,14 +65294,14 @@
       "on_ko": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1
+          },
+          {
             "action": "ko",
             "count": 2,
             "target": "opp_character",
             "cost_lte": 1
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ],
         "conditions": {
@@ -65331,13 +65331,13 @@
       "on_ko": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1
+          },
+          {
             "action": "rest_opp_character",
             "count": 1,
             "cost_lte": 6
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ]
       },
@@ -80121,12 +80121,12 @@
       "on_play": {
         "steps": [
           {
-            "action": "rest_opp_character",
-            "count": 2
-          },
-          {
             "action": "draw",
             "count": 1
+          },
+          {
+            "action": "rest_opp_character",
+            "count": 2
           }
         ],
         "conditions": {
@@ -80261,13 +80261,13 @@
       "on_play": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1
+          },
+          {
             "action": "rest_opp_character",
             "count": 1,
             "cost_lte": 8
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ]
       },
