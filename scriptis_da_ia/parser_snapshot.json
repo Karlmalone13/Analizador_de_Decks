@@ -1577,13 +1577,17 @@
   "on_play": {
    "steps": [
     {
+     "action": "draw",
+     "count": 2
+    },
+    {
      "action": "bounce",
      "cost_lte": 1,
      "count": 1,
      "target": "opp_character"
     },
     {
-     "action": "draw",
+     "action": "hand_to_deck",
      "count": 2
     }
    ]
@@ -5527,6 +5531,12 @@
  "OP01-010": {},
  "OP01-011": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "place_hand_bottom_deck"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -9196,7 +9206,7 @@
   }
  },
  "OP03-001": {
-  "passive": {
+  "leader_battle_reactive": {
    "costs": [
     {
      "card_types": [
@@ -12090,32 +12100,32 @@
   "counter": {
    "steps": [
     {
+     "action": "rest_opp_character",
+     "cost_lte": 6,
+     "count": 1
+    },
+    {
      "action": "ko",
      "cost_lte": 6,
      "count": 1,
      "rested_only": true,
      "target": "opp_character"
-    },
-    {
-     "action": "rest_opp_character",
-     "cost_lte": 6,
-     "count": 1
     }
    ]
   },
   "main": {
    "steps": [
     {
+     "action": "rest_opp_character",
+     "cost_lte": 6,
+     "count": 1
+    },
+    {
      "action": "ko",
      "cost_lte": 6,
      "count": 1,
      "rested_only": true,
      "target": "opp_character"
-    },
-    {
-     "action": "rest_opp_character",
-     "cost_lte": 6,
-     "count": 1
     }
    ]
   },
@@ -12410,6 +12420,10 @@
    "steps": [
     {
      "action": "draw",
+     "count": 1
+    },
+    {
+     "action": "hand_to_deck",
      "count": 1
     }
    ]
@@ -14683,6 +14697,10 @@
     {
      "action": "draw",
      "count": 1
+    },
+    {
+     "action": "hand_to_deck",
+     "count": 1
     }
    ]
   }
@@ -14793,6 +14811,10 @@
    "steps": [
     {
      "action": "draw",
+     "count": 2
+    },
+    {
+     "action": "hand_to_deck",
      "count": 2
     }
    ]
@@ -16913,6 +16935,10 @@
    "steps": [
     {
      "action": "draw",
+     "count": 2
+    },
+    {
+     "action": "hand_to_deck",
      "count": 2
     }
    ]
@@ -19375,6 +19401,10 @@
    "steps": [
     {
      "action": "draw",
+     "count": 2
+    },
+    {
+     "action": "hand_to_deck",
      "count": 2
     }
    ]
@@ -24042,6 +24072,10 @@
    "costs": [
     {
      "type": "rest_self"
+    },
+    {
+     "count": 2,
+     "type": "place_hand_bottom_deck"
     }
    ],
    "steps": [
@@ -25676,16 +25710,16 @@
    },
    "steps": [
     {
+     "action": "rest_opp_character",
+     "cost_lte": 5,
+     "count": 1
+    },
+    {
      "action": "ko",
      "cost_lte": 3,
      "count": 1,
      "rested_only": true,
      "target": "opp_character"
-    },
-    {
-     "action": "rest_opp_character",
-     "cost_lte": 5,
-     "count": 1
     }
    ]
   }
@@ -25972,16 +26006,16 @@
   "main": {
    "steps": [
     {
+     "action": "rest_opp_character",
+     "cost_lte": 6,
+     "count": 1
+    },
+    {
      "action": "ko",
      "cost_lte": 5,
      "count": 1,
      "rested_only": true,
      "target": "opp_character"
-    },
-    {
-     "action": "rest_opp_character",
-     "cost_lte": 6,
-     "count": 1
     }
    ]
   },
@@ -30305,16 +30339,16 @@
   "on_play": {
    "steps": [
     {
+     "action": "rest_opp_character",
+     "cost_lte": 2,
+     "count": 1
+    },
+    {
      "action": "ko",
      "cost_lte": 1,
      "count": 1,
      "rested_only": true,
      "target": "opp_character"
-    },
-    {
-     "action": "rest_opp_character",
-     "cost_lte": 2,
-     "count": 1
     }
    ]
   }
@@ -33888,12 +33922,12 @@
   "trigger": {
    "steps": [
     {
-     "action": "rest_opp_character",
-     "cost_lte": 3,
+     "action": "draw",
      "count": 1
     },
     {
-     "action": "draw",
+     "action": "rest_opp_character",
+     "cost_lte": 3,
      "count": 1
     }
    ]
@@ -34308,14 +34342,14 @@
    },
    "steps": [
     {
+     "action": "draw",
+     "count": 1
+    },
+    {
      "action": "ko",
      "count": 1,
      "power_lte": 3000,
      "target": "opp_character"
-    },
-    {
-     "action": "draw",
-     "count": 1
     }
    ]
   }
@@ -34986,13 +35020,13 @@
    ],
    "steps": [
     {
+     "action": "draw",
+     "count": 1
+    },
+    {
      "action": "rest_opp_character",
      "count": 1,
      "power_lte": 7000
-    },
-    {
-     "action": "draw",
-     "count": 1
     }
    ]
   }
@@ -35227,14 +35261,14 @@
    ],
    "steps": [
     {
+     "action": "draw",
+     "count": 2
+    },
+    {
      "action": "bounce",
      "cost_lte": 7,
      "count": 1,
      "target": "opp_character"
-    },
-    {
-     "action": "draw",
-     "count": 2
     }
    ]
   }
@@ -36024,14 +36058,14 @@
    },
    "steps": [
     {
+     "action": "draw",
+     "count": 1
+    },
+    {
      "action": "ko",
      "cost_lte": 1,
      "count": 1,
      "target": "opp_stage"
-    },
-    {
-     "action": "draw",
-     "count": 1
     }
    ]
   }
@@ -41659,14 +41693,14 @@
    },
    "steps": [
     {
+     "action": "draw",
+     "count": 1
+    },
+    {
      "action": "ko",
      "cost_lte": 1,
      "count": 2,
      "target": "opp_character"
-    },
-    {
-     "action": "draw",
-     "count": 1
     }
    ]
   },
@@ -41682,12 +41716,12 @@
   "on_ko": {
    "steps": [
     {
-     "action": "rest_opp_character",
-     "cost_lte": 6,
+     "action": "draw",
      "count": 1
     },
     {
-     "action": "draw",
+     "action": "rest_opp_character",
+     "cost_lte": 6,
      "count": 1
     }
    ]
@@ -41963,7 +41997,10 @@
  "OP17-003": {
   "on_play": {
    "conditions": {
-    "leader_is": "edward.newgate"
+    "leader_is_or_type": {
+     "name": "edward.newgate",
+     "type": "land of wano"
+    }
    },
    "steps": [
     {
@@ -41989,7 +42026,10 @@
      "action": "select_grant_rush",
      "count": 1,
      "duration": "this_turn",
-     "filter_type": "land of wano"
+     "filter_type": [
+      "land of wano",
+      "whitebeard pirates"
+     ]
     }
    ]
   }
@@ -42022,14 +42062,20 @@
  "OP17-007": {
   "on_play": {
    "conditions": {
-    "leader_is": "edward newgate"
+    "leader_is_or_type": {
+     "name": "edward newgate",
+     "type": "land of wano"
+    }
    },
    "steps": [
     {
      "action": "play_card",
      "cost_lte": 99,
      "count": 1,
-     "filter_type": "land of wano",
+     "filter_type": [
+      "land of wano",
+      "whitebeard pirates"
+     ],
      "power_lte": 6000
     }
    ]
@@ -42312,12 +42358,12 @@
    },
    "steps": [
     {
-     "action": "rest_opp_character",
-     "count": 2
-    },
-    {
      "action": "draw",
      "count": 1
+    },
+    {
+     "action": "rest_opp_character",
+     "count": 2
     }
    ]
   },
@@ -42415,12 +42461,12 @@
   "on_play": {
    "steps": [
     {
-     "action": "rest_opp_character",
-     "cost_lte": 8,
+     "action": "draw",
      "count": 1
     },
     {
-     "action": "draw",
+     "action": "rest_opp_character",
+     "cost_lte": 8,
      "count": 1
     }
    ]
@@ -42477,6 +42523,9 @@
  },
  "OP17-034": {
   "activate_main": {
+   "conditions": {
+    "opp_leader_power_gte": 6000
+   },
    "once_per_turn": true,
    "steps": [
     {
@@ -42515,16 +42564,16 @@
    ],
    "steps": [
     {
+     "action": "rest_opp_character",
+     "cost_lte": 6,
+     "count": 1
+    },
+    {
      "action": "ko",
      "cost_lte": 6,
      "count": 2,
      "rested_only": true,
      "target": "opp_character"
-    },
-    {
-     "action": "rest_opp_character",
-     "cost_lte": 6,
-     "count": 1
     }
    ]
   }
@@ -42621,18 +42670,31 @@
   }
  },
  "OP17-040": {
-  "on_play": {
+  "leader_battle_reactive": {
+   "conditions": {
+    "leader_type_includes": "rocks pirates"
+   },
+   "costs": [
+    {
+     "count": 1,
+     "type": "trash_from_hand"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
-    {
-     "action": "draw",
-     "count": 1
-    },
     {
      "action": "buff_power",
      "amount": 3000,
      "duration": "battle_only",
      "target": "leader"
+    }
+   ]
+  },
+  "on_play": {
+   "steps": [
+    {
+     "action": "draw",
+     "count": 1
     }
    ]
   }
@@ -43191,6 +43253,14 @@
      "target": "opp_character"
     }
    ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "buff_hand_counter_no_counter",
+     "amount": 1000
+    }
+   ]
   }
  },
  "OP17-064": {
@@ -43230,14 +43300,14 @@
    ],
    "steps": [
     {
+     "action": "draw",
+     "count": 1
+    },
+    {
      "action": "lock_opp_character_attack",
      "cost_lte": 5,
      "count": 2,
      "duration": "until_opp_end_phase"
-    },
-    {
-     "action": "draw",
-     "count": 1
     }
    ]
   },
@@ -44298,6 +44368,14 @@
      "cost_lte": 99,
      "count": 2,
      "filter_type": "rocks pirates"
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "buff_own_hand_counter_if_no_others",
+     "amount": 2000
     }
    ]
   }
@@ -50527,6 +50605,10 @@
     {
      "action": "draw",
      "count": 1
+    },
+    {
+     "action": "hand_to_deck",
+     "count": 1
     }
    ]
   },
@@ -50779,12 +50861,12 @@
    ],
    "steps": [
     {
-     "action": "place_opp_character_bottom_deck",
-     "cost_lte": 5,
+     "action": "draw",
      "count": 1
     },
     {
-     "action": "draw",
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 5,
      "count": 1
     }
    ]

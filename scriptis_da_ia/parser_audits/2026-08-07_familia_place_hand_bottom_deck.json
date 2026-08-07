@@ -1,0 +1,21 @@
+{
+  "trigger_card": "EB02-024",
+  "problem": "Continuacao explicita pedida pelo usuario: fecha a pendencia registrada em 2026-08-06b_familia_draw_n_and_conjuncao.json (achado colateral, na epoca fora do escopo) -- EB02-024 (Sogeking) tem a clausula 'place 2 cards from your hand at the bottom of your deck in any order' inteira ausente do parseado. NAO e bug de ordem (a familia ja auditada de 'draw N and/Then [...]'): e um gap de COBERTURA -- nenhum parser reconhecia 'place N cards from your hand at (the) bottom of your deck' SEM 'top or' antes dela (so a variante 'top or bottom ... in any order' existia, achado 15/07, hand_to_deck).",
+  "grammar_family": "'place N cards from your hand at (the) bottom of your deck [in any order]' -- self, destino so fundo (sem 'top or'). Duas formas: STEP obrigatorio (parte de uma sequencia de efeito) e CUSTO opcional ('you may place N ... : efeito', antes do ':').",
+  "queries": [
+    "Censo global (regex 'place \\d+ cards? from your hand at(?: the)? bottom of your deck', cards_rows.csv, excluindo ocorrencias com 'top or bottom' -- ja cobertas por hand_to_deck): 9 cartas base.",
+    "Classificacao STEP vs CUSTO: pra cada match, olhei se havia ':' entre o fim da clausula e o proximo '.' do bloco -- se sim, e a variante custo (a clausula inteira e opcional, gatea o efeito depois do ':'); se nao, e STEP obrigatorio (efeito ja decidido, so falta modelar a acao).",
+    "7 cartas STEP (clausula inteira ausente do JSON, so o 'draw' que a precede sobrevivia): EB02-024 (achado original), OP04-053, OP05-046, OP05-054, OP06-045, OP07-056, ST22-002.",
+    "2 cartas CUSTO (efeito tratado como GRATIS, custo inteiro ausente): OP01-011 ('you may place 1 card ... : Draw 1 card'), OP09-060 (custo COMPOSTO 'place 2 cards ... in any order and rest this Stage:' -- o rest_self ja era capturado por uma regra generica pre-existente, so o place_hand_bottom_deck faltava)."
+  ],
+  "cards_found": ["EB02-024", "OP04-053", "OP05-046", "OP05-054", "OP06-045", "OP07-056", "ST22-002", "OP01-011", "OP09-060"],
+  "resolution_scope": "global",
+  "decision": "2 fixes generericos aplicados em gerar_effects_db.py: (1) parse_draw ganhou um novo regex STEP que reusa a action 'hand_to_deck' JA existente no engine (mesma semantica de 'top or bottom ... in any order' -- fundo do deck, 'in any order' e escolha estetica sem efeito mecanico), guardado por 'sem : antes do proximo . apos a clausula' pra nao capturar a variante custo. (2) parse_costs ganhou um novo cost type 'place_hand_bottom_deck', espelhando o 'place_hand_top_deck' ja existente (achado 17/07) trocando so o destino (fundo em vez de topo); pago em decision_engine.py:_pay_costs com a mesma logica de place_hand_top_deck, so com deck.insert(0, ...) em vez de deck.append(...). Um teste pre-existente (test_franky_e_page_one..., 'Page One compra 1 carta quando o PROPRIO lado ativa um Evento', OP04-053) teve sua asserção ATUALIZADA -- media so o draw antes deste fix, ignorando por acidente a clausula ausente 'Then, place 1 card ... bottom of your deck' da MESMA carta; a contagem liquida de mao correta agora e -1 (evento jogado) +1 (draw) -1 (place at bottom), nao 0.",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=33 (24 dos blocos 455-460 ainda no MUDOU por causa do snapshot antigo + 9 novos: os 9 cards_found acima)",
+    "smoke_fast.py: SMOKE FAST OK (2 testes novos -- 1 STEP com EB02-024/ST22-002 + execucao real via _execute_step, 1 CUSTO com OP01-011/OP09-060 + pagamento real via _pay_costs incluindo caminho de falha sem mao suficiente -- e 1 teste pre-existente com asserção corrigida)",
+    "smoke_test.py: TODOS OS TESTES PASSARAM",
+    "parser_snapshot.json re-gerado via snapshot_parser.py (indent=1, sort_keys=True, formato original preservado)"
+  ],
+  "notes": "Com este fix, a familia 'place N cards from your hand at (the) bottom of your deck' (self, destino fundo) fica integralmente auditada nas duas formas (step + custo), fechando a ultima pendencia aberta desta linha de investigacao (draw N Then/and [...] -> EB02-024 colateral -> este fix). Nao ha pendencia nova conhecida desta familia."
+}

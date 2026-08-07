@@ -1,6 +1,28 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 6 de agosto de 2026
+**Última atualização:** 7 de agosto de 2026
+
+> 07/08/2026 (bloco 461): **fecha a última pendência da linha "draw N
+> Then/and [...]"** — EB02-024 (Sogeking) tinha a cláusula "place 2
+> cards from your hand at the bottom of your deck in any order" **inteira
+> ausente** do parseado (gap de COBERTURA, distinto dos bugs de ORDEM já
+> fechados nos blocos 456/457). Censo global achou **9 cartas base** em 2
+> formas: 7 STEP (efeito obrigatório ausente — EB02-024, OP04-053,
+> OP05-046, OP05-054, OP06-045, OP07-056, ST22-002) + 2 CUSTO (tratado
+> como grátis — OP01-011, OP09-060). Fix: `parse_draw` ganhou regex STEP
+> reusando a action `hand_to_deck` já existente (guardado contra a
+> variante custo via "sem `:` antes do próximo `.`"); `parse_costs`
+> ganhou cost type novo `place_hand_bottom_deck` espelhando
+> `place_hand_top_deck`, pago em `_pay_costs` (decision_engine.py).
+> Efeito colateral: 1 teste pré-existente (Page One/OP04-053) tinha
+> asserção calibrada só pro draw, sem saber da 2ª cláusula ausente na
+> MESMA carta — corrigida. Registrado em `parser_audits/2026-08-07_
+> familia_place_hand_bottom_deck.json`. `diff_parser.py` PERDEU=0,
+> `smoke_fast`/`smoke_test` 100%. **Linha "draw N Then/and [...]" agora
+> integralmente fechada** (blocos 456/457/461), nenhuma pendência nova.
+> Pendência restante não perseguida: `HABILITA_ATAQUE_BONUS` (bloco 459)
+> se beneficiaria de amostra de self-play maior que N=15. Ver bloco 461
+> do HANDOFF.
 
 > 06/08/2026 (bloco 460): **lidos os 14 casos residuais do Katakuri**
 > (pendência dos blocos 442/443, "16 casos não lidos") — **2 bugs reais

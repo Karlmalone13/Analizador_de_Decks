@@ -1,5 +1,69 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-07 (461) - Claude (sessao remota web) - Fecha a ultima pendencia da linha "draw N Then/and [...]" -- EB02-024 (Sogeking) tinha clausula inteira ausente (gap de COBERTURA, nao de ordem), censo global achou 9 cartas
+
+Usuario pediu "tem mais alguma coisa?" apos o bloco 460 (Katakuri);
+respondi apontando 2 pendencias menores conhecidas e o usuario confirmou
+("Sim") pra seguir com a primeira: a pendencia de EB02-024 registrada em
+`2026-08-06b_familia_draw_n_and_conjuncao.json` (achado colateral do
+bloco 457, na epoca fora do escopo por ser gap de cobertura, nao de
+ordem).
+
+**Diagnostico**: EB02-024 (Sogeking, trata o nome como [Usopp]) tem
+texto "Draw 2 cards and place 2 cards from your hand at the bottom of
+your deck in any order. Then, return up to 1 Character...". A clausula
+do meio ("place 2 cards ... bottom of your deck") nunca virava step
+NENHUM -- so `draw` e `bounce` sobreviviam no parseado.
+
+**Censo global** (regex "place N cards from your hand at (the) bottom
+of your deck", excluindo "top or bottom" -- ja coberto por `hand_to_deck`
+desde 15/07): achei **9 cartas base**, em 2 formas gramaticais distintas
+que precisaram de fixes SEPARADOS:
+- **7 cartas STEP** (efeito obrigatorio, clausula inteira ausente):
+  EB02-024 (achado original), OP04-053, OP05-046, OP05-054, OP06-045,
+  OP07-056, ST22-002.
+- **2 cartas CUSTO** (`you may place N ... : efeito`, tratado como
+  GRATIS -- custo inteiro ausente): OP01-011, OP09-060 (custo
+  COMPOSTO, "...in any order and rest this Stage:" -- o `rest_self` ja
+  era capturado por uma regra generica pre-existente, so o
+  `place_hand_bottom_deck` faltava).
+
+**Fix (2 partes, ambas em `gerar_effects_db.py`)**:
+1. `parse_draw` ganhou um regex STEP novo que reusa a action
+   `hand_to_deck` JA existente no engine (mesma semantica de "top or
+   bottom ... in any order" -- fundo do deck, "in any order" e escolha
+   estetica sem efeito mecanico pro engine). Guardado por "sem `:` antes
+   do proximo `.` apos a clausula" pra nao capturar a variante custo
+   (ex: OP09-060 tem "in any order and rest this Stage:" entre a
+   clausula e o `:` -- guarda por janela ate o proximo `.`, nao so
+   adjacencia, pra cobrir esse caso).
+2. `parse_costs` ganhou um cost type novo, `place_hand_bottom_deck`,
+   espelhando `place_hand_top_deck` (achado 17/07) trocando so o
+   destino. Pago em `decision_engine.py:_pay_costs` com a MESMA logica
+   de `place_hand_top_deck`, so com `deck.insert(0, ...)` em vez de
+   `deck.append(...)` (fundo em vez de topo).
+
+**Efeito colateral achado**: um teste PRE-EXISTENTE
+(`test_franky_e_page_one...`, "Page One compra 1 carta quando o PROPRIO
+lado ativa um Evento", carta = OP04-053) tinha a asserção calibrada
+so pro `draw` (contagem liquida de mao = 0), sem saber que a MESMA
+carta tinha essa 2a clausula ausente. Corrigido pra contagem liquida
+correta (-1 evento jogado +1 draw -1 place at bottom = -1).
+
+Registrado em `parser_audits/2026-08-07_familia_place_hand_bottom_deck.json`.
+`diff_parser.py`: GANHOU=0, PERDEU=0, MUDOU=33 (24 de snapshot desatualizado
+dos blocos 455-460 + 9 novos desta sessao) -- `parser_snapshot.json`
+re-gerado via `snapshot_parser.py` (formato original preservado,
+indent=1/sort_keys). `smoke_fast.py` (2 testes novos + 1 asserção
+corrigida) e `smoke_test.py`: 100% ambos.
+
+Com este fix, a linha de investigacao "draw N Then/and [...]" (blocos
+456/457/461) fica integralmente fechada -- nenhuma pendencia nova
+conhecida desta familia. Pendencia menor restante, nao perseguida
+nesta sessao (mencionada ao usuario, sem pedido de acao):
+`HABILITA_ATAQUE_BONUS` (bloco 459) se beneficiaria de amostra de
+self-play maior que N=15 pra uma calibracao mais confiavel.
+
 ## 2026-08-06 (460) - Claude (sessao remota web) - Le os 14 casos residuais do Katakuri (pendencia dos blocos 442/443) -- 2 bugs reais de engine achados e corrigidos
 
 Usuario pediu explicitamente pra continuar os "16 casos residuais do

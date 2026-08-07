@@ -1436,6 +1436,25 @@ def parse_costs(text):
         costs.append({'type': 'place_hand_top_deck',
                        'count': int(m_hand_top_cost.group(1))})
 
+    # Custo de colocar N cartas da PRÓPRIA mão no FUNDO do deck ("you may
+    # place N cards from your hand at the bottom of your deck [in any
+    # order] [and rest this Stage]: efeito"). Mesma familia do custo TOPO
+    # acima (place_hand_top_deck), mas destino=fundo -- precisa de action
+    # PROPRIA (place_hand_bottom_deck) porque e opcional (antes do ':'),
+    # distinto do STEP obrigatorio hand_to_deck ja tratado em parse_draw
+    # (que so dispara quando NAO ha ':' colado na clausula). "[^:]*:" (em
+    # vez de "\s*:") tolera texto composto entre a clausula e o ':' (ex:
+    # OP09-060 "...deck in any order and rest this Stage:" -- o rest_self
+    # desse composto ja e capturado a parte pela regra generica "rest this
+    # (card|character|stage|leader)" mais acima neste arquivo). Achado
+    # 07/08, mesmo censo do STEP acima: OP01-011 e OP09-060 (2 cartas,
+    # custo inteiro ausente -- efeito disparava de graca).
+    m_hand_bottom_cost = re.search(
+        r'you may place (\d+) cards? from your hand at(?: the)? bottom of your deck[^:]*:', t)
+    if m_hand_bottom_cost:
+        costs.append({'type': 'place_hand_bottom_deck',
+                       'count': int(m_hand_bottom_cost.group(1))})
+
     # Custo de dar N DON!! ATIVOS a UM Character PROPRIO NOMEADO ("you may
     # give N active DON!! card(s) to 1 of your [Nome]: efeito") -- familia
     # de 4 cartas Event (EB04-009, OP12-016, OP12-017, OP12-019, todas
@@ -3619,6 +3638,28 @@ def parse_draw(text):
         r'place (\d+) cards? from your hand at (?:the )?top of your deck(?!\s*:)', t)
     if m_hand_top:
         steps.append({'action': 'hand_to_deck_top', 'count': int(m_hand_top.group(1))})
+
+    # "draw N cards and place N cards from your hand at the bottom of your
+    # deck [in any order]" -- SEM "top or" (destino so fundo, nao e escolha
+    # entre topo/fundo como o m_loot acima) e STEP OBRIGATORIO, distinto do
+    # custo opcional 'place_hand_bottom_deck' (parse_costs, "you may place
+    # N cards from your hand at the bottom of your deck: efeito"). Guarda:
+    # sem ':' entre o fim do match e o proximo '.' do bloco -- se tiver,
+    # e a clausula de custo (ex: OP09-060 "...deck in any order and rest
+    # this Stage: efeito", onde o ':' nao fica imediatamente colado no fim
+    # do match). Achado 07/08, censo de "place N cards from your hand at
+    # bottom of your deck" (self, sem 'top or'): clausula inteira ausente
+    # em EB02-024 (Sogeking), OP04-053, OP05-046, OP05-054, OP06-045,
+    # OP07-056, ST22-002 (7 cartas base) -- so o 'draw' que a precede
+    # sobrevivia no parseado.
+    m_hand_bottom = re.search(
+        r'place (\d+) cards? from your hand at(?: the)? bottom of your deck'
+        r'(?: in any order)?', t)
+    if m_hand_bottom:
+        tail = t[m_hand_bottom.end():]
+        clause_tail = tail[:tail.find('.')] if '.' in tail else tail
+        if ':' not in clause_tail:
+            steps.append({'action': 'hand_to_deck', 'count': int(m_hand_bottom.group(1))})
 
     return steps
 

@@ -1640,8 +1640,12 @@ def test_on_event_activated_dispara_gatilho_generico() -> None:
     ee3 = EffectExecutor(c, d)
     mao_antes = len(c.hand)
     match3._play_card(evento3, c, d, ee3, verbose=False)
-    check("Page One compra 1 carta quando o PROPRIO lado ativa um Evento",
-          len(c.hand) == mao_antes)  # -1 (evento saiu da mao) +1 (comprou) = mesma contagem
+    # -1 (evento saiu da mao) +1 (comprou) -1 (achado 07/08: a clausula
+    # "Then, place 1 card from your hand at the bottom of your deck" desta
+    # mesma carta ficava ausente do parseado -- agora e um step real, ver
+    # test_hand_to_deck_step_familia_bottom_of_deck_07_08) = -1 liquido.
+    check("Page One compra 1 carta E devolve 1 da mao pro fundo do deck quando o PROPRIO lado ativa um Evento",
+          len(c.hand) == mao_antes - 1)
 
 
 def test_on_char_played_dispara_gatilho_generico_com_filtro() -> None:
@@ -10078,6 +10082,8 @@ def main() -> int:
     test_vazamento_de_condicao_protecao_externa_06_08()
     test_print_vitoria_dano_com_0_vidas_06_08()
     test_resolve_cost_lte_don_count_opp_em_todas_as_copias_06_08()
+    test_hand_to_deck_step_familia_bottom_of_deck_07_08()
+    test_place_hand_bottom_deck_custo_op01_011_e_op09_060_07_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -11591,6 +11597,90 @@ def test_resolve_cost_lte_don_count_opp_em_todas_as_copias_06_08() -> None:
     match = OPTCGMatch((me.leader, []), (opp.leader, []))
     pode, motivo = match._should_activate_main(katakuri, am, me, opp)
     check(f"OP08-062: _should_activate_main NAO crasha ({motivo!r})", pode is True)
+
+
+def test_hand_to_deck_step_familia_bottom_of_deck_07_08() -> None:
+    """
+    Achado real 07/08 (pendencia EB02-024/Sogeking registrada no bloco
+    460): "place N cards from your hand at the bottom of your deck" (SEM
+    "top or", destino so fundo) nao tinha NENHUM parser cobrindo a forma
+    STEP -- so a variante "top or bottom ... in any order" (hand_to_deck,
+    achado 15/07) e a variante "top" pura (hand_to_deck_top, achado 17/07)
+    existiam. Censo global achou 7 cartas base com a clausula inteira
+    ausente do parseado (so o 'draw' que a precede sobrevivia): EB02-024,
+    OP04-053, OP05-046, OP05-054, OP06-045, OP07-056, ST22-002. Fix
+    generico em parse_draw (gerar_effects_db.py): reusa a mesma action
+    hand_to_deck ja existente no engine (fundo do deck, "in any order" e
+    escolha estetica sem efeito mecanico), com guarda pra NAO capturar a
+    variante CUSTO ("you may place N ... : efeito", ver teste irmao
+    abaixo) -- verifica se ha ':' antes do proximo '.' apos a clausula.
+    """
+    ef_sogeking = get_card_effects("EB02-024").get("on_play", {})
+    acoes_sogeking = [s.get("action") for s in ef_sogeking.get("steps", [])]
+    check("EB02-024 (Sogeking): 'hand_to_deck' aparece no on_play (clausula 'place 2 cards ... bottom of your deck' nao fica mais ausente)",
+          "hand_to_deck" in acoes_sogeking)
+
+    ef_st22002 = get_card_effects("ST22-002").get("on_opp_attack", {})
+    acoes_st22002 = [s.get("action") for s in ef_st22002.get("steps", [])]
+    check("ST22-002: 'hand_to_deck' aparece no on_opp_attack (mesma familia, bloco reativo com custo trash_self separado)",
+          acoes_st22002 == ["draw", "hand_to_deck"])
+
+    # Engine nao crasha executando o step de verdade e move a carta certa
+    # da mao pro FUNDO do deck (index 0, convencao do projeto).
+    sogeking = real_card("EB02-024")
+    carta_ruim = mk("SGK-RUIM", "Carta Ruim", power=1000, cost=1)
+    me = GameState(leader=mk("SGK-L", "Lider", card_type="LEADER"), turn=2,
+                  field_chars=[sogeking], hand=[carta_ruim],
+                  deck=[mk("SGK-D1", "Deck1"), mk("SGK-D2", "Deck2")])
+    opp = GameState(leader=mk("SGK-OPPL", "Opp", card_type="LEADER"), turn=2)
+    ee = EffectExecutor(me, opp)
+    step = {"action": "hand_to_deck", "count": 1}
+    ee._execute_step(step, sogeking)
+    check("hand_to_deck: carta saiu da mao", carta_ruim not in me.hand)
+    check("hand_to_deck: carta foi pro FUNDO do deck (index 0)", me.deck[0] is carta_ruim)
+
+
+def test_place_hand_bottom_deck_custo_op01_011_e_op09_060_07_08() -> None:
+    """
+    Achado real 07/08, mesmo censo do teste irmao acima: a variante CUSTO
+    ("you may place N cards from your hand at the bottom of your deck
+    [in any order] [and rest this Stage]: efeito") tambem tinha cobertura
+    ZERO -- OP01-011 e OP09-060 tratavam o efeito como GRATIS (custo
+    inteiro ausente). Novo cost type 'place_hand_bottom_deck' (parse_costs
+    em gerar_effects_db.py) espelha o 'place_hand_top_deck' ja existente
+    (achado 17/07), so trocando destino topo->fundo; pago em _pay_costs
+    (decision_engine.py) com a mesma logica de place_hand_top_deck, exceto
+    deck.insert(0, ...) em vez de deck.append(...).
+    """
+    ef_op01011 = get_card_effects("OP01-011").get("on_play", {})
+    custos_op01011 = [c.get("type") for c in ef_op01011.get("costs", [])]
+    check("OP01-011: custo 'place_hand_bottom_deck' presente (antes: efeito gratis)",
+          "place_hand_bottom_deck" in custos_op01011)
+
+    ef_op09060 = get_card_effects("OP09-060").get("activate_main", {})
+    custos_op09060 = {c.get("type") for c in ef_op09060.get("costs", [])}
+    check("OP09-060: custo composto 'rest_self' + 'place_hand_bottom_deck' presentes (composto com 'and rest this Stage')",
+          custos_op09060 == {"rest_self", "place_hand_bottom_deck"})
+
+    # _pay_costs paga de verdade: 1 carta sai da mao pro FUNDO do deck.
+    sogeking_hand = mk("PHB-RUIM", "Carta Ruim", power=1000, cost=1)
+    carta_fonte = mk("PHB-FONTE", "Fonte", power=3000, cost=2)
+    me = GameState(leader=mk("PHB-L", "Lider", card_type="LEADER"), turn=2,
+                  field_chars=[carta_fonte], hand=[sogeking_hand],
+                  deck=[mk("PHB-D1", "Deck1")])
+    opp = GameState(leader=mk("PHB-OPPL", "Opp", card_type="LEADER"), turn=2)
+    ee = EffectExecutor(me, opp)
+    pagou = ee._pay_costs([{"type": "place_hand_bottom_deck", "count": 1}], carta_fonte)
+    check("place_hand_bottom_deck: _pay_costs paga com sucesso (1 carta na mao, custo de 1)", pagou is True)
+    check("place_hand_bottom_deck: carta saiu da mao", sogeking_hand not in me.hand)
+    check("place_hand_bottom_deck: carta foi pro FUNDO do deck (index 0)", me.deck[0] is sogeking_hand)
+
+    # Sem carta suficiente na mao, custo falha (nao crasha, retorna False).
+    me_vazia = GameState(leader=mk("PHB-L2", "Lider2", card_type="LEADER"), turn=2,
+                         field_chars=[carta_fonte], hand=[])
+    ee_vazia = EffectExecutor(me_vazia, opp)
+    pagou_vazia = ee_vazia._pay_costs([{"type": "place_hand_bottom_deck", "count": 1}], carta_fonte)
+    check("place_hand_bottom_deck: _pay_costs retorna False sem carta suficiente na mao", pagou_vazia is False)
 
 
 if __name__ == "__main__":

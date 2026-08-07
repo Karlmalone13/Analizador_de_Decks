@@ -4748,6 +4748,24 @@ class EffectExecutor:
                     self.me.deck.append(worst)
                     movidos.append(worst.name[:14])
                 self._cost_logs.append(f'custo: topo do deck (da mão): {", ".join(movidos)}')
+            elif ctype == 'place_hand_bottom_deck':
+                # "you may place N cards from your hand at the bottom of
+                # your deck [in any order] [and rest this Stage]: efeito"
+                # -- mesma familia do custo TOPO acima (place_hand_top_
+                # deck), mas destino=fundo. Achado 07/08, OP01-011 e
+                # OP09-060.
+                count = cost.get('count', 1)
+                if len(self.me.hand) < count:
+                    return False
+                movidos = []
+                for _ in range(count):
+                    worst = self._choose_to_trash(self.me.hand)
+                    if not worst:
+                        break
+                    remove_by_identity(self.me.hand, worst)
+                    self.me.deck.insert(0, worst)
+                    movidos.append(worst.name[:14])
+                self._cost_logs.append(f'custo: fundo do deck (da mão): {", ".join(movidos)}')
             elif ctype == 'give_don_to_named':
                 # "you may give N active DON!! cards to 1 of your [Nome]:
                 # efeito" -- custo de anexar DON ATIVO (do banco) a um

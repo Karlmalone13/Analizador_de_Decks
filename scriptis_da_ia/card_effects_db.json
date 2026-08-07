@@ -2519,6 +2519,10 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 1
+          },
+          {
+            "action": "hand_to_deck",
+            "count": 2
           }
         ]
       }
@@ -8408,6 +8412,12 @@
         "steps": [
           {
             "action": "draw",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_hand_bottom_deck",
             "count": 1
           }
         ]
@@ -19764,6 +19774,10 @@
           {
             "action": "draw",
             "count": 1
+          },
+          {
+            "action": "hand_to_deck",
+            "count": 1
           }
         ],
         "once_per_turn": true,
@@ -23244,6 +23258,10 @@
           {
             "action": "draw",
             "count": 1
+          },
+          {
+            "action": "hand_to_deck",
+            "count": 1
           }
         ]
       }
@@ -23442,6 +23460,10 @@
         "steps": [
           {
             "action": "draw",
+            "count": 2
+          },
+          {
+            "action": "hand_to_deck",
             "count": 2
           }
         ]
@@ -26772,6 +26794,10 @@
         "steps": [
           {
             "action": "draw",
+            "count": 2
+          },
+          {
+            "action": "hand_to_deck",
             "count": 2
           }
         ]
@@ -30647,6 +30673,10 @@
         "steps": [
           {
             "action": "draw",
+            "count": 2
+          },
+          {
+            "action": "hand_to_deck",
             "count": 2
           }
         ]
@@ -37962,6 +37992,10 @@
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "place_hand_bottom_deck",
+            "count": 2
           }
         ]
       }
@@ -76000,6 +76034,10 @@
         "steps": [
           {
             "action": "draw",
+            "count": 1
+          },
+          {
+            "action": "hand_to_deck",
             "count": 1
           }
         ],

@@ -3699,6 +3699,10 @@
     "trigger": "on_play",
     "cost_lte": 1,
     "target": "opp_character"
+   },
+   {
+    "action": "hand_to_deck",
+    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
@@ -29153,6 +29157,11 @@
     "action": "draw",
     "trigger": "on_own_event_activated",
     "don_requirement": 1
+   },
+   {
+    "action": "hand_to_deck",
+    "trigger": "on_own_event_activated",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -34190,6 +34199,10 @@
    {
     "action": "draw",
     "trigger": "on_ko"
+   },
+   {
+    "action": "hand_to_deck",
+    "trigger": "on_ko"
    }
   ],
   "synergy_states": {},
@@ -34521,6 +34534,10 @@
   "effects": [
    {
     "action": "draw",
+    "trigger": "on_play"
+   },
+   {
+    "action": "hand_to_deck",
     "trigger": "on_play"
    }
   ],
@@ -39447,6 +39464,10 @@
   "effects": [
    {
     "action": "draw",
+    "trigger": "on_play"
+   },
+   {
+    "action": "hand_to_deck",
     "trigger": "on_play"
    }
   ],
@@ -45149,6 +45170,10 @@
   "effects": [
    {
     "action": "draw",
+    "trigger": "trigger"
+   },
+   {
+    "action": "hand_to_deck",
     "trigger": "trigger"
    },
    {
@@ -111373,6 +111398,10 @@
    },
    {
     "action": "draw",
+    "trigger": "on_opp_attack"
+   },
+   {
+    "action": "hand_to_deck",
     "trigger": "on_opp_attack"
    }
   ],
