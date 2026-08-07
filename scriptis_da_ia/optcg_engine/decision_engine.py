@@ -2444,9 +2444,20 @@ class EffectExecutor:
                 return contains_identity(me.hand, card)  # GRUPO 1 (trigger): a própria carta
             from optcg_engine.rules_facade import eligible_cards
 
-            cost_lte = step.get('cost_lte')
-            if cost_lte == 'don_count_self':
-                cost_lte = me.don_available + me.don_rested
+            # Achado real 06/08 (investigando os casos residuais do
+            # Katakuri em audit_real_losses.py): so tratava o sentinela
+            # 'don_count_self' na marra, sem passar por _resolve_cost_lte
+            # (fonte unica que ja resolve TAMBEM 'don_count_opp', usado por
+            # OP08-062 Charlotte Katakuri e P-090 Charlotte Smoothie) --
+            # `card.cost > 'don_count_opp'` (str) explodia com TypeError em
+            # qualquer chamada que passasse por aqui pra essas 2 cartas
+            # (reproduzido via reconstrucao real, TypeError intermitente
+            # dependendo da ordem embaralhada do deck). Mesmo bug em MAIS
+            # 5 copias da mesma regra de elegibilidade neste arquivo (ver
+            # comentario em _should_activate_main, "esta era a TERCEIRA
+            # copia" -- na verdade sao pelo menos 6), todas corrigidas
+            # juntas nesta sessao.
+            cost_lte = self._resolve_cost_lte(step, default=None)
             # "Play 1 [tipo] ..." sem card_type explicito = CHARACTER — mesma
             # regra do _elegivel_para_play (sim_bridge). Achado real 12/07
             # (partida 23.03.36, 3a vez reportado pelo usuario): o EVENTO
@@ -8410,9 +8421,10 @@ class EffectExecutor:
                 return f'jogou {card.name[:18]} (grátis, do trigger)'
 
             # GRUPO 2 — jogar carta da mão (ou mão+trash) com filtro, escolhendo a melhor
-            cost_lte = step.get('cost_lte')
-            if cost_lte == 'don_count_self':
-                cost_lte = self.me.don_available + self.me.don_rested  # dinâmico
+            # Achado 06/08 (mesmo de _step_is_viable): so tratava
+            # 'don_count_self', faltava 'don_count_opp' -- _resolve_cost_lte
+            # ja cobre os dois.
+            cost_lte = self._resolve_cost_lte(step, default=None)
             cost_eq = step.get('cost_eq')
             fontes = [me.hand]
             if step.get('source_alt') == 'trash':
@@ -12966,9 +12978,11 @@ class OPTCGMatch:
             for s in steps:
                 if s.get('action') != 'play_card':
                     continue
-                cost_lte = s.get('cost_lte')
-                if cost_lte == 'don_count_self':
-                    cost_lte = p.don_available + p.don_rested
+                # Achado 06/08: so tratava 'don_count_self', faltava
+                # 'don_count_opp' (OP08-062/P-090) -- reusa dummy_ee (ja
+                # criado acima, mesmo `p`/`opp`) em vez de duplicar a
+                # resolucao de novo.
+                cost_lte = dummy_ee._resolve_cost_lte(s, default=None)
                 ftype = (s.get('filter_type') or '').lower()
                 fcolor = (s.get('color') or '').lower()
                 req_type = (s.get('card_type') or 'CHARACTER').upper()
@@ -13150,6 +13164,12 @@ class OPTCGMatch:
             cost_lte = step.get('cost_lte')
             if cost_lte == 'don_count_self':
                 cost_lte = p.don_available + p.don_rested
+            # Achado 06/08: faltava 'don_count_opp' (nenhuma STAGE do banco
+            # usa hoje -- so OP08-062/P-090, Characters -- mas fica
+            # resolvido pra nao virar armadilha se aparecer uma no futuro,
+            # mesmo padrao das outras 5 copias corrigidas nesta sessao).
+            elif cost_lte == 'don_count_opp' and opp is not None:
+                cost_lte = opp.don_available + opp.don_rested
             ftype = (step.get('filter_type') or '').lower()
             fcolor = (step.get('color') or '').lower()
             fcard_type = (step.get('card_type') or 'CHARACTER').upper()
@@ -13237,6 +13257,10 @@ class OPTCGMatch:
                     cost_lte = step.get('cost_lte')
                     if cost_lte == 'don_count_self':
                         cost_lte = engine.me.don_available + engine.me.don_rested
+                    # Achado 06/08: faltava 'don_count_opp' (OP08-062/
+                    # P-090), mesmo padrao das outras copias corrigidas.
+                    elif cost_lte == 'don_count_opp':
+                        cost_lte = engine.opp.don_available + engine.opp.don_rested
                     elegiveis = eligible_cards(
                         [c for c in engine.me.hand if c is not card],
                         cost_lte=cost_lte,
@@ -13618,6 +13642,10 @@ class OPTCGMatch:
                 cost_lte = step.get('cost_lte')
                 if cost_lte == 'don_count_self':
                     cost_lte = p.don_available + p.don_rested
+                # Achado 06/08: faltava 'don_count_opp' (OP08-062/P-090),
+                # mesmo padrao das outras copias corrigidas.
+                elif cost_lte == 'don_count_opp':
+                    cost_lte = opp.don_available + opp.don_rested
                 ftype = (step.get('filter_type') or '').lower()
                 fcolor = (step.get('color') or '').lower()
                 fcard_type = (step.get('card_type') or '').upper()
@@ -15744,6 +15772,21 @@ class OPTCGMatch:
                 # (Receber dano com 0 vidas = derrota.)
                 if not opp.life:
                     p.dmg_dealt += 1
+                    # Achado 06/08 (investigando os 14 casos residuais do
+                    # Katakuri em audit_real_losses.py/triage_real_losses.py):
+                    # este e o UNICO caminho de dano/vitoria de TODA a
+                    # funcao sem print nenhum em verbose=True (todos os
+                    # outros -- dano normal, banish, bloqueio -- imprimem
+                    # algo). Narrativa capturada (`engine_hoje_narrativa`)
+                    # terminava ABRUPTAMENTE logo apos "ataca Leader", sem
+                    # nenhum resultado -- fazia parecer que o motor "parou
+                    # de atacar" quando na verdade ele GANHOU o jogo bem
+                    # ali (2 dos 14 casos residuais eram exatamente este
+                    # artefato de narrativa, nao decisao pior que a
+                    # historica -- ver parser_audits N/A, registrado em
+                    # HANDOFF/TODO por ser fix de engine, nao de parser).
+                    if verbose:
+                        print(f'      🏆 VITORIA! {attacker.name[:20]} zera a vida do oponente')
                     return True  # vitória: dano com 0 vidas
 
                 # Tira até 'damage' vidas, UMA por vez, resolvendo trigger de cada.

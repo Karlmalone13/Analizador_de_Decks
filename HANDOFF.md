@@ -1,5 +1,79 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-06 (460) - Claude (sessao remota web) - Le os 14 casos residuais do Katakuri (pendencia dos blocos 442/443) -- 2 bugs reais de engine achados e corrigidos
+
+Usuario pediu explicitamente pra continuar os "16 casos residuais do
+Katakuri" (registrados desde o bloco 442, so 2 lidos no bloco 443). A
+lista original usava uma categorizacao mais antiga de
+`triage_real_losses.py`; reconstrui o equivalente atual (turnos onde o
+motor de HOJE ataca MENOS que o historico, filtrado por partidas do
+Katakuri) e achei **14 casos** (numero varia levemente porque a
+reconstrucao embaralha o deck a CADA execucao -- limitacao ja
+documentada da ferramenta). Li os 14 manualmente, comparando a
+narrativa do motor de hoje com a acao historica.
+
+**Achado 1 (real, corrigido)**: 3 dos 14 casos tinham a narrativa
+(`engine_hoje_narrativa`) terminando ABRUPTAMENTE logo apos "ataca
+Leader", sem nenhum resultado -- parecia que o motor "parou de atacar"
+(por isso entravam na lista de "ataca menos"). Rastreei ate
+`_execute_attack` (decision_engine.py): o caminho de "vitoria por dano
+com 0 vidas" (`if not opp.life: ... return True`) e o UNICO de toda a
+funcao SEM print nenhum em `verbose=True` -- dano normal, banish e
+bloqueio imprimem algo, esse nao. Reconstruindo as 3 partidas de
+verdade (Krieg-RG turnos 7 e 11, Marshall.D.Teach-BY turno 9), confirmei
+que os 3 eram **vitorias silenciosas**: o motor de hoje ganhava o jogo
+naquele exato ataque (melhor que a derrota historica), so que sem
+avisar. Fix: 1 linha de print adicionada.
+
+**Achado 2 (real, corrigido, MAIS SERIO)**: investigando um dos 14 casos
+(Mihawk-G x Katakuri, 20/07, turno 3) achei um **crash intermitente**
+rodando `audit_real_losses.py` repetidas vezes (`TypeError: '>' not
+supported between instances of 'int' and 'str'`, ~1 a cada 3 execucoes
+-- dependia de qual carta o deck embaralhado colocava na mao). Traceback
+levou a `eligible_cards()` recebendo `cost_lte='don_count_opp'` (string
+sentinela de custo DINAMICO, "custo <= DON!! no campo do OPONENTE",
+usado por SO 2 cartas no banco: Charlotte Katakuri OP08-062 e Charlotte
+Smoothie P-090) sem passar por `_resolve_cost_lte()` (a fonte unica que
+sabe resolver esse sentinela pro numero real). **Achei 6 copias
+diferentes** da mesma regra "resolver cost_lte de um step play_card"
+espalhadas pelo arquivo (`_step_is_viable`, `_execute_step`,
+`_should_activate_main`, `_stage_play_saves_don_for_card`,
+`_score_play_action`, `_score_activate_main`) -- TODAS tratavam
+`'don_count_self'` (ja tinha sido adicionado antes) mas NENHUMA tratava
+`'don_count_opp'` (adicionado DEPOIS, so em `_resolve_cost_lte`, nunca
+propagado pras copias). Uma delas (`_should_activate_main`) ja tinha um
+comentario proprio admitindo "esta era a TERCEIRA copia da regra de
+elegibilidade... e foi assim que o bug do Empty Throne sobreviveu a 3
+reports" -- mesma classe de bug, historico documentado, dessa vez
+faltando o OUTRO lado do sentinela. Fix: as 2 copias dentro de
+`EffectExecutor` (`_step_is_viable`, `_execute_step`) passaram a
+delegar pra `self._resolve_cost_lte()`; as 4 copias em `OPTCGMatch`
+(sem acesso direto a um `EffectExecutor`) ganharam o `elif
+'don_count_opp'` que faltava, no mesmo estilo ja usado pro
+`'don_count_self'` de cada uma. Reproduzi o crash ANTES do fix (15
+tentativas, ~5 crashes) e confirmei 0 crashes em 15 tentativas DEPOIS.
+
+**Achados NAO corrigidos, sem padrao claro de bug**: dos 14 casos, os
+outros ~11 (excluindo os 3 do Achado 1) nao mostraram uma decisao
+CLARAMENTE pior que a historica -- a maioria era escolha de alocacao de
+DON defensavel (as vezes ate melhor, ex: Krieg-RG turno 9, onde o motor
+de hoje ataca o lider 2x mas NOCAUTEIA um Blocker no processo, algo que
+a linha historica nao fez) ou diferenca plausivel de composicao de
+baralho (a reconstrucao usa a mesma LISTA de cartas mas ORDEM
+embaralhada -- ex: Jinbe-B turno 7, onde o log historico mostra Charlotte
+Brulee atacando 2x, sugerindo 2 copias na mao que a reconstrucao pode
+nao ter distribuido da mesma forma).
+
+`smoke_fast.py` (3 testes novos, incluindo reproducao direta do crash
+via `OP08-062`)/`smoke_test.py`: 100%. Relatorios em
+`metrics/real_loss_audits/*.json` foram regenerados durante a
+investigacao mas **revertidos antes do commit** -- a reconstrucao
+embaralha o deck a cada execucao, entao regenerar TODOS os 55 arquivos
+so introduziria ruido aleatorio nao relacionado ao fix real (o achado
+em si ja foi confirmado e documentado aqui, sem depender de commitar os
+JSONs). Sem `parser_audits/` novo (fix 100% em `decision_engine.py`,
+nenhum arquivo de parser tocado).
+
 ## 2026-08-06 (459) - Claude (sessao remota web) - Calibracao real de HABILITA_ATAQUE_BONUS (pendencia do bloco 449) -- CONFIRMA dependencia de deck na constante real, MANTIDO em 60
 
 Usuario pediu pra continuar com "calibração do bônus de sequenciamento"

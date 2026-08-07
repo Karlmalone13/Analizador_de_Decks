@@ -2,6 +2,34 @@
 
 **Última atualização:** 6 de agosto de 2026
 
+> 06/08/2026 (bloco 460): **lidos os 14 casos residuais do Katakuri**
+> (pendência dos blocos 442/443, "16 casos não lidos") — **2 bugs reais
+> de engine achados e corrigidos**. (1) 3 dos 14 casos eram VITÓRIAS
+> SILENCIOSAS: `_execute_attack` não imprimia nada no caminho "dano com
+> 0 vidas" (verbose=True), fazendo a narrativa parecer que o motor
+> "parou de atacar" quando na verdade tinha GANHO o jogo ali. Fix: 1
+> print adicionado. (2) **Mais sério**: crash intermitente
+> (`TypeError: '>' not supported between 'int' and 'str'`) reproduzido
+> rodando `audit_real_losses.py` repetidamente — `cost_lte='don_count_opp'`
+> (sentinela dinâmico, só usado por Charlotte Katakuri OP08-062 e
+> Charlotte Smoothie P-090) nunca era resolvido em **6 cópias
+> diferentes** da mesma regra de elegibilidade espalhadas pelo motor
+> (`_step_is_viable`, `_execute_step`, `_should_activate_main`,
+> `_stage_play_saves_don_for_card`, `_score_play_action`,
+> `_score_activate_main`) — todas tratavam `'don_count_self'` mas
+> nenhuma tratava `'don_count_opp'`. Fix: 2 cópias passaram a delegar
+> pra `_resolve_cost_lte()` (fonte única já correta), as outras 4
+> ganharam o `elif` que faltava. Reproduzido ANTES (15 tentativas, ~5
+> crashes) e confirmado 0 crashes DEPOIS (15/15). **Os outros ~11 casos
+> não mostraram padrão claro de bug** — DON alocado diferente, às vezes
+> até melhor (ex: Krieg-RG turno 9, motor de hoje nocauteia um Blocker
+> que a linha histórica não pegou) ou diferença de composição de
+> baralho plausível (reconstrução embaralha ordem). `smoke_fast` (3
+> testes novos)/`smoke_test` 100%. Relatórios de auditoria regenerados
+> durante a investigação mas revertidos antes do commit (reconstrução
+> não-determinística, regenerar os 55 arquivos só introduziria ruído
+> aleatório). Ver bloco 460 do HANDOFF.
+
 > 06/08/2026 (bloco 459): **calibração de `HABILITA_ATAQUE_BONUS`
 > concluída — CONFIRMA dependência de deck na constante REAL** (não só
 > na política gulosa simplificada do bloco 449). Sweep de self-play com

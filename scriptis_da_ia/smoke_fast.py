@@ -10076,6 +10076,8 @@ def main() -> int:
     test_ordem_de_steps_rest_antes_de_ko_rested_e_draw_antes_de_lock_05_08()
     test_vazamento_de_condicao_pro_substitute_ko_removal_06_08()
     test_vazamento_de_condicao_protecao_externa_06_08()
+    test_print_vitoria_dano_com_0_vidas_06_08()
+    test_resolve_cost_lte_don_count_opp_em_todas_as_copias_06_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -11515,6 +11517,80 @@ def test_vazamento_de_condicao_protecao_externa_06_08() -> None:
     log = EffectExecutor(me, opp).try_any_substitute(aliado, "bounce")
     check("OP17-095: Zoro protege um ALIADO (protecao externa) mesmo SEM Character custo 12+ no campo",
           log is not None)
+
+
+def test_print_vitoria_dano_com_0_vidas_06_08() -> None:
+    """
+    Achado real 06/08 (investigando os 14 casos residuais do Katakuri em
+    `audit_real_losses.py`/`triage_real_losses.py`, pedido explicito do
+    usuario pra continuar essa pendencia): o caminho de "vitoria por dano
+    com 0 vidas" em `_execute_attack` (`if not opp.life: ... return True`)
+    era o UNICO de toda a funcao SEM print nenhum em `verbose=True` --
+    dano normal, banish e bloqueio imprimem algo, esse nao. A narrativa
+    capturada (`engine_hoje_narrativa`) terminava ABRUPTAMENTE logo apos
+    "ataca Leader", sem nenhum resultado -- parecia que o motor "parou de
+    atacar" (achado como "attacks less" pela triagem) quando na verdade
+    ele GANHOU o jogo ali mesmo. Confirmado em 3 dos 14 casos residuais
+    reconstruindo as partidas de verdade (Krieg-RG turnos 7 e 11,
+    Marshall.D.Teach-BY turno 9) -- todos os 3 eram vitorias silenciosas,
+    nao decisao pior que a historica. Fix: print de vitoria adicionado,
+    mesmo padrao dos outros caminhos de dano da funcao.
+    """
+    import io, contextlib
+    atacante = mk("VIT-A", "Atacante", power=8000, cost=5)
+    me = GameState(leader=mk("VIT-L", "Lider", card_type="LEADER"), turn=2, field_chars=[atacante])
+    opp = GameState(leader=mk("VIT-OPPL", "Opp", card_type="LEADER", power=5000), turn=2, life=[])
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    eng = DecisionEngine(me, opp)
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        resultado = match._execute_attack(atacante, "leader", None, me, opp, eng, verbose=True)
+    check("Vitoria por dano com 0 vidas retorna True", resultado is True)
+    check("Vitoria por dano com 0 vidas agora IMPRIME algo em verbose=True (narrativa nao corta mais em silencio)",
+          "VITORIA" in buf.getvalue())
+
+
+def test_resolve_cost_lte_don_count_opp_em_todas_as_copias_06_08() -> None:
+    """
+    Achado real 06/08 (mesma investigacao dos 14 casos residuais do
+    Katakuri): 6 copias diferentes da regra "resolver cost_lte de um step
+    play_card" so tratavam o sentinela 'don_count_self' (custo dinamico =
+    DON do PROPRIO campo), nunca 'don_count_opp' (DON do campo do
+    OPONENTE) -- usado por SO 2 cartas no banco, Charlotte Katakuri
+    (OP08-062) e Charlotte Smoothie (P-090), ambas ja documentadas na
+    docstring de `_resolve_cost_lte` (a fonte unica que sempre soube
+    resolver os dois lados). `eligible_cards`/comparacoes diretas faziam
+    `card.cost > 'don_count_opp'` (int > str) -- TypeError, reproduzido
+    de verdade rodando `audit_real_losses.py` numa partida com Mihawk x
+    Katakuri (erro intermitente, dependia da ordem embaralhada do deck
+    reconstruido colocar OP08-062 numa posicao onde o Turn Planner
+    avaliava ativar a habilidade dele). Prova aqui as 2 pontas mais
+    diretas: `_step_is_viable` (o crash original, via `_should_activate_main`
+    tambem) e `_score_activate_main` (scoring, copia separada da mesma
+    regra) nao crasham mais e resolvem o DON do OPONENTE corretamente.
+    """
+    katakuri = real_card("OP08-062")
+    alvo_na_mao = real_card("ST34-001")  # Charlotte Katakuri, custo 5
+    me = GameState(leader=mk("KTK-L", "Lider Big Mom", card_type="LEADER",
+                             sub_types="Big Mom Pirates"), turn=2,
+                  field_chars=[katakuri], hand=[alvo_na_mao])
+    opp = GameState(leader=mk("KTK-OPPL", "Opp", card_type="LEADER"), turn=2,
+                    don_available=5, don_rested=0)
+    ee = EffectExecutor(me, opp)
+    am = get_card_effects("OP08-062").get("activate_main", {})
+    passo = am.get("steps", [{}])[0]
+    check("OP08-062: _step_is_viable NAO crasha com cost_lte='don_count_opp' (opp com 5 DON, alvo custo 5)",
+          ee._step_is_viable(passo, katakuri) is True)
+
+    opp_pobre = GameState(leader=mk("KTK-OPPL2", "Opp", card_type="LEADER"), turn=2,
+                          don_available=1, don_rested=0)
+    ee_pobre = EffectExecutor(me, opp_pobre)
+    check("OP08-062: _step_is_viable retorna False quando o DON do OPONENTE nao cobre o custo (nao crasha tambem)",
+          ee_pobre._step_is_viable(passo, katakuri) is False)
+
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    pode, motivo = match._should_activate_main(katakuri, am, me, opp)
+    check(f"OP08-062: _should_activate_main NAO crasha ({motivo!r})", pode is True)
 
 
 if __name__ == "__main__":
