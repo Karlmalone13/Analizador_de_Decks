@@ -2,6 +2,18 @@
 
 **Última atualização:** 6 de agosto de 2026
 
+> 06/08/2026 (bloco 458): **confirma e fecha o gap da PROTEÇÃO EXTERNA**
+> de substitute (pendência teórica registrada no bloco 455).
+> `_source_conditions_met_for_substitute()` (protetor ≠ protegido) não
+> tinha o mesmo guard que `try_substitute()` (autoproteção) já tinha
+> ganhado — confirmado REAL (não só teórico) com Roronoa Zoro (OP17-095,
+> `no_filter=True`, protege qualquer personagem seu): sem o fix, Zoro só
+> protegia A SI MESMO, nunca um aliado, quando faltava a condição do buff
+> irmão (que não tem nada a ver com o substitute). Mesmo princípio do
+> bloco 455 aplicado no gêmeo. `smoke_fast` (1 teste novo)/`smoke_test`
+> 100%. Sem `parser_audits/` novo (fix 100% em decision_engine.py). Ver
+> bloco 458 do HANDOFF.
+
 > 06/08/2026 (bloco 457): **fecha a variante "Draw N AND [...]"**
 > (conjunção, não "Then,") — última pendência da família de ordem de
 > steps, pedido explícito do usuário. Censo refinado (excluindo o idioma

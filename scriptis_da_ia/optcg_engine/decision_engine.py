@@ -2837,6 +2837,27 @@ class EffectExecutor:
         conds = dict(block.get('conditions', {}))
         for key in ('self_type', 'self_power_base_lte', 'self_power_base_gte'):
             conds.pop(key, None)
+        # Vazamento de condicao de clausula IRMA (achado 06/08, mesmo
+        # principio ja aplicado em try_substitute() pro caminho de
+        # AUTOPROTECAO -- ver comentario la): quando o bloco combina o
+        # substitute com OUTRO(S) step(s) independente(s), a 'conditions'
+        # restante (apos a limpeza de self_type acima) pertence a essa
+        # clausula irma, nunca ao proprio substitute -- que e sempre
+        # auto-contido. So aplica quando o substitute e o UNICO step do
+        # bloco. Achado REAL confirmado (nao so teorico): OP17-095
+        # (Roronoa Zoro) tem 'no_filter'=True no substitute_removal
+        # ("if ONE OF YOUR Characters would be removed..." -- protege
+        # QUALQUER personagem seu, uso EXTERNO valido) + o buff irmao
+        # ("if Character custo 12+...") vazando 'board_has_cost_gte' pro
+        # nivel do bloco -- sem este guard, Zoro nunca protegia um ALIADO
+        # (so a si mesmo, e olhe la) quando nao havia Character custo 12+
+        # no campo, apesar do texto do substitute nao mencionar essa
+        # condicao em nenhum momento.
+        outros_steps = [
+            s for s in block.get('steps', [])
+            if s.get('action') not in ('substitute_ko', 'substitute_removal', 'substitute_rest')]
+        if outros_steps:
+            conds = {}
         return self._check_conditions(conds, source)
 
     def _target_matches_external_substitute(self, target: Card, source: Card,

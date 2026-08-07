@@ -1,5 +1,36 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-06 (458) - Claude (sessao remota web) - Confirma e fecha o gap da PROTECAO EXTERNA de substitute (pendencia teorica do bloco 455)
+
+Usuario pediu pra continuar com "proteção externa" (dentre as pendencias
+listadas no fim do bloco 457). O bloco 455 tinha registrado isso como
+GAP TEORICO, sem carta real confirmada -- `_source_conditions_met_for_
+substitute()` (usado quando OUTRA carta protege um ALIADO diferente,
+`_try_external_substitute_from_source`) so descartava `self_type`/
+`self_power_base_*` antes de checar a 'conditions' do bloco, sem o
+guard "so aplica quando o substitute e o UNICO step" que `try_substitute()`
+ja tinha ganhado pro caminho de AUTOPROTECAO.
+
+**Confirmado REAL antes de mexer em qualquer coisa** (script standalone
+chamando `EffectExecutor.try_any_substitute()`): Roronoa Zoro (OP17-095)
+tem `substitute_removal` com `no_filter=True` ("if ONE OF YOUR Characters
+would be removed..." -- protege QUALQUER personagem seu, nao so a si
+mesmo) + a `conditions: {board_has_cost_gte: 12}` vazada do buff irmao
+("if Character custo 12+..."). Testei: Zoro em campo + 1 aliado + SEM
+nenhum Character custo 12+ -> `try_any_substitute(aliado, 'bounce')`
+retornava `None` (Zoro nao protegia o aliado, so protegeria a SI MESMO
+via `try_substitute()`, ja corrigido). Bug real confirmado, nao so
+teorico.
+
+**Fix**: mesmo principio do bloco 455, aplicado em
+`_source_conditions_met_for_substitute()` -- quando o bloco tem step(s)
+NAO-substitute alem do substitute, zera a 'conditions' inteira (nao so
+self_type) antes de checar contra a fonte externa.
+
+`smoke_fast.py` (1 teste novo, reproduz o cenario exato do script de
+confirmacao)/`smoke_test.py`: 100%. Sem `parser_audits/` novo (fix 100%
+em `decision_engine.py`, nenhum arquivo de parser tocado).
+
 ## 2026-08-06 (457) - Claude (sessao remota web) - Fecha a variante "Draw N AND [...]" (conjuncao) -- ultima pendencia da familia de ordem de steps
 
 Usuario pediu explicitamente "resolva primeiro essa questão do 'e'" (a

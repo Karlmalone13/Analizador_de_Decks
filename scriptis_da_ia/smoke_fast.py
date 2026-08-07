@@ -10075,6 +10075,7 @@ def main() -> int:
     test_leader_battle_reactive_newgate_op17_040_e_ace_op03_001_05_08()
     test_ordem_de_steps_rest_antes_de_ko_rested_e_draw_antes_de_lock_05_08()
     test_vazamento_de_condicao_pro_substitute_ko_removal_06_08()
+    test_vazamento_de_condicao_protecao_externa_06_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -11486,6 +11487,34 @@ def test_vazamento_de_condicao_pro_substitute_ko_removal_06_08() -> None:
     apply_conditional_keyword_passives(me_hc, opp_hc)
     check("OP07-029: COM lider Supernovas, gain_blocker ativa normalmente",
           hawkins_com.has_blocker is True)
+
+
+def test_vazamento_de_condicao_protecao_externa_06_08() -> None:
+    """
+    Achado real 06/08 (continuacao pedida pelo usuario: "proteção
+    externa" era uma pendencia teorica registrada no bloco 455 -- o
+    mesmo vazamento de `try_substitute()` tambem existia em
+    `_source_conditions_met_for_substitute()`, o irmao usado quando OUTRA
+    carta protege um ALIADO diferente de si mesma). Confirmado REAL (nao
+    so teorico) com OP17-095 (Roronoa Zoro): o substitute_removal dele
+    tem `no_filter=True` ("if ONE OF YOUR Characters would be removed..."
+    -- protege QUALQUER personagem seu, uso EXTERNO valido), mas o buff
+    irmao ("if Character custo 12+...") vazava `board_has_cost_gte` pro
+    nivel do bloco -- sem o fix, Zoro nunca protegia um ALIADO diferente
+    quando nao havia Character custo 12+ no campo, apesar do texto do
+    substitute nao mencionar essa condicao em nenhum momento. Mesmo
+    principio de `try_substitute()` (bloco 455), aplicado em
+    `_source_conditions_met_for_substitute()`.
+    """
+    zoro = real_card("OP17-095")
+    aliado = mk("ZR-ALIADO", "Aliado", power=3000, cost=3)
+    me = GameState(leader=mk("ZR-EXT-L", "Lider", card_type="LEADER"), turn=2,
+                  field_chars=[zoro, aliado],
+                  trash=[mk("ZR-EXT-T1", "T1"), mk("ZR-EXT-T2", "T2"), mk("ZR-EXT-T3", "T3")])
+    opp = GameState(leader=mk("ZR-EXT-OPPL", "Opp", card_type="LEADER"), turn=2)
+    log = EffectExecutor(me, opp).try_any_substitute(aliado, "bounce")
+    check("OP17-095: Zoro protege um ALIADO (protecao externa) mesmo SEM Character custo 12+ no campo",
+          log is not None)
 
 
 if __name__ == "__main__":
