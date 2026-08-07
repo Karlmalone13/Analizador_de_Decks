@@ -1,29 +1,49 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-08-06 (459, PARCIAL -- ver TODO.md) - Claude (sessao remota web) - Inicia calibracao real de HABILITA_ATAQUE_BONUS (pendencia do bloco 449) -- extracao commitada, sweep de self-play EM ANDAMENTO
+## 2026-08-06 (459) - Claude (sessao remota web) - Calibracao real de HABILITA_ATAQUE_BONUS (pendencia do bloco 449) -- CONFIRMA dependencia de deck na constante real, MANTIDO em 60
 
 Usuario pediu pra continuar com "calibração do bônus de sequenciamento"
-(pendencia deixada em aberto no bloco 449: o teste com politica gulosa
-simplificada achou efeito FORTE mas dependente de deck, sem calibrar a
-constante real de producao).
+(pendencia do bloco 449: teste com politica gulosa simplificada achou
+efeito FORTE mas dependente de deck, sem calibrar a constante real de
+producao).
 
-**Feito nesta parte**: literal `+60` inline em `_score_play_action`
-(decision_engine.py) extraido pra `HABILITA_ATAQUE_BONUS` (constante de
-modulo, mesmo padrao de `ATTACK_LEADER_BASE_SCORE`/
-`BLOCK_CRITICAL_LIFE_MAX_COST` etc.) -- refactor puro, valor MANTIDO em
-60, `smoke_fast.py` 100% (confirma zero mudanca de comportamento).
+**Extracao**: literal `+60` inline em `_score_play_action`
+(decision_engine.py) virou `HABILITA_ATAQUE_BONUS` (constante de modulo,
+mesmo padrao de `ATTACK_LEADER_BASE_SCORE`) -- refactor puro, valor
+mantido, `smoke_fast.py` 100%.
 
-**Em andamento (script descartavel, NAO commitado -- fica no scratchpad
-da sessao, mesma convencao do bloco 449)**: sweep de self-play PAREADO
-usando o MOTOR DE PRODUCAO de verdade (`OPTCGMatch`/`ReplayMatch`, mesma
-metodologia de `gauntlet_matchup.py` -- diferente do bloco 449, que
-usava uma politica gulosa simplificada que NAO testava a constante
-real). Matchups: Enel vs Mihawk/Nami, Nami vs Mihawk, Ace vs Mihawk, Imu
-vs Mihawk (os 4 lideres do achado original do bloco 449) -- N=15
-seeds/matchup, valores testados 0/60/120. Resultado ainda NAO analisado
--- proxima sessao (ou continuacao desta) deve ler o output, decidir o
-valor final, atualizar o comentario da constante com os numeros reais
-(mesmo padrao de documentacao dos blocos 395-398), e comitar separado.
+**Calibracao real**: sweep de self-play PAREADO com o MOTOR DE PRODUCAO
+de verdade (`OPTCGMatch`/`ReplayMatch`, metodologia de
+`gauntlet_matchup.py` -- diferente do bloco 449, que usava uma politica
+gulosa simplificada que NAO testava a constante real). Enel vs
+Mihawk/Nami, Nami vs Mihawk, Ace vs Mihawk, Imu vs Mihawk (os 4 lideres
+do achado original), N=15 seeds/matchup, valores 0/60/120:
+
+```
+bonus  EnelvMihawk EnelvNami  NamivMihawk AcevMihawk ImuvMihawk agregado
+  0      73.3%      66.7%      26.7%      40.0%      20.0%      45.3%
+ 60      46.7%      93.3%      20.0%       6.7%      13.3%      36.0%
+120      60.0%      73.3%       6.7%      33.3%      26.7%      40.0%
+```
+
+**Achado CONFIRMA o padrao do bloco 449 na constante REAL** (nao so na
+politica simplificada): nenhum valor unico e vitoria limpa em todos os
+decks. **Nami vs Mihawk piora MONOTONICAMENTE com bonus maior** (26.7%
+-> 20.0% -> 6.7%, sinal mais limpo do sweep, mesma direcao do achado
+original) -- **Enel vs Nami prefere fortemente o valor atual** (93.3%
+em 60, vs 66.7-73.3% nos extremos). N=15/celula e RUIDOSO (cada partida
+vale ~6.7pp) -- Enel vs Mihawk e Ace vs Mihawk oscilam sem padrao
+monotonico limpo, provavelmente ruido de amostra pequena.
+
+**Decisao: MANTIDO em 60** -- nenhum candidato vence o valor atual com
+confianca (o agregado favorece 0, mas isso reflete a queda de Enel vs
+Nami em 0/120, nao uma vitoria real -- mesmo principio de "nao escolher
+pelo pico de win rate ruidoso" ja usado nos blocos 396/398). Amostra
+maior seria necessaria pra calibracao com confianca de verdade --
+registrado como pendencia futura no comentario da constante, nao um
+valor final definitivo. `smoke_fast.py`/`smoke_test.py`: 100%. Script de
+sweep descartavel, NAO commitado (fica no scratchpad da sessao, mesma
+convencao do bloco 449).
 
 ## 2026-08-06 (458) - Claude (sessao remota web) - Confirma e fecha o gap da PROTECAO EXTERNA de substitute (pendencia teorica do bloco 455)
 

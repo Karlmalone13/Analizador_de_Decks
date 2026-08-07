@@ -169,10 +169,8 @@ GIVE_DON_RESTED_BASE_SCORE = -10
 # (K.O./remocao/buff/rush/draw/busca/rest_opponent/when_attacking/
 # activate_main) -- prioriza jogar ANTES de atacar no mesmo turno pra
 # ativar o efeito a tempo. Promovido de literal `+60` inline pra
-# constante nomeada (06/08) -- valor MANTIDO em 60 nesta extracao
-# (refactor puro, smoke_fast/smoke_test 100%, zero mudanca de
-# comportamento); calibracao real via self-play EM ANDAMENTO, ver
-# pendencia no TODO.md/HANDOFF.md.
+# constante nomeada (06/08), mesmo padrao de ATTACK_LEADER_BASE_SCORE/
+# BLOCK_CRITICAL_LIFE_MAX_COST etc.
 #
 # Achado do bloco 449 (05/08): um teste pareado com politica GULOSA
 # simplificada (nao o Turn Planner real -- substituia main_phase inteiro
@@ -183,13 +181,31 @@ GIVE_DON_RESTED_BASE_SCORE = -10
 # teste NAO calibrou a constante real (bypassava o score, nao testava
 # valores diferentes de bonus).
 #
-# Calibracao real EM ANDAMENTO (06/08, self-play pareado com o MOTOR de
-# producao via `OPTCGMatch`/`ReplayMatch`, mesma metodologia de
-# gauntlet_matchup.py -- 4 lideres do achado do bloco 449: Enel, Nami,
-# Ace, Imu, cada um vs Mihawk + Enel tambem vs Nami, N=15 seeds/matchup,
-# testando 0/60/120). Resultado ainda nao analisado nesta sessao -- este
-# comentario sera atualizado com os numeros reais e o valor final assim
-# que o sweep terminar.
+# Calibracao real (06/08, self-play pareado com o MOTOR de producao via
+# `OPTCGMatch`/`ReplayMatch`, mesma metodologia de `gauntlet_matchup.py`
+# -- 4 lideres do achado do bloco 449, cada um vs Mihawk + Enel tambem
+# vs Nami, N=15 seeds/matchup, testando 0/60/120):
+#
+#   bonus   EnelvMihawk EnelvNami  NamivMihawk AcevMihawk ImuvMihawk agregado
+#     0       73.3%      66.7%      26.7%      40.0%      20.0%      45.3%
+#    60       46.7%      93.3%      20.0%       6.7%      13.3%      36.0%
+#   120       60.0%      73.3%       6.7%      33.3%      26.7%      40.0%
+#
+# **Achado CONFIRMA o padrao do bloco 449 na constante REAL, nao so na
+# politica simplificada**: nenhum valor unico e vitoria limpa em todos os
+# decks. Nami vs Mihawk piora MONOTONICAMENTE com bonus maior (26.7% ->
+# 20.0% -> 6.7%, o sinal mais limpo do sweep, mesma direcao do achado
+# original) -- Enel vs Nami prefere fortemente o valor atual (93.3% em
+# 60, contra 66.7-73.3% nos extremos). N=15/celula e RUIDOSO (cada
+# partida vale ~6.7pp) -- Enel vs Mihawk e Ace vs Mihawk oscilam sem
+# padrao monotonico limpo, provavelmente ruido de amostra pequena, nao
+# tendencia real. **Decisao: MANTIDO em 60** -- nao existe candidato que
+# vença o valor atual com confianca (o agregado favorece 0, mas isso so
+# reflete a queda profunda de Enel vs Nami em 0/120, nao uma vitoria
+# real; ver mesmo principio de "nao escolher pelo pico de win rate
+# ruidoso" dos blocos 396/398). Amostra maior (N maior, mais seeds) seria
+# necessaria pra uma calibracao com confianca de verdade -- fica
+# registrado como pendencia futura, nao um valor final definitivo.
 HABILITA_ATAQUE_BONUS = 60
 
 # ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
