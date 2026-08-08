@@ -1,0 +1,830 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "Karlmalone#2854",
+        "leader": {
+          "name": "Rocks D. Xebec",
+          "code": "OP17-039"
+        }
+      },
+      "p2": {
+        "name": "Drocks99#7236",
+        "leader": {
+          "name": "Monkey D. Luffy",
+          "code": "OP09-061"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 9,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-042",
+            "OP17-055",
+            "OP17-052",
+            "OP17-053",
+            "OP17-048"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "Drocks99#7236": {
+          "hand": [
+            "OP15-088",
+            "OP15-086",
+            "OP15-092",
+            "OP09-076",
+            "OP15-086"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Drocks99#7236",
+      "card_drawn": {
+        "name": "Gum Gum Giant",
+        "code": "OP09-078"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-042",
+            "OP17-055",
+            "OP17-052",
+            "OP17-053",
+            "OP17-048"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "Drocks99#7236": {
+          "hand": [
+            "OP15-088",
+            "OP15-086",
+            "OP15-092",
+            "OP09-076",
+            "OP15-086",
+            "OP09-078"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Rocks D. Xebec",
+        "code": "OP17-118"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Monkey D. Luffy [\"OP09-061\">OP09-061]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash There's No Authority in the World [\"OP17-055\">OP17-055]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-042",
+            "OP17-055",
+            "OP17-052",
+            "OP17-053",
+            "OP17-048",
+            "OP17-118",
+            "OP17-118"
+          ],
+          "board": [],
+          "trash": [
+            "OP17-055"
+          ],
+          "life": 5
+        },
+        "Drocks99#7236": {
+          "hand": [
+            "OP15-088",
+            "OP15-086",
+            "OP15-092",
+            "OP09-076",
+            "OP15-086",
+            "OP09-078",
+            "OP15-085"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Drocks99#7236",
+      "card_drawn": {
+        "name": "Monkey D. Luffy",
+        "code": "ST26-005"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-076",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Minus 1 Don",
+            "Minus 1 Extra Don"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-085",
+          "card_name": "Tony Tony Chopper",
+          "effects": [
+            "Trash 3 Cards from Deck",
+            "Trash Tony Tony Chopper [\"OP15-085\">OP15-085]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-061",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP09-061",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-042",
+            "OP17-052",
+            "OP17-053",
+            "OP17-048",
+            "OP17-118",
+            "OP17-118"
+          ],
+          "board": [],
+          "trash": [
+            "OP17-055",
+            "OP17-055"
+          ],
+          "life": 5
+        },
+        "Drocks99#7236": {
+          "hand": [
+            "OP15-088",
+            "OP15-086",
+            "OP15-092",
+            "OP15-086",
+            "OP09-078",
+            "ST26-005",
+            "PRB02-012"
+          ],
+          "trash": [
+            "OP17-095",
+            "OP17-091",
+            "OP15-085"
+          ],
+          "board": [
+            "OP09-076"
+          ],
+          "life": 3,
+          "rested": {
+            "OP09-076": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Shiki",
+        "code": "OP17-048"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-043",
+          "card_name": "Ganzui",
+          "effects": [
+            "Grant Rocks D. Xebec [\"OP17-039\">OP17-039] 1000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Monkey D. Luffy [\"OP09-061\">OP09-061]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Don Marlon [\"OP17-052\">OP17-052]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-042",
+            "OP17-053",
+            "OP17-048",
+            "OP17-118",
+            "OP17-118",
+            "OP17-046",
+            "OP17-048"
+          ],
+          "board": [
+            "OP17-043"
+          ],
+          "trash": [
+            "OP17-055",
+            "OP17-055",
+            "OP17-052"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-043": 1
+          }
+        },
+        "Drocks99#7236": {
+          "hand": [
+            "OP15-088",
+            "OP15-086",
+            "OP15-092",
+            "OP15-086",
+            "OP09-078",
+            "ST26-005",
+            "PRB02-012",
+            "ST14-017"
+          ],
+          "trash": [
+            "OP17-095",
+            "OP17-091",
+            "OP15-085"
+          ],
+          "board": [
+            "OP09-076"
+          ],
+          "life": 2,
+          "rested": {
+            "OP09-076": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Drocks99#7236",
+      "card_drawn": {
+        "name": "Brook",
+        "code": "OP17-091"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST14-017",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-088",
+          "card_name": "Pirate Docking 6",
+          "effects": [
+            "Trash 3 Cards from Deck",
+            "Deployed Tony Tony Chopper [\"OP15-085\">OP15-085] from Trash"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-085",
+          "card_name": "Tony Tony Chopper",
+          "effects": [
+            "Trash 3 Cards from Deck",
+            "Trash Tony Tony Chopper [\"OP15-085\">OP15-085]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-061",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP09-061",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-042",
+            "OP17-053",
+            "OP17-048",
+            "OP17-118",
+            "OP17-118",
+            "OP17-046",
+            "OP17-048",
+            "OP17-057"
+          ],
+          "board": [
+            "OP17-043"
+          ],
+          "trash": [
+            "OP17-055",
+            "OP17-055",
+            "OP17-052"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-043": 1
+          }
+        },
+        "Drocks99#7236": {
+          "hand": [
+            "OP15-086",
+            "OP15-092",
+            "OP15-086",
+            "OP09-078",
+            "ST26-005",
+            "PRB02-012",
+            "PRB02-012",
+            "OP17-091",
+            "OP17-095"
+          ],
+          "trash": [
+            "OP17-095",
+            "OP17-091",
+            "OP15-085",
+            "OP17-081",
+            "ST26-005",
+            "ST14-017",
+            "OP09-078",
+            "OP15-085"
+          ],
+          "board": [
+            "OP09-076",
+            "OP15-088"
+          ],
+          "life": 2,
+          "rested": {
+            "OP15-088": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Stussy",
+        "code": "OP17-054"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-057",
+          "card_name": "Fullalead",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-046",
+          "card_name": "Gloriosa",
+          "effects": [
+            "Send Roronoa Zoro [\"OP09-076\">OP09-076] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Ganzui",
+          "attacker_code": "OP17-043",
+          "target": "Monkey D. Luffy [\"OP09-061\">OP09-061]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-095",
+            "OP15-092"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Monkey D. Luffy [\"OP09-061\">OP09-061]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Kaido [\"OP17-042\">OP17-042]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-042",
+            "OP17-053",
+            "OP17-048",
+            "OP17-118",
+            "OP17-118",
+            "OP17-048",
+            "OP17-044",
+            "OP17-054"
+          ],
+          "board": [
+            "OP17-043",
+            "OP17-046"
+          ],
+          "trash": [
+            "OP17-055",
+            "OP17-055",
+            "OP17-052",
+            "OP17-042"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-043": 1,
+            "OP17-046": 1
+          }
+        },
+        "Drocks99#7236": {
+          "hand": [
+            "OP15-086",
+            "OP15-086",
+            "OP09-078",
+            "ST26-005",
+            "PRB02-012",
+            "PRB02-012",
+            "OP17-091",
+            "OP09-076"
+          ],
+          "trash": [
+            "OP17-095",
+            "OP17-091",
+            "OP15-085",
+            "OP17-081",
+            "ST26-005",
+            "ST14-017",
+            "OP09-078",
+            "OP15-085",
+            "OP17-095",
+            "OP15-092"
+          ],
+          "board": [
+            "OP15-088"
+          ],
+          "life": 1,
+          "rested": {
+            "OP15-088": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Drocks99#7236",
+      "card_drawn": {
+        "name": "Roronoa Zoro",
+        "code": "OP09-076"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-086",
+          "card_name": "Nami",
+          "effects": [
+            "Deployed Monkey D. Luffy [\"ST26-005\">ST26-005] from Trash",
+            "Give Monkey D. Luffy [\"ST26-005\">ST26-005] Rush"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST26-005",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "Minus 2 Don",
+            "Grant Monkey D. Luffy [\"OP09-061\">OP09-061] 2000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST26-005",
+          "target": "Ganzui [\"OP17-043\">OP17-043]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Pirate Docking 6",
+          "attacker_code": "OP15-088",
+          "target": "Ganzui [\"OP17-043\">OP17-043]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP17-046",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-061",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP09-061",
+          "target": "Ganzui [\"OP17-043\">OP17-043]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-042",
+            "OP17-053",
+            "OP17-048",
+            "OP17-118",
+            "OP17-118",
+            "OP17-048",
+            "OP17-054"
+          ],
+          "board": [],
+          "trash": [
+            "OP17-055",
+            "OP17-055",
+            "OP17-052",
+            "OP17-042",
+            "OP17-044",
+            "OP17-046",
+            "OP17-043"
+          ],
+          "life": 4
+        },
+        "Drocks99#7236": {
+          "hand": [
+            "OP15-086",
+            "OP09-078",
+            "ST26-005",
+            "PRB02-012",
+            "PRB02-012",
+            "OP17-091",
+            "OP09-076",
+            "OP09-076"
+          ],
+          "trash": [
+            "OP17-095",
+            "OP17-091",
+            "OP15-085",
+            "OP17-081",
+            "ST14-017",
+            "OP09-078",
+            "OP15-085",
+            "OP17-095",
+            "OP15-092"
+          ],
+          "board": [
+            "OP15-088",
+            "OP15-086",
+            "ST26-005"
+          ],
+          "life": 1,
+          "rested": {
+            "OP15-088": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Stussy",
+        "code": "OP17-054"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "Monkey D. Luffy [\"ST26-005\">ST26-005] can't attack next turn"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-053",
+          "card_name": "Barbell",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Monkey D. Luffy [\"OP09-061\">OP09-061]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Shiki [\"OP17-048\">OP17-048]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-042",
+            "OP17-048",
+            "OP17-118",
+            "OP17-118",
+            "OP17-056",
+            "OP17-056",
+            "OP17-054"
+          ],
+          "board": [
+            "OP17-054",
+            "OP17-053"
+          ],
+          "trash": [
+            "OP17-055",
+            "OP17-055",
+            "OP17-052",
+            "OP17-042",
+            "OP17-044",
+            "OP17-046",
+            "OP17-043",
+            "OP17-048"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-054": 1,
+            "OP17-053": 1
+          }
+        },
+        "Drocks99#7236": {
+          "hand": [
+            "OP15-086",
+            "OP09-078",
+            "ST26-005",
+            "PRB02-012",
+            "PRB02-012",
+            "OP17-091",
+            "OP09-076",
+            "OP09-076"
+          ],
+          "trash": [
+            "OP17-095",
+            "OP17-091",
+            "OP15-085",
+            "OP17-081",
+            "ST14-017",
+            "OP09-078",
+            "OP15-085",
+            "OP17-095",
+            "OP15-092"
+          ],
+          "board": [
+            "OP15-088",
+            "OP15-086",
+            "ST26-005"
+          ],
+          "life": 1,
+          "rested": {
+            "OP15-088": 1
+          }
+        }
+      }
+    }
+  ]
+}

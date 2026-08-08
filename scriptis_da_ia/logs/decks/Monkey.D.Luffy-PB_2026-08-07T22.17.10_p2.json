@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP15-086",
+      "name": "Nami",
+      "count": 2
+    },
+    {
+      "code": "OP09-076",
+      "name": "Roronoa Zoro",
+      "count": 2
+    },
+    {
+      "code": "OP09-078",
+      "name": "Gum Gum Giant",
+      "count": 2
+    },
+    {
+      "code": "OP15-085",
+      "name": "Tony Tony Chopper",
+      "count": 2
+    },
+    {
+      "code": "ST26-005",
+      "name": "Monkey D. Luffy",
+      "count": 2
+    },
+    {
+      "code": "PRB02-012",
+      "name": "Nami",
+      "count": 2
+    },
+    {
+      "code": "OP17-095",
+      "name": "Roronoa Zoro",
+      "count": 2
+    },
+    {
+      "code": "OP17-091",
+      "name": "Brook",
+      "count": 2
+    },
+    {
+      "code": "OP15-088",
+      "name": "Pirate Docking 6",
+      "count": 1
+    },
+    {
+      "code": "OP15-092",
+      "name": "Monkey D. Luffy",
+      "count": 1
+    },
+    {
+      "code": "ST14-017",
+      "name": "Thousand Sunny",
+      "count": 1
+    },
+    {
+      "code": "OP17-081",
+      "name": "OP17-081",
+      "count": 1
+    }
+  ],
+  "total_seen": 20,
+  "leader": "OP09-061"
+}

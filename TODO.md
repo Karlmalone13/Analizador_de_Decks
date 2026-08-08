@@ -1,6 +1,18 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 7 de agosto de 2026
+**Última atualização:** 8 de agosto de 2026
+
+> 08/08/2026 (bloco 463): 3 logs pedidos pelo usuário bancados (humano
+> x humano, sem bot — sem telemetria aplicável). Achado operacional
+> importante: `CombatLogs`/`AutoSaved` são sobrescritos AO VIVO pelo
+> client enquanto uma partida está rodando — 6 dos 10 arquivos
+> investigados encolheram pra um stub de 3 linhas entre uma leitura e
+> outra, e uma cópia de resgate em `/tmp` (em vez do scratchpad
+> correto) também sumiu numa pausa. Recuperação via variante `_p2.log`
+> (perspectiva do outro jogador, nome de arquivo diferente, sobreviveu)
+> funcionou pros 3 pedidos. **3 partidas extras perdidas de verdade**
+> (sem `_p2`) — não recuperáveis. Ver bloco 463 do HANDOFF pra lição
+> completa antes de mexer em CombatLogs/AutoSaved de novo.
 
 > 07/08/2026 (bloco 462, PARCIAL — EM ANDAMENTO): **amostra maior (N=50,
 > 750 partidas, 4 workers em paralelo) pra calibração de

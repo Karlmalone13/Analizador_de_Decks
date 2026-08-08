@@ -1,5 +1,59 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-08 (463) - Claude (sessao local) - banca 3 logs pedidos pelo usuario (partidas humano x humano, sem bot) -- recuperados via log `_p2` apos o client sobrescrever os arquivos originais em pleno diagnostico
+
+Usuario pediu pra salvar 3 combat logs (`2026-08-05T23.28.24`,
+`2026-08-07T22.17.10`, `2026-08-08T10.03.33`). Todos os 3 vieram com o
+`Leader is` do OPONENTE ausente porque o oponente precisou atualizar o
+client no meio da conexao ("Opponent has new mini patch! Updating...").
+
+**Achado operacional, registrar pra nao repetir**: ao investigar (varios
+`head`/`grep`/`diff` sucessivos), os arquivos originais em
+`CombatLogs/` e `CombatLogs/AutoSaved/` foram SOBRESCRITOS PELO PROPRIO
+JOGO (o client reusa esses nomes/slots conforme novas partidas
+comecam) — 6 dos 10 arquivos investigados encolheram pra um stub de
+3 linhas ("Opponent has new mini patch...") entre uma leitura e outra.
+Pior ainda: uma copia de resgate feita em `/tmp` (fora do projeto)
+TAMBEM sumiu depois de uma pausa aguardando resposta do usuario — `/tmp`
+NAO e persistente neste ambiente entre chamadas ("Always use this
+scratchpad directory for temporary files instead of `/tmp`" ja avisa
+isso no proprio prompt do sistema, ignorado por engano aqui). **Licao:
+ao lidar com CombatLogs/AutoSaved ao vivo, copiar pro scratchpad correto
+(NAO `/tmp`) na PRIMEIRA leitura, antes de qualquer exploracao
+adicional — o arquivo pode sumir a qualquer momento se o jogo estiver
+rodando.**
+
+**Recuperacao bem-sucedida pros 3 pedidos**: cada partida tem uma
+variante `_p2.log` (perspectiva do OUTRO jogador) salva com nome
+DIFERENTE, que sobreviveu ao ciclo de sobrescrita. Cada `_p2` tinha o
+`Leader is` do lado QUE FALTAVA no arquivo principal. Reconstrui a
+linha ausente (nome+codigo do lider, dado ja confirmado no proprio
+arquivo via `RZ1|PLY|N|Nome|CODE`, protocolo interno do jogo) e rodei
+o parser normal. Banco atualizado:
+- `Rocks.D.Xebec-B_x_Rocks.D.Xebec-B_2026-08-05T23.28.24_p2` (espelho,
+  17 turnos)
+- `Rocks.D.Xebec-B_x_Monkey.D.Luffy-PB_2026-08-07T22.17.10_p2` (9 turnos)
+- `Rocks.D.Xebec-B_x_Kuzan-B_2026-08-08T10.03.33_p2` (14 turnos)
+
+**3 partidas extras achadas em AutoSaved (nao pedidas) foram
+PERDIDAS DE VERDADE** (04/08 23:52 hechi/Yamato, 07/08 22:03
+Trignis/Charlotte Linlin, 07/08 22:45 Lost1/Mihawk) -- sem `_p2`
+disponivel, e a copia de resgate em `/tmp` sumiu antes de eu conseguir
+reconstruir a linha faltante (usuario confirmou que era Rocks D. Xebec
+tambem, mas por essa altura so sobravam 3-5 linhas). Entradas vazias
+(0 turnos) chegaram a ser adicionadas ao `logs/index.json` por engano
+e foram REMOVIDAS (junto dos arquivos raw/parsed/decks associados,
+todos truncados/inuteis) antes deste commit -- nao ficam sujando o
+banco.
+
+**Partidas humano x humano** (Karlmalone jogando manualmente contra
+oponentes de matchmaking, nao o bot) -- sem telemetria de decisao
+aplicavel, passo pulado corretamente por essa razao (nao por
+esquecimento).
+
+`smoke_fast.py` nao roda (nenhuma mudanca de codigo neste bloco, so
+banco de logs).
+
 ## 2026-08-07 (462, PARCIAL) - Claude (sessao remota web) - EM ANDAMENTO: amostra maior (N=50) pra calibracao de HABILITA_ATAQUE_BONUS (continuacao do bloco 459); gitignore formalizado pros scripts de calibracao descartaveis
 
 Usuario confirmou ("Sim") seguir com a pendencia menor mencionada ao
