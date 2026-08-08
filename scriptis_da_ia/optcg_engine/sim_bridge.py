@@ -2055,10 +2055,19 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     # opp_board aqui, senao quebra o alvo real do efeito).
     # Classificacao (allowlist conservadora, custo x zona) vive em
     # decision_engine.py -- fonte unica, nao duplicar a regua aqui.
-    from optcg_engine.decision_engine import actor_effect_is_hand_cost_only
+    from optcg_engine.decision_engine import (actor_effect_is_hand_cost_only,
+                                              actor_step_numeric_filter)
     actor_hand_cost_only = (
         bool(actor_code) and not (actor_opp_only or actor_battlefield_only)
         and actor_effect_is_hand_cost_only(actor_code, attacker_power > 0))
+
+    # O UNICO step de campo relevante do ator tem filtro numerico
+    # (cost_lte/power_lte/power_gte)? Exclusao DURA de quem nao bate,
+    # nao so deprioridade -- ver docstring de actor_step_numeric_filter
+    # (decision_engine.py) pro achado real (Doc Q OP16-109).
+    actor_numeric_filter = (
+        actor_step_numeric_filter(actor_code, attacker_power > 0)
+        if actor_code else None)
 
     # O ator tem CUSTO "trash 1 Character seu OU 1 carta da mao"
     # (trash_char_or_hand — ex: draw do lider Imu)? Entao own_board e
@@ -2384,6 +2393,32 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     }
     if actor_hand_cost_only:
         candidates = [c for c in candidates if c.get('zone') in _HAND_COST_ALLOWED_ZONES]
+
+    # O UNICO step de campo relevante tem filtro numerico (cost_lte/
+    # power_lte/power_gte)? Exclusao DURA de quem nao bate, na zona do
+    # LADO indicado (opp_board/own_board) -- so essa zona (deixa hand/
+    # trash/deck/DON como estavam, o filtro so se aplica a candidatos de
+    # CAMPO). Candidato sem 'code' (DON, ou zona oculta) nunca e excluido
+    # por este filtro -- so campo tem cost/power pra comparar.
+    if actor_numeric_filter is not None:
+        lado, filtro = actor_numeric_filter
+        zona_alvo = 'opp_board' if lado == 'opp' else 'own_board'
+
+        def _bate_filtro(cand):
+            if cand.get('zone') != zona_alvo:
+                return True  # fora da zona filtrada, exclusao nao se aplica
+            card = card_of(cand)
+            if card is None:
+                return False  # zona certa mas sem carta resolvivel -- exclui
+            if 'cost_lte' in filtro and card.cost > filtro['cost_lte']:
+                return False
+            if 'power_lte' in filtro and card.power > filtro['power_lte']:
+                return False
+            if 'power_gte' in filtro and card.power < filtro['power_gte']:
+                return False
+            return True
+
+        candidates = [c for c in candidates if _bate_filtro(c)]
 
     return [c.get('id') for c in sorted(candidates, key=sort_key)]
 

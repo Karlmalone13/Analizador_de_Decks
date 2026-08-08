@@ -1015,6 +1015,60 @@ def actor_effect_is_hand_cost_only(actor_code: str, in_combat: bool) -> bool:
     return tem_custo_mao
 
 
+# Acoes de campo (Character/Leader) que sim_bridge.order_target_candidates
+# ja sabe mapear pra opp_board/own_board via _implied_target -- extraido
+# aqui pra reusar a mesma lista na deteccao de filtro numerico abaixo.
+_BATTLEFIELD_FILTERABLE_ACTIONS = {
+    'ko', 'rest_opp_character', 'bounce_opp_character', 'debuff_power',
+    'ko_own_character', 'rest_own_character', 'trash_own_character',
+}
+
+
+def actor_step_numeric_filter(actor_code: str, in_combat: bool):
+    """Se o UNICO step relevante do ator (filtrado por janela de combate)
+    que mira campo/oponente tiver filtro numerico (cost_lte/power_lte/
+    power_gte), devolve (target_label, filtro) pra sim_bridge.
+    order_target_candidates EXCLUIR (nao so deprioritizar) candidatos do
+    campo que nao batem -- mesmo padrao de exclusao dura de actor_opp_only/
+    actor_hand_cost_only, agora pro FILTRO do proprio step, nao so a zona.
+
+    CONSERVADOR: exige exatamente 1 step de campo com filtro numerico
+    entre os blocos relevantes -- 2+ steps ambiguos (podem exigir filtros
+    DIFERENTES) abortam a generalizacao (None), preservando o
+    comportamento antigo (so deprioridade) nesses casos raros.
+
+    Achado real 08/08 (usuario, partida ao vivo -- "doc q chegou a
+    escolher 1 alvo, travou no 2o por falta de alvo, anulou sem dar KO
+    em ninguem"): Doc Q OP16-109 ("K.O. up to 2... com custo 1 ou
+    menos") tinha SO 1 alvo valido em campo; a decisao de alvo pro 2o
+    slot pediu a MESMA lista de 37 candidatos (deck+mao+trash+campo dos
+    dois lados) duas vezes, 23s de diferenca -- nenhum filtro de custo
+    excluia quem nao batia, o cliente clicou candidato por candidato
+    (0.8s de cooldown) ate esgotar a lista e o efeito inteiro (incluindo
+    o 1o alvo ja escolhido) foi cancelado."""
+    effects = get_card_effects(actor_code)
+    blocks = [v for k, v in effects.items()
+              if isinstance(v, dict)
+              and (k in COMBAT_ONLY_TRIGGERS) == in_combat]
+    achado = None
+    for block in blocks:
+        for s in block.get('steps', []):
+            if s.get('action') not in _BATTLEFIELD_FILTERABLE_ACTIONS:
+                continue
+            filtro = {k: s[k] for k in ('cost_lte', 'power_lte', 'power_gte')
+                      if s.get(k) is not None}
+            if not filtro:
+                continue
+            target = s.get('target') or ''
+            lado = 'opp' if 'opp' in target else 'own' if target else None
+            if lado is None:
+                continue
+            if achado is not None:
+                return None  # 2+ steps com filtro -- ambiguo, nao generaliza
+            achado = (lado, filtro)
+    return achado
+
+
 @dataclass
 class GameState:
     leader: Card

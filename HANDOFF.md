@@ -1,5 +1,63 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-08 (466) - Claude (sessao local) - CORRIGIDO: order_target_candidates ignorava filtro numerico (cost_lte/power_lte/power_gte) do proprio step -- Doc Q (e mais 231 cartas) travava/anulava efeito quando faltava alvo pro 2o+ slot
+
+Log `Rocks.D.Xebec-B_x_Marshall.D.Teach-BY_2026-08-08T12.15.57` banco
+(bot p2/Teach, perdeu). Usuario reportou 4 pontos numa mesma partida;
+3 investigados nesta sessao:
+
+**1. Doc Q (OP16-109) travado no 2o alvo -- bug real CONFIRMADO e
+CORRIGIDO.** "K.O. up to 2 of your opponent's Characters with a cost
+of 1 or less": usuario tinha SO 1 alvo valido (custo<=1) em campo.
+Decisao de alvo pro 1o slot funcionou; a do 2o slot (JSONL idx161 e
+idx163, 23s de diferenca) pediu a MESMA lista de 37 candidatos --
+deck+mao+trash+campo dos dois lados, nenhum excluido por custo --
+DUAS vezes identicas. O cliente clicou candidato por candidato (0.8s
+de cooldown) ate esgotar a lista sem achar nada valido, e o efeito
+INTEIRO foi cancelado -- nem o 1o alvo, ja escolhido, resultou em KO.
+Mesma classe do achado do bloco 423 (custo so de mao), mas agora o
+gap e um FILTRO NUMERICO dentro do proprio step (`cost_lte`/
+`power_lte`/`power_gte`), nao a ZONA -- `order_target_candidates`
+sabia excluir zona errada, mas nunca excluia candidato de campo que
+batia a zona certa mas nao o filtro do efeito.
+
+Fix: nova funcao `actor_step_numeric_filter` (decision_engine.py) --
+quando o UNICO step de campo relevante do ator tem filtro numerico,
+`sim_bridge.order_target_candidates` exclui DURO (nao so deprioriza)
+qualquer candidato de opp_board/own_board que nao bate. CONSERVADOR:
+2+ steps com filtro (ambiguo, podem exigir filtros diferentes) abortam
+a generalizacao, preservando o comportamento antigo nesses casos raros.
+Sweep nas 2747 cartas do banco: 0 excecoes, 231 cartas com filtro
+detectado (impacto potencial real, nao so o Doc Q).
+
+**2. Teach 10 (OP09-093) sequenciado errado -- achado real, NAO
+corrigido.** Confirmado no log de decisoes (turno 5): o bot atacou
+PRIMEIRO e so DEPOIS ativou o Teach 10 (`negate_effect` no lider/
+personagem do oponente + trava ataque) -- deveria ser o inverso, pra
+anular a resposta do oponente ANTES do ataque. Mesma classe do fix do
+Edward Newgate (bloco 420, "jogar antes de atacar"), mas o bonus
+`habilita_ataque`/`HABILITA_ATAQUE_BONUS` so cobre acoes `play`, nunca
+`activate`. Generalizar pra `activate` fica pendente pra proxima
+sessao -- escopo maior, precisa da mesma calibracao cuidadosa que
+`HABILITA_ATAQUE_BONUS` ja teve (bloco 449, remoto).
+
+**3. Teach 8 (OP16-119) "nao ganhou vida" -- INVESTIGADO, dados
+CONTRADIZEM o relato do usuario.** Log mostra claramente "Marshall D.
+Teach: Added card to top of Life from Hand" logo apos o deploy (linha
+590) -- a vida foi ganha. Sem reproducao do bug nesta partida;
+usuario pode ter visto outra copia da carta ou outro momento. Fica em
+aberto, pedido pro usuario indicar o turno exato se acontecer de novo.
+
+**Item 4 do relato original (Doc Q) totalmente fechado, itens 2/3
+parcialmente investigados.**
+
+2 testes novos (`test_order_target_candidates_respeita_filtro_
+numerico_cost_lte`, cobre exclusao com/sem alvo valido). `smoke_fast.
+py`/`smoke_test.py` 100%. `audit_replay.py --n 20 --seed 73`: 0
+excecoes, 0 anomalias.
+
+`server.py` reiniciado apos o fix.
+
 ## 2026-08-08 (465) - Claude (sessao local) - fecha o bloco 464: causa raiz achada e CORRIGIDA (2 partes) -- ataque ao lider com vida critica nao competia direito com ataque a Character
 
 Fecha a pendencia deixada aberta no bloco 464 ("poderia ter ganho 1

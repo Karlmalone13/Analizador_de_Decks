@@ -10085,6 +10085,7 @@ def main() -> int:
     test_hand_to_deck_step_familia_bottom_of_deck_07_08()
     test_place_hand_bottom_deck_custo_op01_011_e_op09_060_07_08()
     test_ataque_ao_lider_com_vida_critica_ignora_penalidade_de_postura()
+    test_order_target_candidates_respeita_filtro_numerico_cost_lte()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -11730,6 +11731,54 @@ def test_ataque_ao_lider_com_vida_critica_ignora_penalidade_de_postura() -> None
           s_leader >= 250)
     check("ataque ao lider com vida critica agora SUPERA o ataque ao Character ameaca (era o bug real)",
           s_leader > s_char)
+
+
+def test_order_target_candidates_respeita_filtro_numerico_cost_lte() -> None:
+    """
+    Achado real 08/08 (usuario, partida ao vivo): Doc Q (OP16-109, "K.O.
+    up to 2 of your opponent's Characters with a cost of 1 or less")
+    tinha SO 1 alvo valido em campo (custo 1). A decisao de alvo pro 2o
+    slot pediu a MESMA lista de candidatos (todas as zonas, sem excluir
+    quem nao batia com custo<=1) duas vezes, 23s de diferenca -- o
+    cliente clicou candidato por candidato ate esgotar a lista, e o
+    efeito INTEIRO foi cancelado (nem o 1o alvo, ja escolhido, resultou
+    em KO). Fix: order_target_candidates agora exclui candidatos de
+    campo que nao batem com o filtro numerico (cost_lte/power_lte/
+    power_gte) do UNICO step relevante do ator.
+    """
+    ace = real_card("OP16-001")
+    ace._deck_uid = 1
+    alvo_valido = real_card("OP13-016")  # custo 1 -- bate no filtro
+    alvo_valido._deck_uid = 100
+    alvo_invalido = real_card("OP16-011")  # custo 6 -- NAO bate
+    alvo_invalido._deck_uid = 200
+    me = GameState(leader=real_card("OP16-080"))
+    opp = GameState(leader=ace)
+    opp.field_chars = [alvo_valido, alvo_invalido]
+    cands = [
+        {"id": 100, "zone": "opp_board", "code": "OP13-016"},
+        {"id": 200, "zone": "opp_board", "code": "OP16-011"},
+        {"id": 300, "zone": "own_hand", "code": "OP16-014"},
+    ]
+    order = sim_bridge.order_target_candidates(me, opp, cands, actor_code="OP16-109")
+    check("Doc Q (cost_lte=1) exclui candidato de campo com custo maior (OP16-011)",
+          200 not in order)
+    check("Doc Q (cost_lte=1) mantem o candidato de campo valido (OP13-016)",
+          100 in order)
+    # own_hand ja era excluido pelo actor_opp_only pre-existente (Doc Q so
+    # mira opp_character) -- comportamento correto e anterior a este fix,
+    # so confirma que o filtro numerico novo nao interfere nessa exclusao.
+    check("Doc Q (cost_lte=1) devolve so o alvo de campo valido, nada mais",
+          order == [100])
+
+    # Sem NENHUM alvo valido (so o custo alto em campo): lista de candidatos
+    # de campo fica vazia -- nao clica em nada, nao esgota 23s de tentativas.
+    opp2 = GameState(leader=ace)
+    opp2.field_chars = [alvo_invalido]
+    cands2 = [{"id": 200, "zone": "opp_board", "code": "OP16-011"}]
+    order2 = sim_bridge.order_target_candidates(me, opp2, cands2, actor_code="OP16-109")
+    check("Doc Q sem nenhum alvo valido (custo<=1) devolve lista vazia, nao fica clicando",
+          order2 == [])
 
 
 if __name__ == "__main__":

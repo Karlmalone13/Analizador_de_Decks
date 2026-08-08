@@ -2,6 +2,25 @@
 
 **Última atualização:** 8 de agosto de 2026
 
+> 08/08/2026 (bloco 466): **corrigido bug real do Doc Q** —
+> `order_target_candidates` nunca excluía candidato de campo que batia
+> a zona certa mas não o filtro numérico (`cost_lte`/`power_lte`/
+> `power_gte`) do próprio efeito. Com só 1 alvo válido pro "K.O. até 2
+> com custo ≤1", o 2º slot pedia a mesma lista de 37 candidatos sem
+> filtro 2x seguidas (23s de diferença) até esgotar e cancelar o
+> efeito inteiro — nem o 1º alvo já escolhido resultava em KO. Fix
+> conservador (só aplica quando há exatamente 1 step de campo com
+> filtro numérico), sweep nas 2747 cartas do banco sem erros, 231
+> cartas com impacto potencial. 2 testes novos, `smoke_fast.py`/
+> `smoke_test.py` 100%, `audit_replay.py --n 20`: 0 exceções, 0
+> anomalias. **Pendências da mesma rodada**: Teach 10 (OP09-093)
+> ativado DEPOIS do ataque em vez de antes (mesma classe do fix do
+> Newgate, mas pra `activate` em vez de `play` — não corrigido,
+> precisa generalizar `HABILITA_ATAQUE_BONUS`); Teach 8 "não ganhou
+> vida" investigado mas os dados do log contradizem o relato (vida foi
+> ganha) — sem bug confirmado, pedir turno exato se acontecer de novo.
+> Ver bloco 466 do HANDOFF.
+
 > 08/08/2026 (bloco 465): **fechado o achado do bloco 464** — causa
 > raiz do "poderia ter ganho 1 turno antes". Bug de 2 partes: (1)
 > `REMOVE_THREAT`/`DEFENSIVE` descontava -100/-80 do ataque ao líder

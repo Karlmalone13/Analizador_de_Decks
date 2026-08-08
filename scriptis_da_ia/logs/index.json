@@ -3006,5 +3006,31 @@
       "You": "decks/Rocks.D.Xebec-B_2026-08-08T10.55.01_p2.json",
       "Opponent": "decks/Portgas.D.Ace-R_2026-08-08T10.55.01_p2.json"
     }
+  },
+  {
+    "id": "2026-08-08T12.15.57",
+    "friendly_name": "Rocks.D.Xebec-B_x_Marshall.D.Teach-BY",
+    "date": "2026-08-08",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 10,
+    "winner": "p1",
+    "bot_side": "p2",
+    "log_file": "raw/Rocks.D.Xebec-B_x_Marshall.D.Teach-BY_2026-08-08T12.15.57.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Marshall.D.Teach-BY_2026-08-08T12.15.57.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-08-08T12.15.57.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-08-08T12.15.57.json"
+    }
   }
 ]
