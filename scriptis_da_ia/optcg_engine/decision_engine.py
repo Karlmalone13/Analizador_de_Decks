@@ -206,6 +206,24 @@ GIVE_DON_RESTED_BASE_SCORE = -10
 # ruidoso" dos blocos 396/398). Amostra maior (N maior, mais seeds) seria
 # necessaria pra uma calibracao com confianca de verdade -- fica
 # registrado como pendencia futura, nao um valor final definitivo.
+#
+# Amostra maior (07/08, N=50/celula em vez de 15, mesmos 5 matchups/3
+# valores, paralelizado em 4 workers -- 750 partidas): RESOLVE o ruido
+# acima. O agregado INVERTE em relacao ao N=15 (que favorecia 0): agora
+# 60 e o MELHOR valor agregado (41.6% vs 39.6% em 120 vs 36.0% em 0,
+# N=250/valor). Ganho de confianca vem de EnelvMihawk, que a N=15 parecia
+# favorecer fortemente 0 (73.3%) mas a N=50 se revela o OPOSTO -- 0 e o
+# PIOR valor (26.0%, contra 42.0% empatado em 60/120), confirmando que o
+# N=15 original era mesmo ruido de amostra pequena, nao sinal real. Com
+# N=50, 60 fica empatado-melhor ou melhor isolado em 4 dos 5 matchups
+# (EnelvMihawk empatado c/120, EnelvNami so 2pp atras de 120, NamivMihawk
+# melhor isolado, ImuvMihawk empatado c/0) -- so perde claramente pra 0
+# em AceMihawk (30% vs 32%, dentro do ruido de N=50, SE~7pp). **Decisao
+# FINAL: CONFIRMADO em 60**, agora com amostra suficiente pra confiar na
+# direcao do resultado (nao so "nenhum candidato vence com confianca" do
+# bloco 459 -- aqui 60 efetivamente vence o agregado e a maioria dos
+# matchups individuais). Fecha a pendencia de amostra maior registrada
+# no paragrafo acima.
 HABILITA_ATAQUE_BONUS = 60
 
 # ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────

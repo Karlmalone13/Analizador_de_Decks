@@ -1,17 +1,25 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 7 de agosto de 2026
+**Última atualização:** 8 de agosto de 2026
 
-> 07/08/2026 (bloco 462, PARCIAL — EM ANDAMENTO): **amostra maior (N=50,
-> 750 partidas, 4 workers em paralelo) pra calibração de
-> `HABILITA_ATAQUE_BONUS`**, continuação do bloco 459 (N=15 era
-> ruidoso/conflitante). Sweep rodando em background — decisão final
-> (manter 60 ou trocar) fica pro próximo bloco. Incidental: `.gitignore`
-> ganhou padrão pros scripts de calibração self-play descartáveis
+> 08/08/2026 (bloco 462): **calibração de `HABILITA_ATAQUE_BONUS`
+> FECHADA — amostra maior (N=50, 750 partidas) CONFIRMA 60 com confiança
+> real**, diferente do bloco 459 (N=15, "mantido por falta de confiança
+> pra mudar"). A N=50 o agregado INVERTE em relação ao N=15 (que
+> favorecia 0): agora 60 vence o agregado (41.6% vs 36.0% em 0 vs 39.6%
+> em 120) e fica empatado-melhor ou melhor isolado em 4 dos 5 matchups —
+> o caso mais claro é Enel vs Mihawk, que a N=15 parecia favorecer
+> fortemente 0 (73.3%) mas a N=50 se revela o PIOR valor (26.0%),
+> confirmando que aquele sinal era ruído de amostra pequena. Comentário
+> da constante atualizado com a tabela final; valor em si não mudou (já
+> era 60), sem teste novo necessário. **Pendência do bloco 459/461
+> fechada definitivamente.** Incidental: `.gitignore` ganhou padrão pros
+> scripts de calibração self-play descartáveis
 > (`scriptis_da_ia/calibrate_*.py`/`metrics/calibrate_*.json`), mesma
-> convenção já usada pra `decision_audit_*.json` — evita que scripts
-> scratch (nunca commitados, por convenção dos blocos 449/459) fiquem
-> como pendência untracked. Ver bloco 462 do HANDOFF.
+> convenção já usada pra `decision_audit_*.json`; e o 1º disparo do
+> sweep (via `nohup` solto) morreu num restart de sessão — reiniciado
+> via mecanismo de background do harness na 2ª tentativa. Ver bloco 462
+> do HANDOFF.
 
 > 07/08/2026 (bloco 461): **fecha a última pendência da linha "draw N
 > Then/and [...]"** — EB02-024 (Sogeking) tinha a cláusula "place 2

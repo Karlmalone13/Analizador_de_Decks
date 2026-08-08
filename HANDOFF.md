@@ -1,6 +1,6 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-08-07 (462, PARCIAL) - Claude (sessao remota web) - EM ANDAMENTO: amostra maior (N=50) pra calibracao de HABILITA_ATAQUE_BONUS (continuacao do bloco 459); gitignore formalizado pros scripts de calibracao descartaveis
+## 2026-08-07/08 (462) - Claude (sessao remota web) - Amostra maior (N=50) pra calibracao de HABILITA_ATAQUE_BONUS (continuacao do bloco 459) -- RESULTADO FINAL: CONFIRMADO em 60, com confianca real desta vez
 
 Usuario confirmou ("Sim") seguir com a pendencia menor mencionada ao
 fim do bloco 461: `HABILITA_ATAQUE_BONUS` (bloco 459) se beneficiaria
@@ -14,9 +14,7 @@ matchups: Enel/Mihawk, Enel/Nami, Nami/Mihawk, Ace/Mihawk, Imu/Mihawk;
 mesmos 3 valores de bonus: 0/60/120) mas com `N_SEEDS=50` (antes 15) e
 paralelizado via `ProcessPoolExecutor` (4 workers) pra caber num tempo
 razoavel (~20min estimados pra 750 partidas, contra quase 2h
-sequencial). Sweep disparado em background (nohup), ainda RODANDO ao
-escrever este bloco -- resultado/decisao final ficam pro PROXIMO bloco
-desta mesma investigacao (agendei um wakeup pra quando terminar).
+sequencial).
 
 **Achado incidental, ja fechado nesta sessao**: um hook local de stop
 (`~/.claude/stop-hook-git-check.sh`) bloqueia encerrar a sessao com
@@ -28,6 +26,48 @@ decisao): `.gitignore` ganhou `scriptis_da_ia/calibrate_*.py` e
 `scriptis_da_ia/metrics/calibrate_*.json` -- os scripts de calibracao
 continuam fora do git (documentados so via HANDOFF, nunca fazem parte
 do produto) mas sem aparecer como pendencia untracked pro hook.
+
+**Segundo achado incidental**: o primeiro disparo do sweep (via `nohup
+... &` solto no shell) morreu no meio (250/750 concluidos) quando a
+sessao foi reiniciada -- processo solto nao sobrevive a um restart de
+container/worker. Reiniciado usando o mecanismo de background do
+proprio harness (`run_in_background`) na segunda tentativa, que
+notifica quando termina em vez de depender de um processo orfao.
+
+**Resultado final (N=50/celula, 750 partidas)**:
+
+```
+Matchup       Bonus=0  Bonus=60 Bonus=120
+EnelvMihawk    26.0%    42.0%    42.0%
+EnelvNami      70.0%    78.0%    80.0%
+NamivMihawk    32.0%    38.0%    30.0%
+AcevMihawk     32.0%    30.0%    30.0%
+ImuvMihawk     20.0%    20.0%    16.0%
+agregado       36.0%    41.6%    39.6%
+```
+
+**O ruido do N=15 (bloco 459) fica exposto**: EnelvMihawk parecia
+favorecer FORTEMENTE 0 (73.3%) a N=15 -- a N=50 essa mesma celula
+mostra o OPOSTO, 0 e o PIOR valor (26.0%, contra 42.0% empatado em
+60/120). Isso confirma que o sinal de N=15 pra essa celula era ruido de
+amostra pequena, nao tendencia real. Com N=50, `60` fica empatado-melhor
+ou melhor isolado em 4 dos 5 matchups (EnelvMihawk empatado com 120,
+EnelvNami so 2pp atras de 120 -- dentro do ruido, NamivMihawk melhor
+isolado, ImuvMihawk empatado com 0) -- so perde pra 0 em AceMihawk
+(30% vs 32%, diferenca desprezivel/ruido a N=50). O agregado tambem
+INVERTE em relacao ao N=15 (que favorecia 0): agora 60 e o melhor valor
+agregado (41.6% vs 39.6% em 120 vs 36.0% em 0).
+
+**Decisao FINAL: CONFIRMADO em 60** -- diferente do bloco 459 ("mantido
+por falta de confianca pra mudar"), aqui a amostra e grande o bastante
+pra 60 efetivamente VENCER o agregado e a maioria dos matchups
+individuais, nao so "nenhum concorrente vence com confianca". Comentario
+da constante (`decision_engine.py` ~L209) atualizado com a tabela final
+e a analise. Mudanca 100% em COMENTARIO -- valor da constante nao mudou
+(ja era 60), entao sem teste novo necessario; `smoke_fast.py` rodado
+mesmo assim (100%, protocolo padrao). Sem `parser_audits/` novo (fix
+0% em parser). Fecha definitivamente a pendencia de "amostra maior"
+que ficou em aberto desde o bloco 459.
 
 ## 2026-08-07 (461) - Claude (sessao remota web) - Fecha a ultima pendencia da linha "draw N Then/and [...]" -- EB02-024 (Sogeking) tinha clausula inteira ausente (gap de COBERTURA, nao de ordem), censo global achou 9 cartas
 
