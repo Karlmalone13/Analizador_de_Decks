@@ -2,6 +2,17 @@
 
 **Última atualização:** 7 de agosto de 2026
 
+> 07/08/2026 (bloco 462, PARCIAL — EM ANDAMENTO): **amostra maior (N=50,
+> 750 partidas, 4 workers em paralelo) pra calibração de
+> `HABILITA_ATAQUE_BONUS`**, continuação do bloco 459 (N=15 era
+> ruidoso/conflitante). Sweep rodando em background — decisão final
+> (manter 60 ou trocar) fica pro próximo bloco. Incidental: `.gitignore`
+> ganhou padrão pros scripts de calibração self-play descartáveis
+> (`scriptis_da_ia/calibrate_*.py`/`metrics/calibrate_*.json`), mesma
+> convenção já usada pra `decision_audit_*.json` — evita que scripts
+> scratch (nunca commitados, por convenção dos blocos 449/459) fiquem
+> como pendência untracked. Ver bloco 462 do HANDOFF.
+
 > 07/08/2026 (bloco 461): **fecha a última pendência da linha "draw N
 > Then/and [...]"** — EB02-024 (Sogeking) tinha a cláusula "place 2
 > cards from your hand at the bottom of your deck in any order" **inteira

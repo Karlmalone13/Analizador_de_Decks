@@ -1,5 +1,34 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-07 (462, PARCIAL) - Claude (sessao remota web) - EM ANDAMENTO: amostra maior (N=50) pra calibracao de HABILITA_ATAQUE_BONUS (continuacao do bloco 459); gitignore formalizado pros scripts de calibracao descartaveis
+
+Usuario confirmou ("Sim") seguir com a pendencia menor mencionada ao
+fim do bloco 461: `HABILITA_ATAQUE_BONUS` (bloco 459) se beneficiaria
+de amostra de self-play maior que N=15 pra uma decisao mais confiavel
+(resultado anterior era ruidoso/conflitante entre matchups).
+
+Recriado `calibrate_habilita_ataque_07_08.py` (o script do bloco 459 e
+scratch, nao commitado, some entre sessoes/containers) com a MESMA
+metodologia (self-play pareado via `ReplayMatch`/`OPTCGMatch`, mesmos 5
+matchups: Enel/Mihawk, Enel/Nami, Nami/Mihawk, Ace/Mihawk, Imu/Mihawk;
+mesmos 3 valores de bonus: 0/60/120) mas com `N_SEEDS=50` (antes 15) e
+paralelizado via `ProcessPoolExecutor` (4 workers) pra caber num tempo
+razoavel (~20min estimados pra 750 partidas, contra quase 2h
+sequencial). Sweep disparado em background (nohup), ainda RODANDO ao
+escrever este bloco -- resultado/decisao final ficam pro PROXIMO bloco
+desta mesma investigacao (agendei um wakeup pra quando terminar).
+
+**Achado incidental, ja fechado nesta sessao**: um hook local de stop
+(`~/.claude/stop-hook-git-check.sh`) bloqueia encerrar a sessao com
+arquivos untracked no repo -- o script/JSON de calibracao (scratch,
+por convencao do projeto NUNCA commitados, blocos 449/459) ficavam
+untracked e prendiam o hook. Resolvido formalizando a mesma convencao
+ja usada pra `scriptis_da_ia/decision_audit_*.json` (auditor de
+decisao): `.gitignore` ganhou `scriptis_da_ia/calibrate_*.py` e
+`scriptis_da_ia/metrics/calibrate_*.json` -- os scripts de calibracao
+continuam fora do git (documentados so via HANDOFF, nunca fazem parte
+do produto) mas sem aparecer como pendencia untracked pro hook.
+
 ## 2026-08-07 (461) - Claude (sessao remota web) - Fecha a ultima pendencia da linha "draw N Then/and [...]" -- EB02-024 (Sogeking) tinha clausula inteira ausente (gap de COBERTURA, nao de ordem), censo global achou 9 cartas
 
 Usuario pediu "tem mais alguma coisa?" apos o bloco 460 (Katakuri);
