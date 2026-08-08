@@ -1,5 +1,53 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-08 (465) - Claude (sessao local) - fecha o bloco 464: causa raiz achada e CORRIGIDA (2 partes) -- ataque ao lider com vida critica nao competia direito com ataque a Character
+
+Fecha a pendencia deixada aberta no bloco 464 ("poderia ter ganho 1
+turno antes atacando a vida"). Causa raiz achada por reconstrucao ao
+vivo do EXATO `state_before` da decisao real (turno 5, idx148):
+chamando `score_attack_target` isolado com o mesmo estado, o resultado
+(130) DIVERGIA do valor realmente registrado na decisao ao vivo (30).
+
+**Parte 1 (bug claro, causa raiz confirmada)**: em
+`_generate_and_score_actions`, a prioridade `REMOVE_THREAT` (Vista em
+campo como ameaca critica) aplicava `-100` no score de ataque ao
+lider -- exatamente o gap de 130->30. Essa penalidade nao verificava
+`opp_life`: mesmo com o oponente JA em 0/1 vida (onde qualquer
+conexao no lider VENCE o jogo), o desconto generico de "prefira
+remover ameaca" continuava valendo. Fix: `DEFENSIVE`/`REMOVE_THREAT`
+so descontam quando `opp.life_count() > 1` (mesmo padrao de guarda ja
+usado em `activate_cost`).
+
+**Parte 2 (achado ao re-testar com o cenario real -- confirmado com o
+usuario antes de aplicar)**: com a Parte 1 sozinha, o score do
+ataque ao lider subia pra 130, mas AINDA perdia pro ataque ao
+Character-ameaca real da partida (Stussy, 220 -- `activate_main` que
+trava ataque do oponente, bonus legitimo de "ameaca recorrente"). O
+valor-base "vida 0/1, sem letal CERTIFICADO" (antes 130/220) nao
+garantia superar um ataque a Character bem pontuado -- so refletia
+"pressao", nao o valor assimetrico real (remover ameaca so importa se
+o jogo CONTINUAR; conectar na vida com 0 restante pode ACABAR o jogo
+agora). Fix: `opp_life==0` sem letal certificado sobe de 130 pra 300;
+`opp_life==1` sobe de 220 pra 260 -- segue abaixo do bonus de
+prioridade LETHAL (+500, letal certificado de verdade), preservando a
+ordem certificado > vida critica > alvo generico.
+
+**Validado com o cenario EXATO da partida real** (reconstrucao via
+`GameStateDto.model_validate` + `_dto_to_gs` + `_generate_and_score_
+actions`, idx148 do log `decisions_2026-08-08T10.23.05.jsonl`): antes
+30 (perdia pro Character 220); so com a Parte 1, 130 (ainda perdia);
+com as duas partes, 300 (agora vence 220 -- o bot teria atacado a vida
+e fechado o jogo 1 turno antes, exatamente o que o usuario reportou).
+
+2 testes novos (`test_ataque_ao_lider_com_vida_critica_ignora_
+penalidade_de_postura`, reproduz REMOVE_THREAT + vida critica + sem
+letal certificado, cobrindo as duas partes do fix).
+`smoke_fast.py`/`smoke_test.py` 100%. `audit_replay.py --n 20` rodado
+2x (seed=51 so Parte 1, seed=62 com as duas partes): **0 excecoes, 0
+anomalias** nas duas rodadas.
+
+`server.py` reiniciado apos o fix.
+
 ## 2026-08-08 (464) - Claude (sessao local) - PRIMEIRA VITORIA REAL DO BOT AO VIVO (Rocks.D.Xebec-B vs Portgas.D.Ace-R, 2026-08-08T10.55.01) + achado real (nao corrigido) no score de ataque ao lider no turno 5
 
 Marco historico: bot venceu uma partida real ao vivo pela primeira vez.

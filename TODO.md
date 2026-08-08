@@ -2,6 +2,18 @@
 
 **Última atualização:** 8 de agosto de 2026
 
+> 08/08/2026 (bloco 465): **fechado o achado do bloco 464** — causa
+> raiz do "poderia ter ganho 1 turno antes". Bug de 2 partes: (1)
+> `REMOVE_THREAT`/`DEFENSIVE` descontava -100/-80 do ataque ao líder
+> mesmo com a vida do oponente já crítica (0/1), onde qualquer conexão
+> vence o jogo — agora só desconta com `opp_life > 1`. (2) mesmo
+> corrigido (1), o valor-base "vida crítica, sem letal certificado"
+> (130/220) ainda perdia pra um ataque a Character bem pontuado —
+> subido pra 300/220→260, validado batendo o cenário exato da partida
+> real (300 agora vence os 220 do Character-ameaça). 2 testes novos,
+> `smoke_fast.py`/`smoke_test.py` 100%, `audit_replay.py --n 20` 2x
+> (seeds 51 e 62): 0 exceções, 0 anomalias. Ver bloco 465 do HANDOFF.
+
 > 08/08/2026 (bloco 464): 🎉 **primeira vitória real do bot ao vivo**
 > (`Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01`). Achado
 > real (não corrigido) investigando a observação do usuário ("poderia

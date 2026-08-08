@@ -10084,6 +10084,7 @@ def main() -> int:
     test_resolve_cost_lte_don_count_opp_em_todas_as_copias_06_08()
     test_hand_to_deck_step_familia_bottom_of_deck_07_08()
     test_place_hand_bottom_deck_custo_op01_011_e_op09_060_07_08()
+    test_ataque_ao_lider_com_vida_critica_ignora_penalidade_de_postura()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -11681,6 +11682,54 @@ def test_place_hand_bottom_deck_custo_op01_011_e_op09_060_07_08() -> None:
     ee_vazia = EffectExecutor(me_vazia, opp)
     pagou_vazia = ee_vazia._pay_costs([{"type": "place_hand_bottom_deck", "count": 1}], carta_fonte)
     check("place_hand_bottom_deck: _pay_costs retorna False sem carta suficiente na mao", pagou_vazia is False)
+
+
+def test_ataque_ao_lider_com_vida_critica_ignora_penalidade_de_postura() -> None:
+    """
+    Achado real 08/08 (usuario, primeira vitoria ao vivo do bot --
+    "poderia ter ganho 1 turno antes atacando a vida em vez do campo").
+    Com opp_life<=1, score_attack_target ja da 130 pro ataque ao lider
+    (nao 10000: can_lethal_this_turn exige garantia mesmo no pior caso
+    de defesa do oponente). Mas em _generate_and_score_actions, as
+    penalidades de postura DEFENSIVE (-80)/REMOVE_THREAT (-100) eram
+    aplicadas do MESMO jeito que num turno qualquer -- derrubavam 130
+    pra 30, perdendo pro ataque a um Character. Vida critica (0/1) ja e
+    o MESMO sinal que os bonus LETHAL/PREVENT_COMBO respeitam; as
+    penalidades devem ceder tambem. Reproduz o cenario exato: ameaca
+    critica no campo do oponente (Vista, 8000 de poder -> REMOVE_
+    THREAT), atacante empata com o lider do oponente (ataque valido,
+    empate favorece o atacante) mas o oponente tem counter na mao
+    (can_lethal_this_turn=False, sem garantia).
+    """
+    xebec = real_card("OP17-039")  # lider 5000
+    ace_opp = real_card("OP16-001")  # lider oponente 5000
+    vista = real_card("OP16-011")  # 8000 de poder (inatacavel sem DON) -> gatilho de REMOVE_THREAT
+    vista.rested = True
+    stussy = real_card("OP17-054")  # 5000 de poder, matavel -> alvo real do ataque a Character
+    stussy.rested = True
+    curiel = real_card("OP16-004")  # counter 2000 na mao -> sobrevive ao empate
+
+    me = GameState(leader=xebec, don_available=0, turn=5)
+    me.life = [real_card("OP07-077") for _ in range(3)]
+    opp = GameState(leader=ace_opp, turn=5)
+    opp.field_chars = [vista, stussy]
+    opp.hand = [curiel]
+    opp.life = [real_card("OP07-077")]  # vida critica: so 1 carta
+
+    engine = DecisionEngine(me, opp)
+    check("cenario reproduz REMOVE_THREAT com vida critica e sem letal certificado",
+          engine.analyzer.analysis_priority() == "REMOVE_THREAT"
+          and not engine.analyzer.can_lethal_this_turn())
+
+    match = OPTCGMatch((xebec, []), (ace_opp, []))
+    actions = match._generate_and_score_actions(me, opp, engine)
+    scores = {(a[1], a[3], getattr(a[4], "code", None)): a[0] for a in actions}
+    s_leader = scores[("attack", "leader", None)]
+    s_char = scores[("attack", "character", "OP17-054")]
+    check("ataque ao lider com vida critica NAO leva a penalidade cheia de REMOVE_THREAT (-100)",
+          s_leader >= 250)
+    check("ataque ao lider com vida critica agora SUPERA o ataque ao Character ameaca (era o bug real)",
+          s_leader > s_char)
 
 
 if __name__ == "__main__":

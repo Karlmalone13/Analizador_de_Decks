@@ -11858,10 +11858,24 @@ class DecisionEngine:
             # mas nao deve soterrar as outras acoes.
             lethal_now = a.can_lethal_this_turn()
             s = ATTACK_LEADER_BASE_SCORE
+            # Sem letal CERTIFICADO (can_lethal_this_turn exige sobreviver ao
+            # pior caso de defesa do oponente), o valor "nao lethal" ainda
+            # precisa superar de forma confiavel um ataque a Character
+            # legitimamente valioso -- 220/130 nao garantiam isso. Achado
+            # real 08/08 (usuario, primeira vitoria ao vivo -- "poderia ter
+            # ganho 1 turno antes"): com vida 0, ataque ao lider com folga
+            # real de poder (2000, sem precisar de DON) pontuava so 130,
+            # perdendo pra matar um Character com ameaca recorrente (Stussy,
+            # 220 -- lock_opp_character_attack em activate_main). Remover
+            # uma ameaca so vale se o jogo CONTINUAR; um acerto na vida com
+            # 0/1 restante pode ACABAR o jogo agora -- valor assimetrico que
+            # os 130/220 antigos nao refletiam. Ainda abaixo do bonus de
+            # prioridade LETHAL (+500, cenario com letal certificado de
+            # verdade), preservando a ordem: certificado > vida critica > alvo generico.
             if opp_life == 1:
-                s = 500 if lethal_now else 220
+                s = 500 if lethal_now else 260
             if opp_life == 0:
-                s = 10000 if lethal_now else 130
+                s = 10000 if lethal_now else 300
 
             # Penaliza levemente se precisa de muito DON (mas ainda é válido)
             opp_defense = leader_power + a.opp_counter_potential()
@@ -14361,9 +14375,26 @@ class OPTCGMatch:
                         # de vez). Inclinação forte, mas a ameaça crítica ainda vem antes.
                         if att.has_banish:
                             s_leader += 150
+                        # Com a vida do oponente critica (0 ou 1 carta), CONECTAR
+                        # no lider vale mais que qualquer prioridade generica de
+                        # postura -- as penalidades de DEFENSIVE/REMOVE_THREAT
+                        # nao sabiam disso e descontavam o ataque ao lider do
+                        # MESMO jeito que descontariam num turno qualquer.
+                        # Achado real 08/08 (usuario, primeira vitoria ao vivo do
+                        # bot -- "poderia ter ganho 1 turno antes"): com
+                        # opp_life==0 e o ataque do lider com folga real de poder
+                        # (sem precisar de letal CERTIFICADO), score_attack_target
+                        # ja da 130 (nao 10000, pois can_lethal_this_turn exige
+                        # garantia mesmo no pior caso de defesa) -- mas o -100 de
+                        # REMOVE_THREAT (havia um Character ameacador em campo)
+                        # derrubava pra 30, perdendo pro ataque ao Character. Vida
+                        # 0/1 ja e o MESMO sinal que os bonus LETHAL/PREVENT_COMBO
+                        # respeitam -- as penalidades de postura devem ceder aqui
+                        # tambem, nao so os bonus.
+                        opp_life_critica = opp.life_count() <= 1
                         if priority == 'LETHAL':       s_leader += 500   # foco em fechar
-                        elif priority == 'DEFENSIVE':  s_leader -= 80    # não exponha à toa
-                        elif priority == 'REMOVE_THREAT': s_leader -= 100 # remova antes
+                        elif priority == 'DEFENSIVE' and not opp_life_critica:  s_leader -= 80    # não exponha à toa
+                        elif priority == 'REMOVE_THREAT' and not opp_life_critica: s_leader -= 100 # remova antes
                         # PREVENT_COMBO (achado 07/07): oponente pode virar o
                         # jogo reanimando o trash no turno dele -- correr o
                         # clock agora (antes da virada) vale mais que o normal,
