@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP16-118",
+      "name": "OP16-118",
+      "count": 2
+    },
+    {
+      "code": "OP16-015",
+      "name": "Monkey D. Luffy",
+      "count": 1
+    },
+    {
+      "code": "OP14-018",
+      "name": "OP14-018",
+      "count": 1
+    },
+    {
+      "code": "OP16-014",
+      "name": "Marco",
+      "count": 1
+    },
+    {
+      "code": "OP16-017",
+      "name": "LittleOars Jr.",
+      "count": 1
+    },
+    {
+      "code": "OP16-004",
+      "name": "OP16-004",
+      "count": 1
+    },
+    {
+      "code": "OP16-003",
+      "name": "Edward Newgate",
+      "count": 1
+    },
+    {
+      "code": "OP16-005",
+      "name": "OP16-005",
+      "count": 1
+    },
+    {
+      "code": "OP13-016",
+      "name": "OP13-016",
+      "count": 1
+    },
+    {
+      "code": "OP16-011",
+      "name": "OP16-011",
+      "count": 1
+    },
+    {
+      "code": "OP16-010",
+      "name": "OP16-010",
+      "count": 1
+    },
+    {
+      "code": "EB01-002",
+      "name": "EB01-002",
+      "count": 1
+    }
+  ],
+  "total_seen": 13,
+  "leader": "OP16-001"
+}

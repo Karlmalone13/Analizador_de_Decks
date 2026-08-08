@@ -2,6 +2,20 @@
 
 **Última atualização:** 8 de agosto de 2026
 
+> 08/08/2026 (bloco 464): 🎉 **primeira vitória real do bot ao vivo**
+> (`Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01`). Achado
+> real (não corrigido) investigando a observação do usuário ("poderia
+> ter ganho 1 turno antes atacando a vida"): no turno 5, com o
+> oponente já em 0 vida, a decisão de atacar a vida com o líder (folga
+> de poder de +2000, deveria pontuar alto) registrou score **30** ao
+> vivo, mas reconstruindo o EXATO mesmo estado e chamando
+> `score_attack_target` isoladamente o resultado é **130** — mesmos
+> dados, resultado diferente. Aponta pra um bug real onde a busca
+> contrafactual usa um estado interno diferente do que fica gravado em
+> `state_before` na telemetria. Causa raiz não localizada — precisa de
+> instrumentação por dentro da busca (não só reconstrução externa) na
+> próxima sessão. Ver bloco 464 do HANDOFF.
+
 > 08/08/2026 (bloco 463): 3 logs pedidos pelo usuário bancados (humano
 > x humano, sem bot — sem telemetria aplicável). Achado operacional
 > importante: `CombatLogs`/`AutoSaved` são sobrescritos AO VIVO pelo

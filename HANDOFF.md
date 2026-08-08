@@ -1,5 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-08 (464) - Claude (sessao local) - PRIMEIRA VITORIA REAL DO BOT AO VIVO (Rocks.D.Xebec-B vs Portgas.D.Ace-R, 2026-08-08T10.55.01) + achado real (nao corrigido) no score de ataque ao lider no turno 5
+
+Marco historico: bot venceu uma partida real ao vivo pela primeira vez.
+Log banco (`Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01`,
+bot_side=p2, 11 turnos).
+
+Usuario reportou: bot poderia ter vencido 1 turno antes se tivesse
+atacado a VIDA em vez de um Character no turno 5. Investigado via
+telemetria + reconstrucao ao vivo do estado exato.
+
+**Contexto confirmado, sem bug**: no inicio do turno 5, o oponente
+(usuario) ja estava com 0 cartas de vida (qualquer ataque que conecte
+vence). Primeiro atacante (Marco, OP16-014) tentou o ataque letal e foi
+neutralizado pela defesa REAL do usuario (Shiki debuff -3000 no
+atacante + Fullalead buff +1000 no lider defensor, ambos reativos,
+informacao que o motor nao tem antes do ataque ser declarado) --
+"Attack Fails" no log real. Isso e defesa legitima, nao bug.
+
+**Achado real (bug confirmado, causa raiz NAO fechada)**: a decisao
+SEGUINTE (o proprio lider do bot, OP16-001/Ace, decidindo se ataca a
+vida) tinha atk_power=7000 vs lider do oponente=5000 (folga de +2000,
+sem precisar de DON) e vida do oponente ainda em 0 -- deveria pontuar
+alto (`opp_life==0` -> 10000 se letal certo, 130 caso contrario, por
+`score_attack_target`). O valor REGISTRADO na decisao ao vivo foi
+**30**. Reconstrui o EXATO `state_before` dessa decisao (via
+`GameStateDto.model_validate` + `_dto_to_gs` + chamada direta a
+`score_attack_target(ace, 'leader', None)`) e a funcao, isolada,
+devolve **130** para os mesmos dados -- `activate_cost=0`,
+`opp_counter_potential=0`, `power_buff=0`, nada explica os -100
+pontos. Ou seja: o MESMO calculo, com o MESMO snapshot, da resultado
+diferente do que foi realmente usado na hora -- indica que o valor
+REAL usado na decisao ao vivo vinha de um estado interno diferente do
+que `state_before` capturou (provavelmente um clone/simulacao dentro
+da busca contrafactual, nao o estado "de fora"). **Nao commitado** --
+achado real mas sem localizar a linha exata da divergencia; proxima
+sessao deve instrumentar por dentro da busca (nao so comparar
+snapshots de fora) pra achar onde o score diverge de 130 pra 30.
+
+`server.py`/bot reiniciados nesta sessao apos o BepInEx ter sido
+apagado de novo pelo update do jogo (`setup_bepinex.ps1` resolveu,
+mesmo procedimento documentado).
+
 ## 2026-08-08 (463) - Claude (sessao local) - banca 3 logs pedidos pelo usuario (partidas humano x humano, sem bot) -- recuperados via log `_p2` apos o client sobrescrever os arquivos originais em pleno diagnostico
 
 Usuario pediu pra salvar 3 combat logs (`2026-08-05T23.28.24`,
