@@ -58,6 +58,13 @@ scriptis_da_ia/metrics/live_runs/
 scriptis_da_ia/decision_audit_*.json
 scriptis_da_ia/_debug_prompt_bbox/
 
+# scripts de calibracao self-play descartaveis (mesma convencao dos blocos
+# HANDOFF 449/459/461+: sweep de constante calibrada via self-play pareado,
+# nunca faz parte do produto -- a decisao/tabela de resultado fica
+# documentada em HANDOFF.md, nao o script nem o JSON bruto)
+scriptis_da_ia/calibrate_*.py
+scriptis_da_ia/metrics/calibrate_*.json
+
 # vercel
 .vercel
 
