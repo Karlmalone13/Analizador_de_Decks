@@ -2,6 +2,19 @@
 
 **Última atualização:** 8 de agosto de 2026
 
+> 08/08/2026 (bloco 467): **fecha a pendência do bloco 466** — Teach 10
+> (OP09-093, `negate_effect`) atacava antes de ativar, quando deveria
+> ser o inverso. `_score_activate_main` nunca tinha o equivalente do
+> `HABILITA_ATAQUE_BONUS` que `_score_play_action` já tem pra "sair
+> antes do ataque". Fix: categoria remoção/controle ganha o bônus
+> (+60) quando há atacante disponível e o alvo tem valor real;
+> `negate_effect` especificamente ganha +150 extra (protege TODOS os
+> ataques do turno, não só remove um alvo). Validado com o cenário
+> exato da partida real: activate foi de 170 (perdia pro ataque de
+> 288) pra 380 (agora supera). 2 testes novos, `smoke_fast.py`/
+> `smoke_test.py` 100%, `audit_replay.py --n 20 --seed 84`: 0
+> exceções, 0 anomalias. Ver bloco 467 do HANDOFF.
+
 > 08/08/2026 (bloco 466): **corrigido bug real do Doc Q** —
 > `order_target_candidates` nunca excluía candidato de campo que batia
 > a zona certa mas não o filtro numérico (`cost_lte`/`power_lte`/

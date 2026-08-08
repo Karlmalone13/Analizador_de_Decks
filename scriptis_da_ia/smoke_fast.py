@@ -10086,6 +10086,7 @@ def main() -> int:
     test_place_hand_bottom_deck_custo_op01_011_e_op09_060_07_08()
     test_ataque_ao_lider_com_vida_critica_ignora_penalidade_de_postura()
     test_order_target_candidates_respeita_filtro_numerico_cost_lte()
+    test_activate_negate_effect_habilita_ataque_sai_antes_do_ataque()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -11779,6 +11780,65 @@ def test_order_target_candidates_respeita_filtro_numerico_cost_lte() -> None:
     order2 = sim_bridge.order_target_candidates(me, opp2, cands2, actor_code="OP16-109")
     check("Doc Q sem nenhum alvo valido (custo<=1) devolve lista vazia, nao fica clicando",
           order2 == [])
+
+
+def test_activate_negate_effect_habilita_ataque_sai_antes_do_ataque() -> None:
+    """
+    Achado real 08/08 (usuario, partida ao vivo): Teach 10 (OP09-093,
+    negate_effect no lider/personagem do oponente + trava ataque)
+    atacou PRIMEIRO e so ativou DEPOIS, quando deveria ser o inverso --
+    anular a resposta do oponente ANTES do ataque. _score_play_action ja
+    tinha HABILITA_ATAQUE_BONUS pra carta que precisa ENTRAR pra
+    habilitar o ataque, mas _score_activate_main nunca tinha o
+    equivalente pra ATIVAR uma habilidade. Fix: bonus generico (+
+    HABILITA_ATAQUE_BONUS) pra categoria remocao/controle quando ha
+    atacante disponivel, com bonus extra especifico pro negate_effect
+    (protege TODOS os ataques do turno, nao so remove um alvo). Prova a
+    logica condicional comparando o MESMO ativar com e sem atacante
+    disponivel (com atacante restado, o bonus "sair antes do ataque"
+    nao significa nada e nao deve aplicar).
+
+    Validado tambem contra o cenario exato da partida real (idx201,
+    decisions_2026-08-08T11.43.12.jsonl, reconstrucao manual via
+    GameStateDto): sem o fix, activate=170 perdia pro ataque=288; com
+    o fix, activate=380 supera o melhor ataque=288.
+    """
+    teach_leader = real_card("OP16-080")
+    opp_leader = real_card("OP17-039")  # Xebec, alvo real do negate_effect
+    opp_char = real_card("OP17-050")  # Streusen, alvo de campo pra viabilizar o step
+
+    def _score_activate(atacante_disponivel: bool) -> float:
+        teach10 = real_card("OP09-093")
+        me = GameState(leader=teach_leader, don_available=3, turn=5)
+        if atacante_disponivel:
+            teach10.rested = False
+            atacante = real_card("OP16-119")
+            atacante.rested = False
+            atacante.just_played = False
+            me.field_chars = [teach10, atacante]
+        else:
+            # teach10 ATIVO (nao precisa restar pra ativar -- sem custo
+            # rest_self) mas just_played=True SEM rush o impede de
+            # ATACAR (doenca de invocacao) sem impedir ativar; lider
+            # tambem restado -- ninguem pode atacar este turno.
+            teach10.rested = False
+            teach10.just_played = True
+            teach_leader.rested = True
+            me.field_chars = [teach10]
+        opp = GameState(leader=opp_leader, turn=5)
+        opp.field_chars = [opp_char]
+        engine = DecisionEngine(me, opp)
+        match = OPTCGMatch((teach_leader, []), (opp_leader, []))
+        actions = match._generate_and_score_actions(me, opp, engine)
+        return next(a[0] for a in actions if a[1] == "activate" and a[2].code == "OP09-093")
+
+    s_com_atacante = _score_activate(True)
+    teach_leader.rested = False
+    s_sem_atacante = _score_activate(False)
+    check("negate_effect com atacante disponivel pontua mais que sem atacante (habilita_ataque so faz sentido com ataque pra proteger)",
+          s_com_atacante > s_sem_atacante)
+    check("diferenca bate com a ordem de grandeza esperada (HABILITA_ATAQUE_BONUS=60 + 150 extra do negate_effect)",
+          190 <= (s_com_atacante - s_sem_atacante) <= 215)
 
 
 if __name__ == "__main__":

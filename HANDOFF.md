@@ -1,5 +1,35 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-08 (467) - Claude (sessao local) - CORRIGIDO: _score_activate_main nao tinha o equivalente do HABILITA_ATAQUE_BONUS -- Teach 10 (negate_effect) atacava antes de ativar, quando deveria ser o inverso
+
+Corrige a pendencia do bloco 466 (Teach 10 sequenciado errado --
+atacava ANTES de ativar `negate_effect`, quando deveria ser o
+inverso). Mesma causa raiz do fix do Edward Newgate (bloco 420,
+"jogar antes de atacar"), mas `_score_activate_main` nunca tinha o
+equivalente do `HABILITA_ATAQUE_BONUS` que `_score_play_action` ja
+tem.
+
+Fix: dentro da categoria "remocao/controle" de `_score_activate_main`,
+quando ha um alvo de valor real (base>0) E ainda existe um atacante
+disponivel este turno (`character_can_attack_now` no lider ou em
+qualquer Character), soma `HABILITA_ATAQUE_BONUS` (+60, mesma
+constante do `play`). `negate_effect` especificamente ganha +150
+extra -- categoricamente diferente do resto (ko/bounce/debuff removem
+UM alvo; negar a resposta do oponente protege TODOS os ataques do
+turno, nao so um).
+
+Validado com o cenario EXATO da partida real (reconstrucao via
+`GameStateDto.model_validate` + `_generate_and_score_actions`, idx201
+do log `decisions_2026-08-08T11.43.12.jsonl`): activate do Teach 10
+foi de 170 (perdia pro ataque de 288) pra **380** (agora supera).
+
+2 testes novos (compara o MESMO activate com/sem atacante disponivel,
+prova que o bonus so aplica quando faz sentido).
+`smoke_fast.py`/`smoke_test.py` 100%. `audit_replay.py --n 20
+--seed 84`: 0 excecoes, 0 anomalias.
+
+`server.py` reiniciado apos o fix.
+
 ## 2026-08-08 (466) - Claude (sessao local) - CORRIGIDO: order_target_candidates ignorava filtro numerico (cost_lte/power_lte/power_gte) do proprio step -- Doc Q (e mais 231 cartas) travava/anulava efeito quando faltava alvo pro 2o+ slot
 
 Log `Rocks.D.Xebec-B_x_Marshall.D.Teach-BY_2026-08-08T12.15.57` banco

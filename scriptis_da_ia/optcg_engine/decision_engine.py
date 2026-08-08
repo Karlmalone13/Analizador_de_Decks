@@ -13825,6 +13825,35 @@ class OPTCGMatch:
                 # (-60 sem alvo de valor, 100+min(valor,70) com alvo).
                 alvo_valor = self._best_removal_target_value(opp, steps, engine)
                 base = -60 if alvo_valor <= 0 else 100 + min(alvo_valor * 0.3, 70)
+            # HABILITA_ATAQUE, agora tambem pra ACTIVATE (achado real
+            # 08/08, usuario -- partida ao vivo): _score_play_action ja
+            # da HABILITA_ATAQUE_BONUS (+60) pra carta que precisa
+            # ENTRAR pra habilitar o ataque (kos/remocao/buff/draw),
+            # priorizando sair antes do ataque no mesmo turno -- mas
+            # _score_activate_main nunca tinha o equivalente. Teach 10
+            # (OP09-093, negate_effect no lider/personagem do oponente +
+            # trava ataque) atacou PRIMEIRO e so ativou DEPOIS, quando
+            # deveria ser o inverso (anular a resposta do oponente ANTES
+            # do ataque, senao o oponente ainda pode counterar/bloquear
+            # normalmente). So aplica quando ha um alvo de valor real
+            # (base>0, mesmo criterio ja usado acima) E ainda existe um
+            # atacante disponivel este turno -- sem atacante, "sair
+            # antes do ataque" nao significa nada.
+            tenho_atacante = (character_can_attack_now(p.leader, p, opp)
+                              or any(character_can_attack_now(c, p, opp) for c in p.field_chars))
+            if base > 0 and tenho_atacante:
+                base += HABILITA_ATAQUE_BONUS
+                # negate_effect e categoricamente diferente do resto da
+                # categoria (ko/bounce/debuff removem/enfraquecem UM alvo;
+                # negar a resposta do oponente protege TODOS os meus
+                # ataques deste turno, nao so um) -- bonus extra pra
+                # garantir que sai antes mesmo quando ha um ataque de
+                # score alto competindo. Validado com o cenario exato da
+                # partida real (turno 5): sem este extra, 100+60=160
+                # ainda perdia pro ataque de 288; com o extra, ativa
+                # primeiro como deveria.
+                if 'negate_effect' in actions_list:
+                    base += 150
         elif any(a == 'play_from_trash' for a in actions_list):
             # Achado real 09/07 (Five Elders OP13-082 nunca ativava, mesmo
             # com o board quase morrendo e a lixeira cheia de alvos
