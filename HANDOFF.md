@@ -1,5 +1,17 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-09 (474) - Claude (sessao local) - Registra tarefa de auditoria de cobertura da pontuacao dinamica no topo do TODO.md, a pedido do usuario, pra uma sessao NOVA comecar direto nela
+
+Usuario pediu explicitamente pra registrar a discussao da pontuacao
+"dinamica" (bloco 473) como tarefa propria de sessao nova, em vez de
+resolver reativo. TODO.md atualizado com escopo completo (o que ja
+existe no motor vs o gap real -- mao do oponente nunca entra em
+nenhuma funcao de score), passo a passo (auditar cobertura primeiro,
+so depois calibrar por volume, nunca reescrita ampla de uma vez) e a
+evidencia ja levantada (telemetria + audit_real_losses do Teach 119).
+Nenhuma mudanca de codigo nesta sessao -- so registro, pronto pra
+sessao nova ler e ir direto ao ponto.
+
 ## 2026-08-09 (473) - Claude (sessao local) - audit_real_losses.py agora OBRIGATORIO apos derrota bancada (pedido do usuario); rodado na partida do bloco 472 -- turno do Teach 119 diverge (motor de hoje removeria 2 personagens em vez de jogar a carta)
 
 Continuacao da discussao do bloco 472. Usuario questionou minha leitura
