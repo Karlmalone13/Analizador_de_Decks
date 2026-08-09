@@ -1,0 +1,1007 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Marshall D. Teach",
+          "code": "OP16-080"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Rocks D. Xebec",
+          "code": "OP17-039"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-109",
+          "card_name": "Doc Q",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP09-096",
+            "OP06-115",
+            "OP16-119",
+            "OP09-093"
+          ],
+          "board": [
+            "OP16-109"
+          ],
+          "trash": [],
+          "life": 4,
+          "rested": {
+            "OP16-109": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-052",
+            "OP17-042",
+            "OP17-054",
+            "OP17-052",
+            "OP17-040"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-052",
+            "OP17-042",
+            "OP17-054",
+            "OP17-052",
+            "OP17-040",
+            "OP17-044"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "OP09-096",
+            "OP06-115",
+            "OP16-119",
+            "OP09-093"
+          ],
+          "trash": [],
+          "board": [
+            "OP16-109"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-109": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-096",
+          "card_name": "This is MY AGE!!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Jesus Burgess [\"OP09-086\">OP09-086]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP06-115",
+            "OP16-119",
+            "OP09-093",
+            "EB04-058",
+            "OP09-086"
+          ],
+          "board": [
+            "OP16-109"
+          ],
+          "trash": [
+            "OP09-096",
+            "EB04-058",
+            "OP09-096"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-052",
+            "OP17-042",
+            "OP17-054",
+            "OP17-052",
+            "OP17-040",
+            "OP17-044",
+            "OP17-053"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-044",
+          "card_name": "Captain John",
+          "effects": [
+            "Draw 1 Card",
+            "Rest Captain John [\"OP17-044\">OP17-044]",
+            "Trash Barbell [\"OP17-053\">OP17-053]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Captain John [\"OP17-044\">OP17-044]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-052",
+            "OP17-042",
+            "OP17-054",
+            "OP17-052",
+            "OP17-040",
+            "OP17-056",
+            "OP17-049",
+            "OP17-118"
+          ],
+          "board": [
+            "OP17-044"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-044"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "OP16-119",
+            "OP09-093",
+            "EB04-058"
+          ],
+          "trash": [
+            "OP09-096",
+            "EB04-058",
+            "OP09-096",
+            "OP06-115",
+            "OP09-086"
+          ],
+          "board": [
+            "OP16-109"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-104",
+          "card_name": "Catarina Devon",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-119",
+            "OP09-093",
+            "EB04-058"
+          ],
+          "board": [
+            "OP16-109",
+            "OP16-104"
+          ],
+          "trash": [
+            "OP09-096",
+            "EB04-058",
+            "OP09-096",
+            "OP06-115",
+            "OP09-086"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-104": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-052",
+            "OP17-042",
+            "OP17-054",
+            "OP17-052",
+            "OP17-040",
+            "OP17-049",
+            "OP17-118"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-044",
+            "OP17-056"
+          ],
+          "board": [
+            "OP17-044"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-057",
+          "card_name": "Fullalead",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-049",
+          "card_name": "Charlotte Linlin",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Captain John",
+          "attacker_code": "OP17-044",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB04-058"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Don Marlon [\"OP17-052\">OP17-052]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-052",
+            "OP17-042",
+            "OP17-054",
+            "OP17-040",
+            "OP17-118",
+            "OP17-054",
+            "OP17-046"
+          ],
+          "board": [
+            "OP17-044",
+            "OP17-049"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-044",
+            "OP17-056",
+            "OP17-052"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-044": 1,
+            "OP17-049": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-096",
+            "EB04-058",
+            "OP09-096",
+            "OP06-115",
+            "OP09-086",
+            "EB04-058",
+            "OP09-093",
+            "EB04-058"
+          ],
+          "board": [
+            "OP16-109",
+            "OP16-104"
+          ],
+          "life": 3,
+          "rested": {
+            "OP16-104": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Catarina Devon",
+          "attacker_code": "OP16-104",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-104",
+          "card_name": "Catarina Devon",
+          "effects": [
+            "Buff Self 4000"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "OP16-109",
+          "to_name": "Doc Q",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Doc Q",
+          "attacker_code": "OP16-109",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-119",
+            "OP16-109"
+          ],
+          "board": [
+            "OP16-109",
+            "OP16-104"
+          ],
+          "trash": [
+            "OP09-096",
+            "EB04-058",
+            "OP09-096",
+            "OP06-115",
+            "OP09-086",
+            "EB04-058",
+            "OP09-093",
+            "EB04-058"
+          ],
+          "life": 3,
+          "rested": {
+            "OP16-109": 1,
+            "OP16-104": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-052",
+            "OP17-040",
+            "OP17-118",
+            "OP17-054",
+            "OP17-046",
+            "OP17-046"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-044",
+            "OP17-056",
+            "OP17-052",
+            "OP17-042",
+            "OP17-054",
+            "OP17-044"
+          ],
+          "board": [
+            "OP17-049"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-049": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-040",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-049",
+          "to_name": "Charlotte Linlin",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-109"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Ganzui [\"OP17-043\">OP17-043]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-052",
+            "OP17-118",
+            "OP17-054",
+            "OP17-046",
+            "OP17-046",
+            "OP17-055",
+            "OP17-048",
+            "OP17-054"
+          ],
+          "board": [
+            "OP17-040"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-044",
+            "OP17-056",
+            "OP17-052",
+            "OP17-042",
+            "OP17-054",
+            "OP17-044",
+            "OP17-049",
+            "OP17-043"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-040": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-096",
+            "EB04-058",
+            "OP09-096",
+            "OP06-115",
+            "OP09-086",
+            "EB04-058",
+            "OP09-093",
+            "EB04-058",
+            "OP16-119",
+            "OP16-109"
+          ],
+          "board": [
+            "OP16-109",
+            "OP16-104"
+          ],
+          "life": 2,
+          "rested": {
+            "OP16-109": 1,
+            "OP16-104": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Catarina Devon",
+          "attacker_code": "OP16-104",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-104",
+          "card_name": "Catarina Devon",
+          "effects": [
+            "Buff Self 5000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "OP16-109",
+          "to_name": "Doc Q",
+          "total": 5
+        },
+        {
+          "type": "play",
+          "card": "OP12-112",
+          "card_name": "Baby 5",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Doc Q",
+          "attacker_code": "OP16-109",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-119"
+          ],
+          "board": [
+            "OP16-109",
+            "OP16-104",
+            "OP12-112"
+          ],
+          "trash": [
+            "OP09-096",
+            "EB04-058",
+            "OP09-096",
+            "OP06-115",
+            "OP09-086",
+            "EB04-058",
+            "OP09-093",
+            "EB04-058",
+            "OP16-119",
+            "OP16-109"
+          ],
+          "life": 2,
+          "rested": {
+            "OP16-109": 1,
+            "OP16-104": 1,
+            "OP12-112": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-052",
+            "OP17-118",
+            "OP17-054",
+            "OP17-046",
+            "OP17-055",
+            "OP17-048",
+            "OP17-050",
+            "OP17-048"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-044",
+            "OP17-056",
+            "OP17-052",
+            "OP17-042",
+            "OP17-054",
+            "OP17-044",
+            "OP17-049",
+            "OP17-043",
+            "OP17-046",
+            "OP17-054"
+          ],
+          "board": [
+            "OP17-040"
+          ],
+          "life": 1,
+          "rested": {
+            "OP17-040": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-046",
+          "card_name": "Gloriosa",
+          "effects": [
+            "Send Baby 5 [\"OP12-112\">OP12-112] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Doc Q [\"OP16-109\">OP16-109]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Don Marlon [\"OP17-052\">OP17-052]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "Catarina Devon [\"OP16-104\">OP16-104] can't attack next turn"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-052",
+          "card_name": "Don Marlon",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP17-040",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-118",
+            "OP17-055",
+            "OP17-048",
+            "OP17-050",
+            "OP17-048",
+            "OP17-040",
+            "OP17-053",
+            "OP17-056"
+          ],
+          "board": [
+            "OP17-040",
+            "OP17-046",
+            "OP17-054",
+            "OP17-052"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-044",
+            "OP17-052",
+            "OP17-042",
+            "OP17-054",
+            "OP17-044",
+            "OP17-049",
+            "OP17-043",
+            "OP17-046",
+            "OP17-054",
+            "OP17-052"
+          ],
+          "life": 1,
+          "rested": {
+            "OP17-040": 1,
+            "OP17-046": 1,
+            "OP17-054": 1,
+            "OP17-052": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP16-119",
+            "OP12-112",
+            "OP16-108"
+          ],
+          "trash": [
+            "OP09-096",
+            "EB04-058",
+            "OP09-096",
+            "OP06-115",
+            "OP09-086",
+            "EB04-058",
+            "OP09-093",
+            "EB04-058",
+            "OP16-119",
+            "OP16-109",
+            "OP16-109",
+            "OP09-096",
+            "OP16-115",
+            "OP09-095"
+          ],
+          "board": [
+            "OP16-104"
+          ],
+          "life": 1,
+          "rested": {
+            "OP16-104": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP12-112",
+            "OP16-108",
+            "OP16-109"
+          ],
+          "board": [
+            "OP16-104",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-096",
+            "EB04-058",
+            "OP09-096",
+            "OP06-115",
+            "OP09-086",
+            "EB04-058",
+            "OP09-093",
+            "EB04-058",
+            "OP16-119",
+            "OP16-109",
+            "OP16-109",
+            "OP09-096",
+            "OP16-115",
+            "OP09-095"
+          ],
+          "life": 1,
+          "rested": {
+            "OP16-119": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-118",
+            "OP17-055",
+            "OP17-048",
+            "OP17-050",
+            "OP17-048",
+            "OP17-040",
+            "OP17-056"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-044",
+            "OP17-052",
+            "OP17-042",
+            "OP17-054",
+            "OP17-044",
+            "OP17-049",
+            "OP17-043",
+            "OP17-046",
+            "OP17-054",
+            "OP17-052",
+            "OP17-053"
+          ],
+          "board": [
+            "OP17-040",
+            "OP17-046",
+            "OP17-054",
+            "OP17-052"
+          ],
+          "life": 1,
+          "rested": {
+            "OP17-040": 1,
+            "OP17-046": 1,
+            "OP17-054": 1,
+            "OP17-052": 1
+          }
+        }
+      }
+    }
+  ]
+}

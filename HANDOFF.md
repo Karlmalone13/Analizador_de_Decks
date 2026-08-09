@@ -1,5 +1,72 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-09 (472) - Claude (sessao local) - CORRIGE regressao severa dos blocos 470/471: _relevant_blocks mistura on_play+trigger da MESMA carta, cravando actor_opp_only/actor_battlefield_only errado -- Teach 119 nunca completava o on_play (usuario: "jogou o teach 8 mas nao ganhou vida")
+
+Nova partida (`Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T17.04.22`,
+ja no banco, bot=p1 perdeu). Usuario reportou 2 observacoes: (a) turno
+5, por que o motor anexou 5 DON no Doc Q e atacou em vez de jogar
+"Teach 8" (OP16-119); (b) turno 6, jogou o Teach 8 mas nao ganhou vida.
+
+**Telemetria lida na ordem obrigatoria**: `live_2026-08-09T17.04.24.json`
+(`commit_consistency` confirma commit `c60cc14`, o fix do bloco 471, já
+ativo nesta partida) primeiro, depois `decision_summary.py --latest` +
+`decisions_2026-08-09T11.20.20.jsonl` direto.
+
+**(b) CONFIRMADO, bug real GRAVE, corrigido.** OP16-119 (Marshall D.
+Teach, custo 8) tem `on_play` ("look at top 3, add 1 to hand, rest to
+bottom, gain up to 1 Life from deck top" -- NENHUM alvo battlefield) E
+um bloco `trigger` de vida SEPARADO ("[Trigger] K.O. up to 1 opp
+Character cost<=5 / negate_effect opp_character cost<=5", esse sim
+battlefield-only). `_relevant_blocks(actor_code, in_combat=False)`
+sempre devolveu os DOIS blocos JUNTOS (nenhum dos dois e gatilho de
+combate) -- os steps do `on_play` sem alvo implicito
+(`look_top_deck`/`add_to_hand` nao mencionam personagem/lider,
+`_implied_target` retorna `''`) "somem" da conta (filtrados por `if
+t`), sobrando so os alvos `opp_character` do `trigger` -- isso cravava
+`actor_opp_only=True` E `actor_battlefield_only=True` pra uma carta
+cujo `on_play` de verdade PRECISA de `own_hand`/`top_deck`.
+
+Esse bug JA EXISTIA antes desta sessao (deteccao errada, mas so
+DEPRIORITIZAVA essas zonas). Os fixes dos blocos 470/471 (exclusao
+DURA pro Doc Q) o transformaram numa FALHA TOTAL: decision idx170/172/174
+(mesmo padrao "chamada repetida" do Doc Q) mostrou 68 candidatos reais
+entrando em `order_target_candidates`, so 24 sobrevivendo -- NENHUM de
+`top_deck`/`own_hand` (o "look at top 3, add 1 to hand" nunca
+completava, e o `gain_life` subsequente nunca tinha o que escolher).
+Confirma exatamente a observacao do usuario.
+
+**Fix**: `order_target_candidates` agora computa os alvos relevantes
+UMA VEZ (`_alvos_relevantes`) e rastreia "veneno" (`_poison`) -- qualquer
+step SEM alvo implicito cuja acao nao esta na allowlist de acoes
+seguras (`decision_engine._SAFE_NO_TARGET_ACTIONS`, ja existente,
+reusada) desqualifica TANTO `actor_opp_only` QUANTO
+`actor_battlefield_only` pra esse ator, em vez de ser silenciosamente
+ignorado. Reproduzido com o candidato REAL da partida: antes do fix,
+`top_deck`/`own_hand` ficavam vazios; depois, 67/68 sobrevivem (so 1
+excluido, um `opp_board` de custo alto irrelevante pro `on_play`,
+comportamento correto e inofensivo).
+
+Teste novo em `smoke_fast.py`
+(`test_order_target_candidates_nao_mistura_blocos_nao_combate_diferentes`),
+reproduz a lista real da decisao idx170.
+
+**(a) Investigado, jogada DEFENSAVEL, nao corrigida.** No turno 5, Teach
+8 (OP16-119, score=190, `play`) ESTAVA disponivel (9 DON ativo, custo
+8 pagavel) mas o motor escolheu `attach_don` no Doc Q (score=265) e
+atacar com ele em vez de jogar Teach 8. Trade-off real: Teach 8 nao tem
+Rush (nao ataca no turno em que entra), entao jogar ele nesse turno
+"gasta" o turno todo sem converter em dano imediato, enquanto anexar
+DON no Doc Q e atacar converte o mesmo pool de recursos em dano AGORA.
+Gap de score (265 vs 190) nao e enorme mas e consistente com essa
+logica. Nao investigado a fundo se o peso relativo entre "tempo agora"
+vs "desenvolvimento com upside" (busca+vida+corpo de 10000) esta bem
+calibrado — fica como pendencia SECUNDARIA (nao urgente, jogada
+plausivel) pra proxima sessao, caso o padrao se repita.
+
+Validado: `smoke_fast.py` (todos OK, incluindo o teste novo),
+`smoke_test.py` completo (`TODOS OS TESTES PASSARAM`), `audit_replay.py
+--n 20` (seed=98) em andamento.
+
 ## 2026-08-09 (471) - Claude (sessao local) - Investiga as 4 observacoes do usuario (mesma partida do bloco 470): 2 bugs reais achados+corrigidos (regressao do proprio fix 470 + Shiryu nunca jogado), 2 nao-bugs explicados (redirects Doc Q e Burgess), 1 achado real NAO corrigido (line search as vezes ignora o score imediato mais alto)
 
 Continuacao direta do bloco 470. Apos o fix do Doc Q, investiguei as 4

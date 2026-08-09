@@ -2,6 +2,30 @@
 
 **Última atualização:** 9 de agosto de 2026
 
+> 09/08/2026 (bloco 472): **corrige regressão SEVERA introduzida pelos
+> próprios blocos 470/471** — `_relevant_blocks` sempre misturou
+> `on_play` e `trigger` da MESMA carta (nenhum dos dois é gatilho de
+> combate), então uma carta com os dois blocos resolvendo em momentos
+> DIFERENTES (Marshall D. Teach OP16-119: on_play sem alvo battlefield
+> nenhum + trigger de vida com alvo opp_character) cravava
+> `actor_opp_only`/`actor_battlefield_only` errado — os steps do
+> on_play sem alvo implícito "somem" da conta, sobrando só os do
+> trigger. Antes só deprioritizava (lento, mas funcionava); com a
+> exclusão DURA dos blocos 470/471, isso zerava `own_hand`/`top_deck`
+> por completo — o "look at top 3, add 1 to hand" do Teach 119 nunca
+> completava (usuário: "jogou o teach 8 mas não ganhou vida", 68
+> candidatos reais → só 24 sobreviviam, nenhum top_deck/own_hand). Fix:
+> qualquer step sem alvo implícito cuja ação não está na allowlist seg
+> ura (`_SAFE_NO_TARGET_ACTIONS`) agora "envenena" as duas detecções em
+> vez de ser ignorado silenciosamente — reproduzido com o candidato
+> real da partida, 67/68 sobrevivem agora. Investigado também: turno 5,
+> por que anexou DON no Doc Q em vez de jogar o Teach 8 — jogada
+> DEFENSÁVEL (Teach 8 não tem Rush, não ataca no turno que entra;
+> attach_don+atacar converte o mesmo pool de DON em dano AGORA), não
+> corrigido, fica como pendência secundária se o padrão se repetir.
+> `smoke_fast`/`smoke_test` 100%, `audit_replay.py --n 20` (seed=98)
+> validado. Ver bloco 472 do HANDOFF.
+
 > **PENDENTE PRIORITARIO (bloco 471)**: `decisions_2026-08-09T09.57.32.jsonl`
 > idx 78 (turno 4) — o motor tinha `attack OP16-104 -> character OP17-042`
 > disponível com `score=277.0` (eligible/nao-excluido, matava o alvo) e

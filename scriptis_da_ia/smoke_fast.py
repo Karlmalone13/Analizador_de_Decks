@@ -10097,6 +10097,7 @@ def main() -> int:
     test_ataque_ao_lider_com_vida_critica_ignora_penalidade_de_postura()
     test_order_target_candidates_respeita_filtro_numerico_cost_lte()
     test_order_target_candidates_actor_battlefield_only_com_custo_de_mao()
+    test_order_target_candidates_nao_mistura_blocos_nao_combate_diferentes()
     test_activate_negate_effect_habilita_ataque_sai_antes_do_ataque()
     test_score_play_action_habilita_ataque_remocao_gated_por_atacante_08_08()
     test_score_activate_main_play_card_habilita_ataque_gated_por_atacante_08_08()
@@ -11883,6 +11884,56 @@ def test_order_target_candidates_actor_battlefield_only_com_custo_de_mao() -> No
     ee = de_mod.EffectExecutor(me, opp)
     check("_trash_value protege corpo de alto PODER mesmo com custo<7 (Shiryu > Devon)",
           ee._trash_value(shiryu) > ee._trash_value(devon))
+
+
+def test_order_target_candidates_nao_mistura_blocos_nao_combate_diferentes() -> None:
+    """
+    Achado real 09/08 (partida ao vivo, mesma sessao do fix do Doc Q):
+    Marshall D. Teach (OP16-119, custo 8) tem on_play "look at top 3,
+    add 1 to hand, rest to bottom, gain up to 1 Life from deck top" (SEM
+    nenhum alvo battlefield) E um bloco trigger de vida separado
+    ("[Trigger] K.O. up to 1 opp Character cost<=5 / negate_effect
+    opp_character cost<=5", target=opp_character -- ESSE sim
+    battlefield-only). _relevant_blocks(actor_code, in_combat=False)
+    devolve os DOIS blocos juntos (nenhum e gatilho de combate) -- sem
+    isolar "qual bloco esta resolvendo agora", os steps do on_play sem
+    alvo implicito (look_top_deck/add_to_hand nao mencionam personagem/
+    lider) somem da conta (_implied_target=='', filtrado), sobrando so
+    os alvos opp_character do trigger -- actor_opp_only E
+    actor_battlefield_only cravavam True pra uma carta cujo on_play
+    PRECISA de own_hand/top_deck. Com a exclusao DURA ja endurecida
+    pro Doc Q (bloco 470/471), isso zerava own_hand/top_deck da lista
+    real (68 candidatos -> 24 sobreviventes, so DON+opp_board+opp_leader)
+    -- o "look at top 3, add 1 to hand" nunca completava (usuario:
+    "jogou o teach 8 mas nao ganhou vida"). Fix: qualquer step sem alvo
+    implicito cuja acao NAO esta na allowlist de acoes seguras
+    (decision_engine._SAFE_NO_TARGET_ACTIONS) "envenena" as duas
+    deteccoes pra esse ator (nem opp_only nem battlefield_only aplicam),
+    em vez de ser silenciosamente ignorado.
+
+    Reproducao com o candidato REAL da partida (decision idx170,
+    decisions_2026-08-09T11.20.20.jsonl): 68 candidatos entrando, so 24
+    sobreviviam antes do fix (nenhum top_deck/own_hand).
+    """
+    real_card("OP16-119")  # confirma que a carta existe no banco antes de usar o codigo
+    me = GameState(leader=real_card("OP16-080"))
+    opp = GameState(leader=real_card("OP17-039"))
+
+    cands = [
+        {"id": 300, "zone": "top_deck", "code": "EB04-058"},
+        {"id": 60, "zone": "top_deck", "code": "OP09-086"},
+        {"id": 20, "zone": "top_deck", "code": "OP09-095"},
+        {"id": 220, "zone": "own_hand", "code": "OP12-112"},
+        {"id": 330, "zone": "own_hand", "code": "OP16-108"},
+        {"id": -290, "zone": "opp_board", "code": "OP17-040"},
+        {"id": -1, "zone": "opp_leader", "code": "OP17-039"},
+        {"id": 10008, "zone": "own_don_rested", "code": "Don"},
+    ]
+    order = sim_bridge.order_target_candidates(me, opp, cands, actor_code="OP16-119")
+    check("Teach 119 (on_play + trigger separados): top_deck NAO fica vazio",
+          {300, 60, 20} & set(order) == {300, 60, 20})
+    check("Teach 119 (on_play + trigger separados): own_hand NAO fica vazio",
+          {220, 330} & set(order) == {220, 330})
 
 
 def test_activate_negate_effect_habilita_ataque_sai_antes_do_ataque() -> None:

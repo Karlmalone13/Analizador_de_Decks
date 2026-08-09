@@ -1989,13 +1989,41 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     # primeiro. Generico: olha os targets (explicitos ou implicitos pelo
     # nome da acao) dos blocos RELEVANTES pro contexto atual: se todos
     # comecam com 'opp', nenhuma zona own_* compete.
+    # _relevant_blocks devolve TODOS os blocos nao-combate juntos (ex:
+    # on_play E trigger da MESMA carta, quando nenhum dos dois e um
+    # gatilho de combate) -- pra cartas com blocos DIFERENTES resolvendo
+    # em momentos DIFERENTES (ex: Marshall D. Teach OP16-119: on_play
+    # look_top_deck/add_to_hand/gain_life sem NENHUM alvo battlefield,
+    # trigger de vida ko/negate_effect target=opp_character), misturar os
+    # dois faz um step do on_play sem alvo implicito (_implied_target=='',
+    # filtrado por `if t`) "desaparecer" da conta, sobrando so os alvos
+    # opp_character do trigger -- actor_opp_only/actor_battlefield_only
+    # cravavam True pra uma carta cujo on_play PRECISA de own_hand/
+    # top_deck pra resolver. Achado real 09/08 (partida ao vivo): com a
+    # exclusao DURA ja endurecida pro Doc Q (bloco 470/471), essa deteccao
+    # errada zerava own_hand/top_deck da lista de candidatos do on_play do
+    # Teach 119 -- o "look at top 3, add 1 to hand" nunca completava
+    # (usuario: "jogou o teach 8 mas nao ganhou vida"). POISON: qualquer
+    # step sem alvo implicito cuja acao NAO esta na allowlist de acoes
+    # seguras (decision_engine._SAFE_NO_TARGET_ACTIONS -- resolvem sem
+    # pedir candidato de nenhuma zona nova) desqualifica as DUAS
+    # deteccoes pra esse ator, em vez de ser silenciosamente ignorado.
+    from optcg_engine.decision_engine import _SAFE_NO_TARGET_ACTIONS
     actor_opp_only = False
-    if actor_code and not (actor_copia_poder or actor_debuff_swing
-                            or actor_self_power_target is not None):
-        blocks = _relevant_blocks(actor_code, attacker_power > 0)
-        alvos = [t for block in blocks for s in block.get('steps', [])
-                 if (t := _implied_target(s))]
-        if alvos and all(t.startswith('opp') for t in alvos):
+    actor_battlefield_only = False
+    _alvos_relevantes, _poison = [], False
+    if actor_code:
+        for block in _relevant_blocks(actor_code, attacker_power > 0):
+            for s in block.get('steps', []):
+                t = _implied_target(s)
+                if t:
+                    _alvos_relevantes.append(t)
+                elif (s.get('action') or '') not in _SAFE_NO_TARGET_ACTIONS:
+                    _poison = True
+    if (actor_code and not _poison
+            and not (actor_copia_poder or actor_debuff_swing
+                     or actor_self_power_target is not None)):
+        if _alvos_relevantes and all(t.startswith('opp') for t in _alvos_relevantes):
             actor_opp_only = True
 
     # O ator so tem steps cujo target e Lider/Character EM CAMPO (ex:
@@ -2025,13 +2053,9 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     # actor_debuff_swing (tem um step debuff_power) E ainda assim ter outro
     # step (ex: o [Counter] da Divine Departure) cujo alvo e so lider/
     # personagem em campo. As duas perguntas sao ortogonais.
-    actor_battlefield_only = False
-    if actor_code:
-        blocks_bf = _relevant_blocks(actor_code, attacker_power > 0)
-        alvos_bf = [t for block in blocks_bf for s in block.get('steps', [])
-                    if (t := _implied_target(s))]
-        if alvos_bf and all(t in _BATTLEFIELD_TARGETS for t in alvos_bf):
-            actor_battlefield_only = True
+    if (actor_code and not _poison and _alvos_relevantes
+            and all(t in _BATTLEFIELD_TARGETS for t in _alvos_relevantes)):
+        actor_battlefield_only = True
 
     # Mesmo ator battlefield_only pode ter um custo de mao pagando o
     # efeito (ex: OP06-115, ver actor_effect_has_hand_cost) -- nesse caso
