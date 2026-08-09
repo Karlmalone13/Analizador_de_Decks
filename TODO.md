@@ -2,6 +2,26 @@
 
 **Última atualização:** 9 de agosto de 2026
 
+> **REGRA NOVA (bloco 473)**: `audit_real_losses.py` (+ `triage_real_
+> losses.py`) agora é OBRIGATÓRIO rodar sempre que um log de DERROTA do
+> bot é banco (não só "existe, use se quiser"). Ver `CLAUDE.md`/
+> `AGENTS.md` e `.claude/skills/optcg-live-log-triage/SKILL.md` (Step 4).
+
+> **PENDENTE (bloco 473)**: calibração `_score_play_action` vs
+> `attach_don`/`attack` quando competem pelo mesmo DON — 2 fontes de
+> evidência agora (telemetria da partida ao vivo: Teach 119 score=190
+> perdeu pro Doc Q attach_don+ataque=265; `audit_real_losses.py`: no
+> turno em que o Teach 119 foi jogado de verdade, o motor de hoje
+> preferiria remover 2 personagens do oponente via ataque). Achado à
+> parte (não explica o caso, mas é real): `_score_play_action` nunca
+> desconta custo de oportunidade do DON gasto, diferente de
+> `attach_don` — assimetria que FAVORECE "play", então não é a causa.
+> NÃO mexer com base numa partida só — precisa de auditoria de
+> cobertura + calibração por volume (ideia do usuário: pontuação mais
+> dinâmica considerando efeito/mecânica/mão própria e do oponente/
+> blocker/vidas/ameaças — maioria já existe no motor, gap real
+> identificado: tamanho da mão do OPONENTE não entra em lugar nenhum).
+
 > 09/08/2026 (bloco 472): **corrige regressão SEVERA introduzida pelos
 > próprios blocos 470/471** — `_relevant_blocks` sempre misturou
 > `on_play` e `trigger` da MESMA carta (nenhum dos dois é gatilho de

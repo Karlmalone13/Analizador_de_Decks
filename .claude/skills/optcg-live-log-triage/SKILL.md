@@ -78,14 +78,47 @@ decision-by-decision detail that has no priority signal on its own.
    suspicious. Shows the exact action chosen versus the best discarded
    alternatives with their scores, for each bot decision.
 
-## Step 4 — Compare against human play where relevant
+## Step 4 — If the bot LOST, run audit_real_losses.py (mandatory)
+
+Whenever the banked log is a loss for the bot side (check `winner` in the
+`logs/index.json` entry, or `bot_side` losing in the parsed log), run:
+
+```bash
+python audit_real_losses.py --log parsed/<canonical_name>.json
+```
+
+This is **mandatory**, not optional or "if there's time" — pedido explícito
+do usuário 09/08/2026, depois de uma sessão inteira reagindo decisão-a-decisão
+a partir só do combat log e da telemetria sem essa segunda opinião. It
+reconstructs the game state turn-by-turn from the historical snapshot and
+asks TODAY's engine (`OPTCGMatch.play_turn()`, the real engine, not a
+duplicate) what it would do — giving independent corroboration (or
+contradiction) for whatever the combat log/telemetry investigation already
+suggested, instead of relying on your own read of the raw log alone. Read
+the resulting `metrics/real_loss_audits/<nome_do_log>.json` report before
+concluding the investigation, and run `python triage_real_losses.py`
+afterward to classify each audited turn as MATCH (today's engine repeats
+the historical action — a stronger signal worth a closer look) vs DIVERGE
+(today's engine does something different — priority signal for manual
+review, not an automatic verdict either way).
+
+Skip only when the match is human-vs-human (no bot side to audit) or the
+bot won (the tool is specifically for losses — see its own docstring for
+why). Read the tool's documented limitations (top of `audit_real_losses.py`)
+before treating any single turn's divergence as a confirmed bug — deck
+order is shuffled (not the real historical order), opponent hand starts
+fully known (more information than the live bot had), and DON tracking is
+best-effort. Use it as a second opinion to weigh against the combat-log
+investigation, not a verdict on its own.
+
+## Step 5 — Compare against human play where relevant
 
 If the investigation calls for it, `compare_vs_human.py` reconstructs
 GameState from a snapshot and runs the Turn Planner to surface turn-by-turn
 divergences between what the bot did and what a human did in a similar
 spot.
 
-## Step 5 — Report efficiency with numbers
+## Step 6 — Report efficiency with numbers
 
 Don't narrate "the bot was inefficient" without a number attached. Run:
 
@@ -102,7 +135,7 @@ misleads. The two metrics that matter most for spotting inefficiency:
 (average DON attached when the bot attacks — low values point to a
 curve/ramp problem, not just bad luck).
 
-## Step 6 — Scope check
+## Step 7 — Scope check
 
 If this triage surfaces a real bug in bot decision-making, that's a
 legitimate follow-up but generally a separate task from this skill —

@@ -366,6 +366,23 @@ Para pular a checagem numa emergência (não recomendado): `git push --no-verify
 > ferramenta criada nesta sessão, `scriptis_da_ia/audit_real_losses.py`.
 > Sessões futuras devem SABER que ela existe e usá-la — não reinventar.
 
+> **OBRIGATÓRIO rodar, não só saber que existe** (pedido explícito do
+> usuário, 09/08/2026): sempre que um combat log de DERROTA do bot
+> (`winner` != `bot_side` no `logs/index.json`) for adicionado ao banco,
+> rode `audit_real_losses.py --log <parsed/....json>` (e depois
+> `triage_real_losses.py` pra classificar MATCH vs DIVERGE) ANTES de
+> considerar a investigação da partida terminada — não é opcional, não é
+> "se sobrar tempo". Motivo do pedido: uma sessão inteira reagindo
+> decisão-a-decisão só a partir do combat log cru e da telemetria, sem
+> essa segunda opinião independente do motor de hoje, arriscava
+> justificar cada escolha do bot com raciocínio pós-hoc em vez de
+> confirmar (ou contradizer) com uma fonte separada. Ver
+> [`.claude/skills/optcg-live-log-triage/SKILL.md`](.claude/skills/optcg-live-log-triage/SKILL.md)
+> (Step 4) pro passo a passo — o skill de triagem de log já foi
+> atualizado pra cobrir isso. Só pula quando a partida é humano-vs-
+> humano (sem lado bot pra auditar) ou o bot GANHOU (a ferramenta é
+> especificamente pra derrotas).
+
 **O que faz**: pega uma derrota REAL do bot contra humano (banco de logs,
 seção acima), reconstrói o estado do jogo (mão/campo/DON/vida) em cada
 turno do bot a partir do snapshot do log, e pergunta pro motor de HOJE

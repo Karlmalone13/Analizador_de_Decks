@@ -1,5 +1,59 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-09 (473) - Claude (sessao local) - audit_real_losses.py agora OBRIGATORIO apos derrota bancada (pedido do usuario); rodado na partida do bloco 472 -- turno do Teach 119 diverge (motor de hoje removeria 2 personagens em vez de jogar a carta)
+
+Continuacao da discussao do bloco 472. Usuario questionou minha leitura
+de "jogada defensavel" pro turno 5 (DON no Doc Q em vez de jogar Teach
+119) -- teve razao em pedir pra eu mostrar a conta em vez de so
+afirmar. Confirmei que `avaliar_carta` JA credita bonus de busca (+30)
+e ganho de vida (+15, +35 extra com vida<=2) pro Teach 119 (score
+final 190), mas ainda perdeu pro attach_don+ataque do Doc Q (265).
+Achado a parte (nao explica o caso, mas e real): `_score_play_action`
+nunca desconta custo de oportunidade do DON gasto, diferente de
+`attach_don` (desconto explicito por DON usado) -- assimetria que
+FAVORECE jogadas de "play" caras, entao nao explica por que o Teach
+119 perdeu; registrado como investigacao separada, nao mexido agora.
+
+Usuario levantou 2 pontos:
+
+1. **Ideia de pontuacao dinamica** (efeito, mecanica, mao propria/
+   oponente, blocker, vidas, numero de personagens/ameacas, etc.) --
+   maioria disso JA existe no motor (flags de efeito, vida propria/do
+   oponente com limiares, tamanho da mao, blocker, `critical_threats()`
+   pra ameacas). Gap real identificado: tamanho da mao do OPONENTE nao
+   parece entrar em nenhum lugar. Recomendei NAO fazer reescrita ampla
+   agora (risco alto de desbalancear por tabela, exatamente o medo do
+   usuario) -- auditar cobertura primeiro, calibrar por volume depois,
+   como uma tarefa planejada separada.
+
+2. **Tornar `audit_real_losses.py` obrigatorio** apos qualquer derrota
+   bancada -- pedido atendido. `CLAUDE.md`/`AGENTS.md` (espelhados) e
+   `.claude/skills/optcg-live-log-triage/SKILL.md` (novo Step 4)
+   atualizados: sempre que o log banco e uma DERROTA do bot, rodar
+   `audit_real_losses.py --log <parsed/...>` + `triage_real_losses.py`
+   antes de fechar a investigacao.
+
+**Rodado nesta sessao** na partida do bloco 472
+(`Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T17.04.22`, ja era
+derrota banco anterior): 5 turnos auditados, todos classificados
+DIVERGE pela triagem (heuristico, so prioriza revisao manual, nao
+veredito automatico). Achado mais relevante: no turno em que Teach 119
+foi jogado (turno 11 na numeracao do log), o motor de HOJE (reconstrucao
+do MESMO estado real, engine unico via `OPTCGMatch.play_turn()`) NAO
+jogou o Teach 119 -- em vez disso, atacou e deu K.O. em 2 personagens do
+oponente (Gloriosa e Miss Buckingham Stussy). Bate direto com a
+observacao anterior do usuario ("bot nunca tirou personagem meu de
+campo") -- segunda opinioes independente sugerindo que remover ameacas
+ali era melhor que desenvolver com o Teach 119, mas com as limitacoes
+documentadas da ferramenta (ordem do deck embaralhada, mao do oponente
+totalmente conhecida) -- nao e veredito definitivo, so mais um sinal.
+
+**Nao fiz mudanca de codigo nesta sessao** pra pontuacao attach_don-vs-
+play nem pro caso do turno 11 -- fica registrado como pendencia real
+(mais forte agora, com 2 fontes de evidencia: telemetria da partida ao
+vivo E audit_real_losses) pra investigar com volume/calibracao
+adequada, nao um patch reativo de uma partida so.
+
 ## 2026-08-09 (472) - Claude (sessao local) - CORRIGE regressao severa dos blocos 470/471: _relevant_blocks mistura on_play+trigger da MESMA carta, cravando actor_opp_only/actor_battlefield_only errado -- Teach 119 nunca completava o on_play (usuario: "jogou o teach 8 mas nao ganhou vida")
 
 Nova partida (`Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T17.04.22`,
