@@ -13488,13 +13488,35 @@ class OPTCGMatch:
         # On Play de remoção/buff/rest/draw, ou rush. Bônus para sair antes do
         # ataque. Detecção via flags estruturadas (não substring no texto cru).
         habilita_ataque = False
+        # Familia de remocao/controle (kos/is_removal/bounces/rests_opponent):
+        # o motivo de existir deste bonus e SEQUENCIAMENTO relativo ao ataque
+        # deste turno ("sai antes do ataque, senao remove/resta o alvo tarde
+        # demais pra render efeito") -- MESMA logica ja aplicada em
+        # `_score_activate_main` pra "remocao/controle" (achado 08/08, Teach
+        # 10/bloco 467): sem NENHUM atacante disponivel este turno (nem o
+        # lider, nem nenhum Character), nao ha corrida de ordem pra vencer.
+        # O VALOR base da remocao (board control, independente de ataque) ja
+        # fica capturado em `avaliar_carta` -- este bonus e so a prioridade
+        # extra de ORDEM, que so faz sentido quando existe um ataque pra
+        # proteger/habilitar. Achado 08/08 (revisao pedida pelo usuario apos
+        # o fix do Teach 10, "vale a pena revisar consistencia"): antes desta
+        # gate, `_score_play_action` dava o bonus incondicionalmente aqui,
+        # unico caminho de scoring que ainda nao seguia esse principio.
+        # `power_buff`/`draws`/`is_searcher` ficam de fora do gate de
+        # proposito: duracao do buff nao e rastreada pela flag (pode ser
+        # permanente, nao so "battle_only") e draw/search tem valor de
+        # informacao/recurso independente de haver ataque este turno.
+        tenho_atacante_agora = (character_can_attack_now(engine.me.leader, engine.me, engine.opp)
+                                or any(character_can_attack_now(c, engine.me, engine.opp)
+                                       for c in engine.me.field_chars))
         if 'on_play' in effects:
-            if (flags.get('kos') or flags.get('is_removal') or flags.get('bounces')
-                    or flags.get('power_buff')
-                    or flags.get('draws') or flags.get('is_searcher')):
+            if (flags.get('kos') or flags.get('is_removal') or flags.get('bounces')) and tenho_atacante_agora:
                 habilita_ataque = True
-            # rests_opponent só habilita ataque se o oponente tem alvo para restar
-            if flags.get('rests_opponent') and engine.opp.field_chars:
+            if flags.get('power_buff') or flags.get('draws') or flags.get('is_searcher'):
+                habilita_ataque = True
+            # rests_opponent só habilita ataque se o oponente tem alvo para
+            # restar E se eu tenho atacante pra se beneficiar do alvo restado.
+            if flags.get('rests_opponent') and engine.opp.field_chars and tenho_atacante_agora:
                 habilita_ataque = True
         if card.has_rush or card.rush_this_turn:
             habilita_ataque = True
@@ -13740,6 +13762,7 @@ class OPTCGMatch:
             base = 110   # jogar carta grátis
             best_play_value = 0.0
             best_saved_don = 0
+            best_candidate = None
             for step in steps:
                 if step.get('action') != 'play_card':
                     continue
@@ -13763,13 +13786,36 @@ class OPTCGMatch:
                     if fcard_type and candidate.card_type.upper() != fcard_type:
                         continue
                     value = engine.avaliar_carta(candidate) if engine is not None else candidate.board_value()
-                    best_play_value = max(best_play_value, value)
+                    if value > best_play_value or best_candidate is None:
+                        best_play_value = value
+                        best_candidate = candidate
                     best_saved_don = max(best_saved_don, effective_hand_play_cost(p, candidate, opp) - custo_don)
             base += min(best_play_value * 0.55, 95)
             base += min(max(0, best_saved_don) * 18, 45)
             if src is getattr(p, 'field_stage', None) and best_saved_don >= 3:
                 base += min(best_saved_don * 80, 520)
                 base += min(best_play_value * 0.20, 180)
+
+            # HABILITA_ATAQUE (achado 08/08, revisao de consistencia pedida
+            # pelo usuario apos o fix do Teach 10/bloco 467): jogar de GRACA
+            # via ability um Character com RUSH da um atacante NOVO este
+            # turno -- vale priorizar sempre (mesma logica incondicional de
+            # `card.has_rush` em `_score_play_action`, ja que quem fornece o
+            # proprio atacante nao depende de ja existir um). Se o candidato
+            # tem on_play de remocao/controle (kos/is_removal/bounces),
+            # mesma gate `tenho_atacante_agora` ja aplicada tanto em
+            # `_score_play_action` quanto na categoria "remocao/controle"
+            # deste mesmo metodo -- so faz sentido sair primeiro se ha um
+            # ataque de verdade pra proteger/habilitar.
+            if best_candidate is not None:
+                cand_flags = get_card_flags(best_candidate.code)
+                if best_candidate.has_rush or best_candidate.rush_this_turn:
+                    base += HABILITA_ATAQUE_BONUS
+                elif cand_flags.get('kos') or cand_flags.get('is_removal') or cand_flags.get('bounces'):
+                    tenho_atacante_pc = (character_can_attack_now(p.leader, p, opp)
+                                         or any(character_can_attack_now(c, p, opp) for c in p.field_chars))
+                    if tenho_atacante_pc:
+                        base += HABILITA_ATAQUE_BONUS
         elif any(a == 'give_don' for a in actions_list):
             # DON RESTADO (delayed) -- distinto de add_don/set_don_active
             # (base=90, DON ATIVO imediato). Ver GIVE_DON_RESTED_BASE_SCORE.
@@ -13886,6 +13932,8 @@ class OPTCGMatch:
             # count do proprio step), igual 'play_card' ja faz pra mao.
             base = 120
             reanimados_valor = 0.0
+            reanimados_tem_rush = False
+            reanimados_tem_removal = False
             for step in steps:
                 if step.get('action') != 'play_from_trash':
                     continue
@@ -13904,7 +13952,25 @@ class OPTCGMatch:
                 elegiveis.sort(key=lambda c: -(engine.analyzer.char_value_score(c) if engine is not None else c.board_value()))
                 for c in elegiveis[:count]:
                     reanimados_valor += engine.analyzer.char_value_score(c) if engine is not None else c.board_value()
+                    # HABILITA_ATAQUE (achado 08/08, mesma revisao pedida
+                    # pelo usuario do fix do Teach 10/play_card acima): um
+                    # reanimado com RUSH da atacante NOVO este turno; um
+                    # reanimado com on_play de remocao/controle so vale
+                    # priorizar se ha atacante de verdade pra proteger.
+                    if c.has_rush or c.rush_this_turn:
+                        reanimados_tem_rush = True
+                    c_flags = get_card_flags(c.code)
+                    if c_flags.get('kos') or c_flags.get('is_removal') or c_flags.get('bounces'):
+                        reanimados_tem_removal = True
             base += min(reanimados_valor * 0.4, 280)
+
+            if reanimados_tem_rush:
+                base += HABILITA_ATAQUE_BONUS
+            elif reanimados_tem_removal:
+                tenho_atacante_pt = (character_can_attack_now(p.leader, p, opp)
+                                     or any(character_can_attack_now(c, p, opp) for c in p.field_chars))
+                if tenho_atacante_pt:
+                    base += HABILITA_ATAQUE_BONUS
 
             # Se o custo INCLUI trashar o proprio campo inteiro (Five
             # Elders: "trash all your Characters"), desconta o que esta

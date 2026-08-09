@@ -18,6 +18,7 @@ from optcg_engine.decision_engine import (  # noqa: E402
     DecisionEngine,
     EffectExecutor,
     GameState,
+    HABILITA_ATAQUE_BONUS,
     OPTCGMatch,
     _make_card,
     active_taunt_character,
@@ -10087,6 +10088,9 @@ def main() -> int:
     test_ataque_ao_lider_com_vida_critica_ignora_penalidade_de_postura()
     test_order_target_candidates_respeita_filtro_numerico_cost_lte()
     test_activate_negate_effect_habilita_ataque_sai_antes_do_ataque()
+    test_score_play_action_habilita_ataque_remocao_gated_por_atacante_08_08()
+    test_score_activate_main_play_card_habilita_ataque_gated_por_atacante_08_08()
+    test_score_activate_main_play_from_trash_habilita_ataque_gated_por_atacante_08_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -11839,6 +11843,135 @@ def test_activate_negate_effect_habilita_ataque_sai_antes_do_ataque() -> None:
           s_com_atacante > s_sem_atacante)
     check("diferenca bate com a ordem de grandeza esperada (HABILITA_ATAQUE_BONUS=60 + 150 extra do negate_effect)",
           190 <= (s_com_atacante - s_sem_atacante) <= 215)
+
+
+def test_score_play_action_habilita_ataque_remocao_gated_por_atacante_08_08() -> None:
+    """
+    Achado 08/08 (revisao pedida pelo usuario apos o fix do Teach 10,
+    "vale a pena revisar consistencia"): `_score_play_action` dava
+    HABILITA_ATAQUE_BONUS incondicionalmente pra qualquer carta de
+    remocao (kos/is_removal/bounces) ou rests_opponent no `on_play`,
+    mesmo SEM nenhum atacante disponivel este turno -- unico caminho de
+    scoring que ainda nao seguia o principio ja aplicado em
+    `_score_activate_main` pra "remocao/controle" (bloco 467): o bonus e
+    SEQUENCIAMENTO relativo ao ataque, so faz sentido quando ha um
+    ataque pra proteger/habilitar. Fix: mesma gate `tenho_atacante_agora`
+    (character_can_attack_now no lider OU em qualquer Character),
+    aplicada so a kos/is_removal/bounces/rests_opponent -- `power_buff`/
+    `draws`/`is_searcher` ficam de fora (duracao do buff nao rastreada
+    pela flag, draw/search tem valor independente de ataque).
+
+    T-Bone (EB01-049): "[On Play] K.O. up to 1 of your opponent's
+    Characters with a cost of 2 or less" -- kos/is_removal puro, sem
+    outras flags que dariam habilita_ataque por outro caminho.
+    """
+    def _score_play(atacante_disponivel: bool) -> float:
+        carta = real_card("EB01-049")
+        lider = real_card("OP11-062")
+        # life explicita nos dois lados (nao 0, o default de GameState) --
+        # sem isso, posture() cai em LETHAL/DEFENSIVE (limiares de vida
+        # critica) e MUDA de valor entre os 2 cenarios so por causa do
+        # rested do lider, confundindo o ajuste por postura (avaliar_carta,
+        # ~L11040) com o efeito isolado que este teste quer medir.
+        me = GameState(leader=lider, turn=3, don_available=2,
+                       life=[mk(f"TBL{i}", "Life") for i in range(4)])
+        me.hand = [carta]
+        if not atacante_disponivel:
+            lider.rested = True  # ninguem mais pode atacar (sem field_chars)
+        opp = GameState(leader=real_card("ST04-001"), turn=3,
+                        life=[mk(f"TBOL{i}", "Life") for i in range(4)])
+        opp.field_chars = [real_card("OP01-004")]  # custo 2, valido pro ko
+        match = OPTCGMatch((lider, []), (opp.leader, []))
+        engine = DecisionEngine(me, opp)
+        return match._score_play_action(carta, engine)
+
+    score_com_atacante = _score_play(True)
+    score_sem_atacante = _score_play(False)
+    check("T-Bone (kos/is_removal) com atacante disponivel pontua MAIS que sem atacante (bonus so aplica com corrida de ordem real)",
+          score_com_atacante > score_sem_atacante)
+    check("diferenca bate exatamente com HABILITA_ATAQUE_BONUS (60)",
+          abs((score_com_atacante - score_sem_atacante) - HABILITA_ATAQUE_BONUS) < 1e-6)
+
+
+def test_score_activate_main_play_card_habilita_ataque_gated_por_atacante_08_08() -> None:
+    """
+    Achado 08/08 (mesma revisao de consistencia do teste irmao acima,
+    agora dentro de `_score_activate_main`): a categoria 'play_card'
+    (jogar carta de graca via habilidade, ex: Eustass Kid OP01-051 "you
+    may rest this Character: play up to 1 card with a cost of 3 or less
+    from your hand") so pontuava pelo VALOR base da carta jogada
+    (`avaliar_carta`), nunca pela mesma prioridade de SEQUENCIAMENTO que
+    `_score_play_action`/'remocao-controle' ja davam quando o candidato
+    tem on_play de remocao (e ha atacante disponivel pra se beneficiar).
+
+    OP02-011 (Vista, custo 3): "[On Play] K.O. up to 1 of your
+    opponent's Characters with power 3000 or less" -- kos/is_removal
+    puro, elegivel pro filtro de OP01-051 (cost_lte=3).
+    """
+    def _score_activate(atacante_disponivel: bool) -> float:
+        kid = real_card("OP01-051")
+        vista = real_card("OP02-011")
+        lider = real_card("OP11-062")
+        me = GameState(leader=lider, turn=5, don_available=3,
+                       life=[mk(f"PCL{i}", "Life") for i in range(4)])
+        me.hand = [vista]
+        me.field_chars = [kid]
+        if not atacante_disponivel:
+            lider.rested = True
+            kid.rested = True  # o proprio Kid tambem pode atacar -- precisa restar os DOIS
+        opp = GameState(leader=real_card("ST04-001"), turn=5,
+                        life=[mk(f"PCOL{i}", "Life") for i in range(4)])
+        opp.field_chars = [real_card("OP01-004")]
+        match = OPTCGMatch((lider, []), (opp.leader, []))
+        engine = DecisionEngine(me, opp)
+        am = get_card_effects("OP01-051").get("activate_main", {})
+        return match._score_activate_main(kid, am, me, opp, priority="CONTROL", engine=engine)
+
+    score_com_atacante = _score_activate(True)
+    score_sem_atacante = _score_activate(False)
+    check("play_card (Kid->Vista, removal) com atacante disponivel pontua MAIS que sem atacante",
+          score_com_atacante > score_sem_atacante)
+    check("diferenca bate exatamente com HABILITA_ATAQUE_BONUS (60)",
+          abs((score_com_atacante - score_sem_atacante) - HABILITA_ATAQUE_BONUS) < 1e-6)
+
+
+def test_score_activate_main_play_from_trash_habilita_ataque_gated_por_atacante_08_08() -> None:
+    """
+    Mesma revisao 08/08, agora pra categoria 'play_from_trash'
+    (reanimacao via habilidade, ex: Blueno EB02-047 "trash this
+    Character and 1 card from your hand: play up to 1 [CP] type
+    Character with a cost of 5 or less from your trash").
+
+    OP07-092 (Joseph, custo 1, CP0): "[On Play] K.O. up to 1 of your
+    opponent's Characters with a cost of 1 or less" -- kos/is_removal,
+    elegivel pro filtro 'cp' de Blueno.
+    """
+    def _score_activate(atacante_disponivel: bool) -> float:
+        blueno = real_card("EB02-047")
+        joseph = real_card("OP07-092")
+        lider = real_card("OP11-062")
+        me = GameState(leader=lider, turn=5, don_available=3,
+                       life=[mk(f"PTL{i}", "Life") for i in range(4)])
+        me.hand = [mk("PTHAND", "MaoQualquer", cost=1)]
+        me.field_chars = [blueno]
+        me.trash = [joseph]
+        if not atacante_disponivel:
+            lider.rested = True
+            blueno.rested = True  # o proprio Blueno tambem pode atacar -- precisa restar os DOIS
+        opp = GameState(leader=real_card("ST04-001"), turn=5,
+                        life=[mk(f"PTOL{i}", "Life") for i in range(4)])
+        opp.field_chars = [real_card("OP01-004")]
+        match = OPTCGMatch((lider, []), (opp.leader, []))
+        engine = DecisionEngine(me, opp)
+        am = get_card_effects("EB02-047").get("activate_main", {})
+        return match._score_activate_main(blueno, am, me, opp, priority="CONTROL", engine=engine)
+
+    score_com_atacante = _score_activate(True)
+    score_sem_atacante = _score_activate(False)
+    check("play_from_trash (Blueno->Joseph, removal) com atacante disponivel pontua MAIS que sem atacante",
+          score_com_atacante > score_sem_atacante)
+    check("diferenca bate exatamente com HABILITA_ATAQUE_BONUS (60)",
+          abs((score_com_atacante - score_sem_atacante) - HABILITA_ATAQUE_BONUS) < 1e-6)
 
 
 if __name__ == "__main__":

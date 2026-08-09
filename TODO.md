@@ -2,6 +2,27 @@
 
 **Última atualização:** 8 de agosto de 2026
 
+> 08/08/2026 (bloco 469): **fecha a inconsistência do `HABILITA_ATAQUE_
+> BONUS`** notada revisando o commit `1805815` (bloco 467) — a gate
+> `tenho_atacante` (só dá o bônus de "sair antes do ataque" quando há
+> atacante disponível pra proteger) tinha ficado só em
+> `_score_activate_main`/"remoção-controle". Propagada pra
+> `_score_play_action` (jogar carta da mão com on_play de kos/
+> is_removal/bounces/rests_opponent) — `power_buff`/`draws`/
+> `is_searcher`/`has_rush`/`when_attacking` ficam de fora de propósito
+> (semântica diferente, não é "só simetria"). **Revisão ampla também
+> pedida** encontrou 2 gaps reais em `_score_activate_main`: categorias
+> `play_card` (33 cartas, jogar de graça via habilidade) e `play_from_
+> trash` (8 cartas, reanimação via habilidade) nunca davam prioridade
+> de sequenciamento pro candidato jogado/reanimado ter rush (atacante
+> novo) ou remoção (gate por atacante) — mesmo gap do Teach 10, em 2
+> caminhos que ainda não tinham sido revisados. `add_don`/`set_don_
+> active`/`give_don` ficaram de fora (já têm lógica própria calibrada,
+> mais precisa que um bônus genérico). 3 testes novos, cada um provando
+> a diferença exata de 60 pontos com/sem atacante disponível.
+> `smoke_fast`/`smoke_test` 100%, `audit_replay.py --n 20`: 0 exceções,
+> 0 anomalias. Ver bloco 469 do HANDOFF.
+
 > 08/08/2026 (bloco 468): **fecha a pendência do bloco 462/459** —
 > amostra maior (N=50, 750 partidas) CONFIRMA `HABILITA_ATAQUE_BONUS`
 > em 60 com confiança real (diferente do bloco 459, "mantido por falta

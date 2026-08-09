@@ -1,5 +1,69 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-08 (469) - Claude (sessao remota web) - Consistencia do HABILITA_ATAQUE_BONUS: gate `tenho_atacante` propagada pra `_score_play_action` + 2 categorias novas de `_score_activate_main` (play_card/play_from_trash) que faltavam a mesma logica do fix do Teach 10
+
+Usuario pediu pra seguir com a assimetria que eu tinha notado revisando
+o commit `1805815` (bloco 467): `_score_activate_main`/"remocao-
+controle" ganhou a gate `tenho_atacante_agora` (so aplica
+HABILITA_ATAQUE_BONUS quando ha atacante disponivel pra proteger), mas
+`_score_play_action` continuava dando o mesmo bonus incondicionalmente.
+Pediu tambem pra revisar de forma mais ampla se outros efeitos/
+mecanicas mereciam o mesmo tratamento.
+
+**Fix 1 (a assimetria original)**: `_score_play_action` (jogar carta da
+MAO) tinha `habilita_ataque=True` incondicional pra qualquer carta com
+`on_play` de kos/is_removal/bounces/rests_opponent. Gate adicionada
+(`tenho_atacante_agora`, mesma funcao `character_can_attack_now` no
+lider OU em qualquer Character), aplicada SO a essa familia -- `power_
+buff`/`draws`/`is_searcher`/`has_rush`/`when_attacking` ficam de fora
+DE PROPOSITO: duracao do buff nao e rastreada pela flag (pode ser
+permanente, nao so "battle_only"), draw/search tem valor de informacao/
+recurso independente de ataque, e has_rush fornece o PROPRIO atacante
+(nao depende de ja existir um). T-Bone (EB01-049, kos puro) usado como
+prova: com atacante disponivel, +60 exatos sobre sem atacante.
+
+**Fix 2/3 (revisao ampla pedida)**: investiguei as OUTRAS categorias de
+`_score_activate_main` procurando o mesmo padrao (habilitar um corpo em
+campo que pode remover/atacar, sem dar prioridade de sequenciamento).
+`add_don`/`set_don_active`/`give_don` ja tem logica propria calibrada
+(ramp nao depende de timing de ataque; give_don ja tem bonus especifico
+de "fecha deficit contra o lider"/"desbloqueia don_requirement", mais
+preciso que um HABILITA_ATAQUE_BONUS generico). Achei 2 gaps reais:
+- **`play_card`** (jogar carta de graca via habilidade, 33 cartas no
+  banco -- Eustass Kid OP01-051, Iceburg, etc): so pontuava pelo valor
+  BASE da carta jogada (`avaliar_carta`), nunca a prioridade de
+  sequenciamento quando o candidato tem rush (fornece atacante novo,
+  bonus incondicional) ou on_play de remocao (bonus gateado por
+  `tenho_atacante`, mesma logica do Fix 1). Prova: Eustass Kid jogando
+  Vista (OP02-011, ko puro) de graca, +60 exatos com atacante
+  disponivel.
+- **`play_from_trash`** (reanimar do cemiterio via habilidade, 8 cartas
+  -- Five Elders, Blueno, Kuzan, etc): mesmo gap, agora pra QUALQUER
+  personagem reanimado dentre os elegiveis escolhidos (`elegiveis[:
+  count]`) -- se PELO MENOS 1 tem rush, bonus incondicional; senao, se
+  PELO MENOS 1 tem remocao, bonus gateado. Prova: Blueno reanimando
+  Joseph (OP07-092, ko puro, CP0) do trash, +60 exatos com atacante
+  disponivel.
+
+**Erro de teste pego ANTES de commitar** (nao um bug no fix): a
+primeira tentativa de escrever o teste do play_from_trash deu diff=0
+em vez de 60 -- rastreado ate o cenario "sem atacante" so restar o
+LIDER, esquecendo que a PROPRIA carta com a habilidade (Blueno) tambem
+podia atacar, mantendo `tenho_atacante_agora=True` nos dois lados sem
+querer. Corrigido restando os DOIS (lider + fonte da habilidade) no
+cenario "sem atacante".
+
+3 testes novos (`test_score_play_action_habilita_ataque_remocao_
+gated_por_atacante_08_08`, `test_score_activate_main_play_card_
+habilita_ataque_gated_por_atacante_08_08`, `test_score_activate_main_
+play_from_trash_habilita_ataque_gated_por_atacante_08_08`), cada um
+provando `com_atacante - sem_atacante == HABILITA_ATAQUE_BONUS` exato
+(precisou de `life` explicita nos 2 lados nos 3 testes -- sem isso,
+`posture()` cai em LETHAL/DEFENSIVE por vida default=0 e confunde o
+delta isolado que o teste quer medir, achado ao debugar o 1o teste).
+`smoke_fast.py`/`smoke_test.py` 100%. `audit_replay.py --n 20 --seed
+91`: 20 partidas reais, 0 excecoes, 0 anomalias.
+
 ## 2026-08-08 (468) - Claude (sessao remota web) - Fecha a pendencia do bloco 462/459 (calibracao de HABILITA_ATAQUE_BONUS): amostra maior (N=50) CONFIRMA 60, com confianca real desta vez
 
 Continuacao do bloco 462 (PARCIAL, ver abaixo) desta MESMA sessao
