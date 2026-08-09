@@ -7,20 +7,43 @@
 > bot é banco (não só "existe, use se quiser"). Ver `CLAUDE.md`/
 > `AGENTS.md` e `.claude/skills/optcg-live-log-triage/SKILL.md` (Step 4).
 
-> **PENDENTE (bloco 473)**: calibração `_score_play_action` vs
-> `attach_don`/`attack` quando competem pelo mesmo DON — 2 fontes de
-> evidência agora (telemetria da partida ao vivo: Teach 119 score=190
-> perdeu pro Doc Q attach_don+ataque=265; `audit_real_losses.py`: no
-> turno em que o Teach 119 foi jogado de verdade, o motor de hoje
-> preferiria remover 2 personagens do oponente via ataque). Achado à
-> parte (não explica o caso, mas é real): `_score_play_action` nunca
-> desconta custo de oportunidade do DON gasto, diferente de
-> `attach_don` — assimetria que FAVORECE "play", então não é a causa.
-> NÃO mexer com base numa partida só — precisa de auditoria de
-> cobertura + calibração por volume (ideia do usuário: pontuação mais
-> dinâmica considerando efeito/mecânica/mão própria e do oponente/
-> blocker/vidas/ameaças — maioria já existe no motor, gap real
-> identificado: tamanho da mão do OPONENTE não entra em lugar nenhum).
+> **PRÓXIMA SESSÃO COMEÇA AQUI (bloco 473) — auditoria de cobertura da
+> pontuação "dinâmica"**: pedido explícito do usuário (09/08/2026) pra
+> registrar como tarefa própria de uma sessão nova, não resolver
+> reativo numa investigação de partida. Escopo: auditar `avaliar_carta`
+> e as funções de score de ação (`_score_play_action`,
+> `_generate_attach_don_actions`, `score_attack_target`, etc.) contra a
+> lista de fatores que o usuário quer ver considerados de forma mais
+> dinâmica — efeito/mecânica da carta, mão própria, **mão do
+> oponente**, blocker, vidas (própria/oponente), número de personagens
+> em campo, número de personagens que oferecem ameaça real.
+>
+> Passo 1: mapear o que JÁ existe (a maior parte — já confirmado nesta
+> sessão: flags de efeito via `get_card_flags`, vida própria/oponente
+> com limiares 0/1/2, tamanho da própria mão, `has_blocker`,
+> `a.critical_threats()`/`a.field_advantage()` pra ameaças) vs o que
+> falta de verdade. Gap já confirmado: **tamanho da mão do OPONENTE não
+> entra em nenhuma função de score hoje** — auditar se isso é uma lacuna
+> real (ex: devia influenciar risco de counter/trigger, ou de resposta
+> a um play) antes de decidir se/como adicionar.
+>
+> Passo 2: NÃO fazer reescrita ampla de uma vez — esse é exatamente o
+> risco que o usuário citou ("corrigindo uma coisa e desbalanceando
+> outra por tabela"). Qualquer peso novo/ajustado precisa ser validado
+> por volume de simulação (self-play + `bot_efficiency_report.py` antes/
+> depois), não só smoke tests unitários.
+>
+> Contexto/evidência que motivou o pedido: calibração `_score_play_
+> action` vs `attach_don`/`attack` quando competem pelo mesmo DON — 2
+> fontes de evidência já levantadas (telemetria da partida ao vivo:
+> Teach 119 score=190 perdeu pro Doc Q attach_don+ataque=265;
+> `audit_real_losses.py`: no turno em que o Teach 119 foi jogado de
+> verdade, o motor de hoje preferiria remover 2 personagens do oponente
+> via ataque em vez de jogar a carta). Achado à parte, real mas NÃO
+> explica esse caso específico: `_score_play_action` nunca desconta
+> custo de oportunidade do DON gasto, diferente de `attach_don` —
+> assimetria que FAVORECE "play", então não é a causa da divergência
+> observada. Ver bloco 472/473 do HANDOFF pro relato completo.
 
 > 09/08/2026 (bloco 472): **corrige regressão SEVERA introduzida pelos
 > próprios blocos 470/471** — `_relevant_blocks` sempre misturou
