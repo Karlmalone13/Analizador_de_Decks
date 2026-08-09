@@ -1,0 +1,23 @@
+{
+  "deck_a": "Imu",
+  "deck_b": "Barba Negra BY",
+  "n": 50,
+  "seed": 1,
+  "turnos_medios": 11.8,
+  "A": {
+    "winrate": 0.84,
+    "atk_por_turno": 1.68,
+    "pct_atk_lider": 89.1,
+    "dano_por_jogo": 4.14,
+    "don_por_atk": 0.76,
+    "counter_power_por_jogo": 6560.0
+  },
+  "B": {
+    "winrate": 0.16,
+    "atk_por_turno": 1.75,
+    "pct_atk_lider": 89.4,
+    "dano_por_jogo": 3.28,
+    "don_por_atk": 1.58,
+    "counter_power_por_jogo": 8700.0
+  }
+}

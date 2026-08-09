@@ -7,24 +7,31 @@
 > bot é banco (não só "existe, use se quiser"). Ver `CLAUDE.md`/
 > `AGENTS.md` e `.claude/skills/optcg-live-log-triage/SKILL.md` (Step 4).
 
-> **PRÓXIMA SESSÃO COMEÇA AQUI (bloco 475) — calibrar por VOLUME os pesos
-> novos da pontuação dinâmica**: passos 1 e 2 da tarefa do bloco 473/474
-> já foram feitos nesta sessão (09/08/2026), a pedido do usuário. Ver
-> `scriptis_da_ia/scoring_audits/2026-08-09_cobertura_pontuacao_dinamica.md`
-> (mapeamento completo) e bloco 475 do HANDOFF (o que foi implementado):
-> dedupe `score_attack_target`/`future_threat_value` (extraído
-> `GameAnalyzer._effect_threat_weight`), fix de wiring real da estimativa
-> de counter por mão do oponente (`opp_counter_potential` só ligava com
-> `self_play_info_hidden`, nunca setada — corrigido pra também aceitar
-> `hidden_information_masked`, a flag que o caminho ao vivo de fato usa),
-> contagem de personagens do oponente e `critical_threats()` plugados nos
-> bônus de KO/bounce de `avaliar_carta`. Validado só a nível de regressão
-> (`smoke_fast.py` 100%, `audit_replay.py --n 30` 0 anomalias) — **NÃO**
-> calibração por volume de verdade. Pendente real: rodar
-> `bot_efficiency_report.py` antes/depois (cohort do MESMO líder/período)
-> pros pesos novos/ajustados (dedupe mudou blocker 60→45/double_attack
-> 50→65 na leitura do alvo de ataque; bônus novos de contagem/ameaça real
-> são +15/+10/+20/+15 escolhidos por ordem de grandeza, não calibrados).
+> **PRÓXIMA SESSÃO COMEÇA AQUI (bloco 476) — calibração por volume
+> COMPLETA dos pesos novos da pontuação dinâmica** (multi-seed,
+> multi-deck): passos 1-3 da tarefa do bloco 473/474 já feitos
+> (09/08/2026). Ver `scriptis_da_ia/scoring_audits/
+> 2026-08-09_cobertura_pontuacao_dinamica.md` (mapeamento), bloco 475 do
+> HANDOFF (o que foi implementado: dedupe `score_attack_target`/
+> `future_threat_value` via `GameAnalyzer._effect_threat_weight`; fix de
+> wiring real da estimativa de counter por mão do oponente —
+> `opp_counter_potential` só ligava com `self_play_info_hidden`, nunca
+> setada, corrigido pra também aceitar `hidden_information_masked`, a
+> flag que o caminho ao vivo de fato usa; contagem de personagens do
+> oponente e `critical_threats()` plugados nos bônus de KO/bounce de
+> `avaliar_carta`) e bloco 476 (1ª passada de calibração por volume,
+> `baseline_metrics.py --n 50 --seed 1`, Imu vs Barba Negra BY, commit
+> atual vs commit pai): winrate B (Barba Negra/Teach) subiu 12%→16%,
+> counter gasto/jogo caiu nos dois lados (7240→6560 / 9160→8700) — direção
+> coerente com o que a investigação anterior apontava, nada colapsou.
+> **Mas é só 1 seed, 1 confronto de deck** — não é calibração estatística
+> completa. Pendente real: rodar múltiplas seeds e múltiplos pares de
+> deck (`baseline_metrics.py --seed` variado + outros `--deck-a`/
+> `--deck-b`, ou `bot_efficiency_report.py` com cohort real de logs) antes
+> de considerar os pesos novos calibrados de verdade (dedupe mudou blocker
+> 60→45/double_attack 50→65 na leitura do alvo de ataque; bônus novos de
+> contagem/ameaça real são +15/+10/+20/+15 escolhidos por ordem de
+> grandeza).
 >
 > Contexto/evidência que motivou o pedido: calibração `_score_play_
 > action` vs `attach_don`/`attack` quando competem pelo mesmo DON — 2

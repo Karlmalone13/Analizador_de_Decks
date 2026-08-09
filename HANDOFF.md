@@ -1,5 +1,50 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-09 (476) - Claude (sessao local) - Calibracao por volume (1a passada) do bloco 475: baseline_metrics.py antes/depois, Imu vs Barba Negra BY, n=50 seed=1
+
+Pedido do usuario ("vamos fazer o 1", referindo-se a pendencia registrada
+no bloco 475/TODO). Rodei `baseline_metrics.py --n 50 --seed 1` (Imu vs
+Barba Negra BY -- mesmo confronto do Teach que motivou a investigacao dos
+blocos 472-474) no commit ATUAL (`6115662`, pos-bloco-475) e no commit PAI
+(`fed46af`, pre-bloco-475), trocando so `decision_engine.py` temporariamente
+e restaurando pro HEAD depois (`git checkout HEAD --`, confirmado sem diff
+residual). JSONs salvos em `scriptis_da_ia/metrics/baseline_{before,after}_
+bloco475.json`.
+
+| métrica | antes (A/B) | depois (A/B) |
+|---|---|---|
+| winrate | 0.88 / 0.12 | 0.84 / 0.16 |
+| turnos médios | 11.6 | 11.8 |
+| dano/jogo | 3.98 / 3.36 | 4.14 / 3.28 |
+| DON/ataque | 0.72 / 1.55 | 0.76 / 1.58 |
+| counter gasto/jogo | 7240 / 9160 | 6560 / 8700 |
+
+Leitura: Barba Negra (B, o Teach investigado nos blocos 472-474) ganhou
+4pp de winrate -- direcao consistente com o que a investigacao anterior
+apontava como falta. Counter gasto/jogo caiu nos dois lados, coerente com
+o fix do item 2 (mao do oponente -> estimativa de counter): motor com
+melhor leitura do counter potencial escondido do adversario tende a
+declarar ataques mais bem calculados, gastando/forcando menos counter a
+toa. Nada colapsou (sem winrate 50/50 nem 0/100, turnos estaveis) --
+descarta desbalanceamento grave.
+
+**Limitacao explicita, nao escondida**: isso e 1 SEED, 1 confronto de
+deck -- um ponto de dado direcionalmente sao, NAO uma calibracao
+estatistica completa. Pendente de verdade pra proxima sessao: rodar
+multiplas seeds e multiplos confrontos de deck (`bot_efficiency_report.py`
+com cohort real de logs, ou `baseline_metrics.py` com --seed variado e
+outros pares de deck) antes de considerar os pesos novos do bloco 475
+(dedupe blocker 60->45/double_attack 50->65; bonus +15/+10/+20/+15 de
+contagem/ameaca) calibrados de verdade.
+
+Achado lateral operacional (nao de codigo): um `gauntlet_matchup.py
+--help` lancado em background mais cedo na sessao ficou PRESO consumindo
+CPU por 25+ minutos (confirmado via `Get-Process`, 1501s de CPU time
+antes de eu matar o processo) -- atrasou os dois runs de calibracao acima
+por contencao de CPU, nao por bug no `baseline_metrics.py`. Vale lembrar
+em sessoes futuras: `--help` travando merece investigacao/kill imediato,
+nao assumir que vai terminar sozinho.
+
 ## 2026-08-09 (475) - Claude (sessao local) - Auditoria de cobertura da pontuacao dinamica (passo 1) + 4 fixes pedidos pelo usuario (passo 2, mesma sessao): dedupe score_attack_target/future_threat_value, wiring de mao do oponente pra estimativa de counter (bug real: flag errada), contagem de personagens do oponente, ameaca real plugada em avaliar_carta
 
 Continuacao da tarefa registrada no bloco 473/474. Passo 1 (mapeamento,
