@@ -1,5 +1,82 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-09 (470) - Claude (sessao local) - RETIFICA bloco 466: Doc Q travou de novo na proxima partida real -- fix anterior so cobria opp_board/own_board, opp_hand (e outras zonas fora de campo) continuavam candidatas sem exclusao
+
+Log banco: `Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T10.23.52`
+(bot=p1/Teach, perdeu pra p2/Xebec do usuario). Usuario reportou via
+screenshot: "doc q fez o mesmo erro, selecionou 1 custo 1 e depois por
+falta de alvo, nao soube clicar em choose 1 character e simplesmente
+nao deu ko em ninguem" -- o MESMO sintoma do bloco 466 (K.O. "up to 2"
+com so 1 alvo elegivel, 2o slot nunca fecha, efeito inteiro cancelado
+incluindo o 1o KO ja "escolhido").
+
+**Telemetria lida na ordem obrigatoria**: `live_2026-08-09T09.57.32.json`
+primeiro (sem `gate_status` critico novo alem do ja conhecido), depois
+`decision_summary.py --latest` + `decisions_2026-08-09T09.57.32.jsonl`
+direto (indices 116/118/160/164/166/251/253, todos `actor_code=OP16-109`,
+`attacker_power=0`). Indices 251/253 (23s de diferenca, mesmo padrao do
+bloco 466) tem EXATAMENTE 29 candidatos nas duas chamadas.
+
+**Causa raiz confirmada por decodificacao manual dos IDs reais** (mapeando
+`state_before.opp.hand`/`board` contra `response.orderedIds`): o filtro
+numerico do bloco 466 (`actor_step_numeric_filter`/`actor_numeric_filter`)
+FUNCIONA -- os 3 personagens de campo com custo>1 (`OP17-040` custo=6,
+`OP17-049` custo=5, `OP17-054` custo=3) estao corretamente AUSENTES da
+resposta real, so Streusen (`OP17-050`, custo=1, unico alvo valido)
+sobrevive em `opp_board`. O bug real: o filtro numerico so age dentro da
+zona `opp_board`/`own_board` (por desenho, o filtro e sobre custo/poder de
+carta em campo) -- ele nunca tocou `opp_hand`. E o mecanismo mais antigo
+que DEVERIA cobrir isso, `actor_battlefield_only` (achado 20/07, Divine
+Departure), so DEPRIORIZAVA `own_trash`/`opp_trash`/`own_hand`/`top_deck`
+pro fim da lista -- **nem incluia `opp_hand` nesse conjunto**. Resultado:
+~6 candidatos reais de `opp_hand` (`OP17-055`, `OP17-048`, `OP17-056` x2,
+`OP17-052`, `OP17-043`) continuaram na lista, so no fim da ordem -- o
+cliente C# clica candidato por candidato a ~0.8s cada, e como o K.O. so
+tem 1 alvo real (o 2o slot fica "vazio" apos consumir Streusen no 1o), o
+efeito nunca fecha dentro do tempo, e o jogo cancela o efeito inteiro
+(inclusive o 1o KO ja clicado).
+
+**Mesmo padrao ja resolvido pro caso `actor_opp_only` (Pekoms, bloco
+23-24/07)**: deprioridade sozinha nao e suficiente quando a zona certa
+fica vazia -- so exclusao DURA garante que o cliente nunca perde tempo
+clicando invalido. `actor_battlefield_only` nunca tinha recebido o mesmo
+tratamento.
+
+**Fix**: `sim_bridge.order_target_candidates` agora EXCLUI DURO (nao so
+deprioriza) qualquer candidato fora de `own_board`/`opp_board`/
+`own_leader`/`opp_leader`/zonas de DON quando `actor_battlefield_only` e
+verdadeiro -- mesmo padrao de `_OWN_TARGET_ZONES` ja usado pro
+`actor_opp_only`. Cobre `opp_hand` (o gap real desta partida) E fecha o
+gap que ja existia (o `own_trash`/`opp_trash`/`top_deck` antigos, que so
+eram deprioritizados, agora tambem sao excluidos).
+
+**Teste antigo endurecido, nao so novo teste**: `test_order_target_
+candidates_exclui_trash_para_alvo_battlefield_only` (bloco 20/07)
+verificava "own_trash fica por ultimo" -- trocado pra "own_trash e
+excluido" (exclusao e estritamente mais segura que deprioridade, o
+proprio comentario original ja chamava a deprioridade de "fallback de
+seguranca", nao a garantia real). Teste NOVO em `test_order_target_
+candidates_respeita_filtro_numerico_cost_lte` reproduz a lista REALISTA
+(opp_board com 1 valido + 1 invalido, MAIS varios opp_hand) que faltava
+no teste original do bloco 466 -- gap de cobertura que e a razao real do
+bug nao ter sido pego antes de ir pra producao.
+
+Validado: `smoke_fast.py` (todos OK, incluindo os 2 testes acima),
+`smoke_test.py` completo (`TODOS OS TESTES PASSARAM`), `audit_replay.py
+--n 20` self-play em andamento.
+
+**Bloco 466 estava premature**: o titulo "CORRIGIDO" la em cima descrevia
+so a parte de `opp_board`/`own_board` -- o problema completo (qualquer
+zona fora de campo/lider pra um efeito battlefield-only) so fecha agora.
+
+**Pendente**: as 4 observacoes do usuario na mesma partida ainda NAO
+investigadas -- (a) turno 6, Doc Q vs Vasco Shot dado o proximo turno;
+(b) bot nunca jogou nenhuma "bomba" a partida inteira; (c) bot focou
+demais em atacar vida sem nunca remover Character do usuario do campo;
+(d) fim do turno 6, redirect deveria ter mirado Vasco Shot em vez de
+Burgess. Registrar em TODO.md e investigar na proxima sessao (ou nesta,
+se houver tempo).
+
 ## 2026-08-08 (469) - Claude (sessao remota web) - Consistencia do HABILITA_ATAQUE_BONUS: gate `tenho_atacante` propagada pra `_score_play_action` + 2 categorias novas de `_score_activate_main` (play_card/play_from_trash) que faltavam a mesma logica do fix do Teach 10
 
 Usuario pediu pra seguir com a assimetria que eu tinha notado revisando

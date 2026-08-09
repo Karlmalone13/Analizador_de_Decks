@@ -1,6 +1,25 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 8 de agosto de 2026
+**Última atualização:** 9 de agosto de 2026
+
+> 09/08/2026 (bloco 470): **RETIFICA o bloco 466** — Doc Q travou de novo
+> numa partida real nova (`Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_
+> 2026-08-09T10.23.52`, mesmo sintoma: K.O. "up to 2" com só 1 alvo
+> elegível, 2º slot nunca fecha, efeito inteiro cancelado). O fix
+> anterior (filtro numérico cost_lte/power_lte/power_gte) SÓ excluía
+> dentro de `opp_board`/`own_board` — `opp_hand` (mão oculta do
+> oponente) nunca foi tocada, só deprioritizada pelo mecanismo mais
+> antigo `actor_battlefield_only` (nunca excluída de verdade, igual o
+> `own_trash` do achado 20/07). Fix real: `actor_battlefield_only` agora
+> EXCLUI DURO qualquer zona fora de campo/líder (mesmo padrão já usado
+> pro `actor_opp_only`/Pekoms). Teste antigo endurecido (era "por
+> último", agora "excluído") + teste novo com lista realista (opp_hand
+> junto do opp_board). `smoke_fast`/`smoke_test` 100%, `audit_replay.py
+> --n 20` rodando. **Pendente, ainda não investigado**: 4 observações do
+> usuário na mesma partida — Doc Q vs Vasco Shot no turno 6 (lookahead),
+> bot nunca jogou "bomba" nenhuma, bot focou em vida sem remover
+> Character do oponente, redirect do turno 6 deveria mirar Vasco Shot em
+> vez de Burgess. Ver bloco 470 do HANDOFF.
 
 > 08/08/2026 (bloco 469): **fecha a inconsistência do `HABILITA_ATAQUE_
 > BONUS`** notada revisando o commit `1805815` (bloco 467) — a gate

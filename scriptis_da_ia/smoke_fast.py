@@ -703,9 +703,18 @@ def test_order_target_candidates_exclui_trash_para_alvo_battlefield_only() -> No
     # primeiro, recuperacao") ranqueava a PROPRIA carta recem-descartada
     # antes dos alvos de verdade (lider/personagem proprio) -- o jogo
     # recusa em silencio (trash nao e alvo legal pra "dar +3000 de
-    # poder"). Fix generico: qualquer carta cujos steps SO tenham targets
-    # de campo (leader_or_character, opp_character, etc.) deprioriza
-    # own_trash/opp_trash/own_hand/top_deck pro fim da ordem.
+    # poder"). Fix generico original (20/07): qualquer carta cujos steps SO
+    # tenham targets de campo (leader_or_character, opp_character, etc.)
+    # deprioriza own_trash/opp_trash/own_hand/top_deck pro fim da ordem.
+    #
+    # ENDURECIDO 09/08 (achado real, Doc Q OP16-109): deprioridade sozinha
+    # nao bastava -- opp_hand nem estava coberta pela deprioridade, e mesmo
+    # nas zonas cobertas, "por ultimo" ainda deixava o cliente clicar TODOS
+    # os candidatos invalidos (~0.8s cada) ate esgotar a lista, exatamente
+    # o padrao que ja tinha exigido exclusao DURA pro actor_opp_only
+    # (Pekoms, achado 23-24/07). actor_battlefield_only agora tambem
+    # exclui DURO: so campo (own_board/opp_board) e lider (own_leader/
+    # opp_leader) sao alvo valido, mesmo padrao de _OWN_TARGET_ZONES acima.
     me = GameState(leader=real_card("OP11-062"), turn=5)  # Charlotte Katakuri
     me.field_chars = [real_card("OP11-070")]
     me.trash = [real_card("OP13-076")]  # a propria Divine Departure, ja descartada
@@ -716,10 +725,10 @@ def test_order_target_candidates_exclui_trash_para_alvo_battlefield_only() -> No
         {"id": -10, "zone": "own_board", "code": "OP11-070"},
     ]
     order = sim_bridge.order_target_candidates(me, opp, candidates, actor_code="OP13-076")
-    check("own_trash (a propria carta recem-descartada) fica por ULTIMO, nao primeiro",
-          order[-1] == -420)
-    check("own_leader/own_board (alvos de verdade) vem antes do own_trash",
-          order.index(-1) < order.index(-420) and order.index(-10) < order.index(-420))
+    check("own_trash (a propria carta recem-descartada) e excluido, nao so deprioritizado",
+          -420 not in order)
+    check("own_leader/own_board (alvos de verdade) continuam candidatos",
+          -1 in order and -10 in order)
 
 
 def test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio() -> None:
@@ -11784,6 +11793,29 @@ def test_order_target_candidates_respeita_filtro_numerico_cost_lte() -> None:
     order2 = sim_bridge.order_target_candidates(me, opp2, cands2, actor_code="OP16-109")
     check("Doc Q sem nenhum alvo valido (custo<=1) devolve lista vazia, nao fica clicando",
           order2 == [])
+
+    # Reproducao EXATA do 2o caso ao vivo (09/08, mesmo bug reaparecendo):
+    # lista de candidatos REALISTA (nao so opp_board) -- inclui varias
+    # cartas de opp_hand (mao oculta do oponente), que o filtro numerico
+    # (so mira opp_board) nunca excluia. actor_battlefield_only (Doc Q so
+    # mira opp_character, que esta em _BATTLEFIELD_TARGETS) precisa excluir
+    # DURO qualquer zona fora de campo/lider, no mesmo padrao do fix do
+    # Pekoms pra actor_opp_only -- sem isso, ~6-9 candidatos de opp_hand
+    # sobreviviam so deprioritizados, e o cliente clicava um por um (~0.8s
+    # cada) ate esgotar a lista sem nunca fechar o 2o slot do K.O.
+    opp3 = GameState(leader=ace)
+    opp3.field_chars = [alvo_valido, alvo_invalido]
+    cands3 = [
+        {"id": 100, "zone": "opp_board", "code": "OP13-016"},
+        {"id": 200, "zone": "opp_board", "code": "OP16-011"},
+        {"id": -430, "zone": "opp_hand", "code": "OP17-055"},
+        {"id": -330, "zone": "opp_hand", "code": "OP17-048"},
+        {"id": -440, "zone": "opp_hand", "code": "OP17-056"},
+        {"id": 300, "zone": "own_hand", "code": "OP16-014"},
+    ]
+    order3 = sim_bridge.order_target_candidates(me, opp3, cands3, actor_code="OP16-109")
+    check("Doc Q (lista realista com opp_hand) exclui candidatos de opp_hand",
+          order3 == [100])
 
 
 def test_activate_negate_effect_habilita_ataque_sai_antes_do_ataque() -> None:

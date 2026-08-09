@@ -2384,6 +2384,31 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     if actor_opp_only:
         candidates = [c for c in candidates if c.get('zone') not in _OWN_TARGET_ZONES]
 
+    # actor_battlefield_only ate aqui so DEPRIORIZAVA own_trash/opp_trash/
+    # own_hand/top_deck (linha ~2170) -- e nem cobria opp_hand nessa lista.
+    # Achado ao vivo 09/08 (Doc Q OP16-109, mesmo padrao do Pekoms acima):
+    # com actor_numeric_filter (cost_lte:1) ja excluindo os personagens de
+    # campo invalidos, opp_board ficou com 1 unico alvo valido (Streusen) --
+    # mas a lista real ainda tinha ~20 candidatos de opp_hand (mao oculta do
+    # oponente) sobrevivendo, so deprioritizados (nunca excluidos), porque
+    # opp_hand nunca esteve no set de deprioridade. O K.O. "up to 2" (so 1
+    # alvo elegivel de verdade) reapresentou o MESMO alvo (-20) em dois
+    # decision calls seguidos (~15s de diferenca) sem nunca fechar o efeito
+    # -- o cliente C# clica candidato por candidato a ~0.8s cada, e uma mao
+    # oculta de ~6-9 cartas na frente/atras do alvo real reproduz o mesmo
+    # atraso/estouro que o fix do Pekoms ja corrigiu pro campo proprio.
+    # Exclusao DURA (mesmo padrao): so campo (own_board/opp_board) e lider
+    # (own_leader/opp_leader) sao alvo valido pra QUALQUER habilidade cujos
+    # steps relevantes so miram Lider/Character EM CAMPO -- zonas de DON
+    # continuam validas (custo DON!!-N ortogonal ao alvo do efeito).
+    _BATTLEFIELD_ALLOWED_ZONES = {
+        'own_board', 'opp_board', 'own_leader', 'opp_leader',
+        'own_don', 'own_don_rested', 'own_don_attached',
+        'own_don_attached_used', 'opp_don',
+    }
+    if actor_battlefield_only:
+        candidates = [c for c in candidates if c.get('zone') in _BATTLEFIELD_ALLOWED_ZONES]
+
     # actor_hand_cost_only: SO own_hand (a selecao real) e as zonas de DON
     # (custo DON!!-N ortogonal, sempre valido) sobrevivem -- mesma logica
     # de exclusao dura do actor_opp_only acima, ver comentario na deteccao.
