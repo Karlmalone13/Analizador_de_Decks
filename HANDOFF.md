@@ -1,5 +1,111 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-09 (471) - Claude (sessao local) - Investiga as 4 observacoes do usuario (mesma partida do bloco 470): 2 bugs reais achados+corrigidos (regressao do proprio fix 470 + Shiryu nunca jogado), 2 nao-bugs explicados (redirects Doc Q e Burgess), 1 achado real NAO corrigido (line search as vezes ignora o score imediato mais alto)
+
+Continuacao direta do bloco 470. Apos o fix do Doc Q, investiguei as 4
+observacoes que o usuario reportou na MESMA partida
+(`Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T10.23.52`) e que
+ainda nao tinham sido olhadas.
+
+**1. "No turno 6 eu teria escolhido Vasco Shot em vez de Doc Q"** --
+investigado via log bruto (linhas 793-796): o redirect real pro Doc Q
+aconteceu ANTES de Vasco Shot ter sido sequer jogado em campo (Vasco
+Shot so foi deployado depois, linha 864) -- na hora da decisao, Vasco
+Shot NAO era uma alternativa disponivel. O redirect em si (Teach
+mandando o ataque de 11000 do Xebec pro Doc Q, 0 poder, em vez do
+proprio lider) foi uma boa jogada: sacrifica um corpo que ja nao valia
+nada, evita perder 1 vida, e ainda dispara o on-KO (draw 1 + K.O. up to
+2 custo<=1). NAO e bug.
+
+**2. "O bot nunca jogou nenhuma bomba"** -- CONFIRMADO, bug real
+corrigido. Shiryu (OP16-108, custo 6/8000 poder, a carta de maior
+impacto na mao inteira) foi drawn no turno 1, ficou 5 turnos na mao, e
+foi TRASHADA como custo de "You're the One Who Should Disappear"
+(OP06-115, `[Counter]` que paga com `trash_from_hand=1`) em vez de
+qualquer uma das outras 3 cartas na mao (Teach10 custo 10, Devon custo
+4, Borsalino custo 5) -- nunca chegou a ser jogada a partida inteira.
+Causa raiz: `EffectExecutor._trash_value` so protegia carta cara com
+`cost >= 7` -- Shiryu (custo 6) nunca batia esse gate, apesar de ter
+8000 de poder (maior corpo de toda a mao). Fix generalizado: gate agora
+e `cost >= 7 OR power >= 7000`, com o bonus de protecao escalando por
+`max(cost, power/1000)` (tetado em 14, o maior corpo real do jogo hoje
+-- sem o teto, um fixture de teste sintetico com poder=20000 dominava
+indevidamente outras protecoes, ver testes abaixo).
+
+**2b. Bug SECUNDARIO achado investigando o 2b** -- ao tentar reproduzir
+o cenario acima com `order_target_candidates`, o proprio fix do Doc Q
+(bloco 470, exclusao dura de `actor_battlefield_only`) quebrava
+COMPLETAMENTE o pagamento do custo de mao de "You're the One Who Should
+Disappear": o alvo do EFEITO dele (`[Counter] +3000 pro Lider ou
+Character`) e battlefield-only, mas o CUSTO (`trash_from_hand=1`) e
+mao -- a exclusao dura recem-adicionada removia own_hand da lista
+INTEIRA, zerando os candidatos pro pagamento do custo (regressao que eu
+mesmo introduzi nesta sessao, pega ANTES de commitar/subir, nunca foi
+ao vivo). Fix: `actor_effect_has_hand_cost` (novo, decision_engine.py)
+mantem own_hand liberado quando o bloco relevante do ator tem um custo
+de mao de verdade, mesmo com `actor_battlefield_only=True` -- mesmo
+padrao do caso Edward Newgate ja documentado (custo E alvo de campo na
+MESMA pergunta ao vivo). Bug TERCEIRO achado na mesma investigacao:
+mesmo com own_hand liberado, `sort_key` empatava TODO candidato
+own_hand em `(9,0)` sempre que `actor_battlefield_only=True` (a
+deprioridade nunca previa esse caso), entao a ordem saia CRUA (like o
+C# mandou) em vez de por `_trash_value` -- corrigido tambem (reusa a
+mesma deteccao `actor_battlefield_hand_cost`).
+
+3 testes novos em `smoke_fast.py`
+(`test_order_target_candidates_actor_battlefield_only_com_custo_de_mao`):
+confirma que own_hand nao fica vazio, que Shiryu nao e mais a primeira
+oferecida pro descarte, e que `_trash_value` isolado protege poder alto
+mesmo com custo<7. Teste PRE-EXISTENTE ajustado
+(`test_sim_bridge_delega_escolha_de_alvo_pro_motor_unico`): usava um
+personagem SINTETICO com 20000 de poder (fixture antigo, nao existe
+carta real assim) especificamente pra forçar `avaliar_carta` bruto a
+preferir o personagem sobre um evento `[Counter]` -- com a nova
+protecao por poder, esse fixture extremo passou a dominar a propria
+protecao do evento, invertendo o resultado esperado por um motivo
+NAO relacionado ao que o teste realmente prova (delegacao pro motor
+rico, nao "evento sempre ganha"). Trocado por um cenario real
+(EB04-009 vs vanilla poder=5000, ambos abaixo dos novos limiares) que
+preserva a mesma divergencia naive-vs-rico sem colidir com o fix novo.
+
+**3. "O bot focou em atacar vida, nunca tirou personagem meu de
+campo"** -- PARCIALMENTE CONFIRMADO, achado real NAO corrigido nesta
+sessao (fora de escopo seguro pra um fix apressado). Todos os 8 ataques
+da partida foram pro lider (nenhum pra Character), confirmando o
+padrao observado. Investigando decisao a decisao
+(`decisions_2026-08-09T09.57.32.jsonl`, idx 78, turno 4): a acao
+`attack OP16-104(Devon) -> character OP17-042` tinha `score=277.0`
+(matava o alvo -- power_gap positivo, 8000 vs 6000), MAIOR que a acao
+REALMENTE escolhida `attack OP16-104 -> leader` (`score=268.0`) -- as
+duas `eligible=true`, `excluded=false`, `executor_allowed=true`. O
+motor escolheu a opcao de score MENOR apesar da de score MAIOR estar
+totalmente disponivel. A telemetria agregada ja documenta que isso
+PODE ser intencional (`mean_immediate_score_gap` "nao e arrependimento:
+busca pode escolher score imediato menor" -- hipotese: o Turn
+Planner/line-search simula a sequencia completa do turno, nao so a
+acao isolada, e pode preferir uma ordem diferente por causa de acoes
+FUTURAS no mesmo turno). Nao investiguei o line-search internamente o
+suficiente pra confirmar se essa divergencia especifica (9 pontos, nao
+gigante) e uma decisao correta de lookahead ou um bug de selecao --
+fica registrado como pendencia PRIORITARIA pra proxima sessao (ver
+TODO.md), com o caso exato (idx78) pronto pra reproduzir.
+
+**4. "Fim do turno 6, devia ter redirecionado pro Vasco Shot, nao pro
+Burgess"** -- INVESTIGADO, o bot estava CERTO. Jesus Burgess (OP09-086)
+tem passiva `immunity` tipo `ko` fonte `opp` -- NUNCA pode ser K.O.'d
+por ataque do oponente, tornando o redirect pra ele estritamente sem
+risco (confirmado no log: "Attack Fails", Stussy 7000 vs Burgess
+9000-ish, zero perda). Redirecionar pro Vasco Shot (2000 de poder) teria
+MATADO Vasco Shot pra um ataque de 7000 -- pior resultado liquido (perde
+o corpo, so ganha draw+rest_opp_character<=6 do on-KO dele) comparado a
+zero perda nenhuma com Burgess. Bate com o game plan documentado do
+IA_Compendium pra este lider ("Controle/Life -- atrai ataques e
+manipula destino/Life"). NAO e bug.
+
+Validado: `smoke_fast.py` (todos OK, incluindo os 3 testes novos),
+`smoke_test.py` completo (`TODOS OS TESTES PASSARAM`), `audit_replay.py
+--n 20` (seed=97): 0 excecoes, 0 anomalias.
+
 ## 2026-08-09 (470) - Claude (sessao local) - RETIFICA bloco 466: Doc Q travou de novo na proxima partida real -- fix anterior so cobria opp_board/own_board, opp_hand (e outras zonas fora de campo) continuavam candidatas sem exclusao
 
 Log banco: `Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T10.23.52`

@@ -2,6 +2,39 @@
 
 **Última atualização:** 9 de agosto de 2026
 
+> **PENDENTE PRIORITARIO (bloco 471)**: `decisions_2026-08-09T09.57.32.jsonl`
+> idx 78 (turno 4) — o motor tinha `attack OP16-104 -> character OP17-042`
+> disponível com `score=277.0` (eligible/nao-excluido, matava o alvo) e
+> escolheu `attack OP16-104 -> leader` com `score=268.0` — o score MENOR.
+> Pode ser lookahead intencional do Turn Planner/line-search (sequência
+> completa do turno vale mais que a ação isolada) ou um bug real de
+> seleção — não investigado a fundo ainda. Combina com a observação do
+> usuário "bot focou em atacar vida, nunca tirou personagem meu de
+> campo" (confirmado: os 8 ataques da partida foram TODOS pro líder).
+> Investigar o line-search internamente com este caso exato antes de
+> mexer em qualquer heurística de ataque relacionada.
+
+> 09/08/2026 (bloco 471): **investiga as 4 observações do usuário** na
+> mesma partida do bloco 470 (Marshall.D.Teach-BY_x_Rocks.D.Xebec-B).
+> 2 bugs reais achados e corrigidos: (a) Shiryu (custo 6/8000 poder, a
+> carta de maior impacto da mão) foi trashada como custo de um Counter
+> em vez de qualquer outra carta — `_trash_value` só protegia custo≥7,
+> nunca cobria um corpo grande de custo mais baixo; generalizado pra
+> `cost≥7 OR power≥7000`. (b) Regressão no PRÓPRIO fix do bloco 470
+> (pega antes de subir): a exclusão dura de `actor_battlefield_only`
+> quebrava o pagamento de custo de mão pra cartas como "You're the One
+> Who Should Disappear" (alvo do efeito é campo, mas o CUSTO é
+> trash_from_hand) — `actor_effect_has_hand_cost` mantém own_hand
+> liberado nesse caso, + fix no `sort_key` que empatava own_hand em
+> vez de ordenar por `_trash_value`. 2 observações investigadas e
+> explicadas como jogadas CORRETAS, não bugs: redirect pro Doc Q
+> (sacrifício de corpo morto, protege vida) e redirect pro Burgess em
+> vez do Vasco Shot (Burgess tem imunidade a K.O. do oponente — redirect
+> sem risco nenhum, "Attack Fails"). 1 achado real NÃO corrigido (ver
+> pendência prioritária acima). `smoke_fast`/`smoke_test` 100%,
+> `audit_replay.py --n 20` (seed=97): 0 exceções, 0 anomalias. Ver
+> bloco 471 do HANDOFF.
+
 > 09/08/2026 (bloco 470): **RETIFICA o bloco 466** — Doc Q travou de novo
 > numa partida real nova (`Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_
 > 2026-08-09T10.23.52`, mesmo sintoma: K.O. "up to 2" com só 1 alvo

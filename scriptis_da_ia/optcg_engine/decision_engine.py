@@ -1033,6 +1033,34 @@ def actor_effect_is_hand_cost_only(actor_code: str, in_combat: bool) -> bool:
     return tem_custo_mao
 
 
+def actor_effect_has_hand_cost(actor_code: str, in_combat: bool) -> bool:
+    """True quando QUALQUER bloco de efeito relevante do ator (mesmo filtro
+    de janela de combate de actor_effect_is_hand_cost_only) declara um
+    custo de mao (trash_from_hand/reveal_from_hand/trash_any_from_hand),
+    INDEPENDENTE do alvo do proprio efeito ser campo/lider (diferente de
+    actor_effect_is_hand_cost_only, que exige que NENHUM step peca campo).
+
+    Usado por sim_bridge.order_target_candidates pra NAO excluir own_hand
+    quando actor_battlefield_only tambem e verdadeiro pro mesmo ator --
+    achado real 09/08 (You're the One Who Should Disappear, OP06-115):
+    [Counter] buff_power target=leader_or_character (campo, dispara
+    actor_battlefield_only) com custo trash_from_hand=1 (paga descartando
+    da mao). Excluir own_hand duro nesse caso quebra o pagamento do custo
+    de verdade -- mesmo padrao do caso Edward Newgate ja documentado em
+    actor_effect_is_hand_cost_only (reveal_from_hand + debuff_power
+    target=opp_character no MESMO bloco: os dois custos ficam na mesma
+    pergunta ao vivo)."""
+    effects = get_card_effects(actor_code)
+    blocks = [v for k, v in effects.items()
+              if isinstance(v, dict)
+              and (k in COMBAT_ONLY_TRIGGERS) == in_combat]
+    for block in blocks:
+        for cost in block.get('costs', []):
+            if cost.get('type') in _HAND_ONLY_COST_TYPES:
+                return True
+    return False
+
+
 # Acoes de campo (Character/Leader) que sim_bridge.order_target_candidates
 # ja sabe mapear pra opp_board/own_board via _implied_target -- extraido
 # aqui pra reusar a mesma lista na deteccao de filtro numerico abaixo.
@@ -9004,10 +9032,27 @@ class EffectExecutor:
             if flags.get('draws') or flags.get('is_searcher'):
                 value += 20
 
-        # Carta cara = win condition ou ameaça principal; proteger mesmo sem DON
-        # disponível agora (provavelmente jogável nos próximos turnos).
-        if card.card_type == 'CHARACTER' and card.cost >= 7:
-            value += 20 + card.cost * 8   # custo 10 → +100 extra
+        # Carta cara OU corpo grande = win condition ou ameaça principal;
+        # proteger mesmo sem DON disponível agora (provavelmente jogável
+        # nos próximos turnos). Achado real 09/08 (partida ao vivo, log
+        # Marshall.D.Teach-BY_x_Rocks.D.Xebec-B): o gate original (SO
+        # custo>=7) nunca disparava pro Shiryu (custo 6, 8000 de poder --
+        # a carta de maior impacto na mão inteira) — a carta foi
+        # descartada como custo de um Counter (You're the One Who Should
+        # Disappear) em vez de qualquer uma das outras 3 na mão, porque
+        # nenhuma proteção de "carta grande" existia abaixo de custo 7.
+        # Generalizado pra OR com poder>=7000: cobre tanto decks cuja
+        # bomba é cara (custo alto) quanto decks cuja bomba é um corpo de
+        # poder alto por custo relativamente baixo (o padrão de "Shiryu"),
+        # sem depender do numero exato de nenhuma carta especifica.
+        if card.card_type == 'CHARACTER' and (card.cost >= 7 or card.power >= 7000):
+            # poder/1000 tetado em 14 (maior corpo real do jogo hoje) --
+            # sem o teto, um poder fora da curva real (ex: fixture de
+            # teste sintetico com 20000) inflava a protecao muito alem do
+            # que o proprio ramo de custo>=7 alcanca (max +100, custo 10),
+            # dominando indevidamente outras proteções (ex: evento
+            # [Counter] unico na mão, +35) que a mesma função pondera.
+            value += 20 + max(card.cost, min(card.power / 1000, 14)) * 8   # custo/poder 10 -> +100 extra
 
         # GamePlan (HANDOFF #119): a carta identificada como combo/bomba do
         # deck (maior play_from_trash, ex: Five Elders) ganha proteção

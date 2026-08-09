@@ -2033,6 +2033,21 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if alvos_bf and all(t in _BATTLEFIELD_TARGETS for t in alvos_bf):
             actor_battlefield_only = True
 
+    # Mesmo ator battlefield_only pode ter um custo de mao pagando o
+    # efeito (ex: OP06-115, ver actor_effect_has_hand_cost) -- nesse caso
+    # own_hand e uma zona de SELECAO REAL (o pagamento do custo), nao so
+    # ruido a deprioritizar. Calculado uma vez aqui, reusado tanto na
+    # exclusao dura quanto no sort_key (achado real 09/08: sem isto,
+    # sort_key empatava TODO own_hand em (9,0) mesmo com own_hand
+    # liberado pela excecao abaixo, e a lista saia na ordem crua do C#
+    # em vez de por _trash_value -- a carta mais cara da mao podia ser a
+    # PRIMEIRA oferecida pro descarte do custo, exatamente o oposto do
+    # que _trash_value tenta proteger).
+    from optcg_engine.decision_engine import actor_effect_has_hand_cost
+    actor_battlefield_hand_cost = (
+        actor_battlefield_only and bool(actor_code)
+        and actor_effect_has_hand_cost(actor_code, attacker_power > 0))
+
     # O ator SO tem custo de MAO (reveal/trash_from_hand) e nenhum step com
     # target de campo/opp (ex: Luffy OP16-015 "[On Opponent's Attack] DON!!
     # -0, Trash 1 [8000] card: this Leader's power becomes 7000" -- target=
@@ -2155,8 +2170,13 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             return (-1, 0)
         if actor_opp_only and zone.startswith('own'):
             return (9, 0)   # nunca e alvo valido pra essa habilidade
-        if actor_battlefield_only and zone in ('own_trash', 'opp_trash', 'own_hand', 'top_deck'):
-            return (9, 0)   # alvo e lider/personagem EM CAMPO, trash/mao/deck nunca competem
+        if actor_battlefield_only and zone in ('own_trash', 'opp_trash', 'top_deck'):
+            return (9, 0)   # alvo e lider/personagem EM CAMPO, trash/deck nunca competem
+        if actor_battlefield_only and zone == 'own_hand' and not actor_battlefield_hand_cost:
+            return (9, 0)   # sem custo de mao de verdade, own_hand tambem nunca compete
+        # actor_battlefield_hand_cost=True: own_hand SEGUE pro branch normal
+        # (linha ~2297) pra ser ordenado por _trash_value de verdade, nao
+        # empatado em (9,0) -- ver comentario da deteccao acima.
         if actor_copia_poder:
             if zone == 'opp_board':
                 # copy-power: maior poder = maior ataque copiado. Precisa vir
@@ -2407,7 +2427,16 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         'own_don_attached_used', 'opp_don',
     }
     if actor_battlefield_only:
-        candidates = [c for c in candidates if c.get('zone') in _BATTLEFIELD_ALLOWED_ZONES]
+        zonas_permitidas = _BATTLEFIELD_ALLOWED_ZONES
+        # Mesmo ator pode ter um custo de mao (trash_from_hand) pagando um
+        # efeito cujo ALVO e campo/lider (ex: OP06-115 "Trash 1 card da
+        # mao: [Counter] +3000 pro Lider ou Character") -- own_hand
+        # continua candidato valido pro pagamento do custo, mesmo com o
+        # alvo do efeito sendo battlefield-only. actor_battlefield_hand_cost
+        # ja calculado acima (reusado no sort_key tambem).
+        if actor_battlefield_hand_cost:
+            zonas_permitidas = zonas_permitidas | {'own_hand'}
+        candidates = [c for c in candidates if c.get('zone') in zonas_permitidas]
 
     # actor_hand_cost_only: SO own_hand (a selecao real) e as zonas de DON
     # (custo DON!!-N ortogonal, sempre valido) sobrevivem -- mesma logica

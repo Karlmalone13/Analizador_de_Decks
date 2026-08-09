@@ -10096,6 +10096,7 @@ def main() -> int:
     test_place_hand_bottom_deck_custo_op01_011_e_op09_060_07_08()
     test_ataque_ao_lider_com_vida_critica_ignora_penalidade_de_postura()
     test_order_target_candidates_respeita_filtro_numerico_cost_lte()
+    test_order_target_candidates_actor_battlefield_only_com_custo_de_mao()
     test_activate_negate_effect_habilita_ataque_sai_antes_do_ataque()
     test_score_play_action_habilita_ataque_remocao_gated_por_atacante_08_08()
     test_score_activate_main_play_card_habilita_ataque_gated_por_atacante_08_08()
@@ -10286,14 +10287,22 @@ def test_sim_bridge_delega_escolha_de_alvo_pro_motor_unico() -> None:
     opp = GameState(leader=opp_leader, don_deck=0)
     me.don_available = 0
 
-    # Evento [Counter] real (EB01-019, "Off-White") vs personagem vanilla
-    # bem mais forte -- avaliar_carta() puro rankeia o EVENTO como PIOR
-    # (mais descartavel) que o vanilla; _trash_value() PROTEGE o evento
-    # [Counter] (+35, unico na mao) e inverte a escolha.
-    evt = real_card("EB01-019")
+    # Evento [Counter] real (EB04-009, avaliar_carta=35) vs personagem
+    # vanilla um pouco mais forte por stats crus (avaliar_carta=40) --
+    # avaliar_carta() puro rankeia o EVENTO como PIOR (mais descartavel)
+    # que o vanilla; _trash_value() PROTEGE o evento [Counter] (+35,
+    # unico na mao) e inverte a escolha. Vanilla mantido DELIBERADAMENTE
+    # abaixo de custo 7 E poder 7000 (achado 09/08, fix Shiryu/Doc Q):
+    # acima desses limiares o proprio _trash_value passa a proteger
+    # QUALQUER personagem grande, e um vanilla sintetico extremo (ex:
+    # 20000 de poder, valor antigo deste teste) dominava a propria
+    # protecao do evento, invertendo o resultado esperado por um motivo
+    # nao relacionado ao que este teste quer provar (delegacao, nao
+    # "evento sempre ganha de qualquer personagem").
+    evt = real_card("EB04-009")
     vanilla = Card(data=CardData(code="ZZZ-DIVERGE", name="Meio Termo",
                                   card_type="CHARACTER", color="Black",
-                                  cost=6, power=20000))
+                                  cost=0, power=5000))
     me.hand = [evt, vanilla]
     eng = DecisionEngine(me, opp)
     naive_pick = min(me.hand, key=eng.avaliar_carta)
@@ -11816,6 +11825,64 @@ def test_order_target_candidates_respeita_filtro_numerico_cost_lte() -> None:
     order3 = sim_bridge.order_target_candidates(me, opp3, cands3, actor_code="OP16-109")
     check("Doc Q (lista realista com opp_hand) exclui candidatos de opp_hand",
           order3 == [100])
+
+
+def test_order_target_candidates_actor_battlefield_only_com_custo_de_mao() -> None:
+    """
+    Achado real 09/08 (mesma partida do Doc Q, investigando as 4
+    observacoes do usuario apos o fix): "You're the One Who Should
+    Disappear" (OP06-115, [Counter] +3000 pro Lider ou Character seu,
+    custo trash_from_hand=1) e battlefield_only (o ALVO do buff e campo/
+    lider) MAS tambem paga o proprio custo descartando da mao -- a
+    exclusao dura do fix do Doc Q (acima) quebrava esse pagamento por
+    completo (lista de candidatos ficava vazia, nenhuma carta pra
+    descartar). Fix: actor_effect_has_hand_cost mantem own_hand liberado
+    quando o bloco relevante tem um custo de mao de verdade, mesmo com
+    actor_battlefield_only=True.
+
+    Bug secundario encontrado junto: mesmo com own_hand liberado,
+    sort_key empatava TODO candidato own_hand em (9,0) sempre que
+    actor_battlefield_only=True (a deprioridade original nunca prwvia
+    esse caso), entao a ordem saia CRUA (como o C# mandou), ignorando
+    _trash_value -- na partida real, Shiryu (OP16-108, custo 6/8000 de
+    poder, a carta de MAIOR IMPACTO na mao) foi a PRIMEIRA descartada
+    pelo custo, nunca chegou a ser jogada a partida inteira (observacao
+    do usuario: "o bot nao conseguiu jogar nenhuma bomba em campo").
+    """
+    from optcg_engine import decision_engine as de_mod
+
+    shiryu = real_card("OP16-108")     # custo 6, 8000 poder -- a "bomba"
+    teach10 = real_card("OP09-093")    # custo 10, 12000 poder
+    devon = real_card("OP16-104")      # custo 4, 3000 poder -- mais descartavel
+    borsalino = real_card("EB04-058")  # custo 5, 6000 poder
+    for c, uid in ((shiryu, 330), (teach10, 100), (devon, 230), (borsalino, 280)):
+        c._deck_uid = uid
+
+    me = GameState(leader=real_card("OP16-080"))  # Marshall D. Teach
+    me.hand = [shiryu, teach10, devon, borsalino]
+    opp = GameState(leader=real_card("OP17-039"))
+
+    cands = [
+        {"id": 330, "zone": "own_hand", "code": "OP16-108"},
+        {"id": 100, "zone": "own_hand", "code": "OP09-093"},
+        {"id": 230, "zone": "own_hand", "code": "OP16-104"},
+        {"id": 280, "zone": "own_hand", "code": "EB04-058"},
+        {"id": -1, "zone": "own_board", "code": "OP16-080"},
+    ]
+    order = sim_bridge.order_target_candidates(
+        me, opp, cands, attacker_power=7000, actor_code="OP06-115")
+    check("actor_battlefield_only com custo de mao NAO esvazia own_hand (paga o custo)",
+          set(order) & {330, 100, 230, 280} == {330, 100, 230, 280})
+    check("Shiryu (bomba, custo 6/8000 poder) NAO e a primeira carta oferecida pro descarte",
+          order[0] != 330)
+    check("Devon (mais fraca/barata da mao) e a primeira oferecida pro descarte",
+          order[0] == 230)
+
+    # _trash_value isolado: confirma a generalizacao (cost>=7 OR power>=7000),
+    # nao um numero magico so pro Shiryu.
+    ee = de_mod.EffectExecutor(me, opp)
+    check("_trash_value protege corpo de alto PODER mesmo com custo<7 (Shiryu > Devon)",
+          ee._trash_value(shiryu) > ee._trash_value(devon))
 
 
 def test_activate_negate_effect_habilita_ataque_sai_antes_do_ataque() -> None:
