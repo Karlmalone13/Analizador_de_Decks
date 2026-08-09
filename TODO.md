@@ -7,31 +7,24 @@
 > bot é banco (não só "existe, use se quiser"). Ver `CLAUDE.md`/
 > `AGENTS.md` e `.claude/skills/optcg-live-log-triage/SKILL.md` (Step 4).
 
-> **PRÓXIMA SESSÃO COMEÇA AQUI (bloco 473) — auditoria de cobertura da
-> pontuação "dinâmica"**: pedido explícito do usuário (09/08/2026) pra
-> registrar como tarefa própria de uma sessão nova, não resolver
-> reativo numa investigação de partida. Escopo: auditar `avaliar_carta`
-> e as funções de score de ação (`_score_play_action`,
-> `_generate_attach_don_actions`, `score_attack_target`, etc.) contra a
-> lista de fatores que o usuário quer ver considerados de forma mais
-> dinâmica — efeito/mecânica da carta, mão própria, **mão do
-> oponente**, blocker, vidas (própria/oponente), número de personagens
-> em campo, número de personagens que oferecem ameaça real.
->
-> Passo 1: mapear o que JÁ existe (a maior parte — já confirmado nesta
-> sessão: flags de efeito via `get_card_flags`, vida própria/oponente
-> com limiares 0/1/2, tamanho da própria mão, `has_blocker`,
-> `a.critical_threats()`/`a.field_advantage()` pra ameaças) vs o que
-> falta de verdade. Gap já confirmado: **tamanho da mão do OPONENTE não
-> entra em nenhuma função de score hoje** — auditar se isso é uma lacuna
-> real (ex: devia influenciar risco de counter/trigger, ou de resposta
-> a um play) antes de decidir se/como adicionar.
->
-> Passo 2: NÃO fazer reescrita ampla de uma vez — esse é exatamente o
-> risco que o usuário citou ("corrigindo uma coisa e desbalanceando
-> outra por tabela"). Qualquer peso novo/ajustado precisa ser validado
-> por volume de simulação (self-play + `bot_efficiency_report.py` antes/
-> depois), não só smoke tests unitários.
+> **PRÓXIMA SESSÃO COMEÇA AQUI (bloco 475) — calibrar por VOLUME os pesos
+> novos da pontuação dinâmica**: passos 1 e 2 da tarefa do bloco 473/474
+> já foram feitos nesta sessão (09/08/2026), a pedido do usuário. Ver
+> `scriptis_da_ia/scoring_audits/2026-08-09_cobertura_pontuacao_dinamica.md`
+> (mapeamento completo) e bloco 475 do HANDOFF (o que foi implementado):
+> dedupe `score_attack_target`/`future_threat_value` (extraído
+> `GameAnalyzer._effect_threat_weight`), fix de wiring real da estimativa
+> de counter por mão do oponente (`opp_counter_potential` só ligava com
+> `self_play_info_hidden`, nunca setada — corrigido pra também aceitar
+> `hidden_information_masked`, a flag que o caminho ao vivo de fato usa),
+> contagem de personagens do oponente e `critical_threats()` plugados nos
+> bônus de KO/bounce de `avaliar_carta`. Validado só a nível de regressão
+> (`smoke_fast.py` 100%, `audit_replay.py --n 30` 0 anomalias) — **NÃO**
+> calibração por volume de verdade. Pendente real: rodar
+> `bot_efficiency_report.py` antes/depois (cohort do MESMO líder/período)
+> pros pesos novos/ajustados (dedupe mudou blocker 60→45/double_attack
+> 50→65 na leitura do alvo de ataque; bônus novos de contagem/ameaça real
+> são +15/+10/+20/+15 escolhidos por ordem de grandeza, não calibrados).
 >
 > Contexto/evidência que motivou o pedido: calibração `_score_play_
 > action` vs `attach_don`/`attack` quando competem pelo mesmo DON — 2

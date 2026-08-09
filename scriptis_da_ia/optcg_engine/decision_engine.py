@@ -9717,7 +9717,20 @@ class GameAnalyzer:
         disponível (mesmo lookup usado no guard de buff de
         `resolve_optional_effect`, sim_bridge.py).
         """
-        known_only = getattr(self.opp, 'self_play_info_hidden', False)
+        # `hidden_information_masked` e o sinal REAL ja ligado pelo caminho
+        # ao vivo (server.py:_dto_to_gs, setado pro GameState do oponente
+        # sempre que a mao dele vem mascarada com placeholders UNKNOWN-000)
+        # -- ate 09/08 esta funcao so olhava `self_play_info_hidden`, um
+        # atributo irmao que NUNCA e setado em lugar nenhum do projeto (nem
+        # aqui nem no self-play), entao a estimativa estatistica abaixo
+        # (por densidade de counter do deck do lider) nunca rodava de
+        # verdade: toda carta oculta na mao do oponente ao vivo contava
+        # como counter=0 na defesa do lider. `self_play_info_hidden`
+        # continua respeitado pra permitir o self-play/gauntlet ligar essa
+        # mascara manualmente no futuro (smoke_fast.py ja testa esse caso)
+        # sem depender do caminho ao vivo.
+        known_only = (getattr(self.opp, 'self_play_info_hidden', False)
+                      or getattr(self.opp, 'hidden_information_masked', False))
         hand = self.opp.known_hand_cards() if known_only else self.opp.hand
         ee = EffectExecutor(self.opp, self.me)   # perspectiva do DONO da carta
         total = 0
@@ -10029,24 +10042,44 @@ class GameAnalyzer:
         opp_score = sum(c.board_value() for c in self.opp.field_chars)
         return my_score - opp_score
 
-    def future_threat_value(self, card: Card) -> float:
-        """Valor que o corpo ainda pode produzir; On Play ja resolvido nao conta."""
+    def _effect_threat_weight(self, card: Card) -> float:
+        """
+        Peso de efeito/keyword que faz uma carta continuar relevante
+        enquanto fica viva -- fonte ÚNICA usada tanto por
+        `future_threat_value`/`critical_threats` (quanto essa carta AINDA
+        pode produzir, pro board do oponente) quanto por
+        `score_attack_target` (quanto vale MATAR essa carta agora, pro
+        alvo de um ataque). Extraído em 09/08 (auditoria de cobertura da
+        pontuação dinâmica, bloco 475): as duas leituras respondiam à
+        MESMA pergunta ("esse corpo é ameaça de efeito?") com pesos e
+        conjuntos de trigger diferentes, sem reuso -- exatamente o tipo de
+        duplicação que `REGRA_SEM_DUPLICACAO.md` pede pra eliminar. Cada
+        chamador ainda soma bônus próprios que só fazem sentido no
+        contexto dele (ex: `on_ko` conta como "valor que ainda produz"
+        aqui, mas como RISCO pra quem for matar a carta -- ver o `-20`
+        específico em `score_attack_target`).
+        """
         effects = get_card_effects(card.code)
-        value = max(0.0, (card.power - self.me.leader.power) / 1000.0 * 12.0)
+        weight = 0.0
         future_blocks = {
             'activate_main': 50, 'when_attacking': 45, 'opp_turn': 45,
             'your_turn': 30, 'end_of_turn': 30, 'start_of_turn': 30,
             'on_opponent_attack': 40, 'passive': 25, 'continuous': 25,
             'on_ko': 15,
         }
-        for trigger, weight in future_blocks.items():
+        for trigger, w in future_blocks.items():
             if effects.get(trigger):
-                value += weight
+                weight += w
         if card.has_blocker or card.blocker_this_turn:
-            value += 45
+            weight += 45
         if card.has_double_attack or card.double_attack_this_turn:
-            value += 65
-        return value
+            weight += 65
+        return weight
+
+    def future_threat_value(self, card: Card) -> float:
+        """Valor que o corpo ainda pode produzir; On Play ja resolvido nao conta."""
+        power_term = max(0.0, (card.power - self.me.leader.power) / 1000.0 * 12.0)
+        return power_term + self._effect_threat_weight(card)
 
     def critical_threats(self) -> list:
         """
@@ -11034,13 +11067,28 @@ class DecisionEngine:
         if has_ko and self._step_condition_currently_holds(card, _is_ko_removal_step):
             s += 35
             if a.field_advantage() < 0: s += 25
-            # remoção sem alvo vale pouco -- não pontuar KO no vácuo
-            if not self.opp.field_chars: s -= 30
+            # remoção sem alvo vale pouco -- não pontuar KO no vácuo. Achado
+            # 09/08 (auditoria de cobertura, bloco 475): antes disso só
+            # EXISTÊNCIA de personagem do oponente importava (mesmo bônus
+            # com 1 ou 5 personagens no board dele) -- agora escala (limitado)
+            # com quantos alvos reais existem, e soma um bônus extra se
+            # `critical_threats()` (já existente, mesma fonte de peso de
+            # `future_threat_value`) confirma que pelo menos um deles é
+            # ameaça de efeito de verdade, não só um corpo qualquer.
+            if not self.opp.field_chars:
+                s -= 30
+            else:
+                s += min(15, 5 * (len(self.opp.field_chars) - 1))
+                if a.critical_threats(): s += 20
         if has_bounce and self._step_condition_currently_holds(
                 card, lambda st: st.get('action') == 'bounce'):
             s += 20
             if a.field_advantage() < 0: s += 15
-            if not self.opp.field_chars: s -= 20
+            if not self.opp.field_chars:
+                s -= 20
+            else:
+                s += min(10, 4 * (len(self.opp.field_chars) - 1))
+                if a.critical_threats(): s += 15
         if has_ko or has_bounce:
             s += self._own_effect_removes_char_react_bonus(card)
         s += self._event_activated_react_bonus(card)
@@ -12051,28 +12099,26 @@ class DecisionEngine:
             don_needed = max(0, (target_power - atk_power + 999) // 1000)
             s -= self.don_opportunity_cost(don_needed)
 
-            # Alvo COM EFEITO vale matar mesmo com poder baixo/0 (regra do usuário)
+            # Alvo COM EFEITO vale matar mesmo com poder baixo/0 (regra do
+            # usuário) -- `threat_w` vem da MESMA fonte de peso que
+            # `future_threat_value`/`critical_threats` usam pro board do
+            # oponente (dedupe 09/08, auditoria bloco 475: esta função e
+            # `future_threat_value` liam o mesmo conceito -- "esse corpo é
+            # ameaça de efeito?" -- com pesos/triggers diferentes, sem
+            # reuso; a versão antiga inclusive somava `activate_main` e
+            # `blocker` DUAS vezes, uma via `efeito_ameaca`/`tem_efeito_
+            # alvo` e outra via checagem individual, achado lateral desta
+            # mesma auditoria). `on_ko`/`rush` continuam separados porque
+            # têm semântica PRÓPRIA neste contexto (matar, não continuar
+            # vivo) que não faz sentido do lado de `future_threat_value`.
             tgt_effects = get_card_effects(target.code)
-            tem_efeito_alvo = any(t in tgt_effects for t in
-                                  ('on_play', 'activate_main', 'when_attacking',
-                                   'blocker', 'on_ko', 'your_turn', 'opp_turn'))
-            if tem_efeito_alvo and target.power <= 2000:
+            threat_w = a._effect_threat_weight(target)
+            if threat_w and target.power <= 2000:
                 s += 50   # remover utilidade do oponente vale, apesar do poder baixo
+            s += threat_w
 
-            # Alvo cujo efeito AMEAÇA (pune no turno do oponente, ativa vantagem
-            # recorrente, ou bloqueia): remover nega a ameaça futura. Vale mais.
-            efeito_ameaca = any(t in tgt_effects for t in
-                                ('opp_turn', 'activate_main', 'blocker'))
-            if efeito_ameaca:
-                s += 70   # negar ameaça futura do oponente
-
-            # Prioriza ameaças (ordem de prioridade de alvos do documento)
-            if target.has_double_attack or target.double_attack_this_turn:  s += 50
-            if target.has_rush or target.rush_this_turn:           s += 40
-            if target.has_blocker or target.blocker_this_turn:        s += 60
-            if 'when_attacking' in tgt_effects: s += 35
-            if 'activate_main' in tgt_effects:  s += 25
-            if 'on_ko' in tgt_effects:          s -= 20  # cuidado: ativa ao morrer
+            if target.has_rush or target.rush_this_turn:  s += 40
+            if 'on_ko' in tgt_effects:  s -= 20  # cuidado: matar pode ativar algo do oponente
 
             # FASE B do Turn Planner (usuario, 24/07: combos mapeados
             # devem entrar na ordem de ataque). Meu proprio board pode

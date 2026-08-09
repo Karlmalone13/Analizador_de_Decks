@@ -1,5 +1,64 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-09 (475) - Claude (sessao local) - Auditoria de cobertura da pontuacao dinamica (passo 1) + 4 fixes pedidos pelo usuario (passo 2, mesma sessao): dedupe score_attack_target/future_threat_value, wiring de mao do oponente pra estimativa de counter (bug real: flag errada), contagem de personagens do oponente, ameaca real plugada em avaliar_carta
+
+Continuacao da tarefa registrada no bloco 473/474. Passo 1 (mapeamento,
+sem mudar codigo): agente de exploracao leu `avaliar_carta`,
+`score_attack_target`, `_score_play_action`, `_generate_attach_don_actions`,
+`field_advantage`, `critical_threats` linha a linha. Documento completo em
+`scriptis_da_ia/scoring_audits/2026-08-09_cobertura_pontuacao_dinamica.md`.
+Gap confirmado: mao do oponente nao entra como fator geral em nenhuma
+funcao de score (so em condicoes especificas de texto de carta e no ramo
+de ataque ao lider via `opp_counter_potential`). Blocker/vidas/efeito ja
+tem cobertura solida; contagem de personagens (propria/oponente) e
+"ameaca real" (`critical_threats`) existiam mas so parcialmente/na
+orquestracao, nao dentro das funcoes de score por carta/acao.
+
+Usuario pediu pra atacar 4 itens nesta mesma sessao (nao so planejar):
+
+1. **Dedupe** `score_attack_target` (ramo character) vs
+   `future_threat_value`/`critical_threats` -- as duas liam "esse corpo e
+   ameaca de efeito?" com pesos/triggers diferentes sem reuso. Extraido
+   `GameAnalyzer._effect_threat_weight(card)` como fonte unica. Achado
+   lateral: o codigo antigo de `score_attack_target` somava
+   `activate_main`/`blocker` DUAS vezes (via `efeito_ameaca` E via
+   checagem individual) -- corrigido de graca.
+2. **Mao do oponente -> estimativa de counter**: achado um bug de wiring
+   real, nao so gap conceitual. `opp_counter_potential()` so ligava a
+   estimativa estatistica por tamanho de mao (`counter_estimation.py`,
+   ja existia e ja era testada em `smoke_fast.py`) com a flag
+   `opp.self_play_info_hidden`, que NUNCA e setada em producao (nem live,
+   nem self-play -- confirmado via grep no repo inteiro). O caminho ao
+   vivo (`BOT/engine_server/server.py:_dto_to_gs`) sempre setou uma flag
+   IRMA, `hidden_information_masked`, que essa funcao ignorava por
+   completo. Resultado real ANTES do fix: toda carta oculta na mao do
+   oponente ao vivo contava como counter=0 na defesa do lider (nunca
+   usava a densidade real do deck dele pra estimar). Fix: `known_only`
+   agora liga com QUALQUER uma das duas flags. Teste novo em
+   `smoke_fast.py`
+   (`test_hidden_information_masked_tambem_liga_estimativa_de_counter`).
+3. **Contagem de personagens do oponente**: bonus de KO/bounce em
+   `avaliar_carta` (antes: `if not self.opp.field_chars: s -= 30/-20`,
+   mesmo bonus com 1 ou 5 personagens no board dele) agora escalam
+   (limitado a +15/+10) com a contagem real quando ha pelo menos 1 alvo.
+4. **Ameaca real plugada**: os mesmos bonus de KO/bounce somam +20/+15
+   extra quando `critical_threats()` (ja existente, mesma fonte de peso
+   do item 1) confirma ameaca de efeito real no board do oponente, nao so
+   presenca generica.
+
+**Validado** (nivel regressao, NAO calibracao completa por volume):
+`smoke_fast.py` 100% (2 testes novos) e `audit_replay.py --n 30 --seed 98`
+com as 4 mudancas juntas: 0 excecoes, 0 anomalias.
+
+**Pendente pra proxima sessao** (registrado, nao escondido): calibracao
+por volume de verdade (`bot_efficiency_report.py` antes/depois com cohort
+real) pros pesos/escalas novos -- o dedupe do item 1 muda blocker
+60->45/double_attack 50->65 na leitura do alvo de ataque, e os bonus
+novos dos itens 3/4 (+15/+10/+20/+15) foram escolhidos por ordem de
+grandeza, nao calibrados por partida real. `audit_replay.py` confirma
+ausencia de crash/anomalia estrutural, nao que os pesos estao bem
+calibrados.
+
 ## 2026-08-09 (474) - Claude (sessao local) - Registra tarefa de auditoria de cobertura da pontuacao dinamica no topo do TODO.md, a pedido do usuario, pra uma sessao NOVA comecar direto nela
 
 Usuario pediu explicitamente pra registrar a discussao da pontuacao

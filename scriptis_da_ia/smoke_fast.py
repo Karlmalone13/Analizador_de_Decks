@@ -10060,6 +10060,7 @@ def main() -> int:
     test_remocao_controle_escala_por_valor_do_alvo_01_08()
     test_exclude_failed_actions_evita_loop_travado_em_activate()
     test_self_play_info_hidden_mascara_counter_e_deck_do_oponente()
+    test_hidden_information_masked_tambem_liga_estimativa_de_counter()
     test_check_invariants_unifica_auditoria_no_decision_log()
     test_pop_by_identity_evita_vazamento_de_don_via_simdeck_03_08()
     test_sim_bridge_delega_escolha_de_alvo_pro_motor_unico()
@@ -10157,6 +10158,38 @@ def test_self_play_info_hidden_mascara_counter_e_deck_do_oponente() -> None:
     opp2.revealed_deck = {id(removedora)}
     check("flag ON + carta revelada de verdade: agora conta",
           OPTCGMatch._opp_can_remove_stage(opp2, reach_cost=3) is True)
+
+
+def test_hidden_information_masked_tambem_liga_estimativa_de_counter() -> None:
+    # Achado 09/08 (auditoria de cobertura da pontuacao dinamica, bloco
+    # 475): `opp_counter_potential()` so olhava `self_play_info_hidden`
+    # (nunca setado em producao) pra decidir se usa a estimativa
+    # estatistica por tamanho de mao -- o caminho AO VIVO (server.py:
+    # _dto_to_gs) sempre setou uma flag IRMA, `hidden_information_masked`,
+    # que ate agora essa funcao ignorava. Resultado real: toda carta oculta
+    # na mao do oponente ao vivo contava como counter=0 na defesa do lider,
+    # em vez de estimar pela densidade de counter do deck dele. Fix: a
+    # mesma funcao agora liga a estimativa com QUALQUER uma das duas flags.
+    nola_a = real_card("OP15-069")   # counter 2000
+    nola_b = real_card("OP15-069")   # counter 2000
+    me = GameState(leader=mk("SPH-L3", "Leader", card_type="LEADER"))
+    opp = GameState(leader=real_card("OP02-093"))
+    opp.hand = [nola_a, nola_b]
+    eng = DecisionEngine(me, opp)
+
+    v_off = eng.analyzer.opp_counter_potential()
+    check("flag OFF (default): soma real da mao inteira (4000), igual a hoje",
+          v_off == 4000)
+
+    opp.hidden_information_masked = True
+    v_masked = eng.analyzer.opp_counter_potential()
+    check("hidden_information_masked ON, nada revelado: NAO ve os 2 counters reais",
+          v_masked != 4000)
+
+    opp.revealed_to_opponent = {id(nola_a)}
+    v_partial = eng.analyzer.opp_counter_potential()
+    check("hidden_information_masked ON + 1 carta revelada: inclui o valor REAL dela (>= 2000)",
+          v_partial >= 2000)
 
 
 def test_check_invariants_unifica_auditoria_no_decision_log() -> None:
