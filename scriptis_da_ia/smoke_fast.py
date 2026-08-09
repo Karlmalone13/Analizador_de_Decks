@@ -10084,6 +10084,9 @@ def main() -> int:
     test_resolve_cost_lte_don_count_opp_em_todas_as_copias_06_08()
     test_hand_to_deck_step_familia_bottom_of_deck_07_08()
     test_place_hand_bottom_deck_custo_op01_011_e_op09_060_07_08()
+    test_ataque_ao_lider_com_vida_critica_ignora_penalidade_de_postura()
+    test_order_target_candidates_respeita_filtro_numerico_cost_lte()
+    test_activate_negate_effect_habilita_ataque_sai_antes_do_ataque()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -11681,6 +11684,161 @@ def test_place_hand_bottom_deck_custo_op01_011_e_op09_060_07_08() -> None:
     ee_vazia = EffectExecutor(me_vazia, opp)
     pagou_vazia = ee_vazia._pay_costs([{"type": "place_hand_bottom_deck", "count": 1}], carta_fonte)
     check("place_hand_bottom_deck: _pay_costs retorna False sem carta suficiente na mao", pagou_vazia is False)
+
+
+def test_ataque_ao_lider_com_vida_critica_ignora_penalidade_de_postura() -> None:
+    """
+    Achado real 08/08 (usuario, primeira vitoria ao vivo do bot --
+    "poderia ter ganho 1 turno antes atacando a vida em vez do campo").
+    Com opp_life<=1, score_attack_target ja da 130 pro ataque ao lider
+    (nao 10000: can_lethal_this_turn exige garantia mesmo no pior caso
+    de defesa do oponente). Mas em _generate_and_score_actions, as
+    penalidades de postura DEFENSIVE (-80)/REMOVE_THREAT (-100) eram
+    aplicadas do MESMO jeito que num turno qualquer -- derrubavam 130
+    pra 30, perdendo pro ataque a um Character. Vida critica (0/1) ja e
+    o MESMO sinal que os bonus LETHAL/PREVENT_COMBO respeitam; as
+    penalidades devem ceder tambem. Reproduz o cenario exato: ameaca
+    critica no campo do oponente (Vista, 8000 de poder -> REMOVE_
+    THREAT), atacante empata com o lider do oponente (ataque valido,
+    empate favorece o atacante) mas o oponente tem counter na mao
+    (can_lethal_this_turn=False, sem garantia).
+    """
+    xebec = real_card("OP17-039")  # lider 5000
+    ace_opp = real_card("OP16-001")  # lider oponente 5000
+    vista = real_card("OP16-011")  # 8000 de poder (inatacavel sem DON) -> gatilho de REMOVE_THREAT
+    vista.rested = True
+    stussy = real_card("OP17-054")  # 5000 de poder, matavel -> alvo real do ataque a Character
+    stussy.rested = True
+    curiel = real_card("OP16-004")  # counter 2000 na mao -> sobrevive ao empate
+
+    me = GameState(leader=xebec, don_available=0, turn=5)
+    me.life = [real_card("OP07-077") for _ in range(3)]
+    opp = GameState(leader=ace_opp, turn=5)
+    opp.field_chars = [vista, stussy]
+    opp.hand = [curiel]
+    opp.life = [real_card("OP07-077")]  # vida critica: so 1 carta
+
+    engine = DecisionEngine(me, opp)
+    check("cenario reproduz REMOVE_THREAT com vida critica e sem letal certificado",
+          engine.analyzer.analysis_priority() == "REMOVE_THREAT"
+          and not engine.analyzer.can_lethal_this_turn())
+
+    match = OPTCGMatch((xebec, []), (ace_opp, []))
+    actions = match._generate_and_score_actions(me, opp, engine)
+    scores = {(a[1], a[3], getattr(a[4], "code", None)): a[0] for a in actions}
+    s_leader = scores[("attack", "leader", None)]
+    s_char = scores[("attack", "character", "OP17-054")]
+    check("ataque ao lider com vida critica NAO leva a penalidade cheia de REMOVE_THREAT (-100)",
+          s_leader >= 250)
+    check("ataque ao lider com vida critica agora SUPERA o ataque ao Character ameaca (era o bug real)",
+          s_leader > s_char)
+
+
+def test_order_target_candidates_respeita_filtro_numerico_cost_lte() -> None:
+    """
+    Achado real 08/08 (usuario, partida ao vivo): Doc Q (OP16-109, "K.O.
+    up to 2 of your opponent's Characters with a cost of 1 or less")
+    tinha SO 1 alvo valido em campo (custo 1). A decisao de alvo pro 2o
+    slot pediu a MESMA lista de candidatos (todas as zonas, sem excluir
+    quem nao batia com custo<=1) duas vezes, 23s de diferenca -- o
+    cliente clicou candidato por candidato ate esgotar a lista, e o
+    efeito INTEIRO foi cancelado (nem o 1o alvo, ja escolhido, resultou
+    em KO). Fix: order_target_candidates agora exclui candidatos de
+    campo que nao batem com o filtro numerico (cost_lte/power_lte/
+    power_gte) do UNICO step relevante do ator.
+    """
+    ace = real_card("OP16-001")
+    ace._deck_uid = 1
+    alvo_valido = real_card("OP13-016")  # custo 1 -- bate no filtro
+    alvo_valido._deck_uid = 100
+    alvo_invalido = real_card("OP16-011")  # custo 6 -- NAO bate
+    alvo_invalido._deck_uid = 200
+    me = GameState(leader=real_card("OP16-080"))
+    opp = GameState(leader=ace)
+    opp.field_chars = [alvo_valido, alvo_invalido]
+    cands = [
+        {"id": 100, "zone": "opp_board", "code": "OP13-016"},
+        {"id": 200, "zone": "opp_board", "code": "OP16-011"},
+        {"id": 300, "zone": "own_hand", "code": "OP16-014"},
+    ]
+    order = sim_bridge.order_target_candidates(me, opp, cands, actor_code="OP16-109")
+    check("Doc Q (cost_lte=1) exclui candidato de campo com custo maior (OP16-011)",
+          200 not in order)
+    check("Doc Q (cost_lte=1) mantem o candidato de campo valido (OP13-016)",
+          100 in order)
+    # own_hand ja era excluido pelo actor_opp_only pre-existente (Doc Q so
+    # mira opp_character) -- comportamento correto e anterior a este fix,
+    # so confirma que o filtro numerico novo nao interfere nessa exclusao.
+    check("Doc Q (cost_lte=1) devolve so o alvo de campo valido, nada mais",
+          order == [100])
+
+    # Sem NENHUM alvo valido (so o custo alto em campo): lista de candidatos
+    # de campo fica vazia -- nao clica em nada, nao esgota 23s de tentativas.
+    opp2 = GameState(leader=ace)
+    opp2.field_chars = [alvo_invalido]
+    cands2 = [{"id": 200, "zone": "opp_board", "code": "OP16-011"}]
+    order2 = sim_bridge.order_target_candidates(me, opp2, cands2, actor_code="OP16-109")
+    check("Doc Q sem nenhum alvo valido (custo<=1) devolve lista vazia, nao fica clicando",
+          order2 == [])
+
+
+def test_activate_negate_effect_habilita_ataque_sai_antes_do_ataque() -> None:
+    """
+    Achado real 08/08 (usuario, partida ao vivo): Teach 10 (OP09-093,
+    negate_effect no lider/personagem do oponente + trava ataque)
+    atacou PRIMEIRO e so ativou DEPOIS, quando deveria ser o inverso --
+    anular a resposta do oponente ANTES do ataque. _score_play_action ja
+    tinha HABILITA_ATAQUE_BONUS pra carta que precisa ENTRAR pra
+    habilitar o ataque, mas _score_activate_main nunca tinha o
+    equivalente pra ATIVAR uma habilidade. Fix: bonus generico (+
+    HABILITA_ATAQUE_BONUS) pra categoria remocao/controle quando ha
+    atacante disponivel, com bonus extra especifico pro negate_effect
+    (protege TODOS os ataques do turno, nao so remove um alvo). Prova a
+    logica condicional comparando o MESMO ativar com e sem atacante
+    disponivel (com atacante restado, o bonus "sair antes do ataque"
+    nao significa nada e nao deve aplicar).
+
+    Validado tambem contra o cenario exato da partida real (idx201,
+    decisions_2026-08-08T11.43.12.jsonl, reconstrucao manual via
+    GameStateDto): sem o fix, activate=170 perdia pro ataque=288; com
+    o fix, activate=380 supera o melhor ataque=288.
+    """
+    teach_leader = real_card("OP16-080")
+    opp_leader = real_card("OP17-039")  # Xebec, alvo real do negate_effect
+    opp_char = real_card("OP17-050")  # Streusen, alvo de campo pra viabilizar o step
+
+    def _score_activate(atacante_disponivel: bool) -> float:
+        teach10 = real_card("OP09-093")
+        me = GameState(leader=teach_leader, don_available=3, turn=5)
+        if atacante_disponivel:
+            teach10.rested = False
+            atacante = real_card("OP16-119")
+            atacante.rested = False
+            atacante.just_played = False
+            me.field_chars = [teach10, atacante]
+        else:
+            # teach10 ATIVO (nao precisa restar pra ativar -- sem custo
+            # rest_self) mas just_played=True SEM rush o impede de
+            # ATACAR (doenca de invocacao) sem impedir ativar; lider
+            # tambem restado -- ninguem pode atacar este turno.
+            teach10.rested = False
+            teach10.just_played = True
+            teach_leader.rested = True
+            me.field_chars = [teach10]
+        opp = GameState(leader=opp_leader, turn=5)
+        opp.field_chars = [opp_char]
+        engine = DecisionEngine(me, opp)
+        match = OPTCGMatch((teach_leader, []), (opp_leader, []))
+        actions = match._generate_and_score_actions(me, opp, engine)
+        return next(a[0] for a in actions if a[1] == "activate" and a[2].code == "OP09-093")
+
+    s_com_atacante = _score_activate(True)
+    teach_leader.rested = False
+    s_sem_atacante = _score_activate(False)
+    check("negate_effect com atacante disponivel pontua mais que sem atacante (habilita_ataque so faz sentido com ataque pra proteger)",
+          s_com_atacante > s_sem_atacante)
+    check("diferenca bate com a ordem de grandeza esperada (HABILITA_ATAQUE_BONUS=60 + 150 extra do negate_effect)",
+          190 <= (s_com_atacante - s_sem_atacante) <= 215)
 
 
 if __name__ == "__main__":

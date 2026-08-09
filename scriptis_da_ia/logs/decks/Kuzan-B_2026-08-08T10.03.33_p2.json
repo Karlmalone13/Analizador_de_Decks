@@ -1,0 +1,76 @@
+{
+  "cards": [
+    {
+      "code": "ST33-005",
+      "name": "Monkey D. Garp",
+      "count": 4
+    },
+    {
+      "code": "OP12-057",
+      "name": "Ice Block: Pheasant Peck",
+      "count": 3
+    },
+    {
+      "code": "OP16-056",
+      "name": "Mr. 3 (Galdino)",
+      "count": 3
+    },
+    {
+      "code": "ST33-004",
+      "name": "Borsalino",
+      "count": 3
+    },
+    {
+      "code": "EB04-022",
+      "name": "Issho",
+      "count": 3
+    },
+    {
+      "code": "EB04-028",
+      "name": "Ice Time",
+      "count": 3
+    },
+    {
+      "code": "OP12-047",
+      "name": "Sengoku",
+      "count": 3
+    },
+    {
+      "code": "ST33-003",
+      "name": "Smoker",
+      "count": 2
+    },
+    {
+      "code": "OP12-044",
+      "name": "Sakazuki",
+      "count": 2
+    },
+    {
+      "code": "OP06-050",
+      "name": "Tashigi",
+      "count": 2
+    },
+    {
+      "code": "OP12-051",
+      "name": "Hina",
+      "count": 2
+    },
+    {
+      "code": "OP06-058",
+      "name": "Gravity Blade Raging Tiger",
+      "count": 1
+    },
+    {
+      "code": "OP12-043",
+      "name": "Kuzan",
+      "count": 1
+    },
+    {
+      "code": "ST33-001",
+      "name": "Koby",
+      "count": 1
+    }
+  ],
+  "total_seen": 33,
+  "leader": "OP12-040"
+}

@@ -1,0 +1,1993 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "Karlmalone#2854",
+        "leader": {
+          "name": "Rocks D. Xebec",
+          "code": "OP17-039"
+        }
+      },
+      "p2": {
+        "name": "Vius2#16248",
+        "leader": {
+          "name": "Rocks D. Xebec",
+          "code": "OP17-039"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 17,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Vius2#16248",
+      "card_drawn": {
+        "name": "Kyo",
+        "code": "OP17-045"
+      },
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-050",
+          "card_name": "Streusen",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-044",
+            "OP17-043",
+            "OP17-054",
+            "OP17-118",
+            "OP17-045"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-055",
+            "OP17-042",
+            "OP17-055",
+            "OP17-054",
+            "OP17-045"
+          ],
+          "trash": [],
+          "board": [
+            "OP17-050"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-050": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Fullalead",
+        "code": "OP17-057"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-057",
+          "card_name": "Fullalead",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-044",
+            "OP17-043",
+            "OP17-054",
+            "OP17-118",
+            "OP17-045"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-055",
+            "OP17-042",
+            "OP17-055",
+            "OP17-054",
+            "OP17-045"
+          ],
+          "trash": [],
+          "board": [
+            "OP17-050"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-050": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Vius2#16248",
+      "card_drawn": {
+        "name": "Fullalead",
+        "code": "OP17-057"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Barbell [\"OP17-053\">OP17-053]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP17-050",
+          "to_name": "Streusen",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Streusen",
+          "attacker_code": "OP17-050",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-044",
+            "OP17-043",
+            "OP17-054",
+            "OP17-118",
+            "OP17-042"
+          ],
+          "board": [],
+          "trash": [
+            "OP17-045"
+          ],
+          "life": 4
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-055",
+            "OP17-042",
+            "OP17-055",
+            "OP17-054",
+            "OP17-045",
+            "OP17-055",
+            "OP17-057"
+          ],
+          "trash": [
+            "OP17-053"
+          ],
+          "board": [
+            "OP17-050"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-050": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Gloriosa",
+        "code": "OP17-046"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Streusen [\"OP17-050\">OP17-050]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Stussy [\"OP17-054\">OP17-054]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-044",
+          "card_name": "Captain John",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-043",
+            "OP17-118",
+            "OP17-042",
+            "OP17-040",
+            "OP17-055",
+            "OP17-046"
+          ],
+          "board": [
+            "OP17-044"
+          ],
+          "trash": [
+            "OP17-045",
+            "OP17-054"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-044": 1
+          }
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-055",
+            "OP17-042",
+            "OP17-055",
+            "OP17-054",
+            "OP17-045",
+            "OP17-055",
+            "OP17-057"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-050"
+          ],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "Vius2#16248",
+      "card_drawn": {
+        "name": "Rocks D. Xebec",
+        "code": "OP17-118"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Kyo [\"OP17-045\">OP17-045]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-045",
+          "card_name": "Kyo",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-045",
+          "card_name": "Kyo",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-057",
+          "card_name": "Fullalead",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-042",
+            "OP17-040",
+            "OP17-055",
+            "OP17-046"
+          ],
+          "board": [
+            "OP17-044"
+          ],
+          "trash": [
+            "OP17-045",
+            "OP17-054",
+            "OP17-043"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-044": 1
+          }
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-055",
+            "OP17-042",
+            "OP17-055",
+            "OP17-054",
+            "OP17-055",
+            "OP17-057",
+            "OP17-054",
+            "OP17-118"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-050",
+            "OP17-045"
+          ],
+          "board": [
+            "OP17-045",
+            "OP17-045"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-045": 2
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Rocks D. Xebec",
+        "code": "OP17-118"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Captain John",
+          "attacker_code": "OP17-044",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Kyo [\"OP17-045\">OP17-045]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-040",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-042",
+            "OP17-055",
+            "OP17-046",
+            "OP17-044",
+            "OP17-056",
+            "OP17-118"
+          ],
+          "board": [
+            "OP17-044",
+            "OP17-040"
+          ],
+          "trash": [
+            "OP17-045",
+            "OP17-054",
+            "OP17-043",
+            "OP17-045"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-044": 1,
+            "OP17-040": 1
+          }
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-055",
+            "OP17-055",
+            "OP17-054",
+            "OP17-057",
+            "OP17-054",
+            "OP17-118"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-050",
+            "OP17-045",
+            "OP17-055",
+            "OP17-042"
+          ],
+          "board": [
+            "OP17-045",
+            "OP17-045"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-045": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Vius2#16248",
+      "card_drawn": {
+        "name": "Ganzui",
+        "code": "OP17-043"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "Edward Newgate [\"OP17-040\">OP17-040] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Streusen [\"OP17-050\">OP17-050]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-045",
+          "to_name": "Kyo",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Kyo",
+          "attacker_code": "OP17-045",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-042",
+            "OP17-046",
+            "OP17-056",
+            "OP17-118"
+          ],
+          "board": [
+            "OP17-044",
+            "OP17-040"
+          ],
+          "trash": [
+            "OP17-045",
+            "OP17-054",
+            "OP17-043",
+            "OP17-045",
+            "OP17-044",
+            "OP17-055"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-044": 1,
+            "OP17-040": 1
+          }
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-055",
+            "OP17-055",
+            "OP17-057",
+            "OP17-054",
+            "OP17-118",
+            "OP17-049",
+            "OP17-043"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-050",
+            "OP17-045",
+            "OP17-055",
+            "OP17-042",
+            "OP17-050"
+          ],
+          "board": [
+            "OP17-045",
+            "OP17-045",
+            "OP17-054"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-045": 1,
+            "OP17-054": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "There's No Authority in the World",
+        "code": "OP17-055"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-046",
+          "card_name": "Gloriosa",
+          "effects": [
+            "Send Stussy [\"OP17-054\">OP17-054] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Captain John",
+          "attacker_code": "OP17-044",
+          "target": "Kyo [\"OP17-045\">OP17-045]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-040",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Trash Barbell [\"OP17-053\">OP17-053]",
+            "Buff Rocks D. Xebec [\"OP17-039\">OP17-039] 3000 for the Combat"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Kaido [\"OP17-042\">OP17-042]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-118",
+            "OP17-040",
+            "OP17-055"
+          ],
+          "board": [
+            "OP17-044",
+            "OP17-040",
+            "OP17-046"
+          ],
+          "trash": [
+            "OP17-045",
+            "OP17-054",
+            "OP17-043",
+            "OP17-045",
+            "OP17-044",
+            "OP17-055",
+            "OP17-053",
+            "OP17-042"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-044": 1,
+            "OP17-046": 1
+          }
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-055",
+            "OP17-055",
+            "OP17-057",
+            "OP17-054",
+            "OP17-118",
+            "OP17-049",
+            "OP17-043",
+            "OP17-049"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-050",
+            "OP17-045",
+            "OP17-055",
+            "OP17-042",
+            "OP17-050",
+            "OP17-045"
+          ],
+          "board": [
+            "OP17-045"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "Vius2#16248",
+      "card_drawn": {
+        "name": "Gloriosa",
+        "code": "OP17-046"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Don Marlon [\"OP17-052\">OP17-052]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-046",
+          "card_name": "Gloriosa",
+          "effects": [
+            "Send Gloriosa [\"OP17-046\">OP17-046] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-045",
+          "to_name": "Kyo",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Kyo",
+          "attacker_code": "OP17-045",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-118"
+          ],
+          "board": [
+            "OP17-044",
+            "OP17-040"
+          ],
+          "trash": [
+            "OP17-045",
+            "OP17-054",
+            "OP17-043",
+            "OP17-045",
+            "OP17-044",
+            "OP17-055",
+            "OP17-053",
+            "OP17-042",
+            "OP17-040",
+            "OP17-055"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-044": 1
+          }
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-055",
+            "OP17-055",
+            "OP17-057",
+            "OP17-054",
+            "OP17-118",
+            "OP17-049",
+            "OP17-043",
+            "OP17-049",
+            "OP17-048"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-050",
+            "OP17-045",
+            "OP17-055",
+            "OP17-042",
+            "OP17-050",
+            "OP17-045",
+            "OP17-052"
+          ],
+          "board": [
+            "OP17-045",
+            "OP17-046"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-045": 1,
+            "OP17-046": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Stussy",
+        "code": "OP17-054"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-040",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Trash There's No Authority in the World [\"OP17-055\">OP17-055]",
+            "Buff Rocks D. Xebec [\"OP17-039\">OP17-039] 3000 for the Combat"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Rocks Pirates [\"OP17-056\">OP17-056]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP17-040",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP17-046",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Captain John",
+          "attacker_code": "OP17-044",
+          "target": "Kyo [\"OP17-045\">OP17-045]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-118",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Draw 1 Card",
+            "Deploy Charlotte Linlin [\"OP17-049\">OP17-049]",
+            "Deploy Stussy [\"OP17-054\">OP17-054]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-052"
+          ],
+          "board": [
+            "OP17-044",
+            "OP17-040",
+            "OP17-118",
+            "OP17-049",
+            "OP17-054"
+          ],
+          "trash": [
+            "OP17-045",
+            "OP17-054",
+            "OP17-043",
+            "OP17-045",
+            "OP17-044",
+            "OP17-055",
+            "OP17-053",
+            "OP17-042",
+            "OP17-040",
+            "OP17-055",
+            "OP17-055",
+            "OP17-056"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-044": 1,
+            "OP17-040": 1,
+            "OP17-118": 1
+          }
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-057",
+            "OP17-054",
+            "OP17-118",
+            "OP17-049",
+            "OP17-048"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-050",
+            "OP17-045",
+            "OP17-055",
+            "OP17-042",
+            "OP17-050",
+            "OP17-045",
+            "OP17-052",
+            "OP17-055",
+            "OP17-055",
+            "OP17-046",
+            "OP17-045",
+            "OP17-043",
+            "OP17-049"
+          ],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "Vius2#16248",
+      "card_drawn": {
+        "name": "Wang Zhi",
+        "code": "OP17-041"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-118",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Draw 1 Card",
+            "Deploy Shiki [\"OP17-048\">OP17-048]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-048",
+          "card_name": "Shiki",
+          "effects": [
+            "Trash Fullalead [\"OP17-057\">OP17-057]",
+            "Buff Captain John [\"OP17-044\">OP17-044] -3000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Charlotte Linlin [\"OP17-049\">OP17-049]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118"
+          ],
+          "board": [
+            "OP17-040",
+            "OP17-118",
+            "OP17-049",
+            "OP17-054"
+          ],
+          "trash": [
+            "OP17-045",
+            "OP17-054",
+            "OP17-043",
+            "OP17-045",
+            "OP17-044",
+            "OP17-055",
+            "OP17-053",
+            "OP17-042",
+            "OP17-040",
+            "OP17-055",
+            "OP17-055",
+            "OP17-056",
+            "OP17-044",
+            "OP17-052"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-040": 1,
+            "OP17-118": 1
+          }
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-054",
+            "OP17-056",
+            "OP17-046",
+            "OP17-054",
+            "OP17-041"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-050",
+            "OP17-045",
+            "OP17-055",
+            "OP17-042",
+            "OP17-050",
+            "OP17-045",
+            "OP17-052",
+            "OP17-055",
+            "OP17-055",
+            "OP17-046",
+            "OP17-045",
+            "OP17-043",
+            "OP17-049",
+            "OP17-057",
+            "OP17-049"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-048"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-118": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Shiki",
+        "code": "OP17-048"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-048",
+          "card_name": "Shiki",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "Shiki [\"OP17-048\">OP17-048]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Stussy",
+          "attacker_code": "OP17-054",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP17-040",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-118",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118"
+          ],
+          "board": [
+            "OP17-040",
+            "OP17-118",
+            "OP17-049",
+            "OP17-054",
+            "OP17-048"
+          ],
+          "trash": [
+            "OP17-045",
+            "OP17-054",
+            "OP17-043",
+            "OP17-045",
+            "OP17-044",
+            "OP17-055",
+            "OP17-053",
+            "OP17-042",
+            "OP17-040",
+            "OP17-055",
+            "OP17-055",
+            "OP17-056",
+            "OP17-044",
+            "OP17-052"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-040": 1,
+            "OP17-118": 1,
+            "OP17-054": 1,
+            "OP17-048": 1
+          }
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-054",
+            "OP17-056",
+            "OP17-046",
+            "OP17-054",
+            "OP17-048",
+            "OP17-045"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-050",
+            "OP17-045",
+            "OP17-055",
+            "OP17-042",
+            "OP17-050",
+            "OP17-045",
+            "OP17-052",
+            "OP17-055",
+            "OP17-055",
+            "OP17-046",
+            "OP17-045",
+            "OP17-043",
+            "OP17-049",
+            "OP17-057",
+            "OP17-049",
+            "OP17-041",
+            "OP17-048",
+            "OP17-048"
+          ],
+          "board": [
+            "OP17-118"
+          ],
+          "life": 1,
+          "rested": {
+            "OP17-118": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "Vius2#16248",
+      "card_drawn": {
+        "name": "Streusen",
+        "code": "OP17-050"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "Charlotte Linlin [\"OP17-049\">OP17-049] can't attack next turn",
+            "Rest 3 Don",
+            "Rest Stussy [\"OP17-054\">OP17-054]",
+            "Rocks D. Xebec [\"OP17-118\">OP17-118] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-118",
+          "target": "Edward Newgate [\"OP17-040\">OP17-040]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-046",
+          "card_name": "Gloriosa",
+          "effects": [
+            "Send Stussy [\"OP17-054\">OP17-054] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Kyo [\"OP17-045\">OP17-045]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-042"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-049",
+            "OP17-048"
+          ],
+          "trash": [
+            "OP17-045",
+            "OP17-054",
+            "OP17-043",
+            "OP17-045",
+            "OP17-044",
+            "OP17-055",
+            "OP17-053",
+            "OP17-042",
+            "OP17-040",
+            "OP17-055",
+            "OP17-055",
+            "OP17-056",
+            "OP17-044",
+            "OP17-052",
+            "OP17-040"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-118": 1,
+            "OP17-048": 1
+          }
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-054",
+            "OP17-056",
+            "OP17-048",
+            "OP17-118",
+            "OP17-053",
+            "OP17-050"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-050",
+            "OP17-045",
+            "OP17-055",
+            "OP17-042",
+            "OP17-050",
+            "OP17-045",
+            "OP17-052",
+            "OP17-055",
+            "OP17-055",
+            "OP17-046",
+            "OP17-045",
+            "OP17-043",
+            "OP17-049",
+            "OP17-057",
+            "OP17-049",
+            "OP17-041",
+            "OP17-048",
+            "OP17-048",
+            "OP17-045"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-054",
+            "OP17-046"
+          ],
+          "life": 1,
+          "rested": {
+            "OP17-118": 1,
+            "OP17-054": 1,
+            "OP17-046": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "There's No Authority in the World",
+        "code": "OP17-055"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-048",
+          "to_name": "Shiki",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-048",
+          "to_name": "Shiki",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-048",
+          "to_name": "Shiki",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-048",
+          "to_name": "Shiki",
+          "total": 4
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-048",
+          "to_name": "Shiki",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP17-046",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-048",
+          "card_name": "Shiki",
+          "effects": [
+            "Trash Stussy [\"OP17-054\">OP17-054]",
+            "Buff Rocks D. Xebec [\"OP17-118\">OP17-118] -3000"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Rocks D. Xebec [\"OP17-118\">OP17-118]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Kaido [\"OP17-042\">OP17-042]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-046",
+            "OP17-055"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-049",
+            "OP17-048"
+          ],
+          "trash": [
+            "OP17-045",
+            "OP17-054",
+            "OP17-043",
+            "OP17-045",
+            "OP17-044",
+            "OP17-055",
+            "OP17-053",
+            "OP17-042",
+            "OP17-040",
+            "OP17-055",
+            "OP17-055",
+            "OP17-056",
+            "OP17-044",
+            "OP17-052",
+            "OP17-040",
+            "OP17-054",
+            "OP17-042"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-048": 1
+          }
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-054",
+            "OP17-048",
+            "OP17-118",
+            "OP17-053",
+            "OP17-050"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-050",
+            "OP17-045",
+            "OP17-055",
+            "OP17-042",
+            "OP17-050",
+            "OP17-045",
+            "OP17-052",
+            "OP17-055",
+            "OP17-055",
+            "OP17-046",
+            "OP17-045",
+            "OP17-043",
+            "OP17-049",
+            "OP17-057",
+            "OP17-049",
+            "OP17-041",
+            "OP17-048",
+            "OP17-048",
+            "OP17-045",
+            "OP17-046",
+            "OP17-056"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-054"
+          ],
+          "life": 1,
+          "rested": {
+            "OP17-118": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "Vius2#16248",
+      "card_drawn": {
+        "name": "Rocks Pirates",
+        "code": "OP17-056"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "Rest 3 Don",
+            "Rest Stussy [\"OP17-054\">OP17-054]",
+            "Rocks D. Xebec [\"OP17-118\">OP17-118] can't attack next turn",
+            "Charlotte Linlin [\"OP17-049\">OP17-049] can't attack next turn"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP17-118",
+          "to_name": "Rocks D. Xebec",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-118",
+          "target": "Shiki [\"OP17-048\">OP17-048]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Streusen [\"OP17-050\">OP17-050]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-055"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-049"
+          ],
+          "trash": [
+            "OP17-045",
+            "OP17-054",
+            "OP17-043",
+            "OP17-045",
+            "OP17-044",
+            "OP17-055",
+            "OP17-053",
+            "OP17-042",
+            "OP17-040",
+            "OP17-055",
+            "OP17-055",
+            "OP17-056",
+            "OP17-044",
+            "OP17-052",
+            "OP17-040",
+            "OP17-054",
+            "OP17-042",
+            "OP17-048",
+            "OP17-046"
+          ],
+          "life": 3
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-048",
+            "OP17-118",
+            "OP17-053",
+            "OP17-052",
+            "OP17-055",
+            "OP17-056"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-050",
+            "OP17-045",
+            "OP17-055",
+            "OP17-042",
+            "OP17-050",
+            "OP17-045",
+            "OP17-052",
+            "OP17-055",
+            "OP17-055",
+            "OP17-046",
+            "OP17-045",
+            "OP17-043",
+            "OP17-049",
+            "OP17-057",
+            "OP17-049",
+            "OP17-041",
+            "OP17-048",
+            "OP17-048",
+            "OP17-045",
+            "OP17-046",
+            "OP17-056",
+            "OP17-050"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-054",
+            "OP17-054"
+          ],
+          "life": 1,
+          "rested": {
+            "OP17-118": 1,
+            "OP17-054": 2
+          }
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Ganzui",
+        "code": "OP17-043"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Kaido [\"OP17-042\">OP17-042]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-118",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Draw 1 Card",
+            "Deploy Edward Newgate [\"OP17-040\">OP17-040]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-040",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-055",
+            "OP17-049",
+            "OP17-056",
+            "OP17-043"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-049",
+            "OP17-118",
+            "OP17-040"
+          ],
+          "trash": [
+            "OP17-045",
+            "OP17-054",
+            "OP17-043",
+            "OP17-045",
+            "OP17-044",
+            "OP17-055",
+            "OP17-053",
+            "OP17-042",
+            "OP17-040",
+            "OP17-055",
+            "OP17-055",
+            "OP17-056",
+            "OP17-044",
+            "OP17-052",
+            "OP17-040",
+            "OP17-054",
+            "OP17-042",
+            "OP17-048",
+            "OP17-046",
+            "OP17-042"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-118": 1
+          }
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-048",
+            "OP17-118",
+            "OP17-053",
+            "OP17-055",
+            "OP17-056"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-050",
+            "OP17-045",
+            "OP17-055",
+            "OP17-042",
+            "OP17-050",
+            "OP17-045",
+            "OP17-052",
+            "OP17-055",
+            "OP17-055",
+            "OP17-046",
+            "OP17-045",
+            "OP17-043",
+            "OP17-049",
+            "OP17-057",
+            "OP17-049",
+            "OP17-041",
+            "OP17-048",
+            "OP17-048",
+            "OP17-045",
+            "OP17-046",
+            "OP17-056",
+            "OP17-050",
+            "OP17-052"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-054",
+            "OP17-054"
+          ],
+          "life": 1,
+          "rested": {
+            "OP17-118": 1,
+            "OP17-054": 2
+          }
+        }
+      }
+    },
+    {
+      "turn": 17,
+      "player": "Vius2#16248",
+      "card_drawn": {
+        "name": "Don Marlon",
+        "code": "OP17-052"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Wang Zhi [\"OP17-041\">OP17-041]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "Rest 3 Don",
+            "Rest Stussy [\"OP17-054\">OP17-054]",
+            "Rocks D. Xebec [\"OP17-118\">OP17-118] can't attack next turn",
+            "Rest 3 Don",
+            "Rest Stussy [\"OP17-054\">OP17-054]",
+            "Rocks D. Xebec [\"OP17-118\">OP17-118] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-118",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-052",
+          "card_name": "Don Marlon",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-055",
+            "OP17-049",
+            "OP17-056",
+            "OP17-052"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-049",
+            "OP17-118",
+            "OP17-040"
+          ],
+          "trash": [
+            "OP17-045",
+            "OP17-054",
+            "OP17-043",
+            "OP17-045",
+            "OP17-044",
+            "OP17-055",
+            "OP17-053",
+            "OP17-042",
+            "OP17-040",
+            "OP17-055",
+            "OP17-055",
+            "OP17-056",
+            "OP17-044",
+            "OP17-052",
+            "OP17-040",
+            "OP17-054",
+            "OP17-042",
+            "OP17-048",
+            "OP17-046",
+            "OP17-042",
+            "OP17-043"
+          ],
+          "life": 2,
+          "rested": {
+            "OP17-118": 1
+          }
+        },
+        "Vius2#16248": {
+          "hand": [
+            "OP17-048",
+            "OP17-118",
+            "OP17-053",
+            "OP17-055",
+            "OP17-056",
+            "OP17-040",
+            "OP17-055"
+          ],
+          "trash": [
+            "OP17-053",
+            "OP17-050",
+            "OP17-045",
+            "OP17-055",
+            "OP17-042",
+            "OP17-050",
+            "OP17-045",
+            "OP17-052",
+            "OP17-055",
+            "OP17-046",
+            "OP17-045",
+            "OP17-043",
+            "OP17-049",
+            "OP17-057",
+            "OP17-049",
+            "OP17-041",
+            "OP17-048",
+            "OP17-048",
+            "OP17-045",
+            "OP17-046",
+            "OP17-056",
+            "OP17-050",
+            "OP17-052",
+            "OP17-041"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-054",
+            "OP17-054",
+            "OP17-052"
+          ],
+          "life": 1,
+          "rested": {
+            "OP17-118": 1,
+            "OP17-054": 2,
+            "OP17-052": 1
+          }
+        }
+      }
+    }
+  ]
+}

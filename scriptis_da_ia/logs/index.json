@@ -2876,5 +2876,161 @@
       "You": "decks/Portgas.D.Ace-R_2026-08-02T23.52.21.json",
       "Opponent": "decks/Eustass.Captain.Kid-Y_2026-08-02T23.52.21.json"
     }
+  },
+  {
+    "id": "2026-08-07T22.17.10_p2",
+    "friendly_name": "Rocks.D.Xebec-B_x_Monkey.D.Luffy-PB",
+    "date": "2026-08-07",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Drocks99#7236",
+      "leader_code": "OP09-061",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-PB"
+    },
+    "turns": 9,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Rocks.D.Xebec-B_x_Monkey.D.Luffy-PB_2026-08-07T22.17.10_p2.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Monkey.D.Luffy-PB_2026-08-07T22.17.10_p2.json",
+    "deck_files": {
+      "Karlmalone#2854": "decks/Rocks.D.Xebec-B_2026-08-07T22.17.10_p2.json",
+      "Drocks99#7236": "decks/Monkey.D.Luffy-PB_2026-08-07T22.17.10_p2.json"
+    }
+  },
+  {
+    "id": "2026-08-08T10.03.33_p2",
+    "friendly_name": "Rocks.D.Xebec-B_x_Kuzan-B",
+    "date": "2026-08-08",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "yuuki#80186",
+      "leader_code": "OP12-040",
+      "leader_name": "Kuzan (040)",
+      "slug": "Kuzan-B"
+    },
+    "turns": 14,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Rocks.D.Xebec-B_x_Kuzan-B_2026-08-08T10.03.33_p2.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Kuzan-B_2026-08-08T10.03.33_p2.json",
+    "deck_files": {
+      "Karlmalone#2854": "decks/Rocks.D.Xebec-B_2026-08-08T10.03.33_p2.json",
+      "yuuki#80186": "decks/Kuzan-B_2026-08-08T10.03.33_p2.json"
+    }
+  },
+  {
+    "id": "2026-08-05T23.28.24_p2",
+    "friendly_name": "Rocks.D.Xebec-B_x_Rocks.D.Xebec-B",
+    "date": "2026-08-05",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Vius2#16248",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 17,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Rocks.D.Xebec-B_x_Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.json",
+    "deck_files": {
+      "Karlmalone#2854": "decks/Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.json",
+      "Vius2#16248": "decks/Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.json"
+    }
+  },
+  {
+    "id": "2026-08-08T10.55.01",
+    "friendly_name": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R",
+    "date": "2026-08-08",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "turns": 0,
+    "winner": "p2",
+    "bot_side": "p2",
+    "log_file": "raw/Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-08-08T10.55.01.json",
+      "Opponent": "decks/Portgas.D.Ace-R_2026-08-08T10.55.01.json"
+    }
+  },
+  {
+    "id": "2026-08-08T10.55.01_p2",
+    "friendly_name": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R",
+    "date": "2026-08-08",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "turns": 11,
+    "winner": "p2",
+    "bot_side": null,
+    "log_file": "raw/Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01_p2.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01_p2.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-08-08T10.55.01_p2.json",
+      "Opponent": "decks/Portgas.D.Ace-R_2026-08-08T10.55.01_p2.json"
+    }
+  },
+  {
+    "id": "2026-08-08T12.15.57",
+    "friendly_name": "Rocks.D.Xebec-B_x_Marshall.D.Teach-BY",
+    "date": "2026-08-08",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 10,
+    "winner": "p1",
+    "bot_side": "p2",
+    "log_file": "raw/Rocks.D.Xebec-B_x_Marshall.D.Teach-BY_2026-08-08T12.15.57.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Marshall.D.Teach-BY_2026-08-08T12.15.57.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-08-08T12.15.57.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-08-08T12.15.57.json"
+    }
   }
 ]

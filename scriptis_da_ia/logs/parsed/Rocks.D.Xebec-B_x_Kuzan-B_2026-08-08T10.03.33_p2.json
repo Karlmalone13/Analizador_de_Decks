@@ -1,0 +1,1480 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "Karlmalone#2854",
+        "leader": {
+          "name": "Rocks D. Xebec",
+          "code": "OP17-039"
+        }
+      },
+      "p2": {
+        "name": "yuuki#80186",
+        "leader": {
+          "name": "Kuzan (040)",
+          "code": "OP12-040"
+        }
+      }
+    },
+    "goes_first": "Karlmalone#2854"
+  },
+  "total_turns": 14,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-057",
+          "card_name": "Fullalead",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-048",
+            "OP17-048"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "yuuki#80186": {
+          "hand": [
+            "OP06-058",
+            "OP12-057",
+            "OP12-057",
+            "ST33-003",
+            "OP12-044"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "yuuki#80186",
+      "card_drawn": {
+        "name": "Mr. 3 (Galdino)",
+        "code": "OP16-056"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-048",
+            "OP17-048"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "yuuki#80186": {
+          "hand": [
+            "OP06-058",
+            "OP12-057",
+            "OP12-057",
+            "ST33-003",
+            "OP12-044",
+            "OP16-056"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "There's No Authority in the World",
+        "code": "OP17-055"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-045",
+          "card_name": "Kyo",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Shiki [\"OP17-048\">OP17-048]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-048",
+            "OP17-049",
+            "OP17-049",
+            "OP17-055"
+          ],
+          "board": [
+            "OP17-045"
+          ],
+          "trash": [
+            "OP17-048"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-045": 1
+          }
+        },
+        "yuuki#80186": {
+          "hand": [
+            "OP06-058",
+            "OP12-057",
+            "OP12-057",
+            "ST33-003",
+            "OP12-044",
+            "OP16-056",
+            "ST33-004"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "yuuki#80186",
+      "card_drawn": {
+        "name": "Kuzan",
+        "code": "OP12-043"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST33-003",
+          "card_name": "Smoker",
+          "effects": [
+            "Trash Ice Block: Pheasant Peck [\"OP12-057\">OP12-057]",
+            "Send Kyo [\"OP17-045\">OP17-045] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-040",
+          "card_name": "Kuzan",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP12-040",
+          "to_name": "Kuzan",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP12-040",
+          "to_name": "Kuzan",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP12-040",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-048",
+            "OP17-049",
+            "OP17-049",
+            "OP17-055",
+            "OP17-048"
+          ],
+          "board": [],
+          "trash": [
+            "OP17-048"
+          ],
+          "life": 4
+        },
+        "yuuki#80186": {
+          "hand": [
+            "OP06-058",
+            "OP12-057",
+            "OP12-044",
+            "OP16-056",
+            "ST33-004",
+            "OP12-057",
+            "OP12-043"
+          ],
+          "trash": [
+            "OP12-057"
+          ],
+          "board": [
+            "ST33-003"
+          ],
+          "life": 4,
+          "rested": {
+            "ST33-003": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Ganzui",
+        "code": "OP17-043"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-049",
+          "card_name": "Charlotte Linlin",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Gloriosa [\"OP17-046\">OP17-046]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-048",
+            "OP17-049",
+            "OP17-055",
+            "OP17-048",
+            "OP17-043",
+            "OP17-043"
+          ],
+          "board": [
+            "OP17-049"
+          ],
+          "trash": [
+            "OP17-048",
+            "OP17-046"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-049": 1
+          }
+        },
+        "yuuki#80186": {
+          "hand": [
+            "OP06-058",
+            "OP12-057",
+            "OP12-044",
+            "OP16-056",
+            "ST33-004",
+            "OP16-056"
+          ],
+          "trash": [
+            "OP12-057",
+            "OP12-043",
+            "OP12-057"
+          ],
+          "board": [
+            "ST33-003"
+          ],
+          "life": 3,
+          "rested": {
+            "ST33-003": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "yuuki#80186",
+      "card_drawn": {
+        "name": "Issho",
+        "code": "EB04-022"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-022",
+          "card_name": "Issho",
+          "effects": [
+            "Trash Borsalino [\"ST33-004\">ST33-004]",
+            "Trash Mr. 3 (Galdino) [\"OP16-056\">OP16-056]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-040",
+          "card_name": "Kuzan",
+          "effects": [
+            "Draw 1 Card",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP12-040",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-048",
+            "OP17-049",
+            "OP17-048"
+          ],
+          "board": [
+            "OP17-049"
+          ],
+          "trash": [
+            "OP17-048",
+            "OP17-046",
+            "OP17-043"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-049": 1
+          }
+        },
+        "yuuki#80186": {
+          "hand": [
+            "OP06-058",
+            "OP12-057",
+            "OP12-044",
+            "OP16-056",
+            "ST33-005",
+            "EB04-022"
+          ],
+          "trash": [
+            "OP12-057",
+            "OP12-043",
+            "OP12-057",
+            "ST33-004",
+            "OP16-056"
+          ],
+          "board": [
+            "ST33-003",
+            "EB04-022"
+          ],
+          "life": 3,
+          "rested": {
+            "EB04-022": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Rocks Pirates",
+        "code": "OP17-056"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-049",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-050",
+          "card_name": "Streusen",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Fullalead [\"OP17-057\">OP17-057]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-048",
+            "OP17-048",
+            "OP17-055",
+            "OP17-054",
+            "OP17-054",
+            "OP17-056"
+          ],
+          "board": [
+            "OP17-049",
+            "OP17-049",
+            "OP17-050"
+          ],
+          "trash": [
+            "OP17-048",
+            "OP17-046",
+            "OP17-043",
+            "OP17-057"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-049": 2,
+            "OP17-050": 1
+          }
+        },
+        "yuuki#80186": {
+          "hand": [
+            "OP06-058",
+            "OP12-044",
+            "OP16-056",
+            "ST33-005",
+            "OP06-050",
+            "ST33-005"
+          ],
+          "trash": [
+            "OP12-057",
+            "OP12-043",
+            "OP12-057",
+            "ST33-004",
+            "OP16-056",
+            "OP12-057",
+            "EB04-022"
+          ],
+          "board": [
+            "ST33-003",
+            "EB04-022"
+          ],
+          "life": 2,
+          "rested": {
+            "EB04-022": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "yuuki#80186",
+      "card_drawn": {
+        "name": "Ice Time",
+        "code": "EB04-028"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP06-058",
+          "card_name": "Gravity Blade Raging Tiger",
+          "effects": [
+            "Rest 7 Don",
+            "Send Charlotte Linlin [\"OP17-049\">OP17-049] to Deck Bottom",
+            "Send Charlotte Linlin [\"OP17-049\">OP17-049] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP12-040",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Issho",
+          "attacker_code": "EB04-022",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-048",
+            "OP17-048",
+            "OP17-055",
+            "OP17-054",
+            "OP17-056",
+            "OP17-048"
+          ],
+          "board": [
+            "OP17-050"
+          ],
+          "trash": [
+            "OP17-048",
+            "OP17-046",
+            "OP17-043",
+            "OP17-057",
+            "OP17-054"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-050": 1
+          }
+        },
+        "yuuki#80186": {
+          "hand": [
+            "OP12-044",
+            "OP16-056",
+            "ST33-005",
+            "OP06-050",
+            "ST33-005",
+            "EB04-028"
+          ],
+          "trash": [
+            "OP12-057",
+            "OP12-043",
+            "OP12-057",
+            "ST33-004",
+            "OP16-056",
+            "OP12-057",
+            "EB04-022",
+            "OP06-058"
+          ],
+          "board": [
+            "ST33-003",
+            "EB04-022"
+          ],
+          "life": 2,
+          "rested": {
+            "EB04-022": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Kyo",
+        "code": "OP17-045"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-048",
+          "card_name": "Shiki",
+          "effects": [
+            "Trash Shiki [\"OP17-048\">OP17-048]",
+            "Buff Issho [\"EB04-022\">EB04-022] -3000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "Issho [\"EB04-022\">EB04-022]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Captain John [\"OP17-044\">OP17-044]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-048",
+            "OP17-055",
+            "OP17-054",
+            "OP17-056",
+            "OP17-056",
+            "OP17-045"
+          ],
+          "board": [
+            "OP17-050",
+            "OP17-048"
+          ],
+          "trash": [
+            "OP17-048",
+            "OP17-046",
+            "OP17-043",
+            "OP17-057",
+            "OP17-054",
+            "OP17-048",
+            "OP17-044"
+          ],
+          "life": 3
+        },
+        "yuuki#80186": {
+          "hand": [
+            "OP12-044",
+            "OP16-056",
+            "ST33-005",
+            "OP06-050",
+            "ST33-005",
+            "EB04-028",
+            "OP12-044"
+          ],
+          "trash": [
+            "OP12-057",
+            "OP12-043",
+            "OP12-057",
+            "ST33-004",
+            "OP16-056",
+            "OP12-057",
+            "EB04-022",
+            "OP06-058",
+            "EB04-022"
+          ],
+          "board": [
+            "ST33-003"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "yuuki#80186",
+      "card_drawn": {
+        "name": "Hina",
+        "code": "OP12-051"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-056",
+          "card_name": "Mr. 3 (Galdino)",
+          "effects": [
+            "Trash Mr. 3 (Galdino) [\"OP16-056\">OP16-056]",
+            "Draw 2 Card",
+            "Shiki [\"OP17-048\">OP17-048] can't attack next turn"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST33-005",
+          "card_name": "Monkey D. Garp",
+          "effects": [
+            "Deploy Sakazuki [\"OP12-044\">OP12-044]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-044",
+          "card_name": "Sakazuki",
+          "effects": [
+            "Draw 2 Card",
+            "Trash Ice Time [\"EB04-028\">EB04-028]",
+            "Attach 1 Rested Don to Kuzan [\"OP12-040\">OP12-040]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-040",
+          "card_name": "Kuzan",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP12-040",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-048",
+            "OP17-055",
+            "OP17-054",
+            "OP17-056",
+            "OP17-045"
+          ],
+          "board": [
+            "OP17-050",
+            "OP17-048"
+          ],
+          "trash": [
+            "OP17-048",
+            "OP17-046",
+            "OP17-043",
+            "OP17-057",
+            "OP17-054",
+            "OP17-048",
+            "OP17-044",
+            "OP17-056"
+          ],
+          "life": 3
+        },
+        "yuuki#80186": {
+          "hand": [
+            "OP12-044",
+            "ST33-005",
+            "OP06-050",
+            "EB04-028",
+            "OP06-050",
+            "ST33-003",
+            "ST33-004",
+            "ST33-004",
+            "OP12-051"
+          ],
+          "trash": [
+            "OP12-057",
+            "OP12-043",
+            "OP12-057",
+            "ST33-004",
+            "OP16-056",
+            "OP12-057",
+            "EB04-022",
+            "OP06-058",
+            "EB04-022",
+            "OP16-056",
+            "EB04-028"
+          ],
+          "board": [
+            "ST33-003",
+            "ST33-005",
+            "OP12-044"
+          ],
+          "life": 1,
+          "rested": {
+            "ST33-005": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Rocks Pirates",
+        "code": "OP17-056"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-118",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Draw 1 Card",
+            "Deploy Shiki [\"OP17-048\">OP17-048]",
+            "Deploy Kyo [\"OP17-045\">OP17-045]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-045",
+          "card_name": "Kyo",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP06-050"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Don Marlon [\"OP17-052\">OP17-052]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-056",
+            "OP17-055",
+            "OP17-054",
+            "OP17-056",
+            "OP17-053",
+            "OP17-049",
+            "OP17-055",
+            "OP17-056"
+          ],
+          "board": [
+            "OP17-050",
+            "OP17-048",
+            "OP17-118",
+            "OP17-048",
+            "OP17-045"
+          ],
+          "trash": [
+            "OP17-048",
+            "OP17-046",
+            "OP17-043",
+            "OP17-057",
+            "OP17-054",
+            "OP17-048",
+            "OP17-044",
+            "OP17-056",
+            "OP17-052"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-118": 1
+          }
+        },
+        "yuuki#80186": {
+          "hand": [
+            "OP12-044",
+            "ST33-005",
+            "OP06-050",
+            "EB04-028",
+            "ST33-003",
+            "ST33-004",
+            "ST33-004",
+            "OP12-051"
+          ],
+          "trash": [
+            "OP12-057",
+            "OP12-043",
+            "OP12-057",
+            "ST33-004",
+            "OP16-056",
+            "OP12-057",
+            "EB04-022",
+            "OP06-058",
+            "EB04-022",
+            "OP16-056",
+            "EB04-028",
+            "OP06-050"
+          ],
+          "board": [
+            "ST33-003",
+            "ST33-005",
+            "OP12-044"
+          ],
+          "life": 1,
+          "rested": {
+            "ST33-005": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "yuuki#80186",
+      "card_drawn": {
+        "name": "Issho",
+        "code": "EB04-022"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "EB04-028",
+          "card_name": "Ice Time",
+          "effects": [
+            "Rest 5 Don",
+            "Trash Tashigi [\"OP06-050\">OP06-050]",
+            "Shiki [\"OP17-048\">OP17-048] can't attack next turn",
+            "Shiki [\"OP17-048\">OP17-048] can't attack next turn"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-040",
+          "card_name": "Kuzan",
+          "effects": [
+            "Draw 1 Card",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-056",
+          "card_name": "Mr. 3 (Galdino)",
+          "effects": [
+            "Trash Mr. 3 (Galdino) [\"OP16-056\">OP16-056]",
+            "Draw 2 Card",
+            "Kyo [\"OP17-045\">OP17-045] can't attack next turn"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-044",
+          "card_name": "Sakazuki",
+          "effects": [
+            "Trash Sengoku [\"OP12-047\">OP12-047]",
+            "Attach 1 Rested Don to Kuzan [\"OP12-040\">OP12-040]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP12-040",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Garp",
+          "attacker_code": "ST33-005",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sakazuki",
+          "attacker_code": "OP12-044",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-056",
+            "OP17-055",
+            "OP17-053",
+            "OP17-055"
+          ],
+          "board": [
+            "OP17-050",
+            "OP17-048",
+            "OP17-118",
+            "OP17-048",
+            "OP17-045"
+          ],
+          "trash": [
+            "OP17-048",
+            "OP17-046",
+            "OP17-043",
+            "OP17-057",
+            "OP17-054",
+            "OP17-048",
+            "OP17-044",
+            "OP17-056",
+            "OP17-052",
+            "OP17-056",
+            "OP17-056",
+            "OP17-049",
+            "OP17-054"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-118": 1
+          }
+        },
+        "yuuki#80186": {
+          "hand": [
+            "OP12-044",
+            "ST33-005",
+            "ST33-003",
+            "ST33-004",
+            "ST33-004",
+            "OP12-051",
+            "OP12-047",
+            "ST33-005",
+            "EB04-022"
+          ],
+          "trash": [
+            "OP12-057",
+            "OP12-043",
+            "OP12-057",
+            "ST33-004",
+            "OP16-056",
+            "OP12-057",
+            "EB04-022",
+            "OP06-058",
+            "EB04-022",
+            "OP16-056",
+            "EB04-028",
+            "OP06-050",
+            "EB04-028",
+            "OP06-050",
+            "OP16-056",
+            "OP12-047"
+          ],
+          "board": [
+            "ST33-003",
+            "ST33-005",
+            "OP12-044"
+          ],
+          "life": 1,
+          "rested": {
+            "ST33-005": 1,
+            "OP12-044": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Stussy",
+        "code": "OP17-054"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-118",
+          "target": "Monkey D. Garp [\"ST33-005\">ST33-005]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-047"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Barbell [\"OP17-053\">OP17-053]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-118",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Draw 1 Card",
+            "Deploy Gloriosa [\"OP17-046\">OP17-046]",
+            "Deploy Stussy [\"OP17-054\">OP17-054]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "Smoker [\"ST33-003\">ST33-003] can't attack next turn"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-046",
+          "card_name": "Gloriosa",
+          "effects": [
+            "Send Smoker [\"ST33-003\">ST33-003] to Deck Bottom"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-056",
+            "OP17-055",
+            "OP17-055",
+            "OP17-118"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-048",
+            "OP17-118",
+            "OP17-046",
+            "OP17-054"
+          ],
+          "trash": [
+            "OP17-048",
+            "OP17-046",
+            "OP17-043",
+            "OP17-057",
+            "OP17-054",
+            "OP17-048",
+            "OP17-044",
+            "OP17-056",
+            "OP17-052",
+            "OP17-056",
+            "OP17-056",
+            "OP17-049",
+            "OP17-054",
+            "OP17-053",
+            "OP17-045",
+            "OP17-050",
+            "OP17-048"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-118": 2
+          }
+        },
+        "yuuki#80186": {
+          "hand": [
+            "OP12-044",
+            "ST33-005",
+            "ST33-003",
+            "ST33-004",
+            "ST33-004",
+            "OP12-051",
+            "ST33-005",
+            "EB04-022"
+          ],
+          "trash": [
+            "OP12-057",
+            "OP12-043",
+            "OP12-057",
+            "ST33-004",
+            "OP16-056",
+            "OP12-057",
+            "EB04-022",
+            "OP06-058",
+            "EB04-022",
+            "OP16-056",
+            "EB04-028",
+            "OP06-050",
+            "EB04-028",
+            "OP06-050",
+            "OP16-056",
+            "OP12-047",
+            "ST33-005",
+            "OP12-047"
+          ],
+          "board": [
+            "OP12-044"
+          ],
+          "life": 1,
+          "rested": {
+            "OP12-044": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "yuuki#80186",
+      "card_drawn": {
+        "name": "Hina",
+        "code": "OP12-051"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP12-047",
+          "card_name": "Sengoku",
+          "effects": [
+            "Trash Issho [\"EB04-022\">EB04-022]",
+            "<b>Reveal and Draw Ice Time [\"EB04-028\">EB04-028]</b>",
+            "<b>Reveal and Draw Koby [\"ST33-001\">ST33-001]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-040",
+          "card_name": "Kuzan",
+          "effects": [
+            "Draw 1 Card",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-044",
+          "card_name": "Sakazuki",
+          "effects": [
+            "Trash Monkey D. Garp [\"ST33-005\">ST33-005]",
+            "Attach 1 Rested Don to Sakazuki [\"OP12-044\">OP12-044]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST33-004",
+          "card_name": "Borsalino",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP12-040",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST33-004",
+          "card_name": "Borsalino",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sakazuki",
+          "attacker_code": "OP12-044",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-118"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-056",
+            "OP17-055",
+            "OP17-118"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-048",
+            "OP17-118",
+            "OP17-046",
+            "OP17-054"
+          ],
+          "trash": [
+            "OP17-048",
+            "OP17-046",
+            "OP17-043",
+            "OP17-057",
+            "OP17-054",
+            "OP17-048",
+            "OP17-044",
+            "OP17-056",
+            "OP17-052",
+            "OP17-056",
+            "OP17-056",
+            "OP17-049",
+            "OP17-054",
+            "OP17-053",
+            "OP17-045",
+            "OP17-050",
+            "OP17-048",
+            "OP17-055",
+            "OP17-118"
+          ],
+          "life": 2,
+          "rested": {
+            "OP17-118": 2
+          }
+        },
+        "yuuki#80186": {
+          "hand": [
+            "OP12-044",
+            "ST33-003",
+            "OP12-051",
+            "ST33-005",
+            "EB04-028",
+            "ST33-001",
+            "ST33-005",
+            "OP12-051"
+          ],
+          "trash": [
+            "OP12-057",
+            "OP12-043",
+            "OP12-057",
+            "ST33-004",
+            "OP16-056",
+            "OP12-057",
+            "EB04-022",
+            "OP06-058",
+            "EB04-022",
+            "OP16-056",
+            "EB04-028",
+            "OP06-050",
+            "EB04-028",
+            "OP06-050",
+            "OP16-056",
+            "OP12-047",
+            "ST33-005",
+            "OP12-047",
+            "EB04-022",
+            "ST33-005"
+          ],
+          "board": [
+            "OP12-044",
+            "OP12-047",
+            "ST33-004",
+            "ST33-004"
+          ],
+          "life": 1,
+          "rested": {
+            "OP12-044": 1,
+            "OP12-047": 1,
+            "ST33-004": 2
+          }
+        }
+      }
+    }
+  ]
+}

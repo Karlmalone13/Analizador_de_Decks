@@ -2,24 +2,88 @@
 
 **Última atualização:** 8 de agosto de 2026
 
-> 08/08/2026 (bloco 462): **calibração de `HABILITA_ATAQUE_BONUS`
-> FECHADA — amostra maior (N=50, 750 partidas) CONFIRMA 60 com confiança
-> real**, diferente do bloco 459 (N=15, "mantido por falta de confiança
-> pra mudar"). A N=50 o agregado INVERTE em relação ao N=15 (que
-> favorecia 0): agora 60 vence o agregado (41.6% vs 36.0% em 0 vs 39.6%
-> em 120) e fica empatado-melhor ou melhor isolado em 4 dos 5 matchups —
-> o caso mais claro é Enel vs Mihawk, que a N=15 parecia favorecer
-> fortemente 0 (73.3%) mas a N=50 se revela o PIOR valor (26.0%),
-> confirmando que aquele sinal era ruído de amostra pequena. Comentário
-> da constante atualizado com a tabela final; valor em si não mudou (já
-> era 60), sem teste novo necessário. **Pendência do bloco 459/461
-> fechada definitivamente.** Incidental: `.gitignore` ganhou padrão pros
-> scripts de calibração self-play descartáveis
-> (`scriptis_da_ia/calibrate_*.py`/`metrics/calibrate_*.json`), mesma
-> convenção já usada pra `decision_audit_*.json`; e o 1º disparo do
-> sweep (via `nohup` solto) morreu num restart de sessão — reiniciado
-> via mecanismo de background do harness na 2ª tentativa. Ver bloco 462
-> do HANDOFF.
+> 08/08/2026 (bloco 468): **fecha a pendência do bloco 462/459** —
+> amostra maior (N=50, 750 partidas) CONFIRMA `HABILITA_ATAQUE_BONUS`
+> em 60 com confiança real (diferente do bloco 459, "mantido por falta
+> de confiança pra mudar"). A N=50 o agregado INVERTE em relação ao
+> N=15 (que favorecia 0): 60 vence o agregado (41.6% vs 36.0% em 0 vs
+> 39.6% em 120) — caso mais claro é Enel vs Mihawk, que a N=15 parecia
+> favorecer fortemente 0 (73.3%) mas a N=50 revela como o PIOR valor
+> (26.0%), confirmando ruído de amostra pequena. Valor não mudou (já
+> era 60), só o comentário da constante. Sessão remota (bloco 462
+> original) mesclada com 5 blocos de uma sessão LOCAL em paralelo
+> (463-467, ver abaixo) via `git merge origin/main` a pedido do
+> usuário. Ver bloco 468 do HANDOFF.
+
+> 08/08/2026 (bloco 467): **fecha a pendência do bloco 466** — Teach 10
+> (OP09-093, `negate_effect`) atacava antes de ativar, quando deveria
+> ser o inverso. `_score_activate_main` nunca tinha o equivalente do
+> `HABILITA_ATAQUE_BONUS` que `_score_play_action` já tem pra "sair
+> antes do ataque". Fix: categoria remoção/controle ganha o bônus
+> (+60) quando há atacante disponível e o alvo tem valor real;
+> `negate_effect` especificamente ganha +150 extra (protege TODOS os
+> ataques do turno, não só remove um alvo). Validado com o cenário
+> exato da partida real: activate foi de 170 (perdia pro ataque de
+> 288) pra 380 (agora supera). 2 testes novos, `smoke_fast.py`/
+> `smoke_test.py` 100%, `audit_replay.py --n 20 --seed 84`: 0
+> exceções, 0 anomalias. Ver bloco 467 do HANDOFF.
+
+> 08/08/2026 (bloco 466): **corrigido bug real do Doc Q** —
+> `order_target_candidates` nunca excluía candidato de campo que batia
+> a zona certa mas não o filtro numérico (`cost_lte`/`power_lte`/
+> `power_gte`) do próprio efeito. Com só 1 alvo válido pro "K.O. até 2
+> com custo ≤1", o 2º slot pedia a mesma lista de 37 candidatos sem
+> filtro 2x seguidas (23s de diferença) até esgotar e cancelar o
+> efeito inteiro — nem o 1º alvo já escolhido resultava em KO. Fix
+> conservador (só aplica quando há exatamente 1 step de campo com
+> filtro numérico), sweep nas 2747 cartas do banco sem erros, 231
+> cartas com impacto potencial. 2 testes novos, `smoke_fast.py`/
+> `smoke_test.py` 100%, `audit_replay.py --n 20`: 0 exceções, 0
+> anomalias. **Pendências da mesma rodada**: Teach 10 (OP09-093)
+> ativado DEPOIS do ataque em vez de antes (mesma classe do fix do
+> Newgate, mas pra `activate` em vez de `play` — não corrigido,
+> precisa generalizar `HABILITA_ATAQUE_BONUS`); Teach 8 "não ganhou
+> vida" investigado mas os dados do log contradizem o relato (vida foi
+> ganha) — sem bug confirmado, pedir turno exato se acontecer de novo.
+> Ver bloco 466 do HANDOFF.
+
+> 08/08/2026 (bloco 465): **fechado o achado do bloco 464** — causa
+> raiz do "poderia ter ganho 1 turno antes". Bug de 2 partes: (1)
+> `REMOVE_THREAT`/`DEFENSIVE` descontava -100/-80 do ataque ao líder
+> mesmo com a vida do oponente já crítica (0/1), onde qualquer conexão
+> vence o jogo — agora só desconta com `opp_life > 1`. (2) mesmo
+> corrigido (1), o valor-base "vida crítica, sem letal certificado"
+> (130/220) ainda perdia pra um ataque a Character bem pontuado —
+> subido pra 300/220→260, validado batendo o cenário exato da partida
+> real (300 agora vence os 220 do Character-ameaça). 2 testes novos,
+> `smoke_fast.py`/`smoke_test.py` 100%, `audit_replay.py --n 20` 2x
+> (seeds 51 e 62): 0 exceções, 0 anomalias. Ver bloco 465 do HANDOFF.
+
+> 08/08/2026 (bloco 464): 🎉 **primeira vitória real do bot ao vivo**
+> (`Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01`). Achado
+> real (não corrigido) investigando a observação do usuário ("poderia
+> ter ganho 1 turno antes atacando a vida"): no turno 5, com o
+> oponente já em 0 vida, a decisão de atacar a vida com o líder (folga
+> de poder de +2000, deveria pontuar alto) registrou score **30** ao
+> vivo, mas reconstruindo o EXATO mesmo estado e chamando
+> `score_attack_target` isoladamente o resultado é **130** — mesmos
+> dados, resultado diferente. Aponta pra um bug real onde a busca
+> contrafactual usa um estado interno diferente do que fica gravado em
+> `state_before` na telemetria. Causa raiz não localizada — precisa de
+> instrumentação por dentro da busca (não só reconstrução externa) na
+> próxima sessão. Ver bloco 464 do HANDOFF.
+
+> 08/08/2026 (bloco 463): 3 logs pedidos pelo usuário bancados (humano
+> x humano, sem bot — sem telemetria aplicável). Achado operacional
+> importante: `CombatLogs`/`AutoSaved` são sobrescritos AO VIVO pelo
+> client enquanto uma partida está rodando — 6 dos 10 arquivos
+> investigados encolheram pra um stub de 3 linhas entre uma leitura e
+> outra, e uma cópia de resgate em `/tmp` (em vez do scratchpad
+> correto) também sumiu numa pausa. Recuperação via variante `_p2.log`
+> (perspectiva do outro jogador, nome de arquivo diferente, sobreviveu)
+> funcionou pros 3 pedidos. **3 partidas extras perdidas de verdade**
+> (sem `_p2`) — não recuperáveis. Ver bloco 463 do HANDOFF pra lição
+> completa antes de mexer em CombatLogs/AutoSaved de novo.
 
 > 07/08/2026 (bloco 461): **fecha a última pendência da linha "draw N
 > Then/and [...]"** — EB02-024 (Sogeking) tinha a cláusula "place 2

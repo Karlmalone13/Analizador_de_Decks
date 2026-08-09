@@ -1033,6 +1033,60 @@ def actor_effect_is_hand_cost_only(actor_code: str, in_combat: bool) -> bool:
     return tem_custo_mao
 
 
+# Acoes de campo (Character/Leader) que sim_bridge.order_target_candidates
+# ja sabe mapear pra opp_board/own_board via _implied_target -- extraido
+# aqui pra reusar a mesma lista na deteccao de filtro numerico abaixo.
+_BATTLEFIELD_FILTERABLE_ACTIONS = {
+    'ko', 'rest_opp_character', 'bounce_opp_character', 'debuff_power',
+    'ko_own_character', 'rest_own_character', 'trash_own_character',
+}
+
+
+def actor_step_numeric_filter(actor_code: str, in_combat: bool):
+    """Se o UNICO step relevante do ator (filtrado por janela de combate)
+    que mira campo/oponente tiver filtro numerico (cost_lte/power_lte/
+    power_gte), devolve (target_label, filtro) pra sim_bridge.
+    order_target_candidates EXCLUIR (nao so deprioritizar) candidatos do
+    campo que nao batem -- mesmo padrao de exclusao dura de actor_opp_only/
+    actor_hand_cost_only, agora pro FILTRO do proprio step, nao so a zona.
+
+    CONSERVADOR: exige exatamente 1 step de campo com filtro numerico
+    entre os blocos relevantes -- 2+ steps ambiguos (podem exigir filtros
+    DIFERENTES) abortam a generalizacao (None), preservando o
+    comportamento antigo (so deprioridade) nesses casos raros.
+
+    Achado real 08/08 (usuario, partida ao vivo -- "doc q chegou a
+    escolher 1 alvo, travou no 2o por falta de alvo, anulou sem dar KO
+    em ninguem"): Doc Q OP16-109 ("K.O. up to 2... com custo 1 ou
+    menos") tinha SO 1 alvo valido em campo; a decisao de alvo pro 2o
+    slot pediu a MESMA lista de 37 candidatos (deck+mao+trash+campo dos
+    dois lados) duas vezes, 23s de diferenca -- nenhum filtro de custo
+    excluia quem nao batia, o cliente clicou candidato por candidato
+    (0.8s de cooldown) ate esgotar a lista e o efeito inteiro (incluindo
+    o 1o alvo ja escolhido) foi cancelado."""
+    effects = get_card_effects(actor_code)
+    blocks = [v for k, v in effects.items()
+              if isinstance(v, dict)
+              and (k in COMBAT_ONLY_TRIGGERS) == in_combat]
+    achado = None
+    for block in blocks:
+        for s in block.get('steps', []):
+            if s.get('action') not in _BATTLEFIELD_FILTERABLE_ACTIONS:
+                continue
+            filtro = {k: s[k] for k in ('cost_lte', 'power_lte', 'power_gte')
+                      if s.get(k) is not None}
+            if not filtro:
+                continue
+            target = s.get('target') or ''
+            lado = 'opp' if 'opp' in target else 'own' if target else None
+            if lado is None:
+                continue
+            if achado is not None:
+                return None  # 2+ steps com filtro -- ambiguo, nao generaliza
+            achado = (lado, filtro)
+    return achado
+
+
 @dataclass
 class GameState:
     leader: Card
@@ -11876,10 +11930,24 @@ class DecisionEngine:
             # mas nao deve soterrar as outras acoes.
             lethal_now = a.can_lethal_this_turn()
             s = ATTACK_LEADER_BASE_SCORE
+            # Sem letal CERTIFICADO (can_lethal_this_turn exige sobreviver ao
+            # pior caso de defesa do oponente), o valor "nao lethal" ainda
+            # precisa superar de forma confiavel um ataque a Character
+            # legitimamente valioso -- 220/130 nao garantiam isso. Achado
+            # real 08/08 (usuario, primeira vitoria ao vivo -- "poderia ter
+            # ganho 1 turno antes"): com vida 0, ataque ao lider com folga
+            # real de poder (2000, sem precisar de DON) pontuava so 130,
+            # perdendo pra matar um Character com ameaca recorrente (Stussy,
+            # 220 -- lock_opp_character_attack em activate_main). Remover
+            # uma ameaca so vale se o jogo CONTINUAR; um acerto na vida com
+            # 0/1 restante pode ACABAR o jogo agora -- valor assimetrico que
+            # os 130/220 antigos nao refletiam. Ainda abaixo do bonus de
+            # prioridade LETHAL (+500, cenario com letal certificado de
+            # verdade), preservando a ordem: certificado > vida critica > alvo generico.
             if opp_life == 1:
-                s = 500 if lethal_now else 220
+                s = 500 if lethal_now else 260
             if opp_life == 0:
-                s = 10000 if lethal_now else 130
+                s = 10000 if lethal_now else 300
 
             # Penaliza levemente se precisa de muito DON (mas ainda é válido)
             opp_defense = leader_power + a.opp_counter_potential()
@@ -13775,6 +13843,35 @@ class OPTCGMatch:
                 # (-60 sem alvo de valor, 100+min(valor,70) com alvo).
                 alvo_valor = self._best_removal_target_value(opp, steps, engine)
                 base = -60 if alvo_valor <= 0 else 100 + min(alvo_valor * 0.3, 70)
+            # HABILITA_ATAQUE, agora tambem pra ACTIVATE (achado real
+            # 08/08, usuario -- partida ao vivo): _score_play_action ja
+            # da HABILITA_ATAQUE_BONUS (+60) pra carta que precisa
+            # ENTRAR pra habilitar o ataque (kos/remocao/buff/draw),
+            # priorizando sair antes do ataque no mesmo turno -- mas
+            # _score_activate_main nunca tinha o equivalente. Teach 10
+            # (OP09-093, negate_effect no lider/personagem do oponente +
+            # trava ataque) atacou PRIMEIRO e so ativou DEPOIS, quando
+            # deveria ser o inverso (anular a resposta do oponente ANTES
+            # do ataque, senao o oponente ainda pode counterar/bloquear
+            # normalmente). So aplica quando ha um alvo de valor real
+            # (base>0, mesmo criterio ja usado acima) E ainda existe um
+            # atacante disponivel este turno -- sem atacante, "sair
+            # antes do ataque" nao significa nada.
+            tenho_atacante = (character_can_attack_now(p.leader, p, opp)
+                              or any(character_can_attack_now(c, p, opp) for c in p.field_chars))
+            if base > 0 and tenho_atacante:
+                base += HABILITA_ATAQUE_BONUS
+                # negate_effect e categoricamente diferente do resto da
+                # categoria (ko/bounce/debuff removem/enfraquecem UM alvo;
+                # negar a resposta do oponente protege TODOS os meus
+                # ataques deste turno, nao so um) -- bonus extra pra
+                # garantir que sai antes mesmo quando ha um ataque de
+                # score alto competindo. Validado com o cenario exato da
+                # partida real (turno 5): sem este extra, 100+60=160
+                # ainda perdia pro ataque de 288; com o extra, ativa
+                # primeiro como deveria.
+                if 'negate_effect' in actions_list:
+                    base += 150
         elif any(a == 'play_from_trash' for a in actions_list):
             # Achado real 09/07 (Five Elders OP13-082 nunca ativava, mesmo
             # com o board quase morrendo e a lixeira cheia de alvos
@@ -14379,9 +14476,26 @@ class OPTCGMatch:
                         # de vez). Inclinação forte, mas a ameaça crítica ainda vem antes.
                         if att.has_banish:
                             s_leader += 150
+                        # Com a vida do oponente critica (0 ou 1 carta), CONECTAR
+                        # no lider vale mais que qualquer prioridade generica de
+                        # postura -- as penalidades de DEFENSIVE/REMOVE_THREAT
+                        # nao sabiam disso e descontavam o ataque ao lider do
+                        # MESMO jeito que descontariam num turno qualquer.
+                        # Achado real 08/08 (usuario, primeira vitoria ao vivo do
+                        # bot -- "poderia ter ganho 1 turno antes"): com
+                        # opp_life==0 e o ataque do lider com folga real de poder
+                        # (sem precisar de letal CERTIFICADO), score_attack_target
+                        # ja da 130 (nao 10000, pois can_lethal_this_turn exige
+                        # garantia mesmo no pior caso de defesa) -- mas o -100 de
+                        # REMOVE_THREAT (havia um Character ameacador em campo)
+                        # derrubava pra 30, perdendo pro ataque ao Character. Vida
+                        # 0/1 ja e o MESMO sinal que os bonus LETHAL/PREVENT_COMBO
+                        # respeitam -- as penalidades de postura devem ceder aqui
+                        # tambem, nao so os bonus.
+                        opp_life_critica = opp.life_count() <= 1
                         if priority == 'LETHAL':       s_leader += 500   # foco em fechar
-                        elif priority == 'DEFENSIVE':  s_leader -= 80    # não exponha à toa
-                        elif priority == 'REMOVE_THREAT': s_leader -= 100 # remova antes
+                        elif priority == 'DEFENSIVE' and not opp_life_critica:  s_leader -= 80    # não exponha à toa
+                        elif priority == 'REMOVE_THREAT' and not opp_life_critica: s_leader -= 100 # remova antes
                         # PREVENT_COMBO (achado 07/07): oponente pode virar o
                         # jogo reanimando o trash no turno dele -- correr o
                         # clock agora (antes da virada) vale mais que o normal,
