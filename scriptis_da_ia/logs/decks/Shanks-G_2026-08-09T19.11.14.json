@@ -1,0 +1,81 @@
+{
+  "cards": [
+    {
+      "code": "OP17-027",
+      "name": "Benn Beckman",
+      "count": 4
+    },
+    {
+      "code": "OP17-029",
+      "name": "Hongo",
+      "count": 3
+    },
+    {
+      "code": "OP17-021",
+      "name": "Crone Oli",
+      "count": 2
+    },
+    {
+      "code": "OP17-033",
+      "name": "Lucky Roux",
+      "count": 2
+    },
+    {
+      "code": "ST32-002",
+      "name": "Kouzuki Oden",
+      "count": 1
+    },
+    {
+      "code": "OP17-038",
+      "name": "I Think He's Seen An Ugly Future",
+      "count": 1
+    },
+    {
+      "code": "OP17-025",
+      "name": "Building Snake",
+      "count": 1
+    },
+    {
+      "code": "OP17-031",
+      "name": "Yasopp",
+      "count": 1
+    },
+    {
+      "code": "OP17-032",
+      "name": "Limejuice",
+      "count": 1
+    },
+    {
+      "code": "ST16-004",
+      "name": "Shanks",
+      "count": 1
+    },
+    {
+      "code": "OP17-028",
+      "name": "Bonk Punch & Monster",
+      "count": 1
+    },
+    {
+      "code": "OP17-024",
+      "name": "Howling Gab",
+      "count": 1
+    },
+    {
+      "code": "OP17-037",
+      "name": "Are You That Afraid of the New Era?!",
+      "count": 1
+    },
+    {
+      "code": "OP17-022",
+      "name": "Shanks",
+      "count": 1
+    },
+    {
+      "code": "OP17-036",
+      "name": "OP17-036",
+      "count": 1
+    }
+  ],
+  "total_seen": 22,
+  "leader": "OP17-020"
+}

@@ -3084,5 +3084,57 @@
       "You": "decks/Marshall.D.Teach-BY_2026-08-09T17.04.22.json",
       "Opponent": "decks/Rocks.D.Xebec-B_2026-08-09T17.04.22.json"
     }
+  },
+  {
+    "id": "2026-08-09T18.48.47",
+    "friendly_name": "Portgas.D.Ace-R_x_Rocks.D.Xebec-B",
+    "date": "2026-08-09",
+    "p1": {
+      "name": "Zico#6849",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 10,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Portgas.D.Ace-R_x_Rocks.D.Xebec-B_2026-08-09T18.48.47.log",
+    "parsed_file": "parsed/Portgas.D.Ace-R_x_Rocks.D.Xebec-B_2026-08-09T18.48.47.json",
+    "deck_files": {
+      "Zico#6849": "decks/Portgas.D.Ace-R_2026-08-09T18.48.47.json",
+      "Karlmalone#2854": "decks/Rocks.D.Xebec-B_2026-08-09T18.48.47.json"
+    }
+  },
+  {
+    "id": "2026-08-09T19.11.14",
+    "friendly_name": "Shanks-G_x_Rocks.D.Xebec-B",
+    "date": "2026-08-09",
+    "p1": {
+      "name": "TomDBomb#22755",
+      "leader_code": "OP17-020",
+      "leader_name": "Shanks",
+      "slug": "Shanks-G"
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 15,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Shanks-G_x_Rocks.D.Xebec-B_2026-08-09T19.11.14.log",
+    "parsed_file": "parsed/Shanks-G_x_Rocks.D.Xebec-B_2026-08-09T19.11.14.json",
+    "deck_files": {
+      "TomDBomb#22755": "decks/Shanks-G_2026-08-09T19.11.14.json",
+      "Karlmalone#2854": "decks/Rocks.D.Xebec-B_2026-08-09T19.11.14.json"
+    }
   }
 ]

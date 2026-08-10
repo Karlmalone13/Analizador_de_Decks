@@ -1,0 +1,1686 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "TomDBomb#22755",
+        "leader": {
+          "name": "Shanks",
+          "code": "OP17-020"
+        }
+      },
+      "p2": {
+        "name": "Karlmalone#2854",
+        "leader": {
+          "name": "Rocks D. Xebec",
+          "code": "OP17-039"
+        }
+      }
+    },
+    "goes_first": "TomDBomb#22755"
+  },
+  "total_turns": 15,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "TomDBomb#22755",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-057",
+            "OP17-049",
+            "OP17-045",
+            "OP17-118",
+            "OP17-052"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "TomDBomb#22755": {
+          "hand": [
+            "OP17-029",
+            "OP17-029",
+            "OP17-021",
+            "OP17-033",
+            "ST32-002"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Ganzui",
+        "code": "OP17-043"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-045",
+          "card_name": "Kyo",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-057",
+            "OP17-049",
+            "OP17-118",
+            "OP17-052",
+            "OP17-057",
+            "OP17-043"
+          ],
+          "board": [
+            "OP17-045"
+          ],
+          "trash": [],
+          "life": 5,
+          "rested": {
+            "OP17-045": 1
+          }
+        },
+        "TomDBomb#22755": {
+          "hand": [
+            "OP17-029",
+            "OP17-029",
+            "OP17-021",
+            "OP17-033",
+            "ST32-002"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "TomDBomb#22755",
+      "card_drawn": {
+        "name": "I Think He's Seen An Ugly Future",
+        "code": "OP17-038"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP17-020",
+          "to_name": "Shanks",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-020",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-057",
+            "OP17-049",
+            "OP17-118",
+            "OP17-052",
+            "OP17-057",
+            "OP17-043",
+            "OP17-049"
+          ],
+          "board": [
+            "OP17-045"
+          ],
+          "trash": [],
+          "life": 4,
+          "rested": {
+            "OP17-045": 1
+          }
+        },
+        "TomDBomb#22755": {
+          "hand": [
+            "OP17-029",
+            "OP17-029",
+            "OP17-021",
+            "OP17-033",
+            "ST32-002",
+            "OP17-038"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Rocks D. Xebec",
+        "code": "OP17-118"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-057",
+          "card_name": "Fullalead",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-045",
+          "to_name": "Kyo",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Kyo",
+          "attacker_code": "OP17-045",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-021",
+            "ST32-002"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Fullalead [\"OP17-057\">OP17-057]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-049",
+            "OP17-118",
+            "OP17-052",
+            "OP17-043",
+            "OP17-049",
+            "OP17-118",
+            "OP17-044",
+            "OP17-118"
+          ],
+          "board": [
+            "OP17-045"
+          ],
+          "trash": [
+            "OP17-057"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-045": 1
+          }
+        },
+        "TomDBomb#22755": {
+          "hand": [
+            "OP17-029",
+            "OP17-029",
+            "OP17-033",
+            "OP17-038",
+            "OP17-027"
+          ],
+          "trash": [
+            "OP17-021",
+            "ST32-002"
+          ],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "TomDBomb#22755",
+      "card_drawn": {
+        "name": "Building Snake",
+        "code": "OP17-025"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-033",
+          "card_name": "Lucky Roux",
+          "effects": [
+            "<b>Reveal and Draw Limejuice [\"OP17-032\">OP17-032]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-032",
+          "card_name": "Limejuice",
+          "effects": [
+            "<b>Reveal and Draw Yasopp [\"OP17-031\">OP17-031]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-020",
+          "target": "Kyo [\"OP17-045\">OP17-045]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-049",
+            "OP17-118",
+            "OP17-052",
+            "OP17-043",
+            "OP17-049",
+            "OP17-118",
+            "OP17-044",
+            "OP17-118"
+          ],
+          "board": [],
+          "trash": [
+            "OP17-057",
+            "OP17-045"
+          ],
+          "life": 4
+        },
+        "TomDBomb#22755": {
+          "hand": [
+            "OP17-029",
+            "OP17-029",
+            "OP17-038",
+            "OP17-027",
+            "OP17-025",
+            "OP17-031"
+          ],
+          "trash": [
+            "OP17-021",
+            "ST32-002"
+          ],
+          "board": [
+            "OP17-033",
+            "OP17-032"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-033": 1,
+            "OP17-032": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Captain John",
+        "code": "OP17-044"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-029"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Don Marlon [\"OP17-052\">OP17-052]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-049",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-052",
+            "OP17-043",
+            "OP17-049",
+            "OP17-118",
+            "OP17-044",
+            "OP17-118",
+            "OP17-043",
+            "OP17-054",
+            "OP17-056",
+            "OP17-044"
+          ],
+          "board": [
+            "OP17-049"
+          ],
+          "trash": [
+            "OP17-057",
+            "OP17-045",
+            "OP17-052"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-049": 1
+          }
+        },
+        "TomDBomb#22755": {
+          "hand": [
+            "OP17-029",
+            "OP17-038",
+            "OP17-027",
+            "OP17-025",
+            "OP17-031"
+          ],
+          "trash": [
+            "OP17-021",
+            "ST32-002",
+            "OP17-029"
+          ],
+          "board": [
+            "OP17-033",
+            "OP17-032"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-033": 1,
+            "OP17-032": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "TomDBomb#22755",
+      "card_drawn": {
+        "name": "Shanks",
+        "code": "ST16-004"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-027",
+          "card_name": "Benn Beckman",
+          "effects": [
+            "Draw 1 Card",
+            "Rest Charlotte Linlin [\"OP17-049\">OP17-049]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Lucky Roux",
+          "attacker_code": "OP17-033",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-020",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-020",
+          "card_name": "Shanks",
+          "effects": [
+            "Trash Bonk Punch & Monster [\"OP17-028\">OP17-028]",
+            "Charlotte Linlin [\"OP17-049\">OP17-049] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Benn Beckman",
+          "attacker_code": "OP17-027",
+          "target": "Charlotte Linlin [\"OP17-049\">OP17-049]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-052",
+            "OP17-049",
+            "OP17-118",
+            "OP17-044",
+            "OP17-118",
+            "OP17-043",
+            "OP17-054",
+            "OP17-056"
+          ],
+          "board": [],
+          "trash": [
+            "OP17-057",
+            "OP17-045",
+            "OP17-052",
+            "OP17-043",
+            "OP17-044",
+            "OP17-049"
+          ],
+          "life": 4
+        },
+        "TomDBomb#22755": {
+          "hand": [
+            "OP17-029",
+            "OP17-038",
+            "OP17-025",
+            "OP17-031",
+            "ST16-004"
+          ],
+          "trash": [
+            "OP17-021",
+            "ST32-002",
+            "OP17-029",
+            "OP17-028"
+          ],
+          "board": [
+            "OP17-033",
+            "OP17-032",
+            "OP17-027"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-033": 1,
+            "OP17-027": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Fullalead",
+        "code": "OP17-057"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-049",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Lucky Roux [\"OP17-033\">OP17-033]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Ganzui [\"OP17-043\">OP17-043]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "Limejuice [\"OP17-032\">OP17-032] can't attack next turn"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-052",
+            "OP17-118",
+            "OP17-044",
+            "OP17-118",
+            "OP17-054",
+            "OP17-056",
+            "OP17-048",
+            "OP17-046",
+            "OP17-054",
+            "OP17-057"
+          ],
+          "board": [
+            "OP17-049",
+            "OP17-054"
+          ],
+          "trash": [
+            "OP17-057",
+            "OP17-045",
+            "OP17-052",
+            "OP17-043",
+            "OP17-044",
+            "OP17-049",
+            "OP17-043"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-049": 1,
+            "OP17-054": 1
+          }
+        },
+        "TomDBomb#22755": {
+          "hand": [
+            "OP17-029",
+            "OP17-038",
+            "OP17-025",
+            "OP17-031",
+            "ST16-004"
+          ],
+          "trash": [
+            "OP17-021",
+            "ST32-002",
+            "OP17-029",
+            "OP17-028",
+            "OP17-033"
+          ],
+          "board": [
+            "OP17-032",
+            "OP17-027"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-027": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "TomDBomb#22755",
+      "card_drawn": {
+        "name": "Howling Gab",
+        "code": "OP17-024"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST16-004",
+          "card_name": "Shanks",
+          "effects": [
+            "Destroy Charlotte Linlin [\"OP17-049\">OP17-049]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-020",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Benn Beckman",
+          "attacker_code": "OP17-027",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-020",
+          "card_name": "Shanks",
+          "effects": [
+            "Trash Howling Gab [\"OP17-024\">OP17-024]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-052",
+            "OP17-118",
+            "OP17-044",
+            "OP17-118",
+            "OP17-054",
+            "OP17-056",
+            "OP17-048",
+            "OP17-046",
+            "OP17-054",
+            "OP17-055"
+          ],
+          "board": [
+            "OP17-054"
+          ],
+          "trash": [
+            "OP17-057",
+            "OP17-045",
+            "OP17-052",
+            "OP17-043",
+            "OP17-044",
+            "OP17-049",
+            "OP17-043",
+            "OP17-049",
+            "OP17-057"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-054": 1
+          }
+        },
+        "TomDBomb#22755": {
+          "hand": [
+            "OP17-029",
+            "OP17-038",
+            "OP17-025",
+            "OP17-031"
+          ],
+          "trash": [
+            "OP17-021",
+            "ST32-002",
+            "OP17-029",
+            "OP17-028",
+            "OP17-033",
+            "OP17-024"
+          ],
+          "board": [
+            "OP17-032",
+            "OP17-027",
+            "ST16-004"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-027": 1,
+            "ST16-004": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "There's No Authority in the World",
+        "code": "OP17-055"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Stussy",
+          "attacker_code": "OP17-054",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Rocks Pirates [\"OP17-056\">OP17-056]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-118",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Draw 1 Card",
+            "Deploy Captain John [\"OP17-044\">OP17-044]",
+            "Deploy Stussy [\"OP17-054\">OP17-054]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "Limejuice [\"OP17-032\">OP17-032] can't attack next turn"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-044",
+          "card_name": "Captain John",
+          "effects": [
+            "Draw 1 Card",
+            "Rest Captain John [\"OP17-044\">OP17-044]",
+            "Trash Don Marlon [\"OP17-052\">OP17-052]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-052",
+            "OP17-118",
+            "OP17-118",
+            "OP17-054",
+            "OP17-056",
+            "OP17-048",
+            "OP17-046",
+            "OP17-055",
+            "OP17-042",
+            "OP17-054",
+            "OP17-055"
+          ],
+          "board": [
+            "OP17-054",
+            "OP17-118",
+            "OP17-044",
+            "OP17-054"
+          ],
+          "trash": [
+            "OP17-057",
+            "OP17-045",
+            "OP17-052",
+            "OP17-043",
+            "OP17-044",
+            "OP17-049",
+            "OP17-043",
+            "OP17-049",
+            "OP17-057",
+            "OP17-056",
+            "OP17-052"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-054": 1,
+            "OP17-118": 1
+          }
+        },
+        "TomDBomb#22755": {
+          "hand": [
+            "OP17-029",
+            "OP17-038",
+            "OP17-025",
+            "OP17-031",
+            "OP17-037",
+            "OP17-027"
+          ],
+          "trash": [
+            "OP17-021",
+            "ST32-002",
+            "OP17-029",
+            "OP17-028",
+            "OP17-033",
+            "OP17-024"
+          ],
+          "board": [
+            "OP17-032",
+            "OP17-027",
+            "ST16-004"
+          ],
+          "life": 2,
+          "rested": {
+            "OP17-027": 1,
+            "ST16-004": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "TomDBomb#22755",
+      "card_drawn": {
+        "name": "Hongo",
+        "code": "OP17-029"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Draw 1 Card",
+            "Rest Stussy [\"OP17-054\">OP17-054]",
+            "Set Shanks [\"ST16-004\">ST16-004] to Active"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-029",
+          "card_name": "Hongo",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-027",
+          "to_name": "Benn Beckman",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Benn Beckman",
+          "attacker_code": "OP17-027",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "ST16-004",
+          "target": "Stussy [\"OP17-054\">OP17-054]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-020",
+          "target": "Stussy [\"OP17-054\">OP17-054]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-020",
+          "card_name": "Shanks",
+          "effects": [
+            "Trash Benn Beckman [\"OP17-027\">OP17-027]",
+            "Stussy [\"OP17-054\">OP17-054] will not Activate during next Refresh"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-052",
+            "OP17-118",
+            "OP17-118",
+            "OP17-054",
+            "OP17-056",
+            "OP17-048",
+            "OP17-046",
+            "OP17-055",
+            "OP17-042",
+            "OP17-055"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-054"
+          ],
+          "trash": [
+            "OP17-057",
+            "OP17-045",
+            "OP17-052",
+            "OP17-043",
+            "OP17-044",
+            "OP17-049",
+            "OP17-043",
+            "OP17-049",
+            "OP17-057",
+            "OP17-056",
+            "OP17-052",
+            "OP17-044",
+            "OP17-054",
+            "OP17-054"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-118": 1,
+            "OP17-054": 1
+          }
+        },
+        "TomDBomb#22755": {
+          "hand": [
+            "OP17-038",
+            "OP17-025",
+            "OP17-037",
+            "OP17-027",
+            "OP17-029"
+          ],
+          "trash": [
+            "OP17-021",
+            "ST32-002",
+            "OP17-029",
+            "OP17-028",
+            "OP17-033",
+            "OP17-024",
+            "OP17-027"
+          ],
+          "board": [
+            "OP17-032",
+            "OP17-027",
+            "ST16-004",
+            "OP17-031",
+            "OP17-029"
+          ],
+          "life": 2,
+          "rested": {
+            "ST16-004": 1,
+            "OP17-031": 1,
+            "OP17-029": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Rocks Pirates",
+        "code": "OP17-056"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-025"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Streusen [\"OP17-050\">OP17-050]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-118",
+          "target": "Benn Beckman [\"OP17-027\">OP17-027]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-118",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Draw 1 Card",
+            "Deploy Edward Newgate [\"OP17-040\">OP17-040]",
+            "Deploy Stussy [\"OP17-054\">OP17-054]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "Yasopp [\"OP17-031\">OP17-031] can't attack next turn"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-040",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-052",
+            "OP17-118",
+            "OP17-056",
+            "OP17-048",
+            "OP17-046",
+            "OP17-055",
+            "OP17-042",
+            "OP17-055",
+            "OP17-045",
+            "OP17-046",
+            "OP17-056"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-054",
+            "OP17-118",
+            "OP17-040",
+            "OP17-054"
+          ],
+          "trash": [
+            "OP17-057",
+            "OP17-045",
+            "OP17-052",
+            "OP17-043",
+            "OP17-044",
+            "OP17-049",
+            "OP17-043",
+            "OP17-049",
+            "OP17-057",
+            "OP17-056",
+            "OP17-052",
+            "OP17-044",
+            "OP17-054",
+            "OP17-054",
+            "OP17-050"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-118": 2
+          }
+        },
+        "TomDBomb#22755": {
+          "hand": [
+            "OP17-038",
+            "OP17-037",
+            "OP17-027",
+            "OP17-029"
+          ],
+          "trash": [
+            "OP17-021",
+            "ST32-002",
+            "OP17-029",
+            "OP17-028",
+            "OP17-033",
+            "OP17-024",
+            "OP17-027",
+            "OP17-025",
+            "OP17-027"
+          ],
+          "board": [
+            "OP17-032",
+            "ST16-004",
+            "OP17-031",
+            "OP17-029"
+          ],
+          "life": 2,
+          "rested": {
+            "ST16-004": 1,
+            "OP17-031": 1,
+            "OP17-029": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "TomDBomb#22755",
+      "card_drawn": {
+        "name": "Shanks",
+        "code": "OP17-022"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-022",
+          "card_name": "Shanks",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Rest Rocks D. Xebec [\"OP17-118\">OP17-118]",
+            "Rest Edward Newgate [\"OP17-040\">OP17-040]",
+            "Rest Stussy [\"OP17-054\">OP17-054]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-022",
+          "target": "Stussy [\"OP17-054\">OP17-054]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "ST16-004",
+          "target": "Stussy [\"OP17-054\">OP17-054]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-037",
+          "card_name": "Are You That Afraid of the New Era?!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Crone Oli [\"OP17-021\">OP17-021]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-020",
+          "card_name": "Shanks",
+          "effects": [
+            "Rest Don [\"Don\">Don]",
+            "Rocks D. Xebec [\"OP17-118\">OP17-118] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Set Shanks [\"OP17-022\">OP17-022] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-052",
+            "OP17-118",
+            "OP17-056",
+            "OP17-048",
+            "OP17-046",
+            "OP17-055",
+            "OP17-042",
+            "OP17-055",
+            "OP17-045",
+            "OP17-046",
+            "OP17-056"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-118",
+            "OP17-040"
+          ],
+          "trash": [
+            "OP17-057",
+            "OP17-045",
+            "OP17-052",
+            "OP17-043",
+            "OP17-044",
+            "OP17-049",
+            "OP17-043",
+            "OP17-049",
+            "OP17-057",
+            "OP17-056",
+            "OP17-052",
+            "OP17-044",
+            "OP17-054",
+            "OP17-054",
+            "OP17-050",
+            "OP17-054",
+            "OP17-054"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-118": 2,
+            "OP17-040": 1
+          }
+        },
+        "TomDBomb#22755": {
+          "hand": [
+            "OP17-038",
+            "OP17-027",
+            "OP17-029",
+            "OP17-021"
+          ],
+          "trash": [
+            "OP17-021",
+            "ST32-002",
+            "OP17-029",
+            "OP17-028",
+            "OP17-033",
+            "OP17-024",
+            "OP17-027",
+            "OP17-025",
+            "OP17-027",
+            "OP17-037"
+          ],
+          "board": [
+            "OP17-032",
+            "ST16-004",
+            "OP17-031",
+            "OP17-029",
+            "OP17-022"
+          ],
+          "life": 2,
+          "rested": {
+            "ST16-004": 1,
+            "OP17-022": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Streusen",
+        "code": "OP17-050"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-021",
+            "OP17-029"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Streusen [\"OP17-050\">OP17-050]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-040",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Trash Kyo [\"OP17-045\">OP17-045]",
+            "Buff Rocks D. Xebec [\"OP17-039\">OP17-039] 3000 for the Combat"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP17-040",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-118",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP17-029",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-118",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Draw 1 Card",
+            "Deploy Charlotte Linlin [\"OP17-049\">OP17-049]",
+            "Deploy Gloriosa [\"OP17-046\">OP17-046]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-046",
+          "card_name": "Gloriosa",
+          "effects": [
+            "Send Limejuice [\"OP17-032\">OP17-032] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-049",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-052",
+            "OP17-056",
+            "OP17-048",
+            "OP17-055",
+            "OP17-042",
+            "OP17-055",
+            "OP17-046",
+            "OP17-056",
+            "OP17-046",
+            "OP17-040",
+            "OP17-056",
+            "OP17-050"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-118",
+            "OP17-118",
+            "OP17-049",
+            "OP17-046"
+          ],
+          "trash": [
+            "OP17-057",
+            "OP17-045",
+            "OP17-052",
+            "OP17-043",
+            "OP17-044",
+            "OP17-049",
+            "OP17-043",
+            "OP17-049",
+            "OP17-057",
+            "OP17-056",
+            "OP17-052",
+            "OP17-044",
+            "OP17-054",
+            "OP17-054",
+            "OP17-050",
+            "OP17-054",
+            "OP17-054",
+            "OP17-050",
+            "OP17-045",
+            "OP17-040"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-118": 2
+          }
+        },
+        "TomDBomb#22755": {
+          "hand": [
+            "OP17-038",
+            "OP17-027",
+            "OP17-036"
+          ],
+          "trash": [
+            "OP17-021",
+            "ST32-002",
+            "OP17-029",
+            "OP17-028",
+            "OP17-033",
+            "OP17-024",
+            "OP17-027",
+            "OP17-025",
+            "OP17-027",
+            "OP17-037",
+            "OP17-021",
+            "OP17-029",
+            "OP17-029"
+          ],
+          "board": [
+            "ST16-004",
+            "OP17-031",
+            "OP17-022"
+          ],
+          "life": 1,
+          "rested": {
+            "ST16-004": 1,
+            "OP17-022": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "TomDBomb#22755",
+      "card_drawn": {
+        "name": "Lucky Roux",
+        "code": "OP17-033"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-027",
+          "card_name": "Benn Beckman",
+          "effects": [
+            "Draw 1 Card",
+            "Rest Rocks D. Xebec [\"OP17-118\">OP17-118]",
+            "Rest Charlotte Linlin [\"OP17-049\">OP17-049]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-027",
+          "to_name": "Benn Beckman",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Benn Beckman",
+          "attacker_code": "OP17-027",
+          "target": "Charlotte Linlin [\"OP17-049\">OP17-049]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "ST16-004",
+          "to_name": "Shanks",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "ST16-004",
+          "target": "Rocks D. Xebec [\"OP17-118\">OP17-118]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-022",
+          "target": "Rocks D. Xebec [\"OP17-118\">OP17-118]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Set Shanks [\"OP17-022\">OP17-022] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-052",
+            "OP17-048",
+            "OP17-055",
+            "OP17-042",
+            "OP17-055",
+            "OP17-046",
+            "OP17-046",
+            "OP17-040"
+          ],
+          "board": [
+            "OP17-118",
+            "OP17-118",
+            "OP17-118",
+            "OP17-049",
+            "OP17-046"
+          ],
+          "trash": [
+            "OP17-057",
+            "OP17-045",
+            "OP17-052",
+            "OP17-043",
+            "OP17-044",
+            "OP17-049",
+            "OP17-043",
+            "OP17-049",
+            "OP17-057",
+            "OP17-056",
+            "OP17-052",
+            "OP17-044",
+            "OP17-054",
+            "OP17-054",
+            "OP17-050",
+            "OP17-054",
+            "OP17-054",
+            "OP17-050",
+            "OP17-045",
+            "OP17-040",
+            "OP17-056",
+            "OP17-056",
+            "OP17-056",
+            "OP17-050"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-118": 3,
+            "OP17-049": 1
+          }
+        },
+        "TomDBomb#22755": {
+          "hand": [
+            "OP17-038",
+            "OP17-027",
+            "OP17-036",
+            "OP17-033"
+          ],
+          "trash": [
+            "OP17-021",
+            "ST32-002",
+            "OP17-029",
+            "OP17-028",
+            "OP17-033",
+            "OP17-024",
+            "OP17-027",
+            "OP17-025",
+            "OP17-027",
+            "OP17-037",
+            "OP17-021",
+            "OP17-029",
+            "OP17-029"
+          ],
+          "board": [
+            "ST16-004",
+            "OP17-031",
+            "OP17-022",
+            "OP17-027"
+          ],
+          "life": 1,
+          "rested": {
+            "ST16-004": 1,
+            "OP17-022": 1,
+            "OP17-027": 1
+          }
+        }
+      }
+    }
+  ]
+}

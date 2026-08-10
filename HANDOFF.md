@@ -1,5 +1,87 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-09 (477) - Claude (sessao local) - Calibracao multi-seed/multi-deck COMPLETA do bloco 475 (3 pares x 3 seeds x 50 jogos), profiling de custo de decisao, e discussao/registro de arquitetura de busca pra proxima sessao
+
+Continuacao direta do bloco 476 (calibracao de 1 seed/1 deck). Usuario
+pediu calibracao completa. Usados 2 scripts DESCARTAVEIS (mesma convencao
+dos blocos 449/459/461+, `.gitignore` linha 65 -- nunca fazem parte do
+produto, so o resultado documentado aqui): um rodando
+`baseline_metrics.run_match()` direto em memoria pra varias combinacoes
+de seed/par-de-deck sem relancar processo a cada uma, outro com cProfile
+categorizado em scoring/search/exec. Ambos apagados ao final da sessao,
+JSONs brutos tambem (mesma convencao) -- resultado fica so nesta tabela.
+
+**Calibracao** (Imu/Barba.Negra.BY, Rocks.D.Xebec/Barba.Negra.BY,
+Kid/Zoro; seeds 1-3; n=50 cada; commit atual `6115662`+ vs commit pai
+`fed46af`, ~2700 partidas no total):
+
+| par | winrate A antes->depois | winrate B antes->depois | counter B antes->depois |
+|---|---|---|---|
+| Imu vs Barba Negra BY | 86,0%->82,7% | 14,0%->17,3% | 8867->8327 |
+| Rocks D Xebec vs Barba Negra BY | 37,3%->36,0% | 62,7%->64,0% | 6713->6500 |
+| Kid vs Zoro | 79,3%->74,7% | 20,7%->25,3% | 8880->8333 |
+
+Media geral winrate A: 67,6%->64,4%. Barba Negra BY (o Teach investigado
+nos blocos 472-474) melhora consistentemente contra os DOIS oponentes
+testados (nao so 1 seed/1 deck como no bloco 476) -- confirmacao mais
+forte que a passada anterior. Zoro tambem melhora contra Kid. Gasto de
+counter cai nos 3 pares, mesma explicacao do bloco 476 (leitura melhor do
+counter potencial escondido do oponente evita ataque que forca gasto de
+counter a toa). Nada colapsou. Ainda nao e volume "definitivo" (mais
+pares/seeds ou validacao ao vivo fechariam de vez), mas e evidencia
+consistente atraves de 3 pares de deck INDEPENDENTES, nao ruido de 1
+partida. JSONs brutos apagados ao final (convencao de script descartavel),
+resultado fica so nesta tabela.
+
+**Profiling de custo de decisao** (script descartavel, cProfile, 3 partidas
+Imu vs Barba Negra BY, cProfile): ~98% do tempo de decisao esta DENTRO da
+busca do Turn Planner (`_simulate_sequence_once`/`_simulate_sequence_values`),
+nao na decisao final em si. Dentro da busca, `_generate_and_score_actions`
+(gerar+pontuar candidatos) sozinho e ~68% do tempo total (150s de 222s),
+chamado 12.292x em so 3 partidas -- a cada turno HIPOTETICO explorado
+internamente, a maquina de pontuacao completa roda de novo do zero.
+Investiguei se havia "vitoria facil" de cache antes de propor qualquer
+mudanca: `get_card_effects` ja tem cache (`_EFFECTS_ENRICHED_CACHE`) e
+`Card.__deepcopy__` ja foi otimizado antes (achado documentado de 24/06,
+sessao anterior, "94% do tempo em deepcopy" corrigido compartilhando
+`self.data` imutavel) -- nao sobrou otimizacao de graca, sem risco.
+
+**Discussao de arquitetura (usuario trouxe o CPU MCTS do site
+narutosim.theramenbowl.net como comparacao)**: usuario perguntou se um
+motor "burro" (avaliacao simples + muita simulacao, estilo MCTS) ajudaria.
+Conclusao registrada, NAO implementada:
+- Substituir o motor por busca generica: NAO recomendado -- jogaria fora
+  meses de conhecimento de dominio auditado (avaliar_carta) por uma aposta
+  incerta, contra o objetivo explicito de CONFIABILIDADE do bot pro
+  front-end.
+- Amostragem adaptativa hoje so liga no caminho AO VIVO (piso 12/teto 24,
+  bloco 381); o modo OFFLINE/self-play (main_phase, usado por
+  `baseline_metrics.py`/`/simulate` do front-end) ainda usa N FIXO
+  pequeno (3 ou 6) -- pendencia JA registrada no TODO.md antes desta
+  sessao ("medir custo total de um jogo de self-play antes de ligar
+  piso/teto ali tambem"), so re-priorizada: usuario confirmou que isso e
+  SECUNDARIO pro objetivo dele (fortalecer o bot AO VIVO contra humano),
+  porque o live ja tem o orcamento maior.
+- **Pondering (pensar no turno do oponente)**: ideia nova discutida e
+  aprovada em espirito pelo usuario -- usar o tempo ocioso do bot durante
+  o turno do OPONENTE (server.py ja recebe eventos nesse periodo via
+  `/reveal`/`/execution`, confirmado no codigo) pra rodar simulacao
+  adiantada com o MESMO motor (via `OpponentModel`), sem aumentar latencia
+  do caminho ao vivo. Nao implementado ainda -- e uma mudanca de
+  engenharia real (scheduling em background no servidor, cache de
+  resultado adiantado), fica registrada como candidata pra sessao
+  dedicada.
+
+**Prioridade combinada, confirmada pelo usuario**: (1) continuar
+auditoria/calibracao da pontuacao dinamica (ja em andamento, blocos
+475-477) -- maior impacto direto na qualidade de decisao independente de
+quanto se simula; (2) pondering -- unico jeito real de dar mais
+"inteligencia" ao bot AO VIVO sem custar latencia; (3) verificar se o
+piso/teto ao vivo (12/24) tem folga pra subir, olhando telemetria de
+latencia real; (4) amostragem adaptativa offline -- serve mais o
+simulador do front-end que o bot ao vivo, despriorizado pro objetivo
+atual do usuario.
+
 ## 2026-08-09 (476) - Claude (sessao local) - Calibracao por volume (1a passada) do bloco 475: baseline_metrics.py antes/depois, Imu vs Barba Negra BY, n=50 seed=1
 
 Pedido do usuario ("vamos fazer o 1", referindo-se a pendencia registrada

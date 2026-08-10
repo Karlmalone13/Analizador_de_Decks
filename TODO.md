@@ -7,31 +7,51 @@
 > bot é banco (não só "existe, use se quiser"). Ver `CLAUDE.md`/
 > `AGENTS.md` e `.claude/skills/optcg-live-log-triage/SKILL.md` (Step 4).
 
-> **PRÓXIMA SESSÃO COMEÇA AQUI (bloco 476) — calibração por volume
-> COMPLETA dos pesos novos da pontuação dinâmica** (multi-seed,
-> multi-deck): passos 1-3 da tarefa do bloco 473/474 já feitos
-> (09/08/2026). Ver `scriptis_da_ia/scoring_audits/
-> 2026-08-09_cobertura_pontuacao_dinamica.md` (mapeamento), bloco 475 do
-> HANDOFF (o que foi implementado: dedupe `score_attack_target`/
-> `future_threat_value` via `GameAnalyzer._effect_threat_weight`; fix de
-> wiring real da estimativa de counter por mão do oponente —
-> `opp_counter_potential` só ligava com `self_play_info_hidden`, nunca
-> setada, corrigido pra também aceitar `hidden_information_masked`, a
-> flag que o caminho ao vivo de fato usa; contagem de personagens do
-> oponente e `critical_threats()` plugados nos bônus de KO/bounce de
-> `avaliar_carta`) e bloco 476 (1ª passada de calibração por volume,
-> `baseline_metrics.py --n 50 --seed 1`, Imu vs Barba Negra BY, commit
-> atual vs commit pai): winrate B (Barba Negra/Teach) subiu 12%→16%,
-> counter gasto/jogo caiu nos dois lados (7240→6560 / 9160→8700) — direção
-> coerente com o que a investigação anterior apontava, nada colapsou.
-> **Mas é só 1 seed, 1 confronto de deck** — não é calibração estatística
-> completa. Pendente real: rodar múltiplas seeds e múltiplos pares de
-> deck (`baseline_metrics.py --seed` variado + outros `--deck-a`/
-> `--deck-b`, ou `bot_efficiency_report.py` com cohort real de logs) antes
-> de considerar os pesos novos calibrados de verdade (dedupe mudou blocker
-> 60→45/double_attack 50→65 na leitura do alvo de ataque; bônus novos de
-> contagem/ameaça real são +15/+10/+20/+15 escolhidos por ordem de
-> grandeza).
+> **PRÓXIMA SESSÃO COMEÇA AQUI (bloco 477) — ordem de prioridade
+> confirmada pelo usuário (09/08/2026)**:
+>
+> **1º — continuar a auditoria/calibração da pontuação dinâmica.** A
+> calibração multi-seed/multi-deck do bloco 475 (3 pares de deck × 3
+> seeds × 50 jogos, ~2700 partidas, script descartável de sessão — mesma
+> convenção dos blocos 449/459/461+, `.gitignore` linha 65, resultado só
+> documentado, não versionado) CONFIRMOU o resultado do bloco 476 com
+> evidência mais forte: Barba Negra BY (Teach) melhora contra os DOIS
+> oponentes testados (Imu E Rocks D Xebec), Zoro melhora contra Kid,
+> gasto de counter cai nos 3 pares — nada colapsou. Ainda não é volume
+> "definitivo" (mais pares/seeds fechariam de vez), mas não é mais "1
+> seed, 1 deck". Ver bloco 477 do HANDOFF pra tabela completa.
+>
+> **2º — pondering (pensar no turno do oponente)**: ideia nova discutida
+> nesta sessão, é o único jeito real de dar mais orçamento de simulação
+> pro bot AO VIVO sem custar latência (usa o tempo ocioso durante o turno
+> do OPONENTE, que o servidor já observa via `/reveal`/`/execution`).
+> Ainda NÃO desenhado/implementado — precisa de: (a) mecanismo de
+> scheduling em background no `server.py` que não trave outras
+> requisições, (b) usar `OpponentModel` pra simular hipóteses do que o
+> oponente pode fazer, (c) cache/reaproveitamento seguro do resultado
+> adiantado quando o turno do bot chegar de verdade. Ver bloco 477 do
+> HANDOFF pro contexto completo da discussão.
+>
+> **3º — verificar se o piso/teto de amostragem AO VIVO (12/24, já
+> implementado desde o bloco 381) tem folga pra subir**, olhando
+> telemetria real de latência (`latency_ms`, `client_timeouts`) antes de
+> qualquer número novo.
+>
+> **4º, despriorizado pro objetivo atual (fortalecer o bot contra
+> humano)** — amostragem adaptativa no modo OFFLINE/self-play (hoje N
+> fixo de 3-6 em `main_phase`, usado por `baseline_metrics.py` e pelo
+> `/simulate` do front-end): serve mais a fidelidade do simulador do
+> front-end e das próprias calibrações futuras que o bot ao vivo (que já
+> tem o orçamento maior). Pendência antiga, ainda válida, só reordenada.
+>
+> **Achado extra desta sessão, sem ação pendente**: profiling (cProfile,
+> script descartável) confirmou que ~98% do tempo
+> de decisão está dentro da busca do Turn Planner, e ~68% disso é só
+> gerar/pontuar candidatos repetidamente a cada turno hipotético
+> simulado — não sobrou nenhuma otimização de graça (`get_card_effects`
+> já tem cache, `Card.__deepcopy__` já foi otimizado numa sessão
+> anterior, 24/06). Motivou a discussão de arquitetura acima; não mexer
+> em nada disso sem antes desenhar o item 2 (pondering) direito.
 >
 > Contexto/evidência que motivou o pedido: calibração `_score_play_
 > action` vs `attach_don`/`attack` quando competem pelo mesmo DON — 2
@@ -69,17 +89,22 @@
 > `smoke_fast`/`smoke_test` 100%, `audit_replay.py --n 20` (seed=98)
 > validado. Ver bloco 472 do HANDOFF.
 
-> **PENDENTE PRIORITARIO (bloco 471)**: `decisions_2026-08-09T09.57.32.jsonl`
-> idx 78 (turno 4) — o motor tinha `attack OP16-104 -> character OP17-042`
-> disponível com `score=277.0` (eligible/nao-excluido, matava o alvo) e
-> escolheu `attack OP16-104 -> leader` com `score=268.0` — o score MENOR.
-> Pode ser lookahead intencional do Turn Planner/line-search (sequência
-> completa do turno vale mais que a ação isolada) ou um bug real de
-> seleção — não investigado a fundo ainda. Combina com a observação do
-> usuário "bot focou em atacar vida, nunca tirou personagem meu de
-> campo" (confirmado: os 8 ataques da partida foram TODOS pro líder).
-> Investigar o line-search internamente com este caso exato antes de
-> mexer em qualquer heurística de ataque relacionada.
+> **RESOLVIDO (bloco 471, fechado 09/08/2026 na sessão do bloco 476)**:
+> `decisions_2026-08-09T09.57.32.jsonl` idx 78 (turno 4) — o motor tinha
+> `attack OP16-104 -> character OP17-042` disponível com `score=277.0`
+> (eligible/não-excluído, matava o alvo) e escolheu `attack OP16-104 ->
+> leader` com `score=268.0`, o score MENOR. **Não é bug** — confirmado
+> lendo `search_values`/`line_search` da própria decisão:
+> `selection: "counterfactual_search"`, a busca (`line_search.depth=4`,
+> `counterfactual_basis: "sampled_opponent_model"`) atribuiu VALOR de
+> sequência completa de 313.0 pro ataque ao líder contra só 129.67 pro
+> ataque ao personagem — mesmo com a postura marcada `REMOVE_THREAT`, a
+> busca projetada (que simula o resto do turno + resposta provável do
+> oponente) achou que pressionar o líder rendia mais valor esperado que
+> remover aquele personagem específico ali. O score bruto de
+> `score_attack_target` é só sinal de geração de candidato, não o
+> critério final quando há mais de 1 candidato — a busca decide. Não
+> mexer em heurística de ataque por causa deste caso específico.
 
 > 09/08/2026 (bloco 471): **investiga as 4 observações do usuário** na
 > mesma partida do bloco 470 (Marshall.D.Teach-BY_x_Rocks.D.Xebec-B).

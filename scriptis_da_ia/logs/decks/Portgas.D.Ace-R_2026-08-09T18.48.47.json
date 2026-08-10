@@ -1,0 +1,51 @@
+{
+  "cards": [
+    {
+      "code": "OP16-017",
+      "name": "LittleOars Jr.",
+      "count": 3
+    },
+    {
+      "code": "OP16-003",
+      "name": "Edward Newgate",
+      "count": 3
+    },
+    {
+      "code": "OP16-004",
+      "name": "Curiel",
+      "count": 1
+    },
+    {
+      "code": "OP17-005",
+      "name": "Edward Newgate",
+      "count": 1
+    },
+    {
+      "code": "OP13-016",
+      "name": "Monkey D. Garp",
+      "count": 1
+    },
+    {
+      "code": "OP16-014",
+      "name": "Marco",
+      "count": 1
+    },
+    {
+      "code": "OP16-005",
+      "name": "OP16-005",
+      "count": 1
+    },
+    {
+      "code": "OP16-020",
+      "name": "If You're Coming With Me... Kiss Your Lives Goodbye!!",
+      "count": 1
+    },
+    {
+      "code": "OP16-015",
+      "name": "Monkey D. Luffy",
+      "count": 1
+    }
+  ],
+  "total_seen": 13,
+  "leader": "OP16-001"
+}
