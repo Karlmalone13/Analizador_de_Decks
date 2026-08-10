@@ -37,6 +37,23 @@ tres coisas que independem do resultado da partida:
    menos alguma vez; nao prova que uma carta ausente da tabela nunca
    foi considerada, so que nunca chegou perto de ser a melhor escolha.
 
+   **RESSALVA IMPORTANTE, achado real 10/08 (bloco 487)**: uma taxa de
+   utilizacao BAIXA no item 3 NAO prova bug -- e um PONTO DE PARTIDA
+   pra investigar, nao um veredito. Rastreamento manual de 2 cartas do
+   Sanji com utilizacao baixa (`Boeuf Burst` OP12-060, 14,3%;
+   `Gum-Gum Jet Culverin` OP11-061, 0%) mostrou que, em TODAS as
+   ocorrencias em que nao foram escolhidas, perderam pra uma alternativa
+   com score legitimamente MAIOR no mesmo turno (ativar a habilidade do
+   lider, atacar, ou outra carta) -- nao um erro de avaliacao, so
+   competicao real por DON escasso num deck com mais opcoes boas do que
+   DON pra gastar todas no mesmo turno. Antes de tratar uma linha desta
+   tabela como bug, rastreie manualmente pelo menos 3-5 ocorrencias reais
+   (mesmo padrao: filtrar `decision_log` pelo `code` da carta, comparar
+   score dela contra o `chosen` de cada entrada) -- so vale investigar
+   fundo se a alternativa vencedora for CONSISTENTEMENTE pouco melhor ou
+   claramente pior (ai sim e sinal de miscalibração), nao so "nao foi a
+   escolhida desta vez".
+
 Uso obrigatorio (ver CLAUDE.md): sempre que for avaliar se o bot sabe
 jogar um lider/deck especifico, rodar este relatorio ANTES de olhar
 winrate -- winrate sozinho nao distingue "bot jogou mal" de "deck e
@@ -242,6 +259,8 @@ def main():
     print()
     print(f'3) Utilizacao por CARTA (pior aproveitamento primeiro, min. {args.min_ofertas} '
           f'ofertas -- ver limitacao do top-8 no docstring):')
+    print('   RESSALVA: taxa baixa aqui e PONTO DE PARTIDA, nao veredito -- rastreie a carta no')
+    print('   decision_log antes de tratar como bug (ver docstring, achado real Boeuf Burst/Gum-Gum Jet Culverin).')
     if not outras_cartas:
         print('   (nenhuma carta alem do lider apareceu como candidata o suficiente nesta amostra)')
     else:

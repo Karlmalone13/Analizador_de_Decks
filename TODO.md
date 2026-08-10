@@ -2,6 +2,19 @@
 
 **Última atualização:** 10 de agosto de 2026
 
+> 10/08/2026 (bloco 487): **fechados os 2 achados pendentes do item 3**
+> (bloco 486) — `Boeuf Burst` (14,3%) e `Gum-Gum Jet Culverin` (0%) no
+> Sanji. Rastreamento manual de cada ocorrência no `decision_log`:
+> **NÃO são bug** — em toda ocorrência não escolhida, perderam pra uma
+> alternativa com score legitimamente maior no mesmo turno (habilidade
+> do líder, atacar, outra carta) — competição real por DON escasso num
+> deck com mais opções boas do que orçamento pra jogar todas. **Lição
+> genérica registrada** (docstring/saída do script + `CLAUDE.md`/
+> `AGENTS.md`): taxa baixa no item 3 é ponto de partida pra investigar,
+> nunca veredito automático — só escalar se a alternativa vencedora for
+> consistentemente pouco melhor ou claramente pior. `decision_engine.py`
+> não foi tocado. Ver bloco 487 do HANDOFF.
+
 > 10/08/2026 (bloco 486): **`decision_quality_report.py` ganha item 3
 > (utilização POR CARTA, não só líder)** — pedido do usuário logo após
 > ver o item 1 do bloco 485: "preciso saber se os efeitos das outras

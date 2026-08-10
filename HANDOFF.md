@@ -1,5 +1,43 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-10 (487) - Claude (sessao remota web) - Investigadas as 2 cartas de utilizacao baixa do Sanji achadas no bloco 486 -- NAO sao bug (competicao real por DON), ressalva registrada no relatorio e no CLAUDE.md/AGENTS.md
+
+Usuario pediu ("Pode fazer") pra fechar os 2 achados pendentes do
+`decision_quality_report.py` item 3 (bloco 486): `Boeuf Burst`
+(OP12-060, 14,3% de utilizacao) e `Gum-Gum Jet Culverin` (OP11-061, 0%
+de utilizacao, nunca escolhido em 5 ofertas).
+
+**Investigacao** (mesmo metodo pras 2 cartas): filtrado `decision_log`
+de 20 partidas reais do Sanji pelas ocorrencias de cada codigo como
+candidata, comparado o score da carta contra o `chosen` de cada
+decisao. Resultado pras 2: em TODA ocorrencia em que nao foram
+escolhidas, perderam pra uma alternativa com score legitimamente MAIOR
+no mesmo turno -- ativar a habilidade do lider (211-365), atacar
+(268-371), ou outra carta melhor no momento. Exemplo revelador: o
+Boeuf Burst foi reavaliado 4x no MESMO turno numa partida (score
+subindo 145->194->203->210 conforme outras acoes iam sendo resolvidas)
+e acabou ESCOLHIDO na 4a rodada, quando finalmente sobrou DON -- prova
+que o mecanismo de sequenciamento do Turn Planner esta funcionando
+como deveria, nao "esquecendo" a carta.
+
+**Conclusao: NAO e bug.** O deck do Sanji tem mais cartas boas do que
+DON pra jogar todas no mesmo turno na maioria das vezes (habilidade do
+lider + atacar + varias Events competindo pelo mesmo orcamento) -- as
+2 cartas simplesmente perdem essa disputa com frequencia, nao porque o
+motor as subestima.
+
+**Licao generica registrada** (`decision_quality_report.py` docstring +
+saida do script + `CLAUDE.md`/`AGENTS.md`, secao do bloco 485, byte-
+identica nos 2 arquivos): taxa de utilizacao BAIXA no item 3 e PONTO DE
+PARTIDA pra investigar, NUNCA veredito automatico de bug -- rastrear
+manualmente 3-5 ocorrencias reais (filtrar decision_log pelo codigo,
+comparar score contra o chosen) antes de tratar como achado real. So
+escalar se a alternativa vencedora for consistentemente POUCO melhor ou
+claramente PIOR, nao so "nao foi a escolhida desta vez".
+
+`decision_engine.py` nao foi tocado -- `smoke_fast.py`/`smoke_test.py`
+continuam 100% sem mudanca.
+
 ## 2026-08-10 (486) - Claude (sessao remota web) - `decision_quality_report.py` ganha item 3: utilizacao POR CARTA (nao so lider) -- pedido do usuario apos ver o item 1
 
 Usuario, direto apos o bloco 485: "não quero só conferir efeito do

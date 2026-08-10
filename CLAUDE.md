@@ -244,11 +244,19 @@ Referências oficiais das regras (manual, playsheet) em
 > das partidas**, confirmando que o bot usa o mecanismo central do deck
 > quase sempre; Mihawk OP14-020 (88,2%) e Imu OP13-079 (99,1%) deram
 > números na mesma faixa, como esperado de líderes com winrate saudável.
-> Item 3 no Sanji já achou um sinal concreto pra investigar depois:
-> `Boeuf Burst` (OP12-060, Evento de bounce/draw real) ofertado 14x mas
-> escolhido só 2x (14,3%) — bem abaixo da maioria das outras cartas do
-> mesmo deck, candidato a próxima investigação pontual. Complementa (não
-> substitui) a comparação obrigatória contra
+> Item 3 no Sanji achou 2 cartas com utilização baixa (`Boeuf Burst`
+> OP12-060, 14,3%; `Gum-Gum Jet Culverin` OP11-061, 0%) — **investigadas
+> a fundo (bloco 487) e NÃO são bug**: rastreamento manual de cada
+> ocorrência no `decision_log` mostrou que, toda vez que não foram
+> escolhidas, perderam pra uma alternativa com score legitimamente MAIOR
+> no mesmo turno (ativar a habilidade do líder, atacar, outra carta) —
+> competição real por DON escasso, não erro de avaliação. **Lição
+> registrada pra sessões futuras**: uma taxa baixa no item 3 é PONTO DE
+> PARTIDA pra investigar (rastrear 3-5 ocorrências reais comparando
+> score contra o `chosen` de cada uma), nunca um veredito automático de
+> bug — só escale se a alternativa vencedora for consistentemente pouco
+> melhor ou claramente pior, não só "não foi a escolhida desta vez".
+> Complementa (não substitui) a comparação obrigatória contra
 > `IA_Compendium/RESUMO_ESTRATEGICO.md` acima — o placar dá o "quanto",
 > o catálogo dá o "o que era esperado".
 
