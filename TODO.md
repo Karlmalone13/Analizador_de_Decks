@@ -2,6 +2,21 @@
 
 **Última atualização:** 10 de agosto de 2026
 
+> 10/08/2026 (bloco 488): **`decision_quality_report.py` rodado nos 17
+> líderes distintos do pool** (baseline de referência, pedido do
+> usuário "rodar em mais líderes") + `--pool-size` novo (default 30 só
+> alcançava 9 dos 17 líderes do banco de 193 decks). **Achado 1**:
+> Luffy EB02-010 repete a assinatura do Sanji — winrate baixíssimo
+> (6,7%) mas ativação de habilidade altíssima (98,8%), segunda
+> confirmação de que winrate baixo ≠ bot não usa o mecanismo central.
+> **Achado 2, NÃO investigado ainda**: Nefeltari Vivi (EB03-001) com
+> 56,4% de ativação — único outlier real, todo o resto do pool com
+> habilidade parseada ficou ≥88%. Candidato a próxima investigação
+> pontual (mesmo método do bloco 487: rastrear no `decision_log` se é
+> competição legítima por DON ou algo diferente). `smoke_fast`/
+> `smoke_test` 100%, `decision_engine.py` não tocado. Ver bloco 488 do
+> HANDOFF pra tabela completa dos 17 líderes.
+
 > 10/08/2026 (bloco 487): **fechados os 2 achados pendentes do item 3**
 > (bloco 486) — `Boeuf Burst` (14,3%) e `Gum-Gum Jet Culverin` (0%) no
 > Sanji. Rastreamento manual de cada ocorrência no `decision_log`:

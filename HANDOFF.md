@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-10 (488) - Claude (sessao remota web) - `decision_quality_report.py` rodado nos 17 lideres distintos do pool (baseline de referencia) + `--pool-size` novo -- achado: Nefeltari Vivi com utilizacao de habilidade bem abaixo da faixa normal (56,4%)
+
+Usuario pediu ("Rodar em mais lideres") pra expandir a base de
+comparacao do placar de qualidade de decisao (blocos 485-487) alem dos
+4 ja testados (Sanji/Mihawk/Imu/Ace).
+
+**`--pool-size` novo** (`decision_quality_report.py`, `--pool-size N`,
+default 30): `_load_deck_list()` so carregava os primeiros 30 decks
+(deduplicados por `deck_url`) de `decklists_raw.csv` -- varios lideres
+do banco (193 decks unicos no total) so aparecem depois desse corte.
+8 dos 17 lideres testados precisaram de `--pool-size` maior (60 ou 193)
+pra serem alcancados.
+
+**Rodado nos 17 lideres distintos do pool** (15-20 partidas cada,
+seed=77):
+
+| Lider | Winrate | Ativ. habilidade | 0-DON no fim |
+|---|---|---|---|
+| Sanji OP12-041 | 15,0% (20) | 98,3% | 61,6% |
+| Mihawk OP14-020 | 70,0% (20) | 88,2% | 32,8% |
+| Imu OP13-079 | 70,0% (20) | 99,1% | 46,4% |
+| Ace OP13-002 | 60,0% (10) | N/A | 59,6% |
+| Nami OP11-041 | 66,7% (15) | N/A | 43,0% |
+| Enel OP15-058 | 80,0% (15) | 98,1% | 59,7% |
+| Luffy EB02-010 | **6,7% (15)** | **98,8%** | 44,7% |
+| Lucy OP15-002 | 80,0% (15) | 100,0%* (so 9 turnos) | 50,5% |
+| Luffy OP13-001 | 53,3% (15) | N/A | 41,2% |
+| Enel(SPR) OP05-098 | 40,0% (5) | N/A | 41,4% |
+| Nefeltari Vivi EB03-001 | 46,7% (15) | **56,4%** | 46,0% |
+| Luffy OP15-098 | 46,7% (15) | N/A | 50,5% |
+| Kalgara OP08-098 | 53,3% (15) | N/A | 53,7% |
+| Crocodile OP14-079 | 33,3% (15) | 93,0% | 68,9% |
+| Bonney EB04-001 | 40,0% (15) | 90,4% | 54,3% |
+| Bonney OP07-019 | 60,0% (15) | N/A | 64,5% |
+| Jinbe OP14-040 | 46,7% (15) | 98,0% | 75,6% |
+
+**Achado 1 (confirma o padrao do Sanji, nao e isolado)**: Luffy
+EB02-010 (Straw Hat/Midrange) repete a MESMA assinatura do Sanji --
+winrate baixissimo (6,7%) mas ativacao de habilidade altissima (98,8%).
+Segunda confirmacao de que "winrate baixo" e "bot nao usa o mecanismo
+central" sao coisas DIFERENTES -- reforca a decisao do usuario de nao
+tratar winrate isolado como criterio de "sabe jogar".
+
+**Achado 2 (unico outlier real, NAO investigado ainda)**: Nefeltari
+Vivi (EB03-001) com **56,4%** de ativacao de habilidade -- bem abaixo
+da faixa normal do resto do pool (88-100%, exceto os N/A). Todos os
+outros lideres com habilidade parseada ficaram >=88%; Vivi e o unico
+caso destoante. Candidato real a proxima investigacao pontual (mesmo
+metodo do bloco 487: rastrear ocorrencias no `decision_log` onde a
+habilidade foi ofertada mas nao ativada, ver se e competicao legitima
+por DON como Boeuf Burst/Gum-Gum Jet Culverin, ou se e um caso
+diferente -- ex: condicao da habilidade raramente satisfeita, ou custo
+alto demais pro que entrega).
+
+`smoke_fast.py`/`smoke_test.py` continuam 100% (mudanca so em
+`decision_quality_report.py`, `decision_engine.py` intocado).
+
 ## 2026-08-10 (487) - Claude (sessao remota web) - Investigadas as 2 cartas de utilizacao baixa do Sanji achadas no bloco 486 -- NAO sao bug (competicao real por DON), ressalva registrada no relatorio e no CLAUDE.md/AGENTS.md
 
 Usuario pediu ("Pode fazer") pra fechar os 2 achados pendentes do

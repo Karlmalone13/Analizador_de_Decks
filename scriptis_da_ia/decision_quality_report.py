@@ -59,7 +59,7 @@ jogar um lider/deck especifico, rodar este relatorio ANTES de olhar
 winrate -- winrate sozinho nao distingue "bot jogou mal" de "deck e
 fraco/matchup ruim".
 
-Uso: python decision_quality_report.py --leader OP12-041 --n 30 [--seed S] [--workers W] [--top-cartas N]
+Uso: python decision_quality_report.py --leader OP12-041 --n 30 [--seed S] [--workers W] [--top-cartas N] [--pool-size N]
 """
 import argparse
 import concurrent.futures
@@ -101,8 +101,8 @@ def _run_one(task):
     oponente aleatorio do resto do pool, e extrai os dois sinais direto do
     decision_log/estado real -- cada processo carrega o proprio banco
     (mesmo padrao de audit_replay.py/gauntlet_matchup.py, bloco 481)."""
-    i, match_seed, leader_code = task
-    deck_list = _load_deck_list()
+    i, match_seed, leader_code, pool_size = task
+    deck_list = _load_deck_list(pool_size)
     target_indices = [idx for idx, (_, d) in enumerate(deck_list) if d[0].code == leader_code]
     if not target_indices:
         return None
@@ -197,14 +197,17 @@ def main():
                      help='quantas cartas (piores primeiro) mostrar na tabela do item 3')
     ap.add_argument('--min-ofertas', type=int, default=2,
                      help='ignora cartas ofertadas menos que isso (amostra pequena demais)')
+    ap.add_argument('--pool-size', type=int, default=30,
+                     help='quantos decks unicos carregar de decklists_raw.csv -- aumente '
+                          'se o lider-alvo nao aparecer nos primeiros 30 (deduplicados por deck_url)')
     args = ap.parse_args()
 
-    deck_list = _load_deck_list()
+    deck_list = _load_deck_list(args.pool_size)
     if not any(d[0].code == args.leader for _, d in deck_list):
         raise SystemExit(f'lider {args.leader} nao tem deck valido no pool de '
-                          f'{len(deck_list)} decks (decklists_raw.csv)')
+                          f'{len(deck_list)} decks (decklists_raw.csv) -- tente --pool-size maior')
 
-    tasks = [(i, args.seed * 1_000_003 + i, args.leader) for i in range(args.n)]
+    tasks = [(i, args.seed * 1_000_003 + i, args.leader, args.pool_size) for i in range(args.n)]
     if args.workers <= 1:
         resultados = [_run_one(t) for t in tasks]
     else:
