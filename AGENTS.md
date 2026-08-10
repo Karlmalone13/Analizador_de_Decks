@@ -200,6 +200,43 @@ Referências oficiais das regras (manual, playsheet) em
 > comparação disponível ainda, e isso deve ser dito explicitamente em vez
 > de forçar uma correspondência inexistente.
 
+## Placar de qualidade de decisão por líder — OBRIGATÓRIO antes de avaliar se o bot "sabe jogar" um deck
+
+> **OBRIGATÓRIO** (pedido explícito do usuário, 10/08/2026, bloco 485):
+> sempre que a avaliação for "o bot sabe jogar com este líder/deck?" —
+> não "quem ganha mais" — rode primeiro
+> `scriptis_da_ia/decision_quality_report.py --leader <CODIGO> --n 20-30
+> --workers 4` **antes** de olhar winrate agregado. Nasceu da auditoria do
+> Sanji OP12-041 (blocos 482-484): o líder ficou preso em ~10% de winrate
+> mesmo depois de 3 correções de código diferentes, e o usuário definiu o
+> critério real — **"não tem problema perder a partida, as vezes o deck
+> só é fraco mesmo, nós só precisamos garantir de que o bot entende o
+> deck e toma as melhores decisões, maximizando a play com o deck"**.
+> Winrate mede sorte de matchup; não distingue "bot jogou mal" de "deck é
+> fraco/matchup ruim" — este relatório mede qualidade de decisão
+> independente do resultado.
+>
+> **O que mede** (os dois sinais lidos direto do `decision_log`/estado
+> real do motor — NÃO reimplementa elegibilidade própria, contra
+> `REGRA_SEM_DUPLICACAO.md`):
+> 1. **Utilização da habilidade do líder** ([Activate: Main]): em quantos
+>    turnos o Turn Planner ofereceu a habilidade como candidata legal vs.
+>    quantos turnos ela foi de fato escolhida. Líderes sem
+>    [Activate: Main] reportam N/A.
+> 2. **DON deixado na mesa** no fim de cada turno do próprio lado —
+>    recurso não aproveitado, independe de vitória/derrota.
+>
+> Uso: `python decision_quality_report.py --leader OP12-041 --n 30
+> --workers 4` (`scriptis_da_ia/`). Referência calibrada nesta sessão (20
+> partidas cada, seed=77): Sanji OP12-041 ativou a habilidade em 98,3%
+> dos turnos elegíveis (118/120) e terminou 61,6% dos turnos com 0 DON
+> sobrando — **mesmo perdendo 85% das partidas**, confirmando que o bot
+> usa o mecanismo central do deck quase sempre; Mihawk OP14-020 (88,2%)
+> e Imu OP13-079 (99,1%) deram números na mesma faixa, como esperado de
+> líderes com winrate saudável. Complementa (não substitui) a comparação
+> obrigatória contra `IA_Compendium/RESUMO_ESTRATEGICO.md` acima — o
+> placar dá o "quanto", o catálogo dá o "o que era esperado".
+
 ## Estado do projeto / o que falta
 Ver [TODO.md](TODO.md) (lista viva, atualizada por sessão) para: buracos de
 mecânica conhecidos e priorizados, problemas abertos do replay, dívida

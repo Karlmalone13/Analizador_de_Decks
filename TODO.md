@@ -2,6 +2,26 @@
 
 **Última atualização:** 10 de agosto de 2026
 
+> 10/08/2026 (bloco 485): **`decision_quality_report.py` NOVO,
+> ferramenta permanente e agora OBRIGATÓRIA** — placar de qualidade de
+> decisão por líder, independente de winrate (pedido do usuário depois
+> do bloco 484: "como saberemos se o bot sabe jogar com o deck?").
+> Mede, direto do `decision_log`/estado real (sem reimplementar
+> elegibilidade): (1) taxa de utilização da habilidade do líder
+> ([Activate: Main], candidata-vs-escolhida), (2) DON deixado na mesa
+> no fim do turno. `--leader CODIGO --n N --workers W`. Validado em 3
+> líderes reais: **Sanji OP12-041 ativa a habilidade em 98,3% dos
+> turnos elegíveis mesmo perdendo 85% das partidas** — confirma que o
+> mecanismo central do deck está sendo usado, a fraqueza (se houver)
+> não é "não sabe ativar a própria habilidade". Mihawk (88,2%) e Imu
+> (99,1%) na mesma faixa, validação cruzada. Tornado obrigatório em
+> `CLAUDE.md`/`AGENTS.md` (mesma seção, byte-idêntica): rodar este
+> relatório ANTES de olhar winrate sempre que a pergunta for "o bot
+> sabe jogar esse líder?". Complementa a comparação já obrigatória com
+> `IA_Compendium/RESUMO_ESTRATEGICO.md`. `decision_engine.py` não foi
+> tocado neste bloco — `smoke_fast`/`smoke_test` 100% sem mudança. Ver
+> bloco 485 do HANDOFF.
+
 > 10/08/2026 (bloco 484): **`deck_lacks_removal_tools()`** — postura
 > `CONTROL` passa a dar crédito a busca/compra (`has_search`/`has_draw`,
 > mesmo bônus de `DEVELOP`) quando o deck genuinamente não tem remoção

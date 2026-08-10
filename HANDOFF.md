@@ -1,5 +1,54 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-10 (485) - Claude (sessao remota web) - Ferramenta permanente NOVA `decision_quality_report.py` -- placar de qualidade de decisao por lider, independente de winrate, agora OBRIGATORIO no CLAUDE.md/AGENTS.md
+
+Depois do bloco 484 (Sanji preso em 10% mesmo apos 3 correcoes de codigo
+diferentes), usuario perguntou "como saberemos se o bot sabe jogar com o
+deck? ou outro deck?" -- questao de metodologia, nao de bug pontual.
+Proposta discutida e aprovada: medir qualidade de decisao DADO o deck
+real, nao resultado da partida (winrate mede sorte de matchup, nao
+sabe distinguir "bot jogou mal" de "deck e fraco").
+
+**Ferramenta nova**: `scriptis_da_ia/decision_quality_report.py` (COMMIT,
+nao descartavel -- diferente dos scripts `_*_investigation_*.py` desta
+sessao, esta e permanente e reusavel pra qualquer lider). Mede 2 sinais
+lidos DIRETO do `decision_log`/estado real do motor (sem reimplementar
+elegibilidade, contra `REGRA_SEM_DUPLICACAO.md`):
+1. **Utilizacao da habilidade do lider** ([Activate: Main]): turnos em
+   que o Turn Planner ofereceu como candidata legal vs turnos em que foi
+   de fato escolhida. Lideres sem essa habilidade reportam N/A.
+2. **DON deixado na mesa** no fim de cada turno do lado alvo (estado
+   real pos-`play_turn()`, nao inferido do log).
+
+`--leader CODIGO --n N --seed S --workers W` (mesmo padrao `--workers`
+obrigatorio dos scripts de lote, bloco 481). Validado rodando 3 lideres
+reais (20 partidas cada, seed=77):
+- Sanji OP12-041: ativou a habilidade em **98,3%** dos turnos elegiveis
+  (118/120), 61,6% dos turnos terminaram com 0 DON sobrando -- **mesmo
+  perdendo 85% das partidas (3/20 vitorias nesta amostra)**. Confirma
+  numericamente o que a auditoria manual (blocos 483/484) ja sugeria: o
+  bot usa o mecanismo central do deck quase sempre, a fraqueza (se
+  houver alguma alem do que ja foi corrigido) nao esta em "ele nao sabe
+  ativar a propria habilidade".
+- Mihawk OP14-020: 88,2% (30/34), Imu OP13-079: 99,1% (109/110) -- faixa
+  parecida, esperado de lideres com winrate saudavel (validacao cruzada
+  de que o instrumento nao esta calibrado so pro caso Sanji).
+- Ace OP13-002 (sem Activate:Main): reporta N/A corretamente no sinal 1,
+  so o sinal 2 (DON deixado na mesa).
+
+**Tornado OBRIGATORIO** em `CLAUDE.md`/`AGENTS.md` (pedido explicito do
+usuario, mesma secao nos dois arquivos, verificado byte-identico):
+sempre que a pergunta for "o bot sabe jogar esse lider/deck", rodar este
+relatorio ANTES de olhar winrate agregado. Complementa (nao substitui) a
+comparacao ja obrigatoria contra `IA_Compendium/RESUMO_ESTRATEGICO.md`.
+
+Sem teste dedicado em `smoke_fast.py` (mesmo padrao de
+`audit_replay.py`/`gauntlet_matchup.py` -- scripts de lote self-play sao
+validados rodando de verdade contra partidas reais, nao com unit test
+isolado; validacao feita acima com 3 lideres + o caminho N/A).
+`smoke_fast.py`/`smoke_test.py` continuam 100% (nada em
+`decision_engine.py` foi tocado neste bloco).
+
 ## 2026-08-10 (484) - Claude (sessao remota web) - `deck_lacks_removal_tools()`: postura CONTROL passa a dar credito a busca/compra quando o deck nao tem remocao de verdade (generico, achado auditando o Sanji) -- winrate do Sanji continua 10.0%, e por pedido explicito do usuario ISSO NAO E FALHA (criterio e qualidade de decisao, nao resultado)
 
 Continuacao do bloco 483 -- usuario pediu pra investigar mais fundo
