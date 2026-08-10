@@ -2,6 +2,26 @@
 
 **Última atualização:** 10 de agosto de 2026
 
+> 10/08/2026 (bloco 482): **200 partidas reais em lote** (usando o
+> paralelismo do bloco 481, `--workers 4`) pra capturar bugs + tempo +
+> tendências de winrate por líder, a pedido do usuário. **BUGS**: 0
+> exceções, 0 anomalias de invariante — nenhum sinal de regressão dos
+> blocos recentes (469/479/480/481). **TEMPO**: lote 275.5s (~3,6x vs
+> ~989.4s sequencial estimado); turnos#5-9 (meio de jogo) são
+> consistentemente os mais caros, não o fim de jogo; as 5 partidas mais
+> lentas têm o líder Enel (OP15-058) em 4 de 5. **TENDÊNCIA — achado
+> que precisa de investigação**: **Sanji (OP12-041) com 10,0% de
+> winrate em 50 jogos**, único líder com amostra grande E resultado tão
+> fora da faixa (demais líderes ficaram 45-71%). Causa ainda NÃO
+> apurada — pode ser deck genuinamente fraco no formato simulado,
+> gameplan mal capturado por `deck_profile`/heurística do Turn Planner,
+> ou lacuna de parser específica de cartas Sanji. **Próximo passo
+> proposto, ainda não iniciado**: auditoria pente-fino do líder Sanji
+> (texto-real vs efeito-parseado vs comportamento, igual blocos
+> 400-401), cruzando com `IA_Compendium/RESUMO_ESTRATEGICO.md` se ele
+> estiver no catálogo de 60 decks. Ver bloco 482 do HANDOFF pros números
+> completos (tempo por turno, tabela de winrate completa).
+
 > 10/08/2026 (bloco 481): **paralelismo em `audit_replay.py`/
 > `gauntlet_matchup.py`/`baseline_metrics.py`** — os 3 rodavam partidas
 > em sequência mesmo sendo independentes. Adicionado `--workers N`

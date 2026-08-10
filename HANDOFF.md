@@ -1,5 +1,58 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-10 (482) - Claude (sessao remota web) - 200 partidas reais em lote (paralelismo do bloco 481): 0 bugs/anomalias, mapa de tempo por turno, e um outlier forte de winrate por lider (Sanji OP12-041, 10%)
+
+Usuario pediu ("simularmos varias partidas e capturar tendencias, tempo
+de decisoes, e bugs, entao veremos onde podemos corrigir algo ou
+otimizar") -- uso direto do paralelismo recem-implementado (bloco 481).
+
+Script descartavel `_big_sim_investigation_10_08.py` (mesma convencao
+dos calibrate_*.py, agora tambem coberta pelo `.gitignore` -- padrao
+novo `_*_investigation_*.py` adicionado nesta sessao pra isso, ja que o
+padrao anterior so cobria `calibrate_*.py`). Roda partidas reais via
+`ReplayMatch` (decklists_raw.csv, ate 30 decks validos), capturando por
+partida: excecoes/violacoes de invariante (mesma auditoria de
+`audit_replay.py`), tempo por turno E por partida (`time.perf_counter`),
+lider de cada lado (codigo real da carta, pra agregar winrate por
+lider). 200 partidas, seed=77, `--workers 4`, disparado em background
+via harness (nao nohup solto -- licao do bloco 479).
+
+**BUGS**: 0 excecoes, 0 anomalias de invariante em 200 partidas reais
+(pares de decks distintos do banco, seed determinístico). Nenhum sinal
+de regressao das mudancas recentes (469/479/480/481) sob essa amostra.
+
+**TEMPO**: lote inteiro 275.5s com 4 workers (equivalente sequencial
+estimado 989.4s, ~3.6x -- consistente com o bloco 481). Por partida:
+media 4.95s, mediana 4.18s, p95 10.78s, max 23.94s. Por turno: media
+0.411s, mediana 0.247s, p95 1.357s, max 5.115s. Tempo medio por INDICE
+de turno cresce ate o turno#7 (0.798s) e decresce depois (menos opcoes
+com o board mais definido/vidas caindo) -- turnos#5-9 (meio de jogo,
+board cheio nos dois lados) sao consistentemente os mais caros, nao o
+fim de jogo. As 5 partidas mais lentas (14.9s-23.9s) tem em comum o
+deck "Purple Enel" (Gabi31) de um dos dois lados em 4 das 5 -- indicio
+de que o lider Enel (OP15-058, ver tendencias abaixo) gera arvore de
+busca mais cara que a media, plausivel dado que ele tem varias opcoes
+de ativacao por turno.
+
+**TENDENCIAS** (winrate por lider, so >=3 jogos): OP14-020 Dracule
+Mihawk 69.1% (81 jogos), OP15-058 Enel 71.1% (45 jogos), OP13-079 Imu
+51.9% (54 jogos), OP13-002 Portgas.D.Ace 45.7% (94 jogos), OP11-041
+Nami 51.3% (39), OP15-002 Lucy 55.6% (18), OP13-001 Luffy(001) 54.5%
+(11), EB02-010 Luffy(010) 0% (8 jogos, amostra pequena). **Outlier
+forte: OP12-041 Sanji, 10.0% winrate em 50 jogos** -- unico lider com
+amostra grande E winrate extremo (todos os outros ficam 45-71%). Ainda
+NAO investigado a causa (pode ser deck genuinamente fraco no formato
+simulado, gameplan do Sanji mal capturado pelo `deck_profile`/heuristica
+de Turn Planner, ou peculiaridade do parser pra cartas Sanji-specific)
+-- so o sinal agregado foi capturado nesta sessao, proxima etapa e
+investigar ANTES de qualquer correcao (auditoria pente-fino igual
+blocos 400-401, comparar contra `IA_Compendium/RESUMO_ESTRATEGICO.md`
+se o lider estiver no catalogo de 60 decks).
+
+Duracao media de partida: 12.0 turnos. Script e output brutos nao
+commitados (convencao de scripts descartaveis) -- achados acima sao o
+registro permanente.
+
 ## 2026-08-10 (481) - Claude (sessao remota web) - Paraleliza os 3 scripts de simulacao em lote (audit_replay.py, gauntlet_matchup.py, baseline_metrics.py) -- `--workers N`, ~3.6x mais rapido medido, resultado reprodutivel identico entre sequencial/paralelo
 
 Usuario pediu ("o que podemos fazer pra acelerar essas simulacoes")
