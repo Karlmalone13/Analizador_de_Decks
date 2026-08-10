@@ -1,6 +1,6 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-08-10 (483, PARCIAL) - Claude (sessao remota web) - EM ANDAMENTO: fix de `_step_condition_currently_holds` (avaliar_carta/_score_to_play superestimavam cartas so-de-[Counter] fora de batalha) -- achado ao auditar o outlier de winrate do Sanji (bloco 482)
+## 2026-08-10 (483) - Claude (sessao remota web) - fix de `_step_condition_currently_holds` CONFIRMADO e correto (nao infla mais cartas so-de-[Counter] fora de batalha), mas NAO resolveu o outlier de winrate do Sanji -- causa raiz continua aberta
 
 Auditoria pedida pelo usuario ("Sim") sobre o outlier do bloco 482 (Sanji
 OP12-041, 10% winrate em 50 jogos, unico lider com amostra grande E fora
@@ -50,11 +50,34 @@ escolhendo a carta certa entre Gum-Gum Giant e a carta de dig real).
 `smoke_fast.py`/`smoke_test.py` 100%. `audit_replay.py --n 40 --workers 4`:
 0 excecoes, 0 anomalias.
 
-**Validacao em andamento**: rodando de novo o mesmo lote de 200 partidas
-do bloco 482 (MESMA seed=77, mesmos confrontos por indice) pra comparar
-o winrate do Sanji antes (10.0%) vs depois do fix -- resultado fica pro
-PROXIMO bloco desta mesma investigacao (nao commitado ainda o script
-descartavel, mesma convencao de sempre).
+**Validacao real (re-rodada do MESMO lote de 200 partidas do bloco 482,
+seed=77 identica, mesmos 49 confrontos do Sanji por indice)**:
+`RESULTADO HONESTO -- o fix e real e mudou decisoes de verdade (outros
+lideres no MESMO lote mudaram de winrate: OP14-020 69.1%->72.8%,
+OP15-058 71.1%->62.2%, OP11-041 51.3%->59.0%, OP13-079 51.9%->55.6%,
+OP15-002 55.6%->44.4%, OP13-002 45.7%->43.6% -- prova que o fix E
+exercitado e influencia partidas reais), MAS o Sanji ficou EXATAMENTE
+igual: 10.0% em 50 jogos, os dois lados. 0 excecoes/anomalias nos dois
+lotes.` Interpretacao: o bug de scoring era real e generico (vale a
+correcao por si so, protege qualquer deck Event dual-mode/Counter-only
+no futuro), mas NAO e a causa principal do desempenho ruim do Sanji
+especificamente -- ou a situacao "Gum-Gum Giant concorrendo com uma
+carta melhor" raramente aparece/decide o jogo nas 49 partidas reais
+dele, ou ha outro problema maior dominando o resultado.
+
+**Pista levantada, nao investigada a fundo ainda**: mapeamento dos 49
+confrontos do Sanji nesta amostra mostra um pool de adversarios pesado
+pra lideres fortes no MESMO lote -- Imu OP13-079 (55.6% geral) x7,
+Mihawk OP14-020 (72.8% geral) x5, Enel OP15-058 (62.2% geral) x6, Nami
+OP11-041 (59.0% geral) x4 = 22/49 jogos contra os 4 lideres com melhor
+winrate agregado do lote; só Ace OP13-002 (43.6%, mais fraco) aparece
+mais (x11). Nao da pra confirmar se e so azar de amostra (pool de so 30
+decks, matchup determinado por seed) ou se o Sanji perde estruturalmente
+contra esse perfil de deck -- fica pro proximo bloco decidir se vale
+rodar com --seed diferente/mais decks Sanji no pool, ou auditar 2-3
+derrotas reais dele decisao-a-decisao (mesmo padrao de
+`audit_real_losses.py`, adaptado pra self-play) pra achar a causa raiz
+de verdade.
 
 ## 2026-08-10 (482) - Claude (sessao remota web) - 200 partidas reais em lote (paralelismo do bloco 481): 0 bugs/anomalias, mapa de tempo por turno, e um outlier forte de winrate por lider (Sanji OP12-041, 10%)
 
