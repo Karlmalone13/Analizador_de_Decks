@@ -1,5 +1,65 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-10 (493) - Claude (sessao remota web) - Investigadas 2 hipoteses de vies (attach_don sobre "descer bomba"; atacar lider sobre focar board) -- NENHUMA confirmada, causa raiz do metodo de investigacao encontrada: comparar `score` raso e enganoso, o motor decide por `simulated_value` (Monte Carlo)
+
+Usuario pediu pra investigar 2 hipoteses de vies sistematico do bot:
+(1) distribuir DON via `attach_don` em vez de jogar uma "bomba" (carta
+cara) da mao; (2) atacar sempre o lider (corrida de vida) em vez de
+focar o board em situacoes onde isso seria melhor.
+
+**Metodo**: self-play real (5 lideres -- Mihawk/Imu/Ace/Enel/Nami --,
+6 partidas cada, `decision_log` com `enable_decision_audit()`),
+comparando os candidatos oferecidos numa MESMA decisao contra o que foi
+escolhido.
+
+**1a passada (score raso, METODOLOGIA FALHA)**: comparando o campo
+`score` (heuristico imediato) dos candidatos, achei 6 casos onde
+`attack->leader` foi escolhido com score MENOR que um `attack-
+>character` tambem candidato na MESMA decisao (ex: lider=284.0 vs
+Marco=297.0) -- parecia um vies real.
+
+**Investigacao mais funda (correta) revelou a causa**: o Turn Planner
+NAO decide pelo `score` raso -- ele usa `score` so pra selecionar quais
+candidatos rodar no lookahead Monte Carlo (`_select_action_via_search`),
+e a escolha FINAL e pelo `simulated_value` (resultado esperado apos
+simular alguns turnos a frente). Conferido no JSON completo de 1 caso
+real (Mihawk T7, vida 2x2): `attack->character` (Marco, RESTADO, DON ja
+preso) tinha score=297 mas `simulated_value`=309.67; `attack->leader`
+tinha score=284 mas `simulated_value`=**431.0** -- o lookahead capta
+que matar um Character ja neutralizado (restado, sem poder atacar de
+volta) vale pouco na pratica, enquanto pressionar a vida (2x2, perto de
+letal) vale muito mais adiante. Campo `descartada_porque` no proprio
+log ja documenta isso: "valor esperado 121.3 abaixo da escolhida".
+NENHUM dos 6 casos e vies -- e o mecanismo de busca funcionando como
+projetado.
+
+**Mesma causa raiz confirmada pro DON**: caso real (Mihawk T7, deck
+diferente) -- `attach_don` (Kid & Killer, score=120) venceu
+`attack->leader` (score=268, MAIOR) porque `simulated_value` inverteu
+(157.67 vs 44.75). Outro caso no mesmo turno: `attach_don` (score=315)
+venceu `play` da bomba Shanks custo 7 (score=195) com
+`simulated_value` 225.67 vs 179.67 -- de novo, a decisao real bate com
+o lookahead, nao com o score bruto.
+
+**Contexto adicional relevante, ja existia (nao descoberto agora)**: a
+calibracao de `ATTACK_LEADER_BASE_SCORE` (100->400, bloco 395, TODO)
+usou comparacao contra VENCEDORES REAIS humanos -- antes da calibracao,
+o bot atacava o lider MENOS que humanos vencedores (76,2% vs 84,1%);
+depois de 400, ficou em 87,2%, mais perto do real. Ou seja, a tendencia
+agregada de atacar o lider ja foi validada contra dado humano real, nao
+e um numero escolhido no chute.
+
+**Conclusao**: nenhuma das 2 hipoteses do usuario foi confirmada como
+bug real -- ambas as vezes que pareciam vies (comparando `score`) se
+resolveram ao comparar `simulated_value` (o criterio real de decisao).
+Isso e uma licao metodologica importante pra QUALQUER investigacao
+futura de "o bot preferiu X sobre Y": **nunca comparar so `score`
+imediato entre candidatos -- sempre conferir `simulated_value` quando
+presente** (nem toda decisao passa pelo Monte Carlo -- ver `simulated_
+samples`/`simulated_wins` no log; quando `None`, so o `score` raso
+decidiu mesmo). Nenhuma mudanca de codigo feita (nao havia bug pra
+corrigir). Scripts de investigacao descartaveis apagados.
+
 ## 2026-08-10 (492) - Claude (sessao remota web) - 2a tentativa de calibrar o PREVENT_COMBO (N=60, paralelo) -- causa raiz REAL encontrada: nao e falta de amostra, e LETHAL/DEFENSIVE dominando a cascata de prioridade antes do PREVENT_COMBO ter chance de importar
 
 Usuario pediu ("Sim") pra tentar de novo com amostra maior depois do

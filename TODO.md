@@ -2,6 +2,26 @@
 
 **Última atualização:** 10 de agosto de 2026
 
+> 10/08/2026 (bloco 493): **investigadas 2 hipóteses de viés (attach_don
+> sobre "descer bomba"; atacar líder sobre focar board) — NENHUMA
+> confirmada**. Self-play real (5 líderes, 6 partidas cada,
+> `decision_log`). 1ª passada comparando `score` raso achou 6 casos
+> aparentes de "líder escolhido com score MENOR que Character
+> disponível" — investigação mais funda mostrou que o Turn Planner
+> decide por `simulated_value` (Monte Carlo), não pelo `score` raso (só
+> usado pra selecionar candidatos do lookahead). Conferido em JSON real:
+> Character já restado/neutralizado tinha score maior mas
+> `simulated_value` menor que atacar o líder — o lookahead capta
+> corretamente que matar um alvo já neutralizado vale pouco. Mesmo
+> padrão confirmado pro DON (`attach_don` vencendo por `simulated_value`
+> mesmo com `score` menor que a "bomba"/ataque ao líder). **Lição
+> metodológica registrada**: nunca comparar só `score` entre candidatos
+> — sempre conferir `simulated_value` quando presente (`simulated_
+> samples` não-nulo). Contexto: `ATTACK_LEADER_BASE_SCORE` (bloco 395)
+> já foi calibrado contra vencedores humanos reais (bot atacava líder
+> MENOS que humanos antes do fix). Nenhuma mudança de código — não havia
+> bug pra corrigir. Ver bloco 493 do HANDOFF.
+
 > 10/08/2026 (bloco 492): **2ª tentativa de calibrar o PREVENT_COMBO —
 > causa raiz REAL encontrada, não é falta de amostra**. Reescrito com
 > `ProcessPoolExecutor` (N=60/matchup, Mihawk/Ace vs Imu). Taxa de
