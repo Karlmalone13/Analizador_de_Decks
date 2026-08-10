@@ -65,6 +65,12 @@ scriptis_da_ia/_debug_prompt_bbox/
 scriptis_da_ia/calibrate_*.py
 scriptis_da_ia/metrics/calibrate_*.json
 
+# scripts de investigacao pura descartaveis (mesma convencao acima, ex:
+# profiling/sweep de tendencias/tempo/bugs em lote -- prefixo "_" de
+# proposito, nunca fazem parte do produto, achado/decisao documentado em
+# HANDOFF.md, nao o script)
+scriptis_da_ia/_*_investigation_*.py
+
 # vercel
 .vercel
 
