@@ -1,6 +1,6 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-08-10 (491, PARCIAL) - Claude (sessao remota web) - EM ANDAMENTO: calibracao formal do PREVENT_COMBO (TODO "consciencia de combos estrategicos do oponente", pendente desde 19/07) -- constantes extraidas, self-play pareado rodando em background
+## 2026-08-10 (491) - Claude (sessao remota web) - Calibracao do PREVENT_COMBO: constantes extraidas (mantido), mas a tentativa de calibrar valores foi SUBDIMENSIONADA -- gatilho e raro demais pra N=12/matchup dar sinal, valores de producao MANTIDOS sem mudanca
 
 Usuario pediu ("Sim") pra calibrar formalmente o `PREVENT_COMBO`
 (limiar `magnitude>=2`, pesos 150/80/0.8) -- item aberto desde 19/07,
@@ -18,14 +18,43 @@ mudanca de comportamento (valores identicos aos literais que
 substituem), `smoke_fast.py` 100% confirmado. Isso por si so ja e
 melhoria (permite a calibracao patchar um lugar so, nao 3).
 
-**Em andamento**: script descartavel de calibracao (self-play pareado,
-mesmo protocolo maximin do fix de LETHAL, HANDOFF bloco 285) rodando em
-background -- baseline (producao: 2/150/80) vs candidato A (mais
-reativo: 1/200/120) vs candidato B (menos reativo: 3/100/50), 2
+**Resultado do self-play pareado** (mesmo protocolo maximin do fix de
+LETHAL, HANDOFF bloco 285): baseline (producao: 2/150/80) vs candidato A
+(mais reativo: 1/200/120) vs candidato B (menos reativo: 3/100/50), 2
 matchups (Mihawk e Ace vs Imu, que tem a ameaca real de reanimacao que
-motivou a mecanica), N=12 cada. Resultado e decisao (aplicar candidato
-vencedor ou manter valores atuais) ficam pro PROXIMO bloco desta mesma
-calibracao.
+motivou a mecanica), N=12/matchup. **Os 3 lotes deram resultado
+IDENTICO, partida por partida** (Mihawk 11/12 = 91.7% e Ace 7/12 = 58.3%
+nos TRES conjuntos de constantes, sem nenhuma diferenca).
+
+**Diagnostico antes de aceitar isso como "sem efeito"**: resultado
+identico-bit-a-bit e suspeito por si so (nao "sem diferenca
+estatistica", literalmente as MESMAS partidas). Investigado direto no
+`decision_log`: `opp_combo_threat()['magnitude']` (o sinal que
+`PREVENT_COMBO` le) so chegou a `>=1` em **2 de 12 partidas** em CADA
+matchup, e em apenas **2/247 (Mihawk)** e **6/205 (Ace)** decisoes
+individuais no total. Ou seja, a prioridade `PREVENT_COMBO` mal chegou
+a disparar nessas 24 partidas -- os 3 lotes darem resultado identico
+nao prova "os valores nao importam", prova que **N=12/matchup e
+subdimensionado demais pra esse gatilho** (que so aparece organicamente
+em ~15-17% das partidas, tarde o suficiente pra raramente decidir o
+jogo nessa amostra).
+
+**Decisao**: manter os valores de producao (2/150/80) -- nao ha
+evidencia real (nem a favor nem contra os candidatos) nesta amostra pra
+justificar mudar. A extracao de constantes (unica parte com beneficio
+comprovado) fica. **Registrado honestamente como pendencia real, nao
+fechada**: uma calibracao de verdade desse gatilho especifico precisa
+de MUITO mais amostra (N bem maior, ou curadoria de seeds/matchups que
+garantam `opp_combo_threat` disparando cedo o suficiente pra importar)
+do que o orcamento desta sessao permitia -- ficou fora de escopo aqui,
+nao e um "calibrado e confirmado sem regressao" como o fix de LETHAL do
+bloco 285 conseguiu.
+
+Script descartavel de calibracao (`/tmp/calibrate_prevent_combo.py`) ja
+apagado, mesma convencao dos outros -- so o achado fica registrado aqui.
+`decision_engine.py` sem mudanca de comportamento nenhuma alem do
+refactor de extracao das constantes. `smoke_fast.py`/`smoke_test.py`
+continuam 100%.
 
 ## 2026-08-10 (490) - Claude (sessao remota web) - SIMULADOR SELF X SELF do front-end LIGADO (TODO bloco 370, pendente desde 25/07) -- `hide_opponent_info` no OPTCGMatch, default True na API /simulate + bug real corrigido no __deepcopy__
 

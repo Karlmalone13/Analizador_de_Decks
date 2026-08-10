@@ -2,18 +2,23 @@
 
 **Última atualização:** 10 de agosto de 2026
 
-> 10/08/2026 (bloco 491, PARCIAL/EM ANDAMENTO): **calibração formal do
-> PREVENT_COMBO iniciada** (pedido do usuário, item aberto desde 19/07
-> — "consciência de combos estratégicos do oponente"). Extraídos os 3
-> literais numéricos (limiar `magnitude>=2`, bônus de carta defensiva
-> 80, bônus de ataque de líder 150) pra constantes de módulo nomeadas
-> (`PREVENT_COMBO_MAGNITUDE_THRESHOLD`/`PREVENT_COMBO_DEFENSIVE_CARD_
-> BONUS`/`PREVENT_COMBO_LEADER_ATTACK_BONUS`) — refactor puro, zero
-> mudança de comportamento, `smoke_fast` 100%. Self-play pareado
-> (mesmo protocolo maximin do fix de LETHAL) rodando em background:
-> baseline vs 2 candidatos (mais/menos reativo), Mihawk/Ace vs Imu.
-> Resultado e decisão final ficam pro próximo bloco. Ver bloco 491 do
-> HANDOFF.
+> 10/08/2026 (bloco 491): **tentativa de calibração formal do
+> PREVENT_COMBO — subdimensionada, valores de produção MANTIDOS**
+> (item aberto desde 19/07). Extraídos os 3 literais numéricos pra
+> constantes nomeadas (`PREVENT_COMBO_MAGNITUDE_THRESHOLD`/
+> `PREVENT_COMBO_DEFENSIVE_CARD_BONUS`/`PREVENT_COMBO_LEADER_ATTACK_
+> BONUS`) — refactor puro, mantido, zero mudança de comportamento.
+> Self-play pareado (baseline vs 2 candidatos, Mihawk/Ace vs Imu,
+> N=12/matchup) deu resultado **idêntico partida-por-partida nos 3
+> lotes** — investigado e explicado: `opp_combo_threat()['magnitude']`
+> só chegou a `>=1` em 2/12 partidas por matchup (2/247 e 6/205
+> decisões individuais) — o gatilho é raro demais pra N=12 gerar
+> qualquer sinal, não é evidência de que os valores não importam.
+> **Decisão**: manter valores de produção (2/150/80), sem base pra
+> mudar. **Pendência real registrada, não fechada**: uma calibração de
+> verdade precisa de N bem maior ou curadoria de seeds que garantam o
+> gatilho disparando cedo — fora do orçamento desta sessão. Ver bloco
+> 491 do HANDOFF.
 
 > 10/08/2026 (bloco 490): **SIMULADOR SELF X SELF do front-end LIGADO**
 > (pendência mais antiga do TODO, bloco 370, 25/07 → fechada). O ponto
@@ -3632,8 +3637,20 @@ self-play pareado com seeds fixos, mesmo protocolo maximin do fix de
 LETHAL (ver HANDOFF bloco 285); e — quando surgir partida ao vivo nova —
 confirmar que o padrão observado em 07/07 (Five Elders reanimando 4-5
 corpos) realmente é neutralizado/reduzido. Ver HANDOFF bloco 287 pro
-detalhe completo. Descrição original do problema abaixo, preservada pra
-contexto:
+detalhe completo.
+
+**Tentativa 10/08/2026 (bloco 491)**: os 3 literais viraram constantes
+nomeadas (`PREVENT_COMBO_MAGNITUDE_THRESHOLD`/`PREVENT_COMBO_DEFENSIVE_
+CARD_BONUS`/`PREVENT_COMBO_LEADER_ATTACK_BONUS`, mantido — melhoria
+válida por si só). Self-play pareado (baseline vs 2 candidatos,
+Mihawk/Ace vs Imu, N=12/matchup) **subdimensionado**: o gatilho
+(`opp_combo_threat()['magnitude']>=1`) só apareceu em 2/12 partidas por
+matchup — não deu sinal suficiente pra decidir entre baseline/candidatos,
+valores de produção mantidos sem mudança. Calibração real ainda
+**pendente** — precisa de N bem maior ou seeds curadas garantindo o
+gatilho disparar cedo o suficiente pra importar no resultado.
+
+Descrição original do problema abaixo, preservada pra contexto:
 
 4 partidas reais instrumentadas na sessão de 07/07 (ver HANDOFF 99/100) — o
 bot perdeu as 4, e as 4 pelo **mesmo padrão exato**: o oponente (Imu/Five
