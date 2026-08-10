@@ -1313,6 +1313,20 @@ class GameState:
         # (de 5.8s totais) so nisso.
         novo.full_deck_plan = getattr(self, 'full_deck_plan', None)
         novo.full_deck_profile = getattr(self, 'full_deck_profile', None)
+        # self_play_info_hidden/hidden_information_masked: atributos
+        # DINAMICOS (getattr, nunca campos declarados) -- achado real 10/08
+        # (bloco 490, ao ligar o simulador self x self): sem propagar aqui,
+        # o UNICO call site que deepcopia GameState (_simulate_sequence_once,
+        # Monte Carlo do Turn Planner, dezenas/centenas de clones por
+        # decisao) perdia a flag em TODO turno simulado dentro da busca --
+        # a partida real (state_a/state_b, nunca clonados diretamente)
+        # mantinha a flag, mas qualquer lookahead do Turn Planner voltava a
+        # info cheia silenciosamente, esvaziando o proposito da flag pro
+        # caminho de decisao que mais importa (USE_OPPONENT_RESPONSE_SEARCH).
+        if getattr(self, 'self_play_info_hidden', False):
+            novo.self_play_info_hidden = True
+        if getattr(self, 'hidden_information_masked', False):
+            novo.hidden_information_masked = True
         novo.revealed_to_opponent = set(self.revealed_to_opponent)
         novo.revealed_life = set(self.revealed_life)
         novo.revealed_deck = set(self.revealed_deck)
@@ -12664,7 +12678,25 @@ class DecisionEngine:
 class OPTCGMatch:
     MAX_TURNS = 15
 
-    def __init__(self, deck_a: tuple, deck_b: tuple):
+    def __init__(self, deck_a: tuple, deck_b: tuple, hide_opponent_info: bool = False):
+        """
+        hide_opponent_info (achado real 10/08, bloco 490 -- fecha a
+        pendencia do simulador self x self, TODO bloco 370): quando True,
+        seta `self_play_info_hidden = True` nos DOIS `GameState` -- os 2
+        pontos do motor que hoje leem mao/deck do oponente DIRETO
+        (`opp_counter_potential`/`_opp_can_remove_stage`, unico vazamento
+        real encontrado na auditoria do bloco 370) passam a usar so o que
+        foi REVELADO de verdade (`known_hand_cards`/`known_deck_cards`) +
+        estimativa estatistica pro resto, igual o bot ao vivo ja faz.
+        Default False preserva 100% do comportamento de sempre (bot ao
+        vivo via sim_bridge.py/server.py NUNCA passa por aqui; toda
+        ferramenta de tuning/auditoria existente -- audit_replay.py,
+        baseline_metrics.py, tune_weights.py, via ReplayMatch -- continua
+        full-info de proposito, decisao explicita do bloco 370: mais
+        deterministico pra calibracao). Usado por `simulation_worker.py`
+        (API `/simulate` do front-end, o simulador self x self de
+        verdade), default True la.
+        """
         leader_a, cards_a, stage_a = deck_a if len(deck_a) == 3 else (*deck_a, None)
         leader_b, cards_b, stage_b = deck_b if len(deck_b) == 3 else (*deck_b, None)
 
@@ -12672,6 +12704,9 @@ class OPTCGMatch:
                                  deck=[deepcopy(c) for c in cards_a])
         self.state_b = GameState(leader=deepcopy(leader_b),
                                  deck=[deepcopy(c) for c in cards_b])
+        if hide_opponent_info:
+            self.state_a.self_play_info_hidden = True
+            self.state_b.self_play_info_hidden = True
 
         # full_deck_census/full_deck_plan/full_deck_profile: achado 14/07
         # (pedido do usuario -- parar de so consertar o Imu) -- nenhum

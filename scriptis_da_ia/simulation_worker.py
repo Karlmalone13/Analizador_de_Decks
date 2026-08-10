@@ -63,9 +63,25 @@ def load_deck(cards: list[dict]) -> tuple:
     return leader, main_deck
 
 
-def run_single_match(deck_a: tuple, deck_b: tuple) -> dict:
-    """Roda 1 partida e devolve o resultado bruto de OPTCGMatch.simulate()."""
-    match = OPTCGMatch(deck_a, deck_b)
+def run_single_match(deck_a: tuple, deck_b: tuple, hide_opponent_info: bool = True) -> dict:
+    """
+    Roda 1 partida e devolve o resultado bruto de OPTCGMatch.simulate().
+
+    hide_opponent_info=True (default, achado real 10/08, bloco 490 --
+    fecha a pendencia do TODO bloco 370): este e o simulador self x self
+    do front-end -- os dois lados nao podem "ver" a mao/deck real um do
+    outro, igual o bot ao vivo ja nao ve. `OPTCGMatch(hide_opponent_info=
+    True)` liga `self_play_info_hidden` nos dois `GameState`, que
+    restringe os 2 pontos do motor que leem mao/deck do oponente direto
+    (`opp_counter_potential`/`_opp_can_remove_stage`) ao que foi
+    REVELADO de verdade + estimativa estatistica pro resto. Decisao
+    explicita do bloco 370: as OUTRAS ferramentas de tuning/auditoria
+    (audit_replay.py, baseline_metrics.py, tune_weights.py, via
+    ReplayMatch) continuam full-info de proposito (mais deterministico
+    pra calibracao) -- so este caminho (o simulador NOVO do front-end)
+    usa a flag.
+    """
+    match = OPTCGMatch(deck_a, deck_b, hide_opponent_info=hide_opponent_info)
     return match.simulate()
 
 

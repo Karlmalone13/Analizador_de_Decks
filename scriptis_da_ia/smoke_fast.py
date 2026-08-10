@@ -17,6 +17,7 @@ from optcg_engine.decision_engine import (  # noqa: E402
     CardData,
     DecisionEngine,
     EffectExecutor,
+    GameAnalyzer,
     GameState,
     HABILITA_ATAQUE_BONUS,
     OPTCGMatch,
@@ -10106,6 +10107,7 @@ def main() -> int:
     test_score_activate_main_play_from_trash_habilita_ataque_gated_por_atacante_08_08()
     test_step_condition_currently_holds_nao_infla_flag_so_de_combate_10_08()
     test_deck_lacks_removal_tools_da_credito_a_busca_em_postura_control_10_08()
+    test_optcgmatch_hide_opponent_info_propaga_e_muda_comportamento_10_08()
     test_ponder_fingerprint_deterministico_09_08()
     test_ponder_fingerprint_muda_por_mutacao_isolada_09_08()
     test_ponder_payload_byte_identico_ao_caminho_normal_09_08()
@@ -12263,6 +12265,63 @@ def test_deck_lacks_removal_tools_da_credito_a_busca_em_postura_control_10_08() 
           val_sem_remocao > val_com_remocao)
     check("diferenca bate exatamente com o bonus de has_search (25)",
           abs((val_sem_remocao - val_com_remocao) - 25) < 1e-6)
+
+
+def test_optcgmatch_hide_opponent_info_propaga_e_muda_comportamento_10_08() -> None:
+    """
+    Achado real 10/08 (bloco 490 -- fecha o TODO bloco 370, simulador self
+    x self do front-end): `OPTCGMatch(hide_opponent_info=True)` liga
+    `self_play_info_hidden` nos DOIS `GameState`, restringindo o motor a
+    so usar mao/deck do oponente REVELADOS de verdade (`opp_counter_
+    potential`/`_opp_can_remove_stage`, os 2 unicos vazamentos achados na
+    auditoria do bloco 370) em vez de ler os objetos Card reais direto
+    (sempre presentes no self-play, diferente do caminho ao vivo que
+    mascara com placeholders).
+
+    Prova 3 coisas:
+    1. O construtor liga a flag nos dois lados (e o default preserva o
+       comportamento de sempre, flag ausente).
+    2. `__deepcopy__` PROPAGA a flag -- achado real ao implementar: o
+       UNICO call site que deepcopia GameState e `_simulate_sequence_once`
+       (Monte Carlo do Turn Planner, dezenas/centenas de clones por
+       decisao) -- sem propagar, cada turno SIMULADO dentro da busca
+       perdia a flag silenciosamente, mesmo com state_a/state_b da
+       partida real mantendo ela certa.
+    3. Comportamento REAL diverge: uma carta de counter (2000) na mao do
+       oponente, NAO revelada, conta o valor cheio (2000) com a flag
+       desligada e um valor ESTATISTICO bem menor com ela ligada (carta
+       oculta vira estimativa por densidade do deck, nao soma exata).
+    """
+    lider_a = real_card("OP12-041")
+    lider_b = real_card("OP12-041")
+    deck_a = (lider_a, [mk(f"HAD{i}", f"D{i}", cost=1) for i in range(10)])
+    deck_b = (lider_b, [mk(f"HBD{i}", f"D{i}", cost=1) for i in range(10)])
+
+    match = OPTCGMatch(deck_a, deck_b, hide_opponent_info=True)
+    check("hide_opponent_info=True liga self_play_info_hidden nos DOIS lados",
+          match.state_a.self_play_info_hidden is True
+          and match.state_b.self_play_info_hidden is True)
+
+    from copy import deepcopy
+    clone_a = deepcopy(match.state_a)
+    check("__deepcopy__ propaga self_play_info_hidden (Monte Carlo do Turn Planner nao perde a flag)",
+          getattr(clone_a, "self_play_info_hidden", False) is True)
+
+    match_default = OPTCGMatch(deck_a, deck_b)
+    check("default (hide_opponent_info=False) preserva comportamento de sempre -- flag ausente",
+          not getattr(match_default.state_a, "self_play_info_hidden", False))
+
+    counter_card = mk("CTX1", "CounterCard", counter=2000, cost=1)
+    match.state_b.hand = [counter_card]
+    valor_oculto = GameAnalyzer(match.state_a, match.state_b).opp_counter_potential()
+
+    match.state_b.self_play_info_hidden = False
+    valor_cheio = GameAnalyzer(match.state_a, match.state_b).opp_counter_potential()
+
+    check("opp_counter_potential: info CHEIA conta o counter real (2000) da carta nao revelada",
+          valor_cheio == 2000)
+    check("opp_counter_potential: info OCULTA nao enxerga a carta nao revelada -- valor bem menor",
+          valor_oculto < valor_cheio)
 
 
 # ── Pondering (BOT/engine_server/server.py, design bloco 478, implementado

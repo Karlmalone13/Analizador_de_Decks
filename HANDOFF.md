@@ -1,5 +1,69 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-10 (490) - Claude (sessao remota web) - SIMULADOR SELF X SELF do front-end LIGADO (TODO bloco 370, pendente desde 25/07) -- `hide_opponent_info` no OPTCGMatch, default True na API /simulate + bug real corrigido no __deepcopy__
+
+Usuario pediu ("Vamos fazer o bloco 370") pra fechar a pendencia mais
+antiga do TODO ainda em aberto -- simulador self x self do front-end,
+fundacao pronta desde 25/07 (bloco 370) mas nunca ligado.
+
+**Descoberta**: o ponto de entrada que faltava JA EXISTIA -- `api.py`
+`POST /simulate` (chamado por `src/app/simulate/page.tsx`, o simulador
+de verdade que o usuario final usa) delega pra
+`simulation_worker.run_single_match()` -> `OPTCGMatch(...).simulate()`.
+Nao precisou de script novo, so ligar a flag nesse caminho ja existente.
+
+**Implementado**:
+1. `OPTCGMatch.__init__(deck_a, deck_b, hide_opponent_info: bool =
+   False)` -- quando True, liga `self_play_info_hidden = True` nos DOIS
+   `GameState` (`state_a`/`state_b`), restringindo os 2 pontos do motor
+   que leem mao/deck do oponente direto (`opp_counter_potential`/
+   `_opp_can_remove_stage`, unicos vazamentos achados na auditoria
+   original do bloco 370) a usar so o que foi revelado de verdade +
+   estimativa estatistica pro resto, igual o bot ao vivo ja faz.
+2. `simulation_worker.run_single_match(deck_a, deck_b,
+   hide_opponent_info: bool = True)` -- default True, passa direto pro
+   `OPTCGMatch`. `api.py` NAO precisou de nenhuma mudanca (a chamada
+   existente em `run_simulation_job` nao passa o parametro, entao usa o
+   novo default automaticamente) -- o simulador do front-end ja fica
+   oculto por padrao assim que este commit for deployado.
+3. **Decisao explicita do bloco 370, mantida**: `baseline_metrics.py`/
+   `tune_weights.py`/`audit_replay.py` (via `ReplayMatch`) continuam
+   full-info de proposito -- so o simulador NOVO do front-end usa a flag.
+
+**Bug real achado ao ligar de verdade** (nao existia antes porque a
+flag nunca tinha sido usada num jogo inteiro): `GameState.__deepcopy__`
+NAO propagava `self_play_info_hidden`/`hidden_information_masked`
+(atributos dinamicos via getattr, nunca campos declarados do
+dataclass). O UNICO call site que deepcopia `GameState`
+(`_simulate_sequence_once`, Monte Carlo do Turn Planner -- dezenas/
+centenas de clones por decisao) perdia a flag em TODO turno SIMULADO
+dentro da busca, mesmo com a partida real (`state_a`/`state_b`)
+mantendo ela certa -- o proposito da flag ficava esvaziado
+silenciosamente assim que o Turn Planner comecasse a simular o futuro.
+Corrigido: `__deepcopy__` agora propaga os dois atributos quando
+presentes no objeto original.
+
+**Auditoria adicional** (item pendente do checklist original, "so
+decision_engine.py foi auditado"): varredura de todo acesso a
+`opp.hand`/`opp.deck` no arquivo. Achado 1 caso a mais --
+`opp_counter_in_hand()` le `opp.hand` sem gate, mas e CODIGO MORTO
+(zero call sites) -- sem impacto hoje, registrado no TODO pra quem for
+usar essa funcao no futuro saber que precisa do mesmo gate. Resto dos
+acessos e tamanho de mao/deck (publico) ou execucao legitima de efeito
+que revela a mao/deck do oponente de proposito.
+
+**Teste novo** em `smoke_fast.py`
+(`test_optcgmatch_hide_opponent_info_propaga_e_muda_comportamento_10_08`):
+prova a flag nos dois lados, a propagacao via `__deepcopy__` (prova
+direta do bug achado acima), e uma divergencia de comportamento REAL
+(`opp_counter_potential()` com carta de counter 2000 nao revelada: 2000
+com info cheia vs valor estatistico bem menor oculto -- valores reais
+medidos: 2000 vs 320). `smoke_fast`/`smoke_test` 100%.
+`audit_replay.py --n 30 --workers 4` (full-info, comportamento
+default preservado): 0 excecoes/anomalias.
+`simulation_worker.run_single_match()` rodado de verdade (5 partidas
+reais hidden + 3 full-info) sem excecao, resultados sensatos.
+
 ## 2026-08-10 (489) - Claude (sessao remota web) - Outlier da Nefeltari Vivi (bloco 488, 56,4% de ativacao) investigado -- NAO e bug, e trade-off real de design (custo `rest_self` = mutuamente exclusivo com atacar)
 
 Usuario pediu ("Sim") pra investigar o outlier levantado no bloco 488

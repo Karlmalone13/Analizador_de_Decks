@@ -2,6 +2,29 @@
 
 **Última atualização:** 10 de agosto de 2026
 
+> 10/08/2026 (bloco 490): **SIMULADOR SELF X SELF do front-end LIGADO**
+> (pendência mais antiga do TODO, bloco 370, 25/07 → fechada). O ponto
+> de entrada já existia: `api.py POST /simulate` (usado por
+> `src/app/simulate/page.tsx`) → `simulation_worker.run_single_match()`
+> → `OPTCGMatch.simulate()`. `OPTCGMatch` ganhou
+> `hide_opponent_info: bool = False`; `run_single_match` passou a usar
+> `True` como default — o simulador do front-end já esconde mão/deck
+> real de cada lado sem nenhuma mudança em `api.py`.
+> `baseline_metrics.py`/`tune_weights.py`/`audit_replay.py` continuam
+> full-info de propósito (decisão do bloco 370 mantida). **Bug real
+> achado ao ligar de verdade**: `GameState.__deepcopy__` não propagava
+> `self_play_info_hidden` — o único call site que deepcopia GameState
+> (Monte Carlo do Turn Planner, dezenas/centenas de clones por decisão)
+> perdia a flag em todo turno SIMULADO dentro da busca, esvaziando o
+> propósito silenciosamente. Corrigido. Auditoria adicional achou
+> `opp_counter_in_hand()` sem gate, mas é código morto (zero call
+> sites) — registrado, não corrigido (sem impacto hoje). Teste novo em
+> `smoke_fast.py` prova a flag, a propagação via `__deepcopy__` e uma
+> divergência real de comportamento (2000 vs 320 no
+> `opp_counter_potential()`). `smoke_fast`/`smoke_test` 100%,
+> `audit_replay.py --n 30 --workers 4`: 0 exceções. Ver bloco 490 do
+> HANDOFF e a seção "SIMULADOR SELF X SELF" mais abaixo (agora 🟢).
+
 > 10/08/2026 (bloco 489): **outlier da Nefeltari Vivi (bloco 488, 56,4%
 > de ativação) fechado — NÃO é bug**. Causa: a habilidade dela custa
 > `rest_self` (restar o PRÓPRIO líder), mutuamente exclusivo com atacar
@@ -2578,7 +2601,7 @@ scripts rodados de verdade sem exceção.
   a própria orquestração de turno em vez de chamar `OPTCGMatch.play_turn()`
   — **resolvido no bloco 372** (ver acima), apagado de vez.
 
-## 🟡 SIMULADOR SELF X SELF (front-end) — fundação pronta, falta construir o simulador em si (25/07/2026, bloco 370)
+## 🟢 SIMULADOR SELF X SELF (front-end) — RESOLVIDO: `OPTCGMatch(hide_opponent_info=True)`, ligado por padrão no `/simulate` (25/07/2026, bloco 370; fechado 10/08/2026, bloco 490)
 
 Objetivo do projeto: front-end vai ter um simulador deck-vs-deck (self x
 self) que precisa se aproximar do ao vivo — os dois lados não podem
@@ -2594,19 +2617,48 @@ self-play existente). Quando `True`, usam só o que foi **revelado de
 verdade** (`known_hand_cards`/`known_deck_cards`) + estimativa
 estatística pro resto (mesma infra do `counter_estimation.py`).
 
-- [ ] **Construir o simulador self x self em si** — hoje a flag existe
-  mas ninguém a liga. Precisa de um ponto de entrada (script novo, ou
-  opção nas ferramentas existentes tipo `audit_replay.py`) que, no
-  início da partida, sete `self_play_info_hidden = True` nos DOIS lados
-  (cada `GameState` representando "o outro" pro respectivo dono).
-- [ ] Decidir se as ferramentas de tuning/auditoria já existentes
-  (`baseline_metrics.py`, `tune_weights.py`, `audit_replay.py`) também
-  devem rodar em modo oculto por padrão, ou se ficam como estão
-  (informação cheia, mais determinístico pra tuning) e só o simulador
-  NOVO do front-end usa a flag.
-- [ ] Auditoria feita foi só em `decision_engine.py` — se aparecer
-  comportamento "esperto demais" no self x self depois de ligar a flag,
-  pode haver algum outro vazamento não encontrado nesta varredura.
+- [x] **Construir o simulador self x self em si** — resolvido bloco 490.
+  `OPTCGMatch.__init__` ganhou `hide_opponent_info: bool = False`; quando
+  True, liga `self_play_info_hidden` nos DOIS `GameState`.
+  `simulation_worker.run_single_match()` (chamado pela API `POST
+  /simulate`, o endpoint que `src/app/simulate/page.tsx` já usa — não
+  precisou de script novo, o ponto de entrada JÁ existia) passou a usar
+  `hide_opponent_info: bool = True` como default — o simulador do
+  front-end agora esconde mão/deck real de cada lado por padrão, sem
+  nenhuma mudança em `api.py`.
+- [x] **Bug real achado ao ligar a flag de verdade**: `GameState.
+  __deepcopy__` não propagava `self_play_info_hidden`/
+  `hidden_information_masked` (atributos dinâmicos, não campos
+  declarados) — o ÚNICO call site que deepcopia `GameState`
+  (`_simulate_sequence_once`, Monte Carlo do Turn Planner, dezenas/
+  centenas de clones por decisão) perdia a flag em TODO turno simulado
+  dentro da busca, mesmo com `state_a`/`state_b` da partida real
+  mantendo ela certa. Corrigido: `__deepcopy__` agora propaga os dois
+  atributos quando presentes.
+- [x] Decidido: `baseline_metrics.py`/`tune_weights.py`/`audit_replay.py`
+  (via `ReplayMatch`) continuam full-info de propósito (mais
+  determinístico pra calibração) — só o simulador NOVO do front-end usa
+  a flag. Nenhum desses 3 scripts foi tocado.
+- [x] Auditoria adicional feita (bloco 490, além dos 2 vazamentos já
+  achados no bloco 370): varredura de todo acesso a `opp.hand`/
+  `opp.deck` em `decision_engine.py`. Achado 1 caso a mais —
+  `opp_counter_in_hand()` lê `opp.hand` sem gate nenhum — mas é **código
+  morto** (nenhum call site no arquivo inteiro), sem impacto
+  comportamental hoje; registrado aqui pra quem for usar essa função no
+  futuro saber que precisa do mesmo gate. Todo o resto (`len(opp.hand)`,
+  `opp.deck` vazio) é tamanho de mão/deck (informação pública mesmo num
+  jogo real) ou execução legítima de efeito que revela/olha a mão/deck
+  do oponente de propósito (parte da resolução da carta, não um
+  "espiar" da IA).
+- Teste novo em `smoke_fast.py`
+  (`test_optcgmatch_hide_opponent_info_propaga_e_muda_comportamento_10_08`):
+  prova a flag nos dois lados, a propagação via `__deepcopy__`, e uma
+  divergência de comportamento real (`opp_counter_potential()` com uma
+  carta de counter 2000 não revelada: 2000 com info cheia vs valor
+  estatístico bem menor oculto). `smoke_fast`/`smoke_test` 100%,
+  `audit_replay.py --n 30 --workers 4` (full-info, default preservado):
+  0 exceções/anomalias. `simulation_worker.run_single_match()` rodado
+  de verdade (5 partidas reais, hidden vs full) sem exceção.
 
 > 25/07/2026 (bloco HANDOFF 368): **Turn Planner Fase D fechada** —
 > cache por instância de `GameAnalyzer._lethal_search` (invalidado em
