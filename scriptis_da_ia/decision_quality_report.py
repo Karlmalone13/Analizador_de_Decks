@@ -17,6 +17,15 @@ tres coisas que independem do resultado da partida:
    segunda fonte de verdade sobre "quando essa acao e legal", contra
    REGRA_SEM_DUPLICACAO.md) vs quantos turnos foi de fato ESCOLHIDA.
    Liders sem [Activate: Main] (boa parte do banco) reportam N/A.
+   RESSALVA (achado real 10/08, Nefeltari Vivi EB03-001, bloco 489): nem
+   toda habilidade de lider e comparavel entre si aqui -- quando o custo
+   inclui restar o PROPRIO lider (`rest_self`), ativar e MUTUAMENTE
+   EXCLUSIVO com atacar este turno (rested nao ataca), diferente da
+   maioria (custo em DON, compativel com atacar tambem). Vivi rastreada
+   manualmente: toda vez que "activate" perdeu, foi pra "attack" do
+   MESMO lider, nunca outra coisa -- taxa de 56,4% e um trade-off real
+   de design da carta, nao bug. O script AVISA quando detecta esse tipo
+   de custo (ver saida do item 1).
 2. DON DEIXADO NA MESA: `don_available` do lado alvo IMEDIATAMENTE apos
    cada um dos proprios turnos dele terminar (estado real, nao inferido
    do log) -- DON > 0 no fim do turno e sinal de recurso nao aproveitado.
@@ -239,11 +248,18 @@ def main():
         lider = por_carta.get(args.leader, {'ofertada': 0, 'escolhida': 0})
         total_oferta, total_ativou = lider['ofertada'], lider['escolhida']
         taxa = (total_ativou / total_oferta * 100) if total_oferta else 0.0
+        custa_rest_self = any(c.get('type') == 'rest_self'
+                               for c in get_card_effects(args.leader).get('activate_main', {}).get('costs', []))
         print(f'1) Utilizacao da habilidade do lider (Activate:Main):')
         print(f'   Oferecida como candidata em {total_oferta} turnos, ATIVADA em {total_ativou} '
               f'({taxa:.1f}%)')
         if total_oferta == 0:
             print('   (nunca foi legal ativar em nenhum turno destas partidas -- checar elegibilidade/custo)')
+        if custa_rest_self:
+            print('   ATENCAO: o custo inclui restar o PROPRIO lider -- mutuamente exclusivo com')
+            print('   atacar este turno (achado real 10/08, Nefeltari Vivi EB03-001, bloco 489). Taxa')
+            print('   baixa aqui NAO e comparavel a lideres cujo custo e DON (compativel com atacar')
+            print('   tambem) -- e esperado competir de verdade com "attack" do proprio lider.')
 
     todos_leftover = [d for r in resultados for d in r['don_leftover']]
     if todos_leftover:

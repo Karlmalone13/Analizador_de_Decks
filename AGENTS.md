@@ -222,7 +222,12 @@ Referências oficiais das regras (manual, playsheet) em
 > 1. **Utilização da habilidade do líder** ([Activate: Main]): em quantos
 >    turnos o Turn Planner ofereceu a habilidade como candidata legal vs.
 >    quantos turnos ela foi de fato escolhida. Líderes sem
->    [Activate: Main] reportam N/A.
+>    [Activate: Main] reportam N/A. **Ressalva (achado real 10/08,
+>    Nefeltari Vivi EB03-001, bloco 489)**: quando o custo inclui restar
+>    o PRÓPRIO líder (`rest_self`), ativar é mutuamente exclusivo com
+>    atacar esse turno — taxa baixa aí não é comparável a líderes cujo
+>    custo é DON (compatível com atacar também); o script já avisa
+>    quando detecta esse tipo de custo.
 > 2. **DON deixado na mesa** no fim de cada turno do próprio lado —
 >    recurso não aproveitado, independe de vitória/derrota.
 > 3. **Utilização por CARTA** (pedido explícito do usuário, mesmo dia:

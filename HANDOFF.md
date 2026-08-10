@@ -1,5 +1,42 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-10 (489) - Claude (sessao remota web) - Outlier da Nefeltari Vivi (bloco 488, 56,4% de ativacao) investigado -- NAO e bug, e trade-off real de design (custo `rest_self` = mutuamente exclusivo com atacar)
+
+Usuario pediu ("Sim") pra investigar o outlier levantado no bloco 488
+(Nefeltari Vivi EB03-001, 56,4% de ativacao de habilidade, unico caso
+bem abaixo da faixa 88-100% do resto do pool).
+
+**Causa raiz achada**: a habilidade do lider da Vivi
+("[Activate: Main] You may rest this Leader: ...") tem custo
+`rest_self` -- restar o PROPRIO lider. Isso e estruturalmente diferente
+de Sanji/Mihawk/Imu/Enel/Crocodile/Bonney/Jinbe (todos com custo em
+DON, `rest_don`/`don_minus`/trash, compativel com TAMBEM atacar no
+mesmo turno). Pra Vivi, ativar e restar = **mutuamente exclusivo** com
+atacar esse turno (um lider restado nao ataca).
+
+**Confirmado por rastreamento real** (mesmo metodo do bloco 487):
+filtrado `decision_log` de 15 partidas pelas ocorrencias de "activate
+EB03-001" como candidata, comparado contra o `chosen` de cada decisao.
+Em TODA ocorrencia em que activate NAO foi escolhido, o vencedor foi
+"attack EB03-001" -- o MESMO lider, nunca outra coisa. Ou seja, os
+56,4% nao sao um sinal de mau uso: e a IA escolhendo entre 2 usos
+mutuamente exclusivos do mesmo lider (atacar direto com 5000+ poder vs
+restar pra debuffar 2000 num personagem do oponente + dar Rush
+condicional pra outro), e na maioria das vezes atacar pontuou mais
+(scores tipicos: attack 220-328 vs activate 166-191).
+
+**Nao e bug -- e um trade-off real de design da carta.**
+
+**Melhoria generica registrada** (nao so pra Vivi -- qualquer lider
+futuro com o mesmo padrao de custo se beneficia): `decision_quality_
+report.py` agora detecta `rest_self` no custo do `activate_main` do
+lider-alvo e IMPRIME um aviso explicito no item 1 explicando que a taxa
+nao e comparavel a lideres de custo-DON. Mesma ressalva no docstring e
+na secao obrigatoria do `CLAUDE.md`/`AGENTS.md` (byte-identica nos 2).
+
+`smoke_fast.py`/`smoke_test.py` continuam 100% (`decision_engine.py`
+intocado -- so `decision_quality_report.py`).
+
 ## 2026-08-10 (488) - Claude (sessao remota web) - `decision_quality_report.py` rodado nos 17 lideres distintos do pool (baseline de referencia) + `--pool-size` novo -- achado: Nefeltari Vivi com utilizacao de habilidade bem abaixo da faixa normal (56,4%)
 
 Usuario pediu ("Rodar em mais lideres") pra expandir a base de

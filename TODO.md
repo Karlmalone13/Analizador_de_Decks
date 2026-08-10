@@ -2,6 +2,19 @@
 
 **Última atualização:** 10 de agosto de 2026
 
+> 10/08/2026 (bloco 489): **outlier da Nefeltari Vivi (bloco 488, 56,4%
+> de ativação) fechado — NÃO é bug**. Causa: a habilidade dela custa
+> `rest_self` (restar o PRÓPRIO líder), mutuamente exclusivo com atacar
+> nesse turno — diferente do resto do pool (custo em DON, compatível
+> com atacar também). Rastreamento real confirmou: toda vez que
+> "activate" perdeu, foi pra "attack" do MESMO líder, nunca outra coisa
+> — trade-off de design real da carta, não erro de avaliação.
+> `decision_quality_report.py` agora detecta `rest_self` no custo do
+> líder-alvo e avisa explicitamente no item 1 que a taxa não é
+> comparável a líderes de custo-DON. Mesma ressalva no `CLAUDE.md`/
+> `AGENTS.md` (byte-idêntica). `decision_engine.py` não tocado —
+> `smoke_fast`/`smoke_test` 100%. Ver bloco 489 do HANDOFF.
+
 > 10/08/2026 (bloco 488): **`decision_quality_report.py` rodado nos 17
 > líderes distintos do pool** (baseline de referência, pedido do
 > usuário "rodar em mais líderes") + `--pool-size` novo (default 30 só
