@@ -226,6 +226,20 @@ ML só se 1-3 baterem teto).
   `smoke_test.py` NAO e mais smoke curto: trate como regressao ampla e rode
   so quando mexer em parser, counters, imunidade, substituicao, gramatica de
   efeitos ou outra area compartilhada de alto risco.
+- **Simulação em lote = SEMPRE escolher `--workers N` antes de rodar**
+  (pedido do usuário, 10/08/2026): `audit_replay.py`, `gauntlet_matchup.py`
+  e `baseline_metrics.py` rodam partidas independentes entre si e suportam
+  `--workers N` (`ProcessPoolExecutor`, ver HANDOFF bloco 481) — medido
+  ~3,6x mais rápido com 4 workers, resultado IDÊNTICO ao sequencial pro
+  mesmo `--seed`. Antes de disparar qualquer simulação em lote (auditoria,
+  gauntlet, calibração baseline), decidir explicitamente quantos workers
+  usar (ajustar ao número de núcleos disponíveis, ex: `--workers 4`) — não
+  rodar sequencial (`--workers 1`, o default) só por inércia. Qualquer
+  script de calibração NOVO/descartável (mesma convenção dos blocos
+  449/459/468) deve seguir o MESMO padrão desde o início (seed derivada
+  por índice, `seed_base * 1_000_003 + i` — nunca um `random.seed()` único
+  encadeado entre partidas, que quebra a reprodutibilidade entre
+  sequencial/paralelo, achado real ao implementar o bloco 481).
 - Front: `npm run dev` (porta 3000), `npx eslint`, `npx tsc --noEmit`,
   `npx next build` antes de considerar uma tarefa de front concluída.
 - API Python local: `cd scriptis_da_ia && pip install -r requirements.txt

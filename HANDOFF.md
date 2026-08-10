@@ -56,6 +56,18 @@ dependentes da ordem de execucao).
 diretamente, rodados por precaucao ja que decision_engine.py nao foi
 tocado nesta sessao -- so os 3 scripts de simulacao em lote).
 
+**Follow-up na mesma sessao**: usuario pediu pra transformar isto numa
+OBRIGACAO registrada (nao so uma opcao mencionada no chat) -- "coloque
+essa informacao como obrigacao pra gente escolher antes de uma
+simulacao". Adicionado bullet novo em `CLAUDE.md`/`AGENTS.md` (secao
+"Workflow / convencoes", replicado byte-a-byte nos dois arquivos, regra
+de espelho do topo do arquivo): decidir explicitamente `--workers N`
+antes de qualquer simulacao em lote (nao rodar sequencial por inercia),
+e qualquer script de calibracao novo/descartavel deve nascer ja com o
+padrao de seed-por-indice (nao um `random.seed()` unico encadeado, que
+quebra a reprodutibilidade sequencial/paralelo -- achado real desta
+mesma sessao, ver acima).
+
 ## 2026-08-10 (480) - Claude (sessao remota web) - Liga amostragem ADAPTATIVA no main_phase() offline (piso=3/teto=6), fecha pendencia antiga (blocos 380/477) -- custo medido em +7.2% de tempo, sem regressao
 
 Usuario perguntou (curiosidade, apos o bloco 479 de pondering) se o

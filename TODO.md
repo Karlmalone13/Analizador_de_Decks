@@ -17,7 +17,11 @@
 > mas a composição exata de cada partida individual mudou (não depende
 > mais da ordem de execução acumulada). `smoke_fast`/`smoke_test` 100%
 > (precaução — nenhum dos 3 scripts é testado por eles diretamente,
-> `decision_engine.py` não foi tocado). Ver bloco 481 do HANDOFF.
+> `decision_engine.py` não foi tocado). **Virou regra obrigatória** em
+> `CLAUDE.md`/`AGENTS.md` (pedido do usuário): escolher `--workers N`
+> antes de qualquer simulação em lote, e scripts de calibração novos
+> devem nascer com seed-por-índice, não `random.seed()` encadeado. Ver
+> bloco 481 do HANDOFF.
 
 > 10/08/2026 (bloco 480): **amostragem ADAPTATIVA ligada no `main_phase()`
 > offline** (self-play/replay/calibração/`/simulate` do front-end) —
