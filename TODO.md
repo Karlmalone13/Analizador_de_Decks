@@ -2,6 +2,24 @@
 
 **Última atualização:** 10 de agosto de 2026
 
+> 10/08/2026 (bloco 480): **amostragem ADAPTATIVA ligada no `main_phase()`
+> offline** (self-play/replay/calibração/`/simulate` do front-end) —
+> **fecha pendência antiga (blocos 380/477)**: trocado N FIXO=3 por
+> piso=3/teto=6 (mesmo mecanismo de early-stop estatístico já calibrado
+> no caminho ao vivo, `OFFLINE_MC_SAMPLES_MIN/MAX/BATCH` novas). Custo
+> medido ANTES de commitar (30 partidas reais, N fixo vs adaptativo):
+> **+7,2% de tempo total** — decisões já claras custam o mesmo de antes,
+> só as ambíguas gastam a amostra extra, exatamente onde a precisão
+> importa. `smoke_fast`/`smoke_test` 100%, `audit_replay.py --n 20`: 0
+> exceções, 0 anomalias. **Investigação relacionada, sem ação**: ideia de
+> cache/memoização dentro da busca (motivada por "68% do tempo em
+> generate_and_score_actions", bloco 477) foi **rejeitada pelo usuário**
+> depois de confirmar que ~8% dos casos reais divergem entre amostras
+> (cache ingênuo erraria decisões) — não implementado, registrado como
+> descartado. `search_alloc`/lethal search confirmados caros por
+> natureza (O(board²) já conhecido), não por desperdício. Ver bloco 480
+> do HANDOFF.
+
 > 10/08/2026 (bloco 479): **pondering implementado** (design aprovado do
 > bloco 478) — `server.py` ganhou `ponder_fingerprint`/`_get_ponder_match`/
 > `_trigger_pondering`/`_ponder_worker`/`_try_consume_ponder` + a extração
@@ -81,12 +99,15 @@
 > olhando telemetria real de latência (`latency_ms`, `client_timeouts`)
 > antes de qualquer número novo.
 >
-> **Despriorizado pro objetivo atual (fortalecer o bot contra
-> humano)** — amostragem adaptativa no modo OFFLINE/self-play (hoje N
+> ~~Despriorizado pro objetivo atual (fortalecer o bot contra
+> humano) — amostragem adaptativa no modo OFFLINE/self-play (hoje N
 > fixo de 3-6 em `main_phase`, usado por `baseline_metrics.py` e pelo
 > `/simulate` do front-end): serve mais a fidelidade do simulador do
 > front-end e das próprias calibrações futuras que o bot ao vivo (que já
-> tem o orçamento maior). Pendência antiga, ainda válida, só reordenada.
+> tem o orçamento maior). Pendência antiga, ainda válida, só reordenada.~~
+> **FEITO no bloco 480 (10/08)** — usuário pediu pra investigar/resolver
+> antes do previsto, custo medido em +7,2% de tempo. Ver bloco 480 no
+> topo deste arquivo e do HANDOFF.
 >
 > **Achado extra desta sessão, sem ação pendente**: profiling (cProfile,
 > script descartável) confirmou que ~98% do tempo
@@ -2086,13 +2107,10 @@ ao vivo não tinha nenhuma das duas.
   foi só via script descartável (não commitado). Vale adicionar 1 teste
   leve de regressão (1-2 partidas reais rápidas até o fim) pra pegar
   erros que só aparecem num jogo completo.
-- [ ] **PENDENTE**: medir se vale ligar amostragem adaptativa de verdade
-  no offline também (hoje só usa o N fixo). Precisa medir custo total de
-  um jogo de self-play inteiro primeiro — offline roda em regime de
-  THROUGHPUT (até 30 sub-decisões/turno, muitos jogos de
-  calibração/tuning), diferente do orçamento por decisão do caminho ao
-  vivo, e já existe uma explosão O(board²) conhecida lá (até 13.8s/turno
-  late-game medido antes desta sessão).
+- [x] **FEITO no bloco 480 (10/08)**: amostragem adaptativa ligada no
+  offline (piso=3/teto=6, `OFFLINE_MC_SAMPLES_MIN/MAX/BATCH`), custo
+  medido primeiro (+7,2% de tempo total, 30 partidas reais N fixo vs
+  adaptativo) antes de commitar, como esta pendência já pedia.
 - [ ] **PENDENTE (pedido do usuário, 26/07)**: até agora só validei que a
   unificação NÃO regride (testes + self-play sintético) e que o caminho
   ao vivo ganhou a guarda `_is_unsafe_zero_life_leader_attack` + a

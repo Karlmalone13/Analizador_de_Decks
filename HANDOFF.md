@@ -1,5 +1,68 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-10 (480) - Claude (sessao remota web) - Liga amostragem ADAPTATIVA no main_phase() offline (piso=3/teto=6), fecha pendencia antiga (blocos 380/477) -- custo medido em +7.2% de tempo, sem regressao
+
+Usuario perguntou (curiosidade, apos o bloco 479 de pondering) se o
+pondering ajudaria a simulacao offline tambem -- resposta: nao, e uma
+otimizacao especifica do tempo ocioso REAL do caminho ao vivo, sem
+equivalente na simulacao (sem I/O real pra sobrepor). Pediu pra
+investigar (SEM correcao) 2 angulos: (a) cache/memoizacao dentro da
+busca (motivado pela pergunta do profiling do bloco 477, "68% do tempo
+em generate_and_score_actions"), (b) esse mesmo 68%.
+
+**Investigacao (a) -- REJEITADA pelo usuario, registrada por completo**:
+confirmei por instrumentacao real que minha propria continuacao gulosa
+(antes de simular a resposta do oponente) e ~92% identica entre
+amostras Monte Carlo diferentes da mesma decisao (25 decisoes reais
+testadas, 4 matchups) -- mas os ~8% que DIVERGEM (rastreados ate
+`opp_counter_potential()`, que le `opp.hand` direto sem mascara no
+self-play offline) provam que um cache ingenuo ("calcula 1x, reusa em
+todas as amostras") erraria a decisao numa fracao real de casos.
+Usuario rejeitou explicitamente ("nao gostei, essa ideia e ruim") --
+risco/complexidade nao compensa pro ganho, mesmo com o achado
+mecanistico de que `can_lethal_this_turn()` especificamente (usa so
+`known_hand_cards()`, nunca a mao amostrada) e sample-invariant de
+verdade -- documentado como prova de conceito, NAO implementado.
+
+**Investigacao (b)**: `search_alloc`/`hits_after_best_defense` (busca
+combinatoria de alocacao de DON pra lethal garantido, ja com early-exit
+"tenta mais DON primeiro" e cache por instancia) sao caros por
+NATUREZA do problema (O(board²) ja documentado no bloco 477), nao por
+desperdicio -- nenhuma correcao algoritmica obvia encontrada.
+
+**Achado real, aprovado pelo usuario ("vale a pena sim... no menor
+tempo possivel")**: `main_phase()` (offline: self-play/replay/
+calibracao/`/simulate` do front-end) usava N FIXO=3 amostras Monte
+Carlo por decisao (`samples_min==samples_max==batch_size`, degenerava
+a amostragem adaptativa do `_select_action_via_search` -- MESMA funcao
+do caminho ao vivo -- num lote so, sem teste de significancia). Essa
+era uma pendencia JA registrada (blocos 380 e 477 do TODO.md, "medir
+custo total de um jogo de self-play antes de ligar piso/teto") --
+reordenada e agora fechada.
+
+**Fix**: liga o MESMO mecanismo de early-stop estatistico (CRN
+pareado, ja calibrado e usado no caminho ao vivo) tambem no offline,
+so com piso/teto MENORES pro regime de THROUGHPUT (ate 30 sub-decisoes/
+turno x muitos turnos x muitas partidas de calibracao, bem diferente
+do orcamento POR DECISAO do caminho ao vivo, que usa piso=12/teto=24).
+Constantes novas `OFFLINE_MC_SAMPLES_MIN=3`/`_MAX=6`/`_BATCH=3`
+(decision_engine.py, ~L47) -- piso=3 preserva o custo de quando a
+decisao ja e clara (mesmo custo de antes), teto=6 e o mesmo valor ja
+validado em 13/07 pro caso `USE_OPPONENT_RESPONSE_SEARCH=False`. So
+afeta a busca offline (`main_phase`); `_select_action_via_search` em si
+nao mudou (mesma funcao, so os parametros do chamador).
+
+**Custo medido ANTES de commitar** (script descartavel, mesma
+convencao dos blocos 449/459/468, apagado ao final): 3 matchups reais x
+5 seeds x 2 rodadas (N=3 fixo vs adaptativo 3-6) = 30 partidas cada.
+**+7.2% de tempo total** (68.6s -> 73.6s) -- a maioria das decisoes ja
+e clara com 3 amostras e para ali (custo igual a antes), so as
+decisoes AMBIGUAS gastam a amostra extra, exatamente onde a precisao
+extra importa mais.
+
+`smoke_fast.py`/`smoke_test.py`: 100%. `audit_replay.py --n 20 --seed
+33`: 20 partidas reais, 0 excecoes, 0 anomalias.
+
 ## 2026-08-09/10 (479) - Claude (sessao remota web) - Implementa o pondering (design aprovado do bloco 478) -- codigo + 4 testes exigidos, flag OFF por padrao. NENHUM TESTE AO VIVO feito nesta sessao (ambiente remoto sem acesso ao cliente do jogo)
 
 Usuario confirmou ("Sim") pra eu implementar o design do pondering ja

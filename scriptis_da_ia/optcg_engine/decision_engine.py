@@ -46,6 +46,30 @@ USE_EVAL_V2 = True    # LIGADA 13/07: validação rigorosa (MC=6, n=50, Imu-v2 v
 # a 6). Knob global — não muda a régua, só o custo da simulação.
 PLANNER_MC_SAMPLES = 6
 
+# Amostragem ADAPTATIVA do main_phase (offline: self-play/replay/calibração),
+# quando USE_OPPONENT_RESPONSE_SEARCH=True. Antes disto (blocos 380/477): N
+# FIXO=3 (samples_min==samples_max==batch_size, degenerava a amostragem
+# adaptativa em 1 lote só, sem teste de significância -- mesmo mecanismo do
+# caminho ao vivo, só sem a parte "sobe até o teto quando o gap não é
+# confiável"). Achado 10/08 (usuário: "vale a pena melhorar a precisão, no
+# menor tempo possível, mudar estratégia se for o caso"): ligar o MESMO
+# early-stop estatístico (CRN pareado, `_select_action_via_search`) já
+# calibrado no caminho ao vivo (SEARCH_SAMPLES_MIN/MAX/BATCH_DEFAULT em
+# sim_bridge.py, piso=12/teto=24 -- generoso demais pro regime de THROUGHPUT
+# do offline, que roda até 30 sub-decisões/turno vezes muitos turnos vezes
+# muitas partidas de calibração). Escolhido piso=3 (mesmo custo do N fixo
+# anterior quando a decisão já é clara) / teto=6 (mesmo valor já validado
+# em 13/07 pro caso USE_OPPONENT_RESPONSE_SEARCH=False, PLANNER_MC_SAMPLES)
+# / batch=3. Medido via `calibrate_offline_mc_samples_10_08.py` (script
+# descartável, mesma convenção dos blocos 449/459/468, não commitado): 3
+# matchups reais x 5 seeds x 2 rodadas (N fixo vs adaptativo) — custo extra
+# de tempo total = **+7,2%** (68,6s -> 73,6s) pra ganhar a precisão extra
+# exatamente nas decisões ambíguas onde 3 amostras não bastam (a maioria
+# das decisões já é clara com 3 e para aí, custo igual a antes).
+OFFLINE_MC_SAMPLES_MIN = 3
+OFFLINE_MC_SAMPLES_MAX = 6
+OFFLINE_MC_SAMPLES_BATCH = 3
+
 # Componente de counter em `_counter_stat_bonus` (rede de segurança na mão
 # vs jogar a carta). Promovido de literal solto pra constante nomeada
 # (28/07, bloco HANDOFF 390) -- achado real via `compare_vs_human.py` em
@@ -15620,18 +15644,22 @@ class OPTCGMatch:
             # mesmo corte de custo do TOP_K acima (ver comentario la): S≈3 com
             # a busca de resposta ligada, S=6 (ja validado) sem ela.
             #
-            # N FIXO (samples_min == samples_max == batch_size): o offline
-            # ainda NAO usa amostragem adaptativa -- roda em regime de
-            # THROUGHPUT total (ate 30 sub-decisoes/turno, muitos turnos,
-            # muitos jogos de self-play/calibracao), diferente do orcamento
-            # POR DECISAO do caminho ao vivo. Ja existe explosao O(board²)
-            # conhecida ali (medido: ate 13.8s/turno late-game) -- ligar
-            # piso/teto de verdade aqui exige medir o custo total de um
-            # jogo de self-play primeiro (pendente, ver TODO.md), nao so
-            # trocar o numero. `_select_action_via_search` com min==max
-            # degenera exatamente no comportamento fixo de sempre (1 lote
-            # so, sem teste de significancia).
-            n_monte_carlo = 3 if USE_OPPONENT_RESPONSE_SEARCH else PLANNER_MC_SAMPLES
+            # Amostragem ADAPTATIVA (piso/teto, ver OFFLINE_MC_SAMPLES_MIN/
+            # MAX/BATCH acima) quando USE_OPPONENT_RESPONSE_SEARCH=True --
+            # mesmo mecanismo de early-stop estatistico (CRN pareado) ja
+            # calibrado no caminho ao vivo, so com piso/teto menores pro
+            # regime de THROUGHPUT do offline (ate 30 sub-decisoes/turno,
+            # muitos turnos, muitas partidas de calibracao). Achado 10/08
+            # (pedido do usuario, custo medido em +7.2% de tempo total pra
+            # ganhar precisao nas decisoes ambiguas -- ver comentario da
+            # constante). Flag desligada continua no N FIXO de sempre
+            # (PLANNER_MC_SAMPLES=6, nao investigado nesta sessao).
+            if USE_OPPONENT_RESPONSE_SEARCH:
+                samples_min = OFFLINE_MC_SAMPLES_MIN
+                samples_max = OFFLINE_MC_SAMPLES_MAX
+                batch_size = OFFLINE_MC_SAMPLES_BATCH
+            else:
+                samples_min = samples_max = batch_size = PLANNER_MC_SAMPLES
             # rng=random (modulo, nao random.Random() novo) -- achado 26/07:
             # random.Random() semeia do SO/relogio, ignora random.seed() e
             # tornava main_phase() nao-reprodutivel mesmo com seed fixo
@@ -15640,8 +15668,8 @@ class OPTCGMatch:
                 self._select_action_via_search(
                     p, opp, engine, candidatas, model,
                     max_steps=8, extra_own_turn_search=False,
-                    samples_min=n_monte_carlo, samples_max=n_monte_carlo,
-                    batch_size=n_monte_carlo, rng=random))
+                    samples_min=samples_min, samples_max=samples_max,
+                    batch_size=batch_size, rng=random))
 
             if melhor_acao is None:
                 break
