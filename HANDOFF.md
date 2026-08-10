@@ -1,5 +1,68 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-10 (492) - Claude (sessao remota web) - 2a tentativa de calibrar o PREVENT_COMBO (N=60, paralelo) -- causa raiz REAL encontrada: nao e falta de amostra, e LETHAL/DEFENSIVE dominando a cascata de prioridade antes do PREVENT_COMBO ter chance de importar
+
+Usuario pediu ("Sim") pra tentar de novo com amostra maior depois do
+bloco 491 (N=12, subdimensionado). Reescrito com `ProcessPoolExecutor`
+(`--workers 4`, mesmo padrao do resto da sessao) e N=60/matchup (Mihawk
+e Ace vs Imu) -- 525.7s pra 360 partidas.
+
+**Taxa de disparo melhorou muito** (26,7%, 32/120 partidas com
+`opp_combo_threat magnitude>=1` -- vs 17% antes), mas **os 3 lotes
+(baseline 2/150/80, candidato A mais reativo 1/200/120, candidato B
+menos reativo 3/100/50) continuaram com resultado IDENTICO ate o
+digito** (Mihawk 45/60=75,0% e Ace 36/60=60,0% nos TRES). Com uma taxa
+de disparo dessa (quase 1 em cada 4 partidas) e ainda assim ZERO
+diferenca em 120 partidas x 3 conjuntos de constante bem diferentes,
+"amostra pequena" parou de ser explicacao plausivel -- investigado mais
+fundo antes de aceitar.
+
+**Confirmado que o mecanismo de patch das constantes funciona**
+(teste unitario isolado: `PREVENT_COMBO_MAGNITUDE_THRESHOLD=2` +
+`magnitude=1` -> `analysis_priority()` retorna `ATTACK`;
+`threshold=1` + `magnitude=1` -> retorna `PREVENT_COMBO`, como
+esperado). O bug nao esta no patch.
+
+**Causa raiz real, achada rastreando uma partida especifica onde
+magnitude chega a 4 (turno 11)**: `analysis_priority()` e uma CASCATA
+com LETHAL e DEFENSIVE ACIMA de PREVENT_COMBO (ver docstring do
+metodo -- ordem: 1.LETHAL 2.DEFENSIVE 3.PREVENT_COMBO 4.REMOVE_THREAT
+5.DEVELOP 6.ATTACK). Na partida rastreada, 3 de 4 decisoes do turno 11
+tinham `priority=LETHAL` (nao `PREVENT_COMBO`) MESMO com
+`opp_combo_threat magnitude=4` -- porque `can_lethal_this_turn()` ja
+era `True` naquele momento, e LETHAL sempre vence a cascata primeiro.
+So 1 decisao daquele turno realmente tinha `priority=PREVENT_COMBO`.
+
+**Interpretacao**: os matchups escolhidos pra calibracao (Mihawk 75%,
+Ace 60% de winrate contra o Imu) sao vitorias DECISIVAS na maioria das
+vezes -- justamente por isso, quando o `opp_combo_threat` do oponente
+sobe, o proprio lado que esta calibrando ja costuma estar perto de
+LETHAL/ganhando, entao a cascata prioriza LETHAL/DEFENSIVE ANTES do
+`PREVENT_COMBO` ter chance de mudar qualquer decisao real -- nao
+importa quao agressivos os bonus/limiar de `PREVENT_COMBO` fiquem, eles
+sao estruturalmente sobrepostos por prioridades mais altas na MAIORIA
+dos momentos em que o gatilho aparece nesses matchups especificos.
+
+**Conclusao**: calibrar `PREVENT_COMBO` por winrate agregado nesses
+matchups e um teste ESTRUTURALMENTE insensivel aos proprios valores,
+nao um problema de tamanho de amostra -- aumentar N mais ainda nao
+resolveria isso. Uma calibracao de verdade precisaria de um design
+diferente: matchups/momentos de jogo mais equilibrados (sem LETHAL/
+DEFENSIVE disponivel com frequencia pro lado que esta sendo calibrado),
+ou medir diretamente a QUALIDADE das decisoes tomadas quando
+`priority==PREVENT_COMBO` de fato ocorre (nao o resultado agregado da
+partida inteira, que raramente depende dessas poucas decisoes).
+
+**Decisao**: valores de producao (2/150/80) MANTIDOS, sem regressao.
+Registrado como pendencia real e mais bem compreendida agora (nao so
+"precisa de mais amostra") -- se retomada no futuro, o design certo e
+diferente do usado nos blocos 491/492.
+
+Scripts descartaveis (`/tmp/calibrate_prevent_combo_v2.py` e o
+diagnostico pontual) apagados. `decision_engine.py` sem mudanca alem do
+que ja estava no bloco 491 (extracao de constantes). `smoke_fast`/
+`smoke_test` inalterados (nenhum codigo de producao mudou neste bloco).
+
 ## 2026-08-10 (491) - Claude (sessao remota web) - Calibracao do PREVENT_COMBO: constantes extraidas (mantido), mas a tentativa de calibrar valores foi SUBDIMENSIONADA -- gatilho e raro demais pra N=12/matchup dar sinal, valores de producao MANTIDOS sem mudanca
 
 Usuario pediu ("Sim") pra calibrar formalmente o `PREVENT_COMBO`

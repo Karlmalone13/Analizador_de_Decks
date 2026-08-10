@@ -2,6 +2,24 @@
 
 **Última atualização:** 10 de agosto de 2026
 
+> 10/08/2026 (bloco 492): **2ª tentativa de calibrar o PREVENT_COMBO —
+> causa raiz REAL encontrada, não é falta de amostra**. Reescrito com
+> `ProcessPoolExecutor` (N=60/matchup, Mihawk/Ace vs Imu). Taxa de
+> disparo melhorou pra 26,7% (32/120), mas os 3 lotes continuaram
+> **idênticos até o dígito**. Investigado a fundo: `analysis_priority()`
+> é uma cascata com LETHAL e DEFENSIVE ACIMA de PREVENT_COMBO — nos
+> matchups escolhidos (Mihawk 75%/Ace 60% de winrate vs Imu, vitórias
+> decisivas), quando `opp_combo_threat` sobe o próprio lado já costuma
+> estar perto de LETHAL, que sempre vence a cascata primeiro. Confirmado
+> numa partida real: 3 de 4 decisões no turno com magnitude=4 tinham
+> `priority=LETHAL`, não `PREVENT_COMBO`. **Não é problema de N — mais
+> amostra não resolveria isso.** Uma calibração de verdade precisa de
+> matchups mais equilibrados (sem LETHAL/DEFENSIVE disponível com
+> frequência) ou medir a qualidade das decisões nos momentos em que
+> `priority==PREVENT_COMBO` de fato ocorre, não o winrate agregado da
+> partida inteira. Valores de produção (2/150/80) mantidos. Ver bloco
+> 492 do HANDOFF.
+
 > 10/08/2026 (bloco 491): **tentativa de calibração formal do
 > PREVENT_COMBO — subdimensionada, valores de produção MANTIDOS**
 > (item aberto desde 19/07). Extraídos os 3 literais numéricos pra
@@ -3646,9 +3664,24 @@ válida por si só). Self-play pareado (baseline vs 2 candidatos,
 Mihawk/Ace vs Imu, N=12/matchup) **subdimensionado**: o gatilho
 (`opp_combo_threat()['magnitude']>=1`) só apareceu em 2/12 partidas por
 matchup — não deu sinal suficiente pra decidir entre baseline/candidatos,
-valores de produção mantidos sem mudança. Calibração real ainda
-**pendente** — precisa de N bem maior ou seeds curadas garantindo o
-gatilho disparar cedo o suficiente pra importar no resultado.
+valores de produção mantidos sem mudança.
+
+**2ª tentativa 10/08/2026 (bloco 492), N=60/matchup — causa raiz REAL
+encontrada, não é falta de amostra**: taxa de disparo subiu pra 26,7%
+(32/120), mas os 3 lotes continuaram idênticos até o dígito. Investigado
+a fundo: `analysis_priority()` é uma cascata com LETHAL/DEFENSIVE ACIMA
+de PREVENT_COMBO — nos matchups escolhidos (vitórias decisivas, 60-75%
+de winrate), quando `opp_combo_threat` sobe o próprio lado já costuma
+estar perto de LETHAL, que sempre vence a cascata primeiro. Confirmado
+numa partida real (magnitude=4 no turno 11): 3 de 4 decisões daquele
+turno tinham `priority=LETHAL`, não `PREVENT_COMBO`. **Mais amostra não
+resolve isso** — é insensibilidade estrutural do teste, não tamanho de
+N. Calibração real ainda **pendente**, mas agora com um design mais
+claro pro futuro: precisa de matchups mais equilibrados (sem LETHAL/
+DEFENSIVE disponível com frequência) ou medir a qualidade das decisões
+diretamente nos momentos em que `priority==PREVENT_COMBO` de fato
+ocorre, não o winrate agregado da partida inteira (que raramente
+depende dessas poucas decisões nos matchups testados até agora).
 
 Descrição original do problema abaixo, preservada pra contexto:
 
