@@ -2,6 +2,23 @@
 
 **Última atualização:** 10 de agosto de 2026
 
+> 10/08/2026 (bloco 486): **`decision_quality_report.py` ganha item 3
+> (utilização POR CARTA, não só líder)** — pedido do usuário logo após
+> ver o item 1 do bloco 485: "preciso saber se os efeitos das outras
+> cartas estão sendo utilizados". Mesmo mecanismo (candidata-vs-
+> escolhida, por turno, direto do `decision_log`), generalizado por
+> código de carta. Tabela ordenada do pior aproveitamento pro melhor,
+> `--top-cartas`/`--min-ofertas` configuráveis. Limitação honesta:
+> `decision_log` só grava top-8 candidatos por decisão, carta que nunca
+> chega perto do topo não aparece na tabela. **Achado real no Sanji,
+> não investigado ainda**: `Boeuf Burst` (OP12-060, um dos poucos com
+> remoção real no deck) ofertado 14x, escolhido só 2x (14,3%) — bem
+> abaixo da maioria das outras cartas do mesmo deck. Validado também em
+> Mihawk e Ace (incl. caminho N/A). `CLAUDE.md`/`AGENTS.md` atualizados
+> (mesma seção do bloco 485, byte-idêntica). `decision_engine.py` não
+> foi tocado — `smoke_fast`/`smoke_test` 100% sem mudança. Ver bloco
+> 486 do HANDOFF.
+
 > 10/08/2026 (bloco 485): **`decision_quality_report.py` NOVO,
 > ferramenta permanente e agora OBRIGATÓRIA** — placar de qualidade de
 > decisão por líder, independente de winrate (pedido do usuário depois

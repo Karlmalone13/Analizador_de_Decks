@@ -1,5 +1,40 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-10 (486) - Claude (sessao remota web) - `decision_quality_report.py` ganha item 3: utilizacao POR CARTA (nao so lider) -- pedido do usuario apos ver o item 1
+
+Usuario, direto apos o bloco 485: "não quero só conferir efeito do
+líder, preciso saber se os efeitos das outras cartas estão sendo
+utilizados". Generalizacao do MESMO mecanismo do item 1 (candidata vs
+escolhida, por turno, lido do `decision_log`) pra QUALQUER codigo de
+carta que apareca como candidata de `play`/`activate`/`play_from_trash`
+-- nao so o lider. Agregado por CODIGO (nao por copia individual),
+tabela ordenada do pior aproveitamento pro melhor.
+
+**Limitacao honesta documentada no docstring e na tabela**:
+`decision_log` so grava os top-8 candidatos por decisao
+(`candidates[:8]`, `_log_turn_planner_decision`) -- uma carta cuja
+pontuacao NUNCA entra no top-8 nunca aparece como "ofertada" aqui, mesmo
+estando na mao. O relatorio so enxerga cartas que competem perto do
+topo pelo menos alguma vez.
+
+**Validado no Sanji (20 partidas, seed=77)** -- achado real, nao
+investigado ainda (fica pro proximo bloco se o usuario quiser puxar):
+`Boeuf Burst` (OP12-060, Evento real de bounce/draw, um dos poucos com
+remocao de verdade no deck) foi ofertado 14x mas escolhido so 2x
+(14,3%) -- bem abaixo da maioria das outras cartas do mesmo deck (a
+maior parte fica na faixa 40-80%). `Gum-Gum Jet Culverin` (OP11-061)
+ofertado 5x, NUNCA escolhido (0,0%). Validado tambem em Mihawk OP14-020
+e Ace OP13-002 (incl. caminho N/A do item 1 pra lider sem
+Activate:Main) -- tabela sai coerente nos dois, sem crash.
+
+**CLAUDE.md/AGENTS.md** (secao "Placar de qualidade de decisao por
+lider" do bloco 485) atualizados pra descrever os 3 itens, byte-
+identico nos dois arquivos (verificado via diff). Sem teste dedicado em
+`smoke_fast.py` (mesmo padrao dos scripts de lote self-play, ja
+justificado no bloco 485) -- validado rodando de verdade em 3 lideres.
+`decision_engine.py` nao foi tocado -- `smoke_fast`/`smoke_test`
+continuam 100%.
+
 ## 2026-08-10 (485) - Claude (sessao remota web) - Ferramenta permanente NOVA `decision_quality_report.py` -- placar de qualidade de decisao por lider, independente de winrate, agora OBRIGATORIO no CLAUDE.md/AGENTS.md
 
 Depois do bloco 484 (Sanji preso em 10% mesmo apos 3 correcoes de codigo

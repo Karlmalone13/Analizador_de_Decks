@@ -8,7 +8,7 @@ genuinamente fraco perde mesmo jogado perfeitamente, e isso NAO e um
 problema pra corrigir (confirmado pelo usuario: "não tem problema perder a
 partida, as vezes o deck só é fraco mesmo, nós só precisamos garantir de
 que o bot entende o deck e toma as melhores decisões"). Este script mede
-duas coisas que independem do resultado da partida:
+tres coisas que independem do resultado da partida:
 
 1. UTILIZACAO DA HABILIDADE DO LIDER: em quantos turnos a habilidade
    [Activate: Main] do lider foi oferecida como CANDIDATA pelo Turn
@@ -20,13 +20,29 @@ duas coisas que independem do resultado da partida:
 2. DON DEIXADO NA MESA: `don_available` do lado alvo IMEDIATAMENTE apos
    cada um dos proprios turnos dele terminar (estado real, nao inferido
    do log) -- DON > 0 no fim do turno e sinal de recurso nao aproveitado.
+3. UTILIZACAO POR CARTA (achado real 10/08, pedido do usuario apos o
+   placar do lider: "não quero só conferir efeito do líder, preciso
+   saber se os efeitos das outras cartas estão sendo utilizados"):
+   MESMO mecanismo do item 1, generalizado pra QUALQUER carta da mao
+   (personagens/Eventos jogados, incl. reanimados via play_from_trash)
+   -- por turno, "essa carta apareceu como candidata de jogar/reanimar"
+   vs "foi de fato escolhida". Agregado por CODIGO de carta (nao por
+   copia), ordenado do PIOR aproveitamento pro melhor -- destaca cartas
+   que o bot recebe na mao com frequencia mas raramente prioriza.
+   LIMITACAO HONESTA: `decision_log` so grava os top-8 candidatos por
+   decisao (`candidates[:8]`, ver `_log_turn_planner_decision`) -- uma
+   carta cuja pontuacao NUNCA entra no top-8 (sempre pior que outras 8+
+   opcoes) nunca aparece como "ofertada" aqui, mesmo estando na mao.
+   Este relatorio so enxerga cartas que competem perto do topo pelo
+   menos alguma vez; nao prova que uma carta ausente da tabela nunca
+   foi considerada, so que nunca chegou perto de ser a melhor escolha.
 
 Uso obrigatorio (ver CLAUDE.md): sempre que for avaliar se o bot sabe
 jogar um lider/deck especifico, rodar este relatorio ANTES de olhar
 winrate -- winrate sozinho nao distingue "bot jogou mal" de "deck e
 fraco/matchup ruim".
 
-Uso: python decision_quality_report.py --leader OP12-041 --n 30 [--seed S] [--workers W]
+Uso: python decision_quality_report.py --leader OP12-041 --n 30 [--seed S] [--workers W] [--top-cartas N]
 """
 import argparse
 import concurrent.futures
@@ -84,8 +100,6 @@ def _run_one(task):
 
     tem_activate_main = bool(get_card_effects(leader_code).get('activate_main'))
 
-    turnos_com_oferta = 0
-    turnos_com_ativacao = 0
     turnos_totais_alvo = 0
     don_leftover = []
 
@@ -105,34 +119,51 @@ def _run_one(task):
             if vencedor:
                 break
 
-    if tem_activate_main:
-        por_turno = defaultdict(list)
-        for e in (match.decision_log or []):
-            if e is None or e.get('kind') != 'turn_planner' or e.get('player') != 'A':
+    # Item 3 (generico, cobre item 1 tambem): por CODIGO de carta, conta
+    # turnos em que apareceu como candidata de 'play'/'activate'/
+    # 'play_from_trash' vs turnos em que foi de fato escolhida. Agregado
+    # por turno (nao por entrada de log) pra nao inflar o denominador com
+    # a MESMA carta reavaliada varias vezes no mesmo turno (Turn Planner
+    # roda em loop ate esgotar acoes do turno).
+    USA_EFEITO = ('play', 'activate', 'play_from_trash')
+    por_turno = defaultdict(list)
+    for e in (match.decision_log or []):
+        if e is None or e.get('kind') != 'turn_planner' or e.get('player') != 'A':
+            continue
+        por_turno[e['turn']].append(e)
+
+    por_carta = {}   # code -> {'nome':str, 'ofertada': int, 'escolhida': int}
+    for turno, entradas in por_turno.items():
+        ofertadas_no_turno = set()
+        for e in entradas:
+            for c in (e.get('candidates') or []):
+                if c.get('kind') not in USA_EFEITO:
+                    continue
+                card = c.get('card') or {}
+                code = card.get('code')
+                if not code:
+                    continue
+                ofertadas_no_turno.add(code)
+                slot = por_carta.setdefault(code, {'nome': card.get('name', code), 'ofertada': 0, 'escolhida': 0})
+        for code in ofertadas_no_turno:
+            por_carta[code]['ofertada'] += 1
+        escolhidas_no_turno = set()
+        for e in entradas:
+            chosen = e.get('chosen') or {}
+            if chosen.get('kind') not in USA_EFEITO:
                 continue
-            por_turno[e['turn']].append(e)
-        for turno, entradas in por_turno.items():
-            ofertou = any(
-                c.get('kind') == 'activate' and (c.get('card') or {}).get('code') == leader_code
-                for e in entradas for c in (e.get('candidates') or [])
-            )
-            ativou = any(
-                (e.get('chosen') or {}).get('kind') == 'activate'
-                and ((e.get('chosen') or {}).get('card') or {}).get('code') == leader_code
-                for e in entradas
-            )
-            if ofertou:
-                turnos_com_oferta += 1
-                if ativou:
-                    turnos_com_ativacao += 1
+            code = (chosen.get('card') or {}).get('code')
+            if code and code in ofertadas_no_turno:
+                escolhidas_no_turno.add(code)
+        for code in escolhidas_no_turno:
+            por_carta[code]['escolhida'] += 1
 
     return {
         'i': i, 'name_a': name_a, 'name_b': name_b, 'vencedor': vencedor,
         'tem_activate_main': tem_activate_main,
-        'turnos_com_oferta': turnos_com_oferta,
-        'turnos_com_ativacao': turnos_com_ativacao,
         'turnos_totais_alvo': turnos_totais_alvo,
         'don_leftover': don_leftover,
+        'por_carta': por_carta,
     }
 
 
@@ -145,6 +176,10 @@ def main():
     ap.add_argument('--workers', type=int, default=1,
                      help='processos paralelos (1=sequencial). Partidas sao '
                           'independentes -- paraleliza sem risco de correcao.')
+    ap.add_argument('--top-cartas', type=int, default=15,
+                     help='quantas cartas (piores primeiro) mostrar na tabela do item 3')
+    ap.add_argument('--min-ofertas', type=int, default=2,
+                     help='ignora cartas ofertadas menos que isso (amostra pequena demais)')
     args = ap.parse_args()
 
     deck_list = _load_deck_list()
@@ -163,6 +198,14 @@ def main():
     tem_activate_main = resultados[0]['tem_activate_main'] if resultados else False
     vitorias = sum(1 for r in resultados if r['vencedor'] == 'A')
 
+    # Merge por_carta de todas as partidas (mesmo codigo pode aparecer em varios jogos)
+    por_carta = {}
+    for r in resultados:
+        for code, dados in r['por_carta'].items():
+            slot = por_carta.setdefault(code, {'nome': dados['nome'], 'ofertada': 0, 'escolhida': 0})
+            slot['ofertada'] += dados['ofertada']
+            slot['escolhida'] += dados['escolhida']
+
     print(f'{"="*70}')
     print(f'PLACAR DE QUALIDADE DE DECISAO -- lider {args.leader} ({len(resultados)} partidas, seed={args.seed})')
     print(f'{"="*70}')
@@ -173,8 +216,8 @@ def main():
     if not tem_activate_main:
         print('1) Utilizacao da habilidade do lider: N/A (este lider nao tem [Activate: Main] parseado)')
     else:
-        total_oferta = sum(r['turnos_com_oferta'] for r in resultados)
-        total_ativou = sum(r['turnos_com_ativacao'] for r in resultados)
+        lider = por_carta.get(args.leader, {'ofertada': 0, 'escolhida': 0})
+        total_oferta, total_ativou = lider['ofertada'], lider['escolhida']
         taxa = (total_ativou / total_oferta * 100) if total_oferta else 0.0
         print(f'1) Utilizacao da habilidade do lider (Activate:Main):')
         print(f'   Oferecida como candidata em {total_oferta} turnos, ATIVADA em {total_ativou} '
@@ -191,6 +234,25 @@ def main():
         print(f'   media={media:.2f} DON/turno ({len(todos_leftover)} turnos), '
               f'{zero_leftover}/{len(todos_leftover)} turnos terminaram com 0 DON sobrando '
               f'({zero_leftover/len(todos_leftover)*100:.1f}%)')
+
+    outras_cartas = [
+        (code, d) for code, d in por_carta.items()
+        if code != args.leader and d['ofertada'] >= args.min_ofertas
+    ]
+    print()
+    print(f'3) Utilizacao por CARTA (pior aproveitamento primeiro, min. {args.min_ofertas} '
+          f'ofertas -- ver limitacao do top-8 no docstring):')
+    if not outras_cartas:
+        print('   (nenhuma carta alem do lider apareceu como candidata o suficiente nesta amostra)')
+    else:
+        outras_cartas.sort(key=lambda kv: (kv[1]['escolhida'] / kv[1]['ofertada'], -kv[1]['ofertada']))
+        print(f'   {"Carta":34s} {"Codigo":10s} {"Ofertada":>8s} {"Usada":>6s} {"Taxa":>7s}')
+        for code, d in outras_cartas[:args.top_cartas]:
+            taxa = d['escolhida'] / d['ofertada'] * 100
+            print(f'   {d["nome"][:34]:34s} {code:10s} {d["ofertada"]:8d} {d["escolhida"]:6d} {taxa:6.1f}%')
+        if len(outras_cartas) > args.top_cartas:
+            print(f'   ... e mais {len(outras_cartas) - args.top_cartas} carta(s) '
+                  f'com {args.min_ofertas}+ ofertas')
 
 
 if __name__ == '__main__':

@@ -216,7 +216,7 @@ Referências oficiais das regras (manual, playsheet) em
 > fraco/matchup ruim" — este relatório mede qualidade de decisão
 > independente do resultado.
 >
-> **O que mede** (os dois sinais lidos direto do `decision_log`/estado
+> **O que mede** (os três sinais lidos direto do `decision_log`/estado
 > real do motor — NÃO reimplementa elegibilidade própria, contra
 > `REGRA_SEM_DUPLICACAO.md`):
 > 1. **Utilização da habilidade do líder** ([Activate: Main]): em quantos
@@ -225,17 +225,32 @@ Referências oficiais das regras (manual, playsheet) em
 >    [Activate: Main] reportam N/A.
 > 2. **DON deixado na mesa** no fim de cada turno do próprio lado —
 >    recurso não aproveitado, independe de vitória/derrota.
+> 3. **Utilização por CARTA** (pedido explícito do usuário, mesmo dia:
+>    "não quero só conferir efeito do líder, preciso saber se os efeitos
+>    das outras cartas estão sendo utilizados") — mesmo mecanismo do
+>    item 1, generalizado por CÓDIGO de carta (personagens/Eventos
+>    jogados, incl. reanimados via `play_from_trash`): quantos turnos
+>    apareceu como candidata vs. foi escolhida, tabela ordenada do pior
+>    aproveitamento pro melhor. Limitação honesta documentada no
+>    docstring: `decision_log` só grava os top-8 candidatos por decisão
+>    — uma carta que nunca chega perto de ser a melhor opção não aparece
+>    na tabela, mesmo estando na mão.
 >
 > Uso: `python decision_quality_report.py --leader OP12-041 --n 30
-> --workers 4` (`scriptis_da_ia/`). Referência calibrada nesta sessão (20
-> partidas cada, seed=77): Sanji OP12-041 ativou a habilidade em 98,3%
-> dos turnos elegíveis (118/120) e terminou 61,6% dos turnos com 0 DON
-> sobrando — **mesmo perdendo 85% das partidas**, confirmando que o bot
-> usa o mecanismo central do deck quase sempre; Mihawk OP14-020 (88,2%)
-> e Imu OP13-079 (99,1%) deram números na mesma faixa, como esperado de
-> líderes com winrate saudável. Complementa (não substitui) a comparação
-> obrigatória contra `IA_Compendium/RESUMO_ESTRATEGICO.md` acima — o
-> placar dá o "quanto", o catálogo dá o "o que era esperado".
+> --workers 4 [--top-cartas N] [--min-ofertas N]` (`scriptis_da_ia/`).
+> Referência calibrada nesta sessão (20 partidas cada, seed=77): Sanji
+> OP12-041 ativou a habilidade em 98,3% dos turnos elegíveis (118/120) e
+> terminou 61,6% dos turnos com 0 DON sobrando — **mesmo perdendo 85%
+> das partidas**, confirmando que o bot usa o mecanismo central do deck
+> quase sempre; Mihawk OP14-020 (88,2%) e Imu OP13-079 (99,1%) deram
+> números na mesma faixa, como esperado de líderes com winrate saudável.
+> Item 3 no Sanji já achou um sinal concreto pra investigar depois:
+> `Boeuf Burst` (OP12-060, Evento de bounce/draw real) ofertado 14x mas
+> escolhido só 2x (14,3%) — bem abaixo da maioria das outras cartas do
+> mesmo deck, candidato a próxima investigação pontual. Complementa (não
+> substitui) a comparação obrigatória contra
+> `IA_Compendium/RESUMO_ESTRATEGICO.md` acima — o placar dá o "quanto",
+> o catálogo dá o "o que era esperado".
 
 ## Estado do projeto / o que falta
 Ver [TODO.md](TODO.md) (lista viva, atualizada por sessão) para: buracos de
