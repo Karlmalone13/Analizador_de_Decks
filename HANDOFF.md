@@ -1,5 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-10 (491, PARCIAL) - Claude (sessao remota web) - EM ANDAMENTO: calibracao formal do PREVENT_COMBO (TODO "consciencia de combos estrategicos do oponente", pendente desde 19/07) -- constantes extraidas, self-play pareado rodando em background
+
+Usuario pediu ("Sim") pra calibrar formalmente o `PREVENT_COMBO`
+(limiar `magnitude>=2`, pesos 150/80/0.8) -- item aberto desde 19/07,
+confirmado que a prioridade DISPARA em self-play mas nunca teve os
+valores calibrados de verdade (so priors escolhidos na hora).
+
+**Feito (seguro, testado, ja commitado)**: os 3 literais numericos
+embutidos em 3 pontos diferentes do arquivo (limiar de magnitude em
+`analysis_priority()`, bonus de carta defensiva em
+`_score_play_action`, bonus de ataque de lider) foram extraidos pra
+constantes de modulo nomeadas (`PREVENT_COMBO_MAGNITUDE_THRESHOLD`,
+`PREVENT_COMBO_DEFENSIVE_CARD_BONUS`, `PREVENT_COMBO_LEADER_ATTACK_
+BONUS`, perto de `HABILITA_ATAQUE_BONUS`) -- refactor puro, ZERO
+mudanca de comportamento (valores identicos aos literais que
+substituem), `smoke_fast.py` 100% confirmado. Isso por si so ja e
+melhoria (permite a calibracao patchar um lugar so, nao 3).
+
+**Em andamento**: script descartavel de calibracao (self-play pareado,
+mesmo protocolo maximin do fix de LETHAL, HANDOFF bloco 285) rodando em
+background -- baseline (producao: 2/150/80) vs candidato A (mais
+reativo: 1/200/120) vs candidato B (menos reativo: 3/100/50), 2
+matchups (Mihawk e Ace vs Imu, que tem a ameaca real de reanimacao que
+motivou a mecanica), N=12 cada. Resultado e decisao (aplicar candidato
+vencedor ou manter valores atuais) ficam pro PROXIMO bloco desta mesma
+calibracao.
+
 ## 2026-08-10 (490) - Claude (sessao remota web) - SIMULADOR SELF X SELF do front-end LIGADO (TODO bloco 370, pendente desde 25/07) -- `hide_opponent_info` no OPTCGMatch, default True na API /simulate + bug real corrigido no __deepcopy__
 
 Usuario pediu ("Vamos fazer o bloco 370") pra fechar a pendencia mais

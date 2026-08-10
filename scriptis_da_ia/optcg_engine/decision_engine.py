@@ -250,6 +250,22 @@ GIVE_DON_RESTED_BASE_SCORE = -10
 # no paragrafo acima.
 HABILITA_ATAQUE_BONUS = 60
 
+# ── PREVENT_COMBO (achado 07/07, HANDOFF blocos 99-100/287, TODO "consciência
+# de combos estratégicos do oponente") — extraídos de literais embutidos pra
+# constantes de módulo (mesmo padrão de HABILITA_ATAQUE_BONUS acima), pedido
+# do usuário 10/08/2026 (bloco 491): calibração formal via self-play pareado,
+# mesmo protocolo maximin do fix de LETHAL (HANDOFF bloco 285) -- precisa
+# poder trocar o valor sem editar 3 pontos espalhados do arquivo.
+# magnitude>=N de opp_combo_threat() pra `analysis_priority()` retornar
+# PREVENT_COMBO (ver GameAnalyzer.opp_combo_threat/analysis_priority).
+PREVENT_COMBO_MAGNITUDE_THRESHOLD = 2
+# Bonus pra carta defensiva (blocker/counter) em postura PREVENT_COMBO --
+# "guardar recurso pro turno da virada do oponente" (_score_play_action).
+PREVENT_COMBO_DEFENSIVE_CARD_BONUS = 80
+# Bonus pra ataque de lider em postura PREVENT_COMBO -- "correr o clock
+# antes da virada" (loop de scoring de ataque ao lider).
+PREVENT_COMBO_LEADER_ATTACK_BONUS = 150
+
 # ── Selecao de candidatas pra busca Monte Carlo (unificacao 26/07) ────────────
 # Promovidos de variavel local do main_phase pra constante de modulo --
 # `_select_search_candidates`/`_select_action_via_search` sao agora a FONTE
@@ -10294,7 +10310,7 @@ class GameAnalyzer:
             return 'LETHAL'
         if self.opp_lethal_threat() > 0.6:
             return 'DEFENSIVE'
-        if self.opp_combo_threat()['magnitude'] >= 2:
+        if self.opp_combo_threat()['magnitude'] >= PREVENT_COMBO_MAGNITUDE_THRESHOLD:
             return 'PREVENT_COMBO'
         if self.critical_threats():
             return 'REMOVE_THREAT'
@@ -14711,7 +14727,7 @@ class OPTCGMatch:
                 if priority == 'DEFENSIVE':
                     score += 120
                 elif priority == 'PREVENT_COMBO':
-                    score += 80
+                    score += PREVENT_COMBO_DEFENSIVE_CARD_BONUS
             # Preservacao de mao (partida real 04/07: bot esvaziou a mao em
             # deploys e ficou sem counter/custo de reacao para defender).
             # Mao encolhendo = cada play adicional fica mais caro.
@@ -14833,7 +14849,7 @@ class OPTCGMatch:
                         # jogo reanimando o trash no turno dele -- correr o
                         # clock agora (antes da virada) vale mais que o normal,
                         # mas menos que LETHAL (não é vitória garantida).
-                        elif priority == 'PREVENT_COMBO': s_leader += 150
+                        elif priority == 'PREVENT_COMBO': s_leader += PREVENT_COMBO_LEADER_ATTACK_BONUS
                         # Ataque de LÍDER validado é quase grátis (ele resta de
                         # qualquer jeito no fim do turno, não expõe personagem):
                         # postura defensiva + risco de trigger não podem

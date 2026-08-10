@@ -2,6 +2,19 @@
 
 **Última atualização:** 10 de agosto de 2026
 
+> 10/08/2026 (bloco 491, PARCIAL/EM ANDAMENTO): **calibração formal do
+> PREVENT_COMBO iniciada** (pedido do usuário, item aberto desde 19/07
+> — "consciência de combos estratégicos do oponente"). Extraídos os 3
+> literais numéricos (limiar `magnitude>=2`, bônus de carta defensiva
+> 80, bônus de ataque de líder 150) pra constantes de módulo nomeadas
+> (`PREVENT_COMBO_MAGNITUDE_THRESHOLD`/`PREVENT_COMBO_DEFENSIVE_CARD_
+> BONUS`/`PREVENT_COMBO_LEADER_ATTACK_BONUS`) — refactor puro, zero
+> mudança de comportamento, `smoke_fast` 100%. Self-play pareado
+> (mesmo protocolo maximin do fix de LETHAL) rodando em background:
+> baseline vs 2 candidatos (mais/menos reativo), Mihawk/Ace vs Imu.
+> Resultado e decisão final ficam pro próximo bloco. Ver bloco 491 do
+> HANDOFF.
+
 > 10/08/2026 (bloco 490): **SIMULADOR SELF X SELF do front-end LIGADO**
 > (pendência mais antiga do TODO, bloco 370, 25/07 → fechada). O ponto
 > de entrada já existia: `api.py POST /simulate` (usado por
