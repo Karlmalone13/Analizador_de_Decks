@@ -1,5 +1,87 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-09 (478) - Claude (sessao local) - Design COMPLETO e APROVADO do pondering (pensar no turno do oponente), pronto pra implementacao. NENHUM CODIGO MEXIDO AINDA -- sessao trocou de dispositivo (celular) antes de comecar a escrever.
+
+Continuacao direta do bloco 477 (pondering era o item 2 de prioridade).
+Usuario pediu pra desenhar e implementar. Dado que mexe em componente
+critico (`server.py`, atende partida ao vivo contra humano), usei plan
+mode: 2 agentes de exploracao em paralelo (arquitetura do `server.py` +
+caminho de decisao ao vivo/`OpponentModel`) seguidos de 1 agente de design
+dedicado, depois verifiquei os achados mais arriscados lendo o codigo
+direto (nao confiei cegamente no relatorio dos agentes). Plano aprovado
+pelo usuario via ExitPlanMode.
+
+**Achado de concorrencia CONFIRMADO por leitura direta** (nao so relatado
+pelo agente): `OPTCGMatch._simulate_sequence_values`
+(`decision_engine.py:15377-15390`) usa `self._suppress_replay_log` como
+flag mutavel de INSTANCIA -- se uma thread de pondering e a thread da
+requisicao real ao vivo compartilhassem a MESMA instancia de
+`OPTCGMatch` (`_get_match()`, singleton hoje em `server.py`), seria uma
+corrida de verdade. Decisao: pondering usa uma instancia DEDICADA de
+`OPTCGMatch`, nunca a compartilhada. Auditoria rapida de outros
+`self.X =` dentro da classe `OPTCGMatch` (grep manual, linhas
+12523-16671) nao achou mais nenhum mutavel de instancia tocado pelo
+caminho de busca ao vivo -- os outros achados (`play_turn`,
+`simulate()`, `enable_decision_audit`) sao metodos que a propria
+docstring confirma NAO serem usados no caminho ao vivo. Nao e auditoria
+100% exaustiva de toda a arvore de chamada (registrado como risco
+residual no plano, nao bloqueia o inicio da implementacao).
+
+**Desenho aprovado** (arquivo completo do plano ficou local, em
+`C:\Users\arthu\.claude\plans\frolicking-whistling-jellyfish.md` --
+NAO faz parte do repo, resumo completo abaixo pra sobreviver troca de
+sessao/maquina):
+
+1. **Gatilho**: dentro de `/defense` com `phase in ("blocker","counter",
+   "trigger")` -- sinal ja confiavel e documentado no proprio codigo de
+   que e o turno do OPONENTE (`server.py:702-704`). Copia PROFUNDA de
+   `gs`/`opp_gs` (nunca os objetos da requisicao real), dispara thread
+   daemon nova (mesmo padrao ja usado em `sim_bridge.choose_action`).
+2. **Fingerprint** (`sim_bridge.py`, funcao nova `ponder_fingerprint`):
+   hash sha256 dos dicts das DTOs (bot+oponente+snapshot de
+   `MatchMemory`) canonicalizados via `json.dumps(sort_keys=True)`.
+   EXCLUI `turnNumber` e os exclude-sets do hash (viram checagens
+   separadas, pra manter motivo de miss diagnosticavel na telemetria).
+3. **Job em background**: instancia PROPRIA de `OPTCGMatch`
+   (`_get_ponder_match()`, separada de `_get_match()`), chama
+   `sim_bridge.choose_action` de verdade (reusa, nao duplica logica),
+   orcamento generoso (~8-10s) mas limitado. Try/except no topo (nunca
+   deixa excecao vazar pra thread daemon). So grava resultado se a
+   `generation` ainda for a mais recente (nao foi substituido por
+   gatilho mais novo).
+4. **NAO cachear a tupla de acao bruta** (referencia objetos `Card` da
+   copia do pondering) -- cachear o PAYLOAD ja empacotado
+   (`{"type","cardId","targetId","donToAttach"}`, por `_deck_uid`,
+   estavel). Exige extrair a logica de empacotamento hoje inline em
+   `/decide` (`server.py:976-1058`) pra uma funcao compartilhada, usada
+   tanto por `/decide` quanto pelo job de pondering -- preserva "um
+   motor so" tambem na camada de resposta.
+5. **Consumo**: dentro de `/decide`, ANTES da busca real. 4 checagens em
+   ordem (falha fechada, cai no caminho normal em qualquer uma):
+   resultado pronto? exclude-sets do turno atual vazios? turno atual ==
+   turno do gatilho + 1? fingerprint recalculado bate com o salvo?
+   Resultado de turno errado e descartado incondicionalmente ao ser
+   observado (nunca fica pendurado esperando bater por coincidencia).
+6. **Reset**: dentro de `/mulligan`, zera `_ponder_result` e incrementa
+   `_ponder_generation` (invalida qualquer thread da partida anterior).
+7. **Feature flag**: `PONDER_ENABLED = os.environ.get("OPTCG_PONDER_ENABLED",
+   "0") == "1"` -- default OFF, mesmo padrao ja usado por
+   `BOT_AUTO_COLLECT`.
+
+**Validacao obrigatoria, NENHUMA feita ainda** (nada foi implementado):
+4 testes novos em `smoke_fast.py` (fingerprint deterministico,
+fingerprint muda por mutacao isolada, payload do pondering BYTE-IDENTICO
+ao caminho normal pro mesmo estado com seed fixo -- propriedade de
+correcao mais importante, "pondering muda QUANDO calcula, nunca O QUE
+decide" -- e teste de concorrencia sem contaminacao cruzada); depois
+sessao ao vivo monitorada com a flag ligada so localmente, lendo
+telemetria na ordem obrigatoria do projeto antes de considerar ligar por
+padrao.
+
+**Arquivos que serao mexidos** (nenhum ainda tocado): `BOT/engine_server/
+server.py`, `scriptis_da_ia/optcg_engine/sim_bridge.py`,
+`scriptis_da_ia/smoke_fast.py`.
+
 ## 2026-08-09 (477) - Claude (sessao local) - Calibracao multi-seed/multi-deck COMPLETA do bloco 475 (3 pares x 3 seeds x 50 jogos), profiling de custo de decisao, e discussao/registro de arquitetura de busca pra proxima sessao
 
 Continuacao direta do bloco 476 (calibracao de 1 seed/1 deck). Usuario

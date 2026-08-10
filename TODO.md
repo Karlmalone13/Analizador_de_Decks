@@ -7,37 +7,54 @@
 > bot é banco (não só "existe, use se quiser"). Ver `CLAUDE.md`/
 > `AGENTS.md` e `.claude/skills/optcg-live-log-triage/SKILL.md` (Step 4).
 
-> **PRÓXIMA SESSÃO COMEÇA AQUI (bloco 477) — ordem de prioridade
-> confirmada pelo usuário (09/08/2026)**:
+> **PRÓXIMA SESSÃO COMEÇA AQUI (bloco 478) — pondering: DESENHO APROVADO,
+> implementação ainda NÃO começou** (sessão trocou pra celular antes de
+> escrever código). Ver bloco 478 do HANDOFF pro desenho completo
+> (resumo abaixo pra não depender só do HANDOFF):
 >
-> **1º — continuar a auditoria/calibração da pontuação dinâmica.** A
-> calibração multi-seed/multi-deck do bloco 475 (3 pares de deck × 3
-> seeds × 50 jogos, ~2700 partidas, script descartável de sessão — mesma
-> convenção dos blocos 449/459/461+, `.gitignore` linha 65, resultado só
-> documentado, não versionado) CONFIRMOU o resultado do bloco 476 com
-> evidência mais forte: Barba Negra BY (Teach) melhora contra os DOIS
-> oponentes testados (Imu E Rocks D Xebec), Zoro melhora contra Kid,
-> gasto de counter cai nos 3 pares — nada colapsou. Ainda não é volume
-> "definitivo" (mais pares/seeds fechariam de vez), mas não é mais "1
-> seed, 1 deck". Ver bloco 477 do HANDOFF pra tabela completa.
+> - Gatilho: `/defense` com `phase in (blocker,counter,trigger)` (turno
+>   confirmado do oponente) → copia profunda de `gs`/`opp_gs` → thread
+>   daemon.
+> - Fingerprint novo em `sim_bridge.py` (`ponder_fingerprint`): sha256 das
+>   DTOs canonicalizadas + snapshot do `MatchMemory`, EXCLUINDO
+>   `turnNumber`/exclude-sets (checados à parte).
+> - Job usa uma instância PRÓPRIA de `OPTCGMatch` (nunca a compartilhada
+>   de `_get_match()` — risco de corrida CONFIRMADO por leitura direta:
+>   `_simulate_sequence_values` usa `self._suppress_replay_log` mutável).
+> - Cachear o PAYLOAD já empacotado (não a tupla de ação bruta) — exige
+>   extrair a lógica de empacotamento de `/decide` (hoje inline,
+>   `server.py:976-1058`) pra função compartilhada.
+> - Consumo em `/decide`, ANTES da busca real: 4 checagens em ordem
+>   (pronto? exclude-sets vazios? turno==gatilho+1? fingerprint bate?),
+>   falha fechada em qualquer uma → cai no caminho normal, ZERO mudança
+>   de comportamento.
+> - Reset em `/mulligan`. Feature flag `OPTCG_PONDER_ENABLED` (default
+>   OFF).
+> - **Validação obrigatória antes de considerar pronto** (nenhuma feita
+>   ainda): 4 testes novos em `smoke_fast.py` — o mais importante prova
+>   que o payload do pondering é BYTE-IDÊNTICO ao caminho normal pro
+>   mesmo estado (seed fixo) — depois sessão ao vivo monitorada com a
+>   flag só localmente, lendo telemetria na ordem obrigatória do projeto.
+> - Arquivos a mexer: `BOT/engine_server/server.py`,
+>   `scriptis_da_ia/optcg_engine/sim_bridge.py`,
+>   `scriptis_da_ia/smoke_fast.py`.
 >
-> **2º — pondering (pensar no turno do oponente)**: ideia nova discutida
-> nesta sessão, é o único jeito real de dar mais orçamento de simulação
-> pro bot AO VIVO sem custar latência (usa o tempo ocioso durante o turno
-> do OPONENTE, que o servidor já observa via `/reveal`/`/execution`).
-> Ainda NÃO desenhado/implementado — precisa de: (a) mecanismo de
-> scheduling em background no `server.py` que não trave outras
-> requisições, (b) usar `OpponentModel` pra simular hipóteses do que o
-> oponente pode fazer, (c) cache/reaproveitamento seguro do resultado
-> adiantado quando o turno do bot chegar de verdade. Ver bloco 477 do
-> HANDOFF pro contexto completo da discussão.
+> Contexto de origem (bloco 477): calibração multi-seed/multi-deck do
+> bloco 475 (3 pares × 3 seeds × 50 jogos) CONFIRMOU o resultado com
+> evidência mais forte (Barba Negra BY melhora contra os DOIS oponentes
+> testados, Zoro melhora contra Kid, gasto de counter cai nos 3 pares) —
+> discussão de arquitetura levou ao pondering como próximo passo (ver
+> bloco 477 do HANDOFF pra tabela completa e a comparação com MCTS que
+> motivou a ideia). Auditoria/calibração da pontuação dinâmica (era o 1º
+> item de prioridade) já está feita (blocos 475-477) — pondering é o
+> próximo item da fila, não o primeiro criado do zero.
 >
-> **3º — verificar se o piso/teto de amostragem AO VIVO (12/24, já
-> implementado desde o bloco 381) tem folga pra subir**, olhando
-> telemetria real de latência (`latency_ms`, `client_timeouts`) antes de
-> qualquer número novo.
+> **Depois do pondering — verificar se o piso/teto de amostragem AO VIVO
+> (12/24, já implementado desde o bloco 381) tem folga pra subir**,
+> olhando telemetria real de latência (`latency_ms`, `client_timeouts`)
+> antes de qualquer número novo.
 >
-> **4º, despriorizado pro objetivo atual (fortalecer o bot contra
+> **Despriorizado pro objetivo atual (fortalecer o bot contra
 > humano)** — amostragem adaptativa no modo OFFLINE/self-play (hoje N
 > fixo de 3-6 em `main_phase`, usado por `baseline_metrics.py` e pelo
 > `/simulate` do front-end): serve mais a fidelidade do simulador do
