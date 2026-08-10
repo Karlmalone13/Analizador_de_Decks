@@ -1,5 +1,122 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-09/10 (479) - Claude (sessao remota web) - Implementa o pondering (design aprovado do bloco 478) -- codigo + 4 testes exigidos, flag OFF por padrao. NENHUM TESTE AO VIVO feito nesta sessao (ambiente remoto sem acesso ao cliente do jogo)
+
+Usuario confirmou ("Sim") pra eu implementar o design do pondering ja
+aprovado no bloco 478 (sessao local, via `ExitPlanMode`). Antes de
+codar, sincronizei esta branch remota com `main` (14 commits de
+diferenca acumulados desde o ultimo merge, blocos 469-478) via
+`git merge origin/main` (fast-forward, sem conflito).
+
+**Implementado em `BOT/engine_server/server.py`** (nenhum arquivo novo,
+tudo no mesmo modulo, seguindo o desenho dos 7 pontos do bloco 478):
+
+1. `PONDER_ENABLED = os.environ.get("OPTCG_PONDER_ENABLED", "0") == "1"`
+   -- default OFF, mesmo padrao de `BOT_AUTO_COLLECT`. Com a flag OFF
+   (default de producao ATE hoje), `_trigger_pondering`/
+   `_try_consume_ponder` retornam cedo -- ZERO mudanca de comportamento
+   pro caminho ao vivo existente enquanto a flag nao for ligada.
+2. `ponder_fingerprint(bot, opp, memory)`: hash sha256 de
+   `_model_dict(bot)` + `_model_dict(opp)` + `memory.known(zone)` (o SET
+   de uids revelados por zona, nao so a CONTAGEM de
+   `MatchMemory.snapshot()` -- 2 sets do mesmo tamanho com uids
+   diferentes produziriam uma mascara `hide_hidden` diferente e uma
+   contagem-so nunca pegaria isso, achado ao desenhar o teste de
+   mutacao). `turnNumber` fica de fora do hash de proposito (checado
+   separado em `_try_consume_ponder`).
+3. `_get_ponder_match()`: singleton PROPRIO de `OPTCGMatch`, espelha
+   `_get_match()` mas NUNCA compartilha instancia -- fecha o achado de
+   concorrencia do bloco 478 (`_suppress_replay_log` como flag mutavel
+   de instancia).
+4. `_trigger_pondering(state)`: chamado de dentro de `/defense` quando
+   `phase in (blocker, counter, trigger)` (mesmo sinal que ja distingue
+   "turno do oponente" pro `is_active_turn`). Bump de `_ponder_generation`
+   a cada chamada -- gatilhos mais novos invalidam jobs antigos ainda
+   rodando, sem precisar cancelar a thread de verdade.
+5. `_ponder_worker(...)`: roda em thread daemon separada, reconstroi
+   `gs`/`opp_gs` do ZERO a partir dos DTOs brutos (nunca reusa objetos
+   Card/GameState da requisicao `/defense` real -- elimina qualquer
+   mutavel compartilhado entre threads sem precisar de deepcopy
+   explicito). Chama `bridge.choose_action` de verdade (reusa, nao
+   duplica) com orcamento maior (`PONDER_TIMEOUT_SECONDS=9.0` vs 3.0 do
+   `/decide` ao vivo). So grava em `_ponder_result` se a `generation`
+   ainda for a mais recente. Nunca deixa excecao vazar (mesmo padrao de
+   `choose_action._run`).
+6. `_try_consume_ponder(state)`: as 4 checagens do design, EM ORDEM,
+   falha fechada em qualquer uma -- resultado pronto? exclude-sets do
+   turno atual vazios? turno atual == turno do gatilho + 1? fingerprint
+   recalculado bate?
+7. `/mulligan`: zera `_ponder_result` e bumpa `_ponder_generation` --
+   partida nova invalida qualquer resultado/job da partida ANTERIOR.
+8. **Extracao pedida pelo design (ponto 4)**: `_package_action(action,
+   gs, opp_gs, match, bridge)` -- toda a logica de traduzir a tuple de
+   acao do engine pro payload `{type,cardId,targetId,donToAttach}`
+   (antes inline em `/decide`, ~85 linhas) virou uma funcao PROPRIA,
+   chamada tanto por `/decide` quanto por `_ponder_worker`. Isso NAO E
+   so organizacao -- e a garantia estrutural de "1 motor so": nao ha
+   como o pondering e o caminho ao vivo produzirem payloads diferentes
+   pro MESMO estado, porque literalmente rodam a MESMA funcao (nao 2
+   copias que podem divergir com o tempo).
+9. `/decide`: checagem do cache logo no topo do `try:`, ANTES de
+   `_dto_to_gs`/`choose_action` -- se bate, usa
+   `trace.update(cached["trace"])` + `trace["ponder_hit"]=True` e
+   retorna via `finish()` normalmente (telemetria continua sendo
+   escrita, com `state_before` da requisicao REAL, nunca do gatilho).
+
+**4 testes novos em `smoke_fast.py`** (exigidos pelo proprio design
+antes de considerar a feature pronta), cross-modulo de proposito
+(`server.py` fica fora de `scriptis_da_ia`, import feito sob demanda
+via `_load_ponder_server_module()` -- aceita o efeito colateral de
+`server.py` redirecionar stdout/stderr pra um log novo, mesmo padrao ja
+usado ao vivo):
+- `test_ponder_fingerprint_deterministico_09_08`: mesmo estado -> mesmo
+  hash, formato sha256 valido.
+- `test_ponder_fingerprint_muda_por_mutacao_isolada_09_08`: 3 mutacoes
+  isoladas (1 carta rested, DON ativo, memoria de reveals) mudam o
+  hash; `turnNumber` sozinho NAO muda (checado a parte, por design).
+- `test_ponder_payload_byte_identico_ao_caminho_normal_09_08` (o mais
+  importante): `_ponder_worker` chamado direto/sincrono (sem thread, pra
+  determinismo) com uma instancia de `OPTCGMatch` DEDICADA, comparado
+  contra o caminho normal (`bridge.choose_action`+`_package_action`)
+  rodado do ZERO com uma instancia DIFERENTE -- payload
+  BYTE-IDENTICO confirmado. Cenario com 1 unica candidata elegivel
+  (Usopp OP01-004 na mao, sem board) -- 100% deterministico, sem
+  precisar fixar seed de random.
+- `test_ponder_generation_guard_sem_contaminacao_cruzada_09_08`: prova
+  a invariante logica do guard (job com generation velha nunca
+  escreve por cima de uma mais nova) chamando `_ponder_worker` direto
+  com generations manipuladas -- testa a invariante, nao o timing real
+  de threads (inerentemente nao-deterministico de testar).
+
+**Achado durante a implementacao, nao no design original**: rodar os
+testes de pondering neste ambiente remoto exigiria `_get_match()`/
+`_get_ponder_match()` (via `bridge.list_decks()`), que dependem de
+`DECKS_DIR` (`sim_bridge.py`) -- um caminho Windows fixo
+(`E:\Games\...`) que so existe na maquina local do usuario com o jogo
+instalado. Contornado nos testes com `_ponder_test_match()`,
+construindo um `OPTCGMatch` valido via `decklists_raw.csv` (mesmo
+padrao ja usado pelos scripts de calibracao self-play, blocos
+449/459/468) e monkeypatchando `server._match`/`server._ponder_match`
+diretamente -- NAO muda nada em `server.py` em si, so como o TESTE
+inicializa as dependencias.
+
+`smoke_fast.py`/`smoke_test.py`: 100% (1219+ checks). `git diff
+--stat`: 2 arquivos, `server.py` (+367/-88, incluindo a extracao de
+`_package_action`), `smoke_fast.py` (+245).
+
+**NAO FEITO, pendencia explicita pra proxima sessao (local, com acesso
+ao jogo)**: NENHUM teste ao vivo de verdade. Este e um ambiente remoto
+sem cliente OPTCGSim -- a validacao "sessao ao vivo monitorada com a
+flag ligada so localmente, lendo telemetria na ordem obrigatoria do
+projeto antes de considerar ligar por padrao" (bloco 478, explicito)
+continua 100% pendente. `OPTCG_PONDER_ENABLED` continua indefinida
+(default OFF) em qualquer ambiente ate alguem ligar explicitamente. Ler
+`bot_confusion`/`score_components_coverage_pct` etc (metrics/live_runs)
+E o `decision_summary.py` de uma partida real com a flag ligada antes
+de qualquer decisao de habilitar por padrao -- mesma disciplina
+obrigatoria ja documentada no CLAUDE.md pra qualquer log de partida do
+bot.
+
 ## 2026-08-09 (478) - Claude (sessao local) - Design COMPLETO e APROVADO do pondering (pensar no turno do oponente), pronto pra implementacao. NENHUM CODIGO MEXIDO AINDA -- sessao trocou de dispositivo (celular) antes de comecar a escrever.
 
 Continuacao direta do bloco 477 (pondering era o item 2 de prioridade).

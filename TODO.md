@@ -1,6 +1,24 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 9 de agosto de 2026
+**Última atualização:** 10 de agosto de 2026
+
+> 10/08/2026 (bloco 479): **pondering implementado** (design aprovado do
+> bloco 478) — `server.py` ganhou `ponder_fingerprint`/`_get_ponder_match`/
+> `_trigger_pondering`/`_ponder_worker`/`_try_consume_ponder` + a extração
+> de `_package_action` (empacotamento de action→payload, agora reusado
+> por `/decide` E pelo pondering — mesma função, nunca duas versões
+> divergentes). Gatilho em `/defense` (blocker/counter/trigger), consumo
+> no topo de `/decide`, reset em `/mulligan`. **Flag `OPTCG_PONDER_
+> ENABLED` OFF por padrão — zero mudança de comportamento em produção
+> até alguém ligar explicitamente.** 4 testes novos em `smoke_fast.py`
+> (exigidos pelo design), incluindo o mais importante — payload do
+> pondering byte-idêntico ao caminho normal com instâncias de
+> `OPTCGMatch` diferentes. `smoke_fast`/`smoke_test` 100%.
+> **PENDÊNCIA CRÍTICA, não feita nesta sessão**: nenhum teste AO VIVO —
+> ambiente remoto sem cliente OPTCGSim. Antes de considerar ligar por
+> padrão, precisa de sessão local com a flag ligada + leitura obrigatória
+> de telemetria (mesma disciplina do CLAUDE.md pra qualquer log de
+> partida do bot). Ver bloco 479 do HANDOFF.
 
 > **REGRA NOVA (bloco 473)**: `audit_real_losses.py` (+ `triage_real_
 > losses.py`) agora é OBRIGATÓRIO rodar sempre que um log de DERROTA do

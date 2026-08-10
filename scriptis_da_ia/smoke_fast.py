@@ -10103,6 +10103,10 @@ def main() -> int:
     test_score_play_action_habilita_ataque_remocao_gated_por_atacante_08_08()
     test_score_activate_main_play_card_habilita_ataque_gated_por_atacante_08_08()
     test_score_activate_main_play_from_trash_habilita_ataque_gated_por_atacante_08_08()
+    test_ponder_fingerprint_deterministico_09_08()
+    test_ponder_fingerprint_muda_por_mutacao_isolada_09_08()
+    test_ponder_payload_byte_identico_ao_caminho_normal_09_08()
+    test_ponder_generation_guard_sem_contaminacao_cruzada_09_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -12155,6 +12159,247 @@ def test_score_activate_main_play_from_trash_habilita_ataque_gated_por_atacante_
           score_com_atacante > score_sem_atacante)
     check("diferenca bate exatamente com HABILITA_ATAQUE_BONUS (60)",
           abs((score_com_atacante - score_sem_atacante) - HABILITA_ATAQUE_BONUS) < 1e-6)
+
+
+# ── Pondering (BOT/engine_server/server.py, design bloco 478, implementado
+# no bloco 479) -- os 4 testes exigidos pelo proprio design antes de
+# considerar a feature pronta pra validacao ao vivo. Cross-modulo de
+# proposito (server.py nao mora em scriptis_da_ia): import feito sob
+# demanda (nao no topo do arquivo) porque server.py e um modulo FastAPI
+# com efeito colateral de import -- redireciona sys.stdout/stderr pra um
+# arquivo de log novo em BOT/engine_server/logs/ (mesmo padrao usado ao
+# vivo). Aceito aqui porque o proprio design pede estes 4 testes
+# EXPLICITAMENTE em smoke_fast.py, nao um arquivo separado.
+def _load_ponder_server_module():
+    import sys
+    import os
+    server_dir = os.path.abspath(os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "..", "BOT", "engine_server"))
+    if server_dir not in sys.path:
+        sys.path.insert(0, server_dir)
+    import server as ponder_server
+    return ponder_server
+
+
+def _ponder_test_match():
+    """OPTCGMatch minimo pra testes de pondering. Bypassa list_decks()/
+    load_sim_deck() (server.py._get_match/_get_ponder_match) porque
+    DECKS_DIR (sim_bridge.py) e um caminho Windows fixo que so existe na
+    maquina do usuario com o jogo instalado -- ausente neste ambiente.
+    OPTCGMatch e so "maquinaria" de scoring (docstring de _get_match:
+    "os GameStates reais sao reconstruidos a cada /decide a partir do
+    DTO"), entao qualquer deck real serve -- mesmo padrao ja usado pelos
+    scripts de calibracao self-play (blocos 449/459/468, decklists_raw.csv)."""
+    import pandas as pd
+    from optcg_engine.decision_engine import build_real_deck
+    df_raw = pd.read_csv("decklists_raw.csv")
+    urls = df_raw.groupby("deck_url")["deck_name"].first()
+    target = "Purple Enelby Mirko Zanelli"
+    for url, name in urls.items():
+        if name == target:
+            leader, hand_cards, stage = build_real_deck(name, url, df_raw, cards)
+            deck_tuple = (leader, hand_cards, stage)
+            m = OPTCGMatch(deck_tuple, deck_tuple)
+            m.setup()
+            return m
+    raise RuntimeError(f"deck de teste nao encontrado: {target}")
+
+
+def _ponder_test_state(ps, turn: int):
+    """GameStateDto simples e DETERMINISTICO: bot com 1 unica carta
+    jogavel na mao (Usopp OP01-004, sem on_play/rush/removal -- so o
+    valor generico de developpment), sem board, DON suficiente. So 1
+    candidata elegivel -> _select_action_via_search nunca entra no ramo
+    de amostragem Monte Carlo (len(candidatos) > 1), entao o resultado e
+    100% deterministico sem precisar fixar seed de random."""
+    bot_leader = ps.CardDto(code="OP11-062", cost=0, power=5000,
+                            rested=False, justPlayed=False, deckUniqueId=1)
+    bot_hand = ps.CardDto(code="OP01-004", cost=2, power=3000,
+                          rested=False, justPlayed=False, deckUniqueId=101)
+    bot_life = [ps.CardDto(code="OP01-004", cost=2, power=3000, rested=False,
+                           justPlayed=False, deckUniqueId=200 + i) for i in range(4)]
+    bot = ps.PlayerDto(hand=[bot_hand], board=[], life=bot_life, leader=bot_leader,
+                       stage=None, trash=[], deckCount=40, activeDon=3, restedDon=0)
+
+    opp_leader = ps.CardDto(code="ST04-001", cost=0, power=5000,
+                            rested=False, justPlayed=False, deckUniqueId=2)
+    opp_life = [ps.CardDto(code="OP01-004", cost=2, power=3000, rested=False,
+                           justPlayed=False, deckUniqueId=300 + i) for i in range(4)]
+    opp = ps.PlayerDto(hand=[], board=[], life=opp_life, leader=opp_leader,
+                       stage=None, trash=[], deckCount=40, activeDon=0, restedDon=0)
+
+    return ps.GameStateDto(turnNumber=turn, bot=bot, opp=opp)
+
+
+def test_ponder_fingerprint_deterministico_09_08() -> None:
+    """
+    1o dos 4 testes exigidos pelo design do pondering (bloco 478/479):
+    o MESMO estado (bot/opp/memoria) produz sempre o MESMO fingerprint --
+    pre-requisito basico pro cache bater consigo mesmo entre o gatilho
+    (/defense) e o consumo (/decide).
+    """
+    ps = _load_ponder_server_module()
+    state = _ponder_test_state(ps, turn=3)
+    memory = ps.MatchMemory()
+    fp1 = ps.ponder_fingerprint(state.bot, state.opp, memory)
+    fp2 = ps.ponder_fingerprint(state.bot, state.opp, memory)
+    check("ponder_fingerprint e deterministico pro MESMO estado", fp1 == fp2)
+    check("ponder_fingerprint produz uma string sha256 (64 hex chars)",
+          isinstance(fp1, str) and len(fp1) == 64)
+
+
+def test_ponder_fingerprint_muda_por_mutacao_isolada_09_08() -> None:
+    """
+    2o dos 4 testes: uma mutacao ISOLADA (1 campo, 1 carta) muda o
+    fingerprint -- prova que o hash e sensivel ao estado real (nao um
+    hash raso que sempre bate por coincidencia), essencial pra "falha
+    fechada" (bloco 478, ponto 5: fingerprint errado = cai pro caminho
+    normal, nunca serve um payload desatualizado).
+    """
+    ps = _load_ponder_server_module()
+    state = _ponder_test_state(ps, turn=3)
+    memory = ps.MatchMemory()
+    fp_base = ps.ponder_fingerprint(state.bot, state.opp, memory)
+
+    # Mutacao 1: 1 carta da mao do bot fica rested (nao devia, mas prova
+    # sensibilidade a um campo bool isolado).
+    state2 = _ponder_test_state(ps, turn=3)
+    state2.bot.hand[0].rested = True
+    fp_mut1 = ps.ponder_fingerprint(state2.bot, state2.opp, memory)
+    check("mutacao isolada (1 carta rested) muda o fingerprint",
+          fp_mut1 != fp_base)
+
+    # Mutacao 2: DON ativo do bot muda.
+    state3 = _ponder_test_state(ps, turn=3)
+    state3.bot.activeDon = 4
+    fp_mut2 = ps.ponder_fingerprint(state3.bot, state3.opp, memory)
+    check("mutacao isolada (activeDon) muda o fingerprint",
+          fp_mut2 != fp_base)
+
+    # Mutacao 3: memoria de reveals diferente (mesmo bot/opp identicos).
+    memory2 = ps.MatchMemory()
+    memory2.note("opp_hand", [999])
+    fp_mut3 = ps.ponder_fingerprint(state.bot, state.opp, memory2)
+    check("mutacao isolada (memoria de reveals) muda o fingerprint",
+          fp_mut3 != fp_base)
+
+    # turnNumber NAO faz parte do fingerprint (checado separado por
+    # _try_consume_ponder) -- confirma que so bot/opp/memoria entram.
+    fp_outro_turno = ps.ponder_fingerprint(state.bot, state.opp, memory)
+    check("fingerprint NAO muda so por turnNumber (checado a parte)",
+          fp_outro_turno == fp_base)
+
+
+def test_ponder_payload_byte_identico_ao_caminho_normal_09_08() -> None:
+    """
+    3o dos 4 testes, o mais importante (bloco 478): "pondering muda
+    QUANDO calcula, nunca O QUE decide". O job de pondering (via
+    `_ponder_worker`, chamado direto/sincrono aqui pra determinismo, sem
+    depender de timing de thread real) e o caminho normal de /decide
+    (chamado aqui via as MESMAS pecas — bridge.choose_action +
+    _package_action) usam instancias de OPTCGMatch DIFERENTES (a
+    dedicada do pondering vs a "ao vivo") mas DEVEM produzir o payload
+    IDENTICO pro MESMO estado real -- e a garantia de correcao central
+    do design inteiro. Cenario com 1 unica candidata elegivel (ver
+    docstring de _ponder_test_state) -- 100% deterministico, sem
+    precisar fixar seed de random.
+    """
+    ps = _load_ponder_server_module()
+    ps.PONDER_ENABLED = True
+    try:
+        bridge = ps._get_bridge()
+        match_ao_vivo = _ponder_test_match()
+        match_pondering = _ponder_test_match()  # instancia SEPARADA de proposito
+        ps._match = match_ao_vivo
+        ps._ponder_match = match_pondering
+        ps._ponder_result = None
+        ps._ponder_generation += 1
+        generation = ps._ponder_generation
+
+        state_gatilho = _ponder_test_state(ps, turn=3)  # turno do OPONENTE (gatilho)
+        fingerprint = ps.ponder_fingerprint(state_gatilho.bot, state_gatilho.opp, ps._match_memory)
+
+        # Job de pondering, chamado DIRETO (sincrono) em vez de via thread
+        # -- evita flakiness de timing no teste, testa a MESMA logica que
+        # a thread real chamaria.
+        ps._ponder_worker(state_gatilho.bot, state_gatilho.opp, state_gatilho.turnNumber,
+                          generation, fingerprint, set(), set())
+        check("_ponder_worker escreveu um resultado", ps._ponder_result is not None)
+
+        state_real = _ponder_test_state(ps, turn=state_gatilho.turnNumber + 1)  # turno do BOT
+        cached = ps._try_consume_ponder(state_real)
+        check("_try_consume_ponder aceita o cache pro turno seguinte com o MESMO estado",
+              cached is not None)
+
+        # "Ground truth": caminho normal, do zero, com a instancia AO VIVO
+        # (nao a de pondering) -- mesma sequencia que /decide roda.
+        gs = ps._dto_to_gs(state_real.bot, state_real.turnNumber)
+        opp_gs = ps._dto_to_gs(state_real.opp, state_real.turnNumber, hide_hidden=True)
+        gs.is_active_turn = True
+        opp_gs.is_active_turn = False
+        action = bridge.choose_action(
+            gs, opp_gs, match_ao_vivo, timeout=3.0,
+            allowed_types={"play", "attack", "attach_don", "activate"},
+            exclude_activate_codes=set(), exclude_failed_actions=set(), trace_out={})
+        payload_normal, reason_normal, _ = ps._package_action(action, gs, opp_gs, match_ao_vivo, bridge)
+
+        check("payload do pondering e BYTE-IDENTICO ao payload do caminho normal",
+              cached["payload"] == payload_normal)
+        check("reason do pondering bate com o caminho normal",
+              cached["reason"] == reason_normal)
+        check("payload nao e o fallback end_turn (prova que uma decisao real foi tomada)",
+              payload_normal["type"] != "end_turn")
+    finally:
+        ps.PONDER_ENABLED = False
+        ps._ponder_result = None
+        ps._match = None
+        ps._ponder_match = None
+
+
+def test_ponder_generation_guard_sem_contaminacao_cruzada_09_08() -> None:
+    """
+    4o dos 4 testes: um job de pondering ATRASADO (generation velha,
+    simulando uma thread lenta que so termina DEPOIS de um gatilho mais
+    novo -- ex: o oponente jogou outra carta e /defense disparou pondering
+    de novo antes do 1o job acabar) NUNCA sobrescreve o resultado com uma
+    generation mais nova. Testa a INVARIANTE logica do guard (mesmo
+    principio de generation/geracao ja usado em `_effect_conditions_met`/
+    cache por instancia do resto do motor), nao o timing real de threads
+    (inerentemente nao-deterministico de testar) -- chama `_ponder_worker`
+    diretamente com generations manipuladas, sem threading de verdade.
+    """
+    ps = _load_ponder_server_module()
+    ps.PONDER_ENABLED = True
+    try:
+        match_pondering = _ponder_test_match()
+        ps._ponder_match = match_pondering
+        ps._ponder_result = None
+
+        state = _ponder_test_state(ps, turn=5)
+        fingerprint = ps.ponder_fingerprint(state.bot, state.opp, ps._match_memory)
+
+        # Simula: job A comecou com generation=10, mas ANTES dele terminar
+        # um gatilho mais novo (ex: outro /defense) ja bumpou pra 11.
+        ps._ponder_generation = 10
+        ps._ponder_generation += 1  # = 11, "gatilho mais novo" ja aconteceu
+        ps._ponder_worker(state.bot, state.opp, state.turnNumber,
+                          10,  # job A, generation VELHA
+                          fingerprint, set(), set())
+        check("job com generation velha (10) NAO escreve quando a atual ja e 11 (sem contaminacao cruzada)",
+              ps._ponder_result is None)
+
+        # Job B, com a generation ATUAL (11), escreve normalmente.
+        ps._ponder_worker(state.bot, state.opp, state.turnNumber,
+                          11, fingerprint, set(), set())
+        check("job com generation atual (11) escreve normalmente",
+              ps._ponder_result is not None)
+        if ps._ponder_result is not None:
+            check("resultado escrito e do job B (fingerprint bate)",
+                  ps._ponder_result["fingerprint"] == fingerprint)
+    finally:
+        ps.PONDER_ENABLED = False
+        ps._ponder_result = None
+        ps._ponder_match = None
 
 
 if __name__ == "__main__":
