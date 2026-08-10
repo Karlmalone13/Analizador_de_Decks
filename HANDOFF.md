@@ -1,5 +1,61 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-10 (483, PARCIAL) - Claude (sessao remota web) - EM ANDAMENTO: fix de `_step_condition_currently_holds` (avaliar_carta/_score_to_play superestimavam cartas so-de-[Counter] fora de batalha) -- achado ao auditar o outlier de winrate do Sanji (bloco 482)
+
+Auditoria pedida pelo usuario ("Sim") sobre o outlier do bloco 482 (Sanji
+OP12-041, 10% winrate em 50 jogos, unico lider com amostra grande E fora
+da faixa 45-71% dos demais).
+
+**Causa raiz confirmada** (nao especifica do Sanji -- generica, so mais
+visivel em decks Event-heavy): `_step_condition_currently_holds`
+(`decision_engine.py:10525`, usada por TODAS as flags condicionais de
+`avaliar_carta`) so varria os blocos `on_play`/`main` da carta pra
+confirmar se a condicao de uma flag (`draws`/`power_buff`/etc, vindas de
+`card_analysis_db.json`) vale agora. Sem achar nenhum step la, caia num
+fallback conservador que retorna `True` (assumindo que a flag vinha de
+um gatilho legitimo fora do scan, tipo `on_ko`/`passive`/`end_of_turn`)
+-- mas esse mesmo fallback tambem disparava (ERRADO) quando a flag so
+existe porque a carta tem um bloco `[Counter]`, que NUNCA resolve fora
+de uma batalha. Prova real: Gum-Gum Giant (`OP09-078`, so tem `[Counter]`
+-- draw 2 + buff, zero efeito em Main) pontuava em `avaliar_carta` IGUAL
+a uma carta de dig de verdade do deck (`OP12-079`, `[Main]` real: 78.0 x
+78.0) e ACIMA de uma carta de remocao real (`OP12-078` Brochette Blow,
+52.0) -- a habilidade do lider Sanji ("Activate up to 1 Straw Hat Crew
+Event <=3 da mao", 1x por turno) podia gastar a ativacao numa carta que
+nao faz literalmente nada.
+
+**Fix** (dois pontos, pra nao divergir "dois motores" na mesma decisao --
+`REGRA_SEM_DUPLICACAO.md`):
+1. `_step_condition_currently_holds`: quando nao acha step em on_play/
+   main, agora escaneia os OUTROS blocos -- se achar a acao SO em
+   `COMBAT_ONLY_TRIGGERS` (counter/when_attacking/on_opp_attack/
+   leader_battle_reactive), retorna `False` (nao da o bonus); se achar em
+   qualquer outro gatilho (on_ko/passive/end_of_turn), mantem o `True`
+   conservador de sempre.
+2. `_score_to_play` (funcao local dentro de `EffectExecutor._execute_step`,
+   usada pela EXECUCAO real de qualquer `play_card` de efeito -- inclui a
+   habilidade do Sanji) usava as MESMAS flags cruas, sem NENHUM gate --
+   agora reusa `self._de()._step_condition_currently_holds(...)` (mesmo
+   `DecisionEngine` cacheado por instancia desde o bloco 03/08), pra
+   execucao escolher a MESMA carta que a decisao ja considerava certa.
+
+Apos o fix: Gum-Gum Giant cai pra 28.0 (correto, carta morta nesse
+contexto); Concasser 78->63 e EB04-029 93->78 (perderam so o bonus
+bogus de power_buff, mantiveram os bonus reais de draw/is_searcher).
+
+**Teste novo** em `smoke_fast.py`
+(`test_step_condition_currently_holds_nao_infla_flag_so_de_combate_10_08`):
+prova os dois lados (avaliar_carta E a execucao real via `_execute_step`
+escolhendo a carta certa entre Gum-Gum Giant e a carta de dig real).
+`smoke_fast.py`/`smoke_test.py` 100%. `audit_replay.py --n 40 --workers 4`:
+0 excecoes, 0 anomalias.
+
+**Validacao em andamento**: rodando de novo o mesmo lote de 200 partidas
+do bloco 482 (MESMA seed=77, mesmos confrontos por indice) pra comparar
+o winrate do Sanji antes (10.0%) vs depois do fix -- resultado fica pro
+PROXIMO bloco desta mesma investigacao (nao commitado ainda o script
+descartavel, mesma convencao de sempre).
+
 ## 2026-08-10 (482) - Claude (sessao remota web) - 200 partidas reais em lote (paralelismo do bloco 481): 0 bugs/anomalias, mapa de tempo por turno, e um outlier forte de winrate por lider (Sanji OP12-041, 10%)
 
 Usuario pediu ("simularmos varias partidas e capturar tendencias, tempo

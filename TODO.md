@@ -2,6 +2,31 @@
 
 **Última atualização:** 10 de agosto de 2026
 
+> 10/08/2026 (bloco 483, PARCIAL/EM ANDAMENTO): **fix em
+> `_step_condition_currently_holds`** — achado ao investigar o outlier
+> de winrate do Sanji (bloco 482, 10% em 50 jogos). Causa raiz GENÉRICA
+> (não específica do Sanji): a função só varria blocos `on_play`/`main`
+> pra confirmar se uma flag condicional (`draws`/`power_buff`/etc.) vale
+> agora — sem achar step lá, caía num fallback que retornava `True`
+> mesmo quando a flag só existe porque a carta tem um bloco `[Counter]`
+> (nunca resolve fora de batalha). Prova real: Gum-Gum Giant (`OP09-078`,
+> só `[Counter]`, zero efeito em Main) pontuava **igual** a uma carta de
+> dig real do deck do Sanji e **acima** de uma carta de remoção real —
+> a habilidade do líder Sanji podia gastar a ativação (1x/turno) numa
+> carta que não faz nada. Fix em dois pontos (decisão E execução, pra
+> não divergir "dois motores"): `_step_condition_currently_holds` agora
+> distingue "ação só existe em gatilho de combate" (não dá bônus) de
+> "ação existe em outro gatilho não coberto, tipo on_ko/passive" (mantém
+> o `True` conservador de sempre); `_score_to_play` (execução real de
+> qualquer `play_card` de efeito) passou a reusar o mesmo checador via
+> `self._de()`, em vez de flags cruas sem gate nenhum. Teste novo em
+> `smoke_fast.py` prova os dois lados. `smoke_fast`/`smoke_test` 100%,
+> `audit_replay.py --n 40 --workers 4`: 0 exceções/anomalias.
+> **Validação em andamento**: re-rodando o mesmo lote de 200 partidas do
+> bloco 482 (mesma seed) pra confirmar que o winrate do Sanji melhora de
+> verdade — resultado e conclusão (fechar ou reabrir) ficam pro próximo
+> bloco. Ver bloco 483 do HANDOFF.
+
 > 10/08/2026 (bloco 482): **200 partidas reais em lote** (usando o
 > paralelismo do bloco 481, `--workers 4`) pra capturar bugs + tempo +
 > tendências de winrate por líder, a pedido do usuário. **BUGS**: 0

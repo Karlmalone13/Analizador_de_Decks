@@ -26,6 +26,7 @@ from optcg_engine.decision_engine import (  # noqa: E402
     character_can_attack_now,
     compute_game_plan,
     consume_play_cost_reductions,
+    contains_identity,
     don_needed_for_attack,
     effective_counter,
     effective_hand_play_cost,
@@ -10103,6 +10104,7 @@ def main() -> int:
     test_score_play_action_habilita_ataque_remocao_gated_por_atacante_08_08()
     test_score_activate_main_play_card_habilita_ataque_gated_por_atacante_08_08()
     test_score_activate_main_play_from_trash_habilita_ataque_gated_por_atacante_08_08()
+    test_step_condition_currently_holds_nao_infla_flag_so_de_combate_10_08()
     test_ponder_fingerprint_deterministico_09_08()
     test_ponder_fingerprint_muda_por_mutacao_isolada_09_08()
     test_ponder_payload_byte_identico_ao_caminho_normal_09_08()
@@ -12159,6 +12161,57 @@ def test_score_activate_main_play_from_trash_habilita_ataque_gated_por_atacante_
           score_com_atacante > score_sem_atacante)
     check("diferenca bate exatamente com HABILITA_ATAQUE_BONUS (60)",
           abs((score_com_atacante - score_sem_atacante) - HABILITA_ATAQUE_BONUS) < 1e-6)
+
+
+def test_step_condition_currently_holds_nao_infla_flag_so_de_combate_10_08() -> None:
+    """
+    Achado real 10/08 (auditoria do lider Sanji OP12-041, disparada por
+    winrate de 10% em 200 partidas em lote do bloco 482 -- unico lider com
+    amostra grande E resultado bem fora da faixa dos demais, 45-71%).
+
+    `_step_condition_currently_holds` (usada por TODAS as flags condicionais
+    de `avaliar_carta`) so varria os blocos on_play/main da carta pra
+    confirmar se a condicao vale agora -- sem achar nenhum step la, assumia
+    conservadoramente que a flag vinha de um gatilho legitimo nao coberto
+    (on_ko/passive/end_of_turn) e dava o bonus mesmo assim. Isso tambem
+    disparava (ERRADO) quando a flag so existe porque a carta tem um bloco
+    [Counter] -- Gum-Gum Giant (OP09-078) so tem [Counter] (draw 2 + buff,
+    nunca dispara fora de batalha), mas `avaliar_carta` pontuava ela IGUAL
+    a uma carta de dig de verdade (Luffy Is the Man..., OP12-079, [Main]
+    real) -- a habilidade do lider Sanji ("Activate up to 1 Straw Hat Crew
+    Event <=3 da mao") podia gastar a ativacao (1x por turno) numa carta
+    que nao faz literalmente nada.
+    """
+    lider = real_card("OP12-041")
+    me = GameState(leader=lider, turn=3, don_available=3,
+                   life=[mk(f"SJL{i}", "Life") for i in range(4)])
+    gum_gum_giant = real_card("OP09-078")   # so [Counter] -- zero efeito fora de batalha
+    luffy_event = real_card("OP12-079")     # [Main] real: dig 3, pega 1
+    me.hand = [gum_gum_giant, luffy_event]
+    me.deck = [mk(f"SJD{i}", f"Deck{i}", cost=1) for i in range(5)]
+    opp = GameState(leader=real_card("ST04-001"), turn=3,
+                    life=[mk(f"SJOL{i}", "Life") for i in range(4)])
+
+    # 1) DECISAO: avaliar_carta (usada por _score_activate_main) nao pode
+    # mais empatar/superar a carta que so tem [Counter] com a carta real.
+    engine = DecisionEngine(me, opp)
+    val_dead = engine.avaliar_carta(gum_gum_giant)
+    val_real = engine.avaliar_carta(luffy_event)
+    check("avaliar_carta: carta so-de-[Counter] (Gum-Gum Giant) vale MENOS que a carta de dig real",
+          val_dead < val_real)
+
+    # 2) EXECUCAO: a mesma escolha real da habilidade do lider (_execute_step,
+    # 'play_card') tem que escolher a carta de dig real, nao a morta --
+    # mesmo gate espelhado em _score_to_play (regra "1 motor so", sem isso
+    # a decisao e a execucao podiam divergir mesmo com o fix acima).
+    ee = EffectExecutor(me, opp)
+    step = {"action": "play_card", "count": 1, "card_type": "EVENT",
+            "filter_type": "straw hat crew", "cost_lte": 3}
+    ee._execute_step(step, lider)
+    check("execucao: habilidade do lider jogou a carta de dig real (saiu da mao)",
+          not contains_identity(me.hand, luffy_event))
+    check("execucao: Gum-Gum Giant (so-de-[Counter]) ficou na mao, nao foi escolhida",
+          contains_identity(me.hand, gum_gum_giant))
 
 
 # ── Pondering (BOT/engine_server/server.py, design bloco 478, implementado

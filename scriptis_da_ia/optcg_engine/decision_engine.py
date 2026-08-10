@@ -8460,17 +8460,44 @@ class EffectExecutor:
         if action == 'play_card':
 
             def _score_to_play(c):
-                # score local (executor não tem DecisionEngine): board_value real
-                # + bônus por efeito útil, via as MESMAS flags do analysis_db.
+                # score local: board_value real + bônus por efeito útil, via
+                # as MESMAS flags do analysis_db, gateadas pelo MESMO
+                # checador de DecisionEngine.avaliar_carta (self._de(),
+                # cache por instância -- ver bloco 03/08) pra não divergir
+                # "dois motores" na mesma decisão. Achado real 10/08 (mesmo
+                # bug do Sanji/Gum-Gum Giant OP09-078): sem o gate, esta
+                # função de EXECUÇÃO podia escolher jogar uma carta que só
+                # tem bloco [Counter] achando que ela ia comprar/buffar,
+                # quando nada acontece fora de batalha -- a DECISÃO
+                # (avaliar_carta, via _score_activate_main) já ganhou esse
+                # gate neste mesmo fix; sem espelhar aqui, a execução real
+                # continuaria escolhendo a carta errada mesmo com a decisão
+                # de ativar já correta.
                 f = get_card_flags(c.code)
                 s = c.board_value()
-                if f.get('kos') or f.get('is_removal'): s += 70
-                if f.get('bounces'):                    s += 45
-                if f.get('rests_opponent'):             s += 35
-                if f.get('is_searcher'):                s += 40
-                if f.get('draws'):                      s += 35
+                de = self._de()
+                if (f.get('kos') or f.get('is_removal')) and de._step_condition_currently_holds(
+                        c, lambda st: st.get('action') in (
+                            'ko', 'trash_character', 'ko_selected', 'debuff_power', 'set_base_power',
+                            'rest_opp_character', 'place_opp_character_bottom_deck',
+                            'lock_opp_character_refresh', 'lock_opp_character_attack')):
+                    s += 70
+                if f.get('bounces') and de._step_condition_currently_holds(
+                        c, lambda st: st.get('action') in ('bounce', 'opp_bounce_own_character')):
+                    s += 45
+                if f.get('rests_opponent') and de._step_condition_currently_holds(
+                        c, lambda st: st.get('action') == 'rest_opp_character'):
+                    s += 35
+                if f.get('is_searcher') and de._step_condition_currently_holds(
+                        c, lambda st: st.get('action') in ('look_top_deck', 'add_to_hand', 'add_from_trash')):
+                    s += 40
+                if f.get('draws') and de._step_condition_currently_holds(
+                        c, lambda st: st.get('action') == 'draw'):
+                    s += 35
                 if f.get('is_blocker'):                 s += 30
-                if f.get('power_buff'):                 s += 20
+                if f.get('power_buff') and de._step_condition_currently_holds(
+                        c, lambda st: st.get('action') == 'buff_power'):
+                    s += 20
                 if f.get('has_trigger'):                s += 10
                 # Carta CERTA do game_plan (a bomba do combo, ex: Five Elders):
                 # 3a copia do MESMO bug ja corrigido em avaliar_carta (14/07) e
@@ -10539,6 +10566,28 @@ class DecisionEngine:
         outro gatilho, tipo on_ko/passive/end_of_turn, que este scan nao
         cobre) -> True, conservador: mantem o comportamento antigo (sem
         regressao nas centenas de cartas ja tunadas com esse bonus fixo).
+
+        EXCECAO (achado real 10/08, auditoria do lider Sanji OP12-041 --
+        investigacao pedida pelo usuario apos 200 partidas em lote
+        mostrarem winrate de 10% pra ele, muito abaixo dos demais):
+        quando o UNICO lugar onde a acao aparece e um gatilho SO-DE-COMBATE
+        (`COMBAT_ONLY_TRIGGERS` -- counter/when_attacking/on_opp_attack/
+        leader_battle_reactive), o fallback conservador acima estava
+        ERRADO -- esses gatilhos NUNCA resolvem quando a carta e jogada
+        fora de batalha (habilidade do lider Sanji joga um Event da mao;
+        qualquer outro `play_card`/`play_from_trash` de efeito tem o
+        mesmo problema). Ex real: Gum-Gum Giant (OP09-078) so tem bloco
+        `[Counter]` (draw 2 + buff, nunca dispara em Main) e pontuava
+        IGUAL a uma carta de dig de verdade (78 vs 78) e ACIMA de uma
+        carta de remocao real (52) em `avaliar_carta` -- o motor podia
+        gastar a ativacao (1x por turno) numa carta que nao faz
+        absolutamente nada. Distingue isso escaneando os OUTROS blocos:
+        se achar a acao em algum gatilho NAO-so-de-combate (on_ko/
+        passive/end_of_turn/etc, fora do scan de on_play/main de
+        proposito), mantem o True conservador de sempre; se so achar em
+        gatilho de combate, retorna False (a flag esta certa sobre o que
+        a carta PODE fazer, mas errada sobre poder fazer isso agora,
+        fora de uma batalha).
         """
         effects = get_card_effects(card.code)
         ee = EffectExecutor(self.me, self.opp)
@@ -10562,7 +10611,19 @@ class DecisionEngine:
                 step_ok = (not step_conds) or ee._check_conditions(step_conds, card)
                 if block_ok and step_ok:
                     return True
-        return not achou
+        if achou:
+            return False
+        so_gatilho_de_combate = False
+        for trig, ef in effects.items():
+            if trig in ('on_play', 'main') or not isinstance(ef, dict):
+                continue
+            for step in resolve_choice_for_scoring(ef, card, self.me, self.opp):
+                if not step_matches(step):
+                    continue
+                if trig not in COMBAT_ONLY_TRIGGERS:
+                    return True   # gatilho legitimo fora do scan (on_ko/passive/etc)
+                so_gatilho_de_combate = True
+        return not so_gatilho_de_combate
 
     def _conditional_play_card_combo_value(self, card: 'Card') -> float:
         """
