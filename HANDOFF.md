@@ -1,6 +1,88 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-08-10 (483) - Claude (sessao remota web) - fix de `_step_condition_currently_holds` CONFIRMADO e correto (nao infla mais cartas so-de-[Counter] fora de batalha), mas NAO resolveu o outlier de winrate do Sanji -- causa raiz continua aberta
+## 2026-08-10 (484) - Claude (sessao remota web) - `deck_lacks_removal_tools()`: postura CONTROL passa a dar credito a busca/compra quando o deck nao tem remocao de verdade (generico, achado auditando o Sanji) -- winrate do Sanji continua 10.0%, e por pedido explicito do usuario ISSO NAO E FALHA (criterio e qualidade de decisao, nao resultado)
+
+Continuacao do bloco 483 -- usuario pediu pra investigar mais fundo
+("Investigue mais fundo") em vez de aceitar "deck fraco" sem checar a
+FORMA como a IA joga esse deck especificamente. Depois, ao ver que 2
+experimentos A/B nao moveram o winrate de forma decisiva, o usuario
+redefiniu o criterio de sucesso explicitamente: **"Não tem problema
+perder a partida, as vezes o deck só é fraco mesmo, nós só precisamos
+garantir de que o bot entende o deck e toma as melhores decisões,
+maximizando a play com o deck"** -- ou seja, o alvo e QUALIDADE de
+decisao dado o deck real, nao winrate agregado. Fica registrado aqui
+pra sessoes futuras nao reabrirem essa investigacao achando que
+"winrate nao subiu" = "fix nao funcionou".
+
+**Investigacao (2 experimentos A/B controlados, mesmas 49 partidas reais
+do Sanji, seed=77, antes de qualquer fix novo)**:
+1. Forcar `deck_profile_type()` do Sanji pra `midrange` em vez de
+   `control`: 8.2% -> 10.2% (ruido, 49 partidas). Causa do resultado
+   fraco: a postura `midrange` TAMBEM cai em `CONTROL` quando
+   `field_advantage() < -3` (quase sempre o caso do Sanji, board fraco
+   -- ver bloco 483 pro padrao "campo raso, lider ataca sozinho").
+2. Forcar a postura do Sanji a NUNCA retornar `CONTROL` (vira `DEVELOP`
+   direto): 8.2% -> 12.2%. Melhor, mas ainda dentro do ruido -- nao um
+   driver dominante.
+
+**Causa raiz real, achada ao ler `_posture_uncached()`**:
+`deck_profile_type()` classifica o deck SO pela curva de custo media
+(`deck_census.py:deck_profile`) -- um deck 64% Eventos baratos de
+busca/compra (Sanji: 32/50 cartas, so 12 sao remocao real) ainda cai em
+`control` por ter 2-3 personagens caros (Rosinante & Law custo 8,
+Vinsmoke Reiju/Sanji 5-6k). Na postura `CONTROL`, `avaliar_carta` so
+dava bonus pra `has_ko`/`has_bounce`/`has_rest` (remocao que esse deck
+quase nao tem) e NUNCA pra `has_search`/`has_draw` (que e a ferramenta
+de controle REAL dele -- achar a resposta certa via busca, nao remover
+ameaca) -- ficava sem credito justo no momento em que mais precisava
+continuar cavando. Confirmado que NAO e exclusivo do Sanji: censo de
+todo o pool de 30 decks mostrou 26/30 classificados `control` (a
+classificacao por curva e um instrumento cego, nao so um problema
+pontual desta carta/lider).
+
+**Fix** (`decision_engine.py`, generico via censo do deck -- NAO
+hardcoded por lider/codigo):
+1. `populate_full_deck_knowledge()`: alem do `deck_census()` existente,
+   conta `removal_tools` (kos/is_removal/bounces) e
+   `card_selection_tools` (is_searcher/draws) via `get_card_flags` em
+   toda a decklist completa (uma vez por partida, censo e invariante).
+2. `GameAnalyzer.deck_lacks_removal_tools()` (novo): `True` quando
+   `removal_tools < card_selection_tools * 0.6` -- limiar generico, nao
+   calibrado especificamente pro Sanji.
+3. `avaliar_carta`, postura `CONTROL`: quando
+   `deck_lacks_removal_tools()`, tambem soma o MESMO bonus de
+   `has_search`(+25)/`has_draw`(+20) que `DEVELOP` ja dava -- alem dos
+   bonus de remocao existentes (nao substitui, soma).
+
+**Teste novo** em `smoke_fast.py`
+(`test_deck_lacks_removal_tools_da_credito_a_busca_em_postura_control_10_08`):
+prova os dois lados com censo sintetico tipo-Sanji (12/30) vs
+tipo-Mihawk (24/14), postura forcada via `engine._posture_cache` pra
+isolar exatamente o branch novo -- diferenca de score bate exatamente
+com o bonus (25). `smoke_fast`/`smoke_test` 100%.
+`audit_replay.py --n 40 --workers 4`: 0 excecoes, 0 anomalias.
+
+**Validacao real (re-rodada do MESMO lote de 200 partidas dos blocos
+482/483, seed=77 identica)**: `0 excecoes/anomalias. Sanji continua
+EXATAMENTE em 10.0% (50 jogos)` -- terceira vez seguida com o mesmo
+numero exato, apos 3 mudancas de codigo diferentes (bloco 483 +
+2 experimentos A/B + este fix). **Por pedido explicito do usuario,
+isso NAO e tratado como fix fracassado**: o objetivo nunca foi mover
+esse numero, e sim corrigir uma classificacao de deck genuinamente
+errada (postura CONTROL cobrando um plano de remocao que o deck nao
+tem) -- o que foi feito e confirmado por teste dedicado. O winrate
+estagnado em 10.0% através de 3 mudanças de código distintas é, se
+algo, evidência ADICIONAL de que a explicação restante é mesmo
+composição/matchup do deck (ou algo nao relacionado a postura/perfil),
+não um bug de decisão ainda não encontrado nessa área.
+
+**Pendente, nao investigado nesta sessao**: se o usuario quiser
+continuar por uma linha DIFERENTE de "postura/perfil" (ja esgotada),
+as hipoteses que restam sao: pool de decks maior/diferente (descartar
+azar de amostra pequena, so 30 decks), ou um mecanismo especifico nao
+testado ainda (gerenciamento de DON turno a turno, timing de ataque
+com o unico atacante consistente = lider). Nenhuma das duas foi
+investigada aqui.
 
 Auditoria pedida pelo usuario ("Sim") sobre o outlier do bloco 482 (Sanji
 OP12-041, 10% winrate em 50 jogos, unico lider com amostra grande E fora

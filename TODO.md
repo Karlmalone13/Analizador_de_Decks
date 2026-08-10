@@ -2,6 +2,39 @@
 
 **Última atualização:** 10 de agosto de 2026
 
+> 10/08/2026 (bloco 484): **`deck_lacks_removal_tools()`** — postura
+> `CONTROL` passa a dar crédito a busca/compra (`has_search`/`has_draw`,
+> mesmo bônus de `DEVELOP`) quando o deck genuinamente não tem remoção
+> real, além do bônus de remoção que já dava. Achado ao investigar mais
+> fundo o Sanji (pedido do usuário) depois de 2 experimentos A/B não
+> decisivos (forçar profile→midrange: 8,2%→10,2%, ruído; forçar postura
+> nunca-CONTROL: 8,2%→12,2%, ainda ruído). Causa raiz real:
+> `deck_profile_type()` classifica só pela curva de custo — um deck 64%
+> Evento barato de busca (Sanji, 32/50 cartas, só 12 remoção real) cai
+> em `control` só por ter 2-3 personagens caros, e a postura `CONTROL`
+> só recompensava remoção que esse deck não tem, nunca a busca que É a
+> ferramenta real dele. Confirmado GENÉRICO (não só Sanji): 26/30 decks
+> do pool testado caem em `control` pela classificação por curva. Fix
+> via censo do deck (`removal_tools`/`card_selection_tools`, calculados
+> em `populate_full_deck_knowledge`), limiar genérico (removal <
+> selection*0.6), não hardcoded por líder. Teste novo em
+> `smoke_fast.py` isolando o branch com censo sintético. `smoke_fast`/
+> `smoke_test` 100%, `audit_replay.py --n 40 --workers 4`: 0 exceções.
+> **Validação real (3ª rodada do mesmo lote de 200 partidas, seed
+> idêntica)**: Sanji continua EXATAMENTE em 10,0% — mesmo número após 3
+> mudanças de código diferentes (bloco 483 + 2 experimentos A/B + este
+> fix). **Por pedido explícito do usuário, isso NÃO é falha**: o
+> critério de sucesso desta investigação é qualidade de decisão dado o
+> deck real ("garantir que o bot entende o deck e toma as melhores
+> decisões, maximizando a play com o deck"), não winrate agregado — o
+> bug de classificação era real e foi corrigido, independente do
+> resultado agregado não ter mudado. A estagnação em 3 tentativas
+> diferentes é evidência de que a explicação restante (se houver) não
+> está mais na área postura/perfil — hipóteses que restam e não foram
+> testadas: pool de decks maior (descartar azar de amostra, só 30
+> decks hoje) ou mecanismo específico não investigado (DON turno a
+> turno, timing de ataque). Ver bloco 484 do HANDOFF.
+
 > 10/08/2026 (bloco 483): **fix em `_step_condition_currently_holds`
 > CONFIRMADO e correto, mas NÃO resolveu o outlier de winrate do Sanji**
 > — achado ao investigar o bloco 482 (Sanji OP12-041, 10% em 50 jogos).

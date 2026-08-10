@@ -673,6 +673,23 @@ def populate_full_deck_knowledge(state: 'GameState', cards: list, leader_code: s
     resposta dele (USE_OPPONENT_RESPONSE_SEARCH).
     """
     state.full_deck_census = deck_census(cards)
+    # Achado real 10/08 (auditoria Sanji OP12-041, bloco 484): deck_census()
+    # (deck_census.py) não pode importar get_card_flags daqui (import
+    # circular -- este módulo já importa deck_census no topo) -- calcula
+    # aqui e enriquece o census depois de pronto. Conta ferramentas de
+    # REMOÇÃO real (kos/is_removal/bounces) vs de SELEÇÃO de carta
+    # (is_searcher/draws) -- usado por `GameAnalyzer.deck_lacks_removal_
+    # tools()` pra dar crédito de busca/compra na postura CONTROL quando o
+    # deck genuinamente não tem remoção (ver avaliar_carta).
+    n_removal = n_selection = 0
+    for c in cards:
+        flags = get_card_flags(getattr(c, 'code', ''))
+        if flags.get('kos') or flags.get('is_removal') or flags.get('bounces'):
+            n_removal += 1
+        if flags.get('is_searcher') or flags.get('draws'):
+            n_selection += 1
+    state.full_deck_census['removal_tools'] = n_removal
+    state.full_deck_census['card_selection_tools'] = n_selection
     state.full_deck_plan = compute_game_plan_from_cards(cards)
     if _build_profile_from_codes is not None:
         try:
@@ -9706,6 +9723,34 @@ class GameAnalyzer:
         from optcg_engine.deck_census import deck_profile as classify
         return classify(census)['profile']
 
+    def deck_lacks_removal_tools(self) -> bool:
+        """
+        Achado real 10/08 (auditoria do líder Sanji OP12-041, bloco 484 --
+        pedido do usuário pra investigar mais fundo depois de 2 experimentos
+        A/B não decisivos: reclassificar profile e evitar postura CONTROL
+        de vez, nenhum dos dois moveu o winrate de forma consistente).
+        `deck_profile_type()` classifica pela CURVA de custo (aggressive/
+        control/midrange), sem saber se o deck tem remoção de verdade --
+        um deck com 64% de Eventos baratos de busca/compra (Sanji) e só um
+        punhado de remoção real cai em 'control' só por ter algumas cartas
+        caras, mas o PLANO real dele é achar a resposta certa via busca,
+        não remover ameaças. Sem isso, a postura CONTROL (ver avaliar_carta)
+        só recompensava ko/bounce/rest -- remoção que esse tipo de deck não
+        tem -- e não dava nenhum crédito pra busca/compra, que é a
+        ferramenta de controle real dele.
+
+        Genérico via censo do deck (kos/is_removal/bounces vs is_searcher/
+        draws, contados em populate_full_deck_knowledge), não hardcoded por
+        líder -- qualquer deck com essa mesma assimetria (pouca remoção,
+        muita seleção de carta) se beneficia, não só o Sanji.
+        """
+        census = getattr(self.me, 'full_deck_census', None)
+        if not census:
+            return False
+        removal = census.get('removal_tools', 0)
+        selection = census.get('card_selection_tools', 0)
+        return selection > 0 and removal < selection * 0.6
+
     # ── Potencial ofensivo ───────────────────────────────────────────────────
 
     def my_attack_power(self) -> int:
@@ -11233,6 +11278,17 @@ class DecisionEngine:
             if has_ko:     s += 30
             if has_bounce: s += 20
             if has_rest:   s += 15
+            # Achado real 10/08 (auditoria Sanji OP12-041, bloco 484): um
+            # deck que genuinamente não tem remoção (ver
+            # `deck_lacks_removal_tools()`) usa busca/compra COMO o
+            # próprio jeito de "controlar" o jogo (achar a resposta
+            # certa) -- sem isto, CONTROL só recompensava ko/bounce/rest,
+            # que esse tipo de deck raramente tem, e a IA parava de
+            # priorizar suas melhores cartas bem no momento em que mais
+            # precisava continuar cavando.
+            if a.deck_lacks_removal_tools():
+                if has_search: s += 25
+                if has_draw:   s += 20
         elif posture == 'DEVELOP':
             if has_search: s += 25
             if has_draw:   s += 20

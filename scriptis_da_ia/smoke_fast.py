@@ -10105,6 +10105,7 @@ def main() -> int:
     test_score_activate_main_play_card_habilita_ataque_gated_por_atacante_08_08()
     test_score_activate_main_play_from_trash_habilita_ataque_gated_por_atacante_08_08()
     test_step_condition_currently_holds_nao_infla_flag_so_de_combate_10_08()
+    test_deck_lacks_removal_tools_da_credito_a_busca_em_postura_control_10_08()
     test_ponder_fingerprint_deterministico_09_08()
     test_ponder_fingerprint_muda_por_mutacao_isolada_09_08()
     test_ponder_payload_byte_identico_ao_caminho_normal_09_08()
@@ -12212,6 +12213,56 @@ def test_step_condition_currently_holds_nao_infla_flag_so_de_combate_10_08() -> 
           not contains_identity(me.hand, luffy_event))
     check("execucao: Gum-Gum Giant (so-de-[Counter]) ficou na mao, nao foi escolhida",
           contains_identity(me.hand, gum_gum_giant))
+
+
+def test_deck_lacks_removal_tools_da_credito_a_busca_em_postura_control_10_08() -> None:
+    """
+    Achado real 10/08 (auditoria mais funda do Sanji OP12-041, bloco 484 --
+    pedido do usuario apos 2 experimentos A/B nao decisivos: reclassificar
+    profile e evitar postura CONTROL de vez, nenhum moveu o winrate de
+    forma consistente). Investigacao mais profunda achou o mecanismo real:
+    `deck_profile_type()` classifica so pela CURVA de custo -- um deck de
+    64% Eventos baratos de busca (Sanji) com so um punhado de remocao real
+    ainda cai em 'control' por ter algumas cartas caras. Na postura
+    CONTROL, `avaliar_carta` so recompensava ko/bounce/rest (remocao que
+    esse deck quase nao tem) e NUNCA busca/compra (que e a ferramenta de
+    controle real dele) -- ficava sem credito bem no turno em que mais
+    precisava continuar cavando.
+
+    Fix generico via censo do deck (`deck_lacks_removal_tools()`, nao
+    hardcoded por lider): CONTROL passa a dar o MESMO bonus de
+    has_search/has_draw que DEVELOP ja da, mas SO quando o deck
+    genuinamente tem menos remocao que selecao de carta.
+    """
+    lider = real_card("OP12-041")
+    me = GameState(leader=lider, turn=6, don_available=3,
+                   life=[mk(f"DLT{i}", "Life") for i in range(3)])
+    opp = GameState(leader=real_card("ST04-001"), turn=6,
+                    life=[mk(f"DLTOL{i}", "Life") for i in range(4)])
+    opp.field_chars = [real_card("OP01-004"), real_card("OP01-004")]
+
+    luffy_event = real_card("OP12-079")   # is_searcher=True, draws=False
+
+    # censo tipo Sanji real (bloco 484: 12 remocao / 30 selecao no deck completo)
+    me.full_deck_census = {'removal_tools': 12, 'card_selection_tools': 30}
+    engine = DecisionEngine(me, opp)
+    check("deck_lacks_removal_tools: True com censo tipo Sanji (12 remocao / 30 selecao)",
+          engine.analyzer.deck_lacks_removal_tools())
+    engine._posture_cache = 'CONTROL'
+    val_sem_remocao = engine.avaliar_carta(luffy_event)
+
+    # censo tipo Mihawk/Imu real (remocao de sobra, pouca selecao de carta)
+    me.full_deck_census = {'removal_tools': 24, 'card_selection_tools': 14}
+    engine2 = DecisionEngine(me, opp)
+    check("deck_lacks_removal_tools: False com censo tipo Mihawk (24 remocao / 14 selecao)",
+          not engine2.analyzer.deck_lacks_removal_tools())
+    engine2._posture_cache = 'CONTROL'
+    val_com_remocao = engine2.avaliar_carta(luffy_event)
+
+    check("avaliar_carta: mesma carta de busca vale MAIS em CONTROL quando o deck NAO tem remocao de verdade",
+          val_sem_remocao > val_com_remocao)
+    check("diferenca bate exatamente com o bonus de has_search (25)",
+          abs((val_sem_remocao - val_com_remocao) - 25) < 1e-6)
 
 
 # ── Pondering (BOT/engine_server/server.py, design bloco 478, implementado
