@@ -104,6 +104,39 @@ inicializa as dependencias.
 --stat`: 2 arquivos, `server.py` (+367/-88, incluindo a extracao de
 `_package_action`), `smoke_fast.py` (+245).
 
+**Follow-up na MESMA sessao** (usuario pediu "tirando o teste ao vivo,
+tem mais alguma coisa?", revisando com mais calma): achado real de
+correcao, sem log ao vivo pra provar (raciocinio puro sobre o codigo,
+janela extremamente estreita). `fingerprint` era calculado em
+`_trigger_pondering` (thread PRINCIPAL, sincrono, no momento do
+gatilho), mas `_dto_to_gs(..., hide_hidden=True)` (chamado DEPOIS,
+dentro da thread do pondering) le `_match_memory` de novo -- um global
+mutavel que `/reveal` pode atualizar CONCORRENTEMENTE. Se um reveal
+cair exatamente nesse intervalo, o hash guardado ficaria descolado do
+estado realmente usado pra computar o payload (mascara `hide_hidden`
+diferente da que o fingerprint description). Fix: `_ponder_worker`
+agora RECALCULA o fingerprint no proprio instante em que `gs`/`opp_gs`
+sao construidos (mesma thread, sem gap), e e ESSE valor (nao o
+recebido por parametro) que fica gravado em `_ponder_result` -- fecha a
+janela sem precisar de lock extra em volta de `_match_memory`. Print de
+diagnostico (`[PONDER] fingerprint mudou entre gatilho e calculo`)
+adicionado pra medir em partida real com que frequencia isso realmente
+acontece (nao bloqueia nada, so observabilidade). `smoke_fast.py`/
+`smoke_test.py` 100% de novo apos o fix.
+
+**Consideracao registrada, NAO implementada** (mesmo pedido de revisao):
+`_trigger_pondering` dispara uma thread nova a CADA `/defense` com
+phase blocker/counter/trigger -- se o oponente gerar varios desses
+eventos em sequencia rapida (multiplos ataques no mesmo turno), varias
+threads de pondering podem ficar rodando em paralelo de verdade (o
+generation guard evita resultado ERRADO, mas nao evita o CUSTO de CPU
+das threads mais antigas ainda em voo ate descartarem o proprio
+resultado). Nao implementado enquanto nao houver dado real mostrando
+que isso importa na pratica (mesmo principio do bloco 478: risco residual
+registrado, resolvido por observacao ao vivo, nao especulacao
+antecipada) -- item pra observar explicitamente na sessao ao vivo
+monitorada, junto com o resto da telemetria.
+
 **NAO FEITO, pendencia explicita pra proxima sessao (local, com acesso
 ao jogo)**: NENHUM teste ao vivo de verdade. Este e um ambiente remoto
 sem cliente OPTCGSim -- a validacao "sessao ao vivo monitorada com a

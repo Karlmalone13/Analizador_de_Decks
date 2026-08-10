@@ -290,12 +290,36 @@ def _ponder_worker(bot_dto, opp_dto, trigger_turn: int, generation: int,
     gs/opp_gs do zero a partir dos DTOs (nunca reusa objetos Card/GameState
     da requisicao /defense real) -- nenhum objeto mutavel do engine e
     compartilhado entre a thread de pondering e a thread da requisicao ao
-    vivo. Nunca deixa excecao vazar (mesmo padrao de choose_action._run)."""
+    vivo. Nunca deixa excecao vazar (mesmo padrao de choose_action._run).
+
+    `fingerprint` (calculado em _trigger_pondering, SINCRONO, antes desta
+    thread comecar) so serve pra detectar generation obsoleta cedo -- o
+    valor de fato GRAVADO em _ponder_result e RECALCULADO logo abaixo, no
+    MESMO instante em que gs/opp_gs sao construidos. Achado 09/08 (revisao
+    apos a implementacao): _match_memory (usado por _dto_to_gs pro
+    mascaramento hide_hidden) e um global mutavel -- se um /reveal chegar
+    no intervalo entre o calculo em _trigger_pondering (thread principal)
+    e o gs desta thread ser construido, o hash guardado ficaria
+    DESCOLADO do que realmente foi usado pra computar o payload. Recalcular
+    aqui garante que o fingerprint persistido SEMPRE reflete o estado
+    realmente consumido -- fecha a janela sem precisar de lock extra em
+    volta de _match_memory."""
     global _ponder_result
     try:
         bridge = _get_bridge()
         match = _get_ponder_match()
         proximo_turno = trigger_turn + 1
+        fingerprint_real = ponder_fingerprint(bot_dto, opp_dto, _match_memory)
+        if fingerprint_real != fingerprint:
+            # Diagnostico (nao um erro): a memoria de reveals mudou entre o
+            # gatilho (thread principal) e este calculo (thread do
+            # pondering) -- ex: um /reveal concorrente. Nao invalida nada
+            # aqui (fingerprint_real, o recalculado, e o que vale), so
+            # exposto pra medir em partida real com que frequencia essa
+            # janela e realmente atingida.
+            print("[PONDER] fingerprint mudou entre gatilho e calculo "
+                  "(memoria de reveals atualizada no meio) -- usando o recalculado",
+                  flush=True)
         gs = _dto_to_gs(bot_dto, proximo_turno)
         opp_gs = _dto_to_gs(opp_dto, proximo_turno, hide_hidden=True)
         gs.is_active_turn = True
@@ -313,7 +337,7 @@ def _ponder_worker(bot_dto, opp_dto, trigger_turn: int, generation: int,
                 return  # invalidado por /mulligan ou gatilho mais novo enquanto calculava
             _ponder_result = {
                 "trigger_turn": trigger_turn,
-                "fingerprint": fingerprint,
+                "fingerprint": fingerprint_real,
                 "payload": payload,
                 "reason": reason,
                 "trace": trace,

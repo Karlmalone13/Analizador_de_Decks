@@ -18,7 +18,16 @@
 > ambiente remoto sem cliente OPTCGSim. Antes de considerar ligar por
 > padrão, precisa de sessão local com a flag ligada + leitura obrigatória
 > de telemetria (mesma disciplina do CLAUDE.md pra qualquer log de
-> partida do bot). Ver bloco 479 do HANDOFF.
+> partida do bot). **Follow-up na mesma sessão** (revisão pedida pelo
+> usuário): achado real — o fingerprint podia ficar descolado do estado
+> realmente usado se um `/reveal` concorrente mudasse `_match_memory`
+> entre o gatilho e o cálculo do pondering; corrigido recalculando o
+> fingerprint dentro da própria thread do pondering. Consideração
+> registrada mas NÃO implementada: várias threads de pondering podem
+> rodar em paralelo se o oponente gerar `/defense` em sequência rápida
+> (custo de CPU, não gera resultado errado) — item pra observar na
+> sessão ao vivo, não corrigido preventivamente sem dado real. Ver
+> bloco 479 do HANDOFF.
 
 > **REGRA NOVA (bloco 473)**: `audit_real_losses.py` (+ `triage_real_
 > losses.py`) agora é OBRIGATÓRIO rodar sempre que um log de DERROTA do
