@@ -1,5 +1,61 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-10 (481) - Claude (sessao remota web) - Paraleliza os 3 scripts de simulacao em lote (audit_replay.py, gauntlet_matchup.py, baseline_metrics.py) -- `--workers N`, ~3.6x mais rapido medido, resultado reprodutivel identico entre sequencial/paralelo
+
+Usuario pediu ("o que podemos fazer pra acelerar essas simulacoes")
+depois do bloco 480. Achado principal: os 3 scripts de simulacao em
+LOTE (auditoria/gauntlet/baseline) rodavam as partidas em SEQUENCIA
+(`for` simples), mesmo sendo 100% independentes entre si (nenhum
+estado compartilhado) -- trabalho classico "embaraçosamente paralelo",
+ja usado com sucesso nos scripts de calibracao descartaveis (blocos
+449/459/468). Adicionado `--workers N` (default 1 = sequencial, mesmo
+comportamento de sempre) via `ProcessPoolExecutor` nos 3:
+
+- **`audit_replay.py`**: reestruturado com `if __name__ == "__main__":`
+  (exigido pro `multiprocessing` funcionar com seguranca no Windows,
+  que usa spawn em vez de fork -- sem isso, cada processo filho
+  reimportaria e reexecutaria o script inteiro). Logica por-partida
+  extraida pra `_run_one_match(task)`, sem depender de estado global
+  (cada chamada carrega o proprio banco de decks). Medido: 20 partidas
+  reais, seed=33 -- **1m49s sequencial -> 30s com 4 workers (~3.6x)**,
+  resultado IDENTICO (mesmos matchups/vencedores/turnos) entre os dois.
+- **`gauntlet_matchup.py`**: mesmo padrao, mas com um detalhe a mais --
+  o monkeypatch de `OPTCGMatch._execute_attack` (rastreia DON anexado
+  via closure `captured`) precisou virar LOCAL a cada partida (aplicado
+  e restaurado dentro de `_run_one_seed`, nao mais um bloco try/finally
+  em volta do loop inteiro) pra nao vazar entre processos/chamadas.
+  Testado com roster reduzido (2 adversarios x 5 seeds): sequencial e
+  paralelo (4 workers) deram resultado byte-a-byte identico.
+- **`baseline_metrics.py`**: `run_match()` (funcao publica, usada por
+  outros scripts como `baseline_metrics.run_match()` direto em memoria,
+  ver bloco 477) preservada INTACTA pra compatibilidade -- a
+  paralelizacao vive em `_play_one_match`/`_accumulate`/`_worker_task`
+  novas, usadas só por `main()`. **Bug pego ANTES de commitar**: a
+  1a versao usava `random.seed(args.seed)` uma vez so (encadeado entre
+  partidas) no caminho sequencial mas seed-por-indice no paralelo --
+  resultado DIFERENTE pro MESMO `--seed` dependendo de `--workers`,
+  quebrando a premissa "paralelismo so muda o tempo". Corrigido:
+  unificado pra sempre usar seed-por-indice
+  (`args.seed * 1_000_003 + i`), sequencial e paralelo agora batem
+  100% (testado com deck loader mockado, ja que este script depende de
+  `.deck` do Windows -- so existe na maquina do usuario).
+
+**Nota de reprodutibilidade, documentada nos 3 scripts**: a versao
+sequencial ANTIGA avançava um UNICO `random` global entre as N
+partidas (a seed efetiva da partida i dependia de quantas chamadas de
+`random.*` as partidas 0..i-1 ja tinham feito) -- isso nao e
+reproduzivel entre processos separados. Todos os 3 agora derivam a
+seed de CADA partida independentemente (`seed_base * 1_000_003 + i`),
+entao `--seed` continua determinístico (mesmo seed = mesmas N
+partidas), mas a composição EXATA de cada partida individual mudou em
+relação ao comportamento pré-paralelismo (matchups/resultados
+especificos por indice sao diferentes de antes, so nao mais
+dependentes da ordem de execucao).
+
+`smoke_fast.py`/`smoke_test.py`: 100% (nao testam estes scripts
+diretamente, rodados por precaucao ja que decision_engine.py nao foi
+tocado nesta sessao -- so os 3 scripts de simulacao em lote).
+
 ## 2026-08-10 (480) - Claude (sessao remota web) - Liga amostragem ADAPTATIVA no main_phase() offline (piso=3/teto=6), fecha pendencia antiga (blocos 380/477) -- custo medido em +7.2% de tempo, sem regressao
 
 Usuario perguntou (curiosidade, apos o bloco 479 de pondering) se o

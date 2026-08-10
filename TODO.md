@@ -2,6 +2,23 @@
 
 **Última atualização:** 10 de agosto de 2026
 
+> 10/08/2026 (bloco 481): **paralelismo em `audit_replay.py`/
+> `gauntlet_matchup.py`/`baseline_metrics.py`** — os 3 rodavam partidas
+> em sequência mesmo sendo independentes. Adicionado `--workers N`
+> (default 1 = sequencial, comportamento de sempre) via
+> `ProcessPoolExecutor`. Medido em `audit_replay.py`: **1m49s → 30s com
+> 4 workers (~3,6x), resultado idêntico** entre sequencial/paralelo.
+> `audit_replay.py` ganhou `if __name__ == "__main__":` (exigido pro
+> multiprocessing no Windows/spawn). **Bug pego antes de commitar** em
+> `baseline_metrics.py`: sequencial e paralelo davam resultados
+> DIFERENTES pro mesmo `--seed` (esquemas de seed diferentes) —
+> corrigido, unificado pra seed-por-índice nos dois casos. **Mudança de
+> comportamento documentada nos 3**: `--seed` continua determinístico,
+> mas a composição exata de cada partida individual mudou (não depende
+> mais da ordem de execução acumulada). `smoke_fast`/`smoke_test` 100%
+> (precaução — nenhum dos 3 scripts é testado por eles diretamente,
+> `decision_engine.py` não foi tocado). Ver bloco 481 do HANDOFF.
+
 > 10/08/2026 (bloco 480): **amostragem ADAPTATIVA ligada no `main_phase()`
 > offline** (self-play/replay/calibração/`/simulate` do front-end) —
 > **fecha pendência antiga (blocos 380/477)**: trocado N FIXO=3 por

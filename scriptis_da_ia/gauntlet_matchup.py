@@ -28,22 +28,30 @@ causa só deste gauntlet sem log real desses matchups pra cross-validar.
 
 Uso:
     python gauntlet_matchup.py
+    python gauntlet_matchup.py --workers 4   # paraleliza (achado 10/08)
+
+Paralelismo: cada (adversario, seed) e uma partida independente -- roda em
+processo separado via ProcessPoolExecutor, mesmo padrao ja validado em
+audit_replay.py/blocos de calibracao anteriores. Cada worker reconstroi os
+decks do zero a partir de decklists_raw.csv (evita depender de picklar
+objetos Card entre processos) e aplica o MESMO monkeypatch de
+`OPTCGMatch._execute_attack` localmente (o `captured`/`_fixed_side_marker`
+do original era estado compartilhado via closure -- aqui vira retorno da
+propria funcao, sem risco de contaminacao entre partidas).
 """
+import argparse
 import random
 import sys
 import contextlib
 import io
 import json
 import os
+from concurrent.futures import ProcessPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from replay_optcg import ReplayMatch
 from optcg_engine.decision_engine import build_real_deck, load_cards_db, validar_deck, OPTCGMatch
 import pandas as pd
-
-cards_db = load_cards_db('cards_rows.csv')
-df_raw = pd.read_csv('decklists_raw.csv')
-urls = df_raw.groupby('deck_url')['deck_name'].first()
 
 # Roster escolhido pelos arquétipos mais representados em decklists_raw.csv
 # (meta real de torneio): Enel (70 decks), Nami (30), Ace (19), Mihawk (16),
@@ -64,7 +72,7 @@ OUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                          'metrics', 'gauntlet_imu_04_08.json')
 
 
-def find_deck(target_name):
+def _find_deck(target_name, cards_db, df_raw, urls):
     for url, name in urls.items():
         if name == target_name:
             result = build_real_deck(name, url, df_raw, cards_db)
@@ -78,23 +86,16 @@ def find_deck(target_name):
     return None
 
 
-def main():
-    fixed_deck = find_deck(FIXED_NAME)
-    fixed_mirror_deck = find_deck(FIXED_MIRROR_NAME)
-    assert fixed_deck and fixed_mirror_deck, "deck fixo nao encontrado"
-
-    roster = {}
-    for label, name in ROSTER_NAMES.items():
-        d = find_deck(name)
-        if d:
-            roster[label] = d
-        else:
-            print(f'AVISO: {label} ({name}) nao encontrado/invalido')
-    roster['Mirror'] = fixed_mirror_deck
-
-    print(f'Roster final: {list(roster.keys())}')
-    print(f'Deck fixo: {FIXED_NAME}')
-    print()
+def _run_one_seed(task):
+    """Roda 1 partida (adversario, seed) completa e devolve (label, linha).
+    Independente de qualquer outra chamada -- pode rodar em processo
+    separado sem coordenacao."""
+    label, opp_name, seed = task
+    cards_db = load_cards_db('cards_rows.csv')
+    df_raw = pd.read_csv('decklists_raw.csv')
+    urls = df_raw.groupby('deck_url')['deck_name'].first()
+    fixed_deck = _find_deck(FIXED_NAME, cards_db, df_raw, urls)
+    opp_deck = _find_deck(opp_name, cards_db, df_raw, urls)
 
     original_execute_attack = OPTCGMatch._execute_attack
     captured = []
@@ -105,43 +106,83 @@ def main():
         return original_execute_attack(self, attacker, target_type, target, p, opp, engine, verbose=verbose, attached_don=attached_don)
 
     OPTCGMatch._execute_attack = patched_execute_attack
-
-    resultados = {}
     try:
-        for label, opp_deck in roster.items():
-            linhas = []
-            for seed in range(N_SEEDS):
-                random.seed(1000 + seed)
-                captured.clear()
-
-                buf = io.StringIO()
-                with contextlib.redirect_stdout(buf):
-                    match = ReplayMatch(fixed_deck, opp_deck, 'Fixo', label)
-                    match.setup()
-                    eng = match._get_engine_match()
-                    eng._fixed_side_marker = match.state_a
-                    vencedor = None
-                    turn_num = 0
-                    for turn_num in range(match.MAX_TURNS * 2):
-                        p = (match.state_a if match.state_a.is_first else match.state_b) \
-                            if turn_num % 2 == 0 \
-                            else (match.state_b if match.state_a.is_first else match.state_a)
-                        opp = match.state_b if p is match.state_a else match.state_a
-                        vencedor = eng.play_turn(p, opp, verbose=False)
-                        if vencedor:
-                            break
-
-                fixo_won = (vencedor == 'A')
-                n_ataques = len(captured)
-                don_medio = sum(captured) / n_ataques if n_ataques else 0.0
-                linhas.append({
-                    'seed': seed, 'fixo_won': fixo_won,
-                    'dmg_fixo': match.state_a.dmg_dealt, 'dmg_opp': match.state_b.dmg_dealt,
-                    'turnos': turn_num, 'ataques_fixo': n_ataques, 'don_medio': don_medio,
-                })
-            resultados[label] = linhas
+        random.seed(1000 + seed)
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            match = ReplayMatch(fixed_deck, opp_deck, 'Fixo', label)
+            match.setup()
+            eng = match._get_engine_match()
+            eng._fixed_side_marker = match.state_a
+            vencedor = None
+            turn_num = 0
+            for turn_num in range(match.MAX_TURNS * 2):
+                p = (match.state_a if match.state_a.is_first else match.state_b) \
+                    if turn_num % 2 == 0 \
+                    else (match.state_b if match.state_a.is_first else match.state_a)
+                opp = match.state_b if p is match.state_a else match.state_a
+                vencedor = eng.play_turn(p, opp, verbose=False)
+                if vencedor:
+                    break
     finally:
         OPTCGMatch._execute_attack = original_execute_attack
+
+    fixo_won = (vencedor == 'A')
+    n_ataques = len(captured)
+    don_medio = sum(captured) / n_ataques if n_ataques else 0.0
+    linha = {
+        'seed': seed, 'fixo_won': fixo_won,
+        'dmg_fixo': match.state_a.dmg_dealt, 'dmg_opp': match.state_b.dmg_dealt,
+        'turnos': turn_num, 'ataques_fixo': n_ataques, 'don_medio': don_medio,
+    }
+    return label, linha
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('--workers', type=int, default=1,
+                    help='processos paralelos (1=sequencial, comportamento de sempre)')
+    args = ap.parse_args()
+
+    cards_db = load_cards_db('cards_rows.csv')
+    df_raw = pd.read_csv('decklists_raw.csv')
+    urls = df_raw.groupby('deck_url')['deck_name'].first()
+
+    fixed_deck = _find_deck(FIXED_NAME, cards_db, df_raw, urls)
+    fixed_mirror_deck = _find_deck(FIXED_MIRROR_NAME, cards_db, df_raw, urls)
+    assert fixed_deck and fixed_mirror_deck, "deck fixo nao encontrado"
+
+    roster_names = {}
+    for label, name in ROSTER_NAMES.items():
+        d = _find_deck(name, cards_db, df_raw, urls)
+        if d:
+            roster_names[label] = name
+        else:
+            print(f'AVISO: {label} ({name}) nao encontrado/invalido')
+    roster_names['Mirror'] = FIXED_MIRROR_NAME
+
+    print(f'Roster final: {list(roster_names.keys())}')
+    print(f'Deck fixo: {FIXED_NAME}')
+    print()
+
+    tasks = [(label, opp_name, seed)
+             for label, opp_name in roster_names.items()
+             for seed in range(N_SEEDS)]
+
+    if args.workers <= 1:
+        pares = [_run_one_seed(t) for t in tasks]
+    else:
+        with ProcessPoolExecutor(max_workers=args.workers) as ex:
+            pares = list(ex.map(_run_one_seed, tasks))
+
+    resultados: dict[str, list] = {}
+    for label, linha in pares:
+        resultados.setdefault(label, []).append(linha)
+    for label in resultados:
+        resultados[label].sort(key=lambda l: l['seed'])
+    # Preserva a ordem original do roster na impressao/JSON (dict do
+    # Python 3.7+ mantem ordem de insercao).
+    resultados = {label: resultados[label] for label in roster_names if label in resultados}
 
     print(f'{"Adversario":15} {"WinRate":>8} {"Dano_medio":>11} {"DON/atk":>9} {"Ataques/turno":>14} {"Turnos_medio":>13}')
     agg_win, agg_dmg, agg_don, agg_atk_per_turn = [], [], [], []

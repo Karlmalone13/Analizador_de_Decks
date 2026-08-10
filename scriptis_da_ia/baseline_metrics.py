@@ -24,6 +24,18 @@ Uso:
   python baseline_metrics.py --n 50 --seed 1
   python baseline_metrics.py --deck-a Imu --deck-b "Krieg RG"
   python baseline_metrics.py --json out.json        # salva pra diff entre etapas
+  python baseline_metrics.py --workers 4            # paraleliza (achado 10/08)
+
+Paralelismo: cada partida e independente -- `--workers N` roda N partidas em
+processos separados via ProcessPoolExecutor (mesmo padrao ja validado em
+audit_replay.py/gauntlet_matchup.py). Nota de reprodutibilidade: a versao
+sequencial antiga avançava um UNICO `random` global entre as N partidas (a
+seed efetiva da partida i dependia de quantas chamadas de random.* as
+partidas 0..i-1 ja tinham feito) -- isso nao e reproduzivel entre processos,
+entao cada partida agora usa sua PROPRIA seed derivada de `--seed`+indice
+(`args.seed * 1_000_003 + i`), igual sequencial ou paralelo. `--seed`
+continua determinístico (mesmo seed = mesmas N partidas), só a composição
+exata de cada partida individual muda em relação ao comportamento antigo.
 """
 from __future__ import annotations
 import argparse
@@ -32,6 +44,7 @@ import os
 import random
 import subprocess
 import sys
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 # Reprodutibilidade real (ver audit_antipatterns.py): PYTHONHASHSEED precisa
@@ -50,10 +63,83 @@ def _side_stats() -> dict:
             'don_attached': 0, 'counters': 0, 'turnos_proprios': 0}
 
 
+def _play_one_match(deck_a, deck_b, seed: int, side_a_v2: dict | None = None) -> dict:
+    """Roda 1 partida instrumentada do ZERO (sem mutar estado compartilhado) e
+    devolve um resultado bruto -- pode rodar em processo separado sem
+    coordenacao. `_accumulate` (abaixo) faz a mesma soma que antes vivia
+    inline dentro do loop de `run_match`."""
+    random.seed(seed)
+    match = OPTCGMatch(deck_a, deck_b)
+    match.setup()
+    match.replay_log = []
+    if side_a_v2 is not None:
+        match.state_a.use_eval_v2 = True
+        match.state_a.eval_weights = side_a_v2
+        match.state_b.use_eval_v2 = False
+
+    turnos = 0
+    winner = None
+    turnos_proprios_a = 0
+    turnos_proprios_b = 0
+    for turn_num in range(match.MAX_TURNS * 2):
+        p = (match.state_a if match.state_a.is_first else match.state_b) \
+            if turn_num % 2 == 0 \
+            else (match.state_b if match.state_a.is_first else match.state_a)
+        opp = match.state_b if p is match.state_a else match.state_a
+        if p is match.state_a:
+            turnos_proprios_a += 1
+        else:
+            turnos_proprios_b += 1
+        result = match.play_turn(p, opp)
+        turnos += 1
+        if result:
+            winner = result
+            break
+
+    return {
+        'winner': winner,
+        'turnos': turnos,
+        'turnos_proprios_a': turnos_proprios_a,
+        'turnos_proprios_b': turnos_proprios_b,
+        'replay_log': match.replay_log,
+        'counters_a': match.state_a.counters_used,
+        'counters_b': match.state_b.counters_used,
+    }
+
+
+def _accumulate(raw: dict, sa: dict, sb: dict) -> None:
+    """Soma o resultado bruto de 1 partida nos totais acumulados -- mesma
+    logica que `run_match` fazia inline, extraida pra rodar no processo
+    PRINCIPAL depois de coletar resultados (sequenciais ou paralelos)."""
+    winner = raw['winner']
+    if winner == 'A':   sa['wins'] += 1
+    elif winner == 'B': sb['wins'] += 1
+    else:               sa['wins'] += 0.5; sb['wins'] += 0.5
+
+    sa['turnos_proprios'] += raw['turnos_proprios_a']
+    sb['turnos_proprios'] += raw['turnos_proprios_b']
+
+    for e in raw['replay_log']:
+        side = sa if e.get('player') == 'A' else sb
+        if e.get('type') == 'attack':
+            side['atk'] += 1
+            side['don_attached'] += e.get('attached_don', 0)
+            tgt = e.get('target') or {}
+            if tgt.get('type') == 'LEADER':
+                side['atk_leader'] += 1
+        elif e.get('type') == 'life_damage':
+            side['dmg'] += 1
+
+    sa['counters'] += raw['counters_a']
+    sb['counters'] += raw['counters_b']
+
+
 def run_match(deck_a, deck_b, sa: dict, sb: dict, side_a_v2: dict | None = None) -> int:
-    """Roda 1 partida instrumentada; acumula em sa (A) e sb (B). Retorna turnos.
-    side_a_v2: se dado, lado A usa evaluate_state_v2 com ESSES pesos e lado B
-    fica na v1 — mede o deployment real (nosso bot em v2 vs oponente v1)."""
+    """Compatibilidade com chamadores existentes (ex: outros scripts que
+    importam esta funcao) -- roda 1 partida com o `random` global JA
+    posicionado pelo chamador (nao deriva seed propria) e acumula direto,
+    igual ao comportamento original. `main()` abaixo usa `_play_one_match`/
+    `_accumulate` separados pra poder paralelizar."""
     match = OPTCGMatch(deck_a, deck_b)
     match.setup()
     match.replay_log = []
@@ -76,12 +162,10 @@ def run_match(deck_a, deck_b, sa: dict, sb: dict, side_a_v2: dict | None = None)
             winner = result
             break
 
-    # winrate (empate = meio ponto pra cada)
     if winner == 'A':   sa['wins'] += 1
     elif winner == 'B': sb['wins'] += 1
     else:               sa['wins'] += 0.5; sb['wins'] += 0.5
 
-    # métricas de ação via replay_log
     for e in match.replay_log:
         side = sa if e.get('player') == 'A' else sb
         if e.get('type') == 'attack':
@@ -96,6 +180,13 @@ def run_match(deck_a, deck_b, sa: dict, sb: dict, side_a_v2: dict | None = None)
     sa['counters'] += match.state_a.counters_used
     sb['counters'] += match.state_b.counters_used
     return turnos
+
+
+def _worker_task(task):
+    deck_a_name, deck_b_name, seed, side_a_v2 = task
+    deck_a = load_sim_deck(deck_a_name)
+    deck_b = load_sim_deck(deck_b_name)
+    return _play_one_match(deck_a, deck_b, seed, side_a_v2=side_a_v2)
 
 
 def _fmt(s: dict, n: int) -> dict:
@@ -121,9 +212,10 @@ def main():
     ap.add_argument('--json', default='', help='salva o resumo em JSON pra diff entre etapas')
     ap.add_argument('--side-a-v2', action='store_true',
                     help='lado A usa evaluate_state_v2 + eval_weights.json; B fica v1 (deployment real)')
+    ap.add_argument('--workers', type=int, default=1,
+                    help='processos paralelos (1=sequencial, comportamento de sempre)')
     args = ap.parse_args()
 
-    random.seed(args.seed)
     deck_a = load_sim_deck(args.deck_a)
     deck_b = load_sim_deck(args.deck_b)
 
@@ -140,8 +232,25 @@ def main():
 
     sa, sb = _side_stats(), _side_stats()
     turnos_total = 0
-    for _ in range(args.n):
-        turnos_total += run_match(deck_a, deck_b, sa, sb, side_a_v2=side_a_v2)
+
+    # Mesma derivacao de seed por-partida (args.seed * 1_000_003 + i) nos
+    # DOIS caminhos -- achado ao testar: usar `random.seed(args.seed)` uma
+    # vez so (encadeado entre partidas, comportamento antigo) no sequencial
+    # e a seed derivada no paralelo dava resultados DIFERENTES pro mesmo
+    # --seed, quebrando a promessa de "--workers so muda o tempo, nao o
+    # resultado". Unificado: `--workers 1` tambem usa `_play_one_match`/
+    # `_accumulate` com seed por indice, entao trocar --workers e
+    # reprodutivel (mesmo --seed = mesmos N resultados, sequencial ou nao).
+    tasks = [(args.deck_a, args.deck_b, args.seed * 1_000_003 + i, side_a_v2)
+             for i in range(args.n)]
+    if args.workers <= 1:
+        resultados_brutos = [_worker_task(t) for t in tasks]
+    else:
+        with ProcessPoolExecutor(max_workers=args.workers) as ex:
+            resultados_brutos = list(ex.map(_worker_task, tasks))
+    for raw in resultados_brutos:
+        _accumulate(raw, sa, sb)
+        turnos_total += raw['turnos']
 
     resA, resB = _fmt(sa, args.n), _fmt(sb, args.n)
     resumo = {
