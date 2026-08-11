@@ -2,6 +2,36 @@
 
 **Última atualização:** 11 de agosto de 2026
 
+> 11/08/2026 (bloco 496): **`wincon_ready`/`opp_combo_threat`** (os 2
+> pesos restantes do achado do bloco 494) testados com o `__deepcopy__`
+> já corrigido. Lição do 491/492 aplicada PROATIVAMENTE desta vez:
+> probe rápido (N=6) ANTES de escalar — `wincon_ready` disparou em
+> 71-76% dos turnos (Imu, único deck do roster com o eixo bottleneck);
+> `opp_combo_threat` deu **0% em 166 turnos/4 matchups** (provável causa:
+> só conta ameaça se o trash do oponente já tiver ≥1 corpo qualificado,
+> e jogos self-play curtos podem terminar antes disso acontecer) —
+> **calibração pulada**, não vale gastar amostra grande num termo que
+> não dispara nestas condições.
+>
+> **`wincon_ready` calibrado de verdade** (N=30, 4 matchups
+> Imu_v_{Mihawk,Enel,Ace,Nami}): candidatos x1.5 (30.0, maximin=-0,100)
+> e x0.67 (13.4, maximin=-0,067) diferenciaram bem do baseline (prova
+> que o mecanismo funciona), mas nenhum bateu sem regredir o pior
+> matchup (Imu_v_Mihawk). **Prior 20.0 mantido — resultado negativo mas
+> conclusivo**, agora validado por teste real em vez de nunca calibrado.
+> Nenhum valor numérico mudou em `eval_weights.json`, só `_meta`.
+> `smoke_fast.py` 100%. Ver bloco 496 do HANDOFF.
+>
+> **Fecha os 3 pesos do achado do bloco 494**: next_turn_readiness
+> (dividido e calibrado), wincon_ready (validado, sem mudança),
+> opp_combo_threat (pulado, dado insuficiente).
+>
+> **Pendências pra próxima sessão**: (1) repetir `opp_combo_threat` com
+> jogos mais longos ou matchups onde o trash do oponente acumula fuel
+> mais cedo; (2) a suspeita maior do bloco 495 — revalidar os 11 pesos
+> originais de `tune_weights.py._TUNABLE`, calibrados possivelmente sob
+> o bug do `__deepcopy__` (só corrigido no bloco 495).
+
 > 11/08/2026 (bloco 495): **`next_turn_readiness` dividido em 2 pesos
 > independentes** (`next_turn_readiness_self` / `next_turn_readiness_
 > opp_threat`) — o peso único do bloco 494 multiplicava dois sinais

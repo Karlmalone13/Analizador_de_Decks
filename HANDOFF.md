@@ -1,5 +1,74 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-11 (496) - Claude (sessao remota web) - `wincon_ready`/`opp_combo_threat` (os 2 pesos restantes do bloco 494): 1 validado (prior mantido), 1 pulado por 0% de gatilho
+
+Continuacao direta do bloco 495 (usuario: "Sim, pode seguir"). Com o
+`__deepcopy__` corrigido, os 2 pesos que faltavam de `_evaluate_state_v2`
+finalmente podiam ser testados de verdade.
+
+**Licao do bloco 491/492 aplicada PROATIVAMENTE desta vez**: antes de
+escalar pra N=30, rodei um probe rapido (N=6, script descartavel) pra
+medir frequencia de gatilho dos dois termos em 4 matchups:
+- `wincon_ready` (so existe pro eixo `bottleneck`/reanimacao do perfil
+  do deck): 71-76% dos turnos quando Imu (unico deck do roster com esse
+  eixo) e o lado A; 0% pros outros decks (esperado, sem o eixo). Sinal
+  forte -- vale calibrar.
+- `opp_combo_threat`: **0% em TODOS os 4 matchups, 166 turnos**,
+  incluindo Mihawk_v_Imu (onde o OPONENTE Imu tem habilidade de
+  reanimacao em massa de verdade). Causa provavel: `opp_combo_threat()`
+  so conta uma fonte se ja existir >=1 corpo qualificado no TRASH do
+  oponente (`if not fuel: continue`) -- jogos self-play curtos (~7
+  turnos/lado) podem terminar antes do trash acumular fuel suficiente.
+  Bate com o aviso ja registrado nos blocos 491/492/494 sobre esse peso
+  poder esbarrar em insensibilidade de amostra/cenario. **Calibracao
+  PULADA** -- nao vale gastar N=30 num termo que nunca dispara nestas
+  condicoes. Fica pendente pra proxima tentativa com jogos mais longos
+  ou matchups diferentes.
+
+**Calibracao real de `wincon_ready`** (self-play pareado, N=30, 4
+matchups Imu_v_{Mihawk,Enel,Ace,Nami} -- Imu fixo no lado A por ser o
+unico deck do roster com o eixo bottleneck, pesos simetricos nos 2
+lados): candidatos multiplicativos x1.5 (30.0) e x0.67 (13.4), mesma
+convencao do `tune_weights.py`.
+
+- baseline (20.0): Imu_v_Mihawk 30,0% / Imu_v_Enel 53,3% / Imu_v_Ace
+  60,0% / Imu_v_Nami 63,3%.
+- x1.5 (30.0): margens -10,0pp / +3,3pp / +3,3pp / +6,7pp ->
+  **maximin=-0,100**, reprovado (regride o pior matchup ainda mais).
+- x0.67 (13.4): margens -6,7pp / -3,3pp / +3,3pp / 0,0pp ->
+  **maximin=-0,067**, reprovado.
+
+Diferente do resultado "identico demais" do bug do bloco 495 -- aqui os
+numeros diferenciaram de verdade (prova de que o mecanismo esta
+funcionando), so que nenhum candidato testado bateu o baseline sem
+regredir Imu_v_Mihawk (ja o matchup mais desfavoravel). **Resultado
+negativo mas CONCLUSIVO**: prior 20.0 mantido, agora validado por teste
+real em vez de nunca calibrado.
+
+**`eval_weights.json`**: nenhum valor numerico mudou (wincon_ready
+continua no default do modulo, 20.0; opp_combo_threat continua 0.8) --
+so `_meta` documentando os 2 resultados (chaves aninhadas
+`wincon_ready`/`opp_combo_threat` dentro de `_meta`, ignoradas pelo
+loader do motor igual o resto do bloco `_meta`).
+
+**Validacao**: `smoke_fast.py` 100% (sem mudanca de peso numerico, so
+`_meta`, mas rodado por disciplina). Scripts descartaveis
+(`probe_trigger_freq.py`, `calibrate_wincon_ready.py`) apagados.
+
+**Fecha os 3 pesos nunca calibrados achados no bloco 494**:
+`next_turn_readiness_self=0.6`/`next_turn_readiness_opp_threat=0.0`
+(mudou), `wincon_ready=20.0` (validado, sem mudanca),
+`opp_combo_threat=0.8` (pulado, sem dado suficiente pra validar ainda).
+
+**Pendencias pra proxima sessao** (nenhuma nova iniciada):
+1. `opp_combo_threat`: repetir a calibracao com jogos mais longos
+   (`MAX_TURNS` maior?) ou matchups onde o trash do oponente acumula
+   fuel mais cedo -- 0% de gatilho aqui nao prova que o peso e inutil,
+   so que este harness/matchups nao o exercitam.
+2. Suspeita maior (registrada no bloco 495): revalidar os 11 pesos
+   originais de `tune_weights.py._TUNABLE`, calibrados possivelmente sob
+   o bug do `__deepcopy__` (fix so entrou neste bloco 495/496).
+
 ## 2026-08-11 (495) - Claude (sessao remota web) - `next_turn_readiness` dividido em 2 pesos (self/opp_threat), calibrado (self=0.6, threat=0.0) -- e bug real de `__deepcopy__` achado/corrigido no processo (invalida override de eval_weights no Monte Carlo)
 
 Continuacao direta do bloco 494. Usuario perguntou se a funcao

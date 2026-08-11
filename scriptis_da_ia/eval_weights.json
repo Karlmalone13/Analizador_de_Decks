@@ -18,9 +18,20 @@
   "_meta": {
     "origin": "learned",
     "when": "2026-08-11",
-    "note": "next_turn_readiness_self/opp_threat calibrados via self-play pareado (bloco 495) DEPOIS de corrigir bug real em GameState.__deepcopy__ (eval_weights/use_eval_v2 nao propagavam pro clone que _evaluate_state_v2 avalia -- 1a rodada, pre-fix, deu margem zero em TODOS os candidatos, sinal identico demais, investigado e corrigido antes de aceitar). Coordinate-ascent 2 fases, N=30/matchup, 3 matchups (Mihawk_v_Imu, Ace_v_Mihawk, Nami_v_Enel). Fase 1 (self, threat=0.0 fixo): self=0.6 teve maximin=+0.067 (melhora os 3 matchups: +6.7pp/+6.7pp/+6.7pp), self=0.3 regrediu Nami_v_Enel (-6.7pp, maximin=-0.067, reprovado). Fase 2 (threat, self=0.6 fixo): threat=0.3 e threat=0.6 regrediram pelo menos 1 matchup (maximin=-0.033 nos dois), reprovados -- threat fica em 0.0. Resultado interpretavel: o sinal de GANHO projetado pro meu lado (self) e bom (bate com o prior original 0.6 de antes do bloco 494); o sinal de AMEACA do oponente (threat) e o que estava atrapalhando no peso combinado do bloco 494 -- explica por que 'next_turn_readiness' unico foi pra 0.0 la. wincon_ready/opp_combo_threat continuam nao calibrados (prior). SUSPEITA REGISTRADA (nao investigada): os 11 pesos originais de tune_weights.py._TUNABLE podem ter sido calibrados sob o mesmo bug de __deepcopy__, candidato a revalidacao futura.",
+    "note": "next_turn_readiness_self/opp_threat calibrados via self-play pareado (bloco 495) DEPOIS de corrigir bug real em GameState.__deepcopy__ (eval_weights/use_eval_v2 nao propagavam pro clone que _evaluate_state_v2 avalia -- 1a rodada, pre-fix, deu margem zero em TODOS os candidatos, sinal identico demais, investigado e corrigido antes de aceitar). Coordinate-ascent 2 fases, N=30/matchup, 3 matchups (Mihawk_v_Imu, Ace_v_Mihawk, Nami_v_Enel). Fase 1 (self, threat=0.0 fixo): self=0.6 teve maximin=+0.067 (melhora os 3 matchups: +6.7pp/+6.7pp/+6.7pp), self=0.3 regrediu Nami_v_Enel (-6.7pp, maximin=-0.067, reprovado). Fase 2 (threat, self=0.6 fixo): threat=0.3 e threat=0.6 regrediram pelo menos 1 matchup (maximin=-0.033 nos dois), reprovados -- threat fica em 0.0. Resultado interpretavel: o sinal de GANHO projetado pro meu lado (self) e bom (bate com o prior original 0.6 de antes do bloco 494); o sinal de AMEACA do oponente (threat) e o que estava atrapalhando no peso combinado do bloco 494 -- explica por que 'next_turn_readiness' unico foi pra 0.0 la. SUSPEITA REGISTRADA (nao investigada): os 11 pesos originais de tune_weights.py._TUNABLE podem ter sido calibrados sob o mesmo bug de __deepcopy__, candidato a revalidacao futura.",
     "gauntlet": ["Mihawk_v_Imu", "Ace_v_Mihawk", "Nami_v_Enel"],
     "n": 30,
-    "seed_base": 4400
+    "seed_base": 4400,
+    "wincon_ready": {
+      "status": "validado, prior mantido (20.0)",
+      "note": "probe (N=6) confirmou gatilho frequente (71-76% dos turnos do lado Imu, unico deck do roster com eixo bottleneck). Calibracao real (N=30, 4 matchups Imu_v_{Mihawk,Enel,Ace,Nami}) diferenciou de verdade (nao identico) mas NENHUM candidato multiplicativo (x1.5=30.0, x0.67=13.4) bateu o baseline sem regredir Imu_v_Mihawk (ja o pior matchup, 30.0% baseline): x1.5 piorou -10pp, x0.67 piorou -6.7pp. Prior 20.0 fica, agora validado por teste real (nao so suposicao) em vez de nunca calibrado.",
+      "gauntlet": ["Imu_v_Mihawk", "Imu_v_Enel", "Imu_v_Ace", "Imu_v_Nami"],
+      "n": 30,
+      "seed_base": 5500
+    },
+    "opp_combo_threat": {
+      "status": "calibracao PULADA -- 0% de gatilho observado",
+      "note": "probe (N=6, 4 matchups incluindo Mihawk_v_Imu, onde o OPONENTE Imu tem habilidade de reanimacao em massa) deu ZERO disparos em 166 turnos avaliados. Causa provavel: opp_combo_threat() so conta uma fonte se ja existir >=1 corpo qualificado no TRASH do oponente (`if not fuel: continue`) -- jogos curtos (self-play, ~7 turnos/lado) podem terminar antes do trash do oponente acumular fuel suficiente. Nao e o mesmo bug do next_turn_readiness (aqui o mecanismo de leitura ja esta correto, testado no bloco 495) -- e insensibilidade de AMOSTRA/CENARIO, mesma categoria de risco ja avisada nos blocos 491/492 pro PREVENT_COMBO. Nao calibrado nesta sessao -- proxima tentativa precisa de jogos mais longos ou matchups onde o trash do oponente acumula fuel mais cedo."
+    }
   }
 }
