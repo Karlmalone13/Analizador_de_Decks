@@ -2,6 +2,18 @@
 
 **Última atualização:** 10 de agosto de 2026
 
+> 10/08/2026 (bloco 494, PARCIAL/EM ANDAMENTO): **3 pesos de
+> `_evaluate_state_v2` nunca calibrados achados** (pedido do usuário,
+> "melhorar o simulated_value" via a função de avaliação de estado).
+> `wincon_ready`/`opp_combo_threat`/`next_turn_readiness` nunca
+> estiveram em `tune_weights.py._TUNABLE` — ficaram presos no prior
+> desde que foram criados, mesmo com comentário dizendo "tunagem por
+> self-play ajusta". Extensão do `_TUNABLE` já feita (fix permanente,
+> baixo risco). Calibração real de `next_turn_readiness` (o mais
+> genérico dos 3) rodando em self-play pareado (baseline 0.6 vs
+> zero 0.0 vs forte 2.0, 3 matchups, N=30). Resultado e decisão ficam
+> pro próximo bloco. Ver bloco 494 do HANDOFF.
+
 > 10/08/2026 (bloco 493): **investigadas 2 hipóteses de viés (attach_don
 > sobre "descer bomba"; atacar líder sobre focar board) — NENHUMA
 > confirmada**. Self-play real (5 líderes, 6 partidas cada,

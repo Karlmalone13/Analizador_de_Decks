@@ -46,7 +46,18 @@ _V1 = {
 # passo de busca por peso (fração multiplicativa) e limites sensatos
 _TUNABLE = ['dmg', 'board_mine', 'board_opp', 'hand_first', 'counter_hand',
             'don_field', 'coverage', 'ax_trash', 'ax_reanim', 'ax_inversion',
-            'life_mult']
+            'life_mult',
+            # Achado real 10/08 (bloco 494, pedido do usuario: "melhorar o
+            # simulated_value"): estes 3 pesos existem em EVAL_WEIGHTS desde
+            # que foram criados (07/07 opp_combo_threat, 24/07 next_turn_
+            # readiness/wincon_ready) mas NUNCA estiveram nesta lista --
+            # ficaram presos no PRIOR documentado no proprio comentario como
+            # "tunagem por self-play ajusta" (isso nunca aconteceu de
+            # verdade). Toda amostra Monte Carlo do Turn Planner usa
+            # _evaluate_state_v2 no estado final -- um peso nao calibrado ali
+            # degrada a qualidade de QUALQUER simulacao que passe por esses
+            # eixos, nao so um caso pontual.
+            'wincon_ready', 'opp_combo_threat', 'next_turn_readiness']
 
 
 def _imu_winrate(deck_imu, deck_opp, weights: dict, n: int, seed: int) -> float:

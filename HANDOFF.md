@@ -1,5 +1,39 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-10 (494, PARCIAL) - Claude (sessao remota web) - EM ANDAMENTO: melhoria de `_evaluate_state_v2` (qualidade do simulated_value) -- 3 pesos nunca calibrados achados e adicionados ao `_TUNABLE` do tune_weights.py, calibracao real de `next_turn_readiness` rodando em background
+
+Usuario pediu ("Vai pela 3") pra melhorar a qualidade do
+`simulated_value` (Monte Carlo) via a funcao de avaliacao de estado, em
+vez de aumentar amostras/profundidade (as outras 2 alavancas discutidas
+-- amostras ja tem custo real medido, profundidade custa ainda mais e
+so existe ao vivo).
+
+**Achado**: `EVAL_WEIGHTS` (`decision_engine.py`) tem 17 pesos, mas
+`tune_weights.py._TUNABLE` (a lista que o otimizador de self-play
+realmente varia) so tinha 11. Comparando com `eval_weights.json` (saida
+real do otimizador): `wincon_ready`, `opp_combo_threat` e
+`next_turn_readiness` nunca apareceram em NENHUM dos dois -- ficaram
+presos no PRIOR desde que foram criados (07/07 e 24/07), mesmo o
+proprio comentario do codigo dizendo "tunagem por self-play ajusta"
+(nunca aconteceu de verdade). Como `_evaluate_state_v2` roda no FINAL
+de toda amostra Monte Carlo do Turn Planner, um peso errado ali degrada
+a qualidade de QUALQUER simulacao que passe por esses eixos.
+
+**Feito (seguro, baixo risco)**: `tune_weights.py._TUNABLE` estendida
+pra incluir os 3 pesos -- fix permanente, credito por si so
+independente do resultado da calibracao abaixo (proxima vez que
+alguem rodar `tune_weights.py` localmente com decks reais, esses 3
+pesos finalmente entram na busca).
+
+**Em andamento**: calibracao real (self-play pareado, decklists_raw.csv
+-- `tune_weights.py` normal so roda localmente com decks `.deck` do
+Windows) do `next_turn_readiness` (o mais generico dos 3, nao amarrado
+a arquetipo especifico como os outros 2 -- melhor candidato pra testar
+primeiro). baseline=0.6 (producao) vs zero=0.0 vs forte=2.0, 3 matchups
+(Mihawk/Imu, Ace/Mihawk, Nami/Enel), N=30 cada, `--workers 4`. Resultado
+e decisao (aplicar valor vencedor em `eval_weights.json` ou manter)
+ficam pro PROXIMO bloco.
+
 ## 2026-08-10 (493) - Claude (sessao remota web) - Investigadas 2 hipoteses de vies (attach_don sobre "descer bomba"; atacar lider sobre focar board) -- NENHUMA confirmada, causa raiz do metodo de investigacao encontrada: comparar `score` raso e enganoso, o motor decide por `simulated_value` (Monte Carlo)
 
 Usuario pediu pra investigar 2 hipoteses de vies sistematico do bot:
