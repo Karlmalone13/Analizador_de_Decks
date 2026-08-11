@@ -1890,6 +1890,12 @@ def test_turn_planner_fase_b_next_turn_readiness_bonus() -> None:
     a1 = GameState(leader=real_card("OP11-062"), turn=3, don_available=2, don_rested=0)
     a1.don_deck = 0
     a1.leader.rested = False
+    # peso fixo local (achado real 10/08, bloco 494): NAO ler o peso de
+    # producao (EVAL_WEIGHTS/eval_weights.json) aqui -- esse valor e
+    # TUNAVEL por self-play (tune_weights.py) e pode legitimamente virar
+    # 0.0 (ou qualquer outro numero) numa calibracao futura sem que o
+    # MECANISMO (sinal negativo = ameaca do oponente) deixe de valer.
+    a1.eval_weights = {'next_turn_readiness': 0.6}
     opp1 = GameState(leader=real_card("OP11-062"), turn=3, don_available=0, don_rested=6)
     opp1.leader.rested = True
     match1 = OPTCGMatch((a1.leader, []), (opp1.leader, []))

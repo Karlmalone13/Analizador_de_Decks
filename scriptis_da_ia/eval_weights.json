@@ -12,5 +12,14 @@
   "ax_trash": 0.05,
   "ax_reanim": 12.0,
   "ax_inversion": 0.5,
-  "survival_premium": 15.0
+  "survival_premium": 15.0,
+  "next_turn_readiness": 0.0,
+  "_meta": {
+    "origin": "learned",
+    "when": "2026-08-10",
+    "note": "next_turn_readiness calibrado via self-play pareado (bloco 494) -- 0.0 vs 0.6 (prior) vs 2.0, N=30/matchup, 3 matchups (Mihawk_v_Imu, Ace_v_Mihawk, Nami_v_Enel). 0.0 teve maximin=+0.000 (empata no pior matchup, melhora nos outros 2: +13.3pp Ace_v_Mihawk, +3.3pp Nami_v_Enel) contra 2.0 que regrediu Nami_v_Enel (-3.3pp, maximin=-0.033, reprovado pela regra de nao-regressao). wincon_ready/opp_combo_threat continuam nao calibrados (prior), candidatos a proxima rodada.",
+    "gauntlet": ["Mihawk_v_Imu", "Ace_v_Mihawk", "Nami_v_Enel"],
+    "n": 30,
+    "seed_base": 3300
+  }
 }

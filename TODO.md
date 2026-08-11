@@ -2,17 +2,23 @@
 
 **Última atualização:** 10 de agosto de 2026
 
-> 10/08/2026 (bloco 494, PARCIAL/EM ANDAMENTO): **3 pesos de
-> `_evaluate_state_v2` nunca calibrados achados** (pedido do usuário,
-> "melhorar o simulated_value" via a função de avaliação de estado).
-> `wincon_ready`/`opp_combo_threat`/`next_turn_readiness` nunca
-> estiveram em `tune_weights.py._TUNABLE` — ficaram presos no prior
-> desde que foram criados, mesmo com comentário dizendo "tunagem por
-> self-play ajusta". Extensão do `_TUNABLE` já feita (fix permanente,
-> baixo risco). Calibração real de `next_turn_readiness` (o mais
-> genérico dos 3) rodando em self-play pareado (baseline 0.6 vs
-> zero 0.0 vs forte 2.0, 3 matchups, N=30). Resultado e decisão ficam
-> pro próximo bloco. Ver bloco 494 do HANDOFF.
+> 10/08/2026 (bloco 494): **`next_turn_readiness` CALIBRADO de verdade
+> pela 1ª vez — prior 0,6 → 0,0**, fechando 1 dos 3 pesos de
+> `_evaluate_state_v2` que nunca passaram por `tune_weights.py`
+> (`wincon_ready`/`opp_combo_threat`/`next_turn_readiness` — extensão
+> do `_TUNABLE` feita, fix permanente). Self-play pareado real (3
+> matchups, N=30): **0,0 teve maximin=+0,000** (não regride nenhum
+> matchup, melhora 2 de 3: Ace_v_Mihawk +13,3pp, Nami_v_Enel +3,3pp);
+> **2,0 teve maximin=-0,033** (regrediu Nami_v_Enel), reprovado pela
+> mesma regra de não-regressão do `tune_weights.py`. Aplicado em
+> `eval_weights.json` com `_meta` registrando o protocolo. Teste
+> `smoke_fast.py` corrigido (lia o peso de produção sem perceber,
+> quebraria com 0,0 — decoplado via `eval_weights` explícito no teste).
+> `smoke_fast`/`smoke_test` 100%, `audit_replay.py --n 30 --workers 4`:
+> 0 exceções. **Pendente**: `wincon_ready`/`opp_combo_threat` continuam
+> no prior — `opp_combo_threat` pode ter o mesmo problema estrutural do
+> PREVENT_COMBO (blocos 491/492), checar frequência de disparo antes de
+> aceitar qualquer resultado. Ver bloco 494 do HANDOFF.
 
 > 10/08/2026 (bloco 493): **investigadas 2 hipóteses de viés (attach_don
 > sobre "descer bomba"; atacar líder sobre focar board) — NENHUMA

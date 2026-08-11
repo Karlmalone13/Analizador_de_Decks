@@ -1,6 +1,6 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-08-10 (494, PARCIAL) - Claude (sessao remota web) - EM ANDAMENTO: melhoria de `_evaluate_state_v2` (qualidade do simulated_value) -- 3 pesos nunca calibrados achados e adicionados ao `_TUNABLE` do tune_weights.py, calibracao real de `next_turn_readiness` rodando em background
+## 2026-08-10 (494) - Claude (sessao remota web) - `next_turn_readiness` CALIBRADO de verdade pela 1a vez: prior 0.6 -> 0.0 (self-play pareado real, maximin sem regressao) -- fecha 1 dos 3 pesos nunca tunados de `_evaluate_state_v2`
 
 Usuario pediu ("Vai pela 3") pra melhorar a qualidade do
 `simulated_value` (Monte Carlo) via a funcao de avaliacao de estado, em
@@ -25,14 +25,53 @@ independente do resultado da calibracao abaixo (proxima vez que
 alguem rodar `tune_weights.py` localmente com decks reais, esses 3
 pesos finalmente entram na busca).
 
-**Em andamento**: calibracao real (self-play pareado, decklists_raw.csv
--- `tune_weights.py` normal so roda localmente com decks `.deck` do
-Windows) do `next_turn_readiness` (o mais generico dos 3, nao amarrado
-a arquetipo especifico como os outros 2 -- melhor candidato pra testar
-primeiro). baseline=0.6 (producao) vs zero=0.0 vs forte=2.0, 3 matchups
-(Mihawk/Imu, Ace/Mihawk, Nami/Enel), N=30 cada, `--workers 4`. Resultado
-e decisao (aplicar valor vencedor em `eval_weights.json` ou manter)
-ficam pro PROXIMO bloco.
+**Calibracao real** (self-play pareado, decklists_raw.csv -- `tune_
+weights.py` normal so roda localmente com decks `.deck` do Windows) do
+`next_turn_readiness` (o mais generico dos 3, nao amarrado a arquetipo
+especifico como os outros 2 -- melhor candidato pra testar primeiro):
+baseline=0.6 (producao) vs zero=0.0 vs forte=2.0, 3 matchups
+(Mihawk_v_Imu, Ace_v_Mihawk, Nami_v_Enel), N=30 cada, `--workers 4`.
+
+**Resultado (dessa vez NAO identico -- licao do bloco 491/492 aplicada,
+mas o sinal apareceu de verdade porque este peso roda em TODA avaliacao
+de estado, nao atras de uma cascata de prioridade rara como o
+PREVENT_COMBO)**:
+- ZERO (0.0): Mihawk_v_Imu 86,7%->86,7% (empate), Ace_v_Mihawk
+  43,3%->56,7% (+13,3pp), Nami_v_Enel 50,0%->53,3% (+3,3pp).
+  **maximin=+0,000** -- nao regride NENHUM matchup, melhora 2 de 3.
+- FORTE (2.0): Mihawk_v_Imu +6,7pp, Ace_v_Mihawk +10pp, MAS
+  Nami_v_Enel 50,0%->46,7% (-3,3pp). **maximin=-0,033** -- reprovado
+  pela mesma regra de nao-regressao que `tune_weights.py` usa pra
+  decidir se salva (`>= -0.02`).
+
+**Decisao**: `next_turn_readiness` calibrado pra **0.0** em
+`eval_weights.json` (com bloco `_meta` registrando origem/protocolo,
+mesma convencao que `tune_weights.py` escreveria). Efeito pratico:
+`_next_turn_readiness_bonus` (mecanismo continua existindo no codigo,
+so multiplicado por zero por enquanto) para de influenciar
+`_evaluate_state_v2` ate uma proxima calibracao achar um valor positivo
+que realmente nao regrida nenhum matchup -- os dados desta rodada
+sugerem que o termo, no peso prior (0.6), estava fazendo mais mal que
+bem em pelo menos 1 matchup real.
+
+**Teste ajustado** (`smoke_fast.py`,
+`test_turn_planner_fase_b_next_turn_readiness_bonus`): o teste de sinal
+negativo (ameaca do oponente) lia o peso de PRODUCAO
+(`EVAL_WEIGHTS`/`eval_weights.json`) sem perceber -- com o novo 0.0,
+`bonus1 < 0.0` teria quebrado (0.0 nao e < 0.0). Corrigido pra setar
+`a1.eval_weights = {'next_turn_readiness': 0.6}` explicitamente no
+teste -- decopla o teste do MECANISMO (sinal negativo funciona) do
+valor TUNAVEL de producao, que pode legitimamente mudar de novo no
+futuro. `smoke_fast.py`/`smoke_test.py` 100%. `audit_replay.py --n 30
+--workers 4`: 0 excecoes/anomalias.
+
+**Pendente pra proxima sessao**: `wincon_ready` e `opp_combo_threat`
+continuam no PRIOR (nunca calibrados) -- candidatos a mesma rodada de
+calibracao, mesmo metodo. `opp_combo_threat` em particular pode sofrer
+do MESMO problema estrutural do PREVENT_COMBO (blocos 491/492, ligado
+ao mesmo `opp_combo_threat()` -- ameaca de reanimacao em massa) --
+checar frequencia de disparo ANTES de aceitar qualquer resultado
+identico/suspeito, mesma licao ja aplicada aqui.
 
 ## 2026-08-10 (493) - Claude (sessao remota web) - Investigadas 2 hipoteses de vies (attach_don sobre "descer bomba"; atacar lider sobre focar board) -- NENHUMA confirmada, causa raiz do metodo de investigacao encontrada: comparar `score` raso e enganoso, o motor decide por `simulated_value` (Monte Carlo)
 
