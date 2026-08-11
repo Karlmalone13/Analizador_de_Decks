@@ -44,8 +44,61 @@ em {0.0(baseline), 0.3, 0.6} com threat fixo em 0.0; Fase 2 fixa o
 vencedor da fase 1 e varia `next_turn_readiness_opp_threat` em
 {0.0(baseline novo), 0.3, 0.6}. Vencedor de cada fase decidido por
 maximin da margem de winrate vs baseline (tolerancia -0.02, mesma regra
-do `tune_weights.py`). Resultado ainda nao chegou -- proximo bloco fecha
-com os numeros e a decisao final (aplicar em `eval_weights.json` ou nao).
+do `tune_weights.py`).
+
+**ACHADO MAIOR (nao esperado): bug real em `GameState.__deepcopy__` fazia
+QUALQUER override por-estado de `eval_weights` ser invisivel pro Monte
+Carlo -- provavelmente invalida boa parte do historico de calibracao do
+`tune_weights.py`.**
+
+1a rodada da calibracao acima terminou com margem **ZERO em TODOS os 5
+candidatos** (self=0.3/0.6, threat=0.3/0.6 -- winrate identico ao
+baseline, ate a casa decimal, nos 3 matchups). Sinal identico demais
+igual ao alerta do bloco 491/492 (PREVENT_COMBO) -- investigado a fundo
+em vez de aceito.
+
+**Causa raiz**: `eval_weights`/`use_eval_v2` sao atributos DINAMICOS
+(`state.eval_weights = {...}`, nunca campos declarados do dataclass) --
+exatamente a mesma categoria de bug do `self_play_info_hidden` (bloco
+490). `_evaluate_state_v2` e a UNICA funcao que le `eval_weights` (a
+propria docstring dela ja dizia "so roda em p2/opp2") e e chamada
+SEMPRE sobre o clone gerado por `_simulate_sequence_once` (linha ~15713,
+`p2 = deepcopy(p)`). Sem propagar em `__deepcopy__`, o clone nunca tinha
+o atributo -- `getattr(p2, 'eval_weights', None) or EVAL_WEIGHTS` sempre
+caia no fallback GLOBAL de producao, silenciosamente, pra QUALQUER
+override setado no estado real antes do clone.
+
+**Por que isso e maior que so este peso**: `tune_weights.py` (o
+otimizador de self-play do projeto) usa exatamente este mecanismo
+(`m.state_a.eval_weights = weights`) pra dar ao lado A (Imu) os pesos
+CANDIDATOS enquanto o lado B usa v1 -- e isso e o UNICO jeito de isolar
+o efeito de um peso numa partida self-play. Com o bug, toda vez que
+`tune_weights.py` rodou historicamente (produzindo o `eval_weights.json`
+atual, `origin: "learned"` em varias chaves), a busca via Monte Carlo
+NUNCA viu os pesos candidatos de verdade -- so o fallback global (que
+nao muda entre candidatos). Isso NAO prova que os valores atuais de
+`eval_weights.json` estao errados (podem ter vindo de melhorias reais
+fora do caminho Monte Carlo, ou de sorte/ruido que passou no maximin por
+acaso), mas o METODO que os gerou estava estruturalmente cego pra
+qualquer diferenca nesse caminho -- fica registrado aqui como suspeita
+que precisa de re-validacao futura, nao decidido nesta sessao (fora do
+escopo do que foi pedido: so a calibracao separada do next_turn_readiness).
+
+**Fix aplicado** (`decision_engine.py`, `GameState.__deepcopy__`, mesmo
+padrao/lugar do fix do bloco 490): propaga `eval_weights` (referencia,
+igual outros campos invariantes ja tratados assim) e `use_eval_v2` pro
+clone quando presentes no original. Teste novo em `smoke_fast.py`
+(`test_deepcopy_propaga_eval_weights_e_use_eval_v2_11_08`): prova (1)
+propagacao estrutural do dict/flag, (2) nao cria o atributo do nada
+quando ausente, (3) prova COMPORTAMENTAL -- bonus calculado num clone
+com override de ameaca do oponente sai negativo (só possível se o clone
+realmente usar o override, já que o fallback global de produção é
+0.0/0.0 pros dois novos pesos). `smoke_fast.py` + `smoke_test.py`
+100% apos o fix.
+
+Calibracao pareada **relançada do zero** apos o fix (script identico,
+resultado da 1a rodada descartado por invalido). Resultado no proximo
+bloco.
 
 ## 2026-08-10 (494) - Claude (sessao remota web) - `next_turn_readiness` CALIBRADO de verdade pela 1a vez: prior 0.6 -> 0.0 (self-play pareado real, maximin sem regressao) -- fecha 1 dos 3 pesos nunca tunados de `_evaluate_state_v2`
 

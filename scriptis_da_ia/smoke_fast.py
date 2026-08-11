@@ -10117,6 +10117,7 @@ def main() -> int:
     test_step_condition_currently_holds_nao_infla_flag_so_de_combate_10_08()
     test_deck_lacks_removal_tools_da_credito_a_busca_em_postura_control_10_08()
     test_optcgmatch_hide_opponent_info_propaga_e_muda_comportamento_10_08()
+    test_deepcopy_propaga_eval_weights_e_use_eval_v2_11_08()
     test_ponder_fingerprint_deterministico_09_08()
     test_ponder_fingerprint_muda_por_mutacao_isolada_09_08()
     test_ponder_payload_byte_identico_ao_caminho_normal_09_08()
@@ -12331,6 +12332,57 @@ def test_optcgmatch_hide_opponent_info_propaga_e_muda_comportamento_10_08() -> N
           valor_cheio == 2000)
     check("opp_counter_potential: info OCULTA nao enxerga a carta nao revelada -- valor bem menor",
           valor_oculto < valor_cheio)
+
+
+def test_deepcopy_propaga_eval_weights_e_use_eval_v2_11_08() -> None:
+    """
+    Achado real 11/08 (bloco 495 -- ao investigar por que a calibracao
+    pareada de next_turn_readiness_self/opp_threat deu MARGEM ZERO pra
+    TODOS os candidatos testados, sinal identico demais igual ao achado
+    do PREVENT_COMBO nos blocos 491/492). MESMO padrao de bug do
+    self_play_info_hidden (bloco 490): `eval_weights`/`use_eval_v2` sao
+    atributos DINAMICOS (setados via `state.eval_weights = {...}`, nunca
+    campos declarados), e `_evaluate_state_v2` -- a UNICA funcao que le
+    `eval_weights` (comentario dela mesma: "so roda em p2/opp2") -- e
+    chamada SEMPRE sobre o clone gerado por `_simulate_sequence_once`
+    (Monte Carlo do Turn Planner). Sem propagar em `__deepcopy__`, todo
+    override por-estado -- o MESMO mecanismo que `tune_weights.py` usa
+    pra dar pesos v2 DIFERENTES a cada lado numa mesma partida -- nunca
+    chegava na avaliacao de verdade: o clone caia sempre no fallback
+    `EVAL_WEIGHTS` global (producao), entao a busca Monte Carlo ignorava
+    silenciosamente qualquer candidato testado.
+    """
+    from copy import deepcopy
+
+    a = GameState(leader=real_card("OP11-062"), turn=3, don_available=2, don_rested=0)
+    a.eval_weights = {'next_turn_readiness_self': 0.0, 'next_turn_readiness_opp_threat': 0.6}
+    a.use_eval_v2 = True
+    clone = deepcopy(a)
+    check("__deepcopy__ propaga eval_weights (mesmo dict, mesmos valores)",
+          getattr(clone, 'eval_weights', None) == a.eval_weights)
+    check("__deepcopy__ propaga use_eval_v2",
+          getattr(clone, 'use_eval_v2', None) is True)
+
+    b = GameState(leader=real_card("OP11-062"), turn=3, don_available=2, don_rested=0)
+    check("__deepcopy__ NAO cria eval_weights do nada quando o original nao tem",
+          not hasattr(deepcopy(b), 'eval_weights'))
+
+    # Prova comportamental: cenario de ameaca do oponente (mesmo setup do
+    # teste de _next_turn_readiness_bonus acima) aplicado a um clone --
+    # com o bug, o clone cairia no fallback global (0.0/0.0 em producao)
+    # e o bonus sairia sempre 0.0, MESMO com uma ameaca real projetada.
+    a2 = GameState(leader=real_card("OP11-062"), turn=3, don_available=2, don_rested=0)
+    a2.don_deck = 0
+    a2.leader.rested = False
+    a2.eval_weights = {'next_turn_readiness_self': 0.0, 'next_turn_readiness_opp_threat': 0.6}
+    opp2 = GameState(leader=real_card("OP11-062"), turn=3, don_available=0, don_rested=6)
+    opp2.leader.rested = True
+    match2 = OPTCGMatch((a2.leader, []), (opp2.leader, []))
+    a2_clone = deepcopy(a2)
+    opp2_clone = deepcopy(opp2)
+    bonus_no_clone = match2._next_turn_readiness_bonus(a2_clone, opp2_clone)
+    check("bonus calculado NO CLONE usa o override herdado (nao cai no fallback global 0.0/0.0)",
+          bonus_no_clone < 0.0)
 
 
 # ── Pondering (BOT/engine_server/server.py, design bloco 478, implementado

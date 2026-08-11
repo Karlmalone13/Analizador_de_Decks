@@ -1354,6 +1354,26 @@ class GameState:
             novo.self_play_info_hidden = True
         if getattr(self, 'hidden_information_masked', False):
             novo.hidden_information_masked = True
+        # eval_weights/use_eval_v2: MESMO padrao de bug do self_play_info_
+        # hidden acima -- achado real 11/08 (bloco 495, ao investigar por
+        # que a calibracao pareada de next_turn_readiness_self/opp_threat
+        # deu resultado IDENTICO pra todo candidato). `_evaluate_state_v2`
+        # (a UNICA leitora de eval_weights, ver comentario dela "so roda em
+        # p2/opp2") e chamada SEMPRE sobre o clone de _simulate_sequence_
+        # once -- sem propagar aqui, QUALQUER override por-estado
+        # (`state.eval_weights = {...}`, o mecanismo que tune_weights.py
+        # usa pra dar pesos DIFERENTES a cada lado numa mesma partida)
+        # nunca chegava na avaliacao de verdade: o clone caia sempre no
+        # fallback `EVAL_WEIGHTS` global, entao toda busca Monte Carlo via
+        # _simulate_sequence_once ignorava silenciosamente o candidato.
+        # Efeito pratico: a calibracao pareada deste peso saiu com margem
+        # zero pra TODOS os candidatos (nao so este par de pesos -- afeta
+        # qualquer chamada de tune_weights.py que dependa do lado A/B
+        # terem pesos v2 diferentes via este mecanismo).
+        if hasattr(self, 'eval_weights'):
+            novo.eval_weights = self.eval_weights
+        if hasattr(self, 'use_eval_v2'):
+            novo.use_eval_v2 = self.use_eval_v2
         novo.revealed_to_opponent = set(self.revealed_to_opponent)
         novo.revealed_life = set(self.revealed_life)
         novo.revealed_deck = set(self.revealed_deck)

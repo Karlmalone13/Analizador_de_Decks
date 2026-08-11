@@ -10,9 +10,31 @@
 > dois juntos (decisão do 494) podia estar descartando sinal bom junto
 > com o ruim. Código dividido e testado (`smoke_fast.py` 100%,
 > `eval_weights.json` com os 2 novos em 0,0 = mesmo comportamento de
-> hoje). **Calibração pareada separada rodando em background** (mesmo
-> protocolo do 494 — self-play, 3 matchups, N=30, maximin sem
-> regressão), resultado ainda pendente. Ver bloco 495 do HANDOFF.
+> hoje).
+>
+> **ACHADO MAIOR não planejado**: 1ª calibração deu margem **ZERO em
+> TODOS os 5 candidatos** (idêntico demais, mesmo alerta do
+> bloco 491/492) — investigado a fundo, achado bug real em
+> `GameState.__deepcopy__`: `eval_weights`/`use_eval_v2` são atributos
+> DINÂMICOS nunca propagados pro clone (mesma categoria do bug do
+> `self_play_info_hidden`, bloco 490), e `_evaluate_state_v2` (única
+> leitora de `eval_weights`) SEMPRE roda sobre o clone de
+> `_simulate_sequence_once` — todo override por-estado (o mecanismo que
+> `tune_weights.py` usa pra dar pesos candidatos ao lado A) caía
+> silenciosamente no fallback global. **Suspeita registrada**: isso pode
+> ter afetado boa parte do histórico de calibração do `tune_weights.py`
+> (o que gerou o `eval_weights.json` atual) — não decidido/investigado
+> nesta sessão, fica pra reavaliação futura. Fix aplicado + teste novo
+> (`test_deepcopy_propaga_eval_weights_e_use_eval_v2_11_08`),
+> `smoke_fast`/`smoke_test` 100%. **Calibração pareada relançada do zero
+> após o fix** (a 1ª rodada foi descartada por inválida), rodando em
+> background. Ver bloco 495 do HANDOFF.
+>
+> **Pendência nova pra próxima sessão**: re-validar (ou pelo menos
+> checar a data/protocolo de) os 11 pesos originais de
+> `tune_weights.py._TUNABLE` no `eval_weights.json` — se foram
+> calibrados antes deste fix, o resultado "learned" pode não refletir
+> diferença real entre candidatos.
 
 > 10/08/2026 (bloco 494): **`next_turn_readiness` CALIBRADO de verdade
 > pela 1ª vez — prior 0,6 → 0,0**, fechando 1 dos 3 pesos de
