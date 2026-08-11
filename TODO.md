@@ -2,6 +2,32 @@
 
 **Última atualização:** 11 de agosto de 2026
 
+> 11/08/2026 (bloco 497): **`wincon_ready` revalidado** — usuário
+> perguntou "só testou com Imu?" sobre o bloco 496 e achou um problema
+> real: escaneando o pool completo (193 decks), **84 (43%) têm o eixo
+> bottleneck**, não só o Imu — e 2 dos 4 "oponentes" usados no bloco 496
+> (Enel/Mirko Zanelli, Nami/AceOfSpades) também tinham o eixo, quebrando
+> o isolamento da comparação (peso é aplicado simétrico nos 2 lados).
+> Revalidado com 4 oponentes confirmados LIMPOS (Mihawk, Ace, Lucy,
+> Luffy-Amarelo) e N=100/matchup (>3x, pedido do usuário por mais
+> confiança). **Mesmo resultado**: nenhum candidato (x1.5=30.0,
+> x0.67=13.4) bate o baseline sem regredir — prior 20.0 mantido, agora
+> validado de forma robusta (não só a 1ª tentativa menor/confundida).
+> Nenhum valor numérico mudou. `smoke_fast.py` 100%. Ver bloco 497 do
+> HANDOFF.
+>
+> **Lição**: em calibração pareada com peso simétrico, sempre checar se
+> os "oponentes" escolhidos também têm o eixo/termo sendo testado — um
+> oponente que compartilha o eixo quebra o isolamento mesmo com
+> maximin/N grande.
+>
+> (Ideia trazida pelo usuário de outra sessão — Monte Carlo puro sem
+> heurística tipo o simulador do Naruto TCG — avaliada e descartada pra
+> uso AO VIVO nesta sessão: custo proibitivo no orçamento de tempo real
+> e exigiria um 2º motor simplificado, o que viola a regra "sem dois
+> motores" do projeto. Alternativa aceita: mais amostra self-play
+> OFFLINE com o motor real, que é o que já fazemos.)
+
 > 11/08/2026 (bloco 496): **`wincon_ready`/`opp_combo_threat`** (os 2
 > pesos restantes do achado do bloco 494) testados com o `__deepcopy__`
 > já corrigido. Lição do 491/492 aplicada PROATIVAMENTE desta vez:

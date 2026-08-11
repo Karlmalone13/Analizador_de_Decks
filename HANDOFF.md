@@ -1,5 +1,68 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-11 (497) - Claude (sessao remota web) - `wincon_ready` REVALIDADO com amostra maior e matchups deconfundidos -- usuario achou confound real na calibracao do bloco 496
+
+Usuario perguntou "so testou com Imu?" sobre a calibracao de
+`wincon_ready` do bloco 496. Escaneei o pool COMPLETO de decks
+(`decklists_raw.csv`, 193 decks) em vez de so o roster de 5 do
+`gauntlet_matchup.py` -- achado real: **84/193 decks (43%) tem o eixo
+`bottleneck`** (reanimacao), nao so o Imu. Pior: **2 dos 4 "oponentes"
+usados no bloco 496** (`Purple Enelby Mirko Zanelli`, `Blue/Yellow
+Namiby AceOfSpades`) **tambem tinham o eixo** -- como o peso e aplicado
+SIMETRICO nos 2 lados (mesmo dict pros dois `GameState`), essas 2
+partidas nao isolavam limpo "isso ajuda o Imu?": tambem mudavam o
+auto-julgamento do PROPRIO oponente ao mesmo tempo. Confound real na
+metodologia, achado pelo usuario, nao por mim.
+
+Usuario tambem trouxe uma ideia de outra sessao/projeto (simulador do
+Naruto TCG, Monte Carlo puro sem heuristica, ~8400 simulacoes) --
+expliquei que essa ideia (substituir a heuristica por rollout completo
+em massa NA BUSCA AO VIVO) esbarra em 2 problemas especificos deste
+projeto: (1) performance -- o motor ja tem dificuldade com so 6 amostras
+RASAS no orcamento ao vivo (timeout de busca de 3s, pendencia conhecida),
+escalar pra milhares de partidas COMPLETAS por decisao nao e viavel sem
+motor mais rapido ou paralelismo pesado inexistente hoje; (2) arquitetura
+-- pra ficar rapido, normalmente se usa um simulador simplificado
+separado, e isso viola a regra "sem dois motores" (`REGRA_SEM_
+DUPLICACAO.md`) ja reforcada varias vezes neste projeto. Proposta
+alternativa aceita pelo usuario: usar MAIS amostra self-play OFFLINE
+(mesmo motor real, sem duplicar nada, sem pressao de tempo real) como
+metodo de calibracao -- exatamente o que ja estavamos fazendo, so que
+com N bem maior.
+
+**Revalidacao de `wincon_ready`** (script novo, mesmo protocolo do
+bloco 496): 4 oponentes CONFIRMADOS sem o eixo bottleneck (checado nesta
+sessao: Mihawk, Ace, Lucy, Luffy-Amarelo -- Rosinante do roster antigo
+nao foi encontrado/invalido), `N=100/matchup` (>3x o N anterior),
+seeds pareadas, candidatos multiplicativos x1.5(30.0)/x0.67(13.4) --
+mesma convencao do `tune_weights.py`.
+
+- baseline (20.0): Imu_v_Mihawk 37,0% / Imu_v_Ace 70,0% / Imu_v_Lucy
+  37,0% / Imu_v_Luffy-Y 27,0%.
+- x1.5 (30.0): margens -4,0pp / -4,0pp / +3,0pp / -1,0pp ->
+  **maximin=-0,040**, reprovado.
+- x0.67 (13.4): margens -5,0pp / +1,0pp / 0,0pp / +4,0pp ->
+  **maximin=-0,050**, reprovado.
+
+**MESMO RESULTADO da 1a tentativa** (prior 20.0 mantido), mas agora com
+validacao robusta -- matchups limpos (sem confound) e amostra >3x maior.
+A conclusao do bloco 496 nao era um artefato do confound/amostra
+pequena; e um resultado real e reproduzivel.
+
+**`eval_weights.json`**: nenhum valor numerico mudou (wincon_ready
+continua 20.0) -- `_meta.wincon_ready` atualizado com o achado do
+confound e os novos numeros, substituindo a nota do bloco 496 (mantida a
+info de que a 1a tentativa tinha o problema, pra registro).
+
+**Validacao**: `smoke_fast.py` 100% (sem mudanca de peso numerico).
+Script descartavel apagado.
+
+**Licao registrada**: ao aplicar peso SIMETRICO nos 2 lados numa
+calibracao pareada, sempre checar se os decks "oponentes" escolhidos
+tambem sao afetados pelo eixo/termo sendo testado -- um oponente que
+compartilha o mesmo eixo do lado testado quebra o isolamento da
+comparacao, mesmo com maximin/N grande.
+
 ## 2026-08-11 (496) - Claude (sessao remota web) - `wincon_ready`/`opp_combo_threat` (os 2 pesos restantes do bloco 494): 1 validado (prior mantido), 1 pulado por 0% de gatilho
 
 Continuacao direta do bloco 495 (usuario: "Sim, pode seguir"). Com o

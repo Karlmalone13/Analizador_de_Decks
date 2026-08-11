@@ -23,11 +23,11 @@
     "n": 30,
     "seed_base": 4400,
     "wincon_ready": {
-      "status": "validado, prior mantido (20.0)",
-      "note": "probe (N=6) confirmou gatilho frequente (71-76% dos turnos do lado Imu, unico deck do roster com eixo bottleneck). Calibracao real (N=30, 4 matchups Imu_v_{Mihawk,Enel,Ace,Nami}) diferenciou de verdade (nao identico) mas NENHUM candidato multiplicativo (x1.5=30.0, x0.67=13.4) bateu o baseline sem regredir Imu_v_Mihawk (ja o pior matchup, 30.0% baseline): x1.5 piorou -10pp, x0.67 piorou -6.7pp. Prior 20.0 fica, agora validado por teste real (nao so suposicao) em vez de nunca calibrado.",
-      "gauntlet": ["Imu_v_Mihawk", "Imu_v_Enel", "Imu_v_Ace", "Imu_v_Nami"],
-      "n": 30,
-      "seed_base": 5500
+      "status": "validado, prior mantido (20.0) -- revalidado com amostra maior e matchups deconfundidos (bloco 497)",
+      "note": "1a tentativa (N=30, roster Imu_v_{Mihawk,Enel,Ace,Nami}) tinha um CONFOUND achado pelo usuario: escaneando o pool completo (193 decks), 84 (43%) tem o eixo bottleneck, incluindo 2 dos 4 oponentes usados (Enel/Mirko Zanelli, Nami/AceOfSpades) -- como o peso e aplicado simetrico nos 2 lados, essas 2 partidas nao isolavam limpo 'isso ajuda o Imu?'. Revalidado (bloco 497) com 4 oponentes CONFIRMADOS sem o eixo (Mihawk, Ace, Lucy, Luffy-Amarelo) e N=100/matchup (>3x a amostra, pedido explicito do usuario por mais confianca). MESMO RESULTADO: x1.5=30.0 teve maximin=-0.040 (regride Imu_v_Mihawk -4pp e Imu_v_Ace -4pp), x0.67=13.4 teve maximin=-0.050 (regride Imu_v_Mihawk -5pp). Nenhum candidato bate o baseline sem regredir -- prior 20.0 fica, agora com validacao robusta (limpa + amostra grande), nao so a 1a tentativa menor/confundida.",
+      "gauntlet": ["Imu_v_Mihawk", "Imu_v_Ace", "Imu_v_Lucy", "Imu_v_Luffy-Y"],
+      "n": 100,
+      "seed_base": 6600
     },
     "opp_combo_threat": {
       "status": "calibracao PULADA -- 0% de gatilho observado",
