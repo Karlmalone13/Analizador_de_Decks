@@ -1,6 +1,18 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 10 de agosto de 2026
+**Última atualização:** 11 de agosto de 2026
+
+> 11/08/2026 (bloco 495, PARCIAL): **`next_turn_readiness` dividido em 2
+> pesos independentes** (`next_turn_readiness_self` /
+> `next_turn_readiness_opp_threat`) — o peso único do bloco 494
+> multiplicava dois sinais diferentes (ganho projetado pro meu lado vs
+> ameaça de ataque projetada do oponente) pelo mesmo escalar; zerar os
+> dois juntos (decisão do 494) podia estar descartando sinal bom junto
+> com o ruim. Código dividido e testado (`smoke_fast.py` 100%,
+> `eval_weights.json` com os 2 novos em 0,0 = mesmo comportamento de
+> hoje). **Calibração pareada separada rodando em background** (mesmo
+> protocolo do 494 — self-play, 3 matchups, N=30, maximin sem
+> regressão), resultado ainda pendente. Ver bloco 495 do HANDOFF.
 
 > 10/08/2026 (bloco 494): **`next_turn_readiness` CALIBRADO de verdade
 > pela 1ª vez — prior 0,6 → 0,0**, fechando 1 dos 3 pesos de

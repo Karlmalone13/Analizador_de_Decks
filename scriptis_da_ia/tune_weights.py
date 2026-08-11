@@ -57,7 +57,14 @@ _TUNABLE = ['dmg', 'board_mine', 'board_opp', 'hand_first', 'counter_hand',
             # _evaluate_state_v2 no estado final -- um peso nao calibrado ali
             # degrada a qualidade de QUALQUER simulacao que passe por esses
             # eixos, nao so um caso pontual.
-            'wincon_ready', 'opp_combo_threat', 'next_turn_readiness']
+            'wincon_ready', 'opp_combo_threat',
+            # 11/08 (bloco 495): 'next_turn_readiness' virou 2 pesos
+            # independentes (ver comentario em EVAL_WEIGHTS,
+            # decision_engine.py) -- self (ganho projetado pro meu lado) e
+            # opp_threat (penalidade pela ameaca de ataque projetada do
+            # oponente) eram multiplicados pelo MESMO escalar antes, o que
+            # impedia calibrar um sem afetar o outro.
+            'next_turn_readiness_self', 'next_turn_readiness_opp_threat']
 
 
 def _imu_winrate(deck_imu, deck_opp, weights: dict, n: int, seed: int) -> float:

@@ -345,8 +345,19 @@ EVAL_WEIGHTS = {
     # especifico. Este termo e mais amplo: QUALQUER carta forte na mao que
     # ainda nao cabe no DON de agora, mas cabe no DON projetado do PROXIMO
     # turno (sem simular o turno de verdade -- so a projecao de ramp).
-    # Prior — tunagem por self-play ajusta, mesma convencao dos outros.
-    'next_turn_readiness': 0.6,
+    #
+    # Split em 2 pesos (achado 11/08, bloco 495): o antigo 'next_turn_
+    # readiness' unico multiplicava DOIS sinais diferentes pelo MESMO
+    # numero -- o ganho que EU tenho esperando o proximo turno (sinal
+    # positivo, 'self') e a ameaca de ataque forte que o OPONENTE tera no
+    # turno dele (sinal negativo, 'opp_threat'). A calibracao pareada do
+    # bloco 494 zerou o combinado (0.6 -> 0.0) porque um dos dois estava
+    # atrapalhando mais que o outro ajudava -- zerar os dois juntos pode
+    # ter descartado sinal bom junto com o ruim. Cada um agora e tunavel
+    # independente (`tune_weights.py._TUNABLE`). Prior — tunagem por
+    # self-play ajusta, mesma convencao dos outros.
+    'next_turn_readiness_self': 0.0,
+    'next_turn_readiness_opp_threat': 0.0,
 }
 try:
     _wpath = os.path.join(os.path.dirname(__file__), '..', 'eval_weights.json')
@@ -15361,7 +15372,8 @@ class OPTCGMatch:
         padrao.
         """
         W = getattr(p, 'eval_weights', None) or EVAL_WEIGHTS
-        bonus = 0.0
+        bonus_self = 0.0
+        bonus_threat = 0.0
 
         melhor_proximo = self._project_next_turn_best_action(p, opp)
         if melhor_proximo is not None:
@@ -15369,13 +15381,14 @@ class OPTCGMatch:
             score_agora = acts_agora[0][0] if acts_agora and acts_agora[0][0] > 0 else 0.0
             ganho = melhor_proximo[0] - score_agora
             if ganho > 0:
-                bonus += min(60.0, ganho * 0.35)
+                bonus_self += min(60.0, ganho * 0.35)
 
         ameaca_opp = self._project_next_turn_best_action(opp, p)
         if ameaca_opp is not None and ameaca_opp[1] == 'attack':
-            bonus -= min(50.0, ameaca_opp[0] * 0.25)
+            bonus_threat -= min(50.0, ameaca_opp[0] * 0.25)
 
-        return bonus * W['next_turn_readiness']
+        return (bonus_self * W['next_turn_readiness_self']
+                + bonus_threat * W['next_turn_readiness_opp_threat'])
 
     def _evaluate_state_v2(self, p, opp) -> float:
         """

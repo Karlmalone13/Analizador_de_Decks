@@ -1,5 +1,52 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-11 (495, PARCIAL) - Claude (sessao remota web) - `next_turn_readiness` dividido em 2 pesos independentes (self/opp_threat) -- calibracao pareada rodando em background
+
+Continuacao direta do bloco 494. Usuario perguntou se a funcao
+`_next_turn_readiness_bonus` (zerada no bloco 494) "vira funcao morta" --
+expliquei que nao (continua rodando, so o peso zera a contribuicao) e
+que o codigo tem DOIS sinais diferentes multiplicados pelo MESMO escalar
+`next_turn_readiness`: (1) o ganho projetado pro MEU lado esperando o
+proximo turno (`bonus_self`, positivo), e (2) a penalidade pela ameaca de
+ataque forte que o OPONENTE tera no turno dele (`bonus_threat`,
+negativo). Zerar os dois JUNTOS (decisao do bloco 494) pode ter
+descartado sinal bom de um junto com o sinal ruim do outro. Usuario
+confirmou: "Sim, faz essa calibração separada".
+
+**Feito (codigo, testado, sem quebrar nada)**:
+- `EVAL_WEIGHTS` (`decision_engine.py` ~L349): `next_turn_readiness`
+  (unico) -> `next_turn_readiness_self` + `next_turn_readiness_opp_threat`
+  (ambos comecam em 0.0, valor combinado do bloco 494).
+- `_next_turn_readiness_bonus` (~L15337): `bonus_self`/`bonus_threat`
+  calculados separadamente, cada um multiplicado pelo SEU peso antes de
+  somar (`bonus_self * W['next_turn_readiness_self'] + bonus_threat *
+  W['next_turn_readiness_opp_threat']`), em vez de somar primeiro e
+  multiplicar por um unico peso.
+- `tune_weights.py._TUNABLE`: `next_turn_readiness` trocado pelos 2 novos
+  nomes (a extensao do bloco 494 ja tinha incluido o nome antigo, que nao
+  existe mais).
+- `eval_weights.json`: chave antiga removida, 2 novas em 0.0/0.0 (mesmo
+  comportamento efetivo de hoje), `_meta` documentando o split e que a
+  calibracao separada esta PENDENTE (nao aplicada ainda).
+- `smoke_fast.py` (`test_turn_planner_fase_b_next_turn_readiness_bonus`):
+  o teste que fixava peso local pra isolar o sinal de ameaca do oponente
+  foi atualizado pra `{'next_turn_readiness_self': 0.0,
+  'next_turn_readiness_opp_threat': 0.6}` (so o termo relevante pro teste
+  fica ligado). `smoke_fast.py` rodou 100% OK apos a mudanca.
+
+**Calibracao pareada rodando em background** (script descartavel em
+`/tmp/.../scratchpad/calibrate_next_turn_readiness_split.py`, mesmo
+protocolo do bloco 494 -- self-play, decklists_raw.csv, 3 matchups
+Mihawk_v_Imu/Ace_v_Mihawk/Nami_v_Enel, N=30, seeds pareadas entre
+candidatos, `--workers 4` equivalente via `ProcessPoolExecutor`):
+coordinate-ascent em 2 fases -- Fase 1 varia `next_turn_readiness_self`
+em {0.0(baseline), 0.3, 0.6} com threat fixo em 0.0; Fase 2 fixa o
+vencedor da fase 1 e varia `next_turn_readiness_opp_threat` em
+{0.0(baseline novo), 0.3, 0.6}. Vencedor de cada fase decidido por
+maximin da margem de winrate vs baseline (tolerancia -0.02, mesma regra
+do `tune_weights.py`). Resultado ainda nao chegou -- proximo bloco fecha
+com os numeros e a decisao final (aplicar em `eval_weights.json` ou nao).
+
 ## 2026-08-10 (494) - Claude (sessao remota web) - `next_turn_readiness` CALIBRADO de verdade pela 1a vez: prior 0.6 -> 0.0 (self-play pareado real, maximin sem regressao) -- fecha 1 dos 3 pesos nunca tunados de `_evaluate_state_v2`
 
 Usuario pediu ("Vai pela 3") pra melhorar a qualidade do
