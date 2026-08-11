@@ -13,14 +13,14 @@
   "ax_reanim": 12.0,
   "ax_inversion": 0.5,
   "survival_premium": 15.0,
-  "next_turn_readiness_self": 0.0,
+  "next_turn_readiness_self": 0.6,
   "next_turn_readiness_opp_threat": 0.0,
   "_meta": {
     "origin": "learned",
     "when": "2026-08-11",
-    "note": "PENDENTE bloco 495: 'next_turn_readiness' (bloco 494, calibrado combinado -> 0.0) foi dividido em 2 pesos independentes porque multiplicava 2 sinais diferentes (ganho projetado pro meu lado vs penalidade pela ameaca de ataque projetada do oponente) pelo MESMO escalar -- zerar os dois juntos podia estar descartando sinal bom junto com o ruim. Ambos comecam em 0.0 (valor combinado anterior) ate a calibracao separada (self-play pareado, mesmo protocolo do bloco 494) terminar. wincon_ready/opp_combo_threat continuam nao calibrados (prior), candidatos a proxima rodada.",
-    "gauntlet_ref": ["Mihawk_v_Imu", "Ace_v_Mihawk", "Nami_v_Enel"],
-    "n_ref": 30,
-    "seed_base_ref": 3300
+    "note": "next_turn_readiness_self/opp_threat calibrados via self-play pareado (bloco 495) DEPOIS de corrigir bug real em GameState.__deepcopy__ (eval_weights/use_eval_v2 nao propagavam pro clone que _evaluate_state_v2 avalia -- 1a rodada, pre-fix, deu margem zero em TODOS os candidatos, sinal identico demais, investigado e corrigido antes de aceitar). Coordinate-ascent 2 fases, N=30/matchup, 3 matchups (Mihawk_v_Imu, Ace_v_Mihawk, Nami_v_Enel). Fase 1 (self, threat=0.0 fixo): self=0.6 teve maximin=+0.067 (melhora os 3 matchups: +6.7pp/+6.7pp/+6.7pp), self=0.3 regrediu Nami_v_Enel (-6.7pp, maximin=-0.067, reprovado). Fase 2 (threat, self=0.6 fixo): threat=0.3 e threat=0.6 regrediram pelo menos 1 matchup (maximin=-0.033 nos dois), reprovados -- threat fica em 0.0. Resultado interpretavel: o sinal de GANHO projetado pro meu lado (self) e bom (bate com o prior original 0.6 de antes do bloco 494); o sinal de AMEACA do oponente (threat) e o que estava atrapalhando no peso combinado do bloco 494 -- explica por que 'next_turn_readiness' unico foi pra 0.0 la. wincon_ready/opp_combo_threat continuam nao calibrados (prior). SUSPEITA REGISTRADA (nao investigada): os 11 pesos originais de tune_weights.py._TUNABLE podem ter sido calibrados sob o mesmo bug de __deepcopy__, candidato a revalidacao futura.",
+    "gauntlet": ["Mihawk_v_Imu", "Ace_v_Mihawk", "Nami_v_Enel"],
+    "n": 30,
+    "seed_base": 4400
   }
 }

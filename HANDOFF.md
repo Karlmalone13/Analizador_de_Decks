@@ -1,6 +1,6 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-08-11 (495, PARCIAL) - Claude (sessao remota web) - `next_turn_readiness` dividido em 2 pesos independentes (self/opp_threat) -- calibracao pareada rodando em background
+## 2026-08-11 (495) - Claude (sessao remota web) - `next_turn_readiness` dividido em 2 pesos (self/opp_threat), calibrado (self=0.6, threat=0.0) -- e bug real de `__deepcopy__` achado/corrigido no processo (invalida override de eval_weights no Monte Carlo)
 
 Continuacao direta do bloco 494. Usuario perguntou se a funcao
 `_next_turn_readiness_bonus` (zerada no bloco 494) "vira funcao morta" --
@@ -97,8 +97,45 @@ realmente usar o override, já que o fallback global de produção é
 100% apos o fix.
 
 Calibracao pareada **relançada do zero** apos o fix (script identico,
-resultado da 1a rodada descartado por invalido). Resultado no proximo
-bloco.
+resultado da 1a rodada descartado por invalido). **Desta vez os
+candidatos DIFERENCIARAM de verdade** (prova de que o fix funcionou):
+
+**Fase 1** (`next_turn_readiness_self`, threat fixo em 0.0):
+- baseline (0.0): Mihawk_v_Imu 80,0% / Ace_v_Mihawk 23,3% / Nami_v_Enel 53,3%
+- self=0.3: margens +6,7pp / +3,3pp / **-6,7pp** -> maximin=-0,067,
+  reprovado (regride Nami_v_Enel).
+- self=0.6: margens +6,7pp / +6,7pp / +6,7pp -> **maximin=+0,067**,
+  melhora os 3 matchups, nenhuma regressao. Vencedor.
+
+**Fase 2** (`next_turn_readiness_opp_threat`, self fixo em 0.6):
+- baseline2 (self=0.6, threat=0.0): 86,7% / 30,0% / 60,0%
+- threat=0.3: margens -3,3pp / -3,3pp / -3,3pp -> maximin=-0,033, reprovado.
+- threat=0.6: margens -3,3pp / -3,3pp / +3,3pp -> maximin=-0,033, reprovado.
+- threat fica em **0.0** (nenhum candidato bateu o baseline sem regredir).
+
+**Resultado final aplicado em `eval_weights.json`**:
+`next_turn_readiness_self=0.6`, `next_turn_readiness_opp_threat=0.0`.
+
+**Leitura**: o sinal de GANHO projetado pro meu lado (self) e um sinal
+bom -- bate exatamente com o prior original (0.6) de antes do bloco 494
+inteiro. O sinal de AMEACA projetada do oponente (threat) e o que
+estava prejudicando no peso combinado -- explica por que o bloco 494
+(peso unico, media dos dois efeitos) tinha concluido "zerar tudo": o
+ganho de zerar o threat ruim superava a perda de zerar o self bom, mas
+a resposta CORRETA (agora visivel com os pesos separados) era manter
+self ligado e so zerar threat.
+
+**Validacao**: `smoke_fast.py`/`smoke_test.py` 100% com os pesos finais.
+`audit_replay.py --n 30 --seed 55 --workers 4`: 0 excecoes, 0 anomalias.
+Script descartavel apagado.
+
+**Pendente pra proxima rodada** (nao iniciado): `wincon_ready`/
+`opp_combo_threat` continuam no prior, agora com o `__deepcopy__`
+corrigido -- calibra-los deve finalmente produzir sinal real (antes do
+fix, teriam dado o mesmo falso "sem efeito" que este peso deu na 1a
+tentativa). E a suspeita maior registrada acima: revalidar os 11 pesos
+originais de `tune_weights.py._TUNABLE`, calibrados possivelmente sob o
+bug do `__deepcopy__`.
 
 ## 2026-08-10 (494) - Claude (sessao remota web) - `next_turn_readiness` CALIBRADO de verdade pela 1a vez: prior 0.6 -> 0.0 (self-play pareado real, maximin sem regressao) -- fecha 1 dos 3 pesos nunca tunados de `_evaluate_state_v2`
 

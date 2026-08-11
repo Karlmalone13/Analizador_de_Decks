@@ -2,15 +2,12 @@
 
 **Última atualização:** 11 de agosto de 2026
 
-> 11/08/2026 (bloco 495, PARCIAL): **`next_turn_readiness` dividido em 2
-> pesos independentes** (`next_turn_readiness_self` /
-> `next_turn_readiness_opp_threat`) — o peso único do bloco 494
-> multiplicava dois sinais diferentes (ganho projetado pro meu lado vs
-> ameaça de ataque projetada do oponente) pelo mesmo escalar; zerar os
-> dois juntos (decisão do 494) podia estar descartando sinal bom junto
-> com o ruim. Código dividido e testado (`smoke_fast.py` 100%,
-> `eval_weights.json` com os 2 novos em 0,0 = mesmo comportamento de
-> hoje).
+> 11/08/2026 (bloco 495): **`next_turn_readiness` dividido em 2 pesos
+> independentes** (`next_turn_readiness_self` / `next_turn_readiness_
+> opp_threat`) — o peso único do bloco 494 multiplicava dois sinais
+> diferentes (ganho projetado pro meu lado vs ameaça de ataque projetada
+> do oponente) pelo mesmo escalar; zerar os dois juntos (decisão do 494)
+> descartava sinal bom junto com o ruim.
 >
 > **ACHADO MAIOR não planejado**: 1ª calibração deu margem **ZERO em
 > TODOS os 5 candidatos** (idêntico demais, mesmo alerta do
@@ -21,20 +18,25 @@
 > leitora de `eval_weights`) SEMPRE roda sobre o clone de
 > `_simulate_sequence_once` — todo override por-estado (o mecanismo que
 > `tune_weights.py` usa pra dar pesos candidatos ao lado A) caía
-> silenciosamente no fallback global. **Suspeita registrada**: isso pode
-> ter afetado boa parte do histórico de calibração do `tune_weights.py`
-> (o que gerou o `eval_weights.json` atual) — não decidido/investigado
-> nesta sessão, fica pra reavaliação futura. Fix aplicado + teste novo
-> (`test_deepcopy_propaga_eval_weights_e_use_eval_v2_11_08`),
-> `smoke_fast`/`smoke_test` 100%. **Calibração pareada relançada do zero
-> após o fix** (a 1ª rodada foi descartada por inválida), rodando em
-> background. Ver bloco 495 do HANDOFF.
+> silenciosamente no fallback global. Fix aplicado + teste novo
+> (`test_deepcopy_propaga_eval_weights_e_use_eval_v2_11_08`).
 >
-> **Pendência nova pra próxima sessão**: re-validar (ou pelo menos
-> checar a data/protocolo de) os 11 pesos originais de
-> `tune_weights.py._TUNABLE` no `eval_weights.json` — se foram
-> calibrados antes deste fix, o resultado "learned" pode não refletir
-> diferença real entre candidatos.
+> **Calibração relançada após o fix — desta vez diferenciou de
+> verdade**: `next_turn_readiness_self=0.6` (maximin=+0,067, melhora os
+> 3 matchups sem regredir nenhum — bate com o prior original de antes
+> do bloco 494); `next_turn_readiness_opp_threat=0.0` (0,3 e 0,6
+> regrediram, maximin=-0,033 nos dois). Aplicado em `eval_weights.json`.
+> Leitura: o sinal "self" sempre foi bom — o sinal "threat" era o que
+> prejudicava no peso combinado do bloco 494. `smoke_fast`/`smoke_test`
+> 100%, `audit_replay.py --n 30 --workers 4`: 0 exceções/anomalias. Ver
+> bloco 495 do HANDOFF.
+>
+> **Pendência pra próxima sessão**: `wincon_ready`/`opp_combo_threat`
+> continuam no prior — agora com `__deepcopy__` corrigido, calibrá-los
+> deve produzir sinal real pela 1ª vez. E a suspeita maior: **re-validar
+> os 11 pesos originais de `tune_weights.py._TUNABLE`** no
+> `eval_weights.json` — calibrados possivelmente sob o mesmo bug, o
+> resultado "learned" pode não refletir diferença real entre candidatos.
 
 > 10/08/2026 (bloco 494): **`next_turn_readiness` CALIBRADO de verdade
 > pela 1ª vez — prior 0,6 → 0,0**, fechando 1 dos 3 pesos de
