@@ -43,6 +43,64 @@ adicionados/recalibrados depois, usar SEMPRE pelo menos 2 arquetipos
 distintos como ancora (nao so o deck mais conveniente/ja testado) --
 achado real desta sessao, nao teorico.
 
+---
+
+**Addendum (mesmo bloco, mesma conversa)**: usuario discutiu a fundo se
+per-deck/media/MCTS "tipo Naruto" resolveria o problema acima --
+concluido que o motor JA suporta pesos por-estado (`state.eval_weights`,
+o mesmo mecanismo do bug do bloco 495) mas per-deck completo multiplica
+o custo de calibracao por arquetipo; que varios termos (`wincon_ready`/
+`ax_reanim`/`survival_premium`) JA sao "hibridos" (formula global +
+gating condicional por perfil), o meio-termo mais barato que per-deck
+puro; e que "MC puro tipo Naruto, cacheado, heuristica consulta o cache"
+tem a mesma tensao de amostra que pesos escalares (so muda de forma --
+poucos buckets generalizam mal, muitos buckets precisam de muito dado
+cada).
+
+Usuario (outra sessao/ferramenta com acesso a browser, que eu nao
+tenho aqui -- YouTube bloqueado pelo proxy deste ambiente) inspecionou
+o codigo-fonte de https://narutosim.theramenbowl.net/ (site publico,
+JS aberto no browser) e confirmou: o "CPU" de la e MCTS de verdade
+(UCT classico, uctC=√2), com dificuldade = SO orcamento de busca (facil
+24 iteracoes sem lookahead, dificil 8192 iteracoes + 2 turnos de
+horizonte, teto de 4s) sobre uma avaliacao de posicao LINEAR e simples
+(8 features: vida do lider, carta no deck/mao, corpo em campo, poder,
+HP restante, corpo pronto, chakra disponivel = equivalente ao nosso
+DON, pressao letal) -- SEM nenhum conhecimento de carta/efeito
+especifico.
+
+**Confirmado contra o codigo real** (nao aceito sem checar, achado
+plausivel mas verificavel): `opponent_model.py` existe de verdade
+(`optcg_engine/`), `counterfactual_search`/`sampled_opponent_model`
+aparecem em `sim_bridge.py`/`smoke_fast.py`, blocos 471/475
+referenciados sao entradas reais no topo historico deste mesmo
+HANDOFF.md (09/08, sessao local anterior). `git fetch` confirmou nenhum
+commit novo de outra sessao ainda nao puxado -- a analise nunca tinha
+sido registrada aqui.
+
+**Conclusao pratica** (concordo com a leitura da outra sessao): o
+motivo do NarutoSim funcionar com MCTS largo + avaliacao simples e que
+cada rollout la e BARATO (soma linear de 8 numeros, sem interpretar
+texto de carta). No nosso caso, cada rollout precisaria rodar
+`OPTCGMatch` completo (triggers/counters/blockers/efeitos) -- ordens de
+magnitude mais caro por iteracao. Confirma, por um angulo
+independente, a mesma conclusao ja dada ao usuario sobre MC puro ao
+vivo ser inviavel no orcamento de tempo real sem um 2o motor
+simplificado (que violaria "sem dois motores").
+
+**Achado lateral mais acionavel que o MCTS em si**: `opponent_model.py`
+(amostragem Monte Carlo da mao oculta do oponente por densidade de
+deck) JA EXISTE no motor mas esta SUBUTILIZADO -- so alimenta o Turn
+Planner (`counterfactual_search`), nao entra em funcoes de score
+isoladas tipo `avaliar_carta`. Antes de um subsistema novo de cache
+tipo-MCTS (ideia maior, registrada acima como direcao futura, NAO
+iniciada), o proximo passo mais barato e natural seria ampliar quantas
+amostras o `OpponentModel` ja gera e ONDE elas alimentam decisao --
+mudanca de escopo bem menor que um subsistema de cache novo.
+
+**Nada disso foi implementado nesta sessao** -- e reflexao/contexto pro
+backlog, registrada a pedido do usuario, nao uma tarefa aberta.
+
 ## 2026-08-11 (504) - Claude (sessao remota web) - Refinamento final: `don_field` confirmado teto local, `ax_inversion` refina mais (0.75 -> 0.625) -- FECHA os 3 itens aprovados pelo usuario
 
 Ultimo item aprovado (dos 3 do AskUserQuestion): refinar `don_field`

@@ -19,6 +19,26 @@
 > **Nota permanente pra sessões futuras**: calibração de peso universal
 > sempre precisa de pelo menos 2 arquétipos-âncora distintos, não só o
 > deck mais conveniente/já testado.
+>
+> **Addendum (contexto de backlog, NADA implementado)**: usuário
+> discutiu per-deck vs global vs "MC puro tipo Naruto cacheado" —
+> conclusão: motor já suporta pesos por-estado (`state.eval_weights`),
+> vários termos já são híbridos (formula global + gating condicional,
+> ex. `wincon_ready`/`survival_premium`), e cache-de-MC-massivo tem a
+> MESMA tensão de amostra que pesos escalares, só em forma de buckets.
+> Usuário (outra ferramenta/sessão com browser) inspecionou o
+> `narutosim.theramenbowl.net` — CPU de lá é MCTS/UCT real com
+> dificuldade = só orçamento de busca, avaliação linear de 8 features
+> sem conhecimento de carta. **Confirmado contra o código real**:
+> `opponent_model.py` existe, `counterfactual_search`/
+> `sampled_opponent_model` existem, blocos 471/475 são reais. Conclusão:
+> confirma por ângulo independente que MC puro ao vivo é inviável aqui
+> (cada rollout nosso precisaria do motor de regras completo, não uma
+> soma linear de 8 números). **Achado mais acionável**: `opponent_model.py`
+> já existe mas está subutilizado (só alimenta o Turn Planner, não
+> `avaliar_carta`) — candidato a próximo passo mais barato que um
+> subsistema de cache novo. Registrado como direção futura, não
+> iniciado.
 
 > 11/08/2026 (bloco 504): **FECHA os 3 itens aprovados pelo usuário**
 > (redesign `opp_combo_threat`, calibrar 3 pesos nunca testados, refinar
