@@ -1,5 +1,51 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-11 (500) - Claude (sessao remota web) - 2o lote da revalidacao dos 11 pesos originais: `don_field` 4.0 -> 6.0, outros 4 mantidos
+
+Continuacao direta do bloco 499 (usuario: "Sim"). Mesmo protocolo,
+proximos 5 pesos UNIVERSAIS de `tune_weights.py._TUNABLE` (sem risco de
+confound de perfil): `life_mult`, `hand_first`, `counter_hand`,
+`don_field`, `coverage`. Coordinate-ascent continuou do baseline ja
+atualizado (dmg=270.0 do bloco 499), N=30, mesmo roster deconfundido
+Imu_v_{Mihawk,Ace,Lucy,Luffy-Y}, candidatos x1.5/x0.67.
+
+- **`life_mult`** (1.0): x1.5 e x0.67 regrediram (maximin=-0,067 nos
+  dois) -- mantido.
+- **`hand_first`** (8.0): x1.5 e x0.67 regrediram (maximin=-0,033 nos
+  dois) -- mantido.
+- **`counter_hand`** (9.0): x1.5 regrediu -0,067, x0.67 regrediu bem
+  mais -0,133 -- mantido.
+- **`don_field`** (4.0): x1.5=6.0 teve **maximin=+0,000** (empata
+  Imu_v_Mihawk exatamente, melhora Imu_v_Ace e Imu_v_Lucy em +3,3pp
+  cada, Imu_v_Luffy-Y neutro). x0.67=2.68 regrediu (-0,033). **Aceito**
+  pela mesma regra de `tune_weights.py` (maximin >= -0,02 E soma maior
+  entre os candidatos que passam) -- evidencia mais fraca que a do
+  `dmg` (empate no pior matchup, nao melhora estrita nos 4), mas dentro
+  da regra de aceite ja estabelecida nesta sessao.
+- **`coverage`** (7.0): x1.5 regrediu -0,033, x0.67 regrediu -0,067 --
+  mantido.
+
+**`eval_weights.json`**: `don_field` 4.0 -> **6.0** (unico valor
+numerico que mudou neste lote). `_meta` com 5 entradas novas
+documentando cada peso testado.
+
+**Validacao**: `smoke_fast.py` + `smoke_test.py` 100%. `audit_replay.py
+--n 30 --seed 99 --workers 4`: 0 excecoes, 0 anomalias. Script
+descartavel apagado.
+
+**Placar acumulado da revalidacao (blocos 499-500, 8 de 11 pesos
+testados)**: 2 mudaram (`dmg` 180->270, `don_field` 4->6), 6 validados
+sem mudanca (`board_mine`, `board_opp`, `life_mult`, `hand_first`,
+`counter_hand`, `coverage`). Confirma que a suspeita do bloco 495 tinha
+fundamento parcial -- nem todos os 11 pesos estavam errados, mas pelo
+menos 2 estavam presos abaixo do valor real.
+
+**Pendente pra proxima rodada**: os 3 ultimos -- `ax_trash`,
+`ax_reanim`, `ax_inversion` (eixos derivados de perfil de deck,
+provavelmente precisam do mesmo cuidado de confound/probe que
+`wincon_ready` exigiu nos blocos 496/497, ja que sao condicionais a
+arquetipo).
+
 ## 2026-08-11 (499) - Claude (sessao remota web) - PRIMEIRO peso original de tune_weights.py confirmado mal calibrado: `dmg` 180.0 -> 270.0 -- valida a suspeita do bloco 495
 
 Continuacao direta (usuario: "vai pro 2 primeiro, depois pros 11",

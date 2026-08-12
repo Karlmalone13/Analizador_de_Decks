@@ -2,6 +2,21 @@
 
 **Última atualização:** 11 de agosto de 2026
 
+> 11/08/2026 (bloco 500): **2º lote da revalidação dos 11 pesos
+> originais** — `life_mult`, `hand_first`, `counter_hand`, `don_field`,
+> `coverage` (universais, sem risco de confound). Só `don_field` mudou
+> (4.0 → **6.0**, maximin=+0,000 — empata o pior matchup, melhora 2
+> outros, aceito pela mesma regra do `tune_weights.py`). Os outros 4
+> ficaram como estavam (nenhum candidato bateu o baseline). **Placar
+> acumulado (8/11 pesos testados)**: 2 mudaram (`dmg`, `don_field`), 6
+> validados sem mudança. `smoke_fast`/`smoke_test` 100%,
+> `audit_replay.py --n 30 --workers 4`: 0 exceções/anomalias. Ver bloco
+> 500 do HANDOFF.
+>
+> **Pendente pra próxima rodada**: os 3 últimos — `ax_trash`,
+> `ax_reanim`, `ax_inversion` (eixos derivados de perfil, precisam do
+> mesmo cuidado de confound/probe que `wincon_ready` exigiu).
+
 > 11/08/2026 (bloco 499): **1º peso original de `tune_weights.py.
 > _TUNABLE` confirmado mal calibrado** — `dmg` (180.0) testado junto com
 > `board_mine`/`board_opp` (os 3 mais centrais, universais, sem risco do
