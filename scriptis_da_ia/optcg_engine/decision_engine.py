@@ -10277,9 +10277,29 @@ class GameAnalyzer:
         trash, não a capacidade teórica da carta). `threat_power` = soma de
         `board_value()` desses corpos (estimativa de quanto o board dele
         pode virar).
+
+        Achado real 11/08 (bloco 502, ao investigar 0% de gatilho no
+        pool de decks atual, bloco 498): a única carta do banco que
+        dispara este padrão (Five Elders OP13-082) trasha A SI MESMA
+        como parte do próprio [Activate: Main], antes de reanimar --
+        tudo no mesmo turno em que é jogada+ativada (custo barato,
+        rest_don+trash_from_hand). Isso significa que ela NUNCA fica
+        visível em `field_chars` num turno em que o oponente ainda
+        poderia reagir -- por design da própria carta, resolve-se
+        atomicamente antes do próximo turno do oponente. Escaneando
+        `self.opp.known_hand_cards()` (cartas na mão do oponente já
+        REVELADAS a mim por efeito de busca/peek -- mesma infra de
+        fairness usada por `opp_counter_potential`, não é informação
+        que o bot não deveria ter) cobre o único cenário onde ainda
+        existe janela real de aviso prévio: a carta sentada na mão
+        aguardando DON/custo, revelada antes de ser jogada. Não resolve
+        o caso em que ela nunca é revelada (fog of war genuíno) nem o
+        caso em que é jogada+ativada no mesmo turno em que se torna
+        pagável sem nunca ter sido revelada antes -- esses continuam
+        estruturalmente sem aviso prévio possível.
         """
         sources = []
-        pool = [self.opp.leader] + list(self.opp.field_chars)
+        pool = [self.opp.leader] + list(self.opp.field_chars) + list(self.opp.known_hand_cards())
         for c in pool:
             if c is None:
                 continue

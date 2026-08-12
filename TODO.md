@@ -2,6 +2,22 @@
 
 **Última atualização:** 11 de agosto de 2026
 
+> 11/08/2026 (bloco 502): **`opp_combo_threat` REDESENHADO** — usuário
+> aprovou (dos 3 itens propostos) corrigir a causa raiz do bloco 498.
+> `opp_combo_threat()` agora também escaneia `known_hand_cards()` (cartas
+> reveladas na mão do oponente — mesma infra de fairness de
+> `opp_counter_potential`), cobrindo o cenário real de aviso prévio que
+> faltava. **Impacto real medido**: gatilho subiu de 0% pra **38,7%**
+> nas mesmas 15 partidas do probe original. Teste novo prova as 2 pontas
+> (carta oculta invisível, carta revelada detectada) + scan antigo
+> preservado. `smoke_fast`/`smoke_test` 100%, `audit_replay.py --n 30
+> --workers 4`: 0 exceções/anomalias. Ver bloco 502 do HANDOFF.
+>
+> **Próximo**: `opp_combo_threat` (peso, ainda prior 0.8) agora é
+> candidato viável de calibração de verdade — vai entrar no próximo lote
+> junto com `opp_blocker`/`hand_extra`/`survival_premium` (também
+> aprovados pelo usuário).
+
 > 11/08/2026 (bloco 501): **3º e ÚLTIMO lote — FECHA a revalidação dos
 > 11 pesos originais de `tune_weights.py._TUNABLE`** (suspeita do bloco
 > 495). `ax_reanim`/`ax_trash`/`ax_inversion` são eixos derivados

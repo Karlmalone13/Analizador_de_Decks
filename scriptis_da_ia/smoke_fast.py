@@ -10118,6 +10118,7 @@ def main() -> int:
     test_deck_lacks_removal_tools_da_credito_a_busca_em_postura_control_10_08()
     test_optcgmatch_hide_opponent_info_propaga_e_muda_comportamento_10_08()
     test_deepcopy_propaga_eval_weights_e_use_eval_v2_11_08()
+    test_opp_combo_threat_ve_carta_revelada_na_mao_11_08()
     test_ponder_fingerprint_deterministico_09_08()
     test_ponder_fingerprint_muda_por_mutacao_isolada_09_08()
     test_ponder_payload_byte_identico_ao_caminho_normal_09_08()
@@ -12383,6 +12384,53 @@ def test_deepcopy_propaga_eval_weights_e_use_eval_v2_11_08() -> None:
     bonus_no_clone = match2._next_turn_readiness_bonus(a2_clone, opp2_clone)
     check("bonus calculado NO CLONE usa o override herdado (nao cai no fallback global 0.0/0.0)",
           bonus_no_clone < 0.0)
+
+
+def test_opp_combo_threat_ve_carta_revelada_na_mao_11_08() -> None:
+    """
+    Achado real 11/08 (bloco 502 -- ao investigar por que opp_combo_threat
+    deu 0% de gatilho em 166 turnos reais, bloco 498). Causa raiz: a UNICA
+    carta do banco que dispara este padrao (Five Elders OP13-082) trasha A
+    SI MESMA como parte do proprio [Activate: Main], antes de reanimar --
+    tudo no mesmo turno em que e jogada+ativada. Ela NUNCA aparece em
+    `field_chars` num turno em que o oponente ainda poderia reagir.
+
+    Fix: `opp_combo_threat()` agora TAMBEM escaneia `known_hand_cards()`
+    (cartas na mao do oponente ja REVELADAS a mim -- mesma infra de
+    fairness de `opp_counter_potential`, nao e informacao que o bot nao
+    deveria ter). Prova as duas pontas: carta NAO revelada na mao
+    continua invisivel (fairness preservada); carta REVELADA na mao
+    agora conta como ameaca (fix funciona).
+    """
+    me = GameState(leader=real_card("OP11-062"), turn=3, don_available=2, don_rested=0)
+    opp = GameState(leader=real_card("OP11-062"), turn=3, don_available=2, don_rested=0)
+
+    five_elders = real_card("OP13-082")
+    opp.hand = [five_elders]
+    fuel1 = mk("FE1", "Saint Fuel 1", power=5000, sub_types="Five Elders")
+    fuel2 = mk("FE2", "Saint Fuel 2", power=5000, sub_types="Five Elders")
+    opp.trash = [fuel1, fuel2]
+
+    combo_oculto = GameAnalyzer(me, opp).opp_combo_threat()
+    check("Five Elders NAO revelada na mao do oponente -- ameaca invisivel (fairness preservada)",
+          combo_oculto['magnitude'] == 0)
+
+    opp.revealed_to_opponent = {id(five_elders)}
+    combo_revelado = GameAnalyzer(me, opp).opp_combo_threat()
+    check("Five Elders REVELADA na mao do oponente -- ameaca detectada (fix funciona)",
+          combo_revelado['magnitude'] == 2)
+    check("threat_power conta o board_value dos 2 corpos qualificados",
+          combo_revelado['threat_power'] == fuel1.board_value() + fuel2.board_value())
+
+    # Continua funcionando pro caso original (carta em campo/lider) -- fix
+    # e aditivo, nao substitui o scan de field_chars/leader.
+    opp2 = GameState(leader=real_card("OP11-062"), turn=3, don_available=2, don_rested=0)
+    opp2.field_chars = [real_card("OP13-082")]
+    opp2.trash = [mk("FE3", "Saint Fuel 3", power=5000, sub_types="Five Elders"),
+                  mk("FE4", "Saint Fuel 4", power=5000, sub_types="Five Elders")]
+    combo_campo = GameAnalyzer(me, opp2).opp_combo_threat()
+    check("Five Elders em CAMPO continua detectada normalmente (scan antigo preservado)",
+          combo_campo['magnitude'] == 2)
 
 
 # ── Pondering (BOT/engine_server/server.py, design bloco 478, implementado

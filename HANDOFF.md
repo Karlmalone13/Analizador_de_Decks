@@ -1,5 +1,49 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-11 (502) - Claude (sessao remota web) - `opp_combo_threat` REDESENHADO: agora enxerga carta revelada na mao -- gatilho sobe de 0% pra 38,7% nas mesmas partidas
+
+Usuario aprovou (via AskUserQuestion, 3 itens) redesenhar o mecanismo de
+`opp_combo_threat` (achado do bloco 498: Five Elders trasha a si mesma
+como parte do proprio efeito, nunca fica "em campo, ameaca pendente").
+
+**Fix** (`decision_engine.py`, `GameAnalyzer.opp_combo_threat`):
+`pool` passou de `[self.opp.leader] + list(self.opp.field_chars)` pra
+`[self.opp.leader] + list(self.opp.field_chars) +
+list(self.opp.known_hand_cards())`. `known_hand_cards()` ja existe
+(mesma infra de fairness usada por `opp_counter_potential` -- so cartas
+na mao do oponente ja REVELADAS a mim por efeito de busca/peek, nao
+informacao que o bot nao deveria ter). Cobre o cenario onde ainda existe
+janela real de aviso previo: a carta revelada sentada na mao aguardando
+DON/custo. NAO resolve (nem tenta) os 2 casos genuinamente sem aviso
+previo possivel: carta nunca revelada (fog of war real) ou jogada+
+ativada no mesmo turno em que se torna pagavel sem nunca ter sido
+revelada antes.
+
+**Teste novo** (`smoke_fast.py`,
+`test_opp_combo_threat_ve_carta_revelada_na_mao_11_08`): prova as 2
+pontas -- carta NAO revelada continua invisivel (fairness preservada),
+carta REVELADA na mao agora conta como ameaca (fix funciona), E que o
+scan antigo (campo/lider) continua funcionando (fix e aditivo, nao
+substitui).
+
+**Validacao real do impacto pratico**: re-rodei o probe original (15
+partidas Imu_v_Mihawk, MESMAS seeds 7000-7014) -- gatilho subiu de
+**0% pra 38,7%** (41 de 106 turnos do Mihawk). Nao e um numero
+teorico -- e o resultado real, confirmando que Five Elders fica
+revelada na mao com frequencia real nesses jogos (Imu/Mihawk devem ter
+efeitos de busca/peek que revelam), nao um cenario raro.
+
+`smoke_fast.py` + `smoke_test.py` 100%. `audit_replay.py --n 30 --seed
+222 --workers 4`: 0 excecoes, 0 anomalias.
+
+**Implicacao**: `opp_combo_threat` (o PESO, ainda em prior 0.8, nunca
+calibrado -- bloco 498 pulou a calibracao por causa do 0% de gatilho)
+agora e um candidato VIAVEL de calibracao de verdade, ja que o
+mecanismo finalmente dispara com frequencia real. Rolando pra dentro do
+proximo lote de calibracao (junto com `opp_blocker`/`hand_extra`/
+`survival_premium`, tambem aprovados pelo usuario) em vez de esperar
+outra sessao.
+
 ## 2026-08-11 (501) - Claude (sessao remota web) - 3o e ULTIMO lote da revalidacao dos 11 pesos originais: `ax_inversion` 0.5 -> 0.75 -- FECHA a suspeita do bloco 495
 
 Continuacao direta do bloco 500 (usuario: "Sim"). Ultimos 3 pesos:
