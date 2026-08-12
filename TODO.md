@@ -2,6 +2,24 @@
 
 **Última atualização:** 11 de agosto de 2026
 
+> 11/08/2026 (bloco 505, PARCIAL): **ACHADO METODOLÓGICO do usuário**:
+> a calibração dos blocos 499-504 usou **Imu como âncora única** até pros
+> pesos UNIVERSAIS (`dmg`, `board_mine`, `hand_first`, `don_field`, etc.)
+> — necessário pros pesos condicionais a eixo de perfil (só o Imu tem os
+> eixos no pool de 193 decks), mas pros universais foi conveniência,
+> arriscando otimizar pro ESTILO do Imu em vez de generalizar. 1ª
+> tentativa da 2ª iteração (Imu-only) morta a meio caminho, nada mudou
+> em `eval_weights.json`. **Redesenhada**: pesos universais agora testam
+> com 2 âncoras de arquétipo diferente (Imu combo/reanimação + Mihawk
+> agressivo/counter-denso), mesmo total de partidas de antes, só
+> redistribuído. Pesos condicionais continuam Imu-ancorados (correto pra
+> eles). Relançado em background, resultado pendente. Ver bloco 505 do
+> HANDOFF.
+>
+> **Nota permanente pra sessões futuras**: calibração de peso universal
+> sempre precisa de pelo menos 2 arquétipos-âncora distintos, não só o
+> deck mais conveniente/já testado.
+
 > 11/08/2026 (bloco 504): **FECHA os 3 itens aprovados pelo usuário**
 > (redesign `opp_combo_threat`, calibrar 3 pesos nunca testados, refinar
 > `don_field`/`ax_inversion`). Refinamento final: `don_field` testado dos

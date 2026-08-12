@@ -1,5 +1,48 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-11 (505, PARCIAL) - Claude (sessao remota web) - ACHADO METODOLOGICO do usuario: calibracao dos blocos 499-504 usou Imu como ancora UNICA ate pros pesos universais -- 2a iteracao relancada multi-ancora (Imu+Mihawk)
+
+Usuario apontou (enquanto a 1a tentativa de 2a iteracao rodava em
+background): "estamos calibrando como o bot joga de imu e nao como o
+bot joga, pq a jogabilidade muda de deck para deck".
+
+**Achado valido**: TODOS os testes dos blocos 499-504 usaram Imu como
+lado A (ancora) em praticamente todo matchup. Pros pesos CONDICIONAIS a
+eixo de perfil (`wincon_ready`, `ax_reanim`, `ax_trash`, `ax_inversion`,
+`opp_combo_threat`, `survival_premium`) isso e NECESSARIO -- Imu e o
+unico deck do pool de 193 decks com os eixos/`don_target` que ativam
+esses termos, entao ancorar neles e a metodologia CORRETA, nao um vies.
+Mas pros pesos UNIVERSAIS (`dmg`, `board_mine`, `board_opp`,
+`life_mult`, `hand_first`, `counter_hand`, `don_field`, `coverage`,
+`opp_blocker`, `hand_extra`) -- que toda avaliacao de QUALQUER deck usa,
+sem gating -- ancorar so no Imu foi conveniencia (reusar o roster ja
+validado), nao necessidade, arriscando produzir pesos que otimizam o
+ESTILO de jogo do Imu (combo/reanimacao) em vez de generalizar pra
+qualquer arquetipo.
+
+**Acao**: 1a tentativa de 2a iteracao (Imu-only, task `bxfmvowwz`) tinha
+processado so `dmg` (mantido) e estava no meio de `board_mine` quando o
+usuario levantou o ponto -- morta (`pkill`) antes de aplicar qualquer
+mudanca em `eval_weights.json` (nada foi tocado por ela).
+
+**Redesign**: pesos UNIVERSAIS agora testados com **2 ANCORAS de
+arquetipo diferente** -- Imu (combo/reanimacao, control-ish) e Mihawk
+(agressivo/counter-denso, ja documentado em `gauntlet_matchup.py` como
+o oposto estilistico do Imu). Roster: `Imu_v_Ace`, `Imu_v_Lucy`,
+`Mihawk_v_Ace`, `Mihawk_v_Lucy` -- MESMO total de 4 matchups/partidas de
+antes, so redistribuido entre os 2 arquetipos em vez de concentrado
+so no Imu. Candidato so aceito se nao regride NENHUM dos 4 (nem Imu nem
+Mihawk). Pesos CONDICIONAIS continuam Imu-ancorados (metodologia
+correta pra eles, mantida sem mudanca).
+
+Relancado em background (task `bcm1vg87d`), mesma escala de tempo
+estimada (~1h50-2h). Resultado no proximo bloco.
+
+**Nota pra sessoes futuras**: se mais pesos universais forem
+adicionados/recalibrados depois, usar SEMPRE pelo menos 2 arquetipos
+distintos como ancora (nao so o deck mais conveniente/ja testado) --
+achado real desta sessao, nao teorico.
+
 ## 2026-08-11 (504) - Claude (sessao remota web) - Refinamento final: `don_field` confirmado teto local, `ax_inversion` refina mais (0.75 -> 0.625) -- FECHA os 3 itens aprovados pelo usuario
 
 Ultimo item aprovado (dos 3 do AskUserQuestion): refinar `don_field`
