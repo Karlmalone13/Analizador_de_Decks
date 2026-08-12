@@ -3,9 +3,9 @@
   "life_mult": 1.0,
   "board_mine": 1.0,
   "board_opp": 0.8,
-  "opp_blocker": 25.0,
+  "opp_blocker": 16.75,
   "hand_first": 8.0,
-  "hand_extra": 3.0,
+  "hand_extra": 2.01,
   "counter_hand": 9.0,
   "don_field": 6.0,
   "coverage": 7.0,
@@ -13,6 +13,7 @@
   "ax_reanim": 12.0,
   "ax_inversion": 0.75,
   "survival_premium": 15.0,
+  "opp_combo_threat": 1.2,
   "next_turn_readiness_self": 0.6,
   "next_turn_readiness_opp_threat": 0.0,
   "_meta": {
@@ -30,8 +31,11 @@
       "seed_base": 6600
     },
     "opp_combo_threat": {
-      "status": "calibracao PULADA -- causa raiz achada, nao e sample size (bloco 498)",
-      "note": "so 4 cartas em todo o banco tem a assinatura que o termo procura (play_from_trash/add_from_trash count>=2); das 193 decklists, so o Imu roda uma (Five Elders OP13-082). Rastreamento turno-a-turno mostrou que Five Elders NUNCA aparece em campo nos checkpoints -- o proprio [Activate: Main] dela manda ela mesma pro trash (trash_character self_character) ANTES de reanimar, tudo no mesmo turno. Nao existe janela de aviso previo pra essa carta -- o termo foi desenhado pra detectar ameaca PENDENTE, mas a unica carta que dispararia o padrao se resolve atomicamente. Rodar mais partidas/jogos mais longos NAO mudaria isso (estrutural, nao estatistico). Fica como decisao pendente: aceitar como esta ou redesenhar o mecanismo pra cobrir ameacas resolvidas no mesmo turno (mudanca de mecanismo, precisa decisao do usuario)."
+      "status": "REVALIDADO apos redesign do mecanismo -- 0.8 -> 1.2 (bloco 503)",
+      "note": "bloco 498: calibracao pulada, 0% de gatilho (Five Elders trasha a si mesma, nunca fica visivel em campo). Bloco 502: mecanismo redesenhado -- opp_combo_threat() passou a escanear known_hand_cards() (carta revelada na mao), gatilho subiu pra 38.7% real. Bloco 503: com o mecanismo funcionando, calibracao de verdade finalmente possivel -- x1.5=1.2 teve maximin=+0.000 (melhora Imu_v_Mihawk +3.3pp e Imu_v_Luffy-Y +3.3pp, zero regressao), aceito. x0.67=0.536 regrediu (-0.033). Valida o esforco do redesign: o peso agora responde a calibracao, nao fica mais inerte.",
+      "gauntlet": ["Imu_v_Mihawk", "Imu_v_Ace", "Imu_v_Lucy", "Imu_v_Luffy-Y"],
+      "n": 30,
+      "seed_base": 11100
     },
     "dmg": {
       "status": "REVALIDADO -- prior estava subestimado, 180.0 -> 270.0 (bloco 499)",
@@ -91,6 +95,27 @@
       "gauntlet": ["Imu_v_Lucy", "Imu_v_Luffy-GP", "Imu_v_Luffy-RG", "Imu_v_Enel-Gabi"],
       "n": 30,
       "seed_base": 9900
+    },
+    "opp_blocker": {
+      "status": "REVALIDADO -- prior estava alto, 25.0 -> 16.75 (bloco 503)",
+      "note": "1o de 3 pesos NUNCA testados por tune_weights.py (nunca estiveram em _TUNABLE, nem antes nem depois da extensao do bloco 494). Termo universal (blockers ativos do oponente, sem gating condicional). Roster padrao Imu_v_{Mihawk,Ace,Lucy,Luffy-Y}. x1.5=37.5 regrediu Imu_v_Luffy-Y (-3.3pp, maximin=-0.033). x0.67=16.75 teve maximin=+0.000 (melhora Imu_v_Mihawk +3.3pp, zero regressao) -- aceito.",
+      "gauntlet": ["Imu_v_Mihawk", "Imu_v_Ace", "Imu_v_Lucy", "Imu_v_Luffy-Y"],
+      "n": 30,
+      "seed_base": 11100
+    },
+    "hand_extra": {
+      "status": "REVALIDADO -- prior estava alto, 3.0 -> 2.01 (bloco 503)",
+      "note": "2o dos 3 pesos nunca testados. Termo universal (carta extra na mao alem da 5a). x1.5=4.5 regrediu 2 matchups (maximin=-0.067). x0.67=2.01 teve maximin=+0.000, melhora Imu_v_Lucy (+3.3pp) e Imu_v_Luffy-Y (+10pp), zero regressao -- aceito, evidencia relativamente forte (soma=+0.133, a maior deste lote).",
+      "gauntlet": ["Imu_v_Mihawk", "Imu_v_Ace", "Imu_v_Lucy", "Imu_v_Luffy-Y"],
+      "n": 30,
+      "seed_base": 11100
+    },
+    "survival_premium": {
+      "status": "revalidado, prior mantido (15.0) -- bloco 503",
+      "note": "3o dos 3 pesos nunca testados. Gated pelo MEU don_target (compute_game_plan) >=6 E oponente nao-Controle -- checado antes de rodar: dos 4 oponentes do roster padrao, nenhum tem don_target setado (None), sem risco de confound (so dispara do lado do Imu, que tem don_target=10). x1.5=22.5 maximin=-0.033, x0.67=10.05 maximin=-0.033 tambem. Nenhum candidato bateu o baseline -- prior 15.0 fica, validado.",
+      "gauntlet": ["Imu_v_Mihawk", "Imu_v_Ace", "Imu_v_Lucy", "Imu_v_Luffy-Y"],
+      "n": 30,
+      "seed_base": 11100
     }
   }
 }

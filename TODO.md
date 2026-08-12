@@ -2,6 +2,22 @@
 
 **Última atualização:** 11 de agosto de 2026
 
+> 11/08/2026 (bloco 503): **3 pesos nunca testados calibrados**
+> (`opp_blocker`, `hand_extra`, `survival_premium` — nunca estiveram em
+> `_TUNABLE`) + **`opp_combo_threat` recalibrado** (redesenhado no bloco
+> 502). Confound checado antes de rodar (`survival_premium` é gated pelo
+> meu `don_target`, roster padrão confirmado sem risco). Resultado:
+> `opp_blocker` 25.0→**16.75**, `hand_extra` 3.0→**2.01** (evidência mais
+> forte deste lote), `opp_combo_threat` 0.8→**1.2** (valida o redesign —
+> peso saiu de inerte pra responder de verdade), `survival_premium`
+> mantido (15.0, validado). `smoke_fast`/`smoke_test` 100%,
+> `audit_replay.py --n 30 --workers 4`: 0 exceções/anomalias. Ver bloco
+> 503 do HANDOFF.
+>
+> **Próximo**: refinar `don_field`/`ax_inversion` (item 3 aprovado pelo
+> usuário) — os dois só bateram o baseline empatando o pior matchup, vale
+> testar valores adicionais.
+
 > 11/08/2026 (bloco 502): **`opp_combo_threat` REDESENHADO** — usuário
 > aprovou (dos 3 itens propostos) corrigir a causa raiz do bloco 498.
 > `opp_combo_threat()` agora também escaneia `known_hand_cards()` (cartas

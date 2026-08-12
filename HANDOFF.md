@@ -1,5 +1,46 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-11 (503) - Claude (sessao remota web) - 3 pesos nunca testados calibrados (opp_blocker, hand_extra, opp_combo_threat) -- o redesign do bloco 502 valida na pratica
+
+Continuacao direta (usuario aprovou os 3 itens do bloco anterior via
+AskUserQuestion: redesenhar opp_combo_threat [feito, bloco 502], calibrar
+opp_blocker/hand_extra/survival_premium, refinar don_field/ax_inversion).
+
+**Confound checado ANTES de rodar** (habito ja estabelecido): `survival_
+premium` e gated pelo MEU `don_target` (`compute_game_plan`) >=6 E
+oponente nao-Controle -- checado os 4 oponentes do roster padrao
+(Mihawk/Ace/Lucy/Luffy-Y), nenhum tem `don_target` setado (None), sem
+risco de confound (so dispara do lado do Imu, don_target=10). `opp_
+blocker`/`hand_extra` sao universais, sem gating.
+
+**Calibracao** (N=30, roster padrao Imu_v_{Mihawk,Ace,Lucy,Luffy-Y},
+candidatos x1.5/x0.67):
+
+- **`opp_blocker`** (25.0): x1.5=37.5 regrediu (-0,033). x0.67=16.75
+  teve **maximin=+0,000** (melhora Imu_v_Mihawk +3,3pp, zero
+  regressao) -- **aceito, 25.0 -> 16.75**.
+- **`hand_extra`** (3.0): x1.5=4.5 regrediu 2 matchups (-0,067).
+  x0.67=2.01 teve **maximin=+0,000**, melhora Imu_v_Lucy (+3,3pp) e
+  Imu_v_Luffy-Y (+10pp), zero regressao -- **aceito, 3.0 -> 2.01**
+  (soma=+0,133, a evidencia mais forte deste lote).
+- **`survival_premium`** (15.0): x1.5=22.5 e x0.67=10.05 regrediram
+  ambos (-0,033) -- mantido, validado.
+- **`opp_combo_threat`** (0.8, redesenhado no bloco 502): x1.5=1.2 teve
+  **maximin=+0,000** (melhora Imu_v_Mihawk +3,3pp e Imu_v_Luffy-Y
+  +3,3pp, zero regressao) -- **aceito, 0.8 -> 1.2**. x0.67=0.536
+  regrediu (-0,033). **Valida o esforco do redesign do bloco 502**: o
+  peso passou de completamente inerte (0% gatilho) pra responder de
+  verdade a calibracao.
+
+**`eval_weights.json`**: `opp_blocker` 25.0->16.75, `hand_extra`
+3.0->2.01, `opp_combo_threat` 0.8->1.2 (NOVO -- primeira vez que essa
+chave aparece no topo do arquivo, antes so documentada em `_meta` no
+valor prior/default do modulo). `_meta` com as 4 entradas deste lote.
+
+**Validacao**: `smoke_fast.py` + `smoke_test.py` 100%. `audit_replay.py
+--n 30 --seed 333 --workers 4`: 0 excecoes, 0 anomalias. Script
+descartavel apagado.
+
 ## 2026-08-11 (502) - Claude (sessao remota web) - `opp_combo_threat` REDESENHADO: agora enxerga carta revelada na mao -- gatilho sobe de 0% pra 38,7% nas mesmas partidas
 
 Usuario aprovou (via AskUserQuestion, 3 itens) redesenhar o mecanismo de
