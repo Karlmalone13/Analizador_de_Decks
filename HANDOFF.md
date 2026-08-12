@@ -1,6 +1,6 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-08-11 (508, PARCIAL) - Claude (sessao remota web) - Nova direcao proposta pelo usuario: "calibragem DINAMICA" (refinar a heuristica por simulacao ANTES de cada decisao, nao um eval_weights.json fixo) -- 2 tentativas de escopo erradas, registrando o desenho certo
+## 2026-08-11 (508) - Claude (sessao remota web) - Desenho FINAL em 2 fases acordado: camada barata (flags) + shortlist do Turn Planner (fase 1), depois calibragem dinamica em cima (fase 2) -- especificacao completa, nada implementado ainda
 
 Continuacao do debate arquitetural do bloco 505/506 (per-deck vs global
 vs cache-MC). Usuario redirecionou 2 vezes ate o desenho ficar claro --
@@ -49,14 +49,65 @@ escolhido: (a) refinamento so em decisoes caras/importantes, nao toda
 decisao trivial; (b) refinamento 1x por turno/fase, nao por decisao
 individual dentro do turno.
 
-**Plano depois de fechar o desenho**: prototipar pequeno, DEPOIS
-comparar eficiencia da calibragem dinamica contra os pesos estaticos
-de hoje (eval_weights.json, blocos 493-507) -- mesmo espirito de
-comparacao que ja fizemos o dia inteiro (self-play, N grande,
-maximin/margem), so comparando MECANISMO, nao so valor de peso.
+**Refinamento em conversa (mesmo bloco, apos o usuario confirmar o
+entendimento acima)**: usuario perguntou "e se a gente agrega essa
+ideia junto do Turn Planner?" -- investigado `_select_search_candidates`
+(decision_engine.py ~L14571), a funcao que hoje corta a lista completa
+de acoes (`_generate_and_score_actions`) pro subconjunto que recebe
+busca cara (`_select_action_via_search`). Corte de hoje e 100% estatico
+(score imediato, top_k + janela) -- ZERO simulacao entra nessa decisao.
+Achado real: e o ponto de encaixe natural pra "milhares de simulacoes
+baratas" -- a propria docstring da funcao ja a chama de "FONTE UNICA"
+(usada offline E ao vivo), entao mudar SO a entrada dela (de "so score
+estatico" pra "score estatico + sinal de rollout barato") nao exige
+sistema novo nenhum, e a parte cara (`_select_action_via_search`) fica
+intocada.
 
-**Nada implementado ainda** -- aguardando confirmacao do usuario de que
-o entendimento acima esta correto antes de prototipar.
+Usuario propos ir mais longe -- encadear as 3 ideias (camada barata +
+shortlist do Turn Planner + calibragem dinamica) num prototipo so.
+Recomendei SEQUENCIAR em vez de combinar tudo de uma vez: mesmo
+raciocinio de isolar variavel usado o dia inteiro (achado do
+`wincon_ready` confundido, bug do `__deepcopy__` etc) -- combinar 3
+mecanismos novos num prototipo so impede saber qual deles causou
+qualquer resultado (bom ou ruim). Tambem a "calibragem dinamica" ainda
+nao tinha mecanismo fechado (o encaixe com o Turn Planner ja tinha),
+entao misturar arriscava travar o prototipo inteiro numa peca ainda
+indefinida. Usuario concordou em sequenciar.
+
+**FASE 1 (a construir agora)**: camada barata (baseada nas flags ja
+existentes de `get_card_flags` -- `has_ko`/`has_search`/`has_draw`/etc,
+NAO resolve efeito de verdade, so aplica delta aproximado) rodada
+MUITAS vezes de forma barata, alimentando `_select_search_candidates`
+como sinal ADICIONAL ao score estatico de hoje -- widen o shortlist que
+entra na busca cara, sem mudar a busca cara em si.
+
+**FASE 2 (especificada, so construir DEPOIS de medir a fase 1
+isolada)**:
+- **Fonte de dado**: reusa os MESMOS rollouts baratos da fase 1 (nao
+  roda simulacao nova).
+- **Mecanismo**: NAO substitui `eval_weights.json` (ja validado hoje,
+  blocos 493-507) -- aplica um AJUSTE em cima: `peso_final = peso_
+  estatico * (1 + ajuste)`, com TETO (ex: ajuste nunca passa de ±20%)
+  pra nao deixar ruido de amostra pequena desestabilizar a decisao --
+  degrada suave de volta pro comportamento de hoje se o sinal for
+  fraco/ruidoso.
+- **Onde entra**: reusa `state.eval_weights` (o MESMO mecanismo
+  por-estado ja usado e corrigido o dia inteiro, bug do `__deepcopy__`
+  no bloco 495 ja garante que propaga certo pro Monte Carlo) -- zero
+  infraestrutura nova.
+- **Quando roda**: em aberto -- por decisao cara ou 1x por turno,
+  decisao adiada pra depois de medir o custo real da fase 1.
+- Usuario confirmou a especificacao ("Concordo").
+
+**Plano de medicao**: fase 1 sozinha primeiro (self-play, N grande,
+mesmos matchups ja validados/deconfundidos) contra o baseline de hoje
+-- isola o ganho de "ver mais candidatas boas". SO DEPOIS, fase 2 em
+cima, pra isolar o ganho ADICIONAL de "pesos ajustados a situacao" sem
+misturar com o ganho da fase 1.
+
+**Nada implementado ainda neste bloco** -- proximo passo real e
+construir a fase 1 (camada barata + integracao em
+`_select_search_candidates`).
 
 ## 2026-08-11 (507) - Claude (sessao remota web) - Verificacao final: `decision_quality_report.py` em 4 lideres com os pesos novos -- nenhum sinal de deck "descalibrado", fecha o arco de calibracao 493-507
 

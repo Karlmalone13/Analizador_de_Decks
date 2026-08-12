@@ -2,27 +2,34 @@
 
 **Última atualização:** 11 de agosto de 2026
 
-> 11/08/2026 (bloco 508, PARCIAL): **Nova direção proposta pelo
-> usuário: "calibragem DINÂMICA"** — em vez de `eval_weights.json` FIXO
-> (calibrado 1x offline, o que a sessão inteira fez), o bot rodaria
-> milhares de simulações estilo NarutoSim **antes de cada decisão**, e o
-> resultado **refinaria os parâmetros da heurística** naquele momento
-> (não escolhe a jogada direto pelas simulações — isso seria MCTS puro;
-> refina o "motor de pensamento" decisão a decisão). Deck-agnóstico por
-> construção — é um processo, não um perfil salvo por deck/matchup.
-> **2 tentativas de escopo erradas antes de chegar nisso** (perfil por
-> matchup — ainda é calibragem por deck; pergunta fechada A/B — nenhuma
-> capturou certo), registradas no bloco 508 do HANDOFF pra sessões
-> futuras não repetirem.
+> 11/08/2026 (bloco 508): **Desenho FINAL em 2 fases acordado** pra
+> "calibragem dinâmica" (nasceu de "como não descalibrar um deck pro
+> outro"). 2 tentativas de escopo erradas antes de chegar aqui (perfil
+> por matchup — ainda é calibragem por deck; pergunta fechada A/B —
+> nenhuma capturou certo), registradas no bloco 508 do HANDOFF.
 >
-> **Ressalva técnica ainda sem resposta**: milhares de simulações POR
-> DECISÃO tem o mesmo problema de custo já discutido (nosso motor não é
-> barato por rollout como o do NarutoSim) — provavelmente estoura o
-> orçamento ao vivo. 2 cortes de custo propostos, nenhum escolhido: (a)
-> só em decisões caras; (b) 1x por turno, não por decisão individual.
+> **Fase 1 (a construir agora)**: camada barata baseada nas flags já
+> existentes (`get_card_flags` — `has_ko`/`has_search`/etc, sem resolver
+> efeito de verdade), rodada muitas vezes, alimentando
+> `_select_search_candidates` (achado: é a função "FONTE ÚNICA", hoje
+> 100% score estático, que decide quais ações entram na busca cara do
+> Turn Planner — offline E ao vivo) como sinal adicional pra widen o
+> shortlist, sem tocar na busca cara em si.
 >
-> **Nada implementado** — aguardando confirmação do usuário do
-> entendimento antes de prototipar.
+> **Fase 2 (especificada, só construir depois de medir a fase 1
+> isolada)**: reusa os rollouts baratos da fase 1 (sem simulação nova),
+> aplica um ajuste com teto (±20%) em cima do `eval_weights.json` já
+> validado — `peso_final = peso_estático × (1 + ajuste)` —, via o mesmo
+> `state.eval_weights` já usado/corrigido o dia inteiro. Degrada suave
+> pro comportamento de hoje se o sinal for fraco/ruidoso.
+>
+> **Por que sequenciar**: combinar as 2 fases num prototipo só impediria
+> saber qual peça causou qualquer resultado — mesmo raciocínio de
+> isolar variável usado o dia inteiro. Medir fase 1 sozinha primeiro
+> (self-play, N grande, matchups já deconfundidos) contra o baseline de
+> hoje, DEPOIS fase 2 em cima.
+>
+> **Nada implementado ainda** — próximo passo real é construir a fase 1.
 
 > 11/08/2026 (bloco 507): **Verificação final — `decision_quality_
 > report.py` em 4 líderes** (Imu, Mihawk, Ace, Lucy, N=20 cada) com os
