@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-11 (498) - Claude (sessao remota web) - `opp_combo_threat`: causa raiz do 0% de gatilho NAO e amostra pequena -- Five Elders trasha A SI MESMA como parte do proprio [Activate: Main], eliminando a janela de aviso previo que o termo tenta detectar
+
+Continuacao do bloco 496/497 (usuario: "vai pro 2 primeiro, depois pros
+11"). Item 2 era "retestar `opp_combo_threat` com jogos mais longos ou
+matchups onde o trash do oponente acumula fuel mais cedo" -- antes de
+gastar uma calibracao cara nisso, investiguei a causa raiz de verdade.
+
+**Achado 1**: escaneando `card_effects_db.json` inteiro (TODAS as
+cartas, nao so lideres), so **4 cartas em todo o banco** tem
+`play_from_trash`/`add_from_trash` com `count>=2` (a assinatura que
+`opp_combo_threat()` procura): Kalifa (EB01-031), Vinsmoke Judge
+(OP06-062), Gild Tesoro (OP06-071), Five Elders (OP13-082). Das 193
+decklists do pool, **so os 4 decks do Imu rodam uma delas** (Five
+Elders) -- as outras 3 nao aparecem em NENHUM deck do pool atual.
+
+**Achado 2 (causa raiz de verdade, nao e sample size)**: rastreei
+turno-a-turno (5 partidas Imu_v_Mihawk, seed 7000-7004) se Five Elders
+aparecia no campo do Imu nos checkpoints do turno do Mihawk. Resultado:
+**nunca no campo, mas ja no trash a partir do turno 5 em TODA partida**.
+O efeito parseado de Five Elders explica por que:
+
+```
+[Activate: Main] (custo: rest_don x1 + trash_from_hand x1)
+  1. trash_character(self_character, count=99)   <- ELA MESMA vai pro trash AQUI
+  2. play_from_trash(count=5, power_eq=5000, filter='five elders')
+```
+
+O PRIMEIRO step do proprio efeito manda Five Elders pro trash ANTES de
+reanimar -- e um sacrificio atomico, tudo no mesmo turno em que e
+ativada (custo barato, rest_don+trash_from_hand, o bot ativa assim que
+pode). Isso significa que NUNCA existe uma janela real em que o
+oponente veria "Five Elders no campo, ameaca pendente, ainda da tempo de
+reagir" -- pelo design da propria carta, a reanimacao e o auto-trash
+acontecem juntos, no MESMO turno do Imu, antes do oponente ter qualquer
+chance de agir. `opp_combo_threat()`/PREVENT_COMBO foi desenhado pra
+avisar "o oponente PODE fazer isso no proximo turno dele, previna agora"
+(mesmo o nome da funcao/docstring fala em ameaca "ainda no trash, nao no
+board" -- pressupõe aviso previo) -- mas a UNICA carta do pool que
+dispara esse padrao nao da esse aviso previo por natureza propria.
+
+**Conclusao**: 0% de gatilho em 166 turnos NAO e problema de amostra
+pequena (rodar mais partidas ou jogos mais longos nao mudaria isso -- o
+padrao e estrutural, nao estatistico). `opp_combo_threat` fica **sem
+calibracao nesta sessao, documentado como estruturalmente near-
+intestavel com o pool de decks atual**. Nao decidi reescrever a logica
+de deteccao (mudaria o MECANISMO, nao so o peso -- fora do escopo desta
+tarefa, que era calibrar o peso existente) -- fica registrado pra
+decisao futura do usuario: (a) aceitar que este termo so importa se/
+quando surgir outra carta com o mesmo padrao SEM auto-trash no efeito,
+ou (b) redesenhar `opp_combo_threat()` pra tambem considerar ameacas que
+se resolvem no MESMO turno em que aparecem (mudanca de mecanismo, nao
+so de peso -- precisa de decisao explicita do usuario antes).
+
+Nenhum arquivo de codigo/peso mudou neste bloco -- so investigacao e
+documentacao. 3 scripts de investigacao descartaveis rodados e
+descartados (nao commitados).
+
 ## 2026-08-11 (497) - Claude (sessao remota web) - `wincon_ready` REVALIDADO com amostra maior e matchups deconfundidos -- usuario achou confound real na calibracao do bloco 496
 
 Usuario perguntou "so testou com Imu?" sobre a calibracao de

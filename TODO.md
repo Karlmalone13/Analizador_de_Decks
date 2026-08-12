@@ -2,6 +2,24 @@
 
 **Última atualização:** 11 de agosto de 2026
 
+> 11/08/2026 (bloco 498): **`opp_combo_threat` — causa raiz do 0% de
+> gatilho achada, NÃO é sample size**. Só 4 cartas em todo o banco têm a
+> assinatura que o termo procura (`play_from_trash`/`add_from_trash`
+> count≥2); das 193 decklists, só o Imu roda uma delas (Five Elders
+> OP13-082). Rastreando turno a turno: Five Elders **nunca aparece em
+> campo** nos checkpoints porque o próprio `[Activate: Main]` dela manda
+> ela mesma pro trash (`trash_character self_character`) ANTES de
+> reanimar, tudo no mesmo turno — não existe janela de "ameaça pendente,
+> ainda dá tempo de reagir" pra essa carta específica, o que o termo foi
+> desenhado pra detectar. Rodar mais partidas ou jogos mais longos NÃO
+> resolveria isso (padrão estrutural, não estatístico). **Calibração não
+> feita** — fica documentado como pendência de DECISÃO (não de dado):
+> aceitar que o termo só importa se aparecer outra carta sem auto-trash
+> com esse padrão, ou redesenhar `opp_combo_threat()` pra cobrir ameaças
+> que se resolvem no mesmo turno (mudança de mecanismo, precisa decisão
+> explícita do usuário — fora do escopo de "calibrar peso"). Nenhum
+> código/peso mudou. Ver bloco 498 do HANDOFF.
+
 > 11/08/2026 (bloco 497): **`wincon_ready` revalidado** — usuário
 > perguntou "só testou com Imu?" sobre o bloco 496 e achou um problema
 > real: escaneando o pool completo (193 decks), **84 (43%) têm o eixo
