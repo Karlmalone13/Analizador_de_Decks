@@ -1,5 +1,63 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-11 (508, PARCIAL) - Claude (sessao remota web) - Nova direcao proposta pelo usuario: "calibragem DINAMICA" (refinar a heuristica por simulacao ANTES de cada decisao, nao um eval_weights.json fixo) -- 2 tentativas de escopo erradas, registrando o desenho certo
+
+Continuacao do debate arquitetural do bloco 505/506 (per-deck vs global
+vs cache-MC). Usuario redirecionou 2 vezes ate o desenho ficar claro --
+registro as 2 tentativas erradas tambem, pra futuras sessoes nao
+repetirem o mesmo caminho.
+
+**Tentativa 1 (errada, matada antes de aplicar qualquer mudanca)**:
+implementei um prototipo de "perfil de pesos POR MATCHUP" (coordinate-
+ascent so pro par Imu_v_Mihawk, sem maximin cruzado, script
+`prototype_per_matchup_tuning.py`, task `bus7i5knp`) -- usuario corrigiu:
+isso AINDA e calibragem por deck, so mais fina (um eval_weights.json
+por matchup em vez de 1 global). Matado antes do fim, nenhuma mudanca
+aplicada.
+
+**Tentativa 2 (pergunta fechada, ainda incompleta)**: perguntei via
+AskUserQuestion se a ideia era (a) aprender pesos GLOBAIS a partir de
+dado agregado de MUITOS matchups misturados (1 conjunto so, aprendido
+por regressao/estatistica em vez de coordinate-ascent manual) ou (b) um
+cache de busca ao vivo de curto prazo (otimizacao de velocidade, sem
+aprender nada permanente). Usuario respondeu que nenhuma das duas
+captura certo -- a ideia real e uma TERCEIRA coisa.
+
+**Desenho real (bloco 508, confirmado em prosa, aguardando confirmacao
+final do usuario antes de prototipar)**: "calibragem DINAMICA" --
+diferente de um `eval_weights.json` FIXO (calibrado 1x offline, o que
+a sessao inteira fez ate agora), o bot roda MILHARES de simulacoes
+rapidas estilo NarutoSim **ANTES DE CADA DECISAO**, e o resultado
+dessas simulacoes **REFINA OS PARAMETROS DA HEURISTICA** naquele
+momento especifico -- nao escolhe a jogada direto pelas simulacoes (isso
+seria MCTS puro escolhendo a acao), usa o resultado pra recalibrar o
+"motor de pensamento" decisao a decisao. Deck-agnostico por construcao:
+nao existe "perfil do Imu" salvo em lugar nenhum -- e um PROCESSO que
+roda igual pra qualquer deck, o resultado sai diferente naturalmente
+porque reflete a simulacao daquele jogo especifico, nao porque alguem
+calibrou pra aquele arquetipo.
+
+**Ressalva tecnica registrada** (levantada antes de prototipar, ainda
+sem resposta do usuario): "milhares de simulacoes antes de CADA decisao"
+tem o MESMO problema de custo ja discutido nos blocos 505/506 --
+NarutoSim e barato por rollout (8 features, sem regra de carta); nosso
+motor precisaria rodar regras completas por rollout, ordens de
+magnitude mais caro. Rodar milhares TODA decisao (varias por turno)
+provavelmente estoura o orcamento de tempo ao vivo (mesmo `client_
+timeouts` ja monitorado). 2 cortes de custo propostos, nenhum ainda
+escolhido: (a) refinamento so em decisoes caras/importantes, nao toda
+decisao trivial; (b) refinamento 1x por turno/fase, nao por decisao
+individual dentro do turno.
+
+**Plano depois de fechar o desenho**: prototipar pequeno, DEPOIS
+comparar eficiencia da calibragem dinamica contra os pesos estaticos
+de hoje (eval_weights.json, blocos 493-507) -- mesmo espirito de
+comparacao que ja fizemos o dia inteiro (self-play, N grande,
+maximin/margem), so comparando MECANISMO, nao so valor de peso.
+
+**Nada implementado ainda** -- aguardando confirmacao do usuario de que
+o entendimento acima esta correto antes de prototipar.
+
 ## 2026-08-11 (507) - Claude (sessao remota web) - Verificacao final: `decision_quality_report.py` em 4 lideres com os pesos novos -- nenhum sinal de deck "descalibrado", fecha o arco de calibracao 493-507
 
 Usuario perguntou "o que fazemos pra resolver o problema" (de nao

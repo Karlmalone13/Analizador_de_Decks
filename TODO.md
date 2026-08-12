@@ -2,6 +2,28 @@
 
 **Última atualização:** 11 de agosto de 2026
 
+> 11/08/2026 (bloco 508, PARCIAL): **Nova direção proposta pelo
+> usuário: "calibragem DINÂMICA"** — em vez de `eval_weights.json` FIXO
+> (calibrado 1x offline, o que a sessão inteira fez), o bot rodaria
+> milhares de simulações estilo NarutoSim **antes de cada decisão**, e o
+> resultado **refinaria os parâmetros da heurística** naquele momento
+> (não escolhe a jogada direto pelas simulações — isso seria MCTS puro;
+> refina o "motor de pensamento" decisão a decisão). Deck-agnóstico por
+> construção — é um processo, não um perfil salvo por deck/matchup.
+> **2 tentativas de escopo erradas antes de chegar nisso** (perfil por
+> matchup — ainda é calibragem por deck; pergunta fechada A/B — nenhuma
+> capturou certo), registradas no bloco 508 do HANDOFF pra sessões
+> futuras não repetirem.
+>
+> **Ressalva técnica ainda sem resposta**: milhares de simulações POR
+> DECISÃO tem o mesmo problema de custo já discutido (nosso motor não é
+> barato por rollout como o do NarutoSim) — provavelmente estoura o
+> orçamento ao vivo. 2 cortes de custo propostos, nenhum escolhido: (a)
+> só em decisões caras; (b) 1x por turno, não por decisão individual.
+>
+> **Nada implementado** — aguardando confirmação do usuário do
+> entendimento antes de prototipar.
+
 > 11/08/2026 (bloco 507): **Verificação final — `decision_quality_
 > report.py` em 4 líderes** (Imu, Mihawk, Ace, Lucy, N=20 cada) com os
 > pesos finais de hoje. Utilização da habilidade do líder saudável nos 3
