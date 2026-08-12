@@ -10119,6 +10119,9 @@ def main() -> int:
     test_optcgmatch_hide_opponent_info_propaga_e_muda_comportamento_10_08()
     test_deepcopy_propaga_eval_weights_e_use_eval_v2_11_08()
     test_opp_combo_threat_ve_carta_revelada_na_mao_11_08()
+    test_cheap_rollout_value_deterministico_e_direcao_correta_11_08()
+    test_select_search_candidates_alarga_com_cheap_values_sem_regredir_11_08()
+    test_log_turn_planner_decision_registra_cheap_value_pra_auditoria_11_08()
     test_ponder_fingerprint_deterministico_09_08()
     test_ponder_fingerprint_muda_por_mutacao_isolada_09_08()
     test_ponder_payload_byte_identico_ao_caminho_normal_09_08()
@@ -12431,6 +12434,124 @@ def test_opp_combo_threat_ve_carta_revelada_na_mao_11_08() -> None:
     combo_campo = GameAnalyzer(me, opp2).opp_combo_threat()
     check("Five Elders em CAMPO continua detectada normalmente (scan antigo preservado)",
           combo_campo['magnitude'] == 2)
+
+
+def test_cheap_rollout_value_deterministico_e_direcao_correta_11_08() -> None:
+    """
+    Fase 1 da "calibragem dinamica" (bloco 508/509, desenho acordado com
+    o usuario): `_cheap_rollout_value` aproxima o valor de uma acao SEM
+    resolver o efeito de verdade -- so usa as flags ja pre-parseadas
+    (get_card_flags, MESMA fonte que avaliar_carta) sobre um resumo
+    grosseiro do estado. Prova 2 coisas basicas antes de qualquer
+    integracao: e deterministico com rng seedado (senao a comparacao de
+    concordancia via auditoria nao faria sentido), e aponta na DIRECAO
+    certa (carta com is_removal vale mais que uma vanilla equivalente
+    quando ha alvo real pra remover).
+    """
+    import random
+    me = GameState(leader=real_card("OP11-062"), turn=3, don_available=5, don_rested=0)
+    opp = GameState(leader=real_card("OP11-062"), turn=3, don_available=5, don_rested=0)
+    opp.field_chars = [mk("OPPC1", "Opp Body", power=4000, cost=3)]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+
+    linlin = real_card("ST34-004")  # is_removal=True, ja confirmado em teste existente
+    action_removal = (100.0, 'play', linlin, None, None)
+
+    v1 = match._cheap_rollout_value(me, opp, action_removal, n_samples=50,
+                                     rng=random.Random(777))
+    v2 = match._cheap_rollout_value(me, opp, action_removal, n_samples=50,
+                                     rng=random.Random(777))
+    check("_cheap_rollout_value e deterministico com o MESMO rng seedado",
+          v1 == v2)
+
+    vanilla = mk("VAN1", "Vanilla", power=linlin.power, cost=linlin.cost)
+    action_vanilla = (100.0, 'play', vanilla, None, None)
+    v_removal = match._cheap_rollout_value(me, opp, action_removal, n_samples=200,
+                                            rng=random.Random(42))
+    v_vanilla = match._cheap_rollout_value(me, opp, action_vanilla, n_samples=200,
+                                            rng=random.Random(42))
+    check("carta com is_removal vale mais que vanilla equivalente quando ha alvo pra remover",
+          v_removal > v_vanilla)
+
+
+def test_select_search_candidates_alarga_com_cheap_values_sem_regredir_11_08() -> None:
+    """
+    `_select_search_candidates` (fonte unica do shortlist, offline E ao
+    vivo) ganhou um parametro opcional `cheap_values=` (bloco 508/509).
+    Prova as 2 pontas exigidas pelo desenho: (1) SEM `cheap_values`
+    (default None, o caso de todo chamador existente hoje -- offline
+    main_phase so liga com USE_CHEAP_LAYER_SHORTLIST=True, sim_bridge
+    nunca liga) o resultado e IDENTICO ao comportamento de sempre, zero
+    regressao; (2) COM `cheap_values`, uma candidata que o score
+    estatico sozinho deixaria de fora (fora do top_k/janela) entra no
+    shortlist se o sinal barato apontar ela como promissora --
+    estritamente ADITIVO, nunca remove o que o score estatico ja
+    garantiu.
+    """
+    match = OPTCGMatch((real_card("OP11-062"), []), (real_card("OP11-062"), []))
+
+    # 5 acoes: scores bem espacados, so as 2 primeiras entram no shortlist
+    # com min_candidates=2/score_window pequeno (a 3a fica de fora, score
+    # muito abaixo da 1a).
+    a1 = (500.0, 'play', mk("C1", "Carta1", power=5000, cost=3), None, None)
+    a2 = (480.0, 'play', mk("C2", "Carta2", power=4000, cost=2), None, None)
+    a3 = (50.0, 'play', mk("C3", "Carta3", power=1000, cost=1), None, None)
+    actions = [a1, a2, a3]
+
+    sem_cheap = match._select_search_candidates(
+        actions, top_k=5, priority='DEVELOP', min_candidates=2, score_window=100)
+    check("SEM cheap_values, a3 (score baixo) fica de fora -- comportamento de sempre",
+          a3 not in sem_cheap and a1 in sem_cheap and a2 in sem_cheap)
+
+    com_cheap_baixo = match._select_search_candidates(
+        actions, top_k=5, priority='DEVELOP', min_candidates=2, score_window=100,
+        cheap_values={id(a1): 10.0, id(a2): 8.0, id(a3): 5.0})
+    check("COM cheap_values mas SEM destaque pra a3, resultado nao muda (nao forca inclusao a toa)",
+          a3 not in com_cheap_baixo)
+
+    com_cheap_alto = match._select_search_candidates(
+        actions, top_k=5, priority='DEVELOP', min_candidates=2, score_window=100,
+        cheap_values={id(a1): 10.0, id(a2): 8.0, id(a3): 50.0})
+    check("COM cheap_values destacando a3, ela ENTRA no shortlist (alargamento funciona)",
+          a3 in com_cheap_alto)
+    check("a1/a2 continuam presentes -- alargamento e ADITIVO, nunca remove o que o score ja garantiu",
+          a1 in com_cheap_alto and a2 in com_cheap_alto)
+
+
+def test_log_turn_planner_decision_registra_cheap_value_pra_auditoria_11_08() -> None:
+    """
+    `_log_turn_planner_decision` ganhou `cheap_values=` (bloco 508/509) --
+    prova que o decision_log grava o campo `cheap_value` por candidata
+    quando fornecido (pra `audit_cheap_layer.py` medir concordancia
+    contra `simulated_value` depois) e grava `None` quando a camada
+    barata nao rodou (USE_CHEAP_LAYER_SHORTLIST desligado, o padrao).
+    """
+    match = OPTCGMatch((real_card("OP11-062"), []), (real_card("OP11-062"), []))
+    match.enable_decision_audit()
+    engine = DecisionEngine(match.state_a, match.state_b)
+
+    a1 = (500.0, 'play', mk("C1", "Carta1", power=5000, cost=3), None, None)
+    a2 = (480.0, 'play', mk("C2", "Carta2", power=4000, cost=2), None, None)
+    actions = [a1, a2]
+
+    match._log_turn_planner_decision(
+        match.state_a, match.state_b, engine, 'DEVELOP', actions, [a1, a2],
+        a1, None, {}, cheap_values={id(a1): 12.34, id(a2): 5.0})
+    rec = match.decision_log[-1]
+    check("cheap_value gravado corretamente na candidata 'chosen'",
+          rec['chosen']['cheap_value'] == 12.34)
+    check("cheap_value gravado corretamente nas 'candidates'",
+          any(c['cheap_value'] == 5.0 for c in rec['candidates']))
+
+    match._log_turn_planner_decision(
+        match.state_a, match.state_b, engine, 'DEVELOP', actions, [a1, a2],
+        a1, None, {}, cheap_values=None)
+    rec2 = match.decision_log[-1]
+    check("SEM cheap_values (padrao), cheap_value grava None -- nao inventa dado",
+          rec2['chosen']['cheap_value'] is None)
+    check("context.cheap_layer_active reflete corretamente ligado/desligado",
+          rec['context']['cheap_layer_active'] is True
+          and rec2['context']['cheap_layer_active'] is False)
 
 
 # ── Pondering (BOT/engine_server/server.py, design bloco 478, implementado

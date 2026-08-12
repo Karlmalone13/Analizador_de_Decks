@@ -280,6 +280,27 @@ PREVENT_COMBO_LEADER_ATTACK_BONUS = 150
 SEARCH_MIN_CANDIDATES = 3
 SEARCH_SCORE_WINDOW = 180
 
+# ── camada barata / fase 1 da "calibragem dinamica" (bloco 508/509) ──────────
+# Desenho acordado com o usuario 11/08: em vez de resolver o efeito de
+# verdade (caro, precisa do motor de regras completo), `_cheap_rollout_value`
+# usa SO as flags ja pre-parseadas (get_card_flags, mesma fonte que
+# avaliar_carta ja usa) pra aproximar o resultado de uma acao -- muitas
+# amostras rapidas, nao um substituto da busca real. O sinal alimenta
+# `_select_search_candidates` como um segundo criterio (alem do score
+# estatico de sempre) pra ALARGAR o shortlist que entra na busca cara --
+# nunca substitui, nunca encolhe o que o score estatico ja garantia.
+# Desligado por padrao (opt-in explicito via `cheap_values=` em
+# `_select_search_candidates`) -- nenhum caminho existente (offline
+# main_phase, ao vivo sim_bridge.choose_action) muda de comportamento
+# ate ser explicitamente ligado e validado por self-play.
+CHEAP_LAYER_SAMPLES = 40
+CHEAP_LAYER_EXTRA_CANDIDATES = 3
+# Knob global, mesmo padrao do USE_EVAL_V2/USE_OPPONENT_RESPONSE_SEARCH --
+# comeca DESLIGADO. So o experimento de comparacao (self-play controlado)
+# liga explicitamente antes de medir; main_phase (offline) e sim_bridge
+# (ao vivo) preservam o comportamento de sempre enquanto isto for False.
+USE_CHEAP_LAYER_SHORTLIST = False
+
 # ── busca prof.2 / resposta do oponente (item 3 do PLANO_AVALIACAO_E_BUSCA.md) ─
 # Depois de simular MINHA linha ate o fim do turno, simula o TURNO INTEIRO de
 # resposta do oponente (proprio engine, modo GULOSO -- ver _play_turn_greedy,
@@ -14568,9 +14589,116 @@ class OPTCGMatch:
             and not engine.analyzer.can_lethal_this_turn()
         )
 
+    def _cheap_rollout_value(self, p, opp, action, n_samples=CHEAP_LAYER_SAMPLES,
+                              rng=None):
+        """
+        Camada BARATA (fase 1 da "calibragem dinamica", bloco 508/509):
+        aproxima o valor de uma acao candidata SEM resolver o efeito de
+        verdade (nao chama _execute_step/_apply_action) -- so olha as
+        flags ja pre-parseadas (get_card_flags, MESMA fonte que
+        avaliar_carta usa pros bonus de has_ko/has_search/etc, ver
+        REGRA_SEM_DUPLICACAO: nao reimplementa deteccao propria) e aplica
+        um delta grosseiro sobre um resumo generico do estado (board
+        meu/dele, mao, DON, pressao de dano) -- os MESMOS termos
+        universais de EVAL_WEIGHTS, mesma escala, pra ficar comparavel.
+
+        Roda `n_samples` vezes com pequena aleatoriedade nas partes
+        ambiguas (ex: qual corpo do oponente seria removido por um KO
+        sem alvo declarado) e tira a media -- um sinal RAPIDO, nunca um
+        substituto da busca real (_select_action_via_search). Usado por
+        `_select_search_candidates` (via `cheap_values=`) so pra ALARGAR
+        o shortlist que recebe a busca cara, nunca pra decidir a acao
+        final sozinho.
+
+        Retorna um float na mesma ordem de grandeza do `score` imediato
+        de `_generate_and_score_actions` -- serve pra RANKEAR candidatas
+        entre si, nao tem significado absoluto proprio.
+        """
+        rng = rng or random
+        W = getattr(p, 'eval_weights', None) or EVAL_WEIGHTS
+        score, kind, obj, target_type, target = action
+
+        total = 0.0
+        for _ in range(max(1, n_samples)):
+            d_board_mine = 0.0    # + = ganho de board_value pro meu lado
+            d_opp_removed = 0.0   # + = board_value removido do oponente
+            d_hand = 0.0          # + = cartas ganhas na mao
+            d_don = 0.0           # + = DON disponivel ganho/poupado
+            d_pressure = 0.0      # + = fracao de progresso rumo a dano no lider
+
+            if kind == 'play':
+                card = obj
+                flags = get_card_flags(card.code)
+                d_board_mine += card.board_value()
+                d_don -= min(p.don_available, card.cost)
+                if flags.get('draws'):
+                    d_hand += 1.0
+                if flags.get('is_searcher'):
+                    # busca nem sempre acha algo jogavel na hora -- fracao,
+                    # nao certeza cheia.
+                    d_hand += 0.5
+                if (flags.get('kos') or flags.get('is_removal')) and opp.field_chars:
+                    alvo = rng.choice(opp.field_chars)
+                    d_opp_removed += alvo.board_value()
+                if flags.get('bounces') and opp.field_chars:
+                    alvo = rng.choice(opp.field_chars)
+                    d_opp_removed += alvo.board_value()
+                if flags.get('power_buff'):
+                    d_board_mine += 1.0
+                if flags.get('gives_don'):
+                    d_don += 1.0
+            elif kind == 'activate':
+                source = obj
+                flags = get_card_flags(source.code)
+                if (flags.get('kos') or flags.get('is_removal')) and opp.field_chars:
+                    alvo = rng.choice(opp.field_chars)
+                    d_opp_removed += alvo.board_value()
+                if flags.get('draws'):
+                    d_hand += 1.0
+                if flags.get('gives_don'):
+                    d_don += 1.0
+            elif kind == 'attack':
+                attacker = obj
+                atk_power = attacker.effective_power()
+                if target_type == 'leader':
+                    defesa = opp.leader.power + opp.leader.power_buff
+                    # chance grosseira de conectar sem bloqueio/counter
+                    # relevante -- proxy rapido, nao substitui
+                    # opp_counter_potential/should_use_blocker de verdade.
+                    if atk_power >= defesa and rng.random() < 0.7:
+                        d_pressure += 1.0
+                elif target is not None:
+                    alvo_power = target.effective_power()
+                    if atk_power >= alvo_power:
+                        d_opp_removed += target.board_value()
+
+            total += (d_board_mine * W['board_mine']
+                      + d_opp_removed * W['board_opp']
+                      + d_hand * W['hand_first']
+                      + d_don * W['don_field']
+                      + d_pressure * W['dmg'] * 0.1)
+
+        return total / max(1, n_samples)
+
+    def _compute_cheap_values(self, p, opp, actions, n_samples=CHEAP_LAYER_SAMPLES,
+                               rng=None):
+        """
+        Calcula `_cheap_rollout_value` pra TODA a lista de acoes
+        (score>=0 apenas, mesmo corte de elegibilidade de
+        `_select_search_candidates`), devolvendo um dict {id(acao): valor}
+        pronto pra passar como `cheap_values=` la. Funcao separada (nao
+        inline) pra poder ser chamada 1x e reusada tanto pelo corte do
+        shortlist quanto pelo log de auditoria (mesmos valores, sem
+        recalcular).
+        """
+        rng = rng or random
+        return {id(a): self._cheap_rollout_value(p, opp, a, n_samples, rng)
+                for a in actions if a[0] >= 0}
+
     def _select_search_candidates(self, actions, top_k, priority,
                                    min_candidates=SEARCH_MIN_CANDIDATES,
-                                   score_window=SEARCH_SCORE_WINDOW):
+                                   score_window=SEARCH_SCORE_WINDOW,
+                                   cheap_values=None):
         """
         Recorta, a partir da lista COMPLETA de ações pontuadas
         (`_generate_and_score_actions`, ordenada por score desc), quais
@@ -14619,6 +14747,43 @@ class OPTCGMatch:
             include_best_kind('play', 1)
             include_best_kind('activate', 1)
             candidatas.sort(key=lambda acao: acao[0], reverse=True)
+
+        if cheap_values:
+            # Fase 1 da "calibragem dinamica" (bloco 508/509): ALARGA o
+            # shortlist com candidatas que o sinal barato aponta como
+            # promissoras mesmo fora do top_k/janela do score estatico --
+            # nunca remove nada que a politica de score ja garantiu acima,
+            # so adiciona ate CHEAP_LAYER_EXTRA_CANDIDATES extras, e SO
+            # quando o proprio sinal barato julga a candidata excluida tao
+            # boa quanto a PIOR das ja incluidas (limiar auto-referente --
+            # achado real ao testar: sem limiar, isto sempre completava ate
+            # CHEAP_LAYER_EXTRA_CANDIDATES vagas com o que sobrasse, mesmo
+            # com valor baixo, em vez de so promover candidata realmente
+            # competitiva).
+            ja_incluidas = {id(acao) for acao in candidatas}
+            cheap_incluidas = [cheap_values[id(a)] for a in candidatas if id(a) in cheap_values]
+            limiar = min(cheap_incluidas) if cheap_incluidas else float('-inf')
+            pool_extra = [acao for acao in actions
+                         if acao[0] >= 0 and id(acao) not in ja_incluidas
+                         and id(acao) in cheap_values
+                         and cheap_values[id(acao)] >= limiar]
+            pool_extra.sort(key=lambda acao: cheap_values[id(acao)], reverse=True)
+            adicionadas = pool_extra[:CHEAP_LAYER_EXTRA_CANDIDATES]
+            for acao in adicionadas:
+                candidatas.append(acao)
+                ja_incluidas.add(id(acao))
+            # Canal lateral pra auditoria (mesmo padrao de `engine.
+            # _posture_cache`, cache de instancia, nao muda a assinatura de
+            # retorno): `main_phase` le isto logo apos a chamada e repassa
+            # pra `_log_turn_planner_decision` -- deixa `audit_cheap_layer.py`
+            # medir se as candidatas que SO a camada barata promoveu (nao
+            # entrariam no shortlist estatico sozinho) realmente viram a
+            # melhor escolha na busca real, ou se o alargamento so gasta
+            # orcamento a toa.
+            self._last_cheap_layer_additions = {id(a) for a in adicionadas}
+        else:
+            self._last_cheap_layer_additions = set()
+
         return candidatas
 
     def _select_action_via_search(self, p, opp, engine, candidatas, model,
@@ -15848,14 +16013,22 @@ class OPTCGMatch:
             # ser o mesmo nos dois") -- MESMAS funcoes usadas pelo caminho
             # AO VIVO (sim_bridge.choose_action), so o TOP_K/piso/teto de
             # amostras (orcamento de tempo) diferem por chamador.
-            candidatas = self._select_search_candidates(actions, TOP_K, priority)
+            # Fase 1 da "calibragem dinamica" (bloco 508/509): opt-in via
+            # USE_CHEAP_LAYER_SHORTLIST (desligado por padrao) -- calcula
+            # o sinal barato 1x por decisao e passa pra alargar o corte
+            # do shortlist. Log de auditoria recebe os mesmos valores
+            # (audit_cheap_layer.py le o decision_log depois).
+            cheap_values = (self._compute_cheap_values(p, opp, actions)
+                            if USE_CHEAP_LAYER_SHORTLIST else None)
+            candidatas = self._select_search_candidates(
+                actions, TOP_K, priority, cheap_values=cheap_values)
             if len(candidatas) == 1:
                 melhor_acao = candidatas[0]
                 if self._is_unsafe_zero_life_leader_attack(melhor_acao, p, opp, engine):
                     break
                 self._log_turn_planner_decision(
                     p, opp, engine, priority, actions, candidatas,
-                    melhor_acao, None, {}
+                    melhor_acao, None, {}, cheap_values=cheap_values
                 )
                 if self._apply_action(melhor_acao, p, opp, ee, engine, verbose=verbose):
                     return True
@@ -15898,7 +16071,8 @@ class OPTCGMatch:
             # Executa a primeira ação da melhor linha no estado REAL
             self._log_turn_planner_decision(
                 p, opp, engine, priority, actions, candidatas,
-                melhor_acao, sim_values.get(id(melhor_acao), melhor_valor), sim_values
+                melhor_acao, sim_values.get(id(melhor_acao), melhor_valor), sim_values,
+                cheap_values=cheap_values
             )
             if self._apply_action(melhor_acao, p, opp, ee, engine, verbose=verbose):
                 return True
@@ -16589,7 +16763,8 @@ class OPTCGMatch:
             'don_attached': int(getattr(card, 'don_attached', 0)),
         }
 
-    def _audit_action_brief(self, action, simulated_value=None):
+    def _audit_action_brief(self, action, simulated_value=None, cheap_value=None,
+                             added_by_cheap_layer=False):
         score, kind, obj, target_type, target = action
         sim_avg = simulated_value
         sim_wins = None
@@ -16604,6 +16779,19 @@ class OPTCGMatch:
                                 else round(float(sim_avg), 2)),
             'simulated_wins': sim_wins,
             'simulated_samples': sim_samples,
+            # camada barata (bloco 508/509) -- None quando USE_CHEAP_LAYER_
+            # SHORTLIST esta desligado ou a acao nao foi avaliada por ela.
+            # `audit_cheap_layer.py` le este campo pra medir concordancia
+            # com `simulated_value` (a busca real) nas candidatas que tem
+            # os dois.
+            'cheap_value': (None if cheap_value is None
+                            else round(float(cheap_value), 2)),
+            # True so pras candidatas que NAO entrariam no shortlist pelo
+            # score estatico sozinho -- so a camada barata as promoveu
+            # (`OPTCGMatch._last_cheap_layer_additions`). E o sinal chave
+            # pra `audit_cheap_layer.py` responder "o alargamento pega
+            # valor real, ou so gasta orcamento a toa?".
+            'added_by_cheap_layer': bool(added_by_cheap_layer),
             'kind': kind,
             'card': self._audit_card_brief(obj),
             'target_type': target_type,
@@ -16612,13 +16800,16 @@ class OPTCGMatch:
 
     def _log_turn_planner_decision(self, p: GameState, opp: GameState, engine,
                                    priority: str, actions: list, candidates: list,
-                                   chosen, chosen_value, sim_values: dict):
+                                   chosen, chosen_value, sim_values: dict,
+                                   cheap_values: dict | None = None):
         """Registra o ranking que levou o Turn Planner a escolher uma acao."""
         if self.decision_log is None or self._suppress_replay_log:
             return
         player_id = 'A' if p is self.state_a else 'B'
         top_immediate = actions[0] if actions else None
         chosen_card = chosen[2] if chosen else None
+        cv = cheap_values or {}
+        added_ids = getattr(self, '_last_cheap_layer_additions', None) or set()
         self.decision_log.append({
             'kind': 'turn_planner',
             'turn': self.global_turn,
@@ -16644,11 +16835,22 @@ class OPTCGMatch:
                 'can_lethal': engine.analyzer.can_lethal_this_turn(),
                 'opp_lethal_threat': round(float(engine.analyzer.opp_lethal_threat()), 3),
                 'opp_combo_threat': engine.analyzer.opp_combo_threat(),
+                # bloco 508/509: visibilidade agregada da camada barata sem
+                # precisar reconstruir por-candidata -- audit_cheap_layer.py
+                # usa isto pra medir "quanto alargou" ao longo de muitas
+                # partidas.
+                'cheap_layer_active': cheap_values is not None,
+                'n_candidates': len(candidates),
             },
-            'chosen': self._audit_action_brief(chosen, chosen_value) if chosen else None,
-            'top_immediate': self._audit_action_brief(top_immediate) if top_immediate else None,
+            'chosen': (self._audit_action_brief(chosen, chosen_value, cv.get(id(chosen)),
+                                                id(chosen) in added_ids)
+                      if chosen else None),
+            'top_immediate': (self._audit_action_brief(top_immediate, None, cv.get(id(top_immediate)),
+                                                        id(top_immediate) in added_ids)
+                              if top_immediate else None),
             'candidates': [
-                self._audit_action_brief(a, sim_values.get(id(a)))
+                self._audit_action_brief(a, sim_values.get(id(a)), cv.get(id(a)),
+                                         id(a) in added_ids)
                 for a in candidates[:8]
             ],
         })

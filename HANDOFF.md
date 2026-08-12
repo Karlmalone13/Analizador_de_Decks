@@ -1,5 +1,108 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-11 (509) - Claude (sessao remota web) - FASE 1 IMPLEMENTADA: camada barata (`_cheap_rollout_value`) + alargamento do shortlist do Turn Planner + ferramenta de auditoria permanente (`audit_cheap_layer.py`) -- primeiro resultado real: sinal bate o acaso por +18,3pp
+
+Implementacao da fase 1 do desenho acordado no bloco 508 (usuario:
+"Pode sim, porem quero que deixe isso bem registrado e tb crie uma
+forma de auditoria dessa nova funcao").
+
+**Codigo novo** (`decision_engine.py`):
+- `CHEAP_LAYER_SAMPLES=40`, `CHEAP_LAYER_EXTRA_CANDIDATES=3`,
+  `USE_CHEAP_LAYER_SHORTLIST=False` (constantes de modulo, mesmo padrao
+  de `USE_EVAL_V2`/`USE_OPPONENT_RESPONSE_SEARCH` -- comeca DESLIGADO,
+  nenhum caminho existente muda de comportamento ate ligar
+  explicitamente).
+- `_cheap_rollout_value(p, opp, action, n_samples, rng)`: aproxima o
+  valor de uma acao candidata SEM resolver o efeito de verdade -- so
+  usa `get_card_flags` (MESMA fonte que `avaliar_carta` ja usa, sem
+  reimplementar deteccao propria, `REGRA_SEM_DUPLICACAO.md`) pra
+  aplicar um delta grosseiro sobre um resumo do estado (board_mine,
+  opp_removed, hand, don, pressure) na MESMA escala de `EVAL_WEIGHTS`
+  (board_mine/board_opp/hand_first/don_field/dmg). Roda `n_samples`
+  vezes com aleatoriedade nas partes ambiguas (ex: qual corpo do
+  oponente seria removido por um KO sem alvo declarado) e tira a media.
+- `_compute_cheap_values(p, opp, actions, ...)`: calcula pra toda a
+  lista de acoes de uma vez, devolve `{id(acao): valor}`.
+- `_select_search_candidates` ganhou `cheap_values=None` (opt-in,
+  default preserva comportamento de sempre): quando fornecido, ALARGA
+  o shortlist com candidatas que o sinal barato aponta como
+  competitivas -- **so** quando o `cheap_value` da candidata excluida e
+  >= o PIOR `cheap_value` das ja incluidas (limiar auto-referente,
+  achado real ao testar: sem isso, sempre completava ate
+  `CHEAP_LAYER_EXTRA_CANDIDATES` vagas com qualquer sobra, mesmo com
+  valor baixo -- ver teste que pegou o bug). Estritamente ADITIVO,
+  nunca remove o que o score estatico ja garantiu.
+- `main_phase` (offline): opt-in via `USE_CHEAP_LAYER_SHORTLIST`,
+  calcula `cheap_values` 1x por decisao quando ligado. `sim_bridge.py`
+  (caminho AO VIVO) **nao foi tocado** -- so o offline recebeu a
+  integracao nesta fase, por seguranca (validar por self-play antes de
+  cogitar o caminho ao vivo).
+- `_log_turn_planner_decision`/`_audit_action_brief` ganharam
+  `cheap_value` e `added_by_cheap_layer` por candidata no
+  `decision_log`, mais `cheap_layer_active`/`n_candidates` no
+  `context` -- infraestrutura de auditoria, nao so debug.
+- Canal lateral `self._last_cheap_layer_additions` (mesmo padrao de
+  `engine._posture_cache`) pra `_select_search_candidates` informar
+  pra `main_phase` quais ids foram promovidos SO pela camada barata,
+  sem mudar a assinatura de retorno da funcao.
+
+**Testes novos** (`smoke_fast.py`): determinismo com rng seedado;
+direcao correta (carta `is_removal` vale mais que vanilla equivalente
+quando ha alvo pra remover); alargamento SEM regressao (sem
+`cheap_values`, comportamento identico a antes) E aditivo (com
+`cheap_values`, so adiciona quando o sinal aponta, nunca so pra
+completar vagas -- pegou o bug do limiar ausente); registro correto do
+`cheap_value`/`cheap_layer_active` no `decision_log`.
+`smoke_fast.py` + `smoke_test.py` 100%. `audit_replay.py --n 30
+--workers 4` (feature desligada por padrao): 0 excecoes, 0 anomalias.
+
+**Ferramenta de auditoria permanente** (`audit_cheap_layer.py`, pedido
+explicito do usuario -- nao um teste unico, ferramenta reusavel): roda
+self-play com `USE_CHEAP_LAYER_SHORTLIST` ligado (monkeypatch so no
+processo do worker, nunca vaza pra producao) e le `decision_log` pra
+responder 3 perguntas:
+1. **Concordancia**: quando uma candidata tem `cheap_value` E
+   `simulated_value` no mesmo turno, o ranking do sinal barato bate com
+   o da busca real?
+2. **Alargamento**: quantas decisoes tiveram pelo menos 1 candidata
+   adicionada SO pela camada barata?
+3. **Valor real**: das candidatas adicionadas, quantas viraram a
+   escolha FINAL apos a busca real reavaliar?
+
+**Achado real ao testar a propria ferramenta** (N=3 inicial): a
+metrica de concordancia comparada contra um limiar FIXO de 50% e
+ingenua -- um conjunto com 3+ candidatas ja tem chance de concordar
+por puro ACASO menor que 50%. Corrigido pra comparar contra o
+ACASO ESPERADO de verdade (soma de 1/tamanho de cada conjunto), nao um
+numero fixo -- mesmo tipo de cuidado estatistico usado o dia inteiro
+nesta sessao (maximin, tolerancia de regressao, etc.).
+
+**Primeiro resultado real** (N=20 partidas, lider Imu OP13-079, seed=1,
+548 decisoes do lado A, `--workers 4`):
+- Concordancia: 209/435 (48,0%) contra 29,7% esperado por acaso --
+  **bate o acaso por +18,3pp**. O sinal barato carrega informacao real,
+  nao e ruido -- primeiro veredito objetivo, nao suposicao.
+- Alargamento: 480 candidatas adicionadas em 548 decisoes (87,6% das
+  decisoes tiveram pelo menos 1 candidata so-camada-barata).
+- Valor real: 96/480 (20,0%) das candidatas adicionadas viraram a
+  escolha final apos a busca real -- confirma que o alargamento
+  RESGATA jogadas boas que o score estatico sozinho perderia, nao so
+  gasta orcamento a toa.
+
+**Leitura honesta**: este resultado valida que o MECANISMO funciona
+como desenhado (sinal informativo, alargamento pega valor real) --
+NAO prova ainda que isso melhora a qualidade de decisao agregada ou o
+winrate (essa e a proxima etapa: comparar self-play com a camada
+ligada vs desligada, mesmos matchups ja deconfundidos, N grande).
+Tambem so testado com 1 lider (Imu) ate agora -- mesma licao do bloco
+505 (nao generalizar de 1 deck so) se aplica aqui tambem.
+
+**Pendente pra proximo bloco**: rodar a comparacao de eficiencia real
+(self-play com/sem a camada, winrate + custo computacional) antes de
+decidir se fica. Fase 2 (calibragem dinamica em cima) continua NAO
+iniciada, aguardando o resultado desta comparacao primeiro (mesma
+decisao de sequenciar do bloco 508).
+
 ## 2026-08-11 (508) - Claude (sessao remota web) - Desenho FINAL em 2 fases acordado: camada barata (flags) + shortlist do Turn Planner (fase 1), depois calibragem dinamica em cima (fase 2) -- especificacao completa, nada implementado ainda
 
 Continuacao do debate arquitetural do bloco 505/506 (per-deck vs global

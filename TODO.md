@@ -2,6 +2,42 @@
 
 **Última atualização:** 11 de agosto de 2026
 
+> 11/08/2026 (bloco 509): **FASE 1 implementada** — camada barata
+> (`_cheap_rollout_value`, baseada nas flags já existentes de
+> `get_card_flags`, sem resolver efeito de verdade) alargando o
+> shortlist de `_select_search_candidates` (opt-in via
+> `USE_CHEAP_LAYER_SHORTLIST`, desligado por padrão — zero mudança de
+> comportamento em produção). Só o offline (`main_phase`) recebeu a
+> integração; `sim_bridge.py` (ao vivo) não foi tocado ainda.
+>
+> **Ferramenta de auditoria permanente criada**: `audit_cheap_layer.py`
+> (pedido explícito do usuário) — mede concordância entre o sinal
+> barato e a busca real, quanto o shortlist alarga, e se as candidatas
+> adicionadas viram escolha final. Achado ao testar a própria
+> ferramenta: métrica de concordância contra limiar fixo de 50% é
+> ingênua (conjuntos com 3+ candidatas têm chance de concordar por
+> acaso menor que 50%) — corrigida pra comparar contra o acaso esperado
+> de verdade.
+>
+> **Primeiro resultado real** (N=20, líder Imu, 548 decisões):
+> concordância bate o acaso por **+18,3pp** (sinal carrega informação
+> real, não ruído); 20% das candidatas que só a camada barata promoveu
+> viraram a escolha final depois da busca real reavaliar (resgata
+> jogada boa que o score estático perderia).
+>
+> **Testes novos** (`smoke_fast.py`, incl. um bug real pego — limiar
+> ausente no alargamento, corrigido antes de aceitar). `smoke_fast`/
+> `smoke_test` 100%, `audit_replay.py --n 30 --workers 4` (feature
+> desligada): 0 exceções/anomalias. Ver bloco 509 do HANDOFF.
+>
+> **Leitura honesta**: valida que o MECANISMO funciona, não prova ainda
+> ganho de winrate/eficiência agregada — só testado com 1 líder (Imu).
+>
+> **Próximo**: comparação de eficiência real (self-play com/sem a
+> camada, mesmos matchups deconfundidos, N grande) antes de decidir se
+> fica. Fase 2 (calibragem dinâmica) continua não iniciada, aguardando
+> esse resultado primeiro.
+
 > 11/08/2026 (bloco 508): **Desenho FINAL em 2 fases acordado** pra
 > "calibragem dinâmica" (nasceu de "como não descalibrar um deck pro
 > outro"). 2 tentativas de escopo erradas antes de chegar aqui (perfil
