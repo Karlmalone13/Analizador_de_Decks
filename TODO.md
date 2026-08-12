@@ -2,6 +2,31 @@
 
 **Última atualização:** 11 de agosto de 2026
 
+> 11/08/2026 (bloco 504): **FECHA os 3 itens aprovados pelo usuário**
+> (redesign `opp_combo_threat`, calibrar 3 pesos nunca testados, refinar
+> `don_field`/`ax_inversion`). Refinamento final: `don_field` testado dos
+> dois lados (5.0, 7.5), nenhum bateu — **6.0 confirmado teto local de
+> verdade**. `ax_inversion` refinou mais: 0.75 → **0.625** (0.625 vs 1.0,
+> ambos empatam maximin mas 0.625 tem soma maior). `smoke_fast`/
+> `smoke_test` 100%, `audit_replay.py --n 30 --workers 4`: 0
+> exceções/anomalias. Ver bloco 504 do HANDOFF.
+>
+> **Resumo do arco 493-504** (nasceu de "como melhoramos o
+> simulated_value"): achado e corrigido 1 bug real (`__deepcopy__` não
+> propagava `eval_weights`, invalidando silenciosamente calibração via
+> Monte Carlo desde sempre); revalidados os 14 pesos numéricos de
+> `EVAL_WEIGHTS` (7 mudaram: `dmg`, `don_field`, `ax_inversion`,
+> `opp_blocker`, `hand_extra`, `opp_combo_threat`,
+> `next_turn_readiness` dividido em 2); redesenhado 1 mecanismo de
+> detecção que estava estruturalmente morto. Toda mudança validada
+> antes de commitar.
+>
+> **Pendências pro futuro** (nenhuma nova): 2ª iteração completa de
+> coordinate-ascent (esta sessão fez só 1 passada por peso); os 2 casos
+> que `opp_combo_threat` ainda não cobre (fog of war genuíno; jogado+
+> ativado no mesmo turno sem revelação prévia) — aceitos como limite
+> honesto, não bug.
+
 > 11/08/2026 (bloco 503): **3 pesos nunca testados calibrados**
 > (`opp_blocker`, `hand_extra`, `survival_premium` — nunca estiveram em
 > `_TUNABLE`) + **`opp_combo_threat` recalibrado** (redesenhado no bloco

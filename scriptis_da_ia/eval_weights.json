@@ -11,7 +11,7 @@
   "coverage": 7.0,
   "ax_trash": 0.05,
   "ax_reanim": 12.0,
-  "ax_inversion": 0.75,
+  "ax_inversion": 0.625,
   "survival_premium": 15.0,
   "opp_combo_threat": 1.2,
   "next_turn_readiness_self": 0.6,
@@ -53,8 +53,8 @@
       "note": "mesmo lote do dmg acima. x1.5=1.2 teve maximin=-0.067, x0.67=0.536 teve maximin=-0.067 tambem. Nenhum candidato bateu o baseline -- prior 0.8 fica, validado."
     },
     "don_field": {
-      "status": "REVALIDADO -- prior estava um pouco baixo, 4.0 -> 6.0 (bloco 500)",
-      "note": "2o lote de revalidacao dos 11 pesos originais (continuacao do bloco 499), com dmg=270.0 ja fixado como baseline. Termo universal (DON no campo, sem gating condicional). x1.5=6.0 teve maximin=+0.000 (empata Imu_v_Mihawk exatamente, melhora Imu_v_Ace e Imu_v_Lucy em +3.3pp cada, Imu_v_Luffy-Y neutro) -- aceito pela mesma regra de tune_weights.py (maximin>=-0.02 E soma maior que o candidato alternativo). x0.67=2.68 regrediu (maximin=-0.033). Evidencia mais fraca que a do dmg (empate no pior matchup, nao melhora estrita), mas dentro da regra de aceite estabelecida.",
+      "status": "REVALIDADO -- prior estava um pouco baixo, 4.0 -> 6.0 (bloco 500); refinado (bloco 504) -- 6.0 CONFIRMADO teto local",
+      "note": "2o lote de revalidacao dos 11 pesos originais (continuacao do bloco 499), com dmg=270.0 ja fixado como baseline. Termo universal (DON no campo, sem gating condicional). x1.5=6.0 teve maximin=+0.000 (empata Imu_v_Mihawk exatamente, melhora Imu_v_Ace e Imu_v_Lucy em +3.3pp cada, Imu_v_Luffy-Y neutro) -- aceito pela mesma regra de tune_weights.py (maximin>=-0.02 E soma maior que o candidato alternativo). x0.67=2.68 regrediu (maximin=-0.033). REFINAMENTO (bloco 504, item 3 aprovado pelo usuario): testados 5.0 (maximin=-0.033) e 7.5 (maximin=-0.067) ao redor de 6.0 -- nenhum bateu, 6.0 confirmado como teto local (nao so evidencia fraca antiga, agora testado dos dois lados).",
       "gauntlet": ["Imu_v_Mihawk", "Imu_v_Ace", "Imu_v_Lucy", "Imu_v_Luffy-Y"],
       "n": 30,
       "seed_base": 8800
@@ -90,11 +90,11 @@
       "seed_base": 9900
     },
     "ax_inversion": {
-      "status": "REVALIDADO -- prior estava um pouco baixo, 0.5 -> 0.75 (bloco 501)",
-      "note": "eixo derivado condicional (inversion) -- roster NOVO deconfundido (Mihawk/Ace/Luffy-Amarelo do roster padrao tem inversion): Imu_v_{Lucy,Luffy-Verde/Roxo(IceLoom),Luffy-Verde/Vermelho(Julius Schurhoff),Enel(Gabi313)}. x1.5=0.75 teve maximin=+0.000 (empata 3 matchups, melhora Imu_v_Lucy +10pp, nenhuma regressao) -- aceito pela mesma regra de don_field (bloco 500). x0.67=0.335 regrediu (-0.033). Fecha o UTIMO dos 11 pesos originais de tune_weights.py._TUNABLE -- placar final: 3 mudaram (dmg, don_field, ax_inversion), 8 validados sem mudanca.",
+      "status": "REVALIDADO -- 0.5 -> 0.75 (bloco 501); refinado (bloco 504) -- 0.75 -> 0.625",
+      "note": "eixo derivado condicional (inversion) -- roster NOVO deconfundido (Mihawk/Ace/Luffy-Amarelo do roster padrao tem inversion): Imu_v_{Lucy,Luffy-Verde/Roxo(IceLoom),Luffy-Verde/Vermelho(Julius Schurhoff),Enel(Gabi313)}. x1.5=0.75 teve maximin=+0.000 (empata 3 matchups, melhora Imu_v_Lucy +10pp, nenhuma regressao) -- aceito pela mesma regra de don_field (bloco 500). x0.67=0.335 regrediu (-0.033). REFINAMENTO (bloco 504, item 3 aprovado pelo usuario): testados 0.625 e 1.0 ao redor de 0.75 -- 0.625 teve maximin=+0.000 (empata 3, melhora Imu_v_Enel-Gabi +6.7pp, soma=+0.067) contra 1.0 neutro (maximin=+0.000 mas soma=0.000) -- 0.625 vence o desempate por soma maior, aceito. Fechou o UTIMO dos 11 pesos originais de tune_weights.py._TUNABLE (bloco 501) e depois foi refinado mais uma vez (504).",
       "gauntlet": ["Imu_v_Lucy", "Imu_v_Luffy-GP", "Imu_v_Luffy-RG", "Imu_v_Enel-Gabi"],
       "n": 30,
-      "seed_base": 9900
+      "seed_base": 12200
     },
     "opp_blocker": {
       "status": "REVALIDADO -- prior estava alto, 25.0 -> 16.75 (bloco 503)",

@@ -1,5 +1,69 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-11 (504) - Claude (sessao remota web) - Refinamento final: `don_field` confirmado teto local, `ax_inversion` refina mais (0.75 -> 0.625) -- FECHA os 3 itens aprovados pelo usuario
+
+Ultimo item aprovado (dos 3 do AskUserQuestion): refinar `don_field`
+(6.0) e `ax_inversion` (0.75), os 2 pesos aceitos com evidencia mais
+fraca (maximin exatamente +0,000, so empate no pior matchup) nos blocos
+500/501. Testados valores mais finos ao redor de cada um, mesmo roster
+deconfundido especifico de cada peso, N=30.
+
+- **`don_field`**: candidatos 5.0 (maximin=-0,033) e 7.5
+  (maximin=-0,067) -- **nenhum bateu**. 6.0 confirmado como teto local
+  de verdade (testado dos dois lados agora, nao so aceito por uma
+  regra de desempate fraca).
+- **`ax_inversion`**: candidatos 0.625 (maximin=+0,000, melhora
+  Imu_v_Enel-Gabi +6,7pp, soma=+0,067) e 1.0 (maximin=+0,000 mas
+  soma=0,000, neutro) -- **0.625 vence o desempate por soma maior**,
+  aceito: 0.75 -> **0.625**.
+
+**`eval_weights.json`**: `ax_inversion` 0.75 -> 0.625 (unico valor
+numerico que mudou). `_meta` de `don_field`/`ax_inversion` atualizado
+com o refinamento.
+
+**Validacao**: `smoke_fast.py` + `smoke_test.py` 100%. `audit_replay.py
+--n 30 --seed 444 --workers 4`: 0 excecoes, 0 anomalias. Script
+descartavel apagado.
+
+**FECHA os 3 itens aprovados pelo usuario** (blocos 502-504): (1)
+`opp_combo_threat` redesenhado (mecanismo, nao so peso) -- gatilho 0%
+-> 38,7%, peso depois calibrado 0.8->1.2; (2) `opp_blocker`/`hand_extra`/
+`survival_premium` calibrados (2 de 3 mudaram); (3) `don_field`/
+`ax_inversion` refinados (1 confirmado teto, 1 refinou mais).
+
+**Estado final de `eval_weights.json`** (todos os pesos numericos,
+origem "learned" onde testado):
+```
+dmg=270.0, life_mult=1.0, board_mine=1.0, board_opp=0.8,
+opp_blocker=16.75, hand_first=8.0, hand_extra=2.01, counter_hand=9.0,
+don_field=6.0, coverage=7.0, ax_trash=0.05, ax_reanim=12.0,
+ax_inversion=0.625, survival_premium=15.0, opp_combo_threat=1.2,
+next_turn_readiness_self=0.6, next_turn_readiness_opp_threat=0.0
+```
+
+**Resumo do arco inteiro da sessao** (blocos 493-504, todos derivados
+da pergunta original do usuario "como melhoramos o simulated_value"):
+achado e corrigido 1 bug real de propagacao (`__deepcopy__` nao
+propagava `eval_weights`/`use_eval_v2`, bloco 495) que invalidava
+SILENCIOSAMENTE qualquer calibracao de peso via Monte Carlo desde que
+esse mecanismo existe; revalidados TODOS os 14 pesos numericos de
+`EVAL_WEIGHTS` (11 originais + 3 do achado do bloco 494), com 7 mudando
+de valor no total (dmg, don_field, ax_inversion, opp_blocker,
+hand_extra, opp_combo_threat, next_turn_readiness dividido em 2);
+redesenhado 1 mecanismo de deteccao (`opp_combo_threat`) que estava
+estruturalmente morto pro pool de decks atual. Toda mudanca validada
+com `smoke_fast`/`smoke_test`/`audit_replay` antes de commitar. Nenhuma
+tarefa nova pendente foi iniciada sem aprovacao explicita do usuario em
+cada etapa.
+
+**Pendencias registradas pro futuro** (nenhuma nova, ja documentadas em
+blocos anteriores): 2a iteracao completa de coordinate-ascent (blocos
+499-504 fizeram so 1a passada por peso, nao re-testam depois que outros
+pesos mudam) se o usuario quiser espremer mais; achado do bloco 498
+sobre os 2 casos que `opp_combo_threat` ainda nao cobre (fog of war
+genuino, jogado+ativado no mesmo turno sem revelacao previa) continuam
+sem solucao (aceito como limite honesto, nao um bug).
+
 ## 2026-08-11 (503) - Claude (sessao remota web) - 3 pesos nunca testados calibrados (opp_blocker, hand_extra, opp_combo_threat) -- o redesign do bloco 502 valida na pratica
 
 Continuacao direta (usuario aprovou os 3 itens do bloco anterior via
