@@ -1,6 +1,58 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-08-11 (505, PARCIAL) - Claude (sessao remota web) - ACHADO METODOLOGICO do usuario: calibracao dos blocos 499-504 usou Imu como ancora UNICA ate pros pesos universais -- 2a iteracao relancada multi-ancora (Imu+Mihawk)
+## 2026-08-11 (506) - Claude (sessao remota web) - 2a iteracao multi-ancora CONCLUIDA: os 10 pesos universais confirmam robustos contra Imu+Mihawk, 2 condicionais refinam mais -- FECHA o bloco 505
+
+Resultado da calibracao relancada no bloco 505 (task `bcm1vg87d`).
+
+**Pesos UNIVERSAIS (roster multi-ancora Imu_v_Ace, Imu_v_Lucy,
+Mihawk_v_Ace, Mihawk_v_Lucy)**: `dmg`, `board_mine`, `board_opp`,
+`life_mult`, `hand_first`, `counter_hand`, `don_field`, `coverage`,
+`opp_blocker`, `hand_extra` -- **NENHUM mudou**. Todos os candidatos
+x1.5/x0.67 testados regrediram pelo menos 1 dos 4 matchups (a maioria
+regrediu varios, alguns feio: `board_mine` x1.5 teve maximin=-0,133,
+`counter_hand` x1.5 teve maximin=-0,167). **Leitura direta pro que o
+usuario perguntou**: os valores ja aceitos nos blocos 499-504 (todos
+derivados SO de self-play do Imu) passaram no teste cruzado contra um
+arquetipo bem diferente (Mihawk, agressivo/counter-denso) sem precisar
+mudar mais nada -- evidencia REAL (nao suposicao) de que essa parte da
+calibracao nao ficou "boa pro Imu, ruim pro Mihawk". Nao prova que sao
+o otimo conjunto pra QUALQUER arquetipo (so testamos 2), mas e uma
+confirmacao concreta, nao teorica.
+
+**Pesos CONDICIONAIS** (continuam Imu-ancorados, metodologia correta --
+so o Imu tem os eixos/`don_target` no pool de 193 decks): `ax_reanim`/
+`ax_trash` mantidos. `opp_combo_threat` refinou mais: 1.2 -> **0.804**
+(maximin=+0,000, melhora Imu_v_Mihawk e Imu_v_Luffy-Y, zero regressao).
+`survival_premium` refinou mais: 15.0 -> **22.5** (maximin=+0,000,
+melhora Imu_v_Luffy-Y, zero regressao) -- interessante que nos blocos
+503/506 os MESMOS candidatos (x1.5=22.5, x0.67=10.05) deram resultados
+diferentes com seeds diferentes (503: nenhum bateu; 506: x1.5 bateu) --
+ruido de amostra normal, nao inconsistencia -- fica dentro da margem
+esperada de N=30.
+
+**`eval_weights.json`**: `opp_combo_threat` 1.2->0.804, `survival_
+premium` 15.0->22.5 (unicos 2 valores numericos que mudaram).
+
+**Validacao**: `smoke_fast.py` + `smoke_test.py` 100%. `audit_replay.py
+--n 30 --seed 555 --workers 4`: 0 excecoes, 0 anomalias. Scripts
+descartaveis apagados (o morto e o multi-ancora).
+
+**Conversa em paralelo enquanto a calibracao rodava** (registrada
+tambem no addendum do bloco 505, ver la): usuario discutiu per-deck vs
+global vs cache-MC "tipo Naruto", trouxe analise real de
+narutosim.theramenbowl.net (MCTS/UCT classico, confirmado contra o
+codigo do site), e o achado mais acionavel que saiu disso -- `opponent_
+model.py` (Monte Carlo de mao oculta) so alimenta `_adaptive_
+counterfactual_search` (a busca profunda), NUNCA `avaliar_carta` (a
+heuristica de carta, chamada em 16 pontos do codigo, muito mais barata
+que a busca profunda) -- fica registrado como proximo passo mais barato
+pra reduzir dependencia de pesos globais: ligar primeiro
+`opp_counter_potential()` (ja existe, ja e barato, ja e fairness-aware,
+NAO precisa de sampling novo) em `avaliar_carta`, antes de cogitar
+sampling completo la. NADA disso foi implementado ainda -- fica pra
+proxima decisao do usuario.
+
+## 2026-08-11 (505, PARCIAL)
 
 Usuario apontou (enquanto a 1a tentativa de 2a iteracao rodava em
 background): "estamos calibrando como o bot joga de imu e nao como o

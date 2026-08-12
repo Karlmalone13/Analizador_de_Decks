@@ -2,6 +2,30 @@
 
 **Última atualização:** 11 de agosto de 2026
 
+> 11/08/2026 (bloco 506): **2ª iteração multi-âncora CONCLUÍDA — os 10
+> pesos universais confirmam robustos contra Imu+Mihawk**. Nenhum dos 10
+> (`dmg`, `board_mine`, `board_opp`, `life_mult`, `hand_first`,
+> `counter_hand`, `don_field`, `coverage`, `opp_blocker`, `hand_extra`)
+> mudou — os valores derivados só de self-play do Imu (blocos 499-504)
+> passaram no teste cruzado contra Mihawk (arquétipo bem diferente) sem
+> precisar de ajuste. **Resposta direta pra pergunta do usuário**
+> ("como não descalibrar um deck pro outro"): evidência real, não
+> suposição — essa parte da calibração não ficou "boa só pro Imu".
+> 2 pesos condicionais refinaram mais: `opp_combo_threat` 1.2→**0.804**,
+> `survival_premium` 15.0→**22.5** (continuam Imu-ancorados, correto —
+> só o Imu tem os eixos/`don_target` relevantes). `smoke_fast`/
+> `smoke_test` 100%, `audit_replay.py --n 30 --workers 4`: 0
+> exceções/anomalias. Ver bloco 506 do HANDOFF.
+>
+> **Próximo passo mais barato registrado** (não iniciado): ligar
+> `opp_counter_potential()` (já existe, barato, fairness-aware) dentro
+> de `avaliar_carta()` — hoje ela não usa nem essa peça simples, muito
+> menos o `OpponentModel` completo (que só alimenta a busca profunda,
+> `_adaptive_counterfactual_search`, nunca a heurística de carta usada
+> em 16 pontos do código). Passo natural antes de cogitar sampling
+> completo em `avaliar_carta` (caro — chamada bem mais vezes por decisão
+> que a busca profunda).
+
 > 11/08/2026 (bloco 505, PARCIAL): **ACHADO METODOLÓGICO do usuário**:
 > a calibração dos blocos 499-504 usou **Imu como âncora única** até pros
 > pesos UNIVERSAIS (`dmg`, `board_mine`, `hand_first`, `don_field`, etc.)

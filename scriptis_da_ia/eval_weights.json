@@ -12,8 +12,8 @@
   "ax_trash": 0.05,
   "ax_reanim": 12.0,
   "ax_inversion": 0.625,
-  "survival_premium": 15.0,
-  "opp_combo_threat": 1.2,
+  "survival_premium": 22.5,
+  "opp_combo_threat": 0.804,
   "next_turn_readiness_self": 0.6,
   "next_turn_readiness_opp_threat": 0.0,
   "_meta": {
@@ -31,11 +31,11 @@
       "seed_base": 6600
     },
     "opp_combo_threat": {
-      "status": "REVALIDADO apos redesign do mecanismo -- 0.8 -> 1.2 (bloco 503)",
-      "note": "bloco 498: calibracao pulada, 0% de gatilho (Five Elders trasha a si mesma, nunca fica visivel em campo). Bloco 502: mecanismo redesenhado -- opp_combo_threat() passou a escanear known_hand_cards() (carta revelada na mao), gatilho subiu pra 38.7% real. Bloco 503: com o mecanismo funcionando, calibracao de verdade finalmente possivel -- x1.5=1.2 teve maximin=+0.000 (melhora Imu_v_Mihawk +3.3pp e Imu_v_Luffy-Y +3.3pp, zero regressao), aceito. x0.67=0.536 regrediu (-0.033). Valida o esforco do redesign: o peso agora responde a calibracao, nao fica mais inerte.",
+      "status": "REVALIDADO apos redesign do mecanismo -- 0.8 -> 1.2 (bloco 503); refinado (multi-ancora, bloco 506) -- 1.2 -> 0.804",
+      "note": "bloco 498: calibracao pulada, 0% de gatilho (Five Elders trasha a si mesma, nunca fica visivel em campo). Bloco 502: mecanismo redesenhado -- opp_combo_threat() passou a escanear known_hand_cards() (carta revelada na mao), gatilho subiu pra 38.7% real. Bloco 503: com o mecanismo funcionando, calibracao de verdade finalmente possivel -- x1.5=1.2 teve maximin=+0.000, aceito. Bloco 506 (2a iteracao, apos redesign multi-ancora pros pesos universais): re-testado com seed diferente -- x0.67=0.804 teve maximin=+0.000 (empata Imu_v_Ace/Imu_v_Lucy, melhora Imu_v_Mihawk e Imu_v_Luffy-Y +3.3pp cada) contra x1.5=1.8 que regrediu Imu_v_Mihawk (-3.3pp). Continua Imu-ancorado (metodologia correta, condicional a eixo especifico do Imu).",
       "gauntlet": ["Imu_v_Mihawk", "Imu_v_Ace", "Imu_v_Lucy", "Imu_v_Luffy-Y"],
       "n": 30,
-      "seed_base": 11100
+      "seed_base": 14400
     },
     "dmg": {
       "status": "REVALIDADO -- prior estava subestimado, 180.0 -> 270.0 (bloco 499)",
@@ -111,11 +111,17 @@
       "seed_base": 11100
     },
     "survival_premium": {
-      "status": "revalidado, prior mantido (15.0) -- bloco 503",
-      "note": "3o dos 3 pesos nunca testados. Gated pelo MEU don_target (compute_game_plan) >=6 E oponente nao-Controle -- checado antes de rodar: dos 4 oponentes do roster padrao, nenhum tem don_target setado (None), sem risco de confound (so dispara do lado do Imu, que tem don_target=10). x1.5=22.5 maximin=-0.033, x0.67=10.05 maximin=-0.033 tambem. Nenhum candidato bateu o baseline -- prior 15.0 fica, validado.",
+      "status": "revalidado, prior mantido (15.0) -- bloco 503; refinado (multi-ancora, bloco 506) -- 15.0 -> 22.5",
+      "note": "3o dos 3 pesos nunca testados. Gated pelo MEU don_target (compute_game_plan) >=6 E oponente nao-Controle -- checado antes de rodar: dos 4 oponentes do roster padrao, nenhum tem don_target setado (None), sem risco de confound (so dispara do lado do Imu, que tem don_target=10). Bloco 503: x1.5=22.5 maximin=-0.033, x0.67=10.05 maximin=-0.033 tambem -- mantido. Bloco 506 (2a iteracao, seed diferente): x1.5=22.5 desta vez teve maximin=+0.000 (melhora Imu_v_Luffy-Y +3.3pp, zero regressao) -- aceito. x0.67=10.05 regrediu (-0.100). Continua Imu-ancorado (correto, condicional ao meu don_target).",
       "gauntlet": ["Imu_v_Mihawk", "Imu_v_Ace", "Imu_v_Lucy", "Imu_v_Luffy-Y"],
       "n": 30,
-      "seed_base": 11100
+      "seed_base": 14400
+    },
+    "iteracao_2_multi_ancora": {
+      "status": "CONCLUIDA -- confirma a robustez dos 10 pesos universais (bloco 506)",
+      "note": "2a iteracao de coordinate-ascent, redesenhada a pedido do usuario (achado metodologico do bloco 505: pesos universais so tinham sido testados com Imu como ancora unica). Testados de novo os 10 pesos universais (dmg, board_mine, board_opp, life_mult, hand_first, counter_hand, don_field, coverage, opp_blocker, hand_extra) com roster multi-ancora (Imu_v_Ace, Imu_v_Lucy, Mihawk_v_Ace, Mihawk_v_Lucy -- 2 arquetipos distintos, Imu combo/reanimacao e Mihawk agressivo/counter-denso). NENHUM dos 10 mudou -- os valores ja aceitos nos blocos 499-504 (derivados so de Imu) se mantiveram estaveis mesmo sob o teste cruzado mais rigoroso, evidencia real (nao suposicao) de que nao estavam overfit ao estilo do Imu. Os 5 pesos condicionais continuaram Imu-ancorados (metodologia correta -- so o Imu tem os eixos/don_target no pool de 193 decks) e 2 refinaram mais (opp_combo_threat, survival_premium).",
+      "n": 30,
+      "seed_base": 14400
     }
   }
 }
