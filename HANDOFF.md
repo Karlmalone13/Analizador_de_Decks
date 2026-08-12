@@ -1,5 +1,63 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-11 (499) - Claude (sessao remota web) - PRIMEIRO peso original de tune_weights.py confirmado mal calibrado: `dmg` 180.0 -> 270.0 -- valida a suspeita do bloco 495
+
+Continuacao direta (usuario: "vai pro 2 primeiro, depois pros 11",
+depois "Sim" pra comecar pelos pesos mais impactantes). Item 3: revalidar
+os 11 pesos originais de `tune_weights.py._TUNABLE`, suspeitos de terem
+sido calibrados ANTES do fix do `__deepcopy__` (bloco 495) -- ou seja,
+o override por-estado usado pela busca A-vs-B do tuner pode nunca ter
+chegado no Monte Carlo de verdade durante a propria calibracao deles.
+
+Escopo desta rodada: `dmg`, `board_mine`, `board_opp` (os 3 mais
+centrais -- toda avaliacao de estado usa dano/board, sem gating
+condicional por perfil de deck, entao SEM risco do confound achado no
+bloco 497 pra wincon_ready -- nao precisou de probe de frequencia antes
+de escalar).
+
+**Coordinate-ascent** (script descartavel, mesmo protocolo dos blocos
+anteriores: self-play pareado, N=30, roster ja deconfundido Imu_v_
+{Mihawk,Ace,Lucy,Luffy-Y}, candidatos multiplicativos x1.5/x0.67,
+maximin com tolerancia -0.02, peso aceito atualiza o baseline pro
+proximo da lista):
+
+- **`dmg`** (180.0 -> testado): x1.5=270.0 teve **maximin=+0,067**,
+  melhora TODOS os 4 matchups (+6,7pp / +6,7pp / +10,0pp / +6,7pp),
+  ZERO regressao. x0.67=120.6 piorou muito (maximin=-0,133). **Aceito
+  -- primeiro achado real de um peso original genuinamente mal
+  calibrado**, confirmando a suspeita do bloco 495.
+- **`board_mine`** (1.0, testado com o novo dmg=270.0 ja fixado):
+  x1.5=1.5 maximin=-0,100 (regride 3/4 matchups), x0.67=0.67
+  maximin=-0,100 tambem. Nenhum candidato bate -- **mantido em 1.0,
+  validado**.
+- **`board_opp`** (0.8, mesmo lote): x1.5=1.2 maximin=-0,067, x0.67=0.536
+  maximin=-0,067. Nenhum candidato bate -- **mantido em 0.8, validado**.
+
+**`eval_weights.json`**: `dmg` 180.0 -> **270.0** (unico valor numerico
+que mudou). `_meta` com 3 entradas novas (`dmg`/`board_mine`/
+`board_opp`) documentando o protocolo e resultado de cada um.
+
+**Validacao**: `smoke_fast.py` + `smoke_test.py` 100%. `audit_replay.py
+--n 30 --seed 88 --workers 4`: 0 excecoes, 0 anomalias. Script
+descartavel apagado.
+
+**Leitura**: a suspeita do bloco 495 tinha fundamento real -- pelo menos
+`dmg` estava preso num valor 33% mais baixo do que o self-play real
+(com o bug ja corrigido) mostra ser melhor. Como o Turn Planner pondera
+TUDO contra `dmg` (e o termo com maior peso absoluto da formula, 180 ->
+270 numa escala onde a maioria dos outros termos e <30), esse ajuste
+pode ter efeito sistemico em varias decisoes -- vale acompanhar em
+partidas reais futuras (nao so self-play) se o comportamento mudou de
+forma perceptivel (ex: mais disposto a trocar recursos por dano
+direto).
+
+**Pendente pra proxima rodada** (nenhuma iniciada): os 8 pesos restantes
+de `tune_weights.py._TUNABLE` -- `life_mult`, `hand_first`,
+`counter_hand`, `don_field`, `coverage`, `ax_trash`, `ax_reanim`,
+`ax_inversion`. Os 3 ultimos (eixos derivados de perfil) podem precisar
+do mesmo cuidado de confound/probe que `wincon_ready` exigiu (blocos
+496/497), por serem condicionais a perfil de deck.
+
 ## 2026-08-11 (498) - Claude (sessao remota web) - `opp_combo_threat`: causa raiz do 0% de gatilho NAO e amostra pequena -- Five Elders trasha A SI MESMA como parte do proprio [Activate: Main], eliminando a janela de aviso previo que o termo tenta detectar
 
 Continuacao do bloco 496/497 (usuario: "vai pro 2 primeiro, depois pros

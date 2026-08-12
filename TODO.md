@@ -2,6 +2,26 @@
 
 **Última atualização:** 11 de agosto de 2026
 
+> 11/08/2026 (bloco 499): **1º peso original de `tune_weights.py.
+> _TUNABLE` confirmado mal calibrado** — `dmg` (180.0) testado junto com
+> `board_mine`/`board_opp` (os 3 mais centrais, universais, sem risco do
+> confound do bloco 497). Coordinate-ascent N=30, roster deconfundido:
+> `dmg=270.0` (x1.5) teve **maximin=+0,067, melhora TODOS os 4 matchups,
+> zero regressão** — aceito. `board_mine`/`board_opp`: nenhum candidato
+> bateu o baseline, mantidos (1.0 e 0.8). **Valida a suspeita do bloco
+> 495**: pelo menos 1 dos 11 pesos originais estava preso num valor pior
+> por causa do bug do `__deepcopy__`. `dmg` é o termo de maior peso
+> absoluto da fórmula — mudança pode ter efeito sistêmico, vale observar
+> em partidas reais futuras. `smoke_fast`/`smoke_test` 100%,
+> `audit_replay.py --n 30 --workers 4`: 0 exceções/anomalias. Ver bloco
+> 499 do HANDOFF.
+>
+> **Pendente pra próxima rodada**: os 8 pesos restantes de
+> `tune_weights.py._TUNABLE` — `life_mult`, `hand_first`, `counter_hand`,
+> `don_field`, `coverage`, `ax_trash`, `ax_reanim`, `ax_inversion` (os 3
+> últimos, eixos derivados de perfil, podem precisar do mesmo cuidado de
+> confound/probe que `wincon_ready` exigiu).
+
 > 11/08/2026 (bloco 498): **`opp_combo_threat` — causa raiz do 0% de
 > gatilho achada, NÃO é sample size**. Só 4 cartas em todo o banco têm a
 > assinatura que o termo procura (`play_from_trash`/`add_from_trash`

@@ -1,5 +1,5 @@
 {
-  "dmg": 180.0,
+  "dmg": 270.0,
   "life_mult": 1.0,
   "board_mine": 1.0,
   "board_opp": 0.8,
@@ -30,8 +30,23 @@
       "seed_base": 6600
     },
     "opp_combo_threat": {
-      "status": "calibracao PULADA -- 0% de gatilho observado",
-      "note": "probe (N=6, 4 matchups incluindo Mihawk_v_Imu, onde o OPONENTE Imu tem habilidade de reanimacao em massa) deu ZERO disparos em 166 turnos avaliados. Causa provavel: opp_combo_threat() so conta uma fonte se ja existir >=1 corpo qualificado no TRASH do oponente (`if not fuel: continue`) -- jogos curtos (self-play, ~7 turnos/lado) podem terminar antes do trash do oponente acumular fuel suficiente. Nao e o mesmo bug do next_turn_readiness (aqui o mecanismo de leitura ja esta correto, testado no bloco 495) -- e insensibilidade de AMOSTRA/CENARIO, mesma categoria de risco ja avisada nos blocos 491/492 pro PREVENT_COMBO. Nao calibrado nesta sessao -- proxima tentativa precisa de jogos mais longos ou matchups onde o trash do oponente acumula fuel mais cedo."
+      "status": "calibracao PULADA -- causa raiz achada, nao e sample size (bloco 498)",
+      "note": "so 4 cartas em todo o banco tem a assinatura que o termo procura (play_from_trash/add_from_trash count>=2); das 193 decklists, so o Imu roda uma (Five Elders OP13-082). Rastreamento turno-a-turno mostrou que Five Elders NUNCA aparece em campo nos checkpoints -- o proprio [Activate: Main] dela manda ela mesma pro trash (trash_character self_character) ANTES de reanimar, tudo no mesmo turno. Nao existe janela de aviso previo pra essa carta -- o termo foi desenhado pra detectar ameaca PENDENTE, mas a unica carta que dispararia o padrao se resolve atomicamente. Rodar mais partidas/jogos mais longos NAO mudaria isso (estrutural, nao estatistico). Fica como decisao pendente: aceitar como esta ou redesenhar o mecanismo pra cobrir ameacas resolvidas no mesmo turno (mudanca de mecanismo, precisa decisao do usuario)."
+    },
+    "dmg": {
+      "status": "REVALIDADO -- prior estava subestimado, 180.0 -> 270.0 (bloco 499)",
+      "note": "1o de 11 pesos originais de tune_weights.py._TUNABLE revalidados apos o fix do __deepcopy__ (suspeita registrada no bloco 495: esses pesos podem ter sido 'aprendidos' ANTES do fix, quando o override por-estado nunca chegava no Monte Carlo de verdade). Termo UNIVERSAL (todo estado usa dano/board, sem gating condicional -- diferente de wincon_ready/opp_combo_threat, sem risco do confound do bloco 497). Coordinate-ascent, N=30, 4 matchups Imu_v_{Mihawk,Ace,Lucy,Luffy-Y} (roster ja deconfundido dos blocos 496/497): x1.5=270.0 teve maximin=+0.067, melhora os 4 matchups (+6.7pp/+6.7pp/+10.0pp/+6.7pp), NENHUMA regressao. x0.67=120.6 piorou muito (maximin=-0.133). Aceito -- primeiro achado real de que um dos 11 pesos originais estava genuinamente mal calibrado, confirmando a suspeita do bloco 495. board_mine e board_opp testados no mesmo lote: nenhum candidato bateu o baseline, mantidos.",
+      "gauntlet": ["Imu_v_Mihawk", "Imu_v_Ace", "Imu_v_Lucy", "Imu_v_Luffy-Y"],
+      "n": 30,
+      "seed_base": 7700
+    },
+    "board_mine": {
+      "status": "revalidado, prior mantido (1.0) -- bloco 499",
+      "note": "mesmo lote do dmg acima. x1.5=1.5 teve maximin=-0.100 (regride 3 dos 4 matchups), x0.67=0.67 teve maximin=-0.100 tambem. Nenhum candidato bateu o baseline -- prior 1.0 fica, validado."
+    },
+    "board_opp": {
+      "status": "revalidado, prior mantido (0.8) -- bloco 499",
+      "note": "mesmo lote do dmg acima. x1.5=1.2 teve maximin=-0.067, x0.67=0.536 teve maximin=-0.067 tambem. Nenhum candidato bateu o baseline -- prior 0.8 fica, validado."
     }
   }
 }
