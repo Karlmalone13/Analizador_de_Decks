@@ -2,6 +2,26 @@
 
 **Última atualização:** 11 de agosto de 2026
 
+> 11/08/2026 (bloco 507): **Verificação final — `decision_quality_
+> report.py` em 4 líderes** (Imu, Mihawk, Ace, Lucy, N=20 cada) com os
+> pesos finais de hoje. Utilização da habilidade do líder saudável nos 3
+> que têm uma (94,6%-100%), DON limpo em faixa razoável nos 4
+> (33%-66%). **Nenhum sinal de deck "descalibrado"** pelas 7 mudanças de
+> peso desta sessão. Só verificação, nenhum código/peso mudou. Ver bloco
+> 507 do HANDOFF.
+>
+> **FECHA o arco de calibração 493-507**: bug real corrigido
+> (`__deepcopy__`), 14 pesos de `EVAL_WEIGHTS` revalidados (7 mudaram),
+> 1 mecanismo redesenhado (`opp_combo_threat`), metodologia corrigida de
+> single-anchor pra multi-anchor, verificação final em 4 arquétipos sem
+> regressão.
+>
+> **Pendências pro futuro** (nenhuma nova): (1) ligar `opp_counter_
+> potential()` em `avaliar_carta()`; (2) expandir multi-âncora pra mais
+> arquétipos; (3) os 2 casos sem cobertura de `opp_combo_threat`
+> (aceitos, não bug); (4) ideia de cache-MC tipo NarutoSim, direção de
+> longo prazo não escopada.
+
 > 11/08/2026 (bloco 506): **2ª iteração multi-âncora CONCLUÍDA — os 10
 > pesos universais confirmam robustos contra Imu+Mihawk**. Nenhum dos 10
 > (`dmg`, `board_mine`, `board_opp`, `life_mult`, `hand_first`,

@@ -1,5 +1,56 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-11 (507) - Claude (sessao remota web) - Verificacao final: `decision_quality_report.py` em 4 lideres com os pesos novos -- nenhum sinal de deck "descalibrado", fecha o arco de calibracao 493-507
+
+Usuario perguntou "o que fazemos pra resolver o problema" (de nao
+descalibrar um deck pro outro) -- plano de 4 passos proposto, aprovado
+o passo 1 (o mais direto ja disponivel): rodar `decision_quality_
+report.py` (ferramenta MANDATORIA do CLAUDE.md pra essa pergunta
+exata) em varios lideres com os pesos finais de hoje, ja que nenhuma
+verificacao desse tipo tinha rodado desde que 7 pesos mudaram (blocos
+499-506).
+
+**4 lideres testados** (os mesmos ja usados como matchups nesta sessao
+-- Imu, Mihawk, Ace, Lucy --, N=20/lider, seed=42):
+
+| Lider | Winrate (contexto, nao e o criterio) | Habilidade do lider | DON limpo no fim do turno |
+|---|---|---|---|
+| Imu (OP13-079) | 75,0% (15/20) | 98,3% (117/119 turnos) | 55,5% (76/137 turnos) |
+| Mihawk (OP14-020) | 80,0% (16/20) | 94,6% (35/37 turnos) | 33,3% (45/135 turnos) |
+| Ace (OP13-002) | 70,0% (14/20) | N/A (sem [Activate: Main] parseado) | 56,4% (66/117 turnos) |
+| Lucy (OP15-002) | 55,0% (11/20) | 100% (6/6 turnos, amostra pequena) | 65,8% (79/120 turnos) |
+
+**Leitura**: utilizacao da habilidade do lider saudavel nos 3 que tem
+uma (94,6%-100%), DON limpo em faixa razoavel nos 4 (33%-66%). Nenhum
+sinal de "o bot parou de entender esse deck" apos as mudancas de hoje
+(dmg, don_field, ax_inversion, opp_blocker, hand_extra, opp_combo_
+threat, survival_premium, next_turn_readiness dividido). Tabela de
+utilizacao por carta (item 3) de cada lider tambem sem padrao
+alarmante -- taxas baixas concentradas em cartas de nicho/situacionais
+(esperado, mesmo padrao ja investigado nos blocos 486/487 pra Sanji).
+
+**So verificacao, nenhum codigo/peso mudou** -- nao precisou da suite
+pesada de novo (smoke_fast/smoke_test/audit_replay ja rodaram no
+bloco 506, ultimo bloco que mudou peso).
+
+**FECHA o arco inteiro de calibracao desta sessao (blocos 493-507)**,
+nascido da pergunta original do usuario "como melhoramos o
+simulated_value": bug real corrigido (`__deepcopy__`), 14 pesos
+numericos de `EVAL_WEIGHTS` revalidados (7 mudaram de valor no total),
+1 mecanismo de deteccao redesenhado (`opp_combo_threat`), metodologia
+de calibracao corrigida de single-anchor pra multi-anchor (achado do
+proprio usuario), e verificacao final de qualidade de decisao em 4
+arquetipos confirmando nenhuma regressao de comportamento.
+
+**Pendencias registradas pro futuro** (nenhuma nova, ja documentadas em
+blocos anteriores -- nao iniciadas): (1) ligar `opp_counter_potential()`
+em `avaliar_carta()` (passo 3 do plano, mais barato que sampling
+completo); (2) expandir multi-ancora pra mais arquetipos ao longo do
+tempo; (3) `opp_combo_threat` ainda tem 2 casos sem cobertura (fog of
+war genuino, jogado+ativado no mesmo turno sem revelacao previa),
+aceitos como limite honesto; (4) ideia de cache-MC tipo NarutoSim,
+registrada como direcao de longo prazo, nao escopada.
+
 ## 2026-08-11 (506) - Claude (sessao remota web) - 2a iteracao multi-ancora CONCLUIDA: os 10 pesos universais confirmam robustos contra Imu+Mihawk, 2 condicionais refinam mais -- FECHA o bloco 505
 
 Resultado da calibracao relancada no bloco 505 (task `bcm1vg87d`).
