@@ -11,7 +11,7 @@
   "coverage": 7.0,
   "ax_trash": 0.05,
   "ax_reanim": 12.0,
-  "ax_inversion": 0.5,
+  "ax_inversion": 0.75,
   "survival_premium": 15.0,
   "next_turn_readiness_self": 0.6,
   "next_turn_readiness_opp_threat": 0.0,
@@ -70,6 +70,27 @@
     "coverage": {
       "status": "revalidado, prior mantido (7.0) -- bloco 500",
       "note": "mesmo lote. x1.5=10.5 maximin=-0.033, x0.67=4.69 maximin=-0.067. Nenhum candidato bateu o baseline -- prior 7.0 fica, validado."
+    },
+    "ax_reanim": {
+      "status": "revalidado, prior mantido (12.0) -- bloco 501 (ULTIMO lote, fecha os 11 pesos originais)",
+      "note": "eixo derivado condicional (bottleneck) -- roster ja deconfundido dos blocos 496/497 (Imu_v_{Mihawk,Ace,Lucy,Luffy-Y}, nenhum tem bottleneck). x1.5=18.0 maximin=-0.067, x0.67=8.04 maximin=-0.067 tambem. Nenhum candidato bateu o baseline -- prior 12.0 fica, validado.",
+      "gauntlet": ["Imu_v_Mihawk", "Imu_v_Ace", "Imu_v_Lucy", "Imu_v_Luffy-Y"],
+      "n": 30,
+      "seed_base": 9900
+    },
+    "ax_trash": {
+      "status": "revalidado, prior mantido (0.05) -- bloco 501",
+      "note": "eixo derivado condicional (resource_staircase) -- roster NOVO deconfundido (escaneado o pool completo pra achar oponentes sem resource_staircase NEM bottleneck, ja que Lucy/Luffy-Amarelo do roster padrao tem resource_staircase): Imu_v_{Mihawk,Ace,Luffy-Verde/Vermelho(Julius Schurhoff),Mihawk(Ed)}. x1.5=0.075 deu margens 0.0 em TODOS os 4 (peso tao pequeno em escala absoluta -- 0.05 -- que nem 1.5x move nenhuma decisao observavel); x0.67=0.0335 teve maximin=-0.033 (pequena regressao). Nenhum candidato bateu o baseline -- prior 0.05 fica, validado. Diferente do bug do bloco 495 (aqui so 1 dos 2 candidatos saiu identico, nao os dois -- plausivelmente so reflete a escala pequena do peso, nao um bug de propagacao).",
+      "gauntlet": ["Imu_v_Mihawk", "Imu_v_Ace", "Imu_v_Luffy-RG", "Imu_v_Mihawk-Ed"],
+      "n": 30,
+      "seed_base": 9900
+    },
+    "ax_inversion": {
+      "status": "REVALIDADO -- prior estava um pouco baixo, 0.5 -> 0.75 (bloco 501)",
+      "note": "eixo derivado condicional (inversion) -- roster NOVO deconfundido (Mihawk/Ace/Luffy-Amarelo do roster padrao tem inversion): Imu_v_{Lucy,Luffy-Verde/Roxo(IceLoom),Luffy-Verde/Vermelho(Julius Schurhoff),Enel(Gabi313)}. x1.5=0.75 teve maximin=+0.000 (empata 3 matchups, melhora Imu_v_Lucy +10pp, nenhuma regressao) -- aceito pela mesma regra de don_field (bloco 500). x0.67=0.335 regrediu (-0.033). Fecha o UTIMO dos 11 pesos originais de tune_weights.py._TUNABLE -- placar final: 3 mudaram (dmg, don_field, ax_inversion), 8 validados sem mudanca.",
+      "gauntlet": ["Imu_v_Lucy", "Imu_v_Luffy-GP", "Imu_v_Luffy-RG", "Imu_v_Enel-Gabi"],
+      "n": 30,
+      "seed_base": 9900
     }
   }
 }

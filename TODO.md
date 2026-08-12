@@ -2,6 +2,26 @@
 
 **Última atualização:** 11 de agosto de 2026
 
+> 11/08/2026 (bloco 501): **3º e ÚLTIMO lote — FECHA a revalidação dos
+> 11 pesos originais de `tune_weights.py._TUNABLE`** (suspeita do bloco
+> 495). `ax_reanim`/`ax_trash`/`ax_inversion` são eixos derivados
+> condicionais (mesmo risco de confound do `wincon_ready`) — escaneei o
+> pool completo e montei roster LIMPO por peso antes de rodar (licão do
+> 497 aplicada proativamente). `ax_inversion` mudou: 0.5 → **0.75**
+> (maximin=+0,000, empata 3 matchups, melhora 1). `ax_reanim`/`ax_trash`
+> mantidos (validados). **Placar final dos 11 pesos**: 3 mudaram (`dmg`
+> 180→270, `don_field` 4→6, `ax_inversion` 0.5→0.75), 8 validados sem
+> mudança. `smoke_fast`/`smoke_test` 100%, `audit_replay.py --n 30
+> --workers 4`: 0 exceções/anomalias. Ver bloco 501 do HANDOFF.
+>
+> **Pendências pro futuro** (nenhuma nova iniciada): (1) `opp_combo_
+> threat` — decisão de mecanismo pendente (bloco 498); (2)
+> `opp_blocker`/`hand_extra`/`survival_premium` nunca estiveram em
+> `_TUNABLE`, ainda prior puro — próxima fronteira natural; (3) 2ª
+> iteração de coordinate-ascent nos pesos já aceitos com margem fraca
+> (`don_field`, `ax_inversion`, maximin=+0,000 nos dois) poderia refinar
+> mais.
+
 > 11/08/2026 (bloco 500): **2º lote da revalidação dos 11 pesos
 > originais** — `life_mult`, `hand_first`, `counter_hand`, `don_field`,
 > `coverage` (universais, sem risco de confound). Só `don_field` mudou

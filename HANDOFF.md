@@ -1,5 +1,109 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-11 (501) - Claude (sessao remota web) - 3o e ULTIMO lote da revalidacao dos 11 pesos originais: `ax_inversion` 0.5 -> 0.75 -- FECHA a suspeita do bloco 495
+
+Continuacao direta do bloco 500 (usuario: "Sim"). Ultimos 3 pesos:
+`ax_reanim`, `ax_trash`, `ax_inversion` -- eixos DERIVADOS de perfil de
+deck (condicionais), mesma categoria de risco do `wincon_ready` (bloco
+497).
+
+**Confound checado ANTES de rodar** (licao do bloco 497 aplicada
+proativamente): escaneei quais eixos cada deck do roster padrao (Imu,
+Mihawk, Ace, Lucy, Luffy-Y) realmente tem --
+
+```
+Imu       -> bottleneck, resource_staircase, inversion, disruption
+Mihawk    -> inversion, disruption
+Ace       -> inversion
+Lucy      -> resource_staircase
+Luffy-Y   -> inversion, resource_staircase
+```
+
+O roster padrao (usado pro `dmg`/`don_field` etc.) tem overlap real com
+o Imu em `inversion` (Mihawk/Ace/Luffy-Y) e `resource_staircase`
+(Lucy/Luffy-Y) -- inutilizavel pra `ax_trash`/`ax_inversion` sem
+confound. `ax_reanim` (eixo `bottleneck`) reusa o roster padrao sem
+problema (ja confirmado limpo de `bottleneck` nos blocos 496/497).
+
+Escaneei o pool completo (193 decks) e montei roster LIMPO por peso:
+- `ax_trash`: Imu vs {Mihawk, Ace, Luffy-Verde/Vermelho (Julius
+  Schürhoff), Mihawk (Ed)} -- todos confirmados sem
+  `resource_staircase` nem `bottleneck`.
+- `ax_inversion`: Imu vs {Lucy, Luffy-Verde/Roxo (IceLoom),
+  Luffy-Verde/Vermelho (Julius Schürhoff), Enel (Gabi313)} -- todos
+  confirmados sem `inversion` nem `bottleneck`.
+
+**Resultado** (N=30, coordinate-ascent x1.5/x0.67, continuando do
+baseline ja atualizado com dmg=270.0/don_field=6.0):
+
+- **`ax_reanim`** (12.0): x1.5=18.0 maximin=-0,067, x0.67=8.04
+  maximin=-0,067 tambem -- mantido, validado.
+- **`ax_trash`** (0.05): x1.5=0.075 deu margens **0.0 em TODOS os 4
+  matchups** -- a principio parece o mesmo padrao suspeito do bug do
+  bloco 495, mas x0.67=0.0335 mostrou diferenca real (nao identico) --
+  interpretacao mais provavel: o peso e tao pequeno em escala absoluta
+  (0.05, contra dmg=270/don_field=6/etc.) que nem um aumento de 50% move
+  qualquer decisao observavel nesta amostra. Nao investigado mais a
+  fundo (diferente do bloco 495, so 1 dos 2 candidatos saiu identico,
+  nao os dois -- sinal mais fraco de bug). Mantido, validado com essa
+  ressalva registrada.
+- **`ax_inversion`** (0.5): x1.5=0.75 teve **maximin=+0,000** (empata 3
+  matchups, melhora Imu_v_Lucy em +10pp, zero regressao) -- **aceito**
+  pela mesma regra do `don_field` (bloco 500). x0.67=0.335 regrediu
+  (-0,033).
+
+**`eval_weights.json`**: `ax_inversion` 0.5 -> **0.75** (unico valor
+numerico que mudou neste lote). `_meta` com as 3 entradas finais.
+
+**Validacao**: `smoke_fast.py` + `smoke_test.py` 100%. `audit_replay.py
+--n 30 --seed 111 --workers 4`: 0 excecoes, 0 anomalias. Script
+descartavel apagado.
+
+**FECHA a revalidacao dos 11 pesos originais de `tune_weights.py.
+_TUNABLE`** (suspeita registrada no bloco 495, blocos 499-501): placar
+final **3 mudaram** (`dmg` 180->270, `don_field` 4->6, `ax_inversion`
+0.5->0.75), **8 validados sem mudanca** (`board_mine`, `board_opp`,
+`life_mult`, `hand_first`, `counter_hand`, `coverage`, `ax_reanim`,
+`ax_trash`). A suspeita tinha fundamento parcial e real -- nao invalida
+o `eval_weights.json` inteiro, mas confirmou que pelo menos 3 dos 11
+pesos originais estavam presos abaixo do valor ideal por causa do bug
+do `__deepcopy__` corrigido no bloco 495. `dmg` (maior peso absoluto da
+formula) e a mudanca com maior potencial de impacto sistemico --
+observar em partidas reais futuras.
+
+**Estado final de `eval_weights.json`** (todos os 14 pesos com origem
+"learned", nenhum mais em prior puro nunca testado):
+```
+dmg=270.0 (era 180.0), life_mult=1.0, board_mine=1.0, board_opp=0.8,
+opp_blocker=25.0 (nao testado -- fora do escopo dos 11 originais,
+nao esta em _TUNABLE), hand_first=8.0, hand_extra=3.0 (idem,
+fora de _TUNABLE), counter_hand=9.0, don_field=6.0 (era 4.0),
+coverage=7.0, ax_trash=0.05, ax_reanim=12.0, ax_inversion=0.75
+(era 0.5), survival_premium=15.0 (fora de _TUNABLE),
+next_turn_readiness_self=0.6 (era combinado 0.6, bloco 494/495),
+next_turn_readiness_opp_threat=0.0 (era combinado 0.6, bloco 495),
+wincon_ready=20.0 (prior, validado bloco 497),
+opp_combo_threat=0.8 (prior, calibracao pulada bloco 498 -- decisao
+pendente de mecanismo, nao de peso)
+```
+
+**Pendencias registradas pro futuro** (nenhuma nova iniciada):
+1. `opp_combo_threat`: decisao de mecanismo pendente (bloco 498) --
+   aceitar como esta ou redesenhar pra cobrir ameacas resolvidas no
+   mesmo turno.
+2. `opp_blocker`, `hand_extra`, `survival_premium`: NUNCA estiveram em
+   `tune_weights.py._TUNABLE` (nem antes nem depois da extensao do
+   bloco 494) -- ainda prior puro, nunca calibrados. Fora do escopo
+   desta sessao (que revalidou os 11 ja presentes + os 3 do achado
+   494), mas registrado como proxima fronteira natural se o usuario
+   quiser continuar.
+3. Considerar rodar uma 2a iteracao de coordinate-ascent nos pesos ja
+   testados (como `tune_weights.py --iters 3` faria) -- esta sessao fez
+   so 1 iteracao por peso (aceita o 1o candidato que bate, nao re-testa
+   o vencedor contra fatores adicionais). Pesos aceitos com maximin
+   fraco (`don_field`, `ax_inversion`, ambos maximin=+0.000) sao os
+   candidatos mais uteis pra uma 2a rodada com fatores diferentes.
+
 ## 2026-08-11 (500) - Claude (sessao remota web) - 2o lote da revalidacao dos 11 pesos originais: `don_field` 4.0 -> 6.0, outros 4 mantidos
 
 Continuacao direta do bloco 499 (usuario: "Sim"). Mesmo protocolo,
