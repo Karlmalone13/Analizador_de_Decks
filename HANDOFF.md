@@ -1,5 +1,64 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (515) - Claude (sessao remota web) - Fase 2 (ajuste de peso) REMOVIDA por pedido do usuario -- "calibragem dinamica" vira SO escalar a camada barata (40 -> 3000), sem mexer em peso nenhum
+
+Continuacao do bloco 514: enquanto a comparacao OFF-vs-ON (com escala
+`DYNAMIC_WEIGHT_ADJUSTMENT_SAMPLES=3000` + roster multi-ancora
+corrigido) rodava em background, o usuario interrompeu de novo: "Isso
+era o que estávamos fazendo? Vamos para o próximo passo" -> "A ideia
+era fazer igual ao Naruto sim... aí pega a tendência e passa pela
+heurística como se fosse um filtro... mas agora parece que está indo
+por outra linhagem". Perguntei via AskUserQuestion pra separar 2
+hipoteses (fase 2 nao deveria existir separada / a tendencia vira
+criterio novo somado). Resposta livre do usuario: "rodar milhares de
+vezes e achar tendências e boas alternativas, então essas alternativas
+são passadas para a heurística para validar... não vejo muita
+diferença entre multiplicar o somar, expliquem a diferença".
+
+**Reconciliacao**: expliquei a diferenca multiplicativo-vs-aditivo
+(pedida), mas o ponto real e outro -- o que o usuario descreve ("rodar
+milhares, achar boas alternativas, passar pra heuristica validar/
+escolher") **e exatamente o fluxo que a fase 1 + a busca cara ja
+fazem**, sem precisar de nenhum mecanismo que mexa em peso. Propus:
+remover o ajuste de peso (multiplicativo OU aditivo, as duas formas)
+por inteiro, e so aumentar a ESCALA da camada barata (fase 1) pra
+milhares -- usuario confirmou ("Topo").
+
+**Pergunta do usuario, respondida**: "a ideia de mexer no peso era
+tornar ele dinamico porque aí evitaria do bot jogar bem com 1 deck e
+mal com outro" -- expliquei por que isso ja fica coberto SEM mexer em
+peso: `_cheap_rollout_sample_deltas` le so flags genericas de carta
+(`get_card_flags` -- `is_removal`/`is_searcher`/`draws`/etc, funcionam
+pra QUALQUER carta de QUALQUER deck, nunca especificas de um arquetipo).
+A adaptacao por deck vem de QUAIS candidatas entram na busca cara
+(isso SIM muda por deck, naturalmente, sem perfil salvo) -- nao de
+ajustar a regua fixa em si. A regua (`EVAL_WEIGHTS`) fica intocada,
+exatamente como calibrada nos blocos 493-507.
+
+**Codigo removido** (registrado como tentativa descartada, mesmo
+tratamento das 2 tentativas erradas do bloco 508): `_cheap_rollout_
+components`, `_compute_dynamic_weight_adjustment`, `_set_dynamic_
+weights`, `_restore_weights`, constantes `DYNAMIC_WEIGHT_ADJUSTMENT_
+CAP`/`DYNAMIC_WEIGHT_ADJUSTMENT_SAMPLES`/`USE_DYNAMIC_WEIGHT_
+ADJUSTMENT`, wiring em `main_phase`/`sim_bridge.choose_action`, campo
+`dynamic_weight_adjustment` do log/trace, e os 3 testes de
+`smoke_fast.py` que cobriam esse mecanismo.
+
+**Codigo mantido/alterado**: `CHEAP_LAYER_SAMPLES` (fase 1, a UNICA
+constante de amostra que resta) sobe de `40` pra `3000` diretamente --
+`_compute_cheap_values`/`_cheap_rollout_value` (inalterados na logica,
+so herdam o novo default). Custo medido: `_compute_cheap_values` numa
+decisao real (~2-3 acoes elegiveis) foi de ~0,1ms (n=40) pra ~19-29ms
+(n=3000) -- ainda trivial no orcamento ao vivo (3-5s), mas nao mais
+negligivel no offline (chamado varias vezes por turno em muitos jogos
+de self-play/calibracao) -- comparacao de escala rodando (ver proximo
+bloco pro resultado, mesmo roster multi-ancora do bloco 514: Imu_v_
+Mihawk/Mihawk_v_Ace/Ace_v_Lucy/Lucy_v_Imu, N=30/matchup, seeds
+pareadas, comparando CHEAP_LAYER_SAMPLES=40 vs 3000).
+
+**Validado**: `smoke_fast.py` 100% apos a remocao (import nao-usado de
+`EVAL_WEIGHTS` em `smoke_fast.py` tambem removido).
+
 ## 2026-08-13 (514) - Claude (sessao remota web) - Correcao metodologica na medicao da fase 2: escala de amostra (40 -> 3000) + roster multi-ancora (era Imu fixo)
 
 Usuario interrompeu a leitura do resultado do bloco 513 ("Calma, acho

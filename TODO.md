@@ -2,6 +2,23 @@
 
 **Última atualização:** 13 de agosto de 2026
 
+> 13/08/2026 (bloco 515): **Fase 2 (ajuste de peso) REMOVIDA por pedido
+> do usuário** — reiterou a ideia original ("igual ao NarutoSim: rodar
+> milhares de vezes, achar boas alternativas, passar pra heurística
+> validar/escolher") e esclareceu que isso já é o fluxo da fase 1 + a
+> busca cara existente, sem precisar mexer em peso nenhum (nem
+> multiplicativo nem aditivo). A adaptação por deck vem de QUAIS
+> candidatas entram na busca (deck-agnóstico via `get_card_flags`), não
+> de ajustar a régua fixa (`EVAL_WEIGHTS`, calibrada nos blocos
+> 493-507, permanece intocada). Código do mecanismo de ajuste removido
+> por inteiro (registrado como tentativa descartada, mesmo tratamento
+> das 2 tentativas do bloco 508). Único ajuste que sobrou: escala da
+> camada barata (`CHEAP_LAYER_SAMPLES`) de 40 pra 3000 amostras — custo
+> medido (~19-29ms/decisão, trivial ao vivo, mensurável offline).
+> Comparação de escala (40 vs 3000, mesmo roster multi-âncora do bloco
+> 514) rodando — resultado no próximo bloco. `smoke_fast.py` 100%. Ver
+> bloco 515 do HANDOFF.
+
 > 13/08/2026 (bloco 514): **Correção metodológica na medição da fase 2**
 > (usuário: "não adianta fazer igual vc tá fazendo, calibrando 1 deck
 > só" + "milhares de vezes", não 40). Duas correções: (1)

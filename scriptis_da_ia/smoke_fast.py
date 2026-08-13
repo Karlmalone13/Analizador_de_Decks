@@ -16,7 +16,6 @@ from optcg_engine.decision_engine import (  # noqa: E402
     Card,
     CardData,
     DecisionEngine,
-    EVAL_WEIGHTS,
     EffectExecutor,
     GameAnalyzer,
     GameState,
@@ -10124,9 +10123,6 @@ def main() -> int:
     test_select_search_candidates_alarga_com_cheap_values_sem_regredir_11_08()
     test_log_turn_planner_decision_registra_cheap_value_pra_auditoria_11_08()
     test_select_action_via_search_generaliza_parada_antecipada_pra_3_candidatas_13_08()
-    test_cheap_rollout_components_soma_bate_com_cheap_rollout_value_13_08()
-    test_compute_dynamic_weight_adjustment_reforca_termo_correto_13_08()
-    test_set_e_restore_dynamic_weights_transitorio_e_reversivel_13_08()
     test_ponder_fingerprint_deterministico_09_08()
     test_ponder_fingerprint_muda_por_mutacao_isolada_09_08()
     test_ponder_payload_byte_identico_ao_caminho_normal_09_08()
@@ -12628,129 +12624,6 @@ def test_select_action_via_search_generaliza_parada_antecipada_pra_3_candidatas_
           n_amostras_2 == 24)
 
     del match._simulate_sequence_values
-
-
-def test_cheap_rollout_components_soma_bate_com_cheap_rollout_value_13_08() -> None:
-    """
-    Fase 2 (bloco 508/513): `_cheap_rollout_components` extrai a MESMA
-    amostragem de `_cheap_rollout_value` (`_cheap_rollout_sample_deltas`
-    compartilhado, REGRA_SEM_DUPLICACAO) -- prova que a soma dos 5
-    termos devolvidos bate exatamente com o total agregado, pra qualquer
-    seed/acao (senao o ajuste da fase 2 estaria calculando algo
-    diferente do sinal que a fase 1 ja usa pra alargar o shortlist).
-    """
-    import random
-    me = GameState(leader=real_card("OP11-062"), turn=3, don_available=5, don_rested=0)
-    opp = GameState(leader=real_card("OP11-062"), turn=3, don_available=5, don_rested=0)
-    opp.field_chars = [mk("OPPC1", "Opp Body", power=4000, cost=3)]
-    match = OPTCGMatch((me.leader, []), (opp.leader, []))
-
-    linlin = real_card("ST34-004")
-    action = (100.0, 'play', linlin, None, None)
-
-    total = match._cheap_rollout_value(me, opp, action, n_samples=50, rng=random.Random(55))
-    componentes = match._cheap_rollout_components(me, opp, action, n_samples=50, rng=random.Random(55))
-    check("soma dos componentes bate com o total agregado (mesma amostragem)",
-          abs(sum(componentes.values()) - total) < 1e-9)
-
-
-def test_compute_dynamic_weight_adjustment_reforca_termo_correto_13_08() -> None:
-    """
-    Fase 2 (bloco 508/513): `_compute_dynamic_weight_adjustment` acha
-    qual termo de EVAL_WEIGHTS mais explica a vantagem da candidata
-    LIDER (maior cheap_value) sobre a VICE, e reforca proporcionalmente
-    ao gap, respeitando o teto de 20%. `_cheap_rollout_components`
-    trocado por valores sinteticos (mesmo padrao dos outros testes desta
-    secao) pra controlar o gap com precisao.
-    """
-    match = OPTCGMatch((real_card("OP11-062"), []), (real_card("OP11-062"), []))
-    a = (100.0, 'play', mk("CA", "CartaA", power=1, cost=1), None, None)
-    b = (100.0, 'play', mk("CB", "CartaB", power=1, cost=1), None, None)
-    c = (100.0, 'play', mk("CC", "CartaC", power=1, cost=1), None, None)
-
-    # Caso 1: 1 unico termo com gap positivo (board_mine) -- recebe o
-    # teto inteiro (20%), os outros termos ficam de fora do dict.
-    componentes_caso1 = {
-        id(a): {'board_mine': 10.0, 'board_opp': 5.0, 'hand_first': 0.0, 'don_field': -2.0, 'dmg': 0.0},
-        id(b): {'board_mine': 4.0, 'board_opp': 5.0, 'hand_first': 0.0, 'don_field': 0.0, 'dmg': 0.0},
-    }
-    match._cheap_rollout_components = lambda p, opp, action, n_samples=None, rng=None: componentes_caso1[id(action)]
-    ajuste1 = match._compute_dynamic_weight_adjustment(
-        match.state_a, match.state_b, [a, b, c], {id(a): 100.0, id(b): 80.0, id(c): 10.0})
-    check("1 termo com gap positivo (board_mine) recebe o teto de 20%",
-          set(ajuste1.keys()) == {'board_mine'} and abs(ajuste1['board_mine'] - 0.20) < 1e-9)
-
-    # Caso 2: 2 termos com gap positivo, dividido proporcionalmente
-    # (board_mine gap=6, board_opp gap=4, total=10 -> 12%/8%, soma 20%).
-    componentes_caso2 = {
-        id(a): {'board_mine': 10.0, 'board_opp': 8.0, 'hand_first': 0.0, 'don_field': 0.0, 'dmg': 0.0},
-        id(b): {'board_mine': 4.0, 'board_opp': 4.0, 'hand_first': 0.0, 'don_field': 0.0, 'dmg': 0.0},
-    }
-    match._cheap_rollout_components = lambda p, opp, action, n_samples=None, rng=None: componentes_caso2[id(action)]
-    ajuste2 = match._compute_dynamic_weight_adjustment(
-        match.state_a, match.state_b, [a, b, c], {id(a): 100.0, id(b): 80.0, id(c): 10.0})
-    check("2 termos com gap positivo dividem o teto proporcionalmente (12%/8%)",
-          abs(ajuste2['board_mine'] - 0.12) < 1e-9 and abs(ajuste2['board_opp'] - 0.08) < 1e-9)
-
-    # Caso 3: NENHUM termo com gap positivo (vice na frente em tudo,
-    # apesar do cheap_value dizer que a e lider) -- ajuste vazio, nao
-    # inventa reforco sem justificativa.
-    componentes_caso3 = {
-        id(a): {'board_mine': 1.0, 'board_opp': 1.0, 'hand_first': 0.0, 'don_field': 0.0, 'dmg': 0.0},
-        id(b): {'board_mine': 5.0, 'board_opp': 5.0, 'hand_first': 0.0, 'don_field': 0.0, 'dmg': 0.0},
-    }
-    match._cheap_rollout_components = lambda p, opp, action, n_samples=None, rng=None: componentes_caso3[id(action)]
-    ajuste3 = match._compute_dynamic_weight_adjustment(
-        match.state_a, match.state_b, [a, b, c], {id(a): 100.0, id(b): 80.0, id(c): 10.0})
-    check("sem gap positivo em nenhum termo, ajuste fica vazio (nao inventa reforco)",
-          ajuste3 == {})
-
-    # Caso 4: menos de 2 candidatas com cheap_value valido -- vazio.
-    ajuste4 = match._compute_dynamic_weight_adjustment(
-        match.state_a, match.state_b, [a, b, c], {id(a): 100.0})
-    check("menos de 2 candidatas com cheap_value, ajuste fica vazio",
-          ajuste4 == {})
-
-    del match._cheap_rollout_components
-
-
-def test_set_e_restore_dynamic_weights_transitorio_e_reversivel_13_08() -> None:
-    """
-    Fase 2 (bloco 508/513): `_set_dynamic_weights` aplica `peso_final =
-    peso_estatico * (1+ajuste)` SO nos termos ajustados, preserva o
-    resto; `_restore_weights` devolve exatamente o valor original
-    (None se `eval_weights` nao existia, ou o override anterior se
-    existia) -- prova que o mecanismo e transitorio de verdade, sem
-    vazar entre decisoes (a garantia central do desenho "deck-
-    agnostico" da fase 2).
-    """
-    match = OPTCGMatch((real_card("OP11-062"), []), (real_card("OP11-062"), []))
-    p = match.state_a
-    check("estado novo comeca sem override de eval_weights",
-          getattr(p, 'eval_weights', None) is None)
-
-    original = match._set_dynamic_weights(p, {'board_mine': 0.20})
-    check("_set_dynamic_weights devolve None (nao existia override antes)",
-          original is None)
-    check("board_mine reforcado em +20% sobre o global",
-          abs(p.eval_weights['board_mine'] - EVAL_WEIGHTS['board_mine'] * 1.20) < 1e-9)
-    check("termo NAO ajustado (board_opp) fica identico ao global",
-          p.eval_weights['board_opp'] == EVAL_WEIGHTS['board_opp'])
-
-    match._restore_weights(p, original)
-    check("_restore_weights devolve exatamente ao estado anterior (None)",
-          getattr(p, 'eval_weights', None) is None)
-
-    # Ajuste vazio ({}) e um no-op -- nao mexe em eval_weights, mesmo se
-    # ja houver um override em vigor (simula perfil por-estado ja
-    # existente, ex: use_eval_v2/per-deck no futuro).
-    p.eval_weights = {'board_mine': 999.0}
-    original2 = match._set_dynamic_weights(p, {})
-    check("ajuste vazio nao mexe no eval_weights ja existente",
-          p.eval_weights == {'board_mine': 999.0})
-    match._restore_weights(p, original2)
-    check("restore com ajuste vazio preserva o override anterior",
-          p.eval_weights == {'board_mine': 999.0})
 
 
 # ── Pondering (BOT/engine_server/server.py, design bloco 478, implementado

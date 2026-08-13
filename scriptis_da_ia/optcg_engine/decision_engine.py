@@ -280,7 +280,7 @@ PREVENT_COMBO_LEADER_ATTACK_BONUS = 150
 SEARCH_MIN_CANDIDATES = 3
 SEARCH_SCORE_WINDOW = 180
 
-# ── camada barata / fase 1 da "calibragem dinamica" (bloco 508/509) ──────────
+# ── camada barata / "calibragem dinamica" (bloco 508/509, escala bloco 514) ──
 # Desenho acordado com o usuario 11/08: em vez de resolver o efeito de
 # verdade (caro, precisa do motor de regras completo), `_cheap_rollout_value`
 # usa SO as flags ja pre-parseadas (get_card_flags, mesma fonte que
@@ -288,13 +288,22 @@ SEARCH_SCORE_WINDOW = 180
 # amostras rapidas, nao um substituto da busca real. O sinal alimenta
 # `_select_search_candidates` como um segundo criterio (alem do score
 # estatico de sempre) pra ALARGAR o shortlist que entra na busca cara --
-# nunca substitui, nunca encolhe o que o score estatico ja garantia.
+# nunca substitui, nunca encolhe o que o score estatico ja garantia. A
+# busca cara (heuristica de sempre, sem nenhum peso mexido) VALIDA/ESCOLHE
+# entre as candidatas alargadas -- essa e a "fase fina" completa, nao
+# precisa de um mecanismo separado que ajuste peso (tentativa registrada
+# e descartada no bloco 513/514, ver HANDOFF: usuario esclareceu que a
+# adaptacao por deck vem de QUAIS candidatas entram na busca, ja
+# deck-agnostico via get_card_flags -- nao de mexer na regua fixa).
 # Validado por self-play (bloco 510) antes de ligar -- ver USE_CHEAP_
 # LAYER_SHORTLIST abaixo pro resultado. Extensao pro caminho AO VIVO
 # (`sim_bridge.choose_action`) feita no bloco 511 -- reusa a MESMA flag,
 # sem flag separada (a decisao "camada barata ligada ou nao" e unica
-# pros dois chamadores).
-CHEAP_LAYER_SAMPLES = 40
+# pros dois chamadores). Escala de amostra subida de 40 pra milhares no
+# bloco 514 (pedido explicito do usuario, "igual ao NarutoSim, simular
+# umas 8000 ou 1000x" -- 40 dava tendencia ruidosa demais pra decisoes
+# com alvo ambiguo) -- custo medido antes de subir (ver HANDOFF 514).
+CHEAP_LAYER_SAMPLES = 3000
 CHEAP_LAYER_EXTRA_CANDIDATES = 3
 # Knob global, mesmo padrao do USE_EVAL_V2/USE_OPPONENT_RESPONSE_SEARCH.
 # LIGADO 11/08 (bloco 510) apos comparacao controlada (self-play, N=30,
@@ -306,31 +315,6 @@ CHEAP_LAYER_EXTRA_CANDIDATES = 3
 # interno 3.0s->5.0s pra acomodar, folga real medida contra o limite
 # fisico de 10s do plugin C#).
 USE_CHEAP_LAYER_SHORTLIST = True
-
-# ── calibragem dinamica / fase 2 (bloco 508 especifica, bloco 513 implementa) ─
-# Depois de decidir QUAIS candidatas entram na busca cara (fase 1 acima),
-# a fase 2 usa os MESMOS rollouts baratos pra decidir se algum termo de
-# EVAL_WEIGHTS explica a vantagem da candidata lider sobre a vice NESTA
-# decisao especifica, e reforca ele TRANSITORIAMENTE (so durante a busca
-# cara desta decisao, via `_set_dynamic_weights`/`_restore_weights`) --
-# nunca persiste em lugar nenhum, some no fim da decisao. Deck-agnostico
-# por construcao: nao existe "perfil do Imu" salvo, e um PROCESSO que
-# roda igual pra qualquer deck. Cap de ±20% (pedido do usuario, bloco
-# 508) evita que ruido de amostra pequena desestabilize a decisao.
-DYNAMIC_WEIGHT_ADJUSTMENT_CAP = 0.20
-# Amostras pra `_cheap_rollout_components` (lider/vice) especificamente
-# na fase 2 -- SEPARADO de CHEAP_LAYER_SAMPLES (fase 1, alargamento do
-# shortlist, ja validado com 40 amostras, NAO mexido aqui pra nao
-# arriscar regressao no que ja funciona). Pedido explicito do usuario
-# 13/08 (bloco 514): "milhares de vezes", nao 40 -- cada amostra e
-# barata (so flags pre-parseadas + aritmetica, sem simular jogo de
-# verdade), custo medido antes de subir pra confirmar que continua
-# desprezivel mesmo em escala de milhares (ver HANDOFF bloco 514).
-DYNAMIC_WEIGHT_ADJUSTMENT_SAMPLES = 3000
-# Knob global, OFF por padrao ate medir isolado (mesmo protocolo da fase
-# 1: bloco 509 implementou OFF, bloco 510 mediu e ligou) -- NAO ligar
-# sem repetir a comparacao OFF-vs-ON self-play antes.
-USE_DYNAMIC_WEIGHT_ADJUSTMENT = False
 
 # ── busca prof.2 / resposta do oponente (item 3 do PLANO_AVALIACAO_E_BUSCA.md) ─
 # Depois de simular MINHA linha ate o fim do turno, simula o TURNO INTEIRO de
@@ -14624,11 +14608,10 @@ class OPTCGMatch:
         """
         Uma amostra da camada barata: (d_board_mine, d_opp_removed,
         d_hand, d_don, d_pressure) SEM peso nenhum aplicado ainda.
-        Extraido de `_cheap_rollout_value` (13/08, bloco 513) pra ser
-        compartilhado com `_cheap_rollout_components` (fase 2 da
-        "calibragem dinamica") sem duplicar a logica de amostragem --
-        REGRA_SEM_DUPLICACAO: a decisao "o que essa acao provavelmente
-        muda no estado" mora aqui uma unica vez.
+        Extraido de `_cheap_rollout_value` (13/08, bloco 513) -- passo
+        de amostragem isolado numa funcao propria pra ficar claro qual
+        parte tem aleatoriedade (alvo de KO/bounce ambiguo, chance de
+        ataque conectar), separado da agregacao por peso.
         """
         score, kind, obj, target_type, target = action
         d_board_mine = 0.0    # + = ganho de board_value pro meu lado
@@ -14724,100 +14707,6 @@ class OPTCGMatch:
                       + d_pressure * W['dmg'] * 0.1)
 
         return total / max(1, n_samples)
-
-    def _cheap_rollout_components(self, p, opp, action, n_samples=CHEAP_LAYER_SAMPLES,
-                                   rng=None):
-        """
-        Fase 2 da "calibragem dinamica" (bloco 508 especifica, bloco 513
-        implementa): mesma amostragem barata de `_cheap_rollout_value`
-        (reusa `_cheap_rollout_sample_deltas`, mesma fonte), mas devolve
-        a soma PONDERADA por termo de EVAL_WEIGHTS (`board_mine`,
-        `board_opp`, `hand_first`, `don_field`, `dmg`) em vez de um
-        unico total agregado -- a soma dos 5 valores devolvidos aqui
-        bate exatamente com o que `_cheap_rollout_value` retornaria pra
-        mesma acao/amostras. Usado por `_compute_dynamic_weight_
-        adjustment` pra achar qual termo mais explica a vantagem de uma
-        candidata sobre outra numa decisao especifica.
-        """
-        rng = rng or random
-        W = getattr(p, 'eval_weights', None) or EVAL_WEIGHTS
-        somas = {'board_mine': 0.0, 'board_opp': 0.0, 'hand_first': 0.0,
-                 'don_field': 0.0, 'dmg': 0.0}
-        n = max(1, n_samples)
-        for _ in range(n):
-            d_board_mine, d_opp_removed, d_hand, d_don, d_pressure = (
-                self._cheap_rollout_sample_deltas(p, opp, action, rng))
-            somas['board_mine'] += d_board_mine * W['board_mine']
-            somas['board_opp'] += d_opp_removed * W['board_opp']
-            somas['hand_first'] += d_hand * W['hand_first']
-            somas['don_field'] += d_don * W['don_field']
-            somas['dmg'] += d_pressure * W['dmg'] * 0.1
-        return {k: v / n for k, v in somas.items()}
-
-    def _compute_dynamic_weight_adjustment(self, p, opp, candidatas, cheap_values,
-                                            n_samples=DYNAMIC_WEIGHT_ADJUSTMENT_SAMPLES,
-                                            rng=None, cap=DYNAMIC_WEIGHT_ADJUSTMENT_CAP):
-        """
-        Fase 2 da "calibragem dinamica" (bloco 508 especifica, bloco 513
-        implementa, mecanismo confirmado com o usuario): pra CADA
-        decisao (nunca um perfil salvo -- deck-agnostico por construcao,
-        o ajuste desaparece no fim da decisao), acha qual termo de
-        EVAL_WEIGHTS mais explica a vantagem da candidata LIDER (maior
-        cheap_value) sobre a VICE (segunda maior) dentre as `candidatas`
-        que vao pra busca cara, e devolve um ajuste percentual
-        (`peso_final = peso_estatico * (1+ajuste)`, aplicado por
-        `_set_dynamic_weights`) proporcional a fatia de cada termo no
-        gap positivo, respeitando o teto `cap` (default ±20%, aprovado
-        pelo usuario 13/08). So termos que FAVORECEM a lider (gap > 0)
-        recebem ajuste -- termos que jogam contra ela (a lider vence
-        apesar deles) nao sao reforcados, porque reforca-los so pioraria
-        a avaliacao na direcao errada.
-
-        Retorna {} (nenhum ajuste, comportamento de hoje preservado)
-        quando: menos de 2 candidatas tem cheap_value valido, ou nenhum
-        termo tem gap positivo (a vantagem da lider nao e explicada
-        pelos termos que a camada barata rastreia -- ex: decisao
-        dominada por combate/ataque, fora do escopo de
-        `_cheap_rollout_sample_deltas`).
-        """
-        rng = rng or random
-        com_cheap = [c for c in candidatas if id(c) in (cheap_values or {})]
-        if len(com_cheap) < 2:
-            return {}
-        ordenadas = sorted(com_cheap, key=lambda c: cheap_values[id(c)], reverse=True)
-        lider, vice = ordenadas[0], ordenadas[1]
-        comp_lider = self._cheap_rollout_components(p, opp, lider, n_samples, rng)
-        comp_vice = self._cheap_rollout_components(p, opp, vice, n_samples, rng)
-        gaps_positivos = {termo: comp_lider[termo] - comp_vice[termo]
-                          for termo in comp_lider
-                          if comp_lider[termo] - comp_vice[termo] > 0}
-        total_gap = sum(gaps_positivos.values())
-        if total_gap <= 0:
-            return {}
-        return {termo: cap * (gap / total_gap) for termo, gap in gaps_positivos.items()}
-
-    def _set_dynamic_weights(self, p, ajuste):
-        """
-        Aplica `ajuste` (dict termo->fracao, ver `_compute_dynamic_
-        weight_adjustment`) em cima do `eval_weights` ATUAL de `p`
-        (respeita override existente se houver, senao usa o global
-        EVAL_WEIGHTS). Devolve o valor ORIGINAL de `p.eval_weights`
-        (None se o atributo nao existia) -- o chamador PRECISA passar
-        isso pra `_restore_weights` depois (try/finally), senao o ajuste
-        vaza pra decisoes seguintes e deixa de ser deck-agnostico. Sem
-        `ajuste` (dict vazio), e um no-op que ainda devolve o original
-        certo, pra manter o mesmo protocolo try/finally nos dois casos.
-        """
-        original = getattr(p, 'eval_weights', None)
-        if ajuste:
-            base = original or EVAL_WEIGHTS
-            p.eval_weights = {k: (v * (1 + ajuste[k]) if k in ajuste else v)
-                              for k, v in base.items()}
-        return original
-
-    def _restore_weights(self, p, original):
-        """Desfaz `_set_dynamic_weights` -- SEMPRE chamar em `finally`."""
-        p.eval_weights = original
 
     def _compute_cheap_values(self, p, opp, actions, n_samples=CHEAP_LAYER_SAMPLES,
                                rng=None):
@@ -16211,27 +16100,12 @@ class OPTCGMatch:
             # random.Random() semeia do SO/relogio, ignora random.seed() e
             # tornava main_phase() nao-reprodutivel mesmo com seed fixo
             # (ver opponent_model.py.sample() docstring).
-            #
-            # Fase 2 da "calibragem dinamica" (bloco 508/513): opt-in via
-            # USE_DYNAMIC_WEIGHT_ADJUSTMENT (desligado por padrao ate medir
-            # isolado, mesmo protocolo da fase 1) -- reusa os cheap_values
-            # ja calculados acima pra achar qual termo mais explica a
-            # vantagem da lider sobre a vice, reforca ele TRANSITORIAMENTE
-            # so pra esta busca (try/finally garante que nunca vaza pra
-            # decisoes seguintes, mesmo se _select_action_via_search
-            # levantar excecao).
-            ajuste = (self._compute_dynamic_weight_adjustment(p, opp, candidatas, cheap_values)
-                      if USE_DYNAMIC_WEIGHT_ADJUSTMENT and cheap_values else {})
-            original_weights = self._set_dynamic_weights(p, ajuste)
-            try:
-                melhor_acao, melhor_valor, _records, _n_amostras, sim_values = (
-                    self._select_action_via_search(
-                        p, opp, engine, candidatas, model,
-                        max_steps=8, extra_own_turn_search=False,
-                        samples_min=samples_min, samples_max=samples_max,
-                        batch_size=batch_size, rng=random))
-            finally:
-                self._restore_weights(p, original_weights)
+            melhor_acao, melhor_valor, _records, _n_amostras, sim_values = (
+                self._select_action_via_search(
+                    p, opp, engine, candidatas, model,
+                    max_steps=8, extra_own_turn_search=False,
+                    samples_min=samples_min, samples_max=samples_max,
+                    batch_size=batch_size, rng=random))
 
             if melhor_acao is None:
                 break
@@ -16240,7 +16114,7 @@ class OPTCGMatch:
             self._log_turn_planner_decision(
                 p, opp, engine, priority, actions, candidatas,
                 melhor_acao, sim_values.get(id(melhor_acao), melhor_valor), sim_values,
-                cheap_values=cheap_values, dynamic_weight_adjustment=ajuste
+                cheap_values=cheap_values
             )
             if self._apply_action(melhor_acao, p, opp, ee, engine, verbose=verbose):
                 return True
@@ -16969,8 +16843,7 @@ class OPTCGMatch:
     def _log_turn_planner_decision(self, p: GameState, opp: GameState, engine,
                                    priority: str, actions: list, candidates: list,
                                    chosen, chosen_value, sim_values: dict,
-                                   cheap_values: dict | None = None,
-                                   dynamic_weight_adjustment: dict | None = None):
+                                   cheap_values: dict | None = None):
         """Registra o ranking que levou o Turn Planner a escolher uma acao."""
         if self.decision_log is None or self._suppress_replay_log:
             return
@@ -17010,12 +16883,6 @@ class OPTCGMatch:
                 # partidas.
                 'cheap_layer_active': cheap_values is not None,
                 'n_candidates': len(candidates),
-                # Fase 2 da "calibragem dinamica" (bloco 508/513): {} quando
-                # desligada (USE_DYNAMIC_WEIGHT_ADJUSTMENT=False, o padrao)
-                # ou quando nenhum termo teve gap positivo pra explicar a
-                # vantagem da lider -- so preenche quando o ajuste realmente
-                # foi aplicado nesta decisao.
-                'dynamic_weight_adjustment': dynamic_weight_adjustment or {},
             },
             'chosen': (self._audit_action_brief(chosen, chosen_value, cv.get(id(chosen)),
                                                 id(chosen) in added_ids)
