@@ -1,5 +1,94 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (511) - Claude (sessao remota web) - Camada barata ESTENDIDA pro caminho AO VIVO (`sim_bridge.choose_action`) + timeout interno 3.0s -> 5.0s
+
+Pedido explicito do usuario apos o bloco 510: "vamos estender para o
+aovivo". Continuacao direta da fase 1 (`USE_CHEAP_LAYER_SHORTLIST`,
+blocos 508-510), agora tambem no caminho `sim_bridge.py`/`server.py`
+(bot jogando contra humano de verdade), nao so no Turn Planner offline.
+
+**Antes de mexer em codigo, medi custo REAL no orcamento AO VIVO**
+(muito mais apertado que o offline: `TOP_K=2`, piso/teto de amostras
+12/24, `max_steps=4`, `extra_own_turn_search=True` vs os valores bem
+maiores do offline) -- o benchmark anterior (fim do bloco 510, feito
+inline, nao registrado em HANDOFF ainda) tinha achado so 2 pontos de
+decisao qualificantes em 5 partidas, amostra pequena demais. Script
+descartavel novo capturou ~130 mil pontos de decisao reais ao longo de
+~24 partidas self-play (3 matchups: Imu_v_{Mihawk,Ace,Lucy} -- Luffy-Y
+pulado, deck nao encontrado pelo substring usado), amostrou ~460 desses
+com `deepcopy` no MOMENTO da captura (achado real: capturar so a
+REFERENCIA do `GameState` e usa-la DEPOIS que o self-play inteiro
+termina reflete o estado FINAL do jogo, nao o estado no momento da
+captura -- `AttributeError: 'NoneType' object has no attribute
+'don_attached'` foi o sintoma, cartas que ja nao existiam mais naquela
+posicao), e rodou `_select_action_via_search` com os parametros AO VIVO
+reais nos ~400 pontos que de fato tinham >=2 candidatas elegiveis com
+`TOP_K=2`:
+```
+N=403 pontos de decisao (self-play real, orcamento AO VIVO)
+SEM camada barata: media=734,5ms  max=4666,2ms  n_candidatas_media=2,34
+COM camada barata: media=1000,8ms max=4245,3ms  n_candidatas_media=3,71
+overhead medio: +266,3ms (+36,3%)
+```
+**Achado que mudou a decisao de timeout**: mesmo SEM a camada barata,
+o pior caso observado (4,7s) ja passava do `timeout=3.0` autoimposto em
+`server.py:1264` -- isso e um comportamento PRE-EXISTENTE (nao criado
+por esta mudanca), mas reforça que 3.0s ja era apertado antes mesmo de
+qualquer extensao. Motivo tecnico (nao suposto, lido no codigo): esse
+timeout e um `thread.join(timeout=...)` -- estourar NAO mata a busca
+nem quebra nada, so faz o caller usar o fallback de score imediato ja
+calculado (perde o refinamento Monte Carlo daquela decisao, mas nunca
+cai pro "encerra turno").
+
+**Mudancas de codigo**:
+1. `optcg_engine/sim_bridge.py`, `choose_action`/`_run` (~L654): antes
+   de `match._select_search_candidates(candidatos_elegiveis,
+   SEARCH_TOP_K, priority)`, agora calcula `cheap_values =
+   match._compute_cheap_values(gs, opp_gs, actions) if
+   _de.USE_CHEAP_LAYER_SHORTLIST else None` e passa
+   `cheap_values=cheap_values` pra `_select_search_candidates` --
+   **reusa a MESMA flag** do decision_engine.py (nao criou uma segunda
+   flag `..._LIVE`: alargar o shortlist e uma unica decisao "ligado ou
+   nao" compartilhada pelos dois chamadores da FONTE UNICA, nao duas
+   independentes -- contra REGRA_SEM_DUPLICACAO.md). Como o bloco 510
+   ja deixou a flag `True` por padrao, o caminho ao vivo passa a usar a
+   camada barata automaticamente, sem flag nova pra configurar.
+2. Mesmo arquivo, bloco `trace_out["line_search"]` (~L770): 2 campos
+   novos, `cheap_layer_active` (bool) e `cheap_layer_additions`
+   (`len(match._last_cheap_layer_additions)`) -- pra auditar em
+   telemetria de partida real com que frequencia o alargamento
+   acontece e quantas candidatas extras entraram, mesmo padrao dos
+   outros campos de auditoria ja existentes ali (`opponent_model_source`,
+   `adaptive_samples_used`, etc).
+3. `BOT/engine_server/server.py:1264`: `timeout=3.0` -> `timeout=5.0`
+   na chamada real de `/decide` (nao mexi no `PONDER_TIMEOUT_SECONDS=9.0`
+   do pondering em background, que e outro orcamento, ocioso, ja mais
+   largo). 5.0s mantem ~5s de folga sob o limite real de 10s
+   (`HttpClient` do plugin C#, confirmado no bloco 510 lendo o codigo,
+   nao suposto) e cobre tanto o overhead novo da camada barata (+36%)
+   quanto a cauda pre-existente que ja passava de 3s antes desta
+   mudanca.
+
+**Validacao**: `smoke_fast.py` 100% (inclui os 3 testes novos do bloco
+509 sobre `_cheap_rollout_value`/`_select_search_candidates`/log de
+auditoria, mais os testes de pondering que exercitam
+`sim_bridge.choose_action` de ponta a ponta sem quebrar). `smoke_test.py`
+100% (regressao ampla, arquivo toca area compartilhada de busca).
+Sanity check manual adicional (script descartavel, fora do smoke):
+chamei `sim_bridge.choose_action` com um `OPTCGMatch` real e
+`GameState`s de partidas self-play avancadas (Imu x Mihawk, varias
+seeds) ate achar pontos com `candidate_count>1` -- confirmado
+`selection: counterfactual_search`, `cheap_layer_active: True`,
+`cheap_layer_additions` de 0 a 3 dependendo do estado, decisao final
+plausivel (`attack`/`activate` com score/valor simulado coerentes),
+sem excecao.
+
+**Ressalva honesta**: mesma limitacao do bloco 510 -- so 1 lider-ancora
+(Imu) testado no benchmark de custo, e o benchmark mede CUSTO (tempo),
+nao qualidade de decisao ao vivo (isso exigiria partida real contra
+humano com telemetria, fora do alcance de uma sessao remota). Fase 2
+(calibragem dinamica, bloco 508) continua NAO iniciada.
+
 ## 2026-08-11 (510) - Claude (sessao remota web) - VEREDITO da fase 1: `USE_CHEAP_LAYER_SHORTLIST` LIGADO por padrao no offline -- winrate melhora nos 4 matchups (maximin=+0,033), custo +60,6% aceitavel fora do orcamento ao vivo
 
 Comparacao controlada pedida pelo usuario apos a implementacao do bloco

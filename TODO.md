@@ -1,6 +1,38 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 11 de agosto de 2026
+**Última atualização:** 13 de agosto de 2026
+
+> 13/08/2026 (bloco 511): **Camada barata ESTENDIDA pro caminho AO VIVO**
+> (`sim_bridge.choose_action`/`server.py`, pedido explícito do usuário
+> "vamos estender para o aovivo" após o veredito do bloco 510).
+>
+> Antes de mexer em código, medi custo REAL no orçamento ao vivo
+> (TOP_K=2, piso/teto 12/24, muito mais apertado que o offline) com um
+> benchmark de N=403 pontos de decisão de self-play real (3 matchups):
+> **overhead médio +266ms (+36,3%)** — média SEM=734ms/COM=1001ms.
+> Achado que mudou a decisão de timeout: mesmo SEM a camada barata, o
+> pior caso já passava de 3s (4,7s) — comportamento pré-existente, não
+> criado por esta mudança, mas reforça que a margem já era apertada.
+>
+> **Mudanças**: `sim_bridge.py` agora calcula `cheap_values` e passa
+> pra `_select_search_candidates` (reusa a MESMA flag
+> `USE_CHEAP_LAYER_SHORTLIST`, já `True` por padrão desde o bloco 510 —
+> nenhuma flag nova, contra REGRA_SEM_DUPLICACAO.md); 2 campos novos de
+> auditoria em `trace_out["line_search"]` (`cheap_layer_active`,
+> `cheap_layer_additions`); `server.py:1264` `timeout=3.0` → `5.0`
+> (mantém ~5s de folga sob o limite real de 10s do `HttpClient` do
+> plugin C#, confirmado no bloco 510).
+>
+> `smoke_fast`/`smoke_test` 100%. Sanity check manual adicional
+> (`OPTCGMatch` real + `GameState`s de self-play avançado) confirmou
+> `selection: counterfactual_search`, `cheap_layer_active: True`,
+> alargamento de até 3 candidatas, sem exceção. Ver bloco 511 do
+> HANDOFF.
+>
+> **Ressalva**: mesma limitação de 1 líder-âncora (Imu); benchmark mede
+> CUSTO, não qualidade de decisão ao vivo real (exigiria partida contra
+> humano, fora do alcance remoto). Fase 2 (calibragem dinâmica, bloco
+> 508) continua NÃO iniciada.
 
 > 11/08/2026 (bloco 510): **VEREDITO da fase 1 — `USE_CHEAP_LAYER_
 > SHORTLIST` LIGADO por padrão** (offline). Comparação controlada

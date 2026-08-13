@@ -651,8 +651,26 @@ def choose_action(gs: GameState, opp_gs: GameState,
                       f"jogou {c.code} custo={c.cost} counter={c.counter} "
                       f"score={a[0]:.1f}", flush=True)
 
+            # Extensao AO VIVO da camada barata (bloco 508-510: validada
+            # offline com maximin +0.033/soma +0.433 winrate, zero
+            # regressao em 4 matchups, N=30 cada) -- reusa a MESMA flag
+            # `USE_CHEAP_LAYER_SHORTLIST` do decision_engine.py (nao cria
+            # uma segunda flag: o alargamento do shortlist e uma unica
+            # decisao "ligado ou nao", nao duas independentes por
+            # chamador -- REGRA_SEM_DUPLICACAO). Custo medido em
+            # orcamento AO VIVO real (TOP_K=2/piso=12/teto=24/passos=4,
+            # N=403 pontos de decisao de self-play, 3 matchups): media
+            # SEM=734ms/COM=1001ms (+36%, +266ms), pior caso observado
+            # ~4.2-4.7s -- decisao de estender timeout=3.0->5.0 em
+            # server.py (achado: MESMO SEM a camada barata o pior caso ja
+            # passava de 3s antes desta mudanca) tomada junto, mesmo
+            # commit.
+            cheap_values = (
+                match._compute_cheap_values(gs, opp_gs, actions)
+                if _de.USE_CHEAP_LAYER_SHORTLIST else None)
             candidatos = match._select_search_candidates(
-                candidatos_elegiveis, SEARCH_TOP_K, priority)
+                candidatos_elegiveis, SEARCH_TOP_K, priority,
+                cheap_values=cheap_values)
 
             # ITEM 3 do plano: com >1 candidato de score proximo, refina a
             # escolha simulando a linha ate o fim do MEU turno + o turno de
@@ -774,6 +792,15 @@ def choose_action(gs: GameState, opp_gs: GameState,
                                 "selected": action_to_trace(melhor),
                                 "public_state_only": bool(hidden),
                                 "two_turn_lookahead_wins_found": two_turn_wins,
+                                # Camada barata (bloco 508-510): quantas das
+                                # candidatas vieram do alargamento (nao do
+                                # corte por TOP_K puro) -- audita em partida
+                                # real com que frequencia o alargamento
+                                # acontece e (junto com "chosen" acima) se a
+                                # candidata escolhida foi uma delas.
+                                "cheap_layer_active": cheap_values is not None,
+                                "cheap_layer_additions": len(
+                                    getattr(match, '_last_cheap_layer_additions', None) or ()),
                             }
                         verbo = "refinou" if model is not None else "auditou"
                         print(f"[ENG] busca {verbo}: {melhor[1]} (score imediato {melhor[0]:.1f}, "

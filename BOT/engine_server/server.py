@@ -1261,7 +1261,19 @@ def decide(state: GameStateDto):
         # _failed_actions_this_turn acima) -- mesmo raciocinio do excluir
         # de cima, agora pra acoes que FORAM tentadas e nao mudaram o jogo.
         excluir_falhas = {key for (key, t) in _failed_actions_this_turn if t == state.turnNumber}
-        action = bridge.choose_action(gs, opp_gs, match, timeout=3.0,
+        # timeout 3.0 -> 5.0 (bloco 511, extensao AO VIVO da camada barata):
+        # o limite REAL e o HttpClient do plugin C#, que desiste de QUALQUER
+        # endpoint (/decide incluso) so depois de 10s -- confirmado lendo o
+        # codigo do plugin, nao suposto. 3.0s era so a margem de seguranca
+        # AUTOIMPOSTA aqui (thread.join, nao mata a busca -- so para de
+        # ESPERAR e usa o fallback de score imediato ja calculado). Medido
+        # em orcamento ao vivo real (N=403 pontos, 3 matchups): pior caso ja
+        # passava de 3s MESMO SEM a camada barata (4.6s), e a camada barata
+        # soma +36%/+266ms de media -- 5.0s mantem ~5s de folga sob o limite
+        # real de 10s e reduz quanto a busca (Monte Carlo) cai pro fallback
+        # de score imediato por estouro de tempo, sem chegar perto do teto
+        # real. `trace_out["timed_out"]` ja audita isso em partida real.
+        action = bridge.choose_action(gs, opp_gs, match, timeout=5.0,
                                       allowed_types={"play", "attack",
                                                      "attach_don", "activate"},
                                       exclude_activate_codes=excluir,
