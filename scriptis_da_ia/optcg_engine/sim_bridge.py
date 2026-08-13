@@ -8,6 +8,8 @@ Responsabilidades:
   4. Expor choose_action(game_state, opp_state) → ação para executar
 """
 from __future__ import annotations
+import hashlib
+import json
 import os, sys
 from copy import copy, deepcopy
 from pathlib import Path
@@ -76,6 +78,40 @@ SEARCH_SAMPLES_MIN_DEFAULT = 12
 SEARCH_SAMPLES_BATCH_DEFAULT = 12
 SEARCH_SAMPLES_MAX_DEFAULT = 24
 SEARCH_SAMPLES_Z_DEFAULT = 2.0
+
+# ── Fingerprint pro pondering (pensar no turno do oponente, bloco 478) ───────
+
+
+def ponder_fingerprint(bot_dto_dict: dict, opp_dto_dict: dict,
+                        match_memory_snapshot: dict) -> str:
+    """
+    Fingerprint do estado observável usado pelo pondering pra decidir se um
+    resultado ADIANTADO (computado durante o turno do OPONENTE, antes do
+    /decide real) ainda vale pra decisão real. Cobre deliberadamente só o
+    estado público/observável -- as mesmas DTOs que /decide recebe (mão/
+    board/vida/trash/DON dos dois lados) mais o snapshot de reveals
+    (`MatchMemory.snapshot()`).
+
+    NÃO inclui `turnNumber` nem os exclude-sets (`_declined_optional`/
+    `_failed_actions_this_turn`) -- esses são checados À PARTE em
+    server.py, de propósito, pra manter o motivo de um "miss" diagnosticável
+    na telemetria (mudança de estado vs turno errado vs exclusão pendente)
+    em vez de virar tudo um único hash opaco sem explicação.
+
+    Falha SEMPRE fechada: qualquer diferença no board/mão/vida/trash/DON de
+    qualquer um dos dois lados, ou qualquer coisa nova revelada entre o
+    pondering e a decisão real, muda o hash -- o resultado adiantado só é
+    reusado quando o estado bate EXATAMENTE. Sem fallback de serialização
+    (sem `default=`): se o payload não for puramente JSON-serializável de
+    forma determinística, é melhor estourar exceção (o chamador cai no
+    caminho normal, sem pondering) do que arriscar um hash que pareça
+    estável mas não seja de verdade.
+    """
+    payload = {"bot": bot_dto_dict, "opp": opp_dto_dict,
+               "match_memory": match_memory_snapshot}
+    canon = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canon.encode("utf-8")).hexdigest()
+
 
 # ── Carrega banco de cartas uma vez ───────────────────────────────────────────
 # _load_effects_db/_load_analysis_db populam globals do decision_engine e

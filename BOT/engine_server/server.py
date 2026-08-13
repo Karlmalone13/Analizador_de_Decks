@@ -150,6 +150,22 @@ _match_has_decisions = False
 _match_has_outcome = False
 _decision_context: dict[str, dict] = {}
 
+# ── Pondering (pensar no turno do oponente, bloco 478) ───────────────────────
+# Precompute especulativo do PROXIMO turno do bot, disparado durante o turno
+# do OPONENTE (sinal confiavel: /defense com phase blocker/counter/trigger,
+# "nunca meu turno" -- ver comentario em /defense). Padrao "so ajuda, nunca
+# atrapalha": /decide so reusa um resultado adiantado se TODAS as checagens
+# em _try_consume_ponder baterem; qualquer duvida cai no caminho sincrono de
+# sempre, sem NENHUMA mudanca de comportamento. Default OFF (mesmo padrao
+# operacional ja usado por BOT_AUTO_COLLECT) ate validar em sessao ao vivo
+# monitorada.
+PONDER_ENABLED = os.environ.get("OPTCG_PONDER_ENABLED", "0") == "1"
+_PONDER_TIMEOUT = 8.0   # generoso -- nada sincrono espera o job de pondering
+_ponder_lock = threading.Lock()
+_ponder_generation = 0
+_ponder_result: dict | None = None   # {generation, fingerprint, trigger_turn, payload, reason, trace, ready}
+_ponder_match = None   # OPTCGMatch DEDICADA -- nunca a de _get_match() (ver _get_ponder_match)
+
 
 def _resource_snapshot(state: dict | None) -> dict | None:
     """Ledger observavel de uma ponta da transicao; nao decide nada."""
@@ -225,6 +241,32 @@ def _get_match():
         _match = OPTCGMatch(deck_tuple, deck_tuple)
         _match.setup()
     return _match
+
+
+def _get_ponder_match():
+    """
+    Instancia SEPARADA de OPTCGMatch, usada SÓ pelo job de pondering --
+    nunca compartilha instância com `_get_match()` (usada pela decisão real
+    em /decide). Motivo: `OPTCGMatch._simulate_sequence_values`
+    (decision_engine.py) usa `self._suppress_replay_log` como flag mutável
+    de INSTÂNCIA durante a busca -- duas threads chamando métodos de busca
+    na MESMA instância ao mesmo tempo (a thread da requisição /decide real
+    + a thread de pondering) seria uma corrida de verdade, confirmada por
+    leitura direta do código antes de implementar (não só suposta). Custo
+    de construir é o mesmo de `_get_match()` (já pago 1x hoje) -- paga 1x
+    a mais no processo inteiro, não por partida/decisão.
+    """
+    global _ponder_match
+    if _ponder_match is None:
+        from optcg_engine.decision_engine import OPTCGMatch
+        bridge = _get_bridge()
+        decks = bridge.list_decks()
+        if not decks:
+            raise RuntimeError("Nenhum .deck encontrado para inicializar o match de pondering")
+        deck_tuple = bridge.load_sim_deck(decks[0])
+        _ponder_match = OPTCGMatch(deck_tuple, deck_tuple)
+        _ponder_match.setup()
+    return _ponder_match
 
 
 def _make(dto: CardDto):
@@ -642,6 +684,7 @@ def mulligan(req: MulliganRequest):
     Resposta: {"mulligan": bool, "reason": str}
     """
     global _live_match_id, _match_has_decisions, _match_has_outcome
+    global _ponder_result, _ponder_generation
     started = time.perf_counter()
     try:
         # Fecha explicitamente uma tentativa anterior que recebeu decisoes
@@ -662,6 +705,13 @@ def mulligan(req: MulliganRequest):
         _declined_optional.clear()
         _failed_actions_this_turn.clear()
         _match_memory.reset()  # reveals sao por partida
+        # Pondering (bloco 478): resultado adiantado da partida anterior
+        # nunca pode vazar pra uma partida nova -- zera e invalida qualquer
+        # thread de pondering ainda rodando da partida anterior (o job so
+        # grava se `generation` ainda bater, ver _run_ponder_job).
+        with _ponder_lock:
+            _ponder_result = None
+            _ponder_generation += 1
         match = _get_match()
         hand_cards = [c for c in (_make(d) for d in req.hand) if c]
         if not hand_cards:
@@ -702,6 +752,11 @@ def defense(req: DefenseRequest):
         if req.phase in ("blocker", "counter", "trigger"):
             gs.is_active_turn = False
             opp_gs.is_active_turn = True
+            # Pondering (bloco 478): mesmo sinal confiavel comentado acima
+            # ("nunca meu turno") -- aproveita pra disparar (ou reaproveitar)
+            # o precompute adiantado do proximo turno do bot em background.
+            # Nunca bloqueia esta resposta (so agenda a thread e volta).
+            _maybe_start_ponder(req.state)
         elif req.phase == "optional":
             gs.is_active_turn = True
             opp_gs.is_active_turn = False
@@ -861,6 +916,272 @@ def choose_target(req: ChooseTargetRequest):
         return {"orderedIds": [c.id for c in req.candidates]}
 
 
+def _maybe_start_ponder(state: GameStateDto) -> None:
+    """
+    Dispara (ou reaproveita) um job de pondering em background, chamado
+    dentro de /defense sempre que `phase in ("blocker","counter","trigger")`
+    -- sinal já confiável e documentado no próprio código de que é o turno
+    do OPONENTE agora (nunca o do bot). Nunca bloqueia o chamador: só
+    calcula o fingerprint (barato) e agenda a thread.
+
+    `state.bot`/`state.opp` (as DTOs) são convertidas em GameState AQUI,
+    na thread da requisição -- `_dto_to_gs` sempre constrói objetos NOVOS
+    a cada chamada (nunca reaproveita/compartilha com o `gs`/`opp_gs` que
+    o handler de /defense usa pra própria resposta), então os objetos
+    entregues à thread de pondering já nascem sem nenhuma referência
+    compartilhada -- não precisa de deepcopy extra.
+    """
+    global _ponder_generation
+    if not PONDER_ENABLED:
+        return
+    try:
+        from optcg_engine import sim_bridge
+        fingerprint = sim_bridge.ponder_fingerprint(
+            _model_dict(state.bot), _model_dict(state.opp), _match_memory.snapshot())
+    except Exception as e:
+        print(f"[PONDER] falha ao calcular fingerprint, pulando: {e}", flush=True)
+        return
+
+    with _ponder_lock:
+        atual = _ponder_result
+        if atual is not None and atual.get("fingerprint") == fingerprint:
+            # Gatilho redundante -- /defense dispara varias vezes por turno
+            # do oponente (1 por blocker/counter/trigger); ja temos (ou já
+            # calculamos) exatamente esse estado, não reinicia a busca.
+            return
+        _ponder_generation += 1
+        generation = _ponder_generation
+
+    try:
+        gs_p = _dto_to_gs(state.bot, state.turnNumber)
+        opp_gs_p = _dto_to_gs(state.opp, state.turnNumber, hide_hidden=True)
+    except Exception as e:
+        print(f"[PONDER] falha ao montar estado, pulando: {e}", flush=True)
+        return
+    gs_p.is_active_turn = False
+    opp_gs_p.is_active_turn = True
+
+    t = threading.Thread(
+        target=_run_ponder_job,
+        args=(gs_p, opp_gs_p, state.turnNumber, fingerprint, generation),
+        daemon=True)
+    t.start()
+
+
+def _run_ponder_job(gs_p, opp_gs_p, trigger_turn: int, fingerprint: str,
+                    generation: int) -> None:
+    """
+    Roda em thread daemon separada. Usa a MESMA `bridge.choose_action`
+    (nunca duplica lógica de busca) com uma OPTCGMatch dedicada
+    (`_get_ponder_match`). Try/except no nível mais alto -- nunca deixa
+    exceção vazar pra thread daemon nem derrubar o processo.
+    """
+    try:
+        bridge = _get_bridge()
+        match = _get_ponder_match()
+        trace: dict = {}
+        action = bridge.choose_action(
+            gs_p, opp_gs_p, match, timeout=_PONDER_TIMEOUT,
+            allowed_types={"play", "attack", "attach_don", "activate"},
+            exclude_activate_codes=set(),
+            exclude_failed_actions=set(),
+            trace_out=trace)
+        payload, reason = _package_action(action, gs_p, opp_gs_p, bridge, match, trace)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        write_event("ponder_error", new_decision_id(), match_id=_live_match_id,
+                    trigger_turn=trigger_turn, fingerprint=fingerprint, error=str(e))
+        return
+
+    global _ponder_result
+    with _ponder_lock:
+        if generation != _ponder_generation:
+            # Um gatilho mais novo já substituiu este -- descarta em silêncio.
+            superseded = True
+        else:
+            _ponder_result = {
+                "generation": generation,
+                "fingerprint": fingerprint,
+                "trigger_turn": trigger_turn,
+                "payload": payload,
+                "reason": reason,
+                "trace": trace,
+                "ready": True,
+            }
+            superseded = False
+    write_event("ponder_computed", new_decision_id(), match_id=_live_match_id,
+                trigger_turn=trigger_turn, fingerprint=fingerprint,
+                superseded=superseded, had_action=action is not None)
+
+
+def _try_consume_ponder(state: GameStateDto, excluir: set, excluir_falhas: set,
+                        trace: dict):
+    """
+    Verifica (falha SEMPRE fechada) se há um resultado de pondering válido
+    pra reusar nesta decisão real de /decide. QUALQUER divergência devolve
+    None -- o chamador cai no caminho normal, byte a byte idêntico ao de
+    sempre (choose_action de verdade). Retorna (payload, reason) só no
+    caso de reuso bem-sucedido.
+    """
+    global _ponder_result
+    if not PONDER_ENABLED:
+        return None
+
+    with _ponder_lock:
+        resultado = _ponder_result
+
+    if resultado is None or not resultado.get("ready"):
+        return None
+
+    # Resultado de um turno que já passou (ou nunca vai bater) -- descarta
+    # incondicionalmente ao ser observado, nunca fica "pendurado" esperando
+    # bater por coincidência num turno futuro.
+    if resultado["trigger_turn"] + 1 != state.turnNumber:
+        with _ponder_lock:
+            if _ponder_result is resultado:
+                _ponder_result = None
+        write_event("ponder_miss", new_decision_id(), match_id=_live_match_id,
+                    turn=state.turnNumber, reason="turn_mismatch")
+        return None
+
+    # _declined_optional/_failed_actions_this_turn são por-turno e só
+    # populados depois que o turno do bot começa -- por construção, o
+    # pondering sempre roda ANTES disso, então um resultado adiantado só é
+    # confiável se, no momento do consumo, ainda não houve NENHUMA recusa/
+    # falha registrada neste turno (senão o Turn Planner real já teria
+    # visto informação nova que o pondering não tinha).
+    if excluir or excluir_falhas:
+        write_event("ponder_miss", new_decision_id(), match_id=_live_match_id,
+                    turn=state.turnNumber, reason="stale_exclusions")
+        return None
+
+    try:
+        from optcg_engine import sim_bridge
+        fingerprint_agora = sim_bridge.ponder_fingerprint(
+            _model_dict(state.bot), _model_dict(state.opp), _match_memory.snapshot())
+    except Exception as e:
+        print(f"[PONDER] falha ao recalcular fingerprint no consumo: {e}", flush=True)
+        return None
+
+    if fingerprint_agora != resultado["fingerprint"]:
+        write_event("ponder_miss", new_decision_id(), match_id=_live_match_id,
+                    turn=state.turnNumber, reason="state_changed")
+        return None
+
+    with _ponder_lock:
+        if _ponder_result is resultado:
+            _ponder_result = None   # consome uma vez só
+
+    trace.update(resultado.get("trace") or {})
+    trace["selection"] = "ponder_hit"
+    trace["ponder_fingerprint"] = fingerprint_agora
+    write_event("ponder_hit", new_decision_id(), match_id=_live_match_id,
+                turn=state.turnNumber, fingerprint=fingerprint_agora)
+    return resultado["payload"], resultado["reason"]
+
+
+_NULL_PAYLOAD = {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
+
+
+def _package_action(action, gs, opp_gs, bridge, match, trace: dict) -> tuple[dict, str]:
+    """
+    Traduz a tupla `action` (retorno de `bridge.choose_action`, formato
+    `(score, tipo, card, ...)`) pro payload JSON que o plugin executa.
+
+    Extraída de dentro de `/decide` (bloco 478, pondering) pra ser
+    reusada IDENTICAMENTE tanto pela decisão real (`/decide`) quanto pelo
+    job de pondering (decisão adiantada, calculada durante o turno do
+    OPONENTE) -- a regra "um motor só" também vale nesta camada de
+    resposta, não só na busca em si: nunca duplicar a extração de uid/
+    DON/attack_quality em dois lugares.
+
+    Retorna `(payload, reason)` -- `reason` é sempre um motivo
+    diagnóstico ("acao escolhida" no caso de sucesso, senão o motivo
+    específico de por que a ação não é executável).
+    """
+    if action is None:
+        return dict(_NULL_PAYLOAD), "sem acao elegivel"
+
+    # Formato da action: (score, tipo, card, ...)
+    #   play:       (score, 'play',       card, None, None)
+    #   attack:     (score, 'attack',     att, 'leader'|'character', tgt_card|None)
+    #   attach_don: (score, 'attach_don', card, falta, keyword/trigger)
+    action_type = action[1] if len(action) > 1 else "end_turn"
+    card_id    = 0
+    target_id  = 0
+    don_attach = 0
+
+    if action_type == "play" and len(action) > 2:
+        card = action[2]
+        # A carta veio do proprio gs.hand — tem _deck_uid direto
+        card_id = getattr(card, '_deck_uid', 0)
+        if card_id == 0:
+            return dict(_NULL_PAYLOAD), "play sem uid executavel"
+
+    elif action_type == "attack" and len(action) > 2:
+        attacker = action[2]
+        card_id = getattr(attacker, '_deck_uid', 0)
+        if card_id == 0:
+            # Lider do bot nao tem uid do board — usa o uid do proprio leader dto
+            if attacker is gs.leader:
+                card_id = getattr(gs.leader, '_deck_uid', 0)
+            if card_id == 0:
+                return dict(_NULL_PAYLOAD), "atacante sem uid executavel"
+
+        ttype = action[3] if len(action) > 3 else 'leader'
+        if ttype == 'character' and len(action) > 4 and action[4] is not None:
+            target_id = getattr(action[4], '_deck_uid', 0)
+            if target_id == 0:
+                return dict(_NULL_PAYLOAD), "alvo sem uid executavel"
+        # ttype == 'leader' -> targetId = 0 (lider oponente)
+
+        # DON a anexar ANTES de declarar. Deficit base sempre; margem de
+        # counter so com DON ocioso no plano do turno (match da acesso as
+        # jogadas planejadas + reserva de defesa)
+        don_attach = bridge.don_for_attack(gs, opp_gs, action, match=match)
+        target_power = (opp_gs.leader.power if ttype == 'leader'
+                        else getattr(action[4], 'power', 0))
+        from optcg_engine.decision_engine import attack_time_power
+        planned_power = attack_time_power(attacker, opp_gs) + don_attach * 1000
+        trace["attack_quality"] = {
+            "attacker_code": attacker.code,
+            "target_type": ttype,
+            "target_code": getattr(action[4], 'code', None)
+                if ttype == 'character' else getattr(opp_gs.leader, 'code', None),
+            "power_before_attach": attack_time_power(attacker, opp_gs),
+            "don_planned": don_attach,
+            "power_planned": planned_power,
+            "target_power_before": target_power,
+            "planned_gap": planned_power - target_power,
+        }
+
+    elif action_type == "attach_don" and len(action) > 3:
+        card = action[2]
+        card_id    = getattr(card, '_deck_uid', 0)
+        don_attach = int(action[3] or 0)
+        if card_id == 0 or don_attach <= 0:
+            return dict(_NULL_PAYLOAD), "attach_don invalido"
+
+    elif action_type == "activate" and len(action) > 2:
+        # [Activate: Main] de lider/personagem/stage em campo (ex:
+        # Laffitte OP09-095 — search). O jogo valida e paga o custo.
+        card = action[2]
+        card_id = getattr(card, '_deck_uid', 0)
+        if card_id == 0:
+            if card is gs.leader:
+                card_id = getattr(gs.leader, '_deck_uid', 0)
+            if card_id == 0:
+                return dict(_NULL_PAYLOAD), "activate sem uid executavel"
+
+    else:
+        return dict(_NULL_PAYLOAD), "tipo nao executavel"
+
+    return ({"type": action_type, "cardId": card_id,
+             "targetId": target_id, "donToAttach": don_attach},
+            "acao escolhida")
+
+
 @app.post("/decide")
 def decide(state: GameStateDto):
     """
@@ -962,6 +1283,17 @@ def decide(state: GameStateDto):
         # _failed_actions_this_turn acima) -- mesmo raciocinio do excluir
         # de cima, agora pra acoes que FORAM tentadas e nao mudaram o jogo.
         excluir_falhas = {key for (key, t) in _failed_actions_this_turn if t == state.turnNumber}
+
+        # Pondering (bloco 478): reusa um resultado adiantado (computado
+        # durante o turno do OPONENTE) só se TODAS as checagens em
+        # _try_consume_ponder baterem exatamente -- qualquer divergência
+        # devolve None e cai no caminho normal abaixo, sem NENHUMA mudança
+        # de comportamento (mesma busca de sempre).
+        ponderado = _try_consume_ponder(state, excluir, excluir_falhas, trace)
+        if ponderado is not None:
+            payload, reason = ponderado
+            return finish(payload, reason)
+
         action = bridge.choose_action(gs, opp_gs, match, timeout=3.0,
                                       allowed_types={"play", "attack",
                                                      "attach_don", "activate"},
@@ -969,93 +1301,8 @@ def decide(state: GameStateDto):
                                       exclude_failed_actions=excluir_falhas,
                                       trace_out=trace)
 
-        if action is None:
-            return finish({"type": "end_turn", "cardId": 0, "targetId": 0,
-                           "donToAttach": 0}, "sem acao elegivel")
-
-        # Formato da action: (score, tipo, card, ...)
-        #   play:       (score, 'play',       card, None, None)
-        #   attack:     (score, 'attack',     att, 'leader'|'character', tgt_card|None)
-        #   attach_don: (score, 'attach_don', card, falta, keyword/trigger)
-        action_type = action[1] if len(action) > 1 else "end_turn"
-        card_id    = 0
-        target_id  = 0
-        don_attach = 0
-
-        if action_type == "play" and len(action) > 2:
-            card = action[2]
-            # A carta veio do proprio gs.hand — tem _deck_uid direto
-            card_id = getattr(card, '_deck_uid', 0)
-            if card_id == 0:
-                return finish({"type": "end_turn", "cardId": 0, "targetId": 0,
-                               "donToAttach": 0}, "play sem uid executavel")
-
-        elif action_type == "attack" and len(action) > 2:
-            attacker = action[2]
-            card_id = getattr(attacker, '_deck_uid', 0)
-            if card_id == 0:
-                # Lider do bot nao tem uid do board — usa o uid do proprio leader dto
-                if attacker is gs.leader:
-                    card_id = getattr(gs.leader, '_deck_uid', 0)
-                if card_id == 0:
-                    return finish({"type": "end_turn", "cardId": 0, "targetId": 0,
-                                   "donToAttach": 0}, "atacante sem uid executavel")
-
-            ttype = action[3] if len(action) > 3 else 'leader'
-            if ttype == 'character' and len(action) > 4 and action[4] is not None:
-                target_id = getattr(action[4], '_deck_uid', 0)
-                if target_id == 0:
-                    return finish({"type": "end_turn", "cardId": 0, "targetId": 0,
-                                   "donToAttach": 0}, "alvo sem uid executavel")
-            # ttype == 'leader' -> targetId = 0 (lider oponente)
-
-            # DON a anexar ANTES de declarar. Deficit base sempre; margem de
-            # counter so com DON ocioso no plano do turno (match da acesso as
-            # jogadas planejadas + reserva de defesa)
-            don_attach = bridge.don_for_attack(gs, opp_gs, action, match=match)
-            target_power = (opp_gs.leader.power if ttype == 'leader'
-                            else getattr(action[4], 'power', 0))
-            from optcg_engine.decision_engine import attack_time_power
-            planned_power = attack_time_power(attacker, opp_gs) + don_attach * 1000
-            trace["attack_quality"] = {
-                "attacker_code": attacker.code,
-                "target_type": ttype,
-                "target_code": getattr(action[4], 'code', None)
-                    if ttype == 'character' else getattr(opp_gs.leader, 'code', None),
-                "power_before_attach": attack_time_power(attacker, opp_gs),
-                "don_planned": don_attach,
-                "power_planned": planned_power,
-                "target_power_before": target_power,
-                "planned_gap": planned_power - target_power,
-            }
-
-        elif action_type == "attach_don" and len(action) > 3:
-            card = action[2]
-            card_id    = getattr(card, '_deck_uid', 0)
-            don_attach = int(action[3] or 0)
-            if card_id == 0 or don_attach <= 0:
-                return finish({"type": "end_turn", "cardId": 0, "targetId": 0,
-                               "donToAttach": 0}, "attach_don invalido")
-
-        elif action_type == "activate" and len(action) > 2:
-            # [Activate: Main] de lider/personagem/stage em campo (ex:
-            # Laffitte OP09-095 — search). O jogo valida e paga o custo.
-            card = action[2]
-            card_id = getattr(card, '_deck_uid', 0)
-            if card_id == 0:
-                if card is gs.leader:
-                    card_id = getattr(gs.leader, '_deck_uid', 0)
-                if card_id == 0:
-                    return finish({"type": "end_turn", "cardId": 0, "targetId": 0,
-                                   "donToAttach": 0}, "activate sem uid executavel")
-
-        else:
-            return finish({"type": "end_turn", "cardId": 0, "targetId": 0,
-                           "donToAttach": 0}, "tipo nao executavel")
-
-        return finish({"type": action_type, "cardId": card_id,
-                       "targetId": target_id, "donToAttach": don_attach},
-                      "acao escolhida")
+        payload, reason = _package_action(action, gs, opp_gs, bridge, match, trace)
+        return finish(payload, reason)
 
     except Exception as e:
         import traceback

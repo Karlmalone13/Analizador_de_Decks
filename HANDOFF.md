@@ -1,5 +1,71 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-12 (479) - Claude (sessao local) - Pondering IMPLEMENTADO e validado por smoke test. Falta so a validacao AO VIVO (feature flag ainda default OFF)
+
+Implementação do desenho aprovado no bloco 478 (nenhum desvio de
+arquitetura — só o esperado durante a escrita). Arquivos mexidos:
+
+1. **`scriptis_da_ia/optcg_engine/sim_bridge.py`**: nova função
+   `ponder_fingerprint(bot_dto_dict, opp_dto_dict, match_memory_snapshot)`
+   — sha256 de `json.dumps(sort_keys=True)`, sem fallback de serialização
+   (falha explícita em vez de hash não-confiável).
+2. **`BOT/engine_server/server.py`**:
+   - `_package_action(action, gs, opp_gs, bridge, match, trace)` extraída
+     de dentro de `/decide` (era lógica inline de ~80 linhas, agora
+     reusada por `/decide` E pelo job de pondering — "um motor só"
+     também na camada de resposta).
+   - Estado novo: `PONDER_ENABLED` (env var `OPTCG_PONDER_ENABLED`,
+     default `"0"` = OFF), `_ponder_lock`, `_ponder_generation`,
+     `_ponder_result`, `_ponder_match`.
+   - `_get_ponder_match()`: instância SEPARADA de `OPTCGMatch`, nunca a
+     de `_get_match()` (risco de corrida em `_suppress_replay_log`,
+     confirmado no bloco 478).
+   - `_maybe_start_ponder(state)`: chamada dentro de `/defense` quando
+     `phase in ("blocker","counter","trigger")`. Calcula fingerprint,
+     não reinicia busca se já bate com o resultado atual (defense
+     dispara várias vezes por turno do oponente), dispara thread daemon.
+   - `_run_ponder_job(...)`: roda em background, usa
+     `bridge.choose_action` de verdade (não duplica lógica), try/except
+     no topo, só grava resultado se a `generation` ainda for a mais
+     recente.
+   - `_try_consume_ponder(state, excluir, excluir_falhas, trace)`:
+     chamada dentro de `/decide`, ANTES da busca real. 4 checagens em
+     ordem, falha SEMPRE fechada (qualquer uma falha → cai no caminho
+     normal, zero mudança de comportamento): pronto? exclude-sets
+     vazios? `turno_atual == trigger_turn + 1`? fingerprint bate?
+   - Reset em `/mulligan` (zera `_ponder_result`, incrementa
+     `_ponder_generation` — invalida qualquer thread da partida
+     anterior).
+
+**Validação feita** (`scriptis_da_ia/smoke_fast.py`, 3 testes novos, 12
+checks, suíte inteira `SMOKE FAST OK`):
+- Fingerprint determinístico + muda pra 5 mutações isoladas diferentes
+  (rested, DON, deck count, vida do oponente, snapshot de reveal).
+- **Propriedade de correção mais importante**: `_package_action` chamada
+  duas vezes pro MESMO estado sintético (simulando "caminho real" vs
+  "caminho de pondering") produz payload BYTE-IDÊNTICO — confirma que
+  pondering muda QUANDO se calcula, nunca O QUE se decide.
+- Concorrência: 2 instâncias de `OPTCGMatch` rodando `choose_action`
+  simultaneamente em threads separadas, sem exceção, sem vazamento de
+  `_suppress_replay_log` entre elas.
+
+**NÃO feito ainda** (pendência real, não escondida): validação AO VIVO.
+A flag `OPTCG_PONDER_ENABLED` continua default OFF — smoke test prova
+que a lógica está correta em isolamento, mas não prova taxa de acerto
+real (`ponder_hit` vs motivos de miss) nem ausência de regressão de
+latência em `/defense` numa partida de verdade. Próxima sessão (ou
+sessão com acesso ao jogo rodando):
+1. Ligar `OPTCG_PONDER_ENABLED=1` numa sessão local só.
+2. Jogar partidas reais.
+3. Ler telemetria NA ORDEM obrigatória do projeto (`metrics/live_runs/`
+   primeiro, depois `decision_summary.py --latest`) — novos eventos
+   `ponder_computed`/`ponder_hit`/`ponder_miss`/`ponder_error` no
+   `.jsonl` de decisões.
+4. Conferir que `/defense` não ficou mais lento (pondering é
+   fire-and-forget).
+5. Só considerar ligar por padrão depois de uma sessão limpa, com
+   aprovação explícita do usuário.
+
 ## 2026-08-09 (478) - Claude (sessao local) - Design COMPLETO e APROVADO do pondering (pensar no turno do oponente), pronto pra implementacao. NENHUM CODIGO MEXIDO AINDA -- sessao trocou de dispositivo (celular) antes de comecar a escrever.
 
 Continuacao direta do bloco 477 (pondering era o item 2 de prioridade).
