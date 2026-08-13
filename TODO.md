@@ -2,6 +2,22 @@
 
 **Última atualização:** 13 de agosto de 2026
 
+> 13/08/2026 (bloco 521): **EXCEÇÃO EXPLÍCITA a REGRA_SEM_DUPLICACAO,
+> autorizada pelo usuário** ("Pode abrir uma exceção dessa vez dessa
+> regra, se não não vamos avançar"), depois de eu propor uma alternativa
+> mais segura e o usuário preferir a exceção mesmo assim. Motivo: a
+> camada barata só olhava 1 ação isolada — não é uma simulação de
+> verdade (sem sequência de jogadas), por isso mais amostra nunca
+> ajudava. `_cheap_playout_deltas` (novo, `decision_engine.py`) encadeia
+> até 4 jogadas 'play' fictícias gulosas, respeitando DON restante —
+> escopo deliberadamente restrito e documentado (só 'play', não
+> rastreia alvo de remoção repetido). Custo medido: 3000 amostras com
+> sequência = 42,8ms/decisão, ainda muito mais barato que 1 amostra da
+> busca real (~3,7ms). 3 testes novos, `smoke_fast`/`smoke_test` 100%.
+> **Em andamento**: re-rodando a comparação de 3 vias do bloco 520 com
+> essa profundidade nova. Resultado em bloco separado. Ver bloco 521 do
+> HANDOFF.
+
 > 13/08/2026 (bloco 520): **Modo experimental `CHEAP_LAYER_DECIDES_
 > ALONE` implementado** — comparação de 3 vias pedida pelo usuário
 > pra separar "a camada barata capta sinal bom?" de "confiamos demais/

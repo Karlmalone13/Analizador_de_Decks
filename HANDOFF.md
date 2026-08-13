@@ -1,5 +1,64 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (521) - Claude (sessao remota web) - EXCECAO EXPLICITA A REGRA_SEM_DUPLICACAO autorizada pelo usuario: `_cheap_playout_deltas` da profundidade de SEQUENCIA de verdade pra camada barata -- medicao em andamento
+
+**Contexto**: apos o bloco 520 mostrar que "so a camada barata decide"
+(C) perde consistentemente pra heuristica (A) e pra heuristica+barata
+(B), investigando o porque, achei a causa raiz real: `_cheap_rollout_
+sample_deltas` olha SO 1 acao isolada, sem sequencia nenhuma -- nao e
+uma simulacao/rollout de verdade (nao joga uma LINHA de jogadas como o
+NarutoSim faz, mesmo ele sendo raso na regra). Por isso mais amostra
+nunca ajudava: nao tinha profundidade pra explorar, so reduzia ruido
+de uma estimativa ja rasa.
+
+**Proposta inicial (rejeitada por mim mesmo antes de codar)**: construir
+um "motor de regras aproximado" que jogasse a sequencia -- percebi que
+isso bateria de frente com REGRA_SEM_DUPLICACAO.md ("apenas 1 motor,
+apenas um engine de decisao", ja violado e corrigido varias vezes no
+projeto, ver blocos 372-375 la). Propus ao usuario uma alternativa mais
+segura (reusar `_simulate_sequence_once` de verdade, so com escopo mais
+raso -- sem resposta do oponente, poucos passos). **O usuario pediu
+explicitamente pra abrir excecao a regra mesmo assim** ("Pode abrir uma
+excecao dessa vez dessa regra, se não não vamos avançar") -- decisao
+dele, registrada aqui pra nenhuma sessao futura confundir isso com uma
+violacao acidental nao percebida.
+
+**O que foi construido** (`decision_engine.py`):
+1. `_cheap_rollout_sample_deltas` ganhou parametro opcional
+   `don_disponivel` (default None = comportamento de sempre,
+   `p.don_available`) -- permite passar um DON FICTICIO (o que sobrou
+   depois de jogadas anteriores da MESMA sequencia).
+2. `_cheap_playout_deltas(p, opp, first_action, max_steps, rng)` (NOVA,
+   ~L14708) -- joga `first_action`, depois continua escolhendo
+   gulosamente a proxima carta da MAO RESTANTE (maior `board_value()`
+   + bonus se tem draw) que ainda cabe no DON restante, ate
+   `max_steps` acoes ou a mao/DON esgotar. Escopo DELIBERADAMENTE
+   restrito, documentado no docstring: so encadeia 'play' (nao
+   'attack'/'activate' nos passos seguintes), nao rastreia alvo de
+   remocao ja "usado" na mesma sequencia (pode contar 2x, ruido aceito
+   -- dilui na media de muitas amostras). NUNCA muta os objetos reais
+   `p`/`opp` -- so acumula deltas e rastreia mao/DON localmente.
+3. `_cheap_rollout_value` agora chama `_cheap_playout_deltas` (antes
+   chamava `_cheap_rollout_sample_deltas` direto, 1 acao so) -- novo
+   parametro `playout_steps=CHEAP_LAYER_PLAYOUT_STEPS` (constante nova,
+   valor 4).
+
+**Custo medido** (offline, hand de 6 cartas, DON=8): 3000 amostras com
+sequencia de ate 4 jogadas = **42,8ms** por decisao -- ainda muito mais
+barato que 1 UNICA amostra da busca real (~3,7ms cada, 3000 amostras
+custaria ~3 MINUTOS). Confirma que "milhares" continua viavel com essa
+profundidade nova.
+
+**Validado**: 3 testes novos em `smoke_fast.py`
+(`_cheap_playout_deltas` encadeia >1 carta quando cabe no DON,
+respeita o orcamento de DON, deterministico com mesmo seed).
+`smoke_fast.py`/`smoke_test.py` 100%.
+
+**Em andamento**: re-rodando a comparacao de 3 vias do bloco 520 (A
+heuristica / B heuristica+barata / C so barata) com essa profundidade
+nova, pra ver se fecha a lacuna que a versao rasa (1 acao) nao
+fechava. Resultado em bloco separado assim que sair.
+
 ## 2026-08-13 (520) - Claude (sessao remota web) - Modo experimental `CHEAP_LAYER_DECIDES_ALONE` implementado -- comparacao de 3 vias (heuristica x heuristica+barata x so barata) em andamento
 
 Pedido do usuario apos o fechamento do bloco 519: separar "a camada

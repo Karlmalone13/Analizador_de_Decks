@@ -10123,6 +10123,9 @@ def main() -> int:
     test_select_search_candidates_alarga_com_cheap_values_sem_regredir_11_08()
     test_log_turn_planner_decision_registra_cheap_value_pra_auditoria_11_08()
     test_select_action_via_search_generaliza_parada_antecipada_pra_3_candidatas_13_08()
+    test_cheap_playout_deltas_encadeia_multiplas_cartas_quando_cabe_no_don_13_08()
+    test_cheap_playout_deltas_respeita_orcamento_de_don_13_08()
+    test_cheap_playout_deltas_deterministico_com_mesmo_seed_13_08()
     test_ponder_fingerprint_deterministico_09_08()
     test_ponder_fingerprint_muda_por_mutacao_isolada_09_08()
     test_ponder_payload_byte_identico_ao_caminho_normal_09_08()
@@ -12624,6 +12627,71 @@ def test_select_action_via_search_generaliza_parada_antecipada_pra_3_candidatas_
           n_amostras_2 == 24)
 
     del match._simulate_sequence_values
+
+
+def test_cheap_playout_deltas_encadeia_multiplas_cartas_quando_cabe_no_don_13_08() -> None:
+    """
+    `_cheap_playout_deltas` (bloco 521, excecao explicita a REGRA_SEM_
+    DUPLICACAO autorizada pelo usuario) estende a camada barata de "1
+    acao isolada" pra "sequencia de ate N jogadas" -- prova o caso
+    basico: com DON sobrando e mais de 1 carta barata na mao, a
+    sequencia realmente ENCADEIA (d_board_mine reflete mais de 1
+    carta), nao so a primeira.
+    """
+    import random
+    me = GameState(leader=real_card("OP11-062"), turn=5, don_available=6, don_rested=0)
+    opp = GameState(leader=real_card("OP11-062"), turn=5, don_available=6, don_rested=0)
+    c1 = mk("C1", "Barata1", power=3000, cost=2)
+    c2 = mk("C2", "Barata2", power=2000, cost=2)
+    c3 = mk("C3", "Barata3", power=1000, cost=2)
+    me.hand = [c1, c2, c3]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+
+    action = (100.0, 'play', c1, None, None)
+    d_board_mine, _, _, d_don, _ = match._cheap_playout_deltas(
+        me, opp, action, max_steps=4, rng=random.Random(1))
+
+    check("sequencia joga mais de 1 carta -- d_board_mine soma mais que so c1",
+          d_board_mine > c1.board_value() + 1e-6)
+    check("DON gasto reflete varias cartas (nao so o custo de c1)",
+          d_don <= -4.0)
+
+
+def test_cheap_playout_deltas_respeita_orcamento_de_don_13_08() -> None:
+    """
+    A sequencia PARA quando nenhuma carta restante cabe no DON que
+    sobrou -- nao gasta mais DON do que o jogador realmente tem.
+    """
+    import random
+    me = GameState(leader=real_card("OP11-062"), turn=5, don_available=3, don_rested=0)
+    opp = GameState(leader=real_card("OP11-062"), turn=5, don_available=3, don_rested=0)
+    c1 = mk("C1", "Cara1", power=5000, cost=3)
+    c2 = mk("C2", "Cara2", power=5000, cost=3)
+    me.hand = [c1, c2]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+
+    action = (100.0, 'play', c1, None, None)
+    _, _, _, d_don, _ = match._cheap_playout_deltas(
+        me, opp, action, max_steps=4, rng=random.Random(1))
+
+    check("sequencia nao gasta mais DON do que o jogador tinha (3)",
+          d_don >= -3.0)
+
+
+def test_cheap_playout_deltas_deterministico_com_mesmo_seed_13_08() -> None:
+    """Mesma seed produz a MESMA sequencia/delta -- pre-requisito pra
+    qualquer comparacao/auditoria confiar no numero."""
+    import random
+    me = GameState(leader=real_card("OP11-062"), turn=5, don_available=6, don_rested=0)
+    opp = GameState(leader=real_card("OP11-062"), turn=5, don_available=6, don_rested=0)
+    opp.field_chars = [mk("OPPC1", "OppBody", power=4000, cost=3)]
+    me.hand = [mk("C1", "Barata1", power=3000, cost=2), mk("C2", "Barata2", power=2000, cost=2)]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    action = (100.0, 'play', me.hand[0], None, None)
+
+    r1 = match._cheap_playout_deltas(me, opp, action, max_steps=4, rng=random.Random(777))
+    r2 = match._cheap_playout_deltas(me, opp, action, max_steps=4, rng=random.Random(777))
+    check("_cheap_playout_deltas e deterministico com o MESMO rng seedado", r1 == r2)
 
 
 # ── Pondering (BOT/engine_server/server.py, design bloco 478, implementado

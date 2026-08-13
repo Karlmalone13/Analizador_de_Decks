@@ -318,6 +318,17 @@ SEARCH_SCORE_WINDOW = 180
 # o confound removido -- ver HANDOFF bloco 518 pro resultado real.
 CHEAP_LAYER_SAMPLES = 40
 CHEAP_LAYER_EXTRA_CANDIDATES = 3
+# Profundidade de SEQUENCIA da camada barata (bloco 521, EXCECAO
+# EXPLICITA a REGRA_SEM_DUPLICACAO autorizada pelo usuario 13/08 --
+# ver HANDOFF bloco 521 pro registro completo do motivo e do escopo).
+# `_cheap_playout_deltas` encadeia ate esse numero de jogadas 'play'
+# fictícias (a 1a + N-1 seguintes, gulosas, so mao->campo, sem
+# resolver regra real) -- da profundidade de verdade pra camada
+# barata, que antes so olhava 1 acao isolada (por isso mais amostra
+# nunca ajudava, nao tinha nada pra explorar). 4 = tamanho tipico de
+# "quantas cartas cabem numa curva de turno" (mesmo MAX_ACOES/TOP_K
+# usados no resto do motor como escala de referencia).
+CHEAP_LAYER_PLAYOUT_STEPS = 4
 # RNG ISOLADO pra camada barata (bloco 518) -- NUNCA usar o modulo
 # `random` global aqui (contaminaria o stream do jogo, ver comentario
 # acima). Seed fixa: a camada barata so estima uma MEDIA/tendencia, nao
@@ -14631,7 +14642,7 @@ class OPTCGMatch:
             and not engine.analyzer.can_lethal_this_turn()
         )
 
-    def _cheap_rollout_sample_deltas(self, p, opp, action, rng):
+    def _cheap_rollout_sample_deltas(self, p, opp, action, rng, don_disponivel=None):
         """
         Uma amostra da camada barata: (d_board_mine, d_opp_removed,
         d_hand, d_don, d_pressure) SEM peso nenhum aplicado ainda.
@@ -14639,8 +14650,18 @@ class OPTCGMatch:
         de amostragem isolado numa funcao propria pra ficar claro qual
         parte tem aleatoriedade (alvo de KO/bounce ambiguo, chance de
         ataque conectar), separado da agregacao por peso.
+
+        `don_disponivel`: DON a considerar pro custo de 'play' -- None
+        (padrao) usa `p.don_available` (comportamento de sempre, 1 acao
+        isolada). Passado explicito por `_cheap_playout_deltas` (bloco
+        521) quando esta acao e a Nesima de uma SEQUENCIA fictícia, pra
+        respeitar o DON ja "gasto" pelas acoes anteriores da mesma
+        amostra -- sem isso, cada acao da sequencia contaria o custo
+        contra o DON TOTAL original, sempre, nunca esgotando de verdade.
         """
         score, kind, obj, target_type, target = action
+        if don_disponivel is None:
+            don_disponivel = p.don_available
         d_board_mine = 0.0    # + = ganho de board_value pro meu lado
         d_opp_removed = 0.0   # + = board_value removido do oponente
         d_hand = 0.0          # + = cartas ganhas na mao
@@ -14651,7 +14672,7 @@ class OPTCGMatch:
             card = obj
             flags = get_card_flags(card.code)
             d_board_mine += card.board_value()
-            d_don -= min(p.don_available, card.cost)
+            d_don -= min(don_disponivel, card.cost)
             if flags.get('draws'):
                 d_hand += 1.0
             if flags.get('is_searcher'):
@@ -14695,18 +14716,89 @@ class OPTCGMatch:
 
         return d_board_mine, d_opp_removed, d_hand, d_don, d_pressure
 
-    def _cheap_rollout_value(self, p, opp, action, n_samples=CHEAP_LAYER_SAMPLES,
-                              rng=None):
+    def _cheap_playout_deltas(self, p, opp, first_action, max_steps, rng):
         """
-        Camada BARATA (fase 1 da "calibragem dinamica", bloco 508/509):
-        aproxima o valor de uma acao candidata SEM resolver o efeito de
-        verdade (nao chama _execute_step/_apply_action) -- so olha as
-        flags ja pre-parseadas (get_card_flags, MESMA fonte que
-        avaliar_carta usa pros bonus de has_ko/has_search/etc, ver
-        REGRA_SEM_DUPLICACAO: nao reimplementa deteccao propria) e aplica
-        um delta grosseiro sobre um resumo generico do estado (board
-        meu/dele, mao, DON, pressao de dano) -- os MESMOS termos
-        universais de EVAL_WEIGHTS, mesma escala, pra ficar comparavel.
+        Sequencia de ate `max_steps` acoes baratas a partir de
+        `first_action` (bloco 521). EXCECAO EXPLICITA, autorizada pelo
+        usuario 13/08 ("pode abrir uma excecao dessa vez"), a
+        REGRA_SEM_DUPLICACAO -- ver HANDOFF bloco 521 pro registro
+        completo. Motivo: a camada barata de UM passo so (`_cheap_
+        rollout_sample_deltas` sozinha) nunca melhorava com mais
+        amostra porque nao tinha profundidade nenhuma pra explorar (so
+        reduzia ruido de uma estimativa ja rasa) -- o usuario pediu uma
+        "simulacao de verdade" estilo NarutoSim (sequencia de jogadas,
+        nao 1 carta isolada), o que exige uma aproximacao de "jogar
+        varias cartas seguidas" SEM pagar o custo da busca real
+        (`_apply_action`/`EffectExecutor`, que resolve regra completa).
+
+        Escopo DELIBERADAMENTE restrito (mantem o "raso" barato, so
+        acrescenta profundidade de SEQUENCIA):
+        - So encadeia acoes 'play' da mao restante (nao considera
+          'attack'/'activate' nos passos seguintes ao primeiro -- cartas
+          jogadas ficticiamente nesta amostra nao viram atacantes
+          validos aqui, simplificacao aceita, ver HANDOFF).
+        - Escolhe gulosamente a carta de maior `board_value()` (+ bonus
+          fixo se tem draw) que ainda cabe no DON restante -- nao
+          resolve sinergia entre cartas, nao reordena por combo.
+        - NAO rastreia quais personagens do oponente ja foram "removidos"
+          por uma acao anterior da MESMA sequencia -- 2 remocoes na
+          mesma amostra podem contar o mesmo alvo 2x. Ruido aceito (a
+          media sobre muitas amostras ja dilui isso), documentado aqui
+          em vez de escondido.
+        - NUNCA usada pra decidir a acao final sozinha (mesmo principio
+          da fase 1) -- so alimenta `cheap_values` que ALARGA o
+          shortlist da busca cara de verdade, que continua sendo a
+          FONTE UNICA da decisao real.
+
+        Opera SEM mutar os objetos reais `p`/`opp` -- so acumula deltas
+        e rastreia mao/DON restantes em variaveis locais.
+        """
+        d_board_mine, d_opp_removed, d_hand, d_don, d_pressure = (
+            self._cheap_rollout_sample_deltas(p, opp, first_action, rng))
+
+        mao_restante = list(p.hand)
+        kind0, obj0 = first_action[1], first_action[2]
+        if kind0 == 'play' and obj0 in mao_restante:
+            mao_restante.remove(obj0)
+        don_restante = p.don_available + d_don   # d_don ja e <= 0 (custo)
+
+        for _ in range(max(0, max_steps - 1)):
+            candidatas = [c for c in mao_restante if c.cost <= don_restante]
+            if not candidatas:
+                break
+            melhor = max(candidatas, key=lambda c: (
+                c.board_value() + (1.0 if get_card_flags(c.code).get('draws') else 0.0)))
+            acao_fake = (0.0, 'play', melhor, None, None)
+            dm, dor, dh, dd, dp = self._cheap_rollout_sample_deltas(
+                p, opp, acao_fake, rng, don_disponivel=don_restante)
+            d_board_mine += dm
+            d_opp_removed += dor
+            d_hand += dh
+            d_don += dd
+            d_pressure += dp
+            don_restante += dd   # dd <= 0
+            mao_restante.remove(melhor)
+
+        return d_board_mine, d_opp_removed, d_hand, d_don, d_pressure
+
+    def _cheap_rollout_value(self, p, opp, action, n_samples=CHEAP_LAYER_SAMPLES,
+                              rng=None, playout_steps=CHEAP_LAYER_PLAYOUT_STEPS):
+        """
+        Camada BARATA ("calibragem dinamica", bloco 508/509, profundidade
+        de sequencia adicionada bloco 521): aproxima o valor de uma acao
+        candidata SEM resolver o efeito de verdade (nao chama
+        _execute_step/_apply_action) -- so olha as flags ja pre-parseadas
+        (get_card_flags, MESMA fonte que avaliar_carta usa pros bonus de
+        has_ko/has_search/etc, ver REGRA_SEM_DUPLICACAO: nao reimplementa
+        deteccao propria) e aplica um delta grosseiro sobre um resumo
+        generico do estado (board meu/dele, mao, DON, pressao de dano) --
+        os MESMOS termos universais de EVAL_WEIGHTS, mesma escala, pra
+        ficar comparavel. Desde o bloco 521, `_cheap_playout_deltas`
+        estende essa unica acao numa SEQUENCIA de ate `playout_steps`
+        jogadas (exececao explicita a REGRA_SEM_DUPLICACAO, autorizada
+        pelo usuario -- ver HANDOFF bloco 521): sem isso, mais amostra
+        (`n_samples`) nunca ajudava, porque uma acao isolada nao tem
+        profundidade nenhuma pra explorar, so ruido de alvo ambiguo.
 
         Roda `n_samples` vezes com pequena aleatoriedade nas partes
         ambiguas (ex: qual corpo do oponente seria removido por um KO
@@ -14731,7 +14823,7 @@ class OPTCGMatch:
         total = 0.0
         for _ in range(max(1, n_samples)):
             d_board_mine, d_opp_removed, d_hand, d_don, d_pressure = (
-                self._cheap_rollout_sample_deltas(p, opp, action, rng))
+                self._cheap_playout_deltas(p, opp, action, playout_steps, rng))
             total += (d_board_mine * W['board_mine']
                       + d_opp_removed * W['board_opp']
                       + d_hand * W['hand_first']
