@@ -16060,7 +16060,18 @@ class OPTCGMatch:
             # o sinal barato 1x por decisao e passa pra alargar o corte
             # do shortlist. Log de auditoria recebe os mesmos valores
             # (audit_cheap_layer.py le o decision_log depois).
-            cheap_values = (self._compute_cheap_values(p, opp, actions)
+            #
+            # n_samples=CHEAP_LAYER_SAMPLES passado EXPLICITO (nao confiar
+            # no default do parametro): default de funcao e resolvido 1x
+            # no IMPORT do modulo -- reatribuir `de.CHEAP_LAYER_SAMPLES`
+            # em runtime (ex: script de calibracao comparando escalas)
+            # NAO muda esse default ja fixado, so passar como argumento
+            # explicito le o valor atual de verdade. Achado real 13/08
+            # (bloco 515/516): uma comparacao 40-vs-3000 amostras deu
+            # margem EXATAMENTE zero em TODOS os matchups -- sinal
+            # classico desse bug (as duas condicoes rodaram com o mesmo
+            # valor de fato).
+            cheap_values = (self._compute_cheap_values(p, opp, actions, n_samples=CHEAP_LAYER_SAMPLES)
                             if USE_CHEAP_LAYER_SHORTLIST else None)
             candidatas = self._select_search_candidates(
                 actions, TOP_K, priority, cheap_values=cheap_values)

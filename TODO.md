@@ -2,6 +2,20 @@
 
 **Última atualização:** 13 de agosto de 2026
 
+> 13/08/2026 (bloco 516): **Bug real na comparação de escala (40 vs
+> 3000 amostras)**: margem deu EXATAMENTE zero em todos os 4 matchups —
+> sinal de bug, não "efeito zero de verdade". Causa: `_compute_cheap_
+> values` usava `CHEAP_LAYER_SAMPLES` como valor PADRÃO de parâmetro —
+> Python fixa isso no import, reatribuir `de.CHEAP_LAYER_SAMPLES` em
+> runtime (o script de comparação) nunca mudava o default já fixado.
+> Corrigido passando `n_samples=` explícito nos 2 chamadores de
+> produção (`main_phase`/`sim_bridge.choose_action`) — não é bug de
+> produção (a constante nunca é reatribuída fora de teste), mas
+> invalidava qualquer comparação futura que tentasse variar essa
+> constante. Validado manualmente (tempos agora variam de verdade:
+> 0,14ms vs 6,6ms). `smoke_fast.py` 100%. Comparação re-rodando com o
+> fix. Ver bloco 516 do HANDOFF.
+
 > 13/08/2026 (bloco 515): **Fase 2 (ajuste de peso) REMOVIDA por pedido
 > do usuário** — reiterou a ideia original ("igual ao NarutoSim: rodar
 > milhares de vezes, achar boas alternativas, passar pra heurística

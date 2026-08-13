@@ -1,5 +1,45 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (516) - Claude (sessao remota web) - Bug real achado na comparacao de escala (40 vs 3000): default de parametro nao le reatribuicao em runtime -- corrigido passando n_samples explicito
+
+A comparacao 40-vs-3000-amostras (roster multi-ancora do bloco 514,
+rodando apos o bloco 515) deu margem **EXATAMENTE zero** em TODOS os 4
+matchups -- winrate identico ate a 3a casa decimal em cada um, sinal
+classico de "as duas condicoes rodaram com o MESMO valor de fato",
+nao "o efeito e zero de verdade".
+
+**Causa raiz, confirmada com `inspect.signature`**: `_compute_cheap_
+values(self, p, opp, actions, n_samples=CHEAP_LAYER_SAMPLES, ...)` usa
+a constante como VALOR PADRAO do parametro -- Python resolve esse
+default UMA VEZ, no import do modulo, e fixa o objeto no proprio
+objeto funcao. Reatribuir `de.CHEAP_LAYER_SAMPLES = 40` em runtime (o
+que o script de comparacao fazia, mesmo padrao ja usado com sucesso
+pros blocos 510/511/513 -- mas aqueles eram FLAGS BOOLEANAS checadas
+com `if CONSTANTE:` DENTRO do corpo da funcao, que SIM leem o global
+de novo a cada chamada) NUNCA muda esse default ja fixado. Os 2
+chamadores de producao (`main_phase`, `sim_bridge.choose_action`)
+chamavam `_compute_cheap_values(p, opp, actions)` sem passar
+`n_samples=` explicito -- sempre usavam o valor fixado no import
+(3000), nas duas "condicoes" do teste.
+
+**Nao e um bug de producao** (a constante nunca e reatribuida em
+runtime fora de script de calibracao/teste), mas E um risco real pra
+qualquer comparacao futura que queira variar `CHEAP_LAYER_SAMPLES` --
+e ja pegou esta sessao uma vez. Corrigido nos 2 chamadores: `n_samples=
+CHEAP_LAYER_SAMPLES` (main_phase) / `n_samples=_de.CHEAP_LAYER_SAMPLES`
+(sim_bridge) agora passados EXPLICITOS -- le o global de dentro do
+corpo da funcao chamadora (que SIM reflete reatribuicao em runtime),
+igual ao padrao ja usado pra `SEARCH_SAMPLES_MIN_DEFAULT`/etc em
+`sim_bridge.py` (capturados em variavel local no corpo de
+`choose_action`, nunca usados como default de parametro).
+
+**Validado**: teste manual confirma que `de.CHEAP_LAYER_SAMPLES = 40`
+vs `= 3000` agora produz tempos de `_compute_cheap_values` diferentes
+de verdade (0,14ms vs 6,6ms pra 1 acao) -- antes do fix, os dois davam
+o mesmo tempo (~6,6ms, preso no valor do import). `smoke_fast.py`
+100%. Comparacao 40-vs-3000 re-rodando com o fix -- resultado no
+proximo bloco.
+
 ## 2026-08-13 (515) - Claude (sessao remota web) - Fase 2 (ajuste de peso) REMOVIDA por pedido do usuario -- "calibragem dinamica" vira SO escalar a camada barata (40 -> 3000), sem mexer em peso nenhum
 
 Continuacao do bloco 514: enquanto a comparacao OFF-vs-ON (com escala

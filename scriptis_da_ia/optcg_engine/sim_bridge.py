@@ -665,8 +665,11 @@ def choose_action(gs: GameState, opp_gs: GameState,
             # server.py (achado: MESMO SEM a camada barata o pior caso ja
             # passava de 3s antes desta mudanca) tomada junto, mesmo
             # commit.
+            # n_samples explicito (nao confiar no default do parametro,
+            # resolvido 1x no import do modulo) -- ver comentario gemeo em
+            # main_phase (decision_engine.py, bloco 515/516).
             cheap_values = (
-                match._compute_cheap_values(gs, opp_gs, actions)
+                match._compute_cheap_values(gs, opp_gs, actions, n_samples=_de.CHEAP_LAYER_SAMPLES)
                 if _de.USE_CHEAP_LAYER_SHORTLIST else None)
             candidatos = match._select_search_candidates(
                 candidatos_elegiveis, SEARCH_TOP_K, priority,
