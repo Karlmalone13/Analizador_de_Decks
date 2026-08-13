@@ -2,6 +2,15 @@
 
 **Última atualização:** 13 de agosto de 2026
 
+> 13/08/2026 (bloco 520): **Modo experimental `CHEAP_LAYER_DECIDES_
+> ALONE` implementado** — comparação de 3 vias pedida pelo usuário
+> pra separar "a camada barata capta sinal bom?" de "confiamos demais/
+> de menos nela?": (A) heurística sozinha, (B) heurística + camada
+> barata (produção atual), (C) só a camada barata decide direto (sem
+> busca cara), testada com `CHEAP_LAYER_SAMPLES=3000` ("milhares").
+> `smoke_fast`/`smoke_test` 100% (flag OFF por padrão, zero impacto em
+> produção). **Comparação em andamento** — resultado no próximo bloco.
+
 > 13/08/2026 (bloco 519): **FECHAMENTO da "calibragem dinâmica"** —
 > re-teste 40-vs-3000 sem o confound de RNG (bloco 518) deu
 > `maximin=+0,000, soma=+0,033`: não regride, mas ganho quase nulo (3

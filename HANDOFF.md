@@ -1,5 +1,39 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (520) - Claude (sessao remota web) - Modo experimental `CHEAP_LAYER_DECIDES_ALONE` implementado -- comparacao de 3 vias (heuristica x heuristica+barata x so barata) em andamento
+
+Pedido do usuario apos o fechamento do bloco 519: separar "a camada
+barata captura sinal bom?" de "a gente confia demais/de menos nela?",
+comparando 3 modos de decisao lado a lado:
+- **A) Heuristica sozinha** (`USE_CHEAP_LAYER_SHORTLIST=False`) --
+  baseline pre-509, busca cara decide tudo.
+- **B) Heuristica + camada barata** (`USE_CHEAP_LAYER_SHORTLIST=True`,
+  `CHEAP_LAYER_SAMPLES=40`) -- o que ja esta em producao (fase 1).
+- **C) SO camada barata decide** (`CHEAP_LAYER_DECIDES_ALONE=True`,
+  testada com `CHEAP_LAYER_SAMPLES=3000` -- "milhares", pedido
+  explicito do usuario pra este experimento) -- bypassa a busca cara
+  INTEIRA, aplica direto a acao de maior `cheap_value`.
+
+**Implementacao**: novo bloco em `main_phase` (decision_engine.py,
+logo apos gerar/pontuar as acoes), guardado por
+`CHEAP_LAYER_DECIDES_ALONE` (novo, `False` por padrao) -- quando
+ligado, calcula `cheap_values` e aplica `max(..., key=cheap_value)`
+direto, sem `_select_search_candidates`/`_select_action_via_search`.
+Mantem a guarda de seguranca `_is_unsafe_zero_life_leader_attack` e loga
+via `_log_turn_planner_decision` normalmente (candidates=[melhor_acao],
+sim_values={} ja que nao rodou busca real). Explicitamente documentado
+como modo de MEDICAO, nunca pra producao (offline ou ao vivo) --
+`sim_bridge.py` nao foi tocado.
+
+**Validado antes da comparacao**: `smoke_fast.py`/`smoke_test.py` 100%
+(flag OFF por padrao, zero impacto no comportamento de producao).
+Sanity check manual: 1 partida completa com `CHEAP_LAYER_DECIDES_ALONE
+=True` rodou sem excecao ate o fim.
+
+**Comparacao de 3 vias em andamento** (mesmo roster multi-ancora
+Imu/Mihawk/Ace/Lucy em rotacao, N=30/matchup, seeds pareadas) --
+resultado registrado em bloco separado assim que terminar.
+
 ## 2026-08-13 (519) - Claude (sessao remota web) - FECHAMENTO: re-teste sem confound confirma ganho quase nulo -- decisao final e manter a camada barata RASA (so flags), sem investir numa camada intermediaria
 
 Re-teste 40-vs-3000 (bloco 518, agora com `_CHEAP_LAYER_RNG` isolado,

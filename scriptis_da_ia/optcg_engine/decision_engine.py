@@ -335,6 +335,13 @@ _CHEAP_LAYER_RNG = random.Random(20260813)
 # interno 3.0s->5.0s pra acomodar, folga real medida contra o limite
 # fisico de 10s do plugin C#).
 USE_CHEAP_LAYER_SHORTLIST = True
+# Modo experimental de ABLACAO (bloco 519/520, pedido do usuario: medir
+# separadamente "heuristica sozinha" x "heuristica+simulacao" x "so
+# simulacao"). Quando True, `main_phase` aplica a acao de maior
+# `cheap_value` DIRETO, sem NENHUMA busca cara -- so pra self-play de
+# MEDICAO comparativa, NUNCA pra producao (offline OU ao vivo). Nunca
+# ligar em `sim_bridge.py`.
+CHEAP_LAYER_DECIDES_ALONE = False
 
 # ── busca prof.2 / resposta do oponente (item 3 do PLANO_AVALIACAO_E_BUSCA.md) ─
 # Depois de simular MINHA linha ate o fim do turno, simula o TURNO INTEIRO de
@@ -16052,6 +16059,28 @@ class OPTCGMatch:
             if not actions or actions[0][0] < 0:
                 break
             priority = engine.analyzer.analysis_priority()
+
+            # Modo experimental "SO camada barata decide" (bloco 520,
+            # ablacao pedida pelo usuario apos o achado do bloco 519: "a
+            # gente pode... fazer so a simulacao barata milhares de vezes
+            # ai comparamos bot so com heuristica x bot com heuristica e
+            # simulacao x bot so com simulacao"). Aplica DIRETO a acao de
+            # maior `cheap_value`, sem passar pela busca cara/heuristica
+            # de verdade -- mede se o sinal barato, sozinho, basta.
+            # OFF por padrao, so pra medicao -- nao e um modo de producao.
+            if CHEAP_LAYER_DECIDES_ALONE:
+                cv_alone = self._compute_cheap_values(p, opp, actions, n_samples=CHEAP_LAYER_SAMPLES)
+                melhor_acao = (max((a for a in actions if id(a) in cv_alone), key=lambda a: cv_alone[id(a)])
+                              if cv_alone else actions[0])
+                if self._is_unsafe_zero_life_leader_attack(melhor_acao, p, opp, engine):
+                    break
+                self._log_turn_planner_decision(
+                    p, opp, engine, priority, actions, [melhor_acao],
+                    melhor_acao, cv_alone.get(id(melhor_acao)), {}, cheap_values=cv_alone
+                )
+                if self._apply_action(melhor_acao, p, opp, ee, engine, verbose=verbose):
+                    return True
+                continue
 
             # GamePlan fase 2b (auditor 10/07, flag D_win_con_parado): quando a
             # acao do topo e JOGAR a carta-bomba do plano e o DON ja paga, executa
