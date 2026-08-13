@@ -300,18 +300,31 @@ SEARCH_SCORE_WINDOW = 180
 # (`sim_bridge.choose_action`) feita no bloco 511 -- reusa a MESMA flag,
 # sem flag separada (a decisao "camada barata ligada ou nao" e unica
 # pros dois chamadores).
-# ESCALA (bloco 514/517): usuario pediu subir de 40 pra milhares
-# ("igual ao NarutoSim, 8000 ou 1000x") -- testado com roster multi-
-# ancora (Imu_v_Mihawk/Mihawk_v_Ace/Ace_v_Lucy/Lucy_v_Imu, N=30,
-# CHEAP_LAYER_SAMPLES=3000 vs 40 de verdade, apos corrigir um bug real
-# onde o teste nao estava variando o parametro -- ver HANDOFF bloco
-# 516) e o resultado foi NEGATIVO: 3 matchups pioraram, 1 empatou,
-# NENHUM melhorou (maximin=-0,133, soma=-0,333). Contraintuitivo (mais
-# amostra deveria dar sinal mais confiavel, nao pior), causa raiz nao
-# investigada a fundo -- registrado como achado negativo (ver HANDOFF
-# bloco 517). Revertido pro valor ja validado no bloco 510.
+# ESCALA (bloco 514/517/518): usuario pediu subir de 40 pra milhares
+# ("igual ao NarutoSim, 8000 ou 1000x"). Primeira tentativa (bloco 517)
+# testou CHEAP_LAYER_SAMPLES=3000 vs 40 e deu resultado NEGATIVO (3 de
+# 4 matchups pioraram) -- investigado a fundo (bloco 518) e achado um
+# CONFOUND real, nao "mais amostra e ruim de verdade": `_cheap_rollout_
+# value`/`_compute_cheap_values` usavam `rng or random` (o MODULO
+# global `random`, mesmo stream que `random.shuffle(p.deck)`/compras de
+# carta usam em todo o motor). Sample count DIFERENTE consome uma
+# quantidade DIFERENTE de numeros aleatorios do stream compartilhado a
+# cada decisao, deslocando TODOS os sorteios seguintes da partida (mao
+# vira outra, mesmo com a MESMA seed) -- a comparacao 40-vs-3000 nao
+# estava isolando "qualidade da amostra", estava comparando partidas
+# com maos DIFERENTES. Corrigido com `_CHEAP_LAYER_RNG` (instancia
+# `random.Random` PROPRIA, isolada do stream do jogo, ver definicao
+# abaixo). Valor ainda EM 40 (ja validado) ate re-medir 40-vs-3000 com
+# o confound removido -- ver HANDOFF bloco 518 pro resultado real.
 CHEAP_LAYER_SAMPLES = 40
 CHEAP_LAYER_EXTRA_CANDIDATES = 3
+# RNG ISOLADO pra camada barata (bloco 518) -- NUNCA usar o modulo
+# `random` global aqui (contaminaria o stream do jogo, ver comentario
+# acima). Seed fixa: a camada barata so estima uma MEDIA/tendencia, nao
+# toma decisao nenhuma sozinha -- nao precisa variar entre partidas pra
+# ser correta, so precisa ser reprodutivel e nao vazar entropia pro
+# resto do motor.
+_CHEAP_LAYER_RNG = random.Random(20260813)
 # Knob global, mesmo padrao do USE_EVAL_V2/USE_OPPONENT_RESPONSE_SEARCH.
 # LIGADO 11/08 (bloco 510) apos comparacao controlada (self-play, N=30,
 # roster deconfundido Imu_v_{Mihawk,Ace,Lucy,Luffy-Y}, seeds pareadas):
@@ -14700,7 +14713,12 @@ class OPTCGMatch:
         de `_generate_and_score_actions` -- serve pra RANKEAR candidatas
         entre si, nao tem significado absoluto proprio.
         """
-        rng = rng or random
+        # _CHEAP_LAYER_RNG (bloco 518), NUNCA o modulo `random` global --
+        # contaminaria o stream de aleatoriedade REAL do jogo (deck
+        # shuffle/compra), fazendo `CHEAP_LAYER_SAMPLES` mudar a MAO que
+        # sai em partidas de self-play com a MESMA seed (achado real:
+        # confundiu a comparacao 40-vs-3000 do bloco 517 inteira).
+        rng = rng or _CHEAP_LAYER_RNG
         W = getattr(p, 'eval_weights', None) or EVAL_WEIGHTS
 
         total = 0.0
@@ -14726,7 +14744,7 @@ class OPTCGMatch:
         shortlist quanto pelo log de auditoria (mesmos valores, sem
         recalcular).
         """
-        rng = rng or random
+        rng = rng or _CHEAP_LAYER_RNG
         return {id(a): self._cheap_rollout_value(p, opp, a, n_samples, rng)
                 for a in actions if a[0] >= 0}
 

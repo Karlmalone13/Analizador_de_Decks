@@ -1,5 +1,42 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (518) - Claude (sessao remota web) - CONFOUND real achado no resultado negativo do bloco 517: camada barata contaminava o stream de aleatoriedade do JOGO -- corrigido com RNG isolado, re-teste em andamento
+
+Usuario pediu pra investigar a causa do resultado negativo do bloco
+517 antes de desistir de vez de subir a amostra ("acho que deve ter
+algum bug, porque na teoria era pra melhorar as decisoes").
+
+**Causa raiz encontrada**: `_cheap_rollout_value`/`_compute_cheap_values`
+usavam `rng = rng or random` -- quando nenhum `rng=` e passado
+explicito (o caso de TODO chamador em producao, `main_phase` e
+`sim_bridge.choose_action`), isso cai no MODULO global `random`, o
+MESMO stream que `random.shuffle(p.deck)` e as compras de carta usam
+em todo o motor. `CHEAP_LAYER_SAMPLES` diferente consome uma
+quantidade DIFERENTE de numeros aleatorios do stream compartilhado a
+cada decisao (a camada barata roda em TODA iteracao do loop do Turn
+Planner, ate 30x por turno) -- isso desloca TODOS os sorteios
+seguintes da partida (que carta e comprada, em que ordem), mesmo com a
+MESMA seed. A comparacao 40-vs-3000 do bloco 517 nao estava isolando
+"qualidade da amostra barata" -- estava comparando partidas com MAOS
+DIFERENTES, um confound classico (mesma familia de erro ja visto
+varias vezes nesta sessao: variavel nao-isolada explicando um
+resultado que parecia ser sobre outra coisa).
+
+**Correcao**: `_CHEAP_LAYER_RNG = random.Random(20260813)`
+(decision_engine.py ~L318) -- instancia PROPRIA, isolada do stream do
+jogo. `_cheap_rollout_value`/`_compute_cheap_values` agora usam
+`rng or _CHEAP_LAYER_RNG` em vez de `rng or random`. Seed FIXA
+(nao precisa variar por partida -- a camada barata so estima uma
+media/tendencia, nao toma decisao nenhuma sozinha, so precisa ser
+reprodutivel e nao vazar entropia). Confirmado com teste manual:
+`random.getstate()` antes/depois de `_compute_cheap_values(n_samples=
+3000)` agora bate exatamente (stream do jogo intacto).
+
+**Validado**: `smoke_fast.py`/`smoke_test.py` 100% com a correcao.
+`CHEAP_LAYER_SAMPLES` mantido em `40` (valor ja validado) ate o
+re-teste 40-vs-3000 (agora sem o confound) terminar -- em andamento,
+resultado registrado em bloco separado assim que sair.
+
 ## 2026-08-13 (517) - Claude (sessao remota web) - RESULTADO FINAL: subir CHEAP_LAYER_SAMPLES pra milhares PIORA o bot -- revertido pro valor validado (40)
 
 Comparacao 40-vs-3000 re-rodada apos o fix do bug do bloco 516 (agora

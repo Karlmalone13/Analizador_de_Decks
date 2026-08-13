@@ -2,6 +2,20 @@
 
 **Última atualização:** 13 de agosto de 2026
 
+> 13/08/2026 (bloco 518): **CONFOUND real achado no resultado negativo
+> do bloco 517** (pedido do usuário pra investigar antes de desistir).
+> `_cheap_rollout_value`/`_compute_cheap_values` usavam o MÓDULO
+> `random` global (mesmo stream de `random.shuffle(p.deck)`/compras de
+> carta) quando nenhum `rng=` era passado — sample count diferente
+> consumia quantidade diferente de números aleatórios a cada decisão,
+> deslocando TODOS os sorteios seguintes da partida. A comparação
+> 40-vs-3000 do bloco 517 comparava partidas com MÃOS diferentes, não
+> "qualidade da amostra". **Corrigido** com `_CHEAP_LAYER_RNG` isolado
+> (seed fixa, nunca toca o stream do jogo) — confirmado que o stream
+> real fica intacto agora. `smoke_fast`/`smoke_test` 100%.
+> `CHEAP_LAYER_SAMPLES` mantido em 40 até o re-teste (em andamento) dar
+> resultado. Ver bloco 518 do HANDOFF.
+
 > 13/08/2026 (bloco 517): **RESULTADO FINAL — subir `CHEAP_LAYER_
 > SAMPLES` pra milhares PIORA o bot**. Comparação re-rodada após o fix
 > do bug do bloco 516 (agora varia de verdade): 3 de 4 matchups
