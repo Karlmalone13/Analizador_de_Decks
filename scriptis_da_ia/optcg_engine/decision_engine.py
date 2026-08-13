@@ -299,11 +299,18 @@ SEARCH_SCORE_WINDOW = 180
 # LAYER_SHORTLIST abaixo pro resultado. Extensao pro caminho AO VIVO
 # (`sim_bridge.choose_action`) feita no bloco 511 -- reusa a MESMA flag,
 # sem flag separada (a decisao "camada barata ligada ou nao" e unica
-# pros dois chamadores). Escala de amostra subida de 40 pra milhares no
-# bloco 514 (pedido explicito do usuario, "igual ao NarutoSim, simular
-# umas 8000 ou 1000x" -- 40 dava tendencia ruidosa demais pra decisoes
-# com alvo ambiguo) -- custo medido antes de subir (ver HANDOFF 514).
-CHEAP_LAYER_SAMPLES = 3000
+# pros dois chamadores).
+# ESCALA (bloco 514/517): usuario pediu subir de 40 pra milhares
+# ("igual ao NarutoSim, 8000 ou 1000x") -- testado com roster multi-
+# ancora (Imu_v_Mihawk/Mihawk_v_Ace/Ace_v_Lucy/Lucy_v_Imu, N=30,
+# CHEAP_LAYER_SAMPLES=3000 vs 40 de verdade, apos corrigir um bug real
+# onde o teste nao estava variando o parametro -- ver HANDOFF bloco
+# 516) e o resultado foi NEGATIVO: 3 matchups pioraram, 1 empatou,
+# NENHUM melhorou (maximin=-0,133, soma=-0,333). Contraintuitivo (mais
+# amostra deveria dar sinal mais confiavel, nao pior), causa raiz nao
+# investigada a fundo -- registrado como achado negativo (ver HANDOFF
+# bloco 517). Revertido pro valor ja validado no bloco 510.
+CHEAP_LAYER_SAMPLES = 40
 CHEAP_LAYER_EXTRA_CANDIDATES = 3
 # Knob global, mesmo padrao do USE_EVAL_V2/USE_OPPONENT_RESPONSE_SEARCH.
 # LIGADO 11/08 (bloco 510) apos comparacao controlada (self-play, N=30,

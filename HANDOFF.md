@@ -1,5 +1,50 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (517) - Claude (sessao remota web) - RESULTADO FINAL: subir CHEAP_LAYER_SAMPLES pra milhares PIORA o bot -- revertido pro valor validado (40)
+
+Comparacao 40-vs-3000 re-rodada apos o fix do bug do bloco 516 (agora
+varia de verdade). Roster multi-ancora (Imu_v_Mihawk/Mihawk_v_Ace/
+Ace_v_Lucy/Lucy_v_Imu, N=30/matchup, seeds pareadas):
+```
+matchup          40-amostras wr   3000-amostras wr   margem
+Imu_v_Mihawk     0,633            0,500              -0,133
+Mihawk_v_Ace     0,900            0,900              +0,000
+Ace_v_Lucy       0,633            0,567              -0,067
+Lucy_v_Imu       0,800            0,667              -0,133
+maximin=-0,133   soma=-0,333
+```
+**Resultado NEGATIVO, contraintuitivo**: 3 de 4 matchups pioraram, 1
+empatou, NENHUM melhorou. Reprova o criterio maximin usado a sessao
+inteira pra decidir se uma mudanca fica. Contrario a expectativa do
+usuario ("igual ao NarutoSim, milhares deveria dar sinal mais
+confiavel") -- causa raiz NAO investigada a fundo (hipotese registrada,
+nao confirmada: mais amostra reduz o RUIDO do sinal barato, mas ruido
+as vezes funciona como diversidade acidental em QUAIS candidatas
+entram no shortlist alargado -- um sinal mais "preciso" pode estar
+convergindo consistentemente pra um subconjunto mais estreito de
+candidatas que, apesar de pontuar melhor na camada barata, correlaciona
+PIOR com o que a busca cara real prefere. Nao testado, so hipotese).
+
+**Decisao**: `CHEAP_LAYER_SAMPLES` revertido de `3000` pra `40` (valor
+ja validado no bloco 510, positivo em todos os matchups testados la).
+Comentario da constante atualizado registrando o achado negativo, pra
+nenhuma sessao futura tentar subir a escala de novo sem repetir esta
+medicao.
+
+**Validado**: `smoke_fast.py`/`smoke_test.py` 100% apos o revert.
+
+**Estado final da "calibragem dinamica" nesta sessao**: fase 1 (camada
+barata alargando o shortlist, `USE_CHEAP_LAYER_SHORTLIST=True`,
+`CHEAP_LAYER_SAMPLES=40`) e a UNICA parte que sobrevive, exatamente
+como ficou no bloco 510/511 -- offline E ao vivo. A tentativa de fase 2
+(ajuste de peso, blocos 513-515) e a tentativa de escalar a amostra
+(blocos 514/517) foram AMBAS medidas e descartadas por regredir/nao
+melhorar. Registro explicito pra nao repetir: "rodar mais amostra
+barata" e "ajustar peso dinamicamente" pareciam boas ideias em teoria
+(inclusive com o usuario descrevendo o NarutoSim como referencia), mas
+NENHUMA das duas se sustentou quando medida com o mesmo rigor
+(maximin, multi-ancora) usado pro resto da calibracao desta sessao.
+
 ## 2026-08-13 (516) - Claude (sessao remota web) - Bug real achado na comparacao de escala (40 vs 3000): default de parametro nao le reatribuicao em runtime -- corrigido passando n_samples explicito
 
 A comparacao 40-vs-3000-amostras (roster multi-ancora do bloco 514,

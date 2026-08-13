@@ -2,6 +2,24 @@
 
 **Última atualização:** 13 de agosto de 2026
 
+> 13/08/2026 (bloco 517): **RESULTADO FINAL — subir `CHEAP_LAYER_
+> SAMPLES` pra milhares PIORA o bot**. Comparação re-rodada após o fix
+> do bug do bloco 516 (agora varia de verdade): 3 de 4 matchups
+> pioraram, 1 empatou, NENHUM melhorou (`maximin=-0,133, soma=-0,333`)
+> — reprova o critério maximin, contrário à expectativa ("igual ao
+> NarutoSim, milhares deveria ser mais confiável"). Causa raiz não
+> investigada a fundo (hipótese não confirmada no HANDOFF). **Revertido
+> pro valor já validado (40, bloco 510)**. `smoke_fast`/`smoke_test`
+> 100%.
+>
+> **Estado final da "calibragem dinâmica" nesta sessão**: só a fase 1
+> (camada barata alargando o shortlist, `CHEAP_LAYER_SAMPLES=40`)
+> sobrevive — exatamente como ficou nos blocos 510/511. Tanto o ajuste
+> de peso (fase 2, blocos 513-515) quanto escalar a amostra (blocos
+> 514/517) foram medidos e descartados por regredir/não melhorar,
+> apesar de ambos parecerem boas ideias em teoria. Ver bloco 517 do
+> HANDOFF.
+
 > 13/08/2026 (bloco 516): **Bug real na comparação de escala (40 vs
 > 3000 amostras)**: margem deu EXATAMENTE zero em todos os 4 matchups —
 > sinal de bug, não "efeito zero de verdade". Causa: `_compute_cheap_
