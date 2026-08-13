@@ -2,6 +2,21 @@
 
 **Última atualização:** 13 de agosto de 2026
 
+> 13/08/2026 (bloco 522, EM ANDAMENTO): sinal barato mais confiante
+> (samples=1000/depth=8) usado pra ALARGAR o shortlist da fase 1
+> original **regride** produção (`maximin=-0,050`) — orçamento da
+> busca cara offline é apertado demais pra receber mais candidatas
+> sem perder precisão. Pedido do usuário pra simplificar: novo modo
+> **GATE** (`USE_CHEAP_LAYER_GATE`, `False` por padrão) — só pula a
+> busca cara quando a simulação barata já está confiante (gap grande
+> entre a 1ª e 2ª candidata), senão cai no fluxo de sempre sem
+> alargar. Implementado, testado (`smoke_fast`/`smoke_test` 100%),
+> **mas o limiar de confiança (`CHEAP_LAYER_GATE_THRESHOLD=50.0`)
+> ainda não foi calibrado nem validado com o protocolo completo**.
+> Próxima sessão: terminar a calibração do limiar e validar com
+> matchups multi-âncora antes de decidir se liga por padrão. Ver
+> bloco 522 do HANDOFF.
+
 > 13/08/2026 (bloco 521): **EXCEÇÃO EXPLÍCITA a REGRA_SEM_DUPLICACAO,
 > autorizada pelo usuário** ("Pode abrir uma exceção dessa vez dessa
 > regra, se não não vamos avançar"), depois de eu propor uma alternativa

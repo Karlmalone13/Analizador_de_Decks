@@ -1,5 +1,60 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (522) - Claude (sessao remota web) - Alargar sempre o shortlist com sinal mais confiante REGRIDE producao (maximin=-0,050) -- novo modo "GATE" (pedido do usuario) simplifica: so pula a busca cara quando a simulacao ja e confiante, EM ANDAMENTO (threshold nao calibrado ainda)
+
+Continuacao do bloco 521 (profundidade de sequencia na camada barata,
+`_cheap_playout_deltas`). Depois de achar o "ponto de maior qualidade"
+via ladder de espelho de deck (samples=15000/depth=8 vencendo tudo,
+sem teto visivel -- ver bloco 521), o usuario pediu um teto pratico
+("no maximo 9000, o que acha?" -- bate com a referencia original do
+NarutoSim, ~8000). Escolhido samples=1000/depth=8 como candidato
+pratico (venceu producao 85% em espelho de deck, custo de 124ms/
+decisao vs 933ms do 8000/8).
+
+**Achado importante ao VALIDAR pra producao de verdade** (protocolo
+correto: matchups DIFERENTES, nao espelho -- o mesmo usado a sessao
+inteira pra decisoes de producao): usar esse sinal mais confiante como
+sinal de ALARGAMENTO da fase 1 original (`USE_CHEAP_LAYER_SHORTLIST`,
+onde a busca cara SEMPRE recebe as candidatas extras) **regride**,
+nao melhora -- `maximin=-0,050, soma=-0,075` (2 de 4 matchups
+pioraram). Explicacao: a busca cara offline tem orcamento MUITO
+apertado (`OFFLINE_MC_SAMPLES_MIN=3/MAX=6`) -- um sinal barato mais
+confiante alarga o shortlist com MAIS candidatas mais vezes, dividindo
+esse orcamento ja curto entre mais opcoes, piorando a precisao por
+candidata mesmo trazendo candidatas objetivamente melhores.
+
+**Pedido do usuario pra simplificar** ("voce esta complicando demais,
+e so fazer a simulacao... e depois jogar na heuristica ou nao
+dependendo do resultado"): em vez de SEMPRE alargar (fase 1 original),
+criar um GATE -- roda a simulacao barata, e SO pula a busca cara
+(aplica a acao de maior `cheap_value` DIRETO) quando o resultado ja e
+CONFIANTE (gap entre a 1a e a 2a candidata >= `CHEAP_LAYER_GATE_
+THRESHOLD`); senao, cai no fluxo de sempre (score estatico + busca
+cara), SEM alargamento nenhum -- evita o problema de orcamento
+encontrado acima porque nos casos ambiguos a busca cara volta a
+trabalhar exatamente como sempre trabalhou.
+
+**Implementado** (`decision_engine.py`, `main_phase`): novo bloco
+logo apos o modo `CHEAP_LAYER_DECIDES_ALONE` (ablacao, bloco 520),
+guardado por `USE_CHEAP_LAYER_GATE` (novo, `False` por padrao) e
+`CHEAP_LAYER_GATE_THRESHOLD` (prior nao calibrado, `50.0`) --
+mutuamente exclusivo com `USE_CHEAP_LAYER_SHORTLIST` (quando o gate
+esta ligado, a linha que computa `cheap_values` pra alargamento fica
+forcada a `None`, pra nao empilhar os dois mecanismos na mesma
+decisao). `smoke_fast.py`/`smoke_test.py` 100% (flag OFF, zero
+mudanca de comportamento), sanity check manual (1 partida completa
+com o gate ligado, sem excecao).
+
+**AINDA EM ANDAMENTO, nao concluido nesta sessao**: `CHEAP_LAYER_GATE_
+THRESHOLD=50.0` e um CHUTE, nao calibrado -- estava no meio de medir a
+distribuicao real de gaps (`cheap_value` da 1a candidata menos a 2a,
+amostrado com `samples=1000`, 20 partidas Imu x Mihawk) pra escolher
+um limiar sensato antes de validar com o protocolo multi-ancora
+completo (matchups diferentes, N>=40, maximin). Proximo passo direto:
+terminar essa medicao de distribuicao, escolher/testar 2-3 valores de
+threshold, validar o vencedor com o protocolo de producao, so entao
+decidir se `USE_CHEAP_LAYER_GATE` liga por padrao.
+
 ## 2026-08-13 (521) - Claude (sessao remota web) - EXCECAO EXPLICITA A REGRA_SEM_DUPLICACAO autorizada pelo usuario: `_cheap_playout_deltas` da profundidade de SEQUENCIA de verdade pra camada barata -- medicao em andamento
 
 **Contexto**: apos o bloco 520 mostrar que "so a camada barata decide"

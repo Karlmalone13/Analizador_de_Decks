@@ -354,6 +354,24 @@ USE_CHEAP_LAYER_SHORTLIST = True
 # ligar em `sim_bridge.py`.
 CHEAP_LAYER_DECIDES_ALONE = False
 
+# Modo "GATE" (bloco 522, pedido direto do usuario apos o achado do
+# bloco 521: alargar SEMPRE o shortlist da busca cara com um sinal
+# barato mais confiante sobrecarrega o orcamento apertado dela em vez
+# de ajudar -- maximin=-0,050 medido no teste de producao). Design
+# simplificado: roda a simulacao barata, e SO pula a busca cara
+# (aplica a acao de maior cheap_value DIRETO) quando o resultado ja e
+# CONFIANTE (gap >= CHEAP_LAYER_GATE_THRESHOLD entre a 1a e a 2a
+# candidata) -- senao, cai no fluxo de sempre (score estatico + busca
+# cara), SEM alargamento algum (mutuamente exclusivo com USE_CHEAP_
+# LAYER_SHORTLIST). OFF por padrao ate validar com o mesmo protocolo
+# multi-ancora de sempre.
+USE_CHEAP_LAYER_GATE = False
+# Limiar de confianca do gate -- mesma ordem de grandeza do `score`
+# imediato de `_generate_and_score_actions` (a camada barata usa os
+# MESMOS termos de EVAL_WEIGHTS, ver `_cheap_rollout_value`). Prior
+# nao calibrado ainda -- ver HANDOFF bloco 522 pro processo de escolha.
+CHEAP_LAYER_GATE_THRESHOLD = 50.0
+
 # ── busca prof.2 / resposta do oponente (item 3 do PLANO_AVALIACAO_E_BUSCA.md) ─
 # Depois de simular MINHA linha ate o fim do turno, simula o TURNO INTEIRO de
 # resposta do oponente (proprio engine, modo GULOSO -- ver _play_turn_greedy,
@@ -16174,6 +16192,42 @@ class OPTCGMatch:
                     return True
                 continue
 
+            # Modo "GATE" (bloco 522, pedido direto do usuario: "e so
+            # fazer a simulacao... e depois jogar na heuristica ou nao
+            # dependendo do resultado" -- simplifica o desenho anterior.
+            # Achado do bloco 521/522: SEMPRE alargar o shortlist pra
+            # busca cara (a fase 1 original) sobrecarrega o orcamento
+            # apertado dela quando o sinal barato fica mais confiante
+            # (mais candidatas dividindo o mesmo teto de amostras) --
+            # regride em vez de ajudar. Em vez disso: roda a simulacao
+            # barata, e SO pula a busca cara quando o resultado ja e
+            # CONFIANTE (gap grande entre a 1a e a 2a candidata) --
+            # senao, cai no fluxo de sempre (score estatico + busca
+            # cara), SEM alargar. OFF por padrao ate validar.
+            if USE_CHEAP_LAYER_GATE:
+                cv_gate = self._compute_cheap_values(p, opp, actions, n_samples=CHEAP_LAYER_SAMPLES)
+                ordenadas_gate = sorted(
+                    (a for a in actions if id(a) in cv_gate),
+                    key=lambda a: cv_gate[id(a)], reverse=True)
+                if ordenadas_gate:
+                    top = ordenadas_gate[0]
+                    vice_valor = (cv_gate[id(ordenadas_gate[1])]
+                                 if len(ordenadas_gate) > 1 else float('-inf'))
+                    gap = cv_gate[id(top)] - vice_valor
+                    if (gap >= CHEAP_LAYER_GATE_THRESHOLD
+                            and not self._is_unsafe_zero_life_leader_attack(top, p, opp, engine)):
+                        self._log_turn_planner_decision(
+                            p, opp, engine, priority, actions, [top],
+                            top, cv_gate.get(id(top)), {}, cheap_values=cv_gate
+                        )
+                        if self._apply_action(top, p, opp, ee, engine, verbose=verbose):
+                            return True
+                        continue
+                # nao confiante (ou sem candidatas com cheap_value) --
+                # cai no fluxo normal abaixo, SEM alargamento (cheap_
+                # values forcado a None so nesta iteracao, pra nao
+                # empilhar o gate com a fase 1 -- mecanismos separados).
+
             # GamePlan fase 2b (auditor 10/07, flag D_win_con_parado): quando a
             # acao do topo e JOGAR a carta-bomba do plano e o DON ja paga, executa
             # DIRETO, sem passar pelo Monte Carlo. O valor da bomba se realiza no
@@ -16218,7 +16272,7 @@ class OPTCGMatch:
             # classico desse bug (as duas condicoes rodaram com o mesmo
             # valor de fato).
             cheap_values = (self._compute_cheap_values(p, opp, actions, n_samples=CHEAP_LAYER_SAMPLES)
-                            if USE_CHEAP_LAYER_SHORTLIST else None)
+                            if USE_CHEAP_LAYER_SHORTLIST and not USE_CHEAP_LAYER_GATE else None)
             candidatas = self._select_search_candidates(
                 actions, TOP_K, priority, cheap_values=cheap_values)
             if len(candidatas) == 1:
