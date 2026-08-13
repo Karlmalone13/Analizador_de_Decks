@@ -713,13 +713,29 @@ def choose_action(gs: GameState, opp_gs: GameState,
                     # numa simulacao deterministica sem amostragem -- rng=
                     # random (modulo, nao random.Random() novo, achado
                     # 26/07) so importa quando model existe.
-                    melhor, melhor_valor, records, n_amostras, _sim_values = (
-                        match._select_action_via_search(
-                            gs, opp_gs, engine, candidatos, model,
-                            max_steps=SEARCH_MAX_STEPS, extra_own_turn_search=True,
-                            samples_min=SEARCH_SAMPLES_MIN, samples_max=SEARCH_SAMPLES_MAX,
-                            batch_size=SEARCH_SAMPLES_BATCH, z_threshold=SEARCH_SAMPLES_Z,
-                            rng=random))
+                    # Fase 2 da "calibragem dinamica" (bloco 508/513): reusa
+                    # os MESMOS cheap_values ja calculados acima (linha
+                    # 668) pra achar qual termo de EVAL_WEIGHTS mais
+                    # explica a vantagem da candidata lider sobre a vice, e
+                    # reforca ele TRANSITORIAMENTE (so durante ESTA busca,
+                    # try/finally garante que nunca vaza pra decisao
+                    # seguinte). Mesma flag/mesmo mecanismo do offline
+                    # (main_phase) -- FONTE UNICA, sem flag separada por
+                    # caminho.
+                    ajuste = (
+                        match._compute_dynamic_weight_adjustment(gs, opp_gs, candidatos, cheap_values)
+                        if _de.USE_DYNAMIC_WEIGHT_ADJUSTMENT and cheap_values else {})
+                    original_weights = match._set_dynamic_weights(gs, ajuste)
+                    try:
+                        melhor, melhor_valor, records, n_amostras, _sim_values = (
+                            match._select_action_via_search(
+                                gs, opp_gs, engine, candidatos, model,
+                                max_steps=SEARCH_MAX_STEPS, extra_own_turn_search=True,
+                                samples_min=SEARCH_SAMPLES_MIN, samples_max=SEARCH_SAMPLES_MAX,
+                                batch_size=SEARCH_SAMPLES_BATCH, z_threshold=SEARCH_SAMPLES_Z,
+                                rng=random))
+                    finally:
+                        match._restore_weights(gs, original_weights)
                     search_records = [
                         {"action": action_to_trace(rec["action"]), "value": round(rec["value"], 4)}
                         for rec in records
@@ -801,6 +817,11 @@ def choose_action(gs: GameState, opp_gs: GameState,
                                 "cheap_layer_active": cheap_values is not None,
                                 "cheap_layer_additions": len(
                                     getattr(match, '_last_cheap_layer_additions', None) or ()),
+                                # Fase 2 (bloco 508/513): {} quando desligada
+                                # (USE_DYNAMIC_WEIGHT_ADJUSTMENT=False, o
+                                # padrao ate medir isolado) ou sem termo com
+                                # gap positivo pra explicar a vantagem.
+                                "dynamic_weight_adjustment": ajuste,
                             }
                         verbo = "refinou" if model is not None else "auditou"
                         print(f"[ENG] busca {verbo}: {melhor[1]} (score imediato {melhor[0]:.1f}, "

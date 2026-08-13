@@ -2,6 +2,20 @@
 
 **Última atualização:** 13 de agosto de 2026
 
+> 13/08/2026 (bloco 513): **FASE 2 da "calibragem dinâmica" implementada**
+> (`USE_DYNAMIC_WEIGHT_ADJUSTMENT`, desligada por padrão até medir
+> isolada — mesmo protocolo da fase 1). Mecanismo: reusa os rollouts
+> baratos da fase 1 (`_cheap_rollout_components`, decomposição por
+> termo de `EVAL_WEIGHTS`) pra achar qual termo mais explica a vantagem
+> da candidata líder sobre a vice numa decisão específica, e reforça
+> ele TRANSITORIAMENTE (`peso_final = peso_estático × (1+ajuste)`, teto
+> ±20%, só durante a busca cara daquela decisão — nunca persiste,
+> deck-agnóstico de verdade). Wired nos dois caminhos (offline e ao
+> vivo). 4 testes novos em `smoke_fast.py`, suíte completa 100%,
+> comportamento de produção inalterado (flag OFF). **Próximo passo em
+> andamento**: comparação OFF-vs-ON isolada (mesmo roster/protocolo do
+> bloco 510) pra decidir se liga por padrão. Ver bloco 513 do HANDOFF.
+
 > 13/08/2026 (bloco 512): **`_select_action_via_search` generaliza a
 > parada antecipada de 2 pra N candidatas** (achado ao investigar o
 > pior caso de tempo do bloco 511, pedido do usuário "acha que tem

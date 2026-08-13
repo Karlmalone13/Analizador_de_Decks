@@ -1,5 +1,67 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (513) - Claude (sessao remota web) - FASE 2 da "calibragem dinamica" implementada (`USE_DYNAMIC_WEIGHT_ADJUSTMENT`, desligada por padrao ate medir isolada)
+
+Pedido do usuario ("vamos pra fase 2") pra construir o mecanismo
+especificado no bloco 508 e confirmado nesta sessao antes de codar
+("Isso, vamos para fase 2" apos eu propor o mecanismo concreto, ja que
+a especificacao original deixava em aberto COMO o rollout barato vira
+`ajuste`).
+
+**Mecanismo implementado** (`decision_engine.py`):
+1. `_cheap_rollout_sample_deltas` -- extraido de `_cheap_rollout_value`
+   (fase 1) pra compartilhar a amostragem sem duplicar
+   (REGRA_SEM_DUPLICACAO). Comportamento de `_cheap_rollout_value`
+   preservado byte a byte (mesma sequencia de `rng`, mesmos testes de
+   determinismo do bloco 509 continuam passando).
+2. `_cheap_rollout_components` -- mesma amostragem, mas devolve a
+   decomposicao PONDERADA por termo de EVAL_WEIGHTS (`board_mine`,
+   `board_opp`, `hand_first`, `don_field`, `dmg`) em vez do total unico.
+   Soma dos 5 componentes bate exatamente com `_cheap_rollout_value`
+   (teste novo prova isso).
+3. `_compute_dynamic_weight_adjustment(p, opp, candidatas, cheap_values)`
+   -- acha a candidata LIDER e VICE (maior/segunda maior cheap_value
+   dentre as que vao pra busca cara), compara a decomposicao das duas,
+   e reforca proporcionalmente SO os termos com gap POSITIVO (que
+   favorecem a lider), respeitando teto `DYNAMIC_WEIGHT_ADJUSTMENT_CAP
+   = 0.20` (±20%, valor acordado no bloco 508). Termos com gap negativo
+   (a lider vence apesar deles) NAO sao reforcados. Vazio quando <2
+   candidatas tem cheap_value ou nenhum termo tem gap positivo.
+4. `_set_dynamic_weights`/`_restore_weights` -- aplicam
+   `peso_final = peso_estatico * (1+ajuste)` em cima do `eval_weights`
+   ATUAL de `p` (respeita override existente), devolvem/restauram o
+   valor original -- SEMPRE via try/finally nos 2 chamadores, garante
+   que o ajuste nunca vaza pra decisao seguinte (deck-agnostico de
+   verdade: nao existe perfil salvo, e recalculado do zero a cada
+   decisao e desaparece no fim dela).
+
+**Onde entra**: em `main_phase` (offline) e `sim_bridge.choose_action`
+(ao vivo), imediatamente antes de `_select_action_via_search`, reusando
+os MESMOS `cheap_values` ja calculados pela fase 1 (nao roda rollout
+novo pra decidir alargamento + rollout novo pra calibrar -- so 2
+chamadas extras de `_cheap_rollout_components`, uma pra lider uma pra
+vice, quando ha pelo menos 2 candidatas com cheap_value). Opt-in via
+`USE_DYNAMIC_WEIGHT_ADJUSTMENT` (nova constante, `False` por padrao) --
+MESMO protocolo da fase 1 (bloco 509 implementou desligado, bloco 510
+mediu e ligou). Log de auditoria (`_log_turn_planner_decision` e
+`trace_out["line_search"]`, ao vivo) ganha o campo
+`dynamic_weight_adjustment` nos dois caminhos.
+
+**Validacao**: 4 testes novos em `smoke_fast.py` (consistencia
+soma-de-componentes-bate-com-total; reforco de 1 termo recebe o teto
+inteiro; 2 termos dividem o teto proporcionalmente; sem gap positivo
+fica vazio; menos de 2 candidatas fica vazio; `_set_dynamic_weights`/
+`_restore_weights` transitorio e reversivel, inclusive com override
+pre-existente). `smoke_fast.py`/`smoke_test.py` 100% -- comportamento
+de producao inalterado (flag OFF por padrao).
+
+**Proximo passo, ja em andamento**: comparacao OFF-vs-ON isolada
+(mesmo roster Imu_v_{Mihawk,Ace,Lucy}, N=30/matchup, seeds pareadas,
+`USE_CHEAP_LAYER_SHORTLIST` ligado nas 2 condicoes pra isolar SO o
+efeito ADICIONAL da fase 2) -- resultado registrado em bloco separado
+assim que terminar, decide se a flag liga por padrao (mesmo protocolo
+do bloco 510).
+
 ## 2026-08-13 (512) - Claude (sessao remota web) - `_select_action_via_search` generaliza parada antecipada de 2 pra N candidatas (achado ao investigar o pior caso do bloco 511) + AVISO: ambiente reverteu o repo local sozinho no meio da sessao
 
 **ALERTA pra sessoes futuras (nao-engine, infraestrutura)**: no meio
