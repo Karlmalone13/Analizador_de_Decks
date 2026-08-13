@@ -14749,15 +14749,25 @@ class OPTCGMatch:
         varias cartas seguidas" SEM pagar o custo da busca real
         (`_apply_action`/`EffectExecutor`, que resolve regra completa).
 
-        Escopo DELIBERADAMENTE restrito (mantem o "raso" barato, so
-        acrescenta profundidade de SEQUENCIA):
-        - So encadeia acoes 'play' da mao restante (nao considera
-          'attack'/'activate' nos passos seguintes ao primeiro -- cartas
-          jogadas ficticiamente nesta amostra nao viram atacantes
-          validos aqui, simplificacao aceita, ver HANDOFF).
-        - Escolhe gulosamente a carta de maior `board_value()` (+ bonus
-          fixo se tem draw) que ainda cabe no DON restante -- nao
-          resolve sinergia entre cartas, nao reordena por combo.
+        Escopo restrito (mantem o "raso" barato, so acrescenta
+        profundidade de SEQUENCIA):
+        - Encadeia acoes 'play' da mao restante E 'attack' (ao lider,
+          o caso mais universal) dos personagens reais que ainda podem
+          atacar -- corrigido 13/08 (bloco 523, achado real: a versao
+          anterior so encadeava 'play', o que enviesava sistematicamente
+          a favor de "jogar mais carta" sobre "atacar agora" (so 'play'
+          ganhava profundidade), medido causando REGRESSAO real quando
+          usado como sinal de confianca -- ver HANDOFF bloco 522/523).
+          Cada passo escolhe, entre TODAS as cartas jogaveis e TODOS os
+          atacantes disponiveis, quem tem o maior delta PONDERADO (mesmos
+          termos de EVAL_WEIGHTS usados no total final, pra comparar
+          'play' e 'attack' na MESMA escala) -- nao so board_value().
+        - So considera ataque ao LIDER (nao a personagens do oponente) --
+          simplificacao deliberada, cobre o caso mais comum/universal
+          sem precisar escolher alvo entre personagens.
+        - Personagens jogados FICTICIAMENTE nesta amostra NAO viram
+          atacantes validos nos passos seguintes (nao tem rush/sickness
+          modelado aqui) -- so os que JA estavam em campo de verdade.
         - NAO rastreia quais personagens do oponente ja foram "removidos"
           por uma acao anterior da MESMA sequencia -- 2 remocoes na
           mesma amostra podem contar o mesmo alvo 2x. Ruido aceito (a
@@ -14769,10 +14779,18 @@ class OPTCGMatch:
           FONTE UNICA da decisao real.
 
         Opera SEM mutar os objetos reais `p`/`opp` -- so acumula deltas
-        e rastreia mao/DON restantes em variaveis locais.
+        e rastreia mao/DON/atacantes restantes em variaveis locais.
         """
         d_board_mine, d_opp_removed, d_hand, d_don, d_pressure = (
             self._cheap_rollout_sample_deltas(p, opp, first_action, rng))
+
+        W = getattr(p, 'eval_weights', None) or EVAL_WEIGHTS
+
+        def peso(deltas):
+            dbm, dor, dh, dd, dp = deltas
+            return (dbm * W['board_mine'] + dor * W['board_opp']
+                    + dh * W['hand_first'] + dd * W['don_field']
+                    + dp * W['dmg'] * 0.1)
 
         mao_restante = list(p.hand)
         kind0, obj0 = first_action[1], first_action[2]
@@ -14780,22 +14798,39 @@ class OPTCGMatch:
             mao_restante.remove(obj0)
         don_restante = p.don_available + d_don   # d_don ja e <= 0 (custo)
 
+        atacantes_disponiveis = [
+            c for c in ([p.leader] + list(p.field_chars))
+            if character_can_attack_now(c, p, opp)
+               and not (kind0 == 'attack' and c is obj0)
+        ]
+
         for _ in range(max(0, max_steps - 1)):
-            candidatas = [c for c in mao_restante if c.cost <= don_restante]
+            candidatas = []
+            for c in mao_restante:
+                if c.cost <= don_restante:
+                    acao_fake = (0.0, 'play', c, None, None)
+                    deltas = self._cheap_rollout_sample_deltas(
+                        p, opp, acao_fake, rng, don_disponivel=don_restante)
+                    candidatas.append(('play', c, deltas))
+            for att in atacantes_disponiveis:
+                acao_fake = (0.0, 'attack', att, 'leader', None)
+                deltas = self._cheap_rollout_sample_deltas(
+                    p, opp, acao_fake, rng, don_disponivel=don_restante)
+                candidatas.append(('attack', att, deltas))
             if not candidatas:
                 break
-            melhor = max(candidatas, key=lambda c: (
-                c.board_value() + (1.0 if get_card_flags(c.code).get('draws') else 0.0)))
-            acao_fake = (0.0, 'play', melhor, None, None)
-            dm, dor, dh, dd, dp = self._cheap_rollout_sample_deltas(
-                p, opp, acao_fake, rng, don_disponivel=don_restante)
+            melhor_kind, melhor_obj, melhor_deltas = max(candidatas, key=lambda c: peso(c[2]))
+            dm, dor, dh, dd, dp = melhor_deltas
             d_board_mine += dm
             d_opp_removed += dor
             d_hand += dh
             d_don += dd
             d_pressure += dp
-            don_restante += dd   # dd <= 0
-            mao_restante.remove(melhor)
+            if melhor_kind == 'play':
+                don_restante += dd   # dd <= 0
+                mao_restante.remove(melhor_obj)
+            else:
+                atacantes_disponiveis = [a for a in atacantes_disponiveis if a is not melhor_obj]
 
         return d_board_mine, d_opp_removed, d_hand, d_don, d_pressure
 

@@ -2,6 +2,18 @@
 
 **Última atualização:** 13 de agosto de 2026
 
+> 13/08/2026 (bloco 523, EM ANDAMENTO): calibração do limiar do GATE
+> (bloco 522) mostrou os 3 valores testados (3,0/8,0/15,0) TODOS
+> regredindo produção. Investigada a causa: `_cheap_playout_deltas`
+> só encadeava jogadas 'play' nos passos seguintes, nunca 'attack' —
+> viés sistemático a favor de "jogar mais carta" sobre "atacar agora".
+> **Corrigido**: cada passo agora compara 'play' e 'attack' na MESMA
+> escala (delta ponderado por `EVAL_WEIGHTS`, não `board_value()` cru).
+> Custo subiu ~2,6x (esperado, agora avalia todos os candidatos por
+> passo). `smoke_fast`/`smoke_test` 100%. **Re-validação dos mesmos 3
+> limiares com a correção EM ANDAMENTO**, resultado ainda não saiu.
+> Ver bloco 523 do HANDOFF.
+
 > 13/08/2026 (bloco 522, EM ANDAMENTO): sinal barato mais confiante
 > (samples=1000/depth=8) usado pra ALARGAR o shortlist da fase 1
 > original **regride** produção (`maximin=-0,050`) — orçamento da

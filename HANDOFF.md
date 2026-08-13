@@ -1,5 +1,43 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (523) - Claude (sessao remota web) - Corrige o viES real achado no gate: `_cheap_playout_deltas` so encadeava 'play' (nunca 'attack'), enviesando a favor de desenvolver -- validacao com a correcao EM ANDAMENTO
+
+Continuacao direta do bloco 522: os 3 limiares testados pro modo GATE
+(3.0, 8.0, 15.0) regrediram TODOS contra a producao (maximin=-0,067,
+-0,233, -0,100). Investigado o motivo em vez de so tentar mais
+limiares: `_cheap_playout_deltas` (bloco 521) so encadeava acoes
+'play' da mao restante nos passos APOS a 1a acao -- 'attack' nunca
+ganhava esse bonus de profundidade de sequencia, so o delta de 1 passo
+so. Resultado: o sinal barato ficava sistematicamente enviesado a
+favor de "jogar mais carta" sobre "atacar agora", mesmo quando atacar
+seria a jogada certa -- e quando o GATE confiava nessa opiniao
+enviesada, aplicava direto sem a busca cara corrigir.
+
+**Correcao** (`_cheap_playout_deltas`, `decision_engine.py`): cada
+passo da sequencia agora avalia TODAS as cartas jogaveis da mao E
+TODOS os personagens reais que podem atacar (`character_can_attack_now`,
+so contra o lider -- simplificacao deliberada, nao escolhe entre
+personagens do oponente), comparando os dois tipos de acao na MESMA
+escala (delta ponderado pelos termos de EVAL_WEIGHTS, nao mais so
+`board_value()` cru) -- 'play' e 'attack' competem de igual pra igual
+a cada passo agora. Personagens jogados ficticiamente na MESMA amostra
+nao viram atacantes validos (sem rush/sickness modelado, simplificacao
+aceita e documentada).
+
+**Custo subiu** (esperado: agora avalia TODOS os candidatos a cada
+passo, nao so escolhe pelo `board_value()` cru sem chamar a funcao de
+delta): samples=1000/depth=8 foi de 124ms pra ~325ms/decisao (~2,6x).
+Ainda tolerável pra medicao offline.
+
+**Validado**: `smoke_fast.py`/`smoke_test.py` 100% (inclusive os 3
+testes novos do bloco 521 sobre `_cheap_playout_deltas`, que ainda
+passam -- comportamento aditivo, nao quebrou os casos ja cobertos).
+
+**EM ANDAMENTO, nao concluido nesta sessao**: re-rodando a mesma
+validacao de 3 limiares (3.0/8.0/15.0) do bloco 522 com a correcao,
+protocolo multi-ancora de producao (matchups diferentes, N=30),
+resultado sai em bloco separado assim que terminar.
+
 ## 2026-08-13 (522) - Claude (sessao remota web) - Alargar sempre o shortlist com sinal mais confiante REGRIDE producao (maximin=-0,050) -- novo modo "GATE" (pedido do usuario) simplifica: so pula a busca cara quando a simulacao ja e confiante, EM ANDAMENTO (threshold nao calibrado ainda)
 
 Continuacao do bloco 521 (profundidade de sequencia na camada barata,
