@@ -10122,6 +10122,7 @@ def main() -> int:
     test_cheap_rollout_value_deterministico_e_direcao_correta_11_08()
     test_select_search_candidates_alarga_com_cheap_values_sem_regredir_11_08()
     test_log_turn_planner_decision_registra_cheap_value_pra_auditoria_11_08()
+    test_select_action_via_search_generaliza_parada_antecipada_pra_3_candidatas_13_08()
     test_ponder_fingerprint_deterministico_09_08()
     test_ponder_fingerprint_muda_por_mutacao_isolada_09_08()
     test_ponder_payload_byte_identico_ao_caminho_normal_09_08()
@@ -12552,6 +12553,77 @@ def test_log_turn_planner_decision_registra_cheap_value_pra_auditoria_11_08() ->
     check("context.cheap_layer_active reflete corretamente ligado/desligado",
           rec['context']['cheap_layer_active'] is True
           and rec2['context']['cheap_layer_active'] is False)
+
+
+def test_select_action_via_search_generaliza_parada_antecipada_pra_3_candidatas_13_08() -> None:
+    """
+    Bloco 512: `_select_action_via_search` so tinha parada antecipada
+    adaptativa (piso/teto) pra EXATAMENTE 2 candidatas ("pairwise") --
+    com 3+, sempre rodava exatamente `samples_min` amostras, sem testar
+    nada: gastava o piso inteiro numa decisao obvia (desperdicio) e nunca
+    subia pro teto numa decisao genuinamente empatada (menos precisao
+    que um empate de so 2 teria). Corrigido generalizando o teste pareado
+    pra comparar a LIDER (maior media corrente) contra a VICE (segunda
+    maior), va-los pra qualquer N>=2. Prova as 2 pontas com
+    `_simulate_sequence_values` trocado por valores sinteticos
+    deterministicos (sem rodar simulacao de verdade):
+    (1) separacao clara entre as 2 melhores (a=100 vs b=50, c irrelevante)
+    -> para no PISO, nao desperdica amostras extras;
+    (2) empate genuino entre as 2 melhores (delta alternando +4/-4, media
+    0) -> sobe ate o TETO, nao fica preso no piso como o codigo antigo.
+    """
+    import random
+    match = OPTCGMatch((real_card("OP11-062"), []), (real_card("OP11-062"), []))
+
+    a = (100.0, 'play', mk("CA", "CartaA", power=1, cost=1), None, None)
+    b = (100.0, 'play', mk("CB", "CartaB", power=1, cost=1), None, None)
+    c = (100.0, 'play', mk("CC", "CartaC", power=1, cost=1), None, None)
+
+    class _StubModel:
+        def sample(self, opp, rng=None):
+            return None
+
+    # Caso 1: separacao clara (a~100, b~50, c bem abaixo) -- delta a-b tem
+    # ruido real (fases opostas) mas a media (50) domina o desvio-padrao.
+    def fake_sim_separado(p, opp, first_action, max_steps, amostras=None,
+                          extra_own_turn_search=False):
+        n = len(amostras)
+        if first_action is a:
+            return [101.0 if i % 2 == 0 else 99.0 for i in range(n)]
+        if first_action is b:
+            return [49.0 if i % 2 == 0 else 51.0 for i in range(n)]
+        return [-1000.0] * n
+
+    match._simulate_sequence_values = fake_sim_separado
+    _melhor, _valor, _recs, n_amostras_1, _sv = match._select_action_via_search(
+        match.state_a, match.state_b, DecisionEngine(match.state_a, match.state_b),
+        [a, b, c], _StubModel(), max_steps=1, extra_own_turn_search=False,
+        samples_min=12, samples_max=24, batch_size=12, z_threshold=2.0,
+        rng=random.Random(1))
+    check("3 candidatas com separacao CLARA para no PISO (12), nao desperdica amostras",
+          n_amostras_1 == 12)
+
+    # Caso 2: empate genuino entre as 2 melhores (a e b, media 10 nos
+    # dois, delta alternando +4/-4 -- variancia real, media zero).
+    def fake_sim_empatado(p, opp, first_action, max_steps, amostras=None,
+                          extra_own_turn_search=False):
+        n = len(amostras)
+        if first_action is a:
+            return [12.0 if i % 2 == 0 else 8.0 for i in range(n)]
+        if first_action is b:
+            return [8.0 if i % 2 == 0 else 12.0 for i in range(n)]
+        return [-1000.0] * n
+
+    match._simulate_sequence_values = fake_sim_empatado
+    _melhor2, _valor2, _recs2, n_amostras_2, _sv2 = match._select_action_via_search(
+        match.state_a, match.state_b, DecisionEngine(match.state_a, match.state_b),
+        [a, b, c], _StubModel(), max_steps=1, extra_own_turn_search=False,
+        samples_min=12, samples_max=24, batch_size=12, z_threshold=2.0,
+        rng=random.Random(1))
+    check("3 candidatas com EMPATE genuino sobe ate o TETO (24), nao fica preso no piso",
+          n_amostras_2 == 24)
+
+    del match._simulate_sequence_values
 
 
 # ── Pondering (BOT/engine_server/server.py, design bloco 478, implementado

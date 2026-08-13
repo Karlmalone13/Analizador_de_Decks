@@ -1,5 +1,65 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (512) - Claude (sessao remota web) - `_select_action_via_search` generaliza parada antecipada de 2 pra N candidatas (achado ao investigar o pior caso do bloco 511) + AVISO: ambiente reverteu o repo local sozinho no meio da sessao
+
+**ALERTA pra sessoes futuras (nao-engine, infraestrutura)**: no meio
+desta sessao, o container reverteu SOZINHO o estado local do repo (e
+pacotes pip -- `pandas`/`fastapi` sumiram e precisaram ser reinstalados)
+pra um commit BEM mais antigo (`5fe0966`, anterior ao bloco 478/505),
+sem nenhum aviso explicito no transcript alem de um erro
+`ModuleNotFoundError` reaparecendo. O push do bloco 511 (`3b7c938`)
+TINHA ido pro GitHub normalmente antes disso (confirmado via
+`git fetch`), entao nada foi perdido de verdade, mas qualquer commit
+feito DEPOIS da reversao (sem perceber) teria sido feito em cima do
+codigo errado e apagado meses de trabalho ao dar push. Se `git log
+--oneline -3` mostrar algo muito mais antigo que o HANDOFF.md que voce
+acabou de ler, ou um `ModuleNotFoundError` aparecer pra um pacote que
+"sempre esteve instalado", pare e rode `git fetch origin
+<branch>` + compare com `git log origin/<branch>` antes de continuar
+editando -- o fix e `git checkout -B <branch> origin/<branch>` (seguro
+quando `git log origin/<branch>..HEAD` so mostra commits ja incluidos/
+superados, como foi o caso aqui: o unico commit local unico era uma
+versao de pondering mais antiga e menor que a que ja estava no origin).
+
+**O achado de engine**: investigando o "pior caso" de tempo (4,7s) do
+benchmark do bloco 511 a pedido do usuario ("acha que tem alguma coisa
+errada que possa ser corrigida?"), achei uma lacuna real em
+`_select_action_via_search` (item 3 do plano, unificacao 26/07): a
+parada antecipada adaptativa (teste pareado, piso/teto de amostras) SO
+existia pra `len(candidatas) == 2` (`pairwise`). Com 3+ candidatas
+(cada vez mais comum desde a camada barata dos blocos 508-510, que
+alarga o shortlist exatamente pra trazer mais candidatas boas pra
+briga), o codigo sempre rodava exatamente `samples_min` amostras, sem
+testar nada -- gastava o piso inteiro numa decisao obvia (desperdicio)
+E nunca subia pro teto numa decisao genuinamente empatada (as
+candidatas mais dificeis de decidir ficavam com MENOS precisao
+adaptativa que um empate de so 2 teria).
+
+**Correcao**: generalizei o teste pareado pra comparar a LIDER atual
+(maior media corrente) contra a VICE (segunda maior), recalculadas a
+cada lote -- funciona pra qualquer N>=2 (com N==2 os 2 unicos indices
+SAO lider/vice, comportamento idêntico ao de antes, so muda o sinal
+possivel de `media`, irrelevante porque so `abs(media)` importa).
+`decision_engine.py` ~L14851-14876.
+
+**Validacao**: 2 testes novos em `smoke_fast.py`
+(`test_select_action_via_search_generaliza_parada_antecipada_pra_3_candidatas_13_08`)
+com `_simulate_sequence_values` trocado por valores sinteticos
+deterministicos (sem depender de simulacao real): 3 candidatas com
+separacao clara para no piso (12, nao desperdica), 3 candidatas com
+empate genuino (delta alternando +4/-4, media 0) sobe ate o teto (24,
+nao fica preso). `smoke_fast.py`/`smoke_test.py` 100%. `audit_replay.py
+--n 20 --seed 777 --workers 4`: 20 partidas reais, 0 excecoes, 0
+anomalias (afeta os dois caminhos, ja que a funcao e fonte unica —
+offline tambem usa piso/teto adaptativo quando
+`USE_OPPONENT_RESPONSE_SEARCH=True`, `OFFLINE_MC_SAMPLES_MIN/MAX=3/6`).
+
+**Nao medido nesta sessao**: impacto em winrate/custo agregado desta
+mudanca especifica (só a ausencia de excecoes/anomalias foi validada,
+nao uma comparacao OFF-vs-ON como os blocos 509/510 fizeram pra camada
+barata) -- fica registrado como possibilidade de acompanhamento futuro
+se o usuario quiser medir o efeito isolado.
+
 ## 2026-08-13 (511) - Claude (sessao remota web) - Camada barata ESTENDIDA pro caminho AO VIVO (`sim_bridge.choose_action`) + timeout interno 3.0s -> 5.0s
 
 Pedido explicito do usuario apos o bloco 510: "vamos estender para o

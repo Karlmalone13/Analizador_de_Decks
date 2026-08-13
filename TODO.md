@@ -2,6 +2,32 @@
 
 **Última atualização:** 13 de agosto de 2026
 
+> 13/08/2026 (bloco 512): **`_select_action_via_search` generaliza a
+> parada antecipada de 2 pra N candidatas** (achado ao investigar o
+> pior caso de tempo do bloco 511, pedido do usuário "acha que tem
+> alguma coisa errada que possa ser corrigida?"). Antes, o teste
+> pareado adaptativo (piso/teto de amostras) só existia pra
+> `len(candidatas)==2` — com 3+ (cada vez mais comum desde a camada
+> barata), o código sempre rodava exatamente o piso, sem testar nada:
+> desperdiçava amostras numa decisão óbvia E nunca subia pro teto numa
+> decisão genuinamente empatada. Corrigido comparando a LÍDER atual vs
+> a VICE (recalculadas a cada lote), generaliza pra qualquer N>=2, sem
+> mudar o comportamento de N==2. 2 testes novos em `smoke_fast.py`,
+> `smoke_test.py` 100%, `audit_replay.py --n 20`: 0 exceções/anomalias.
+> Afeta os dois caminhos (offline e ao vivo, mesma fonte única).
+>
+> **ALERTA de infraestrutura, leia antes de editar qualquer coisa**: o
+> ambiente reverteu sozinho o repo local (e pacotes pip) pra um commit
+> bem mais antigo no meio desta sessão, sem aviso explícito — só um
+> `ModuleNotFoundError` reaparecendo pra pacote que já estava
+> instalado foi o sinal. Nada foi perdido (o push anterior já tinha ido
+> pro GitHub), mas exige `git fetch`+comparar antes de continuar
+> editando se `git log` parecer suspeito. Ver bloco 512 do HANDOFF pro
+> procedimento de recuperação.
+>
+> **Não medido nesta sessão**: impacto em winrate/custo agregado desta
+> mudança específica (só ausência de exceções/anomalias foi validada).
+
 > 13/08/2026 (bloco 511): **Camada barata ESTENDIDA pro caminho AO VIVO**
 > (`sim_bridge.choose_action`/`server.py`, pedido explícito do usuário
 > "vamos estender para o aovivo" após o veredito do bloco 510).

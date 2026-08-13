@@ -14809,16 +14809,26 @@ class OPTCGMatch:
         caminho ao vivo não tinha NENHuma das duas.
 
         Amostragem SEQUENCIAL em lotes: para no PISO (`samples_min`) assim
-        que a diferença de valor entre as 2 melhores candidatas fica
-        estatisticamente clara (teste pareado, mesmas amostras nos dois
-        lados via CRN), só sobe até o TETO (`samples_max`) quando o gap
-        ainda não é confiável (achado 26/07 do sweep de qualidade: mais
-        amostras melhora objetivamente a escolha, mas só vale gastar
-        quando o gap não está resolvido). `samples_min == samples_max`
-        degenera num N FIXO clássico (1 lote só, sem teste de
-        significância) -- é assim que o offline chama hoje, preservando
-        seu comportamento/custo atual byte a byte; o caminho ao vivo usa
-        piso/teto de verdade (12/24).
+        que a diferença de valor entre a LÍDER e a VICE-LÍDER (maior e
+        segunda maior média corrente, que podem trocar de identidade a
+        cada lote) fica estatisticamente clara (teste pareado, mesmas
+        amostras dos dois lados via CRN), só sobe até o TETO
+        (`samples_max`) quando o gap ainda não é confiável (achado 26/07
+        do sweep de qualidade: mais amostras melhora objetivamente a
+        escolha, mas só vale gastar quando o gap não está resolvido).
+        Generalizado pra N>=2 candidatas (13/08, bloco 512) -- antes só
+        existia pra N==2 exatas; com N>=3 (comum desde a camada barata,
+        bloco 508-510, que alarga o shortlist justamente pra trazer mais
+        candidatas boas pra briga) o código sempre parava cego em
+        `samples_min`, sem testar nada: gastava o piso inteiro numa
+        decisão óbvia (desperdício) e nunca subia pro teto numa decisão
+        genuinamente difícil (as 3+ candidatas empatadas ficavam com
+        MENOS precisão adaptativa que um empate de só 2 teria). `samples_
+        min == samples_max` degenera num N FIXO clássico (1 lote só, sem
+        teste de significância, o break do loop nunca é alcançado) -- é
+        assim que o offline chama hoje, preservando seu comportamento/
+        custo atual byte a byte; o caminho ao vivo usa piso/teto de
+        verdade (12/24).
 
         Retorna (melhor_action_ou_None, melhor_valor, search_records,
         amostras_usadas, sim_values_by_id). `melhor` vem `None` só se
@@ -14848,7 +14858,6 @@ class OPTCGMatch:
                     melhor = cand
             return melhor, melhor_valor, search_records, 0, sim_values
 
-        pairwise = len(candidatas) == 2
         valores_por_cand: list = [[] for _ in candidatas]
         n_coletadas = 0
         while n_coletadas < samples_max:
@@ -14862,9 +14871,14 @@ class OPTCGMatch:
             n_coletadas += batch
             if n_coletadas < samples_min:
                 continue
-            if not pairwise:
-                break
-            deltas = [a - b for a, b in zip(valores_por_cand[0], valores_por_cand[1])]
+            # Teste pareado generalizado (ver docstring) -- lider (maior
+            # media corrente) vs vice (segunda maior). Com N==2 os dois
+            # unicos indices SAO a lider/vice, byte-compativel com o teste
+            # antigo (so muda o sinal possivel de `media`, irrelevante
+            # porque so `abs(media)` importa abaixo).
+            medias = [sum(v) / len(v) if v else float('-inf') for v in valores_por_cand]
+            i_lider, i_vice = sorted(range(len(candidatas)), key=lambda i: medias[i], reverse=True)[:2]
+            deltas = [a - b for a, b in zip(valores_por_cand[i_lider], valores_por_cand[i_vice])]
             media = sum(deltas) / len(deltas)
             if len(deltas) > 1:
                 var = sum((d - media) ** 2 for d in deltas) / (len(deltas) - 1)
