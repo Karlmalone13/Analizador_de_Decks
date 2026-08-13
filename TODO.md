@@ -2,6 +2,29 @@
 
 **Última atualização:** 13 de agosto de 2026
 
+> 13/08/2026 (bloco 519): **FECHAMENTO da "calibragem dinâmica"** —
+> re-teste 40-vs-3000 sem o confound de RNG (bloco 518) deu
+> `maximin=+0,000, soma=+0,033`: não regride, mas ganho quase nulo (3
+> de 4 matchups empatados exatos). Verificação ponto-a-ponto explicou
+> o porquê: o ranking interno da camada barata muda 33% com mais
+> amostra, mas o CONJUNTO de candidatas que entram no shortlist não
+> mudou em nenhum caso testado (0%) — os números ficam mais precisos,
+> mas a decisão que importa já estava certa com 40. Diferença
+> arquitetural pro NarutoSim explicada ao usuário: lá as simulações
+> SÃO a decisão final (MCTS); aqui elas só filtram grosseiramente quem
+> entra na busca cara (que já decide bem). A busca cara em si não pode
+> escalar pra "milhares" como o NarutoSim — cada amostra simula um
+> turno real completo (~3,7ms/amostra medido, 8000 amostras custaria
+> ~30s só pra 1 candidata).
+>
+> **Decisão final do usuário**: manter a camada barata RASA (só
+> flags, `CHEAP_LAYER_SAMPLES=40`), sem investir numa camada
+> intermediária. Estado consolidado: só a fase 1 original (blocos
+> 509-511) sobrevive da "calibragem dinâmica"; fase 2 (ajuste de peso)
+> e escala maior de amostra foram exploradas e descartadas — mas 2
+> bugs reais e permanentes foram corrigidos no processo (confound de
+> RNG, default de parâmetro não dinâmico). Ver bloco 519 do HANDOFF.
+
 > 13/08/2026 (bloco 518): **CONFOUND real achado no resultado negativo
 > do bloco 517** (pedido do usuário pra investigar antes de desistir).
 > `_cheap_rollout_value`/`_compute_cheap_values` usavam o MÓDULO

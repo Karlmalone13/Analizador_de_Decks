@@ -1,5 +1,68 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (519) - Claude (sessao remota web) - FECHAMENTO: re-teste sem confound confirma ganho quase nulo -- decisao final e manter a camada barata RASA (so flags), sem investir numa camada intermediaria
+
+Re-teste 40-vs-3000 (bloco 518, agora com `_CHEAP_LAYER_RNG` isolado,
+sem confound) terminou. Roster multi-ancora, N=30/matchup:
+```
+matchup          40-amostras wr   3000-amostras wr   margem
+Imu_v_Mihawk     0,400            0,433              +0,033
+Mihawk_v_Ace     0,933            0,933              +0,000
+Ace_v_Lucy       0,633            0,633              +0,000
+Lucy_v_Imu       0,667            0,667              +0,000
+maximin=+0,000   soma=+0,033
+```
+Diferente do bloco 517 (negativo de verdade), agora **nao regride em
+lugar nenhum** -- confirma que o confound do RNG era a causa real do
+resultado negativo anterior. Mas o ganho tambem e quase nulo: 3 de 4
+matchups EXATAMENTE empatados, so 1 melhorou 3,3pp. `soma=+0,033` e
+muito mais fraco que o ganho da fase 1 original (bloco 510,
+`soma=+0,433`). Custo subiu de verdade (~10-25% mais tempo/partida em
+todos os matchups) pra esse ganho quase nulo.
+
+**Por que o ganho e tao pequeno, verificado ponto-a-ponto** (usuario
+pediu conferir se a medicao fazia sentido, "no Naruto sim simulava
+8000 e jogava bem"): comparei 40 vs 3000 amostras na MESMA decisao (9
+pontos reais de decisao, self-play Mihawk x Ace) -- o RANKING interno
+de `cheap_value` mudou em 33% dos casos (confirma que a amostragem
+funciona, nao e trivial), mas o CONJUNTO de candidatas que entram no
+shortlist alargado NAO mudou em NENHUM caso (0%). Ou seja: os numeros
+ficam mais precisos com mais amostra, mas a decisao que de fato
+importa (quem entra na busca cara) ja estava certa com 40.
+
+**Explicacao arquitetural pro usuario** (por que isso difere do
+NarutoSim): la, as milhares de simulacoes SAO a decisao final (MCTS,
+mais rollout = jogada melhor direto). Aqui, a camada barata so FILTRA
+quem entra na busca cara de verdade (que ja decide bem, ja validada) --
+e essa filtragem e um julgamento GROSSEIRO (cruza a linha ou nao),
+robusto a ruido, entao refinar o numero raramente muda o resultado.
+Medido tambem o motivo de nao dar pra "ser mais NarutoSim de verdade"
+na busca cara em si: cada amostra dela simula um TURNO REAL completo
+(regra de carta, combate, resposta do oponente) -- medido ~3,7ms por
+amostra, rodar 8000 assim custaria ~30s SO PRA UMA candidata,
+inviavel tanto ao vivo (orcamento de segundos) quanto offline em
+volume (calibracao roda muitas partidas).
+
+**Decisao final do usuario**: nao vale construir uma camada
+intermediaria (mais rica que flags, mais barata que simulacao
+completa) pra tentar fechar essa lacuna -- ficar com a camada barata
+RASA como esta (so flags, `CHEAP_LAYER_SAMPLES=40`) e aceitavel dado o
+esforco vs beneficio incerto. `CHEAP_LAYER_SAMPLES` permanece em `40`.
+
+**Estado final consolidado da "calibragem dinamica" nesta sessao**
+(blocos 508-519): SO a fase 1 original sobrevive (camada barata de
+flags alargando o shortlist do Turn Planner, offline e ao vivo,
+`CHEAP_LAYER_SAMPLES=40`, `USE_CHEAP_LAYER_SHORTLIST=True`) -- exatamente
+como validado nos blocos 509-511. Fase 2 (ajuste de peso) e escala
+maior de amostra (blocos 513-519) foram ambas exploradas, medidas com
+o mesmo rigor (multi-ancora, maximin) e descartadas por nao se
+sustentarem. Um bug real de confound de RNG foi achado e corrigido no
+processo (fica no motor pra sempre, independente da decisao de escala)
+e um bug real de default de parametro tambem (bloco 516). `_select_
+action_via_search` tambem ganhou uma correcao real e permanente no
+meio deste arco (bloco 512, parada antecipada generalizada pra N
+candidatas).
+
 ## 2026-08-13 (518) - Claude (sessao remota web) - CONFOUND real achado no resultado negativo do bloco 517: camada barata contaminava o stream de aleatoriedade do JOGO -- corrigido com RNG isolado, re-teste em andamento
 
 Usuario pediu pra investigar a causa do resultado negativo do bloco
