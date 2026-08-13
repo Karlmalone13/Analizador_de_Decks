@@ -1,5 +1,72 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-11 (510) - Claude (sessao remota web) - VEREDITO da fase 1: `USE_CHEAP_LAYER_SHORTLIST` LIGADO por padrao no offline -- winrate melhora nos 4 matchups (maximin=+0,033), custo +60,6% aceitavel fora do orcamento ao vivo
+
+Comparacao controlada pedida pelo usuario apos a implementacao do bloco
+509 ("vamos comparar a eficiencia desse novo metodo com o desse ultimo
+push, ai decidimos se ficamos com ele ou nao").
+
+**Metodologia**: mesmo roster ja deconfundido/validado dos blocos
+496/497/499-507 (Imu_v_{Mihawk,Ace,Lucy,Luffy-Y}), seeds PAREADAS entre
+2 condicoes (OFF=producao de entao, ON=camada barata ligada), N=30/
+matchup, script descartavel.
+
+**Resultado (o mais forte da sessao inteira)**:
+```
+Margens de winrate (ON - OFF): Imu_v_Mihawk +3,3pp / Imu_v_Ace +16,7pp /
+                                Imu_v_Lucy +6,7pp / Imu_v_Luffy-Y +16,7pp
+maximin=+0,033  soma=+0,433
+```
+Melhora nos 4 matchups testados, ZERO regressao -- maximin estritamente
+positivo, nao so empate como a maioria dos aceites de peso do dia.
+`soma=+0,433` e muito maior que qualquer ganho de recalibracao de peso
+isolado desta sessao.
+
+**Custo real**: +60,6% de tempo por partida (OFF=4,46s/partida,
+ON=7,16s/partida, media dos 4 matchups). Contextualizado com o usuario:
+essa camada so afeta o caminho OFFLINE (self-play/calibracao, sem
+orcamento de tempo real) -- `sim_bridge.choose_action` (AO VIVO) nunca
+foi tocado nesta implementacao, entao o overhead nao afeta decisao real
+do bot jogando contra humano.
+
+**Esclarecimento pro usuario** (pergunta real: "podemos estender o
+orcamento de 3s se precisar?"): investigado o codigo antes de responder
+-- existem DOIS timeouts diferentes no caminho ao vivo:
+1. **Limite real/rigido**: o plugin C# (`HttpClient`) desiste de
+   esperar resposta de QUALQUER endpoint (`/decide`, `/defense`, etc)
+   depois de **10 segundos** -- definido no lado do jogo, fora do nosso
+   controle.
+2. **Orcamento interno de busca**: `timeout=3.0` passado pra
+   `bridge.choose_action` em `server.py:1264` -- escolha PROPRIA
+   (margem de seguranca sob o limite real de 10s), nao um limite fisico.
+Resposta: SIM, da pra estender (ex: 5-6s), ainda com folga sob os 10s
+reais -- mas isso e decisao SEPARADA (extensao pro caminho ao vivo,
+fora do escopo desta sessao) com seu proprio teste de custo antes de
+mudar.
+
+**Decisao aplicada**: `USE_CHEAP_LAYER_SHORTLIST` mudado de `False`
+pra **`True`** (decision_engine.py ~L302) -- fica LIGADO por padrao
+pro caminho offline. Comentario do bloco de constantes atualizado pra
+nao ficar desatualizado (dizia "desligado por padrao", corrigido).
+
+**Validacao com o novo padrao**: `smoke_fast.py` + `smoke_test.py`
+100%. `audit_replay.py --n 30 --seed 777 --workers 4`: 0 excecoes, 0
+anomalias (46s de wall time, mostra o overhead real mas dentro do
+esperado pra uso offline). Script descartavel da comparacao apagado.
+
+**Ressalva honesta**: N=30/matchup, so 1 lider-ancora (Imu) testado
+ate agora -- mesma licao do bloco 505/506 (nao generalizar de 1 deck
+so) continua valendo; o resultado e forte o suficiente pra justificar
+ligar por padrao, mas uma validacao futura com mais arquetipos-ancora
+(mesmo espirito do bloco 506) reforcaria ainda mais a confianca.
+
+**Estado da fase 1**: CONCLUIDA e LIGADA em producao (offline). Fase 2
+(calibragem dinamica, especificada no bloco 508) continua NAO
+iniciada -- proximo passo natural se o usuario quiser continuar.
+Extensao da camada barata pro caminho AO VIVO tambem NAO iniciada,
+registrada como possibilidade real (ha folga de orcamento) mas fora do
+escopo decidido nesta sessao.
+
 ## 2026-08-11 (509) - Claude (sessao remota web) - FASE 1 IMPLEMENTADA: camada barata (`_cheap_rollout_value`) + alargamento do shortlist do Turn Planner + ferramenta de auditoria permanente (`audit_cheap_layer.py`) -- primeiro resultado real: sinal bate o acaso por +18,3pp
 
 Implementacao da fase 1 do desenho acordado no bloco 508 (usuario:

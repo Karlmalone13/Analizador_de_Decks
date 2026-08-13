@@ -2,6 +2,31 @@
 
 **Última atualização:** 11 de agosto de 2026
 
+> 11/08/2026 (bloco 510): **VEREDITO da fase 1 — `USE_CHEAP_LAYER_
+> SHORTLIST` LIGADO por padrão** (offline). Comparação controlada
+> (mesmo roster deconfundido, N=30/matchup, seeds pareadas): winrate
+> melhora nos **4 matchups** (+3,3pp/+16,7pp/+6,7pp/+16,7pp,
+> **maximin=+0,033**, zero regressão — resultado mais forte da sessão)
+> ao custo de **+60,6%** de tempo por partida. Custo aceitável porque só
+> afeta o caminho OFFLINE (`sim_bridge.py`, ao vivo, não foi tocado).
+>
+> **Esclarecimento pro usuário**: existem 2 timeouts no caminho ao
+> vivo — limite real/rígido de 10s (plugin C#, `HttpClient`, fora do
+> nosso controle) vs orçamento interno de busca de 3s (escolha própria
+> em `server.py`, com folga sob os 10s reais). **Sim, dá pra estender**
+> (ex: 5-6s) se algum dia quisermos levar a camada barata pro caminho ao
+> vivo — decisão separada, fora do escopo desta sessão.
+>
+> `smoke_fast`/`smoke_test` 100%, `audit_replay.py --n 30 --workers 4`
+> (novo padrão): 0 exceções/anomalias. Ver bloco 510 do HANDOFF.
+>
+> **Ressalva**: N=30, só 1 líder-âncora (Imu) testado — mesma lição do
+> bloco 505/506 sobre generalizar de 1 deck só.
+>
+> **Estado**: fase 1 CONCLUÍDA e ligada em produção (offline). Fase 2
+> (calibragem dinâmica) e extensão pro caminho ao vivo continuam NÃO
+> iniciadas — próximos passos naturais se o usuário quiser continuar.
+
 > 11/08/2026 (bloco 509): **FASE 1 implementada** — camada barata
 > (`_cheap_rollout_value`, baseada nas flags já existentes de
 > `get_card_flags`, sem resolver efeito de verdade) alargando o

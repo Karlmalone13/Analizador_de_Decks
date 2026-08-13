@@ -289,17 +289,23 @@ SEARCH_SCORE_WINDOW = 180
 # `_select_search_candidates` como um segundo criterio (alem do score
 # estatico de sempre) pra ALARGAR o shortlist que entra na busca cara --
 # nunca substitui, nunca encolhe o que o score estatico ja garantia.
-# Desligado por padrao (opt-in explicito via `cheap_values=` em
-# `_select_search_candidates`) -- nenhum caminho existente (offline
-# main_phase, ao vivo sim_bridge.choose_action) muda de comportamento
-# ate ser explicitamente ligado e validado por self-play.
+# Validado por self-play (bloco 510) antes de ligar -- ver USE_CHEAP_
+# LAYER_SHORTLIST abaixo pro resultado. `sim_bridge.choose_action` (ao
+# vivo) NAO chama `_compute_cheap_values`/nao passa `cheap_values=` --
+# so `main_phase` (offline) recebe o efeito enquanto isso nao mudar.
 CHEAP_LAYER_SAMPLES = 40
 CHEAP_LAYER_EXTRA_CANDIDATES = 3
-# Knob global, mesmo padrao do USE_EVAL_V2/USE_OPPONENT_RESPONSE_SEARCH --
-# comeca DESLIGADO. So o experimento de comparacao (self-play controlado)
-# liga explicitamente antes de medir; main_phase (offline) e sim_bridge
-# (ao vivo) preservam o comportamento de sempre enquanto isto for False.
-USE_CHEAP_LAYER_SHORTLIST = False
+# Knob global, mesmo padrao do USE_EVAL_V2/USE_OPPONENT_RESPONSE_SEARCH.
+# LIGADO 11/08 (bloco 510) apos comparacao controlada (self-play, N=30,
+# roster deconfundido Imu_v_{Mihawk,Ace,Lucy,Luffy-Y}, seeds pareadas):
+# winrate melhorou nos 4 matchups (+3,3pp/+16,7pp/+6,7pp/+16,7pp,
+# maximin=+0,033, sem regredir nenhum) ao custo de +60,6% de tempo por
+# partida -- aceitavel pro offline (self-play/calibracao, sem orcamento
+# de tempo real). So afeta main_phase (offline); sim_bridge (ao vivo)
+# continua com comportamento de sempre -- extensao pro caminho ao vivo
+# e decisao separada, com seu proprio teste de custo (orcamento real de
+# 3s/10s, ver HANDOFF bloco 510).
+USE_CHEAP_LAYER_SHORTLIST = True
 
 # ── busca prof.2 / resposta do oponente (item 3 do PLANO_AVALIACAO_E_BUSCA.md) ─
 # Depois de simular MINHA linha ate o fim do turno, simula o TURNO INTEIRO de
