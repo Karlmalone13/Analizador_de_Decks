@@ -55,12 +55,38 @@ fica vazio; menos de 2 candidatas fica vazio; `_set_dynamic_weights`/
 pre-existente). `smoke_fast.py`/`smoke_test.py` 100% -- comportamento
 de producao inalterado (flag OFF por padrao).
 
-**Proximo passo, ja em andamento**: comparacao OFF-vs-ON isolada
-(mesmo roster Imu_v_{Mihawk,Ace,Lucy}, N=30/matchup, seeds pareadas,
-`USE_CHEAP_LAYER_SHORTLIST` ligado nas 2 condicoes pra isolar SO o
-efeito ADICIONAL da fase 2) -- resultado registrado em bloco separado
-assim que terminar, decide se a flag liga por padrao (mesmo protocolo
-do bloco 510).
+**RESULTADO da comparacao OFF-vs-ON (mesmo roster Imu_v_{Mihawk,Ace,
+Lucy}, N=30/matchup, seeds pareadas, `USE_CHEAP_LAYER_SHORTLIST` ligado
+nas 2 condicoes pra isolar SO o efeito ADICIONAL da fase 2)**:
+```
+matchup          OFF winrate   ON winrate   margem
+Imu_v_Mihawk     0,533         0,400        -0,133
+Imu_v_Ace        0,667         0,667        +0,000
+Imu_v_Lucy       0,500         0,667        +0,167
+maximin=-0,133   soma=+0,033
+```
+**DIFERENTE do resultado da fase 1 (bloco 510, maximin=+0,033, ZERO
+regressao em 4 matchups)**: a fase 2 tem margem NEGATIVA real num dos 3
+matchups testados (Imu_v_Mihawk, -13,3pp) -- nao passa no criterio
+maximin usado a sessao inteira pra decidir se uma mudanca liga por
+padrao (mesmo protocolo, mesmo bar de exigencia, sem abrir excecao pra
+esta mudanca). **Decisao: `USE_DYNAMIC_WEIGHT_ADJUSTMENT` continua
+`False`** -- fase 2 fica implementada, testada, auditável (log ja
+grava `dynamic_weight_adjustment` mesmo desligada, valor sempre `{}`),
+mas NAO ligada em producao.
+
+**Hipotese nao investigada a fundo** (registrada pra proxima sessao,
+nao uma conclusao): o mecanismo de alocacao proporcional atual (todo o
+teto de 20% pro(s) termo(s) com gap positivo, ignorando os de gap
+negativo) pode estar super-reforcando um termo baseado em SO 1
+decisao/turno de sinal ruidoso (`CHEAP_LAYER_SAMPLES=40` por candidata,
+amostra pequena pra atribuicao por termo) -- Imu_v_Mihawk especificamente
+regredindo pode ser coincidencia de matchup ou um sinal real de que o
+ajuste esta enviesando a avaliacao errado nesse confronto especifico.
+N=30/matchup nao distingue os dois com confianca. Ideias nao testadas:
+(a) reduzir o cap abaixo de 20%; (b) exigir um gap minimo (nao so
+positivo, mas acima de um limiar) antes de ajustar; (c) medir com mais
+seeds/matchups antes de descartar a ideia de vez.
 
 ## 2026-08-13 (512) - Claude (sessao remota web) - `_select_action_via_search` generaliza parada antecipada de 2 pra N candidatas (achado ao investigar o pior caso do bloco 511) + AVISO: ambiente reverteu o repo local sozinho no meio da sessao
 

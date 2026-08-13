@@ -12,9 +12,19 @@
 > ±20%, só durante a busca cara daquela decisão — nunca persiste,
 > deck-agnóstico de verdade). Wired nos dois caminhos (offline e ao
 > vivo). 4 testes novos em `smoke_fast.py`, suíte completa 100%,
-> comportamento de produção inalterado (flag OFF). **Próximo passo em
-> andamento**: comparação OFF-vs-ON isolada (mesmo roster/protocolo do
-> bloco 510) pra decidir se liga por padrão. Ver bloco 513 do HANDOFF.
+> comportamento de produção inalterado (flag OFF).
+>
+> **RESULTADO da comparação OFF-vs-ON** (mesmo roster/protocolo do
+> bloco 510, N=30/matchup): **NÃO passa no critério maximin** —
+> Imu_v_Mihawk regrediu -13,3pp, Imu_v_Ace ficou igual, Imu_v_Lucy
+> melhorou +16,7pp (maximin=-0,133, soma=+0,033). Diferente da fase 1
+> (bloco 510, maximin=+0,033 positivo em TODOS). **Decisão:
+> `USE_DYNAMIC_WEIGHT_ADJUSTMENT` continua `False`** — fase 2 fica
+> implementada/testada/auditável, mas não liga em produção. Hipótese
+> não confirmada registrada pro futuro (alocação proporcional do teto
+> pode estar super-reforçando com sinal ruidoso de 1 decisão só) — ver
+> bloco 513 do HANDOFF pras ideias não testadas (reduzir cap, exigir
+> gap mínimo, mais seeds antes de descartar de vez).
 
 > 13/08/2026 (bloco 512): **`_select_action_via_search` generaliza a
 > parada antecipada de 2 pra N candidatas** (achado ao investigar o
