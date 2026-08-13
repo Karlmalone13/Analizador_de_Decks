@@ -1,5 +1,45 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (514) - Claude (sessao remota web) - Correcao metodologica na medicao da fase 2: escala de amostra (40 -> 3000) + roster multi-ancora (era Imu fixo)
+
+Usuario interrompeu a leitura do resultado do bloco 513 ("Calma, acho
+que houve uma confusao") e reiterou a especificacao original: "milhares
+de vezes" de amostra barata, e "nao adianta fazer igual vc ta fazendo,
+calibrando 1 deck so". Perguntei via AskUserQuestion pra separar as 2
+possibilidades (escala baixa demais vs teste com ancora unica) --
+usuario confirmou "as duas coisas".
+
+**Correcao 1 -- escala**: nova constante `DYNAMIC_WEIGHT_ADJUSTMENT_
+SAMPLES = 3000` (decision_engine.py), separada de `CHEAP_LAYER_SAMPLES
+= 40` (fase 1, NAO mexida -- ja validada/em producao, mudar arriscaria
+regredir o que ja funciona). `_compute_dynamic_weight_adjustment` usa a
+constante nova como default de `n_samples` pro par lider/vice. Custo
+medido antes de commitar: `_cheap_rollout_components` com 3000 amostras
+= ~6,8ms/chamada (era ~0,2ms com 40) -- ainda negligivel (2 chamadas =
+~13,6ms/decisao, trivial mesmo no orcamento ao vivo de 3-5s).
+
+**Correcao 2 -- roster de teste**: a comparacao OFF-vs-ON do bloco 513
+usava Imu como lado A FIXO nos 3 confrontos (Imu_v_Mihawk/Ace/Lucy) --
+o MESMO erro de "ancora unica" ja achado e corrigido nos blocos 505/506
+pra calibracao de peso estatico, repetido aqui sem perceber na hora de
+medir a fase 2. Corrigido pra ROTACAO multi-ancora: cada um dos 4 decks
+(Imu/Mihawk/Ace/Lucy) aparece como lado A (rastreado) exatamente 1 vez
+e como oponente exatamente 1 vez -- `Imu_v_Mihawk, Mihawk_v_Ace,
+Ace_v_Lucy, Lucy_v_Imu`. Mesmo N=30/matchup, seeds pareadas,
+`USE_CHEAP_LAYER_SHORTLIST` ligado nas 2 condicoes.
+
+**Validado**: `smoke_fast.py` 100% apos a mudanca de escala (testes
+novos do bloco 513 monkeypatcham `_cheap_rollout_components`
+diretamente, nao dependem do default de `n_samples`, entao a mudanca de
+constante nao quebra nada).
+
+**Comparacao com o roster corrigido rodando em background no momento
+deste commit** -- resultado (winrate por matchup, maximin, decisao
+final sobre `USE_DYNAMIC_WEIGHT_ADJUSTMENT`) vai pro proximo bloco assim
+que terminar. Commitando agora (escala + roster corrigidos, ambos
+validados/sem quebrar nada) pra nao acumular mudanca nao salva enquanto
+a comparacao roda.
+
 ## 2026-08-13 (513) - Claude (sessao remota web) - FASE 2 da "calibragem dinamica" implementada (`USE_DYNAMIC_WEIGHT_ADJUSTMENT`, desligada por padrao ate medir isolada)
 
 Pedido do usuario ("vamos pra fase 2") pra construir o mecanismo

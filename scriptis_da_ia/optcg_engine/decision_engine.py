@@ -318,6 +318,15 @@ USE_CHEAP_LAYER_SHORTLIST = True
 # roda igual pra qualquer deck. Cap de ±20% (pedido do usuario, bloco
 # 508) evita que ruido de amostra pequena desestabilize a decisao.
 DYNAMIC_WEIGHT_ADJUSTMENT_CAP = 0.20
+# Amostras pra `_cheap_rollout_components` (lider/vice) especificamente
+# na fase 2 -- SEPARADO de CHEAP_LAYER_SAMPLES (fase 1, alargamento do
+# shortlist, ja validado com 40 amostras, NAO mexido aqui pra nao
+# arriscar regressao no que ja funciona). Pedido explicito do usuario
+# 13/08 (bloco 514): "milhares de vezes", nao 40 -- cada amostra e
+# barata (so flags pre-parseadas + aritmetica, sem simular jogo de
+# verdade), custo medido antes de subir pra confirmar que continua
+# desprezivel mesmo em escala de milhares (ver HANDOFF bloco 514).
+DYNAMIC_WEIGHT_ADJUSTMENT_SAMPLES = 3000
 # Knob global, OFF por padrao ate medir isolado (mesmo protocolo da fase
 # 1: bloco 509 implementou OFF, bloco 510 mediu e ligou) -- NAO ligar
 # sem repetir a comparacao OFF-vs-ON self-play antes.
@@ -14746,8 +14755,8 @@ class OPTCGMatch:
         return {k: v / n for k, v in somas.items()}
 
     def _compute_dynamic_weight_adjustment(self, p, opp, candidatas, cheap_values,
-                                            n_samples=CHEAP_LAYER_SAMPLES, rng=None,
-                                            cap=DYNAMIC_WEIGHT_ADJUSTMENT_CAP):
+                                            n_samples=DYNAMIC_WEIGHT_ADJUSTMENT_SAMPLES,
+                                            rng=None, cap=DYNAMIC_WEIGHT_ADJUSTMENT_CAP):
         """
         Fase 2 da "calibragem dinamica" (bloco 508 especifica, bloco 513
         implementa, mecanismo confirmado com o usuario): pra CADA

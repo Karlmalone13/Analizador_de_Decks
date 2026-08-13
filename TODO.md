@@ -2,6 +2,18 @@
 
 **Última atualização:** 13 de agosto de 2026
 
+> 13/08/2026 (bloco 514): **Correção metodológica na medição da fase 2**
+> (usuário: "não adianta fazer igual vc tá fazendo, calibrando 1 deck
+> só" + "milhares de vezes", não 40). Duas correções: (1)
+> `DYNAMIC_WEIGHT_ADJUSTMENT_SAMPLES = 3000` (separado de
+> `CHEAP_LAYER_SAMPLES=40` da fase 1, não mexida) — custo medido
+> ~13,6ms/decisão, negligível; (2) comparação OFF-vs-ON refeita com
+> roster MULTI-ÂNCORA (cada deck aparece 1x como lado rastreado, 1x
+> como oponente) em vez do Imu fixo do bloco 513 — mesmo erro já achado
+> nos blocos 505/506, repetido sem perceber na medição da fase 2.
+> `smoke_fast.py` 100%. **Comparação com roster corrigido rodando —
+> resultado no próximo bloco.**
+
 > 13/08/2026 (bloco 513): **FASE 2 da "calibragem dinâmica" implementada**
 > (`USE_DYNAMIC_WEIGHT_ADJUSTMENT`, desligada por padrão até medir
 > isolada — mesmo protocolo da fase 1). Mecanismo: reusa os rollouts
