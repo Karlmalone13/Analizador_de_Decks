@@ -10026,6 +10026,63 @@ def test_leader_plan_alignment_cobre_sem_habilidade_rest_self_rest_don_e_ja_usad
           abs((score_on - score_off) - 50.0) < 1e-6)
 
 
+def test_leader_ability_centrality_escala_por_escassez_de_outras_fontes_14_08() -> None:
+    # Pedido do usuario (14/08): "aumentar o N nao vai resolver... precisamos
+    # de algo pra fazer com precisao essa calibragem dinamica" -- em vez de
+    # um peso global unico achado por self-play (ruidoso, decks incompativeis
+    # querem valores diferentes), o fator escala ANALITICAMENTE pela propria
+    # composicao do deck (full_deck_census, ja computado 1x por partida,
+    # zero simulacao nova). Ver GameAnalyzer._leader_ability_centrality.
+    def vida4():
+        return [mk(f"LF{i}", "Life") for i in range(4)]
+
+    opp0 = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+
+    # Lucy (OP15-002): habilidade 'draw', sem custo -- caso canonico de
+    # vantagem de carta. Deck SEM outras fontes de selecao -- totalmente
+    # central, centralidade=1.0, credito cheio de 0.5.
+    me1 = GameState(leader=real_card("OP15-002"), turn=5, life=vida4())
+    me1.full_deck_census = {"card_selection_tools": 0}
+    engine1 = DecisionEngine(me1, opp0)
+    check("0 outras fontes de selecao no deck -- centralidade 1.0, credito cheio (0.5)",
+          abs(engine1.analyzer.leader_plan_alignment() - 0.5) < 1e-9)
+
+    # mesmo lider, deck com MUITAS outras fontes (10) -- habilidade menos
+    # critica (redundante), credito escalado pra BAIXO: centralidade =
+    # 1/(1+10*0.15) = 1/2.5 = 0.4 -> credito = 0.5*0.4 = 0.2
+    me2 = GameState(leader=real_card("OP15-002"), turn=5, life=vida4())
+    me2.full_deck_census = {"card_selection_tools": 10}
+    engine2 = DecisionEngine(me2, opp0)
+    valor2 = engine2.analyzer.leader_plan_alignment()
+    check("muitas outras fontes de selecao -- credito escala pra BAIXO (redundante, 0.2)",
+          abs(valor2 - 0.2) < 1e-9)
+
+    # deck com AINDA MAIS fontes (30) -- satura no piso 0.3 de centralidade
+    # (nunca some de vez): credito = 0.5*0.3 = 0.15
+    me2b = GameState(leader=real_card("OP15-002"), turn=5, life=vida4())
+    me2b.full_deck_census = {"card_selection_tools": 30}
+    engine2b = DecisionEngine(me2b, opp0)
+    check("com fontes suficientes, satura no piso 0.3 de centralidade -- credito 0.15, nunca zera",
+          abs(engine2b.analyzer.leader_plan_alignment() - 0.15) < 1e-9)
+
+    # sem full_deck_census disponivel (contexto de teste isolado, sem passar
+    # por OPTCGMatch/ReplayMatch) -- fallback neutro 1.0, nao inventa dado
+    me3 = GameState(leader=real_card("OP15-002"), turn=5, life=vida4())
+    engine3 = DecisionEngine(me3, opp0)
+    check("sem full_deck_census -- fallback centralidade 1.0 (credito cheio 0.5)",
+          abs(engine3.analyzer.leader_plan_alignment() - 0.5) < 1e-9)
+
+    # Mihawk (OP14-020): habilidade de RAMP (set_don_active), nao vantagem de
+    # carta -- centralidade SEMPRE 1.0, mesmo com census de selecao alto
+    # (eixo nao coberto por design, nao inventa sinal sem dado real)
+    me4 = GameState(leader=real_card("OP14-020"), turn=5, life=vida4())
+    me4.don_available = 1
+    me4.full_deck_census = {"card_selection_tools": 20}
+    engine4 = DecisionEngine(me4, opp0)
+    check("habilidade de ramp (nao vantagem de carta) ignora o census de selecao -- credito cheio 0.5",
+          abs(engine4.analyzer.leader_plan_alignment() - 0.5) < 1e-9)
+
+
 def main() -> int:
     test_big_mom_optional_zero_parser_order_and_don_synergy()
     test_is_active_turn_corrigido_evita_don_minus_desnecessario()
@@ -10311,6 +10368,7 @@ def main() -> int:
     test_ponder_payload_byte_identico_ao_caminho_normal_09_08()
     test_ponder_generation_guard_sem_contaminacao_cruzada_09_08()
     test_leader_plan_alignment_cobre_sem_habilidade_rest_self_rest_don_e_ja_usada_14_08()
+    test_leader_ability_centrality_escala_por_escassez_de_outras_fontes_14_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

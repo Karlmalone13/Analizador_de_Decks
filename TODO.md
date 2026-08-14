@@ -2,7 +2,21 @@
 
 **Última atualização:** 14 de agosto de 2026
 
-> 14/08/2026 (bloco 528, EM ANDAMENTO): **1a calibração isolada do
+> 14/08/2026 (bloco 529, EM ANDAMENTO): **`_leader_ability_centrality`**
+> — resposta ao pedido do usuário ("aumentar o N não vai resolver...
+> precisamos de algo pra fazer com precisão essa calibragem dinâmica").
+> Em vez de caçar 1 peso global via self-play (ruidoso porque a resposta
+> certa VARIA por deck), novo fator estrutural `[0.3..1.0]` derivado da
+> composição real do deck (`full_deck_census`, já computado, zero custo
+> de simulação) escala `leader_plan_alignment` pela ESCASSEZ de outras
+> fontes do mesmo recurso (ex: habilidade de compra vale mais num deck
+> sem outros buscadores). 5 testes novos, `smoke_fast`/`smoke_test`
+> 100%. Sanity check leve (N=20, 1 candidato) rodando — não é mais
+> busca de peso ótimo por força bruta, só confirmação de que o
+> mecanismo estrutural não regride antes de aceitar um valor
+> conservador. Ver bloco 529 do HANDOFF.
+>
+> 14/08/2026 (bloco 528): **1a calibração isolada do
 > `leader_plan_alignment` (bloco 527) FALHOU** (maximin=-0,200/-0,150
 > nos 2 candidatos testados) — Vivi (EB03-001) foi o único líder que
 > regrediu nos dois, e é o único ancora com custo `rest_self`. Causa

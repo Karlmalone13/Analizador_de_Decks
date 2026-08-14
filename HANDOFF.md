@@ -1,5 +1,50 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-14 (529) - Claude (sessao remota web) - `_leader_ability_centrality`: escala leader_plan_alignment ANALITICAMENTE por deck (nao por self-play) -- resposta ao achado de que "aumentar N nao resolve"
+
+**Contexto**: apos o fix do bloco 528, a recalibracao isolada
+(N=20, 3 candidatos) ainda deu sinal INCONSISTENTE -- Mihawk (rest_don)
+oscilou de sinal entre candidatos (-5pp/-10pp/+5pp), sem tendencia
+estavel. Usuario apontou a causa raiz certa: **"aumentar o N não vai
+resolver... precisamos de algo pra fazer com precisão essa calibragem
+dinâmica"** -- nao existe UM peso global certo, porque o quanto "usar a
+habilidade do lider" importa VARIA genuinamente por deck (compra e
+vital pro deck sem outra fonte de vantagem de carta, quase irrelevante
+pro deck que ja tem 8 buscadores). Tentar achar essa resposta por
+media estatistica entre decks incompativeis e estruturalmente
+ruidoso, nao importa quantas amostras -- a resposta certa nao e uma
+constante.
+
+**Mecanismo novo**: `GameAnalyzer._leader_ability_centrality()` --
+fator [0.3..1.0] derivado da propria composicao do deck
+(`full_deck_census['card_selection_tools']`, ja computado 1x por
+partida em `populate_full_deck_knowledge`, ZERO custo extra de
+simulacao/self-play). Pra habilidades de vantagem de carta (`draw`/
+`look_top_deck`/`add_to_hand`), escala pela ESCASSEZ de outras fontes
+do mesmo recurso no deck: 0 outras fontes = 1.0 (totalmente central),
+muitas = satura em 0.3 (nunca zera). Outros tipos de efeito (ramp,
+play_card gratis) ou sem census disponivel (testes isolados) ficam
+neutros em 1.0 -- nao inventa sinal sem dado real. `leader_plan_
+alignment` agora multiplica o credito (0.5/1.0) por essa centralidade
+antes de aplicar o peso global de `EVAL_WEIGHTS`.
+
+Isso transforma o peso de "1 constante achada por tentativa-e-erro em
+self-play" pra "1 escalar de sensibilidade grosseiro, com a variacao
+REAL entre decks resolvida por analise estrutural, nao por amostragem
+estatistica". 5 testes novos em `smoke_fast.py` (Lucy/OP15-002 com 0,
+10 e 30 outras fontes; sem census disponivel; Mihawk/ramp ignora o
+eixo). `smoke_fast`/`smoke_test` 100%.
+
+**Sanity check leve rodando** (N=20, 1 candidato=40.0, mesmos 4
+ancoras/2 oponentes do bloco 527/528, script `tune_leader_plan_
+alignment.py` corrigido pra fixar `PYTHONHASHSEED=0` -- achado real:
+sem isso `hash(label)` muda de seed entre execucoes diferentes do
+script, invalidando comparacao entre rodadas anteriores) -- objetivo
+NAO e mais achar o peso otimo por forca bruta (isso e exatamente o que
+o usuario pediu pra parar de fazer), so confirmar que o mecanismo
+estrutural nao regride claramente antes de aceitar um valor pequeno/
+conservador em produção. Resultado pendente.
+
 ## 2026-08-14 (528) - Claude (sessao remota web) - resultado da 1a calibracao isolada do bloco 527: FALHOU (maximin=-0.200/-0.150) -- achado real corrigido (rest_self nao deve dar credito parcial), recalibrando de novo
 
 **Resultado da calibracao isolada do bloco 527** (4 lideres-ancora x 2

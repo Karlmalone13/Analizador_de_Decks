@@ -10492,6 +10492,55 @@ class GameAnalyzer:
             'sources': sources,
         }
 
+    def _leader_ability_centrality(self) -> float:
+        """
+        Fator ESTRUTURAL [0.3..1.0] de quanto a habilidade [Activate: Main]
+        do líder é CENTRAL pro plano do PRÓPRIO deck -- não calibrado por
+        self-play, derivado direto da composição real do deck
+        (`full_deck_census`, já computado 1x por partida em
+        `populate_full_deck_knowledge`, zero custo extra de simulação).
+
+        Achado real 14/08 (pedido do usuário: "aumentar o N não vai
+        resolver... precisamos de algo pra fazer com precisão essa
+        calibragem dinâmica"): a calibração isolada de `leader_plan_
+        alignment` via self-play (rodadas dos blocos 527/528) deu sinal
+        inconsistente entre líderes -- Mihawk oscilou de sinal entre
+        candidatos, sem tendência estável. Causa provável: não existe UM
+        peso global certo, porque o quanto "usar a habilidade do líder"
+        importa genuinamente VARIA por deck (uma habilidade de compra é
+        vital pro deck que não tem outra fonte de vantagem de carta, e
+        quase irrelevante pro deck que já tem 8 buscadores). Tentar achar
+        essa resposta por média estatística entre decks incompatíveis é
+        estruturalmente ruidoso, não importa quantas amostras -- a
+        resposta certa não é uma constante. Este método resolve a
+        variação ANALITICAMENTE (a partir do que o deck realmente tem),
+        deixando pro peso global em EVAL_WEIGHTS só a sensibilidade geral
+        (1 escalar grosseiro, não 1 número fino por deck).
+
+        Único eixo coberto por ora (mais comum, com dado já disponível
+        sem inventar census novo): habilidade de VANTAGEM DE CARTA
+        (draw/look_top_deck/add_to_hand) -- escala pela ESCASSEZ de
+        OUTRAS fontes do mesmo recurso no deck (`full_deck_census
+        ['card_selection_tools']`, já conta buscadores/compra de
+        `populate_full_deck_knowledge`). Zero outras fontes = 1.0
+        (totalmente central, o deck depende dela). Muitas outras fontes =
+        satura em 0.3 (nunca zera -- usar a própria carta sempre vale
+        alguma coisa, só menos crítico). Outros tipos de efeito (ramp,
+        play_card grátis, etc.) ou sem `full_deck_census` disponível
+        (ex: testes isolados sem passar por OPTCGMatch/ReplayMatch) caem
+        no neutro 1.0 -- sem dado estrutural pra ajustar, não inventa.
+        """
+        leader = self.me.leader
+        am = get_card_effects(leader.code).get('activate_main')
+        if not am:
+            return 1.0
+        actions = [s.get('action') for s in am.get('steps', [])]
+        if any(a in ('draw', 'look_top_deck', 'add_to_hand') for a in actions):
+            census = getattr(self.me, 'full_deck_census', None) or {}
+            outras_fontes = census.get('card_selection_tools', 0)
+            return max(0.3, 1.0 / (1.0 + outras_fontes * 0.15))
+        return 1.0
+
     def leader_plan_alignment(self) -> float:
         """
         Sinal de estado: o quanto o estado atual está alinhado com o plano
@@ -10501,6 +10550,9 @@ class GameAnalyzer:
         BOTTLENECK específico do perfil do deck, ex: reanimação) para
         QUALQUER líder com [Activate: Main], lendo o efeito genericamente
         via `get_card_effects` -- sem hardcode de nome/código de carta.
+        Escala pelo fator ESTRUTURAL de `_leader_ability_centrality` --
+        calibragem dinâmica por deck sem depender de self-play pra achar
+        o valor certo (ver docstring de `_leader_ability_centrality`).
 
         Não reimplementa elegibilidade real da ação (isso é
         `_generate_and_score_actions`/`_should_activate_main`, fonte única
@@ -10537,15 +10589,16 @@ class GameAnalyzer:
         am = get_card_effects(leader.code).get('activate_main')
         if not am:
             return 0.0
+        centralidade = self._leader_ability_centrality()
         if getattr(leader, '_am_used_turn', -1) == self.me.turn:
-            return 1.0
+            return 1.0 * centralidade
         costs = am.get('costs', [])
         if any(c.get('type') == 'rest_self' for c in costs):
             return 0.0
         for c in costs:
             if c.get('type') == 'rest_don' and self.me.don_available < c.get('count', 0):
                 return 0.0
-        return 0.5
+        return 0.5 * centralidade
 
     def analysis_priority(self) -> str:
         """
