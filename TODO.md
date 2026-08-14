@@ -1,45 +1,53 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 12 de agosto de 2026
+**Última atualização:** 9 de agosto de 2026
 
 > **REGRA NOVA (bloco 473)**: `audit_real_losses.py` (+ `triage_real_
 > losses.py`) agora é OBRIGATÓRIO rodar sempre que um log de DERROTA do
 > bot é banco (não só "existe, use se quiser"). Ver `CLAUDE.md`/
 > `AGENTS.md` e `.claude/skills/optcg-live-log-triage/SKILL.md` (Step 4).
 
-> **PRÓXIMA SESSÃO COMEÇA AQUI (bloco 479) — pondering IMPLEMENTADO e
-> validado por smoke test; falta SÓ a validação AO VIVO** (feature flag
-> `OPTCG_PONDER_ENABLED` continua default OFF). Ver bloco 479 do HANDOFF
-> pro detalhe completo do que foi escrito (`sim_bridge.ponder_fingerprint`,
-> `server._package_action`/`_maybe_start_ponder`/`_run_ponder_job`/
-> `_try_consume_ponder`, `_get_ponder_match`). 3 testes novos em
-> `smoke_fast.py` (12 checks) passam, suíte inteira `SMOKE FAST OK`.
+> **PRÓXIMA SESSÃO COMEÇA AQUI (bloco 478) — pondering: DESENHO APROVADO,
+> implementação ainda NÃO começou** (sessão trocou pra celular antes de
+> escrever código). Ver bloco 478 do HANDOFF pro desenho completo
+> (resumo abaixo pra não depender só do HANDOFF):
 >
-> **Passo a passo da validação ao vivo, nessa ordem**:
-> 1. `OPTCG_PONDER_ENABLED=1` numa sessão local só (nunca em produção sem
->    isso).
-> 2. Jogar partidas reais contra humano.
-> 3. Ler telemetria na ordem obrigatória do projeto (`metrics/live_runs/`
->    primeiro, depois `decision_summary.py --latest`) — procurar os
->    eventos novos `ponder_computed`/`ponder_hit`/`ponder_miss`/
->    `ponder_error` no `.jsonl` de decisões pra medir taxa real de
->    acerto e motivo predominante de miss (`turn_mismatch` vs
->    `stale_exclusions` vs `state_changed`).
-> 4. Conferir que `/defense` não ficou mais lento (pondering é
->    fire-and-forget, não pode bloquear a resposta real de blocker/
->    counter/trigger).
-> 5. Só considerar ligar por padrão depois de uma sessão limpa (sem
->    `ponder_error`, taxa de acerto e ações reusadas fazendo sentido) —
->    com aprovação explícita do usuário, não automático.
+> - Gatilho: `/defense` com `phase in (blocker,counter,trigger)` (turno
+>   confirmado do oponente) → copia profunda de `gs`/`opp_gs` → thread
+>   daemon.
+> - Fingerprint novo em `sim_bridge.py` (`ponder_fingerprint`): sha256 das
+>   DTOs canonicalizadas + snapshot do `MatchMemory`, EXCLUINDO
+>   `turnNumber`/exclude-sets (checados à parte).
+> - Job usa uma instância PRÓPRIA de `OPTCGMatch` (nunca a compartilhada
+>   de `_get_match()` — risco de corrida CONFIRMADO por leitura direta:
+>   `_simulate_sequence_values` usa `self._suppress_replay_log` mutável).
+> - Cachear o PAYLOAD já empacotado (não a tupla de ação bruta) — exige
+>   extrair a lógica de empacotamento de `/decide` (hoje inline,
+>   `server.py:976-1058`) pra função compartilhada.
+> - Consumo em `/decide`, ANTES da busca real: 4 checagens em ordem
+>   (pronto? exclude-sets vazios? turno==gatilho+1? fingerprint bate?),
+>   falha fechada em qualquer uma → cai no caminho normal, ZERO mudança
+>   de comportamento.
+> - Reset em `/mulligan`. Feature flag `OPTCG_PONDER_ENABLED` (default
+>   OFF).
+> - **Validação obrigatória antes de considerar pronto** (nenhuma feita
+>   ainda): 4 testes novos em `smoke_fast.py` — o mais importante prova
+>   que o payload do pondering é BYTE-IDÊNTICO ao caminho normal pro
+>   mesmo estado (seed fixo) — depois sessão ao vivo monitorada com a
+>   flag só localmente, lendo telemetria na ordem obrigatória do projeto.
+> - Arquivos a mexer: `BOT/engine_server/server.py`,
+>   `scriptis_da_ia/optcg_engine/sim_bridge.py`,
+>   `scriptis_da_ia/smoke_fast.py`.
 >
 > Contexto de origem (bloco 477): calibração multi-seed/multi-deck do
 > bloco 475 (3 pares × 3 seeds × 50 jogos) CONFIRMOU o resultado com
 > evidência mais forte (Barba Negra BY melhora contra os DOIS oponentes
 > testados, Zoro melhora contra Kid, gasto de counter cai nos 3 pares) —
-> discussão de arquitetura levou ao pondering (ver bloco 477 do HANDOFF
-> pra tabela completa e a comparação com MCTS que motivou a ideia).
-> Auditoria/calibração da pontuação dinâmica já está feita (blocos
-> 475-477).
+> discussão de arquitetura levou ao pondering como próximo passo (ver
+> bloco 477 do HANDOFF pra tabela completa e a comparação com MCTS que
+> motivou a ideia). Auditoria/calibração da pontuação dinâmica (era o 1º
+> item de prioridade) já está feita (blocos 475-477) — pondering é o
+> próximo item da fila, não o primeiro criado do zero.
 >
 > **Depois do pondering — verificar se o piso/teto de amostragem AO VIVO
 > (12/24, já implementado desde o bloco 381) tem folga pra subir**,
