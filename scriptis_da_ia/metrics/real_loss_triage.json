@@ -1,7 +1,7 @@
 {
   "counts": {
-    "MATCH": 5,
-    "DIVERGE": 268,
+    "MATCH": 6,
+    "DIVERGE": 271,
     "ERROR": 0,
     "SKIPPED": 0
   },
@@ -66,6 +66,24 @@
       "hoje_leader_atk": 1,
       "hist_char_atk": 0,
       "hoje_char_atk": 1
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56.json",
+      "turn": 3,
+      "hist_plays": [
+        "docq",
+        "vascoshot"
+      ],
+      "hoje_plays": [
+        "docq",
+        "vascoshot"
+      ],
+      "hist_activates": [],
+      "hoje_activates": [],
+      "hist_leader_atk": 1,
+      "hoje_leader_atk": 1,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 0
     },
     {
       "file": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T09.41.46.json",
@@ -4183,6 +4201,52 @@
       "hoje_leader_atk": 0,
       "hist_char_atk": 0,
       "hoje_char_atk": 2
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56.json",
+      "turn": 5,
+      "hist_plays": [],
+      "hoje_plays": [
+        "borsalino"
+      ],
+      "hist_activates": [],
+      "hoje_activates": [],
+      "hist_leader_atk": 2,
+      "hoje_leader_atk": 1,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 0
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56.json",
+      "turn": 7,
+      "hist_plays": [
+        "laffitte"
+      ],
+      "hoje_plays": [],
+      "hist_activates": [],
+      "hoje_activates": [],
+      "hist_leader_atk": 2,
+      "hoje_leader_atk": 1,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 0
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56.json",
+      "turn": 9,
+      "hist_plays": [
+        "borsalino"
+      ],
+      "hoje_plays": [
+        "blackvortex"
+      ],
+      "hist_activates": [
+        "blackvortex"
+      ],
+      "hoje_activates": [],
+      "hist_leader_atk": 2,
+      "hoje_leader_atk": 1,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 1
     },
     {
       "file": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",

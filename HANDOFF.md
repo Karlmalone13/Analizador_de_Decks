@@ -1,5 +1,82 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (480) - Claude (sessao local) - Pondering testado AO VIVO, achou causa raiz real (GIL, nao qualidade de decisao), REVERTIDO a pedido do usuario. Motor de volta ao estado do commit cc68d30 (pre-pondering)
+
+Continuação direta do bloco 478 (o bloco 479, que documentava a
+implementação do pondering, foi ele mesmo revertido junto com o código —
+ver commit `5fe0966` no `git log`, e o commit de revert `60d133c` logo
+depois). Resumo do que aconteceu nesta sessão, do início ao fim:
+
+1. **Implementação** (era o bloco 479): seguiu o desenho aprovado do
+   bloco 478 sem desvio — `sim_bridge.ponder_fingerprint`, `_get_ponder_
+   match` (instância dedicada), `_maybe_start_ponder`/`_run_ponder_job`/
+   `_try_consume_ponder` em `server.py`, `_package_action` extraída de
+   `/decide`. Validado por smoke test (3 testes novos, 12 checks,
+   `SMOKE FAST OK`) — a propriedade de correção (payload byte-idêntico
+   entre caminho real e caminho de pondering) foi confirmada em
+   isolamento.
+2. **Servidor antigo encontrado rodando código de dias atrás** (PID 5536,
+   sem pondering) — encerrado, subido de novo com `OPTCG_PONDER_
+   ENABLED=1`.
+3. **`BOT\setup_bepinex.bat` precisou rodar de novo** — a pasta
+   `BepInEx` inteira tinha sumido (mesmo problema já documentado no
+   CLAUDE.md, "o jogo apaga a pasta quando atualiza"), por isso a
+   telinha do bot não aparecia. Reinstalado sem erro.
+4. **Teste ao vivo real**: usuário jogou uma partida (`Marshall.D.Teach-
+   BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56`, banco automático já
+   coletou), **derrota** (bot=p1=Teach, venceu p2=Rocks D Xebec).
+   Usuário reportou "não gostei, ficou muito ruim" e pediu reverter tudo.
+
+**Causa raiz encontrada, lendo a telemetria na ordem obrigatória**
+(`metrics/live_runs/live_2026-08-13T22.23.59.json` primeiro, depois
+`decision_summary.py --latest`, depois `audit_real_losses.py` por ser
+derrota do bot — regra do bloco 473): **NÃO foi qualidade de decisão**
+(a propriedade "payload idêntico" já tinha sido provada em smoke test) —
+foi **contenção real de CPU pelo GIL do Python**. `gate_status: "fail"`,
+com 2 alertas de erro:
+- `decision_timeouts` (4 ocorrências) — buscas reais de `/decide`
+  estourando o timeout de 3s (latências de 3022ms/3040ms/3043ms/3096ms,
+  turnos 3 e 4 — logo depois de `/defense` ter disparado pondering no
+  turno 2/3).
+- `bot_confusion` (4x `no_eligible_action`) — o bot "sem saber o que
+  fazer" e passando o turno, latências de 8-20ms (caiu direto no
+  fallback, nem tentou buscar).
+
+**O erro de design**: o desenho (bloco 478) analisou corretamente o
+risco de CORREÇÃO (duas threads mutando o mesmo objeto — por isso a
+`OPTCGMatch` dedicada pro pondering) mas **não considerou o risco de
+DESEMPENHO**: `threading` em Python não dá paralelismo real pra trabalho
+CPU-bound (GIL) — rodar uma busca Monte Carlo inteira em background
+(orçamento de até 8s) **rouba tempo de CPU da busca real** que precisa
+responder em até 3s, em vez de usar tempo genuinamente ocioso. A ideia
+original ("o bot vai economizar tempo do turno dele") pressupunha que o
+turno do oponente era tempo morto pro PROCESSO inteiro — na prática, com
+threading, as duas buscas competem pelo mesmo núcleo/GIL, e a que tem
+menos orçamento (a real, 3s) perde.
+
+**Ação tomada**: `git revert 5fe0966` (não `reset --hard` + force-push —
+o histórico continua íntegro, reversível). Confirmado limpo: `grep
+ponder` em `server.py`/`smoke_fast.py` = 0 ocorrências reais,
+`sim_bridge.py` só tem um falso-positivo ("respo**nder**"). `smoke_fast.py`
+100% depois do revert. Servidor derrubado (a versão com pondering não
+deve mais rodar).
+
+**Se isso for retomado no futuro** (não descartar a ideia, só a
+implementação): a alavancagem de "usar tempo do turno do oponente"
+precisa de `multiprocessing` (processo separado, sem GIL compartilhado)
+em vez de `threading`, OU um mecanismo explícito de pausar/despriorizar
+o job de pondering assim que uma requisição `/decide` real chegar (nem
+isso é trivial de fazer bem com Monte Carlo já em andamento). Registrar
+esse achado evita que uma sessão futura tente a mesma abordagem de novo
+sem essa lição.
+
+**Log da partida de teste**: já banco automaticamente (`Marshall.D.Teach-
+BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56`). `audit_real_losses.py`
+rodado (regra obrigatória de derrota) — 4 turnos auditados, classificados
+DIVERGE pela triagem heurística (não achou "MATCH" forte, mas o
+diagnóstico real desta derrota não é sobre qualidade de decisão mesmo,
+como já estabelecido acima).
+
 ## 2026-08-09 (478) - Claude (sessao local) - Design COMPLETO e APROVADO do pondering (pensar no turno do oponente), pronto pra implementacao. NENHUM CODIGO MEXIDO AINDA -- sessao trocou de dispositivo (celular) antes de comecar a escrever.
 
 Continuacao direta do bloco 477 (pondering era o item 2 de prioridade).

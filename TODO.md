@@ -1,74 +1,43 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 9 de agosto de 2026
+**Última atualização:** 13 de agosto de 2026
 
 > **REGRA NOVA (bloco 473)**: `audit_real_losses.py` (+ `triage_real_
 > losses.py`) agora é OBRIGATÓRIO rodar sempre que um log de DERROTA do
 > bot é banco (não só "existe, use se quiser"). Ver `CLAUDE.md`/
 > `AGENTS.md` e `.claude/skills/optcg-live-log-triage/SKILL.md` (Step 4).
 
-> **PRÓXIMA SESSÃO COMEÇA AQUI (bloco 478) — pondering: DESENHO APROVADO,
-> implementação ainda NÃO começou** (sessão trocou pra celular antes de
-> escrever código). Ver bloco 478 do HANDOFF pro desenho completo
-> (resumo abaixo pra não depender só do HANDOFF):
+> **PRÓXIMA SESSÃO COMEÇA AQUI (bloco 480) — pondering foi implementado,
+> testado AO VIVO e REVERTIDO** (`git revert 5fe0966`, commit `60d133c`
+> — motor de volta ao estado do commit `cc68d30`, código idêntico ao
+> pré-pondering). **NÃO tentar reimplementar do mesmo jeito** sem ler o
+> bloco 480 do HANDOFF primeiro:
 >
-> - Gatilho: `/defense` com `phase in (blocker,counter,trigger)` (turno
->   confirmado do oponente) → copia profunda de `gs`/`opp_gs` → thread
->   daemon.
-> - Fingerprint novo em `sim_bridge.py` (`ponder_fingerprint`): sha256 das
->   DTOs canonicalizadas + snapshot do `MatchMemory`, EXCLUINDO
->   `turnNumber`/exclude-sets (checados à parte).
-> - Job usa uma instância PRÓPRIA de `OPTCGMatch` (nunca a compartilhada
->   de `_get_match()` — risco de corrida CONFIRMADO por leitura direta:
->   `_simulate_sequence_values` usa `self._suppress_replay_log` mutável).
-> - Cachear o PAYLOAD já empacotado (não a tupla de ação bruta) — exige
->   extrair a lógica de empacotamento de `/decide` (hoje inline,
->   `server.py:976-1058`) pra função compartilhada.
-> - Consumo em `/decide`, ANTES da busca real: 4 checagens em ordem
->   (pronto? exclude-sets vazios? turno==gatilho+1? fingerprint bate?),
->   falha fechada em qualquer uma → cai no caminho normal, ZERO mudança
->   de comportamento.
-> - Reset em `/mulligan`. Feature flag `OPTCG_PONDER_ENABLED` (default
->   OFF).
-> - **Validação obrigatória antes de considerar pronto** (nenhuma feita
->   ainda): 4 testes novos em `smoke_fast.py` — o mais importante prova
->   que o payload do pondering é BYTE-IDÊNTICO ao caminho normal pro
->   mesmo estado (seed fixo) — depois sessão ao vivo monitorada com a
->   flag só localmente, lendo telemetria na ordem obrigatória do projeto.
-> - Arquivos a mexer: `BOT/engine_server/server.py`,
->   `scriptis_da_ia/optcg_engine/sim_bridge.py`,
->   `scriptis_da_ia/smoke_fast.py`.
+> **Causa raiz real da derrota de teste** (não foi qualidade de decisão —
+> a propriedade "payload idêntico" já tinha sido provada em smoke test):
+> `threading` em Python não dá paralelismo de CPU de verdade (GIL) —
+> rodar a busca Monte Carlo do pondering em background ROUBOU tempo de
+> CPU da busca real, causando 4 timeouts de `/decide` (3+ segundos, turnos
+> 3-4) e 4 `no_eligible_action` (bot "sem saber o que fazer", turno
+> desperdiçado). Confirmado lendo `metrics/live_runs/live_
+> 2026-08-13T22.23.59.json` (`gate_status: "fail"`) — partida real
+> `Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56`, já banco.
 >
-> Contexto de origem (bloco 477): calibração multi-seed/multi-deck do
-> bloco 475 (3 pares × 3 seeds × 50 jogos) CONFIRMOU o resultado com
-> evidência mais forte (Barba Negra BY melhora contra os DOIS oponentes
-> testados, Zoro melhora contra Kid, gasto de counter cai nos 3 pares) —
-> discussão de arquitetura levou ao pondering como próximo passo (ver
-> bloco 477 do HANDOFF pra tabela completa e a comparação com MCTS que
-> motivou a ideia). Auditoria/calibração da pontuação dinâmica (era o 1º
-> item de prioridade) já está feita (blocos 475-477) — pondering é o
-> próximo item da fila, não o primeiro criado do zero.
+> **Se isso for retomado no futuro**: precisa de `multiprocessing` (processo
+> separado, sem GIL compartilhado) em vez de `threading`, ou pausar/
+> despriorizar o job de pondering quando uma requisição `/decide` real
+> chega — nenhuma das duas é trivial. Não é uma ideia descartada, só a
+> implementação testada não funciona.
 >
-> **Depois do pondering — verificar se o piso/teto de amostragem AO VIVO
-> (12/24, já implementado desde o bloco 381) tem folga pra subir**,
-> olhando telemetria real de latência (`latency_ms`, `client_timeouts`)
-> antes de qualquer número novo.
->
-> **Despriorizado pro objetivo atual (fortalecer o bot contra
-> humano)** — amostragem adaptativa no modo OFFLINE/self-play (hoje N
-> fixo de 3-6 em `main_phase`, usado por `baseline_metrics.py` e pelo
-> `/simulate` do front-end): serve mais a fidelidade do simulador do
-> front-end e das próprias calibrações futuras que o bot ao vivo (que já
-> tem o orçamento maior). Pendência antiga, ainda válida, só reordenada.
->
-> **Achado extra desta sessão, sem ação pendente**: profiling (cProfile,
-> script descartável) confirmou que ~98% do tempo
-> de decisão está dentro da busca do Turn Planner, e ~68% disso é só
-> gerar/pontuar candidatos repetidamente a cada turno hipotético
-> simulado — não sobrou nenhuma otimização de graça (`get_card_effects`
-> já tem cache, `Card.__deepcopy__` já foi otimizado numa sessão
-> anterior, 24/06). Motivou a discussão de arquitetura acima; não mexer
-> em nada disso sem antes desenhar o item 2 (pondering) direito.
+> **Foco volta pra calibração/auditoria da pontuação dinâmica** (pedido
+> explícito do usuário, "continuar a calibração de lá" — já estava feita
+> nos blocos 475-477, sem pendência nova aberta agora). Próximos itens
+> ainda válidos, sem urgência:
+> - Verificar se o piso/teto de amostragem AO VIVO (12/24, bloco 381) tem
+>   folga pra subir, olhando telemetria real de latência.
+> - Amostragem adaptativa no modo OFFLINE/self-play (N fixo de 3-6 hoje)
+>   — serve mais a fidelidade do simulador do front-end que o bot ao
+>   vivo, despriorizado.
 >
 > Contexto/evidência que motivou o pedido: calibração `_score_play_
 > action` vs `attach_don`/`attack` quando competem pelo mesmo DON — 2
