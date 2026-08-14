@@ -1,0 +1,51 @@
+{
+  "cards": [
+    {
+      "code": "OP16-108",
+      "name": "OP16-108",
+      "count": 4
+    },
+    {
+      "code": "OP16-109",
+      "name": "Doc Q",
+      "count": 3
+    },
+    {
+      "code": "EB04-058",
+      "name": "Borsalino",
+      "count": 2
+    },
+    {
+      "code": "OP09-093",
+      "name": "OP09-093",
+      "count": 2
+    },
+    {
+      "code": "OP16-110",
+      "name": "Vasco Shot",
+      "count": 1
+    },
+    {
+      "code": "OP16-104",
+      "name": "OP16-104",
+      "count": 1
+    },
+    {
+      "code": "OP09-095",
+      "name": "Laffitte",
+      "count": 1
+    },
+    {
+      "code": "OP16-115",
+      "name": "OP16-115",
+      "count": 1
+    },
+    {
+      "code": "OP09-086",
+      "name": "OP09-086",
+      "count": 1
+    }
+  ],
+  "total_seen": 16,
+  "leader": "OP16-080"
+}

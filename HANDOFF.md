@@ -3002,6 +3002,192 @@ de qualquer decisao de habilitar por padrao -- mesma disciplina
 obrigatoria ja documentada no CLAUDE.md pra qualquer log de partida do
 bot.
 
+## 2026-08-13 (482) - Claude (sessao local) - Partida de validacao pos-fix (bloco 481) jogada: Doc Q/Shiryu nao recorreram (nao testados nesta partida), MAS achado NOVO real -- 10 timeouts de busca no /decide, NAO relacionado ao fix de hoje
+
+Usuario jogou outra partida (`Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_
+2026-08-13T23.38.28`, 11 turnos, derrota, `commit_consistency` confirma
+`4581da1` -- o commit com os fixes de Doc Q/Shiryu) pra validar o bloco
+481.
+
+**Doc Q/Shiryu**: nao deu pra confirmar nem refutar -- nenhum dos dois
+cenarios ocorreu nesta partida. Doc Q foi jogado 2x mas nunca foi K.O.'d
+em campo (sem evento "Destroyed" no raw log, on-KO nunca disparou).
+Shiryu foi comprado mas NUNCA jogado (foi trashado da mao por outro
+efeito antes) -- seu on-play nunca teve chance de rodar. Sem evidencia
+de recorrencia do bug, mas tambem sem confirmacao positiva do fix nesta
+partida especifica.
+
+**Achado novo, real, CONFIRMADO nao relacionado ao fix de hoje**: 10
+timeouts de busca (`decision_timeouts`, `latency_ms.timeout_pct=9.9%`,
+turnos 3-6, todas ~3.0-3.06s -- batendo exatamente no teto de 3s do
+`/decide`). Verificado explicitamente: **todos os 10 timeouts sao
+`decision_kind=main`** (a busca `_select_action_via_search`/
+`choose_action`, chamada pelo `/decide`) -- **NENHUM e `target`**
+(`order_target_candidates`, o que foi mexido no bloco 481). O fix de
+hoje só roda dentro da resolução de `/choose_target`, nunca dentro da
+busca principal — confirma que não é regressão do bloco 481. Também
+apareceu `semantic_transition_failed: 2` (93.1% de sucesso nas 29
+transições checadas, `transition_semantics_summary`) — não investigado
+a fundo, registrado como pendência separada.
+
+**Hipótese não confirmada**: partida de 11 turnos (mais longa que as
+2 primeiras de hoje, 9 e 7 turnos) pode ter batido em boards mais
+complexos no meio-jogo (turnos 3-6), onde a busca já é conhecidamente
+mais cara (achado do profiling do bloco 477: custo O(board²) na busca
+offline, mas aqui é o caminho AO VIVO que já usa amostragem
+piso=12/teto=24). Não é uma regressão nova de hoje -- vale investigar
+como item separado (não bloqueia nada, só registra) numa sessão futura
+com foco em performance da busca ao vivo, não em ordenação de alvo.
+
+Log bancado, `audit_real_losses.py`/`triage_real_losses.py` rodados
+(regra do bloco 473) -- sem achado adicional de destaque (mesma
+distribuição heurística de sempre, majoritariamente DIVERGE).
+
+## 2026-08-13 (481) - Claude (sessao local) - 2 bugs REAIS de ordenacao de alvo achados e corrigidos, investigando as reclamacoes do usuario nos logs de hoje ("bot nao da KO com Doc Q", "bot nao ganha vida com Shiryu")
+
+Continuação direta do bloco 480. Após o revert do pondering, usuário
+reportou 3 defeitos observados nas partidas de hoje: bot não joga
+"bomba", não consegue K.O. com Doc Q, não ganha vida com Shiryu/Teach 8.
+Investigação carta a carta nos logs reais (não especulação):
+
+- **Teach 8 (OP16-119)**: NÃO é bug — telemetria confirmou a carta nunca
+  virou candidata de jogada porque o DON do bot nunca passou de 7 na
+  partida inteira (custo 8, partida curta, só 7 turnos). Resource
+  constraint real, não falha de decisão.
+- **Doc Q (OP16-109) e Shiryu (OP16-108)**: bugs REAIS confirmados,
+  mesma família de causa raiz em `sim_bridge.order_target_candidates`
+  (função responsável por ordenar os candidatos de alvo que o
+  `BotDriver.cs` clica, 1 por tick, ~0.8s cada, jogo ignora cliques
+  invalidos em silencio).
+
+**Bug 1 — zonas de DON com prioridade INCONDICIONAL** (achado 21/07,
+pra resolver custo real "DON!! -N"): aplicava a QUALQUER efeito
+pendente, mesmo um que nunca aceita DON como alvo. Doc Q ("[On K.O.]
+draw 1 card and K.O. up to 2 opponent's Characters cost<=1") teve seu
+único alvo válido (Streusen, custo 1) empurrado pra penúltimo lugar
+numa lista de 14, atrás de ~12 tokens de DON que o jogo sempre rejeita
+-- ~8s+ clicando em nada antes de chegar no alvo certo, risco real de
+perder a janela da ação (confirmado no raw log: `[On K.O.]` disparou,
+só "Draw 1 Card" apareceu, nenhum K.O., apesar de Streusen confirmado
+em campo do oponente naquele momento). **Fix**: nova detecção
+`actor_needs_own_don`/`actor_needs_opp_don` (`sim_bridge.py`) -- só dá
+prioridade máxima às zonas de DON quando o ator tem de verdade um custo
+(`don_minus`/`rest_don`/`return_own_don`) ou alvo (`rest_opp_don`/
+`opp_don_minus`) de DON nos blocos relevantes; senão cai no balde
+"nunca é alvo válido" (9, 0), igual `actor_opp_only`/
+`actor_battlefield_only`.
+
+**Bug 2 — `gain_life` tratado como "nunca precisa de zona real"**: a
+allowlist `_SAFE_NO_TARGET_ACTIONS` (decision_engine.py) inclui
+`gain_life` inteiro, certo pra `source='deck_top'` (56 cartas, topo do
+próprio deck, sem zona clicável) mas ERRADO pra `source='trash'`/
+`'hand_or_trash'` (Shiryu OP16-108 + ST13-003, únicos 2 casos no banco
+inteiro -- auditado): essas PRECISAM escolher uma carta real do trash.
+`actor_effect_is_hand_cost_only` tratava o step como "seguro" e excluía
+`own_trash` via `_HAND_COST_ALLOWED_ZONES` (só `own_hand`/DON
+sobrevivem) -- confirmado no raw log: Shiryu pagou o custo (descartou
+ZEHAHAHAHA), o trash tinha 4+ alvos válidos (Laffitte, Jesus Burgess,
+Vasco Shot, Black Vortex), mas "adicionar à vida" nunca apareceu no
+log. **Fix**: nova função única `step_is_safe_no_target(step)`
+(decision_engine.py, substitui a checagem crua de `_SAFE_NO_TARGET_
+ACTIONS` nos 2 pontos que a usavam) -- exclui `gain_life` da allowlist
+quando `source in ('trash', 'hand_or_trash')`.
+
+**Validação**: 4 checks novos em `smoke_fast.py` (2 pra cada bug,
+reproduzindo os candidatos reais das partidas de hoje) + 2 testes
+existentes corrigidos (`test_own_don_e_candidato_prioritario_pra_custo_
+don_minus` e o teste irmão de attach — precisavam de `attacker_power`
+explícito porque o custo do Katakuri vive em `when_attacking`/
+`on_opp_attack`, gatilhos só-de-combate, e a prioridade condicional
+agora depende do contexto de combate estar presente). Suíte inteira
+`SMOKE FAST OK`, 0 falhas.
+
+**Não foi possível confirmar 100% via replay ao vivo** (BepInEx foi
+reinstalado hoje, o log de clique-a-clique da partida específica não
+sobreviveu) -- a evidência é: (a) raw combat log mostrando o efeito
+disparar sem completar apesar de alvo válido confirmado em campo/trash,
+(b) leitura direta do código mostrando exatamente o mecanismo que
+causaria esse sintoma (candidato certo enterrado/excluído da lista).
+Convergência forte, não prova absoluta -- registrar se o sintoma
+reaparecer numa próxima partida real.
+
+## 2026-08-13 (480) - Claude (sessao local) - Pondering testado AO VIVO, achou causa raiz real (GIL, nao qualidade de decisao), REVERTIDO a pedido do usuario. Motor de volta ao estado do commit cc68d30 (pre-pondering)
+
+Continuação direta do bloco 478 (o bloco 479, que documentava a
+implementação do pondering, foi ele mesmo revertido junto com o código —
+ver commit `5fe0966` no `git log`, e o commit de revert `60d133c` logo
+depois). Resumo do que aconteceu nesta sessão, do início ao fim:
+
+1. **Implementação** (era o bloco 479): seguiu o desenho aprovado do
+   bloco 478 sem desvio — `sim_bridge.ponder_fingerprint`, `_get_ponder_
+   match` (instância dedicada), `_maybe_start_ponder`/`_run_ponder_job`/
+   `_try_consume_ponder` em `server.py`, `_package_action` extraída de
+   `/decide`. Validado por smoke test (3 testes novos, 12 checks,
+   `SMOKE FAST OK`) — a propriedade de correção (payload byte-idêntico
+   entre caminho real e caminho de pondering) foi confirmada em
+   isolamento.
+2. **Servidor antigo encontrado rodando código de dias atrás** (PID 5536,
+   sem pondering) — encerrado, subido de novo com `OPTCG_PONDER_
+   ENABLED=1`.
+3. **`BOT\setup_bepinex.bat` precisou rodar de novo** — a pasta
+   `BepInEx` inteira tinha sumido (mesmo problema já documentado no
+   CLAUDE.md, "o jogo apaga a pasta quando atualiza"), por isso a
+   telinha do bot não aparecia. Reinstalado sem erro.
+4. **Teste ao vivo real**: usuário jogou uma partida (`Marshall.D.Teach-
+   BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56`, banco automático já
+   coletou), **derrota** (bot=p1=Teach, venceu p2=Rocks D Xebec).
+   Usuário reportou "não gostei, ficou muito ruim" e pediu reverter tudo.
+
+**Causa raiz encontrada, lendo a telemetria na ordem obrigatória**
+(`metrics/live_runs/live_2026-08-13T22.23.59.json` primeiro, depois
+`decision_summary.py --latest`, depois `audit_real_losses.py` por ser
+derrota do bot — regra do bloco 473): **NÃO foi qualidade de decisão**
+(a propriedade "payload idêntico" já tinha sido provada em smoke test) —
+foi **contenção real de CPU pelo GIL do Python**. `gate_status: "fail"`,
+com 2 alertas de erro:
+- `decision_timeouts` (4 ocorrências) — buscas reais de `/decide`
+  estourando o timeout de 3s (latências de 3022ms/3040ms/3043ms/3096ms,
+  turnos 3 e 4 — logo depois de `/defense` ter disparado pondering no
+  turno 2/3).
+- `bot_confusion` (4x `no_eligible_action`) — o bot "sem saber o que
+  fazer" e passando o turno, latências de 8-20ms (caiu direto no
+  fallback, nem tentou buscar).
+
+**O erro de design**: o desenho (bloco 478) analisou corretamente o
+risco de CORREÇÃO (duas threads mutando o mesmo objeto — por isso a
+`OPTCGMatch` dedicada pro pondering) mas **não considerou o risco de
+DESEMPENHO**: `threading` em Python não dá paralelismo real pra trabalho
+CPU-bound (GIL) — rodar uma busca Monte Carlo inteira em background
+(orçamento de até 8s) **rouba tempo de CPU da busca real** que precisa
+responder em até 3s, em vez de usar tempo genuinamente ocioso. A ideia
+original ("o bot vai economizar tempo do turno dele") pressupunha que o
+turno do oponente era tempo morto pro PROCESSO inteiro — na prática, com
+threading, as duas buscas competem pelo mesmo núcleo/GIL, e a que tem
+menos orçamento (a real, 3s) perde.
+
+**Ação tomada**: `git revert 5fe0966` (não `reset --hard` + force-push —
+o histórico continua íntegro, reversível). Confirmado limpo: `grep
+ponder` em `server.py`/`smoke_fast.py` = 0 ocorrências reais,
+`sim_bridge.py` só tem um falso-positivo ("respo**nder**"). `smoke_fast.py`
+100% depois do revert. Servidor derrubado (a versão com pondering não
+deve mais rodar).
+
+**Se isso for retomado no futuro** (não descartar a ideia, só a
+implementação): a alavancagem de "usar tempo do turno do oponente"
+precisa de `multiprocessing` (processo separado, sem GIL compartilhado)
+em vez de `threading`, OU um mecanismo explícito de pausar/despriorizar
+o job de pondering assim que uma requisição `/decide` real chegar (nem
+isso é trivial de fazer bem com Monte Carlo já em andamento). Registrar
+esse achado evita que uma sessão futura tente a mesma abordagem de novo
+sem essa lição.
+
+**Log da partida de teste**: já banco automaticamente (`Marshall.D.Teach-
+BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56`). `audit_real_losses.py`
+rodado (regra obrigatória de derrota) — 4 turnos auditados, classificados
+DIVERGE pela triagem heurística (não achou "MATCH" forte, mas o
+diagnóstico real desta derrota não é sobre qualidade de decisão mesmo,
+como já estabelecido acima).
+
 ## 2026-08-09 (478) - Claude (sessao local) - Design COMPLETO e APROVADO do pondering (pensar no turno do oponente), pronto pra implementacao. NENHUM CODIGO MEXIDO AINDA -- sessao trocou de dispositivo (celular) antes de comecar a escrever.
 
 Continuacao direta do bloco 477 (pondering era o item 2 de prioridade).

@@ -1352,8 +1352,14 @@ def test_own_don_e_candidato_prioritario_pra_custo_don_minus() -> None:
     # CollectTargetCandidates agora inclui DON ativo (nao restado) como
     # zona 'own_don'; ClickTargetCandidate sabe achar e clicar nela.
     # Fix (Python, este teste): order_target_candidates prioriza 'own_don'
-    # incondicionalmente (antes de actor_opp_only/battlefield_only, que so
-    # fazem sentido pro ALVO do efeito, nao pro pagamento do custo).
+    # QUANDO o efeito pendente tem de verdade um custo DON!! -N (achado
+    # 13/08, ver actor_needs_own_don: prioridade deixou de ser
+    # incondicional -- ver teste irmao abaixo, test_own_don_nao_e_
+    # prioritario_sem_custo_de_don). O custo don_minus do Katakuri vive em
+    # when_attacking/on_opp_attack (gatilhos SO de combate) -- por isso
+    # attacker_power>0 aqui, simulando a janela de ataque real em que esse
+    # custo de fato resolve (mesmo contexto que o BotDriver.cs passa ao
+    # vivo pra esse card).
     me = GameState(leader=real_card("OP11-062"))
     me.field_chars = [real_card("OP12-034")]
     opp = GameState(leader=real_card("OP04-019"))
@@ -1365,9 +1371,79 @@ def test_own_don_e_candidato_prioritario_pra_custo_don_minus() -> None:
         {"zone": "own_don", "id": -900, "code": ""},
         {"zone": "own_don", "id": -901, "code": ""},
     ]
-    order = sim_bridge.order_target_candidates(me, opp, candidates, actor_code="OP11-062")
+    order = sim_bridge.order_target_candidates(me, opp, candidates, actor_code="OP11-062",
+                                                attacker_power=5000)
     check("own_don vem ANTES de qualquer outra zona (candidato exclusivo do custo DON!! -N)",
           order[0] in (-900, -901) and order[1] in (-900, -901))
+
+
+def test_own_don_nao_e_prioritario_sem_custo_de_don() -> None:
+    # Achado real 13/08 (partida ao vivo, log Marshall.D.Teach-BY_x_
+    # Rocks.D.Xebec-B, usuario: "bot nao consegue dar K.O. em apenas 1
+    # personagem com Doc Q"). Doc Q (OP16-109) "[On K.O.] draw 1 card and
+    # K.O. up to 2 of your opponent's Characters with a cost of 1 or
+    # less" NAO tem nenhum custo/alvo de DON -- mas a prioridade
+    # incondicional das zonas own_don*/opp_don (achado 21/07) colocava
+    # todos os tokens de DON do bot (5-9 candidatos) na FRENTE do alvo de
+    # verdade (Streusen, custo 1) na lista ordenada. O BotDriver.cs clica
+    # 1 candidato por tick (~0.8s, jogo ignora cliques invalidos em
+    # silencio) -- na partida real, isso significou ~8s+ clicando em nada
+    # antes de chegar no alvo certo, risco real de perder a janela da
+    # acao. Fix: zonas de DON so ganham prioridade maxima quando o ator
+    # tem de verdade um custo/alvo de DON (actor_needs_own_don/
+    # actor_needs_opp_don) -- senao caem no balde "nunca e alvo valido"
+    # (9, 0), igual actor_opp_only/actor_battlefield_only.
+    me = GameState(leader=real_card("OP16-080"), don_available=5)  # Marshall D. Teach
+    me.field_chars = []
+    opp = GameState(leader=real_card("OP17-039"))
+    streusen = mk("OP17-050", "Streusen", power=2000, cost=1, color="Blue")
+    opp.field_chars = [streusen]
+    candidates = [
+        {"zone": "own_don", "id": 10005, "code": ""},
+        {"zone": "own_don", "id": 10006, "code": ""},
+        {"zone": "own_don", "id": 10007, "code": ""},
+        {"zone": "opp_don", "id": -10004, "code": ""},
+        {"zone": "opp_board", "id": -30, "code": "OP17-050"},
+        {"zone": "opp_leader", "id": -1, "code": "OP17-039"},
+    ]
+    order = sim_bridge.order_target_candidates(me, opp, candidates, actor_code="OP16-109")
+    check("Streusen (alvo de verdade do K.O.) vem ANTES de qualquer token de DON",
+          order.index(-30) < order.index(10005))
+    check("Streusen e o PRIMEIRO candidato da lista (unico alvo valido: custo<=1)",
+          order[0] == -30)
+
+
+def test_own_trash_nao_e_excluido_pro_gain_life_com_source_trash() -> None:
+    # Achado real 13/08 (mesma partida do teste acima, usuario: "bot nao
+    # consegue ganhar vida com Shiryu"). Shiryu (OP16-108) "[On Play] You
+    # may trash 1 card from your hand: Add up to 1 {Blackbeard Pirates}
+    # type card with a cost of 6 or less from your TRASH to the top of
+    # your Life cards face-up" -- parseado como gain_life(source='trash').
+    # `gain_life` esta na allowlist _SAFE_NO_TARGET_ACTIONS ("resolve sem
+    # selecao de zona nenhuma"), certo pra source='deck_top' (topo do
+    # proprio deck, sem zona clicavel) mas ERRADO pra source='trash'/
+    # 'hand_or_trash' (existe sim uma selecao real, e a UNICA zona onde
+    # ela vive e own_trash). actor_effect_is_hand_cost_only tratava o
+    # step como "seguro" e excluia own_trash via _HAND_COST_ALLOWED_ZONES
+    # (so own_hand/DON sobrevivem) -- o efeito nunca completava (custo
+    # pago, "adicionar a vida" sem nenhum candidato pra clicar). Fix:
+    # step_is_safe_no_target (decision_engine.py) exclui gain_life com
+    # source in (trash, hand_or_trash) da allowlist -- generico, auditado
+    # em todo o banco (só OP16-108/ST13-003 usam esse padrão hoje).
+    me = GameState(leader=real_card("OP16-080"), don_available=5)  # Marshall D. Teach
+    laffitte = real_card("OP09-095")  # Blackbeard Pirates, custo 1 -- alvo valido
+    me.trash = [laffitte]
+    opp = GameState(leader=real_card("OP17-039"))
+    candidates = [
+        {"zone": "own_don", "id": 10005, "code": ""},
+        {"zone": "own_don", "id": 10006, "code": ""},
+        {"zone": "own_trash", "id": 500, "code": "OP09-095"},
+    ]
+    order = sim_bridge.order_target_candidates(me, opp, candidates, actor_code="OP16-108")
+    check("own_trash NAO fica vazio pro gain_life(source=trash) do Shiryu",
+          500 in order)
+    check("Laffitte (own_trash, alvo de verdade) vem ANTES dos tokens de DON",
+          order[0] == 500)
 
 
 def test_ataque_em_character_exige_poder_final_suficiente() -> None:
@@ -2413,8 +2489,14 @@ def test_ataque_respeita_orcamento_da_jogada_principal_e_don_anexado() -> None:
         {"id": 3, "zone": "own_don_attached", "code": "Don"},
         {"id": 4, "zone": "own_don_attached_used", "code": "Don"},
     ]
+    # attacker_power>0: o custo don_minus do Katakuri vive em when_attacking/
+    # on_opp_attack (gatilhos SO de combate) -- desde o achado 13/08
+    # (actor_needs_own_don), as zonas de DON so ganham prioridade quando o
+    # ator tem de verdade esse custo NO CONTEXTO ATUAL (mesmo motivo do
+    # ajuste em test_own_don_e_candidato_prioritario_pra_custo_don_minus).
     order = sim_bridge.order_target_candidates(me, opp, candidates,
-                                                actor_code="OP11-062")
+                                                actor_code="OP11-062",
+                                                attacker_power=5000)
     check("DON anexado a atacante que ja agiu e devolvido antes do DON do banco",
           order[0] == 4 and order.index(2) < order.index(1))
 
@@ -9900,6 +9982,8 @@ def main() -> int:
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()
     test_peek_opp_deck_top_nao_vira_alvo_battlefield_only()
     test_own_don_e_candidato_prioritario_pra_custo_don_minus()
+    test_own_don_nao_e_prioritario_sem_custo_de_don()
+    test_own_trash_nao_e_excluido_pro_gain_life_com_source_trash()
     test_ataque_em_character_exige_poder_final_suficiente()
     test_bonus_de_ameaca_critica_exige_chance_real_de_conectar()
     test_debuff_power_no_oponente_conta_como_removal()
