@@ -1,7 +1,7 @@
 {
   "counts": {
     "MATCH": 8,
-    "DIVERGE": 272,
+    "DIVERGE": 277,
     "ERROR": 0,
     "SKIPPED": 0
   },
@@ -4297,6 +4297,89 @@
       "hist_leader_atk": 1,
       "hoje_leader_atk": 1,
       "hist_char_atk": 0,
+      "hoje_char_atk": 0
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T23.38.28.json",
+      "turn": 3,
+      "hist_plays": [],
+      "hoje_plays": [
+        "laffitte"
+      ],
+      "hist_activates": [],
+      "hoje_activates": [],
+      "hist_leader_atk": 2,
+      "hoje_leader_atk": 1,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 0
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T23.38.28.json",
+      "turn": 5,
+      "hist_plays": [
+        "docq",
+        "fullalead",
+        "laffitte",
+        "vascoshot"
+      ],
+      "hoje_plays": [
+        "laffitte",
+        "vascoshot"
+      ],
+      "hist_activates": [],
+      "hoje_activates": [],
+      "hist_leader_atk": 1,
+      "hoje_leader_atk": 1,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 0
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T23.38.28.json",
+      "turn": 7,
+      "hist_plays": [
+        "jesusburgess"
+      ],
+      "hoje_plays": [],
+      "hist_activates": [],
+      "hoje_activates": [],
+      "hist_leader_atk": 2,
+      "hoje_leader_atk": 1,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 0
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T23.38.28.json",
+      "turn": 9,
+      "hist_plays": [
+        "docq",
+        "marshalldtea"
+      ],
+      "hoje_plays": [
+        "docq"
+      ],
+      "hist_activates": [],
+      "hoje_activates": [],
+      "hist_leader_atk": 2,
+      "hoje_leader_atk": 2,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 0
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T23.38.28.json",
+      "turn": 11,
+      "hist_plays": [
+        "marshalldtea"
+      ],
+      "hoje_plays": [
+        "docq"
+      ],
+      "hist_activates": [
+        "fullalead"
+      ],
+      "hoje_activates": [],
+      "hist_leader_atk": 1,
+      "hoje_leader_atk": 2,
+      "hist_char_atk": 1,
       "hoje_char_atk": 0
     },
     {

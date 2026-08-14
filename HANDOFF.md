@@ -1,5 +1,46 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (482) - Claude (sessao local) - Partida de validacao pos-fix (bloco 481) jogada: Doc Q/Shiryu nao recorreram (nao testados nesta partida), MAS achado NOVO real -- 10 timeouts de busca no /decide, NAO relacionado ao fix de hoje
+
+Usuario jogou outra partida (`Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_
+2026-08-13T23.38.28`, 11 turnos, derrota, `commit_consistency` confirma
+`4581da1` -- o commit com os fixes de Doc Q/Shiryu) pra validar o bloco
+481.
+
+**Doc Q/Shiryu**: nao deu pra confirmar nem refutar -- nenhum dos dois
+cenarios ocorreu nesta partida. Doc Q foi jogado 2x mas nunca foi K.O.'d
+em campo (sem evento "Destroyed" no raw log, on-KO nunca disparou).
+Shiryu foi comprado mas NUNCA jogado (foi trashado da mao por outro
+efeito antes) -- seu on-play nunca teve chance de rodar. Sem evidencia
+de recorrencia do bug, mas tambem sem confirmacao positiva do fix nesta
+partida especifica.
+
+**Achado novo, real, CONFIRMADO nao relacionado ao fix de hoje**: 10
+timeouts de busca (`decision_timeouts`, `latency_ms.timeout_pct=9.9%`,
+turnos 3-6, todas ~3.0-3.06s -- batendo exatamente no teto de 3s do
+`/decide`). Verificado explicitamente: **todos os 10 timeouts sao
+`decision_kind=main`** (a busca `_select_action_via_search`/
+`choose_action`, chamada pelo `/decide`) -- **NENHUM e `target`**
+(`order_target_candidates`, o que foi mexido no bloco 481). O fix de
+hoje só roda dentro da resolução de `/choose_target`, nunca dentro da
+busca principal — confirma que não é regressão do bloco 481. Também
+apareceu `semantic_transition_failed: 2` (93.1% de sucesso nas 29
+transições checadas, `transition_semantics_summary`) — não investigado
+a fundo, registrado como pendência separada.
+
+**Hipótese não confirmada**: partida de 11 turnos (mais longa que as
+2 primeiras de hoje, 9 e 7 turnos) pode ter batido em boards mais
+complexos no meio-jogo (turnos 3-6), onde a busca já é conhecidamente
+mais cara (achado do profiling do bloco 477: custo O(board²) na busca
+offline, mas aqui é o caminho AO VIVO que já usa amostragem
+piso=12/teto=24). Não é uma regressão nova de hoje -- vale investigar
+como item separado (não bloqueia nada, só registra) numa sessão futura
+com foco em performance da busca ao vivo, não em ordenação de alvo.
+
+Log bancado, `audit_real_losses.py`/`triage_real_losses.py` rodados
+(regra do bloco 473) -- sem achado adicional de destaque (mesma
+distribuição heurística de sempre, majoritariamente DIVERGE).
+
 ## 2026-08-13 (481) - Claude (sessao local) - 2 bugs REAIS de ordenacao de alvo achados e corrigidos, investigando as reclamacoes do usuario nos logs de hoje ("bot nao da KO com Doc Q", "bot nao ganha vida com Shiryu")
 
 Continuação direta do bloco 480. Após o revert do pondering, usuário

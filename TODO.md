@@ -32,6 +32,16 @@
 >   (combat log + leitura de código), não prova absoluta. Registrar se o
 >   sintoma reaparecer numa partida real.
 >
+> **ACHADO NOVO (bloco 482), NÃO relacionado ao fix acima**: partida de
+> validação pós-fix teve 10 timeouts de busca (`decision_kind=main`,
+> turnos 3-6, todos ~3.0-3.06s no teto do `/decide`) — confirmado que
+> NENHUM é `target` (a parte que o bloco 481 mexeu), então não é
+> regressão de hoje. Hipótese não confirmada: boards mais complexos no
+> meio-jogo esbarrando no custo já conhecido da busca. Vale investigar
+> performance da busca AO VIVO como item separado numa sessão futura
+> (não é ordenação de alvo, é a busca Monte Carlo em si). Também apareceu
+> `semantic_transition_failed: 2` (93% de sucesso), não investigado.
+>
 > **PENDÊNCIA ANTERIOR (bloco 480) — pondering foi implementado, testado
 > AO VIVO e REVERTIDO** (`git revert 5fe0966`, commit `60d133c` — motor
 > de volta ao estado do commit `cc68d30`, código idêntico ao

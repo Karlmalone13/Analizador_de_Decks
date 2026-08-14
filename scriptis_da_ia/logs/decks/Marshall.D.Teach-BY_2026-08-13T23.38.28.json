@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP16-109",
+      "name": "Doc Q",
+      "count": 4
+    },
+    {
+      "code": "OP16-104",
+      "name": "OP16-104",
+      "count": 3
+    },
+    {
+      "code": "OP09-093",
+      "name": "Marshall D. Teach",
+      "count": 2
+    },
+    {
+      "code": "OP09-095",
+      "name": "Laffitte",
+      "count": 2
+    },
+    {
+      "code": "OP16-110",
+      "name": "Vasco Shot",
+      "count": 2
+    },
+    {
+      "code": "OP16-108",
+      "name": "OP16-108",
+      "count": 2
+    },
+    {
+      "code": "EB04-058",
+      "name": "EB04-058",
+      "count": 1
+    },
+    {
+      "code": "OP09-099",
+      "name": "Fullalead",
+      "count": 1
+    },
+    {
+      "code": "OP09-086",
+      "name": "Jesus Burgess",
+      "count": 1
+    },
+    {
+      "code": "OP16-119",
+      "name": "Marshall D. Teach",
+      "count": 1
+    },
+    {
+      "code": "OP16-116",
+      "name": "OP16-116",
+      "count": 1
+    }
+  ],
+  "total_seen": 20,
+  "leader": "OP16-080"
+}
