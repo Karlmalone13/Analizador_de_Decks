@@ -1,0 +1,81 @@
+{
+  "cards": [
+    {
+      "code": "OP17-118",
+      "name": "Rocks D. Xebec",
+      "count": 4
+    },
+    {
+      "code": "OP17-046",
+      "name": "Gloriosa",
+      "count": 4
+    },
+    {
+      "code": "OP17-052",
+      "name": "Don Marlon",
+      "count": 3
+    },
+    {
+      "code": "OP17-054",
+      "name": "Stussy",
+      "count": 3
+    },
+    {
+      "code": "OP17-050",
+      "name": "Streusen",
+      "count": 3
+    },
+    {
+      "code": "OP17-049",
+      "name": "Charlotte Linlin",
+      "count": 3
+    },
+    {
+      "code": "OP17-055",
+      "name": "There's No Authority in the World",
+      "count": 3
+    },
+    {
+      "code": "OP17-048",
+      "name": "Shiki",
+      "count": 2
+    },
+    {
+      "code": "OP17-057",
+      "name": "Fullalead",
+      "count": 2
+    },
+    {
+      "code": "OP17-045",
+      "name": "Kyo",
+      "count": 2
+    },
+    {
+      "code": "OP17-056",
+      "name": "Rocks Pirates",
+      "count": 2
+    },
+    {
+      "code": "OP17-043",
+      "name": "Ganzui",
+      "count": 2
+    },
+    {
+      "code": "OP17-042",
+      "name": "OP17-042",
+      "count": 1
+    },
+    {
+      "code": "OP17-044",
+      "name": "Captain John",
+      "count": 1
+    },
+    {
+      "code": "OP17-040",
+      "name": "Edward Newgate",
+      "count": 1
+    }
+  ],
+  "total_seen": 36,
+  "leader": "OP17-039"
+}

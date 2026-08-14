@@ -1,0 +1,1747 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "AcesWife#7970",
+        "leader": {
+          "name": "Charlotte Linlin",
+          "code": "OP17-099"
+        }
+      },
+      "p2": {
+        "name": "Karlmalone#2854",
+        "leader": {
+          "name": "Rocks D. Xebec",
+          "code": "OP17-039"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 15,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Gloriosa",
+        "code": "OP17-046"
+      },
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-050",
+          "card_name": "Streusen",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-052",
+            "OP17-048",
+            "OP17-054",
+            "OP17-046"
+          ],
+          "board": [
+            "OP17-050"
+          ],
+          "trash": [],
+          "life": 5,
+          "rested": {
+            "OP17-050": 1
+          }
+        },
+        "AcesWife#7970": {
+          "hand": [
+            "OP17-117",
+            "OP17-102",
+            "OP17-114",
+            "ST20-005",
+            "OP17-103"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "AcesWife#7970",
+      "card_drawn": {
+        "name": "Charlotte Mont-d'or",
+        "code": "OP17-111"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-052",
+            "OP17-048",
+            "OP17-054",
+            "OP17-046"
+          ],
+          "board": [
+            "OP17-050"
+          ],
+          "trash": [],
+          "life": 5,
+          "rested": {
+            "OP17-050": 1
+          }
+        },
+        "AcesWife#7970": {
+          "hand": [
+            "OP17-117",
+            "OP17-102",
+            "OP17-114",
+            "ST20-005",
+            "OP17-103",
+            "OP17-111"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Shiki",
+        "code": "OP17-048"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-057",
+          "card_name": "Fullalead",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Don Marlon [\"OP17-052\">OP17-052]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-048",
+            "OP17-054",
+            "OP17-046",
+            "OP17-049",
+            "OP17-048"
+          ],
+          "board": [
+            "OP17-050"
+          ],
+          "trash": [
+            "OP17-052"
+          ],
+          "life": 5
+        },
+        "AcesWife#7970": {
+          "hand": [
+            "OP17-117",
+            "OP17-102",
+            "OP17-114",
+            "ST20-005",
+            "OP17-103",
+            "OP17-111",
+            "OP17-112"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "AcesWife#7970",
+      "card_drawn": {
+        "name": "Charlotte Linlin",
+        "code": "OP17-112"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-102",
+          "card_name": "Charlotte Oven",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-048",
+            "OP17-054",
+            "OP17-049",
+            "OP17-048"
+          ],
+          "board": [
+            "OP17-050"
+          ],
+          "trash": [
+            "OP17-052",
+            "OP17-046"
+          ],
+          "life": 5
+        },
+        "AcesWife#7970": {
+          "hand": [
+            "OP17-117",
+            "OP17-114",
+            "ST20-005",
+            "OP17-103",
+            "OP17-111",
+            "OP17-112",
+            "OP17-112"
+          ],
+          "trash": [],
+          "board": [
+            "OP17-102"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-102": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Fullalead",
+        "code": "OP17-057"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-049",
+          "card_name": "Charlotte Linlin",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Kyo [\"OP17-045\">OP17-045]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-048",
+            "OP17-054",
+            "OP17-048",
+            "OP17-055",
+            "OP17-057"
+          ],
+          "board": [
+            "OP17-050",
+            "OP17-049"
+          ],
+          "trash": [
+            "OP17-052",
+            "OP17-046",
+            "OP17-045"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-049": 1
+          }
+        },
+        "AcesWife#7970": {
+          "hand": [
+            "OP17-114",
+            "ST20-005",
+            "OP17-103",
+            "OP17-112",
+            "OP17-112"
+          ],
+          "trash": [
+            "OP17-111",
+            "OP17-117"
+          ],
+          "board": [
+            "OP17-102",
+            "OP17-102"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-102": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "AcesWife#7970",
+      "card_drawn": {
+        "name": "Jewelry Bonney",
+        "code": "OP08-105"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-103",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Add card to top of Life from Deck",
+            "Buff Charlotte Linlin [\"OP17-049\">OP17-049] -3000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-048",
+            "OP17-054",
+            "OP17-048",
+            "OP17-055"
+          ],
+          "board": [
+            "OP17-050",
+            "OP17-049"
+          ],
+          "trash": [
+            "OP17-052",
+            "OP17-046",
+            "OP17-045",
+            "OP17-057"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-049": 1
+          }
+        },
+        "AcesWife#7970": {
+          "hand": [
+            "OP17-114",
+            "ST20-005",
+            "OP17-112",
+            "OP17-112",
+            "OP08-105"
+          ],
+          "trash": [
+            "OP17-111",
+            "OP17-117"
+          ],
+          "board": [
+            "OP17-102",
+            "OP17-102",
+            "OP17-103"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-103": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "There's No Authority in the World",
+        "code": "OP17-055"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-048",
+          "card_name": "Shiki",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP08-105"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Gloriosa [\"OP17-046\">OP17-046]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-048",
+            "OP17-054",
+            "OP17-055",
+            "OP17-052",
+            "OP17-055"
+          ],
+          "board": [
+            "OP17-050",
+            "OP17-049",
+            "OP17-048"
+          ],
+          "trash": [
+            "OP17-052",
+            "OP17-046",
+            "OP17-045",
+            "OP17-057",
+            "OP17-046"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-049": 1,
+            "OP17-048": 1
+          }
+        },
+        "AcesWife#7970": {
+          "hand": [
+            "OP17-114",
+            "ST20-005",
+            "OP17-112",
+            "OP17-112",
+            "OP11-106"
+          ],
+          "trash": [
+            "OP17-111",
+            "OP17-117",
+            "OP17-109",
+            "OP08-105"
+          ],
+          "board": [
+            "OP17-102",
+            "OP17-102",
+            "OP17-103"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-103": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "AcesWife#7970",
+      "card_drawn": {
+        "name": "Charlotte Katakuri",
+        "code": "OP17-103"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-114",
+          "card_name": "The 3 Sweet Commanders",
+          "effects": [
+            "Rest 2 Don",
+            "Draw 1 Card",
+            "Add card to top of Life from Deck",
+            "Buff Charlotte Linlin [\"OP17-049\">OP17-049] -3000",
+            "Buff Shiki [\"OP17-048\">OP17-048] -3000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Oven",
+          "attacker_code": "OP17-102",
+          "target": "Charlotte Linlin [\"OP17-049\">OP17-049]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Charlotte Linlin [\"OP17-049\">OP17-049]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Oven",
+          "attacker_code": "OP17-102",
+          "target": "Charlotte Linlin [\"OP17-049\">OP17-049]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-054",
+            "OP17-055"
+          ],
+          "board": [
+            "OP17-050",
+            "OP17-049",
+            "OP17-048"
+          ],
+          "trash": [
+            "OP17-052",
+            "OP17-046",
+            "OP17-045",
+            "OP17-057",
+            "OP17-046",
+            "OP17-052",
+            "OP17-055",
+            "OP17-048"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-049": 1,
+            "OP17-048": 1
+          }
+        },
+        "AcesWife#7970": {
+          "hand": [
+            "ST20-005",
+            "OP17-112",
+            "OP17-112",
+            "OP11-106",
+            "OP11-106",
+            "OP17-103"
+          ],
+          "trash": [
+            "OP17-111",
+            "OP17-117",
+            "OP17-109",
+            "OP08-105"
+          ],
+          "board": [
+            "OP17-102",
+            "OP17-102",
+            "OP17-103",
+            "OP17-114"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-102": 2,
+            "OP17-114": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Stussy",
+        "code": "OP17-054"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Fullalead [\"OP17-057\">OP17-057]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-050",
+          "card_name": "Streusen",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "Charlotte Oven [\"OP17-102\">OP17-102]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "Charlotte Katakuri [\"OP17-103\">OP17-103] can't attack next turn"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "The 3 Sweet Commanders [\"OP17-114\">OP17-114] can't attack next turn"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-055",
+            "OP17-052"
+          ],
+          "board": [
+            "OP17-050",
+            "OP17-048",
+            "OP17-050",
+            "OP17-054",
+            "OP17-054"
+          ],
+          "trash": [
+            "OP17-052",
+            "OP17-046",
+            "OP17-045",
+            "OP17-057",
+            "OP17-046",
+            "OP17-052",
+            "OP17-055",
+            "OP17-048",
+            "OP17-057",
+            "OP17-049"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-048": 1,
+            "OP17-050": 1,
+            "OP17-054": 2
+          }
+        },
+        "AcesWife#7970": {
+          "hand": [
+            "ST20-005",
+            "OP17-112",
+            "OP17-112",
+            "OP11-106",
+            "OP11-106",
+            "OP17-103",
+            "OP17-111",
+            "OP17-113"
+          ],
+          "trash": [
+            "OP17-111",
+            "OP17-117",
+            "OP08-105",
+            "OP16-119",
+            "OP17-102",
+            "OP17-103"
+          ],
+          "board": [
+            "OP17-102",
+            "OP17-103",
+            "OP17-114",
+            "OP17-109"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-102": 1,
+            "OP17-114": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "AcesWife#7970",
+      "card_drawn": {
+        "name": "Zeus",
+        "code": "OP11-106"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST20-005",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Charlotte Mont-d'or [\"OP17-111\">OP17-111]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-102",
+          "to_name": "Charlotte Oven",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Oven",
+          "attacker_code": "OP17-102",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Charlotte Katakuri [\"OP17-103\">OP17-103]",
+            "Trash Zeus [\"OP11-106\">OP11-106]",
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-106",
+          "card_name": "Zeus",
+          "effects": [
+            "Takes Top Life",
+            "Destroy Stussy [\"OP17-054\">OP17-054]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-118",
+            "OP17-055",
+            "OP17-049"
+          ],
+          "board": [
+            "OP17-050",
+            "OP17-048",
+            "OP17-050",
+            "OP17-054"
+          ],
+          "trash": [
+            "OP17-052",
+            "OP17-046",
+            "OP17-045",
+            "OP17-057",
+            "OP17-046",
+            "OP17-052",
+            "OP17-055",
+            "OP17-048",
+            "OP17-057",
+            "OP17-049",
+            "OP17-042",
+            "OP17-052",
+            "OP17-054"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-048": 1,
+            "OP17-050": 1,
+            "OP17-054": 1
+          }
+        },
+        "AcesWife#7970": {
+          "hand": [
+            "OP17-112",
+            "OP17-112",
+            "OP11-106",
+            "OP17-113",
+            "OP11-106"
+          ],
+          "trash": [
+            "OP17-111",
+            "OP17-117",
+            "OP08-105",
+            "OP16-119",
+            "OP17-102",
+            "OP17-103",
+            "OP17-111",
+            "OP17-103",
+            "OP11-106",
+            "OP17-103"
+          ],
+          "board": [
+            "OP17-102",
+            "OP17-114",
+            "OP17-109",
+            "ST20-005",
+            "OP11-106"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-102": 1,
+            "ST20-005": 1,
+            "OP11-106": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Ganzui",
+        "code": "OP17-043"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Gloriosa [\"OP17-046\">OP17-046]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "Charlotte Oven [\"OP17-102\">OP17-102]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-118",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Draw 1 Card",
+            "Deploy Captain John [\"OP17-044\">OP17-044]",
+            "Deploy Charlotte Linlin [\"OP17-049\">OP17-049]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-049",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-044",
+          "card_name": "Captain John",
+          "effects": [
+            "Draw 1 Card",
+            "Rest Captain John [\"OP17-044\">OP17-044]",
+            "Trash Ganzui [\"OP17-043\">OP17-043]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-055",
+            "OP17-045",
+            "OP17-049",
+            "OP17-056",
+            "OP17-046"
+          ],
+          "board": [
+            "OP17-048",
+            "OP17-054",
+            "OP17-118",
+            "OP17-044",
+            "OP17-049"
+          ],
+          "trash": [
+            "OP17-052",
+            "OP17-046",
+            "OP17-045",
+            "OP17-057",
+            "OP17-046",
+            "OP17-052",
+            "OP17-055",
+            "OP17-048",
+            "OP17-057",
+            "OP17-049",
+            "OP17-042",
+            "OP17-052",
+            "OP17-054",
+            "OP17-046",
+            "OP17-050",
+            "OP17-050",
+            "OP17-043"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-048": 1,
+            "OP17-118": 1
+          }
+        },
+        "AcesWife#7970": {
+          "hand": [
+            "OP17-112",
+            "OP17-112",
+            "OP11-106",
+            "OP17-113",
+            "OP11-106"
+          ],
+          "trash": [
+            "OP17-111",
+            "OP17-117",
+            "OP08-105",
+            "OP16-119",
+            "OP17-102",
+            "OP17-103",
+            "OP17-111",
+            "OP17-103",
+            "OP11-106",
+            "OP17-108",
+            "OP17-102"
+          ],
+          "board": [
+            "OP17-114",
+            "OP17-109",
+            "ST20-005",
+            "OP11-106",
+            "OP17-103"
+          ],
+          "life": 2,
+          "rested": {
+            "ST20-005": 1,
+            "OP11-106": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "AcesWife#7970",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP16-119"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-112",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Draw 1 Card",
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP17-103",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "The 3 Sweet Commanders",
+          "attacker_code": "OP17-114",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "OP17-109",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Marshall D. Teach [\"OP16-119\">OP16-119]",
+            "Trash Charlotte Brulee [\"OP17-108\">OP17-108]",
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "ST20-005",
+          "target": "Stussy [\"OP17-054\">OP17-054]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-055",
+            "OP17-045",
+            "OP17-043"
+          ],
+          "board": [
+            "OP17-048",
+            "OP17-118",
+            "OP17-049"
+          ],
+          "trash": [
+            "OP17-052",
+            "OP17-046",
+            "OP17-045",
+            "OP17-057",
+            "OP17-046",
+            "OP17-052",
+            "OP17-055",
+            "OP17-048",
+            "OP17-057",
+            "OP17-049",
+            "OP17-042",
+            "OP17-052",
+            "OP17-054",
+            "OP17-046",
+            "OP17-050",
+            "OP17-050",
+            "OP17-043",
+            "OP17-049",
+            "OP17-046",
+            "OP17-056",
+            "OP17-044",
+            "OP17-054"
+          ],
+          "life": 2,
+          "rested": {
+            "OP17-048": 1,
+            "OP17-118": 1
+          }
+        },
+        "AcesWife#7970": {
+          "hand": [
+            "OP17-112",
+            "OP11-106",
+            "OP17-113",
+            "OP11-106"
+          ],
+          "trash": [
+            "OP17-111",
+            "OP17-117",
+            "OP08-105",
+            "OP16-119",
+            "OP17-102",
+            "OP17-103",
+            "OP17-111",
+            "OP17-103",
+            "OP11-106",
+            "OP17-108",
+            "OP17-102",
+            "OP11-106",
+            "OP16-119",
+            "OP17-108"
+          ],
+          "board": [
+            "OP17-114",
+            "OP17-109",
+            "ST20-005",
+            "OP17-103",
+            "OP17-112"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-114": 1,
+            "OP17-109": 1,
+            "ST20-005": 1,
+            "OP17-103": 1,
+            "OP17-112": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "There's No Authority in the World",
+        "code": "OP17-055"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Charlotte Pudding [\"OP17-109\">OP17-109]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Kyo [\"OP17-045\">OP17-045]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "The 3 Sweet Commanders [\"OP17-114\">OP17-114]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Charlotte Katakuri [\"OP17-103\">OP17-103]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-118",
+          "target": "Charlotte Linlin [\"ST20-005\">ST20-005]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-118",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Draw 1 Card",
+            "Deploy Edward Newgate [\"OP17-040\">OP17-040]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-040",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-055",
+            "OP17-043",
+            "OP17-050",
+            "OP17-054",
+            "OP17-055"
+          ],
+          "board": [
+            "OP17-048",
+            "OP17-118",
+            "OP17-049",
+            "OP17-118",
+            "OP17-040"
+          ],
+          "trash": [
+            "OP17-052",
+            "OP17-046",
+            "OP17-045",
+            "OP17-057",
+            "OP17-046",
+            "OP17-052",
+            "OP17-055",
+            "OP17-048",
+            "OP17-057",
+            "OP17-049",
+            "OP17-042",
+            "OP17-052",
+            "OP17-054",
+            "OP17-046",
+            "OP17-050",
+            "OP17-050",
+            "OP17-043",
+            "OP17-049",
+            "OP17-046",
+            "OP17-056",
+            "OP17-044",
+            "OP17-054",
+            "OP17-045"
+          ],
+          "life": 2,
+          "rested": {
+            "OP17-048": 1,
+            "OP17-118": 2,
+            "OP17-049": 1
+          }
+        },
+        "AcesWife#7970": {
+          "hand": [
+            "OP17-112",
+            "OP11-106",
+            "OP17-113",
+            "OP11-106"
+          ],
+          "trash": [
+            "OP17-111",
+            "OP17-117",
+            "OP08-105",
+            "OP16-119",
+            "OP17-102",
+            "OP17-103",
+            "OP17-111",
+            "OP17-103",
+            "OP11-106",
+            "OP17-108",
+            "OP17-102",
+            "OP11-106",
+            "OP16-119",
+            "OP17-108",
+            "OP17-109",
+            "OP17-114",
+            "OP17-103",
+            "ST20-005"
+          ],
+          "board": [
+            "OP17-112"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-112": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "AcesWife#7970",
+      "card_drawn": {
+        "name": "Charlotte Cracker",
+        "code": "OP17-104"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-113",
+          "card_name": "Streusen",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Cracker [\"OP17-104\">OP17-104]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-109",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "Trash Charlotte Cracker [\"OP17-104\">OP17-104]",
+            "Draw 3 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-104",
+          "card_name": "Charlotte Cracker",
+          "effects": [
+            "Rest 2 Don",
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-113",
+          "card_name": "Streusen",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Oven [\"OP17-102\">OP17-102]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-055",
+            "OP17-043",
+            "OP17-054",
+            "OP17-055"
+          ],
+          "board": [
+            "OP17-048",
+            "OP17-118",
+            "OP17-049",
+            "OP17-118",
+            "OP17-040"
+          ],
+          "trash": [
+            "OP17-052",
+            "OP17-046",
+            "OP17-045",
+            "OP17-057",
+            "OP17-046",
+            "OP17-052",
+            "OP17-055",
+            "OP17-048",
+            "OP17-057",
+            "OP17-049",
+            "OP17-042",
+            "OP17-052",
+            "OP17-054",
+            "OP17-046",
+            "OP17-050",
+            "OP17-050",
+            "OP17-043",
+            "OP17-049",
+            "OP17-046",
+            "OP17-056",
+            "OP17-044",
+            "OP17-054",
+            "OP17-045",
+            "OP17-050"
+          ],
+          "life": 2,
+          "rested": {
+            "OP17-048": 1,
+            "OP17-118": 2,
+            "OP17-049": 1
+          }
+        },
+        "AcesWife#7970": {
+          "hand": [
+            "OP17-112",
+            "OP11-106",
+            "OP11-106",
+            "OP17-110",
+            "OP17-102"
+          ],
+          "trash": [
+            "OP17-111",
+            "OP17-117",
+            "OP08-105",
+            "OP16-119",
+            "OP17-102",
+            "OP17-103",
+            "OP17-111",
+            "OP17-103",
+            "OP11-106",
+            "OP17-108",
+            "OP17-102",
+            "OP11-106",
+            "OP16-119",
+            "OP17-108",
+            "OP17-109",
+            "OP17-114",
+            "OP17-103",
+            "ST20-005",
+            "OP17-104"
+          ],
+          "board": [
+            "OP17-112",
+            "OP17-113",
+            "OP17-109",
+            "OP17-104",
+            "OP17-113"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-113": 2,
+            "OP17-109": 1,
+            "OP17-104": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Rocks Pirates",
+        "code": "OP17-056"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP17-040",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-106",
+            "OP11-106"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-118",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-118",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "Charlotte Cracker [\"OP17-104\">OP17-104] can't attack next turn",
+            "Rest 3 Don",
+            "Rest Stussy [\"OP17-054\">OP17-054]",
+            "Charlotte Linlin [\"OP17-112\">OP17-112] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Ganzui [\"OP17-043\">OP17-043]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP17-055",
+            "OP17-055",
+            "OP17-118",
+            "OP17-118",
+            "OP17-056"
+          ],
+          "board": [
+            "OP17-048",
+            "OP17-118",
+            "OP17-118",
+            "OP17-040",
+            "OP17-054"
+          ],
+          "trash": [
+            "OP17-052",
+            "OP17-046",
+            "OP17-045",
+            "OP17-057",
+            "OP17-046",
+            "OP17-052",
+            "OP17-055",
+            "OP17-048",
+            "OP17-057",
+            "OP17-049",
+            "OP17-042",
+            "OP17-052",
+            "OP17-054",
+            "OP17-046",
+            "OP17-050",
+            "OP17-050",
+            "OP17-043",
+            "OP17-049",
+            "OP17-046",
+            "OP17-056",
+            "OP17-044",
+            "OP17-054",
+            "OP17-045",
+            "OP17-050",
+            "OP17-049",
+            "OP17-043"
+          ],
+          "life": 2,
+          "rested": {
+            "OP17-048": 1,
+            "OP17-118": 2,
+            "OP17-040": 1,
+            "OP17-054": 1
+          }
+        },
+        "AcesWife#7970": {
+          "hand": [
+            "OP17-112",
+            "OP17-110",
+            "OP17-102",
+            "OP17-110",
+            "OP17-113"
+          ],
+          "trash": [
+            "OP17-111",
+            "OP17-117",
+            "OP08-105",
+            "OP16-119",
+            "OP17-102",
+            "OP17-103",
+            "OP17-111",
+            "OP17-103",
+            "OP11-106",
+            "OP17-108",
+            "OP17-102",
+            "OP11-106",
+            "OP16-119",
+            "OP17-108",
+            "OP17-109",
+            "OP17-114",
+            "OP17-103",
+            "ST20-005",
+            "OP17-104",
+            "OP17-113",
+            "OP11-106",
+            "OP11-106",
+            "OP17-117",
+            "OP17-104"
+          ],
+          "board": [
+            "OP17-112",
+            "OP17-113",
+            "OP17-109",
+            "OP17-114",
+            "OP17-106"
+          ],
+          "life": 0,
+          "rested": {
+            "OP17-109": 1,
+            "OP17-113": 1
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,5 +1,71 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (525) - Claude (sessao remota web) - FECHA o arco inteiro de "calibragem dinamica" (blocos 508-525): NENHUMA das 4 tentativas pos-fase-1 se sustentou -- so a fase 1 original continua valida
+
+Comparacao `USE_DEEP_REAL_SEARCH` (busca real com piso/teto 100/300,
+bloco 524) terminou. Roster multi-ancora, N=12 (exploratorio, custo
+proibitivo ja descartou a ideia antes de justificar N maior):
+```
+matchup          atual(3-6)   fundo(100-300)   margem
+Imu_v_Mihawk     0,250        0,250            +0,000
+Mihawk_v_Ace     0,917        1,000            +0,083
+Ace_v_Lucy       0,583        0,583            +0,000
+Lucy_v_Imu       0,667        0,583            -0,083
+maximin=-0,083   soma=+0,000
+```
+**Reprova o criterio de sempre** (regride 1 matchup, ganho agregado
+zero) **E o custo e proibitivo**: tempo por partida foi de ~4-9s pra
+**123-278s** (20-40x mais lento) -- "centenas de amostras" na busca
+REAL (regra completa via `_apply_action`) e caro demais mesmo pra
+medicao offline, nem precisou testar ao vivo.
+
+**Registro consolidado das 4 tentativas pos-fase-1, TODAS descartadas
+nesta sessao** (pedido explicito do usuario de simular "igual ao
+NarutoSim" de varias formas diferentes, cada uma medida com o MESMO
+rigor -- multi-ancora, maximin -- do resto do projeto):
+1. **Ajuste dinamico de peso** (fase 2, blocos 513-515): reforcar
+   transitoriamente o termo de `EVAL_WEIGHTS` que mais explicava a
+   vantagem da candidata lider -- `maximin` negativo, descartado.
+2. **Escalar a camada barata pra milhares** (blocos 514/517-519):
+   `CHEAP_LAYER_SAMPLES` 40->3000+ -- resultado final (apos corrigir 2
+   bugs reais de medicao) foi neutro (`maximin=+0,000, soma=+0,033`),
+   ganho quase nulo pra custo real, decidido manter 40.
+3. **GATE** (blocos 521-523): profundidade de sequencia real
+   (`_cheap_playout_deltas`, excecao explicita a REGRA_SEM_DUPLICACAO)
+   + pular a busca cara quando a camada barata fica confiante --
+   melhorou depois de corrigir um vies real (play vs attack), mas
+   nenhum dos 3 limiares testados passou o criterio.
+4. **Busca real com centenas de amostras** (bloco 524-525, este
+   bloco): substitui a aproximacao barata pela busca real de verdade
+   em maior volume -- nem melhora winrate nem e viavel em custo.
+
+**Estado final**: `USE_CHEAP_LAYER_SHORTLIST=True`/`CHEAP_LAYER_
+SAMPLES=40`/`CHEAP_LAYER_PLAYOUT_STEPS=4` (fase 1 original + profundidade
+de sequencia com vies corrigido, que NAO regride sozinha quando usada
+so pra alargar, ver bloco 510/523) continuam a UNICA parte validada e
+ativa em producao, offline e ao vivo. `USE_DYNAMIC_WEIGHT_ADJUSTMENT`,
+`USE_CHEAP_LAYER_GATE`, `USE_DEEP_REAL_SEARCH`, `CHEAP_LAYER_DECIDES_
+ALONE` -- todas `False`, mecanismos ficam no codigo (documentados,
+testados, nunca removidos) pra nenhuma sessao futura reimplementar do
+zero, mas nenhuma deve ser ligada sem repetir esta mesma medicao.
+
+**Log real adicionado ao banco** (regra obrigatoria do projeto,
+partida humano-vs-humano compartilhada pelo usuario durante a sessao):
+`Charlotte.Linlin-Y_x_Rocks.D.Xebec-B_karlmalone_x_aceswife_2026-08-12`
+(Karlmalone/Rocks D. Xebec venceu, AcesWife/Charlotte Linlin concedeu,
+15 turnos). **Achado real de infraestrutura durante o processo**: o
+arquivo enviado via upload encolheu de 75.420 bytes pra 117 bytes
+sozinho, 2 vezes seguidas (2 uploads diferentes, mesmo sintoma) --
+sem nenhuma escrita minha no caminho. Recuperado via o arquivo `_p2.log`
+que `parse_combat_log.py`'s `split_multigame_log` ja tinha salvo antes
+da falha (o log tem "Version is 1.42b" 2x, uma por jogador conectando,
+e a funcao trata QUALQUER ocorrencia como inicio de nova partida --
+bug real, nao investigado a fundo ainda, registrado pra proxima sessao:
+`split_multigame_log` em `parse_combat_log.py` precisa de um criterio
+mais especifico que "comeca com Version is" pra separar partidas de
+verdade concatenadas vs o handshake normal de conexao dos 2 jogadores
+do MESMO jogo).
+
 ## 2026-08-13 (524) - Claude (sessao remota web) - Camada barata com viés corrigido AINDA nao passa no GATE (limiar 15 mais perto, mas ainda regride) -- nova ideia do usuario: aumentar amostra da BUSCA REAL (nao a camada barata), EM ANDAMENTO
 
 Re-teste do GATE (bloco 523, com a correcao de vies play/attack)

@@ -2,6 +2,34 @@
 
 **Última atualização:** 13 de agosto de 2026
 
+> 13/08/2026 (bloco 525): **FECHA o arco inteiro de "calibragem
+> dinâmica"** (blocos 508-525) — as 4 tentativas pós-fase-1 foram
+> TODAS descartadas, medidas com o mesmo rigor de sempre (multi-âncora,
+> maximin): (1) ajuste dinâmico de peso — `maximin` negativo; (2)
+> escalar a camada barata pra milhares — neutro (`soma=+0,033`), não
+> compensa o custo; (3) GATE (pular busca cara quando a camada barata
+> fica confiante) — melhorou após corrigir um viés real (play vs
+> attack) mas nenhum limiar passou; (4) busca real com centenas de
+> amostras — nem melhora winrate (`maximin=-0,083`) nem é viável em
+> custo (20-40x mais lento, 123-278s/partida). **Estado final**: só a
+> fase 1 original (`CHEAP_LAYER_SAMPLES=40`, com a profundidade de
+> sequência do bloco 521/523 já com viés corrigido) continua ativa em
+> produção — exatamente como validado antes desta sessão. Os 4
+> mecanismos experimentais ficam no código (documentados/testados,
+> flags `False`) pra não precisar reimplementar do zero no futuro, mas
+> nenhum deve ligar sem repetir a medição. Ver bloco 525 do HANDOFF.
+>
+> **Log real adicionado ao banco**: partida humano-vs-humano
+> (Karlmalone/Rocks D. Xebec x AcesWife/Charlotte Linlin, 15 turnos,
+> compartilhada pelo usuário). **Achado de infraestrutura**: arquivo
+> de upload encolheu sozinho de 75KB pra 117 bytes 2x seguidas (bug do
+> ambiente, não do log) — recuperado via `_p2.log` que `parse_combat_
+> log.py` já tinha salvo. Achado um bug real (não corrigido ainda) em
+> `split_multigame_log`: trata QUALQUER linha "Version is" como início
+> de nova partida, mas ela aparece 2x por partida normal (1x por
+> jogador conectando) — precisa de critério mais específico. Registrado
+> pra próxima sessão corrigir.
+
 > 13/08/2026 (bloco 524, EM ANDAMENTO): re-teste do GATE (correção do
 > viés play/attack do bloco 523) — os 3 limiares AINDA regridem
 > (`maximin=-0,133/-0,267/-0,067`), melhor que antes mas nenhum passa

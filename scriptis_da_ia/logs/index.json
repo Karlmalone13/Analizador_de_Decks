@@ -3136,5 +3136,31 @@
       "TomDBomb#22755": "decks/Shanks-G_2026-08-09T19.11.14.json",
       "Karlmalone#2854": "decks/Rocks.D.Xebec-B_2026-08-09T19.11.14.json"
     }
+  },
+  {
+    "id": "karlmalone_x_aceswife_2026-08-12",
+    "friendly_name": "Charlotte.Linlin-Y_x_Rocks.D.Xebec-B",
+    "date": "karlmalone",
+    "p1": {
+      "name": "AcesWife#7970",
+      "leader_code": "OP17-099",
+      "leader_name": "Charlotte Linlin",
+      "slug": "Charlotte.Linlin-Y"
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 15,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Charlotte.Linlin-Y_x_Rocks.D.Xebec-B_karlmalone_x_aceswife_2026-08-12.log",
+    "parsed_file": "parsed/Charlotte.Linlin-Y_x_Rocks.D.Xebec-B_karlmalone_x_aceswife_2026-08-12.json",
+    "deck_files": {
+      "AcesWife#7970": "decks/Charlotte.Linlin-Y_karlmalone_x_aceswife_2026-08-12.json",
+      "Karlmalone#2854": "decks/Rocks.D.Xebec-B_karlmalone_x_aceswife_2026-08-12.json"
+    }
   }
 ]
