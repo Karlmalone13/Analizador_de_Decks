@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (524) - Claude (sessao remota web) - Camada barata com viés corrigido AINDA nao passa no GATE (limiar 15 mais perto, mas ainda regride) -- nova ideia do usuario: aumentar amostra da BUSCA REAL (nao a camada barata), EM ANDAMENTO
+
+Re-teste do GATE (bloco 523, com a correcao de vies play/attack)
+terminou: os 3 limiares (3,0/8,0/15,0) AINDA regridem (`maximin=
+-0,133/-0,267/-0,067`), melhor que antes mas nenhum passa. Limiar 15
+chegou mais perto (`soma=+0,033`, so 1 matchup negativo em -6,7pp) --
+registrado mas nao suficiente pro criterio de sempre.
+
+**Pivot do usuario**: em vez de insistir no GATE/camada barata, nova
+ideia -- "dar um jeito de simular a heuristica centenas de vezes com
+calibragem dinamica". Interpretacao acordada (resumo aprovado pelo
+usuario com "Sim"): reusar a BUSCA REAL de sempre
+(`_select_action_via_search`, regra completa via `_apply_action`,
+ZERO motor novo -- ao contrario da camada barata, que e uma
+aproximacao) com piso/teto de amostras MUITO maiores (centenas, nao
+3-6 do offline de hoje) -- testa isolado ANTES de complicar com
+ajuste de peso em cima (mesma disciplina "isola 1 variavel" de sempre;
+calibragem dinamica de peso ja foi tentada e descartada nos blocos
+513-515 com sinal fraco, reviver so faz sentido se a base -- mais
+amostra real -- ja mostrar valor sozinha).
+
+**Implementado**: `USE_DEEP_REAL_SEARCH` (flag, OFF por padrao) +
+`DEEP_REAL_SEARCH_SAMPLES_MIN/MAX/BATCH` (100/300/50) --
+`decision_engine.py` ~L72-84, wired em `main_phase` (substitui
+`OFFLINE_MC_SAMPLES_MIN/MAX/BATCH` quando ligado, mesma busca real, so
+orcamento maior). `smoke_fast.py`/`smoke_test.py` 100% (flag OFF,
+comportamento de producao inalterado).
+
+**EM ANDAMENTO, nao concluido nesta sessao**: comparacao exploratoria
+(N=12, roster multi-ancora reduzido pra medir custo antes de ampliar)
+entre producao (piso/teto 3/6) e "fundo" (100/300) rodando em segundo
+plano -- resultado sai em bloco separado assim que terminar. Custo
+por amostra da busca real ja medido antes (bloco 521): ~3,7ms/amostra
+-- centenas de amostras por candidata pode custar segundos por decisao,
+tolerabilidade real ainda nao confirmada em partida completa.
+
 ## 2026-08-13 (523) - Claude (sessao remota web) - Corrige o viES real achado no gate: `_cheap_playout_deltas` so encadeava 'play' (nunca 'attack'), enviesando a favor de desenvolver -- validacao com a correcao EM ANDAMENTO
 
 Continuacao direta do bloco 522: os 3 limiares testados pro modo GATE

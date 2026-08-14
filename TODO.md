@@ -2,6 +2,19 @@
 
 **Última atualização:** 13 de agosto de 2026
 
+> 13/08/2026 (bloco 524, EM ANDAMENTO): re-teste do GATE (correção do
+> viés play/attack do bloco 523) — os 3 limiares AINDA regridem
+> (`maximin=-0,133/-0,267/-0,067`), melhor que antes mas nenhum passa
+> (limiar 15 chegou mais perto, `soma=+0,033`). **Pivot do usuário**:
+> em vez de insistir na camada barata (aproximação), reusar a BUSCA
+> REAL de sempre (`_select_action_via_search`, zero motor novo) com
+> piso/teto de amostras bem maiores (centenas, não 3-6) — testa
+> isolado antes de reviver ajuste de peso em cima (já descartado nos
+> blocos 513-515 com sinal fraco). Implementado `USE_DEEP_REAL_SEARCH`
+> (OFF por padrão) + constantes de amostra (100/300/50).
+> `smoke_fast`/`smoke_test` 100%. **Comparação exploratória rodando em
+> segundo plano, resultado ainda não saiu**. Ver bloco 524 do HANDOFF.
+
 > 13/08/2026 (bloco 523, EM ANDAMENTO): calibração do limiar do GATE
 > (bloco 522) mostrou os 3 valores testados (3,0/8,0/15,0) TODOS
 > regredindo produção. Investigada a causa: `_cheap_playout_deltas`

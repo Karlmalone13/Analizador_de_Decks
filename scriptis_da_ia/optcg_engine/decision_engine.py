@@ -70,6 +70,21 @@ OFFLINE_MC_SAMPLES_MIN = 3
 OFFLINE_MC_SAMPLES_MAX = 6
 OFFLINE_MC_SAMPLES_BATCH = 3
 
+# Modo experimental de MEDICAO (bloco 524, ideia do usuario apos o GATE
+# nao funcionar: "dar um jeito de simular a heuristica centenas de
+# vezes" -- em vez de inventar uma camada aproximada nova (a
+# "calibragem dinamica" original, ja tentada e descartada nos blocos
+# 513-523), reusa a busca REAL de sempre (`_select_action_via_search`,
+# regra completa via `_apply_action`, ZERO duplicacao de motor) com
+# piso/teto de amostras bem maiores. So pra self-play de MEDICAO
+# (offline) -- NUNCA pra producao ao vivo sem medir custo separado
+# (cada amostra real custa ~3,7ms, ver HANDOFF bloco 521 -- centenas
+# de amostras por candidata pode levar segundos por decisao).
+USE_DEEP_REAL_SEARCH = False
+DEEP_REAL_SEARCH_SAMPLES_MIN = 100
+DEEP_REAL_SEARCH_SAMPLES_MAX = 300
+DEEP_REAL_SEARCH_SAMPLES_BATCH = 50
+
 # Componente de counter em `_counter_stat_bonus` (rede de segurança na mão
 # vs jogar a carta). Promovido de literal solto pra constante nomeada
 # (28/07, bloco HANDOFF 390) -- achado real via `compare_vs_human.py` em
@@ -16336,7 +16351,14 @@ class OPTCGMatch:
             # ganhar precisao nas decisoes ambiguas -- ver comentario da
             # constante). Flag desligada continua no N FIXO de sempre
             # (PLANNER_MC_SAMPLES=6, nao investigado nesta sessao).
-            if USE_OPPONENT_RESPONSE_SEARCH:
+            if USE_DEEP_REAL_SEARCH:
+                # Bloco 524: piso/teto bem maiores, MESMA busca real (nao
+                # e um motor novo) -- so pra medicao offline, ver comentario
+                # da constante.
+                samples_min = DEEP_REAL_SEARCH_SAMPLES_MIN
+                samples_max = DEEP_REAL_SEARCH_SAMPLES_MAX
+                batch_size = DEEP_REAL_SEARCH_SAMPLES_BATCH
+            elif USE_OPPONENT_RESPONSE_SEARCH:
                 samples_min = OFFLINE_MC_SAMPLES_MIN
                 samples_max = OFFLINE_MC_SAMPLES_MAX
                 batch_size = OFFLINE_MC_SAMPLES_BATCH
