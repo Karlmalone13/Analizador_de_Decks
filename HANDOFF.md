@@ -1,5 +1,69 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-14 (527) - Claude (sessao remota web) - EM ANDAMENTO: novo termo `leader_plan_alignment` em EVAL_WEIGHTS (generaliza wincon_ready pra QUALQUER lider) + achado real sobre a raiz do "bot joga bem so com Imu/Teach" -- calibracao isolada rodando
+
+**Contexto**: apos o revert do bloco 526, o usuario perguntou o PORQUE do
+bot jogar mal com decks diferentes de Imu/Teach: "a bot tá calibrado
+para imu e ou teach, aí se jogar com outro deck ele não tá entendendo
+a dinâmica do deck". Investigado e CONFIRMADO com evidencia concreta:
+`tune_weights.py` (o script que gera `eval_weights.json`, o vetor
+GLOBAL usado por TODO deck) tem Imu hardcoded como lado A ("Lado A
+(Imu) = v2 com os pesos-candidatos") em TODO o historico de calibracao
+-- 10 das 11 rodadas salvas em `eval_weights.json._meta` usam gauntlet
+no formato `Imu_v_X`, e `baseline_metrics.py` tem "Imu vs Teach BY"
+como matchup default do projeto inteiro. `EVAL_WEIGHTS` nunca passou
+pelo padrao multi-ancora que o resto do projeto usa -- foi moldado
+quase inteiramente jogando como Imu. Plano de 2 partes acordado com o
+usuario: (1) recalibrar com gauntlet rotacionado por arquetipo
+(AGGRO/CONTROLE/RAMP/VIDA, ja classificados em `card_taxonomy.py`/
+`deck_analyzer.py` -- LEADER_ARCHETYPE), ainda NAO iniciado; (2) somar
+um termo novo relacionado ao entendimento do efeito do PROPRIO lider
+(pedido explicito do usuario) -- ESTE bloco cobre a parte (2), pedida
+pra testar ISOLADA antes de misturar com (1).
+
+**Implementado**: `GameAnalyzer.leader_plan_alignment()` (novo,
+`decision_engine.py`) -- generaliza `wincon_ready` (que so cobre o
+eixo BOTTLENECK do perfil do deck, ex: reanimacao) pra QUALQUER lider
+com `[Activate: Main]`, lido genericamente via `get_card_effects`
+(zero hardcode de carta). Retorna 0.0 sem a habilidade (mesma
+convencao N/A do `decision_quality_report.py`), 0.5 quando o custo
+(`rest_self`/`rest_don`) ja e pagavel mas ainda nao foi usada neste
+turno ("arma carregada"), 1.0 quando ja foi usada neste turno (plano
+JA executado). NAO reimplementa elegibilidade real (isso continua em
+`_generate_and_score_actions`/`_should_activate_main`, contra
+REGRA_SEM_DUPLICACAO) -- e so um sinal aproximado pra avaliacao de
+ESTADO, mesma tolerancia a ruido do achado de robustez do bloco
+518/519. Peso novo `EVAL_WEIGHTS['leader_plan_alignment']`, **prior
+0.0 -- SEM nenhum efeito em producao** ate a calibracao isolada validar
+um valor (mesmo padrao dos outros pesos novos, ex: `next_turn_
+readiness_self/opp_threat` quando foram criados). Ligado em
+`_evaluate_state_v2`.
+
+**Testado**: 9 checagens novas em `smoke_fast.py` (sem habilidade,
+custo `rest_self` pagavel/nao-pagavel, custo `rest_don` pagavel/nao-
+pagavel, ja usada neste turno vs turno anterior, integracao real com
+`_evaluate_state_v2` confirmando que o peso>0 muda o score na direcao
+esperada). `smoke_fast`/`smoke_test` completos, sem regressao.
+
+**Calibracao isolada (pedido explicito do usuario: "podemos ver ele
+testado primeiro sozinho")**: script `tune_leader_plan_alignment.py`
+(scratchpad, disposable) criado, MESMA metodologia de `tune_weights.py`
+(Lado A = peso candidato, Lado B = baseline 0.0, MAXIMIN da margem de
+winrate), mas **rotacionando o lado A entre 4 lideres-ancora**
+(Mihawk OP14-020/`rest_don`, Vivi EB03-001/`rest_self`, Sanji
+OP12-041/custo generico, Imu OP13-079/custo generico) **contra 2
+oponentes fixos** (Enel OP15-058, Lucy OP15-002) -- exatamente o ponto
+que o usuario levantou: nao aceitar um peso que so ajuda 1 deck.
+Decks reais via `decklists_raw.csv` (nao `sim_bridge.load_sim_deck`,
+que exige um path Windows local inexistente nesta sessao remota).
+**Rodando em segundo plano no momento em que o container reiniciou --
+resultado ainda nao saiu, retomar na proxima sessao/turno**. Ver o
+script em
+`/tmp/claude-0/.../scratchpad/tune_leader_plan_alignment.py` (path de
+scratchpad, nao versionado -- recriar se precisar, o codigo esta
+citado aqui e no proprio historico de commits desta sessao caso o
+scratchpad tenha sumido).
+
 ## 2026-08-14 (526) - Claude (sessao remota web) - REVERTE a fase 1 tambem (`USE_CHEAP_LAYER_SHORTLIST=False`): sinal de partida AO VIVO ("bot jogando pior que antes") anula a validacao de self-play do bloco 525 -- volta ao estado de decisao de ANTES do bloco 508 inteiro
 
 **Pedido direto do usuario, apos jogar ao vivo no proprio PC**: "a bot

@@ -2,6 +2,25 @@
 
 **Última atualização:** 14 de agosto de 2026
 
+> 14/08/2026 (bloco 527, EM ANDAMENTO): **achado real sobre a causa do
+> "bot joga bem só com Imu/Teach"** — `tune_weights.py`/`eval_weights.json`
+> (o vetor de pesos GLOBAL, usado por todo deck) foi calibrado quase
+> inteiramente jogando como Imu (10/11 rodadas salvas usam gauntlet
+> `Imu_v_X`; `baseline_metrics.py` tem "Imu vs Teach BY" como default do
+> projeto inteiro) — nunca passou pelo padrão multi-âncora que o resto do
+> projeto usa. Plano de 2 partes com o usuário: (1) recalibrar com
+> gauntlet rotacionado por arquétipo (ainda não iniciado); (2) **termo
+> novo `leader_plan_alignment`** em `EVAL_WEIGHTS` (generaliza
+> `wincon_ready` pra QUALQUER líder com `[Activate: Main]`, não só o
+> eixo bottleneck do perfil do deck) — implementado, testado
+> (9 checks novos, `smoke_fast`/`smoke_test` 100%), **prior 0.0 (SEM
+> efeito em produção ainda)**. Calibração ISOLADA (pedido do usuário,
+> antes de misturar com os perfis por arquétipo) rotacionando 4 líderes-
+> âncora (Mihawk/Vivi/Sanji/Imu, cobrindo os tipos de custo `rest_don`/
+> `rest_self`/genérico) contra 2 oponentes fixos — **rodando quando o
+> container reiniciou, resultado pendente pra próxima sessão**. Ver
+> bloco 527 do HANDOFF.
+>
 > 14/08/2026 (bloco 526): **REVERTE a fase 1 também** —
 > `USE_CHEAP_LAYER_SHORTLIST` voltou pra `False`. Motivo: sinal REAL de
 > partida ao vivo (usuário testou no próprio PC — "a bot passou a jogar

@@ -9930,6 +9930,88 @@ def test_exclude_failed_actions_evita_loop_travado_em_activate() -> None:
           filtrada is not None and getattr(filtrada[2], "_deck_uid", None) == 102)
 
 
+def test_leader_plan_alignment_cobre_sem_habilidade_rest_self_rest_don_e_ja_usada_14_08() -> None:
+    # Pedido do usuario (14/08, bloco 526/527): generaliza wincon_ready pra
+    # QUALQUER lider com [Activate: Main] -- ver GameAnalyzer.leader_plan_alignment.
+    def vida4():
+        return [mk(f"LF{i}", "Life") for i in range(4)]
+
+    # sem [Activate: Main] (Marshall D. Teach, OP16-080) -- N/A, 0.0
+    opp0 = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+    me0 = GameState(leader=real_card("OP16-080"), turn=5, life=vida4())
+    engine0 = DecisionEngine(me0, opp0)
+    check("lider sem [Activate: Main] retorna 0.0 (N/A)",
+          engine0.analyzer.leader_plan_alignment() == 0.0)
+
+    # custo rest_self (Nefeltari Vivi, EB03-001): lider ATIVO -> pagavel (0.5)
+    me1 = GameState(leader=real_card("EB03-001"), turn=5, life=vida4())
+    me1.leader.rested = False
+    engine1 = DecisionEngine(me1, opp0)
+    check("custo rest_self pagavel (lider ativo, ainda nao usada) retorna 0.5",
+          engine1.analyzer.leader_plan_alignment() == 0.5)
+
+    # mesmo lider, mas RESTADO -> custo nao pagavel (0.0)
+    me2 = GameState(leader=real_card("EB03-001"), turn=5, life=vida4())
+    me2.leader.rested = True
+    engine2 = DecisionEngine(me2, opp0)
+    check("custo rest_self NAO pagavel (lider restado) retorna 0.0",
+          engine2.analyzer.leader_plan_alignment() == 0.0)
+
+    # custo rest_don (Mihawk, OP14-020): DON suficiente -> pagavel (0.5)
+    me3 = GameState(leader=real_card("OP14-020"), turn=5, life=vida4())
+    me3.don_available = 1
+    engine3 = DecisionEngine(me3, opp0)
+    check("custo rest_don pagavel (DON suficiente) retorna 0.5",
+          engine3.analyzer.leader_plan_alignment() == 0.5)
+
+    # mesmo lider, SEM DON -> custo nao pagavel (0.0)
+    me4 = GameState(leader=real_card("OP14-020"), turn=5, life=vida4())
+    me4.don_available = 0
+    engine4 = DecisionEngine(me4, opp0)
+    check("custo rest_don NAO pagavel (sem DON) retorna 0.0",
+          engine4.analyzer.leader_plan_alignment() == 0.0)
+
+    # ja usada NESTE turno -- credito cheio (1.0), independente do custo
+    me5 = GameState(leader=real_card("OP14-020"), turn=5, life=vida4())
+    me5.don_available = 0
+    me5.leader._am_used_turn = 5
+    engine5 = DecisionEngine(me5, opp0)
+    check("habilidade ja usada neste turno retorna 1.0 (plano ja executado)",
+          engine5.analyzer.leader_plan_alignment() == 1.0)
+
+    # usada num turno ANTERIOR -- nao conta pro turno atual (reavalia custo)
+    me6 = GameState(leader=real_card("OP14-020"), turn=5, life=vida4())
+    me6.don_available = 1
+    me6.leader._am_used_turn = 3
+    engine6 = DecisionEngine(me6, opp0)
+    check("habilidade usada em turno ANTERIOR nao conta -- reavalia custo do turno atual",
+          engine6.analyzer.leader_plan_alignment() == 0.5)
+
+    # peso liga (prior default e 0.0, SEM efeito) -- override manual confirma o termo
+    # chega ate _evaluate_state_v2
+    from optcg_engine.decision_engine import EVAL_WEIGHTS
+    import copy as _copy
+    me7 = GameState(leader=real_card("EB03-001"), turn=5, life=vida4())
+    me7.leader.rested = False
+    me7.use_eval_v2 = True
+    w_on = dict(EVAL_WEIGHTS)
+    w_on["leader_plan_alignment"] = 100.0
+    me7.eval_weights = w_on
+    match7 = OPTCGMatch((me7.leader, []), (opp0.leader, []))
+    score_on = match7._evaluate_state_v2(me7, opp0)
+
+    me8 = GameState(leader=real_card("EB03-001"), turn=5, life=vida4())
+    me8.leader.rested = False
+    me8.use_eval_v2 = True
+    w_off = dict(EVAL_WEIGHTS)
+    w_off["leader_plan_alignment"] = 0.0
+    me8.eval_weights = w_off
+    match8 = OPTCGMatch((me8.leader, []), (opp0.leader, []))
+    score_off = match8._evaluate_state_v2(me8, opp0)
+    check("peso leader_plan_alignment>0 aumenta o score de _evaluate_state_v2 em exatamente 0.5*peso",
+          abs((score_on - score_off) - 50.0) < 1e-6)
+
+
 def main() -> int:
     test_big_mom_optional_zero_parser_order_and_don_synergy()
     test_is_active_turn_corrigido_evita_don_minus_desnecessario()
@@ -10214,6 +10296,7 @@ def main() -> int:
     test_ponder_fingerprint_muda_por_mutacao_isolada_09_08()
     test_ponder_payload_byte_identico_ao_caminho_normal_09_08()
     test_ponder_generation_guard_sem_contaminacao_cruzada_09_08()
+    test_leader_plan_alignment_cobre_sem_habilidade_rest_self_rest_don_e_ja_usada_14_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

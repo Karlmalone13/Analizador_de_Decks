@@ -472,6 +472,12 @@ EVAL_WEIGHTS = {
     # self-play ajusta, mesma convencao dos outros.
     'next_turn_readiness_self': 0.0,
     'next_turn_readiness_opp_threat': 0.0,
+    # Alinhamento com o plano do PROPRIO lider (pedido do usuario 14/08,
+    # bloco 526/527 -- generaliza wincon_ready pra QUALQUER lider com
+    # [Activate: Main], nao so o eixo bottleneck do perfil do deck). Ver
+    # GameAnalyzer.leader_plan_alignment. Prior 0.0 -- SEM efeito ate
+    # calibracao isolada (multi-ancora, nao so 1 deck) validar um valor.
+    'leader_plan_alignment': 0.0,
 }
 try:
     _wpath = os.path.join(os.path.dirname(__file__), '..', 'eval_weights.json')
@@ -10486,6 +10492,46 @@ class GameAnalyzer:
             'sources': sources,
         }
 
+    def leader_plan_alignment(self) -> float:
+        """
+        Sinal de estado: o quanto o estado atual está alinhado com o plano
+        do PRÓPRIO líder (pedido do usuário, 14/08 -- "colocar um peso com
+        relação ao entendimento do efeito do líder"). Generaliza
+        `wincon_ready`/`_derived_axes_value` (que só cobrem o eixo
+        BOTTLENECK específico do perfil do deck, ex: reanimação) para
+        QUALQUER líder com [Activate: Main], lendo o efeito genericamente
+        via `get_card_effects` -- sem hardcode de nome/código de carta.
+
+        Não reimplementa elegibilidade real da ação (isso é
+        `_generate_and_score_actions`/`_should_activate_main`, fonte única
+        de verdade sobre "pode ativar agora", contra REGRA_SEM_DUPLICACAO):
+        aqui é só um SINAL aproximado pra avaliação de ESTADO, tolerante a
+        imprecisão de propósito (mesma lição do achado de robustez a ruído
+        do bloco 518/519 -- filtro grosseiro não precisa ser exato).
+
+        0.0 se o líder não tem [Activate: Main] (mesma convenção N/A do
+        decision_quality_report.py). 1.0 se já foi usada neste turno
+        (plano JÁ executado). 0.5 se ainda não foi usada mas o custo
+        (rest_self / rest_don) já é pagável agora ("arma carregada",
+        pronta pra disparar). 0.0 se o custo ainda não é pagável.
+
+        [Activate: Main] é once-per-turn por regra do jogo (não depende
+        de flag no JSON do parser) -- trata como tal incondicionalmente.
+        """
+        leader = self.me.leader
+        am = get_card_effects(leader.code).get('activate_main')
+        if not am:
+            return 0.0
+        if getattr(leader, '_am_used_turn', -1) == self.me.turn:
+            return 1.0
+        for c in am.get('costs', []):
+            ctype = c.get('type')
+            if ctype == 'rest_self' and leader.rested:
+                return 0.0
+            if ctype == 'rest_don' and self.me.don_available < c.get('count', 0):
+                return 0.0
+        return 0.5
+
     def analysis_priority(self) -> str:
         """
         PRIORIDADE DE ANÁLISE (documento) — cascata de INCLINAÇÃO.
@@ -15958,6 +16004,10 @@ class OPTCGMatch:
         # FASE B do Turn Planner (24/07): "quase la" pra proxima jogada
         # forte, generico (nao so o eixo bottleneck do perfil do deck).
         score += self._next_turn_readiness_bonus(p, opp)
+
+        # alinhamento com o plano do PROPRIO lider (14/08) -- generaliza
+        # wincon_ready pra QUALQUER lider com [Activate: Main].
+        score += an.leader_plan_alignment() * W['leader_plan_alignment']
 
         return score
 
