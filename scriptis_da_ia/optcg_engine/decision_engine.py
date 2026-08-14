@@ -10512,8 +10512,23 @@ class GameAnalyzer:
         0.0 se o líder não tem [Activate: Main] (mesma convenção N/A do
         decision_quality_report.py). 1.0 se já foi usada neste turno
         (plano JÁ executado). 0.5 se ainda não foi usada mas o custo
-        (rest_self / rest_don) já é pagável agora ("arma carregada",
-        pronta pra disparar). 0.0 se o custo ainda não é pagável.
+        (rest_don) já é pagável agora ("arma carregada", pronta pra
+        disparar). 0.0 se o custo ainda não é pagável.
+
+        ACHADO REAL (14/08, calibração isolada multi-âncora): custo
+        `rest_self` NÃO recebe o crédito parcial de 0.5 -- 1a versão dava
+        0.5 flat só por "lider ativo, custo pagável" pra QUALQUER tipo de
+        custo, e isso regrediu Vivi (EB03-001, único âncora testado com
+        `rest_self`) em -20pp/-15pp em 2 candidatos de peso, único líder
+        que piorou nos dois. Causa: `rest_self` RESTA o próprio líder --
+        ativar e atacar são MUTUAMENTE EXCLUSIVOS este turno (mesmo achado
+        de `decision_quality_report.py`, bloco 489/Nefeltari Vivi), então
+        "pronta pra ativar" não é um estado bom por si só como é pra
+        `rest_don` (compatível com atacar também) -- o trade-off real já é
+        decidido por `_score_activate_main` na hora certa, e dano/board já
+        capturam o valor de atacar em vez de ativar. Só dá crédito quando
+        a habilidade rest_self foi de fato USADA (1.0), nunca por estar
+        só "pronta".
 
         [Activate: Main] é once-per-turn por regra do jogo (não depende
         de flag no JSON do parser) -- trata como tal incondicionalmente.
@@ -10524,11 +10539,11 @@ class GameAnalyzer:
             return 0.0
         if getattr(leader, '_am_used_turn', -1) == self.me.turn:
             return 1.0
-        for c in am.get('costs', []):
-            ctype = c.get('type')
-            if ctype == 'rest_self' and leader.rested:
-                return 0.0
-            if ctype == 'rest_don' and self.me.don_available < c.get('count', 0):
+        costs = am.get('costs', [])
+        if any(c.get('type') == 'rest_self' for c in costs):
+            return 0.0
+        for c in costs:
+            if c.get('type') == 'rest_don' and self.me.don_available < c.get('count', 0):
                 return 0.0
         return 0.5
 

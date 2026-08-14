@@ -2,7 +2,20 @@
 
 **Última atualização:** 14 de agosto de 2026
 
-> 14/08/2026 (bloco 527, EM ANDAMENTO): **achado real sobre a causa do
+> 14/08/2026 (bloco 528, EM ANDAMENTO): **1a calibração isolada do
+> `leader_plan_alignment` (bloco 527) FALHOU** (maximin=-0,200/-0,150
+> nos 2 candidatos testados) — Vivi (EB03-001) foi o único líder que
+> regrediu nos dois, e é o único ancora com custo `rest_self`. Causa
+> raiz: dar crédito parcial (0.5) só por "pronta pra ativar" ignorava
+> que `rest_self` resta o líder — ativar e atacar viram mutuamente
+> exclusivos, então "pronta mas ainda não decidiu" não é um estado bom
+> por si só (diferente de `rest_don`, que não resta o líder). **Fix
+> aplicado**: `rest_self` só ganha crédito (1.0) quando de fato
+> USADA, nunca crédito parcial por estar só pagável. Testes ajustados,
+> `smoke_fast`/`smoke_test` 100%. Recalibrando com o fix — resultado
+> pendente. Ver bloco 528 do HANDOFF.
+>
+> 14/08/2026 (bloco 527): **achado real sobre a causa do
 > "bot joga bem só com Imu/Teach"** — `tune_weights.py`/`eval_weights.json`
 > (o vetor de pesos GLOBAL, usado por todo deck) foi calibrado quase
 > inteiramente jogando como Imu (10/11 rodadas salvas usam gauntlet

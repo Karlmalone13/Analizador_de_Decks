@@ -9943,19 +9943,33 @@ def test_leader_plan_alignment_cobre_sem_habilidade_rest_self_rest_don_e_ja_usad
     check("lider sem [Activate: Main] retorna 0.0 (N/A)",
           engine0.analyzer.leader_plan_alignment() == 0.0)
 
-    # custo rest_self (Nefeltari Vivi, EB03-001): lider ATIVO -> pagavel (0.5)
+    # custo rest_self (Nefeltari Vivi, EB03-001): achado real 14/08 -- ativar
+    # RESTA o proprio lider, mutuamente exclusivo com atacar este turno, entao
+    # "pronta mas ainda nao usada" NAO recebe o credito parcial de 0.5 (1a
+    # versao dava, e regrediu Vivi -20pp/-15pp na calibracao isolada). Lider
+    # ATIVO (custo tecnicamente pagavel) ainda assim retorna 0.0.
     me1 = GameState(leader=real_card("EB03-001"), turn=5, life=vida4())
     me1.leader.rested = False
     engine1 = DecisionEngine(me1, opp0)
-    check("custo rest_self pagavel (lider ativo, ainda nao usada) retorna 0.5",
-          engine1.analyzer.leader_plan_alignment() == 0.5)
+    check("custo rest_self NUNCA da credito parcial (so por estar 'pronta'), mesmo lider ativo",
+          engine1.analyzer.leader_plan_alignment() == 0.0)
 
-    # mesmo lider, mas RESTADO -> custo nao pagavel (0.0)
+    # mesmo lider, RESTADO -> tambem 0.0 (mesmo resultado, motivo diferente:
+    # aqui nem seria pagavel de qualquer forma)
     me2 = GameState(leader=real_card("EB03-001"), turn=5, life=vida4())
     me2.leader.rested = True
     engine2 = DecisionEngine(me2, opp0)
-    check("custo rest_self NAO pagavel (lider restado) retorna 0.0",
+    check("custo rest_self com lider restado tambem retorna 0.0",
           engine2.analyzer.leader_plan_alignment() == 0.0)
+
+    # rest_self MAS ja usada neste turno -- credito cheio (1.0), o "nunca
+    # credito parcial" acima e so pro caso NAO usada
+    me2b = GameState(leader=real_card("EB03-001"), turn=5, life=vida4())
+    me2b.leader.rested = True
+    me2b.leader._am_used_turn = 5
+    engine2b = DecisionEngine(me2b, opp0)
+    check("rest_self JA usada neste turno retorna 1.0 (credito cheio, apesar do custo ser rest_self)",
+          engine2b.analyzer.leader_plan_alignment() == 1.0)
 
     # custo rest_don (Mihawk, OP14-020): DON suficiente -> pagavel (0.5)
     me3 = GameState(leader=real_card("OP14-020"), turn=5, life=vida4())
@@ -9991,8 +10005,8 @@ def test_leader_plan_alignment_cobre_sem_habilidade_rest_self_rest_don_e_ja_usad
     # chega ate _evaluate_state_v2
     from optcg_engine.decision_engine import EVAL_WEIGHTS
     import copy as _copy
-    me7 = GameState(leader=real_card("EB03-001"), turn=5, life=vida4())
-    me7.leader.rested = False
+    me7 = GameState(leader=real_card("OP14-020"), turn=5, life=vida4())
+    me7.don_available = 1
     me7.use_eval_v2 = True
     w_on = dict(EVAL_WEIGHTS)
     w_on["leader_plan_alignment"] = 100.0
@@ -10000,8 +10014,8 @@ def test_leader_plan_alignment_cobre_sem_habilidade_rest_self_rest_don_e_ja_usad
     match7 = OPTCGMatch((me7.leader, []), (opp0.leader, []))
     score_on = match7._evaluate_state_v2(me7, opp0)
 
-    me8 = GameState(leader=real_card("EB03-001"), turn=5, life=vida4())
-    me8.leader.rested = False
+    me8 = GameState(leader=real_card("OP14-020"), turn=5, life=vida4())
+    me8.don_available = 1
     me8.use_eval_v2 = True
     w_off = dict(EVAL_WEIGHTS)
     w_off["leader_plan_alignment"] = 0.0

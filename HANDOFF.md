@@ -1,5 +1,40 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-14 (528) - Claude (sessao remota web) - resultado da 1a calibracao isolada do bloco 527: FALHOU (maximin=-0.200/-0.150) -- achado real corrigido (rest_self nao deve dar credito parcial), recalibrando de novo
+
+**Resultado da calibracao isolada do bloco 527** (4 lideres-ancora x 2
+oponentes, N=20/matchup): **ambos candidatos testados FALHARAM** o
+criterio de sempre (maximin >= 0):
+```
+cand=20.0: MAXIMIN=-0.200 SOMA=-0.000
+cand=40.0: MAXIMIN=-0.150 SOMA=-0.100
+```
+**Vivi (EB03-001) foi o UNICO lider que regrediu nos 2 candidatos**
+(-5pp/-20pp em cand=20, -10pp/-15pp em cand=40) -- e o unico ancora
+testado cujo custo de `[Activate: Main]` e `rest_self` (resta o
+PROPRIO lider). Causa raiz identificada: a 1a versao de
+`leader_plan_alignment` dava credito parcial (0.5, "arma carregada")
+so por o custo estar tecnicamente pagavel, pra QUALQUER tipo de custo
+-- mas `rest_self` RESTA o lider, tornando ativar e atacar MUTUAMENTE
+EXCLUSIVOS neste turno (mesmo achado ja documentado em
+`decision_quality_report.py`, bloco 489/Vivi). Dar credito de estado
+so por estar "pronta" (sem ainda ter decidido abrir mao do ataque)
+empurrava a avaliacao a favor de ativar mesmo quando atacar era
+melhor -- o trade-off real ja e resolvido corretamente por
+`_score_activate_main` na hora certa, esse termo novo so distorcia.
+
+**Fix aplicado**: `leader_plan_alignment` agora retorna 0.0 (nao 0.5)
+quando o custo inclui `rest_self` e a habilidade AINDA nao foi usada
+neste turno -- so da credito (1.0) quando de fato foi usada. `rest_don`
+continua dando o credito parcial de 0.5 normalmente (nao resta o lider,
+compativel com atacar tambem, sem o mesmo trade-off). Testes
+atualizados (3 checks novos/ajustados cobrindo o caso rest_self
+usada/nao-usada/restada), `smoke_fast`/`smoke_test` 100%.
+
+**Recalibrando com o fix** (mesmos 4 ancoras/2 oponentes/N=20, +1
+candidato novo 60.0) -- rodando em segundo plano, resultado pendente
+pra proxima leitura desta sessao/proxima sessao.
+
 ## 2026-08-14 (527) - Claude (sessao remota web) - EM ANDAMENTO: novo termo `leader_plan_alignment` em EVAL_WEIGHTS (generaliza wincon_ready pra QUALQUER lider) + achado real sobre a raiz do "bot joga bem so com Imu/Teach" -- calibracao isolada rodando
 
 **Contexto**: apos o revert do bloco 526, o usuario perguntou o PORQUE do
