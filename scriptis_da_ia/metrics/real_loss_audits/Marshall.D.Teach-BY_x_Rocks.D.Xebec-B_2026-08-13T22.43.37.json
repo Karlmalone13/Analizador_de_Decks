@@ -1,0 +1,126 @@
+{
+  "parsed_file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.43.37.json",
+  "bot_side": "You",
+  "bot_leader": "Marshall D. Teach",
+  "opp_leader": "Rocks D. Xebec",
+  "turnos_auditados": 3,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Doc Q [\"OP16-109\">OP16-109]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-109",
+          "card_name": "Doc Q",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-096",
+          "card_name": "This is MY AGE!!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Vasco Shot [\"OP16-110\">OP16-110]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 2 DON em Marshall.D.Teach (08 para ligar [attack_power]\n    Marshall.D.Teach (08 (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n      ↳ custo: restou Laffitte (Reprint)\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-086",
+          "card_name": "Jesus Burgess",
+          "effects": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Marshall.D.Teach (08\n    Marshall.D.Teach (08 (6000pwr) ataca Captain John\n      🛡 Counter There's No Authori: +2000 power -> defesa 8000\n      ✗ Ataque bloqueado (6000 < 8000)\n  > gastou 4 DON -> Joga: Jesus Burgess (Reprint) (5000pwr) [CHARACTER]\n    \u001b[90mefeito: This Character cannot be K.O.'d by your opponent's effects.If your Leader has the \"Blackbe...\u001b[0m\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Jesus Burgess",
+          "attacker_code": "OP09-086",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-118"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": [
+            "Trash ZEHAHAHAHA [\"OP16-116\">OP16-116]"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Jesus Burgess (Repri (6000pwr) ataca Captain John\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Gloriosa\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      🛡 Counter There's No Authori: +2000 power -> defesa 8000\n      ✗ Ataque bloqueado (6000 < 8000)\n  > gastou 6 DON -> Joga: Shiryu (Full Art) (8000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 card from your hand: Add up to 1 {Blackbeard Pirates} type card ...\u001b[0m\n    ↳ [Shiryu (Full Art)] custo: trashou da mão: Zehahahahaha! (\n    ↳ [Shiryu (Full Art)] +1 vida (trash->life_top)\n"
+    }
+  ]
+}

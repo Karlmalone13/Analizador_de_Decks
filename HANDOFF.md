@@ -1,5 +1,73 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-13 (481) - Claude (sessao local) - 2 bugs REAIS de ordenacao de alvo achados e corrigidos, investigando as reclamacoes do usuario nos logs de hoje ("bot nao da KO com Doc Q", "bot nao ganha vida com Shiryu")
+
+Continuação direta do bloco 480. Após o revert do pondering, usuário
+reportou 3 defeitos observados nas partidas de hoje: bot não joga
+"bomba", não consegue K.O. com Doc Q, não ganha vida com Shiryu/Teach 8.
+Investigação carta a carta nos logs reais (não especulação):
+
+- **Teach 8 (OP16-119)**: NÃO é bug — telemetria confirmou a carta nunca
+  virou candidata de jogada porque o DON do bot nunca passou de 7 na
+  partida inteira (custo 8, partida curta, só 7 turnos). Resource
+  constraint real, não falha de decisão.
+- **Doc Q (OP16-109) e Shiryu (OP16-108)**: bugs REAIS confirmados,
+  mesma família de causa raiz em `sim_bridge.order_target_candidates`
+  (função responsável por ordenar os candidatos de alvo que o
+  `BotDriver.cs` clica, 1 por tick, ~0.8s cada, jogo ignora cliques
+  invalidos em silencio).
+
+**Bug 1 — zonas de DON com prioridade INCONDICIONAL** (achado 21/07,
+pra resolver custo real "DON!! -N"): aplicava a QUALQUER efeito
+pendente, mesmo um que nunca aceita DON como alvo. Doc Q ("[On K.O.]
+draw 1 card and K.O. up to 2 opponent's Characters cost<=1") teve seu
+único alvo válido (Streusen, custo 1) empurrado pra penúltimo lugar
+numa lista de 14, atrás de ~12 tokens de DON que o jogo sempre rejeita
+-- ~8s+ clicando em nada antes de chegar no alvo certo, risco real de
+perder a janela da ação (confirmado no raw log: `[On K.O.]` disparou,
+só "Draw 1 Card" apareceu, nenhum K.O., apesar de Streusen confirmado
+em campo do oponente naquele momento). **Fix**: nova detecção
+`actor_needs_own_don`/`actor_needs_opp_don` (`sim_bridge.py`) -- só dá
+prioridade máxima às zonas de DON quando o ator tem de verdade um custo
+(`don_minus`/`rest_don`/`return_own_don`) ou alvo (`rest_opp_don`/
+`opp_don_minus`) de DON nos blocos relevantes; senão cai no balde
+"nunca é alvo válido" (9, 0), igual `actor_opp_only`/
+`actor_battlefield_only`.
+
+**Bug 2 — `gain_life` tratado como "nunca precisa de zona real"**: a
+allowlist `_SAFE_NO_TARGET_ACTIONS` (decision_engine.py) inclui
+`gain_life` inteiro, certo pra `source='deck_top'` (56 cartas, topo do
+próprio deck, sem zona clicável) mas ERRADO pra `source='trash'`/
+`'hand_or_trash'` (Shiryu OP16-108 + ST13-003, únicos 2 casos no banco
+inteiro -- auditado): essas PRECISAM escolher uma carta real do trash.
+`actor_effect_is_hand_cost_only` tratava o step como "seguro" e excluía
+`own_trash` via `_HAND_COST_ALLOWED_ZONES` (só `own_hand`/DON
+sobrevivem) -- confirmado no raw log: Shiryu pagou o custo (descartou
+ZEHAHAHAHA), o trash tinha 4+ alvos válidos (Laffitte, Jesus Burgess,
+Vasco Shot, Black Vortex), mas "adicionar à vida" nunca apareceu no
+log. **Fix**: nova função única `step_is_safe_no_target(step)`
+(decision_engine.py, substitui a checagem crua de `_SAFE_NO_TARGET_
+ACTIONS` nos 2 pontos que a usavam) -- exclui `gain_life` da allowlist
+quando `source in ('trash', 'hand_or_trash')`.
+
+**Validação**: 4 checks novos em `smoke_fast.py` (2 pra cada bug,
+reproduzindo os candidatos reais das partidas de hoje) + 2 testes
+existentes corrigidos (`test_own_don_e_candidato_prioritario_pra_custo_
+don_minus` e o teste irmão de attach — precisavam de `attacker_power`
+explícito porque o custo do Katakuri vive em `when_attacking`/
+`on_opp_attack`, gatilhos só-de-combate, e a prioridade condicional
+agora depende do contexto de combate estar presente). Suíte inteira
+`SMOKE FAST OK`, 0 falhas.
+
+**Não foi possível confirmar 100% via replay ao vivo** (BepInEx foi
+reinstalado hoje, o log de clique-a-clique da partida específica não
+sobreviveu) -- a evidência é: (a) raw combat log mostrando o efeito
+disparar sem completar apesar de alvo válido confirmado em campo/trash,
+(b) leitura direta do código mostrando exatamente o mecanismo que
+causaria esse sintoma (candidato certo enterrado/excluído da lista).
+Convergência forte, não prova absoluta -- registrar se o sintoma
+reaparecer numa próxima partida real.
+
 ## 2026-08-13 (480) - Claude (sessao local) - Pondering testado AO VIVO, achou causa raiz real (GIL, nao qualidade de decisao), REVERTIDO a pedido do usuario. Motor de volta ao estado do commit cc68d30 (pre-pondering)
 
 Continuação direta do bloco 478 (o bloco 479, que documentava a

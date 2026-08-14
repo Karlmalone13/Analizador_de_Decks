@@ -7,9 +7,34 @@
 > bot é banco (não só "existe, use se quiser"). Ver `CLAUDE.md`/
 > `AGENTS.md` e `.claude/skills/optcg-live-log-triage/SKILL.md` (Step 4).
 
-> **PRÓXIMA SESSÃO COMEÇA AQUI (bloco 480) — pondering foi implementado,
-> testado AO VIVO e REVERTIDO** (`git revert 5fe0966`, commit `60d133c`
-> — motor de volta ao estado do commit `cc68d30`, código idêntico ao
+> **PRÓXIMA SESSÃO COMEÇA AQUI (bloco 481) — 2 bugs reais de ordenação de
+> alvo corrigidos** (investigação das reclamações do usuário nas partidas
+> de hoje: "bot não dá K.O. com Doc Q", "bot não ganha vida com Shiryu").
+> Ver bloco 481 do HANDOFF pro relato completo. Resumo:
+> - **Doc Q**: zonas de DON tinham prioridade incondicional na lista de
+>   candidatos de alvo, mesmo pra efeitos que nunca aceitam DON — o alvo
+>   real (Streusen) ficava enterrado atrás de ~12 tokens de DON, ~8s+ de
+>   cliques inúteis. Fix: `sim_bridge.order_target_candidates` só prioriza
+>   DON quando o ator tem custo/alvo de DON de verdade
+>   (`actor_needs_own_don`/`actor_needs_opp_don`).
+> - **Shiryu**: `gain_life` estava na allowlist "nunca precisa de zona
+>   real" (`_SAFE_NO_TARGET_ACTIONS`), certo pra `source='deck_top'` mas
+>   errado pra `source='trash'`/`'hand_or_trash'` (só Shiryu OP16-108 e
+>   ST13-003 no banco inteiro) — `own_trash` era excluído da lista de
+>   candidatos mesmo com alvos válidos. Fix: `step_is_safe_no_target`
+>   (decision_engine.py, fonte única, substitui os 2 pontos que liam a
+>   allowlist crua).
+> - Validado: 4 checks novos + 2 testes existentes corrigidos (precisavam
+>   de `attacker_power` explícito pro custo de DON do Katakuri, que vive
+>   em gatilhos só-de-combate). `smoke_fast.py` 100%, 0 falhas.
+> - **Não confirmado via replay ao vivo** (log de clique-a-clique não
+>   sobreviveu à reinstalação do BepInEx de hoje) — evidência forte
+>   (combat log + leitura de código), não prova absoluta. Registrar se o
+>   sintoma reaparecer numa partida real.
+>
+> **PENDÊNCIA ANTERIOR (bloco 480) — pondering foi implementado, testado
+> AO VIVO e REVERTIDO** (`git revert 5fe0966`, commit `60d133c` — motor
+> de volta ao estado do commit `cc68d30`, código idêntico ao
 > pré-pondering). **NÃO tentar reimplementar do mesmo jeito** sem ler o
 > bloco 480 do HANDOFF primeiro:
 >

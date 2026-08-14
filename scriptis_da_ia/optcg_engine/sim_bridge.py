@@ -2008,7 +2008,7 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     # seguras (decision_engine._SAFE_NO_TARGET_ACTIONS -- resolvem sem
     # pedir candidato de nenhuma zona nova) desqualifica as DUAS
     # deteccoes pra esse ator, em vez de ser silenciosamente ignorado.
-    from optcg_engine.decision_engine import _SAFE_NO_TARGET_ACTIONS
+    from optcg_engine.decision_engine import step_is_safe_no_target
     actor_opp_only = False
     actor_battlefield_only = False
     _alvos_relevantes, _poison = [], False
@@ -2018,7 +2018,7 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                 t = _implied_target(s)
                 if t:
                     _alvos_relevantes.append(t)
-                elif (s.get('action') or '') not in _SAFE_NO_TARGET_ACTIONS:
+                elif not step_is_safe_no_target(s):
                     _poison = True
     if (actor_code and not _poison
             and not (actor_copia_poder or actor_debuff_swing
@@ -2144,6 +2144,42 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             if actor_play_step is not None:
                 break
 
+    # O ator resolvendo tem de verdade um custo/alvo de DON (own ou opp)?
+    # Achado real 13/08 (partida ao vivo, log Marshall.D.Teach-BY_x_
+    # Rocks.D.Xebec-B): a prioridade INCONDICIONAL das zonas own_don*/
+    # opp_don no sort_key abaixo (achado 21/07, comentario "Prioridade
+    # MAXIMA e INCONDICIONAL") foi pensada pra custo real de DON!! -N
+    # (Katakuri, Mamaragan [Main]) -- mas se aplicava a QUALQUER efeito
+    # pendente, mesmo um que NUNCA aceita DON como alvo (Doc Q OP16-109:
+    # "[On K.O.] draw 1 card and K.O. up to 2 opponent's Characters with
+    # cost 1 or less" -- nenhum custo de DON, nenhum alvo de DON). O
+    # BotDriver.cs clica 1 candidato por tick (~0.8s) e o jogo ignora
+    # cliques invalidos em silencio -- com ~5-9 tokens de DON proprio
+    # sempre na frente da lista (own_don_attached_used/rested/attached/
+    # own_don, todos com prioridade negativa), o alvo de verdade (um
+    # personagem com o filtro certo, ex: Streusen custo 1) so aparecia
+    # quase no fim da lista, gastando ~8s+ clicando em nada antes de
+    # chegar nele -- risco real de perder a janela da acao. Mesmo padrao
+    # defensivo do actor_opp_only/actor_battlefield_only acima: quando o
+    # ator claramente NAO usa DON (sem custo don_minus/rest_don/
+    # return_own_don nem step rest_opp_don/opp_don_minus em nenhum bloco
+    # relevante), as zonas de DON caem pro balde "nunca e alvo valido"
+    # (9, 0) em vez de prioridade maxima -- sem `actor_code` (ator
+    # desconhecido), mantem o comportamento antigo (permissivo) por
+    # seguranca, igual as outras deteccoes acima.
+    actor_needs_own_don = True
+    actor_needs_opp_don = True
+    if actor_code:
+        actor_needs_own_don = False
+        actor_needs_opp_don = False
+        for block in _relevant_blocks(actor_code, attacker_power > 0):
+            if any((c.get('type') or '') in ('don_minus', 'rest_don', 'return_own_don')
+                   for c in block.get('costs', [])):
+                actor_needs_own_don = True
+            if any((s.get('action') or '') in ('rest_opp_don', 'opp_don_minus')
+                   for s in block.get('steps', [])):
+                actor_needs_opp_don = True
+
     def _elegivel_para_play(card) -> bool:
         if card is None or actor_play_step is None:
             return False
@@ -2182,16 +2218,18 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         # usuario). opp_don logo apos (efeito que resta/remove DON inimigo);
         # se o efeito for de custo proprio, o jogo recusa o DON do oponente e
         # cai no proximo.
-        if zone == 'own_don_attached_used':
-            return (-4, 0)
-        if zone == 'own_don_rested':
-            return (-3, 0)
-        if zone == 'own_don_attached':
-            return (-2.5, 0)
-        if zone == 'own_don':
-            return (-2, 0)
+        if zone in ('own_don_attached_used', 'own_don_rested', 'own_don_attached', 'own_don'):
+            if not actor_needs_own_don:
+                return (9, 0)   # efeito nao tem custo de DON -- nunca e alvo valido
+            if zone == 'own_don_attached_used':
+                return (-4, 0)
+            if zone == 'own_don_rested':
+                return (-3, 0)
+            if zone == 'own_don_attached':
+                return (-2.5, 0)
+            return (-2, 0)   # own_don
         if zone == 'opp_don':
-            return (-1, 0)
+            return (-1, 0) if actor_needs_opp_don else (9, 0)
         if actor_opp_only and zone.startswith('own'):
             return (9, 0)   # nunca e alvo valido pra essa habilidade
         if actor_battlefield_only and zone in ('own_trash', 'opp_trash', 'top_deck'):

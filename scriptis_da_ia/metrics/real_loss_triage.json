@@ -1,7 +1,7 @@
 {
   "counts": {
-    "MATCH": 6,
-    "DIVERGE": 271,
+    "MATCH": 8,
+    "DIVERGE": 272,
     "ERROR": 0,
     "SKIPPED": 0
   },
@@ -84,6 +84,38 @@
       "hoje_leader_atk": 1,
       "hist_char_atk": 0,
       "hoje_char_atk": 0
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.43.37.json",
+      "turn": 5,
+      "hist_plays": [
+        "jesusburgess"
+      ],
+      "hoje_plays": [
+        "jesusburgess"
+      ],
+      "hist_activates": [],
+      "hoje_activates": [],
+      "hist_leader_atk": 0,
+      "hoje_leader_atk": 0,
+      "hist_char_atk": 1,
+      "hoje_char_atk": 1
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.43.37.json",
+      "turn": 7,
+      "hist_plays": [
+        "shiryu"
+      ],
+      "hoje_plays": [
+        "shiryu"
+      ],
+      "hist_activates": [],
+      "hoje_activates": [],
+      "hist_leader_atk": 0,
+      "hoje_leader_atk": 0,
+      "hist_char_atk": 2,
+      "hoje_char_atk": 1
     },
     {
       "file": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T09.41.46.json",
@@ -4247,6 +4279,25 @@
       "hoje_leader_atk": 1,
       "hist_char_atk": 0,
       "hoje_char_atk": 1
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.43.37.json",
+      "turn": 3,
+      "hist_plays": [
+        "docq"
+      ],
+      "hoje_plays": [],
+      "hist_activates": [
+        "laffitte",
+        "thisismyage"
+      ],
+      "hoje_activates": [
+        "laffitterepr"
+      ],
+      "hist_leader_atk": 1,
+      "hoje_leader_atk": 1,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 0
     },
     {
       "file": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",

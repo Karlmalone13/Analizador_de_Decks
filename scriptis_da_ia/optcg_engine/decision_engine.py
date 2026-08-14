@@ -992,6 +992,38 @@ _SAFE_NO_TARGET_ACTIONS = {
 }
 
 
+def step_is_safe_no_target(step: dict) -> bool:
+    """
+    True quando um step SEM alvo implicito de fato NAO precisa de selecao
+    de zona nenhuma pra resolver -- fonte unica usada tanto por
+    actor_effect_is_hand_cost_only (abaixo) quanto por
+    sim_bridge.order_target_candidates (deteccao de actor_opp_only/
+    actor_battlefield_only) pra decidir quais steps "somem" da conta de
+    alvos relevantes sem virar falso negativo (blocos 470-472/478).
+
+    Excecao GENERICA a _SAFE_NO_TARGET_ACTIONS (nao amarrada a 1 carta,
+    ver auditoria global obrigatoria do projeto pra grammar de parser):
+    `gain_life` com source='trash'/'hand_or_trash' PRECISA escolher uma
+    carta de verdade do trash (Shiryu OP16-108: "add up to 1 {Blackbeard
+    Pirates} card cost<=6 FROM YOUR TRASH to life", ST13-003
+    hand_or_trash) -- diferente de source='deck_top' (topo do proprio
+    deck, sem zona clicavel visivel) ou source='hand'/'own_field' (zonas
+    ja sempre disponiveis nas exclusoes duras existentes, own_hand/
+    own_board nunca ficam de fora). Achado real 13/08 (partida ao vivo,
+    usuario: "bot nao consegue ganhar vida com Shiryu"): own_trash sumia
+    da lista de candidatos porque actor_effect_is_hand_cost_only tratava
+    o step gain_life(source=trash) como "sem selecao real", excluindo a
+    UNICA zona onde o alvo de verdade vive (auditado em todo o banco: só
+    esses 2 codes usam source in trash/hand_or_trash em gain_life hoje).
+    """
+    action = step.get('action') or ''
+    if action not in _SAFE_NO_TARGET_ACTIONS:
+        return False
+    if action == 'gain_life' and step.get('source') in ('trash', 'hand_or_trash'):
+        return False
+    return True
+
+
 def actor_effect_is_hand_cost_only(actor_code: str, in_combat: bool) -> bool:
     """True quando TODOS os blocos de efeito relevantes do ator (filtrados
     por janela de combate, ver COMBAT_ONLY_TRIGGERS) so tem custo de mao
@@ -1026,8 +1058,8 @@ def actor_effect_is_hand_cost_only(actor_code: str, in_combat: bool) -> bool:
             elif ctype is not None and ctype not in _ORTHOGONAL_COST_TYPES:
                 return False
         for s in block.get('steps', []):
-            tgt, act = s.get('target'), s.get('action')
-            seguro = tgt in _NO_ZONE_TARGETS or (tgt is None and act in _SAFE_NO_TARGET_ACTIONS)
+            tgt = s.get('target')
+            seguro = tgt in _NO_ZONE_TARGETS or (tgt is None and step_is_safe_no_target(s))
             if not seguro:
                 return False
     return tem_custo_mao
