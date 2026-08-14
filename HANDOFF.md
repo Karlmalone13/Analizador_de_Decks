@@ -1,5 +1,70 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-14 (526) - Claude (sessao remota web) - REVERTE a fase 1 tambem (`USE_CHEAP_LAYER_SHORTLIST=False`): sinal de partida AO VIVO ("bot jogando pior que antes") anula a validacao de self-play do bloco 525 -- volta ao estado de decisao de ANTES do bloco 508 inteiro
+
+**Pedido direto do usuario, apos jogar ao vivo no proprio PC**: "a bot
+passou a jogar pior que antes" -- overriding explicito de tudo que foi
+medido em self-play nos blocos 508-525 (inclusive a conclusao do bloco
+525 de que "so a fase 1 original continua valida"). O usuario tambem
+relembrou um pedido de ONTEM (nao registrado explicitamente num bloco
+proprio nesta sessao) de deixar o pondering de lado -- ja cumprido
+tecnicamente (`OPTCG_PONDER_ENABLED` default OFF desde a implementacao
+propria desta branch, commits `e7e8283`/`a8cd3cf`), mas reconfirmado
+aqui como decisao ativa, nao esquecida.
+
+**Acao concreta**: `USE_CHEAP_LAYER_SHORTLIST` voltou de `True` pra
+`False` em `decision_engine.py` (e o espelho em `sim_bridge.py`
+automaticamente para de alargar, ja que le a mesma constante). Isso
+desliga a UNICA parte do arco 508-525 que estava ativa por padrao --
+o alargamento de shortlist da fase 1 original. Com isso, o motor volta
+a decidir exatamente como decidia antes do bloco 508 comecar: heuristica
+pura via `_select_action_via_search`, sem nenhum candidato extra vindo
+da camada barata.
+
+**Validado**: `smoke_fast.py` (100% OK, incluindo os testes de
+`_cheap_playout_deltas`/`_cheap_rollout_value`/pondering que continuam
+passando -- os mecanismos ficam no codigo, so nao rodam por padrao) e
+`smoke_test.py` completo (`TODOS OS TESTES PASSARAM`).
+
+**Pondering** (`BOT/engine_server/server.py`, `PONDER_ENABLED`,
+`_get_ponder_match`, `_trigger_pondering`, `_ponder_worker`,
+`_try_consume_ponder`): decisao explicita desta sessao foi **deixar o
+codigo no lugar, dormente** (ja `False`/OFF por padrao via
+`OPTCG_PONDER_ENABLED` nao setado), em vez de fazer um revert
+cirurgico multi-arquivo. Motivos: (1) ja esta seguro/inerte -- nunca
+foi a causa do "bot jogando pior" reportado agora, essa causa e quase
+certamente o `USE_CHEAP_LAYER_SHORTLIST=True` revertido acima; (2) essa
+propria implementacao (independente da que rodou e foi revertida no
+`main`, commit `5fe0966`/`60d133c`) usa a MESMA arquitetura `threading`
+e portanto **muito provavelmente carrega o mesmo bug de GIL** que
+`main` encontrou e documentou (bloco 480 do `main`, ja mesclado aqui no
+526<-525): rodar a busca Monte Carlo de pondering numa thread Python
+NAO ganha paralelismo real (GIL), competindo por CPU com o `/decide`
+em tempo real e causando timeout. `_package_action` (linha ~810 de
+`server.py`) fica -- e usado direto pelo `/decide` normal, nao so pelo
+pondering, refatoracao valida por si so. **Registrado para qualquer
+sessao futura que cogitar ligar `OPTCG_PONDER_ENABLED=1`**: nao ligar
+sem antes portar pra `multiprocessing` (ou logica explicita de
+pausa/despriorizacao) -- ligar como esta hoje deve reproduzir o mesmo
+timeout que o `main` documentou.
+
+**Estado final de TUDO que veio do arco 508-525, apos este revert**:
+`USE_CHEAP_LAYER_SHORTLIST=False` (era a UNICA `True`),
+`USE_DYNAMIC_WEIGHT_ADJUSTMENT`/`USE_CHEAP_LAYER_GATE`/
+`USE_DEEP_REAL_SEARCH`/`CHEAP_LAYER_DECIDES_ALONE`=`False` (ja
+estavam). **Nenhum mecanismo do arco roda em producao agora** -- todos
+ficam no codigo, documentados e testados, disponiveis pra uma sessao
+futura reavaliar, mas exigindo nova validacao AO VIVO (nao so
+self-play) antes de religar qualquer um.
+
+**Licao pra proxima sessao de calibragem** (o proprio usuario pediu
+pra pensar nisso a seguir): self-play com maximin/multi-ancora foi o
+padrao de rigor do projeto o dia inteiro e MESMO ASSIM nao capturou o
+efeito real que apareceu ao vivo -- o proximo design de calibragem
+dinamica cross-deck precisa incluir validacao ao vivo (ou pelo menos
+um proxy mais realista que self-play espelhado) antes de declarar
+qualquer mecanismo pronto pra producao, nao só a bateria offline.
+
 ## 2026-08-13 (525) - Claude (sessao remota web) - FECHA o arco inteiro de "calibragem dinamica" (blocos 508-525): NENHUMA das 4 tentativas pos-fase-1 se sustentou -- so a fase 1 original continua valida
 
 Comparacao `USE_DEEP_REAL_SEARCH` (busca real com piso/teto 100/300,

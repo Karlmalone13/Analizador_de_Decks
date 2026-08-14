@@ -360,7 +360,14 @@ _CHEAP_LAYER_RNG = random.Random(20260813)
 # de tempo real). Estendido pro caminho ao vivo no bloco 511 (timeout
 # interno 3.0s->5.0s pra acomodar, folga real medida contra o limite
 # fisico de 10s do plugin C#).
-USE_CHEAP_LAYER_SHORTLIST = True
+# DESLIGADO DE NOVO no bloco 526 -- pedido direto do usuario apos jogar
+# ao vivo e observar o bot jogando PIOR que antes (sinal real de
+# partida, mais forte que qualquer medicao de self-play desta sessao).
+# Volta ao estado de decisao de ANTES do bloco 508 inteiro (heuristica
+# pura, sem alargamento de shortlist nenhum) -- os mecanismos ficam no
+# codigo (documentados/testados) mas NADA deles roda por padrao ate
+# uma nova validacao ao vivo justificar religar. Ver HANDOFF bloco 526.
+USE_CHEAP_LAYER_SHORTLIST = False
 # Modo experimental de ABLACAO (bloco 519/520, pedido do usuario: medir
 # separadamente "heuristica sozinha" x "heuristica+simulacao" x "so
 # simulacao"). Quando True, `main_phase` aplica a acao de maior

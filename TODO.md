@@ -1,7 +1,30 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 13 de agosto de 2026
+**Última atualização:** 14 de agosto de 2026
 
+> 14/08/2026 (bloco 526): **REVERTE a fase 1 também** —
+> `USE_CHEAP_LAYER_SHORTLIST` voltou pra `False`. Motivo: sinal REAL de
+> partida ao vivo (usuário testou no próprio PC — "a bot passou a jogar
+> pior que antes") anula a conclusão do bloco 525 ("só a fase 1
+> continua válida"), porque essa conclusão veio só de self-play. Volta
+> ao estado de decisão de ANTES do bloco 508 inteiro — heurística pura,
+> sem nenhum alargamento de shortlist da camada barata.
+> `smoke_fast`/`smoke_test` 100% após o revert. **Pondering**
+> (`OPTCG_PONDER_ENABLED`) confirmado deixado de lado — já OFF por
+> padrão, decisão foi manter o código dormente (não remover): já é
+> seguro, não foi a causa da piora relatada, e um revert cirúrgico
+> multi-arquivo teria custo/risco maior que valor — mas **provavelmente
+> carrega o mesmo bug de GIL que o `main` já achou e reverteu** (thread
+> Python não dá paralelismo real, compete com `/decide` e causa
+> timeout) se algum dia for ligado; não ligar sem migrar pra
+> `multiprocessing` primeiro. **Nenhum mecanismo do arco 508-526 roda
+> em produção agora** — todos ficam no código, testados, exigindo nova
+> validação AO VIVO (não só self-play) antes de religar qualquer um.
+> **Próximo passo pedido pelo usuário**: repensar calibragem dinâmica
+> pra generalizar entre decks desde o zero, informado pelos 4-5
+> fracassos de hoje E pela lição de que self-play sozinho não é
+> suficiente pra validar. Ver bloco 526 do HANDOFF.
+>
 > 13/08/2026 (bloco 525): **FECHA o arco inteiro de "calibragem
 > dinâmica"** (blocos 508-525) — as 4 tentativas pós-fase-1 foram
 > TODAS descartadas, medidas com o mesmo rigor de sempre (multi-âncora,
