@@ -420,6 +420,15 @@ USE_HAND_VALUE_CURVE_SCALE = False
 USE_BOARD_VALUE_CURVE_SCALE = False
 USE_LIFE_VALUE_CURVE_SCALE = False
 
+# Bloco 532 (pedido do usuario: "acho que dmg tb influencia se o deck for
+# agro") -- escala `dmg` (dano feito NESTE turno) pela curva do deck via
+# GameAnalyzer.dmg_value_curve_scale. Era o peso mais sensivel/calibrado
+# do motor (120->270, achado real bloco 499) -- por isso NAO mexe no valor
+# BASE, so multiplica por um fator extra atras de flag propria, mesmo
+# padrao de seguranca dos outros eixos (False por padrao, termo ja ativo
+# em producao).
+USE_DMG_VALUE_CURVE_SCALE = False
+
 # ── busca prof.2 / resposta do oponente (item 3 do PLANO_AVALIACAO_E_BUSCA.md) ─
 # Depois de simular MINHA linha ate o fim do turno, simula o TURNO INTEIRO de
 # resposta do oponente (proprio engine, modo GULOSO -- ver _play_turn_greedy,
@@ -10058,6 +10067,33 @@ class GameAnalyzer:
             return 0.7
         return 1.0
 
+    def dmg_value_curve_scale(self) -> float:
+        """
+        Fator que escala o valor de DANO FEITO NESTE TURNO (`dmg`) pela
+        curva do PRÓPRIO deck (bloco 532, pedido do usuário: "acho que
+        dmg tb influência se o deck for agro").
+
+        Deck AGRESSIVO: dano É o plano de vitória, conectar dano agora
+        vale mais (1.3) -- reforça o Turn Planner a preferir a linha que
+        ataca em vez de só desenvolver. Deck CONTROLE: dano é secundário
+        ao plano de remoção/resposta/combo, vale um pouco menos (0.7) --
+        não IMPEDE atacar (dano continua positivo), só não empurra tanto
+        quanto pro agressivo. Midrange/sem censo = neutro (1.0).
+
+        Mesma lógica direcional de `life_value_curve_scale_opp` (reduzir
+        a vida do oponente importa mais pro agressivo), mas em cima do
+        termo de DELTA de dano do turno (recompensa o ATO de atacar
+        agora), não do total de vida do estado resultante -- termos
+        relacionados mas distintos, cada um com seu próprio método e
+        flag pra poder isolar/desligar independente se um regredir.
+        """
+        profile = self.deck_profile_type()
+        if profile == 'aggressive':
+            return 1.3
+        if profile == 'control':
+            return 0.7
+        return 1.0
+
     def deck_lacks_removal_tools(self) -> bool:
         """
         Achado real 10/08 (auditoria do líder Sanji OP12-041, bloco 484 --
@@ -16117,8 +16153,11 @@ class OPTCGMatch:
         score = 0.0
 
         # dano feito NESTE turno — delta que faz o planner preferir a linha que
-        # de fato conecta dano (não só "desenvolve")
-        score += p.dmg_dealt * W['dmg']
+        # de fato conecta dano (não só "desenvolve"). Escala pela curva do
+        # deck quando USE_DMG_VALUE_CURVE_SCALE ligado (bloco 532): agressivo
+        # valoriza mais conectar dano agora, controle um pouco menos.
+        dmg_scale = an.dmg_value_curve_scale() if USE_DMG_VALUE_CURVE_SCALE else 1.0
+        score += p.dmg_dealt * W['dmg'] * dmg_scale
 
         # vida (curva íngreme). Escala ASSIMETRICA por curva do deck quando
         # USE_LIFE_VALUE_CURVE_SCALE ligado (bloco 531): controle valoriza

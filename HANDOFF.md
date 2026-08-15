@@ -1,5 +1,38 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-14 (532) - Claude (sessao remota web) - `dmg_value_curve_scale` -- escala o peso mais sensivel do motor (dmg) por curva, atras de flag propria
+
+**Pedido do usuario**: "acho que dmg tb influência se o deck for agro".
+
+**Implementado**: `GameAnalyzer.dmg_value_curve_scale()`, mesma
+familia analitica dos blocos 530/531 (reusa `deck_profile_type()`,
+zero self-play): agressivo=1.3 (dano E o plano de vitoria, conectar
+dano agora vale mais), controle=0.7 (dano secundario ao plano de
+remocao/resposta/combo), midrange/sem censo=1.0. Direcionalmente igual
+a `life_value_curve_scale_opp` (bloco 531), mas aplicado ao termo de
+DELTA de dano do turno (`dmg_dealt`, recompensa o ATO de atacar agora)
+em vez do total de vida do estado resultante -- termos relacionados
+mas distintos.
+
+**Cautela extra**: `dmg` e explicitamente o peso mais calibrado/
+sensivel do motor inteiro (achado real de sessao anterior, 120->270
+via multi-ancora). NAO mexi no valor BASE -- so multiplica por um
+fator extra atras de `USE_DMG_VALUE_CURVE_SCALE` (nova, `False` por
+padrao), mesmo padrao de seguranca dos outros 4 eixos.
+
+**Testado**: 6 checks novos (aggressive/control/midrange/sem-censo +
+flag off por padrao + `_evaluate_state_v2` muda de fato quando liga).
+`smoke_fast`/`smoke_test` 100%.
+
+**Estado consolidado (blocos 529-532)**: 6 termos de `EVAL_WEIGHTS`
+com escala analitica nova (`leader_plan_alignment`, `don_field`,
+`hand_first`/`hand_extra`, `board_mine`/`board_opp`, `life_mult` self/
+opp, `dmg`) + 6 ja dinamicos de sessoes anteriores = 12/17 termos
+variam por deck agora. Restam `counter_hand`/`coverage`/`opp_blocker`
+como constante universal, sem sinal estrutural levantado ainda. Todos
+os mecanismos novos continuam desligados por padrao -- pendente
+validacao via telemetria de partida real.
+
 ## 2026-08-14 (531) - Claude (sessao remota web) - `hand_value_curve_scale`/`board_value_curve_scale`/`life_value_curve_scale_self`/`_opp` -- completa o levantamento de calibragem dinamica analitica do motor
 
 **Pedido do usuario**: apos listar os 9 termos de `EVAL_WEIGHTS` que

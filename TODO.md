@@ -2,6 +2,18 @@
 
 **Última atualização:** 14 de agosto de 2026
 
+> 14/08/2026 (bloco 532): **`dmg_value_curve_scale`** (pedido: "acho
+> que dmg tb influência se o deck for agro") — mesma família analítica
+> dos blocos 530/531. Agressivo=1.3 (dano é o plano), controle=0.7
+> (dano secundário). `dmg` é o peso mais calibrado/sensível do motor
+> (120→270 em sessão anterior) — não mexi no valor base, só multiplico
+> por um fator atrás de `USE_DMG_VALUE_CURVE_SCALE` (nova, `False`).
+> 6 testes novos, `smoke_fast`/`smoke_test` 100%. **Estado consolidado
+> (529-532)**: 12 dos 17 termos de `EVAL_WEIGHTS` agora variam por
+> deck (6 novos + 6 já dinâmicos de antes). Restam `counter_hand`/
+> `coverage`/`opp_blocker` universais. Tudo desligado, pendente
+> validação real. Ver bloco 532 do HANDOFF.
+>
 > 14/08/2026 (bloco 531): **completa o levantamento de calibragem
 > dinâmica analítica** (pedido: "Hand first dá, valor do board tb e
 > valor da vida tb") — `hand_value_curve_scale`/`board_value_curve_

@@ -10243,6 +10243,64 @@ def test_hand_board_life_curve_scale_e_gates_ao_vivo_14_08() -> None:
           score_on > score_off)
 
 
+def test_dmg_value_curve_scale_e_gate_ao_vivo_14_08() -> None:
+    # Pedido do usuario (14/08, bloco 532): "acho que dmg tb influencia se
+    # o deck for agro". Mesma familia analitica de don_field/hand/board/
+    # vida (blocos 530/531). Ver GameAnalyzer.dmg_value_curve_scale.
+    def vida4():
+        return [mk(f"LF{i}", "Life") for i in range(4)]
+
+    opp0 = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+    census_aggro = {
+        "by_cost": {1: 30, 2: 15, 3: 5}, "total": 50,
+        "rush": {"total": 0}, "blockers": {"total": 0},
+    }
+    census_control = {
+        "by_cost": {2: 10, 4: 20, 6: 10, 7: 10}, "total": 50,
+        "rush": {"total": 0}, "blockers": {"total": 0},
+    }
+    census_midrange = {
+        "by_cost": {2: 15, 3: 20, 4: 15}, "total": 50,
+        "rush": {"total": 0}, "blockers": {"total": 0},
+    }
+
+    def mk_engine(census):
+        me = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+        if census is not None:
+            me.full_deck_census = census
+        return DecisionEngine(me, opp0)
+
+    check("dmg: deck agressivo escala pra CIMA (1.3) -- dano e o plano",
+          abs(mk_engine(census_aggro).analyzer.dmg_value_curve_scale() - 1.3) < 1e-9)
+    check("dmg: deck controle escala pra BAIXO (0.7) -- dano e secundario ao plano",
+          abs(mk_engine(census_control).analyzer.dmg_value_curve_scale() - 0.7) < 1e-9)
+    check("dmg: deck midrange neutro (1.0)",
+          abs(mk_engine(census_midrange).analyzer.dmg_value_curve_scale() - 1.0) < 1e-9)
+    check("dmg: sem censo neutro (1.0)",
+          abs(mk_engine(None).analyzer.dmg_value_curve_scale() - 1.0) < 1e-9)
+
+    import optcg_engine.decision_engine as de
+    check("USE_DMG_VALUE_CURVE_SCALE fica False por padrao (dmg e o peso mais sensivel do motor)",
+          de.USE_DMG_VALUE_CURVE_SCALE is False)
+
+    from optcg_engine.decision_engine import EVAL_WEIGHTS
+    me_dmg = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+    me_dmg.full_deck_census = census_aggro
+    me_dmg.dmg_dealt = 5000
+    me_dmg.use_eval_v2 = True
+    me_dmg.eval_weights = dict(EVAL_WEIGHTS)
+    match_dmg = OPTCGMatch((me_dmg.leader, []), (opp0.leader, []))
+    score_off = match_dmg._evaluate_state_v2(me_dmg, opp0)
+    old_flag = de.USE_DMG_VALUE_CURVE_SCALE
+    try:
+        de.USE_DMG_VALUE_CURVE_SCALE = True
+        score_on = match_dmg._evaluate_state_v2(me_dmg, opp0)
+    finally:
+        de.USE_DMG_VALUE_CURVE_SCALE = old_flag
+    check("com o flag ligado, deck agressivo que conectou dano aumenta o score",
+          score_on > score_off)
+
+
 def main() -> int:
     test_big_mom_optional_zero_parser_order_and_don_synergy()
     test_is_active_turn_corrigido_evita_don_minus_desnecessario()
@@ -10531,6 +10589,7 @@ def main() -> int:
     test_leader_ability_centrality_escala_por_escassez_de_outras_fontes_14_08()
     test_don_field_curve_scale_e_gate_ao_vivo_14_08()
     test_hand_board_life_curve_scale_e_gates_ao_vivo_14_08()
+    test_dmg_value_curve_scale_e_gate_ao_vivo_14_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
