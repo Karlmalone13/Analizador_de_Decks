@@ -1,5 +1,58 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (542) - Claude (sessao local) - logging de diagnostico pro fix do bloco 540 (confirma se a selecao PARCIAL realmente resolve o Doc Q/Teach-10) + relatorio de latencia de decisao
+
+Pedido do usuario (mesma pergunta do bloco 541, "ferramenta pra
+investigar melhorias/bugs nos testes ao vivo"): eu tinha comecado a
+tentar estender `live_calibration_report.py` (deteccao automatica) pra
+tambem pegar o padrao especifico "seleciona 1 alvo valido, depois clica
+Cancel" do bloco 539/540 -- mas esse padrao acontece inteiramente
+dentro do loop `HandlePendingAction()` do plugin C#, nunca chega a
+virar telemetria no lado Python (nao existe evento "o plugin decidiu
+dar Cancel numa selecao pendente" no `decisions_*.jsonl`). Detectar
+isso em Python e estruturalmente impossivel com o schema atual.
+
+**Fix**: em vez de tentar detectar no Python, adicionei 2 linhas de log
+novas/atualizadas direto no `BotDriver.cs` (`HandlePendingAction`):
+1. Log novo ANTES de chamar `ConfirmPendingSelection()` (agora
+   incondicional, sem o gate `UsesV3()` removido no bloco 540):
+   `"[Bot] confirma selecao PARCIAL: {attempt} de {total} candidato(s)
+   selecionado(s)"`.
+2. Log de Cancel (bloco 373) ganhou `pendingAttempt={_pendingAttempt}`
+   -- permite distinguir "a tentativa de confirmar parcial rodou mas
+   nao achou o botao certo" (pendingAttempt > 0) de "nunca teve
+   candidato nenhum desde o inicio" (pendingAttempt == 0).
+
+Plugin recompilado e reinstalado via `setup_bepinex.bat` (jogo ja
+estava fechado). Proximo teste ao vivo: se o Doc Q/Teach-10 ainda
+falhar, o `LogOutput.log` agora mostra exatamente onde -- se a linha
+"confirma selecao PARCIAL" aparece (fix do 540 funcionando) e se algum
+Cancel subsequente tem `pendingAttempt > 0` (bug diferente/novo).
+
+**`live_calibration_report.py` ganhou `report_decision_latency()`**
+(3ª funcao do relatorio, usando os campos `latency_ms`/
+`latency_segments_ms` que ja existiam no schema de telemetria, so
+nunca tinham relatorio proprio): media/pico de latencia por sessao,
+`timed_out=True` count, e lista as decisoes acima de um limiar
+(default 800ms, `--latencia-limiar-ms`) com o breakdown
+`generate_and_score`/`line_search`/`engine_total` e a carta/acao
+envolvida. Rodado contra a sessao mais recente (18.49.44): media
+665ms, pico 3984ms, 11 de 35 decisoes de main acima de 800ms -- em
+TODOS os casos o custo dominante e `line_search`, nao
+`generate_and_score` (ex: turno 4, OP16-109, `line_search=3978ms` de
+um total de `3980ms`) -- sinal pra investigar profundidade/poda da
+busca em turnos com board complexo, nao o gerador de candidatos.
+Nenhum `timed_out=True` nessa sessao.
+
+**Validado**: `smoke_fast.py` rodado apos as mudancas -- mesmas 14
+falhas esperadas de antes (flags de calibragem ainda True local pro
+teste ao vivo, nao commitadas), nenhuma falha nova.
+
+**Status**: `BotDriver.cs` + `live_calibration_report.py` prontos pra
+commit. Pendente: proximo teste ao vivo do usuario (plugin ja
+recompilado/instalado) pra confirmar o fix do 540 via essas 2 linhas
+de log novas.
+
 ## 2026-08-15 (541) - Claude (sessao local) - nova ferramenta pra investigar teste ao vivo: telemetria das flags de calibragem + deteccao automatica do padrao "acao repetida"
 
 Pedido do usuario: ferramenta pra investigar melhorias/bugs nos testes

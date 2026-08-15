@@ -2,6 +2,22 @@
 
 **Última atualização:** 15 de agosto de 2026
 
+> 15/08/2026 (bloco 542): **logging de diagnostico pro fix 540 + relatorio
+> de latencia** — o padrão "seleciona 1 alvo válido, depois clica Cancel"
+> (bloco 539/540) acontece inteiramente dentro do `HandlePendingAction()`
+> do plugin C#, invisível à telemetria Python — por isso a extensão do
+> detector automático virou 2 linhas de log novas/atualizadas no
+> `BotDriver.cs` em vez de código Python: uma antes de
+> `ConfirmPendingSelection()` ("confirma seleção PARCIAL: N de M"), outra
+> no Cancel (bloco 373) com `pendingAttempt` anexado, pra distinguir "a
+> tentativa parcial rodou mas não achou botão" de "nunca teve candidato".
+> Plugin recompilado/reinstalado, pendente validar no próximo teste ao
+> vivo. `live_calibration_report.py` ganhou `report_decision_latency()`
+> (usa `latency_ms`/`latency_segments_ms` já existentes no schema) — na
+> sessão mais recente, 11/35 decisões de main acima de 800ms, custo
+> dominante sempre `line_search` (não o gerador de candidatos), pico
+> 3984ms, nenhum timeout. Ver bloco 542 do HANDOFF.
+
 > 15/08/2026 (bloco 541): **nova ferramenta pra investigar teste ao
 > vivo** — `sim_bridge.choose_action` expõe `calibration_scales` no
 > `trace_out` (perfil do deck + os 9 fatores das flags USE_*_CURVE_SCALE

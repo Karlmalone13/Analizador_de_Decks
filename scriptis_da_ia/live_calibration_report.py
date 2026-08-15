@@ -14,6 +14,11 @@ telemetria existente nao juntava antes:
    parcial (ou outro loop parecido) esta acontecendo de novo, mesmo sem
    olhar o LogOutput.log do plugin (que e local/gitignored e pode nao
    estar disponivel).
+3. Latencia de decisao (`latency_ms`/`latency_segments_ms`, ja presentes no
+   schema de telemetria) -- destaca decisoes de main que chegaram perto do
+   timeout de resposta ao plugin, com turno/carta pra contexto (pedido do
+   usuario, 15/08/2026, bloco 542: ferramenta pra investigar melhorias/bugs
+   nas sessoes ao vivo de teste da flag de calibragem).
 
 Uso:
     python live_calibration_report.py                  # sessao mais recente
@@ -117,6 +122,47 @@ def report_repeated_action_bug(decisions: list[dict]) -> None:
     print()
 
 
+def report_decision_latency(decisions: list[dict], limiar_ms: float = 800.0) -> None:
+    print('== Latencia de decisao (engine_total / generate_and_score / line_search) ==')
+    main_decs = [d for d in decisions
+                 if d.get('event') == 'decision' and d.get('decision_kind') == 'main']
+    if not main_decs:
+        print('  Nenhuma decisao de main nesta sessao.')
+        print()
+        return
+
+    latencias = [d.get('latency_ms') for d in main_decs if d.get('latency_ms') is not None]
+    timeouts = [d for d in main_decs if d.get('timed_out')]
+    lentas = sorted(
+        (d for d in main_decs if (d.get('latency_ms') or 0) >= limiar_ms),
+        key=lambda d: d.get('latency_ms') or 0, reverse=True,
+    )
+
+    if latencias:
+        media = sum(latencias) / len(latencias)
+        pico = max(latencias)
+        print(f'  {len(latencias)} decisoes com latency_ms; media={media:.1f}ms pico={pico:.1f}ms')
+    else:
+        print('  Nenhuma decisao com `latency_ms` registrado.')
+
+    print(f'  timed_out=True: {len(timeouts)} de {len(main_decs)}')
+
+    if lentas:
+        print(f'  {len(lentas)} decisao(oes) acima de {limiar_ms:.0f}ms:')
+        for d in lentas[:20]:
+            ca = d.get('chosen_action') or {}
+            seg = d.get('latency_segments_ms') or {}
+            print(f'    match={(d.get("match_id") or "")[:8]} turno={d.get("turn")} '
+                  f'latency={d.get("latency_ms"):.1f}ms '
+                  f'(gerar={seg.get("generate_and_score", "?")} '
+                  f'line_search={seg.get("line_search", "?")} '
+                  f'engine_total={seg.get("engine_total", "?")}) '
+                  f'timed_out={d.get("timed_out")} acao={ca.get("type")} carta={ca.get("card_code")}')
+    else:
+        print(f'  Nenhuma decisao acima de {limiar_ms:.0f}ms.')
+    print()
+
+
 def report_execution_failures(decisions: list[dict]) -> None:
     print('== Execucoes com status="failed" (acao enviada, jogo nao mudou) ==')
     falhas = [d for d in decisions if d.get('event') == 'execution'
@@ -135,6 +181,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--session', help='nome da sessao (decisions_<nome>.jsonl)')
     ap.add_argument('--file', help='caminho direto pro .jsonl')
+    ap.add_argument('--latencia-limiar-ms', type=float, default=800.0,
+                     help='limiar pra destacar decisoes lentas (default 800ms)')
     args = ap.parse_args()
 
     if args.file:
@@ -152,6 +200,7 @@ def main() -> int:
     decisions = _load(path)
     report_calibration(decisions)
     report_repeated_action_bug(decisions)
+    report_decision_latency(decisions, limiar_ms=args.latencia_limiar_ms)
     report_execution_failures(decisions)
     return 0
 

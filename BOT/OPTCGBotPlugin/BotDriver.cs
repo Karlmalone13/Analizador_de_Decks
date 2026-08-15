@@ -669,6 +669,15 @@ namespace OPTCGBotPlugin
             if (!_pendingConfirmTried)
             {
                 _pendingConfirmTried = true;
+                // Log distinto de "confirmar selecao: X (Y)" generico --
+                // pedido do usuario (15/08, bloco 542): fechar o loop do
+                // fix acima com evidencia clara no LogOutput.log de que a
+                // selecao PARCIAL (nao 0) realmente confirmou, sem precisar
+                // reconstruir na mao de novo se o problema reapareceu.
+                Plugin.Log.LogInfo(
+                    $"[Bot] confirma selecao PARCIAL: {_pendingAttempt} de " +
+                    $"{(_pendingOrder?.Count ?? 0)} candidato(s) selecionado(s) " +
+                    $"(actor={BotExecutor.ActorCode(gls)})");
                 BotExecutor.ConfirmPendingSelection(gls);
                 _cooldown = 1f;
                 return;
@@ -686,10 +695,17 @@ namespace OPTCGBotPlugin
             // que reproduzir: UsesV3/remaining ajudam a saber se o efeito
             // realmente precisava de candidato ou se CollectTargetCandidates
             // nunca soube modelar um "reveal" sem escolha real.
+            // pendingAttempt aqui mostra se o Cancel aconteceu MESMO DEPOIS
+            // da tentativa de confirmar parcial (bloco 540/542) -- se >0,
+            // o ConfirmPendingSelection tentou mas nao achou nenhum botao
+            // dos preferidos (OfferedButtons), sinal de que falta cobrir
+            // outro ButtonChoiceType na lista; se ==0, o efeito realmente
+            // nao tinha nenhum candidato pra comecar (ex: reveal sem alvo).
             Plugin.Log.LogWarning(
                 $"[Bot] efeito pendente sem alvo viavel — Cancel " +
                 $"(actor={BotExecutor.ActorCode(gls)}, usesV3={gls.acaActive?.UsesV3()}, " +
                 $"remaining={BotExecutor.RemainingV3Targets(gls)}, " +
+                $"pendingAttempt={_pendingAttempt}, " +
                 $"step={gls.acaActive?.iActionStep}, state={gls.e_CurrentState})");
             BotExecutor.CancelPendingAction(gls);
             _pendingRef = null;
