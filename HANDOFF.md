@@ -1,5 +1,51 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-14 (531) - Claude (sessao remota web) - `hand_value_curve_scale`/`board_value_curve_scale`/`life_value_curve_scale_self`/`_opp` -- completa o levantamento de calibragem dinamica analitica do motor
+
+**Pedido do usuario**: apos listar os 9 termos de `EVAL_WEIGHTS` que
+continuavam constante fixa pra todo deck, usuario apontou 3 (hand,
+board, vida) que ele acha que TAMBEM deveriam variar por deck: "Hans
+First dá, valor do board tb e valor da vida tb".
+
+**Implementado**, mesma familia analitica de `don_field_curve_scale`
+(bloco 530), todos reusando `deck_profile_type()` ja existente (dados
+reais do Limitless, zero self-play):
+- `hand_value_curve_scale()`: controle guarda mais valor em MANTER
+  cartas na mao (respostas calculadas, 1.3); agressivo joga a mao
+  rapido de proposito, segurar carta nao ajuda o plano (0.7).
+- `board_value_curve_scale()`: agressivo depende de board LARGO pro
+  plano (mais atacantes = mais dano, 1.3); controle depende menos de
+  amplitude de board (0.7). Fator SIMETRICO (mesmo peso pros dois
+  lados, `board_mine`/`board_opp`).
+- `life_value_curve_scale_self()` / `life_value_curve_scale_opp()`:
+  **ASSIMETRICO por design** (unico dos 4 que nao e simetrico) --
+  controle valoriza mais a PROPRIA vida (precisa sobreviver ate o
+  plano, 1.3 self / 0.7 opp); agressivo valoriza mais a vida DO
+  OPONENTE (correr pro dano E o plano, 1.3 opp / 0.7 self).
+
+Todos os 3 termos JA tem peso ativo em producao (mesma logica de
+seguranca do `don_field`) -- atras de 3 flags NOVAS e SEPARADAS
+(`USE_HAND_VALUE_CURVE_SCALE`, `USE_BOARD_VALUE_CURVE_SCALE`,
+`USE_LIFE_VALUE_CURVE_SCALE`, todas `False`), pra poder isolar/
+desligar cada eixo independente se um regredir na validacao real, sem
+afetar os outros. 15 testes novos em `smoke_fast.py` (cada metodo em
+aggressive/control/midrange/sem-censo + 1 teste confirmando que
+`_evaluate_state_v2` muda de fato quando um flag liga). `smoke_fast`/
+`smoke_test` 100%.
+
+**Estado consolidado da calibragem dinamica do motor (blocos 529-531)**:
+5 termos de `EVAL_WEIGHTS` agora tem escala analitica por deck
+(`leader_plan_alignment`, `don_field`, `hand_first`/`hand_extra`
+juntos, `board_mine`/`board_opp` juntos, `life_mult` self/opp
+assimetrico) + 6 termos ja eram dinamicos de sessoes anteriores
+(`wincon_ready`/`ax_trash`/`ax_reanim`/`ax_inversion`/`survival_
+premium`/`opp_combo_threat`). Restam so `dmg`/`counter_hand`/
+`coverage`/`opp_blocker` como constante universal, sem sinal
+estrutural claro levantado pra eles ainda. TODOS os mecanismos novos
+(529/530/531) continuam desligados por padrao -- pendente validacao
+via telemetria de partida real, nao mais self-play (achado 528/529:
+ruidoso demais em N pequeno pra esse tipo de efeito).
+
 ## 2026-08-14 (530) - Claude (sessao remota web) - `don_field_curve_scale`: 2o eixo de calibragem dinamica analitica -- "vamos fazer para o motor inteiro"
 
 **Contexto**: apos validar a filosofia do bloco 529 (escalar

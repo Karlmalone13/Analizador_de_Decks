@@ -2,6 +2,23 @@
 
 **Última atualização:** 14 de agosto de 2026
 
+> 14/08/2026 (bloco 531): **completa o levantamento de calibragem
+> dinâmica analítica** (pedido: "Hand first dá, valor do board tb e
+> valor da vida tb") — `hand_value_curve_scale`/`board_value_curve_
+> scale`/`life_value_curve_scale_self`/`_opp`, mesma família do
+> `don_field_curve_scale` (bloco 530), reusando `deck_profile_type()`.
+> Vida é ASSIMÉTRICA por design (controle valoriza mais a própria vida,
+> agressivo valoriza mais a vida do oponente). 3 flags novas e
+> separadas (`USE_HAND_VALUE_CURVE_SCALE`/`USE_BOARD_VALUE_CURVE_SCALE`/
+> `USE_LIFE_VALUE_CURVE_SCALE`, todas `False`) — mesma cautela do
+> `don_field` (esses termos já têm peso ativo em produção). 15 testes
+> novos, `smoke_fast`/`smoke_test` 100%. **Estado consolidado**: 5
+> termos com escala analítica nova + 6 já dinâmicos de antes = 11 dos
+> 17 termos de `EVAL_WEIGHTS` variam por deck; restam `dmg`/`counter_
+> hand`/`coverage`/`opp_blocker` como constante universal (sem sinal
+> estrutural levantado ainda). Tudo desligado por padrão, pendente
+> validação via telemetria real. Ver bloco 531 do HANDOFF.
+>
 > 14/08/2026 (bloco 530): **`don_field_curve_scale`** — 2º eixo de
 > calibragem dinâmica analítica (pedido: "vamos fazer para o motor
 > inteiro"). Levantamento de `EVAL_WEIGHTS`: 6 termos já são dinâmicos

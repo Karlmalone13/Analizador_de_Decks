@@ -407,6 +407,19 @@ CHEAP_LAYER_GATE_THRESHOLD = 50.0
 # demais pra validar sozinho).
 USE_DON_FIELD_CURVE_SCALE = False
 
+# Mesma familia (bloco 531, pedido do usuario: "Hand first da, valor do
+# board tb e valor da vida tb") -- hand_first/hand_extra, board_mine/
+# board_opp e life_mult (self/opp assimetrico) tambem escalam pela curva
+# do deck via GameAnalyzer.hand_value_curve_scale/board_value_curve_scale/
+# life_value_curve_scale_self/life_value_curve_scale_opp. Mesmo motivo de
+# seguranca do USE_DON_FIELD_CURVE_SCALE acima: todos os 3 termos JA tem
+# peso ativo em producao, entao cada flag muda comportamento ao vivo assim
+# que ligada -- flags SEPARADAS (nao 1 unica) pra poder isolar/desligar
+# cada eixo independente se um deles regredir na validacao real.
+USE_HAND_VALUE_CURVE_SCALE = False
+USE_BOARD_VALUE_CURVE_SCALE = False
+USE_LIFE_VALUE_CURVE_SCALE = False
+
 # ── busca prof.2 / resposta do oponente (item 3 do PLANO_AVALIACAO_E_BUSCA.md) ─
 # Depois de simular MINHA linha ate o fim do turno, simula o TURNO INTEIRO de
 # resposta do oponente (proprio engine, modo GULOSO -- ver _play_turn_greedy,
@@ -9973,6 +9986,78 @@ class GameAnalyzer:
             return 1.3
         return 1.0
 
+    def hand_value_curve_scale(self) -> float:
+        """
+        Fator que escala o valor de MANTER cartas na mão (`hand_first`/
+        `hand_extra`) pela curva do PRÓPRIO deck -- mesma família
+        analítica de `don_field_curve_scale` (bloco 531, pedido do
+        usuário: "Hand first dá, valor do board tb e valor da vida tb").
+
+        Deck CONTROLE guarda mais valor em manter cartas na mão --
+        cada carta é uma resposta calculada, o plano é jogar reativo.
+        Deck AGRESSIVO joga a mão rápido de propósito -- o plano é
+        desenvolver e atacar, não acumular; segurar cartas sem jogar
+        não ajuda esse plano. Midrange/sem censo = neutro (1.0).
+        """
+        profile = self.deck_profile_type()
+        if profile == 'aggressive':
+            return 0.7
+        if profile == 'control':
+            return 1.3
+        return 1.0
+
+    def board_value_curve_scale(self) -> float:
+        """
+        Fator que escala o valor SIMÉTRICO de board (`board_mine`/
+        `board_opp`) pela curva do PRÓPRIO deck.
+
+        Deck AGRESSIVO depende de board LARGO pra fechar -- mais
+        atacantes vivos = mais dano, o board É o plano de vitória.
+        Deck CONTROLE depende menos de amplitude de board (o plano é
+        remoção/resposta pontual, não uma fileira de atacantes) --
+        eixos mais finos disso já são cobertos em parte por
+        `deck_lacks_removal_tools`/eixos derivados; aqui é só o termo
+        BASE simétrico de board. Midrange/sem censo = neutro (1.0).
+        """
+        profile = self.deck_profile_type()
+        if profile == 'aggressive':
+            return 1.3
+        if profile == 'control':
+            return 0.7
+        return 1.0
+
+    def life_value_curve_scale_self(self) -> float:
+        """
+        Fator que escala o valor da PRÓPRIA vida pela curva do deck.
+        Deck CONTROLE precisa sobreviver até o plano de late-game --
+        a própria vida vale mais. Deck AGRESSIVO está atacando, não
+        defendendo -- a própria vida é secundária ao plano de correr
+        pro dano do oponente. Ver `life_value_curve_scale_opp` (par
+        assimétrico -- os dois lados NÃO escalam igual, diferente de
+        `board_value_curve_scale`, que é simétrico por natureza).
+        """
+        profile = self.deck_profile_type()
+        if profile == 'control':
+            return 1.3
+        if profile == 'aggressive':
+            return 0.7
+        return 1.0
+
+    def life_value_curve_scale_opp(self) -> float:
+        """
+        Fator que escala o valor da vida DO OPONENTE pela curva do
+        PRÓPRIO deck. Deck AGRESSIVO está correndo pro dano -- reduzir
+        a vida do oponente é literalmente o plano de vitória, vale
+        mais. Deck CONTROLE vence por atrito/combo, não corrida direta
+        -- pressionar a vida do oponente é secundário ao plano.
+        """
+        profile = self.deck_profile_type()
+        if profile == 'aggressive':
+            return 1.3
+        if profile == 'control':
+            return 0.7
+        return 1.0
+
     def deck_lacks_removal_tools(self) -> bool:
         """
         Achado real 10/08 (auditoria do líder Sanji OP12-041, bloco 484 --
@@ -16035,9 +16120,14 @@ class OPTCGMatch:
         # de fato conecta dano (não só "desenvolve")
         score += p.dmg_dealt * W['dmg']
 
-        # vida (curva íngreme, simétrica)
-        score += self._life_value(p.life_count()) * W['life_mult']
-        score -= self._life_value(opp.life_count()) * W['life_mult']
+        # vida (curva íngreme). Escala ASSIMETRICA por curva do deck quando
+        # USE_LIFE_VALUE_CURVE_SCALE ligado (bloco 531): controle valoriza
+        # mais a PROPRIA vida (sobreviver até o plano), agressivo valoriza
+        # mais a vida DO OPONENTE (correr pro dano é o plano).
+        life_scale_self = an.life_value_curve_scale_self() if USE_LIFE_VALUE_CURVE_SCALE else 1.0
+        life_scale_opp = an.life_value_curve_scale_opp() if USE_LIFE_VALUE_CURVE_SCALE else 1.0
+        score += self._life_value(p.life_count()) * W['life_mult'] * life_scale_self
+        score -= self._life_value(opp.life_count()) * W['life_mult'] * life_scale_opp
 
         # SOBREVIVENCIA ciente do game_plan (pedido do usuario 14/07): se a
         # win-con do deck e um combo de CUSTO ALTO que ainda NAO da pra
@@ -16073,9 +16163,13 @@ class OPTCGMatch:
         except Exception:
             pass
 
-        # board (reusa char_value_score — já vê blocker/rush/imunidade/efeito)
-        score += sum(an.char_value_score(c) for c in p.field_chars) * W['board_mine']
-        score -= sum(an.char_value_score(c) for c in opp.field_chars) * W['board_opp']
+        # board (reusa char_value_score — já vê blocker/rush/imunidade/efeito).
+        # Escala pela curva do deck quando USE_BOARD_VALUE_CURVE_SCALE ligado
+        # (bloco 531): agressivo depende de board largo pro plano, controle
+        # depende menos -- fator SIMETRICO (mesmo pros dois lados).
+        board_scale = an.board_value_curve_scale() if USE_BOARD_VALUE_CURVE_SCALE else 1.0
+        score += sum(an.char_value_score(c) for c in p.field_chars) * W['board_mine'] * board_scale
+        score -= sum(an.char_value_score(c) for c in opp.field_chars) * W['board_opp'] * board_scale
 
         # blockers do oponente vivos travam meu ataque
         score -= len(opp.blockers_active()) * W['opp_blocker']
@@ -16087,9 +16181,13 @@ class OPTCGMatch:
         # habilidade, recomputa menor aqui e a busca já prefere essa linha.
         score -= an.opp_combo_threat()['threat_power'] * W['opp_combo_threat']
 
-        # mão: retorno decrescente (as primeiras cartas valem mais)
+        # mão: retorno decrescente (as primeiras cartas valem mais). Escala
+        # pela curva do deck quando USE_HAND_VALUE_CURVE_SCALE ligado (bloco
+        # 531): controle valoriza mais MANTER cartas (respostas calculadas),
+        # agressivo joga a mão rápido de propósito (segurar não ajuda o plano).
         nh = len(p.hand)
-        score += min(nh, 5) * W['hand_first'] + max(0, nh - 5) * W['hand_extra']
+        hand_scale = an.hand_value_curve_scale() if USE_HAND_VALUE_CURVE_SCALE else 1.0
+        score += (min(nh, 5) * W['hand_first'] + max(0, nh - 5) * W['hand_extra']) * hand_scale
         # poder de counter na mão = vida futura
         score += p.counter_in_hand() / 1000 * W['counter_hand']
 
