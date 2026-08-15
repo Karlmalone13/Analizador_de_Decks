@@ -1,5 +1,33 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (537) - Claude (sessao local) - is_closing_mode REVERTIDO (pedido do usuario, respondendo a pergunta pendente do bloco 534)
+
+Usuario respondeu as 3 pendencias do bloco 536: (1) reverter
+`is_closing_mode`, (2) refinar a comparacao das flags de calibragem pra
+ser por acao estruturada (nao texto), (3) testar ao vivo depois.
+
+**Revertido** (`decision_engine.py`): removido `GameAnalyzer.
+is_closing_mode()` e as 3 excecoes "EXCEÇÃO (bloco 534)" que ele
+disparava em `board_value_curve_scale`/`life_value_curve_scale_opp`/
+`dmg_value_curve_scale` (voltam ao comportamento pre-534: aggressive=
+1.3, control=0.7, midrange=1.0, sem excecao por vida do oponente).
+Motivo do usuario: a evidencia real que motivou a regra (bloco 534)
+foi invalidada por um bug de seed no proprio script de comparacao --
+a regra continuava logicamente defensavel por conta propria, mas sem
+prova real, o usuario preferiu remover em vez de manter codigo sem
+justificativa medida. Removido tambem o teste correspondente em
+`smoke_fast.py` (`test_is_closing_mode_sobrepoe_desconto_de_
+controle_14_08`) e sua chamada em `main()`. `smoke_fast`/`smoke_test`
+100% depois do revert.
+
+**Nota**: essas 8 flags `USE_*_CURVE_SCALE` (blocos 529-533) continuam
+no codigo, desligadas por padrao -- so o `is_closing_mode` (excecao
+especifica do bloco 534) foi removido, nao a calibragem dinamica
+inteira.
+
+Proximo: refinar `audit_curve_calibration_flags.py` pra comparacao
+semantica (ver bloco seguinte) e depois validar ao vivo.
+
 ## 2026-08-15 (536) - Claude (sessao local) - continuacao do bloco 535: 2a fonte de nao-determinismo achada e corrigida (RNG driftava turno a turno DENTRO do mesmo jogo), auditoria completa nas 66 partidas disponiveis (nao so 10) -- 15.0% dos turnos genuinamente divergentes, ferramenta agora permanente
 
 Pedido do usuario: "pode continuar então" (retomando o pendente do bloco

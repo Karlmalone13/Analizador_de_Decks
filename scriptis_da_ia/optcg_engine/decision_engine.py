@@ -10030,27 +10030,6 @@ class GameAnalyzer:
             return 1.3
         return 1.0
 
-    def is_closing_mode(self) -> bool:
-        """
-        True quando o OPONENTE está baixo de vida o bastante pra QUALQUER
-        deck (mesmo classificado "controle") priorizar FECHAR o jogo em
-        vez de manter a postura padrão do arquétipo -- achado real 14/08
-        (auditoria humano x bot pedida pelo usuário: Imu x Marshall D.
-        Teach, 2026-07-09, vitória REAL do humano). O deck do Teach é
-        classificado "controle" (custo médio 4,7) pela análise da
-        decklist inteira, mas no turno 21 dessa partida real o humano
-        estava em modo de FECHAR (anexou DON no líder pra empurrar dano),
-        e o motor com a calibragem dinâmica ficou tímido demais (não
-        anexou DON, atacou mais fraco, deixou o oponente vivo em vez de
-        quase morto) -- o desconto de "controle" no dano/board não deveria
-        se aplicar quando o próprio jogo já virou uma corrida pro fim.
-
-        Reusa o MESMO limiar de pânico já usado em `survival_premium`
-        (vida <= 3) -- não inventa um número novo, mesma noção de "perto
-        do fim" já validada em produção.
-        """
-        return self.opp.life_count() <= 3
-
     def board_value_curve_scale(self) -> float:
         """
         Fator que escala o valor SIMÉTRICO de board (`board_mine`/
@@ -10063,12 +10042,7 @@ class GameAnalyzer:
         eixos mais finos disso já são cobertos em parte por
         `deck_lacks_removal_tools`/eixos derivados; aqui é só o termo
         BASE simétrico de board. Midrange/sem censo = neutro (1.0).
-
-        EXCEÇÃO (bloco 534): em `is_closing_mode()`, vale 1.3 pra
-        QUALQUER arquétipo -- ver docstring de `is_closing_mode`.
         """
-        if self.is_closing_mode():
-            return 1.3
         profile = self.deck_profile_type()
         if profile == 'aggressive':
             return 1.3
@@ -10100,14 +10074,7 @@ class GameAnalyzer:
         a vida do oponente é literalmente o plano de vitória, vale
         mais. Deck CONTROLE vence por atrito/combo, não corrida direta
         -- pressionar a vida do oponente é secundário ao plano.
-
-        EXCEÇÃO (bloco 534): em `is_closing_mode()`, vale 1.3 pra
-        QUALQUER arquétipo -- reduzir a vida do oponente É o plano
-        assim que ele já está baixo, não importa o arquétipo do meu
-        deck. Ver docstring de `is_closing_mode`.
         """
-        if self.is_closing_mode():
-            return 1.3
         profile = self.deck_profile_type()
         if profile == 'aggressive':
             return 1.3
@@ -10134,17 +10101,7 @@ class GameAnalyzer:
         agora), não do total de vida do estado resultante -- termos
         relacionados mas distintos, cada um com seu próprio método e
         flag pra poder isolar/desligar independente se um regredir.
-
-        EXCEÇÃO (bloco 534, achado real na auditoria humano x bot pedida
-        pelo usuário -- Imu x Marshall D. Teach 2026-07-09, vitória real
-        do humano, turno 21): em `is_closing_mode()`, vale 1.3 pra
-        QUALQUER arquétipo, mesmo "controle" -- o desconto de controle
-        estava freando o motor bem na hora em que o deck real (mesmo
-        classificado controle) virava agressivo pra fechar o jogo,
-        igual o humano fez de verdade. Ver docstring de `is_closing_mode`.
         """
-        if self.is_closing_mode():
-            return 1.3
         profile = self.deck_profile_type()
         if profile == 'aggressive':
             return 1.3

@@ -2,6 +2,18 @@
 
 **Última atualização:** 15 de agosto de 2026
 
+> 15/08/2026 (bloco 537): **`is_closing_mode` revertido** — usuário
+> respondeu a pendência do bloco 534/536 (a evidência que motivou a
+> regra foi invalidada por um bug de seed; sem prova real, preferiu
+> remover em vez de manter sem justificativa medida). Removido de
+> `decision_engine.py` (as 3 exceções em board/life_opp/dmg
+> `_value_curve_scale`) e o teste correspondente. As 8 flags `USE_*_
+> CURVE_SCALE` (blocos 529-533) continuam no código, desligadas por
+> padrão — só a exceção específica do bloco 534 saiu. `smoke_fast`/
+> `smoke_test` 100%. Próximo: refinar a comparação de calibragem pra
+> ação estruturada (em andamento) e depois validar ao vivo (pedido do
+> usuário). Ver bloco 537 do HANDOFF.
+
 > 15/08/2026 (bloco 536): **2ª fonte de não-determinismo achada e
 > corrigida** em `audit_real_losses.py` — fixar `random.seed()` só
 > uma vez antes de CADA chamada de `audit_one_game` (fix do bloco 534)
