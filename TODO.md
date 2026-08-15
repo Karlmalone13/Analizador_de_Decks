@@ -2,6 +2,27 @@
 
 **Última atualização:** 15 de agosto de 2026
 
+> 15/08/2026 (bloco 544): **aprofundamento dos achados 2/4 do bloco 543**.
+> Achado 4 fechado: `redirect_attack_target` (efeito do líder OP16-080,
+> redireciona ataque do oponente) é NO-OP explícito no motor — nunca há
+> decisão estratégica no alvo do redirect (Teach 10 vs Vasco Shot), é
+> lacuna arquitetural documentada, não bug de scoring. Achado 2
+> RECLASSIFICADO — não é bug: o `state_before` da telemetria mostra a
+> mão real do oponente (é o DTO completo pra auditoria), mas o motor de
+> verdade decide com a mão do oponente MASCARADA (`hide_hidden=True`,
+> regra 21/07 de jogar como humano vs humano) — `opp_counter_potential()`
+> caiu pro caminho estatístico, avaliou baixo risco, e `don_needed_for_
+> attack` corretamente não pagou margem extra. Atacar "seco" é pressão
+> LEGítima e validada (bloco 04/07) — essa derrota específica foi
+> informação oculta genuína (oponente tinha a carta certa), não falha de
+> código. NENHUMA mudança de score feita — mexer sem evidência de
+> recalibração sistêmica arriscaria regredir um sistema já calibrado.
+> Pendente real (não decidido): a estimativa estatística de
+> `opp_counter_potential()` está bem calibrada pro deck do Rocks D.
+> Xebec, ou vale um ajuste mais amplo quando o atacante é peça fraca (0
+> poder) com alternativa de board melhor parada na mão? Ver bloco 544
+> do HANDOFF.
+
 > 15/08/2026 (bloco 543): **partida ao vivo pós-fix 540/542 — fix do
 > Teach-10/Doc Q CONFIRMADO pelo usuário, 3 achados novos** (log banco
 > `Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27[_p2]`,

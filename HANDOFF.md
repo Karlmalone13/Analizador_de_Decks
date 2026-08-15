@@ -1,5 +1,58 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (544) - Claude (sessao local) - aprofundamento dos achados 2 e 4 do bloco 543: achado 4 fechado (causa raiz confirmada), achado 2 RECLASSIFICADO (nao e bug, e risco de informacao oculta ja tratado por design validado)
+
+**Achado 4 fechado.** Usuario esclareceu: a reclamacao era sobre o
+efeito do LIDER (`OP16-080.on_opp_attack`: `redirect_attack_target`,
+custo trash1 da mao, redireciona ataque do oponente pra um personagem
+Blackbeard Pirates) — o bot redirecionou pro Teach 10 (OP09-093) em vez
+do Vasco Shot (OP16-110), que teria dado draw+rest(custo<=6) via
+`on_ko` se morresse no redirect. Causa raiz: `redirect_attack_target` e
+um **NO-OP EXPLICITO no motor** (`decision_engine.py` ~linha 6889,
+comentario original: "no-op engine, parser only... complexidade de
+interrupcao de resolucao de ataque inviavel"). Ou seja, NAO EXISTE
+decisao estrategica nenhuma por tras da escolha de alvo do redirect —
+o motor nunca e consultado, o alvo escolhido vem de algum fallback do
+lado C#/jogo sem consciencia de on_ko nenhuma. Nao e um bug de scoring
+ruim, e uma lacuna arquitetural ja documentada e aceita como fora de
+escopo (complexidade de interromper a resolucao do ataque). Registrar
+como pendencia real caso o usuario queira revisitar essa decisao de
+escopo no futuro (implementar redirect via motor exigiria expor a
+decisao ao Turn Planner antes da resolucao do ataque, o que hoje nao
+tem ponto de entrada).
+
+**Achado 2 RECLASSIFICADO — nao e bug.** Investigado a fundo pra
+entender por que o `-10` de penalidade em `score_attack_target` (por
+precisar de DON) e a margem de counter de `don_needed_for_attack` nao
+evitaram o all-in que falhou. Achado real: **o `state_before` do
+`decisions_*.jsonl` mostra a mao REAL do oponente (Rocks Pirates
+OP17-056 visivel, counter+2000)** — mas isso e so o DTO completo que o
+PLUGIN client-side grava pra telemetria/auditoria. O ESTADO REAL usado
+pelo motor pra decidir (`server.py:_dto_to_gs`, `hide_hidden=True` pro
+oponente) **mascara a mao do oponente com placeholders UNKNOWN-000**
+(regra do usuario, 21/07: bot deve jogar como humano vs humano, sem ler
+informacao oculta). `opp_counter_potential()` cai pro caminho
+ESTATISTICO (densidade da decklist) nesse caso, nao a soma real —
+achou pouca chance de counter, entao `don_needed_for_attack` nao pagou
+margem NENHUMA (so o deficit base de 5 DON, sem os +2 pra cobrir
+2000 de counter). **Atacar "seco" no empate e pressao LEGITIMA e
+validada pelo usuario (bloco 04/07/2026, docstring de
+`don_needed_for_attack`)** — o motor fez exatamente o que foi pedido
+pra fazer: nao gastar DON extra "so por garantia" quando a estimativa
+estatistica nao indicava ameaca forte o bastante. Essa partida
+especifica, o oponente tinha a carta certa na mao — informacao
+oculta genuina, nao falha de codigo. **NAO fiz nenhuma mudanca de
+score** — mexer em `score_attack_target`/`don_needed_for_attack` sem
+evidencia de recalibração sistemica arriscaria regredir um sistema
+ja calibrado com bastante historico real (blocos 374/420/422/434 e
+outros). Se o usuario quiser reduzir esse tipo de variancia, a
+pergunta certa e outra: a estimativa ESTATISTICA de
+`opp_counter_potential()` esta bem calibrada pro deck do Rocks D.
+Xebec especificamente, ou growth/tuning mais amplo (nao um flat -10)
+faz sentido quando o atacante e uma peca de suporte fraca (poder base
+0) E existe alternativa de desenvolvimento de board melhor parada na
+mao (2x Jesus Burgess)? Registrado como pendente, nao decidido ainda.
+
 ## 2026-08-15 (543) - Claude (sessao local) - partida ao vivo pos-fix 540/542: fix do Teach-10/Doc Q CONFIRMADO pelo usuario; 3 achados novos investigados (1 causa raiz confirmada, 1 confirmada+evidenciada, 1 pendente de esclarecimento)
 
 Log bancado: `Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27[_p2].log/json`
