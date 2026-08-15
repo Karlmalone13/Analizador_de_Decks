@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Marshall D. Teach",
+          "code": "OP16-080"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Rocks D. Xebec",
+          "code": "OP17-039"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 1,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP17-048",
+            "OP17-118",
+            "OP17-118",
+            "OP17-057",
+            "OP17-043"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-115",
+            "OP16-108",
+            "OP09-095",
+            "OP16-109",
+            "OP09-093"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    }
+  ]
+}

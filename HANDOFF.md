@@ -1,5 +1,101 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (543) - Claude (sessao local) - partida ao vivo pos-fix 540/542: fix do Teach-10/Doc Q CONFIRMADO pelo usuario; 3 achados novos investigados (1 causa raiz confirmada, 1 confirmada+evidenciada, 1 pendente de esclarecimento)
+
+Log bancado: `Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27[_p2].log/json`
+(o `.log` sem sufixo e o download PARCIAL feito em Turn3, o `_p2` e a
+partida completa ate o GameOver — os dois estao no indice). Telemetria
+lida (obrigatorio, sessao local): `live_2026-08-15T20.33.30.json` (gate
+FAIL, `bot_confusion=6` sinalizado, mas os 6 sao TODOS "sem_acao" de
+fim-de-main-phase normal, 1 por turno — nao e o bug reportado pelo
+usuario, ver achado 1 abaixo) + `decision_summary` +
+`audit_curve_calibration` nao rodado (nao e derrota por decisao ruim
+isolada, ver abaixo). Partida = DERROTA (perde no turno 6 = 6a vez do
+bot jogando = turno real 11, ja que o P1 vai primeiro).
+
+**Confirmado pelo usuario**: o fix do bloco 540 (Doc Q "K.O. ate 2
+custo<=1" e Marshall D. Teach custo 10) funcionou — bot agora consegue
+selecionar o personagem corretamente quando so tem 1 alvo valido, sem
+cancelar a selecao parcial. Sem instancia do log novo
+"confirma selecao PARCIAL" no `LogOutput.log` desta partida especifica
+porque a tela em que isso importava nao apareceu de novo nesta partida
+(nao e regressao, so nao teve o caso).
+
+**ACHADO 1 (causa raiz CONFIRMADA, novo) — a tela "[Opponent] Forcing
+opponent to resolve Card Action!" (Draws 2 Cards / Trash 2 Cards) trava
+o bot porque NUNCA HA CODIGO NENHUM que trate `bForcingOpponentAction`
+como um estado ATIVAVEL — so existe como guarda NEGATIVA em
+`BotDriver.cs` (linhas 261 e 271: `!gls.bOpponentResolving &&
+!gls.bForcingOpponentAction`), nunca como um branch positivo que
+resolve a escolha.** Confirmado contra o C# decompilado oficial
+(`_referencias/simulador-oficial/dnspy-export/.../GameplayLogicScript.cs`,
+`ForceOpponentAction`/`ForceOpponentV3Action`, linhas ~9880-9993): esse
+mecanismo e usado por QUALQUER carta com `choice_chooser: "opponent"`
+no parser (ex: Charlotte Linlin OP17-049, `on_play`: escolha entre
+"draw 2" ou "opp_trash_from_hand 2" decidida por quem SOFRE o efeito,
+nao por quem jogou a carta) — a escolha fica na fila `acaPending` (nao
+em `acaActive`), `iPlayerAction` e virado pro lado que precisa decidir,
+e `bForcingOpponentAction=true`. Como NENHUM branch do loop principal
+do `BotDriver.cs` trata esse caso, o bot literalmente nao faz nada —
+trava ate humano clicar. **Pendente**: fix real precisa confirmar qual
+`ButtonChoiceType`/mecanismo resolve esse `acaPending` especifico
+(nao e o mesmo caminho do `CardAction`/`SelectTargets` ja tratado) —
+NAO implementado ainda, achado registrado pra proxima etapa (evitar
+chute sem confirmar o mecanismo exato de clique, mesmo padrao de
+cautela do bloco 539/540).
+
+**ACHADO 2 (confirmado + evidenciado, novo) — bot desperdicou TODO o
+DON (5/5) numa carta de poder base 0 (Doc Q, OP16-109) atacando o
+lider do oponente, que tinha buff disponivel pra sobreviver — ataque
+falhou 100%, zero dano, zero valor.** Log real (raw combat log, linha
+599): `Doc Q [OP16-109][5000] vs Rocks D. Xebec [OP17-039][7000] --
+Attack Fails` (Rocks Pirates buffou o lider +2000 na hora do combate).
+Enquanto isso, 2x Jesus Burgess (OP09-086, custo 4, poder 5000) ficaram
+na mao sem jogar. Isso bate com a reclamacao do usuario ("insistencia
+em botar 5 dons em personagem [de baixo poder base] so pra atacar
+5000") — o motor nao esta considerando que o oponente tem recurso pra
+neutralizar o ataque antes de comprometer TODO o DON disponivel numa
+unica carta fraca. **Pendente**: nao investigado ainda QUAL termo do
+score deveria penalizar esse all-in (falta de reserva/blefe de buff do
+oponente) — proximo passo natural, nao feito nesta sessao.
+
+**ACHADO 3 (linha de jogo sub-otima, evidenciada mas raiz nao
+confirmada) — no turno final (6/real 11), o motor escolheu jogar
+Marshall D. Teach custo 10 (OP09-093, score=510) pagando o custo cheio
+(10 DON), em vez de jogar Zehahahahaha! (OP16-116, evento custo 8,
+score=425) que — com `don_on_field_gte: 10` satisfeito (o bot tinha
+EXATAMENTE 10 DON no campo nesse momento, confirmado via
+`resource_ledger_before`) — jogaria o MESMO Marshall D. Teach DE
+GRACA (regra do projeto: `play_card` vindo de efeito e sempre gratis)
+mais 1 dano ao oponente, sobrando 2 DON pra outras jogadas (ativar
+Laffitte OP09-095 custo1 + anexar 1 DON no lider e atacar, como o
+usuario sugeriu).** Achado real no `score_components` do
+`decisions_*.jsonl`: `intrinsic_card_value` de "play OP16-116" e so
+155 (vs 360 do Teach direto) — o calculo do score de "play <evento>"
+aparentemente NAO credita o valor da jogada gratis de Teach que o
+proprio evento desencadeia (`main.steps` de OP16-116 tem
+`play_card`+`deal_damage` como PARTE do efeito do evento, nao como algo
+o motor simula a parte). **Pendente, nao investigado a fundo**: onde
+exatamente em `decision_engine.py` o `intrinsic_card_value` de eventos
+com step `play_card` deveria propagar o valor do alvo jogado de graca
+— possivel bug generico (qualquer evento-combo "jogue carta X de
+graca" undervaluando a si mesmo), mas precisa confirmar no codigo antes
+de mexer.
+
+**ACHADO 4 (NAO esclarecido, pedido de confirmacao ao usuario) —
+usuario reportou "turno 6, quando usou o efeito do lider, nao leva em
+conta o on_ko dos personagens no board, quero saber o motivo de ter
+escolhido o teach 10"**: o lider OP16-080 NAO tem `[Activate: Main]`
+(so `on_opp_attack`/`opp_turn`) — a unica coisa "ativada" no turno 6 foi
+o proprio OP09-093 (Marshall D. Teach custo10, `activate_main` =
+negar efeito lider+personagem oponente + travar 1 personagem oponente
+de atacar), que NAO faz K.O. de nada. Doc Q (on_ko: ao SER nocauteado,
+compra+KOa 2 custo<=1) e Vasco Shot (on_ko: ao SER nocauteado,
+compra+resta 1 custo<=6) sao gatilhos de MORTE das PROPRIAS cartas, nao
+relacionados a ativacao do OP09-093. Nao consegui mapear com confianca
+qual decisao exata o usuario quis dizer — registrado como pendente,
+vou perguntar direto em vez de investigar as cegas.
+
 ## 2026-08-15 (542) - Claude (sessao local) - logging de diagnostico pro fix do bloco 540 (confirma se a selecao PARCIAL realmente resolve o Doc Q/Teach-10) + relatorio de latencia de decisao
 
 Pedido do usuario (mesma pergunta do bloco 541, "ferramenta pra

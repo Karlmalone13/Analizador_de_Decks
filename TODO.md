@@ -2,6 +2,32 @@
 
 **Última atualização:** 15 de agosto de 2026
 
+> 15/08/2026 (bloco 543): **partida ao vivo pós-fix 540/542 — fix do
+> Teach-10/Doc Q CONFIRMADO pelo usuário, 3 achados novos** (log banco
+> `Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27[_p2]`,
+> derrota no turno real 11). **(1) causa raiz CONFIRMADA da tela
+> travada "Forcing opponent to resolve Card Action!"**: `BotDriver.cs`
+> NUNCA trata `bForcingOpponentAction` como estado ativável — só existe
+> como guarda negativa, nunca um branch que resolve a escolha (afeta
+> qualquer carta com `choice_chooser: "opponent"`, ex: Charlotte Linlin
+> draw-2-vs-trash-2). Fix NÃO implementado ainda — falta confirmar o
+> mecanismo exato de clique pro `acaPending` desse caso antes de mexer.
+> **(2) DON desperdiçado confirmado com evidência de log**: bot anexou
+> 5/5 DON em Doc Q (poder base 0) atacando o líder do oponente, que
+> tinha buff disponível — ataque falhou 100%, enquanto 2x Jesus Burgess
+> (custo4/5000) ficaram na mão. Termo do score que deveria penalizar
+> esse all-in ainda não identificado. **(3) linha sub-ótima no turno
+> final**: motor jogou Teach custo10 pago (score 510) em vez de
+> Zehahahahaha! (score 425) que, com DON de campo=10 (confirmado),
+> jogaria o MESMO Teach de graça + 1 dano, sobrando 2 DON — suspeita de
+> que `intrinsic_card_value` de eventos com step `play_card` não
+> credita o valor da carta jogada de graça que o próprio evento
+> desencadeia. **(4) pendente esclarecimento do usuário**: reclamação
+> sobre "efeito do líder não considerar on_ko" não bateu com nenhuma
+> decisão real do turno (líder não tem Activate:Main; Teach-10
+> ativado não faz K.O.) — perguntado direto em vez de investigar às
+> cegas. Ver bloco 543 do HANDOFF.
+
 > 15/08/2026 (bloco 542): **logging de diagnostico pro fix 540 + relatorio
 > de latencia** — o padrão "seleciona 1 alvo válido, depois clica Cancel"
 > (bloco 539/540) acontece inteiramente dentro do `HandlePendingAction()`
