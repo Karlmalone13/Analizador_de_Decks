@@ -2,6 +2,18 @@
 
 **Última atualização:** 15 de agosto de 2026
 
+> 15/08/2026 (bloco 541): **nova ferramenta pra investigar teste ao
+> vivo** — `sim_bridge.choose_action` expõe `calibration_scales` no
+> `trace_out` (perfil do deck + os 9 fatores das flags USE_*_CURVE_SCALE
+> no momento da decisão — antes não dava pra saber quanto elas pesavam
+> numa partida real, já que entram em `evaluate_state()`, não no score
+> imediato). `live_calibration_report.py` (novo, permanente) lê uma
+> sessão de decisões e reporta: quanto a calibragem desviou de 1.0,
+> detecção automática do padrão "mesma ação 3x+ no mesmo turno" (o
+> sinal que revelou os bugs dos blocos 371-374/540), e execuções
+> falhas. `smoke_fast`/`smoke_test` 100% com flags no default (False)
+> de produção. Ver bloco 541 do HANDOFF.
+
 > 15/08/2026 (bloco 540): **bug real corrigido** — os 2 travamentos de
 > UI do bloco 539 (Doc Q "K.O. up to 2 custo<=1" e Marshall D. Teach
 > custo 10) não eram travamento, era escolha ERRADA: com 1 alvo válido

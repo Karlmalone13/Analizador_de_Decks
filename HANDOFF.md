@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (541) - Claude (sessao local) - nova ferramenta pra investigar teste ao vivo: telemetria das flags de calibragem + deteccao automatica do padrao "acao repetida"
+
+Pedido do usuario: ferramenta pra investigar melhorias/bugs nos testes
+ao vivo novos (fix do bloco 540 + calibragem dinamica ligada).
+
+**Telemetria nova** (`sim_bridge.choose_action`): `trace_out` ganha
+`calibration_scales` -- perfil do deck + os 9 fatores das flags USE_*_
+CURVE_SCALE calculados NAQUELE momento da decisao (mesmo com flag
+desligada, expoe o fator que SERIA usado, marcado 1.0). Achado real: as
+flags entram em `evaluate_state()` (usado na SIMULACAO/busca), nao no
+score IMEDIATO por acao (`action_score_components`) -- por isso nao
+dava pra saber, so olhando o decision log de uma partida real, se/quanto
+elas pesaram. Custo zero quando desligado (so calcula, nao muda
+decisao).
+
+**`live_calibration_report.py`** (novo, permanente): le um
+`decisions_<sessao>.jsonl` e reporta 3 coisas:
+1. Quanto as flags de calibragem realmente desviaram de 1.0 nessa
+   sessao (media por termo + quantas decisoes tiveram fator ativo).
+2. Deteccao automatica do padrao "mesma acao (tipo/carta/alvo) 3x+ no
+   mesmo turno" -- o sinal generico que revelou os bugs dos blocos
+   371-374 e 540, agora reusavel sem precisar vasculhar JSONL na mao
+   de novo.
+3. Execucoes com `status="failed"` (acao enviada, jogo nao mudou).
+
+**Validado**: `smoke_fast`/`smoke_test` 100% com as flags no default
+de producao (False) -- testado explicitamente restaurando o estado
+antes de confirmar (`git stash` temporario da flip de teste). As 14
+falhas vistas ANTES desse commit (com flags=True pro teste ao vivo)
+sao esperadas -- os proprios testes verificam "flag fica False por
+padrao", nao uma regressao real.
+
+**Status**: `sim_bridge.py`/`live_calibration_report.py` commitados.
+As 8 flags continuam LIGADAS no arquivo local (nao commitado, so pro
+teste ao vivo em andamento pedido pelo usuario).
+
 ## 2026-08-15 (540) - Claude (sessao local) - bug real ACHADO E CORRIGIDO: selecao PARCIAL de alvo "up to N" cancelava a acao inteira quando a acao nao era V3, jogando fora o alvo unico ja escolhido certo
 
 Continuacao do bloco 539. Usuario deu uma descricao PRECISA do
