@@ -394,6 +394,19 @@ USE_CHEAP_LAYER_GATE = False
 # nao calibrado ainda -- ver HANDOFF bloco 522 pro processo de escolha.
 CHEAP_LAYER_GATE_THRESHOLD = 50.0
 
+# Calibragem dinamica pro `don_field` (bloco 530, pedido do usuario --
+# "vamos fazer para o motor inteiro"): escala o valor de DON parado no
+# campo pela curva do PROPRIO deck (GameAnalyzer.don_field_curve_scale,
+# reusa deck_profile_type() ja existente -- analitico, ZERO self-play
+# novo, mesma familia de leader_plan_alignment/_leader_ability_
+# centrality). Diferente de leader_plan_alignment (prior 0.0, inerte):
+# don_field JA tem peso ativo em producao, entao este flag muda
+# comportamento AO VIVO pra QUALQUER deck aggressive/control assim que
+# ligado -- OFF por padrao ate validacao real (nao so self-play, ver
+# achado do bloco 528/529 de que self-play em N pequeno e ruidoso
+# demais pra validar sozinho).
+USE_DON_FIELD_CURVE_SCALE = False
+
 # ── busca prof.2 / resposta do oponente (item 3 do PLANO_AVALIACAO_E_BUSCA.md) ─
 # Depois de simular MINHA linha ate o fim do turno, simula o TURNO INTEIRO de
 # resposta do oponente (proprio engine, modo GULOSO -- ver _play_turn_greedy,
@@ -9936,6 +9949,30 @@ class GameAnalyzer:
         from optcg_engine.deck_census import deck_profile as classify
         return classify(census)['profile']
 
+    def don_field_curve_scale(self) -> float:
+        """
+        Fator que escala o valor de DON parado no campo (`EVAL_WEIGHTS
+        ['don_field']`) pela curva do PRÓPRIO deck -- calibragem dinâmica
+        (bloco 530, pedido do usuário: "vamos fazer para o motor inteiro"),
+        mesma família de `_leader_ability_centrality`: analítico, deriva
+        da composição REAL do deck, zero self-play novo. Reusa
+        `deck_profile_type()` (já existente, calibrado com dados reais do
+        Limitless, não medido por partida simulada).
+
+        Deck AGRESSIVO (curva baixa) já gasta o DON assim que compra --
+        guardar DON parado no campo sem jogar vale menos pra esse plano.
+        Deck CONTROLE (curva alta) precisa acumular DON pra bancar as
+        cartas caras -- guardar DON vale mais. MIDRANGE ou sem censo
+        disponível (ex: teste isolado) fica neutro (1.0, comportamento de
+        sempre) -- não inventa direção sem dado real.
+        """
+        profile = self.deck_profile_type()
+        if profile == 'aggressive':
+            return 0.7
+        if profile == 'control':
+            return 1.3
+        return 1.0
+
     def deck_lacks_removal_tools(self) -> bool:
         """
         Achado real 10/08 (auditoria do líder Sanji OP12-041, bloco 484 --
@@ -16056,8 +16093,11 @@ class OPTCGMatch:
         # poder de counter na mão = vida futura
         score += p.counter_in_hand() / 1000 * W['counter_hand']
 
-        # DON no campo (ramp = chegar na bomba) — leve
-        score += p.don_on_field() * W['don_field']
+        # DON no campo (ramp = chegar na bomba) — leve. Escala pela curva do
+        # PROPRIO deck quando USE_DON_FIELD_CURVE_SCALE ligado (bloco 530,
+        # calibragem dinamica analitica -- ver don_field_curve_scale).
+        don_scale = an.don_field_curve_scale() if USE_DON_FIELD_CURVE_SCALE else 1.0
+        score += p.don_on_field() * W['don_field'] * don_scale
 
         # cobertura defensiva: counter na mão vs ataques que o opp faz no
         # próximo turno (líder + chars ativos). min = ter counter além do

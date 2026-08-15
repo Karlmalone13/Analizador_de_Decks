@@ -1,5 +1,48 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-14 (530) - Claude (sessao remota web) - `don_field_curve_scale`: 2o eixo de calibragem dinamica analitica -- "vamos fazer para o motor inteiro"
+
+**Contexto**: apos validar a filosofia do bloco 529 (escalar
+analiticamente por deck em vez de calibrar 1 peso global por
+self-play), usuario pediu pra estender pro motor inteiro. Fiz um
+levantamento de `EVAL_WEIGHTS` (17 termos): `wincon_ready`/`ax_trash`/
+`ax_reanim`/`ax_inversion` (via `_derived_axes_value`/`deck_profile.py`)
+e `survival_premium`/`opp_combo_threat` **ja sao dinamicos por deck**,
+de sessoes anteriores a hoje -- nao precisam de trabalho novo. Dos
+termos que ainda sao 1 constante fixa pra todo deck (`dmg`, `board_
+mine/opp`, `hand_first/extra`, `counter_hand`, `coverage`, `don_field`,
+`opp_blocker`, `life_mult`), `don_field` (valor de DON parado no campo)
+foi o candidato escolhido: deck de curva baixa (agressivo) ja gasta o
+DON assim que compra, guardar vale menos; deck de curva alta
+(controle) precisa acumular pras bombas, guardar vale mais. `dmg`
+ficou de fora por ser o peso mais sensivel/calibrado do motor (achado
+real de sessao anterior, 120->270) -- mexer sem necessidade clara e
+risco alto.
+
+**Implementado**: `GameAnalyzer.don_field_curve_scale()` -- reusa
+`deck_profile_type()` (JA EXISTENTE, classifica aggressive/control/
+midrange via `full_deck_census`, calibrado com dados REAIS do
+Limitless, nao self-play). Aggressive=0.7, control=1.3, midrange/sem
+censo=1.0 (neutro). Aplicado em `_evaluate_state_v2` multiplicando o
+termo `don_field` existente.
+
+**Diferenca importante de `leader_plan_alignment`**: `don_field` JA
+tem peso ATIVO em producao (nao prior 0.0) -- aplicar a escala direto
+mudaria comportamento AO VIVO pra qualquer deck aggressive/control
+imediatamente. Por isso, atras de flag nova `USE_DON_FIELD_CURVE_SCALE
+= False` (OFF por padrao) -- mesmo padrao de seguranca de todo o resto
+do arco de hoje (`USE_CHEAP_LAYER_GATE`, `USE_DEEP_REAL_SEARCH`, etc).
+
+**Testado**: 6 checks novos em `smoke_fast.py` (aggressive/control/
+midrange/sem-censo retornam o fator certo; flag OFF por padrao;
+_evaluate_state_v2 muda de fato quando o flag liga). `smoke_fast`/
+`smoke_test` 100%.
+
+**Pendente**: mesma decisao do bloco 529 -- NAO vou tentar validar por
+self-play (achado do bloco 528/529: ruidoso demais em N pequeno pra
+esse tipo de efeito). Fica desligado ate validacao via telemetria de
+partida real, seguindo a mesma logica do `leader_plan_alignment`.
+
 ## 2026-08-14 (529) - Claude (sessao remota web) - `_leader_ability_centrality`: escala leader_plan_alignment ANALITICAMENTE por deck (nao por self-play) -- resposta ao achado de que "aumentar N nao resolve"
 
 **Contexto**: apos o fix do bloco 528, a recalibracao isolada

@@ -2,7 +2,20 @@
 
 **Última atualização:** 14 de agosto de 2026
 
-> 14/08/2026 (bloco 529, EM ANDAMENTO): **`_leader_ability_centrality`**
+> 14/08/2026 (bloco 530): **`don_field_curve_scale`** — 2º eixo de
+> calibragem dinâmica analítica (pedido: "vamos fazer para o motor
+> inteiro"). Levantamento de `EVAL_WEIGHTS`: 6 termos já são dinâmicos
+> por deck (de sessões anteriores), `don_field` foi o próximo candidato
+> claro (curva baixa = guardar DON vale menos; curva alta = vale mais),
+> reusando `deck_profile_type()` já existente (dados reais do
+> Limitless, não self-play). `dmg` ficou de fora — peso mais sensível/
+> calibrado do motor, risco alto sem necessidade clara. Atrás de flag
+> nova `USE_DON_FIELD_CURVE_SCALE=False` (diferente do `leader_plan_
+> alignment`: `don_field` já tem peso ativo em produção, então a escala
+> mudaria comportamento ao vivo imediatamente sem o flag). 6 testes
+> novos, `smoke_fast`/`smoke_test` 100%. Ver bloco 530 do HANDOFF.
+>
+> 14/08/2026 (bloco 529): **`_leader_ability_centrality`**
 > — resposta ao pedido do usuário ("aumentar o N não vai resolver...
 > precisamos de algo pra fazer com precisão essa calibragem dinâmica").
 > Em vez de caçar 1 peso global via self-play (ruidoso porque a resposta

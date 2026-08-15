@@ -10083,6 +10083,80 @@ def test_leader_ability_centrality_escala_por_escassez_de_outras_fontes_14_08() 
           abs(engine4.analyzer.leader_plan_alignment() - 0.5) < 1e-9)
 
 
+def test_don_field_curve_scale_e_gate_ao_vivo_14_08() -> None:
+    # Pedido do usuario (14/08, bloco 530): "vamos fazer para o motor
+    # inteiro" -- escala don_field pela curva do PROPRIO deck (aggressive/
+    # control/midrange, ja classificado por deck_profile_type() com dados
+    # reais do Limitless, sem self-play novo). Ver GameAnalyzer.don_field_
+    # curve_scale.
+    def vida4():
+        return [mk(f"LF{i}", "Life") for i in range(4)]
+
+    opp0 = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+
+    # deck AGRESSIVO (curva baixa, avg_cost=1.5, 90% custo<=2) -- guardar
+    # DON parado vale MENOS (0.7)
+    me1 = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+    me1.full_deck_census = {
+        "by_cost": {1: 30, 2: 15, 3: 5}, "total": 50,
+        "rush": {"total": 0}, "blockers": {"total": 0},
+    }
+    engine1 = DecisionEngine(me1, opp0)
+    check("deck agressivo (curva baixa) escala don_field pra BAIXO (0.7)",
+          abs(engine1.analyzer.don_field_curve_scale() - 0.7) < 1e-9)
+
+    # deck CONTROLE (curva alta, avg_cost=4.6) -- guardar DON vale MAIS (1.3)
+    me2 = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+    me2.full_deck_census = {
+        "by_cost": {2: 10, 4: 20, 6: 10, 7: 10}, "total": 50,
+        "rush": {"total": 0}, "blockers": {"total": 0},
+    }
+    engine2 = DecisionEngine(me2, opp0)
+    check("deck controle (curva alta) escala don_field pra CIMA (1.3)",
+          abs(engine2.analyzer.don_field_curve_scale() - 1.3) < 1e-9)
+
+    # deck MIDRANGE (curva equilibrada, avg_cost=3.0) -- neutro (1.0)
+    me3 = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+    me3.full_deck_census = {
+        "by_cost": {2: 15, 3: 20, 4: 15}, "total": 50,
+        "rush": {"total": 0}, "blockers": {"total": 0},
+    }
+    engine3 = DecisionEngine(me3, opp0)
+    check("deck midrange fica neutro (1.0)",
+          abs(engine3.analyzer.don_field_curve_scale() - 1.0) < 1e-9)
+
+    # sem full_deck_census -- fallback neutro (1.0), nao inventa direcao
+    me4 = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+    engine4 = DecisionEngine(me4, opp0)
+    check("sem full_deck_census -- fallback neutro (1.0)",
+          abs(engine4.analyzer.don_field_curve_scale() - 1.0) < 1e-9)
+
+    # USE_DON_FIELD_CURVE_SCALE OFF por padrao -- _evaluate_state_v2 NAO
+    # aplica a escala mesmo com deck claramente agressivo/controle (muda
+    # comportamento AO VIVO, diferente de leader_plan_alignment com prior
+    # 0.0 -- por isso o gate)
+    import optcg_engine.decision_engine as de
+    check("USE_DON_FIELD_CURVE_SCALE fica False por padrao (sem efeito ao vivo ainda)",
+          de.USE_DON_FIELD_CURVE_SCALE is False)
+
+    me5 = GameState(leader=real_card("OP13-079"), turn=5, life=vida4(), don_rested=6)
+    me5.full_deck_census = dict(me2.full_deck_census)   # deck controle (1.3x)
+    me5.use_eval_v2 = True
+    from optcg_engine.decision_engine import EVAL_WEIGHTS
+    me5.eval_weights = dict(EVAL_WEIGHTS)
+    match5 = OPTCGMatch((me5.leader, []), (opp0.leader, []))
+    score_flag_off = match5._evaluate_state_v2(me5, opp0)
+
+    old_flag = de.USE_DON_FIELD_CURVE_SCALE
+    try:
+        de.USE_DON_FIELD_CURVE_SCALE = True
+        score_flag_on = match5._evaluate_state_v2(me5, opp0)
+    finally:
+        de.USE_DON_FIELD_CURVE_SCALE = old_flag
+    check("com o flag ligado, deck controle aumenta o score (mais DON no campo vale mais)",
+          score_flag_on > score_flag_off)
+
+
 def main() -> int:
     test_big_mom_optional_zero_parser_order_and_don_synergy()
     test_is_active_turn_corrigido_evita_don_minus_desnecessario()
@@ -10369,6 +10443,7 @@ def main() -> int:
     test_ponder_generation_guard_sem_contaminacao_cruzada_09_08()
     test_leader_plan_alignment_cobre_sem_habilidade_rest_self_rest_don_e_ja_usada_14_08()
     test_leader_ability_centrality_escala_por_escassez_de_outras_fontes_14_08()
+    test_don_field_curve_scale_e_gate_ao_vivo_14_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
