@@ -17,6 +17,24 @@ propria. Comparar OFF vs ON em 2 chamadas separadas SEM fixar
 ruido de ordem de deck, nao efeito real das flags -- por isso este script
 sempre fixa a MESMA seed antes de cada chamada de `audit_one_game`.
 
+Licao do bloco 536 (2a fonte de nao-determinismo, tambem corrigida em
+`audit_one_game`): fixar a seed 1x antes da chamada inteira nao basta --
+o motor consome `random.*` em quantidade diferente conforme as flags
+(Monte Carlo, desempate), driftando o RNG global entre OFF/ON a partir
+do 1o turno com decisao diferente e contaminando turnos SEGUINTES do
+MESMO jogo. `audit_one_game` agora reseed determinístico por (arquivo,
+turno) antes de cada `_remaining_deck` -- ja corrigido na fonte, este
+script nao precisa fazer nada extra por isso.
+
+Licao do bloco 536 (comparacao por AÇÃO, nao por texto): duas acoes
+IDENTICAS podem gerar `engine_hoje_narrativa` ligeiramente diferente
+(mesmo attach de DON, caminho de codigo distinto = texto de log
+distinto) -- inflava falsos positivos numa comparacao por string. Este
+script usa `capture_actions=True` (`audit_one_game`) e compara a lista
+ESTRUTURADA de acoes escolhidas (kind/carta/alvo, extraida do
+`decision_log` interno do motor) -- mesma fonte que a telemetria ao
+vivo ja usa, nao um parser de texto ad-hoc.
+
 Uso:
     python audit_curve_calibration_flags.py --limit N   # so os N mais recentes
     python audit_curve_calibration_flags.py --all       # todos os disponiveis
@@ -60,11 +78,13 @@ def _set_flags(value: bool) -> None:
 def run_one(pf: str, cards_db, df_raw, urls) -> dict:
     random.seed(SEED)
     _set_flags(False)
-    off = audit_one_game(os.path.join('logs', pf), 'Opponent', cards_db, df_raw, urls)
+    off = audit_one_game(os.path.join('logs', pf), 'Opponent', cards_db, df_raw, urls,
+                         capture_actions=True)
 
     random.seed(SEED)
     _set_flags(True)
-    on = audit_one_game(os.path.join('logs', pf), 'Opponent', cards_db, df_raw, urls)
+    on = audit_one_game(os.path.join('logs', pf), 'Opponent', cards_db, df_raw, urls,
+                        capture_actions=True)
 
     _set_flags(False)  # nunca deixa ligado pro resto do processo
 
@@ -75,14 +95,21 @@ def run_one(pf: str, cards_db, df_raw, urls) -> dict:
     turnos_on = {t['turn']: t for t in on['turnos']}
     divergentes = []
     for turno in sorted(set(turnos_off) & set(turnos_on)):
-        n_off = turnos_off[turno].get('engine_hoje_narrativa', '')
-        n_on = turnos_on[turno].get('engine_hoje_narrativa', '')
-        if n_off != n_on:
+        # Achado real 15/08: comparar por TEXTO da narrativa pega diferenca
+        # de LOG (mesmo attach de DON, texto diferente por caminho de
+        # codigo distinto) como se fosse decisao diferente. Compara pela
+        # ACAO ESTRUTURADA (kind/carta/alvo, na mesma ordem) -- mesmo
+        # dado que decision_summary.py/telemetria ao vivo ja usa.
+        a_off = turnos_off[turno].get('chosen_actions', [])
+        a_on = turnos_on[turno].get('chosen_actions', [])
+        if a_off != a_on:
             divergentes.append({
                 'turn': turno,
                 'historical_actions': turnos_off[turno].get('historical_actions', []),
-                'narrativa_off': n_off,
-                'narrativa_on': n_on,
+                'acoes_off': a_off,
+                'acoes_on': a_on,
+                'narrativa_off': turnos_off[turno].get('engine_hoje_narrativa', ''),
+                'narrativa_on': turnos_on[turno].get('engine_hoje_narrativa', ''),
             })
 
     return {

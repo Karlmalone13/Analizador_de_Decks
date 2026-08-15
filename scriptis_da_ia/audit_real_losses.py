@@ -189,7 +189,21 @@ class DonEstimator:
         return max(0, self.drawn.get(player, 0) - self.attached.get(player, 0))
 
 
-def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False):
+def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
+                   capture_actions=False):
+    """
+    capture_actions: alem da narrativa em texto (`engine_hoje_narrativa`),
+    inclui em cada turno `chosen_actions` -- lista ESTRUTURADA (kind, carta,
+    alvo) extraida do `decision_log` interno do motor (`_log_turn_planner_
+    decision`), uma entrada por decisao de main phase no turno. Pensado pra
+    comparacoes automatizadas (ex: `audit_curve_calibration_flags.py`)
+    que precisam saber se a AÇÃO mudou, nao so se o TEXTO do log mudou --
+    achado real 15/08: duas acoes identicas podem gerar texto de log
+    ligeiramente diferente dependendo do caminho de codigo, inflando uma
+    comparacao por string. False por padrao (custo extra de habilitar o
+    decision_log), comportamento de quem nao passa o parametro é idêntico
+    a antes.
+    """
     data = json.load(open(parsed_path, encoding='utf-8'))
     meta = data['meta']['players']
     turns = data['turns']
@@ -285,6 +299,8 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False)
         p.don_available = don_est.available(bot_side)
 
         eng = match._get_engine_match()
+        if capture_actions:
+            eng.enable_decision_audit()
         buf2 = io.StringIO()
         with contextlib.redirect_stdout(buf2):
             try:
@@ -298,12 +314,29 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False)
                 continue
         engine_log = buf2.getvalue()
 
-        results.append({
+        entry = {
             'turn': turn['turn'],
             'don_available_estimado': p.don_available,
             'historical_actions': turn.get('actions', []),
             'engine_hoje_narrativa': engine_log,
-        })
+        }
+        if capture_actions:
+            # p e sempre match.state_a (ver acima) -- player_id 'A' em
+            # _log_turn_planner_decision. Cada entrada e 1 decisao de main
+            # phase (play/attack/activate/attach_don); ordem preservada.
+            entry['chosen_actions'] = [
+                {
+                    'kind': (rec.get('chosen') or {}).get('kind'),
+                    'card': (rec.get('chosen') or {}).get('card', {}).get('code')
+                            if rec.get('chosen') else None,
+                    'target_type': (rec.get('chosen') or {}).get('target_type'),
+                    'target': (rec.get('chosen') or {}).get('target', {}).get('code')
+                              if (rec.get('chosen') or {}).get('target') else None,
+                }
+                for rec in (eng.decision_log or [])
+                if rec.get('kind') == 'turn_planner' and rec.get('player') == 'A'
+            ]
+        results.append(entry)
         if verbose:
             print(f'--- turno {turn["turn"]} (real vs motor de hoje) ---')
             print('HISTORICO:', json.dumps(turn.get('actions', []), ensure_ascii=False)[:300])

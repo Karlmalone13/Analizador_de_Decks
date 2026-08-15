@@ -2,6 +2,19 @@
 
 **Última atualização:** 15 de agosto de 2026
 
+> 15/08/2026 (bloco 538): **comparação da calibragem refinada pra ação
+> ESTRUTURADA** (não texto) — `audit_one_game` ganhou `capture_actions`
+> (usa o `decision_log` interno do motor, mesma fonte da telemetria ao
+> vivo). Resultado nas 66 partidas: **47/307 (15.3%)**, praticamente
+> igual ao número por texto (15.0%) — a hipótese de que a divergência
+> anterior era inflada por diferença de log não se confirmou como fator
+> grande. Sinal estável nos 3 métodos (14.7% → 15.0% → 15.3%): ~15% dos
+> turnos reconstruídos muda de decisão com a calibragem ligada, número
+> real. **Metodologia de auditoria agora considerada sólida**
+> (determinismo + comparação semântica). **Próximo (item 3 das
+> pendências do usuário): validar ao vivo** — `is_closing_mode` já
+> revertido, `engine_server` pronto. Ver bloco 538 do HANDOFF.
+
 > 15/08/2026 (bloco 537): **`is_closing_mode` revertido** — usuário
 > respondeu a pendência do bloco 534/536 (a evidência que motivou a
 > regra foi invalidada por um bug de seed; sem prova real, preferiu

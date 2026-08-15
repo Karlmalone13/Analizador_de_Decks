@@ -1,5 +1,45 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (538) - Claude (sessao local) - comparacao das flags de calibragem refinada pra acao ESTRUTURADA (nao texto) -- 47/307 (15.3%), numero praticamente igual ao anterior, metodologia agora limpa
+
+Pedido do usuario (item 2 das 3 pendencias): refinar `audit_curve_
+calibration_flags.py` pra comparar a ACAO real (kind/carta/alvo), nao
+o texto impresso da narrativa.
+
+**Implementado**: `audit_real_losses.audit_one_game` ganhou parametro
+`capture_actions=False` (opcional, comportamento antigo intacto sem
+ele) -- quando True, ativa `eng.enable_decision_audit()` antes de
+`play_turn()` e extrai do `decision_log` interno do motor (`_log_
+turn_planner_decision`, ja existente, usado pela telemetria ao vivo)
+a lista estruturada de decisoes `kind='turn_planner'` do turno:
+`{kind, card (codigo), target_type, target (codigo)}`, uma entrada por
+decisao de main phase. `audit_curve_calibration_flags.py` agora
+compara essa lista (`chosen_actions`) em vez do texto de
+`engine_hoje_narrativa`.
+
+**Resultado, mesmas 66 partidas, MESMO codigo (ja com o revert do
+bloco 537)**: **47/307 turnos divergentes (15.3%)**, praticamente
+igual ao numero por texto do bloco 536 (46/307, 15.0%) -- a hipotese
+de que boa parte da divergencia era so diferenca de LOG (nao decisao
+real) NAO se confirmou como um fator grande nesta amostra; a
+diferenca entre os dois metodos foi pequena. Sinal de que ~15% dos
+turnos reconstruidos realmente muda de decisao com a calibragem
+ligada e um numero real, nao inflado por ruido de log.
+
+**Nota metodologica**: esta rodada ja inclui o revert do `is_closing_
+mode` (bloco 537) -- nao da pra separar limpo quanto do numero mudou
+por causa do metodo de comparacao vs por causa do revert (2 mudancas
+entre a rodada anterior e esta). Nao invalida a conclusao (~15% e
+~15%, direcao e magnitude estaveis nos 3 metodos: 14.7% -> 15.0% ->
+15.3%), so registra a limitacao.
+
+**Status**: metodologia de auditoria agora considerada solida
+(determinismo real + comparacao semantica). Proximo passo (item 3 das
+pendencias do usuario): validar ao vivo -- `is_closing_mode` revertido
+e commitado, `engine_server` reiniciado com o codigo atual, pronto pra
+teste real. Self-play (ja tentado nos blocos 528/529) continua
+descartado como via de validacao pra esses efeitos pequenos.
+
 ## 2026-08-15 (537) - Claude (sessao local) - is_closing_mode REVERTIDO (pedido do usuario, respondendo a pergunta pendente do bloco 534)
 
 Usuario respondeu as 3 pendencias do bloco 536: (1) reverter
