@@ -2,6 +2,23 @@
 
 **Última atualização:** 14 de agosto de 2026
 
+> 14/08/2026 (bloco 534): **`is_closing_mode` implementado, mas a
+> evidência que motivou ele estava contaminada** — auditoria de
+> partida real humano x bot (humano venceu, `audit_real_losses.py`
+> reaproveitado do lado do humano) achou 3 turnos onde a calibragem
+> dinâmica parecia mudar decisão; corrigi um bug de seed não-fixada no
+> script de comparação e, re-rodando corretamente, **as 9 flags não
+> mudam NENHUMA decisão real nessa partida** — os 3 turnos "divergentes"
+> eram ruído do teste, não efeito do código. `is_closing_mode` (deck
+> controle vira agressivo quando oponente tem vida<=3) fica implementado
+> e testado — é logicamente defensável por conta própria — mas a
+> justificativa original não se sustentou. **Pergunta feita ao usuário
+> (manter ou reverter) ainda pendente de resposta** nesta sessão. Lição
+> registrada: `audit_real_losses.py` tem uma fonte de não-determinismo
+> (`_remaining_deck`) que exige `random.seed()` fixa antes de CADA
+> chamada comparada — não coberta pelo `PYTHONHASHSEED=0` já usado nos
+> scripts de self-play. Ver bloco 534 do HANDOFF.
+>
 > 14/08/2026 (bloco 533): **reinvestigação dos 3 termos "universais"
 > restantes** (pedido: "investigue de novo para aver se não tem razão
 > mesmo") — `counter_hand`/`coverage` são proxies de sobrevivência

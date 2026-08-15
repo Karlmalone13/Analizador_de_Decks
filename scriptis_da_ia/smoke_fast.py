@@ -10364,6 +10364,72 @@ def test_counter_hand_coverage_opp_blocker_curve_scale_14_08() -> None:
           on3 > off3)
 
 
+def test_is_closing_mode_sobrepoe_desconto_de_controle_14_08() -> None:
+    # Pedido do usuario (14/08, bloco 534): "quero que voce faca isso que
+    # voce falou" -- corrigir o ponto cego achado na auditoria humano x bot
+    # real (Imu x Marshall D. Teach, 2026-07-09, vitoria real do humano):
+    # deck "controle" fica tímido demais no dano bem na hora de FECHAR o
+    # jogo. is_closing_mode() (vida do oponente <= 3, mesmo limiar de
+    # survival_premium) sobrepoe o desconto de controle pra 1.3 em
+    # dmg/board/life_opp.
+    def vida4():
+        return [mk(f"LF{i}", "Life") for i in range(4)]
+
+    def vida_baixa(n):
+        return [mk(f"LF{i}", "Life") for i in range(n)]
+
+    census_control = {
+        "by_cost": {2: 10, 4: 20, 6: 10, 7: 10}, "total": 50,
+        "rush": {"total": 0}, "blockers": {"total": 0},
+    }
+
+    def mk_engine(opp_life_n):
+        opp = GameState(leader=real_card("OP13-079"), turn=5, life=vida_baixa(opp_life_n))
+        me = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+        me.full_deck_census = census_control
+        return DecisionEngine(me, opp)
+
+    # vida do oponente ALTA (4): deck controle NAO esta fechando -- desconto normal (0.7)
+    eng_normal = mk_engine(4)
+    check("fora do closing mode, deck controle mantem desconto normal em dmg (0.7)",
+          abs(eng_normal.analyzer.dmg_value_curve_scale() - 0.7) < 1e-9)
+    check("fora do closing mode, deck controle mantem desconto normal em board (0.7)",
+          abs(eng_normal.analyzer.board_value_curve_scale() - 0.7) < 1e-9)
+    check("fora do closing mode, deck controle mantem desconto normal em life_opp (0.7)",
+          abs(eng_normal.analyzer.life_value_curve_scale_opp() - 0.7) < 1e-9)
+    check("is_closing_mode() False com vida do oponente=4",
+          eng_normal.analyzer.is_closing_mode() is False)
+
+    # vida do oponente BAIXA (3, limiar de survival_premium): closing mode
+    # LIGA -- deck controle vira 1.3 (mesmo valor do agressivo) nos 3 eixos
+    eng_closing = mk_engine(3)
+    check("is_closing_mode() True com vida do oponente=3 (limiar de survival_premium)",
+          eng_closing.analyzer.is_closing_mode() is True)
+    check("em closing mode, deck controle SOBE pra 1.3 em dmg (mesmo valor do agressivo)",
+          abs(eng_closing.analyzer.dmg_value_curve_scale() - 1.3) < 1e-9)
+    check("em closing mode, deck controle SOBE pra 1.3 em board",
+          abs(eng_closing.analyzer.board_value_curve_scale() - 1.3) < 1e-9)
+    check("em closing mode, deck controle SOBE pra 1.3 em life_opp",
+          abs(eng_closing.analyzer.life_value_curve_scale_opp() - 1.3) < 1e-9)
+
+    # life_value_curve_scale_self NAO muda em closing mode (fora do escopo
+    # do fix -- so os 3 eixos de "empurrar dano" foram corrigidos). Testa
+    # com deck AGRESSIVO (self=0.7 normalmente) pra confirmar que closing
+    # mode nao sobrescreve esse metodo pra 1.3 tambem.
+    census_aggro = {
+        "by_cost": {1: 30, 2: 15, 3: 5}, "total": 50,
+        "rush": {"total": 0}, "blockers": {"total": 0},
+    }
+    opp_closing = GameState(leader=real_card("OP13-079"), turn=5, life=vida_baixa(3))
+    me_aggro = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+    me_aggro.full_deck_census = census_aggro
+    eng_aggro_closing = DecisionEngine(me_aggro, opp_closing)
+    check("is_closing_mode() True (vida do oponente=3) mas deck agressivo",
+          eng_aggro_closing.analyzer.is_closing_mode() is True)
+    check("life_value_curve_scale_self NAO e afetado por closing mode -- continua 0.7 (agressivo)",
+          abs(eng_aggro_closing.analyzer.life_value_curve_scale_self() - 0.7) < 1e-9)
+
+
 def main() -> int:
     test_big_mom_optional_zero_parser_order_and_don_synergy()
     test_is_active_turn_corrigido_evita_don_minus_desnecessario()
@@ -10654,6 +10720,7 @@ def main() -> int:
     test_hand_board_life_curve_scale_e_gates_ao_vivo_14_08()
     test_dmg_value_curve_scale_e_gate_ao_vivo_14_08()
     test_counter_hand_coverage_opp_blocker_curve_scale_14_08()
+    test_is_closing_mode_sobrepoe_desconto_de_controle_14_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

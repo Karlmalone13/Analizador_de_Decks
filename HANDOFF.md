@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-14 (534) - Claude (sessao remota web) - `is_closing_mode` implementado E TESTADO, mas a evidencia real que motivou ele estava CONTAMINADA por um bug no proprio script de auditoria (seed nao fixada) -- CORRECAO registrada, decisao de manter/reverter pendente do usuario
+
+**Pedido do usuario**: reconstruir uma partida REAL humano x bot (do
+banco de logs) do lado do HUMANO GANHADOR, colocar o motor de hoje com
+a calibragem dinamica (blocos 529-533) pra decidir no lugar dele, e
+comparar com o que o humano realmente fez pra vencer -- reusando
+`audit_real_losses.py.audit_one_game` (ja existente) com `bot_side=
+'Opponent'` em vez de `'You'` (a funcao e generica, so muda QUAL lado
+e reconstruido).
+
+**Partida usada**: `Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json`,
+22 turnos, **vitoria REAL do humano** (Marshall D. Teach, winner=p2)
+contra o bot (Imu). 11 turnos do humano reconstruidos.
+
+**1a rodada (SEM seed fixa entre as chamadas off/on)**: achei 3 turnos
+divergentes (17/19/21) entre flags OFF e ON, e rastreei uma causa
+aparentemente real -- o deck do Teach classificado "controle" (custo
+medio 4,7) fazia `dmg_value_curve_scale`/`board_value_curve_scale`/
+`life_value_curve_scale_opp` descontarem o dano bem na hora (turno 21)
+em que esse deck especifico virava agressivo pra fechar o jogo, igual
+o humano fez de verdade. Implementei `GameAnalyzer.is_closing_mode()`
+(vida do oponente <= 3, MESMO limiar de `survival_premium`) que
+sobrepoe o desconto de "controle" pra 1.3 nesses 3 eixos quando o
+oponente ja esta baixo -- 12 testes novos, `smoke_fast`/`smoke_test`
+100%.
+
+**CORRECAO (mesmo bloco, achada ao re-validar o fix)**: `_remaining_
+deck` (dentro de `audit_one_game`, chamado a cada turno reconstruido)
+embaralha o deck restante via `random.shuffle` SEM seed fixa -- meu
+script de comparacao (`compare_human_vs_engine.py`, scratchpad) nao
+fixava `random.seed()` antes de cada chamada de `audit_one_game`,
+entao a rodada OFF e a rodada ON usavam ORDENS DE DECK DIFERENTES
+entre si (2 chamadas separadas do zero). Fixando a MESMA seed antes
+das duas chamadas (mesmo padrao de `tune_weights.py`/etc o dia
+inteiro) e re-rodando: **as 9 flags de calibragem dinamica NAO mudam
+NENHUMA das 11 decisoes do turno humano nessa partida** -- os 3
+"turnos divergentes" da 1a rodada eram RUIDO do proprio script de
+teste (ordem de deck diferente), nao efeito real do codigo.
+
+**Estado final**: `is_closing_mode` fica implementado e testado
+(unitariamente correto, comportamento logico defensavel por si so --
+deck de controle deveria mesmo ficar mais agressivo perto do fim), mas
+**a evidencia real que motivou construir ele era invalida**. Pergunta
+feita ao usuario: manter mesmo assim (correcao razoavel, sem custo,
+atras de flag `False`) ou reverter e procurar evidencia real de novo
+antes de adicionar mais mecanismo -- **resposta ainda pendente**,
+commit registra o estado atual sem decidir por conta propria.
+
+**Licao de metodologia pra proxima sessao**: `audit_real_losses.py`
+(e qualquer script que o chame) tem uma fonte de nao-determinismo real
+(`_remaining_deck`) que NAO e coberta pelos `PYTHONHASHSEED=0`/`random.
+seed()` ja usados nos scripts de calibracao de self-play -- qualquer
+comparacao futura ANTES/DEPOIS usando essa ferramenta precisa fixar
+`random.seed()` explicitamente antes de CADA chamada de
+`audit_one_game` sendo comparada, senão a comparação está contaminada
+do mesmo jeito que esta foi.
+
 ## 2026-08-14 (533) - Claude (sessao remota web) - reinvestigacao dos 3 termos "universais" restantes -- TODOS os 17 de EVAL_WEIGHTS agora tem razao estrutural (calibragem dinamica completa, ainda desligada)
 
 **Pedido do usuario**: "Investigue de novo para aver se não tem razão
