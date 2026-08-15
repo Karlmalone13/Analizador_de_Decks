@@ -1,0 +1,277 @@
+{
+  "parsed_file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T19.16.09.json",
+  "bot_side": "You",
+  "bot_leader": "Marshall D. Teach",
+  "opp_leader": "Rocks D. Xebec",
+  "turnos_auditados": 5,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP16-110",
+          "to_name": "Vasco Shot",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Vasco Shot",
+          "attacker_code": "OP16-110",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Monkey.D.Luffy (012) (Full Art\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: Monkey.D.Luffy (012) (Full Art (0pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] [Once Per Turn] Give up to 1 rested DON!! card to 1 of your [Monkey.D.Luf...\u001b[0m\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP12-112",
+          "card_name": "Baby 5",
+          "effects": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Maha\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n  > gastou 1 DON -> Joga: My Era...Begins!! (Reprint) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Blackbeard Pirates\" type...\u001b[0m\n    ↳ [My Era...Begins!! (R] olhou 3 do topo -> nada para pegar\n    ↳ [My Era...Begins!! (R] trash resto: Sanji, Briscola\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP16-110",
+          "to_name": "Vasco Shot",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Vasco Shot",
+          "attacker_code": "OP16-110",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-109",
+          "card_name": "Doc Q",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Baby 5",
+          "attacker_code": "OP12-112",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Catarina Devon [\"OP16-104\">OP16-104]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-096",
+          "card_name": "This is MY AGE!!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Doc Q [\"OP16-109\">OP16-109]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Kuzan (OP02-096) (Reprint)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 4 DON -> Joga: Kuzan (OP02-096) (Reprint) (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Draw 1 card.[When Attacking] Give up to 1 of your opponent's Characters -4 cost ...\u001b[0m\n    ↳ [Kuzan (OP02-096) (Re] comprou: Basil Hawkin\n    Baby 5 (112) (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Gecko Moria (04\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      💥 DANO! vida do oponente: 2\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP16-110",
+          "to_name": "Vasco Shot",
+          "total": 3
+        },
+        {
+          "type": "play",
+          "card": "EB04-058",
+          "card_name": "Borsalino",
+          "effects": [
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Vasco Shot",
+          "attacker_code": "OP16-110",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Baby 5",
+          "attacker_code": "OP12-112",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-115",
+          "card_name": "Black Vortex",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Kuzan (OP02-096) (Reprint)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Baby 5 (112) (5000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Miss Buckingham\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      💥 DANO! vida do oponente: 2\n  > gastou 1 DON -> Joga: Black Vortex (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the {Blackbeard Pirates} type, add up to 1 card with a [Trigger]...\u001b[0m\n    ↳ [Black Vortex] recuperou do trash: Vasco Shot\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n    Vasco Shot (2000pwr) ataca Streusen\n      💀 Streusen foi KO!\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "activate",
+          "card": "OP16-116",
+          "card_name": "ZEHAHAHAHA",
+          "effects": [
+            "Rest 8 Don",
+            "Deploy Marshall D. Teach [\"OP09-093\">OP09-093]",
+            "Send 1 Life to Hand"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Nullify effects of Rocks D. Xebec [\"OP17-039\">OP17-039]",
+            "Shiki [\"OP17-048\">OP17-048] can't attack next turn",
+            "Nullify effects of Shiki [\"OP17-048\">OP17-048] until next turn end!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Baby 5",
+          "attacker_code": "OP12-112",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-115",
+          "card_name": "Black Vortex",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Jesus Burgess [\"OP09-086\">OP09-086]",
+            "<b>Reveal and Draw Marshall D. Teach [\"OP09-093\">OP09-093]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Vasco Shot",
+          "attacker_code": "OP16-110",
+          "target": "Streusen [\"OP17-050\">OP17-050]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: S-Hawk\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Miss Buckingham\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      💥 DANO! vida do oponente: 2\n    Baby 5 (112) (5000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Gecko Moria\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      💥 DANO! vida do oponente: 1\n  > gastou 1 DON -> Joga: Black Vortex (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the {Blackbeard Pirates} type, add up to 1 card with a [Trigger]...\u001b[0m\n    ↳ [Black Vortex] recuperou do trash: Vasco Shot\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n    Vasco Shot (2000pwr) ataca Streusen\n      🛡 Counter! +1000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n"
+    }
+  ]
+}

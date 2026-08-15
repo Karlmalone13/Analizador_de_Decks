@@ -1,5 +1,55 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (539) - Claude (sessao local) - teste ao vivo (item 3 das pendencias): 2 travamentos de UI reportados, NAO reproduzidos com confianca no log disponivel -- log banqueado, auditoria obrigatoria feita, plano de captura ao vivo pra proxima vez
+
+Usuario testou ao vivo (Marshall.D.Teach-BY x Rocks.D.Xebec-B,
+`2026-08-15T19.16.09`, 11 turnos, bot perdeu -- winner=p2). Reportou 2
+travamentos de UI, com screenshots:
+1. Turno 3-4: bot ficou sem resposta numa tela "Choose 0 Enemy
+   Characters" -- usuario teve que escolher manualmente. Hipotese
+   forte (nao confirmada): Doc Q (OP16-109) `on_ko` tem 2 steps
+   (`draw 1` + `ko count=2 target=opp_character cost_lte=1`) -- com 0
+   personagens do oponente custo<=1, o jogo pede confirmacao de
+   "escolher 0", e essa e a MESMA familia de bug ja vista com a
+   Pudding (`peek_opp_deck_top`, blocos 371/373): confirmar 0 alvos as
+   vezes trava em vez de auto-confirmar.
+2. Mesma partida: Marshall D. Teach custo 10 (OP09-093, 2 copias no
+   deck, ja investigado nos blocos 371/372/374) deu alvo pro lider
+   (negate_effect opp_leader, sempre valido) mas nao conseguiu dar
+   alvo em personagem (negate_effect opp_character / lock_opp_
+   character_attack, os outros 2 steps do activate_main).
+
+**Trabalho de auditoria feito** (obrigatorio, `optcg-live-log-triage`):
+log banqueado (`logs/index.json`), telemetria lida
+(`bot_confusion=6`, todos `no_eligible_action`, 0 `stuck_executions`;
+1 `semantic_transition_failed`), `audit_real_losses.py --log` +
+`triage_real_losses.py` rodados. **Achado indireto interessante**: no
+turno 11 dessa MESMA partida, o HISTORICO real mostra o bot deployando
+E ativando a 2a copia de OP09-093 com sucesso ("Nullify effects of
+Rocks D. Xebec") -- entao o combo nao trava 100% das vezes nessa
+partida, e intermitente (consistente com a hipotese ja registrada no
+bloco 373 de corrida de timing entre animacao/leitura de estado).
+
+**NAO reproduzido com confianca**: vasculhei `LogOutput.log` (406
+linhas, turnos 1-6 cobertos) procurando o diagnostico do bloco 373
+("efeito pendente sem alvo viavel") ou qualquer assinatura de
+travamento -- nao achei nenhuma. Hipoteses: (a) usuario usou "Restart
+this turn" (feature do jogo visivel nos screenshots) antes do
+diagnostico rodar, cortando a evidencia; (b) o travamento especifico
+NAO passa pelo caminho de codigo ja instrumentado (`HandlePendingAction`
+-> Cancel), passando por outro estado ainda sem handler (mesmo padrao
+do fix historico do `ConfirmRevealedCard`).
+
+**Decisao**: NAO implementei um fix as cegas pela 3a vez sem prova
+real (2 tentativas anteriores documentadas nos blocos 373/374 ja
+mostraram o risco de corrigir a causa errada). Combinado com o
+usuario: proxima partida, capturar o `LogOutput.log` AO VIVO durante
+o travamento (monitoramento em tempo real, nao reconstrucao pos-fato)
+pra finalmente achar o `GameplayState`/contexto exato.
+
+**Pendente**: ambos os travamentos de UI (Doc Q 0-alvo, OP09-093 2o
+alvo) ficam registrados, sem fix ainda -- aguardando captura ao vivo.
+
 ## 2026-08-15 (538) - Claude (sessao local) - comparacao das flags de calibragem refinada pra acao ESTRUTURADA (nao texto) -- 47/307 (15.3%), numero praticamente igual ao anterior, metodologia agora limpa
 
 Pedido do usuario (item 2 das 3 pendencias): refinar `audit_curve_

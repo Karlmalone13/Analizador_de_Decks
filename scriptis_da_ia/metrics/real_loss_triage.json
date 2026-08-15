@@ -1,7 +1,7 @@
 {
   "counts": {
     "MATCH": 8,
-    "DIVERGE": 277,
+    "DIVERGE": 282,
     "ERROR": 0,
     "SKIPPED": 0
   },
@@ -4381,6 +4381,98 @@
       "hoje_leader_atk": 2,
       "hist_char_atk": 1,
       "hoje_char_atk": 0
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T19.16.09.json",
+      "turn": 3,
+      "hist_plays": [],
+      "hoje_plays": [
+        "monkeydluffy",
+        "vascoshot"
+      ],
+      "hist_activates": [],
+      "hoje_activates": [],
+      "hist_leader_atk": 2,
+      "hoje_leader_atk": 1,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 0
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T19.16.09.json",
+      "turn": 5,
+      "hist_plays": [
+        "baby5",
+        "vascoshot"
+      ],
+      "hoje_plays": [
+        "myerabegins",
+        "vascoshot"
+      ],
+      "hist_activates": [],
+      "hoje_activates": [],
+      "hist_leader_atk": 1,
+      "hoje_leader_atk": 1,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 0
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T19.16.09.json",
+      "turn": 7,
+      "hist_plays": [
+        "docq",
+        "laffitte"
+      ],
+      "hoje_plays": [
+        "kuzan"
+      ],
+      "hist_activates": [
+        "thisismyage"
+      ],
+      "hoje_activates": [],
+      "hist_leader_atk": 3,
+      "hoje_leader_atk": 2,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 0
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T19.16.09.json",
+      "turn": 9,
+      "hist_plays": [
+        "borsalino"
+      ],
+      "hoje_plays": [
+        "blackvortex",
+        "vascoshot"
+      ],
+      "hist_activates": [
+        "blackvortex"
+      ],
+      "hoje_activates": [],
+      "hist_leader_atk": 3,
+      "hoje_leader_atk": 2,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 1
+    },
+    {
+      "file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T19.16.09.json",
+      "turn": 11,
+      "hist_plays": [
+        "fullalead"
+      ],
+      "hoje_plays": [
+        "blackvortex",
+        "vascoshot"
+      ],
+      "hist_activates": [
+        "blackvortex",
+        "marshalldtea",
+        "zehahahaha"
+      ],
+      "hoje_activates": [],
+      "hist_leader_atk": 2,
+      "hoje_leader_atk": 2,
+      "hist_char_atk": 1,
+      "hoje_char_atk": 1
     },
     {
       "file": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",

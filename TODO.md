@@ -2,6 +2,24 @@
 
 **Última atualização:** 15 de agosto de 2026
 
+> 15/08/2026 (bloco 539): **teste ao vivo (item 3) rodado, 2
+> travamentos de UI reportados pelo usuário, NÃO reproduzidos com
+> confiança no log disponível** — (1) Doc Q [OP16-109] `on_ko` (K.O.
+> até 2 personagens custo<=1) travou numa tela "Choose 0 Enemy
+> Characters" quando não havia alvo válido; (2) Marshall D. Teach
+> custo 10 [OP09-093] deu alvo pro líder mas não conseguiu dar alvo em
+> personagem (2º/3º step do `activate_main`). Mesma família de bug já
+> vista com a Pudding (blocos 371/373) — confirmação de 0 alvos às
+> vezes trava em vez de auto-confirmar. Achado indireto: no turno 11
+> da MESMA partida, o histórico real mostra o combo do OP09-093
+> funcionando (intermitente, não 100% quebrado). Vasculhei
+> `LogOutput.log` sem achar assinatura de erro clara — **não
+> implementei fix às cegas pela 3ª vez sem prova real**. **Combinado
+> com o usuário: próxima partida, capturar o log AO VIVO** (não
+> reconstruir depois) pra achar o `GameplayState` exato. Log banqueado,
+> auditoria obrigatória (`audit_real_losses.py`/`triage_real_losses.py`)
+> feita. Ver bloco 539 do HANDOFF.
+
 > 15/08/2026 (bloco 538): **comparação da calibragem refinada pra ação
 > ESTRUTURADA** (não texto) — `audit_one_game` ganhou `capture_actions`
 > (usa o `decision_log` interno do motor, mesma fonte da telemetria ao
