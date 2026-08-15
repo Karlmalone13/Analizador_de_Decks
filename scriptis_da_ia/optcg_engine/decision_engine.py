@@ -429,6 +429,21 @@ USE_LIFE_VALUE_CURVE_SCALE = False
 # em producao).
 USE_DMG_VALUE_CURVE_SCALE = False
 
+# Bloco 533 (pedido do usuario: "investigue de novo para aver se não tem
+# razão mesmo" -- reinvestigacao dos 3 termos que sobraram como constante
+# universal). Achado: os 3 TEM razao estrutural, so nao foi levantada de
+# primeira. counter_hand/coverage sao proxies de SOBREVIVENCIA (o proprio
+# comentario de counter_hand ja dizia "vida futura") -- mesma direcao de
+# life_value_curve_scale_self (controle depende mais, agressivo menos).
+# opp_blocker e obstaculo pro plano de DANO -- mesma direcao de dmg/board
+# (agressivo depende mais de conectar dano, blocker atrapalha mais esse
+# plano). Reusam os metodos ja existentes (nao duplicam logica), cada um
+# atras da PROPRIA flag pra isolamento independente, mesmo padrao de
+# seguranca dos blocos 530-532 (termos ja ativos em producao).
+USE_COUNTER_HAND_CURVE_SCALE = False
+USE_COVERAGE_CURVE_SCALE = False
+USE_OPP_BLOCKER_CURVE_SCALE = False
+
 # ── busca prof.2 / resposta do oponente (item 3 do PLANO_AVALIACAO_E_BUSCA.md) ─
 # Depois de simular MINHA linha ate o fim do turno, simula o TURNO INTEIRO de
 # resposta do oponente (proprio engine, modo GULOSO -- ver _play_turn_greedy,
@@ -16210,8 +16225,15 @@ class OPTCGMatch:
         score += sum(an.char_value_score(c) for c in p.field_chars) * W['board_mine'] * board_scale
         score -= sum(an.char_value_score(c) for c in opp.field_chars) * W['board_opp'] * board_scale
 
-        # blockers do oponente vivos travam meu ataque
-        score -= len(opp.blockers_active()) * W['opp_blocker']
+        # blockers do oponente vivos travam meu ataque -- obstaculo pro MEU
+        # plano de dano, mesma direcao de dmg/board (agressivo depende mais
+        # de conectar dano, blocker atrapalha mais esse plano; controle nao
+        # esta numa corrida, blocker incomoda menos). Reusa board_value_
+        # curve_scale (mesmos valores de dmg_value_curve_scale, escolhido
+        # por ser semanticamente board-relacionado) atras de flag propria
+        # (bloco 533, pedido do usuario "investigue de novo").
+        opp_blocker_scale = an.board_value_curve_scale() if USE_OPP_BLOCKER_CURVE_SCALE else 1.0
+        score -= len(opp.blockers_active()) * W['opp_blocker'] * opp_blocker_scale
 
         # ameaça de virada por reanimação em massa do trash dele (achado
         # 07/07, PREVENT_COMBO) -- penaliza pelo threat_power ESTIMADO no
@@ -16227,8 +16249,14 @@ class OPTCGMatch:
         nh = len(p.hand)
         hand_scale = an.hand_value_curve_scale() if USE_HAND_VALUE_CURVE_SCALE else 1.0
         score += (min(nh, 5) * W['hand_first'] + max(0, nh - 5) * W['hand_extra']) * hand_scale
-        # poder de counter na mão = vida futura
-        score += p.counter_in_hand() / 1000 * W['counter_hand']
+        # poder de counter na mão = vida futura -- proxy de SOBREVIVENCIA
+        # (o proprio comentario ja dizia "vida futura"), mesma direcao de
+        # life_value_curve_scale_self: controle depende de counter pra
+        # aguentar ate o plano, agressivo esta atacando (nao defendendo),
+        # counter guardado sem usar nao ajuda o plano dele. Reusa o metodo
+        # existente atras de flag propria (bloco 533).
+        counter_hand_scale = an.life_value_curve_scale_self() if USE_COUNTER_HAND_CURVE_SCALE else 1.0
+        score += p.counter_in_hand() / 1000 * W['counter_hand'] * counter_hand_scale
 
         # DON no campo (ramp = chegar na bomba) — leve. Escala pela curva do
         # PROPRIO deck quando USE_DON_FIELD_CURVE_SCALE ligado (bloco 530,
@@ -16238,10 +16266,13 @@ class OPTCGMatch:
 
         # cobertura defensiva: counter na mão vs ataques que o opp faz no
         # próximo turno (líder + chars ativos). min = ter counter além do
-        # necessário satura (não vale acumular counter infinito).
+        # necessário satura (não vale acumular counter infinito). Mesmo
+        # proxy de sobrevivência de counter_hand acima -- reusa life_value_
+        # curve_scale_self, flag própria (bloco 533).
         opp_atk = 1 + sum(1 for c in opp.field_chars if not c.rested)
         cobertura = min(p.counter_in_hand(), opp_atk * 2000)
-        score += cobertura / 1000 * W['coverage']
+        coverage_scale = an.life_value_curve_scale_self() if USE_COVERAGE_CURVE_SCALE else 1.0
+        score += cobertura / 1000 * W['coverage'] * coverage_scale
 
         # eixos derivados do perfil (auto-motor: trash/reanimação/inversão)
         score += self._derived_axes_value(p, self._turn_profile_for(p))

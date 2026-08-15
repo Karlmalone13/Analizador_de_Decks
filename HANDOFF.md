@@ -1,5 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-14 (533) - Claude (sessao remota web) - reinvestigacao dos 3 termos "universais" restantes -- TODOS os 17 de EVAL_WEIGHTS agora tem razao estrutural (calibragem dinamica completa, ainda desligada)
+
+**Pedido do usuario**: "Investigue de novo para aver se não tem razão
+mesmo" -- depois de eu classificar `counter_hand`/`coverage`/
+`opp_blocker` como universais sem sinal estrutural claro, usuario
+pediu reinvestigacao antes de aceitar isso.
+
+**Achado**: os 3 TEM razao estrutural, so nao tinha sido levantada de
+primeira -- nenhum termo de `EVAL_WEIGHTS` precisou de metodo novo,
+os 2 eixos ja existentes (bloco 531) cobrem todos:
+
+- `counter_hand`/`coverage`: o proprio comentario do codigo ja dizia
+  "poder de counter na mão = vida futura" -- sao proxies de
+  SOBREVIVENCIA, mesma direcao de `life_value_curve_scale_self`
+  (controle depende de counter pra aguentar ate o plano, agressivo
+  esta atacando nao defendendo, counter guardado sem usar nao ajuda
+  o plano dele). Reusam o metodo do bloco 531 direto.
+- `opp_blocker`: blocker do oponente trava MEU ataque -- obstaculo pro
+  plano de DANO, mesma direcao de `board_value_curve_scale`/`dmg_
+  value_curve_scale` (agressivo depende mais de conectar dano,
+  blocker atrapalha mais esse plano especifico; controle nao esta
+  numa corrida, blocker incomoda menos).
+
+**Implementado**: 3 flags novas (`USE_COUNTER_HAND_CURVE_SCALE`,
+`USE_COVERAGE_CURVE_SCALE`, `USE_OPP_BLOCKER_CURVE_SCALE`, todas
+`False`), cada uma reusando os metodos JA EXISTENTES (`life_value_
+curve_scale_self`/`board_value_curve_scale`) -- zero codigo duplicado,
+zero metodo novo. 6 testes novos (flags off por padrao + `_evaluate_
+state_v2` muda de fato quando cada flag liga, verificado com deck
+controle). `smoke_fast`/`smoke_test` 100%.
+
+**Estado final (blocos 529-533)**: **TODOS os 17 termos de
+`EVAL_WEIGHTS` agora tem alguma forma de variacao por deck** -- 9 com
+escala analitica nova desta sessao, 6 ja dinamicos de sessoes
+anteriores, 2 (`dmg`, `wincon_ready`/etc ja contam nos 6) -- resumo
+simples: nenhum termo ficou de fora. Todos os mecanismos NOVOS (bloco
+529 em diante) continuam desligados por padrao -- pendente validacao
+via telemetria de partida real, nao self-play (achado 528/529: ruidoso
+demais em N pequeno pra esse tipo de efeito pequeno por termo). Isso
+fecha o pedido original do usuario de "calibragem dinamica pro motor
+inteiro".
+
 ## 2026-08-14 (532) - Claude (sessao remota web) - `dmg_value_curve_scale` -- escala o peso mais sensivel do motor (dmg) por curva, atras de flag propria
 
 **Pedido do usuario**: "acho que dmg tb influência se o deck for agro".

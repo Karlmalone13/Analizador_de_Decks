@@ -2,6 +2,19 @@
 
 **Última atualização:** 14 de agosto de 2026
 
+> 14/08/2026 (bloco 533): **reinvestigação dos 3 termos "universais"
+> restantes** (pedido: "investigue de novo para aver se não tem razão
+> mesmo") — `counter_hand`/`coverage` são proxies de sobrevivência
+> (mesma direção de `life_value_curve_scale_self`), `opp_blocker` é
+> obstáculo pro plano de dano (mesma direção de `board_value_curve_
+> scale`). Reusam os métodos já existentes, zero código novo — só 3
+> flags novas (`False`). 6 testes novos, `smoke_fast`/`smoke_test`
+> 100%. **TODOS os 17 termos de `EVAL_WEIGHTS` agora variam por deck**
+> de alguma forma — fecha o pedido de "calibragem dinâmica pro motor
+> inteiro". Tudo desligado, pendente validação via telemetria real
+> (não self-play, achado 528/529: ruidoso demais pra efeitos pequenos
+> por termo). Ver bloco 533 do HANDOFF.
+>
 > 14/08/2026 (bloco 532): **`dmg_value_curve_scale`** (pedido: "acho
 > que dmg tb influência se o deck for agro") — mesma família analítica
 > dos blocos 530/531. Agressivo=1.3 (dano é o plano), controle=0.7

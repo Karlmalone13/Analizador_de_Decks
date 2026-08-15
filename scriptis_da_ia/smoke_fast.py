@@ -10301,6 +10301,69 @@ def test_dmg_value_curve_scale_e_gate_ao_vivo_14_08() -> None:
           score_on > score_off)
 
 
+def test_counter_hand_coverage_opp_blocker_curve_scale_14_08() -> None:
+    # Pedido do usuario (14/08, bloco 533): "investigue de novo para aver
+    # se não tem razão mesmo" -- os 3 termos que sobraram como constante
+    # universal (counter_hand, coverage, opp_blocker) TEM razao estrutural:
+    # os 2 primeiros sao proxy de sobrevivencia (mesma direcao de life_
+    # value_curve_scale_self), o 3o e obstaculo pro plano de dano (mesma
+    # direcao de board_value_curve_scale/dmg_value_curve_scale). Reusam os
+    # metodos ja existentes, atras de flag propria cada um.
+    def vida4():
+        return [mk(f"LF{i}", "Life") for i in range(4)]
+
+    from optcg_engine.decision_engine import EVAL_WEIGHTS
+    import optcg_engine.decision_engine as de
+
+    census_control = {
+        "by_cost": {2: 10, 4: 20, 6: 10, 7: 10}, "total": 50,
+        "rush": {"total": 0}, "blockers": {"total": 0},
+    }
+
+    def score_com_flag(flag_name, hand=None, opp_field=None):
+        opp0 = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+        if opp_field:
+            opp0.field_chars = opp_field
+        me = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+        me.full_deck_census = census_control
+        if hand:
+            me.hand = hand
+        me.use_eval_v2 = True
+        me.eval_weights = dict(EVAL_WEIGHTS)
+        match = OPTCGMatch((me.leader, []), (opp0.leader, []))
+        score_off = match._evaluate_state_v2(me, opp0)
+        old = getattr(de, flag_name)
+        try:
+            setattr(de, flag_name, True)
+            score_on = match._evaluate_state_v2(me, opp0)
+        finally:
+            setattr(de, flag_name, old)
+        return score_off, score_on
+
+    check("USE_COUNTER_HAND_CURVE_SCALE fica False por padrao",
+          de.USE_COUNTER_HAND_CURVE_SCALE is False)
+    check("USE_COVERAGE_CURVE_SCALE fica False por padrao",
+          de.USE_COVERAGE_CURVE_SCALE is False)
+    check("USE_OPP_BLOCKER_CURVE_SCALE fica False por padrao",
+          de.USE_OPP_BLOCKER_CURVE_SCALE is False)
+
+    counter_card = mk("CTR0", "Counter", counter=2000)
+    off, on = score_com_flag("USE_COUNTER_HAND_CURVE_SCALE", hand=[counter_card])
+    check("deck controle com counter na mao: flag ligado AUMENTA o score (sobrevivencia vale mais)",
+          on > off)
+
+    off2, on2 = score_com_flag("USE_COVERAGE_CURVE_SCALE", hand=[counter_card])
+    check("deck controle com cobertura defensiva: flag ligado AUMENTA o score",
+          on2 > off2)
+
+    blocker = mk("BLK0", "Blocker", power=5000)
+    blocker.has_blocker = True
+    off3, on3 = score_com_flag("USE_OPP_BLOCKER_CURVE_SCALE", opp_field=[blocker])
+    check("deck controle (nao agressivo) com blocker do opp: flag ligado DIMINUI a penalidade "
+          "(score sobe, ja que a penalidade fica menor que 1.0x)",
+          on3 > off3)
+
+
 def main() -> int:
     test_big_mom_optional_zero_parser_order_and_don_synergy()
     test_is_active_turn_corrigido_evita_don_minus_desnecessario()
@@ -10590,6 +10653,7 @@ def main() -> int:
     test_don_field_curve_scale_e_gate_ao_vivo_14_08()
     test_hand_board_life_curve_scale_e_gates_ao_vivo_14_08()
     test_dmg_value_curve_scale_e_gate_ao_vivo_14_08()
+    test_counter_hand_coverage_opp_blocker_curve_scale_14_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
