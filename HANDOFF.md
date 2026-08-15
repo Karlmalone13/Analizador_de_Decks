@@ -1,5 +1,87 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (536) - Claude (sessao local) - continuacao do bloco 535: 2a fonte de nao-determinismo achada e corrigida (RNG driftava turno a turno DENTRO do mesmo jogo), auditoria completa nas 66 partidas disponiveis (nao so 10) -- 15.0% dos turnos genuinamente divergentes, ferramenta agora permanente
+
+Pedido do usuario: "pode continuar então" (retomando o pendente do bloco
+535 -- investigar os turnos divergentes revelados apos o fix do
+`_find_real_deck`).
+
+**Achado antes de conseguir investigar direito**: o script `compare_
+human_vs_engine.py` do bloco 534/535 nunca foi commitado (scratchpad) --
+recriado aqui como `audit_curve_calibration_flags.py` (permanente,
+reusa `audit_real_losses.audit_one_game` com `bot_side='Opponent'`,
+mesma ideia). Rodando pela 1a vez nas 66 partidas (nao so as 10 do
+bloco 535) com o MESMO padrao de seed do bloco 534 (fixa 1x antes de
+CADA chamada completa de `audit_one_game`), examinando os turnos
+divergentes de perto achei um SEGUNDO problema de nao-determinismo que
+o fix do bloco 534 não cobria: fixar a seed 1x ANTES da chamada inteira
+so garante que o PRIMEIRO turno embaralha igual -- turnos POSTERIORES
+do MESMO jogo (chamados dentro do mesmo `audit_one_game`) continuam
+sujeitos a random.shuffle() em `_remaining_deck`, e o quanto de
+`random.*` o `eng.play_turn()` consome internamente (Monte Carlo,
+desempate) MUDA dependendo de quais flags de calibragem estão ligadas
+-- ou seja, o estado global do `random` DRIFTA de forma diferente entre
+OFF e ON a partir do 1o turno com decisão diferente, e turnos
+POSTERIORES comparam mão embaralhada de formas diferentes por
+acidente. Confirmado concretamente: turno 11 de uma partida mostrava
+uma CARTA COMPRADA diferente entre OFF/ON antes de qualquer decisão
+rodar nesse turno.
+
+**Fix** (`audit_real_losses.py`, `audit_one_game`): reseed
+DETERMINÍSTICO por `(nome_do_arquivo, numero_do_turno)` logo antes de
+cada `_remaining_deck`, imune a quanto random foi consumido pelas
+decisões de turnos anteriores -- cada turno embaralha exatamente igual
+nas duas condições, só a decisão em si pode divergir.
+
+**Resultado, ANTES vs DEPOIS do fix, mesmas 66 partidas**:
+- Sem o fix: 45/307 turnos divergentes (14.7%).
+- Com o fix: 46/307 (15.0%) -- a taxa AGREGADA ficou quase igual, mas
+  o PADRÃO por jogo mudou bastante (ex: 1 jogo caiu de 8/11 pra 0/11,
+  outro subiu de 0/3 pra 3/3) -- confirma que a lista de QUAIS turnos
+  divergiam antes não era confiável/reproduzível, mesmo com a taxa
+  agregada coincidindo. Com o fix, o resultado agora É determinístico
+  (reproduzível rodando de novo).
+
+**Leitura qualitativa (parcial, não exaustiva)**: turno 4 da partida
+`Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27` -- OFF
+joga Charlotte Cracker (custo 4, KO + rampa) e ataca com o líder, que
+é BLOQUEADO (5000 vs defesa 6000, sem dano). ON joga Charlotte Pudding
+(custo 1, mais barato) + anexa 1 DON no líder (7000) e o ataque
+CONECTA (dano real, vida do oponente cai pra 4) -- exemplo concreto de
+linha melhor com a calibragem ligada. Mas turno 2 da MESMA partida: OFF
+joga Pudding (peek+busca, pegou uma carta útil), ON troca por um EVENT
+("We're Going to Claim the One Piece", peek similar) que **não achou
+nada pra pegar** -- pior resultado. Achado misto, não uma vitória clara
+num sentido só.
+
+**Limitação honesta desta rodada (não resolvida)**: a comparação é por
+TEXTO da narrativa (`engine_hoje_narrativa`), não por AÇÃO semântica --
+alguns casos observados (ex: turno 4 da partida Crocodile/Ace
+2026-08-02T09.41.46) mostram o MESMO attach de DON pro MESMO alvo
+gerando texto ligeiramente diferente ("anexou 3 DON em X" vs "⚡ anexou
+3 DON em X para ligar [attack_power]"), possivelmente por caminho de
+código diferente sem mudar a decisão de fato -- parte dos 15.0% pode
+ser diferença de LOG, não de decisão real. Comparar por ação
+estruturada (tipo/carta/alvo/quantidade) em vez de string seria mais
+limpo, não feito ainda.
+
+**Pendente pra próxima sessão**: (a) decidir se vale refinar a
+comparação pra ação semântica antes de confiar no número de 15.0% como
+"efeito real"; (b) mesmo com o número limpo, comparação de NARRATIVA
+não prova se a decisão diferente é MELHOR ou PIOR -- só self-play em
+volume (já tentado nos blocos 528/529 e achado "ruidoso demais pra
+efeitos pequenos") ou telemetria de partida ao vivo real dão essa
+resposta; (c) decisão original do bloco 534 (manter ou reverter
+`is_closing_mode`) continua sem resposta do usuário.
+
+**Status**: `audit_curve_calibration_flags.py` novo (permanente, não
+scratchpad), fix de determinismo em `audit_real_losses.py`, relatório
+completo salvo em `metrics/curve_calibration_audits/`. Nenhuma mudança
+em `decision_engine.py`/`sim_bridge.py` nesta sessão -- `smoke_fast`/
+`smoke_test` não precisam rodar de novo (só ferramenta de auditoria
+tocada), mas o `engine_server` continua no ar sem mudança de
+comportamento.
+
 ## 2026-08-14 (535) - Claude (sessao remota web) - bug real achado e corrigido em `audit_real_losses.py._find_real_deck`: fallback generico gerava deck de 0 CARTAS pra 65/141 lideres (46% do banco) -- corrigido, divergencia real medida sobe de 11% pra 32% dos turnos
 
 **Pedido do usuario**: apos o teste multi-partida do bloco 534 (10

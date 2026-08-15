@@ -1,0 +1,3067 @@
+{
+  "seed": 20260814,
+  "flags": [
+    "USE_DON_FIELD_CURVE_SCALE",
+    "USE_HAND_VALUE_CURVE_SCALE",
+    "USE_BOARD_VALUE_CURVE_SCALE",
+    "USE_LIFE_VALUE_CURVE_SCALE",
+    "USE_DMG_VALUE_CURVE_SCALE",
+    "USE_COUNTER_HAND_CURVE_SCALE",
+    "USE_COVERAGE_CURVE_SCALE",
+    "USE_OPP_BLOCKER_CURVE_SCALE"
+  ],
+  "total_turnos": 307,
+  "total_divergentes": 45,
+  "erros": 0,
+  "jogos": [
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 10,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 2,
+      "divergencias": [
+        {
+          "turn": 8,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP16-110",
+              "card_name": "Vasco Shot",
+              "effects": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Shiryu",
+              "attacker_code": "OP16-108",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": null,
+              "damage": null,
+              "blocked_by": "OP13-091",
+              "countered_by": []
+            },
+            {
+              "type": "play",
+              "card": "PRB02-015",
+              "card_name": "Shiryu",
+              "effects": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-080",
+              "to_name": "Marshall D. Teach",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-080",
+              "to_name": "Marshall D. Teach",
+              "total": 2
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-080",
+              "to_name": "Marshall D. Teach",
+              "total": 3
+            },
+            {
+              "type": "attack",
+              "attacker": "Marshall D. Teach",
+              "attacker_code": "OP16-080",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: The Risky Brothers\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    anexou 1 DON em Shiryu (Full Art)\n    Shiryu (Full Art) (9000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n  > gastou 1 DON -> Joga: Avalo Pizarro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card, then play up to 1 [Fullalead] from your hand or trash.\r [Trigger] A...\u001b[0m\n",
+          "narrativa_on": "  \u001b[90mComprou: Monkey.D.Luffy (111) (Parallel\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    anexou 1 DON em Shiryu (Full Art)\n    Shiryu (Full Art) (9000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n  > gastou 1 DON -> Joga: Avalo Pizarro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card, then play up to 1 [Fullalead] from your hand or trash.\r [Trigger] A...\u001b[0m\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n  > gastou 1 DON -> Joga: Monkey.D.Luffy (111) (Parallel (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 \"Supernovas\" type card...\u001b[0m\n    ↳ [Monkey.D.Luffy (111)] olhou 5 do topo -> nada para pegar\n    ↳ [Monkey.D.Luffy (111)] 4 carta(s) no fundo do deck\n"
+        },
+        {
+          "turn": 10,
+          "historical_actions": [
+            {
+              "type": "attack",
+              "attacker": "Marshall D. Teach",
+              "attacker_code": "OP16-080",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP13-089"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Shiryu",
+              "attacker_code": "OP16-108",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "play",
+              "card": "OP09-093",
+              "card_name": "Marshall D. Teach",
+              "effects": [
+                "Nullify effects of Imu [\"OP13-079\">OP13-079]",
+                "St. Jaygarcia Saturn [\"OP13-083\">OP13-083] can't attack next turn",
+                "Nullify effects of St. Jaygarcia Saturn [\"OP13-083\">OP13-083] until next turn end!"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Monkey.D.Garp\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 5 DON em Vasco Shot\n    Vasco Shot (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n    anexou 1 DON em Marshall.D.Teach (08\n    Marshall.D.Teach (08 (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Shiryu (Full Art) (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n  > gastou 1 DON -> Joga: Avalo Pizarro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card, then play up to 1 [Fullalead] from your hand or trash.\r [Trigger] A...\u001b[0m\n",
+          "narrativa_on": "  \u001b[90mComprou: Bastille\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 5 DON em Vasco Shot\n    Vasco Shot (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n    anexou 1 DON em Marshall.D.Teach (08\n    Marshall.D.Teach (08 (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Shiryu (Full Art) (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n  > gastou 1 DON -> Joga: Avalo Pizarro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card, then play up to 1 [Fullalead] from your hand or trash.\r [Trigger] A...\u001b[0m\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 11,
+      "turnos_divergentes": 8,
+      "divergencias": [
+        {
+          "turn": 8,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP16-110",
+              "card_name": "Vasco Shot",
+              "effects": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Shiryu",
+              "attacker_code": "OP16-108",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": null,
+              "damage": null,
+              "blocked_by": "OP13-091",
+              "countered_by": []
+            },
+            {
+              "type": "play",
+              "card": "PRB02-015",
+              "card_name": "Shiryu",
+              "effects": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-080",
+              "to_name": "Marshall D. Teach",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-080",
+              "to_name": "Marshall D. Teach",
+              "total": 2
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-080",
+              "to_name": "Marshall D. Teach",
+              "total": 3
+            },
+            {
+              "type": "attack",
+              "attacker": "Marshall D. Teach",
+              "attacker_code": "OP16-080",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: The Risky Brothers\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    anexou 1 DON em Shiryu (Full Art)\n    Shiryu (Full Art) (9000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n  > gastou 1 DON -> Joga: Avalo Pizarro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card, then play up to 1 [Fullalead] from your hand or trash.\r [Trigger] A...\u001b[0m\n",
+          "narrativa_on": "  \u001b[90mComprou: Monkey.D.Luffy (111) (Parallel\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    anexou 1 DON em Shiryu (Full Art)\n    Shiryu (Full Art) (9000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n  > gastou 1 DON -> Joga: Avalo Pizarro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card, then play up to 1 [Fullalead] from your hand or trash.\r [Trigger] A...\u001b[0m\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n  > gastou 1 DON -> Joga: Monkey.D.Luffy (111) (Parallel (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 \"Supernovas\" type card...\u001b[0m\n    ↳ [Monkey.D.Luffy (111)] olhou 5 do topo -> nada para pegar\n    ↳ [Monkey.D.Luffy (111)] 4 carta(s) no fundo do deck\n"
+        },
+        {
+          "turn": 10,
+          "historical_actions": [
+            {
+              "type": "attack",
+              "attacker": "Marshall D. Teach",
+              "attacker_code": "OP16-080",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP13-089"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Shiryu",
+              "attacker_code": "OP16-108",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "play",
+              "card": "OP09-093",
+              "card_name": "Marshall D. Teach",
+              "effects": [
+                "Nullify effects of Imu [\"OP13-079\">OP13-079]",
+                "St. Jaygarcia Saturn [\"OP13-083\">OP13-083] can't attack next turn",
+                "Nullify effects of St. Jaygarcia Saturn [\"OP13-083\">OP13-083] until next turn end!"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Monkey.D.Garp\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 5 DON em Vasco Shot\n    Vasco Shot (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n    anexou 1 DON em Marshall.D.Teach (08\n    Marshall.D.Teach (08 (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Shiryu (Full Art) (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n  > gastou 1 DON -> Joga: Avalo Pizarro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card, then play up to 1 [Fullalead] from your hand or trash.\r [Trigger] A...\u001b[0m\n",
+          "narrativa_on": "  \u001b[90mComprou: Bastille\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 5 DON em Vasco Shot\n    Vasco Shot (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n    anexou 1 DON em Marshall.D.Teach (08\n    Marshall.D.Teach (08 (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Shiryu (Full Art) (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n  > gastou 1 DON -> Joga: Avalo Pizarro (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card, then play up to 1 [Fullalead] from your hand or trash.\r [Trigger] A...\u001b[0m\n"
+        },
+        {
+          "turn": 12,
+          "historical_actions": [
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-108",
+              "to_name": "Shiryu",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-108",
+              "to_name": "Shiryu",
+              "total": 2
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-108",
+              "to_name": "Shiryu",
+              "total": 3
+            },
+            {
+              "type": "attack",
+              "attacker": "Shiryu",
+              "attacker_code": "OP16-108",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Marshall D. Teach",
+              "attacker_code": "OP16-080",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP13-084"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP09-093",
+              "to_name": "Marshall D. Teach",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP09-093",
+              "to_name": "Marshall D. Teach",
+              "total": 2
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP09-093",
+              "to_name": "Marshall D. Teach",
+              "total": 3
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP09-093",
+              "to_name": "Marshall D. Teach",
+              "total": 4
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP09-093",
+              "to_name": "Marshall D. Teach",
+              "total": 5
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP09-093",
+              "to_name": "Marshall D. Teach",
+              "total": 6
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP09-093",
+              "to_name": "Marshall D. Teach",
+              "total": 7
+            },
+            {
+              "type": "attack",
+              "attacker": "Marshall D. Teach",
+              "attacker_code": "OP09-093",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Scratchmen Apoo - OP10-108 (Re\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 9 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 4 DON em Marshall.D.Teach (08\n    Marshall.D.Teach (08 (9000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n    anexou 3 DON em Shiryu (Full Art)\n    Shiryu (Full Art) (11000pwr) ataca Leader\n      🏆 VITORIA! Shiryu (Full Art) zera a vida do oponente\n",
+          "narrativa_on": "  \u001b[90mComprou: Rebecca (092)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 9 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 4 DON em Marshall.D.Teach (08\n    Marshall.D.Teach (08 (9000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n    anexou 3 DON em Shiryu (Full Art)\n    Shiryu (Full Art) (11000pwr) ataca Leader\n      🏆 VITORIA! Shiryu (Full Art) zera a vida do oponente\n"
+        },
+        {
+          "turn": 13,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP09-095",
+              "card_name": "Laffitte",
+              "effects": []
+            },
+            {
+              "type": "play",
+              "card": "OP09-099",
+              "card_name": "Fullalead",
+              "effects": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Monkey.D.Luffy (111) (Parallel\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Monkey.D.Luffy (111) (Parallel (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 \"Supernovas\" type card...\u001b[0m\n    ↳ [Monkey.D.Luffy (111)] olhou 5 do topo -> pegou: X.Drake (Reprin\n    ↳ [Monkey.D.Luffy (111)] 4 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: My Era...Begins!! (Reprint) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Blackbeard Pirates\" type...\u001b[0m\n    ↳ [My Era...Begins!! (R] olhou 3 do topo -> nada para pegar\n    ↳ [My Era...Begins!! (R] trash resto: Jinbe, Inazuma\n",
+          "narrativa_on": "  \u001b[90mComprou: Bastille\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: My Era...Begins!! (Reprint) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Blackbeard Pirates\" type...\u001b[0m\n    ↳ [My Era...Begins!! (R] olhou 3 do topo -> nada para pegar\n    ↳ [My Era...Begins!! (R] trash resto: Koala, Ms. Wednesda\n  > gastou 1 DON -> Joga: Fullalead (Reprint) (0pwr) [STAGE]\n    \u001b[90mefeito: [Activate: Main] You may trash 1 card from your hand and rest this Stage: Look at 3 cards ...\u001b[0m\n    ⚙ ativou [Activate:Main] de Fullalead (Reprint)\n      ↳ custo: restou Fullalead (Reprint\n      ↳ custo: trashou da mão: Jesus Burgess (\n      ↳ olhou 3 do topo -> nada para pegar\n      ↳ 2 carta(s) no fundo do deck\n"
+        },
+        {
+          "turn": 15,
+          "historical_actions": [
+            {
+              "type": "activate",
+              "card": "OP09-095",
+              "card_name": "Laffitte",
+              "effects": [
+                "Rest 1 Don",
+                "Rest Laffitte [\"OP09-095\">OP09-095]",
+                "<b>Reveal and Draw Shiryu [\"OP16-108\">OP16-108]</b>"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP09-096",
+              "card_name": "This is MY AGE!!!!",
+              "effects": [
+                "Rest 1 Don",
+                "<b>Reveal and Draw Marshall D. Teach [\"OP16-119\">OP16-119]</b>",
+                "Trash 2 Remaining Cards"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-080",
+              "to_name": "Marshall D. Teach",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-080",
+              "to_name": "Marshall D. Teach",
+              "total": 2
+            },
+            {
+              "type": "attack",
+              "attacker": "Marshall D. Teach",
+              "attacker_code": "OP16-080",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Bellamy\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Laffitte (Reprint)\n      ↳ custo: restou 1 DON\n      ↳ custo: restou Laffitte (Reprint)\n      ↳ olhou 5 do topo -> nada para pegar\n      ↳ 4 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: My Era...Begins!! (Reprint) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Blackbeard Pirates\" type...\u001b[0m\n    ↳ [My Era...Begins!! (R] olhou 3 do topo -> nada para pegar\n    ↳ [My Era...Begins!! (R] trash resto: Lindbergh, Fullbody\n",
+          "narrativa_on": "  \u001b[90mComprou: Sanji\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 2 DON -> Joga: Sanji (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [DON!! x2] [When Attacking] You may add 1 card from the top or bottom of your Life cards t...\u001b[0m\n"
+        },
+        {
+          "turn": 17,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP09-086",
+              "card_name": "Jesus Burgess",
+              "effects": []
+            },
+            {
+              "type": "activate",
+              "card": "OP09-099",
+              "card_name": "Fullalead",
+              "effects": [
+                "Rest Fullalead [\"OP09-099\">OP09-099]",
+                "Trash Black Vortex [\"OP16-115\">OP16-115]",
+                "<b>Reveal and Draw Vasco Shot [\"OP16-110\">OP16-110]</b>"
+              ]
+            },
+            {
+              "type": "play",
+              "card": "OP16-110",
+              "card_name": "Vasco Shot",
+              "effects": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-080",
+              "to_name": "Marshall D. Teach",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "Marshall D. Teach",
+              "attacker_code": "OP16-080",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP13-086",
+                "OP13-091"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Scratchmen Apoo - OP08-087 (Re\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 2 DON em Marshall.D.Teach (08 para ligar [attack_power]\n    Marshall.D.Teach (08 (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n",
+          "narrativa_on": "  \u001b[90mComprou: Jinbe\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 2 DON em Marshall.D.Teach (08 para ligar [attack_power]\n    Marshall.D.Teach (08 (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n      ⚡ [trigger] olhou 3 do topo -> pegou: Five Elders (Al; trash resto: St. Ethanbar, The Five Eld\n"
+        },
+        {
+          "turn": 19,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP09-086",
+              "card_name": "Jesus Burgess",
+              "effects": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-080",
+              "to_name": "Marshall D. Teach",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-080",
+              "to_name": "Marshall D. Teach",
+              "total": 2
+            },
+            {
+              "type": "attack",
+              "attacker": "Marshall D. Teach",
+              "attacker_code": "OP16-080",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP09-086",
+              "to_name": "Jesus Burgess",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP09-086",
+              "to_name": "Jesus Burgess",
+              "total": 2
+            },
+            {
+              "type": "attack",
+              "attacker": "Jesus Burgess",
+              "attacker_code": "OP09-086",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP13-080",
+                "OP16-093",
+                "OP16-093",
+                "OP13-084"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: The Risky Brothers\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: The Risky Brothers (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate: Main] You may trash this Character: If you have 15 or more cards in your trash,...\u001b[0m\n    ⚡ anexou 1 DON em Marshall.D.Teach (08 para ligar [attack_power]\n    Marshall.D.Teach (08 (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Jesus Burgess (Repri (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n",
+          "narrativa_on": "  \u001b[90mComprou: Jinbe\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Jesus Burgess (Repri\n    Jesus Burgess (Repri (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    ⚡ anexou 1 DON em Marshall.D.Teach (08 para ligar [attack_power]\n    Marshall.D.Teach (08 (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n"
+        },
+        {
+          "turn": 21,
+          "historical_actions": [
+            {
+              "type": "activate",
+              "card": "OP16-116",
+              "card_name": "ZEHAHAHAHA",
+              "effects": [
+                "Rest 8 Don",
+                "Deploy Marshall D. Teach [\"OP16-119\">OP16-119]",
+                "Send 1 Life to Hand"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP16-119",
+              "card_name": "Marshall D. Teach",
+              "effects": [
+                "Added card to top of Life from Hand"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Jesus Burgess",
+              "attacker_code": "OP09-086",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-080",
+              "to_name": "Marshall D. Teach",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP16-080",
+              "to_name": "Marshall D. Teach",
+              "total": 2
+            },
+            {
+              "type": "attack",
+              "attacker": "Marshall D. Teach",
+              "attacker_code": "OP16-080",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP13-083",
+                "OP16-093",
+                "OP13-089"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Jinbe\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Jesus Burgess (Repri (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n",
+          "narrativa_on": "  \u001b[90mComprou: Kouzuki Momonosuke\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 2 DON em Marshall.D.Teach (08 para ligar [attack_power]\n    Marshall.D.Teach (08 (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n    Jesus Burgess (Repri (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json",
+      "bot_leader": "Imu",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 1,
+      "divergencias": [
+        {
+          "turn": 10,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP13-086",
+              "card_name": "St. Shalria",
+              "effects": [
+                "<b>Reveal and Draw St. Jaygarcia Saturn [\"OP13-083\">OP13-083]</b>",
+                "Trash 2 Remaining Cards",
+                "Trash St. Jaygarcia Saturn [\"OP13-083\">OP13-083]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP13-079",
+              "card_name": "Imu",
+              "effects": [
+                "Trash St. Shalria [\"OP13-086\">OP13-086]",
+                "Draw 1 Card"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-084",
+              "to_name": "St. Shepherd Ju Peter",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "St. Shepherd Ju Peter",
+              "attacker_code": "OP13-084",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "activate",
+              "card": "OP13-099",
+              "card_name": "The Empty Throne",
+              "effects": [
+                "Rest 3 Don",
+                "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+                "Deploy Five Elders [\"OP13-082\">OP13-082]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP13-082",
+              "card_name": "Five Elders",
+              "effects": [
+                "Rest 1 Don",
+                "Trash St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+                "Trash St. Shepherd Ju Peter [\"OP13-084\">OP13-084]",
+                "Trash Five Elders [\"OP13-082\">OP13-082]",
+                "Deployed St. Shepherd Ju Peter [\"OP13-084\">OP13-084] from Trash",
+                "Deployed St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080] from Trash",
+                "Deployed St. Jaygarcia Saturn [\"OP13-083\">OP13-083] from Trash",
+                "Deployed St. Marcus Mars [\"OP13-091\">OP13-091] from Trash",
+                "Deployed St. Topman Warcury [\"OP13-089\">OP13-089] from Trash"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP13-083",
+              "card_name": "St. Jaygarcia Saturn",
+              "effects": [
+                "<b>Reveal and Draw St. Shepherd Ju Peter [\"OP13-084\">OP13-084]</b>"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Imu",
+              "attacker_code": "OP13-079",
+              "target": "Laffitte [\"OP09-095\">OP09-095]",
+              "result": null,
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-080",
+              "to_name": "St. Ethanbaron V. Nusjuro",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-080",
+              "to_name": "St. Ethanbaron V. Nusjuro",
+              "total": 2
+            },
+            {
+              "type": "attack",
+              "attacker": "St. Ethanbaron V. Nusjuro",
+              "attacker_code": "OP13-080",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "activate",
+              "card": "OP13-080",
+              "card_name": "St. Ethanbaron V. Nusjuro",
+              "effects": [
+                "Buff Marshall D. Teach [\"OP16-119\">OP16-119] -2000"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: St. Jaygarcia Saturn (Parallel\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    St. Shepherd Ju Pete (5000pwr) ataca Laffitte (Reprint)\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Black Vortex\n      💀 Laffitte (Reprint) foi KO!\n  > gastou 1 DON -> Joga: Ground Death (Alternate Art) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Don!! cards: Negate the effect of up to 1 of your opponent's...\u001b[0m\n    ↳ [Ground Death (Altern] custo: restou 2 DON\n    ↳ [Ground Death (Altern] negou o efeito de Doc Q\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Shiryu (Full Ar\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Jaygarcia \n      ↳ comprou: Mary Geoise \n",
+          "narrativa_on": "  \u001b[90mComprou: St. Jaygarcia Saturn (Parallel\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: Ground Death (Alternate Art) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Don!! cards: Negate the effect of up to 1 of your opponent's...\u001b[0m\n    ↳ [Ground Death (Altern] custo: restou 2 DON\n    ↳ [Ground Death (Altern] negou o efeito de Doc Q\n    St. Shepherd Ju Pete (5000pwr) ataca Laffitte (Reprint)\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Black Vortex\n      💀 Laffitte (Reprint) foi KO!\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Shiryu (Full Ar\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Jaygarcia \n      ↳ comprou: Mary Geoise \n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json",
+      "bot_leader": "Imu",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 5,
+      "divergencias": [
+        {
+          "turn": 4,
+          "historical_actions": [
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-079",
+              "to_name": "Imu",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "Imu",
+              "attacker_code": "OP13-079",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "activate",
+              "card": "OP13-099",
+              "card_name": "The Empty Throne",
+              "effects": [
+                "Rest 3 Don",
+                "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+                "Deploy St. Topman Warcury [\"OP13-089\">OP13-089]"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: St. Shepherd Ju Peter (Alterna\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Laffitte (Reprint)\n      💀 Laffitte (Reprint) foi KO!\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão Saint Mjosgard\n      ↳ comprou: Five Elders \n    ⚙ ativou [Activate:Main] de The Empty Throne\n      ↳ custo: restou The Empty Throne\n      ↳ custo: restou 3 DON\n      ↳ jogou (grátis): St. Topman Warc\n",
+          "narrativa_on": "  \u001b[90mComprou: St. Shepherd Ju Peter (Alterna\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Laffitte (Reprint)\n      💀 Laffitte (Reprint) foi KO!\n  > gastou 4 DON -> Joga: St. Topman Warcury (Parallel) (5000pwr) [CHARACTER]\n    \u001b[90mefeito: If you have 7 or more cards in your trash, this Character cannot be removed from the field...\u001b[0m\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character St. Topman War\n      ↳ comprou: Five Elders \n"
+        },
+        {
+          "turn": 6,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP13-086",
+              "card_name": "St. Shalria",
+              "effects": [
+                "<b>Reveal and Draw St. Jaygarcia Saturn [\"OP13-083\">OP13-083]</b>",
+                "Trash 2 Remaining Cards",
+                "Trash St. Shepherd Ju Peter [\"OP13-084\">OP13-084]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP13-079",
+              "card_name": "Imu",
+              "effects": [
+                "Trash St. Shalria [\"OP13-086\">OP13-086]",
+                "Draw 1 Card"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP13-099",
+              "card_name": "The Empty Throne",
+              "effects": [
+                "Rest 3 Don",
+                "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+                "Deploy St. Jaygarcia Saturn [\"OP13-083\">OP13-083]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP13-083",
+              "card_name": "St. Jaygarcia Saturn",
+              "effects": [
+                "<b>Reveal and Draw St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]</b>"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-079",
+              "to_name": "Imu",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-089",
+              "to_name": "St. Topman Warcury",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "St. Topman Warcury",
+              "attacker_code": "OP13-089",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP16-104"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Imu",
+              "attacker_code": "OP13-079",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": [
+                "OP06-115"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Saint Shalria\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Leader\n      🛡 Counter You're the One Who: +3000 power | custo: trashou da mao: Fullalead (Repr -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n    St. Topman Warcury ( (5000pwr) ataca Laffitte (Reprint)\n      💀 Laffitte (Reprint) foi KO!\n  > gastou 1 DON -> Joga: Saint Shalria (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" ty...\u001b[0m\n    ↳ [Saint Shalria] olhou 3 do topo -> pegou: Never Existed..\n    ↳ [Saint Shalria] trash resto: After All Th, St. Marcus M\n    ↳ [Saint Shalria] descartou da mão: Saint Mjosga\n  > gastou 1 DON -> Joga: Ground Death (Alternate Art) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Don!! cards: Negate the effect of up to 1 of your opponent's...\u001b[0m\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: St. Shepherd\n",
+          "narrativa_on": "  \u001b[90mComprou: The Five Elders Are at Your Se\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: Five Elders (Al\n    ↳ [The Five Elders Are ] trash resto: St. Shepherd, Shirahoshi (\n    anexou 2 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Leader\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Catarina Devon\n      🛡 Counter You're the One Who: +3000 power | custo: trashou da mao: Fullalead (Repr -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n    St. Topman Warcury ( (5000pwr) ataca Vasco Shot\n      💀 Vasco Shot foi KO!\n      ↳ [on KO] comprou: Edison\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Shepherd J\n      ↳ comprou: St. Marcus M\n  > gastou 1 DON -> Joga: Ground Death (Alternate Art) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Don!! cards: Negate the effect of up to 1 of your opponent's...\u001b[0m\n"
+        },
+        {
+          "turn": 8,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP13-086",
+              "card_name": "St. Shalria",
+              "effects": [
+                "<b>Reveal and Draw Five Elders [\"OP13-082\">OP13-082]</b>",
+                "Trash 2 Remaining Cards",
+                "Trash ...Never Existed... [\"OP13-098\">OP13-098]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP13-096",
+              "card_name": "The Five Elders... Are At Your Service",
+              "effects": [
+                "Rest 1 Don",
+                "<b>Reveal and Draw Five Elders [\"OP13-082\">OP13-082]</b>",
+                "Trash 2 Remaining Cards"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-083",
+              "to_name": "St. Jaygarcia Saturn",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-083",
+              "to_name": "St. Jaygarcia Saturn",
+              "total": 2
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-083",
+              "to_name": "St. Jaygarcia Saturn",
+              "total": 3
+            },
+            {
+              "type": "activate",
+              "card": "OP13-079",
+              "card_name": "Imu",
+              "effects": [
+                "Trash St. Shalria [\"OP13-086\">OP13-086]",
+                "Draw 1 Card"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "St. Jaygarcia Saturn",
+              "attacker_code": "OP13-083",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-079",
+              "to_name": "Imu",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-079",
+              "to_name": "Imu",
+              "total": 2
+            },
+            {
+              "type": "attack",
+              "attacker": "Imu",
+              "attacker_code": "OP13-079",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "hit",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: St. Ethanbaron V. Nusjuro (Par\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em St. Jaygarcia Saturn\n    St. Jaygarcia Saturn (6000pwr) ataca Laffitte (Reprint)\n      💀 Laffitte (Reprint) foi KO!\n    Imu (Alternate Art) (5000pwr) ataca Vasco Shot\n      💀 Vasco Shot foi KO!\n      ↳ [on KO] comprou: Edison\n  > gastou 1 DON -> Joga: Saint Shalria (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" ty...\u001b[0m\n    ↳ [Saint Shalria] olhou 3 do topo -> pegou: St. Shepherd Ju\n    ↳ [Saint Shalria] trash resto: Shirahoshi (, Ground Death\n    ↳ [Saint Shalria] descartou da mão: St. Ethanbar\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: Five Elders (Al\n    ↳ [The Five Elders Are ] trash resto: Five Elders , Never Existe\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: St. Marcus M\n",
+          "narrativa_on": "  \u001b[90mComprou: St. Marcus Mars (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em St. Jaygarcia Saturn\n    St. Jaygarcia Saturn (6000pwr) ataca Laffitte (Reprint)\n      💀 Laffitte (Reprint) foi KO!\n    Imu (Alternate Art) (5000pwr) ataca Vasco Shot\n      💀 Vasco Shot foi KO!\n      ↳ [on KO] comprou: Cerberus\n  > gastou 1 DON -> Joga: Saint Shalria (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" ty...\u001b[0m\n    ↳ [Saint Shalria] olhou 3 do topo -> pegou: Five Elders (Al\n    ↳ [Saint Shalria] trash resto: The Five Eld, St. Ethanbar\n    ↳ [Saint Shalria] descartou da mão: St. Marcus M\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: St. Jaygarcia S\n    ↳ [The Five Elders Are ] trash resto: After All Th, After All Th\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: St. Ethanbar\n"
+        },
+        {
+          "turn": 10,
+          "historical_actions": [
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-083",
+              "to_name": "St. Jaygarcia Saturn",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-083",
+              "to_name": "St. Jaygarcia Saturn",
+              "total": 2
+            },
+            {
+              "type": "attack",
+              "attacker": "St. Jaygarcia Saturn",
+              "attacker_code": "OP13-083",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 8,
+              "to": "OP13-079",
+              "to_name": "Imu",
+              "total": 8
+            },
+            {
+              "type": "attack",
+              "attacker": "Imu",
+              "attacker_code": "OP13-079",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "hit",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "activate",
+              "card": "OP13-079",
+              "card_name": "Imu",
+              "effects": [
+                "Trash St. Jaygarcia Saturn [\"OP13-083\">OP13-083]",
+                "Draw 1 Card"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: St. Jaygarcia Saturn (Parallel\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    St. Jaygarcia Saturn (5000pwr) ataca Catarina Devon\n      💀 Catarina Devon foi KO!\n    Imu (Alternate Art) (6000pwr) ataca Laffitte (Reprint)\n      💀 Laffitte (Reprint) foi KO!\n  > gastou 1 DON -> Joga: Ground Death (Alternate Art) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Don!! cards: Negate the effect of up to 1 of your opponent's...\u001b[0m\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Jaygarcia \n      ↳ comprou: St. Shepherd\n",
+          "narrativa_on": "  \u001b[90mComprou: St. Ethanbaron V. Nusjuro (Par\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    St. Jaygarcia Saturn (5000pwr) ataca Catarina Devon\n      💀 Catarina Devon foi KO!\n    Imu (Alternate Art) (6000pwr) ataca Doc Q\n      💀 Doc Q foi KO!\n      ↳ [on KO] comprou: Shirahoshi\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character St. Jaygarcia \n      ↳ comprou: Saint Shalri\n  > gastou 1 DON -> Joga: Saint Shalria (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" ty...\u001b[0m\n    ↳ [Saint Shalria] olhou 3 do topo -> pegou: Never Existed..\n    ↳ [Saint Shalria] trash resto: St. Marcus M, St. Jaygarci\n    ↳ [Saint Shalria] descartou da mão: St. Ethanbar\n"
+        },
+        {
+          "turn": 12,
+          "historical_actions": [
+            {
+              "type": "activate",
+              "card": "OP13-079",
+              "card_name": "Imu",
+              "effects": [
+                "Trash St. Marcus Mars [\"OP13-091\">OP13-091]",
+                "Draw 1 Card"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-079",
+              "to_name": "Imu",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-079",
+              "to_name": "Imu",
+              "total": 2
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-079",
+              "to_name": "Imu",
+              "total": 3
+            },
+            {
+              "type": "attack",
+              "attacker": "Imu",
+              "attacker_code": "OP13-079",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": "OP09-093",
+              "countered_by": []
+            },
+            {
+              "type": "activate",
+              "card": "OP13-099",
+              "card_name": "The Empty Throne",
+              "effects": [
+                "Rest 3 Don",
+                "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+                "Deploy Five Elders [\"OP13-082\">OP13-082]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP13-082",
+              "card_name": "Five Elders",
+              "effects": [
+                "Rest 1 Don",
+                "Trash St. Marcus Mars [\"OP13-091\">OP13-091]",
+                "Trash Five Elders [\"OP13-082\">OP13-082]",
+                "Deployed St. Jaygarcia Saturn [\"OP13-083\">OP13-083] from Trash",
+                "Deployed St. Marcus Mars [\"OP13-091\">OP13-091] from Trash",
+                "Deployed St. Topman Warcury [\"OP13-089\">OP13-089] from Trash",
+                "Deployed St. Shepherd Ju Peter [\"OP13-084\">OP13-084] from Trash",
+                "Deployed St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080] from Trash"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP13-083",
+              "card_name": "St. Jaygarcia Saturn",
+              "effects": [
+                "<b>Reveal and Draw St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]</b>"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-080",
+              "to_name": "St. Ethanbaron V. Nusjuro",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "St. Ethanbaron V. Nusjuro",
+              "attacker_code": "OP13-080",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "activate",
+              "card": "OP13-080",
+              "card_name": "St. Ethanbaron V. Nusjuro",
+              "effects": [
+                "Buff Marshall D. Teach [\"OP09-093\">OP09-093] -2000"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: The Five Elders Are at Your Se\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Catarina Devon\n      💀 Catarina Devon foi KO!\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão Saint Mjosgard\n      ↳ comprou: The Five Eld\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: Five Elders (Al\n    ↳ [The Five Elders Are ] trash resto: After All Th, St. Marcus M\n",
+          "narrativa_on": "  \u001b[90mComprou: St. Jaygarcia Saturn (Parallel\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (7000pwr) ataca Catarina Devon\n      💀 Catarina Devon foi KO!\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Jaygarcia \n      ↳ comprou: St. Jaygarci\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T21.41.10.json",
+      "bot_leader": "Imu",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 3,
+      "turnos_divergentes": 2,
+      "divergencias": [
+        {
+          "turn": 4,
+          "historical_actions": [
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-086",
+              "to_name": "St. Shalria",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "St. Shalria",
+              "attacker_code": "OP13-086",
+              "target": "Laffitte [\"OP09-095\">OP09-095]",
+              "result": "hit",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "activate",
+              "card": "OP13-079",
+              "card_name": "Imu",
+              "effects": [
+                "Trash St. Shalria [\"OP13-086\">OP13-086]",
+                "Draw 1 Card"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Imu",
+              "attacker_code": "OP13-079",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "activate",
+              "card": "OP13-099",
+              "card_name": "The Empty Throne",
+              "effects": [
+                "Rest 3 Don",
+                "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+                "Deploy St. Jaygarcia Saturn [\"OP13-083\">OP13-083]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP13-083",
+              "card_name": "St. Jaygarcia Saturn",
+              "effects": [
+                "<b>Reveal and Draw St. Topman Warcury [\"OP13-089\">OP13-089]</b>"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: St. Shepherd Ju Peter (Alterna\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Laffitte (Reprint)\n      💀 Laffitte (Reprint) foi KO!\n    ⚙ ativou [Activate:Main] de The Empty Throne\n      ↳ custo: restou The Empty Throne\n      ↳ custo: restou 3 DON\n      ↳ jogou (grátis): St. Jaygarcia S\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: Five Elders (Al\n    ↳ [The Five Elders Are ] trash resto: St. Ethanbar, Shirahoshi (\n    Saint Shalria (0pwr) ataca Doc Q\n      💀 Doc Q foi KO!\n      ↳ [on KO] comprou: Perona (045)\n      ↳ [on KO] KO: Saint Shalria\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Ethanbaron\n      ↳ comprou: The Five Eld\n",
+          "narrativa_on": "  \u001b[90mComprou: St. Shepherd Ju Peter (Alterna\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Laffitte (Reprint)\n      💀 Laffitte (Reprint) foi KO!\n    Saint Shalria (0pwr) ataca Doc Q\n      💀 Doc Q foi KO!\n      ↳ [on KO] comprou: Perona (045)\n      ↳ [on KO] KO: Saint Shalria\n    ⚙ ativou [Activate:Main] de The Empty Throne\n      ↳ custo: restou The Empty Throne\n      ↳ custo: restou 3 DON\n      ↳ jogou (grátis): St. Jaygarcia S\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: Five Elders (Al\n    ↳ [The Five Elders Are ] trash resto: St. Ethanbar, Shirahoshi (\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Ethanbaron\n      ↳ comprou: The Five Eld\n"
+        },
+        {
+          "turn": 6,
+          "historical_actions": [
+            {
+              "type": "activate",
+              "card": "OP13-099",
+              "card_name": "The Empty Throne",
+              "effects": [
+                "Rest 3 Don",
+                "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+                "Deploy St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-080",
+              "to_name": "St. Ethanbaron V. Nusjuro",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "St. Ethanbaron V. Nusjuro",
+              "attacker_code": "OP13-080",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-083",
+              "to_name": "St. Jaygarcia Saturn",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "St. Jaygarcia Saturn",
+              "attacker_code": "OP13-083",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP16-109"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-079",
+              "to_name": "Imu",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "Imu",
+              "attacker_code": "OP13-079",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: St. Jaygarcia Saturn (Parallel\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    St. Jaygarcia Saturn (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 4 DON -> Joga: St. Jaygarcia Saturn (Parallel (5000pwr) [CHARACTER]\n    \u001b[90mefeito: If you have 7 or more cards in your trash, this Character cannot be removed from the field...\u001b[0m\n    ↳ [St. Jaygarcia Saturn] olhou 5 do topo -> pegou: St. Topman Warc\n    ↳ [St. Jaygarcia Saturn] 4 carta(s) no fundo do deck\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Topman War\n      ↳ comprou: Saint Shalri\n  > gastou 1 DON -> Joga: Saint Shalria (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" ty...\u001b[0m\n    ↳ [Saint Shalria] olhou 3 do topo -> pegou: St. Shepherd Ju\n    ↳ [Saint Shalria] trash resto: St. Jaygarci, Ground Death\n    ↳ [Saint Shalria] descartou da mão: St. Topman W\n",
+          "narrativa_on": "  \u001b[90mComprou: St. Jaygarcia Saturn (Parallel\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    St. Jaygarcia Saturn (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 4 DON -> Joga: St. Topman Warcury (Parallel) (5000pwr) [CHARACTER]\n    \u001b[90mefeito: If you have 7 or more cards in your trash, this Character cannot be removed from the field...\u001b[0m\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Jaygarcia \n      ↳ comprou: St. Ethanbar\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 1,
+      "divergencias": [
+        {
+          "turn": 8,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP16-119",
+              "card_name": "Marshall D. Teach",
+              "effects": [
+                "Added card to top of Life from Hand"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Marshall D. Teach",
+              "attacker_code": "OP16-080",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP13-084"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Shiryu",
+              "attacker_code": "OP16-108",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Shirley\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Marshall.D.Teach (08\n    Marshall.D.Teach (08 (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 3 DON -> Joga: Shirley (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] (After your opponent declares an attack, you may rest this card to make it the n...\u001b[0m\n    ↳ [Shirley] olhou vida do oponente: moveu topo para o fundo\n    Shiryu (Full Art) (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n",
+          "narrativa_on": "  \u001b[90mComprou: Mr.1 (Daz.Bonez) (Alternate Ar\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Shiryu (Full Art) (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n  > gastou 4 DON -> Joga: Jesus Burgess (Reprint) (5000pwr) [CHARACTER]\n    \u001b[90mefeito: This Character cannot be K.O.'d by your opponent's effects.If your Leader has the \"Blackbe...\u001b[0m\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 3,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 9,
+      "turnos_divergentes": 1,
+      "divergencias": [
+        {
+          "turn": 11,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP16-109",
+              "card_name": "Doc Q",
+              "effects": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Tony Tony.Chopper\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Marshall.D.Teach (08\n    Marshall.D.Teach (08 (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n  > gastou 3 DON -> Joga: Tony Tony.Chopper (4000pwr) [CHARACTER]\n    \u001b[90mefeito: [When Attacking] If your opponent has a Character with a cost of 0, this Character gains +...\u001b[0m\n  > gastou 1 DON -> Joga: Doc Q (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] If your Leader has the {Blackbeard Pirates} type, draw 1 card and K.O. up to 2 o...\u001b[0m\n",
+          "narrativa_on": "  \u001b[90mComprou: Tony Tony.Chopper\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Marshall.D.Teach (08\n    Marshall.D.Teach (08 (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n  > gastou 4 DON -> Joga: Baby 5 (112) (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [Trigger] If your Leader is multicolored, draw 2 cards.\u001b[0m\n  > gastou 1 DON -> Joga: Doc Q (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] If your Leader has the {Blackbeard Pirates} type, draw 1 card and K.O. up to 2 o...\u001b[0m\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.25.08.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T15.27.45.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Krieg-RG_2026-07-12T23.03.36.json",
+      "bot_leader": "Krieg",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "bot_leader": "Krieg",
+      "opp_leader": "Imu",
+      "turnos_auditados": 8,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50.json",
+      "bot_leader": "Eustass \"Captain\" Kid",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
+      "bot_leader": "Kaido",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Jinbe-G_2026-07-13T22.54.47.json",
+      "bot_leader": "Jinbe",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
+      "bot_leader": "Jewelry Bonney",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39.json",
+      "bot_leader": "Jewelry Bonney",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32.json",
+      "bot_leader": "Donquixote Doflamingo",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.json",
+      "bot_leader": "Eustass \"Captain\" Kid",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T02.34.18.json",
+      "bot_leader": "Eustass \"Captain\" Kid",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.10.05.json",
+      "bot_leader": "Imu",
+      "opp_leader": "Eustass \"Captain\" Kid",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 3,
+      "divergencias": [
+        {
+          "turn": 4,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP13-086",
+              "card_name": "St. Shalria",
+              "effects": [
+                "<b>Reveal and Draw Five Elders [\"OP13-082\">OP13-082]</b>",
+                "Trash 2 Remaining Cards",
+                "Trash St. Marcus Mars [\"OP13-091\">OP13-091]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP13-079",
+              "card_name": "Imu",
+              "effects": [
+                "Trash St. Shalria [\"OP13-086\">OP13-086]",
+                "Draw 1 Card"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Imu",
+              "attacker_code": "OP13-079",
+              "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+              "result": "hit",
+              "damage": null,
+              "blocked_by": "OP11-101",
+              "countered_by": []
+            },
+            {
+              "type": "activate",
+              "card": "OP13-099",
+              "card_name": "The Empty Throne",
+              "effects": [
+                "Rest 3 Don",
+                "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+                "Deploy St. Jaygarcia Saturn [\"OP13-083\">OP13-083]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP13-083",
+              "card_name": "St. Jaygarcia Saturn",
+              "effects": [
+                "<b>Reveal and Draw St. Topman Warcury [\"OP13-089\">OP13-089]</b>"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: St. Topman Warcury (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚙ ativou [Activate:Main] de The Empty Throne\n      ↳ custo: restou The Empty Throne\n      ↳ custo: restou 3 DON\n      ↳ jogou (grátis): St. Topman Warc\n    Imu (Alternate Art) (5000pwr) ataca Capone\"Gang\"Bege (10\n      💀 Capone\"Gang\"Bege (10 foi KO!\n  > gastou 1 DON -> Joga: Saint Shalria (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" ty...\u001b[0m\n    ↳ [Saint Shalria] olhou 3 do topo -> pegou: The Five Elders\n    ↳ [Saint Shalria] trash resto: Never Existe, After All Th\n    ↳ [Saint Shalria] descartou da mão: St. Marcus M\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: St. Topman W\n",
+          "narrativa_on": "  \u001b[90mComprou: St. Shepherd Ju Peter (Alterna\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Capone\"Gang\"Bege (10\n      💀 Capone\"Gang\"Bege (10 foi KO!\n  > gastou 4 DON -> Joga: St. Jaygarcia Saturn (Parallel (5000pwr) [CHARACTER]\n    \u001b[90mefeito: If you have 7 or more cards in your trash, this Character cannot be removed from the field...\u001b[0m\n    ↳ [St. Jaygarcia Saturn] olhou 5 do topo -> pegou: Five Elders (Al\n    ↳ [St. Jaygarcia Saturn] 4 carta(s) no fundo do deck\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Marcus Mar\n      ↳ comprou: Five Elders \n"
+        },
+        {
+          "turn": 6,
+          "historical_actions": [
+            {
+              "type": "activate",
+              "card": "OP13-099",
+              "card_name": "The Empty Throne",
+              "effects": [
+                "Rest 3 Don",
+                "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+                "Deploy St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "St. Ethanbaron V. Nusjuro",
+              "attacker_code": "OP13-080",
+              "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "activate",
+              "card": "OP13-080",
+              "card_name": "St. Ethanbaron V. Nusjuro",
+              "effects": [
+                "Buff X. Drake [\"OP10-114\">OP10-114] -2000"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "St. Jaygarcia Saturn",
+              "attacker_code": "OP13-083",
+              "target": "X. Drake [\"OP10-114\">OP10-114]",
+              "result": null,
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-079",
+              "to_name": "Imu",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-079",
+              "to_name": "Imu",
+              "total": 2
+            },
+            {
+              "type": "attack",
+              "attacker": "Imu",
+              "attacker_code": "OP13-079",
+              "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: St. Shepherd Ju Peter (Alterna\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    St. Jaygarcia Saturn (5000pwr) ataca X.Drake (Reprint)\n      💀 X.Drake (Reprint) foi KO!\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n      ⚡ [trigger] travou (não pode atacar): St. Jaygarcia S\n  > gastou 3 DON -> Joga: St. Jaygarcia Saturn (Parallel (5000pwr) [CHARACTER]\n    \u001b[90mefeito: If you have 7 or more cards in your trash, this Character cannot be removed from the field...\u001b[0m\n    ↳ [St. Jaygarcia Saturn] olhou 5 do topo -> pegou: The Five Elders\n    ↳ [St. Jaygarcia Saturn] 4 carta(s) no fundo do deck\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character St. Jaygarcia \n      ↳ comprou: Saint Mjosga\n  > gastou 3 DON -> Joga: St. Topman Warcury (Parallel) (5000pwr) [CHARACTER]\n    \u001b[90mefeito: If you have 7 or more cards in your trash, this Character cannot be removed from the field...\u001b[0m\n",
+          "narrativa_on": "  \u001b[90mComprou: Shirahoshi (OP05-082) (Reprint\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚙ ativou [Activate:Main] de The Empty Throne\n      ↳ custo: restou The Empty Throne\n      ↳ custo: restou 3 DON\n      ↳ jogou (grátis): St. Topman Warc\n  > gastou 1 DON -> Joga: Ground Death (Alternate Art) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 2 of your Don!! cards: Negate the effect of up to 1 of your opponent's...\u001b[0m\n    ↳ [Ground Death (Altern] custo: restou 2 DON\n    ↳ [Ground Death (Altern] negou o efeito de X.Drake (Reprint)\n    St. Jaygarcia Saturn (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n    Imu (Alternate Art) (5000pwr) ataca X.Drake (Reprint)\n      💀 X.Drake (Reprint) foi KO!\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Jaygarcia \n      ↳ comprou: St. Ethanbar\n"
+        },
+        {
+          "turn": 8,
+          "historical_actions": [
+            {
+              "type": "activate",
+              "card": "OP13-099",
+              "card_name": "The Empty Throne",
+              "effects": [
+                "Rest 3 Don",
+                "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+                "Deploy St. Jaygarcia Saturn [\"OP13-083\">OP13-083]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP13-083",
+              "card_name": "St. Jaygarcia Saturn",
+              "effects": [
+                "<b>Reveal and Draw ...Never Existed... [\"OP13-098\">OP13-098]</b>"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "St. Ethanbaron V. Nusjuro",
+              "attacker_code": "OP13-080",
+              "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attack",
+              "attacker": "St. Jaygarcia Saturn",
+              "attacker_code": "OP13-083",
+              "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP10-114"
+              ]
+            },
+            {
+              "type": "play",
+              "card": "OP13-089",
+              "card_name": "St. Topman Warcury",
+              "effects": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Imu",
+              "attacker_code": "OP13-079",
+              "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: St. Jaygarcia Saturn (Parallel\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    St. Ethanbaron V. Nu (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    St. Jaygarcia Saturn (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    ⚙ ativou [Activate:Main] de The Empty Throne\n      ↳ custo: restou The Empty Throne\n      ↳ custo: restou 3 DON\n      ↳ jogou (grátis): St. Topman Warc\n    anexou 1 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Jaygarcia \n      ↳ comprou: St. Topman W\n",
+          "narrativa_on": "  \u001b[90mComprou: St. Jaygarcia Saturn (Parallel\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    St. Jaygarcia Saturn (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    St. Ethanbaron V. Nu (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    ⚙ ativou [Activate:Main] de The Empty Throne\n      ↳ custo: restou The Empty Throne\n      ↳ custo: restou 3 DON\n      ↳ jogou (grátis): St. Topman Warc\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Jaygarcia \n      ↳ comprou: Never Existe\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.json",
+      "bot_leader": "Imu",
+      "opp_leader": "Eustass \"Captain\" Kid",
+      "turnos_auditados": 7,
+      "turnos_divergentes": 6,
+      "divergencias": [
+        {
+          "turn": 11,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP10-111",
+              "card_name": "Monkey D. Luffy",
+              "effects": [
+                "<b>Reveal and Draw Trafalgar Law [\"OP10-119\">OP10-119]</b>"
+              ]
+            },
+            {
+              "type": "play",
+              "card": "OP15-105",
+              "card_name": "Jewelry Bonney",
+              "effects": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Saint Mjosgard\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n  > gastou 4 DON -> Joga: Basil Hawkins - OP10-109 (Repr (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Trash up to 1 card from the top of your opponent's Life cards.[Trigger] Draw 2 c...\u001b[0m\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão Saint Mjosgard\n      ↳ comprou: Ground Death\n",
+          "narrativa_on": "  \u001b[90mComprou: St. Ethanbaron V. Nusjuro (Par\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Ethanbaron\n      ↳ comprou: The Five Eld\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: St. Jaygarcia S\n    ↳ [The Five Elders Are ] trash resto: Shirahoshi (, St. Topman W\n    ⚙ ativou [Activate:Main] de The Empty Throne\n      ↳ custo: restou The Empty Throne\n      ↳ custo: restou 3 DON\n      ↳ jogou (grátis): St. Jaygarcia S\n"
+        },
+        {
+          "turn": 13,
+          "historical_actions": [
+            {
+              "type": "activate",
+              "card": "OP10-116",
+              "card_name": "Damned Punk: Electromagnetic Cannon",
+              "effects": [
+                "Rest 4 Don",
+                "<b>Looked at opponent's top Life</b>",
+                "<b>Left at the Top</b>"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Eustass \"Captain\" Kid",
+              "attacker_code": "OP10-099",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Ground Death (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 7 DON -> Joga: Trafalgar Law - OP10-119 (Repr (9000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Reveal up to 1 \"Supernovas\" type Character card from your hand and add it to the...\u001b[0m\n    ↳ [Trafalgar Law - OP10] +1 DON\n    ↳ [Trafalgar Law - OP10] +1 vida (deck_top->life_top)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão Jewelry Bonney\n      ↳ comprou: Mary Geoise \n",
+          "narrativa_on": "  \u001b[90mComprou: Shirahoshi (OP05-082) (Reprint\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 7 DON -> Joga: Trafalgar Law - OP10-119 (Repr (9000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Reveal up to 1 \"Supernovas\" type Character card from your hand and add it to the...\u001b[0m\n    ↳ [Trafalgar Law - OP10] +1 DON\n    ↳ [Trafalgar Law - OP10] +1 vida (deck_top->life_top)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão Shirahoshi (OP\n      ↳ comprou: The Empty Th\n"
+        },
+        {
+          "turn": 15,
+          "historical_actions": [
+            {
+              "type": "attach_don",
+              "amount": 3,
+              "to": "OP10-111",
+              "to_name": "Monkey D. Luffy",
+              "total": 3
+            },
+            {
+              "type": "attack",
+              "attacker": "Monkey D. Luffy",
+              "attacker_code": "OP10-111",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP13-080"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 3,
+              "to": "OP15-105",
+              "to_name": "Jewelry Bonney",
+              "total": 3
+            },
+            {
+              "type": "attack",
+              "attacker": "Jewelry Bonney",
+              "attacker_code": "OP15-105",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Eustass \"Captain\" Kid",
+              "attacker_code": "OP10-099",
+              "target": "Imu [\"OP13-079\">OP13-079]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP13-084"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Never Existed... in the First \u001b[0m\n  \u001b[93mDON!! +2 rampados │ 9 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 7 DON -> Joga: Trafalgar Law - OP10-119 (Repr (9000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Reveal up to 1 \"Supernovas\" type Character card from your hand and add it to the...\u001b[0m\n    ↳ [Trafalgar Law - OP10] +1 DON\n    ↳ [Trafalgar Law - OP10] +1 vida (deck_top->life_top)\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Scratchmen Apoo\n    ↳ [Bartolomeo] comprou: St. Topman W, St. Ethanbar\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Topman War\n      ↳ comprou: Saint Shalri\n  > gastou 1 DON -> Joga: Saint Shalria (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" ty...\u001b[0m\n    ↳ [Saint Shalria] olhou 3 do topo -> pegou: Five Elders (Al\n    ↳ [Saint Shalria] trash resto: St. Marcus M, Saint Mjosga\n    ↳ [Saint Shalria] descartou da mão: St. Ethanbar\n",
+          "narrativa_on": "  \u001b[90mComprou: Saint Shalria\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 9 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 7 DON -> Joga: Trafalgar Law - OP10-119 (Repr (9000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Reveal up to 1 \"Supernovas\" type Character card from your hand and add it to the...\u001b[0m\n    ↳ [Trafalgar Law - OP10] +1 DON\n    ↳ [Trafalgar Law - OP10] +1 vida (deck_top->life_top)\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ↳ [Bartolomeo] custo: trashou da mão: Scratchmen Apoo\n    ↳ [Bartolomeo] comprou: St. Ethanbar, Saint Mjosga\n  > gastou 1 DON -> Joga: Saint Shalria (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" ty...\u001b[0m\n    ↳ [Saint Shalria] olhou 3 do topo -> pegou: Five Elders (Al\n    ↳ [Saint Shalria] trash resto: St. Jaygarci, Shirahoshi (\n    ↳ [Saint Shalria] descartou da mão: St. Ethanbar\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou character Saint Shalria\n      ↳ comprou: Shirahoshi (\n"
+        },
+        {
+          "turn": 17,
+          "historical_actions": [
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP10-099",
+              "to_name": "Eustass \"Captain\" Kid",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "Eustass \"Captain\" Kid",
+              "attacker_code": "OP10-099",
+              "target": "St. Jaygarcia Saturn [\"OP13-083\">OP13-083]",
+              "result": null,
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "play",
+              "card": "OP10-119",
+              "card_name": "Trafalgar Law",
+              "effects": [
+                "Added card to top of Life from Hand",
+                "Attach 1 Rested Don to Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: St. Ethanbaron V. Nusjuro (Par\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Ethanbaron\n      ↳ comprou: Shirahoshi (\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n  > gastou 4 DON -> Joga: Basil Hawkins - OP10-109 (Repr (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Trash up to 1 card from the top of your opponent's Life cards.[Trigger] Draw 2 c...\u001b[0m\n",
+          "narrativa_on": "  \u001b[90mComprou: After All These Years I'm Losi\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão After All Thes\n      ↳ comprou: St. Shepherd\n  > gastou 4 DON -> Joga: Basil Hawkins - OP10-109 (Repr (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Trash up to 1 card from the top of your opponent's Life cards.[Trigger] Draw 2 c...\u001b[0m\n"
+        },
+        {
+          "turn": 19,
+          "historical_actions": [
+            {
+              "type": "attach_don",
+              "amount": 8,
+              "to": "OP10-099",
+              "to_name": "Eustass \"Captain\" Kid",
+              "total": 8
+            },
+            {
+              "type": "attack",
+              "attacker": "Eustass \"Captain\" Kid",
+              "attacker_code": "OP10-099",
+              "target": "St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+              "result": null,
+              "damage": null,
+              "blocked_by": "OP13-089",
+              "countered_by": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 2,
+              "to": "OP10-119",
+              "to_name": "Trafalgar Law",
+              "total": 2
+            },
+            {
+              "type": "attack",
+              "attacker": "Trafalgar Law",
+              "attacker_code": "OP10-119",
+              "target": "St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+              "result": "hit",
+              "damage": null,
+              "blocked_by": "OP13-089",
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: St. Topman Warcury (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca St. Ethanbaron V. Nu\n      🛡 Blocker! St. Topman Warcury ( intercepta\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Trafalgar Law - OP10 (9000pwr) ataca St. Ethanbaron V. Nu\n      🛡 Blocker! St. Topman Warcury ( intercepta\n      💀 St. Topman Warcury ( foi KO!\n      ↳ [on KO] comprou: Camie\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n  > gastou 4 DON -> Joga: Killer (6000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] (After your opponent declares an attack, you may rest this card to make it the n...\u001b[0m\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Topman War\n      ↳ comprou: St. Marcus M\n",
+          "narrativa_on": "  \u001b[90mComprou: After All These Years I'm Losi\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão Bartolomeo\n      ↳ comprou: Never Existe\n    anexou 1 DON em Imu (Alternate Art)\n    Imu (Alternate Art) (6000pwr) ataca St. Ethanbaron V. Nu\n      🛡 Blocker! St. Topman Warcury ( intercepta\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Trafalgar Law - OP10 (9000pwr) ataca St. Ethanbaron V. Nu\n      🛡 Blocker! St. Topman Warcury ( intercepta\n      💀 St. Topman Warcury ( foi KO!\n      ↳ [on KO] comprou: Kamakiri\n  > gastou 4 DON -> Joga: Killer (6000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] (After your opponent declares an attack, you may rest this card to make it the n...\u001b[0m\n"
+        },
+        {
+          "turn": 21,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP10-114",
+              "card_name": "X. Drake",
+              "effects": [
+                "Rest X. Drake [\"OP10-114\">OP10-114]",
+                "Rest St. Jaygarcia Saturn [\"OP13-083\">OP13-083]"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Eustass \"Captain\" Kid",
+              "attacker_code": "OP10-099",
+              "target": "St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+              "result": null,
+              "damage": null,
+              "blocked_by": "OP13-089",
+              "countered_by": []
+            },
+            {
+              "type": "play",
+              "card": "OP10-109",
+              "card_name": "Basil Hawkins",
+              "effects": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: The Five Elders Are at Your Se\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Blocker! St. Topman Warcury ( intercepta\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: The Five Elders Are at Your Se (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" type ...\u001b[0m\n    ↳ [The Five Elders Are ] olhou 3 do topo -> pegou: Saint Mjosgard\n    ↳ [The Five Elders Are ] trash resto: Shirahoshi (, Shirahoshi (\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão Slam Gibson\n      ↳ comprou: Five Elders \n",
+          "narrativa_on": "  \u001b[90mComprou: St. Topman Warcury (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Imu (Alternate Art) (5000pwr) ataca Leader\n      🛡 Blocker! St. Topman Warcury ( intercepta\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Bartolomeo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Supernovas} type card from your hand: Draw 2 cards.\u001b[0m\n    ⚙ ativou [Activate:Main] de Imu (Alternate Art)\n      ↳ custo: trashou da mão St. Topman War\n      ↳ comprou: Saint Shalri\n  > gastou 1 DON -> Joga: Saint Shalria (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; reveal up to 1 \"Celestial Dragons\" ty...\u001b[0m\n    ↳ [Saint Shalria] olhou 3 do topo -> pegou: The Five Elders\n    ↳ [Saint Shalria] trash resto: St. Ethanbar, Saint Shalri\n    ↳ [Saint Shalria] descartou da mão: Slam Gibson\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.json",
+      "bot_leader": "Jinbe",
+      "opp_leader": "Eustass \"Captain\" Kid",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 1,
+      "divergencias": [
+        {
+          "turn": 6,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP11-029",
+              "card_name": "Charlotte Praline",
+              "effects": []
+            },
+            {
+              "type": "activate",
+              "card": "OP11-030",
+              "card_name": "Shirahoshi",
+              "effects": [
+                "Rest 1 Don",
+                "Rest Shirahoshi [\"OP11-030\">OP11-030]",
+                "<b>Reveal and Draw Noah's Ark [\"OP06-041\">OP06-041]</b>"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP15-023",
+              "card_name": "Arlong",
+              "effects": [
+                "Attach 1 Rested Don to Trafalgar Law [\"P-088\">P-088]",
+                "Attach 1 Rested Don to Jinbe [\"OP11-021\">OP11-021]"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP15-023",
+              "to_name": "Arlong",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "Arlong",
+              "attacker_code": "OP15-023",
+              "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP15-105"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Jinbe",
+              "attacker_code": "OP11-021",
+              "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Arlong (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Jinbe - OP14-040 (Al (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Arlong (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Shirahoshi (030)\n      ↳ custo: restou 1 DON\n      ↳ custo: restou Shirahoshi (030)\n      ↳ olhou 5 do topo -> nada para pegar\n      ↳ 4 carta(s) no fundo do deck\n  > gastou 4 DON -> Joga: Megalo (Alternate Art) (4000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may rest this Character: K.O. up to 1 of your opponent's rested Characters w...\u001b[0m\n    ↳ [Megalo (Alternate Ar] custo: restou Megalo (Alternate \n    ↳ [Megalo (Alternate Ar] KO: Trafalgar Law -\n  > gastou 1 DON -> Joga: Arlong (Alternate Art) (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader has the {Fish Man} type, look at 4 cards from the top of your dec...\u001b[0m\n    ↳ [Arlong (Alternate Ar] olhou 4 do topo -> pegou: Boa Hancock (SP\n    ↳ [Arlong (Alternate Ar] 3 carta(s) no fundo do deck\n    ⚙ ativou [Activate:Main] de Jinbe - OP14-040 (Alte\n      ↳ custo: trashou da mão: Hammond\n      ↳ +0 DON\n",
+          "narrativa_on": "  \u001b[90mComprou: Arlong (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Jinbe - OP14-040 (Al (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Arlong (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Shirahoshi (030)\n      ↳ custo: restou 1 DON\n      ↳ custo: restou Shirahoshi (030)\n      ↳ olhou 5 do topo -> nada para pegar\n      ↳ 4 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: Arlong (Alternate Art) (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader has the {Fish Man} type, look at 4 cards from the top of your dec...\u001b[0m\n    ↳ [Arlong (Alternate Ar] olhou 4 do topo -> pegou: Boa Hancock (SP\n    ↳ [Arlong (Alternate Ar] 3 carta(s) no fundo do deck\n  > gastou 2 DON -> Joga: Hammond (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] (After your opponent declares an attack, you may rest this card to make it the n...\u001b[0m\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+      "bot_leader": "Smoker",
+      "opp_leader": "Krieg",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27.json",
+      "bot_leader": "Charlotte Katakuri",
+      "opp_leader": "Dracule Mihawk",
+      "turnos_auditados": 3,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.31.57.json",
+      "bot_leader": "Charlotte Katakuri",
+      "opp_leader": "Dracule Mihawk",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T13.57.47.json",
+      "bot_leader": "Charlotte Katakuri",
+      "opp_leader": "Dracule Mihawk",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 1,
+      "divergencias": [
+        {
+          "turn": 4,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP11-070",
+              "card_name": "Charlotte Pudding",
+              "effects": [
+                "<b>Reveal and Draw Charlotte Katakuri [\"OP11-067\">OP11-067]</b>"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 3,
+              "to": "OP11-062",
+              "to_name": "Charlotte Katakuri",
+              "total": 3
+            },
+            {
+              "type": "attack",
+              "attacker": "Charlotte Katakuri",
+              "attacker_code": "OP11-062",
+              "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Kaku (059)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: Charlotte Pudding (Alternate A (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 \"Big Mom Pirates\" type...\u001b[0m\n    ↳ [Charlotte Pudding (A] olhou 5 do topo -> nada para pegar\n    ↳ [Charlotte Pudding (A] 4 carta(s) no fundo do deck\n  > gastou 3 DON -> Joga: Uso-Hachi (Reprint) (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If you have 8 or more DON!! cards on your field, rest up to 1 of your opponent's...\u001b[0m\n    Charlotte Katakuri ( (6000pwr) ataca Perona (Alternate Ar\n      💀 Perona (Alternate Ar foi KO!\n",
+          "narrativa_on": "  \u001b[90mComprou: Kaku (059)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 1 DON -> Joga: Charlotte Pudding (Alternate A (0pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 5 cards from the top of your deck; reveal up to 1 \"Big Mom Pirates\" type...\u001b[0m\n    ↳ [Charlotte Pudding (A] olhou 5 do topo -> nada para pegar\n    ↳ [Charlotte Pudding (A] 4 carta(s) no fundo do deck\n  > gastou 3 DON -> Joga: Uso-Hachi (Reprint) (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If you have 8 or more DON!! cards on your field, rest up to 1 of your opponent's...\u001b[0m\n    Charlotte Katakuri ( (6000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T17.01.09.json",
+      "bot_leader": "Charlotte Katakuri",
+      "opp_leader": "Dracule Mihawk",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 1,
+      "divergencias": [
+        {
+          "turn": 10,
+          "historical_actions": [
+            {
+              "type": "attach_don",
+              "amount": 7,
+              "to": "OP11-070",
+              "to_name": "Charlotte Pudding",
+              "total": 7
+            },
+            {
+              "type": "attack",
+              "attacker": "Charlotte Pudding",
+              "attacker_code": "OP11-070",
+              "target": "Smoker [\"OP10-030\">OP10-030]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 2,
+              "to": "OP11-062",
+              "to_name": "Charlotte Katakuri",
+              "total": 2
+            },
+            {
+              "type": "attack",
+              "attacker": "Charlotte Katakuri",
+              "attacker_code": "OP11-062",
+              "target": "Smoker [\"OP10-030\">OP10-030]",
+              "result": null,
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "play",
+              "card": "ST34-003",
+              "card_name": "Charlotte Brulee",
+              "effects": [
+                "<b>Reveal and Draw Charlotte Pudding [\"PRB02-010\">PRB02-010]</b>"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Pica\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 1 DON em Baron Tamago & Pekom para ligar [attack_power]\n    Baron Tamago & Pekom (5000pwr) ataca Leader\n      ↳ [when attacking] custo: devolveu 1 DON ao deck\n      ↳ [when attacking] KO: Kikunojo - OP14\n      ↳ [on opp attack: Dracule Mihawk ] custo: trashou da mão: You Can Be My S\n      ↳ [on opp attack: Dracule Mihawk ] +2000 power em leader_or_character\n      ✗ Ataque bloqueado (4000 < 5000)\n    Charlotte Katakuri ( (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n",
+          "narrativa_on": "  \u001b[90mComprou: Miss.MerryChristmas(Drophy)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Charlotte Katakuri (\n    Charlotte Katakuri ( (7000pwr) ataca Leader\n      ↳ [on opp attack: Dracule Mihawk ] custo: trashou da mão: You Can Be My S\n      ↳ [on opp attack: Dracule Mihawk ] +2000 power em leader_or_character\n      💥 DANO! vida do oponente: 3\n    ⚡ anexou 1 DON em Baron Tamago & Pekom para ligar [attack_power]\n    Baron Tamago & Pekom (5000pwr) ataca Kin'emon\n      ↳ [when attacking] custo: devolveu 1 DON ao deck\n      ↳ [when attacking] KO: Kikunojo - OP14\n      💀 Kin'emon foi KO!\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Jinbe-B_2026-07-20T19.13.14.json",
+      "bot_leader": "Jinbe",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P_2026-07-21T01.08.09.json",
+      "bot_leader": "Charlotte Katakuri",
+      "opp_leader": "Donquixote Doflamingo",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",
+      "bot_leader": "Charlotte Katakuri",
+      "opp_leader": "Monkey D. Luffy",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34.json",
+      "bot_leader": "Kaido",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07.json",
+      "bot_leader": "Smoker",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 0,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.json",
+      "bot_leader": "Smoker",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.json",
+      "bot_leader": "Portgas D. Ace",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 2,
+      "divergencias": [
+        {
+          "turn": 6,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP13-054",
+              "card_name": "Yamato",
+              "effects": [
+                "Draw 2 Card",
+                "Attach 1 Rested Don to Portgas D. Ace [\"OP13-002\">OP13-002]"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Kyros\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 4 DON -> Joga: Marco (Alternate Art) (6000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker](After your opponent declares an attack, you may rest this card to make it the ne...\u001b[0m\n    Portgas.D.Ace (002)  (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Marco (Alternate Art (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Izo (Parallel) (0pwr) ataca Charlotte Pudding (A\n      🛡 Counter! +1000 -> defesa 1000\n      ✗ Ataque bloqueado (0 < 1000)\n  > gastou 1 DON -> Joga: Thatch (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader's type includes \"Whitebeard Pirates\", give up to 1 of your oppone...\u001b[0m\n    ↳ [Thatch] -2000 power em: Charlotte Brule\n    ↳ [Thatch] comprou 1 da vida -> mao\n",
+          "narrativa_on": "  \u001b[90mComprou: Kyros\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 5 DON em Izo (Parallel) para ligar [attack_power]\n    Portgas.D.Ace (002)  (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Izo (Parallel) (5000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n    Marco (Alternate Art (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 1 DON -> Joga: Thatch (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader's type includes \"Whitebeard Pirates\", give up to 1 of your oppone...\u001b[0m\n    ↳ [Thatch] -2000 power em: Charlotte Brule\n    ↳ [Thatch] comprou 1 da vida -> mao\n"
+        },
+        {
+          "turn": 8,
+          "historical_actions": [
+            {
+              "type": "activate",
+              "card": "ST22-015",
+              "card_name": "I Am Whitebeard!",
+              "effects": [
+                "Rest 8 Don",
+                "Deploy Edward Newgate [\"OP13-042\">OP13-042]",
+                "Takes Top Life",
+                "Grant Portgas D. Ace [\"OP13-002\">OP13-002] 2000 until opponent's next turn end"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP13-042",
+              "card_name": "Edward Newgate",
+              "effects": [
+                "Draw 2 Card",
+                "Trash Izou [\"ST22-002\">ST22-002]",
+                "Attach 1 Rested Don to Portgas D. Ace [\"OP13-002\">OP13-002]",
+                "Attach 1 Rested Don to Portgas D. Ace [\"OP13-002\">OP13-002]",
+                "Attach 1 Rested Don to Yamato [\"OP13-054\">OP13-054]",
+                "Attach 1 Rested Don to Yamato [\"OP13-054\">OP13-054]"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Yamato",
+              "attacker_code": "OP13-054",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": "OP11-067",
+              "countered_by": [
+                "OP11-070"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Portgas D. Ace",
+              "attacker_code": "OP13-002",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Gin (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 8 DON -> Joga: I Am Whitebeard!! (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader's type includes \"Whitebeard Pirates\", play up to 1 [Edward.Newgate] ...\u001b[0m\n    ↳ [I Am Whitebeard!!] +2000 power em leader\n    ↳ [I Am Whitebeard!!] jogou (grátis): Edward.Newgate \n    ↳ [I Am Whitebeard!!] comprou 1 da vida -> mao\n    Portgas.D.Ace (002)  (8000pwr) ataca Leader\n      🛡 Blocker! Charlotte Katakuri ( intercepta\n      🛡 Counter! +2000 -> defesa 10000\n      ✗ Ataque bloqueado (8000 < 10000)\n    Marco (Alternate Art (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Yamato (Alternate Ar (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n",
+          "narrativa_on": "  \u001b[90mComprou: Dragon Number Thirteen\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 8 DON -> Joga: I Am Whitebeard!! (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader's type includes \"Whitebeard Pirates\", play up to 1 [Edward.Newgate] ...\u001b[0m\n    ↳ [I Am Whitebeard!!] +2000 power em leader\n    ↳ [I Am Whitebeard!!] jogou (grátis): Edward.Newgate \n    ↳ [I Am Whitebeard!!] comprou 1 da vida -> mao\n    Portgas.D.Ace (002)  (8000pwr) ataca Leader\n      🛡 Blocker! Charlotte Katakuri ( intercepta\n      🛡 Counter! +2000 -> defesa 10000\n      ✗ Ataque bloqueado (8000 < 10000)\n    Marco (Alternate Art (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Yamato (Alternate Ar (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json",
+      "bot_leader": "Jinbe",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.json",
+      "bot_leader": "Krieg",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17.json",
+      "bot_leader": "Kaido",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Jinbe-B_2026-07-24T11.35.39.json",
+      "bot_leader": "Jinbe",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 3,
+      "divergencias": [
+        {
+          "turn": 4,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP07-045",
+              "card_name": "Jinbe",
+              "effects": [
+                "Deploy Trafalgar Law [\"OP07-047\">OP07-047]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP07-047",
+              "card_name": "Trafalgar Law",
+              "effects": [
+                "Return Trafalgar Law [\"OP07-047\">OP07-047] to Hand"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Jinbe",
+              "attacker_code": "OP14-040",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Boa Hancock (SP)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Jinbe - OP14-040 (Al (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 4 DON -> Joga: Jinbe (045) (Parallel) (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Play up to 1 [The Seven Warlords of the Sea] type Character card with a cost of ...\u001b[0m\n    ↳ [Jinbe (045) (Paralle] jogou (grátis): Trafalgar Law (\n    Arlong (Alternate Ar (3000pwr) ataca Charlotte Brulee\n      🛡 Counter! +2000 -> defesa 4000\n      ✗ Ataque bloqueado (3000 < 4000)\n    Sengoku - OP07-046 ( (2000pwr) ataca Charlotte Brulee\n      🛡 Counter! +1000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n    ⚙ ativou [Activate:Main] de Jinbe - OP14-040 (Alte\n      ↳ custo: trashou da mão: Leo\n      ↳ +0 DON\n",
+          "narrativa_on": "  \u001b[90mComprou: Boa Hancock (SP)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Jinbe - OP14-040 (Al (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚡ anexou 2 DON em Arlong (Alternate Ar para ligar [attack_power]\n    Arlong (Alternate Ar (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Sengoku - OP07-046 ( (2000pwr) ataca Charlotte Brulee\n      🛡 Counter! +1000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n  > gastou 1 DON -> Joga: Leo (2000pwr) [CHARACTER]\n    \u001b[90mefeito: If your Character with 7000 base power or less would be removed from the field by your opp...\u001b[0m\n"
+        },
+        {
+          "turn": 6,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP07-051",
+              "card_name": "Boa Hancock",
+              "effects": [
+                "Charlotte Cracker [\"ST34-002\">ST34-002] can't attack next turn",
+                "Send Charlotte Brulee [\"ST34-003\">ST34-003] to Deck Bottom"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP14-040",
+              "card_name": "Jinbe",
+              "effects": [
+                "Trash Trafalgar Law [\"OP07-047\">OP07-047]",
+                "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]",
+                "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Jinbe",
+              "attacker_code": "OP07-045",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Jinbe",
+              "attacker_code": "OP14-040",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Jinbe - OP14-049 (Alternate Ar\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Jinbe - OP14-040 (Al (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 4 DON -> Joga: Jinbe (045) (Parallel) (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Play up to 1 [The Seven Warlords of the Sea] type Character card with a cost of ...\u001b[0m\n    ↳ [Jinbe (045) (Paralle] jogou (grátis): Trafalgar Law (\n    Jinbe (045) (Paralle (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Chew (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader has the {Fish-Man} type, draw 1 card.\u001b[0m\n    ↳ [Chew] comprou: Jozu\n    ⚙ ativou [Activate:Main] de Jinbe - OP14-040 (Alte\n      ↳ custo: trashou da mão: Edward Weevil -\n      ↳ +2 DON\n    ⚡ anexou 1 DON em Sengoku - OP07-046 ( para ligar [attack_power]\n    Sengoku - OP07-046 ( (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n",
+          "narrativa_on": "  \u001b[90mComprou: Crocodile - OP07-040 (Reprint)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Jinbe - OP14-040 (Al (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Jinbe (045) (Paralle (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚡ anexou 3 DON em Sengoku - OP07-046 ( para ligar [attack_power]\n    Sengoku - OP07-046 ( (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 1 DON -> Joga: Chew (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader has the {Fish-Man} type, draw 1 card.\u001b[0m\n    ↳ [Chew] comprou: Buggy - ST17\n  > gastou 1 DON -> Joga: Buggy - ST17-003 (Reprint) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck and place them at the top of your deck...\u001b[0m\n    ↳ [Buggy - ST17-003 (Re] olhou 3 do topo -> pegou: Boa Hancock (SP\n"
+        },
+        {
+          "turn": 8,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP14-050",
+              "card_name": "Chew",
+              "effects": [
+                "Draw 1 Card"
+              ]
+            },
+            {
+              "type": "play",
+              "card": "OP07-045",
+              "card_name": "Jinbe",
+              "effects": [
+                "Deploy Edward Weevil [\"EB01-023\">EB01-023]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "EB01-023",
+              "card_name": "Edward Weevil",
+              "effects": [
+                "Draw 1 Card"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP07-045",
+              "to_name": "Jinbe",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "Jinbe",
+              "attacker_code": "OP07-045",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP14-040",
+              "to_name": "Jinbe",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "Boa Hancock",
+              "attacker_code": "OP07-051",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Jinbe",
+              "attacker_code": "OP14-040",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "ST18-001"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Edward Weevil - EB01-023 (SP)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 8 DON -> Joga: Jinbe - OP14-049 (Alternate Ar (10000pwr) [CHARACTER]\n    \u001b[90mefeito: When a card is trashed from your hand by an effect, this Character gains [Rush] during thi...\u001b[0m\n    Jinbe - OP14-040 (Al (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Jinbe (045) (Paralle (5000pwr) ataca Baron Tamago & Pekom\n      💀 Baron Tamago & Pekom foi KO!\n    Boa Hancock (SP) (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    ⚙ ativou [Activate:Main] de Jinbe - OP14-040 (Alte\n      ↳ custo: trashou da mão: Edward Weevil -\n      ↳ +2 DON\n    Sengoku - OP07-046 ( (4000pwr) ataca Baron Tamago & Pekom\n      🛡 Counter! +2000 -> defesa 6000\n      ✗ Ataque bloqueado (4000 < 6000)\n",
+          "narrativa_on": "  \u001b[90mComprou: Koala\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 3 DON em Sengoku - OP07-046 ( para ligar [attack_power]\n    Jinbe - OP14-040 (Al (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Sengoku - OP07-046 ( (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Jinbe (045) (Paralle (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    Boa Hancock (SP) (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  > gastou 1 DON -> Joga: Chew (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader has the {Fish-Man} type, draw 1 card.\u001b[0m\n    ↳ [Chew] comprou: Arlong (Alte\n  > gastou 4 DON -> Joga: Edward Weevil - EB01-023 (SP) (6000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Draw 1 card.\u001b[0m\n    ↳ [Edward Weevil - EB01] comprou: Jozu\n    ⚙ ativou [Activate:Main] de Jinbe - OP14-040 (Alte\n      ↳ custo: trashou da mão: Jinbe (045) (Pa\n      ↳ +0 DON\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T21.54.29.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09.json",
+      "bot_leader": "Jinbe",
+      "opp_leader": "Krieg",
+      "turnos_auditados": 0,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09_p2.json",
+      "bot_leader": "Jinbe",
+      "opp_leader": "Krieg",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21.json",
+      "bot_leader": "Portgas D. Ace",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 0,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json",
+      "bot_leader": "Portgas D. Ace",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 1,
+      "divergencias": [
+        {
+          "turn": 10,
+          "historical_actions": [
+            {
+              "type": "activate",
+              "card": "ST22-015",
+              "card_name": "I Am Whitebeard!",
+              "effects": [
+                "Rest 8 Don",
+                "Deploy Edward Newgate [\"OP13-042\">OP13-042]",
+                "Takes Top Life",
+                "Grant Portgas D. Ace [\"OP13-002\">OP13-002] 2000 until opponent's next turn end"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP13-042",
+              "card_name": "Edward Newgate",
+              "effects": [
+                "Draw 2 Card",
+                "Trash Uta [\"ST23-001\">ST23-001]",
+                "Attach 1 Rested Don to Portgas D. Ace [\"OP13-002\">OP13-002]",
+                "Attach 1 Rested Don to Portgas D. Ace [\"OP13-002\">OP13-002]",
+                "Attach 1 Rested Don to Namule [\"OP08-050\">OP08-050]",
+                "Attach 1 Rested Don to Namule [\"OP08-050\">OP08-050]"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP08-050",
+              "to_name": "Namule",
+              "total": 3
+            },
+            {
+              "type": "attack",
+              "attacker": "Namule",
+              "attacker_code": "OP08-050",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP13-054",
+              "to_name": "Yamato",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "Yamato",
+              "attacker_code": "OP13-054",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Jozu",
+              "attacker_code": "OP08-047",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Portgas D. Ace",
+              "attacker_code": "OP13-002",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Ain\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 8 DON -> Joga: I Am Whitebeard!! (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader's type includes \"Whitebeard Pirates\", play up to 1 [Edward.Newgate] ...\u001b[0m\n    ↳ [I Am Whitebeard!!] +2000 power em leader\n    ↳ [I Am Whitebeard!!] jogou (grátis): Edward.Newgate \n    ↳ [I Am Whitebeard!!] comprou 1 da vida -> mao\n    Portgas.D.Ace (002)  (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    Namule (2000pwr) ataca Charlotte Pudding (A\n      💀 Charlotte Pudding (A foi KO!\n    Yamato (Alternate Ar (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Jozu (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n",
+          "narrativa_on": "  \u001b[90mComprou: Ain\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 3 DON em Namule para ligar [attack_power]\n    Portgas.D.Ace (002)  (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Namule (5000pwr) ataca Leader\n      🛡 Counter Mamaragan (Alterna: +1000 power | comprou: Paulie (Alte -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Yamato (Alternate Ar (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    Jozu (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  > gastou 4 DON -> Joga: Marco (Alternate Art) (6000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker](After your opponent declares an attack, you may rest this card to make it the ne...\u001b[0m\n  > gastou 1 DON -> Joga: Monkey.D.Garp (Alternate Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader is [Sabo], [Portgas.D.Ace] or [Monkey.D.Luffy], look at 4 cards f...\u001b[0m\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T00.53.44.json",
+      "bot_leader": "Crocodile",
+      "opp_leader": "Portgas D. Ace",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T01.59.52.json",
+      "bot_leader": "Crocodile",
+      "opp_leader": "Portgas D. Ace",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 3,
+      "divergencias": [
+        {
+          "turn": 8,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP14-084",
+              "card_name": "Miss All Sunday",
+              "effects": [
+                "Deployed Miss Goldenweek (Marianne) [\"OP14-085\">OP14-085] from Trash",
+                "Deployed Miss Valentine (Mikita) [\"OP14-087\">OP14-087] from Trash"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP14-087",
+              "card_name": "Miss Valentine (Mikita)",
+              "effects": [
+                "<b>Reveal and Draw Mr. 2 Bon Clay (Bentham) [\"OP14-091\">OP14-091]</b>",
+                "Trash 3 Remaining Cards"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP14-079",
+              "card_name": "Crocodile",
+              "effects": [
+                "Destroy Miss Goldenweek (Marianne) [\"OP14-085\">OP14-085]",
+                "Izou [\"EB01-002\">EB01-002] Cost -10",
+                "Trash 2 Cards from Deck"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP14-085",
+              "card_name": "Miss Goldenweek (Marianne)",
+              "effects": [
+                "Draw 2 Card",
+                "Trash Miss All Sunday [\"OP14-084\">OP14-084]",
+                "Trash Crocodile [\"OP14-120\">OP14-120]"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Crocodile",
+              "attacker_code": "OP14-079",
+              "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP16-005"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Miss Doublefinger (Zala)",
+              "attacker_code": "OP14-086",
+              "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Mr.4(Babe)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Miss Doublefinger(Za (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n  > gastou 4 DON -> Joga: Mr.2.Bon.Kurei (Bentham) (Alte (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Play up to 1 Character card with a type including \"Baroque Works\" and a cost of ...\u001b[0m\n    ⚙ ativou [Activate:Main] de Crocodile - OP14-079 (\n      ↳ custo: K.O. próprio: Mr.2.Bon.Kurei \n      ↳ -10 cost em Monkey.D.Garp (\n      ↳ mill 2 (topo do deck -> trash)\n    Crocodile - OP14-079 (5000pwr) ataca Monkey.D.Garp (Alter\n      ↳ [on opp attack: Izo] custo: trashou da mão: Tony Tony.Chopp\n      ↳ [on opp attack: Izo] -2000 power em: Mr.1 (Daz.Bonez\n      💀 Monkey.D.Garp (Alter foi KO!\n  > gastou 4 DON -> Joga: Mr.4(Babe) (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker]\r [On K.O.] Add up to 1 Character card with a type including \"Baroque Works\" and ...\u001b[0m\n",
+          "narrativa_on": "  \u001b[90mComprou: Mr.4(Babe)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 8 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Miss Doublefinger(Za (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n    Crocodile - OP14-079 (5000pwr) ataca Leader\n      ↳ [on opp attack: Izo] custo: trashou da mão: Tony Tony.Chopp\n      ↳ [on opp attack: Izo] -2000 power em: Miss Doublefing\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 8 DON -> Joga: Crocodile - OP14-120 (Alternat (10000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] up to 1 of your opponent's Characters with a cost of 9 or less cannot attack unt...\u001b[0m\n    ↳ [Crocodile - OP14-120] travou (não pode atacar): Izo\n    ⚙ ativou [Activate:Main] de Crocodile - OP14-079 (\n      ↳ custo: K.O. próprio: Miss Doublefing\n      ↳ -10 cost em Monkey.D.Garp (\n      ↳ mill 2 (topo do deck -> trash)\n"
+        },
+        {
+          "turn": 10,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP14-120",
+              "card_name": "Crocodile",
+              "effects": [
+                "Izou [\"EB01-002\">EB01-002] can't attack next turn"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Miss Valentine (Mikita)",
+              "attacker_code": "OP14-087",
+              "target": "Monkey D. Garp [\"OP13-016\">OP13-016]",
+              "result": null,
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "activate",
+              "card": "OP14-079",
+              "card_name": "Crocodile",
+              "effects": [
+                "Destroy Miss Valentine (Mikita) [\"OP14-087\">OP14-087]",
+                "Marco [\"OP16-014\">OP16-014] Cost -10",
+                "Trash 2 Cards from Deck"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP14-084",
+              "to_name": "Miss All Sunday",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "Miss All Sunday",
+              "attacker_code": "OP14-084",
+              "target": "Marco [\"OP16-014\">OP16-014]",
+              "result": "hit",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Miss Doublefinger (Zala)",
+              "attacker_code": "OP14-086",
+              "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Crocodile",
+              "attacker_code": "OP14-079",
+              "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP16-017"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Crocodile - OP14-120 (Alternat\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 10 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Miss Doublefinger(Za (7000pwr) ataca Leader\n      ↳ [on opp attack: Izo] custo: trashou da mão: Monkey.D.Luffy \n      ↳ [on opp attack: Izo] -2000 power em: Ms. All Sunday \n      💥 DANO! vida do oponente: 3\n    ⚡ anexou 3 DON em Miss.Valentine(Mikit para ligar [attack_power]\n  > gastou 4 DON -> Joga: Mr.2.Bon.Kurei (Bentham) (Alte (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Play up to 1 Character card with a type including \"Baroque Works\" and a cost of ...\u001b[0m\n    anexou 1 DON em Ms. All Sunday (SP)\n    Ms. All Sunday (SP) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Miss.Valentine(Mikit (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Crocodile - OP14-079 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Crocodile - OP14-079 (\n      ↳ custo: K.O. próprio: Miss.Valentine(\n      ↳ -10 cost em Monkey.D.Garp (\n      ↳ mill 2 (topo do deck -> trash)\n  > gastou 1 DON -> Joga: Miss.Valentine(Mikita) (Dash P (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader's type includes \"Baroque Works\", look at 4 cards from the top of ...\u001b[0m\n    ↳ [Miss.Valentine(Mikit] olhou 4 do topo -> pegou: Miss.MerryChris\n    ↳ [Miss.Valentine(Mikit] trash resto: Miss.Goldenw, Mr.5(Gem), Mr.5(Gem)\n",
+          "narrativa_on": "  \u001b[90mComprou: Miss.MerryChristmas(Drophy)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 10 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 3 DON em Miss.Valentine(Mikit para ligar [attack_power]\n    Miss Doublefinger(Za (7000pwr) ataca Leader\n      ↳ [on opp attack: Izo] custo: trashou da mão: Monkey.D.Luffy \n      ↳ [on opp attack: Izo] -2000 power em: Ms. All Sunday \n      💥 DANO! vida do oponente: 3\n  > gastou 4 DON -> Joga: Mr.2.Bon.Kurei (Bentham) (Alte (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Play up to 1 Character card with a type including \"Baroque Works\" and a cost of ...\u001b[0m\n  > gastou 1 DON -> Joga: Miss.MerryChristmas(Drophy) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] If your Leader's type includes \"Baroque Works\", draw 1 card and K.O. up to 1 of ...\u001b[0m\n    anexou 1 DON em Ms. All Sunday (SP)\n    Ms. All Sunday (SP) (7000pwr) ataca Leader\n      ↳ [on opp attack: Izo] custo: trashou da mão: Karasu\n      ↳ [on opp attack: Izo] -2000 power em: Mr.2.Bon.Kurei \n      💥 DANO! vida do oponente: 2\n    Miss.Valentine(Mikit (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Crocodile - OP14-079 (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    ⚙ ativou [Activate:Main] de Crocodile - OP14-079 (\n      ↳ custo: K.O. próprio: Miss.Valentine(\n      ↳ -10 cost em Monkey.D.Garp (\n      ↳ mill 2 (topo do deck -> trash)\n  > gastou 1 DON -> Joga: Miss.Valentine(Mikita) (Dash P (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] If your Leader's type includes \"Baroque Works\", look at 4 cards from the top of ...\u001b[0m\n    ↳ [Miss.Valentine(Mikit] olhou 4 do topo -> pegou: Mr.4(Babe)\n    ↳ [Miss.Valentine(Mikit] trash resto: Mr.4(Babe), Mr.5(Gem), Mr.1 (Daz.Bo\n"
+        },
+        {
+          "turn": 12,
+          "historical_actions": [
+            {
+              "type": "attack",
+              "attacker": "Crocodile",
+              "attacker_code": "OP14-120",
+              "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "activate",
+              "card": "OP14-079",
+              "card_name": "Crocodile",
+              "effects": [
+                "Destroy Crocodile [\"OP14-120\">OP14-120]",
+                "Izou [\"EB01-002\">EB01-002] Cost -10",
+                "Trash 2 Cards from Deck"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP14-120",
+              "card_name": "Crocodile",
+              "effects": [
+                "Trash Crocodile [\"OP14-120\">OP14-120]",
+                "Deploy Crocodile [\"OP14-120\">OP14-120]",
+                "Marco [\"OP16-014\">OP16-014] can't attack next turn",
+                "Draw 1 Card",
+                "Izou [\"EB01-002\">EB01-002] can't attack next turn",
+                "Draw 1 Card"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Crocodile",
+              "attacker_code": "OP14-079",
+              "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "play",
+              "card": "OP14-120",
+              "card_name": "Crocodile",
+              "effects": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Miss All Sunday",
+              "attacker_code": "OP14-084",
+              "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Mr.1 (Daz.Bonez) (Alternate Ar\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 11 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 4 DON -> Joga: Mr.2.Bon.Kurei (Bentham) (Alte (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Play up to 1 Character card with a type including \"Baroque Works\" and a cost of ...\u001b[0m\n    Crocodile - OP14-079 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  > gastou 5 DON -> Joga: Mr.1 (Daz.Bonez) (Alternate Ar (6000pwr) [CHARACTER]\n    \u001b[90mefeito: If there is a Character with a cost of 0 or with a cost of 8 or more, this Character can a...\u001b[0m\n    Ms. All Sunday (SP) (8000pwr) ataca Leader\n      ↳ [on opp attack: Izo] custo: trashou da mão: Monkey.D.Luffy \n      ↳ [on opp attack: Izo] -2000 power em: Crocodile - OP1\n      💥 DANO! vida do oponente: 1\n    Crocodile - OP14-120 (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n    anexou 1 DON em Mr.1 (Daz.Bonez) (Al\n    Mr.1 (Daz.Bonez) (Al (7000pwr) ataca Izo\n      🛡 Counter! +1000 -> defesa 8000\n      ✗ Ataque bloqueado (7000 < 8000)\n    ⚙ ativou [Activate:Main] de Crocodile - OP14-079 (\n      ↳ custo: K.O. próprio: Mr.2.Bon.Kurei \n      ↳ -10 cost em Izo\n      ↳ mill 2 (topo do deck -> trash)\n",
+          "narrativa_on": "  \u001b[90mComprou: Mr.2.Bon.Kurei (Bentham) (Alte\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 11 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 8 DON -> Joga: Crocodile - OP14-120 (Alternat (10000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] up to 1 of your opponent's Characters with a cost of 9 or less cannot attack unt...\u001b[0m\n    ↳ [Crocodile - OP14-120] travou (não pode atacar): Marco (Alternat\n    Crocodile - OP14-079 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Ms. All Sunday (SP) (8000pwr) ataca Leader\n      ↳ [on opp attack: Izo] custo: trashou da mão: Monkey.D.Luffy \n      ↳ [on opp attack: Izo] -2000 power em: Crocodile - OP1\n      💥 DANO! vida do oponente: 1\n    Crocodile - OP14-120 (8000pwr) ataca Leader\n      ↳ [on opp attack: Izo] custo: trashou da mão: Bonk Punch (Rep\n      ↳ [on opp attack: Izo] -2000 power em: Crocodile - OP1\n      💥 DANO! vida do oponente: 0\n    ⚙ ativou [Activate:Main] de Crocodile - OP14-079 (\n      ↳ custo: K.O. próprio: Ms. All Sunday \n      ↳ -10 cost em Izo\n      ↳ mill 2 (topo do deck -> trash)\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T09.41.46.json",
+      "bot_leader": "Crocodile",
+      "opp_leader": "Portgas D. Ace",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T13.18.18.json",
+      "bot_leader": "Portgas D. Ace",
+      "opp_leader": "Portgas D. Ace",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 1,
+      "divergencias": [
+        {
+          "turn": 6,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP16-011",
+              "card_name": "Vista",
+              "effects": [
+                "Draw 1 Card",
+                "Destroy Namule [\"OP16-010\">OP16-010]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP16-021",
+              "card_name": "Moby Dick",
+              "effects": [
+                "Trash Moby Dick [\"OP16-021\">OP16-021]",
+                "Attach 1 Rested Don to Vista [\"OP16-011\">OP16-011]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP16-001",
+              "card_name": "Portgas D. Ace",
+              "effects": [
+                "Give Vista [\"OP16-011\">OP16-011] Rush"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Vista",
+              "attacker_code": "OP16-011",
+              "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Monkey D. Luffy",
+              "attacker_code": "OP16-015",
+              "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Portgas D. Ace",
+              "attacker_code": "OP16-001",
+              "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP16-005"
+              ]
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Rockstar\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 6 DON -> Joga: Vista (8000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may reveal 1 Character card with 8000 power from your hand: Draw 1 card.\r \r ...\u001b[0m\n    ↳ [Vista] custo: revelou 1 carta(s) com tipo \n    ↳ [Vista] comprou: Buggy\n    Namule (2000pwr) ataca Namule\n      🛡 Counter! +1000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n    ⚙ ativou [Activate:Main] de Portgas.D.Ace (001) (A\n      ↳ ganhou Rush: Vista\n    Vista (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n",
+          "narrativa_on": "  \u001b[90mComprou: Inazuma\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 6 DON -> Joga: Vista (8000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may reveal 1 Character card with 8000 power from your hand: Draw 1 card.\r \r ...\u001b[0m\n    ↳ [Vista] custo: revelou 1 carta(s) com tipo \n    ↳ [Vista] comprou: Speed Jil (D\n    Namule (2000pwr) ataca Namule\n      🛡 Counter! +1000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n    ⚙ ativou [Activate:Main] de Portgas.D.Ace (001) (A\n      ↳ ganhou Rush: Vista\n    Vista (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T16.38.43.json",
+      "bot_leader": "Portgas D. Ace",
+      "opp_leader": "Portgas D. Ace",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 2,
+      "divergencias": [
+        {
+          "turn": 6,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP10-005",
+              "card_name": "Sanji",
+              "effects": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Portgas D. Ace",
+              "attacker_code": "OP16-001",
+              "target": "Monkey D. Garp [\"OP13-016\">OP13-016]",
+              "result": null,
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP10-005",
+              "to_name": "Sanji",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP10-005",
+              "to_name": "Sanji",
+              "total": 2
+            },
+            {
+              "type": "attack",
+              "attacker": "Sanji",
+              "attacker_code": "OP10-005",
+              "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Speed Jil (Dash Pack)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Sanji (Parallel)\n    Sanji (Parallel) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n  > gastou 4 DON -> Joga: Monkey.D.Luffy (Alternate Art) (6000pwr) [CHARACTER]\n    \u001b[90mefeito: If your Leader's card name includes \"Ace\" and you have 6 or more DON!! cards on your field...\u001b[0m\n    Portgas.D.Ace (001)  (5000pwr) ataca Monkey.D.Garp (Alter\n      💀 Monkey.D.Garp (Alter foi KO!\n    ⚙ ativou [Activate:Main] de Portgas.D.Ace (001) (A\n      ↳ ganhou Rush: Monkey.D.Luffy \n    Monkey.D.Luffy (Alte (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n",
+          "narrativa_on": "  \u001b[90mComprou: Rockstar\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Portgas.D.Ace (001) \n    Portgas.D.Ace (001)  (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n  > gastou 4 DON -> Joga: Monkey.D.Luffy (Alternate Art) (6000pwr) [CHARACTER]\n    \u001b[90mefeito: If your Leader's card name includes \"Ace\" and you have 6 or more DON!! cards on your field...\u001b[0m\n    Sanji (Parallel) (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    ⚙ ativou [Activate:Main] de Portgas.D.Ace (001) (A\n      ↳ ganhou Rush: Monkey.D.Luffy \n    Monkey.D.Luffy (Alte (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n"
+        },
+        {
+          "turn": 8,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP16-003",
+              "card_name": "Edward Newgate",
+              "effects": [
+                "Buff Vista [\"OP16-011\">OP16-011] -6000"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Sanji",
+              "attacker_code": "OP10-005",
+              "target": "Vista [\"OP16-011\">OP16-011]",
+              "result": "hit",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Sanji",
+              "attacker_code": "OP10-005",
+              "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP16-005",
+                "OP16-118"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP16-001",
+              "card_name": "Portgas D. Ace",
+              "effects": [
+                "Give Edward Newgate [\"OP16-003\">OP16-003] Rush"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Portgas D. Ace",
+              "attacker_code": "OP16-001",
+              "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+              "result": "hit",
+              "damage": 2,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Edward Newgate",
+              "attacker_code": "OP16-003",
+              "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Portgas.D.Rouge\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 4 DON -> Joga: Monkey.D.Luffy (Alternate Art) (6000pwr) [CHARACTER]\n    \u001b[90mefeito: If your Leader's card name includes \"Ace\" and you have 6 or more DON!! cards on your field...\u001b[0m\n    Sanji (Parallel) (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    Sanji (Parallel) (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    ⚙ ativou [Activate:Main] de Portgas.D.Ace (001) (A\n      ↳ ganhou Rush: Monkey.D.Luffy \n    Monkey.D.Luffy (Alte (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n",
+          "narrativa_on": "  \u001b[90mComprou: Rockstar (Reprint)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 5 DON -> Joga: Portgas.D.Ace (118) (Alternate (6000pwr) [CHARACTER]\n    \u001b[90mefeito: The counter of all of your Character cards with 8000 power in your hand becomes +2000.\r [O...\u001b[0m\n    ↳ [Portgas.D.Ace (118) ] olhou 5 do topo -> nada para pegar\n    Sanji (Parallel) (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    Sanji (Parallel) (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n    Portgas.D.Ace (001)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Portgas.D.Ace-R_x_Eustass.Captain.Kid-Y_2026-08-02T23.52.21.json",
+      "bot_leader": "Eustass \"Captain\" Kid",
+      "opp_leader": "Portgas D. Ace",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01.json",
+      "bot_leader": "Portgas D. Ace",
+      "opp_leader": "Rocks D. Xebec",
+      "turnos_auditados": 0,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01_p2.json",
+      "bot_leader": "Portgas D. Ace",
+      "opp_leader": "Rocks D. Xebec",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T10.23.52.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T17.04.22.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.43.37.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 3,
+      "turnos_divergentes": 1,
+      "divergencias": [
+        {
+          "turn": 4,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP17-044",
+              "card_name": "Captain John",
+              "effects": [
+                "Draw 1 Card",
+                "Rest Captain John [\"OP17-044\">OP17-044]",
+                "Trash Edward Newgate [\"OP17-040\">OP17-040]"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Rocks D. Xebec",
+              "attacker_code": "OP17-039",
+              "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "activate",
+              "card": "OP17-039",
+              "card_name": "Rocks D. Xebec",
+              "effects": [
+                "Trash Gloriosa [\"OP17-046\">OP17-046]",
+                "Draw 2 Card"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Kyo",
+              "attacker_code": "OP17-045",
+              "target": "Laffitte [\"OP09-095\">OP09-095]",
+              "result": "hit",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "narrativa_off": "  \u001b[90mComprou: Bell-mere\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 1 DON em Kyo para ligar [attack_power]\n    Kyo (5000pwr) ataca Laffitte (Reprint)\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Zehahahahaha! (\n      💀 Laffitte (Reprint) foi KO!\n    Rocks.D.Xebec (5000pwr) ataca Doc Q\n      ↳ [when attacking] custo: trashou da mão: Bell-mere\n      ↳ [when attacking] revelou Monkey.D.Garp ( do topo do deck: nao bateu a condicao\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Vasco Shot\n      💀 Doc Q foi KO!\n      ↳ [on KO] comprou: Taralan\n  > gastou 3 DON -> Joga: Don Marlon (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Add up to 1 Blue Event with a cost of 0 from your trash to your hand.\u001b[0m\n",
+          "narrativa_on": "  \u001b[90mComprou: Bell-mere\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    ⚡ anexou 1 DON em Kyo para ligar [attack_power]\n    Kyo (5000pwr) ataca Laffitte (Reprint)\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Zehahahahaha! (\n      💀 Laffitte (Reprint) foi KO!\n    Rocks.D.Xebec (5000pwr) ataca Leader\n      ↳ [when attacking] custo: trashou da mão: Bell-mere\n      ↳ [when attacking] revelou Monkey.D.Garp ( do topo do deck: nao bateu a condicao\n      ↳ [on opp attack: Marshall.D.Teac] custo: trashou da mão: Vasco Shot\n      💥 DANO! vida do oponente: 3\n  > gastou 3 DON -> Joga: Don Marlon (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Add up to 1 Blue Event with a cost of 0 from your trash to your hand.\u001b[0m\n"
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T23.38.28.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    }
+  ]
+}

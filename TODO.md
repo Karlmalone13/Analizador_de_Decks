@@ -1,6 +1,31 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 14 de agosto de 2026
+**Última atualização:** 15 de agosto de 2026
+
+> 15/08/2026 (bloco 536): **2ª fonte de não-determinismo achada e
+> corrigida** em `audit_real_losses.py` — fixar `random.seed()` só
+> uma vez antes de CADA chamada de `audit_one_game` (fix do bloco 534)
+> não bastava: o motor consome quantidade DIFERENTE de `random.*`
+> (Monte Carlo, desempate) dependendo de quais flags de calibragem
+> estão ligadas, então o RNG global driftava entre OFF/ON a partir do
+> 1º turno com decisão diferente, contaminando a mão embaralhada dos
+> turnos SEGUINTES do mesmo jogo. Fix: reseed determinístico por
+> (arquivo, turno). Script `compare_human_vs_engine.py` (scratchpad,
+> nunca commitado) recriado como `audit_curve_calibration_flags.py`
+> (permanente). **Resultado, agora nas 66 partidas disponíveis (não
+> só 10)**: 46/307 turnos divergentes (**15.0%**, determinístico/
+> reproduzível). Leitura qualitativa mista — achou 1 exemplo claro de
+> linha melhor com a calibragem ligada (dano real vs ataque bloqueado)
+> e 1 exemplo pior (evento que não achou nada vs personagem que
+> achou). **Limitação**: comparação é por TEXTO da narrativa, não por
+> ação estruturada — parte da divergência pode ser diferença de LOG,
+> não de decisão real (ex: mesmo attach de DON gerando texto
+> diferente). **Pendente**: refinar pra comparação semântica antes de
+> confiar no número; decidir se vale ir atrás de validação real
+> (self-play já mostrou ser ruidoso demais, blocos 528/529) ou só
+> telemetria ao vivo; decisão de manter/reverter `is_closing_mode`
+> (bloco 534) continua sem resposta do usuário. Ver bloco 536 do
+> HANDOFF.
 
 > 14/08/2026 (bloco 535): **bug real corrigido em `audit_real_losses.
 > py._find_real_deck`** — fallback genérico (quando o líder não tem

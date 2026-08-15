@@ -252,6 +252,23 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False)
         opp_life_n = opp_snap.get('life', 4)
         opp.life = [deepcopy(c) for c in opp.deck[:opp_life_n]] if opp.deck else []
 
+        # Achado real 15/08 (continuacao do bloco 534/535): fixar
+        # random.seed() so uma vez ANTES da chamada inteira de
+        # audit_one_game nao basta pra comparar OFF vs ON turno a turno --
+        # eng.play_turn() consome random (Monte Carlo, desempate) em
+        # quantidade DIFERENTE dependendo de quais flags de calibragem
+        # estao ligadas (caminhos de decisao diferentes = numero diferente
+        # de chamadas random.*), entao o estado global do random DRIFTA
+        # entre as duas condicoes a partir do 1o turno com decisao
+        # diferente -- turnos POSTERIORES do MESMO jogo comparavam mao
+        # embaralhada de formas diferentes por acidente, nao por efeito
+        # real das flags (confirmado: turno 11 de um jogo mostrava carta
+        # comprada diferente entre OFF/ON ANTES de qualquer decisao rodar
+        # nesse turno). Fix: reseed DETERMINISTICO por (arquivo, turno),
+        # imune a quanto random foi consumido por decisoes de turnos
+        # anteriores -- cada turno embaralha exatamente igual nas duas
+        # condicoes, only a decisao em si pode divergir.
+        random.seed(f'{os.path.basename(parsed_path)}:{turn["turn"]}')
         seen_bot = {}
         for c in p.hand + p.field_chars + p.trash + p.life:
             seen_bot[c.code] = seen_bot.get(c.code, 0) + 1
