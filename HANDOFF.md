@@ -1,5 +1,54 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-14 (535) - Claude (sessao remota web) - bug real achado e corrigido em `audit_real_losses.py._find_real_deck`: fallback generico gerava deck de 0 CARTAS pra 65/141 lideres (46% do banco) -- corrigido, divergencia real medida sobe de 11% pra 32% dos turnos
+
+**Pedido do usuario**: apos o teste multi-partida do bloco 534 (10
+vitorias reais do humano, 8/75 turnos divergentes), usuario apontou
+"você está usando só o como base, tem diversos outros pra gente poder
+usar" -- investigando isso, achei algo mais estrutural que "poucos
+decklists disponiveis": um BUG real no fallback de `_find_real_deck`.
+
+**O bug**: quando o lider nao tem decklist real em `decklists_raw.csv`
+(nome completo do log, ex: "Marshall D. Teach", nao bate com o nome
+curto usado no banco, ex: "Teach"), a funcao cai num fallback GENERICO
+(cartas aleatorias da mesma cor). O codigo fazia `leader.color.split
+('/')[0]` pra extrair a cor -- mas o campo `color` no banco vem
+separado por "/" OU por ESPACO dependendo da carta (ex: OP16-080 Teach
+= `"Black Yellow"`, sem "/"). Pra cores espaco-separadas, o split
+devolvia a STRING INTEIRA ("Black Yellow"), que nunca bate como
+substring em nenhum campo `color` de carta real -- `candidatos` ficava
+vazio, gerando um deck de **0 CARTAS**. Confirmado: **65 dos 141
+lideres do banco (46%) tem cor espaco-separada**, todos afetados, nao
+so o Teach.
+
+**Fix**: separa por `/` OU espaco via regex (`re.split(r'[/\s]+', ...)`),
+casa por QUALQUER cor individual da lista (nao a string inteira) --
+`Marshall D. Teach`/`Krieg`/`Monkey D. Luffy` confirmados gerando 50
+cartas normalmente apos o fix (antes: 0 pro Teach).
+
+**Impacto real, medido**: re-rodei o MESMO teste de 10 partidas
+(vitorias reais do humano) com o fix -- **divergencia sobe de 8/75
+(11%) pra 24/75 (32%) dos turnos**. As 3 partidas envolvendo Marshall
+D. Teach (antes reconstruidas com deck vazio/quebrado, por isso
+pareciam "sem efeito") agora mostram 9/11, 5/10 e 5/6 turnos
+divergentes -- a conclusao anterior ("calibragem muda pouco, ~11% dos
+turnos") era em parte um ARTEFATO do bug, nao um resultado real.
+Inspecao rapida de 2 turnos (partida `Imu-B_x_Marshall.D.Teach-BY_
+2026-07-09T17.42.21`, agora com deck valido): as linhas divergentes
+parecem alternativas ESTRATEGICAS genuinas (ex: turno 4 -- flags OFF
+joga carta de desenvolvimento e ataca o lider como o humano fez;
+flags ON troca por outra carta e ataca um PERSONAGEM, matando-o) --
+nao degeneradas/quebradas, mas ainda NAO avaliadas a fundo se sao
+melhores ou piores que a linha historica.
+
+**Pendente pra proxima sessao/continuacao**: investigar mais fundo os
+24 turnos divergentes agora revelados (antes escondidos pelo bug) pra
+decidir se a calibragem dinamica (blocos 529-533) e o `is_closing_mode`
+(bloco 534, ainda com decisao de manter/reverter em aberto) ajudam ou
+atrapalham nesses casos reais -- a amostra ficou bem mais rica agora
+que a reconstrucao nao esta mais quebrada pra quase metade dos lideres
+do banco.
+
 ## 2026-08-14 (534) - Claude (sessao remota web) - `is_closing_mode` implementado E TESTADO, mas a evidencia real que motivou ele estava CONTAMINADA por um bug no proprio script de auditoria (seed nao fixada) -- CORRECAO registrada, decisao de manter/reverter pendente do usuario
 
 **Pedido do usuario**: reconstruir uma partida REAL humano x bot (do

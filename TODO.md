@@ -2,6 +2,20 @@
 
 **Última atualização:** 14 de agosto de 2026
 
+> 14/08/2026 (bloco 535): **bug real corrigido em `audit_real_losses.
+> py._find_real_deck`** — fallback genérico (quando o líder não tem
+> decklist real no banco) gerava deck de **0 CARTAS** para 65/141
+> líderes (46%, cor armazenada com espaço em vez de "/", ex: Marshall
+> D. Teach). Corrigido (regex separa por "/" ou espaço, casa por cor
+> individual). Impacto medido: re-rodando o teste de 10 partidas reais
+> (vitórias do humano) do bloco 534, divergência entre flags OFF/ON
+> sobe de 8/75 (11%) para **24/75 (32%) dos turnos** — a conclusão
+> anterior era em parte artefato do bug (3 partidas com Teach estavam
+> reconstruídas com deck vazio). Pendente: investigar a fundo os 24
+> turnos divergentes agora revelados antes de decidir sobre `is_
+> closing_mode`/as flags de calibragem dinâmica. Ver bloco 535 do
+> HANDOFF.
+>
 > 14/08/2026 (bloco 534): **`is_closing_mode` implementado, mas a
 > evidência que motivou ele estava contaminada** — auditoria de
 > partida real humano x bot (humano venceu, `audit_real_losses.py`

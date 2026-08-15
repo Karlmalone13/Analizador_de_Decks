@@ -110,9 +110,21 @@ def _find_real_deck(leader_name, cards_db, df_raw, urls, leader_code=None):
                 return leader, cards, stage
     if leader_code and leader_code in cards_db:
         leader = _make_card(leader_code, cards_db[leader_code])
-        cor = (leader.color or '').split('/')[0]
+        # Achado real 14/08 (pedido do usuario: "diversos outros pra gente
+        # poder usar" -- investigando a qualidade da reconstrucao, achei um
+        # bug real aqui): `color` no banco vem separado por "/" OU por
+        # ESPACO dependendo da carta (ex: OP16-080 Teach = "Black Yellow",
+        # sem "/"). O split('/')[0] antigo, pra cores espaco-separadas,
+        # devolvia a string INTEIRA ("Black Yellow") e nunca batia como
+        # substring em nenhuma carta -- candidatos ficava vazio, gerando um
+        # deck de 0 CARTAS (fallback quebrado, nao so "generico"). Afeta
+        # 65 dos 141 lideres do banco (46%, checado via grep de cores sem
+        # "/"), nao so o Teach. Fix: separa por "/" OU espaco (regex) e
+        # casa por QUALQUER cor individual, nao a string inteira.
+        cores = [c for c in re.split(r'[/\s]+', leader.color or '') if c]
         candidatos = [code for code, d in cards_db.items()
-                      if d.get('type') == 'CHARACTER' and cor and cor in (d.get('color') or '')]
+                      if d.get('type') == 'CHARACTER' and cores
+                      and any(c in (d.get('color') or '') for c in cores)]
         random.shuffle(candidatos)
         cards = []
         i = 0
