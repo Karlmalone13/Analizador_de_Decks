@@ -1,5 +1,44 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (540) - Claude (sessao local) - bug real ACHADO E CORRIGIDO: selecao PARCIAL de alvo "up to N" cancelava a acao inteira quando a acao nao era V3, jogando fora o alvo unico ja escolhido certo
+
+Continuacao do bloco 539. Usuario deu uma descricao PRECISA do
+comportamento (nao "trava", e sim escolha errada): efeito tipo "K.O.
+up to 2 Character com custo<=1" com so 1 candidato real -- o bot
+seleciona o 1 alvo valido CORRETAMENTE, mas na hora do 2o slot (sem
+mais candidato), em vez de clicar o botao "Choose 1 Enemy
+Character(s)" (confirma com o que ja foi escolhido), clica Cancel --
+que desfaz a acao INTEIRA, inclusive o alvo ja selecionado certo.
+Mesmo padrao no Marshall D. Teach custo 10 (OP09-093): da alvo pro
+lider mas nao consegue dar alvo em personagem (2o/3o step do
+`activate_main`).
+
+**Causa raiz achada** (`BotDriver.cs`, `HandlePendingAction`): o bloco
+que tenta `ConfirmPendingSelection()` (confirma selecao PARCIAL antes
+de desistir) so rodava se `gls.acaActive.UsesV3()` fosse true:
+```
+if (!_pendingConfirmTried && gls.acaActive.UsesV3()) { ... confirma ... }
+// senao cai direto no Cancel
+```
+Pra acoes "up to N" que NAO usam o sistema V3 do jogo (Doc Q `on_ko`,
+Teach `activate_main` -- confirmado pelos 2 casos reportados), esse
+gate pulava a tentativa de confirmar e ia direto pro Cancel, jogando
+fora qualquer selecao parcial ja feita.
+
+**Fix**: removido o `&& gls.acaActive.UsesV3()` do gate -- agora
+SEMPRE tenta `ConfirmPendingSelection()` uma vez quando os candidatos
+se esgotam, independente de V3. Seguro: `ConfirmPendingSelection` so
+clica um botao que o jogo esta REALMENTE oferecendo naquele momento
+(`OfferedButtons`), nunca inventa um clique -- no pior caso (nada
+oferecido) e um no-op e cai pro Cancel do jeito que ja caia antes.
+
+**Status**: plugin recompilado e reinstalado (`setup_bepinex.bat`,
+jogo fechado e reaberto pelo usuario). Nao testado ao vivo ainda --
+proximo teste com as 8 flags de calibragem ja ligadas (pedido do
+usuario, nao commitado -- so pra este teste) deve confirmar os 2
+casos reportados (Doc Q, Teach custo 10) e o comportamento geral de
+qualquer efeito "up to N" nao-V3 com candidatos insuficientes.
+
 ## 2026-08-15 (539) - Claude (sessao local) - teste ao vivo (item 3 das pendencias): 2 travamentos de UI reportados, NAO reproduzidos com confianca no log disponivel -- log banqueado, auditoria obrigatoria feita, plano de captura ao vivo pra proxima vez
 
 Usuario testou ao vivo (Marshall.D.Teach-BY x Rocks.D.Xebec-B,

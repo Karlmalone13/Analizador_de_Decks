@@ -2,6 +2,20 @@
 
 **Última atualização:** 15 de agosto de 2026
 
+> 15/08/2026 (bloco 540): **bug real corrigido** — os 2 travamentos de
+> UI do bloco 539 (Doc Q "K.O. up to 2 custo<=1" e Marshall D. Teach
+> custo 10) não eram travamento, era escolha ERRADA: com 1 alvo válido
+> de N possíveis, o bot selecionava certo mas ao esgotar candidatos
+> pro slot seguinte clicava **Cancel** em vez de confirmar a seleção
+> parcial — desfazendo o alvo já escolhido certo. Causa: em
+> `BotDriver.cs`, a tentativa de `ConfirmPendingSelection()` só rodava
+> se `gls.acaActive.UsesV3()`; ações "up to N" fora do sistema V3
+> pulavam direto pro Cancel. Fix: removido o gate `UsesV3()` — sempre
+> tenta confirmar a seleção parcial antes de desistir. Plugin
+> recompilado e reinstalado. **Pendente**: validar ao vivo (próximo
+> teste, com as 8 flags de calibragem também ligadas a pedido do
+> usuário, não commitadas). Ver bloco 540 do HANDOFF.
+
 > 15/08/2026 (bloco 539): **teste ao vivo (item 3) rodado, 2
 > travamentos de UI reportados pelo usuário, NÃO reproduzidos com
 > confiança no log disponível** — (1) Doc Q [OP16-109] `on_ko` (K.O.

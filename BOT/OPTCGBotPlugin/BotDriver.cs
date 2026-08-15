@@ -650,8 +650,23 @@ namespace OPTCGBotPlugin
                 }
             }
 
-            // ...confirma selecao parcial (V3) uma vez...
-            if (!_pendingConfirmTried && gls.acaActive.UsesV3())
+            // ...confirma selecao PARCIAL uma vez -- ex: "K.O. up to 2
+            // Character com custo<=1" com so 1 candidato de verdade: o bot
+            // ja selecionou o unico alvo valido, e quando o 2o slot nao
+            // acha mais candidato, o jogo espera um clique tipo "Choose 1
+            // Enemy Character(s)" (confirma com o que ja foi escolhido),
+            // nao um Cancel. Achado real 15/08 (usuario descreveu o
+            // comportamento exato ao vivo, Doc Q OP16-109 e Marshall D.
+            // Teach custo 10 OP09-093): esse branch so rodava com
+            // `gls.acaActive.UsesV3()` == true -- pra acoes "up to N" que
+            // NAO usam o sistema V3, o gate pulava direto pro Cancel,
+            // JOGANDO FORA a selecao parcial ja feita (o alvo unico
+            // escolhido certo virava nulo, nenhum K.O./efeito acontecia).
+            // ConfirmPendingSelection so clica um botao que o jogo
+            // realmente esta oferecendo AGORA (OfferedButtons) -- seguro
+            // tentar independente de V3, no pior caso e um clique sem
+            // efeito e cai pro Cancel do jeito que já caia antes.
+            if (!_pendingConfirmTried)
             {
                 _pendingConfirmTried = true;
                 BotExecutor.ConfirmPendingSelection(gls);
