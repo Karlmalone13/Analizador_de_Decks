@@ -332,6 +332,20 @@ nesta sessão (30/07/2026). Se chegar, atualizar este arquivo e a regra em
 > disponível, comparação com o deck usado em `decklists_raw.csv` se
 > houver).
 
+### Monkey D. Luffy (OP13-001) — Red/Green
+
+- **Guia completo em arquivo separado** (ficou longo demais para caber
+  aqui):
+  [`guias_por_deck/OP13-001_RG_Monkey_D_Luffy.md`](guias_por_deck/OP13-001_RG_Monkey_D_Luffy.md)
+  — fonte Spell Mana, salvo 16/08/2026 (bloco 568).
+- **Por que importa para o motor** (resumo do resumo): o líder só liga com
+  **1 DON anexado nele E no máximo 5 DON ativos**; o plano do deck é
+  **guardar DON** ("bank Don"), aceitando **atacar menos** para sobreviver
+  mais. Isso **contradiz** duas suposições do motor — que DON ocioso é
+  desperdício e que atacar mais é melhor — e inverte a leitura da métrica
+  `pct_turnos_zero_don` do `quality_baseline.py` para este arquétipo.
+  Ver a seção "Conflitos com o motor" do arquivo.
+
 ### Dracule Mihawk (OP14-020) — Verde
 
 - **Fonte**: Cards Realm, "Guia de Deck OP15: Dracule Mihawk", Pedro
