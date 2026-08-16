@@ -777,6 +777,18 @@ def outcome(report: OutcomeReport):
                     status="success", message="log capturado e salvo no banco",
                     report=receipt.get("report"), receipt=receipt.get("receipt"))
                 print(f"[AUTO-COLLECT] OK -> {receipt['report']}", flush=True)
+                # Consequencia por decisao (bloco 549): o achado precisa
+                # APARECER sozinho aqui. Um relatorio que so existe em
+                # disco depende de alguem lembrar de abrir -- foi
+                # exatamente a reclamacao do usuario ao criar isso.
+                fortes = receipt.get("consequence_strong_findings")
+                if fortes:
+                    print(f"[AUTO-COLLECT][ATENCAO] {fortes} decisao(oes) com DON alto "
+                          f"e retorno ZERO em todo horizonte -- ver "
+                          f"{receipt.get('consequence_text')}", flush=True)
+                elif fortes == 0:
+                    print("[AUTO-COLLECT] consequencia por decisao: nenhuma decisao "
+                          "cara sem retorno (bom sinal)", flush=True)
             except Exception as exc:
                 _collection_status.update(status="failed", message=str(exc),
                                           report=None, receipt=None)

@@ -148,6 +148,38 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
     if reported.returncode:
         raise RuntimeError(f"bot_efficiency_report falhou: {reported.stderr or reported.stdout}")
 
+    # Consequencia por decisao (bloco 549): roda SOZINHO no fim de cada
+    # partida -- pedido do usuario ("eu que tenho que lembrar de usar essa
+    # ferramenta? tem como deixar ela automatica?"). Uma ferramenta que so
+    # roda quando alguem lembra de rodar nao pega o caso da proxima
+    # partida, que e justamente quando o achado importa.
+    #
+    # BEST-EFFORT DE PROPOSITO: o trabalho critico deste coletor e BANCAR
+    # o log (ja feito acima). Se este relatorio quebrar, a partida NAO
+    # pode ser perdida junto -- por isso o try/except amplo e o campo
+    # `consequence_error` no recibo em vez de uma excecao que aborta tudo.
+    consequence_json = output_dir / f"consequence_{stamp}.json"
+    consequence_txt = output_dir / f"consequence_{stamp}.txt"
+    consequence_error = None
+    suspeitas_fortes = None
+    try:
+        run = subprocess.run(
+            [sys.executable, str(ROOT / "decision_consequence_report.py"),
+             "--file", str(decision_log), "--json", str(consequence_json)],
+            cwd=ROOT, text=True, capture_output=True,
+            env={**os.environ, "PYTHONIOENCODING": "utf-8"})
+        if run.returncode:
+            raise RuntimeError(run.stderr or run.stdout)
+        consequence_txt.write_text(run.stdout, encoding="utf-8")
+        dados = json.loads(consequence_json.read_text(encoding="utf-8"))
+        suspeitas_fortes = sum(
+            1 for linha in dados.get("linhas", [])
+            if linha.get("veredito") == "DON_SEM_RETORNO_PERSISTENTE")
+    except Exception as exc:            # noqa: BLE001 - ver comentario acima
+        consequence_error = str(exc)
+        print(f"[AUTO-COLLECT] consequencia por decisao falhou (log ja bancado, "
+              f"nada perdido): {exc}", flush=True)
+
     receipt = {
         "schema": 1,
         "match_id": match_id or None,
@@ -160,6 +192,12 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
         "bank_decks": [str(DB_ROOT / rel) for rel in (bank_entry.get("deck_files") or {}).values()],
         "canonical_name": canonical_stem,
         "collected_at": stamp,
+        "consequence_report": (str(consequence_json) if consequence_error is None
+                               else None),
+        "consequence_text": (str(consequence_txt) if consequence_error is None
+                             else None),
+        "consequence_strong_findings": suspeitas_fortes,
+        "consequence_error": consequence_error,
     }
     receipt_path = output_dir / f"receipt_{stamp}.json"
     receipt_path.write_text(json.dumps(receipt, indent=2, ensure_ascii=False) + "\n",

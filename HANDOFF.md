@@ -1,5 +1,43 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (549) - Claude (sessao local) - relatorio de consequencia roda SOZINHO no fim de cada partida (auto-collect) e o achado aparece no console, sem ninguem precisar lembrar
+
+Pedido do usuario, logo depois do bloco 548: *"eu que tenho que lembrar
+de usar essa ferramenta? tem como deixar ela automatica nao?"*.
+Argumento correto: uma ferramenta que so roda quando alguem lembra nao
+pega o caso da PROXIMA partida -- que e justamente quando o achado
+importa. Vale como principio geral pras ferramentas de telemetria deste
+projeto, nao so pra essa.
+
+**`collect_latest_match.py`**: depois do `bot_efficiency_report` (que ja
+rodava sozinho via `/outcome` -> `_collect()`), agora tambem roda o
+`decision_consequence_report.py` e salva 2 artefatos ao lado do recibo:
+`consequence_<stamp>.json` (dado) e `consequence_<stamp>.txt` (leitura
+humana). O recibo ganhou 4 campos: `consequence_report`,
+`consequence_text`, `consequence_strong_findings` (quantas decisoes
+`DON_SEM_RETORNO_PERSISTENTE`) e `consequence_error`.
+
+**BEST-EFFORT DE PROPOSITO**: o trabalho critico do coletor e BANCAR o
+log (regra do projeto -- logs somem quando o simulador atualiza). Se o
+relatorio de consequencia quebrar, a partida NAO pode ser perdida junto
+-- por isso try/except amplo + campo `consequence_error` no recibo, em
+vez de excecao que aborta a coleta. **Testado explicitamente**: com
+caminho invalido, o erro e capturado e a coleta seguiria normal.
+
+**`server.py`**: o achado APARECE sozinho no console do server ao fim da
+partida -- `[AUTO-COLLECT][ATENCAO] N decisao(oes) com DON alto e retorno
+ZERO em todo horizonte -- ver <caminho>`, ou a linha de "bom sinal"
+quando N=0. Um relatorio que so existe em disco ainda dependeria de
+alguem lembrar de abrir, que era exatamente a reclamacao.
+
+**Validado antes do commit** (nao so "deve funcionar"): a chamada exata
+de subprocess que o coletor faz foi executada contra o log real da
+sessao -- returncode 0, 2 achados fortes, 3925 chars de stdout
+capturados; os dois arquivos compilam; o contrato de campos entre
+`collect_latest_match.py` e `server.py` foi conferido; e o caminho de
+FALHA foi exercitado. Server reiniciado (PID novo) -- o hook ja esta no
+ar pro proximo teste ao vivo.
+
 ## 2026-08-15 (548) - Claude (sessao local) - consequencia POR DECISAO (ferramenta nova, acha sozinha o all-in que o usuario reclamou) + auditoria semantica das 66/69 partidas fechada em 15,5%
 
 Pedido do usuario: aprofundar telemetria em tempo/qualidade/consequencia

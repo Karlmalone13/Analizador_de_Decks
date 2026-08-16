@@ -2,6 +2,22 @@
 
 **Última atualização:** 15 de agosto de 2026
 
+> 15/08/2026 (bloco 549): **consequência por decisão agora é AUTOMÁTICA**
+> — pedido do usuário ("eu que tenho que lembrar de usar essa
+> ferramenta?"). `collect_latest_match.py` roda o
+> `decision_consequence_report.py` junto do `bot_efficiency_report` no
+> fim de cada partida (via `/outcome`), salvando
+> `consequence_<stamp>.json`/`.txt` ao lado do recibo, que ganhou 4
+> campos novos. O achado **aparece sozinho no console do server**
+> (`[AUTO-COLLECT][ATENCAO] N decisões com DON alto e retorno ZERO`) —
+> relatório só em disco ainda dependeria de alguém lembrar de abrir.
+> Best-effort de propósito: se o relatório quebrar, o log ainda é
+> bancado (caminho de falha testado explicitamente). Server reiniciado,
+> hook no ar. **Princípio geral registrado**: ferramenta de telemetria
+> que depende de alguém lembrar não pega o caso da próxima partida —
+> pendurar no auto-collect deve ser o default pras próximas. Ver bloco
+> 549 do HANDOFF.
+
 > 15/08/2026 (bloco 548): **consequência POR DECISÃO + auditoria semântica
 > fechada**. `decision_consequence_report.py` (novo, permanente) cruza DON
 > investido com retorno em 4 horizontes (direto/3/5/fim do turno) por
