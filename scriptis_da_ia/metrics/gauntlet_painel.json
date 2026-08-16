@@ -1,0 +1,54 @@
+[
+  {
+    "deck": "Imu",
+    "partidas": 105,
+    "win_rate": 38.095238095238095,
+    "ic95": [
+      29.3823651390926,
+      47.64847600987984
+    ],
+    "dano_medio": 3.6285714285714286,
+    "don_por_ataque": 1.3220864678018593,
+    "ataques_por_turno": 0.8029945396962204,
+    "arquetipo": "controle"
+  },
+  {
+    "deck": "Ace",
+    "partidas": 75,
+    "win_rate": 40.0,
+    "ic95": [
+      29.662343078170593,
+      51.312167839923404
+    ],
+    "dano_medio": 4.173333333333333,
+    "don_por_ataque": 1.1369907129907133,
+    "ataques_por_turno": 0.7564670514670512,
+    "arquetipo": "agressivo"
+  },
+  {
+    "deck": "Enel",
+    "partidas": 75,
+    "win_rate": 72.0,
+    "ic95": [
+      60.95909606557163,
+      80.89697991462155
+    ],
+    "dano_medio": 4.706666666666667,
+    "don_por_ataque": 2.0477967518664113,
+    "ataques_por_turno": 1.2128609908609913,
+    "arquetipo": "ramp/controle"
+  },
+  {
+    "deck": "Nami",
+    "partidas": 75,
+    "win_rate": 30.666666666666664,
+    "ic95": [
+      21.386719822895706,
+      41.83066795208602
+    ],
+    "dano_medio": 3.026666666666667,
+    "don_por_ataque": 1.3743899618899622,
+    "ataques_por_turno": 0.7918708143708144,
+    "arquetipo": "tempo"
+  }
+]

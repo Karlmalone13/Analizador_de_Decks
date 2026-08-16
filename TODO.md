@@ -2,6 +2,15 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 558): **termina o A/B pendente do fator 0.35**
+> (blocos 551/552, interrompido 2x localmente) — `ab_desconto_ataque.py
+> --seeds 15 --workers 4`, painel de 4 arquétipos. Winrate: todos os
+> deltas dentro do IC95 sobreposto (ruído), nenhuma regressão. DON/atk
+> (a métrica que o fix mira): caiu em 3/4 decks, quase neutro no 4º —
+> direção certa, sem custo de winrate. **Decisão: fica como está**
+> (0.35 permanece em produção) — não prova o valor ótimo exato, mas
+> fecha a pendência sem achado de regressão. Ver bloco 558 do HANDOFF.
+>
 > 16/08/2026 (bloco 557): **`should_use_counter` agora valoriza o
 > PERSONAGEM sendo defendido**, não a tabela de vida, quando o alvo é
 > um corpo pós-redirect de `[Blocker]` — fecha a pendência do bloco

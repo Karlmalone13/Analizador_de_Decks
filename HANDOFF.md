@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (558) - Claude (sessao remota web) - TERMINA o A/B pendente do fator 0.35 (blocos 551/552): sem sinal de regressao, DON/atk melhora na direcao esperada em 3/4 arquetipos -- fica como esta
+
+**Pedido do usuario**: rodar ate o fim o A/B do desconto de valor
+esperado (`_generate_attach_don_actions`, `valor *= 0.35`, bloco 551)
+que a sessao local tinha interrompido 2x sem terminar. Rodado com
+`ab_desconto_ataque.py --seeds 15 --workers 4` (painel de 4 arquetipos
+--Imu/controle, Ace/agressivo, Enel/ramp-controle, Nami/tempo-- contra
+roster de 5-7 oponentes cada). Script se auto-restaurou corretamente
+no fim (`finally`), confirmado via `fator_atual()` = 0.35 (o fix
+continua ativo em producao).
+
+**Resultado**:
+```
+Deck    Arquetipo         SEM fix(1.0)      COM fix(0.35)    delta
+Imu     controle          41.9% [33-51]     38.1% [29-48]    -3.8 (ruido)
+Ace     agressivo         40.0% [30-51]     40.0% [30-51]    +0.0 (ruido)
+Enel    ramp/controle     58.7% [47-69]     72.0% [61-81]   +13.3 (ruido)
+Nami    tempo             33.3% [24-45]     30.7% [21-42]    -2.7 (ruido)
+```
+**Winrate**: TODOS os deltas ficam dentro do IC95 sobreposto -- nao da
+pra afirmar efeito real (positivo ou negativo) com N=15 seeds/matchup.
+**DON/atk** (a metrica que o fix realmente mira -- gastar menos DON em
+ataque fadado a falhar): caiu em 3/4 decks (Imu -0.11, Enel -0.09,
+Nami -0.03), quase neutro no Ace (+0.02) -- direcao consistente com a
+intencao do fix, sem custo de winrate detectavel.
+
+**Decisao**: fica como esta (0.35 continua em producao). Nao prova que
+0.35 e o numero EXATO otimo, mas fecha a pendencia -- nenhum sinal de
+regressao encontrado, e o sinal que o fix mira moveu na direcao certa
+na maioria dos arquetipos. Um N maior poderia refinar o valor exato no
+futuro, mas nao ha urgencia (sem regressao pra justificar).
+
+**Metrics atualizados**: `metrics/gauntlet_{imu,ace,enel,nami}.json`
+(numeros da rodada B/0.35, a config atual de producao) +
+`metrics/gauntlet_painel.json` (resumo agregado).
+
 ## 2026-08-16 (557) - Claude (sessao remota web) - `should_use_counter` agora valoriza o PERSONAGEM (nao a tabela de vida) quando defende um corpo pos-redirect de blocker -- fecha a pendencia do bloco 556
 
 **Pedido do usuario**: continuacao direta do mesmo pedido do bloco 556
