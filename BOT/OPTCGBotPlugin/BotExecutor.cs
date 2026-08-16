@@ -53,39 +53,64 @@ namespace OPTCGBotPlugin
         private static readonly MethodInfo _mClickActionChoice =
             AccessTools.Method(typeof(GameplayLogicScript), "HandleMouseClickCardMakingActionChoice");
 
-        // True se o jogo esta esperando o jogador escolher QUAL de varias
-        // acoes pendentes (acaPending) resolver primeiro -- acaActive ainda
-        // null, lgo_ActionChoices ja populado com as cartas clicaveis, E a
-        // 1a opcao pertence ao PROPRIO bot (nunca clicar na escolha do
-        // humano -- as cartas so aparecem juntas em lgo_ActionChoices
-        // quando sao do MESMO dono, confirmado no decompilado, entao 1
-        // checagem basta pra saber de quem e a decisao inteira).
-        public static bool IsOfferingActionChoiceOrder(GameplayLogicScript gls, PlayerState botPs)
+        // True se o jogo esta esperando ALGUEM escolher QUAL de varias acoes
+        // pendentes (acaPending) resolver primeiro -- acaActive ainda null e
+        // lgo_ActionChoices ja populado com as cartas clicaveis. Achado real
+        // 16/08 (usuario, tela "Choose card effect to activate next" travou
+        // de novo com o fix de 02/08 ja instalado): a versao anterior decidia
+        // "e comigo?" pelo DONO da carta em choices[0]
+        // (`FindCardOwner(choices[0]) == botPs`) -- exatamente a MESMA
+        // categoria de bug que o bloco 551 ja corrigiu pras telas de
+        // downside/efeito pendente vizinhas ("o dono da carta nao decide
+        // isso, iPlayerAction decide", comentario poucas linhas acima desta
+        // chamada em BotDriver.cs). Cenario relatado (Nola do bot ativando em
+        // resposta a Kaido do oponente mirando o Cracker): se a 1a carta da
+        // lista de opcoes for do OPONENTE nesse instante, a checagem antiga
+        // retornava false e o driver nunca clicava, mesmo com `iPlayerAction`
+        // apontando pro bot. Agora usa o MESMO sinal ja usado por
+        // HandleDefense/mulligan/downside em vez de reimplementar via dono
+        // da carta.
+        public static bool IsOfferingActionChoiceOrder(GameplayLogicScript gls, bool minhaVezDeClicar)
         {
             if (gls.acaActive != null) return false;
+            if (!minhaVezDeClicar) return false;
             var choices = _fActionChoices.GetValue(gls) as List<GameObject>;
-            if (choices == null || choices.Count == 0) return false;
-            try { return gls.FindCardOwner(choices[0]) == botPs; }
-            catch { return false; }
+            return choices != null && choices.Count > 0;
         }
 
-        // Resolve a ordem clicando na PRIMEIRA opcao disponivel. As cartas
-        // que disparam gatilho ao mesmo tempo tem efeitos INDEPENDENTES
-        // (cada uma resolve seu proprio custo/alvo depois, via
-        // HandlePendingAction normal) -- a ORDEM entre elas raramente muda o
-        // resultado (2 copias da mesma carta, ou efeitos que nao interagem
-        // entre si), entao nao vale a pena consultar o engine so pra isso;
-        // qualquer ordem valida desbloqueia o jogo. Retorna false se a lista
-        // sumiu entre a checagem e o clique (condicao de corrida rara).
-        public static bool ResolveActionChoiceOrder(GameplayLogicScript gls)
+        // Resolve a ordem clicando na PRIMEIRA opcao que pertence ao PROPRIO
+        // bot (nunca clica na escolha do humano, mesmo que a lista misture
+        // donos -- caso do achado 16/08 acima). Cartas que disparam gatilho
+        // ao mesmo tempo tem efeitos INDEPENDENTES (cada uma resolve seu
+        // proprio custo/alvo depois, via HandlePendingAction normal) -- a
+        // ORDEM entre as opcoes do bot raramente muda o resultado, entao nao
+        // vale a pena consultar o engine so pra isso. Se NENHUMA opcao for
+        // do bot apesar de `iPlayerAction` apontar pra ele (nao deveria
+        // acontecer, mas e defensivo -- mesmo espirito do bloco 559 pro
+        // counter), loga e retorna false sem clicar em nada.
+        public static bool ResolveActionChoiceOrder(GameplayLogicScript gls, PlayerState botPs)
         {
             var choices = _fActionChoices.GetValue(gls) as List<GameObject>;
             if (choices == null || choices.Count == 0) return false;
-            var escolhido = choices[0];
+            GameObject? escolhido = null;
+            foreach (var go in choices)
+            {
+                bool minha;
+                try { minha = gls.FindCardOwner(go) == botPs; }
+                catch { minha = false; }
+                if (minha) { escolhido = go; break; }
+            }
+            if (escolhido == null)
+            {
+                Plugin.Log.LogWarning(
+                    $"[Bot] ordem de ativacao: iPlayerAction apontou pro bot mas "
+                    + $"nenhuma das {choices.Count} opcoes pertence a ele -- nao clicou em nada");
+                return false;
+            }
             _mClickActionChoice.Invoke(gls, new object[] { escolhido });
             Plugin.Log.LogInfo(
                 $"[Bot] ordem de ativacao (2+ gatilhos simultaneos): escolheu {CodeOf(escolhido)} "
-                + $"(1a de {choices.Count} opcoes)");
+                + $"({choices.Count} opcoes na lista, pode incluir carta do oponente)");
             return true;
         }
 

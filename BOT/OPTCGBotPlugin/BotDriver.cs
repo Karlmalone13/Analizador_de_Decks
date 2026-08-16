@@ -260,14 +260,24 @@ namespace OPTCGBotPlugin
             // qualquer ordem valida desbloqueia, sem precisar do engine.
             // Mesma leitura de "de quem e o clique agora" usada no bloco de
             // efeito pendente logo abaixo (ver comentario la): o dono da
-            // carta nao decide isso, `iPlayerAction` decide.
+            // carta nao decide isso, `iPlayerAction` decide. Achado real
+            // 16/08: a tela travou de novo mesmo com este bloco instalado --
+            // IsOfferingActionChoiceOrder ainda decidia por DONO da carta
+            // (choices[0]), nao por `iPlayerAction`, quebrando exatamente
+            // quando a 1a opcao da lista era do oponente mas a decisao era
+            // do bot (Nola do bot respondendo a Kaido do oponente). Agora
+            // passa `minhaVezDeClicarOrdem` direto pra function decidir, e
+            // ResolveActionChoiceOrder varre a lista inteira procurando a
+            // opcao do bot em vez de assumir que e sempre a primeira.
             bool minhaVezDeClicarOrdem = gls.gsv_CurrentGame.iPlayerAction == BotPlayerIndex;
             if (!((gls.bOpponentResolving || gls.bForcingOpponentAction) && !minhaVezDeClicarOrdem)
-                && BotExecutor.IsOfferingActionChoiceOrder(gls, gls.Lps_Players[BotPlayerIndex]))
+                && BotExecutor.IsOfferingActionChoiceOrder(gls, minhaVezDeClicarOrdem))
             {
-                BotExecutor.ResolveActionChoiceOrder(gls);
-                _cooldown = 0.8f;
-                return;
+                if (BotExecutor.ResolveActionChoiceOrder(gls, gls.Lps_Players[BotPlayerIndex]))
+                {
+                    _cooldown = 0.8f;
+                    return;
+                }
             }
 
             // O JOGO diz de quem e o clique agora. `iPlayerAction` e o sinal

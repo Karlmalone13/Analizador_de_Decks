@@ -2,6 +2,25 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 560): **achado real (não só hipótese) da tela
+> "Choose card effect to activate next" travando de novo** (pendência
+> recorrente dos blocos 551/553, mesmo com o fix de 02/08 já
+> instalado). `IsOfferingActionChoiceOrder` decidia "é comigo?" pelo
+> DONO da 1ª carta em `lgo_ActionChoices` — a MESMA categoria de bug já
+> corrigida no bloco 551 para as telas vizinhas de downside/efeito
+> pendente (o próprio comentário do arquivo já dizia "o dono da carta
+> não decide isso, `iPlayerAction` decide", só não tinha sido aplicado
+> aqui). Cenário relatado (Nola do bot respondendo a Kaido do
+> oponente): se a 1ª opção da lista calhar de ser do oponente,
+> `iPlayerAction` aponta pro bot mas a checagem por dono retornava
+> `false` → freeze. Fix: `IsOfferingActionChoiceOrder` agora usa
+> `iPlayerAction` (mesmo sinal já usado no resto do arquivo, sem
+> reimplementar); `ResolveActionChoiceOrder` varre a lista inteira
+> procurando a opção do bot em vez de assumir `choices[0]`. **NÃO
+> compilado nem testado ao vivo** (sem `dotnet`/jogo nesta sessão
+> remota) — precisa build + partida real com gatilhos cruzados pra
+> confirmar. Ver bloco 560 do HANDOFF.
+>
 > 16/08/2026 (bloco 559): **investiga (sem confirmar) o bug do plugin
 > "só 1 dos 2 counters aplicado"** (blocos 551/553). Achado o ponto —
 > `BotExecutor.PlayCounters` — e uma hipótese plausível não confirmada:

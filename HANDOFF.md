@@ -1,5 +1,74 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (560) - Claude (sessao remota web) - Achado real: tela "Choose card effect to activate next" travava por causa da MESMA categoria de bug ja corrigida no bloco 551 (dono da carta em vez de iPlayerAction) -- fix aplicado, NAO testado ao vivo
+
+**Pedido do usuario**: "Investiga a tela do 'Choose card effect to
+activate next' travando" -- pendencia registrada nos blocos 551/553 e
+que **recorreu de novo em 16/08** (nota no bloco anterior, linha ~337
+deste arquivo) mesmo com o fix de 02/08
+(`BotExecutor.IsOfferingActionChoiceOrder`/`ResolveActionChoiceOrder`)
+ja instalado.
+
+**Investigacao** (so leitura de codigo -- sem `dotnet`/`msbuild` e sem
+jogo ao vivo nesta sessao remota; `_referencias/simulador-oficial/
+dnspy-export/GameplayLogicScript.cs`, citado no CLAUDE.md, nao existe
+neste clone, entao nao da pra confirmar o nome exato do
+`GameplayState` nem ler a logica original do C# do jogo). Enumerei
+todo `GameplayState.X` tratado explicitamente em `BotDriver.cs` (13
+estados) -- nenhum bate com "escolher ordem de efeito" isoladamente, o
+que ja apontava pro mecanismo `lgo_ActionChoices`/`acaPending` (2+
+gatilhos simultaneos esperando ordem de resolucao, ja existente desde
+02/08) como o candidato certo, e o HANDOFF confirma isso na nota da
+recorrencia ("esta e a de ORDEM de resolucao
+(`IsOfferingActionChoiceOrder`), caminho diferente").
+
+**Causa real encontrada**: `IsOfferingActionChoiceOrder` decidia "e
+comigo?" verificando `FindCardOwner(choices[0]) == botPs` -- **o DONO
+da 1a carta na lista de opcoes**. Isso e exatamente a MESMA categoria
+de bug que o bloco 551 ja corrigiu em outros pontos do mesmo arquivo
+("Achado real 15/08... quando uma carta do OPONENTE forca o bot a
+decidir... o dono da carta continua sendo o oponente... o dono da
+carta nao decide isso, `iPlayerAction` decide" -- comentario que ja
+estava a poucas linhas ACIMA desta mesma chamada em `BotDriver.cs`, sem
+nunca ter sido aplicado a esta funcao especifica). Cenario relatado
+antes (bloco antigo, linha ~13966 deste arquivo): "Nola ativou em
+resposta ao Kaido mirando o Cracker" -- Nola e do bot, Kaido e do
+oponente; se `choices[0]` (ordem de insercao na lista, nao controlada
+pelo bot) calhar de ser o Kaido do oponente naquele instante, a
+checagem por dono retornava `false` e o driver nunca clicava, mesmo com
+`iPlayerAction` apontando pro bot -- freeze ate o usuario clicar na
+mao.
+
+**Fix** (`BotExecutor.cs` + `BotDriver.cs`):
+- `IsOfferingActionChoiceOrder(gls, minhaVezDeClicar)`: troca o
+  parametro `botPs`/checagem de dono por `bool minhaVezDeClicar` (o
+  MESMO sinal `iPlayerAction == BotPlayerIndex` ja calculado pelo
+  chamador, reaproveitado em vez de reimplementado) -- so confere
+  `acaActive == null`, `minhaVezDeClicar` e a lista populada.
+- `ResolveActionChoiceOrder(gls, botPs)`: agora varre a lista INTEIRA
+  procurando a primeira opcao que pertence ao bot (em vez de assumir
+  `choices[0]`), e clica so nessa. Se `iPlayerAction` apontar pro bot
+  mas NENHUMA opcao da lista for dele (nao deveria acontecer, checagem
+  defensiva no mesmo espirito do bloco 559), loga aviso e retorna
+  `false` sem clicar em nada -- nunca clica na escolha do humano.
+- Chamador em `BotDriver.cs` ajustado pra passar `minhaVezDeClicarOrdem`
+  em vez de `gls.Lps_Players[BotPlayerIndex]` pro primeiro metodo, e so
+  consome o `_cooldown`/`return` quando `ResolveActionChoiceOrder`
+  realmente clicou (retorno `true`).
+
+**NAO CONFIRMADO/TESTADO** (mesma ressalva do bloco 559): sem
+`dotnet`/`msbuild` nesta sessao remota o C# nao foi compilado; sem jogo
+ao vivo, a hipotese "choices[0] pode ser do oponente enquanto
+iPlayerAction aponta pro bot" nao foi observada diretamente, so
+inferida da recorrencia do freeze DEPOIS do fix de 02/08 (que so cobria
+o caso "todas as opcoes sao do mesmo dono") e do padrao ja confirmado
+em bloco 551 pra funcoes vizinhas do mesmo arquivo. Pendente: instalar
+via `setup_bepinex.bat` + reproduzir uma partida real com gatilhos
+cruzados (carta do bot respondendo a carta do oponente) pra confirmar
+que a tela nao trava mais, e olhar o log `[Bot] ordem de ativacao` (ou
+o novo aviso `iPlayerAction apontou pro bot mas nenhuma das opcoes
+pertence a ele`) pra validar qual dos dois caminhos disparou.
+
 ## 2026-08-16 (559) - Claude (sessao remota web) - INVESTIGA (sem confirmar) o bug do plugin "so 1 dos 2 counters aplicado" -- checagem defensiva + log novo, NAO testado ao vivo (sem acesso ao jogo nesta sessao remota)
 
 **Pedido do usuario**: investigar a pendencia dos blocos 551/553 --
