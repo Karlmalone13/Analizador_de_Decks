@@ -310,27 +310,50 @@ namespace OPTCGBotPlugin
                 // Oferta de "downside cost" com tela dedicada (botoes Cancel /
                 // UseOnPlay|UseV3OnPlay): cliques em cartas sao ignorados ate
                 // decidir.
-                if (BotExecutor.IsOfferingDownside(gls))
+                if (BotExecutor.IsOfferingDownside(gls)
+                    && BotExecutor.PendingActionIsMine(gls, pdBotPs))
                 {
-                    if (BotExecutor.PendingActionIsMine(gls, pdBotPs))
+                    bool use = ShouldUseOptionalCost(gls, duringAttack);
+                    var btn = !use ? ButtonChoiceType.Cancel
+                            : gls.acaActive.UsesV3() ? ButtonChoiceType.UseV3OnPlay
+                            : ButtonChoiceType.UseOnPlay;
+                    Plugin.Log.LogInfo($"[Bot] downside offer ({(duringAttack ? "reacao" : "proprio turno")}): {(use ? "USAR efeito" : "Cancel")}");
+                    gls.ChoiceButtonClicked(btn, -1);
+                    _cooldown = 1f;
+                    return;
+                }
+
+                // Escolha FORCADA por carta do OPONENTE. Antes esta guarda
+                // vivia DENTRO do `if (IsOfferingDownside)` acima, entao so
+                // valia pra telas com botao UseOnPlay/UseV3OnPlay. Achado real
+                // 16/08 (bloco 562, partida ao vivo travada): Charlotte Linlin
+                // OP17-049 ("[On Play] Your opponent chooses one:") oferece as
+                // duas OPCOES DE EFEITO como botoes -- sem UseOnPlay e sem
+                // Cancel -- entao IsOfferingDownside dava false, o fluxo caia
+                // em HandlePendingAction e ele retorna seco quando a carta nao
+                // e do bot ("efeito do humano? nao toca"). Ninguem clicava:
+                // freeze ate o usuario clicar na mao. Terceira variacao da
+                // MESMA causa dos blocos 551 e 560 -- quem decide e
+                // `iPlayerAction`, nunca o dono da carta.
+                //
+                // A condicao agora e a FORMA do problema, nao o tipo de tela:
+                // ha efeito pendente, a carta e do oponente, o jogo aponta o
+                // clique pro bot, e existe botao na tela.
+                if (!BotExecutor.PendingActionIsMine(gls, pdBotPs))
+                {
+                    if (minhaVezDeClicar && BotExecutor.HasOfferedButtons(gls))
                     {
-                        bool use = ShouldUseOptionalCost(gls, duringAttack);
-                        var btn = !use ? ButtonChoiceType.Cancel
-                                : gls.acaActive.UsesV3() ? ButtonChoiceType.UseV3OnPlay
-                                : ButtonChoiceType.UseOnPlay;
-                        Plugin.Log.LogInfo($"[Bot] downside offer ({(duringAttack ? "reacao" : "proprio turno")}): {(use ? "USAR efeito" : "Cancel")}");
-                        gls.ChoiceButtonClicked(btn, -1);
-                        _cooldown = 1f;
-                        return;
-                    }
-                    if (minhaVezDeClicar)
-                    {
-                        // Carta do OPONENTE oferecendo a escolha pro bot. Nao
-                        // da pra reusar ShouldUseOptionalCost (a pergunta dele
-                        // e "vale pagar MEU custo?", que nao e esta). Recusar
-                        // (Cancel) e a leitura conservadora: e um efeito que o
-                        // oponente esta empurrando, nao um custo nosso. O que
-                        // NAO pode e ficar parado -- era o travamento.
+                        // Nao da pra reusar ShouldUseOptionalCost (a pergunta
+                        // dele e "vale pagar MEU custo?", que nao e esta).
+                        // Cancel primeiro quando existir (recusar o que o
+                        // oponente empurra e a leitura conservadora); quando
+                        // nao existir -- caso da Linlin, em que as duas opcoes
+                        // sao efeitos -- clica a primeira ofertada. Isso NAO e
+                        // uma escolha informada: o motor nao pontua estas
+                        // opcoes hoje (limitacao registrada no HANDOFF 562), e
+                        // o WARNING abaixo grava os nomes dos botoes justamente
+                        // pra dar o dado que falta pra implementar a escolha
+                        // real depois. O que nao pode e ficar parado.
                         string? clicado = BotExecutor.ClickFirstOffered(
                             gls, ButtonChoiceType.Cancel);
                         Plugin.Log.LogWarning(
@@ -340,6 +363,7 @@ namespace OPTCGBotPlugin
                             $"{BotExecutor.OfferedButtonNames(gls)}");
                         _cooldown = 1f;
                     }
+                    // Sem botao na tela ou clique do outro lado: nao e comigo.
                     return;
                 }
 

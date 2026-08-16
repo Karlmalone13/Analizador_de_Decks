@@ -299,6 +299,22 @@ namespace OPTCGBotPlugin
             return false;
         }
 
+        // Existe QUALQUER botao de escolha na tela agora? Sinal generico de
+        // "o jogo esta esperando um clique de escolha", sem depender de qual
+        // tipo de botao e. Achado real 16/08 (bloco 562, Charlotte Linlin
+        // OP17-049 "[On Play] Your opponent chooses one:"): a guarda de
+        // escolha forcada estava presa a IsOfferingDownside, que so reconhece
+        // telas com UseOnPlay/UseV3OnPlay. Uma tela que oferece as OPCOES DE
+        // EFEITO direto (sem UseOnPlay, sem Cancel) escapava dela e caia em
+        // HandlePendingAction, que retorna seco quando a carta e do oponente
+        // -- ninguem clicava e a partida travava ate o humano intervir.
+        public static bool HasOfferedButtons(GameplayLogicScript gls)
+        {
+            foreach (var _ in OfferedButtons(gls))
+                return true;
+            return false;
+        }
+
         // Ator do efeito pendente. goActor e null em acoes V3 — ActorObject()
         // resolve os dois estilos (V3 busca por iActorID).
         private static GameObject? PendingActor(GameplayLogicScript gls)

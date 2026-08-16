@@ -117,6 +117,25 @@ COUNTER_STAT_VALUE_PER_1000 = 15
 # original) -- 400 e o valor validado, nao um palpite.
 ATTACK_LEADER_BASE_SCORE = 400
 
+# Custo MAXIMO de restar um [Blocker] pra atacar -- ele deixa de estar
+# disponivel pra interceptar no turno do oponente. Multiplicado pela ameaca
+# real de morrer (`opp_lethal_threat`, que ja pondera vida/atacantes/counters
+# proprios), entao vale 0 quando o oponente nao tem como finalizar e so chega
+# perto do teto quando a morte no proximo turno e quase certa.
+#
+# Achado real 16/08 (bloco 562, partida ao vivo Teach x Xebec): com o bot em
+# 0 de vida e o oponente com 5 personagens no campo, o motor atacou com o
+# Borsalino EB04-058 ([Blocker], 6000) -- score 252 contra o lider. As unicas
+# alternativas geradas eram OUTROS alvos do mesmo ataque (85 pro personagem);
+# "nao atacar e segurar o blocker" nao existia como candidata pontuada, entao
+# nem entrava no `mean_counterfactual_regret`. O ataque falhou e o blocker
+# ficou restado pro turno seguinte, que fechou a partida.
+#
+# Nao e desligamento de ataque com blocker: com vida saudavel a ameaca tende
+# a 0 e o desconto some. Simetrico ao `_activate_main_value` (custo de restar
+# um atacante que perde [Activate: Main]), que ja existia com a mesma forma.
+BLOCKER_REST_COST_MAX = 300.0
+
 # Teto de custo pra bloquear INCONDICIONALMENTE com vida critica (<=2) em
 # should_use_blocker. Ate 29/07 (bloco HANDOFF 395/396) essa regra
 # bloqueava SEMPRE que houvesse um blocker disponivel, sem nenhum check
@@ -3028,21 +3047,7 @@ class EffectExecutor:
         if not options:
             return []
 
-        weights = {
-            'attack_life': 4,
-            'place_opp_character_bottom_deck': 3,
-            # Mesmo peso de place_opp_character_bottom_deck -- remocao
-            # forte equivalente (achado 16/07, OP05-096: essa acao nunca
-            # tinha peso proprio aqui, caia no default=1 igual bounce,
-            # subvalorizada na escolha entre as 3 opcoes do "Choose one").
-            'place_opp_char_to_opp_life': 3,
-            'ko': 2,
-            'trash_character': 2,
-            'bounce': 1,
-            'draw': 1,
-            'trash_opp_life': 3,
-            'gain_life': 2,
-        }
+        weights = self._STEP_VALUE_WEIGHTS
 
         def choice_step_viable(step: dict) -> bool:
             # Condicao por-OPCAO (ex: OP04-040 Queen -- so pode escolher
@@ -3204,10 +3209,12 @@ class EffectExecutor:
             if combat_verdict is not None:
                 if not combat_verdict:
                     return []
-            elif not self._worth_paying_optional_costs(ef_data.get('costs', []), card):
+            elif not self._worth_paying_optional_costs(
+                    ef_data.get('costs', []), card, ef_data.get('steps')):
                 return []
         elif trigger in ('on_play', 'main', 'trigger') \
-                and not self._worth_paying_optional_costs(ef_data.get('costs', []), card):
+                and not self._worth_paying_optional_costs(
+                    ef_data.get('costs', []), card, ef_data.get('steps')):
             # 'trigger' (achado 23/07): [Trigger] de vida com custo de
             # recurso antes do ':' tambem e opcional pela regra oficial
             # (ver CLAUDE.md#regras-de-jogo) -- passava direto sem
@@ -9537,6 +9544,30 @@ class EffectExecutor:
                              'ko_own_character', 'trash_self', 'trash_own_life',
                              'trash_own_character', 'return_own_character_to_hand'}
 
+    # Peso relativo de cada acao de efeito. FONTE UNICA -- usada por
+    # `_resolve_choice` (qual opcao do "Choose one" vale mais) e por
+    # `_worth_paying_optional_costs` (quanto vale o BENEFICIO que justifica
+    # pagar o custo). Estava inline dentro de _resolve_choice; extraida aqui
+    # no bloco 562 pra nao virar duas tabelas divergentes quando a segunda
+    # regua passou a precisar da mesma nocao de valor
+    # (REGRA_SEM_DUPLICACAO.md). Acao ausente = peso 1 (default do
+    # _resolve_choice preservado).
+    _STEP_VALUE_WEIGHTS = {
+        'attack_life': 4,
+        'place_opp_character_bottom_deck': 3,
+        # Mesmo peso de place_opp_character_bottom_deck -- remocao
+        # forte equivalente (achado 16/07, OP05-096: essa acao nunca
+        # tinha peso proprio aqui, caia no default=1 igual bounce,
+        # subvalorizada na escolha entre as 3 opcoes do "Choose one").
+        'place_opp_char_to_opp_life': 3,
+        'ko': 2,
+        'trash_character': 2,
+        'bounce': 1,
+        'draw': 1,
+        'trash_opp_life': 3,
+        'gain_life': 2,
+    }
+
     def _combat_buff_worth_paying(self, card: Card, ef_data: dict, trigger: str,
                                   battle_defender_power: 'int | None') -> 'bool | None':
         """
@@ -9607,7 +9638,26 @@ class EffectExecutor:
             return de.buff_wins_combat(defender_power, attacker_power, defender_power + amount)
         return None
 
-    def _worth_paying_optional_costs(self, costs: list, card: Card) -> bool:
+    def _benefit_weight(self, steps: list | None, card: Card) -> int:
+        """
+        Peso do BENEFICIO de um bloco de efeito -- o maior peso entre os steps
+        que realmente vao produzir algo agora (`_step_is_viable`, mesma regua
+        de viabilidade usada em todo o resto). 0 = sem steps informados ou
+        nenhum viavel.
+
+        Existe pra `_worth_paying_optional_costs` deixar de decidir SO pelo
+        custo. Reusa `_STEP_VALUE_WEIGHTS`, a tabela que `_resolve_choice` ja
+        usava pra ordenar opcoes de "Choose one" -- e a mesma pergunta ("quanto
+        vale esta acao?"), entao nao pode virar uma segunda tabela.
+        """
+        if not steps:
+            return 0
+        pesos = [self._STEP_VALUE_WEIGHTS.get(s.get('action', ''), 1)
+                 for s in steps if self._step_is_viable(s, card)]
+        return max(pesos) if pesos else 0
+
+    def _worth_paying_optional_costs(self, costs: list, card: Card,
+                                     steps: list | None = None) -> bool:
         """
         Em OPTCG, um bloco de efeito com custo é sempre "you may pagar X: Y"
         -- decide se vale a pena. ÚNICA fonte de verdade pra essa pergunta,
@@ -9734,6 +9784,24 @@ class EffectExecutor:
             meus.append(self.me.field_stage)
         if any(get_card_effects(c.code).get('on_hand_card_trashed') for c in meus):
             limiar += 25
+        # O limiar era uma CONSTANTE: a decisao olhava so o custo (valor da
+        # pior carta da mao) e nunca o que se ganhava em troca. Achado real
+        # 16/08 (bloco 562, partida ao vivo Teach x Xebec, turno 4): Shiryu
+        # OP16-108 ("[On Play] You may trash 1 card: add 1 {Blackbeard
+        # Pirates} cost<=6 do trash pro topo da Life") foi jogado com o bot
+        # em 3 de vida e 4 alvos validos no trash -- o beneficio era viavel
+        # (`_step_is_viable` True) e a carta era exatamente a resposta a
+        # pressao que matou a partida, mas a mao mais barata valia 83 contra
+        # o limiar fixo 60 e o custo foi recusado em 2.9ms, sem nenhum score
+        # gravado pras duas opcoes. Ganhar vida na iminencia de perder pesava
+        # igual a um efeito irrelevante.
+        #
+        # Agora o limiar ESCALA com o beneficio (peso da melhor acao viavel do
+        # bloco, pela tabela unica `_STEP_VALUE_WEIGHTS`): efeito mais valioso
+        # justifica sacrificar uma carta mais cara. Sem `steps` (chamadores que
+        # so tem os custos em maos) o comportamento antigo fica intacto --
+        # peso 0, limiar inalterado.
+        limiar += self._benefit_weight(steps, card) * 15
         return self._trash_value(worst) <= limiar
 
 
@@ -12775,6 +12843,13 @@ class DecisionEngine:
         # atacar com ele perde o efeito do turno. Desconta, salvo letal/ameaça grande.
         activate_cost = self._activate_main_value(attacker)
 
+        # Custo de restar um [Blocker] atacando (bloco 562). Mesma forma do
+        # activate_cost logo acima: nao muda a escolha ENTRE alvos (incide
+        # igual nos dois ramos), rebaixa o atacante inteiro quando a defesa
+        # dele vale mais que o ataque. Nunca se aplica com letal certificado
+        # -- se o jogo acaba agora, nao ha proximo turno pra defender.
+        blocker_cost = self._blocker_rest_cost(attacker)
+
         if target_type == 'leader':
             don_disp  = self.me.don_available
             # +power_buff: mesmo achado do bloco HANDOFF 434
@@ -12806,7 +12881,7 @@ class DecisionEngine:
                 s = self._rest_only_attack_value(attacker)
                 if activate_cost > 0 and opp_life > 1:
                     s -= activate_cost
-                return s
+                return s - blocker_cost
 
             # Pontua os ataques validos. Vida 0/1 so vira prioridade maxima
             # quando o conjunto de ataques realmente garante lethal; com
@@ -12860,6 +12935,10 @@ class DecisionEngine:
             # Custo de perder o Activate Main: desconta, salvo se for letal
             if activate_cost > 0 and opp_life > 1:
                 s -= activate_cost
+            # Com letal certificado o jogo acaba agora -- nao ha turno seguinte
+            # pra esse blocker defender, entao o custo nao existe.
+            if not lethal_now:
+                s -= blocker_cost
             return s
 
         elif target_type == 'character' and target:
@@ -12938,9 +13017,32 @@ class DecisionEngine:
             if activate_cost > 0 and not ameaca_grande:
                 s -= activate_cost
 
+            # Mesmo custo de restar o blocker do ramo do lider (bloco 562) --
+            # incide igual nos dois pra nao distorcer a escolha de ALVO, que e
+            # uma pergunta separada de "vale restar esta carta".
+            if not a.can_lethal_this_turn():
+                s -= blocker_cost
+
             return s
 
         return s
+
+    def _blocker_rest_cost(self, attacker: 'Card') -> float:
+        """
+        Custo de restar um [Blocker] pra atacar: ele nao podera interceptar no
+        turno do oponente. 0 quando a carta nao e blocker OU quando o oponente
+        nao tem como me finalizar no proximo turno.
+
+        Reusa `opp_lethal_threat()` (ja existente) como medida de risco -- ela
+        ja pondera vida, numero de atacantes do oponente, meus blockers e meus
+        counters. Nao reimplementa nenhuma dessas contas (REGRA_SEM_DUPLICACAO).
+        """
+        if not (attacker.has_blocker or getattr(attacker, 'blocker_this_turn', False)):
+            return 0.0
+        ameaca = self.analyzer.opp_lethal_threat()
+        if ameaca <= 0:
+            return 0.0
+        return BLOCKER_REST_COST_MAX * ameaca
 
     def _activate_main_value(self, card) -> float:
         """

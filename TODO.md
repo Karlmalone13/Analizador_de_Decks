@@ -2,6 +2,40 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 563): **partida ao vivo nova (derrota Teach x Xebec),
+> 3 achados com causa raiz isolada — 2 fechados, o 3º expôs um bug maior
+> ainda ABERTO.** Ambiente: update do jogo apagou o BepInEx de novo
+> (reinstalado; plugin compila contra a API nova com 0 erros — o update
+> não quebrou nada). **(1) Tela travada da Charlotte Linlin OP17-049**
+> ("Your opponent chooses one") — terceira variação da mesma causa dos
+> blocos 551/560: o fix de escolha forçada existia mas estava atrás da
+> guarda `IsOfferingDownside`, que só reconhece tela com
+> `UseOnPlay`/`UseV3OnPlay`; a tela da Linlin oferece as opções de efeito
+> direto e escapava, caindo em `HandlePendingAction` que retorna seco
+> quando a carta é do oponente. **Corrigido e compilado, não testado ao
+> vivo.** Pendente: o motor ainda **não pontua** essas opções — o plugin
+> só destrava (clica Cancel, ou a 1ª ofertada) e loga os botões pra dar o
+> dado que falta. **(2) Shiryu OP16-108 sem ganhar vida** — o motor
+> recusou o custo opcional em 2.9ms, com as opções gravadas sem score:
+> `_worth_paying_optional_costs` nunca recebia os `steps`, julgava só o
+> custo contra uma constante. **Corrigido** (limiar escala com o
+> benefício; tabela de pesos extraída pra fonte única). **(3) Borsalino
+> [Blocker] atacando com vida 0** — confirmado que "guardar o blocker"
+> **nunca foi gerada como candidata**. Desconto `_blocker_rest_cost`
+> implementado e medido (126 com vida 0, 42 com vida 4), **mas não teria
+> mudado esta decisão**: o motor tinha `can_lethal_this_turn() == True`
+> num letal que não existia (falhou por buff reativo do oponente pago com
+> trash). **NOVA PRIORIDADE ABERTA: `_lethal_search` parece ignorar buffs
+> de defesa reativos do oponente** — enquanto isso não for atacado o bot
+> segue "all-in" em letal falso; provavelmente o item de maior impacto em
+> aberto. Também aberto e **não investigado**: `don_planned_total: 0` em
+> 12 ataques (partida inteira sem planejar DON), `line_search` com média
+> 934ms/máx 2711ms (a "demora nos alvos"), e a **sequência de defesa**
+> (o motor decide cada ataque isoladamente, sem alocar counter/redirect/
+> blocker ao longo do turno). `smoke_fast` 14 falhas conhecidas (nenhuma
+> 15ª), `smoke_test` 100%, 9 checks novos permanentes. Ver bloco 563 do
+> HANDOFF.
+
 > 16/08/2026 (bloco 562): **ferramenta de calibração apagou código de
 > produção** — o `ab_desconto_ataque.py` guardava o arquivo INTEIRO e o
 > reescrevia no fim; um A/B disparado antes do merge e concluído depois

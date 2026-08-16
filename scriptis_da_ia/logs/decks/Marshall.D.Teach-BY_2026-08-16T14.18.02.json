@@ -1,0 +1,76 @@
+{
+  "cards": [
+    {
+      "code": "OP16-119",
+      "name": "Marshall D. Teach",
+      "count": 4
+    },
+    {
+      "code": "EB04-058",
+      "name": "Borsalino",
+      "count": 3
+    },
+    {
+      "code": "OP16-115",
+      "name": "OP16-115",
+      "count": 2
+    },
+    {
+      "code": "OP09-086",
+      "name": "OP09-086",
+      "count": 2
+    },
+    {
+      "code": "OP09-095",
+      "name": "Laffitte",
+      "count": 2
+    },
+    {
+      "code": "OP16-110",
+      "name": "OP16-110",
+      "count": 2
+    },
+    {
+      "code": "OP16-108",
+      "name": "Shiryu",
+      "count": 1
+    },
+    {
+      "code": "OP16-104",
+      "name": "Catarina Devon",
+      "count": 1
+    },
+    {
+      "code": "OP09-096",
+      "name": "OP09-096",
+      "count": 1
+    },
+    {
+      "code": "OP12-112",
+      "name": "OP12-112",
+      "count": 1
+    },
+    {
+      "code": "OP06-115",
+      "name": "OP06-115",
+      "count": 1
+    },
+    {
+      "code": "OP16-109",
+      "name": "OP16-109",
+      "count": 1
+    },
+    {
+      "code": "OP09-093",
+      "name": "Marshall D. Teach",
+      "count": 1
+    },
+    {
+      "code": "OP09-099",
+      "name": "OP09-099",
+      "count": 1
+    }
+  ],
+  "total_seen": 23,
+  "leader": "OP16-080"
+}

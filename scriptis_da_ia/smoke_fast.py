@@ -10606,6 +10606,8 @@ def main() -> int:
     test_apply_winner_grava_bot_side_da_fonte_autoritativa()
     test_attach_don_margem_seguranca_em_empate_com_don_ocioso()
     test_worth_paying_optional_costs_recusa_reveal_from_hand_impagavel()
+    test_worth_paying_optional_costs_enxerga_o_beneficio_16_08()
+    test_blocker_rest_cost_escala_com_a_ameaca_16_08()
     test_score_give_don_considera_sinergia_com_ataque()
     test_gain_double_attack_respeita_target_leader_e_selecionado()
     test_score_play_prioriza_carta_que_buffa_ataque_do_lider_hoje()
@@ -11873,6 +11875,96 @@ def test_worth_paying_optional_costs_recusa_reveal_from_hand_impagavel() -> None
     me.hand = [marco, marco2, luffy]
     check("reveal_from_hand pagavel (2/2 cartas validas): _worth_paying_optional_costs aceita",
           ee._worth_paying_optional_costs(am["costs"], newgate) is True)
+
+
+def test_worth_paying_optional_costs_enxerga_o_beneficio_16_08() -> None:
+    """
+    Achado real 16/08 (bloco 562, partida ao vivo Marshall.D.Teach-BY x
+    Rocks.D.Xebec-B, turno 4): Shiryu OP16-108 ("[On Play] You may trash 1
+    card from your hand: add up to 1 {Blackbeard Pirates} cost<=6 do trash
+    pro topo da Life") foi jogado com o bot em 3 de vida e 4 cartas no
+    trash -- o custo foi RECUSADO (`{"accepted": false}` no decision log,
+    2.9ms, e as duas opcoes gravadas sem score nenhum). O usuario reportou
+    como "jogou o shiryu mas nao ganhou vida".
+
+    Causa: `_worth_paying_optional_costs` recebia so `costs` e `card`,
+    nunca os `steps` -- comparava o valor da pior carta da mao contra uma
+    CONSTANTE (60), sem nunca perguntar o que se ganhava em troca. Ganhar
+    vida na iminencia de perder pesava igual a um efeito irrelevante.
+
+    Fix: o limiar escala com o peso da melhor acao viavel do bloco
+    (`_STEP_VALUE_WEIGHTS`, a mesma tabela que `_resolve_choice` ja usava
+    -- nao uma segunda regua). Sem `steps`, comportamento antigo intacto.
+    """
+    from optcg_engine.decision_engine import get_card_effects
+
+    me = GameState(leader=real_card("OP16-080"))
+    me.hand = [real_card(c) for c in
+               ["OP16-119", "EB04-058", "OP09-096", "OP12-112", "OP16-119"]]
+    me.trash = [real_card(c) for c in
+                ["OP09-095", "OP09-086", "OP16-115", "OP16-110"]]
+    me.field_chars = [real_card("OP16-108")]
+    me.life = [real_card(c) for c in ["OP09-093", "OP09-095", "OP16-115"]]
+
+    opp = GameState(leader=real_card("OP17-039"))
+    opp.field_chars = [real_card(c) for c in ["OP17-050", "OP17-042", "OP17-049"]]
+    opp.life = [real_card("OP17-040")] * 3
+
+    ee = EffectExecutor(me, opp)
+    shiryu = me.field_chars[0]
+    ef = get_card_effects("OP16-108")["on_play"]
+
+    check("Shiryu OP16-108: o beneficio (gain_life do trash) e viavel",
+          ee._step_is_viable(ef["steps"][0], shiryu) is True)
+    check("peso do beneficio gain_life vem da tabela unica (=2)",
+          ee._benefit_weight(ef["steps"], shiryu) == 2)
+    check("COM steps: aceita pagar o custo do Shiryu (era o bug ao vivo)",
+          ee._worth_paying_optional_costs(ef["costs"], shiryu, ef["steps"]) is True)
+    check("SEM steps: comportamento antigo preservado (recusa)",
+          ee._worth_paying_optional_costs(ef["costs"], shiryu) is False)
+    check("steps vazio nao inventa beneficio (peso 0)",
+          ee._benefit_weight([], shiryu) == 0)
+
+
+def test_blocker_rest_cost_escala_com_a_ameaca_16_08() -> None:
+    """
+    Achado real 16/08 (bloco 562, mesma partida): com o bot em 0 de vida e
+    o oponente com 5 personagens no campo, o motor atacou com o Borsalino
+    EB04-058 ([Blocker]) -- restando o proprio blocker que precisava pra
+    sobreviver ao turno seguinte. "Nao atacar e segurar o blocker" nunca
+    existiu como candidata pontuada (o decision log so tinha outros ALVOS
+    do mesmo ataque), entao nem entrava no counterfactual regret.
+
+    Fix: `_blocker_rest_cost` -- custo de restar um [Blocker], escalado
+    pela ameaca real de morrer (`opp_lethal_threat`, ja existente, que
+    pondera vida/atacantes/blockers/counters). Nao e desligamento de
+    ataque com blocker: com vida saudavel a ameaca cai e o custo encolhe.
+    """
+    def cena(vidas: int):
+        me = GameState(leader=real_card("OP16-080"))
+        me.field_chars = [real_card("OP16-119"), real_card("EB04-058")]
+        me.life = [real_card("OP09-086")] * vidas
+        me.don_available = 10
+        opp = GameState(leader=real_card("OP17-039"))
+        opp.field_chars = [real_card(c) for c in
+                           ["OP17-049", "OP17-043", "OP17-045", "OP17-118", "OP17-040"]]
+        opp.life = [real_card("OP17-040")] * 3
+        return DecisionEngine(me, opp), me.field_chars[1], me.field_chars[0]
+
+    eng0, bors0, teach0 = cena(0)
+    eng4, bors4, _ = cena(4)
+
+    custo0 = eng0._blocker_rest_cost(bors0)
+    custo4 = eng4._blocker_rest_cost(bors4)
+
+    check("restar blocker custa >0 quando o oponente pode finalizar",
+          custo0 > 0)
+    check("carta SEM [Blocker] nunca paga esse custo",
+          eng0._blocker_rest_cost(teach0) == 0.0)
+    check("o custo ESCALA com a ameaca (vida 0 custa mais que vida 4)",
+          custo0 > custo4)
+    check("nao e desligamento cego: com vida saudavel o custo encolhe",
+          custo4 < custo0 / 2)
 
 
 def test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno() -> None:

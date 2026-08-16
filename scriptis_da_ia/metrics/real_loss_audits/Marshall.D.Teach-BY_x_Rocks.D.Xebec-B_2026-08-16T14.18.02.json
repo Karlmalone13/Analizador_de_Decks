@@ -1,0 +1,260 @@
+{
+  "parsed_file": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T14.18.02.json",
+  "bot_side": "You",
+  "bot_leader": "Marshall D. Teach",
+  "opp_leader": "Rocks D. Xebec",
+  "turnos_auditados": 6,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Catarina Devon [\"OP16-104\">OP16-104]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Prometheus\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Streusen\n      💀 Streusen foi KO!\n  > gastou 3 DON -> Joga: Prometheus (3000pwr) [CHARACTER]\n    \u001b[90mefeito: [Activate:Main] You may rest this Character: Up to 1 of your [Charlotte Linlin] cards gain...\u001b[0m\n    ⚙ ativou [Activate:Main] de Prometheus\n      ↳ custo: restou Prometheus\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-104",
+          "card_name": "Catarina Devon",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-115",
+          "card_name": "Black Vortex",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Nico Robin (055) (SP)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      🛡 Counter There's No Authori: +2000 power -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n  > gastou 5 DON -> Joga: Borsalino (Alternate Art) (6000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] (After your opponent declares an attack, you may rest this card to make it the n...\u001b[0m\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Catarina Devon",
+          "attacker_code": "OP16-104",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-104",
+          "card_name": "Catarina Devon",
+          "effects": [
+            "Buff Self 4000"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-096",
+          "card_name": "This is MY AGE!!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Vasco Shot [\"OP16-110\">OP16-110]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Brogy\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Fullalead\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      🛡 Counter There's No Authori: +2000 power -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Catarina Devon (7000pwr) ataca Leader\n      ↳ [when attacking] base power de Catarina Devon virou 8000 (selected_opp_character)\n      💥 DANO! vida do oponente: 3\n  > gastou 6 DON -> Joga: Shiryu (Full Art) (8000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 card from your hand: Add up to 1 {Blackbeard Pirates} type card ...\u001b[0m\n    ↳ [Shiryu (Full Art)] custo: trashou da mão: Brogy\n    ↳ [Shiryu (Full Art)] +1 vida (trash->life_top)\n  > gastou 1 DON -> Joga: My Era...Begins!! (Reprint) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] Look at 3 cards from the top of your deck; reveal up to 1 \"Blackbeard Pirates\" type...\u001b[0m\n    ↳ [My Era...Begins!! (R] olhou 3 do topo -> pegou: Marshall.D.Teac\n    ↳ [My Era...Begins!! (R] trash resto: Viola (Alter, Gecko Moria \n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Added card to top of Life from Hand"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP17-042",
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Emporio.Ivankov (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 9 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Shiryu (Full Art) (8000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Fullalead\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      🛡 Blocker! Kaido intercepta\n      🔁 Kyo evitou K.O./remoção trashando da mão: There's No Auth, Gloriosa\n  > gastou 8 DON -> Joga: Marshall.D.Teach (119) (Altern (10000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; add up to 1 card to the top of your L...\u001b[0m\n    ↳ [Marshall.D.Teach (11] olhou 3 do topo -> pegou: Gecko Moria - O\n    ↳ [Marshall.D.Teach (11] 2 carta(s) no fundo do deck\n    ↳ [Marshall.D.Teach (11] +1 vida (deck_top->life_top)\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  > gastou 1 DON -> Joga: Black Vortex (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the {Blackbeard Pirates} type, add up to 1 card with a [Trigger]...\u001b[0m\n    ↳ [Black Vortex] recuperou do trash: Laffitte (Repri\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "EB04-058",
+          "card_name": "Borsalino",
+          "effects": [
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-119",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "EB04-058",
+          "card_name": "Borsalino",
+          "effects": [
+            "Add card to top of Life from Deck"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Tenguyama Hitetsu\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 10 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 5 DON -> Joga: Borsalino (Alternate Art) (6000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] (After your opponent declares an attack, you may rest this card to make it the n...\u001b[0m\n    ↳ [Borsalino (Alternate] +1 vida (deck_top->life_top)\n    Marshall.D.Teach (08 (5000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Fullalead\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      ↳ [lider e atacado: Edward.Newgate] custo: trashou da mão: Fullalead\n      ↳ [lider e atacado: Edward.Newgate] +3000 power em leader\n      ✗ Ataque bloqueado (5000 < 8000)\n    Shiryu (Full Art) (8000pwr) ataca Leader\n      🛡 Counter There's No Authori: +2000 power -> defesa 10000\n      ✗ Ataque bloqueado (8000 < 10000)\n    Marshall.D.Teach (11 (10000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  > gastou 5 DON -> Joga: Borsalino (Alternate Art) (6000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] (After your opponent declares an attack, you may rest this card to make it the n...\u001b[0m\n    ↳ [Borsalino (Alternate] +1 vida (deck_top->life_top)\n"
+    },
+    {
+      "turn": 13,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Nullify effects of Rocks D. Xebec [\"OP17-039\">OP17-039]",
+            "Rocks D. Xebec [\"OP17-118\">OP17-118] can't attack next turn",
+            "Nullify effects of Rocks D. Xebec [\"OP17-118\">OP17-118] until next turn end!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-119",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Borsalino",
+          "attacker_code": "EB04-058",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Prometheus\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 12 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Marshall.D.Teach (08\n    Marshall.D.Teach (08 (7000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Kyo\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      💥 DANO! vida do oponente: 1\n  > gastou 8 DON -> Joga: Marshall.D.Teach (119) (Altern (10000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 3 cards from the top of your deck; add up to 1 card to the top of your L...\u001b[0m\n    ↳ [Marshall.D.Teach (11] olhou 3 do topo -> pegou: Tenguyama Hitet\n    ↳ [Marshall.D.Teach (11] 2 carta(s) no fundo do deck\n    ↳ [Marshall.D.Teach (11] +1 vida (deck_top->life_top)\n    anexou 1 DON em Marshall.D.Teach (11\n    Marshall.D.Teach (11 (11000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n    Borsalino (Alternate (6000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 1 DON -> Joga: Vasco Shot (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On K.O.] Draw 1 card and rest up to 1 of your opponent's Characters with a cost of 6 or l...\u001b[0m\n"
+    }
+  ]
+}

@@ -1,5 +1,150 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (563) - Claude (sessao local) - Partida ao vivo nova: BepInEx reinstalado pos-update + 3 achados com causa raiz isolada (tela travada da Linlin, Shiryu sem ganhar vida, blocker atacando) -- 2 fixes fecham o caso, o 3o expos um bug MAIOR ainda aberto (letal falso-positivo)
+
+Partida `Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T14.18.02`
+(derrota do bot). Log no banco, telemetria lida na ordem obrigatoria,
+`audit_real_losses.py` + `triage_real_losses.py` rodados.
+
+### Ambiente: o update do jogo apagou o BepInEx de novo
+
+Sintoma classico do `BOT/README.md`: pasta `BepInEx/` inteira sumiu (sem
+core, sem plugin, sem `LogOutput.log`), sobrou o `winhttp.dll` orfao.
+`Assembly-CSharp.dll` do jogo e de 16/08 12:59 -- update de verdade, nao
+verificacao de integridade. Reinstalado via `setup_bepinex.ps1`; **o
+plugin compilou contra a API nova com 0 erros**, entao o update nao mexeu
+em nada que o plugin usa. Server reiniciado.
+
+> **Ordem que importa** (perdi um build com isso): o `.csproj` referencia
+> `BepInEx/core/*.dll` DENTRO da pasta do jogo. Com o BepInEx apagado,
+> `dotnet build` falha com 13 erros CS0246 que parecem codigo quebrado e
+> nao sao -- e dependencia ausente. Extrair o BepInEx PRIMEIRO (o que o
+> `setup_bepinex.ps1` ja faz na etapa 1/3), compilar depois.
+
+### Telemetria agregada (numeros, nao prosa)
+
+`gate_status: fail`. 107 decisoes, 104 confirmadas, 0 falhas de execucao,
+0 timeouts de cliente, 2 `no_eligible_action_suspicious`.
+
+- **`don_planned_total: 0` em 12 ataques** -- a partida INTEIRA sem
+  planejar DON de ataque. O combat log corrobora: 1 unico `Attach 1 Don`
+  do bot contra 4-8 por turno do oponente. Nao investigado nesta sessao.
+- **Latencia**: media 246ms, p95 1396ms, max 3299ms. O segmento culpado e
+  `line_search` (media 934ms, max 2711ms) -- e a "demora pra escolher
+  alvos" que o usuario reportou, agora com numero.
+- Cobertura de instrumentacao 84% / 71%: ~1/4 das decisoes sem dado.
+- `lethal_certified`: 1 partida certificou letal e **nao fechou**.
+
+### Achado 1 -- tela travada da Charlotte Linlin (RESOLVIDO, nao testado ao vivo)
+
+`OP17-049`: "[On Play] **Your opponent chooses one:** Draw 2 / opponent
+trashes 2". Parser CORRETO (`choice_chooser: "opponent"`). Bug no plugin.
+
+**Terceira variacao da MESMA causa dos blocos 551 e 560** -- "quem decide
+e `iPlayerAction`, nunca o dono da carta". O fix de escolha forcada ja
+existia e ate cita a Linlin pelo nome no comentario, mas estava **dentro
+do `if (IsOfferingDownside)`**, que so reconhece tela com botao
+`UseOnPlay`/`UseV3OnPlay`. A tela da Linlin oferece as duas OPCOES DE
+EFEITO direto (sem UseOnPlay, sem Cancel) -> a guarda dava false, o fluxo
+caia em `HandlePendingAction`, cuja 1a linha e "efeito do humano? nao
+toca" (`return` seco porque a carta e do oponente). **Ninguem clicava.**
+
+Prova no `LogOutput.log`: 4x `aca=True downside=False mine=False
+actor=OP17-049`, e **zero** ocorrencias de `escolha FORCADA`.
+
+Fix: a guarda saiu de dentro do `IsOfferingDownside` e agora testa a FORMA
+do problema -- ha efeito pendente + a carta e do oponente + `iPlayerAction`
+aponta pro bot + existe botao na tela (`BotExecutor.HasOfferedButtons`,
+novo). Compilado (0 erros) e DLL instalada.
+
+> **Limitacao honesta, nao e escolha informada**: o motor nao pontua essas
+> opcoes hoje -- o plugin clica `Cancel` se existir, senao a primeira
+> ofertada, so pra destravar (mesmo precedente do bloco 551). O WARNING
+> grava os nomes dos botoes justamente pra dar o dado que falta pra
+> implementar a escolha real depois. **Fica pendente.**
+
+### Achado 2 -- Shiryu jogado sem ganhar vida (RESOLVIDO)
+
+Usuario: "turno 4, jogou o shiryu mas nao ganhou vida". `OP16-108`:
+"[On Play] You may trash 1 card: add up to 1 {Blackbeard Pirates} cost<=6
+do trash pro topo da Life". Parser CORRETO.
+
+O motor **recusou explicitamente**: `{"type":"optional","accepted":false}`
+em 2.9ms, com as duas opcoes gravadas **sem score nenhum**. Reproduzido
+com o `state_before` real: beneficio viavel (`_step_is_viable` True, 4
+alvos no trash, bot em 3 de vida), mas a carta mais barata da mao valia 83
+contra o limiar fixo **60**.
+
+> **Hipotese minha que o teste DERRUBOU** (registrado porque quase virou
+> "achado"): pensei que o limiar 60 fosse inatingivel (o proprio arquivo
+> diz "piso estrutural 75" num branch vizinho). Varri as 2747 cartas:
+> **821 ficam <= 60**. Nao e codigo morto -- a conclusao errada morreu no
+> teste, nao no commit.
+
+Causa real: `_worth_paying_optional_costs(costs, card)` **nunca recebia os
+`steps`**. Julgava so o custo contra uma CONSTANTE, sem nunca perguntar o
+que se ganha. Ganhar vida na iminencia de perder pesava igual a um efeito
+irrelevante.
+
+Fix: parametro `steps` opcional; o limiar escala com o peso da melhor acao
+viavel do bloco. A tabela de pesos foi **extraida** de dentro de
+`_resolve_choice` pra `_STEP_VALUE_WEIGHTS` (constante de classe) e agora e
+usada pelos dois -- e a mesma pergunta ("quanto vale esta acao?"), entao
+nao podia virar duas tabelas (`REGRA_SEM_DUPLICACAO.md`). Os 3 chamadores
+reais passam `steps`; **sem `steps` o comportamento antigo fica intacto**,
+o que preserva os testes existentes.
+
+### Achado 3 -- blocker atacando: fix entregue, mas a causa REAL e outra
+
+Usuario: "turno 6 nao podia ter atacado com o borsalino, ele era blocker
+e nao tinha condicoes de vencer ali". Confirmado no decision log: a
+decisao foi `attack EB04-058 -> leader (score=252)` e as unicas
+alternativas eram **outros ALVOS do mesmo ataque** (85 pro personagem) --
+**"nao atacar e segurar o blocker" nunca foi gerada como candidata**, entao
+nem entrava no `mean_counterfactual_regret: 0.0`.
+
+Fix implementado: `_blocker_rest_cost` -- custo de restar um [Blocker],
+escalado por `opp_lethal_threat()` (funcao ja existente, que ja pondera
+vida/atacantes/blockers/counters -- nao reimplementei nada). Simetrico ao
+`_activate_main_value`, que ja fazia exatamente isso pra [Activate: Main].
+Incide igual nos dois ramos (lider/character) pra nao distorcer a escolha
+de ALVO, e nunca com letal certificado. Medido: custo 126 com vida 0, 42
+com vida 4 -- escala como projetado, nao e desligamento cego.
+
+> **MAS o fix NAO teria mudado esta decisao, e isso e o achado maior.**
+> Ao reproduzir a cena, `can_lethal_this_turn()` devolveu **True** -- o
+> motor achava que tinha LETAL naquele turno. Sob essa crenca, atacar com
+> tudo (blocker incluso) e correto, e o desconto e corretamente suprimido.
+> O letal nao existia: o ataque falhou por buff reativo do oponente
+> (Newgate `+3000` do trash e Rocks Pirates counter `+2000`), o blocker
+> ficou restado e o turno seguinte fechou a partida. A telemetria
+> corrobora de forma independente: `matches_not_closed_after_lethal: 1`.
+>
+> **PENDENTE, nao investigado**: `_lethal_search` parece nao considerar
+> buffs de defesa reativos do oponente (efeitos [Counter]/on_opp_attack
+> pagos com trash). Enquanto isso nao for atacado, o bot vai continuar
+> "all-in" em letais que nao existem. Este e provavelmente o item de maior
+> impacto em aberto -- maior que os 3 desta sessao.
+
+### Achado 4 -- sequencia de defesa (NAO investigado)
+
+Usuario descreveu a sequencia ideal do turno 7 (counter no 1o ataque de
+5000, redirect com trigger no 3o, blocker no 4o). O motor decide cada
+ataque **isoladamente** -- nao existe nocao de alocar counter/redirect/
+blocker ao longo dos N ataques do turno. Registrado, nao mexido.
+
+### Validacao
+
+`smoke_fast`: **14 falhas, exatamente as conhecidas** (as 8 flags de
+calibragem ligadas localmente) -- nenhuma 15a. `smoke_test`: **100%**.
+9 checks novos permanentes cobrindo os achados 2 e 3
+(`test_worth_paying_optional_costs_enxerga_o_beneficio_16_08`,
+`test_blocker_rest_cost_escala_com_a_ameaca_16_08`).
+
+Conferido apos os 2 commits que outra sessao fez durante esta (blocos
+561/562): meus fixes intactos, `_blocker_gratis_se_sobrevive` de volta com
+4 ocorrencias, 8/8 flags, `fator_atual()` = 0.35 lido por VALOR.
+
 ## 2026-08-16 (562) - Claude (sessao local) - A/B local APAGOU os fixes da sessao remota ao terminar (snapshot do arquivo INTEIRO) -- detectado, revertido e a causa corrigida; de quebra, o A/B local REPRODUZIU a conclusao da remota
 
 **Ferramenta de calibracao corrompeu codigo de producao silenciosamente.**

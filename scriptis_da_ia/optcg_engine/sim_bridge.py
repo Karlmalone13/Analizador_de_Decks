@@ -1794,7 +1794,11 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
                           f'counters sem/com buff={n_sem}/{n_com}) '
                           f'-> False', flush=True)
                     return False
-        return ee._worth_paying_optional_costs(custos, card_obj)
+        # `steps` passa junto (bloco 562): a decisao "vale pagar?" precisa ver
+        # o BENEFICIO, nao so o custo -- mesma chamada que execute() faz no
+        # simulador interno, pra os dois caminhos continuarem com a mesma
+        # regua (regra do motor unico).
+        return ee._worth_paying_optional_costs(custos, card_obj, steps)
 
     return False
 
