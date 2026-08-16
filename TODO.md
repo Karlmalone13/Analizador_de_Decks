@@ -2,6 +2,25 @@
 
 **Última atualização:** 15 de agosto de 2026
 
+> 15/08/2026 (bloco 545): **RETRATAÇÃO do achado 4 (bloco 544 estava
+> errado)** — `redirect_attack_target` NÃO é no-op no caminho ao vivo; o
+> comentário "no-op" em `decision_engine.py` é só do caminho de
+> simulação interna. `/choose_target` já resolve redirect via
+> `redirect_option_value` (existe desde 04/07, doc cita literalmente o
+> caso Doc Q/Vasco Shot). Reconstruí o estado real da partida (turno 6):
+> Vasco Shot dá EXATAMENTE 0.0 de ganho líquido no redirect (on_ko_value
+> 40 = char_value_score 40, empate matemático), empatando com "deixar
+> Teach10/Shiryu sobreviverem" (também 0.0) — o desempate por maior
+> poder escolheu proteger o Teach10. **Gap real identificado**:
+> `on_ko_value`'s peso fixo de +25 pro `rest_opp_character` não escala
+> quando o alvo restado evitaria um dos "vários ataques" ainda
+> pendentes no MESMO turno (o usuário citou isso na partida real) —
+> `resolve_reaction` já tem lógica de seguraro golpe maior que vem, mas
+> só pra decisão de pagar/não pagar, nunca pro valor de QUAL alvo
+> escolher. Não implementado — registrado como próximo passo com escopo
+> preciso. Achado 2 permanece como reclassificado no bloco 544 (não é
+> bug, é informação oculta por design). Ver bloco 545 do HANDOFF.
+
 > 15/08/2026 (bloco 544): **aprofundamento dos achados 2/4 do bloco 543**.
 > Achado 4 fechado: `redirect_attack_target` (efeito do líder OP16-080,
 > redireciona ataque do oponente) é NO-OP explícito no motor — nunca há

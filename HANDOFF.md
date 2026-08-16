@@ -1,5 +1,54 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (545) - Claude (sessao local) - RETRATACAO do achado 4 (bloco 544): redirect_attack_target NAO e no-op no caminho ao vivo -- ja existe scoring on_ko-aware real, achado real e um EMPATE no modelo, nao ausencia de decisao
+
+Usuario pediu pra investigar o achado 4 de verdade (nao aceitar como
+lacuna arquitetural fechada) e apontou que "atacar seco" (achado 2) nao
+deveria ser padrao fixo -- depende do momento, e nessa partida existiam
+alternativas melhores. Investigando os dois a fundo:
+
+**Achado 4 -- minha conclusao do bloco 544 estava ERRADA.** O comentario
+"no-op engine, parser only" em `decision_engine.py:6889` e real, mas e
+so pro caminho de SIMULACAO interna (`execute()`/self-play) -- o
+caminho AO VIVO (plugin) resolve redirect via `/choose_target` ->
+`sim_bridge.order_target_candidates()`, que **ja tem logica dedicada e
+on_ko-aware pra isso** (linha ~2482-2487, usa `redirect_option_value`
+que ja existe desde 04/07 especificamente pro caso Doc Q/Vasco Shot,
+docstring cita literalmente esse par como exemplo). Reconstrui o
+estado REAL da decisao (turno 6, atk_power=7000) e chamei
+`redirect_option_value` pra cada candidato de campo:
+
+| carta | poder | redirect_value | char_value_score | on_ko_value |
+|---|---|---|---|---|
+| OP09-093 (Teach10) | 12000 | 0.0 (sobrevive) | 200 | 0 |
+| OP16-108 (Shiryu) | 8000 | 0.0 (sobrevive) | 100 | 0 |
+| OP16-110 (Vasco Shot) x2 | 2000 | **0.0** | 40 | 40 |
+| OP09-095 (Laffitte) | 1000 | -30.0 | 30 | 0 |
+
+**O redirect pro Vasco Shot da EXATAMENTE 0.0 de ganho liquido** (morre,
+mas on_ko_value=40 igual ao char_value_score=40 dele -- draw+
+rest_opp_character empata matematicamente com o valor de mante-lo vivo).
+Empata com "mandar pro Teach10/Shiryu e deixar sobreviver" (tambem 0.0).
+O desempate (`-power`, maior poder primeiro) escolheu proteger o
+Teach10 -- comportamento defensavel numa igualdade real, nao um bug de
+"nunca decide nada".
+
+**Gap real identificado** (proximo passo, nao implementado ainda):
+`on_ko_value`'s peso fixo de +25 pro step `rest_opp_character` nao
+escala quando restar ESSE personagem especifico do oponente evitaria um
+dos "varios ataques" que ainda vem no MESMO turno (usuario mencionou
+isso na partida real) -- `resolve_reaction` ja tem logica de "segura a
+reacao pro ataque maior que vem" (`maior_por_vir`), mas essa logica so
+se aplica a DECISAO de pagar ou nao o custo, nunca ao valor atribuido a
+QUAL alvo escolher dentro do redirect. Dar credito extra a
+`rest_opp_character` quando o alvo restado especificamente esta na
+lista de atacantes ainda pendentes do oponente destravaria o empate a
+favor do Vasco Shot nesse tipo de situacao (deck com "varios ataques"
+no turno = signal real do arquetipo, conecta com o pedido do usuario de
+entendimento por deck/calibragem dinamica). NAO implementado ainda --
+fica registrado pra proxima sessao com esse escopo preciso (nao "redirect
+e no-op", que era a conclusao errada do bloco 544).
+
 ## 2026-08-15 (544) - Claude (sessao local) - aprofundamento dos achados 2 e 4 do bloco 543: achado 4 fechado (causa raiz confirmada), achado 2 RECLASSIFICADO (nao e bug, e risco de informacao oculta ja tratado por design validado)
 
 **Achado 4 fechado.** Usuario esclareceu: a reclamacao era sobre o
