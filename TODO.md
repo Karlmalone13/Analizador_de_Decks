@@ -15,7 +15,11 @@
 > partida real** — (1) bloqueio de graça/Borsalino, (2) tela "Choose card
 > effect to activate next", (3) "só 1 dos 2 counters", esta última sendo
 > uma **hipótese NÃO confirmada** que o log da próxima partida confirma ou
-> descarta. Ver bloco 561 do HANDOFF.
+> descarta. **Como conferir se o servidor está com o código atual**: o
+> HANDOFF traz o comando pronto (compara início do processo com alteração
+> do `decision_engine.py`) — não confie em timestamp anotado, ele
+> envelhece e vira afirmação falsa (aconteceu neste próprio bloco: anotei
+> 12:54 e o processo já era 13:12). Ver bloco 561 do HANDOFF.
 
 > 16/08/2026 (bloco 560): **achado real (não só hipótese) da tela
 > "Choose card effect to activate next" travando de novo** (pendência

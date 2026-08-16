@@ -28,8 +28,22 @@ gauntlet locais antes de deixar a branch sobrescrever.
 
 ### Estado EXATO do ambiente ao encerrar
 
-- **Servidor**: no ar (subiu 12:54, `decision_engine.py` alterado 12:50 --
-  conferido por horario de processo vs arquivo, nao por leitura de texto).
+- **Servidor**: no ar. **NAO confie em timestamp anotado aqui** -- ele
+  envelhece (anotei "subiu 12:54" e o processo ja tinha sido reiniciado
+  pras 13:12 quando fui reconferir). O que importa e a INVARIANTE, e o
+  jeito de checar e este:
+  ```powershell
+  # 1) responde?
+  Invoke-RestMethod "http://127.0.0.1:8765/collection_status"
+  # 2) carregou o codigo ATUAL? (inicio do processo > alteracao do arquivo)
+  $p = Get-CimInstance Win32_Process -Filter "Name='python.exe'" |
+       Where-Object { $_.CommandLine -like '*engine_server*' }
+  (Get-Process -Id $p.ProcessId).StartTime
+  (Get-Item "scriptis_da_ia\optcg_engine\decision_engine.py").LastWriteTime
+  ```
+  Se o arquivo for mais NOVO que o processo, o servidor esta com codigo
+  velho -> reiniciar. (Python carrega o modulo uma vez no import; editar o
+  arquivo depois NAO afeta o processo em execucao.)
 - **Plugin**: DLL de 12:53, mais nova que o codigo -> tem as correcoes.
 - **Calibragem dinamica**: **8/8 flags LIGADAS localmente, NAO commitadas**
   (no git continuam False = producao desligada). Sao a causa das **14
