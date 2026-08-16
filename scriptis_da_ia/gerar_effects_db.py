@@ -12,6 +12,18 @@ import pandas as pd
 import json
 import re
 
+# Pool "seu Lider OU seus Characters" com QUALIFICADOR arbitrario entre os
+# dois lados (tipo/atributo/custo), ex: 'up to 1 of your Leader with a type
+# including "Rocks Pirates" or up to 1 of your Characters with a type
+# including "Rocks Pirates"'. As checagens literais antigas
+# ('your leader or character', etc.) so pegavam a forma sem qualificador.
+# `[^.]` impede atravessar fim de frase (nao mistura clausulas diferentes);
+# exigir "of your ... character" DEPOIS do "or" evita casar com CONDICAO do
+# tipo "if your Leader's type includes X, this Character gains ...".
+_POOL_LEADER_CHAR = re.compile(
+    r'your leader\b[^.]{0,140}?\bor\b[^.]{0,40}?of your [^.]{0,60}?characters?\b',
+    re.S)
+
 
 # ===========================================================================
 # Parsers de condicoes
@@ -3682,6 +3694,13 @@ def parse_power_buff(text):
 
     JANELA_ANTES = 90  # chars de contexto antes do match, suficiente p/ pegar "of your opponent's characters"
     JANELA_DEPOIS = 40  # chars de contexto depois, p/ pegar "during this turn/battle"
+    # Janela MAIOR, usada SO pra detectar o pool "Leader ... or ... Character"
+    # (ver _POOL_LEADER_CHAR). A JANELA_ANTES continua 90 de proposito -- e
+    # estreita pra evitar contaminacao de clausula anterior (varios achados
+    # documentados de condicao/custo vazando pro alvo). Alargar o padrao
+    # mudaria o alvo de muita carta; aqui so o padrao de POOL, que e
+    # estruturalmente inequivoco, enxerga mais longe.
+    JANELA_POOL_LEADER_CHAR = 220
     dynamic_spans = []
 
     def target_from_context(ctx: str) -> str:
@@ -4057,11 +4076,31 @@ def parse_power_buff(text):
         elif re.search(r'that (?:character|card) gains?(?: an additional)?\s*$', contexto_antes):
             target = 'selected'
         elif ('your leader or 1 of your characters' in contexto_antes or 'your leader or character' in contexto_antes
-                or 'your leader and character' in contexto_antes):
+                or 'your leader and character' in contexto_antes
+                or _POOL_LEADER_CHAR.search(
+                    t[max(0, m.start() - JANELA_POOL_LEADER_CHAR):m.start()])):
             # "and" (nao so "or") -- achado 17/07, EB02-007 (unica carta
             # no banco): "up to a total of N of your Leader AND Character
             # cards" e a MESMA semantica de pool combinado leader+character,
             # so com conectivo diferente.
+            #
+            # _POOL_LEADER_CHAR (achado real 16/08, partida PERDIDA ao vivo):
+            # as formas literais acima nao cobrem o pool quando ha
+            # QUALIFICADOR entre os dois lados -- ex: Rocks Pirates OP17-056,
+            # '[Counter] Up to 1 of your Leader with a type including "Rocks
+            # Pirates" OR up to 1 of your Characters with a type including
+            # "Rocks Pirates" gains +2000'. O "your leader" fica a ~120 chars
+            # do "gains", FORA da JANELA_ANTES=90 padrao, entao so sobrava
+            # "of your characters" na janela e o alvo virava own_character:
+            # o LIDER sumia do pool. Ao vivo isso custou a partida -- o bot
+            # tinha 2 counters (+2000 cada; lider 5000 -> 9000 contra ataque
+            # de 7000, sobreviveria), mas nao podia mirar o proprio lider e o
+            # buff foi parar num personagem fora do combate.
+            # Corrige a FORMA (qualificador arbitrario entre Leader e
+            # Character), nao o texto desta carta. Exige "of your ...
+            # character" DEPOIS do "or" pra nao confundir com CONDICAO
+            # ("if your Leader's type includes X, this Character gains...",
+            # que ja e tratada antes pelo ramo 'this character gains$').
             target = 'leader_or_character'
         elif 'all of your' in contexto_antes and "leader" in contexto_antes:
             target = 'all_allies_and_leader'

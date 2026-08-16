@@ -43013,7 +43013,7 @@
      "action": "buff_power",
      "amount": 2000,
      "duration": "battle_only",
-     "target": "own_character"
+     "target": "leader_or_character"
     }
    ]
   },
@@ -43039,7 +43039,7 @@
      "action": "buff_power",
      "amount": 2000,
      "duration": "battle_only",
-     "target": "own_character"
+     "target": "leader_or_character"
     }
    ]
   },
@@ -43076,7 +43076,7 @@
      "action": "buff_power",
      "amount": 1000,
      "duration": "battle_only",
-     "target": "own_character"
+     "target": "leader_or_character"
     }
    ]
   }
@@ -43088,7 +43088,7 @@
      "action": "buff_power",
      "amount": 2000,
      "duration": "battle_only",
-     "target": "own_character"
+     "target": "leader_or_character"
     }
    ]
   },

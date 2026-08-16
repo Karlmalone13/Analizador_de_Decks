@@ -2,6 +2,29 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 553): **bug de PARSER que custou a partida** — o
+> [Counter] do Rocks Pirates (OP17-056) estava com `target: own_character`,
+> então **o líder não era alvo válido**. O motor decidiu certo (2 counters,
+> +4000, líder 5000→9000 vs ataque 7000 = sobreviveria), mas o buff foi
+> parar num personagem fora do combate e o líder morreu. Causa medida:
+> `JANELA_ANTES=90` e o "your leader" fica a ~120 chars do "gains"
+> (empurrado pelos qualificadores de tipo) — sobrava só "of your
+> characters". Fix genérico (`_POOL_LEADER_CHAR`, janela própria de 220,
+> exige "of your ... character" depois do "or", guarda `[^.]` de
+> fim-de-frase). Auditoria global: 6 candidatas, **4 eram o bug**
+> (OP17-055/056/057/058), 2 estavam corretas e foram preservadas.
+> `diff_parser.py`: GANHOU=0, **PERDEU=0**, MUDOU=4. Auditoria registrada
+> em `parser_audits/`. **Fix complementar**: na janela de defesa o
+> DEFENSOR agora tem prioridade mesmo quando o buff sozinho não vira o
+> combate (antes caía pro critério genérico e escolhia qualquer
+> personagem). **ERRO MEU registrado**: matei o A/B pela metade, o
+> `finally` não rodou e o arquivo ficou com o fix do bloco 551
+> **desligado** — o teste do smoke_fast pegou (14→15 falhas). Mitigado com
+> `fator_atual()`. **PENDENTES**: (a) o plugin aplicou só 1 dos 2 counters
+> que o motor selecionou (execução C#, não investigado); (b) a tela
+> "Choose card effect to activate next" travou de novo — é o caminho de
+> ORDEM de resolução, diferente do corrigido no 551. Ver bloco 553.
+
 > 16/08/2026 (bloco 552): **gauntlet deixa de testar só o Imu** — pergunta
 > do usuário ("jogar só de imu não é ruim não?") expôs que `FIXED_NAME`
 > era **hardcoded**, ou seja, toda validação de mudança de motor deste

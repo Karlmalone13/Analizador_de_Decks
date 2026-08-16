@@ -81113,7 +81113,7 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "own_character",
+            "target": "leader_or_character",
             "duration": "battle_only"
           }
         ]
@@ -81150,7 +81150,7 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "own_character",
+            "target": "leader_or_character",
             "duration": "battle_only"
           }
         ]
@@ -81189,7 +81189,7 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "own_character",
+            "target": "leader_or_character",
             "duration": "battle_only"
           }
         ],
@@ -81221,7 +81221,7 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "own_character",
+            "target": "leader_or_character",
             "duration": "battle_only"
           }
         ]

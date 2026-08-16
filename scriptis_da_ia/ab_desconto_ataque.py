@@ -51,6 +51,23 @@ def _set_fator(valor: str) -> None:
     _escrever(novo)
 
 
+def fator_atual() -> str:
+    """Fator que esta AGORA no arquivo -- pra conferir que o A/B nao deixou
+    lixo pra tras.
+
+    Existe por um erro REAL (16/08): matei um A/B pela metade, o `finally`
+    que restaura nao rodou, e o arquivo ficou com `valor *= 1.0` -- ou seja,
+    o fix DESLIGADO. Pior: eu 'verifiquei' procurando o marcador
+    `AB-TEST-BASELINE`, que este script nunca escreve (ele troca so o
+    numero), e o grep deu 0, me dando confianca falsa. O servidor foi
+    reiniciado assim e o usuario testou sem o fix. Quem pegou foi o teste
+    do smoke_fast (14 -> 15 falhas). Confira SEMPRE o numero, nunca um
+    marcador.
+    """
+    m = LINHA_RE.search(_ler())
+    return m.group(0).split('*=')[1].strip() if m else '(nao encontrado)'
+
+
 def _rodar_painel(seeds: int, workers: int) -> dict:
     cmd = [sys.executable, os.path.join(AQUI, 'gauntlet_matchup.py'),
            '--painel', '--seeds', str(seeds), '--workers', str(workers)]
@@ -80,8 +97,11 @@ def main() -> int:
         fix = _rodar_painel(args.seeds, args.workers)
     finally:
         # Restaura o arquivo EXATAMENTE como estava, aconteca o que acontecer.
+        # ATENCAO: um kill -9 no processo NAO executa este bloco -- se o A/B
+        # for interrompido a forca, CONFIRA `fator_atual()` antes de subir o
+        # servidor (erro real de 16/08, ver docstring de fator_atual).
         _escrever(original)
-        print('(arquivo decision_engine.py restaurado ao estado original)')
+        print(f'(decision_engine.py restaurado -- fator agora: {fator_atual()})')
 
     print('=' * 78)
     print('COMPARACAO A/B -- desconto de valor esperado em attach_don')

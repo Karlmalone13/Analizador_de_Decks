@@ -2371,6 +2371,23 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                 # unico (empate vai pro atacante), nao regua propria aqui
                 if eh_defensor and engine.buff_wins_combat(p, attacker_power, resultante):
                     return (-2, 0)
+                # DEFENSOR mesmo quando ESTE buff sozinho nao fecha a conta.
+                # Achado real 16/08 (usuario, partida perdida ao vivo): o
+                # motor escolheu CERTO -- 2x Rocks Pirates [Counter], +2000
+                # cada, lider 5000 -> 9000 contra ataque de 7000, sobrevive.
+                # Mas esta funcao pontua cada buff ISOLADAMENTE
+                # (`resultante` = 5000+2000 = 7000; empate vai pro atacante,
+                # entao `buff_wins_combat` da False) e o lider CAIA pro
+                # criterio generico, perdendo pra um personagem qualquer --
+                # o +2000 foi parar na Charlotte Linlin, que nem estava no
+                # combate, e o lider levou o golpe letal.
+                # Numa janela de defesa, buffar quem NAO e o defensor tem
+                # valor ZERO pro combate em andamento -- entao o defensor
+                # tem que vir na frente SEMPRE, mesmo quando sozinho este
+                # buff nao vira o combate (pode vir outro counter atras,
+                # que era exatamente o plano do motor aqui).
+                if eh_defensor:
+                    return (-1, 0)
 
             # O lider tem uma ameaca REAL no campo do oponente (personagem ou
             # lider dele ainda ATIVO, nao restado) que ele hoje NAO sobrevive

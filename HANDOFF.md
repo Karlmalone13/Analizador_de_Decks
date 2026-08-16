@@ -1,5 +1,80 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (553) - Claude (sessao local) - BUG DE PARSER que custou a partida: o LIDER sumia do pool "Leader or Character" quando havia qualificador no meio (4 cartas) + defensor tem prioridade no buff de defesa + ERRO MEU: A/B morto deixou o fix do bloco 551 DESLIGADO
+
+Partida das 00:14 (bancada automatica). Auto-collect do bloco 549
+funcionou e reportou **"nenhuma decisao cara sem retorno (bom sinal)"** --
+diferente da partida anterior, que tinha 1 achado forte.
+
+**ACHADO PRINCIPAL (causa raiz no PARSER, custou a partida).** Usuario:
+*"no turno 6 o bot tinha condicao de counter o ataque da catarina devon"*.
+A telemetria mostra que **o motor decidiu CERTO**: selecionou 2x Rocks
+Pirates [Counter] (`counter_ids=[-440,-450]`, +2000 cada) -- lider 5000 ->
+9000 contra ataque de 7000, sobreviveria. Mas o combat log mostra so UM
+buff aplicado, e na **Charlotte Linlin**, personagem FORA do combate; o
+lider levou o golpe letal em 5000 vs 7000.
+
+Causa raiz: o [Counter] de OP17-056 estava parseado como
+`target: own_character` -- **o LIDER nao era alvo valido**. Texto real:
+`[Counter] Up to 1 of your Leader with a type including "Rocks Pirates"
+or up to 1 of your Characters with a type including "Rocks Pirates" gains
++2000`. Medido (nao suposto): `JANELA_ANTES = 90` chars, mas o
+"your leader" fica a ~120 chars do "gains" (empurrado pelos dois
+qualificadores de tipo) -- FORA da janela. Sobrava so "of your
+characters", e o ramo `'of your characters' -> own_character` vencia.
+
+**Fix generico** (corrige a FORMA, nao a carta): novo `_POOL_LEADER_CHAR`
+com janela propria de 220 chars, tolerante a qualificador arbitrario
+entre as duas metades do pool. Exige `of your ... character` DEPOIS do
+`or` (pra nao casar com CONDICAO tipo "if your Leader's type includes X,
+this Character gains...") e usa `[^.]` pra nunca atravessar fim de frase.
+A `JANELA_ANTES` continua 90 DE PROPOSITO -- e estreita pra evitar
+contaminacao de clausula anterior (varios achados ja documentados);
+alargar o padrao mudaria alvo de muita carta.
+
+**Auditoria global (gate obrigatorio)**: censo achou 6 candidatas; 4 sao
+o bug real (OP17-055/056/057/058, todas Rocks Pirates) e **2 eram falso
+positivo do censo e estavam CORRETAS** -- OP08-095 (o bloco [Main] fala
+so "your Characters") e OP12-019 (o [Counter] e "your Characters or
+[Silvers Rayleigh]", personagem NOMEADO, nao lider). A guarda `[^.]`
+preservou as duas. `diff_parser.py`: **GANHOU=0, PERDEU=0, MUDOU=4** --
+exatamente as 4 certas, nenhuma outra das 2747 tocada. Registro em
+`parser_audits/2026-08-16_pool_leader_or_character_com_qualificador.json`.
+
+**Fix complementar (`sim_bridge.order_target_candidates`)**: numa janela
+de defesa, o DEFENSOR passa a ter prioridade sobre nao-defensores mesmo
+quando ESTE buff sozinho nao vira o combate. Antes a prioridade so valia
+se `buff_wins_combat` fosse True -- e como a funcao pontua cada buff
+ISOLADAMENTE (5000+2000=7000 vs ataque 7000: empate vai pro atacante,
+logo "nao salva"), o lider caia pro criterio generico mesmo sendo o alvo
+do ataque. Buffar quem NAO esta no combate vale ZERO naquela janela.
+Os dois fixes sao independentes e ambos necessarios: o do parser devolve
+o lider ao POOL, o do bridge garante que ele seja o ESCOLHIDO. Validado
+na decisao real: o lider passa de fora do top-6 pra **1o lugar**.
+
+**ERRO MEU, registrado porque quase passou**: eu matei o A/B
+(`ab_desconto_ataque.py`) pela metade pra desbloquear o usuario. O
+`finally` que restaura o arquivo NAO roda com kill -9, entao o
+`decision_engine.py` ficou com `valor *= 1.0` -- **o fix do bloco 551
+DESLIGADO** -- e eu reiniciei o servidor assim; o usuario testou sem ele.
+Pior: eu "verifiquei" procurando o marcador `AB-TEST-BASELINE`, que o
+script nunca escreve (ele troca so o numero), e o grep deu 0, me dando
+confianca falsa. **Quem pegou foi o teste**: `smoke_fast` foi de 14 pra
+15 falhas e a nova era exatamente a checagem do bloco 551. Mitigacao:
+`ab_desconto_ataque.fator_atual()` le e imprime o NUMERO real do arquivo,
+e o `finally` agora imprime o fator restaurado. Licao: conferir o VALOR,
+nunca um marcador que pode nao existir.
+
+**Pendente**: o plugin aplicou so 1 dos 2 counters selecionados pelo
+motor (`counter_ids` tinha 2 uids, o combat log mostra 1 buff). Isso e
+execucao no C#, ainda NAO investigado -- mesmo com o alvo certo, se so 1
+counter sair o lider fica em 7000 e o empate ainda vai pro atacante.
+Registrado como proximo passo. Tambem pendente: a tela "Choose card
+effect to activate next" travou de novo (o usuario teve que clicar) --
+o fix do bloco 551 cobriu a tela de escolha FORCADA por carta do
+oponente, esta e a de ORDEM de resolucao (`IsOfferingActionChoiceOrder`),
+caminho diferente.
+
 ## 2026-08-16 (552) - Claude (sessao local) - gauntlet deixa de testar SO o Imu (deck fixo era hardcoded): painel multi-arquetipo + IC95 + A/B automatico do desconto do bloco 551
 
 Pergunta do usuario que expos a falha: *"como melhorar esse gauntlet?
