@@ -1,5 +1,63 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (548) - Claude (sessao local) - consequencia POR DECISAO (ferramenta nova, acha sozinha o all-in que o usuario reclamou) + auditoria semantica das 66/69 partidas fechada em 15,5%
+
+Pedido do usuario: aprofundar telemetria em tempo/qualidade/consequencia
+de decisao. Tempo ja feito (bloco 542), qualidade ja existe
+(`decision_quality_report.py`) -- o buraco real era CONSEQUENCIA: o
+`future_state_delta_by_decisions` so dava MEDIA agregada, nunca ligava
+UMA decisao ao que aconteceu depois dela, entao o caso concreto
+reclamado (5 DON no Doc Q de poder base 0, ataque falhou, dano zero)
+ficava diluido no meio de dezenas de decisoes normais.
+
+**`decision_consequence_report.py` (novo, permanente)**: por decisao de
+main com execucao confirmada, cruza INVESTIMENTO (DON comprometido) com
+RETORNO em 4 horizontes (efeito direto = `state_after` da propria
+decisao; 3; 5; e ate o fim do turno). Dois vereditos:
+`DON_SEM_RETORNO_PERSISTENTE` (zero em TODO horizonte com dado -- sinal
+forte) e `DON_SEM_RETORNO_DIRETO` (zero direto mas pagou depois --
+tipicamente preparacao legitima). Validado contra a sessao real de
+15/08: **achou sozinho os 2 casos certos** -- turno 4 `attack OP16-109`
+(Doc Q) com 5 DON e dano 0 em todo horizonte (exatamente a reclamacao do
+usuario) e turno 6 `play OP09-093` com 10 DON -- e classificou
+corretamente como FRACO o `attach_don` do turno 2 (efeito direto zero,
+mas viabilizou +1 de dano no ataque seguinte).
+
+**3 bugs reais achados VALIDANDO a ferramenta contra o log de verdade,
+antes do commit** (nao inventados depois pra ter teste):
+1. `attach_don` contava o MESMO DON duas vezes (`don_cost=3` +
+   `donToAttach=3` = 6, enquanto o log do plugin dizia "attach_don: 3/3
+   DON") -- inflava o total de 33 pra 36 e o percentual de desperdicio.
+   Fix: `max()` em vez de soma so pra `attach_don`.
+2. Veredito julgava por um horizonte e IMPRIMIA outro ("sem dado"),
+   parecendo acusacao no vacuo.
+3. **O mais importante**: creditar `board_ganho`/`mao_delta` a um ATAQUE
+   mascarava justamente o all-in falho -- o +1 de board veio de OUTRA
+   decisao do mesmo turno, nada a ver com o ataque. Fix: retorno
+   relevante por TIPO de acao (`_RETORNO_RELEVANTE`) -- ataque so "paga"
+   com dano ou remocao de personagem. Sem esse fix o caso do Doc Q saia
+   classificado como "pagou depois" e sumia do relatorio.
+
+8 testes em `test_decision_consequence_report.py` (todos passam),
+cobrindo os 3 bugs acima + os limites (decisao barata nao vira suspeita,
+decisao sem `state_before` nao quebra).
+
+**Auditoria semantica fechada** (rodou 318,7s, 69 partidas -- nao 66):
+**49/317 turnos divergentes = 15,5%**, 0 jogos com erro de reconstrucao.
+Relatorio em `metrics/curve_calibration_audits/audit_2026-08-15T21.56.38.json`.
+Comparando com as iteracoes anteriores de metodologia: 14,7% (texto,
+sem seed fixa) -> 15,0% (46/307, texto com seed) -> 15,3% -> **15,5%
+(estruturado por acao)**. **Conclusao: o numero e ESTAVEL (~15%) em 4
+metodologias diferentes** -- as 8 flags de calibragem mudam de fato ~1 em
+cada 7 turnos, e a variacao entre metodologias (0,8 p.p.) e ruido, nao
+sinal. Isso fecha a duvida de que a comparacao por texto estivesse
+inflando/desinflando o efeito.
+
+**Nota de processo**: `audit_curve_calibration_flags.py` ainda NAO tem
+`--workers` (diferente de `audit_replay`/`gauntlet_matchup`/
+`baseline_metrics`, que ja seguem a convencao do bloco 481) -- rodou
+sequencial, 318,7s. Candidato obvio a paralelizar se virar rotina.
+
 ## 2026-08-15 (547) - Claude (sessao local) - bot_confusion nao conta mais fim de turno normal como "confuso" + rodando auditoria semantica das 66 partidas em background
 
 Pedido do usuario: melhorar a telemetria, comecando pelo falso positivo

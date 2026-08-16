@@ -2,6 +2,26 @@
 
 **Última atualização:** 15 de agosto de 2026
 
+> 15/08/2026 (bloco 548): **consequência POR DECISÃO + auditoria semântica
+> fechada**. `decision_consequence_report.py` (novo, permanente) cruza DON
+> investido com retorno em 4 horizontes (direto/3/5/fim do turno) por
+> decisão individual — o `future_state_delta_by_decisions` só dava média
+> agregada e diluía casos concretos. **Achou sozinho os 2 casos certos**
+> na sessão real: `attack OP16-109` (Doc Q, 5 DON, dano 0 em todo
+> horizonte — a reclamação exata do usuário) e `play OP09-093` (10 DON),
+> classificando corretamente como preparação legítima o `attach_don` que
+> viabilizou dano depois. **3 bugs achados validando contra o log real
+> antes do commit**: attach_don contava o mesmo DON 2x (log do plugin
+> confirmou 3, não 6); veredito julgava um horizonte e imprimia outro; e
+> creditar `board_ganho` a um ATAQUE mascarava o all-in falho (fix:
+> retorno relevante por tipo de ação). 8 testes novos, todos passam.
+> **Auditoria semântica das 69 partidas: 49/317 = 15,5%** — estável
+> contra as 3 metodologias anteriores (14,7% → 15,0% → 15,3% → 15,5%),
+> confirmando que as flags mudam ~1 em cada 7 turnos e que a comparação
+> por texto não distorcia o número. Pendente: `audit_curve_calibration_
+> flags.py` ainda não tem `--workers` (rodou 318,7s sequencial). Ver
+> bloco 548 do HANDOFF.
+
 > 15/08/2026 (bloco 547): **bot_confusion não conta mais fim de turno
 > normal como confusão** — todo turno termina a main phase com um
 > `no_eligible_action` (sem DON ativo, `response=end_turn`), inflando o
