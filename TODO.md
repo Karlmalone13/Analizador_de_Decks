@@ -2,6 +2,27 @@
 
 **Última atualização:** 15 de agosto de 2026
 
+> 15/08/2026 (bloco 550): **bug de DADO que custou a partida + redirect
+> corrigido de verdade**. (1) **42 cartas tinham o counter apagado**: no
+> `cards_rows.csv` as variantes (Reprint/Alt Art) compartilham o
+> `card_set_id` e o `load_cards_db` deixava a ÚLTIMA linha vencer — as
+> linhas de Reprint têm campos VAZIOS, então o counter real virava 0 e a
+> carta nunca era oferecida na defesa. Foi exatamente o que fez o bot
+> tomar o golpe letal com Jesus Burgess (counter 1000) na mão. Também
+> zerava 1 poder (OP07-029) e 1 custo (OP07-116). Fix estreito de
+> propósito: só recupera campos NUMÉRICOS (maior valor entre variantes),
+> **0 textos alterados** — parser intocado. (2) **redirect**: o fix do
+> bloco 546 NÃO tinha resolvido; Teach 10000 (sobrevive) e Vasco Shot
+> (on_ko) empatavam em exatamente 0.0 e o desempate por maior poder
+> escolhia o corpo grande, com 4 ataques pendentes do oponente. Agora
+> `rest_opp_character` escala pela pressão real (teto 1,5x) — Vasco Shot
+> vai a 12,5 e vence. `attackers_available` extraído; `opp_attack_count`
+> delega (sem duplicação). `smoke_test.py` 100%. **PENDENTE NOVO**: o
+> CSV tem `card_set_id` ERRADO em algumas linhas (ex: OP10-109, base é
+> [Blocker] e as variantes carregam texto de OUTRA carta) — 371 cartas
+> teriam texto diferente se a base mandasse; exige auditoria em
+> `parser_audits/`, não entrou neste fix. Ver bloco 550 do HANDOFF.
+
 > 15/08/2026 (bloco 549): **consequência por decisão agora é AUTOMÁTICA**
 > — pedido do usuário ("eu que tenho que lembrar de usar essa
 > ferramenta?"). `collect_latest_match.py` roda o

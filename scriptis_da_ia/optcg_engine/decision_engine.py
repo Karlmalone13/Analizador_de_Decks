@@ -2159,6 +2159,31 @@ def active_taunt_character(defender: 'GameState', attacker_side: 'GameState') ->
     return None
 
 
+def attackers_available(side: 'GameState',
+                        foe: 'Optional[GameState]' = None) -> int:
+    """
+    Quantos ataques `side` ainda pode declarar: personagens ativos (nao
+    restados) + o lider, se ativo e nao travado por efeito proprio.
+
+    Extraido de `GameAnalyzer.opp_attack_count` (que agora delega pra ca)
+    pra ser reusado por `on_ko_value` sem duplicar a contagem -- regra
+    "sem duplicacao" (REGRA_SEM_DUPLICACAO.md): as duas respondem a MESMA
+    pergunta de estado ("quantos ataques ainda vem?"), entao precisam da
+    MESMA implementacao, incluindo o tratamento de lider travado
+    ("This Leader cannot attack", achado 03/08).
+
+    `foe` e opcional so porque `on_ko_value` nem sempre tem o outro lado
+    em maos; sem ele, a checagem de lider travado (que precisa dos dois
+    lados) e pulada de forma conservadora -- conta o lider como atacante.
+    """
+    count = sum(1 for c in side.field_chars if not c.rested)
+    leader = getattr(side, 'leader', None)
+    if leader is not None and not leader.rested:
+        if foe is None or not is_attack_locked_self(leader, side, foe):
+            count += 1
+    return count
+
+
 def _step_matching_targets(step: dict, chars: list) -> int:
     """Quantos personagens de `chars` passam nos FILTROS do step
     (cost_lte/gte/eq, power_lte/gte, rested_only, filter_type)."""
@@ -2338,7 +2363,25 @@ def on_ko_value(code: str, opp: 'Optional[GameState]' = None,
                         rested_only=step.get('rested_only', False),
                         active_only=True,
                         filter_text=step.get('filter_type', ''))
-                    total += 25 * min(count, len(alvos_reais))
+                    # PRESSAO REAL: restar um personagem so vale o que ele
+                    # DEIXA de fazer. Achado real 15/08 (usuario, redirect do
+                    # lider Teach, partida das 22:24): o bot mandou o golpe
+                    # pro Marshall D. Teach 10000 (sobrevive, valor 0.0) em
+                    # vez do Vasco Shot (morre, mas [On K.O.] compra 1 e
+                    # RESTA 1 personagem custo<=6) -- os dois empatavam em
+                    # EXATAMENTE 0.0 (on_ko 40 == char_value 40) e o
+                    # desempate por maior poder escolhia o corpo grande,
+                    # justamente com o oponente tendo 4 ataques pendentes.
+                    # Um peso fixo de 25 nao sabe distinguir "restar nega 1
+                    # de 4 ataques que ainda vem" de "restar nao nega nada"
+                    # -- e a pergunta que decide a jogada. Reusa a MESMA
+                    # contagem de `opp_attack_count` (attackers_available),
+                    # sem regua propria. Bonus contido (ate 1,5x) de
+                    # proposito: e um desempate informado, nao um novo eixo
+                    # dominante de score.
+                    pendentes = attackers_available(opp, owner)
+                    pressao = 1.0 + 0.25 * min(max(pendentes - 1, 0), 2)
+                    total += 25 * pressao * min(count, len(alvos_reais))
             elif action in ('play_card', 'play_from_trash'):
                 total += _on_ko_play_card_value(step, owner)
             elif action == 'debuff_power':
@@ -9748,10 +9791,65 @@ def load_cards_db(csv_path: str = 'cards_rows.csv') -> dict:
                     'card_text', 'counter_amount', 'sub_types']:
             df[col] = df[col].fillna('').astype(str)
 
-        for _, row in df.iterrows():
-            code = row['card_set_id'].split('_')[0]
+        # ── Variantes da MESMA carta (reprint/alt art/parallel) ──────────────
+        # Todas compartilham o `card_set_id` (ex: OP09-086); quem distingue e
+        # a coluna `id` (OP09-086, OP09-086_p1, OP09-086_r1...). Ate 15/08 o
+        # loop simplesmente fazia `db[code] = {...}` linha a linha, entao a
+        # ULTIMA variante vencia -- e varias linhas de Reprint tem campos
+        # VAZIOS no CSV, destruindo o dado bom da linha canonica.
+        #
+        # Achado real 15/08 (usuario, partida perdida ao vivo): o bot tomou o
+        # golpe letal sem usar counter tendo Jesus Burgess (OP09-086,
+        # counter 1000) na mao -- a linha `OP09-086_r2` (Reprint, counter
+        # vazio) tinha sobrescrito o counter pra 0, entao a carta NUNCA era
+        # oferecida como counter. Auditoria global do banco: **42 cartas**
+        # perdiam counter assim e 1 perdia poder (OP07-029 ficava com
+        # power=0 em vez de 7000, por causa de um Reprint com poder zerado).
+        # Nao e bug de uma carta -- e a FORMA "variante sobrescreve base".
+        #
+        # Politica DELIBERADAMENTE ESTREITA: mantem a linha vencedora de
+        # sempre (a ultima do CSV, entao TEXTO e efeitos parseados ficam
+        # byte-identicos ao comportamento anterior) e so recupera os campos
+        # NUMERICOS perdidos, pegando o maior valor entre as variantes --
+        # um campo vazio nunca deve apagar um valor real.
+        #
+        # Por que nao trocar pra "linha base manda": tentei, e o diff global
+        # mostrou 371 cartas com TEXTO diferente entre base e variante --
+        # varias porque o CSV tem `card_set_id` simplesmente ERRADO em
+        # algumas linhas (ex: OP10-109, cuja linha base e um [Blocker] e as
+        # variantes carregam o texto de OUTRA carta, um [On K.O.]). Trocar a
+        # fonte do texto mexeria no parser de efeitos de 371 cartas como
+        # efeito colateral de um bug de counter -- e o projeto exige
+        # auditoria registrada em `parser_audits/` pra mudanca de parser.
+        # Fica como achado SEPARADO pra investigar com esse gate proprio,
+        # nao carona neste fix.
+        def _num(valor) -> int:
+            texto = str(valor or '').strip()
+            if not texto or texto.lower() == 'nan':
+                return 0
+            try:
+                return int(float(texto))
+            except ValueError:
+                return 0
+
+        melhor_numerico: dict[str, dict[str, int]] = {}
+        for _, r in df.iterrows():
+            code = str(r['card_set_id']).split('_')[0]
             if not code or code == 'nan':
                 continue
+            alvo = melhor_numerico.setdefault(code, {})
+            for campo in ('counter_amount', 'card_power', 'card_cost', 'life'):
+                alvo[campo] = max(alvo.get(campo, 0), _num(r[campo]))
+
+        for _, row in df.iterrows():
+            code = str(row['card_set_id']).split('_')[0]
+            if not code or code == 'nan':
+                continue
+            melhor = melhor_numerico.get(code, {})
+            for campo in ('counter_amount', 'card_power', 'card_cost', 'life'):
+                if _num(row[campo]) < melhor.get(campo, 0):
+                    row = row.copy() if not isinstance(row, dict) else row
+                    row[campo] = melhor[campo]
             kws = parse_card_effects_basic(row['card_text'], row['counter_amount'])
             db[code] = {
                 'name':      row['card_name'],
@@ -10322,16 +10420,16 @@ class GameAnalyzer:
         return len(self.opp.blockers_active())
 
     def opp_attack_count(self) -> int:
-        """Quantos personagens o oponente pode atacar no próximo turno."""
-        count = sum(1 for c in self.opp.field_chars if not c.rested)
-        # Achado real 03/08: o lider do oponente entrava na conta so por
-        # nao estar restado, ignorando "This Leader cannot attack"
-        # (Vegapunk, Iceburg, etc.) -- superestimava a ameaca de ataque
-        # dele (bot ficava defensivo demais contra um lider que fisicamente
-        # nao pode atacar).
-        if not self.opp.leader.rested and not is_attack_locked_self(self.opp.leader, self.opp, self.me):
-            count += 1
-        return count
+        """Quantos personagens o oponente pode atacar no próximo turno.
+
+        Delega pra `attackers_available` (modulo) -- a MESMA contagem que
+        `on_ko_value` precisa pra saber se restar um personagem do
+        oponente nega um ataque de verdade. O tratamento de lider travado
+        ("This Leader cannot attack", achado 03/08 -- sem ele o bot ficava
+        defensivo demais contra um lider que fisicamente nao pode atacar)
+        vive la dentro, nao duplicado aqui.
+        """
+        return attackers_available(self.opp, self.me)
 
     # ── Análise de lethality ─────────────────────────────────────────────────
 

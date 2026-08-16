@@ -10656,6 +10656,9 @@ def main() -> int:
     test_counter_hand_coverage_opp_blocker_curve_scale_14_08()
     test_on_ko_value_rest_opp_ignora_alvo_ja_restado_15_08()
     test_on_ko_value_draw_escala_com_necessidade_de_mao_15_08()
+    test_variante_reprint_nao_apaga_counter_nem_power_15_08()
+    test_rest_opp_escala_com_ataques_pendentes_15_08()
+    test_opp_attack_count_delega_pro_helper_compartilhado_15_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -13522,6 +13525,98 @@ def test_on_ko_value_draw_escala_com_necessidade_de_mao_15_08() -> None:
 
     check("on_ko_value credita MAIS o draw quando a mao do dono esta curta",
           valor_mao_curta > valor_mao_cheia)
+
+
+def test_variante_reprint_nao_apaga_counter_nem_power_15_08() -> None:
+    """
+    Bug REAL que custou uma partida ao vivo (15/08, usuario: "ataquei com o
+    Kyo com 5000 e o bot tinha counter na mao e nao usou para se defender e
+    perdeu o jogo").
+
+    Causa raiz: no `cards_rows.csv` as variantes (Reprint/Alternate Art)
+    compartilham o `card_set_id`, e o `load_cards_db` fazia `db[code] = {...}`
+    linha a linha -- a ULTIMA vencia. Varias linhas de Reprint tem campos
+    VAZIOS, entao o counter real da carta virava 0 e ela NUNCA era oferecida
+    como counter. Jesus Burgess (OP09-086, counter 1000) foi a carta da
+    partida perdida; a auditoria global achou 42 cartas com counter zerado
+    assim e 1 com poder zerado (OP07-029, 0 em vez de 7000).
+    """
+    check("OP09-086 (Jesus Burgess) mantem counter 1000 apesar do Reprint sem dado",
+          cards["OP09-086"].get("counter") == 1000)
+    check("OP07-029 (Basil Hawkins) mantem power 7000 apesar do Reprint zerado",
+          cards["OP07-029"].get("power") == 7000)
+    check("OP07-116 (Blaze Slice) mantem cost 1 apesar do Reprint sem custo",
+          cards["OP07-116"].get("cost") == 1)
+    # A carta montada de verdade (caminho que o bot usa ao vivo) tem que
+    # enxergar o counter -- e o que faz ela virar candidata de defesa.
+    burgess = real_card("OP09-086")
+    check("Card montado de OP09-086 expoe counter > 0 (vira candidato de defesa)",
+          getattr(burgess, "counter", 0) == 1000)
+
+
+def test_rest_opp_escala_com_ataques_pendentes_15_08() -> None:
+    """
+    Redirect do lider Teach na partida das 22:24 (usuario: "no turno 5 o fix
+    nao funcionou, o bot usou o efeito do lider e redirecionou o ataque para
+    o teach 8... se tivesse redirecionada para um vasco shot ele teria tirado
+    um ataque do oponente").
+
+    Estado real reconstruido: ataque de 7000; Marshall D. Teach OP16-119
+    (10000, SOBREVIVE -> valor 0.0) empatava em EXATAMENTE 0.0 com o Vasco
+    Shot OP16-110 (morre, mas [On K.O.] compra 1 + resta 1 custo<=6:
+    on_ko 40 - char_value 40 = 0.0), e o desempate por maior poder mandava o
+    golpe pro corpo grande -- com o oponente tendo 4 ataques pendentes. Com a
+    pressao real na conta, restar um atacante passa a valer mais e o Vasco
+    Shot vence o empate.
+    """
+    from optcg_engine.decision_engine import attackers_available, redirect_option_value
+
+    def _cenario(n_atacantes_ativos: int):
+        me = GameState(leader=real_card("OP16-080"), turn=5)
+        me.hand = [real_card("OP09-086")] * 5
+        vasco = real_card("OP16-110")      # 2000, on_ko: draw + rest cost<=6
+        teach = real_card("OP16-119")      # 10000, sobrevive a 7000
+        me.field_chars = [vasco, teach]
+        opp = GameState(leader=real_card("OP17-039"), turn=5)
+        opp.leader.rested = True           # lider fora da conta de atacantes
+        opp.field_chars = []
+        for i in range(4):
+            c = real_card("OP17-045")      # custo 2 -- alvo valido de cost<=6
+            c.rested = i >= n_atacantes_ativos
+            opp.field_chars.append(c)
+        return me, opp, vasco, teach
+
+    # Pressao alta (4 atacantes ativos): restar nega um ataque de verdade
+    me, opp, vasco, teach = _cenario(4)
+    eng = DecisionEngine(me, opp)
+    check("attackers_available conta os 4 atacantes ativos do oponente",
+          attackers_available(opp, me) == 4)
+    v_vasco = redirect_option_value(vasco, 7000, opp, eng)
+    v_teach = redirect_option_value(teach, 7000, opp, eng)
+    check("sob pressao (4 ataques), redirect pro Vasco Shot VENCE o corpo que so sobrevive",
+          v_vasco > v_teach)
+
+    # Pressao minima (1 atacante ativo): sem varios ataques pra negar, o
+    # bonus encolhe -- guarda contra o fix virar "sempre sacrificar".
+    me2, opp2, vasco2, teach2 = _cenario(1)
+    eng2 = DecisionEngine(me2, opp2)
+    v_vasco_baixa = redirect_option_value(vasco2, 7000, opp2, eng2)
+    check("com pouca pressao o bonus e MENOR que sob pressao alta (nao e bonus fixo)",
+          v_vasco_baixa < v_vasco)
+
+
+def test_opp_attack_count_delega_pro_helper_compartilhado_15_08() -> None:
+    """Regra 'sem duplicacao': a contagem de atacantes vive num lugar so."""
+    from optcg_engine.decision_engine import attackers_available
+    me = GameState(leader=real_card("OP16-080"), turn=5)
+    opp = GameState(leader=real_card("OP17-039"), turn=5)
+    opp.leader.rested = False
+    c1, c2 = real_card("OP17-045"), real_card("OP17-045")
+    c2.rested = True
+    opp.field_chars = [c1, c2]
+    eng = DecisionEngine(me, opp)
+    check("opp_attack_count == attackers_available (mesma resposta, uma implementacao)",
+          eng.analyzer.opp_attack_count() == attackers_available(opp, me) == 2)
 
 
 if __name__ == "__main__":

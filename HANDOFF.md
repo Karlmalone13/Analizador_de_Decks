@@ -1,5 +1,78 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (550) - Claude (sessao local) - BUG DE DADO que custou a partida: variante Reprint apagava o counter de 42 cartas + redirect agora pesa ataques pendentes (o fix do 546 NAO tinha resolvido)
+
+Partida das 22:24 (bancada automaticamente, `Marshall.D.Teach-BY_x_
+Rocks.D.Xebec-B_2026-08-15T22.24.38`). O auto-collect do bloco 549
+funcionou de ponta a ponta e o aviso saiu sozinho no console
+(`[AUTO-COLLECT][ATENCAO] 1 decisao(oes) com DON alto e retorno ZERO`),
+apontando o `attack OP16-110` do turno 4 (3 DON, retorno zero) -- a
+mesma familia de desperdicio que o usuario vinha reclamando.
+
+**ACHADO 1 (CAUSA RAIZ, bug de DADO, custou a partida) -- variante
+Reprint apagava o counter de 42 cartas.** Usuario: *"ataquei com o Kyo
+com 5000 e o bot tinha counter na mao e nao usou para se defender e
+perdeu o jogo"*. Telemetria do ultimo counter: `scored_actions` so tinha
+`no_counter` -- nenhuma carta de counter foi sequer OFERECIDA. A mao
+tinha Jesus Burgess (OP09-086), que **tem counter 1000**. Causa: no
+`cards_rows.csv` as variantes (Reprint/Alt Art/Parallel) compartilham o
+mesmo `card_set_id`; `load_cards_db` fazia `db[code] = {...}` linha a
+linha e **a ULTIMA vencia** -- as linhas de Reprint tem campos VAZIOS,
+entao o counter real virava 0 e a carta nunca entrava como candidata de
+defesa. **Auditoria global (gate obrigatorio do projeto): 42 cartas com
+counter zerado, 1 com poder zerado (OP07-029, 0 em vez de 7000), 1 com
+custo zerado (OP07-116).** Nao e bug de uma carta -- e a FORMA "variante
+sobrescreve base com campo vazio".
+
+**Fix DELIBERADAMENTE ESTREITO**: mantem a linha vencedora de sempre (a
+ultima), entao TEXTO e efeitos parseados ficam **byte-identicos**, e so
+recupera os campos NUMERICOS pelo MAIOR valor entre as variantes.
+Verificado com diff global antes/depois: **42 counter + 1 power + 1 cost
+corrigidos, 0 textos alterados**. Cheguei a implementar a versao "linha
+base manda" e **revertI**: o diff mostrou 371 cartas com TEXTO diferente
+entre base e variante -- varias porque o CSV tem `card_set_id` ERRADO em
+algumas linhas (ex: OP10-109, cuja linha base e um [Blocker] e as
+variantes carregam o texto de OUTRA carta, um [On K.O.]). Trocar a fonte
+do texto mexeria no parser de 371 cartas de carona num fix de counter,
+e o projeto exige auditoria em `parser_audits/` pra isso. **Fica como
+achado SEPARADO** (ver TODO) -- nao entra neste commit.
+
+**ACHADO 2 -- redirect do lider: meu fix do bloco 546 NAO resolveu, e o
+usuario estava certo.** Usuario: *"no turno 5 o fix nao funcionou... se
+tivesse redirecionada para um vasco shot ele teria tirado um ataque do
+oponente"*. Reconstrui o estado real (ataque 7000): Marshall D. Teach
+OP16-119 (10000, SOBREVIVE) = 0.0 e Vasco Shot OP16-110 (morre, on_ko
+compra 1 + resta 1 custo<=6) = on_ko 40 - char_value 40 = **exatamente
+0.0** -- empate, desempatado por MAIOR PODER, mandando o golpe pro corpo
+grande. **E o oponente tinha 4 ataques pendentes.** O fix do 546 (exigir
+alvo ATIVO) nao mudou nada aqui porque havia varios alvos ativos
+elegiveis -- ele fechou um buraco diferente.
+
+**Fix real**: `on_ko_value` passa a escalar `rest_opp_character` pela
+PRESSAO real (`1.0 + 0.25 * min(pendentes-1, 2)`, teto 1,5x) -- restar
+nega 1 de 4 ataques que ainda vem, e isso e o que decide a jogada; peso
+fixo de 25 nao distinguia isso de "restar nao nega nada". Validado
+contra a decisao real: Vasco Shot passa de 0.0 pra **12,5** e vence o
+Teach (0.0). Bonus contido de proposito -- e desempate informado, nao
+novo eixo dominante.
+
+**Sem duplicacao**: a contagem de atacantes virou `attackers_available`
+(modulo), e `GameAnalyzer.opp_attack_count` agora DELEGA pra ela --
+inclusive o tratamento de lider travado ("This Leader cannot attack",
+achado 03/08) fica num lugar so.
+
+**Validacao**: `smoke_test.py` (regressao ampla) **TODOS PASSARAM** --
+critico, ja que o loader de cartas e compartilhado por tudo.
+`smoke_fast.py` com 8 checagens novas passando; as 14 falhas continuam
+sendo so as flags de calibragem ligadas localmente (inalteradas).
+
+**Pendentes desta partida (NAO corrigidos)**: (a) a tela "Forcing
+opponent to resolve Card Action!" ainda trava o bot (causa raiz ja
+documentada no bloco 543 -- `bForcingOpponentAction` nunca tratado como
+estado ativavel no `BotDriver.cs`); (b) ataque com personagem fraco
+gastando DON (o `attack OP16-110` de 3 DON que o proprio relatorio
+automatico pegou) -- e o eixo de score de ataque, mudanca maior.
+
 ## 2026-08-15 (549) - Claude (sessao local) - relatorio de consequencia roda SOZINHO no fim de cada partida (auto-collect) e o achado aparece no console, sem ninguem precisar lembrar
 
 Pedido do usuario, logo depois do bloco 548: *"eu que tenho que lembrar
