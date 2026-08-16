@@ -2,6 +2,18 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 554): **achado novo do usuário, NÃO investigado** —
+> partida 00:57 bancada (auto-collect). Usuário: *"no turno 3 ao invés de
+> bloquear com borsalino usou o borsalino de counter? perdeu uma carta
+> à toa"*. Suspeita estrutural: `should_use_blocker` e `should_use_counter`
+> decidem em janelas DIFERENTES do mesmo ataque, cada uma isolada, sem
+> saber que a outra é alternativa mais barata pro MESMO ataque. Push feito
+> sem tocar em código (usuário foi pro celular). Roteiro de investigação
+> no bloco 554 do HANDOFF — inclui o aviso de que a telemetria é
+> local-only e não existe em sessão remota. **Pendências abertas**: plugin
+> aplica só 1 dos 2 counters selecionados; tela "Choose card effect to
+> activate next" ainda trava; A/B do fator 0.35 nunca completou.
+
 > 16/08/2026 (bloco 553): **bug de PARSER que custou a partida** — o
 > [Counter] do Rocks Pirates (OP17-056) estava com `target: own_character`,
 > então **o líder não era alvo válido**. O motor decidiu certo (2 counters,

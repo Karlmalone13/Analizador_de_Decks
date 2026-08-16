@@ -1,5 +1,48 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (554) - Claude (sessao local) - banca partida 00:57 + ACHADO NOVO DO USUARIO ainda NAO investigado: bot usou Borsalino como COUNTER em vez de BLOQUEAR com ele (turno 3)
+
+Bloco curto e honesto: o usuario pediu push imediato porque vai continuar
+**pelo celular**. Nada foi investigado nem corrigido aqui -- este bloco
+existe pra a proxima sessao (provavelmente remota) nao perder o achado.
+
+**Partida bancada**: `Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T00.57.17`
+(auto-collect do bloco 549 rodou sozinho).
+
+**ACHADO DO USUARIO, NAO INVESTIGADO**: *"no turno 3 ao inves de bloquear
+com borsalino usou o borsalino de counter? perdeu uma carta atoa"*.
+Ou seja: Borsalino (EB04-058) estava em CAMPO como blocker disponivel, e
+o bot preferiu descarta-lo da mao como counter -- gastando a carta pra
+somar poder num combate, em vez de usar o corpo pra ABSORVER o ataque
+(que preserva a carta e ainda pode sobreviver). Se confirmado, e escolha
+entre `should_use_blocker` e `should_use_counter` -- as duas decisoes sao
+tomadas em janelas DIFERENTES do mesmo ataque (blocker resolve antes de
+counter), entao o risco estrutural e cada uma decidir isolada, sem saber
+que a outra existe como alternativa mais barata pro MESMO ataque.
+
+**Por onde comecar na proxima sessao** (nao pular a ordem obrigatoria):
+1. `metrics/live_runs/live_<ts>.json` do run 00.57 (agregado primeiro);
+2. `python decision_summary.py --latest`;
+3. no `decisions_*.jsonl`, achar as decisoes `decision_kind=defense` do
+   turno 3 -- comparar a de `phase=blocker` (candidatos em
+   `blocker_candidates`, com `char_value_score`/`on_ko_value` por
+   candidato, ja gravados) com a de `phase=counter` do MESMO ataque;
+4. o `decision_consequence_report.py` (automatico) tambem cobre esse run.
+
+**ATENCAO pra quem pegar isso numa sessao REMOTA**: `BOT/engine_server/logs/`
+e `metrics/live_runs/` sao gitignored e LOCAIS -- os passos 1-3 acima nao
+existem na nuvem. Nesse caso, declarar explicitamente "telemetria de
+decisao indisponivel nesta sessao" em vez de reconstruir a intencao do bot
+so pelo combat log bruto (regra do CLAUDE.md, achado do bloco 342). O
+combat log em si (`logs/raw/...00.57.17.log`) ESTA no repositorio.
+
+**Estado do ambiente ao parar**: servidor no ar (fator do desconto 0.35,
+8/8 flags de calibragem LIGADAS localmente e NAO commitadas, plugin do
+bloco 551 instalado). Pendencias abertas dos blocos 551/553: (a) plugin
+aplicou so 1 dos 2 counters selecionados pelo motor; (b) tela "Choose card
+effect to activate next" (ordem de resolucao) ainda trava; (c) A/B do
+fator 0.35 NUNCA rodou ate o fim -- foi interrompido duas vezes.
+
 ## 2026-08-16 (553) - Claude (sessao local) - BUG DE PARSER que custou a partida: o LIDER sumia do pool "Leader or Character" quando havia qualificador no meio (4 cartas) + defensor tem prioridade no buff de defesa + ERRO MEU: A/B morto deixou o fix do bloco 551 DESLIGADO
 
 Partida das 00:14 (bancada automatica). Auto-collect do bloco 549
