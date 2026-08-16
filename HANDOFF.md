@@ -1,5 +1,57 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (562) - Claude (sessao local) - A/B local APAGOU os fixes da sessao remota ao terminar (snapshot do arquivo INTEIRO) -- detectado, revertido e a causa corrigida; de quebra, o A/B local REPRODUZIU a conclusao da remota
+
+**Ferramenta de calibracao corrompeu codigo de producao silenciosamente.**
+Vale mais como licao de processo do que como bug de jogo.
+
+### O que aconteceu
+
+O `ab_desconto_ataque.py` (bloco 552) fazia `original = _ler()` (arquivo
+INTEIRO) no inicio e reescrevia esse texto no `finally`. Eu disparei um
+A/B, achei que tinha matado, e **ele na verdade concluiu horas depois --
+DEPOIS do `git merge` da branch remota**. O `finally` restaurou a versao
+PRE-MERGE, apagando as **132 linhas** de fix que a sessao remota tinha
+trazido, incluindo `_blocker_gratis_se_sobrevive` (o fix do Borsalino).
+
+**Por que quase passou**: as duas coisas que eu vinha conferindo -- fator
+`0.35` e flags `8/8` -- estavam **CERTAS**. O arquivo parecia intacto. So
+apareceu ao comparar o diff contra o commit e ver 132 linhas fora das
+flags (`git diff ... | grep -vc "CURVE_SCALE"` devolveu 132 em vez de 0).
+E a terceira vez nesta sessao que uma verificacao "que parecia suficiente"
+nao era -- as outras duas foram o marcador inexistente (bloco 553) e o
+timestamp que envelheceu (bloco 561).
+
+### Correcao
+
+- **Estado revertido**: `git checkout` do arquivo commitado + reaplicacao
+  so das flags. Confirmado: fix do Borsalino de volta (4 ocorrencias),
+  0 linhas nao-flag no diff, fator 0.35, `smoke_fast` de volta as 14
+  falhas conhecidas.
+- **Causa corrigida**: o script guarda agora **so o FATOR** (`fator_atual()`)
+  e restaura so ele com `_set_fator()`. Nunca mais reescreve o arquivo
+  inteiro, entao **e impossivel ele desfazer mudanca que nao seja dele**.
+
+### Resultado do A/B local (2a medicao independente)
+
+Roda completa, 15 seeds, 4 arquetipos -- **bate com a da sessao remota**
+(commit `1ef5db4`), que foi feita em outra maquina/sessao:
+
+| deck | arquetipo | SEM fix | COM fix | delta |
+|---|---|---|---|---|
+| Imu | controle | 41,9% [33-51] | 33,3% [25-43] | -8,6 (ruido) |
+| Ace | agressivo | 32,0% [23-43] | 40,0% [30-51] | +8,0 (ruido) |
+| Enel | ramp/controle | 64,0% [53-74] | 65,3% [54-75] | +1,3 (ruido) |
+| Nami | tempo | 25,3% [17-36] | 29,3% [20-40] | +4,0 (ruido) |
+
+DON/atk (a metrica que o fix realmente mira): Imu -0,11, Ace -0,13,
+Nami -0,07, Enel +0,04 -- **cai em 3/4**, igual a remota reportou.
+
+**Leitura**: winrate indistinguivel de ruido nos 4 (todos os IC95 se
+sobrepoem), DON/atk melhora na direcao pretendida. Duas medicoes
+independentes chegando no mesmo lugar reforcam a decisao ja registrada:
+0.35 fica, sem alegar que e o valor otimo.
+
 ## 2026-08-16 (561) - Claude (sessao local) - PONTO DE PARTIDA PRA SESSAO NOVA: merge da branch remota no main + C# compilado/instalado (a remota nao pode) + estado exato do ambiente
 
 Sessao anterior ficou grande demais e o usuario vai abrir uma nova. Este

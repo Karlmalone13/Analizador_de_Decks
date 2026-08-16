@@ -86,7 +86,20 @@ def main() -> int:
     ap.add_argument('--workers', type=int, default=4)
     args = ap.parse_args()
 
-    original = _ler()
+    # Guarda SO O FATOR, nunca um snapshot do arquivo inteiro.
+    #
+    # BUG REAL que isso corrige (16/08): a versao anterior fazia
+    # `original = _ler()` (arquivo INTEIRO) e no `finally` reescrevia esse
+    # texto por cima. Um A/B disparado antes de um `git merge` e concluido
+    # DEPOIS restaurou a versao PRE-MERGE, apagando silenciosamente as 132
+    # linhas de fix que a sessao remota tinha trazido (incluindo o
+    # `_blocker_gratis_se_sobrevive`, o fix do Borsalino). O arquivo ficou
+    # "certo" nas duas coisas que eu conferia -- fator 0.35 e flags 8/8 --
+    # enquanto tinha perdido codigo. So apareceu ao comparar o diff contra
+    # o commit e ver 132 linhas fora das flags.
+    # Restaurar so a LINHA que este script altera torna impossivel ele
+    # desfazer qualquer mudanca que nao seja dele.
+    fator_original = fator_atual()
     try:
         print('########## RODADA A: SEM o desconto (baseline, fator 1.0) ##########')
         _set_fator('1.0')
@@ -96,12 +109,12 @@ def main() -> int:
         _set_fator(FATOR_FIX)
         fix = _rodar_painel(args.seeds, args.workers)
     finally:
-        # Restaura o arquivo EXATAMENTE como estava, aconteca o que acontecer.
         # ATENCAO: um kill -9 no processo NAO executa este bloco -- se o A/B
         # for interrompido a forca, CONFIRA `fator_atual()` antes de subir o
         # servidor (erro real de 16/08, ver docstring de fator_atual).
-        _escrever(original)
-        print(f'(decision_engine.py restaurado -- fator agora: {fator_atual()})')
+        _set_fator(fator_original)
+        print(f'(fator restaurado para {fator_atual()} -- o resto do arquivo '
+              f'nao foi tocado)')
 
     print('=' * 78)
     print('COMPARACAO A/B -- desconto de valor esperado em attach_don')

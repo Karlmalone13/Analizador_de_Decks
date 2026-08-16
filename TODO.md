@@ -2,6 +2,20 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 562): **ferramenta de calibração apagou código de
+> produção** — o `ab_desconto_ataque.py` guardava o arquivo INTEIRO e o
+> reescrevia no fim; um A/B disparado antes do merge e concluído depois
+> restaurou a versão PRÉ-MERGE, apagando as **132 linhas** da sessão
+> remota (incluindo o fix do Borsalino). Quase passou porque as duas
+> verificações que eu fazia — fator 0.35 e flags 8/8 — estavam **certas**;
+> só apareceu comparando o diff contra o commit. **Revertido** (fix de
+> volta, 0 linhas não-flag, 14 falhas conhecidas) e **causa corrigida**: o
+> script agora guarda e restaura **só o fator**, nunca o arquivo inteiro —
+> impossível desfazer mudança que não seja dele. De quebra, o A/B local
+> **reproduziu independentemente** a conclusão da sessão remota: winrate
+> indistinguível de ruído nos 4 arquétipos (IC95 sobrepostos), DON/atk
+> caindo em 3/4. Ver bloco 562 do HANDOFF.
+
 > 16/08/2026 (bloco 561): **PONTO DE PARTIDA PRA SESSÃO NOVA** (a anterior
 > ficou grande demais). Branch do celular (`claude/execute-remote-control-3qzqgm`,
 > 6 commits) mergeada no `main` por fast-forward (`42522cd`). **O passo que
