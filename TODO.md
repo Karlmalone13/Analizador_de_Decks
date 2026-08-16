@@ -2,6 +2,21 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 556): **`_blocker_gratis_se_sobrevive` olha o PIOR
+> ataque restante do turno**, não só o atual (extensão pedida pelo
+> usuário ao bloco 555: "se o adversário tem um atacante 5000 e outro
+> ainda ativo com possibilidade de 8000, talvez seja melhor tomar a
+> vida do que perder o Borsalino"). Nova `_pior_ataque_restante_este_
+> turno()` projeta o maior poder base entre os personagens/líder ainda
+> ativos do atacante + o DON que ele ainda tem disponível. Bloqueio de
+> graça só libera se sobrevive ao ataque atual E a essa pior ameaça. 4
+> testes novos, `smoke_fast`/`smoke_test` 100%. **Pendente, mesmo
+> pedido**: "bloquear o de 8000 e usar counter pra salvar o Borsalino"
+> — achado gap relacionado em `should_use_counter` (usa a tabela de
+> valor de VIDA mesmo quando defende um PERSONAGEM pós-redirect de
+> blocker, não o líder) — não investigado a fundo ainda. Ver bloco 556
+> do HANDOFF.
+>
 > 16/08/2026 (bloco 555): **resolve o achado do bloco 554** (Borsalino
 > usado como counter em vez de bloquear) — confirmado no combat log
 > bruto: 2 ataques de 5000pwr no mesmo turno, Borsalino 6000pwr ativo

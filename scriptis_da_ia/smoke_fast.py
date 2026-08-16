@@ -10600,6 +10600,7 @@ def main() -> int:
     test_counter_valor_vida_scale_calibrado_29_07()
     test_block_critical_life_max_cost_estendido_vida_3_4_29_07()
     test_blocker_gratis_vida_saudavel_16_08()
+    test_blocker_gratis_olha_pior_ameaca_restante_do_turno_16_08()
     test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno()
     test_apply_winner_grava_bot_side_da_fonte_autoritativa()
     test_attach_don_margem_seguranca_em_empate_com_don_ocioso()
@@ -11137,6 +11138,79 @@ def test_blocker_gratis_vida_saudavel_16_08() -> None:
     eng3 = DecisionEngine(me3, opp3)
     check("vida saudavel + blocker CARO que sobrevive (9000): mesmo teto calibrado, NAO bloqueia incondicionalmente",
           eng3.should_use_blocker(9000) is None)
+
+
+def test_blocker_gratis_olha_pior_ameaca_restante_do_turno_16_08() -> None:
+    """
+    Achado real 16/08 (extensao pedida pelo usuario apos o fix do bloco
+    555): "se o adversario tem um atacante 5000 e um outro ainda ativo
+    com possibilidade de ataque de 8000, talvez seja melhor tomar a
+    vida [do 5000] do que perder o Borsalino [pro 8000 depois]". Um
+    blocker que sobrevive ao ataque ATUAL mas fica restado e exposto a
+    um ataque MAIOR do MESMO turno nao e realmente "de graca" -- pode
+    perder o corpo inteiro por economizar 1 vida. Ver
+    `_pior_ataque_restante_este_turno`/`_blocker_gratis_se_sobrevive`.
+    """
+    def vida4():
+        return [real_card("OP07-077") for _ in range(4)]
+
+    # atacante ATUAL fraco (5000, borsalino sobrevive), MAS outro
+    # personagem do oponente ainda ATIVO tem poder 8000 (mataria o
+    # borsalino se atacasse depois, ja restado) -- NAO deve bloquear de
+    # graca aqui, guarda o borsalino pro proximo ataque.
+    ameaca_forte = mk("AMEACA1", "Ameaca Forte", power=8000, card_type="CHARACTER")
+    me = GameState(leader=mk("BLDLD", "Lider", card_type="LEADER"), turn=4)
+    me.field_chars = [real_card("EB04-058")]
+    me.life = vida4()
+    opp = GameState(leader=mk("BLDOPP", "Opp", card_type="LEADER", power=1000), turn=4)
+    opp.field_chars = [ameaca_forte]
+    opp.life = vida4()
+    eng = DecisionEngine(me, opp)
+    check("ha ameaca de 8000 ainda ativa este turno: NAO bloqueia de graca o ataque de 5000 (guarda o corpo)",
+          eng.should_use_blocker(5000) is None)
+
+    # mesmo cenario, mas a "ameaca" restante e FRACA (3000, o borsalino
+    # sobreviveria tambem) -- bloqueio de graca continua liberado.
+    ameaca_fraca = mk("AMEACA2", "Ameaca Fraca", power=3000, card_type="CHARACTER")
+    me2 = GameState(leader=mk("BLDLD2", "Lider", card_type="LEADER"), turn=4)
+    me2.field_chars = [real_card("EB04-058")]
+    me2.life = vida4()
+    opp2 = GameState(leader=mk("BLDOPP2", "Opp", card_type="LEADER", power=1000), turn=4)
+    opp2.field_chars = [ameaca_fraca]
+    opp2.life = vida4()
+    eng2 = DecisionEngine(me2, opp2)
+    check("ameaca restante e fraca (3000, borsalino tb sobrevive a ela): bloqueio de graca continua liberado",
+          eng2.should_use_blocker(5000) is not None)
+
+    # a "ameaca" ja esta RESTADA (ja atacou este turno, ou nao pode mais
+    # agir) -- nao conta como pior ataque restante, bloqueio de graca
+    # liberado mesmo ela sendo forte em teoria.
+    ameaca_restada = mk("AMEACA3", "Ameaca Restada", power=8000, card_type="CHARACTER")
+    ameaca_restada.rested = True
+    me3 = GameState(leader=mk("BLDLD3", "Lider", card_type="LEADER"), turn=4)
+    me3.field_chars = [real_card("EB04-058")]
+    me3.life = vida4()
+    opp3 = GameState(leader=mk("BLDOPP3", "Opp", card_type="LEADER", power=1000), turn=4)
+    opp3.field_chars = [ameaca_restada]
+    opp3.life = vida4()
+    eng3 = DecisionEngine(me3, opp3)
+    check("ameaca forte ja RESTADA (nao pode atacar de novo este turno): nao conta, bloqueio de graca liberado",
+          eng3.should_use_blocker(5000) is not None)
+
+    # DON disponivel do oponente projeta poder futuro: personagem base
+    # fraco (2000) mas oponente tem 6 DON disponivel -> pior caso
+    # 2000+6000=8000, mataria o borsalino -- NAO bloqueia de graca.
+    corpo_fraco_com_don = mk("AMEACA4", "Corpo Fraco", power=2000, card_type="CHARACTER")
+    me4 = GameState(leader=mk("BLDLD4", "Lider", card_type="LEADER"), turn=4)
+    me4.field_chars = [real_card("EB04-058")]
+    me4.life = vida4()
+    opp4 = GameState(leader=mk("BLDOPP4", "Opp", card_type="LEADER", power=1000), turn=4)
+    opp4.field_chars = [corpo_fraco_com_don]
+    opp4.life = vida4()
+    opp4.don_available = 6
+    eng4 = DecisionEngine(me4, opp4)
+    check("corpo fraco (2000) + 6 DON disponivel do oponente (pior caso 8000): NAO bloqueia de graca",
+          eng4.should_use_blocker(5000) is None)
 
 
 def test_blocker_condicional_auditoria_global_28_07() -> None:

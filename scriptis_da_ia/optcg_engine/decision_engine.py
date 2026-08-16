@@ -12980,23 +12980,64 @@ class DecisionEngine:
 
     # ── Decisões de defesa ────────────────────────────────────────────────────
 
+    def _pior_ataque_restante_este_turno(self) -> int:
+        """
+        Estimativa CONSERVADORA do pior ataque que o ATACANTE (self.opp,
+        dono do turno atual) ainda pode declarar este turno, DEPOIS do
+        ataque que está sendo resolvido agora. Acha o maior poder BASE
+        entre os personagens dele ainda ATIVOS (não restados -- o
+        atacante ATUAL já foi restado em `_execute_attack` antes deste
+        ponto, então não entra aqui de novo) + o líder dele se ainda
+        ativo e não travado, e soma o DON que ele ainda tem disponível
+        (`don_available`, já descontado o que usou no ataque atual) como
+        se fosse todo anexado nesse próximo ataque -- pior caso real, não
+        só o poder já anexado agora (que pode mudar quando ele declarar).
+
+        Achado real 16/08 (pedido do usuário, cenário hipotético: "se o
+        adversário tem um atacante 5000 e um outro ainda ativo com
+        possibilidade de ataque de 8000, talvez seja melhor tomar a vida
+        [do 5000] do que perder o Borsalino [pro 8000 depois]"). Sem
+        isso, `_blocker_gratis_se_sobrevive` só olhava o ataque atual,
+        podia declarar "de graça" um bloqueio que deixa o blocker restado
+        e exposto a um ataque maior no MESMO turno.
+        """
+        atacante_lado = self.opp
+        candidatos = [c for c in atacante_lado.field_chars if not c.rested]
+        leader = atacante_lado.leader
+        if leader is not None and not leader.rested:
+            if not is_attack_locked_self(leader, atacante_lado, self.me):
+                candidatos = candidatos + [leader]
+        if not candidatos:
+            return 0
+        maior_base = max(live_attack_power(c) for c in candidatos)
+        return maior_base + atacante_lado.don_available * 1000
+
     def _blocker_gratis_se_sobrevive(self, blockers, attacker_power, custo_sacrificio):
         """
-        Bloqueio SÓ quando a sobrevivência do blocker é garantida (poder
-        dele > poder do atacante -- não é KO'd, o ataque simplesmente
-        falha) E o custo cabe no mesmo teto calibrado (BLOCK_CRITICAL_
-        LIFE_MAX_COST) usado pelos outros ramos de vida. Usado nos ramos
-        de vida saudável de `should_use_blocker` (achado real 16/08 --
-        ver comentário lá) -- NÃO estende bloqueio incondicional pra
-        blocker que MORRERIA no combate, isso já foi tentado e regrediu
-        os testes calibrados dos blocos 396/398 (blocker "caro" que
-        sobrevive mas ainda assim NÃO deve bloquear sempre, achado real
-        de self-play pareado contra vencedores reais).
+        Bloqueio SÓ quando a sobrevivência do blocker é garantida -- não
+        só contra ESTE ataque (poder dele > poder do atacante, não é
+        KO'd, o ataque simplesmente falha), mas contra o PIOR ataque
+        ainda restante este turno (`_pior_ataque_restante_este_turno`):
+        um blocker que sobrevive ao golpe atual mas fica restado e exposto
+        a um golpe maior depois NÃO é realmente "de graça" -- pode custar
+        o corpo inteiro. E o custo (quando não há ameaça maior à espreita)
+        ainda precisa caber no mesmo teto calibrado (BLOCK_CRITICAL_LIFE_
+        MAX_COST) usado pelos outros ramos de vida. Usado nos ramos de
+        vida saudável de `should_use_blocker` (achado real 16/08 -- ver
+        comentário lá) -- NÃO estende bloqueio incondicional pra blocker
+        que MORRERIA no combate atual, isso já foi tentado e regrediu os
+        testes calibrados dos blocos 396/398 (blocker "caro" que sobrevive
+        mas ainda assim NÃO deve bloquear sempre, achado real de self-play
+        pareado contra vencedores reais).
         """
         sobreviventes = [c for c in blockers if (c.power + c.power_buff) > attacker_power]
         if not sobreviventes:
             return None
-        melhor = min(sobreviventes, key=custo_sacrificio)
+        pior_ameaca = self._pior_ataque_restante_este_turno()
+        seguros = [c for c in sobreviventes if (c.power + c.power_buff) > pior_ameaca]
+        if not seguros:
+            return None
+        melhor = min(seguros, key=custo_sacrificio)
         if (BLOCK_CRITICAL_LIFE_MAX_COST is None
                 or custo_sacrificio(melhor) <= BLOCK_CRITICAL_LIFE_MAX_COST):
             return melhor

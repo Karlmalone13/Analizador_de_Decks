@@ -1,5 +1,50 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (556) - Claude (sessao remota web) - `_blocker_gratis_se_sobrevive` agora olha o PIOR ataque restante do turno, nao so o ataque atual (extensao pedida pelo usuario ao fix do bloco 555)
+
+**Pedido do usuario**: apos o fix do bloco 555, usuario apontou (com
+razao, chamou de "ponto sensivel") que o fix so olhava se o blocker
+sobrevive a ESTE ataque, sem checar se existe outro atacante do
+oponente ainda ativo, mais forte, que mataria o blocker (ja restado)
+depois -- cenario concreto: "se o adversario tem um atacante 5000 e
+outro ainda ativo com possibilidade de ataque de 8000, talvez seja
+melhor tomar a vida [do 5000] do que perder o Borsalino [pro 8000
+depois]". Confirmou que o corpo de 6000 tem valor pros PROXIMOS turnos
+(inclusive pra atacar), entao "de graca" precisa significar seguro pro
+TURNO INTEIRO, nao so pro golpe da vez.
+
+**Implementado**: `_pior_ataque_restante_este_turno()` -- acha o maior
+poder BASE entre os personagens do ATACANTE ainda ativos (nao restados
+-- o atacante atual ja foi restado em `_execute_attack` antes deste
+ponto do fluxo, entao nao entra de novo) + o lider dele se ainda ativo
+e nao travado, e projeta o DON que ele ainda tem disponivel (ja
+descontado o gasto no ataque atual) como se fosse todo anexado nesse
+proximo ataque -- pior caso conservador, nao so o que ja esta anexado
+agora. `_blocker_gratis_se_sobrevive` agora exige sobreviver ao ataque
+atual E a essa pior ameaca projetada antes de liberar o bloqueio de
+graca; se nao sobreviver aos dois, cai de volta pro comportamento
+antigo (ramos calibrados por vida/custo).
+
+**Testado**: 4 checks novos (ameaca forte ainda ativa bloqueia o
+bloqueio de graca; ameaca fraca nao atrapalha; ameaca ja RESTADA nao
+conta; corpo fraco + DON do oponente projeta poder futuro corretamente).
+`smoke_fast`/`smoke_test` 100%.
+
+**Pendente, levantado pelo mesmo usuario no mesmo pedido, NAO
+implementado ainda**: "outra opcao tambem e tomar o dano ou usar
+counter, e depois bloquear o de 8000 e usar counter para salvar o
+Borsalino" -- ou seja, bloquear o ataque MAIOR (nao o menor) e AINDA
+completar com counter se o poder do atacante superar o do blocker
+depois do redirect. Investigando `should_use_counter`, achei um gap
+relacionado mas DISTINTO: a funcao usa `valor_vida` (tabela calibrada
+pela VIDA do jogador) pra decidir se vale contrariar, mesmo quando o
+alvo sendo defendido e um PERSONAGEM (pos-redirect de blocker), nao o
+lider -- ou seja, nao diferencia "vale gastar carta pra proteger minha
+vida" de "vale gastar carta pra proteger ESTE corpo especifico" (que
+deveria usar o valor do PERSONAGEM, tipo `char_value_score`, nao a
+tabela de vida). Ainda nao investigado a fundo nem corrigido -- fica
+pra proxima iteracao desta mesma linha de investigacao.
+
 ## 2026-08-16 (555) - Claude (sessao remota web) - RESOLVE o achado do bloco 554: `should_use_blocker` desistia sem checar custo com vida saudavel -- bot descartava counter em vez de bloquear de graca
 
 **Investigado sem telemetria local** (nao disponivel nesta sessao
