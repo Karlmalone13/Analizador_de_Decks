@@ -2,6 +2,23 @@
 
 **Última atualização:** 15 de agosto de 2026
 
+> 15/08/2026 (bloco 547): **bot_confusion não conta mais fim de turno
+> normal como confusão** — todo turno termina a main phase com um
+> `no_eligible_action` (sem DON ativo, `response=end_turn`), inflando o
+> alerta/gate_status sem bug nenhum (achado ao investigar o achado 1 do
+> bloco 543). Novo `no_eligible_action_suspicious` só soma quando ainda
+> sobrava DON ativo ou a resposta não foi `end_turn` — `bot_confusion.
+> total`/alerta usam esse subconjunto. 2 testes novos + 1 atualizado em
+> `test_bot_efficiency_report.py`, 15/16 passam (1 falha pré-existente,
+> não relacionada, confirmada via `git stash`). **Auditoria semântica
+> das 66 partidas rodando em background** (`audit_curve_calibration_
+> flags.py --all`), resultado pendente pro próximo bloco. **Pendente**:
+> tempo/qualidade/consequência de decisão como eixos de telemetria —
+> grande parte já existe (`report_decision_latency`, `decision_quality_
+> report.py`, `future_state_delta_by_decisions`), inventário reportado
+> ao usuário, aguardando qual eixo aprofundar primeiro. Ver bloco 547
+> do HANDOFF.
+
 > 15/08/2026 (bloco 546): **fix real do achado 4/545** — `on_ko_value`
 > (`decision_engine.py`) agora exige alvo ATIVO de verdade pro
 > `rest_opp_character` (reusa `eligible_cards(active_only=True)`, a

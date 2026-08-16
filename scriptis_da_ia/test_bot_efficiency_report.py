@@ -189,10 +189,41 @@ class BotEfficiencyReportTests(unittest.TestCase):
         self.assertEqual(result["bot_confusion"], {
             "total": 4,
             "no_eligible_action": 1,
+            "no_eligible_action_suspicious": 1,
             "engine_exceptions": 1,
             "client_timeouts": 1,
             "stuck_executions": 1,
         })
+        self.assertIn("bot_confusion", {a["code"] for a in result["alerts"]})
+
+    def test_bot_confusion_ignora_fim_de_turno_normal_sem_don_15_08(self):
+        # Achado real 15/08 (usuario, investigacao ao vivo bloco 543): TODA
+        # main phase termina com um "no_eligible_action" quando nao sobra
+        # DON ativo -- isso e o fim de turno normal, nao confusao. Sem
+        # DON ativo + response=end_turn nao deve contar pro alerta.
+        events = [
+            {"event": "decision", "decision_id": "a", "decision_kind": "main",
+             "selection": "no_eligible_action", "scored_actions": [], "chosen_action": None,
+             "resource_ledger_before": {"active_don": 0}, "response": {"type": "end_turn"}},
+        ]
+        result = report.analyze_decision_events(json.dumps(e) for e in events)
+        self.assertEqual(result["bot_confusion"]["total"], 0)
+        self.assertEqual(result["bot_confusion"]["no_eligible_action"], 1)
+        self.assertEqual(result["bot_confusion"]["no_eligible_action_suspicious"], 0)
+        self.assertNotIn("bot_confusion", {a["code"] for a in result["alerts"]})
+
+    def test_bot_confusion_conta_no_eligible_action_com_don_ativo_sobrando_15_08(self):
+        # Mesmo evento, mas com DON ainda disponivel -- o gerador deveria ter
+        # achado ALGUMA candidata pra gastar; "sem_acao" aqui e sinal real de
+        # confusao, precisa continuar contando pro alerta.
+        events = [
+            {"event": "decision", "decision_id": "a", "decision_kind": "main",
+             "selection": "no_eligible_action", "scored_actions": [], "chosen_action": None,
+             "resource_ledger_before": {"active_don": 3}, "response": {"type": "end_turn"}},
+        ]
+        result = report.analyze_decision_events(json.dumps(e) for e in events)
+        self.assertEqual(result["bot_confusion"]["total"], 1)
+        self.assertEqual(result["bot_confusion"]["no_eligible_action_suspicious"], 1)
         self.assertIn("bot_confusion", {a["code"] for a in result["alerts"]})
 
     def test_bot_confusion_silent_when_no_signal_present(self):

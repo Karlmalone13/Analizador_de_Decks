@@ -295,6 +295,7 @@ def analyze_decision_events(lines) -> dict:
     timed_out = 0
     fallback_errors = 0
     no_eligible_action = 0
+    no_eligible_action_suspicious = 0
     stuck_executions = 0
     lethal_certified: list[dict] = []
     by_kind: dict[str, dict[str, int]] = {}
@@ -374,7 +375,25 @@ def analyze_decision_events(lines) -> dict:
         timed_out += int(bool(decision.get("timed_out")))
         fallback_errors += int(bool(decision.get("error") or decision.get("telemetry_error")
                                     or decision.get("engine_error")))
-        no_eligible_action += int(decision.get("selection") == "no_eligible_action")
+        if decision.get("selection") == "no_eligible_action":
+            no_eligible_action += 1
+            # Achado real 15/08 (usuario, investigacao ao vivo bloco 543):
+            # TODO turno normal termina a main phase com um "sem_acao"
+            # (nenhum DON ativo sobrando, response=end_turn) -- 6 turnos =
+            # 6 "confusoes" sinalizadas mesmo sem bug nenhum, mascarando a
+            # investigacao (o gate_status virava "fail" so por isso). So
+            # conta como sinal de confusao de verdade quando ainda sobrava
+            # DON ativo (recurso que DEVERIA ter produzido algum candidato)
+            # ou a resposta nao foi o fim de turno esperado -- sem os dois
+            # campos (evento sintetico/legado), trata como suspeito por
+            # padrao (conservador: nao engolir um caso real por falta de
+            # dado).
+            ledger = decision.get("resource_ledger_before") or {}
+            resp = decision.get("response") or {}
+            benign_fim_de_turno = (
+                ledger.get("active_don", 0) == 0 and resp.get("type") == "end_turn")
+            if not benign_fim_de_turno:
+                no_eligible_action_suspicious += 1
         if decision.get("can_lethal"):
             lethal_certified.append(decision)
         if chosen is not None and eligible:
@@ -549,11 +568,12 @@ def analyze_decision_events(lines) -> dict:
     if fallback_errors:
         alert("decision_fallback_errors", "error", "decisoes usaram fallback por erro",
               fallback_errors, 0)
-    bot_confusion_total = (no_eligible_action + len(decision_errors)
+    bot_confusion_total = (no_eligible_action_suspicious + len(decision_errors)
                           + len(client_timeouts) + stuck_executions)
     if bot_confusion_total:
         alert("bot_confusion", "error",
-              f"bot travado/confuso {bot_confusion_total}x (sem_acao={no_eligible_action}, "
+              f"bot travado/confuso {bot_confusion_total}x "
+              f"(sem_acao_suspeito={no_eligible_action_suspicious}, "
               f"excecao_engine={len(decision_errors)}, timeout_cliente={len(client_timeouts)}, "
               f"execucao_travada={stuck_executions})",
               bot_confusion_total, 0)
@@ -668,6 +688,7 @@ def analyze_decision_events(lines) -> dict:
         "bot_confusion": {
             "total": bot_confusion_total,
             "no_eligible_action": no_eligible_action,
+            "no_eligible_action_suspicious": no_eligible_action_suspicious,
             "engine_exceptions": len(decision_errors),
             "client_timeouts": len(client_timeouts),
             "stuck_executions": stuck_executions,
@@ -679,8 +700,13 @@ def analyze_decision_events(lines) -> dict:
             "state_fidelity exige verdade independente do estado do jogo",
             "contrafactual usa somente alternativas realmente simuladas pela busca do motor",
             "sent sem confirmed/failed permanece pending e nao conta como sucesso",
-            "bot_confusion agrega sinais de 'nao sabia o que fazer' (sem_acao/excecao/timeout/execucao "
-            "travada); lethal_certified_summary correlaciona can_lethal=True com o outcome real da partida",
+            "bot_confusion agrega sinais de 'nao sabia o que fazer' (sem_acao_suspeito/excecao/timeout/"
+            "execucao travada); no_eligible_action (total bruto) inclui fim de turno normal (sem DON "
+            "ativo, response=end_turn), que NAO conta como confusao -- so o subconjunto suspeito "
+            "(no_eligible_action_suspicious, ainda com recurso disponivel ou resposta inesperada) entra "
+            "no total/alerta (achado real 15/08: 6 fins de turno normais inflavam o alerta e o "
+            "gate_status sem bug nenhum). lethal_certified_summary correlaciona can_lethal=True com o "
+            "outcome real da partida",
         ],
     }
 

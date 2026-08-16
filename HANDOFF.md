@@ -1,5 +1,49 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (547) - Claude (sessao local) - bot_confusion nao conta mais fim de turno normal como "confuso" + rodando auditoria semantica das 66 partidas em background
+
+Pedido do usuario: melhorar a telemetria, comecando pelo falso positivo
+de `bot_confusion` que eu mesmo achei investigando o achado 1 (partida
+do bloco 543) -- TODO turno normal termina a main phase com um
+`no_eligible_action` (sem DON ativo sobrando, `response.type=="end_turn"`),
+e isso inflava o alerta/gate_status como se fosse confusao de verdade
+mesmo sem bug nenhum (6 turnos = 6 "confusoes" so por terminar o turno).
+
+**Fix em `bot_efficiency_report.py`**: `no_eligible_action` continua
+contando o TOTAL bruto (informativo), mas um novo
+`no_eligible_action_suspicious` so soma quando ainda sobrava DON ativo
+OU a resposta nao foi `end_turn` (sinal genuino de "o gerador deveria
+ter achado uma candidata e nao achou"). `bot_confusion.total`/o alerta
+agora usam o subconjunto suspeito, nao o bruto. Sem `resource_ledger_before`/
+`response` (evento sintetico/legado) cai no lado conservador (conta como
+suspeito, nao engole um caso real por falta de dado).
+
+**2 testes novos** em `test_bot_efficiency_report.py` (fim de turno
+normal nao conta; DON ainda sobrando continua contando) + o teste
+existente (`test_bot_confusion_aggregates_all_four_signals`) atualizado
+pra nova chave. `test_bot_efficiency_report.py` 15/16 passam -- a 1
+falha (`test_reproduces_historical_bot_baseline`, atk_por_turno
+1.04!=0.88) e PRE-EXISTENTE (confirmado via `git stash`, falha igual
+sem esta mudanca) -- provavelmente o manifesto/cohort de
+`bot_efficiency_cohorts.json` ficou desatualizado, nao relacionado a
+este fix. Nao investigado a fundo, registrado como pendencia separada.
+
+**Auditoria semantica das 66 partidas** (pedido original do usuario
+nesta sessao, `audit_curve_calibration_flags.py --all`, comparando OFF
+vs ON estruturado por acao em vez de texto): rodando em background
+(iniciada ~21:56, sem `--workers` porque o script nao suporta essa
+flag ainda -- diferente de audit_replay/gauntlet_matchup/baseline_metrics,
+que ja tem). Resultado pendente pra proximo bloco quando terminar.
+
+**Pendente (pedido do usuario, mesma mensagem)**: tempo de decisao,
+qualidade de decisao e consequencia de decisao como eixos de melhoria
+de telemetria -- grande parte ja EXISTE (`report_decision_latency` em
+`live_calibration_report.py`, `decision_quality_report.py` pra
+qualidade por lider/carta, `future_state_delta_by_decisions` pra
+consequencia N decisoes depois) -- reportado ao usuario o inventario
+em vez de duplicar, aguardando direcionamento de qual eixo aprofundar
+primeiro.
+
 ## 2026-08-15 (546) - Claude (sessao local) - fix real do achado 4/545: on_ko_value do rest_opp_character agora exige alvo ATIVO de verdade (nao fantasma) + draw escala pela necessidade de mao
 
 Pedido do usuario (mesmo dia, apos o bloco 545): nao aceitar um "credito
