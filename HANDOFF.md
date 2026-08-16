@@ -1,5 +1,65 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (555) - Claude (sessao remota web) - RESOLVE o achado do bloco 554: `should_use_blocker` desistia sem checar custo com vida saudavel -- bot descartava counter em vez de bloquear de graca
+
+**Investigado sem telemetria local** (nao disponivel nesta sessao
+remota, declarado explicitamente per regra do CLAUDE.md) -- usando so
+o combat log bruto do repo (`logs/raw/Marshall.D.Teach-BY_x_Rocks.D.
+Xebec-B_2026-08-16T00.57.17.log`, que ESTA versionado) mais a
+descricao do usuario ("bot tinha um borsalino ativo em campo e um
+borsalino na mao... ataquei com 5000... o bot resolveu usar o
+borsalino da mao como counter").
+
+**Confirmado no log bruto**: turno do bot implanta Borsalino (EB04-058,
+6000pwr, `[Blocker]`, counter 1000) em campo, termina o turno sem
+atacar com ele. No turno seguinte do oponente, DOIS ataques de 5000pwr
+cada acertam o lider -- pra CADA um, o bot descarta uma COPIA da MAO
+do Borsalino como counter (`[You] Discard Borsalino... for Counter
+1000`), nunca resta o Borsalino do CAMPO nenhuma vez. Confirmado via
+`cards_rows.csv`: Borsalino 6000pwr > ambos os ataques (5000pwr) --
+bloquear seria de GRACA (o atacante nao teria poder suficiente pra
+K.O. o bloqueador, ataque simplesmente falha, zero carta gasta).
+
+**Causa raiz achada no codigo** (`should_use_blocker`,
+`decision_engine.py`): com vida saudavel (4-5) e oponente tambem
+saudavel (>2 vidas), a funcao **desistia de bloquear sem checar custo
+nenhum** -- `if not use_threshold.get(my_life, True): if opp_life > 2:
+return None` retornava direto, nunca chegando no calculo de
+`custo_sacrificio`/`BLOCK_CRITICAL_LIFE_MAX_COST` que os OUTROS ramos
+(vida<=2, ==3, ==4-com-opp<=2) ja usam desde os blocos 396/398.
+`should_use_counter` (chamada DEPOIS, janela separada) nao tem como
+saber que um bloqueio de graca ja tinha sido descartado -- raiz
+estrutural exatamente como o usuario suspeitou no bloco 554.
+
+**1a tentativa (revertida)**: bloqueio incondicional sempre que o
+blocker sobrevive, ignorando os gates de vida inteiros -- QUEBROU 3
+testes calibrados dos blocos 396/398 (self-play pareado contra
+vencedores reais mostrou que um blocker CARO que sobrevive NAO deve
+sempre bloquear, mesmo em vida critica -- ha razao real, provavelmente
+reservar o corpo pra ameaca maior no mesmo turno/próximos). Revertido
+depois de rodar smoke_fast e ver as falhas.
+
+**Fix final (cirurgico)**: novo `_blocker_gratis_se_sobrevive` --
+bloqueio SO quando sobrevive garantido (poder do blocker > poder do
+atacante) E custo cabe no MESMO teto calibrado
+(`BLOCK_CRITICAL_LIFE_MAX_COST=150`) ja usado nos outros ramos.
+Aplicado SO nos 2 pontos que antes desistiam sem check nenhum (vida>4,
+e vida==4/5 com opp>2) -- os ramos ja calibrados (vida<=2/==3/==4-com-
+opp<=2) ficam intocados. Reproduzido o cenario exato (Teach, vida=4,
+opp vida=4, Borsalino 6000 vs ataque 5000): `should_use_blocker(5000)`
+agora retorna o Borsalino (antes: `None` sempre). 3 checks novos em
+`smoke_fast.py` (bloqueio de graca ativa; blocker que NAO sobrevive
+continua None; blocker CARO que sobrevive mas excede o teto continua
+None, preserva a calibracao antiga). `smoke_fast`/`smoke_test` 100%.
+
+**Nao investigado ainda** (fora do escopo deste fix, mesma janela
+`should_use_counter` isolada): se HOUVER 2+ ataques no MESMO turno e
+so 1 blocker disponivel, qual ataque bloquear primeiro -- o fix atual
+bloqueia o PRIMEIRO ataque elegivel (ordem de resolucao do motor), nao
+necessariamente o "melhor" dos dois pra bloquear. Nao apareceu como
+problema no log real (os 2 ataques tinham o MESMO poder, 5000 cada),
+mas fica registrado como limite conhecido.
+
 ## 2026-08-16 (554) - Claude (sessao local) - banca partida 00:57 + ACHADO NOVO DO USUARIO ainda NAO investigado: bot usou Borsalino como COUNTER em vez de BLOQUEAR com ele (turno 3)
 
 Bloco curto e honesto: o usuario pediu push imediato porque vai continuar

@@ -12980,6 +12980,28 @@ class DecisionEngine:
 
     # ── Decisões de defesa ────────────────────────────────────────────────────
 
+    def _blocker_gratis_se_sobrevive(self, blockers, attacker_power, custo_sacrificio):
+        """
+        Bloqueio SÓ quando a sobrevivência do blocker é garantida (poder
+        dele > poder do atacante -- não é KO'd, o ataque simplesmente
+        falha) E o custo cabe no mesmo teto calibrado (BLOCK_CRITICAL_
+        LIFE_MAX_COST) usado pelos outros ramos de vida. Usado nos ramos
+        de vida saudável de `should_use_blocker` (achado real 16/08 --
+        ver comentário lá) -- NÃO estende bloqueio incondicional pra
+        blocker que MORRERIA no combate, isso já foi tentado e regrediu
+        os testes calibrados dos blocos 396/398 (blocker "caro" que
+        sobrevive mas ainda assim NÃO deve bloquear sempre, achado real
+        de self-play pareado contra vencedores reais).
+        """
+        sobreviventes = [c for c in blockers if (c.power + c.power_buff) > attacker_power]
+        if not sobreviventes:
+            return None
+        melhor = min(sobreviventes, key=custo_sacrificio)
+        if (BLOCK_CRITICAL_LIFE_MAX_COST is None
+                or custo_sacrificio(melhor) <= BLOCK_CRITICAL_LIFE_MAX_COST):
+            return melhor
+        return None
+
     def should_use_blocker(self, attacker_power: int) -> 'Optional[Card]':
         """
         Decide se usa blocker e qual usar.
@@ -12993,21 +13015,9 @@ class DecisionEngine:
         my_life = self.me.life_count()
         opp_life = self.opp.life_count()
 
-        # Com muita vida, não usa blocker
-        if my_life > 4:
-            return None
-
         blockers = self.me.blockers_active()
         if not blockers:
             return None
-
-        # Analisa se vale usar blocker
-        # Quanto mais baixa a vida, mais agressivo na defesa
-        use_threshold = {5: False, 4: False, 3: True, 2: True, 1: True}
-        if not use_threshold.get(my_life, True):
-            # Com 4 vidas e oponente pressionando (≤ 2 vidas), vale bloquear
-            if opp_life > 2:
-                return None
 
         # Custo EFETIVO de sacrificar `c` como blocker: char_value_score
         # (quanto vale o corpo) MENOS o proprio [On K.O.] dele (achado
@@ -13021,6 +13031,32 @@ class DecisionEngine:
         # checando alvos REAIS no campo do oponente pra ko/rest_opp.
         def custo_sacrificio(c):
             return a.char_value_score(c) - on_ko_value(c.code, self.opp, owner=self.me)
+
+        # Com muita vida, só considera blocker de graça (ver bloco abaixo) --
+        # não força um blocker que MORRERIA no combate.
+        if my_life > 4:
+            return self._blocker_gratis_se_sobrevive(blockers, attacker_power, custo_sacrificio)
+
+        # Analisa se vale usar blocker
+        # Quanto mais baixa a vida, mais agressivo na defesa
+        use_threshold = {5: False, 4: False, 3: True, 2: True, 1: True}
+        if not use_threshold.get(my_life, True):
+            # Com 4 vidas e oponente pressionando (≤ 2 vidas), vale bloquear
+            if opp_life > 2:
+                # ACHADO REAL 16/08 (log ao vivo: Borsalino 6000pwr ativo
+                # em campo, o bot descartou 2 CÓPIAS da MÃO como counter
+                # contra 2 ataques de 5000pwr no MESMO turno -- nunca usou
+                # o bloqueador, que sobreviveria ileso e anularia o ataque
+                # de graça). Com vida saudável (4-5) e oponente tambem
+                # saudável (>2), a função ANTES desistia sem checar custo
+                # nenhum -- diferente dos outros ramos (vida<=2/==3/==4-com-
+                # opp<=2), que já usam BLOCK_CRITICAL_LIFE_MAX_COST desde
+                # os blocos 396/398. Não estende o bloqueio incondicional
+                # (isso regrediu os testes calibrados dos blocos 396/398 --
+                # revertido, ver histórico) -- só cobre o caso onde o
+                # bloqueio é GARANTIDAMENTE de graça (blocker sobrevive) E
+                # cabe no MESMO teto calibrado, em vez de nunca considerar.
+                return self._blocker_gratis_se_sobrevive(blockers, attacker_power, custo_sacrificio)
 
         # Com 1-2 vidas, usa o blocker de menor custo -- mas so se o custo
         # couber no teto (BLOCK_CRITICAL_LIFE_MAX_COST), quando definido.

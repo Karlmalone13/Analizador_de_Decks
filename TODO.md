@@ -2,6 +2,23 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 555): **resolve o achado do bloco 554** (Borsalino
+> usado como counter em vez de bloquear) — confirmado no combat log
+> bruto: 2 ataques de 5000pwr no mesmo turno, Borsalino 6000pwr ativo
+> em campo nunca usado, 2 cópias da mão descartadas como counter em vez
+> disso (bloquear seria de graça, 6000>5000). Causa raiz: `should_use_
+> blocker` desistia sem checar custo nenhum com vida saudável (4-5) e
+> oponente saudável (>2) — os outros ramos já usam `BLOCK_CRITICAL_
+> LIFE_MAX_COST` desde os blocos 396/398, esse não. 1ª tentativa
+> (bloqueio incondicional se sobrevive) quebrou 3 testes calibrados —
+> revertida. Fix final cirúrgico: só cobre o bloqueio GARANTIDO de
+> graça que cabe no mesmo teto calibrado, sem tocar nos ramos já
+> validados. Reproduzido o cenário exato, confirmado corrigido. 3 testes
+> novos, `smoke_fast`/`smoke_test` 100%. Limite conhecido (não
+> investigado): 2+ ataques no mesmo turno com só 1 blocker, qual
+> priorizar — não apareceu no caso real (mesmo poder nos 2 ataques).
+> Ver bloco 555 do HANDOFF.
+>
 > 16/08/2026 (bloco 554): **achado novo do usuário, NÃO investigado** —
 > partida 00:57 bancada (auto-collect). Usuário: *"no turno 3 ao invés de
 > bloquear com borsalino usou o borsalino de counter? perdeu uma carta

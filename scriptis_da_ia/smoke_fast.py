@@ -10599,6 +10599,7 @@ def main() -> int:
     test_block_critical_life_max_cost_calibrado_29_07()
     test_counter_valor_vida_scale_calibrado_29_07()
     test_block_critical_life_max_cost_estendido_vida_3_4_29_07()
+    test_blocker_gratis_vida_saudavel_16_08()
     test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno()
     test_apply_winner_grava_bot_side_da_fonte_autoritativa()
     test_attach_don_margem_seguranca_em_empate_com_don_ocioso()
@@ -11077,6 +11078,65 @@ def test_block_critical_life_max_cost_estendido_vida_3_4_29_07() -> None:
     eng4 = DecisionEngine(me4, opp4)
     check("vida==4 + opp vida<=2 + atacante forte + blocker caro: NAO bloqueia mais incondicionalmente",
           eng4.should_use_blocker(9000) is None)
+
+
+def test_blocker_gratis_vida_saudavel_16_08() -> None:
+    """
+    Achado real 16/08 (log ao vivo, partida Marshall.D.Teach-BY_x_
+    Rocks.D.Xebec-B_2026-08-16T00.57.17): Borsalino (EB04-058, 6000pwr,
+    [Blocker]) ativo em campo, vida propria=4, vida do oponente=4 (>2).
+    O bot levou 2 ataques de 5000pwr no MESMO turno e descartou 2 COPIAS
+    da MAO como counter, nunca usando o bloqueador -- que sobreviveria
+    ileso (6000>5000) e anularia o ataque de graca, sem gastar carta
+    nenhuma. Causa raiz: com vida saudavel (4-5) e oponente tambem
+    saudavel (>2), `should_use_blocker` desistia sem checar custo NENHUM
+    (diferente dos outros ramos, que ja usam BLOCK_CRITICAL_LIFE_MAX_COST
+    desde os blocos 396/398). Fix cobre SO o caso de bloqueio GARANTIDO
+    de graca (sobrevive) que cabe no mesmo teto calibrado -- nao estende
+    bloqueio incondicional (ver `_blocker_gratis_se_sobrevive`).
+    """
+    def vida4():
+        return [real_card("OP07-077") for _ in range(4)]
+
+    borsalino = real_card("EB04-058")
+    check("Borsalino real e blocker de 6000pwr (pre-condicao do cenario)",
+          borsalino.has_blocker and borsalino.power == 6000)
+
+    me = GameState(leader=real_card("OP16-080"), turn=4)
+    me.field_chars = [borsalino]
+    me.life = vida4()
+    opp = GameState(leader=real_card("OP17-039"), turn=4)
+    opp.life = vida4()
+    eng = DecisionEngine(me, opp)
+    check("vida saudavel (4) + opp saudavel (4) + blocker sobrevive (6000>5000): "
+          "AGORA bloqueia de graca (antes do fix, retornava None sempre)",
+          eng.should_use_blocker(5000) is borsalino)
+
+    # mesma vida, mas o atacante e FORTE o bastante pra matar o blocker
+    # (7000 > 6000pwr) -- nao sobrevive, NAO deve bloquear de graca (cai
+    # no comportamento antigo, sem cost-check nesse ramo -- None)
+    me2 = GameState(leader=real_card("OP16-080"), turn=4)
+    me2.field_chars = [real_card("EB04-058")]
+    me2.life = vida4()
+    opp2 = GameState(leader=real_card("OP17-039"), turn=4)
+    opp2.life = vida4()
+    eng2 = DecisionEngine(me2, opp2)
+    check("vida saudavel + blocker NAO sobrevive (7000>6000pwr): continua None (sem mudanca)",
+          eng2.should_use_blocker(7000) is None)
+
+    # blocker CARO (custo > BLOCK_CRITICAL_LIFE_MAX_COST) que sobrevive,
+    # vida saudavel -- mesmo teto calibrado dos blocos 396/398 aplica
+    # aqui tambem, nao vira bloqueio incondicional
+    caro = mk("XBCH1", "Blocker Caro Saudavel", power=13000, card_type="CHARACTER")
+    caro.has_blocker = True
+    me3 = GameState(leader=mk("XBCH1LD", "Lider", card_type="LEADER"), turn=4)
+    me3.field_chars = [caro]
+    me3.life = vida4()
+    opp3 = GameState(leader=mk("XBCH1OPP", "Opp", card_type="LEADER"), turn=4)
+    opp3.life = vida4()
+    eng3 = DecisionEngine(me3, opp3)
+    check("vida saudavel + blocker CARO que sobrevive (9000): mesmo teto calibrado, NAO bloqueia incondicionalmente",
+          eng3.should_use_blocker(9000) is None)
 
 
 def test_blocker_condicional_auditoria_global_28_07() -> None:
