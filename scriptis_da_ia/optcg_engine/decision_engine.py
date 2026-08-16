@@ -16191,7 +16191,23 @@ class OPTCGMatch:
         if priority is None:
             priority = engine.analyzer.analysis_priority()
 
-        for card in p.field_chars:
+        # O LIDER entra junto dos personagens (bloco 567). Achado real 16/08,
+        # partida ao vivo com Monkey D. Luffy OP13-001 ("[DON!! x1] [On Your
+        # Opponent's Attack] ... +2000 por DON restado"): o bot NUNCA anexou
+        # DON no proprio lider -- 0 vezes na partida inteira -- e por isso a
+        # habilidade dele nunca ficou elegivel (`reaction: 0` no decision log,
+        # 24 ataques sofridos). A causa nao era score baixo: este loop so
+        # percorria `p.field_chars`, entao "anexar DON no lider pra ligar a
+        # habilidade DELE" **nunca era gerado como candidato**. Mesmo padrao
+        # dos outros achados do dia (Borsalino/Doc Q/Luffy): a opcao certa
+        # nao perde a votacao, ela nao chega a existir.
+        #
+        # Vale pra QUALQUER lider com gatilho condicionado a DON (`[DON!! xN]`),
+        # nao so o Luffy -- e a categoria (3) logo abaixo ja tratava o lider
+        # como atacante, entao ele so faltava aqui.
+        for card in [p.leader, *p.field_chars]:
+            if card is None:
+                continue
             effects = get_card_effects(card.code)
             # 1) keywords condicionais a DON (blocker/double_attack/rush/banish)
             cond_kw = getattr(card, 'don_cond_keywords', None) or {}

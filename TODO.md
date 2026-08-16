@@ -2,6 +2,29 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 567): **"por que o bot não anexa DON no líder?" — porque
+> a opção NUNCA era gerada.** O loop de candidatos de `attach_don` para
+> desbloquear gatilho com `don_requirement` só percorria `p.field_chars`; o
+> **líder ficava de fora**. Não era score baixo, a opção não existia.
+> **Terceiro achado do dia com a mesma forma** (Borsalino, Doc Q, Luffy) —
+> regra prática que fica: quando o usuário disser "o bot não sabe usar X",
+> checar PRIMEIRO se X vira candidato, antes de investigar pontuação.
+> **Corrigido** (`[p.leader, *p.field_chars]`), genérico para qualquer líder
+> `[DON!! xN]`. **Explica a queda Teach→Luffy**: o Luffy OP13-001 exige 1 DON
+> anexado; o bot anexou 0 vezes na partida → `reaction: 0` com 24 ataques
+> sofridos. O Teach não exigia DON anexado, por isso não sofria. Conecta com
+> `don_planned_total: 0` e `attached_don: 1` já vistos antes e não ligados —
+> **o bot quase não anexa DON**. `smoke_fast` 14 conhecidas, `smoke_test`
+> 100%. **Aberto**: (a) o stage Thousand Sunny ST31-004 é a fonte do DON do
+> líder, mas não dá pra afirmar que o bot o recusou — o print é do fim da
+> partida, pode não ter comprado; precisa de partida com ele na mão + DON;
+> (b) `negate_on_play_effects` ainda não implementada; (c) `lock_opp_don`
+> **provavelmente é erro de PARSER** (textos falam de Characters/Stages, não
+> DON) — exige o gate de auditoria global + `parser_audits/`. **Crítica
+> estrutural do usuário registrada**: a geração de candidatos é escrita por
+> categoria estrutural, não pelo plano do deck — por isso cada arquétipo novo
+> exige ajuste manual. Ver bloco 567 do HANDOFF.
+
 > 16/08/2026 (bloco 566): **varredura das 2747 cartas — o bug do Luffy era
 > a ponta de um padrão.** Ferramenta nova `audit_card_coverage.py` responde
 > as 3 perguntas do usuário (sabe o que faz? / consegue usar? / consegue

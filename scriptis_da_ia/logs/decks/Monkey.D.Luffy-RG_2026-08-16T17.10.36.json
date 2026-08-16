@@ -1,0 +1,46 @@
+{
+  "cards": [
+    {
+      "code": "OP13-037",
+      "name": "Roronoa Zoro",
+      "count": 3
+    },
+    {
+      "code": "EB04-007",
+      "name": "Roronoa Zoro",
+      "count": 3
+    },
+    {
+      "code": "OP14-022",
+      "name": "OP14-022",
+      "count": 2
+    },
+    {
+      "code": "OP13-040",
+      "name": "OP13-040",
+      "count": 1
+    },
+    {
+      "code": "ST21-003",
+      "name": "Sanji",
+      "count": 1
+    },
+    {
+      "code": "ST31-005",
+      "name": "ST31-005",
+      "count": 1
+    },
+    {
+      "code": "OP01-016",
+      "name": "Nami",
+      "count": 1
+    },
+    {
+      "code": "OP15-032",
+      "name": "Brook",
+      "count": 1
+    }
+  ],
+  "total_seen": 13,
+  "leader": "OP13-001"
+}

@@ -1,5 +1,77 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (567) - Claude (sessao local) - "Por que o bot nao anexa DON no lider?" -- porque a opcao NUNCA era gerada: o loop de attach_don so olhava field_chars. Explica a queda Teach -> Luffy
+
+### O achado (resposta direta a pergunta do usuario)
+
+Geracao de candidatos de `attach_don` pra desbloquear gatilho com
+`don_requirement` percorria **apenas `p.field_chars`**. O **LIDER ficava de
+fora do loop** -- entao "anexar DON no proprio lider pra ligar a habilidade
+DELE" **nunca virava candidato**.
+
+Nao era score baixo. A opcao nao existia. **Terceiro achado do dia com essa
+mesma forma** (Borsalino "guardar blocker", Doc Q, Luffy) -- vale registrar o
+padrao: quando o usuario diz "o bot nao sabe usar X", checar PRIMEIRO se X
+chega a ser gerado como candidato, antes de investigar pontuacao.
+
+Fix: `for card in [p.leader, *p.field_chars]`. Generico -- vale pra qualquer
+lider com `[DON!! xN]`. A categoria (3) do mesmo bloco ja tratava o lider como
+atacante, entao ele so faltava aqui.
+
+### Por que isso derrubou o Luffy e nao o Teach (cadeia completa)
+
+Partida `Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T17.10.36` (derrota).
+Usuario: "a qualidade caiu muito depois que troquei do Teach pro Luffy".
+
+1. Lider OP13-001 so funciona com **`[DON!! x1]` anexado** (`don_requirement: 1`).
+2. O bot anexou DON no lider **0 vezes** na partida inteira (unico attach foi
+   3 DON na Nami).
+3. Logo, a habilidade nunca ficou elegivel -> **`reaction: 0`** no decision
+   log, com 24 ataques sofridos.
+
+O Teach OP16-080 nao sofria disso: efeito reativo SEM requisito de DON
+anexado. Por isso a troca de deck derrubou tanto -- e conecta com um sintoma
+que ja aparecia e nao tinha sido ligado: `don_planned_total: 0` em 12 ataques
+e `attached_don: 1` em 30 amostras nas partidas do Teach. **O bot quase nao
+anexa DON.** No Teach custava dano; no Luffy custava o deck inteiro.
+
+> **A critica de fundo do usuario (registrar, e legitima)**: "o bot nao sabe
+> tomar as decisoes de acordo com o deck que ta jogando, nao consegue
+> interpretar, ele so melhora depois que a gente ajusta por deck". Os achados
+> de hoje sustentam isso: 3 dos 4 bugs eram opcao-nao-gerada, e a geracao de
+> candidatos e escrita por CATEGORIA ESTRUTURAL (personagem no campo, atacante)
+> em vez de derivar do que o DECK precisa. Enquanto a geracao nao olhar o plano
+> do deck, cada arquetipo novo vai exigir um fix manual -- que e exatamente a
+> queixa.
+
+### Stage (Thousand Sunny ST31-004) -- NAO concluido, nao inventar
+
+O stage e a peca que fecha o combo: `[Activate: Main] Rest this stage: Give up
+to 1 of your "Monkey D. Luffy" up to 1 rested DON!!` -- ou seja, e a FONTE do
+DON que o lider exige.
+
+Medido: nunca esteve na mao em nenhuma das 36 decisoes de main, nunca foi
+ofertado como candidato. **MAS** o print do usuario e do FIM da partida
+(`YOU LOSE`) com o stage na mao -- pode ter sido comprado depois da ultima
+decisao. O builder da mao no plugin nao filtra por tipo, entao **nao ha
+evidencia de bug de captura**. Pendente: uma partida com o stage
+comprovadamente na mao E DON disponivel, pra separar "nao comprou" de
+"recusou".
+
+### As 2 actions sem implementacao (bloco 566) -- 1 delas nao e o que parecia
+
+- `negate_on_play_effects` (OP09-081): implementavel no padrao do
+  `negate_effect` existente. **NAO feito.**
+- `lock_opp_don` (OP14-021, ST24-004): **provavelmente ERRO DE PARSER, nao
+  action faltando** -- os textos dizem "opponent's rested Characters **or
+  Stages** will not become active", nao falam de DON. Corrigir exige o gate do
+  CLAUDE.md (auditoria global da gramatica + registro em `parser_audits/`),
+  entao NAO foi tocado.
+
+### Validacao
+
+`smoke_fast` 14 falhas conhecidas (flags locais), `smoke_test` 100%.
+
 ## 2026-08-16 (566) - Claude (sessao local) - Varredura das 2747 cartas: o bug do Luffy era a ponta de um padrao (mais ~353 cartas com efeito morto ao vivo pela MESMA causa) -- deteccao de janela generalizada
 
 Pedido do usuario apos o bloco 565: "faca uma varredura em todas as cartas
