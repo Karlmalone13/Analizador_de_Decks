@@ -1,5 +1,50 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (546) - Claude (sessao local) - fix real do achado 4/545: on_ko_value do rest_opp_character agora exige alvo ATIVO de verdade (nao fantasma) + draw escala pela necessidade de mao
+
+Pedido do usuario (mesmo dia, apos o bloco 545): nao aceitar um "credito
+a mais" solto -- a analise tem que checar de verdade se o oponente TEM
+personagem custo<=6 (ativo, nao restado -- resting algo ja restado e
+no-op) e a necessidade real de comprar carta, nao um flat.
+
+**Fix em `on_ko_value` (`decision_engine.py`, closure `_score_steps`)**:
+
+1. `rest_opp`/`rest_opp_character`: trocado `_step_matching_targets`
+   (contava QUALQUER personagem custo<=6 do oponente, mesmo um ja
+   RESTADO -- restar de novo nao nega ataque nenhum, efeito nulo) por
+   `rules_facade.eligible_cards(..., active_only=True)` -- a MESMA
+   checagem que `_step_is_viable` (linha ~2798) ja usa pra viabilidade
+   real de execucao dessa mesma acao. Sem dois motores: reusa a regua
+   existente em vez de manter uma mais frouxa so pro scoring.
+2. `draw`/`draw_cards`: valor agora escala com `len(owner.hand)` (mao
+   <=1: 1.6x: mao <=3: 1.3x; mao >=7: 0.6x; resto neutro) em vez de
+   flat 15 sempre.
+
+**Validado contra o estado REAL da partida do bloco 545** (reconstrucao
+via `state_before` do decisions.jsonl, turno 6): nesse caso especifico
+o oponente TINHA personagens custo<=6 ativos de verdade (OP17-046/
+OP17-042, nao restados), entao o valor do Vasco Shot continua 40 (empate
+com deixar o Teach10 sobreviver) -- o fix NAO muda essa decisao
+especifica (era um empate legitimo, nao um bug nesse caso), mas fecha o
+buraco pra qualquer OUTRA partida onde os alvos custo<=6 do oponente ja
+estejam todos restados (onde o credito de +25 seria fantasma).
+
+**2 testes novos** em `smoke_fast.py`:
+`test_on_ko_value_rest_opp_ignora_alvo_ja_restado_15_08` (Vasco Shot com
+alvo restado vs ativo, confirma a diferenca) e
+`test_on_ko_value_draw_escala_com_necessidade_de_mao_15_08` (mao curta
+vs cheia). `smoke_fast.py` (14 falhas esperadas das flags de calibragem,
+inalteradas) e `smoke_test.py` completo rodados -- TODOS OS TESTES
+PASSARAM, sem regressao.
+
+**Pendente**: o gap mais amplo que geraria o "credito extra" original
+(peso maior quando o alvo restado evitaria um dos VARIOS ataques ainda
+pendentes no MESMO turno, nao so "existe algum alvo ativo") continua em
+aberto -- esse fix so corrige a parte de "o alvo existe de verdade"
+(sem_alvo_ativo=alvo_fantasma=0), nao a parte de "quantos ataques isso
+realmente evita". Registrado como proximo passo se o usuario quiser ir
+mais fundo.
+
 ## 2026-08-15 (545) - Claude (sessao local) - RETRATACAO do achado 4 (bloco 544): redirect_attack_target NAO e no-op no caminho ao vivo -- ja existe scoring on_ko-aware real, achado real e um EMPATE no modelo, nao ausencia de decisao
 
 Usuario pediu pra investigar o achado 4 de verdade (nao aceitar como

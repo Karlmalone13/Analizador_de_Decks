@@ -2,6 +2,22 @@
 
 **Última atualização:** 15 de agosto de 2026
 
+> 15/08/2026 (bloco 546): **fix real do achado 4/545** — `on_ko_value`
+> (`decision_engine.py`) agora exige alvo ATIVO de verdade pro
+> `rest_opp_character` (reusa `eligible_cards(active_only=True)`, a
+> mesma checagem que `_step_is_viable` já usa pra viabilidade real —
+> antes contava qualquer custo<=6 mesmo já restado, crédito fantasma) e
+> escala o valor do `draw` pela necessidade real de mão (curta=mais
+> valioso, cheia=menos). Validado contra o estado real da partida do
+> bloco 545: nesse caso específico o oponente tinha alvo ativo de
+> verdade, então o empate Vasco Shot/Teach10 permanece (era legítimo),
+> mas o fix fecha o buraco pra partidas onde os alvos custo<=6 do
+> oponente já estão todos restados. 2 testes novos em `smoke_fast.py`;
+> `smoke_test.py` completo rodado, TODOS PASSARAM. Pendente: o peso
+> ainda não escala por "quantos ataques isso evita" quando há vários
+> pendentes no mesmo turno — só corrige "o alvo existe de verdade". Ver
+> bloco 546 do HANDOFF.
+
 > 15/08/2026 (bloco 545): **RETRATAÇÃO do achado 4 (bloco 544 estava
 > errado)** — `redirect_attack_target` NÃO é no-op no caminho ao vivo; o
 > comentário "no-op" em `decision_engine.py` é só do caminho de

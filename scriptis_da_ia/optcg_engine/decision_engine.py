@@ -2293,14 +2293,52 @@ def on_ko_value(code: str, opp: 'Optional[GameState]' = None,
                 else:
                     total += 30 * min(count, _step_matching_targets(step, opp.field_chars))
             elif action in ('draw', 'draw_cards'):
-                total += 15 * count
+                # Valor de compra escala com a NECESSIDADE real de carta na
+                # mao, nao um flat 15 sempre (pedido do usuario, partida real
+                # 15/08: redirect do lider Teach comparando Vasco Shot contra
+                # so deixar o golpe passar -- "analisar... a necessidade de
+                # dar um draw"). Mao cheia = a carta extra tem pouca
+                # utilidade marginal (ja tem opcoes sobrando); mao vazia/
+                # curta = compra e o unico jeito de continuar jogando.
+                mult = 1.0
+                if owner is not None:
+                    hand_sz = len(owner.hand)
+                    if hand_sz <= 1:
+                        mult = 1.6
+                    elif hand_sz <= 3:
+                        mult = 1.3
+                    elif hand_sz >= 7:
+                        mult = 0.6
+                total += 15 * count * mult
             elif action in ('rest_opp', 'rest_opp_character'):
                 # restar personagem do oponente nega um ataque/bloqueio — tempo
-                # real (partida 04/07: Vasco Shot era o sacrificio certo)
+                # real (partida 04/07: Vasco Shot era o sacrificio certo).
+                # Achado real 15/08 (usuario, redirect do turno 6 -- Vasco
+                # Shot empatou 0.0 com so deixar o golpe passar, e o usuario
+                # apontou que a analise tinha que ser "o oponente TEM
+                # personagem custo<=6, ou so parece que tem"): o antigo
+                # _step_matching_targets contava QUALQUER personagem custo<=6
+                # do oponente, mesmo um que JA esta restado (ja atacou/ja foi
+                # usado este turno) -- restar de novo nao nega ataque NENHUM,
+                # e um efeito nulo, mas pontuava os mesmos +25 de um alvo
+                # ativo de verdade. `_step_is_viable` (linha ~2798) ja exige
+                # `active_only=True` pra essa mesma acao na checagem de
+                # VIABILIDADE real de execucao -- reusa aqui em vez de manter
+                # uma segunda regua mais frouxa so pra scoring (sem dois
+                # motores).
                 if opp is None:
                     total += 25 * count
                 else:
-                    total += 25 * min(count, _step_matching_targets(step, opp.field_chars))
+                    from optcg_engine.rules_facade import eligible_cards
+                    alvos_reais = eligible_cards(
+                        opp.field_chars,
+                        cost_lte=step.get('cost_lte'),
+                        cost_eq=step.get('cost_eq'),
+                        power_lte=step.get('power_lte'),
+                        rested_only=step.get('rested_only', False),
+                        active_only=True,
+                        filter_text=step.get('filter_type', ''))
+                    total += 25 * min(count, len(alvos_reais))
             elif action in ('play_card', 'play_from_trash'):
                 total += _on_ko_play_card_value(step, owner)
             elif action == 'debuff_power':

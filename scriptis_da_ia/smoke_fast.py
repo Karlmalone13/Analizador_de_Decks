@@ -10654,6 +10654,8 @@ def main() -> int:
     test_hand_board_life_curve_scale_e_gates_ao_vivo_14_08()
     test_dmg_value_curve_scale_e_gate_ao_vivo_14_08()
     test_counter_hand_coverage_opp_blocker_curve_scale_14_08()
+    test_on_ko_value_rest_opp_ignora_alvo_ja_restado_15_08()
+    test_on_ko_value_draw_escala_com_necessidade_de_mao_15_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -13457,6 +13459,69 @@ def test_ponder_generation_guard_sem_contaminacao_cruzada_09_08() -> None:
         ps.PONDER_ENABLED = False
         ps._ponder_result = None
         ps._ponder_match = None
+
+
+def test_on_ko_value_rest_opp_ignora_alvo_ja_restado_15_08() -> None:
+    """
+    Pedido do usuario (15/08, partida ao vivo -- redirect do lider Teach no
+    turno 6): a analise do valor de sacrificar o Vasco Shot (on_ko: draw 1 +
+    rest_opp_character custo<=6) tem que checar se o oponente REALMENTE tem
+    um personagem custo<=6 ATIVO (poderia atacar de novo este turno), nao so
+    "tem algum custo<=6 em campo" -- restar um personagem JA restado (ja
+    atacou/ja foi usado) nao nega ataque nenhum, e um efeito nulo. Antes
+    deste fix, `_step_matching_targets` contava qualquer personagem custo<=6
+    independente de `rested`, pontuando +25 fantasma pro mesmo cenario onde
+    `_step_is_viable` (que ja usa `active_only=True` pra essa mesma acao)
+    diria que o efeito nao produz nada de verdade.
+    """
+    vasco = real_card("OP16-110")  # on_ko: draw 1 + rest_opp_character cost<=6
+    me = GameState(leader=real_card("OP16-080"), turn=6)
+    me.hand = [real_card("OP09-086"), real_card("OP09-086"),
+               real_card("OP09-095"), real_card("OP16-116")]  # mao=4, mult neutro
+
+    # Cenario A: oponente so tem personagens custo<=6 JA RESTADOS -- resting
+    # de novo e no-op, nao deveria contar o bonus de 25.
+    opp_so_restado = GameState(leader=real_card("OP17-039"), turn=6)
+    alvo_restado = real_card("OP17-046")
+    alvo_restado.rested = True
+    opp_so_restado.field_chars = [alvo_restado]
+    valor_sem_alvo_ativo = on_ko_value(vasco.code, opp_so_restado, owner=me)
+    check("on_ko_value do Vasco Shot NAO credita rest_opp quando o unico "
+          "custo<=6 do oponente ja esta restado (efeito seria no-op)",
+          valor_sem_alvo_ativo < 25.0)
+
+    # Cenario B: MESMO personagem, mas ATIVO -- agora o rest_opp de verdade
+    # nega um ataque, o bonus completo deve entrar.
+    opp_com_alvo_ativo = GameState(leader=real_card("OP17-039"), turn=6)
+    alvo_ativo = real_card("OP17-046")
+    alvo_ativo.rested = False
+    opp_com_alvo_ativo.field_chars = [alvo_ativo]
+    valor_com_alvo_ativo = on_ko_value(vasco.code, opp_com_alvo_ativo, owner=me)
+    check("on_ko_value do Vasco Shot credita o rest_opp completo quando "
+          "existe alvo custo<=6 ATIVO de verdade",
+          valor_com_alvo_ativo > valor_sem_alvo_ativo)
+
+
+def test_on_ko_value_draw_escala_com_necessidade_de_mao_15_08() -> None:
+    """
+    Mesmo pedido do usuario (15/08): "a necessidade de dar um draw" tambem
+    entra na conta, nao um valor fixo de 15 sempre. Mao vazia/curta = compra
+    e critica; mao cheia = a carta extra tem pouca utilidade marginal.
+    """
+    doc_q_sem_ko_de_char = real_card("OP16-110")  # draw 1 + rest_opp (fixa o resto igual)
+    opp = GameState(leader=real_card("OP17-039"), turn=6)  # sem personagem custo<=6 ativo
+    opp.field_chars = []
+
+    dono_mao_curta = GameState(leader=real_card("OP16-080"), turn=6)
+    dono_mao_curta.hand = [real_card("OP09-095")]  # mao=1
+    valor_mao_curta = on_ko_value(doc_q_sem_ko_de_char.code, opp, owner=dono_mao_curta)
+
+    dono_mao_cheia = GameState(leader=real_card("OP16-080"), turn=6)
+    dono_mao_cheia.hand = [real_card("OP09-095")] * 8  # mao=8
+    valor_mao_cheia = on_ko_value(doc_q_sem_ko_de_char.code, opp, owner=dono_mao_cheia)
+
+    check("on_ko_value credita MAIS o draw quando a mao do dono esta curta",
+          valor_mao_curta > valor_mao_cheia)
 
 
 if __name__ == "__main__":
