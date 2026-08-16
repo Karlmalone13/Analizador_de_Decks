@@ -1,5 +1,78 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (561) - Claude (sessao local) - PONTO DE PARTIDA PRA SESSAO NOVA: merge da branch remota no main + C# compilado/instalado (a remota nao pode) + estado exato do ambiente
+
+Sessao anterior ficou grande demais e o usuario vai abrir uma nova. Este
+bloco e o ponto de entrada -- leia ele e o 554 (achado do Borsalino).
+
+### O que foi feito AQUI (nada de logica nova, so integracao)
+
+A branch `claude/execute-remote-control-3qzqgm` (6 commits, feitos pelo
+usuario no CELULAR) foi mergeada no `main` por **fast-forward** e enviada
+(`42522cd`). Ela fechou as pendencias que este mesmo HANDOFF tinha
+deixado registradas -- o handoff funcionou como devia.
+
+**O passo que so podia ser feito aqui**: a sessao remota nao tinha
+`dotnet` nem o jogo, entao os 2 commits de C# (`66b6f14` counters,
+`42522cd` tela travada) foram escritos **sem compilar**. Compilados aqui:
+**0 erros**, DLL instalada via `setup_bepinex.bat`.
+
+**Cuidado tomado no merge** (registrar porque e o tipo de coisa que
+corrompe estado sem avisar): eu tinha as 8 flags de calibragem ligadas
+LOCALMENTE e nao commitadas, e a branch mexia em 132 linhas do MESMO
+`decision_engine.py`. Sequencia: `git stash` das flags -> merge ff ->
+`stash pop` -> **verificado explicitamente** que (a) o fix do Borsalino
+(`_blocker_gratis_se_sobrevive`) continuava presente e (b) a unica
+diferenca local voltou a ser so as flags. Tambem backup dos artefatos de
+gauntlet locais antes de deixar a branch sobrescrever.
+
+### Estado EXATO do ambiente ao encerrar
+
+- **Servidor**: no ar (subiu 12:54, `decision_engine.py` alterado 12:50 --
+  conferido por horario de processo vs arquivo, nao por leitura de texto).
+- **Plugin**: DLL de 12:53, mais nova que o codigo -> tem as correcoes.
+- **Calibragem dinamica**: **8/8 flags LIGADAS localmente, NAO commitadas**
+  (no git continuam False = producao desligada). Sao a causa das **14
+  falhas** conhecidas do `smoke_fast.py` -- os testes conferem justamente
+  que elas ficam False por padrao. **Uma 15a falha = regressao de verdade**
+  (foi assim que peguei o fix desligado no bloco 553).
+- **Fator do desconto de ataque**: 0.35 (confira com
+  `ab_desconto_ataque.fator_atual()`, NUNCA por marcador de texto).
+- `smoke_test.py`: 100%.
+
+### As 3 correcoes que NUNCA rodaram em partida real
+
+Prioridade da proxima sessao: validar ao vivo. Nenhuma tem confirmacao.
+
+1. **Borsalino / bloqueio de graca** (blocos 554-556): blocker que
+   sobrevive deve BLOQUEAR, nao queimar carta da mao como counter.
+2. **Tela "Choose card effect to activate next"** (bloco 560): nao deve
+   mais travar. C# compilado, nunca exercitado.
+3. **"So 1 dos 2 counters aplicado"** (bloco 559): a mais incerta -- a
+   sessao remota registrou explicitamente como **HIPOTESE NAO
+   CONFIRMADA** (a janela `Attack_WaitOnCounters` fecharia depois do 1o
+   descarte). O fix e uma checagem defensiva + log; o log da proxima
+   partida CONFIRMA OU DESCARTA a hipotese. Nao tratar como resolvido.
+
+### Pendencias antigas ainda abertas
+
+- Peso de "desenvolver board" parece baixo demais vs "atacar" (play de um
+  corpo 5000 valia 80 contra ~380 do ataque) -- levantado no bloco 551,
+  nao investigado, exige medicao antes de mexer.
+- O A/B do 0.35 fechou SEM provar o valor otimo: winrate dentro do IC95
+  nos 4 arquetipos (efeito indistinguivel de ruido), DON/atk melhorou em
+  3/4. Mantido por nao ter regressao, nao por estar provado.
+- `audit_curve_calibration_flags.py` ainda nao tem `--workers`.
+
+### Regra que mais evitou erro nesta sessao
+
+Reconstruir a decisao REAL do `decisions_*.jsonl` e conferir o numero
+contra o log antes de acreditar num fix. Duas vezes isso pegou erro meu:
+uma reconstrucao incompleta (sem turno/vida) dava score de letal e zero
+acoes -- quase validei um fix contra estado falso; e o A/B morto deixou o
+fix DESLIGADO enquanto um grep num marcador inexistente dizia que estava
+tudo certo. Conferir o VALOR, nunca um marcador.
+
 ## 2026-08-16 (560) - Claude (sessao remota web) - Achado real: tela "Choose card effect to activate next" travava por causa da MESMA categoria de bug ja corrigida no bloco 551 (dono da carta em vez de iPlayerAction) -- fix aplicado, NAO testado ao vivo
 
 **Pedido do usuario**: "Investiga a tela do 'Choose card effect to

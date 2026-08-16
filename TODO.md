@@ -2,6 +2,21 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 561): **PONTO DE PARTIDA PRA SESSÃO NOVA** (a anterior
+> ficou grande demais). Branch do celular (`claude/execute-remote-control-3qzqgm`,
+> 6 commits) mergeada no `main` por fast-forward (`42522cd`). **O passo que
+> só dava pra fazer aqui**: os 2 commits de C# foram escritos sem compilar
+> (sessão remota não tem dotnet/jogo) — compilados aqui, **0 erros**, DLL
+> instalada. **Ambiente**: servidor no ar, plugin atualizado, calibragem
+> dinâmica **8/8 ligada localmente e não commitada** (produção segue
+> desligada; é a causa das 14 falhas conhecidas do `smoke_fast` — uma 15ª
+> seria regressão real), fator do desconto 0.35, `smoke_test` 100%.
+> **PRIORIDADE: validar ao vivo as 3 correções que nunca rodaram em
+> partida real** — (1) bloqueio de graça/Borsalino, (2) tela "Choose card
+> effect to activate next", (3) "só 1 dos 2 counters", esta última sendo
+> uma **hipótese NÃO confirmada** que o log da próxima partida confirma ou
+> descarta. Ver bloco 561 do HANDOFF.
+
 > 16/08/2026 (bloco 560): **achado real (não só hipótese) da tela
 > "Choose card effect to activate next" travando de novo** (pendência
 > recorrente dos blocos 551/553, mesmo com o fix de 02/08 já
