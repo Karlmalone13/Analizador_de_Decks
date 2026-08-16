@@ -90,6 +90,32 @@ T4 Law+Sanji ou Luffy+Zoro (8) · T5 Zoro 9 (10).
 Mulligan — primeiro: searcher 1, Bonney 3, Sanji 5. Segundo: searcher 1,
 Zoro 4, Law 6.
 
+## Segunda fonte (Cards Realm) — confirma e endurece o ponto do DON
+
+> **Fonte 2**: Cards Realm, "Monkey D. Luffy Vermelho e Verde — Deck Guide
+> Meta OP15" —
+> <https://onepiece.cardsrealm.com/pt-br/articles/monkey-d-luffy-vermelho-e-verde-deck-guide-meta-op15>
+
+Duas fontes independentes dizem a MESMA coisa sobre o recurso central, o que
+tira qualquer dúvida de que é o plano do deck e não opinião de um autor:
+
+- Plano em uma frase: *"usar muito bem seu DON!!, fazendo mais do que parecia
+  possível no seu próprio turno e, **ainda assim, terminando a rodada com
+  DON!! aberto** contra o oponente."*
+- **"Prioridade absoluta manter ≤5 abertos no fim do turno"** para ligar o
+  efeito do líder na defesa.
+- Regra explícita de quando NÃO atacar: *"não atacar agressivamente se isso
+  deixar <5 DON!! para a próxima defesa"*.
+- *"Muitas partidas são vencidas calculando exatamente quantos recursos
+  precisava deixar de pé para fazer o oponente dar de cara com uma parede."*
+
+Cartas-chave desta versão (OP15), todas de re-ativação de DON: Nami OP14-031
+(Blocker, resta 2 personagens ≤8 e **reativa até 5 DON**), Sanji OP13-027
+(reativa 2 ao entrar, +1 no fim do turno), Usopp OP14-022 (reativa 2 no fim do
+turno), Luffy OP13-118 (Double Attack, desvira 4 DON — **trava plays de custo
+base 5+ naquele turno**), Zoro EB04-007 (+2000 ao líder, Rush se o adversário
+tem 8000+). Proteção: Robin P-111, Tashigi OP10-032.
+
 ## Conflitos com o motor (o que importa para o projeto)
 
 1. **DON ocioso não é desperdício aqui.** O motor trata DON sobrando como

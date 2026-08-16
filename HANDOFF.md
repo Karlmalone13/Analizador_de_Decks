@@ -1,5 +1,83 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (568) - Claude (sessao local) - Guias estrategicos por deck (o plano do RG Luffy CONTRADIZ 2 suposicoes do motor) + a calculadora de lethal da comunidade resolve, de forma probabilistica, exatamente o buraco que deixamos aberto
+
+### 1. Lethal probabilistico -- referencia externa para a pendencia do bloco 564
+
+O usuario mandou a calculadora de lethal da comunidade
+(<https://optcglab.com>, de Real_JoshuaTV; o link cafecomonepiece e so
+redirecionamento). Aberta no browser -- e uma SPA, `WebFetch` sozinho so
+devolve o titulo.
+
+**Como ela modela**: entradas de board dos dois lados, blockers, LIFE (0-5) e
+**HAND (numero de cartas)** do oponente, e o campo central:
+
+> **PROBABILITY** -- "Computes lethal % from opponent's deck" ·
+> "Opponent's deck (50/50) · Tracked cards (0)"
+
+Ou seja: **nao responde "tem lethal: sim/nao"**. Devolve **% de chance**,
+derivada da composicao do deck do oponente, do tamanho da mao dele e das
+cartas ja rastreadas. Trata a mao desconhecida como DISTRIBUICAO, nao como
+certeza.
+
+**Por que isso e a resposta pra nossa pendencia**: nosso
+`opp_counter_chunks_for_lethal` faz o oposto -- "slots desconhecidos: tratamos
+como 0 (...) Ignoramos slots ocultos: nenhum chunk adicional". Tratar "nao sei
+o que ele tem" como "ele nao tem nada" e a fonte do falso-positivo que custou
+2 partidas (`matches_not_closed_after_lethal: 1` nas duas).
+
+> **E o nosso codigo JA previa isso e nunca implementou**: existe a variavel
+> `unknown_hand_size` com o comentario literal
+> `# reservado para futura estimativa probabilistica`. A calculadora e prova
+> de que a abordagem e viavel e e o padrao que a comunidade usa.
+
+Caminho pra proxima sessao: contar counters restantes no deck do oponente
+(composicao por arquetipo, ou o `MatchMemory` de reveals que ja existe),
+ponderar pelo tamanho da mao dele, e exigir margem sobre a expectativa em vez
+de assumir zero. Muda o lethal de binario otimista pra conservador calibrado.
+**Continua sendo o item de maior impacto em aberto.**
+
+### 2. Guias de deck: nova pasta `IA_Compendium/guias_por_deck/`
+
+Pedido do usuario: "faca uma varredura nesse site Cards Realm, para mapear a
+instrucao de cada deck e salvar no nosso IA".
+
+**Feito**: `OP13-001_RG_Monkey_D_Luffy.md` com **duas fontes independentes**
+(Spell Mana + Cards Realm) e `_INDICE_E_PENDENCIAS.md` com a fila das outras
+11 URLs ja levantadas, priorizadas, mais o template a seguir.
+
+**NAO feito, e e uma entrega parcial declarada**: os outros 11 guias. Nao
+coube nesta sessao com qualidade -- extrair cada um exige fetch + resumo
+fiel, e entregar resumo raso de deck seria pior que nao entregar. As URLs
+estao levantadas e priorizadas no indice; e so continuar de onde parou.
+A listagem veio da pagina 2 da busca do site -- **ha outras paginas**.
+
+### 3. O achado que os guias produziram (vale mais que os guias)
+
+O plano do RG Luffy, confirmado por DUAS fontes independentes:
+
+- *"terminando a rodada com DON!! aberto contra o oponente"*
+- **"prioridade absoluta manter <=5 DON abertos no fim do turno"**
+- *"nao atacar agressivamente se isso deixar <5 DON!! para a proxima defesa"*
+
+Isso **contradiz duas suposicoes embutidas no motor**:
+
+1. **DON ocioso NAO e desperdicio neste arquetipo.** O motor trata DON
+   sobrando como "margem de pressao" a anexar. Este deck quer guardar.
+2. **Atacar menos pode ser a jogada certa.**
+
+> **Consequencia direta na ferramenta que EU entreguei hoje**: o
+> `quality_baseline.py` (bloco 565) conta `pct_turnos_zero_don` -- terminar o
+> turno com 0 DON -- como sinal BOM. Pro RG Luffy e sinal **RUIM**: sem DON
+> ativo nao ha como pagar o custo do lider na defesa. **A metrica esta
+> invertida para o arquetipo.** Nao usar esse numero isolado pra julgar este
+> deck; o baseline gravado do Teach (don=0.88, zero_don=69.7%) so vale pro
+> Teach.
+
+Isso e a critica do usuario (bloco 567) aparecendo de novo, agora dentro do
+nosso proprio instrumento de medicao: metrica generica que nao sabe qual e o
+plano do deck.
+
 ## 2026-08-16 (567) - Claude (sessao local) - "Por que o bot nao anexa DON no lider?" -- porque a opcao NUNCA era gerada: o loop de attach_don so olhava field_chars. Explica a queda Teach -> Luffy
 
 ### O achado (resposta direta a pergunta do usuario)

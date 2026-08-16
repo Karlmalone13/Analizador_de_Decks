@@ -2,6 +2,28 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 568): **guias estratégicos por deck + a calculadora de
+> lethal da comunidade aponta a solução da nossa maior pendência.**
+> **(1) Lethal probabilístico**: a calculadora da comunidade
+> (optcglab.com) devolve **% de chance de lethal** calculada a partir do
+> deck/mão do oponente — trata a mão desconhecida como distribuição, não
+> como certeza. O nosso `opp_counter_chunks_for_lethal` faz o oposto
+> (ignora slots ocultos = assume que o oponente não tem counter), que é a
+> fonte do falso-positivo que custou 2 partidas. **E o nosso código já
+> previa isso**: existe `unknown_hand_size` com o comentário "reservado
+> para futura estimativa probabilística". **Segue como o item de maior
+> impacto em aberto.** **(2) Nova pasta `IA_Compendium/guias_por_deck/`**
+> com o guia do RG Luffy OP13-001 (duas fontes) e um índice com a fila das
+> outras 11 URLs priorizadas + template. **Entrega parcial declarada**: os
+> outros 11 guias não couberam nesta sessão. **(3) Achado que os guias
+> produziram**: o plano do RG Luffy é **guardar DON** (≤5 abertos é
+> "prioridade absoluta", e "não atacar se isso deixar <5 DON"), o que
+> contradiz duas suposições do motor — DON ocioso como desperdício e
+> atacar mais como melhor. **Isso inverte a leitura da métrica
+> `pct_turnos_zero_don` do `quality_baseline.py` para este arquétipo** — a
+> ferramenta que eu mesmo entreguei hoje herdou a suposição errada. Ver
+> bloco 568 do HANDOFF.
+
 > 16/08/2026 (bloco 567): **"por que o bot não anexa DON no líder?" — porque
 > a opção NUNCA era gerada.** O loop de candidatos de `attach_don` para
 > desbloquear gatilho com `don_requirement` só percorria `p.field_chars`; o
