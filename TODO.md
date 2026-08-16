@@ -2,6 +2,25 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 566): **varredura das 2747 cartas — o bug do Luffy era
+> a ponta de um padrão.** Ferramenta nova `audit_card_coverage.py` responde
+> as 3 perguntas do usuário (sabe o que faz? / consegue usar? / consegue
+> executar?). **(1) Parser sólido**: só 1 carta com gatilho no texto e sem
+> efeito parseado (P-088). **(2) O buraco real**: a detecção da janela de
+> custo opcional era feita por MOEDA de custo, então toda moeda não prevista
+> = efeito morto ao vivo — `don_minus` **163 cartas**, `rest_self` **130**,
+> `trash_self` **60**, todas mortas. E o fix do bloco 565 (`DonTap`), feito
+> pra 1 carta, na verdade destravou as **125 de `rest_don`** junto.
+> **Corrigido** com `IsOptionalCostWindow` (detecta pela FORMA: "exige algum
+> custo + tem Cancel na tela"), compilado, **não testado ao vivo**. **(3)
+> Motor executa quase tudo**: de 140 actions, só 2 sem implementação —
+> `negate_on_play_effects` e `lock_opp_don`, 4 cartas viram no-op —
+> **PENDENTE**. **Ressalva**: a varredura é estática; os ~353 são teto
+> superior de impacto, não bugs confirmados (parte pode ser paga
+> automaticamente pelo jogo). Confirmar ao vivo com carta de `don_minus`.
+> Ainda aberto: 23 tipos de custo (~180 cartas) sem mapeamento de campo do
+> jogo, marcados `[ ? ]`. Ver bloco 566 do HANDOFF.
+
 > 16/08/2026 (bloco 565): **habilidade de líder com custo de RESTAR DON
 > estava 100% morta ao vivo.** Partida com o bot de Luffy OP13-001
 > (`[On Your Opponent's Attack]`, resta N DON → +2000 por DON): 12 ataques

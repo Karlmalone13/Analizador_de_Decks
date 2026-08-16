@@ -388,8 +388,7 @@ namespace OPTCGBotPlugin
                 // `reaction` no decision log.
                 if (!ReferenceEquals(_downsideCheckedFor, gls.acaActive) &&
                     BotExecutor.PendingActionIsMine(gls, pdBotPs) &&
-                    (BotExecutor.IsOptionalHandTrashCost(gls) ||
-                     BotExecutor.IsOptionalDonRestCost(gls)))
+                    BotExecutor.IsOptionalCostWindow(gls))
                 {
                     _downsideCheckedFor = gls.acaActive;
                     bool use = ShouldUseOptionalCost(gls, duringAttack);

@@ -1,5 +1,76 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (566) - Claude (sessao local) - Varredura das 2747 cartas: o bug do Luffy era a ponta de um padrao (mais ~353 cartas com efeito morto ao vivo pela MESMA causa) -- deteccao de janela generalizada
+
+Pedido do usuario apos o bloco 565: "faca uma varredura em todas as cartas
+identificando se tem outro erro desses -- o bot sabe o que a carta faz? o bot
+consegue usar o efeito? o motor consegue executar?".
+
+Ferramenta nova permanente: **`audit_card_coverage.py`** (as 3 perguntas viram
+as 3 secoes da saida).
+
+### Resultado da varredura (2747 cartas)
+
+**1. Sabe o que faz?** Praticamente tudo: **1** carta com gatilho no texto e
+sem efeito parseado (`P-088`, um [Trigger]). Parser solido.
+
+**2. Consegue usar?** Aqui estava o problema, e era MUITO maior que o Luffy.
+O motor sabe pagar os 31 tipos de custo; o buraco era a **deteccao da janela
+pelo plugin**, que era feita por MOEDA de custo -- uma funcao por moeda, entao
+toda moeda nao prevista virava efeito silenciosamente morto ao vivo. Por
+cartas com gatilho INTERATIVO:
+
+| custo | cartas | antes |
+|---|---|---|
+| trash_from_hand | 207 | ja cobria (`TrashCard`) |
+| **don_minus** | **163** | **MORTO** |
+| **rest_self** | **130** | **MORTO** |
+| rest_don | 125 | passou a cobrir no b.565 (`DonTap`) |
+| **trash_self** | **60** | **MORTO** |
+| rest_any_don | 1 | o Luffy (b.565) |
+
+> Nota que muda a leitura do bloco 565: o fix do Luffy (`effect.DonTap`) foi
+> feito pra **1 carta** e na verdade destravou as **125 de `rest_don`** junto,
+> que estavam no mesmo buraco sem ninguem saber.
+
+**3. Consegue executar?** De 140 actions, so **2** sem implementacao no motor:
+`negate_on_play_effects` (OP09-081) e `lock_opp_don` (OP14-021, ST24-004) --
+4 cartas viram no-op silencioso. **PENDENTE, nao corrigido.**
+
+### Fix: deteccao pela FORMA, nao pela moeda
+
+`BotExecutor.IsOptionalCostWindow` substitui as funcoes por-moeda: "o step V3
+atual exige ALGUM custo do jogador E existe Cancel na tela" (sem Cancel o custo
+e obrigatorio -- regra das versoes anteriores, preservada). Cobre
+`TrashCard`/`RestSelf`/`TrashSelf`/`DonTap`/`DonMinus`, todos campos vizinhos
+em `ActV3Effect`. Custo novo passa a ser 1 linha, num lugar so.
+`IsOptionalDonRestCost` virou alias. Compilado 0 erros -- o que por si so
+confirma que os 3 campos novos existem mesmo no `ActV3Effect`.
+
+**NAO testado ao vivo.** Precisa reabrir o jogo (DLL de 16:56).
+
+> **Ressalva que NAO pode ser perdida**: a varredura e ESTATICA (procura o nome
+> no codigo). Ela prova "nao existia tratamento nenhum" -- que era o caso --
+> mas NAO prova que as 353 cartas estavam todas quebradas: parte desses custos
+> pode ser paga automaticamente pelo jogo sem abrir tela. O numero e teto
+> superior do impacto, nao contagem confirmada de bugs. Confirmar ao vivo
+> procurando decisoes de `reaction`/`optional` no decision log com carta de
+> `don_minus` (o mais comum dos tres).
+
+> **Falso negativo do proprio auditor, achado e corrigido na hora**: a 1a
+> versao do `_deteccao_plugin` procurava a expressao `effect.DonMinus`, mas o
+> plugin acessa via variavel local (`ef.DonMinus`) -- a varredura rodada logo
+> apos o fix reportou "NAO" nos 3 custos recem-cobertos. Agora casa o CAMPO
+> (`\.DonMinus\b`), nao a expressao. Licao repetida da sessao: conferir a
+> logica de deteccao contra um caso conhecido antes de acreditar no agregado.
+
+### Ainda aberto
+
+- 23 tipos de custo (~180 cartas: `life_to_hand`, `reveal_from_hand`,
+  `return_own_character_to_hand`, ...) sem mapeamento conhecido pro campo do
+  jogo -- a varredura marca `[ ? ]`, nao afirma que estao quebrados.
+- As 2 actions sem implementacao (4 cartas).
+
 ## 2026-08-16 (565) - Claude (sessao local) - Habilidade de lider com custo de RESTAR DON nunca era oferecida ao vivo (Luffy OP13-001: 12 ataques sofridos, ZERO decisoes de reaction) + ferramenta nova pra medir melhora + decks reais do simulador utilizaveis
 
 ### Achado principal: efeito reativo com custo de DON estava 100% morto ao vivo

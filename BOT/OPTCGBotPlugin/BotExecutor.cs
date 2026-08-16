@@ -320,15 +320,50 @@ namespace OPTCGBotPlugin
         // opcional seja restar DON. Mesma regra do irmao -- sem Cancel na tela,
         // o custo e obrigatorio (parte de acao ja confirmada), nao opcional.
         public static bool IsOptionalDonRestCost(GameplayLogicScript gls)
+            => IsOptionalCostWindow(gls);
+
+        // Generalizacao do bloco 566 (varredura `audit_card_coverage.py` sobre
+        // as 2747 cartas do banco). O bug do Luffy era a ponta de um padrao: o
+        // plugin so reconhecia a janela de custo opcional pela MOEDA especifica
+        // do custo, uma funcao por moeda -- entao cada moeda nao prevista era
+        // um efeito silenciosamente morto ao vivo. A varredura mediu o tamanho
+        // real do buraco, por cartas com gatilho INTERATIVO:
+        //
+        //     trash_from_hand  207  (ja cobria, effect.TrashCard)
+        //     don_minus        163  <- morto
+        //     rest_self        130  <- morto
+        //     rest_don         125  (passou a cobrir com effect.DonTap, b.565)
+        //     trash_self        60  <- morto
+        //     rest_any_don       1  (o Luffy, b.565)
+        //
+        // Agora a checagem e pela FORMA do problema, nao pela moeda (mesma
+        // orientacao do CLAUDE.md sobre corrigir generico): "o step V3 atual
+        // exige ALGUM custo do jogador E existe Cancel na tela". Sem Cancel o
+        // custo e obrigatorio (parte de acao ja confirmada), nao opcional --
+        // regra que as versoes por-moeda ja usavam, preservada.
+        //
+        // Os campos vem de `ActV3Effect` (dnspy-export), todos vizinhos do
+        // TrashCard que ja era lido. Custo novo que apareca no jogo so precisa
+        // ser somado a esta lista, num lugar so.
+        public static bool IsOptionalCostWindow(GameplayLogicScript gls)
         {
             if (gls.acaActive == null || !gls.acaActive.UsesV3())
                 return false;
+
+            bool exigeCusto;
             try
             {
-                if (gls.acaActive.V3Step().effect.DonTap <= 0)
-                    return false;
+                var ef = gls.acaActive.V3Step().effect;
+                exigeCusto = ef.TrashCard      // trashar carta da mao
+                          || ef.RestSelf       // restar a propria carta
+                          || ef.TrashSelf      // trashar a propria carta
+                          || ef.DonTap    > 0  // restar DON
+                          || ef.DonMinus  > 0; // devolver DON ao deck de DON
             }
             catch { return false; }
+
+            if (!exigeCusto)
+                return false;
 
             foreach (var btn in OfferedButtons(gls))
                 if (btn.myType == ButtonChoiceType.Cancel)
