@@ -1,5 +1,43 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (557) - Claude (sessao remota web) - `should_use_counter` agora valoriza o PERSONAGEM (nao a tabela de vida) quando defende um corpo pos-redirect de blocker -- fecha a pendencia do bloco 556
+
+**Pedido do usuario**: continuacao direta do mesmo pedido do bloco 556
+-- "bloquear o de 8000 e usar counter pra salvar o Borsalino". Ou
+seja: em vez de só decidir "bloqueio ou não", também considerar
+bloquear o ataque MAIOR (redirecionando pro Borsalino) e AINDA somar
+counter se o poder do atacante superar o do blocker depois do
+redirect, salvando o corpo.
+
+**Achado real**: `should_use_counter` já era chamado nesse cenário (o
+"counter step" em `_execute_attack` roda pra QUALQUER `target_type`,
+incluindo personagem pos-redirect de `[Blocker]`) -- mas a função
+inteira decidia usando `valor_vida` (tabela `{1:250, 2:150, 3:65,
+4:85, 5:75}` calibrada pra proteger VIDA do líder, blocos 397).
+Defendendo um PERSONAGEM, essa tabela não tem sentido nenhum -- o que
+está em jogo não é "vida perdida", é o próprio corpo sendo KO'd.
+
+**Fix**: novo parâmetro `valor_protegido` em `should_use_counter` --
+quando preenchido, a função decide SÓ por ele (`gasto < valor_
+protegido`), ignorando a tabela de vida por completo. Chamador
+(`_execute_attack`) passa, quando o alvo é um personagem (não o
+líder), o custo de perder ELE -- mesma conta de `custo_sacrificio`
+(bloco 555): `char_value_score(target) - on_ko_value(target.code, p,
+owner=opp)`. Sem alvo de personagem (defendendo o líder), `valor_
+protegido` fica `None` e o comportamento antigo (tabela de vida) é
+preservado sem mudança.
+
+**Testado**: 3 checks novos (`valor_protegido` alto conta mesmo com
+vida alta que daria limite baixo pela tabela antiga; `valor_protegido`
+baixo recusa mesmo gasto que a tabela de vida aceitaria; sem `valor_
+protegido`/defendendo líder, cai exatamente no comportamento antigo --
+prova regressão zero). `smoke_fast`/`smoke_test` 100%.
+
+**Fecha a pendência levantada no bloco 556** -- as duas partes do
+pedido do usuário ("olhar o pior ataque restante antes de bloquear de
+graça" e "bloquear o maior e ainda contra-atacar pra salvar o corpo")
+agora estão implementadas e testadas.
+
 ## 2026-08-16 (556) - Claude (sessao remota web) - `_blocker_gratis_se_sobrevive` agora olha o PIOR ataque restante do turno, nao so o ataque atual (extensao pedida pelo usuario ao fix do bloco 555)
 
 **Pedido do usuario**: apos o fix do bloco 555, usuario apontou (com

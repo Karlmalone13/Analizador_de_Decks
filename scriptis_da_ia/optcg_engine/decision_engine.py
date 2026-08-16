@@ -13272,7 +13272,8 @@ class DecisionEngine:
 
     def should_use_counter(self, atk_power: int, def_power: int,
                            counter_avail: int | None = None,
-                           gasto: float | None = None) -> bool:
+                           gasto: float | None = None,
+                           valor_protegido: float | None = None) -> bool:
         """
         Decide se countera um ataque no LIDER por GANHO LIQUIDO (regra do
         usuario: caso a caso, nunca threshold fixo por categoria):
@@ -13289,6 +13290,17 @@ class DecisionEngine:
         (sim_bridge inclui eventos [Counter], que counter_in_hand() nao
         enxerga). Sem override, calcula dos personagens da mao via
         pick_counters (mesma selecao que use_counter executa).
+
+        valor_protegido: achado real 16/08 (pedido do usuario, extensao
+        ao bloco 555/556 -- "bloquear o de 8000 e usar counter pra
+        salvar o Borsalino"). Quando o alvo sendo defendido e um
+        PERSONAGEM (pos-redirect de [Blocker]), nao o lider, o valor em
+        jogo NAO e "vida perdida" (a tabela `valor_vida` abaixo mede
+        isso, sem sentido pra proteger um corpo) -- e o proprio corpo
+        que seria KO'd. Chamador passa o custo de PERDER esse personagem
+        (mesma conta de `custo_sacrificio` em `should_use_blocker`:
+        char_value_score - on_ko_value) aqui; se vier preenchido, decide
+        so por isso, ignorando a tabela de vida inteira.
         """
         if atk_power < def_power:
             return False  # defesa já suficiente
@@ -13301,6 +13313,11 @@ class DecisionEngine:
 
         if counter_avail < needed:
             return False  # nunca counter parcial
+
+        # Defendendo um PERSONAGEM (nao o lider) -- decide pelo valor DELE,
+        # nao pela tabela de vida (ver docstring acima).
+        if valor_protegido is not None:
+            return gasto < valor_protegido
 
         # Vida 0: qualquer golpe no líder = derrota. Paga o que for.
         if my_life <= 0:
@@ -17345,6 +17362,7 @@ class OPTCGMatch:
                           f'Blocker) -- {", ".join(koed)}')
 
         # Define poder de defesa
+        valor_protegido = None
         if target_type == 'leader':
             defend_power = opp.leader.power + opp.leader.power_buff
         elif target and target in opp.field_chars:
@@ -17356,11 +17374,20 @@ class OPTCGMatch:
             # so na declaracao) pra cobrir corretamente o caso de blocker
             # redirect (atacar o Leader mas acabar batendo num Character).
             attacker.battled_opp_character_this_turn = True
+            # Achado real 16/08 (pedido do usuario: "bloquear o de 8000 e
+            # usar counter pra salvar o Borsalino"): defendendo um
+            # PERSONAGEM (pos-redirect de [Blocker]), nao o lider -- o
+            # valor em jogo e o proprio corpo, nao "vida perdida". Mesma
+            # conta de custo_sacrificio (should_use_blocker): char_value_
+            # score menos o proprio [On K.O.] (nao e perda pura se o KO em
+            # si ja compensa parte).
+            valor_protegido = (opp_engine.analyzer.char_value_score(target)
+                                - on_ko_value(target.code, p, owner=opp))
         else:
             return False
 
         # Counter step
-        if opp_engine.should_use_counter(atk_power, defend_power):
+        if opp_engine.should_use_counter(atk_power, defend_power, valor_protegido=valor_protegido):
             counter_add = opp_engine.use_counter(atk_power - defend_power + 1)
             defend_power += counter_add
             if verbose and counter_add > 0:

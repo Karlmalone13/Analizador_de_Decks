@@ -10601,6 +10601,7 @@ def main() -> int:
     test_block_critical_life_max_cost_estendido_vida_3_4_29_07()
     test_blocker_gratis_vida_saudavel_16_08()
     test_blocker_gratis_olha_pior_ameaca_restante_do_turno_16_08()
+    test_should_use_counter_valor_protegido_defende_personagem_nao_lider_16_08()
     test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno()
     test_apply_winner_grava_bot_side_da_fonte_autoritativa()
     test_attach_don_margem_seguranca_em_empate_com_don_ocioso()
@@ -11211,6 +11212,39 @@ def test_blocker_gratis_olha_pior_ameaca_restante_do_turno_16_08() -> None:
     eng4 = DecisionEngine(me4, opp4)
     check("corpo fraco (2000) + 6 DON disponivel do oponente (pior caso 8000): NAO bloqueia de graca",
           eng4.should_use_blocker(5000) is None)
+
+
+def test_should_use_counter_valor_protegido_defende_personagem_nao_lider_16_08() -> None:
+    """
+    Achado real 16/08 (mesmo pedido do usuario -- "bloquear o de 8000 e
+    usar counter pra salvar o Borsalino"): `should_use_counter` usava a
+    tabela `valor_vida` (calibrada pra proteger VIDA do lider) mesmo
+    quando o alvo sendo defendido, pos-redirect de [Blocker], e um
+    PERSONAGEM -- sem sentido, o que esta em jogo ali e o corpo, nao vida
+    perdida. Novo parametro `valor_protegido` (chamador passa o custo de
+    perder o personagem, mesma conta de custo_sacrificio) faz a funcao
+    decidir por isso em vez da tabela de vida.
+    """
+    # vida ALTA (5, tabela de vida daria limite baixo -- 75*1.3=97.5) mas
+    # valor_protegido ALTO (corpo valioso, 200): com o parametro, conta
+    # (ignora a tabela de vida por completo).
+    me = GameState(leader=real_card("OP11-062"), don_available=0, turn=4)
+    me.life = [real_card("OP07-077") for _ in range(5)]
+    opp = GameState(leader=real_card("ST04-001"))
+    engine = DecisionEngine(me, opp)
+    check("valor_protegido alto (200): conta gasto=100 mesmo com vida 5 (tabela de vida daria limite baixo)",
+          engine.should_use_counter(6000, 5000, counter_avail=2000, gasto=100.0,
+                                     valor_protegido=200.0) is True)
+    check("valor_protegido baixo (50): recusa gasto=100 mesmo com vida 5",
+          engine.should_use_counter(6000, 5000, counter_avail=2000, gasto=100.0,
+                                     valor_protegido=50.0) is False)
+
+    # sem valor_protegido (None, defendendo o LIDER): comportamento
+    # antigo preservado, cai na tabela de vida normal (vida 5: 75*1.3=
+    # 97.5 -- gasto=100 excede, recusa, DIFERENTE do resultado com
+    # valor_protegido=200 acima, prova que o parametro muda a decisao).
+    check("sem valor_protegido (lider): cai na tabela de vida normal (regressao preservada)",
+          engine.should_use_counter(6000, 5000, counter_avail=2000, gasto=100.0) is False)
 
 
 def test_blocker_condicional_auditoria_global_28_07() -> None:

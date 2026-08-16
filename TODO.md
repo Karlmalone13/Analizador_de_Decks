@@ -2,6 +2,16 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 557): **`should_use_counter` agora valoriza o
+> PERSONAGEM sendo defendido**, não a tabela de vida, quando o alvo é
+> um corpo pós-redirect de `[Blocker]` — fecha a pendência do bloco
+> 556 ("bloquear o de 8000 e usar counter pra salvar o Borsalino").
+> Novo parâmetro `valor_protegido` (custo de perder o personagem,
+> mesma conta de `custo_sacrificio`) substitui a tabela de vida (sem
+> sentido pra proteger um corpo) quando preenchido; sem ele (defendendo
+> o líder), comportamento antigo preservado. 3 testes novos,
+> `smoke_fast`/`smoke_test` 100%. Ver bloco 557 do HANDOFF.
+>
 > 16/08/2026 (bloco 556): **`_blocker_gratis_se_sobrevive` olha o PIOR
 > ataque restante do turno**, não só o atual (extensão pedida pelo
 > usuário ao bloco 555: "se o adversário tem um atacante 5000 e outro
