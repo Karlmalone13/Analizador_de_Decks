@@ -267,6 +267,43 @@ namespace OPTCGBotPlugin
         }
 
         // O efeito pendente pertence ao bot?
+        // Tipos dos botoes que o jogo esta oferecendo AGORA, em texto -- so
+        // pra diagnostico. Sem isso, quando o bot trava numa tela que o
+        // plugin nao sabe tratar, o log nao diz QUAL era a tela, e a sessao
+        // seguinte fica adivinhando (foi o que aconteceu com a tela de
+        // "Forcing opponent to resolve Card Action", blocos 543/550).
+        public static string OfferedButtonNames(GameplayLogicScript gls)
+        {
+            var nomes = new System.Collections.Generic.List<string>();
+            foreach (var btn in OfferedButtons(gls))
+                nomes.Add(btn.myType.ToString());
+            return nomes.Count == 0 ? "(nenhum)" : string.Join("|", nomes);
+        }
+
+        // Clica o primeiro botao ofertado que casar com a lista de
+        // preferencia; se nenhum casar, clica o primeiro ofertado. Usado pra
+        // DESTRAVAR telas de escolha forcada pelo oponente que o plugin
+        // ainda nao sabe pontuar -- nunca deixa o jogo parado esperando um
+        // clique humano. Devolve o tipo clicado (ou null se nao havia botao).
+        public static string? ClickFirstOffered(GameplayLogicScript gls,
+                                                params ButtonChoiceType[] preferidos)
+        {
+            ChoiceButtonScript? primeiro = null;
+            foreach (var btn in OfferedButtons(gls))
+            {
+                primeiro ??= btn;
+                foreach (var p in preferidos)
+                    if (btn.myType == p)
+                    {
+                        gls.ChoiceButtonClicked(btn.myType, -1);
+                        return btn.myType.ToString();
+                    }
+            }
+            if (primeiro == null) return null;
+            gls.ChoiceButtonClicked(primeiro.myType, -1);
+            return primeiro.myType.ToString();
+        }
+
         public static bool PendingActionIsMine(GameplayLogicScript gls, PlayerState botPs)
         {
             var actor = PendingActor(gls);

@@ -15987,6 +15987,30 @@ class OPTCGMatch:
                         valor = engine.score_attack_target(att, ttype, tgt)
                         if valor <= 0:
                             continue
+                        # `falta` cobre so EMPATAR com o alvo -- e empate ja
+                        # basta pra vencer o combate. Mas se a defesa
+                        # ESPERADA (poder do alvo + counter provavel do
+                        # oponente, que o motor ja estima) ainda supera o
+                        # poder final, esse ataque tende a ser barrado -- e
+                        # o DON investido vai junto, sem dano nenhum.
+                        # Herdar o valor CHEIO do ataque nesse caso e o que
+                        # fazia o bot "encher de DON bicho de poder 2000 pra
+                        # atacar 5000" (usuario, 15/08): achado real na
+                        # partida das 22:24 -- Vasco Shot (2000) recebeu 3
+                        # DON pra bater exatos 5000 no lider, com o motor JA
+                        # estimando 2000 de counter na mao do oponente
+                        # (defesa esperada 7000). Resultado: 0 de dano, DON
+                        # perdido, e o relatorio de consequencia marcou a
+                        # jogada como retorno ZERO em todo horizonte.
+                        # Desconto de VALOR ESPERADO (nao penalidade
+                        # arbitraria): um ataque que provavelmente nao passa
+                        # vale uma fracao do que vale um que passa. Ataque
+                        # SECO (sem anexar DON) nao e afetado -- pressao de
+                        # graca continua valendo, conforme regra ja validada
+                        # com o usuario (04/07).
+                        defesa_esperada = alvo_power + engine.analyzer.opp_counter_potential()
+                        if atk_now + falta * 1000 < defesa_esperada:
+                            valor *= 0.35
                         score = valor - falta * DON_COST
                     elif gap == 0 and don_idle:
                         # Empate exato: "empate favorece o atacante" ja

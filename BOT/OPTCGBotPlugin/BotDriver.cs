@@ -258,7 +258,11 @@ namespace OPTCGBotPlugin
             // o bot ficava parado indefinidamente ate o usuario clicar
             // manualmente. Cartas envolvidas tem efeitos independentes --
             // qualquer ordem valida desbloqueia, sem precisar do engine.
-            if (!gls.bOpponentResolving && !gls.bForcingOpponentAction
+            // Mesma leitura de "de quem e o clique agora" usada no bloco de
+            // efeito pendente logo abaixo (ver comentario la): o dono da
+            // carta nao decide isso, `iPlayerAction` decide.
+            bool minhaVezDeClicarOrdem = gls.gsv_CurrentGame.iPlayerAction == BotPlayerIndex;
+            if (!((gls.bOpponentResolving || gls.bForcingOpponentAction) && !minhaVezDeClicarOrdem)
                 && BotExecutor.IsOfferingActionChoiceOrder(gls, gls.Lps_Players[BotPlayerIndex]))
             {
                 BotExecutor.ResolveActionChoiceOrder(gls);
@@ -266,9 +270,26 @@ namespace OPTCGBotPlugin
                 return;
             }
 
+            // O JOGO diz de quem e o clique agora. `iPlayerAction` e o sinal
+            // proprio do jogo pra isso -- o mesmo ja usado no mulligan
+            // (linha ~237) e na defesa (linha ~766). Achado real 15/08
+            // (usuario, 2 partidas seguidas travadas): quando uma carta do
+            // OPONENTE forca o bot a decidir (ex: Charlotte Linlin OP17-049,
+            // `choice_chooser: "opponent"` -- quem escolhe e quem SOFRE o
+            // efeito), o jogo poe `iPlayerAction` no bot, mas o dono da
+            // carta continua sendo o oponente. As duas guardas abaixo liam
+            // so o DONO DA CARTA e concluiam "nao e comigo", deixando o jogo
+            // parado ate o humano clicar ("Forcing opponent to resolve Card
+            // Action!" na tela).
+            bool minhaVezDeClicar = gls.gsv_CurrentGame.iPlayerAction == BotPlayerIndex;
+            // So fica de fora quando o OUTRO lado e quem deve clicar -- ai
+            // sim o bot nao pode se meter (comportamento antigo preservado).
+            bool resolucaoDoOutroLado =
+                (gls.bOpponentResolving || gls.bForcingOpponentAction) && !minhaVezDeClicar;
+
             // Efeito pendente (On Play do bot, efeito do lider ao tomar dano,
             // etc.) — vale nos DOIS turnos
-            if (gls.acaActive != null && !gls.bOpponentResolving && !gls.bForcingOpponentAction)
+            if (gls.acaActive != null && !resolucaoDoOutroLado)
             {
                 var pdBotPs = gls.Lps_Players[BotPlayerIndex];
                 bool duringAttack =
@@ -289,6 +310,24 @@ namespace OPTCGBotPlugin
                                 : ButtonChoiceType.UseOnPlay;
                         Plugin.Log.LogInfo($"[Bot] downside offer ({(duringAttack ? "reacao" : "proprio turno")}): {(use ? "USAR efeito" : "Cancel")}");
                         gls.ChoiceButtonClicked(btn, -1);
+                        _cooldown = 1f;
+                        return;
+                    }
+                    if (minhaVezDeClicar)
+                    {
+                        // Carta do OPONENTE oferecendo a escolha pro bot. Nao
+                        // da pra reusar ShouldUseOptionalCost (a pergunta dele
+                        // e "vale pagar MEU custo?", que nao e esta). Recusar
+                        // (Cancel) e a leitura conservadora: e um efeito que o
+                        // oponente esta empurrando, nao um custo nosso. O que
+                        // NAO pode e ficar parado -- era o travamento.
+                        string? clicado = BotExecutor.ClickFirstOffered(
+                            gls, ButtonChoiceType.Cancel);
+                        Plugin.Log.LogWarning(
+                            $"[Bot] escolha FORCADA por carta do oponente " +
+                            $"(actor={BotExecutor.ActorCode(gls)}) -- clicou " +
+                            $"'{clicado ?? "nada"}'. Botoes ofertados: " +
+                            $"{BotExecutor.OfferedButtonNames(gls)}");
                         _cooldown = 1f;
                     }
                     return;

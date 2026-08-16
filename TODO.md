@@ -2,6 +2,26 @@
 
 **Última atualização:** 15 de agosto de 2026
 
+> 15/08/2026 (bloco 551): **os 2 pendentes priorizados pelo usuário**.
+> (1) **Travamento em escolha forçada por carta do oponente** (ex:
+> Charlotte Linlin, `choice_chooser: opponent`): o plugin decidia "é
+> comigo?" pelo DONO DA CARTA, mas quem escolhe é quem SOFRE o efeito —
+> então ficava parado esperando clique humano. Eram 2 caminhos de stall
+> (guarda externa `!bForcingOpponentAction` e o `return` sem clique no
+> ramo de downside). Fix: usa `iPlayerAction == BotPlayerIndex`, o sinal
+> do próprio jogo pra "de quem é o clique", já usado no mulligan/defesa.
+> Destrava clicando Cancel e **loga os botões ofertados** pra calibrar a
+> escolha com dado real na próxima partida (honesto: destrava, não
+> pretende ser ótimo ainda). (2) **DON queimado em ataque previsto pra
+> falhar**: `attach_don` herdava o valor CHEIO do ataque mesmo quando o
+> poder final, já com o DON pago, ficava abaixo de `alvo + counter
+> provável` (que o motor já estimava). Fix: desconto de valor esperado
+> (0.35x) só nesse caso — ataque SECO segue valendo como pressão.
+> Validado na decisão real: score do Vasco Shot cai de **315** (bate com
+> o log) pra **61,5**, ficando abaixo das jogadas de board (110/80).
+> `smoke_test.py` 100%, 10 checagens novas. **PENDENTE: instalar a DLL**
+> (jogo estava aberto). Ver bloco 551 do HANDOFF.
+
 > 15/08/2026 (bloco 550): **bug de DADO que custou a partida + redirect
 > corrigido de verdade**. (1) **42 cartas tinham o counter apagado**: no
 > `cards_rows.csv` as variantes (Reprint/Alt Art) compartilham o

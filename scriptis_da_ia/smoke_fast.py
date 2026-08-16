@@ -10658,6 +10658,7 @@ def main() -> int:
     test_on_ko_value_draw_escala_com_necessidade_de_mao_15_08()
     test_variante_reprint_nao_apaga_counter_nem_power_15_08()
     test_rest_opp_escala_com_ataques_pendentes_15_08()
+    test_attach_don_nao_carrega_ataque_que_a_defesa_esperada_barra_15_08()
     test_opp_attack_count_delega_pro_helper_compartilhado_15_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
@@ -13603,6 +13604,59 @@ def test_rest_opp_escala_com_ataques_pendentes_15_08() -> None:
     v_vasco_baixa = redirect_option_value(vasco2, 7000, opp2, eng2)
     check("com pouca pressao o bonus e MENOR que sob pressao alta (nao e bonus fixo)",
           v_vasco_baixa < v_vasco)
+
+
+def test_attach_don_nao_carrega_ataque_que_a_defesa_esperada_barra_15_08() -> None:
+    """
+    Usuario (15/08): "o bot continua atacando loucamente com personagens
+    fracos e gastando dons com isso" / "atacar seco nao significa que tem
+    que ficar botando don e bicho de poder 2000 ou 0 etc, toda hora".
+
+    Caso real (partida das 22:24, turno 4): Vasco Shot (2000) recebeu 3 DON
+    pra bater EXATOS 5000 no lider -- com o motor JA estimando 2000 de
+    counter na mao do oponente (defesa esperada 7000). O ataque nao passou,
+    0 de dano, 3 DON perdidos; o relatorio de consequencia marcou retorno
+    ZERO em todo horizonte. Causa: `falta` cobria so EMPATAR com o alvo e o
+    `attach_don` herdava o valor CHEIO do ataque, como se fosse conectar.
+
+    Regra: ataque SECO (sem anexar DON) continua valendo como pressao de
+    graca (regra validada 04/07) -- o desconto so pega o caso de INVESTIR
+    DON num ataque que a defesa esperada ainda barra.
+    """
+    def _cenario(counter_na_mao_do_opp: int):
+        me = GameState(leader=real_card("OP16-080"), turn=4)
+        me.life = [real_card("OP09-086")]
+        me.don_available = 7
+        vasco = real_card("OP16-110")          # corpo fraco: 2000
+        me.field_chars = [vasco]
+        opp = GameState(leader=real_card("OP17-039"), turn=4)   # lider 5000
+        opp.life = [real_card("OP17-045")] * 2
+        # Mao do oponente com counter real -- e o que forma a defesa esperada
+        opp.hand = [real_card("OP09-086")] * counter_na_mao_do_opp  # counter 1000 cada
+        return me, opp, vasco
+
+    # COM counter na mao do oponente (defesa esperada > alcance do DON):
+    # investir DON nesse ataque e negocio ruim, score tem que despencar.
+    me_c, opp_c, _ = _cenario(2)
+    eng_c = DecisionEngine(me_c, opp_c)
+    match_c = OPTCGMatch((me_c.leader, []), (opp_c.leader, []))
+    acts_c = match_c._generate_attach_don_actions(me_c, opp_c, eng_c)
+    score_com_counter = max([a[0] for a in acts_c if a[4] == 'attack_power'], default=0.0)
+
+    # SEM counter nenhum: o mesmo investimento passa a fazer sentido
+    # (defesa esperada = so o poder do lider), score tem que ser bem maior.
+    me_s, opp_s, _ = _cenario(0)
+    eng_s = DecisionEngine(me_s, opp_s)
+    match_s = OPTCGMatch((me_s.leader, []), (opp_s.leader, []))
+    acts_s = match_s._generate_attach_don_actions(me_s, opp_s, eng_s)
+    score_sem_counter = max([a[0] for a in acts_s if a[4] == 'attack_power'], default=0.0)
+
+    check("anexar DON em corpo fraco vale MENOS quando a defesa esperada "
+          "(alvo + counter) ainda barra o ataque",
+          score_com_counter < score_sem_counter)
+    check("sem counter do oponente, o mesmo attach_don continua valendo (nao "
+          "virou penalidade cega)",
+          score_sem_counter > 0)
 
 
 def test_opp_attack_count_delega_pro_helper_compartilhado_15_08() -> None:

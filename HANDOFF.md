@@ -1,5 +1,73 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-15 (551) - Claude (sessao local) - os 2 pendentes que o usuario priorizou: tela travada por escolha FORCADA do oponente + DON queimado em ataque que a defesa esperada ja barrava
+
+Usuario: *"mexa nesses dois, e super importante"*.
+
+**FIX 1 -- travamento em escolha forcada por carta do OPONENTE
+(`BotDriver.cs`).** Causa raiz (confirmada lendo o codigo + o heartbeat do
+plugin): o plugin decidia "e comigo?" pelo **DONO DA CARTA**
+(`PendingActionIsMine`), mas quando uma carta do oponente FORCA o bot a
+decidir (ex: Charlotte Linlin OP17-049, `choice_chooser: "opponent"` --
+quem escolhe e quem SOFRE o efeito), o dono continua sendo o oponente e
+o bot concluia "nao e comigo", ficando parado ate o humano clicar
+("Forcing opponent to resolve Card Action!" na tela). Eram **dois**
+caminhos de stall:
+1. guarda externa `!bOpponentResolving && !bForcingOpponentAction`
+   pulava o bloco inteiro de efeito pendente;
+2. dentro do bloco, `IsOfferingDownside(...)` + `!PendingActionIsMine`
+   caia num `return` **sem clicar nada**.
+
+Fix: passa a usar `iPlayerAction == BotPlayerIndex` -- o sinal do PROPRIO
+jogo pra "de quem e o clique agora", ja usado no mulligan (linha ~237) e
+na defesa (linha ~766), entao nao e regra nova. O bot so fica de fora
+quando o OUTRO lado e quem deve clicar (comportamento antigo preservado).
+Na escolha forcada por carta do oponente, clica Cancel se ofertado (o
+efeito esta sendo empurrado pelo oponente, recusar e a leitura
+conservadora) e **loga os botoes ofertados** (`OfferedButtonNames`) --
+honestidade: isso DESTRAVA e nao pretende ser a escolha otima; o log da
+proxima partida vai dizer exatamente quais botoes aparecem pra calibrar
+com dado real em vez de chute. Plugin compilou com 0 erros.
+
+**FIX 2 -- DON queimado em ataque previsto pra falhar
+(`_generate_attach_don_actions`).** Usuario: *"atacar seco nao significa
+que tem que ficar botando don e bicho de poder 2000 ou 0 etc"*. Caso real
+(22:24, turno 4): Vasco Shot (2000) recebeu 3 DON pra bater EXATOS 5000
+no lider -- com o motor **ja estimando 2000 de counter** na mao do
+oponente (defesa esperada 7000). Deu 0 de dano; o relatorio automatico de
+consequencia marcou retorno ZERO em todo horizonte.
+
+Causa: `falta` cobre so EMPATAR com o alvo (empate ja vence o combate),
+e o `attach_don` herdava o valor **CHEIO** do ataque como se fosse
+conectar -- `opp_counter_potential()` nunca entrava nessa conta. Fix:
+desconto de VALOR ESPERADO (`valor *= 0.35`) quando o poder final, ja com
+o DON pago, ainda fica abaixo de `alvo + counter provavel`. Nao e
+penalidade arbitraria: um ataque que provavelmente nao passa vale uma
+fracao do que vale um que passa. **Ataque SECO nao e afetado** -- pressao
+de graca continua valendo (regra validada com o usuario em 04/07).
+
+Validado contra a decisao REAL reconstruida: `attach_don` do Vasco Shot
+sai de **315** (numero que bate exatamente com o log da partida) pra
+**61,5**. As alternativas daquele turno eram `play OP09-099` (110) e
+`play OP09-086` (80) -- ou seja, o bot passa a DESENVOLVER O BOARD em vez
+de queimar 3 DON num ataque perdido.
+
+**Nota de metodo**: a primeira reconstrucao que fiz estava INCOMPLETA
+(sem `turn` e sem vida) e devolvia `score_attack_target = 9990` (score de
+letal) e zero acoes geradas -- quase validei o fix contra um estado
+falso. So depois de reconstruir com turno/vida/trash/DON o numero bateu
+com o log real (315). Registrar porque e o tipo de erro que faz uma
+sessao "confirmar" um fix que nunca foi testado de verdade.
+
+**Validacao**: `smoke_test.py` (regressao ampla) **TODOS PASSARAM** --
+critico, mexe em score de ataque/DON usado em todo lugar. `smoke_fast.py`
+com 10 checagens novas passando (as 14 falhas continuam sendo so as flags
+de calibragem locais). Gauntlet rodando pra conferir forca de jogo.
+
+**PENDENTE**: instalar a DLL nova (o jogo estava ABERTO no momento do
+fix -- `setup_bepinex.bat` precisa dele fechado). O fix do plugin SO
+vale ao vivo depois disso.
+
 ## 2026-08-15 (550) - Claude (sessao local) - BUG DE DADO que custou a partida: variante Reprint apagava o counter de 42 cartas + redirect agora pesa ataques pendentes (o fix do 546 NAO tinha resolvido)
 
 Partida das 22:24 (bancada automaticamente, `Marshall.D.Teach-BY_x_
