@@ -590,9 +590,39 @@ namespace OPTCGBotPlugin
                   ?? FindCard(oppPs.Lgo_MyDonCostArea, targetId)
                   ?? FindCard(oppPs.Lgo_MyHand, targetId);
             if (go == null)
+            {
+                // Alvo que o motor pediu nao foi encontrado em NENHUMA zona
+                // clicavel. Antes isso era um `return false` silencioso -- o
+                // efeito simplesmente nao acontecia e nao sobrava rastro
+                // nenhum no log pra distinguir "motor errou o alvo" de
+                // "plugin nao achou a carta". Achado 16/08 (bloco 564, Doc Q
+                // OP16-109): investigacao do "[On K.O.] nao deu K.O." ficou
+                // sem conclusao porque este caminho e mudo.
+                Plugin.Log.LogWarning(
+                    $"[Bot] alvo de efeito NAO ENCONTRADO (uid={targetId}, " +
+                    $"actor={ActorCode(gls)}) -- efeito nao vai resolver");
                 return false;
+            }
+
+            // Diagnostico do bloco 564: o clique era registrado sem NENHUMA
+            // verificacao de que surtiu efeito. No Doc Q, o motor mandou o
+            // alvo certo (Streusen, custo 1) e o log mostrou o clique nele --
+            // mas o K.O. nunca apareceu no combat log, e nao havia como saber
+            // se o jogo aceitou o clique. Logar alvos-restantes antes/depois
+            // separa "clique recusado pelo jogo" de "clique aceito e efeito
+            // resolveu errado". Nao muda comportamento -- so observa.
+            int faltavamAntes = RemainingV3Targets(gls);
             _mClickDuringCardAction.Invoke(gls, new object[] { go });
-            Plugin.Log.LogInfo($"[Bot] alvo de efeito: {CodeOf(go)}");
+            int faltamDepois = RemainingV3Targets(gls);
+            Plugin.Log.LogInfo(
+                $"[Bot] alvo de efeito: {CodeOf(go)} (uid={targetId}, " +
+                $"actor={ActorCode(gls)}, faltavam={faltavamAntes} -> " +
+                $"faltam={faltamDepois})");
+            if (faltavamAntes >= 0 && faltamDepois == faltavamAntes)
+                Plugin.Log.LogWarning(
+                    $"[Bot] clique em {CodeOf(go)} NAO consumiu alvo " +
+                    $"(faltam {faltamDepois} antes e depois) -- jogo pode ter " +
+                    $"recusado a selecao");
             return true;
         }
 

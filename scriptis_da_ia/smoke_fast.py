@@ -10608,6 +10608,8 @@ def main() -> int:
     test_worth_paying_optional_costs_recusa_reveal_from_hand_impagavel()
     test_worth_paying_optional_costs_enxerga_o_beneficio_16_08()
     test_blocker_rest_cost_escala_com_a_ameaca_16_08()
+    test_lethal_conta_buff_reativo_do_campo_do_oponente_16_08()
+    test_opp_lethal_threat_memoizada_nao_muda_resposta_16_08()
     test_score_give_don_considera_sinergia_com_ataque()
     test_gain_double_attack_respeita_target_leader_e_selecionado()
     test_score_play_prioriza_carta_que_buffa_ataque_do_lider_hoje()
@@ -11965,6 +11967,83 @@ def test_blocker_rest_cost_escala_com_a_ameaca_16_08() -> None:
           custo0 > custo4)
     check("nao e desligamento cego: com vida saudavel o custo encolhe",
           custo4 < custo0 / 2)
+
+
+def test_lethal_conta_buff_reativo_do_campo_do_oponente_16_08() -> None:
+    """
+    Achado real 16/08 (bloco 564): `can_lethal_this_turn` contava so o counter
+    da MAO do oponente. Os ataques que o motor certificou como letais nas duas
+    partidas de 16/08 morreram em buff reativo vindo do CAMPO -- Edward
+    Newgate OP17-040 (trash 1: +3000), Charlotte Linlin OP17-049 (+1000) --
+    que e informacao PUBLICA, visivel o tempo todo. A telemetria marcou
+    `matches_not_closed_after_lethal: 1` nas duas.
+
+    Consequencia pratica: o bot ia all-in (restando ate os proprios [Blocker])
+    num letal que nao existia.
+    """
+    me = GameState(leader=real_card("OP16-080"))
+    me.field_chars = [real_card("OP16-119")]
+    me.hand = [real_card("OP09-086")]
+    me.life = [real_card("OP09-086")]
+
+    opp = GameState(leader=real_card("OP17-039"))
+    opp.life = [real_card("OP17-040")]
+    opp.hand = [real_card("OP17-046")] * 4
+
+    # Sem personagens no campo: nenhum buff reativo disponivel.
+    opp.field_chars = []
+    eng_vazio = DecisionEngine(me, opp)
+    check("campo do oponente vazio: nenhum buff reativo entra no lethal",
+          eng_vazio.analyzer.opp_reactive_field_buffs() == [])
+
+    # Com Newgate (+3000) e Linlin (+1000) no campo: ambos contam.
+    opp.field_chars = [real_card("OP17-040"), real_card("OP17-049")]
+    eng = DecisionEngine(me, opp)
+    buffs = sorted(eng.analyzer.opp_reactive_field_buffs())
+    check("Newgate/Linlin no campo entram como defesa reativa do lethal",
+          buffs == [1000, 3000])
+    check("os buffs do campo entram nos chunks de defesa do lethal",
+          all(b in eng.analyzer.opp_counter_chunks_for_lethal() for b in buffs))
+
+    # Custo que consome a mao e limitado pelo estoque real dela.
+    opp.hand = []
+    eng_sem_mao = DecisionEngine(me, opp)
+    check("sem carta na mao, buff que exige trash da mao nao e contado",
+          3000 not in eng_sem_mao.analyzer.opp_reactive_field_buffs())
+
+
+def test_opp_lethal_threat_memoizada_nao_muda_resposta_16_08() -> None:
+    """
+    Bloco 564: `opp_lethal_threat` custava 152us e virou 59% do custo de
+    pontuar um ataque de [Blocker] depois que `_blocker_rest_cost` (bloco 563)
+    passou a chama-la por candidato -- a latencia media do line_search ao vivo
+    subiu 934ms -> 1109ms, com 1 estouro do timeout de 5s. Memoizada por
+    carimbo de estado. Este teste garante que o cache nao "congela" a resposta
+    quando o estado muda de verdade.
+    """
+    me = GameState(leader=real_card("OP16-080"))
+    me.field_chars = [real_card("EB04-058")]
+    me.hand = [real_card("OP09-086")]
+    me.life = [real_card("OP09-086")] * 4
+
+    opp = GameState(leader=real_card("OP17-039"))
+    opp.field_chars = [real_card(c) for c in ["OP17-043", "OP17-045"]]
+    opp.life = [real_card("OP17-040")] * 3
+
+    eng = DecisionEngine(me, opp)
+    v1 = eng.analyzer.opp_lethal_threat()
+    check("chamada repetida com o MESMO estado devolve o mesmo valor (cache)",
+          eng.analyzer.opp_lethal_threat() == v1)
+
+    # Vida despenca: a ameaca TEM que subir, o cache nao pode segurar o valor.
+    me.life = []
+    v2 = eng.analyzer.opp_lethal_threat()
+    check("vida caindo pra 0 invalida o cache (ameaca sobe)", v2 > v1)
+
+    # Mais atacantes no campo do oponente tambem invalida.
+    opp.field_chars.append(real_card("OP17-040"))
+    v3 = eng.analyzer.opp_lethal_threat()
+    check("atacante novo no campo do oponente invalida o cache", v3 >= v2)
 
 
 def test_select_grant_rush_so_beneficia_quem_entrou_em_campo_este_turno() -> None:

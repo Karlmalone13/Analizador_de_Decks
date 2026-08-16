@@ -1,5 +1,131 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (564) - Claude (sessao local) - 2a partida ao vivo do dia: Shiryu recusado DE NOVO (calibragem do 563 estava errada), Doc Q inocenta motor E plugin, latencia REGREDIU por culpa do proprio fix 563, e o letal falso-positivo ganhou meia-correcao
+
+Partida `Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T15.11.37`
+(derrota). Log no banco, telemetria na ordem obrigatoria,
+`audit_real_losses.py` rodado. Rodou com o commit `0db0121` (bloco 563)
+confirmado na telemetria -- ou seja, os fixes daquele bloco ESTAVAM ativos.
+
+### O que o bloco 563 de fato resolveu
+
+`bot_confusion` caiu de **2 -> 0** e `no_eligible_action_suspicious` de
+**2 -> 0**. O usuario nao relatou travamento da tela da Linlin. Sinal bom,
+mas 1 partida so -- nao e prova.
+
+### Achado 1 -- Shiryu recusado DE NOVO: minha calibragem do 563 estava errada
+
+Mesma carta, mesmo sintoma. Causa encontrada: **`don_available`**.
+
+| DON | pior carta da mao | limiar (563) | resultado |
+|---|---|---|---|
+| 0 | Fullalead = 78 | 90 | aceita |
+| **1 (o real)** | Catarina = **114,5** | 90 | **RECUSA** |
+| 7 | Fullalead = 126 | 90 | recusa |
+
+Com DON na mesa o `_trash_value` da mao INTEIRA sobe (carta jogavel vale
+mais). Eu calibrei o `+15 por peso` contra o caso da partida anterior, onde
+a pior carta valia 83; aqui vale 114,5. **Licao**: calibrar constante contra
+UM caso observado e o mesmo erro de sempre -- o segundo caso real derrubou.
+
+Fix: `_benefit_weight` dobra o peso de `gain_life`/`heal` quando
+`life_count() <= 2`. Nao e "aumentar a constante ate passar": o peso da
+tabela e ESTATICO, e ganhar vida com 2 de vida nao vale o mesmo que com 5.
+Mesmo corte (`life<=2`) que `_trash_value` ja usa pra proteger counter na
+mao. Verificado no estado real: don=1 passou a aceitar; don=7 continua
+recusando (126 > 120), que e o comportamento desejado -- com 7 DON existem
+coisas melhores a fazer.
+
+### Achado 2 -- Doc Q: motor CERTO, plugin CERTO, falha depois do clique
+
+Usuario: "Doc Q nao conseguiu dar KO em 1 personagem". Duas hipoteses minhas
+morreram no teste, nesta ordem:
+
+1. **Bug de parser (`up to 2` sem flag `up_to`)**: auditei o banco -- 301
+   steps de `ko` com "up to N" no texto, **zero** com a flag. Parecia
+   sistemico. Mas `up_to` **mal e consumido** pelo motor (1 ocorrencia, num
+   comentario). Nao era isso. Bom nao ter "corrigido" 301 cartas.
+2. **Motor escolheu alvo errado**: NAO. O `ordered_ids` comeca com `-20`,
+   que e exatamente o Streusen OP17-050 (**custo 1**, o unico alvo legal de
+   "cost 1 or less"), e exclui os de custo 5 e 3. Decisao correta.
+
+E o plugin **tambem** clicou certo: `actor=OP16-109` seguido de
+`[Bot] alvo de efeito: OP17-050` no `LogOutput.log`.
+
+Ou seja: a falha esta ENTRE o clique e a resolucao do efeito. `ClickTarget`
+clicava e logava **sem nunca verificar se o clique surtiu efeito**, e o
+caminho "alvo nao encontrado" era um `return false` mudo -- por isso a
+investigacao morre aqui. **Instrumentado** (bloco 564): agora loga
+`faltavam=N -> faltam=M` em volta do clique, avisa quando o clique NAO
+consumiu alvo, e o "nao encontrado" virou WARNING com uid+actor. Compilado,
+0 erros. **A proxima partida com Doc Q fecha o diagnostico.**
+
+### Achado 3 -- latencia: o fix do bloco 563 causou a regressao
+
+A queixa do usuario ("demora pra escolher os alvos do teach 10") estava
+**mal atribuida, e o dado mostra coisa pior**:
+
+- decisoes de `target` (escolher alvo): **3 a 8ms**, incluindo o Teach
+  OP16-119 (max 4,7ms). Nao e ai.
+- decisoes de `main`: 5035ms / 3046ms / 2517ms / 2366ms.
+- **1 timeout** (`decision_timeouts`, severity error) -- alerta NOVO.
+
+O timeout de 5035ms **nao e bug**: e o limite autoimposto de 5.0s
+(`thread.join`, cai pro fallback de score imediato). Mas a latencia media do
+`line_search` piorou **934ms -> 1109ms** entre as duas partidas, e a unica
+diferenca entre elas foi o meu commit.
+
+Medido: `opp_lethal_threat` custa **152us**, contra **258us** do
+`score_attack_target` INTEIRO -- ou seja, **59%** do custo de pontuar um
+ataque de [Blocker] era a funcao que o meu `_blocker_rest_cost` passou a
+chamar por candidato. Memoizada por carimbo barato de estado
+(`_lethal_threat_stamp`): 152us -> **9,6us**, e `score_attack_target`
+258us -> **76us** (mais rapido que antes do fix 563). `smoke_test` 100%
+confirma que o cache nao muda decisao.
+
+### Achado 4 -- letal falso-positivo: meia-correcao (o resto e maior)
+
+`opp_counter_chunks_for_lethal` contava **so a mao** do oponente. Os ataques
+certificados como letais morreram em buff reativo vindo do **CAMPO** --
+Newgate OP17-040 (trash 1: +3000), Linlin OP17-049 (+1000) -- que e
+informacao **PUBLICA**, visivel o tempo todo.
+
+Fix: `opp_reactive_field_buffs()` -- varre lider/personagens/stage do
+oponente por `on_opp_attack`/`leader_battle_reactive` com `buff_power` de
+batalha, e entra nos chunks de defesa do lethal. Conservador: so conta buff
+cujo custo ele pode pagar, e ativacoes que exigem trash ficam limitadas pelo
+tamanho da mao dele.
+
+> **NAO fecha o caso, e e importante nao achar que fecha.** Na cena real do
+> ultimo turno, `can_lethal_this_turn()` continua `True` mesmo com o fix:
+> um atacante de 10000 passa por 5000+3000. O que barrou de verdade foi um
+> counter **da mao** (Rocks Pirates +2000) -- e ai esbarra no outro lado do
+> problema, que deixo registrado com todas as letras:
+>
+> **PENDENTE (maior que este fix)**: `opp_counter_chunks_for_lethal` IGNORA
+> os slots ocultos da mao do oponente. O comentario no codigo justifica isso
+> como "conservador para o atacante", mas o efeito e o **oposto**: ignorar
+> defesa que pode existir INFLA o lethal e produz exatamente o
+> falso-positivo. Corrigir muda o comportamento do bot de forma ampla (ele
+> ficaria bem mais cauteloso pra declarar letal), entao exige gauntlet
+> dedicado -- nao dava pra enfiar nesta sessao junto com o resto.
+
+### Validacao
+
+`smoke_fast`: 14 falhas, exatamente as conhecidas (flags locais), nenhuma
+15a; **100% com as flags no estado de producao**. `smoke_test`: 100%.
+7 checks novos permanentes
+(`test_lethal_conta_buff_reativo_do_campo_do_oponente_16_08`,
+`test_opp_lethal_threat_memoizada_nao_muda_resposta_16_08`), somados aos 9
+do bloco 563.
+
+> **Gauntlet multi-arquetipo ficou RODANDO ao encerrar** (`gauntlet_matchup.py
+> --painel --seeds 10 --workers 4`). A mudanca do `gain_life` com vida
+> critica e a do lethal alteram decisao de verdade, entao o resultado dele e
+> a validacao que FALTA -- se a proxima sessao encontrar regressao de
+> winrate nos 4 arquetipos, o suspeito numero 1 e o dobro do peso de
+> `gain_life`, que e o dial mais novo e menos testado.
+
 ## 2026-08-16 (563) - Claude (sessao local) - Partida ao vivo nova: BepInEx reinstalado pos-update + 3 achados com causa raiz isolada (tela travada da Linlin, Shiryu sem ganhar vida, blocker atacando) -- 2 fixes fecham o caso, o 3o expos um bug MAIOR ainda aberto (letal falso-positivo)
 
 Partida `Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T14.18.02`

@@ -9652,8 +9652,27 @@ class EffectExecutor:
         """
         if not steps:
             return 0
-        pesos = [self._STEP_VALUE_WEIGHTS.get(s.get('action', ''), 1)
-                 for s in steps if self._step_is_viable(s, card)]
+        pesos = []
+        for s in steps:
+            if not self._step_is_viable(s, card):
+                continue
+            acao = s.get('action', '')
+            p = self._STEP_VALUE_WEIGHTS.get(acao, 1)
+            # Urgencia de vida: o peso da tabela e ESTATICO, mas ganhar vida
+            # com 2 de vida nao vale o mesmo que com 5 -- e a diferenca entre
+            # sobreviver ao proximo turno e nao sobreviver. Mesmo principio
+            # (e mesmo corte, life<=2) que `_trash_value` ja usa pra proteger
+            # counter na mao com vida critica. Achado real 16/08 (bloco 564,
+            # 2a partida seguida): o Shiryu OP16-108 foi recusado DE NOVO com
+            # o fix do bloco 563 instalado -- com DON na mesa o `_trash_value`
+            # da mao inteira sobe (carta jogavel vale mais) e a mais barata
+            # passou de 83 pra 114,5, acima do limiar 90 que o peso estatico
+            # produzia. Nao e "aumentar a constante ate passar": o efeito so
+            # cresce quando a vida esta critica, que e exatamente quando
+            # ganhar vida deixa de ser bonus e vira sobrevivencia.
+            if acao in ('gain_life', 'heal') and self.me.life_count() <= 2:
+                p *= 2
+            pesos.append(p)
         return max(pesos) if pesos else 0
 
     def _worth_paying_optional_costs(self, costs: list, card: Card,
@@ -10473,7 +10492,65 @@ class GameAnalyzer:
         # sabemos quantos são — ignorar é conservador para o atacante.)
         # Ignoramos slots ocultos: nenhum chunk adicional.
         _ = unknown_hand_size  # reservado para futura estimativa probabilística
+        chunks.extend(self.opp_reactive_field_buffs())
         return sorted(chunks)
+
+    def opp_reactive_field_buffs(self) -> list[int]:
+        """
+        Buffs de batalha que o oponente pode aplicar a partir do CAMPO (nao da
+        mao): personagens/lider/stage com `on_opp_attack` -> `buff_power` de
+        duracao de batalha. Cada um vale um "chunk" a mais de defesa, na mesma
+        moeda dos counters da mao.
+
+        Achado real 16/08 (bloco 564, 2 partidas seguidas): o lethal era
+        certificado (`can_lethal_this_turn() == True`) contando SO o counter da
+        MAO -- e os ataques morriam em buff reativo vindo do campo, que e
+        informacao PUBLICA e visivel o tempo todo. Na partida das 14:18, o
+        Edward Newgate OP17-040 (trash 1 carta: +3000) e o Rocks Pirates
+        OP17-056 (+2000) barraram o ataque que o motor tinha certificado como
+        letal; a Charlotte Linlin OP17-049 fez o mesmo (+1000) em tres turnos
+        diferentes. A telemetria marcou `matches_not_closed_after_lethal: 1`
+        nas duas partidas. Consequencia pratica: o bot ia "all-in" (restando
+        ate os proprios [Blocker], ver `_blocker_rest_cost`) num letal que nao
+        existia, e o turno seguinte fechava a partida contra ele.
+
+        Conservador de proposito: so conta buffs cujo custo o oponente
+        consegue pagar AGORA, e o total de ativacoes que exigem trash da mao
+        fica limitado pelo tamanho da mao dele (nao da pra trashar 4 cartas
+        com 2 na mao). `once_per_turn` limita a 1 ativacao por carta.
+        """
+        buffs: list[int] = []
+        pagaveis_por_mao = len(self.opp.hand)
+
+        fontes = [self.opp.leader, *self.opp.field_chars]
+        if getattr(self.opp, 'field_stage', None) is not None:
+            fontes.append(self.opp.field_stage)
+
+        for c in fontes:
+            if c is None:
+                continue
+            efeitos = get_card_effects(c.code)
+            for trig in ('on_opp_attack', 'leader_battle_reactive'):
+                ef = efeitos.get(trig)
+                if not ef:
+                    continue
+                ganho = max(
+                    (s.get('amount', 0) for s in ef.get('steps', [])
+                     if s.get('action') == 'buff_power'
+                     and s.get('duration') in ('battle_only', 'this_battle')),
+                    default=0)
+                if ganho <= 0:
+                    continue
+                # Custo que consome carta da mao: limita pelo estoque real.
+                custos = ef.get('costs', [])
+                usa_mao = any(x.get('type') in ('trash_from_hand', 'trash_hand')
+                              for x in custos)
+                if usa_mao:
+                    if pagaveis_por_mao <= 0:
+                        continue
+                    pagaveis_por_mao -= 1
+                buffs.append(ganho)
+        return buffs
 
     def opp_counter_in_hand(self) -> int:
         """Counter real do oponente (se visível — normalmente 0 em simulação)."""
@@ -10654,11 +10731,43 @@ class GameAnalyzer:
 
     # ── Análise de defesa ────────────────────────────────────────────────────
 
+    def _lethal_threat_stamp(self) -> tuple:
+        """
+        Carimbo BARATO (O(n) com n<=5) do estado que `opp_lethal_threat` le.
+        Usado so pra invalidar o cache dela -- se qualquer um destes muda, o
+        valor e recalculado. Nao substitui a conta: e a chave dela.
+        """
+        return (len(self.opp.field_chars),
+                sum(1 for c in self.opp.field_chars if getattr(c, 'rested', False)),
+                self.me.life_count(),
+                len(self.me.hand),
+                len(self.me.field_chars),
+                sum(1 for c in self.me.field_chars if getattr(c, 'rested', False)))
+
     def opp_lethal_threat(self) -> float:
         """
         Probabilidade do oponente me finalizar no próximo turno.
         Considera atacantes, DON disponível, minha vida.
+
+        Memoizada por `_lethal_threat_stamp` (bloco 564). Medido: 152us por
+        chamada, contra 258us do `score_attack_target` INTEIRO -- ou seja,
+        59% do custo de pontuar um ataque de [Blocker] era esta funcao, que
+        `_blocker_rest_cost` (bloco 563) passou a chamar pra CADA candidato
+        de ataque. A latencia media do `line_search` ao vivo subiu 934ms ->
+        1109ms entre as duas partidas de 16/08, com 1 estouro do timeout de
+        5s. O valor so muda quando o campo/mao/vida mudam, entao recalcular
+        por candidato era desperdicio puro.
         """
+        stamp = self._lethal_threat_stamp()
+        cache = getattr(self, '_lethal_threat_cache', None)
+        if cache is not None and cache[0] == stamp:
+            return cache[1]
+
+        valor = self._opp_lethal_threat_uncached()
+        self._lethal_threat_cache = (stamp, valor)
+        return valor
+
+    def _opp_lethal_threat_uncached(self) -> float:
         opp_attacks = self.opp_attack_count()
         my_life = self.me.life_count()
         my_blockers = len(self.me.blockers_active())

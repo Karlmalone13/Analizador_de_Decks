@@ -2,6 +2,40 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 564): **2ª partida ao vivo do dia — os 4 itens do
+> usuário investigados, 3 com correção entregue e 1 com meia-correção.**
+> Rodou com o commit do bloco 563 confirmado: `bot_confusion` caiu de 2→0
+> e a tela da Linlin não travou (sinal bom, 1 partida só). **(1) Shiryu
+> recusado DE NOVO** — minha calibragem do 563 estava errada: com DON na
+> mesa o `_trash_value` da mão inteira sobe e a pior carta passou de 83
+> para 114,5, acima do limiar 90. Corrigido dobrando o peso de
+> `gain_life` quando `life<=2` (ganhar vida com vida crítica é
+> sobrevivência, não bônus) — **não** aumentando a constante no escuro.
+> **(2) Doc Q: motor e plugin estão CERTOS** — o motor ordenou o Streusen
+> (custo 1, único alvo legal) em 1º e o plugin clicou nele; a falha é
+> entre o clique e a resolução. Duas hipóteses minhas morreram no teste
+> (parser `up_to` — 301 cartas sem a flag, mas o motor mal usa `up_to`; e
+> alvo errado — não era). **Instrumentado** (`ClickTarget` agora loga
+> alvos-restantes antes/depois e avisa quando o clique não consome
+> alvo); a próxima partida com Doc Q fecha o caso. **(3) Latência: a
+> queixa estava mal atribuída E a regressão era minha** — escolher alvo
+> leva 3-8ms; quem demora é a decisão de `main`, e o `line_search` piorou
+> 934→1109ms porque o `_blocker_rest_cost` do bloco 563 passou a chamar
+> `opp_lethal_threat` (152µs, **59%** do custo de pontuar um ataque) por
+> candidato. Memoizada: 152µs→9,6µs, `score_attack_target` 258µs→76µs. O
+> timeout de 5035ms **não é bug** (limite autoimposto de 5s, cai pro
+> fallback). **(4) Letal falso-positivo: meia-correção** — o lethal agora
+> conta buffs reativos do CAMPO do oponente (Newgate +3000, Linlin
+> +1000), que são informação pública e antes eram ignorados. **MAS NÃO
+> FECHA**: `opp_counter_chunks_for_lethal` continua ignorando os slots
+> ocultos da mão do oponente, e o comentário que justifica isso como
+> "conservador para o atacante" está invertido — ignorar defesa possível
+> INFLA o lethal. **Segue como a maior pendência aberta**, exige gauntlet
+> dedicado. `smoke_fast` 100% em produção, `smoke_test` 100%, 7 checks
+> novos. **Gauntlet multi-arquétipo ficou RODANDO ao encerrar** — é a
+> validação que falta; se houver regressão de winrate, o suspeito nº 1 é
+> o dobro do peso de `gain_life`. Ver bloco 564 do HANDOFF.
+
 > 16/08/2026 (bloco 563): **partida ao vivo nova (derrota Teach x Xebec),
 > 3 achados com causa raiz isolada — 2 fechados, o 3º expôs um bug maior
 > ainda ABERTO.** Ambiente: update do jogo apagou o BepInEx de novo
