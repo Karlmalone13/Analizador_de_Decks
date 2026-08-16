@@ -156,6 +156,31 @@ namespace OPTCGBotPlugin
             gls.bConfirmCounter = false;   // descarta direto, sem dialogo de confirmacao
             foreach (int id in counterIds)
             {
+                // Achado real 16/08 (pedido do usuario -- investigar "so 1 dos
+                // 2 counters selecionados pelo motor e aplicado", combat log
+                // mostrando 1 buff quando /defense pediu 2 uids). Hipotese
+                // NAO confirmada (sem jogo ao vivo pra reproduzir aqui): se o
+                // proprio jogo ja considera o combate resolvido depois do
+                // PRIMEIRO desconto (poder real do jogo divergindo da
+                // estimativa do motor no momento do calculo), a janela de
+                // counter fecha e o(s) descarte(s) seguinte(s) cairiam aqui
+                // MESMO ASSIM, sem checagem -- carta some da mao pro trash
+                // sem counter de verdade aplicado, batendo exatamente com o
+                // sintoma reportado. Checagem defensiva: NAO muda o caminho
+                // feliz (quando o jogo continua em Attack_WaitOnCounters o
+                // loop inteiro roda igual a antes), so para e loga se a
+                // janela ja fechou no meio -- confirma ou descarta esta
+                // hipotese com dado real na proxima partida, em vez de
+                // continuar descartando carta numa janela morta.
+                if (gls.e_CurrentState != GameplayState.Attack_WaitOnCounters)
+                {
+                    Plugin.Log.LogWarning(
+                        $"[Bot] counter: estado saiu de Attack_WaitOnCounters " +
+                        $"({gls.e_CurrentState}) antes de aplicar uid={id} -- " +
+                        $"abortando o resto da lista (janela de counter ja fechada, " +
+                        $"evita descartar carta a toa)");
+                    return;
+                }
                 var go = FindCard(botPs.Lgo_MyHand, id);
                 if (go == null)
                 {

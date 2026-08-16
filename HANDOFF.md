@@ -1,5 +1,48 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (559) - Claude (sessao remota web) - INVESTIGA (sem confirmar) o bug do plugin "so 1 dos 2 counters aplicado" -- checagem defensiva + log novo, NAO testado ao vivo (sem acesso ao jogo nesta sessao remota)
+
+**Pedido do usuario**: investigar a pendencia dos blocos 551/553 --
+"o plugin aplicou so 1 dos 2 counters selecionados pelo motor
+(`counter_ids` tinha 2 uids, o combat log mostra 1 buff)".
+
+**Investigacao** (so leitura de codigo -- sem jogo ao vivo nesta sessao
+remota pra reproduzir): achei o ponto exato,
+`BotExecutor.PlayCounters` (`BOT/OPTCGBotPlugin/BotExecutor.cs`) --
+recebe a lista de uids do `/defense`, faz um loop chamando
+`DiscardCardForCounter` (reflection) pra cada carta de personagem,
+fechando com `ChoiceButtonClicked(ResolveAttack)`. **Hipotese
+principal, NAO confirmada**: se o jogo (poder real, que pode divergir
+da estimativa do Python no momento do calculo) ja considera o combate
+resolvido depois do PRIMEIRO desconto, a janela `Attack_WaitOnCounters`
+fecha -- e o loop antigo, sem checagem nenhuma, tentaria descartar a
+SEGUNDA carta numa janela ja morta: ela sai da mao (vai pro trash) mas
+sem counter de verdade aplicado. Bate exatamente com o sintoma
+reportado. Hipotese alternativa (nao descartada): timing assincrono do
+Unity entre os 2 cliques de reflection na mesma chamada C#.
+
+**O que foi feito**: checagem defensiva no INICIO de cada iteracao do
+loop -- confere `gls.e_CurrentState == GameplayState.Attack_
+WaitOnCounters` antes de tentar o proximo descarte; se a janela ja
+fechou, loga um aviso com o estado atual e o uid que seria descartado,
+e RETORNA sem tentar (sem chamar `ChoiceButtonClicked(ResolveAttack)`,
+mesmo padrao ja usado no ramo de evento [Counter] acima). **NAO muda o
+caminho feliz** (quando a janela continua aberta o loop inteiro roda
+identico a antes) -- so evita descartar carta a toa SE a hipotese
+estiver certa, e o log novo confirma ou descarta a hipotese com dado
+real na proxima partida.
+
+**IMPORTANTE, nao escondido**: mudanca em C# (plugin Unity), **NAO
+compilada nem testada** -- sem `dotnet`/`msbuild` disponivel nesta
+sessao remota e sem o jogo pra rodar. Revisao manual cuidadosa (sintaxe,
+chaves, mesmo padrao de acesso a `GameplayState`/`ChoiceButtonClicked`
+ja usado em outros pontos do mesmo arquivo -- nenhum `using` novo
+deveria ser necessario), mas precisa ser **compilada e instalada** (
+`setup_bepinex.bat`, mesmo passo de sempre) e testada numa partida real
+antes de confiar. Se o log novo aparecer numa partida real, confirma a
+hipotese 1 -- se o bug persistir SEM esse log aparecer, aponta pra
+hipotese 2 (timing) ou uma 3a causa ainda nao cogitada.
+
 ## 2026-08-16 (558) - Claude (sessao remota web) - TERMINA o A/B pendente do fator 0.35 (blocos 551/552): sem sinal de regressao, DON/atk melhora na direcao esperada em 3/4 arquetipos -- fica como esta
 
 **Pedido do usuario**: rodar ate o fim o A/B do desconto de valor

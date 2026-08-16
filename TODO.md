@@ -2,6 +2,18 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 559): **investiga (sem confirmar) o bug do plugin
+> "só 1 dos 2 counters aplicado"** (blocos 551/553). Achado o ponto —
+> `BotExecutor.PlayCounters` — e uma hipótese plausível não confirmada:
+> a janela `Attack_WaitOnCounters` pode fechar no meio do loop (poder
+> real do jogo divergindo da estimativa do motor), fazendo o 2º
+> descarte cair numa janela já morta. Adicionada checagem defensiva +
+> log novo (não muda o caminho feliz, só evita descarte inútil e
+> confirma/descarta a hipótese com dado real). **NÃO compilado nem
+> testado** (sem `dotnet`/jogo nesta sessão remota) — precisa build
+> (`setup_bepinex.bat`) + partida real antes de confiar. Ver bloco 559
+> do HANDOFF.
+>
 > 16/08/2026 (bloco 558): **termina o A/B pendente do fator 0.35**
 > (blocos 551/552, interrompido 2x localmente) — `ab_desconto_ataque.py
 > --seeds 15 --workers 4`, painel de 4 arquétipos. Winrate: todos os
