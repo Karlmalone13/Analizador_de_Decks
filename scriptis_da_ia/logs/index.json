@@ -3448,5 +3448,31 @@
       "You": "decks/Marshall.D.Teach-BY_2026-08-16T15.11.37.json",
       "Opponent": "decks/Rocks.D.Xebec-B_2026-08-16T15.11.37.json"
     }
+  },
+  {
+    "id": "2026-08-16T16.43.31",
+    "friendly_name": "Rocks.D.Xebec-B_x_Monkey.D.Luffy-RG",
+    "date": "2026-08-16",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-001",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-RG"
+    },
+    "turns": 10,
+    "winner": "p1",
+    "bot_side": "p2",
+    "log_file": "raw/Rocks.D.Xebec-B_x_Monkey.D.Luffy-RG_2026-08-16T16.43.31.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Monkey.D.Luffy-RG_2026-08-16T16.43.31.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-08-16T16.43.31.json",
+      "Opponent": "decks/Monkey.D.Luffy-RG_2026-08-16T16.43.31.json"
+    }
   }
 ]

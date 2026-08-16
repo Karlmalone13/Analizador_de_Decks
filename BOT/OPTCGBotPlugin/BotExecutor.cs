@@ -299,6 +299,43 @@ namespace OPTCGBotPlugin
             return false;
         }
 
+        // Custo opcional de RESTAR DON, irmao de IsOptionalHandTrashCost acima.
+        // Achado real 16/08 (bloco 565, partida ao vivo): o bot jogando
+        // Monkey D. Luffy OP13-001 ("[DON!! x1] [On Your Opponent's Attack] ...
+        // you may rest any number of your DON!! cards: +2000 por DON restado")
+        // NUNCA usou a habilidade do lider -- e a telemetria mostrou por que:
+        // 12 decisoes de blocker e 12 de counter na partida, e ZERO de
+        // `reaction`. O motor nao decidiu mal, ele nunca foi PERGUNTADO.
+        //
+        // Causa: o plugin so reconhecia janela de custo opcional em dois
+        // formatos -- tela com botao UseOnPlay (`IsOfferingDownside`) ou custo
+        // de TRASHAR carta da mao (`IsOptionalHandTrashCost`, que exige
+        // `effect.TrashCard`). O Teach OP16-080 tem o MESMO gatilho
+        // [On Your Opponent's Attack] mas paga com trash de carta, entao caia
+        // no segundo caso e funcionava; um custo de RESTAR DON (`effect.DonTap`,
+        // campo vizinho do TrashCard em ActV3Effect) nao batia em nenhum dos
+        // dois e a janela passava batido.
+        //
+        // Generico, nao e do Luffy: vale pra qualquer carta/lider cujo custo
+        // opcional seja restar DON. Mesma regra do irmao -- sem Cancel na tela,
+        // o custo e obrigatorio (parte de acao ja confirmada), nao opcional.
+        public static bool IsOptionalDonRestCost(GameplayLogicScript gls)
+        {
+            if (gls.acaActive == null || !gls.acaActive.UsesV3())
+                return false;
+            try
+            {
+                if (gls.acaActive.V3Step().effect.DonTap <= 0)
+                    return false;
+            }
+            catch { return false; }
+
+            foreach (var btn in OfferedButtons(gls))
+                if (btn.myType == ButtonChoiceType.Cancel)
+                    return true;
+            return false;
+        }
+
         // Existe QUALQUER botao de escolha na tela agora? Sinal generico de
         // "o jogo esta esperando um clique de escolha", sem depender de qual
         // tipo de botao e. Achado real 16/08 (bloco 562, Charlotte Linlin

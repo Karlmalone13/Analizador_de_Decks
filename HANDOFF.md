@@ -1,5 +1,97 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (565) - Claude (sessao local) - Habilidade de lider com custo de RESTAR DON nunca era oferecida ao vivo (Luffy OP13-001: 12 ataques sofridos, ZERO decisoes de reaction) + ferramenta nova pra medir melhora + decks reais do simulador utilizaveis
+
+### Achado principal: efeito reativo com custo de DON estava 100% morto ao vivo
+
+Partida `Rocks.D.Xebec-B_x_Monkey.D.Luffy-RG_2026-08-16T16.43.31` (usuario de
+Xebec, **bot de Luffy OP13-001**, bot perdeu). Queixa: "o bot nao soube usar o
+efeito do lider".
+
+Telemetria mostrou que **nao foi decisao ruim -- a decisao nunca existiu**:
+`blocker: 12`, `counter: 12` (12 ataques sofridos), **`reaction: 0`**.
+
+Lider OP13-001: `[DON!! x1] [On Your Opponent's Attack] ... you may rest any
+number of your DON!! cards: +2000 por DON restado`. Parser CORRETO.
+
+**Causa (plugin)**: o bot so reconhecia janela de custo opcional em dois
+formatos -- tela com `UseOnPlay` (`IsOfferingDownside`) ou custo de TRASHAR
+carta da mao (`IsOptionalHandTrashCost`, que exige `effect.TrashCard`). O
+Teach OP16-080 tem o MESMO gatilho `[On Your Opponent's Attack]` mas paga com
+trash de carta -- por isso funcionava e ninguem tinha notado o buraco. Custo
+de **restar DON** (`effect.DonTap`, campo vizinho do `TrashCard` em
+`ActV3Effect`, confirmado no dnspy-export) nao batia em nenhum dos dois.
+
+**Fix**: `BotExecutor.IsOptionalDonRestCost` (irmao do `IsOptionalHandTrashCost`,
+mesma regra do Cancel na tela = custo opcional), somado ao `||` do bloco de
+custo opcional em `BotDriver`. Compilado 0 erros, DLL instalada.
+**NAO testado ao vivo** -- precisa reabrir o jogo e uma partida com lider de
+custo-DON.
+
+> **Generico, nao e do Luffy**: vale pra QUALQUER carta/lider cujo custo
+> opcional seja restar DON. Vale procurar outros formatos de custo que
+> tambem nao tem deteccao (o padrao ja se repetiu 2x: trash-da-mao existia,
+> DON nao).
+
+> **Consequencia pra leitura da calibragem dinamica** (o usuario perguntou
+> "como sabemos se esta funcionando?"): parte do que vinha sendo atribuido a
+> peso mal calibrado pode ser simplesmente **efeito nao executado**. As flags
+> ajustam PESOS de avaliacao -- nao tinham como consertar uma pergunta que
+> nunca chegou ao motor.
+
+### Calibragem dinamica: o estado real (nao sabemos se funciona)
+
+- As 8 flags estao **LIGADAS no arquivo local** e `False` no git. O server le
+  o arquivo local -> **as 3 partidas ao vivo de hoje rodaram com elas
+  ligadas**, numa configuracao que nao e a de producao e nunca foi validada
+  por RESULTADO. As 14 falhas do `smoke_fast` sao exatamente esse alarme.
+- O que existe (`metrics/curve_calibration_audits/`, 4 rodadas de 15/08):
+  307-317 turnos, 45-49 divergentes -> ligar as flags muda **~15% das
+  decisoes**. Isso mede DIVERGENCIA, nao QUALIDADE. Nao ha nenhum A/B de
+  resultado dessas flags registrado.
+
+### Ferramenta nova: `quality_baseline.py` (pedido do usuario)
+
+"Precisamos criar algo para avaliar se esta havendo melhora ou nao." Os
+instrumentos existentes falhavam por 3 motivos, todos observados hoje:
+
+1. `gauntlet_matchup.py` mede winrate em **self-play** -- o motor joga os dois
+   lados, a mudanca entra dos dois lados e se cancela: enviesado pro NULO.
+   Evidencia desta sessao: rodando o fix do lethal, **Enel e Nami sairam
+   identicos ate no digito** de dano/DON, porque o fix nem era exercitado
+   naqueles matchups.
+2. `gauntlet_painel.json` e **sobrescrito** a cada rodada -- ao tentar
+   comparar antes/depois hoje, o baseline ja tinha virado o resultado novo.
+3. Winrate e a metrica errada pelo criterio do proprio usuario (bloco 485).
+
+`quality_baseline.py` reusa `_run_one`/`_load_deck_list` do
+`decision_quality_report.py` (nao reimplementa nada) e: agrega em metricas
+comparaveis (DON ocioso, % turnos com 0 DON, utilizacao de cartas/lider),
+**carimba cada rodada com o COMMIT** e nunca sobrescreve, e compara
+automaticamente com o snapshot anterior mostrando o delta. Avisa quando a
+arvore esta suja (snapshot nao representa o commit).
+
+Primeiro baseline gravado -- Teach OP16-080, seed 42, 20 partidas:
+`don_sobrando=0.88`, `zero_don=69.7%`, `utilizacao_cartas=62.93%`.
+
+### `game_decks.py`: os decks REAIS do simulador
+
+O Teach OP16-080 **nao existe em `decklists_raw.csv`** (0 de 209 decks com
+lider identificado) -- entao `decision_quality_report --leader OP16-080` era
+impossivel de rodar, justamente pro unico deck em teste ao vivo. O simulador
+guarda os decks do jogador em `<jogo>/Decks/*.deck` (`NxCODIGO`, lider na 1a
+linha). `game_decks.py` le esses arquivos e devolve no MESMO formato do
+loader do CSV; `--decks-do-jogo` habilita nas ferramentas. Caminho
+configuravel por `OPTCG_DECKS_DIR`.
+
+### Gauntlet do bloco 564 (resultado)
+
+Codigo final vs intermediario, mesmas seeds: Imu 51.4->52.9, Ace 30.0->34.0,
+Enel 68.0->68.0, Nami 34.0->34.0. **Todos os IC95 sobrepostos = ruido.** Sem
+regressao, sem melhora comprovada. E a mudanca mais arriscada (peso dobrado
+de `gain_life`, bloco 564) estava nas DUAS rodadas -- continua **sem
+validacao**.
+
 ## 2026-08-16 (564) - Claude (sessao local) - 2a partida ao vivo do dia: Shiryu recusado DE NOVO (calibragem do 563 estava errada), Doc Q inocenta motor E plugin, latencia REGREDIU por culpa do proprio fix 563, e o letal falso-positivo ganhou meia-correcao
 
 Partida `Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T15.11.37`

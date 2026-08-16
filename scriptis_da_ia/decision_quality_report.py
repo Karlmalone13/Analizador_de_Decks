@@ -85,11 +85,23 @@ from optcg_engine.decision_engine import (
 )
 
 
-def _load_deck_list(pool_size: int = 30):
+def _load_deck_list(pool_size: int = 30, usar_decks_do_jogo: bool = False):
     cards_db = load_cards_db('cards_rows.csv')
+
+    # Decks REAIS salvos pelo simulador (bloco 565). Existe porque lideres
+    # jogados ao vivo podem simplesmente NAO ter decklist de torneio -- o
+    # Teach OP16-080 nao tem nenhuma em decklists_raw.csv (0 de 209), entao
+    # este relatorio era impossivel de rodar justamente pro deck que estava
+    # sendo testado em partida real. Some ao pool do CSV em vez de substituir:
+    # o relatorio precisa de adversarios variados, e o CSV e a melhor fonte
+    # deles.
+    deck_list = []
+    if usar_decks_do_jogo:
+        from game_decks import carregar_decks_do_jogo
+        deck_list.extend(carregar_decks_do_jogo(cards_db, validar_deck))
+
     df_raw = pd.read_csv('decklists_raw.csv')
     urls = df_raw.groupby('deck_url')['deck_name'].first()
-    deck_list = []
     for url, name in urls.items():
         result = build_real_deck(name, url, df_raw, cards_db)
         if not result:
@@ -110,8 +122,8 @@ def _run_one(task):
     oponente aleatorio do resto do pool, e extrai os dois sinais direto do
     decision_log/estado real -- cada processo carrega o proprio banco
     (mesmo padrao de audit_replay.py/gauntlet_matchup.py, bloco 481)."""
-    i, match_seed, leader_code, pool_size = task
-    deck_list = _load_deck_list(pool_size)
+    i, match_seed, leader_code, pool_size, usar_jogo = task
+    deck_list = _load_deck_list(pool_size, usar_jogo)
     target_indices = [idx for idx, (_, d) in enumerate(deck_list) if d[0].code == leader_code]
     if not target_indices:
         return None
@@ -206,17 +218,23 @@ def main():
                      help='quantas cartas (piores primeiro) mostrar na tabela do item 3')
     ap.add_argument('--min-ofertas', type=int, default=2,
                      help='ignora cartas ofertadas menos que isso (amostra pequena demais)')
+    ap.add_argument('--decks-do-jogo', action='store_true',
+                     help='inclui os decks REAIS salvos pelo OPTCGSim '
+                          '(<jogo>/Decks/*.deck, ou OPTCG_DECKS_DIR) no pool. '
+                          'Necessario pra lideres sem decklist de torneio -- '
+                          'ex: Teach OP16-080, ausente em decklists_raw.csv.')
     ap.add_argument('--pool-size', type=int, default=30,
                      help='quantos decks unicos carregar de decklists_raw.csv -- aumente '
                           'se o lider-alvo nao aparecer nos primeiros 30 (deduplicados por deck_url)')
     args = ap.parse_args()
 
-    deck_list = _load_deck_list(args.pool_size)
+    deck_list = _load_deck_list(args.pool_size, args.decks_do_jogo)
     if not any(d[0].code == args.leader for _, d in deck_list):
         raise SystemExit(f'lider {args.leader} nao tem deck valido no pool de '
                           f'{len(deck_list)} decks (decklists_raw.csv) -- tente --pool-size maior')
 
-    tasks = [(i, args.seed * 1_000_003 + i, args.leader, args.pool_size) for i in range(args.n)]
+    tasks = [(i, args.seed * 1_000_003 + i, args.leader, args.pool_size,
+              args.decks_do_jogo) for i in range(args.n)]
     if args.workers <= 1:
         resultados = [_run_one(t) for t in tasks]
     else:

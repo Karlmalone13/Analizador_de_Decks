@@ -380,9 +380,16 @@ namespace OPTCGBotPlugin
                 // vez de deixar HandlePendingAction trashar a pior carta da
                 // mao automaticamente (o bug reportado: Teach trashava toda
                 // vez, mesmo quando nao valia a pena).
+                // `IsOptionalDonRestCost` entrou no bloco 565: mesma familia do
+                // trash-da-mao, so muda a MOEDA do custo (restar DON em vez de
+                // trashar carta). Sem ele, o efeito reativo do lider Luffy
+                // OP13-001 nunca chegava a virar pergunta pro motor -- 12
+                // ataques sofridos na partida ao vivo e ZERO decisoes de
+                // `reaction` no decision log.
                 if (!ReferenceEquals(_downsideCheckedFor, gls.acaActive) &&
                     BotExecutor.PendingActionIsMine(gls, pdBotPs) &&
-                    BotExecutor.IsOptionalHandTrashCost(gls))
+                    (BotExecutor.IsOptionalHandTrashCost(gls) ||
+                     BotExecutor.IsOptionalDonRestCost(gls)))
                 {
                     _downsideCheckedFor = gls.acaActive;
                     bool use = ShouldUseOptionalCost(gls, duringAttack);

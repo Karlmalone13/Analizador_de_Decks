@@ -1,0 +1,89 @@
+{
+  "commit": "34e46968817f",
+  "git_sujo": true,
+  "timestamp": "2026-08-16T16:31:52",
+  "leader": "OP16-080",
+  "n": 20,
+  "seed": 42,
+  "decks_do_jogo": true,
+  "metricas": {
+    "don_sobrando_medio": 0.8788,
+    "pct_turnos_zero_don": 69.7,
+    "utilizacao_cartas_pct": 62.93,
+    "utilizacao_lider_pct": null,
+    "winrate_pct": 60.0
+  },
+  "turnos_medidos": 132,
+  "por_carta": {
+    "OP09-096": {
+      "nome": "My Era...Begins!! (Reprint)",
+      "ofertada": 24,
+      "escolhida": 23
+    },
+    "OP09-095": {
+      "nome": "Laffitte (Reprint)",
+      "ofertada": 64,
+      "escolhida": 44
+    },
+    "OP16-104": {
+      "nome": "Catarina Devon",
+      "ofertada": 16,
+      "escolhida": 3
+    },
+    "OP16-109": {
+      "nome": "Doc Q",
+      "ofertada": 36,
+      "escolhida": 17
+    },
+    "OP16-108": {
+      "nome": "Shiryu (Full Art)",
+      "ofertada": 22,
+      "escolhida": 10
+    },
+    "OP16-119": {
+      "nome": "Marshall.D.Teach (119) (Alternate Art)",
+      "ofertada": 32,
+      "escolhida": 22
+    },
+    "OP09-093": {
+      "nome": "Marshall.D.Teach - OP09-093 (Reprint)",
+      "ofertada": 13,
+      "escolhida": 6
+    },
+    "OP16-110": {
+      "nome": "Vasco Shot",
+      "ofertada": 40,
+      "escolhida": 31
+    },
+    "OP09-099": {
+      "nome": "Fullalead (Reprint)",
+      "ofertada": 43,
+      "escolhida": 31
+    },
+    "OP16-115": {
+      "nome": "Black Vortex",
+      "ofertada": 14,
+      "escolhida": 11
+    },
+    "OP09-086": {
+      "nome": "Jesus Burgess (Reprint)",
+      "ofertada": 6,
+      "escolhida": 1
+    },
+    "EB04-058": {
+      "nome": "Borsalino (Alternate Art)",
+      "ofertada": 7,
+      "escolhida": 3
+    },
+    "OP12-112": {
+      "nome": "Baby 5 (112)",
+      "ofertada": 3,
+      "escolhida": 0
+    },
+    "OP16-116": {
+      "nome": "Zehahahahaha! (Alternate Art)",
+      "ofertada": 1,
+      "escolhida": 0
+    }
+  }
+}

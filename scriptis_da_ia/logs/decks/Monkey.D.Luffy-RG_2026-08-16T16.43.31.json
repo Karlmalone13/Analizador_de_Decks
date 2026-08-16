@@ -1,0 +1,46 @@
+{
+  "cards": [
+    {
+      "code": "ST31-005",
+      "name": "ST31-005",
+      "count": 3
+    },
+    {
+      "code": "OP13-037",
+      "name": "OP13-037",
+      "count": 3
+    },
+    {
+      "code": "OP14-022",
+      "name": "OP14-022",
+      "count": 2
+    },
+    {
+      "code": "OP15-035",
+      "name": "Laboon",
+      "count": 1
+    },
+    {
+      "code": "OP13-040",
+      "name": "OP13-040",
+      "count": 1
+    },
+    {
+      "code": "EB02-017",
+      "name": "Nami",
+      "count": 1
+    },
+    {
+      "code": "ST21-003",
+      "name": "ST21-003",
+      "count": 1
+    },
+    {
+      "code": "OP16-004",
+      "name": "OP16-004",
+      "count": 1
+    }
+  ],
+  "total_seen": 13,
+  "leader": "OP13-001"
+}

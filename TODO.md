@@ -2,6 +2,31 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 565): **habilidade de líder com custo de RESTAR DON
+> estava 100% morta ao vivo.** Partida com o bot de Luffy OP13-001
+> (`[On Your Opponent's Attack]`, resta N DON → +2000 por DON): 12 ataques
+> sofridos, **zero decisões de `reaction`** no decision log — o motor nunca
+> foi perguntado. Causa: o plugin só detectava custo opcional via
+> `UseOnPlay` ou `TrashCard` (trash da mão); custo de restar DON
+> (`effect.DonTap`) não batia em nenhum. O Teach tem o mesmo gatilho mas
+> paga com trash, por isso o buraco passou. **Corrigido**
+> (`IsOptionalDonRestCost`), compilado, **não testado ao vivo**. Genérico:
+> vale pra qualquer carta com custo de DON — e vale procurar outros
+> formatos de custo sem detecção, o padrão já se repetiu. **Impacto na
+> leitura da calibragem dinâmica**: parte do "bot não sabe jogar o deck"
+> pode ser efeito não executado, não peso mal calibrado. **Estado das 8
+> flags**: ligadas no arquivo local, `False` no git — as 3 partidas de hoje
+> rodaram com elas ligadas, config não-validada; o que existe mede
+> DIVERGÊNCIA (~15% das decisões mudam), nunca RESULTADO. **Ferramentas
+> novas**: `quality_baseline.py` (mede melhora em qualidade de decisão,
+> carimba por commit, nunca sobrescreve, compara automático — nasceu porque
+> o gauntlet é self-play espelhado enviesado pro nulo E o painel era
+> sobrescrito) e `game_decks.py` (lê os `.deck` reais do simulador — o Teach
+> não existe em `decklists_raw.csv`, 0 de 209). Baseline inicial do Teach:
+> don=0,88 / zero_don=69,7% / utilização=62,93%. Gauntlet do 564 fechou em
+> ruído (todos os IC95 sobrepostos), e o peso dobrado de `gain_life` **segue
+> sem validação**. Ver bloco 565 do HANDOFF.
+
 > 16/08/2026 (bloco 564): **2ª partida ao vivo do dia — os 4 itens do
 > usuário investigados, 3 com correção entregue e 1 com meia-correção.**
 > Rodou com o commit do bloco 563 confirmado: `bot_confusion` caiu de 2→0
