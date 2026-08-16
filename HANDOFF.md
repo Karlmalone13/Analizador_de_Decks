@@ -1,5 +1,59 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (552) - Claude (sessao local) - gauntlet deixa de testar SO o Imu (deck fixo era hardcoded): painel multi-arquetipo + IC95 + A/B automatico do desconto do bloco 551
+
+Pergunta do usuario que expos a falha: *"como melhorar esse gauntlet?
+jogar so de imu nao e ruim nao?"*. Estava certo -- `FIXED_NAME` era
+**hardcoded** em `'Black Imuby Spence Gibson'`, entao TODA validacao de
+mudanca de motor deste projeto vinha sendo medida por um unico deck, e
+de CONTROLE. O fix do bloco 551 mexe em gasto de DON pra atacar, que pesa
+completamente diferente num deck AGRESSIVO -- uma regressao la seria
+invisivel no gauntlet de hoje.
+
+**`gauntlet_matchup.py`**:
+- `--deck <label>` escolhe o deck fixo; `--painel` roda os 4 arquetipos
+  (`PAINEL`: Imu=controle, Ace=agressivo, Enel=ramp/controle, Nami=tempo);
+  `--seeds N` pra trocar precisao por tempo. Default inalterado (Imu),
+  entao o comportamento historico e preservado.
+- O deck fixo passou a viajar na TUPLA DA TAREFA, nunca pelo global.
+  Motivo tecnico real: no Windows o `ProcessPoolExecutor` usa spawn, cada
+  worker RE-IMPORTA o modulo e enxergaria o `FIXED_NAME` default (Imu),
+  ignorando o `--deck` -- o painel pareceria funcionar e estaria medindo
+  Imu 4 vezes.
+- **IC95 (Wilson) por matchup e no agregado.** 30 seeds dao margem larga;
+  sem intervalo e facil ler RUIDO como melhora. Ja se provou util no
+  smoke do proprio fix: com 2 seeds, um "0.0%" aparece como `[0-66]`, ou
+  seja, nao significa nada. O deck fixo tambem deixou de entrar no
+  proprio roster como adversario, e o JSON de saida virou por deck
+  (`gauntlet_<deck>.json`) em vez do antigo nome fixo `gauntlet_imu_04_08`.
+
+**`ab_desconto_ataque.py` (descartavel, convencao dos blocos 449/459/468)**:
+roda o painel com o fator do bloco 551 em `1.0` (sem fix) e em `0.35`
+(com fix), nas MESMAS seeds, e imprime o delta por arquetipo marcando
+`(ruido)` quando os IC95 se sobrepoem. Nasceu de dois erros REAIS desta
+sessao: (a) o primeiro gauntlet rodou enquanto eu ligava/desligava as
+flags de calibragem pro commit -- resultado contaminado, descartado; (b)
+risco de esquecer de restaurar o fator no arquivo. O script restaura o
+`decision_engine.py` byte a byte num `finally`, e ABORTA sem escrever se
+nao achar exatamente 1 linha `valor *= X` (guarda contra o fix ter mudado
+de forma).
+
+**Honestidade sobre o 0.35**: eu escolhi esse numero por raciocinio
+(ataque que provavelmente nao passa vale uma fracao do que vale um que
+passa) e validei a DIRECAO contra a decisao real (315 -> 61,5, ficando
+abaixo das jogadas de mao). O VALOR exato nao esta provado -- podia ser
+0,3 ou 0,5. O que esta demonstrado e que 1.0 (o de antes) estava errado.
+O A/B existe justamente pra isso deixar de ser opiniao.
+
+**Contexto pro usuario** (pergunta dele, "de onde veio esses pesos"):
+respondido com o codigo na mao -- sao constantes calibradas por medicao
+agregada, com a evidencia no proprio comentario (ex:
+`ATTACK_LEADER_BASE_SCORE = 400` traz "600 ja reverte (win rate cai pra
+36%) -- 400 e o valor validado, nao um palpite"). Parte JA varia por
+contexto (vida do oponente, letal, counter estimado, arquetipo via as 8
+flags), mas os numeros-BASE sao estaticos -- essa e a limitacao real e
+esta registrada como tal, nao vendida como resolvida.
+
 ## 2026-08-15 (551) - Claude (sessao local) - os 2 pendentes que o usuario priorizou: tela travada por escolha FORCADA do oponente + DON queimado em ataque que a defesa esperada ja barrava
 
 Usuario: *"mexa nesses dois, e super importante"*.

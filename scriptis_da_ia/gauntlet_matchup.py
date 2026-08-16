@@ -68,8 +68,48 @@ ROSTER_NAMES = {
 FIXED_NAME = 'Black Imuby Spence Gibson'
 FIXED_MIRROR_NAME = 'Black Imuby Adderall'
 N_SEEDS = 30
-OUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         'metrics', 'gauntlet_imu_04_08.json')
+
+# Painel de decks FIXOS pra testar uma mudanca de motor em varios
+# arquetipos, nao so num (pedido do usuario, 15/08/2026): "jogar so de imu
+# nao e ruim nao?". Estava certo -- o deck fixo era HARDCODED no Imu, que e
+# CONTROLE. Uma mudanca que mexe em gasto de DON pra atacar (como a do
+# bloco 551) pesa completamente diferente num deck AGRESSIVO, e um gauntlet
+# so de Imu nunca mostraria uma regressao la. Cada entrada aqui e um
+# arquetipo diferente do meta real (decklists_raw.csv), e o `--painel` roda
+# o MESMO roster contra todos, reportando por deck E o agregado.
+PAINEL = {
+    'Imu':    ('Black Imuby Spence Gibson',        'controle'),
+    'Ace':    ('Red/Blue Aceby Tzuwy',             'agressivo'),
+    'Enel':   ('Purple Enelby Mirko Zanelli',      'ramp/controle'),
+    'Nami':   ('Blue/Yellow Namiby AceOfSpades',   'tempo'),
+}
+
+OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'metrics')
+
+
+def _out_path(fixed_label: str) -> str:
+    return os.path.join(OUT_DIR, f'gauntlet_{fixed_label.lower()}.json')
+
+
+def _wilson_ci95(vitorias: int, n: int) -> tuple[float, float]:
+    """
+    Intervalo de confianca 95% (Wilson) do win rate, em pontos percentuais.
+
+    Existe porque 30 seeds por matchup dao margem larga: sem isso e facil
+    ler RUIDO como melhora/piora ao comparar duas rodadas do gauntlet
+    (risco real -- a primeira rodada desta sessao deu 31,9% e foi descartada
+    justamente por nao dar pra distinguir efeito de ruido). Wilson em vez da
+    aproximacao normal por se comportar melhor com n pequeno e taxas
+    proximas de 0/100%.
+    """
+    if n == 0:
+        return (0.0, 0.0)
+    z = 1.96
+    p = vitorias / n
+    denom = 1 + z * z / n
+    centro = (p + z * z / (2 * n)) / denom
+    margem = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5) / denom
+    return (max(0.0, (centro - margem) * 100), min(100.0, (centro + margem) * 100))
 
 
 def _find_deck(target_name, cards_db, df_raw, urls):
@@ -90,11 +130,16 @@ def _run_one_seed(task):
     """Roda 1 partida (adversario, seed) completa e devolve (label, linha).
     Independente de qualquer outra chamada -- pode rodar em processo
     separado sem coordenacao."""
-    label, opp_name, seed = task
+    # `fixed_name` vem na TUPLA, nunca do global: no Windows o
+    # ProcessPoolExecutor usa spawn, entao cada worker RE-IMPORTA este
+    # modulo e enxergaria o FIXED_NAME default (Imu), ignorando o --deck
+    # escolhido na linha de comando. Passar pela tarefa e o que faz o
+    # painel multi-deck funcionar de verdade em paralelo.
+    fixed_name, label, opp_name, seed = task
     cards_db = load_cards_db('cards_rows.csv')
     df_raw = pd.read_csv('decklists_raw.csv')
     urls = df_raw.groupby('deck_url')['deck_name'].first()
-    fixed_deck = _find_deck(FIXED_NAME, cards_db, df_raw, urls)
+    fixed_deck = _find_deck(fixed_name, cards_db, df_raw, urls)
     opp_deck = _find_deck(opp_name, cards_db, df_raw, urls)
 
     original_execute_attack = OPTCGMatch._execute_attack
@@ -138,41 +183,36 @@ def _run_one_seed(task):
     return label, linha
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument('--workers', type=int, default=1,
-                    help='processos paralelos (1=sequencial, comportamento de sempre)')
-    args = ap.parse_args()
-
-    cards_db = load_cards_db('cards_rows.csv')
-    df_raw = pd.read_csv('decklists_raw.csv')
-    urls = df_raw.groupby('deck_url')['deck_name'].first()
-
-    fixed_deck = _find_deck(FIXED_NAME, cards_db, df_raw, urls)
-    fixed_mirror_deck = _find_deck(FIXED_MIRROR_NAME, cards_db, df_raw, urls)
-    assert fixed_deck and fixed_mirror_deck, "deck fixo nao encontrado"
+def _rodar_um_deck_fixo(fixed_label, fixed_name, cards_db, df_raw, urls,
+                        workers, n_seeds):
+    """Roda o roster inteiro contra UM deck fixo. Devolve (resultados, resumo)."""
+    fixed_deck = _find_deck(fixed_name, cards_db, df_raw, urls)
+    if not fixed_deck:
+        print(f'AVISO: deck fixo {fixed_label} ({fixed_name}) nao encontrado -- pulando')
+        return None, None
 
     roster_names = {}
     for label, name in ROSTER_NAMES.items():
-        d = _find_deck(name, cards_db, df_raw, urls)
-        if d:
+        if name == fixed_name:
+            continue          # nao se enfrenta como "adversario do roster"
+        if _find_deck(name, cards_db, df_raw, urls):
             roster_names[label] = name
         else:
             print(f'AVISO: {label} ({name}) nao encontrado/invalido')
-    roster_names['Mirror'] = FIXED_MIRROR_NAME
+    if _find_deck(FIXED_MIRROR_NAME, cards_db, df_raw, urls) and fixed_name == FIXED_NAME:
+        roster_names['Mirror'] = FIXED_MIRROR_NAME
 
-    print(f'Roster final: {list(roster_names.keys())}')
-    print(f'Deck fixo: {FIXED_NAME}')
-    print()
+    print(f'=== DECK FIXO: {fixed_label} ({fixed_name}) ===')
+    print(f'Roster: {list(roster_names.keys())}')
 
-    tasks = [(label, opp_name, seed)
+    tasks = [(fixed_name, label, opp_name, seed)
              for label, opp_name in roster_names.items()
-             for seed in range(N_SEEDS)]
+             for seed in range(n_seeds)]
 
-    if args.workers <= 1:
+    if workers <= 1:
         pares = [_run_one_seed(t) for t in tasks]
     else:
-        with ProcessPoolExecutor(max_workers=args.workers) as ex:
+        with ProcessPoolExecutor(max_workers=workers) as ex:
             pares = list(ex.map(_run_one_seed, tasks))
 
     resultados: dict[str, list] = {}
@@ -180,35 +220,92 @@ def main():
         resultados.setdefault(label, []).append(linha)
     for label in resultados:
         resultados[label].sort(key=lambda l: l['seed'])
-    # Preserva a ordem original do roster na impressao/JSON (dict do
-    # Python 3.7+ mantem ordem de insercao).
     resultados = {label: resultados[label] for label in roster_names if label in resultados}
 
-    print(f'{"Adversario":15} {"WinRate":>8} {"Dano_medio":>11} {"DON/atk":>9} {"Ataques/turno":>14} {"Turnos_medio":>13}')
-    agg_win, agg_dmg, agg_don, agg_atk_per_turn = [], [], [], []
+    print(f'{"Adversario":15} {"WinRate":>8} {"IC95%":>16} {"Dano":>7} {"DON/atk":>9} {"Atk/turno":>10}')
+    agg_win, agg_dmg, agg_don, agg_atk = [], [], [], []
     for label, linhas in resultados.items():
         n = len(linhas)
         wins = sum(1 for l in linhas if l['fixo_won'])
-        win_rate = wins / n * 100
+        lo, hi = _wilson_ci95(wins, n)
         dmg_medio = sum(l['dmg_fixo'] for l in linhas) / n
         dons = [l['don_medio'] for l in linhas if l['ataques_fixo'] > 0]
         don_medio = sum(dons) / len(dons) if dons else 0.0
         atk_turno = sum(l['ataques_fixo'] / max(1, l['turnos']) for l in linhas) / n
-        turnos_medio = sum(l['turnos'] for l in linhas) / n
-        print(f'{label:15} {win_rate:7.1f}% {dmg_medio:11.2f} {don_medio:9.2f} {atk_turno:14.2f} {turnos_medio:13.1f}')
+        print(f'{label:15} {wins/n*100:7.1f}% {f"[{lo:.0f}-{hi:.0f}]":>16} '
+              f'{dmg_medio:7.2f} {don_medio:9.2f} {atk_turno:10.2f}')
         agg_win.extend([1 if l['fixo_won'] else 0 for l in linhas])
         agg_dmg.extend([l['dmg_fixo'] for l in linhas])
         agg_don.extend(dons)
-        agg_atk_per_turn.extend([l['ataques_fixo'] / max(1, l['turnos']) for l in linhas])
+        agg_atk.extend([l['ataques_fixo'] / max(1, l['turnos']) for l in linhas])
 
+    n_tot = len(agg_win)
+    lo, hi = _wilson_ci95(sum(agg_win), n_tot)
+    resumo = {
+        'deck': fixed_label, 'partidas': n_tot,
+        'win_rate': sum(agg_win) / n_tot * 100,
+        'ic95': [lo, hi],
+        'dano_medio': sum(agg_dmg) / n_tot,
+        'don_por_ataque': sum(agg_don) / len(agg_don) if agg_don else 0.0,
+        'ataques_por_turno': sum(agg_atk) / n_tot,
+    }
+    print(f'  -> {fixed_label}: {n_tot} partidas, win_rate={resumo["win_rate"]:.1f}% '
+          f'(IC95 {lo:.0f}-{hi:.0f}), dano={resumo["dano_medio"]:.2f}, '
+          f'DON/atk={resumo["don_por_ataque"]:.2f}')
     print()
-    print(f'TOTAL: {len(agg_win)} partidas, win_rate={sum(agg_win)/len(agg_win)*100:.1f}%, '
-          f'dano_medio={sum(agg_dmg)/len(agg_dmg):.2f}, don_medio={sum(agg_don)/len(agg_don):.2f}, '
-          f'ataques_turno_medio={sum(agg_atk_per_turn)/len(agg_atk_per_turn):.2f}')
 
-    os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
-    with open(OUT_PATH, 'w') as f:
+    os.makedirs(OUT_DIR, exist_ok=True)
+    with open(_out_path(fixed_label), 'w') as f:
         json.dump(resultados, f, indent=2)
+    return resultados, resumo
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('--workers', type=int, default=1,
+                    help='processos paralelos (1=sequencial, comportamento de sempre)')
+    ap.add_argument('--deck', choices=sorted(PAINEL), default=None,
+                    help='deck FIXO a testar (default: Imu, comportamento de sempre)')
+    ap.add_argument('--painel', action='store_true',
+                    help=f'roda TODOS os arquetipos do painel ({", ".join(PAINEL)}) '
+                         f'-- use pra validar mudanca de motor, que pesa diferente por arquetipo')
+    ap.add_argument('--seeds', type=int, default=N_SEEDS,
+                    help=f'partidas por matchup (default {N_SEEDS}); menos = mais rapido, IC mais largo')
+    args = ap.parse_args()
+
+    cards_db = load_cards_db('cards_rows.csv')
+    df_raw = pd.read_csv('decklists_raw.csv')
+    urls = df_raw.groupby('deck_url')['deck_name'].first()
+
+    if args.painel:
+        escolhidos = list(PAINEL.items())
+    elif args.deck:
+        escolhidos = [(args.deck, PAINEL[args.deck])]
+    else:
+        escolhidos = [('Imu', (FIXED_NAME, 'controle'))]
+
+    resumos = []
+    for fixed_label, (fixed_name, arquetipo) in escolhidos:
+        print(f'[{arquetipo}]')
+        _res, resumo = _rodar_um_deck_fixo(fixed_label, fixed_name, cards_db,
+                                           df_raw, urls, args.workers, args.seeds)
+        if resumo:
+            resumo['arquetipo'] = arquetipo
+            resumos.append(resumo)
+
+    if len(resumos) > 1:
+        print('=' * 72)
+        print('RESUMO DO PAINEL (compare estes numeros entre duas rodadas do motor)')
+        print(f'{"Deck":10} {"Arquetipo":16} {"WinRate":>8} {"IC95%":>14} {"Dano":>7} {"DON/atk":>9}')
+        for r in resumos:
+            ic = f'[{r["ic95"][0]:.0f}-{r["ic95"][1]:.0f}]'
+            print(f'{r["deck"]:10} {r["arquetipo"]:16} {r["win_rate"]:7.1f}% {ic:>14} '
+                  f'{r["dano_medio"]:7.2f} {r["don_por_ataque"]:9.2f}')
+        print()
+        print('LEITURA: so trate como efeito REAL a diferenca que sai do IC95 da')
+        print('outra rodada. Sobreposicao de intervalo = ruido, nao melhora.')
+        with open(os.path.join(OUT_DIR, 'gauntlet_painel.json'), 'w') as f:
+            json.dump(resumos, f, indent=2)
 
 
 if __name__ == '__main__':

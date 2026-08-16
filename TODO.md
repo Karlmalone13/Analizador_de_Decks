@@ -1,6 +1,23 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 15 de agosto de 2026
+**Última atualização:** 16 de agosto de 2026
+
+> 16/08/2026 (bloco 552): **gauntlet deixa de testar só o Imu** — pergunta
+> do usuário ("jogar só de imu não é ruim não?") expôs que `FIXED_NAME`
+> era **hardcoded**, ou seja, toda validação de mudança de motor deste
+> projeto vinha sendo medida por um único deck, e de controle. Agora:
+> `--deck` / `--painel` (4 arquétipos: Imu controle, Ace agressivo, Enel
+> ramp, Nami tempo) / `--seeds`; deck fixo viaja na tupla da tarefa (no
+> Windows os workers re-importam o módulo e ignorariam o `--deck`, medindo
+> Imu 4x sem ninguém perceber); **IC95 de Wilson** por matchup e agregado,
+> pra não ler ruído como melhora; saída JSON por deck. Default inalterado.
+> **`ab_desconto_ataque.py`** (descartável) roda o painel com o fator do
+> bloco 551 em 1.0 e 0.35 nas mesmas seeds e marca `(ruido)` quando os
+> IC95 se sobrepõem — restaura o arquivo num `finally` e aborta sem
+> escrever se não achar exatamente 1 linha alvo. **Pendente**: ler o
+> resultado do A/B e decidir se 0.35 fica, muda ou volta (o valor exato
+> NÃO está provado; provado está só que 1.0 estava errado). Ver bloco 552
+> do HANDOFF.
 
 > 15/08/2026 (bloco 551): **os 2 pendentes priorizados pelo usuário**.
 > (1) **Travamento em escolha forçada por carta do oponente** (ex:

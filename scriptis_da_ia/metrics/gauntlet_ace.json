@@ -1,0 +1,102 @@
+{
+  "Enel": [
+    {
+      "seed": 0,
+      "fixo_won": false,
+      "dmg_fixo": 4,
+      "dmg_opp": 4,
+      "turnos": 10,
+      "ataques_fixo": 7,
+      "don_medio": 0.0
+    },
+    {
+      "seed": 1,
+      "fixo_won": false,
+      "dmg_fixo": 2,
+      "dmg_opp": 3,
+      "turnos": 8,
+      "ataques_fixo": 4,
+      "don_medio": 0.5
+    }
+  ],
+  "Nami": [
+    {
+      "seed": 0,
+      "fixo_won": true,
+      "dmg_fixo": 4,
+      "dmg_opp": 2,
+      "turnos": 9,
+      "ataques_fixo": 8,
+      "don_medio": 1.125
+    },
+    {
+      "seed": 1,
+      "fixo_won": true,
+      "dmg_fixo": 4,
+      "dmg_opp": 2,
+      "turnos": 11,
+      "ataques_fixo": 9,
+      "don_medio": 1.4444444444444444
+    }
+  ],
+  "Mihawk": [
+    {
+      "seed": 0,
+      "fixo_won": false,
+      "dmg_fixo": 3,
+      "dmg_opp": 4,
+      "turnos": 12,
+      "ataques_fixo": 7,
+      "don_medio": 0.8571428571428571
+    },
+    {
+      "seed": 1,
+      "fixo_won": false,
+      "dmg_fixo": 5,
+      "dmg_opp": 3,
+      "turnos": 10,
+      "ataques_fixo": 8,
+      "don_medio": 1.625
+    }
+  ],
+  "Lucy": [
+    {
+      "seed": 0,
+      "fixo_won": false,
+      "dmg_fixo": 2,
+      "dmg_opp": 4,
+      "turnos": 10,
+      "ataques_fixo": 6,
+      "don_medio": 1.1666666666666667
+    },
+    {
+      "seed": 1,
+      "fixo_won": false,
+      "dmg_fixo": 3,
+      "dmg_opp": 4,
+      "turnos": 10,
+      "ataques_fixo": 5,
+      "don_medio": 1.6
+    }
+  ],
+  "Luffy-Y": [
+    {
+      "seed": 0,
+      "fixo_won": true,
+      "dmg_fixo": 6,
+      "dmg_opp": 2,
+      "turnos": 11,
+      "ataques_fixo": 8,
+      "don_medio": 1.375
+    },
+    {
+      "seed": 1,
+      "fixo_won": false,
+      "dmg_fixo": 4,
+      "dmg_opp": 3,
+      "turnos": 10,
+      "ataques_fixo": 8,
+      "don_medio": 0.75
+    }
+  ]
+}
