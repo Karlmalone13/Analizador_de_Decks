@@ -42,6 +42,7 @@ import json
 import os
 import re
 import random
+from collections import Counter
 from copy import deepcopy
 
 import pandas as pd
@@ -134,6 +135,44 @@ def _find_real_deck(leader_name, cards_db, df_raw, urls, leader_code=None):
             i += 1
         return leader, cards, None
     return None
+
+
+def _known_gains_this_turn(turn, before_hand_codes, after_hand_codes):
+    """Achado real 17/08 (pedido do usuario: "e so seguir as cartas que o
+    humano tem na mao... se for dar draw e so comprar a mesma carta que
+    o humano pegou" -- rejeitando a abordagem anterior de baralho
+    embaralhado pra QUALQUER compra dentro do turno simulado).
+
+    Devolve um Counter {codigo: qtd} das cartas que REALMENTE entraram
+    na mao do jogador NESTE turno (compra padrao do inicio do turno +
+    qualquer "Draw N"/efeito de compra, nomeado ou nao) -- sem precisar
+    parsear o texto do efeito, so a diferenca de MULTISET entre a mao
+    ANTES (snapshot do turno anterior) e a mao DEPOIS (snapshot deste
+    turno, que no schema do log representa o estado ao FINAL do turno):
+
+        ganho = (mao_depois + jogadas_este_turno) - mao_antes
+
+    O `+ jogadas_este_turno` cobre o caso de uma carta comprada E jogada
+    no MESMO turno (nunca aparece em "mao_depois" porque saiu de novo,
+    sem isso o diff a perderia). Confirmado contra um caso real (Mr. 5
+    Draw 2 Card + compra padrao do turno = 3 ganhos, todos SEM nome no
+    texto do efeito, so recuperaveis via este diff) -- e o UNICO jeito
+    de saber a carta certa quando o efeito nao nomeia (ex: "Draw 2
+    Card" generico vs "Reveal and Draw Thousand Sunny [cod]" nomeado).
+
+    Limitacao aceita: se uma carta sai da mao por TRASH-DE-CUSTO (nao
+    play, ex: "Trash 1 card from hand" como custo de outro efeito), o
+    diff simplesmente nao a conta como ganha (correto) mas TAMBEM nao
+    detecta que ela saiu por outro motivo que nao draw -- nao afeta o
+    calculo de GANHOS, so poderia mascarar uma perda, irrelevante aqui.
+    Ordem entre draws SEM nome no mesmo turno nao e recuperavel (quem
+    veio da compra padrao vs de um "Draw N" generico) -- aceito, o
+    CONJUNTO exato de cartas ja e a parte que importa pra decisao do
+    Turn Planner, nao a ordem de chegada dentro do turno.
+    """
+    played = Counter(a['card'] for a in turn.get('actions', [])
+                     if a.get('type') == 'play' and a.get('card'))
+    return (Counter(after_hand_codes) + played) - Counter(before_hand_codes)
 
 
 def _remaining_deck(full_cards, seen_codes_with_qty):
@@ -312,7 +351,23 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         seen_bot = {}
         for c in p.hand + p.field_chars + p.trash + p.life:
             seen_bot[c.code] = seen_bot.get(c.code, 0) + 1
+
+        # Achado real 17/08 (pedido do usuario, ver docstring de
+        # _known_gains_this_turn): as cartas que o motor vai COMPRAR
+        # durante este turno simulado nao precisam ser um palpite
+        # aleatorio -- o log ja diz exatamente quais cartas entraram na
+        # mao do humano neste turno (diff de snapshot antes/depois).
+        # Remove essas cartas do pool "desconhecido" (senao sobrariam
+        # DUPLICADAS: uma copia forcada no topo + outra ainda solta no
+        # resto do baralho embaralhado) e as recoloca no TOPO (fim da
+        # lista, convencao pop() do projeto) depois do embaralhamento --
+        # exatamente as cartas que o motor vai comprar primeiro.
+        after_bot_hand = turn.get('snapshot', {}).get(bot_side, {}).get('hand', [])
+        known_gains_bot = _known_gains_this_turn(turn, bot_snap.get('hand', []), after_bot_hand)
+        for code, qty in known_gains_bot.items():
+            seen_bot[code] = seen_bot.get(code, 0) + qty
         p.deck = _remaining_deck(bot_deck[1], seen_bot)
+        p.deck.extend(_cards_from_codes(list(known_gains_bot.elements()), cards_db))
         populate_full_deck_knowledge(p, bot_deck[1], bot_deck[0].code)
 
         seen_opp = {}

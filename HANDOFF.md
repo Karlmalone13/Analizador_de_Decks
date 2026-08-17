@@ -1,5 +1,90 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (598) - Claude (sessao remota web) - Fix pedido pelo usuario: PARA DE EMBARALHAR o resto do baralho reconstruido -- compra a MESMA carta que o humano comprou de verdade (diff de mao antes/depois do turno), nao mais um palpite aleatorio. Numeros MUDAM (90,1%->86,5% no dano agregado) -- nao e regressao, e o numero ficando mais PRECISO (menos ruido de sorte de draw)
+
+**Pedido do usuario**, direto, apos o relatorio do bloco 597: "e so
+seguir as cartas que o humano tem na mao e ver se o bot faz as mesmas
+coisas, nao tem erro, nao precisa embaralhar... se for dar draw e so
+comprar a mesma carta que o humano pegou". Correto -- a limitacao
+"ordem do deck nao e real" (documentada desde a criacao de `audit_
+real_losses.py`, 04/08) so era um problema pra cartas SEM rastro no
+log. Mas o log JA diz, implicitamente, quais cartas entraram na mao a
+cada turno -- nao precisava adivinhar.
+
+### O que mudou: `_known_gains_this_turn()` (`audit_real_losses.py`)
+
+Nova funcao: `ganho = (mao_DEPOIS_do_turno + cartas_jogadas_no_turno) -
+mao_ANTES_do_turno` (aritmetica de `Counter`/multiset). `mao_DEPOIS` e o
+snapshot do PROPRIO turno (`turn['snapshot']`, que no schema representa
+o estado ao FINAL do turno -- confirmado contra um caso real: Mr. 5
+jogado com "Draw 2 Card" sem cartas nomeadas no texto, diff de mao bateu
+exatamente 3 ganhos [1 compra padrao do turno + 2 do efeito], nenhum dos
+3 nomeado em lugar nenhum do log -- SO o diff de multiset resolve isso,
+nao dava pra so procurar "Reveal and Draw X" no texto). O `+ jogadas`
+cobre o caso "comprou e jogou a mesma carta no mesmo turno" (nunca
+aparece na mao DEPOIS, o diff sozinho perderia).
+
+Essas cartas conhecidas saem do pool "desconhecido" (senao duplicariam:
+uma copia forcada + outra ainda solta no resto embaralhado) e vao pro
+TOPO do baralho reconstruido (fim da lista, convencao `pop()` do
+projeto) -- exatamente o que o motor vai comprar primeiro. Se o caminho
+que o motor escolhe precisar de MAIS compras do que o historico
+registrou (decisao realmente diferente, puxando mais uma carta que o
+humano nunca comprou), cai no fallback pro resto embaralhado por baixo
+-- comportamento correto, nao um bug.
+
+**Limitacao aceita, documentada no docstring**: quando 2+ cartas SEM
+nome no texto (tipo "Draw 2 Card" generico) entram na mao no mesmo
+turno, a ORDEM entre elas (qual veio da compra padrao vs qual veio do
+efeito) nao e recuperavel do log -- so o CONJUNTO exato e garantido.
+Aceito: o que importa pro Turn Planner e o que esta NA MAO, nao a
+ordem de chegada dentro do turno.
+
+### Validado -- smoke_fast 100%, numeros MUDAM mas de forma esperada e agora deterministica
+
+`decision_quality_vs_human.py --all`: **90,1% (100/111) -> 86,5%
+(96/111)**, estavel em 3 runs (2x `--workers 1`, 1x `--workers 4`,
+identico sempre). **Isto NAO e uma regressao de codigo** -- nenhuma
+decisao do motor mudou, so a FIDELIDADE da mao reconstruida. O 90,1%
+antigo tinha ruido de sorte de draw embutido (`turnos onde o motor
+puxava uma carta aleatoria diferente da que o humano puxou de verdade,
+pra melhor ou pra pior`); o 86,5% novo e mais preciso, sem esse ruido.
+Nao ha "antes/depois" pra comparar aqui igual as tentativas de DON
+(593-595) porque nenhum codigo de DECISAO mudou, so a entrada fica mais
+fiel -- o numero simplesmente FICOU mais correto.
+
+`decision_quality_full.py --all`: `play` (turno inteiro) subiu 21,7%->
+**25,7%** (menos ruido de deck, mais precisao); `attack`/`activate`/
+`attach_don` ficaram quase iguais (ja dependiam pouco de draw dentro do
+turno). A tecnica de "isolar so a 1a jogada do turno" (bloco 597,
+33,7%, usada como proxy pra fugir do ruido de deck) fica REDUNDANTE
+agora -- o numero de turno inteiro ja e confiavel por construcao, nao
+precisa mais desse contorno.
+
+### Tabela atualizada (26 partidas, deterministico)
+
+| categoria | bloco 597 (deck embaralhado) | bloco 598 (draw real) |
+|---|---|---|
+| dano agregado >= humano | 90,1% (100/111) | **86,5% (96/111)** |
+| play (turno inteiro) | 21,7% | **25,7%** |
+| play (so 1a jogada, proxy antigo) | 33,7% | (redundante agora) |
+| attack -- quem atacou | 54,3% | 53,3% |
+| attack -- mesmo alvo | 84,8% | 82,6% |
+| activate | 8,3% | 7,0% |
+| attach_don -- mesmo alvo | 4,2% | 6,5% |
+| blocker/counter (turno do OPONENTE, nao afetado por este fix) | igual | igual |
+
+### Pendente
+
+Os 3 achados do bloco 597 continuam validos e agora com numero mais
+confiavel pra investigar: (1) play ainda diverge muito (25,7%, mesmo
+sem ruido de deck) -- proximo passo natural e olhar 3-5 turnos reais
+caso a caso; (2) attach_don no lider pra reforcar ataque (Crocodile
+OP14-079, eco do Luffy bloco 594) continua pendente de investigacao
+caso a caso; (3) nenhum fix de motor ainda -- so a MEDICAO ficou mais
+fiel, decisao de mudar codigo continua exigindo medir caso a caso antes
+(licao 593-595).
+
 ## 2026-08-17 (597) - Claude (sessao remota web) - `decision_quality_full.py`: ferramenta unica cobrindo TODAS as categorias de decisao (pedido explicito do usuario: "nao quero so DON ocioso, tem que ser play/attack/activate/attach_don/blocker/counter/ordem de counter") -- achado real: divergencia de PLAY/ACTIVATE e maior que a de attack/blocker/counter, parcialmente por limitacao ja conhecida (ordem do deck nao e real), parcialmente por um padrao concreto novo (DON extra no LIDER pra reforcar ataque)
 
 **Pedido do usuario**, direto, apos o resumo do bloco 596: "nao quero so

@@ -2,6 +2,25 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 598): **Fix pedido pelo usuário**: "é só seguir as
+> cartas que o humano tem na mão... se for dar draw é só comprar a
+> mesma carta que o humano pegou" — `audit_real_losses.py` parava de
+> embaralhar aleatoriamente as cartas compradas DENTRO do turno
+> simulado. Nova `_known_gains_this_turn()`: diff de multiset entre a
+> mão antes/depois do turno (do próprio snapshot do log) diz EXATAMENTE
+> quais cartas entraram na mão, mesmo quando o efeito não nomeia
+> (`"Draw 2 Card"` genérico) — confirmado contra um caso real. Essas
+> cartas vão pro topo do baralho reconstruído; só cai no aleatório se o
+> motor precisar comprar MAIS do que o histórico (decisão realmente
+> diferente). **Números mudam — não é regressão, é medição ficando mais
+> precisa** (nenhum código de decisão mudou): dano agregado 90,1%→86,5%
+> (100/111→96/111, agora determinístico em todo run); `play` (turno
+> inteiro) 21,7%→25,7%. `smoke_fast.py` 100% OK. Pendente: os 3 achados
+> do bloco 597 (play ainda diverge 25,7%; DON extra no líder pra
+> reforçar ataque; nenhum fix de motor ainda) continuam abertos, agora
+> com número mais confiável pra investigar caso a caso. Ver bloco 598
+> do HANDOFF.
+>
 > 17/08/2026 (bloco 597): **`decision_quality_full.py`** (pedido
 > explícito do usuário: "tem que ser todas as decisões — counter, ordem
 > de counter, blocker, efeito, ataque, distribuição de dons, ativação de
