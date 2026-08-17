@@ -2,6 +2,27 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 17/08/2026 (bloco 580): **escala corrigida no ponto certo.** O problema não
+> era "attack × play" — ataque não gasta DON, então não disputa com `play`.
+> Quem disputa é o **`attach_don` de combate**, e ele (1) herdava a prioridade
+> CHEIA do ataque (escala base 400, interna, feita pra ordenar ataques) numa
+> decisão de RECURSO, e (2) usava custo **flat** de 25/DON enquanto o ramo
+> vizinho já usava `don_opportunity_cost` (25-115) — **o ramo do bug era o
+> único que ignorava o que aquele DON compraria na mão**. Fix:
+> `ATTACH_DON_COMBATE_FRACAO=0.5` + custo de oportunidade real. `attach_don`
+> p90 **415→95**, abaixo do p90 de `play` (165). Luffy: turnos com 0 DON
+> 37,0→**43,5%**, utilização de carta 73,2→70,9%. Teach: DON ocioso
+> 0,86→**0,66**, utilização 62,4→**64,6%**. **Trade, não vitória limpa.**
+> Stage: 10 partidas self-play → Thousand Sunny jogado **9x** (na partida ao
+> vivo sem este fix ficava na mão). `smoke_fast` foi a 15 falhas e **não era
+> regressão** — o teste media o *máximo* entre atacantes e o corpo fraco agora
+> nem vira candidato; teste tornado preciso, de volta a 14. `smoke_test`
+> passou inteiro. **PENDENTE**: (a) analisar a partida de **referência do
+> usuário** `..._2026-08-17T00.07.45` (usuário jogou Luffy e **ganhou**, bot
+> jogou Xebec) com `compare_vs_human.py`; (b) **bot TRAVOU** em "Choose card
+> effect to activate next" (ordem de efeitos simultâneos) — provável prompt
+> sem handler; (c) 3º líder da medição. Ver bloco 580.
+
 > 16/08/2026 (bloco 579): **PRIORIDADE 1 — `attack` e `play` estão em escalas
 > incomparáveis.** Medido no motor de hoje: mediana de score **attack 366,0**
 > vs **play 68,5** (p90: 992 vs 174). Na partida real as faixas nem se cruzam

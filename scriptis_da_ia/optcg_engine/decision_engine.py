@@ -117,6 +117,20 @@ COUNTER_STAT_VALUE_PER_1000 = 15
 # original) -- 400 e o valor validado, nao um palpite.
 ATTACK_LEADER_BASE_SCORE = 400
 
+# Fracao da PRIORIDADE de ataque que um attach_don de COMBATE herda (bloco
+# 580). Existe porque `score_attack_target` e uma escala INTERNA de ataque
+# (base 400): comparar ataque com ataque so precisa da ordem, e o numero
+# absoluto nunca importou. Mas o attach_don de combate GASTA DON, entao
+# disputa com `play` (escala de `avaliar_carta`, mediana ~68) -- e ali o
+# numero absoluto passa a decidir. Sem esta ponte, as duas faixas ficavam
+# DISJUNTAS (medido 16/08 na partida real: attack 284-376 x play 7.8-186) e
+# desenvolver o campo nunca ganhava de empurrar um ataque.
+#
+# 0.5 nao e ajuste fino: e o que faz as faixas se SOBREPOREM em vez de se
+# excluirem, que era o defeito. Continua sendo calibragem -- se o bot passar
+# a descer carta DEMAIS e parar de pressionar, e o primeiro numero a revisar.
+ATTACH_DON_COMBATE_FRACAO = 0.5
+
 # Custo MAXIMO de restar um [Blocker] pra atacar -- ele deixa de estar
 # disponivel pra interceptar no turno do oponente. Multiplicado pela ameaca
 # real de morrer (`opp_lethal_threat`, que ja pondera vida/atacantes/counters
@@ -16383,7 +16397,32 @@ class OPTCGMatch:
                         defesa_esperada = alvo_power + engine.analyzer.opp_counter_potential()
                         if atk_now + falta * 1000 < defesa_esperada:
                             valor *= 0.35
-                        score = valor - falta * DON_COST
+                        # O DON compra o DESFECHO deste combate, nao a
+                        # PRIORIDADE inteira do ataque (bloco 580).
+                        #
+                        # `score_attack_target` devolve prioridade numa escala
+                        # com base 400 (ATTACK_LEADER_BASE_SCORE), calibrada no
+                        # bloco 395 pra escolher ENTRE ataques -- onde a escala
+                        # e interna e so a ordem importa. Herdar esse numero
+                        # CHEIO aqui vazava aquela escala pra uma decisao de
+                        # RECURSO: este ramo gasta DON, entao compete com
+                        # `play`, que pontua por `avaliar_carta` (mediana ~68).
+                        # Medido 16/08: as duas faixas nao se cruzavam em
+                        # nenhum ponto na partida real (attack 284-376, play
+                        # 7.8-186) -- nenhuma carta da mao conseguia ganhar o
+                        # lance, por melhor que fosse e por mais fraco que
+                        # fosse o atacante. Era a causa mecanica de "bota DON
+                        # em personagem fraco e ataca em vez de descer carta"
+                        # (usuario, 3 partidas seguidas).
+                        valor *= ATTACH_DON_COMBATE_FRACAO
+                        # Custo de OPORTUNIDADE, nao custo flat. A categoria 2
+                        # (ligar gatilho condicionado a DON) ja usava
+                        # `don_opportunity_cost`, que enxerga a melhor carta
+                        # jogavel que esse DON bloquearia; so este ramo usava
+                        # `falta * DON_COST` (25 fixo). Era o ramo do bug --
+                        # justamente o que gasta DON pra empurrar ataque
+                        # ignorava o que o DON compraria na mao.
+                        score = valor - engine.don_opportunity_cost(falta)
                     elif gap == 0 and don_idle:
                         # Empate exato: "empate favorece o atacante" ja
                         # garante a vitoria do combate HOJE, sem anexar

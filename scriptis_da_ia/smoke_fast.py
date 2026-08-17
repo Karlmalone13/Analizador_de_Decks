@@ -14009,21 +14009,29 @@ def test_attach_don_nao_carrega_ataque_que_a_defesa_esperada_barra_15_08() -> No
         opp.hand = [real_card("OP09-086")] * counter_na_mao_do_opp  # counter 1000 cada
         return me, opp, vasco
 
-    # COM counter na mao do oponente (defesa esperada > alcance do DON):
-    # investir DON nesse ataque e negocio ruim, score tem que despencar.
-    me_c, opp_c, _ = _cenario(2)
-    eng_c = DecisionEngine(me_c, opp_c)
-    match_c = OPTCGMatch((me_c.leader, []), (opp_c.leader, []))
-    acts_c = match_c._generate_attach_don_actions(me_c, opp_c, eng_c)
-    score_com_counter = max([a[0] for a in acts_c if a[4] == 'attack_power'], default=0.0)
+    # Mede o CORPO FRACO especificamente, nao o max sobre todos os
+    # atacantes. O max incluia o proprio LIDER (que tambem gera attach_don
+    # de combate) e mascarava o sinal: depois do bloco 580 o candidato do
+    # Vasco deixa de ser gerado quando a defesa esperada barra o ataque, o
+    # max cai pro score do lider e os dois lados EMPATAM -- o teste falhava
+    # por imprecisao de medicao, com o motor se comportando MELHOR do que
+    # ele exigia. Filtrar por `is vasco` mede a intencao original de fato.
+    def _score_do_vasco(counter_na_mao: int) -> float:
+        me, opp, vasco = _cenario(counter_na_mao)
+        eng = DecisionEngine(me, opp)
+        match = OPTCGMatch((me.leader, []), (opp.leader, []))
+        acts = match._generate_attach_don_actions(me, opp, eng)
+        return max([a[0] for a in acts
+                    if a[4] == 'attack_power' and a[2] is vasco], default=0.0)
 
+    # COM counter na mao do oponente (defesa esperada > alcance do DON):
+    # investir DON nesse ataque e negocio ruim. Score tem que despencar --
+    # e a partir do bloco 580 despenca ao ponto de a opcao nem existir (0.0
+    # pelo `default`, porque score negativo nao vira candidato).
+    score_com_counter = _score_do_vasco(2)
     # SEM counter nenhum: o mesmo investimento passa a fazer sentido
     # (defesa esperada = so o poder do lider), score tem que ser bem maior.
-    me_s, opp_s, _ = _cenario(0)
-    eng_s = DecisionEngine(me_s, opp_s)
-    match_s = OPTCGMatch((me_s.leader, []), (opp_s.leader, []))
-    acts_s = match_s._generate_attach_don_actions(me_s, opp_s, eng_s)
-    score_sem_counter = max([a[0] for a in acts_s if a[4] == 'attack_power'], default=0.0)
+    score_sem_counter = _score_do_vasco(0)
 
     check("anexar DON em corpo fraco vale MENOS quando a defesa esperada "
           "(alvo + counter) ainda barra o ataque",

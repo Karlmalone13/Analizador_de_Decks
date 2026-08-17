@@ -1,5 +1,83 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (580) - Claude (sessao local) - Escala attack x play: attach_don de COMBATE herdava a escala de ataque (base 400) numa decisao de RECURSO + partida de REFERENCIA do usuario gravada
+
+### O fix
+
+Diagnostico afinado do bloco 579. O problema nao era "attack x play" no
+geral -- ataque NAO gasta DON, entao nao disputa com `play`. Quem disputa e o
+**`attach_don` de combate**, e ele tinha DOIS defeitos:
+
+1. **Herdava a prioridade CHEIA do ataque.** `score_attack_target` e escala
+   INTERNA (base 400, calibrada no bloco 395 pra escolher ENTRE ataques, onde
+   so a ordem importa). Esse numero vazava pra uma decisao de RECURSO, contra
+   `play` (escala de `avaliar_carta`, mediana ~68). Medido: faixas DISJUNTAS
+   na partida real (attack 284-376 x play 7.8-186).
+2. **Usava custo FLAT** (`falta * DON_COST`, 25 fixo) enquanto a categoria 2
+   (ligar gatilho condicionado a DON) ja usava `don_opportunity_cost` (25-115,
+   enxerga a melhor carta jogavel que aquele DON bloquearia). **O ramo do bug
+   era justamente o unico que ignorava o que o DON compraria na mao.**
+
+Fix: `ATTACH_DON_COMBATE_FRACAO = 0.5` (ponte entre as escalas -- faz as
+faixas se SOBREPOREM em vez de se excluirem) + trocar o custo flat pelo
+`don_opportunity_cost` que o outro ramo ja usava.
+
+### Medicao
+
+Faixas depois: `attach_don` p90 **415 -> 95**, agora ABAIXO do p90 de `play`
+(165). Deixou de atropelar.
+
+| | OP13-001 (Luffy) | OP16-080 (Teach) |
+|---|---|---|
+| DON ocioso | 1.90 -> **1.84** | 0.86 -> **0.66** |
+| turnos com 0 DON | 37.04 -> **43.51%** | 70.31 -> 68.99% |
+| utilizacao cartas | 73.16 -> 70.85% | 62.38 -> **64.56%** |
+
+Trade real, nao vitoria limpa: DON passa a ser gasto (o alvo), utilizacao de
+carta oscila nos dois sentidos. **Falta o 3o lider prometido.**
+
+Stage: com o fix, 10 partidas self-play do deck Luffy RG -> Thousand Sunny
+jogado **9x** e `[Activate:Main]` rodado **39x**. Na partida ao vivo das 23:55
+(que tinha parser+alias mas NAO tinha este fix) a carta era reconhecida e
+**ficou na mao 6 snapshots seguidos** -- confirmando que o que prendia o stage
+na mao era a escala, nao o parser.
+
+### smoke_fast foi de 14 pra 15 falhas -- e NAO era regressao
+
+O teste "anexar DON em corpo fraco vale MENOS..." media o **max sobre todos os
+atacantes**, e o max incluia o proprio LIDER. Depois do fix o candidato do
+corpo fraco (Vasco 2000) **nem e mais gerado** quando a defesa esperada barra
+o ataque (score fica negativo) -- o max cai pro score do lider e os dois lados
+empatam. Ou seja: o motor ficou MAIS correto do que o teste exigia, e o teste
+falhou por imprecisao de medicao. Teste agora filtra por `is vasco`.
+De volta a 14 falhas conhecidas. `smoke_test.py` (ampla): PASSOU INTEIRO.
+
+## PENDENTE PRA PROXIMA SESSAO (nada disso foi feito)
+
+1. **Partida de REFERENCIA do usuario** -- `Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45`
+   (`winner: p1`, `bot_side: p2`). **O USUARIO jogou de Luffy e GANHOU; o BOT
+   jogou de Xebec.** Pedido explicito: usar a pilotagem do usuario como
+   EXEMPLO -- o bot tem que jogar parecido com isso de Luffy, E o jeito que
+   ele jogou de Xebec tambem serve de referencia. Ferramenta pra isso ja
+   existe: `compare_vs_human.py`. **Nao analisado ainda.**
+2. **BUG AO VIVO: bot TRAVOU** na tela "Choose card effect to activate next"
+   (ordem de ativacao de efeitos disparados SIMULTANEAMENTE). Print do usuario
+   as 00:01. Nao achei handler nem client_timeout no log do server pra esse
+   prompt -- provavel prompt que o plugin nao reconhece. **Investigar primeiro
+   se existe rota pra esse prompt no `server.py`/plugin.**
+3. **3o lider** da medicao do bloco 580.
+
+### Nomenclatura dos logs (auditada a pedido do usuario)
+
+150 logs no index. **119 seguem o padrao exato** (`Lider-Cores_x_Lider-Cores_
+timestamp`, com sufixo `_pN` legitimo pra varias partidas no mesmo arquivo --
+todos os de hoje estao certos). Desvios:
+- **1 fora do padrao**: `Charlotte.Linlin-Y_x_Rocks.D.Xebec-B_karlmalone_x_aceswife_2026-08-12`
+  (traz apelido dos jogadores e nao tem componente de hora).
+- **30 entradas legadas** `source: autosaved_log`, anteriores a convencao: so
+  tem `original_file`/`parsed_file` com timestamp cru
+  (`2026-06-16T01.57.48_autosaved.json`), **sem slug de lider nenhum**.
+
 ## 2026-08-16 (579) - Claude (sessao local) - Partida ao vivo rodou com o SERVER PARADO (motor das 15:38) -- e o achado real que sobra: attack e play estao em ESCALAS INCOMPARAVEIS (mediana 366 vs 68)
 
 Partida: `Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T23.26.16`, bot = p1,
