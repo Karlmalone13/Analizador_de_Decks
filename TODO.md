@@ -2,6 +2,30 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 599): **FIX REAL confirmado**, achado que o usuário
+> vinha reportando repetidamente e eu tinha rejeitado sem checar direito
+> ("o bot fica pondo DON em personagem fraco e desperdiçando jogada").
+> Log real (Marshall D. Teach x Rocks D. Xebec, T10): motor gastava 5
+> DON em Streusen (2000 poder, ataque nem contestado — puro
+> desperdício) enquanto Charlotte Linlin (7000 poder, SEM don) era
+> bloqueada por exatamente 1000 de diferença. Causa raiz:
+> `_don_livre_for_plan` reservava DON pro plano de play/activate +
+> defesa, mas NUNCA pro déficit BASE (obrigatório) de outros ataques já
+> visíveis na mesma lista de candidatos — o ataque processado primeiro
+> (ordem de score) drenava a margem que o próximo precisava de verdade.
+> Achado sistêmico: **22 casos no banco de 26 partidas** com esse
+> padrão. Fix: `_don_livre_for_plan(..., exclude_attacker=None)` agora
+> soma e reserva o déficit base de todo atacante candidato != o próprio
+> antes de liberar qualquer margem (vale também no caminho de lethal
+> certificado). **Resultado no mesmo turno**: Charlotte conecta sem
+> DON, turno fecha a partida (antes não fechava). Determinístico (2
+> runs idênticos). `smoke_fast.py` (+1 teste novo) e `smoke_test.py`
+> 100% OK, nenhuma regressão. **Honesto**: métricas de comparação-com-
+> humano ficaram inalteradas (esperado — não é isso que este fix mede);
+> não rodei gauntlet/self-play em lote pra quantificar ganho de winrate
+> — próximo passo se o usuário quiser esse número. Ver bloco 599 do
+> HANDOFF.
+>
 > 17/08/2026 (bloco 598): **Fix pedido pelo usuário**: "é só seguir as
 > cartas que o humano tem na mão... se for dar draw é só comprar a
 > mesma carta que o humano pegou" — `audit_real_losses.py` parava de

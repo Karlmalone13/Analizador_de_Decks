@@ -169,7 +169,7 @@
       "turn": 5,
       "before_life": 4,
       "human_damage": 0,
-      "engine_damage": 1,
+      "engine_damage": 0,
       "engine_won_this_turn": false,
       "game": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T12.30.45.json",
       "human_leader": "OP16-001"
@@ -323,7 +323,7 @@
       "before_life": 2,
       "human_damage": 1,
       "engine_damage": 2,
-      "engine_won_this_turn": true,
+      "engine_won_this_turn": false,
       "game": "Rocks.D.Xebec-B_x_Marshall.D.Teach-BY_2026-08-08T12.15.57.json",
       "human_leader": "OP17-039"
     },
@@ -646,7 +646,7 @@
       "turn": 9,
       "before_life": 2,
       "human_damage": 1,
-      "engine_damage": 2,
+      "engine_damage": 1,
       "engine_won_this_turn": false,
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T00.14.40.json",
       "human_leader": "OP16-080"
@@ -728,7 +728,7 @@
       "before_life": 3,
       "human_damage": 2,
       "engine_damage": 3,
-      "engine_won_this_turn": false,
+      "engine_won_this_turn": true,
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T14.18.02.json",
       "human_leader": "OP17-039"
     },
@@ -826,7 +826,7 @@
       "turn": 9,
       "before_life": 3,
       "human_damage": 2,
-      "engine_damage": 2,
+      "engine_damage": 3,
       "engine_won_this_turn": false,
       "game": "Rocks.D.Xebec-B_x_Monkey.D.Luffy-RG_2026-08-16T16.43.31.json",
       "human_leader": "OP17-039"

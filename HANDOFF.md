@@ -1,5 +1,118 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (599) - Claude (sessao remota web) - FIX REAL confirmado no proprio log que o usuario vinha apontando: motor gastava DON de margem num atacante FRACO nao-contestado, drenando o pool que um atacante FORTE precisava pra converter um bloqueio em acerto. `_don_livre_for_plan` agora reserva o deficit BASE de outros ataques pendentes antes de liberar qualquer margem
+
+**Contexto direto**: apos eu relatar o achado 597 (T12, "motor nao jogou
+nada e venceu, mais eficiente que o humano") o usuario rejeitou minha
+leitura: **"T12 não é mais eficiente que o humano, já cansei de relatar
+aqui que o bot fica pondo don em personagem fraco e desperdiçando
+jogada... para de achar que o bot está bom e faz o que eu tô pedindo"**.
+Em vez de insistir, fui direto no dado cru procurar esse padrao
+especifico -- e achei, confirmado, num log REAL diferente do T12 que eu
+tinha defendido.
+
+### Evidencia concreta (Marshall D. Teach x Rocks D. Xebec, 2026-08-16T14.18.02, turno 10, ANTES do fix)
+
+```
+anexou 1 DON em Rocks.D.Xebec (6000pwr) -> ataca Leader -> DANO (vida 2)
+anexou 5 DON em Streusen (2000pwr base -> 7000pwr) -> ataca Leader -> DANO (vida 1)
+anexou 1 DON em Kyo (5000pwr) -> ataca Leader -> Counter +2000 -> defesa 7000 -> BLOQUEADO
+Charlotte Linlin (7000pwr, SEM DON) -> ataca Leader -> Counter +3000 -> defesa 8000 -> BLOQUEADO (7000<8000)
+Ganzui (7000pwr) -> ataca Leader -> DANO (vida 0, mas SEM fechar a partida neste turno)
+```
+
+Streusen (2000 de poder impresso) recebeu 5 DON (3 de deficit base + 2 de
+MARGEM contra `opp_counter_potential()`) e o ataque NEM FOI CONTESTADO --
+a margem foi puro desperdicio nesse desfecho. Charlotte Linlin (7000 de
+poder impresso, forte, SEM DON nenhum) foi bloqueada por EXATAMENTE 1000
+de diferenca -- 1 DON a menos de margem no Streusen bastava pra fechar
+essa conta (empate favorece o ATACANTE, `buff_wins_combat`). Busquei o
+padrao no banco inteiro (26 partidas): **22 casos onde DON foi pro
+atacante de MENOR poder impresso havendo atacante mais forte no mesmo
+turno**, 70 DON total nesses casos.
+
+### Causa raiz
+
+`_don_livre_for_plan` (`decision_engine.py`) reservava DON pro plano de
+`play`/`activate` + reserva de defesa -- mas NUNCA pro deficit BASE
+(obrigatorio, nao-luxo) de OUTROS ataques ja visiveis na mesma lista de
+candidatas (`_generate_and_score_actions`, chamada logo ali dentro). O
+ataque processado PRIMEIRO (ordem de score, nao "quem precisa mais")
+via TODO o `don_available` como "livre" e drenava a margem que um
+ataque processado DEPOIS precisava de verdade so pra cobrir o proprio
+deficit base -- nunca era sobre "guardar DON no personagem errado", era
+sobre a ORDEM de processamento roubar recurso compartilhado.
+
+### Fix
+
+`_don_livre_for_plan(self, p, opp, engine, exclude_attacker=None)`: soma
+o deficit BASE (`don_needed_for_attack(outro_atacante, ..., don_livre=0)`
+-- so a parcela obrigatoria, sem margem) de todo atacante com score>=0 na
+MESMA lista `acts` ja gerada, excluindo `exclude_attacker` (o proprio
+ataque em resolucao -- ainda aparece nessa lista porque so vira `rested`
+DEPOIS, dentro de `_execute_attack`) e deduplicado por atacante (a lista
+pode ter mais de 1 entrada pro MESMO atacante contra alvos diferentes).
+Desconta essa reserva ANTES de liberar qualquer margem -- inclusive no
+caminho de LETHAL CERTIFICADO (`FIX_LETHAL_DON_ALLOCATION`), que antes
+pulava TODA reserva (`return p.don_available`); a reserva de deficit
+base continua valendo ali tambem, porque e parte da PROPRIA
+certificacao de lethal (garantir que os OUTROS ataques do combo
+conectem), nao "resto do plano pra turnos futuros" (o que a FIX 19/07
+original de fato queria evitar reservar). `_attach_don_for_attack` passa
+`exclude_attacker=attacker` na unica chamada existente.
+
+### Resultado no MESMO turno, apos o fix
+
+```
+anexou 1 DON em Rocks.D.Xebec -> DANO (vida 2)
+anexou 5 DON em Streusen -> DANO (vida 1)
+Charlotte Linlin (7000pwr, SEM DON) -> ataca Leader -> DANO (vida 0)
+Ganzui -> ataca Leader -> VITORIA! fecha a partida NO PROPRIO TURNO
+```
+
+Charlotte conecta sem precisar de DON (Kyo nem chega a ser declarado --
+a reserva mudou o SCORE de Kyo o suficiente pro Turn Planner preferir
+nao declara-lo, nao so a quantidade de DON de um ataque ja escolhido) e
+o turno agora FECHA A PARTIDA, o que nao acontecia antes. Confirmado
+DETERMINISTICO (2 runs identicos, mesma narrativa exata).
+
+### Validacao
+
+`smoke_fast.py` (100%, incluindo `test_don_livre_reserva_deficit_base_
+de_outros_ataques_pendentes_17_08`, cenario minimo com 2 atacantes
+sinteticos: `fraco` 2000pwr/deficit=3, `forte` 4000pwr/deficit=1,
+`don_available=4` -- confirma que a reserva EXATA acontece nos dois
+sentidos, e que com 1 SO atacante candidato nada e reservado, mesmo
+comportamento de antes) + `smoke_test.py` completo (regressao ampla,
+area compartilhada de alto risco -- counter/lethal/DON) -- **TODOS OS
+TESTES PASSARAM**, nenhuma regressao.
+
+**Honestidade sobre o que NAO mede este fix**: `decision_quality_vs_
+human.py`/`decision_quality_full.py` (blocos 596-598) ficaram
+ESSENCIALMENTE INALTERADOS (dano agregado continua 86,5%, variacoes de
+play/attack dentro do ruido) -- ESPERADO, porque este fix nao e sobre
+"jogar igual ao humano", e sobre o motor nao desperdicar recurso CONTRA
+SI MESMO. A comparacao-com-humano nao e a ferramenta certa pra validar
+este tipo de mudanca; a evidencia real e o trace direto (Charlotte
+conecta, turno fecha a partida) + a contagem do padrao (22 casos no
+banco). **Nao rodei gauntlet/self-play em lote pra medir impacto em
+winrate agregado** -- proximo passo natural se o usuario quiser
+quantificar o ganho em vitorias, nao so em "o padrao para de acontecer
+neste caso".
+
+### Pendente
+
+Os 22 casos do padrao "DON no atacante mais fraco" continuam
+aparecendo em CONTAGEM (a reserva evita o desperdicio de MARGEM, mas
+nao muda que um atacante fraco legitimamente precisa de MAIS deficit
+base pra alcancar o mesmo poder que um forte ja tem de graca -- isso
+por si so nao e bug). O que mudou e QUANTO de margem extra (alem do
+deficit base obrigatorio) cada um recebe, nao se aparece na lista.
+Proximo passo, se o usuario quiser continuar: gauntlet/self-play em
+lote (`--workers N`) num lider afetado (Xebec/Crocodile/Teach
+aparecem varias vezes na lista) pra medir dano-por-jogo/winrate
+antes-vs-depois deste fix especifico.
+
 ## 2026-08-17 (598) - Claude (sessao remota web) - Fix pedido pelo usuario: PARA DE EMBARALHAR o resto do baralho reconstruido -- compra a MESMA carta que o humano comprou de verdade (diff de mao antes/depois do turno), nao mais um palpite aleatorio. Numeros MUDAM (90,1%->86,5% no dano agregado) -- nao e regressao, e o numero ficando mais PRECISO (menos ruido de sorte de draw)
 
 **Pedido do usuario**, direto, apos o relatorio do bloco 597: "e so

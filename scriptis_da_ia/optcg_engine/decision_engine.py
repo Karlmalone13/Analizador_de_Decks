@@ -17431,14 +17431,44 @@ class OPTCGMatch:
             c.just_played = False
         return False
 
-    def _don_livre_for_plan(self, p, opp, engine) -> int:
+    def _don_livre_for_plan(self, p, opp, engine, exclude_attacker=None) -> int:
         """
         DON ocioso do plano do turno: o que sobra do don_available depois
         (a) das jogadas/ativacoes que o Turn Planner ainda pretende fazer
         (acoes 'play'/'activate' com score >= 0, na ordem de preferencia,
-        enquanto o DON alcanca) e (b) da reserva de defesa. So esse sobra
-        vira margem de counter num ataque -- DON comprometido com o plano
-        nunca e gasto a mais numa unica margem.
+        enquanto o DON alcanca), (b) da reserva de defesa e (c) do DEFICIT
+        BASE (obrigatorio, sem margem) de QUALQUER OUTRO ataque ainda
+        pendente este turno. So o que sobra disso tudo vira margem de
+        counter num ataque -- DON comprometido com o plano nunca e gasto a
+        mais numa unica margem.
+
+        Achado real 17/08 (pedido do usuario, log real Marshall D. Teach x
+        Rocks D. Xebec T10, apos ele insistir "o bot fica pondo DON em
+        personagem fraco e desperdicando jogada" e eu ter rejeitado esse
+        diagnostico sem checar direito): confirmado com o trace exato --
+        Streusen (2000 de poder impresso) recebeu 5 DON (3 de deficit base
+        + 2 de MARGEM contra o `opp_counter_potential()` do oponente
+        inteiro) e acertou um golpe que nem foi bloqueado nem counterado
+        (a margem foi puro desperdicio nesse desfecho). Charlotte Linlin
+        (7000 de poder impresso, SEM DON nenhum) foi bloqueada por
+        EXATAMENTE 1000 de diferenca (7000 < 8000 de defesa apos counter)
+        -- 1 DON a menos que Streusen recebeu de margem teria fechado essa
+        conta (empate favorece o ATACANTE, `buff_wins_combat`). Causa raiz:
+        (c) nao existia -- cada ataque calculava sua propria margem "livre"
+        olhando so pro `p.don_available` NAQUELE momento, sem reservar
+        NADA pro deficit base (obrigatorio, nao-luxo) dos ataques que a
+        MESMA `_generate_and_score_actions` ja sabia estarem pendentes --
+        o ataque processado PRIMEIRO (ordem de score, nao de "quem precisa
+        mais") drenava a margem que um ataque processado DEPOIS precisava
+        de verdade. Fix: soma o deficit BASE (`don_needed_for_attack(...,
+        don_livre=0)`, so a parcela obrigatoria, sem margem) de todo
+        atacante com score>=0 na lista JA GERADA (exclui `exclude_attacker`
+        -- o proprio ataque em resolucao, que tambem aparece nessa lista
+        antes de ser marcado `rested`) e desconta ANTES de liberar
+        qualquer margem. Deduplicado por atacante (a lista pode ter mais
+        de uma entrada pro MESMO atacante contra alvos diferentes -- so a
+        de maior score, primeira ocorrencia, ja que `acts` vem ordenada
+        desc).
 
         'activate' entrou 14/07 (achado ao vivo, log 13.08.24): so 'play'
         reservava DON -- o Activate:Main da PROPRIA win-con ja em campo (ex:
@@ -17468,10 +17498,34 @@ class OPTCGMatch:
         Sem isto, 82% dos momentos de lethal certificado (medido em 3
         partidas reais) tinham a alocacao real de DON MENOR que a
         certificada, arriscando o ataque ser bloqueado/counterado por
-        falta da margem que a certificacao assumia disponivel.
+        falta da margem que a certificacao assumia disponivel. Continua
+        valendo mesmo com o fix de 17/08 acima: a reserva (c) e sobre
+        DEFICIT BASE de outros ataques (parte da propria certificacao de
+        lethal, nao "resto do plano" pra turnos futuros) -- reservar isso
+        e o que GARANTE que os outros ataques do MESMO combo de lethal
+        realmente conectem, em vez de perder pra margem gasta no ataque
+        errado primeiro.
         """
+        reserva_outros_ataques = 0
+        try:
+            acts = self._generate_and_score_actions(p, opp, engine)
+            vistos = set()
+            for a in acts:
+                if a[0] < 0:
+                    break
+                if a[1] != 'attack':
+                    continue
+                outro_atacante = a[2]
+                if outro_atacante is exclude_attacker or id(outro_atacante) in vistos:
+                    continue
+                vistos.add(id(outro_atacante))
+                reserva_outros_ataques += don_needed_for_attack(
+                    outro_atacante, a[3], a[4], p, opp, engine, don_livre=0)
+        except Exception:
+            reserva_outros_ataques = 0
+
         if FIX_LETHAL_DON_ALLOCATION and engine.analyzer.can_lethal_this_turn():
-            return p.don_available
+            return max(0, p.don_available - reserva_outros_ataques)
 
         planejado = 0
         try:
@@ -17492,11 +17546,11 @@ class OPTCGMatch:
             reserva = engine._don_reserve_for_defense()
         except Exception:
             planejado, reserva = 0, 0
-        return max(0, p.don_available - planejado - reserva)
+        return max(0, p.don_available - planejado - reserva - reserva_outros_ataques)
 
     def _attach_don_for_attack(self, attacker, ttype, tgt, p, opp, engine, verbose):
         """Anexa DON a este ataque, se ajudar a passar a defesa."""
-        don_livre = self._don_livre_for_plan(p, opp, engine)
+        don_livre = self._don_livre_for_plan(p, opp, engine, exclude_attacker=attacker)
         need = don_needed_for_attack(attacker, ttype, tgt, p, opp, engine, don_livre=don_livre)
         if need > 0:
             attacker.don_attached += need

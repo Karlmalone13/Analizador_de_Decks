@@ -10648,6 +10648,7 @@ def main() -> int:
     test_opp_lethal_threat_memoizada_nao_muda_resposta_16_08()
     test_attach_don_margem_seguranca_com_ataque_ja_vencedor_e_don_ocioso()
     test_bank_idle_don_no_lider_como_ultimo_recurso_17_08()
+    test_don_livre_reserva_deficit_base_de_outros_ataques_pendentes_17_08()
     test_score_give_don_considera_sinergia_com_ataque()
     test_gain_double_attack_respeita_target_leader_e_selecionado()
     test_score_play_prioriza_carta_que_buffa_ataque_do_lider_hoje()
@@ -11613,6 +11614,65 @@ def test_bank_idle_don_no_lider_como_ultimo_recurso_17_08() -> None:
     check("banking NAO aparece no pool normal de candidatas (so via chamada explicita)",
           not any(a[1] == "attach_don" and a[4] == "bank_for_future" for a in acts3
                   if len(a) > 4))
+
+
+def test_don_livre_reserva_deficit_base_de_outros_ataques_pendentes_17_08() -> None:
+    """
+    Achado real 17/08 (usuario, log real Marshall.D.Teach-BY x
+    Rocks.D.Xebec-B 2026-08-16T14.18.02, turno 10, apos insistir "o bot
+    fica pondo DON em personagem fraco e desperdicando jogada" -- rastreado
+    ate confirmar): Streusen (2000 de poder impresso) recebia 5 DON (3 de
+    deficit base + 2 de MARGEM contra `opp_counter_potential()`) e o
+    ataque nem era contestado (margem pura perda); Charlotte Linlin (7000
+    de poder impresso, SEM DON nenhum) era bloqueada por EXATAMENTE 1000
+    de diferenca (7000 < 8000 pos-counter) -- 1 DON a menos de margem no
+    Streusen bastava pra fechar essa conta (empate favorece o atacante).
+
+    Causa raiz: `_don_livre_for_plan` so reservava DON pro plano de
+    play/activate + defesa -- NUNCA pro deficit BASE (obrigatorio, nao
+    luxo) de outros ataques ja visiveis na mesma lista de candidatas
+    (`_generate_and_score_actions`). O ataque processado primeiro drenava
+    a margem que um ataque processado depois precisava de verdade pra
+    cobrir o proprio deficit base.
+
+    Fix: soma o deficit base (`don_needed_for_attack(..., don_livre=0)`)
+    de todo atacante candidato != o que esta pedindo margem, desconta
+    ANTES de liberar qualquer sobra como margem. Cenario minimo aqui: 2
+    atacantes, `fraco` (2000pwr, deficit base=3 contra lider 5000) e
+    `forte` (4000pwr, deficit base=1), com don_available=4 (exatamente
+    a soma dos dois deficits base, zero sobra real pra margem em
+    QUALQUER um dos dois se o outro for reservado corretamente).
+    """
+    lider = mk("L1", "MeuLider", power=5000, cost=0, card_type="LEADER")
+    opp_lider = mk("OL", "LiderOponente", power=5000, cost=0, card_type="LEADER")
+    fraco = mk("F1", "Fraco", power=2000, cost=2)
+    forte = mk("F2", "Forte", power=4000, cost=4)
+
+    me = GameState(leader=lider, don_available=4, turn=3)
+    me.field_chars = [fraco, forte]
+    me.hand = []
+    opp = GameState(leader=opp_lider)
+    engine = DecisionEngine(me, opp)
+    match = OPTCGMatch((lider, []), (opp_lider, []))
+
+    livre_para_fraco = match._don_livre_for_plan(me, opp, engine, exclude_attacker=fraco)
+    livre_para_forte = match._don_livre_for_plan(me, opp, engine, exclude_attacker=forte)
+    check("DON livre pro FRACO reserva o deficit base do FORTE (1) -- sobra 3, nao 4",
+          livre_para_fraco == 3)
+    check("DON livre pro FORTE reserva o deficit base do FRACO (3) -- sobra 1, nao 4",
+          livre_para_forte == 1)
+
+    # Controle: excluindo o MESMO atacante dos dois lados (nenhum outro
+    # pendente), reserva zero -- comportamento antigo preservado quando so
+    # existe 1 atacante possivel.
+    me_solo = GameState(leader=lider, don_available=4, turn=3)
+    me_solo.field_chars = [forte]
+    me_solo.hand = []
+    engine_solo = DecisionEngine(me_solo, opp)
+    match_solo = OPTCGMatch((lider, []), (opp_lider, []))
+    livre_solo = match_solo._don_livre_for_plan(me_solo, opp, engine_solo, exclude_attacker=forte)
+    check("com um SO atacante candidato, nada a reservar -- livre = don_available inteiro",
+          livre_solo == 4)
 
 
 def test_score_give_don_considera_sinergia_com_ataque() -> None:
