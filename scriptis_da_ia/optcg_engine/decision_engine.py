@@ -9953,6 +9953,23 @@ def load_cards_db(csv_path: str = 'cards_rows.csv') -> dict:
             img_url = str(row.get('card_image', '') or '')
             if img_url and img_url != 'nan':
                 _CARD_IMAGE_CACHE[code] = img_url
+        # Aliases do simulador (codigo que o JOGO usa != codigo IMPRESSO,
+        # bloco 575). Este e o SEGUNDO caminho de carga de cartas do projeto:
+        # o primeiro le os JSONs ja gerados (onde gerar_dbs.py aplicou os
+        # aliases), este le o CSV cru. Sem repetir a aplicacao aqui, todo
+        # consumidor do CSV -- as ferramentas de calibragem, e o
+        # `carregar_decks_do_jogo` que monta os decks REAIS do simulador --
+        # continua cego: o deck `Luffy RG` perdia 4 copias do Thousand Sunny
+        # e era descartado por validar 46/50 (achado 16/08 ao rodar o
+        # audit_candidate_generation depois do proprio fix do 575).
+        #
+        # O MAPA nao e duplicado: importado de gerar_dbs.py, que segue como
+        # fonte unica. So a aplicacao acontece nos dois caminhos, porque sao
+        # dois formatos de entrada diferentes.
+        from gerar_dbs import ALIASES_DO_SIMULADOR
+        for alias, real in ALIASES_DO_SIMULADOR.items():
+            if real in db and alias not in db:
+                db[alias] = dict(db[real])
         print(f'  Banco de cartas: {len(db)} cartas carregadas')
     except Exception as e:
         print(f'  Erro ao carregar {csv_path}: {e}')

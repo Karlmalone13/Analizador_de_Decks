@@ -1,5 +1,78 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (577) - Claude (sessao local) - Validacao OFFLINE dos 15 fixes: o bloco 567 FUNCIONA (703 candidatos numa partida), o alarme que dizia o contrario era FALSO, e o fix do 575 tinha um furo
+
+Pedido do usuario: validar offline os 15 fixes acumulados sem partida real.
+Tres achados, em ordem de importancia.
+
+### 1. O fix do bloco 567 funciona -- e o instrumento que dizia "nao" estava errado
+
+`audit_candidate_generation.py --leader OP13-001` imprimiu
+**">> ALERTA: attach_don no LIDER nunca gerado (regressao do bloco 567?)"**.
+Isso e exatamente o alarme que aquele script existe pra dar. **Era falso.**
+
+Instrumentando `_generate_attach_don_actions` direto (monkeypatch, 1 partida):
+**703 candidatos com o LIDER como alvo**, contra 2168 em personagens. A opcao
+E gerada. O que acontece e que ela sai com score **~35.0, praticamente
+constante**, e o `decision_log` so guarda os **top-8** candidatos por decisao
+-- entao ela quase nunca aparece no log que o auditor le.
+
+> **Licao**: "ausente do decision_log" != "nunca gerado". O script foi
+> corrigido pra dizer o que realmente mede ("nao aparece entre os candidatos
+> LOGADOS") e pra mandar instrumentar a geracao antes de tratar como
+> regressao. Um alarme que grita sem regressao e pior que nenhum -- custaria
+> a proxima sessao inteira cacando um bug inexistente.
+
+### 2. O que o numero 35.0 revela (achado NOVO, nao corrigido)
+
+O score do attach_don no lider e ~35.0 fixo porque
+`_trigger_don_value` joga o `buff_power_per_count` do Luffy no balde generico
+"tem 'power' no nome da acao" = **60**, menos `don_opportunity_cost(1)` = 25.
+
+Ou seja: a habilidade-assinatura do deck -- **+2000 por DON restado**, que
+escala e pode decidir a partida -- vale o mesmo que qualquer buffzinho fixo.
+E o problema de **peso absoluto** ja nomeado no bloco 569, agora com um caso
+concreto e medido. **Nao corrigido**: mexer na tabela de valor de gatilho
+afeta todo lider com `[DON!! xN]` (os 33) e precisa de medicao antes/depois
+propria, com `quality_baseline.py`.
+
+### 3. Furo no proprio fix do bloco 575 (corrigido aqui)
+
+O alias so tinha sido aplicado nos JSONs gerados. Existe um **SEGUNDO**
+caminho de carga: `load_cards_db()`, que le o `cards_rows.csv` cru e alimenta
+as ferramentas de calibragem e o `carregar_decks_do_jogo`. Por isso o deck
+`Luffy RG` continuava sendo descartado (46/50) e o auditor recusava rodar --
+**achado justamente ao tentar validar o fix anterior**. Aplicado o mesmo mapa
+(importado de `gerar_dbs.py`, sem duplicar) tambem ali: 2749 cartas, deck
+valido 50/50, entra no pool.
+
+### 4. Baseline OP16-080 (antes x depois dos 15 fixes)
+
+Unico braco "antes" que existia (commit `34e4696`, bloco 564). Rodado o mesmo
+cenario (n=20, seed=42, decks do jogo, 4 workers) em `d43b08c`:
+
+| metrica | antes | depois | leitura |
+|---|---|---|---|
+| DON sobrando/turno | 0.88 | 0.86 | praticamente igual |
+| turnos com 0 DON | 69.70% | 70.31% | praticamente igual |
+| utilizacao das cartas | 62.93% | 62.38% | praticamente igual |
+
+**Leitura honesta: nao mudou nada pro Teach** -- esperado, os fixes 565-576
+quase nao tocam esse lider. Nao e evidencia de melhora nem de regressao; e
+so ausencia de dano colateral.
+
+### Validacao
+
+`smoke_test.py` (ampla): **TODOS OS TESTES PASSARAM**. `smoke_fast.py`: as 14
+falhas conhecidas dos flags locais.
+
+### O que isso NAO valida
+
+Nenhum dos 15 fixes foi exercitado em partida REAL. O self-play e espelhado
+(o motor joga os dois lados) e a mao do oponente e informacao completa. O
+teste ao vivo continua sendo o gargalo -- especialmente pro Thousand Sunny,
+que agora tem os dois bugs fechados e nunca foi visto funcionando.
+
 ## 2026-08-16 (576) - Claude (sessao local) - Varredura dos ~35 GATES do parse_block: 1 defeituoso (o do draw), o resto limpo -- e a familia do defeito tem nome agora
 
 Varredura PROATIVA, nao partiu de carta quebrada. Motivada pelo bloco 574: o

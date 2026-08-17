@@ -148,15 +148,31 @@ def main():
     if faltando:
         print(f'   >> NUNCA gerados: {sorted(faltando)}')
 
-    print('\n2) Alvo do attach_don (bug do bloco 567: LIDER nunca aparecia)')
+    print('\n2) Alvo do attach_don entre os candidatos LOGADOS '
+          '(bug do bloco 567: LIDER nunca aparecia)')
     if not attach:
-        print('   nenhum attach_don gerado nesta amostra')
+        print('   nenhum attach_don logado nesta amostra')
     else:
         for k, v in attach.most_common():
             print(f'   {k:22} {v:6}')
         if 'LIDER' not in attach:
-            print('   >> ALERTA: attach_don no LIDER nunca gerado '
-                  '(regressao do bloco 567?)')
+            # NAO diga "nunca gerado": o decision_log so guarda os top-8
+            # candidatos por decisao, entao ausencia aqui significa "nunca
+            # ficou entre os 8 melhores", nao "nunca existiu". Achado
+            # 16/08 (bloco 577): este alarme deu FALSO POSITIVO no
+            # OP13-001 -- instrumentando _generate_attach_don_actions
+            # direto, o lider apareceu 703 vezes numa unica partida, todas
+            # com score ~35.0, perdendo a vaga no log pra opcoes melhores.
+            # Um alarme de regressao que grita sem regressao e pior que
+            # nenhum: a proxima sessao vai cacar um bug que nao existe.
+            print('   >> ATENCAO: attach_don no LIDER nao aparece entre os '
+                  'candidatos LOGADOS.')
+            print('      Isso NAO prova regressao do bloco 567 -- o log so '
+                  'guarda os top-8 por decisao.')
+            print('      Antes de tratar como bug, instrumente '
+                  '_generate_attach_don_actions e conte a geracao REAL;')
+            print('      score baixo (opcao gerada e preterida) e problema de '
+                  'CALIBRAGEM, nao de geracao.')
 
     print('\n3) Cartas do deck que NUNCA viraram candidata')
     nunca = sorted((c for c in deck if c not in vistos),

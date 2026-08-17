@@ -2,6 +2,28 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 577): **validação offline dos 15 fixes**. (1) O fix do
+> bloco 567 **funciona**: instrumentando `_generate_attach_don_actions`,
+> **703 candidatos com o líder como alvo** numa única partida. O
+> `audit_candidate_generation.py` dizia *"ALERTA: attach_don no LIDER nunca
+> gerado"* — **alarme falso**: o `decision_log` só guarda os **top-8** por
+> decisão, e a opção sai com score ~35.0 e perde a vaga. Script corrigido pra
+> dizer o que mede. **"Ausente do log" ≠ "nunca gerado".** (2) Achado novo,
+> **não corrigido**: esse 35.0 é constante porque `_trigger_don_value` joga o
+> `buff_power_per_count` do Luffy no balde genérico "tem 'power' no nome" =
+> 60, menos custo de oportunidade 25 — a habilidade-assinatura do deck (+2000
+> **por DON restado**, escala) vale o mesmo que um buff fixo qualquer. É o
+> problema de **peso absoluto** do bloco 569, agora medido. Corrigir afeta os
+> 33 líderes com `[DON!! xN]` e exige medição antes/depois própria. (3) **Furo
+> no fix do bloco 575**, corrigido: o alias só valia nos JSONs gerados;
+> `load_cards_db()` lê o CSV cru e alimenta as ferramentas de calibragem —
+> por isso o `Luffy RG` seguia sendo descartado 46/50. (4) Baseline OP16-080
+> antes×depois: **praticamente idêntico** (DON 0.88→0.86, utilização
+> 62.93→62.38%) — esperado, os fixes mal tocam esse líder; é ausência de dano
+> colateral, não evidência de melhora. `smoke_test` passou inteiro. **Nada
+> disso substitui partida real** — o self-play é espelhado e vê a mão do
+> oponente. Ver bloco 577.
+
 > 16/08/2026 (bloco 576): **varredura dos ~35 gates do `parse_block`** —
 > proativa, motivada pelo bloco 574 (2ª vez que um efeito morria no *gate* e
 > não na gramática; a 1ª foi o Vegapunk, 03/08). Gate estreito é pior que
