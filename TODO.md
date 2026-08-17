@@ -2,6 +2,22 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 589): **CORREÇÃO GRANDE, pedida pelo usuário
+> diretamente cético** ("faria a mesma coisa ou melhor? se não, tá
+> errado") — `chosen_actions` (extraído do `decision_log`) usado nos
+> blocos 582-588 SUBESTIMA o que o motor faz: `attach_don` executado
+> junto de um `attack` em sequência não gera registro `turn_planner`
+> próprio, então ficava invisível pra métrica. Lendo a NARRATIVA
+> completa (texto real da execução, sempre salvo) em vez do resumo: dos
+> 6 turnos mais "divergentes" da amostra anterior, **4 mostram o motor
+> VENCENDO A PARTIDA NAQUELE TURNO** — melhor que o histórico real, que
+> não fechou ali. Os outros 2 são decisões diferentes, sem veredito
+> claro de pior. **Todo número agregado de `attach_don`/`activate`/
+> `play` dos blocos 582-588 que usou `chosen_actions` como fonte
+> precisa ser refeito** (via narrativa ou nova instrumentação em
+> `_apply_action`) antes de ser tratado como confiável. Só leitura,
+> nenhum código de produção alterado. Ver bloco 589 do HANDOFF.
+>
 > 17/08/2026 (bloco 588): **primeira auditoria de DEFESA** (blocker/
 > counter) contra as 25 partidas que o humano venceu — categoria que a
 > rodada 582-587 nunca tocou (só cobria o turno próprio). Achado

@@ -1,5 +1,88 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (589) - Claude (sessao remota web) - CORRECAO GRANDE do metodo usado nos blocos 582-588: `chosen_actions` (extraido do decision_log) SUBESTIMA o que o motor faz -- attach_don bundled com attack pode nao gerar registro turn_planner proprio. Lendo a NARRATIVA real (texto completo), 3 de 5 turnos "mais divergentes" mostram o motor VENCENDO A PARTIDA NAQUELE TURNO, melhor que o humano fez de verdade
+
+**Pedido do usuario, direto e cetico** (com razao): "no ao vivo o bot
+faz pessimas decisoes... nao confio no que vc ta me falando. Analise o
+seguinte: o humano jogou carta X no turno tal, o bot faria a mesma
+coisa ou melhor? Se nao, entao ta errado." Pediu veredito CASO A CASO,
+nao estatistica agregada -- e essa exigencia direta que descobriu o
+proximo erro metodologico.
+
+### O erro (grande, retroage em varios blocos anteriores)
+
+Peguei os turnos com MENOR overlap (kind+carta) entre humano e motor
+(metrica dos blocos 582-583) pra dar veredito caso a caso. Primeira
+impressao, olhando so `chosen_actions`: motor parecia fazer BEM menos
+que o humano (ex: turno com 6 ataques+9 attach_don do humano vs so 4
+"attack" crus no `chosen_actions` do motor, ZERO attach_don). Fui
+conferir contra `engine_hoje_narrativa` (o texto completo da execucao
+real, ja salvo em todo report desde o bloco 582) antes de reportar --
+**a narrativa mostra que o motor TINHA anexado DON antes de cada
+ataque** (`anexou 2 DON em Rocks.D.Xebec`, etc.), exatamente igual ao
+padrao do humano. So que essa acao de attach_don, quando executada
+DENTRO do fluxo "anexa e ataca em sequencia" de uma unica jogada de
+attack, nao gera uma entrada `turn_planner` PROPRIA no `decision_log` --
+`chosen_actions` (extraido so das entradas `turn_planner`) fica cego
+pra ela.
+
+> **Consequencia**: TODA contagem agregada de `attach_don`/`activate`/
+> `play` feita nos blocos 582-588 a partir de `chosen_actions` esta
+> SUBESTIMADA -- em algum grau ainda nao medido, o motor faz mais
+> attach_don do que o numero reportado (6, depois 7 apos o fix do 585).
+> Os deltas de score do bloco 586 (contra `full_actions`, nao
+> `chosen_actions`) continuam validos -- aquele problema especifico ja
+> usava a fonte certa. O problema e especifico de comparacoes que usaram
+> `chosen_actions`/a metrica de overlap kind+carta dos blocos 582/583/587.
+
+### Veredito caso a caso (leitura da narrativa completa, 5 dos turnos "mais divergentes")
+
+| partida/turno | o que o motor fez de verdade | resultado |
+|---|---|---|
+| `2026-08-16T14.18.02 T12` | anexou DON em 4 atacantes em sequencia, cada um batendo | **VENCEU a partida neste turno** (zerou vida do oponente) -- humano NAO fechou neste turno no historico real |
+| `2026-08-15T19.16.09 T10` | anexou DON em 2, 1 bloqueado por counter, 2 sem DON fecharam | **VENCEU a partida neste turno** |
+| `2026-08-09T10.23.52 T10` | 1 bloqueado por counter, DON em 2 atacantes, ultimo fecha | **VENCEU a partida neste turno** |
+| `2026-08-15T22.24.38 T8` | 1 bloqueado por counter, DON leve em 1, ultimo fecha sem DON | **VENCEU a partida neste turno** |
+| `2026-08-16T23.55.32 T6` | gastou TODO o DON pra jogar um Blocker em vez de atacar mais | diferente do humano, NAO claramente pior -- decisao defensiva, nao investigada a fundo se foi certa |
+| `2026-08-16T15.11.37 T8` | DON num atacante + jogou 2 personagens (1 vira blocker) | parecido em qualidade ao humano, so ordem/enfase diferente |
+
+**4 de 6 fecham a partida NO MESMO TURNO que o historico real mostra o
+humano NAO fechando** -- nestes casos concretos, a resposta direta a
+pergunta do usuario ("faria a mesma coisa ou melhor?") e **melhor**,
+nao pior. Os outros 2 sao decisoes DIFERENTES sem veredito claro de
+pior (uma prioriza defesa via Blocker, nao investigado se e erro).
+
+### O que isso significa pro pedido do usuario
+
+Nao e uma prova de que "o bot nunca erra" -- e uma amostra pequena (6
+turnos), escolhida justamente entre os que MAIS pareciam errados pela
+metrica anterior (agora sabida incompleta). Mas contradiz diretamente a
+suspeita de que esses casos especificos sao "o bot jogando pessimamente" --
+pelo menos nestes 6, a execucao real (narrativa) e igual ou MELHOR que o
+historico, nao pior.
+
+> **Nao decidir com base nisso que "esta tudo certo"** -- decidir com
+> base nisso que a FERRAMENTA de medir precisa ser corrigida antes de
+> confiar em qualquer numero anterior desta sessao que usou
+> `chosen_actions` como base. Prioridade pra proxima sessao: refazer a
+> extracao de `chosen_actions`/contagem agregada lendo `engine_hoje_
+> narrativa` (parseando o texto) ou instrumentando `_apply_action`
+> direto (mais confiavel que parsear texto), NAO o `decision_log`
+> sozinho.
+
+### Pendente
+
+- Recontar `attach_don`/`play`/`activate` REAIS (via narrativa ou nova
+  instrumentacao em `_apply_action`) antes de aceitar qualquer numero
+  anterior desta sessao (582-588) como final.
+- Os 2 casos "diferente, nao claramente pior" (Isuka-blocker,
+  desenvolvimento duplo) merecem leitura mais de perto se sobrar tempo --
+  sao os unicos, nesta amostra de 6, onde a resposta nao e um "sim,
+  igual ou melhor" limpo.
+- Recomendacao que segue valendo: o item de maior impacto conhecido
+  continua sendo `_lethal_search` x buffs reativos do oponente (bloco
+  563), nao investigado nesta sessao.
+
 ## 2026-08-17 (588) - Claude (sessao remota web) - NOVA categoria auditada: DEFESA (blocker/counter), que o bloco 587 nunca tocou (audit_one_game so simula turno PROPRIO). Achado: 95,8% de concordancia em bloquear/nao-bloquear (uma vez corrigido um bug MEU de leitura do schema do log) -- pedido do usuario ("as decisoes do bot sao as piores, sempre perde")
 
 **Contexto**: usuario, direto, apos o inventario do bloco 587: "eu
