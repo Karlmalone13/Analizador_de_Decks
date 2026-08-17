@@ -2,6 +2,23 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 583): **aprofundamento do bloco 582** — simulou o
+> TURNO INTEIRO (não só a 1ª jogada) nas 25 partidas reais que o humano
+> venceu, 111 turnos. Sequência idêntica exata é rara (9%, esperado —
+> várias ordens são válidas), mas quando o motor ataca com a MESMA
+> carta que o humano, o ALVO bate em **81,6%** das vezes; só 4,5% dos
+> turnos têm zero jogadas em comum. **O achado que importa**: contagem
+> real de ações mostra o motor `activate`-a **3x menos** (33 vs 97) e
+> `attach_don`-a **14x menos** (6 vs 83) que o humano vencedor, enquanto
+> ataca 13% mais — **confirma por um caminho 100% independente** (contagem
+> real de jogo, não score sintético) o mesmo diagnóstico já registrado nos
+> blocos 569/578/579/580 (escala attack×play incomparável, `attach_don`/
+> `activate` subutilizados). Sobe a prioridade de resolver esse item.
+> Achado lateral: o bug do Streusen `OP17-050` (bloco 576, nunca
+> corrigido) apareceu pela 3ª vez distorcendo uma decisão real, em
+> partida diferente. Só leitura, nenhum código de produção alterado.
+> Ver bloco 583 do HANDOFF.
+>
 > 17/08/2026 (bloco 582): **fecha a pendência #1 do bloco 580**
 > (`compare_vs_human.py` nunca tinha sido rodado) — pedido do usuário:
 > "pegue os logs que o humano vencer, simule os turnos com o bot e veja

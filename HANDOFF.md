@@ -1,5 +1,117 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (583) - Claude (sessao remota web) - Aprofunda o bloco 582: simula o TURNO INTEIRO (nao so a 1a jogada) nas 25 partidas que o humano venceu -- CONFIRMA por um caminho independente o achado do bloco 578/579/580: o motor ativa habilidade 3x menos e anexa DON 14x menos que o humano vencedor
+
+**Pedido do usuario**: "passe turno a turno e veja se o bot toma decisoes
+parecidas ou iguais ao do humano, em relacao a cartas jogadas,
+sequencia de jogadas e ativacao de efeitos, alvos selecionados etc" --
+aprofundamento explicito do bloco 582 (que so comparava a MELHOR jogada
+isolada contra o que o humano fez naquele turno).
+
+### Metodo
+
+`audit_one_game` (`audit_real_losses.py`, reusado sem duplicar,
+`capture_actions=True`) chama `OPTCGMatch.play_turn()` DE VERDADE pra
+cada turno das 25 partidas do bloco 582, com `bot_side` = lado do
+HUMANO (nao o bot original) -- o motor de hoje joga o turno INTEIRO
+(multiplas acoes em sequencia: play/activate/attack/attach_don, cada
+uma com alvo), nao so pontua 1 candidato isolado. Script descartavel em
+scratchpad (`audit_human_wins.py` + `analyze_human_wins.py`, nao
+versionados). **111 turnos** comparados (a diferenca pros 116 do bloco
+582 e que ali contava por PLAYER-turno mesmo sem `chosen_actions`
+capturavel; aqui so entram turnos que o motor conseguiu simular
+completo).
+
+**Bug pego e corrigido ANTES de reportar** (mesma familia da
+retificacao 04/08 documentada mais abaixo neste arquivo pro
+`audit_real_losses.py` original): o log historico nunca escreve a
+palavra "Leader" no alvo de um ataque, sempre nome+codigo da carta --
+minha 1a versao do script tratava ataque ao lider como "ataque a um
+personagem de codigo X", inflando divergencia de alvo pra quase 100%.
+Corrigido normalizando o codigo do alvo contra o `leader_code` real do
+oponente (`logs/index.json`) antes de comparar.
+
+### Resultado 1 -- sequencia INTEIRA do turno raramente bate exata, e isso e esperado
+
+- Sequencia identica (mesma acao+alvo, mesma ordem): **10/111 (9%)**
+- Mesmo CONJUNTO de acoes (kind+carta), qualquer ordem: **11/111 (10%)**
+- Quando o motor faz MENOS acoes que o humano no turno: **59/111 (53%)**
+- Quando faz MAIS: **22/111 (20%)**; mesmo numero: **30/111 (27%)**
+
+Turno de OPTCG tem varias linhas validas (ordem de ataque/play/DON quase
+sempre comuta) -- exigir a sequencia IDENTICA e um padrao alto demais
+pra ser o criterio principal. O numero que importa mais e o de baixo.
+
+### Resultado 2 -- quando o motor faz a MESMA jogada, o ALVO bate na
+maioria das vezes
+
+De 208 ataques do humano, **156 (75%) tiveram o mesmo alvo escolhido
+pelo motor naquele turno**; restrito aos casos em que o motor escolheu
+ATACAR COM A MESMA CARTA que o humano (190 casos), o alvo bateu em
+**155 (81,6%)**. Overlap de acoes (kind+carta) por turno: 14/111 (13%)
+turnos com 100% de overlap, 55/111 (50%) com 50-99%, 37/111 (33%) com
+1-49%, so **5/111 (4,5%) com ZERO overlap**.
+
+### Resultado 3 -- O ACHADO QUE IMPORTA: motor SUBUTILIZA `activate`/
+`attach_don` comparado ao humano vencedor, CONFIRMANDO por um caminho
+100% independente o que os blocos 567/569/578/579/580 ja tinham achado
+por outro angulo (score/escala, nao contagem real de jogo)
+
+| tipo de acao | HUMANO (519 acoes, 111 turnos) | MOTOR DE HOJE | razao |
+|---|---|---|---|
+| attack | 208 | 234 | motor ataca **13% MAIS** |
+| play | 131 | 137 | quase igual |
+| **activate** | 97 | **33** | motor ativa **3x MENOS** |
+| **attach_don** | 83 | **6** | motor anexa DON **14x MENOS** |
+
+Media de acoes por turno: humano 4,68, motor 3,69 -- o motor faz um
+turno inteiro **mais curto**, e a diferenca esta quase toda em
+`activate`/`attach_don`, nao em jogar carta ou atacar. Bate ponto por
+ponto com o diagnostico ja registrado (bloco 569: "3 dos 4 achados de
+16/08 eram opcao-nao-gerada"; bloco 579/580: "attack e play em escalas
+incomparaveis, motor sempre prefere atacar"). A diferenca desta vez: em
+vez de medir SCORE em self-play sintetico, e uma CONTAGEM DE JOGADA REAL
+em 25 partidas que um humano de fato ganhou -- segunda fonte de
+evidencia, independente, apontando pro mesmo lugar.
+
+### Exemplos concretos (ilustram o padrao, nao so o numero)
+
+- `2026-08-02T00.53.44 T10`: humano
+  `play OP15-092, attack OP14-120->leader, play OP14-099, attach_don OP14-079 (x2), attack OP14-079->leader, activate OP14-079, activate OP14-120`
+  (8 acoes) vs motor `play OP14-120, attack OP14-120->leader, activate OP14-079, attack OP14-079->leader, play OP05-094, play OP14-099`
+  (6 acoes) -- nucleo de jogadas em comum (mesmas cartas atacando/
+  jogando), mas os 2 `attach_don` do humano e 1 dos 2 plays somem.
+- `2026-08-02T00.53.44 T12`: humano ataca `OP14-079 -> OP16-010`
+  (personagem, nao lider) e o motor ataca `OP14-079 -> leader` -- exemplo
+  real de divergencia de ALVO (nao so contagem) com a MESMA carta
+  atacante escolhida.
+- 3 turnos com ZERO overlap: 2 sao "humano jogou 1 carta, motor achou
+  nada que valesse a pena" (`OP17-039`/`attach_don`, `OP17-045`/`play`);
+  o 3o (`2026-08-15T22.24.38 T2`) e "humano jogou OP17-045, motor jogou
+  OP17-050 (Streusen) no lugar" -- **o MESMO bug de parser ja registrado
+  no bloco 582/576** (`add_to_hand` espurio inflando o score de
+  OP17-050) aparecendo de novo numa partida DIFERENTE, terceira
+  ocorrencia real documentada.
+
+### Validacao
+
+So leitura (mesmo padrao do bloco 582), nenhum arquivo de producao
+alterado. Scripts descartaveis ficam no scratchpad da sessao, nao
+commitados (`audit_human_wins.py`, `analyze_human_wins.py`,
+`human_win_audits/*.json`, `analysis_results.json`).
+
+### Pendente
+
+- O achado de `attach_don`/`activate` 3-14x subutilizados agora tem
+  **prova por contagem real**, nao so por score -- eleva a prioridade
+  do item "escala attack x play incomparavel" (bloco 580, "3o lider
+  prometido" ainda pendente) pra cima de qualquer outro ajuste fino de
+  peso.
+- O bug do Streusen `OP17-050` (bloco 576, nunca corrigido) agora tem
+  **3 ocorrencias reais documentadas** distorcendo decisao em partidas
+  diferentes (bloco 582 T1 de 16/08, este bloco T2 de 15/08) -- deveria
+  furar a fila de prioridade do parser.
+
 ## 2026-08-17 (582) - Claude (sessao remota web) - Fecha a pendencia #1 do bloco 580 (`compare_vs_human.py` "nao analisado ainda"): 25 partidas REAIS em que o HUMANO venceu, 116 turnos -- motor concorda com a jogada do humano em 88,8% (top1 exato) e 95,7% (top5)
 
 **Pedido do usuario**: "quero que pegue os logs que o humano vencer, e
