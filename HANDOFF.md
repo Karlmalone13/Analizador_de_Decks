@@ -1,5 +1,76 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (592) - Claude (sessao remota web) - Veredito OBJETIVO e AUTOMATIZADO em TODOS os 111 turnos das 26 partidas reais bot-vs-humano do banco (nao so uma amostra) -- motor de hoje causa dano >= ao humano real em 90,1% dos turnos
+
+**Pedido do usuario**: apos eu amostrar so 6 turnos no bloco 589
+("faria a mesma coisa ou melhor?"), o usuario pediu explicitamente pra
+nao olhar so uma amostra -- "quero que olhe todos os turnos de todos
+os logs com humanos no nosso banco". Dado o volume (111 turnos), leitura
+manual turno a turno nao escala -- construida uma metrica OBJETIVA e
+automatizavel em vez de julgamento qualitativo.
+
+### Metodo
+
+Reauditadas as 26 partidas (nao so as 25 que o humano venceu) com o
+motor ATUAL (ja incluindo os fixes desta sessao: attach_don gap<=0,
+attach_don_for_attack logado, lethal com counter tipo evento). Pra
+CADA turno: `dano_humano_real = vida_antes - vida_depois` (dos
+snapshots do proprio log, fato historico) vs `dano_motor =
+vida_antes - vida_minima_atingida_na_narrativa_real_da_simulacao`
+(parseando `engine_hoje_narrativa`, ja gerada por `audit_one_game`,
+sem reimplementar nada). Dano e um NUMERO, nao interpretacao -- da pra
+automatizar com confianca em vez de ler 111 narrativas na mao.
+
+### Resultado (111 turnos, 26 partidas, TODAS -- nao amostra)
+
+- **Motor causa dano >= ao que o humano causou de verdade: 100/111
+  (90,1%)**
+- Motor causa MENOS dano: 11/111 (9,9%)
+- Distribuicao do delta: 68,5% empate exato (mesmo dano), 21,6% motor
+  causa MAIS dano que o historico real, 9,9% motor causa menos
+- Motor fecha a partida no PROPRIO turno: 7/111 -- mesma contagem de
+  quantas vezes o humano fechou de verdade no historico (7/111,
+  turnos diferentes, coincidencia numerica registrada mas nao
+  necessariamente causal)
+
+### Os 11 casos onde o motor causa menos dano (lista completa, maior diferenca primeiro)
+
+```
+2026-08-02T16.38.43 T8  (OP16-001): humano=3, motor=1
+2026-08-15T22.24.38 T6  (OP17-039): humano=2, motor=0
+2026-08-02T12.30.45 T3  (OP16-001): humano=1, motor=0
+2026-08-02T13.18.18 T6  (OP16-001): humano=2, motor=1
+2026-08-08T12.15.57 T3  (OP17-039): humano=1, motor=0
+2026-08-13T22.43.37 T4  (OP17-039): humano=1, motor=0
+2026-08-13T22.43.37 T6  (OP17-039): humano=2, motor=1
+2026-08-15T22.24.38 T4  (OP17-039): humano=1, motor=0
+2026-08-16T00.57.17 T8  (OP17-039): humano=3, motor=2
+2026-08-16T15.11.37 T6  (OP17-039): humano=2, motor=1
+2026-08-16T23.26.16 T4  (OP17-039): humano=1, motor=0
+```
+
+7 dos 11 sao do lider principal do usuario (OP17-039, Rocks D. Xebec) --
+maior amostra desse lider tambem explica parte da concentracao.
+Diferencas pequenas (1-2 pontos de vida por turno, nunca um turno
+inteiro "perdido"). **Nao investigado individualmente ainda** -- proximo
+passo natural, mas a leitura agregada ja e clara: o motor NUNCA causa
+"muito menos" dano em nenhum turno desta base, so ligeiramente menos.
+
+### Leitura honesta pro usuario
+
+Isto responde a pergunta "o bot jogaria igual ou melhor que o humano?"
+de forma objetiva e cobrindo o banco INTEIRO, nao uma amostra
+escolhida a dedo: **na esmagadora maioria dos turnos (90%), sim** --
+causa o mesmo dano ou mais. Os 11 turnos onde causa menos sao
+diferencas pequenas, concentradas no lider principal, e sao a fila
+natural de investigacao caso a caso daqui pra frente (mesmo metodo dos
+blocos 585/591 -- achar causa raiz antes de mexer em score).
+
+### Scripts (scratchpad, nao commitados)
+
+`audit_all26_current.py` (reauditoria com motor atual),
+`full_verdict.py` (metrica objetiva de dano por turno).
+
 ## 2026-08-17 (591) - Claude (sessao remota web) - FIX REAL: `_lethal_search` podia certificar "letal garantido" contra uma mao que na verdade sobrevivia -- ignorava counter tipo EVENTO (Ground Death e afins) na mao CONHECIDA do oponente, so contava o stat impresso
 
 **Pedido do usuario, direto**: "antes de investigar o Marlon, preciso

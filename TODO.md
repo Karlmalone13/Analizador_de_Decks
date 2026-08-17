@@ -2,6 +2,19 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 592): pedido do usuário ("quero que olhe TODOS os
+> turnos de TODOS os logs com humanos", não uma amostra) — veredito
+> objetivo e automatizado (dano real por turno, não leitura manual) em
+> **111 turnos das 26 partidas bot-vs-humano do banco inteiro**, motor
+> atual (pós os 3 fixes desta sessão). **Resultado: motor causa dano
+> igual ou maior que o humano real em 90,1% dos turnos** (100/111);
+> nos outros 11 (9,9%), a diferença é sempre pequena (1-2 pontos de
+> vida), nunca um turno "perdido" inteiro — 7 desses 11 são do líder
+> principal do usuário (Rocks D. Xebec OP17-039). Lista completa dos 11
+> casos registrada no HANDOFF para investigação futura caso a caso. Só
+> leitura, nenhum código de produção alterado nesta rodada. Ver bloco
+> 592 do HANDOFF.
+>
 > 17/08/2026 (bloco 591): **FIX REAL, pedido direto do usuário**
 > ("resolva isso que ainda não foi resolvido"). `_lethal_search` podia
 > certificar "letal garantido" contra uma mão que na verdade
