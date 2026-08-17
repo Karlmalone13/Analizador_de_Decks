@@ -2,6 +2,24 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 587): **fecha o inventário completo das 5
+> categorias de divergência** motor-vs-humano (attach_don gerado/não
+> gerado, activate, play, alvo de ataque) nas 25 partidas que o humano
+> venceu. 2 achados novos: (1) o delta de 828 do bloco 586 estava
+> inflado por turnos de LETHAL (71% dos casos — comportamento CORRETO,
+> não bug); excluindo-os, sobra só evidência fraca (7 casos, mediana
+> 185) — **decisão: não recalibrar a escala attack×resto com base
+> nisso**. (2) o gap de `play` (82 casos, 64%) é **quase todo artefato**
+> do `DonEstimator` (limitação já documentada: DON anexado que retorna
+> ao K.O./bounce não é rastreado, subestimando DON disponível conforme
+> a partida avança). **Conclusão final**: das 5 categorias investigadas
+> nesta sessão, só 2 sobrevivem como achado acionável — o fix já
+> enviado (bloco 585) e um padrão concentrado de "guardar DON pro
+> futuro sem ataque no turno" (24 casos, 1 carta só, ainda
+> especulativo). O resto é ruído de medição ou evidência fraca demais
+> pra justificar mexer no motor. Só leitura, nenhum código de produção
+> alterado nesta rodada. Ver bloco 587 do HANDOFF.
+>
 > 17/08/2026 (bloco 586): **retificação do bloco 585** — capturando a
 > lista CHEIA de candidatas (não o shortlist de 3-6 salvo no
 > decision_log), o quadro fica bem mais preciso. Dos 163 gaps

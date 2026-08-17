@@ -1,5 +1,101 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (587) - Claude (sessao remota web) - Fecha a rodada de investigacao pos-586: 2 achados novos (mistura lethal/nao-lethal inflava o delta de attach_don; gap de "play" de 64% e quase todo artefato do DonEstimator, nao bug) -- inventario final das 5 categorias de divergencia
+
+**Pedido do usuario, sequencia de perguntas**: "so tem essas
+divergencias?" (apos o 586) -> pediu inventario completo -> "investiga
+o play" (a maior categoria numerica ainda nao aberta).
+
+### Achado 1 -- o delta de 828 do bloco 586 estava contaminado por turnos de LETHAL (comportamento CORRETO, nao bug)
+
+Segmentando os 24 casos de `attach_don` "gerado mas perdeu" (bloco 586)
+por `can_lethal_this_turn` no momento da decisao: **17/24 (71%)**
+aconteceram com `can_lethal=True` -- nesses, o motor achava (certo ou
+errado) que tinha letal aquele turno, entao atacar tudo em vez de
+guardar DON pra depois e a decisao CORRETA (nao ha "depois" se o jogo
+acaba agora). Excluindo esses, sobram so **7 casos NAO-letais**, com
+delta bem menor: mediana **185** (nao 828), min 88, max 221. Evidencia
+fraca e mista pra recalibrar a escala attack-vs-resto de forma geral --
+olhando 1 exemplo de perto (`2026-08-16T00.57.17 T8`), o motor tinha
+uma jogada de `play` genuinamente melhor (score 250) disponivel no
+mesmo turno, entao nem e claramente um erro.
+
+> **Conclusao pratica**: NAO ha evidencia solida suficiente pra
+> recalibrar `ATTACH_DON_COMBATE_FRACAO`/escala geral com base nestes
+> 7 casos. Decisao: nao mexer, registrar como investigado e
+> insuficiente.
+
+### Achado 2 -- gap de `play` (82 casos, 64% do que o humano jogou) e quase TODO artefato do `DonEstimator`, nao decisao ruim
+
+Mesma metodologia (lista CHEIA via `full_actions`) aplicada a `play`:
+- **39/82 (48%) geradas mas perderam** -- delta mediano 141, mas
+  MISTO: 3 exemplos tem delta NEGATIVO (candidata com score MAIOR que
+  a escolhida, ainda assim nao escolhida) -- sinal de que a busca por
+  simulacao (`_select_action_via_search`, Monte Carlo) decide por
+  VALOR SIMULADO, nao pelo score estatico que capturei; a comparacao
+  por score puro e só aproximada quando 2+ candidatas entram na busca
+  cara. Sem padrao dominante unico (quem vence: `attack` 25x, `play`
+  12x, `activate` 2x) -- misto demais pra virar 1 fix generico.
+- **43/82 (52%) nunca geradas** -- e aqui a causa fica clara: **42 das
+  43** tem custo em DON MAIOR que o `don_available_estimado` da
+  `DonEstimator` pro inicio daquele turno. Causa raiz: a propria
+  limitacao ja documentada no docstring de `DonEstimator` --
+  "Unico DON que realmente FICA PRESO fora do pool geral e o anexado
+  via attach_don... nao rastreia DON que retorna quando o personagem e
+  K.O.'d/bounced". Em partidas com bastante combate (a maioria das 25),
+  DON anexado a personagens que depois morrem em combate SOME da
+  estimativa, mesmo tendo retornado de verdade no jogo real -- a
+  estimativa fica artificialmente BAIXA conforme a partida avanca,
+  fazendo cartas que o humano realmente pagou parecerem "caras demais"
+  pro motor.
+
+> **Conclusao pratica**: o numero "64% do play nao e replicado" do
+> inventario anterior **nao e um achado de qualidade de decisao** --
+> e majoritariamente um artefato de reconstrucao de estado JA
+> documentado como limitacao conhecida da ferramenta. Nao vale corrigir
+> `decision_engine.py` com base nisso; se algum dia valer a pena,
+> o fix fica em `DonEstimator.available()` (rastrear retorno de DON via
+> K.O./bounce), nao no motor de decisao.
+
+### Inventario final das 5 categorias de divergencia (25 partidas, 111 turnos)
+
+| categoria | tamanho | status apos investigacao |
+|---|---|---|
+| `attach_don` nunca gerado | 56 | 24 concentrados numa carta so (OP17-039 Rocks D. Xebec) -- padrao "guardar DON pro futuro sem ataque no turno", categoria de candidato que NAO EXISTE hoje. Nao investigado a fundo (especulativo, pode ser habito de baixo valor do jogador, nao gap real) |
+| `attach_don` gerado mas perdeu | 24 | 17 sao turnos de LETHAL (correto), so 7 sao divergencia real e fraca (mediana 185) -- nao vale recalibrar com essa evidencia |
+| `activate` "gap" | 80 | NAO CONFIAVEL -- 13/14 cartas nem tem `activate_main`, e rotulo do log (gatilho automatico marcado como "activate") |
+| `play` nunca escolhido | 82 (64%) | 42/43 dos "nunca gerados" e artefato do `DonEstimator` (DON de attach nao retorna ao K.O./bounce); os 39 "gerados mas perderam" sao mistos, sem padrao unico, parte deles e ruido de busca por simulacao (score estatico != valor decisorio real) |
+| alvo de ataque diferente (mesma carta) | 35/190 (18%) | direcao MISTA (19 humano-mira-personagem/motor-mira-lider vs 14 o oposto) -- nao e vies sistematico claro |
+
+**Dos 5, so 2 sobrevivem como achado acionavel com confianca**: o fix
+ja enviado (bloco 585, `gap<=0` na margem de seguranca) e o padrao
+concentrado de "guardar DON pro futuro" (24 casos, 1 carta) --
+especulativo, precisa de mais investigacao antes de virar codigo. Os
+outros 3 (activate, play, alvo de ataque) sao ruido de medicao ou
+evidencia fraca demais pra justificar mudar `decision_engine.py`.
+
+### Licao de processo (vale registrar pra proxima sessao)
+
+A pergunta inicial do usuario ("so 9% de sequencia identica, muito
+pouco") levou a uma cadeia de 3 correcoes sucessivas no MEU proprio
+metodo de medicao antes de chegar num numero confiavel (bloco 585:
+top-8 nao e o que pensava: bloco 586: lista completa via full_actions
+revela que a maioria dos gaps de activate era rotulo, nao bug; este
+bloco: play tambem era majoritariamente artefato, e o delta de
+attach_don estava inflado por turnos de letal). **Cada correcao reduziu
+o tamanho do problema real** -- do "so 9% igual" inicial pro quadro
+final de "2 gaps acionaveis conhecidos, o resto e ruido de medicao ou
+evidencia fraca". Vale como caso de estudo: sequencia exata de turno
+inteiro (a pergunta original) e uma vara MUITO alta pra decisao
+multi-passo com varias ordens validas -- decompor por categoria de
+acao e olhar a lista CHEIA de candidatas (nao o que o log salva) e o
+que realmente separa achado real de artefato de medicao.
+
+### Scripts (scratchpad, nao commitados)
+
+`play_gap_analysis.py` -- mesma tecnica de `calibration_deltas.py`,
+generalizada pra `play`.
+
 ## 2026-08-17 (586) - Claude (sessao remota web) - RETIFICACAO do bloco 585: capturando a lista CHEIA de candidatas (nao o shortlist de 3-6 do decision_log), o quadro muda bastante -- 83% dos gaps de attach_don/activate SAO estruturais (nunca gerados), mas a maior parte do "gap de activate" era ARTEFATO de medicao, nao bug real
 
 **Pedido direto do usuario**: "passe log a log conferindo... se ele
