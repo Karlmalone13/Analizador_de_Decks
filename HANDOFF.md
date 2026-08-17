@@ -1,5 +1,75 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (595) - Claude (sessao remota web) - TERCEIRA TENTATIVA de bancar DON ocioso no lider FUNCIONOU: fora do pool de candidatas, so como ULTIMO RECURSO do turno -- confirma a hipotese dos blocos 593/594 e mantem o baseline (90,1%) com ganho real pequeno
+
+**Pedido do usuario, apos o ceticismo justo sobre a metrica** ("se ele
+jogar igual humano, nao tem como piorar, ja esta ruim... essa nossa
+forma de verificar... esta errada"): expliquei o mecanismo tecnico
+concreto (as 2 tentativas competiam por espaco no shortlist `TOP_K`
+que a busca cara considera, mesmo sem serem escolhidas) e propus uma
+3a implementacao que elimina essa competicao por construcao, medindo
+de novo antes de aceitar -- mesma disciplina, resultado desta vez
+confirma a explicacao.
+
+### A implementacao que funcionou
+
+`_bank_idle_don_on_leader(p, opp, engine, verbose)` -- metodo novo,
+chamado DIRETAMENTE no loop do Turn Planner (`main_phase`), exatamente
+no ponto onde `_generate_and_score_actions` ja decidiu que NAO ha nada
+acionavel este turno (`if not actions or actions[0][0] < 0:`) -- ou
+seja, ESTRITAMENTE POSTERIOR a qualquer decisao real, nunca entra no
+pool de candidatas nem no shortlist. Se banca DON (retorna True), o
+loop faz `continue` (tenta mais uma vez -- proxima iteracao ve
+`don_sobra=0` e ai sim quebra); se nao ha nada pra bancar, `break` como
+sempre. Reusa `_don_reserve_for_defense`/`_can_play_card` (mesma fonte
+das outras versoes, nao duplica regra).
+
+### Medido ANTES de aceitar -- desta vez bate o baseline, com ganho pequeno real
+
+| metrica | baseline (592) | 1a tentativa (593) | 2a tentativa (594) | 3a tentativa (esta) |
+|---|---|---|---|---|
+| motor causa dano >= ao humano | **100/111 (90,1%)** | 95/111 (85,6%) | 96/111 (86,5%) | **100/111 (90,1%)** |
+| motor causa MENOS dano | 11/111 (9,9%) | 16/111 (14,4%) | 15/111 (13,5%) | 11/111 (9,9%) |
+| motor causa MAIS dano que o humano | 24/111 | -- | -- | **26/111** (+2) |
+| motor fecha a partida no proprio turno | 7/111 | -- | -- | **8/111** (+1) |
+| empate (mesmo dano) | 76/111 | -- | -- | 74/111 |
+
+**Confirma a hipotese registrada no bloco 594**: o problema das 2
+tentativas anteriores nunca foi a IDEIA (bancar DON ocioso no lider) --
+era ela competir por espaco no shortlist `TOP_K` contra candidatas
+`play`/`activate` genuinamente boas, mesmo sem ser a escolhida.
+Isolando a execucao pra rodar SO depois que o shortlist/busca ja
+decidiram que nao ha nada mais, o mesmo comportamento final (bancar DON
+no lider ocioso) deixa de ter esse efeito colateral -- resultado volta
+exatamente ao baseline e ainda ganha um pouco (2 turnos a mais com mais
+dano que o humano, 1 turno a mais fechando a partida).
+
+**Detalhe da lista dos 11 piores casos** (dano do motor < humano):
+10 dos 11 sao EXATAMENTE os mesmos do bloco 592 (nao regrediram, nem
+melhoraram) -- 1 caso saiu da lista (`2026-08-02T12.30.45 T3`, agora
+corrigido) e 1 caso novo entrou (`2026-08-02T01.59.52 T12`), contagem
+liquida igual mas distribuicao diferente -- dentro do esperado pra uma
+mudanca real no motor, nao motivo de preocupacao.
+
+### Validacao
+
+`smoke_fast`/`smoke_test`: 100%, incluindo 3 checks novos
+(`test_bank_idle_don_no_lider_como_ultimo_recurso_17_08`) -- confirma
+que a funcao banca quando deveria, nao banca com DON nao-ocioso, e
+**nao aparece no pool normal de `_generate_attach_don_actions`**
+(exatamente o que faltava nas 2 tentativas anteriores).
+
+### Licao final registrada (fecha o arco dos blocos 593-595)
+
+Quando uma ideia bem fundamentada (padrao real, 24 casos concentrados)
+regride o resultado medido, a causa pode ser a IMPLEMENTACAO
+(onde/como o candidato entra no pipeline de decisao), nao a ideia em
+si. "Medir antes de aceitar" vale tanto pra REJEITAR uma mudanca quanto
+pra dar uma 2a/3a chance a mesma ideia com uma implementacao diferente
+-- as 3 tentativas juntas (2 revertidas + 1 aceita) sao o registro
+completo de como chegar la sem aceitar nada por confianca cega no
+"parece certo" nem desistir cedo demais so porque a 1a tentativa falhou.
+
 ## 2026-08-17 (594) - Claude (sessao remota web) - SEGUNDA TENTATIVA, TAMBEM REVERTIDA: versao conservadora da categoria 4 (so banca quando NINGUEM pode atacar) continua piorando o resultado real (90,1% -> 86,5%) -- ideia abandonada por ora, registrada com os dois experimentos pra nao repetir
 
 **Contexto**: bloco 593 tentou "bancar DON ocioso no lider" (categoria

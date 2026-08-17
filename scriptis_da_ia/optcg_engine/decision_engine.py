@@ -17242,6 +17242,21 @@ class OPTCGMatch:
             n += 1
             actions = self._generate_and_score_actions(p, opp, engine)
             if not actions or actions[0][0] < 0:
+                # Ultimo recurso ANTES de encerrar o turno: banca DON ocioso
+                # no proprio lider pra um ataque futuro (achado real 17/08,
+                # blocos 592-594). So chega aqui quando `_generate_and_
+                # score_actions` ja decidiu que NAO ha nada acionavel este
+                # turno (lista vazia ou melhor score negativo) -- nunca
+                # disputa espaco no shortlist TOP_K que a busca cara usa.
+                # 2 tentativas anteriores (blocos 593/594) encaixaram isso
+                # como CANDIDATO competindo na lista de acoes e regrediram o
+                # resultado real medido (90,1% -> 85-86%), mesmo numa versao
+                # que nunca vencia um ataque de verdade -- a causa provavel
+                # era disputar espaco no shortlist contra outras boas
+                # candidatas, nao competir com attack em si. Aqui e
+                # estritamente POSTERIOR a qualquer decisao real.
+                if self._bank_idle_don_on_leader(p, opp, engine, verbose=verbose):
+                    continue
                 break
             priority = engine.analyzer.analysis_priority()
 
@@ -17514,6 +17529,50 @@ class OPTCGMatch:
                     'target_type': ttype,
                 })
         return need
+
+    def _bank_idle_don_on_leader(self, p: GameState, opp: GameState, engine, verbose=False) -> bool:
+        """
+        Ultimo recurso do turno (achado real 17/08, blocos 592-594): quando
+        `_generate_and_score_actions` ja esgotou tudo que vale a pena fazer
+        (o loop principal do Turn Planner ia encerrar o turno agora), banca
+        o DON genuinamente OCIOSO no proprio lider -- fica anexado a ele
+        pros proximos turnos (permanente, ao contrario do pool geral, que
+        so refresca sem acumular) em vez de nao servir pra nada este turno.
+        Mesma fonte de `_don_reserve_for_defense`/`_can_play_card` ja usada
+        no resto do arquivo, nao duplica regra.
+
+        Roda SO daqui, chamado explicitamente no ponto onde o loop do Turn
+        Planner ja ia parar -- nunca entra no pool de candidatas de
+        `_generate_and_score_actions`/no shortlist `TOP_K` que a busca cara
+        considera. As 2 tentativas anteriores (blocos 593/594) encaixaram a
+        MESMA ideia como candidato COMPETINDO nesse pool e regrediram o
+        resultado real medido nas 26 partidas do banco (90,1% -> 85-86% de
+        turnos com dano >= ao humano), mesmo numa versao que nunca vencia um
+        ataque de verdade -- a causa provavel era disputar espaco no
+        shortlist contra outras candidatas boas (`play`/`activate`), nao
+        competir com `attack` em si. Este ponto de entrada e estritamente
+        POSTERIOR a qualquer decisao real do turno, entao nunca pode causar
+        esse efeito colateral.
+
+        Retorna True se anexou (o loop do Turn Planner deve continuar, nao
+        encerrar o turno ainda -- pode ainda haver mais nada a fazer na
+        proxima iteracao, aí sim encerra).
+        """
+        if p.leader is None:
+            return False
+        don_reserve = engine._don_reserve_for_defense()
+        don_sobra = max(0, p.don_available - don_reserve)
+        if don_sobra <= 0:
+            return False
+        if any(engine._can_play_card(c, don_usable=don_sobra) for c in p.hand):
+            return False
+        p.leader.don_attached += don_sobra
+        p.don_available -= don_sobra
+        EffectExecutor(p, opp)._dispatch_don_given(p.leader)
+        if verbose:
+            print(f'    ⚡ anexou {don_sobra} DON em {p.leader.name[:20]} '
+                  f'(banking -- nada mais pra fazer este turno)')
+        return True
 
     def _play_card(self, card: Card, p: GameState, opp: GameState,
                    ee: EffectExecutor, verbose: bool = False):

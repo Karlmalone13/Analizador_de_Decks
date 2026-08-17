@@ -2,6 +2,20 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 595): **TERCEIRA tentativa de bancar DON ocioso no
+> líder FUNCIONOU** (fecha o arco dos blocos 592-595). As 2 tentativas
+> anteriores (candidato competindo no pool de `_generate_attach_don_
+> actions`) regrediam o resultado real medido — a causa era disputar
+> espaço no shortlist `TOP_K` contra candidatas boas, não a ideia em
+> si. 3ª tentativa: `_bank_idle_don_on_leader`, chamado como **último
+> recurso** direto no loop do Turn Planner, só quando já não há NADA
+> acionável — nunca entra no pool/shortlist. Medido de novo: **volta ao
+> baseline (90,1%, 100/111) e ainda ganha um pouco** (26/111 turnos com
+> mais dano que o histórico real, contra 24 antes; 8/111 fecha a
+> partida no próprio turno, contra 7). `smoke_fast`/`smoke_test` 100%,
+> 3 checks novos. **Aceito e mantido em produção.** Ver bloco 595 do
+> HANDOFF.
+>
 > 17/08/2026 (bloco 594): **2ª tentativa, também revertida** — versão
 > conservadora da categoria 4 (só bancar DON ocioso no líder quando
 > NINGUÉM pode atacar, corrigindo a hipótese do bloco 593) continua

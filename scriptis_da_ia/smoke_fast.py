@@ -10647,6 +10647,7 @@ def main() -> int:
     test_lethal_conta_counter_tipo_evento_conhecido_na_mao_17_08()
     test_opp_lethal_threat_memoizada_nao_muda_resposta_16_08()
     test_attach_don_margem_seguranca_com_ataque_ja_vencedor_e_don_ocioso()
+    test_bank_idle_don_no_lider_como_ultimo_recurso_17_08()
     test_score_give_don_considera_sinergia_com_ataque()
     test_gain_double_attack_respeita_target_leader_e_selecionado()
     test_score_play_prioriza_carta_que_buffa_ataque_do_lider_hoje()
@@ -11562,6 +11563,56 @@ def test_attach_don_margem_seguranca_com_ataque_ja_vencedor_e_don_ocioso() -> No
     attach2 = [a for a in acts2 if a[1] == "attach_don" and a[2] is me2.leader]
     check("ataque ja vencedor + DON NAO ocioso (mao tem carta jogavel): nao gera margem",
           not attach2)
+
+
+def test_bank_idle_don_no_lider_como_ultimo_recurso_17_08() -> None:
+    """
+    Achado real 17/08 (blocos 592-594): 24 dos 56 casos de "attach_don
+    nunca gerado" eram concentrados numa carta so -- Rocks D. Xebec
+    OP17-039 (sem nenhum gatilho condicionado a DON) -- o humano guardava
+    DON de sobra nele em turnos SEM nenhum ataque. 2 tentativas anteriores
+    (encaixar isso como CANDIDATO no pool de `_generate_attach_don_
+    actions`) regrediram o resultado real medido nas 26 partidas do banco
+    (90,1% -> 85-86%), mesmo numa versao que nunca vencia um ataque de
+    verdade -- hipotese: disputava espaco no shortlist TOP_K contra outras
+    candidatas boas. Terceira tentativa: `_bank_idle_don_on_leader` roda
+    SO como ultimo recurso, chamado explicitamente no ponto onde o loop do
+    Turn Planner ja ia encerrar o turno (nada mais acionavel) -- nunca
+    entra no pool de candidatas. Testado aqui isoladamente (nao precisa
+    rodar o loop inteiro pra validar a funcao em si).
+    """
+    xebec = real_card("OP17-039")
+    opp = GameState(leader=real_card("OP16-080"))
+
+    me = GameState(leader=xebec, don_available=2, turn=2)
+    me.field_chars = []
+    me.hand = [mk("H1", "Cara1", cost=6), mk("H2", "Cara2", cost=5)]  # nada pagavel com 2
+    engine = DecisionEngine(me, opp)
+    match = OPTCGMatch((xebec, []), (opp.leader, []))
+    banked = match._bank_idle_don_on_leader(me, opp, engine)
+    check("ultimo recurso: DON ocioso banca no lider quando chamado",
+          banked and xebec.don_attached == 2 and me.don_available == 0)
+
+    # Controle: DON NAO ocioso -- nao deve bancar.
+    me2 = GameState(leader=real_card("OP17-039"), don_available=2, turn=2)
+    me2.hand = [mk("H3", "Barata", cost=2)]  # pagavel -- DON NAO ocioso
+    engine2 = DecisionEngine(me2, opp)
+    match2 = OPTCGMatch((me2.leader, []), (opp.leader, []))
+    banked2 = match2._bank_idle_don_on_leader(me2, opp, engine2)
+    check("DON NAO ocioso (carta pagavel na mao): nao banca, nao muda estado",
+          not banked2 and me2.leader.don_attached == 0 and me2.don_available == 2)
+
+    # Confirma que a funcao NUNCA aparece no pool de candidatas normal --
+    # so e chamada explicitamente no loop, nao dentro de _generate_attach_
+    # don_actions (que e o que causava a regressao nas 2 tentativas antes).
+    me3 = GameState(leader=real_card("OP17-039"), don_available=2, turn=2)
+    me3.hand = [mk("H4", "Cara4", cost=6)]
+    engine3 = DecisionEngine(me3, opp)
+    match3 = OPTCGMatch((me3.leader, []), (opp.leader, []))
+    acts3 = match3._generate_attach_don_actions(me3, opp, engine3)
+    check("banking NAO aparece no pool normal de candidatas (so via chamada explicita)",
+          not any(a[1] == "attach_don" and a[4] == "bank_for_future" for a in acts3
+                  if len(a) > 4))
 
 
 def test_score_give_don_considera_sinergia_com_ataque() -> None:
