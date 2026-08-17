@@ -1,5 +1,71 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (579) - Claude (sessao local) - Partida ao vivo rodou com o SERVER PARADO (motor das 15:38) -- e o achado real que sobra: attack e play estao em ESCALAS INCOMPARAVEIS (mediana 366 vs 68)
+
+Partida: `Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T23.26.16`, bot = p1,
+**derrota** em 9 turnos. Usuario reportou: "bot nao joga o stage, nao pensa,
+ataca toda hora com carta fraca e fica com carta boa na mao".
+
+### 1. O teste nao exercitou nenhum fix de hoje (falha de processo, minha)
+
+O engine server (PID 16136) estava de pe desde **15:38:34** -- confirmado pela
+hora de INICIO DO PROCESSO, nao so pelo log. O receipt aponta pro decision log
+`decisions_2026-08-16T15.38.55.jsonl`. Os fixes sairam as 17:19, 22:05, 22:16,
+22:27, 22:48 e 23:07: **nenhum estava carregado**.
+
+> **Regra pra proxima vez**: avisar o usuario pra reiniciar o server NAO basta.
+> Antes de liberar teste ao vivo, CONFERIR `Get-Process <pid> | StartTime`
+> contra o mtime do `decision_engine.py` e dos bancos -- e reiniciar o server
+> se estiver velho. Um teste ao vivo com processo velho gasta a partida do
+> usuario e produz conclusao errada ("nada foi resolvido").
+
+**Evidencia de que os fixes funcionam**: `audit_real_losses.py` rodou o motor
+de HOJE no MESMO estado do turno 3 e a narrativa e:
+`> gastou 1 DON -> Joga: Thousand Sunny [STAGE]` + `⚙ ativou [Activate:Main]
+de Thousand Sunny`. O bot ao vivo, no mesmo turno, atacou e jogou a Nami.
+O stage so nao foi jogado porque naquele processo ele ainda era carta cega.
+
+### 2. O ACHADO REAL, que os fixes de hoje NAO resolvem
+
+A reclamacao "ataca toda hora com carta fraca e fica com carta boa na mao" e
+**procedente e mecanica**. Distribuicao dos scores dos candidatos gerados,
+medida no motor de HOJE (1 partida instrumentada, deck real do usuario):
+
+| tipo | p10 | mediana | p90 | max |
+|---|---|---|---|---|
+| **attack** | 30.0 | **366.0** | 992.0 | 10500.0 |
+| **play** | -959.0 | **68.5** | 174.0 | 515.0 |
+| attach_don | 35.0 | 61.5 | 415.0 | 9915.0 |
+| activate | 35.0 | 66.0 | 150.0 | 180.0 |
+
+Na telemetria da partida real, a separacao e ainda mais limpa: **todo** attack
+escolhido ficou em 284-376 e **todo** play ficou em 7.8-186 -- as duas faixas
+nao se cruzam em nenhum ponto.
+
+> **Consequencia**: enquanto existir um ataque legal disponivel, **nenhuma
+> carta da mao consegue superar o lance**, por melhor que ela seja e por mais
+> fraco que seja o atacante. Nao e falta de calibragem fina num peso -- sao
+> duas familias de acao pontuadas em REGUAS DIFERENTES. Isso explica os tres
+> sintomas de uma vez: ataca sempre, ataca com corpo fraco, e a carta boa fica
+> na mao.
+
+E a MESMA familia de problema do bloco 569/578 (peso absoluto), mas de longe a
+maior instancia dela -- as anteriores mexiam em 1 gatilho, esta governa a
+escolha entre desenvolver e atacar em TODO turno de TODO deck.
+
+**NAO corrigido nesta sessao**: mexer na escala de `score_attack_target` ou de
+`avaliar_carta` muda o comportamento de todos os decks ao mesmo tempo. Precisa
+de braco antes/depois com `quality_baseline.py` em pelo menos 3 lideres de
+arquetipos diferentes antes de aceitar.
+
+### 3. Telemetria (ordem obrigatoria cumprida)
+
+`consequence_*.txt`: 52 de 55 decisoes de main analisadas, **0 achados
+[FORTE]**, 0 DON que nunca pagou. `decision_summary`: 52 decisoes com opcoes
+registradas. `audit_real_losses` + `triage_real_losses`: 306 turnos, 11 MATCH
+(3.6%) / 295 DIVERGE (96.4%) -- a divergencia altissima e esperada aqui, ja
+que o motor de hoje tem fixes que o motor da partida nao tinha.
+
 ## 2026-08-16 (578) - Claude (sessao local) - Peso do buff condicionado a DON passa a valer por MAGNITUDE (o 35.0 constante do bloco 577) -- ganho REAL medido: pequeno
 
 Fecha o achado do bloco 577. **Resultado honesto: funciona, mas nao foi a

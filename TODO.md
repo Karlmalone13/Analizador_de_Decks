@@ -2,6 +2,23 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 579): **PRIORIDADE 1 — `attack` e `play` estão em escalas
+> incomparáveis.** Medido no motor de hoje: mediana de score **attack 366,0**
+> vs **play 68,5** (p90: 992 vs 174). Na partida real as faixas nem se cruzam
+> (attack 284-376, play 7,8-186). **Enquanto houver um ataque legal, nenhuma
+> carta da mão vence o lance** — explica de uma vez os três sintomas que o
+> usuário relata há dias: ataca sempre, ataca com corpo fraco, carta boa fica
+> na mão. Mesma família do peso absoluto (blocos 569/578), mas a maior
+> instância: governa desenvolver-vs-atacar em todo turno de todo deck. **Não
+> corrigido** — mexer na escala afeta todos os decks; exige braço antes/depois
+> com `quality_baseline.py` em ≥3 líderes de arquétipos diferentes.
+> **Processo**: a partida ao vivo de 23:26 rodou com o engine server parado
+> desde **15:38** (PID 16136), sem nenhum fix de hoje — avisar o usuário pra
+> reiniciar não bastou; **conferir `StartTime` do processo antes de liberar
+> teste ao vivo** virou passo obrigatório. O `audit_real_losses` com o motor
+> de hoje **joga o Thousand Sunny e ativa o `[Activate:Main]`** no mesmo
+> turno 3 em que o bot ao vivo não jogou. Ver bloco 579.
+
 > 16/08/2026 (bloco 578): **peso do 35.0 corrigido** — buff condicionado a DON
 > passa a valer por **magnitude**, não por balde fixo. Duas partes: (1)
 > `per_count_source_n()` virou **função de módulo** com modo `projecao=True` —
