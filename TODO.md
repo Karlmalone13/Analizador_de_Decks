@@ -2,6 +2,23 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 571): **fecha o "bot não joga o stage" — são DOIS bugs
+> empilhados no Thousand Sunny.** **(1)** O jogo usa `ST31-005`, o banco tem
+> a carta como `ST31-006` → ao vivo chega com código desconhecido (4 cópias
+> cegas, e é o que faz o deck validar 46/50 e travar o auditor de
+> candidatos). **(2, pior)** O `card_effects_db` só tem o `on_play` da carta
+> — o **`[Activate:Main] Rest this stage: Give 1 rested DON ao Monkey D.
+> Luffy` NÃO foi parseado**. Ou seja, o motor vê um stage que só olha o topo
+> do deck; o valor real (ser a FONTE do DON que o líder exige) é invisível.
+> Empilha com o bloco 567: corrigi a geração de `attach_don` no líder, mas a
+> fonte do DON seguia desconhecida — dois bugs independentes, mesmo sintoma.
+> **Pendente** (exige o gate de parser do CLAUDE.md): auditoria GLOBAL de
+> quantos outros Stages perdem o `[Activate:Main]` pela mesma gramática
+> (suspeita: custo "Rest this stage") + `parser_audits/`, depois adicionar
+> ST31-005 e regenerar, e então rodar o auditor de candidatos. **Checagem
+> genérica**: varrer todos os `.deck` reais e listar códigos ausentes do
+> banco. Ver bloco 571 do HANDOFF.
+
 > 16/08/2026 (bloco 570): **auditor de GERAÇÃO de candidatos criado**
 > (`audit_candidate_generation.py`, item 1 do bloco 569) — pergunta "o que
 > sequer virou opção?", que foi a causa de 3 dos 4 achados do dia. **Não

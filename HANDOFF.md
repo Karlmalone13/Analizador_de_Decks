@@ -1,5 +1,60 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (571) - Claude (sessao local) - O Thousand Sunny tem DOIS bugs empilhados: codigo divergente jogo-vs-banco E o [Activate:Main] que da DON ao Luffy NAO foi parseado
+
+Fecha a investigacao do "bot nao joga o stage" (blocos 567/570).
+
+### Confirmacao
+
+Usuario informou os campos: **Thousand Sunny, Stage, custo 1, Red, Straw Hat
+Crew**. Identicos aos do `ST31-006` no banco, e o TEXTO tambem bate palavra
+por palavra com o print. E a MESMA carta.
+
+### Bug 1 -- codigo divergente
+
+O jogo usa **`ST31-005`** (confirmado no proprio jogo:
+`Action.ST31-005=(Rest): Give 1 Rested Don to a [Monkey D. Luffy]`, unica
+ocorrencia em todo o `StreamingAssets`). O banco tem a carta como
+**`ST31-006`**. Ao vivo, portanto, a carta chega com um codigo que o banco nao
+conhece -- 4 copias cegas no deck real (`Luffy RG.deck`), que tambem e o
+motivo de o deck validar 46/50 e o `audit_candidate_generation.py` nao ter
+rodado.
+
+### Bug 2 (o pior) -- o [Activate:Main] nao foi parseado
+
+`card_effects_db.json` para `ST31-006` tem **so o `on_play`**:
+
+```json
+"on_play": { "look_top_deck", "add_to_hand", "deck_bottom_rest" }
+```
+
+O bloco `[Activate:Main] Rest this stage: Give up to 1 of your "Monkey D.
+Luffy" up to 1 rested DON!!` **sumiu**. Consequencia: mesmo com o codigo
+certo, o motor enxerga um stage que so olha o topo do deck -- o valor REAL da
+carta (ser a **fonte do DON anexado que o lider OP13-001 exige**) e invisivel.
+
+Isso empilha com o bug do bloco 567: eu corrigi a GERACAO de `attach_don` no
+lider, mas a FONTE do DON continuava desconhecida. Dois bugs independentes
+produzindo o mesmo sintoma.
+
+### O que fazer (nao feito -- exige o gate do CLAUDE.md)
+
+1. **Parser** (bug 2, prioridade): descobrir por que o `[Activate:Main]` de
+   um STAGE com custo "Rest this stage" nao e capturado. **Auditoria GLOBAL
+   obrigatoria** -- quantos outros stages perdem o bloco `[Activate:Main]`
+   pela mesma gramatica? -- e registro em `scriptis_da_ia/parser_audits/`,
+   conforme o gate do CLAUDE.md. Suspeita a investigar: o custo "Rest this
+   stage" (rest_self em Stage) pode nao estar previsto na gramatica.
+2. **Codigo** (bug 1): adicionar `ST31-005` ao `cards_rows.csv` (mesma carta,
+   codigo do jogo) e regenerar. Faz parte do mesmo ciclo do item 1.
+3. Depois disso, rodar `audit_candidate_generation.py --leader OP13-001
+   --decks-do-jogo`, que fica destravado.
+
+> **Checagem generica que sai daqui**: varrer TODOS os `.deck` reais do
+> usuario e listar codigos ausentes do `cards_rows.csv`. `game_decks.py` ja
+> le esses arquivos. ST31-005 provavelmente nao e o unico.
+
+
 ## 2026-08-16 (570) - Claude (sessao local) - Auditor de GERACAO de candidatos criado (nao rodou ainda) + achado: carta do deck real AUSENTE do banco (4 copias cegas) + ideia do usuario: derivar o plano do deck dos logs humano-vs-bot
 
 ### Ferramenta nova: `audit_candidate_generation.py` (item 1 do bloco 569)
