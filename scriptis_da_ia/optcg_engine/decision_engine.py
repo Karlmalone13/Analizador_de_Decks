@@ -16423,22 +16423,31 @@ class OPTCGMatch:
                         # justamente o que gasta DON pra empurrar ataque
                         # ignorava o que o DON compraria na mao.
                         score = valor - engine.don_opportunity_cost(falta)
-                    elif gap == 0 and don_idle:
-                        # Empate exato: "empate favorece o atacante" ja
-                        # garante a vitoria do combate HOJE, sem anexar
-                        # nada -- mas margem ZERO quebra com QUALQUER
-                        # Counter do oponente. Sem custo de oportunidade
-                        # real (DON idle), reforcar ate 2 DON e estritamente
-                        # melhor que deixar parado. Achado real 02/08
-                        # (usuario, log Portgas.D.Ace-R x Crocodile-B,
-                        # turno 2): Ace(5000) empatava com o lider do
-                        # oponente(5000), 3 DON idle (mao so custava >=4)
-                        # nunca viravam candidato porque o gap<=0 cortava
-                        # tudo antes -- ficaram parados o turno inteiro.
-                        # Valor descontado (0.3x, nao o cheio do gap>0):
-                        # e seguro opcional, nao o que decide o combate.
-                        # Nunca usa a reserva de defesa (don_sobra, nao
-                        # p.don_available).
+                    elif gap <= 0 and don_idle:
+                        # Empate OU ataque JA vencedor: "empate favorece o
+                        # atacante" ja garante a vitoria do combate HOJE
+                        # (gap==0), e gap<0 vence com folga -- mas margem
+                        # ZERO ou PEQUENA quebra com QUALQUER Counter do
+                        # oponente que o motor nao estimou. Sem custo de
+                        # oportunidade real (DON idle), reforcar ate 2 DON
+                        # e estritamente melhor que deixar parado. Achado
+                        # real 02/08 (usuario, log Portgas.D.Ace-R x
+                        # Crocodile-B, turno 2): Ace(5000) empatava com o
+                        # lider do oponente(5000), 3 DON idle (mao so
+                        # custava >=4) nunca viravam candidato porque o
+                        # gap<=0 cortava tudo antes -- ficaram parados o
+                        # turno inteiro. Generalizado pra gap<0 apos achado
+                        # real 17/08 (auditoria turno-a-turno de 25
+                        # partidas que o humano venceu, MESMO log): o
+                        # humano tambem anexava DON de sobra num atacante
+                        # que JA vencia o combate (Crocodile-lider recebeu
+                        # 2 DON turno 10 antes de atacar, gap<0 na hora) --
+                        # o motor nunca gerava essa opcao como candidata
+                        # (nao so score baixo: opcao inexistente), so a
+                        # sobra ficava sempre sem uso. Valor descontado
+                        # (0.3x, nao o cheio do gap>0): e seguro opcional,
+                        # nao o que decide o combate. Nunca usa a reserva
+                        # de defesa (don_sobra, nao p.don_available).
                         falta = min(don_sobra, 2)
                         valor = engine.score_attack_target(att, ttype, tgt)
                         if valor <= 0:

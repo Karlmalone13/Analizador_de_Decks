@@ -10645,6 +10645,7 @@ def main() -> int:
     test_blocker_rest_cost_escala_com_a_ameaca_16_08()
     test_lethal_conta_buff_reativo_do_campo_do_oponente_16_08()
     test_opp_lethal_threat_memoizada_nao_muda_resposta_16_08()
+    test_attach_don_margem_seguranca_com_ataque_ja_vencedor_e_don_ocioso()
     test_score_give_don_considera_sinergia_com_ataque()
     test_gain_double_attack_respeita_target_leader_e_selecionado()
     test_score_play_prioriza_carta_que_buffa_ataque_do_lider_hoje()
@@ -11513,6 +11514,53 @@ def test_attach_don_margem_seguranca_em_empate_com_don_ocioso() -> None:
           reserva > 0)
     check("empate + evento [Counter] na mao: margem NUNCA gasta a reserva de defesa",
           margem2 <= max(0, 3 - reserva))
+
+
+def test_attach_don_margem_seguranca_com_ataque_ja_vencedor_e_don_ocioso() -> None:
+    """
+    Achado real 17/08 (auditoria turno-a-turno de 25 partidas que o
+    humano venceu, MESMO log do teste acima -- Portgas.D.Ace-R x
+    Crocodile-B 2026-08-02T00.53.44, turno 10): o humano anexou 2 DON no
+    Crocodile-lider ANTES de atacar, mesmo o ataque ja vencendo o
+    combate sem ajuda nenhuma (gap<0) -- provavel margem contra Counter
+    nao estimado, ou so aproveitar DON que nao tinha outro uso. O motor
+    de hoje nunca gerava esse candidato: o branch de margem de
+    seguranca (teste acima) so cobria gap==0 (empate exato), gap<0
+    (ataque JA vencedor) caia direto no `else: continue`.
+
+    Fix: generaliza `elif gap == 0` pra `elif gap <= 0`, mesma logica
+    (valor 0.3x, ate 2 DON, nunca gasta a reserva de defesa).
+    """
+    ace = real_card("OP16-001")
+    ace.don_attached = 2  # 5000 base + 2000 = 7000, ja vence o lider 5000 do oponente
+    croc = real_card("OP14-079")
+
+    me = GameState(leader=ace, don_available=3, turn=10)
+    opp = GameState(leader=croc)
+    me.hand = [mk("H1", "Barato", cost=6), mk("H2", "Barato2", cost=4),
+               mk("H3", "Barato3", cost=5), mk("H4", "Barato4", cost=5),
+               mk("H5", "Barato5", cost=8), mk("H6", "Barato6", cost=4)]
+    engine = DecisionEngine(me, opp)
+    match = OPTCGMatch((ace, []), (croc, []))
+    acts = match._generate_attach_don_actions(me, opp, engine)
+    attach_leader = [a for a in acts if a[1] == "attach_don" and a[2] is ace]
+    check("ataque ja vencedor (gap<0) + DON ocioso: gera candidato attach_don pro lider",
+          bool(attach_leader))
+    check("ataque ja vencedor + DON ocioso: anexa ate 2 DON de margem (nao mais que a sobra)",
+          bool(attach_leader) and attach_leader[0][3] == 2)
+
+    # Controle: DON nao-ocioso (mao tem carta jogavel) -- nao deve gerar
+    # candidato de margem so porque o ataque ja vence.
+    me2 = GameState(leader=real_card("OP16-001"), don_available=3, turn=10)
+    me2.leader.don_attached = 2
+    opp2 = GameState(leader=real_card("OP14-079"))
+    me2.hand = [mk("H1", "Barato", cost=2)]  # jogavel com 2 de sobra -- DON NAO ocioso
+    engine2 = DecisionEngine(me2, opp2)
+    match2 = OPTCGMatch((me2.leader, []), (opp2.leader, []))
+    acts2 = match2._generate_attach_don_actions(me2, opp2, engine2)
+    attach2 = [a for a in acts2 if a[1] == "attach_don" and a[2] is me2.leader]
+    check("ataque ja vencedor + DON NAO ocioso (mao tem carta jogavel): nao gera margem",
+          not attach2)
 
 
 def test_score_give_don_considera_sinergia_com_ataque() -> None:

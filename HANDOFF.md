@@ -1,6 +1,88 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-08-17 (584, EM ANDAMENTO) - Claude (sessao remota web) - `audit_one_game` ganha `capture_candidates` -- pedido do usuario pra ir alem do bloco 583 ("9% e muito pouco, precisamos criar algo pra jogar igual") exige saber a CAUSA de cada gap, nao so contar quantas vezes aconteceu
+## 2026-08-17 (585) - Claude (sessao remota web) - Fecha o bloco 584: 1 fix REAL confirmado (attach_don em ataque ja vencedor, gap<0) + CORRECAO METODOLOGICA importante -- "97,5% nunca gerado" do primeiro corte estava inflado pelo truncamento top-8 do decision_log, mesma licao do bloco 577
+
+**Continuacao do bloco 584** (`capture_candidates` ja commitado). Rodei
+`audit_one_game(..., capture_candidates=True)` nas 25 partidas do bloco
+582/583 e cruzei `historical_actions` (humano) contra os `candidates`
+de TODAS as decisoes do turno (nao so a escolhida) -- pra cada
+`activate`/`attach_don` que o humano fez e o motor nao, verifica se a
+mesma (kind, carta) aparece em ALGUM candidato daquele turno.
+
+### Achado 1 -- fix real, confirmado por 2 caminhos independentes
+
+`_generate_attach_don_actions` so gerava candidato de "margem de
+seguranca" (DON ocioso reforcando um ataque) quando `gap == 0` (empate
+exato) -- generalizado pra `gap <= 0` (ataque JA vencedor tambem).
+Confirmado com o MESMO log que motivou o fix original do `gap==0`
+(bloco de 02/08, achado do usuario): turno 10, Crocodile-lider recebeu
+2 DON antes de atacar mesmo ja vencendo o combate (gap<0) -- o motor
+nunca considerava essa opcao.
+
+- **Unidade**: 3 checks novos em `smoke_fast.py`
+  (`test_attach_don_margem_seguranca_com_ataque_ja_vencedor_e_don_ocioso`),
+  incluindo controle negativo (DON NAO ocioso -> nao gera candidato).
+  `smoke_fast`/`smoke_test` 100%, sem regressao.
+- **Real, nas 25 partidas**: reauditoria completa antes/depois do fix
+  (mesmas 25 partidas, mesmo metodo do bloco 583) -- `attach_don`
+  gerado pelo motor foi de 6 pra 7 ocorrencias, e o padrao AGREGADO
+  mudou na direcao certa: `play` 137->150 (+13), `attack` 234->227
+  (-7). Movimento pequeno mas real e na direcao certa (menos ataque
+  puro, mais desenvolvimento) -- **nao e a virada completa**, so um
+  fix genuino e cirurgico dentro de um problema maior.
+
+### Achado 2 -- CORRECAO do numero "97,5% nunca gerado" do corte anterior
+
+Ao investigar por que o proprio turno 10 (o caso que motivou o fix)
+CONTINUAVA aparecendo como "nunca gerado" mesmo DEPOIS do fix, achei a
+causa: **`_log_turn_planner_decision` so grava os top-8 candidatos por
+decisao** (`candidates[:8]`, linha 18164) -- a MESMA limitacao ja
+documentada no CLAUDE.md ("uma carta que nunca chega perto de ser a
+melhor opcao nao aparece na tabela, mesmo estando na mao") e redescoberta
+pela sessao local no bloco 577 ("ausente do decision_log" != "nunca
+gerado" -- o alarme do bloco 567 tinha sido FALSO pelo mesmo motivo,
+`_generate_attach_don_actions` gerava 703 candidatos que so nao
+apareciam no log por causa do corte top-8).
+
+Exemplo concreto que expos isso: turno 10 de
+`Portgas.D.Ace-R_x_Eustass.Captain.Kid-Y_2026-08-02T23.52.21`, `don=10`
+disponivel, e os top-8 de CADA decisao eram só `attack` com scores
+876-10500 -- se `attach_don` foi gerado com um score bem mais baixo
+(esperado, pelo desconto ja calibrado no bloco 580), ele nunca
+apareceria nesses top-8, **independente de ter sido gerado ou nao**.
+
+**Consequencia pratica**: os numeros "159/163 (97,5%) nunca gerado" dos
+blocos 583/584 (rascunho, nao commitado como numero final) **nao sao
+confiaveis como estao** -- misturam "genuinamente nunca gerado" (bug de
+geracao real, como o achado 1 acima) com "gerado mas fora do top-8
+salvo" (visibilidade, nao bug). Pra separar de verdade, precisaria
+instrumentar `_generate_attach_don_actions`/geradores de `activate_main`
+DIRETO via monkeypatch (mesmo metodo do bloco 577), nao ler o
+decision_log. **Nao feito ainda** -- fica registrado como o proximo
+passo real antes de tratar qualquer numero de "% nunca gerado" como
+fato.
+
+### O que NAO foi confirmado nesta sessao (registrar honestamente)
+
+- Quanto do gap `activate` (33 vs 97 no bloco 583) e geracao-real vs
+  visibilidade top-8 -- zero investigacao de causa raiz feita aqui, so
+  o `attach_don`.
+- Se o restante do gap `attach_don` (79 dos 80 casos "nunca gerado"
+  apos o fix desta sessao) e visibilidade ou geracao real -- precisa da
+  instrumentacao direta acima.
+- O padrao de scores MUITO altos vistos no exemplo (876-10500 pra
+  `attack`) nesse deck especifico (Kid/Ace-R) pode ser o MESMO problema
+  de escala attack-vs-o-resto do bloco 578-580 aparecendo de novo, mais
+  um dado a favor de priorizar aquele item (o "3o lider" prometido e
+  nunca feito) antes de continuar cacando gaps individuais.
+
+### Scripts descartaveis (scratchpad, nao commitados)
+
+`audit_human_wins.py`, `root_cause.py`, `analyze_human_wins.py` --
+reusam `audit_one_game`/`capture_candidates` (que SIM foi commitado no
+bloco 584) sem duplicar nenhuma logica de decisao.
+
+## 2026-08-17 (584) - Claude (sessao remota web) - `audit_one_game` ganha `capture_candidates` -- pedido do usuario pra ir alem do bloco 583 ("9% e muito pouco, precisamos criar algo pra jogar igual") exige saber a CAUSA de cada gap, nao so contar quantas vezes aconteceu
 
 **Pedido do usuario, direto**: "9% e muito pouco... pegue cada turno e
 veja simule para ver se o bot jogar igual, se nao jogar, precisamos

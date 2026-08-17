@@ -2,15 +2,22 @@
 
 **Última atualização:** 17 de agosto de 2026
 
-> 17/08/2026 (bloco 584, EM ANDAMENTO): usuário pediu pra ir além do
-> bloco 583 ("9% é muito pouco... precisamos criar algo pra que ele
-> jogue igual") — `audit_one_game` ganhou `capture_candidates` (default
-> False, sem regressão) pra expor o top-8 de candidatos com score por
-> decisão, não só a escolhida. Objetivo: descobrir se o gap
-> `activate`/`attach_don` do bloco 583 é opção NUNCA GERADA (bug de
-> geração, blocos 565-567) ou GERADA mas perdendo pra `attack` por
-> escala (bloco 578-580) — determina que tipo de fix escrever. Rodando
-> nas 25 partidas do bloco 582/583. Ver bloco 584 do HANDOFF.
+> 17/08/2026 (bloco 585): fecha o bloco 584 — **1 fix real confirmado**:
+> `_generate_attach_don_actions` generalizado de `gap==0` (empate) pra
+> `gap<=0` (ataque já vencedor também) quando DON está ocioso — mesma
+> lógica/limites já validados (0,3x, até 2 DON, nunca gasta reserva de
+> defesa). 3 testes novos em `smoke_fast.py`, 100% sem regressão.
+> Impacto real medido nas 25 partidas (antes/depois): `attach_don`
+> gerado 6→7, `play` 137→150, `attack` 234→227 — pequeno mas na direção
+> certa. **CORREÇÃO IMPORTANTE**: o número "97,5% das jogadas nunca
+> geradas" do rascunho do bloco 583/584 não é confiável — `decision_log`
+> só grava os top-8 candidatos por decisão (mesma limitação já
+> documentada no CLAUDE.md e redescoberta no bloco 577), então "ausente
+> do log" mistura "nunca gerado" (bug real) com "gerado mas fora do
+> top-8" (visibilidade). Separar os dois exige instrumentar os
+> geradores DIRETO via monkeypatch (método do bloco 577) — **não feito
+> ainda**, é o próximo passo antes de tratar qualquer % como fato. Ver
+> bloco 585 do HANDOFF.
 >
 > 17/08/2026 (bloco 583): **aprofundamento do bloco 582** — simulou o
 > TURNO INTEIRO (não só a 1ª jogada) nas 25 partidas reais que o humano
