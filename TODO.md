@@ -2,6 +2,24 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 590): **fecha a causa raiz do bloco 589** e melhora
+> `decision_quality_report.py` (pedido do usuário: "esse decision
+> quality precisa passar por melhorias"). `_attach_don_for_attack`
+> (top-up automático de DON quando um `attack` já escolhido precisa de
+> DON extra pra passar a defesa) era **invisível no decision_log** —
+> mecanismo separado da categoria `attach_don` do Turn Planner, nunca
+> logado. Agora loga (`kind: 'attach_don_for_attack'`, aditivo, mesmo
+> guard de sempre). `audit_real_losses.py` e `decision_quality_
+> report.py` ganham **item 4**: "DON investido em ataque via top-up".
+> Rodado contra as **26 partidas reais bot-vs-humano do banco inteiro**
+> (não só self-play) — pro deck principal do usuário (Rocks D. Xebec
+> OP17-039, 17 partidas, 69 turnos): 76,8% dos turnos terminam com 0
+> DON sobrando, e **46/151 ataques (30,5%) usaram 89 DON extra pra
+> passar a defesa** — dado que não existia em nenhum relatório antes
+> disso. Pior carta aproveitada: Don Marlon (OP17-052, 20%). `smoke_
+> fast`/`smoke_test` sem regressão (mudança puramente aditiva). Ver
+> bloco 590 do HANDOFF.
+>
 > 17/08/2026 (bloco 589): **CORREÇÃO GRANDE, pedida pelo usuário
 > diretamente cético** ("faria a mesma coisa ou melhor? se não, tá
 > errado") — `chosen_actions` (extraído do `decision_log`) usado nos

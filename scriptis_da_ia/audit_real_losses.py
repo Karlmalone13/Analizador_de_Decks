@@ -353,6 +353,16 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
                 rec for rec in (eng.decision_log or [])
                 if rec.get('kind') == 'turn_planner' and rec.get('player') == 'A'
             ]
+            # Achado real 17/08 (bloco 589/590): DON anexado via top-up
+            # AUTOMATICO de _attach_don_for_attack (quando um 'attack' ja
+            # ESCOLHIDO precisa de DON pra passar a defesa) e um kind
+            # PROPRIO no decision_log, separado de 'turn_planner' -- sem
+            # isto, ferramentas que so leem `decisions` (filtrado acima)
+            # subestimam quanto DON o motor de fato investe em ataque.
+            entry['attach_don_for_attack_events'] = [
+                rec for rec in (eng.decision_log or [])
+                if rec.get('kind') == 'attach_don_for_attack' and rec.get('player') == 'A'
+            ]
         results.append(entry)
         if verbose:
             print(f'--- turno {turn["turn"]} (real vs motor de hoje) ---')

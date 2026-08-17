@@ -1,5 +1,84 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (590) - Claude (sessao remota web) - Fecha a causa raiz do bloco 589: `_attach_don_for_attack` (top-up automatico de DON, roda toda vez que um 'attack' JA ESCOLHIDO precisa de DON pra passar) era INVISIVEL no decision_log -- agora loga, `audit_real_losses.py`/`decision_quality_report.py` ganham item 4 pra usar o dado
+
+**Pedido do usuario**: "Esse decision quality precisa passar por
+melhorias." Direto na sequencia do bloco 589 (que achou a CAUSA do
+`chosen_actions` subestimar o motor, mas nao tinha corrigido nada
+ainda).
+
+### A causa raiz, achada e corrigida
+
+`_apply_action` (linha ~16962), ao executar uma acao `kind=='attack'`
+JA ESCOLHIDA pelo Turn Planner, chama `self._attach_don_for_attack(...)`
+-- um mecanismo SEPARADO de `_generate_attach_don_actions` (que pontua
+"anexar DON + atacar" como CANDIDATO competindo contra play/activate/
+outros ataques). `_attach_don_for_attack` roda DEPOIS que attack ja
+venceu a comparacao do Turn Planner, so pra garantir que o ataque
+ESCOLHIDO tenha DON suficiente pra passar a defesa -- e nunca gerava
+NENHUM registro no `decision_log`. Exatamente a causa do bloco 589: o
+motor anexava DON de verdade (visto na narrativa em texto), mas
+`chosen_actions`/`decisions` (baseados so em `kind=='turn_planner'`)
+nunca enxergavam esse passo.
+
+### Fix (aditivo, testado que nao muda decisao nenhuma)
+
+1. `_attach_don_for_attack` agora grava um evento no `decision_log`
+   (`kind: 'attach_don_for_attack'`, campos turno/jogador/carta/quantidade/
+   target_type) sempre que `need > 0`, guardado pelo MESMO guard
+   (`self.decision_log is not None`) ja usado em `_log_turn_planner_
+   decision` -- custo zero quando o audit esta desligado (default),
+   kind PROPRIO (nao `'turn_planner'`) pra nao interferir com nenhum
+   consumidor existente que filtra por esse kind. Testado ao vivo
+   (script isolado, 6 turnos simulados): eventos aparecem corretos,
+   `smoke_fast`/`smoke_test` sem regressao.
+2. `audit_real_losses.py`: `capture_candidates=True` agora tambem
+   inclui `entry['attach_don_for_attack_events']` por turno (mesmo
+   padrao aditivo do bloco 586/589 -- comportamento de quem nao usa o
+   parametro continua identico).
+3. `decision_quality_report.py` (a ferramenta "OBRIGATORIA" do
+   CLAUDE.md) ganha **item 4**: "DON investido em ATAQUE via top-up
+   automatico" -- quantos ataques precisaram de DON extra pra passar a
+   defesa e quanto DON total foi investido assim, complementando o item
+   2 (DON parado no fim do turno). Testado rodando contra OP13-079
+   (Imu), 6 partidas self-play: **38/57 ataques (66,7%) precisaram de
+   DON extra, 68 DON total investido** -- numero que antes desta sessao
+   nao existia em NENHUM relatorio deste projeto.
+
+### Rodado contra TODOS os logs reais (pedido explicito do usuario, nao so self-play)
+
+`decision_quality_from_logs.py` (scratchpad, reusa `audit_one_game
+(capture_candidates=True)` sem duplicar nada) -- as MESMAS 4 metricas,
+agora contra as **26 partidas bot-vs-humano reais do banco inteiro**
+(nao so as 25 que o humano venceu), agrupadas por CODIGO do lider que
+o humano realmente jogou.
+
+**OP17-039 Rocks D. Xebec (o deck principal do usuario -- 17 partidas
+reais, 69 turnos)**:
+- Sem `[Activate:Main]` (confirmado, mesmo achado do bloco 587).
+- DON deixado na mesa: media 0.39/turno, **76,8% dos turnos terminam
+  com ZERO DON sobrando** -- uso de recurso eficiente, pouco
+  desperdicio.
+- **Item 4 novo**: 46/151 ataques (30,5%) precisaram de DON extra pra
+  passar a defesa, **89 DON total investido assim** -- numero que
+  simplesmente NAO EXISTIA em nenhum relatorio antes deste bloco.
+- Item 3: pior aproveitamento e `Don Marlon` (OP17-052, 2/10 = 20%),
+  seguido de `Shiki` (OP17-048, 1/3 = 33%) -- candidatos a investigar
+  na proxima sessao (rastrear manualmente antes de tratar como bug, ver
+  ressalva ja documentada no proprio relatorio).
+
+Outros 5 lideres com amostra bem menor (1-3 partidas cada, OP14-079
+Crocodile/OP16-001 Ace/OP10-099 Kid/OP13-001 Luffy/OP16-080 Teach) --
+numeros no corpo do relatorio salvo, amostra pequena demais pra
+conclusao forte em qualquer um deles.
+
+### Validacao
+
+`smoke_fast.py`/`smoke_test.py`: sem regressao (mudanca e puramente
+aditiva -- novo campo de log, novo item de relatorio, nenhum caminho de
+decisao alterado). `decision_quality_report.py` continua funcionando
+igual pra quem nao olha o item 4 novo.
+
 ## 2026-08-17 (589) - Claude (sessao remota web) - CORRECAO GRANDE do metodo usado nos blocos 582-588: `chosen_actions` (extraido do decision_log) SUBESTIMA o que o motor faz -- attach_don bundled com attack pode nao gerar registro turn_planner proprio. Lendo a NARRATIVA real (texto completo), 3 de 5 turnos "mais divergentes" mostram o motor VENCENDO A PARTIDA NAQUELE TURNO, melhor que o humano fez de verdade
 
 **Pedido do usuario, direto e cetico** (com razao): "no ao vivo o bot

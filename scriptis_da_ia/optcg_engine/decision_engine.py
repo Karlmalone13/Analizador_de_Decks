@@ -17454,6 +17454,30 @@ class OPTCGMatch:
             EffectExecutor(p, opp)._dispatch_don_given(attacker)
             if verbose:
                 print(f'    anexou {need} DON em {attacker.name[:20]}')
+            # Achado real 17/08: este top-up e um mecanismo SEPARADO da
+            # categoria 3 de `_generate_attach_don_actions` (que pontua
+            # "anexar DON + atacar" como candidato do Turn Planner) --
+            # roda SEMPRE que uma acao 'attack' ja ESCOLHIDA precisa de
+            # DON pra passar, mesmo quando o Turn Planner nunca considerou
+            # attach_don como candidato pra este atacante (o score bruto
+            # de 'attack' ja bastava pra vencer a comparacao). Ate agora
+            # isso era INVISIVEL no decision_log -- ferramentas que leem
+            # so `kind=='turn_planner'` (decision_quality_report.py,
+            # scripts de auditoria desta sessao) subestimavam quanto DON
+            # o motor de fato investe em ataque, contando so os casos em
+            # que attach_don venceu a comparacao top-level. Log leve,
+            # kind proprio (nao 'turn_planner') pra nao interferir com
+            # nenhum consumidor existente que filtra por esse kind.
+            if self.decision_log is not None and not self._suppress_replay_log:
+                self.decision_log.append({
+                    'kind': 'attach_don_for_attack',
+                    'turn': self.global_turn,
+                    'player': 'A' if p is self.state_a else 'B',
+                    'card': attacker.code,
+                    'name': attacker.name,
+                    'amount': need,
+                    'target_type': ttype,
+                })
         return need
 
     def _play_card(self, card: Card, p: GameState, opp: GameState,

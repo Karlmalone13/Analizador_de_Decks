@@ -157,6 +157,28 @@ def _run_one(task):
             if vencedor:
                 break
 
+    # Item 4 (achado real 17/08, auditoria turno-a-turno contra partidas
+    # reais que o humano venceu): `_attach_don_for_attack` e um TOP-UP
+    # automatico, separado da categoria 3 de `_generate_attach_don_
+    # actions` -- roda toda vez que uma acao 'attack' JA ESCOLHIDA
+    # precisa de DON pra passar a defesa, mesmo quando attach_don nunca
+    # foi candidato pra este atacante (o score bruto de 'attack' ja
+    # bastava). Ate este bloco era INVISIVEL no decision_log -- contar
+    # so `kind=='attach_don'` (categoria 1-3) subestima quanto DON o
+    # motor de fato investe em ataque de verdade. Kind proprio
+    # ('attach_don_for_attack'), nao interfere com o item 3 abaixo.
+    ataques_totais = sum(
+        1 for e in (match.decision_log or [])
+        if e and e.get('kind') == 'turn_planner' and e.get('player') == 'A'
+        and (e.get('chosen') or {}).get('kind') == 'attack'
+    )
+    top_up_events = [
+        e for e in (match.decision_log or [])
+        if e and e.get('kind') == 'attach_don_for_attack' and e.get('player') == 'A'
+    ]
+    don_investido_em_ataque = sum(e.get('amount', 0) for e in top_up_events)
+    ataques_com_top_up = len(top_up_events)
+
     # Item 3 (generico, cobre item 1 tambem): por CODIGO de carta, conta
     # turnos em que apareceu como candidata de 'play'/'activate'/
     # 'play_from_trash' vs turnos em que foi de fato escolhida. Agregado
@@ -202,6 +224,9 @@ def _run_one(task):
         'turnos_totais_alvo': turnos_totais_alvo,
         'don_leftover': don_leftover,
         'por_carta': por_carta,
+        'ataques_totais': ataques_totais,
+        'ataques_com_top_up': ataques_com_top_up,
+        'don_investido_em_ataque': don_investido_em_ataque,
     }
 
 
@@ -288,6 +313,21 @@ def main():
         print(f'   media={media:.2f} DON/turno ({len(todos_leftover)} turnos), '
               f'{zero_leftover}/{len(todos_leftover)} turnos terminaram com 0 DON sobrando '
               f'({zero_leftover/len(todos_leftover)*100:.1f}%)')
+
+    ataques_totais = sum(r['ataques_totais'] for r in resultados)
+    ataques_com_top_up = sum(r['ataques_com_top_up'] for r in resultados)
+    don_investido_em_ataque = sum(r['don_investido_em_ataque'] for r in resultados)
+    if ataques_totais:
+        taxa_top_up = ataques_com_top_up / ataques_totais * 100
+        print()
+        print(f'4) DON investido em ATAQUE via top-up automatico (achado 17/08 -- ')
+        print(f'   mecanismo separado da categoria attach_don, antes invisivel aqui):')
+        print(f'   {ataques_com_top_up}/{ataques_totais} ataques ({taxa_top_up:.1f}%) precisaram anexar DON '
+              f'pra passar a defesa, {don_investido_em_ataque} DON total investido assim')
+        print('   (complementa o item 2: DON parado no fim do turno E DON gasto pra reforcar')
+        print('   ataque sao os dois lados do mesmo recurso -- 0% aqui com DON alto sobrando')
+        print('   no item 2 sugere atacantes ja fortes o bastante sem precisar de reforco, nao')
+        print('   necessariamente desperdicio)')
 
     outras_cartas = [
         (code, d) for code, d in por_carta.items()
