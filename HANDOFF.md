@@ -1,5 +1,123 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (597) - Claude (sessao remota web) - `decision_quality_full.py`: ferramenta unica cobrindo TODAS as categorias de decisao (pedido explicito do usuario: "nao quero so DON ocioso, tem que ser play/attack/activate/attach_don/blocker/counter/ordem de counter") -- achado real: divergencia de PLAY/ACTIVATE e maior que a de attack/blocker/counter, parcialmente por limitacao ja conhecida (ordem do deck nao e real), parcialmente por um padrao concreto novo (DON extra no LIDER pra reforcar ataque)
+
+**Pedido do usuario**, direto, apos o resumo do bloco 596: "nao quero so
+de DON ocioso... tem que ser todas as decisoes... counter, ordem de
+counter, blocker, efeito, ataque, distribuicao de dons, ativacao de
+efeito". `decision_quality_vs_human.py` (bloco 596) so media dano
+agregado do turno proprio; o scratchpad `audit_defense.py` (nunca
+formalizado, sessao anterior) media blocker/counter mas so sim/nao, sem
+qual carta nem ORDEM. Nenhum dos dois sozinho respondia "90% em relacao
+a que".
+
+### Ferramenta nova: `scriptis_da_ia/decision_quality_full.py`
+
+Unifica os dois caminhos numa unica tabela, por categoria (cada uma com
+seu proprio denominador -- nao existe "um numero so"):
+
+**OFENSIVA** (turno PROPRIO de cada humano, via `audit_one_game(capture_
+actions=True)`, comparacao ESTRUTURAL — nao so dano):
+- `play`: mesmo(s) codigo(s) de carta jogada(s) no turno (conjunto)
+- `attack_quem`/`attack_alvo`: mesmo(s) atacante(s) e MESMO alvo
+- `activate`: mesma(s) carta(s) ativou [Activate: Main]
+- `attach_don_alvo`: mesmo personagem/lider recebeu DON
+
+**DEFESA** (turno do OPONENTE, ataque a ataque contra o humano,
+reconstrucao igual ao scratchpad antigo mas AGORA com `pick_counters`
+pra capturar QUAIS cartas e em que ORDEM, nao so sim/nao):
+- `blocker` (sim/nao + carta), `counter` (sim/nao + conjunto de cartas
+  + ORDEM quando 2+, usando `pick_counters` -- mesma selecao gulosa por
+  menor pitch_cost que o jogo ao vivo usaria)
+
+### Achado real 1: `type` do log historico NAO e a categoria do motor -- fix de classificacao (pequeno impacto, mas real)
+
+Rodando pela 1a vez: `play`=21,7%, `activate`=7,0%, numeros muito abaixo
+de attack/blocker/counter. Antes de reportar, verifiquei contra o dado
+cru (mesma disciplina de sempre): o log historico rotula jogar uma carta
+EVENT/STAGE da mao como `type: "activate"` (209 EVENT + 148 STAGE no
+banco INTEIRO sao "activate" historico, confirmado por grep+cards_db) —
+enquanto o motor sempre gera essa mesma acao como `kind: "play"` (unico
+gerador de 'play' em `decision_engine.py` cobre CHARACTER/EVENT/STAGE
+igual). Exemplo concreto: `Disappointed?` (OP14-099, EVENT) jogado nos
+DOIS lados identicamente, contado como divergencia so por causa do
+rotulo. Fix: reclassifica o HISTORICO pelo TIPO REAL da carta
+(`cards_db`), nao pelo `type` do log. Numeros mudaram pouco (21,7%→21,7%,
+7,0%→8,3%) -- nao era a causa principal, mas o fix e correto e fica.
+
+### Achado real 2: divergencia de play/activate e PARCIALMENTE contaminacao conhecida (ordem do deck), PARCIALMENTE real -- confirmado isolando a 1a jogada do turno
+
+O numero de turno INTEIRO (`play_match`, comparando o CONJUNTO de cartas
+jogadas no turno todo) sofre de uma limitacao JA documentada em
+`audit_one_game`: o deck restante tem composicao real mas ORDEM
+embaralhada -- cartas compradas por EFEITO durante o proprio turno
+("Draw N Card" etc) quase nunca batem com o que o humano puxou de
+verdade, e isso cascateia pro resto das jogadas daquele turno (motor
+compra carta X, historico comprou carta Y, dai as escolhas SEGUINTES no
+mesmo turno divergem so por causa disso, nao por decisao ruim).
+
+Pra isolar esse efeito, medi so a PRIMEIRA jogada (play/activate) de
+cada turno -- vem da mao INICIAL real do turno (snapshot do log), sem
+nenhuma contaminacao de draw-de-efeito ainda: **32/95 (33,7%)**. Mais
+alto que o 21,7% do turno inteiro (confirma que parte da divergencia E
+artefato de ordem de deck), mas ainda BEM abaixo de attack/blocker
+(75-95%) -- ou seja, **existe uma divergencia REAL, nao so ruido de
+medicao**, na escolha de QUAL carta jogar primeiro a partir da MESMA mao
+real. Nao investigado caso a caso ainda (proximo passo natural).
+
+### Achado real 3 (pista concreta, nao investigada a fundo): humano anexa DON extra no proprio LIDER pra reforcar ataque, motor nao faz isso na mesma medida -- eco do achado lateral do Luffy (bloco 594), agora confirmado em OUTRO lider
+
+`attach_don_alvo` (mesmo personagem recebeu DON): so 4,2% (2/48). Puxando
+4 exemplos concretos do mismatch: EM TODOS OS 4, o padrao e o MESMO --
+humano anexou DON no proprio LIDER (Crocodile OP14-079, confirmado via
+`cards_db`), motor nao anexou DON em NINGUEM naquele turno. Conferido
+`card_effects_db.json` de OP14-079: o `activate_main` dele custa
+`ko_own_character`, NAO DON -- ou seja, **nao e o padrao "DON pra
+desbloquear habilidade"** (isso ja foi confirmado correto pro Luffy no
+bloco 594). E o padrao MAIS GERAL, ja suspeitado no bloco 594 pro Luffy
+("humano investe DON ADICIONAL pra reforcar os proprios ataques") --
+aqui aparece de novo com um lider DIFERENTE, sugerindo que pode ser
+sistemico (humano usa DON ocioso pra aumentar o poder do proprio lider
+antes de atacar, motor prioriza outra coisa ou nao prioriza isso o
+suficiente) em vez de um caso isolado do Luffy.
+
+**Deliberadamente NAO tentei consertar isto ainda** -- a saga dos blocos
+593-595 (2 tentativas de "bancar DON" regrediram o resultado real por
+disputar espaco no shortlist `TOP_K`) e a licao direta: qualquer mudanca
+aqui precisa ser medida com `decision_quality_full.py`/`decision_
+quality_vs_human.py` ANTES de aceitar, com o mesmo cuidado de nao
+inflar o pool de candidatas.
+
+### Tabela completa (26 partidas, `--workers 1`)
+
+| categoria | resultado | confiavel? |
+|---|---|---|
+| play (turno inteiro) | 23/106 (21,7%) | parcialmente contaminado (ordem de deck) |
+| play (so 1a jogada do turno) | 32/95 (33,7%) | SIM -- vem da mao real, divergencia genuina |
+| attack -- quem atacou | 50/92 (54,3%) | parcial (depende de quem sobrou vivo apos plays) |
+| attack -- mesmo alvo (atacantes em comum) | 156/184 (84,8%) | SIM |
+| activate | 7/84 (8,3%) | parcialmente contaminado (mesma razao do play) |
+| attach_don -- mesmo alvo | 2/48 (4,2%) | SIM -- achado 3 acima |
+| blocker (bloquear ou nao) | 114/119 (95,8%) | SIM |
+| blocker -- mesma carta | 4/5 (80,0%) | amostra pequena |
+| counter (usar ou nao) | 82/109 (75,2%) | SIM |
+| counter -- mesmo conjunto de cartas | 13/24 (54,2%) | amostra pequena |
+| counter -- mesma ordem (2+ cartas) | 0/1 (0,0%) | amostra INSUFICIENTE (so 1 caso) |
+
+### Pendente / proximo passo recomendado
+
+1. Investigar achado 3 (DON extra no lider pra reforcar ataque) caso a
+   caso em 3-5 turnos reais antes de qualquer mudanca de codigo --
+   confirmar se e realmente "motor deixa DON parado" ou se o motor gasta
+   esse DON em outra coisa legitimamente melhor (mesmo padrao de
+   investigacao usado pro Boeuf Burst/Gum-Gum Jet Culverin do Sanji,
+   secao "Placar de qualidade" do CLAUDE.md -- nao BUG automatico so por
+   taxa baixa).
+2. Investigar achado 2 (33,7% na 1a jogada do turno) caso a caso --
+   ainda nao aberto.
+3. Ambos exigem MEDIR de novo com esta ferramenta antes de aceitar
+   qualquer mudanca (licao dos blocos 593-595).
+
 ## 2026-08-17 (596) - Claude (sessao remota web) - formalizei `decision_quality_vs_human.py` (pedido do usuario) e achei um bug real de nao-determinismo nele: `audit_real_losses.py` reconstruia deck generico (Teach/Krieg/Kid) com `random` NAO-seedado -- corrigido, resultado agora bate 100/111 (90,1%) em TODO run, sequencial ou paralelo
 
 **Pedido do usuario** (via `AskUserQuestion`, apos pedir uma explicacao

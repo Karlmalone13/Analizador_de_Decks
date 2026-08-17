@@ -2,6 +2,28 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 597): **`decision_quality_full.py`** (pedido
+> explícito do usuário: "tem que ser todas as decisões — counter, ordem
+> de counter, blocker, efeito, ataque, distribuição de dons, ativação de
+> efeito", não só o dano agregado). Nova ferramenta permanente cobre
+> play/attack/activate/attach_don (turno próprio) + blocker/counter/
+> conjunto-de-cartas/ORDEM de counter (turno do oponente), tudo numa
+> tabela só. **3 achados**: (1) fix de classificação — log histórico
+> rotula jogar EVENT/STAGE como `"activate"`, motor sempre gera `"play"`
+> — corrigido, impacto pequeno; (2) divergência de play/activate é
+> PARCIALMENTE artefato conhecido (ordem do deck reconstruído não é
+> real) — isolando só a 1ª jogada do turno (sem contaminação de draw),
+> ainda sobra divergência REAL (33,7%, contra 75-95% de attack/blocker/
+> counter) — não investigada caso a caso ainda; (3) **pista concreta
+> nova**: humano anexa DON extra no próprio LÍDER pra reforçar ataque
+> (confirmado com Crocodile OP14-079, custo do `activate_main` dele é
+> `ko_own_character`, não DON — não é o padrão "desbloquear habilidade")
+> — ecoa o achado lateral do Luffy (bloco 594), agora com OUTRO líder,
+> sugere ser sistêmico. **Deliberadamente não mexi no código do motor
+> ainda** — lição dos blocos 593-595 (2 tentativas de "bancar DON"
+> regrediram por disputar espaço no shortlist `TOP_K`) exige investigar
+> caso a caso antes de qualquer fix. Ver bloco 597 do HANDOFF.
+>
 > 17/08/2026 (bloco 596): **`decision_quality_vs_human.py` formalizado**
 > (pedido do usuário, escolheu "formalizar como ferramenta permanente")
 > — e um bug real de não-determinismo achado e corrigido nele:
