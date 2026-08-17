@@ -10644,6 +10644,7 @@ def main() -> int:
     test_worth_paying_optional_costs_enxerga_o_beneficio_16_08()
     test_blocker_rest_cost_escala_com_a_ameaca_16_08()
     test_lethal_conta_buff_reativo_do_campo_do_oponente_16_08()
+    test_lethal_conta_counter_tipo_evento_conhecido_na_mao_17_08()
     test_opp_lethal_threat_memoizada_nao_muda_resposta_16_08()
     test_attach_don_margem_seguranca_com_ataque_ja_vencedor_e_don_ocioso()
     test_score_give_don_considera_sinergia_com_ataque()
@@ -12093,6 +12094,64 @@ def test_lethal_conta_buff_reativo_do_campo_do_oponente_16_08() -> None:
     eng_sem_mao = DecisionEngine(me, opp)
     check("sem carta na mao, buff que exige trash da mao nao e contado",
           3000 not in eng_sem_mao.analyzer.opp_reactive_field_buffs())
+
+
+def test_lethal_conta_counter_tipo_evento_conhecido_na_mao_17_08() -> None:
+    """
+    Achado real 17/08: o bloco 564 corrigiu o lethal search pra contar buff
+    reativo do CAMPO do oponente, mas `opp_counter_chunks_for_lethal` --
+    usada por `_lethal_search`/`can_lethal_this_turn` -- continuava so
+    olhando `c.counter` (o stat IMPRESSO) pras cartas CONHECIDAS da mao.
+    Cartas cujo counter vem de um efeito [Counter] parseado (EVENT sem stat
+    impresso, ex: Ground Death OP14-096, +4000 condicionado a trash_gte 10)
+    contavam ZERO mesmo estando reveladas e certas -- o motor podia
+    certificar "letal garantido" contra uma mao que na verdade sobrevivia.
+    Mesma categoria de bug do bloco 564 (defesa reativa do oponente
+    ignorada), so do lado da MAO em vez do campo. Fix: `_card_counter_value`
+    vira fonte unica com `opp_counter_potential`, que ja tratava isso certo
+    desde o achado 07/07 (mesma carta citada no docstring de la).
+    """
+    me = GameState(leader=real_card("OP16-080"))
+    me.leader.rested = True  # so os 2 personagens abaixo atacam, nao o lider tambem
+    atacante1 = real_card("OP17-046")
+    atacante2 = real_card("OP16-104")
+    me.field_chars = [atacante1, atacante2]
+    me.hand = []
+    me.life = [real_card("OP09-086")]
+
+    opp = GameState(leader=real_card("OP17-039"))  # leader power 5000
+    opp.life = [real_card("OP17-040")]  # vida = 1 -> precisa de 2 hits
+    ground_death = real_card("OP14-096")
+    opp.hand = [ground_death]
+    opp.revealed_to_opponent = {id(ground_death)}
+    opp.field_chars = []
+
+    # Atacantes com poder IGUAL ao lider do oponente -- passam sem DON,
+    # qualquer counter >0 ja barra cada um individualmente.
+    atacante1.don_attached = max(0, (opp.leader.power - atacante1.power) // 1000)
+    atacante2.don_attached = max(0, (opp.leader.power - atacante2.power) // 1000)
+
+    # Sem trash suficiente: condicao trash_gte=10 NAO bate, Ground Death
+    # nao conta nada -- 2 hits conectam, lethal garantido de verdade.
+    opp.trash = []
+    eng_sem_trash = DecisionEngine(me, opp)
+    check("Ground Death sem trash_gte satisfeito nao entra nos chunks",
+          0 == sum(c for c in eng_sem_trash.analyzer.opp_counter_chunks_for_lethal()))
+    check("sem a condicao do Ground Death, lethal e garantido (2 atacantes, sem defesa)",
+          eng_sem_trash.analyzer.can_lethal_this_turn())
+
+    # Com trash_gte=10 satisfeito: Ground Death vale +4000, cobre um dos
+    # dois ataques -- so 1 hit conecta, MENOS que os 2 necessarios.
+    opp.trash = [real_card("OP09-086")] * 10
+    eng = DecisionEngine(me, opp)
+    check("Ground Death CONHECIDO com condicao satisfeita entra nos chunks do lethal",
+          4000 in eng.analyzer.opp_counter_chunks_for_lethal())
+    check("com o counter tipo evento contado, o mesmo ataque deixa de ser letal garantido",
+          not eng.analyzer.can_lethal_this_turn())
+
+    # Mesma fonte usada por opp_counter_potential (nao regride, ja tratava certo).
+    check("opp_counter_potential continua contando o Ground Death satisfeito",
+          eng.analyzer.opp_counter_potential() >= 4000)
 
 
 def test_opp_lethal_threat_memoizada_nao_muda_resposta_16_08() -> None:

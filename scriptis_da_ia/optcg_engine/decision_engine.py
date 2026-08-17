@@ -10452,6 +10452,39 @@ class GameAnalyzer:
 
     # ── Potencial defensivo do oponente ──────────────────────────────────────
 
+    def _card_counter_value(self, card: 'Card', ee: 'EffectExecutor') -> int:
+        """
+        Counter efetivo de UMA carta (stat impresso + efeito [Counter]
+        parseado, condicoes checadas contra o estado real do dono via `ee`).
+        Fonte UNICA usada por `opp_counter_potential` e
+        `opp_counter_chunks_for_lethal` (REGRA_SEM_DUPLICACAO.md).
+
+        Achado real 17/08: `opp_counter_chunks_for_lethal` (a funcao que
+        `_lethal_search`/`can_lethal_this_turn` realmente usa pra certificar
+        letal) so olhava `c.counter` -- o stat IMPRESSO -- ignorando por
+        completo cartas cujo counter vem de um efeito [Counter] parseado
+        (EVENT sem stat impresso, ex: Ground Death/"...Never Existed..." --
+        as MESMAS 2 cartas ja citadas no achado 07/07 do docstring de
+        `opp_counter_potential`, que ja tratava isso certo). Ou seja: o
+        motor podia certificar "letal garantido" contra uma mao conhecida
+        que na verdade tinha counter suficiente pra sobreviver, so porque
+        esse counter vinha de um EVENT em vez do stat de um CHARACTER --
+        exatamente a categoria de bug "lethal nao considera defesa reativa
+        do oponente" registrada como pendente desde o bloco 563 (o board
+        buff ja tinha sido corrigido no bloco 564 via
+        `opp_reactive_field_buffs`; a mao com counter tipo evento ficou de
+        fora ate agora).
+        """
+        value = getattr(card, 'counter', 0)
+        counter_block = get_card_effects(card.code).get('counter', {})
+        steps = counter_block.get('steps', [])
+        if not steps:
+            return value
+        if ee._check_conditions(counter_block.get('conditions', {}), card):
+            value += sum(s.get('amount', 0) for s in steps
+                        if s.get('action') == 'buff_power')
+        return value
+
     def opp_counter_potential(self) -> int:
         """
         Potencial de counter do oponente: soma REAL do stat impresso
@@ -10503,16 +10536,7 @@ class GameAnalyzer:
                       or getattr(self.opp, 'hidden_information_masked', False))
         hand = self.opp.known_hand_cards() if known_only else self.opp.hand
         ee = EffectExecutor(self.opp, self.me)   # perspectiva do DONO da carta
-        total = 0
-        for c in hand:
-            total += getattr(c, 'counter', 0)
-            counter_block = get_card_effects(c.code).get('counter', {})
-            steps = counter_block.get('steps', [])
-            if not steps:
-                continue
-            if ee._check_conditions(counter_block.get('conditions', {}), c):
-                total += sum(s.get('amount', 0) for s in steps
-                            if s.get('action') == 'buff_power')
+        total = sum(self._card_counter_value(c, ee) for c in hand)
         if not known_only:
             return total
 
@@ -10544,12 +10568,23 @@ class GameAnalyzer:
         oculta. Cartas reveladas contam pelo valor real; slots desconhecidos
         contam como possiveis counters de 2000. Isso e conservador de proposito:
         se a mao e desconhecida, nao podemos chamar de lethal garantido.
+
+        Achado real 17/08: ate aqui usava so `c.counter` (stat IMPRESSO) pras
+        cartas reveladas -- cartas com counter vindo de um efeito [Counter]
+        parseado (EVENT sem stat impresso, ex: Ground Death/"...Never
+        Existed...") contavam 0, mesmo CONHECIDAS e certas. Isso podia
+        certificar "letal garantido" contra uma defesa que na verdade
+        sobrevivia -- a mesma categoria de bug do `opp_reactive_field_buffs`
+        (bloco 564, board), so que do lado da MAO. Agora usa
+        `_card_counter_value` (fonte unica com `opp_counter_potential`).
         """
         known = self.opp.known_hand_cards()
         unknown_hand_size = max(0, len(self.opp.hand) - len(known))
+        ee = EffectExecutor(self.opp, self.me)
 
-        # Cartas reveladas: valor real de counter (inclui 0 para cartas sem counter)
-        chunks = [c.counter for c in known]
+        # Cartas reveladas: valor real de counter (stat impresso + efeito
+        # [Counter] parseado; inclui 0 para cartas sem counter nenhum)
+        chunks = [self._card_counter_value(c, ee) for c in known]
         # Slots desconhecidos: não sabemos o counter — tratamos como 0 para
         # não inflar a defesa do oponente com suposições. O cálculo de lethal
         # é sobre o que podemos GARANTIR, não sobre o que o oponente pode ter.

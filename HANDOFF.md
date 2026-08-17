@@ -1,5 +1,93 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (591) - Claude (sessao remota web) - FIX REAL: `_lethal_search` podia certificar "letal garantido" contra uma mao que na verdade sobrevivia -- ignorava counter tipo EVENTO (Ground Death e afins) na mao CONHECIDA do oponente, so contava o stat impresso
+
+**Pedido do usuario, direto**: "antes de investigar o Marlon, preciso
+que resolva isso que estamos tratando pq ainda nao foi resolvido" --
+apos eu citar (de memoria, sem checar o codigo) o item do bloco 563
+como "o maior impacto em aberto, nao investigado nesta sessao". Fui
+checar o codigo antes de prometer mais uma rodada de medicao, e achei
+que bloco 563 estava PARCIALMENTE desatualizado: o board buff (Newgate/
+Linlin reagindo do CAMPO) ja tinha sido corrigido no bloco 564, ANTES
+desta sessao comecar -- eu estava repetindo um achado antigo sem
+verificar se ja tinha sido fechado.
+
+### O bug real que sobrou (lado da MAO, nao do campo)
+
+`_lethal_search`/`can_lethal_this_turn` usa `opp_counter_chunks_for_
+lethal()` pra saber quanto counter o oponente pode jogar em defesa.
+Essa funcao, pras cartas CONHECIDAS da mao (reveladas por efeito),
+so lia `c.counter` -- o stat IMPRESSO em cartas CHARACTER. Cartas cujo
+counter vem de um efeito `[Counter]` PARSEADO (EVENT sem stat impresso,
+ex: `Ground Death` OP14-096, +4000 condicionado a `trash_gte: 10`, ou
+`"...Never Existed..."`) contavam ZERO, mesmo estando CONHECIDAS e a
+condicao satisfeita. Achado por comparacao: `opp_counter_potential()`
+(funcao IRMA, usada em outros pontos de scoring) ja tratava isso
+CERTO desde o achado 07/07 -- as duas funcoes calculavam a mesma coisa
+("quanto counter o oponente tem") de dois jeitos diferentes, um deles
+com um buraco real. Mesma categoria do bloco 564 (defesa reativa do
+oponente ignorada no lethal), so do lado da mao em vez do campo --
+consequencia identica: o motor podia ir all-in (inclusive restando os
+proprios [Blocker], como o bloco 564 ja documentou) num "letal
+garantido" que na verdade tinha counter suficiente pra sobreviver.
+
+### Fix
+
+`_card_counter_value(card, ee)` -- metodo novo, fonte UNICA (REGRA_SEM_
+DUPLICACAO.md) que calcula stat impresso + efeito `[Counter]` parseado
+(condicoes checadas) pra UMA carta. `opp_counter_potential()`
+refatorada pra usar-la (sem mudar comportamento -- mesma logica, so
+extraida). `opp_counter_chunks_for_lethal()` corrigida pra usar-la
+tambem nas cartas conhecidas -- e o fix de verdade, fecha o buraco.
+
+### Validacao
+
+- **Teste novo** (`test_lethal_conta_counter_tipo_evento_conhecido_na_
+  mao_17_08`, `smoke_fast.py`): 2 atacantes poder=poder do lider do
+  oponente (empatam, qualquer counter>0 barra), Ground Death CONHECIDO
+  na mao do oponente. Sem `trash_gte` satisfeito: conta 0, lethal
+  garantido de verdade (controle negativo). Com a condicao satisfeita:
+  o chunk de 4000 entra em `opp_counter_chunks_for_lethal`, cobre 1 dos
+  2 ataques, e **`can_lethal_this_turn()` deixa de certificar lethal**
+  -- exatamente o cenario do bug. `opp_counter_potential()` confirmado
+  que nao regrediu (ja contava certo).
+  - Pegadinha do PROPRIO teste: `me.leader` tambem ataca por padrao
+    (nao-restado) -- minha 1a versao esquecia disso, criando um 3o
+    atacante nao-intencional que absorvia a diferenca e mascarava o
+    fix (teste passava mesmo com o bug NAO corrigido, seria um falso
+    positivo). Pego ao rodar e ver `[FALHOU]`, nao assumido corrigido
+    sem conferir -- `me.leader.rested = True` no setup fecha o teste.
+  - `smoke_fast.py`: 100%, zero regressao (as 8 flags de calibragem
+    locais continuam False no git, comportamento inalterado).
+  - **`smoke_test.py` (regressao AMPLA, rodado por mexer em area
+    compartilhada de alto risco -- counter/lethal): TODOS OS TESTES
+    PASSARAM.**
+
+### O que isso significa pro pedido do usuario ("bot sempre perde")
+
+Isto e o item mais concreto e de maior confianca encontrado na sessao
+inteira: um cenario onde o motor literalmente ACREDITAVA ter vencido o
+jogo (e por isso ia all-in, sem guardar nada pra depois) quando na
+verdade nao tinha -- e a mesma categoria de erro ja documentada em
+partidas reais (bloco 564: 2 partidas seguidas, `matches_not_closed_
+after_lethal: 1` nas duas, o all-in incluia restar os proprios
+[Blocker]). Diferente dos achados anteriores desta sessao (que quase
+todos morreram em "artefato de medicao" ou "evidencia fraca"), este e
+um bug de LOGICA REAL, confirmado por teste antes/depois, numa area que
+o proprio projeto ja identificou como alto impacto.
+
+### Pendente
+
+- Nao testado ao vivo (sem jogo nesta sessao remota) -- proxima sessao
+  local deveria confirmar numa partida real com um EVENT [Counter]
+  conhecido na mao do oponente (revelado por efeito) perto do fim de
+  jogo.
+- Slots DESCONHECIDOS da mao continuam contando 0 pra lethal GARANTIDO
+  (comportamento conservador ja documentado, nao mudou aqui) -- so
+  cartas CONHECIDAS (reveladas) se beneficiam do fix.
+- Marlon (OP17-052, item 3 do bloco 590) continua na fila, pedido
+  explicitamente adiado pelo usuario pra depois deste fix.
+
 ## 2026-08-17 (590) - Claude (sessao remota web) - Fecha a causa raiz do bloco 589: `_attach_don_for_attack` (top-up automatico de DON, roda toda vez que um 'attack' JA ESCOLHIDO precisa de DON pra passar) era INVISIVEL no decision_log -- agora loga, `audit_real_losses.py`/`decision_quality_report.py` ganham item 4 pra usar o dado
 
 **Pedido do usuario**: "Esse decision quality precisa passar por

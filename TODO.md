@@ -2,6 +2,24 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 591): **FIX REAL, pedido direto do usuário**
+> ("resolva isso que ainda não foi resolvido"). `_lethal_search` podia
+> certificar "letal garantido" contra uma mão que na verdade
+> sobrevivia: `opp_counter_chunks_for_lethal()` só lia o stat de
+> Counter IMPRESSO das cartas conhecidas da mão do oponente, ignorando
+> cartas cujo counter vem de um efeito `[Counter]` parseado (EVENT sem
+> stat impresso, ex: Ground Death OP14-096). A função irmã
+> `opp_counter_potential()` já tratava isso certo (achado 07/07) — as
+> duas calculavam a mesma coisa de dois jeitos, um com buraco real.
+> Mesma categoria do bloco 564 (defesa reativa do oponente ignorada no
+> lethal), agora do lado da mão. Fix: `_card_counter_value` vira fonte
+> única (REGRA_SEM_DUPLICACAO.md), usada pelas duas. **Teste novo**
+> confirma antes/depois: sem a condição do Ground Death satisfeita,
+> lethal garantido de verdade (controle); com a condição satisfeita, o
+> mesmo cenário deixa de certificar lethal. `smoke_fast`/`smoke_test`
+> 100%. Não testado ao vivo (sem jogo nesta sessão remota). Ver bloco
+> 591 do HANDOFF.
+>
 > 17/08/2026 (bloco 590): **fecha a causa raiz do bloco 589** e melhora
 > `decision_quality_report.py` (pedido do usuário: "esse decision
 > quality precisa passar por melhorias"). `_attach_don_for_attack`
