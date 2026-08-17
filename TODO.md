@@ -2,6 +2,22 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 570): **auditor de GERAÇÃO de candidatos criado**
+> (`audit_candidate_generation.py`, item 1 do bloco 569) — pergunta "o que
+> sequer virou opção?", que foi a causa de 3 dos 4 achados do dia. **Não
+> rodou ainda** pro Luffy: o deck real `Luffy RG.deck` tem 4 cópias de
+> **`ST31-005`, que NÃO existe no `cards_rows.csv`** → valida como 46/50 e é
+> rejeitado. **Ao vivo o impacto é pior**: o bot joga com 4 cartas que não
+> sabe o que fazem, sem erro visível. Verificado que o **Thousand Sunny
+> ST31-004 ESTÁ no banco** — logo o bot não jogar o stage não é
+> desconhecimento da carta, aquela causa segue aberta. **Pendente**:
+> atualizar o banco e checar de forma genérica quantos códigos dos `.deck`
+> reais não existem nele. **Ideia do usuário a perseguir**: derivar o plano
+> do deck dos **logs humano-vs-bot** (o guia dá o plano ideal, o log dá o
+> executado que funcionou) — a infra já existe
+> (`audit_curve_calibration_flags.py` já reconstrói o lado humano), falta a
+> camada de leitura. Ver bloco 570 do HANDOFF.
+
 > 16/08/2026 (bloco 569): **NOTA ARQUITETURAL — "tudo depende do deck e do
 > turno" são DOIS problemas, e o segundo não se resolve com peso.**
 > **(A) heurística absoluta** onde deveria ser condicional (constantes

@@ -1,5 +1,55 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (570) - Claude (sessao local) - Auditor de GERACAO de candidatos criado (nao rodou ainda) + achado: carta do deck real AUSENTE do banco (4 copias cegas) + ideia do usuario: derivar o plano do deck dos logs humano-vs-bot
+
+### Ferramenta nova: `audit_candidate_generation.py` (item 1 do bloco 569)
+
+Enquanto o `decision_quality_report.py` pergunta "das opcoes oferecidas, o bot
+escolheu bem?", este pergunta o passo ANTERIOR -- **"o que sequer virou
+opcao?"**, que foi a causa de 3 dos 4 achados de 16/08. Mede por lider:
+(1) tipos de acao gerados pelo Turn Planner e quais NUNCA aparecem;
+(2) alvo do `attach_don` separando LIDER de personagem (teste de
+nao-regressao permanente do bloco 567); (3) **cartas do deck que nunca
+viraram candidata** -- o sinal mais forte.
+
+**NAO RODOU AINDA** pro Luffy, pelo motivo abaixo. Roda pro Teach
+(`--leader OP16-080 --decks-do-jogo`). Validar na proxima sessao.
+
+### Achado: `ST31-005` ausente do `cards_rows.csv`
+
+O deck real `Luffy RG.deck` tem 4 copias de `ST31-005`, que **nao existe no
+banco de cartas** (o banco tem ST31-001/002/003/004/006 -- falta so o 005).
+Efeitos praticos:
+
+- O deck valida como **46/50** e e rejeitado por `validar_deck` -- foi o que
+  impediu o auditor de rodar.
+- **Ao vivo o impacto e pior**: o bot joga com 4 cartas que ele nao sabe o que
+  fazem. Nao ha erro visivel, so decisao degradada em silencio.
+- Verificado que o **Thousand Sunny `ST31-004` ESTA no banco** (cards_rows E
+  effects_db) -- ou seja, o bot nao jogar o stage **nao e desconhecimento da
+  carta**. Aquela causa segue em aberto (bloco 567).
+
+> **Pendente**: atualizar `cards_rows.csv` com a(s) carta(s) faltante(s). Vale
+> uma checagem generica -- quantos codigos dos `.deck` reais do usuario nao
+> existem no banco? `game_decks.py` ja le esses arquivos, e a checagem e
+> barata. Provavel que ST31-005 nao seja a unica.
+
+### Ideia do usuario a perseguir: aprender o plano do deck dos LOGS
+
+> "um outro jeito de saber como o deck funciona e pegar os logs de humano x
+> bot e interpretar o deck e jogadas do humano com o deck dele"
+
+Vale mais que guia escrito: o guia da o plano IDEAL, o log da o plano
+EXECUTADO e que funcionou contra o bot real. **A infra ja existe** --
+`audit_real_losses.py` reconstroi estado turno a turno, e
+`audit_curve_calibration_flags.py` ja reconstroi o lado VENCEDOR (humano) via
+`bot_side='Opponent'`. Falta a camada de LEITURA: extrair do historico humano
+o que o motor nao tem -- DON deixado aberto por turno, turnos em que o humano
+escolheu NAO atacar, ordem de desenvolvimento das pecas. Isso vira "plano do
+deck" derivado de dado real, util tanto pra comparar com o bot quanto pra
+alimentar as metricas cientes do deck (item 2 do bloco 569).
+
+
 ## 2026-08-16 (569) - NOTA ARQUITETURAL (ler antes de calibrar qualquer coisa) - "tudo depende do deck e do turno": sao DOIS problemas distintos, e o segundo NAO se resolve com peso
 
 Tese do usuario, repetida ha anos e reforcada hoje: *"isso depende do deck,
