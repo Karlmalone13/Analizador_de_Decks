@@ -2,6 +2,26 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 575): **código divergente do Thousand Sunny resolvido por
+> ALIAS** — e o diagnóstico do bloco 571 estava **invertido**: abri a arte da
+> carta no jogo (`Cards/ST31/ST31-005.jpg`) e o código impresso nela é
+> **`ST31-006`**. O banco está certo; o simulador é que guarda a carta num
+> arquivo com número diferente do impresso (`ST31-004.jpg` confere, então não
+> é o set deslocado). **Renumerar o banco, que era o caminho óbvio a partir do
+> 571, teria corrompido o código correto** — e o `cards_rows.csv` é
+> compartilhado com o front-end. Varredura global de TODOS os 2838 códigos do
+> jogo contra o banco achou **2** divergências, de classes diferentes:
+> `ST31-005`→`ST31-006` (número) e **`St22-012`→`ST22-012` (caixa, Marco —
+> nunca notada antes, também chegava cega ao vivo)**. Fix: mapa
+> `ALIASES_DO_SIMULADOR` em `gerar_dbs.py` aplicado aos dois bancos na
+> geração (vale pra engine/api/bot sem resolvedor duplicado) + novo
+> `audit_game_code_divergence.py` pra re-derivar a lista **depois de cada
+> atualização do simulador** + teste permanente em `smoke_fast.py`.
+> **Fica aberto**: 99 cartas do jogo ausentes do banco (16 de OP17, 83 promos
+> P-xxx) — alias não resolve, é banco desatualizado na fonte. E a ambiguidade
+> pré-existente de `_lookup_by_name('Thousand Sunny')` (5 cartas com esse
+> nome; custo 1 devolve `OP09-080`, não `ST31-006`). Ver bloco 575.
+
 > 16/08/2026 (bloco 574): **os 2 gaps do parser FORAM corrigidos** (fecha o
 > 573). Nenhuma das 4 hipóteses do 573 era a causa — as duas cartas caíam em
 > `parse_block` devolvendo `[]` (gap de gramática de EFEITO, não de

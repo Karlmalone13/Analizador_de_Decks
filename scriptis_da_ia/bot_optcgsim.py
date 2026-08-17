@@ -58,6 +58,15 @@ def _load_card_db() -> None:
     try:
         raw = json.loads(_DB_PATH.read_text(encoding="utf-8"))
         for code, info in raw.items():
+            # Entradas-alias (codigo que o simulador usa, ver
+            # ALIASES_DO_SIMULADOR em gerar_dbs.py) apontam para a MESMA
+            # carta e sao puladas aqui de proposito: este indice e
+            # nome->codigo, e sem o skip a mesma carta entraria duas vezes,
+            # fazendo a resolucao por nome devolver as vezes o codigo do
+            # jogo em vez do codigo IMPRESSO. O alias serve ao caminho
+            # inverso (codigo do jogo -> carta), que le o banco direto.
+            if info.get("alias_de"):
+                continue
             name = info.get("name", "").strip().lower()
             if name:
                 _CARD_DB.setdefault(name, []).append({**info, "code": code})

@@ -1,5 +1,80 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (575) - Claude (sessao local) - Codigo divergente do Thousand Sunny resolvido por ALIAS -- e o diagnostico do bloco 571 estava invertido: o banco esta CERTO, o jogo e que renumera
+
+Fecha o bug 1 do bloco 571. Com o bloco 574, o Thousand Sunny agora deve
+funcionar ao vivo pela primeira vez -- **ainda nao testado em partida**.
+
+### Correcao do diagnostico do 571
+
+O bloco 571 concluiu que "o jogo usa ST31-005, o banco tem ST31-006" e tratou
+isso como **erro do banco**. Esta invertido. **Abri a arte da carta no proprio
+jogo** (`Cards/ST31/ST31-005.jpg`): a carta impressa ali diz **`ST31-006`** no
+canto inferior direito. O banco esta certo; o simulador e que guarda a carta
+num arquivo com numero diferente do impresso.
+
+Controle: `ST31-004.jpg` confere com o impresso (`ST31-004`), entao **nao e o
+set inteiro deslocado** -- so a ultima carta. Os dois lados tem 5 cartas.
+
+> **Licao pra proxima divergencia de codigo**: o nome do arquivo do jogo NAO e
+> fonte de verdade. A ARTE e. Renumerar o banco pra "bater com o jogo", que
+> era o caminho obvio a partir do 571, teria corrompido o codigo correto --
+> e o `cards_rows.csv` e compartilhado com o front-end.
+
+### Varredura global (o gate, aplicado a codigo e nao a gramatica)
+
+Comparei **todos** os codigos do jogo contra o banco antes de corrigir uma
+carta so. 2838 cartas no jogo. Resultado:
+
+- **2 divergencias de identidade** (mesma carta, codigo diferente) -- e sao de
+  classes DIFERENTES:
+  - `ST31-005` -> `ST31-006` (numero)
+  - `St22-012` -> `ST22-012` (**caixa**: 'St' em vez de 'ST', Marco). A busca
+    no banco e case-sensitive, entao essa tambem chegava cega ao vivo. **Nao
+    tinha sido notada por ninguem ate agora.**
+- **99 cartas do jogo ausentes do banco** (16 de OP17, 83 promos P-xxx).
+  Alias nao resolve isso -- e banco desatualizado na fonte. **Fica aberto**,
+  registrado no TODO.
+- 1 codigo do banco sem arquivo no jogo (`OP09-078-r1`, reprint) -- esperado.
+
+### O fix
+
+1. **`ALIASES_DO_SIMULADOR` em `gerar_dbs.py`** (mapa codigo-do-jogo ->
+   codigo-real) aplicado aos DOIS bancos na geracao. Feito na unica porta de
+   geracao de proposito: `decision_engine`, `api.py` e `bot_optcgsim` leem os
+   JSONs gerados, entao o alias vale pros tres **sem nenhum resolvedor
+   duplicado em cada ponto de lookup** (`REGRA_SEM_DUPLICACAO.md`). A entrada
+   carrega `alias_de` pra continuar rastreavel.
+2. **`audit_game_code_divergence.py`** (novo) -- re-deriva a lista comparando
+   a pasta de cartas do jogo com o `cards_rows.csv`. Existe porque **o jogo
+   atualiza e traz sets novos**: manter a lista na mao envelhece em silencio.
+   Separa os dois achados (candidato a alias vs carta ausente), que tem
+   tratamentos diferentes. **Rode depois de cada atualizacao do simulador.**
+   Ele reproduziu exatamente os 2 aliases de forma independente.
+3. `bot_optcgsim._load_card_db` pula entradas com `alias_de` -- o indice de la
+   e nome->codigo, e sem o skip a mesma carta entraria duas vezes e a
+   resolucao por nome podia devolver o codigo do jogo em vez do impresso.
+4. Teste permanente em `smoke_fast.py`
+   (`test_aliases_do_simulador_resolvem_no_banco`), que itera o mapa e falha
+   na hora se alguem regenerar os bancos sem aplicar os aliases.
+
+### Validacao
+
+- `ST31-005` e `St22-012` resolvem para os mesmos efeitos dos codigos reais.
+- `gerar_dbs.py`: 2749 cartas sincronizadas (2747 + 2 aliases).
+- `diff_parser.py`: PERDEU=0.
+- `smoke_fast.py`: 14 falhas, **as mesmas 14 conhecidas** das flags locais.
+
+### Achado lateral NAO corrigido (fica de pista)
+
+`_lookup_by_name('Thousand Sunny')` no `bot_optcgsim` e ambiguo: existem **5**
+cartas com esse nome no banco (`EB02-009`, `OP09-080`, `ST01-017`, `ST14-017`,
+`ST31-006`), e a desambiguacao por custo escolhe `OP09-080` pra custo 1 --
+**nao** o `ST31-006`. E pre-existente, nao foi introduzido aqui, e afeta o
+caminho nome->codigo (quando o bot le o nome na tela), nao o caminho
+codigo->carta que este bloco conserta. Nao investiguei qual dos dois caminhos
+alimenta a decisao ao vivo -- precisa de investigacao propria antes de mexer.
+
 ## 2026-08-16 (574) - Claude (sessao local) - Os 2 gaps do parser CORRIGIDOS -- nenhuma das 4 hipoteses do 573 era a causa, e o Thousand Sunny tinha um GATE bloqueando antes da gramatica
 
 Fecha o bloco 573. As 2 cartas (`ST31-006` Thousand Sunny, `OP11-031` Jinbe)

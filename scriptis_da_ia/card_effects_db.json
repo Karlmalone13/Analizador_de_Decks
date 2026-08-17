@@ -83134,5 +83134,97 @@
         ]
       }
     }
+  },
+  "ST31-005": {
+    "name": "Thousand Sunny",
+    "type": "STAGE",
+    "cost": 1,
+    "power": 0,
+    "counter": 0,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Straw Hat Crew",
+    "attribute": "",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 5
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": true
+          },
+          {
+            "action": "deck_bottom_rest"
+          }
+        ]
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "transfer_don",
+            "count": 1,
+            "target": "own_character",
+            "distribution": "free",
+            "per_target_max": 1,
+            "filter_name": "monkey d. luffy"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    },
+    "alias_de": "ST31-006"
+  },
+  "St22-012": {
+    "name": "Marco",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Whitebeard Pirates",
+    "attribute": "Special",
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "reveal_deck_top_conditional",
+            "return_to": "top",
+            "condition": {
+              "revealed_card_type": "whitebeard pirates"
+            },
+            "on_match_steps": [
+              {
+                "action": "buff_power",
+                "amount": 1000,
+                "target": "self",
+                "duration": "until_opp_turn_end"
+              }
+            ]
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "trash_from_hand",
+              "count": 1
+            }
+          }
+        ],
+        "once_per_turn": true
+      }
+    },
+    "alias_de": "ST22-012"
   }
 }

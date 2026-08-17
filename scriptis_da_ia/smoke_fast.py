@@ -10364,6 +10364,40 @@ def test_counter_hand_coverage_opp_blocker_curve_scale_14_08() -> None:
           on3 > off3)
 
 
+def test_aliases_do_simulador_resolvem_no_banco():
+    """
+    Codigos que o SIMULADOR usa e divergem do codigo impresso precisam
+    resolver no banco. Sem isso a carta chega ao vivo como "copia cega":
+    sem efeito, sem custo, sem nome, e o motor nunca a gera como candidata
+    -- silenciosamente, sem erro nenhum (achado 16/08, bloco 570: 4 copias
+    do Thousand Sunny sumiram do deck real do usuario).
+
+    O teste guarda o RESULTADO (alias resolve para a mesma carta), nao a
+    implementacao -- regenerar os bancos sem aplicar ALIASES_DO_SIMULADOR
+    de gerar_dbs.py derruba este teste na hora.
+    """
+    from gerar_dbs import ALIASES_DO_SIMULADOR
+    from optcg_engine.decision_engine import get_card_effects
+
+    for alias, real in ALIASES_DO_SIMULADOR.items():
+        efeitos_reais = get_card_effects(real)
+        check(f"{real} (codigo impresso) existe no banco com efeitos",
+              bool(efeitos_reais))
+        check(f"{alias} (codigo do simulador) resolve para os MESMOS efeitos de {real}",
+              get_card_effects(alias) == efeitos_reais)
+
+    # Ancora concreta do caso que originou o fix: o [Activate:Main] do
+    # Thousand Sunny e a FONTE do DON anexado que o lider Luffy OP13-001
+    # exige. Chegar pelo codigo do jogo tem que dar o efeito completo.
+    sunny = get_card_effects("ST31-005")
+    check("ST31-005 (Thousand Sunny pelo codigo do jogo) traz o activate_main",
+          "activate_main" in sunny)
+    check("o activate_main do Thousand Sunny da DON restado a um 'monkey d. luffy'",
+          any(s.get("action") == "transfer_don"
+              and s.get("filter_name") == "monkey d. luffy"
+              for s in sunny.get("activate_main", {}).get("steps", [])))
+
+
 def main() -> int:
     test_big_mom_optional_zero_parser_order_and_don_synergy()
     test_is_active_turn_corrigido_evita_don_minus_desnecessario()
@@ -10578,6 +10612,7 @@ def main() -> int:
     test_lote_8_op09_051_a_op10_080()
     test_lote_9_op15_020_a_op16_038()
     test_lote_10_op14_054_a_st07_017()
+    test_aliases_do_simulador_resolvem_no_banco()
     test_op05_099_opp_pode_evitar_e_op07_036_custo_condicional_proprio()
     test_lote_16_itens_op09_051_a_op15_059()
     test_ultimos_5_itens_op06_057_a_op15_119()

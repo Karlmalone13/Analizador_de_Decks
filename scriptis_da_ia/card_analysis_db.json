@@ -120997,5 +120997,102 @@
   "has_unblockable": false,
   "has_banish": false,
   "has_trigger": false
+ },
+ "ST31-005": {
+  "name": "Thousand Sunny",
+  "type": "STAGE",
+  "cost": 1,
+  "power": 0,
+  "counter": 0,
+  "life": 0,
+  "color": "Red",
+  "sub_types": "Straw Hat Crew",
+  "attribute": "",
+  "effects": [
+   {
+    "action": "look_top_deck",
+    "trigger": "on_play"
+   },
+   {
+    "action": "add_to_hand",
+    "trigger": "on_play"
+   },
+   {
+    "action": "deck_bottom_rest",
+    "trigger": "on_play"
+   },
+   {
+    "action": "transfer_don",
+    "trigger": "activate_main",
+    "target": "own_character"
+   }
+  ],
+  "synergy_states": {},
+  "text": "[On Play] Look at the top 5 cards of your deck. Reveal up to 1 card with the \"Straw Hat Crew\" type and add it to your hand. Then, place the rest at the bottom of your deck in any order. [Activate:Main] Rest this stage: Give up to 1 of your \"Monkey D. Luffy\" up to 1 rested DON!!",
+  "is_searcher": true,
+  "draws": false,
+  "has_counter_value": false,
+  "has_counter_event": false,
+  "is_blocker": false,
+  "is_removal": false,
+  "kos": false,
+  "rests_opponent": false,
+  "bounces": false,
+  "gives_don": false,
+  "power_buff": false,
+  "heals": false,
+  "gains_life": false,
+  "attacks_life": false,
+  "trashes_own_life": false,
+  "has_rush": false,
+  "has_double_attack": false,
+  "has_unblockable": false,
+  "has_banish": false,
+  "has_trigger": false,
+  "alias_de": "ST31-006"
+ },
+ "St22-012": {
+  "name": "Marco",
+  "type": "CHARACTER",
+  "cost": 4,
+  "power": 5000,
+  "counter": 1000,
+  "life": 0,
+  "color": "Blue",
+  "sub_types": "Whitebeard Pirates",
+  "attribute": "Special",
+  "effects": [
+   {
+    "action": "reveal_deck_top_conditional",
+    "trigger": "when_attacking"
+   },
+   {
+    "action": "substitute_ko",
+    "trigger": "passive"
+   }
+  ],
+  "synergy_states": {},
+  "text": "[Once Per Turn] If this Character would be K.O.'d by your opponent's effect, you may trash 1 card from your hand instead.\r\n[When Attacking] Reveal 1 card from the top of your deck. If that card's type includes \"Whitebeard Pirates\", this Character gains +1000 power until the end of your opponent's next turn.",
+  "is_searcher": false,
+  "draws": false,
+  "has_counter_value": true,
+  "has_counter_event": false,
+  "is_blocker": false,
+  "is_removal": false,
+  "kos": false,
+  "rests_opponent": false,
+  "bounces": false,
+  "gives_don": false,
+  "power_buff": false,
+  "heals": false,
+  "gains_life": false,
+  "attacks_life": false,
+  "trashes_own_life": false,
+  "has_rush": false,
+  "has_double_attack": false,
+  "has_unblockable": false,
+  "has_banish": false,
+  "has_trigger": false,
+  "alias_de": "ST22-012"
  }
 }
