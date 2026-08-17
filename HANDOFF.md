@@ -1,5 +1,79 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (593) - Claude (sessao remota web) - TENTADO E REVERTIDO: categoria 4 (bancar DON ocioso no lider sem ataque) piorou o resultado real -- medido, nao aceito so por "passar nos testes unitarios"
+
+**Pedido do usuario**: apos a discussao sobre "sequencia identica"
+(bloco 592), pediu explicitamente: nao forcar replay, mas **calibrar o
+motor ou criar coisa nova nele** pra melhorar de verdade -- "do jeito
+que esta hoje ta ruim".
+
+### O que foi tentado
+
+Padrao ja registrado nos blocos 586/587: 24 dos 56 casos de
+`attach_don` genuinamente nunca gerado eram concentrados numa carta so
+-- Rocks D. Xebec OP17-039 (lider principal do usuario nesta base, 17
+das 26 partidas), sem nenhum gatilho condicionado a DON. O humano
+anexava DON de sobra nele em turnos SEM nenhum ataque -- "guardar"
+recurso ocioso pra golpe futuro. Implementada categoria 4 em
+`_generate_attach_don_actions`: `don_idle`/`don_sobra` movidos pra fora
+do `if p.can_attack_this_turn()`, novo candidato `attach_don` no
+proprio lider usando toda a sobra quando `don_idle`, score
+`don_sobra * 15.0`.
+
+**Teste unitario isolado passou** (`smoke_fast`/`smoke_test` 100%,
+cenario sintetico: lider restado, sem carta pagavel na mao, gera o
+candidato certo) -- mas teste unitario so prova que a FUNCAO faz o que
+o codigo diz, nao que o resultado agregado melhora.
+
+### Medido ANTES de aceitar -- regrediu
+
+Reauditadas as MESMAS 26 partidas / 111 turnos do bloco 592 (mesma
+metrica objetiva: dano real do turno historico vs dano que o motor de
+hoje causaria). Resultado:
+
+| metrica | antes (bloco 592) | depois do fix tentado |
+|---|---|---|
+| motor causa dano >= ao humano real | **100/111 (90,1%)** | 95/111 (85,6%) |
+| motor causa MENOS dano | 11/111 (9,9%) | 16/111 (14,4%) |
+
+**Piorou, nao melhorou.** Causa provavel (nao confirmada a fundo,
+registrada como hipotese): o candidato novo de banking, com score ate
+`don_sobra*15` (pode passar de 50-70 com varios DON sobrando), as vezes
+competia e VENCIA um ataque FRACO mas com valor real (mesmo 1 ponto de
+dano garantido agora vale mais que "guardar pra depois" na maioria dos
+casos de jogo de cartas -- passaro na mao). A categoria 4 nao tinha
+nenhum desconto pela existencia de um ataque marginal disponivel na
+MESMA janela de decisao.
+
+### Revertido
+
+`decision_engine.py` (categoria 4 + o `don_idle`/`don_sobra` movido pra
+fora do `if`) e `smoke_fast.py` (o teste novo) restaurados ao estado
+anterior via edicao manual (o `git checkout --` em lote foi bloqueado
+pelo classificador de seguranca do ambiente -- revertido campo a campo,
+conferido `git diff` vazio nos dois arquivos antes de seguir).
+`smoke_fast.py` de volta a 100% no baseline original.
+
+### Licao registrada (reforca a disciplina do projeto)
+
+Teste unitario isolado (sintetico, 1 cenario por vez) **nao substitui**
+medir o impacto agregado numa base real antes de aceitar uma mudanca de
+geracao de candidato -- mesmo quando a motivacao (padrao real, 24
+casos concentrados) e solida. A ideia pode estar certa e a
+IMPLEMENTACAO especifica (score fixo sem considerar o que mais compete
+naquele turno) errada. Fica pendente pra proxima tentativa: se alguem
+quiser reabrir isto, considerar descontar o score do banking pela
+existencia de qualquer ataque com score>0 na mesma janela (nao so
+"nao ha carta jogavel"), ou usar um score bem mais conservador.
+
+### Pendente
+
+- O padrao real (24 casos, Rocks D. Xebec) continua sem cobertura --
+  fica registrado como aberto, NAO fechado por este bloco.
+- Reversao confirmada limpa (`git diff` vazio); nada commitado desta
+  tentativa alem deste proprio registro de HANDOFF (histórico do que
+  foi tentado e por que nao ficou).
+
 ## 2026-08-17 (592) - Claude (sessao remota web) - Veredito OBJETIVO e AUTOMATIZADO em TODOS os 111 turnos das 26 partidas reais bot-vs-humano do banco (nao so uma amostra) -- motor de hoje causa dano >= ao humano real em 90,1% dos turnos
 
 **Pedido do usuario**: apos eu amostrar so 6 turnos no bloco 589

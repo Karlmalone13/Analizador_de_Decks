@@ -2,6 +2,19 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 593): **tentado e REVERTIDO** — categoria 4 em
+> `_generate_attach_don_actions` (bancar DON ocioso no líder mesmo sem
+> ataque disponível, fechando o padrão dos blocos 586/587 — 24 casos
+> concentrados em Rocks D. Xebec OP17-039). Teste unitário isolado
+> passou, mas a medição real nas mesmas 26 partidas/111 turnos do
+> bloco 592 (mesma métrica objetiva de dano) **piorou**: motor
+> causando dano ≥ ao humano caiu de 90,1% pra 85,6%. Revertido (código
+> restaurado manualmente, `git diff` conferido vazio) — não commitado.
+> Lição: teste unitário sintético não substitui medir impacto agregado
+> antes de aceitar mudança de geração de candidato. O padrão real
+> (Rocks D. Xebec banking DON) continua **sem cobertura, em aberto**.
+> Ver bloco 593 do HANDOFF.
+>
 > 17/08/2026 (bloco 592): pedido do usuário ("quero que olhe TODOS os
 > turnos de TODOS os logs com humanos", não uma amostra) — veredito
 > objetivo e automatizado (dano real por turno, não leitura manual) em
