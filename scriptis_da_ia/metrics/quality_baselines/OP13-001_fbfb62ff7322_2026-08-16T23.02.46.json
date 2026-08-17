@@ -1,0 +1,89 @@
+{
+  "commit": "fbfb62ff7322",
+  "git_sujo": true,
+  "timestamp": "2026-08-16T23:02:46",
+  "leader": "OP13-001",
+  "n": 20,
+  "seed": 42,
+  "decks_do_jogo": true,
+  "metricas": {
+    "don_sobrando_medio": 1.8963,
+    "pct_turnos_zero_don": 37.04,
+    "utilizacao_cartas_pct": 73.16,
+    "utilizacao_lider_pct": null,
+    "winrate_pct": 70.0
+  },
+  "turnos_medidos": 135,
+  "por_carta": {
+    "OP14-031": {
+      "nome": "Nami (Alternate Art)",
+      "ofertada": 19,
+      "escolhida": 12
+    },
+    "ST31-005": {
+      "nome": "Thousand Sunny",
+      "ofertada": 79,
+      "escolhida": 75
+    },
+    "OP14-022": {
+      "nome": "Usopp",
+      "ofertada": 8,
+      "escolhida": 4
+    },
+    "OP01-016": {
+      "nome": "Nami (OP01-016) (Manga)",
+      "ofertada": 36,
+      "escolhida": 23
+    },
+    "ST21-003": {
+      "nome": "Sanji - ST21-003 (Reprint)",
+      "ofertada": 7,
+      "escolhida": 3
+    },
+    "OP13-040": {
+      "nome": "I Know You're Strong... So I'll Go All Out from the Very Start!!!",
+      "ofertada": 19,
+      "escolhida": 9
+    },
+    "OP13-027": {
+      "nome": "Sanji (Alternate Art)",
+      "ofertada": 22,
+      "escolhida": 14
+    },
+    "EB02-017": {
+      "nome": "Nami (Alternate Art)",
+      "ofertada": 26,
+      "escolhida": 20
+    },
+    "OP15-035": {
+      "nome": "Laboon",
+      "ofertada": 8,
+      "escolhida": 7
+    },
+    "OP13-118": {
+      "nome": "Monkey.D.Luffy (118) (Wanted Poster)",
+      "ofertada": 12,
+      "escolhida": 8
+    },
+    "OP15-032": {
+      "nome": "Brook (OP15-032) (Alternate Art)",
+      "ofertada": 7,
+      "escolhida": 4
+    },
+    "EB04-007": {
+      "nome": "Roronoa Zoro (EB04-007) (Alternate Art)",
+      "ofertada": 23,
+      "escolhida": 17
+    },
+    "OP10-011": {
+      "nome": "Tony Tony.Chopper (Reprint)",
+      "ofertada": 4,
+      "escolhida": 2
+    },
+    "OP13-037": {
+      "nome": "Roronoa Zoro (OP13-037)",
+      "ofertada": 2,
+      "escolhida": 1
+    }
+  }
+}

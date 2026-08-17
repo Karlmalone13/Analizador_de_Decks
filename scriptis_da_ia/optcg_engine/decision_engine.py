@@ -2267,6 +2267,75 @@ def _on_ko_play_card_value(step: dict, owner: 'Optional[GameState]') -> float:
     return min(30.0, 12.0 + melhor.board_value() * 2.0)
 
 
+def per_count_source_n(source: str, me: 'GameState', holder=None,
+                       projecao: bool = False) -> int:
+    """
+    Quantas vezes a fonte de contagem de um efeito `*_per_count` conta AGORA.
+
+    Fonte UNICA dessa conta (REGRA_SEM_DUPLICACAO). Nasceu dentro do
+    `EffectExecutor._execute_step`, que EXECUTA o efeito; a valoracao
+    (`OPTCGMatch._trigger_don_value`, bloco 578) precisa da mesma conta pra
+    saber por quanto o efeito escala. Sao classes diferentes, entao a conta
+    virou funcao de modulo em vez de ser reimplementada num dos lados -- duas
+    respostas pra "quanto esse efeito rende" e exatamente o que a regra
+    proibe.
+
+    `holder` e quem carrega os contadores `_last_cost_*` do efeito em
+    execucao (o EffectExecutor). Pode ser None em projecao.
+
+    `projecao=True` = "quanto renderia SE eu pagasse", perguntado ANTES de
+    pagar. Muda dois comportamentos:
+      - fontes `*_this_effect` contam o custo VARIAVEL pago naquele efeito,
+        que na execucao vem de `holder._last_cost_*`. Em projecao esses
+        contadores ainda nao existem: valeriam 0 e o efeito pareceria nao
+        render NADA -- que era metade do bug do peso 35.0 (bloco 577). O que
+        vale na projecao e o MAXIMO que o jogador conseguiria pagar agora.
+      - nao produz efeito colateral: o `revealed_life` de
+        `life_top_revealed_cost` so pode ser marcado na execucao real, senao
+        o bot "lembraria" de uma carta que nunca chegou a revelar.
+    """
+    if source == 'events_in_trash':
+        return sum(1 for c in me.trash if c.card_type == 'EVENT')
+    if source == 'trash':
+        return len(me.trash)
+    if source == 'rested_don':
+        return me.don_rested
+    if source == 'hand':
+        return len(me.hand)
+    if source == 'unique_character_names':
+        return len({c.name for c in me.field_chars})
+    if source == 'own_characters':
+        return len(me.field_chars)
+    if source == 'placed_bottom_deck_this_effect':
+        return getattr(holder, '_last_moved_count', 0)
+    if source == 'trashed_hand_this_effect':
+        if projecao:
+            return len(me.hand)
+        return getattr(holder, '_last_cost_trash_any_count', 0)
+    if source == 'bounced_own_this_effect':
+        if projecao:
+            return len(me.field_chars)
+        return getattr(holder, '_last_cost_bounce_any_count', 0)
+    if source == 'rested_don_this_effect':
+        # Achado 29/07, OP13-001 Luffy: "for every DON!! card rested this
+        # way" -- contagem do custo VARIAVEL rest_any_don pago NESTE efeito,
+        # mesma familia de trashed_hand_this_effect/bounced_own_this_effect
+        # (nao o total de DON rested no banco -- isso e source='rested_don').
+        if projecao:
+            return me.don_available
+        return getattr(holder, '_last_cost_rest_any_don_count', 0)
+    if source == 'life_top_revealed_cost':
+        # "reveal up to 1 card from the top of your Life cards. This
+        # Character gains +N power per M cost on the revealed card" -- PEEK
+        # (nao remove/nao move), so olha o custo da carta (achado 19/07,
+        # OP15-119). Zero se a Life estiver vazia.
+        n = me.life[-1].cost if me.life else 0
+        if me.life and not projecao:  # memoria: topo da propria Life conhecido
+            me.revealed_life.add(id(me.life[-1]))
+        return n
+    return 0
+
+
 def resolve_choice_for_scoring(block: dict, card: 'Card', me: 'GameState', opp: 'GameState') -> list:
     """
     Steps 'efetivos' de um bloco de efeito PRA FINS DE AVALIAÇÃO (scoring/
@@ -7655,42 +7724,7 @@ class EffectExecutor:
             amount_per = int(step.get('amount_per', 1000) or 0)
             target = step.get('target', 'self')
 
-            if source == 'events_in_trash':
-                n = sum(1 for c in me.trash if c.card_type == 'EVENT')
-            elif source == 'trash':
-                n = len(me.trash)
-            elif source == 'rested_don':
-                n = me.don_rested
-            elif source == 'hand':
-                n = len(me.hand)
-            elif source == 'unique_character_names':
-                n = len({c.name for c in me.field_chars})
-            elif source == 'own_characters':
-                n = len(me.field_chars)
-            elif source == 'placed_bottom_deck_this_effect':
-                n = getattr(self, '_last_moved_count', 0)
-            elif source == 'trashed_hand_this_effect':
-                n = getattr(self, '_last_cost_trash_any_count', 0)
-            elif source == 'bounced_own_this_effect':
-                n = getattr(self, '_last_cost_bounce_any_count', 0)
-            elif source == 'rested_don_this_effect':
-                # Achado 29/07, OP13-001 Luffy: "for every DON!! card rested
-                # this way" -- contagem do custo VARIAVEL rest_any_don pago
-                # NESTE efeito, mesma familia de trashed_hand_this_effect/
-                # bounced_own_this_effect (nao o total de DON rested no
-                # banco -- isso ja e o source='rested_don').
-                n = getattr(self, '_last_cost_rest_any_don_count', 0)
-            elif source == 'life_top_revealed_cost':
-                # "reveal up to 1 card from the top of your Life cards.
-                # This Character gains +N power per M cost on the
-                # revealed card" -- PEEK (nao remove/nao move), so olha o
-                # custo da carta (achado 19/07, OP15-119). Zero se a Life
-                # estiver vazia.
-                n = me.life[-1].cost if me.life else 0
-                if me.life:  # memoria: topo da propria Life conhecido
-                    me.revealed_life.add(id(me.life[-1]))
-            else:
-                n = 0
+            n = per_count_source_n(source, me, self)
 
             amount = (n // count_per) * amount_per
             if amount <= 0:
@@ -16399,6 +16433,17 @@ class OPTCGMatch:
             return 70 + (40 if opp.life_count() <= 3 else 0)
         return 40
 
+    def _per_count_source_n(self, source, me, projecao: bool = False) -> int:
+        """Atalho de instancia -- a conta vive em `per_count_source_n`."""
+        return per_count_source_n(source, me, self, projecao)
+
+    # Regua de conversao "poder -> score" do projeto: 8 pontos por 1000 de
+    # poder. NAO e um numero novo -- e o mesmo fator ja calibrado em
+    # _conditional_board_synergy_value (`(amount / 1000.0) * 8`). Reusado
+    # aqui de proposito pra que buff escalavel e buff fixo sejam medidos
+    # com a MESMA regua (bloco 578).
+    _PONTOS_POR_1000_DE_PODER = 8.0
+
     def _trigger_don_value(self, trig, ef, card, p, opp, priority) -> float:
         """Valor de ligar um gatilho condicional a DON, pelo que o efeito faz."""
         # Achado real 03/08: resolve "Choose one" quando `steps` vazio.
@@ -16419,7 +16464,41 @@ class OPTCGMatch:
         elif actions and all(x == 'peek_opp_deck_top' for x in actions):
             valor = 40    # informacao, nao vantagem de carta
         elif any('power' in str(x) for x in actions):
-            valor = 60    # buff de poder
+            # Buff de poder: vale pela MAGNITUDE, nao por ser "um buff".
+            #
+            # Ate 16/08 isto era um flat 60 pra qualquer acao com 'power' no
+            # nome. Achado medido no bloco 577: o gatilho-assinatura do lider
+            # Luffy OP13-001 ("+2000 power POR DON restado", que escala e pode
+            # decidir a partida) recebia os mesmos 60 de um +1000 fixo, e o
+            # candidato saia com score ~35.0 constante -- gerado, e preterido
+            # por quase tudo. Peso absoluto, o problema nomeado no bloco 569.
+            #
+            # Agora converte o poder PROJETADO pela regua do projeto. Para
+            # `*_per_count` a projecao usa a fonte de contagem real
+            # (_per_count_source_n, projecao=True) em vez de assumir 1x.
+            ganho = 0
+            for s in steps:
+                a = s.get('action') or ''
+                if 'power' not in a:
+                    continue
+                if a.endswith('_per_count'):
+                    n = self._per_count_source_n(s.get('source', 'trash'), p,
+                                                 projecao=True)
+                    count_per = max(1, int(s.get('count_per', 1) or 1))
+                    ganho += (n // count_per) * abs(int(s.get('amount_per', 0) or 0))
+                else:
+                    ganho += abs(int(s.get('amount', 0) or 0))
+            if ganho:
+                # Teto 120 = mesmo patamar de remocao/controle: um buff
+                # gigante pode valer tanto quanto um K.O., nunca mais.
+                valor = min(120.0,
+                            (ganho / 1000.0) * self._PONTOS_POR_1000_DE_PODER)
+                # Piso no valor antigo: um buff pequeno nao pode passar a
+                # valer MENOS do que valia antes desta mudanca, senao isto
+                # vira uma regressao silenciosa em toda carta de buff fixo.
+                valor = max(valor, 60.0)
+            else:
+                valor = 60    # sem magnitude legivel: comportamento antigo
         else:
             valor = 40
         # Piso generico (achado 24/07, mesma auditoria): reusa a MESMA tabela

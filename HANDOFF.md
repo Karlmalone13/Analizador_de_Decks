@@ -1,5 +1,75 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (578) - Claude (sessao local) - Peso do buff condicionado a DON passa a valer por MAGNITUDE (o 35.0 constante do bloco 577) -- ganho REAL medido: pequeno
+
+Fecha o achado do bloco 577. **Resultado honesto: funciona, mas nao foi a
+virada que o diagnostico sugeria.** Ver "Medicao" antes de assumir ganho.
+
+### O que estava errado
+
+`_trigger_don_value` dava **flat 60** pra qualquer acao com "power" no nome.
+O gatilho-assinatura do Luffy OP13-001 -- `+2000 power POR DON restado`, que
+escala com o recurso -- valia o mesmo que um `+1000` fixo. Menos o custo de
+oportunidade (25), o candidato saia com **score 35.0 constante**: gerado, e
+preterido por quase tudo.
+
+### O fix (2 partes)
+
+1. **`per_count_source_n()` virou funcao de MODULO.** A conta de "por quantas
+   vezes esse efeito escala" so existia dentro de
+   `EffectExecutor._execute_step` (que EXECUTA). A valoracao vive em
+   `OPTCGMatch` (outra classe) e precisava da MESMA conta -- reimplementar
+   seria uma segunda verdade sobre "quanto esse efeito rende", exatamente o
+   que `REGRA_SEM_DUPLICACAO.md` proibe. Ganhou um modo `projecao=True`:
+   fontes `*_this_effect` contam o custo variavel JA PAGO (via
+   `_last_cost_*`), que em projecao ainda nao existe -- valeriam 0 e o efeito
+   pareceria nao render nada, **metade do bug do 35.0**. Em projecao contam o
+   maximo pagavel agora. O modo tambem suprime o efeito colateral de
+   `life_top_revealed_cost` (marcar `revealed_life` sem ter revelado).
+2. **Valor por magnitude**, com a regua que o projeto ja tinha
+   (`(amount/1000)*8`, de `_conditional_board_synergy_value` -- nao inventei
+   numero). Teto 120 (mesmo patamar de remocao/controle: um buff gigante pode
+   valer tanto quanto um K.O., nunca mais) e **piso no 60 antigo**, pra buff
+   pequeno nao passar a valer MENOS do que valia -- senao o fix viraria
+   regressao silenciosa em toda carta de buff fixo.
+
+### Medicao (mesma seed, mesmo n, flags locais iguais nos dois bracos)
+
+Score do candidato, 1 partida: era **35.0 constante**; agora
+**min 0.1 / media 52.0 / max 120.0**, distribuido -- varia com o DON
+disponivel, que e o ponto.
+
+Alvo direto do fix, **8 partidas instrumentadas**:
+
+| | antes | depois | delta |
+|---|---|---|---|
+| attach_don no lider GERADO | 20621 | 22651 | +9,8% |
+| habilidade reativa EXECUTOU | 1017 | 1072 | **+5,4%** |
+
+`quality_baseline.py` (OP13-001, n=20, seed 42): **neutro** -- DON ocioso
+1.84 -> 1.90, turnos com 0 DON 36.57% -> 37.04%, utilizacao 73.13% ->
+73.16%, winrate 75% -> 70% (self-play espelhado, so contexto).
+
+> **Leitura**: o peso esta corrigido -- deixou de ser constante e passou a
+> refletir magnitude. Mas o ganho pratico medido e **+5,4% de ativacoes da
+> habilidade**, nao uma virada. As metricas agregadas nao se moveram, e nao
+> adianta fingir que sim: elas medem o turno inteiro, nao este gatilho.
+> Nao concluir "o Luffy foi resolvido" a partir daqui.
+
+### Validacao
+
+`smoke_test.py` (ampla): TODOS OS TESTES PASSARAM. `smoke_fast.py`: as 14
+falhas conhecidas dos flags locais. Snapshots dos dois bracos em
+`metrics/quality_baselines/` (ambos no commit `fbfb62f`, arvore suja pelos
+flags -- os dois bracos com o MESMO estado de flag, entao comparaveis).
+
+### Cuidado pra proxima sessao
+
+O teto/piso (120/60) e a projecao `me.don_available` sao escolhas de
+calibragem tomadas sem partida real. Se o bot passar a anexar DON no lider
+DEMAIS ao vivo (perdendo tempo de curva), o suspeito e a projecao otimista:
+ela assume que TODO o DON disponivel poderia ser restado no efeito.
+
 ## 2026-08-16 (577) - Claude (sessao local) - Validacao OFFLINE dos 15 fixes: o bloco 567 FUNCIONA (703 candidatos numa partida), o alarme que dizia o contrario era FALSO, e o fix do 575 tinha um furo
 
 Pedido do usuario: validar offline os 15 fixes acumulados sem partida real.

@@ -2,6 +2,25 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 578): **peso do 35.0 corrigido** — buff condicionado a DON
+> passa a valer por **magnitude**, não por balde fixo. Duas partes: (1)
+> `per_count_source_n()` virou **função de módulo** com modo `projecao=True` —
+> a conta de "por quanto o efeito escala" só existia dentro do
+> `EffectExecutor._execute_step`, e a valoração vive em `OPTCGMatch`;
+> reimplementar seria segunda fonte de verdade. Em projeção as fontes
+> `*_this_effect` contam o máximo pagável (na execução vêm de `_last_cost_*`,
+> que em projeção seriam 0 — **metade do bug**). (2) Valor pela régua que já
+> existia (`(amount/1000)*8`), teto 120, **piso no 60 antigo** pra não virar
+> regressão em buff pequeno. **Medição honesta**: score deixou de ser 35.0
+> constante e virou min 0.1 / média 52 / máx 120; em 8 partidas instrumentadas
+> a habilidade reativa do líder executou **+5,4%** (1017→1072) e o candidato
+> foi gerado +9,8%. `quality_baseline` (n=20, seed 42): **neutro** (DON ocioso
+> 1.84→1.90, utilização 73.13→73.16%). **Não é a virada que o diagnóstico
+> sugeria — não concluir que "o Luffy foi resolvido".** `smoke_test` passou
+> inteiro. **Risco a vigiar ao vivo**: a projeção assume que todo o DON
+> disponível poderia ser restado; se o bot anexar DON no líder demais, o
+> suspeito é essa. Ver bloco 578.
+
 > 16/08/2026 (bloco 577): **validação offline dos 15 fixes**. (1) O fix do
 > bloco 567 **funciona**: instrumentando `_generate_attach_don_actions`,
 > **703 candidatos com o líder como alvo** numa única partida. O
