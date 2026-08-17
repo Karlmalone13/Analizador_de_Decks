@@ -1,5 +1,85 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (582) - Claude (sessao remota web) - Fecha a pendencia #1 do bloco 580 (`compare_vs_human.py` "nao analisado ainda"): 25 partidas REAIS em que o HUMANO venceu, 116 turnos -- motor concorda com a jogada do humano em 88,8% (top1 exato) e 95,7% (top5)
+
+**Pedido do usuario**: "quero que pegue os logs que o humano vencer, e
+simule os turno usando o bot e veja se as jogadas do bot são parecidas
+com a que o humano fez". `compare_vs_human.py` ja existia (citado como
+pendente no bloco 580) e faz exatamente isso -- reconstroi o estado
+ANTES de cada turno a partir do log real e pergunta pro
+`_generate_and_score_actions` do motor de HOJE qual seria a melhor
+jogada, comparando contra o que o humano REALMENTE fez naquele turno
+(chave `(tipo, codigo_da_carta)` -- play/activate/attack/attach_don).
+
+### Amostra
+
+`logs/index.json` tem o campo `bot_side` por partida (achado do bloco
+387, ja existia). Filtrado: `bot_side` preenchido (excluiu humano x
+humano) E `winner != bot_side` (o BOT perdeu, ou seja, o **HUMANO
+venceu**) -> **25 partidas**, 116 turnos do lado vencedor. Rodado em 2
+grupos (a convencao `p1=You/p2=Opponent` e fixa por maquina, nao por
+pessoa -- 20 partidas com humano=Opponent, 5 com humano=You,
+`--player` filtra por esse rotulo).
+
+### Resultado (agregado, `--summary`)
+
+| metrica | humano=Opponent (91 turnos) | humano=You (25 turnos) | total (116 turnos) |
+|---|---|---|---|
+| top1 exato | 81 (89,0%) | 22 (88,0%) | **103 (88,8%)** |
+| top1 mesmo TIPO | 88 (96,7%) | 24 (96,0%) | **112 (96,6%)** |
+| top5 exato | 88 (96,7%) | 23 (92,0%) | **111 (95,7%)** |
+
+**Leitura**: na maioria esmagadora dos turnos de partidas que o humano
+GANHOU, a jogada de MAIOR score do motor de hoje bate exatamente com o
+que o humano fez -- e quando nao bate exato, quase sempre bate no TIPO
+de acao (a diferenca e SO' qual carta, nao qual categoria de jogada).
+So 5 dos 116 turnos ficaram fora do top-5 inteiro.
+
+### Os 5 misses reais (fora do top-5), 1 por 1
+
+1. **Teach BY x Xebec 09/08 T2**: humano `attach_don`, motor achou
+   score 0 em tudo (`pass`). DON anexado sem alvo de gatilho imediato --
+   bate com o achado JA REGISTRADO nos blocos 578/580 (peso de
+   `attach_don` como investimento de recurso, nao so resposta a
+   gatilho, ainda em ajuste).
+2. **Teach BY x Xebec 13/08 T2**: humano passou, motor queria jogar
+   `OP17-055` (score 50) -- Rocks Pirates, a MESMA familia de carta do
+   bug de parser corrigido no bloco 553 (pool `Leader or Character` com
+   qualificador, registrado em `parser_audits/2026-08-16_...json`); o
+   log e de 13/08, ANTES desse fix (16/08) -- pode ser puro artefato de
+   dado velho, nao comportamento atual.
+3. **Ace-R espelho 02/08 T2**: humano passou, motor queria jogar
+   `OP16-010` (score 69). Nao investigado a fundo.
+4. **Xebec x Luffy-RG 16/08 T1**: humano passou, motor queria jogar
+   `OP17-050` (score 240 -- alto demais pro turno 1). **Bate direto com
+   um bug JA CONHECIDO e nao corrigido**: bloco 576 documentou que
+   `OP17-050` (Streusen) "parseia um `add_to_hand` ESPURIO -- o texto so
+   olha, ordena e recoloca no deck, nunca adiciona a mao... pre-existente,
+   nao investigado". O score inflado aqui e provavelmente CONSEQUENCIA
+   direta desse bug de parser, nao um bug novo de decisao.
+
+### Limitacoes (mesmas de `audit_real_losses.py`, nao repetidas aqui em
+detalhe -- ver aquele arquivo): mao do OPONENTE do turno reconstruida
+com informacao COMPLETA (nao mascarada como no jogo real), e a
+comparacao mede so a MELHOR jogada no INICIO do turno contra o
+CONJUNTO do que o humano fez no turno inteiro -- nao simula o turno
+passo a passo nem teste sequencias de decisao dentro do mesmo turno
+(ex: motor podia estar "certo" jogando a carta X primeiro e so depois
+fazendo o que o humano fez tambem).
+
+### Validacao
+
+Rodado com o motor de HOJE (`decision_engine.py` pos-merge do bloco
+580), sem alterar nenhum arquivo de producao -- so leitura. Nao alterou
+`smoke_fast`/`smoke_test` (nao mexi em codigo).
+
+**Pendente**: os 2 misses do turno 2 com carta Rocks Pirates ((#1) e
+(#2) acima) valem conferir se o log e anterior ou posterior ao fix do
+bloco 543-544 -- se anterior, e so ruido de dado velho, nao achado
+novo. O miss #4 (Streusen) fecha o "por que" de um bug ja registrado
+(bloco 576) mas nao corrigido -- prioridade dele sobe, ja que agora tem
+evidencia de que ele distorce decisao real, nao so teoria de censo.
+
 ## 2026-08-17 (581) - Claude (sessao remota web) - Tela "Choose card effect to activate next" travou de NOVO (00:01, item 2 do pendente do bloco 580) mesmo com as 3 variacoes conhecidas ja corrigidas -- SEM causa raiz achada, so diagnostico generico adicionado (nao clica em nada)
 
 **Contexto**: mergeei `origin/main` (5f8b41e) nesta branch -- trouxe os

@@ -2,6 +2,21 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 582): **fecha a pendência #1 do bloco 580**
+> (`compare_vs_human.py` nunca tinha sido rodado) — pedido do usuário:
+> "pegue os logs que o humano vencer, simule os turnos com o bot e veja
+> se as jogadas são parecidas". Rodado nas **25 partidas reais em que o
+> humano venceu** (`bot_side` preenchido e `winner != bot_side`,
+> `logs/index.json`), 116 turnos do lado vencedor. **Resultado: motor
+> concorda com a jogada real do humano em 88,8% dos turnos (top1 exato)
+> e 95,7% no top5** — só 5 turnos ficaram fora do top-5 inteiro. 2 dos 5
+> misses batem com bugs JÁ CONHECIDOS: 1 é o parser do Rocks Pirates
+> (bloco 553, log é de ANTES do fix) e 1 é o `add_to_hand` espúrio do
+> Streusen OP17-050 (bloco 576, **ainda não corrigido** — agora tem
+> evidência de que distorce decisão real, não só censo teórico). Só
+> leitura, nenhum código de produção alterado. Ver bloco 582 do
+> HANDOFF.
+>
 > 17/08/2026 (bloco 581): **tela "Choose card effect to activate next"
 > travou de NOVO (00:01)** mesmo com as 3 variações conhecidas do bug
 > "dono da carta vs `iPlayerAction`" já corrigidas e compiladas (blocos
