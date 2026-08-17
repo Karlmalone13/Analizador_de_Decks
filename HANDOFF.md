@@ -1,5 +1,85 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (596) - Claude (sessao remota web) - formalizei `decision_quality_vs_human.py` (pedido do usuario) e achei um bug real de nao-determinismo nele: `audit_real_losses.py` reconstruia deck generico (Teach/Krieg/Kid) com `random` NAO-seedado -- corrigido, resultado agora bate 100/111 (90,1%) em TODO run, sequencial ou paralelo
+
+**Pedido do usuario** (via `AskUserQuestion`, apos pedir uma explicacao
+clara de onde saiu o numero "piorou" do bloco 594): **"Formalizar como
+ferramenta permanente"** -- formalizei o script de scratchpad usado nos
+blocos 592-595 (`full_verdict.py`) como `scriptis_da_ia/
+decision_quality_vs_human.py`, documentado, reusavel por qualquer sessao
+futura sem reescrever do zero (`--all`, `--log`, `--leader`, `--workers
+N`, `--pior N`).
+
+### Bug real achado ao validar a ferramenta nova: resultado nao-reproduzivel entre runs identicos
+
+Rodando o script recem-formalizado 3x com o MESMO codigo: 87,4%
+(`--workers 4`), 85,6% (`--workers 1`, run 1), 87,4% (`--workers 1`, run
+2) -- nenhum batendo o 90,1% ja aceito nos blocos 592/595. Isso e grave:
+poe em duvida se as validacoes "medir antes de aceitar" desta sessao
+inteira (blocos 592-595) eram confiaveis, ou so tiveram sorte de
+process/seed.
+
+**Root cause**: `_find_real_deck()` (`audit_real_losses.py`), pra
+lideres SEM decklist real no banco (Marshall D. Teach OP17-039/Krieg/Kid
+-- confirmado 0 linhas em `decklists_raw.csv`), cai num fallback
+generico que usa `random.shuffle(candidatos)` (linha ~128) pra montar um
+deck plausivel da mesma cor. Essa chamada roda em `audit_one_game`, UMA
+VEZ por jogo, ANTES do reseed deterministico por-turno que ja existia
+(`random.seed(f'{arquivo}:{turno}')`, achado do bloco 534/535) -- ou
+seja, o fallback generico usava o estado GLOBAL nao-seedado do modulo
+`random` (dependente de timing/entropia do processo, NAO do
+`PYTHONHASHSEED`), mudando a composicao/ordem do deck reconstruido do
+Teach a cada processo novo. Confirmado isolando a variavel:
+`PYTHONHASHSEED` fixo sozinho NAO estabilizava o resultado (rodou 90,1%
+uma vez, depois 84,7%, depois 86,5%, todos com `PYTHONHASHSEED=0`) --
+provando que a causa nao era hash-seed de `set`/`dict`, era o `random`
+global mesmo. A maioria dos "piores casos" antes do fix eram exatamente
+jogos com lider humano OP17-039 (Marshall D. Teach), a pista que fechou
+a causa raiz.
+
+**Fix**: `random.seed(f'{arquivo}:deck:{bot_leader_code}:{opp_leader_code}')`
+logo ANTES das duas chamadas de `_find_real_deck` em `audit_one_game`
+(`audit_real_losses.py`) -- seed deterministico por (arquivo, par de
+lideres), cobrindo o fallback sem tocar no reseed por-turno ja existente
+mais abaixo. Unico call site de `_find_real_deck` no projeto (conferido
+via grep), sem outro caminho pra cobrir.
+
+**Validado**: rodei `decision_quality_vs_human.py --all` 4x apos o fix
+(2x `--workers 1`, 2x `--workers 4`, sem fixar `PYTHONHASHSEED`) --
+**100/111 (90,1%) identico nas 4 vezes**, batendo EXATAMENTE o baseline
+do bloco 592 e a confirmacao do bloco 595. Isso retroativamente valida
+que a aceitacao do bloco 595 (3a tentativa de bancar DON ocioso) foi
+uma medicao real, nao coincidencia de processo -- o numero e
+reproduzivel agora. `smoke_fast.py`: 100% OK, sem regressao.
+
+**Licao pra sessoes futuras**: qualquer ferramenta de auditoria/medicao
+que reconstrua deck via `decklists_raw.csv` com fallback generico
+precisa de seed proprio ANTES do fallback -- nao basta seedar so o
+turno-a-turno. Se uma medicao "antes/depois" usa esse caminho (qualquer
+script em cima de `audit_one_game`/`_find_real_deck`), rodar 2x e
+conferir que bate ANTES de confiar no numero -- e exatamente o que
+expos este bug.
+
+### Estado da metrica formalizada (com o fix)
+
+| metrica | valor (reproduzivel, 4 runs identicos) |
+|---|---|
+| motor causa dano >= ao humano | 100/111 (90,1%) |
+| motor causa MENOS dano | 11/111 (9,9%) |
+| motor causa MAIS dano que o humano | 26/111 |
+| motor fecha a partida no proprio turno | 8/111 |
+
+Bate exatamente os numeros do bloco 595 (3a tentativa aceita de
+`_bank_idle_don_on_leader`) -- nenhuma mudanca de decisao necessaria,
+so a ferramenta de medicao ficou confiavel.
+
+**Pendente**: nenhuma pendencia nova de codigo do motor -- o proximo
+passo natural (nao feito ainda) e usar a ferramenta agora confiavel pra
+investigar os 11 piores turnos caso a caso (Luffy: "humano investe DON
+ADICIONAL pra reforcar os proprios ataques, motor so aneza o minimo pro
+unlock", achado lateral do bloco 594, nunca aprofundado) e a questao de
+counter (74,5% de concordancia, nunca investigada caso a caso).
+
 ## 2026-08-17 (595) - Claude (sessao remota web) - TERCEIRA TENTATIVA de bancar DON ocioso no lider FUNCIONOU: fora do pool de candidatas, so como ULTIMO RECURSO do turno -- confirma a hipotese dos blocos 593/594 e mantem o baseline (90,1%) com ganho real pequeno
 
 **Pedido do usuario, apos o ceticismo justo sobre a metrica** ("se ele

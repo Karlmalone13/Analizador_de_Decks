@@ -2,6 +2,25 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 596): **`decision_quality_vs_human.py` formalizado**
+> (pedido do usuário, escolheu "formalizar como ferramenta permanente")
+> — e um bug real de não-determinismo achado e corrigido nele:
+> `_find_real_deck` (`audit_real_losses.py`), pro fallback genérico de
+> líderes sem decklist real (Teach OP17-039/Krieg/Kid, confirmado 0
+> linhas em `decklists_raw.csv`), usava `random.shuffle` **não-seedado**
+> — rodava antes do reseed determinístico por-turno já existente,
+> deixando o resultado variar entre processos (87,4%/85,6%/87,4% em 3
+> runs do mesmo código, nenhum batendo o 90,1% aceito). Fix: seed
+> determinístico por (arquivo, par de líderes) logo antes do fallback.
+> Validado: 4 runs (sequencial e paralelo, sem fixar `PYTHONHASHSEED`)
+> agora dão **100/111 (90,1%) idêntico sempre**, batendo exatamente o
+> número já aceito nos blocos 592/595 — confirma retroativamente que a
+> aceitação do bloco 595 foi medição real, não coincidência de processo.
+> `smoke_fast.py` 100% OK. Pendente: usar a ferramenta agora confiável
+> pra investigar os 11 piores turnos caso a caso (achado lateral do Luffy
+> — DON extra pra reforçar ataque — e a questão de counter, 74,5%, nunca
+> aprofundados). Ver bloco 596 do HANDOFF.
+>
 > 17/08/2026 (bloco 595): **TERCEIRA tentativa de bancar DON ocioso no
 > líder FUNCIONOU** (fecha o arco dos blocos 592-595). As 2 tentativas
 > anteriores (candidato competindo no pool de `_generate_attach_don_

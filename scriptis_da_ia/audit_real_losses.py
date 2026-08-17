@@ -226,6 +226,20 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
     bot_leader_name, bot_leader_code = bot_leader['name'], bot_leader.get('code')
     opp_leader_name, opp_leader_code = opp_leader['name'], opp_leader.get('code')
 
+    # Achado real 17/08: pra lideres SEM decklist real no banco (Teach/
+    # Krieg/Kid confirmados ausentes), _find_real_deck cai no fallback
+    # generico (linha ~128, random.shuffle(candidatos)) -- e isso roda
+    # AQUI, uma vez por jogo, ANTES do reseed deterministico por-turno
+    # la embaixo (`random.seed(f'{parsed_path}:{turn}')`). Sem seed
+    # proprio aqui, o fallback usava o estado GLOBAL do random (ambiente,
+    # nao determinismo do projeto) -- resultado: rodar o MESMO audit_one_
+    # game duas vezes (ou em processos paralelos com PYTHONHASHSEED
+    # diferente) montava um deck generico DIFERENTE pro Teach, mudando a
+    # mao reconstruida turno a turno e o veredito agregado inteiro
+    # (confirmado: decision_quality_vs_human.py dava 84.7%/86.5%/90.1%
+    # em runs identicos ate este fix). Seed determinista por (arquivo,
+    # lider) cobre o fallback sem tocar no reseed por-turno existente.
+    random.seed(f'{os.path.basename(parsed_path)}:deck:{bot_leader_code}:{opp_leader_code}')
     bot_deck = _find_real_deck(bot_leader_name, cards_db, df_raw, urls, bot_leader_code)
     opp_deck = _find_real_deck(opp_leader_name, cards_db, df_raw, urls, opp_leader_code)
     if not bot_deck or not opp_deck:
