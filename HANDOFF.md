@@ -1,5 +1,72 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (576) - Claude (sessao local) - Varredura dos ~35 GATES do parse_block: 1 defeituoso (o do draw), o resto limpo -- e a familia do defeito tem nome agora
+
+Varredura PROATIVA, nao partiu de carta quebrada. Motivada pelo bloco 574: o
+Thousand Sunny morria num **gate** (o `if` que decide se uma `parse_X` e
+sequer CHAMADA), nao na gramatica dela. Era a segunda vez -- a primeira foi o
+Vegapunk (03/08, gate do `parse_lock_attack`).
+
+> **Por que gate e pior que regex estreito**: a funcao correta existe, esta
+> certa, e nunca roda. Sem erro, sem log, sem carta "com efeito errado" --
+> o efeito simplesmente nao acontece. So aparece se alguem for procurar.
+
+### Metodo
+
+Pra cada uma das 31 `parse_X` gatilhadas por um gate, chamei a funcao DIRETO
+no texto de cada carta (ignorando o gate) e comparei com as acoes que a carta
+tem no banco. Acao que a funcao produz e o banco nao tem = candidata a efeito
+morto por gate. Script descartavel (scratchpad), nao versionado.
+
+### Resultado: 1 gate defeituoso em ~35
+
+- `parse_shuffle_hand` deu 2468 cartas -- **falso positivo degenerado**: a
+  funcao dispara em quase qualquer texto, o gate dela e load-bearing.
+- Outras 6 funcoes somaram ~23 cartas. **Quase todas falso positivo do MESMO
+  tipo**: uma acao mais ESPECIFICA ja cobre o caso (`buff_power_per_count` vs
+  `buff_power`, `bounce_self` vs `bounce`, `life_to_trash` vs `trash_own_life`,
+  `deck_reorder_rest` vs `deck_top_rest`). Em `OP04-044` a funcao e que
+  erraria (o texto devolve pra MAO, nao pro fundo do deck).
+- **O achado real**: o gate do draw era
+  `if 'draw' in t and 'look at' not in t`. A intencao era nao DUPLICAR o draw
+  quando `parse_look_at` ja o tinha adicionado -- e `'look at'` era so um
+  **proxy** dessa intencao. O proxy vazava: qualquer bloco que apenas
+  MENCIONASSE "look at" perdia o draw inteiro.
+
+### O fix
+
+Gate passa a checar o **RESULTADO** (`not any(s['action'] == 'draw' for s in
+steps)`) em vez da frase. Codifica a intencao real, e vale pra qualquer
+fraseado futuro que combine busca e compra.
+
+Censo global do sintoma (texto com `draw N card` e nenhuma acao de draw
+parseada): **3 cartas no banco inteiro**. Duas resolvidas -- `OP17-050`
+(ganha o "Then, draw 1 card" final) e `ST07-016` (ganha o draw dentro do
+bloco `[Trigger]`, corretamente, sem contaminar o `[Counter]`).
+
+### Validacao
+
+- `diff_parser.py`: **PERDEU=0**.
+- **`smoke_test.py` (regressao AMPLA, rodado porque draw e gramatica
+  compartilhada de alto risco): TODOS OS TESTES PASSARAM.**
+- `smoke_fast.py`: 14 falhas, as mesmas 14 conhecidas das flags locais.
+- Registro: `parser_audits/2026-08-16d_varredura_de_gates_estreitos.json`.
+
+### 2 achados NAO corrigidos (deliberado)
+
+1. **`OP17-112` Charlotte Linlin** -- a terceira carta do censo de draw, e
+   este fix **nao** a resolve. O bloco e `[On Play] Draw 1 card, then choose
+   one: ...`, e o caminho de "choose one" monta `entry={'choice': [...]}`
+   **descartando os steps** -- entao qualquer efeito incondicional ANTES do
+   "choose one" se perde. Censo: das 36 cartas com "choose one", **so esta**
+   tem efeito real (nao condicao, nao custo, nao lembrete) antes dele --
+   isolado. Corrigir exige `entry` com `steps` **e** `choice` juntos, hoje
+   mutuamente exclusivos: mudanca **estrutural no parser E no motor**. Nao e
+   coisa pra fazer no fim de uma varredura sem espaco pra validar. A mesma
+   carta tambem perde o bloco `[Your Turn]` -- segundo gap independente.
+2. **`OP17-050` parseia um `add_to_hand` ESPURIO** -- o texto so olha, ordena
+   e recoloca no deck, nunca adiciona a mao. Pre-existente, nao investigado.
+
 ## 2026-08-16 (575) - Claude (sessao local) - Codigo divergente do Thousand Sunny resolvido por ALIAS -- e o diagnostico do bloco 571 estava invertido: o banco esta CERTO, o jogo e que renumera
 
 Fecha o bug 1 do bloco 571. Com o bloco 574, o Thousand Sunny agora deve

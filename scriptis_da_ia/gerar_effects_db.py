@@ -7757,8 +7757,17 @@ def parse_block(block_text, trigger_name):
         steps.append(step_shuf)
         shuffled_hand = True
 
-    # Draw (sem look at). Pula se já tratado como shuffle_hand (draw-back embutido).
-    if 'draw' in t and 'look at' not in t and not shuffled_hand and not draw_added_early:
+    # Draw. A intencao do gate e NAO duplicar o draw quando ele ja foi
+    # adicionado por outro caminho (parse_look_at, shuffle_hand com draw-back
+    # embutido, ou o draw_added_early acima). A versao anterior usava
+    # "'look at' not in t" como proxy dessa intencao -- e o proxy vazava:
+    # qualquer bloco que MENCIONASSE "look at" perdia o draw inteiro, mesmo
+    # quando o parse_look_at nao produzia draw nenhum (achado 16/08 na
+    # varredura de gates: 'Look at 2 cards... Then, draw 1 card' ficava sem
+    # o draw). Agora o gate checa o RESULTADO -- se ja existe um step de
+    # draw --, nao a presenca de uma frase.
+    if ('draw' in t and not shuffled_hand and not draw_added_early
+            and not any(s.get('action') == 'draw' for s in steps)):
         steps.extend(parse_draw(t))
 
     # Power buff/debuff (com ou sem sinal explicito -- parse_power_buff agora

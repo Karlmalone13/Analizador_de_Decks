@@ -104636,6 +104636,10 @@
   "attribute": "",
   "effects": [
    {
+    "action": "draw",
+    "trigger": "trigger"
+   },
+   {
     "action": "peek_life",
     "trigger": "trigger",
     "target": "opponent"
@@ -104659,7 +104663,7 @@
   },
   "text": "[Counter] Look at up to 1 card from the top of your or your opponent's Life cards, and place it at the top or bottom of the Life cards. Then, up to 1 of your Leader or Character cards gains +2000 power during this battle. [Trigger] Draw 1 card, look at up to 1 card from the top of your opponent's Life cards, and place it at the top or bottom of the Life cards.",
   "is_searcher": false,
-  "draws": false,
+  "draws": true,
   "has_counter_value": false,
   "has_counter_event": true,
   "is_blocker": false,
@@ -118235,12 +118239,16 @@
    {
     "action": "deck_reorder_rest",
     "trigger": "on_play"
+   },
+   {
+    "action": "draw",
+    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
   "text": "[On Play] Look at 2 cards from the top of your deck, sort them in any order and place them at the top or bottom of your deck. Then, draw 1 card.",
   "is_searcher": true,
-  "draws": false,
+  "draws": true,
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,

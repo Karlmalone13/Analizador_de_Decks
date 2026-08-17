@@ -71432,6 +71432,10 @@
       "trigger": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1
+          },
+          {
             "action": "peek_life",
             "target": "opponent",
             "count": 1
@@ -81008,6 +81012,10 @@
           },
           {
             "action": "deck_reorder_rest"
+          },
+          {
+            "action": "draw",
+            "count": 1
           }
         ]
       }

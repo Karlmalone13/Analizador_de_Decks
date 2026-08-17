@@ -2,6 +2,26 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 576): **varredura dos ~35 gates do `parse_block`** —
+> proativa, motivada pelo bloco 574 (2ª vez que um efeito morria no *gate* e
+> não na gramática; a 1ª foi o Vegapunk, 03/08). Gate estreito é pior que
+> regex estreito: a função certa existe, está correta e **nunca roda** — sem
+> erro, sem log. Método: chamar cada `parse_X` direto no texto de todas as
+> cartas, ignorando o gate, e comparar com o banco. **Resultado: 1 gate
+> defeituoso em ~35.** O do draw era `'draw' in t and 'look at' not in t` — a
+> intenção era não duplicar quando `parse_look_at` já tinha adicionado, e
+> `'look at'` era só um **proxy** que vazava: qualquer bloco que
+> *mencionasse* "look at" perdia o draw. Fix: o gate passa a checar o
+> **resultado** (já existe step de draw?), não a frase. Censo global do
+> sintoma: 3 cartas no banco inteiro, 2 resolvidas (`OP17-050`, `ST07-016`).
+> O resto da varredura era falso positivo — quase sempre uma ação mais
+> específica já cobrindo (`buff_power_per_count`, `bounce_self`,
+> `life_to_trash`). `smoke_test` (regressão ampla) **passou inteiro**;
+> `diff_parser` PERDEU=0. **Fica aberto**: `OP17-112` (efeito antes de
+> "choose one" é descartado — exige `entry` com `steps` E `choice` juntos,
+> mudança estrutural no parser **e** no motor; isolado, 1 carta em 36) e um
+> `add_to_hand` espúrio pré-existente em `OP17-050`. Ver bloco 576.
+
 > 16/08/2026 (bloco 575): **código divergente do Thousand Sunny resolvido por
 > ALIAS** — e o diagnóstico do bloco 571 estava **invertido**: abri a arte da
 > carta no jogo (`Cards/ST31/ST31-005.jpg`) e o código impresso nela é
