@@ -2,6 +2,19 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 573): **os 2 gaps do parser NÃO foram corrigidos** — não
+> coube no contexto, e mexer na gramática que hoje acerta 373/375 sem espaço
+> pra rodar `diff_parser` (PERDEU=0) quebraria o que funciona. **O que ficou
+> pronto: 4 hipóteses de causa ELIMINADAS por teste** — (1) flag `up_to`
+> (motor mal consome), (2) família de Stages quebrada (373/375 parseiam),
+> (3) espaço no tag (as 2 grafias funcionam, 336x/279x), (4) tags na mesma
+> linha (472 cartas assim parseiam certo). **Onde olhar**: as 2 cartas falham
+> por motivos DIFERENTES — Thousand Sunny pelo custo "Rest this stage" +
+> efeito "dar DON restado a personagem próprio"; Jinbe pelo efeito raro "can
+> attack Characters on the turn it is played". **Prioridade alta** no
+> Thousand Sunny: é a fonte do DON que o líder Luffy exige, 4 cópias no deck
+> real. Ver bloco 573 do HANDOFF.
+
 > 16/08/2026 (bloco 572): **auditoria global do `[Activate:Main]` derruba a
 > suspeita do 571 — NÃO é sistêmico**: 375 cartas com o tag no texto, **373
 > parseadas**, só **2 perdidas** e com causas diferentes (Thousand Sunny

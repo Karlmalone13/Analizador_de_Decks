@@ -1,5 +1,53 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (573) - Claude (sessao local) - Os 2 gaps do parser NAO foram corrigidos -- mas 4 hipoteses de causa ja estao ELIMINADAS por teste (economiza a proxima sessao)
+
+Usuario pediu "corrige os 2 gaps do parser". **Nao entreguei a correcao.**
+Motivo honesto: cada hipotese que levantei foi derrubada por teste, e a causa
+real exige entrar na gramatica do `gerar_effects_db.py` com espaco pra
+investigar + rodar o ciclo completo (`diff_parser` ate PERDEU=0 + regenerar
+DBs + `parser_audits/`). Contexto da sessao acabou antes. Mexer no parser --
+que hoje acerta **373 de 375** -- sem espaco pra validar e como se quebra o
+que funciona.
+
+### As 2 cartas (texto exato)
+
+- **`ST31-006` Thousand Sunny** (Stage):
+  `... place the rest at the bottom of your deck in any order. [Activate:Main] Rest this stage: Give up to 1 of your "Monkey D. Luffy" up to 1 rested DON!!`
+  -> parseia SO o `on_play`; o bloco `[Activate:Main]` some.
+- **`OP11-031` Jinbe** (Character, 2 variantes de arte):
+  `[On Play] ...
+[Activate: Main] [Once Per Turn] Up to 1 of your "Fish-Man" or "Merfolk" type Characters can attack Characters on the turn in which it is played.`
+  -> parseia SO o `on_play`; o bloco `[Activate: Main]` some.
+
+### HIPOTESES JA ELIMINADAS POR TESTE (nao repetir)
+
+| # | hipotese | como morreu |
+|---|---|---|
+| 1 | flag `up_to` ausente nos steps de `ko` | 301 cartas sem a flag, mas o motor **mal consome** `up_to` -- nao era causa de nada (b.566) |
+| 2 | familia de Stages com `[Activate:Main]` quebrada | auditoria global: **373/375 parseadas**; so 2 falham, e sao de tipos diferentes (Stage e Character) (b.572) |
+| 3 | espaco no tag (`[Activate: Main]` vs `[Activate:Main]`) | AMBAS as grafias existem no banco e ambas funcionam: 336x com espaco, 279x sem (b.572) |
+| 4 | 2+ tags de gatilho na MESMA linha nao sao separados | **472 cartas** tem 2+ tags na mesma linha e parseiam certo (ex: `EB01-030` Loguetown -> `activate_main` + `trigger`) |
+
+### Onde a proxima sessao deve olhar
+
+As 2 cartas falham por motivos provavelmente DIFERENTES (`isolated_after_
+global_scan`, ja classificado no b.572) -- nao procurar uma causa unica:
+
+- **Thousand Sunny**: o custo e `Rest this stage` (rest_self aplicado a um
+  STAGE) e o efeito e "dar DON **restado** a um personagem proprio". Investigar
+  se a gramatica de custo reconhece "Rest this stage" e se existe acao pra
+  "give rested don to own character" (relacionada a `give_don_to_named`?).
+- **Jinbe**: efeito raro -- "can attack Characters on the turn in which it is
+  played" (conceder ataque-no-turno-que-entrou, mirando Characters). Pode ser
+  gramatica de efeito inexistente, nao de custo. O `[Once Per Turn]` entre o
+  tag e o texto tambem nao foi descartado como interferencia.
+
+**Impacto pratico do Thousand Sunny e alto** (nao e carta qualquer): e a FONTE
+do DON anexado que o lider Luffy OP13-001 exige, 4 copias no deck real do
+usuario. Ver blocos 567/571.
+
+
 ## 2026-08-16 (572) - Claude (sessao local) - Auditoria global do [Activate:Main] DERRUBA a suspeita (nao e sistemico: 373/375 OK) + os 33 lideres com [DON!! xN] estao todos parseados, e o fix do bloco 567 destrava TODOS eles (inclusive Krieg)
 
 ### 1. Parser do [Activate:Main] -- auditoria global feita, correcao NAO feita
