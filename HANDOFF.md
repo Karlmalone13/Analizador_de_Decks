@@ -1,5 +1,66 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (581) - Claude (sessao remota web) - Tela "Choose card effect to activate next" travou de NOVO (00:01, item 2 do pendente do bloco 580) mesmo com as 3 variacoes conhecidas ja corrigidas -- SEM causa raiz achada, so diagnostico generico adicionado (nao clica em nada)
+
+**Contexto**: mergeei `origin/main` (5f8b41e) nesta branch -- trouxe os
+blocos 561-580 da sessao local, incluindo a compilacao/instalacao do meu
+proprio fix (bloco 560) e o achado da 3a variacao do mesmo bug (bloco
+563, Charlotte Linlin). Pendencia nao investigada, item 2 do bloco 580:
+"BUG AO VIVO: bot TRAVOU na tela 'Choose card effect to activate next'...
+Print do usuario as 00:01. Nao achei handler nem client_timeout no log
+do server pra esse prompt".
+
+**Investigacao** (so leitura de codigo, mesma limitacao de sempre nesta
+sessao remota: sem `dotnet`/jogo/`LogOutput.log`). Confirmei pela
+cronologia do HANDOFF que as DUAS correcoes conhecidas
+(`IsOfferingActionChoiceOrder` via `iPlayerAction`, bloco 560; guarda de
+escolha forcada generalizada por `HasOfferedButtons`, bloco 563) **ja
+estavam compiladas e instaladas** antes das partidas das 23:26/23:55/
+00:07 (bloco 561: "Compilados aqui: 0 erros, DLL instalada"). Ou seja,
+o freeze das 00:01 e um **4o caso**, distinto dos 3 ja fechados -- nao
+uma regressao dos fixes anteriores.
+
+Reli o combat log raw da partida das 23:55:32 (a que teria terminado
+perto de 00:01) procurando sinal de gatilho simultaneo -- **o log do
+jogo nao registra estado de UI**, so acoes resolvidas, entao nao da pra
+achar o freeze nele (mesma limitacao que ja valia pro caso da Nola/
+Kaido, bloco antigo linha ~13894: "a tela travada nao correlaciona com
+nenhuma chamada lenta do motor"). O dado que resolveria isso definitivo
+(`[HB] ... state=...` do heartbeat, ou a linha `[Bot] DIALOGO NAO
+TRATADO` nova abaixo) fica em `BOT/engine_server/logs/`/`LogOutput.log`,
+**gitignored e local-only** -- declarado explicitamente, nao inventei
+substituto.
+
+**O que foi feito**: NENHUM fix de causa raiz (nao sei qual e ainda).
+Adicionado diagnostico generico em `BotDriver.cs`, logo antes do
+fallback final (`if state != PlayerTurn_Action return`) que ja existia:
+se o estado atual nao e nenhum dos ja tratados explicitamente E existe
+QUALQUER botao na tela (`BotExecutor.HasOfferedButtons`, reaproveitado
+do bloco 563, sem duplicar), loga um WARNING com estado completo
+(`GameplayState`, botoes ofertados, `acaActive`, `iPlayerAction`,
+`oppResolving`/`forcing`, dono do efeito) -- **NAO clica em nada**, zero
+risco de clique errado; so garante que a PROXIMA ocorrencia (seja este
+mesmo caso ou outro ainda desconhecido) vira uma linha de log
+autoexplicativa em vez de outra rodada de investigacao as cegas via
+print do usuario. Dedupe por `state+botoes` (mesmo padrao do heartbeat
+ja existente), pra nao spammar o log todo frame.
+
+**NAO CONFIRMADO/TESTADO**: sem compilar (sem `dotnet` aqui). Puramente
+aditivo -- nao muda nenhum caminho de clique existente, so acrescenta um
+log novo num branch que hoje faz `return` silencioso. Risco de regressao
+e minimo por construcao (nao decide, nao clica), mas ainda precisa
+build (`setup_bepinex.bat`) antes de confiar.
+
+**Pendente pra proxima sessao**: se o freeze acontecer de novo com este
+diagnostico instalado, a linha `[Bot] DIALOGO NAO TRATADO` no
+`LogOutput.log` da o `GameplayState` exato -- aí sim da pra escrever o
+handler real (mesmo padrao do `Action_SelectingDeploySwap`, que ja foi
+resolvido assim: estado explicito + `/choose_target` do engine). Se
+NAO acontecer de novo, tambem e sinal util (pode ter sido o mesmo caso
+da Linlin/ActionChoiceOrder que so nao tinha DLL nova o suficiente na
+hora exata -- precisa cruzar o timestamp do print com o timestamp de
+instalacao da DLL, que so quem tem a maquina local consegue checar).
+
 ## 2026-08-17 (580) - Claude (sessao local) - Escala attack x play: attach_don de COMBATE herdava a escala de ataque (base 400) numa decisao de RECURSO + partida de REFERENCIA do usuario gravada
 
 ### O fix

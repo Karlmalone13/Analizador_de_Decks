@@ -1,7 +1,22 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 16 de agosto de 2026
+**Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 581): **tela "Choose card effect to activate next"
+> travou de NOVO (00:01)** mesmo com as 3 variações conhecidas do bug
+> "dono da carta vs `iPlayerAction`" já corrigidas e compiladas (blocos
+> 551/560/563) antes das partidas da noite — confirmado pela cronologia
+> do HANDOFF que não é regressão, é um **4º caso, causa ainda
+> desconhecida**. Sem `dotnet`/jogo/`LogOutput.log` nesta sessão remota
+> não dá pra achar o `GameplayState` exato. **Nenhum fix de causa raiz**
+> — só um diagnóstico genérico e aditivo em `BotDriver.cs` (não clica em
+> nada): loga estado completo (`GameplayState`, botões ofertados,
+> `acaActive`, `iPlayerAction`) na 1ª vez que um diálogo não-tratado
+> aparecer com algum botão na tela. Próxima ocorrência (deste ou de
+> outro caso) vira uma linha de log autoexplicativa em vez de
+> investigação às cegas via print. **Não compilado**. Ver bloco 581 do
+> HANDOFF.
+>
 > 17/08/2026 (bloco 580): **escala corrigida no ponto certo.** O problema não
 > era "attack × play" — ataque não gasta DON, então não disputa com `play`.
 > Quem disputa é o **`attach_don` de combate**, e ele (1) herdava a prioridade

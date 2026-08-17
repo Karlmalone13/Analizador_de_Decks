@@ -48,6 +48,7 @@ namespace OPTCGBotPlugin
         private int    _sameActionCount;
         private float _heartbeat;
         private string _lastHeartbeatMsg = "";
+        private string _lastUnhandledDialogKey = "";
         private BotAction? _pendingTelemetryAction;
         private string _pendingTelemetryState = "";
         private string _pendingTargetDecisionId = "";
@@ -485,6 +486,42 @@ namespace OPTCGBotPlugin
                 }
                 _cooldown = 1f;
                 return;
+            }
+
+            // Diagnostico generico pra qualquer dialogo AINDA NAO tratado
+            // acima. Achado real 17/08: apos os fixes dos blocos 551/560/563
+            // (as 3 variacoes conhecidas de "dono da carta vs iPlayerAction"),
+            // a tela "Choose card effect to activate next" travou de NOVO
+            // (print do usuario as 00:01) -- e desta vez sem nenhum
+            // client_timeout no log do server, ou seja: o plugin nunca sequer
+            // tentou perguntar pro engine, o que aponta pra um 4o caso, ainda
+            // desconhecido, do mesmo padrao (estado nao reconhecido por
+            // nenhum dos blocos acima). Sem acesso ao jogo nem ao
+            // LogOutput.log desta sessao remota pra achar o GameplayState
+            // exato, o bloco abaixo NAO tenta clicar em nada (zero risco de
+            // clique errado) -- so GRAVA o estado completo na 1a vez que
+            // acontecer (dedupe por state, mesmo padrao do heartbeat), pra
+            // que a proxima ocorrencia real seja resolvida direto pelo log
+            // em vez de outra rodada de investigacao as cegas.
+            if (gls.e_CurrentState != GameplayState.PlayerTurn_Action
+                && BotExecutor.HasOfferedButtons(gls))
+            {
+                string diagKey = $"{gls.e_CurrentState}|{BotExecutor.OfferedButtonNames(gls)}";
+                if (diagKey != _lastUnhandledDialogKey)
+                {
+                    _lastUnhandledDialogKey = diagKey;
+                    Plugin.Log.LogWarning(
+                        $"[Bot] DIALOGO NAO TRATADO -- state={gls.e_CurrentState} " +
+                        $"botoes={BotExecutor.OfferedButtonNames(gls)} " +
+                        $"acaActive={(gls.acaActive != null)} " +
+                        $"iPlayerAction={gls.gsv_CurrentGame.iPlayerAction} " +
+                        $"BotPlayerIndex={BotPlayerIndex} " +
+                        $"oppResolving={gls.bOpponentResolving} " +
+                        $"forcing={gls.bForcingOpponentAction} " +
+                        $"actor={BotExecutor.ActorCode(gls) ?? "-"}. " +
+                        $"Nenhuma acao tomada -- so diagnostico, pra achar a causa " +
+                        $"exata na proxima ocorrencia sem depender de print do usuario.");
+                }
             }
 
             // Main Phase: so com o state machine ocioso
