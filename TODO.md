@@ -2,6 +2,25 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 586): **retificação do bloco 585** — capturando a
+> lista CHEIA de candidatas (não o shortlist de 3-6 salvo no
+> decision_log), o quadro fica bem mais preciso. Dos 163 gaps
+> `activate`/`attach_don` (humano fez, motor não), **136 (83%) são
+> genuinamente estruturais** (nunca aparecem em nenhuma decisão do
+> turno) e **27 (17%) foram gerados mas perderam** — desses, a maioria
+> (18/24 de `attach_don`) perdeu pra `attack`, com **delta mediano de
+> 828 pontos** — confirma com número exato que o item já identificado
+> e nunca fechado (bloco 580, escala attack×resto) é o maior
+> alavancador disponível, não ajuste fino isolado do `attach_don`.
+> **Correção importante**: quase todo o "gap de `activate`" (13 de 14
+> cartas envolvidas) é ARTEFATO de rótulo do log — o combat log marca
+> qualquer efeito disparado como "activate", inclusive gatilhos
+> automáticos (`on_ko`/`passive`) que nunca foram decisões
+> independentes do motor. O número "ativa 3x menos" do bloco 583
+> precisa ser re-filtrado antes de ser citado de novo. Só leitura
+> (monkeypatch de instrumentação, sem mudar comportamento do motor).
+> Ver bloco 586 do HANDOFF.
+>
 > 17/08/2026 (bloco 585): fecha o bloco 584 — **1 fix real confirmado**:
 > `_generate_attach_don_actions` generalizado de `gap==0` (empate) pra
 > `gap<=0` (ataque já vencedor também) quando DON está ocioso — mesma

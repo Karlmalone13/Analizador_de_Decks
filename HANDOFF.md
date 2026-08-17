@@ -1,5 +1,108 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (586) - Claude (sessao remota web) - RETIFICACAO do bloco 585: capturando a lista CHEIA de candidatas (nao o shortlist de 3-6 do decision_log), o quadro muda bastante -- 83% dos gaps de attach_don/activate SAO estruturais (nunca gerados), mas a maior parte do "gap de activate" era ARTEFATO de medicao, nao bug real
+
+**Pedido direto do usuario**: "passe log a log conferindo... se ele
+atacou com tal personagem, se o bot fosse fazer a mesma jogada, quanto
+que deveria ser a calibragem... vai ter um parametro e vai conseguir
+melhorar as decisoes". Foi exatamente essa pergunta que expos o
+proximo erro de medicao.
+
+### Correcao 1 -- `candidates` do decision_log NAO e top-8 de tudo, e o SHORTLIST pre-busca (3-6 itens)
+
+O bloco 585 ja tinha corrigido "so grava top-8" -- mas o numero real e
+pior: `candidatas` (o parametro que vira `candidates` no log) e o
+`_select_search_candidates(actions, TOP_K, ...)` com **TOP_K=3 ou 6**,
+o SHORTLIST que entra na busca cara, nao um top-8 do total gerado. A
+lista CHEIA (`actions`, retorno de `_generate_and_score_actions`, TODAS
+as opcoes com score) nunca era gravada em lugar nenhum.
+
+**Fix de instrumentacao** (scratchpad, monkeypatch, nao altera
+comportamento do motor): patch em `_log_turn_planner_decision` que so
+ACRESCENTA `full_actions` (a lista `actions` inteira, ja calculada, so
+serializada) ao registro que a funcao ja grava -- leitura pura, testado
+que nao muda nenhum retorno. Rodado nas mesmas 25 partidas.
+
+### Correcao 2 -- com a lista CHEIA, o quadro fica bem mais preciso
+
+163 gaps totais (mesmo universo dos blocos 583-585):
+- **27 (16,6%) GERADOS em algum ponto do turno** -- agora da pra medir
+  o DELTA exato de score que faltou.
+- **136 (83,4%) NUNCA aparecem em NENHUMA decisao do turno** -- esses
+  SIM sao estruturais (opcao nao gerada), numero bem mais confiavel que
+  o "97,5%" anterior.
+
+**Pra `attach_don`** (24 dos 27 gerados-mas-perdeu sao attach_don): o
+delta necessario e GRANDE -- mediana **828 pontos**, p90 **8867**. Em
+18 dos 24 casos, quem venceu foi `attack`. Isso **confirma com numero
+exato** a suspeita ja registrada (bloco 578-580): nao e questao de
+"aumentar um pouco" o peso do attach_don -- e a MESMA escala
+incomparavel attack-vs-resto, so que agora medida contra decisoes REAIS
+de partidas vencidas, nao so contra self-play sintetico. Calibrar
+attach_don isoladamente pra fechar esse delta quebraria toda vez que
+NAO devesse vencer o attack (a maioria dos turnos normais) -- o fix
+certo continua sendo o item ja identificado e NUNCA fechado do bloco
+580 (recalibrar a escala de `score_attack_target`/`avaliar_carta`
+juntas, com braco antes/depois em 3+ arquetipos).
+
+### Correcao 3 -- a MAIOR parte do "gap de activate" NAO E BUG, e ARTEFATO de rotulo do log
+
+Das 80 ocorrencias de `activate` "nunca gerado", so **14 cartas
+unicas** estao envolvidas. Cruzando contra `card_effects_db.json`:
+**13 das 14 NAO TEM `activate_main` ability nenhuma** (Mr.2 Bon Kurei,
+Shiki, Edward Newgate, Rocks D. Xebec, Charlotte Linlin, Sanji, etc. --
+a maioria tem `on_ko`/`passive`/`when_attacking`). O log historico do
+jogo rotula qualquer RESOLUCAO de efeito disparado como `activate`,
+inclusive gatilhos AUTOMATICOS (ex: Mr.2 Bon Kurei `on_ko: play_from_
+trash` disparando porque outra carta o destruiu como CUSTO de sua
+propria habilidade -- confirmado turno a turno no bloco 585) -- essas
+NUNCA foram decisoes independentes do Turn Planner pra comecar, entao
+"nunca aparecem como candidata" e ESPERADO, nao um bug.
+
+> **Consequencia que precisa ser dita com todas as letras**: o numero
+> "motor ativa 3x menos que o humano" do bloco 583 (33 vs 97 ocorrencias
+> de `activate`) esta **inflado pela mesma causa** -- a maior parte das
+> 97 ocorrencias historicas de `activate` do humano provavelmente NAO
+> sao decisoes de Turn Planner comparaveis. **Nao dá pra confiar nesse
+> numero especifico ate re-filtrar por cartas que REALMENTE tem
+> `activate_main`** (feito aqui so pro subconjunto "nunca gerado";
+> nao refeito pro numero agregado do 583 inteiro -- fica pendente).
+
+### O que ficou solido, sem ressalva
+
+- **56 dos 80 gaps de `attach_don`** continuam genuinamente "nunca
+  gerados" mesmo na lista CHEIA -- esses SIM sao bugs estruturais reais
+  (mesma categoria do fix ja enviado no bloco 585, so que ha mais
+  casos ainda nao cobertos por aquele fix especifico).
+- O delta de score pra `attach_don` vencer `attack` (mediana 828) e um
+  NUMERO REAL, direto da lista completa sem corte -- serve de
+  referencia concreta pra quando alguem for medir o antes/depois da
+  recalibracao de escala do bloco 580.
+
+### Scripts (scratchpad, nao commitados)
+
+`audit_full_calibration.py` (monkeypatch + roda as 25 partidas),
+`calibration_deltas.py` (calcula os deltas). O monkeypatch em si
+(patch de leitura em `_log_turn_planner_decision`) e generico o
+bastante pra virar um `capture_full_actions` formal em
+`audit_real_losses.py` se uma sessao futura precisar reusar -- nao
+formalizado ainda, ficou so como prova de conceito validada.
+
+### Pendente (prioridade sugerida pra proxima sessao)
+
+1. **Recalibrar a escala attack vs attach_don/play** (bloco 580, nunca
+   fechado) -- agora com evidencia quantificada (mediana 828 de delta)
+   de que e o maior alavancador disponivel. Precisa de braco
+   antes/depois em 3+ arquetipos antes de aceitar (regra ja registrada
+   no proprio bloco 580).
+2. Investigar os 56 casos reais de `attach_don` nunca gerado (nao
+   cobertos pelo fix do bloco 585) -- provavel mistura de "gap <=0 mas
+   don_idle=False por causa de OUTRA carta jogavel" (limite conhecido
+   do fix atual) com outros padroes ainda nao identificados.
+3. Re-filtrar o numero agregado "activate 3x menos" do bloco 583 pelo
+   mesmo criterio desta sessao (so cartas com `activate_main` real)
+   antes de citar aquele numero de novo em qualquer lugar.
+
 ## 2026-08-17 (585) - Claude (sessao remota web) - Fecha o bloco 584: 1 fix REAL confirmado (attach_don em ataque ja vencedor, gap<0) + CORRECAO METODOLOGICA importante -- "97,5% nunca gerado" do primeiro corte estava inflado pelo truncamento top-8 do decision_log, mesma licao do bloco 577
 
 **Continuacao do bloco 584** (`capture_candidates` ja commitado). Rodei
