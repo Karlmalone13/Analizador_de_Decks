@@ -1,5 +1,51 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (572) - Claude (sessao local) - Auditoria global do [Activate:Main] DERRUBA a suspeita (nao e sistemico: 373/375 OK) + os 33 lideres com [DON!! xN] estao todos parseados, e o fix do bloco 567 destrava TODOS eles (inclusive Krieg)
+
+### 1. Parser do [Activate:Main] -- auditoria global feita, correcao NAO feita
+
+Gate do CLAUDE.md cumprido ANTES de tocar no parser. Resultado **contradiz a
+hipotese do bloco 571** (que suspeitava de uma familia de Stages quebrada):
+
+- 375 cartas com `[Activate:Main]` no texto
+- **373 parseadas corretamente**
+- **2 perdidas**, com causas DIFERENTES entre si:
+  - `ST31-006` Thousand Sunny (Stage) -- custo "Rest this stage", efeito
+    "Give up to 1 of your \"Monkey D. Luffy\" up to 1 rested DON!!"
+  - `OP11-031` Jinbe (Character, 2 variantes de arte) -- "[Once Per Turn] Up
+    to 1 of your Fish-Man/Merfolk Characters can att[ack]..."
+
+**Nao e o espaco do tag**: as duas grafias existem no banco e ambas funcionam
+(`[Activate: Main]` 336x, `[Activate:Main]` 279x). Classificacao correta:
+**`isolated_after_global_scan`**, 2 gaps de gramatica independentes -- nao uma
+familia.
+
+> **NAO corrigido nesta sessao, e a escolha e deliberada**: sao 2 gaps
+> distintos, cada um exige entender a gramatica do efeito especifico
+> ("dar DON restado a um personagem proprio" e "conceder ataque extra a
+> personagem"), editar `gerar_effects_db.py`, registrar em `parser_audits/`,
+> regenerar os DBs e validar com `diff_parser.py` (PERDEU=0). Contexto da
+> sessao nao comportava fazer isso direito, e fix apressado em parser e
+> exatamente o que o gate existe pra impedir.
+
+### 2. Lideres com [DON!! xN]: parser 100% OK, e o fix do 567 vale pra 33
+
+Varredura pedida pelo usuario ("verifique outros lideres com DON!! 1x tipo
+Krieg"): **33 lideres** tem `[DON!! xN]` no texto e **TODOS os 33 tem
+`don_requirement` parseado** -- zero perdidos. O parser esta correto aqui.
+
+Inclui: Krieg OP15-001 (`opp_turn: 1`), Luffy OP13-001 (`on_opp_attack: 1`),
+Yamato ST09-001, Sabo OP05-001/ST13-001, Katakuri OP03-099, Marco OP08-002,
+Law OP10-022, Zoro OP12-020 (`activate_main: 3`), Linlin OP03-077/ST07-001,
+Nami OP11-041, Ace OP13-002, Hancock OP14-041, entre outros.
+
+> **Consequencia que amplia o bloco 567**: o fix "incluir o lider no loop de
+> `attach_don`" nao destravou so o Luffy -- destravou **os 33**. Todos
+> dependiam de DON anexado no lider pra ligar a habilidade, e pra todos a
+> opcao **nunca era gerada como candidata**. E o achado de maior alcance do
+> dia, e ainda **nao foi testado ao vivo em nenhum deles**.
+
+
 ## 2026-08-16 (571) - Claude (sessao local) - O Thousand Sunny tem DOIS bugs empilhados: codigo divergente jogo-vs-banco E o [Activate:Main] que da DON ao Luffy NAO foi parseado
 
 Fecha a investigacao do "bot nao joga o stage" (blocos 567/570).

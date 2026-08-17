@@ -2,6 +2,20 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 572): **auditoria global do `[Activate:Main]` derruba a
+> suspeita do 571 — NÃO é sistêmico**: 375 cartas com o tag no texto, **373
+> parseadas**, só **2 perdidas** e com causas diferentes (Thousand Sunny
+> ST31-006 e Jinbe OP11-031). Não é o espaço do tag (as duas grafias existem
+> e funcionam). Classificação: `isolated_after_global_scan`. **Correção NÃO
+> feita** — 2 gaps independentes, cada um exige gramática própria +
+> `parser_audits/` + regenerar + `diff_parser` (PERDEU=0); fix apressado em
+> parser é o que o gate existe pra impedir. **Líderes com `[DON!! xN]`: 33
+> no total, TODOS com `don_requirement` parseado** (Krieg OP15-001 incluso) —
+> parser 100% OK aqui. **Isso amplia muito o bloco 567**: o fix de incluir o
+> líder no loop de `attach_don` destrava **os 33 líderes**, não só o Luffy —
+> todos tinham a opção nunca gerada. É o achado de maior alcance do dia e
+> **segue sem teste ao vivo**. Ver bloco 572 do HANDOFF.
+
 > 16/08/2026 (bloco 571): **fecha o "bot não joga o stage" — são DOIS bugs
 > empilhados no Thousand Sunny.** **(1)** O jogo usa `ST31-005`, o banco tem
 > a carta como `ST31-006` → ao vivo chega com código desconhecido (4 cópias
