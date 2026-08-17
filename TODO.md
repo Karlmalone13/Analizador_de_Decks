@@ -2,6 +2,26 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 574): **os 2 gaps do parser FORAM corrigidos** (fecha o
+> 573). Nenhuma das 4 hipóteses do 573 era a causa — as duas cartas caíam em
+> `parse_block` devolvendo `[]` (gap de gramática de EFEITO, não de
+> segmentação de tag). Causas reais: (a) gramáticas escritas assumindo **UM
+> único item delimitado** (`[]`/`""`/`{}`) — Jinbe tem dois tipos ligados por
+> "or"; (b) `transfer_don` só aceitava alvo `type Characters` com sufixo
+> `card(s) each` — Thousand Sunny usa nome de carta e não tem o sufixo; (c)
+> **o gate que decide se `parse_transfer_don` é chamada** exigia a string
+> literal `rested don!! card`, e o texto termina em `rested DON!!` sem
+> "card" — mesma classe do bug já documentado no gate do `parse_lock_attack`
+> (Vegapunk, 03/08): **corrigir a função sem corrigir o gate não muda nada**.
+> Fix genérico: nova constante `LISTA_DE_TIPOS` (1..N delimitados, `or`/`/`)
+> + variante 3 do `transfer_don` (nome-vs-tipo decidido pela presença da
+> palavra "type", não por lista de nomes) + gate afrouxado. `diff_parser`:
+> GANHOU=0, **PERDEU=0**, MUDOU=2 (exatamente as 2 cartas). `smoke_fast`: 14
+> falhas, todas as conhecidas das flags locais, nenhuma nova. Registro em
+> `parser_audits/2026-08-16b_lista_de_delimitados_e_gate_rested_don.json`.
+> **Continua aberto**: o bug 1 do bloco 571 (jogo usa `ST31-005`, banco tem
+> `ST31-006` — 4 cópias cegas no deck real) e **teste ao vivo de tudo**.
+
 > 16/08/2026 (bloco 573): **os 2 gaps do parser NÃO foram corrigidos** — não
 > coube no contexto, e mexer na gramática que hoje acerta 373/375 sem espaço
 > pra rodar `diff_parser` (PERDEU=0) quebraria o que funciona. **O que ficou

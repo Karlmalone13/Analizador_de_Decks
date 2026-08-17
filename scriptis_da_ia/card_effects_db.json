@@ -44365,6 +44365,19 @@
             "cost_lte": 5
           }
         ]
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "select_grant_rush_character",
+            "count": 1,
+            "filter_type": [
+              "fish-man",
+              "merfolk"
+            ]
+          }
+        ],
+        "once_per_turn": true
       }
     }
   },
@@ -78725,6 +78738,23 @@
           },
           {
             "action": "deck_bottom_rest"
+          }
+        ]
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "transfer_don",
+            "count": 1,
+            "target": "own_character",
+            "distribution": "free",
+            "per_target_max": 1,
+            "filter_name": "monkey d. luffy"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
           }
         ]
       }

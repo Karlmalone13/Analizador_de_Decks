@@ -1,5 +1,79 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (574) - Claude (sessao local) - Os 2 gaps do parser CORRIGIDOS -- nenhuma das 4 hipoteses do 573 era a causa, e o Thousand Sunny tinha um GATE bloqueando antes da gramatica
+
+Fecha o bloco 573. As 2 cartas (`ST31-006` Thousand Sunny, `OP11-031` Jinbe)
+agora tem o bloco `[Activate:Main]` no banco.
+
+### Onde a causa realmente estava
+
+As 4 hipoteses registradas no 573 continuam eliminadas -- e **nenhuma delas
+era a causa**. O diagnostico correto levou 2 comandos: `parse_block(bloco,
+'activate_main')` devolvia `[]` para as duas. Como o loop de triggers faz
+`continue` quando `steps` sai vazio, o bloco INTEIRO era descartado depois de
+ter casado o `trigger_pattern` normalmente. **Era gap de gramatica de EFEITO,
+nunca de segmentacao de tag** -- que e onde as 4 hipoteses estavam olhando.
+
+Licao pra proxima vez que um bloco de trigger "some": testar
+`parse_block` isolado ANTES de investigar a segmentacao. O `continue` faz um
+gap de efeito parecer, de fora, um gap de tag.
+
+### As 3 causas reais (2 cartas, 3 bugs)
+
+| # | causa | carta |
+|---|---|---|
+| 1 | gramatica aceitava **UM** item delimitado (`[]`/`""`/`{}`); o texto tem dois ligados por "or" | Jinbe (`"Fish-Man" or "Merfolk"`) |
+| 2 | `transfer_don` variante 2 exigia alvo `type Characters` + sufixo `card(s) each` | Thousand Sunny (alvo e um NOME, sem sufixo) |
+| 3 | **o gate** que decide se `parse_transfer_don` e sequer CHAMADA exigia a string literal `rested don!! card` | Thousand Sunny (texto termina em `rested DON!!`, sem "card") |
+
+A causa 3 e a mais importante de registrar: e a **mesma classe de bug ja
+documentada no gate do `parse_lock_attack`** logo acima no mesmo arquivo
+(achado 03/08, Vegapunk). Consertar a funcao interna sem consertar o gate nao
+produz efeito nenhum -- e exatamente o que aconteceu na primeira tentativa
+aqui (variante 3 escrita e testada isolada funcionando, carta continuando
+`{}`). **Vale varrer os outros gates desse arquivo procurando literais
+parecidos.**
+
+### O fix (generico, pela FORMA)
+
+1. Nova constante de modulo **`LISTA_DE_TIPOS`** -- 1..N itens delimitados por
+   `[]`/`""`/`{}` ligados por `or`//`/`. Existe pra que a proxima carta com 3
+   tipos, ou com `{}` no lugar de `""`, nao exija outro fix.
+2. `select_grant_rush_character` usa a constante e emite `filter_type` como
+   **lista** quando ha 2+ (semantica OR ja suportada por
+   `card_matches_filter`/`eligible_cards`); aceita `they are played` alem de
+   `it is played`.
+3. **Variante 3** do `parse_transfer_don`: alvo delimitado, sufixo opcional.
+   Nome-vs-tipo decidido pela **presenca da palavra "type" no proprio texto**
+   (`filter_type` vs `filter_name`), nao por lista de nomes conhecidos. Roda
+   sob `if not steps`, entao nao rouba as cartas da variante 2.
+4. Gate afrouxado: `rested don!! card` -> `rested don!!`.
+
+Nenhum dos 4 menciona "Monkey D. Luffy", "Fish-Man" ou codigo de carta.
+
+### Validacao
+
+- `diff_parser.py`: **GANHOU=0, PERDEU=0, MUDOU=2** -- exatamente as 2 cartas
+  alvo. As outras 2745 inalteradas. Confirmado que `OP08-001`, `ST30-014`
+  (variante 2) e `P-091` (tipo unico) seguem identicas.
+- `gerar_dbs.py`: 2747 cartas sincronizadas, sanidade das cartas-chave OK.
+- `smoke_fast.py`: **14 falhas, todas as 14 conhecidas** (asserts de que as 8
+  flags de calibragem ficam `False` por padrao -- ligadas no disco local).
+  Nenhuma falha nova.
+- Registro do gate obrigatorio:
+  `parser_audits/2026-08-16b_lista_de_delimitados_e_gate_rested_don.json`.
+
+### O que continua aberto
+
+- **Bug 1 do bloco 571 nao foi tocado**: o jogo usa `ST31-005`, o banco tem
+  `ST31-006`. Ao vivo a carta ainda chega com codigo desconhecido -- 4 copias
+  cegas no `Luffy RG.deck`. Os dois bugs sao independentes e **ambos**
+  precisam cair pro Thousand Sunny funcionar em partida real.
+- **Nada testado ao vivo**: nem este fix, nem os dos blocos 563-567 (incluindo
+  o `attach_don` no lider, que destrava 33 lideres). Continua sendo a
+  prioridade 2 da fila.
+- Fila inalterada depois disso: lethal probabilistico (bloco 568).
+
 ## 2026-08-16 (573) - Claude (sessao local) - Os 2 gaps do parser NAO foram corrigidos -- mas 4 hipoteses de causa ja estao ELIMINADAS por teste (economiza a proxima sessao)
 
 Usuario pediu "corrige os 2 gaps do parser". **Nao entreguei a correcao.**

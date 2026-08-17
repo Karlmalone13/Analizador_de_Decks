@@ -12,6 +12,14 @@ import pandas as pd
 import json
 import re
 
+# Lista de 1..N nomes delimitados por [], "" ou {} ligados por "or"/"/",
+# como o texto oficial escreve tipos ('"Fish-Man" or "Merfolk"') e nomes de
+# carta ('[Monkey.D.Luffy]'). Existe porque varias gramaticas foram escritas
+# assumindo UM unico delimitado e perdiam a carta inteira quando o texto
+# trazia dois (achado 16/08: OP11-031 Jinbe). Grupo unico -- quem usa extrai
+# os itens com re.findall(r'[\["{]([^\]"}]+)[\]"}]', grupo).
+LISTA_DE_TIPOS = (r'((?:[\["{][^\]"}]+[\]"}]\s*(?:or|/)\s*)*[\["{][^\]"}]+[\]"}])')
+
 # Pool "seu Lider OU seus Characters" com QUALIFICADOR arbitrario entre os
 # dois lados (tipo/atributo/custo), ex: 'up to 1 of your Leader with a type
 # including "Rocks Pirates" or up to 1 of your Characters with a type
@@ -3104,13 +3112,21 @@ def parse_can_attack_active(text):
                       'filter_type': m_rush_type.group(1).strip()})
         return steps
 
+    # Concessao de Rush:Character a um alvo ESCOLHIDO. A lista de tipos e
+    # generica (1..N nomes entre [], "" ou {}, ligados por "or" ou "/") --
+    # a versao anterior aceitava UM tipo so e perdia a carta inteira quando
+    # o texto trazia dois (achado 16/08, OP11-031 Jinbe: '"Fish-Man" or
+    # "Merfolk" type Characters' -- o bloco [Activate: Main] sumia do banco).
+    # "it is"/"they are" tambem variam com o numero do alvo no texto oficial.
     m_select_rush_char = re.search(
-        r'up to (\d+) of your [\["{]([^\]"}]+)[\]"}] type characters? '
-        r'can attack characters? on the turn in which it is played', t)
+        r'up to (\d+) of your ' + LISTA_DE_TIPOS + r' type characters? '
+        r'can attack characters? on the turn in which (?:it is|they are) played', t)
     if m_select_rush_char:
+        tipos = re.findall(r'[\["{]([^\]"}]+)[\]"}]', m_select_rush_char.group(2))
+        tipos = [x.strip() for x in tipos]
         steps.append({'action': 'select_grant_rush_character',
                       'count': int(m_select_rush_char.group(1)),
-                      'filter_type': m_select_rush_char.group(2).strip()})
+                      'filter_type': tipos if len(tipos) > 1 else tipos[0]})
         return steps
 
     m_select = re.search(
@@ -4723,6 +4739,34 @@ def parse_transfer_don(text):
         if m2.group(3):
             step['filter_power_base_eq'] = int(m2.group(3))
         steps.append(step)
+
+    # Variante 3: mesma distribuicao da variante 2, mas o alvo vem
+    # delimitado ([], "" ou {}) em vez de "type Characters"/"with N base
+    # power", e o "card(s) each" final e opcional. Achado 16/08 (ST31-006
+    # Thousand Sunny: 'Give up to 1 of your "Monkey D. Luffy" up to 1 rested
+    # DON!!') -- a carta e a FONTE do DON anexado que o lider Luffy
+    # OP13-001 exige, e o bloco [Activate:Main] inteiro sumia do banco.
+    # A distincao nome-vs-tipo e pela FORMA (a palavra "type" presente ou
+    # nao no proprio texto), nao por lista de nomes conhecidos.
+    if not steps:
+        m3 = re.search(
+            r"give up to (\d+) of your " + LISTA_DE_TIPOS +
+            r"( type)?(?: characters?)? up to (\d+) rested don!!(?: cards?)?(?: each)?",
+            t
+        )
+        if m3:
+            nomes = [x.strip() for x in
+                     re.findall(r'[\["{]([^\]"}]+)[\]"}]', m3.group(2))]
+            step = {
+                'action': 'transfer_don',
+                'count': int(m3.group(1)),
+                'target': 'own_character',
+                'distribution': 'free',
+                'per_target_max': int(m3.group(4)),
+            }
+            chave = 'filter_type' if m3.group(3) else 'filter_name'
+            step[chave] = nomes if len(nomes) > 1 else nomes[0]
+            steps.append(step)
 
     return steps
 
@@ -7635,7 +7679,12 @@ def parse_block(block_text, trigger_name):
 
     # Transferencia/distribuicao de DON entre characters (distinto de
     # give_don, que da DON do pool a um unico alvo)
-    if 'don!!' in t and ('currently given' in t or 'rested don!! card' in t):
+    # O gate exigia literalmente "rested don!! card" -- mesma classe de bug
+    # do gate de parse_lock_attack logo acima (achado 16/08, ST31-006
+    # Thousand Sunny: o texto termina em "up to 1 rested DON!!", sem a
+    # palavra "card", entao parse_transfer_don nunca era CHAMADA e a
+    # variante 3 dentro dela sozinha nao bastaria).
+    if 'don!!' in t and ('currently given' in t or 'rested don!!' in t):
         steps.extend(parse_transfer_don(t))
 
     # Auto-restrição "you cannot play ... this turn" (combo de ramp).
