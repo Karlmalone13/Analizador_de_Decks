@@ -1,5 +1,72 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-16 (569) - NOTA ARQUITETURAL (ler antes de calibrar qualquer coisa) - "tudo depende do deck e do turno": sao DOIS problemas distintos, e o segundo NAO se resolve com peso
+
+Tese do usuario, repetida ha anos e reforcada hoje: *"isso depende do deck,
+do turno, etc -- tudo depende"*. Os 4 achados de 16/08 sustentam a tese, mas
+mostram que ela se parte em **dois problemas com solucoes diferentes**. Nao
+confundir os dois foi o que fez esta sessao gastar horas.
+
+### Problema A -- heuristica ABSOLUTA onde deveria ser condicional
+
+Constantes globais que valem igual pra todo deck/turno:
+`ATTACK_LEADER_BASE_SCORE = 400`, limiar `60` do custo opcional,
+`BLOCKER_REST_COST_MAX = 300` (adicionada HOJE -- mais uma), peso estatico
+`gain_life: 2` (o "dobra se vida<=2" do bloco 564 e remendo condicional, nao
+solucao).
+
+E o que a **calibragem dinamica** (8 flags `USE_*_CURVE_SCALE`) tenta atacar,
+escalando pesos pela curva do deck. Status honesto: nunca validada por
+RESULTADO -- o que existe mede DIVERGENCIA (~15% das decisoes mudam), e as
+flags rodam LIGADAS localmente e `False` no git.
+
+### Problema B -- a opcao NEM EXISTE (peso nenhum resolve)
+
+**3 dos 4 achados de hoje foram opcao-nao-gerada**:
+
+| achado | bloco | o que faltava |
+|---|---|---|
+| "guardar o [Blocker] em vez de atacar" | 563 | nunca virou candidata |
+| efeito reativo com custo de DON | 565/566 | janela nunca detectada pelo plugin |
+| "anexar DON no LIDER" | 567 | loop so percorria `field_chars` |
+
+Calibragem **nao alcanca** este problema: se a jogada nao entra na lista de
+candidatas, ela tem probabilidade ZERO, nao baixa. Pior -- ela tambem nao
+aparece em metrica de arrependimento, entao o motor se reporta saudavel
+(`mean_counterfactual_regret: 0.0`) enquanto ignora a jogada certa.
+
+> **REGRA PRATICA que sai disso** (aplicar antes de investigar pontuacao):
+> quando o usuario disser "o bot nao sabe usar X", checar PRIMEIRO se X chega
+> a ser **gerado como candidato** -- olhar `scored_actions` no decision log,
+> nao o score do que foi escolhido. Teria economizado a maior parte desta
+> sessao.
+
+### A causa raiz do B, e por que obriga a "ajustar por deck" toda vez
+
+A geracao de candidatos e escrita por **CATEGORIA ESTRUTURAL** ("personagens
+no campo", "atacantes", "custo de trashar carta da mao"), nao por **o que
+este deck precisa fazer pra ganhar**. Todo arquetipo que use um recurso de um
+jeito nao previsto cai num buraco, e a unica saida e alguem achar o buraco na
+mao -- exatamente o que foi feito 4x hoje, e exatamente a queixa do usuario.
+
+Sintoma de que isso contaminou ate a MEDICAO: o `quality_baseline.py` (bloco
+565) trata "0 DON no fim do turno" como sinal BOM -- falso pro RG Luffy, cujo
+plano documentado e o oposto (bloco 568).
+
+### Consequencia pra ordem do roadmap
+
+Calibrar peso (A) rende pouco enquanto B estiver aberto -- ajustar
+coeficiente de uma acao que nunca e gerada nao muda nada. Ordem sugerida:
+
+1. **Auditar a GERACAO de candidatos** por arquetipo (existe alguma jogada que
+   o plano do deck exige e que nunca aparece em `scored_actions`?). O
+   `audit_card_coverage.py` (bloco 566) ja faz isso pra efeitos/custos; falta
+   o equivalente pras ACOES do turno.
+2. **Metricas cientes do plano do deck** -- comparar contra o guia do deck
+   (`IA_Compendium/guias_por_deck/`), nao contra constante global.
+3. So entao calibrar peso, ja com instrumento que sabe o que e "bom" pra
+   aquele deck.
+
 ## 2026-08-16 (568) - Claude (sessao local) - Guias estrategicos por deck (o plano do RG Luffy CONTRADIZ 2 suposicoes do motor) + a calculadora de lethal da comunidade resolve, de forma probabilistica, exatamente o buraco que deixamos aberto
 
 ### 1. Lethal probabilistico -- referencia externa para a pendencia do bloco 564

@@ -2,6 +2,25 @@
 
 **Última atualização:** 16 de agosto de 2026
 
+> 16/08/2026 (bloco 569): **NOTA ARQUITETURAL — "tudo depende do deck e do
+> turno" são DOIS problemas, e o segundo não se resolve com peso.**
+> **(A) heurística absoluta** onde deveria ser condicional (constantes
+> globais: `ATTACK_LEADER_BASE_SCORE`, limiar 60, `BLOCKER_REST_COST_MAX`,
+> peso estático de `gain_life`) — é o que a calibragem dinâmica tenta
+> atacar, e ela segue **sem validação por resultado**. **(B) a opção nem
+> existe**: 3 dos 4 achados de hoje foram **opção-não-gerada** (guardar o
+> blocker, janela de custo de DON, anexar DON no líder). Calibragem **não
+> alcança** B — jogada não gerada tem probabilidade zero, não baixa, e
+> ainda some das métricas de arrependimento (`mean_counterfactual_regret:
+> 0.0` enquanto o bot ignora a jogada certa). **Causa raiz**: a geração de
+> candidatos é escrita por categoria estrutural, não pelo que o deck precisa
+> — por isso cada arquétipo novo exige ajuste manual. **REGRA PRÁTICA**:
+> quando o usuário disser "o bot não sabe usar X", checar PRIMEIRO se X vira
+> candidato (`scored_actions`), antes de olhar score. **Ordem do roadmap
+> muda**: (1) auditar a GERAÇÃO de candidatos por arquétipo, (2) métricas
+> cientes do plano do deck, (3) só então calibrar peso. Ver bloco 569 do
+> HANDOFF.
+
 > 16/08/2026 (bloco 568): **guias estratégicos por deck + a calculadora de
 > lethal da comunidade aponta a solução da nossa maior pendência.**
 > **(1) Lethal probabilístico**: a calculadora da comunidade
