@@ -2,6 +2,16 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 584, EM ANDAMENTO): usuário pediu pra ir além do
+> bloco 583 ("9% é muito pouco... precisamos criar algo pra que ele
+> jogue igual") — `audit_one_game` ganhou `capture_candidates` (default
+> False, sem regressão) pra expor o top-8 de candidatos com score por
+> decisão, não só a escolhida. Objetivo: descobrir se o gap
+> `activate`/`attach_don` do bloco 583 é opção NUNCA GERADA (bug de
+> geração, blocos 565-567) ou GERADA mas perdendo pra `attack` por
+> escala (bloco 578-580) — determina que tipo de fix escrever. Rodando
+> nas 25 partidas do bloco 582/583. Ver bloco 584 do HANDOFF.
+>
 > 17/08/2026 (bloco 583): **aprofundamento do bloco 582** — simulou o
 > TURNO INTEIRO (não só a 1ª jogada) nas 25 partidas reais que o humano
 > venceu, 111 turnos. Sequência idêntica exata é rara (9%, esperado —

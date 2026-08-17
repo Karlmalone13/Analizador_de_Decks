@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (584, EM ANDAMENTO) - Claude (sessao remota web) - `audit_one_game` ganha `capture_candidates` -- pedido do usuario pra ir alem do bloco 583 ("9% e muito pouco, precisamos criar algo pra jogar igual") exige saber a CAUSA de cada gap, nao so contar quantas vezes aconteceu
+
+**Pedido do usuario, direto**: "9% e muito pouco... pegue cada turno e
+veja simule para ver se o bot jogar igual, se nao jogar, precisamos
+criar algo para que ele jogue igual" -- ou seja, o bloco 583 (contagem
+agregada: `activate` 3x menos, `attach_don` 14x menos que o humano
+vencedor) nao basta; precisa saber, POR TURNO, se cada gap e (a) a
+jogada nunca foi GERADA como candidata (bug de geracao, categoria ja
+resolvida varias vezes nesta sessao -- blocos 565-567) ou (b) foi
+gerada e perdeu pra `attack` por causa da escala incomparavel (bloco
+578-580, ainda so parcialmente corrigido).
+
+**Extensao minima, sem duplicar nada**: `audit_one_game`
+(`audit_real_losses.py`) ganhou o parametro `capture_candidates`
+(default `False`, comportamento antigo intacto pra quem nao passa).
+Quando ligado, cada turno passa a incluir `decisions` -- a lista CRUA
+de registros `turn_planner` do `decision_log` interno do motor
+(`chosen` + top-8 `candidates` com `score`/`simulated_value`), o MESMO
+dado que `_log_turn_planner_decision`/`_audit_action_brief` ja
+produzem pra outras ferramentas (`decision_summary.py`,
+`decision_quality_report.py`) -- so exposto aqui tambem, sem
+reprocessar nada. Liga `enable_decision_audit()` de forma independente
+de `capture_actions` (union das duas flags).
+
+**Validado**: `smoke_fast.py` 100% (mesmo estado de antes, nenhuma
+regressao), teste manual num turno confirma `decisions[0]['chosen']`/
+`['candidates']` com score/simulated_value preenchidos como esperado.
+
+**Em andamento** (proximo bloco fecha isto): rodando
+`audit_one_game(..., capture_actions=True, capture_candidates=True)`
+nas mesmas 25 partidas do bloco 582/583, focando nos turnos onde o
+humano fez `activate`/`attach_don` e o motor NAO -- pra cada gap,
+verificar se a acao aparece nos `candidates` top-8 (com que score) ou
+nunca aparece. Resultado guia se o fix e de GERACAO (padrao blocos
+565-567) ou de ESCALA/PESO (padrao bloco 578-580).
+
 ## 2026-08-17 (583) - Claude (sessao remota web) - Aprofunda o bloco 582: simula o TURNO INTEIRO (nao so a 1a jogada) nas 25 partidas que o humano venceu -- CONFIRMA por um caminho independente o achado do bloco 578/579/580: o motor ativa habilidade 3x menos e anexa DON 14x menos que o humano vencedor
 
 **Pedido do usuario**: "passe turno a turno e veja se o bot toma decisoes

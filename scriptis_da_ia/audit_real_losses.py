@@ -190,7 +190,7 @@ class DonEstimator:
 
 
 def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
-                   capture_actions=False):
+                   capture_actions=False, capture_candidates=False):
     """
     capture_actions: alem da narrativa em texto (`engine_hoje_narrativa`),
     inclui em cada turno `chosen_actions` -- lista ESTRUTURADA (kind, carta,
@@ -203,6 +203,18 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
     comparacao por string. False por padrao (custo extra de habilitar o
     decision_log), comportamento de quem nao passa o parametro é idêntico
     a antes.
+
+    capture_candidates: inclui em cada turno `decisions` -- lista CRUA de
+    registros `turn_planner` do `decision_log` (chosen + top-8 candidatos
+    com score/simulated_value, ja produzidos por `_log_turn_planner_
+    decision`/`_audit_action_brief`, sem reprocessar nada). Existe pra
+    responder "a jogada X nem foi GERADA como candidata, ou foi gerada e
+    perdeu pra outra com score maior?" -- distincao que `chosen_actions`
+    sozinho nao da (so mostra o que venceu). Achado real 17/08 (pedido do
+    usuario, comparar motor x humano turno a turno): sem isto, um gap
+    tipo "motor ativa 3x menos que o humano" fica sem causa raiz
+    identificavel. Tambem liga `enable_decision_audit()` (independente de
+    `capture_actions`). False por padrao, sem custo extra pra quem nao usa.
     """
     data = json.load(open(parsed_path, encoding='utf-8'))
     meta = data['meta']['players']
@@ -299,7 +311,7 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         p.don_available = don_est.available(bot_side)
 
         eng = match._get_engine_match()
-        if capture_actions:
+        if capture_actions or capture_candidates:
             eng.enable_decision_audit()
         buf2 = io.StringIO()
         with contextlib.redirect_stdout(buf2):
@@ -334,6 +346,11 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
                               if (rec.get('chosen') or {}).get('target') else None,
                 }
                 for rec in (eng.decision_log or [])
+                if rec.get('kind') == 'turn_planner' and rec.get('player') == 'A'
+            ]
+        if capture_candidates:
+            entry['decisions'] = [
+                rec for rec in (eng.decision_log or [])
                 if rec.get('kind') == 'turn_planner' and rec.get('player') == 'A'
             ]
         results.append(entry)
