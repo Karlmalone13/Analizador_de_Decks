@@ -1,5 +1,99 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (588) - Claude (sessao remota web) - NOVA categoria auditada: DEFESA (blocker/counter), que o bloco 587 nunca tocou (audit_one_game so simula turno PROPRIO). Achado: 95,8% de concordancia em bloquear/nao-bloquear (uma vez corrigido um bug MEU de leitura do schema do log) -- pedido do usuario ("as decisoes do bot sao as piores, sempre perde")
+
+**Contexto**: usuario, direto, apos o inventario do bloco 587: "eu
+quero que seja parecido com o do humano pq as do bot sao as piores
+decisoes, sempre perde as partidas". `audit_one_game` (usado em toda a
+rodada 582-587) so simula o TURNO PROPRIO de `bot_side` via
+`eng.play_turn()` -- nunca exercita `should_use_blocker`/`should_use_
+counter`, que so disparam quando o OUTRO lado ataca. Ou seja: **toda a
+investigacao anterior (582-587) nunca tocou em defesa**, a categoria de
+decisao mais citada como "custa a partida inteira" (ver bloco 563,
+"sequencia de defesa nao investigada").
+
+### Ferramenta nova (scratchpad, `audit_defense.py`)
+
+Pra cada ataque REAL sofrido pelo humano (turno do oponente no log),
+reconstroi os dois lados no momento exato do ataque (poder do atacante
+JA com o DON anexado ate aquele ponto do turno, via replay sequencial
+das acoes) e chama `DecisionEngine(human, opp).should_use_blocker`/
+`.should_use_counter` -- as MESMAS funcoes que `_execute_attack` usa ao
+vivo, sem reimplementar nada. 203 ataques auditados nas 25 partidas,
+zero erro de reconstrucao.
+
+### ERRO MEU pego a tempo (registrado porque quase virou "achado")
+
+Primeira leitura: 112/203 (55%) casos onde o motor NAO bloquearia mas o
+historico diz `result: "blocked"`. Antes de reportar, cross-tabulei
+`result`/`blocked_by`/`countered_by` no BANCO INTEIRO (1829 ataques,
+todos os logs) e achei a causa: **`result: "blocked"` e um
+guarda-chuva** que cobre TANTO bloqueio por personagem QUANTO defesa
+SO por counter (sem blocker nenhum) -- 506 dos casos `blocked` no banco
+tem `countered_by` preenchido e `blocked_by` vazio (pura defesa por
+counter, sem blocker). Eu tinha "corrigido" `hist_blocked` pra usar
+`result=='blocked'` direto (parecia mais confiavel que `blocked_by`,
+que costuma vir null) -- e essa "correcao" que introduziu o falso
+positivo gigante: contava toda defesa-so-por-counter como "deveria ter
+bloqueado".
+
+**Fix**: `hist_blocked = bool(blocked_by)` (sinal correto, mesmo
+sub-preenchido -- ~260 casos no banco ficam AMBIGUOS: `result==blocked`
+sem `blocked_by` nem `countered_by`, tratados como "desconhecido" e
+EXCLUIDOS da comparacao, nao contados como erro do motor). Terceira vez
+nesta sessao que um "achado grande" morre ao verificar contra o dado
+cru antes de reportar (mesma disciplina do bloco 562/553 do projeto).
+
+### Resultado (so nos 119 casos CLAROS, excluindo os 84 ambiguos)
+
+- **BLOQUEAR/NAO-BLOQUEAR: 114/119 (95,8%) de concordancia** -- so 1
+  caso motor-bloquearia-humano-nao-bloqueou e 4 motor-nao-bloquearia-
+  humano-bloqueou. **Nao e o padrao "o bot toma as piores decisoes"**
+  -- pelo contrario, a decisao de bloquear ou nao esta majoritariamente
+  alinhada com o que um humano vencedor faria na mesma situacao.
+- **COUNTER (so quando NAO bloqueou): 82/110 (74,5%)** -- mais fraco
+  que bloqueio, mas SEM direcao dominante (16 casos "humano usou
+  counter, motor nao usaria" vs 12 "motor usaria, humano nao usou") --
+  nao e um bug de uma linha so, parece questao de calibragem fina da
+  tabela de vida do `should_use_counter`, nao investigado a fundo aqui.
+
+> **Leitura honesta pro usuario**: nas categorias medidas ate agora
+> (play/attack/activate/attach_don no bloco 582-587, blocker/counter
+> aqui), a decisao TATICA individual do motor de hoje concorda com a de
+> um humano vencedor na maioria esmagadora dos casos -- os numeros
+> grandes de divergencia que apareceram ao longo da sessao quase todos
+> morreram ao investigar (artefato de medicao, nao bug real). **Isso
+> contraria a premissa "as decisoes do bot sao as piores"** SE a
+> pergunta for sobre decisao tatica isolada. Se o bot realmente perde
+> muito, a causa mais provavel NAO esta em "qual carta jogar/atacar/
+> bloquear" -- esta em outro lugar: o item ja registrado como maior
+> impacto em aberto (`_lethal_search` nao considera buffs defensivos
+> REATIVOS do oponente, bloco 563 -- falso-positivo de letal que causa
+> all-in ruim), ou eficiencia agregada ao longo de MUITOS turnos
+> (nenhum erro isolado, mas soma de pequenas perdas).
+
+### Pendente
+
+- 84 casos ambiguos (schema do log nao distingue blocker de counter
+  quando `result==blocked` e nenhum dos dois campos auxiliares esta
+  preenchido) -- se algum dia valer a pena, exigiria melhorar o PARSER
+  do combat log (`parse_combat_log.py`), fora do escopo desta sessao.
+- Contagem de counter (74,5%, misto) nao foi investigada caso a caso --
+  proximo passo se o usuario quiser continuar por aqui.
+- **Recomendacao pra proxima sessao dado o padrao desta**: investigar
+  o item do bloco 563 (`_lethal_search` x buffs reativos do oponente)
+  antes de continuar cacando divergencia decisao-a-decisao -- e o unico
+  item, entre tudo que ja foi olhado nesta sessao e na anterior, com
+  evidencia de custar partidas de verdade (nao so "diferente do
+  humano").
+
+### Scripts (scratchpad, nao commitados)
+
+`audit_defense.py` -- reusa `_cards_from_codes`/`_find_real_deck`/
+`_remaining_deck`/`DonEstimator` de `audit_real_losses.py` sem
+duplicar, chama `DecisionEngine.should_use_blocker`/`should_use_
+counter` direto (mesmas funcoes de producao).
+
 ## 2026-08-17 (587) - Claude (sessao remota web) - Fecha a rodada de investigacao pos-586: 2 achados novos (mistura lethal/nao-lethal inflava o delta de attach_don; gap de "play" de 64% e quase todo artefato do DonEstimator, nao bug) -- inventario final das 5 categorias de divergencia
 
 **Pedido do usuario, sequencia de perguntas**: "so tem essas

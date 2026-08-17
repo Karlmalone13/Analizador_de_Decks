@@ -2,6 +2,25 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 588): **primeira auditoria de DEFESA** (blocker/
+> counter) contra as 25 partidas que o humano venceu — categoria que a
+> rodada 582-587 nunca tocou (só cobria o turno próprio). Achado
+> inicial (112/203 divergências) era **erro meu**: `result: "blocked"`
+> no log mistura bloqueio-por-personagem com defesa-só-por-counter;
+> corrigido usando `blocked_by` como sinal real. **Resultado correto:
+> 95,8% de concordância em bloquear/não-bloquear** (114/119 casos
+> claros) — o bot concorda com o humano vencedor na esmagadora maioria.
+> Counter (quando não bloqueou) é mais fraco (74,5%, 82/110) mas sem
+> direção dominante. **Conclusão pro usuário**: nas categorias medidas
+> até agora, a decisão tática individual do motor está majoritariamente
+> alinhada com a de um humano vencedor — isso contraria a premissa de
+> "as piores decisões". Se o bot realmente perde muito, a causa mais
+> provável não é "qual jogada individual" — é o item já registrado como
+> maior impacto em aberto (bloco 563: `_lethal_search` não considera
+> buffs defensivos reativos do oponente, causando all-in em falso
+> lethal) ou eficiência agregada ao longo de muitos turnos. Só leitura,
+> nenhum código de produção alterado. Ver bloco 588 do HANDOFF.
+>
 > 17/08/2026 (bloco 587): **fecha o inventário completo das 5
 > categorias de divergência** motor-vs-humano (attach_don gerado/não
 > gerado, activate, play, alvo de ataque) nas 25 partidas que o humano
