@@ -2,6 +2,22 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 594): **2ª tentativa, também revertida** — versão
+> conservadora da categoria 4 (só bancar DON ocioso no líder quando
+> NINGUÉM pode atacar, corrigindo a hipótese do bloco 593) continua
+> regredindo o resultado real (90,1%→86,5%, quase igual à 1ª tentativa
+> 85,6%). Nova hipótese registrada: o candidato novo pode disputar
+> espaço no shortlist (`TOP_K`, 3-6) contra `play`/`activate` mesmo sem
+> nunca ser o escolhido — precisa ser investigada antes de uma 3ª
+> tentativa. Revertido (`git checkout --`, confirmado limpo). **Achado
+> lateral**: conferido o pedido do usuário sobre líderes com
+> `[DON!! xN]` — dos 6 líderes jogados nas 26 partidas, só Luffy
+> OP13-001 tem isso de verdade, e **o desbloqueio já funciona** (visto
+> na narrativa real: "anexou 1 DON... para ligar [on_opp_attack]"). O
+> que diverge é o humano investir DON ADICIONAL no Luffy pra reforçar
+> os próprios ataques, algo o motor não faz na mesma medida — não
+> investigado a fundo ainda. Ver bloco 594 do HANDOFF.
+>
 > 17/08/2026 (bloco 593): **tentado e REVERTIDO** — categoria 4 em
 > `_generate_attach_don_actions` (bancar DON ocioso no líder mesmo sem
 > ataque disponível, fechando o padrão dos blocos 586/587 — 24 casos

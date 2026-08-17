@@ -1,5 +1,83 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (594) - Claude (sessao remota web) - SEGUNDA TENTATIVA, TAMBEM REVERTIDA: versao conservadora da categoria 4 (so banca quando NINGUEM pode atacar) continua piorando o resultado real (90,1% -> 86,5%) -- ideia abandonada por ora, registrada com os dois experimentos pra nao repetir
+
+**Contexto**: bloco 593 tentou "bancar DON ocioso no lider" (categoria
+4) sem checar se havia ataque disponivel, mediu regressao (90,1% ->
+85,6%) e reverteu. Hipotese registrada la: o candidato competia e
+vencia ataques FRACOS mas com valor real. **Esta sessao testou a
+correcao obvia dessa hipotese e ELA TAMBEM REGREDIU.**
+
+### A correcao tentada
+
+Gate adicional: categoria 4 so gera o candidato de banking quando
+`ninguem_pode_atacar` (nem o lider nem nenhum personagem tem ataque
+disponivel este turno -- checado direto via `character_can_attack_now`,
+mesma funcao ja usada pela categoria 3, sem reimplementar). Em teoria,
+isso deveria fechar o buraco sem nunca competir com nenhum ataque, por
+mais fraco que fosse. `smoke_fast`/`smoke_test` 100%, incluindo um
+CONTROLE NEGATIVO especifico pra essa hipotese (existe atacante
+disponivel, mesmo fraco -> banking nao e gerado -- teste passou).
+
+### Medido de novo -- regrediu de novo, quase igual a antes
+
+| metrica | baseline (592) | 1a tentativa (593) | 2a tentativa (conservadora) |
+|---|---|---|---|
+| motor causa dano >= ao humano | **100/111 (90,1%)** | 95/111 (85,6%) | 96/111 (86,5%) |
+| motor causa MENOS dano | 11/111 (9,9%) | 16/111 (14,4%) | 15/111 (13,5%) |
+
+A melhora da 1a pra 2a tentativa e marginal (85,6% -> 86,5%, 1 turno a
+menos de regressao) -- **nao volta perto do baseline**. A hipotese do
+bloco 593 (competir com ataque fraco) nao era a causa principal, ou nao
+era a UNICA.
+
+### Nova hipotese (nao testada, registrada pra quem tentar de novo)
+
+Adicionar QUALQUER candidato novo a lista que `_generate_and_score_
+actions` devolve pode mudar quais OUTRAS candidatas entram no shortlist
+`TOP_K` (3-6, `_select_search_candidates`) que vai pra busca cara --
+mesmo quando o candidato novo em si nunca e o ESCOLHIDO. Se o banking
+(score ate `don_sobra*15`, pode passar de 50-90) empurra pra fora do
+shortlist uma carta de PLAY genuinamente boa (scores de play tipicos
+vistos nesta sessao: 10-250), a busca profunda nunca chega a considerar
+essa jogada, e o resultado piora sem o banking nunca ter sido
+escolhido. Isso explicaria por que MESMO a versao que nunca compete com
+ataque ainda regride -- ela pode competir por ESPACO NO SHORTLIST
+contra `play`/`activate`, nao so contra `attack`.
+
+### Decisao
+
+**Revertido de novo** (`git checkout --` desta vez funcionou sem
+bloqueio do classificador, diferente do bloco 593). Ideia de "bancar
+DON no lider" fica REGISTRADA COMO TENTADA DUAS VEZES E REVERTIDA DUAS
+VEZES -- qualquer sessao futura que queira reabrir isto **precisa**
+investigar a hipotese do shortlist acima (ou aumentar TOP_K
+temporariamente pra medir se o efeito some) antes de tentar uma
+terceira implementacao, em vez de so ajustar o score de novo.
+
+### Achado lateral (nao relacionado a este fix, do pedido do usuario sobre "Marlon"/DON!! xN)
+
+Investigando o pedido do usuario ("nao e guardar no lider sem atacar,
+e por DON no lider PRA ATACAR, ou pra usar o efeito dele -- tem lideres
+com DON!! x1"): dos 6 lideres que o humano jogou nas 26 partidas, **so
+Monkey D. Luffy OP13-001** tem `[DON!! x1]` de verdade (`on_opp_attack`,
+achado 03/08/2026, hipotese anterior de Xebec estava errada -- Xebec
+NAO tem nenhum gatilho condicionado a DON, confirmado no texto oficial
+da carta). Partida real conferida
+(`Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45`, unica com
+humano jogando Luffy): a narrativa do motor de HOJE mostra
+`⚡ anexou 1 DON em Monkey.D.Luffy (001) para ligar [on_opp_attack]` no
+turno 9 -- **o desbloqueio do DON!! x1 esta funcionando**, nao e um bug.
+O que diverge de verdade: o humano investe DON ADICIONAL no Luffy pra
+reforcar os PROPRIOS ataques dele (2 DON turno 9, 4 DON turno 11,
+escalando), o motor de hoje so anexa o minimo pro unlock e deixa os
+ataques do Luffy sem reforco extra (2 deles foram bloqueados/
+contra-atacados na partida real simulada). **Nao investigado a fundo
+ainda** -- e provavelmente a MESMA disputa de prioridade "desbloquear
+habilidade vs reforcar combate" que ja foi mexida nos blocos 580/585/
+591/593/594, precisa de instrumentacao pra confirmar antes de tentar
+outro fix.
+
 ## 2026-08-17 (593) - Claude (sessao remota web) - TENTADO E REVERTIDO: categoria 4 (bancar DON ocioso no lider sem ataque) piorou o resultado real -- medido, nao aceito so por "passar nos testes unitarios"
 
 **Pedido do usuario**: apos a discussao sobre "sequencia identica"
