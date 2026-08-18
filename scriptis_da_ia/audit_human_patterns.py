@@ -239,6 +239,15 @@ def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dic
                     'count': count,
                 })
     candidates.sort(key=lambda row: (-row['count'], row['leader'], row['pattern']))
+    # Achado real 18/08 (pedido do usuario -- mapear TODAS as decisoes do
+    # banco de logs, nao so uma amostra): com o banco de 150 partidas
+    # (vs 7 antigas), o corte fixo de 80 candidatos cortava a maioria dos
+    # padroes com suporte real (min_support>=2) so por causa de lideres
+    # muito frequentes (Xebec/Teach) dominarem o topo por contagem bruta.
+    # O consumidor (`_load_human_patterns`/`_HUMAN_PATTERN_MIN_SUPPORT`)
+    # ja filtra por suporte minimo E cada bonus individual ja tem teto
+    # proprio (`_HUMAN_PATTERN_MAX_BONUS=30`) -- nao ha risco extra em
+    # manter mais candidatos aqui, so em cortar demais.
 
     return {
         'meta': {
@@ -257,7 +266,7 @@ def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dic
         'by_leader_before_attack': nested_counter_to_dict(by_leader_attack, 12),
         'by_defender_response': nested_counter_to_dict(by_defender, 12),
         'context_examples': dict(sorted(context_examples.items())),
-        'heuristic_candidates': candidates[:80],
+        'heuristic_candidates': candidates,
         'card_names': {code: card_name(cards_db, code)
                        for code in sorted({token.split(':', 1)[1].split(' > ')[0]
                                            for row in candidates

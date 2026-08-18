@@ -2,6 +2,28 @@
 
 **Última atualização:** 18 de agosto de 2026
 
+> 18/08/2026 (bloco 613): **ACHADO GRANDE, melhora real**. Pedido do
+> usuário (após rejeitar a linha de "desconto de score" do bloco 612):
+> "mapear as decisões do humano e gerar uma calibragem que simboliza
+> as decisões dele". Achei que a ferramenta certa **já existia**
+> (`audit_human_patterns.py`/`human_patterns.json`/`_human_pattern_
+> bonus`, minera sequências reais por líder e dá bonus pequeno e
+> TETADO em 30 pontos) mas estava **treinada em só 7 logs de
+> 08/08** — o banco tem 150 hoje. Regenerado com todos (1984 turnos,
+> 5346 ações), removido corte artificial de 80 candidatos (agora
+> 1118), e conectado `attach_don` ao mecanismo (só cobria
+> play/activate/attack antes — exatamente o ponto fraco do Imu dos
+> blocos 609-612). `smoke_fast`/`smoke_test` 100% OK (1 teste
+> pré-existente ajustado — assumia bonus humano sempre 0). Resultado
+> real nas 26 partidas, reproduzido `--workers 1` e `--workers 4`
+> idênticos: play 25,5%→**27,1%**, attack-quem 35,9%→**39,1%**,
+> attach_don 8,1%→**9,6%** — melhora ampla, sem regressão relevante
+> (diferente das 3 tentativas anteriores nessa área que regrediram).
+> Pendente: lado de DEFESA (counter/blocker) ainda sem calibragem por
+> padrão humano — `_HUMAN_DEFENSE_BY_LEADER` é computado mas nunca
+> lido, e o produtor descarta qual CARTA foi usada como counter (só
+> agrega contagem). Próximo passo natural. Ver bloco 613 do HANDOFF.
+
 > 18/08/2026 (bloco 612): Tentativa de resolver a causa raiz apontada
 > no bloco 611 (metade dos casos do Imu sem resolver porque `attack`
 > não desconta risco de counter em empate) -- **revertida por

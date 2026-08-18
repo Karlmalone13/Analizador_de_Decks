@@ -1,5 +1,111 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-18 (613) - Claude (sessao remota web) - ACHADO GRANDE: `human_patterns.json` (calibragem por padroes humanos, ja existente e ja lida por `_human_pattern_bonus` em play/activate/attack) estava TREINADA EM SO 7 LOGS de 2026-08-08 -- o banco tem 150 hoje. Regenerado com todos, corte de 80->1118 candidatos, e conectado `attach_don` (que nao usava esse mecanismo). Melhora REAL e AMPLA, sem regressao relevante
+
+**Pedido do usuario** (explicito, apos rejeitar a linha anterior de
+"desconto de score" -- bloco 612 revertido): "o bot perdeu todas as
+partidas... precisamos fazer ele tomar atitudes identicas ao do
+humano... se for o caso passe log a log... e mapear as decisoes do
+humano e gere uma calibragem que simboliza as decisoes dele".
+
+### Achado: a ferramenta certa ja existia, so estava desatualizada e incompleta
+
+`audit_human_patterns.py` + `human_patterns.json` + `_human_pattern_
+bonus` (`decision_engine.py`) e EXATAMENTE o pedido do usuario --
+minera sequencias de decisao (play/activate/attack) dos logs reais por
+LIDER e da um bonus pequeno e TETADO (`_HUMAN_PATTERN_MAX_BONUS=30`,
+capado por design, nunca domina o score) pra candidatos que batem com
+o padrao observado. So que:
+1. `human_patterns.json` datava de 08/08, gerado com **so 7 logs** (99
+   turnos, 487 acoes) -- o banco de `logs/parsed/` tem **150 logs**
+   hoje (1984 turnos, 5346 acoes, 759 eventos de defesa), 21x mais
+   dado nunca incorporado.
+2. `audit_human_patterns.py` cortava a lista de candidatos em
+   `[:80]` -- com 150 logs, lideres MUITO frequentes (Xebec, Teach)
+   dominavam esse topo por contagem bruta, cortando fora padroes reais
+   (suporte>=2, ja filtrado tanto na producao quanto no consumidor)
+   de lideres menos representados.
+3. `_load_human_patterns`/`_human_pattern_bonus` so cobriam
+   `play`/`activate`/`attack` -- `attach_don` (o EXATO ponto fraco do
+   Imu, blocos 609-612) nunca recebia bonus nenhum, mesmo com o padrao
+   `attach_don:OP13-079 > attack:OP13-079` aparecendo 35x nos logs.
+
+### Fix (3 mudancas, cada uma testada em isolado antes de aceitar)
+
+1. `audit_human_patterns.py`: `candidates[:80]` -> `candidates`
+   (sem corte artificial -- o filtro real ja e `min_support`/teto por
+   bonus, cortar a lista so descarta sinal real sem necessidade).
+2. `decision_engine.py`, `_load_human_patterns`: filtro de `kind`
+   ganha `'attach_don'` (era so `('play','activate','attack')`).
+3. `decision_engine.py`, `_generate_attach_don_actions`: as 3
+   categorias de geracao de candidato (keyword condicional, gatilho
+   condicional, margem de combate) agora somam `self._human_pattern_
+   bonus(p, 'attach_don', card)` ao score, mesmo padrao ja usado nas
+   outras 3 acoes -- ANTES do filtro `if score > 0`, entao o bonus
+   pode empurrar um candidato marginal pra existir, nao so reordenar
+   candidatos que ja existiam.
+4. `human_patterns.json` regenerado: `python audit_human_patterns.py
+   --logs-dir logs/parsed --output human_patterns.json --min-support 2`
+   (150 logs, 1118 candidatos vs 80 antes).
+
+### Validado
+
+`smoke_fast.py`: 1 teste pre-existente quebrou na 1a rodada
+(`test_...pekoms_...`) -- nao por regressao, o teste assumia bonus
+humano SEMPRE 0 (calculo de score EXATO sem contar o termo), e
+Katakuri+Pekoms passou a ter suporte real (bonus 24.0) com o banco
+maior. Corrigido pra calcular o valor esperado incluindo o bonus (e
+descobri, ao depurar, que o bonus entra ANTES do teto do desconto de
+trigger -- score final e `base/2 + bonus/2`, nao `base/2 + bonus`,
+porque o teto e computado sobre o score JA com bonus). `smoke_test.py`
+completo: **TODOS OS TESTES PASSARAM**.
+
+### Resultado (26 partidas do banco, `--workers 1` e `--workers 4` idênticos)
+
+| categoria | antes (bloco 610/612) | depois (613) |
+|---|---|---|
+| play | 25,5% (27/106) | **27,1% (29/107)** |
+| attack -- quem atacou | 35,9% (33/92) | **39,1% (36/92)** |
+| attach_don -- mesmo alvo | 8,1% (6/74) | **9,6% (7/73)** |
+| activate | 41,7% (10/24) | 38,5% (10/26) -- mesmo numerador, denominador cresceu |
+| attack -- mesmo alvo | 83,6% (138/165) | 82,0% (137/167) -- ruido, denominador cresceu |
+| SEQUENCIA similaridade | 34,5% | 33,7% -- ruido pequeno |
+| ALVO efeito | 54,3% (19/35) | 52,8% (19/36) -- mesmo numerador |
+| blocker/counter (defesa) | sem mudanca | sem mudanca (mecanismo ainda nao cobre defesa, ver pendente) |
+
+Diferente das 3 tentativas anteriores nessa mesma area (593, 594,
+612), esta teve melhora REAL e ampla (3 categorias sobem de verdade)
+com só ruído nas demais -- porque usa um mecanismo JA testado/seguro
+(bonus pequeno e tetado, nao reescreve a formula de score de `attack`)
+alimentado por dado real muito maior, em vez de inventar uma penalidade
+nova.
+
+### Pendente
+
+- **Defesa (counter/blocker) continua sem calibragem por padrao
+  humano**: `_HUMAN_DEFENSE_BY_LEADER` e computado em `_load_human_
+  patterns` mas **nunca lido em lugar nenhum** -- alem disso, o
+  produtor (`audit_human_patterns.py`) so agrega CONTAGEM total de
+  counter vs blocker por lider, descartando qual CARTA foi usada
+  (`by_defender_response` guarda `pattern: 'counter:CODIGO'` mas o
+  loader so soma o count, joga o codigo fora). Pra replicar "ordem de
+  counter"/"qual carta counterar" (pedido explicito do usuario) seria
+  preciso: (a) o loader preservar o codigo, nao so agregar, (b) achar
+  um ponto de injecao em `pick_counters`/`should_use_blocker`. Nao
+  feito neste bloco -- proximo passo natural.
+- `by_leader_band`/`by_leader_exact_orders`/`by_leader_ngrams_2/3`/
+  `by_leader_before_attack`/`by_defender_response` no script continuam
+  com corte pequeno (10-12 por lider) -- so `heuristic_candidates` foi
+  ampliado. Se a extensao de defesa acima for feita, esses cortes
+  precisam do mesmo tratamento.
+- `_HUMAN_PATTERN_MAX_BONUS=30` e `_HUMAN_PATTERN_MIN_SUPPORT=2`
+  nunca foram recalibrados pro banco maior -- ficaram no valor
+  original (calibrado pros 7 logs antigos). Nao mexido aqui
+  (resultado ja positivo sem mexer), mas fica registrado como
+  parametro nao re-tunado.
+- Lembrar de regenerar `human_patterns.json` sempre que novos logs
+  entrarem no banco -- nao e automatico.
+
 ## 2026-08-18 (612) - Claude (sessao remota web) - TENTATIVA REVERTIDA: descontar `score_attack_target` por risco de counter em ataque empatado ao lider (a causa raiz apontada no bloco 611 pro porque o fix do Imu so resolvia metade). Piorou a propria metrica que devia ajudar -- Imu foi de 7 nunca-gerado/7 gerado-perdeu pra 12 nunca-gerado/2 gerado-perdeu -- alem de regredir attack-alvo (83,6%->77,6%) e alvo-efeito (54,3%->39,5%). Revertido por completo, codigo e testes voltaram ao estado exato do bloco 610
 
 **Pedido do usuario**: "vamos resolver essa do lider" (a causa

@@ -656,7 +656,7 @@ def _load_human_patterns():
             if ':' not in token:
                 continue
             kind, code = token.split(':', 1)
-            if kind not in ('play', 'activate', 'attack'):
+            if kind not in ('play', 'activate', 'attack', 'attach_don'):
                 continue
             key = (kind, code)
             leader_bonus[key] = min(
@@ -16379,6 +16379,7 @@ class OPTCGMatch:
                     continue
                 valor = self._keyword_don_value(kw, card, p, opp, priority)
                 score = valor - falta * DON_COST
+                score += self._human_pattern_bonus(p, 'attach_don', card)
                 if score > 0:
                     acts.append((score, 'attach_don', card, falta, kw))
 
@@ -16403,6 +16404,7 @@ class OPTCGMatch:
                                         for a in step_actions):
                     copies = sum(1 for c in p.field_chars if c.code == card.code)
                     score -= max(0, copies - 1) * 30.0
+                score += self._human_pattern_bonus(p, 'attach_don', card)
                 if score > 0:
                     acts.append((score, 'attach_don', card, falta, trig))
 
@@ -16581,6 +16583,7 @@ class OPTCGMatch:
                         score = valor * 0.3 - engine.don_opportunity_cost(falta)
                     else:
                         continue
+                    score += self._human_pattern_bonus(p, 'attach_don', att)
                     if score > melhor_score:
                         melhor_score, melhor_falta = score, falta
                 if melhor_falta:

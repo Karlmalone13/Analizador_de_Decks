@@ -1085,8 +1085,22 @@ def test_trigger_risk_penalty_nao_veta_sozinho_ataque_legitimo() -> None:
     match = OPTCGMatch((me.leader, []), (opp.leader, []))
     actions = match._generate_and_score_actions(me, opp, DecisionEngine(me, opp))
     ataque = next((a for a in actions if a[1] == "attack" and a[2] is pekoms), None)
+    # Subtrai o bonus de padrao humano (bloco 613: human_patterns.json
+    # regenerado com as 150 partidas do banco, nao mais so as 7 antigas --
+    # Katakuri+Pekoms passou a ter suporte real nos logs e ganha bonus>0
+    # agora, quebrando a igualdade exata que este teste assumia com
+    # bonus=0 sempre). O teste em si mede o TETO do desconto de trigger,
+    # nao o bonus de padrao humano -- neutraliza o bonus pra continuar
+    # robusto a qualquer conteudo futuro de human_patterns.json.
+    # O bonus de padrao humano entra ANTES do teto do desconto de trigger
+    # (`s_leader += bonus` na linha que precede `s_leader -= min(penalidade,
+    # max(0, s_leader) * 0.5)`), entao o teto acaba sendo metade de
+    # (base + bonus), nao so metade da base -- score final =
+    # base/2 + bonus/2, nao base/2 + bonus.
+    bonus_humano = match._human_pattern_bonus(me, "attack", pekoms)
     check("Pekoms empatando com o lider (ataque legitimo) nao fica com score negativo mesmo com desconto de trigger enorme",
-          ataque is not None and ataque[0] == de.ATTACK_LEADER_BASE_SCORE / 2)
+          ataque is not None
+          and ataque[0] == de.ATTACK_LEADER_BASE_SCORE / 2 + bonus_humano / 2)
 
 
 def test_should_use_counter_nao_trava_com_vida_alta_em_ataque_real() -> None:
