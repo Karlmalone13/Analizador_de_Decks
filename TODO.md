@@ -2,6 +2,23 @@
 
 **Última atualização:** 18 de agosto de 2026
 
+> 18/08/2026 (bloco 612): Tentativa de resolver a causa raiz apontada
+> no bloco 611 (metade dos casos do Imu sem resolver porque `attack`
+> não desconta risco de counter em empate) -- **revertida por
+> completo**. O fix (descontar `score_attack_target` 0,35x quando o
+> ataque empata mas o oponente carrega counter real) piorou a própria
+> métrica que devia ajudar: Imu foi de 7 nunca-gerado/7 gerado-perdeu
+> pra 12 nunca-gerado/2 gerado-perdeu, além de regredir attack-alvo
+> (83,6%→77,6%) e alvo-efeito (54,3%→39,5%). Hipótese: descontar
+> `attack` faz o motor gastar DON em outra coisa numa iteração
+> anterior, não necessariamente na alternativa certa (margem) --
+> terceira vez que essa área (scoring de attack/attach_don) regride ao
+> ser tocada (593, 594, agora 612), reforça como zona de alto risco.
+> `decision_engine.py`/`smoke_fast.py` voltaram byte-a-byte ao estado
+> do bloco 610 -- nenhuma mudança de código ficou. Causa raiz continua
+> diagnosticada corretamente, só não há fix validado ainda. Ver bloco
+> 612 do HANDOFF.
+
 > 18/08/2026 (bloco 611): Pedido do usuário: "achar a causa" dos 4
 > números do bloco 610 (attach_don 8,1%, play 25,5%, sequência-idêntica
 > 9,1%, sequência-similaridade 34,5%). Ao reconferir, achei um **bug na

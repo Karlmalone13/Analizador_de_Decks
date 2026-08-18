@@ -1,5 +1,82 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-18 (612) - Claude (sessao remota web) - TENTATIVA REVERTIDA: descontar `score_attack_target` por risco de counter em ataque empatado ao lider (a causa raiz apontada no bloco 611 pro porque o fix do Imu so resolvia metade). Piorou a propria metrica que devia ajudar -- Imu foi de 7 nunca-gerado/7 gerado-perdeu pra 12 nunca-gerado/2 gerado-perdeu -- alem de regredir attack-alvo (83,6%->77,6%) e alvo-efeito (54,3%->39,5%). Revertido por completo, codigo e testes voltaram ao estado exato do bloco 610
+
+**Pedido do usuario**: "vamos resolver essa do lider" (a causa
+diagnosticada no bloco 611 -- `attack` nao desconta risco de counter
+quando o ataque ja "passa sem DON" por empate).
+
+### O que foi tentado
+
+`score_attack_target` (alvo `leader`): novo ramo, `elif atk_power <
+opp_defense and passa_sem_don and not lethal_now and opp_life > 1: s
+*= 0.35` -- mesmo fator de desconto ja usado em
+`_generate_attach_don_actions` pra risco analogo. Gates cuidadosos pra
+nao repetir regressao conhecida: `not lethal_now` (letal certificado ja
+soma pior caso de defesa) e `opp_life > 1` (achado real 08/08 ja
+estabeleceu que vida critica do oponente nao leva penalidade de
+postura -- pego por um teste PRE-EXISTENTE, `test_ataque_ao_lider_
+com_vida_critica_ignora_penalidade_de_postura`, que falhou na 1a
+tentativa sem o gate e foi corrigido antes de aceitar). `smoke_fast.py`
+e `smoke_test.py` completos: 100% OK com o gate certo.
+
+### Medido contra o banco de 26 partidas -- resultado NEGATIVO
+
+| categoria | antes (bloco 610) | depois (tentativa) |
+|---|---|---|
+| attack -- quem atacou | 35,9% | **40,2%** (unica melhora) |
+| attach_don -- mesmo alvo | 8,1% | **6,8%** (PIOROU -- era o alvo do fix) |
+| attack -- mesmo alvo | 83,0-83,6% | **77,6-78,2%** (PIOROU) |
+| ALVO dentro do efeito | 54,3% | **39,5%** (PIOROU, sample pequeno n=35-38) |
+| play/sequencia/counter/blocker | sem mudanca | sem mudanca |
+
+Reproduzido em `--workers 1` e `--workers 4` (mesma direcao, variancia
+residual conhecida). Nao e ruido.
+
+### Por que reverteu, nao so ajustou magnitude
+
+Rodado o censo "nunca gerada" corrigido (bloco 611) com o fix aplicado:
+**Imu (OP13-079) piorou** -- foi de 7 nunca-gerado/7 gerado-mas-perdeu
+(pos-bloco-610) pra **12 nunca-gerado/2 gerado-mas-perdeu**. Ou seja: o
+proprio problema que a mudanca tentava resolver ficou PIOR, nao melhor.
+Hipotese (nao confirmada a fundo, registrada como pista): descontar
+`attack` bare faz o Turn Planner escolher OUTRA coisa numa iteracao
+anterior (`activate`, outro atacante, etc.) antes do Imu chegar a vez
+de atacar -- gastando DON em outro lugar, deixando `p.don_available`
+baixo demais quando o ramo de margem do bloco 610 (`p.don_available >
+0`) seria avaliado. Descontar o `attack` nao faz a alternativa CERTA
+(margem) ganhar espaco -- faz uma alternativa DIFERENTE (nao
+necessariamente melhor) ganhar espaco, empurrando o estado do turno
+pra longe de ambas as opcoes relacionadas ao Imu.
+
+**Licao, mesma familia dos blocos 593/594**: mexer no score de
+`attack`/`attach_don` pra fazer margem "competir melhor" tem efeito
+cascata dificil de prever so olhando o candidato isolado -- precisa
+medir o TURNO inteiro (todas as categorias), nao so a metrica alvo.
+Terceira vez que essa area regride ao ser tocada (593, 594, agora 612)
+-- fica reforcado como area de ALTO RISCO, qualquer fix futuro aqui
+precisa de medicao completa (nao so smoke test) antes de aceitar,
+mesmo com o raciocinio parecendo correto isoladamente.
+
+### Estado final
+
+Revertido por completo -- `decision_engine.py` e `smoke_fast.py`
+voltaram byte-a-byte ao estado do commit `01fe2fd` (bloco 610).
+Nenhuma mudanca de codigo ficou deste bloco; só este registro.
+
+### Pendente
+
+- A causa raiz continua diagnosticada corretamente (bloco 611): metade
+  dos casos do Imu ficam sem resolver porque `attack` nao desconta
+  risco de counter em empate. Só o FIX tentado nao funcionou -- ainda
+  nao ha uma solucao validada.
+- Proxima tentativa, se o usuario quiser continuar nessa linha, deveria
+  medir o efeito ISOLADO em cada turno mismatch (nao so o agregado) pra
+  entender ONDE o DON esta indo em vez de pro Imu -- ou considerar uma
+  abordagem que NAO mexe no score de `attack` (ex: dar ao candidato de
+  margem um bonus que reflita a mesma urgencia sem depender de
+  penalizar o `attack`).
+
 ## 2026-08-18 (611) - Claude (sessao remota web) - RETIFICACAO do proprio censo (nao do motor): a ferramenta scratch usada pra medir attach_don/play no escopo de 76 partidas tinha uma chave de captura quebrada, inflando "nunca gerado" pra ~100% artificialmente. Corrigido; numeros reais sao bem diferentes -- `attach_don`: fix do bloco 610 realmente funcionou pra ~metade dos casos do Imu (7 continuam "nunca gerado", 7 viraram "gerado mas perdeu" -- competicao legitima agora). `play`: so 37/145 sao a limitacao estrutural (ordem do baralho embaralhado); os outros 112/145 SAO gerados como candidato sempre, so perdem pra outra jogada (atacar/carta mais forte) -- calibracao difusa, nao bug de 1 carta, amostrado e nao e blunder obvio
 
 **Pedido do usuario**: "precisamos investigar isso para resolver, achar
