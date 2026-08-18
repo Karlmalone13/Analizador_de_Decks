@@ -1,5 +1,89 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (603) - Claude (sessao remota web) - FIX REAL na ferramenta de auditoria: `is_first` era fixo em True pro lado auditado, SEMPRE -- mesmo quando esse lado realmente jogou em SEGUNDO na partida real, subestimando DON em 1 no primeiro turno (jogador 2 ganha 2 DON no proprio 1o turno, nao 1). Melhora real e mensuravel: dano agregado 86,5%->88,3%, varios outros indicadores sobem junto
+
+**Pedido do usuario, reforcado**: "não fuja... pegue cada log... simule
+cada turno de acordo com o turno que foi jogado, a simulacao deve dar
+pelo menos 93%". Construi uma varredura sistematica (nao mais so 2
+exemplos manuais) sobre TODOS os 26 logs: pra cada carta que o humano
+jogou mas o motor nao, verifica se essa jogada aparece em QUALQUER
+iteracao da lista COMPLETA de acoes geradas pelo Turn Planner naquele
+turno (nao so o shortlist TOP_K do `decision_log`) -- monkeypatch
+leve em `_log_turn_planner_decision` pra expor `actions` (o parametro
+que a funcao ja recebe, nunca persistido antes), reusando a mesma
+reconstrucao ja validada de `audit_one_game` (nao reimplementa nada).
+
+### Erro MEU pego a tempo (2 tentativas antes de confiar no resultado)
+
+1a tentativa: reconstrucao PROPRIA do zero (script scratch) —deu 62/64
+turnos "nunca gerados", numero absurdo que contradizia diretamente uma
+verificacao manual ja feita (Mr.2.Bon.Kurei CONFIRMADO candidato com
+score 143,75 nesse EXATO turno). Causa: esqueci de inicializar
+`p.don_available` via `DonEstimator` (ficava proximo de 0, nada era
+afordavel). Corrigido, caiu pra 45 -- ainda contradizia a verificacao
+manual. Abandonei a reconstrucao propria e troquei pro monkeypatch em
+cima de `audit_one_game` (fonte ja validada a sessao inteira) -- 26
+casos, agora CONSISTENTE com a verificacao manual anterior. Terceira
+vez nesta sessao que um numero grande morre/diminui ao verificar contra
+uma fonte independente antes de aceitar.
+
+### Achado real: `is_first` fixo, deveria vir do log
+
+Dos 26 casos suspeitos, abri Kyo (OP17-045, custo 2, turno 2 de
+`Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.43.37`): motor
+via so 1 DON disponivel (`+1 rampados`) pro que deveria ser o 1o turno
+do jogador auditado -- mas o LOG mostra `turns[0]['player']=='You'`,
+nao `'Opponent'` (o lado sendo auditado) -- ou seja, o lado auditado
+jogou em SEGUNDO na partida real. Regra do motor (`decision_engine.py`
+~14180): quem vai PRIMEIRO ganha so 1 DON no proprio 1o turno; quem vai
+SEGUNDO ganha 2. `audit_one_game` fixava `p.is_first = True`
+incondicionalmente pro lado auditado, `opp.is_first = False` pro outro
+-- **sempre**, independente de quem realmente foi primeiro no log.
+Todo turno inicial de um jogador que realmente foi o 2o subestimava o
+DON disponivel em 1.
+
+### Fix
+
+`audit_real_losses.py`: `bot_is_first = turns[0]['player'] == bot_side`
+-- deriva de quem jogou o PRIMEIRO turno de verdade no log, nao mais um
+palpite fixo. `DonEstimator` (que acumula `don_drawn` real do log pra
+turnos JA PASSADOS) nao precisou de mudanca -- ja usava o dado
+historico real; o bug so afetava o RAMP do turno ATUALMENTE sendo
+simulado (calculado do zero por `eng.play_turn()`, que le `p.is_first`
+direto).
+
+### Validado, com trace direto ANTES/DEPOIS
+
+Kyo T2: `+1 rampados │ 1 ativos` -> `+2 rampados │ 2 ativos`; motor
+passa a jogar Kyo (`> gastou 2 DON -> Joga: Kyo`), batendo com o
+historico. `smoke_fast.py`/`smoke_test.py`: 100% (fix e so na
+ferramenta de auditoria, nao toca `decision_engine.py`, sem risco pro
+motor de producao).
+
+**Impacto medido no banco de 26 partidas** (`decision_quality_vs_
+human.py`/`decision_quality_full.py`, reproduzivel):
+
+| categoria | antes | depois |
+|---|---|---|
+| dano agregado >= humano | 86,5% (96/111) | **88,3% (98/111)** |
+| attack -- quem atacou | 54,3% | **56,5%** |
+| attack -- mesmo alvo | 81,9% | **82,4%** |
+| activate | 7,0% | **8,1%** |
+| play (turno inteiro) | 26,7% | 26,7% (sem mudanca liquida -- alguns turnos melhoraram, outros pioraram, cancelou) |
+| censo "nunca gerada como candidata" | 26 casos | **22 casos** (Kyo x2, Fullalead saem da lista) |
+
+### Pendente
+
+22 casos "nunca gerada" restantes, alguns claramente ligados a custo
+alto vs DON legitimamente insuficiente (Rocks D. Xebec OP17-118, custo
+10, aparece 4x -- confirmado 9 DON disponivel real, 1 a menos, PODE
+ainda ser imprecisao do `DonEstimator`, nao verificado a fundo). Outros
+(Captain John, Charlotte Linlin, Shiki, Newgate, Sanji, Zoro) ainda nao
+investigados individualmente -- proximo passo natural, mesma
+metodologia (monkeypatch + full_actions), continuar ate esgotar a
+lista ou confirmar que o resto e limitacao conhecida (deck-order/DON
+estimado) e nao bug novo.
+
 ## 2026-08-17 (602) - Claude (sessao remota web) - Pedido do usuario ("nao e pra olhar so o Xebec"): censo ampliado no banco de 26 partidas achou um 2o bug real e GENERICO (nao isolado, diferente do Xebec) -- `don_needed_for_attack` era cego pro `don_requirement` de `[When Attacking]`, so olhava deficit de PODER. Vista (OP16-011) atacou 2x com 0 DON, nunca desbloqueando "K.O. ate 2 fracos" -- fix generico aplicado, afeta 95 cartas no banco, mas as 2 ocorrencias reais no dataset atual nao tinham alvo valido (comportamento correto nos 2 casos, sem mudanca de resultado nestes 26 logs)
 
 **Pedido direto do usuario**: "Não é para olhar só o xebec" -- apos o

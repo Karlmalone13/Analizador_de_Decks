@@ -2,6 +2,27 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 603): Pedido do usuário (reforçado: "não fuja...
+> simule cada turno... deve dar pelo menos 93%"). Varredura sistemática
+> em TODOS os 26 logs (monkeypatch expõe a lista COMPLETA de ações do
+> Turn Planner, não só o shortlist) achou **bug real na FERRAMENTA de
+> auditoria**: `is_first` era fixo em `True` pro lado auditado sempre,
+> mesmo quando esse lado jogou em SEGUNDO na partida real — subestimava
+> DON em 1 no primeiro turno (jogador 2 ganha 2 DON no próprio 1º
+> turno, regra do jogo, não 1). Fix: deriva de `turns[0]['player']` no
+> log, não mais palpite fixo. **Impacto medido real**: dano agregado
+> 86,5%→88,3%, attack-quem 54,3%→56,5%, activate 7,0%→8,1%, censo de
+> "jogada nunca gerada como candidata" caiu de 26→22 casos.
+> `smoke_fast`/`smoke_test` 100% (fix só na ferramenta, não toca o
+> motor). **2 tentativas descartadas antes desta**: reconstrução
+> própria deu 62/64 "nunca gerados" (absurdo, contradizia verificação
+> manual anterior) — causa: esqueci `DonEstimator`; corrigido caiu pra
+> 45, ainda contradizia — abandonei reconstrução própria, usei
+> monkeypatch em cima do `audit_one_game` já validado. Pendente: 22
+> casos suspeitos restantes, ainda não investigados individualmente
+> (alguns podem ser custo real vs DON insuficiente, não bug). Ver bloco
+> 603 do HANDOFF.
+>
 > 17/08/2026 (bloco 602): Pedido do usuário ("não é pra olhar só o
 > Xebec") — ampliei a busca de gatilhos que nunca disparam pra TODOS os
 > códigos que atacam nos 26 logs (não só 1 carta). Achado 2º bug real,

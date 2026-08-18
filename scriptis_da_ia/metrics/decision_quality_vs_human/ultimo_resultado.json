@@ -1,7 +1,7 @@
 {
   "n_turnos": 111,
-  "melhor_ou_igual": 96,
-  "pior": 15,
+  "melhor_ou_igual": 98,
+  "pior": 13,
   "rows": [
     {
       "turn": 2,
@@ -53,7 +53,7 @@
       "before_life": 2,
       "human_damage": 1,
       "engine_damage": 2,
-      "engine_won_this_turn": true,
+      "engine_won_this_turn": false,
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T00.53.44.json",
       "human_leader": "OP14-079"
     },
@@ -196,7 +196,7 @@
       "turn": 4,
       "before_life": 5,
       "human_damage": 0,
-      "engine_damage": 1,
+      "engine_damage": 0,
       "engine_won_this_turn": false,
       "game": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T13.18.18.json",
       "human_leader": "OP16-001"
@@ -412,7 +412,7 @@
       "turn": 8,
       "before_life": 3,
       "human_damage": 1,
-      "engine_damage": 1,
+      "engine_damage": 2,
       "engine_won_this_turn": false,
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T17.04.22.json",
       "human_leader": "OP17-039"
@@ -475,7 +475,7 @@
       "turn": 4,
       "before_life": 4,
       "human_damage": 1,
-      "engine_damage": 0,
+      "engine_damage": 1,
       "engine_won_this_turn": false,
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.43.37.json",
       "human_leader": "OP17-039"
@@ -728,7 +728,7 @@
       "before_life": 3,
       "human_damage": 2,
       "engine_damage": 3,
-      "engine_won_this_turn": true,
+      "engine_won_this_turn": false,
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T14.18.02.json",
       "human_leader": "OP17-039"
     },
@@ -817,7 +817,7 @@
       "turn": 7,
       "before_life": 4,
       "human_damage": 1,
-      "engine_damage": 0,
+      "engine_damage": 1,
       "engine_won_this_turn": false,
       "game": "Rocks.D.Xebec-B_x_Monkey.D.Luffy-RG_2026-08-16T16.43.31.json",
       "human_leader": "OP17-039"
@@ -952,7 +952,7 @@
       "turn": 10,
       "before_life": 4,
       "human_damage": 2,
-      "engine_damage": 2,
+      "engine_damage": 3,
       "engine_won_this_turn": false,
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T23.55.32.json",
       "human_leader": "OP17-039"

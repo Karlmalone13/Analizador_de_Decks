@@ -314,8 +314,23 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
             match.setup()
         p = match.state_a
         opp = match.state_b
-        p.is_first = True
-        opp.is_first = False
+        # Achado real 17/08 (pedido do usuario, censo amplo de "jogada
+        # nunca gerada como candidata" -- Kyo OP17-045, custo 2, turno 2
+        # do jogo, so 1 DON estimado disponivel): is_first ERA fixo em
+        # True pro lado auditado, SEMPRE -- mesmo quando esse lado
+        # realmente jogou em SEGUNDO na partida real (confirmado neste
+        # caso: turns[0]['player']=='You', bot_side=='Opponent' foi o
+        # 2o jogador). O motor da 1 DON no 1o turno de quem vai PRIMEIRO
+        # e 2 DON no 1o turno de quem vai SEGUNDO (`decision_engine.py`,
+        # linha ~14180) -- com is_first errado, todo turno inicial de um
+        # jogador que realmente foi o 2o subestimava o DON disponivel em
+        # 1, cascateando pro resto da partida via DonEstimator (que
+        # acumula don_drawn por turno). Fix: deriva de quem jogou o
+        # PRIMEIRO turno de verdade no log (`turns[0]['player']`), nao
+        # mais um palpite fixo.
+        bot_is_first = turns[0]['player'] == bot_side
+        p.is_first = bot_is_first
+        opp.is_first = not bot_is_first
 
         p.hand = _cards_from_codes(bot_snap.get('hand', []), cards_db)
         p.field_chars = _cards_from_codes(bot_snap.get('board', []), cards_db,
