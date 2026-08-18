@@ -2,6 +2,33 @@
 
 **Última atualização:** 18 de agosto de 2026
 
+> 18/08/2026 (bloco 611): Pedido do usuário: "achar a causa" dos 4
+> números do bloco 610 (attach_don 8,1%, play 25,5%, sequência-idêntica
+> 9,1%, sequência-similaridade 34,5%). Ao reconferir, achei um **bug na
+> minha própria ferramenta de censo** (não no motor): a chave de
+> captura usava um contador interno que sempre vale 1 (o
+> `audit_real_losses.py` cria um match novo por turno), inflando
+> "nunca gerado" pra quase 100% artificialmente em dois censos
+> diferentes. Corrigido (intercepta `random.seed()`, que já carrega o
+> turno real). Números reais: **`attach_don`** — o fix do bloco 610
+> funcionou pra metade dos casos do Imu (7 continuam sem gerar, 7
+> passaram a competir e perder — comportamento esperado); acharam um
+> motivo NOVO por que só resolve metade: a ação `attack` pontua como
+> se o ataque fosse sempre seguro, sem descontar risco de faltar
+> margem contra Counter — mudança mais profunda, não tentada (histórico
+> de 2 regressões nessa área). **`play`** — SÓ 37/145 são a limitação
+> estrutural (ordem do baralho embaralhado); os outros 112/145 (77%!)
+> SÃO gerados como candidato sempre, só perdem pra outra jogada
+> (atacar com o líder, carta de score maior) — não é bug de 1 carta,
+> distribuído por ~40 cartas diferentes (a mais comum, Doc Q, só 6x),
+> padrão: motor prioriza 1 jogada forte por turno, humano historicamente
+> "esvazia a mão" com 2-3 cartas baratas. Amostrado 3 casos manualmente,
+> nenhum blunder óbvio — questão de calibragem difusa, não bug
+> mecânico. Sequências herdam a mesma causa (derivadas de
+> play/activate/attack/attach_don). Nenhum fix novo em
+> `decision_engine.py` neste bloco — só correção de ferramenta +
+> diagnóstico. Ver bloco 611 do HANDOFF.
+>
 > 18/08/2026 (bloco 610): Duas frentes, pedido do usuário "continuar
 > investigando... principalmente as menores". **Frente 1** (`counter`/
 > Luffy OP15-092, 3 casos no banco): investigado a fundo, **não é bug**

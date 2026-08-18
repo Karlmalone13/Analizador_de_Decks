@@ -1,5 +1,119 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-18 (611) - Claude (sessao remota web) - RETIFICACAO do proprio censo (nao do motor): a ferramenta scratch usada pra medir attach_don/play no escopo de 76 partidas tinha uma chave de captura quebrada, inflando "nunca gerado" pra ~100% artificialmente. Corrigido; numeros reais sao bem diferentes -- `attach_don`: fix do bloco 610 realmente funcionou pra ~metade dos casos do Imu (7 continuam "nunca gerado", 7 viraram "gerado mas perdeu" -- competicao legitima agora). `play`: so 37/145 sao a limitacao estrutural (ordem do baralho embaralhado); os outros 112/145 SAO gerados como candidato sempre, so perdem pra outra jogada (atacar/carta mais forte) -- calibracao difusa, nao bug de 1 carta, amostrado e nao e blunder obvio
+
+**Pedido do usuario**: "precisamos investigar isso para resolver, achar
+a causa" (sobre os 4 numeros reportados no fechamento do bloco 610:
+attach_don 8,1%, play 25,5%, sequencia-identica 9,1%,
+sequencia-similaridade 34,5%).
+
+### Erro MEU pego a tempo: bug de chave no censo scratch (nao no motor)
+
+Ao reconferir `attach_don` (pos-fix 610) e investigar `play` no mesmo
+escopo de 76 partidas, o script usava `self.global_turn` (do
+`OPTCGMatch` interno) como parte da chave de captura das acoes
+completas do Turn Planner. Descoberta ao rastrear por que o fix do
+bloco 610 "nao mudava nada" nos numeros amplos: `audit_real_losses.py`
+cria um `ReplayMatch` NOVO A CADA TURNO (nao reusa um so pro jogo
+inteiro) -- `self.global_turn` do match interno **sempre vale 1**,
+nunca o turno real (5, 7, 9...). Isso colapsava a captura de TODOS os
+turnos do jogo numa unica chave `(1, 'A')`, enquanto a leitura buscava
+pela chave do turno REAL -- nunca batia, entao TODA carta "faltante"
+caia em "nunca gerado" por definicao (busca numa chave vazia), mesmo
+quando o motor tinha oferecido a carta normalmente em varias
+iteracoes. Corrigido interceptando `random.seed()` (que
+`audit_real_losses.py` ja chama com `f'{arquivo}:{turno_real}'` logo
+antes de cada `eng.play_turn()`) pra descobrir o turno real de cada
+chamada, sem depender do contador interno do match.
+
+**Licao**: mesma classe de erro que ja aconteceu 3x nesta sessao (auto-
+validar um numero grande contra uma fonte independente antes de
+aceitar) -- desta vez o numero suspeito era "0 gerado-mas-perdeu" em
+DOIS censos diferentes (attach_don E play), sinal forte demais pra ser
+coincidencia, que levou a rastrear a ferramenta em vez do motor.
+
+### `attach_don`, recontado corretamente
+
+| carta | nunca-gerado (bug de chave) | nunca-gerado (corrigido) | gerado-mas-perdeu (corrigido) |
+|---|---|---|---|
+| Imu (OP13-079) | 14 | **7** | **7** |
+| Vasco Shot (OP16-110) | 9 | 4 | 5 |
+| Mihawk (OP14-020) | 8 | 8 | 0 |
+| Ace (OP16-001) | 8 | 8 | 0 |
+| Teach (OP16-080) | 6 | 6 | 0 |
+
+O fix do bloco 610 (margem do lider em empate exato) **funcionou**
+pra metade dos casos do Imu -- exatamente o comportamento esperado de
+um candidato que passa a COMPETIR (nao a sempre VENCER). Rastreado 1
+caso "gerado mas perdeu": a acao `attack` (Imu atacando sem margem)
+tem score ESTATICO muito mais alto (298-398) que a versao com margem
+(0,3x do valor, menos opportunity cost) porque `attack` pontua o
+ataque como se fosse SEMPRE seguro, sem descontar o risco de faltar
+margem contra um Counter -- entao o Turn Planner ataca sem margem
+numa iteracao ANTES de "anexar DON primeiro" ter chance de vencer,
+gastando o atacante do turno. Mihawk/Ace/Teach continuam 100% "nunca
+gerado" -- ou nao sao empate exato (fora do escopo deliberado do fix)
+ou o alvo e um PERSONAGEM (Vasco Shot, Namule, Kikunojo -- fora do
+escopo, so lider).
+
+**Pendente, nao investigado a fundo ainda**: por que `attack` nao
+desconta risco de faltar margem no proprio score (a raiz do porque o
+fix so resolve METADE mesmo funcionando como desenhado) -- mudanca
+mais profunda no scoring de `attack` em si, area de alto risco (2
+regressoes documentadas ja nesse territorio, blocos 593/594), NAO
+tentada aqui.
+
+### `play`, recontado corretamente -- maioria NAO e limitacao estrutural
+
+Classificacao por turno/carta faltante (146 casos, 76 partidas):
+- **(a) 37 casos**: carta genuinamente NAO estava na mao reconstruida
+  no INICIO do turno -- limitacao ja documentada (ordem do baralho
+  restante e embaralhada, nao a ordem real) -- nao fixavel via
+  decision_engine.py, e informacao que o log simplesmente nao guarda.
+- **(b) 10 casos**: carta saiu da mao ate o fim do turno (8/10 geradas
+  como candidata `play` normalmente) -- ruido pequeno, comportamento
+  saudavel.
+- **(c) 112 casos** (77% do total!): carta continuava na mao dos DOIS
+  lados (motor NUNCA jogou) **mas foi gerada como candidata** (checado
+  -- presente em `_generate_and_score_actions` em alguma iteracao do
+  turno). Ou seja: o motor SEMPRE considerou jogar essa carta, so
+  nunca ganhou a comparacao contra outra acao (geralmente `attack` com
+  o lider, ou outra carta de score mais alto).
+
+Amostrado 3 casos manualmente (Bartholomew Kuma, Doc Q, Catarina
+Devon) contra o `decision_log` real: em TODOS os 3, a acao vencedora
+foi defensavel por si so (atacar com o lider, score 398; ativar Empty
+Throne por valor simulado maior; jogar outra carta de score mais
+alto) -- nenhum blunder obvio. Padrao observado: o HUMANO
+historicamente "esvazia a mao" (joga 2-3 cartas baratas no mesmo
+turno), o motor prioriza UMA acao forte por turno e para. Sem carta
+dominante (a mais comum, Doc Q, so 6/112) e distribuido por ~40 cartas
+diferentes em varios decks -- **nao e um bug de 1 linha, e uma
+questao de calibragem difusa** (mesma categoria que `counter`/Luffy no
+bloco 610: pode ser o motor certo e o humano gastando recurso de forma
+sub-otima, ou o motor deveria valorizar mais "desenvolver o board"
+mesmo com DON marginal sobrando -- nao decidido aqui).
+
+### Conclusao pro usuario
+
+As "causas" dos 4 numeros pedidos:
+- `attach_don` (8,1%): parcialmente corrigido (bloco 610), resto exige
+  ou expandir escopo do fix (outros lideres, personagens) ou consertar
+  o score de `attack` pra descontar risco de margem insuficiente
+  (mudanca maior, deliberadamente NAO tentada por historico de
+  regressao na area).
+- `play` (25,5%): NAO e majoritariamente bug -- e o motor jogando 1
+  carta forte por turno onde o humano jogou 2-3 fracas. Exigiria
+  decidir SE isso deveria mudar (calibragem de "desenvolver board" vs
+  "1 melhor jogada"), nao um fix mecanico.
+- `sequencia-identica`/`sequencia-similaridade`: derivadas de
+  play+activate+attack+attach_don, entao herdam a MESMA causa acima --
+  nao ha bug separado a caçar so nessas duas metricas.
+
+Nenhum fix novo em `decision_engine.py` neste bloco -- so correcao de
+ferramenta de medicao (scratch, nao commitada) e diagnostico. Scripts
+usados (`censo_v3_corrigido.py` e afins) ficaram em scratchpad.
+
 ## 2026-08-18 (610) - Claude (sessao remota web) - Fechado o investigacao de `counter`/Luffy OP15-092 (NAO e bug, calibracao ja tunada de proposito) e achado real novo em `attach_don`: censo "nunca gerada" com escopo ampliado (76 derrotas reais, nao so as 26 do banco de decision_quality_full) achou 14/92 casos concentrados no LIDER Imu (OP13-079) -- humano reforca 1-3 DON no proprio lider ANTES de atacar (empate/quase-empate), motor nunca cogitava porque o ramo de margem existente so libera quando NENHUMA carta e mais jogavel. Fix generico (qualquer lider em empate exato), cobrando opportunity cost de verdade -- melhora real e SEM regressao em nenhuma categoria
 
 **Pedido do usuario**: "vamos continuar investigando para poder subir
