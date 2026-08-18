@@ -2,6 +2,22 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 605): Continuando o censo dos 22 casos "jogada
+> nunca gerada" (bloco 603) — achado bug de **RELATÓRIO** (não de
+> decisão): `don_available_estimado` lia o DON **depois** de
+> `play_turn()` já ter gastado, mostrando sempre a sobra final, nunca
+> o disponível real no início do turno — o que fazia parecer que quase
+> todo turno tinha "0 DON" mesmo em turnos tardios. A simulação em si
+> **sempre** usou o valor certo (confirmado: `decision_quality_full.py`
+> não muda em NADA com o fix — 26,7%/8,1%/6,5% idênticos). Corrigido
+> pra futuras investigações não perderem tempo com esse falso padrão.
+> **Conclusão**: os 22 casos restantes, reconferidos com o campo
+> correto, parecem ser déficit REAL de DON (ex: Edward Newgate custo 6,
+> só 5 disponível de verdade) — não mais uma família de bugs tipo
+> `is_first`. Sem outro padrão agregado óbvio pra seguir; próximo passo
+> seria voltar ao caso-a-caso sem expectativa de outro achado grande.
+> Ver bloco 605 do HANDOFF.
+>
 > 17/08/2026 (bloco 604): Pedido do usuário ("e os outros efeitos,
 > mecânicas, sequências?" — cobrança justa de que só media play/
 > activate por conjunto de cartas). `decision_quality_full.py` ganha:

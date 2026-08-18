@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (605) - Claude (sessao remota web) - Continuando o censo dos 22 casos "jogada nunca gerada": achado bug de RELATORIO (nao de decisao) -- `don_available_estimado` lia `p.don_available` DEPOIS de `eng.play_turn()` ja ter gastado o DON do turno, mostrando sempre o SOBRA final, nao o disponivel real no inicio. Corrigido; simulacao em si SEMPRE usou o valor certo (confirmado: metricas nao mudam nada com o fix). Conclusao: os 22 casos restantes parecem ser DEFICIT REAL de DON (linha valida indisponivel), nao mais bugs a caçar
+
+**Contexto**: continuando o censo sistematico dos 22 casos "jogada
+nunca gerada como candidata" (bloco 603), notei um padrao suspeito --
+`don_antes_do_ramp` aparecia **0 em quase TODOS os casos**, inclusive
+turnos tardios (T8/T9/T10) onde o jogador deveria ter DON acumulado de
+sobra. Rastreei um caso a fundo (Edward Newgate custo 6, T6 de
+`Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56`): recriei
+`DonEstimator` manualmente fora da funcao e cheguei a `available=3`
+pra esse ponto -- mas `audit_one_game` reportava 0.
+
+### Causa: bug de RELATORIO, nao de simulacao
+
+`entry['don_available_estimado'] = p.don_available` era lido **DEPOIS**
+de `eng.play_turn(p, opp, verbose=True)` ja ter rodado -- ou seja,
+sempre mostrava o que SOBROU apos o motor gastar no proprio turno
+simulado, nunca o que ele tinha disponivel no INICIO. A linha anterior
+(`p.don_available = don_est.available(bot_side)`) ja setava o valor
+CERTO antes de `play_turn()` -- a simulacao sempre usou o numero
+correto, so o campo de diagnostico usado pelas minhas investigacoes
+manuais mentia.
+
+### Fix
+
+Captura `don_disponivel_pre_turno = p.don_available` logo apos setar o
+valor (linha ~395-396), ANTES de `play_turn()` mutar. `entry['don_
+available_estimado']` passa a usar essa copia.
+
+### Validado -- ZERO mudanca nas metricas (esperado, confirma que era so relatorio)
+
+`smoke_fast.py`/`smoke_test.py`: 100%. `decision_quality_full.py --all`:
+play 26,7%, activate 8,1%, attach_don 6,5% -- **identico** ao numero
+antes deste fix, confirmando que a simulacao real ja usava o DON certo
+o tempo todo.
+
+### Conclusao sobre o censo dos 22 casos
+
+Com o campo de diagnostico agora confiavel, reconferido o caso do
+Edward Newgate: `don_antes_do_ramp=3`, +2 de rampa = 5 total, custo 6
+-- **realmente faltava DON**, nao e mais um "off by 1 suspeito", e
+deficit real confirmado com o numero certo. Os 22 casos restantes
+(Rocks D. Xebec custo 10 x4, Charlotte Linlin custo 5 x varias, Edward
+Newgate custo 6/8, etc.) agora tem uma explicacao mais simples e menos
+alarmante do que o padrao "0 sempre" sugeria: **a maioria e deficit
+real de DON**, nao mais bugs sistemicos a caçar da mesma familia do
+`is_first` (bloco 603). Continuar caçando caso a caso ainda pode achar
+bugs pontuais (tipo Vista/Xebec), mas o SINAL AGREGADO que motivou essa
+rodada (0 sempre) era, em si, um artefato do bug de relatorio -- nao
+uma pista real de mais 1 bug grande escondido.
+
+### Pendente
+
+Os 22 casos continuam la, mas sem mais um padrao agregado obvio pra
+seguir -- proximo passo, se o usuario quiser continuar, e voltar ao
+metodo caso-a-caso (como Xebec/Vista), sem expectativa de outro achado
+do tamanho do `is_first`.
+
 ## 2026-08-17 (604) - Claude (sessao remota web) - Pedido do usuario ("e os outros efeitos, mecanicas, sequencias?"): `decision_quality_full.py` ganha SEQUENCIA de execucao (ordem exata + similaridade LCS) e ALVO escolhido DENTRO do efeito de play/activate (nao so ataque). Mulligan declarado como NAO capturavel pelo schema do log
 
 **Pedido direto**: por que so media `play`/`activate` (mesma carta),

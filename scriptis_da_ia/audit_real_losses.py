@@ -393,6 +393,17 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
 
         p.turn = bot_turn_count - 1
         p.don_available = don_est.available(bot_side)
+        # Achado real 17/08 (pedido do usuario, censo de "jogada nunca
+        # gerada" -- don_antes_do_ramp aparecia 0 em quase TODO turno,
+        # ate em turnos tardios T8/T9/T10 onde deveria ter acumulado
+        # DON de sobra): `don_available_estimado` abaixo lia `p.don_
+        # available` DEPOIS de `eng.play_turn()` rodar -- ou seja,
+        # mostrava o que SOBROU apos o motor gastar no proprio turno
+        # simulado, nao o que ele TINHA no inicio (a simulacao em si
+        # sempre usou o valor certo, pre-turno -- isto e so um bug de
+        # RELATORIO/diagnostico, nao de decisao). Captura o valor ANTES
+        # de play_turn() mutar `p.don_available`.
+        don_disponivel_pre_turno = p.don_available
 
         eng = match._get_engine_match()
         if capture_actions or capture_candidates:
@@ -412,7 +423,7 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
 
         entry = {
             'turn': turn['turn'],
-            'don_available_estimado': p.don_available,
+            'don_available_estimado': don_disponivel_pre_turno,
             'historical_actions': turn.get('actions', []),
             'engine_hoje_narrativa': engine_log,
         }
