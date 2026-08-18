@@ -10650,6 +10650,7 @@ def main() -> int:
     test_bank_idle_don_no_lider_como_ultimo_recurso_17_08()
     test_don_livre_reserva_deficit_base_de_outros_ataques_pendentes_17_08()
     test_benefit_weight_enxerga_step_aninhado_e_escala_por_count_17_08()
+    test_don_needed_for_attack_desbloqueia_don_requirement_com_alvo_real_17_08()
     test_score_give_don_considera_sinergia_com_ataque()
     test_gain_double_attack_respeita_target_leader_e_selecionado()
     test_score_play_prioriza_carta_que_buffa_ataque_do_lider_hoje()
@@ -11742,6 +11743,62 @@ def test_benefit_weight_enxerga_step_aninhado_e_escala_por_count_17_08() -> None
     steps_count_absurdo = [{"action": "draw", "count": 99}]
     check("count absurdo (99) capado em 3x, nao explode o peso",
           ee._benefit_weight(steps_count_absurdo, card) == 3)  # 1*min(99,3)
+
+
+def test_don_needed_for_attack_desbloqueia_don_requirement_com_alvo_real_17_08() -> None:
+    """
+    Achado real 17/08 (pedido do usuario, "nao e pra olhar so o Xebec"
+    -- censo ampliado no banco de 26 partidas achou Vista OP16-011,
+    "[DON!! x1][When Attacking] K.O. ate 2 Characters power<=2000",
+    atacando 2x com 0 DON anexado, nunca desbloqueando). As 2
+    ocorrencias reais nao tinham alvo valido no momento exato (uma
+    porque o unico alvo fraco ja tinha morrido em OUTRO combate no
+    mesmo turno, outra porque o campo do oponente nao tinha nenhum
+    personagem fraco) -- entao o comportamento CORRETO nesses 2 casos
+    especificos era mesmo nao anexar. Mas a causa raiz e generica e
+    real: `don_needed_for_attack` so olhava deficit de PODER pra
+    decidir quanto DON anexar -- cego pro `don_requirement` do proprio
+    `when_attacking` do atacante, mesmo quando a categoria 3 de
+    `_generate_attach_don_actions` ja pontuava "anexar 1 DON no Vista"
+    como candidato valioso (125.0, confirmado isolado) quando o Turn
+    Planner escolhe ATACAR em vez do attach_don avulso. Censo global:
+    95 cartas no banco tem `when_attacking`+`don_requirement` -- gap
+    generico, nao especifico do Vista.
+
+    Fix: se o atacante tem `when_attacking` com `don_requirement` ainda
+    nao atingido E ha alvo real pro beneficio (`_step_is_viable`, nunca
+    anexa no vacuo), o deficit minimo passa a cobrir tambem essa falta.
+    """
+    vista = real_card("OP16-011")
+    vista.rested = False
+    vista.just_played = False
+    lider = real_card("OP16-001")
+    opp_lider = real_card("OP14-079")
+
+    # Com alvo VALIDO (power<=2000) no campo do oponente -- deve pedir
+    # 1 DON mesmo Vista (8000pwr) ja vencendo o lider (5000pwr) sozinha.
+    me = GameState(leader=lider, don_available=5, turn=4)
+    me.field_chars = [vista]
+    opp = GameState(leader=opp_lider)
+    opp.field_chars = [real_card("OP17-050")]  # Streusen, 2000pwr, alvo valido
+    engine = DecisionEngine(me, opp)
+    need = don_needed_for_attack(vista, "leader", None, me, opp, engine)
+    check("com alvo KO valido presente, desbloqueia [DON!! x1] mesmo sem deficit de poder",
+          need == 1)
+
+    # Controle: SEM alvo valido (campo do oponente so tem carta forte) --
+    # nao deve anexar DON no vacuo.
+    me2 = GameState(leader=real_card("OP16-001"), don_available=5, turn=4)
+    vista2 = real_card("OP16-011")
+    vista2.rested = False
+    vista2.just_played = False
+    me2.field_chars = [vista2]
+    opp2 = GameState(leader=real_card("OP14-079"))
+    opp2.field_chars = [real_card("OP17-118")]  # 12000pwr, NAO e alvo valido
+    engine2 = DecisionEngine(me2, opp2)
+    need2 = don_needed_for_attack(vista2, "leader", None, me2, opp2, engine2)
+    check("sem alvo KO valido, nao anexa DON no vacuo (need=0)",
+          need2 == 0)
 
 
 def test_score_give_don_considera_sinergia_com_ataque() -> None:

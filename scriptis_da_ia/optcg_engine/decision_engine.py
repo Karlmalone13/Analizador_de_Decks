@@ -2678,6 +2678,32 @@ def don_needed_for_attack(attacker: 'Card', ttype: str, tgt: 'Optional[Card]',
     falta_base = alvo_power - (atk - buff_liquido_incerto)
     need_base = (falta_base + 999) // 1000 if falta_base > 0 else 0
 
+    # Achado real 17/08 (usuario: "olhar outras cartas, nao so o Xebec"
+    # -- Vista OP16-011, censo no banco de 26 partidas: atacou 2x com
+    # 0 DON anexado, quando_atacando dela ("[DON!! x1] K.O. ate 2
+    # Characters power<=2000") NUNCA desbloqueou). O deficit de PODER
+    # sozinho ficava 0 (Vista ja vencia o combate sem ajuda), entao
+    # nenhum DON era anexado -- mesmo a categoria 3 de _generate_attach_
+    # don_actions ja pontuando "anexar 1 DON no Vista" como candidato
+    # valioso (125.0, confirmado isolado) quando essa ATAQUE especifico
+    # eh o escolhido pelo Turn Planner em vez do attach_don avulso, a
+    # EXECUCAO (_attach_don_for_attack, aqui) nunca sabia do don_
+    # requirement -- so via deficit de poder. Fix: se o proprio efeito
+    # when_attacking do atacante exige DON!! xN e ainda nao foi
+    # atingido, e ha alvo real pro beneficio (_step_is_viable, mesma
+    # regua de sempre -- nunca anexa no vacuo), o deficit minimo passa
+    # a cobrir tambem essa falta (o DON extra da PODER de graca tambem,
+    # entao nunca e desperdicio puro).
+    wa_unlock = get_card_effects(attacker.code).get('when_attacking')
+    if isinstance(wa_unlock, dict):
+        don_req = int(wa_unlock.get('don_requirement', 0) or 0)
+        faltando_unlock = don_req - getattr(attacker, 'don_attached', 0)
+        if faltando_unlock > 0:
+            steps_unlock = wa_unlock.get('steps', [])
+            ee_unlock = EffectExecutor(p, opp)
+            if not steps_unlock or any(ee_unlock._step_is_viable(s, attacker) for s in steps_unlock):
+                need_base = max(need_base, faltando_unlock)
+
     if need_base >= p.don_available:
         return min(p.don_available, need_base)
 

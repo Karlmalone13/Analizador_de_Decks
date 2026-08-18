@@ -1,5 +1,84 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (602) - Claude (sessao remota web) - Pedido do usuario ("nao e pra olhar so o Xebec"): censo ampliado no banco de 26 partidas achou um 2o bug real e GENERICO (nao isolado, diferente do Xebec) -- `don_needed_for_attack` era cego pro `don_requirement` de `[When Attacking]`, so olhava deficit de PODER. Vista (OP16-011) atacou 2x com 0 DON, nunca desbloqueando "K.O. ate 2 fracos" -- fix generico aplicado, afeta 95 cartas no banco, mas as 2 ocorrencias reais no dataset atual nao tinham alvo valido (comportamento correto nos 2 casos, sem mudanca de resultado nestes 26 logs)
+
+**Pedido direto do usuario**: "Não é para olhar só o xebec" -- apos o
+bloco 601 rejeitar a hipotese de margem-de-ataque como padrao
+sistemico, ampliei a busca pra QUALQUER carta que realmente ataca nos
+26 logs do banco (nao so uma), comparando quantas vezes cada codigo
+ataca vs quantas vezes seu `[When Attacking]` de fato dispara na
+narrativa (mesmo metodo que achou o Xebec, agora generalizado).
+
+### Metodo (corrigido de uma tentativa inicial com bug)
+
+1a tentativa: casar NOME impresso na narrativa contra `cards_db` por
+substring -- gerou falso-positivo grosseiro (uma unica carta "Portgas
+D. Ace" casava com 19 codigos diferentes do banco inteiro, a maioria
+sem relacao). Corrigido: usa o CODIGO exato de `chosen_actions`
+(gerado pelo proprio `decision_log`), correlacionado por POSICAO com
+as linhas "ataca" da narrativa (mesma ordem de execucao). Validado
+contra um sanity check: Rocks D. Xebec (ja com o fix do bloco 600
+aplicado) mostrou 54 ataques / 27 disparos -- confirma que o metodo
+funciona E que o fix anterior esta ativo.
+
+### Achado 2: Vista (OP16-011) -- "[DON!! x1][When Attacking] K.O. ate 2 Characters power<=2000" nunca disparou, 2/2 ocorrencias
+
+Diferente do Xebec (custo `trash_from_hand`, caminho `_worth_paying_
+optional_costs`/`_benefit_weight`), Vista **nao tem custo nenhum** --
+so exige 1 DON anexado (`don_requirement`). Causa raiz DIFERENTE:
+`don_needed_for_attack` (usado por `_attach_don_for_attack`, o top-up
+automatico quando um ataque JA ESCOLHIDO precisa de DON) so calculava
+deficit de PODER contra o alvo -- cego pro `don_requirement` do
+proprio efeito do atacante. Vista (8000pwr) ja vencia o combate sozinha
+contra os lideres vistos (5000-6000pwr), entao nenhum DON era anexado,
+mesmo quando anexar 1 DON desbloquearia um K.O. real. Confirmado que a
+categoria 3 de `_generate_attach_don_actions` (candidato avulso "anexar
+DON pra ligar efeito") JA pontuava esse anexo como valioso (125.0,
+isolado) -- mas quando o Turn Planner escolhe ATACAR direto em vez do
+attach_don avulso, a EXECUCAO nunca consultava essa mesma logica.
+**Censo: 95 cartas no banco tem `when_attacking`+`don_requirement`** --
+gap generico, nao especifico do Vista (diferente do Xebec, que ficou
+isolado a 1 carta so).
+
+### Fix
+
+`don_needed_for_attack`: se o atacante tem `when_attacking` com
+`don_requirement` ainda nao atingido E ha alvo real pro beneficio
+(`_step_is_viable`, mesma regra de sempre -- nunca anexa no vacuo), o
+deficit minimo (`need_base`) passa a cobrir tambem essa falta (`max`
+entre deficit de poder e falta de don_requirement -- o DON extra da
+poder de graca tambem, nunca e desperdicio puro).
+
+### Validado, mas SEM caso vivo confirmado neste banco especifico
+
+Isolado: com alvo KO valido presente, `need=1` mesmo sem deficit de
+poder; sem alvo valido, `need=0` (nao anexa no vacuo) -- os 2 testes
+passam. `smoke_fast.py` (+1 teste novo) e `smoke_test.py` completo:
+**TODOS OS TESTES PASSARAM**.
+
+**Honesto**: rastreando as 2 ocorrencias REAIS de Vista neste banco de
+26 partidas, NENHUMA tinha alvo valido no momento exato do ataque (T6:
+o unico personagem fraco do oponente ja tinha morrido em OUTRO combate
+mais cedo no MESMO turno; T8: campo do oponente sem nenhum personagem
+power<=2000). Ou seja, o comportamento CORRETO nos 2 casos reais
+observados JA era nao anexar -- `decision_quality_full.py`/`decision_
+quality_vs_human.py` rodados de novo confirmam ZERO mudanca de
+resultado nestes 26 logs especificos. O fix e generico e correto por
+construcao (valida contra qualquer uma das 95 cartas afetadas, nao so
+Vista), mas este banco de logs especifico nao tem um caso vivo onde
+ele muda o resultado -- fica valendo pra self-play/gauntlet futuro ou
+pro proximo log real que envolva alguma dessas 95 cartas com alvo
+disponivel de verdade.
+
+### Pendente
+
+- Nenhuma das outras 93 cartas da lista de 95 foi verificada
+  individualmente contra o banco de logs (so Vista apareceu atacando
+  nestes 26 jogos) -- se aparecer um log novo com qualquer uma delas,
+  vale conferir se o fix se comporta como esperado.
+- Recalibragem da tabela `_STEP_VALUE_WEIGHTS` (bloco 600) continua
+  pendente, nao decidida.
+
 ## 2026-08-17 (601) - Claude (sessao remota web) - Investigacao continuada (pedido do usuario): a hipotese "DON de margem nunca compete contra jogar carta" (achado lateral do bloco 599) foi TESTADA e NAO se sustenta como padrao sistemico -- era efeito lateral do caso especifico do Xebec, nao uma regra geral. Tabela de porcentagem completa atualizada (26 partidas, todos os logs)
 
 **Pedido do usuario**: "Vamos investigar, e tb me diga a porcentagem

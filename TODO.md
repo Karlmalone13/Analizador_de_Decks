@@ -2,6 +2,26 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 602): Pedido do usuário ("não é pra olhar só o
+> Xebec") — ampliei a busca de gatilhos que nunca disparam pra TODOS os
+> códigos que atacam nos 26 logs (não só 1 carta). Achado 2º bug real,
+> este GENÉRICO: `don_needed_for_attack` só olhava déficit de PODER pra
+> decidir DON de ataque, cego pro `don_requirement` de `[When
+> Attacking]` — Vista (OP16-011, "K.O. até 2 fracos" com `[DON!! x1]`)
+> atacou 2x com 0 DON, nunca desbloqueando, mesmo a categoria 3 de
+> `_generate_attach_don_actions` já pontuando esse anexo como valioso
+> (125.0) quando avaliado avulso. Censo: **95 cartas no banco** têm
+> essa forma — gap sistêmico, não isolado como o Xebec. Fix aplicado
+> (`smoke_fast.py` +1 teste, `smoke_test.py` completo, 100% OK).
+> **Honesto**: as 2 ocorrências reais de Vista neste banco de logs não
+> tinham alvo válido no momento exato (uma porque o único alvo fraco já
+> tinha morrido em outro combate no mesmo turno, outra por falta de
+> alvo) — comportamento correto nos 2 casos já era não anexar, então
+> `decision_quality_full.py` não muda nestes 26 logs específicos. Fix
+> genérico e validado isoladamente, mas sem caso vivo confirmado aqui —
+> vale pra self-play futuro ou próximo log real com qualquer uma das
+> 95 cartas. Ver bloco 602 do HANDOFF.
+>
 > 17/08/2026 (bloco 601): Pedido do usuário: investigar mais + tabela
 > de % completa (play/attack/activate/attach/blocker/counter, todos os
 > 26 logs). **Tabela**: play 26,7%, attack-quem 54,3%, attack-alvo
