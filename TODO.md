@@ -1,7 +1,40 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 17 de agosto de 2026
+**Última atualização:** 18 de agosto de 2026
 
+> 18/08/2026 (bloco 610): Duas frentes, pedido do usuário "continuar
+> investigando... principalmente as menores". **Frente 1** (`counter`/
+> Luffy OP15-092, 3 casos no banco): investigado a fundo, **não é bug**
+> — `pitch_cost_as_counter` fica barato porque a carta não é afordável
+> AGORA (comportamento correto), e o caso de vida=1/ataque letal é o
+> motor CORRIGINDO um erro real do histórico (que perdeu a partida),
+> não um bug do motor. `valor_vida` já foi tunado nessa faixa exata
+> (achado 24/07). Fechado, sem mudança de código. **Frente 2**
+> (`attach_don`, achado real): censo "nunca gerada" com escopo AMPLIADO
+> (76 derrotas reais, não só as 26 do banco curado) achou **14/92 casos
+> concentrados só no líder Imu (OP13-079)** — humano reforça 1-3 DON no
+> próprio líder antes de atacar (empate), motor nunca cogitava porque o
+> ramo de margem existente só libera quando NENHUMA carta é mais
+> jogável, e o líder ataca cedo na sequência simulada (com DON ainda de
+> sobra pra cartas). Rastreado num turno real: motor gastou todo o DON
+> em 2 cartas, líder atacou sem margem e perdeu um combate que 1 DON de
+> margem venceria (empate favorece o atacante). Fix genérico e
+> deliberadamente estreito: só para o LÍDER, só empate EXATO, cobrando
+> opportunity cost de verdade (não grátis) — escopo estreito de
+> propósito porque 2 tentativas anteriores de fazer margem competir
+> contra play/activate (blocos 593/594) regrediram o resultado real.
+> `smoke_fast`/`smoke_test` 100% OK, teste isolado novo com controle
+> explícito (personagem não-líder continua sem esse ramo). Impacto
+> medido nas 26 partidas do banco: attach_don 6,8%→**8,1%**, play
+> 23,6%→**25,5%**, sequência idêntica 8,2%→**9,1%**, sequência
+> similaridade 34,1%→**34,5%** — nenhuma categoria regrediu (attack-alvo
+> variou dentro do ruído residual já conhecido). Pendente: 78 dos 92
+> casos "nunca gerado" de attach_don fora do Imu não auditados (próximos
+> alvos: Vasco Shot 9x, Mihawk 8x); investigar se o mesmo padrão afeta a
+> categoria `attack` (motor não ataca quando a margem faria diferença);
+> script de censo ficou em scratchpad, não commitado. Ver bloco 610 do
+> HANDOFF.
+>
 > 17/08/2026 (bloco 609): **ACHADO FUNDAMENTAL** (usuário recusou
 > aceitar o teto: "não é possível que esse é o máximo"). `_find_real_deck`
 > nunca casava nome composto de líder ("Portgas D. Ace") contra o

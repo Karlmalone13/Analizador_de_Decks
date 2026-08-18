@@ -10651,6 +10651,7 @@ def main() -> int:
     test_don_livre_reserva_deficit_base_de_outros_ataques_pendentes_17_08()
     test_benefit_weight_enxerga_step_aninhado_e_escala_por_count_17_08()
     test_don_needed_for_attack_desbloqueia_don_requirement_com_alvo_real_17_08()
+    test_attach_don_margem_lider_empate_compete_com_carta_jogavel_18_08()
     test_score_give_don_considera_sinergia_com_ataque()
     test_gain_double_attack_respeita_target_leader_e_selecionado()
     test_score_play_prioriza_carta_que_buffa_ataque_do_lider_hoje()
@@ -11799,6 +11800,75 @@ def test_don_needed_for_attack_desbloqueia_don_requirement_com_alvo_real_17_08()
     need2 = don_needed_for_attack(vista2, "leader", None, me2, opp2, engine2)
     check("sem alvo KO valido, nao anexa DON no vacuo (need=0)",
           need2 == 0)
+
+
+def test_attach_don_margem_lider_empate_compete_com_carta_jogavel_18_08() -> None:
+    """
+    Achado real 18/08 (censo "nunca gerada" rodado com decks reais pos-fix
+    do bloco 609, escopo ampliado pras 76 derrotas reais do bot -- nao so
+    as 26 do banco de decision_quality_full): 14 dos 92 casos "nunca
+    gerado" de attach_don sao SO com Imu (OP13-079, o LIDER) -- padrao
+    identico em varias partidas diferentes: humano anexa 1-3 DON no
+    proprio lider (empatando ou superando o poder do alvo) ANTES de
+    atacar, MESMO com carta ainda jogavel na mao. O motor de hoje nunca
+    considerava isso: o ramo de "margem de seguranca" existente
+    (`elif gap <= 0 and don_idle`, testes acima) so libera quando NENHUMA
+    carta e mais afordavel -- e como o lider tende a atacar CEDO na
+    sequencia simulada (com DON ainda de sobra pra jogar cartas), esse
+    seguro nunca chegava a competir contra `play`.
+
+    Rastreado num caso real (Imu-B x Donquixote.Doflamingo-GP,
+    2026-07-14T00:40:32, turno 5): motor jogou Saturn com todo o DON,
+    Imu atacou a 5000pwr (sem margem), oponente conterou pra 6000 e o
+    ataque falhou -- COM 1 DON de margem (5000->6000), o empate
+    resultante venceria pela regra "empate favorece o atacante" e
+    o Blocker seria K.O.'d.
+
+    Fix: novo ramo `elif gap == 0 and att is p.leader and p.don_available > 0`
+    -- SO pro proprio lider, SO empate EXATO (nao gap<0, nao personagens
+    genericos -- escopo deliberadamente estreito), cobrando
+    `don_opportunity_cost` DE VERDADE (nao gratis como o ramo idle) pra
+    competir sem vazar orcamento contra play/activate -- as 2 tentativas
+    anteriores de fazer margem competir (blocos 593/594, ver
+    `test_bank_idle_don_no_lider_como_ultimo_recurso_17_08`) regrediram o
+    resultado real por dar valor sem custo de oportunidade genuino.
+    """
+    lider = mk("L1", "MeuLider", power=5000, cost=0, card_type="LEADER")
+    opp_lider = mk("OL", "LiderOponente", power=5000, cost=0, card_type="LEADER")
+
+    # DON NAO ocioso: 1 carta barata jogavel com sobra -- o ramo antigo
+    # (`gap<=0 and don_idle`) nunca dispararia aqui.
+    me = GameState(leader=lider, don_available=3, turn=5)
+    me.hand = [mk("H1", "Barata", cost=1)]
+    opp = GameState(leader=opp_lider)
+    engine = DecisionEngine(me, opp)
+    match = OPTCGMatch((lider, []), (opp_lider, []))
+    acts = match._generate_attach_don_actions(me, opp, engine)
+    attach_leader = [a for a in acts if a[1] == "attach_don" and a[2] is lider]
+    check("empate exato do LIDER + carta jogavel na mao: gera candidato de margem mesmo assim",
+          bool(attach_leader))
+    if attach_leader:
+        check("margem do lider em empate: cobra opportunity cost de verdade (score < valor cheio*0.3)",
+              attach_leader[0][0] < engine.score_attack_target(lider, 'leader', None) * 0.3)
+
+    # Controle: mesmo cenario mas PERSONAGEM (nao lider) em empate -- NAO
+    # deve gerar margem (escopo e so o lider, pra nao repetir a
+    # regressao das tentativas anteriores com atacantes genericos).
+    me2 = GameState(leader=lider, don_available=3, turn=5)
+    personagem = mk("C1", "Bicho", power=5000, cost=3)
+    personagem.just_played = False
+    personagem.rested = False
+    me2.field_chars = [personagem]
+    me2.hand = [mk("H2", "Barata2", cost=1)]
+    opp2 = GameState(leader=opp_lider)
+    opp2.field_chars = [mk("OC1", "AlvoRestado", power=5000, cost=3)]
+    opp2.field_chars[0].rested = True
+    engine2 = DecisionEngine(me2, opp2)
+    match2 = OPTCGMatch((lider, []), (opp_lider, []))
+    acts2 = match2._generate_attach_don_actions(me2, opp2, engine2)
+    attach_personagem = [a for a in acts2 if a[1] == "attach_don" and a[2] is personagem]
+    check("empate de PERSONAGEM (nao lider) + carta jogavel: continua SEM margem (escopo so lider)",
+          not attach_personagem)
 
 
 def test_score_give_don_considera_sinergia_com_ataque() -> None:

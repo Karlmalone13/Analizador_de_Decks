@@ -16550,6 +16550,35 @@ class OPTCGMatch:
                         if valor <= 0:
                             continue
                         score = valor * 0.3
+                    elif gap == 0 and att is p.leader and p.don_available > 0:
+                        # Achado real 18/08 (censo "nunca gerada" pos-fix de
+                        # deck real, bloco 610): EMPATE exato do proprio
+                        # LIDER (o ramo `don_idle` acima so cobre esse
+                        # mesmo caso quando NENHUMA carta da mao e mais
+                        # afordavel -- e o lider costuma atacar CEDO na
+                        # sequencia simulada, com DON ainda de sobra pra
+                        # cartas, entao esse seguro nunca chegava a
+                        # competir). 14 ocorrencias so com Imu (OP13-079)
+                        # no banco de derrotas reais: humano reforcava 1-3
+                        # DON no proprio lider ANTES de atacar, mesmo com
+                        # mao ainda jogavel -- seguro contra Blocker/Counter
+                        # que este calculo de `gap` nao ve (baseado so no
+                        # poder impresso do alvo, sem simular a resposta
+                        # reativa do oponente). Diferente do ramo idle:
+                        # aqui cobra `don_opportunity_cost` de verdade (nao
+                        # gratis) pra competir sem vazar orcamento contra
+                        # play/activate -- as 2 tentativas anteriores de
+                        # fazer margem competir (blocos 593/594) regrediram
+                        # o resultado real por dar valor sem custo de
+                        # oportunidade genuino; aqui o custo é cobrado.
+                        # Escopo deliberadamente estreito (so o LIDER, so
+                        # empate EXATO, nao qualquer atacante/gap<0) pra
+                        # nao repetir esse erro.
+                        falta = min(p.don_available, 2)
+                        valor = engine.score_attack_target(att, ttype, tgt)
+                        if valor <= 0:
+                            continue
+                        score = valor * 0.3 - engine.don_opportunity_cost(falta)
                     else:
                         continue
                     if score > melhor_score:

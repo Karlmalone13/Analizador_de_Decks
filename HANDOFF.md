@@ -1,5 +1,141 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-18 (610) - Claude (sessao remota web) - Fechado o investigacao de `counter`/Luffy OP15-092 (NAO e bug, calibracao ja tunada de proposito) e achado real novo em `attach_don`: censo "nunca gerada" com escopo ampliado (76 derrotas reais, nao so as 26 do banco de decision_quality_full) achou 14/92 casos concentrados no LIDER Imu (OP13-079) -- humano reforca 1-3 DON no proprio lider ANTES de atacar (empate/quase-empate), motor nunca cogitava porque o ramo de margem existente so libera quando NENHUMA carta e mais jogavel. Fix generico (qualquer lider em empate exato), cobrando opportunity cost de verdade -- melhora real e SEM regressao em nenhuma categoria
+
+**Pedido do usuario**: "vamos continuar investigando para poder subir
+essas porcentagens, principalmente as menores". Duas frentes nesta
+sessao.
+
+### Frente 1 -- `counter`/Luffy OP15-092: investigado, NAO e bug
+
+3 casos no banco (Portgas.D.Ace-R x Crocodile-B, 2026-08-02T01:59:52,
+turnos 5/7/11) onde o motor usou Monkey.D.Luffy (OP15-092, corpo de mao
+custo 7/7000pwr/1000 counter) como counter e o humano nao counterou
+nada. Hipotese investigada: `pitch_cost_as_counter` subvaloriza cartas
+caras. Reconstruido o estado exato dos 3 turnos (mao completa, DON
+real) e comparado `pitch_cost_as_counter` de TODOS os candidatos de
+counter na mao, nao so o Luffy:
+
+- Turno 5 (vida 4): Luffy pitch=57.0 < Miss Doublefinger pitch=68.0 --
+  Luffy e mais barato de pitchar porque **nao e afordavel AGORA** (7 de
+  custo, DON insuficiente no turno) -- `avaliar_carta` ja desconta isso,
+  entao pitchar o que nao da pra jogar mesmo e mais barato que pitchar
+  o que ESTA jogavel. Comportamento correto, nao bug.
+- Turno 11 (vida 1, ataque LETAL 5000v5000 empate): o motor decidiu
+  counterar (corretamente -- vida 0 = derrota) com Mr.2.Bon.Kurei
+  (pitch mais barato), nao Luffy. O HISTORICO real nao counterou aqui e
+  perdeu a partida -- e exatamente o tipo de divergencia "motor
+  melhor que o bot historico" que a ferramenta foi desenhada pra achar,
+  nao um bug.
+- `valor_vida` (85 em vida 4, 65 em vida 3) ja foi tunado explicitamente
+  (achado 24/07, log real Katakuri x Jinbe) pra cobrir justo essa faixa
+  de gasto (~70-75 numa carta so) -- os pitch costs aqui (52-68) caem
+  dentro do escopo JA decidido, nao e recalibracao nova precisando.
+
+Conclusao: nenhum bug encontrado, fechando esta sub-investigacao como
+"calibracao ja confirmada correta" (mesmo padrao do bloco 601 -- reporta
+o resultado negativo honestamente em vez de forcar um achado).
+
+### Frente 2 -- `attach_don`: achado real, escopo ampliado do censo
+
+O censo "nunca gerada" das sessoes anteriores (blocos 603/606/607) so
+rodava sobre as 26 partidas do banco de `decision_quality_full.py`.
+Ampliei pra `find_real_bot_losses()` inteiro (76 derrotas reais, mesma
+fonte de `audit_real_losses.py --all`) -- monkeypatch em
+`_log_turn_planner_decision` (mesmo metodo, expondo `actions` completo)
++ `attach_don_for_attack_events` (auto-topup) pra nao repetir o bug do
+bloco 609 (subestimar o que o motor realmente anexa).
+
+Resultado: 84 turnos com mismatch de attach_don, **92/92 (100%) nunca
+gerados como candidato** (0 "gerado mas perdeu no score" -- sinal MUITO
+mais forte que o normal). Maior concentracao: **Imu (OP13-079, o
+LIDER): 14 casos em 8 partidas diferentes**.
+
+### Causa raiz confirmada (4 turnos abertos manualmente, mesmo padrao em todos)
+
+Ex: `Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32`, turno 5.
+HISTORICO: humano anexou 1 DON no Imu (5000->6000) ANTES de atacar.
+MOTOR: jogou St. Jaygarcia Saturn (4 DON) + Ground Death (1 DON) --
+gastou os 5 DON disponiveis inteiros em cartas -- Imu atacou a 5000pwr
+puro, oponente conterou pra defesa 6000, ataque falhou. **Com o DON de
+margem, o combate empataria em 6000 e a regra "empate favorece o
+atacante" faria o bloqueador cair** -- diferenca real de resultado, nao
+so de contabilidade.
+
+`_generate_attach_don_actions` ja tinha um ramo de "margem de
+seguranca em empate" (`elif gap <= 0 and don_idle`, blocos 555/589),
+mas **gated atras de `don_idle`** -- so libera quando NENHUMA carta da
+mao e mais afordavel. O lider tende a atacar CEDO na sequencia simulada
+pelo Turn Planner, com DON ainda de sobra pra jogar cartas -- esse
+seguro nunca chegava a competir contra `play`/`activate` na pratica,
+mesmo quando o humano real preferia reservar a margem.
+
+### Fix (escopo deliberadamente estreito)
+
+`decision_engine.py`, `_generate_attach_don_actions` (~linha 16553):
+novo ramo `elif gap == 0 and att is p.leader and p.don_available > 0`
+-- SO pro proprio LIDER (nao personagens genericos), SO empate EXATO
+(nao gap<0), cobrando `don_opportunity_cost` DE VERDADE (nao gratis
+como o ramo `don_idle`) pra competir sem vazar orcamento. Escopo
+estreito de proposito: **2 tentativas anteriores de fazer margem
+competir contra play/activate (blocos 593/594) regrediram o resultado
+real medido** (90,1% -> 85-86% de turnos com dano >= humano) por dar
+valor SEM custo de oportunidade genuino -- aqui o custo e cobrado de
+verdade, e o escopo fica restrito ao caso com evidencia real (lider,
+empate exato).
+
+Teste isolado novo:
+`test_attach_don_margem_lider_empate_compete_com_carta_jogavel_18_08`
+(`smoke_fast.py`) -- confirma que o candidato aparece com carta
+jogavel na mao (cenario que o ramo antigo nunca cobria) E que o score
+e estritamente menor que o valor cheio (opportunity cost cobrado de
+verdade), com um controle explicito confirmando que PERSONAGENS (nao
+lider) continuam SEM esse ramo.
+
+### Validado
+
+`smoke_fast.py`: 100% (3 checks novos, todos OK). `smoke_test.py`
+completo: **TODOS OS TESTES PASSARAM** (suite ampla, cobre
+gramatica/parser/regras compartilhadas -- fix e local a uma funcao,
+sem tocar parser).
+
+**Impacto medido nas 26 partidas do banco** (`decision_quality_full.py
+--all`, reproduzido com `--workers 1` e `--workers 4`, mesmo resultado
+exceto o residual de 1 unidade ja documentado em attack-alvo/sequencia):
+
+| categoria | antes (bloco 609) | depois (610) |
+|---|---|---|
+| attach_don -- mesmo alvo | 6,8% (5/73) | **8,1% (6/74)** |
+| play (mesmas cartas) | 23,6% (25/106) | **25,5% (27/106)** |
+| SEQUENCIA identica | 8,2% (9/110) | **9,1% (10/110)** |
+| SEQUENCIA similaridade | 34,1% (169/496) | **34,5% (171/495)** |
+| attack -- mesmo alvo | 84,1% (138/164) | 83,0-83,6% (137-138/165) -- ruido residual ja conhecido |
+| resto (attack-quem, activate, blocker, counter) | sem mudanca (fix nao toca esses caminhos) | sem mudanca |
+
+Nenhuma categoria regrediu. Melhora pequena em magnitude nas 26
+partidas do banco curado (o achado de 14 casos veio do escopo AMPLIADO
+de 76 partidas, a maioria fora desse banco de 26) mas confirma o
+mecanismo: mais candidatos de margem real sendo gerados e vencendo,
+zero efeito colateral medido.
+
+### Pendente
+
+- O restante dos 92 "nunca gerado" de attach_don (78 casos fora do Imu)
+  nao foi auditado individualmente -- proximo alvo natural seria
+  Vasco Shot (OP16-110, 9x) e Mihawk (OP14-020, 8x), mesma metodologia.
+- Reconferir se o mesmo padrao (margem no lider em empate, negada por
+  `don_idle`) tambem afeta a categoria `attack` (motor as vezes nao
+  ataca de jeito nenhum quando a margem faria a diferenca entre atacar
+  e nao atacar) -- nao investigado aqui, so o caso "ataca sem margem e
+  falha" foi confirmado.
+- Script de censo usado (`censo_attach_don.py`, escopo de 76 partidas)
+  ficou em scratchpad, nao commitado -- se for reusar em sessao futura,
+  vale formalizar como script permanente (mesmo padrao pedido pro
+  `decision_quality_report.py`), nao recriar do zero.
+- Blocos 599-602 (achados sobre Xebec/Vista/reserva de DON entre
+  ataques) ainda nao foram reconferidos numericamente contra os decks
+  reais pos-609 -- pendencia carregada, nao fechada nesta sessao.
+
 ## 2026-08-17 (609) - Claude (sessao remota web) - ACHADO FUNDAMENTAL (usuario: "nao e possivel que isso e o maximo") -- 5 dos 6 lideres humanos do banco inteiro usavam baralho GENERICO (aleatorio, sem sinergia real) na reconstrucao, nao por falta de decklist real disponivel, mas por BUG DE CASAMENTO DE NOME em `_find_real_deck`. Corrigido: 4 dos 6 agora acham deck real (Ace, Luffy, Teach, Crocodile). Impacto misto nos numeros -- alguns sobem, outros descem -- porque a medicao ficou mais fiel, nao "melhor" por definicao
 
 **Pedido do usuario**, direto, apos o relatorio "todas as categorias
