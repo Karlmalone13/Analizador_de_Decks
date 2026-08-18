@@ -99,16 +99,57 @@ def _find_real_deck(leader_name, cards_db, df_raw, urls, leader_code=None):
     deck GENÉRICO (mesma cor do líder, sem fidelidade real) só pra não
     travar a auditoria -- qualidade do reconstruído pra ESSE lado fica
     mais fraca, mas o lado que importa pra auditoria (bot_side) quase
-    sempre tem decklist real (Imu/Jinbe/Crocodile confirmados presentes)."""
-    for url, name in urls.items():
-        if leader_name.lower() in name.lower():
-            result = build_real_deck(name, url, df_raw, cards_db)
-            if not result:
-                continue
-            leader, cards, stage = result
-            valido, _ = validar_deck(leader, cards, cards_db)
-            if valido:
-                return leader, cards, stage
+    sempre tem decklist real (Imu/Jinbe/Crocodile confirmados presentes).
+
+    Achado real 17/08 (pedido do usuario, "nao e possivel que isso e o
+    maximo que conseguimos" -- fui verificar a fundo em vez de aceitar
+    o teto): `deck_name` em decklists_raw.csv usa o NOME CURTO do lider
+    ("Red/Blue Aceby You got a bye", "Yellow Luffyby..."), nunca o nome
+    COMPLETO da carta que o log usa ("Portgas D. Ace", "Monkey D.
+    Luffy"). O match antigo (`leader_name.lower() in name.lower()`) so
+    funcionava por acidente pra lideres de UMA palavra so (ex:
+    "Crocodile", que E substring de "Black Crocodileby..."). Pra
+    QUALQUER lider de nome composto -- a MAIORIA -- nunca batia, mesmo
+    com decklists reais fartas disponiveis: confirmado 20 decks de Ace
+    e 17 de Luffy no CSV, mas `_find_real_deck('Portgas D. Ace', ...)`
+    caia no fallback GENERICO (50 cartas UNICAS, sem sinergia nenhuma
+    com o arquetipo real) porque "portgas d. ace" nunca e substring de
+    "red/blue aceby...". Confirmado com o banco de 26 partidas: 5 dos 6
+    lideres humanos (todos exceto Crocodile) usavam o fallback generico
+    -- afetando NAO SO a ordem do deck (ja corrigida nos blocos 596/
+    598), mas a COMPOSICAO inteira, incluindo `populate_full_deck_
+    knowledge`/`compute_game_plan` (arquetipo, sinergias, plano de jogo
+    que o motor usa pra avaliar toda decisao estrategica do turno).
+
+    Fix: tenta o nome COMPLETO primeiro (mantem compatibilidade com
+    lideres de uma palavra), e SE isso nao achar nada, tenta a ULTIMA
+    palavra significativa do nome (o sobrenome/apelido distintivo que
+    os decks reais usam -- "Ace", "Luffy", "Xebec", "Teach", "Kid" --
+    confirmado esse padrao em todos os nomes do banco). `validar_deck`
+    (chamado logo abaixo, ja existia) continua sendo o guarda-chuva de
+    seguranca contra falso-positivo -- um match errado nunca passa."""
+    def _tentar(termo):
+        termo_low = termo.lower()
+        for url, name in urls.items():
+            if termo_low in name.lower():
+                result = build_real_deck(name, url, df_raw, cards_db)
+                if not result:
+                    continue
+                leader, cards, stage = result
+                valido, _ = validar_deck(leader, cards, cards_db)
+                if valido:
+                    return leader, cards, stage
+        return None
+
+    achou = _tentar(leader_name)
+    if achou:
+        return achou
+    palavras = [w.strip('"().,') for w in leader_name.split()]
+    palavras_significativas = [w for w in palavras if len(w) >= 3 and w.lower() not in ('the',)]
+    if palavras_significativas:
+        achou = _tentar(palavras_significativas[-1])
+        if achou:
+            return achou
     if leader_code and leader_code in cards_db:
         leader = _make_card(leader_code, cards_db[leader_code])
         # Achado real 14/08 (pedido do usuario: "diversos outros pra gente

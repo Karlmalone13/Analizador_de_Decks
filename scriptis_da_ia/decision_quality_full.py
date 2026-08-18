@@ -101,8 +101,20 @@ def _offense_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
     opp_side = 'Opponent' if human_side_label == 'You' else 'You'
     opp_leader_code = meta['p1' if meta['p1']['name'] == opp_side else 'p2']['leader'].get('code')
 
+    # Achado real 17/08: `attach_don_alvo` (mais abaixo) sempre pretendeu
+    # incluir `attach_don_for_attack_events` (o top-up AUTOMATICO que
+    # acontece durante a execucao de um ataque ja escolhido, ver docstring
+    # do modulo) -- mas essa chamada nunca passava `capture_candidates=
+    # True`, o UNICO jeito de `audit_one_game` popular esse campo. O
+    # metodo ficava, sem querer, so vendo attach_don GERADO como candidato
+    # PROPRIO do Turn Planner (raro), cego pro caminho principal (anexar
+    # DON durante a execucao de um ataque ja decidido). Ficou mascarado
+    # enquanto os decks eram genericos (bug de casamento de nome, ver
+    # audit_real_losses._find_real_deck) -- com decks REAIS a metrica caiu
+    # pra 0% EXATO, sinal forte demais pra ser coincidencia, o que expos
+    # a lacuna. Fix: pede capture_candidates=True tambem.
     report = audit_one_game(parsed_path, human_side_label, cards_db, df_raw, urls,
-                            capture_actions=True)
+                            capture_actions=True, capture_candidates=True)
     if report.get('error'):
         return {'error': report['error']}
 

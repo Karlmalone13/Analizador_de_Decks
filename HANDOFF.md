@@ -1,5 +1,127 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (609) - Claude (sessao remota web) - ACHADO FUNDAMENTAL (usuario: "nao e possivel que isso e o maximo") -- 5 dos 6 lideres humanos do banco inteiro usavam baralho GENERICO (aleatorio, sem sinergia real) na reconstrucao, nao por falta de decklist real disponivel, mas por BUG DE CASAMENTO DE NOME em `_find_real_deck`. Corrigido: 4 dos 6 agora acham deck real (Ace, Luffy, Teach, Crocodile). Impacto misto nos numeros -- alguns sobem, outros descem -- porque a medicao ficou mais fiel, nao "melhor" por definicao
+
+**Pedido do usuario**, direto, apos o relatorio "todas as categorias
+ja foram auditadas com o censo, nao achei mais nada grande": "entao
+deve ser outra coisa ou esta faltando alguma coisa, nao e possivel que
+esse e o maximo que conseguimos". Em vez de aceitar o teto, fui
+verificar a PREMISSA por baixo de tudo: a reconstrucao do baralho em
+si.
+
+### Achado: `_find_real_deck` nunca casava nome composto
+
+`decklists_raw.csv` guarda `deck_name` no formato "Cor(es) NomeCurtoby
+Jogador" (ex: "Red/Blue Aceby You got a bye", sem espaco antes do "by")
+-- usa o nome CURTO/distintivo do lider (ultima palavra do nome
+completo da carta), nunca o nome completo. O match antigo
+(`leader_name.lower() in name.lower()`) comparava o nome COMPLETO do
+log ("Portgas D. Ace") contra esse texto -- nunca batia pra nenhum
+lider de nome composto (a esmagadora maioria). So funcionava por
+ACIDENTE pra lideres de uma palavra so (ex: "Crocodile", que E
+substring literal de "Black Crocodileby...").
+
+Confirmado com o banco de 26 partidas: **5 dos 6 lideres humanos**
+(todos exceto Crocodile) caiam no fallback GENERICO -- mesmo com
+decklists REAIS fartas disponiveis (confirmado: 20 decks de Ace, 17 de
+Luffy, 1+ de Teach no CSV). O fallback genérico gera 50 cartas UNICAS
+(1 copia cada, sem sinergia nenhuma com o arquetipo real -- ex: pro
+Xebec, cartas como Edward Weevil/Hamlet/Krieg/Doflamingo/Bartholomew
+Kuma, nada de Rocks Pirates). Isso nao afeta so a ORDEM do baralho (ja
+corrigida nos blocos 596/598) -- afeta a COMPOSICAO inteira, incluindo
+`populate_full_deck_knowledge`/`compute_game_plan` (arquetipo,
+sinergias, plano de jogo que o motor usa pra avaliar CADA decisao
+estrategica do turno, nao so quais cartas existem).
+
+### Fix
+
+`_find_real_deck`: tenta o nome COMPLETO primeiro (mantem
+compatibilidade com lideres de 1 palavra), e se nao achar, tenta a
+ULTIMA palavra significativa do nome (padrao confirmado em todo o
+banco de decks: "Ace", "Luffy", "Xebec", "Teach", "Kid" sao sempre a
+ultima palavra do nome completo da carta). `validar_deck` (ja
+existente) continua como guarda-chuva de seguranca contra qualquer
+falso-positivo de match.
+
+### Resultado do fix isolado
+
+| lider | antes | depois |
+|---|---|---|
+| Portgas D. Ace | generico | **deck real** (20 cartas unicas, ate 4x copia) |
+| Monkey D. Luffy | generico | **deck real** (16 cartas unicas, ate 4x) |
+| Marshall D. Teach | generico | **deck real** (19 cartas unicas, ate 4x) |
+| Crocodile | ja era real | real (sem mudanca) |
+| Rocks D. Xebec | generico | **continua generico** (confirmado 0 decks no CSV -- nao e bug, e falta de dado mesmo) |
+| Eustass "Captain" Kid | generico | **continua generico** (confirmado 0 decks no CSV) |
+
+### 2o bug achado NO PROPRIO CAMINHO de validar este fix: `attach_don_alvo` nunca via o mecanismo PRINCIPAL de anexar DON
+
+Medindo o impacto, `attach_don` foi pra **0,0% EXATO** (0/48) -- numero
+extremo demais pra aceitar sem checar. Rastreado: `_offense_verdict`
+(decision_quality_full.py) SEMPRE pretendeu incluir `attach_don_for_
+attack_events` (o top-up AUTOMATICO que acontece quando um ataque JA
+ESCOLHIDO precisa de DON -- o caminho PRINCIPAL de attach_don, ver
+bloco 590) na comparacao -- mas a chamada de `audit_one_game` nunca
+passava `capture_candidates=True`, o UNICO jeito desse campo ser
+populado. O bug SEMPRE existiu (desde o bloco 604), so ficava
+mascarado: com baralhos genericos por coincidencia mais attach_don
+acontecia via candidato PROPRIO do Turn Planner (visivel mesmo sem o
+fix); com baralhos REAIS, o motor passou a depender quase so do
+auto-topup (invisivel sem o fix), empurrando o numero VISIVEL pra 0
+exato. Fix: `_offense_verdict` agora pede `capture_candidates=True`
+tambem.
+
+### Numeros finais (26 partidas, com os 2 fixes -- deck real E attach_don completo)
+
+| categoria | antes (deck generico p/ 5/6 lideres) | depois (deck real p/ 4/6) |
+|---|---|---|
+| play | 26,7% | 23,6% |
+| attack -- quem | 56,5% | 35,9% |
+| activate | 46,4% | 41,7% |
+| **attach_don -- alvo** | 6,5% (48 turnos, incompleto) | **6,8%** (73 turnos, completo) |
+| **attack -- mesmo alvo** | 81,9% | **84,1%** |
+| SEQUENCIA identica | 11,8% | 8,2% |
+| SEQUENCIA similaridade | 38,1% | 34,1% |
+| **ALVO dentro do efeito** | 42,9% | **51,4%** |
+
+**Leitura honesta**: resultado MISTO, nao uma melhora uniforme. Isso e
+esperado e correto -- a medicao ficou mais FIEL (o motor agora avalia
+o jogo contra o arquetipo/sinergias REAIS que o humano realmente
+jogava, nao um baralho aleatorio), nao necessariamente "melhor" nos
+numeros. Categorias que dependem de avaliacao ESTRATEGICA ampla
+(play/attack-quem/activate, decisoes que competem entre TODAS as
+opcoes do turno) pioraram -- plausivel: um baralho aleatorio da
+CENARIOS mais faceis/degenerados de acertar por acaso; um baralho
+REAL com curva/sinergia de verdade exige o motor tomar decisoes
+genuinamente mais dificeis onde a linha certa e menos obvia.
+Categorias mais LOCAIS/taticas (mesmo alvo de ataque, alvo dentro do
+efeito) melhoraram -- plausivel: com o board mais realista, o motor
+tem MENOS ambiguidade sobre qual alvo faz sentido.
+
+### Validado
+
+`smoke_fast.py`/`smoke_test.py`: 100%. Determinístico entre `--workers
+1`/`--workers 4` pra praticamente tudo -- 1 unidade de variancia
+residual em `attack -- mesmo alvo` (84,1% vs 83,5%, 138 vs 137 de 164)
+e ja visto antes (bloco 606, mesma ordem de grandeza) -- NAO
+investigado a fundo ainda, registrado como pendencia.
+
+### Pendente
+
+- Variancia residual de 1 unidade entre sequencial/paralelo (visto 2x
+  agora, blocos 606 e 609) -- precisa de investigacao dedicada se for
+  bloquear alguma decisao futura que dependa de precisao exata.
+- Xebec e Kid continuam sem decklist real disponivel -- isso E um
+  limite genuino de DADO (nao de codigo), a menos que o usuario tenha
+  uma decklist real pra esses 2 lideres pra adicionar ao
+  `decklists_raw.csv`.
+- Vale re-investigar os achados ANTERIORES desta sessao que
+  dependiam do baralho generico do Xebec (blocos 599/600/601/602) --
+  agora que o attach_don_for_attack_events esta completo e mais
+  lideres tem deck real, os NUMEROS especificos desses blocos podem
+  ter mudado (a conclusao qualitativa provavelmente segue valida, mas
+  nao foi reconferida com os 2 fixes deste bloco).
+
 ## 2026-08-17 (608) - Claude (sessao remota web) - Censo "nunca gerada" aplicado em `attack` tambem: Shiki (OP17-048) domina (7/11), mas rastreado ate a causa e NAO e bug -- Rush:Character (so pode atacar PERSONAGEM no turno que entra, nao lider) parseado corretamente; o motor so nao oferece Shiki como candidato porque OUTRA jogada dele no mesmo turno (Gloriosa, manda personagem custo<=5 pro fundo do deck) remove o unico alvo valido ANTES do Shiki precisar dele -- consequencia de sequencia diferente, nao erro de regra
 
 **Continuacao do bloco 607** (verificar as categorias restantes pro

@@ -2,6 +2,38 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 609): **ACHADO FUNDAMENTAL** (usuário recusou
+> aceitar o teto: "não é possível que esse é o máximo"). `_find_real_deck`
+> nunca casava nome composto de líder ("Portgas D. Ace") contra o
+> formato curto do CSV ("Aceby..."), só funcionava por acidente pra
+> líderes de 1 palavra (Crocodile). **5 dos 6 líderes humanos do banco
+> inteiro** caíam no baralho GENÉRICO (aleatório, sem sinergia real) —
+> mesmo com decklists reais fartas disponíveis (20 de Ace, 17 de Luffy
+> no CSV). Isso afetava não só a ordem do baralho (já corrigida antes),
+> mas a COMPOSIÇÃO inteira, incluindo o game_plan/arquétipo que o motor
+> usa pra avaliar toda decisão estratégica. Fix: tenta nome completo
+> primeiro, senão tenta a última palavra significativa (padrão real dos
+> decks). **4 dos 6 líderes agora acham deck real** (Ace/Luffy/Teach/
+> Crocodile); Xebec e Kid continuam genéricos — confirmado que
+> realmente não há decklist deles no CSV, não é mais bug. Achado um 2º
+> bug no processo: `attach_don` foi pra 0,0% exato (sinal forte demais
+> pra ignorar) — rastreado até `_offense_verdict` nunca pedir
+> `capture_candidates=True`, então nunca via o mecanismo PRINCIPAL de
+> anexar DON (top-up automático durante ataque); corrigido, attach_don
+> volta a 6,8% com denominador completo (73 turnos, era 48).
+> **Resultado final é MISTO, não uma vitória uniforme** — algumas
+> categorias sobem (attack-alvo 81,9%→84,1%, alvo-de-efeito
+> 42,9%→51,4%), outras descem (play 26,7%→23,6%, activate
+> 46,4%→41,7%). Isso é esperado: a medição ficou mais FIEL ao jogo
+> real, não necessariamente "melhor" nos números — baralho aleatório
+> dava cenários mais fáceis de acertar por acaso, baralho real com
+> curva/sinergia de verdade exige decisões genuinamente mais difíceis.
+> `smoke_fast`/`smoke_test` 100% OK. Pendente: variância residual de 1
+> unidade sequencial-vs-paralelo (visto 2x agora, não investigado a
+> fundo); reconferir achados anteriores da sessão (599-602) que
+> dependiam do baralho genérico do Xebec, já que agora a medição mudou.
+> Ver bloco 609 do HANDOFF.
+>
 > 17/08/2026 (bloco 608): Censo "nunca gerada" aplicado em `attack`
 > também (última categoria pendente do bloco 607). Shiki (OP17-048)
 > domina os casos (7/11), mas rastreado até a causa e **não é bug**:
