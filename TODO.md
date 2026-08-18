@@ -2,6 +2,24 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 608): Censo "nunca gerada" aplicado em `attack`
+> também (última categoria pendente do bloco 607). Shiki (OP17-048)
+> domina os casos (7/11), mas rastreado até a causa e **não é bug**:
+> `Rush:Character` (só ataca personagem no turno que entra, não líder)
+> está parseado certo; o motor só não oferece Shiki como candidato
+> porque jogou Gloriosa antes no mesmo turno, cujo efeito manda um
+> personagem custo≤5 pro fundo do deck — e escolheu justamente o único
+> alvo válido que Shiki precisava, removendo-o antes da hora. É
+> consequência de uma sequência de jogadas diferente da do humano, não
+> erro de regra. **Todas as 4 categorias ofensivas + as 2 defensivas já
+> foram auditadas com o censo "nunca gerada"** — só `activate` (bloco
+> 606) rendeu um achado do tamanho grande; as outras 3 desta rodada
+> (play/attach_don/attack) não repetiram o padrão. Próximo passo real:
+> continuar caçando bugs pontuais caso a caso (sem garantia de mais
+> achados grandes) ou aceitar que parte da divergência restante é
+> empate tático/consequência de sequência, não bug corrigível. Ver
+> bloco 608 do HANDOFF.
+>
 > 17/08/2026 (bloco 607): Verificado se `play`/`attach_don` tinham o
 > mesmo bug de categorização que inflou `activate` (bloco 606). `play`:
 > **limpo** (21 casos suspeitos checados, nenhum era "deploy fantasma"

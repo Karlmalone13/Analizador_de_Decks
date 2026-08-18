@@ -1,5 +1,57 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (608) - Claude (sessao remota web) - Censo "nunca gerada" aplicado em `attack` tambem: Shiki (OP17-048) domina (7/11), mas rastreado ate a causa e NAO e bug -- Rush:Character (so pode atacar PERSONAGEM no turno que entra, nao lider) parseado corretamente; o motor so nao oferece Shiki como candidato porque OUTRA jogada dele no mesmo turno (Gloriosa, manda personagem custo<=5 pro fundo do deck) remove o unico alvo valido ANTES do Shiki precisar dele -- consequencia de sequencia diferente, nao erro de regra
+
+**Continuacao do bloco 607** (verificar as categorias restantes pro
+mesmo tipo de bug do `activate`). `attack` -- so 14 turnos com dado (a
+categoria ja tem 56,5% de acerto, poucos mismatches restam), 11 casos
+"nunca gerado", **Shiki (OP17-048) e 7 dos 11**.
+
+### Investigado a fundo, NAO e bug
+
+Confirmado `has_rush_character=True` (parseado certo do texto
+`[Rush:Character]`). Confirmado no log historico: Shiki SEMPRE ataca
+um PERSONAGEM (ex: Sanji), nunca o lider -- consistente com a regra
+real de Rush:Character (so pode atacar personagem no turno que entra
+em campo, nao o lider). Rastreado um caso especifico
+(`Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T23.55.32`, T8):
+na narrativa do motor, ANTES de chegar em Shiki, o Turn Planner jogou
+Gloriosa (efeito: "coloca ate 1 personagem custo<=5 no FUNDO do deck")
+e escolheu justamente o Sanji -- o UNICO alvo valido de personagem que
+Shiki poderia atacar -- removendo-o do campo ANTES do Shiki precisar
+dele. Sem alvo de personagem, Rush:Character nao permite atacar o
+lider, entao nenhuma acao de ataque de Shiki e gerada -- comportamento
+CORRETO da regra, so que como CONSEQUENCIA de uma sequencia de jogadas
+diferente da do humano (que nao jogou Gloriosa daquele jeito, ou jogou
+em ordem diferente, preservando Sanji como alvo).
+
+### Conclusao
+
+Terceira categoria verificada nesta rodada (`play` limpo, `attach_don`
+efeito pequeno, `attack` sem bug de categorizacao) -- nenhuma repete o
+tamanho do achado do `activate`. O padrao "Shiki nunca ataca" e um
+efeito CASCATA de uma decisao anterior no MESMO turno (jogar Gloriosa
+de um jeito que remove o proprio alvo futuro), nao um bug isolado
+numa carta so -- mais um exemplo de que decisoes de um turno inteiro
+sao interligadas, nao independentes, dificultando "consertar" so
+olhando decisao a decisao.
+
+### Pendente
+
+As 3 categorias offense (`play`/`activate`/`attach_don`/`attack`) e as
+2 defense (`blocker`/`counter`) ja foram auditadas com o metodo do
+censo "nunca gerada". O que resta pra subir os numeros de verdade,
+dado o que foi encontrado ate aqui: (1) achar mais bugs pontuais tipo
+Vista/Xebec-quando-atacando/is_first (metodo ja validado, precisa
+continuar caso a caso, sem garantia de mais achados do tamanho
+grande); (2) aceitar que uma fatia real da divergencia e empate tatico
+legitimo ou consequencia de sequencia (como o Shiki), nao bug
+corrigivel; (3) considerar se vale a pena medir `counter`/`blocker`
+com o MESMO censo de "nunca gerada" que achou os achados grandes em
+play/activate (ainda nao feito, essas categorias usam reconstrucao
+DIFERENTE -- `should_use_blocker`/`should_use_counter` direto, nao o
+Turn Planner -- metodo do censo precisaria adaptar).
+
 ## 2026-08-17 (607) - Claude (sessao remota web) - Verificado se `play`/`attach_don` tem o mesmo bug de categorizacao do bloco 606 (`activate`). Resultado: `play` esta limpo (nenhuma jogada "fantasma" de deploy-via-efeito). `attach_don` tem uma reducao pequena e real (4 casos, `give_don`/`add_don` estrutural) mas a MAIORIA dos "nunca gerados" (Xebec dominando de novo) sao a mesma dinamica de margem ja caracterizada no bloco 601 (ataque ja vence sem DON extra) -- diferenca tatica legitima, nao bug novo
 
 **Pedido do usuario**: "vamos continuar simulando e investigando pra
