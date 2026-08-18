@@ -1,5 +1,70 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-18 (614) - Claude (sessao remota web) - Continuacao do bloco 613 pro lado de DEFESA: `pick_counters` agora tambem usa padrao humano por CARTA (nao so a contagem agregada counter-vs-blocker que ja existia e nunca era lida). Melhora real e isolada em counter, zero mudanca em qualquer outra categoria
+
+**Pedido do usuario, explicito** ("ordem de counter" estava na lista
+de categorias a igualar, junto de ataque/DON/defesa/cartas/alvos).
+
+### Achado: mesmo padrao do bloco 613, so que o dado ja existia e era jogado fora
+
+`audit_human_patterns.py` ja gravava `pattern: 'counter:CODIGO'` por
+LIDER DEFENSOR em `by_defender_response` -- mas
+`_load_human_patterns` (`decision_engine.py`) so somava a CONTAGEM
+agregada (`_HUMAN_DEFENSE_BY_LEADER[lider] = {'counter': N, 'blocker':
+M}`), descartando qual CARTA especifica o humano usou. Essa contagem
+agregada, alem de perder a informacao de carta, tambem **nunca era lida
+em lugar nenhum** -- codigo morto desde que foi escrito.
+
+### Fix
+
+1. `audit_human_patterns.py`: `by_defender_response` de `limit=12` pra
+   `limit=60` por lider (mesmo raciocinio do corte de 80->sem-corte do
+   bloco 613 -- 150 logs tem mais diversidade real de counter do que
+   12 slots comportam).
+2. `decision_engine.py`, `_load_human_patterns`: novo
+   `_HUMAN_COUNTER_CARD_BONUS_BY_LEADER[lider][codigo] = bonus`,
+   MESMA formula/teto (`_HUMAN_PATTERN_MAX_BONUS=30`) do bonus
+   ofensivo, extraido de `counter:CODIGO` (que ja existia no JSON,
+   so nao era usado assim).
+3. Novo helper `_human_counter_card_bonus(leader_code, card_code)`.
+4. `pick_counters`: `custo[id(c)] = max(0, pitch_cost_as_counter(c) -
+   bonus)` -- cartas com suporte humano real ficam "mais baratas" no
+   guloso, sem mudar a logica de cobertura/gasto. `blocker` (`should_
+   use_blocker`) NAO recebeu o mesmo tratamento -- ja escolhe por
+   `custo_sacrificio` calibrado via self-play documentado (52% vs 42%,
+   blocos 396/398) e ja bate 95,8%/80% com o humano, nao e um gargalo.
+
+### Validado
+
+Teste isolado novo
+(`test_pick_counters_prioriza_carta_com_padrao_humano_18_08`): 2
+cartas com `pitch_cost_as_counter` IDENTICO (mesmos stats) sem padrao
+carregado (controle), depois com bonus mockado so numa delas --
+`pick_counters` passa a escolher a favorecida. `smoke_fast.py`/
+`smoke_test.py`: 100% OK.
+
+### Resultado (26 partidas, `--workers 1`/`--workers 4` idênticos)
+
+| categoria | antes (613) | depois (614) |
+|---|---|---|
+| counter -- mesmo conjunto | 54,2% (13/24) | **56,0% (14/25)** |
+| attack -- mesmo alvo | 82,0% (137/167) | 82,6% (138/167) -- ruido |
+| resto (play/attack-quem/activate/attach_don/sequencia/alvo-efeito/blocker) | sem mudanca | sem mudanca (identico, nao so ruido -- fix isolado a `pick_counters`) |
+
+Segunda melhora real seguida usando o mesmo mecanismo seguro (bonus
+pequeno e tetado alimentado por dado real), zero regressao.
+
+### Pendente
+
+- `blocker` (qual carta bloqueia) continua sem sinal de padrao humano
+  -- decidido deliberadamente NAO mexer (ja calibrado via self-play,
+  ja bate bem com humano, risco > beneficio esperado).
+- `_HUMAN_PATTERN_MAX_BONUS=30`/`_HUMAN_PATTERN_MIN_SUPPORT=2`
+  continuam nao recalibrados pro banco maior (mesma pendencia do
+  bloco 613).
+- Lembrar de regenerar `human_patterns.json` sempre que novos logs
+  entrarem no banco.
+
 ## 2026-08-18 (613) - Claude (sessao remota web) - ACHADO GRANDE: `human_patterns.json` (calibragem por padroes humanos, ja existente e ja lida por `_human_pattern_bonus` em play/activate/attack) estava TREINADA EM SO 7 LOGS de 2026-08-08 -- o banco tem 150 hoje. Regenerado com todos, corte de 80->1118 candidatos, e conectado `attach_don` (que nao usava esse mecanismo). Melhora REAL e AMPLA, sem regressao relevante
 
 **Pedido do usuario** (explicito, apos rejeitar a linha anterior de

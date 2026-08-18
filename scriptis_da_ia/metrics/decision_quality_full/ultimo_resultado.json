@@ -688,7 +688,7 @@
       "attack_quem_match": false,
       "attack_has_data": true,
       "attack_alvo_common": 2,
-      "attack_alvo_match": 1,
+      "attack_alvo_match": 2,
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
@@ -2543,8 +2543,8 @@
       "hist_counter_codes": [],
       "engine_counter_codes": [
         "OP14-091",
-        "OP15-092",
-        "OP14-087"
+        "OP14-087",
+        "OP15-092"
       ]
     },
     {
@@ -2718,9 +2718,12 @@
       "hist_blocker_card": null,
       "engine_blocker_card": null,
       "hist_countered": false,
-      "engine_countered": false,
+      "engine_countered": true,
       "hist_counter_codes": [],
-      "engine_counter_codes": []
+      "engine_counter_codes": [
+        "OP16-004",
+        "OP16-004"
+      ]
     },
     {
       "game": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T12.30.45.json",
@@ -2731,11 +2734,14 @@
       "hist_blocker_card": null,
       "engine_blocker_card": null,
       "hist_countered": true,
-      "engine_countered": false,
+      "engine_countered": true,
       "hist_counter_codes": [
         "OP16-004"
       ],
-      "engine_counter_codes": []
+      "engine_counter_codes": [
+        "OP16-004",
+        "OP16-004"
+      ]
     },
     {
       "game": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T13.18.18.json",

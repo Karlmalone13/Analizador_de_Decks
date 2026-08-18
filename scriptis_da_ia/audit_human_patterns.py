@@ -264,7 +264,15 @@ def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dic
         'by_leader_ngrams_2': nested_counter_to_dict(by_leader_ngram2, 12),
         'by_leader_ngrams_3': nested_counter_to_dict(by_leader_ngram3, 12),
         'by_leader_before_attack': nested_counter_to_dict(by_leader_attack, 12),
-        'by_defender_response': nested_counter_to_dict(by_defender, 12),
+        # Achado real 18/08 (bloco 613, continuacao pro lado de defesa):
+        # limite de 12 cortava a diversidade real de cartas de counter
+        # por lider defensor com o banco maior (150 logs) -- o
+        # consumidor (`decision_engine.py::_load_human_patterns`) agora
+        # le o CODIGO de cada `counter:CODIGO` daqui pra montar um bonus
+        # tetado por carta (era so contagem agregada antes), entao
+        # cortar essa lista descarta sinal real sem necessidade (mesmo
+        # raciocinio do `heuristic_candidates[:80]` removido acima).
+        'by_defender_response': nested_counter_to_dict(by_defender, 60),
         'context_examples': dict(sorted(context_examples.items())),
         'heuristic_candidates': candidates,
         'card_names': {code: card_name(cards_db, code)

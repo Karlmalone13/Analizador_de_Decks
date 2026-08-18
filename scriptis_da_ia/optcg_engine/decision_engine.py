@@ -613,6 +613,7 @@ _ANALYSIS_DB: dict = {}
 _HUMAN_PATTERNS_PATH = os.path.join(os.path.dirname(__file__), '..', 'human_patterns.json')
 _HUMAN_PATTERN_BONUS_BY_LEADER: dict = {}
 _HUMAN_DEFENSE_BY_LEADER: dict = {}
+_HUMAN_COUNTER_CARD_BONUS_BY_LEADER: dict = {}
 _HUMAN_PATTERN_MIN_SUPPORT = 2
 _HUMAN_PATTERN_MAX_BONUS = 30.0
 
@@ -631,7 +632,7 @@ _load_effects_db()
 
 def _load_human_patterns():
     """Carrega sinais leves de pilotagem humana extraidos dos logs reais."""
-    global _HUMAN_PATTERN_BONUS_BY_LEADER, _HUMAN_DEFENSE_BY_LEADER
+    global _HUMAN_PATTERN_BONUS_BY_LEADER, _HUMAN_DEFENSE_BY_LEADER, _HUMAN_COUNTER_CARD_BONUS_BY_LEADER
     if _HUMAN_PATTERN_BONUS_BY_LEADER:
         return
     try:
@@ -643,6 +644,7 @@ def _load_human_patterns():
 
     by_leader: dict = {}
     defense_by_leader: dict = {}
+    counter_card_by_leader: dict = {}
     for row in data.get('heuristic_candidates', []):
         count = int(row.get('count') or 0)
         if count < _HUMAN_PATTERN_MIN_SUPPORT:
@@ -666,15 +668,40 @@ def _load_human_patterns():
     for leader, rows in data.get('by_defender_response', {}).items():
         leader_code = leader.split('|', 1)[0]
         defense = defense_by_leader.setdefault(leader_code, {'counter': 0, 'blocker': 0})
+        # Achado real 18/08 (bloco 613, continuacao -- pedido do usuario
+        # "ordem de counter" tambem): o produtor ja guarda `pattern:
+        # 'counter:CODIGO'`/`'blocker:CODIGO'` por lider DEFENSOR, mas
+        # ate aqui so a contagem agregada (counter vs blocker) era
+        # usada -- o CODIGO especifico era descartado, entao nao dava
+        # pra aprender "esta carta especifica e a que o humano usa
+        # pra counterar contra este lider". Preserva por carta, mesma
+        # formula/teto do bonus ofensivo (`_HUMAN_PATTERN_MAX_BONUS`),
+        # so pra `counter:` (blocker ja escolhe por custo de sacrificio
+        # calibrado via self-play, nao precisa desse sinal extra).
+        counter_bonus = counter_card_by_leader.setdefault(leader_code, {})
         for row in rows:
             pattern = row.get('pattern') or ''
             count = int(row.get('count') or 0)
             if pattern.startswith('counter:'):
                 defense['counter'] += count
+                code = pattern.split(':', 1)[1]
+                if code and count >= _HUMAN_PATTERN_MIN_SUPPORT:
+                    counter_bonus[code] = min(
+                        _HUMAN_PATTERN_MAX_BONUS,
+                        counter_bonus.get(code, 0.0) + min(4.0 + count * 2.0, 12.0),
+                    )
             elif pattern.startswith('blocker:'):
                 defense['blocker'] += count
     _HUMAN_PATTERN_BONUS_BY_LEADER = by_leader
     _HUMAN_DEFENSE_BY_LEADER = defense_by_leader
+    _HUMAN_COUNTER_CARD_BONUS_BY_LEADER = counter_card_by_leader
+
+
+def _human_counter_card_bonus(leader_code: str, card_code: str) -> float:
+    """Bonus tetado (mesma familia de `_human_pattern_bonus`) pra cartas
+    que o humano historicamente usou como counter defendendo este lider."""
+    _load_human_patterns()
+    return float(_HUMAN_COUNTER_CARD_BONUS_BY_LEADER.get(leader_code, {}).get(card_code, 0.0))
 
 
 def _load_analysis_db():
@@ -13528,7 +13555,19 @@ class DecisionEngine:
         if needed <= 0 or not pool:
             return [], 0.0, 0
 
-        custo = {id(c): self.pitch_cost_as_counter(c) for _, c in pool}
+        # Achado real 18/08 (bloco 613, pedido do usuario -- "ordem de
+        # counter" tambem, nao so ofensiva): desconta um bonus tetado
+        # (`_human_counter_card_bonus`, mesma familia/teto de
+        # `_human_pattern_bonus`) do pitch cost de cartas que o humano
+        # historicamente usou como counter defendendo ESTE lider --
+        # deixa essas cartas "mais baratas" de escolher primeiro no
+        # guloso abaixo, sem mudar a logica de cobertura/gasto em si.
+        leader_code = self.me.leader.code if self.me.leader else ''
+        custo = {
+            id(c): max(0.0, self.pitch_cost_as_counter(c)
+                       - _human_counter_card_bonus(leader_code, c.code))
+            for _, c in pool
+        }
         # pitch menor primeiro; empate = counter maior (cobre mais rapido)
         ordenado = sorted(pool, key=lambda item: (custo[id(item[1])], -item[0]))
         escolha, gasto, total = [], 0.0, 0

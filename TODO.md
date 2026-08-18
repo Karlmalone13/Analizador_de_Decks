@@ -2,6 +2,21 @@
 
 **Última atualização:** 18 de agosto de 2026
 
+> 18/08/2026 (bloco 614): Continuação do bloco 613 pro lado de
+> DEFESA (pedido explícito: "ordem de counter" também). O dado já
+> existia (`by_defender_response` guardava `counter:CÓDIGO` por líder
+> defensor) mas o loader só somava contagem agregada, nunca lido em
+> lugar nenhum — código morto. Conectado: `pick_counters` agora desconta
+> um bônus tetado (mesma fórmula do bloco 613) do pitch cost de cartas
+> com suporte humano real, deixando-as mais prováveis de serem
+> escolhidas primeiro. `blocker` (qual carta bloqueia) NÃO mexido —
+> já calibrado via self-play, já bate 95,8%/80% com o humano, não é
+> gargalo. Teste isolado + `smoke_fast`/`smoke_test` 100% OK. Resultado
+> real nas 26 partidas: counter-mesmo-conjunto 54,2%→**56,0%**, resto
+> idêntico (não é ruído — fix isolado a `pick_counters`). Segunda
+> melhora real seguida com o mesmo mecanismo seguro. Ver bloco 614 do
+> HANDOFF.
+
 > 18/08/2026 (bloco 613): **ACHADO GRANDE, melhora real**. Pedido do
 > usuário (após rejeitar a linha de "desconto de score" do bloco 612):
 > "mapear as decisões do humano e gerar uma calibragem que simboliza

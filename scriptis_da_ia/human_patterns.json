@@ -7714,6 +7714,30 @@
       {
         "pattern": "counter:OP10-111",
         "count": 3
+      },
+      {
+        "pattern": "blocker:OP13-089",
+        "count": 3
+      },
+      {
+        "pattern": "blocker:ST36-001",
+        "count": 2
+      },
+      {
+        "pattern": "blocker:OP10-112",
+        "count": 2
+      },
+      {
+        "pattern": "counter:OP13-080",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP13-084",
+        "count": 1
+      },
+      {
+        "pattern": "counter:ST36-001",
+        "count": 1
       }
     ],
     "OP11-021|Jinbe": [
@@ -8188,6 +8212,22 @@
       {
         "pattern": "counter:OP12-027",
         "count": 2
+      },
+      {
+        "pattern": "counter:OP15-025",
+        "count": 2
+      },
+      {
+        "pattern": "blocker:OP12-021",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP15-015",
+        "count": 1
+      },
+      {
+        "pattern": "blocker:OP12-027",
+        "count": 1
       }
     ],
     "OP15-002|Lucy": [

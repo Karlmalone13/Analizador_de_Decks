@@ -10664,6 +10664,7 @@ def main() -> int:
     test_bank_idle_don_no_lider_como_ultimo_recurso_17_08()
     test_don_livre_reserva_deficit_base_de_outros_ataques_pendentes_17_08()
     test_benefit_weight_enxerga_step_aninhado_e_escala_por_count_17_08()
+    test_pick_counters_prioriza_carta_com_padrao_humano_18_08()
     test_don_needed_for_attack_desbloqueia_don_requirement_com_alvo_real_17_08()
     test_attach_don_margem_lider_empate_compete_com_carta_jogavel_18_08()
     test_score_give_don_considera_sinergia_com_ataque()
@@ -11758,6 +11759,52 @@ def test_benefit_weight_enxerga_step_aninhado_e_escala_por_count_17_08() -> None
     steps_count_absurdo = [{"action": "draw", "count": 99}]
     check("count absurdo (99) capado em 3x, nao explode o peso",
           ee._benefit_weight(steps_count_absurdo, card) == 3)  # 1*min(99,3)
+
+
+def test_pick_counters_prioriza_carta_com_padrao_humano_18_08() -> None:
+    """
+    Achado real 18/08 (bloco 613, continuacao pro lado de DEFESA --
+    pedido explicito do usuario: "ordem de counter" tambem, nao so
+    ofensiva). `by_defender_response` ja guardava `pattern:
+    'counter:CODIGO'` por lider DEFENSOR, mas o loader so somava a
+    CONTAGEM agregada (`_HUMAN_DEFENSE_BY_LEADER`), descartando qual
+    carta especifica o humano usou -- nunca influenciava `pick_counters`.
+
+    Fix: novo `_HUMAN_COUNTER_CARD_BONUS_BY_LEADER` (mesma formula/teto
+    de `_human_pattern_bonus`) desconta um bonus tetado do `pitch_cost_
+    as_counter` de cartas com suporte real, deixando-as "mais baratas"
+    de escolher primeiro no guloso de `pick_counters` -- sem mudar a
+    logica de cobertura/gasto em si.
+    """
+    from optcg_engine import decision_engine as de
+
+    croc = mk("L1", "MeuLider", power=5000, cost=0, card_type="LEADER")
+    barata_favorita = mk("C1", "FavoritaHumana", power=3000, cost=2, counter=1000)
+    barata_neutra = mk("C2", "Neutra", power=3000, cost=2, counter=1000)
+
+    me = GameState(leader=croc, don_available=0, turn=5)
+    me.life = [mk("VL", "Vida", cost=1) for _ in range(4)]
+    me.hand = [barata_favorita, barata_neutra]
+    opp = GameState(leader=mk("OL", "LiderOponente", power=5000, cost=0, card_type="LEADER"))
+    engine = DecisionEngine(me, opp)
+
+    # Isola: as 2 cartas tem pitch_cost IDENTICO (mesmos stats) sem
+    # nenhum padrao humano carregado -- desempate arbitrario/qualquer.
+    orig = dict(de._HUMAN_COUNTER_CARD_BONUS_BY_LEADER)
+    try:
+        de._HUMAN_COUNTER_CARD_BONUS_BY_LEADER = {}
+        custo_favorita_sem_padrao = engine.pitch_cost_as_counter(barata_favorita)
+        custo_neutra_sem_padrao = engine.pitch_cost_as_counter(barata_neutra)
+        check("controle: sem padrao humano carregado, pitch cost das 2 cartas e identico",
+              custo_favorita_sem_padrao == custo_neutra_sem_padrao)
+
+        # Carrega um padrao humano SO pra 'C1' sob este lider.
+        de._HUMAN_COUNTER_CARD_BONUS_BY_LEADER = {"L1": {"C1": 12.0}}
+        escolha, gasto, total = engine.pick_counters(1000)
+        check("pick_counters escolhe a carta com padrao humano quando o pitch cost empataria",
+              bool(escolha) and escolha[0] is barata_favorita)
+    finally:
+        de._HUMAN_COUNTER_CARD_BONUS_BY_LEADER = orig
 
 
 def test_don_needed_for_attack_desbloqueia_don_requirement_com_alvo_real_17_08() -> None:
