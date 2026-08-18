@@ -2,6 +2,24 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 607): Verificado se `play`/`attach_don` tinham o
+> mesmo bug de categorização que inflou `activate` (bloco 606). `play`:
+> **limpo** (21 casos suspeitos checados, nenhum era "deploy fantasma"
+> via efeito de outra carta — todos compra normal do turno). `attach_don`:
+> efeito real mas pequeno (4 casos de `give_don` estrutural, não vale
+> fix dedicado); o grosso dos "27 nunca gerados" (Xebec dominando) é a
+> MESMA dinâmica de margem já caracterizada no bloco 601 (motor não
+> precisa do DON que o humano usou por segurança quando o ataque já
+> vence sem ele) — diferença tática legítima, não bug. **Não achei outro
+> achado do tamanho do `activate` nesta rodada** — informação real, as
+> duas categorias foram auditadas com o mesmo método confiável.
+> Pendente pra próxima rodada: `attack` ainda não passou pelo censo
+> "nunca gerada"; boa parte do que resta em `play`/`attach_don` parece
+> ser deficit real de DON ou empate tático, não mais bugs de
+> categorização — pode exigir aceitar um teto menor que 93% nessas
+> categorias específicas, não só mais auditoria. Ver bloco 607 do
+> HANDOFF.
+>
 > 17/08/2026 (bloco 606): **ACHADO GRANDE** (pedido do usuário "temos
 > que subir essa porcentagem", todas as categorias). Censo confiável
 > aplicado em `activate` achou 79/81 casos "nunca gerado", quase todos

@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (607) - Claude (sessao remota web) - Verificado se `play`/`attach_don` tem o mesmo bug de categorizacao do bloco 606 (`activate`). Resultado: `play` esta limpo (nenhuma jogada "fantasma" de deploy-via-efeito). `attach_don` tem uma reducao pequena e real (4 casos, `give_don`/`add_don` estrutural) mas a MAIORIA dos "nunca gerados" (Xebec dominando de novo) sao a mesma dinamica de margem ja caracterizada no bloco 601 (ataque ja vence sem DON extra) -- diferenca tatica legitima, nao bug novo
+
+**Pedido do usuario**: "vamos continuar simulando e investigando pra
+subir mais os numeros" -- pendencia deixada no bloco 606 (`play`/
+`attach_don`/`attack` podem ter o mesmo tipo de erro de categorizacao
+que inflou o mismatch de `activate`).
+
+### `play`: verificado, LIMPO
+
+Hipotese: um personagem DEPLOYADO via efeito de OUTRA carta (ex: "Deploy
+Edward Newgate" dentro do on-play de Rocks D. Xebec OP17-118) poderia
+estar recebendo sua PROPRIA entrada `type:"play"` no log historico,
+inflando mismatch contra o motor (que nunca "jogaria" independentemente
+algo que so entra em campo como efeito). Censo: 21 acoes `play` cuja
+carta nao estava na mao ANTES do turno -- checadas as 7 mais suspeitas
+uma a uma contra o texto de "Deploy" de outras acoes do MESMO turno:
+**nenhuma** era deploy-via-efeito, todas eram compra normal do turno
+(ja coberto corretamente pelo fix `_known_gains_this_turn`, bloco 598).
+
+### `attach_don`: efeito pequeno e real, mas nao e o mesmo padrao
+
+Testado com heuristica de texto primeiro (`'Don' in effects`) -- 12
+casos, mas o PRIMEIRO exemplo conferido foi FALSO POSITIVO ("Rest 1
+Don" e CUSTO pago, nao DON dado a outra carta). Corrigido pra usar
+`card_effects_db` ESTRUTURAL (acoes `give_don`/`add_don`/
+`transfer_don`): **so 4 casos reais**, todos concentrados numa carta
+(Monkey D. Garp). Efeito pequeno, nao vale um fix dedicado agora (a
+diferenca no denominador de 46 turnos e marginal).
+
+Censo "nunca gerada" (mesmo metodo do bloco 603/606) rodado em
+`attach_don`: 27 nunca gerados, dominado de novo por Rocks D. Xebec
+(15 dos 27). Aberto 1 caso a fundo (`2026-08-16T14.18.02` T6): humano
+anexou 1 DON no Xebec ANTES de ataca-lo -- padrao classico de margem.
+Nao ha evidencia de bug de categorizacao aqui (diferente do `activate`)
+-- e mais provavel que seja a MESMA dinamica ja caracterizada no bloco
+601 ("quando o motor ataca sem margem, e porque o ataque ja vence
+decisivamente sem ela" -- 235 decisoes de ataque, so 1 apertada) --
+motor as vezes nao precisa do DON que o humano usou por seguranca,
+diferenca tatica legitima, nao bug.
+
+### Conclusao desta rodada
+
+Nao achei outro "achado grande" do tamanho do `activate` (bloco 606)
+nesta passada por `play`/`attach_don`. Isso e informacao real (nao
+"nao procurei direito") -- as duas categorias foram auditadas com o
+MESMO metodo confiavel que achou `activate`, `is_first` (603) e o
+`don_requirement` do Vista (602), e nao renderam o mesmo tipo de
+achado. Proximo passo, se o usuario quiser continuar subindo os
+numeros: (a) `attack` ainda nao passou por este censo especifico de
+"nunca gerada" (so foi medido por conjunto/alvo ate agora); (b) os 22
+casos de `play`/27 de `attach_don`/79 de `activate` (agora reduzidos)
+que sao deficit real de DON ou empate tatico legitimo nao vao subir
+mais SO com auditoria -- exigiriam ou aceitar que o teto realista e
+menor que 93% pra essas categorias especificas, ou uma mudanca de
+metodologia (nao so medir "mesma carta", que ja foi ampliado com
+sequencia/alvo-de-efeito no bloco 604).
+
 ## 2026-08-17 (606) - Claude (sessao remota web) - ACHADO GRANDE: metrica `activate` estava fundamentalmente mal-categorizada -- log historico rotula QUALQUER efeito reativo automatico (on_ko, when_attacking, on_opp_attack, fim de turno) como "activate", mas o motor so gera `kind='activate'` pra `[Activate:Main]` DE VERDADE. 79/81 casos "nunca gerado" no censo eram essa categoria errada, nao decisao ruim. Corrigido: activate sobe de 8,1% pra 46,4%
 
 **Pedido do usuario**: "temos que subir essa porcentagem" (todas as
