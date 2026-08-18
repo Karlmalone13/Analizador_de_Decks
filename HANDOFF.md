@@ -1,5 +1,69 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (601) - Claude (sessao remota web) - Investigacao continuada (pedido do usuario): a hipotese "DON de margem nunca compete contra jogar carta" (achado lateral do bloco 599) foi TESTADA e NAO se sustenta como padrao sistemico -- era efeito lateral do caso especifico do Xebec, nao uma regra geral. Tabela de porcentagem completa atualizada (26 partidas, todos os logs)
+
+**Pedido do usuario**: "Vamos investigar, e tb me diga a porcentagem
+de igualdade de decisoes de counter, blocker, play, activate, attack,
+attach, lembre-se de olhar todos os logs".
+
+### Tabela completa (26 partidas, todos os turnos/ataques do banco, apos os fixes 596-600)
+
+| categoria | resultado |
+|---|---|
+| play (mesmas cartas jogadas no turno) | 28/105 (26,7%) |
+| attack -- mesmo(s) atacante(s) | 50/92 (54,3%) |
+| attack -- mesmo alvo (dos atacantes em comum) | 154/188 (81,9%) |
+| activate (mesmas cartas ativaram) | 6/86 (7,0%) |
+| attach_don -- mesmo alvo recebeu DON | 3/46 (6,5%) |
+| blocker (bloquear ou nao) | 114/119 (95,8%) |
+| blocker -- mesma carta | 4/5 (80,0%) |
+| counter (usar ou nao) | 81/109 (74,3%) |
+| counter -- mesmo conjunto de cartas | 13/24 (54,2%) |
+| counter -- mesma ordem (2+ cartas) | 0/1 (0,0%) |
+
+### Hipotese testada e REJEITADA: "margem de ataque atropela jogar carta"
+
+Duas checagens objetivas em CIMA de todos os 26 logs, nao so o caso
+Xebec que motivou a hipotese:
+
+1. **Census da MESMA forma de bug** (beneficio escondido em step
+   aninhado + custo de sacrificio + trigger julgado por
+   `_worth_paying_optional_costs`): **so 1 carta no banco inteiro**
+   (OP17-039) tem essa combinacao exata -- nao e uma familia, era
+   isolado.
+2. **Census de decisoes APERTADAS** (turno_planner escolheu 'attack'
+   tendo pelo menos 1 candidato 'play'/'activate' disponivel, gap de
+   score entre os dois): de **235 decisoes de ataque** com alternativa
+   de jogar carta disponivel, **so 1 foi apertada** (gap <=15 pontos).
+   Caso real destrinchado (Crocodile x Ace, T12): os ataques que
+   receberam margem ja venciam a comparacao por LARGA margem (276 vs
+   225,5 do play), a jogada foi escolhida quando valia a pena, uma
+   decisao apertada real foi resolvida por 1 ponto so (nao MARGEM de
+   DON, so calibragem fina normal), e o DON sobrando no fim foi
+   BANCADO no lider (bloco 595), nao desperdicado.
+
+**Conclusao honesta**: quando o motor ataca em vez de jogar carta, e
+porque atacar realmente vale muito mais no calculo dele -- nao e DON
+de margem "roubando" recurso de uma jogada que quase empatava. A
+divergencia de play/activate (26,7%/7,0%) contra o humano NAO tem uma
+causa unica sistemica identificavel -- e mistura de (a) empates
+taticos legitimos (linhas diferentes igualmente validas, ja
+confirmado com exemplos concretos no bloco 597: T4/T12 do Crocodile x
+Ace) e (b) bugs pontuais espalhados, um de cada vez (como o Xebec),
+sem padrao unificador. **Nao ha mais "causa raiz grande" pra caçar
+aqui** -- proximo ganho real, se houver, vem de auditoria carta-a-carta
+continuada (mesmo metodo do bloco 600), nao de mais uma tentativa de
+mecanismo unico.
+
+### Pendente
+
+- Recalibragem da tabela `_STEP_VALUE_WEIGHTS` (bloco 600, nao feita --
+  blast radius grande, ~150 cartas).
+- Continuar auditoria carta-a-carta em turnos de baixo match (usar
+  `decision_quality_full.py`/`audit_one_game(capture_candidates=True)`
+  pra achar mais casos como o Xebec) -- e o unico caminho concreto
+  restante, sem atalho de mecanismo unico.
+
 ## 2026-08-17 (600) - Claude (sessao remota web) - Achado real (usuario corrigiu minha metrica: "a metrica e copiar a eficiencia do humano sim"): `[When Attacking]` do lider Rocks D. Xebec (OP17-039) NUNCA disparava -- causa raiz em `_benefit_weight` (2 bugs genericos, nao so desta carta): nao enxergava beneficio escondido em step aninhado, e `count` nunca escalava peso. Fix estrutural aplicado e validado, mas HONESTO: sozinho nao basta pra fazer o gatilho disparar numa mao real -- fica registrada a pendencia maior
 
 **Contexto**: apos o bloco 599 (fix de reserva de DON entre ataques), eu

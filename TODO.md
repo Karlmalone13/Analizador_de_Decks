@@ -2,6 +2,22 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 601): Pedido do usuário: investigar mais + tabela
+> de % completa (play/attack/activate/attach/blocker/counter, todos os
+> 26 logs). **Tabela**: play 26,7%, attack-quem 54,3%, attack-alvo
+> 81,9%, activate 7,0%, attach_don-alvo 6,5%, blocker 95,8%,
+> blocker-carta 80,0%, counter 74,3%, counter-cartas 54,2%. **Hipótese
+> do bloco 599 testada e REJEITADA**: "DON de margem nunca compete
+> contra jogar carta" não é padrão sistêmico — census no banco inteiro
+> achou só 1 carta (Xebec) com essa forma de bug, e de 235 decisões de
+> ataque com alternativa de jogar carta disponível, só 1 foi apertada
+> (a maioria dos ataques vence a comparação por larga margem, quando
+> vence). Conclusão: não há mais "causa raiz grande" pra caçar nessa
+> frente — a divergência de play/activate é mistura de empates táticos
+> legítimos + bugs pontuais espalhados (tipo Xebec), sem padrão
+> unificador. Próximo passo real: continuar auditoria carta-a-carta,
+> não mais uma tentativa de mecanismo único. Ver bloco 601 do HANDOFF.
+>
 > 17/08/2026 (bloco 600): Usuário corrigiu a métrica ("a métrica é
 > copiar a eficiência do humano sim") — reabri o turno do bloco 599 e
 > confirmei: humano gastou 0 DON em ataque e jogou/ativou 3 cartas;
