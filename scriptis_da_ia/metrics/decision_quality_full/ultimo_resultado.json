@@ -12,7 +12,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 2,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T00.53.44.json",
@@ -26,7 +32,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 2,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T00.53.44.json",
@@ -40,7 +52,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 2,
+      "alvo_efeito_match": 1
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T00.53.44.json",
@@ -54,7 +72,13 @@
       "activate_match": true,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 2,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T00.53.44.json",
@@ -68,7 +92,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 8,
+      "alvo_efeito_common": 2,
+      "alvo_efeito_match": 1
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T00.53.44.json",
@@ -82,7 +112,13 @@
       "activate_match": true,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T01.59.52.json",
@@ -96,7 +132,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 3,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T01.59.52.json",
@@ -110,7 +152,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T01.59.52.json",
@@ -124,7 +172,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T01.59.52.json",
@@ -138,7 +192,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 1
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T01.59.52.json",
@@ -152,7 +212,13 @@
       "activate_match": true,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 7,
+      "alvo_efeito_common": 2,
+      "alvo_efeito_match": 1
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T01.59.52.json",
@@ -166,7 +232,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 1
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T09.41.46.json",
@@ -180,7 +252,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": true,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 2,
+      "alvo_efeito_common": 2,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T09.41.46.json",
@@ -194,7 +272,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T09.41.46.json",
@@ -208,7 +292,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T09.41.46.json",
@@ -222,7 +312,13 @@
       "activate_match": true,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 1
     },
     {
       "game": "Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T09.41.46.json",
@@ -236,7 +332,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 8,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 1
     },
     {
       "game": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T12.30.45.json",
@@ -250,7 +352,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T12.30.45.json",
@@ -264,7 +372,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 3,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T12.30.45.json",
@@ -278,7 +392,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T13.18.18.json",
@@ -292,7 +412,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": true,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 1,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T13.18.18.json",
@@ -306,7 +432,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T13.18.18.json",
@@ -320,7 +452,13 @@
       "activate_match": true,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 2,
+      "alvo_efeito_match": 2
     },
     {
       "game": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T13.18.18.json",
@@ -334,7 +472,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T16.38.43.json",
@@ -348,7 +492,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 0,
+      "seq_maxlen": 1,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T16.38.43.json",
@@ -362,7 +512,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T16.38.43.json",
@@ -376,7 +532,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T16.38.43.json",
@@ -390,7 +552,13 @@
       "activate_match": true,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 7,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Eustass.Captain.Kid-Y_2026-08-02T23.52.21.json",
@@ -404,7 +572,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": true,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 1,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Eustass.Captain.Kid-Y_2026-08-02T23.52.21.json",
@@ -414,11 +588,17 @@
       "attack_quem_match": true,
       "attack_has_data": true,
       "attack_alvo_common": 1,
-      "attack_alvo_match": 1,
+      "attack_alvo_match": 0,
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 3,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Eustass.Captain.Kid-Y_2026-08-02T23.52.21.json",
@@ -432,7 +612,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 3,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Eustass.Captain.Kid-Y_2026-08-02T23.52.21.json",
@@ -446,7 +632,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Portgas.D.Ace-R_x_Eustass.Captain.Kid-Y_2026-08-02T23.52.21.json",
@@ -460,7 +652,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 12,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Rocks.D.Xebec-B_x_Marshall.D.Teach-BY_2026-08-08T12.15.57.json",
@@ -474,7 +672,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Rocks.D.Xebec-B_x_Marshall.D.Teach-BY_2026-08-08T12.15.57.json",
@@ -488,7 +692,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Rocks.D.Xebec-B_x_Marshall.D.Teach-BY_2026-08-08T12.15.57.json",
@@ -502,7 +712,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Rocks.D.Xebec-B_x_Marshall.D.Teach-BY_2026-08-08T12.15.57.json",
@@ -516,7 +732,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 10,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T10.23.52.json",
@@ -530,7 +752,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 2,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T10.23.52.json",
@@ -544,7 +772,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 3,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T10.23.52.json",
@@ -558,7 +792,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T10.23.52.json",
@@ -572,7 +812,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 8,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 1
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T10.23.52.json",
@@ -586,7 +832,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 10,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T17.04.22.json",
@@ -600,7 +852,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 0,
+      "seq_maxlen": 1,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T17.04.22.json",
@@ -614,7 +872,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 3,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T17.04.22.json",
@@ -628,7 +892,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T17.04.22.json",
@@ -642,7 +912,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T17.04.22.json",
@@ -656,7 +932,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 2,
+      "alvo_efeito_match": 1
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56.json",
@@ -670,7 +952,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": true,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 1,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56.json",
@@ -684,7 +972,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 1
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56.json",
@@ -698,7 +992,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56.json",
@@ -712,7 +1012,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 9,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.43.37.json",
@@ -726,7 +1032,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": true,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 1,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.43.37.json",
@@ -740,7 +1052,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.43.37.json",
@@ -754,7 +1072,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T23.38.28.json",
@@ -768,7 +1092,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 0,
+      "seq_maxlen": 2,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T23.38.28.json",
@@ -782,7 +1112,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 3,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T23.38.28.json",
@@ -796,7 +1132,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T23.38.28.json",
@@ -810,7 +1152,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T23.38.28.json",
@@ -824,7 +1172,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 8,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T19.16.09.json",
@@ -838,7 +1192,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": true,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 1,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T19.16.09.json",
@@ -852,7 +1212,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T19.16.09.json",
@@ -866,7 +1232,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T19.16.09.json",
@@ -880,7 +1252,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 8,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T19.16.09.json",
@@ -894,7 +1272,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 16,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T22.24.38.json",
@@ -908,7 +1292,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": true,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 1,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T22.24.38.json",
@@ -922,7 +1312,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 7,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T22.24.38.json",
@@ -936,7 +1332,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T22.24.38.json",
@@ -950,7 +1352,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 7,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 1
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T00.14.40.json",
@@ -964,7 +1372,13 @@
       "activate_match": true,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T00.14.40.json",
@@ -978,7 +1392,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T00.14.40.json",
@@ -992,7 +1412,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 7,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T00.14.40.json",
@@ -1006,7 +1432,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T00.57.17.json",
@@ -1020,7 +1452,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": true,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 1,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T00.57.17.json",
@@ -1034,7 +1472,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T00.57.17.json",
@@ -1048,7 +1492,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T00.57.17.json",
@@ -1062,7 +1512,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 9,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T14.18.02.json",
@@ -1076,7 +1532,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": true,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 2,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T14.18.02.json",
@@ -1090,7 +1552,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 1
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T14.18.02.json",
@@ -1104,7 +1572,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T14.18.02.json",
@@ -1118,7 +1592,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 7,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T14.18.02.json",
@@ -1132,7 +1612,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T14.18.02.json",
@@ -1146,7 +1632,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 4,
+      "seq_maxlen": 17,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T15.11.37.json",
@@ -1160,7 +1652,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 2,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T15.11.37.json",
@@ -1174,7 +1672,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 1
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T15.11.37.json",
@@ -1188,7 +1692,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 1
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T15.11.37.json",
@@ -1202,7 +1712,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T15.11.37.json",
@@ -1216,7 +1732,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T15.11.37.json",
@@ -1230,7 +1752,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 4,
+      "seq_maxlen": 11,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Rocks.D.Xebec-B_x_Monkey.D.Luffy-RG_2026-08-16T16.43.31.json",
@@ -1244,7 +1772,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Rocks.D.Xebec-B_x_Monkey.D.Luffy-RG_2026-08-16T16.43.31.json",
@@ -1258,7 +1792,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Rocks.D.Xebec-B_x_Monkey.D.Luffy-RG_2026-08-16T16.43.31.json",
@@ -1272,7 +1812,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Rocks.D.Xebec-B_x_Monkey.D.Luffy-RG_2026-08-16T16.43.31.json",
@@ -1286,7 +1832,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 8,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 1
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T17.10.36.json",
@@ -1300,7 +1852,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 2,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T17.10.36.json",
@@ -1314,7 +1872,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T17.10.36.json",
@@ -1328,7 +1892,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T17.10.36.json",
@@ -1342,7 +1912,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T17.10.36.json",
@@ -1356,7 +1932,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T23.26.16.json",
@@ -1370,7 +1952,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": true,
+      "seq_has_data": false,
+      "seq_lcs": 0,
+      "seq_maxlen": 0,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T23.26.16.json",
@@ -1384,7 +1972,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T23.26.16.json",
@@ -1398,7 +1992,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T23.26.16.json",
@@ -1412,7 +2012,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 7,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T23.55.32.json",
@@ -1426,7 +2032,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": true,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 1,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T23.55.32.json",
@@ -1440,7 +2052,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 3,
+      "alvo_efeito_common": 1,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T23.55.32.json",
@@ -1454,7 +2072,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T23.55.32.json",
@@ -1468,7 +2092,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T23.55.32.json",
@@ -1482,7 +2112,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45.json",
@@ -1496,7 +2132,13 @@
       "activate_match": true,
       "activate_has_data": false,
       "don_alvo_match": true,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": true,
+      "seq_has_data": true,
+      "seq_lcs": 3,
+      "seq_maxlen": 3,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45.json",
@@ -1510,7 +2152,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": false
+      "don_has_data": false,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 4,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45.json",
@@ -1524,7 +2172,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 1,
+      "seq_maxlen": 6,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45.json",
@@ -1538,7 +2192,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": false,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 2,
+      "seq_maxlen": 5,
+      "alvo_efeito_common": 0,
+      "alvo_efeito_match": 0
     },
     {
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45.json",
@@ -1552,7 +2212,13 @@
       "activate_match": false,
       "activate_has_data": true,
       "don_alvo_match": true,
-      "don_has_data": true
+      "don_has_data": true,
+      "seq_exact_match": false,
+      "seq_has_data": true,
+      "seq_lcs": 4,
+      "seq_maxlen": 7,
+      "alvo_efeito_common": 2,
+      "alvo_efeito_match": 1
     }
   ],
   "defense": [

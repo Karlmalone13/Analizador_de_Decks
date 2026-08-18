@@ -23,6 +23,20 @@ porque cada categoria tem denominador diferente):
     - attack_alvo: dos atacantes em comum, mesmo alvo escolhido
     - activate: mesma(s) carta(s) ativou [Activate: Main]
     - attach_don_alvo: mesmo(s) personagem(ns)/lider recebeu DON
+    - sequencia: ORDEM de execucao (play/activate/attack/attach_don
+      combinados) identica start-a-fim, e similaridade por LCS (quanto
+      da ordem bate, sem exigir identidade total)
+    - alvo_efeito: quando os dois jogaram/ativaram a MESMA carta,
+      mesmo alvo ESCOLHIDO DENTRO do efeito dela (nao so ataque) --
+      best-effort via texto da narrativa, rotulado como tal (nao e um
+      campo estruturado como target_type/target de attack)
+
+    LIMITACAO NOVA (17/08, pedido do usuario "e os outros efeitos,
+    mecanicas, sequencias"): mulligan (manter ou embaralhar a mao
+    inicial) NAO e capturado pelo schema do log (`meta.goes_first` e o
+    unico campo relacionado, sempre null nos logs do banco) -- nao ha
+    como medir essa decisao com os dados disponiveis, declarado aqui em
+    vez de fingir cobertura.
 
   DEFESA (turno do OPONENTE, ataque a ataque contra o humano --
   reconstrucao igual `audit_defense.py`, chama DIRETAMENTE
@@ -148,6 +162,129 @@ def _offense_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
         common_attackers = hist_atk_who & motor_atk_who
         alvo_matches = [hist_atk_map[c] == motor_atk_map[c] for c in common_attackers]
 
+        # Achado real 17/08 (pedido do usuario: "e os outros efeitos,
+        # mecanicas, sequencias?" -- ate aqui so comparava CONJUNTO de
+        # cartas por categoria, nunca a ORDEM de execucao dentro do
+        # turno nem o ALVO escolhido DENTRO de um efeito de play/
+        # activate (so attack/attach_don tinham alvo comparado). Duas
+        # extensoes:
+        #
+        # 1. SEQUENCIA: lista ORDENADA (kind, codigo) de play/activate/
+        # attack/attach_don, na ordem real de execucao (o proprio
+        # schema do log ja preserva ordem; chosen_actions tambem, pela
+        # ordem que o decision_log registrou). match_exato = sequencia
+        # IDENTICA start-a-fim; similaridade = razao de subsequencia
+        # comum mais longa (LCS) sobre o maior dos dois -- mede "quanto
+        # da ordem bate" sem exigir identidade total (empate tatico em
+        # 1 passo nao deveria zerar a sequencia inteira).
+        hist_seq = []
+        for a in hist_actions:
+            if a.get('type') == 'play' or (a.get('type') == 'activate' and a.get('card')
+                                           and _hist_kind(cards_db.get(a['card'], {}).get('type')) == 'play'):
+                if a.get('card'):
+                    hist_seq.append(('play', a['card']))
+            elif a.get('type') == 'activate' and a.get('card') and _hist_kind(
+                    cards_db.get(a['card'], {}).get('type')) == 'activate':
+                hist_seq.append(('activate', a['card']))
+            elif a.get('type') == 'attack' and a.get('attacker_code'):
+                hist_seq.append(('attack', a['attacker_code']))
+            elif a.get('type') == 'attach_don' and a.get('to'):
+                hist_seq.append(('attach_don', a['to']))
+        motor_seq = [(a['kind'], a['card']) for a in motor_actions
+                    if a.get('kind') in ('play', 'activate', 'attack', 'attach_don') and a.get('card')]
+
+        def _lcs_len(x, y):
+            m, n = len(x), len(y)
+            if m == 0 or n == 0:
+                return 0
+            dp = [[0] * (n + 1) for _ in range(m + 1)]
+            for ii in range(1, m + 1):
+                for jj in range(1, n + 1):
+                    if x[ii - 1] == y[jj - 1]:
+                        dp[ii][jj] = dp[ii - 1][jj - 1] + 1
+                    else:
+                        dp[ii][jj] = max(dp[ii - 1][jj], dp[ii][jj - 1])
+            return dp[m][n]
+
+        seq_lcs = _lcs_len(hist_seq, motor_seq)
+        seq_maxlen = max(len(hist_seq), len(motor_seq))
+
+        # 2. ALVO dentro do efeito de play/activate (nao so attack) --
+        # so comparavel quando os DOIS jogaram/ativaram a MESMA carta
+        # neste turno (senao nao ha o que comparar). Historico: 1o
+        # codigo mencionado no texto de `effects` que nao seja a
+        # propria carta. Motor: 1o codigo mencionado na narrativa entre
+        # o "Joga:"/"ativou" desta carta e a proxima acao -- best-effort
+        # (narrativa e texto livre, nao um campo estruturado), rotulado
+        # como tal no relatorio final.
+        # Achado real 17/08 (ao validar esta metrica antes de reportar,
+        # mesma disciplina de sempre -- 2 tentativas descartadas):
+        # 1a: buscar CODIGO (formato `["COD">COD]`) na narrativa do
+        # motor -- ZERO ocorrencias em qualquer narrativa gerada
+        # (confirmado, grep de `">`  em 3 turnos = 0): a narrativa so
+        # imprime NOME truncado (`card.name[:30]`), nunca o bracket-
+        # code do log historico. CODE_RE nunca poderia bater ali.
+        # 2a: nome com espaco ("Mr. 5 (Gem)" do cards_db) contra
+        # narrativa sem espaco ("Mr.5(Gem)") -- tambem falhava, so por
+        # formatacao. Fix final: INVERTE a direcao -- historico da o
+        # CODIGO do alvo (formato bracket, confiavel), converte pra
+        # NOME via cards_db, normaliza removendo espaco dos DOIS lados
+        # (nome candidato E narrativa) antes de procurar substring.
+        def _sem_espaco(s):
+            return (s or '').replace(' ', '')
+
+        narrativa = t.get('engine_hoje_narrativa', '')
+        narrativa_sem_espaco = _sem_espaco(narrativa)
+        cartas_ambos = (hist_play & motor_play) | (hist_activate & motor_activate)
+        alvo_efeito_matches = []
+        for code in cartas_ambos:
+            hist_eff_text = ' '.join(
+                e for a in hist_actions if a.get('card') == code for e in (a.get('effects') or []))
+            hist_target_codes = {m for m in CODE_RE.findall(hist_eff_text) if m != code}
+            if not hist_target_codes:
+                continue
+            # Achado real 17/08 (2a rodada de validacao): a 1a ocorrencia
+            # do nome na narrativa costuma ser a linha "Comprou: X" (o
+            # anuncio de compra no INICIO do turno, sempre impresso),
+            # nao a jogada de verdade -- ancora a busca em "Joga:"/
+            # "ativou" (os 2 prefixos que `_play_card`/o log de activate
+            # usam), senao pega o trecho errado da narrativa.
+            nome_carta = cards_db.get(code, {}).get('name', '')
+            nome_curto = _sem_espaco(nome_carta.split(' (')[0].split(' [')[0]) if nome_carta else code
+            idx = -1
+            for prefixo in ('Joga:', 'ativou[Activate:Main]de'):
+                pos = narrativa_sem_espaco.find(prefixo + nome_curto)
+                if pos < 0:
+                    # narrativa trunca nome em 30 chars -- tenta prefixo parcial tambem
+                    pos = narrativa_sem_espaco.find(prefixo)
+                    while pos >= 0:
+                        if nome_curto[:10] and nome_curto[:10] in narrativa_sem_espaco[pos:pos+60]:
+                            break
+                        pos = narrativa_sem_espaco.find(prefixo, pos + 1)
+                if pos >= 0:
+                    idx = pos
+                    break
+            if idx < 0:
+                continue
+            trecho = narrativa_sem_espaco[idx:idx + 500]
+            fim = trecho.find('>Joga:', 10)
+            if fim < 0:
+                fim = len(trecho)
+            trecho = trecho[:fim]
+            # converte cada alvo HISTORICO (codigo) pro nome truncado
+            # (mesmo corte de 30 chars que a narrativa usa) e procura
+            # esse nome, sem espaco, dentro do trecho.
+            bateu = False
+            for tcode in hist_target_codes:
+                tnome = cards_db.get(tcode, {}).get('name', '')
+                if not tnome:
+                    continue
+                tmarcador = _sem_espaco(tnome[:30])
+                if tmarcador and tmarcador in trecho:
+                    bateu = True
+                    break
+            alvo_efeito_matches.append(bateu)
+
         rows.append({
             'game': os.path.basename(parsed_path), 'turn': turn_num,
             'play_match': hist_play == motor_play,
@@ -160,6 +297,12 @@ def _offense_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
             'activate_has_data': bool(hist_activate or motor_activate),
             'don_alvo_match': hist_don_alvo == motor_don_alvo,
             'don_has_data': bool(hist_don_alvo or motor_don_alvo),
+            'seq_exact_match': hist_seq == motor_seq,
+            'seq_has_data': bool(hist_seq or motor_seq),
+            'seq_lcs': seq_lcs,
+            'seq_maxlen': seq_maxlen,
+            'alvo_efeito_common': len(alvo_efeito_matches),
+            'alvo_efeito_match': sum(alvo_efeito_matches),
         })
     return {'rows': rows}
 
@@ -350,6 +493,18 @@ def main():
     total_common = sum(r['attack_alvo_common'] for r in off_rows)
     total_alvo_ok = sum(r['attack_alvo_match'] for r in off_rows)
     print(f'  attack -- MESMO ALVO (dos atacantes em comum): {_pct(total_alvo_ok, total_common)}')
+
+    seq_base = [r for r in off_rows if r['seq_has_data']]
+    seq_exact_ok = sum(1 for r in seq_base if r['seq_exact_match'])
+    print(f'  SEQUENCIA -- identica start-a-fim: {_pct(seq_exact_ok, len(seq_base))}')
+    total_lcs = sum(r['seq_lcs'] for r in off_rows)
+    total_maxlen = sum(r['seq_maxlen'] for r in off_rows)
+    print(f'  SEQUENCIA -- similaridade (LCS/maior sequencia): {_pct(total_lcs, total_maxlen)}')
+
+    total_alvo_ef_common = sum(r['alvo_efeito_common'] for r in off_rows)
+    total_alvo_ef_ok = sum(r['alvo_efeito_match'] for r in off_rows)
+    print(f'  ALVO dentro do efeito (so quando ambos jogaram a MESMA carta, best-effort via narrativa): '
+          f'{_pct(total_alvo_ef_ok, total_alvo_ef_common)}')
 
     print(f'\n--- DEFESA (turno do oponente, {len(def_rows)} ataques sofridos) ---')
     n = len(def_rows)

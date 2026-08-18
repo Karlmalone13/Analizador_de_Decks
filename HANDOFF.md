@@ -1,5 +1,73 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (604) - Claude (sessao remota web) - Pedido do usuario ("e os outros efeitos, mecanicas, sequencias?"): `decision_quality_full.py` ganha SEQUENCIA de execucao (ordem exata + similaridade LCS) e ALVO escolhido DENTRO do efeito de play/activate (nao so ataque). Mulligan declarado como NAO capturavel pelo schema do log
+
+**Pedido direto**: por que so media `play`/`activate` (mesma carta),
+sem olhar ordem, alvo escolhido dentro do efeito, ou outras mecanicas.
+
+### O que foi adicionado
+
+1. **SEQUENCIA**: lista ORDENADA (play/activate/attack/attach_don
+   combinados, na ordem real de execucao) comparada de duas formas --
+   identica start-a-fim (rigida) e similaridade por LCS (Longest Common
+   Subsequence) sobre o maior dos dois, que mede "quanto da ordem bate"
+   sem exigir que TODA a sequencia seja identica.
+2. **ALVO dentro do efeito**: quando os dois lados jogaram/ativaram a
+   MESMA carta no mesmo turno, compara se o alvo ESCOLHIDO pelo efeito
+   dela (nao o ataque) bate -- ex: "Trash Crocodile" do historico vs
+   quem o motor realmente trashou.
+3. **Mulligan**: verificado o schema do log (`meta.goes_first`, unico
+   campo relacionado) -- sempre `null` em todos os logs do banco, sem
+   nenhum outro campo de mulligan. **Declarado explicitamente como NAO
+   MENSURAVEL** com os dados disponiveis, em vez de fingir cobertura.
+
+### 3 bugs pegos e corrigidos ANTES de reportar o numero de "alvo dentro do efeito" (mesma disciplina de sempre)
+
+1. Tentativa 1 (buscar CODIGO `["COD">COD]` na narrativa do motor):
+   **zero ocorrencias possiveis** -- confirmado por grep, a narrativa
+   do motor SO imprime nome truncado (`card.name[:30]`), nunca o
+   bracket-code que o log HISTORICO usa. CODE_RE nunca bateria ali.
+2. Tentativa 2 (nome da carta, com espaco, contra a narrativa): 0
+   casos -- `cards_db` guarda "Mr. 5 (Gem)" (com espaco), a narrativa
+   imprime "Mr.5(Gem)" (sem espaco nenhum). Normalizado removendo
+   espaco dos dois lados antes de comparar.
+3. Ainda incorreto: a 1a ocorrencia do nome na narrativa era a linha
+   `Comprou: X` (anuncio de compra no INICIO do turno, sempre
+   impresso), nao a jogada de verdade -- pegava o trecho ERRADO
+   (efeito de OUTRA carta jogada antes). Fix: ancora a busca em
+   `Joga:`/`ativou[Activate:Main]de`, os 2 prefixos reais que o log de
+   execucao usa.
+
+Numero final so ficou confiavel depois dessas 3 correcoes -- foi de "0
+casos" (2 bugs anteriores escondiam TODO o dado) pra 42 casos com dado
+real, 18 batendo (42,9%).
+
+### Tabela atualizada (26 partidas, deterministico -- 2 runs identicos)
+
+| categoria | resultado |
+|---|---|
+| play (mesmas cartas) | 26,7% (28/105) |
+| attack -- quem | 56,5% (52/92) |
+| attack -- mesmo alvo | 81,9% (154/188) |
+| activate | 8,1% (7/86) |
+| attach_don -- mesmo alvo | 6,5% (3/46) |
+| **SEQUENCIA -- identica start-a-fim** | **10,0% (11/110)** |
+| **SEQUENCIA -- similaridade LCS** | **34,2% (187/547)** |
+| **ALVO dentro do efeito (best-effort)** | **42,9% (18/42)** |
+| blocker | 95,8% (114/119) |
+| counter | 75,2% (82/109) |
+| mulligan | **nao mensuravel** (schema do log nao captura) |
+
+### Limitacao honesta do "ALVO dentro do efeito"
+
+Continua rotulado `best-effort`: depende de achar o NOME certo (nao
+codigo) na narrativa de texto livre do motor, com todos os riscos de
+truncamento/ambiguidade de nome que isso carrega -- nao e um campo
+estruturado como `target_type`/`target` de `attack` (que vem direto do
+tuple de acao). Uma versao mais solida exigiria instrumentar
+`EffectExecutor`/`_execute_step` pra logar o alvo REAL escolhido por
+cada step (mudanca estrutural maior, nao feita aqui).
+
 ## 2026-08-17 (603) - Claude (sessao remota web) - FIX REAL na ferramenta de auditoria: `is_first` era fixo em True pro lado auditado, SEMPRE -- mesmo quando esse lado realmente jogou em SEGUNDO na partida real, subestimando DON em 1 no primeiro turno (jogador 2 ganha 2 DON no proprio 1o turno, nao 1). Melhora real e mensuravel: dano agregado 86,5%->88,3%, varios outros indicadores sobem junto
 
 **Pedido do usuario, reforcado**: "não fuja... pegue cada log... simule

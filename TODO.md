@@ -2,6 +2,20 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 604): Pedido do usuário ("e os outros efeitos,
+> mecânicas, sequências?" — cobrança justa de que só media play/
+> activate por conjunto de cartas). `decision_quality_full.py` ganha:
+> **SEQUÊNCIA** de execução (play/activate/attack/attach_don
+> combinados, ordem real) — idêntica start-a-fim **10,0%**,
+> similaridade por LCS **34,2%**; **ALVO dentro do efeito** (não só
+> ataque — quando os dois jogaram a mesma carta, o alvo escolhido pelo
+> efeito dela bate?) **42,9%** (best-effort via texto da narrativa, 3
+> bugs de parsing corrigidos antes de confiar no número — ia de "0
+> casos" pra 42 casos reais); **mulligan** verificado e **declarado
+> explicitamente não-mensurável** (schema do log não captura essa
+> decisão, `meta.goes_first` sempre null). Ver bloco 604 do HANDOFF
+> pros 3 bugs de parsing encontrados e corrigidos nesta métrica nova.
+>
 > 17/08/2026 (bloco 603): Pedido do usuário (reforçado: "não fuja...
 > simule cada turno... deve dar pelo menos 93%"). Varredura sistemática
 > em TODOS os 26 logs (monkeypatch expõe a lista COMPLETA de ações do
