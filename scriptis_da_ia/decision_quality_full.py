@@ -77,7 +77,7 @@ from audit_real_losses import (
 from decision_quality_vs_human import find_bot_vs_human_logs
 from optcg_engine.decision_engine import (
     load_cards_db, DecisionEngine, GameState, populate_full_deck_knowledge,
-    attack_time_power,
+    attack_time_power, get_card_effects,
 )
 
 LOGS_DIR = 'logs'
@@ -114,30 +114,49 @@ def _offense_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
         hist_actions = t.get('historical_actions', [])
         motor_actions = t.get('chosen_actions', [])
 
-        # Achado real 17/08: o log historico rotula `type` por CONVENCAO
-        # DA SIMULACAO, nao por categoria do motor -- jogar uma carta
-        # EVENT/STAGE da mao aparece como `type: "activate"` la (209
-        # EVENT + 148 STAGE no banco inteiro sao "activate" historico,
-        # confirmado grep), enquanto o motor sempre gera essa MESMA acao
-        # como `kind: "play"` (unico gerador de 'play' em decision_
-        # engine.py cobre CHARACTER/EVENT/STAGE igual). Comparar os
-        # rotulos crus inflava falso mismatch (ex: Disappointed? OP14-099
-        # jogado nos dois lados, contado como divergencia so por rotulo).
-        # Fix: reclassifica o HISTORICO pelo TIPO REAL da carta
-        # (cards_db), nao pelo `type` do log -- EVENT/STAGE = "play"
-        # (so podem ser jogados da mao, nunca ficam "ativaveis" depois),
-        # LEADER/CHARACTER com `type=="activate"` = "activate" de
-        # verdade ([Activate: Main] de algo ja em campo).
-        def _hist_kind(card_type):
-            return 'play' if card_type in ('EVENT', 'STAGE') else 'activate'
+        # Achado real 17/08 (bloco 597): o log historico rotula `type`
+        # por CONVENCAO DA SIMULACAO, nao por categoria do motor -- jogar
+        # uma carta EVENT/STAGE da mao aparece como `type: "activate"`
+        # la, enquanto o motor sempre gera essa MESMA acao como `kind:
+        # "play"`. EVENT/STAGE = "play" sempre (so podem ser jogados da
+        # mao, nunca ficam "ativaveis" depois).
+        #
+        # Achado real 17/08, 2a rodada (pedido do usuario "temos que
+        # subir essa porcentagem", censo amplo de 'activate' achou 79/81
+        # casos "nunca gerado" -- quase todos Rocks D. Xebec OP17-039):
+        # LEADER/CHARACTER com `type=="activate"` NAO significa
+        # `[Activate:Main]` de verdade -- o rotulo historico e um
+        # guarda-chuva pra QUALQUER efeito nao-play/nao-attack resolvido
+        # (on_ko, when_attacking, on_opp_attack, end_of_turn,
+        # leader_battle_reactive, on_play tambem aparecem como
+        # "activate" no log). Xebec NEM TEM `activate_main` definido --
+        # o "activate" dele no log e o `when_attacking` (ja investigado
+        # a fundo no bloco 600) disparando JUNTO do proprio ataque, nao
+        # uma acao de Main Phase separada que o Turn Planner geraria
+        # como candidato proprio. Comparar isso contra `kind=='activate'`
+        # do motor (que so existe pra `[Activate:Main]` real,
+        # `_score_activate_main`) e categoria errada -- garantia de
+        # falso mismatch pra QUALQUER carta sem `activate_main`, nao um
+        # sinal de decisao ruim do motor. Fix: so classifica como
+        # "activate" comparavel quando a carta REALMENTE tem
+        # `activate_main` no card_effects_db; senao, EXCLUI da
+        # comparacao (nem play nem activate -- e um efeito reativo
+        # automatico, nao uma decisao independente do Turn Planner).
+        def _hist_kind(card_type, code):
+            if card_type in ('EVENT', 'STAGE'):
+                return 'play'
+            if get_card_effects(code).get('activate_main'):
+                return 'activate'
+            return None  # efeito reativo automatico -- nao comparavel
 
         hist_play = {a['card'] for a in hist_actions if a.get('card') and (
             a.get('type') == 'play'
-            or (a.get('type') == 'activate' and _hist_kind(cards_db.get(a['card'], {}).get('type')) == 'play'))}
+            or (a.get('type') == 'activate'
+                and _hist_kind(cards_db.get(a['card'], {}).get('type'), a['card']) == 'play'))}
         motor_play = {a['card'] for a in motor_actions if a.get('kind') == 'play' and a.get('card')}
 
         hist_activate = {a['card'] for a in hist_actions if a.get('type') == 'activate' and a.get('card')
-                         and _hist_kind(cards_db.get(a['card'], {}).get('type')) == 'activate'}
+                         and _hist_kind(cards_db.get(a['card'], {}).get('type'), a['card']) == 'activate'}
         motor_activate = {a['card'] for a in motor_actions if a.get('kind') == 'activate' and a.get('card')}
 
         hist_don_alvo = {a['to'] for a in hist_actions if a.get('type') == 'attach_don' and a.get('to')}
@@ -179,13 +198,12 @@ def _offense_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
         # 1 passo nao deveria zerar a sequencia inteira).
         hist_seq = []
         for a in hist_actions:
-            if a.get('type') == 'play' or (a.get('type') == 'activate' and a.get('card')
-                                           and _hist_kind(cards_db.get(a['card'], {}).get('type')) == 'play'):
-                if a.get('card'):
-                    hist_seq.append(('play', a['card']))
-            elif a.get('type') == 'activate' and a.get('card') and _hist_kind(
-                    cards_db.get(a['card'], {}).get('type')) == 'activate':
-                hist_seq.append(('activate', a['card']))
+            if a.get('type') == 'play' and a.get('card'):
+                hist_seq.append(('play', a['card']))
+            elif a.get('type') == 'activate' and a.get('card'):
+                kind = _hist_kind(cards_db.get(a['card'], {}).get('type'), a['card'])
+                if kind:  # None = efeito reativo automatico, nao comparavel -- fora da sequencia
+                    hist_seq.append((kind, a['card']))
             elif a.get('type') == 'attack' and a.get('attacker_code'):
                 hist_seq.append(('attack', a['attacker_code']))
             elif a.get('type') == 'attach_don' and a.get('to'):

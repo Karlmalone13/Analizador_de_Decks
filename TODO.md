@@ -2,6 +2,31 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 606): **ACHADO GRANDE** (pedido do usuário "temos
+> que subir essa porcentagem", todas as categorias). Censo confiável
+> aplicado em `activate` achou 79/81 casos "nunca gerado", quase todos
+> concentrados no líder Rocks D. Xebec (OP17-039). Causa: **não é bug
+> de decisão, é bug de CATEGORIZAÇÃO da própria ferramenta de medição**
+> — o log histórico rotula QUALQUER efeito reativo automático (on_ko,
+> when_attacking, on_opp_attack, fim de turno) como `"activate"`, mas
+> Xebec (e mais 10 cartas conferidas: Crocodile-120, Mr.2 Bon Kurei,
+> Eustass Kid, Catarina Devon, Edward Newgate, Charlotte Linlin, Shiki,
+> Sanji, Gloriosa, Miss.Goldenweek, Miss.Valentine) **não têm
+> `activate_main` nenhum** — o motor só gera `kind='activate'` pra
+> habilidades de Main Phase de verdade, então a comparação estava
+> quase sempre contra um alvo que não existe no motor. Fix:
+> `_hist_kind` agora só classifica como "activate" comparável quando a
+> carta realmente tem `activate_main`; senão exclui da comparação
+> (efeito reativo automático não é decisão independente do Turn
+> Planner). **Resultado: activate sobe de 8,1% (7/86) pra 46,4%
+> (13/28)** — o denominador caiu de 86 pra 28 porque 58 turnos nunca
+> deveriam ter entrado na conta. Não é "o bot ficou melhor" — é que a
+> pergunta estava mal-formulada quase sempre; nos casos que REALMENTE
+> comparam a mesma coisa, o motor acerta quase metade, bem diferente do
+> quadro que 8,1% sugeria. Pendente: conferir se play/attach_don/attack
+> têm o mesmo tipo de problema (não verificado ainda). Ver bloco 606 do
+> HANDOFF.
+>
 > 17/08/2026 (bloco 605): Continuando o censo dos 22 casos "jogada
 > nunca gerada" (bloco 603) — achado bug de **RELATÓRIO** (não de
 > decisão): `don_available_estimado` lia o DON **depois** de

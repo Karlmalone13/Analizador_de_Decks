@@ -1,5 +1,75 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (606) - Claude (sessao remota web) - ACHADO GRANDE: metrica `activate` estava fundamentalmente mal-categorizada -- log historico rotula QUALQUER efeito reativo automatico (on_ko, when_attacking, on_opp_attack, fim de turno) como "activate", mas o motor so gera `kind='activate'` pra `[Activate:Main]` DE VERDADE. 79/81 casos "nunca gerado" no censo eram essa categoria errada, nao decisao ruim. Corrigido: activate sobe de 8,1% pra 46,4%
+
+**Pedido do usuario**: "temos que subir essa porcentagem" (todas as
+categorias). Apliquei o mesmo censo confiavel (monkeypatch +
+full_actions, ja validado no bloco 603) na categoria `activate` -- achei
+**79 de 81 casos "nunca gerado como candidata"**, esmagadoramente
+concentrados numa carta so: **Rocks D. Xebec (OP17-039, o LIDER)**,
+repetindo em quase TODO turno de TODA partida onde ele e o lider.
+
+### Causa raiz: nao e bug de decisao, e bug de CATEGORIZACAO da minha propria ferramenta
+
+Conferido `card_effects_db.json`: **Xebec nao tem `activate_main`
+nenhum** -- so tem o `when_attacking` (ja investigado a fundo no bloco
+600: "trash 1 da mao -> revela topo -> se Rocks Pirates compra 2").
+O "activate" que aparece no log historico pra ele e ESSE gatilho, que
+dispara JUNTO do proprio ataque (nao e uma acao de Main Phase
+separada). Conferido mais 10 cartas da lista de 81 (Crocodile-120, Mr.2
+Bon Kurei, Eustass Kid, Catarina Devon, Edward Newgate, Charlotte
+Linlin, Shiki, Sanji, Gloriosa, Miss.Goldenweek, Miss.Valentine) --
+**NENHUMA tem `activate_main`** -- os triggers reais sao on_ko,
+when_attacking, on_opp_attack, end_of_turn, leader_battle_reactive,
+on_play. O log historico usa `type: "activate"` como guarda-chuva pra
+QUALQUER efeito nao-play/nao-attack resolvido, nao so `[Activate:
+Main]` -- achado analogo ao EVENT/STAGE-vira-"activate" do bloco 597,
+so que essa vez pra LEADER/CHARACTER tambem, nao so EVENT/STAGE.
+
+Isso significa que a metrica `activate` (8,1% ate aqui, 7/86) estava
+comparando o motor contra um alvo ERRADO na GRANDE maioria dos casos --
+nao existe (nem deveria existir) um `kind=='activate'` do motor pra
+comparar contra o on_ko/when_attacking/etc historico de uma carta sem
+`activate_main`; o motor so gera esse `kind` quando a carta realmente
+tem essa habilidade. Nao e sinal de decisao ruim, e sinal de pergunta
+mal-formulada.
+
+### Fix
+
+`decision_quality_full.py`: `_hist_kind(card_type, code)` agora conferre
+`get_card_effects(code).get('activate_main')` -- so classifica como
+"activate" comparavel quando a carta REALMENTE tem essa habilidade;
+senao retorna `None` (nao-comparavel, excluido tanto da comparacao de
+`activate` quanto da SEQUENCIA -- um efeito reativo automatico nao e
+uma decisao independente do Turn Planner, nao faz sentido cobrar
+"sequencia" dele).
+
+### Resultado (26 partidas, deterministico -- pequena variancia residual de 1 unidade em SEQUENCIA-similaridade entre sequencial/paralelo, sob investigacao, nao afeta o achado principal)
+
+| categoria | antes (categorizacao errada) | depois (corrigida) |
+|---|---|---|
+| **activate** | 8,1% (7/86) | **46,4% (13/28)** |
+| turnos com dado (denominador) | 86/111 | **28/111** (58 turnos removidos por serem efeito reativo, nao [Activate:Main] real) |
+| SEQUENCIA identica | 10,0% | 11,8% |
+| SEQUENCIA similaridade | 34,2% | 38,1-38,2% |
+
+O denominador caiu de 86 pra 28 -- a MAIORIA dos "86 turnos com
+activate" nunca deveriam ter entrado na conta pra comecar. Dos 28
+turnos que sobraram (cartas com `activate_main` de verdade), o motor
+acerta quase metade (46,4%) -- MUITO diferente do quadro que 8,1%
+sugeria ("motor quase nunca ativa habilidade certa").
+
+### Pendente
+
+- Pequena variancia (1 em ~490) na similaridade de SEQUENCIA entre
+  `--workers 1` e `--workers 4` -- residual, nao investigado a fundo
+  (pode ser algum caminho ainda dependente de ordem de processo em
+  algum lugar nao coberto pelos fixes de determinismo dos blocos
+  596/598). Nao muda a conclusao principal, mas fica registrado.
+- Vale conferir se `attach_don`/`play`/`attack` tem o MESMO tipo de
+  problema de categorizacao (comparar contra o trigger ERRADO) --
+  nao verificado ainda, so `activate` foi auditado a fundo desta vez.
+
 ## 2026-08-17 (605) - Claude (sessao remota web) - Continuando o censo dos 22 casos "jogada nunca gerada": achado bug de RELATORIO (nao de decisao) -- `don_available_estimado` lia `p.don_available` DEPOIS de `eng.play_turn()` ja ter gastado o DON do turno, mostrando sempre o SOBRA final, nao o disponivel real no inicio. Corrigido; simulacao em si SEMPRE usou o valor certo (confirmado: metricas nao mudam nada com o fix). Conclusao: os 22 casos restantes parecem ser DEFICIT REAL de DON (linha valida indisponivel), nao mais bugs a caçar
 
 **Contexto**: continuando o censo sistematico dos 22 casos "jogada
