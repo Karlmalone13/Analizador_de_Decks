@@ -9686,6 +9686,13 @@ class EffectExecutor:
             return de.buff_wins_combat(defender_power, attacker_power, defender_power + amount)
         return None
 
+    # Chaves de sub-passos ANINHADOS usadas em toda a gramatica do parser
+    # (achado real 17/08, auditoria global antes de corrigir -- ver
+    # scriptis_da_ia/parser_audits/): "reveal_deck_top_conditional" e
+    # "choice condicional" escondem o beneficio REAL de um step atras de
+    # uma destas 3 chaves, nunca no proprio `action` do step externo.
+    _NESTED_STEP_KEYS = ('on_match_steps', 'on_success_steps', 'extra_steps')
+
     def _benefit_weight(self, steps: list | None, card: Card) -> int:
         """
         Peso do BENEFICIO de um bloco de efeito -- o maior peso entre os steps
@@ -9697,6 +9704,28 @@ class EffectExecutor:
         custo. Reusa `_STEP_VALUE_WEIGHTS`, a tabela que `_resolve_choice` ja
         usava pra ordenar opcoes de "Choose one" -- e a mesma pergunta ("quanto
         vale esta acao?"), entao nao pode virar uma segunda tabela.
+
+        Achado real 17/08 (usuario, log real Marshall.D.Teach-BY x
+        Rocks.D.Xebec-B, quinto turno seguido em que o [When Attacking] do
+        lider Rocks D. Xebec -- "trash 1 da mao: revela o topo, se Rocks
+        Pirates compra 2" -- nunca disparava): 2 bugs GENERICOS na mesma
+        funcao, achados via busca no banco inteiro (nao so nesta carta --
+        ver registro em parser_audits/):
+
+        1. Steps do tipo "reveal_deck_top_conditional"/"choice condicional"
+           guardam o beneficio DE VERDADE dentro de `on_match_steps`/
+           `on_success_steps`/`extra_steps` -- o `action` do step EXTERNO
+           (ex: "reveal_deck_top_conditional") nunca esteve na tabela
+           `_STEP_VALUE_WEIGHTS`, entao sempre caia no default=1, cegos
+           pro que realmente acontece quando a condicao bate. Fix: soma
+           tambem o peso recursivo de qualquer container aninhado
+           (`_NESTED_STEP_KEYS`), pegando o MAIOR entre externo e interno.
+        2. `count` do step (ex: "draw 2") nunca escalava o peso -- "draw 2"
+           valia exatamente o mesmo que "draw 1" (achado ao auditar 139
+           cartas com `draw`+count>1 no banco). Fix: escala linear,
+           CAPADA em 3x (`min(count, 3)`) pra nao inflar count=99
+           ("todos"/"ilimitado", achado em `ko`/`place_opp_character_
+           bottom_deck` em outras cartas) pra um peso desproporcional.
         """
         if not steps:
             return 0
@@ -9720,7 +9749,14 @@ class EffectExecutor:
             # ganhar vida deixa de ser bonus e vira sobrevivencia.
             if acao in ('gain_life', 'heal') and self.me.life_count() <= 2:
                 p *= 2
+            count = s.get('count')
+            if isinstance(count, (int, float)) and count > 1:
+                p *= min(int(count), 3)
             pesos.append(p)
+            for nested_key in self._NESTED_STEP_KEYS:
+                nested = s.get(nested_key)
+                if nested:
+                    pesos.append(self._benefit_weight(nested, card))
         return max(pesos) if pesos else 0
 
     def _worth_paying_optional_costs(self, costs: list, card: Card,

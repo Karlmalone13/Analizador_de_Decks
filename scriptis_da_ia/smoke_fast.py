@@ -10649,6 +10649,7 @@ def main() -> int:
     test_attach_don_margem_seguranca_com_ataque_ja_vencedor_e_don_ocioso()
     test_bank_idle_don_no_lider_como_ultimo_recurso_17_08()
     test_don_livre_reserva_deficit_base_de_outros_ataques_pendentes_17_08()
+    test_benefit_weight_enxerga_step_aninhado_e_escala_por_count_17_08()
     test_score_give_don_considera_sinergia_com_ataque()
     test_gain_double_attack_respeita_target_leader_e_selecionado()
     test_score_play_prioriza_carta_que_buffa_ataque_do_lider_hoje()
@@ -11673,6 +11674,74 @@ def test_don_livre_reserva_deficit_base_de_outros_ataques_pendentes_17_08() -> N
     livre_solo = match_solo._don_livre_for_plan(me_solo, opp, engine_solo, exclude_attacker=forte)
     check("com um SO atacante candidato, nada a reservar -- livre = don_available inteiro",
           livre_solo == 4)
+
+
+def test_benefit_weight_enxerga_step_aninhado_e_escala_por_count_17_08() -> None:
+    """
+    Achado real 17/08 (usuario, log real Marshall.D.Teach-BY x
+    Rocks.D.Xebec-B, 5 turnos seguidos com o [When Attacking] do lider
+    Rocks D. Xebec -- "trash 1 da mao: revela o topo do deck, se Rocks
+    Pirates compra 2" -- confirmado isolado via EffectExecutor.execute()
+    que NUNCA disparava, mesmo com carta pra pagar o custo E uma carta
+    Rocks Pirates de verdade no topo do deck). Rastreado ate
+    `_benefit_weight`: o beneficio real desse efeito fica dentro de
+    `on_match_steps` (aninhado dentro do step `reveal_deck_top_
+    conditional`), que a funcao NUNCA olhava -- o peso caia no default
+    de acao desconhecida (1) pro step EXTERNO, cego pro `draw` real
+    escondido dentro. Busca no banco inteiro (nao so nesta carta) achou
+    a MESMA forma (`on_match_steps`/`on_success_steps`/`extra_steps`)
+    em mais 4 cartas, e um 2o bug relacionado: `count` (ex: "draw 2")
+    nunca escalava o peso (139 cartas no banco tem `draw`+count>1).
+
+    Fix (ver docstring de `_benefit_weight`): soma tambem o peso
+    recursivo de qualquer step aninhado, e escala peso por
+    `min(count, 3)` -- capado pra nao inflar count=99 ("ilimitado",
+    achado em outras cartas) desproporcionalmente.
+
+    IMPORTANTE -- limitacao HONESTA confirmada aqui (nao escondida):
+    este fix e estruturalmente correto (o beneficio deixa de ser
+    invisivel) mas NAO basta sozinho pra fazer o [When Attacking] do
+    Rocks D. Xebec disparar numa mao real -- o peso 'draw' na tabela
+    compartilhada (`_STEP_VALUE_WEIGHTS`, usada TAMBEM por
+    `_resolve_choice` em todo o banco) e so 1, mesmo capado em 3x fica
+    em 2 (`draw 2` -> min(2,3)=2), muito abaixo do `_trash_value` tipico
+    de uma carta de mao (100-150+) -- recalibrar a tabela pra valer a
+    pena de verdade afetaria ~150 cartas de uma vez (draw/ko/gain_life
+    com count>1 em TODO o banco, nos dois consumidores da tabela) e
+    fica registrado como pendencia SEPARADA, nao decidida aqui.
+    """
+    from optcg_engine.decision_engine import EffectExecutor
+
+    me = GameState(leader=real_card("OP17-039"), don_available=5, turn=5)
+    opp = GameState(leader=real_card("OP16-080"))
+    # `draw` so e viavel (_step_is_viable) com deck nao-vazio -- precisa
+    # de pelo menos 1 carta pro peso do 'draw' entrar na conta.
+    me.deck = [real_card("OP17-118")]
+    ee = EffectExecutor(me, opp)
+    card = me.leader
+
+    # Beneficio SO existe dentro do on_match_steps -- o action externo
+    # (reveal_deck_top_conditional) nao esta na tabela, cairia em 1.
+    steps_aninhado = [{
+        "action": "reveal_deck_top_conditional", "return_to": "top",
+        "condition": {"revealed_card_type": "rocks pirates"},
+        "on_match_steps": [{"action": "draw", "count": 2}],
+    }]
+    peso = ee._benefit_weight(steps_aninhado, card)
+    check("peso enxerga o draw ESCONDIDO em on_match_steps (nao fica preso em 1)",
+          peso == 2)  # draw(peso 1) * min(count=2, 3) = 2
+
+    # Controle: SEM aninhamento nenhum, count=1 -- comportamento antigo
+    # (peso 1, default de acao desconhecida) permanece intacto.
+    steps_simples = [{"action": "acao_desconhecida_qualquer"}]
+    check("sem aninhamento, comportamento antigo (peso 1) preservado",
+          ee._benefit_weight(steps_simples, card) == 1)
+
+    # Cap em 3x pra count absurdo (99 = "ilimitado", visto em outras
+    # cartas do banco) -- nao pode inflar o peso pra 99x.
+    steps_count_absurdo = [{"action": "draw", "count": 99}]
+    check("count absurdo (99) capado em 3x, nao explode o peso",
+          ee._benefit_weight(steps_count_absurdo, card) == 3)  # 1*min(99,3)
 
 
 def test_score_give_don_considera_sinergia_com_ataque() -> None:

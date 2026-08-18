@@ -1,5 +1,119 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-17 (600) - Claude (sessao remota web) - Achado real (usuario corrigiu minha metrica: "a metrica e copiar a eficiencia do humano sim"): `[When Attacking]` do lider Rocks D. Xebec (OP17-039) NUNCA disparava -- causa raiz em `_benefit_weight` (2 bugs genericos, nao so desta carta): nao enxergava beneficio escondido em step aninhado, e `count` nunca escalava peso. Fix estrutural aplicado e validado, mas HONESTO: sozinho nao basta pra fazer o gatilho disparar numa mao real -- fica registrada a pendencia maior
+
+**Contexto**: apos o bloco 599 (fix de reserva de DON entre ataques), eu
+disse "isso nao e sobre copiar o humano, e sobre o motor nao se
+sabotar". Usuario respondeu direto: **"A métrica é copiar a eficiência
+do humano sim"**. Reabri o MESMO turno (Marshall D. Teach x Rocks D.
+Xebec, T10) e comparei against o historico de verdade: humano gastou
+**0 DON em ataque, jogou/ativou 3 coisas**; motor, mesmo com o fix 599,
+gastou **6 DON em ataque, jogou/ativou 0**. Investigando essa
+divergencia especifica, achei que as 3 jogadas do humano vieram de um
+gatilho quando_atacando do proprio Rocks D. Xebec (custo: trash 1 da
+mao; efeito: revela topo do deck, se "Rocks Pirates" compra 2) -- e
+que esse gatilho **nunca aparece na narrativa do motor em NENHUM dos 5
+turnos** em que Rocks D. Xebec ataca nesta partida (turnos 4/6/8/10/12).
+
+### Bug confirmado isolado (fora de qualquer partida simulada)
+
+```python
+ee.execute(xebec, 'when_attacking', battle_defender_power=5000)
+# logs == [] -- mao INALTERADA, deck INALTERADO, nada acontece
+```
+mesmo com uma carta pra pagar o custo `trash_from_hand` na mao E uma
+carta `Rocks Pirates` de verdade no topo do deck (a condicao bateria).
+
+### Causa raiz -- 2 bugs genericos em `_benefit_weight` (usada por `_worth_paying_optional_costs`)
+
+`card_effects_db.json` ja tinha o efeito parseado CORRETAMENTE (nao e
+bug de parser de texto -- confirmado, escopo fora do gate mecanico de
+`gerar_effects_db.py`/`card_effects_db.json`, entao sem registro em
+`parser_audits/` desta vez, mas com a MESMA disciplina de busca
+global):
+```json
+"when_attacking": {
+  "steps": [{"action": "reveal_deck_top_conditional", "return_to": "top",
+             "condition": {"revealed_card_type": "rocks pirates"},
+             "on_match_steps": [{"action": "draw", "count": 2}]}],
+  "costs": [{"type": "trash_from_hand", "count": 1}]
+}
+```
+O bug esta na EXECUCAO: `when_attacking` com custo passa por
+`_worth_paying_optional_costs` -> `_benefit_weight(steps, card)` pra
+decidir se vale a pena pagar o custo de sacrificio. Achei 2 bugs
+genericos, confirmados via busca no banco INTEIRO (nao so nesta carta):
+
+1. **Beneficio escondido em step aninhado nunca era contado.**
+   `reveal_deck_top_conditional` guarda o efeito REAL dentro de
+   `on_match_steps` -- `_benefit_weight` so olhava o `action` do step
+   EXTERNO (nao esta na tabela `_STEP_VALUE_WEIGHTS`, cai no default=1),
+   nunca recursava pra dentro. Censo global: 13 cartas usam
+   `reveal_deck_top_conditional`+`on_match_steps`; junto com
+   `on_success_steps`/`extra_steps` (as outras 2 chaves de sub-passos
+   aninhados usadas em toda a gramatica do parser), 5 cartas no banco
+   tem essa forma COMBINADA com custo de sacrificio (OP11-071, ST13-007,
+   ST13-010, ST13-014 -- via `activate_main`, que usa `_score_
+   activate_main` e NAO passa por `_benefit_weight`, entao nao afetadas
+   por ESTE bug especifico -- e OP17-039, via `when_attacking`, que E
+   afetada). **OP17-039 e a UNICA carta que realmente atravessa o
+   caminho de codigo com o bug** (achado documentado aqui, ja que nao
+   ha arquivo de parser_audits pra isto).
+2. **`count` nunca escalava o peso.** "draw 2" valia exatamente o mesmo
+   peso que "draw 1" -- censo: 139 cartas no banco tem `draw`+count>1
+   (mais 22 `ko`, 5 `place_opp_character_bottom_deck`, 2 `gain_life`, 1
+   `trash_character`, alguns com count=99 = "ilimitado").
+
+### Fix
+
+`_benefit_weight`: soma tambem o peso RECURSIVO de qualquer step
+aninhado (`on_match_steps`/`on_success_steps`/`extra_steps`, constante
+nova `_NESTED_STEP_KEYS`), pega o MAIOR entre externo e interno; escala
+peso por `min(count, 3)` quando o step tem `count>1` (capado pra nao
+inflar count=99 desproporcionalmente). `_STEP_VALUE_WEIGHTS` (a tabela
+em si) NAO foi tocada -- so como `_benefit_weight` a LE, entao
+`_resolve_choice` (outro consumidor da mesma tabela) fica intacto.
+
+### Validado, MAS honesto sobre o limite
+
+`smoke_fast.py` (+1 teste novo, `test_benefit_weight_enxerga_step_
+aninhado_e_escala_por_count_17_08`, 3 cenarios: beneficio aninhado
+agora conta, sem aninhamento comportamento antigo preservado, count
+absurdo capado) + `smoke_test.py` completo (regressao AMPLA, mexe numa
+tabela compartilhada de alto risco): **TODOS OS TESTES PASSARAM**.
+
+**Mas, reconferindo NUMERICAMENTE o caso real que motivou o fix**: com
+o fix, `benefit_weight` de Rocks D. Xebec sobe de 1 pra 2 (draw peso
+1 * min(count=2,3)=2), `limiar` sobe de 75 pra 90 -- **ainda MENOR que
+o `_trash_value` tipico de uma carta de mao (156 no teste isolado)**.
+O gatilho **continua nao disparando** nessa mao especifica mesmo com o
+fix. Isto e estruturalmente correto (o beneficio deixou de ser
+INVISIVEL) mas nao e suficiente sozinho -- o peso BASE de `draw` (1) na
+tabela compartilhada e pequeno demais frente ao valor tipico de uma
+carta, e subir isso de verdade (ex: mudar o multiplicador `*15` do
+`limiar`, ou os pesos da tabela) afetaria `_resolve_choice` E
+`_worth_paying_optional_costs` em ~150+ cartas de uma vez (qualquer
+carta com `draw`/`ko`/`gain_life` count>1 no banco inteiro) -- risco
+real de regressao ampla, ver saga dos blocos 593-595 (TOP_K
+shortlist). **Nao fiz essa recalibragem maior aqui** -- decisao
+consciente de nao arriscar uma mudanca de blast radius grande sem medir
+com cuidado antes/depois, deixada como pendencia EXPLICITA pra proxima
+sessao.
+
+### Pendente
+
+- **Recalibragem da tabela `_STEP_VALUE_WEIGHTS`/multiplicador do
+  `limiar`** (pendencia MAIOR, nao decidida): precisa medir impacto
+  antes/depois em `_resolve_choice` (Choose-one) E
+  `_worth_paying_optional_costs` juntos, ~150+ cartas afetadas -- exige
+  sessao dedicada, nao um fix rapido no fim de uma investigacao.
+- O padrao mais amplo que motivou esta investigacao (humano gasta 0 DON
+  em ataque e usa pra jogar carta, motor gasta 6 DON em ataque e joga
+  0) continua so PARCIALMENTE explicado -- este quando_atacando
+  especifico do Xebec era uma peca, nao a causa completa; a questao
+  maior de "DON de margem nunca compete contra play/activate no scoring
+  do Turn Planner" (achado lateral do bloco 599) continua em aberto.
+
 ## 2026-08-17 (599) - Claude (sessao remota web) - FIX REAL confirmado no proprio log que o usuario vinha apontando: motor gastava DON de margem num atacante FRACO nao-contestado, drenando o pool que um atacante FORTE precisava pra converter um bloqueio em acerto. `_don_livre_for_plan` agora reserva o deficit BASE de outros ataques pendentes antes de liberar qualquer margem
 
 **Contexto direto**: apos eu relatar o achado 597 (T12, "motor nao jogou

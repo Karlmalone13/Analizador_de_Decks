@@ -2,6 +2,28 @@
 
 **Última atualização:** 17 de agosto de 2026
 
+> 17/08/2026 (bloco 600): Usuário corrigiu a métrica ("a métrica é
+> copiar a eficiência do humano sim") — reabri o turno do bloco 599 e
+> confirmei: humano gastou 0 DON em ataque e jogou/ativou 3 cartas;
+> motor, mesmo com o fix 599, gastou 6 DON em ataque e jogou 0. Achado:
+> o `[When Attacking]` do líder Rocks D. Xebec (OP17-039) **nunca
+> dispara** — isolado fora de partida (`ee.execute` retorna vazio mesmo
+> com custo pagável e condição batendo). Causa raiz em
+> `_benefit_weight` (2 bugs genéricos, achados via busca no banco
+> inteiro, não só nesta carta): (1) benefício escondido em step
+> aninhado (`on_match_steps`/`on_success_steps`/`extra_steps`, 13+5
+> cartas no banco com essa forma) nunca era contado; (2) `count` nunca
+> escalava peso (139 cartas com `draw`+count>1). Fix aplicado e
+> validado (`smoke_fast.py` +1 teste, `smoke_test.py` completo, 100%
+> OK). **Honesto**: o fix é estruturalmente correto mas sozinho **não
+> basta** — refiz a conta numérica do caso real e o gatilho continua
+> não disparando (peso sobe de 1→2, ainda bem abaixo do valor típico de
+> uma carta de mão). Recalibrar de verdade a tabela compartilhada
+> afetaria ~150 cartas de uma vez — pendência maior, não decidida aqui,
+> fica pra sessão dedicada. A questão mais ampla (DON de margem nunca
+> compete contra play/activate no scoring) também segue aberta. Ver
+> bloco 600 do HANDOFF.
+>
 > 17/08/2026 (bloco 599): **FIX REAL confirmado**, achado que o usuário
 > vinha reportando repetidamente e eu tinha rejeitado sem checar direito
 > ("o bot fica pondo DON em personagem fraco e desperdiçando jogada").
