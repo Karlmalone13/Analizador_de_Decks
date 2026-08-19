@@ -614,6 +614,7 @@ _HUMAN_PATTERNS_PATH = os.path.join(os.path.dirname(__file__), '..', 'human_patt
 _HUMAN_PATTERN_BONUS_BY_LEADER: dict = {}
 _HUMAN_DEFENSE_BY_LEADER: dict = {}
 _HUMAN_COUNTER_CARD_BONUS_BY_LEADER: dict = {}
+_HUMAN_BLOCKER_CARD_BONUS_BY_LEADER: dict = {}
 _HUMAN_PATTERN_MIN_SUPPORT = 2
 _HUMAN_PATTERN_MAX_BONUS = 30.0
 
@@ -632,7 +633,7 @@ _load_effects_db()
 
 def _load_human_patterns():
     """Carrega sinais leves de pilotagem humana extraidos dos logs reais."""
-    global _HUMAN_PATTERN_BONUS_BY_LEADER, _HUMAN_DEFENSE_BY_LEADER, _HUMAN_COUNTER_CARD_BONUS_BY_LEADER
+    global _HUMAN_PATTERN_BONUS_BY_LEADER, _HUMAN_DEFENSE_BY_LEADER, _HUMAN_COUNTER_CARD_BONUS_BY_LEADER, _HUMAN_BLOCKER_CARD_BONUS_BY_LEADER
     if _HUMAN_PATTERN_BONUS_BY_LEADER:
         return
     try:
@@ -645,6 +646,7 @@ def _load_human_patterns():
     by_leader: dict = {}
     defense_by_leader: dict = {}
     counter_card_by_leader: dict = {}
+    blocker_card_by_leader: dict = {}
     for row in data.get('heuristic_candidates', []):
         count = int(row.get('count') or 0)
         if count < _HUMAN_PATTERN_MIN_SUPPORT:
@@ -668,17 +670,22 @@ def _load_human_patterns():
     for leader, rows in data.get('by_defender_response', {}).items():
         leader_code = leader.split('|', 1)[0]
         defense = defense_by_leader.setdefault(leader_code, {'counter': 0, 'blocker': 0})
-        # Achado real 18/08 (bloco 613, continuacao -- pedido do usuario
-        # "ordem de counter" tambem): o produtor ja guarda `pattern:
-        # 'counter:CODIGO'`/`'blocker:CODIGO'` por lider DEFENSOR, mas
-        # ate aqui so a contagem agregada (counter vs blocker) era
-        # usada -- o CODIGO especifico era descartado, entao nao dava
-        # pra aprender "esta carta especifica e a que o humano usa
-        # pra counterar contra este lider". Preserva por carta, mesma
-        # formula/teto do bonus ofensivo (`_HUMAN_PATTERN_MAX_BONUS`),
-        # so pra `counter:` (blocker ja escolhe por custo de sacrificio
-        # calibrado via self-play, nao precisa desse sinal extra).
+        # Achado real 18/08 (bloco 613/614, continuacao -- pedido do
+        # usuario "ordem de counter"/"ordem de defesa" tambem): o
+        # produtor ja guarda `pattern: 'counter:CODIGO'`/
+        # `'blocker:CODIGO'` por lider DEFENSOR, mas ate aqui so a
+        # contagem agregada (counter vs blocker) era usada -- o CODIGO
+        # especifico era descartado, entao nao dava pra aprender "esta
+        # carta especifica e a que o humano usa pra counterar/bloquear
+        # contra este lider". Preserva por carta, mesma formula/teto do
+        # bonus ofensivo (`_HUMAN_PATTERN_MAX_BONUS`), pra counter E
+        # blocker (bloco 616 -- blocker tinha ficado de fora
+        # deliberadamente no 614 por `should_use_blocker` ja ser
+        # calibrado via self-play, mas o pedido do usuario foi seguir
+        # pela calibragem dinamica, e a carta ESPECIFICA escolhida
+        # nunca tinha esse sinal, so o SE bloqueia).
         counter_bonus = counter_card_by_leader.setdefault(leader_code, {})
+        blocker_bonus = blocker_card_by_leader.setdefault(leader_code, {})
         for row in rows:
             pattern = row.get('pattern') or ''
             count = int(row.get('count') or 0)
@@ -692,9 +699,16 @@ def _load_human_patterns():
                     )
             elif pattern.startswith('blocker:'):
                 defense['blocker'] += count
+                code = pattern.split(':', 1)[1]
+                if code and count >= _HUMAN_PATTERN_MIN_SUPPORT:
+                    blocker_bonus[code] = min(
+                        _HUMAN_PATTERN_MAX_BONUS,
+                        blocker_bonus.get(code, 0.0) + min(4.0 + count * 2.0, 12.0),
+                    )
     _HUMAN_PATTERN_BONUS_BY_LEADER = by_leader
     _HUMAN_DEFENSE_BY_LEADER = defense_by_leader
     _HUMAN_COUNTER_CARD_BONUS_BY_LEADER = counter_card_by_leader
+    _HUMAN_BLOCKER_CARD_BONUS_BY_LEADER = blocker_card_by_leader
 
 
 def _human_counter_card_bonus(leader_code: str, card_code: str) -> float:
@@ -702,6 +716,13 @@ def _human_counter_card_bonus(leader_code: str, card_code: str) -> float:
     que o humano historicamente usou como counter defendendo este lider."""
     _load_human_patterns()
     return float(_HUMAN_COUNTER_CARD_BONUS_BY_LEADER.get(leader_code, {}).get(card_code, 0.0))
+
+
+def _human_blocker_card_bonus(leader_code: str, card_code: str) -> float:
+    """Bonus tetado (mesma familia de `_human_pattern_bonus`) pra cartas
+    que o humano historicamente usou como blocker defendendo este lider."""
+    _load_human_patterns()
+    return float(_HUMAN_BLOCKER_CARD_BONUS_BY_LEADER.get(leader_code, {}).get(card_code, 0.0))
 
 
 def _load_analysis_db():
@@ -13470,8 +13491,24 @@ class DecisionEngine:
         # versao desta funcao reimplementava uma tabela mais fraca sem
         # perceber que essa ja existia, cobrindo mais tipos de acao e
         # checando alvos REAIS no campo do oponente pra ko/rest_opp.
+        # Achado real 18/08 (bloco 616, continuacao do bloco 613/614 --
+        # pedido do usuario "seguir pela calibragem dinamica"): desconta
+        # um bonus tetado (`_human_blocker_card_bonus`, mesma familia de
+        # `_human_counter_card_bonus`) do custo de sacrificio de cartas
+        # que o humano historicamente usou como blocker defendendo ESTE
+        # lider -- deixa essas cartas "mais baratas" de escolher primeiro
+        # no `min(blockers, key=custo_sacrificio)` abaixo, sem mudar a
+        # logica de SE bloqueia (thresholds ja calibrados via self-play,
+        # blocos 396/398, preservados).
+        leader_code = self.me.leader.code if self.me.leader else ''
+
         def custo_sacrificio(c):
-            return a.char_value_score(c) - on_ko_value(c.code, self.opp, owner=self.me)
+            # Nao clampa em 0: custo_sacrificio ja e negativo quando o
+            # proprio K.O. compensa o valor do corpo (achado 24/07,
+            # docstring acima) -- usado so como chave de `min()`/limite
+            # de custo, nunca somado, entao preservar o negativo importa.
+            return (a.char_value_score(c) - on_ko_value(c.code, self.opp, owner=self.me)
+                    - _human_blocker_card_bonus(leader_code, c.code))
 
         # Com muita vida, só considera blocker de graça (ver bloco abaixo) --
         # não força um blocker que MORRERIA no combate.

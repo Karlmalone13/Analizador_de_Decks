@@ -10665,6 +10665,7 @@ def main() -> int:
     test_don_livre_reserva_deficit_base_de_outros_ataques_pendentes_17_08()
     test_benefit_weight_enxerga_step_aninhado_e_escala_por_count_17_08()
     test_pick_counters_prioriza_carta_com_padrao_humano_18_08()
+    test_should_use_blocker_prioriza_carta_com_padrao_humano_18_08()
     test_don_needed_for_attack_desbloqueia_don_requirement_com_alvo_real_17_08()
     test_attach_don_margem_lider_empate_compete_com_carta_jogavel_18_08()
     test_attach_don_margem_lider_ja_vencendo_com_carta_jogavel_18_08()
@@ -11810,6 +11811,54 @@ def test_pick_counters_prioriza_carta_com_padrao_humano_18_08() -> None:
               bool(escolha) and escolha[0] is barata_favorita)
     finally:
         de._HUMAN_COUNTER_CARD_BONUS_BY_LEADER = orig
+
+
+def test_should_use_blocker_prioriza_carta_com_padrao_humano_18_08() -> None:
+    """
+    Achado real 18/08 (bloco 616, continuacao dos blocos 613/614/615 --
+    pedido do usuario "seguir pela calibragem dinamica" pra continuar
+    subindo as porcentagens baixas). Mesma ideia do
+    `test_pick_counters_prioriza_carta_com_padrao_humano_18_08`, agora
+    pro lado de `should_use_blocker`: `by_defender_response` ja guardava
+    `pattern: 'blocker:CODIGO'` por lider defensor, mas so a CONTAGEM
+    agregada era usada (nunca a carta especifica) -- deliberadamente
+    deixado de fora no bloco 614 (o SE bloqueia ja e bem calibrado via
+    self-play), mas o QUAL bloqueia nunca tinha esse sinal.
+
+    Fix: novo `_HUMAN_BLOCKER_CARD_BONUS_BY_LEADER` (mesma formula/teto)
+    desconta do `custo_sacrificio` em `should_use_blocker`, deixando
+    cartas com suporte real "mais baratas" de escolher primeiro --
+    sem mudar os thresholds de SE bloqueia (blocos 396/398).
+    """
+    from optcg_engine import decision_engine as de
+
+    lider = mk("L1", "MeuLider", power=5000, cost=0, card_type="LEADER")
+    blocker_favorito = mk("C1", "BlockerFavorito", power=3000, cost=3)
+    blocker_favorito.has_blocker = True
+    blocker_favorito.rested = False
+    blocker_neutro = mk("C2", "BlockerNeutro", power=3000, cost=3)
+    blocker_neutro.has_blocker = True
+    blocker_neutro.rested = False
+
+    me = GameState(leader=lider, don_available=0, turn=5)
+    me.life = [mk("VL", "Vida", cost=1) for _ in range(1)]  # vida 1 -> caminho deterministico (min por custo_sacrificio)
+    me.field_chars = [blocker_favorito, blocker_neutro]
+    opp = GameState(leader=mk("OL", "LiderOponente", power=5000, cost=0, card_type="LEADER"))
+    engine = DecisionEngine(me, opp)
+
+    orig = dict(de._HUMAN_BLOCKER_CARD_BONUS_BY_LEADER)
+    try:
+        de._HUMAN_BLOCKER_CARD_BONUS_BY_LEADER = {}
+        escolha_sem_padrao = engine.should_use_blocker(5000)
+        check("controle: sem padrao humano carregado, escolhe algum blocker valido (custo empatado)",
+              escolha_sem_padrao in (blocker_favorito, blocker_neutro))
+
+        de._HUMAN_BLOCKER_CARD_BONUS_BY_LEADER = {"L1": {"C1": 12.0}}
+        escolha_com_padrao = engine.should_use_blocker(5000)
+        check("should_use_blocker escolhe a carta com padrao humano quando o custo empataria",
+              escolha_com_padrao is blocker_favorito)
+    finally:
+        de._HUMAN_BLOCKER_CARD_BONUS_BY_LEADER = orig
 
 
 def test_don_needed_for_attack_desbloqueia_don_requirement_com_alvo_real_17_08() -> None:

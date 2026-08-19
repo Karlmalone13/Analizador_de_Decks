@@ -1,5 +1,71 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-18 (616) - Claude (sessao remota web) - Estende a calibragem dinamica (blocos 613/614) pra `should_use_blocker`: novo `_HUMAN_BLOCKER_CARD_BONUS_BY_LEADER`, mesma formula/teto do bonus de counter. Ultima peca do lado defensivo sem esse sinal. Teste isolado OK, smoke_test 100%, zero mudanca mensuravel no banco de 26 partidas (amostra de blocker duplo e minuscula, n=5) mas mecanismo validado e coerente com o resto
+
+**Pedido do usuario**: "acho que poderia seguir pela calibragem
+dinâmica que estávamos fazendo" -- apos confirmar que a calibragem ja
+cobre 30 lideres (nao so Imu, bloco 615), pediu pra continuar
+extraindo sinal do banco de 150 partidas em vez de caçar mais
+lideres individuais no codigo.
+
+### O que faltava
+
+`by_defender_response` ja guardava `pattern: 'blocker:CODIGO'` por
+lider defensor (a MESMA estrutura que `'counter:CODIGO'`, ja conectada
+no bloco 614) -- mas o bloco 614 deixou blocker de fora de proposito
+("ja calibrado via self-play, ja bate 95,8%/80% com o humano, nao e
+gargalo"). Dado o pedido explicito de seguir pela calibragem, e sendo
+uma extensao estritamente aditiva (mesmo mecanismo ja validado 2x,
+zero risco novo), voltei atras nessa decisao -- nao custa nada tentar
+e medir.
+
+### Fix
+
+Mesma receita dos blocos 613/614: novo
+`_HUMAN_BLOCKER_CARD_BONUS_BY_LEADER[lider][codigo] = bonus` (formula/
+teto identicos), extraido de `blocker:CODIGO` (que ja existia no JSON).
+`should_use_blocker`: `custo_sacrificio(c)` desconta esse bonus --
+cartas com suporte humano real ficam "mais baratas" de escolher
+primeiro no `min(blockers, key=custo_sacrificio)`. Os THRESHOLDS de SE
+bloqueia (vida<=2, vida==3 com atacante forte, etc, calibrados via
+self-play blocos 396/398) ficaram intocados -- so a escolha de QUAL
+carta, quando ha mais de uma candidata, é afetada.
+
+**Cuidado explicito**: `custo_sacrificio` pode ser legitimamente
+NEGATIVO (quando o proprio K.O. da carta compensa o valor dela) -- ao
+contrario de `pitch_cost_as_counter` (que ja vem com `max(0.0, ...)`
+na origem), aqui NAO clampei o resultado em 0 pra nao alterar esse
+sinal negativo pre-existente por acidente.
+
+### Validado
+
+Teste isolado novo
+(`test_should_use_blocker_prioriza_carta_com_padrao_humano_18_08`):
+2 blockers com custo de sacrificio IDENTICO (mesmos stats, sem K.O.),
+controle sem padrao (escolha arbitraria) vs com padrao mockado
+so numa carta (escolhe ela). `smoke_test.py`: TODOS OS TESTES
+PASSARAM.
+
+### Resultado (26 partidas, `--workers 1`/`--workers 4` identicos)
+
+Nenhuma mudanca mensuravel -- `blocker -- mesma carta` continua
+4/5 (80,0%), resto identico ao bloco 615. Esperado: a amostra de
+"os 2 lados bloquearam" no banco curado e minuscula (n=5), pequena
+demais pra qualquer ajuste mostrar sinal detectavel ali. O mecanismo
+em si esta validado (teste isolado + dado real de 10 lideres com
+bonus carregado, ver `_HUMAN_BLOCKER_CARD_BONUS_BY_LEADER`) e deve
+ajudar em partidas fora dessa amostra pequena, mesma logica que
+justificou o counter (bloco 614) antes de medir.
+
+### Pendente
+
+- Amostra de blocker duplo no banco curado (n=5) e pequena demais pra
+  validar/invalidar esse fix com confianca estatistica -- fica
+  registrado como limitacao de medicao, nao do mecanismo.
+- Censo por lider (Ace, Teach, Kikunojo, Namule, Vasco Shot) do bloco
+  615 continua pendente de abertura individual, se o usuario preferir
+  voltar pra essa linha depois.
+
 ## 2026-08-18 (615) - Claude (sessao remota web) - Generaliza o fix de margem do lider do bloco 610 (`gap == 0` -> `gap <= 0`) apos pedido do usuario "ta usando so o Imu?" achar o MESMO padrao no Mihawk (7 casos, atacando ja VENCENDO com DON nao-ocioso). Testado, tambem tentei duas re-calibragens dos parametros do bonus humano do bloco 613 (max_bonus=60, min_support=3) -- as duas regrediram, revertidas
 
 **Pedido do usuario, direto**: "ta usando só o imu?" -- pergunta legit

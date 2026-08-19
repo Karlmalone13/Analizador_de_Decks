@@ -2,6 +2,19 @@
 
 **Última atualização:** 18 de agosto de 2026
 
+> 18/08/2026 (bloco 616): Pedido do usuário de seguir pela calibragem
+> dinâmica (não mais caça individual por líder). Estendida a última
+> peça do lado defensivo sem esse sinal: `should_use_blocker` agora
+> também desconta um bônus tetado (mesma fórmula dos blocos 613/614)
+> pra cartas que o humano historicamente usou como blocker contra
+> aquele líder — só a escolha de QUAL carta, os thresholds de SE
+> bloqueia (calibrados via self-play) ficaram intocados. Teste isolado
+> + `smoke_test` 100% OK. Sem mudança mensurável nas 26 partidas do
+> banco curado (amostra de blocker duplo é minúscula, n=5) mas
+> mecanismo validado com dado real de 10 líderes. Pendente: censo por
+> líder do bloco 615 (Ace/Teach/Kikunojo/Namule/Vasco Shot) ainda não
+> reaberto individualmente. Ver bloco 616 do HANDOFF.
+
 > 18/08/2026 (bloco 615): Pergunta direta do usuário ("tá usando só o
 > Imu?") levou a confirmar com dado real que a calibragem cobre 30
 > líderes (não só Imu), e a achar um 2º líder real (Mihawk, 7 casos)
