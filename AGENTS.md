@@ -346,6 +346,39 @@ conteúdo bruto num arquivo temporário primeiro e então rodar o comando
 acima nele — nunca pular a etapa de adicionar ao banco só porque não veio
 como path pronto.
 
+### `human_patterns.json` — OBRIGATÓRIO regenerar junto com o banco de logs
+
+> **Achado real 18/08/2026 (bloco 613)**: `human_patterns.json`
+> (calibragem que ensina o motor a partir de sequências REAIS de
+> decisão humana — `play`/`activate`/`attack`/`attach_don`/`counter`,
+> lida por `_human_pattern_bonus`/`_human_counter_card_bonus` em
+> `decision_engine.py`) ficou **10 dias desatualizada, treinada em só
+> 7 logs**, enquanto o banco cresceu pra 150 sem ninguém regenerar o
+> arquivo — 21x mais dado real nunca incorporado. Regenerar sozinho
+> (medido, blocos 613/614) já subiu `play`/`attack`/`attach_don`/
+> `counter` de verdade, sem precisar de nenhuma mudança de lógica.
+
+Sempre que um log novo entrar no banco (`logs/parsed/`, via
+`parse_combat_log.py --add-to-db` acima) — **Claude ou Codex, quem
+estiver na sessão, tem que regenerar `human_patterns.json` antes de
+considerar a tarefa terminada**, mesmo padrão de obrigatoriedade do
+banco de logs em si. Não precisa ser a cada log individual dentro da
+MESMA sessão (regenerar 1x no fim da sessão que adicionou logs basta),
+mas nenhuma sessão deve terminar com logs novos no banco e o arquivo
+de calibragem desatualizado.
+
+**Como fazer** (ferramenta já existe, não reinventar):
+```bash
+cd scriptis_da_ia
+python audit_human_patterns.py --logs-dir logs/parsed --output human_patterns.json --min-support 2
+```
+Depois de regenerar, rodar `smoke_fast.py` (o bônus por padrão humano
+pode mudar scores exatos em testes que não isolam esse termo — achado
+real do bloco 613, um teste pré-existente quebrou por assumir bônus
+sempre 0) e considerar medir o impacto real via
+`decision_quality_full.py --all` antes de commitar, mesma disciplina
+de "medir antes de aceitar" do resto do projeto.
+
 ### Telemetria de decisão — OBRIGATÓRIO ler quando o log é de partida do bot
 
 Se o log adicionado ao banco veio de uma partida em que o **bot jogou de
