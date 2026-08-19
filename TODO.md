@@ -2,6 +2,22 @@
 
 **Última atualização:** 18 de agosto de 2026
 
+> 18/08/2026 (bloco 615): Pergunta direta do usuário ("tá usando só o
+> Imu?") levou a confirmar com dado real que a calibragem cobre 30
+> líderes (não só Imu), e a achar um 2º líder real (Mihawk, 7 casos)
+> com o MESMO padrão do bloco 610 numa variação diferente — já ataca
+> VENCENDO (não empatado) com DON não-ocioso. Generalizado `gap == 0`
+> → `gap <= 0` no fix de margem do líder, mesma fórmula/escopo. Testado
+> isolado + `smoke_test` 100% OK. Também tentei apertar os parâmetros
+> do bônus de padrão humano (bloco 613): `max_bonus` 30→60 e
+> `min_support` 2→3 — **os dois regrediram** (o de min_support devolveu
+> `play`/`attack-quem` pros números de ANTES do bloco 613!), revertidos
+> os dois — confirma que 30/2 já é ótimo local. Resultado real: play
+> 27,1%→**28,0%**, sequência-similaridade 33,7%→**33,9%**, sem
+> regressão nova. Pendente: Ace/Teach/Kikunojo/Namule/Vasco Shot ainda
+> têm casos "nunca gerado" não explicados por gap — próximo alvo
+> natural, mesmo método usado pro Mihawk. Ver bloco 615 do HANDOFF.
+
 > 18/08/2026 (bloco 614): Continuação do bloco 613 pro lado de
 > DEFESA (pedido explícito: "ordem de counter" também). O dado já
 > existia (`by_defender_response` guardava `counter:CÓDIGO` por líder

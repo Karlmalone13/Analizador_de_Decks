@@ -1,5 +1,83 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-18 (615) - Claude (sessao remota web) - Generaliza o fix de margem do lider do bloco 610 (`gap == 0` -> `gap <= 0`) apos pedido do usuario "ta usando so o Imu?" achar o MESMO padrao no Mihawk (7 casos, atacando ja VENCENDO com DON nao-ocioso). Testado, tambem tentei duas re-calibragens dos parametros do bonus humano do bloco 613 (max_bonus=60, min_support=3) -- as duas regrediram, revertidas
+
+**Pedido do usuario, direto**: "ta usando só o imu?" -- pergunta legit
+sobre se a calibragem/investigacao estava vazando pra so 1 lider.
+
+### Resposta objetiva: a calibragem (`human_patterns.json`) ja cobria 30 lideres
+
+Confirmado com dado real: 30 lideres tem bonus ofensivo carregado, 22
+tem bonus de counter por carta -- Imu (32 padroes) nao esta sozinho,
+Kid (31), Katakuri (29), Mihawk (23) tambem tem cobertura densa. Mas
+foi legitimo perguntar: o UNICO fix de codigo (nao so calibragem) desta
+sessao, o de margem do lider (bloco 610), tinha nascido especificamente
+da concentracao de casos do Imu -- valia conferir se generalizava de
+verdade ou so "parecia" generico no papel.
+
+### Achado: SIM generaliza, achado um 2o lider real (Mihawk) com o MESMO padrao numa variacao diferente
+
+Censo por lider (gap real no momento do mismatch) achou **7 casos do
+Mihawk (OP14-020)**, 3 partidas reais (Dracule.Mihawk-G x
+Charlotte.Katakuri-P): ja ataca VENCENDO (6000pwr vs 5000pwr do lider
+oponente, gap=-1000), com DON NAO-ocioso (2-4 disponivel, carta
+jogavel na mao) -- nem o ramo `gap == 0` (bloco 610, so empate exato)
+nem o ramo `don_idle` (exige DON REALMENTE sem uso) cobriam. MESMA
+dinamica do Imu (motor prefere gastar DON com play/activate antes do
+lider ter chance de reforcar), so com o atacante ja a frente em vez de
+empatado.
+
+### Fix
+
+`_generate_attach_don_actions`: `elif gap == 0 and att is p.leader` ->
+`elif gap <= 0 and att is p.leader` -- MESMA formula (0,3x do valor -
+opportunity cost real), MESMO escopo (so o lider, nao personagens
+genericos). Teste isolado novo
+(`test_attach_don_margem_lider_ja_vencendo_com_carta_jogavel_18_08`,
+reproduz o cenario exato do Mihawk) + controle (personagem continua
+sem margem). 1 teste PRE-EXISTENTE
+(`test_attach_don_margem_seguranca_com_ataque_ja_vencedor_e_don_ocioso`)
+tinha um controle que assumia "gap<0 + DON nao-ocioso = NUNCA gera
+margem" -- comportamento antigo, agora superado de proposito;
+atualizado pra refletir o novo esperado (gera margem, cobrando
+opportunity cost). `smoke_test.py` completo: TODOS OS TESTES PASSARAM.
+
+### Duas re-calibragens dos parametros do bloco 613 tentadas e REVERTIDAS
+
+Aproveitando o pedido de "melhorar os pontos com porcentagem baixa",
+testei se apertar os parametros do bonus de padrao humano (bloco 613)
+ajudava mais:
+- `_HUMAN_PATTERN_MAX_BONUS` 30->60: **regrediu** `attack -- mesmo
+  alvo` de 82,6% pra 79,8% (deterministico, nao ruido), sem ganho
+  correspondente que compensasse. Revertido.
+- `_HUMAN_PATTERN_MIN_SUPPORT` 2->3: **regrediu** `play`/`attack-quem`
+  de volta pros numeros de ANTES do bloco 613 (23,6%/35,9%) --
+  min_support=2 e necessario, nao acidental. Revertido.
+
+Ambos confirmam que 30/2 (valores atuais) ja sao um otimo local pra
+esse mecanismo especifico -- nao vale insistir nesse eixo sem uma
+mudanca de abordagem (ex: sinal ciente de ORDEM dentro do turno, nao
+so presenca do token, ainda nao feito).
+
+### Resultado (26 partidas, `--workers 1`/`--workers 4`)
+
+| categoria | antes (614) | depois (615) |
+|---|---|---|
+| play | 27,1% (29/107) | **28,0% (30/107)** |
+| SEQUENCIA similaridade | 33,7% | **33,9%** |
+| attack -- quem/attack -- alvo | 39,1%/82,6% (w4) vs 38,0%/81,4% (w1) | mesma faixa, ruido residual JA conhecido (blocos 606/609), nao nova regressao |
+| resto | sem mudanca | sem mudanca |
+
+### Pendente
+
+- Censo por lider (Ace, Teach, Kikunojo, Namule, Vasco Shot) ainda tem
+  casos "nunca gerado" nao explicados por gap -- proximo alvo natural
+  seria abrir 2-3 desses individualmente (mesmo metodo usado pro
+  Mihawk aqui) antes de generalizar mais.
+- Ruido residual sequencial-vs-paralelo em `attack-quem`/`attack-alvo`
+  (~1-4pp) continua sem causa raiz identificada -- registrado desde o
+  bloco 606, ainda nao investigado a fundo.
+
 ## 2026-08-18 (614) - Claude (sessao remota web) - Continuacao do bloco 613 pro lado de DEFESA: `pick_counters` agora tambem usa padrao humano por CARTA (nao so a contagem agregada counter-vs-blocker que ja existia e nunca era lida). Melhora real e isolada em counter, zero mudanca em qualquer outra categoria
 
 **Pedido do usuario, explicito** ("ordem de counter" estava na lista

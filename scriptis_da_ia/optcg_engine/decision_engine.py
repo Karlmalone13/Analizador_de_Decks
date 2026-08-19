@@ -16591,7 +16591,7 @@ class OPTCGMatch:
                         if valor <= 0:
                             continue
                         score = valor * 0.3
-                    elif gap == 0 and att is p.leader and p.don_available > 0:
+                    elif gap <= 0 and att is p.leader and p.don_available > 0:
                         # Achado real 18/08 (censo "nunca gerada" pos-fix de
                         # deck real, bloco 610): EMPATE exato do proprio
                         # LIDER (o ramo `don_idle` acima so cobre esse
@@ -16612,9 +16612,23 @@ class OPTCGMatch:
                         # fazer margem competir (blocos 593/594) regrediram
                         # o resultado real por dar valor sem custo de
                         # oportunidade genuino; aqui o custo é cobrado.
-                        # Escopo deliberadamente estreito (so o LIDER, so
-                        # empate EXATO, nao qualquer atacante/gap<0) pra
-                        # nao repetir esse erro.
+                        #
+                        # Generalizado de `gap == 0` pra `gap <= 0` em
+                        # 18/08 (bloco 615, pedido do usuario "ta usando so
+                        # o Imu?"): censo por lider achou o MESMO padrao no
+                        # Mihawk (OP14-020, 7 casos) -- ja atacando
+                        # VENCENDO (6000 vs 5000 do lider oponente, gap=
+                        # -1000), com DON nao-ocioso (2-4 sobrando, carta
+                        # jogavel na mao), entao nem o ramo antigo (gap==0)
+                        # nem o ramo `don_idle` (que exige DON REALMENTE
+                        # sem uso) cobriam -- exatamente a mesma dinamica
+                        # do Imu, so com o atacante ja a frente em vez de
+                        # empatado. Mesma logica de risco (Counter do
+                        # oponente pode reverter mesmo uma vantagem de
+                        # poder) e mesmo custo de oportunidade real
+                        # cobrado -- escopo continua estreito (so o
+                        # LIDER, nao personagens genericos, pra nao repetir
+                        # a regressao dos blocos 593/594).
                         falta = min(p.don_available, 2)
                         valor = engine.score_attack_target(att, ttype, tgt)
                         if valor <= 0:

@@ -10667,6 +10667,7 @@ def main() -> int:
     test_pick_counters_prioriza_carta_com_padrao_humano_18_08()
     test_don_needed_for_attack_desbloqueia_don_requirement_com_alvo_real_17_08()
     test_attach_don_margem_lider_empate_compete_com_carta_jogavel_18_08()
+    test_attach_don_margem_lider_ja_vencendo_com_carta_jogavel_18_08()
     test_score_give_don_considera_sinergia_com_ataque()
     test_gain_double_attack_respeita_target_leader_e_selecionado()
     test_score_play_prioriza_carta_que_buffa_ataque_do_lider_hoje()
@@ -11570,8 +11571,12 @@ def test_attach_don_margem_seguranca_com_ataque_ja_vencedor_e_don_ocioso() -> No
     check("ataque ja vencedor + DON ocioso: anexa ate 2 DON de margem (nao mais que a sobra)",
           bool(attach_leader) and attach_leader[0][3] == 2)
 
-    # Controle: DON nao-ocioso (mao tem carta jogavel) -- nao deve gerar
-    # candidato de margem so porque o ataque ja vence.
+    # Controle: DON nao-ocioso (mao tem carta jogavel) -- ate 17/08 nao
+    # gerava candidato so pelo ataque ja vencer (so o ramo `don_idle`
+    # existia). Generalizado no bloco 615 (achado real no Mihawk,
+    # OP14-020, 7 casos identicos): agora GERA candidato tambem aqui,
+    # via o mesmo ramo do bloco 610 (so o LIDER, cobrando opportunity
+    # cost de verdade -- nao gratis como o ramo `don_idle`).
     me2 = GameState(leader=real_card("OP16-001"), don_available=3, turn=10)
     me2.leader.don_attached = 2
     opp2 = GameState(leader=real_card("OP14-079"))
@@ -11580,8 +11585,8 @@ def test_attach_don_margem_seguranca_com_ataque_ja_vencedor_e_don_ocioso() -> No
     match2 = OPTCGMatch((me2.leader, []), (opp2.leader, []))
     acts2 = match2._generate_attach_don_actions(me2, opp2, engine2)
     attach2 = [a for a in acts2 if a[1] == "attach_don" and a[2] is me2.leader]
-    check("ataque ja vencedor + DON NAO ocioso (mao tem carta jogavel): nao gera margem",
-          not attach2)
+    check("ataque ja vencedor + DON NAO ocioso (mao tem carta jogavel): gera margem (bloco 615, cobrando opportunity cost)",
+          bool(attach2))
 
 
 def test_bank_idle_don_no_lider_como_ultimo_recurso_17_08() -> None:
@@ -11929,6 +11934,59 @@ def test_attach_don_margem_lider_empate_compete_com_carta_jogavel_18_08() -> Non
     acts2 = match2._generate_attach_don_actions(me2, opp2, engine2)
     attach_personagem = [a for a in acts2 if a[1] == "attach_don" and a[2] is personagem]
     check("empate de PERSONAGEM (nao lider) + carta jogavel: continua SEM margem (escopo so lider)",
+          not attach_personagem)
+
+
+def test_attach_don_margem_lider_ja_vencendo_com_carta_jogavel_18_08() -> None:
+    """
+    Achado real 18/08 (bloco 615, pedido do usuario "ta usando so o
+    Imu?" -- censo por lider confirmando que o mecanismo NAO e
+    especifico do Imu). Rastreado o MESMO padrao do bloco 610 num lider
+    diferente: Dracule Mihawk (OP14-020), 7 casos em 3 partidas reais
+    (Dracule.Mihawk-G x Charlotte.Katakuri-P) -- ja ataca VENCENDO
+    (6000pwr vs 5000pwr do lider oponente, gap=-1000), com DON
+    NAO-ocioso (2-4 disponivel, mas carta jogavel na mao) -- nem o ramo
+    antigo (`gap == 0`, bloco 610) nem o ramo `don_idle` (exige DON
+    REALMENTE sem uso) cobriam esse caso, so o `gap<=0 and don_idle`
+    (que so ativa DON genuinamente ocioso).
+
+    Fix: generaliza `gap == 0` pra `gap <= 0` no ramo do bloco 610 --
+    MESMA formula/custo de oportunidade, MESMO escopo (so o lider).
+    """
+    lider = mk("L1", "MeuLider", power=6000, cost=0, card_type="LEADER")
+    opp_lider = mk("OL", "LiderOponente", power=5000, cost=0, card_type="LEADER")
+
+    # DON NAO ocioso (carta jogavel com sobra) + ataque JA vencedor
+    # (gap=-1000) -- nem o ramo antigo (gap==0) nem don_idle cobririam.
+    me = GameState(leader=lider, don_available=3, turn=5)
+    me.hand = [mk("H1", "Barata", cost=1)]
+    opp = GameState(leader=opp_lider)
+    engine = DecisionEngine(me, opp)
+    match = OPTCGMatch((lider, []), (opp_lider, []))
+    acts = match._generate_attach_don_actions(me, opp, engine)
+    attach_leader = [a for a in acts if a[1] == "attach_don" and a[2] is lider]
+    check("lider ja vencendo (gap<0) + carta jogavel na mao: gera candidato de margem mesmo assim",
+          bool(attach_leader))
+    if attach_leader:
+        check("margem do lider ja vencendo: cobra opportunity cost de verdade (score < valor cheio*0.3)",
+              attach_leader[0][0] < engine.score_attack_target(lider, 'leader', None) * 0.3)
+
+    # Controle: MESMO cenario mas PERSONAGEM (nao lider) -- continua SEM
+    # margem (escopo e so o lider).
+    me2 = GameState(leader=lider, don_available=3, turn=5)
+    personagem = mk("C1", "Bicho", power=6000, cost=3)
+    personagem.just_played = False
+    personagem.rested = False
+    me2.field_chars = [personagem]
+    me2.hand = [mk("H2", "Barata2", cost=1)]
+    opp2 = GameState(leader=opp_lider)
+    opp2.field_chars = [mk("OC1", "AlvoRestado", power=5000, cost=3)]
+    opp2.field_chars[0].rested = True
+    engine2 = DecisionEngine(me2, opp2)
+    match2 = OPTCGMatch((lider, []), (opp_lider, []))
+    acts2 = match2._generate_attach_don_actions(me2, opp2, engine2)
+    attach_personagem = [a for a in acts2 if a[1] == "attach_don" and a[2] is personagem]
+    check("personagem (nao lider) ja vencendo + carta jogavel: continua SEM margem (escopo so lider)",
           not attach_personagem)
 
 
