@@ -1,5 +1,91 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-18 (618) - Claude (sessao remota web) - ACHADO GRANDE E SERIO: `_find_real_deck` (bloco 609) nunca verificava se o LIDER encontrado era o mesmo do log -- so que o deck fosse estruturalmente valido. Achado por acidente ao investigar por que Marshall D. Teach tinha 40 casos de attach_don "nunca gerado": a reconstrucao estava simulando com NAMI como lider (colisao "Teach" com usuario "BigTeach"). Investigacao mais funda achou algo pior -- reimpressoes do MESMO personagem como lider tem PODER/VIDA/HABILIDADE diferentes (Ace OP13-002 vs OP16-001), e a funcao aceitava qualquer print que batesse por nome. So 12 dos 39 lideres do banco (31%) tem decklist real do CODIGO EXATO -- os outros 27, incluindo Ace e Teach, deveriam estar caindo no generico honesto, nao usando o lider errado. Corrigido: exige match de codigo exato antes de aceitar qualquer resultado
+
+**Achado por acidente**, investigando a pergunta do usuario sobre por
+que `attach_don` de Marshall D. Teach tinha 40 casos "nunca gerado" no
+censo do banco completo (bloco 617) -- muito mais concentrado que
+qualquer lider ja visto (Imu 14, Mihawk 7).
+
+### Achado 1: colisao de substring com nome de USUARIO
+
+`_find_real_deck` busca por `termo.lower() in deck_name.lower()`, mas
+`deck_name` inclui "...by NomeDoJogador" -- pra "Teach", isso batia em
+"Blue/Yellow Namiby **BigTeach**" (usuario, nao o lider Teach). Rastreei
+com um monkeypatch direto em `OPTCGMatch.play_turn` (`p.leader.code`
+impresso a cada chamada): confirmado, `p.leader.code` era SEMPRE
+'OP11-041' (Nami), nunca 'OP16-080' (Teach), em TODAS as 40 ocorrencias
+-- a auditoria inteira de Teach nesta sessao estava simulando outro
+jogo.
+
+### Achado 2, mais serio: reimpressoes do MESMO personagem sao CARTAS DIFERENTES
+
+Confirmado com `card_effects_db.json`: `OP13-002` (Portgas.D.Ace,
+Blue/Red, 6000pwr, vida 3, `on_opp_attack` debuff + draw condicional) e
+`OP16-001` (Portgas.D.Ace, Red, 5000pwr, vida 5, `activate_main`
+concede Rush pro Luffy) sao **lideres completamente diferentes** --
+mesmo personagem, cartas diferentes, cores/poder/vida/habilidade
+diferentes. O log usa `OP16-001`; `decklists_raw.csv` so tem decks reais
+catalogados com `OP13-002` (20 decks). `_find_real_deck` aceitava
+qualquer um dos dois como "match de Ace" -- a docstring do bloco 609
+("`validar_deck` garante que um match errado nunca passa") estava
+ERRADA: `validar_deck` so confere legalidade ESTRUTURAL do deck
+(contagem/cores/copias), nunca que o LIDER e o mesmo procurado.
+
+### Escala do problema: reconferido o banco inteiro
+
+Rodado `_find_real_deck` com o fix pros 39 lideres unicos do banco
+(`logs/index.json`, p1+p2 de todos os 150 logs):
+
+| resultado | quantidade |
+|---|---|
+| decklist real do CODIGO EXATO | **12/39 (31%)** |
+| generico (sem decklist do codigo exato) | **27/39 (69%)** |
+
+Antes do fix, varios desses 27 -- confirmado ao menos Ace (OP16-001) e
+Teach (OP16-080) -- estavam recebendo um deck real de OUTRO lider
+(print errado ou colisao de nome) em vez do generico honesto. O bloco
+609 relatou "Ace/Luffy/Teach/Crocodile acham deck real" -- Luffy
+(OP13-001) e Crocodile (OP14-079) CONTINUAM reais (codigo exato bate),
+mas Ace e Teach eram falso-positivo o tempo todo, nunca detectado ate
+agora.
+
+### Fix
+
+`_find_real_deck` (`audit_real_losses.py`): dentro de `_tentar`, apos
+`build_real_deck` retornar `(leader, cards, stage)`, novo check `if
+leader_code and leader.code != leader_code: continue` -- ANTES de
+`validar_deck`. Um match por substring/nome que aponta pro lider
+ERRADO nunca passa, nao importa quao "valido" estruturalmente o deck
+errado seja. `leader_code` ja era um parametro existente da funcao,
+so nao era usado pra essa verificacao.
+
+### Validado
+
+Teste isolado novo (`test_find_real_deck_exige_codigo_exato_do_lider
+_18_08`): reproduz os 2 casos reais (colisao Teach/BigTeach, print
+errado Ace OP13-002/OP16-001) confirmando fallback pro generico
+honesto, MAIS controle confirmando que Imu (que ja funcionava)
+continua achando deck real. `smoke_test.py` completo: TODOS OS TESTES
+PASSARAM.
+
+### Pendente (proximo passo natural desta sessao)
+
+- Toda medicao desta sessao envolvendo Ace/Teach especificamente
+  (blocos 610-617) foi feita com a reconstrucao ERRADA -- precisa
+  remedir com o fix aplicado antes de aceitar qualquer numero
+  especifico desses 2 lideres. Os fixes GENERICOS (margem do lider,
+  calibragem por padrao humano) continuam validos -- nao dependem de
+  qual print exato foi usado, so foram MEDIDOS contra dado parcialmente
+  errado.
+- Remedir `decision_quality_full.py --all` (banco completo, bloco 617)
+  e o censo "nunca gerada" com o fix aplicado -- em andamento.
+- Considerar se vale investigar mais alguns dos 27 lideres genericos
+  pra confirmar que NENHUM outro esta silenciosamente usando o print
+  errado (so Ace/Teach foram confirmados diretamente; a varredura do
+  banco inteiro assume que o fix pega todos os casos, mas nao foi
+  auditado carta-a-carta).
+
 ## 2026-08-18 (617) - Claude (sessao remota web) - ACHADO GRANDE: `decision_quality_full.py --all` so auditava 26 dos 150 logs do banco (so os com `bot_side` preenchido no indice) -- os outros 124 sao humano-vs-humano de verdade, que a ferramenta podia auditar igual (nao precisa de bot do outro lado). Ampliado pra 274 comparacoes (26 bot-vs-humano + 124x2 humano-vs-humano), achando e corrigindo 2 bugs reais no caminho. Numeros REAIS com amostra 10x maior sao bem mais baixos que os 26 jogos sugeriam -- nao e regressao, e a amostra pequena que dava um quadro otimista demais
 
 **Pedido do usuario, direto**: "por que so 26 partidas se temos 150 no

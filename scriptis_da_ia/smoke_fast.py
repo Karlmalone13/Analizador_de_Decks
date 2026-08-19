@@ -10669,6 +10669,7 @@ def main() -> int:
     test_don_needed_for_attack_desbloqueia_don_requirement_com_alvo_real_17_08()
     test_attach_don_margem_lider_empate_compete_com_carta_jogavel_18_08()
     test_attach_don_margem_lider_ja_vencendo_com_carta_jogavel_18_08()
+    test_find_real_deck_exige_codigo_exato_do_lider_18_08()
     test_score_give_don_considera_sinergia_com_ataque()
     test_gain_double_attack_respeita_target_leader_e_selecionado()
     test_score_play_prioriza_carta_que_buffa_ataque_do_lider_hoje()
@@ -12037,6 +12038,60 @@ def test_attach_don_margem_lider_ja_vencendo_com_carta_jogavel_18_08() -> None:
     attach_personagem = [a for a in acts2 if a[1] == "attach_don" and a[2] is personagem]
     check("personagem (nao lider) ja vencendo + carta jogavel: continua SEM margem (escopo so lider)",
           not attach_personagem)
+
+
+def test_find_real_deck_exige_codigo_exato_do_lider_18_08() -> None:
+    """
+    Achado real 18/08 (bloco 618, censo do banco completo achou Marshall
+    D. Teach reconstruido com NAMI como lider simulado). `_find_real_deck`
+    (bloco 609) buscava por SUBSTRING no `deck_name` inteiro (que inclui
+    "...by NomeDoJogador") -- pra "Teach" isso batia em "Blue/Yellow
+    Namiby BigTeach" (usuario "BigTeach", nao o lider Teach de verdade),
+    um deck de Nami completamente diferente. `validar_deck` (a "rede de
+    seguranca" que o bloco 609 achava suficiente) so confere que o deck
+    e ESTRUTURALMENTE legal, nunca que o LIDER bate com quem foi
+    buscado -- um match por substring errado passava direto.
+
+    Achado 2, mais fundo: MESMO sem colisao de nome, o OPTCG tem varias
+    versoes/reimpressoes do mesmo personagem como lider com PODER/VIDA/
+    HABILIDADE diferentes (ex: Portgas D. Ace tem OP13-002 -- Blue/Red,
+    6000pwr, debuff+draw -- e OP16-001 -- Red, 5000pwr, concede Rush pro
+    Luffy -- CARTAS DIFERENTES). O log usa o codigo exato; o banco de
+    decklists so tinha OP13-002 catalogado. Sem verificar o codigo, a
+    funcao simulava com a HABILIDADE ERRADA sem avisar.
+
+    Fix: exige `leader.code == leader_code` (quando o codigo foi
+    passado) antes de aceitar qualquer match -- um match por
+    substring/nome que aponta pro lider errado nunca passa, nao importa
+    quao "valido" estruturalmente o deck errado seja.
+    """
+    import pandas as pd
+    from audit_real_losses import _find_real_deck
+    df_raw = pd.read_csv("decklists_raw.csv")
+    urls = df_raw.groupby("deck_url")["deck_name"].first()
+
+    # Colisao de nome: "Teach" bate em "Blue/Yellow Namiby BigTeach"
+    # (usuario, nao lider) -- sem decklist real de Teach (OP16-080) no
+    # banco, o resultado tem que ser o fallback GENERICO (nunca Nami).
+    res = _find_real_deck("Marshall D. Teach", cards, df_raw, urls, "OP16-080")
+    check("colisao de nome (Teach/BigTeach): NAO retorna Nami, cai no generico honesto",
+          res is not None and res[0].code == "OP16-080")
+
+    # Print errado: existem decks reais de "Ace" no banco, mas todos com
+    # o codigo OP13-002 (lider DIFERENTE, habilidade diferente) -- o log
+    # usa OP16-001. Sem decklist do codigo EXATO, tem que cair no
+    # generico, nunca usar o OP13-002 (habilidade errada).
+    res2 = _find_real_deck("Portgas D. Ace", cards, df_raw, urls, "OP16-001")
+    check("print errado (Ace OP13-002 no banco, log usa OP16-001): NAO usa o print errado",
+          res2 is not None and res2[0].code == "OP16-001")
+
+    # Controle: lider com decklist real do CODIGO EXATO (Imu, OP13-079,
+    # ja confirmado presente no banco desde o bloco 609) continua
+    # achando o deck real -- o fix nao quebra o caso que ja funcionava.
+    res3 = _find_real_deck("Imu", cards, df_raw, urls, "OP13-079")
+    check("lider com decklist real do codigo exato (Imu): continua achando deck real, nao generico",
+          res3 is not None and res3[0].code == "OP13-079"
+          and len(set(c.code for c in res3[1])) < 45)
 
 
 def test_score_give_don_considera_sinergia_com_ataque() -> None:

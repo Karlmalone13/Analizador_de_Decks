@@ -136,6 +136,23 @@ def _find_real_deck(leader_name, cards_db, df_raw, urls, leader_code=None):
                 if not result:
                     continue
                 leader, cards, stage = result
+                # Achado real 18/08 (bloco 618, censo do banco completo
+                # achou Marshall D. Teach reconstruido com o lider NAMI):
+                # a busca por substring rodava contra o `deck_name`
+                # INTEIRO, que inclui "...by NomeDoJogador" -- pra
+                # "Teach" isso batia em "Blue/Yellow Namiby BigTeach"
+                # (usuario "BigTeach", nao o lider Teach), um deck de
+                # Nami completamente diferente. `validar_deck` (a
+                # "rede de seguranca" que o comentario original desta
+                # funcao dizia impedir falso-positivo) so confere que o
+                # deck e ESTRUTURALMENTE legal -- nunca que o LIDER
+                # bate com quem foi buscado. Adicionado o check direto
+                # que faltava: se o CODIGO do lider foi passado, o
+                # lider do deck encontrado TEM que ser o mesmo -- um
+                # match por substring que aponta pro lider errado nunca
+                # passa, nao importa quao "valido" o deck errado seja.
+                if leader_code and leader.code != leader_code:
+                    continue
                 valido, _ = validar_deck(leader, cards, cards_db)
                 if valido:
                     return leader, cards, stage

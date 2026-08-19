@@ -2,6 +2,30 @@
 
 **Última atualização:** 18 de agosto de 2026
 
+> 18/08/2026 (bloco 618): **ACHADO GRANDE E SÉRIO**, por acidente
+> investigando por que Marshall D. Teach tinha 40 casos "nunca gerado"
+> de attach_don no censo do banco completo (bloco 617). `_find_real_
+> deck` (bloco 609) nunca verificava se o LÍDER encontrado era o mesmo
+> do log — só que o deck fosse estruturalmente válido. Achado 1:
+> colisão de substring — "Teach" batia com o usuário "BigTeach",
+> simulando com NAMI como líder (confirmado via monkeypatch:
+> `p.leader.code` era SEMPRE Nami, nunca Teach, nas 40 ocorrências).
+> Achado 2, mais sério: reimpressões do MESMO personagem como líder são
+> CARTAS DIFERENTES (Ace OP13-002: Blue/Red 6000pwr/vida3/debuff+draw
+> vs OP16-001: Red 5000pwr/vida5/Rush pro Luffy) — a função aceitava
+> qualquer print que batesse por nome. Reconferido o banco inteiro: só
+> **12 de 39 líderes (31%)** têm decklist real do código EXATO — os
+> outros 27, incluindo Ace e Teach, deveriam cair no genérico honesto.
+> Fix: exige `leader.code == leader_code` antes de aceitar qualquer
+> match. Teste isolado (reproduz os 2 casos + controle com Imu, que já
+> funcionava) + `smoke_test` 100% OK. **Pendente crítico**: toda medição
+> desta sessão sobre Ace/Teach especificamente (blocos 610-617) foi
+> feita com reconstrução ERRADA — precisa remedir antes de aceitar
+> qualquer número específico desses 2 líderes (os fixes GENÉRICOS —
+> margem do líder, calibragem por padrão humano — continuam válidos,
+> só foram medidos contra dado parcialmente errado). Remedição em
+> andamento. Ver bloco 618 do HANDOFF.
+
 > 18/08/2026 (bloco 617): Pergunta direta do usuário ("por que só 26
 > se temos 150 no banco?") achou que `decision_quality_full.py --all`
 > só usava logs com `bot_side` preenchido no índice — os outros 124
