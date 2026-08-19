@@ -1,5 +1,104 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-18 (617) - Claude (sessao remota web) - ACHADO GRANDE: `decision_quality_full.py --all` so auditava 26 dos 150 logs do banco (so os com `bot_side` preenchido no indice) -- os outros 124 sao humano-vs-humano de verdade, que a ferramenta podia auditar igual (nao precisa de bot do outro lado). Ampliado pra 274 comparacoes (26 bot-vs-humano + 124x2 humano-vs-humano), achando e corrigindo 2 bugs reais no caminho. Numeros REAIS com amostra 10x maior sao bem mais baixos que os 26 jogos sugeriam -- nao e regressao, e a amostra pequena que dava um quadro otimista demais
+
+**Pedido do usuario, direto**: "por que so 26 partidas se temos 150 no
+banco?"
+
+### Causa: escopo do JOB FINDER, nao limitacao da ferramenta de comparacao
+
+`find_bot_vs_human_logs` (usado por `--all`) só inclui logs com
+`bot_side` preenchido no `logs/index.json` -- 26 dos 150. Os outros
+124 sao partidas humano-vs-humano de verdade (nomes reais dos 2
+jogadores, ex: "Karlmalone#2854", confirmado). Mas `_offense_verdict`/
+`_defense_verdict`/`audit_one_game` (a comparacao em si) NUNCA
+precisaram que o lado oponente fosse um bot -- so reconstroem o estado
+real do turno e perguntam pro motor de hoje o que ele faria, igual pra
+qualquer jogador humano. O campo `bot_side` so decidia QUAL lado
+auditar, nao SE dava pra auditar.
+
+### Fix 1: nova `find_all_human_logs` (decision_quality_vs_human.py)
+
+Pra logs COM `bot_side`: mesmo comportamento de antes (so o lado
+humano). Pra logs SEM `bot_side` (humano-vs-humano): audita OS DOIS
+lados (dobra a amostra desses 124 -- as duas decisões são humanas reais
+igualmente validas). `decision_quality_full.py --all` passa a usar essa
+funcao por padrao; `--bot-only` preserva o escopo antigo (26) pra quem
+precisar comparar contra numeros ja registrados no HANDOFF.
+
+### Fix 2 (achado NO PROCESSO): `opp_side` tinha um flip binario hardcoded quebrado pra nomes reais
+
+`_offense_verdict`/`_defense_verdict`/`audit_one_game` calculavam
+`opp_side = 'Opponent' if human_side_label == 'You' else 'You'` -- so
+funciona na convencao fixa dos logs bot-vs-humano. Pra um log
+humano-vs-humano, `human_side_label` chega como nome real (ex:
+"Jack#5459"), NUNCA igual a 'You', entao o flip SEMPRE devolvia 'You'
+(nunca batendo com nenhum dos 2 nomes reais) -- quebraria a
+reconstrucao do lado oponente silenciosamente. Corrigido nos 3 lugares
+(fonte unica `audit_one_game` em `audit_real_losses.py`, e os 2
+lugares em `decision_quality_full.py`) pra derivar do proprio `meta`
+(qualquer nome que NAO seja `human_side_label`) -- identico ao
+resultado antigo pro caso bot-vs-humano, correto pro caso novo.
+
+### Fix 3 (achado ao RODAR): 30 logs usam um schema mais antigo, crashava o batch inteiro
+
+`meta` sem o wrapper `'players'` (formato mais antigo, ainda nao
+mapeado por completo -- `meta.p1`/`meta.p2` direto, sem aninhar
+`.leader`). 1 excecao dentro do `ProcessPoolExecutor.map` derrubava a
+auditoria INTEIRA (274 jobs), nao so o log problematico. Corrigido:
+`_offense_verdict`/`_defense_verdict` detectam e retornam erro
+gracioso (`{'error': ...}`), mesmo padrao ja usado pro resto do
+pipeline -- os 30 logs antigos (60 jobs, 2 lados cada) sao pulados,
+reportados como erro, sem derrubar os outros 214.
+
+### Resultado: amostra 10x maior, numeros REAIS mais baixos (nao regressao)
+
+| categoria | 26 jogos (bloco 616) | 274 comparacoes (bloco 617, banco completo) |
+|---|---|---|
+| play | 28,0% (30/107) | **20,0% (195/975)** |
+| attack -- quem | 39,1% (36/92) | **40,7% (371/911)** |
+| activate | 38,5% (10/26) | **22,1% (100/453)** |
+| attach_don | 9,6% (7/73) | **11,3% (78/688)** |
+| attack -- alvo | 82,6% (138/167) | **69,7% (854/1226)** |
+| SEQUENCIA identica | 9,1% (10/110) | **3,8% (38/1012)** |
+| SEQUENCIA similaridade | 33,9% (168/496) | **31,2% (1440/4619)** |
+| ALVO efeito | 51,4% (19/37) | **19,2% (83/432)** |
+| blocker (SE) | 95,8% (114/119) | **85,9% (1118/1301)** |
+| blocker (QUAL) | 80,0% (4/5) | **87,5% (42/48)** |
+| counter (SE) | 74,3% (81/109) | **60,4% (646/1070)** |
+| counter (conjunto) | 56,0% (14/25) | **52,1% (149/286)** |
+| counter (ordem) | 0,0% (0/2) | **13,5% (5/37)** |
+
+**Nao e regressao** -- nenhum codigo do motor mudou entre a medicao de
+26 e a de 274, so o ESCOPO da medicao. A maioria das categorias caiu
+porque a amostra de 26 (todas derrotas reais do bot, subconjunto bem
+menor e mais especifico) dava um quadro mais otimista/menos ruidoso do
+que a populacao real de 150 partidas, com muito mais matchups/lideres/
+situacoes diferentes. `attach_don`, `attack-quem`, `blocker (qual
+carta)` e `counter (ordem)` na verdade SOBEM com a amostra maior --
+direcao mista, nao uniformemente pior.
+
+### Validado
+
+`smoke_fast.py`/`smoke_test.py`: sem mudanca (nenhum codigo de
+`decision_engine.py` tocado neste bloco, so as ferramentas de
+medicao). Rodado o batch completo 2x (1a vez achou o bug do schema
+antigo, 2a vez limpo, `exited with code 0`).
+
+### Pendente
+
+- 30 logs com schema antigo (60 jobs) continuam fora da medicao --
+  mapear esse schema por completo e uma tarefa separada, nao feita
+  aqui (escopo: entender `meta.p1`/`meta.p2` sem wrapper `players`,
+  provavelmente formato de uma versao anterior do parser).
+- Com a amostra 10x maior, categorias antes pequenas demais pra
+  confiar (counter-ordem n=2, blocker-qual n=5) agora tem n=37/48 --
+  vale reabrir a investigacao de causa raiz com esse dado mais solido
+  antes de tentar mais fixes pontuais.
+- `--bot-only` preserva o escopo antigo pra quem precisar comparar
+  contra numeros historicos ja registrados nos blocos 599-616 do
+  HANDOFF (todos medidos no escopo de 26).
+
 ## 2026-08-18 (616) - Claude (sessao remota web) - Estende a calibragem dinamica (blocos 613/614) pra `should_use_blocker`: novo `_HUMAN_BLOCKER_CARD_BONUS_BY_LEADER`, mesma formula/teto do bonus de counter. Ultima peca do lado defensivo sem esse sinal. Teste isolado OK, smoke_test 100%, zero mudanca mensuravel no banco de 26 partidas (amostra de blocker duplo e minuscula, n=5) mas mecanismo validado e coerente com o resto
 
 **Pedido do usuario**: "acho que poderia seguir pela calibragem

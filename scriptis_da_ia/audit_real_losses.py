@@ -299,7 +299,18 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
     data = json.load(open(parsed_path, encoding='utf-8'))
     meta = data['meta']['players']
     turns = data['turns']
-    opp_side = 'Opponent' if bot_side == 'You' else 'You'
+    # Achado real 18/08 (bloco 617, pedido do usuario "por que so 26 se
+    # temos 150 no banco?" -- decision_quality_full.py passou a auditar
+    # tambem os 124 logs humano-vs-humano, que usam o NOME REAL dos 2
+    # jogadores em vez da convencao fixa 'You'/'Opponent'): o flip
+    # binario hardcoded so funcionava pra logs bot-vs-humano -- pra um
+    # log humano-vs-humano, `bot_side` chega como um nome real (ex:
+    # "Karlmalone#2854"), nunca igual a 'You', entao o flip SEMPRE
+    # devolvia 'You' (nunca batendo com nenhum dos 2 nomes reais),
+    # quebrando a reconstrucao do lado oponente. Deriva do proprio meta
+    # -- funciona identico pro caminho antigo (onde o resultado bate
+    # exatamente com o flip binario) e correto pro caso novo.
+    opp_side = meta['p2']['name'] if meta['p1']['name'] == bot_side else meta['p1']['name']
 
     bot_leader = meta['p1' if meta['p1']['name'] == bot_side else 'p2']['leader']
     opp_leader = meta['p1' if meta['p1']['name'] == opp_side else 'p2']['leader']

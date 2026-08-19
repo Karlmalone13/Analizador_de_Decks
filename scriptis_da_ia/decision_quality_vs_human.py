@@ -93,6 +93,67 @@ def find_bot_vs_human_logs(leader_filter: str | None = None):
     return jobs
 
 
+def find_all_human_logs(leader_filter: str | None = None):
+    """[(parsed_file, human_side_label, human_leader_code, game_id)] pra
+    TODO o banco (150 logs), não só os 26 com `bot_side` preenchido.
+
+    Achado real 18/08/2026 (bloco 617, pedido do usuário "por que só 26
+    se temos 150 no banco?"): `find_bot_vs_human_logs` só inclui logs
+    onde o índice sabe QUAL lado é o bot -- mas `_offense_verdict`/
+    `_defense_verdict` (via `audit_one_game`) nunca usam essa
+    informação pra nada além de escolher QUAL lado auditar; a
+    comparação em si é "reconstrua o estado real deste turno e pergunte
+    pro motor de hoje o que ele faria" -- funciona igual pra QUALQUER
+    jogador humano, bot do outro lado ou não. Os outros 124 logs do
+    banco são humano-vs-humano de verdade (confirmado: nomes reais tipo
+    "Karlmalone#2854", não "You"/"Opponent") -- `turn['player']` usa o
+    nome real do jogador, e o resto do pipeline (`_offense_verdict`
+    etc.) já compara por igualdade de string, sem hardcode de "You"/
+    "Opponent" em nenhum lugar crítico -- funciona sem mudança.
+
+    Pra logs SEM `bot_side` (humano vs humano), audita OS DOIS lados
+    (dobra a amostra pra esses 124 -- os dois são decisões humanas reais
+    igualmente válidas). Pra logs COM `bot_side`, mantém o comportamento
+    de `find_bot_vs_human_logs` (só o lado humano, não o bot) -- não
+    faz sentido comparar o motor de hoje contra o BOT histórico como se
+    fosse "humano".
+    """
+    idx = json.load(open(INDEX_PATH, encoding='utf-8'))
+    jobs = []
+    for e in idx:
+        bs = e.get('bot_side')
+        p1 = e.get('p1', {})
+        p2 = e.get('p2', {})
+        if not p1.get('leader_code') or not p2.get('leader_code'):
+            continue
+        # Achado real 18/08: 30 entradas antigas do indice nao tem
+        # campo `id` (schema mais antigo, so `parsed_file`/`p1`/`p2`/
+        # `winner`) -- nenhuma delas tem `bot_side` (confirmado), entao
+        # o codigo antigo (`find_bot_vs_human_logs`) nunca batia nelas
+        # e nunca precisou de fallback. Aqui, que tambem processa as
+        # sem-bot_side, precisa de um id generico pra essas.
+        game_id = e.get('id') or e.get('parsed_file', 'unknown')
+        if bs:
+            human_key = 'p2' if bs == 'p1' else 'p1'
+            human_side_label = p2.get('name') if bs == 'p1' else p1.get('name')
+            human_leader = e[human_key]['leader_code']
+            if leader_filter and human_leader != leader_filter:
+                continue
+            jobs.append((e['parsed_file'], human_side_label, human_leader, game_id))
+        else:
+            for side_key, other_key in (('p1', 'p2'), ('p2', 'p1')):
+                side = e.get(side_key, {})
+                human_leader = side.get('leader_code')
+                human_side_label = side.get('name')
+                if not human_leader or not human_side_label:
+                    continue
+                if leader_filter and human_leader != leader_filter:
+                    continue
+                jobs.append((e['parsed_file'], human_side_label, human_leader,
+                             f"{game_id}_{side_key}"))
+    return jobs
+
+
 def _turn_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
     """Roda audit_one_game pro lado do HUMANO e devolve o veredito de dano
     por turno -- reusa engine_hoje_narrativa já gerada, não duplica nada."""

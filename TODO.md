@@ -2,6 +2,28 @@
 
 **Última atualização:** 18 de agosto de 2026
 
+> 18/08/2026 (bloco 617): Pergunta direta do usuário ("por que só 26
+> se temos 150 no banco?") achou que `decision_quality_full.py --all`
+> só usava logs com `bot_side` preenchido no índice — os outros 124
+> são humano-vs-humano de verdade, que a ferramenta já conseguia
+> auditar (não precisa de bot do outro lado). Ampliado pra 274
+> comparações (26 + 124×2 lados). No processo, achei e corrigi 2 bugs
+> reais: (1) `opp_side` tinha um flip binário hardcoded ('You'/
+> 'Opponent') que quebrava silenciosamente pra nomes reais de
+> jogadores — corrigido na fonte única (`audit_one_game`); (2) 30 logs
+> usam um schema mais antigo (`meta` sem `players`) que crashava o
+> batch inteiro — agora pulado graciosamente. **Números reais com
+> amostra 10x maior são bem mais baixos** que os 26 jogos sugeriam
+> (play 28,0%→20,0%, activate 38,5%→22,1%, sequência-idêntica
+> 9,1%→3,8%) — **não é regressão**, nenhum código do motor mudou, é a
+> amostra pequena que dava um quadro otimista demais. Algumas
+> categorias na verdade sobem com mais dado (attach_don 9,6%→11,3%,
+> counter-ordem 0%→13,5% com n=2→37). `--bot-only` preserva o escopo
+> antigo de 26 pra comparar com números históricos do HANDOFF. Pendente:
+> 30 logs de schema antigo ainda fora da medição; reabrir causa raiz
+> das categorias que agora têm amostra confiável (counter-ordem,
+> blocker-qual). Ver bloco 617 do HANDOFF.
+
 > 18/08/2026 (bloco 616): Pedido do usuário de seguir pela calibragem
 > dinâmica (não mais caça individual por líder). Estendida a última
 > peça do lado defensivo sem esse sinal: `should_use_blocker` agora

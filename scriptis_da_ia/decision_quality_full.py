@@ -74,7 +74,7 @@ import pandas as pd
 from audit_real_losses import (
     audit_one_game, _cards_from_codes, _find_real_deck, DonEstimator,
 )
-from decision_quality_vs_human import find_bot_vs_human_logs
+from decision_quality_vs_human import find_bot_vs_human_logs, find_all_human_logs
 from optcg_engine.decision_engine import (
     load_cards_db, DecisionEngine, GameState, populate_full_deck_knowledge,
     attack_time_power, get_card_effects,
@@ -96,9 +96,29 @@ def _hist_target_type_code(target_raw, leader_code):
 
 def _offense_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
     data = json.load(open(parsed_path, encoding='utf-8'))
+    # Achado real 18/08 (bloco 617): 30 logs do banco usam um schema
+    # MAIS ANTIGO (`meta` sem o wrapper 'players', formato ainda nao
+    # mapeado por completo) -- crashava o `--all` inteiro (via
+    # ProcessPoolExecutor, 1 excecao derruba o batch todo). Pula
+    # graciosamente, mesmo padrao de erro ja usado pro resto do
+    # pipeline (`if 'error' not in r['offense']`), em vez de tentar
+    # suportar um schema desconhecido as pressas.
+    if 'players' not in data.get('meta', {}):
+        return {'error': f'schema de log antigo sem meta.players: {os.path.basename(parsed_path)}'}
     meta = data['meta']['players']
     turns_raw = data['turns']
-    opp_side = 'Opponent' if human_side_label == 'You' else 'You'
+    # Achado real 18/08 (bloco 617, escopo ampliado pros 124 logs
+    # humano-vs-humano do banco, pedido do usuario "por que so 26 se
+    # temos 150?"): `opp_side` era um flip binario hardcoded ('You'/
+    # 'Opponent') -- so funcionava pra logs bot-vs-humano, que sempre
+    # usam essa convencao fixa. Logs humano-vs-humano usam o NOME REAL
+    # dos 2 jogadores (ex: "Karlmalone#2854"), entao o flip sempre
+    # devolvia 'You' (nunca batendo com nenhum dos dois nomes reais),
+    # quebrando a reconstrucao do lado oponente. Deriva do proprio meta
+    # (qualquer um dos dois nomes que NAO seja o human_side_label) --
+    # funciona igual pros dois formatos, sem regressao pro caminho
+    # antigo (onde o resultado e identico ao flip binario).
+    opp_side = meta['p2']['name'] if meta['p1']['name'] == human_side_label else meta['p1']['name']
     opp_leader_code = meta['p1' if meta['p1']['name'] == opp_side else 'p2']['leader'].get('code')
 
     # Achado real 17/08: `attach_don_alvo` (mais abaixo) sempre pretendeu
@@ -341,9 +361,13 @@ def _offense_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
 
 def _defense_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
     data = json.load(open(parsed_path, encoding='utf-8'))
+    # Ver comentario equivalente em _offense_verdict (bloco 617).
+    if 'players' not in data.get('meta', {}):
+        return {'error': f'schema de log antigo sem meta.players: {os.path.basename(parsed_path)}'}
     meta = data['meta']['players']
     turns = data['turns']
-    opp_side = 'Opponent' if human_side_label == 'You' else 'You'
+    # Ver comentario equivalente em _offense_verdict (bloco 617).
+    opp_side = meta['p2']['name'] if meta['p1']['name'] == human_side_label else meta['p1']['name']
 
     human_leader = meta['p1' if meta['p1']['name'] == human_side_label else 'p2']['leader']
     opp_leader = meta['p1' if meta['p1']['name'] == opp_side else 'p2']['leader']
@@ -467,6 +491,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--log')
     ap.add_argument('--all', action='store_true')
+    ap.add_argument('--bot-only', action='store_true',
+                     help='so os 26 logs bot-vs-humano (escopo antigo, pre-bloco-617)')
     ap.add_argument('--leader')
     ap.add_argument('--workers', type=int, default=1)
     args = ap.parse_args()
@@ -482,10 +508,20 @@ def main():
         human_key = 'p2' if bs == 'p1' else 'p1'
         jobs = [(entry['parsed_file'], 'Opponent' if bs == 'p1' else 'You',
                  entry[human_key]['leader_code'], entry['id'])]
-    else:
+    elif args.bot_only:
         jobs = find_bot_vs_human_logs(args.leader)
         if not jobs:
             raise SystemExit('nenhum log bot-vs-humano encontrado')
+    else:
+        # Achado real 18/08 (bloco 617, pedido do usuario "por que so 26
+        # se temos 150 no banco?"): find_all_human_logs cobre os 150
+        # logs (26 bot-vs-humano + 124 humano-vs-humano, auditando os 2
+        # lados destes ultimos) -- default novo de --all. --bot-only
+        # preserva o escopo antigo (26) pra quem precisar comparar
+        # contra numeros historicos ja registrados no HANDOFF.
+        jobs = find_all_human_logs(args.leader)
+        if not jobs:
+            raise SystemExit('nenhum log encontrado')
 
     print(f'{len(jobs)} log(s) a auditar (ofensiva + defesa)...')
     if args.workers <= 1:
