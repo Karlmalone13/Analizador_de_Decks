@@ -1,6 +1,22 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 18 de agosto de 2026
+**Última atualização:** 20 de agosto de 2026
+
+> 20/08/2026 (bloco 619): Remedição pós-fix 618 concluída — baseline
+> das 274 comparações confirmado determinístico (`--workers 4` ==
+> `--workers 1`, número por número) e **melhor** que o corrompido do
+> bloco 617, não pior: `attack -- QUEM atacou` sobe 40,7%→53,1% (o
+> maior salto), `activate` 22,1%→25,1%, `attach_don` 11,3%→14,0%,
+> `play`/`attack-alvo`/sequência sobem levemente, lado defensivo
+> (blocker/counter) praticamente igual — consistente com o bug do
+> `_find_real_deck` afetando sobretudo a reconstrução ofensiva do bot.
+> Nenhuma mudança de código do motor entre as duas medições, só a
+> correção de identidade de líder. Pendente: re-rodar o censo "nunca
+> gerado" (play/activate/attach_don) com o fix — o achado de Teach com
+> 40 casos foi construído sobre a reconstrução errada (Nami no lugar de
+> Teach); auditar individualmente se outros líderes genéricos (além de
+> Ace/Teach) também trocavam de líder antes do fix. Ver bloco 619 do
+> HANDOFF.
 
 > 18/08/2026 (bloco 618): **ACHADO GRANDE E SÉRIO**, por acidente
 > investigando por que Marshall D. Teach tinha 40 casos "nunca gerado"

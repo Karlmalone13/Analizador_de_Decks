@@ -1,5 +1,65 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-20 (619) - Claude (sessao remota web) - Remedicao pos-fix 618: baseline corrigido das 274 comparacoes, confirmado deterministico (`--workers 4` == `--workers 1`), e melhor que o numero corrompido do bloco 617 -- principalmente `attack-quem` (40,7%→53,1%)
+
+Fechamento do pendente critico do bloco 618. Rodei
+`decision_quality_full.py --all` (274 comparacoes, 1019 turnos
+ofensivos, 1301 eventos defensivos) com o fix de `_find_real_deck`
+aplicado, primeiro com `--workers 4` e depois `--workers 1` pra
+confirmar reprodutibilidade (mesma disciplina de todo fix desta sessao)
+-- os dois bateram numero por numero, sem excecao.
+
+### Baseline corrigido (substitui o do bloco 617)
+
+| métrica | bloco 617 (corrompido p/ Ace/Teach) | bloco 619 (corrigido) |
+|---|---|---|
+| play (mesmas cartas) | 20,0% (195/975) | 20,3% (198/975) |
+| attack -- QUEM atacou | 40,7% (371/911) | **53,1% (484/911)** |
+| activate | 22,1% (100/453) | 25,1% (111/442) |
+| attach_don -- mesmo alvo | 11,3% (78/688) | 14,0% (92/655) |
+| attack -- MESMO ALVO | 69,7% (854/1226) | 69,8% (991/1419) |
+| sequência idêntica | 3,8% (38/1012) | 4,9% (50/1011) |
+| sequência similaridade (LCS) | 31,2% (1440/4619) | 34,4% (1582/4604) |
+| alvo dentro do efeito | 19,2% (83/432) | 19,6% (87/445) |
+| blocker (bloquear ou não) | 85,9% (1118/1301) | 85,9% (1118/1301) — igual |
+| blocker -- mesma carta | 87,5% (42/48) | 87,5% (42/48) — igual |
+| counter (usar ou não) | 60,4% (646/1070) | 60,5% (647/1070) |
+| counter -- mesmo conjunto | 52,1% (149/286) | 52,1% (149/286) — igual |
+| counter -- mesma ordem | 13,5% (5/37) | 13,5% (5/37) — igual |
+
+**Leitura**: o quadro real, com identidade de líder correta, é
+genuinamente MELHOR que o corrompido sugeria, não pior -- não houve
+nenhuma mudança de código do motor entre as duas medições, só a
+correção do bloco 618. O ganho grande é em `attack -- QUEM atacou`
+(+12,4pp): fazia sentido que essa fosse a métrica mais sensível à
+identidade do líder (poder/vida diferentes mudam completamente quais
+alvos valem a pena atacar). Lado defensivo (blocker/counter)
+praticamente não mudou -- consistente com a suspeita já registrada no
+bloco 618 de que o bug de `_find_real_deck` afetava principalmente a
+reconstrução ofensiva (mão/DON/ataque do lado do bot), não a resposta
+defensiva do oponente.
+
+### Pendente
+
+- Censo "nunca gerado" (play/activate/attach_don, script
+  `censo_banco_completo.py` do scratchpad) precisa ser re-rodado com o
+  fix -- o achado de Teach com 40 casos "nunca gerado" foi construído
+  em cima da reconstrução com Nami no lugar de Teach, não é mais
+  confiável como estava.
+- Não confirmado individualmente, carta por carta, se algum OUTRO dos
+  27/39 líderes genéricos (além de Ace e Teach, os 2 únicos confirmados
+  via monkeypatch) também estava recebendo silenciosamente um deck de
+  líder errado antes do fix -- o levantamento de 39 líderes assume que
+  o fix pega todos os casos iguais, mas isso não foi auditado individualmente.
+- `human_patterns.json` não precisa regenerar por causa deste fix --
+  `audit_human_patterns.py` minera as ações brutas do log diretamente e
+  nunca chama `_find_real_deck`.
+- Seguir a diretriz do usuário (calibragem dinâmica via banco de logs,
+  não caça manual por líder) enquanto houver sinal generalizável — a
+  próxima candidata natural é o censo "nunca gerado" re-rodado acima,
+  que pode apontar o próximo padrão real (do jeito que Mihawk apontou
+  a generalização do bloco 615).
+
 ## 2026-08-18 (618) - Claude (sessao remota web) - ACHADO GRANDE E SERIO: `_find_real_deck` (bloco 609) nunca verificava se o LIDER encontrado era o mesmo do log -- so que o deck fosse estruturalmente valido. Achado por acidente ao investigar por que Marshall D. Teach tinha 40 casos de attach_don "nunca gerado": a reconstrucao estava simulando com NAMI como lider (colisao "Teach" com usuario "BigTeach"). Investigacao mais funda achou algo pior -- reimpressoes do MESMO personagem como lider tem PODER/VIDA/HABILIDADE diferentes (Ace OP13-002 vs OP16-001), e a funcao aceitava qualquer print que batesse por nome. So 12 dos 39 lideres do banco (31%) tem decklist real do CODIGO EXATO -- os outros 27, incluindo Ace e Teach, deveriam estar caindo no generico honesto, nao usando o lider errado. Corrigido: exige match de codigo exato antes de aceitar qualquer resultado
 
 **Achado por acidente**, investigando a pergunta do usuario sobre por
