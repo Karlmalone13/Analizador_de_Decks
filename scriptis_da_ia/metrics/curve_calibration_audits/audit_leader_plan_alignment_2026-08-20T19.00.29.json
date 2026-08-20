@@ -1,0 +1,1467 @@
+{
+  "seed": 20260814,
+  "peso_testado": 20.0,
+  "total_turnos": 351,
+  "total_divergentes": 7,
+  "erros": 0,
+  "jogos": [
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 10,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 11,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json",
+      "bot_leader": "Imu",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json",
+      "bot_leader": "Imu",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T21.41.10.json",
+      "bot_leader": "Imu",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 3,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 3,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 9,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.25.08.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T15.27.45.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Krieg-RG_2026-07-12T23.03.36.json",
+      "bot_leader": "Krieg",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "bot_leader": "Krieg",
+      "opp_leader": "Imu",
+      "turnos_auditados": 8,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50.json",
+      "bot_leader": "Eustass \"Captain\" Kid",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
+      "bot_leader": "Kaido",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Jinbe-G_2026-07-13T22.54.47.json",
+      "bot_leader": "Jinbe",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
+      "bot_leader": "Jewelry Bonney",
+      "opp_leader": "Imu",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39.json",
+      "bot_leader": "Jewelry Bonney",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32.json",
+      "bot_leader": "Donquixote Doflamingo",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.json",
+      "bot_leader": "Eustass \"Captain\" Kid",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T02.34.18.json",
+      "bot_leader": "Eustass \"Captain\" Kid",
+      "opp_leader": "Imu",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.10.05.json",
+      "bot_leader": "Imu",
+      "opp_leader": "Eustass \"Captain\" Kid",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.json",
+      "bot_leader": "Imu",
+      "opp_leader": "Eustass \"Captain\" Kid",
+      "turnos_auditados": 7,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.json",
+      "bot_leader": "Jinbe",
+      "opp_leader": "Eustass \"Captain\" Kid",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+      "bot_leader": "Smoker",
+      "opp_leader": "Krieg",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 1,
+      "divergencias": [
+        {
+          "turn": 12,
+          "historical_actions": [
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP02-096",
+              "to_name": "Kuzan",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP02-096",
+              "to_name": "Kuzan",
+              "total": 2
+            },
+            {
+              "type": "attack",
+              "attacker": "Kuzan",
+              "attacker_code": "OP02-096",
+              "target": "Krieg [\"OP15-001\">OP15-001]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP15-009"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP02-096",
+              "card_name": "Kuzan",
+              "effects": [
+                "Kuro [\"OP15-025\">OP15-025] Cost -4"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "ST06-017",
+              "card_name": "Marineford",
+              "effects": [
+                "Rest Marineford [\"ST06-017\">ST06-017]",
+                "Kuro [\"OP15-025\">OP15-025] Cost -1"
+              ]
+            },
+            {
+              "type": "play",
+              "card": "ST06-008",
+              "card_name": "Hina",
+              "effects": [
+                "Kuro [\"OP15-025\">OP15-025] Cost -4"
+              ]
+            },
+            {
+              "type": "play",
+              "card": "OP05-091",
+              "card_name": "Rebecca",
+              "effects": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP02-093",
+              "to_name": "Smoker",
+              "total": 1
+            },
+            {
+              "type": "activate",
+              "card": "OP02-093",
+              "card_name": "Smoker",
+              "effects": [
+                "Kuro [\"OP15-025\">OP15-025] Cost -1",
+                "Buff Self 1000"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Smoker",
+              "attacker_code": "OP02-093",
+              "target": "Krieg [\"OP15-001\">OP15-001]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "acoes_off": [
+            {
+              "kind": "attack",
+              "card": "OP02-093",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP02-096",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "play",
+              "card": "OP05-091",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "play",
+              "card": "ST06-006",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "activate",
+              "card": "ST06-006",
+              "target_type": null,
+              "target": null
+            }
+          ],
+          "acoes_on": [
+            {
+              "kind": "attack",
+              "card": "OP02-093",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP02-096",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "play",
+              "card": "OP05-091",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP03-089",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "attach_don",
+              "card": "OP02-093",
+              "target_type": 1,
+              "target": null
+            },
+            {
+              "kind": "activate",
+              "card": "OP02-093",
+              "target_type": null,
+              "target": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27.json",
+      "bot_leader": "Charlotte Katakuri",
+      "opp_leader": "Dracule Mihawk",
+      "turnos_auditados": 3,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.31.57.json",
+      "bot_leader": "Charlotte Katakuri",
+      "opp_leader": "Dracule Mihawk",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T13.57.47.json",
+      "bot_leader": "Charlotte Katakuri",
+      "opp_leader": "Dracule Mihawk",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T17.01.09.json",
+      "bot_leader": "Charlotte Katakuri",
+      "opp_leader": "Dracule Mihawk",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Jinbe-B_2026-07-20T19.13.14.json",
+      "bot_leader": "Jinbe",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 2,
+      "divergencias": [
+        {
+          "turn": 4,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP14-050",
+              "card_name": "Chew",
+              "effects": [
+                "Draw 1 Card"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Jinbe",
+              "attacker_code": "OP14-040",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP07-046",
+              "to_name": "Sengoku",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP07-046",
+              "to_name": "Sengoku",
+              "total": 2
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP07-046",
+              "to_name": "Sengoku",
+              "total": 3
+            },
+            {
+              "type": "attack",
+              "attacker": "Sengoku",
+              "attacker_code": "OP07-046",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "acoes_off": [
+            {
+              "kind": "attack",
+              "card": "OP14-040",
+              "target_type": "character",
+              "target": "ST34-005"
+            },
+            {
+              "kind": "play",
+              "card": "OP07-047",
+              "target_type": null,
+              "target": null
+            }
+          ],
+          "acoes_on": [
+            {
+              "kind": "attack",
+              "card": "OP14-040",
+              "target_type": "character",
+              "target": "ST34-005"
+            },
+            {
+              "kind": "play",
+              "card": "OP07-045",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "activate",
+              "card": "OP14-040",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP14-050",
+              "target_type": "character",
+              "target": "ST34-005"
+            }
+          ]
+        },
+        {
+          "turn": 6,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP07-045",
+              "card_name": "Jinbe",
+              "effects": [
+                "Deploy Trafalgar Law [\"OP07-047\">OP07-047]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "OP07-047",
+              "card_name": "Trafalgar Law",
+              "effects": [
+                "Return Trafalgar Law [\"OP07-047\">OP07-047] to Hand"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Jinbe",
+              "attacker_code": "OP14-040",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP15-069"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP14-050",
+              "to_name": "Chew",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP14-050",
+              "to_name": "Chew",
+              "total": 2
+            },
+            {
+              "type": "attack",
+              "attacker": "Chew",
+              "attacker_code": "OP14-050",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "acoes_off": [
+            {
+              "kind": "attack",
+              "card": "OP14-040",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP14-050",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "play",
+              "card": "OP07-046",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP14-050",
+              "target_type": "character",
+              "target": "ST34-003"
+            }
+          ],
+          "acoes_on": [
+            {
+              "kind": "play",
+              "card": "OP07-046",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "play",
+              "card": "OP07-057",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP14-040",
+              "target_type": "character",
+              "target": "ST34-005"
+            },
+            {
+              "kind": "attack",
+              "card": "OP14-050",
+              "target_type": "character",
+              "target": "ST34-003"
+            },
+            {
+              "kind": "attack",
+              "card": "OP14-050",
+              "target_type": "character",
+              "target": "ST34-003"
+            },
+            {
+              "kind": "activate",
+              "card": "OP14-040",
+              "target_type": null,
+              "target": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P_2026-07-21T01.08.09.json",
+      "bot_leader": "Charlotte Katakuri",
+      "opp_leader": "Donquixote Doflamingo",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",
+      "bot_leader": "Charlotte Katakuri",
+      "opp_leader": "Monkey D. Luffy",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34.json",
+      "bot_leader": "Kaido",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07.json",
+      "bot_leader": "Smoker",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 0,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.json",
+      "bot_leader": "Smoker",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 2,
+      "divergencias": [
+        {
+          "turn": 6,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "ST19-002",
+              "card_name": "Sengoku",
+              "effects": [
+                "Trash White Out [\"ST06-016\">ST06-016]",
+                "Trash T Bone [\"EB01-049\">EB01-049]",
+                "Draw 3 Card"
+              ]
+            },
+            {
+              "type": "play",
+              "card": "ST19-003",
+              "card_name": "Tashigi",
+              "effects": [
+                "Charlotte Brulee [\"ST34-003\">ST34-003] Cost -4",
+                "Trash Charlotte Brulee [\"ST34-003\">ST34-003]"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Brannew",
+              "attacker_code": "OP03-089",
+              "target": "Charlotte Pudding [\"OP11-070\">OP11-070]",
+              "result": "hit",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Kuzan",
+              "attacker_code": "OP02-096",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "activate",
+              "card": "OP02-096",
+              "card_name": "Kuzan",
+              "effects": [
+                "Charlotte Brulee [\"ST34-003\">ST34-003] Cost -4"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Smoker",
+              "attacker_code": "OP02-093",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "acoes_off": [
+            {
+              "kind": "attack",
+              "card": "OP02-093",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP02-096",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "play",
+              "card": "ST19-003",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP03-089",
+              "target_type": "character",
+              "target": "OP11-070"
+            },
+            {
+              "kind": "play",
+              "card": "ST19-002",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "activate",
+              "card": "ST19-003",
+              "target_type": null,
+              "target": null
+            }
+          ],
+          "acoes_on": [
+            {
+              "kind": "attack",
+              "card": "OP02-093",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP02-096",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "play",
+              "card": "ST19-003",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP03-089",
+              "target_type": "character",
+              "target": "OP11-070"
+            },
+            {
+              "kind": "attach_don",
+              "card": "OP02-093",
+              "target_type": 1,
+              "target": null
+            },
+            {
+              "kind": "activate",
+              "card": "OP02-093",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "activate",
+              "card": "ST19-003",
+              "target_type": null,
+              "target": null
+            }
+          ]
+        },
+        {
+          "turn": 8,
+          "historical_actions": [
+            {
+              "type": "attack",
+              "attacker": "Brannew",
+              "attacker_code": "OP03-089",
+              "target": "Charlotte Brulee [\"ST34-003\">ST34-003]",
+              "result": null,
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "play",
+              "card": "EB02-044",
+              "card_name": "Sengoku",
+              "effects": [
+                "Deployed Tashigi [\"ST06-006\">ST06-006] from Trash"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Kuzan",
+              "attacker_code": "OP02-096",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "activate",
+              "card": "OP02-096",
+              "card_name": "Kuzan",
+              "effects": [
+                "Charlotte Pudding [\"OP11-070\">OP11-070] Cost -4"
+              ]
+            },
+            {
+              "type": "attack",
+              "attacker": "Smoker",
+              "attacker_code": "OP02-093",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Tashigi",
+              "attacker_code": "ST19-003",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "blocked",
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": [
+                "OP15-069"
+              ]
+            }
+          ],
+          "acoes_off": [
+            {
+              "kind": "attack",
+              "card": "OP02-093",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP03-089",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP02-096",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "ST19-003",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "play",
+              "card": "ST19-003",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "ST19-002",
+              "target_type": "character",
+              "target": "ST34-003"
+            },
+            {
+              "kind": "activate",
+              "card": "ST19-003",
+              "target_type": null,
+              "target": null
+            }
+          ],
+          "acoes_on": [
+            {
+              "kind": "attack",
+              "card": "OP02-093",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP03-089",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP02-096",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "ST19-003",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "play",
+              "card": "ST19-003",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "activate",
+              "card": "ST19-003",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "attach_don",
+              "card": "OP02-093",
+              "target_type": 1,
+              "target": null
+            },
+            {
+              "kind": "activate",
+              "card": "OP02-093",
+              "target_type": null,
+              "target": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.json",
+      "bot_leader": "Portgas D. Ace",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json",
+      "bot_leader": "Jinbe",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.json",
+      "bot_leader": "Krieg",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17.json",
+      "bot_leader": "Kaido",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 1,
+      "divergencias": [
+        {
+          "turn": 6,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "ST04-005",
+              "card_name": "Queen",
+              "effects": [
+                "Minus 1 Don",
+                "Draw 2 Card",
+                "Trash Onigashima Island [\"ST04-017\">ST04-017]"
+              ]
+            },
+            {
+              "type": "activate",
+              "card": "ST04-017",
+              "card_name": "Onigashima Island",
+              "effects": [
+                "Rest Onigashima Island [\"ST04-017\">ST04-017]"
+              ]
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "ST04-001",
+              "to_name": "Kaido",
+              "total": 1
+            },
+            {
+              "type": "attack",
+              "attacker": "Kaido",
+              "attacker_code": "ST04-001",
+              "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "acoes_off": [
+            {
+              "kind": "attack",
+              "card": "ST04-001",
+              "target_type": "character",
+              "target": "ST34-005"
+            },
+            {
+              "kind": "play",
+              "card": "OP08-066",
+              "target_type": null,
+              "target": null
+            }
+          ],
+          "acoes_on": [
+            {
+              "kind": "attack",
+              "card": "ST04-001",
+              "target_type": "character",
+              "target": "ST34-005"
+            },
+            {
+              "kind": "play",
+              "card": "OP08-074",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "activate",
+              "card": "OP08-074",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "activate",
+              "card": "ST04-001",
+              "target_type": null,
+              "target": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Jinbe-B_2026-07-24T11.35.39.json",
+      "bot_leader": "Jinbe",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T21.54.29.json",
+      "bot_leader": "Marshall D. Teach",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09.json",
+      "bot_leader": "Jinbe",
+      "opp_leader": "Krieg",
+      "turnos_auditados": 0,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09_p2.json",
+      "bot_leader": "Jinbe",
+      "opp_leader": "Krieg",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21.json",
+      "bot_leader": "Portgas D. Ace",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 0,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json",
+      "bot_leader": "Portgas D. Ace",
+      "opp_leader": "Charlotte Katakuri",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T00.53.44.json",
+      "bot_leader": "Crocodile",
+      "opp_leader": "Portgas D. Ace",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T01.59.52.json",
+      "bot_leader": "Crocodile",
+      "opp_leader": "Portgas D. Ace",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Portgas.D.Ace-R_x_Crocodile-B_2026-08-02T09.41.46.json",
+      "bot_leader": "Crocodile",
+      "opp_leader": "Portgas D. Ace",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 1,
+      "divergencias": [
+        {
+          "turn": 6,
+          "historical_actions": [
+            {
+              "type": "play",
+              "card": "OP14-091",
+              "card_name": "Mr. 2 Bon Clay (Bentham)",
+              "effects": []
+            },
+            {
+              "type": "attack",
+              "attacker": "Miss Valentine (Mikita)",
+              "attacker_code": "OP14-087",
+              "target": "Namule [\"OP16-010\">OP16-010]",
+              "result": null,
+              "damage": null,
+              "blocked_by": null,
+              "countered_by": []
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP14-079",
+              "to_name": "Crocodile",
+              "total": 1
+            },
+            {
+              "type": "attach_don",
+              "amount": 1,
+              "to": "OP14-079",
+              "to_name": "Crocodile",
+              "total": 2
+            },
+            {
+              "type": "attack",
+              "attacker": "Crocodile",
+              "attacker_code": "OP14-079",
+              "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+              "result": "hit",
+              "damage": 1,
+              "blocked_by": null,
+              "countered_by": []
+            }
+          ],
+          "acoes_off": [
+            {
+              "kind": "attack",
+              "card": "OP14-079",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP14-087",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP14-087",
+              "target_type": "character",
+              "target": "OP16-010"
+            }
+          ],
+          "acoes_on": [
+            {
+              "kind": "attack",
+              "card": "OP14-079",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP14-087",
+              "target_type": "leader",
+              "target": null
+            },
+            {
+              "kind": "activate",
+              "card": "OP14-079",
+              "target_type": null,
+              "target": null
+            },
+            {
+              "kind": "attack",
+              "card": "OP14-087",
+              "target_type": "character",
+              "target": "OP16-010"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "parsed_file": "parsed/Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T13.18.18.json",
+      "bot_leader": "Portgas D. Ace",
+      "opp_leader": "Portgas D. Ace",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T16.38.43.json",
+      "bot_leader": "Portgas D. Ace",
+      "opp_leader": "Portgas D. Ace",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Portgas.D.Ace-R_x_Eustass.Captain.Kid-Y_2026-08-02T23.52.21.json",
+      "bot_leader": "Eustass \"Captain\" Kid",
+      "opp_leader": "Portgas D. Ace",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01.json",
+      "bot_leader": "Portgas D. Ace",
+      "opp_leader": "Rocks D. Xebec",
+      "turnos_auditados": 0,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01_p2.json",
+      "bot_leader": "Portgas D. Ace",
+      "opp_leader": "Rocks D. Xebec",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T10.23.52.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T17.04.22.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.23.56.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T22.43.37.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 3,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-13T23.38.28.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T19.16.09.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 0,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27_p2.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T22.24.38.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T00.57.17.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T14.18.02.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-16T15.11.37.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Marshall D. Teach",
+      "turnos_auditados": 6,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T17.10.36.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Monkey D. Luffy",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T23.26.16.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Monkey D. Luffy",
+      "turnos_auditados": 4,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    },
+    {
+      "parsed_file": "parsed/Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-16T23.55.32.json",
+      "bot_leader": "Rocks D. Xebec",
+      "opp_leader": "Monkey D. Luffy",
+      "turnos_auditados": 5,
+      "turnos_divergentes": 0,
+      "divergencias": []
+    }
+  ]
+}

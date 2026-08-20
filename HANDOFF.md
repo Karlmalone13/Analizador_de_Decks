@@ -1,5 +1,71 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-20 (623) - Claude (sessao remota web) - Mesmo diagnostico rigoroso do bloco 622, agora isolado em `leader_plan_alignment`: muda so 2,0% dos turnos (7/351, vs 12,8% da familia de curva), e o pouco que muda e ~empate (1 melhora, 1 piora, 5 sem efeito na aderencia ao humano). Sintese: as DUAS formas existentes de "calibrar por deck/lider" (curva de custo E prontidao de habilidade) sao fracas ou erradas -- nenhuma le o EFEITO da habilidade de forma especifica o bastante pra funcionar
+
+Continuacao direta do bloco 622 -- pedido do usuario ("o bot tem que
+entender o que o lider faz, a calibragem varia de lider pra lider
+influenciando nas jogadas") apontou que eu nunca tinha testado
+`leader_plan_alignment` com o MESMO rigor usado nas 8 flags de curva
+(so a media agregada de 274 comparacoes, que pode esconder sinal
+cancelado -- exatamente o que aconteceu com a familia de curva).
+
+### Metodo
+
+Script novo (scratchpad, `audit_leader_plan_alignment.py`, mesmo
+padrao de `audit_curve_calibration_flags.py` -- reconstroi so o lado
+do humano VENCEDOR de partidas que o bot perdeu, roda cada turno 2x
+com a MESMA seed, peso 0.0 vs 20.0, compara ACAO ESTRUTURADA).
+
+### Resultado
+
+`7/351 turnos divergentes (2,0%)` -- bem menos que os 12,8% da familia
+de curva (bloco 622). Dos 7:
+
+| resultado | quantidade |
+|---|---|
+| aproxima do humano | 1 |
+| afasta do humano | 1 |
+| muda a acao mas nao aproxima nem afasta | 5 |
+
+N pequeno demais pra conclusao estatistica solida sozinho, mas o
+padrao bate com a limitacao de design ja documentada no bloco 619
+(`_leader_ability_centrality` so diferencia habilidade de compra,
+`leader_plan_alignment` so tem 3 estados discretos 0/0.5/1) --
+o sinal e raso demais pra tocar a maioria das decisoes, e quando toca
+e ~aleatorio se ajuda ou atrapalha (1 vs 1, mesmo padrao mas
+proporcionalmente menor que o -3 liquido da familia de curva).
+
+### Sintese dos blocos 621-623
+
+Testadas rigorosamente as DUAS formas que ja existiam no motor de
+"calibrar por deck/lider":
+
+1. Arquetipo por CURVA DE CUSTO (aggressive/control/midrange) -- muda
+   bastante (12,8%), mas ERRADO mais vezes que certo (bloco 622).
+2. PRONTIDAO da habilidade do lider (`leader_plan_alignment`) -- quase
+   nao muda nada (2,0%), efeito residual e ~empate (bloco 623).
+
+Nenhuma das duas e "entender o que a habilidade FAZ estrategicamente"
+de verdade -- a 1a nem olha a habilidade (so a curva de custo do
+deck), a 2a olha mas so pergunta "esta pronta pra usar?", nao "o que
+ela recompensa?". O unico lugar do motor que de fato reconhece um
+PADRAO ESTRATEGICO concreto do texto da habilidade e
+`compute_game_plan_from_cards` -- e reconhece so 2 padroes (limiar de
+trash tipo Imu, reanimacao em massa tipo Five Elders). Qualquer outro
+tipo de habilidade (buff condicional, concessao de keyword, gatilho de
+ataque, ramp de DON) cai no generico, sem reconhecimento.
+
+### Pendente -- proximo passo proposto, ainda nao executado
+
+Estender `compute_game_plan_from_cards` (ou um modulo irmao) pra
+reconhecer mais formas de habilidade, gerando bonus ESPECIFICO por
+acao/carta relacionada ao padrao (mesmo formato de
+`human_patterns.json`, que ja provou funcionar -- bonus concreto por
+carta, nao um score agregado vago), em vez de mais um peso de estado.
+Levantamento proposto (nao feito ainda): quais formas de habilidade
+aparecem com mais frequencia nos lideres do banco de logs, pra
+priorizar o reconhecimento pelas mais comuns primeiro.
+
 ## 2026-08-20 (622) - Claude (sessao remota web) - RETIFICACAO do bloco 621: a hipotese "mecanismo fraco demais pra mudar a decisao" estava ERRADA. Diagnostico real (`audit_curve_calibration_flags.py`, ja existia, nao reinventado) mostra que as 8 flags de curva MUDAM 12,8% das decisoes (45/351 turnos) nos jogos que o bot perdeu -- so que na direcao ERRADA mais vezes que na certa (11 pioram vs 8 melhoram, 26 trocam 1 erro por outro)
 
 Pedido do usuario (mesmo dia, apos o bloco 621): "certeza que e isso?

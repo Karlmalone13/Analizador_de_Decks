@@ -2,6 +2,25 @@
 
 **Última atualização:** 20 de agosto de 2026
 
+> 20/08/2026 (bloco 623): Continuação direta do 622 — pedido do
+> usuário ("o bot tem que entender o que o líder faz, calibragem varia
+> de líder pra líder") levou a testar `leader_plan_alignment` com o
+> MESMO rigor usado nas flags de curva (argmax + direção vs humano
+> vencedor, não só a média agregada). Resultado: muda só **2,0% dos
+> turnos** (7/351, vs 12,8% da família de curva), e o pouco que muda é
+> ~empate (1 melhora, 1 piora, 5 sem efeito). **Síntese dos blocos
+> 621-623**: as duas formas existentes de "calibrar por deck/líder" no
+> motor (curva de custo E prontidão de habilidade) são fracas ou
+> erradas — nenhuma lê o que a habilidade **recompensa
+> estrategicamente**, só `compute_game_plan_from_cards` faz isso de
+> verdade, e reconhece só 2 padrões (limiar de trash, reanimação em
+> massa). Próximo passo proposto (não iniciado): estender esse
+> reconhecimento de padrão pra mais formas de habilidade, gerando
+> bônus específico por carta/ação (formato `human_patterns.json`, já
+> validado) em vez de mais um peso de estado agregado. Levantamento
+> prévio proposto: mapear formas de habilidade mais comuns no banco
+> antes de priorizar implementação. Ver bloco 623 do HANDOFF.
+
 > 20/08/2026 (bloco 622): **RETIFICAÇÃO do bloco 621** — pedido do
 > usuário ("certeza que é isso? não tá fazendo sentido, mas pode rodar
 > o diagnóstico") levou a rodar `audit_curve_calibration_flags.py`
