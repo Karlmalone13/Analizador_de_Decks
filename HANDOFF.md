@@ -1,5 +1,78 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-20 (626) - Claude (sessao remota web) - Correcao de rumo pedida pelo usuario ("pra de mudar de objetivo, tem que cobrir TODAS as decisoes"): mapeadas as 3 lacunas restantes do `human_patterns.json` (ordem de counter, alvo dentro do efeito, distribuicao de DON) -- ordem de counter tem dado real mas sparse demais pra usar com seguranca ainda (mineracao adicionada, NAO conectada); alvo-no-efeito exigiria parsing fragil de narrativa; distribuicao de DON ja e coberta pelo attach_don do bloco 613. Nenhuma mudanca de comportamento em producao (so mineracao nova, nao consumida)
+
+Pedido direto do usuario apos o dia de 4 hipoteses descartadas (blocos
+621-625): "de onde vc tirou que tem que investigar se o bot ataca mais
+que o humano? Ja falei aqui diversas vezes temos que ver todas as
+decisoes... Toda vez vc muda o objetivo e acaba que a gente nao
+resolve". Correto -- a investigacao do dia (habilidade do lider ->
+vies de atacar o lider -> 1 constante) foi um afunilamento progressivo
+que perdeu de vista a lista completa (jogar, atacar, bloquear,
+counterar, ordem, alvo, ativacao). Realinhado: a unica coisa que ja
+mostrou ganho real cobrindo MULTIPLAS categorias ao mesmo tempo e
+`human_patterns.json` (blocos 613/614/616) -- continuar por ai em vez
+de abrir mais uma investigacao estreita.
+
+### Levantamento das 3 lacunas que faltavam nesse mecanismo
+
+1. **Ordem de counter** (quando 2+ cartas sao usadas na mesma defesa
+   -- metrica mais baixa medida, 13,5%): mineracao nova em
+   `audit_human_patterns.py` (`by_defender_counter_order`, pares
+   CONSECUTIVOS `CODE_A>CODE_B` por lider DEFENSOR, `countered_by` do
+   log ja vem em ordem real e ja e codigo puro, sem regex). Rodado
+   contra o banco de 150 logs: **so 62 ocorrencias no total, 55
+   padroes unicos, so 4 com suporte>=2**. Sparso DEMAIS pra um bonus
+   por PAR especifico de cartas (a combinatoria de pares e maior que a
+   de cartas individuais, que ja tinha suporte suficiente pros
+   mecanismos anteriores). NAO conectado no `decision_engine.py` --
+   mineracao fica pronta e cresce organicamente conforme o banco
+   cresce, mas nao ha dado suficiente HOJE pra confiar num bonus sem
+   overfitting (mesma licao ja validada este mes: min_support=2 e
+   necessario, nao incidental).
+2. **Alvo dentro do efeito** (qual alvo dentro de um play/activate):
+   a comparacao existente (`decision_quality_full.py`, "ALVO dentro
+   do efeito") ja e rotulada "best-effort via narrativa" e precisou de
+   2 rodadas de fix so pra MEDIR direito (achado 17/08, documentado no
+   proprio codigo) -- minerar isso pra um bonus novo exigiria o MESMO
+   parsing fragil de texto livre, e o suporte por (lider, carta, alvo)
+   seria ainda mais raro que por par de counter (mais uma dimensao de
+   combinatoria). Nao tentado -- custo/risco alto pro dado disponivel.
+3. **Distribuicao de DON**: 112 turnos no banco tem attach_don em 2+
+   alvos diferentes no mesmo turno -- mas isso e EXATAMENTE o que
+   `attach_don -- MESMO alvo recebeu DON` ja mede, e o bonus por carta
+   ja foi conectado no bloco 613 (`_human_pattern_bonus(..., 'attach_
+   don', ...)`). Nao e uma lacuna separada, e o mesmo mecanismo ja
+   ativo.
+
+### Estado real depois do levantamento
+
+`human_patterns.json` regenerado (so ADICOES, zero remocao -- `git
+diff` confirma, `by_defender_counter_order` e uma chave nova, o resto
+do arquivo ficou byte-identico) -- nenhum bonus ja ativo mudou de
+valor. `smoke_fast.py` 100% OK. Nenhuma mudanca de comportamento em
+producao neste bloco.
+
+Com isto, TODAS as categorias de decisao que o usuario pediu (jogar,
+ativar, atacar-quem, atacar-alvo, attach_don, blocker-qual-carta,
+counter-qual-carta) tem o mecanismo `human_patterns.json` conectado
+onde ha dado suficiente. As 2 que restam sem bonus ativo (ordem de
+counter, alvo-no-efeito) nao sao pendencia de codigo -- sao limitadas
+pelo VOLUME de dado no banco atual de 150 logs, nao por falta de
+engenharia.
+
+### Pendente
+
+- Ordem de counter: reavaliar quando o banco crescer (mais logs =
+  mais suporte por par) -- a mineracao ja esta pronta, so falta
+  conectar quando `by_defender_counter_order` tiver suporte real.
+  Alternativa mais barata a considerar: sinal por CARTA UNICA
+  ("costuma ir primeiro ou por ultimo", nao por par exato) em vez de
+  par exato -- menos sparso, mas ainda nao implementado nem medido.
+- Alvo-no-efeito: precisaria de um approach mais robusto que
+  narrativa-texto pra ser mineravel com seguranca -- nao avaliado
+  ainda se vale o esforco dado o volume de dado disponivel.
+
 ## 2026-08-20 (625) - Claude (sessao remota web) - 4a tentativa do dia (reduzir ATTACK_LEADER_BASE_SCORE 400->320 pra fechar o vies generico do bloco 624) testada e revertida: resultado MISTO, e a metrica-alvo (attack-alvo) PIOROU (-1,9pp), nao melhorou. Fim do dia de testes: 4 hipoteses testadas com o mesmo rigor, 4 sem ganho liquido -- documentado honestamente, nada quebrado, codigo de producao intacto
 
 Continuacao direta do bloco 624 (vies generico "motor ataca o lider

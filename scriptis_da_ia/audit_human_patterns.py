@@ -136,6 +136,7 @@ def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dic
     by_leader_ngram3: dict[str, Counter] = defaultdict(Counter)
     by_leader_attack: dict[str, Counter] = defaultdict(Counter)
     by_defender: dict[str, Counter] = defaultdict(Counter)
+    by_defender_counter_order: dict[str, Counter] = defaultdict(Counter)
     context_examples: dict[str, list[dict]] = defaultdict(list)
     global_action_orders = Counter()
 
@@ -201,6 +202,19 @@ def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dic
                 for counter_card in countered_by:
                     total_defenses += 1
                     by_defender[defender][f'counter:{counter_card}'] += 1
+                # ORDEM do counter (pedido do usuario 20/08: "todas as
+                # decisoes", nao so QUAL carta -- counter_conjunto ja
+                # cobria isso, faltava a sequencia quando 2+ cartas sao
+                # usadas na MESMA defesa). Pares CONSECUTIVOS, mesmo
+                # padrao de `by_leader_ngram2` pra sequencia de jogadas --
+                # 'CODE_A>CODE_B' registra que A foi jogado ANTES de B
+                # nesta defesa real. countered_by ja vem na ordem real de
+                # uso (confirmado no log bruto), sem precisar de regex
+                # pra extrair codigo (ja e codigo puro, diferente de
+                # `target`).
+                for a, b in zip(countered_by, countered_by[1:]):
+                    if a != b:
+                        by_defender_counter_order[defender][f'{a}>{b}'] += 1
 
             if len(context_examples[scope]) < 5:
                 context_examples[scope].append({
@@ -273,6 +287,10 @@ def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dic
         # cortar essa lista descarta sinal real sem necessidade (mesmo
         # raciocinio do `heuristic_candidates[:80]` removido acima).
         'by_defender_response': nested_counter_to_dict(by_defender, 60),
+        # Ordem do counter (pedido do usuario 20/08, "todas as decisoes"
+        # -- counter-ordem era a categoria mais baixa medida, 13,5%).
+        # Pares CONSECUTIVOS 'CODE_A>CODE_B' por lider DEFENSOR.
+        'by_defender_counter_order': nested_counter_to_dict(by_defender_counter_order, 40),
         'context_examples': dict(sorted(context_examples.items())),
         'heuristic_candidates': candidates,
         'card_names': {code: card_name(cards_db, code)

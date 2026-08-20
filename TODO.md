@@ -2,6 +2,26 @@
 
 **Última atualização:** 20 de agosto de 2026
 
+> 20/08/2026 (bloco 626): Correção de rumo pedida pelo usuário depois
+> do dia de 4 hipóteses descartadas — "temos que ver TODAS as decisões,
+> toda vez você muda o objetivo". Voltei pro `human_patterns.json`
+> (único mecanismo já validado cobrindo várias categorias ao mesmo
+> tempo) e mapeei as 3 lacunas que faltavam: **ordem de counter** —
+> dado real minerado (`by_defender_counter_order` novo em
+> `audit_human_patterns.py`) mas só 62 observações no banco todo, 4
+> com suporte≥2 — sparso demais pra conectar com segurança agora, fica
+> pronto pra crescer com o banco; **alvo dentro do efeito** — exigiria
+> parsing frágil de narrativa (já rotulado "best-effort" no código
+> existente), não tentado; **distribuição de DON** — já é o que o
+> `attach_don` (bloco 613) mede, não é lacuna separada. `human_
+> patterns.json` regenerado só com ADIÇÃO (zero remoção, nenhum bonus
+> já ativo mudou), `smoke_fast` 100% OK, **nenhuma mudança de
+> comportamento em produção**. Com isso, todas as categorias pedidas
+> (jogar, ativar, atacar-quem, atacar-alvo, attach_don, blocker,
+> counter) têm o mecanismo conectado onde há dado suficiente — as 2
+> que faltam são limitadas por volume de dado no banco de 150 logs,
+> não por engenharia faltando. Ver bloco 626 do HANDOFF.
+
 > 20/08/2026 (bloco 625): 4ª e última tentativa do dia — reduzir
 > `ATTACK_LEADER_BASE_SCORE` (400→320) pra fechar o viés genérico do
 > bloco 624. Testado com o mesmo rigor: resultado MISTO, e a métrica

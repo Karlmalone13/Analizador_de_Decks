@@ -8429,6 +8429,262 @@
       }
     ]
   },
+  "by_defender_counter_order": {
+    "OP09-061|Monkey D. Luffy": [
+      {
+        "pattern": "OP17-095>OP15-092",
+        "count": 1
+      }
+    ],
+    "OP09-081|Marshall D. Teach": [
+      {
+        "pattern": "OP09-089>OP09-083",
+        "count": 1
+      }
+    ],
+    "OP10-099|Eustass \"Captain\" Kid": [
+      {
+        "pattern": "ST36-001>OP10-114",
+        "count": 1
+      },
+      {
+        "pattern": "OP15-105>OP10-114",
+        "count": 1
+      },
+      {
+        "pattern": "OP15-105>P-088",
+        "count": 1
+      },
+      {
+        "pattern": "P-088>OP11-101",
+        "count": 1
+      }
+    ],
+    "OP11-021|Jinbe": [
+      {
+        "pattern": "OP15-035>EB04-018",
+        "count": 1
+      }
+    ],
+    "OP11-040|Monkey D. Luffy": [
+      {
+        "pattern": "ST18-001>EB03-034",
+        "count": 1
+      },
+      {
+        "pattern": "ST18-001>OP05-067",
+        "count": 1
+      }
+    ],
+    "OP11-062|Charlotte Katakuri": [
+      {
+        "pattern": "PRB02-010>ST34-005",
+        "count": 2
+      },
+      {
+        "pattern": "OP15-069>PRB02-010",
+        "count": 1
+      },
+      {
+        "pattern": "ST34-003>ST34-002",
+        "count": 1
+      },
+      {
+        "pattern": "ST18-001>OP15-069",
+        "count": 1
+      },
+      {
+        "pattern": "ST34-002>ST18-001",
+        "count": 1
+      },
+      {
+        "pattern": "OP15-069>ST34-005",
+        "count": 1
+      },
+      {
+        "pattern": "OP11-070>PRB02-010",
+        "count": 1
+      }
+    ],
+    "OP12-040|Kuzan": [
+      {
+        "pattern": "OP12-047>ST33-003",
+        "count": 1
+      },
+      {
+        "pattern": "OP12-051>ST33-002",
+        "count": 1
+      },
+      {
+        "pattern": "ST33-003>ST33-002",
+        "count": 1
+      }
+    ],
+    "OP13-001|Monkey D. Luffy": [
+      {
+        "pattern": "OP14-022>OP13-037",
+        "count": 1
+      }
+    ],
+    "OP13-002|Portgas D. Ace": [
+      {
+        "pattern": "OP13-043>OP13-054",
+        "count": 1
+      }
+    ],
+    "OP13-079|Imu": [
+      {
+        "pattern": "OP13-083>OP16-093",
+        "count": 4
+      },
+      {
+        "pattern": "OP13-092>OP13-084",
+        "count": 3
+      },
+      {
+        "pattern": "OP13-083>OP13-089",
+        "count": 2
+      },
+      {
+        "pattern": "OP13-080>OP13-089",
+        "count": 1
+      },
+      {
+        "pattern": "OP13-080>OP13-084",
+        "count": 1
+      },
+      {
+        "pattern": "OP13-083>OP13-084",
+        "count": 1
+      },
+      {
+        "pattern": "OP16-093>OP13-086",
+        "count": 1
+      },
+      {
+        "pattern": "OP13-089>OP13-080",
+        "count": 1
+      },
+      {
+        "pattern": "OP13-086>OP13-091",
+        "count": 1
+      },
+      {
+        "pattern": "OP13-080>OP16-093",
+        "count": 1
+      },
+      {
+        "pattern": "OP16-093>OP13-084",
+        "count": 1
+      },
+      {
+        "pattern": "OP16-093>OP13-089",
+        "count": 1
+      },
+      {
+        "pattern": "OP13-089>OP13-084",
+        "count": 1
+      },
+      {
+        "pattern": "OP13-083>OP13-091",
+        "count": 1
+      },
+      {
+        "pattern": "OP13-091>OP13-098",
+        "count": 1
+      },
+      {
+        "pattern": "OP16-093>OP13-092",
+        "count": 1
+      },
+      {
+        "pattern": "OP13-084>OP13-091",
+        "count": 1
+      },
+      {
+        "pattern": "OP13-084>OP13-080",
+        "count": 1
+      }
+    ],
+    "OP14-020|Dracule Mihawk": [
+      {
+        "pattern": "OP14-033>OP07-022",
+        "count": 1
+      },
+      {
+        "pattern": "OP07-022>ST32-002",
+        "count": 1
+      }
+    ],
+    "OP14-040|Jinbe": [
+      {
+        "pattern": "OP07-040>OP14-046",
+        "count": 1
+      },
+      {
+        "pattern": "OP14-046>OP15-052",
+        "count": 1
+      },
+      {
+        "pattern": "OP07-046>OP08-047",
+        "count": 1
+      }
+    ],
+    "OP14-079|Crocodile": [
+      {
+        "pattern": "OP14-083>OP14-088",
+        "count": 1
+      }
+    ],
+    "OP15-001|Krieg": [
+      {
+        "pattern": "OP15-017>OP15-003",
+        "count": 1
+      },
+      {
+        "pattern": "OP15-003>OP15-028",
+        "count": 1
+      },
+      {
+        "pattern": "OP15-027>OP15-025",
+        "count": 1
+      },
+      {
+        "pattern": "OP15-023>OP15-003",
+        "count": 1
+      }
+    ],
+    "OP16-001|Portgas D. Ace": [
+      {
+        "pattern": "OP16-004>OP16-118",
+        "count": 1
+      },
+      {
+        "pattern": "OP16-005>OP16-118",
+        "count": 1
+      }
+    ],
+    "OP16-080|Marshall D. Teach": [
+      {
+        "pattern": "OP16-109>OP09-086",
+        "count": 1
+      },
+      {
+        "pattern": "OP16-109>OP16-104",
+        "count": 1
+      }
+    ],
+    "OP17-020|Shanks": [
+      {
+        "pattern": "OP17-021>ST32-002",
+        "count": 1
+      },
+      {
+        "pattern": "OP17-021>OP17-029",
+        "count": 1
+      }
+    ]
+  },
   "context_examples": {
     "OP02-093|Smoker|early": [
       {
