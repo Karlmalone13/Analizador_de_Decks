@@ -1,5 +1,68 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-20 (622) - Claude (sessao remota web) - RETIFICACAO do bloco 621: a hipotese "mecanismo fraco demais pra mudar a decisao" estava ERRADA. Diagnostico real (`audit_curve_calibration_flags.py`, ja existia, nao reinventado) mostra que as 8 flags de curva MUDAM 12,8% das decisoes (45/351 turnos) nos jogos que o bot perdeu -- so que na direcao ERRADA mais vezes que na certa (11 pioram vs 8 melhoram, 26 trocam 1 erro por outro)
+
+Pedido do usuario (mesmo dia, apos o bloco 621): "certeza que e isso?
+para mim nao ta fazendo sentido, mas pode rodar esse diagnostico".
+Correto desconfiar -- a hipotese anterior nao sobreviveu a medicao
+direta.
+
+### O que o diagnostico mediu
+
+`audit_curve_calibration_flags.py` (script ja existente, criado em
+sessao anterior ao bloco 535, nunca antes rodado nesta investigacao):
+reconstroi o lado do HUMANO VENCEDOR em partidas reais que o bot
+perdeu (`find_real_bot_losses`), roda cada turno 2x com a MESMA seed
+-- 1x com as 8 flags `USE_*_CURVE_SCALE` desligadas (producao hoje),
+1x com todas ligadas -- e compara a ACAO ESTRUTURADA escolhida
+(kind/carta), nao o texto do log.
+
+**Resultado bruto**: 45/351 turnos divergentes (12,8%). Isso ja
+contradiz a hipotese do bloco 621 ("multiplicador fraco demais pra
+inverter o argmax") -- o mecanismo muda decisao real, com frequencia
+nao-trivial, exatamente nos estados que mais importam (jogos que o
+bot perdeu pro humano).
+
+### A pergunta que realmente decide se e bom ou ruim
+
+Pra cada um dos 45 turnos divergentes, comparei `acoes_off`/`acoes_on`
+contra `historical_actions` (o que o humano VENCEDOR de fato fez
+naquele turno):
+
+| resultado | quantidade |
+|---|---|
+| ligar a flag aproxima do que o humano fez | 8 |
+| ligar a flag AFASTA do que o humano fez | 11 |
+| muda a acao mas pra outro erro (nenhum dos 2 bate com o humano) | 26 |
+
+**Mais casos pioram (11) que melhoram (8)**, e a maioria (26/45, 58%)
+so troca um erro por outro sem se aproximar do humano de jeito nenhum.
+Explica de forma limpa o efeito nulo medido no bloco 621 contra as 274
+comparacoes: nao e cancelamento por fraqueza de sinal, e cancelamento
+por FALTA DE CORRELACAO -- a mudanca de decisao e real, so que nao
+aponta consistentemente na direcao certa.
+
+### Leitura corrigida
+
+Achado mais serio que o do bloco 621: a classificacao de arquetipo por
+CURVA DE CUSTO do deck (aggressive/control/midrange, base das 8 flags)
+nao e um bom proxy pra "o que o humano que ganha realmente faz" --
+ligar essas flags nao e neutro, e levemente PIOR que deixar desligado.
+Contraste direto com `human_patterns.json` (blocos 613/614/616, ganho
+real medido, sem regressao): a diferenca e usar o efeito REAL/
+historico daquele lider EXATO em vez de uma inferencia generica de
+arquetipo por curva -- dado especifico vence classificacao abstrata.
+
+### Pendente / proximo passo recomendado
+
+NAO resgatar as 9 flags de curva/leader_plan_alignment -- testado,
+nao so nao ajuda como piora levemente. Caminho com evidencia a favor
+continua sendo estender o ALCANCE do `human_patterns.json` (mais
+categorias de decisao cobertas, ou aumentar influencia onde ja
+comprovadamente funciona) em vez de qualquer forma de inferencia de
+arquetipo generico. Relatorio completo do diagnostico salvo em
+`metrics/curve_calibration_audits/audit_2026-08-20T18.47.54.json`.
+
 ## 2026-08-20 (621) - Claude (sessao remota web) - Achado NEGATIVO importante: os 9 flags "curva do deck escala X" (todos False/0.0 em producao desde que foram criados) testados 2 a 2 contra dado real -- `leader_plan_alignment` e `USE_DMG_VALUE_CURVE_SCALE` deram efeito NULO nas 274 comparacoes. Nao e questao de peso pequeno -- o mecanismo em si (multiplicador fraco em cima da MESMA formula) parece fraco demais pra mudar qual acao vence
 
 Pedido do usuario (20/08): "nao podemos usar so pra desempatar, e sim

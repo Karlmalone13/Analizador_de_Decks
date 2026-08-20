@@ -2,6 +2,24 @@
 
 **Última atualização:** 20 de agosto de 2026
 
+> 20/08/2026 (bloco 622): **RETIFICAÇÃO do bloco 621** — pedido do
+> usuário ("certeza que é isso? não tá fazendo sentido, mas pode rodar
+> o diagnóstico") levou a rodar `audit_curve_calibration_flags.py`
+> (script já existente) comparando ação-a-ação, mesma seed, flags de
+> curva desligadas vs ligadas, nos jogos que o bot REALMENTE perdeu pro
+> humano. Resultado: as 8 flags mudam **12,8% das decisões** (45/351
+> turnos) — a hipótese anterior ("mecanismo fraco demais") estava
+> ERRADA. Mas checando as 45 mudanças contra o que o humano vencedor
+> realmente fez: só 8 aproximam, **11 afastam**, 26 trocam um erro por
+> outro sem aproximar de jeito nenhum. Achado mais sério que o do bloco
+> 621: classificação de arquétipo por CURVA DE CUSTO não é bom proxy
+> pra decisão humana real — ligar essas flags é levemente PIOR que
+> deixar desligado, não neutro. Reforça por contraste que
+> `human_patterns.json` (dado real por líder EXATO) é o caminho certo,
+> não inferência genérica de arquétipo. Recomendação: não resgatar
+> essas 9 flags/peso; estender alcance do `human_patterns.json` em vez
+> disso. Ver bloco 622 do HANDOFF.
+
 > 20/08/2026 (bloco 621): Pedido do usuário ("não podemos usar só pra
 > desempatar, decisões devem variar por deck") levou a achar 9 chaves
 > em `decision_engine.py` feitas exatamente pra escalar dano/mão/
