@@ -2,6 +2,26 @@
 
 **Última atualização:** 20 de agosto de 2026
 
+> 20/08/2026 (bloco 621): Pedido do usuário ("não podemos usar só pra
+> desempatar, decisões devem variar por deck") levou a achar 9 chaves
+> em `decision_engine.py` feitas exatamente pra escalar dano/mão/
+> board/vida/DON/defesa pela curva do deck ou pelo efeito do líder —
+> todas desligadas desde que foram criadas (self-play pequeno demais
+> pra validar). Testei 2 contra dado real (274 comparações):
+> `leader_plan_alignment` (peso 0→20) e `USE_DMG_VALUE_CURVE_SCALE`
+> (False→True) — **ambas deram efeito NULO**, nenhuma categoria se
+> moveu além do ruído (±0,3pp). Hipótese: não é peso pequeno, é que
+> esses termos multiplicam uma fatia pequena da fórmula por um fator
+> perto de 1.0x, raramente o bastante pra inverter qual ação vence
+> contra os termos dominantes (dmg=120, opp_blocker=25). Ambas
+> revertidas pro default original. Pendente: diagnosticar direto se
+> ligar essas flags muda o ARGMAX (não só o score agregado) antes de
+> testar as outras 7 flags da família — se confirmar que quase nunca
+> muda o vencedor, o problema é mecanismo (multiplicador fraco demais),
+> não calibração de valor, e o próximo passo é redesenhar como filtro/
+> reordenação de candidatos em vez de nudge aditivo. Ver bloco 621 do
+> HANDOFF.
+
 > 20/08/2026 (bloco 620): Último pendente do 618/619 fechado — censo
 > "nunca gerado" (play/activate/attach_don) re-rodado com o fix
 > aplicado. O outlier gigante do Teach (40x attach_don) **não se

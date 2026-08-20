@@ -1,5 +1,67 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-20 (621) - Claude (sessao remota web) - Achado NEGATIVO importante: os 9 flags "curva do deck escala X" (todos False/0.0 em producao desde que foram criados) testados 2 a 2 contra dado real -- `leader_plan_alignment` e `USE_DMG_VALUE_CURVE_SCALE` deram efeito NULO nas 274 comparacoes. Nao e questao de peso pequeno -- o mecanismo em si (multiplicador fraco em cima da MESMA formula) parece fraco demais pra mudar qual acao vence
+
+Pedido do usuario (20/08): "nao podemos usar so pra desempatar, e sim
+pra tomar decisoes, como as jogadas e sequencias variam de acordo com
+o deck". Investigacao achou que `decision_engine.py` ja tem uma
+familia inteira de 9 chaves feitas exatamente pra isso (escalar
+dano/mao/board/vida/DON/cobertura/counter/blocker pela curva do
+proprio deck OU pelo texto da habilidade do lider,
+`leader_plan_alignment`) -- todas desligadas desde que foram criadas,
+mesmo motivo em cada uma: calibradas via self-play com N pequeno, que
+deu sinal ruidoso/inconsistente (Mihawk oscilando de sinal entre
+candidatos, blocos 527/528).
+
+### Teste 1: `leader_plan_alignment` (peso 0.0 -> 20.0, mesmo valor de
+`wincon_ready` que ele generaliza)
+
+274 comparacoes reais (`decision_quality_full.py --all`): play
+20,3%->20,1%, attack-quem 53,1%->53,2%, activate 25,1%->25,6%,
+attach_don 14,0%->13,7%, resto identico ou dentro de ruido de
+reconstrucao (sub-±0,3pp em toda categoria). **Efeito nulo.**
+
+### Teste 2: `USE_DMG_VALUE_CURVE_SCALE` (False -> True)
+
+Mesma bateria: play 20,3%->20,5%, attack-quem 53,1%->53,2%, activate
+25,1%->24,9%, attach_don 14,0%->14,1%, resto igual dentro do mesmo
+ruido de ±0,3pp, defesa identica. **Efeito nulo de novo.**
+
+### Leitura honesta
+
+Dois mecanismos DIFERENTES (um le habilidade do lider, outro escala
+por curva de custo), dois resultados NULOS, no mesmo padrao. Hipotese
+mais provavel: nao e magnitude de peso (usei o mesmo valor do termo
+analogo que cada um generaliza), e sim que esses termos multiplicam
+uma fatia PEQUENA da formula de avaliacao (`dmg`/`board`/etc.) por um
+fator perto de 1.0x-1.3x, empurrando o SCORE AGREGADO um pouco pra
+cima ou pra baixo -- mas raramente o suficiente pra INVERTER qual acao
+vence a comparacao contra as outras candidatas (que ja diferem por
+dezenas/centenas de pontos nos termos dominantes: dmg=120,
+opp_blocker=25, survival_premium=25). Ou seja: o sinal pode estar
+"certo" em direcao mas fraco demais em magnitude relativa pra mudar
+a decisao final na pratica -- e diferente de "sinal errado".
+
+Ambas as mudancas revertidas pros defaults originais (`0.0`/`False`),
+so os comentarios documentando o teste ficaram. `smoke_fast.py` 100%
+OK depois do revert.
+
+### Pendente -- proximo passo proposto, ainda nao executado
+
+Em vez de continuar testando as outras 7 chaves da mesma familia uma
+por uma (risco de repetir o mesmo nulo 7x), diagnosticar a hipotese
+acima diretamente: medir quantas vezes ligar cada flag muda o ARGMAX
+(qual acao o Turn Planner escolhe) em vez de so o score agregado. Se a
+resposta for "quase nunca muda o vencedor", confirma que o problema e
+magnitude relativa fraca demais dentro da formula atual -- nesse caso,
+o proximo passo logico e ou (a) aumentar o peso MUITO mais alem do
+valor do termo analogo (arriscado, pode virar dominante demais e
+regredir outras categorias) ou (b) repensar o mecanismo -- nao um
+multiplicador aditivo fraco, mas algo que reordene/filtre CANDIDATOS
+antes da pontuacao final (mais parecido com o que `human_patterns.json`
+ja faz, so que baseado no efeito do lider em vez de historico
+estatistico).
+
 ## 2026-08-20 (620) - Claude (sessao remota web) - Censo "nunca gerado" (play/activate/attach_don) re-rodado com o fix 618 aplicado: outlier gigante do Teach (40x) sumiu, virou 2 versoes de carta em ~9x cada -- confirma que o achado original era artefato da reconstrucao com lider errado, nao um bug de calibragem real
 
 Fecha o ultimo pendente do bloco 618/619. Re-rodei

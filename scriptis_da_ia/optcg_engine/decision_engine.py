@@ -460,6 +460,11 @@ USE_LIFE_VALUE_CURVE_SCALE = False
 # BASE, so multiplica por um fator extra atras de flag propria, mesmo
 # padrao de seguranca dos outros eixos (False por padrao, termo ja ativo
 # em producao).
+# TESTADO 20/08 (flag ligada) contra as 274 comparacoes reais de
+# decision_quality_full.py: efeito NULO (play 20.3%->20.5%, attack-quem
+# 53.1%->53.2%, activate 25.1%->24.9%, resto dentro de ruido de
+# reconstrucao, defesa identica) -- mesmo padrao NULO do teste de
+# leader_plan_alignment no mesmo dia. Revertido pra False.
 USE_DMG_VALUE_CURVE_SCALE = False
 
 # Bloco 533 (pedido do usuario: "investigue de novo para aver se não tem
@@ -558,8 +563,19 @@ EVAL_WEIGHTS = {
     # Alinhamento com o plano do PROPRIO lider (pedido do usuario 14/08,
     # bloco 526/527 -- generaliza wincon_ready pra QUALQUER lider com
     # [Activate: Main], nao so o eixo bottleneck do perfil do deck). Ver
-    # GameAnalyzer.leader_plan_alignment. Prior 0.0 -- SEM efeito ate
-    # calibracao isolada (multi-ancora, nao so 1 deck) validar um valor.
+    # GameAnalyzer.leader_plan_alignment. Prior 0.0 -- SEM efeito.
+    # TESTADO 20/08 (peso=20.0, mesmo valor de wincon_ready que este
+    # termo generaliza) contra as 274 comparacoes reais de
+    # decision_quality_full.py: efeito NULO em toda categoria (play
+    # 20.3%->20.1%, attack-quem 53.1%->53.2%, activate 25.1%->25.6%,
+    # attach_don 14.0%->13.7%, resto identico ou dentro de ruido de
+    # reconstrucao) -- nao e questao de peso pequeno, o sinal em si e
+    # raso demais (3 estados discretos 0.0/0.5/1.0, e
+    # _leader_ability_centrality trata quase todo lider como neutro,
+    # so diferencia habilidade de compra). Revertido pra 0.0. Bate com
+    # o achado antigo de self-play (blocos 527/528, sinal inconsistente
+    # entre lideres) -- agora confirmado tambem contra dado real, nao
+    # so ruido de self-play pequeno.
     'leader_plan_alignment': 0.0,
 }
 try:
