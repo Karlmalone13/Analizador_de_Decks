@@ -2,6 +2,22 @@
 
 **Última atualização:** 20 de agosto de 2026
 
+> 20/08/2026 (bloco 625): 4ª e última tentativa do dia — reduzir
+> `ATTACK_LEADER_BASE_SCORE` (400→320) pra fechar o viés genérico do
+> bloco 624. Testado com o mesmo rigor: resultado MISTO, e a métrica
+> que motivou o teste (attack-alvo) **piorou** (-1,9pp), não melhorou.
+> Revertido pra 400 (valor já era calibrado deliberadamente, comentário
+> antigo confirma alvo original de bater 84,1% humano). **Fim do dia**:
+> 4 hipóteses testadas sobre o viés "motor ataca o líder mais que o
+> humano" (arquétipo por curva, prontidão de habilidade, poder
+> condicional, constante de base) — nenhuma sobreviveu à medição contra
+> as 274 comparações reais. Código de produção termina o dia intocado
+> (toda mudança revertida após medir). Causa raiz do viés genérico
+> ainda não identificada — pendente alinhar com o usuário se vale
+> continuar por esse ângulo específico ou mudar de categoria (play/
+> attach_don/sequência também estão bem abaixo da média). Ver bloco 625
+> do HANDOFF.
+
 > 20/08/2026 (bloco 624): 3ª hipótese do dia testada e DESCARTADA —
 > "líderes com poder condicional (buff_power em when_attacking/
 > on_opp_attack) erram mais o ALVO do ataque" não se sustenta. Testei

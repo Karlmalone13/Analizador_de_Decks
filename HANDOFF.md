@@ -1,5 +1,76 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-20 (625) - Claude (sessao remota web) - 4a tentativa do dia (reduzir ATTACK_LEADER_BASE_SCORE 400->320 pra fechar o vies generico do bloco 624) testada e revertida: resultado MISTO, e a metrica-alvo (attack-alvo) PIOROU (-1,9pp), nao melhorou. Fim do dia de testes: 4 hipoteses testadas com o mesmo rigor, 4 sem ganho liquido -- documentado honestamente, nada quebrado, codigo de producao intacto
+
+Continuacao direta do bloco 624 (vies generico "motor ataca o lider
+~4-5pp mais que o humano"). Hipotese: `score_attack_target` da ao
+lider uma base FIXA (`ATTACK_LEADER_BASE_SCORE=400`) enquanto
+personagem usa `target.board_value()*15` (tipicamente 45-150,
+raramente >200) -- constante fixa alta vs teto variavel baixo,
+estruturalmente favorecendo o lider em quase toda comparacao,
+explicando por que o vies e generico (nao ligado a habilidade
+nenhuma, e uma constante global).
+
+### Contexto encontrado ANTES de testar (evitou repetir erro)
+
+O comentario ja existente perto da constante mostra que 400 foi
+CALIBRADO deliberadamente (nao e palpite): testado contra 76,2%/
+87,2%/etc de "%lider" em self-play, com ALVO explicito de bater o
+"real 84,1%" -- ou seja, a calibracao ORIGINAL ja tinha como objetivo
+bater a taxa humana de ataque-ao-lider, e 400 foi o valor que chegou
+mais perto (87,2% vs alvo 84,1%).
+
+### Teste (mesmo protocolo do dia: editar, smoke_fast, medir 274
+comparacoes, comparar, decidir)
+
+400 -> 320 (reducao de 20%, proporcional ao gap medido no bloco 624):
+
+| metrica | 400 (baseline) | 320 (teste) |
+|---|---|---|
+| play | 20,3% | 21,2% (+0,9pp) |
+| attack-quem | 53,1% | 54,2% (+1,1pp) |
+| attach_don | 14,0% | 12,9% (-1,1pp) |
+| **attack-alvo** | 69,8% | **67,9% (-1,9pp)** |
+| resto | ~igual | ~igual (dentro do ruido) |
+
+A metrica que motivou o teste (attack-alvo, escolha de QUAL alvo)
+**piorou**, nao melhorou -- reduzir o baseline do lider parece ter
+trocado algumas escolhas de lider que ja batiam com o humano por
+personagens errados, sem corrigir os casos que realmente estavam
+errados. Revertido pra 400, comentario novo documentando o teste
+negativo (mesmo padrao dos blocos 621-624).
+
+### Sintese do dia inteiro (blocos 621-625): 4 hipoteses, 4 sem ganho
+
+1. Arquetipo por curva de custo -- muda 12,8% das decisoes, ERRADO
+   mais que certo.
+2. Prontidao de habilidade do lider (`leader_plan_alignment`) -- muda
+   so 2%, efeito residual empatado.
+3. Poder condicional no ataque explicando erro de alvo -- vies e
+   generico, nao ligado a habilidade nenhuma.
+4. Reduzir a constante fixa do lider -- resultado misto, piora
+   justamente a metrica alvo.
+
+Nenhuma das 4 sobreviveu a medicao contra as 274 comparacoes reais.
+Isso NAO significa que a investigacao foi inutil -- descartou 4
+caminhos com confianca real (nao "acho que nao funciona", e "medi e
+nao funciona"), e o codigo de producao terminou o dia INTOCADO (toda
+mudanca revertida apos medir, disciplina "medir antes de aceitar"
+aplicada de forma consistente o dia inteiro).
+
+### Pendente -- estado real no fim do dia
+
+- O vies generico "motor ataca o lider mais que o humano" (~4-5pp)
+  continua sem fix -- as 2 alavancas mais obvias (peso de habilidade,
+  constante de base) nao resolvem sozinhas. Causa raiz ainda nao
+  identificada; pode nao ser uma unica causa (ex: pode ser
+  `opp_counter_potential`/defesa esperada mal calibrada POR alvo
+  especifico, nao um deslocamento geral de escala).
+- Antes de uma 5a tentativa, recomendado alinhar com o usuario se vale
+  a pena continuar por esse angulo especifico (attack-alvo) ou mudar
+  de categoria (play/attach_don/sequencia tambem estao bem abaixo da
+  media e podem ter causa mais tratavel).
+
 ## 2026-08-20 (624) - Claude (sessao remota web) - 3a hipotese do dia testada e DESCARTADA: "lideres com poder condicional (buff_power em when_attacking/on_opp_attack) erram mais o ALVO do ataque" nao se sustenta -- o viés motor-prefere-atacar-o-lider (~4-5pp acima do humano) e IGUAL ou MAIOR em lideres SEM esse tipo de habilidade. Achado real que sobrou: um viés GENERICO (nao ligado a habilidade nenhuma) de atacar o lider com mais frequencia que o humano, pequeno, ainda nao implementado
 
 Continuacao do pedido do usuario (bloco 623: "o bot tem que entender o

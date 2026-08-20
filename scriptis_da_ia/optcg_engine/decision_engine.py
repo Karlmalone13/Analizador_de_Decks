@@ -115,6 +115,15 @@ COUNTER_STAT_VALUE_PER_1000 = 15
 # tambem caiu de 1,9 pra 1,8 como efeito colateral, sem precisar mexer
 # nisso separado). 600 ja reverte (win rate cai pra 36%, igual ao valor
 # original) -- 400 e o valor validado, nao um palpite.
+# TESTADO DE NOVO 20/08 (bloco 625): reduzir pra 320 na tentativa de
+# fechar o vies generico "motor ataca o lider ~4-5pp mais que o
+# humano" (achado bloco 624). Medido contra as 274 comparacoes reais:
+# attack-quem melhorou (+1,1pp) mas attack-alvo (a metrica que
+# motivou o teste) PIOROU (-1,9pp) e attach_don tambem (-1,1pp) --
+# resultado misto, negativo liquido na metrica alvo. Revertido pra
+# 400. Confirma que 400 ja e um otimo local pro que essa constante
+# FLAT consegue fazer sozinha -- o residuo de "motor prefere o lider"
+# nao se resolve so ajustando este numero.
 ATTACK_LEADER_BASE_SCORE = 400
 
 # Fracao da PRIORIDADE de ataque que um attach_don de COMBATE herda (bloco
