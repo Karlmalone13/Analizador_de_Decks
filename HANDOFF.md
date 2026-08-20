@@ -1,5 +1,85 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-20 (624) - Claude (sessao remota web) - 3a hipotese do dia testada e DESCARTADA: "lideres com poder condicional (buff_power em when_attacking/on_opp_attack) erram mais o ALVO do ataque" nao se sustenta -- o viés motor-prefere-atacar-o-lider (~4-5pp acima do humano) e IGUAL ou MAIOR em lideres SEM esse tipo de habilidade. Achado real que sobrou: um viés GENERICO (nao ligado a habilidade nenhuma) de atacar o lider com mais frequencia que o humano, pequeno, ainda nao implementado
+
+Continuacao do pedido do usuario (bloco 623: "o bot tem que entender o
+que o lider faz"). Pedido pra comecar a implementar -- antes de
+escrever codigo, chequei se a lacuna observada (`attack-alvo` ~6pp
+abaixo da media pros lideres com buff_power condicional: 63,6% vs
+69,8% geral) era causada pela habilidade em si ou coincidencia.
+
+### Achado 1 (real, mas nao causal): motor prefere atacar o lider
+
+Levantamento por líder (`--leader CODIGO`, `decision_quality_full.py`)
+nos 8 lideres com `buff_power`/`buff_power_per_count` em
+`when_attacking`/`on_opp_attack` (Katakuri, Mihawk, Ace, Luffy, Lucy,
+Nami, Sabo, Shanks): `attack-quem` na verdade um pouco AC1MA da media
+geral (57,6% vs 53,1%), `attack-alvo` abaixo (63,6% vs 69,8%) --
+motivou a investigacao.
+
+### Achado 2: bug no PROPRIO script de diagnostico, achado e corrigido
+no meio do caminho
+
+Primeira tentativa de puxar casos reais divergentes (Katakuri, maior N)
+usou `result.get('opp_leader_code')` -- chave que NAO EXISTE no dict
+que `audit_one_game` retorna (soo tem `opp_leader`, o NOME). Isso fez
+`_hist_target_type_code` classificar TODO ataque real ao lider do
+oponente como "character" (porque o codigo nunca batia com string
+vazia e o texto historico nunca usa a palavra literal "Leader", achado
+que ja tinha aparecido no bloco 617). Corrigido lendo `opp_leader_code`
+direto do `meta['players']` do proprio log (mesmo padrao usado em
+`decision_quality_full.py`), antes de confiar em qualquer caso
+"divergente".
+
+### Achado 3, o que restou depois do fix: padrao real, mas nao
+especifico de habilidade
+
+Com o fix, o padrao ficou claro pro Katakuri: em 6 casos reais, motor
+ataca o lider 4x, humano ataca uma carta especifica 5x -- so que o
+MESMO teste rodado em 4 lideres SEM buff_power condicional (Kid,
+Jinbe, Crocodile, Jinbe-B) mostrou o MESMO vies, e MAIOR:
+
+| grupo | N | humano ataca lider | motor ataca lider |
+|---|---|---|---|
+| 6 lideres com buff de combate | 185 | 80,0% | 83,8% (+3,8pp) |
+| 4 lideres neutros (sem buff) | 117 | 81,2% | 86,3% (+5,1pp) |
+
+O vies existe (motor ataca o lider mais que o humano), mas e IGUAL ou
+MAIOR nos lideres neutros -- nao tem relacao com a habilidade
+condicional de poder. A correlacao original (Achado 1) era
+coincidencia de amostra (matchups especificos, ex: varios desses jogos
+tinham Mihawk do lado oposto), nao causalidade.
+
+### Sintese do dia (blocos 621-624): 3 hipoteses testadas, 3
+descartadas, 1 achado generico real sobrando
+
+1. Arquetipo por curva de custo -- muda 12,8% das decisoes, ERRADO
+   mais que certo (bloco 622).
+2. Prontidao de habilidade do lider (`leader_plan_alignment`) -- muda
+   so 2%, efeito residual empatado (bloco 623).
+3. Poder condicional no ataque (`when_attacking`/`on_opp_attack` com
+   buff_power) explicando erro de alvo -- NAO se sustenta, vies e
+   generico (bloco 624).
+
+O que sobrou, generico e sem ligacao com habilidade de lider nenhuma:
+motor ataca o lider do oponente ~4-5pp mais que o humano faz, em
+praticamente todo lider testado. Pequeno, ainda nao investigado a
+fundo (causa raiz nao identificada), NAO implementado -- decisao
+consciente de nao emendar uma 4a tentativa no mesmo dia sem alinhar
+com o usuario primeiro, depois de 3 hipoteses erradas seguidas.
+
+### Pendente
+
+- Investigar a causa raiz do vies generico "motor prefere atacar o
+  lider" (~4-5pp) antes de qualquer fix -- ainda nao sabemos SE e por
+  que o motor sobrevaloriza o lider como alvo (ex: dano ao lider conta
+  pra vida igual dano a character? opp_defense do lider calculado
+  errado? falta de valorizar remocao de ameaca no campo?).
+- Reconsiderar se vale a pena voltar pra ideia original do usuario
+  ("bot deve entender o que o lider FAZ") por outro angulo, ja que as
+  3 tentativas de hoje (curva, prontidao, poder condicional) nao
+  funcionaram.
+
 ## 2026-08-20 (623) - Claude (sessao remota web) - Mesmo diagnostico rigoroso do bloco 622, agora isolado em `leader_plan_alignment`: muda so 2,0% dos turnos (7/351, vs 12,8% da familia de curva), e o pouco que muda e ~empate (1 melhora, 1 piora, 5 sem efeito na aderencia ao humano). Sintese: as DUAS formas existentes de "calibrar por deck/lider" (curva de custo E prontidao de habilidade) sao fracas ou erradas -- nenhuma le o EFEITO da habilidade de forma especifica o bastante pra funcionar
 
 Continuacao direta do bloco 622 -- pedido do usuario ("o bot tem que

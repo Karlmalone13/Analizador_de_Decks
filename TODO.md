@@ -2,6 +2,24 @@
 
 **Última atualização:** 20 de agosto de 2026
 
+> 20/08/2026 (bloco 624): 3ª hipótese do dia testada e DESCARTADA —
+> "líderes com poder condicional (buff_power em when_attacking/
+> on_opp_attack) erram mais o ALVO do ataque" não se sustenta. Testei
+> o mesmo padrão (motor prefere atacar o líder vs. carta específica)
+> em líderes SEM esse tipo de habilidade e o viés é IGUAL ou MAIOR lá
+> (+5,1pp vs +3,8pp) — não tem relação com a habilidade, era
+> coincidência de amostra (matchups específicos). No meio do caminho
+> achei e corrigi um bug no PRÓPRIO script de diagnóstico (chave
+> `opp_leader_code` inexistente causando falso positivo). **Síntese do
+> dia**: 3 hipóteses testadas sobre "calibrar por líder/deck" (curva de
+> custo, prontidão de habilidade, poder condicional no ataque) — as 3
+> descartadas por medição rigorosa. Sobrou 1 achado genérico real e
+> pequeno: motor ataca o líder do oponente ~4-5pp mais que o humano,
+> em quase todo líder — sem ligação com habilidade nenhuma, causa raiz
+> ainda não investigada, nada implementado ainda (decisão consciente
+> de parar e alinhar com o usuário antes de uma 4ª tentativa no mesmo
+> dia). Ver bloco 624 do HANDOFF.
+
 > 20/08/2026 (bloco 623): Continuação direta do 622 — pedido do
 > usuário ("o bot tem que entender o que o líder faz, calibragem varia
 > de líder pra líder") levou a testar `leader_plan_alignment` com o
