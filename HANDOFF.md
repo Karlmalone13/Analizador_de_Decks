@@ -1,5 +1,65 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-20 (620) - Claude (sessao remota web) - Censo "nunca gerado" (play/activate/attach_don) re-rodado com o fix 618 aplicado: outlier gigante do Teach (40x) sumiu, virou 2 versoes de carta em ~9x cada -- confirma que o achado original era artefato da reconstrucao com lider errado, nao um bug de calibragem real
+
+Fecha o ultimo pendente do bloco 618/619. Re-rodei
+`censo_banco_completo.py` (mesmo script do bloco 617, agora com o fix
+de `_find_real_deck` aplicado) nas 274 comparacoes.
+
+### Resultado
+
+| categoria | nunca gerado | gerado mas perdeu |
+|---|---|---|
+| play | 209 | 354 |
+| activate | 61 | 78 |
+| attach_don | 117 | 219 |
+
+`erros de reconstrucao: 60` -- esperado, sao os 30 logs de schema
+antigo (`meta` sem `.players`, ja documentado no bloco 617) x 2 lados.
+
+### O achado do Teach nao se repete
+
+Antes do fix (bloco 617), Marshall.D.Teach tinha 40 casos concentrados
+"nunca gerado" de attach_don -- o outlier mais extremo ja visto.
+Agora, com o lider certo sendo simulado, Teach nem aparece no top-15
+de attach_don, e nas outras categorias fica dividido entre 2
+reimpressoes diferentes da carta (`OP09-093` 9x em play + `OP16-119`
+9x em play, `OP09-093` 7x em activate) -- nenhuma sozinha chega perto
+de 40. Confirma a hipotese do bloco 618: o numero de 40 era artefato
+puro da reconstrucao errada (Nami jogando no lugar de Teach), nao um
+problema real de calibragem daquele lider.
+
+### Novo topo, checado e descartado como bug
+
+`OP17-118 Rocks.D.Xebec` virou o novo maior outlier de `play` (17x).
+Checado: (a) nenhum deck em `decklists_raw.csv` usa Xebec como lider
+(cai no generico honesto, comportamento correto pos-fix), (b) a carta
+em si e um Personagem custo 10 / 12000 poder -- perfil classico de
+"caro demais pra jogar na maioria dos turnos", a mesma categoria
+"limitacao estrutural (nao esta na mao / sem DON)" ja caracterizada no
+bloco 611 pra maioria dos casos de `play`. Nao e um bug novo, e uma
+amostra do mesmo padrao diffuso ja conhecido.
+
+### Conclusao
+
+Nenhum outlier remanescente do tamanho do Teach original. Os numeros
+"nunca gerado" que sobram parecem consistentes com o padrao ja
+documentado no bloco 611: maioria e limitacao estrutural (carta cara,
+nao esta na mao no momento certo, ordem de deck que o log nao registra)
+ou calibragem diffusa perdendo pra alternativa com score legitimamente
+maior, nao um bug unico e concentrado. Nao ha indicacao de precisar
+investigar carta por carta essa lista -- o proximo passo natural
+continua sendo a calibragem dinamica via banco de logs (padrao
+`human_patterns.json`, blocos 613/614/616), nao caca manual.
+
+### Pendente
+
+- Auditar individualmente (nao feito ainda) se algum dos outros 27/39
+  lideres genericos, alem de Ace e Teach, tambem trocava de lider
+  silenciosamente antes do fix -- baixa prioridade dado que o censo
+  pos-fix nao mostra mais nenhum outlier no tamanho que denunciaria
+  esse padrao.
+
 ## 2026-08-20 (619) - Claude (sessao remota web) - Remedicao pos-fix 618: baseline corrigido das 274 comparacoes, confirmado deterministico (`--workers 4` == `--workers 1`), e melhor que o numero corrompido do bloco 617 -- principalmente `attack-quem` (40,7%→53,1%)
 
 Fechamento do pendente critico do bloco 618. Rodei

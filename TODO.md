@@ -2,6 +2,21 @@
 
 **Última atualização:** 20 de agosto de 2026
 
+> 20/08/2026 (bloco 620): Último pendente do 618/619 fechado — censo
+> "nunca gerado" (play/activate/attach_don) re-rodado com o fix
+> aplicado. O outlier gigante do Teach (40x attach_don) **não se
+> repete** — vira ~9x espalhado em 2 reimpressões diferentes da carta,
+> confirmando que era artefato puro da reconstrução com líder errado
+> (Nami no lugar de Teach), não um bug de calibragem real. Novo maior
+> outlier (`Rocks.D.Xebec` 17x em play) checado e descartado como bug —
+> não tem deck real no banco (cai no genérico honesto) e é um
+> Personagem custo 10/12000 poder, mesmo perfil "caro demais" já
+> caracterizado como limitação estrutural no bloco 611. Nenhum outlier
+> remanescente do tamanho do Teach original — o resto parece diffuso
+> (mesmo padrão do bloco 611), não pede caça carta-a-carta. Próximo
+> passo natural continua sendo calibragem dinâmica via banco de logs.
+> Ver bloco 620 do HANDOFF.
+
 > 20/08/2026 (bloco 619): Remedição pós-fix 618 concluída — baseline
 > das 274 comparações confirmado determinístico (`--workers 4` ==
 > `--workers 1`, número por número) e **melhor** que o corrompido do
