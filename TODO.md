@@ -2,6 +2,30 @@
 
 **Última atualização:** 20 de agosto de 2026
 
+> 20/08/2026 (bloco 627): **ACHADO GRANDE, não é código, é
+> arquitetura.** Pedido do usuário ("investiga por que o bot só joga
+> carta barata, já reclamei várias vezes") confirmou que o achado
+> antigo de julho ("bot evita as bombas do deck") ainda existe —
+> `avaliar_carta` ainda pontua um vanilla de custo 1 acima de uma
+> bomba de custo 10/12000 poder. Testei 2 correções (aumentar o
+> coeficiente de poder; e uma função nova pedida pelo usuário — poder
+> esperado por custo, derivado de 3248 cartas reais — somada ao poder
+> bruto): as duas corrigem a ordem qualitativa, mas nenhuma moveu a
+> métrica agregada de forma clara (mista, ganhos e perdas pequenos em
+> categorias diferentes). Ambas revertidas. **O motivo real**: mapeei
+> o pipeline de decisão e `avaliar_carta` só decide quem entra na
+> short-list de 3-6 candidatas — quem GANHA de verdade é
+> `_evaluate_state_v2` (avalia o estado SIMULADO, dominado por `dmg`
+> peso 120, 5x maior que qualquer outro termo). Mexer em `avaliar_
+> carta` só importa se mudar QUAIS cartas entram na disputa; quem
+> decide o vencedor é outra função inteira. Isso bate com o achado do
+> bloco 622 (as flags de curva, que mexem direto em `_evaluate_state_
+> v2`, mudaram 12,8% das decisões reais — muito mais que qualquer
+> ajuste de hoje em `avaliar_carta`). Pendente: investigar como `dmg`/
+> `_evaluate_state_v2` calcula o dano do turno simulado — é a alavanca
+> de maior influência real, ainda não investigada a fundo. Ver bloco
+> 627 do HANDOFF.
+
 > 20/08/2026 (bloco 626): Correção de rumo pedida pelo usuário depois
 > do dia de 4 hipóteses descartadas — "temos que ver TODAS as decisões,
 > toda vez você muda o objetivo". Voltei pro `human_patterns.json`

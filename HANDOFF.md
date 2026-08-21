@@ -1,5 +1,93 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-20 (627) - Claude (sessao remota web) - ACHADO GRANDE (nao codigo): mapeado o pipeline real de decisao -- `avaliar_carta` so decide quem entra na short-list (TOP_K=3-6), quem GANHA de verdade e `_evaluate_state_v2` (estado simulado, dominado por `dmg`=peso 120). Explica por que 2 tentativas de recalibrar `avaliar_carta` hoje deram resultado fraco/misto -- revertidas as duas, nada ficou em producao
+
+Retomada do achado antigo de julho ("bot desce carta de custo baixo e
+evita as bombas do deck", raiz confirmada mas nao corrigido na epoca)
+-- pedido do usuario (mesmo dia dos blocos 621-626): "temos que
+investigar pq o bot prefere jogar so carta de custo baixo, ja
+reclamei disso diversas vezes".
+
+### Confirmado: o bug de julho ainda existe
+
+Reproduzido ao vivo com `eng.avaliar_carta()`: Teach (custo=10,
+poder=12000, Blocker) pontua ABAIXO de Avalo Pizarro (custo=1,
+poder=2000). Causa raiz igual a julho -- `card.power/1000*5` e fraco
+(+60 pro Teach) contra a pilha de bonus FIXOS que cartas baratas de
+sinergia acumulam (draw+25, busca+30, ko+35, etc, facil passam de 90).
+
+### Tentativa 1: so aumentar o coeficiente (5 -> 8)
+
+Corrige a ordem qualitativa (Teach passa a pontuar acima de Pizarro).
+Medido contra as 274 comparacoes: misto -- play igual, attack-quem
++0,6pp, activate +0,4pp, attach_don -1,3pp, attack-alvo +0,5pp,
+counter-conjunto -1,2pp. Nem vitoria clara nem derrota clara.
+
+### Tentativa 2: funcao nova, pedido explicito do usuario ("acho que
+nao e so ajuste de valor, deve ta faltando alguma funcao")
+
+Construida `_expected_power_for_cost` -- tabela de poder MEDIO real
+por custo (3248 Characters de `cards_rows.csv`, custo 1->1400 poder
+medio ... custo 10->11700), e um segundo termo que premia o quanto o
+poder da carta SUPERA o esperado pro proprio custo (nao so magnitude
+bruta). Testes:
+- So o delta relativo (substituindo o termo de poder cru): DESFEZ o
+  ganho -- poder BRUTO ainda importa pro impacto de tabuleiro
+  independente de eficiencia de custo, um 12000 e ameaca maior que um
+  2000 de qualquer forma. Teach voltou a perder pra Pizarro.
+- Poder cru (coef 8) + delta relativo (coef 6) somados: corrige melhor
+  a ordem qualitativa (Teach > Pizarro > Shiryu > Doc Q, com vida
+  realista). Medido contra as 274 comparacoes: de novo misto --
+  activate melhor (+1,2pp) e seq-exata melhor (+0,6pp) que a tentativa
+  1, mas attack-alvo pior (-0,3pp) e counter-conjunto pior ainda
+  (-2,3pp, contra -1,2pp da tentativa 1).
+
+Nenhuma das duas tentativas produziu vitoria liquida clara na metrica
+agregada, mesmo apos construir o mecanismo que o usuario suspeitava
+estar faltando. Ambas REVERTIDAS -- `decision_engine.py` volta ao
+`card.power/1000*5` original, `smoke_fast.py` revertido junto.
+`smoke_fast.py` 100% OK depois do revert.
+
+### O ACHADO REAL: por que as duas tentativas deram fraco/misto
+
+Pedido do usuario apos o resultado misto: "liste todas as funcoes que
+influenciam a decisao do bot, em ordem de prioridade... acho que tem
+alguma coisa travando nossas correcoes". Investigado o pipeline real
+(`main_phase`, nao por memoria):
+
+**A decisao final NAO e tomada pelo score imediato.** O loop
+(`main_phase`) faz 2 etapas separadas:
+1. `_generate_and_score_actions` gera e pontua TODAS as acoes (aqui
+   entra `avaliar_carta`, `score_attack_target`, etc) -- corta pras
+   TOP_K=3 (com busca de resposta do oponente ligada) ou 6 melhores.
+2. Pra essas TOP_K finalistas, `_simulate_sequence_once` simula o
+   resto do turno (as vezes o turno de resposta do oponente tambem) e
+   `_evaluate_state_v2` avalia o ESTADO FINAL simulado -- essa funcao,
+   nao o score imediato, decide QUEM GANHA.
+
+`avaliar_carta` (17 pontos de uso, confirmado via grep) so aparece na
+etapa 1 -- nunca dentro de `_evaluate_state_v2`. Ou seja: `avaliar_
+carta` decide quem ENTRA na disputa final, mas NAO decide quem GANHA.
+Se uma mudanca nela nao muda QUAIS 3 cartas entram na short-list, ela
+tem efeito ZERO na decisao final -- explica o padrao fraco/misto das
+2 tentativas de hoje.
+
+`_evaluate_state_v2` soma `EVAL_WEIGHTS`, dominado por `dmg` (peso
+120 -- 5x o segundo colocado, `opp_blocker`/`survival_premium`=25).
+Bate com o achado do bloco 622 (as flags de curva, que mexem direto
+nesses pesos, MUDARAM 12,8% das decisoes reais -- muito mais que
+qualquer ajuste em `avaliar_carta` hoje) -- confirma que o Nivel 1
+(`_evaluate_state_v2`) e a alavanca de maior influencia real no
+motor, nao o Nivel 2 (score imediato de candidatos).
+
+### Pendente -- proximo passo natural
+
+Investigar como `dmg`/`_evaluate_state_v2` calcula o dano do turno
+SIMULADO (nao so o peso 120 em si) -- se essa e a alavanca dominante
+de verdade, um erro de calculo ali importa muito mais que qualquer
+recalibragem de `avaliar_carta`. Pedido explicito do usuario, ainda
+nao iniciado.
+
 ## 2026-08-20 (626) - Claude (sessao remota web) - Correcao de rumo pedida pelo usuario ("pra de mudar de objetivo, tem que cobrir TODAS as decisoes"): mapeadas as 3 lacunas restantes do `human_patterns.json` (ordem de counter, alvo dentro do efeito, distribuicao de DON) -- ordem de counter tem dado real mas sparse demais pra usar com seguranca ainda (mineracao adicionada, NAO conectada); alvo-no-efeito exigiria parsing fragil de narrativa; distribuicao de DON ja e coberta pelo attach_don do bloco 613. Nenhuma mudanca de comportamento em producao (so mineracao nova, nao consumida)
 
 Pedido direto do usuario apos o dia de 4 hipoteses descartadas (blocos
