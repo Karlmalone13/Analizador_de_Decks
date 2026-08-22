@@ -16045,28 +16045,41 @@ class OPTCGMatch:
             if acao[0] >= 0
             and (idx < min_candidates or acao[0] >= top_score - score_window)
         ]
-        if priority == 'REMOVE_THREAT':
-            # A remoção de uma ameaça crítica pode receber score imediato
-            # muito alto (ex.: Roger/Shanks), estreitando demais a janela.
-            # Mantém essa pressão, mas garante diversidade para a
-            # simulação comparar pelo menos algumas linhas de
-            # desenvolvimento.
-            seen_candidate_ids = {id(acao) for acao in candidatas}
+        # Garante diversidade de KIND na comparacao -- generalizado 22/08
+        # (bloco 639, pedido do usuario, seguindo a pista do censo do
+        # bloco 635/638): antes so rodava com priority=='REMOVE_THREAT'
+        # (remocao de ameaca critica podia dar score imediato MUITO alto,
+        # ex Roger/Shanks, estreitando demais a janela). Censo em 50 jogos
+        # reais (150 cartas de 'play' que o humano jogou e o motor nao)
+        # achou o MESMO mecanismo fora de REMOVE_THREAT tambem: 'attack'
+        # tem escala de score estruturalmente maior que 'play'
+        # (ATTACK_LEADER_BASE_SCORE=400 sozinho ja passa a maioria dos
+        # scores de avaliar_carta, tipicamente 15-200) -- sempre que existe
+        # um ataque forte no turno, ele ocupa as 3 vagas garantidas
+        # (SEARCH_MIN_CANDIDATES) e o SEARCH_SCORE_WINDOW=180 corta
+        # qualquer 'play' fora dessa faixa, mesmo quando o humano jogou a
+        # carta E atacou no MESMO turno. 62/150 (41,3%) dos mismatches
+        # eram exatamente isso -- gerados, nunca cortados por TOP_K
+        # estreito (69% ja tinha rank<8), cortados pela JANELA de score
+        # cruzando 'kind's de escala diferente. Mesma protecao de
+        # 'activate' que REMOVE_THREAT ja tinha (mesma razao estrutural:
+        # activate_main tambem vive numa escala mais modesta que attack).
+        seen_candidate_ids = {id(acao) for acao in candidatas}
 
-            def include_best_kind(kind: str, limit: int):
-                current = sum(1 for acao in candidatas if acao[1] == kind)
-                for acao in actions:
-                    if current >= limit:
-                        break
-                    if acao[0] < 0 or acao[1] != kind or id(acao) in seen_candidate_ids:
-                        continue
-                    candidatas.append(acao)
-                    seen_candidate_ids.add(id(acao))
-                    current += 1
+        def include_best_kind(kind: str, limit: int):
+            current = sum(1 for acao in candidatas if acao[1] == kind)
+            for acao in actions:
+                if current >= limit:
+                    break
+                if acao[0] < 0 or acao[1] != kind or id(acao) in seen_candidate_ids:
+                    continue
+                candidatas.append(acao)
+                seen_candidate_ids.add(id(acao))
+                current += 1
 
-            include_best_kind('play', 1)
-            include_best_kind('activate', 1)
-            candidatas.sort(key=lambda acao: acao[0], reverse=True)
+        include_best_kind('play', 1)
+        include_best_kind('activate', 1)
+        candidatas.sort(key=lambda acao: acao[0], reverse=True)
 
         if cheap_values:
             # Fase 1 da "calibragem dinamica" (bloco 508/509): ALARGA o

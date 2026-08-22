@@ -2,6 +2,26 @@
 
 **Última atualização:** 22 de agosto de 2026
 
+> 22/08/2026 (bloco 639, passo 3/3 do plano "continua removendo, depois
+> unifica, depois segue a pista do top_k" — CONCLUÍDO): achado real
+> seguindo a pista do bloco 635 — censo em 50 jogos (150 cartas de
+> `play` divergentes) achou que 41,3% são geradas como ação legal mas
+> CORTADAS antes do shortlist, e 69,4% delas já tinha rank<8 (alargar
+> TOP_K não ataca a causa real). Causa: `attack` vive numa escala de
+> score muito maior que `play` (`ATTACK_LEADER_BASE_SCORE=400` sozinho
+> já passa a maioria dos scores de `avaliar_carta`, tipicamente
+> 15-200) — quando existe ataque forte, ele ocupa as vagas garantidas e
+> o `SEARCH_SCORE_WINDOW=180` corta qualquer `play` fora da faixa,
+> mesmo quando o humano jogou a carta E atacou no MESMO turno.
+> **Fix**: generalizada a guarda de diversidade `include_best_kind(
+> 'play'/'activate', 1)` (`_select_search_candidates`) que só rodava
+> em `priority=='REMOVE_THREAT'` — agora roda sempre, garantindo que a
+> melhor candidata play/activate sempre entra na simulação. Medido
+> **GANHO** em quase toda categoria ofensiva (play 21,2% era 20,8%,
+> attack-quem 53,1% era 52,7%, attach_don 12,7% era 12,6%, attack-alvo
+> 68,3% era 67,6%, activate 26,4% era 26,5%/ruído, defesa idêntica) —
+> melhor resultado do dia. Ver bloco 639 do HANDOFF.
+
 > 22/08/2026 (bloco 638, passo 2/3 do plano "continua removendo, depois
 > unifica, depois segue a pista do top_k"): unificado `char_kill_value`
 > com `char_value_score` — trocado o `board_value()` cru (formula

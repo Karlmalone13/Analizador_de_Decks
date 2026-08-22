@@ -1,5 +1,73 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-22 (639) - Claude (sessao remota web) - Achado real: janela de score corta 'play' quando existe ataque forte no MESMO turno; generaliza guarda de diversidade de kind pra QUALQUER prioridade, GANHO medido em todas as categorias ofensivas, passo 3/3 do plano do usuario ("segue a pista do top_k")
+
+Continuacao direta do bloco 638 (passo 3, "segue a pista do top_k" --
+achado do bloco 635, 36,6% dos mismatches de `play` sao gerados mas
+cortados ANTES do shortlist).
+
+**Metodologia**: script descartavel `rank_census.py` (scratchpad, nao
+commitado), monkeypatch em `OPTCGMatch._log_turn_planner_decision` pra
+anexar a lista COMPLETA `actions` (score-ordenada) e a `candidates`
+CRUA (tuples, nao os briefs serializados) direto no proprio dict do
+`decision_log` -- evita ter que correlacionar por numero de turno
+(achado lateral: `eng`/`match` sao recriados FRESH a cada turno
+HISTORICO dentro de `audit_one_game`, entao `self.global_turn` do
+motor NUNCA bate com o numero de turno do log historico -- 1a versao
+do script deu 100% falso "nunca gerada" por causa disso, corrigido
+piggybackando os dados no proprio record do decision_log em vez de
+tentar casar chaves de turno).
+
+Censo em 50 jogos reais (150 cartas de `play` que o humano jogou e o
+motor de hoje NAO): 64 (42,7%) nunca geradas (achado antigo, bloco
+611/635, sem mudanca), **62 (41,3%) geradas como acao legal mas
+CORTADAS antes do shortlist**, so 24 (16,0%) chegaram a competir de
+verdade. Do RANK dos 62 cortados: 69,4% ja tinha rank<8 (jah dentro do
+TOP_K=8 usado quando USE_OPPONENT_RESPONSE_SEARCH=False) -- ou seja,
+alargar TOP_K (bloco 635, 3->5) nao ataca a causa real pra maioria
+desses casos. Olhando os EXEMPLOS: em quase TODOS, a acao top-score do
+turno era `attack` com score 290-10530, contra `play` tipico de 15-200
+-- `ATTACK_LEADER_BASE_SCORE=400` sozinho ja passa a maioria dos scores
+de `avaliar_carta`. Como `_select_search_candidates` so garante os
+3 primeiros (`SEARCH_MIN_CANDIDATES`) incondicionalmente e exige
+`score >= top_score - SEARCH_SCORE_WINDOW(180)` pro resto, um ataque
+forte ocupa as vagas garantidas e a JANELA corta qualquer `play` fora
+da faixa -- mesmo quando o humano jogou a carta E atacou no MESMO
+turno (2 decisoes legitimas, escalas incompativeis no MESMO shortlist).
+
+**Fix** (`_select_search_candidates`, ~linha 16048): o mecanismo de
+diversidade `include_best_kind('play', 1)` / `include_best_kind(
+'activate', 1)` ja existia, mas so rodava com `priority ==
+'REMOVE_THREAT'` (mesmo motivo estrutural: remocao de ameaca critica
+tambem pode dar score muito alto, ex Roger/Shanks). Generalizado pra
+rodar SEMPRE, independente da prioridade -- garante que a MELHOR
+candidata `play`/`activate` sempre entra na simulacao Monte Carlo,
+mesmo cortada da janela de score. Baixo risco: reusa mecanismo ja
+testado/validado (nao inventa logica nova), so remove o gate de
+prioridade.
+
+**Validacao**: `smoke_fast.py` (100% OK) -> `smoke_test.py` (100% OK)
+-> `decision_quality_full.py --all --workers 4`: play 21,2% (era
+20,8%), attack-quem 53,1% (era 52,7%), activate 26,4% (era 26,5%,
+ruido), attach_don 12,7% (era 12,6%), attack-alvo 68,3% (era 67,6%),
+defesa identica -- GANHO em quase toda categoria ofensiva, nenhuma
+regressao real. Melhor resultado do dia (blocos 628-639 juntos).
+
+**Nao mexido nesta sessao**: `priority` continua parametro de
+`_select_search_candidates` (agora sem uso interno direto nesta
+funcao) -- mantido por estabilidade de assinatura compartilhada entre
+o Turn Planner offline (`main_phase`) e o caminho AO VIVO (`sim_bridge.
+choose_action`), unificacao 26/07. `score_attack_target`'s escala
+propria (Tier 2, `board_value()*15` + `ATTACK_LEADER_BASE_SCORE=400`)
+NAO foi recalibrada pra ficar na mesma ordem de grandeza de
+`avaliar_carta` -- a guarda de diversidade contorna o sintoma (garante
+que play SEMPRE compete), nao resolve a causa raiz da discrepancia de
+escala entre kinds. Fica como possivel proximo passo (recalibrar as
+escalas pra serem comparaveis de verdade, em vez de so garantir 1 slot).
+
+Plano do usuario ("continua removendo, depois unifica, depois segue a
+pista do top_k") **concluido nos 3 passos** (blocos 637/638/639).
+
 ## 2026-08-22 (638) - Claude (sessao remota web) - Unifica `char_kill_value` com `char_value_score` (mesma formula de `board_opp`), efeito NEUTRO medido, passo 2/3 do plano do usuario
 
 Continuacao direta do bloco 637. `char_kill_value` (bloco 634) usava
