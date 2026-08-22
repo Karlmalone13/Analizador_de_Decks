@@ -137,6 +137,20 @@ def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dic
     by_leader_attack: dict[str, Counter] = defaultdict(Counter)
     by_defender: dict[str, Counter] = defaultdict(Counter)
     by_defender_counter_order: dict[str, Counter] = defaultdict(Counter)
+    # bloco 648 (pedido do usuario: "crie fix... obrigar o bot a jogar
+    # identico ao humano" -- mecanismo NOVO, nao mais um bonus que compete
+    # em `_evaluate_state_v2`). Tentativa 1 (descartada, nao sobrou no
+    # codigo): contar so a PRIMEIRA acao de cada turno e forcar quando
+    # dominante na populacao MARGINAL de turnos -- medido no proprio
+    # banco, NENHUM lider com volume real passa de ~27% de dominancia
+    # (Imu com 220 turnos: 27%; Teach com 201: 25%), porque a mao muda a
+    # cada partida. Frequencia TOTAL por token (toda posicao no turno,
+    # nao so a primeira) e a base certa pra comparar RELATIVO as opcoes
+    # realmente disponiveis numa decisao especifica (o consumidor faz
+    # essa comparacao contra as acoes legais ATUAIS, nao contra a
+    # populacao marginal de turnos -- ver
+    # `decision_engine.py::_human_dominant_action_override`).
+    by_leader_action_freq: dict[str, Counter] = defaultdict(Counter)
     context_examples: dict[str, list[dict]] = defaultdict(list)
     global_action_orders = Counter()
 
@@ -175,6 +189,9 @@ def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dic
             global_action_orders[order] += 1
             by_leader_band[scope][order] += 1
             by_leader_order[leader][exact_order] += 1
+            for token in tokens:
+                if token != 'pass':
+                    by_leader_action_freq[leader][token] += 1
 
             for a, b in zip(tokens, tokens[1:]):
                 by_leader_ngram2[leader][f'{a} > {b}'] += 1
@@ -275,6 +292,14 @@ def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dic
         'global_action_orders': counter_to_dict(global_action_orders, 30),
         'by_leader_band': nested_counter_to_dict(by_leader_band, 10),
         'by_leader_exact_orders': nested_counter_to_dict(by_leader_order, 10),
+        # limite alto (nao 10-12 como as outras) -- o consumidor
+        # (`decision_engine.py::_human_dominant_action_override`) precisa
+        # da frequencia REAL de cada token pra comparar contra as opcoes
+        # legais atuais; cortar cedo perderia sinal de cartas menos
+        # frequentes mas ainda validas pra comparacao relativa. Poucos
+        # tokens distintos por lider de qualquer forma (bounded pelas
+        # cartas jogaveis do deck).
+        'by_leader_action_freq': nested_counter_to_dict(by_leader_action_freq, 200),
         'by_leader_ngrams_2': nested_counter_to_dict(by_leader_ngram2, 12),
         'by_leader_ngrams_3': nested_counter_to_dict(by_leader_ngram3, 12),
         'by_leader_before_attack': nested_counter_to_dict(by_leader_attack, 12),

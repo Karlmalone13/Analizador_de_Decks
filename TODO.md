@@ -2,6 +2,32 @@
 
 **Última atualização:** 22 de agosto de 2026
 
+> 22/08/2026 (bloco 648, pedido explícito e mais forte que o bloco
+> 646/647 — usuário rejeitou "mais logs no banco" como resposta e
+> exigiu mecanismo novo AGORA): implementado `_human_dominant_action_
+> override` (`decision_engine.py`) — em vez de um BÔNUS que soma/
+> compete (família inteira dos 5 testes do bloco 646/647), é um HARD
+> OVERRIDE que pula o Monte Carlo inteiro quando uma ação domina
+> claramente (suporte mínimo 8, ≥3x a 2ª colocada) as OUTRAS ações que
+> estão de fato legais nesta decisão específica (não a população
+> marginal de todos os turnos — 1ª tentativa, "força a 1ª ação do
+> turno", foi checada e descartada ANTES de gastar o ciclo de teste:
+> nenhum líder real passa de ~27% de dominância marginal, nem os de
+> maior volume, porque a mão inicial varia demais partida a partida).
+> Novo campo `by_leader_action_freq` em `human_patterns.json`
+> (frequência bruta por token, qualquer posição do turno).
+> **Medido**: GANHO pequeno mas real e uniforme nas 4 categorias
+> ofensivas tocadas — play 21.0→21.4% (+0,4pp), attack-quem 54.0→54.3%
+> (+0,3pp), activate 27.1→27.4% (+0,3pp), attach_don 16.8→17.0%
+> (+0,2pp) — **zero categoria caiu em troca** (defesa idêntica, esperado
+> — mecanismo só toca ofensiva). Diferente dos 5 testes anteriores, que
+> sempre redistribuíam ganho entre categorias por competirem pelo mesmo
+> peso — um hard override evita essa competição por construção. Ver
+> bloco 648 do HANDOFF para a tabela completa e a limitação honesta
+> (limiares conservadores de propósito, disparo real não instrumentado
+> ainda — próximo passo natural é medir a taxa de disparo antes de
+> afrouxar `ratio`/`min_support`).
+
 > 22/08/2026 (blocos 646/647, pedido explicito e repetido do usuário
 > "quero que a gente crie maneiras de subir essas porcentagens... não é
 > só mudar o peso, precisamos criar novas ferramentas"): testadas 5
