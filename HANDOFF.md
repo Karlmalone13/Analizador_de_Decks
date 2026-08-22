@@ -66,6 +66,56 @@ leader` (campo) em vez de `p.hand`, trabalho novo nao feito ainda.
 refazer o checador de "nunca gerada" pra `attach_don` com a semantica
 certa (campo, nao mao) antes de aceitar/descartar os 5 casos suspeitos.
 
+## 2026-08-22 (644) - Claude (sessao remota web) - Refeito o checador de campo pra attach_don (pedido do usuario) -- MELHOROU MUITO a cobertura, mas achado ainda NAO CONFIRMADO (metodologia continua insuficiente pra provar bug real)
+
+Continuacao direta do bloco 643, a pedido explicito do usuario ("refaça
+por favor").
+
+**Fix da metodologia**: `rank_census.py` agora captura `_field_info`
+por decisao (codes de `p.field_chars` + `p.leader`, cada um com
+`character_can_attack_now` avaliado -- mesmo gate que `_generate_
+attach_don_actions` usa na categoria 'attack_power'). Pra `attach_don`,
+"nunca gerada" agora checa presenca no CAMPO (nao mais na mao) +
+elegibilidade pra atacar + DON>0 em qualquer decisao do turno.
+
+**Resultado bruto, MUITO mais forte que o checador errado do bloco
+643**: 27 casos amostrados (50 jogos) -- so 7,4% ausente do campo
+reconstruido (era 81,5% no checador errado -- fazia sentido, a maioria
+das "ausencias" antes eram falso-negativo por procurar no lugar
+errado). **92,6% (25/27) presente E elegivel pra atacar + DON>0 em
+algum momento do turno, mesmo assim nunca gerada** -- primeira vista,
+parece um achado enorme.
+
+**MAS -- investigado 1 caso manualmente antes de aceitar (disciplina do
+dia: nao aceitar numero sem confirmar causa real)**: `Rocks.D.Xebec-B_
+x_Monkey.D.Luffy-PB_2026-08-07T22.17.10_p2.json` T9, `carta=OP17-039`
+(o LIDER Rocks D. Xebec) -- o humano anexou DON no lider e atacou um
+CHARACTER especifico do oponente (`OP09-061`, "Monkey D. Luffy"). Esse
+codigo **NAO aparece em lugar nenhum** no snapshot reconstruido do
+campo do OPONENTE pra esse turno (`["OP15-088", "OP15-086", "ST26-005"]`).
+
+**Causa provavel**: meu checador so verifica se o ATACANTE esta
+elegivel (pode atacar + tem DON) -- NUNCA verifica se existe um ALVO
+valido do lado do OPONENTE que bata as condicoes reais de `_generate_
+attach_don_actions` (personagem restado do oponente, ou lider sem
+taunt, com gap de poder <= DON disponivel*1000). Sem essa checagem, o
+"92,6%" mede "atacante pronto", nao "existia jogada de attach_don+
+attack de verdade disponivel" -- o caso investigado sugere que a MESMA
+familia de limitacao ja documentada pra `play` (reconstrucao de estado
+imperfeita, so que agora do campo do OPONENTE, nao da propria mao)
+explica pelo menos este caso.
+
+**NAO reportado como "25 bugs achados"** -- seria inflar um numero nao
+confirmado. Conclusao honesta: a metodologia melhorou MUITO (do lugar
+errado pro lugar certo), mas ainda nao e suficiente pra provar bug real
+-- precisaria replicar a logica de SELECAO DE ALVO de `_generate_
+attach_don_actions` inteira (personagens restados do oponente + calculo
+de gap de poder) dentro do script de diagnostico, um trabalho bem maior
+que a extensao feita hoje. Fica registrado como pendencia real pra quem
+quiser continuar essa investigacao especifica, com o caso concreto do
+Rocks D. Xebec T9 como ponto de partida pra validar a proxima versao do
+checador.
+
 ## 2026-08-22 (642)
 
 Pedido do usuario apos a discussao do trade-off play/attach_don: "faca

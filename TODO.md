@@ -2,6 +2,23 @@
 
 **Última atualização:** 22 de agosto de 2026
 
+> 22/08/2026 (bloco 644, pedido do usuário "refaça por favor"):
+> checador de "nunca gerada" pra `attach_don` refeito olhando CAMPO
+> (`field_chars`/`leader` + `character_can_attack_now`) em vez de MÃO.
+> Cobertura melhorou muito (só 7,4% ausente do campo, era 81,5% no
+> checador errado), e 92,6% (25/27) apareceram "presente + elegível +
+> DON>0, mesmo assim nunca gerada" — **mas NÃO reportado como bug
+> confirmado**. Investigado 1 caso manualmente (Rocks D. Xebec T9): o
+> alvo do ataque histórico não aparece em lugar nenhum no campo
+> reconstruído do OPONENTE — meu checador só verifica se o ATACANTE
+> está pronto, nunca se existe um ALVO válido do lado do oponente
+> (personagem restado ou líder sem taunt, com gap de poder cobrível
+> pelo DON disponível). Suspeita forte de que é a mesma limitação de
+> reconstrução de estado já conhecida (agora do lado do oponente).
+> Pendência real pra continuar: replicar a lógica de seleção de alvo de
+> `_generate_attach_don_actions` inteira no checador antes de confirmar
+> ou descartar. Ver bloco 644 do HANDOFF.
+
 > 22/08/2026 (bloco 643): investigado "nunca gerada" (play/attach_don,
 > ~37-43% dos mismatches). **`play`: CONCLUSIVO, sem bug real** — 64
 > casos testados, checando presença na mão + pagabilidade em QUALQUER
