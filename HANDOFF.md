@@ -1,5 +1,70 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-22 (642) - Claude (sessao remota web) - Normalizacao de escala por `kind` em `_select_search_candidates` (protecao PREVENTIVA, medido NEUTRO) + resumo de cobertura em `decision_quality_full.py`
+
+Pedido do usuario apos a discussao do trade-off play/attach_don: "faca
+essa normalizacao pra gente investigar melhor as coisas, e conserte essa
+categoria de bug. Paralelo a isso, melhore o decision quality [full]".
+
+**Contexto explicito dado ANTES de implementar** (nao aceito calado):
+normalizacao so resolve a parte do bug que corta candidatas ANTES da
+simulacao (SEARCH_SCORE_WINDOW cruzando kinds de escala diferente) --
+NAO toca no vies da comparacao FINAL simulada (`_evaluate_state_v2`,
+resolvido caso a caso no bloco 641 com `don_spent_on_combat`), nem em
+"nunca gerada" (bug de geracao de candidato), nem em defesa (codigo
+completamente separado). Full separacao de categorias foi descartada --
+o jogo exige decisao CONJUNTA de verdade ("jogo essa carta ou anexo DON
+e ataco" e o MESMO recurso disputado, nao um bug de arquitetura).
+
+**Calibragem via SELF-PLAY, nao os 150 logs humanos** (endereça a
+pergunta do usuario "nao esta defasado nao?" -- ver bloco 641): script
+descartavel `kind_scale_collect.py` (scratchpad) rodou 30 partidas
+motor-vs-motor com 10 decks reais diversos de `decklists_raw.csv`
+(NAO os logs que calibram `human_patterns.json`/validam `decision_
+quality_full.py` -- fonte de dado separada de proposito, evita
+overfitting cruzado). Mediana de score IMEDIATO por kind: play=125.0,
+activate=129.4 (ja comparavel), attach_don=64.2 (na verdade MENOR que
+play -- `ATTACH_DON_COMBATE_FRACAO` ja desconta demais pro lado
+oposto), attack=266.0 (~2.1x play, o outlier estrutural). `KIND_SCORE_
+SCALE = {'play': 1.0, 'activate': 1.0, 'attach_don': 0.5, 'attack':
+2.1}` (mediana/mediana-do-play, usando MEDIANA nao media -- 'attack'
+tem outliers de lethal ate 10000+ que distorcem a media muito mais).
+
+**Implementacao**: `_select_search_candidates` agora ordena/corta por
+`acao[0] / KIND_SCORE_SCALE[kind]` em vez do score CRU -- SO pra decidir
+quem entra no shortlist. `actions` (lista original) fica intocada pra
+qualquer outro consumidor (bypass de win-con em `main_phase`, camada
+barata, log de auditoria) -- risco reduzido de propósito, nao mexe em
+mais nada.
+
+**Validacao**: `smoke_fast.py`/`smoke_test.py` 100% OK ->
+`decision_quality_full.py --all --workers 4`: todas as categorias
+dentro de ±0.9pp do baseline do bloco 641 (play 21.0% era 21.1%,
+attack-quem 54.0% era 54.9%, activate 27.1% era 27.4%, attach_don 16.8%
+era 16.9%, attack-alvo 70.2% era 69.5%, defesa identica) -- **NEUTRO**,
+nem ganho nem regressao real. Esperado: as guardas `include_best_kind`
+(blocos 639/640) ja garantiam pelo menos 1 candidata de cada kind
+critico no shortlist, entao a normalizacao e em grande parte REDUNDANTE
+com a protecao que ja existia hoje. O valor dela e PREVENTIVO -- fica
+pronta pra evitar a MESMA classe de bug (kind novo dominando a janela)
+reaparecer quando eu tunar `attack`/`activate` no futuro, sem precisar
+descobrir e remendar caso a caso de novo (como aconteceu 2x hoje,
+blocos 639 e 640/641).
+
+**`decision_quality_full.py` melhorado em paralelo**: novo bloco
+"COBERTURA DA AMOSTRA" no resumo final -- mostra quantos logs de fato
+entraram na comparacao (ofensiva/defesa separado) e o motivo de
+qualquer exclusao, agrupado (antes so aparecia espalhado como linhas
+"ERRO ..." durante a execucao, sem totalizar). Investigado se os 30
+logs "schema antigo sem meta.players" (achado bloco 617) dava pra
+recuperar com um fix rapido de wrapper -- **NAO da**: os 726 turnos
+desses 30 logs tem `snapshot` chaveado por string VAZIA (`''`), nao
+pelo nome de nenhum jogador -- confirmado que NENHUM turno tem
+snapshot usavel pela reconstrucao por-lado atual. Recuperar exigiria
+uma metodologia DIFERENTE (replay de acoes desde o zero pra inferir
+estado, nao um ajuste de schema) -- fica fora de escopo, registrado
+como limitacao real em vez de um fix arriscado as pressas.
+
 ## 2026-08-22 (640/641) - Claude (sessao remota web) - Generaliza a guarda de diversidade pra `attach_don` tambem (GANHO grande, mas revelou vies de dmg sem contrapeso); fecha o buraco com custo de oportunidade de DON gasto em combate -- resultado liquido POSITIVO em TODAS as categorias ofensivas
 
 Continuacao direta do bloco 639, a pedido do usuario: "do mesmo jeito que

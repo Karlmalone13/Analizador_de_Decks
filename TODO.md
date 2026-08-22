@@ -2,6 +2,26 @@
 
 **Última atualização:** 22 de agosto de 2026
 
+> 22/08/2026 (bloco 642, pedido do usuário "faça essa normalização... e
+> melhore o decision quality em paralelo"): normalização de escala por
+> `kind` em `_select_search_candidates` (`KIND_SCORE_SCALE`) — só afeta
+> QUEM entra no shortlist (não a comparação final simulada, que é outra
+> classe de bug, resolvida caso a caso). Calibrada via SELF-PLAY (30
+> partidas, 10 decks reais, `decklists_raw.csv`) — de propósito NÃO os
+> 150 logs humanos que já calibram `human_patterns.json`/validam este
+> mesmo script, evitando overfitting cruzado (pergunta direta do
+> usuário no bloco 641). Medido **NEUTRO** contra as 274 comparações
+> reais (±0,9pp em toda categoria) — esperado, já que as guardas
+> `include_best_kind` (blocos 639/640) já garantiam pelo menos 1
+> candidata por kind crítico. Valor é preventivo: evita essa MESMA
+> classe de bug reaparecer quando `attack`/`activate` forem tunados no
+> futuro. `decision_quality_full.py` ganhou um resumo de "COBERTURA DA
+> AMOSTRA" (quantos logs entraram, motivo de exclusão). Investigado se
+> os 30 logs de "schema antigo" davam pra recuperar — **não dá**: os
+> 726 turnos têm `snapshot` chaveado por string vazia, sem dado
+> utilizável por lado; recuperar exigiria replay de ações do zero, fora
+> de escopo, registrado como limitação real. Ver bloco 642 do HANDOFF.
+
 > 22/08/2026 (blocos 640/641, pedido do usuário "investigue outras
 > funções que travam outras categorias, crie novas se for o caso"):
 > generalizada a guarda de diversidade (bloco 639) pra `attach_don`

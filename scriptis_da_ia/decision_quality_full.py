@@ -531,19 +531,57 @@ def main():
             resultados = list(ex.map(_run_one, jobs))
 
     off_rows, def_rows = [], []
+    off_errors, def_errors = [], []
     for r in resultados:
         if 'error' not in r['offense']:
             off_rows.extend(r['offense']['rows'])
         elif r['offense'].get('error'):
             print(f"  ERRO ofensiva {r['game_id']}: {r['offense']['error']}")
+            off_errors.append(r['offense']['error'])
         if 'error' not in r['defense']:
             def_rows.extend([row for row in r['defense']['rows'] if 'error' not in row])
         elif r['defense'].get('error'):
             print(f"  ERRO defesa {r['game_id']}: {r['defense']['error']}")
+            def_errors.append(r['defense']['error'])
 
     print(f'\n{"="*72}')
     print(f'DECISION QUALITY FULL vs HUMANO -- {len(jobs)} partida(s)')
     print(f'{"="*72}')
+
+    # Achado real 22/08 (bloco 642, pedido do usuario "melhore o decision
+    # quality"): antes disto, o unico jeito de saber QUANTO da amostra
+    # pretendida foi de fato excluida (e por que) era contar as linhas
+    # "ERRO ..." espalhadas no meio do log a mao -- as PORCENTAGENS finais
+    # ja mostravam "turnos com dado: X/Y" por CATEGORIA, mas nunca um
+    # resumo de COBERTURA no nivel de JOGO/LOG (quantos dos N logs
+    # pretendidos realmente entraram, agrupado por motivo de exclusao).
+    # Investigado a fundo (nao um fix de codigo, uma descoberta real): os
+    # 30 logs "schema antigo sem meta.players" (achado bloco 617) tem um
+    # problema BEM mais profundo que so o wrapper 'players' ausente --
+    # os 726 turnos deles tem `snapshot` chaveado por STRING VAZIA (''),
+    # nao pelo nome de nenhum jogador (a reconstrucao de estado por lado
+    # depende exatamente dessa chave) -- confirmado que NENHUM dos 726
+    # turnos tem snapshot usavel, entao recuperar esses logs exigiria uma
+    # metodologia de reconstrucao DIFERENTE (replay de acoes desde o
+    # zero), nao um ajuste de schema -- fica fora de escopo por ora,
+    # registrado aqui em vez de tentar um fix as pressas que arriscaria
+    # dado incorreto silencioso.
+    def _bucket(errors):
+        buckets = {}
+        for e in errors:
+            key = e.split(':', 1)[0].strip()
+            buckets[key] = buckets.get(key, 0) + 1
+        return buckets
+
+    n_off_ok = len(resultados) - len(off_errors)
+    n_def_ok = len(resultados) - len(def_errors)
+    print(f'\n--- COBERTURA DA AMOSTRA ---')
+    print(f'  ofensiva: {_pct(n_off_ok, len(resultados))} logs usados')
+    for reason, count in sorted(_bucket(off_errors).items(), key=lambda x: -x[1]):
+        print(f'    excluido ({count}x): {reason}')
+    print(f'  defesa:   {_pct(n_def_ok, len(resultados))} logs usados')
+    for reason, count in sorted(_bucket(def_errors).items(), key=lambda x: -x[1]):
+        print(f'    excluido ({count}x): {reason}')
 
     print(f'\n--- OFENSIVA (turno proprio, {len(off_rows)} turnos) ---')
     for label, key, has_key in [

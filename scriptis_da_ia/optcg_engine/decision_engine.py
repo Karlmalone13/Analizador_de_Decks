@@ -356,6 +356,34 @@ PREVENT_COMBO_LEADER_ATTACK_BONUS = 150
 SEARCH_MIN_CANDIDATES = 3
 SEARCH_SCORE_WINDOW = 180
 
+# Fator de escala por KIND pra normalizar a comparacao cruzada usada por
+# `_select_search_candidates` (bloco 642, pedido do usuario: "individualizar
+# as categorias" -- resolvido nao separando a decisao, mas corrigindo a
+# comparacao pra ser justa entre kinds). Achado dos blocos 639/640: 'attack'
+# tem uma escala de score estruturalmente maior que 'play'/'attach_don'
+# (ATTACK_LEADER_BASE_SCORE=400 sozinho ja passa a maioria dos scores de
+# avaliar_carta), fazendo um ataque forte engolir as vagas do
+# SEARCH_SCORE_WINDOW mesmo quando o humano jogaria E atacaria no MESMO
+# turno -- ja corrigido caso a caso pra 'play'/'attach_don' via guarda de
+# diversidade (include_best_kind), mas o MESMO padrao reaparece pra
+# qualquer kind novo que eu tunar. Medido via SELF-PLAY (motor vs motor,
+# 30 partidas, 10 decks reais diversos de decklists_raw.csv -- de proposito
+# NAO os 150 logs humanos que ja calibram human_patterns.json/validam
+# decision_quality_full.py, pra nao repetir a mesma fonte de dado que
+# calibra E mede), mediana de score IMEDIATO por kind (script descartavel
+# scratchpad/kind_scale_collect.py): play=125.0, activate=129.4,
+# attach_don=64.2, attack=266.0. Fatores = mediana_do_kind / mediana_do_
+# play (referencia, fica em 1.0). Mediana (nao media) de proposito -- a
+# media de 'attack' e muito mais distorcida por outliers de lethal
+# (score chega a 10000+ em cenarios de vida 0/1, ver ATTACK_LEADER_BASE_
+# SCORE) do que a mediana, que reflete melhor o caso TIPICO.
+KIND_SCORE_SCALE = {
+    'play': 1.0,
+    'activate': 1.0,
+    'attach_don': 0.5,
+    'attack': 2.1,
+}
+
 # ── camada barata / "calibragem dinamica" (bloco 508/509, escala bloco 514) ──
 # Desenho acordado com o usuario 11/08: em vez de resolver o efeito de
 # verdade (caro, precisa do motor de regras completo), `_cheap_rollout_value`
@@ -16066,11 +16094,21 @@ class OPTCGMatch:
         """
         if not actions:
             return []
-        top_score = actions[0][0]
+        # Normalizacao de escala por kind (bloco 642) SO pra decidir QUEM
+        # entra no shortlist -- `actions` (a lista original, score CRU) fica
+        # intocada pra qualquer outro consumidor (bypass do win-con em
+        # main_phase, camada barata, log de auditoria). `acao[0]` dentro de
+        # `candidatas` continua o score CRU de sempre; so a ORDEM/CORTE
+        # usados aqui dentro passam a ser pela versao normalizada.
+        def _norm(acao):
+            return acao[0] / KIND_SCORE_SCALE.get(acao[1], 1.0)
+
+        actions_norm = sorted(actions, key=_norm, reverse=True)
+        top_score = _norm(actions_norm[0])
         candidatas = [
-            acao for idx, acao in enumerate(actions[:top_k])
+            acao for idx, acao in enumerate(actions_norm[:top_k])
             if acao[0] >= 0
-            and (idx < min_candidates or acao[0] >= top_score - score_window)
+            and (idx < min_candidates or _norm(acao) >= top_score - score_window)
         ]
         # Garante diversidade de KIND na comparacao -- generalizado 22/08
         # (bloco 639, pedido do usuario, seguindo a pista do censo do
