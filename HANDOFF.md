@@ -1,5 +1,33 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+> **RECOMENDACAO REGISTRADA DO USUARIO (22/08/2026, apos o bloco 642)**:
+> discutido explicitamente se "continuar investigando bug real" resolve
+> sozinho ou se precisa de outra ferramenta. Resposta dada ao usuario:
+> caça-bug real (metodologia de hoje, blocos 639-642) tem teto real --
+> categorias como `play`/`activate`/`attach_don` (17-27% hoje) nao vao
+> chegar perto de 90%+ so corrigindo mecanica, porque parte do gap
+> restante e DIVERSIDADE ESTRATEGICA legitima (2 jogadas podem ser
+> igualmente boas no mesmo board; comparar contra a escolha de 1 humano
+> especifico numa partida especifica tem teto bem abaixo de 100%, mesmo
+> pra um bot hipoteticamente perfeito), nao bug corrigivel. O usuario
+> concordou em continuar com investigacao de bug real por ora (proximo
+> alvo: "nunca gerada", ~37-43% dos mismatches de play/attach_don, ainda
+> nao investigado), MAS pediu explicitamente que fique registrado que a
+> recomendacao dele e criar formas/funcoes NOVAS pra "regular isso de
+> uma vez" e forcar o bot a jogar mais parecido com humano -- ou seja,
+> nao so caçar bug mecanico, tambem investir na ferramenta de imitacao
+> (`human_alignment`/`human_patterns.json`, ja usada com cautela) de
+> forma mais decisiva/sistematica no futuro. Risco ja discutido e
+> aceito pelo usuario como conhecido, nao ignorado: pesar mais forte
+> nessa direcao aproxima do overfitting nos MESMOS 150 logs que treinam
+> o mecanismo E validam `decision_quality_full.py` (fonte de dado
+> unica), e nao distingue "humano acertou" de "humano errou" -- forcar
+> demais copia erro tambem. Registrar esta preferencia pra QUALQUER
+> sessao futura (Claude ou Codex) que decida entre "mais um ciclo de
+> caça-bug" vs "investir em forçar/imitar" saber que o usuario ja
+> pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
+> que a execucao imediata de hoje continue sendo caça-bug.
+
 ## 2026-08-22 (642) - Claude (sessao remota web) - Normalizacao de escala por `kind` em `_select_search_candidates` (protecao PREVENTIVA, medido NEUTRO) + resumo de cobertura em `decision_quality_full.py`
 
 Pedido do usuario apos a discussao do trade-off play/attach_don: "faca

@@ -2,6 +2,20 @@
 
 **Última atualização:** 22 de agosto de 2026
 
+> **RECOMENDAÇÃO DO USUÁRIO REGISTRADA (22/08/2026)**: caça-bug real
+> (metodologia dos blocos 639-642) tem teto — parte do gap em `play`/
+> `activate`/`attach_don` é diversidade estratégica legítima, não bug.
+> Usuário concordou em continuar caçando bug real por ora (próximo:
+> "nunca gerada"), mas pediu registro explícito de que a recomendação
+> dele é criar funções NOVAS pra "regular isso de uma vez" e forçar o
+> bot a jogar mais parecido com humano — investir mais decisivamente em
+> `human_alignment`/`human_patterns.json`, não só consertar mecânica.
+> Risco (overfitting nos mesmos 150 logs que treinam E validam; copiar
+> erro de humano junto com acerto) já foi discutido e é aceito pelo
+> usuário como conhecido. Ver bloco 642+ do HANDOFF para o registro
+> completo — vale pra qualquer sessão futura decidir "mais um ciclo de
+> caça-bug" vs "investir em forçar/imitar" sabendo dessa preferência.
+
 > 22/08/2026 (bloco 642, pedido do usuário "faça essa normalização... e
 > melhore o decision quality em paralelo"): normalização de escala por
 > `kind` em `_select_search_candidates` (`KIND_SCORE_SCALE`) — só afeta
