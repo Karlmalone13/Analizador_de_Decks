@@ -2,6 +2,20 @@
 
 **Última atualização:** 22 de agosto de 2026
 
+> 22/08/2026 (bloco 643): investigado "nunca gerada" (play/attach_don,
+> ~37-43% dos mismatches). **`play`: CONCLUSIVO, sem bug real** — 64
+> casos testados, checando presença na mão + pagabilidade em QUALQUER
+> decisão do turno (não só no início): 37,5% ausente da mão
+> reconstruída (limitação de dado já conhecida), 62,5% presente mas
+> nunca pagável (correto não gerar), 0/64 no bucket "bug real". **
+> `attach_don`: INCONCLUSIVO** — reaproveitei o mesmo checador (mão +
+> custo), mas para `attach_don` a "carta" é o RECEPTOR do DON (já em
+> CAMPO, não na mão) — metodologia não se aplica, os 5 casos marcados
+> "[BUG?]" são provavelmente falsos positivos (cópia duplicada na mão
+> vs a cópia real em campo). Pendente: refazer o checador olhando
+> `field_chars`/`leader` em vez de `hand` antes de aceitar/descartar.
+> Ver bloco 643 do HANDOFF.
+
 > **RECOMENDAÇÃO DO USUÁRIO REGISTRADA (22/08/2026)**: caça-bug real
 > (metodologia dos blocos 639-642) tem teto — parte do gap em `play`/
 > `activate`/`attach_don` é diversidade estratégica legítima, não bug.

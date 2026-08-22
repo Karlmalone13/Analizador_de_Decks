@@ -28,7 +28,45 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
-## 2026-08-22 (642) - Claude (sessao remota web) - Normalizacao de escala por `kind` em `_select_search_candidates` (protecao PREVENTIVA, medido NEUTRO) + resumo de cobertura em `decision_quality_full.py`
+## 2026-08-22 (643) - Claude (sessao remota web) - Investiga "nunca gerada" (play/attach_don): CONCLUSIVO pra play (0 bugs reais achados), INCONCLUSIVO pra attach_don (metodologia errada, precisa refazer com checagem de CAMPO nao de MAO)
+
+Continuacao do bloco 642, indo pra frente com "cacar bug real" (proximo
+alvo combinado com o usuario apos a discussao sobre teto do metodo --
+ver nota registrada no topo deste arquivo).
+
+**Metodologia**: estendeu `rank_census.py` (scratchpad) pra, quando uma
+carta cai no bucket "nunca gerada" (nunca aparece em NENHUMA decisao do
+turno como candidata), checar se ela estava PRESENTE na mao reconstruida
+e PAGAVEL (custo <= DON disponivel) em QUALQUER decisao do turno (nao so
+no inicio -- DON pode ramp no meio do turno). 3 buckets: (a) ausente da
+mao reconstruida = limitacao de DADO (reconstrucao de baralho/mao, ja
+documentada, fora de escopo de fix de motor); (b) presente mas nunca
+pagavel = comportamento CORRETO nao gerar; (c) presente E pagavel em
+algum momento, mesmo assim nunca gerada = candidato a BUG REAL.
+
+**`play` -- CONCLUSIVO, sem bug achado**: 64 casos (50 jogos, amostra
+completa). 37,5% ausente da mao (limitacao de dado), 62,5% presente mas
+nunca pagavel no turno inteiro (correto nao gerar). **0/64 no bucket
+(c)** -- nao existe bug real de motor na geracao de candidatas 'play'
+detectavel por essa metodologia.
+
+**`attach_don` -- INCONCLUSIVO, metodologia nao se aplica**: rodou o
+MESMO checador (mao + custo) em `attach_don`, mas a "carta" dessa
+categoria e o RECEPTOR do DON (personagem/lider ja em CAMPO), nao algo
+na mao -- "presente na mao" nao faz sentido semantico aqui. Achou 5
+casos marcados "[BUG?]" (ex: OP13-016/ST36-002/OP13-080/OP11-031/
+OP13-054), mas sao provavelmente FALSOS POSITIVOS: coincidencia de uma
+copia da mesma carta estar na mao (decks tem multiplas copias) enquanto
+a copia relevante (a que deveria receber o DON) esta em campo. Registrado
+como limitacao aberta, NAO como achado -- pra investigar attach_don de
+verdade, precisa reescrever o checador pra olhar `p.field_chars`/`p.
+leader` (campo) em vez de `p.hand`, trabalho novo nao feito ainda.
+
+**Proximo passo, se a sessao seguinte continuar "cacar bug real"**:
+refazer o checador de "nunca gerada" pra `attach_don` com a semantica
+certa (campo, nao mao) antes de aceitar/descartar os 5 casos suspeitos.
+
+## 2026-08-22 (642)
 
 Pedido do usuario apos a discussao do trade-off play/attach_don: "faca
 essa normalizacao pra gente investigar melhor as coisas, e conserte essa
