@@ -569,6 +569,14 @@ EVAL_WEIGHTS = {
     # mesma proporcao (12.0 -> 1.2) pra manter a mesma magnitude no caso
     # SEM gatilho; com gatilho, agora pesa mais (antes era cego a isso).
     'char_kill_value': 1.2,
+    # Custo de OPORTUNIDADE do DON gasto NESTE turno pra fazer um ataque
+    # passar (bloco 640/641) -- ver comentario em GameState.don_spent_
+    # on_combat. So se aplica a linhas NAO-vencedoras (lethal sai direto
+    # via SIMULATED_WIN_SCORE, antes de chegar aqui) -- nao penaliza
+    # attach_don que fecha o jogo. TESTE inicial: 50.0 por DON (mesma
+    # ordem de grandeza de avaliar_carta pra uma carta media), medido
+    # contra as 274 comparacoes reais antes de aceitar.
+    'don_combat_cost': 50.0,
 }
 try:
     _wpath = os.path.join(os.path.dirname(__file__), '..', 'eval_weights.json')
@@ -1572,6 +1580,24 @@ class GameState:
     # `char_value_score` (mesma formula rica de `board_opp`), nao mais
     # `board_value()` cru -- ver `_execute_attack`.
     char_kill_value: float = 0.0
+    # DON anexado NESTE turno especificamente pra fazer um ataque PASSAR
+    # (bloco 640/641, achado real): `_generate_attach_don_actions` (Tier 2,
+    # score IMEDIATO) ja desconta esse ramo via ATTACH_DON_COMBATE_FRACAO
+    # =0.5 -- calibrado pra competir de forma justa com 'play' no shortlist
+    # (bloco 580). Mas `_evaluate_state_v2` (Tier 1, valor SIMULADO que
+    # realmente decide) nunca via esse desconto: uma vez que o DON e
+    # anexado e o ataque conecta, o dano/kill credita EM CHEIO via `dmg`/
+    # `char_kill_value` (pesos 120/1.2), sem NENHUMA nocao de que aquele
+    # dano foi "comprado" as custas de nao jogar outra carta. Generalizando
+    # a guarda de diversidade (bloco 639) pra `attach_don` tambem (bloco
+    # 640) expos esse buraco: censo em 50 jogos reais achou 44 casos onde
+    # `play` chega a competir de verdade e perde -- em 61% deles (27/44),
+    # o bonus de alinhamento humano (`human_alignment`) estava EMPATADO
+    # (mesmo teto 30.0 dos dois lados), entao o desempate vinha inteiro do
+    # termo de dano/kill sem contrapeso nenhum. Espelha `dmg_dealt`/
+    # `char_kill_value` (mesmo padrao, incrementado no ponto exato do
+    # anexo de DON), consumido por peso proprio em `_evaluate_state_v2`.
+    don_spent_on_combat: int = 0
     chars_played: int = 0
     counters_used: int = 0
     searchers_used: int = 0
@@ -1659,6 +1685,7 @@ class GameState:
 
         novo.dmg_dealt = self.dmg_dealt
         novo.char_kill_value = self.char_kill_value
+        novo.don_spent_on_combat = self.don_spent_on_combat
         novo.chars_played = self.chars_played
         novo.counters_used = self.counters_used
         novo.searchers_used = self.searchers_used
@@ -16079,6 +16106,17 @@ class OPTCGMatch:
 
         include_best_kind('play', 1)
         include_best_kind('activate', 1)
+        # 'attach_don' (bloco 640, mesmo censo, categoria propria): achado
+        # AINDA mais forte que 'play' -- 62,9% dos mismatches de attach_don
+        # (39/62 em 50 jogos) eram gerados e cortados antes do shortlist, e
+        # NENHUM (0/39) dos que sobreviveram ao corte chegou a competir de
+        # verdade -- pior taxa medida no dia. Faz sentido estrutural: o
+        # proprio ATTACH_DON_COMBATE_FRACAO=0.5 (bloco 580) ja escala esse
+        # score pra baixo DE PROPOSITO, pra competir com 'play' na faixa
+        # certa -- mas sem a mesma garantia de diversidade que 'play' ja
+        # tinha, ele nunca chegava nem perto de competir contra 'attack'
+        # raw (sem fracao nenhuma) na MESMA janela.
+        include_best_kind('attach_don', 1)
         candidatas.sort(key=lambda acao: acao[0], reverse=True)
 
         if cheap_values:
@@ -17156,6 +17194,23 @@ class OPTCGMatch:
         # que corrigiu o vies medido do bloco 624.
         score += p.char_kill_value * W['char_kill_value']
 
+        # Custo de oportunidade do DON gasto pra fazer um ataque passar
+        # NESTE turno (bloco 640/641, achado real): generalizar a guarda
+        # de diversidade (bloco 639) pra `attach_don` tambem (bloco 640)
+        # corrigiu attach_don (12,7%->17,9%) mas expos um buraco -- Tier 2
+        # (`_generate_attach_don_actions`) ja desconta esse ramo via
+        # ATTACH_DON_COMBATE_FRACAO=0.5 pra competir de forma justa com
+        # 'play' no SHORTLIST, mas Tier 1 (aqui, o valor que realmente
+        # decide) nunca via esse desconto -- dano/kill comprado com DON
+        # creditava EM CHEIO via `dmg`/`char_kill_value`, sem contrapeso.
+        # Censo em 50 jogos reais achou 44 casos de `play` perdendo pra
+        # `attach_don` no shortlist -- em 61% deles o bonus de alinhamento
+        # humano estava EMPATADO (mesmo teto 30.0 dos 2 lados), sobrando
+        # pro termo de dano decidir sozinho. So penaliza linhas NAO-
+        # vencedoras (lethal sai direto via SIMULATED_WIN_SCORE, antes de
+        # chegar aqui).
+        score -= p.don_spent_on_combat * W['don_combat_cost']
+
         # vida (curva íngreme).
         score += self._life_value(p.life_count()) * W['life_mult']
         score -= self._life_value(opp.life_count()) * W['life_mult']
@@ -17302,6 +17357,13 @@ class OPTCGMatch:
                 card.don_attached += anexar
                 p.don_available -= anexar
                 ee._dispatch_don_given(card)
+                # bloco 640/641: so a categoria 'attack_power' (impulsiona
+                # um ataque) alimenta don_spent_on_combat -- as outras 2
+                # categorias (pagar custo de gatilho condicionado a DON)
+                # nao tem o mesmo vies de "dano credita em cheio sem
+                # desconto", entao ficam de fora.
+                if what == 'attack_power':
+                    p.don_spent_on_combat += anexar
                 if verbose:
                     print(f'    ⚡ anexou {anexar} DON em {card.name[:20]} para ligar [{what}]')
 
@@ -17910,6 +17972,7 @@ class OPTCGMatch:
         if need > 0:
             attacker.don_attached += need
             p.don_available -= need
+            p.don_spent_on_combat += need
             EffectExecutor(p, opp)._dispatch_don_given(attacker)
             if verbose:
                 print(f'    anexou {need} DON em {attacker.name[:20]}')

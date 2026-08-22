@@ -2,6 +2,29 @@
 
 **Última atualização:** 22 de agosto de 2026
 
+> 22/08/2026 (blocos 640/641, pedido do usuário "investigue outras
+> funções que travam outras categorias, crie novas se for o caso"):
+> generalizada a guarda de diversidade (bloco 639) pra `attach_don`
+> também — mesmo problema, ainda pior (0% dos gerados chegava a competir
+> de verdade). Isolado, deu ganho grande em `attach_don` (12,7%→17,9%)
+> mas derrubou `play` (21,2%→16,3%) — investigado a fundo (não aceito
+> como "efeito colateral"): `attach_don` passou a vencer `play` no
+> comparativo final porque `_evaluate_state_v2` credita dano/kill em
+> CHEIO sem o desconto que `ATTACH_DON_COMBATE_FRACAO=0.5` já aplica no
+> score imediato (Tier 2) — em 61% dos casos o bônus de `human_alignment`
+> estava empatado nos dois lados, sobrando pro termo de dano decidir
+> sozinho. **Fix**: novo campo `GameState.don_spent_on_combat` (mesmo
+> padrão de `char_kill_value`) + novo peso `don_combat_cost=50.0` em
+> `_evaluate_state_v2`, penalizando DON gasto pra fazer um ataque passar
+> — só em linhas NÃO-vencedoras (lethal sai antes, via
+> `SIMULATED_WIN_SCORE`). Resultado: **ganho em TODA categoria ofensiva**
+> vs o baseline do bloco 639 — play 21,1% (recuperado), attack-quem
+> 54,9% (+1,8pp), activate 27,4% (+0,9pp), attach_don 16,9% (+4,2pp),
+> attack-alvo 69,5% (+1,2pp), defesa idêntica. Limitação registrada:
+> risco de overfitting nos 150 logs que treinam `human_patterns.json` E
+> validam via `decision_quality_full.py` — sem banco de validação
+> separado ainda. Ver bloco 640/641 do HANDOFF.
+
 > 22/08/2026 (bloco 639, passo 3/3 do plano "continua removendo, depois
 > unifica, depois segue a pista do top_k" — CONCLUÍDO): achado real
 > seguindo a pista do bloco 635 — censo em 50 jogos (150 cartas de

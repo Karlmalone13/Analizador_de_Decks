@@ -1,5 +1,86 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-22 (640/641) - Claude (sessao remota web) - Generaliza a guarda de diversidade pra `attach_don` tambem (GANHO grande, mas revelou vies de dmg sem contrapeso); fecha o buraco com custo de oportunidade de DON gasto em combate -- resultado liquido POSITIVO em TODAS as categorias ofensivas
+
+Continuacao direta do bloco 639, a pedido do usuario: "do mesmo jeito que
+descobriu esse gargalo [play/TOP_K], investigue outras funcoes que estao
+barrando outras categorias subirem, e crie novas funcoes se for o caso
+pra forcar o bot a jogar igual o humano".
+
+**Bloco 640 -- attach_don tinha o MESMO problema, ainda pior**: mesmo
+censo (rank_census.py, scratchpad) rodado pra `attach_don` em vez de
+`play`: 62,9% dos mismatches (39/62 em 50 jogos) eram gerados e cortados
+antes do shortlist -- e **0/39 (0%)** dos que sobreviviam ao corte
+chegava a competir de verdade, pior taxa medida no dia inteiro.
+Mecanismo identico ao de `play` (`ATTACK_LEADER_BASE_SCORE=400` domina
+`ATTACH_DON_COMBATE_FRACAO`-descontado). Fix: `include_best_kind(
+'attach_don', 1)` adicionado a mesma guarda generalizada do bloco 639.
+Medido isoladamente: attach_don 12,7%->17,9% (GANHO grande), attack-quem/
+activate/attack-alvo tambem subiram -- **mas `play` caiu 21,2%->16,3%**,
+abaixo de onde a sessao comecou.
+
+**Investigacao do trade-off (pedido explicito do usuario, "nao aceite
+como efeito colateral, investigue o motivo real")**: re-rodado o censo
+de `play` com o codigo novo -- o numero de cortes-antes-do-shortlist
+ficou IGUAL (61 vs 62), mas os que CHEGAM no shortlist e ainda perdem
+quase dobrou (24->46). Instrumentado pra capturar o VENCEDOR real de
+cada shortlist-loss (`_sim_values_full`/`_chosen_full` piggybacked no
+decision_log): em 40 casos de amostra, **25/40 perderam especificamente
+pra `attach_don`**. Investigado mais fundo com o bonus de `human_
+alignment` de cada lado (`_align_full`): em 27/44 casos (61%) o bonus
+de alinhamento estava EMPATADO no teto (30,0 dos dois lados) -- ou seja,
+a calibragem dinamica JA sabia que as duas eram boas escolhas
+historicamente, mas o desempate sobrava inteiro pro termo de dano
+(`dmg`/`char_kill_value`, pesos 120/1,2) decidir sozinho.
+
+**Causa raiz identificada**: `_generate_attach_don_actions` (Tier 2, RANK
+imediato) ja desconta esse ramo via `ATTACH_DON_COMBATE_FRACAO=0.5` --
+calibrado pra competir de forma justa com `play` no SHORTLIST (bloco
+580). Mas `_evaluate_state_v2` (Tier 1, valor SIMULADO que decide de
+verdade) nunca via esse desconto -- uma vez que o DON e anexado e o
+ataque conecta, o dano/kill credita EM CHEIO, sem NENHUMA nocao de
+"esse dano foi comprado as custas de nao jogar outra carta".
+
+**Bloco 641 -- fix**: novo campo `GameState.don_spent_on_combat`
+(mesmo padrao de `char_kill_value`, bloco 634 -- acumulador incrementado
+no ponto exato do gasto, propagado no deepcopy). Incrementado nos 2
+pontos onde DON e anexado especificamente pra um ataque passar: (a)
+`_apply_action`'s `kind=='attach_don'` com `what=='attack_power'`
+(categoria de combate de `_generate_attach_don_actions`, NAO as outras 2
+categorias de custo de gatilho), e (b) `_attach_don_for_attack` (o
+top-up automatico). Novo termo em `_evaluate_state_v2`: `score -= p.don_
+spent_on_combat * W['don_combat_cost']` (peso inicial 50,0, mesma ordem
+de grandeza de uma carta media em `avaliar_carta`). So penaliza linhas
+NAO-vencedoras -- lethal sai direto via `SIMULATED_WIN_SCORE`, antes de
+chegar em `_evaluate_state_v2`, entao fechar o jogo com DON continua sem
+penalidade.
+
+**Validacao**: `smoke_fast.py` (100% OK) -> `smoke_test.py` (100% OK) ->
+`decision_quality_full.py --all --workers 4`, comparado contra o
+baseline do bloco 639 (ANTES de mexer em attach_don): play 21,1% (era
+21,2%, praticamente recuperado), attack-quem 54,9% (era 53,1%, +1,8pp),
+activate 27,4% (era 26,4%, +0,9pp), attach_don 16,9% (era 12,7%,
++4,2pp -- mantem a maior parte do ganho), attack-alvo 69,5% (era 68,3%,
++1,2pp), defesa identica. **GANHO liquido em TODA categoria ofensiva,
+sem trade-off** -- melhor resultado do dia inteiro, substitui o do
+bloco 639.
+
+**Limitacao honesta registrada** (pergunta direta do usuario, "sera que
+esse decision_quality_full.py nao esta defasado nao?"): confirmado que
+NAO ha problema de cache/bytecode stale (`.pyc` recompilado a cada
+edicao, workers do `ProcessPoolExecutor` reimportam fresco). Mas existe
+um risco METODOLOGICO real, distinto: os 274 turnos de validacao vem do
+MESMO banco de 150 logs que treina `human_patterns.json` (a fonte do
+`human_alignment`) -- ha sobreposicao entre o que calibra e o que mede,
+entao parte do ganho medido em mecanismos que dependem de `human_
+patterns.json` pode refletir MEMORIZACAO dessas partidas especificas,
+nao generalizacao pra qualquer humano. O peso `don_combat_cost=50.0`
+em si e um mecanismo ESTRUTURAL (nao aprende por carta), mas foi
+calibrado olhando os gaps do MESMO censo de 50 jogos usado pra medir --
+mesmo risco, grau menor. Nao ha solucao pronta sem um banco de logs
+separado de validacao (fica registrado como limitacao conhecida, nao
+resolvido nesta sessao).
+
 ## 2026-08-22 (639) - Claude (sessao remota web) - Achado real: janela de score corta 'play' quando existe ataque forte no MESMO turno; generaliza guarda de diversidade de kind pra QUALQUER prioridade, GANHO medido em todas as categorias ofensivas, passo 3/3 do plano do usuario ("segue a pista do top_k")
 
 Continuacao direta do bloco 638 (passo 3, "segue a pista do top_k" --
