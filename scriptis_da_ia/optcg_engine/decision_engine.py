@@ -562,10 +562,13 @@ EVAL_WEIGHTS = {
     # comparacoes reais antes de aceitar (mesmo protocolo do dia).
     'human_alignment': 8.0,
     # Valor de Character do oponente morto em COMBATE (bloco 634) -- ver
-    # comentario em `_evaluate_state_v2`. Calibrado pra ficar na mesma
-    # ordem de grandeza de `dmg` (1 vida = 120): Character de valor
-    # medio (~5) * 24 = 120.
-    'char_kill_value': 12.0,
+    # comentario em `_evaluate_state_v2`/`_execute_attack`. UNIFICADO
+    # 22/08 (bloco 638) pra usar `char_value_score` (mesma formula de
+    # `board_opp`) em vez de `board_value()` cru -- escala mudou de ~5
+    # (raw) pra ~50 (char_value_score sem gatilho), entao o peso caiu na
+    # mesma proporcao (12.0 -> 1.2) pra manter a mesma magnitude no caso
+    # SEM gatilho; com gatilho, agora pesa mais (antes era cego a isso).
+    'char_kill_value': 1.2,
 }
 try:
     _wpath = os.path.join(os.path.dirname(__file__), '..', 'eval_weights.json')
@@ -1565,6 +1568,9 @@ class GameState:
     # mesmo ponto do combate, `_execute_attack`), consumido por um termo
     # NOVO e proprio em `_evaluate_state_v2` (nao inflado dentro de
     # `dmg_dealt` -- mantem o significado dele limpo, "vida tirada").
+    # UNIFICACAO 22/08 (bloco 638): apesar do nome, desde entao acumula
+    # `char_value_score` (mesma formula rica de `board_opp`), nao mais
+    # `board_value()` cru -- ver `_execute_attack`.
     char_kill_value: float = 0.0
     chars_played: int = 0
     counters_used: int = 0
@@ -11068,7 +11074,10 @@ class GameAnalyzer:
         Usado para decidir se vale gastar blocker/counter para salvar, E
         (bloco 630, pedido do usuario -- "pegar as funcoes ricas pra
         alimentar a que decide") como termo de board de `_evaluate_state_
-        v2`.
+        v2` (board_mine/board_opp), E (bloco 638, unificacao pedida pelo
+        usuario) como a fonte de `char_kill_value` (credito por matar um
+        Character em COMBATE, somado em `_execute_attack`) -- antes uma
+        3a formula propria e mais pobre (`board_value()` cru).
 
         1a TENTATIVA (bloco 629) de enriquecer com `get_card_flags`
         (agregado, sem distinguir gatilho) foi REVERTIDA por dupla
@@ -17123,12 +17132,15 @@ class OPTCGMatch:
         # atacar o lider" achado no bloco 624 (medido: +4-5pp vs humano,
         # generico em quase todo lider testado -- a causa era o termo
         # mais pesado da avaliacao ignorar kill de Character por
-        # completo). `char_kill_value` (Card.board_value() do alvo,
-        # somado no ponto exato do KO em `_execute_attack`) e um termo
+        # completo). `char_kill_value` (`char_value_score` do alvo desde
+        # o bloco 638, MESMA formula que `board_opp` usa -- ver
+        # `_execute_attack` -- somado no ponto exato do KO) e um termo
         # PROPRIO, nao inflado dentro de `dmg_dealt` (mantem o
-        # significado dele limpo). Peso calibrado pra 1 Character de
-        # valor medio (~5) matar comparar na mesma ordem de grandeza de
-        # 1 carta de vida removida (dmg=120): 5*24=120.
+        # significado dele limpo). Ainda ADICIONAL a `board_opp`
+        # (matar tambem encolhe `opp.field_chars`, que ja credita via
+        # `board_opp`) -- deliberado, pesa mais um kill em COMBATE
+        # especificamente do que a mudanca generica de board, e foi o
+        # que corrigiu o vies medido do bloco 624.
         score += p.char_kill_value * W['char_kill_value']
 
         # vida (curva íngreme).
@@ -18435,7 +18447,24 @@ class OPTCGMatch:
                     if verbose:
                         print(f'      🔁 {counter_sub_log}')
                     return False
-                p.char_kill_value += target.board_value()
+                # UNIFICACAO 22/08 (bloco 638, pedido do usuario "consegue
+                # unir essas funcoes?"): antes usava `target.board_value()`
+                # CRU -- formula PROPRIA, mais pobre que `char_value_score`
+                # (so poder/keywords, cega a gatilho/efeito), e parcialmente
+                # redundante com `board_opp` (que ja credita a queda de
+                # `opp.field_chars` via `char_value_score` quando este
+                # target sai do campo). Reusa a MESMA instancia/formula de
+                # `char_value_score` que `board_opp` usa em
+                # `_evaluate_state_v2` (GameAnalyzer(p, opp), mesma ordem
+                # de argumentos) -- unifica os 2 termos numa unica fonte de
+                # "valor de Character" e torna `char_kill_value`
+                # trigger-aware pela primeira vez. Peso em EVAL_WEIGHTS
+                # recalibrado (12.0 -> 1.2, mesma ordem de 1/10 da mudanca
+                # de escala: board_value() cru ~5 vira char_value_score
+                # ~50) pra manter o kill de um Character SEM gatilho na
+                # mesma magnitude de antes; um Character COM gatilhos agora
+                # pesa mais, coerente com o resto do motor.
+                p.char_kill_value += GameAnalyzer(p, opp).char_value_score(target)
                 remove_character_from_field(opp, target, 'trash')
                 if verbose:
                     print(f'      💀 {target.name[:20]} foi KO!')

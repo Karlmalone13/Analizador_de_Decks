@@ -1,5 +1,60 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-22 (638) - Claude (sessao remota web) - Unifica `char_kill_value` com `char_value_score` (mesma formula de `board_opp`), efeito NEUTRO medido, passo 2/3 do plano do usuario
+
+Continuacao direta do bloco 637. `char_kill_value` (bloco 634) usava
+`target.board_value()` CRU no ponto do KO em combate
+(`_execute_attack`, ~linha 18438) -- uma 3a formula propria de "valor de
+Character", mais pobre que `char_value_score` (so poder/keywords, cega
+a gatilho/efeito) e PARCIALMENTE redundante com `board_opp` (que ja
+credita a queda de `opp.field_chars` via `char_value_score` quando o
+alvo sai do campo morto).
+
+**Mudanca**: `p.char_kill_value += target.board_value()` virou
+`p.char_kill_value += GameAnalyzer(p, opp).char_value_score(target)` --
+MESMA instanciacao/formula que `board_opp` usa em `_evaluate_state_v2`
+(`GameAnalyzer(p, opp)`, mesma ordem de argumentos). `char_kill_value`
+passa a ser trigger-aware pela primeira vez (antes ignorava efeito/
+gatilho por completo, so via `board_value()`). Peso em `EVAL_WEIGHTS`
+recalibrado 12.0 -> 1.2 (escala de referencia mudou de ~5, raw
+`board_value()`, pra ~50, `char_value_score` sem gatilho -- mesma
+proporcao de queda, ~1/10, mantem a magnitude igual no caso SEM
+gatilho; com gatilho, agora pesa mais).
+
+Nao elimina a redundancia com `board_opp` por completo (ainda soma os
+dois: a queda implicita de `opp.field_chars` E o credito explicito de
+`char_kill_value`) -- deliberado, mantido o mesmo raciocinio do bloco
+634 (pesar mais um kill em COMBATE especificamente do que a mudanca
+generica de board, que foi o que corrigiu o vies "motor prefere atacar
+o lider" medido no bloco 624). A unificacao real foi na FORMULA (1
+fonte de verdade pra "valor de Character" em vez de 2 hardcoded
+diferentes), nao na eliminacao do termo.
+
+**Validacao**: `smoke_fast.py` (100% OK) -> `smoke_test.py` (100% OK)
+-> `decision_quality_full.py --all --workers 4`: play 20.8% (era
+20.6%), attack-quem 52.7% (era 53.0%), activate 26.5% (era 26.2%),
+attach_don 12.6% (era 12.5%), attack-alvo 67.6% (era 67.9%) -- todos os
+deltas dentro de +-0.3pp, mesmo ruido de reconstrucao de sempre.
+NEUTRO, sem regressao nem ganho claro -- esperado, dado que o peso foi
+calibrado pra preservar a magnitude no caso comum (Character sem
+gatilho). Nenhum teste existente em `smoke_fast.py`/`smoke_test.py`
+referenciava `char_kill_value` diretamente (nada pra atualizar).
+
+**Nao mexido nesta sessao**: `score_attack_target`'s `target.board_
+value() * 15` (Tier 2, ranking de QUAL alvo atacar) continua como uma
+3a formula separada -- decisao deliberada, Tier 2 tem um job diferente
+(ranking imediato pra shortlist) do que Tier 1 (avaliar estado
+simulado), e o proprio usuario separou isso como um passo 3 distinto
+("depois segue a pista do top_k") -- ver bloco 635 (achado dos 36.6%
+cortados antes do TOP_K) pra esse fio.
+
+**Proximo passo do plano do usuario** (passo 3, "segue a pista do
+top_k"): investigar por que ~36.6% dos casos de `play` divergentes sao
+gerados como acao legal mas cortados ANTES do TOP_K -- provavel que o
+ranking imediato (`avaliar_carta`, Tier 2) seja a causa raiz, nao o
+tamanho do shortlist (alargar TOP_K 3->5 no bloco 635 deu efeito misto,
+nao decisivo).
+
 ## 2026-08-20/22 (637) - Claude (sessao remota web) - Limpeza das 8 flags mortas USE_*_CURVE_SCALE (blocos 529-533), medida NULA contra as 274 comparacoes reais, seguindo o plano do usuario "continua removendo, depois unifica, depois segue a pista do top_k" (passo 1)
 
 Continuacao direta do bloco 636 (limpeza de `leader_plan_alignment`/

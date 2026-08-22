@@ -2,6 +2,22 @@
 
 **Última atualização:** 22 de agosto de 2026
 
+> 22/08/2026 (bloco 638, passo 2/3 do plano "continua removendo, depois
+> unifica, depois segue a pista do top_k"): unificado `char_kill_value`
+> com `char_value_score` — trocado o `board_value()` cru (formula
+> própria, cega a gatilho) por `GameAnalyzer(p, opp).char_value_score
+> (target)`, MESMA fórmula que `board_opp` já usa, no ponto do KO em
+> `_execute_attack`. `char_kill_value` fica trigger-aware pela 1ª vez.
+> Peso recalibrado 12.0→1.2 (escala mudou de ~5 pra ~50) pra manter a
+> mesma magnitude no caso sem gatilho. Medido NEUTRO contra as 274
+> comparações reais (todos os deltas ≤0,3pp — play 20,8%, attack-quem
+> 52,7%, activate 26,5%, attach_don 12,6%, attack-alvo 67,6%). Não
+> elimina a redundância com `board_opp` por completo (deliberado — pesa
+> mais um kill em COMBATE especificamente, correção do viés do bloco
+> 624), só unifica a FÓRMULA. `score_attack_target`'s `board_value()*15`
+> (Tier 2) fica intacto — decisão deliberada, é o passo 3 (TOP_K/ranking
+> imediato). Ver bloco 638 do HANDOFF.
+
 > 22/08/2026 (bloco 637, passo 1/3 do plano "continua removendo, depois
 > unifica, depois segue a pista do top_k"): removidas as 8 flags mortas
 > `USE_*_CURVE_SCALE` (nunca ligadas em produção, efeito NULO medido —
