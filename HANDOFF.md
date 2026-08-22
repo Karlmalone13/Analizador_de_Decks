@@ -66,7 +66,67 @@ leader` (campo) em vez de `p.hand`, trabalho novo nao feito ainda.
 refazer o checador de "nunca gerada" pra `attach_don` com a semantica
 certa (campo, nao mao) antes de aceitar/descartar os 5 casos suspeitos.
 
-## 2026-08-22 (644) - Claude (sessao remota web) - Refeito o checador de campo pra attach_don (pedido do usuario) -- MELHOROU MUITO a cobertura, mas achado ainda NAO CONFIRMADO (metodologia continua insuficiente pra provar bug real)
+## 2026-08-22 (645) - Claude (sessao remota web) - Trabalho completo: replica a selecao de alvo real de _generate_attach_don_actions no diagnostico -- CONCLUSIVO, 0/27 bugs confirmados, "nunca gerada" de attach_don FECHADO (mesmo padrao de play)
+
+Continuacao direta do bloco 644, a pedido explicito do usuario ("pode
+ir, faz o trabalho completo") apos eu avisar que a chance de achar um
+"grande avanco" era baixa (mesmo padrao ja visto em `play`).
+
+**Metodologia**: monkeypatch em `OPTCGMatch._generate_attach_don_actions`
+(`_traced_gen_attach`, scratchpad `rank_census.py`) que chama a funcao
+ORIGINAL sem alterar comportamento, e SEPARADAMENTE roda um trace
+read-only que mirrora SO o controle de fluxo (if/elif) da categoria 3
+('attack_power') -- chamando as MESMAS funcoes que o motor real usa
+(`score_attack_target`, `attack_time_power`, `character_can_attack_now`,
+`active_taunt_character`, `engine.don_opportunity_cost`,
+`engine._can_play_card`, `engine._don_reserve_for_defense`), zero
+reimplementacao de VALOR, so registra POR QUE cada atacante nao virou
+candidato (`n_candidatos_alvo`, `pode_atacar_leader`, `taunt_ativo`,
+motivo por candidato-alvo: `gap`, `score`, `reason`).
+
+**Bug achado na PROPRIA instrumentacao, corrigido antes de aceitar
+qualquer numero** (disciplina do dia): a 1a versao usava `code not in
+trace` pra decidir "ausente do campo" -- mas o trace SO roda quando
+`p.don_available>0 and p.can_attack_this_turn()` (mesmo gate do motor
+real), entao "nao esta no trace" confundia "ausente" com "presente mas
+o gate externo bloqueou" -- inflou "ausente do campo" de 7,4% pra
+85,2%, artefato puro da minha checagem, nao um achado real. Fix:
+presenca vem de `_field_info` (bloco 644, captura INCONDICIONAL),
+independente do trace ter rodado.
+
+**Resultado final, apos o fix**: 27 casos (50 jogos). 7,4% ausente do
+campo reconstruido (limitacao de dado). 92,6% (25/27) presente, mas em
+TODOS os 25 `character_can_attack_now` retornava False em QUALQUER
+decisao do turno (nao por falta de DON -- todos tinham DON 3-11
+disponivel; `can_attack_this_turn()` tambem sempre True, e so `turno>1`).
+**0/27 no bucket "geraria=True e mesmo assim nunca apareceu"** -- ZERO
+bug real de motor confirmado.
+
+**Causa raiz investigada manualmente em 1 caso concreto** (`Portgas.D.
+Ace-R_x_Portgas.D.Ace-R (espelho)_2026-08-02T12.30.45.json` T3,
+atacante=OP13-016 "Monkey D. Garp"): o historico mostra o DON chegando
+nesse personagem por **3 mecanismos diferentes na MESMA sequencia** --
+um EFEITO DE CARTA (Moby Dick, OP16-021, "Attach 1 Rested Don to Monkey
+D. Garp" como parte do proprio efeito ao ser jogada, NAO uma decisao do
+Turn Planner) + 2 acoes explicitas de `attach_don` depois. `character_
+can_attack_now` retornar False em toda decisao reconstruida faz sentido
+nesse tipo de sequencia complexa (ordem/estado misturando efeito-de-
+carta com decisao-de-Turn-Planner, board reconstruido divergindo de
+qual exato momento da sequencia real esta sendo comparado) -- mesma
+familia da limitacao ja confirmada pra `play` (reconstrucao imperfeita),
+so numa forma mais entrelacada.
+
+**"Nunca gerada" fica FECHADO pra as duas categorias investigadas
+(`play` e `attach_don`)**: nenhuma das duas tem bug real de motor
+detectavel nessa metodologia -- o gap inteiro em ambas vem de
+reconstrucao de estado (mao ou campo) ou de recursos genuinamente
+insuficientes/indisponiveis, nao de logica de geracao de candidatos
+quebrada. Terreno esgotado por ora -- proxima investigacao de "cacar
+bug real" precisa mirar OUTRA parte do pipeline (ex: os buckets "cut
+antes do shortlist"/"perde no shortlist" de outras categorias, ou
+`activate`, ainda nao investigados a fundo).
+
+## 2026-08-22 (644)
 
 Continuacao direta do bloco 643, a pedido explicito do usuario ("refaça
 por favor").

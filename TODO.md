@@ -2,6 +2,26 @@
 
 **Última atualização:** 22 de agosto de 2026
 
+> 22/08/2026 (bloco 645, pedido do usuário "faz o trabalho completo"):
+> "nunca gerada" pra `attach_don` FECHADO — trace preciso (chamando as
+> funções reais do motor: `score_attack_target`, `character_can_attack_
+> now`, etc., sem reimplementar valor) substituiu a checagem grosseira
+> do bloco 644. Achou e corrigiu um bug na PRÓPRIA instrumentação antes
+> de aceitar qualquer número (checagem de presença estava confundindo
+> "ausente do campo" com "presente mas gate do trace não rodou"). Após
+> o fix: 7,4% ausente do campo (limitação de dado), 92,6% presente mas
+> `character_can_attack_now` sempre False, **0/27 bugs reais
+> confirmados**. Investigado 1 caso manualmente (Monkey D. Garp
+> OP13-016) — DON chegou por 3 mecanismos diferentes na mesma sequência
+> (efeito de carta Moby Dick + 2 attach_don explícitos), explicando por
+> que a reconstrução diverge. **"Nunca gerada" fica fechado pra `play`
+> E `attach_don`** — nenhuma tem bug real de motor detectável; o gap
+> inteiro vem de reconstrução de estado ou recurso genuinamente
+> indisponível. Próxima investigação de bug real precisa mirar outra
+> parte do pipeline (buckets "cortado"/"perde no shortlist" de outras
+> categorias, ou `activate` ainda não investigado). Ver bloco 645 do
+> HANDOFF.
+
 > 22/08/2026 (bloco 644, pedido do usuário "refaça por favor"):
 > checador de "nunca gerada" pra `attach_don` refeito olhando CAMPO
 > (`field_chars`/`leader` + `character_can_attack_now`) em vez de MÃO.
