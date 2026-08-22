@@ -2,6 +2,31 @@
 
 **Última atualização:** 22 de agosto de 2026
 
+> 22/08/2026 (blocos 646/647, pedido explicito e repetido do usuário
+> "quero que a gente crie maneiras de subir essas porcentagens... não é
+> só mudar o peso, precisamos criar novas ferramentas"): testadas 5
+> configurações diferentes — teto `_HUMAN_PATTERN_MAX_BONUS` 30→60,
+> peso `human_alignment` 8→14, e uma ferramenta NOVA (`human_sequence_
+> alignment`, usando `by_leader_ngrams_2` de `human_patterns.json` —
+> dado já coletado mas nunca consumido, premia o PAR ORDENADO de ações
+> "depois de X, o humano fez Y") em 3 pesos/escopos diferentes.
+> **NENHUMA deu ganho líquido** — todas redistribuem entre categorias
+> (tipicamente `attach_don` sobe às custas de `play` descer mais, ou
+> vice-versa). Causa raiz identificada: não é problema de peso, é
+> desbalanceamento de FREQUÊNCIA nos 150 logs de treino — "attach_don
+> no próprio líder antes de atacar" é o padrão mais comum do banco
+> inteiro, então qualquer sinal que o amplifica ofusca sinais mais
+> fracos/raros de `play` (52+ cartas dividindo o mesmo espaço). Tudo
+> revertido pro baseline limpo (confirmado via `decision_quality_full.py`
+> — todas as categorias dentro de ±0,2pp do bloco 642). `human_sequence_
+> alignment` fica no código com peso 0.0 (inerte, pronto pra uma sessão
+> futura tentar outra forma de usar o mesmo dado — 3-gramas, escopo por
+> líder, limiar de suporte diferente). Ver bloco 646/647 do HANDOFF —
+> registra explicitamente que essa FAMÍLIA de mecanismo (bônus por
+> padrão observado) parece saturada; avanço real provavelmente precisa
+> de mais dado no banco de logs (reduzir sparsidade) ou abordagem
+> estrutural diferente, não mais uma variação do mesmo tipo de bônus.
+
 > 22/08/2026 (bloco 645, pedido do usuário "faz o trabalho completo"):
 > "nunca gerada" pra `attach_don` FECHADO — trace preciso (chamando as
 > funções reais do motor: `score_attack_target`, `character_can_attack_

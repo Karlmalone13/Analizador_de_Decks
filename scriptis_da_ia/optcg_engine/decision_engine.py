@@ -586,9 +586,42 @@ EVAL_WEIGHTS = {
     # (bloco 632): "tornar [_evaluate_state_v2] menos importante que a
     # nossa calibragem dinamica" -- nao so mais um termo entre 15, tem
     # que pesar mais que a media dos termos genericos quando ha dado
-    # real. TESTE -- prior mais agressivo, mede-se contra as 274
-    # comparacoes reais antes de aceitar (mesmo protocolo do dia).
+    # real. 8.0 (bloco 632) validado positivo no dia (blocos 639-642).
+    #
+    # 22/08 (bloco 646): testado teto 60 sozinho (efeito quase neutro/
+    # misto) e depois peso 14.0 junto com o teto (tambem neutro/misto,
+    # play +0.1, attack-quem -0.2, activate -0.8, attach_don +0.1) --
+    # REVERTIDO pra 8.0. Achado real (pedido explicito do usuario, "so
+    # mudar peso nao resolve, precisamos criar novas ferramentas"): o
+    # teto colidindo pra empate (achado bloco 641: 61% dos casos
+    # attach_don-vence-play tinham os 2 lados no mesmo teto) nao e
+    # resolvido so escalando peso/teto -- o SINAL em si (bonus por
+    # ACAO ISOLADA, kind+codigo, sem nocao de SEQUENCIA/ordem) e raso
+    # demais pra diferenciar quando os 2 lados ja sao fortes. Ver
+    # `human_sequence_alignment` abaixo (bloco 647) -- ferramenta NOVA
+    # que usa dado ja coletado mas nunca consumido (by_leader_ngrams_2)
+    # pra dar um sinal de "proxima acao plausivel" alem do bonus por
+    # acao isolada.
     'human_alignment': 8.0,
+    # bloco 647: sinal SEPARADO de human_alignment -- premia o PAR
+    # ORDENADO (first2 -> 1a continuacao gulosa) observado nos logs
+    # humanos (`by_leader_ngrams_2`, nunca consumido ate hoje), nao so
+    # a acao isolada. TESTADO em 3 configuracoes contra as 274
+    # comparacoes reais, NENHUMA deu ganho liquido: peso 10.0 sem
+    # exclusao (play -3.7pp, attach_don +3.8pp -- attach_don:LIDER >
+    # attack:LIDER e o par mais comum/forte do banco inteiro, ganhando
+    # a disputa contra qualquer 2-grama de play); peso 4.0 sem exclusao
+    # (mesmo padrao proporcional, play -2.2pp/attach_don +0.3pp, ainda
+    # negativo); peso 10.0 EXCLUINDO first2=='attach_don' da propria
+    # secao Estados (buscando corrigir o vies acima): play recuperou
+    # (+0.1pp) mas attach_don (-1.9pp) E attack-alvo (-2.1pp) pioraram
+    # ALEM do baseline sem sequence alignment nenhum -- pior liquido
+    # dos 3 testes. Peso 0.0 = mecanismo INERTE (codigo/dado prontos,
+    # sem efeito em producao) -- fica registrado pra proxima sessao
+    # tentar OUTRA forma de usar `_HUMAN_SEQUENCE_BONUS_BY_LEADER`
+    # (ex: 3-gramas, escopo por categoria diferente) em vez de
+    # descartar o dado, so o peso atual nao funcionou.
+    'human_sequence_alignment': 0.0,
     # Valor de Character do oponente morto em COMBATE (bloco 634) -- ver
     # comentario em `_evaluate_state_v2`/`_execute_attack`. UNIFICADO
     # 22/08 (bloco 638) pra usar `char_value_score` (mesma formula de
@@ -659,7 +692,27 @@ _HUMAN_PATTERN_BONUS_BY_LEADER: dict = {}
 _HUMAN_DEFENSE_BY_LEADER: dict = {}
 _HUMAN_COUNTER_CARD_BONUS_BY_LEADER: dict = {}
 _HUMAN_BLOCKER_CARD_BONUS_BY_LEADER: dict = {}
+# bloco 647: `by_leader_ngrams_2` (human_patterns.json) ja e coletado pelo
+# produtor (audit_human_patterns.py) mas NUNCA foi consumido -- ate aqui,
+# `_load_human_patterns` so lia `heuristic_candidates`, que ACHATA cada
+# n-grama em tokens isolados (`pattern.split(' > ')`, credita cada
+# 'kind:codigo' separado, sem nocao de ORDEM/SEQUENCIA). Isso faz DUAS
+# acoes que aparecem juntas em quase toda partida (ex: 'attach_don:X >
+# attack:X') contarem 2 creditos INDEPENDENTES, iguais a 2 acoes que
+# nunca se relacionam -- perde o sinal "depois de X, Y e o que o humano
+# realmente faz" que so a ORDEM preservada da. Guarda por PAR ORDENADO
+# (kind1,codigo1,kind2,codigo2), nao por token isolado.
+_HUMAN_SEQUENCE_BONUS_BY_LEADER: dict = {}
 _HUMAN_PATTERN_MIN_SUPPORT = 2
+# TESTADO 60.0 (bloco 646, hipotese: levantar o teto quebraria os
+# EMPATES achados no bloco 641 -- 61% dos casos attach_don-vence-play
+# tinham os 2 lados no mesmo teto de 30.0). Medido quase NEUTRO/misto
+# contra as 274 comparacoes reais (play +0.6, activate -0.7, attach_don
+# -0.4) -- sozinho ou combinado com peso maior (14.0). REVERTIDO pra
+# 30.0. Causa provavel (pedido do usuario, "so mudar peso nao resolve"):
+# o sinal em si (bonus por ACAO ISOLADA) e raso demais, escalar o teto
+# so aumenta a magnitude do mesmo sinal raso, nao adiciona informacao
+# nova pra desempatar. Ver `human_sequence_alignment` (bloco 647).
 _HUMAN_PATTERN_MAX_BONUS = 30.0
 
 def _load_effects_db():
@@ -677,7 +730,7 @@ _load_effects_db()
 
 def _load_human_patterns():
     """Carrega sinais leves de pilotagem humana extraidos dos logs reais."""
-    global _HUMAN_PATTERN_BONUS_BY_LEADER, _HUMAN_DEFENSE_BY_LEADER, _HUMAN_COUNTER_CARD_BONUS_BY_LEADER, _HUMAN_BLOCKER_CARD_BONUS_BY_LEADER
+    global _HUMAN_PATTERN_BONUS_BY_LEADER, _HUMAN_DEFENSE_BY_LEADER, _HUMAN_COUNTER_CARD_BONUS_BY_LEADER, _HUMAN_BLOCKER_CARD_BONUS_BY_LEADER, _HUMAN_SEQUENCE_BONUS_BY_LEADER
     if _HUMAN_PATTERN_BONUS_BY_LEADER:
         return
     try:
@@ -691,6 +744,39 @@ def _load_human_patterns():
     defense_by_leader: dict = {}
     counter_card_by_leader: dict = {}
     blocker_card_by_leader: dict = {}
+    sequence_by_leader: dict = {}
+    # bloco 647: PAR ORDENADO (kind1,codigo1,kind2,codigo2) direto de
+    # `by_leader_ngrams_2` -- fonte SEPARADA de `heuristic_candidates`
+    # (que so tokeniza), preserva a ordem real "depois de agir X, o
+    # humano fez Y". Mesma formula/teto de suporte de sempre.
+    for leader, rows in data.get('by_leader_ngrams_2', {}).items():
+        leader_code = leader.split('|', 1)[0]
+        seq_bonus = sequence_by_leader.setdefault(leader_code, {})
+        for row in rows:
+            count = int(row.get('count') or 0)
+            if count < _HUMAN_PATTERN_MIN_SUPPORT:
+                continue
+            pattern = row.get('pattern') or ''
+            tokens = pattern.split(' > ')
+            if len(tokens) != 2:
+                continue
+            parsed = []
+            for token in tokens:
+                if ':' not in token:
+                    parsed = None
+                    break
+                kind, code = token.split(':', 1)
+                if kind not in ('play', 'activate', 'attack', 'attach_don'):
+                    parsed = None
+                    break
+                parsed.append((kind, code))
+            if not parsed:
+                continue
+            key = (parsed[0][0], parsed[0][1], parsed[1][0], parsed[1][1])
+            seq_bonus[key] = min(
+                _HUMAN_PATTERN_MAX_BONUS,
+                seq_bonus.get(key, 0.0) + min(4.0 + count * 2.0, 12.0),
+            )
     for row in data.get('heuristic_candidates', []):
         count = int(row.get('count') or 0)
         if count < _HUMAN_PATTERN_MIN_SUPPORT:
@@ -753,6 +839,7 @@ def _load_human_patterns():
     _HUMAN_DEFENSE_BY_LEADER = defense_by_leader
     _HUMAN_COUNTER_CARD_BONUS_BY_LEADER = counter_card_by_leader
     _HUMAN_BLOCKER_CARD_BONUS_BY_LEADER = blocker_card_by_leader
+    _HUMAN_SEQUENCE_BONUS_BY_LEADER = sequence_by_leader
 
 
 def _human_counter_card_bonus(leader_code: str, card_code: str) -> float:
@@ -14092,6 +14179,24 @@ class OPTCGMatch:
         leader_bonus = _HUMAN_PATTERN_BONUS_BY_LEADER.get(p.leader.code, {})
         return float(leader_bonus.get((kind, card.code), 0.0))
 
+    def _human_sequence_bonus(self, p: GameState, kind1: str, card1: Optional[Card],
+                              kind2: str, card2: Optional[Card]) -> float:
+        """
+        Bonus por PAR ORDENADO de acoes observado nos logs humanos (bloco
+        647) -- "depois de X, o humano fez Y", nao so "X e Y sao comuns
+        cada um por si" (isso ja e `_human_pattern_bonus`). Fonte SEPARADA
+        (`_HUMAN_SEQUENCE_BONUS_BY_LEADER`, de `by_leader_ngrams_2`) --
+        dado ja coletado pelo produtor mas nunca consumido ate aqui.
+        """
+        if card1 is None or card2 is None or not p or not p.leader:
+            return 0.0
+        _load_human_patterns()
+        if not _HUMAN_SEQUENCE_BONUS_BY_LEADER:
+            return 0.0
+        leader_seq = _HUMAN_SEQUENCE_BONUS_BY_LEADER.get(p.leader.code, {})
+        key = (kind1, card1.code, kind2, card2.code)
+        return float(leader_seq.get(key, 0.0))
+
     # ── Setup (CheckStartOfGameActions das 34k linhas) ───────────────────────
 
     def _place_start_stage(self, p: GameState, opp: GameState = None):
@@ -17569,10 +17674,35 @@ class OPTCGMatch:
         # Continua gulosamente até o fim do turno
         # activate_main agora compete como ação no _generate_and_score_actions,
         # então não precisa mais de chamada separada aqui.
-        for _ in range(max_steps):
+        # human_sequence_alignment (bloco 647): so a PRIMEIRA continuacao
+        # gulosa apos `first2` conta -- janela FIXA de 2 acoes (nao a
+        # linha inteira), mesmo motivo do fix do bloco 630 (acumular por
+        # toda a linha favorece estruturalmente sequencias LONGAS, sem
+        # relacao com qual escolha e melhor). Usa dado SEPARADO
+        # (`_HUMAN_SEQUENCE_BONUS_BY_LEADER`, par ORDENADO), nao so o
+        # bonus por acao isolada -- da sinal novo pra desempatar quando
+        # `first2` e um candidato concorrente ja tem o MESMO teto de
+        # `human_alignment` (achado bloco 641: 61% dos casos empatavam).
+        human_sequence_alignment = 0.0
+        for step_i in range(max_steps):
             acts = self._generate_and_score_actions(p2, opp2, eng2)
             if not acts or acts[0][0] < 0:
                 break
+            if step_i == 0 and first2[1] != 'attach_don':
+                # TESTADO sem essa exclusao (bloco 647): 'attach_don:LIDER
+                # > attack:LIDER' e disparado o par mais comum e forte do
+                # banco inteiro (anexar DON no proprio atacante antes de
+                # atacar e quase universal) -- o sinal favorecia
+                # attach_don MUITO mais que qualquer 2-grama de 'play',
+                # dando ganho grande em attach_don (+3.8pp a peso 10) as
+                # custas de uma perda AINDA MAIOR em play (-3.7pp),
+                # liquido negativo -- mesmo padrao proporcional em peso
+                # menor (4.0: +0.3/-2.2). attach_don ja tem seu proprio
+                # fix pra esse exato vies (`don_spent_on_combat`, bloco
+                # 641) -- excluir aqui evita competir consigo mesmo por
+                # 2 canais diferentes.
+                human_sequence_alignment = self._human_sequence_bonus(
+                    p2, first2[1], first2[2], acts[0][1], acts[0][2])
             if self._apply_action(acts[0], p2, opp2, ee2, eng2, verbose=False):
                 return SIMULATED_WIN_SCORE
 
@@ -17608,7 +17738,8 @@ class OPTCGMatch:
         if use_v2 is None:
             use_v2 = USE_EVAL_V2
         W = getattr(p, 'eval_weights', None) or EVAL_WEIGHTS
-        bonus_alinhamento = human_alignment * W.get('human_alignment', 0.0)
+        bonus_alinhamento = (human_alignment * W.get('human_alignment', 0.0)
+                            + human_sequence_alignment * W.get('human_sequence_alignment', 0.0))
         # DIAGNOSTICO 20/08 (bloco 633, pedido do usuario: "ainda ta
         # influenciando muito? vale manter ou apagar e seguir so com a
         # calibragem dinamica?") -- flag TEMPORARIA pra medir o extremo:

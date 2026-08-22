@@ -66,7 +66,87 @@ leader` (campo) em vez de `p.hand`, trabalho novo nao feito ainda.
 refazer o checador de "nunca gerada" pra `attach_don` com a semantica
 certa (campo, nao mao) antes de aceitar/descartar os 5 casos suspeitos.
 
-## 2026-08-22 (645) - Claude (sessao remota web) - Trabalho completo: replica a selecao de alvo real de _generate_attach_don_actions no diagnostico -- CONCLUSIVO, 0/27 bugs confirmados, "nunca gerada" de attach_don FECHADO (mesmo padrao de play)
+## 2026-08-22 (646/647) - Claude (sessao remota web) - 5 tentativas de "ferramenta nova" pra forcar alinhamento humano, TODAS neutras ou negativas -- revertido pro baseline limpo, achado honesto registrado pra proxima sessao NAO repetir o mesmo caminho
+
+Pedido explicito e repetido do usuario apos fechar a caca de bug real
+(bloco 645): "nao quero cacar bug real, quero que a gente crie maneiras
+de subir essas porcentagens... precisamos criar novas ferramentas".
+
+**Teste 1 (bloco 646) -- levantar o teto de `_HUMAN_PATTERN_MAX_BONUS`**
+(30.0->60.0): hipotese formada no bloco 641 (61% dos casos attach_don-
+vence-play tinham os DOIS lados empatados no teto de 30) -- distribuicao
+SEM teto (381 pares kind/codigo do banco) tem mediana=30 mas p75=68/
+p90=156, entao quase metade das entradas ja colidia no teto, escondendo
+diferenca real de confianca. Medido: quase NEUTRO/misto (play +0.6,
+activate -0.7, attach_don -0.4, resto ~0). Nao ajudou por si so.
+
+**Teste 2 (bloco 646) -- teto 60 + peso `human_alignment` 8.0->14.0**
+(dobra o ceiling de contribuicao, 240->840): tambem neutro/misto (play
++0.1, attack-quem -0.2, activate -0.8, attach_don +0.1). Confirma que o
+PROBLEMA nao e magnitude de peso/teto -- e que o SINAL em si (bonus por
+ACAO ISOLADA, kind+codigo, sem nocao de sequencia) e raso demais pra
+diferenciar candidatas fortes quando os 2 lados ja tem suporte real.
+**Revertido pro baseline (peso 8.0, teto 30.0)**.
+
+**Teste 3 (bloco 647) -- ferramenta NOVA: `human_sequence_alignment`**,
+usando dado ja coletado mas NUNCA consumido (`by_leader_ngrams_2` de
+`human_patterns.json` -- so `heuristic_candidates`, que ACHATA cada
+n-grama em tokens isolados sem ordem, era usado ate hoje). Novo campo
+`_HUMAN_SEQUENCE_BONUS_BY_LEADER[leader] = {(kind1,cod1,kind2,cod2):
+bonus}` (PAR ORDENADO real, "depois de X o humano fez Y"), novo metodo
+`_human_sequence_bonus`, novo peso `human_sequence_alignment`. Aplicado
+em `_simulate_sequence_once`: bonus calculado 1x, so no PRIMEIRO passo
+da continuacao gulosa apos `first2` (janela FIXA de 2 acoes, mesmo
+cuidado do bloco 630 contra vies de linha longa).
+
+Medido peso 10.0: play 17.3% (-3.7pp!), attach_don 20.6% (+3.8pp) --
+**mesmo padrao de vies do bloco 640/641** (attach_don:LIDER > attack:
+LIDER e o par 2-grama mais comum/forte do banco inteiro -- anexar DON
+no proprio atacante antes de atacar e quase universal -- ganhando a
+disputa contra qualquer 2-grama de play). Liquido NEGATIVO (-1.4pp
+somado). Peso 4.0 (mais moderado): mesmo padrao PROPORCIONAL (play
+-2.2pp, attach_don +0.3pp) -- confirma que NAO e questao de magnitude,
+o sinal favorece attach_don em QUALQUER peso testado.
+
+**Teste 4 (bloco 647) -- excluir first2=='attach_don' da propria
+secao** (attach_don ja tem seu fix proprio pra esse vies, don_spent_
+on_combat do bloco 641 -- tentativa de nao competir consigo mesmo por 2
+canais): play RECUPEROU (+0.1pp, resolveu o proprio problema que
+motivou a exclusao) mas **attach_don (-1.9pp) E attack-alvo (-2.1pp)
+pioraram ALEM do baseline sem sequence alignment nenhum** -- pior
+liquido dos 3 testes (-4.4pp somado). Mecanismo de exclusao criou uma
+distorcao NOVA em vez de resolver a antiga.
+
+**Decisao final**: `human_sequence_alignment` revertido pra peso 0.0
+(mecanismo/dado ficam no codigo, INERTES -- zero efeito em producao,
+prontos pra uma sessao futura tentar OUTRA forma de usar o mesmo dado
+nunca-antes-consumido: 3-gramas, escopo por lider especifico, limiar
+minimo de suporte mais alto antes de aplicar, etc.). `human_alignment`
+e `_HUMAN_PATTERN_MAX_BONUS` revertidos pro baseline validado (8.0/
+30.0). Confirmado via `decision_quality_full.py` que o estado final
+bate com o baseline limpo do bloco 642 (todas as categorias dentro de
++-0.2pp, ruido normal).
+
+**Achado honesto pra registrar, nao repetir o erro** (pedido implicito
+do usuario ao insistir "so mudar peso nao resolve"): TODAS as 5
+tentativas de hoje de "forcar mais alinhamento humano" (teto, peso,
+sequencia em 3 configuracoes) compartilham a MESMA limitacao raiz --
+qualquer sinal que amplifica UM padrao muito forte e muito comum
+(attach_don-no-proprio-lider-antes-de-atacar, presente em quase toda
+partida do banco) automaticamente ofusca sinais mais FRACOS/RAROS de
+outras categorias (`play` especifico, que tem 52+ cartas possiveis
+dividindo o mesmo espaco de suporte). Nao e um problema de PESO -- e um
+problema de DESBALANCEAMENTO DE FREQUENCIA nos proprios dados de
+treino (150 logs). Empurrar mais forte em QUALQUER direcao dentro dessa
+MESMA familia de mecanismo (bonus por padrao observado, kind+codigo ou
+sequencia) tende a redistribuir ganho entre categorias, nao criar ganho
+liquido novo. Uma ferramenta que realmente avance provavelmente precisa
+de uma fonte de dado DIFERENTE (mais logs no banco pra reduzir a
+sparsidade -- ja e um item de roadmap conhecido do projeto) ou uma
+abordagem estrutural diferente (nao mais um termo de bonus por padrao),
+nao mais uma variacao do mesmo mecanismo.
+
+## 2026-08-22 (645)
 
 Continuacao direta do bloco 644, a pedido explicito do usuario ("pode
 ir, faz o trabalho completo") apos eu avisar que a chance de achar um
