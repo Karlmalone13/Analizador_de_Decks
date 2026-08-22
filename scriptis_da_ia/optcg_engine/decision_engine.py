@@ -18055,6 +18055,13 @@ class OPTCGMatch:
                         p, opp, engine, priority, actions, [_forced],
                         _forced, None, {}
                     )
+                    # marcador leve pra diagnostico (ex: correlacionar
+                    # disparo do override contra o historico REAL deste
+                    # turno especifico, nao so a estatistica agregada do
+                    # lider) -- so tag no proprio registro, sem custo
+                    # pra quem nao le decision_log.
+                    if self.decision_log:
+                        self.decision_log[-1]['forced_by_human_override'] = True
                     if self._apply_action(_forced, p, opp, ee, engine, verbose=verbose):
                         return True
                     continue

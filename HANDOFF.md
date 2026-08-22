@@ -108,6 +108,49 @@ acima). `human_patterns.json` regenerado (`by_leader_action_freq` novo;
 `by_leader_first_action` NAO ficou no arquivo final, tentativa 1 foi
 removida antes do commit).
 
+**Diagnostico de causa raiz (mesmo dia, pedido do usuario "por que o
+override nao forcou a porcentagem subir mais")**: instrumentado com um
+marcador leve no proprio `decision_log`
+(`rec['forced_by_human_override']=True`, adicionado direto em
+`main_phase` -- barato, permanece no codigo pra qualquer auditoria
+futura) e 2 scripts de diagnostico (scratchpad, nao comitados --
+`override_fire_rate.py`/`override_accuracy.py`, reusam `audit_one_game`
+de verdade, sem reimplementar nada do motor). Rodados numa amostra real
+de ~61-80 logs (mesma fonte dos 274):
+
+1. **Taxa de disparo**: o override so dispara em **18,8%** das decisoes
+   (192/1021) -- os outros ~81% caem no fluxo normal (Monte Carlo),
+   INTOCADOS. Os limiares (`min_support>=8`, `ratio>=3x`) sao
+   propositalmente conservadores (pra evitar o vies de categoria-unica
+   que estragou o `human_sequence_alignment`), entao a maioria das
+   decisoes nunca tem um candidato dominante o bastante.
+2. **Taxa de acerto ESPECIFICO quando dispara**: correlacionando cada
+   disparo contra o historico REAL daquele MESMO turno especifico (nao
+   a estatistica agregada do lider que fez o override disparar), so
+   **57,1%** (109/191) batem com o que o humano de fato fez naquela
+   partida. Os outros 42,9% sao o override forcando, com confianca, uma
+   acao que e a MAIS COMUM entre varias partidas historicas do lider
+   mas que NAO foi a escolha desse jogador especifico nesse turno
+   especifico (ex: Xebec/Imu tem uma acao "favorita" agregada, mas cada
+   partida individual tem variacao real de mao/board/oponente que o
+   agregado por lider nao capta).
+
+**Isso explica o ganho pequeno com exatidao, nao so qualitativamente**:
+efeito esperado ~ taxa_disparo × (acerto_com_override - acerto_baseline_
+nessas_mesmas_decisoes) aplicado so na fatia de ~19% que o mecanismo
+toca -- consistente com os +0,2/+0,4pp agregados medidos. **Nao e um
+mecanismo quebrado** (57% > qualquer baseline por categoria isolada,
+17-27%, entao ainda ajuda em media), mas o teto real desta abordagem
+(comparar 1 humano especifico contra o agregado de N humanos do mesmo
+lider) parece estar perto de ~55-60% de acerto quando dispara, nao
+100% -- forcar mais disparos (afrouxar `ratio`/`min_support`) sobe a
+COBERTURA mas nao necessariamente a PRECISAO por disparo, e pode ate
+piorar se afrouxar demais aceitar candidatas com suporte fraco.
+Proximo passo natural, se o usuario quiser continuar nesta linha: medir
+se a precisao por disparo (57%) cai, sobe ou fica igual conforme se
+afrouxa os limiares, ANTES de aceitar um limiar mais solto so pela
+cobertura maior.
+
 ## 2026-08-22 (643) - Claude (sessao remota web) - Investiga "nunca gerada" (play/attach_don): CONCLUSIVO pra play (0 bugs reais achados), INCONCLUSIVO pra attach_don (metodologia errada, precisa refazer com checagem de CAMPO nao de MAO)
 
 Continuacao do bloco 642, indo pra frente com "cacar bug real" (proximo

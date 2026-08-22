@@ -23,10 +23,17 @@
 > — mecanismo só toca ofensiva). Diferente dos 5 testes anteriores, que
 > sempre redistribuíam ganho entre categorias por competirem pelo mesmo
 > peso — um hard override evita essa competição por construção. Ver
-> bloco 648 do HANDOFF para a tabela completa e a limitação honesta
-> (limiares conservadores de propósito, disparo real não instrumentado
-> ainda — próximo passo natural é medir a taxa de disparo antes de
-> afrouxar `ratio`/`min_support`).
+> bloco 648 do HANDOFF para a tabela completa. **Causa raiz do ganho
+> pequeno, medida (não suposta) em resposta direta à pergunta do
+> usuário "por que o override não forçou a porcentagem subir mais"**:
+> (1) só dispara em 18,8% das decisões (limiares conservadores de
+> propósito); (2) quando dispara, só bate com o que o humano REALMENTE
+> fez NAQUELE turno específico em 57,1% dos casos — o "mais comum"
+> agregado do líder através de várias partidas não é o mesmo que a
+> escolha de 1 humano específico numa partida específica. As duas
+> taxas multiplicadas explicam o ganho agregado pequeno com exatidão,
+> não só qualitativamente. Ver bloco 648 do HANDOFF para os números e
+> exemplos reais de acerto/erro.
 
 > 22/08/2026 (blocos 646/647, pedido explicito e repetido do usuário
 > "quero que a gente crie maneiras de subir essas porcentagens... não é
