@@ -10036,8 +10036,17 @@ def test_leader_plan_alignment_cobre_sem_habilidade_rest_self_rest_don_e_ja_usad
     me8.eval_weights = w_off
     match8 = OPTCGMatch((me8.leader, []), (opp0.leader, []))
     score_off = match8._evaluate_state_v2(me8, opp0)
-    check("peso leader_plan_alignment>0 aumenta o score de _evaluate_state_v2 em exatamente 0.5*peso",
-          abs((score_on - score_off) - 50.0) < 1e-6)
+    # ATUALIZADO 20/08 (bloco 636, "elimina o morto"): `_evaluate_state_v2`
+    # nao soma mais `an.leader_plan_alignment() * W['leader_plan_alignment']`
+    # (linha removida -- ficava em peso 0.0 desde que testado contra dado
+    # real, bloco 623, e so desperdicava calculo em toda avaliacao). O
+    # termo continua existente e testado (GameAnalyzer.leader_plan_
+    # alignment, testes acima), so nao entra mais no resultado de
+    # `_evaluate_state_v2` -- override de peso agora NAO tem efeito
+    # nenhum, e essa e a asserção que importa (confirma que a remocao
+    # de fato desconectou o termo, nao so zerou o peso default).
+    check("leader_plan_alignment desconectado de _evaluate_state_v2 (override de peso nao muda o score)",
+          abs(score_on - score_off) < 1e-6)
 
 
 def test_leader_ability_centrality_escala_por_escassez_de_outras_fontes_14_08() -> None:

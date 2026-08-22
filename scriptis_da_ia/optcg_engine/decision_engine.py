@@ -126,6 +126,25 @@ COUNTER_STAT_VALUE_PER_1000 = 15
 # nao se resolve so ajustando este numero.
 ATTACK_LEADER_BASE_SCORE = 400
 
+# DIAGNOSTICO TEMPORARIO 20/08 (bloco 633) -- zera a contribuicao de
+# `_evaluate_state_v2` na comparacao final entre TOP_K, deixando SO o
+# alinhamento humano decidir entre linhas que nao vencem o turno. Serve
+# pra medir se a funcao generica ainda importa, ou se a calibragem
+# dinamica sozinha ja basta. Nunca True em producao -- ver `_simulate_
+# sequence_once`.
+NULLIFY_EVALUATE_STATE_V2 = False
+
+# TESTADO 20/08 (bloco 631, 0.3 e depois 0.15): misturar uma fracao do
+# score IMEDIATO GENERICO da candidata na comparacao final entre as
+# TOP_K. Deu o maior efeito medido do dia (attack-alvo +3,5pp), mas com
+# custo real em attach_don (nao-proporcional ao reduzir a fracao --
+# a escala de attach_don e deliberadamente fracionada pro contexto de
+# SHORTLIST, nao comparavel nesse uso). REVERTIDO por pedido do usuario
+# (bloco 632): a ideia certa nao e misturar o score generico, e reforcar
+# especificamente o peso do ALINHAMENTO HUMANO (`EVAL_WEIGHTS
+# ['human_alignment']`, ja dentro de `valor`) acima dos termos genericos
+# de `_evaluate_state_v2` -- ver esse peso mais abaixo.
+
 # Fracao da PRIORIDADE de ataque que um attach_don de COMBATE herda (bloco
 # 580). Existe porque `score_attack_target` e uma escala INTERNA de ataque
 # (base 400): comparar ataque com ataque so precisa da ordem, e o numero
@@ -550,42 +569,42 @@ EVAL_WEIGHTS = {
     # aqui, então a busca já prefere isso sem precisar de regra hardcoded.
     # Escala parecida com board_opp (mesma unidade: soma de board_value()).
     'opp_combo_threat': 0.8,
-    # FASE B do plano do Turn Planner (usuario, 24/07: "pensar a frente").
-    # 'wincon_ready' acima ja cobre "arma carregada" pro eixo bottleneck
-    # (reanimacao) do PERFIL do deck -- generico so dentro desse padrao
-    # especifico. Este termo e mais amplo: QUALQUER carta forte na mao que
-    # ainda nao cabe no DON de agora, mas cabe no DON projetado do PROXIMO
-    # turno (sem simular o turno de verdade -- so a projecao de ramp).
+    # LIMPEZA 20/08 (bloco 636, pedido do usuario -- "elimina o morto"):
+    # 'next_turn_readiness_self'/'next_turn_readiness_opp_threat' (testado
+    # bloco 495, zerado) e 'leader_plan_alignment' (testado 20/08 com
+    # peso=20 contra dado real, efeito NULO -- sinal raso demais, so 3
+    # estados discretos) REMOVIDOS daqui. Ficaram em 0.0 desde que
+    # testados -- nunca contribuiam nada ao resultado, so faziam
+    # `_evaluate_state_v2` chamar as funcoes correspondentes (`_next_turn_
+    # readiness_bonus`, `GameAnalyzer.leader_plan_alignment`) sem
+    # necessidade em TODA avaliacao. As funcoes continuam no codigo,
+    # testadas isoladamente no smoke_fast -- so pararam de ser chamadas
+    # daqui. Se algum dia forem revalidadas com um valor != 0, basta
+    # devolver a entrada aqui e a chamada em `_evaluate_state_v2`.
+    # Alinhamento da PRIMEIRA acao da linha simulada com `human_patterns.
+    # json` (bloco 628/630/632, pedido explicito do usuario -- ver
+    # `_simulate_sequence_once`). Diferente de `leader_plan_alignment`
+    # (so a habilidade do lider): usa o MESMO `_human_pattern_bonus` ja
+    # usado no score imediato (blocos 613-616, validado positivo), mas
+    # agora tambem entra no resultado final que decide o vencedor entre
+    # as TOP_K candidatas -- antes so influenciava os passos internos da
+    # linha simulada, nunca o placar comparado entre candidatas.
     #
-    # Split em 2 pesos (achado 11/08, bloco 495): o antigo 'next_turn_
-    # readiness' unico multiplicava DOIS sinais diferentes pelo MESMO
-    # numero -- o ganho que EU tenho esperando o proximo turno (sinal
-    # positivo, 'self') e a ameaca de ataque forte que o OPONENTE tera no
-    # turno dele (sinal negativo, 'opp_threat'). A calibracao pareada do
-    # bloco 494 zerou o combinado (0.6 -> 0.0) porque um dos dois estava
-    # atrapalhando mais que o outro ajudava -- zerar os dois juntos pode
-    # ter descartado sinal bom junto com o ruim. Cada um agora e tunavel
-    # independente (`tune_weights.py._TUNABLE`). Prior — tunagem por
-    # self-play ajusta, mesma convencao dos outros.
-    'next_turn_readiness_self': 0.0,
-    'next_turn_readiness_opp_threat': 0.0,
-    # Alinhamento com o plano do PROPRIO lider (pedido do usuario 14/08,
-    # bloco 526/527 -- generaliza wincon_ready pra QUALQUER lider com
-    # [Activate: Main], nao so o eixo bottleneck do perfil do deck). Ver
-    # GameAnalyzer.leader_plan_alignment. Prior 0.0 -- SEM efeito.
-    # TESTADO 20/08 (peso=20.0, mesmo valor de wincon_ready que este
-    # termo generaliza) contra as 274 comparacoes reais de
-    # decision_quality_full.py: efeito NULO em toda categoria (play
-    # 20.3%->20.1%, attack-quem 53.1%->53.2%, activate 25.1%->25.6%,
-    # attach_don 14.0%->13.7%, resto identico ou dentro de ruido de
-    # reconstrucao) -- nao e questao de peso pequeno, o sinal em si e
-    # raso demais (3 estados discretos 0.0/0.5/1.0, e
-    # _leader_ability_centrality trata quase todo lider como neutro,
-    # so diferencia habilidade de compra). Revertido pra 0.0. Bate com
-    # o achado antigo de self-play (blocos 527/528, sinal inconsistente
-    # entre lideres) -- agora confirmado tambem contra dado real, nao
-    # so ruido de self-play pequeno.
-    'leader_plan_alignment': 0.0,
+    # Peso 1.0 (bloco 628/630) deu efeito real mas pequeno -- o sinal
+    # (max 30 por acao) ficava na mesma ordem de grandeza dos termos
+    # SECUNDARIOS (opp_blocker/survival_premium=25), longe de competir
+    # com o termo DOMINANTE (dmg=120). Pedido explicito do usuario 20/08
+    # (bloco 632): "tornar [_evaluate_state_v2] menos importante que a
+    # nossa calibragem dinamica" -- nao so mais um termo entre 15, tem
+    # que pesar mais que a media dos termos genericos quando ha dado
+    # real. TESTE -- prior mais agressivo, mede-se contra as 274
+    # comparacoes reais antes de aceitar (mesmo protocolo do dia).
+    'human_alignment': 8.0,
+    # Valor de Character do oponente morto em COMBATE (bloco 634) -- ver
+    # comentario em `_evaluate_state_v2`. Calibrado pra ficar na mesma
+    # ordem de grandeza de `dmg` (1 vida = 120): Character de valor
+    # medio (~5) * 24 = 120.
+    'char_kill_value': 12.0,
 }
 try:
     _wpath = os.path.join(os.path.dirname(__file__), '..', 'eval_weights.json')
@@ -815,6 +834,42 @@ def _enrich_effects_from_analysis_text(code: str, effects: dict) -> dict:
             if not any(c.get('type') == 'rest_self' for c in costs):
                 costs.append({'type': 'rest_self'})
     return effects
+
+
+# Gatilhos EXCLUIDOS de `_actions_in_triggers` quando usados por
+# `char_value_score` (bloco 630) -- `on_ko` fica de fora porque
+# `on_ko_value`/`redirect_option_value` ja somam esse valor separado;
+# incluir de novo aqui seria dupla contagem (achado real, bloco 629,
+# ver docstring de `char_value_score`).
+_NON_ON_KO_TRIGGERS = frozenset({
+    'on_play', 'activate_main', 'when_attacking', 'on_opp_attack',
+    'passive', 'continuous', 'your_turn', 'opp_turn', 'end_of_turn',
+    'start_of_turn', 'when_don_returned', 'trigger',
+})
+_KO_REMOVAL_ACTIONS = frozenset({
+    'ko', 'ko_opp', 'ko_selected', 'ko_if_cost_eq_don',
+    'rest_opp_character', 'trash_character', 'opp_bounce_own_character',
+    'place_opp_character_bottom_deck', 'lock_opp_character_refresh',
+    'lock_opp_character_attack',
+})
+
+
+def _actions_in_triggers(effects: dict, trigger_keys: frozenset) -> set:
+    """
+    Conjunto de nomes de `action` (steps) dentro dos gatilhos permitidos
+    (bloco 630) -- fonte unica pra ler efeitos por GATILHO especifico,
+    em vez de `get_card_flags` (agregado, sem distinguir origem -- ver
+    achado de dupla contagem na docstring de `char_value_score`).
+    """
+    acoes = set()
+    for trigger, data in effects.items():
+        if trigger not in trigger_keys or not isinstance(data, dict):
+            continue
+        for step in data.get('steps', []):
+            a = step.get('action')
+            if a:
+                acoes.add(a)
+    return acoes
 
 
 def get_card_game_rules(code: str) -> list[dict]:
@@ -1539,6 +1594,17 @@ class GameState:
     is_first: bool = True
     # Estatísticas
     dmg_dealt: int = 0
+    # Valor (board_value) de Characters do OPONENTE mortos em combate NESTE
+    # turno (bloco 634, achado real: `dmg_dealt` -- o termo DOMINANTE de
+    # `_evaluate_state_v2`, peso 120 -- so conta carta de VIDA removida do
+    # lider, ZERO credito por matar um Character do oponente por combate,
+    # nao importa quao valioso. Explica o vies "motor prefere atacar o
+    # lider" achado no bloco 624 -- o termo mais pesado da funcao literal-
+    # mente ignora matar personagem). Espelha `dmg_dealt` (incrementado no
+    # mesmo ponto do combate, `_execute_attack`), consumido por um termo
+    # NOVO e proprio em `_evaluate_state_v2` (nao inflado dentro de
+    # `dmg_dealt` -- mantem o significado dele limpo, "vida tirada").
+    char_kill_value: float = 0.0
     chars_played: int = 0
     counters_used: int = 0
     searchers_used: int = 0
@@ -1625,6 +1691,7 @@ class GameState:
         novo.is_first = self.is_first
 
         novo.dmg_dealt = self.dmg_dealt
+        novo.char_kill_value = self.char_kill_value
         novo.chars_played = self.chars_played
         novo.counters_used = self.counters_used
         novo.searchers_used = self.searchers_used
@@ -11037,7 +11104,25 @@ class GameAnalyzer:
     def char_value_score(self, card: 'Card') -> float:
         """
         Valor de um personagem para a partida.
-        Usado para decidir se vale gastar blocker/counter para salvar.
+        Usado para decidir se vale gastar blocker/counter para salvar, E
+        (bloco 630, pedido do usuario -- "pegar as funcoes ricas pra
+        alimentar a que decide") como termo de board de `_evaluate_state_
+        v2`.
+
+        1a TENTATIVA (bloco 629) de enriquecer com `get_card_flags`
+        (agregado, sem distinguir gatilho) foi REVERTIDA por dupla
+        contagem: `redirect_option_value` ja soma `on_ko_value(card)`
+        separadamente, e as flags agregadas incluiam sinal vindo do
+        MESMO gatilho on_ko (ex: Vasco Shot OP16-110 -- draws/is_removal/
+        rests_opponent vem todos do [On K.O.] dele), contando a mesma
+        coisa 2x e quebrando um teste que documenta um bug real corrigido
+        em partida ao vivo (bloco 15/08).
+
+        2a TENTATIVA (esta): usa `_actions_in_triggers` pra olhar so os
+        gatilhos que NENHUM chamador conhecido ja soma a parte (exclui
+        `on_ko`, que `on_ko_value`/`redirect_option_value` cobrem) --
+        mesma fonte de dado (`get_card_effects`, ja separado por gatilho),
+        sem duplicar a deteccao on_ko.
         """
         score = card.board_value() * 10.0
 
@@ -11058,6 +11143,21 @@ class GameAnalyzer:
         # Tem double attack
         if card.has_double_attack or card.double_attack_this_turn:
             score += 20
+
+        # Enriquecimento 20/08 (bloco 630) -- SO gatilhos que nenhum
+        # chamador conhecido ja soma separadamente (exclui on_ko,
+        # coberto por on_ko_value). Sinal mais grosseiro que avaliar_
+        # carta (nao checa "a condicao vale AGORA", so que a carta TEM o
+        # tipo de efeito), por isso peso mais conservador.
+        acoes = _actions_in_triggers(effects, _NON_ON_KO_TRIGGERS)
+        if 'draw' in acoes:                                     score += 15
+        if acoes & {'look_top_deck', 'add_to_hand', 'add_from_trash'}: score += 15
+        if acoes & _KO_REMOVAL_ACTIONS:                          score += 18
+        if 'bounce' in acoes:                                    score += 12
+        if 'rest_opp_character' in acoes:                        score += 8
+        if 'buff_power' in acoes:                                score += 8
+        if 'give_don' in acoes:                                  score += 10
+        if acoes & {'gain_life', 'heal'}:                        score += 8
 
         return score
 
@@ -16143,6 +16243,19 @@ class OPTCGMatch:
             sim_values[id(cand)] = {'avg': valor, 'wins': wins, 'samples': len(valores)}
             if self._is_unsafe_zero_life_leader_attack(cand, p, opp, engine) and wins == 0:
                 continue
+            # TESTE 20/08 (bloco 631) misturava uma fracao do score
+            # IMEDIATO genérico (`cand[0]`) na comparacao final --
+            # REVERTIDO por pedido do usuario ("nao e tirar peso, e
+            # tornar [a funcao generica] menos importante que a nossa
+            # calibragem dinamica"): misturar o score imediato INTEIRO
+            # trazia o problema errado (`attach_don` tem escala
+            # deliberadamente fracionada pro CONTEXTO de shortlist,
+            # nao comparavel nesse uso novo -- explica a queda real e
+            # nao-proporcional medida em attach_don nos 2 testes). Ver
+            # bloco 632: o alinhamento humano ja entra em `valor`
+            # (dentro de `_simulate_sequence_once`, via `human_
+            # alignment * W['human_alignment']`) -- aumentar ESSE peso
+            # especificamente, nao misturar o score generico aqui.
             if melhor_valor is None or valor > melhor_valor:
                 melhor_valor = valor
                 melhor = cand
@@ -17043,6 +17156,23 @@ class OPTCGMatch:
         dmg_scale = an.dmg_value_curve_scale() if USE_DMG_VALUE_CURVE_SCALE else 1.0
         score += p.dmg_dealt * W['dmg'] * dmg_scale
 
+        # Valor de Character do OPONENTE morto em COMBATE neste turno
+        # (bloco 634, pedido do usuario -- enriquecer a funcao pobre no
+        # termo que mais pesa). `dmg_dealt` acima (peso 120, DOMINANTE)
+        # so credita vida do lider tirada -- matar um Character por
+        # combate contribuia ZERO pra ele, mesmo removendo a maior
+        # ameaca do board do oponente. Explica o vies "motor prefere
+        # atacar o lider" achado no bloco 624 (medido: +4-5pp vs humano,
+        # generico em quase todo lider testado -- a causa era o termo
+        # mais pesado da avaliacao ignorar kill de Character por
+        # completo). `char_kill_value` (Card.board_value() do alvo,
+        # somado no ponto exato do KO em `_execute_attack`) e um termo
+        # PROPRIO, nao inflado dentro de `dmg_dealt` (mantem o
+        # significado dele limpo). Peso calibrado pra 1 Character de
+        # valor medio (~5) matar comparar na mesma ordem de grandeza de
+        # 1 carta de vida removida (dmg=120): 5*24=120.
+        score += p.char_kill_value * W['char_kill_value']
+
         # vida (curva íngreme). Escala ASSIMETRICA por curva do deck quando
         # USE_LIFE_VALUE_CURVE_SCALE ligado (bloco 531): controle valoriza
         # mais a PROPRIA vida (sobreviver até o plano), agressivo valoriza
@@ -17115,6 +17245,19 @@ class OPTCGMatch:
         # pela curva do deck quando USE_HAND_VALUE_CURVE_SCALE ligado (bloco
         # 531): controle valoriza mais MANTER cartas (respostas calculadas),
         # agressivo joga a mão rápido de propósito (segurar não ajuda o plano).
+        # Enriquecido 20/08 (bloco 629, pedido do usuario): antes contava
+        # QUANTIDADE (nh = len(p.hand)), cego a QUALIDADE -- uma mao de 5
+        # cartas mortas pontuava igual a uma mao de 5 bombas. Pondera cada
+        # carta por `avaliar_carta` (fonte unica, ja usada pra jogar/
+        # descartar), normalizada em torno de 1.0 (carta "media" ~100
+        # pontos) pra manter a MESMA ordem de grandeza do termo antigo
+        # (cada carta contribuia 1 unidade cheia). Ordena decrescente pra
+        # as 5 primeiras (peso hand_first, maior) serem as MELHORES cartas
+        # da mao, nao as 5 primeiras por ordem arbitraria.
+        # ISOLAMENTO TEMPORARIO 20/08 (bloco 630): revertido pra versao por
+        # CONTAGEM enquanto isola se o enriquecimento por qualidade e o
+        # que ainda puxa `activate` pra baixo, mesmo apos corrigir o vies
+        # de acumulo do human_alignment.
         nh = len(p.hand)
         hand_scale = an.hand_value_curve_scale() if USE_HAND_VALUE_CURVE_SCALE else 1.0
         score += (min(nh, 5) * W['hand_first'] + max(0, nh - 5) * W['hand_extra']) * hand_scale
@@ -17146,13 +17289,19 @@ class OPTCGMatch:
         # eixos derivados do perfil (auto-motor: trash/reanimação/inversão)
         score += self._derived_axes_value(p, self._turn_profile_for(p))
 
-        # FASE B do Turn Planner (24/07): "quase la" pra proxima jogada
-        # forte, generico (nao so o eixo bottleneck do perfil do deck).
-        score += self._next_turn_readiness_bonus(p, opp)
-
-        # alinhamento com o plano do PROPRIO lider (14/08) -- generaliza
-        # wincon_ready pra QUALQUER lider com [Activate: Main].
-        score += an.leader_plan_alignment() * W['leader_plan_alignment']
+        # LIMPEZA 20/08 (bloco 636, pedido do usuario -- "elimina o
+        # morto"): `_next_turn_readiness_bonus(p, opp)` e `an.leader_
+        # plan_alignment() * W['leader_plan_alignment']` foram removidos
+        # daqui. Os DOIS pesos (`next_turn_readiness_self/opp_threat`,
+        # `leader_plan_alignment`) ficaram em 0.0 desde que testados
+        # (blocos 495/622/623) -- contribuiam SEMPRE zero ao resultado,
+        # mas ainda EXECUTAVAM a logica interna inteira (projecao de
+        # DON, leitura de habilidade do lider) em TODA avaliacao de
+        # estado, desperdicando trabalho sem nenhum efeito na decisao.
+        # As funcoes em si (`_next_turn_readiness_bonus`,
+        # `GameAnalyzer.leader_plan_alignment`/`_leader_ability_
+        # centrality`) continuam no codigo, com seus proprios testes
+        # isolados no smoke_fast -- so pararam de ser CHAMADAS aqui.
 
         return score
 
@@ -17337,6 +17486,30 @@ class OPTCGMatch:
         first2 = self._remap_action(first_action, p, p2, opp, opp2)
         if first2 is None:
             return -1e9
+        # ALINHAMENTO COM PADRAO HUMANO da PRIMEIRA acao da linha (bloco 628,
+        # pedido do usuario: "leve a simulacao dinamica pro evaluate_state_v2
+        # -- nao faz sentido ter calibragem dinamica se quem realmente decide
+        # nao usa isso"). Antes, `_human_pattern_bonus` so influenciava o
+        # score IMEDIATO de cada passo -- o RESULTADO final comparado entre
+        # as TOP_K candidatas (`_evaluate_state_v2`) nunca via esse sinal.
+        #
+        # ACHADO REAL 20/08 (bloco 630, investigando por que `activate`
+        # regrediu nos 2 testes anteriores -- pedido do usuario): a 1a
+        # versao ACUMULAVA o bonus de TODA a linha simulada (primeiro passo
+        # + cada passo guloso subsequente). Isso enviesa estruturalmente
+        # contra `[Activate: Main]`, que costuma ser UMA acao por turno
+        # (geralmente gasta DON/resta o lider) -- uma linha que comeca com
+        # `play` pode encadear play->attach_don->attack, somando o bonus
+        # VARIAS vezes, enquanto uma linha de `activate` correta pode nao
+        # ter mais nada legal pra fazer depois e para ali, somando so 1x.
+        # Sequencia mais LONGA ganhava vantagem estrutural no acumulado,
+        # sem relacao com qual escolha e realmente melhor. Corrigido: usa
+        # so o bonus da PRIMEIRA acao (a candidata de fato comparada entre
+        # as TOP_K), nao a soma da continuacao inteira -- os passos
+        # gulosos internos (2..N) continuam sentindo o bonus no proprio
+        # score deles (inalterado), so o valor ACUMULADO que entra no
+        # placar final nao soma mais.
+        human_alignment = self._human_pattern_bonus(p2, first2[1], first2[2])
         won = self._apply_action(first2, p2, opp2, ee2, eng2, verbose=False)
         if won:
             return SIMULATED_WIN_SCORE   # essa linha vence
@@ -17382,9 +17555,21 @@ class OPTCGMatch:
         use_v2 = getattr(p, 'use_eval_v2', None)
         if use_v2 is None:
             use_v2 = USE_EVAL_V2
+        W = getattr(p, 'eval_weights', None) or EVAL_WEIGHTS
+        bonus_alinhamento = human_alignment * W.get('human_alignment', 0.0)
+        # DIAGNOSTICO 20/08 (bloco 633, pedido do usuario: "ainda ta
+        # influenciando muito? vale manter ou apagar e seguir so com a
+        # calibragem dinamica?") -- flag TEMPORARIA pra medir o extremo:
+        # zera a contribuicao de `_evaluate_state_v2`/`_evaluate_state`,
+        # deixando SO `bonus_alinhamento` decidir entre nao-vitorias.
+        # Linhas VENCEDORAS continuam saindo direto por SIMULATED_WIN_
+        # SCORE mais acima (nao passam por aqui) -- este teste so afeta
+        # a comparacao entre linhas que NAO fecham o jogo neste turno.
+        if NULLIFY_EVALUATE_STATE_V2:
+            return bonus_alinhamento
         if use_v2:
-            return self._evaluate_state_v2(p2, opp2)
-        return self._evaluate_state(p2, opp2)
+            return self._evaluate_state_v2(p2, opp2) + bonus_alinhamento
+        return self._evaluate_state(p2, opp2) + bonus_alinhamento
 
     def _remap_action(self, action, p, p2, opp, opp2):
         """Remapeia uma ação do estado real para os objetos da cópia (por índice)."""
@@ -17444,7 +17629,16 @@ class OPTCGMatch:
         # PROPRIO plano ja recomendava ("top-K≈3 linhas minhas... S≈3
         # amostras") quando a busca de resposta esta ativa; K=6/S=6 (validado
         # em 13/07 sem a resposta) continua valendo com a flag desligada.
-        TOP_K = 3 if USE_OPPONENT_RESPONSE_SEARCH else 6
+        # TESTE 20/08 (bloco 635, achado do dia): 36,6% dos casos de `play`
+        # divergente do humano sao cartas GERADAS como acao legal mas
+        # CORTADAS antes de chegar no TOP_K -- nunca competem na
+        # comparacao final (onde `_evaluate_state_v2`/`human_alignment`
+        # atuam), nao importa quao boa fique essa comparacao. So 23,7%
+        # dos casos realmente chegam a competir. TOP_K=3 (offline, so este
+        # Turn Planner -- caminho AO VIVO usa SEARCH_TOP_K_DEFAULT=2
+        # proprio em sim_bridge.py, INTOCADO por este teste) pode estar
+        # cortando candidatas boas cedo demais. Teste: alarga pra 5.
+        TOP_K = 5 if USE_OPPONENT_RESPONSE_SEARCH else 8
         n = 0
 
         while n < MAX_ACOES:
@@ -18314,6 +18508,7 @@ class OPTCGMatch:
                     if verbose:
                         print(f'      🔁 {counter_sub_log}')
                     return False
+                p.char_kill_value += target.board_value()
                 remove_character_from_field(opp, target, 'trash')
                 if verbose:
                     print(f'      💀 {target.name[:20]} foi KO!')

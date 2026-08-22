@@ -2,6 +2,30 @@
 
 **Última atualização:** 20 de agosto de 2026
 
+> 20/08/2026 (blocos 628-636): Sessão longa investigando direto no
+> Nível 1 (`_evaluate_state_v2`, a função que REALMENTE decide entre
+> as TOP_K candidatas — achado do bloco 627). Ativos agora:
+> `human_alignment`=8.0 (calibragem dinâmica agora pesa na decisão
+> final, não só no score imediato — corrigido bug de acúmulo que
+> penalizava `activate`), `char_value_score` enriquecido (trigger-
+> aware, sem dupla-contagem), `char_kill_value`=12.0 (corrige `dmg`,
+> peso dominante 120, que ignorava matar personagem por completo —
+> explica o viés "ataca o líder" do bloco 624), `TOP_K` offline 3→5.
+> **Achado grande**: 36,6% dos erros de `play` são cartas geradas mas
+> **cortadas antes do TOP_K** — nunca competem na comparação onde
+> passamos o dia mexendo. Alargar TOP_K não resolveu sozinho — aponta
+> de volta pro ranking imediato (Nível 2, `avaliar_carta`) como próximo
+> alvo. Limpeza: removidas 2 chamadas mortas de `_evaluate_state_v2`
+> (`leader_plan_alignment`/`next_turn_readiness`, peso 0 mas ainda
+> executavam lógica toda vez) — confirmado neutro, ±0,1-0,3pp.
+> **Resultado líquido misto**: `activate` 25,1%→26,2% (melhorou),
+> `attach_don` 14,0%→12,5% e `attack-alvo` 69,8%→67,9% (pioraram),
+> resto perto do original. **Pendente**: 8 flags `USE_*_CURVE_SCALE`
+> ainda não removidas (aguardando decisão do usuário — remover ou focar
+> em unificar `char_kill_value`/`char_value_score`/`board_value()*15`,
+> 3 fórmulas diferentes pro mesmo conceito de "valor de personagem").
+> Ver blocos 628-636 do HANDOFF.
+
 > 20/08/2026 (bloco 627): **ACHADO GRANDE, não é código, é
 > arquitetura.** Pedido do usuário ("investiga por que o bot só joga
 > carta barata, já reclamei várias vezes") confirmou que o achado

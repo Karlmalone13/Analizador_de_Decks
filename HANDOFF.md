@@ -1,5 +1,174 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-20 (628-636) - Claude (sessao remota web) - Sessao longa de investigacao direta no Nivel 1 (`_evaluate_state_v2`, a funcao que REALMENTE decide, achado do bloco 627). Varios experimentos, a maioria revertida apos medir; ficaram ativos: peso do alinhamento humano na simulacao (8.0), enriquecimento correto de `char_value_score` (sem dupla-contagem), `char_kill_value` (corrige `dmg` ignorando KO de personagem), `TOP_K` offline 3->5, e limpeza de 2 termos mortos
+
+Continuacao direta do bloco 627. Pedido do usuario: nao só ajustar peso,
+"enriquecer" a funcao pobre ou "tirar peso dela" quando enriquecer nao
+funciona -- e por fim "pega essas funcoes ricas e alimenta a que
+decide". Sequencia de experimentos, cada um medido contra as 274
+comparacoes reais (`decision_quality_full.py --all`) antes de aceitar:
+
+### 628/630/632 -- Alinhamento humano ENTRA na decisao final (nao so no
+score imediato)
+
+`_human_pattern_bonus` (blocos 613-616) so influenciava o score
+IMEDIATO de cada acao -- nunca o resultado FINAL comparado entre as
+TOP_K candidatas (`_evaluate_state_v2`). Adicionado `human_alignment`
+como termo em `_simulate_sequence_once`, somado ao valor simulado.
+
+- **1a versao (bloco 628)**: acumulava o bonus de TODA a linha
+  simulada (primeiro passo + passos gulosos). **Bug achado no bloco
+  630** (pedido do usuario, "investigue por que activate esta
+  piorando"): isso enviesa contra `[Activate: Main]` (1 acao por
+  turno, linha curta) vs `play`/`attack` (podem encadear varias acoes,
+  acumulando bonus mais vezes) -- nao e sobre qual e melhor, e sobre
+  QUANTAS acoes a linha tem. Corrigido: usa so o bonus da PRIMEIRA
+  acao (a candidata de fato comparada).
+- **Peso**: 1.0 inicial deu efeito real mas pequeno (mesma ordem de
+  grandeza dos termos secundarios, longe do `dmg`=120 dominante).
+  Pedido explicito do usuario (bloco 632): "tornar [a funcao generica]
+  menos importante que a calibragem dinamica" -- nao so mais 1 termo
+  entre 15. Subido pra **8.0**.
+
+### 629 -- Tentativa de enriquecer `char_value_score`: REVERTIDA por
+dupla contagem, depois corrigida
+
+1a tentativa usou `get_card_flags` (agregado, sem distinguir gatilho)
+-- quebrou um teste real (Vasco Shot OP16-110, bug de 15/08, redirect
+sob pressao) porque `redirect_option_value` ja soma `on_ko_value`
+separadamente, e as flags agregadas incluiam sinal do MESMO gatilho
+on_ko, contando 2x. Corrigido no bloco 630 com `_actions_in_triggers`
+(novo helper modulo, le `get_card_effects` POR GATILHO) + `_NON_ON_KO_
+TRIGGERS` (exclui on_ko explicitamente). Teste do Vasco Shot voltou a
+passar. Mantido ativo.
+
+### 631 -- Misturar score imediato na comparacao final: TESTADO E
+REVERTIDO
+
+Tentativa de "tirar peso" de `_evaluate_state_v2` misturando uma
+fracao (`BLEND_IMMEDIATE_SCORE_FRACTION`, testado 0.3 e 0.15) do score
+IMEDIATO genérico na comparacao final. Deu o maior efeito isolado do
+dia (attack-alvo +3,5pp com 0.3) mas custo real e NAO-proporcional em
+`attach_don` (a escala do score imediato de attach_don e
+deliberadamente fracionada pro contexto de shortlist -- bloco 580 --
+nao comparavel nesse uso novo). **Revertido por pedido do usuario**:
+a ideia certa nao e misturar o score generico, e reforcar o peso do
+ALINHAMENTO HUMANO especificamente (ver 628/632 acima).
+
+### 633 -- Diagnostico: `_evaluate_state_v2` ainda e necessaria?
+
+Pedido direto do usuario antes de aumentar mais peso: medir se a
+funcao generica ainda influencia e se vale manter. Flag `NULLIFY_
+EVALUATE_STATE_V2` (so diagnostico, sempre False em producao) zera a
+contribuicao dela, deixando SO o alinhamento humano decidir entre
+linhas que nao vencem o turno.
+
+**Resultado, comparado com peso 8 mantendo a funcao**:
+attach_don 13,0%->**10,8%** (pior do dia), attack-quem 53,6%->51,9%,
+activate 24,8%->23,9%, MAS **attack-alvo 69,9%->74,0%** (melhor do
+dia). Resposta clara: NAO da pra apagar -- e essencial pra maioria das
+decisoes (a calibragem dinamica sozinha nao sabe comparar ESTADOS,
+so "o que humano fez com essa carta"), mas especificamente pra
+ESCOLHA DE ALVO ela atrapalha mais que ajuda.
+
+### 634 -- Achado real: `dmg` (peso 120, dominante) ignora matar
+personagem por completo
+
+`p.dmg_dealt` (incrementado em `_execute_attack`) so conta VIDA do
+lider removida -- matar um Character do oponente em combate, por mais
+valioso que seja, contribuia ZERO pro termo mais pesado da funcao
+inteira. Explica DIRETAMENTE o vies "motor prefere atacar o lider"
+achado no bloco 624 (generico, +4-5pp vs humano em quase todo lider).
+
+Fix: novo `GameState.char_kill_value` (espelha `dmg_dealt`,
+incrementado no MESMO ponto do combate com `target.board_value()`),
+novo termo em `_evaluate_state_v2`, peso calibrado pra ficar na mesma
+ordem de grandeza de 1 vida (Character medio ~5 * peso ~24 = 120).
+**Testado a 24.0**: activate bateu o baseline pela 1a vez no dia
+(25,8% vs 25,1%), mas attack-alvo piorou (67,8%, -2pp). **Reduzido pra
+12.0** (metade): efeito parecido, sem melhora proporcional em
+attack-alvo -- nao e so questao de peso, mais um sinal de que a causa
+raiz de attack-alvo e outra (ver 635).
+
+### 635 -- Achado real: 36,6% dos erros de `play` sao cortados ANTES
+do TOP_K
+
+Levantamento pedido pelo usuario ("investigue o motivo real, nao me
+diga que e variedade"): de 93 casos reais de `play` divergente
+(amostra de 60 jogos), **37 (39,8%) nunca estavam na mao** (estrutural,
+ordem do baralho desconhecida), **34 (36,6%) foram GERADOS mas
+CORTADOS antes do TOP_K=3** (nunca competem na comparacao onde
+`_evaluate_state_v2`/`human_alignment` atuam), e so **22 (23,7%)**
+realmente chegam a competir e perdem. Ou seja: a maior parte da sessao
+otimizou uma etapa que so tem chance de importar em ~1 a cada 4 casos.
+
+**Teste**: `TOP_K` (offline, `main_phase`, NAO afeta o caminho ao vivo
+-- `sim_bridge.py` tem `SEARCH_TOP_K_DEFAULT=2` proprio e separado)
+alargado de 3 pra 5 (e 6->8 sem busca de resposta). Resultado misto,
+NAO o salto esperado: `activate` melhorou mais (26,2%, melhor do dia),
+mas `play` na verdade caiu um pouco (20,7%->20,2% num teste isolado,
+depois estabilizou perto de 20,7-20,8% combinado com os outros
+fixes). Hipotese pra proxima sessao: as cartas cortadas podem estar
+MUITO mais pra tras no ranking (nao so fora do top-3/5), entao alargar
+um pouco nao basta -- aponta de volta pro RANKING IMEDIATO (Nivel 2,
+`avaliar_carta`) como o proximo lugar a investigar.
+
+Investigacao adicional (Viola/turno 11, jogo Marshall.D.Teach-BY x
+Lucy-RB 2026-07-01T12.46.16): confirmado com instrumentacao direta que
+o score de jogar carta desaba (301->275->-95) conforme a vida do
+oponente cai DENTRO do mesmo turno -- causa raiz mais provavel e DON
+escasso (jogabilidade imediata penaliza forte quando o DON ja foi
+gasto nas primeiras acoes do turno), nao um bug de postura explicito
+(nao achado nenhum termo LETHAL negativo em `avaliar_carta`/`_score_
+play_action`). Nao resolvido, fica registrado pra proxima sessao.
+
+### 636 -- Limpeza: elimina codigo morto (pedido do usuario)
+
+Levantamento completo de TODAS as funcoes/termos que influenciam a
+decisao (Nivel 2 imediato, Nivel 1 estado, corte TOP_K, caminho de
+defesa) apresentado ao usuario -- pediu pra comecar pelo morto.
+Removidas de `_evaluate_state_v2`: a chamada a `an.leader_plan_
+alignment() * W['leader_plan_alignment']` e a `self._next_turn_
+readiness_bonus(p, opp)` -- os 3 pesos correspondentes ja estavam em
+0.0 (testados sem efeito, blocos 495/622/623), mas as funcoes ainda
+EXECUTAVAM a logica interna inteira (projecao de DON, leitura de
+habilidade do lider) em TODA avaliacao de estado, sem nenhum efeito no
+resultado. As funcoes em si continuam no codigo com seus testes
+isolados no smoke_fast -- so pararam de ser chamadas por
+`_evaluate_state_v2`. Medido antes/depois: essencialmente identico
+(diferenca de ±0,1-0,3pp, dentro do esperado pra remocao de termo que
+ja contribuia zero). 1 teste do smoke_fast atualizado pra refletir a
+desconexao (`leader_plan_alignment` override de peso agora nao muda
+mais o score de `_evaluate_state_v2`, era exatamente esse comportamento
+antigo que o teste checava).
+
+**Pendente, ainda nao feito**: as 8 flags `USE_*_CURVE_SCALE` (todas
+False, testadas no bloco 621/622 com efeito real mas errado) --
+diferente dos 2 termos acima, essas NAO desperdicam calculo (curto-
+circuito `if FLAG else 1.0`), entao a limpeza aqui e so simplificacao
+de codigo, nao performance. Tem testes proprios extensos no
+smoke_fast. Perguntado ao usuario se remove tambem ou foca na
+unificacao do valor de personagem (`char_kill_value`/`char_value_
+score`/`board_value()*15` do `score_attack_target` -- 3 formulas
+diferentes competindo pelo mesmo conceito) -- resposta ainda pendente
+no momento deste commit.
+
+### Estado ATIVO em producao agora (fim deste bloco)
+
+`human_alignment`=8.0 (so 1o passo da linha), `char_value_score`
+enriquecido (trigger-aware, sem on_ko), `char_kill_value`=12.0,
+`TOP_K` offline=5 (ao vivo intocado), `leader_plan_alignment`/`next_
+turn_readiness` desconectados de `_evaluate_state_v2`.
+
+**Baseline atual (274 comparacoes, config acima)**: play 20,8%,
+attack-quem 53,1%, activate **26,2%** (acima do baseline pre-sessao de
+25,1%), attach_don 12,5% (abaixo do pre-sessao 14,0%), attack-alvo
+67,9% (abaixo do pre-sessao 69,8%), defesa idêntica (85,9%/87,5%/
+60,6%/52,3%/13,5%). Misto -- ganho real em activate, perda real em
+attach_don/attack-alvo, resto proximo do original.
+
+`smoke_fast.py`/`smoke_test.py`: 100% OK apos cada mudanca.
+
 ## 2026-08-20 (627) - Claude (sessao remota web) - ACHADO GRANDE (nao codigo): mapeado o pipeline real de decisao -- `avaliar_carta` so decide quem entra na short-list (TOP_K=3-6), quem GANHA de verdade e `_evaluate_state_v2` (estado simulado, dominado por `dmg`=peso 120). Explica por que 2 tentativas de recalibrar `avaliar_carta` hoje deram resultado fraco/misto -- revertidas as duas, nada ficou em producao
 
 Retomada do achado antigo de julho ("bot desce carta de custo baixo e
