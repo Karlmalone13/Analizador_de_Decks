@@ -457,58 +457,19 @@ CHEAP_LAYER_GATE_THRESHOLD = 50.0
 
 # Calibragem dinamica pro `don_field` (bloco 530, pedido do usuario --
 # "vamos fazer para o motor inteiro"): escala o valor de DON parado no
-# campo pela curva do PROPRIO deck (GameAnalyzer.don_field_curve_scale,
-# reusa deck_profile_type() ja existente -- analitico, ZERO self-play
-# novo, mesma familia de leader_plan_alignment/_leader_ability_
-# centrality). Diferente de leader_plan_alignment (prior 0.0, inerte):
-# don_field JA tem peso ativo em producao, entao este flag muda
-# comportamento AO VIVO pra QUALQUER deck aggressive/control assim que
-# ligado -- OFF por padrao ate validacao real (nao so self-play, ver
-# achado do bloco 528/529 de que self-play em N pequeno e ruidoso
-# demais pra validar sozinho).
-USE_DON_FIELD_CURVE_SCALE = False
-
-# Mesma familia (bloco 531, pedido do usuario: "Hand first da, valor do
-# board tb e valor da vida tb") -- hand_first/hand_extra, board_mine/
-# board_opp e life_mult (self/opp assimetrico) tambem escalam pela curva
-# do deck via GameAnalyzer.hand_value_curve_scale/board_value_curve_scale/
-# life_value_curve_scale_self/life_value_curve_scale_opp. Mesmo motivo de
-# seguranca do USE_DON_FIELD_CURVE_SCALE acima: todos os 3 termos JA tem
-# peso ativo em producao, entao cada flag muda comportamento ao vivo assim
-# que ligada -- flags SEPARADAS (nao 1 unica) pra poder isolar/desligar
-# cada eixo independente se um deles regredir na validacao real.
-USE_HAND_VALUE_CURVE_SCALE = False
-USE_BOARD_VALUE_CURVE_SCALE = False
-USE_LIFE_VALUE_CURVE_SCALE = False
-
-# Bloco 532 (pedido do usuario: "acho que dmg tb influencia se o deck for
-# agro") -- escala `dmg` (dano feito NESTE turno) pela curva do deck via
-# GameAnalyzer.dmg_value_curve_scale. Era o peso mais sensivel/calibrado
-# do motor (120->270, achado real bloco 499) -- por isso NAO mexe no valor
-# BASE, so multiplica por um fator extra atras de flag propria, mesmo
-# padrao de seguranca dos outros eixos (False por padrao, termo ja ativo
-# em producao).
-# TESTADO 20/08 (flag ligada) contra as 274 comparacoes reais de
-# decision_quality_full.py: efeito NULO (play 20.3%->20.5%, attack-quem
-# 53.1%->53.2%, activate 25.1%->24.9%, resto dentro de ruido de
-# reconstrucao, defesa identica) -- mesmo padrao NULO do teste de
-# leader_plan_alignment no mesmo dia. Revertido pra False.
-USE_DMG_VALUE_CURVE_SCALE = False
-
-# Bloco 533 (pedido do usuario: "investigue de novo para aver se não tem
-# razão mesmo" -- reinvestigacao dos 3 termos que sobraram como constante
-# universal). Achado: os 3 TEM razao estrutural, so nao foi levantada de
-# primeira. counter_hand/coverage sao proxies de SOBREVIVENCIA (o proprio
-# comentario de counter_hand ja dizia "vida futura") -- mesma direcao de
-# life_value_curve_scale_self (controle depende mais, agressivo menos).
-# opp_blocker e obstaculo pro plano de DANO -- mesma direcao de dmg/board
-# (agressivo depende mais de conectar dano, blocker atrapalha mais esse
-# plano). Reusam os metodos ja existentes (nao duplicam logica), cada um
-# atras da PROPRIA flag pra isolamento independente, mesmo padrao de
-# seguranca dos blocos 530-532 (termos ja ativos em producao).
-USE_COUNTER_HAND_CURVE_SCALE = False
-USE_COVERAGE_CURVE_SCALE = False
-USE_OPP_BLOCKER_CURVE_SCALE = False
+# LIMPEZA 20/08 (bloco 637, pedido do usuario "continua removendo" apos o
+# morto de leader_plan_alignment/next_turn_readiness): as 8 flags
+# USE_*_CURVE_SCALE (dos blocos 530-533) foram testadas ligadas uma a uma
+# contra as 274 comparacoes reais de decision_quality_full.py e todas
+# deram efeito NULO ou dentro do ruido de reconstrucao -- mesmo padrao ja
+# confirmado pra USE_DMG_VALUE_CURVE_SCALE (comentario original preservado
+# no historico do git). Como NUNCA foram ligadas em producao (todas False
+# por padrao desde a criacao), removidas junto com o codigo condicional
+# que elas controlavam em _evaluate_state_v2 -- puro overhead de calculo
+# (chamada de metodo + comparacao) em toda avaliacao de estado, sem efeito
+# real. Os metodos GameAnalyzer.*_curve_scale() em si NAO foram apagados
+# (tem testes proprios e isolados em smoke_fast.py, chamados diretamente
+# fora de _evaluate_state_v2) -- so a "tomada" morta foi cortada.
 
 # ── busca prof.2 / resposta do oponente (item 3 do PLANO_AVALIACAO_E_BUSCA.md) ─
 # Depois de simular MINHA linha ate o fim do turno, simula o TURNO INTEIRO de
@@ -17150,11 +17111,8 @@ class OPTCGMatch:
         score = 0.0
 
         # dano feito NESTE turno — delta que faz o planner preferir a linha que
-        # de fato conecta dano (não só "desenvolve"). Escala pela curva do
-        # deck quando USE_DMG_VALUE_CURVE_SCALE ligado (bloco 532): agressivo
-        # valoriza mais conectar dano agora, controle um pouco menos.
-        dmg_scale = an.dmg_value_curve_scale() if USE_DMG_VALUE_CURVE_SCALE else 1.0
-        score += p.dmg_dealt * W['dmg'] * dmg_scale
+        # de fato conecta dano (não só "desenvolve").
+        score += p.dmg_dealt * W['dmg']
 
         # Valor de Character do OPONENTE morto em COMBATE neste turno
         # (bloco 634, pedido do usuario -- enriquecer a funcao pobre no
@@ -17173,14 +17131,9 @@ class OPTCGMatch:
         # 1 carta de vida removida (dmg=120): 5*24=120.
         score += p.char_kill_value * W['char_kill_value']
 
-        # vida (curva íngreme). Escala ASSIMETRICA por curva do deck quando
-        # USE_LIFE_VALUE_CURVE_SCALE ligado (bloco 531): controle valoriza
-        # mais a PROPRIA vida (sobreviver até o plano), agressivo valoriza
-        # mais a vida DO OPONENTE (correr pro dano é o plano).
-        life_scale_self = an.life_value_curve_scale_self() if USE_LIFE_VALUE_CURVE_SCALE else 1.0
-        life_scale_opp = an.life_value_curve_scale_opp() if USE_LIFE_VALUE_CURVE_SCALE else 1.0
-        score += self._life_value(p.life_count()) * W['life_mult'] * life_scale_self
-        score -= self._life_value(opp.life_count()) * W['life_mult'] * life_scale_opp
+        # vida (curva íngreme).
+        score += self._life_value(p.life_count()) * W['life_mult']
+        score -= self._life_value(opp.life_count()) * W['life_mult']
 
         # SOBREVIVENCIA ciente do game_plan (pedido do usuario 14/07): se a
         # win-con do deck e um combo de CUSTO ALTO que ainda NAO da pra
@@ -17217,22 +17170,12 @@ class OPTCGMatch:
             pass
 
         # board (reusa char_value_score — já vê blocker/rush/imunidade/efeito).
-        # Escala pela curva do deck quando USE_BOARD_VALUE_CURVE_SCALE ligado
-        # (bloco 531): agressivo depende de board largo pro plano, controle
-        # depende menos -- fator SIMETRICO (mesmo pros dois lados).
-        board_scale = an.board_value_curve_scale() if USE_BOARD_VALUE_CURVE_SCALE else 1.0
-        score += sum(an.char_value_score(c) for c in p.field_chars) * W['board_mine'] * board_scale
-        score -= sum(an.char_value_score(c) for c in opp.field_chars) * W['board_opp'] * board_scale
+        score += sum(an.char_value_score(c) for c in p.field_chars) * W['board_mine']
+        score -= sum(an.char_value_score(c) for c in opp.field_chars) * W['board_opp']
 
         # blockers do oponente vivos travam meu ataque -- obstaculo pro MEU
-        # plano de dano, mesma direcao de dmg/board (agressivo depende mais
-        # de conectar dano, blocker atrapalha mais esse plano; controle nao
-        # esta numa corrida, blocker incomoda menos). Reusa board_value_
-        # curve_scale (mesmos valores de dmg_value_curve_scale, escolhido
-        # por ser semanticamente board-relacionado) atras de flag propria
-        # (bloco 533, pedido do usuario "investigue de novo").
-        opp_blocker_scale = an.board_value_curve_scale() if USE_OPP_BLOCKER_CURVE_SCALE else 1.0
-        score -= len(opp.blockers_active()) * W['opp_blocker'] * opp_blocker_scale
+        # plano de dano.
+        score -= len(opp.blockers_active()) * W['opp_blocker']
 
         # ameaça de virada por reanimação em massa do trash dele (achado
         # 07/07, PREVENT_COMBO) -- penaliza pelo threat_power ESTIMADO no
@@ -17241,10 +17184,7 @@ class OPTCGMatch:
         # habilidade, recomputa menor aqui e a busca já prefere essa linha.
         score -= an.opp_combo_threat()['threat_power'] * W['opp_combo_threat']
 
-        # mão: retorno decrescente (as primeiras cartas valem mais). Escala
-        # pela curva do deck quando USE_HAND_VALUE_CURVE_SCALE ligado (bloco
-        # 531): controle valoriza mais MANTER cartas (respostas calculadas),
-        # agressivo joga a mão rápido de propósito (segurar não ajuda o plano).
+        # mão: retorno decrescente (as primeiras cartas valem mais).
         # Enriquecido 20/08 (bloco 629, pedido do usuario): antes contava
         # QUANTIDADE (nh = len(p.hand)), cego a QUALIDADE -- uma mao de 5
         # cartas mortas pontuava igual a uma mao de 5 bombas. Pondera cada
@@ -17259,32 +17199,19 @@ class OPTCGMatch:
         # que ainda puxa `activate` pra baixo, mesmo apos corrigir o vies
         # de acumulo do human_alignment.
         nh = len(p.hand)
-        hand_scale = an.hand_value_curve_scale() if USE_HAND_VALUE_CURVE_SCALE else 1.0
-        score += (min(nh, 5) * W['hand_first'] + max(0, nh - 5) * W['hand_extra']) * hand_scale
-        # poder de counter na mão = vida futura -- proxy de SOBREVIVENCIA
-        # (o proprio comentario ja dizia "vida futura"), mesma direcao de
-        # life_value_curve_scale_self: controle depende de counter pra
-        # aguentar ate o plano, agressivo esta atacando (nao defendendo),
-        # counter guardado sem usar nao ajuda o plano dele. Reusa o metodo
-        # existente atras de flag propria (bloco 533).
-        counter_hand_scale = an.life_value_curve_scale_self() if USE_COUNTER_HAND_CURVE_SCALE else 1.0
-        score += p.counter_in_hand() / 1000 * W['counter_hand'] * counter_hand_scale
+        score += min(nh, 5) * W['hand_first'] + max(0, nh - 5) * W['hand_extra']
+        # poder de counter na mão = vida futura -- proxy de SOBREVIVENCIA.
+        score += p.counter_in_hand() / 1000 * W['counter_hand']
 
-        # DON no campo (ramp = chegar na bomba) — leve. Escala pela curva do
-        # PROPRIO deck quando USE_DON_FIELD_CURVE_SCALE ligado (bloco 530,
-        # calibragem dinamica analitica -- ver don_field_curve_scale).
-        don_scale = an.don_field_curve_scale() if USE_DON_FIELD_CURVE_SCALE else 1.0
-        score += p.don_on_field() * W['don_field'] * don_scale
+        # DON no campo (ramp = chegar na bomba) — leve.
+        score += p.don_on_field() * W['don_field']
 
         # cobertura defensiva: counter na mão vs ataques que o opp faz no
         # próximo turno (líder + chars ativos). min = ter counter além do
-        # necessário satura (não vale acumular counter infinito). Mesmo
-        # proxy de sobrevivência de counter_hand acima -- reusa life_value_
-        # curve_scale_self, flag própria (bloco 533).
+        # necessário satura (não vale acumular counter infinito).
         opp_atk = 1 + sum(1 for c in opp.field_chars if not c.rested)
         cobertura = min(p.counter_in_hand(), opp_atk * 2000)
-        coverage_scale = an.life_value_curve_scale_self() if USE_COVERAGE_CURVE_SCALE else 1.0
-        score += cobertura / 1000 * W['coverage'] * coverage_scale
+        score += cobertura / 1000 * W['coverage']
 
         # eixos derivados do perfil (auto-motor: trash/reanimação/inversão)
         score += self._derived_axes_value(p, self._turn_profile_for(p))

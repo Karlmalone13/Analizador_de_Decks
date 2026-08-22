@@ -10154,30 +10154,12 @@ def test_don_field_curve_scale_e_gate_ao_vivo_14_08() -> None:
     check("sem full_deck_census -- fallback neutro (1.0)",
           abs(engine4.analyzer.don_field_curve_scale() - 1.0) < 1e-9)
 
-    # USE_DON_FIELD_CURVE_SCALE OFF por padrao -- _evaluate_state_v2 NAO
-    # aplica a escala mesmo com deck claramente agressivo/controle (muda
-    # comportamento AO VIVO, diferente de leader_plan_alignment com prior
-    # 0.0 -- por isso o gate)
-    import optcg_engine.decision_engine as de
-    check("USE_DON_FIELD_CURVE_SCALE fica False por padrao (sem efeito ao vivo ainda)",
-          de.USE_DON_FIELD_CURVE_SCALE is False)
-
-    me5 = GameState(leader=real_card("OP13-079"), turn=5, life=vida4(), don_rested=6)
-    me5.full_deck_census = dict(me2.full_deck_census)   # deck controle (1.3x)
-    me5.use_eval_v2 = True
-    from optcg_engine.decision_engine import EVAL_WEIGHTS
-    me5.eval_weights = dict(EVAL_WEIGHTS)
-    match5 = OPTCGMatch((me5.leader, []), (opp0.leader, []))
-    score_flag_off = match5._evaluate_state_v2(me5, opp0)
-
-    old_flag = de.USE_DON_FIELD_CURVE_SCALE
-    try:
-        de.USE_DON_FIELD_CURVE_SCALE = True
-        score_flag_on = match5._evaluate_state_v2(me5, opp0)
-    finally:
-        de.USE_DON_FIELD_CURVE_SCALE = old_flag
-    check("com o flag ligado, deck controle aumenta o score (mais DON no campo vale mais)",
-          score_flag_on > score_flag_off)
+    # LIMPEZA 20/08 (bloco 637): USE_DON_FIELD_CURVE_SCALE foi REMOVIDA de
+    # decision_engine.py (nunca ligada em producao, efeito NULO medido
+    # contra as 274 comparacoes reais -- mesmo padrao ja confirmado pra
+    # USE_DMG_VALUE_CURVE_SCALE). don_field_curve_scale() em si continua
+    # testado acima, isolado; so a "tomada" morta em _evaluate_state_v2
+    # foi cortada, sem gate pra reverificar aqui.
 
 
 def test_hand_board_life_curve_scale_e_gates_ao_vivo_14_08() -> None:
@@ -10236,34 +10218,10 @@ def test_hand_board_life_curve_scale_e_gates_ao_vivo_14_08() -> None:
     check("vida do oponente: deck controle escala pra BAIXO (0.7) -- vence por atrito, nao corrida",
           abs(mk_engine(census_control).analyzer.life_value_curve_scale_opp() - 0.7) < 1e-9)
 
-    # flags OFF por padrao -- sem efeito ao vivo ainda (mesmos motivos do
-    # don_field: esses termos JA tem peso ativo em producao)
-    import optcg_engine.decision_engine as de
-    check("USE_HAND_VALUE_CURVE_SCALE fica False por padrao",
-          de.USE_HAND_VALUE_CURVE_SCALE is False)
-    check("USE_BOARD_VALUE_CURVE_SCALE fica False por padrao",
-          de.USE_BOARD_VALUE_CURVE_SCALE is False)
-    check("USE_LIFE_VALUE_CURVE_SCALE fica False por padrao",
-          de.USE_LIFE_VALUE_CURVE_SCALE is False)
-
-    # com os flags ligados, _evaluate_state_v2 muda de fato pra um deck
-    # agressivo com board desenvolvido (board_value_curve_scale=1.3)
-    from optcg_engine.decision_engine import EVAL_WEIGHTS
-    me_board = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
-    me_board.full_deck_census = census_aggro
-    me_board.field_chars = [real_card("OP01-004")]
-    me_board.use_eval_v2 = True
-    me_board.eval_weights = dict(EVAL_WEIGHTS)
-    match_board = OPTCGMatch((me_board.leader, []), (opp0.leader, []))
-    score_off = match_board._evaluate_state_v2(me_board, opp0)
-    old_board_flag = de.USE_BOARD_VALUE_CURVE_SCALE
-    try:
-        de.USE_BOARD_VALUE_CURVE_SCALE = True
-        score_on = match_board._evaluate_state_v2(me_board, opp0)
-    finally:
-        de.USE_BOARD_VALUE_CURVE_SCALE = old_board_flag
-    check("com USE_BOARD_VALUE_CURVE_SCALE ligado, deck agressivo com board aumenta o score",
-          score_on > score_off)
+    # LIMPEZA 20/08 (bloco 637): USE_HAND_VALUE_CURVE_SCALE/USE_BOARD_
+    # VALUE_CURVE_SCALE/USE_LIFE_VALUE_CURVE_SCALE foram REMOVIDAS de
+    # decision_engine.py (nunca ligadas em producao, efeito NULO medido).
+    # Os metodos *_curve_scale() continuam testados isoladamente acima.
 
 
 def test_dmg_value_curve_scale_e_gate_ao_vivo_14_08() -> None:
@@ -10302,26 +10260,10 @@ def test_dmg_value_curve_scale_e_gate_ao_vivo_14_08() -> None:
     check("dmg: sem censo neutro (1.0)",
           abs(mk_engine(None).analyzer.dmg_value_curve_scale() - 1.0) < 1e-9)
 
-    import optcg_engine.decision_engine as de
-    check("USE_DMG_VALUE_CURVE_SCALE fica False por padrao (dmg e o peso mais sensivel do motor)",
-          de.USE_DMG_VALUE_CURVE_SCALE is False)
-
-    from optcg_engine.decision_engine import EVAL_WEIGHTS
-    me_dmg = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
-    me_dmg.full_deck_census = census_aggro
-    me_dmg.dmg_dealt = 5000
-    me_dmg.use_eval_v2 = True
-    me_dmg.eval_weights = dict(EVAL_WEIGHTS)
-    match_dmg = OPTCGMatch((me_dmg.leader, []), (opp0.leader, []))
-    score_off = match_dmg._evaluate_state_v2(me_dmg, opp0)
-    old_flag = de.USE_DMG_VALUE_CURVE_SCALE
-    try:
-        de.USE_DMG_VALUE_CURVE_SCALE = True
-        score_on = match_dmg._evaluate_state_v2(me_dmg, opp0)
-    finally:
-        de.USE_DMG_VALUE_CURVE_SCALE = old_flag
-    check("com o flag ligado, deck agressivo que conectou dano aumenta o score",
-          score_on > score_off)
+    # LIMPEZA 20/08 (bloco 637): USE_DMG_VALUE_CURVE_SCALE ja tinha sido
+    # medida com efeito NULO (comentario original em decision_engine.py) e
+    # foi REMOVIDA junto com as outras 7 flags da mesma familia -- dano_
+    # value_curve_scale() continua testado isoladamente acima.
 
 
 def test_counter_hand_coverage_opp_blocker_curve_scale_14_08() -> None:
@@ -10335,56 +10277,11 @@ def test_counter_hand_coverage_opp_blocker_curve_scale_14_08() -> None:
     def vida4():
         return [mk(f"LF{i}", "Life") for i in range(4)]
 
-    from optcg_engine.decision_engine import EVAL_WEIGHTS
-    import optcg_engine.decision_engine as de
-
-    census_control = {
-        "by_cost": {2: 10, 4: 20, 6: 10, 7: 10}, "total": 50,
-        "rush": {"total": 0}, "blockers": {"total": 0},
-    }
-
-    def score_com_flag(flag_name, hand=None, opp_field=None):
-        opp0 = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
-        if opp_field:
-            opp0.field_chars = opp_field
-        me = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
-        me.full_deck_census = census_control
-        if hand:
-            me.hand = hand
-        me.use_eval_v2 = True
-        me.eval_weights = dict(EVAL_WEIGHTS)
-        match = OPTCGMatch((me.leader, []), (opp0.leader, []))
-        score_off = match._evaluate_state_v2(me, opp0)
-        old = getattr(de, flag_name)
-        try:
-            setattr(de, flag_name, True)
-            score_on = match._evaluate_state_v2(me, opp0)
-        finally:
-            setattr(de, flag_name, old)
-        return score_off, score_on
-
-    check("USE_COUNTER_HAND_CURVE_SCALE fica False por padrao",
-          de.USE_COUNTER_HAND_CURVE_SCALE is False)
-    check("USE_COVERAGE_CURVE_SCALE fica False por padrao",
-          de.USE_COVERAGE_CURVE_SCALE is False)
-    check("USE_OPP_BLOCKER_CURVE_SCALE fica False por padrao",
-          de.USE_OPP_BLOCKER_CURVE_SCALE is False)
-
-    counter_card = mk("CTR0", "Counter", counter=2000)
-    off, on = score_com_flag("USE_COUNTER_HAND_CURVE_SCALE", hand=[counter_card])
-    check("deck controle com counter na mao: flag ligado AUMENTA o score (sobrevivencia vale mais)",
-          on > off)
-
-    off2, on2 = score_com_flag("USE_COVERAGE_CURVE_SCALE", hand=[counter_card])
-    check("deck controle com cobertura defensiva: flag ligado AUMENTA o score",
-          on2 > off2)
-
-    blocker = mk("BLK0", "Blocker", power=5000)
-    blocker.has_blocker = True
-    off3, on3 = score_com_flag("USE_OPP_BLOCKER_CURVE_SCALE", opp_field=[blocker])
-    check("deck controle (nao agressivo) com blocker do opp: flag ligado DIMINUI a penalidade "
-          "(score sobe, ja que a penalidade fica menor que 1.0x)",
-          on3 > off3)
+    # LIMPEZA 20/08 (bloco 637): USE_COUNTER_HAND_CURVE_SCALE/USE_COVERAGE_
+    # CURVE_SCALE/USE_OPP_BLOCKER_CURVE_SCALE foram REMOVIDAS de decision_
+    # engine.py (nunca ligadas em producao, efeito NULO medido). Os
+    # metodos life_value_curve_scale_self()/board_value_curve_scale()
+    # continuam testados isoladamente nos outros testes desta familia.
 
 
 def test_aliases_do_simulador_resolvem_no_banco():

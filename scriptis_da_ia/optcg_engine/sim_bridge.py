@@ -573,38 +573,28 @@ def choose_action(gs: GameState, opp_gs: GameState,
                 trace_out["priority"] = priority
                 trace_out["can_lethal"] = engine.analyzer.can_lethal_this_turn()
                 trace_out["opp_combo_threat"] = engine.analyzer.opp_combo_threat()
-                # Achado real 15/08 (pedido do usuario: ferramenta pra
-                # investigar as flags de calibragem dinamica em teste ao
-                # vivo): antes disso nao dava pra saber, olhando o decision
-                # log de uma partida real, SE/QUANTO as flags USE_*_CURVE_
-                # SCALE (blocos 529-533) estavam de fato mudando o peso do
-                # estado avaliado -- elas entram em evaluate_state(), nao no
-                # score IMEDIATO por acao (action_score_components), entao
-                # precisam do proprio valor das flags + o fator calculado
-                # AGORA (mesmo perfil de deck vale pro turno inteiro) pra
-                # dar pra auditar depois com live_calibration_report.py.
-                from optcg_engine import decision_engine as _de_mod
+                # LIMPEZA 20/08 (bloco 637): as flags USE_*_CURVE_SCALE
+                # (blocos 529-533) foram REMOVIDAS de decision_engine.py --
+                # todas testadas ligadas contra as 274 comparacoes reais e
+                # deram efeito NULO, nunca ligadas em producao. Os termos
+                # que elas escalariam agora rodam SEMPRE no fator neutro
+                # (1.0, equivalente ao estado "flag off" que era o unico
+                # usado ao vivo). `calibration_scales` fica so como
+                # metadado informativo pro live_calibration_report.py (o
+                # profile do deck ainda e util de auditar), sem mais
+                # depender de flag nenhuma.
                 an = engine.analyzer
                 trace_out["calibration_scales"] = {
                     "profile": an.deck_profile_type(),
-                    "don_field": (an.don_field_curve_scale()
-                                 if _de_mod.USE_DON_FIELD_CURVE_SCALE else 1.0),
-                    "hand_value": (an.hand_value_curve_scale()
-                                  if _de_mod.USE_HAND_VALUE_CURVE_SCALE else 1.0),
-                    "board_value": (an.board_value_curve_scale()
-                                    if _de_mod.USE_BOARD_VALUE_CURVE_SCALE else 1.0),
-                    "life_value_self": (an.life_value_curve_scale_self()
-                                        if _de_mod.USE_LIFE_VALUE_CURVE_SCALE else 1.0),
-                    "life_value_opp": (an.life_value_curve_scale_opp()
-                                       if _de_mod.USE_LIFE_VALUE_CURVE_SCALE else 1.0),
-                    "dmg_value": (an.dmg_value_curve_scale()
-                                 if _de_mod.USE_DMG_VALUE_CURVE_SCALE else 1.0),
-                    "counter_hand": (an.life_value_curve_scale_self()
-                                     if _de_mod.USE_COUNTER_HAND_CURVE_SCALE else 1.0),
-                    "coverage": (an.life_value_curve_scale_self()
-                                if _de_mod.USE_COVERAGE_CURVE_SCALE else 1.0),
-                    "opp_blocker": (an.board_value_curve_scale()
-                                    if _de_mod.USE_OPP_BLOCKER_CURVE_SCALE else 1.0),
+                    "don_field": 1.0,
+                    "hand_value": 1.0,
+                    "board_value": 1.0,
+                    "life_value_self": 1.0,
+                    "life_value_opp": 1.0,
+                    "dmg_value": 1.0,
+                    "counter_hand": 1.0,
+                    "coverage": 1.0,
+                    "opp_blocker": 1.0,
                 }
             # uids de 'activate' com falha confirmada este turno: passa pra
             # GERACAO (nao so pro filtro de candidatos abaixo) porque

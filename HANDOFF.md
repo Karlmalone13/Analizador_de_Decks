@@ -1,5 +1,71 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-08-20/22 (637) - Claude (sessao remota web) - Limpeza das 8 flags mortas USE_*_CURVE_SCALE (blocos 529-533), medida NULA contra as 274 comparacoes reais, seguindo o plano do usuario "continua removendo, depois unifica, depois segue a pista do top_k" (passo 1)
+
+Continuacao direta do bloco 636 (limpeza de `leader_plan_alignment`/
+`next_turn_readiness`). As 8 flags `USE_DON_FIELD_CURVE_SCALE`,
+`USE_HAND_VALUE_CURVE_SCALE`, `USE_BOARD_VALUE_CURVE_SCALE`,
+`USE_LIFE_VALUE_CURVE_SCALE`, `USE_DMG_VALUE_CURVE_SCALE`,
+`USE_COUNTER_HAND_CURVE_SCALE`, `USE_COVERAGE_CURVE_SCALE`,
+`USE_OPP_BLOCKER_CURVE_SCALE` (todas `False` desde a criacao, NUNCA
+ligadas em producao) foram removidas de `decision_engine.py` junto com
+os 8 pontos condicionais correspondentes em `_evaluate_state_v2`
+(`X_scale = an.alguma_curve_scale() if USE_X else 1.0` -> direto `1.0`
+implicito, sem chamada nem comparacao). `sim_bridge.py` (caminho AO VIVO)
+tambem referenciava as 8 flags dentro do bloco `calibration_scales`
+(telemetria de auditoria, `trace_out`) -- trocado por `1.0` fixo com
+comentario explicando o motivo, sem mudar nenhum comportamento de
+decisao (era so metadado de log). `audit_curve_calibration_flags.py`
+(script cuja UNICA funcao era comparar essas flags ON/OFF) ficou sem
+proposito e foi apagado. 4 testes em `smoke_fast.py`
+(`test_don_field_curve_scale_e_gate_ao_vivo_14_08`,
+`test_hand_board_life_curve_scale_e_gates_ao_vivo_14_08`,
+`test_dmg_value_curve_scale_e_gate_ao_vivo_14_08`,
+`test_counter_hand_coverage_opp_blocker_curve_scale_14_08`) tiveram os
+blocos de gate/toggle removidos (as chamadas diretas aos metodos
+`*_curve_scale()`, que continuam existindo e testados isoladamente,
+foram preservadas).
+
+**Motivo de seguranca de remover so agora, nao junto do bloco 636**: as
+8 flags foram medidas ligadas UMA A UMA em dias anteriores (blocos
+530-533) contra as 274 comparacoes reais e deram efeito NULO ou dentro
+do ruido -- mesmo padrao ja documentado no comentario original de
+`USE_DMG_VALUE_CURVE_SCALE`. Igual ao bloco 636, sao 8 pontos de
+overhead de calculo real (chamada de metodo + comparacao a cada
+`_evaluate_state_v2`, chamado MILHARES de vezes por partida) sem efeito
+nenhum na decisao.
+
+**Validacao**: `smoke_fast.py` (100% OK) -> `smoke_test.py` (100% OK,
+`TODOS OS TESTES PASSARAM`) -> `decision_quality_full.py --all
+--workers 4`: play 20.6% (era 20.8%), attack-quem 53.0% (era 53.1%),
+activate 26.2% (identico), attach_don 12.5% (identico), attack-alvo
+67.9% (identico), sequencia/alvo-efeito/defesa dentro do mesmo ruido de
++-0.1-0.2pp -- confirma que a remocao foi de fato NULA no
+comportamento, so removeu overhead morto.
+
+**Proximo passo do plano do usuario** (passo 2, "depois unifica"):
+existem 3 formulas independentes de "valor de Character" no motor hoje
+-- `score_attack_target` (Tier 2, `target.board_value() * 15`, ranking
+de QUAL alvo atacar), `char_value_score` (Tier 1, `board_value()*10` +
+bonus por gatilho, usado em `board_mine`/`board_opp`) e `char_kill_value`
+(Tier 1 tambem, `board_value()` CRU, credita especificamente kill em
+COMBATE -- bloco 634). Achado ao mapear pra este bloco: `char_kill_value`
+e PARCIALMENTE redundante com `board_opp` -- quando uma linha simulada
+mata um Character do oponente em combate, o `opp.field_chars` dele
+encolhe, o que JA reduz a subtracao de `board_opp` em
+`char_value_score(alvo)*0.8` (credito implicito de board), e
+`char_kill_value` ADICIONA por cima `board_value(alvo)*12` usando uma
+formula mais pobre (sem os bonus de gatilho que `char_value_score` tem).
+Nao e um bug (a intencao explicita era pesar MAIS um kill em combate
+especificamente, corrigindo o vies medido de "motor prefere atacar o
+lider" achado no bloco 624), mas e exatamente o tipo de formula duplicada
+que o usuario pediu pra unificar -- candidato natural: trocar o
+`target.board_value()` cru em `char_kill_value` (linha ~18438,
+`_execute_attack`) pelo `char_value_score(target)` de um `GameAnalyzer`
+local, recalibrando o peso a partir do novo valor de referencia (~50-100
+pra um Character medio, nao ~5) -- fica pro proximo passo desta mesma
+sessao.
+
 ## 2026-08-20 (628-636) - Claude (sessao remota web) - Sessao longa de investigacao direta no Nivel 1 (`_evaluate_state_v2`, a funcao que REALMENTE decide, achado do bloco 627). Varios experimentos, a maioria revertida apos medir; ficaram ativos: peso do alinhamento humano na simulacao (8.0), enriquecimento correto de `char_value_score` (sem dupla-contagem), `char_kill_value` (corrige `dmg` ignorando KO de personagem), `TOP_K` offline 3->5, e limpeza de 2 termos mortos
 
 Continuacao direta do bloco 627. Pedido do usuario: nao só ajustar peso,

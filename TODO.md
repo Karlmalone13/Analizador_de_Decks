@@ -1,6 +1,25 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 20 de agosto de 2026
+**Última atualização:** 22 de agosto de 2026
+
+> 22/08/2026 (bloco 637, passo 1/3 do plano "continua removendo, depois
+> unifica, depois segue a pista do top_k"): removidas as 8 flags mortas
+> `USE_*_CURVE_SCALE` (nunca ligadas em produção, efeito NULO medido —
+> mesmo padrão do `USE_DMG_VALUE_CURVE_SCALE` original) de
+> `decision_engine.py` e `sim_bridge.py`, junto com o script
+> `audit_curve_calibration_flags.py` (cuja única função era comparar
+> essas flags, agora sem propósito). Medido NULO de novo contra as 274
+> comparações reais (play 20,6% vs 20,8%, resto idêntico) — confirma
+> que era overhead morto, sem efeito. Os métodos `*_curve_scale()`
+> continuam no código, testados isoladamente. **Achado ao mapear pro
+> passo 2 (unificar)**: `char_kill_value` é PARCIALMENTE redundante com
+> `board_opp` — matar um Character em combate já reduz a subtração de
+> `board_opp` (via `char_value_score`) E soma por cima o `char_kill_value`
+> (fórmula mais pobre, `board_value()` cru). Não é bug (intenção
+> explícita de pesar mais um kill em combate), mas é candidato natural
+> pra unificação: trocar o `board_value()` cru em `char_kill_value` pelo
+> `char_value_score(target)` já usado em `board_opp`, recalibrando o
+> peso. Ver bloco 637 do HANDOFF pro detalhe completo.
 
 > 20/08/2026 (blocos 628-636): Sessão longa investigando direto no
 > Nível 1 (`_evaluate_state_v2`, a função que REALMENTE decide entre
