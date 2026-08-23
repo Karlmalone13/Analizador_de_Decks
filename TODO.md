@@ -47,11 +47,22 @@
 > **PENDENTE / MUDOU DE PRIORIDADE**: (a) política de ativação de Stage
 > — concordância subiu 50,0% → 59,7% só com o fix de DON; das causas do
 > resto, o degrau `best_saved_don >= 3` e a dependência de sequência
-> foram as duas TESTADAS E REFUTADAS; sobra que em **48% das
-> divergências a ativação nunca é GERADA como candidata** (geração, não
-> score — nenhum peso conserta), com uma contradição não resolvida entre
-> o motivo `play_card: nenhuma carta elegível na mão` e os 73% de alvos
-> que estavam na mão no início do turno. Próxima sessão começa por aí.
+> foram as duas TESTADAS E REFUTADAS. **RETIFICADO**: o "48% nunca
+> gerada como candidata" também era FALSO — investigado a fundo, **0 bugs
+> reais**: 10 dos 12 casos são recusas CORRETAS (o Five Elders na mão
+> custava mais que o DON no campo; os EVENT com subtipo "Five Elders" são
+> corretamente excluídos porque a carta pede *Character*) e nos outros 2 o
+> motor ACEITOU — só não aparecem no `decision_log`, que grava apenas os
+> **top-8 candidatos por decisão**. É a mesma armadilha do bloco 577:
+> **ausência do log não é ausência de geração**; qualquer checador de
+> "nunca gerada" tem que conferir contra a lista completa de
+> `_generate_and_score_actions` ou contra o veredito de
+> `_should_activate_main`. A "contradição com os 73%" era comparação de
+> populações diferentes (73% sobre todas as ativações, 48% só sobre as 25
+> divergências). O que sobra ABERTO na Stage é calibragem de score, não
+> geração: 13 das 25 divergências são casos em que a ativação competiu e
+> perdeu (gap mediano 75, **5 em quase-empate ≤20**) — próxima sessão
+> começa pelos quase-empates.
 > (b) **Re-medir os achados do bloco 649** (gap de 175 pontos,
 > correlação com `human_alignment`): foram medidos contra uma régua com
 > 18,5% do denominador de `play` travado em zero, e a correlação era com

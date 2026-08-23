@@ -172,15 +172,47 @@ que tunar antes teria sido calibrar contra estado quebrado.
   alvo): **REFUTADO**. So 2% das cartas implantadas foram compradas no
   mesmo turno; 73% ja estavam na mao no inicio.
 
-**ABERTO, nao fechado**: em 48% das divergencias a ativacao **nunca e
-gerada como candidata** (12/25) -- e GERACAO, nao score, entao nenhum peso
-conserta. O motivo dominante na 1a decisao real do turno e `play_card:
-nenhuma carta elegivel na mao`, mas isso CONTRADIZ os 73% que estavam na
-mao e a contradicao NAO foi resolvida. Filtro `five elders`/`black` foi
-verificado e casa certo nas 5 cartas (nao e bug de parser); `cost_lte:
-don_count_self` resolve igual nos dois call sites (`_resolve_cost_lte`).
-Proxima sessao: comecar por aqui, e checar `_step_is_viable` no estado
-REAL de inicio de turno de um caso concreto de divergencia.
+**RETIFICADO no mesmo dia -- o "48% nunca gerada" era FALSO, nao
+perseguir**: a primeira leitura desta sessao dizia que em 48% das
+divergencias (12/25) a ativacao "nunca e gerada como candidata", e que
+isso seria um problema de GERACAO que nenhum peso conserta. **Investigado
+a fundo depois e REFUTADO: 0 bugs reais.** Os 12 casos, testados um a um
+comparando a carta que o humano REALMENTE implantou contra os filtros da
+Stage no estado do motor:
+
+- **10 sao recusas CORRETAS**. O gargalo e sempre o `cost_lte` (a Throne
+  so poe em jogo Five Elders com custo <= DON no campo) -- nesses turnos
+  os Five Elders na mao custavam MAIS que o DON disponivel. Ex: t3 com
+  `cost_lte=3` e mao com Five Elders de custo 4/6/7. Os EVENT da mao
+  (OP13-096/OP13-098, que tem o subtipo "Five Elders" mas nao sao
+  Character) tambem sao corretamente excluidos -- a carta pede
+  explicitamente "Play up to 1 black Five Elders type **Character** card".
+- **2 o motor ACEITOU** (`pode=True`, "play_card elegivel"): nao foram
+  recusadas, so nao aparecem no `decision_log`, que grava **apenas os
+  top-8 candidatos por decisao**.
+
+**E EXATAMENTE a mesma armadilha do bloco 577** (alarme falso porque o
+lider gerava 703 candidatas e so nao entrava no top-8 logado). Qualquer
+checador de "nunca gerada" TEM que confirmar contra a lista COMPLETA de
+`_generate_and_score_actions` (ou contra o veredito de
+`_should_activate_main`), nunca contra os candidatos logados -- ausencia
+do log NAO e ausencia de geracao. Confirmado tambem que NAO era
+nao-determinismo paralelo/serial (rodado serial: 12/25 identico, entao as
+medicoes com `--workers` continuam validas) nem turno com erro de
+reconstrucao (zero).
+
+A "contradicao com os 73%" tambem se dissolveu: os 73% eram sobre TODAS as
+ativacoes de Stage e os 48% so sobre as 25 divergencias -- populacoes
+diferentes, nunca foram comparaveis. Filtrando direito (alvo na mao no
+inicio E nunca gerada) sobram 2 casos, os mesmos 2 do top-8.
+
+**O que continua realmente ABERTO na Stage**: a decisao esta em 59,7% de
+concordancia, com 13/25 divergencias onde a ativacao COMPETIU e perdeu
+(vencedor: play 7x, attach_don 4x, attack 1x, activate 1x; gap mediano de
+score 75, com 5 de 13 em quase-empate <=20). Isso e calibragem de score,
+nao geracao -- e o eixo `best_saved_don` ja foi mostrado como NAO sendo o
+que explica a decisao humana (ver hipoteses refutadas acima). Proxima
+sessao: investigar os 13 que perderam, comecando pelos 5 quase-empates.
 
 ### 2 medicoes minhas que tive que corrigir no caminho (nao repetir)
 
