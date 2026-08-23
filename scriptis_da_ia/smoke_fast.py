@@ -10,6 +10,19 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+# Console cp1252 (padrao no Windows) fazia este script MORRER no meio: alguns
+# labels de teste tem caractere fora do cp1252 (ex: o digito circulado do
+# P-011), e o proprio print() do check() estourava UnicodeEncodeError, abortando
+# ~500 checks com um traceback que PARECE regressao de engine e nao e (achado
+# real ao rodar o pre-flight). Forca UTF-8 na saida aqui em vez de depender de
+# quem roda lembrar de exportar PYTHONIOENCODING.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except (OSError, ValueError):
+            pass
+
 sys.path.insert(0, ".")
 
 from optcg_engine.decision_engine import (  # noqa: E402

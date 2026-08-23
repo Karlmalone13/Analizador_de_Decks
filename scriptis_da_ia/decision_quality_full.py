@@ -73,6 +73,7 @@ import pandas as pd
 
 from audit_real_losses import (
     audit_one_game, _cards_from_codes, _find_real_deck, DonEstimator,
+    hist_action_kind,
 )
 from decision_quality_vs_human import find_bot_vs_human_logs, find_all_human_logs
 from optcg_engine.decision_engine import (
@@ -174,12 +175,25 @@ def _offense_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
         # `activate_main` no card_effects_db; senao, EXCLUI da
         # comparacao (nem play nem activate -- e um efeito reativo
         # automatico, nao uma decisao independente do Turn Planner).
+        #
+        # Achado real 23/08 (bloco 650): a ordem dos dois primeiros gates
+        # estava INVERTIDA pra STAGE. Uma STAGE fica EM CAMPO depois de
+        # jogada e 33 das 49 STAGE do banco tem [Activate: Main] proprio --
+        # o comentario acima ("so podem ser jogados da mao, nunca ficam
+        # ativaveis depois") vale pra EVENT, nao pra STAGE. Com o gate de
+        # card_type vindo primeiro, TODA ativacao de uma Stage ja em campo
+        # era rotulada 'play' de uma carta que nao esta (nem podia estar) na
+        # mao -- mismatch garantido em `play` E some do denominador de
+        # `activate`, penalizando a MESMA acao humana duas vezes. Medido no
+        # corpus: 134 turnos (14,5% do denominador de `play`), 7 Stages
+        # distintas, 8 lideres -- concentrado em Imu OP13-079 (94), a Empty
+        # Throne OP13-099 sozinha em 98. Fix generico pela FORMA: se o log
+        # disse 'activate' e a carta TEM activate_main de verdade, e
+        # activate, seja qual for o card_type. Seguro por construcao pra
+        # EVENT: ZERO das 405 EVENT do banco tem activate_main, entao
+        # nenhum play de Evento muda de categoria.
         def _hist_kind(card_type, code):
-            if card_type in ('EVENT', 'STAGE'):
-                return 'play'
-            if get_card_effects(code).get('activate_main'):
-                return 'activate'
-            return None  # efeito reativo automatico -- nao comparavel
+            return hist_action_kind({'type': 'activate', 'card': code}, cards_db)
 
         hist_play = {a['card'] for a in hist_actions if a.get('card') and (
             a.get('type') == 'play'
@@ -335,8 +349,29 @@ def _offense_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
                     break
             alvo_efeito_matches.append(bateu)
 
+        # Achado real 23/08 (bloco 650): as % de conjunto sao TUDO-OU-NADA
+        # (`hist == motor`). Um turno em que o humano jogou {A,B} e o motor
+        # jogou {A} pontua exatamente igual a um em que jogou {Z} -- a
+        # metrica nao consegue expressar "chegou perto", entao ela nao sobe
+        # quando o motor melhora PARCIALMENTE, e ate DESCE quando uma
+        # correcao de fidelidade faz os dois lados compararem MAIS itens.
+        # `*_inter`/`*_union` guardam a intersecao e a uniao brutas por
+        # turno: somadas no agregado dao um Jaccard micro-medio, que mede
+        # "quanto das decisoes do turno bateu" ao lado do "o turno inteiro
+        # bateu". Nenhuma das % antigas muda -- so ganham companhia.
+        def _io(h, m):
+            return len(h & m), len(h | m)
+        play_i, play_u = _io(hist_play, motor_play)
+        act_i, act_u = _io(hist_activate, motor_activate)
+        atk_i, atk_u = _io(hist_atk_who, motor_atk_who)
+        don_i, don_u = _io(hist_don_alvo, motor_don_alvo)
+
         rows.append({
             'game': os.path.basename(parsed_path), 'turn': turn_num,
+            'play_inter': play_i, 'play_union': play_u,
+            'activate_inter': act_i, 'activate_union': act_u,
+            'attack_quem_inter': atk_i, 'attack_quem_union': atk_u,
+            'don_alvo_inter': don_i, 'don_alvo_union': don_u,
             'play_match': hist_play == motor_play,
             'play_has_data': bool(hist_play or motor_play),
             'attack_quem_match': hist_atk_who == motor_atk_who,
@@ -593,6 +628,24 @@ def main():
         base = [r for r in off_rows if r[has_key]]
         n_ok = sum(1 for r in base if r[key])
         print(f'  {label}: {_pct(n_ok, len(base))}  (turnos com dado: {len(base)}/{len(off_rows)})')
+
+    # bloco 650: mesma comparacao, sem o tudo-ou-nada por turno -- soma
+    # intersecao/uniao de TODOS os turnos (Jaccard micro-medio). Responde
+    # "quanto das cartas certas o motor acertou", nao so "o turno inteiro
+    # bateu". Nao substitui as % acima; existe pra que uma melhora PARCIAL
+    # (acertar 2 de 3 em vez de 1 de 3) apareca em algum lugar.
+    print('  -- mesmas categorias, medidas por SOBREPOSICAO (intersecao/uniao, '
+          'credita acerto parcial) --')
+    for label, ik, uk in [
+        ('play', 'play_inter', 'play_union'),
+        ('attack -- QUEM atacou', 'attack_quem_inter', 'attack_quem_union'),
+        ('activate', 'activate_inter', 'activate_union'),
+        ('attach_don -- alvo', 'don_alvo_inter', 'don_alvo_union'),
+    ]:
+        if any(uk in r for r in off_rows):
+            i = sum(r.get(ik, 0) for r in off_rows)
+            u = sum(r.get(uk, 0) for r in off_rows)
+            print(f'     {label}: {_pct(i, u)}')
 
     total_common = sum(r['attack_alvo_common'] for r in off_rows)
     total_alvo_ok = sum(r['attack_alvo_match'] for r in off_rows)

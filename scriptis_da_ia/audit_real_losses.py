@@ -90,6 +90,80 @@ def _cards_from_codes(codes, cards_db, rested_map=None):
     return out
 
 
+_DEPLOY_CODE_RE = re.compile(r'"([A-Za-z0-9\-]+)">')
+
+
+def _field_stage_at(turns, upto_index, side, cards_db):
+    """Reconstrói qual STAGE o jogador `side` tinha em campo ANTES do turno
+    `upto_index`.
+
+    Achado real 23/08 (bloco 650): o snapshot do log NÃO tem zona de Stage
+    -- o plugin só emite `Hand:`/`Board:`/`Trash:`/`Life:`, e `Board:` traz
+    só personagens (confirmado: `OP13-099` The Empty Throne nunca aparece em
+    NENHUMA linha `Board:` das 150 partidas do banco, mesmo estando em jogo
+    e sendo ativada 7 vezes na mesma partida). Sem isto, `p.field_stage`
+    ficava SEMPRE None em toda reconstrução -- o motor jogava o turno sem um
+    Stage que o humano de fato tinha, e nunca conseguia gerar o
+    `[Activate: Main]` dele como candidato.
+
+    A informação existe no histórico, só não no snapshot: uma Stage entra em
+    campo por `type: "play"` (da mão) ou por um efeito `Deploy <nome>
+    ["CODE">CODE]` de outra carta (ex: o líder Imu OP13-079 implanta a
+    Empty Throne). Vale a ÚLTIMA que entrou (a zona tem 1 slot só -- jogar
+    outra Stage manda a anterior pro trash) e só se ela não estiver no trash
+    do snapshot anterior.
+
+    Limitação aceita: `rested` da Stage não é recuperável do log. Assume
+    ATIVA, que é o estado correto no início do turno do próprio dono (a
+    refresh phase desvira a Stage junto com o resto) -- que é exatamente o
+    momento em que esta reconstrução é usada.
+    """
+    def _entradas(ts):
+        """{codigo_de_stage: indice do turno em que entrou em campo}"""
+        out = {}
+        for j, t in enumerate(ts):
+            if t.get('player') != side:
+                continue
+            for a in t.get('actions') or []:
+                code = a.get('card')
+                if (code and cards_db.get(code, {}).get('type') == 'STAGE'
+                        and hist_action_kind(a, cards_db) == 'play'):
+                    out.setdefault(code, j)
+                for eff in a.get('effects') or []:
+                    if 'Deploy' not in eff:
+                        continue
+                    for cand in _DEPLOY_CODE_RE.findall(eff):
+                        if cards_db.get(cand, {}).get('type') == 'STAGE':
+                            out.setdefault(cand, j)
+        return out
+
+    entradas = _entradas(turns)
+
+    # Stage implantada no SETUP (antes do turno 1) -- o parser nao guarda
+    # nada de pre-turno-1, entao a entrada dela nao existe em `turns`. Caso
+    # real: o lider Imu OP13-079 implanta The Empty Throne OP13-099 logo
+    # apos o mulligan ("Imu [...]: Deploy The Empty Throne", linha do log
+    # cru ANTES do primeiro turno). Deteccao: a carta e ATIVADA em algum
+    # turno mas nunca ENTROU em nenhum -- so pode ter entrado no setup,
+    # logo estava em campo desde o inicio. Nao e vazamento de informacao
+    # futura: recupera um fato VERDADEIRO sobre o passado (a Stage ja
+    # estava la), nao uma decisao que o jogador ainda nao tinha tomado.
+    for t in turns:
+        if t.get('player') != side:
+            continue
+        for a in t.get('actions') or []:
+            code = a.get('card')
+            if (a.get('type') == 'activate' and code
+                    and cards_db.get(code, {}).get('type') == 'STAGE'
+                    and code not in entradas):
+                entradas[code] = -1
+
+    ativas = [(j, c) for c, j in entradas.items() if j < upto_index]
+    if not ativas:
+        return None
+    return max(ativas)[1]
+
+
 def _find_real_deck(leader_name, cards_db, df_raw, urls, leader_code=None):
     """Acha QUALQUER deck real (decklists_raw.csv) com o mesmo nome de
     líder do log -- serve só de fonte pra compor o RESTO do deck (ver
@@ -195,7 +269,41 @@ def _find_real_deck(leader_name, cards_db, df_raw, urls, leader_code=None):
     return None
 
 
-def _known_gains_this_turn(turn, before_hand_codes, after_hand_codes):
+def hist_action_kind(action, cards_db):
+    """Classifica UMA acao do log historico em 'play' / 'activate' / None.
+
+    FONTE UNICA desta regra (bloco 650) -- `decision_quality_full._hist_
+    kind` chama esta funcao em vez de ter a sua propria copia, e
+    `_known_gains_this_turn` usa o mesmo criterio pra saber se a carta saiu
+    da MAO neste turno. Ter duas leituras diferentes de "isto foi um play?"
+    ja custou dois bugs medidos, ver abaixo.
+
+    O rotulo `type` do log nao mapeia 1:1 nas categorias do motor:
+      - `type == 'play'`  -> sempre play.
+      - `type == 'activate'` e um GUARDA-CHUVA pra qualquer efeito que nao
+        seja play/attack (on_ko, when_attacking, on_play, [Main] de Evento,
+        [Activate: Main] de verdade...). Desempate:
+          * carta TEM `activate_main` -> activate de verdade (inclusive
+            STAGE ja em campo, que continua ativavel turno apos turno).
+          * senao, EVENT/STAGE -> so podem sair da MAO, entao e play.
+          * senao (CHARACTER/LEADER sem activate_main) -> efeito reativo
+            automatico, nao e decisao propria do Turn Planner: None.
+    """
+    code = action.get('card')
+    if not code:
+        return None
+    if action.get('type') == 'play':
+        return 'play'
+    if action.get('type') != 'activate':
+        return None
+    if get_card_effects(code).get('activate_main'):
+        return 'activate'
+    if cards_db.get(code, {}).get('type') in ('EVENT', 'STAGE'):
+        return 'play'
+    return None
+
+
+def _known_gains_this_turn(turn, before_hand_codes, after_hand_codes, cards_db):
     """Achado real 17/08 (pedido do usuario: "e so seguir as cartas que o
     humano tem na mao... se for dar draw e so comprar a mesma carta que
     o humano pegou" -- rejeitando a abordagem anterior de baralho
@@ -228,8 +336,17 @@ def _known_gains_this_turn(turn, before_hand_codes, after_hand_codes):
     CONJUNTO exato de cartas ja e a parte que importa pra decisao do
     Turn Planner, nao a ordem de chegada dentro do turno.
     """
+    # Achado real 23/08 (bloco 650): contava so `type == 'play'`. Um
+    # EVENTO comprado e jogado no MESMO turno aparece no log como
+    # `type: 'activate'` (o rotulo guarda-chuva, ver hist_action_kind) --
+    # ficava fora de `played`, entao o diff nao via que ele tinha sido
+    # ganho: nao esta na mao DEPOIS (saiu) nem entrava como ganho. Efeito
+    # pratico: a carta nunca era colocada no topo do deck simulado e o
+    # motor NUNCA podia jogar aquilo que o humano jogou -- mismatch
+    # garantido. Medido no corpus: 39 EVENTOS nessa situacao. Usa o mesmo
+    # classificador do resto do pipeline em vez de um segundo criterio.
     played = Counter(a['card'] for a in turn.get('actions', [])
-                     if a.get('type') == 'play' and a.get('card'))
+                     if hist_action_kind(a, cards_db) == 'play')
     return (Counter(after_hand_codes) + played) - Counter(before_hand_codes)
 
 
@@ -264,26 +381,48 @@ class DonEstimator:
     1 em Saint Shalria) + turno 3 (don_drawn=2) = 3 DON acumulados, e o
     historico JOGOU Bartholomew Kuma custo 3 no turno 3 -- só bate com
     "todo play/activate cost refresca", nao com "gasto e permanente".
-    Unico DON que realmente FICA PRESO fora do pool geral e o anexado
-    via `attach_don` (gruda no personagem ate ele sair de campo, nao
-    volta sozinho no refresh -- aproximacao aceita aqui: nao rastreia
-    DON que retorna quando o personagem e K.O.'d/bounced, ver
-    limitacoes no topo do arquivo)."""
+    RETIFICACAO 23/08 (bloco 650) -- o paragrafo acima continha uma
+    afirmacao ERRADA sobre a regra, e ela custava DON em toda
+    reconstrucao. A versao anterior dizia que o DON anexado via
+    `attach_don` "gruda no personagem ate ele sair de campo, nao volta
+    sozinho no refresh" e subtraia `attached` de forma CUMULATIVA e
+    PERMANENTE pelo jogo inteiro. A regra oficial diz o oposto
+    (`_referencias/regras_do_jogo/rule_comprehensive.pdf`, Refresh
+    Phase):
+
+        6-2-3. "Return all DON!! cards given to cards in your Leader area
+               and Character area to your cost area and rest them."
+        6-2-4. "Set all rested cards placed in your Leader area, Character
+               area, Stage area, and cost area as active."
+
+    Ou seja: no inicio do PROPRIO turno todo DON anexado volta pro cost
+    area E fica ativo -- exatamente o instante que esta reconstrucao
+    modela. E o MESMO erro conceitual que ja tinha sido achado e
+    corrigido em 04/08 pros custos de play/activate; o ramo de
+    `attach_don` ficou pra tras com o modelo errado, defendido por essa
+    frase sobre a regra que nao se sustenta no texto oficial.
+
+    Medido no banco antes do fix: o estimador escondia em media 1,2 a 2,1
+    DON por turno a partir do 4o turno de cada jogador (pico no 6o), com
+    casos extremos de 11 DON reais reportados como 0. O motor recebia um
+    estado de recurso progressivamente mais pobre quanto mais longa a
+    partida -- justo onde estao as jogadas caras.
+
+    Limitacao que CONTINUA valendo: DON entregue ao OPONENTE (`give_don_
+    opp`) sai do proprio pool de verdade, mas o schema do log so registra
+    `attach_don` (confirmado: e o unico `type` com "don" em 80 logs
+    amostrados), entao esse caso nao e rastreavel aqui."""
 
     def __init__(self):
         self.drawn = {}
-        self.attached = {}
 
     def apply_turn(self, player, turn, cards_db):
         self.drawn.setdefault(player, 0)
-        self.attached.setdefault(player, 0)
         self.drawn[player] += turn.get('don_drawn', 0) or 0
-        for act in turn.get('actions', []):
-            if act.get('type') == 'attach_don':
-                self.attached[player] += int(act.get('amount', 0) or 0)
 
     def available(self, player):
-        return max(0, self.drawn.get(player, 0) - self.attached.get(player, 0))
+        # Teto do cost area = tamanho do DON!! deck (GameState.don_deck=10).
+        return max(0, min(10, self.drawn.get(player, 0)))
 
 
 def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
@@ -405,6 +544,10 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         p.field_chars = _cards_from_codes(bot_snap.get('board', []), cards_db,
                                            bot_snap.get('rested', {}))
         p.trash = _cards_from_codes(bot_snap.get('trash', []), cards_db)
+        _stage_code = _field_stage_at(turns, i, bot_side, cards_db)
+        if _stage_code and _stage_code not in (bot_snap.get('trash') or []):
+            _st = _cards_from_codes([_stage_code], cards_db)
+            p.field_stage = _st[0] if _st else None
         life_n = bot_snap.get('life', 4)
         p.life = [deepcopy(c) for c in p.deck[:life_n]] if p.deck else []
 
@@ -412,6 +555,10 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         opp.field_chars = _cards_from_codes(opp_snap.get('board', []), cards_db,
                                              opp_snap.get('rested', {}))
         opp.trash = _cards_from_codes(opp_snap.get('trash', []), cards_db)
+        _stage_code_opp = _field_stage_at(turns, i, opp_side, cards_db)
+        if _stage_code_opp and _stage_code_opp not in (opp_snap.get('trash') or []):
+            _st_o = _cards_from_codes([_stage_code_opp], cards_db)
+            opp.field_stage = _st_o[0] if _st_o else None
         opp_life_n = opp_snap.get('life', 4)
         opp.life = [deepcopy(c) for c in opp.deck[:opp_life_n]] if opp.deck else []
 
@@ -447,7 +594,7 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         # lista, convencao pop() do projeto) depois do embaralhamento --
         # exatamente as cartas que o motor vai comprar primeiro.
         after_bot_hand = turn.get('snapshot', {}).get(bot_side, {}).get('hand', [])
-        known_gains_bot = _known_gains_this_turn(turn, bot_snap.get('hand', []), after_bot_hand)
+        known_gains_bot = _known_gains_this_turn(turn, bot_snap.get('hand', []), after_bot_hand, cards_db)
         for code, qty in known_gains_bot.items():
             seen_bot[code] = seen_bot.get(code, 0) + qty
         p.deck = _remaining_deck(bot_deck[1], seen_bot)

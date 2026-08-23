@@ -4,6 +4,19 @@ conditional_stack (1 card) + fix de defend_power no combate.
 Roda contra os dados REAIS de card_effects_db.json, nao contra mocks.
 """
 import sys, json
+
+# Mesma protecao do smoke_fast.py: console cp1252 (padrao no Windows) aborta o
+# script inteiro com UnicodeEncodeError se um label de teste tiver caractere
+# fora do cp1252 -- traceback que PARECE regressao de engine e nao e. Hoje os
+# unicos caracteres assim aqui estao em comentario (nao imprimem), entao isto e
+# preventivo pro proximo label novo.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, 'reconfigure'):
+        try:
+            _stream.reconfigure(encoding='utf-8', errors='replace')
+        except (OSError, ValueError):
+            pass
+
 sys.path.insert(0, '.')
 import optcg_engine.decision_engine as de
 from optcg_engine.decision_engine import (

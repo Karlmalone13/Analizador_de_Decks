@@ -28,6 +28,191 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-23 (650) - Claude (sessao local) - CAUSA RAIZ do teto das porcentagens: nao era heuristica, era o ESTADO que a reconstrucao entregava ao motor. 4 fixes de fidelidade em ferramenta de auditoria (ZERO linha de decision_engine.py) -- `play` 21,4% -> 29,7% (+8,3pp), o maior ganho medido desta frente
+
+Pedido do usuario, continuando o 649: "tem alguma coisa impedindo a
+porcentagem de igualdade subir, ou tem alguma coisa faltando". Depois:
+"ataca a politica de ativacao de stage, e tambem investigue se tem algo
+decidindo mal, ou se tem algo puxando essas porcentagens para baixo pq
+mesmo com override nao conseguimos subir".
+
+**Resposta curta pra proxima sessao: os blocos 641-649 tunaram peso, teto,
+sequencia e override contra um motor que recebia um ESTADO ERRADO -- em
+media 1,2 a 2,1 DON A MENOS do que o humano tinha na mesa, piorando quanto
+mais longa a partida. Nenhum ajuste de heuristica compensa nao poder pagar
+a carta.** Nada disso estava em `decision_engine.py`; os 4 fixes sao todos
+em ferramenta de auditoria.
+
+### Metodologia nova que destravou tudo: medir o TETO da propria metrica
+
+Ninguem tinha medido quantos turnos do denominador eram GANHAVEIS. Medido:
+o teto de `play` era **81,5%** -- 171 dos 924 turnos eram mismatch
+garantido por construcao, qualquer que fosse a heuristica. Depois dos
+fixes: **100,0%**. Registrar como ferramenta mental permanente -- antes de
+tunar qualquer coisa contra uma metrica, medir o teto dela.
+
+### Fix 1 -- `_hist_kind` classificava ativacao de STAGE como `play`
+
+`decision_quality_full.py` testava `card_type in ('EVENT','STAGE') ->
+'play'` ANTES de checar `activate_main`. Mas STAGE fica EM CAMPO depois de
+jogada e **33 das 49 STAGE do banco tem [Activate: Main]**. Toda ativacao
+de Stage virava "play de uma carta que nao esta na mao" (impossivel de
+bater) E sumia do denominador de `activate` -- a MESMA acao humana punida
+duas vezes. Medido: 134 turnos, 14,5% do denominador de `play`, 7 Stages,
+8 lideres, concentrado em Imu OP13-079 (94). Fix generico pela FORMA: log
+disse 'activate' + carta TEM activate_main -> e activate, seja qual for o
+card_type. Seguro por construcao pra EVENT: **ZERO das 405 EVENT do banco
+tem activate_main**, entao nenhum play de Evento muda de categoria.
+
+### Fix 2 -- o log NAO TEM zona de Stage; `p.field_stage` era sempre None
+
+O plugin so emite `Hand:`/`Board:`/`Trash:`/`Life:`, e `Board:` traz so
+personagens. Confirmado: `OP13-099` (The Empty Throne) **nunca aparece em
+nenhuma linha `Board:`** das 150 partidas, mesmo estando em jogo e sendo
+ativada 7x na mesma partida. O motor jogava todo turno sem um Stage que o
+humano tinha. Novo `_field_stage_at()` em `audit_real_losses.py` recupera
+do historico (`play` da mao ou efeito `Deploy X`). Caso especial que
+precisou de tratamento proprio: **Imu implanta a Empty Throne no SETUP,
+antes do turno 1**, e o parser nao guarda nada de pre-turno-1 -- detectado
+por ausencia (carta ATIVADA em algum turno mas que nunca ENTROU em nenhum
+so pode ter vindo do setup). Nao e vazamento de futuro: recupera um fato
+verdadeiro sobre o passado.
+
+### Fix 3 -- Evento comprado e jogado no mesmo turno sumia da reconstrucao
+
+`_known_gains_this_turn` contava so `type == 'play'` pra saber o que saiu
+da mao. Evento comprado e jogado no mesmo turno e logado como `activate`:
+ficava fora de `played`, o diff nao via o ganho, a carta nunca ia pro topo
+do deck simulado, o motor NUNCA podia jogar o que o humano jogou. 39
+Eventos no corpus.
+
+### Fix 4 (O GRANDE) -- `DonEstimator` contrariava a regra 6-2-3
+
+`available = sacado_acumulado - anexado_acumulado`, subtraindo DON anexado
+de forma **permanente pelo jogo inteiro**. O docstring justificava: "gruda
+no personagem ate ele sair de campo, nao volta sozinho no refresh". A
+regra oficial diz o OPOSTO (`_referencias/regras_do_jogo/rule_comprehensive.pdf`,
+Refresh Phase):
+
+    6-2-3. "Return all DON!! cards given to cards in your Leader area and
+           Character area to your cost area and rest them."
+    6-2-4. "Set all rested cards placed in your Leader area, Character
+           area, Stage area, and cost area as active."
+
+DON anexado volta TODO TURNO e fica ativo -- exatamente o instante que a
+reconstrucao modela. **E o MESMO erro conceitual ja achado e corrigido em
+04/08 pros custos de play/activate** (o comentario do arquivo documenta
+aquele fix); o ramo de `attach_don` ficou pra tras, protegido por essa
+frase sobre a regra que nao se sustenta no texto oficial. Medido em 1848
+turnos, DON escondido do motor por turno do jogador: 3o=0,58 - 4o=1,18 -
+5o=1,74 - **6o=2,09** - 8o=1,97 - 9o=1,86. Casos extremos: real=11 ->
+estimador=0; real=10 -> estimador=5. Em 25 turnos o motor recebeu ZERO DON
+tendo DON real. Piora com a duracao -- justo onde estao as jogadas caras,
+e explica por que `play`/`activate`/`attach_don` (que gastam DON) eram as
+3 piores categorias enquanto `attack` (de graca) ficava em 54%/70%.
+`available()` agora devolve o acumulado com teto 10 (`GameState.don_deck`).
+Limitacao que CONTINUA: DON dado ao oponente (`give_don_opp`) sai do pool
+de verdade, mas o schema so registra `attach_don` (unico `type` com "don"
+em 80 logs amostrados).
+
+### Fix 5 (menor) -- duplicacao de regra eliminada
+
+"Esta acao do log foi um play?" tinha DUAS leituras em dois arquivos, e
+foi isso que gerou os fixes 1 e 3 como bugs separados. Agora e uma funcao
+so: `hist_action_kind()` em `audit_real_losses.py`, usada pelos 3 pontos
+(`_hist_kind`, `_known_gains_this_turn`, `_field_stage_at`).
+
+### Numeros (decision_quality_full.py --all --workers 4, 214 logs, 1018 turnos)
+
+| categoria | baseline 648 | +fix 1/2/3 | +fix DON | total |
+|---|---|---|---|---|
+| play | 21,4% | 24,3% | **29,7%** | **+8,3pp** |
+| attack -- quem | 54,3% | 54,6% | 54,0% | -0,3pp |
+| activate | 27,4% | 24,3% | 25,6% | -1,8pp |
+| attach_don -- alvo | 17,0% | 16,0% | 16,6% | -0,3pp |
+| attack -- alvo | 69,9% | 69,7% | 70,0% | +0,1pp |
+| sequencia (LCS) | 34,0% | 34,2% | 35,1% | +1,1pp |
+| alvo no efeito | 17,5% | 14,6% | 14,5% | -3,0pp |
+
+Defesa (controle, nao tocada pelos fixes): blocker 85,9% IDENTICA, counter
+60,6% -> 60,8%. **Nos MESMOS turnos com o MESMO denominador** (isola
+comportamento de re-contabilidade): play 21,5% -> **29,8% (+8,2pp, 80
+turnos a mais batendo)**, activate 28,1% -> 25,3%, attach_don 18,7% ->
+17,7%. Comparacao de escala: os blocos 641-649 INTEIROS (5 mecanismos, 1
+override, 1 hipotese refutada) somaram entre +0,2 e +0,4pp.
+
+`activate` cai porque 57 turnos ENTRARAM no denominador (as ativacoes de
+Stage, antes 100% invisiveis, acertadas em 28%) e porque o motor agora TEM
+a Stage e as vezes ativa quando o humano nao ativou. **NAO reverter a
+reconstrucao da Stage pra "recuperar" os 27,4%** -- aquele numero media um
+motor jogando sem uma carta que o humano tinha; 25,6% e o numero honesto.
+
+### Ferramenta nova: medida por SOBREPOSICAO ao lado do tudo-ou-nada
+
+As % de conjunto sao `hist == motor` -- um turno {A,B} vs {A} pontua igual
+a {Z}. Melhora PARCIAL nao aparece, e uma correcao de fidelidade pode
+FAZER O NUMERO CAIR (aconteceu aqui). `decision_quality_full.py` agora
+imprime tambem intersecao/uniao somadas (Jaccard micro-medio): play 26,9%,
+attack-quem 70,8%, activate 32,8%, attach_don 20,1%. Nenhuma % antiga
+mudou.
+
+### Politica de ativacao de Stage -- 2 hipoteses TESTADAS E REFUTADAS
+
+Concordancia motor-vs-humano na decisao de ativar a Stage subiu de
+**50,0% -> 59,7% SO com o fix de DON**, sem tocar heuristica nenhuma
+(sub-ativacao 29,0% -> 20,2%; super-ativacao estavel em 20,2%). Confirma
+que tunar antes teria sido calibrar contra estado quebrado.
+
+- **Degrau `best_saved_don >= 3`** em `_score_activate_main` (o boost de
+  stage, `+min(saved*80, 520)`): **REFUTADO**. So 2 de 25 casos de
+  sub-ativacao ficam logo abaixo do gate; a massa esta em `saved=-2`,
+  onde ativar e NEGATIVO por economia de DON e o humano ativou mesmo
+  assim. O eixo "DON economizado" nao explica a decisao humana.
+- **Dependencia de sequencia** (jogar o habilitador antes pra comprar o
+  alvo): **REFUTADO**. So 2% das cartas implantadas foram compradas no
+  mesmo turno; 73% ja estavam na mao no inicio.
+
+**ABERTO, nao fechado**: em 48% das divergencias a ativacao **nunca e
+gerada como candidata** (12/25) -- e GERACAO, nao score, entao nenhum peso
+conserta. O motivo dominante na 1a decisao real do turno e `play_card:
+nenhuma carta elegivel na mao`, mas isso CONTRADIZ os 73% que estavam na
+mao e a contradicao NAO foi resolvida. Filtro `five elders`/`black` foi
+verificado e casa certo nas 5 cartas (nao e bug de parser); `cost_lte:
+don_count_self` resolve igual nos dois call sites (`_resolve_cost_lte`).
+Proxima sessao: comecar por aqui, e checar `_step_is_viable` no estado
+REAL de inicio de turno de um caso concreto de divergencia.
+
+### 2 medicoes minhas que tive que corrigir no caminho (nao repetir)
+
+1. Medi `attach_don` do motor em 0,35x o humano ("anexa 3x menos"). ERRADO
+   -- nao somei o top-up automatico de ataque, que e `kind` PROPRIO do
+   `decision_log`, fora de `turn_planner`: **exatamente o trap ja
+   documentado no bloco 589/590**. Real: 0,86x. Qualquer script novo que
+   conte acoes do motor TEM que somar `attach_don_for_attack_events`.
+2. Medi 91% das recusas de Stage como "sem carta elegivel". CONTAMINADO --
+   o wrapper contava tambem chamadas dentro das simulacoes Monte Carlo,
+   onde a mao ja foi gasta. Restringir a 1a chamada por turno (o generator
+   roda no estado REAL antes de qualquer simulacao).
+
+Tambem REFUTADA: hipotese de que o motor age menos por turno (4,60 acoes
+vs 4,77 do humano -- praticamente igual, nao e a causa).
+
+### Consequencia pros blocos 641-649
+
+O gap de 175 pontos e a correlacao com `human_alignment` do bloco 649
+foram medidos contra uma regua com 18,5% do denominador de `play` travado
+em zero, e a correlacao era com **Imu OP13-079, justamente o lider mais
+afetado pelo bug da Stage**. Re-medir antes de continuar valendo.
+
+### Validacao
+
+`smoke_fast.py` 1376 OK / 0 falhas (exit 0), `smoke_test.py` 204 OK / 0
+falhas (exit 0), `decision_quality_full.py --all --workers 4` completo.
+Bonus: os dois smokes ganharam guard de UTF-8 no stdout -- num console
+cp1252 (padrao no Windows) o `smoke_fast.py` MORRIA no meio com
+UnicodeEncodeError num label com digito circulado, abortando ~500 checks
+com traceback que PARECE regressao de engine e nao e.
+
 ## 2026-08-23 (649) - Claude (sessao remota web) - Diagnostico de causa raiz, pedido do usuario "achar o que esta travando": achado real e ESPECIFICO (gap de valor simulado quando `play` compete e perde), mas a hipotese de fix global (desligar `human_alignment`) foi testada e REFUTADA por dado real
 
 Pedido do usuario apos ver que o override do bloco 648 mal moveu o

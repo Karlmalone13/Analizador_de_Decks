@@ -2,6 +2,75 @@
 
 **Última atualização:** 23 de agosto de 2026
 
+> 23/08/2026 (bloco 650, pedido do usuário "tem alguma coisa impedindo a
+> porcentagem de igualdade subir" + "algo puxando essas porcentagens para
+> baixo pq mesmo com override não conseguimos subir"): **RESPOSTA
+> ACHADA, e não era heurística — era o ESTADO que a reconstrução
+> entregava ao motor.** 4 fixes de fidelidade, todos em ferramenta de
+> auditoria, ZERO linha de `decision_engine.py`. **`play` 21,4% →
+> 29,7% (+8,3pp)**; nos MESMOS turnos com o MESMO denominador, +8,2pp
+> (80 turnos a mais batendo) — comportamento real, não re-contabilidade.
+> Escala: os blocos 641-649 inteiros somaram +0,2 a +0,4pp.
+>
+> **Metodologia nova, adotar sempre**: medir o TETO da métrica antes de
+> tunar contra ela. O teto de `play` era **81,5%** (171 de 924 turnos
+> eram mismatch garantido por construção); hoje é **100,0%**.
+>
+> Os 4 fixes: (1) `_hist_kind` classificava ativação de STAGE como
+> `play` — 33 das 49 STAGE do banco têm `[Activate: Main]`, e a mesma
+> ação humana era punida DUAS vezes (mismatch impossível em `play` +
+> sumia do denominador de `activate`); 134 turnos, 14,5% do denominador.
+> (2) **O log não tem zona de Stage** — o plugin só emite `Hand:`/
+> `Board:`/`Trash:`/`Life:` e `Board:` traz só personagens, então
+> `p.field_stage` era SEMPRE None em toda reconstrução; novo
+> `_field_stage_at()` recupera do histórico, incl. Stage implantada no
+> SETUP (Imu/Empty Throne, que o parser não guarda). (3)
+> `_known_gains_this_turn` perdia Evento comprado e jogado no mesmo
+> turno (logado como `activate`, não `play`) — 39 casos. (4) **O
+> GRANDE: `DonEstimator` contrariava a regra oficial 6-2-3** —
+> subtraía DON anexado de forma permanente pelo jogo inteiro, mas a
+> Refresh Phase devolve todo DON anexado ao cost area e o deixa ATIVO;
+> escondia 1,2 a 2,1 DON por turno do motor (pico no 6º turno), com
+> casos de real=11 → estimador=0. É o MESMO erro conceitual já
+> corrigido em 04/08 pros custos de play/activate — o ramo de
+> `attach_don` ficou pra trás. (5) menor: `hist_action_kind()` vira
+> fonte única de "esta ação do log foi um play?" (a duplicação era o
+> que tinha gerado os fixes 1 e 3 como bugs separados).
+>
+> **FECHADO**: teto de `play` (81,5% → 100%); DON da reconstrução;
+> classificação de STAGE; Evento comprado-e-jogado. Ferramenta nova:
+> `decision_quality_full.py` agora imprime também medida por
+> SOBREPOSIÇÃO (interseção/união, crédita acerto parcial) ao lado das %
+> tudo-ou-nada — porque uma correção de fidelidade pode fazer o número
+> exato CAIR mesmo melhorando (aconteceu com `activate` aqui).
+>
+> **PENDENTE / MUDOU DE PRIORIDADE**: (a) política de ativação de Stage
+> — concordância subiu 50,0% → 59,7% só com o fix de DON; das causas do
+> resto, o degrau `best_saved_don >= 3` e a dependência de sequência
+> foram as duas TESTADAS E REFUTADAS; sobra que em **48% das
+> divergências a ativação nunca é GERADA como candidata** (geração, não
+> score — nenhum peso conserta), com uma contradição não resolvida entre
+> o motivo `play_card: nenhuma carta elegível na mão` e os 73% de alvos
+> que estavam na mão no início do turno. Próxima sessão começa por aí.
+> (b) **Re-medir os achados do bloco 649** (gap de 175 pontos,
+> correlação com `human_alignment`): foram medidos contra uma régua com
+> 18,5% do denominador de `play` travado em zero, e a correlação era com
+> Imu OP13-079 — justamente o líder mais afetado pelo bug da Stage.
+> (c) `activate` em 25,6% (era 27,4%) é o número HONESTO — não reverter
+> a reconstrução da Stage pra "recuperar" o antigo, que media um motor
+> jogando sem uma carta que o humano tinha.
+>
+> **Armadilhas de medição registradas** (duas que esta sessão teve que
+> corrigir): qualquer script que conte ações do motor TEM que somar
+> `attach_don_for_attack_events` (o top-up de ataque é `kind` próprio,
+> fora de `turn_planner` — trap já documentado no bloco 589/590; sem
+> isso `attach_don` aparece como 0,35x o humano em vez de 0,86x); e
+> qualquer wrapper em função de decisão precisa restringir à 1ª chamada
+> do turno, senão conta os estados das simulações Monte Carlo (mão já
+> gasta) junto com o estado real. Também REFUTADA: hipótese de que o
+> motor age menos por turno (4,60 vs 4,77 ações — praticamente igual).
+> Ver bloco 650 do HANDOFF para os números completos.
+
 > 23/08/2026 (bloco 649, pedido do usuário "achar o que está travando"
 > depois de ver que o override do bloco 648 mal moveu o ponteiro):
 > `rank_census.py` (scratchpad) mediu, pela primeira vez, o GAP de valor
