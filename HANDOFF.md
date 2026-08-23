@@ -28,6 +28,72 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-23 (649) - Claude (sessao remota web) - Diagnostico de causa raiz, pedido do usuario "achar o que esta travando": achado real e ESPECIFICO (gap de valor simulado quando `play` compete e perde), mas a hipotese de fix global (desligar `human_alignment`) foi testada e REFUTADA por dado real
+
+Pedido do usuario apos ver que o override do bloco 648 mal moveu o
+ponteiro: "vc reparou que nem com o override essas porcentagens sobem?
+Temos que achar o que esta travando ou o que falta". Objetivo: parar de
+tunar parametro isolado, achar a causa raiz de verdade.
+
+**Metodologia**: `rank_census.py` (scratchpad, ja existia dos blocos
+639-645) tinha uma secao (`shortlist_losses`) que capturava, pra cada
+mismatch de `play` que CHEGA no shortlist e PERDE a comparacao Monte
+Carlo, o valor simulado (`my_sim`) da carta que o humano jogou vs o
+valor simulado (`winner_sim`) do que o motor escolheu -- mas essa
+comparacao nunca tinha sido agregada/reportada antes (so exemplos
+individuais). Adicionado um resumo de GAP (`winner_sim - my_sim`,
+distribuicao completa) e persistencia no JSON de saida. Rodado `--n 60
+--category play` (mesma fonte dos 274 logs).
+
+**Achado 1 -- o gap NAO e "empate tecnico"**: dos 49 casos que chegam
+no shortlist e perdem, gap mediano = **175 pontos**, so 10,2% tem gap
+<=20 (quase-empate). Ou seja, quando `play` perde de verdade a
+comparacao real, o motor prefere a alternativa com MUITA confianca no
+proprio valor simulado -- nao e diversidade estrategica legitima
+("2 jogadas igualmente boas"), e sim uma preferencia forte e
+consistente por OUTRA coisa.
+
+**Achado 2 -- correlacao forte com `human_alignment`**: dos 49 casos,
+em **47** o VENCEDOR ja tinha `human_alignment` bonus >=20 (perto do
+teto 30.0), e em **22** a carta que o humano REALMENTE jogou tinha
+bonus ==0. 20/49 casos combinam os dois (meu align<10 E vencedor
+align>=20). Distribuicao do kind vencedor: attach_don=20, attack=17,
+play=12 (so 12/49 sao outra carta de play vencendo -- a maioria e
+attach_don/attack, kinds com MUITO menos cartas distintas por lider
+que `play`, entao acumulam suporte mais rapido no banco).
+
+**Hipotese testada -- REFUTADA**: se o proprio `human_alignment` (peso
+8.0, teto 30.0, ja em PRODUCAO desde antes desta sessao -- nunca
+testado abaixo de 8.0, as 5 tentativas dos blocos 646/647 so testaram
+SUBIR) favorece desproporcionalmente o padrao mais frequente do banco
+(attach_don:LIDER/attack:LIDER, quase universal) as custas de cartas de
+`play` especificas (raras, dividem muito suporte), desligar deveria
+ajudar `play`. **Medido via decision_quality_full.py --all --workers 4,
+peso 0.0**: PIOROU quase tudo -- play 21,4%->19,9% (-1,5pp), activate
+27,4%->25,3% (-2,1pp), attach_don 17,0%->15,1% (-1,9pp), attack-alvo
+69,9%->68,6% (-1,3pp), so attack-quem melhorou (+0,6pp). **Revertido pro
+baseline (8.0)**.
+
+**Por que a hipotese falhou apesar do achado 1/2 serem reais**: o
+bonus nao e SO "rouba sinal de play pro padrao mega-comum" -- ele
+TAMBEM da sinal positivo real e especifico quando a PROPRIA carta de
+play/activate/attach_don e historicamente comum pra aquele lider.
+Desligar o mecanismo inteiro remove os dois efeitos (o que atrapalha
+`play` especificamente E o que ajuda as outras 3 categorias em geral),
+e o efeito positivo pesa mais no agregado. Confirma (com dado, nao so
+teoria) o que o bloco 646/647 ja tinha concluido: nao e um problema de
+LIGAR/DESLIGAR ou de MAGNITUDE de peso -- e um problema de
+DESBALANCEAMENTO DE FREQUENCIA que precisaria de um fix ESTRUTURAL
+(ex: normalizar a contribuicao do bonus por quantas cartas distintas
+competem naquele kind pra aquele lider, o mesmo espirito de
+`KIND_SCORE_SCALE` do bloco 642 mas aplicado ao bonus em vez de a
+selecao do shortlist) -- nao tentado ainda, proximo passo natural.
+
+**Registro honesto pra proxima sessao**: os achados 1 e 2 continuam
+REAIS e nao explicados (20/49 casos concretos, gap mediano 175) -- so
+a hipotese de fix GLOBAL (on/off) foi refutada. Nao repetir "desligar
+human_alignment" sem uma normalizacao mais cirurgica primeiro.
+
 ## 2026-08-22 (648) - Claude (sessao remota web) - Mecanismo NOVO (hard override, nao bonus): pequeno GANHO real e uniforme em TODAS as 4 categorias ofensivas tocadas, zero regressao -- primeiro resultado liquido positivo da familia "forcar alinhamento humano" depois dos 5 fracassos do bloco 646/647
 
 Pedido explicito e repetido do usuario, mais forte que no bloco 646/647:

@@ -1,6 +1,29 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 22 de agosto de 2026
+**Última atualização:** 23 de agosto de 2026
+
+> 23/08/2026 (bloco 649, pedido do usuário "achar o que está travando"
+> depois de ver que o override do bloco 648 mal moveu o ponteiro):
+> `rank_census.py` (scratchpad) mediu, pela primeira vez, o GAP de valor
+> simulado quando `play` chega no shortlist e perde a comparação real —
+> **mediana 175 pontos, só 10% é quase-empate**. Não é diversidade
+> estratégica legítima, é preferência forte e consistente por outra
+> coisa. Achado 2: em 47/49 casos o vencedor já tinha `human_alignment`
+> bonus ≥20 (perto do teto), em 22/49 a carta que o humano realmente
+> jogou tinha bonus 0. **Hipótese testada — desligar `human_alignment`
+> (peso 8.0→0.0, nunca testado abaixo de 8.0 antes) — foi REFUTADA por
+> decision_quality_full.py real**: piorou quase tudo (play -1,5pp,
+> activate -2,1pp, attach_don -1,9pp, attack-alvo -1,3pp). O bônus não é
+> só "rouba sinal de play" — também dá sinal positivo real quando a
+> própria carta é historicamente comum; desligar perde os dois efeitos.
+> Revertido pro baseline (8.0). Achado honesto: os gaps de 175 pontos e
+> a correlação com align continuam reais e NÃO explicados — só não são
+> consertáveis via liga/desliga global. Próximo passo (não tentado
+> ainda): normalizar a contribuição do bônus por quantas cartas
+> distintas competem naquele kind pra aquele líder (mesmo espírito do
+> `KIND_SCORE_SCALE` do bloco 642, mas aplicado ao bônus em vez de à
+> seleção do shortlist). Ver bloco 649 do HANDOFF para os números
+> completos.
 
 > 22/08/2026 (bloco 648, pedido explícito e mais forte que o bloco
 > 646/647 — usuário rejeitou "mais logs no banco" como resposta e

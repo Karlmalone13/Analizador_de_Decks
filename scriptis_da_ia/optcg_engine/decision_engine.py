@@ -602,6 +602,22 @@ EVAL_WEIGHTS = {
     # que usa dado ja coletado mas nunca consumido (by_leader_ngrams_2)
     # pra dar um sinal de "proxima acao plausivel" alem do bonus por
     # acao isolada.
+    # bloco 649 (teste, pedido do usuario "achar o que esta travando"):
+    # `rank_census.py` (scratchpad) achou que quando 'play' chega no
+    # shortlist e PERDE pra outra kind, em 47/49 casos o VENCEDOR ja
+    # tinha align>=20 (perto do teto 30) enquanto em 22/49 a carta que o
+    # humano realmente jogou tinha align==0. TESTADO 0.0 (desligado
+    # completo, nunca testado antes -- as 5 tentativas dos blocos 646/647
+    # so testaram SUBIR peso/teto): **PIOROU quase tudo** (play -1,5pp,
+    # activate -2,1pp, attach_don -1,9pp, attack-alvo -1,3pp, so
+    # attack-quem +0,6pp). Hipotese REFUTADA por dado real -- o bonus nao
+    # e so "rouba sinal de play pro padrao mega-comum", ele TAMBEM da
+    # sinal positivo real e especifico quando a PROPRIA carta de
+    # play/activate/attach_don e historicamente comum; desligar perde os
+    # dois efeitos, e o positivo pesa mais. Revertido pro baseline (8.0).
+    # O achado especifico dos 20/49 casos (align baixo perdendo pra align
+    # alto) continua real e nao explicado -- so nao e consertavel via
+    # liga/desliga global deste peso. Ver HANDOFF bloco 649.
     'human_alignment': 8.0,
     # bloco 647: sinal SEPARADO de human_alignment -- premia o PAR
     # ORDENADO (first2 -> 1a continuacao gulosa) observado nos logs
