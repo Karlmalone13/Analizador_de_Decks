@@ -28,6 +28,84 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (674) - Claude (sessao remota web) - Pedido do usuario "quero saber se estamos cumprindo o objetivo de jogar identico ao humano": rodada a metrica objetiva `decision_quality_vs_human.py` (26 logs bot-vs-humano, 111 turnos) + investigados os 12/12 turnos residuais um a um -- NENHUM bug novo, teto confirmado como ruido de reconstrucao + diversidade estrategica legitima. Amostra ampliada pra 150 logs (novo flag `--all-logs`), resultado ainda rodando em background
+
+**Resultado da metrica (26 logs/111 turnos, com recorte por lider, mandatorio)**:
+
+| lider | turnos | motor >= humano | % |
+|---|---|---|---|
+| OP17-039 (Xebec) | 69 | 59 | 85,5% |
+| OP14-079 | 17 | 17 | 100% |
+| OP16-001 (Ace) | 11 | 9 | 81,8% |
+| OP10-099 | 5 | 5 | 100% |
+| OP13-001 | 5 | 5 | 100% |
+| OP16-080 (Teach) | 4 | 4 | 100% |
+| **total** | **111** | **99** | **89,2%** |
+
+Comparado ao baseline de 17/08 (bloco 592, MESMOS 26 logs/111 turnos):
+**90,1% (100/111) -> 89,2% (99/111)** -- praticamente estagnado, 1 turno
+PIOR, apesar de varias sessoes de fix de bug mecanico entre as duas
+medicoes (incluindo os 4 fixes de hoje: Kuro, Krieg opp_turn, Jinbe,
+Xebec total_cost_lte).
+
+**Investigados os 12/12 turnos onde o motor causa MENOS dano que o
+humano real** (nao so uma amostra -- todos, lendo HIST vs
+`engine_hoje_narrativa` de cada um via `audit_one_game`). Nenhum bug de
+codigo novo encontrado. Dois padroes confirmados, ambos JA
+documentados como limitacao conhecida da propria ferramenta:
+1. **Ruido de reconstrucao (maioria dos casos)**: o ataque do proprio
+   lider aparece bloqueado por um Counter NA SIMULACAO
+   ("🛡 Counter! +1000 -> defesa 6000") quando historicamente esse
+   MESMO ataque acertou sem counter nenhum -- o baralho do oponente e
+   reembaralhado aleatoriamente na reconstrucao (limitacao ja
+   documentada em `audit_real_losses.py`), entao o oponente simulado
+   as vezes "sorteia" um Counter que o oponente real daquele turno nao
+   tinha na mao. Nao e erro de decisao do lado auditado.
+2. **Troca estrategica legitima (4 dos 12 casos)**: em varios turnos
+   com atacante livre, o motor preferiu matar um character do
+   oponente (Vasco Shot, Catarina Devon, Jesus Burgess, Borsalino) em
+   vez de bater no lider como o humano fez -- dano MENOR nesse turno
+   isolado, mas remove uma ameaca do board. A metrica so mede dano do
+   turno isolado, nao sabe premiar isso. Xebec e um deck de corrida pra
+   vida -- fica registrado como pergunta em aberto (nao resolvida, nao
+   uma acao tomada) se o motor esta pesando remocao de board um pouco
+   forte demais pra esse tipo de arquetipo especifico, mas NAO mexido
+   aqui -- uma tentativa parecida de recalibrar scoring de
+   `attach_don`/banking ja foi tentada e **regrediu** o mesmo tipo de
+   metrica (bloco 587), teve que ser revertida. Qualquer recalibragem
+   futura tem que medir agregado ANTES de aceitar, mesma disciplina.
+
+**Conclusao**: os 12 residuais nao sao bug corrigivel -- confirmam
+exatamente os 2 tetos ja previstos na nota do topo deste arquivo
+(22/08): ruido de reconstrucao + diversidade estrategica. Cacar mais
+bug mecanico nessa metrica especifica bateu no teto; nao vai mover o
+numero pra cima sozinho.
+
+**Amostra ampliada (pedido do usuario, "amostra atual e 62% Xebec")**:
+a amostra de 26 logs so cobre partidas com `bot_side` preenchido no
+indice. `find_all_human_logs` (ja existia neste arquivo, usada por
+`decision_quality_full.py` desde o bloco 617) cobre os 150 logs do
+banco inteiro, auditando os DOIS lados nos 124 logs humano-vs-humano
+(274 jobs no total) -- mas nunca tinha um flag proprio em
+`decision_quality_vs_human.py`. Adicionado `--all-logs` (novo,
+`--all` velho mantido intacto pra nao quebrar as citacoes historicas
+de "111 turnos" no HANDOFF). Primeira tentativa de rodar `--all-logs` **crashou o batch inteiro**
+(`KeyError: 'players'`, `ProcessPoolExecutor.map()` derruba TODOS os
+resultados quando 1 job levanta excecao nao tratada) -- 30 logs do
+banco usam um schema mais antigo (`meta` sem o wrapper `'players'`).
+**Mesmo bug ja tinha sido achado e corrigido em `decision_quality_
+full.py` no bloco 617 (18/08)** -- nunca espelhado em `decision_
+quality_vs_human.py` porque este arquivo so cobria os 26 logs
+bot-vs-humano (schema novo) ate hoje. Fix identico (guarda
+`if 'players' not in raw.get('meta', {})` -> pula com `{'error':...}`
+ANTES de chamar `audit_one_game`, mesmo padrao usado pelo resto do
+pipeline) aplicado em `_turn_verdict`. Rodada reiniciada em background
+nesta sessao (`--all-logs --workers 4`), resultado **AINDA NAO
+disponivel no momento deste registro** -- proxima sessao (ou a
+continuacao desta) deve conferir
+`metrics/decision_quality_vs_human/ultimo_resultado.json` e/ou rodar
+de novo antes de citar qualquer numero da amostra ampliada.
+
 ## 2026-08-24 (673) - Claude (sessao remota web) - Pedido do usuario "pode testar outro lider" (apos o Jinbe): Rocks D. Xebec (OP17-118). Achado real: "play up to N ... total cost of M or less" e "different card names" quebrados no play_card da MAO (so play_from_trash tinha os dois mecanismos)
 
 Partida: `Shanks-G_x_Rocks.D.Xebec-B_2026-08-09T19.11.14.json`, 7 turnos

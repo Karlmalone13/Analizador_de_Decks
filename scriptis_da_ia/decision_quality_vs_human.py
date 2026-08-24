@@ -158,6 +158,20 @@ def _turn_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
     """Roda audit_one_game pro lado do HUMANO e devolve o veredito de dano
     por turno -- reusa engine_hoje_narrativa já gerada, não duplica nada."""
     raw = json.load(open(parsed_path, encoding='utf-8'))
+    # Achado real 24/08 (rodando --all-logs pela 1a vez neste arquivo,
+    # amostra ampliada pedida pelo usuario): 30 logs do banco usam um
+    # schema mais antigo (`meta` sem o wrapper 'players') -- `audit_
+    # one_game` (audit_real_losses.py linha ~621) acessa `data['meta']
+    # ['players']` sem guarda nenhuma, e uma unica excecao derruba o
+    # ProcessPoolExecutor.map() inteiro (perde os outros ~270 resultados
+    # ja prontos). MESMO bug ja achado e corrigido em decision_quality_
+    # full.py no bloco 617 (18/08) -- nunca espelhado aqui porque este
+    # arquivo so cobria os 26 logs bot-vs-humano ate hoje, todos com
+    # schema novo. Mesmo fix: pula graciosamente ANTES de chamar
+    # audit_one_game, mesmo padrao de erro ja usado pelo resto do
+    # pipeline (`report.get('error')` abaixo).
+    if 'players' not in raw.get('meta', {}):
+        return {'error': f'schema de log antigo sem meta.players: {os.path.basename(parsed_path)}'}
     turns_raw = raw['turns']
     report = audit_one_game(parsed_path, human_side_label, cards_db, df_raw, urls)
     if report.get('error'):
@@ -217,7 +231,20 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                   formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--log', help='caminho de um parsed json especifico (relativo a logs/)')
-    ap.add_argument('--all', action='store_true', help='roda em TODOS os logs bot-vs-humano do banco')
+    ap.add_argument('--all', action='store_true', help='roda em TODOS os logs bot-vs-humano do banco (26, so os com bot_side)')
+    # Achado real 24/08 (pedido do usuario, "ampliar a amostra" apos o
+    # levantamento vs-humano com --all mostrar 89,2% dominado 62% por um
+    # unico lider/OP17-039): `find_all_human_logs` ja existia neste
+    # arquivo (usada por decision_quality_full.py desde o bloco 617) mas
+    # nunca tinha um flag proprio aqui -- so dava pra chegar nos 26 logs
+    # com bot_side preenchido, mesmo com 150 no banco todo (124 sao
+    # humano-vs-humano de verdade, auditaveis dos DOIS lados). `--all`
+    # mantido com o comportamento antigo (compatibilidade com os
+    # numeros ja citados no HANDOFF, ex "111 turnos, bloco 592") --
+    # `--all-logs` e o flag NOVO pra amostra ampliada.
+    ap.add_argument('--all-logs', action='store_true',
+                     help='roda em TODOS os 150 logs do banco (via find_all_human_logs -- '
+                          'humano-vs-humano auditado dos 2 lados, amostra bem maior que --all)')
     ap.add_argument('--leader', help='filtra por codigo do lider HUMANO (ex: OP17-039)')
     ap.add_argument('--workers', type=int, default=1,
                      help='processos paralelos (1=sequencial) -- partidas sao independentes')
@@ -236,6 +263,10 @@ def main():
         human_key = 'p2' if bs == 'p1' else 'p1'
         jobs = [(entry['parsed_file'], 'Opponent' if bs == 'p1' else 'You',
                  entry[human_key]['leader_code'], entry['id'])]
+    elif args.all_logs:
+        jobs = find_all_human_logs(args.leader)
+        if not jobs:
+            raise SystemExit('nenhum log encontrado (confira --leader)')
     else:
         jobs = find_bot_vs_human_logs(args.leader)
         if not jobs:

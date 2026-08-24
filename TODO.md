@@ -2,6 +2,23 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 674, pedido "quero saber se estamos cumprindo o
+> objetivo de jogar idêntico ao humano"): rodada `decision_quality_vs_
+> human.py` (26 logs/111 turnos) — **89,2% dos turnos o motor causa
+> dano ≥ ao humano real**, quase igual ao baseline de 17/08 (90,1%)
+> apesar de vários fixes de bug desde então. Investigados os 12/12
+> turnos residuais um a um — **nenhum bug novo**: confirmado que é
+> ruído de reconstrução (baralho do oponente reembaralhado dá Counter
+> que ele não tinha de verdade) + trade-off estratégico legítimo (matar
+> character em vez de bater no líder). Caçar bug mecânico bateu no teto
+> nessa métrica específica. Amostra ampliada pra 150 logs (novo flag
+> `--all-logs`, cobre os 124 humano-vs-humano também) — achado e
+> corrigido no processo um crash real (30 logs de schema antigo sem
+> `meta.players` derrubavam o `ProcessPoolExecutor` inteiro; mesmo bug
+> já corrigido em `decision_quality_full.py` no bloco 617, nunca
+> espelhado aqui — mesmo fix aplicado). Resultado da amostra ampliada
+> ainda rodando/pendente. Ver bloco 674 do HANDOFF.
+
 > 24/08/2026 (bloco 673, pedido "pode testar outro líder", após o
 > Jinbe): **Rocks D. Xebec (OP17-118).** Partida real auditada (7 turnos
 > próprios, vitória do bot) — 6/7 turnos sem divergência nova. **Bug
