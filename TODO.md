@@ -2,6 +2,21 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 663, pedido do usuário "crie novas alternativas no
+> código pra ele jogar igual" em vez de só caçar bug): novo **2º nível
+> de desempate** (`_tb_human`) na busca real — só entra quando o valor
+> simulado E o desempate de DON (bloco 651) JÁ empatam entre 2+
+> candidatas. Usa frequência humana bruta por líder (infraestrutura
+> recriada, tinha sido removida junto com a aposentadoria do override
+> do bloco 648). Diferente de `human_alignment` (que já está somado no
+> valor e por isso nunca desempata nada, medido 0/104 no bloco 651) —
+> esse sinal nunca é somado ao score, só decide entre empates reais.
+> **Medido**: activate 26,5% → **27,7% (+1,2pp)**, attack-quem +0,4pp,
+> resto estável. Líquido positivo e criticamente diferente de zero —
+> confirma que não é circular. Magnitude pequena por desenho (gate
+> conservador, só ativa em empate duplo). smoke_fast/smoke_test OK. Ver
+> bloco 663 do HANDOFF.
+
 > 24/08/2026 (bloco 662): **medição completa confirma os fixes desta
 > sessão** — `decision_quality_full.py --all --workers 4` rodado após
 > os fixes dos blocos 657 (char_value_score corpo recém-jogado) e 661

@@ -404,6 +404,16 @@ SEARCH_SCORE_WINDOW = 180
 # repetir.
 USE_TIEBREAK_PRESERVA_OPCAO = True
 TIEBREAK_EPS = 1e-9
+# Bloco 663 (pedido do usuario: "simule os turnos... se o bot nao tomar
+# decisao identica ao humano, crie novas alternativas no codigo") -- 2o
+# NIVEL de desempate, so entra quando o desempate de DON acima TAMBEM
+# empata. Usa frequencia humana BRUTA (_HUMAN_ACTION_FREQ_BY_LEADER, ja
+# existente do bloco 648) -- sinal DIFERENTE de human_alignment (que ja
+# esta em `valor` e por isso nunca desempata nada, ver comentario do
+# bloco 651 acima). So pode mudar o resultado quando o motor JA e
+# indiferente por 2 criterios seguidos -- nunca sobrepoe uma linha que a
+# busca ou o desempate de DON preferem de verdade.
+USE_TIEBREAK_HUMAN_FREQ = True
 
 # Bloco 656 (analise turno-a-turno de uma vitoria humana, pedido do usuario):
 # ACAO "PASS" -- encerrar o turno agora -- passa a ser uma CANDIDATA que
@@ -767,6 +777,18 @@ _HUMAN_BLOCKER_CARD_BONUS_BY_LEADER: dict = {}
 # realmente faz" que so a ORDEM preservada da. Guarda por PAR ORDENADO
 # (kind1,codigo1,kind2,codigo2), nao por token isolado.
 _HUMAN_SEQUENCE_BONUS_BY_LEADER: dict = {}
+# bloco 663 (readicionado -- existia no bloco 648, removido junto com a
+# aposentadoria do override no bloco 652): contagem BRUTA (nao bonus
+# tetado/somado) de quantas vezes cada (kind,codigo) apareceu em
+# QUALQUER posicao de turnos humanos reais, por lider. Fonte SEPARADA de
+# `_HUMAN_PATTERN_BONUS_BY_LEADER` (que vem de n-gramas tokenizados via
+# `heuristic_candidates`, ja soma DENTRO de `valor`/human_alignment) --
+# usada agora so como 2o nivel de desempate em `_select_action_via_
+# search` (`_tb_human`), NUNCA como termo somado ao score. Ver bloco 651
+# (comentario acima): reusar o sinal que ja esta em `valor` pra
+# desempatar e circular e nao muda nada (medido 0/104); este e um sinal
+# GENUINAMENTE separado.
+_HUMAN_ACTION_FREQ_BY_LEADER: dict = {}
 _HUMAN_PATTERN_MIN_SUPPORT = 2
 # TESTADO 60.0 (bloco 646, hipotese: levantar o teto quebraria os
 # EMPATES achados no bloco 641 -- 61% dos casos attach_don-vence-play
@@ -794,7 +816,7 @@ _load_effects_db()
 
 def _load_human_patterns():
     """Carrega sinais leves de pilotagem humana extraidos dos logs reais."""
-    global _HUMAN_PATTERN_BONUS_BY_LEADER, _HUMAN_DEFENSE_BY_LEADER, _HUMAN_COUNTER_CARD_BONUS_BY_LEADER, _HUMAN_BLOCKER_CARD_BONUS_BY_LEADER, _HUMAN_SEQUENCE_BONUS_BY_LEADER
+    global _HUMAN_PATTERN_BONUS_BY_LEADER, _HUMAN_DEFENSE_BY_LEADER, _HUMAN_COUNTER_CARD_BONUS_BY_LEADER, _HUMAN_BLOCKER_CARD_BONUS_BY_LEADER, _HUMAN_SEQUENCE_BONUS_BY_LEADER, _HUMAN_ACTION_FREQ_BY_LEADER
     if _HUMAN_PATTERN_BONUS_BY_LEADER:
         return
     try:
@@ -809,6 +831,26 @@ def _load_human_patterns():
     counter_card_by_leader: dict = {}
     blocker_card_by_leader: dict = {}
     sequence_by_leader: dict = {}
+    action_freq_by_leader: dict = {}
+    # bloco 663: `by_leader_action_freq` -- token unico (kind:codigo),
+    # contado em QUALQUER posicao do turno. Contagem BRUTA (nao formula
+    # de bonus tetado) -- o gate de empate duplo no consumidor
+    # (`_tb_human`) e o proprio mecanismo de seguranca.
+    for leader, rows in data.get('by_leader_action_freq', {}).items():
+        leader_code = leader.split('|', 1)[0]
+        counts = action_freq_by_leader.setdefault(leader_code, {})
+        for row in rows:
+            count = int(row.get('count') or 0)
+            if count <= 0:
+                continue
+            token = row.get('pattern') or ''
+            if ':' not in token:
+                continue
+            kind, code = token.split(':', 1)
+            if kind not in ('play', 'activate', 'attack', 'attach_don'):
+                continue
+            key = (kind, code)
+            counts[key] = counts.get(key, 0) + count
     # bloco 647: PAR ORDENADO (kind1,codigo1,kind2,codigo2) direto de
     # `by_leader_ngrams_2` -- fonte SEPARADA de `heuristic_candidates`
     # (que so tokeniza), preserva a ordem real "depois de agir X, o
@@ -904,6 +946,7 @@ def _load_human_patterns():
     _HUMAN_COUNTER_CARD_BONUS_BY_LEADER = counter_card_by_leader
     _HUMAN_BLOCKER_CARD_BONUS_BY_LEADER = blocker_card_by_leader
     _HUMAN_SEQUENCE_BONUS_BY_LEADER = sequence_by_leader
+    _HUMAN_ACTION_FREQ_BY_LEADER = action_freq_by_leader
 
 
 def _human_counter_card_bonus(leader_code: str, card_code: str) -> float:
@@ -16482,8 +16525,48 @@ class OPTCGMatch:
 
         melhor, melhor_valor = None, None
         melhor_tb = 0.0
+        melhor_tb2 = 0.0
         search_records = []
         sim_values = {}
+
+        def _tb_human(acao):
+            """
+            Bloco 663 -- 2o NIVEL de desempate, so entra quando `valor`
+            (simulado) E `_tb` (DON) TAMBEM empatam entre si (pedido do
+            usuario: "simule os turnos... se o bot nao tomar decisao
+            identica ao humano, crie novas alternativas no codigo").
+
+            Usa `_HUMAN_ACTION_FREQ_BY_LEADER` (bloco 648, frequencia
+            BRUTA de (kind,codigo) nos logs humanos deste lider) --
+            deliberadamente um sinal DIFERENTE de `_human_pattern_bonus`
+            (human_alignment), que ja soma dentro de `valor` (peso 8.0)
+            e por isso NUNCA consegue diferenciar quem chega empatado
+            aqui (medido no bloco 651: 0/104 empates tinham candidata
+            com bonus MAIOR que a escolhida -- sinal circular, ja
+            reprovado, nao repetir). `_HUMAN_ACTION_FREQ_BY_LEADER` so e
+            usado em `_human_dominant_action_override` (fora deste
+            metodo) -- nunca contribui pra `valor` nem pra `_tb`, entao
+            e um sinal genuinamente NOVO neste ponto, sem risco de
+            circularidade.
+
+            So pode mudar o resultado quando o motor JA e indiferente
+            (por construcao: 2 niveis de empate exato antes dele) --
+            nunca sobrepoe uma linha que a busca ou o desempate de DON
+            ja preferem, entao nunca piora uma decisao onde o motor
+            jogaria melhor que o humano (mesmo principio de seguranca
+            do desempate de DON acima).
+            """
+            if p is None or not p.leader:
+                return 0.0
+            _load_human_patterns()
+            counts = _HUMAN_ACTION_FREQ_BY_LEADER.get(p.leader.code)
+            if not counts:
+                return 0.0
+            kind, obj = acao[1], acao[2]
+            code = getattr(obj, 'code', None) if obj is not None else None
+            if code is None:
+                return 0.0
+            return float(counts.get((kind, code), 0))
 
         def _tb(acao):
             """Chave de desempate (bloco 651): quanto DON esta acao consome.
@@ -16531,6 +16614,7 @@ class OPTCGMatch:
                 melhor_valor = valor
                 melhor = cand
                 melhor_tb = _tb(cand)
+                melhor_tb2 = _tb_human(cand)
             elif (USE_TIEBREAK_PRESERVA_OPCAO and melhor is not None
                     and abs(valor - melhor_valor) <= TIEBREAK_EPS):
                 tb = _tb(cand)
@@ -16538,6 +16622,15 @@ class OPTCGMatch:
                     melhor_valor = valor
                     melhor = cand
                     melhor_tb = tb
+                    melhor_tb2 = _tb_human(cand)
+                elif (USE_TIEBREAK_HUMAN_FREQ and abs(tb - melhor_tb) <= TIEBREAK_EPS):
+                    # bloco 663: 2o nivel -- so decide quando `valor` E
+                    # `_tb` (DON) JA empataram entre os dois, ver
+                    # docstring de `_tb_human`.
+                    tb2 = _tb_human(cand)
+                    if tb2 > melhor_tb2:
+                        melhor = cand
+                        melhor_tb2 = tb2
         return melhor, melhor_valor, search_records, n_coletadas, sim_values
 
     def _generate_and_score_actions(self, p, opp, engine, exclude_activate_uids=None):

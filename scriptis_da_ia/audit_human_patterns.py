@@ -137,6 +137,15 @@ def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dic
     by_leader_attack: dict[str, Counter] = defaultdict(Counter)
     by_defender: dict[str, Counter] = defaultdict(Counter)
     by_defender_counter_order: dict[str, Counter] = defaultdict(Counter)
+    # bloco 663 (readicionado -- tinha sido removido junto com a
+    # aposentadoria do override do bloco 648/652). Frequencia BRUTA de
+    # cada token (kind:codigo), em QUALQUER posicao do turno, por LIDER
+    # inteiro (nao quebrado por band/sequencia) -- fonte DIFERENTE de
+    # `heuristic_candidates` (que vem de n-gramas tokenizados, nao de
+    # contagem direta por posicao), usada agora como 2o nivel de
+    # desempate em decision_engine.py (`_tb_human`, so entra quando
+    # valor simulado E desempate de DON ja empataram).
+    by_leader_action_freq: dict[str, Counter] = defaultdict(Counter)
     context_examples: dict[str, list[dict]] = defaultdict(list)
     global_action_orders = Counter()
 
@@ -175,6 +184,9 @@ def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dic
             global_action_orders[order] += 1
             by_leader_band[scope][order] += 1
             by_leader_order[leader][exact_order] += 1
+            for token in tokens:
+                if token != 'pass':
+                    by_leader_action_freq[leader][token] += 1
             for a, b in zip(tokens, tokens[1:]):
                 by_leader_ngram2[leader][f'{a} > {b}'] += 1
             for a, b, c in zip(tokens, tokens[1:], tokens[2:]):
@@ -274,6 +286,11 @@ def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dic
         'global_action_orders': counter_to_dict(global_action_orders, 30),
         'by_leader_band': nested_counter_to_dict(by_leader_band, 10),
         'by_leader_exact_orders': nested_counter_to_dict(by_leader_order, 10),
+        # limite alto (nao 10-12 como as outras) -- o consumidor
+        # (`decision_engine.py::_tb_human`) precisa da frequencia REAL de
+        # cada token pra desempate, cortar cedo perderia sinal de cartas
+        # menos frequentes mas ainda validas.
+        'by_leader_action_freq': nested_counter_to_dict(by_leader_action_freq, 200),
         'by_leader_ngrams_2': nested_counter_to_dict(by_leader_ngram2, 12),
         'by_leader_ngrams_3': nested_counter_to_dict(by_leader_ngram3, 12),
         'by_leader_before_attack': nested_counter_to_dict(by_leader_attack, 12),

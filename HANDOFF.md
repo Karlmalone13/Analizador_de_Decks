@@ -28,6 +28,60 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (663) - Claude (sessao remota web) - 2o NIVEL de desempate por padrao humano (`_tb_human`), so ativo quando valor simulado E desempate de DON JA empatam -- ganho pequeno mas REAL e nao-circular (activate +1,2pp), pedido do usuario "crie novas alternativas no codigo pra ele jogar [igual]"
+
+Pedido do usuario apos a medicao do bloco 662: em vez de continuar so
+cacando bug, "simule os turnos de novo e ve se o bot toma decisoes
+identicas ao do humano, se ele nao tomar, crie novas alternativas no
+nosso codigo pra que ele jogue [igual]".
+
+**Achado de design ANTES de codar**: `_select_action_via_search` (busca
+real) ja tem um desempate de EMPATE EXATO (`_tb`, bloco 651, "quem gasta
+DON vence" -- argumento de dominancia de recurso, +1,4pp medido na
+epoca). O bloco 651 TAMBEM ja tentou usar o bonus humano existente
+(`_human_pattern_bonus`) como desempate ali -- e deu **0,0pp EXATO em
+TODAS as categorias**, porque esse bonus ja esta somado DENTRO de
+`valor` (via `human_alignment`, peso 8.0) -- quando 2 candidatas
+empatam no `valor` TOTAL, o bonus delas quase sempre ja e o mesmo (0/104
+empates tinham bonus diferente, medido na epoca). Sinal circular, nao
+serve de novo.
+
+**Mecanismo novo**: `_tb_human(acao)`, 3o criterio de desempate (so
+entra quando `valor` E `_tb` DON JA empataram entre 2+ candidatas) --
+usa `_HUMAN_ACTION_FREQ_BY_LEADER` (contagem BRUTA de frequencia por
+kind+codigo, bloco 648 original, readicionado -- tinha sido removido
+junto com a aposentadoria do OVERRIDE do bloco 648 no bloco 652, mas a
+INFRAESTRUTURA de dado e reutilizavel pra uma aplicacao mais segura).
+Diferente de `human_alignment`: NUNCA e somado a `valor` nem a `_tb`,
+so decide entre candidatas que o motor JA e indiferente por 2 criterios
+seguidos -- nunca pode piorar uma decisao onde a busca ou o desempate de
+DON ja tem preferencia real (mesmo argumento de seguranca do `_tb`
+original).
+
+**Infraestrutura recriada** (`audit_human_patterns.py` +
+`human_patterns.json`): campo `by_leader_action_freq` (frequencia por
+token, qualquer posicao do turno, por lider inteiro) reconstruido do
+zero -- confirmado que tinha sumido junto com a limpeza do bloco 652.
+
+**Medido** (`decision_quality_full.py --all --workers 4`, contra o
+baseline do bloco 662): activate 26,5% -> **27,7% (+1,2pp)**, attack-
+quem 54,4% -> 54,8% (+0,4pp), attach_don 18,7% -> 18,5% (-0,2pp, ruido),
+play 27,9% -> 27,9% (identico). Defesa intocada (mecanismo so age em
+ofensiva). **Liquido positivo (+1,4pp somado)**, e criticamente
+DIFERENTE de zero -- confirma que o sinal e mesmo nao-circular
+(diferente do resultado exato 0,0pp do bloco 651).
+
+**Por que a magnitude e pequena**: o gate e propositalmente
+conservador (2 niveis de empate exato antes de agir), entao so afeta
+uma fatia pequena das decisoes totais -- mesma limitacao estrutural ja
+documentada pro override do bloco 648 (fire rate baixo por desenho).
+Ainda assim, e outro caso (junto do `_tb` de DON) onde um argumento de
+SEGURANCA (so decide quando o motor ja e indiferente) produz ganho
+liquido, ao inves da familia de bonus somado que sempre redistribuiu
+sem ganho real.
+
+**Validado**: `smoke_fast.py`/`smoke_test.py` OK.
+
 ## 2026-08-24 (662) - Claude (sessao remota web) - MEDICAO COMPLETA (`decision_quality_full.py --all --workers 4`) dos fixes acumulados desta sessao: `play` 21,0% -> 27,9% (+6,9pp), `attach_don` 16,8% -> 18,7% (+1,9pp), ganho distribuido por lider
 
 Pedido do usuario ("roda o decision_quality_full.py") apos o roteiro
