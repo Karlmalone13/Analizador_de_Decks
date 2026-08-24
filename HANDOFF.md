@@ -28,6 +28,82 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (669) - Claude (sessao remota web) - Pedido do usuario "olhe essa pendencia e confira o deck do krieg de novo, dando atencao ao arlong, krieg 8 e kuro". Corrigida a pendencia (audit_real_losses.py nunca reconstruia o banco de DON do OPONENTE) com um estimador CONSERVADOR novo, validado end-to-end na partida real -- Arlong volta a ativar nos mesmos turnos do humano. Krieg OP15-008 investigado a fundo com evidencia de 3 partidas reais: NAO e bug, o parser ja estava certo. Kuro conferido, tambem correto. Limitacao maior (don_attached por-personagem nunca reconstruido) documentada, NAO corrigida (fora do escopo, exigiria parsing novo de texto livre)
+
+**1) Pendencia corrigida: `opp.don_available`/`opp.don_rested` em
+`audit_real_losses.py`.** Nova funcao `_don_rested_lower_bound(turn,
+cards_db)` -- estimativa CONSERVADORA (limite inferior, nunca inventa
+DON) a partir de 2 sinais 100% estruturados do log: `attach_don`
+(amount explicito) e custo textual "Rest N Don" dentro de `effects`.
+Deliberadamente NAO conta custo de `play` (cartas jogadas de graca via
+efeito nao tem custo real, e o log nao distingue play pago de play
+gratis -- contar arriscaria inventar DON que nunca existiu). Aplicado
+ao ULTIMO turno PROPRIO do oponente antes do ponto sendo simulado (DON
+so refresca de novo no PROXIMO turno dele, que ainda nao aconteceu);
+`don_est.available(opp_side)` (ja rastreado, generico por jogador)
+fornece o total do pool, o resto vira `don_available`.
+
+**Validado end-to-end na MESMA partida (Imu-B_x_Krieg-RG_2026-07-12T23.
+09.31.json) que motivou o achado anterior:** Arlong volta a ativar nos
+turnos 6, 8 e 13 -- turno 13 mostra pela primeira vez o log completo
+funcionando ("custo: deu 1 DON restado do oponente a Imu (Alternate...
+/ deu 1 DON ao character do oponente"), confirmando que TODO o
+mecanismo (custo real + efeito give_don_either_side) funciona de ponta
+a ponta quando a reconstrucao tem dado suficiente. Por ser limite
+INFERIOR, o pior caso remanescente e o mesmo de antes (payavel de
+verdade reportado como impagavel em ALGUNS turnos, ex. T15 nesta
+partida), nunca o oposto.
+
+**2) Krieg (OP15-008) -- investigado a fundo, NAO e bug.** Suspeita
+inicial (antes de olhar dado real): "[Activate: Main] give all of your
+opponent's Characters -1000 power ... for every DON!! card given to
+THAT Character" e ambiguo -- "that Character" (singular) podia
+significar (a) UM personagem especifico (o que recebeu DON via On
+Play), debuff UNIFORME em todos, ou (b) CADA personagem individualmente
+escalado pelo proprio DON acumulado (leitura ja implementada,
+`per_don_attached`). Resolvido com evidencia de log real de 3 partidas
+diferentes (todas com OP15-008 jogado) -- caso mais claro
+(Krieg-RG_x_Brook-GB_2026-07-02T00.33.15.json, T10): campo do oponente
+tinha 5 personagens (Nami, Sanji, Pirates Docking Six, Monkey D. Luffy,
+Brook); rastreando TODO "Attach...Rested Don" do jogo ate aquele ponto,
+Luffy tinha recebido DON multiplas vezes (Morgan+Arlong em T8, +3 do
+proprio OP15-008 em T10) e Pirates Docking Six tambem (Morgan+Arlong em
+T6); resultado real: Nami 0, Sanji 0 (apesar de ter recebido 1 DON em
+T4!), Brook 0, Pirates Docking Six -3000, Luffy -6000. **Decisivo:**
+Sanji tinha DON dado mas debuff 0 -- se fosse uniforme (leitura a),
+Sanji teria o MESMO debuff que Luffy/Docking. So bate com a leitura (b)
+JA implementada: cada alvo escala pelo PROPRIO don_attached, zero
+personagens sem DON dado ficam intocados. Confirma que o parser/motor
+ja estavam certos -- nenhum fix necessario. (Resta uma discrepancia
+numerica menor nao resolvida -- os valores exatos batem +1000 acima do
+esperado pela contagem manual em ambos os alvos do log examinado,
+possivelmente uma fonte de DON adicional nao rastreada nesta auditoria
+manual -- registrado como curiosidade, nao muda a conclusao estrutural
+acima nem foi considerado bloqueante.)
+
+**3) Kuro (OP15-025) -- conferido, correto.** `on_play`: `give_don_opp
+count=2` + `lock_opp_character_refresh count=1 don_attached_gte=3`
+(trava 1 character RESTADO do oponente com 3+ DON dado, coerente com o
+tema "empilha DON, depois trava" do deck). Execucao real de
+`lock_opp_character_refresh` (linha ~7703) ja filtra corretamente por
+`c.rested and c.don_attached >= don_attached_gte` -- sem bug encontrado.
+
+**Limitacao MAIOR, ainda NAO corrigida, documentada como pendencia
+separada (maior escopo que a de hoje):** mesmo com o fix de (1), o
+`don_attached` de cada PERSONAGEM do oponente continua sendo resetado
+a 0 em toda reconstrucao independente de turno (`opp.field_chars =
+_cards_from_codes(opp_snap.get('board', [])...)`, sem nenhum campo de
+DON no snapshot do log). Isso significa que a condicao `don_attached_
+gte` de Kuro/Krieg-lider/OP15-008 NUNCA vai ser satisfeita por
+acumulo real de partidas passadas nesta ferramenta -- so dentro do
+MESMO turno simulado (quando o proprio motor da o DON e imediatamente
+tenta usar a condicao). Corrigir isso exigiria reconstruir o historico
+de "quanto DON foi dado a cada personagem do oponente" varrendo TODAS
+as acoes do jogo inteiro via parsing de texto livre ("Attach N Rested
+Don to X") -- trabalho maior, fragil (regex sobre texto livre, nao
+dado estruturado), fora do escopo desta sessao. Fica registrado pra
+quando (se) o usuario quiser essa profundidade de fidelidade.
+
 ## 2026-08-24 (668) - Claude (sessao remota web) - Pedido do usuario "confira o krieg de novo": achou um 2o BUG REAL, separado do give_don_either_side -- `_should_activate_main` nao checava pagabilidade dos 2 custos novos desta sessao (rest_own_card, give_don_opp), queimando o once_per_turn em ativacoes que iam falhar de qualquer jeito. Tambem documentada uma limitacao PRE-EXISTENTE da propria ferramenta de auditoria (opp.don_rested nunca reconstruido)
 
 Re-simulando a MESMA partida (Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json)

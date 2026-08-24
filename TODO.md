@@ -2,6 +2,32 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 669, pedido do usuário "olhe essa pendência e
+> confira o deck do krieg de novo — arlong, krieg 8, kuro"):
+> **Pendência corrigida** — `audit_real_losses.py` nunca reconstruía
+> `opp.don_available`/`opp.don_rested` (só `opp.don_deck`). Nova função
+> `_don_rested_lower_bound` — estimativa CONSERVADORA (nunca inventa
+> DON) usando só sinais 100% estruturados do log (`attach_don` +
+> custo textual "Rest N Don"), aplicada ao último turno próprio do
+> oponente. Validado end-to-end na mesma partida do Krieg: Arlong volta
+> a ativar nos turnos certos, com o custo E o efeito aparecendo no log
+> pela primeira vez. **Krieg (OP15-008) investigado a fundo — NÃO é
+> bug.** A ambiguidade textual ("-1000 power... for every DON given to
+> that Character") foi resolvida com evidência de 3 partidas reais:
+> confirmado que o debuff escala POR ALVO (cada personagem pelo próprio
+> DON acumulado), não uniforme — Sanji com 1 DON dado teve debuff 0
+> enquanto Luffy/Docking Six (com mais DON) tiveram debuff real,
+> descartando a leitura uniforme. Parser já estava certo. **Kuro
+> conferido, também correto** (`lock_opp_character_refresh` com
+> `don_attached_gte` já filtra certo). **Limitação maior documentada,
+> não corrigida:** `don_attached` por personagem do oponente continua
+> resetado a 0 em cada turno reconstruído (log não guarda isso no
+> snapshot) — a condição de 2+/3+ DON dado de Kuro/Krieg-líder/OP15-008
+> nunca vai ser satisfeita por acúmulo real nesta ferramenta, só dentro
+> do mesmo turno simulado. Corrigir exigiria parsing de texto livre
+> pelo jogo inteiro — maior escopo, fora desta sessão. Ver bloco 669 do
+> HANDOFF.
+
 > 24/08/2026 (bloco 668, pedido do usuário "confira o krieg de novo"):
 > **2º bug real, separado do give_don_either_side (bloco 667).**
 > `_should_activate_main` (decide SE vale TENTAR ativar uma habilidade,

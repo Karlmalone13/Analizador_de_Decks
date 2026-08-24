@@ -554,6 +554,42 @@ class DonEstimator:
         return max(0, 10 - self.drawn.get(player, 0))
 
 
+def _don_rested_lower_bound(turn, cards_db):
+    """Estimativa CONSERVADORA (limite inferior, nunca inventa DON) de
+    quanto DON ficou RESTADO pro dono deste turno, a partir de sinais
+    100% estruturados do log de acoes -- sem adivinhar custo de 'play'
+    (cartas jogadas de graca via efeito nao tem custo real, e o schema do
+    log nao distingue play pago de play gratis, entao contar o custo
+    impresso da carta arriscaria inventar DON restado que nunca existiu).
+
+    Conta so o que e inequivocamente DON saindo do banco do jogador:
+    (a) `attach_don` (amount explicito no proprio log);
+    (b) custo textual 'Rest N Don' dentro de `effects` de qualquer acao
+        (ex: 'The Outcome Will Tell Us Who's Strong and Who's Weak':
+        'Rest 1 Don, Reveal and Draw ...').
+
+    Achado real 24/08 (pedido do usuario 'olhe essa pendencia', apos o
+    fix de give_don_opp pro Arlong/Alvida/Morgan/Krieg OP15-008): usado
+    pra popular `opp.don_rested`/`opp.don_available` em audit_one_game,
+    que antes deste fix NUNCA reconstruia o banco de DON do OPONENTE
+    (so `opp.don_deck`) -- qualquer custo que dependa do banco de DON do
+    OPONENTE especificamente (give_don_opp) sempre aparecia como
+    impagavel nessa ferramenta, mesmo quando o oponente real tinha DON
+    restado disponivel. Por ser um LIMITE INFERIOR (nunca superestima),
+    o pior caso remanescente e o mesmo de antes (custo real pagavel
+    reportado como impagavel), nunca o oposto (nunca inventa
+    payabilidade que nao existia)."""
+    total = 0
+    for a in turn.get('actions', []):
+        if a.get('type') == 'attach_don':
+            total += a.get('amount', 0) or 0
+        for eff in a.get('effects') or []:
+            m = re.search(r'\bRest (\d+) Don\b', eff)
+            if m:
+                total += int(m.group(1))
+    return total
+
+
 def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
                    capture_actions=False, capture_candidates=False):
     """
@@ -763,6 +799,25 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         # simulado estoura o teto de 10 DON
         p.don_deck = don_est.deck_left(bot_side)
         opp.don_deck = don_est.deck_left(opp_side)
+        # Achado real 24/08 (pedido do usuario "olhe essa pendencia"):
+        # opp.don_available/opp.don_rested NUNCA eram populados antes
+        # deste fix (so opp.don_deck) -- qualquer custo que dependa do
+        # banco de DON do OPONENTE (ex: give_don_opp, familia Arlong/
+        # Alvida/Morgan/Krieg OP15-008) sempre aparecia como impagavel
+        # nesta ferramenta. don_rested vem do limite inferior conservador
+        # de `_don_rested_lower_bound` aplicado ao ULTIMO turno PROPRIO
+        # do oponente antes deste ponto (o DON so refresca de novo no
+        # proximo turno DELE, que ainda nao aconteceu) -- o resto do pool
+        # (don_est.available, ja rastreado) fica como don_available.
+        opp_ultimo_turno = next(
+            (turns[j] for j in range(i - 1, -1, -1) if turns[j]['player'] == opp_side),
+            None)
+        opp_total = don_est.available(opp_side)
+        opp_rested_estimado = (
+            min(opp_total, _don_rested_lower_bound(opp_ultimo_turno, cards_db))
+            if opp_ultimo_turno is not None else 0)
+        opp.don_rested = opp_rested_estimado
+        opp.don_available = opp_total - opp_rested_estimado
         # Achado real 17/08 (pedido do usuario, censo de "jogada nunca
         # gerada" -- don_antes_do_ramp aparecia 0 em quase TODO turno,
         # ate em turnos tardios T8/T9/T10 onde deveria ter acumulado
