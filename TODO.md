@@ -2,6 +2,29 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 668, pedido do usuário "confira o krieg de novo"):
+> **2º bug real, separado do give_don_either_side (bloco 667).**
+> `_should_activate_main` (decide SE vale TENTAR ativar uma habilidade,
+> antes de marcar o once_per_turn como usado) tinha checagem de
+> pagabilidade explícita pra 8 tipos de custo conhecidos, mas não pros
+> 2 tipos NOVOS desta sessão (`rest_own_card` do Mihawk/bloco 666,
+> `give_don_opp` do Arlong/bloco 667) — custo não-listado cai num
+> fallback "assume pagável". Com o oponente sem DON restado (custo
+> genuinamente impagável), a habilidade era marcada como usada mesmo
+> falhando silenciosamente depois — desperdiçando o turno inteiro sem
+> efeito nenhum. Fix: os 2 tipos novos ganharam a mesma checagem
+> explícita. **Achado colateral documentado como pendência** (não é
+> bug do motor, é limitação pré-existente da ferramenta de auditoria):
+> `audit_real_losses.py`/`audit_one_game` nunca reconstrói
+> `opp.don_available`/`opp.don_rested` a partir do log real (só
+> `opp.don_deck`) — qualquer custo que dependa do banco de DON do
+> OPONENTE sempre aparece como impagável nessa ferramenta específica,
+> mesmo quando o oponente real tinha DON disponível. Não afeta self-
+> play/produção. Fix validado por teste dedicado com `GameState`
+> controlado (não dava pra validar via replay da partida real, por
+> causa dessa limitação). `smoke_fast.py`/`smoke_test.py` OK. Ver
+> bloco 668 do HANDOFF.
+
 > 24/08/2026 (bloco 667, continuação do roteiro turno-a-turno — Krieg
 > OP15-001, 26,1%/46 turnos): **BUG REAL de parser, família Arlong
 > (OP15-023) / Alvida (OP15-003) / Morgan (OP15-017)**, explicado

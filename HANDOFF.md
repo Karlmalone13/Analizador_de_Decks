@@ -28,6 +28,64 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (668) - Claude (sessao remota web) - Pedido do usuario "confira o krieg de novo": achou um 2o BUG REAL, separado do give_don_either_side -- `_should_activate_main` nao checava pagabilidade dos 2 custos novos desta sessao (rest_own_card, give_don_opp), queimando o once_per_turn em ativacoes que iam falhar de qualquer jeito. Tambem documentada uma limitacao PRE-EXISTENTE da propria ferramenta de auditoria (opp.don_rested nunca reconstruido)
+
+Re-simulando a MESMA partida (Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json)
+apos o fix do bloco 667: "⚙ ativou [Activate:Main] de Arlong" continuava
+aparecendo nos turnos 6/13/15, mas agora SEM nenhuma linha de custo/
+efeito embaixo -- nem "custo: deu N DON..." nem "deu 0 DON...". Isso era
+suspeito: se o custo `give_don_opp` (novo, bloco 667) tivesse sido pago,
+devia aparecer um log; se nao tivesse, a habilidade nao devia nem
+"ativar".
+
+**Causa raiz:** `_should_activate_main` (a funcao que decide SE vale
+TENTAR ativar uma habilidade, chamada pelo caller ANTES de marcar
+`_am_used_turn`) tem uma checagem de pagabilidade explicita, custo a
+custo, pra 8 tipos conhecidos (rest_don, trash_from_hand, don_minus,
+etc.) -- mas os 2 tipos NOVOS desta sessao (`rest_own_card` do Mihawk,
+bloco 666; `give_don_opp` deste bloco/667) nunca foram adicionados a
+essa lista. Custo nao-listado cai num fallback silencioso "assume
+pagavel". Com o oponente sem DON restado (custo genuinamente
+impagavel), a funcao dizia "pode ativar", o caller marcava
+`_am_used_turn = p.turn` (linha que roda ANTES de chamar `execute()`),
+e so DEPOIS o `_pay_costs` de verdade (dentro de `execute()`) falhava
+e abortava com log vazio -- a habilidade era desperdicada no turno
+INTEIRO (once_per_turn queimado) sem produzir efeito nenhum. Pra
+`rest_own_card` (Mihawk) esse gap e baixo risco na pratica (quase
+sempre ha uma carta propria ativa OU o proprio lider pra restar); pra
+`give_don_opp` (Arlong/Alvida/Morgan) e muito mais provavel de morder,
+porque depende do BANCO DE DON DO OPONENTE, que varia bastante turno a
+turno.
+
+**Fix:** adicionados os 2 tipos que faltavam na checagem de
+`_should_activate_main` (mesmo padrao dos outros 8 -- `rest_own_card`
+conta personagens proprios ativos + o proprio lider; `give_don_opp`
+confere `opp.don_rested >= count`).
+
+**Achado colateral, documentado como pendencia (NAO corrigido, fora do
+escopo do parser):** ao tentar validar esse fix via `audit_one_game` na
+mesma partida real, a habilidade NUNCA mais aparece ativando -- porque
+`audit_real_losses.py`/`audit_one_game` reconstroi o DON do BOT com
+precisao (via `DonEstimator`) mas NUNCA populou `opp.don_available`/
+`opp.don_rested` a partir do log real (so `opp.don_deck`). Qualquer
+custo que dependa do banco de DON do OPONENTE especificamente (como
+`give_don_opp`) sempre vai aparecer como impagavel NESSA FERRAMENTA,
+mesmo quando o oponente real tinha DON restado disponivel -- limitacao
+PRE-EXISTENTE da ferramenta de auditoria, distinta do bug do motor.
+Isso NAO afeta self-play/producao (onde o motor ve o estado real dos
+dois lados via simulacao completa), so limita o que da pra validar por
+replay de log historico especificamente pra este tipo de custo. Por
+isso o fix foi validado via teste dedicado com `GameState` controlado
+(smoke_fast.py), nao pela re-simulacao da partida real.
+
+**Validado:** novo teste
+`test_should_activate_main_nao_queima_once_per_turn_em_custo_impagavel_24_08`
+(smoke_fast.py) -- confirma que `_am_used_turn` NAO e marcado quando o
+custo e genuinamente impagavel (habilidade continua disponivel) e QUE
+e marcado quando pagavel (ativa de verdade). `smoke_fast.py`/
+`smoke_test.py` OK. Registro atualizado em
+`parser_audits/2026-08-24_OP15-023_give_don_either_side.json`.
+
 ## 2026-08-24 (667) - Claude (sessao remota web) - Continuando pro lider Krieg (OP15-001, 26,1%/46 turnos): BUG REAL de parser na familia Arlong/Alvida/Morgan (give_don ambiguo de lado), explicado diretamente pelo usuario na conversa. Custo (mover DON restado do oponente pro character dele) nunca virava custo de verdade, so influenciava (errado) o alvo do efeito, sempre pro oponente -- perdia a linha real "dar DON pro proprio lider" que o usuario descreveu como uso comum
 
 Continuacao do roteiro turno-a-turno (Katakuri/Lucy no bloco 665, Mihawk

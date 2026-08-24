@@ -14948,6 +14948,32 @@ class OPTCGMatch:
                 if don_total < cnt:
                     return False, f'custo don_minus {cnt}: só {don_total} DON total'
 
+            elif ctype == 'rest_own_card':
+                # "you may rest N of your cards:" (Mihawk OP14-020 e
+                # familia, achado 24/08) -- sem este check, esta funcao
+                # (a que decide SE vale tentar ativar, ANTES de marcar
+                # once_per_turn como usado) nunca via essa carencia:
+                # qualquer personagem proprio ativo OU o proprio lider
+                # conta como candidato pra restar.
+                candidatos_rc = sum(1 for c2 in p.field_chars if not c2.rested)
+                if not p.leader.rested:
+                    candidatos_rc += 1
+                if candidatos_rc < cnt:
+                    return False, f'custo rest_own_card {cnt}: nenhuma carta própria ativa pra restar'
+
+            elif ctype == 'give_don_opp':
+                # Familia Arlong/Alvida/Morgan (achado 24/08): custo move
+                # DON RESTADO do BANCO DO OPONENTE pra um Character do
+                # PROPRIO oponente -- achado real ao vivo (log Krieg): sem
+                # este check, a ativacao era OFERECIDA (e marcada como
+                # usada no turno, queimando o once_per_turn) mesmo com o
+                # oponente sem DON restado nenhum, e o _pay_costs real
+                # (chamado dentro de execute()) falhava silenciosamente
+                # depois -- desperdicando a habilidade inteira no turno
+                # sem nenhum efeito.
+                if opp.don_rested < cnt:
+                    return False, f'custo give_don_opp {cnt}: oponente só tem {opp.don_rested} DON restado'
+
         # ── 2. Avalia se o benefício compensa ────────────────────────────────
         tem_custo_trash = any(c.get('type') in
                               ('trash_from_hand', 'trash_hand',

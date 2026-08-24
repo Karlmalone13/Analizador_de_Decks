@@ -10656,6 +10656,7 @@ def main() -> int:
     test_attach_don_nao_carrega_ataque_que_a_defesa_esperada_barra_15_08()
     test_opp_attack_count_delega_pro_helper_compartilhado_15_08()
     test_give_don_either_side_arlong_alvida_morgan_24_08()
+    test_should_activate_main_nao_queima_once_per_turn_em_custo_impagavel_24_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -14697,6 +14698,78 @@ def test_give_don_either_side_arlong_alvida_morgan_24_08() -> None:
     check("o DON do efeito NAO foi pro oponente neste cenario (banco do "
           "oponente inalterado apos o custo pagar 1)",
           opp2.don_rested == 2)
+
+
+def test_should_activate_main_nao_queima_once_per_turn_em_custo_impagavel_24_08() -> None:
+    """
+    Achado real 24/08 (pedido do usuario "confira o Krieg de novo" --
+    releitura da mesma partida real apos o fix de give_don_either_side):
+    `_should_activate_main` (funcao que decide SE vale tentar ativar uma
+    habilidade, chamada ANTES de marcar `_am_used_turn`) tinha uma checagem
+    de pagabilidade explicita pra cada tipo de custo conhecido (rest_don,
+    trash_from_hand, don_minus, etc.) mas NENHUMA pros custos NOVOS desta
+    sessao (rest_own_card do Mihawk, give_don_opp do Arlong/Alvida/Morgan)
+    -- custo nao-listado cai no fallback silencioso "assume pagavel".
+    Resultado real: com o oponente sem DON restado (give_don_opp impagavel
+    de verdade), a funcao dizia "pode ativar", `_activate_main_effects`
+    marcava `_am_used_turn` ANTES de chamar execute(), e so DEPOIS o
+    _pay_costs real (dentro de execute()) falhava e abortava -- a
+    habilidade era desperdicada no turno inteiro (once_per_turn queimado)
+    sem produzir NENHUM efeito. Fix: os 2 tipos novos ganharam a mesma
+    checagem explicita que as outras 8 ja tinham.
+    """
+    arlong = real_card("OP15-023")
+    ef = get_card_effects("OP15-023")["activate_main"]
+
+    # Sem DON restado do oponente: custo give_don_opp genuinamente
+    # impagavel -- _should_activate_main tem que recusar (nao so falhar
+    # silenciosamente depois, dentro de execute()).
+    me_sem = GameState(leader=real_card("OP15-001"), turn=5)
+    me_sem.field_chars = [arlong]
+    opp_sem = GameState(leader=mk("KDL1", "OppLeader", card_type="LEADER", power=5000))
+    opp_sem.don_rested = 0
+    match_sem = OPTCGMatch((me_sem.leader, []), (opp_sem.leader, []))
+    pode_sem, motivo_sem = match_sem._should_activate_main(arlong, ef, me_sem, opp_sem)
+    check("custo give_don_opp SEM DON restado do oponente: _should_activate_main recusa",
+          pode_sem is False)
+    check("motivo da recusa menciona o custo real (give_don_opp)",
+          "give_don_opp" in motivo_sem)
+
+    # Fim-a-fim: roda _activate_main_effects completo (o caminho real do
+    # turno) e confirma que o once_per_turn NAO foi queimado -- a carta
+    # continua livre pra tentar de novo (ex: turno seguinte, com DON
+    # restado do oponente disponivel).
+    arlong2 = real_card("OP15-023")
+    me2 = GameState(leader=real_card("OP15-001"), turn=5)
+    me2.field_chars = [arlong2]
+    opp2 = GameState(leader=mk("KDL2", "OppLeader2", card_type="LEADER", power=5000))
+    opp2.don_rested = 0
+    match2 = OPTCGMatch((me2.leader, []), (opp2.leader, []))
+    ee2 = EffectExecutor(me2, opp2)
+    match2._activate_main_effects(me2, opp2, ee2, verbose=False)
+    check("sem DON restado do oponente: once_per_turn NAO foi marcado usado "
+          "(habilidade continua disponivel, nao foi desperdicada)",
+          getattr(arlong2, "_am_used_turn", -1) != me2.turn)
+
+    # Com DON restado do oponente disponivel: custo pagavel, ativa de
+    # verdade e ai sim marca o once_per_turn (comportamento correto).
+    arlong3 = real_card("OP15-023")
+    me3 = GameState(leader=real_card("OP15-001"), turn=5)
+    me3.field_chars = [arlong3]
+    opp3 = GameState(leader=mk("KDL3", "OppLeader3", card_type="LEADER", power=5000))
+    opp3.don_rested = 2
+    match3 = OPTCGMatch((me3.leader, []), (opp3.leader, []))
+    ee3 = EffectExecutor(me3, opp3)
+    match3._activate_main_effects(me3, opp3, ee3, verbose=False)
+    check("com DON restado do oponente disponivel: ativa de verdade e "
+          "marca o once_per_turn (usado por um efeito real, nao desperdicado)",
+          getattr(arlong3, "_am_used_turn", -1) == me3.turn)
+    # 2 DON restado inicial: 1 debitado pelo CUSTO (sempre vai pro
+    # oponente) + 1 pelo EFEITO (sem deficit proprio pra fechar aqui --
+    # mesmo cenario do teste de cenario 1 acima -- tambem prefere o
+    # oponente) = 0 sobrando, os 2 no banco do oponente foram usados.
+    check("custo + efeito de fato pagos (DON restado do oponente todo debitado)",
+          opp3.don_rested == 0)
 
 
 if __name__ == "__main__":
