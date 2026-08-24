@@ -103,12 +103,66 @@ pipeline) aplicado em `_turn_verdict`. **1a versao do guard tambem
 derrubou o batch** (retorno so com `{'error':...}`, faltando a chave
 `'file'` que `main()` indexa ao listar erros -- `KeyError: 'file'`
 depois de ~270 logs ja processados) -- corrigido, guard agora inclui
-`'file'`. Rodada reiniciada em background nesta sessao (3a tentativa,
-`--all-logs --workers 4`), resultado **AINDA NAO disponivel no momento
-deste registro** -- proxima sessao (ou a continuacao desta) deve
-conferir
-`metrics/decision_quality_vs_human/ultimo_resultado.json` e/ou rodar
-de novo antes de citar qualquer numero da amostra ampliada.
+`'file'`. Rodada reiniciada (3a tentativa, `--all-logs --workers 4`)
+**completou com sucesso**.
+
+### Resultado da amostra ampliada (214 partidas validas / 805 turnos --
+### 60 dos 274 jobs pulados por schema antigo, erro tratado)
+
+**Motor causa dano >= ao humano real: 650/805 (80,7%)** -- bem MENOR
+que os 89,2% (99/111) da amostra estreita (26 logs, 62% Xebec). A
+amostra anterior era otimista por causa do vies de composicao, exatamente
+a suspeita que motivou o usuario a pedir a ampliacao.
+
+Recorte POR LIDER (18 lideres, >=5 turnos cada, mandatorio antes de
+qualquer numero agregado):
+
+| lider | turnos | motor>=humano | % |
+|---|---|---|---|
+| OP13-079 (Kid/Imu, conforme partida) | 174 | 148 | 85,1% |
+| OP11-062 (Katakuri) | 140 | 113 | 80,7% |
+| OP16-080 (Teach) | 130 | 107 | 82,3% |
+| OP17-039 (Xebec) | 84 | 71 | 84,5% |
+| OP10-099 | 65 | 44 | 67,7% |
+| OP14-020 | 35 | 25 | 71,4% |
+| OP15-001 (Krieg) | 32 | 25 | 78,1% |
+| OP11-021 | 23 | 14 | 60,9% |
+| OP16-001 (Ace) | 21 | 19 | 90,5% |
+| ST04-001 | 19 | 16 | 84,2% |
+| OP14-079 | 17 | 17 | 100% |
+| OP14-040 (Jinbe) | 12 | 7 | 58,3% |
+| OP02-093 | 11 | 10 | 90,9% |
+| OP13-002 | 10 | 10 | 100% |
+| OP07-019 (Bonney) | 9 | 6 | 66,7% |
+| OP04-019 | 9 | 6 | 66,7% |
+| OP13-001 | 9 | 9 | 100% |
+| OP11-040 | 5 | 3 | 60% |
+
+Piores por volume real (nao amostra pequena): OP11-021 (60,9%, n=23),
+OP10-099 (67,7%, n=65), OP14-020 (71,4%, n=35). Nenhum destes 3 foi
+auditado turno-a-turno ainda nesta sessao -- proximo alvo natural pra
+continuar a metodologia de caca-bug, ja que tem volume suficiente pra
+nao ser ruido.
+
+**Hipotese testada e DESCARTADA**: a lista dos 8 piores casos (maior
+diferenca) tinha 4 entradas repetindo "Imu-B_x_..." -- parecia sinal de
+matchup fraco especifico contra Imu. Conferido em agregado: dos 347
+turnos com "Imu" no nome do arquivo (como QUALQUER um dos 2 lados),
+19,6% sao "motor pior que humano"; dos 458 sem Imu, 19,0% -- mesma taxa,
+diferenca nao e real, so agrupamento por ordenacao (varios turnos do
+mesmo arquivo empatados na mesma diferenca de dano ficam adjacentes na
+lista dos 8 piores). Registrado pra nao repetir esse falso-positivo
+numa sessao futura.
+
+**Conclusao pro objetivo "jogar identico ao humano"**: a resposta
+honesta e representativa e **80,7%**, nao os 89,2% vistos antes -- e a
+mesma investigacao dos 12 casos residuais da amostra estreita (ruido de
+reconstrucao + trade-off estrategico legitimo) provavelmente NAO
+explica todo o gap adicional que apareceu com a amostra maior (mais
+lideres, mais variedade de decks == mais chance de bug real ainda nao
+achado, nao so ruido). Proxima sessao: comecar pelos 3 lideres de pior
+% com volume real (OP11-021, OP10-099, OP14-020), mesma metodologia
+turno-a-turno ja estabelecida.
 
 ## 2026-08-24 (673) - Claude (sessao remota web) - Pedido do usuario "pode testar outro lider" (apos o Jinbe): Rocks D. Xebec (OP17-118). Achado real: "play up to N ... total cost of M or less" e "different card names" quebrados no play_card da MAO (so play_from_trash tinha os dois mecanismos)
 

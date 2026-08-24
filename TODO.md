@@ -18,8 +18,17 @@
 > já corrigido em `decision_quality_full.py` no bloco 617, nunca
 > espelhado aqui — mesmo fix aplicado, precisou de 1 correção de
 > acompanhamento — faltava a chave `'file'` no retorno de erro).
-> Resultado da amostra ampliada ainda rodando/pendente. Ver bloco 674
-> do HANDOFF.
+> **Resultado da amostra ampliada (214 partidas válidas/805 turnos,
+> 18 líderes): 80,7% (650/805)** — bem MENOR que os 89,2% da amostra
+> estreita, confirma que ela era otimista por viés de composição (62%
+> Xebec). Recorte por líder feito (mandatório) — piores com volume real
+> (não amostra pequena): **OP11-021 (60,9%, n=23), OP10-099 (67,7%,
+> n=65), OP14-020 (71,4%, n=35)** — nenhum auditado turno-a-turno ainda,
+> próximo alvo natural. Hipótese "matchup fraco contra Imu" testada e
+> DESCARTADA (19,6% vs 19,0% de turnos ruins com/sem Imu — mesma taxa,
+> era só agrupamento por ordenação). Resposta honesta pro objetivo
+> "jogar idêntico ao humano": **80,7%, não 89,2%**. Ver bloco 674 do
+> HANDOFF.
 
 > 24/08/2026 (bloco 673, pedido "pode testar outro líder", após o
 > Jinbe): **Rocks D. Xebec (OP17-118).** Partida real auditada (7 turnos

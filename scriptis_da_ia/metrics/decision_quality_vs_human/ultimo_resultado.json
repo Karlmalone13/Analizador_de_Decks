@@ -1,8 +1,5993 @@
 {
-  "n_turnos": 111,
-  "melhor_ou_igual": 99,
-  "pior": 12,
+  "n_turnos": 805,
+  "melhor_ou_igual": 650,
+  "pior": 155,
   "rows": [
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 11,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 10,
+      "before_life": 1,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": true,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 11,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 14,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 16,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 18,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 20,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 10,
+      "before_life": 1,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 12,
+      "before_life": 0,
+      "human_damage": -4,
+      "engine_damage": 0,
+      "engine_won_this_turn": true,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 13,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 15,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 17,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 19,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 11,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 10,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 11,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 14,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 16,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 18,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 20,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 22,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 3,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 10,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 12,
+      "before_life": 1,
+      "human_damage": -3,
+      "engine_damage": 1,
+      "engine_won_this_turn": true,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 13,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 15,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 17,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 19,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 21,
+      "before_life": 2,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 11,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 10,
+      "before_life": 2,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 11,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 10,
+      "before_life": 3,
+      "human_damage": 3,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 11,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 10,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 11,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 13,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 8,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 10,
+      "before_life": 1,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": true,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 12,
+      "before_life": 0,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": true,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T21.41.10.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T21.41.10.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T21.41.10.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T21.41.10.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T21.41.10.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T21.41.10.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 11,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 3,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 10,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 12,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 14,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 16,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 18,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 10,
+      "before_life": 2,
+      "human_damage": -2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 11,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 13,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 15,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 17,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.25.08.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.25.08.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.25.08.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.25.08.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.25.08.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.25.08.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.25.08.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.25.08.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T15.27.45.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T15.27.45.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T15.27.45.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 5,
+      "human_damage": 2,
+      "engine_damage": 3,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T15.27.45.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T15.27.45.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T15.27.45.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T15.27.45.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 2,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Marshall.D.Teach-BY_2026-07-12T15.27.45.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.03.36.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.03.36.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.03.36.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.03.36.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.03.36.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.03.36.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.03.36.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 8,
+      "before_life": 2,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.03.36.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 12,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 14,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 16,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 8,
+      "before_life": 2,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 10,
+      "before_life": 0,
+      "human_damage": -4,
+      "engine_damage": 0,
+      "engine_won_this_turn": true,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 11,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 13,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 15,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 6,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 6,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 7,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 11,
+      "before_life": 7,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 8,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 10,
+      "before_life": 2,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 11,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 8,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 10,
+      "before_life": 1,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jinbe-G_2026-07-13T22.54.47.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jinbe-G_2026-07-13T22.54.47.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jinbe-G_2026-07-13T22.54.47.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jinbe-G_2026-07-13T22.54.47.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jinbe-G_2026-07-13T22.54.47.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jinbe-G_2026-07-13T22.54.47.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 6,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jinbe-G_2026-07-13T22.54.47.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 8,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jinbe-G_2026-07-13T22.54.47.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 11,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
+      "human_leader": "OP07-019"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
+      "human_leader": "OP07-019"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
+      "human_leader": "OP07-019"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
+      "human_leader": "OP07-019"
+    },
+    {
+      "turn": 10,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
+      "human_leader": "OP07-019"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39.json",
+      "human_leader": "OP07-019"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39.json",
+      "human_leader": "OP07-019"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39.json",
+      "human_leader": "OP07-019"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39.json",
+      "human_leader": "OP07-019"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32.json",
+      "human_leader": "OP04-019"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32.json",
+      "human_leader": "OP04-019"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32.json",
+      "human_leader": "OP04-019"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32.json",
+      "human_leader": "OP04-019"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 6,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 7,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 8,
+      "before_life": 2,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T02.34.18.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T02.34.18.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T02.34.18.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T02.34.18.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T02.34.18.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T02.34.18.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 6,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T02.34.18.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 8,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T02.34.18.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.02.31.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.02.31.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 7,
+      "before_life": 1,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.02.31.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 9,
+      "before_life": 1,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.02.31.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.02.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": -1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.02.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 6,
+      "before_life": 6,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.02.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 8,
+      "before_life": 6,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.02.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 10,
+      "before_life": 6,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.02.31.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.39.23.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.39.23.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 7,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.39.23.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.39.23.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": -1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.39.23.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 6,
+      "before_life": 7,
+      "human_damage": 0,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.39.23.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 8,
+      "before_life": 8,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.39.23.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T13.08.24.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T13.08.24.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T13.08.24.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 9,
+      "before_life": 2,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T13.08.24.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T13.08.24.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T13.08.24.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 6,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T13.08.24.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 8,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T13.08.24.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 10,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T13.08.24.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T14.16.10.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T14.16.10.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 7,
+      "before_life": 1,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T14.16.10.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 9,
+      "before_life": 1,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T14.16.10.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T14.16.10.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T14.16.10.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 6,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T14.16.10.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 8,
+      "before_life": 5,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T14.16.10.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 10,
+      "before_life": 4,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T14.16.10.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.10.05.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.10.05.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.10.05.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.10.05.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.10.05.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.10.05.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 6,
+      "before_life": 5,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.10.05.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.10.05.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 12,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 14,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 16,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 18,
+      "before_life": 5,
+      "human_damage": 2,
+      "engine_damage": 3,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 20,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 11,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 13,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 15,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 17,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 19,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 21,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T15.17.58.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T15.17.58_p2.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T15.17.58_p2.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T15.17.58_p2.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 9,
+      "before_life": 5,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T15.17.58_p2.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 11,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T15.17.58_p2.json",
+      "human_leader": "OP13-079"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T15.17.58_p2.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T15.17.58_p2.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T15.17.58_p2.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 8,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T15.17.58_p2.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 10,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T15.17.58_p2.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 12,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T15.17.58_p2.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Krieg-RG_2026-07-14T17.11.29.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Krieg-RG_2026-07-14T17.11.29.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Krieg-RG_2026-07-14T17.11.29.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Krieg-RG_2026-07-14T17.11.29.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Krieg-RG_2026-07-14T17.11.29.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Krieg-RG_2026-07-14T17.11.29.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 6,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Krieg-RG_2026-07-14T17.11.29.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 8,
+      "before_life": 6,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Krieg-RG_2026-07-14T17.11.29.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 10,
+      "before_life": 5,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Krieg-RG_2026-07-14T17.11.29.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 11,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 10,
+      "before_life": 4,
+      "human_damage": 3,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 5,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 11,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 3,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 13,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 3,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+      "human_leader": "OP02-093"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+      "human_leader": "OP02-093"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+      "human_leader": "OP02-093"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+      "human_leader": "OP02-093"
+    },
+    {
+      "turn": 10,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+      "human_leader": "OP02-093"
+    },
+    {
+      "turn": 12,
+      "before_life": 1,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+      "human_leader": "OP02-093"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 6,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27_p2.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27_p2.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27_p2.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 9,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27_p2.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 11,
+      "before_life": 2,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": true,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27_p2.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 10,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 12,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.11.27_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.31.57.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.31.57.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.31.57.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.31.57.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.31.57.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 6,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.31.57.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 8,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.31.57.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T13.57.47.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T13.57.47.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T13.57.47.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 3,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T13.57.47.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T13.57.47.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T13.57.47.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T13.57.47.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T13.57.47.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 10,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T13.57.47.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T17.01.09.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T17.01.09.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T17.01.09.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 9,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T17.01.09.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T17.01.09.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T17.01.09.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T17.01.09.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T17.01.09.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 10,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T17.01.09.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-20T19.13.14.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 5,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-20T19.13.14.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 7,
+      "before_life": 5,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-20T19.13.14.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-20T19.13.14.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-20T19.13.14.json",
+      "human_leader": "OP14-040"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-20T19.13.14.json",
+      "human_leader": "OP14-040"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-20T19.13.14.json",
+      "human_leader": "OP14-040"
+    },
+    {
+      "turn": 8,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-20T19.13.14.json",
+      "human_leader": "OP14-040"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P_2026-07-21T01.08.09.json",
+      "human_leader": "OP04-019"
+    },
+    {
+      "turn": 5,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P_2026-07-21T01.08.09.json",
+      "human_leader": "OP04-019"
+    },
+    {
+      "turn": 7,
+      "before_life": 5,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P_2026-07-21T01.08.09.json",
+      "human_leader": "OP04-019"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P_2026-07-21T01.08.09.json",
+      "human_leader": "OP04-019"
+    },
+    {
+      "turn": 11,
+      "before_life": 3,
+      "human_damage": 3,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P_2026-07-21T01.08.09.json",
+      "human_leader": "OP04-019"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P_2026-07-21T01.08.09.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P_2026-07-21T01.08.09.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P_2026-07-21T01.08.09.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P_2026-07-21T01.08.09.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 10,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P_2026-07-21T01.08.09.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 12,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P_2026-07-21T01.08.09.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",
+      "human_leader": "OP11-040"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",
+      "human_leader": "OP11-040"
+    },
+    {
+      "turn": 7,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",
+      "human_leader": "OP11-040"
+    },
+    {
+      "turn": 9,
+      "before_life": 1,
+      "human_damage": -1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",
+      "human_leader": "OP11-040"
+    },
+    {
+      "turn": 11,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",
+      "human_leader": "OP11-040"
+    },
+    {
+      "turn": 2,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 4,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 6,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 10,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 12,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T15.25.14.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T15.25.14.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T15.25.14.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 9,
+      "before_life": 2,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T15.25.14.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T15.25.14.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T15.25.14.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 6,
+      "before_life": 6,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T15.25.14.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 8,
+      "before_life": 7,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T15.25.14.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 10,
+      "before_life": 8,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T15.25.14.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T21.44.06.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T21.44.06.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T21.44.06.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T21.44.06.json",
+      "human_leader": "OP10-099"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T21.44.06.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T21.44.06.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 6,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T21.44.06.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 8,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T21.44.06.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 10,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T21.44.06.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 11,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.json",
+      "human_leader": "OP02-093"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.json",
+      "human_leader": "OP02-093"
+    },
+    {
+      "turn": 6,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.json",
+      "human_leader": "OP02-093"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.json",
+      "human_leader": "OP02-093"
+    },
+    {
+      "turn": 10,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.json",
+      "human_leader": "OP02-093"
+    },
+    {
+      "turn": 3,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 7,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 9,
+      "before_life": 0,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 11,
+      "before_life": 0,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.json",
+      "human_leader": "OP13-002"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.json",
+      "human_leader": "OP13-002"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.json",
+      "human_leader": "OP13-002"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.json",
+      "human_leader": "OP13-002"
+    },
+    {
+      "turn": 10,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.json",
+      "human_leader": "OP13-002"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 5,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 7,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 11,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 13,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 6,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 10,
+      "before_life": 4,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 12,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": -1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 11,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 6,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 10,
+      "before_life": 3,
+      "human_damage": 3,
+      "engine_damage": 3,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.07.35.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.07.35.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.07.35.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.07.35.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.07.35.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.07.35.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.07.35.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.07.35.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 10,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.07.35.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.54.39.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 5,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.54.39.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.54.39.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 9,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.54.39.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.54.39.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.54.39.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.54.39.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.54.39.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 10,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.54.39.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T17.54.33.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T17.54.33.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T17.54.33.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T17.54.33.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T17.54.33.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T17.54.33.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T17.54.33.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 11,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 2,
+      "engine_won_this_turn": true,
+      "game": "Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 10,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 12,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json",
+      "human_leader": "OP14-020"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 2,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 11,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 10,
+      "before_life": 2,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-24T11.35.39.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 5,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-24T11.35.39.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-24T11.35.39.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-24T11.35.39.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-24T11.35.39.json",
+      "human_leader": "OP14-040"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-24T11.35.39.json",
+      "human_leader": "OP14-040"
+    },
+    {
+      "turn": 6,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-24T11.35.39.json",
+      "human_leader": "OP14-040"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Jinbe-B_2026-07-24T11.35.39.json",
+      "human_leader": "OP14-040"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T21.54.29.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T21.54.29.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 7,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T21.54.29.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T21.54.29.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 11,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T21.54.29.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T21.54.29.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T21.54.29.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T21.54.29.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T21.54.29.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 10,
+      "before_life": 3,
+      "human_damage": 3,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T21.54.29.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.10.06.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.10.06.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 7,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.10.06.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.10.06.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 11,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.10.06.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.10.06.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.10.06.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.10.06.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.10.06.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 10,
+      "before_life": 3,
+      "human_damage": 3,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.10.06.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.10.06_p2.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.10.06_p2.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.10.06_p2.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.10.06_p2.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.10.06_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.10.06_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.10.06_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.10.06_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 10,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.10.06_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 7,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 11,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 10,
+      "before_life": 3,
+      "human_damage": 3,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.24.06_p2.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.24.06_p2.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.24.06_p2.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.24.06_p2.json",
+      "human_leader": "OP11-021"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.24.06_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.24.06_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.24.06_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.24.06_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 10,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.24.06_p2.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 3,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Kaido-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06_p3.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 5,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Kaido-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06_p3.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 3,
+      "engine_won_this_turn": false,
+      "game": "Kaido-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06_p3.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 9,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 2,
+      "engine_won_this_turn": true,
+      "game": "Kaido-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06_p3.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 11,
+      "before_life": 2,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": true,
+      "game": "Kaido-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06_p3.json",
+      "human_leader": "ST04-001"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Kaido-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06_p3.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Kaido-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06_p3.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Kaido-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06_p3.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Kaido-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06_p3.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 10,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Kaido-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06_p3.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 12,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Kaido-P_x_Marshall.D.Teach-BY_2026-07-26T22.24.06_p3.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09_p2.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09_p2.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09_p2.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 9,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09_p2.json",
+      "human_leader": "OP15-001"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09_p2.json",
+      "human_leader": "OP14-040"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09_p2.json",
+      "human_leader": "OP14-040"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 2,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09_p2.json",
+      "human_leader": "OP14-040"
+    },
+    {
+      "turn": 8,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Krieg-RG_x_Jinbe-B_2026-07-26T23.35.09_p2.json",
+      "human_leader": "OP14-040"
+    },
+    {
+      "turn": 3,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 5,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 7,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 9,
+      "before_life": 2,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 11,
+      "before_life": 1,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json",
+      "human_leader": "OP13-002"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json",
+      "human_leader": "OP13-002"
+    },
+    {
+      "turn": 6,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json",
+      "human_leader": "OP13-002"
+    },
+    {
+      "turn": 8,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json",
+      "human_leader": "OP13-002"
+    },
+    {
+      "turn": 10,
+      "before_life": 4,
+      "human_damage": 3,
+      "engine_damage": 3,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-27T00.26.21_p4.json",
+      "human_leader": "OP13-002"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-R_2026-08-01T23.56.56.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 5,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-R_2026-08-01T23.56.56.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-R_2026-08-01T23.56.56.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 9,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 3,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-R_2026-08-01T23.56.56.json",
+      "human_leader": "OP11-062"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-R_2026-08-01T23.56.56.json",
+      "human_leader": "OP16-001"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-R_2026-08-01T23.56.56.json",
+      "human_leader": "OP16-001"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-R_2026-08-01T23.56.56.json",
+      "human_leader": "OP16-001"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-R_2026-08-01T23.56.56.json",
+      "human_leader": "OP16-001"
+    },
+    {
+      "turn": 10,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Charlotte.Katakuri-P_x_Portgas.D.Ace-R_2026-08-01T23.56.56.json",
+      "human_leader": "OP16-001"
+    },
     {
       "turn": 2,
       "before_life": 5,
@@ -295,10 +6280,100 @@
       "turn": 10,
       "before_life": 3,
       "human_damage": 1,
-      "engine_damage": 3,
+      "engine_damage": 2,
       "engine_won_this_turn": false,
       "game": "Portgas.D.Ace-R_x_Eustass.Captain.Kid-Y_2026-08-02T23.52.21.json",
       "human_leader": "OP10-099"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01_p2.json",
+      "human_leader": "OP17-039"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01_p2.json",
+      "human_leader": "OP17-039"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01_p2.json",
+      "human_leader": "OP17-039"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 3,
+      "engine_won_this_turn": false,
+      "game": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01_p2.json",
+      "human_leader": "OP17-039"
+    },
+    {
+      "turn": 11,
+      "before_life": 2,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01_p2.json",
+      "human_leader": "OP17-039"
+    },
+    {
+      "turn": 2,
+      "before_life": 5,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01_p2.json",
+      "human_leader": "OP16-001"
+    },
+    {
+      "turn": 4,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01_p2.json",
+      "human_leader": "OP16-001"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01_p2.json",
+      "human_leader": "OP16-001"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 3,
+      "engine_damage": 3,
+      "engine_won_this_turn": false,
+      "game": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01_p2.json",
+      "human_leader": "OP16-001"
+    },
+    {
+      "turn": 10,
+      "before_life": 0,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": true,
+      "game": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-08-08T10.55.01_p2.json",
+      "human_leader": "OP16-001"
     },
     {
       "turn": 3,
@@ -577,6 +6652,96 @@
       "engine_damage": 2,
       "engine_won_this_turn": false,
       "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T19.16.09.json",
+      "human_leader": "OP17-039"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27_p2.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27_p2.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 7,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27_p2.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27_p2.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 11,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27_p2.json",
+      "human_leader": "OP16-080"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27_p2.json",
+      "human_leader": "OP17-039"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27_p2.json",
+      "human_leader": "OP17-039"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27_p2.json",
+      "human_leader": "OP17-039"
+    },
+    {
+      "turn": 8,
+      "before_life": 3,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27_p2.json",
+      "human_leader": "OP17-039"
+    },
+    {
+      "turn": 10,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-15T20.33.27_p2.json",
       "human_leader": "OP17-039"
     },
     {
@@ -1001,6 +7166,87 @@
       "engine_won_this_turn": false,
       "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45.json",
       "human_leader": "OP13-001"
+    },
+    {
+      "turn": 3,
+      "before_life": 5,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45_p2.json",
+      "human_leader": "OP13-001"
+    },
+    {
+      "turn": 5,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45_p2.json",
+      "human_leader": "OP13-001"
+    },
+    {
+      "turn": 7,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 2,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45_p2.json",
+      "human_leader": "OP13-001"
+    },
+    {
+      "turn": 9,
+      "before_life": 3,
+      "human_damage": 2,
+      "engine_damage": 3,
+      "engine_won_this_turn": true,
+      "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45_p2.json",
+      "human_leader": "OP13-001"
+    },
+    {
+      "turn": 2,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45_p2.json",
+      "human_leader": "OP17-039"
+    },
+    {
+      "turn": 4,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45_p2.json",
+      "human_leader": "OP17-039"
+    },
+    {
+      "turn": 6,
+      "before_life": 4,
+      "human_damage": 0,
+      "engine_damage": 1,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45_p2.json",
+      "human_leader": "OP17-039"
+    },
+    {
+      "turn": 8,
+      "before_life": 4,
+      "human_damage": 1,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45_p2.json",
+      "human_leader": "OP17-039"
+    },
+    {
+      "turn": 10,
+      "before_life": 3,
+      "human_damage": 0,
+      "engine_damage": 0,
+      "engine_won_this_turn": false,
+      "game": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-17T00.07.45_p2.json",
+      "human_leader": "OP17-039"
     }
   ]
 }
