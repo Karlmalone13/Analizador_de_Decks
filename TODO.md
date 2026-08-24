@@ -2,6 +2,47 @@
 
 **Última atualização:** 23 de agosto de 2026
 
+> 23/08/2026 (bloco 651, pedido do usuário "investiga os 13 que
+> perderam" + "arruma essa escala de play x attack"): **primeiro mecanismo
+> da família "subir play" que PAGA** — `play` 30,6% → **32,0%**; somando os
+> fixes de régua do 650, a sessão levou `play` de **21,4% → 32,0%
+> (+10,6pp)**. Dois fixes: (1) `USE_TIEBREAK_PRESERVA_OPCAO` — em EMPATE
+> EXATO de valor simulado, prefere a ação que CONSOME DON (argumento de
+> dominância: jogar a carta primeiro preserva o ataque, que é grátis;
+> atacar primeiro pode consumir o DON via top-up e matar a carta); (2)
+> `DonEstimator.deck_left()` — `p.don_deck` ficava em 10 enquanto
+> `don_available` vinha do estimador, e a `don_phase` sacava +2 em cima:
+> turnos tardios rodavam com **12 DON**, acima do máximo físico.
+>
+> **Diagnóstico que destravou** (e que descarta mexer em
+> `KIND_SCORE_SCALE`): nos turnos em que o motor joga ZERO carta e o humano
+> joga ≥1, o `play` **entra no shortlist em 91%** (a guarda
+> `include_best_kind` funciona) e perde com **gap mediano 0,0** — 68% são
+> quase-empate. O gargalo não é exclusão nem avaliação ruim, é o
+> **DESEMPATE**. Constante não resolve: o 2,1 foi calibrado sobre mediana
+> de self-play (attack=266), mas nessas decisões reais o ataque vale ~1000.
+> Medido também que **32,6% de TODAS as decisões terminam em empate exato**
+> nos floats crus, e que `attack` vencia 81% deles enquanto `attach_don`
+> não vencia nenhum.
+>
+> **TRADE aberto, não escondido**: `attack-alvo` caiu 2,1pp (risco previsto
+> antes de medir — menos DON pro top-up muda o alvo). Subiu em 5 de 7
+> categorias, caiu de verdade em 1. **Variante não testada e candidata
+> óbvia**: restringir o desempate aos empates em que existe um `play` em
+> disputa, deixando attack-vs-attack intocado.
+>
+> **2 tentativas REVERTIDAS/descartadas, não repetir**: desempate por
+> `_human_pattern_bonus` deu **0,0pp exato** (o score estático já soma esse
+> bônus e o shortlist já é ordenado por ele — sinal circular; medido: 0 de
+> 104 empates tinham candidata com bônus maior); desempate por "mais
+> barato" mudaria 9 de 16 empates **para `attack`**, direção oposta.
+>
+> **3ª armadilha de medição da sessão, a mesma 3 vezes**: wrapper em função
+> de decisão do motor TEM que restringir à 1ª chamada por turno — senão
+> conta os estados das simulações Monte Carlo (mão/DON já gastos) junto com
+> o real. Deu "mediana 147 DON por turno" antes de eu perceber. Ver bloco
+> 651 do HANDOFF.
+
 > 23/08/2026 (bloco 650, pedido do usuário "tem alguma coisa impedindo a
 > porcentagem de igualdade subir" + "algo puxando essas porcentagens para
 > baixo pq mesmo com override não conseguimos subir"): **RESPOSTA

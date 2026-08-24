@@ -377,6 +377,34 @@ SEARCH_SCORE_WINDOW = 180
 # media de 'attack' e muito mais distorcida por outliers de lethal
 # (score chega a 10000+ em cenarios de vida 0/1, ver ATTACK_LEADER_BASE_
 # SCORE) do que a mediana, que reflete melhor o caso TIPICO.
+# Bloco 651 (23/08) -- desempate de EMPATE EXATO no valor simulado.
+# Medido: 32,6% de TODAS as decisoes terminam empatadas nos floats crus
+# (nao e arredondamento do log). E nos turnos em que o motor joga ZERO
+# carta e o humano joga >=1, o `play` ENTRA no shortlist em 91% dos casos
+# (a guarda include_best_kind funciona) e perde com **gap mediano 0,0** --
+# 68% das decisoes ali sao quase-empate (<=20). Ou seja: o gargalo de
+# `play` NAO e exclusao do shortlist nem avaliacao ruim, e o DESEMPATE.
+# Ate aqui ele caia na ordem do shortlist, dominada pelo score estatico,
+# que nessas mesmas decisoes tem mediana play=45 vs vencedor=1003 (22x --
+# a escala incomparavel entre kinds do bloco 579).
+#
+# Por que preferir quem GASTA DON: a simulacao empata porque a continuacao
+# gulosa executa AS DUAS acoes, so muda a ordem. No loop REAL as ordens
+# nao sao simetricas -- jogar a carta primeiro preserva o ataque (atacar
+# nao custa DON), mas atacar primeiro pode consumir o DON (top-up de
+# `_attach_don_for_attack`) e tornar a carta impagavel depois. Logo, em
+# empate, escolher a acao que consome o recurso escasso PRESERVA a outra;
+# escolher a gratuita pode matar a outra. E dominancia, nao heuristica.
+#
+# NAO confundir com a tentativa REVERTIDA do mesmo dia (desempate por
+# `_human_pattern_bonus`): aquela deu 0,0pp EXATO em todas as categorias
+# porque o score estatico JA soma esse bonus e o shortlist ja e ordenado
+# por ele -- sinal circular, incapaz de mudar qualquer empate (medido: 0
+# de 104 empates tinham candidata com bonus maior que a escolhida). Nao
+# repetir.
+USE_TIEBREAK_PRESERVA_OPCAO = True
+TIEBREAK_EPS = 1e-9
+
 KIND_SCORE_SCALE = {
     'play': 1.0,
     'activate': 1.0,
@@ -16515,8 +16543,31 @@ class OPTCGMatch:
                 break
 
         melhor, melhor_valor = None, None
+        melhor_tb = 0.0
         search_records = []
         sim_values = {}
+
+        def _tb(acao):
+            """Chave de desempate (bloco 651): quanto DON esta acao consome.
+            Maior vence -- ver comentario em USE_TIEBREAK_PRESERVA_OPCAO.
+            Defensivo: smoke_fast.py exercita esta funcao com `self` dublê e
+            `p=None`."""
+            if not USE_TIEBREAK_PRESERVA_OPCAO or p is None:
+                return 0.0
+            kind, obj = acao[1], acao[2]
+            try:
+                if kind == 'play':
+                    return float(effective_hand_play_cost(p, obj, opp))
+                if kind == 'activate':
+                    am = get_card_effects(obj.code).get('activate_main') or {}
+                    return float(sum(c.get('count', 1) for c in am.get('costs', [])
+                                     if c.get('type') == 'rest_don'))
+                if kind == 'attach_don':
+                    return 1.0
+            except Exception:
+                return 0.0
+            return 0.0          # attack nao custa DON
+
         for i, cand in enumerate(candidatas):
             valores = valores_por_cand[i]
             valor = sum(valores) / len(valores) if valores else -1e9
@@ -16538,9 +16589,17 @@ class OPTCGMatch:
             # (dentro de `_simulate_sequence_once`, via `human_
             # alignment * W['human_alignment']`) -- aumentar ESSE peso
             # especificamente, nao misturar o score generico aqui.
-            if melhor_valor is None or valor > melhor_valor:
+            if melhor_valor is None or valor > melhor_valor + TIEBREAK_EPS:
                 melhor_valor = valor
                 melhor = cand
+                melhor_tb = _tb(cand)
+            elif (USE_TIEBREAK_PRESERVA_OPCAO and melhor is not None
+                    and abs(valor - melhor_valor) <= TIEBREAK_EPS):
+                tb = _tb(cand)
+                if tb > melhor_tb:
+                    melhor_valor = valor
+                    melhor = cand
+                    melhor_tb = tb
         return melhor, melhor_valor, search_records, n_coletadas, sim_values
 
     def _generate_and_score_actions(self, p, opp, engine, exclude_activate_uids=None):

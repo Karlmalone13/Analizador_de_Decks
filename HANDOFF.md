@@ -28,6 +28,126 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-23 (651) - Claude (sessao local) - Primeiro mecanismo da familia "subir play" que PAGA de verdade: desempate por PRESERVACAO DE OPCAO (`play` 30,6% -> 32,0%) + teto de DON da reconstrucao. Sessao inteira: `play` 21,4% -> 32,0% (+10,6pp)
+
+Continuacao direta do bloco 650. Pedido do usuario: "investiga os 13 que
+perderam, comecando pelos 5 quase-empates" e depois "vamos tentar aumentar
+a play(motor=humano)" e "arruma essa escala de play x attack".
+
+### Investigacao dos 13 (ativacao de Stage que competiu e perdeu) -- NEGATIVA, mas rendeu o mapa
+
+Os "5 quase-empates" sao na verdade **7 EMPATES EXATOS** de valor simulado
+(sim=509,84 vs 509,84 etc). A busca chega ao MESMO valor porque a
+continuacao gulosa executa AS DUAS acoes, so muda a ordem -- e o DON gasto
+a mais nao aparece na avaliacao de fim de turno (ele volta no refresh).
+
+Medido no corpus: **32,6% de TODAS as decisoes terminam em empate exato**
+nos floats CRUS (confirmado que nao e arredondamento do log). Nesses casos
+quem decide e a ordem do shortlist. Vies medido: `attack` vence 102 dos 126
+empates (81%), `attach_don` NUNCA vence nenhum (0/126), `play` vence 14 e
+perde 60.
+
+**Tentativa 1 -- desempate por `_human_pattern_bonus`: 0,0pp EXATO em todas
+as categorias. REVERTIDA.** Causa entendida e registrada pra nao repetir: o
+score estatico JA soma esse bonus e o shortlist JA e ordenado por ele --
+sinal circular, incapaz de mudar empate. Instrumentado: em **0 de 104**
+empates existe candidata empatada com bonus MAIOR que a escolhida (83% tem
+bonus identico).
+
+**Tentativa 2 -- desempate por "mais barato": NAO implementada.** Medida
+antes: mudaria so 15,4% dos empates e **9 das 16 mudancas iriam pra
+`attack`** -- direcao oposta ao objetivo.
+
+### Diagnostico que destravou: o gargalo de `play` e o DESEMPATE, nao a escala
+
+Nos turnos em que o motor joga ZERO carta e o humano joga >=1:
+- **92,3%** tinham candidata `play` com score>=0 que perdeu TODAS as
+  decisoes do turno (nao e falta de opcao nem encerramento prematuro).
+- O `play` **ENTRA no shortlist em 91%** desses turnos -- a guarda
+  `include_best_kind('play', 1)` funciona.
+- Ele perde com **gap mediano 0,0** e **68% das decisoes sao quase-empate
+  (<=20)**.
+- Mas o score estatico mediano ali e **play=45,0 vs vencedor=1003,6 (22x)**.
+
+Ou seja: NAO adianta mexer em `KIND_SCORE_SCALE` (o fator 2,1 foi calibrado
+sobre a MEDIANA de self-play, attack=266 -- mas nessas decisoes reais o
+ataque vale ~1000, e a cauda nao se corrige com constante). O `play` nao e
+excluido nem mal avaliado; ele PERDE O DESEMPATE.
+
+### O fix que ficou: desempate por PRESERVACAO DE OPCAO
+
+`USE_TIEBREAK_PRESERVA_OPCAO` em `_select_action_via_search`, ativo SO em
+empate exato (`TIEBREAK_EPS=1e-9`): entre acoes empatadas, prefere a que
+CONSOME DON.
+
+Argumento de DOMINANCIA, nao heuristica: a simulacao empata porque a
+continuacao gulosa faz as duas acoes em qualquer ordem, mas **no loop REAL
+as ordens nao sao simetricas** -- jogar a carta primeiro preserva o ataque
+(atacar nao custa DON), enquanto atacar primeiro pode consumir o DON (top-up
+de `_attach_don_for_attack`) e tornar a carta impagavel depois. Em empate,
+escolher a acao que consome o recurso escasso PRESERVA a outra; escolher a
+gratuita pode matar a outra.
+
+### Fix 2 (fidelidade) -- teto de DON da reconstrucao
+
+`p.don_deck` ficava no valor de partida (10) enquanto `p.don_available` era
+setado pelo `DonEstimator` -- entao a `don_phase` do turno simulado sacava
++2 EM CIMA do acumulado, e o motor jogava turnos tardios com **12 DON**,
+acima do maximo fisico. Novo `DonEstimator.deck_left()`. Verificado: maior
+`don_available` observado caiu de 12 pra 10. Mesma familia do fix do bloco
+650 -- estado de recurso irreal, aqui GENEROSO demais (o do 650 era
+avarento demais).
+
+### Numeros (decision_quality_full.py --all --workers 4, 214 logs, 1018 turnos)
+
+| categoria | bloco 650 | +teto DON | +desempate | total |
+|---|---|---|---|---|
+| **play** | 29,7% | 30,6% | **32,0%** | **+2,3pp** |
+| attach_don | 16,6% | 16,9% | 17,9% | +1,3pp |
+| alvo no efeito | 14,5% | 14,6% | 16,3% | +1,8pp |
+| sequencia exata | 5,0% | 5,0% | 6,0% | +1,1pp |
+| sequencia (LCS) | 35,1% | 35,3% | 36,3% | +1,2pp |
+| activate | 25,6% | 26,2% | 26,1% | +0,5pp |
+| attack -- quem | 54,0% | 54,2% | 54,1% | +0,1pp |
+| **attack -- alvo** | 70,0% | 69,5% | **67,9%** | **-2,1pp** |
+
+Defesa IDENTICA (85,9% / 60,8%) -- controle passou. Efeito ISOLADO do
+desempate (mesmos turnos, mesmo denominador): play **+1,4pp**, attach_don
+**+1,2pp**, activate -0,4pp, attack-quem -0,1pp.
+
+### TRADE HONESTO, nao esconder
+
+`attack-alvo` caiu 1,6pp no passo do desempate -- risco previsto ANTES de
+medir (menos DON sobrando pro top-up muda o alvo escolhido). Em decisoes
+absolutas: play +23 turnos, sequencia +11, alvo-efeito +10, attach_don +8,
+activate/attack-quem +1 cada, **attack-alvo -25**. Liquido +29, mas o ganho
+de `play` e quase compensado em numero absoluto pela perda de `attack-alvo`
+-- os denominadores sao diferentes (976 turnos vs 1408 ataques), entao NAO
+somam de forma limpa. Subiu em 5 de 7 categorias, caiu de verdade em 1.
+
+Mantido porque 4 categorias distintas (play, attach_don, sequencia,
+alvo-de-efeito) se movem na MESMA direcao, o que costuma indicar causa real
+e nao ruido. **Variante nao testada, candidata obvia pra proxima sessao**:
+restringir o desempate aos empates em que existe um `play` em disputa,
+deixando attack-vs-attack e attach_don-vs-attack intocados -- pode pegar o
+ganho sem pagar o `attack-alvo`.
+
+### 3a armadilha de medicao da sessao (a MESMA, 3 vezes)
+
+Instrumentei `_attach_don_for_attack` e obtive "mediana 147 DON por turno",
+numero impossivel -- **contei as chamadas dentro das simulacoes Monte Carlo
+junto com as reais**. Ja tinha caido nisso com `_should_activate_main`
+(bloco 650). REGRA: qualquer wrapper em funcao de decisao do motor precisa
+restringir a 1a chamada por turno (o generator roda no estado REAL antes de
+qualquer simulacao) -- senao mistura estados projetados, com mao/DON ja
+gastos, na estatistica. Os numeros do top-up NAO foram usados como achado.
+
+### Validacao
+
+`smoke_fast.py` 1376 OK / 0 falhas, `smoke_test.py` 204 OK / 0 falhas,
+ambos exit 0. `decision_quality_full.py --all --workers 4` completo, 3
+rodadas (baseline / teto DON / desempate) pra atribuicao separada.
+
 ## 2026-08-23 (650) - Claude (sessao local) - CAUSA RAIZ do teto das porcentagens: nao era heuristica, era o ESTADO que a reconstrucao entregava ao motor. 4 fixes de fidelidade em ferramenta de auditoria (ZERO linha de decision_engine.py) -- `play` 21,4% -> 29,7% (+8,3pp), o maior ganho medido desta frente
 
 Pedido do usuario, continuando o 649: "tem alguma coisa impedindo a

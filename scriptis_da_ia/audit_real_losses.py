@@ -424,6 +424,18 @@ class DonEstimator:
         # Teto do cost area = tamanho do DON!! deck (GameState.don_deck=10).
         return max(0, min(10, self.drawn.get(player, 0)))
 
+    def deck_left(self, player):
+        """Quantos DON ainda restam no DON!! deck deste jogador.
+
+        Achado real 23/08 (bloco 651): a reconstrucao setava
+        `p.don_available` mas deixava `p.don_deck` no valor de partida (10),
+        entao a `don_phase` do turno simulado sacava +2 EM CIMA do total ja
+        acumulado -- o motor chegava a jogar turnos tardios com **12 DON**,
+        acima do maximo fisico do jogo. Sem isto o estado tardio fica
+        generoso demais e as decisoes caras do fim de partida nao
+        correspondem ao que o humano tinha."""
+        return max(0, 10 - self.drawn.get(player, 0))
+
 
 def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
                    capture_actions=False, capture_candidates=False):
@@ -609,6 +621,10 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
 
         p.turn = bot_turn_count - 1
         p.don_available = don_est.available(bot_side)
+        # ver DonEstimator.deck_left -- sem isto a don_phase do turno
+        # simulado estoura o teto de 10 DON
+        p.don_deck = don_est.deck_left(bot_side)
+        opp.don_deck = don_est.deck_left(opp_side)
         # Achado real 17/08 (pedido do usuario, censo de "jogada nunca
         # gerada" -- don_antes_do_ramp aparecia 0 em quase TODO turno,
         # ate em turnos tardios T8/T9/T10 onde deveria ter acumulado
