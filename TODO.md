@@ -2,6 +2,21 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 664, continuação da simulação manual turno-a-turno,
+> Teach x Imu T15/T17): T15 confirmado como instância real de uma
+> limitação de reconstrução JÁ aceita e documentada (`_known_gains_
+> this_turn` não rastreia qual ação específica produziu cada carta
+> ganha no turno) — não reaberto. **T17 é bug real, corrigido**: motor
+> trashava o próprio finisher (Zehahahahaha!, EVENT custo 8 — a carta
+> que o histórico usa pra fechar a partida no T21) como custo genérico
+> de outra habilidade, porque a proteção de "carta cara/bomba" em
+> `_trash_value` só cobria `CHARACTER`, nunca `EVENT`/`STAGE`. Busca
+> global: 11 cartas EVENT/STAGE com custo≥7 no banco — mesma família,
+> não só Zehahahahaha. Fix genérico: removida a restrição de tipo da
+> cláusula de custo. Validado end-to-end (motor agora trasha uma carta
+> genérica em vez do finisher). Medido: attack-quem 54,8% → **55,2%
+> (+0,4pp)**, resto estável, zero regressão. Ver bloco 664 do HANDOFF.
+
 > 24/08/2026 (bloco 663, pedido do usuário "crie novas alternativas no
 > código pra ele jogar igual" em vez de só caçar bug): novo **2º nível
 > de desempate** (`_tb_human`) na busca real — só entra quando o valor

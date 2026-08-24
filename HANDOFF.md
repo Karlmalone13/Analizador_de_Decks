@@ -28,6 +28,60 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (664) - Claude (sessao remota web) - Continua o roteiro turno-a-turno (Teach x Imu T15/T17): T15 e limitacao ja aceita de reconstrucao (nao mexido); T17 e BUG REAL genuino -- motor trashava o proprio finisher (Zehahahahaha!, EVENT custo 8) como custo generico de outra habilidade, porque a protecao de "carta cara/bomba" em `_trash_value` so cobria CHARACTER, nunca EVENT/STAGE
+
+Continuacao da simulacao manual turno-a-turno (pedido do usuario:
+"va simulando os turnos manualmente primeiro"), Teach x Imu, turnos
+15 e 17 (ainda nao auditados a fundo desta partida).
+
+**T15 -- nao e bug, e limitacao ja aceita e documentada.** Motor
+"comprou" Marshall.D.Teach OP16-119 direto na fase de compra padrao do
+turno; historicamente o humano so o conseguiu MID-TURN via uma
+habilidade condicional especifica ("This is MY AGE!!!!"). Causa: `_known_
+gains_this_turn` (audit_real_losses.py) rastreia so o CONJUNTO de
+cartas ganhas no turno (diff de mao antes/depois), nao QUAL acao
+especifica produziu cada uma -- decisao de escopo ja tomada e
+documentada no proprio docstring da funcao ("aceito, o CONJUNTO exato
+de cartas ja e a parte que importa"). Confirmado como instancia real
+dessa limitacao ja conhecida, nao reaberto.
+
+**T17 -- BUG REAL, corrigido.** Motor jogou Shiryu (Full Art) e pagou
+o custo opcional do on-play ("trash 1 card from hand") trashando o
+proprio **Zehahahahaha!** (EVENT, custo 8, exatamente o finisher que o
+HISTORICO usa pra fechar a partida no T21). Causa: `_trash_value`
+(funcao que escolhe qual carta da mao vale menos manter, usada como
+custo de descarte generico) tem uma protecao explicita de "carta cara/
+bomba" (`cost>=7 or power>=7000`, +20 a +132 de valor) mas ela so
+disparava pra `card.card_type == 'CHARACTER'` -- QUALQUER EVENT/STAGE
+caro (finisher tematico do jogo, nao so Zehahahahaha) ficava
+DESPROTEGIDO, caindo no valor generico de `avaliar_carta` (baixo pra
+um EVENT de 0 power).
+
+**Busca global** (mesmo espirito do gate de parser, aplicado aqui a um
+padrao de engine): 11 cartas EVENT/STAGE no banco inteiro com custo>=7
+-- mesma familia de "finisher caro" que a protecao ja cobria pra
+CHARACTER, nunca amarrado so ao Zehahahahaha.
+
+**Fix generico**: removida a restricao `card_type == 'CHARACTER'` da
+clausula de custo (`card.cost >= 7`) -- agora vale pra QUALQUER tipo de
+carta. `power >= 7000` continua exclusivo de CHARACTER (EVENT/STAGE
+sempre tem power=0, a clausula seria sempre falsa de qualquer forma, so
+o custo realmente muda de comportamento).
+
+**Validado end-to-end**: T17 do Teach agora trasha "Catarina Devon"
+(carta generica) em vez de Zehahahahaha! pro mesmo custo. `smoke_fast.py`/
+`smoke_test.py` OK. Medido via `decision_quality_full.py --all
+--workers 4`: attack-quem 54,8% -> **55,2% (+0,4pp)**, resto estavel
+(play/activate/attach_don identicos, defesa intocada). Ganho pequeno
+mas real, zero regressao.
+
+**Estado da sessao "crie alternativas" ate aqui**: 3 mecanismos novos
+tentados, 2 mantidos (2o nivel de desempate humano bloco 663 +1,2pp;
+protecao de EVENT/STAGE caro neste bloco +0,4pp), 1 corretamente
+descartado apos testar a premissa (banking de DON, bloco 663 -- gate
+`don_on_field_gte` e satisfeito por ramp automatico, nao muda com
+gasto dentro do turno).
+
 ## 2026-08-24 (663) - Claude (sessao remota web) - 2o NIVEL de desempate por padrao humano (`_tb_human`), so ativo quando valor simulado E desempate de DON JA empatam -- ganho pequeno mas REAL e nao-circular (activate +1,2pp), pedido do usuario "crie novas alternativas no codigo pra ele jogar [igual]"
 
 Pedido do usuario apos a medicao do bloco 662: em vez de continuar so

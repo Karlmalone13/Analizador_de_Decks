@@ -9915,7 +9915,20 @@ class EffectExecutor:
         # bomba é cara (custo alto) quanto decks cuja bomba é um corpo de
         # poder alto por custo relativamente baixo (o padrão de "Shiryu"),
         # sem depender do numero exato de nenhuma carta especifica.
-        if card.card_type == 'CHARACTER' and (card.cost >= 7 or card.power >= 7000):
+        #
+        # 2a generalizacao (24/08, sessao turno-a-turno, Teach x Imu T17):
+        # o gate `card.card_type == 'CHARACTER'` deixava QUALQUER EVENT/
+        # STAGE caro de fora, mesmo sendo tao "bomba" quanto um corpo
+        # grande -- achado real: motor trashou Zehahahahaha! (EVENT,
+        # custo 8, finisher que o HISTORICO realmente usou pra fechar a
+        # partida no T21) como custo generico de uma habilidade menor do
+        # Shiryu, porque nenhuma protecao de "carta cara" existia pra
+        # EVENT/STAGE. Censo global: 11 cartas EVENT/STAGE com custo>=7
+        # no banco inteiro -- mesma familia de "finisher caro", nao so
+        # Zehahahahaha. `power>=7000` continua exclusivo de CHARACTER (
+        # EVENT/STAGE tem power=0 sempre, a clausula seria sempre falsa
+        # pra eles de qualquer forma -- so o custo>=7 realmente muda).
+        if (card.card_type == 'CHARACTER' and card.power >= 7000) or card.cost >= 7:
             # poder/1000 tetado em 14 (maior corpo real do jogo hoje) --
             # sem o teto, um poder fora da curva real (ex: fixture de
             # teste sintetico com 20000) inflava a protecao muito alem do
