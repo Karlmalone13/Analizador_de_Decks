@@ -1579,18 +1579,34 @@ def parse_costs(text):
             if m_bare:
                 costs.append({'type': 'rest_don', 'count': int(m_bare.group(1))})
 
-    # "you may rest N of your cards:" -- atalho oficial de custo que
-    # refere-se a DON!! cards sem dizer "DON!!" explicitamente (mesma
-    # terminologia usada em cartas impressas reais). Achado 19/07,
-    # familia de 8 cartas (EB04-015, EB04-019, OP14-020, OP14-029,
-    # OP14-033, OP14-036, OP14-037, OP14-038): o custo inteiro sumia,
-    # habilidades disparavam de graca. Guard evita duplicar se algum dos
-    # ramos acima ja capturou um rest_don (nunca deveria coexistir, mas
-    # protege contra sobreposicao futura).
-    if not any(c.get('type') == 'rest_don' for c in costs):
+    # "you may rest N of your cards:" -- RETIFICACAO 24/08/2026 (achado
+    # 19/07 estava ERRADO): a familia inteira (agora 13 linhas/10 codigos
+    # base -- EB04-015, EB04-019, OP14-020, OP14-029, OP14-033, OP14-036,
+    # OP14-037, OP14-038, mais OP17-037/OP17-038 achadas nesta busca, que
+    # nao existiam no banco em 19/07) foi mapeada pra rest_don assumindo
+    # que "cards" (sem dizer "DON!!") era so uma forma indireta de dizer
+    # DON!! Cards -- nunca validado contra partida real. Log real (Dracule
+    # Mihawk OP14-020, turnos 7 e 11, Dracule.Mihawk-G_x_Charlotte.
+    # Katakuri-P_2026-07-20T12.11.27_p2.json) mostra o humano pagando esse
+    # EXATO custo restando um PERSONAGEM ('Rest Trafalgar Law'/'Rest
+    # Shanks'), nunca DON. Alem disso, a familia irma de "instead"
+    # (substituicao de K.O./remocao, poucas linhas acima) ja distingue
+    # corretamente "you may rest N of your active DON!! cards instead"
+    # (-> rest_don) de "you may rest N of your cards instead" (->
+    # rest_own_card, qualquer carta propria -- Character OU Leader) --
+    # convencao propria do projeto que o fix de 19/07 contradisse sem
+    # perceber. rest_own_card ja existe e e testado (_pay_costs e
+    # _pay_substitute_cost) -- so faltava esta forma com ':' apontar pra
+    # ele. Efeito colateral do bug antigo: como rest_don exige DON ATIVO
+    # (p.don_available), a habilidade ficava impossivel de gerar como
+    # candidata sempre que o motor ja tinha gasto todo o DON do turno --
+    # justamente quando mais valeria a pena, ja que o custo real (restar
+    # um personagem) nao depende de DON nenhum. Guard evita duplicar se
+    # algum ramo acima ja capturou um custo de rest.
+    if not any(c.get('type') in ('rest_don', 'rest_own_card') for c in costs):
         m_rest_cards_generic = re.search(r'you may rest (\d+) of your cards?\s*:', t)
         if m_rest_cards_generic:
-            costs.append({'type': 'rest_don', 'count': int(m_rest_cards_generic.group(1))})
+            costs.append({'type': 'rest_own_card', 'count': int(m_rest_cards_generic.group(1))})
 
     # Custo de trash do TOPO DO PRÓPRIO DECK (mill como custo, distinto de
     # trash_from_hand) -- "you may trash N cards from the top of your deck:

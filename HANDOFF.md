@@ -28,6 +28,94 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (666) - Claude (sessao remota web) - Continuando o roteiro turno-a-turno pro Dracule Mihawk (OP14-020, 23,5%/34 turnos): achado BUG REAL de parser que retifica um achado anterior (19/07) -- "you may rest N of your cards:" (10 codigos base, 13 linhas) estava mapeado pra `rest_don` (restar DON), mas o custo real (confirmado em partida real) e restar um PERSONAGEM. Fix generico (parser + `_pay_costs` + `leader_plan_alignment`), validado end-to-end: a habilidade de lider do Mihawk, que NUNCA aparecia como candidata em 3 turnos auditados, agora aparece e e escolhida exatamente como o humano fez
+
+Continuacao do pedido do usuario ("simule de novo, se nao bater crie
+alternativa" / "va simulando os turnos manualmente primeiro"). Depois
+de Katakuri e Lucy (bloco 665, nenhum bug achado), a proxima partida
+auditada foi Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T12.
+11.27_p2.json (Mihawk = 23,5%/34 turnos no corpus, o proximo lider
+mais baixo de volume razoavel depois do Katakuri).
+
+**Achado:** nos turnos 7 e 11, o HISTORICO mostra o humano ativando a
+habilidade de lider do Mihawk ("[Activate:Main] You may rest 1 of your
+cards: If there is a Character with a cost of 5 or more, set up to 3
+of your DON!! cards as active...") pagando o custo com 'Rest Trafalgar
+Law'/'Rest Shanks' -- um PERSONAGEM, nunca DON. O motor de hoje NUNCA
+gerava essa habilidade como candidata em NENHUM dos 3 turnos auditados
+(7, 9, 11), porque `gerar_effects_db.py` mapeava "you may rest N of
+your cards:" (sem dizer "DON!! cards" explicitamente) pra
+`{'type': 'rest_don', 'count': N}` -- decisao tomada no achado 19/07
+(registro `2026-07-19_lote_16_...json`, item 15), assumindo que "cards"
+generico era so um jeito indireto de dizer "DON!! cards" (terminologia
+oficial de algumas cartas impressas). Essa suposicao NUNCA foi validada
+contra uma partida real, e a evidencia nova a contradiz diretamente.
+
+**Confirmacao adicional, achada durante a auditoria:** a familia irma
+"you may rest N of your cards INSTEAD" (custo de substituicao de K.O./
+remocao, mesmo arquivo, poucas linhas acima) ja distinguia
+corretamente "cards" generico (-> `rest_own_card`, qualquer carta
+propria) de "active DON!! cards" explicito (-> `rest_don`) -- o fix de
+19/07 contradisse a propria convencao ja estabelecida e testada do
+projeto pro MESMO padrao linguistico, sem perceber.
+
+**Busca global:** regex `you may rest \d+ of your cards?\s*:` em
+`cards_rows.csv` -- 13 linhas / 10 codigos base: os 8 do achado 19/07
+(EB04-015, EB04-019, OP14-020, OP14-029, OP14-033, OP14-036, OP14-037,
+OP14-038) + 2 cartas NOVAS que entraram no banco depois de 19/07 e
+nunca foram cobertas (OP17-037, OP17-038).
+
+**Fix generico:**
+1. `gerar_effects_db.py`: troca o custo emitido de `rest_don` pra
+   `rest_own_card` (tipo ja existente, usado pela familia irma
+   "instead").
+2. `decision_engine.py`, `_pay_costs`: novo handler `rest_own_card`
+   (mesmo padrao de `rest_own_character` -- personagens proprios NAO
+   restados + o proprio Leader se nao restado, escolhe o de MENOR
+   board_value pra restar, o que naturalmente poupa o Leader a menos
+   que nao sobre outra opcao).
+3. `leader_plan_alignment`/`_leader_ability_centrality` (sinal de
+   estado, NAO fonte de elegibilidade real -- essa continua em
+   `_generate_and_score_actions`/`_should_activate_main`, sem
+   duplicacao): ganhou o mesmo check de payabilidade pra
+   `rest_own_card` (antes so verificava DON via `rest_don`).
+4. Os ~13 OUTROS call-sites de `rest_don` no arquivo (budgets de DON
+   do Turn Planner, guards de custo composto, `_ORTHOGONAL_COST_TYPES`)
+   foram conferidos um a um e NAO precisam de mudanca -- como o novo
+   tipo nao e mais `rest_don`, eles automaticamente param de contar
+   esse custo como gasto de DON (correto, o custo real nao usa DON
+   nenhum) sem precisar de nenhum edit.
+
+**Validado end-to-end:** re-simulando a mesma partida real, o motor
+agora ativa a habilidade do Mihawk no T7 (resta Kin'emon, reativa 3
+DON) e no T9 (resta Otama Parallel, reativa 3 DON) -- exatamente o
+padrao real do humano (T7/T11 no historico). T11 tambem melhorou de
+"ataque bloqueado, 0 dano" pra vitoria na mesma simulacao, com mais DON
+disponivel pra ataque gracas as ativacoes corretas dos turnos
+anteriores. `diff_parser.py`: PERDEU=0, MUDOU=10 (exatamente os 10
+codigos esperados). `smoke_fast.py`: 10 testes pre-existentes que
+assumiam `rest_don` foram atualizados pra `rest_own_card` (incluindo os
+que verificavam payabilidade por DON -- agora verificam payabilidade
+por personagem/lider disponivel). `smoke_test.py`: TODOS OS TESTES
+PASSARAM. Registro em
+`parser_audits/2026-08-24_OP14-020_rest_own_card_retificacao.json`.
+
+**Conecta com 2 investigacoes anteriores nao resolvidas sobre este
+MESMO lider:** o achado de 30/07 (`smoke_fast.py`,
+`test_set_don_active_score_escala_por_don_rested_30_07`) ja tinha
+corrigido a CONDICAO (`board_has_cost_gte`) e o VALOR do efeito
+(`set_don_active` escalado por `don_rested`), mas registrou
+explicitamente "ativacoes de OP14-020 subiram de 1,75 pra 2,10/jogo,
+mas ainda longe do alvo de 5,4/jogo" -- sem saber que o CUSTO em si
+(`rest_don` errado) bloqueava a habilidade de ser sequer OFERECIDA como
+candidata sempre que o motor ja tinha gasto todo o DON do turno,
+independente de quao bem calibrado estivesse o valor do efeito uma vez
+oferecida. **Nao medido ainda se isso fecha o gap ate 5,4/jogo** --
+exigiria uma rodada de self-play instrumentado ou
+`decision_quality_full.py --all` nova, fora do escopo desta sessao de
+simulacao turno-a-turno; fica como proximo passo recomendado, nao
+substitui medicao real.
+
 ## 2026-08-24 (665) - Claude (sessao remota web) - Fecha o roteiro Teach x Imu (T21 confirma o fix do T17: motor jogou Zehahahahaha! ate o fim, so em ordem diferente da historica); investiga 2 lideres com metrica agregada baixa (Katakuri 15,8%/139 turnos, Lucy OP15-002 0,0%/10 turnos) via simulacao turno-a-turno -- NENHUM dos dois revelou bug corrigivel, os dois sao "motor joga igual ou melhor que o humano" (achado negativo registrado por pedido explicito do usuario: nao caçar bug onde nao tem)
 
 **T21 (Teach x Imu, ultimo turno da partida) -- nao e bug.** HISTORICO

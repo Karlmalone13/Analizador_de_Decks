@@ -4132,7 +4132,7 @@
    "costs": [
     {
      "count": 1,
-     "type": "rest_don"
+     "type": "rest_own_card"
     }
    ],
    "steps": [
@@ -4244,7 +4244,7 @@
    "costs": [
     {
      "count": 1,
-     "type": "rest_don"
+     "type": "rest_own_card"
     }
    ],
    "steps": [
@@ -34673,7 +34673,7 @@
    "costs": [
     {
      "count": 1,
-     "type": "rest_don"
+     "type": "rest_own_card"
     }
    ],
    "once_per_turn": true,
@@ -34831,7 +34831,7 @@
    "costs": [
     {
      "count": 2,
-     "type": "rest_don"
+     "type": "rest_own_card"
     }
    ],
    "once_per_turn": true,
@@ -34897,7 +34897,7 @@
    "costs": [
     {
      "count": 1,
-     "type": "rest_don"
+     "type": "rest_own_card"
     }
    ],
    "steps": [
@@ -34963,7 +34963,7 @@
    "costs": [
     {
      "count": 1,
-     "type": "rest_don"
+     "type": "rest_own_card"
     }
    ],
    "steps": [
@@ -34979,7 +34979,7 @@
    "costs": [
     {
      "count": 1,
-     "type": "rest_don"
+     "type": "rest_own_card"
     }
    ],
    "steps": [
@@ -35006,7 +35006,7 @@
    "costs": [
     {
      "count": 3,
-     "type": "rest_don"
+     "type": "rest_own_card"
     }
    ],
    "steps": [
@@ -35035,7 +35035,7 @@
    "costs": [
     {
      "count": 2,
-     "type": "rest_don"
+     "type": "rest_own_card"
     }
    ],
    "steps": [
@@ -42603,7 +42603,7 @@
    "costs": [
     {
      "count": 1,
-     "type": "rest_don"
+     "type": "rest_own_card"
     }
    ],
    "steps": [
@@ -42653,7 +42653,7 @@
    "costs": [
     {
      "count": 4,
-     "type": "rest_don"
+     "type": "rest_own_card"
     }
    ],
    "steps": [

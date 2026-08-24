@@ -2,6 +2,34 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 666, continuação do roteiro turno-a-turno — Dracule
+> Mihawk OP14-020, 23,5%/34 turnos): **BUG REAL de parser encontrado,
+> retifica um achado anterior (19/07).** "you may rest N of your
+> cards:" (10 códigos base: EB04-015, EB04-019, OP14-020, OP14-029,
+> OP14-033, OP14-036, OP14-037, OP14-038 + OP17-037/OP17-038 novas)
+> estava mapeado para `rest_don` (restar DON) desde 19/07 — assumido,
+> nunca validado contra partida real. Log real (turnos 7/11) mostra o
+> humano pagando esse custo restando um PERSONAGEM (Trafalgar Law,
+> depois Shanks), nunca DON — e a família irmã "...instead" (custo de
+> substituição de K.O.) já distinguia isso corretamente, contradizendo
+> o achado de 19/07 sem que ninguém notasse. Efeito prático do bug: a
+> habilidade de líder do Mihawk nunca aparecia como candidata sempre
+> que o motor já tinha gasto todo o DON do turno — justamente quando
+> mais valeria a pena, já que o custo real não depende de DON nenhum.
+> Fix genérico: novo custo `rest_own_card` (parser + `_pay_costs` +
+> `leader_plan_alignment`), os ~13 outros usos de `rest_don` no arquivo
+> não precisaram de mudança (naturalmente param de contar como gasto de
+> DON). Validado end-to-end numa partida real: a habilidade passou a
+> ser ativada exatamente nos turnos em que o humano ativou, pagando o
+> custo do mesmo jeito. `smoke_fast.py`/`smoke_test.py` OK (10 testes
+> pré-existentes atualizados). Conecta com uma investigação de 30/07
+> que já tinha corrigido a condição e o valor do efeito dessa mesma
+> habilidade mas não sabia que o CUSTO em si bloqueava a oferta da
+> ação — não medido ainda se isso fecha o gap de ativações/jogo
+> registrado naquela sessão (pendente: nova rodada de
+> `decision_quality_full.py --all` ou self-play instrumentado). Ver
+> bloco 666 do HANDOFF.
+
 > 24/08/2026 (bloco 665, continuação do pedido "simule de novo, se não
 > bater crie alternativa"): T21 do Teach x Imu fecha a 2ª passada dessa
 > partida sem bug novo (mesmo combo do histórico, ordem diferente —

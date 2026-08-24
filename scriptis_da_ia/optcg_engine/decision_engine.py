@@ -5681,6 +5681,31 @@ class EffectExecutor:
                     remove_by_identity(candidates, target)
                     rested.append(target.name[:15])
                 self._cost_logs.append(f'custo: restou aliado: {", ".join(rested)}')
+            elif ctype == 'rest_own_card':
+                # "you may rest N of your cards:" (achado 24/08, retifica
+                # o 19/07 -- ver comentario no parser) -- qualquer carta
+                # PROPRIA ativa (Character OU Leader), nao DON. Mesmo
+                # criterio de "menos valioso primeiro" do rest_own_
+                # character (poupa a carta mais forte pra continuar
+                # atacando/blocando); Leader so entra na lista de
+                # candidatos porque board_value() dele normalmente supera
+                # qualquer personagem de banco, entao só é escolhido
+                # quando não sobra nenhum personagem ativo -- igual um
+                # jogador real nunca restaria o próprio líder por essa
+                # habilidade tendo qualquer outra opção.
+                candidates = [c for c in self.me.field_chars if not c.rested]
+                if not self.me.leader.rested:
+                    candidates.append(self.me.leader)
+                count = cost.get('count', 1)
+                if len(candidates) < count:
+                    return False
+                rested = []
+                for _ in range(count):
+                    target = min(candidates, key=lambda c: c.board_value())
+                    target.rested = True
+                    remove_by_identity(candidates, target)
+                    rested.append(target.name[:15])
+                self._cost_logs.append(f'custo: restou: {", ".join(rested)}')
             elif ctype == 'return_trash_to_deck':
                 count = cost.get('count', 1)
                 if len(self.me.trash) < count:
@@ -11672,6 +11697,17 @@ class GameAnalyzer:
         for c in costs:
             if c.get('type') == 'rest_don' and self.me.don_available < c.get('count', 0):
                 return 0.0
+            # rest_own_card (achado 24/08, retificacao do 19/07 -- ver
+            # gerar_effects_db.py e _pay_costs): mesmo tratamento de
+            # rest_don (compativel com atacar, so consome um personagem
+            # de banco/o proprio lider, nao trava o lider de atacar) --
+            # so pagavel se sobrar ALGUMA carta propria ativa pra restar.
+            if c.get('type') == 'rest_own_card':
+                candidatos = sum(1 for ch in self.me.field_chars if not ch.rested)
+                if not self.me.leader.rested:
+                    candidatos += 1
+                if candidatos < c.get('count', 1):
+                    return 0.0
         return 0.5 * centralidade
 
     def analysis_priority(self) -> str:

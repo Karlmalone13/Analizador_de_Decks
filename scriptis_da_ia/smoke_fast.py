@@ -9152,15 +9152,22 @@ def test_lote_16_itens_op09_051_a_op15_059() -> None:
     check("OP14-018 parseia condicao board_has_power_gte=8000 no Counter",
           get_card_effects("OP14-018")["counter"]["conditions"] == {"board_has_power_gte": 8000})
 
-    # Familia "you may rest N of your cards:" (8 cartas) -- atalho
-    # oficial de custo que refere-se a DON!! sem dizer "DON!!"
-    # explicitamente, mapeado pra rest_don ja existente.
+    # Familia "you may rest N of your cards:" -- RETIFICACAO 24/08/2026: a
+    # suposicao original (achado 19/07, "cards" = DON!! implicito -> rest_don)
+    # nunca foi validada contra partida real e estava ERRADA. Log real
+    # (Dracule Mihawk OP14-020, Dracule.Mihawk-G_x_Charlotte.Katakuri-P_
+    # 2026-07-20T12.11.27_p2.json, turnos 7/11) mostra o humano pagando
+    # esse custo restando um PERSONAGEM ('Rest Trafalgar Law'/'Rest
+    # Shanks'), nunca DON -- e a familia irma "instead" (substituicao de
+    # K.O.) ja distinguia corretamente "cards" (generico) de "DON!! cards"
+    # (explicito) antes mesmo deste fix. Custo agora rest_own_card
+    # (qualquer carta propria ativa -- Character ou Leader).
     for code, timing, n in (("EB04-015", "on_ko", 1), ("EB04-019", "main", 1),
                              ("OP14-020", "activate_main", 1), ("OP14-029", "activate_main", 2),
                              ("OP14-036", "trigger", 1), ("OP14-037", "main", 3),
                              ("OP14-038", "main", 2)):
-        check(f"{code} ganha custo rest_don={n} (familia 'rest N of your cards')",
-              {"type": "rest_don", "count": n} in get_card_effects(code)[timing]["costs"])
+        check(f"{code} ganha custo rest_own_card={n} (familia 'rest N of your cards')",
+              {"type": "rest_own_card", "count": n} in get_card_effects(code)[timing]["costs"])
 
     # OP14-070: custo opcional "you may return N DON!! cards ... If you
     # do, [efeito]" (sem ':') -- mesma simplificacao de OP05-038/OP15-020
@@ -9998,23 +10005,26 @@ def test_leader_plan_alignment_cobre_sem_habilidade_rest_self_rest_don_e_ja_usad
     check("rest_self JA usada neste turno retorna 1.0 (credito cheio, apesar do custo ser rest_self)",
           engine2b.analyzer.leader_plan_alignment() == 1.0)
 
-    # custo rest_don (Mihawk, OP14-020): DON suficiente -> pagavel (0.5)
+    # custo rest_own_card (Mihawk, OP14-020 -- retificado 24/08, ver
+    # gerar_effects_db.py: NAO e mais rest_don, e "qualquer carta propria
+    # ativa"): com o proprio lider destapado (default), ja ha 1 candidato
+    # -> pagavel (0.5), mesmo sem personagem nenhum em campo.
     me3 = GameState(leader=real_card("OP14-020"), turn=5, life=vida4())
-    me3.don_available = 1
     engine3 = DecisionEngine(me3, opp0)
-    check("custo rest_don pagavel (DON suficiente) retorna 0.5",
+    check("custo rest_own_card pagavel (lider destapado conta como candidato) retorna 0.5",
           engine3.analyzer.leader_plan_alignment() == 0.5)
 
-    # mesmo lider, SEM DON -> custo nao pagavel (0.0)
+    # mesmo lider, MAS ja restado e sem personagem em campo -> nenhum
+    # candidato pra restar -> custo nao pagavel (0.0)
     me4 = GameState(leader=real_card("OP14-020"), turn=5, life=vida4())
-    me4.don_available = 0
+    me4.leader.rested = True
     engine4 = DecisionEngine(me4, opp0)
-    check("custo rest_don NAO pagavel (sem DON) retorna 0.0",
+    check("custo rest_own_card NAO pagavel (sem personagem em campo e lider ja restado) retorna 0.0",
           engine4.analyzer.leader_plan_alignment() == 0.0)
 
     # ja usada NESTE turno -- credito cheio (1.0), independente do custo
     me5 = GameState(leader=real_card("OP14-020"), turn=5, life=vida4())
-    me5.don_available = 0
+    me5.leader.rested = True
     me5.leader._am_used_turn = 5
     engine5 = DecisionEngine(me5, opp0)
     check("habilidade ja usada neste turno retorna 1.0 (plano ja executado)",
@@ -10022,7 +10032,6 @@ def test_leader_plan_alignment_cobre_sem_habilidade_rest_self_rest_don_e_ja_usad
 
     # usada num turno ANTERIOR -- nao conta pro turno atual (reavalia custo)
     me6 = GameState(leader=real_card("OP14-020"), turn=5, life=vida4())
-    me6.don_available = 1
     me6.leader._am_used_turn = 3
     engine6 = DecisionEngine(me6, opp0)
     check("habilidade usada em turno ANTERIOR nao conta -- reavalia custo do turno atual",
