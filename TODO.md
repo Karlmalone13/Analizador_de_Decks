@@ -2,6 +2,56 @@
 
 **Última atualização:** 23 de agosto de 2026
 
+> 23/08/2026 (bloco 654) — **CORREÇÃO URGENTE**: a remoção do override no
+> bloco 652 (commit `c503e7b`, já pushado) levou junto o cálculo de
+> `cheap_values` e quebrou `main_phase` com `NameError` em **toda** decisão.
+> **As duas suites de smoke passaram** (1376 OK / 204 OK) porque nenhuma
+> exercita `main_phase` end-to-end, e o `try/except` por turno do
+> `audit_one_game` escondia o erro. Pego por instrumentação que reportou
+> zero chamadas de `_select_action_via_search`. Corrigido e verificado
+> funcionalmente (0 turnos com erro).
+>
+> - [ ] **FALTA teste de partida end-to-end** que falhe se qualquer decisão
+>   levantar exceção. Até existir, mudança em `main_phase` exige rodar
+>   `audit_one_game` e conferir `turnos com erro == 0` — smoke verde não
+>   prova nada nesse caminho.
+
+> 23/08/2026 (bloco 653, pedido do usuário "me diga o que podemos fazer
+> para o bot jogar idêntico ao humano de vez" + "registra esses passos"):
+> **ROTEIRO EM 3 PASSOS registrado**, com 2 medições novas que reformulam
+> o alvo.
+>
+> **O alvo é DETERMINÍSTICO**: o mesmo jogador, na mesma mão e mesmo board,
+> jogou exatamente o mesmo conjunto em **76 de 76** casos. E **o banco é um
+> jogador só**: `Opponent` + `You` + `Karlmalone#2854` = **70,9%** dos 1848
+> turnos (41 identidades no total). Logo, "imitar o humano" aqui é imitar
+> **uma política única e consistente** — tratável. O teto humano-vs-humano
+> **não é mensurável** com este banco (zero pares de jogadores distintos
+> com mão+board idênticos; a versão frouxa deu 22,2% mas não é comparável).
+>
+> **Causa comum das 7 tentativas de imitação que falharam** (blocos 641-649
+> + 2 de hoje): todas usam estatística **marginal e sem contexto** injetada
+> dentro da função de valor. Enquanto isso **100% do ganho de hoje veio de
+> consertar o que o motor VÊ**, não como decide.
+>
+> - [ ] **PASSO 1 (em andamento)** — fechar lacunas de FIDELIDADE: mão do
+>   oponente entra COMPLETA na reconstrução (o caminho ao vivo já mascara,
+>   a reconstrução não — maior suspeito); ordem do deck embaralhada;
+>   mulligan não capturado; `rested` só em 113 de 142 logs;
+>   `give_don_opp` não rastreado.
+> - [ ] **PASSO 2** — imitação por **POLÍTICA** (features do estado →
+>   distribuição sobre ações legais), não por bônus somado. Aplicar nos
+>   **32,6% de decisões que empatam exatamente** (custo zero em valor
+>   esperado) e como prior sobre candidatas. A diferença para as 7
+>   tentativas é **condicionar ao ESTADO**.
+> - [ ] **PASSO 3** — ordem de execução no turno (`sequência exata` 6,0%,
+>   LCS 36,3%, quase intocado).
+>
+> **3 ressalvas registradas**: (1) "idêntico" e "melhor" divergem — se o
+> bot superar o jogador, a similaridade CAI; decidir qual manda antes de
+> chegar lá. (2) O banco é um jogador (70,9%) — o bot herda os vícios
+> dele. (3) Nada vale se não generalizar (regra do bloco 652).
+
 > 23/08/2026 (bloco 652): **OBJETIVO CENTRAL registrado** em `CLAUDE.md` +
 > `AGENTS.md` + memória, depois do usuário dizer "toda vez você esquece":
 > **o bot tem que jogar bem, e igual ou melhor que o humano, com QUALQUER

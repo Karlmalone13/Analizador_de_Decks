@@ -28,6 +28,149 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-23 (654) - Claude (sessao local) - CORRECAO URGENTE: a remocao do override no bloco 652 quebrou `main_phase` (NameError em TODA decisao) e passou pelas DUAS suites de smoke -- lacuna de cobertura registrada
+
+**O que quebrou**: ao remover `_human_dominant_action_override` (bloco 652,
+commit c503e7b, JA PUSHADO), o corte levou junto o calculo de
+`cheap_values` que fica logo antes de `candidatas = self._select_search_
+candidates(...)`. Resultado: `NameError: name 'cheap_values' is not
+defined` em TODA decisao de main phase.
+
+**Por que passou despercebido**: `audit_one_game` tem um `try/except
+Exception` por turno que registra `{'turn': N, 'error': ...}` e segue --
+entao a auditoria "rodava" com 100% dos turnos em erro e reportava
+`turnos_auditados: 8` sem erro no topo. E **`smoke_fast.py` (1376 OK) e
+`smoke_test.py` (204 OK) passaram os dois**, porque nenhum deles exercita
+`main_phase` end-to-end -- testam funcoes isoladas.
+
+**Como foi pego**: investigando o PASSO 1 do roteiro (bloco 653), um
+instrumento que embrulhava `_select_action_via_search` reportou ZERO
+chamadas, o que era impossivel (a mesma medicao dera 436 decisoes horas
+antes). Contando chamadas por metodo: `main_phase` 8, `_generate_and_
+score_actions` 8 (uma por turno), `_select_search_candidates` 0. O motor
+morria na 1a decisao de cada turno.
+
+**Corrigido**: `decision_engine.py` revertido pro `ba3caa7` e a remocao
+refeita cortando SO o bloco do override (para no comentario do TURN
+PLANNER, preservando `cheap_values`). Diferenca: 7702 caracteres removidos
+contra 9470 da versao quebrada -- o excesso era exatamente o `cheap_values`.
+Verificado funcionalmente, nao so por sintaxe: 0 turnos com erro, e a
+contagem por metodo voltou ao normal (7152 / 49 / 43).
+
+**LACUNA DE COBERTURA registrada pra proxima sessao**: as duas suites de
+smoke passam com `main_phase` completamente quebrado. Falta um teste que
+rode uma partida/turno REAL de ponta a ponta e falhe se qualquer decisao
+levantar excecao. Enquanto ele nao existir, QUALQUER mudanca em
+`main_phase` precisa de verificacao funcional explicita (rodar
+`audit_one_game` e conferir `turnos com erro == 0`), nao so smoke verde.
+
+**Licao do dia, 2a vez com a mesma cara**: e a 2a remocao desta sessao que
+apagou codigo vizinho (a 1a levou `_HUMAN_PATTERN_MIN_SUPPORT`/
+`_HUMAN_PATTERN_MAX_BONUS`, essa levou `cheap_values`). Corte por ancora
+textual em arquivo de 19k linhas precisa terminar numa ancora que pertenca
+ao MESMO bloco logico -- e depois exige teste FUNCIONAL, porque sintaxe OK
+e smoke verde nao provam nada aqui.
+
+**Numeros nao mudam**: os resultados citados no bloco 652 pro estado "sem
+override" (`play` 31,5%) vieram do A/B feito com FLAG desligada, com o
+motor intacto -- nao da versao quebrada. Continuam validos.
+
+## 2026-08-23 (653) - Claude (sessao local) - ROTEIRO registrado pra "jogar identico ao humano de vez", com 2 medicoes novas que reformulam o alvo: o banco e UM jogador so (70,9%) e a politica dele e DETERMINISTICA (76/76)
+
+Pedido do usuario: "me diga o que podemos fazer para o bot jogar identico
+ao humano de vez?" + "registra esses passos para nao esquecermos".
+
+### Medicao 1 -- o teto humano-x-humano NAO e mensuravel com este banco
+
+Tentei medir "dois humanos, mesma situacao, jogam igual?" pra saber o teto
+realista da metrica. Resultado por nivel de rigor:
+
+- **frouxo** (mesmo lider, mesmo TAMANHO de mao/board/vida, mesmo turno):
+  1103 pares, concordam em **22,2%**. NAO e comparavel a metrica do bot --
+  mao do mesmo tamanho nao e a mesma mao, e o bot e comparado contra o
+  humano no estado EXATO. Serve so como ordem de grandeza da diversidade
+  humana sob condicionamento fraco.
+- **estrito** (mesma MAO e mesmo BOARD): 76 pares, **100%**... e os 76 sao
+  o MESMO jogador (`You` x `You`) em partidas diferentes. **ZERO pares de
+  jogadores realmente distintos** compartilham mao+board identicos no banco
+  inteiro. Ou seja: o teto humano-x-humano continua DESCONHECIDO, e nao da
+  pra descobrir com 150 logs.
+
+### Medicao 2 -- os 2 achados que MUDAM a estrategia
+
+**(a) O alvo e DETERMINISTICO.** O mesmo jogador, na mesma mao e mesmo
+board, jogou exatamente o mesmo conjunto de cartas em **76 de 76** casos.
+Nao estamos perseguindo ruido: dado o estado, a acao e previsivel.
+
+**(b) O banco e UM JOGADOR SO.** Das 41 identidades, tres sao do mesmo dono
+(`Opponent` 24,7% + `You` 23,5% + `Karlmalone#2854` 22,7%) = **70,9% dos
+1848 turnos**. Os outros 38 nomes somam ~29%.
+
+Juntos: "jogar identico ao humano" neste projeto significa, na pratica,
+**imitar UMA politica unica e altamente consistente** -- que e um problema
+MUITO mais tratavel que imitar uma populacao diversa. Se o alvo fosse
+diverso, 31,5% poderia ja estar perto do teto; nao e o caso.
+
+### Por que as 7 tentativas de imitacao falharam (causa comum, agora clara)
+
+Blocos 641-649 (bonus no eval x5, sequence alignment, hard override) + as 2
+de hoje (desempate por padrao humano, taxa condicional): TODAS usam uma
+estatistica **MARGINAL e SEM CONTEXTO** ("quantas vezes este lider fez este
+token") e a injetam DENTRO de uma funcao de valor que ja tem termos fortes
+de dano/board. Sinal sem estado nao discrimina decisao que depende do
+estado, e ainda distorce as comparacoes em que a busca estava certa.
+
+Contraste medido: **100% do ganho de hoje (21,4% -> 31,5%) veio de
+consertar o que o motor VE**, nao como ele decide. E o unico mecanismo de
+DECISAO que pagou (+1,4pp, desempate por preservacao de opcao) nao usa dado
+humano nenhum -- e argumento de dominancia sobre recurso.
+
+### ROTEIRO (nesta ordem -- registrado a pedido do usuario)
+
+**PASSO 1 (EM ANDAMENTO) -- fechar as lacunas de FIDELIDADE restantes.**
+E onde todo o ganho de hoje veio. Lacunas conhecidas e ainda abertas:
+  - mao do OPONENTE entra COMPLETA na reconstrucao (o motor ve mais que o
+    humano via) -- o caminho AO VIVO ja mascara, a reconstrucao nao. Maior
+    suspeito.
+  - ordem do deck e embaralhada, nao a real.
+  - mulligan nao e capturado pelo schema do log.
+  - `rested` so existe em 113 dos 142 logs.
+  - `give_don_opp` nao e rastreado pelo DonEstimator (limitacao ja
+    documentada no bloco 650).
+Cada uma faz o motor decidir sobre um jogo DIFERENTE do que o humano jogou.
+
+**PASSO 2 -- trocar imitacao-por-BONUS por imitacao-por-POLITICA.**
+Nao mais um termo somado: um modelo que recebe FEATURES DO ESTADO (mao,
+board, DON, vida, turno, ameacas) e devolve distribuicao sobre as acoes
+LEGAIS, aprendido dos logs. Aplicado em 2 pontos onde nao distorce nada:
+  - nos **32,6% de decisoes em que a busca EMPATA EXATAMENTE** (medido no
+    bloco 651): ali o Monte Carlo e indiferente por construcao, entao
+    deferir a politica custa ZERO em valor esperado. Foi onde o desempate
+    de hoje deu +1,4pp com um argumento fraco.
+  - como **prior sobre candidatas**, alargando o shortlist pro que o
+    jogador costuma fazer naquele tipo de estado, sem mexer em quem vence.
+A diferenca pras 7 tentativas e UMA: **condicionar ao ESTADO**. O achado
+(a) diz que o alvo e deterministico o bastante pra isso funcionar.
+
+**PASSO 3 -- ordem de execucao dentro do turno.** `sequencia exata` esta em
+6,0% e o LCS em 36,3%, quase intocado. O bloco 647 falhou por um motivo
+especifico e contornavel (o par `attach_don -> attack` domina o banco).
+
+### 3 RESSALVAS que nao podem passar batido
+
+1. **"Identico" e "melhor" DIVERGEM em algum ponto.** O usuario quer os
+   dois. Hoje nao conflitam porque 31,5% esta longe de qualquer teto -- mas
+   se o bot passar a jogar MELHOR que esse jogador, a metrica de
+   similaridade CAI. Decidir qual manda antes de chegar la.
+2. **O banco e um jogador so (70,9%).** Isso torna a imitacao viavel, mas
+   "identico ao humano" significa na pratica "identico ao Karlmalone" --
+   se ele tem vicios, o bot herda. O risco de overfitting ja estava
+   registrado e aceito; agora esta QUANTIFICADO.
+3. **Nada disso vale se nao generalizar.** Pela regra do bloco 652
+   (OBJETIVO CENTRAL), politica aprendida em 150 logs de ~30 lideres tem
+   que funcionar em deck que NAO esta no banco. Teste = recorte por lider;
+   barra = subir sem concentrar.
+
 ## 2026-08-23 (652) - Claude (sessao local) - REGISTRA O OBJETIVO CENTRAL que as sessoes esquecem (jogar bem com QUALQUER deck) + recorte por lider vira mecanico no relatorio + 2 achados NEGATIVOS medidos (taxa condicional e override aposentado)
 
 Sessao de fechamento do dia. Tres pedidos do usuario, nesta ordem, e o

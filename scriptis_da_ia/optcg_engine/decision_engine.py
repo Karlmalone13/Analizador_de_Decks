@@ -17999,6 +17999,31 @@ class OPTCGMatch:
                         return True
                     continue
 
+            # TURN PLANNER: para as TOP_K ações candidatas, simula a linha de jogo
+            # resultante e escolhe a que leva ao MELHOR estado de fim de turno.
+            # (Em vez de escolher gulosamente a de maior score imediato.)
+            # Selecao/busca unificadas (26/07, pedido do usuario: "tem que
+            # ser o mesmo nos dois") -- MESMAS funcoes usadas pelo caminho
+            # AO VIVO (sim_bridge.choose_action), so o TOP_K/piso/teto de
+            # amostras (orcamento de tempo) diferem por chamador.
+            # Fase 1 da "calibragem dinamica" (bloco 508/509): opt-in via
+            # USE_CHEAP_LAYER_SHORTLIST (desligado por padrao) -- calcula
+            # o sinal barato 1x por decisao e passa pra alargar o corte
+            # do shortlist. Log de auditoria recebe os mesmos valores
+            # (audit_cheap_layer.py le o decision_log depois).
+            #
+            # n_samples=CHEAP_LAYER_SAMPLES passado EXPLICITO (nao confiar
+            # no default do parametro): default de funcao e resolvido 1x
+            # no IMPORT do modulo -- reatribuir `de.CHEAP_LAYER_SAMPLES`
+            # em runtime (ex: script de calibracao comparando escalas)
+            # NAO muda esse default ja fixado, so passar como argumento
+            # explicito le o valor atual de verdade. Achado real 13/08
+            # (bloco 515/516): uma comparacao 40-vs-3000 amostras deu
+            # margem EXATAMENTE zero em TODOS os matchups -- sinal
+            # classico desse bug (as duas condicoes rodaram com o mesmo
+            # valor de fato).
+            cheap_values = (self._compute_cheap_values(p, opp, actions, n_samples=CHEAP_LAYER_SAMPLES)
+                            if USE_CHEAP_LAYER_SHORTLIST and not USE_CHEAP_LAYER_GATE else None)
             candidatas = self._select_search_candidates(
                 actions, TOP_K, priority, cheap_values=cheap_values)
             if len(candidatas) == 1:
