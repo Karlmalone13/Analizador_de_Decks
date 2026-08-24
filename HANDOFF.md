@@ -28,6 +28,64 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (660) - Claude (sessao remota web) - Roteiro turno-a-turno FECHADO por agora: 5 partidas, 5 lideres diferentes auditados (Teach, Katakuri, Xebec, Kid, Ace) -- 1 bug real encontrado e corrigido (T2, bloco 657), ZERO bugs novos nas 4 partidas seguintes, generalizacao confirmada
+
+Continuacao do roteiro apos a retificacao do bloco 659 (pedido do
+usuario "teste outra partida", repetido 2x apos o bloco 657). Resumo
+consolidado das 5 partidas (Teach x Imu ja detalhada no bloco 657):
+
+**Katakuri x Ace** (4 turnos): T3 divergia (jogava so 1 de 2 cartas) --
+ERA sintoma do falso-alarme de DON do bloco 658/659 (ja corrigido pelo
+revert), nao bug real; com o codigo correto o gap e moderado (nao
+blowout tipo T2 do Teach). T5 falso-mismatch conhecido (`activate` no
+log = gatilho `[When Attacking]` disparando junto do ataque, Katakuri
+nao tem `[Activate:Main]`). T7/T9 turnos complexos sem bug isolado.
+
+**Xebec x Luffy** (4 turnos): mesmo padrao -- T3 melhorou com DON
+correto (motor ja jogava as 2 cartas, so ordem diferente do
+historico). Nenhum bug novo.
+
+**Kid x Krieg** (4 turnos): T3 e um trade-off legitimo (pumpar ataque
+com 2x attach_don vs desenvolver 2 corpos -- AMBAS as linhas gastam
+exatamente os mesmos 3 DON), gap de 25 pontos (moderado, nao blowout).
+Nenhum bug novo.
+
+**Ace x Xebec** (5 turnos): T2 bate exato (`[]` nos dois). T4 parecia
+"personagem sem Rush atacando no proprio turno" -- INVESTIGADO A FUNDO,
+nao e bug: o `[Activate:Main]` do lider Ace CONCEDE Rush explicitamente
+("ganhou Rush: LittleOars Jr."), motor combou play+activate+attack pra
+dano extra que o humano nao usou nesse turno. T6/T8: motor ataca com
+multiplos corpos, dano real toda vez, comparavel/melhor. T10: motor
+acha LETHAL mais eficiente (triplo pump + 1 ataque, 13000pwr) contra o
+caminho mais longo do historico (8 acoes) -- mesmo resultado (vitoria),
+caminho mais curto.
+
+**Saldo final do roteiro**: 21 turnos auditados no total (11 Teach + 4
+Katakuri + 4 Xebec-Luffy + 4 Kid + 5 Ace-Xebec), **1 bug real** (T2,
+corpo recem-jogado sem Rush supervalorizado -- ja corrigido, commit
+6dcfa4a) e **1 erro de investigacao proprio, ja corrigido** (DonEstimator,
+blocos 658/659). Todo o resto das divergencias observadas cai em 3
+categorias ja conhecidas, NENHUMA delas bug de decisao:
+  1. Reconstrucao de estado errada (board do oponente contaminado, T4
+     do Teach) -- mesma classe de limitacao ja documentada nos blocos
+     655/656.
+  2. Falso-mismatch de rotulo (`activate` no log = gatilho automatico,
+     nao decisao de Main Phase) -- mesma classe ja filtrada corretamente
+     por `decision_quality_full.py`, so nao pelos scripts rapidos deste
+     roteiro.
+  3. Diversidade estrategica legitima ou motor jogando IGUAL/MELHOR --
+     exatamente a categoria que o usuario pediu pra NAO forcar
+     ("se jogar melhor, otimo!").
+
+**0 erros de execucao** em todas as 5 partidas (21 turnos), `smoke_fast.py`/
+`smoke_test.py` OK durante toda a sessao.
+
+**Estado**: corpus completo (`decision_quality_full.py --all --workers 4`)
+ainda NAO rodado com o fix do T2 -- 5 partidas de lideres DIFERENTES
+sem regressao encontrada e o padrao de "sem bug novo" se repetindo e
+sinal forte de que vale rodar a medicao completa agora, em vez de
+continuar acumulando mais partidas com retorno decrescente.
+
 ## 2026-08-24 (659) - Claude (sessao remota web) - RETIFICACAO do bloco 658 (REVERTIDO, commit 138ea45): o "bug de ordenacao" no DonEstimator era diagnostico mal interpretado, nao bug real -- `don_available_estimado` e DELIBERADAMENTE pre-ramp, `eng.play_turn()` ja rampa o proprio turno sozinho via `don_phase()`
 
 **O erro cometido**: testando se o fix do bloco 657 generalizava (pedido

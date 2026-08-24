@@ -2,6 +2,21 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 660): roteiro turno-a-turno FECHADO por agora — 5
+> partidas, 5 líderes diferentes auditados (Teach, Katakuri, Xebec,
+> Kid, Ace), 21 turnos no total. **1 bug real encontrado e corrigido**
+> (T2 do Teach, corpo recém-jogado sem Rush supervalorizado — commit
+> `6dcfa4a`) e **1 erro de investigação próprio, já corrigido**
+> (DonEstimator, ver bloco 659). Nas 4 partidas seguintes, ZERO bugs
+> novos — todas as divergências caem em 3 categorias já conhecidas
+> (reconstrução de estado errada, falso-mismatch de rótulo `activate`,
+> ou motor jogando igual/melhor). 0 erros de execução em todas as
+> partidas. **Corpus completo ainda NÃO rodado** — mas 5 líderes
+> diferentes sem regressão e o padrão de "sem bug novo" se repetindo é
+> sinal forte de que vale rodar a medição completa agora em vez de
+> continuar acumulando partidas com retorno decrescente. Ver bloco 660
+> do HANDOFF para o detalhe de cada partida.
+
 > 24/08/2026 (bloco 659, RETIFICAÇÃO): commit `acff087` ("fix no
 > DonEstimator") estava **ERRADO** e foi revertido (`git revert`,
 > commit `138ea45`, já pushado). `don_available_estimado` é
