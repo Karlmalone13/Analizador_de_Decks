@@ -2,30 +2,6 @@
 
 **Última atualização:** 23 de agosto de 2026
 
-> 23/08/2026 (bloco 658, testando generalização do fix do bloco 657 em
-> 2 líderes novos — Katakuri, Xebec): achado BUG DE ORDENAÇÃO no
-> `DonEstimator` (`audit_real_losses.py`) — `available()` lia o DON
-> acumulado ANTES do ramp do PRÓPRIO turno ser somado (`apply_turn()`
-> só rodava no fim da iteração, depois da simulação inteira já ter
-> usado o valor errado). Efeito: TODA reconstrução de TODA partida
-> subestimava DON a partir do 2º turno próprio de cada jogador em
-> diante — achado reproduzido identicamente em 2 líderes diferentes
-> (não é acaso de 1 partida). **Fix: muda a ORDEM** (chama
-> `apply_turn()` antes de `available()`, remove as 2 chamadas
-> duplicadas que existiam mais abaixo) — não muda a fórmula. Medido:
-> DON estimado no T3 subiu de 1→3 nos dois líderes, sequência completa
-> passou a subir +2/turno de forma limpa. Efeito em cascata: Xebec T3
-> foi de "1 carta inteira nunca jogada por falta de DON" pra jogar o
-> conjunto IDÊNTICO do histórico. `smoke_fast.py`/`smoke_test.py` OK,
-> 20 logs frescos (seed=99) → 76 turnos, 0 erro. **Importa mais que
-> parece**: afeta toda ferramenta que usa `audit_one_game`
-> (`decision_quality_full.py`, `rank_census.py`) — as investigações de
-> "nunca gerada por falta de DON" dos blocos 643-650 rodaram TODAS
-> sobre esse estado subestimado; vale reconsiderar se algum "0 bugs"
-> daquelas mudaria com DON correto (não refeito ainda). Corpus completo
-> ainda NÃO rodado com este fix — mesma disciplina do bloco 657, ver
-> HANDOFF bloco 658.
-
 > 23/08/2026 (bloco 657, continuação do roteiro turno-a-turno do bloco
 > 656, Teach x Imu, 11 turnos): **T2 corrigido** — `char_value_score`
 > não distinguia corpo recém-jogado (sem Rush, ainda não atacou/

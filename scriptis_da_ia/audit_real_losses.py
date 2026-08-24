@@ -758,19 +758,6 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         populate_full_deck_knowledge(opp, opp_deck[1], opp_deck[0].code)
 
         p.turn = bot_turn_count - 1
-        # bloco 657 (sessao turno-a-turno, achado reproduzido em 2 lideres
-        # diferentes -- Katakuri e Xebec, ambos T3/2o turno proprio com
-        # don_available_estimado=1 mas gastando 3+ DON de verdade):
-        # `don_est.apply_turn()` pra ESTE turno so era chamado la embaixo
-        # (fim da iteracao, apos eng.play_turn() ja ter rodado a simulacao
-        # inteira) -- ou seja, `available()` aqui sempre lia o total SEM o
-        # ramp do proprio turno. Pela regra real (DON phase acontece ANTES
-        # da Main Phase, no MESMO turno), o ramp de hoje tem que estar
-        # contado ANTES da reconstrucao usar esse valor. Chamado aqui,
-        # ANTES de `available()`, e removido do fim da iteracao (linha que
-        # chamava de novo depois de play_turn() -- chamar 2x dobraria o
-        # don_drawn deste turno).
-        don_est.apply_turn(player, turn, cards_db)
         p.don_available = don_est.available(bot_side)
         # ver DonEstimator.deck_left -- sem isto a don_phase do turno
         # simulado estoura o teto de 10 DON
@@ -800,9 +787,7 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
                     'turn': turn['turn'], 'error': str(exc),
                     'historical_actions': turn.get('actions', []),
                 })
-                # bloco 657: NAO chamar don_est.apply_turn de novo aqui --
-                # ja foi chamado mais acima (antes de don_est.available()),
-                # antes de eng.play_turn() ter a chance de lancar excecao.
+                don_est.apply_turn(player, turn, cards_db)
                 continue
         engine_log = buf2.getvalue()
 
@@ -850,6 +835,8 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
             print(f'--- turno {turn["turn"]} (real vs motor de hoje) ---')
             print('HISTORICO:', json.dumps(turn.get('actions', []), ensure_ascii=False)[:300])
             print('HOJE:', engine_log[:600])
+
+        don_est.apply_turn(player, turn, cards_db)
 
     return {
         'parsed_file': os.path.basename(parsed_path),
