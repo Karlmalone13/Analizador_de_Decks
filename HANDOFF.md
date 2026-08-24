@@ -99,10 +99,14 @@ quality_vs_human.py` porque este arquivo so cobria os 26 logs
 bot-vs-humano (schema novo) ate hoje. Fix identico (guarda
 `if 'players' not in raw.get('meta', {})` -> pula com `{'error':...}`
 ANTES de chamar `audit_one_game`, mesmo padrao usado pelo resto do
-pipeline) aplicado em `_turn_verdict`. Rodada reiniciada em background
-nesta sessao (`--all-logs --workers 4`), resultado **AINDA NAO
-disponivel no momento deste registro** -- proxima sessao (ou a
-continuacao desta) deve conferir
+pipeline) aplicado em `_turn_verdict`. **1a versao do guard tambem
+derrubou o batch** (retorno so com `{'error':...}`, faltando a chave
+`'file'` que `main()` indexa ao listar erros -- `KeyError: 'file'`
+depois de ~270 logs ja processados) -- corrigido, guard agora inclui
+`'file'`. Rodada reiniciada em background nesta sessao (3a tentativa,
+`--all-logs --workers 4`), resultado **AINDA NAO disponivel no momento
+deste registro** -- proxima sessao (ou a continuacao desta) deve
+conferir
 `metrics/decision_quality_vs_human/ultimo_resultado.json` e/ou rodar
 de novo antes de citar qualquer numero da amostra ampliada.
 

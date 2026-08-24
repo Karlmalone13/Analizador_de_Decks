@@ -16,8 +16,10 @@
 > corrigido no processo um crash real (30 logs de schema antigo sem
 > `meta.players` derrubavam o `ProcessPoolExecutor` inteiro; mesmo bug
 > já corrigido em `decision_quality_full.py` no bloco 617, nunca
-> espelhado aqui — mesmo fix aplicado). Resultado da amostra ampliada
-> ainda rodando/pendente. Ver bloco 674 do HANDOFF.
+> espelhado aqui — mesmo fix aplicado, precisou de 1 correção de
+> acompanhamento — faltava a chave `'file'` no retorno de erro).
+> Resultado da amostra ampliada ainda rodando/pendente. Ver bloco 674
+> do HANDOFF.
 
 > 24/08/2026 (bloco 673, pedido "pode testar outro líder", após o
 > Jinbe): **Rocks D. Xebec (OP17-118).** Partida real auditada (7 turnos
