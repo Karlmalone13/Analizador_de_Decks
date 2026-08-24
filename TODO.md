@@ -2,6 +2,26 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 670, usuário corrigiu a leitura do Kuro OP15-025):
+> **BUG REAL confirmado e corrigido.** "[On Play] Give up to 2 DON...
+> Then, at the end of this turn, up to 1 rested Character with 3+ DON
+> given will not become active..." — o parser executava o lock
+> IMEDIATAMENTE, ignorando a cláusula "at the end of this turn," que o
+> precede. Problema prático: o alvo do combo (quem recebeu os 2 DON)
+> pode ainda estar ATIVO no instante do On Play — só fica restado
+> DEPOIS no mesmo turno, via combo natural do deck (Activate:Main do
+> próprio líder Krieg resta quem tem 2+ DON dado). O lock falhava
+> silenciosamente na jogada exata que a carta foi desenhada pra
+> habilitar. Fix genérico: detecta a cláusula temporal e marca
+> `timing: end_of_turn`, reusando o mecanismo já existente
+> (`end_of_turn_queue`, mesmo usado por outras cartas). Busca global
+> confirmou 1 carta isolada (+ alt-art); achado um falso-positivo
+> (Jewelry Bonney) descartado após conferência. Teste dedicado novo
+> reproduz o cenário exato do combo (alvo fica ativo→restado no mesmo
+> turno) confirmando que o lock falharia com a execução antiga e
+> funciona com o fix. `smoke_fast.py`/`smoke_test.py` OK. Ver bloco 670
+> do HANDOFF.
+
 > 24/08/2026 (bloco 669, pedido do usuário "olhe essa pendência e
 > confira o deck do krieg de novo — arlong, krieg 8, kuro"):
 > **Pendência corrigida** — `audit_real_losses.py` nunca reconstruía

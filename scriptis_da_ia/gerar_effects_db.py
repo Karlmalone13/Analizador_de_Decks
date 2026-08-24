@@ -4726,6 +4726,24 @@ def parse_give_don(text):
             step['power_lte'] = int(power_lte)
         if don_gte:
             step['don_attached_gte'] = int(don_gte)
+        # "Then, at the end of this turn, [clausula acima]" -- achado 24/08
+        # (pedido do usuario, deck Krieg): OP15-025 Kuro combina give_don_
+        # opp (empilha DON num character do oponente) com este lock, mas
+        # SO no FIM do turno -- nao no instante em que Kuro entra em
+        # campo. Diferenca real: o alvo precisa estar RESTADO
+        # (don_attached_gte exige c.rested tambem, ver _execute_step) --
+        # se travado no ato do On Play, o character do combo pode ainda
+        # nao estar restado (so fica restado DEPOIS, ex: pelo Activate:
+        # Main do proprio lider Krieg, "Rest up to 1 Character com 2+ DON
+        # dado", rodando mais tarde no MESMO turno) -- o step falhava
+        # silenciosamente por falta de candidato justo na jogada que a
+        # carta foi desenhada pra habilitar. Reusa o mecanismo generico
+        # ja existente de `timing: end_of_turn` (`end_of_turn_queue`,
+        # mesmo usado por set_don_active em outras cartas) -- fila o step
+        # pra rodar em end_phase(), depois de QUALQUER outra coisa ter
+        # acontecido no turno (ataques, Activate:Main do lider, etc.).
+        if re.search(r'at the end of this turn,\s*$', t[:m.start()]):
+            step['timing'] = 'end_of_turn'
         steps.append(step)
         return steps
 

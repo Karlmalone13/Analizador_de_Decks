@@ -3232,13 +3232,22 @@ def test_lock_opp_character_refresh_variantes_de_fraseado() -> None:
     check("OP15-025 parseia don_attached_gte=3 (posse implicita no fim da frase)",
           step_op15025.get("action") == "lock_opp_character_refresh"
           and step_op15025.get("don_attached_gte") == 3)
+    check("OP15-025 (Kuro) trava com timing=end_of_turn ('Then, at the end "
+          "of this turn,' -- achado 24/08, pedido do usuario: sem isso o "
+          "lock rodava no ato do On Play, antes do alvo do combo (Kuro dá "
+          "DON + lider Krieg resta quem tem 2+ DON dado, mesmo turno) "
+          "sequer estar restado)",
+          step_op15025.get("timing") == "end_of_turn")
 
     step_op15038 = get_card_effects("OP15-038").get("main", {}).get("steps", [{}])[0]
     check("OP15-038 parseia cost_lte=8 E don_attached_gte=2 juntos (2 filtros encadeados)",
           step_op15038.get("cost_lte") == 8 and step_op15038.get("don_attached_gte") == 2)
 
     # Execucao real: alvo com DON insuficiente nao pode ser travado, alvo
-    # com DON suficiente pode.
+    # com DON suficiente pode. Kuro (achado 24/08) so trava no FIM do
+    # turno -- execute('on_play') so AGENDA (end_of_turn_queue), nao
+    # aplica na hora. Drena a fila manualmente (mesmo mecanismo de
+    # OPTCGMatch.end_phase) pra simular o fim do turno de verdade.
     me = GameState(leader=real_card("OP15-025"), don_available=4, turn=3)
     opp = GameState(leader=mk("OP11-051", "Doflamingo", card_type="LEADER", color="Purple"), turn=3)
     alvo_valido = mk("XOPP1", "Com 3+ DON", power=5000, cost=4, color="Black")
@@ -3248,9 +3257,39 @@ def test_lock_opp_character_refresh_variantes_de_fraseado() -> None:
     alvo_invalido.don_attached = 2
     alvo_invalido.rested = True
     opp.field_chars = [alvo_invalido, alvo_valido]
-    EffectExecutor(me, opp).execute(me.leader, "on_play")
-    check("Kuro congela (frozen_next_refresh) so o alvo com 3+ DON anexado",
+    ee_kuro = EffectExecutor(me, opp)
+    ee_kuro.execute(me.leader, "on_play")
+    check("Kuro NAO trava na hora (agenda pro fim do turno, nao aplica no On Play)",
+          not alvo_valido.frozen_next_refresh and me.end_of_turn_queue)
+    fila_kuro = list(me.end_of_turn_queue)
+    me.end_of_turn_queue.clear()
+    for item in fila_kuro:
+        ee_kuro._execute_step(item["step"], item.get("card") or me.leader)
+    check("Kuro congela (frozen_next_refresh) so o alvo com 3+ DON anexado, "
+          "apos o fim do turno resolver a fila",
           alvo_valido.frozen_next_refresh and not alvo_invalido.frozen_next_refresh)
+
+    # Achado real 24/08 (o motivo pratico do timing importar): o alvo AINDA
+    # NAO estava restado quando Kuro entrou em campo (ex: so ficou restado
+    # DEPOIS, pelo Activate:Main do proprio lider Krieg no MESMO turno) --
+    # travar no ato do On Play encontraria ZERO candidatos e desperdicaria
+    # o efeito; travar no fim do turno ve o estado JA atualizado.
+    me2 = GameState(leader=real_card("OP15-025"), don_available=4, turn=3)
+    opp2 = GameState(leader=mk("OP11-051b", "Doflamingo", card_type="LEADER", color="Purple"), turn=3)
+    alvo_tarde = mk("XOPP3", "Fica restado depois", power=5000, cost=4, color="Black")
+    alvo_tarde.don_attached = 3
+    alvo_tarde.rested = False   # AINDA ativo no momento do On Play
+    opp2.field_chars = [alvo_tarde]
+    ee_kuro2 = EffectExecutor(me2, opp2)
+    ee_kuro2.execute(me2.leader, "on_play")
+    alvo_tarde.rested = True   # so fica restado DEPOIS (ex: lider Krieg resta ele)
+    fila_kuro2 = list(me2.end_of_turn_queue)
+    me2.end_of_turn_queue.clear()
+    for item in fila_kuro2:
+        ee_kuro2._execute_step(item["step"], item.get("card") or me2.leader)
+    check("timing end_of_turn realmente importa: alvo que so ficou restado "
+          "DEPOIS do On Play (mesmo turno) ainda e travado corretamente",
+          alvo_tarde.frozen_next_refresh)
 
 
 def test_rest_opp_alvo_misto_character_ou_don() -> None:

@@ -37403,7 +37403,8 @@
     {
      "action": "lock_opp_character_refresh",
      "count": 1,
-     "don_attached_gte": 3
+     "don_attached_gte": 3,
+     "timing": "end_of_turn"
     }
    ]
   },

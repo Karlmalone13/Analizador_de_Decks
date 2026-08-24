@@ -28,6 +28,59 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (670) - Claude (sessao remota web) - Usuario corrigiu a leitura do Kuro (OP15-025): o lock so acontece no FIM do turno, nao no ato do On Play. BUG REAL confirmado e corrigido -- o parser ignorava por completo a clausula "Then, at the end of this turn," que precede o lock, executando-o imediatamente e perdendo o combo real (alvo so fica restado DEPOIS no mesmo turno, via Activate:Main do lider Krieg)
+
+Pedido do usuario: "O kuro dá até 2 dons tb ativos ou restados e depois
+mo final do turno que ele trava alguem restado com [3+]". Confirma que
+o `count=2` sem qualificador 'rested' (ja parseado certo, "ativos ou
+restados") estava OK -- mas aponta o TIMING do lock, que o bloco 669
+nao tinha examinado.
+
+**Achado:** texto real de Kuro: "[On Play] Give up to 2 DON!! cards
+from your opponent's cost area to 1 of your opponent's Characters.
+**Then, at the end of this turn**, up to 1 rested Character with 3 or
+more DON!! cards given will not become active in your opponent's next
+Refresh Phase." O parser capturava o `lock_opp_character_refresh`
+(don_attached_gte=3) mas **descartava completamente** a clausula
+temporal "Then, at the end of this turn," -- o step rodava IMEDIATO,
+junto com o resto do On Play. Problema real: a execucao do lock exige
+`c.rested == True` no alvo -- no instante exato em que Kuro entra em
+campo, o character que RECEBEU os 2 DON pode ainda estar ATIVO (so
+fica restado DEPOIS no MESMO turno, via combo natural do deck: o
+Activate:Main do proprio lider Krieg OP15-001, "Rest up to 1 of your
+opponent's Characters that has 2 or more DON!! cards given", rodando
+em sequencia). O lock falhava silenciosamente (zero candidatos) bem na
+jogada que a carta foi desenhada pra habilitar.
+
+**Busca global:** regex `at the end of this turn,.{0,150}will not
+become active` em `cards_rows.csv` -- so OP15-025 (+ alt-art). Busca
+complementar com a ordem invertida achou EB02-015 (Jewelry Bonney)
+como falso-positivo -- conferido que la as 2 clausulas sao
+INDEPENDENTES (o "end of this turn" pertence a um `set_don_active`
+separado, ja parseado certo com `timing: end_of_turn`; o lock dela nao
+tem qualificador temporal nenhum no texto real, nao precisa mudar).
+
+**Fix generico:** logo apos montar o step `lock_opp_character_refresh`/
+`lock_opp_don_refresh` (regex principal em `parse_give_don`), checa se
+o texto imediatamente ANTES do match termina em "at the end of this
+turn," -- se sim, marca `step['timing'] = 'end_of_turn'`. Reusa o
+mecanismo generico JA EXISTENTE e testado (`GameState.end_of_turn_
+queue`, dispatch em `_execute_step`, drenado em `OPTCGMatch.end_phase`)
+-- mesmo usado por `set_don_active` em outras cartas. Nenhuma mudanca
+na EXECUCAO do lock em si, so no MOMENTO em que ela roda.
+
+**Validado:** `diff_parser.py` PERDEU=0, MUDOU=1 (so OP15-025).
+`smoke_fast.py`: teste existente atualizado pra refletir que
+`execute('on_play')` agora AGENDA em vez de aplicar na hora; novo
+teste dedicado reproduz EXATAMENTE o cenario do combo real (alvo ainda
+ATIVO no momento do On Play, so fica restado DEPOIS no mesmo turno) --
+confirma que o lock falharia com a execucao antiga (imediata) e
+funciona certo com o fix (fim de turno). `smoke_fast.py`/`smoke_test.py`
+OK. Kuro nao foi jogado pelo motor na partida real usada como
+referencia nesta sessao (Imu-B_x_Krieg-RG) -- validacao ponta-a-ponta
+feita via teste dedicado, nao replay de log real. Registro em
+`parser_audits/2026-08-24_OP15-025_kuro_lock_end_of_turn.json`.
+
 ## 2026-08-24 (669) - Claude (sessao remota web) - Pedido do usuario "olhe essa pendencia e confira o deck do krieg de novo, dando atencao ao arlong, krieg 8 e kuro". Corrigida a pendencia (audit_real_losses.py nunca reconstruia o banco de DON do OPONENTE) com um estimador CONSERVADOR novo, validado end-to-end na partida real -- Arlong volta a ativar nos mesmos turnos do humano. Krieg OP15-008 investigado a fundo com evidencia de 3 partidas reais: NAO e bug, o parser ja estava certo. Kuro conferido, tambem correto. Limitacao maior (don_attached por-personagem nunca reconstruido) documentada, NAO corrigida (fora do escopo, exigiria parsing novo de texto livre)
 
 **1) Pendencia corrigida: `opp.don_available`/`opp.don_rested` em
