@@ -2,6 +2,36 @@
 
 **Última atualização:** 23 de agosto de 2026
 
+> 23/08/2026 (bloco 655, PASSO 1 do roteiro): **o motor modelava o
+> OPONENTE ERRADO**, não "via demais". Medido: em **97,7%** das amostras do
+> `OpponentModel`, ao menos uma carta que o oponente realmente tinha na mão
+> **não existia** no baralho assumido (`_find_real_deck` casava por
+> semelhança de nome no `decklists_raw.csv`). A ressalva histórica do
+> `CLAUDE.md` sobre "informação completa da mão do oponente" é **falsa para
+> o caminho de decisão** — verificado: `known_hand_cards()` vazio em 100%,
+> a busca substitui a mão por amostra, e a defesa usa só o tamanho.
+>
+> **FIX**: decks REAIS do simulador (`E:\Games\OnePieceSimulador> Builds_Windows\Decks`, 38 de 39 completos) entram por `leader_code` —
+> **92% de cobertura** dos 300 lados do banco, desempate por cartas
+> observadas. Resultado: mão real na população **2,3% → 41,2%**.
+>
+> - [ ] **FALTA medir `--all` com recorte por líder** antes de aceitar: no
+>   Imu isolado `play` caiu 26,6% → 24,0%. O fix troca também o **deck
+>   próprio do bot**, então mexe em `full_deck_census`, plano de jogo,
+>   compras e Life — efeito maior que só o modelo do oponente.
+>
+> **Análise turno-a-turno** (Teach OP16-080 vencedor, 11 turnos,
+> deliberadamente NÃO-Imu): 4 padrões — (A) humano anexa DON antes de cada
+> ataque, (B) trata "anexa+ataca" como unidade, (C) motor joga mais cartas
+> no meio de jogo, (D) motor joga no turno 1 e o humano passa.
+>
+> **Padrão A medido no corpus: 0,71 DON/ataque do humano contra 0,55 do
+> motor — razão 0,78x**, e turnos com ataque e zero DON praticamente iguais
+> (42% x 43%). **Muito menor do que a partida sugeria** — um turno de
+> "despeja 10 DON pra fechar" distorceu a impressão. **Nenhuma mudança de
+> código foi feita com base nele.** Lição: turno-a-turno serve para gerar
+> hipótese, não para calibrar.
+
 > 23/08/2026 (bloco 654) — **CORREÇÃO URGENTE**: a remoção do override no
 > bloco 652 (commit `c503e7b`, já pushado) levou junto o cálculo de
 > `cheap_values` e quebrou `main_phase` com `NameError` em **toda** decisão.

@@ -40,6 +40,7 @@ import contextlib
 import io
 import json
 import os
+import glob
 import re
 import random
 from collections import Counter
@@ -164,7 +165,92 @@ def _field_stage_at(turns, upto_index, side, cards_db):
     return max(ativas)[1]
 
 
-def _find_real_deck(leader_name, cards_db, df_raw, urls, leader_code=None):
+# ── Decks REAIS do simulador (bloco 655) ────────────────────────────────
+# Pasta do proprio OPTCGSim, apontada pelo usuario: contem o decklist EXATO
+# que cada jogador usou, formato `NxCODIGO` por linha, PRIMEIRA carta = lider.
+# 38 dos 39 arquivos tem 51 linhas-carta (lider + 50).
+#
+# Por que isso importa (medido 23/08, antes deste fix): `_find_real_deck`
+# montava o deck por SEMELHANCA DE NOME em `decklists_raw.csv`, e o
+# resultado era que **em 97,7% das amostras do OpponentModel pelo menos uma
+# carta que o oponente REALMENTE tinha na mao nao existia no baralho que o
+# motor assumia que ele jogava**. O motor nao ve demais -- ele modelava o
+# oponente ERRADO, o que contamina simulacao do turno dele, estimativa de
+# counter e toda decisao de ataque.
+#
+# Cobertura medida contra `logs/index.json`: **92% dos 300 lados de partida**
+# casam por `leader_code` (8% sem, ex: Nami OP11-041). 29,3% tem mais de um
+# candidato pro mesmo lider (ex: 4 arquivos "Barba Negra") -- desempatados
+# pelas cartas OBSERVADAS daquele jogador naquela partida.
+#
+# Pasta e LOCAL, nao versionada: sessao remota nao tem acesso e cai no
+# fallback antigo em silencio (por isso o retorno None nao e erro).
+_SIM_DECKS_DIR = os.environ.get(
+    'OPTCG_SIM_DECKS_DIR',
+    r'E:\Games\OnePieceSimulador\Builds_Windows\Decks')
+_SIM_DECK_RE = re.compile(r'^\s*(\d+)x([A-Za-z0-9\-]+)')
+_SIM_DECKS_CACHE = None
+
+
+def _load_sim_decks():
+    """{leader_code: [(nome_arquivo, Counter{codigo: qtd_sem_o_lider})]}"""
+    global _SIM_DECKS_CACHE
+    if _SIM_DECKS_CACHE is not None:
+        return _SIM_DECKS_CACHE
+    por_lider = {}
+    try:
+        arquivos = glob.glob(os.path.join(_SIM_DECKS_DIR, '*.deck'))
+    except Exception:
+        arquivos = []
+    for caminho in arquivos:
+        linhas = []
+        try:
+            with open(caminho, encoding='utf-8', errors='replace') as fh:
+                for ln in fh:
+                    m = _SIM_DECK_RE.match(ln.strip())
+                    if m:
+                        linhas.append((m.group(2), int(m.group(1))))
+        except OSError:
+            continue
+        if not linhas:
+            continue
+        lider = linhas[0][0]
+        corpo = Counter()
+        for code, qtd in linhas[1:]:
+            corpo[code] += qtd
+        por_lider.setdefault(lider, []).append(
+            (os.path.basename(caminho)[:-5], corpo))
+    _SIM_DECKS_CACHE = por_lider
+    return por_lider
+
+
+def _deck_real_do_simulador(leader_code, cards_db, observed_codes=None):
+    """Deck EXATO do simulador pra este lider. Com varios candidatos, escolhe
+    o que melhor cobre as cartas OBSERVADAS daquele jogador na partida."""
+    if not leader_code:
+        return None
+    candidatos = _load_sim_decks().get(leader_code)
+    if not candidatos:
+        return None
+    obs = Counter(observed_codes or [])
+    if len(candidatos) > 1 and obs:
+        def cobertura(item):
+            corpo = item[1]
+            return sum(min(q, corpo.get(c, 0)) for c, q in obs.items())
+        candidatos = sorted(candidatos, key=cobertura, reverse=True)
+    _nome, corpo = candidatos[0]
+    leader_data = cards_db.get(leader_code)
+    if not leader_data:
+        return None
+    leader = _make_card(leader_code, leader_data)
+    cards = _cards_from_codes(list(corpo.elements()), cards_db)
+    if not cards:
+        return None
+    return leader, cards, None
+
+
+def _find_real_deck(leader_name, cards_db, df_raw, urls, leader_code=None,
+                    observed_codes=None):
     """Acha QUALQUER deck real (decklists_raw.csv) com o mesmo nome de
     líder do log -- serve só de fonte pra compor o RESTO do deck (ver
     limitações no topo do arquivo). Sem decklist real disponível pra esse
@@ -202,6 +288,13 @@ def _find_real_deck(leader_name, cards_db, df_raw, urls, leader_code=None):
     confirmado esse padrao em todos os nomes do banco). `validar_deck`
     (chamado logo abaixo, ja existia) continua sendo o guarda-chuva de
     seguranca contra falso-positivo -- um match errado nunca passa."""
+    # bloco 655: o deck REAL do simulador vem PRIMEIRO -- ver
+    # `_deck_real_do_simulador`. So cai na busca por nome quando nao existe
+    # arquivo pra este lider (8% do banco) ou a pasta nao esta acessivel.
+    _real = _deck_real_do_simulador(leader_code, cards_db, observed_codes)
+    if _real:
+        return _real
+
     def _tentar(termo):
         termo_low = termo.lower()
         for url, name in urls.items():
@@ -499,8 +592,26 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
     # em runs identicos ate este fix). Seed determinista por (arquivo,
     # lider) cobre o fallback sem tocar no reseed por-turno existente.
     random.seed(f'{os.path.basename(parsed_path)}:deck:{bot_leader_code}:{opp_leader_code}')
-    bot_deck = _find_real_deck(bot_leader_name, cards_db, df_raw, urls, bot_leader_code)
-    opp_deck = _find_real_deck(opp_leader_name, cards_db, df_raw, urls, opp_leader_code)
+    # bloco 655: cartas OBSERVADAS de cada lado na partida inteira (mao,
+    # board e trash de todos os snapshots + o que foi jogado). Servem pra
+    # desempatar entre varios decks do mesmo lider na pasta do simulador
+    # (29,3% dos casos, ex: 4 arquivos "Barba Negra").
+    def _observadas(lado):
+        vistos = []
+        for t in turns:
+            snap = (t.get('snapshot') or {}).get(lado) or {}
+            for zona in ('hand', 'board', 'trash'):
+                vistos.extend(snap.get(zona) or [])
+            if t.get('player') == lado:
+                for a in t.get('actions') or []:
+                    if a.get('card'):
+                        vistos.append(a['card'])
+        return vistos
+
+    bot_deck = _find_real_deck(bot_leader_name, cards_db, df_raw, urls,
+                               bot_leader_code, observed_codes=_observadas(bot_side))
+    opp_deck = _find_real_deck(opp_leader_name, cards_db, df_raw, urls,
+                               opp_leader_code, observed_codes=_observadas(opp_side))
     if not bot_deck or not opp_deck:
         return {'error': f'deck real nao encontrado (bot={bot_leader_name}, opp={opp_leader_name})'}
 

@@ -28,6 +28,114 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-23 (655) - Claude (sessao local) - PASSO 1: o motor modelava o OPONENTE ERRADO em 97,7% das amostras -- decks REAIS do simulador integrados (2,3% -> 41,2%) + analise turno-a-turno de uma vitoria humana, com o padrao principal MEDIDO no corpus e MUITO menor do que parecia
+
+Continuacao do roteiro do bloco 653. Dois pedidos do usuario: (a) conferir e
+registrar que os decks reais das partidas existem em disco; (b) pegar um log
+que o humano VENCEU e ir turno a turno vendo se o motor tomaria a mesma
+decisao, criando mecanismo onde divergir.
+
+### ACHADO GRANDE -- o modelo do oponente estava errado, nao "generoso"
+
+A ressalva historica do `CLAUDE.md` dizia que a reconstrucao da ao motor
+informacao COMPLETA da mao do oponente ("ve mais que o bot real"). **Isso e
+FALSO pro caminho de decisao**, verificado: `max_plausible_defense` usa so o
+TAMANHO da mao; `opp_counter_chunks_for_lethal` usa `known_hand_cards()`, que
+fica **vazio em 100%** das reconstrucoes (`revealed_to_opponent` nunca e
+populado); e a busca substitui a mao por uma amostra
+(`opp2.hand = list(hand_sample)`).
+
+O problema real e o OPOSTO: medido com 1830 amostras, **em 97,7% delas pelo
+menos uma carta que o oponente REALMENTE tinha na mao nao existia no baralho
+que o motor assumia que ele jogava**. `_find_real_deck` montava o deck por
+SEMELHANCA DE NOME em `decklists_raw.csv`. O motor nao via demais -- ele
+modelava o oponente ERRADO, quase sempre. Contamina simulacao do turno do
+oponente, estimativa de counter e toda decisao de ataque.
+
+### FIX -- decks REAIS do simulador (apontados pelo usuario)
+
+`E:\\Games\\OnePieceSimulador\\Builds_Windows\\Decks`: 39 arquivos `.deck`
+(formato `NxCODIGO`, PRIMEIRA carta = lider), **38 completos com 51
+linhas-carta**. Casam pelo `leader_code` que `logs/index.json` ja grava:
+**92% dos 300 lados de partida do banco** (8% sem, ex: Nami OP11-041). 29,3%
+tem mais de um candidato pro mesmo lider (4 arquivos "Barba Negra") --
+desempatados pelas cartas OBSERVADAS daquele jogador naquela partida
+(mao/board/trash de todos os snapshots + o que jogou).
+
+Cobre inclusive Katakuri e Rocks D. Xebec, que NAO existem em
+`knowledge/decks/` (88 decklists, so 71,7% de cobertura mesmo normalizando o
+ponto do slug). `logs/decks/*.json` (236 arquivos) sao PARCIAIS -- mediana de
+so 15 cartas vistas de 50 -- servem de piso, nao de fonte.
+
+Implementado em `audit_real_losses.py`: `_deck_real_do_simulador()` entra
+ANTES da busca por nome; `decklists_raw.csv` vira ultimo fallback. Pasta
+LOCAL e nao versionada -- sessao remota cai no fallback antigo em silencio
+(por isso retornar None nao e erro). Override por `OPTCG_SIM_DECKS_DIR`.
+
+**Resultado medido**: mao real dentro da populacao de sorteio **2,3% ->
+41,2%** (barra dura: exige que TODAS as cartas da mao estejam la).
+
+**RESSALVA, nao medido ainda**: no recorte do Imu, `play` caiu 26,6% ->
+24,0% (-2,6pp, denominador 169->175) enquanto `activate` subiu +0,5pp e
+attack-quem ficou igual. O fix troca tambem o DECK PROPRIO do bot (antes um
+baralho adivinhado por nome), o que muda `full_deck_census`, plano de jogo,
+o que ele compra e o conteudo do Life -- efeito bem maior que so o modelo do
+oponente. **Falta rodar `--all --workers 4` com recorte por lider** pra
+decidir se fica. Mesma tensao do fix da Stage: fidelidade melhor pode
+derrubar similaridade no curto prazo.
+
+### ANALISE TURNO-A-TURNO -- vitoria humana, deliberadamente NAO-Imu
+
+Partida: `Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json`, lado
+auditado `Opponent` = **Marshall D. Teach OP16-080, o VENCEDOR**. 11 turnos,
+0 erros de reconstrucao. Escolhido NAO-Imu de proposito (o usuario apontou
+que todo diagnostico da sessao saia do Imu); Teach e 14,3% do banco.
+
+**4 padroes de divergencia:**
+
+- **A -- DON por ataque**: o humano anexa 1-3 DON IMEDIATAMENTE antes de
+  cada ataque (t8: 3; t12: 3+7; t15: 2; t17: 1; t19: 2+2; t21: 2). No t12
+  ele despeja os **10 DON** em tres atacantes e ataca tres vezes. O motor
+  anexa 0-2 e frequentemente nenhum.
+- **B -- ordem**: humano trata "anexa DON + ataca" como UMA unidade; o motor
+  ataca primeiro e conta com o top-up automatico.
+- **C -- motor joga MAIS cartas** em turnos de meio de jogo (t6: 5 acoes vs
+  2; t13: 8 vs 2) -- consistente com os 39% de "motor joga MAIS" ja medidos
+  no bloco 653.
+- **D -- t2**: motor joga 2 cartas no 1o turno; o humano PASSA.
+
+Nota: no t4 e no t10 os CONJUNTOS batem e so a ORDEM difere -- reforca o
+PASSO 3 do roteiro (sequencia em 6,0%).
+
+### O PADRAO A MEDIDO NO CORPUS -- muito menor do que parecia
+
+Seguindo a regra acordada (mecanismo geral + medicao no corpus antes de
+mexer), quantifiquei o padrao A em 124 turnos de 70 logs:
+
+| | DON anexado | ataques | DON por ataque |
+|---|---|---|---|
+| HUMANO | 154 | 218 | **0,71** |
+| MOTOR | 145 | 262 | **0,55** |
+
+Razao motor/humano: **0,78x**. E turnos com ataque e ZERO DON anexado:
+humano 42%, motor 43% -- **praticamente identico**.
+
+**Ou seja: o padrao existe mas e MODESTO (0,78x), nao a diferenca dramatica
+que o t12 daquela partida sugeria.** Uma unica partida com um turno de
+"despeja 10 DON pra fechar" distorceu a impressao. **NENHUMA mudanca de
+codigo foi feita com base nele** -- exatamente o que a disciplina acordada
+existe pra evitar. Registrado como achado, nao como fix.
+
+Licao pra proxima sessao: a analise turno-a-turno e boa como GERADORA de
+hipotese, e pessima como fonte de calibragem -- toda hipotese que sair dela
+precisa da mesma medicao de corpus antes de virar codigo.
+
+### Validacao
+
+`smoke_fast.py` 1376 OK / 0 falhas. Verificacao FUNCIONAL do
+`audit_one_game` (0 turnos com erro em 8) -- obrigatoria desde o bloco 654,
+porque smoke verde nao cobre `main_phase`.
+
 ## 2026-08-23 (654) - Claude (sessao local) - CORRECAO URGENTE: a remocao do override no bloco 652 quebrou `main_phase` (NameError em TODA decisao) e passou pelas DUAS suites de smoke -- lacuna de cobertura registrada
 
 **O que quebrou**: ao remover `_human_dominant_action_override` (bloco 652,
