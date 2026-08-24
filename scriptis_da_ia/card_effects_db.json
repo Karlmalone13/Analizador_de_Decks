@@ -49585,7 +49585,10 @@
           }
         ],
         "conditions": {
-          "leader_is": "koala"
+          "leader_is": [
+            "koala",
+            "monkey.d.luffy"
+          ]
         }
       }
     }
@@ -50979,7 +50982,11 @@
           }
         ],
         "conditions": {
-          "leader_is": "sabo"
+          "leader_is": [
+            "sabo",
+            "portgas.d.ace",
+            "monkey.d.luffy"
+          ]
         }
       }
     }

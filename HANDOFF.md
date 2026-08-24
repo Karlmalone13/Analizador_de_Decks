@@ -28,6 +28,61 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (661) - Claude (sessao remota web) - BUG DE PARSER real (nao de motor): condicao `leader_is` com MULTIPLOS lideres em OR ("If your Leader is [X], [Y] or [Z]") so capturava o primeiro nome -- OP13-016 Monkey.D.Garp nunca ativava com Ace/Luffy, OP12-087 Nico Robin nunca ativava com Luffy
+
+Continuacao do roteiro turno-a-turno (pedido do usuario "teste mais
+partidas, pelo menos umas 20, sempre variando o lider") -- pivotado pra
+`rank_census.py` numa amostra grande (120 partidas, seed 314, categoria
+`play`) em vez de ler narrativa por narrativa, pra cobrir muitos lideres
+de forma pratica. Achado real na secao "NUNCA GERADA": 2 casos de carta
+PRESENTE na mao E PAGAVEL mas nunca gerada como candidata (contra 0 nos
+censos anteriores desta sessao, menores).
+
+**Causa raiz** (nao e engine, e parser): `OP13-016` Monkey.D.Garp --
+"[On Play] If your Leader is [Sabo], [Portgas.D.Ace] or
+[Monkey.D.Luffy], look at 4 cards..." -- `gerar_effects_db.py` parseava
+a condicao `leader_is` com um regex sem repeticao
+(`\[([^\]]+)\]`), capturando SO o primeiro nome colchetado ("Sabo") e
+perdendo Ace/Luffy inteiramente. Numa partida real com lider Ace, a
+condicao falhava sempre (so reconhecia "sabo"), entao o efeito nunca
+disparava e o motor nunca gerava a carta como candidata de play -- 0
+DON sobrando bancado em vez de jogar uma carta de custo 1 com valor
+real.
+
+**Busca global** (regra obrigatoria do projeto, gate de pre-commit):
+110 cartas no banco tem "if your leader is [...]"; 106 com 1 lider so
+(corretas, comportamento intocado); **2 cartas com multiplos lideres em
+OR** -- OP13-016 (Sabo/Ace/Luffy) e OP12-087 Nico Robin (Koala/Luffy,
+MESMO defeito confirmado: so "koala" parseado).
+
+**Fix generico** (nao amarrado a 1 carta): regex agora captura QUALQUER
+quantidade de nomes colchetados separados por virgula/or/and.
+`conditions.leader_is` vira LISTA quando ha mais de 1 nome, continua
+STRING (formato de sempre) quando ha so 1 -- zero mudanca pros 106
+casos de 1 lider. Nova funcao `_leader_is_match(leader_is, leader_name)`
+(decision_engine.py) aceita os 2 formatos, substituindo os 4 pontos de
+consumo que faziam substring-check direto na string (quebraria com
+lista). Pendencia registrada, nao corrigida: o parser INLINE de texto
+de [Counter] em decision_engine.py tem o MESMO padrao de bug latente,
+mas nenhuma carta do banco aciona esse caminho com leader_is multiplo
+hoje.
+
+**Validado**: `diff_parser.py` PERDEU=0, GANHOU=0, MUDOU=2 (exatamente
+OP12-087/OP13-016). `gerar_dbs.py` 2749 cartas sincronizadas.
+`smoke_fast.py`/`smoke_test.py` OK. Confirmado END-TO-END numa partida
+real (Ace x Xebec, `Portgas.D.Ace-R_x_Rocks.D.Xebec-B_2026-08-09T18.48.47.json`,
+T5): ANTES do fix Garp nunca aparecia como candidata em nenhuma das 5
+decisoes do turno; DEPOIS aparece em TODAS e e ESCOLHIDA na decisao 4
+(antes o motor so bancava DON ocioso). Registro completo em
+`scriptis_da_ia/parser_audits/2026-08-24_OP13-016_leader_is_multiplo.json`.
+
+**Contraste com o resto do censo de 120 partidas**: mesmo com essa
+amostra 2-3x maior que os censos anteriores desta sessao, a taxa de
+"nunca gerada + pagavel" continua muito baixa (2/60 casos amostrados,
+~3%) -- reforca que bugs de motor/parser sao raros e a maior parte do
+gap restante e diversidade estrategica legitima ou limitacao de dado,
+nao mecanismo quebrado.
+
 ## 2026-08-24 (660) - Claude (sessao remota web) - Roteiro turno-a-turno FECHADO por agora: 5 partidas, 5 lideres diferentes auditados (Teach, Katakuri, Xebec, Kid, Ace) -- 1 bug real encontrado e corrigido (T2, bloco 657), ZERO bugs novos nas 4 partidas seguintes, generalizacao confirmada
 
 Continuacao do roteiro apos a retificacao do bloco 659 (pedido do

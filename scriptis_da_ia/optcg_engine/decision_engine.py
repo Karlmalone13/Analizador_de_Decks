@@ -2354,6 +2354,28 @@ def _immunity_conds_met(conds, card, owner, opp):
     return True
 
 
+def _leader_is_match(leader_is, leader_name: str) -> bool:
+    """
+    Confere a condicao `leader_is` (chave de `conditions`, produzida por
+    `gerar_effects_db.py`) contra o nome do lider atual.
+
+    Achado 24/08 (censo global via `rank_census.py`): cartas com "If your
+    Leader is [X], [Y] or [Z]" (OR entre MULTIPLOS lideres nomeados, ex:
+    OP13-016 Monkey.D.Garp -- Sabo/Ace/Luffy; OP12-087 Nico Robin --
+    Koala/Luffy) tinham a condicao parseada como STRING de 1 nome so
+    (perdia os outros). O parser agora produz uma LISTA quando ha mais de
+    1 nome -- esta funcao aceita os dois formatos (string = caso comum,
+    ~106 cartas de 1 lider so; lista = os poucos casos de OR), pra nao
+    duplicar o `isinstance` em cada um dos pontos que consultam
+    `conds.get('leader_is')`.
+    """
+    if not leader_is:
+        return False
+    candidatos = leader_is if isinstance(leader_is, list) else [leader_is]
+    leader_name_lower = leader_name.lower()
+    return any(str(nome).lower() in leader_name_lower for nome in candidatos)
+
+
 def is_attack_locked_self(card: 'Card', owner: 'GameState', opp: 'GameState') -> bool:
     """
     True se `card` esta travada para atacar por um efeito PASSIVO PROPRIO
@@ -2430,8 +2452,7 @@ def is_attack_locked_self(card: 'Card', owner: 'GameState', opp: 'GameState') ->
         if not mass_lock:
             continue
         conds = mass_lock.get('conditions', {})
-        leader_is = conds.get('leader_is', '').lower()
-        if leader_is and leader_is not in owner.leader.name.lower():
+        if conds.get('leader_is') and not _leader_is_match(conds['leader_is'], owner.leader.name):
             continue
         costs_alvo = set()
         for s in mass_lock.get('steps', []):
@@ -4929,7 +4950,7 @@ class EffectExecutor:
         if conds.get('just_played') and not getattr(card, 'just_played', False):
             return False
         if 'leader_is' in conds:
-            if conds['leader_is'].lower() not in me.leader.name.lower():
+            if not _leader_is_match(conds['leader_is'], me.leader.name):
                 return False
         # "if your Leader is [Nomeado] OR has {Tipo} type" -- OR entre as
         # duas alternativas (distinto de leader_is puro acima, que perdia
@@ -12875,7 +12896,7 @@ class DecisionEngine:
             if k == 'leader_type':
                 if str(v).lower() not in ' '.join(leader_types): return False
             if k == 'leader_is':
-                if str(v).lower() not in str(getattr(me.leader, 'name', '')).lower(): return False
+                if not _leader_is_match(v, str(getattr(me.leader, 'name', ''))): return False
         return True
 
     def _can_play_card(self, card, don_usable: int | None = None) -> bool:
@@ -14478,8 +14499,7 @@ class OPTCGMatch:
                 if step.get('action') != 'lock_both_character_refresh':
                     continue
                 conds = passive.get('conditions', {})
-                leader_is = conds.get('leader_is', '').lower()
-                if leader_is and leader_is not in owner.leader.name.lower():
+                if conds.get('leader_is') and not _leader_is_match(conds['leader_is'], owner.leader.name):
                     continue
                 lock_both_cost_lte = step.get('cost_lte', 99)
 

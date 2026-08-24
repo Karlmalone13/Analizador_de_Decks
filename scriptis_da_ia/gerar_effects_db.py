@@ -639,8 +639,23 @@ def parse_conditions(text):
             'type': m_or.group(2).strip(),
         }
     else:
-        m = re.search(r'if your leader is \[([^\]]+)\]', t)
-        if m: conds['leader_is'] = m.group(1)
+        # "if your Leader is [X], [Y] or [Z]" -- OR entre MULTIPLOS lideres
+        # nomeados (achado 24/08, censo global via rank_census.py: OP13-016
+        # Monkey.D.Garp "If your Leader is [Sabo], [Portgas.D.Ace] or
+        # [Monkey.D.Luffy]..." so capturava "Sabo", perdendo Ace/Luffy
+        # inteiramente -- o efeito nunca disparava com Ace/Luffy como lider,
+        # mesmo sendo o caso comum da carta). Captura QUALQUER quantidade de
+        # nomes colchetados separados por virgula/or/and, nao so o primeiro.
+        # `conds['leader_is']` vira lista quando ha mais de 1 nome, string
+        # quando ha so 1 (mesmo formato de sempre -- os ~106 casos de 1
+        # lider so continuam recebendo string, zero mudanca de comportamento
+        # pros consumidores que ja fazem `str.lower() in leader.name.lower()`).
+        m = re.search(
+            r'if your leader is ((?:\[[^\]]+\](?:,\s*|\s+(?:or|and)\s+)?)+)', t)
+        if m:
+            names = re.findall(r'\[([^\]]+)\]', m.group(1))
+            if names:
+                conds['leader_is'] = names if len(names) > 1 else names[0]
 
     m = re.search(r"if your leader(?:'s|\u2019s)? type includes? [\"'\u2019]?([^\"'\u2019\n,]+)[\"'\u2019]?", t)
     if m: conds['leader_type_includes'] = m.group(1).strip()

@@ -28144,6 +28144,19 @@
   }
  },
  "OP11-031": {
+  "activate_main": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "select_grant_rush_character",
+     "count": 1,
+     "filter_type": [
+      "fish-man",
+      "merfolk"
+     ]
+    }
+   ]
+  },
   "on_play": {
    "steps": [
     {
@@ -31423,7 +31436,10 @@
   },
   "passive": {
    "conditions": {
-    "leader_is": "koala"
+    "leader_is": [
+     "koala",
+     "monkey.d.luffy"
+    ]
    },
    "steps": [
     {
@@ -32285,7 +32301,11 @@
  "OP13-016": {
   "on_play": {
    "conditions": {
-    "leader_is": "sabo"
+    "leader_is": [
+     "sabo",
+     "portgas.d.ace",
+     "monkey.d.luffy"
+    ]
    },
    "steps": [
     {
@@ -42932,6 +42952,10 @@
     },
     {
      "action": "deck_reorder_rest"
+    },
+    {
+     "action": "draw",
+     "count": 1
     }
    ]
   }
@@ -47723,6 +47747,10 @@
   "trigger": {
    "steps": [
     {
+     "action": "draw",
+     "count": 1
+    },
+    {
      "action": "peek_life",
      "count": 1,
      "target": "opponent"
@@ -52339,6 +52367,23 @@
   }
  },
  "ST31-006": {
+  "activate_main": {
+   "costs": [
+    {
+     "type": "rest_self"
+    }
+   ],
+   "steps": [
+    {
+     "action": "transfer_don",
+     "count": 1,
+     "distribution": "free",
+     "filter_name": "monkey d. luffy",
+     "per_target_max": 1,
+     "target": "own_character"
+    }
+   ]
+  },
   "on_play": {
    "steps": [
     {

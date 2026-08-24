@@ -1,0 +1,20 @@
+{
+  "trigger_card": "OP13-016",
+  "problem": "Monkey.D.Garp (OP13-016): \"[On Play] If your Leader is [Sabo], [Portgas.D.Ace] or [Monkey.D.Luffy], look at 4 cards from the top of your deck; reveal up to 1 card with a cost of 3 or more and add it to your hand. Then, place the rest at the bottom of your deck in any order.\" O regex de `leader_is` em gerar_effects_db.py so capturava o PRIMEIRO nome colchetado (`\\[([^\\]]+)\\]`, sem repeticao), gravando `conditions.leader_is = 'sabo'` e perdendo Ace/Luffy inteiramente. Achado via decision_quality investigation (rank_census.py, scratchpad, censo amplo de 'nunca gerada' pra `play` em 120 partidas): numa partida real com lider Portgas D. Ace (deveria satisfazer a condicao), o motor NUNCA gerava Garp como candidata mesmo com 1 DON disponivel (custo 1) e a carta na mao, porque o parser so reconhecia 'sabo' -- a condicao falhava erroneamente pra Ace e Luffy, os 2 lideres mais comuns pra essa carta.",
+  "grammar_family": "\"If your Leader is [X], [Y] or [Z]\" -- condicao leader_is com MULTIPLOS lideres nomeados em OR (distinto de leader_is_or_type, que ja trata 'leader nomeado OR tipo generico').",
+  "queries": [
+    "Regex sobre cards_rows.csv inteiro: r'if your leader is ((?:\\[[^\\]]+\\](?:,\\s*)?(?:\\s*(?:or|and)\\s*)?)+)', extraindo todos os [Nome] dentro do trecho casado, deduplicando por codigo base (ignorando variantes _p1/_p2 de arte alternativa).",
+    "Resultado: 110 cartas unicas com 'if your leader is [...]' no texto. 106 com 1 lider so (ja corretamente parseadas, comportamento intocado). 4 linhas de CSV = 2 cartas unicas com MULTIPLOS lideres em OR: OP12-087 Nico Robin (Koala, Monkey.D.Luffy) e OP13-016 Monkey.D.Garp (Sabo, Portgas.D.Ace, Monkey.D.Luffy).",
+    "Confirmado no card_effects_db.json ANTES do fix que OP12-087 tinha o MESMO defeito (passive.conditions.leader_is='koala', perdendo Monkey.D.Luffy)."
+  ],
+  "cards_found": ["OP13-016", "OP13-016_p1", "OP12-087", "OP12-087_p1"],
+  "resolution_scope": "global",
+  "decision": "Regex trocada pra capturar QUALQUER quantidade de nomes colchetados separados por virgula/or/and (nao so o primeiro), extraindo todos via findall. `conditions.leader_is` agora e uma LISTA quando ha mais de 1 nome, e continua sendo uma STRING (mesmo formato de sempre) quando ha so 1 -- zero mudanca de dado pros ~106 casos de 1 lider so. Criada `_leader_is_match(leader_is, leader_name)` (decision_engine.py, funcao nova) que aceita os dois formatos (string ou lista) via `isinstance`, substituindo os 4 pontos de consumo que faziam `conds['leader_is'].lower() not in leader.name.lower()` direto (quebraria com lista). Um 5o ponto de consumo (parser INLINE de texto de [Counter] em decision_engine.py, regex separada com `\\w+` que nem aceita nomes com ponto tipo 'Portgas.D.Ace') tem o MESMO padrao de bug latente mas NENHUMA carta do banco aciona esse caminho com leader_is multiplo hoje (a busca global cobriu texto de Counter tambem) -- registrado como pendencia conhecida, nao corrigido nesta rodada por falta de caso real pra validar contra.",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=2 (exatamente OP12-087 e OP13-016, ambos ganhando a lista completa de lideres, nada mais mudou)",
+    "gerar_dbs.py: 2749 cartas sincronizadas nos dois bancos, sanidade das cartas-chave OK",
+    "smoke_fast.py: OK",
+    "Verificado end-to-end via audit_real_losses.py numa partida real (Portgas.D.Ace-R_x_Rocks.D.Xebec-B_2026-08-09T18.48.47.json, lado Zico#6849/Ace): antes do fix Garp nunca aparecia como candidata em nenhuma das 5 decisoes do T5; depois do fix aparece em TODAS e chega a ser ESCOLHIDA na decisao 4 (antes o motor so bancava o DON ocioso)."
+  ],
+  "notes": "Pendencia conhecida, nao corrigida: o parser inline de [Counter] em decision_engine.py (~linha 4067, `m_leader = re.search(r'if your leader is \\[(\\w+)\\]', counter_text)`) tem a mesma limitacao estrutural (so 1 nome, e `\\w+` nem aceita ponto) mas nenhum card do banco aciona esse caminho com leader_is multiplo hoje -- fica pra quando (se) uma carta com Counter condicionado a multiplos lideres aparecer no banco."
+}

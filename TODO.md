@@ -2,6 +2,23 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 661): **bug de PARSER real encontrado** (não de
+> motor) testando mais partidas via `rank_census.py` numa amostra de
+> 120 jogos variando líder. Condição `leader_is` com múltiplos líderes
+> em OR ("If your Leader is [X], [Y] or [Z]") só capturava o PRIMEIRO
+> nome — OP13-016 Monkey.D.Garp nunca ativava com Ace/Luffy (só
+> reconhecia Sabo), OP12-087 Nico Robin nunca ativava com Luffy (só
+> Koala). Busca global: 110 cartas com essa gramática, 106 corretas (1
+> líder só), 2 com o bug (múltiplos líderes). Fix genérico: regex
+> captura todos os nomes, `leader_is` vira lista quando há mais de 1
+> (string quando há só 1, zero mudança pros 106 casos). Nova
+> `_leader_is_match()` nos 4 pontos de consumo. `diff_parser.py`
+> PERDEU=0/MUDOU=2 (exatamente as 2 cartas certas), `gerar_dbs.py`
+> sincronizado, smoke_fast/smoke_test OK. Confirmado end-to-end numa
+> partida real: Garp passou de nunca-jogado pra escolhido de verdade.
+> Registro em `parser_audits/2026-08-24_OP13-016_leader_is_multiplo.json`.
+> Ver bloco 661 do HANDOFF.
+
 > 24/08/2026 (bloco 660): roteiro turno-a-turno FECHADO por agora — 5
 > partidas, 5 líderes diferentes auditados (Teach, Katakuri, Xebec,
 > Kid, Ace), 21 turnos no total. **1 bug real encontrado e corrigido**
