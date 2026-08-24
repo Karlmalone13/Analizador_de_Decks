@@ -28,6 +28,69 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-23 (658) - Claude (sessao remota web) - BUG DE ORDENACAO no DonEstimator: `available()` lia o DON acumulado ANTES do ramp do proprio turno ser somado -- achado reproduzido em 2 lideres diferentes (Katakuri, Xebec), fix generico, DON estimado sobe de +1/turno pra +2/turno consistente em toda reconstrucao
+
+Continuacao do roteiro turno-a-turno (bloco 657), pedido do usuario "pegue
+outra partida" pra testar generalizacao do fix do bloco 657 -- achou algo
+maior que o proprio fix que estava validando.
+
+**Metodologia**: auditadas 2 partidas de lideres NUNCA testados turno-a-
+turno nesta sessao (Charlotte Katakuri x Portgas D. Ace, Rocks D. Xebec x
+Monkey D. Luffy). Achado comum nos dois: o turno 3 (2o turno proprio de
+cada jogador) mostrava `don_available_estimado=1`, mas o HUMANO gastou
+3+ DON de verdade nesse turno (2 cartas custo 1 + attach_don, ou 1 carta
+custo 1 + 1 carta custo 2 + attach_don). Padrao identico em 2 lideres
+diferentes = nao e coincidencia de 1 partida.
+
+**Causa raiz** (`audit_real_losses.py`, `DonEstimator`): `p.don_available
+= don_est.available(bot_side)` (linha ~761, ANTES do fix) rodava ANTES
+de `don_est.apply_turn(player, turn, cards_db)` pra ESTE MESMO turno --
+esse `apply_turn()` so acontecia no FIM da iteracao (depois de
+`eng.play_turn()` ja ter rodado a simulacao inteira do turno com o
+motor). Ou seja: a reconstrucao sempre usava o DON acumulado ATE o
+turno ANTERIOR, nunca contando o ramp do proprio turno -- mas pela regra
+real (DON phase acontece ANTES da Main Phase, no MESMO turno), o ramp de
+hoje ja devia estar disponivel pro motor decidir.
+
+**Fix**: move `don_est.apply_turn(player, turn, cards_db)` pra ANTES de
+`p.don_available = don_est.available(bot_side)`, removendo as 2 chamadas
+duplicadas que existiam mais abaixo (fim da iteracao normal E dentro do
+`except` de erro de `eng.play_turn()` -- ambas ficariam contando o mesmo
+turno 2x se mantidas). Mudanca de ORDEM, nao de FORMULA -- `DonEstimator`
+continua somando exatamente o mesmo `don_drawn` de sempre, so na hora
+certa.
+
+**Medido**: `don_available_estimado` no T3 de Katakuri e Xebec foi de 1
+pra **3** nos dois -- e a sequencia inteira (T3/T5/T7/T9) passou a subir
++2 por turno de forma limpa (3,5,7,9) em vez do padrao de 1 turno
+atrasado de antes. Efeito em cascata pra decisoes: Xebec T3 foi de
+"faltava 1 carta inteira (OP17-045, custo 2) nunca jogada" pra jogar o
+CONJUNTO IDENTICO de acoes do historico (so ordem diferente -- play+play+
+attach_don+attack nos dois). Katakuri T3 melhorou (2 jogadas em vez de
+1) mas ainda diverge em QUAL carta jogar (`ST34-002` custo 4 em vez de
+`ST34-003` custo 1) -- nao investigado a fundo, pode ser julgamento de
+valor legitimo, nao bug.
+
+**Validacao**: `smoke_fast.py`/`smoke_test.py` OK. Varredura de
+integridade em 20 logs FRESCOS (seed=99, nunca vistos nesta sessao): 16
+processados com sucesso (4 crashes esperados, schema antigo `'players'`,
+ja documentado), **76 turnos, 0 com erro**.
+
+**Por que isso importa mais que o fix do turno 2**: este bug afeta a
+reconstrucao de ABSOLUTAMENTE TODO turno de TODA partida auditada por
+`audit_real_losses.py` (e por extensao `decision_quality_full.py`,
+`rank_census.py`, qualquer ferramenta que use `audit_one_game`) --
+subestimava DON sistematicamente a partir do 2o turno proprio de cada
+jogador em diante. Investigacoes anteriores desta sessao ("nunca gerada"
+por falta de DON, blocos 643-650) rodaram TODAS sobre esse estado
+subestimado -- vale reconsiderar se algum "0 bugs reais encontrados"
+daquelas investigacoes teria mudado com DON correto (nao refeito ainda,
+registrado como pendencia).
+
+**Corpus completo ainda NAO rodado** com este fix (mesma disciplina do
+bloco 657 -- usuario pediu pra continuar acumulando fixes turno-a-turno
+antes de medir).
+
 ## 2026-08-23 (657) - Claude (sessao remota web) - Continua o roteiro turno-a-turno do bloco 656 (Teach x Imu, 11 turnos): T2 CORRIGIDO (corpo recem-jogado sem Rush supervalorizado vs guardar como counter), T4 confundido por reconstrucao errada do board do oponente, T6/T8/T10/T12 motor joga IGUAL ou MELHOR que o humano -- nao sao bugs
 
 Continuacao direta do bloco 656 (mesma sessao de trabalho, "nao passar de
