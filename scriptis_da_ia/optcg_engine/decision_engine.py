@@ -3360,6 +3360,14 @@ class EffectExecutor:
             # target=opp_leader_or_character).
             if step.get('target') in ('opp_leader', 'opp_leader_or_character'):
                 return True
+            # Alvo e a PROPRIA carta ("[Opponent's Turn] Give this
+            # Character -N power", achado 24/08, P-092 Koby) -- nao
+            # precisa de NADA no campo do oponente, sempre viavel. Sem
+            # este atalho o self-debuff caia no fallback generico abaixo
+            # (checa opp.field_chars), que nao tem relacao nenhuma com um
+            # alvo que e sempre a propria carta.
+            if step.get('target') == 'self':
+                return True
             from optcg_engine.rules_facade import eligible_cards
             cost_lte = self._resolve_cost_lte(step, default=None)
             # Achado real 26/07 (bloco HANDOFF 372, Krieg OP15-001 -- usuario
@@ -8061,6 +8069,12 @@ class EffectExecutor:
             amount = step.get('amount', 0)
             target = step.get('target', 'opp_character')
 
+            if target == 'self':
+                # "[Opponent's Turn] Give this Character -N power" (achado
+                # 24/08, P-092 Koby -- unica carta no banco com essa forma,
+                # auto-debuff sem alvo pra escolher).
+                card.power_buff -= amount
+                return f'{card.name[:18]} -{amount} power (self, opp_turn)'
             if target == 'opp_leader':
                 opp.leader.power_buff -= amount
                 return f'Leader do oponente -{amount} power'
@@ -14724,6 +14738,70 @@ class OPTCGMatch:
         p.cant_take_life_this_turn = False
         p.events_activated_costs_this_turn = []
 
+    _OPP_TURN_REACTIVE_ACTIONS = {
+        'buff_power', 'debuff_power', 'buff_cost', 'debuff_cost', 'set_base_power',
+    }
+
+    def _apply_opp_turn_reactive_effects(self, p: GameState, opp: GameState,
+                                          verbose: bool = False) -> None:
+        """
+        Dispara efeitos passivos sob a chave 'opp_turn' (buff_power/
+        debuff_power/buff_cost/debuff_cost/set_base_power) pro lado `opp`
+        -- e literalmente o turno do OPONENTE dele (`p`) agora.
+
+        Achado real 24/08 (pedido do usuario, deck Krieg -- "o debuff que
+        o lider da turno a turno"): NADA no codebase inteiro jamais
+        chamava `execute(source, 'opp_turn')` (busca pela string 'opp_turn'
+        no arquivo inteiro confirma) -- os UNICOS consumidores da chave
+        'opp_turn' sao `apply_conditional_keyword_passives` (keyword
+        grants + set_base_power_group_opp_turn, aura VIVA, campo proprio),
+        `is_immune`/`try_substitute` (checagem VIVA a cada evento) e 2
+        funcoes de RESERVA de DON (so escoram planejamento, nunca
+        executam o efeito). Nenhum aplicava buff_power/debuff_power/
+        buff_cost/set_base_power de verdade -- essas acoes SO existem via
+        `_execute_step`, que so roda dentro de `execute()`, nunca chamado
+        com esse trigger. Achado NO BANCO INTEIRO, nao so Krieg: 32
+        cartas com buff_power, 4 com debuff_power (incl. lider Krieg
+        OP15-001), 3 buff_cost (incl. lider Marshall.D.Teach OP16-080,
+        "+1 cost em todos os proprios Characters"), 2 set_base_power --
+        todas passivas ESTATICAS (condicao + DON!!xN opcional,
+        reavaliadas do zero a cada turno do oponente, sem sub-gatilho de
+        evento tipo "when X e K.O.'d" embutido -- essas EXISTEM tambem
+        na mesma chave 'opp_turn', mas usam outras acoes -- opp_don_minus/
+        gain_life/trash_from_hand/play_from_trash, deliberadamente FORA
+        da allowlist aqui: sao gatilhos por EVENTO especifico, precisam
+        de hook proprio no momento certo, nao "todo inicio de turno do
+        oponente" -- nao corrigidos nesta sessao, ver HANDOFF).
+
+        Chamado 1x por turno, logo apos refresh_phase(p, opp) -- momento
+        em que power_buff/cost_buff de `p` acabaram de zerar (persistem
+        pelo turno INTEIRO do oponente ate o PROXIMO refresh de `p`,
+        batendo com 'duration: this_turn' do lado de quem concede). O
+        `don_attached` de `opp` (ex: DON!! deixado no lider Krieg no
+        proprio turno anterior) NAO e tocado por refresh_phase(p, ...)
+        -- reflete corretamente se o dono pagou o "custo" de manter DON!!
+        anexado pro proximo turno do oponente.
+
+        REGRA_SEM_DUPLICACAO: chamado tanto de `play_turn` (turno real)
+        quanto de `_play_turn_greedy` (lookahead interno do Turn Planner)
+        -- sem isso a BUSCA (Monte Carlo) nao "veria" o debuff/buff que o
+        turno REAL aplicaria, subestimando/superestimando linhas que
+        dependem dele (ex: vale a pena manter DON!! no lider Krieg pro
+        proximo turno do oponente?).
+        """
+        for source in [opp.leader] + list(opp.field_chars) + (
+                [opp.field_stage] if opp.field_stage else []):
+            block = get_card_effects(source.code).get('opp_turn', {})
+            if not block or not any(
+                    s.get('action') in self._OPP_TURN_REACTIVE_ACTIONS
+                    for s in block.get('steps', [])):
+                continue
+            logs = EffectExecutor(opp, p).execute(source, 'opp_turn')
+            if verbose:
+                for log in logs:
+                    if log:
+                        print(f'  \033[90m[opp_turn] {source.name[:20]}: {log}\033[0m')
+
     def draw_phase(self, p: GameState, verbose: bool = False):
         """PlayerDrawPhase — 1º jogador não compra no T1."""
         if p.turn == 1 and p.is_first:
@@ -19463,6 +19541,7 @@ class OPTCGMatch:
         opp.is_active_turn = False
         p.pending_play_cost_reductions.clear()
         self.refresh_phase(p, opp)
+        self._apply_opp_turn_reactive_effects(p, opp)
         self.draw_phase(p)
         self.don_phase(p)
         engine = DecisionEngine(p, opp)
@@ -19501,6 +19580,7 @@ class OPTCGMatch:
         self._log_event(p, 'turn_start', phase='refresh',
                         description=f'Turno {self.global_turn} — refresh/compra/DON')
         self.refresh_phase(p, opp)
+        self._apply_opp_turn_reactive_effects(p, opp, verbose=verbose)
 
         # Log de compra de carta
         hand_before = len(p.hand)

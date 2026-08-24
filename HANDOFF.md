@@ -28,6 +28,108 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (671) - Claude (sessao remota web) - "confira de novo o krieg, principalmente o debuff que o lider dá turno a turno": achado MECANISMO INTEIRO ausente. `execute(source, 'opp_turn')` NUNCA era chamado em lugar nenhum do codebase -- a habilidade defensiva do lider Krieg (e mais 41 cartas no banco inteiro, incl. o lider Marshall.D.Teach) nunca produzia efeito nenhum, so existia no JSON parseado. Corrigido com um dispatch generico novo, chamado tanto no turno real quanto no lookahead do Turn Planner
+
+**Achado (busca exaustiva pela string 'opp_turn' no arquivo inteiro):**
+os UNICOS 5 consumidores da chave `opp_turn` eram: (1)
+`apply_conditional_keyword_passives` -- SO keyword grants (blocker/rush/
+etc) e `set_base_power_group_opp_turn` (aura viva, campo proprio); (2)
+`is_immune()` -- checagem VIVA a cada K.O.; (3) `try_substitute()` --
+checagem VIVA a cada remocao; (4)/(5) `_has_don_reactive_use`/`_max_don_
+needed_for_reactive_use` -- SO reservam DON pro planejamento, nunca
+executam nada. **Nenhum dos 5 aplicava `buff_power`/`debuff_power`/
+`buff_cost`/`set_base_power` de verdade** -- essas acoes SO existem via
+`_execute_step`, que so roda dentro de `execute()`, que nunca era
+chamado com trigger='opp_turn' em lugar nenhum do codebase inteiro
+(confirmado via grep exaustivo, zero ocorrencias).
+
+**Efeito pratico pro Krieg:** "[DON!! x1][Opponent's Turn] If the only
+Characters on your field are East Blue type, give all of your
+opponent's Characters -2000 power" -- a habilidade DEFENSIVA central do
+lider (enfraquece o board do atacante durante o turno dele) nunca
+produzia efeito NENHUM. O motor ate reconhecia CORRETAMENTE que valia a
+pena reservar DON pro proprio lider (visto na narrativa: "anexou 1 DON
+em Krieg... para ligar [opp_turn]"), mas esse DON nunca convertia em
+debuff de verdade -- so ficava parado, sem beneficio.
+
+**Busca no banco INTEIRO confirmou que NAO e so o Krieg** -- censo de
+TODAS as cartas com bloco `opp_turn`, por action: 32 cartas com
+`buff_power` (padrao classico "[DON!! xN][Opponent's Turn] This
+Character gains +N power", defesa comum em varios decks), 4 com
+`debuff_power` (incl. lider Krieg OP15-001), 3 com `buff_cost` (**incl.
+o lider Marshall.D.Teach OP16-080**, "[Opponent's Turn] All of your
+Characters gain +1 cost" -- ja auditado extensamente nesta MESMA sessao
+nos blocos 657-666 sem que ninguem notasse esse gap especifico), 2 com
+`set_base_power`. Todas verificadas por amostragem como passivas
+ESTATICAS puras (condicao + DON!!xN opcional, sem sub-gatilho de
+EVENTO tipo "when X e K.O.'d/torna-se Y" embutido) -- reavaliaveis do
+zero a cada turno do oponente sem risco.
+
+**Deliberadamente FORA do escopo desta correcao** (mesma chave
+`opp_turn`, mas acoes com sub-gatilho de EVENTO especifico, nao
+"blanket todo inicio de turno"): `opp_don_minus` (Magellan OP02-085,
+"when this Character is K.O.'d"), `gain_life`+`trash_from_hand` (Enel
+OP05-098, "when your Life cards becomes 0"), `play_from_trash` (Marco
+OP09-052, custo OPCIONAL reativo "you may... :"). Aplicar essas cegamente
+no inicio do turno seria ERRADO (disparariam sem o evento real ter
+acontecido) -- precisam de hook proprio no momento certo, fica como
+pendencia separada registrada, nao corrigida agora.
+
+**Fix generico:** novo metodo `OPTCGMatch._apply_opp_turn_reactive_
+effects(p, opp, verbose)` -- pra cada carta de `opp` (lider + campo +
+stage) com bloco `opp_turn` contendo uma acao da allowlist
+(`buff_power`/`debuff_power`/`buff_cost`/`debuff_cost`/`set_base_power`),
+chama `EffectExecutor(opp, p).execute(source, 'opp_turn')` (reusa TODA
+a infraestrutura ja existente de `execute()` -- condicoes, `don_
+requirement`, once_per_turn -- sem duplicar nada). Chamado 1x por
+turno, logo apos `refresh_phase(p, opp)` -- momento exato em que
+`power_buff`/`cost_buff` de `p` acabaram de zerar (persistem pelo
+turno INTEIRO do oponente ate o proximo refresh de `p`, batendo com
+"duration: this_turn"); `don_attached` de `opp` (ex: DON deixado no
+lider Krieg no proprio turno anterior) nao e tocado por `refresh_
+phase(p, ...)`, refletindo corretamente o "custo" de manter DON!!
+anexado. **REGRA_SEM_DUPLICACAO**: chamado tanto em `play_turn` (turno
+real) quanto em `_play_turn_greedy` (lookahead interno do Turn
+Planner/Monte Carlo) -- sem isso a BUSCA nao "veria" o debuff que o
+turno real aplicaria, subestimando decisoes que dependem dele (ex:
+vale reservar DON!! no lider Krieg pro proximo turno do oponente?).
+
+**2 achados colaterais, corrigidos junto (descobertos testando o
+mecanismo):**
+- `debuff_power` nunca tinha branch pra `target='self'` (so
+  `opp_leader`/`all_opp_characters`/`opp_leader_or_character`/
+  `opp_character` existiam) -- afeta P-092 Koby ("[Opponent's Turn]
+  Give this Character -3000 power", auto-debuff). Fix: novo branch
+  `target == 'self'` debuffando a propria carta-fonte.
+- `_step_is_viable` tratava QUALQUER `debuff_power`/`debuff_cost` como
+  precisando de alvo no CAMPO DO OPONENTE (checando `opp.field_chars`),
+  mesmo quando o alvo real e a PROPRIA carta (`target='self'`) -- sem
+  nenhuma relacao com o campo do oponente. Sem esse fix, Koby (e
+  qualquer carta futura com o mesmo padrao) nunca passaria no gate de
+  viabilidade de `execute()`, mesmo com o dispatch novo funcionando.
+  Fix: mesmo atalho ja usado pra `opp_leader`/`opp_leader_or_character`
+  (sempre viavel), estendido pra `target == 'self'`.
+
+**Validado:** `smoke_fast.py` (novo teste dedicado, 3 cenarios do
+Krieg -- debuff aplica com DON!!x1+board East Blue, NAO aplica sem
+DON, NAO aplica com board misto -- + cenario do Koby) e
+`smoke_test.py` (suite ampla, dado o alcance da mudanca -- toca
+turn-flow compartilhado por QUALQUER deck): ambos OK, zero regressao.
+**Limitacao de validacao honesta:** `audit_real_losses.py`/
+`audit_one_game` so simula o turno do lado AUDITADO (Krieg aqui),
+nunca o turno completo do OPONENTE -- como a habilidade do Krieg
+precisa disparar no inicio do turno do OPONENTE (Imu), essa ferramenta
+especifica NUNCA vai conseguir exercitar esse caminho, mesmo com o fix
+certo (mesma classe de limitacao ja documentada no bloco 669 pro banco
+de DON do oponente). Validado via teste dedicado com `GameState`
+controlado em vez de replay de log real.
+
+**Nao medido ainda** (fora do escopo desta sessao de investigacao):
+impacto agregado real via `decision_quality_full.py`/self-play -- dado
+o alcance (42 cartas, incl. 2 lideres ja auditados extensamente nesta
+sessao), uma rodada de medicao seria valiosa antes de considerar este
+fix "fechado", fica como proximo passo recomendado.
+
 ## 2026-08-24 (670) - Claude (sessao remota web) - Usuario corrigiu a leitura do Kuro (OP15-025): o lock so acontece no FIM do turno, nao no ato do On Play. BUG REAL confirmado e corrigido -- o parser ignorava por completo a clausula "Then, at the end of this turn," que precede o lock, executando-o imediatamente e perdendo o combo real (alvo so fica restado DEPOIS no mesmo turno, via Activate:Main do lider Krieg)
 
 Pedido do usuario: "O kuro dá até 2 dons tb ativos ou restados e depois

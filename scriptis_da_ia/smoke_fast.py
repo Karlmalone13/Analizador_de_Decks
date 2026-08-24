@@ -10696,6 +10696,7 @@ def main() -> int:
     test_opp_attack_count_delega_pro_helper_compartilhado_15_08()
     test_give_don_either_side_arlong_alvida_morgan_24_08()
     test_should_activate_main_nao_queima_once_per_turn_em_custo_impagavel_24_08()
+    test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -14809,6 +14810,95 @@ def test_should_activate_main_nao_queima_once_per_turn_em_custo_impagavel_24_08(
     # oponente) = 0 sobrando, os 2 no banco do oponente foram usados.
     check("custo + efeito de fato pagos (DON restado do oponente todo debitado)",
           opp3.don_rested == 0)
+
+
+def test_opp_turn_reactive_effects_krieg_leader_debuff_24_08() -> None:
+    """
+    Achado real 24/08 (pedido do usuario "confira de novo o krieg,
+    principalmente o debuff que o lider da turno a turno"): NADA no
+    codebase chamava execute(source, 'opp_turn') -- as unicas
+    consumidoras da chave 'opp_turn' eram checagens VIVAS (keyword
+    grants/set_base_power_group_opp_turn em apply_conditional_keyword_
+    passives, imunidade em is_immune, substituicao em try_substitute) ou
+    so RESERVA de DON pro planejamento -- nenhuma aplicava buff_power/
+    debuff_power/buff_cost/set_base_power de verdade. Achado no banco
+    inteiro (nao so Krieg): 32 buff_power, 4 debuff_power (incl. lider
+    Krieg OP15-001), 3 buff_cost (incl. lider Marshall.D.Teach
+    OP16-080), 2 set_base_power -- todas passivas ESTATICAS (sem
+    sub-gatilho de evento), nunca executadas. Fix:
+    _apply_opp_turn_reactive_effects, chamado 1x por turno logo apos
+    refresh_phase em play_turn E _play_turn_greedy (mesmo mecanismo pro
+    turno real e pro lookahead do Turn Planner -- REGRA_SEM_DUPLICACAO).
+    """
+    krieg_am = get_card_effects("OP15-001")["opp_turn"]
+    check("Krieg (lider) opp_turn: debuff_power/all_opp_characters/"
+          "don_requirement=1/only_field_type=east blue -- parseado certo "
+          "(o bug era na EXECUCAO, nao no parser)",
+          krieg_am["steps"][0]["action"] == "debuff_power"
+          and krieg_am["steps"][0]["target"] == "all_opp_characters"
+          and krieg_am["steps"][0]["amount"] == 2000
+          and krieg_am["don_requirement"] == 1
+          and krieg_am["conditions"]["only_field_type"] == "east blue")
+
+    # Cenario 1: DON!!x1 no lider + board 100% East Blue -- debuff aplica
+    # em TODOS os characters do lado ativo (o "oponente" do Krieg).
+    krieg_owner = GameState(leader=real_card("OP15-001"), turn=3)
+    krieg_owner.leader.don_attached = 1
+    krieg_owner.field_chars = [mk("KEB1", "East Blue Guy", power=4000, cost=3, sub_types="East Blue")]
+    active = GameState(leader=mk("APL1", "ActiveLeader", card_type="LEADER", power=5000), turn=3)
+    alvo_a = mk("AC1", "AlvoA", power=5000)
+    alvo_b = mk("AC2", "AlvoB", power=6000)
+    active.field_chars = [alvo_a, alvo_b]
+    match1 = OPTCGMatch((active.leader, []), (krieg_owner.leader, []))
+    match1._apply_opp_turn_reactive_effects(active, krieg_owner)
+    check("Krieg com DON!!x1 + board 100% East Blue: debuff -2000 aplica "
+          "em TODOS os characters do lado ativo",
+          alvo_a.power_buff == -2000 and alvo_b.power_buff == -2000)
+
+    # Cenario 2: SEM DON anexado no lider -- [DON!! x1] nao satisfeito,
+    # debuff NAO aplica.
+    krieg_owner2 = GameState(leader=real_card("OP15-001"), turn=3)
+    krieg_owner2.leader.don_attached = 0
+    krieg_owner2.field_chars = [mk("KEB2", "East Blue Guy2", power=4000, cost=3, sub_types="East Blue")]
+    active2 = GameState(leader=mk("APL2", "ActiveLeader2", card_type="LEADER", power=5000), turn=3)
+    alvo_c = mk("AC3", "AlvoC", power=5000)
+    active2.field_chars = [alvo_c]
+    match2 = OPTCGMatch((active2.leader, []), (krieg_owner2.leader, []))
+    match2._apply_opp_turn_reactive_effects(active2, krieg_owner2)
+    check("Krieg SEM DON anexado no lider: [DON!! x1] nao satisfeito, "
+          "debuff NAO aplica",
+          alvo_c.power_buff == 0)
+
+    # Cenario 3: board do Krieg com um character QUE NAO e East Blue --
+    # condicao only_field_type falha, debuff NAO aplica.
+    krieg_owner3 = GameState(leader=real_card("OP15-001"), turn=3)
+    krieg_owner3.leader.don_attached = 1
+    krieg_owner3.field_chars = [mk("KNEB", "Not East Blue", power=4000, cost=3, sub_types="Whole Cake Island")]
+    active3 = GameState(leader=mk("APL3", "ActiveLeader3", card_type="LEADER", power=5000), turn=3)
+    alvo_d = mk("AC4", "AlvoD", power=5000)
+    active3.field_chars = [alvo_d]
+    match3 = OPTCGMatch((active3.leader, []), (krieg_owner3.leader, []))
+    match3._apply_opp_turn_reactive_effects(active3, krieg_owner3)
+    check("Krieg com board NAO 100% East Blue: condicao only_field_type "
+          "falha, debuff NAO aplica",
+          alvo_d.power_buff == 0)
+
+    # Achado colateral: debuff_power target='self' (P-092 Koby, "[Opponent's
+    # Turn] Give this Character -3000 power") nao tinha handler nenhum --
+    # so branches opp_leader/all_opp_characters/opp_leader_or_character/
+    # opp_character existiam. Fix minimo: target='self' debuffa a propria
+    # carta-fonte.
+    koby_step = get_card_effects("P-092")["opp_turn"]["steps"][0]
+    check("P-092 (Koby) parseia debuff_power target='self'",
+          koby_step["action"] == "debuff_power" and koby_step["target"] == "self")
+    koby_owner = GameState(leader=mk("KBYLDR", "KobyLeader", card_type="LEADER"), turn=3)
+    koby = real_card("P-092")
+    koby_owner.field_chars = [koby]
+    opp_of_koby = GameState(leader=mk("KBYOPP", "KobyOpp", card_type="LEADER"), turn=3)
+    match_koby = OPTCGMatch((opp_of_koby.leader, []), (koby_owner.leader, []))
+    match_koby._apply_opp_turn_reactive_effects(opp_of_koby, koby_owner)
+    check("Koby (target='self') se auto-debuffa -3000 durante o turno do oponente",
+          koby.power_buff == -3000)
 
 
 if __name__ == "__main__":

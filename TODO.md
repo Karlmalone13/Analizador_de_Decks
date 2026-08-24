@@ -2,6 +2,35 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 671, pedido "confira de novo o krieg, o debuff que
+> o líder dá turno a turno"): **MECANISMO INTEIRO ausente, achado real
+> grande.** `execute(source, 'opp_turn')` nunca era chamado em lugar
+> nenhum do codebase — busca exaustiva confirmou que os 5 consumidores
+> existentes da chave `opp_turn` só fazem checagem viva (keyword
+> grants, imunidade, substituição) ou reserva de DON pro planejamento
+> — nenhum aplicava `buff_power`/`debuff_power`/`buff_cost`/
+> `set_base_power` de verdade. Resultado: a habilidade defensiva do
+> líder Krieg nunca produzia efeito nenhum, mesmo com o motor
+> corretamente reservando DON pra ela. **Busca no banco inteiro
+> confirmou que não é só o Krieg — 42 cartas afetadas**, incluindo o
+> líder Marshall.D.Teach (já auditado extensamente nesta sessão sem
+> ninguém notar esse gap). Fix genérico: novo método
+> `_apply_opp_turn_reactive_effects`, chamado 1x por turno logo após
+> `refresh_phase`, tanto no turno real quanto no lookahead interno do
+> Turn Planner (sem duplicar lógica). Deliberadamente fora do escopo:
+> 3 cartas cuja ação sob `opp_turn` tem sub-gatilho de EVENTO
+> específico (Magellan, Enel, Marco) — aplicar cegamente no início do
+> turno seria errado, ficam como pendência separada. 2 achados
+> colaterais corrigidos junto (`debuff_power` sem suporte a
+> `target='self'`; `_step_is_viable` exigindo alvo no campo do
+> oponente mesmo pra auto-debuff). Validado com teste dedicado (3
+> cenários do Krieg + 1 do Koby) e suite ampla, ambos OK — não dava
+> pra validar via replay de log real (a ferramenta de auditoria só
+> simula o lado auditado, nunca o turno completo do oponente, mesma
+> limitação do bloco 669). **Não medido ainda**: impacto agregado via
+> `decision_quality_full.py` — dado o alcance, recomendado como próximo
+> passo. Ver bloco 671 do HANDOFF.
+
 > 24/08/2026 (bloco 670, usuário corrigiu a leitura do Kuro OP15-025):
 > **BUG REAL confirmado e corrigido.** "[On Play] Give up to 2 DON...
 > Then, at the end of this turn, up to 1 rested Character with 3+ DON
