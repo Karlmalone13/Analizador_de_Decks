@@ -28,6 +28,91 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-23 (656) - Claude (sessao local) - Registro do DECKLIST COMPLETO na ingestao (92% de cobertura, snapshot versionado) + acao **PASS** entra no espaco de acoes do motor: achado estrutural da analise turno-a-turno
+
+Dois pedidos do usuario: (a) criar um jeito de registrar o deck inteiro de
+cada jogador ANTES do log entrar no banco, porque o deck sempre e um dos da
+pasta do simulador; (b) rodar turno a turno numa vitoria humana e mudar o
+motor ate ele jogar igual, sem passar de turno enquanto nao bater.
+
+### (a) `sim_deck_registry.py` -- decklist capturado na INGESTAO
+
+Novo modulo. `parse_combat_log.py --add-to-db` agora resolve o decklist de
+cada jogador na pasta do simulador e grava um SNAPSHOT VERSIONADO em
+`logs/decks_full/`; `index.json` ganha `deck_full_files` por jogador.
+
+Por que snapshot e nao ler a pasta na hora da auditoria (3 motivos medidos):
+  1. a pasta e LOCAL e nao versionada -- sessao remota caia no fallback ruim
+     EM SILENCIO;
+  2. ela MUDA (usuario cria/edita/apaga deck) -- log de julho auditado em
+     setembro casaria com deck que nem existia quando a partida rolou;
+  3. varios arquivos dividem o mesmo lider (4 "Barba Negra") -- o desempate
+     precisa das cartas OBSERVADAS naquela partida, informacao fresca na
+     ingestao.
+
+Retroativo rodado nos 150 logs ja no banco: **241 snapshots, 276 de 300
+lados = 92%**. Os 24 sem sao lideres fora da pasta (Nami OP11-041 etc) e
+agora isso fica VISIVEL no index em vez de virar fallback silencioso.
+`audit_real_losses` le o snapshot primeiro, depois a pasta ao vivo, e
+`decklists_raw.csv` so como ultimo recurso.
+
+Resultado: mao real do oponente dentro da populacao de sorteio **2,3% ->
+44,4%**.
+
+### (b) Turno a turno -- Teach OP16-080 VENCEDOR x Imu, 11 turnos, 0 erros
+
+Partida escolhida deliberadamente NAO-Imu. Ambos os lados com decklist real
+de 50 cartas (o desempate escolheu "Barba Negra BY" entre os 4 candidatos).
+
+**t2 -- primeira divergencia, e virou o achado estrutural do dia.** Com 2 DON
+e a mao com dois Avalo Pizarro (custo 1, power 2000, **counter 2000** -- o
+maximo impresso), o humano PASSOU o turno e o motor jogou os dois.
+Instrumentado: havia **UMA UNICA candidata** nas duas decisoes (score 99,0 e
+depois 35,0). Sem alternativa, sem busca -- o motor executou por falta de
+opcao. O `main_phase` so encerrava o turno quando NENHUMA acao pontuava
+positivo (`actions[0][0] < 0`).
+
+**Ou seja: a acao "passar" existe no JOGO e faltava no espaco de acoes do
+motor.** Nao e peso: e opcao ausente. O termo `counter_hand` inclusive
+FUNCIONA (o score caiu de 99 pra 35 conforme o counter na mao caiu de 5000
+pra 3000) -- so nao tinha contra o que perder.
+
+**FIX (generico, deck-agnostico)**: `PASS_ACTION` entra como candidata em
+`main_phase` (nao em LETHAL -- fechar a partida vem antes de economizar
+recurso) e compete na busca como qualquer outra. Na simulacao,
+`_simulate_sequence_once` trata a linha `pass` como ENCERRAR O TURNO AGORA:
+nao aplica acao E nao continua gulosa (senao a linha nao representaria
+passar), cai direto na resposta do oponente + avaliacao. Se `pass` vence,
+`main_phase` encerra o turno.
+
+**Medido (Imu, 190 turnos)**: `play` 24,0% -> **26,3%** (+2,3pp), attack-quem
+52,5% -> 53,0%. Recupera quase toda a queda que o fix de deck sozinho causou
+(baseline era 26,6%), agora com fidelidade muito maior por baixo.
+
+**t2 CONTINUA divergindo**: `pass` compete mas perde por 27 pontos (play
+135,98 x pass 108,99) na 1a decisao e por so 7 na 2a. Causa identificada, NAO
+corrigida: `board_value = power // 1000` da 2 ao Avalo, virando 20 em
+`char_value_score` (x10), contra 12 do counter na mao (2000/1000 x 6,0) -- o
+motor diz que um corpo de 2000 vale 1,67x um counter de 2000, e trata o corpo
+como valendo o mesmo contra board vazio ou contra ameaca de 10000. Mexer
+nessa escala e o proximo passo, mas e um termo usado em TODA avaliacao de
+estado -- exige medicao de corpus, nao ajuste por um turno.
+
+**Bug que a acao nova revelou**: `audit_one_game` fazia
+`.get('card', {}).get('code')` -- com `pass`, `card` e None (presente mas
+nulo), entao o default nao valia e estourava AttributeError, derrubando o
+`decision_quality_full` inteiro. Corrigido.
+
+### Validacao
+
+`smoke_fast.py` 1376 OK, `smoke_test.py` 204 OK, 0 turnos com erro na
+verificacao funcional (obrigatoria desde o bloco 654).
+
+**NAO MEDIDO no corpus completo** (o usuario pediu pra nao gastar os 40 min):
+a acao `pass` afeta TODA decisao de TODO deck. O check de 6 min no Imu deu
+positivo, mas 1 lider nao prova generalizacao -- pela regra do bloco 652 isso
+esta PENDENTE, nao aprovado.
+
 ## 2026-08-23 (655) - Claude (sessao local) - PASSO 1: o motor modelava o OPONENTE ERRADO em 97,7% das amostras -- decks REAIS do simulador integrados (2,3% -> 41,2%) + analise turno-a-turno de uma vitoria humana, com o padrao principal MEDIDO no corpus e MUITO menor do que parecia
 
 Continuacao do roteiro do bloco 653. Dois pedidos do usuario: (a) conferir e

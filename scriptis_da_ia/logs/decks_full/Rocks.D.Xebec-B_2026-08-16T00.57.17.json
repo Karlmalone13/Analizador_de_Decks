@@ -1,0 +1,69 @@
+{
+  "leader": "OP17-039",
+  "source_deck": "Rocks D Xebec",
+  "source_dir": "E:\\Games\\OnePieceSimulador\\Builds_Windows\\Decks",
+  "captured_at_ingest": true,
+  "cards": [
+    {
+      "code": "OP08-051",
+      "count": 2
+    },
+    {
+      "code": "OP17-040",
+      "count": 4
+    },
+    {
+      "code": "OP17-042",
+      "count": 3
+    },
+    {
+      "code": "OP17-043",
+      "count": 2
+    },
+    {
+      "code": "OP17-044",
+      "count": 2
+    },
+    {
+      "code": "OP17-045",
+      "count": 3
+    },
+    {
+      "code": "OP17-046",
+      "count": 4
+    },
+    {
+      "code": "OP17-048",
+      "count": 4
+    },
+    {
+      "code": "OP17-049",
+      "count": 4
+    },
+    {
+      "code": "OP17-050",
+      "count": 3
+    },
+    {
+      "code": "OP17-054",
+      "count": 4
+    },
+    {
+      "code": "OP17-055",
+      "count": 4
+    },
+    {
+      "code": "OP17-056",
+      "count": 4
+    },
+    {
+      "code": "OP17-057",
+      "count": 3
+    },
+    {
+      "code": "OP17-118",
+      "count": 4
+    }
+  ],
+  "total": 50
+}

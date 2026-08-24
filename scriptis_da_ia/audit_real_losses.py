@@ -53,6 +53,7 @@ from optcg_engine.decision_engine import (
     populate_full_deck_knowledge, get_card_effects, _make_card,
 )
 from replay_optcg import ReplayMatch
+import sim_deck_registry
 
 LOGS_DIR = 'logs'
 INDEX_PATH = os.path.join(LOGS_DIR, 'index.json')
@@ -224,21 +225,44 @@ def _load_sim_decks():
     return por_lider
 
 
+def _snapshot_do_banco(parsed_path, player_name, cards_db):
+    """Decklist COMPLETO gravado na ingestao (`logs/decks_full/`, bloco 656).
+
+    Preferido sobre ler a pasta do simulador na hora: e versionado, funciona
+    em sessao remota e nao muda quando o usuario edita/apaga deck no jogo.
+    """
+    try:
+        idx_path = os.path.join(LOGS_DIR, 'index.json')
+        with open(idx_path, encoding='utf-8') as fh:
+            idx = json.load(fh)
+    except (OSError, ValueError):
+        return None
+    base = os.path.basename(parsed_path)
+    for e in idx:
+        if os.path.basename(e.get('parsed_file') or '') != base:
+            continue
+        rel = (e.get('deck_full_files') or {}).get(player_name)
+        if not rel:
+            return None
+        got = sim_deck_registry.carregar_snapshot(LOGS_DIR, rel)
+        if not got:
+            return None
+        leader_code, corpo = got
+        data = cards_db.get(leader_code)
+        if not data:
+            return None
+        cards = _cards_from_codes(list(corpo.elements()), cards_db)
+        return (_make_card(leader_code, data), cards, None) if cards else None
+    return None
+
+
 def _deck_real_do_simulador(leader_code, cards_db, observed_codes=None):
     """Deck EXATO do simulador pra este lider. Com varios candidatos, escolhe
     o que melhor cobre as cartas OBSERVADAS daquele jogador na partida."""
-    if not leader_code:
+    escolhido = sim_deck_registry.escolher_deck(leader_code, observed_codes)
+    if not escolhido:
         return None
-    candidatos = _load_sim_decks().get(leader_code)
-    if not candidatos:
-        return None
-    obs = Counter(observed_codes or [])
-    if len(candidatos) > 1 and obs:
-        def cobertura(item):
-            corpo = item[1]
-            return sum(min(q, corpo.get(c, 0)) for c, q in obs.items())
-        candidatos = sorted(candidatos, key=cobertura, reverse=True)
-    _nome, corpo = candidatos[0]
+    _nome, corpo = escolhido
     leader_data = cards_db.get(leader_code)
     if not leader_data:
         return None
@@ -608,10 +632,13 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
                         vistos.append(a['card'])
         return vistos
 
-    bot_deck = _find_real_deck(bot_leader_name, cards_db, df_raw, urls,
-                               bot_leader_code, observed_codes=_observadas(bot_side))
-    opp_deck = _find_real_deck(opp_leader_name, cards_db, df_raw, urls,
-                               opp_leader_code, observed_codes=_observadas(opp_side))
+    # snapshot da ingestao vem PRIMEIRO (bloco 656)
+    bot_deck = (_snapshot_do_banco(parsed_path, bot_side, cards_db)
+                or _find_real_deck(bot_leader_name, cards_db, df_raw, urls,
+                                   bot_leader_code, observed_codes=_observadas(bot_side)))
+    opp_deck = (_snapshot_do_banco(parsed_path, opp_side, cards_db)
+                or _find_real_deck(opp_leader_name, cards_db, df_raw, urls,
+                                   opp_leader_code, observed_codes=_observadas(opp_side)))
     if not bot_deck or not opp_deck:
         return {'error': f'deck real nao encontrado (bot={bot_leader_name}, opp={opp_leader_name})'}
 
@@ -777,8 +804,10 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
             entry['chosen_actions'] = [
                 {
                     'kind': (rec.get('chosen') or {}).get('kind'),
-                    'card': (rec.get('chosen') or {}).get('card', {}).get('code')
-                            if rec.get('chosen') else None,
+                    # bloco 656: a acao `pass` grava `card: None` (presente,
+                    # mas nulo) -- `.get('card', {})` devolve None nesse caso,
+                    # nao o default, e quebrava com AttributeError
+                    'card': ((rec.get('chosen') or {}).get('card') or {}).get('code'),
                     'target_type': (rec.get('chosen') or {}).get('target_type'),
                     'target': (rec.get('chosen') or {}).get('target', {}).get('code')
                               if (rec.get('chosen') or {}).get('target') else None,

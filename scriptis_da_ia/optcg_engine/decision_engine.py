@@ -405,6 +405,26 @@ SEARCH_SCORE_WINDOW = 180
 USE_TIEBREAK_PRESERVA_OPCAO = True
 TIEBREAK_EPS = 1e-9
 
+# Bloco 656 (analise turno-a-turno de uma vitoria humana, pedido do usuario):
+# ACAO "PASS" -- encerrar o turno agora -- passa a ser uma CANDIDATA que
+# compete na busca, em vez de so acontecer quando NENHUMA acao pontua
+# positivo (`actions[0][0] < 0` em main_phase).
+#
+# Achado que motivou (t2 da partida Teach OP16-080 x Imu, humano VENCEDOR):
+# com 2 DON e a mao cheia de Avalo Pizarro (custo 1, power 2000, **counter
+# 2000** -- o maximo impresso), o humano PASSOU o turno inteiro e o motor
+# jogou os dois. Instrumentado: havia **uma unica candidata** nas duas
+# decisoes (score 99,0 e depois 35,0), entao nao houve busca nem comparacao
+# -- o motor executou por falta de alternativa. O termo `counter_hand`
+# FUNCIONA (o score caiu de 99 pra 35 conforme o counter na mao caiu de 5000
+# pra 3000), so nao tinha contra o que perder.
+#
+# Nao e ajuste de peso: e uma acao que existe no JOGO e faltava no espaco de
+# acoes do motor. Segurar carta como municao de counter, ou nao gastar DON
+# num corpo que nao ataca nada com lucro, sao jogadas legitimas e frequentes
+# em qualquer deck -- por isso o fix e generico, nao amarrado a este lider.
+PASS_ACTION = (0.0, 'pass', None, None, None)
+
 KIND_SCORE_SCALE = {
     'play': 1.0,
     'activate': 1.0,
@@ -17742,7 +17762,14 @@ class OPTCGMatch:
         # score deles (inalterado), so o valor ACUMULADO que entra no
         # placar final nao soma mais.
         human_alignment = self._human_pattern_bonus(p2, first2[1], first2[2])
-        won = self._apply_action(first2, p2, opp2, ee2, eng2, verbose=False)
+        # bloco 656: a linha "pass" e ENCERRAR O TURNO AGORA -- nao aplica
+        # acao nenhuma E nao continua gulosa (senao o motor faria as mesmas
+        # jogadas mesmo assim e a linha nao representaria passar). Cai direto
+        # na resposta do oponente + avaliacao, que e exatamente o estado que o
+        # humano aceita quando segura carta.
+        _e_pass = (first2[1] == 'pass')
+        won = False if _e_pass else self._apply_action(
+            first2, p2, opp2, ee2, eng2, verbose=False)
         if won:
             return SIMULATED_WIN_SCORE   # essa linha vence
 
@@ -17759,7 +17786,7 @@ class OPTCGMatch:
         # `first2` e um candidato concorrente ja tem o MESMO teto de
         # `human_alignment` (achado bloco 641: 61% dos casos empatavam).
         human_sequence_alignment = 0.0
-        for step_i in range(max_steps):
+        for step_i in range(0 if _e_pass else max_steps):
             acts = self._generate_and_score_actions(p2, opp2, eng2)
             if not acts or acts[0][0] < 0:
                 break
@@ -17832,6 +17859,8 @@ class OPTCGMatch:
     def _remap_action(self, action, p, p2, opp, opp2):
         """Remapeia uma ação do estado real para os objetos da cópia (por índice)."""
         score, kind, obj, ttype, tgt = action
+        if kind == 'pass':          # bloco 656: nao referencia objeto nenhum
+            return action
         try:
             if kind == 'activate':
                 # Remapeia source para o objeto equivalente na cópia
@@ -18026,6 +18055,13 @@ class OPTCGMatch:
                             if USE_CHEAP_LAYER_SHORTLIST and not USE_CHEAP_LAYER_GATE else None)
             candidatas = self._select_search_candidates(
                 actions, TOP_K, priority, cheap_values=cheap_values)
+            # bloco 656: "encerrar o turno agora" entra como CANDIDATA e
+            # compete na busca -- ver comentario de PASS_ACTION. Nao entra em
+            # LETHAL (fechar a partida vem antes de qualquer economia de
+            # recurso) nem quando a lista ja esta vazia (o `break` de cima ja
+            # cobre "nao ha nada a fazer").
+            if candidatas and priority != 'LETHAL':
+                candidatas = list(candidatas) + [PASS_ACTION]
             if len(candidatas) == 1:
                 melhor_acao = candidatas[0]
                 if self._is_unsafe_zero_life_leader_attack(melhor_acao, p, opp, engine):
@@ -18085,6 +18121,12 @@ class OPTCGMatch:
                 melhor_acao, sim_values.get(id(melhor_acao), melhor_valor), sim_values,
                 cheap_values=cheap_values
             )
+            if melhor_acao[1] == 'pass':
+                # bloco 656: a busca decidiu que segurar recurso vale mais que
+                # qualquer acao disponivel -- encerra o turno, nao executa nada
+                if verbose:
+                    print('  [90mpassa (busca preferiu nao agir)[0m')
+                break
             if self._apply_action(melhor_acao, p, opp, ee, engine, verbose=verbose):
                 return True
 

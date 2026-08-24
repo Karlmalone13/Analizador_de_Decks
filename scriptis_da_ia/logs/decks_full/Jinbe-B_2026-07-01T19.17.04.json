@@ -1,0 +1,77 @@
+{
+  "leader": "OP14-040",
+  "source_deck": "jinbe",
+  "source_dir": "E:\\Games\\OnePieceSimulador\\Builds_Windows\\Decks",
+  "captured_at_ingest": true,
+  "cards": [
+    {
+      "code": "EB01-023",
+      "count": 4
+    },
+    {
+      "code": "EB03-026",
+      "count": 1
+    },
+    {
+      "code": "OP06-058",
+      "count": 1
+    },
+    {
+      "code": "OP07-040",
+      "count": 4
+    },
+    {
+      "code": "OP07-045",
+      "count": 4
+    },
+    {
+      "code": "OP07-046",
+      "count": 4
+    },
+    {
+      "code": "OP07-047",
+      "count": 1
+    },
+    {
+      "code": "OP07-051",
+      "count": 2
+    },
+    {
+      "code": "OP07-057",
+      "count": 2
+    },
+    {
+      "code": "OP08-047",
+      "count": 4
+    },
+    {
+      "code": "OP14-042",
+      "count": 4
+    },
+    {
+      "code": "OP14-049",
+      "count": 4
+    },
+    {
+      "code": "OP14-050",
+      "count": 4
+    },
+    {
+      "code": "OP15-047",
+      "count": 2
+    },
+    {
+      "code": "OP15-052",
+      "count": 4
+    },
+    {
+      "code": "ST17-002",
+      "count": 4
+    },
+    {
+      "code": "ST17-003",
+      "count": 1
+    }
+  ],
+  "total": 50
+}

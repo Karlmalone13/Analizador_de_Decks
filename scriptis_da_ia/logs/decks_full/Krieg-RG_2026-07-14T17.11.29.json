@@ -1,0 +1,81 @@
+{
+  "leader": "OP15-001",
+  "source_deck": "Krieg",
+  "source_dir": "E:\\Games\\OnePieceSimulador\\Builds_Windows\\Decks",
+  "captured_at_ingest": true,
+  "cards": [
+    {
+      "code": "EB04-004",
+      "count": 2
+    },
+    {
+      "code": "OP05-037",
+      "count": 1
+    },
+    {
+      "code": "OP12-021",
+      "count": 1
+    },
+    {
+      "code": "OP12-027",
+      "count": 2
+    },
+    {
+      "code": "OP13-040",
+      "count": 3
+    },
+    {
+      "code": "OP14-036",
+      "count": 2
+    },
+    {
+      "code": "OP15-003",
+      "count": 1
+    },
+    {
+      "code": "OP15-007",
+      "count": 4
+    },
+    {
+      "code": "OP15-008",
+      "count": 4
+    },
+    {
+      "code": "OP15-009",
+      "count": 4
+    },
+    {
+      "code": "OP15-012",
+      "count": 2
+    },
+    {
+      "code": "OP15-017",
+      "count": 4
+    },
+    {
+      "code": "OP15-023",
+      "count": 4
+    },
+    {
+      "code": "OP15-025",
+      "count": 4
+    },
+    {
+      "code": "OP15-026",
+      "count": 4
+    },
+    {
+      "code": "OP15-027",
+      "count": 2
+    },
+    {
+      "code": "OP15-028",
+      "count": 2
+    },
+    {
+      "code": "OP15-037",
+      "count": 4
+    }
+  ],
+  "total": 50
+}

@@ -2,6 +2,27 @@
 
 **Última atualização:** 23 de agosto de 2026
 
+> 23/08/2026 (bloco 656): **decklist completo capturado na INGESTAO**
+> (`sim_deck_registry.py`; snapshot versionado em `logs/decks_full/`,
+> `deck_full_files` no index). Retroativo: **276 de 300 lados = 92%**. Mão
+> real do oponente na população de sorteio: **2,3% → 44,4%**.
+>
+> **Achado estrutural da análise turno-a-turno**: no t2 o humano passou o
+> turno segurando dois Avalo Pizarro (counter 2000, o máximo) e o motor jogou
+> os dois. Instrumentado: **uma única candidata**, sem busca — **a ação
+> "passar" existe no jogo e faltava no espaço de ações do motor**. Não é
+> peso: é opção ausente. `PASS_ACTION` agora compete na busca (fora de
+> LETHAL) e a linha `pass` simula "encerrar o turno agora".
+> **Imu: `play` 24,0% → 26,3%**, attack-quem +0,5pp.
+>
+> - [ ] **PENDENTE — medir `pass` no corpus com recorte por líder.** Afeta
+>   toda decisão de todo deck; o check de 6 min num líder não prova
+>   generalização (regra do bloco 652).
+> - [ ] **t2 ainda diverge**: `pass` perde por 27 pontos. Causa achada, não
+>   corrigida — `board_value = power // 1000` dá 20 ao corpo de 2000 contra
+>   12 do counter de 2000, e não olha o board adversário. Termo usado em toda
+>   avaliação: exige medição de corpus, não ajuste por um turno.
+
 > 23/08/2026 (bloco 655, PASSO 1 do roteiro): **o motor modelava o
 > OPONENTE ERRADO**, não "via demais". Medido: em **97,7%** das amostras do
 > `OpponentModel`, ao menos uma carta que o oponente realmente tinha na mão

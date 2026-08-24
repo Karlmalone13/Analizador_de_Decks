@@ -779,6 +779,25 @@ def add_to_db(log_path: str, data: dict, decks: dict, bepinex_log_path=None):
         )
         deck_files[player] = f'decks/{fname}'
 
+    # bloco 656 (pedido do usuario): captura o DECKLIST COMPLETO de cada
+    # jogador AGORA, na ingestao, em vez de adivinhar na hora da auditoria.
+    # A pasta de decks do simulador e local, nao versionada e MUDA com o tempo
+    # -- o snapshot em `logs/decks_full/` torna a reconstrucao fiel,
+    # reproduzivel e utilizavel por sessao remota. Ver sim_deck_registry.py.
+    deck_full_files = {}
+    try:
+        from sim_deck_registry import registrar as _registrar_decks
+        deck_full_files = _registrar_decks(DB_ROOT, timestamp, [
+            {'name': p1d['name'], 'slug': slug1,
+             'leader_code': p1d['leader'].get('code', ''),
+             'deck_parcial': decks.get(p1d['name'])},
+            {'name': p2d['name'], 'slug': slug2,
+             'leader_code': p2d['leader'].get('code', ''),
+             'deck_parcial': decks.get(p2d['name'])},
+        ])
+    except Exception as exc:   # nunca deixa o registro derrubar a ingestao
+        print(f'  [aviso] decklist completo nao registrado: {exc}')
+
     # Entrada no index
     entry = {
         'id': timestamp,
@@ -798,6 +817,10 @@ def add_to_db(log_path: str, data: dict, decks: dict, bepinex_log_path=None):
         'log_file': f'raw/{friendly_stem}.log',
         'parsed_file': f'parsed/{friendly_stem}.json',
         'deck_files': deck_files,
+        # snapshot do decklist COMPLETO (50 cartas) por jogador -- vazio
+        # quando o lider nao tem deck na pasta do simulador, e isso fica
+        # VISIVEL aqui em vez de virar fallback silencioso
+        'deck_full_files': deck_full_files,
     }
     idx.append(entry)
     _save_index(idx)

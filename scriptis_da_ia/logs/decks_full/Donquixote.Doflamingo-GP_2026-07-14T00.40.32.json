@@ -1,0 +1,89 @@
+{
+  "leader": "OP04-019",
+  "source_deck": "doffy rest",
+  "source_dir": "E:\\Games\\OnePieceSimulador\\Builds_Windows\\Decks",
+  "captured_at_ingest": true,
+  "cards": [
+    {
+      "code": "OP01-048",
+      "count": 3
+    },
+    {
+      "code": "OP01-051",
+      "count": 1
+    },
+    {
+      "code": "OP01-058",
+      "count": 2
+    },
+    {
+      "code": "OP04-029",
+      "count": 2
+    },
+    {
+      "code": "OP04-030",
+      "count": 2
+    },
+    {
+      "code": "OP04-031",
+      "count": 2
+    },
+    {
+      "code": "OP05-040",
+      "count": 3
+    },
+    {
+      "code": "OP06-035",
+      "count": 1
+    },
+    {
+      "code": "OP07-021",
+      "count": 4
+    },
+    {
+      "code": "OP07-026",
+      "count": 4
+    },
+    {
+      "code": "OP07-076",
+      "count": 4
+    },
+    {
+      "code": "OP08-024",
+      "count": 2
+    },
+    {
+      "code": "OP08-025",
+      "count": 2
+    },
+    {
+      "code": "OP08-030",
+      "count": 4
+    },
+    {
+      "code": "OP08-036",
+      "count": 2
+    },
+    {
+      "code": "OP08-069",
+      "count": 1
+    },
+    {
+      "code": "ST05-004",
+      "count": 4
+    },
+    {
+      "code": "ST05-011",
+      "count": 2
+    },
+    {
+      "code": "ST12-008",
+      "count": 1
+    },
+    {
+      "code": "ST18-001",
+      "count": 4
+    }
+  ],
+  "total": 50
+}

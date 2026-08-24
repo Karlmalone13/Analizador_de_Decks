@@ -1,0 +1,85 @@
+{
+  "leader": "OP14-080",
+  "source_deck": "moria_BY",
+  "source_dir": "E:\\Games\\OnePieceSimulador\\Builds_Windows\\Decks",
+  "captured_at_ingest": true,
+  "cards": [
+    {
+      "code": "EB04-058",
+      "count": 2
+    },
+    {
+      "code": "OP06-087",
+      "count": 1
+    },
+    {
+      "code": "OP06-091",
+      "count": 3
+    },
+    {
+      "code": "OP06-093",
+      "count": 4
+    },
+    {
+      "code": "OP06-097",
+      "count": 4
+    },
+    {
+      "code": "OP06-098",
+      "count": 1
+    },
+    {
+      "code": "OP14-097",
+      "count": 4
+    },
+    {
+      "code": "OP14-100",
+      "count": 2
+    },
+    {
+      "code": "OP14-102",
+      "count": 2
+    },
+    {
+      "code": "OP14-104",
+      "count": 4
+    },
+    {
+      "code": "OP14-109",
+      "count": 2
+    },
+    {
+      "code": "OP14-110",
+      "count": 3
+    },
+    {
+      "code": "OP14-111",
+      "count": 3
+    },
+    {
+      "code": "OP14-117",
+      "count": 2
+    },
+    {
+      "code": "OP15-079",
+      "count": 4
+    },
+    {
+      "code": "OP15-084",
+      "count": 3
+    },
+    {
+      "code": "OP15-090",
+      "count": 1
+    },
+    {
+      "code": "OP15-092",
+      "count": 3
+    },
+    {
+      "code": "PRB02-013",
+      "count": 2
+    }
+  ],
+  "total": 50
+}
