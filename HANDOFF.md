@@ -28,7 +28,90 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
-## 2026-08-24 (664) - Claude (sessao remota web) - Continua o roteiro turno-a-turno (Teach x Imu T15/T17): T15 e limitacao ja aceita de reconstrucao (nao mexido); T17 e BUG REAL genuino -- motor trashava o proprio finisher (Zehahahahaha!, EVENT custo 8) como custo generico de outra habilidade, porque a protecao de "carta cara/bomba" em `_trash_value` so cobria CHARACTER, nunca EVENT/STAGE
+## 2026-08-24 (665) - Claude (sessao remota web) - Fecha o roteiro Teach x Imu (T21 confirma o fix do T17: motor jogou Zehahahahaha! ate o fim, so em ordem diferente da historica); investiga 2 lideres com metrica agregada baixa (Katakuri 15,8%/139 turnos, Lucy OP15-002 0,0%/10 turnos) via simulacao turno-a-turno -- NENHUM dos dois revelou bug corrigivel, os dois sao "motor joga igual ou melhor que o humano" (achado negativo registrado por pedido explicito do usuario: nao caçar bug onde nao tem)
+
+**T21 (Teach x Imu, ultimo turno da partida) -- nao e bug.** HISTORICO
+ativa Zehahahahaha! (ability, `[Main] If you have 10 DON!! cards on
+your field, play up to 1 [Marshall.D.Teach]`) ANTES de atacar com Jesus
+Burgess; motor de hoje ataca com Jesus Burgess PRIMEIRO, ainda ativa
+Fullalead (loot extra que o historico nao usou nesse turno), so ENTAO
+joga Zehahahahaha! -- mesmo combo central executado (deploy gratis de
+Marshall.D.Teach + 1 dano), so em ordem diferente, com uma ativacao a
+mais de valor (Fullalead). Fecha a 2a passada completa por essa
+partida (turnos 2,4,6,8,10,12,13,15,17,19,21): so o T2 era bug real
+(ja corrigido, bloco 657); T17 corrigido nesta sessao (bloco 664) se
+sustentou ate o fim (T21 prova que a carta sobrevive e e usada como o
+historico usou).
+
+**Katakuri OP11-062 (139 turnos no corpus, 15,8% play, estagnado desde
+o bloco 662) -- investigado a fundo, NAO e bug.** Partida
+`Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json`, 6 turnos
+proprios (3-13). Divergencia mais visivel: motor joga o personagem
+"Charlotte Katakuri" (ST34-001, custo 5, 7000pwr) nos turnos 7 e 9, e
+DUAS copias no mesmo turno em 11 e 13 (forcando descarte por campo
+cheio); HISTORICO so joga a 1a copia no turno 11, segurando 1-2 copias
+na mao desde o TURNO 1 sem nunca jogar. Duas hipoteses checadas antes
+de aceitar como divergencia real:
+1. **Descartada: bug de reconstrucao (carta fantasma).** Conferido que
+   o deck reconstruido tem exatamente 4 copias de ST34-001 (limite
+   legal) e que os snapshots REAIS de mao confirmam 1-2 copias fisicas
+   sentadas na mao do humano desde o turno 1 -- nao e o motor
+   "inventando" copia extra, e o humano genuinamente guardando cartas
+   fortes na mao por 10+ turnos.
+2. **Confirmado: motor joga melhor, nao pior.** Comparando o mesmo
+   ponto de partida real (snapshot antes do turno) contra o resultado:
+   nos turnos 11 e 13 o ataque HISTORICO do lider foi bloqueado (dano
+   liquido 0), mas a linha simulada do motor (mais agressiva, descarta
+   Pudding pra caber mais corpo) fecha com dano liquido -1 de vida do
+   oponente nos dois turnos partindo do MESMO estado real. Por
+   "se jogar melhor, otimo" nao e pra mexer -- o placar agregado fica
+   baixo porque o humano desta partida jogou de forma conservadora
+   (holding), nao porque o motor erra.
+
+**Lucy OP15-002 (unica partida do lider no corpus, 10 turnos, 0,0%
+play) -- investigado a fundo, tambem NAO e bug corrigivel.** Partida
+`Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json` (Lucy = p2,
+"kadomaru#5789"), 10 turnos proprios (3-21), jogo real durou 22 turnos.
+Achado inicial alarmante: a simulacao independente de CADA turno de 13
+a 21 termina em "🏆 VITORIA!" (motor zera a vida do oponente Teach
+naquele mesmo turno, toda vez) -- zero acoes batem com o historico
+porque o motor joga uma linha de burst totalmente diferente
+(`And No One Else Can Have It!` em dobro, Sabo/Cavendish debuff-e-
+ataca) a cada turno. Verificado ANTES de aceitar como "motor descobre
+lethal que o humano perdeu 5x seguidas": a vida REAL de Teach
+(snapshot por turno) OSCILA entre 1 e 3 o jogo inteiro (Teach tem
+efeito de ganhar vida de volta -- 09/07-13/07-17/07 do proprio Teach,
+"Send N Life to Hand"/equivalente), nunca chega a 0 de fato na
+partida real, porque cada turno e reconstruido de forma INDEPENDENTE a
+partir do snapshot real daquele ponto (vida=1 la, vida=1 aqui de novo
+2 turnos depois, ja recuperada) -- entao "motor fecha em N turnos
+diferentes, cada um a partir do mesmo estado real de vida baixa" nao
+e 5 vitorias reais perdidas pelo humano, e o proprio motor de auditoria
+fazendo 5 leituras independentes do MESMO tipo de situacao (Teach
+momentaneamente em 1-2 de vida). Dentro de casa turno isolado, a
+pergunta valida e "dado esse estado real, o motor acha lethal que o
+humano nao achou" -- e no T13 especificamente sim (ataque real de Lucy
+foi bloqueado por um counter do oponente; a linha do motor, mais rica
+em draw/burn via Events, fecha mesmo assim). Nao investigado a fundo
+se a defesa do OPONENTE simulado (bloqueios/counters) esta subestimada
+nesses turnos especificos -- registrado como duvida em aberto, nao
+como bug confirmado (nos outros turnos da mesma partida, ex. 11/15/17,
+o oponente simulado bloqueia/conta normalmente, entao nao parece
+sistemico).
+
+**Conclusao do ciclo "simule de novo, se nao bater crie alternativa"
+(pedido do usuario neste bloco):** 2 partidas/lideres extras
+investigados nesta sessao NAO geraram mecanismo novo -- os dois
+casos eram "motor joga igual ou melhor, metrica agregada so parece
+baixa porque compara contra 1 humano especifico que jogou sub-otimo
+(Katakuri) ou porque o placar por-turno nao capta que o oponente
+historico se recupera de vida entre turnos (Lucy)". Isso e um
+resultado LEGITIMO do metodo, nao uma sessao "improdutiva" -- confirma
+que fixes recentes (T2, leader_is, _tb_human, _trash_value) nao tem
+mais alvo obvio nas partidas auditadas ate agora, e que parte real do
+gap agregado (`play` 27,9%) e diversidade estrategica / vies do
+humano-amostra, exatamente como o proprio usuario e o registro do topo
+deste arquivo (recomendacao pos-bloco 642) ja preveem.
 
 Continuacao da simulacao manual turno-a-turno (pedido do usuario:
 "va simulando os turnos manualmente primeiro"), Teach x Imu, turnos

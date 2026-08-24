@@ -2,6 +2,40 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 665, continuação do pedido "simule de novo, se não
+> bater crie alternativa"): T21 do Teach x Imu fecha a 2ª passada dessa
+> partida sem bug novo (mesmo combo do histórico, ordem diferente —
+> confirma que o fix do T17/bloco 664 se sustenta até o fim). Investigou
+> a fundo 2 líderes com métrica agregada baixa — **nenhum revelou bug
+> corrigível**, achado negativo registrado por pedido explícito do
+> usuário (não caçar bug onde não tem):
+> - **Katakuri OP11-062** (139 turnos, 15,8% play, estagnado desde o
+>   bloco 662): motor joga o personagem "Charlotte Katakuri" (ST34-001)
+>   bem mais cedo que o humano, que segurou 1-2 cópias na mão desde o
+>   turno 1. Descartado como bug de reconstrução (deck tem exatamente
+>   4 cópias legais, snapshots reais confirmam as cópias física na mão
+>   do humano). Confirmado que o motor joga **melhor**: nos turnos 11/13,
+>   partindo do MESMO estado real, o ataque histórico foi bloqueado
+>   (dano líquido 0) mas a linha do motor fecha com dano líquido -1 nos
+>   dois. Placar agregado baixo = humano desta amostra jogou conservador,
+>   não o motor errando.
+> - **Lucy OP15-002** (única partida no corpus, 10 turnos, 0,0% play):
+>   simulação independente de cada turno 13-21 termina em vitória
+>   instantânea do motor, zero ação bate com o histórico. Verificado
+>   antes de aceitar como "motor acha lethal 5x que o humano perdeu":
+>   a vida real do oponente (Teach) oscila 1-3 o jogo inteiro (efeito de
+>   recuperar vida), nunca chega a 0 de fato — cada turno reconstruído
+>   é uma leitura INDEPENDENTE do mesmo tipo de situação (Teach
+>   momentaneamente baixo de vida), não 5 vitórias reais perdidas.
+>   Dúvida em aberto, não confirmada como bug: se a defesa do oponente
+>   simulado está subestimada especificamente no T13 (nos outros turnos
+>   da mesma partida ele bloqueia/conta normalmente).
+> Conclusão: os fixes recentes (T2, leader_is, `_tb_human`,
+> `_trash_value`) não têm mais alvo óbvio nas partidas auditadas até
+> agora — parte real do gap agregado é diversidade estratégica/viés do
+> humano-amostra, como o próprio topo do HANDOFF.md (recomendação
+> pós-bloco 642) já previa. Ver bloco 665 do HANDOFF.
+
 > 24/08/2026 (bloco 664, continuação da simulação manual turno-a-turno,
 > Teach x Imu T15/T17): T15 confirmado como instância real de uma
 > limitação de reconstrução JÁ aceita e documentada (`_known_gains_
