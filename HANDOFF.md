@@ -28,6 +28,52 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (662) - Claude (sessao remota web) - MEDICAO COMPLETA (`decision_quality_full.py --all --workers 4`) dos fixes acumulados desta sessao: `play` 21,0% -> 27,9% (+6,9pp), `attach_don` 16,8% -> 18,7% (+1,9pp), ganho distribuido por lider
+
+Pedido do usuario ("roda o decision_quality_full.py") apos o roteiro
+turno-a-turno (blocos 657-661: fix de `char_value_score` pra corpo
+recem-jogado sem Rush + fix de parser `leader_is` com multiplos
+lideres em OR). Primeira medicao completa desde os dois fixes.
+
+**Comparacao contra o baseline anterior a esta sessao** (blocos 642/647):
+
+| categoria | antes | agora | delta |
+|---|---|---|---|
+| play | 21,0% | **27,9%** | **+6,9pp** |
+| attack (quem) | 54,0% | 54,4% | +0,4pp |
+| activate | 27,1% | 26,5% | -0,6pp |
+| attach_don (alvo) | 16,8% | **18,7%** | **+1,9pp** |
+| attack (alvo) | 70,0% | 69,8% | -0,2pp |
+| defesa blocker | 85,9%/87,5% | 85,9%/87,5% | igual |
+| defesa counter | 60,6%/52,3% | 60,7%/53,4% | +0,1/+1,1pp |
+
+**`play` sobe quase 7pp** -- bate com o que os 2 fixes desta sessao
+deveriam afetar: o desconto de `char_value_score` pra corpo recem-
+jogado sem Rush (bloco 657) e principalmente o fix do parser
+`leader_is` (bloco 661), que destrava efeitos `[On Play]` INTEIROS que
+nunca disparavam (nao e so 1 carta a menos no calculo, e a condicao
+inteira falhando, entao a carta nunca era gerada como candidata de
+jogo nenhuma vez).
+
+**Ganho distribuido por lider, nao concentrado** (regra do
+OBJETIVO CENTRAL, recorte por lider obrigatorio pra validar
+generalizacao): maioria dos lideres com volume (>=20 turnos) entre
+24-49% (OP16-080 Teach 30,1%, OP17-039 Xebec 34,9%, OP10-099 Kid
+29,3%, OP14-040 Jinbe 48,0%, OP16-001 Ace 42,9%). Ainda baixos:
+OP11-062 Katakuri (15,8%, 139 turnos -- volume alto, candidato real
+pra proxima investigacao), OP13-002 (12,5%), ST04-001 (11,8%) --
+registrados, nao investigados ainda.
+
+**Estado final da sessao**: 2 fixes reais commitados e agora
+CONFIRMADOS com medicao completa (nao so partida isolada) -- turno-2
+`char_value_score` (commit 6dcfa4a) e parser `leader_is` (commit
+ace0193). `ultimo_resultado.json` atualizado com este resultado.
+Proximo passo natural pra sessao futura: investigar por que Katakuri
+(OP11-062) continua bem abaixo da media apesar do volume alto de dado
+(139 turnos) -- mesmo padrao de "recorte por lider" que ja pagou nesta
+sessao (foi assim que o parser bug do Garp foi achado, via censo amplo
+em vez de foco num lider so).
+
 ## 2026-08-24 (661) - Claude (sessao remota web) - BUG DE PARSER real (nao de motor): condicao `leader_is` com MULTIPLOS lideres em OR ("If your Leader is [X], [Y] or [Z]") so capturava o primeiro nome -- OP13-016 Monkey.D.Garp nunca ativava com Ace/Luffy, OP12-087 Nico Robin nunca ativava com Luffy
 
 Continuacao do roteiro turno-a-turno (pedido do usuario "teste mais

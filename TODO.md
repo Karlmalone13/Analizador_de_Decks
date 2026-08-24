@@ -2,6 +2,19 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 662): **medição completa confirma os fixes desta
+> sessão** — `decision_quality_full.py --all --workers 4` rodado após
+> os fixes dos blocos 657 (char_value_score corpo recém-jogado) e 661
+> (parser leader_is). `play` 21,0% → **27,9% (+6,9pp)**, `attach_don`
+> 16,8% → **18,7% (+1,9pp)**, resto estável (attack-quem +0,4pp,
+> activate -0,6pp, defesa igual). Ganho distribuído por líder (regra do
+> OBJETIVO CENTRAL) — maioria dos líderes com volume entre 24-49%, não
+> concentrado em 1-2. **Pendência real pra próxima sessão**: OP11-062
+> Katakuri continua em 15,8% (139 turnos, volume alto) — candidato a
+> investigar com o mesmo método (censo amplo `rank_census.py`, não foco
+> manual num líder só, foi assim que o bug do parser foi achado). Ver
+> bloco 662 do HANDOFF pra tabela completa.
+
 > 24/08/2026 (bloco 661): **bug de PARSER real encontrado** (não de
 > motor) testando mais partidas via `rank_census.py` numa amostra de
 > 120 jogos variando líder. Condição `leader_is` com múltiplos líderes
