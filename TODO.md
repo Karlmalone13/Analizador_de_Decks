@@ -2,6 +2,49 @@
 
 **Última atualização:** 23 de agosto de 2026
 
+> 23/08/2026 (bloco 652): **OBJETIVO CENTRAL registrado** em `CLAUDE.md` +
+> `AGENTS.md` + memória, depois do usuário dizer "toda vez você esquece":
+> **o bot tem que jogar bem, e igual ou melhor que o humano, com QUALQUER
+> deck que estiver pilotando — não é tratar líder por líder.** Fix amarrado
+> a um líder não é fix; líder parado é sintoma de que o mecanismo não
+> generalizou, não item de backlog. (Eu tinha registrado errado antes, como
+> "calibragem dinâmica por líder" — corrigido.)
+>
+> **Recorte por líder virou mecânico**: `decision_quality_full.py` imprime
+> `play POR LIDER` (≥8 turnos) junto do agregado. Existe pra PROVAR
+> generalização.
+>
+> **Auditoria de viés do dia inteiro**: fração do ganho vinda do Imu foi
+> 22,1% / 24,4% / 19,8% nas três etapas, contra 17,4% de participação dele
+> no corpus — proporcional, os fixes 650/651 **são genéricos**. 13 de 21
+> líderes subiram; maiores ganhos não são do Imu. Ressalvas: o fix da Stage
+> é estreito por natureza do jogo (8 líderes têm Stage) mas genérico em
+> código; **`OP07-019` caiu −22,2pp** (n=9, única regressão do dia, só
+> visível no recorte); a etapa 1 mistura 3 fixes e não dá pra atribuir
+> individualmente; e o DIAGNÓSTICO do dia foi todo em cima do Imu mesmo com
+> medição ampla — erro apontado pelo usuário.
+>
+> **PENDENTE**: Katakuri OP11-062 (136 turnos, +0,7pp) e OP13-002 (0,0pp)
+> parados. Não é "consertar o Katakuri" — é achar o que de GERAL falta.
+>
+> **ACHADO NEGATIVO — taxa condicional revertida**: o diagnóstico está certo
+> (contagem bruta confunde preferência com oportunidade), o dado melhorou,
+> mas o resultado não (play −0,2pp, activate −0,8pp; 1 líder sobe, 17
+> estáveis, 3 caem). Causa provável **não testada**: o limiar 3.0 foi
+> calibrado pra contagens e em taxas [0,1] é muito mais duro.
+>
+> **Override APOSENTADO** (`_human_dominant_action_override`, bloco 648):
+> removido por inteiro a pedido do usuário — "não cumpre com o propósito que
+> foi criado". **O custo está medido: remover piora play −0,5pp e activate
+> −1,0pp.** Foi troca deliberada (dispara em 10% das decisões, quase só em
+> activate/attack, pula a busca Monte Carlo inteira, teto ~1pp). **Não
+> reabrir sem dado novo** — quem rodar o A/B vai ver o −1pp e achar que
+> deveria voltar; a decisão considerou isso.
+>
+> **Armadilha registrada (2ª vez)**: comparar "acerto quando o mecanismo
+> dispara" contra "acerto quando não dispara" é seleção enviesada. Sempre
+> A/B nas MESMAS decisões.
+
 > 23/08/2026 (bloco 651, pedido do usuário "investiga os 13 que
 > perderam" + "arruma essa escala de play x attack"): **primeiro mecanismo
 > da família "subir play" que PAGA** — `play` 30,6% → **32,0%**; somando os

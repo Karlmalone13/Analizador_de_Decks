@@ -121,6 +121,9 @@ def _offense_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
     # antigo (onde o resultado e identico ao flip binario).
     opp_side = meta['p2']['name'] if meta['p1']['name'] == human_side_label else meta['p1']['name']
     opp_leader_code = meta['p1' if meta['p1']['name'] == opp_side else 'p2']['leader'].get('code')
+    # bloco 652: codigo do lider do lado AUDITADO -- alimenta o recorte por
+    # lider do relatorio (ver comentario em `_print_report`)
+    bot_leader_code = meta['p1' if meta['p1']['name'] == human_side_label else 'p2']['leader'].get('code')
 
     # Achado real 17/08: `attach_don_alvo` (mais abaixo) sempre pretendeu
     # incluir `attach_don_for_attack_events` (o top-up AUTOMATICO que
@@ -368,6 +371,9 @@ def _offense_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
 
         rows.append({
             'game': os.path.basename(parsed_path), 'turn': turn_num,
+            # bloco 652: sem isto o recorte por lider tinha que ser
+            # reconstruido por fora, cruzando com os logs
+            'leader': bot_leader_code,
             'play_inter': play_i, 'play_union': play_u,
             'activate_inter': act_i, 'activate_union': act_u,
             'attack_quem_inter': atk_i, 'attack_quem_union': atk_u,
@@ -646,6 +652,35 @@ def main():
             i = sum(r.get(ik, 0) for r in off_rows)
             u = sum(r.get(uk, 0) for r in off_rows)
             print(f'     {label}: {_pct(i, u)}')
+
+    # ── RECORTE POR LIDER (bloco 652, pedido explicito e REPETIDO do
+    # usuario: "o bot nao pode so jogar bem de imu e mal com os outros") ──
+    # Existe porque um agregado pode subir puxado por 1 ou 2 lideres de
+    # volume alto e esconder lideres parados. Achado real que motivou:
+    # depois dos fixes 650/651 o agregado de `play` subiu 10,6pp, mas o
+    # recorte mostrou Katakuri OP11-062 (136 turnos, 3o maior volume do
+    # banco) andando so +0,7pp e OP13-002 parado em 0,0pp -- invisivel no
+    # numero unico. NAO reportar `play` agregado sem olhar esta tabela.
+    por_lider = {}
+    for r in off_rows:
+        lid = r.get('leader')
+        if not lid or not r.get('play_has_data'):
+            continue
+        agg = por_lider.setdefault(lid, [0, 0])
+        agg[1] += 1
+        if r.get('play_match'):
+            agg[0] += 1
+    if por_lider:
+        print('')
+        print('  -- play POR LIDER (>=8 turnos; o agregado pode esconder lider parado) --')
+        linhas = sorted(por_lider.items(), key=lambda kv: -kv[1][1])
+        for lid, (ok, tot) in linhas:
+            if tot < 8:
+                continue
+            print(f'     {lid:<14} {_pct(ok, tot):<16} ({tot} turnos)')
+        poucos = sum(1 for _, (_, t) in linhas if t < 8)
+        if poucos:
+            print(f'     ({poucos} lider(es) com <8 turnos omitidos)')
 
     total_common = sum(r['attack_alvo_common'] for r in off_rows)
     total_alvo_ok = sum(r['attack_alvo_match'] for r in off_rows)

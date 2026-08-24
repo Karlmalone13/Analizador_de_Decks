@@ -28,6 +28,137 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-23 (652) - Claude (sessao local) - REGISTRA O OBJETIVO CENTRAL que as sessoes esquecem (jogar bem com QUALQUER deck) + recorte por lider vira mecanico no relatorio + 2 achados NEGATIVOS medidos (taxa condicional e override aposentado)
+
+Sessao de fechamento do dia. Tres pedidos do usuario, nesta ordem, e o
+segundo foi uma CORRECAO do primeiro registro que eu tinha feito errado.
+
+### 1. OBJETIVO CENTRAL registrado em CLAUDE.md + AGENTS.md + memoria
+
+Citacao literal, depois de ele dizer "toda vez voce esquece": *"vou repetir,
+nao e tratar lider por lider, quero que o nosso bot seja capaz de jogar bem
+e identico ou melhor que o humano com qualquer deck que ele estiver
+pilotando"*.
+
+**Eu tinha registrado ERRADO primeiro** (como "calibragem dinamica POR
+LIDER"), o que sugeria exatamente o tratamento individual que ele rejeita.
+Reescrito. A secao nova diz o que PROIBE (fix amarrado a um lider,
+constante escolhida porque funcionou no lider de maior volume, "proximo
+alvo: consertar o lider X" como plano) e o que EXIGE (comportamento sai do
+DADO do deck em jogo por mecanismo unico e deck-agnostico; fix so conta
+quando funciona em deck que nao foi olhado durante o desenvolvimento).
+Ancorado na regra que o projeto JA aceita -- "corrija de forma GENERICA,
+nao amarrada a carta que revelou o bug", do gate do parser -- elevada pro
+nivel de deck.
+
+Tambem salvo em `memory/project_bot_qualquer_deck.md` (1a linha do
+MEMORY.md), pra valer em sessao nova antes de qualquer doc ser aberto.
+
+### 2. Recorte POR LIDER agora e MECANICO no relatorio
+
+`decision_quality_full.py` passa a imprimir a tabela `play POR LIDER` (>=8
+turnos) junto do agregado, e cada linha do resultado grava o campo
+`leader`. Nasceu porque o recorte so existia como script solto meu.
+Proposito registrado explicitamente: **provar que um fix GENERALIZOU**, nao
+virar lista de lideres a tunar.
+
+**Auditoria de vies de todo o trabalho do dia** (pedido do usuario "confira
+o que fizemos hj se esta inviesado por lider"): a fracao do ganho ponderado
+vinda do Imu foi 22,1% / 24,4% / 19,8% nas tres etapas (regua / teto DON /
+desempate) -- o Imu e 17,4% do corpus, entao **praticamente proporcional em
+todas**. Dispersao: 13 de 21 lideres subiram na etapa da regua. Maiores
+ganhos NAO sao do Imu (OP10-099 +17,6pp, OP11-040 +18,2pp, OP12-040
++14,3pp). Conclusao: os fixes 650/651 sao genericos -- coerente com a
+natureza deles (regra 6-2-3 do DON e teto de DON valem pra todo jogador; o
+desempate nao consulta dado de lider nenhum).
+
+**Ressalvas honestas da auditoria**: (a) o fix da Stage e estruturalmente
+estreito (so 8 lideres tem Stage, 94 das 134 ocorrencias sao do Imu) -- mas
+a estreiteza e DO JOGO, o codigo e generico por forma (qualquer STAGE com
+activate_main, 33 das 49 do banco; deteccao de setup-deploy e regra geral,
+nao `if leader == Imu`); (b) **`OP07-019` CAIU -22,2pp** (6/9 -> 4/9) e
+`OP13-001` subiu +55,6pp (0/9 -> 5/9) -- com n=9 os dois numeros sao
+frageis, mas o de baixo e a unica regressao real do dia e so apareceu no
+recorte; (c) a etapa 1 mistura TRES fixes numa medicao so, entao nao da pra
+atribuir por lider individualmente sem 3 runs separados; (d) o DIAGNOSTICO
+do dia foi todo em cima do Imu (Stage, trajetoria de DON, exemplos de taxa)
+mesmo com a MEDICAO ampla -- erro apontado pelo usuario, registrado na
+regra.
+
+Seguem parados com volume real: **Katakuri OP11-062 (136 turnos, +0,7pp)** e
+OP13-002 (16 turnos, 0,0pp). Pela regra nova isso NAO e "consertar o
+Katakuri" -- e evidencia de que algum mecanismo desta leva depende de algo
+que aqueles decks nao tem.
+
+### 3. ACHADO NEGATIVO -- taxa condicional no override: testada e REVERTIDA
+
+Diagnostico (correto e mantido): a contagem bruta que alimentava o override
+**confunde PREFERENCIA com OPORTUNIDADE**. `attack:LIDER` esta disponivel em
+quase todo turno (157 ocorrencias no Imu); um `play` especifico so quando a
+carta esta na mao (mediana 2 no banco, 415 tokens distintos dividindo o
+suporte). O gate "3x a 2a colocada" elegia o token onipresente -- dos 58
+disparos reais, 27 `activate` + 25 `attack` contra **4 de `play`**.
+
+Implementado `by_leader_action_rate` (taxa `turnos_usou / turnos_disponivel`,
+disponibilidade do snapshot: mao pra `play`, board+lider pro resto). Tres
+defeitos corrigidos no caminho, cada um teria enganado a medicao: (a)
+denominador inflado pra `play` -- "na mao" conta turno em que a carta era
+cara demais; segurar carta e jogada legitima, passou a exigir na mao E
+PAGAVEL; (b) taxas > 1 (26/19 = 1,37) porque numerador contava ocorrencias e
+denominador turnos; (c) taxa 1,00 artificial pra Stage (97/97), porque ela
+nunca aparece em `Board:` (bloco 650) e a unica evidencia de disponibilidade
+era o proprio uso -- token com disponibilidade NAO OBSERVAVEL passou a ficar
+FORA da taxa.
+
+O dado ficou melhor (play:OP16-093 0,81 acima de attack:OP13-079 0,71; 37
+tokens de `play` elegiveis contra 43 de attack, antes so 13% dos `play`
+passavam). **O resultado NAO**: play -0,2pp, activate -0,8pp, attach_don
+-0,2pp; recorte por lider 1 sobe, 17 estaveis, 3 caem. **Revertido.**
+Causa provavel identificada e NAO testada: `_HUMAN_DOMINANT_ACTION_RATIO=3.0`
+foi calibrado pra CONTAGENS, e em taxas [0,1] exigir 3x e muito mais duro
+(disparo caiu de 10,3% pra 6,6%). Pode ser so o limiar, pode ser que a taxa
+nao seja melhor preditor -- so medicao decide.
+
+### 4. Override APOSENTADO por decisao do usuario -- e o custo esta medido
+
+`_human_dominant_action_override` (bloco 648) REMOVIDO por inteiro: funcao,
+as 2 constantes de gate, o global `_HUMAN_ACTION_FREQ_BY_LEADER`, o bloco do
+loader, o wiring no `main_phase`, o marcador `forced_by_human_override`, o
+produtor em `audit_human_patterns.py` e o campo `by_leader_action_freq` do
+`human_patterns.json` (que agora tem 12 campos, era 13).
+
+**IMPORTANTE, nao e descuido -- e troca deliberada**: o A/B mediu que
+remover PIORA (play 32,0% -> 31,5%, activate 26,1% -> 25,4%, attach_don
+17,9% -> 17,4%; nos mesmos turnos, activate -1,0pp). O usuario decidiu
+aposentar mesmo assim, com o argumento de proposito: *"ele nao cumpre com o
+proposito que foi criado"* -- foi feito pra forcar o bot a jogar identico ao
+humano, dispara em 10% das decisoes, quase so em `activate`/`attack` (4 de
+58 em `play`), e PULA a busca Monte Carlo inteira quando dispara. Teto total
+de ~1pp nao justifica um mecanismo que atropela a busca.
+
+**Nao reabrir essa discussao sem dado novo**: uma sessao futura que rodar o
+A/B vai encontrar +0,5/-1,0pp e concluir que "deveria voltar". A decisao
+considerou isso.
+
+**Armadilha de medicao registrada** (2a vez que aparece com esta cara):
+comparar "acerto QUANDO o override dispara" (58,6%) contra "acerto quando
+NAO dispara" (61,3%) e SELECAO ENVIESADA -- ele dispara justamente onde
+existe padrao dominante, populacao diferente. Foi o que quase me fez remover
+antes do A/B, e o A/B disse o oposto. Sempre A/B nas MESMAS decisoes.
+
+### Validacao
+
+`smoke_fast.py` 1376 OK / 0 falhas, `smoke_test.py` 204 OK / 0 falhas, ambos
+exit 0, apos a remocao completa. `audit_human_patterns.py` regenera o
+`human_patterns.json` sem o campo morto. Numeros do estado final sao os do
+A/B "SEM override" ja medido (play 31,5%), nao remedidos -- a remocao e
+comportamentalmente identica ao flag desligado que o A/B testou.
+
+Primeira tentativa de remocao apagou junto `_HUMAN_PATTERN_MIN_SUPPORT` e
+`_HUMAN_PATTERN_MAX_BONUS` (constantes de OUTRO mecanismo,
+`_human_pattern_bonus`, que continua ativo) -- pego pelo `smoke_fast.py`.
+Refeita com ancoras exatas.
+
 ## 2026-08-23 (651) - Claude (sessao local) - Primeiro mecanismo da familia "subir play" que PAGA de verdade: desempate por PRESERVACAO DE OPCAO (`play` 30,6% -> 32,0%) + teto de DON da reconstrucao. Sessao inteira: `play` 21,4% -> 32,0% (+10,6pp)
 
 Continuacao direta do bloco 650. Pedido do usuario: "investiga os 13 que

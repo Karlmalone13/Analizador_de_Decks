@@ -265,6 +265,66 @@ Referências oficiais das regras (manual, playsheet) em
 > `IA_Compendium/RESUMO_ESTRATEGICO.md` acima — o placar dá o "quanto",
 > o catálogo dá o "o que era esperado".
 
+## OBJETIVO CENTRAL DO BOT (o usuario repete e as sessoes esquecem)
+
+> **QUALQUER DECK.** O bot tem que ser capaz de jogar bem, e **identico ou
+> melhor que o humano**, com **qualquer deck que estiver pilotando** -- nao
+> com os lideres que ja foram tunados, nao com os que tem mais log no banco.
+> Registrado em 23/08/2026 (bloco 652) porque o usuario ja tinha pedido
+> antes, mais de uma vez, e nenhuma sessao anotou: *"vou repetir, nao e
+> tratar lider por lider, quero que o nosso bot seja capaz de jogar bem e
+> identico ou melhor que o humano com qualquer deck que ele estiver
+> pilotando"*.
+>
+> **O que isso PROIBE na pratica:**
+> - Fix amarrado a um lider/deck especifico, ou tunado ate um lider subir.
+> - Constante global escolhida porque funcionou no lider de maior volume.
+> - "Proximo alvo: consertar o lider X" como plano de trabalho. Um lider
+>   parado e **sintoma de que o mecanismo nao generalizou**, nao um item de
+>   backlog pra corrigir isoladamente. A pergunta certa e "o que de GERAL
+>   esta faltando que aparece nele?".
+>
+> **O que isso EXIGE:**
+> - O comportamento tem que sair do DADO do deck que esta em jogo (efeitos
+>   parseados das cartas, curva, arquetipo, padroes observados daquele
+>   lider) atraves de um mecanismo unico e deck-agnostico -- e a mesma
+>   regra de "corrija de forma GENERICA, nao amarrada a carta que revelou o
+>   bug" que o projeto ja aplica no parser (secao do gate de auditoria
+>   global), elevada pro nivel de deck.
+> - Um fix so conta como fix quando funciona pra decks que nao foram
+>   olhados durante o desenvolvimento dele.
+>
+> Ver tambem a comparacao obrigatoria contra
+> `IA_Compendium/RESUMO_ESTRATEGICO.md`: e a mesma exigencia por outro
+> angulo -- o bot tem que ENTENDER o que o lider que ele esta pilotando
+> faz, seja qual for.
+
+## OBRIGATORIO: nenhum resultado agregado vale sem o recorte POR LIDER
+
+> Corolario direto do objetivo acima -- o recorte existe pra **PROVAR que um
+> fix generalizou**, nao pra virar lista de lideres a tunar. Toda vez que
+> uma sessao reportar um numero agregado de qualidade de decisao
+> (`decision_quality_full.py`, `decision_quality_report.py`, winrate,
+> gauntlet), tem que olhar E MOSTRAR o recorte por lider.
+>
+> `decision_quality_full.py` ja imprime a tabela `play POR LIDER` (>=8
+> turnos) desde o bloco 652 -- nao e mais opcional nem trabalho manual.
+>
+> **Achado real que motivou**: os fixes dos blocos 650/651 subiram `play` de
+> 21,4% pra 32,0% no agregado, e o recorte CONFIRMOU que generalizaram
+> (Teach +14,7pp, OP10-099 +16,2pp, Xebec +10,8pp, Imu +12,5pp) -- mas
+> mostrou **Katakuri OP11-062 com so +0,7pp em 136 turnos** (3o maior volume
+> do banco) e **OP13-002 em 0,0pp**. Isso NAO e "agora conserte o Katakuri":
+> e a evidencia de que algum mecanismo desta leva ainda depende de algo que
+> aqueles decks nao tem. Sao 30 lideres no corpus, 21 com volume >=8 turnos;
+> o Imu e so 17,4% dele.
+>
+> **Cuidado adicional, do mesmo pedido**: nao basta a MEDICAO ser ampla se o
+> DIAGNOSTICO for de um lider so (erro cometido no bloco 651/652 -- medicao
+> em 214 logs, mas Stage, trajetoria de DON e exemplos de taxa todos tirados
+> de partidas do Imu). Registrar de qual lider saiu cada exemplo, e conferir
+> o mecanismo contra outros ANTES de generalizar.
+
 ## Estado do projeto / o que falta
 Ver [TODO.md](TODO.md) (lista viva, atualizada por sessão) para: buracos de
 mecânica conhecidos e priorizados, problemas abertos do replay, dívida

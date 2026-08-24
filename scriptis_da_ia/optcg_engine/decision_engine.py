@@ -747,24 +747,6 @@ _HUMAN_BLOCKER_CARD_BONUS_BY_LEADER: dict = {}
 # realmente faz" que so a ORDEM preservada da. Guarda por PAR ORDENADO
 # (kind1,codigo1,kind2,codigo2), nao por token isolado.
 _HUMAN_SEQUENCE_BONUS_BY_LEADER: dict = {}
-# bloco 648: contagem BRUTA (nao bonus tetado/somado) de quantas vezes
-# cada (kind,codigo) apareceu em QUALQUER posicao de turnos humanos
-# reais, por lider -- {leader_code: {(kind,codigo): contagem}}. Fonte de
-# um mecanismo ESTRUTURALMENTE diferente de tudo que ja foi tentado
-# (blocos 641-647, todos bonus que COMPETEM dentro de
-# `_evaluate_state_v2`/`bonus_alinhamento`, dividindo peso com
-# dano/board/etc): aqui e um HARD OVERRIDE que compara a frequencia
-# RELATIVA entre as proprias acoes legais da decisao atual (ver
-# `_human_dominant_action_override`) -- quando uma domina claramente as
-# outras REALMENTE disponiveis agora, forca ela e pula o Monte Carlo
-# inteiro pra essa decisao, em vez de somar um bonus que pode perder pra
-# outros termos. Tentativa 1 (so 1a acao do turno, contra a populacao
-# MARGINAL de turnos) foi descartada -- medido no proprio banco, nenhum
-# lider com volume real passou de ~27% de dominancia marginal (a mao
-# muda a cada partida). Comparar contra as opcoes REALMENTE presentes
-# nesta decisao especifica (nao a populacao inteira de turnos) e o que
-# da sinal forte o bastante pra um override seguro.
-_HUMAN_ACTION_FREQ_BY_LEADER: dict = {}
 _HUMAN_PATTERN_MIN_SUPPORT = 2
 # TESTADO 60.0 (bloco 646, hipotese: levantar o teto quebraria os
 # EMPATES achados no bloco 641 -- 61% dos casos attach_don-vence-play
@@ -792,7 +774,7 @@ _load_effects_db()
 
 def _load_human_patterns():
     """Carrega sinais leves de pilotagem humana extraidos dos logs reais."""
-    global _HUMAN_PATTERN_BONUS_BY_LEADER, _HUMAN_DEFENSE_BY_LEADER, _HUMAN_COUNTER_CARD_BONUS_BY_LEADER, _HUMAN_BLOCKER_CARD_BONUS_BY_LEADER, _HUMAN_SEQUENCE_BONUS_BY_LEADER, _HUMAN_ACTION_FREQ_BY_LEADER
+    global _HUMAN_PATTERN_BONUS_BY_LEADER, _HUMAN_DEFENSE_BY_LEADER, _HUMAN_COUNTER_CARD_BONUS_BY_LEADER, _HUMAN_BLOCKER_CARD_BONUS_BY_LEADER, _HUMAN_SEQUENCE_BONUS_BY_LEADER
     if _HUMAN_PATTERN_BONUS_BY_LEADER:
         return
     try:
@@ -807,27 +789,6 @@ def _load_human_patterns():
     counter_card_by_leader: dict = {}
     blocker_card_by_leader: dict = {}
     sequence_by_leader: dict = {}
-    action_freq_by_leader: dict = {}
-    # bloco 648: `by_leader_action_freq` -- token unico (kind:codigo),
-    # contado em QUALQUER posicao do turno (nao so a primeira). Guarda
-    # contagem BRUTA (nao formula de bonus tetado), ver comentario do
-    # global acima -- o gate de dominancia relativa no consumidor e o
-    # proprio mecanismo de seguranca.
-    for leader, rows in data.get('by_leader_action_freq', {}).items():
-        leader_code = leader.split('|', 1)[0]
-        counts = action_freq_by_leader.setdefault(leader_code, {})
-        for row in rows:
-            count = int(row.get('count') or 0)
-            if count <= 0:
-                continue
-            token = row.get('pattern') or ''
-            if ':' not in token:
-                continue
-            kind, code = token.split(':', 1)
-            if kind not in ('play', 'activate', 'attack', 'attach_don'):
-                continue
-            key = (kind, code)
-            counts[key] = counts.get(key, 0) + count
     # bloco 647: PAR ORDENADO (kind1,codigo1,kind2,codigo2) direto de
     # `by_leader_ngrams_2` -- fonte SEPARADA de `heuristic_candidates`
     # (que so tokeniza), preserva a ordem real "depois de agir X, o
@@ -923,7 +884,6 @@ def _load_human_patterns():
     _HUMAN_COUNTER_CARD_BONUS_BY_LEADER = counter_card_by_leader
     _HUMAN_BLOCKER_CARD_BONUS_BY_LEADER = blocker_card_by_leader
     _HUMAN_SEQUENCE_BONUS_BY_LEADER = sequence_by_leader
-    _HUMAN_ACTION_FREQ_BY_LEADER = action_freq_by_leader
 
 
 def _human_counter_card_bonus(leader_code: str, card_code: str) -> float:
@@ -14281,68 +14241,6 @@ class OPTCGMatch:
         key = (kind1, card1.code, kind2, card2.code)
         return float(leader_seq.get(key, 0.0))
 
-    # contagem minima da acao dominante (nao so ganhar a comparacao com
-    # amostra minuscula, ex: 2x1).
-    _HUMAN_DOMINANT_ACTION_MIN_SUPPORT = 8
-    # a acao dominante precisa ter pelo menos 3x a frequencia da 2a
-    # colocada ENTRE AS ACOES REALMENTE LEGAIS agora -- nao a populacao
-    # inteira de turnos (essa comparacao marginal foi a tentativa 1,
-    # descartada por nunca ficar dominante o bastante, ver comentario do
-    # global `_HUMAN_ACTION_FREQ_BY_LEADER`).
-    _HUMAN_DOMINANT_ACTION_RATIO = 3.0
-
-    def _human_dominant_action_override(self, p: GameState, actions: list):
-        """
-        Bloco 648 (2a iteracao) -- mecanismo ESTRUTURALMENTE diferente dos
-        bonus que competem (`_human_pattern_bonus`/`_human_sequence_bonus`,
-        testados e revertidos nos blocos 641-647): entre as acoes
-        REALMENTE legais nesta decisao (`actions`, saida de
-        `_generate_and_score_actions`, score >= 0), compara a frequencia
-        historica de cada (kind,codigo) pra este LIDER -- se uma domina
-        claramente as outras que estao de fato na mesa agora (nao a
-        populacao inteira de turnos, que nunca fica dominante o bastante
-        por variar demais com a mao), PULA a comparacao Monte Carlo
-        inteira e forca essa acao direto. Mesmo espirito do bypass de
-        `win_con_code` acima, generalizado por dado real em vez de 1
-        carta hardcoded -- mas comparando RELATIVO ao que esta disponivel
-        agora, nao um limiar absoluto contra o historico marginal.
-
-        Seguranca: so compara acoes que JA estao na lista legal calculada
-        AGORA pelo motor real -- nunca inventa uma acao que nao existe no
-        estado atual. Board diferente do historico simplesmente muda
-        quais acoes tem frequencia > 0 pra comparar, ou nenhuma, caindo
-        no fluxo normal.
-        """
-        if not p or not p.leader or not actions:
-            return None
-        _load_human_patterns()
-        if not _HUMAN_ACTION_FREQ_BY_LEADER:
-            return None
-        counts = _HUMAN_ACTION_FREQ_BY_LEADER.get(p.leader.code)
-        if not counts:
-            return None
-        scored = []
-        for acao in actions:
-            if acao[0] < 0:
-                continue
-            alvo = acao[2]
-            code = getattr(alvo, 'code', None) if alvo is not None else None
-            if code is None:
-                continue
-            freq = counts.get((acao[1], code), 0)
-            if freq > 0:
-                scored.append((freq, acao))
-        if not scored:
-            return None
-        scored.sort(key=lambda t: -t[0])
-        top_freq, top_acao = scored[0]
-        if top_freq < self._HUMAN_DOMINANT_ACTION_MIN_SUPPORT:
-            return None
-        second_freq = scored[1][0] if len(scored) > 1 else 0
-        if second_freq > 0 and top_freq < self._HUMAN_DOMINANT_ACTION_RATIO * second_freq:
-            return None
-        return top_acao
-
     # ── Setup (CheckStartOfGameActions das 34k linhas) ───────────────────────
 
     def _place_start_stage(self, p: GameState, opp: GameState = None):
@@ -18101,71 +17999,6 @@ class OPTCGMatch:
                         return True
                     continue
 
-            # OVERRIDE por padrao humano dominante (bloco 648, pedido
-            # explicito do usuario: "nao quero cacar bug, quero que a
-            # gente crie maneiras de subir essas porcentagens... obrigar o
-            # bot a jogar identico ao humano" -- as 5 tentativas anteriores
-            # (blocos 641-647) eram todas um BONUS somado dentro de
-            # `_evaluate_state_v2`/`bonus_alinhamento`, competindo (e
-            # perdendo, ou empatando na melhor das hipoteses) contra
-            # dano/board/etc -- nunca decisivo sozinho. Este e um
-            # mecanismo ESTRUTURALMENTE diferente: um HARD override que
-            # PULA a comparacao Monte Carlo inteira quando uma acao
-            # domina claramente as OUTRAS acoes que estao de fato legais
-            # agora (nao a populacao marginal de todos os turnos -- essa
-            # comparacao absoluta foi a 1a tentativa, descartada por
-            # nenhum lider passar de ~27% de dominancia mesmo com volume
-            # real, porque a mao muda a cada partida). Roda em QUALQUER
-            # decisao do turno (nao so a primeira, n==1) -- mesmo espirito
-            # do bypass de win_con_code logo acima, generalizado por dado
-            # real em vez de 1 carta hardcoded. Ver
-            # `_human_dominant_action_override`. Nao dispara em LETHAL,
-            # mesma excecao do bypass acima (fechar a partida vem antes).
-            if priority != 'LETHAL':
-                _forced = self._human_dominant_action_override(p, actions)
-                if _forced is not None and self._is_unsafe_zero_life_leader_attack(_forced, p, opp, engine):
-                    _forced = None
-                if _forced is not None:
-                    self._log_turn_planner_decision(
-                        p, opp, engine, priority, actions, [_forced],
-                        _forced, None, {}
-                    )
-                    # marcador leve pra diagnostico (ex: correlacionar
-                    # disparo do override contra o historico REAL deste
-                    # turno especifico, nao so a estatistica agregada do
-                    # lider) -- so tag no proprio registro, sem custo
-                    # pra quem nao le decision_log.
-                    if self.decision_log:
-                        self.decision_log[-1]['forced_by_human_override'] = True
-                    if self._apply_action(_forced, p, opp, ee, engine, verbose=verbose):
-                        return True
-                    continue
-
-            # TURN PLANNER: para as TOP_K ações candidatas, simula a linha de jogo
-            # resultante e escolhe a que leva ao MELHOR estado de fim de turno.
-            # (Em vez de escolher gulosamente a de maior score imediato.)
-            # Selecao/busca unificadas (26/07, pedido do usuario: "tem que
-            # ser o mesmo nos dois") -- MESMAS funcoes usadas pelo caminho
-            # AO VIVO (sim_bridge.choose_action), so o TOP_K/piso/teto de
-            # amostras (orcamento de tempo) diferem por chamador.
-            # Fase 1 da "calibragem dinamica" (bloco 508/509): opt-in via
-            # USE_CHEAP_LAYER_SHORTLIST (desligado por padrao) -- calcula
-            # o sinal barato 1x por decisao e passa pra alargar o corte
-            # do shortlist. Log de auditoria recebe os mesmos valores
-            # (audit_cheap_layer.py le o decision_log depois).
-            #
-            # n_samples=CHEAP_LAYER_SAMPLES passado EXPLICITO (nao confiar
-            # no default do parametro): default de funcao e resolvido 1x
-            # no IMPORT do modulo -- reatribuir `de.CHEAP_LAYER_SAMPLES`
-            # em runtime (ex: script de calibracao comparando escalas)
-            # NAO muda esse default ja fixado, so passar como argumento
-            # explicito le o valor atual de verdade. Achado real 13/08
-            # (bloco 515/516): uma comparacao 40-vs-3000 amostras deu
-            # margem EXATAMENTE zero em TODOS os matchups -- sinal
-            # classico desse bug (as duas condicoes rodaram com o mesmo
-            # valor de fato).
-            cheap_values = (self._compute_cheap_values(p, opp, actions, n_samples=CHEAP_LAYER_SAMPLES)
-                            if USE_CHEAP_LAYER_SHORTLIST and not USE_CHEAP_LAYER_GATE else None)
             candidatas = self._select_search_candidates(
                 actions, TOP_K, priority, cheap_values=cheap_values)
             if len(candidatas) == 1:
