@@ -2,6 +2,29 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 667, continuação do roteiro turno-a-turno — Krieg
+> OP15-001, 26,1%/46 turnos): **BUG REAL de parser, família Arlong
+> (OP15-023) / Alvida (OP15-003) / Morgan (OP15-017)**, explicado
+> diretamente pelo usuário na conversa (o texto impresso é
+> genuinamente ambíguo sem contexto de regras que esta sessão remota
+> não tem acesso local). A carta tem um CUSTO fixo (mover 1 DON
+> restado do oponente para um Character do próprio oponente) seguido
+> de um EFEITO cujo alvo é ambíguo — "its owner's Leader or 1 of their
+> Characters" pode ser QUALQUER lado, próprio ou do oponente. O parser
+> nunca capturava o custo como custo de verdade — só usava o texto dele
+> para inferir (sempre errado) que o alvo do efeito era o oponente,
+> perdendo por completo a linha "dar DON pro próprio líder" que o
+> usuário descreveu como uso comum na prática (combina com o próprio
+> Krieg, cujo líder precisa de DON no banco pra valer a pena atacar no
+> mesmo turno). Fix genérico: novo custo `give_don_opp` de verdade em
+> `_pay_costs`, nova ação `give_don_either_side` em `_execute_step` que
+> decide o lado em tempo de execução (prefere o próprio lado quando
+> fecha um deficit de poder pequeno; senão mantém o padrão desta
+> família, dá pro oponente) e DELEGA pra `give_don`/`give_don_opp`
+> (sem duplicar lógica de escolha de alvo). Teste dedicado novo em
+> `smoke_fast.py`, `smoke_test.py` OK, validado end-to-end numa partida
+> real. Ver bloco 667 do HANDOFF.
+
 > 24/08/2026 (bloco 666, continuação do roteiro turno-a-turno — Dracule
 > Mihawk OP14-020, 23,5%/34 turnos): **BUG REAL de parser encontrado,
 > retifica um achado anterior (19/07).** "you may rest N of your

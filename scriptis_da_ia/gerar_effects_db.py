@@ -1608,6 +1608,25 @@ def parse_costs(text):
         if m_rest_cards_generic:
             costs.append({'type': 'rest_own_card', 'count': int(m_rest_cards_generic.group(1))})
 
+    # "you may give N of your opponent's rested DON!! cards to N of your
+    # opponent's Characters:" -- custo da familia Arlong/Alvida/Morgan
+    # (OP15-003, OP15-017, OP15-023, achado 24/08, explicado pelo usuario:
+    # "ele da um don restado pra um character do oponente, depois que faz
+    # esse pre requisito ativa a sequencia do efeito"). Antes desta
+    # correcao essa clausula NAO virava custo nenhum -- so influenciava
+    # (errado) a heuristica de alvo do EFEITO seguinte, fazendo a carta
+    # inteira ser tratada como se so pudesse mirar o oponente. Move DON
+    # RESTADO do banco do OPONENTE pra um Character do PROPRIO oponente
+    # -- mesma mecanica ja usada pela ACAO give_don_opp (efeito), aqui
+    # como pre-requisito obrigatorio (a ativacao toda e opcional via
+    # "you may", mas uma vez ativada este passo nao e "up to").
+    if not any(c.get('type') == 'give_don_opp' for c in costs):
+        m_give_opp_cost = re.search(
+            r"you may give (\d+) of your opponent.?s rested don!! cards? "
+            r"to \d+ of your opponent.?s characters?\s*:", t)
+        if m_give_opp_cost:
+            costs.append({'type': 'give_don_opp', 'count': int(m_give_opp_cost.group(1))})
+
     # Custo de trash do TOPO DO PRÓPRIO DECK (mill como custo, distinto de
     # trash_from_hand) -- "you may trash N cards from the top of your deck:
     # [efeito]". Verificado ANTES da regex generica de trash_from_hand
@@ -4521,17 +4540,35 @@ def parse_give_don(text):
         clause = m.group(0)
         # alvo: se menciona "opponent" DENTRO da clausula do give (nao em
         # outro efeito mais adiante na mesma carta), é setup no oponente
-        # (controle) senão é buff em personagem próprio (aggro). Tambem
-        # cobre o padrao indireto "its owner's Leader/Character" quando o
-        # CUSTO anterior ja estabeleceu "1 of your opponent's..." -- "its
-        # owner" refere-se a esse oponente, nao a "you".
+        # (controle) senão é buff em personagem próprio (aggro).
         to_opp = bool(re.search(r"to .{0,30}opponent.?s (leader|character)", clause)) or \
                  bool(re.search(r"opponent.?s characters?:?\s*$", clause)) or \
-                 bool(re.search(r"from .{0,15}opponent.?s cost area", clause)) or \
-                 (bool(re.search(r"to its owner.?s (leader|character)", clause))
-                  and bool(re.search(r"of your opponent.?s (rested )?(don!!|character)", t[:m.start()])))
+                 bool(re.search(r"from .{0,15}opponent.?s cost area", clause))
+        # RETIFICACAO 24/08 (familia Arlong/Alvida/Morgan, OP15-003/
+        # OP15-017/OP15-023, explicado pelo usuario): "to its owner's
+        # Leader or 1 of their Characters" e GENUINAMENTE ambiguo -- "its
+        # owner" e o dono do DON!! ESCOLHIDO nesta acao, que pode ser
+        # QUALQUER lado (proprio OU do oponente), nao so o oponente so
+        # porque o CUSTO anterior (ja parseado como cost separado em
+        # parse_costs, nao mais aqui) mencionava "of your opponent's
+        # rested DON!!". O fix ANTERIOR (19/07) colapsava essa ambiguidade
+        # sempre pro oponente -- perdia por completo a linha real "da DON
+        # pro proprio lider pra ativar o efeito dele" que o usuario
+        # descreveu como o uso mais comum na pratica. Vira uma 3a acao
+        # dedicada (give_don_either_side) que decide o lado em tempo de
+        # execucao conforme o estado real do jogo, delegando pra give_don/
+        # give_don_opp (mesma fonte unica de verdade de cada mecanica, sem
+        # duplicar logica de decisao).
+        either_side = (bool(re.search(r"to its owner.?s (leader|character)", clause))
+                       and bool(re.search(r"of your opponent.?s (rested )?don!! cards?"
+                                          r".{0,40}of your opponent.?s characters?\s*:",
+                                          t[:m.start()])))
+        if either_side:
+            action_name = 'give_don_either_side'
+        else:
+            action_name = 'give_don_opp' if to_opp else 'give_don'
         step = {
-            'action': 'give_don_opp' if to_opp else 'give_don',
+            'action': action_name,
             'count': cnt,
         }
         if is_rested:

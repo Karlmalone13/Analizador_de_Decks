@@ -84931,7 +84931,7 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "give_don_opp",
+    "action": "give_don_either_side",
     "trigger": "activate_main"
    },
    {
@@ -85525,7 +85525,7 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "give_don_opp",
+    "action": "give_don_either_side",
     "trigger": "activate_main"
    },
    {
@@ -85813,7 +85813,7 @@
   "attribute": "",
   "effects": [
    {
-    "action": "give_don_opp",
+    "action": "give_don_either_side",
     "trigger": "activate_main"
    },
    {

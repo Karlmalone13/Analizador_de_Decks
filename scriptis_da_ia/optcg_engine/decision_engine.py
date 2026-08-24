@@ -5706,6 +5706,25 @@ class EffectExecutor:
                     remove_by_identity(candidates, target)
                     rested.append(target.name[:15])
                 self._cost_logs.append(f'custo: restou: {", ".join(rested)}')
+            elif ctype == 'give_don_opp':
+                # "you may give N of your opponent's rested DON!! cards to
+                # N of your opponent's Characters:" -- custo da familia
+                # Arlong/Alvida/Morgan (achado 24/08, pedido do usuario).
+                # Move DON RESTADO do BANCO DO OPONENTE pra um Character
+                # do PROPRIO oponente -- pre-requisito obrigatorio (nao
+                # "up to", distinto da acao give_don_opp que usa esse
+                # mesmo nome como EFEITO tolerante a 0). Mesmo criterio de
+                # alvo da acao give_don_opp (maior effective_power -- o
+                # personagem mais valioso do oponente pra sobrecarregar).
+                count = cost.get('count', 1)
+                targets_opp = list(self.opp.field_chars) + [self.opp.leader]
+                if not targets_opp or self.opp.don_rested < count:
+                    return False
+                alvo_opp = max(targets_opp, key=lambda c: c.effective_power(True))
+                self.opp.don_rested -= count
+                alvo_opp.don_attached += count
+                self._cost_logs.append(
+                    f'custo: deu {count} DON restado do oponente a {alvo_opp.name[:15]}')
             elif ctype == 'return_trash_to_deck':
                 count = cost.get('count', 1)
                 if len(self.me.trash) < count:
@@ -8391,6 +8410,44 @@ class EffectExecutor:
         # meu), e e anexado a um Character do OPONENTE. Geralmente usado para
         # travar o refresh dele depois (ex: combinado com lock_opp_don /
         # lock_opp_character_refresh), nao para dar vantagem ao oponente.
+        # "Give up to N [rested] DON!! card(s) to its owner's Leader or 1
+        # of their Characters" -- efeito da familia Arlong/Alvida/Morgan
+        # (achado 24/08, retifica o achado 19/07 que colapsava "its
+        # owner" sempre pro OPONENTE). "its owner" e o dono do DON!!
+        # escolhido, que pode ser QUALQUER lado -- explicado pelo usuario:
+        # "a gente usa desse efeito pra dar don pro Krieg [proprio lider]
+        # e ativar o efeito dele, ou pra dar don ativo ou restado do
+        # oponente pros personagens dele". Decide o lado EM TEMPO DE
+        # EXECUCAO (nao um "choose one" textual, e ambiguidade de alvo
+        # dentro da MESMA frase) e delega pra give_don/give_don_opp --
+        # mesma fonte unica de verdade de cada mecanica, sem duplicar
+        # logica de escolha de alvo (REGRA_SEM_DUPLICACAO).
+        if action == 'give_don_either_side':
+            count = step.get('count', 1)
+            # Prefere o PROPRIO lado quando isso fecha (ou reduz) o
+            # deficit de poder pra passar o lider do oponente com o
+            # atacante pronto mais forte -- mesmo calculo de 'give_don'
+            # (secao acima), so que so pra DECIDIR o lado, sem duplicar a
+            # escolha do ALVO especifico dentro do lado (isso fica por
+            # conta do proprio give_don ao ser delegado). Sem nenhum
+            # atacante proprio que se beneficie AGORA, mantem o
+            # comportamento padrao desta familia -- da pro lado do
+            # OPONENTE (setup de controle, combina com efeitos que travam/
+            # penalizam personagens com DON dado, ex: lider Krieg
+            # OP15-001, "rest ate 1 character do oponente com 2+ DON
+            # dado").
+            own_targets = [c for c in me.field_chars if not c.rested] + [me.leader]
+            own_ready = [c for c in own_targets
+                         if (c is me.leader and not c.rested)
+                         or (c is not me.leader and character_can_attack_now(c, me, opp))]
+            prefer_own = False
+            if own_ready:
+                melhor_own = max(own_ready, key=lambda c: c.effective_power(True))
+                deficit = opp.leader.power - attack_time_power(melhor_own, opp)
+                prefer_own = 0 < deficit <= count * 1000
+            delegate_action = 'give_don' if prefer_own else 'give_don_opp'
+            return self._execute_step({**step, 'action': delegate_action}, card)
+
         if action == 'give_don_opp':
             count = step.get('count', 1)
             rested = step.get('rested', False)

@@ -10655,6 +10655,7 @@ def main() -> int:
     test_rest_opp_escala_com_ataques_pendentes_15_08()
     test_attach_don_nao_carrega_ataque_que_a_defesa_esperada_barra_15_08()
     test_opp_attack_count_delega_pro_helper_compartilhado_15_08()
+    test_give_don_either_side_arlong_alvida_morgan_24_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -14618,6 +14619,84 @@ def test_opp_attack_count_delega_pro_helper_compartilhado_15_08() -> None:
     eng = DecisionEngine(me, opp)
     check("opp_attack_count == attackers_available (mesma resposta, uma implementacao)",
           eng.analyzer.opp_attack_count() == attackers_available(opp, me) == 2)
+
+
+def test_give_don_either_side_arlong_alvida_morgan_24_08() -> None:
+    """
+    Familia Arlong (OP15-023) / Alvida (OP15-003) / Morgan (OP15-017) --
+    "[Activate: Main] You may give 1 of your opponent's rested DON!! cards
+    to 1 of your opponent's Characters: Give up to 1 [rested] DON!! card
+    to its owner's Leader or 1 of their Characters." Achado 24/08 (pedido
+    do usuario, explicando a carta): o custo (antes de ':') SEMPRE move 1
+    DON restado do OPONENTE pra um Character do PROPRIO oponente; o efeito
+    (depois de ':') e AMBIGUO de lado ("its owner" pode ser qualquer um) --
+    o fix anterior (19/07) colapsava essa ambiguidade sempre pro oponente,
+    perdendo por completo a linha real "dar DON pro proprio lider" que o
+    usuario descreveu como uso comum na pratica (combinar com Krieg
+    OP15-001, cujo Activate:Main precisa de DON no proprio banco/lider pra
+    valer a pena atacar no mesmo turno).
+    """
+    ef = get_card_effects("OP15-023")["activate_main"]
+    check("Arlong ganha custo give_don_opp=1 (move DON restado do oponente "
+          "pro proprio character do oponente)",
+          ef["costs"] == [{"type": "give_don_opp", "count": 1}])
+    check("Arlong ganha efeito give_don_either_side=1 (SEM 'rested' -- pode "
+          "ser DON ativo ou restado do lado escolhido)",
+          ef["steps"] == [{"action": "give_don_either_side", "count": 1}])
+
+    ef_alvida = get_card_effects("OP15-003")["activate_main"]
+    check("Alvida ganha efeito give_don_either_side=1 COM rested=True "
+          "(texto exige 'rested DON!! card' no efeito tambem)",
+          ef_alvida["steps"] == [{"action": "give_don_either_side", "count": 1, "rested": True}])
+
+    # Cenario 1: nenhum alvo proprio se beneficia agora (poder ja empata/
+    # supera o lider do oponente) -- mantem o comportamento padrao desta
+    # familia, da pro lado do OPONENTE (o mais forte, tema de controle).
+    krieg1 = real_card("OP15-001")
+    arlong1 = real_card("OP15-023")
+    me1 = GameState(leader=krieg1, turn=5)
+    me1.field_chars = [arlong1]
+    opp_leader1 = mk("ODL1", "OppLeader", card_type="LEADER", power=5000)
+    opp_char1 = mk("ODC1", "OppChar", power=3000)
+    opp1 = GameState(leader=opp_leader1)
+    opp1.field_chars = [opp_char1]
+    opp1.don_rested = 3
+    ee1 = EffectExecutor(me1, opp1)
+    paid1 = ee1._pay_costs(ef["costs"], arlong1)
+    check("custo pagavel com DON restado do oponente disponivel", paid1)
+    check("custo debita exatamente 1 do banco RESTADO do oponente",
+          opp1.don_rested == 2)
+    check("custo anexa no alvo do oponente de MAIOR power (lider, 5000 > 3000)",
+          opp_leader1.don_attached == 1 and opp_char1.don_attached == 0)
+    ee1._execute_step(ef["steps"][0], arlong1)
+    check("sem deficit proprio pra fechar, efeito tambem vai pro OPONENTE "
+          "(nenhum alvo proprio ganhou DON)",
+          krieg1.don_attached == 0 and arlong1.don_attached == 0)
+    check("efeito deu o DON extra pro oponente (banco do oponente ainda mais "
+          "restado, um dos alvos dele com 2 DON given no total)",
+          opp1.don_rested == 1 and (opp_leader1.don_attached + opp_char1.don_attached) == 2)
+
+    # Cenario 2: meu proprio lado tem um deficit PEQUENO (fecha com 1 DON =
+    # 1000 de poder) pra passar o lider do oponente -- prefere dar o DON
+    # do efeito pro PROPRIO lado (delega pra give_don, sem duplicar a
+    # escolha de alvo).
+    krieg2 = real_card("OP15-001")
+    me2 = GameState(leader=krieg2, turn=5)
+    me2.don_available = 3
+    arlong2 = real_card("OP15-023")
+    me2.field_chars = [arlong2]
+    opp_leader2 = mk("ODL2", "OppLeader2", card_type="LEADER", power=5500)
+    opp2 = GameState(leader=opp_leader2)
+    opp2.don_rested = 3
+    ee2 = EffectExecutor(me2, opp2)
+    ee2._pay_costs(ef["costs"], arlong2)
+    ee2._execute_step(ef["steps"][0], arlong2)
+    check("com deficit proprio pequeno (500, fecha com 1 DON), efeito "
+          "prefere o PROPRIO lado -- alguem do meu lado ganhou o DON",
+          (krieg2.don_attached + arlong2.don_attached) >= 1)
+    check("o DON do efeito NAO foi pro oponente neste cenario (banco do "
+          "oponente inalterado apos o custo pagar 1)",
+          opp2.don_rested == 2)
 
 
 if __name__ == "__main__":

@@ -28,6 +28,91 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (667) - Claude (sessao remota web) - Continuando pro lider Krieg (OP15-001, 26,1%/46 turnos): BUG REAL de parser na familia Arlong/Alvida/Morgan (give_don ambiguo de lado), explicado diretamente pelo usuario na conversa. Custo (mover DON restado do oponente pro character dele) nunca virava custo de verdade, so influenciava (errado) o alvo do efeito, sempre pro oponente -- perdia a linha real "dar DON pro proprio lider" que o usuario descreveu como uso comum
+
+Continuacao do roteiro turno-a-turno (Katakuri/Lucy no bloco 665, Mihawk
+no bloco 666, ambos "continua simulando"). Proxima partida: Imu-B_x_
+Krieg-RG_2026-07-12T23.09.31.json (Krieg = Opponent), 8 turnos proprios
+auditados.
+
+**Achado:** o narrativa do motor mostrava repetidamente "ativou
+[Activate:Main] de Arlong / deu 0 DON ao character do oponente" (turnos
+6, 8, 13, 15) -- suspeita inicial de bug, mas o texto da carta ("Give up
+to 1 DON!! card from its owner's cost area to its owner's Leader or 1
+of their Characters") era genuinamente ambiguo demais pra decidir sem
+contexto de regras que essa sessao remota nao tem acesso (PDFs de
+regras oficiais sao locais). **O usuario explicou a regra real
+diretamente na conversa**: "ele da um don restado pra um character do
+oponente, depois que faz esse pre requisito ativa a sequencia do
+efeito, que e dar 1 don pra qualquer 1 inclusive seu personagem e
+lider, tanto faz se o don e ativo ou restado... a gente usa desse
+efeito pra dar don pro Krieg e ativar o efeito dele ou pra dar don
+ativo ou restado do oponente pros personagens dele."
+
+**Traducao pra parser:** a frase ANTES de ':' e um CUSTO FIXO (mover 1
+DON restado do OPONENTE pra um Character do PROPRIO oponente); a frase
+DEPOIS de ':' e o EFEITO real, cujo alvo ("its owner's Leader or 1 of
+their Characters") e o dono do DON!! ESCOLHIDO nesta acao -- pode ser
+QUALQUER lado, proprio ou do oponente. O parser (achado 19/07) nunca
+capturava a clausula do custo como custo de verdade -- so usava o
+texto dela pra inferir (sempre errado) que o alvo do EFEITO era o
+oponente, perdendo por completo a linha "dar pro proprio lado" que o
+usuario descreveu como uso comum (combinar com o proprio Krieg,
+OP15-001, cujo [Activate:Main] precisa de DON no banco pra valer a
+pena atacar no mesmo turno).
+
+**Busca global:** regex sobre `cards_rows.csv` -- 3 codigos base
+compartilham essa gramatica exata: Alvida (OP15-003), Morgan
+(OP15-017), Arlong (OP15-023) -- todos personagens do deck Krieg.
+Alvida/Morgan pedem "rested DON!! card" tambem no EFEITO; Arlong nao
+qualifica (ativo ou restado, tanto faz -- confirmado pelo usuario) --
+diferenca preservada no parser (campo `rested` so nos 2 primeiros).
+
+**Fix generico (2 mudancas):**
+1. `gerar_effects_db.py`/`parse_costs`: nova deteccao de "you may give
+   N of your opponent's rested DON!! cards to N of your opponent's
+   Characters:" -> vira custo `{'type': 'give_don_opp', 'count': N}`
+   de verdade (reusa o mesmo NOME da acao/efeito homonima, mecanica
+   identica, so que agora como pre-requisito obrigatorio em vez de "up
+   to" tolerante a 0).
+2. `gerar_effects_db.py`/`parse_give_don`: a deteccao de "to its
+   owner's Leader/Character" que antes forcava `to_opp=True` quando o
+   custo mencionava "opponent's rested DON!!" agora emite uma 3a acao
+   dedicada `give_don_either_side` em vez de colapsar sempre pro
+   oponente.
+3. `decision_engine.py`, `_pay_costs`: novo handler de custo
+   `give_don_opp` (move DON restado do banco do oponente pro Character
+   do oponente de MAIOR effective_power -- mesmo criterio de alvo da
+   acao give_don_opp ja existente).
+4. `decision_engine.py`, `_execute_step`: nova acao `give_don_either_
+   side` que decide o LADO em tempo de execucao -- prefere o proprio
+   lado quando isso fecha (ou reduz) um deficit de poder pequeno o
+   bastante pro atacante proprio mais forte pronto pra atacar passar o
+   lider do oponente NESTE turno; senao mantem o comportamento padrao
+   desta familia (da pro oponente, tema de controle/lockdown). DELEGA
+   pra give_don/give_don_opp via recursao em `_execute_step` (troca so
+   o `action` do step) -- reusa a MESMA logica de escolha de alvo
+   dentro de cada lado, sem duplicar decisao (REGRA_SEM_DUPLICACAO).
+
+**Validado:** `diff_parser.py` PERDEU=0, MUDOU=3 (exatamente os 3
+codigos). Novo teste dedicado em `smoke_fast.py`
+(`test_give_don_either_side_arlong_alvida_morgan_24_08`) cobre custo +
+os 2 ramos do efeito (cenario sem deficit proprio vai pro oponente,
+igual antes; cenario com deficit proprio pequeno vai pro proprio lado,
+linha nova). `smoke_fast.py`/`smoke_test.py` OK. Verificado end-to-end
+na partida real -- Arlong continua ativando nos mesmos turnos de
+antes, agora executando o custo de verdade antes de decidir o lado do
+efeito. Registro em
+`parser_audits/2026-08-24_OP15-023_give_don_either_side.json`.
+
+**Nota metodologica:** diferente dos fixes anteriores desta sessao
+(Mihawk, leader_is), este NAO foi validado so por evidencia de log —
+o texto impresso da carta e genuinamente ambiguo sem conhecimento de
+regras que esta sessao remota nao tem acesso local (PDFs oficiais sao
+gitignored/locais). O usuario explicou a regra real diretamente na
+conversa; o fix foi aceito com base nessa explicacao, cruzada com o
+texto impresso e o log de partida real que motivou a pergunta.
+
 ## 2026-08-24 (666) - Claude (sessao remota web) - Continuando o roteiro turno-a-turno pro Dracule Mihawk (OP14-020, 23,5%/34 turnos): achado BUG REAL de parser que retifica um achado anterior (19/07) -- "you may rest N of your cards:" (10 codigos base, 13 linhas) estava mapeado pra `rest_don` (restar DON), mas o custo real (confirmado em partida real) e restar um PERSONAGEM. Fix generico (parser + `_pay_costs` + `leader_plan_alignment`), validado end-to-end: a habilidade de lider do Mihawk, que NUNCA aparecia como candidata em 3 turnos auditados, agora aparece e e escolhida exatamente como o humano fez
 
 Continuacao do pedido do usuario ("simule de novo, se nao bater crie

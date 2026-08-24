@@ -36945,10 +36945,16 @@
  },
  "OP15-003": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "give_don_opp"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
-     "action": "give_don_opp",
+     "action": "give_don_either_side",
      "count": 1,
      "rested": true
     }
@@ -37193,10 +37199,16 @@
  "OP15-016": {},
  "OP15-017": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "give_don_opp"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
-     "action": "give_don_opp",
+     "action": "give_don_either_side",
      "count": 1,
      "rested": true
     }
@@ -37335,10 +37347,16 @@
  },
  "OP15-023": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "give_don_opp"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
-     "action": "give_don_opp",
+     "action": "give_don_either_side",
      "count": 1
     }
    ]
