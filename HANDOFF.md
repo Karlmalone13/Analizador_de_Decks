@@ -28,6 +28,73 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (673) - Claude (sessao remota web) - Pedido do usuario "pode testar outro lider" (apos o Jinbe): Rocks D. Xebec (OP17-118). Achado real: "play up to N ... total cost of M or less" e "different card names" quebrados no play_card da MAO (so play_from_trash tinha os dois mecanismos)
+
+Partida: `Shanks-G_x_Rocks.D.Xebec-B_2026-08-09T19.11.14.json`, 7 turnos
+proprios auditados (T2-T14, VITORIA do bot).
+
+**Metodologia**: dump turno-a-turno via `kata_dump.py` (scratchpad),
+comparando HISTORICO (acoes reais do log) contra a narrativa do motor de
+hoje. 6 dos 7 turnos nao mostraram divergencia nova (Captain John
+OP17-044 ativado 3x de forma consistente com o texto real "[Activate:
+Main] You may rest this Character: Draw 1 card and trash 1 card from
+your hand"; Gloriosa/Streusen/Charlotte Linlin todos batendo com efeito
+parseado).
+
+**Achado real, 2 bugs na MESMA clausula de OP17-118**: "[On Play] Draw 1
+card and play up to 2 {Rocks Pirates} type cards with different card
+names and a total cost of 9 or less from your hand."
+1. `a TOTAL cost of N or less` -- clausula de orcamento COMPARTILHADO
+   entre as ate 2 cartas escolhidas (nao um teto por carta) -- nao batia
+   no regex existente `(?:with|and) a cost of (\d+) or less` porque a
+   palavra "total" no meio quebra o match. Caia no fallback cost_lte=99
+   (SEM teto nenhum). Na partida auditada isso nao ficou visivel no log
+   (a combinacao escolhida, Kaido+Gloriosa = 4+4=8, ja cabia no orcamento
+   real por coincidencia de score), mas o bug era real e latente --
+   qualquer mao com uma carta de custo mais alto e score maior seria
+   escolhida incorretamente, violando o orcamento real da carta.
+2. `distinct_names` (mecanismo ja existente pra play_from_trash desde
+   16/07) nunca foi estendido pro play_card GENERICO (jogar da MAO) --
+   "with different card names" era descartado por completo, o motor
+   podia jogar 2 copias do MESMO nome quando o texto exige nomes
+   diferentes. Confirmado tambem em OP16-060 Sengoku (mesma familia,
+   sem teto de custo mas com a mesma exigencia de nomes distintos).
+
+**Fix (generico, cobre os 2 codigos-base achados, nao so o Xebec)**:
+`gerar_effects_db.py`/`parse_play_generic`: nova captura
+`total_cost_m = re.search(r'a total cost of (\d+) or less', cauda)`,
+checada ANTES do `cost_m` generico -- emite `total_cost_lte` (chave
+NOVA, distinta de `cost_lte`, removida do step quando total_cost_lte
+esta presente) em vez do fallback 99. Nova captura
+`re.search(r'different card names', cauda)` -> `distinct_names=True`.
+`decision_engine.py`: `_execute_step` (action='play_card', GRUPO 2)
+ganhou rastreio de orcamento DECRESCENTE (filtra o pool a cada iteracao
+por `c.cost <= orcamento_restante`, decrementa a cada carta escolhida) e
+filtro de `distinct_names` (mesmo padrao ja usado em play_from_trash --
+`nomes_jogados` acumulado, exclui nomes ja escolhidos a cada iteracao).
+`_step_is_viable` e `_score_activate_main` (scoring de play_card)
+tambem passaram a usar `total_cost_lte` como teto aproximado POR CARTA
+(nenhuma carta sozinha pode exceder o orcamento total de qualquer
+forma), pra nao divergir de execucao (REGRA_SEM_DUPLICACAO).
+
+**Validado**: `diff_parser.py` GANHOU=0 PERDEU=0 MUDOU=2 (exatamente
+OP16-060 e OP17-118). `gerar_dbs.py` 2749 cartas sincronizadas. Novo
+teste dedicado em `smoke_fast.py`
+(`test_play_card_total_cost_lte_e_distinct_names_24_08`) prova a
+execucao real: Xebec com uma carta "Overcosted" (score mais alto, custo
+10) fica de fora por exceder sozinha o orcamento de 9, e Kaido+Gloriosa
+(4+4=8<=9) sao os escolhidos -- reproduz a combinacao REAL vista na
+partida auditada; Sengoku com 2 copias do mesmo nome na mao so joga 1
+das 2, mesmo com count=3 e 3 elegiveis disponiveis. `smoke_fast.py`
+inteiro OK, `smoke_test.py` TODOS OS TESTES PASSARAM. Registro em
+`parser_audits/2026-08-24_OP17-118_play_card_total_cost_e_distinct_names.json`.
+
+**Pendente**: nenhuma outra divergencia encontrada nos 7 turnos desta
+partida especifica. `decision_quality_full.py`/medicao agregada do
+impacto deste fix ainda NAO rodada (mesma ressalva de blocos
+anteriores -- fix validado por logica/teste dirigido, nao por medicao
+agregada de winrate/qualidade de decisao).
+
 ## 2026-08-24 (672) - Claude (sessao remota web) - Pedido do usuario "depois pode testar com outro lider": Jinbe (OP14-040). Suspeita inicial (habilidade ativada repetidamente sem dar DON nenhum) NAO se confirmou como bug -- e o motor corretamente escolhendo 0 dentro de "up to N". Achado um bug REAL diferente e bem definido: filtro de TIPO do destinatario de give_don descartado pelo parser, familia de 8 cartas
 
 Partida: `Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.json`, 5 turnos

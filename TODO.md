@@ -2,6 +2,28 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 673, pedido "pode testar outro líder", após o
+> Jinbe): **Rocks D. Xebec (OP17-118).** Partida real auditada (7 turnos
+> próprios, vitória do bot) — 6/7 turnos sem divergência nova. **Bug
+> real, 2 partes na mesma cláusula**: "play up to 2 {Rocks Pirates} type
+> cards with different card names and a total cost of 9 or less from
+> your hand" — (1) "a TOTAL cost of N or less" (orçamento COMPARTILHADO
+> entre as cartas escolhidas, não um teto por carta) não batia no regex
+> existente ("total" no meio quebra o match), caindo no fallback
+> cost_lte=99 sem teto nenhum; (2) "different card names"
+> (`distinct_names`, já existia pra play_from_trash desde 16/07) nunca
+> foi estendido pro play_card genérico da MÃO — motor podia repetir o
+> mesmo nome. Confirmado também em OP16-060 Sengoku (mesma família, só a
+> parte de nomes). Fix genérico: parser emite `total_cost_lte` (chave
+> nova) + `distinct_names`; `decision_engine.py` ganhou rastreio de
+> orçamento decrescente e filtro de nomes já usados na seleção greedy de
+> `play_card`, espelhado em `_step_is_viable`/scoring (sem duplicar
+> mecanismo). Teste dedicado novo prova a combinação real da partida
+> (Kaido+Gloriosa, 4+4=8) e rejeita uma carta de score maior mas custo
+> que sozinho já estoura o orçamento. `smoke_fast.py`/`smoke_test.py`
+> OK. `decision_quality_full.py` ainda NÃO rodada pra medir impacto
+> agregado. Ver bloco 673 do HANDOFF.
+
 > 24/08/2026 (bloco 672, pedido "depois pode testar com outro líder"):
 > **Jinbe (OP14-040).** Suspeita inicial (habilidade ativada
 > repetidamente sem dar DON nenhum, trashando Koala à toa) **investigada

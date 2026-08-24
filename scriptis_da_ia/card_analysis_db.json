@@ -120930,8 +120930,7 @@
    },
    {
     "action": "play_card",
-    "trigger": "on_play",
-    "cost_lte": 99
+    "trigger": "on_play"
    },
    {
     "action": "buff_own_hand_counter_if_no_others",

@@ -63749,6 +63749,7 @@
             "action": "play_card",
             "count": 3,
             "cost_lte": 99,
+            "distinct_names": true,
             "filter_type": "admiral"
           }
         ],
@@ -83138,7 +83139,8 @@
           {
             "action": "play_card",
             "count": 2,
-            "cost_lte": 99,
+            "total_cost_lte": 9,
+            "distinct_names": true,
             "filter_type": "rocks pirates"
           }
         ]

@@ -10698,6 +10698,7 @@ def main() -> int:
     test_should_activate_main_nao_queima_once_per_turn_em_custo_impagavel_24_08()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
+    test_play_card_total_cost_lte_e_distinct_names_24_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -14938,6 +14939,77 @@ def test_give_don_filtro_de_tipo_no_destinatario_24_08() -> None:
     check("give_don respeita o filtro de tipo -- so o Fish-Man elegivel "
           "pode receber DON, mesmo o mais fraco",
           elegivel.don_attached > 0 and nao_elegivel.don_attached == 0)
+
+
+def test_play_card_total_cost_lte_e_distinct_names_24_08() -> None:
+    """
+    Achado real 24/08 (testando o lider Rocks D. Xebec, pedido do usuario
+    'pode testar outro lider' apos o Jinbe): OP17-118 "Rocks.D.Xebec"
+    tem "[On Play] Draw 1 card and play up to 2 {Rocks Pirates} type
+    cards with different card names and a total cost of 9 or less from
+    your hand." -- a clausula "a TOTAL cost of N or less" (orcamento
+    COMPARTILHADO entre as ate 2 cartas) nao batia no regex existente
+    de "a cost of N or less" (a palavra "total" no meio quebrava o
+    match) e caia no fallback cost_lte=99 -- SEM teto nenhum, deixando o
+    motor livre pra jogar qualquer combinacao de custo. "different card
+    names" tambem nunca virava `distinct_names` pra esta familia
+    (play_card da MAO -- so play_from_trash ja tinha isso). Mesmo bug de
+    distinct_names tambem presente em OP16-060 Sengoku (sem teto de
+    custo, so exige nomes diferentes).
+    """
+    xebec_step = get_card_effects("OP17-118")["on_play"]["steps"][1]
+    check("Rocks.D.Xebec (OP17-118) play_card ganha total_cost_lte=9 "
+          "(nao cost_lte -- orcamento compartilhado, nao teto por carta)",
+          xebec_step["action"] == "play_card"
+          and xebec_step.get("total_cost_lte") == 9
+          and "cost_lte" not in xebec_step)
+    check("Rocks.D.Xebec play_card ganha distinct_names=True",
+          xebec_step.get("distinct_names") is True)
+
+    sengoku_step = get_card_effects("OP16-060")["activate_main"]["steps"][0]
+    check("Sengoku (OP16-060) play_card ganha distinct_names=True "
+          "(sem total_cost_lte -- carta nao tem teto de custo, so nomes)",
+          sengoku_step.get("distinct_names") is True
+          and "total_cost_lte" not in sengoku_step)
+
+    # Execucao real (Xebec): orcamento total de 9 tem que ser respeitado
+    # SOMANDO as cartas escolhidas, nao filtrando cada uma isoladamente.
+    # "Overcosted" (score mais alto de todos, 20) tem que ficar de fora
+    # porque sozinho ja excede o orcamento total -- pre-fix (cost_lte=99)
+    # ela teria sido a 1a escolhida.
+    me = GameState(leader=real_card("OP17-118"), turn=5, don_available=0)
+    kaido = mk("XK1", "Kaido", power=9000, cost=4, sub_types="Rocks Pirates")
+    gloriosa = mk("XG1", "Gloriosa", power=4000, cost=4, sub_types="Rocks Pirates")
+    overcosted = mk("XO1", "Overcosted", power=20000, cost=10, sub_types="Rocks Pirates")
+    me.hand = [kaido, gloriosa, overcosted]
+    opp = GameState(leader=mk("XOPP", "Opp", card_type="LEADER", power=5000), turn=5)
+    ee = EffectExecutor(me, opp)
+    log = ee._execute_step(xebec_step, me.leader)
+    jogados = {c.code for c in me.field_chars}
+    check("Xebec: Overcosted (custo 10, maior score) NAO foi jogado -- "
+          "sozinho ja excede o orcamento total de 9",
+          "XO1" not in jogados)
+    check("Xebec: Kaido + Gloriosa (4+4=8 <= 9) foram os dois jogados",
+          jogados == {"XK1", "XG1"})
+    check("Xebec: log de execucao reflete as 2 cartas jogadas",
+          "Kaido" in log and "Gloriosa" in log)
+
+    # Execucao real (Sengoku): distinct_names bloqueia jogar 2 copias do
+    # MESMO nome mesmo com slots (count) sobrando e candidatos elegiveis
+    # de sobra em quantidade.
+    me2 = GameState(leader=real_card("OP16-060"), turn=5, don_available=0)
+    aokiji = mk("SA1", "Aokiji", power=9000, cost=4, sub_types="Admiral")
+    fujitora1 = mk("SF1", "Fujitora", power=8000, cost=3, sub_types="Admiral")
+    fujitora2 = mk("SF2", "Fujitora", power=8000, cost=3, sub_types="Admiral")
+    me2.hand = [aokiji, fujitora1, fujitora2]
+    opp2 = GameState(leader=mk("SOPP", "Opp", card_type="LEADER", power=5000), turn=5)
+    ee2 = EffectExecutor(me2, opp2)
+    ee2._execute_step(sengoku_step, me2.leader)
+    jogados2 = [c.code for c in me2.field_chars]
+    check("Sengoku: joga Aokiji + 1 Fujitora (2 cartas, nao 3 pedidas) "
+          "-- a 2a copia do nome 'Fujitora' fica de fora por distinct_names",
+          "SA1" in jogados2
+          and len([c for c in jogados2 if c in ("SF1", "SF2")]) == 1)
 
 
 if __name__ == "__main__":

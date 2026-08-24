@@ -3456,6 +3456,14 @@ class EffectExecutor:
             # copia" -- na verdade sao pelo menos 6), todas corrigidas
             # juntas nesta sessao.
             cost_lte = self._resolve_cost_lte(step, default=None)
+            # `total_cost_lte` (orcamento compartilhado, ex: OP17-118) nao
+            # tem `cost_lte` no step -- pelo menos a carta MAIS BARATA da
+            # mao precisa caber sozinha no orcamento total pra a ativacao
+            # ser viavel. Usa como teto aqui (o rastreio exato do
+            # orcamento decrescente entre multiplas cartas fica na
+            # execucao real, _execute_step).
+            if cost_lte is None and step.get('total_cost_lte') is not None:
+                cost_lte = step.get('total_cost_lte')
             # "Play 1 [tipo] ..." sem card_type explicito = CHARACTER — mesma
             # regra do _elegivel_para_play (sim_bridge). Achado real 12/07
             # (partida 23.03.36, 3a vez reportado pelo usuario): o EVENTO
@@ -9570,6 +9578,21 @@ class EffectExecutor:
                 return ''
 
             count = step.get('count', 1)
+            # `total_cost_lte` (orcamento COMPARTILHADO entre as ate
+            # `count` cartas, ex: OP17-118 "play up to 2 ... with a total
+            # cost of 9 or less") -- distinto de `cost_lte` (teto POR
+            # CARTA, ja aplicado em eligible_cards acima). Achado 24/08:
+            # sem rastrear o orcamento decrescente aqui, o motor podia
+            # jogar 2 cartas que individualmente cabem mas somadas
+            # excedem o total real da carta (ex: 2 cartas de custo 6 cada
+            # quando o texto permite so 9 no total).
+            total_cost_lte = step.get('total_cost_lte')
+            orcamento_restante = total_cost_lte
+            # "with different card names" -- mesma convencao ja usada em
+            # play_from_trash (distinct_names), agora tambem aplicada aqui
+            # (achado 24/08, OP16-060 Sengoku/OP17-118 Rocks.D.Xebec).
+            distinct_names = step.get('distinct_names', False)
+            nomes_jogados = set()
             jogadas = []
             # "N each of [A], [B], and [C]" (ex: ST13-006) -- ate N de CADA
             # nome da lista, independente uns dos outros (nao um total
@@ -9601,9 +9624,14 @@ class EffectExecutor:
                         jogadas.append(melhor.name[:15])
             else:
                 for _ in range(count):
-                    if not elegiveis:
+                    pool = elegiveis
+                    if distinct_names:
+                        pool = [c for c in pool if c.name.lower() not in nomes_jogados]
+                    if orcamento_restante is not None:
+                        pool = [c for c in pool if c.cost <= orcamento_restante]
+                    if not pool:
                         break
-                    melhor = max(elegiveis, key=_score_to_play)
+                    melhor = max(pool, key=_score_to_play)
                     # guarda de campo cheio para characters
                     if melhor.card_type == 'CHARACTER' and len(me.field_chars) >= 5:
                         pior = _pior_para_trocar(me.field_chars)
@@ -9613,6 +9641,10 @@ class EffectExecutor:
                     if not remove_by_identity(me.hand, melhor):
                         remove_by_identity(me.trash, melhor)
                     remove_by_identity(elegiveis, melhor)
+                    if distinct_names:
+                        nomes_jogados.add(melhor.name.lower())
+                    if orcamento_restante is not None:
+                        orcamento_restante -= melhor.cost
                     _put_into_play(melhor)
                     if step.get('enters_rested'):
                         melhor.rested = True
@@ -15822,6 +15854,15 @@ class OPTCGMatch:
                 # mesmo padrao das outras copias corrigidas.
                 elif cost_lte == 'don_count_opp':
                     cost_lte = opp.don_available + opp.don_rested
+                # `total_cost_lte` (orcamento COMPARTILHADO entre as ate
+                # `count` cartas, ex: OP17-118) nao tem `cost_lte` no
+                # step -- usa o orcamento total como teto POR CARTA aqui
+                # (aproximacao aceitavel pra score: nenhuma carta sozinha
+                # pode exceder o orcamento total de qualquer forma). A
+                # execucao real (_execute_step) faz o rastreio exato do
+                # orcamento decrescente entre as escolhas.
+                elif cost_lte is None and step.get('total_cost_lte') is not None:
+                    cost_lte = step.get('total_cost_lte')
                 ftype = (step.get('filter_type') or '').lower()
                 fcolor = (step.get('color') or '').lower()
                 fcard_type = (step.get('card_type') or '').upper()

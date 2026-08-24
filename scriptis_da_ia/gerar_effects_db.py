@@ -5483,6 +5483,21 @@ def parse_play_generic(text):
             cost_m = re.search(r'(?:with|and) a cost of (\d+) or less', cauda)
             cost_eq_m = re.search(r'(?:with|and) a cost of (\d+)(?! or less)(?! or more)', cauda)
             cost_gte_m = re.search(r'(?:with|and) a cost of (\d+) or more', cauda)
+            # "a TOTAL cost of N or less" -- distinto de "a cost of N or
+            # less" (que e um teto POR CARTA): aqui N e um orcamento
+            # COMPARTILHADO entre as ate `count` cartas jogadas (achado
+            # 24/08, OP17-118 Rocks.D.Xebec -- "play up to 2 {Rocks
+            # Pirates} type cards with different card names and a total
+            # cost of 9 or less from your hand". Sem esta captura
+            # separada, `cost_m` acima nao batia (a palavra "total" quebra
+            # "(?:with|and) a cost of") e caia no fallback cost_lte=99
+            # (sem teto nenhum), deixando o motor jogar qualquer
+            # combinacao de custo sem respeitar o orcamento total real da
+            # carta. Emitido como `total_cost_lte` (chave nova, distinta
+            # de `cost_lte`) -- decision_engine.py trata como orcamento
+            # decrescente entre as escolhas, nao como filtro fixo por
+            # carta.
+            total_cost_m = re.search(r'a total cost of (\d+) or less', cauda)
             # filter_type/color: mesma regex usada em parse_play_from_deck e
             # em parse_play_from_trash (que ja suporta "type including
             # \"X\"" fora do inicio da clausula -- trazido aqui pra paridade,
@@ -5527,6 +5542,12 @@ def parse_play_generic(text):
                 r'number of don!{0,2} cards on (your opponent.{0,3}s|your) field', cauda)
             if dyn_m:
                 cost_lte_val = 'don_count_opp' if 'opponent' in dyn_m.group(1) else 'don_count_self'
+            elif total_cost_m:
+                # orcamento TOTAL (nao filtro por carta) -- nao emite
+                # cost_lte nenhum aqui, deixa o fallback global de "sem
+                # teto" (99) fora de cogitacao porque o passo abaixo
+                # substitui a chave inteira por `total_cost_lte`.
+                cost_lte_val = None
             elif cost_m:
                 cost_lte_val = int(cost_m.group(1))
             else:
@@ -5536,11 +5557,22 @@ def parse_play_generic(text):
                 'action': 'play_card', 'count': int(m.group(1)),
                 'cost_lte': cost_lte_val,
             }
+            if total_cost_m:
+                step['total_cost_lte'] = int(total_cost_m.group(1))
+                step.pop('cost_lte', None)
             if cost_gte_m:
                 step['cost_gte'] = int(cost_gte_m.group(1))
             if cost_eq_val is not None:
                 step['cost_eq'] = cost_eq_val
-                del step['cost_lte']   # exato substitui o limite generico, nao soma
+                step.pop('cost_lte', None)   # exato substitui o limite generico, nao soma
+            # "with different card names" -- mesma convencao ja usada em
+            # parse_play_from_trash (achado 16/07): sem marcar
+            # `distinct_names`, o motor podia jogar 2+ copias do MESMO
+            # nome quando o texto real exige nomes distintos (achado
+            # 24/08, tambem presente em OP16-060 Sengoku, que NAO tem
+            # teto de custo total mas EXIGE nomes diferentes).
+            if re.search(r'different card names', cauda):
+                step['distinct_names'] = True
             if type_m:
                 if type_m2:
                     step['filter_type'] = [type_m.group(1).strip(), type_m2.group(1).strip()]
