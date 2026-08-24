@@ -2,6 +2,27 @@
 
 **Última atualização:** 23 de agosto de 2026
 
+> 23/08/2026 (bloco 657, continuação do roteiro turno-a-turno do bloco
+> 656, Teach x Imu, 11 turnos): **T2 corrigido** — `char_value_score`
+> não distinguia corpo recém-jogado (sem Rush, ainda não atacou/
+> bloqueou) de corpo já estabelecido, supervalorizando jogar um corpo
+> vanilla contra board vazio sobre guardá-lo como counter. Desconto de
+> 50% aplicado só no chamador (`_evaluate_state_v2`), não na função
+> base (outros usos, como decidir se vale salvar um corpo já em jogo,
+> não devem mudar). Medido nesta partida: motor agora passa igual ao
+> humano no T2 (antes jogava, gap 27 pontos). **T4 não é bug de motor**
+> — board do oponente reconstruído errado (carta do próprio Teach
+> aparecendo do lado do Imu), mesma classe de limitação dos blocos
+> 655/656. **T6/T8/T10/T12: motor joga igual ou melhor que o
+> humano** (não são bugs — pedido explícito do usuário "se jogar
+> melhor, ótimo!", confirma a ressalva do bloco 653 de que "idêntico" e
+> "melhor" divergem e melhor é o que importa). Saldo: 1 bug real em 6
+> turnos auditados, já corrigido. Faltam T14-T22 da mesma partida.
+> Corpus completo (`decision_quality_full.py --all`) ainda NÃO rodado
+> com este fix — pedido explícito do usuário pra não rodar ainda,
+> continuar acumulando fixes turno-a-turno primeiro. Ver bloco 657 do
+> HANDOFF pros detalhes turno a turno.
+
 > 23/08/2026 (bloco 656): **decklist completo capturado na INGESTAO**
 > (`sim_deck_registry.py`; snapshot versionado em `logs/decks_full/`,
 > `deck_full_files` no index). Retroativo: **276 de 300 lados = 92%**. Mão

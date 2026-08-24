@@ -17488,8 +17488,30 @@ class OPTCGMatch:
             pass
 
         # board (reusa char_value_score — já vê blocker/rush/imunidade/efeito).
-        score += sum(an.char_value_score(c) for c in p.field_chars) * W['board_mine']
-        score -= sum(an.char_value_score(c) for c in opp.field_chars) * W['board_opp']
+        # bloco 656 (sessao turno-a-turno, Teach x Imu T2): corpo RECEM-
+        # jogado sem Rush ainda nao atacou nem bloqueou NESTE estado
+        # avaliado (fim do proprio turno) -- char_value_score() nao
+        # distingue "acabei de entrar" de "ja estabelecido, pronto pra
+        # agir", tratando os dois iguais. Isso supervalorizava jogar um
+        # corpo vanilla contra board vazio (nada pra atacar/bloquear
+        # ainda) sobre guardar a MESMA carta como counter na mao -- achado
+        # real: Avalo Pizarro (2000pwr/2000ctr) jogado vs guardado, motor
+        # preferia jogar por 27 pontos contra um humano que passou.
+        # Desconto SO no chamador (nao dentro de char_value_score, que
+        # tem outros usos onde just_played e irrelevante -- ex: decidir
+        # se vale gastar blocker/counter pra salvar um corpo JA em jogo).
+        # Blocker/keywords continuam funcionais no turno em que entra
+        # (regra do jogo), mas o desconto aqui e deliberadamente GROSSEIRO
+        # (fator fixo no char_value_score inteiro, nao so na parcela de
+        # ataque) -- termo usado em toda avaliacao de estado, ajuste fino
+        # exige medicao de corpus, nao 1 turno.
+        def _board_presence(c):
+            v = an.char_value_score(c)
+            if c.just_played and not (c.has_rush or c.rush_this_turn):
+                v *= 0.5
+            return v
+        score += sum(_board_presence(c) for c in p.field_chars) * W['board_mine']
+        score -= sum(_board_presence(c) for c in opp.field_chars) * W['board_opp']
 
         # blockers do oponente vivos travam meu ataque -- obstaculo pro MEU
         # plano de dano.

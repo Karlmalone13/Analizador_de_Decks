@@ -28,6 +28,79 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-23 (657) - Claude (sessao remota web) - Continua o roteiro turno-a-turno do bloco 656 (Teach x Imu, 11 turnos): T2 CORRIGIDO (corpo recem-jogado sem Rush supervalorizado vs guardar como counter), T4 confundido por reconstrucao errada do board do oponente, T6/T8/T10/T12 motor joga IGUAL ou MELHOR que o humano -- nao sao bugs
+
+Continuacao direta do bloco 656 (mesma sessao de trabalho, "nao passar de
+turno enquanto nao bater"), retomada numa sessao remota apos o usuario
+seguir no PC e depois pedir pra continuar turno a turno em vez de rodar o
+corpus completo ainda.
+
+**T2 -- FECHADO.** Causa ja identificada no bloco 656 (nao corrigida la):
+`char_value_score()` (usado como termo de board em `_evaluate_state_v2`)
+nao distingue um corpo que ACABOU de entrar em campo (ainda nao atacou,
+nada pra bloquear) de um corpo ja estabelecido -- os dois valem o mesmo.
+Isso supervalorizava jogar Avalo Pizarro (2000pwr/2000ctr, sem Rush) contra
+um board vazio (nada de ameaca real ainda) sobre guardar a MESMA carta
+como counter na mao.
+
+Testadas 2 abordagens (usuario escolheu a 1a, mas o calculo mostrou o
+sinal ERRADO antes de codar):
+- Escalar `counter_hand` pela ameaca real do oponente (contagem de
+  atacantes ativos, mesmo sinal que `coverage` ja usa): REFUTADA por
+  calculo direto ANTES de implementar -- ameaca em T2 e BAIXA (board do
+  Imu vazio), entao esse fator reduziria o credito do counter guardado,
+  alargando o gap a favor de jogar, na direcao ERRADA.
+- Descontar `char_value_score` em 50% quando `card.just_played and not
+  (has_rush or rush_this_turn)`, aplicado SO no chamador (`_evaluate_
+  state_v2`, linhas do termo `board_mine`/`board_opp`), nao dentro de
+  `char_value_score()` em si (que tem outros usos onde just_played e
+  irrelevante, ex: decidir se vale gastar blocker/counter pra salvar um
+  corpo JA em jogo -- mudar a funcao base afetaria esses chamadores
+  tambem, sem necessidade).
+
+**Medido nesta partida especifica (nao no corpus ainda)**: decisao 0 do
+T2 virou de play=135,98 x pass=108,99 (motor jogava, gap 27) pra
+pass=108,99 x play=95,98 (motor passa, gap 13 a favor de pass) --
+**bate exatamente com o humano** (`actions: []`). `smoke_fast.py`/
+`smoke_test.py` OK, os 11 turnos desta partida continuam rodando sem
+erro (0/11).
+
+**T4 -- NAO e bug de motor, e reconstrucao de estado errada.** Motor
+ataca e mata "Bartholomew Kuma" (`OP16-093`) -- carta do PROPRIO deck do
+Teach (set OP16), nao do Imu. O board do OPONENTE reconstruido pra esta
+simulacao esta contaminado com uma carta do lado ERRADO -- mesma classe
+de limitacao que os blocos 655/656 ja vinham corrigindo (cobertura de
+deck real ainda em 92%/41,2%, nao 100%). Nao vale ajustar peso de motor
+em cima de um board que ja esta errado por definicao -- registrado como
+achado de FIDELIDADE pendente, nao de decisao.
+
+**T6/T8/T10/T12 -- motor joga IGUAL ou MELHOR, nao sao bugs** (pedido
+explicito do usuario: "se jogar melhor, otimo!" -- corrobora a ressalva
+ja registrada no bloco 653, "identico" e "melhor" divergem, e quando
+divergem o usuario quer MELHOR, nao identico):
+- T6: motor pumpa e ACERTA dano real (vida 4->2); humano atacou sem pump
+  e levou counter (bloqueado, 0 dano) antes de jogar Shiryu.
+- T8: motor usa o Shiryu JA em campo (turno 6, sem a penalidade de
+  recem-jogado) pra fechar mais dano, desenvolvendo Shiryu novo +
+  Vasco Shot na mesma linha -- comparavel ou melhor que a sequencia
+  historica.
+- T10: motor joga a MESMA carta que o humano jogou (OP09-093), mas
+  tambem remove uma ameaca (KO em St. Jaygarcia Saturn) e ativa a
+  habilidade de negar efeitos no mesmo turno -- uso de recursos mais
+  completo que o historico.
+- T12: ambas as linhas (motor e humano) fecham a partida; a "VITORIA"
+  narrada pelo motor aqui e o LOOKAHEAD da busca durante a avaliacao
+  (nao significa que o jogo real acabou no turno 12 -- o log real vai
+  ate turno 22, confirmado via contagem de entradas).
+
+**Estado**: 1 bug real encontrado e corrigido em 6 turnos auditados
+(T2-T12) desta partida. Faltam T14-T22 da mesma partida, nao auditados
+ainda nesta sessao -- proximo passo natural se a sessao continuar o
+roteiro. Corpus completo (`decision_quality_full.py --all --workers 4`)
+ainda NAO rodado com este fix (pedido explicito do usuario, "nao rode
+ainda") -- fica pendente pra quando o roteiro turno-a-turno acumular
+mais fixes, mesma logica de lote ja usada no resto do projeto.
+
 ## 2026-08-23 (656) - Claude (sessao local) - Registro do DECKLIST COMPLETO na ingestao (92% de cobertura, snapshot versionado) + acao **PASS** entra no espaco de acoes do motor: achado estrutural da analise turno-a-turno
 
 Dois pedidos do usuario: (a) criar um jeito de registrar o deck inteiro de
