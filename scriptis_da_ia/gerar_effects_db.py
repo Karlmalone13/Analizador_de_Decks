@@ -4580,6 +4580,25 @@ def parse_give_don(text):
         m_name_recv = re.search(r'to \d+ of your \[([^\]]+)\] cards?', clause)
         if m_name_recv and not to_opp:
             step['target_name'] = m_name_recv.group(1).strip()
+        # Filtro de TIPO no destinatario -- "to 1 of your {Tipo} [or
+        # {Tipo2}] type Leader or Character cards" (achado 24/08, familia
+        # Jinbe OP14-040/Camie EB03-015/Ran OP14-114/Wyper OP15-114/Heso!!
+        # OP15-117/Ace(094) OP16-094/Nami ST21-009, 8 cartas no banco):
+        # mesmo bug do filtro de nome (achado 19/07) mas pra {tipo} em vez
+        # de [nome] -- sem isso o DON podia ir pra QUALQUER character
+        # proprio, ignorando a restricao de tipo/arquetipo real da carta.
+        # Janela dedicada (nao usa `clause`, que so tem ~60 chars de
+        # margem -- curto demais pra "to 1 of your {Fish-Man} or
+        # {Merfolk} type Leader or Character cards", ~68 chars).
+        if not m_name_recv and not to_opp:
+            m_type_recv = re.search(
+                r'to \d+ of your ((?:\{[^}]+\}(?:,\s*|\s+or\s+)?)+)\s*type'
+                r'(?:\s+(?:leader or character|character or leader))?\s*cards?',
+                t[m.start():m.start() + 150])
+            if m_type_recv:
+                tipos = re.findall(r'\{([^}]+)\}', m_type_recv.group(1))
+                if tipos:
+                    step['filter_type'] = tipos if len(tipos) > 1 else tipos[0]
         ramp_steps.append((m.start(), step))
 
     # Aceleração REAL: adicionar DON do seu deck de DON ao seu campo (ramp)

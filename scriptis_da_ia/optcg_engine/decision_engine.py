@@ -8346,6 +8346,17 @@ class EffectExecutor:
             target_name = step.get('target_name', '').lower()
             if target_name:
                 targets = [c for c in targets if target_name in c.name.lower()]
+            # Filtro de TIPO -- "give up to N DON!! cards to 1 of your
+            # {Tipo} [or {Tipo2}] type Leader or Character cards" (achado
+            # 24/08, familia Jinbe OP14-040/Camie/Ran/Wyper/Heso!!/
+            # Ace(094)/Nami, 8 cartas): mesmo bug do filtro de nome, pra
+            # tipo/arquetipo -- sem isso o DON podia ir pra QUALQUER
+            # character proprio, ignorando a restricao real da carta
+            # (ex: Jinbe so pode dar pra {Fish-Man}/{Merfolk}).
+            filter_type = step.get('filter_type')
+            if filter_type:
+                from optcg_engine.rules_facade import card_matches_filter
+                targets = [c for c in targets if card_matches_filter(c, filter_type)]
             transferido = 0
             if targets:
                 # Entre quem pode de fato ATACAR AINDA NESTE TURNO (lider
@@ -15884,6 +15895,11 @@ class OPTCGMatch:
                     target_name = (step.get('target_name') or '').lower()
                     if target_name:
                         candidatos_alvo = [c for c in candidatos_alvo if target_name in c.name.lower()]
+                    filter_type_alvo = step.get('filter_type')
+                    if filter_type_alvo:
+                        from optcg_engine.rules_facade import card_matches_filter
+                        candidatos_alvo = [c for c in candidatos_alvo
+                                            if card_matches_filter(c, filter_type_alvo)]
                     if not candidatos_alvo:
                         continue
                     melhor = max(candidatos_alvo, key=lambda c: c.effective_power(True))

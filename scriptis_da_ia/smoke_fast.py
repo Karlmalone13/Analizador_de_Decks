@@ -10697,6 +10697,7 @@ def main() -> int:
     test_give_don_either_side_arlong_alvida_morgan_24_08()
     test_should_activate_main_nao_queima_once_per_turn_em_custo_impagavel_24_08()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
+    test_give_don_filtro_de_tipo_no_destinatario_24_08()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
@@ -14899,6 +14900,44 @@ def test_opp_turn_reactive_effects_krieg_leader_debuff_24_08() -> None:
     match_koby._apply_opp_turn_reactive_effects(opp_of_koby, koby_owner)
     check("Koby (target='self') se auto-debuffa -3000 durante o turno do oponente",
           koby.power_buff == -3000)
+
+
+def test_give_don_filtro_de_tipo_no_destinatario_24_08() -> None:
+    """
+    Achado real 24/08 (investigacao do lider Jinbe OP14-040, mesmo pedido
+    do usuario sobre o Krieg): "Give up to N rested DON!! cards to 1 of
+    your {Tipo} type Leader or Character cards" -- o filtro de tipo do
+    DESTINATARIO era descartado por completo (mesmo bug ja corrigido
+    19/07 pro filtro de NOME, [Nome], nunca estendido pro filtro de
+    TIPO, {Tipo}). Sem isso o DON podia ir pra QUALQUER character
+    proprio, ignorando a restricao real da carta (Jinbe: {Fish-Man} ou
+    {Merfolk} -- 8 cartas no banco com essa forma).
+    """
+    jinbe_step = get_card_effects("OP14-040")["activate_main"]["steps"][0]
+    check("Jinbe (lider) give_don ganha filter_type=['fish-man','merfolk'] "
+          "(2 tipos, texto com 'or')",
+          jinbe_step["action"] == "give_don"
+          and set(jinbe_step["filter_type"]) == {"fish-man", "merfolk"})
+
+    nami_step = get_card_effects("ST21-009")["activate_main"]["steps"][0]
+    check("Nami (ST21-009) give_don ganha filter_type='straw hat crew' (1 tipo)",
+          nami_step["filter_type"] == "straw hat crew")
+
+    # Execucao real: com board misto (1 Fish-Man, 1 NAO-Fish-Man mais
+    # forte), o DON so pode ir pro elegivel -- mesmo que o mais forte do
+    # campo nao bata o filtro.
+    me = GameState(leader=real_card("OP14-040"), turn=5, don_available=0)
+    me.don_rested = 3
+    me.leader.rested = True   # ja atacou -- forca a escolha pro campo
+    elegivel = mk("JFM1", "Fish-Man Guy", power=3000, cost=2, sub_types="Fish-Man")
+    nao_elegivel = mk("JNE1", "Land Guy Forte", power=9000, cost=6, sub_types="Land of Wano")
+    me.field_chars = [elegivel, nao_elegivel]
+    opp = GameState(leader=mk("JOPP", "Opp", card_type="LEADER", power=5000), turn=5)
+    ee = EffectExecutor(me, opp)
+    ee._execute_step(jinbe_step, me.leader)
+    check("give_don respeita o filtro de tipo -- so o Fish-Man elegivel "
+          "pode receber DON, mesmo o mais fraco",
+          elegivel.don_attached > 0 and nao_elegivel.don_attached == 0)
 
 
 if __name__ == "__main__":

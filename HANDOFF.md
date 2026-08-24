@@ -28,6 +28,65 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (672) - Claude (sessao remota web) - Pedido do usuario "depois pode testar com outro lider": Jinbe (OP14-040). Suspeita inicial (habilidade ativada repetidamente sem dar DON nenhum) NAO se confirmou como bug -- e o motor corretamente escolhendo 0 dentro de "up to N". Achado um bug REAL diferente e bem definido: filtro de TIPO do destinatario de give_don descartado pelo parser, familia de 8 cartas
+
+Partida: `Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.json`, 5 turnos
+proprios auditados (T3-T11).
+
+**Suspeita inicial, investigada e DESCARTADA:** narrativa mostrava
+"⚙ ativou [Activate:Main] de Jinbe... custo: trashou da mão: Koala...
++0 DON" repetido em 3 dos 5 turnos -- parecia desperdicio (paga custo,
+zero retorno). Investigado a fundo: "Give up to 2 rested DON!! cards"
+e um TETO que o proprio jogador escolhe (0..N), e o motor ja tem
+heuristica calibrada (achados 15/07 e 02/08) que reduz corretamente
+pra 0 quando ninguem precisa de mais poder pra fechar o ataque do
+turno (nos turnos observados, Jinbe ja tinha atacado e ganho DON via
+attach_don normal ANTES de ativar essa habilidade). Alem disso, "Koala"
+(OP14-046) e uma carta de descarte por DESIGN (0 power, a propria
+habilidade dela e "trash this Character") -- o custo pago e baixo
+mesmo com retorno 0. Conferido via `decision_log`: a escolha de ativar
+teve `simulated_value` MAIOR que passar (583 vs 305 em 3 amostras),
+sugerindo valor real (hand-thinning) capturado pelo Monte Carlo, nao
+so ruido -- mas nao investigado a fundo o suficiente pra afirmar isso
+com certeza (amostra pequena). **Nao e um achado confirmado, registrado
+so como duvida residual, nao um bug.**
+
+**Bug REAL achado, distinto e bem definido:** o texto completo de
+Jinbe e "Give up to 2 rested DON!! cards to 1 of your **{Fish-Man} or
+{Merfolk} type** Leader or Character cards" -- o parser descartava por
+completo esse filtro de TIPO do destinatario. Mesma classe de bug ja
+corrigida em 19/07 pro filtro de NOME ([Nome]), nunca estendida pro
+filtro de TIPO ({Tipo}). Sem o filtro, o DON podia ir pra QUALQUER
+character proprio do jogador, nao so Fish-Man/Merfolk -- uma violacao
+de regra real sempre que o board tivesse um character MAIS FORTE que
+nao batesse o tipo (nao aconteceu na partida observada porque Jinbe
+era o unico alvo possivel nos turnos auditados, mas e um risco latente
+pra qualquer board misto).
+
+**Busca global:** regex sobre `cards_rows.csv` -- 8 codigos base
+compartilham essa gramatica: Camie (EB03-015), Jinbe (OP14-040, 2
+tipos via "or"), Ran (OP14-114), Wyper (OP15-114), Heso!! (OP15-117),
+Portgas.D.Ace/094 (OP16-094), Nami (ST21-009) -- todos com `give_don`
+sem filter_type nenhum antes do fix.
+
+**Fix generico:** `gerar_effects_db.py`/`parse_give_don` -- nova
+captura de `{Tipo}` (1 ou mais, separados por "or") numa janela
+dedicada de 150 chars (a janela `clause` existente, ~60 chars, e curta
+demais pra "to 1 of your {Fish-Man} or {Merfolk} type Leader or
+Character cards", ~68 chars). Emite `filter_type` como lista quando 2+
+tipos, string quando 1. `decision_engine.py`: `_execute_step`
+(action='give_don') E `_score_activate_main` (mesmo calculo de
+candidatos que a execucao, pra scoring nao divergir -- REGRA_SEM_
+DUPLICACAO) ganharam o filtro via `card_matches_filter` (ja suporta
+lista de tipos nativamente).
+
+**Validado:** `diff_parser.py` PERDEU=0, MUDOU=7 (exatamente os 7
+codigos). Novo teste dedicado em `smoke_fast.py` -- parser (Jinbe 2
+tipos, Nami 1 tipo) + execucao real (board misto, DON so vai pro
+elegivel mesmo sendo o mais fraco). `smoke_fast.py`/`smoke_test.py`
+OK. Registro em
+`parser_audits/2026-08-24_OP14-040_give_don_filtro_de_tipo.json`.
+
 ## 2026-08-24 (671) - Claude (sessao remota web) - "confira de novo o krieg, principalmente o debuff que o lider dá turno a turno": achado MECANISMO INTEIRO ausente. `execute(source, 'opp_turn')` NUNCA era chamado em lugar nenhum do codebase -- a habilidade defensiva do lider Krieg (e mais 41 cartas no banco inteiro, incl. o lider Marshall.D.Teach) nunca produzia efeito nenhum, so existia no JSON parseado. Corrigido com um dispatch generico novo, chamado tanto no turno real quanto no lookahead do Turn Planner
 
 **Achado (busca exaustiva pela string 'opp_turn' no arquivo inteiro):**

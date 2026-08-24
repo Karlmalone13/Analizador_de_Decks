@@ -4278,7 +4278,11 @@
           {
             "action": "give_don",
             "count": 1,
-            "rested": true
+            "rested": true,
+            "filter_type": [
+              "fish-man",
+              "merfolk"
+            ]
           }
         ],
         "costs": [
@@ -55332,7 +55336,11 @@
           {
             "action": "give_don",
             "count": 2,
-            "rested": true
+            "rested": true,
+            "filter_type": [
+              "fish-man",
+              "merfolk"
+            ]
           }
         ],
         "costs": [
@@ -57737,7 +57745,8 @@
           {
             "action": "give_don",
             "count": 1,
-            "rested": true
+            "rested": true,
+            "filter_type": "kuja pirates"
           }
         ],
         "once_per_turn": true
@@ -61727,7 +61736,8 @@
           {
             "action": "give_don",
             "count": 1,
-            "rested": true
+            "rested": true,
+            "filter_type": "sky island"
           }
         ],
         "once_per_turn": true
@@ -61840,7 +61850,8 @@
           {
             "action": "give_don",
             "count": 1,
-            "rested": true
+            "rested": true,
+            "filter_type": "sky island"
           }
         ]
       }
@@ -64834,7 +64845,8 @@
           {
             "action": "give_don",
             "count": 1,
-            "rested": true
+            "rested": true,
+            "filter_type": "land of wano"
           }
         ],
         "once_per_turn": true
@@ -75776,7 +75788,8 @@
           {
             "action": "give_don",
             "count": 2,
-            "rested": true
+            "rested": true,
+            "filter_type": "straw hat crew"
           }
         ],
         "once_per_turn": true

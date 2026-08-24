@@ -2,6 +2,23 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 672, pedido "depois pode testar com outro líder"):
+> **Jinbe (OP14-040).** Suspeita inicial (habilidade ativada
+> repetidamente sem dar DON nenhum, trashando Koala à toa) **investigada
+> e descartada** — "give up to N" é um teto que o motor já reduz
+> corretamente pra 0 quando ninguém precisa de mais poder pra fechar o
+> ataque do turno (heurística já calibrada), e Koala é carta de
+> descarte por design. Não é bug, fica como dúvida residual não
+> confirmada (só o `simulated_value` do Monte Carlo pareceu favorecer
+> ativar, amostra pequena, não investigado a fundo). **Bug REAL achado,
+> diferente e bem definido**: o texto de Jinbe restringe o destinatário
+> do DON a "{Fish-Man} or {Merfolk} type" — o parser descartava esse
+> filtro de tipo por completo (mesma classe de bug já corrigida em
+> 19/07 pro filtro de nome, nunca estendida pro filtro de tipo). Busca
+> global achou 8 cartas com a mesma gramática. Fix genérico no parser +
+> execução + scoring (pra não divergir). Teste dedicado novo,
+> `smoke_fast.py`/`smoke_test.py` OK. Ver bloco 672 do HANDOFF.
+
 > 24/08/2026 (bloco 671, pedido "confira de novo o krieg, o debuff que
 > o líder dá turno a turno"): **MECANISMO INTEIRO ausente, achado real
 > grande.** `execute(source, 'opp_turn')` nunca era chamado em lugar

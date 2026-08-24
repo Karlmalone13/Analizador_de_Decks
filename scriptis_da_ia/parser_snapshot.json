@@ -2714,6 +2714,10 @@
     {
      "action": "give_don",
      "count": 1,
+     "filter_type": [
+      "fish-man",
+      "merfolk"
+     ],
      "rested": true
     }
    ]
@@ -35088,6 +35092,10 @@
     {
      "action": "give_don",
      "count": 2,
+     "filter_type": [
+      "fish-man",
+      "merfolk"
+     ],
      "rested": true
     }
    ]
@@ -36674,6 +36682,7 @@
     {
      "action": "give_don",
      "count": 1,
+     "filter_type": "kuja pirates",
      "rested": true
     }
    ]
@@ -39323,6 +39332,7 @@
     {
      "action": "give_don",
      "count": 1,
+     "filter_type": "sky island",
      "rested": true
     }
    ]
@@ -39412,6 +39422,7 @@
     {
      "action": "give_don",
      "count": 1,
+     "filter_type": "sky island",
      "rested": true
     }
    ]
@@ -41362,6 +41373,7 @@
     {
      "action": "give_don",
      "count": 1,
+     "filter_type": "land of wano",
      "rested": true
     }
    ]
@@ -50475,6 +50487,7 @@
     {
      "action": "give_don",
      "count": 2,
+     "filter_type": "straw hat crew",
      "rested": true
     }
    ]
