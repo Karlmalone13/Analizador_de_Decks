@@ -2,6 +2,20 @@
 
 **Última atualização:** 24 de agosto de 2026
 
+> 24/08/2026 (bloco 675, pedido "tá melhor que as porcentagens de
+> ontem?"): rodada `decision_quality_full.py --all --workers 4` (150
+> logs, 1017 turnos) — `play` = **27,5%/28,1%** hoje. Parecia queda
+> forte vs os 31,5% do fim de 23/08 (bloco 652), mas **investigado e
+> descartado como regressão dos 4 fixes desta sessão** — confirmado via
+> `git merge-base` que todo código de 23/08 está no branch (não é
+> dessincronização); a queda real aconteceu ANTES da minha parte de
+> hoje, quando a auditoria passou a usar decklists REAIS do oponente
+> (bloco 655, cobertura 2,3%→41,2%) — muda a régua de medição, não o
+> motor. Contra a régua já em vigor no início de hoje (27,9%, commit
+> `8d479f3`), meus 4 fixes (Kuro/Krieg/Jinbe/Xebec) deram **27,5%** —
+> diferença de -0,4pp, dentro do ruído. **Nenhuma regressão real.** Ver
+> bloco 675 do HANDOFF.
+
 > 24/08/2026 (bloco 674, pedido "quero saber se estamos cumprindo o
 > objetivo de jogar idêntico ao humano"): rodada `decision_quality_vs_
 > human.py` (26 logs/111 turnos) — **89,2% dos turnos o motor causa

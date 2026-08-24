@@ -28,6 +28,46 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (675) - Claude (sessao remota web) - Pedido do usuario "ta melhor que as porcentagens de ontem?": rodado `decision_quality_full.py --all --workers 4` (150 logs, 214 validos, 1017 turnos) e investigada a queda aparente 31,5% (fim 23/08, bloco 652) -> 27,5% hoje -- NAO e regressao dos 4 fixes desta sessao
+
+**Numero de hoje**: play 265/965 (27,5%, exato) / 512/1825 (28,1%,
+sobreposicao). Tabela `play POR LIDER` completa em
+`metrics/decision_quality_full/ultimo_resultado.json`.
+
+**Investigacao da queda** (pedido explicito do usuario antes de aceitar
+o numero): confirmado via `git merge-base --is-ancestor <hash> HEAD`
+que TODO o codigo dos fixes de 23/08 (`ba3caa7` desempate por
+preservacao de opcao + teto DON, `c503e7b`/`fdded66` aposentadoria do
+override + correcao do NameError) esta presente neste branch -- nao e
+codigo perdido/branch dessincronizado. A comparacao certa NAO e contra
+os 31,5% do fim de 23/08 (bloco 652) -- o proprio bloco 662 (inicio da
+sessao de HOJE, ANTES da minha parte) ja comparava contra um baseline
+DIFERENTE, "21,0% (blocos 642/647)", nao os 31,5%. Causa: entre o fim
+de 23/08 e o inicio de hoje, a ferramenta de auditoria passou por uma
+reforma de FIDELIDADE de reconstrucao (bloco 655, "decks REAIS do
+simulador integrados, cobertura 2,3% -> 41,2%") -- muda o ESTADO
+simulado que o motor reage durante a auditoria, entao o "31,5%" de
+ontem foi medido contra uma reconstrucao MENOS fiel do oponente. Nao e
+o motor jogando pior, e a regua de medicao ficando mais precisa (e mais
+dura) -- exatamente o tipo de "conferir a logica antes de reportar
+percentual agregado" que este projeto ja exige adotar por habito.
+
+**Contra a regua correta (ja em vigor desde o inicio de hoje, antes dos
+meus 4 fixes)**: baseline `8d479f3` (commit anterior a esta parte da
+sessao) media **play=27,9%** no MESMO tipo de amostra ampliada. Meus 4
+fixes desta parte (Kuro timing, Krieg/Teach opp_turn dispatch, Jinbe
+filtro de tipo, Xebec total_cost/distinct_names) resultaram em
+**27,5%/28,1%** -- diferenca de -0,4pp, dentro do ruido esperado (o
+embaralhamento aleatorio do baralho do oponente na reconstrucao varia
+entre rodadas, ja documentado como limitacao da propria ferramenta).
+**Conclusao: nenhuma regressao real dos fixes desta sessao.**
+
+**Licao registrada pra sessoes futuras**: ao comparar "hoje vs ontem"
+neste projeto, sempre conferir qual FERRAMENTA/RECONSTRUCAO gerou cada
+numero antes de comparar -- uma mudanca na fidelidade da auditoria pode
+mover o numero tanto quanto (ou mais que) uma mudanca real no motor de
+decisao, e os dois ficam misturados se nao se separa explicitamente.
+
 ## 2026-08-24 (674) - Claude (sessao remota web) - Pedido do usuario "quero saber se estamos cumprindo o objetivo de jogar identico ao humano": rodada a metrica objetiva `decision_quality_vs_human.py` (26 logs bot-vs-humano, 111 turnos) + investigados os 12/12 turnos residuais um a um -- NENHUM bug novo, teto confirmado como ruido de reconstrucao + diversidade estrategica legitima. Amostra ampliada pra 150 logs (novo flag `--all-logs`), resultado ainda rodando em background
 
 **Resultado da metrica (26 logs/111 turnos, com recorte por lider, mandatorio)**:
