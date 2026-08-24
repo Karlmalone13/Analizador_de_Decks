@@ -1,6 +1,22 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 23 de agosto de 2026
+**Última atualização:** 24 de agosto de 2026
+
+> 24/08/2026 (bloco 659, RETIFICAÇÃO): commit `acff087` ("fix no
+> DonEstimator") estava **ERRADO** e foi revertido (`git revert`,
+> commit `138ea45`, já pushado). `don_available_estimado` é
+> DELIBERADAMENTE o valor pré-ramp — `eng.play_turn()` já faz o ramp do
+> próprio turno sozinho via `don_phase()` (linha ~14568,
+> incondicional, lê `p.turn`/`p.is_first`). A mudança fazia a
+> reconstrução somar o ramp do turno atual E DEPOIS `don_phase()`
+> somava de novo — **dobrava** o DON disponível (confirmado: narrativa
+> mostrou "5 ativos" num turno em que o correto era 3). Nenhum smoke
+> test pegou porque nenhum verifica conservação de DON turno-a-turno
+> contra a regra real (mesma lacuna do bloco 654, mas pro
+> DonEstimator). Lição: antes de mexer em `don_available`/`don_deck`
+> na reconstrução, ler `play_turn()`/`don_phase()` primeiro — "número
+> parece baixo" não é evidência de bug sem confirmar contra o que o
+> consumidor espera. Ver bloco 659 do HANDOFF pro relato completo.
 
 > 23/08/2026 (bloco 657, continuação do roteiro turno-a-turno do bloco
 > 656, Teach x Imu, 11 turnos): **T2 corrigido** — `char_value_score`

@@ -28,6 +28,76 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-24 (659) - Claude (sessao remota web) - RETIFICACAO do bloco 658 (REVERTIDO, commit 138ea45): o "bug de ordenacao" no DonEstimator era diagnostico mal interpretado, nao bug real -- `don_available_estimado` e DELIBERADAMENTE pre-ramp, `eng.play_turn()` ja rampa o proprio turno sozinho via `don_phase()`
+
+**O erro cometido**: testando se o fix do bloco 657 generalizava (pedido
+do usuario "pegue outra partida"), vi `don_available_estimado=1` no T3
+de Katakuri e Xebec, com o humano gastando 3+ DON no turno -- concluí
+(ERRADO) que faltava somar o ramp do proprio turno ANTES de `available()`
+ser lido, e "corrigi" `audit_real_losses.py` pra chamar `don_est.apply_
+turn()` do turno atual antes de `p.don_available = don_est.available(...)`.
+Testei (`smoke_fast`/`smoke_test` OK, 20 logs frescos 0 erro), documentei
+como achado grande ("afeta TODA reconstrucao"), commitei e fiz PUSH
+(acff087) -- **sem verificar o que `eng.play_turn()` faz internamente**.
+
+**Por que estava errado**: `eng.play_turn()` (linha ~19236) chama
+`self.don_phase(p, opp)` (linha 19269) SEMPRE, incondicionalmente, ANTES
+do `main_phase()` -- `don_phase()` (linha 14568) faz `p.don_available +=
+gain` e `p.don_deck -= gain` (gain=1 no T1 do 1o jogador, 2 nos demais)
+por conta propria, lendo `p.turn`/`p.is_first`, SEM depender de nada que
+a reconstrucao tenha feito antes. Ou seja: `p.don_available` ANTES de
+chamar `play_turn()` SEMPRE representa o estado PRE-ramp-deste-turno por
+DESIGN -- o proprio `play_turn()` e quem faz o ramp do turno atual, como
+parte de simular o turno inteiro (refresh->draw->don->main->end). O
+comentario que ja existia no codigo ("Captura o valor ANTES de play_
+turn() mutar p.don_available") ja dizia isso explicitamente -- eu li o
+comentario errado, assumindo que "pre-play_turn()" significava "bug",
+quando era o design CORRETO e intencional.
+
+Minha mudanca fazia `don_est.apply_turn()` somar o ramp do turno atual
+ANTES de setar `p.don_available`, e DEPOIS `don_phase()` (dentro de
+`play_turn()`) ramp AVA DE NOVO -- **dobrava** o DON do turno atual
+(confirmado ao vivo: narrativa mostrou "5 ativos" num turno em que o
+correto era 3). O motor passou a decidir com DON A MAIS do que o
+jogador realmente tinha -- um erro na direcao OPOSTA ao que eu pensava
+estar corrigindo, e provavelmente PIOR (dar recurso de graca é mais
+distorcivo que negar).
+
+**Por que os smoke tests nao pegaram**: nenhum dos dois verifica
+conservacao de DON turno-a-turno contra a regra real do jogo (mesma
+classe de lacuna ja registrada no bloco 654 pra `main_phase` -- "smoke
+verde nao prova nada aqui" quando o assunto é orquestracao de turno
+inteiro). O `_check_invariants()` interno (chamado dentro de `play_
+turn()`) confere conservacao de DON dentro do MOTOR, mas nao entre o
+que a RECONSTRUCAO alimentou e o que deveria ter alimentado.
+
+**Correcao**: `git revert acff087` (commit 138ea45, ja pushado) --
+reverte OS 3 arquivos exatamente pro estado do commit anterior
+(6dcfa4a). Confirmado apos revert: T3 do Kid x Krieg volta a mostrar
+`don_available_estimado=1` (pre-ramp, correto) e a narrativa mostra "+2
+rampados -> 3 ativos" (nao mais 5) -- bate com o esperado.
+
+**Licao pra nao repetir**: antes de mexer em QUALQUER campo que
+alimenta `p.don_available`/`p.don_deck` na reconstrucao, ler `play_
+turn()`/`don_phase()` PRIMEIRO pra confirmar o que o motor ja faz
+sozinho -- "o numero parece baixo" nao e evidencia de bug sem confirmar
+contra o que o consumidor (aqui, `eng.play_turn()`) realmente espera
+receber. O padrao "empate real com o historico melhorou depois do meu
+fix" (Xebec T3 foi de faltar 1 carta pra bater exato) tambem NAO prova
+que o fix estava certo -- dar DON de graca tambem faz mais coisa caber,
+por motivo errado.
+
+**Achado ainda de pe, nao invalidado por esta retificacao**: o padrao
+real observado (T3 de 2 lideres diferentes com o humano gastando mais
+DON do que `don_available_estimado` pre-ramp sozinho sugere) segue
+sendo digno de nota, MAS a explicacao correta e que `don_available_
+estimado` NUNCA foi pra ser lido como "o DON que o motor usou" -- e
+"o DON antes do proprio play_turn() ramp-ar", por design. Quem for
+comparar DON real do humano contra o que o motor teve disponivel numa
+decisao especifica deve olhar o `don_available`/DON gasto DENTRO da
+narrativa (apos "+N rampados"), nao o campo `don_available_estimado`
+do relatorio.
+
 ## 2026-08-23 (657) - Claude (sessao remota web) - Continua o roteiro turno-a-turno do bloco 656 (Teach x Imu, 11 turnos): T2 CORRIGIDO (corpo recem-jogado sem Rush supervalorizado vs guardar como counter), T4 confundido por reconstrucao errada do board do oponente, T6/T8/T10/T12 motor joga IGUAL ou MELHOR que o humano -- nao sao bugs
 
 Continuacao direta do bloco 656 (mesma sessao de trabalho, "nao passar de
