@@ -171,7 +171,15 @@ def _turn_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
     # audit_one_game, mesmo padrao de erro ja usado pelo resto do
     # pipeline (`report.get('error')` abaixo).
     if 'players' not in raw.get('meta', {}):
-        return {'error': f'schema de log antigo sem meta.players: {os.path.basename(parsed_path)}'}
+        # `file` e obrigatorio no retorno -- main() indexa `e["file"]` ao
+        # imprimir a lista de erros (mesma chave que o caminho de erro
+        # JA existente, `report.get('error')` mais abaixo, sempre inclui).
+        # Faltou na 1a versao deste guard e derrubou o `--all-logs`
+        # inteiro de novo, com um KeyError DIFERENTE (`'file'` em vez de
+        # `'players'`) -- mesma classe de erro (excecao nao tratada
+        # matando o batch todo), susto novo pelo mesmo motivo estrutural.
+        return {'error': f'schema de log antigo sem meta.players',
+                'file': os.path.basename(parsed_path)}
     turns_raw = raw['turns']
     report = audit_one_game(parsed_path, human_side_label, cards_db, df_raw, urls)
     if report.get('error'):
