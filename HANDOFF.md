@@ -113,19 +113,46 @@ da 3a acao; reescrito com 4 acoes pra saturar as 3 vagas novas e voltar
 a isolar exatamente o efeito da camada barata (mesmo desenho, deslocado
 pra fora da garantia -- nao e teste ajustado pra passar).
 
-### PENDENTE -- ler antes de confiar neste bloco
+### RESULTADO -- MEDIDO E REVERTIDO (commit seguinte ao 76358c7)
 
-`decision_quality_full.py --all --workers 4` estava **AINDA RODANDO** no
-momento deste registro. Baseline a bater (estado commitado anterior,
-bloco 675): **play 27,5% exato / 28,1% sobreposicao**, activate 28,5%,
-attach_don 19,4%, attack-quem 55,0%, attack-alvo 69,2%. A proxima
-sessao (ou a continuacao desta) DEVE conferir o resultado e:
-- se pagou: registrar os numeros e o recorte POR LIDER (obrigatorio);
-- se ficou flat/negativo: **REVERTER** `SEARCH_MIN_PLAY_CANDIDATES` pra
-  1 (mesma disciplina que ja reverteu 2 mecanismos nesta sessao e no
-  bloco 652), mantendo o diagnostico e os testes, que valem
-  independente.
-Nao citar ganho deste bloco sem esse numero.
+`decision_quality_full.py --all --workers 4` terminou. **Piorou:**
+
+| categoria | baseline (bloco 675) | com 3 vagas | delta |
+|---|---|---|---|
+| **play (exato)** | 27,5% | **26,8%** | **-0,7pp** |
+| **play (sobreposicao)** | 28,1% | **27,2%** | **-0,9pp** |
+| activate | 28,5% | 28,3% | -0,2pp |
+| attach_don | 19,4% | 19,5% | +0,1pp |
+| attack -- quem | 55,0% | 54,7% | -0,3pp |
+| attack -- alvo | 69,2% | 69,1% | -0,1pp |
+| defesa (blocker/counter) | 85,9% / 60,7% | 85,9% / 60,7% | igual |
+
+Recorte POR LIDER (obrigatorio) confirma que nao foi ruido concentrado:
+caiu em varios lideres de volume real (OP13-079 20,8%->18,8%, OP17-039
+34,1%->29,4%), subiu em poucos (OP15-001 25,5%->27,7%). Nenhum lider
+teve ganho que justificasse o custo agregado.
+
+**REVERTIDO** `SEARCH_MIN_PLAY_CANDIDATES` 3 -> 1, exatamente como este
+bloco instruiu antes de saber o resultado. Diagnostico, instrumentacao
+e testes MANTIDOS (valem independente -- o teste novo passou a assertar
+contra a CONSTANTE, entao continua valido no valor revertido).
+
+**O diagnostico estava certo, a conclusao dele nao.** A exclusao
+estrutural existe e foi bem medida (30,6% cortadas antes da busca, rank
+acumulado 59,1% ate rank 3) -- mas **recuperar a candidata nao a
+converte em acerto**. Hipotese da causa (NAO confirmada, registrada pra
+nao ser re-testada as cegas): cada 'play' extra consome amostras Monte
+Carlo do MESMO orcamento fixo por decisao, entao as candidatas boas
+perdem precisao -- e a recuperada costuma perder a busca de qualquer
+jeito (bloco 651 ja media isso). Trocar precisao das boas por presenca
+das ruins e negativo em liquido.
+
+**3a confirmacao independente da mesma familia de regressao** (blocos
+593/594 ja tinham medido "alargar o shortlist regride"). Registrado
+como aprendizado ESTRUTURAL: **nao reabrir "dar mais vaga pro play" em
+nenhuma variante** -- o gargalo real esta no gap de score/valor entre
+'play' e 'attack', ou no orcamento de amostras, nao no numero de vagas.
+Essa e a direcao pra proxima tentativa.
 
 ## 2026-08-25 (676) - Claude (sessao remota web) - Pedido REPETIDO e EXPLICITO do usuario ("conserte essa diversidade estrategica, quero que seja parecido ou igual ao do humano, ja falei diversas vezes"): mecanismo novo de desempate por banda larga TENTADO e REVERTIDO (medido FLAT/levemente negativo) -- diagnostico que motivou tinha 2 erros metodologicos distintos, achados e corrigidos na propria investigacao; `decision_log` ganhou captura completa (candidates sem corte de 8 + `all_actions` novo) pra desbloquear a proxima tentativa com dado confiavel
 

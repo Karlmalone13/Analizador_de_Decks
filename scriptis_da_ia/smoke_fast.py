@@ -10673,7 +10673,7 @@ def main() -> int:
     test_opp_combo_threat_ve_carta_revelada_na_mao_11_08()
     test_cheap_rollout_value_deterministico_e_direcao_correta_11_08()
     test_select_search_candidates_alarga_com_cheap_values_sem_regredir_11_08()
-    test_shortlist_garante_3_plays_bloco_677()
+    test_shortlist_garante_plays_bloco_677()
     test_log_turn_planner_decision_registra_cheap_value_pra_auditoria_11_08()
     test_select_action_via_search_generaliza_parada_antecipada_pra_3_candidatas_13_08()
     test_cheap_playout_deltas_encadeia_multiplas_cartas_quando_cabe_no_don_13_08()
@@ -14045,19 +14045,23 @@ def test_select_search_candidates_alarga_com_cheap_values_sem_regredir_11_08() -
           a1 in com_cheap_alto and a2 in com_cheap_alto)
 
 
-def test_shortlist_garante_3_plays_bloco_677() -> None:
+def test_shortlist_garante_plays_bloco_677() -> None:
     """
-    Bloco 677: `include_best_kind('play', SEARCH_MIN_PLAY_CANDIDATES)`
-    passou de 1 pra 3 vagas garantidas. Motivo medido (diag v3 + rank,
-    503 cartas que o humano jogou e o motor nao): 30,6% eram acoes legais
-    COM score real que nunca chegaram a disputar a busca Monte Carlo,
-    porque so o 'play' de MAIOR score tinha vaga garantida e a janela de
-    score e dominada por 'attack' (escala 2,1x).
+    Fixa o MECANISMO de vaga garantida pra 'play' no shortlist da busca
+    (`include_best_kind('play', SEARCH_MIN_PLAY_CANDIDATES)`), contra o
+    cenario REAL que motivou a investigacao do bloco 677: um 'attack' de
+    score alto ocupando a janela inteira, com varios 'play' de score
+    modesto atras dele -- sem a garantia, NENHUM 'play' competiria.
 
-    Este teste fixa a garantia contra o cenario REAL que a motivou: um
-    'attack' de score alto ocupando a janela inteira, com varios 'play'
-    de score modesto atras dele.
+    Assertivo contra a CONSTANTE, nao contra um numero fixo: o valor foi
+    3 durante o teste do bloco 677 e voltou pra 1 quando a medicao
+    agregada mostrou regressao (ver comentario extenso na constante). O
+    teste continua valido nos dois casos -- o que ele protege e que a
+    garantia EXISTE e respeita ordem de score e filtro de viabilidade,
+    nao qual e o numero calibrado hoje.
     """
+    from optcg_engine.decision_engine import SEARCH_MIN_PLAY_CANDIDATES
+
     match = OPTCGMatch((real_card("OP11-062"), []), (real_card("OP11-062"), []))
 
     atk = (1000.0, 'attack', mk("A1", "Atacante", power=6000, cost=4), None, None)
@@ -14070,11 +14074,13 @@ def test_shortlist_garante_3_plays_bloco_677() -> None:
     shortlist = match._select_search_candidates(
         actions, top_k=3, priority='DEVELOP', min_candidates=1, score_window=50)
     plays = [a for a in shortlist if a[1] == 'play']
-    check("com attack dominando a janela, 3 'play' ainda entram no shortlist "
-          "(garantia do bloco 677 -- antes so 1 entrava)",
-          len(plays) == 3)
-    check("os 3 'play' garantidos sao os de MAIOR score (p1/p2/p3), nao arbitrarios",
-          p1 in plays and p2 in plays and p3 in plays and p4 not in plays)
+    check(f"com attack dominando a janela, exatamente "
+          f"SEARCH_MIN_PLAY_CANDIDATES={SEARCH_MIN_PLAY_CANDIDATES} 'play' "
+          f"entram no shortlist pela garantia",
+          len(plays) == SEARCH_MIN_PLAY_CANDIDATES)
+    esperados = [p1, p2, p3, p4][:SEARCH_MIN_PLAY_CANDIDATES]
+    check("os 'play' garantidos sao os de MAIOR score, em ordem -- nao arbitrarios",
+          all(e in plays for e in esperados))
     check("o attack continua no shortlist -- a garantia e ADITIVA, nao substitui",
           atk in shortlist)
 

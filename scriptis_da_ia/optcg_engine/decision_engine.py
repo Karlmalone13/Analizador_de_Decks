@@ -355,12 +355,32 @@ PREVENT_COMBO_LEADER_ATTACK_BONUS = 150
 # de tempo (recurso), nao politica de decisao.
 SEARCH_MIN_CANDIDATES = 3
 SEARCH_SCORE_WINDOW = 180
-# Bloco 677: quantos 'play' tem vaga GARANTIDA no shortlist da busca
+# Quantos 'play' tem vaga GARANTIDA no shortlist da busca
 # (`include_best_kind('play', ...)` em `_select_search_candidates`).
-# Era 1 fixo desde o bloco 639. Ver o comentario extenso no ponto de uso
-# pra a medicao que definiu o valor 3 (distribuicao de rank das 154
-# cartas que o humano jogou e o motor nem chegou a simular).
-SEARCH_MIN_PLAY_CANDIDATES = 3
+#
+# Bloco 677: tentado 3 (era 1 fixo desde o bloco 639), com base numa
+# medicao SOLIDA de que 30,6% das cartas que o humano jogou eram acoes
+# legais com score real cortadas antes de disputar a busca, e no rank
+# delas (acumulado ate rank 3 = 59,1%). **MEDIDO E REVERTIDO**: o
+# diagnostico estava certo (a exclusao estrutural existe e foi bem
+# medida), mas alargar a garantia NAO a converte em acerto --
+# `decision_quality_full.py --all`: play 27,5% -> 26,8% exato / 28,1%
+# -> 27,2% sobreposicao, activate -0,2pp, attack-quem -0,3pp. Piorou.
+#
+# Causa provavel (NAO confirmada, registrada como hipotese pra nao ser
+# re-testada as cegas): cada 'play' extra no shortlist consome amostras
+# Monte Carlo do MESMO orcamento fixo (`samples_min`/`samples_max` por
+# decisao), entao as candidatas boas ficam com MENOS precisao -- e a
+# candidata recuperada costuma perder a busca de qualquer jeito (bloco
+# 651 ja media que 'play' perde mesmo quando compete). Trocar precisao
+# das boas por presenca das ruins e negativo em liquido. E a MESMA
+# familia de regressao dos blocos 593/594 ("alargar o shortlist
+# regrediu"), agora com terceira confirmacao independente.
+#
+# Nao reabrir sem atacar o outro lado do problema (o gap de score/valor
+# de 'play' vs 'attack', ou o orcamento de amostras) -- mexer so no
+# numero de vagas ja foi testado e nao paga.
+SEARCH_MIN_PLAY_CANDIDATES = 1
 
 # Fator de escala por KIND pra normalizar a comparacao cruzada usada por
 # `_select_search_candidates` (bloco 642, pedido do usuario: "individualizar

@@ -14,13 +14,21 @@
 > `SEARCH_MIN_PLAY_CANDIDATES` = 3, valor **medido** pela distribuição de
 > rank (acumulado até rank 3 = 59,1%), não chutado. `smoke_fast.py` +
 > `smoke_test.py` OK, teste dedicado novo; 1 teste pré-existente da
-> camada barata reescrito (codificava o limite antigo). **PENDENTE:
-> `decision_quality_full.py` ainda rodando no fim da sessão — baseline a
-> bater é play 27,5%/28,1%. Se ficar flat/negativo, REVERTER a constante
-> pra 1** (mantendo diagnóstico e testes). Não citar ganho sem esse
-> número. Achados laterais registrados e NÃO investigados: os 20 casos
-> de bug de geração que "cabiam no DON", e os 11% de rank 1 que são
-> `play` de score negativo (limite maior não resolve). Ver bloco 677.
+> camada barata reescrito (codificava o limite antigo). **MEDIDO E
+> REVERTIDO**: `decision_quality_full.py --all` deu play **26,8%/27,2%**
+> contra baseline 27,5%/28,1% — piorou -0,7pp/-0,9pp, e o recorte por
+> líder confirma que não foi ruído (caiu em OP13-079 e OP17-039, os de
+> maior volume). Constante revertida pra 1; diagnóstico, instrumentação
+> e testes mantidos. **Lição estrutural**: o diagnóstico estava certo (a
+> exclusão existe e foi bem medida), mas **recuperar a candidata não a
+> converte em acerto** — hipótese é que cada `play` extra rouba amostras
+> Monte Carlo do orçamento fixo, tirando precisão das candidatas boas.
+> **3ª confirmação independente** de que alargar o shortlist regride
+> (blocos 593/594 já tinham medido). **NÃO reabrir "mais vaga pro play"
+> em nenhuma variante** — o gargalo é o gap de score/valor entre `play`
+> e `attack`, ou o orçamento de amostras. Achados laterais registrados e
+> NÃO investigados: os 20 casos de bug de geração que "cabiam no DON", e
+> os 11% de rank 1 que são `play` de score negativo. Ver bloco 677.
 
 > 25/08/2026 (bloco 676, pedido repetido "conserte essa diversidade
 > estratégica, quero que seja parecido ou igual ao do humano"): **1
