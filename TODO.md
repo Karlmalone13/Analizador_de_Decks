@@ -17,10 +17,16 @@
 > `REGRA_SEM_DUPLICACAO`); fix reusa o helper existente. Achado
 > perseguindo o **único** caso residual suspeito em 503 analisados
 > (ST04-017 com líder Kaido). Teste permanente novo com controle
-> negativo; `smoke_fast.py`/`smoke_test.py` OK. **PENDENTE: medição
-> `decision_quality_full.py` rodando — baseline play 27,5%/28,1%. Se
-> flat/negativo, reverter e registrar como achado negativo.** Ver bloco
-> 678 do HANDOFF.
+> negativo; `smoke_fast.py`/`smoke_test.py` OK. **MEDIDO: play 27,5% →
+> 27,7% (+0,2pp), demais categorias flat; por líder só Krieg OP15-001
+> se moveu de verdade (23,4% → 27,7%, +4,3pp).** **MANTIDO** — e a
+> distinção com os blocos 676/677 é o ponto: aqueles eram *calibragem*
+> justificada só pela métrica (flat = revertido); este é *corretude* (um
+> líder que É Animal Kingdom Pirates ser lido como não sendo está errado
+> independente da métrica). Ganho pequeno era esperado: a métrica mede
+> concordância com um humano nestes 214 logs, e a maioria das 108 cartas
+> mal aparece aí — não citar "+0,2pp" como a medida do valor do fix. Ver
+> bloco 678 do HANDOFF.
 
 > 25/08/2026 (bloco 677, continuação do 676): diagnóstico v3 (com o
 > `all_actions` novo) **desmontou o bucket enganoso "nunca gerada"** —

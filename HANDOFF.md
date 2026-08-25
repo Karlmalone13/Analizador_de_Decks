@@ -81,14 +81,39 @@ qualquer lider". Teste permanente novo
 (`test_leader_type_multi_palavra_bloco_678`, com o controle negativo
 junto). `smoke_fast.py` OK, `smoke_test.py` TODOS OS TESTES PASSARAM.
 
-### PENDENTE -- nao citar ganho sem este numero
+### RESULTADO -- MANTIDO (e por que, apesar do ganho pequeno)
 
-`decision_quality_full.py --all --workers 4` rodando no momento deste
-registro. Baseline a bater (estado commitado, apos a reversao do bloco
-677): **play 27,5% exato / 28,1% sobreposicao**, activate 28,5%,
-attach_don 19,4%, attack-quem 55,0%. Mesma disciplina dos blocos
-676/677: se ficar flat/negativo, **reverter** e registrar como achado
-negativo; se pagar, registrar com o recorte POR LIDER obrigatorio.
+`decision_quality_full.py --all --workers 4`:
+
+| categoria | baseline | com fix | delta |
+|---|---|---|---|
+| play (exato) | 27,5% | **27,7%** | +0,2pp |
+| play (sobreposicao) | 28,1% | **28,2%** | +0,1pp |
+| activate | 28,5% | 28,3% | -0,2pp |
+| attach_don | 19,4% | 19,4% | igual |
+| attack -- quem | 55,0% | 55,0% | igual |
+| attack -- alvo | 69,2% | 69,3% | +0,1pp |
+
+Recorte POR LIDER (obrigatorio): quase todos IDENTICOS ao baseline; so
+2 se moveram -- **Krieg OP15-001 23,4% -> 27,7% (+4,3pp)** e OP15-002
+0,0% -> 10,0% (n=10, 1 turno, fragil).
+
+**MANTIDO, e a distincao com os blocos 676/677 e o ponto**: aqueles
+eram CALIBRAGEM (peso de desempate, numero de vagas) cuja unica
+justificativa era a metrica -- metrica flat/negativa = sem motivo pra
+existir = revertido. Este e CORRETUDE: um lider que E "Animal Kingdom
+Pirates" ser lido como nao sendo esta objetivamente errado, e continua
+errado independente do que a metrica diga. Reverter seria reintroduzir
+um bug conhecido.
+
+Ganho pequeno era o ESPERADO e nao contradiz o alcance de 108 cartas:
+`decision_quality_full.py` mede concordancia com as escolhas de UM
+humano nestes 214 logs especificos -- a maioria das 108 cartas
+afetadas mal aparece neste corpus. O sinal do Krieg e coerente com
+isso (e um dos poucos lideres do corpus cujo deck usa condicao de tipo
+multi-palavra de verdade). **Nao citar "+0,2pp" como a medida do valor
+deste fix** -- a medida certa e "108 cartas voltaram a ter o efeito
+avaliado corretamente", que esta metrica nao consegue capturar.
 
 Ressalva honesta ja registrada antes de medir: corrigir um bug real
 NAO garante ganho nesta metrica -- a carta destravada ainda precisa
