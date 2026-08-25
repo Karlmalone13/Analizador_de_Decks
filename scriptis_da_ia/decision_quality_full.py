@@ -536,6 +536,13 @@ def main():
                      help='so os 26 logs bot-vs-humano (escopo antigo, pre-bloco-617)')
     ap.add_argument('--leader')
     ap.add_argument('--workers', type=int, default=1)
+    # Bloco 683: subconjunto REPRODUTIVEL pra A/B rapido. O corpus inteiro
+    # (274 lados) leva ~4h com 4 workers -- inviavel pra iterar. `--limit N`
+    # pega os N PRIMEIROS jobs, que e uma ordem ESTAVEL (vem do index.json),
+    # entao dois runs com o mesmo N comparam exatamente as MESMAS partidas.
+    # Nunca usar --limit pra reportar numero ABSOLUTO do corpus; e pra
+    # comparacao A/B (mesmo N nos dois lados).
+    ap.add_argument('--limit', type=int, help='usa so os N primeiros jobs (A/B rapido)')
     args = ap.parse_args()
 
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -564,6 +571,8 @@ def main():
         if not jobs:
             raise SystemExit('nenhum log encontrado')
 
+    if args.limit:
+        jobs = jobs[:args.limit]
     print(f'{len(jobs)} log(s) a auditar (ofensiva + defesa)...')
     if args.workers <= 1:
         resultados = [_run_one(t) for t in jobs]
