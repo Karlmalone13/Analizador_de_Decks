@@ -725,7 +725,15 @@ def main():
     ordem_ok = sum(1 for r in multi if r['hist_counter_codes'] == r['engine_counter_codes'])
     print(f'  counter -- MESMA ORDEM (quando 2+ cartas): {_pct(ordem_ok, len(multi))}')
 
-    out_path = os.path.join(OUT_DIR, 'ultimo_resultado.json')
+    # Bloco 683: run com `--limit` NUNCA sobrescreve `ultimo_resultado.json`.
+    # Achado na pratica no mesmo dia: os dois lados de um A/B com --limit 70
+    # sobrescreveram o resultado do corpus INTEIRO, deixando no repositorio
+    # um arquivo que parece ser dos 274 lados e e de 70 -- armadilha certeira
+    # pra uma sessao futura comparar contra ele sem saber. Subconjunto grava
+    # em arquivo proprio, com o N no nome.
+    nome = (f'parcial_limit{args.limit}.json' if args.limit
+            else 'ultimo_resultado.json')
+    out_path = os.path.join(OUT_DIR, nome)
     json.dump({'offense': off_rows, 'defense': def_rows}, open(out_path, 'w', encoding='utf-8'),
               indent=2, ensure_ascii=False)
     print(f'\nResultado completo salvo em {out_path}')

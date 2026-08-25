@@ -83,3 +83,9 @@ scriptis_da_ia/_*_investigation_*.py
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Resultados PARCIAIS de decision_quality_full.py (--limit N): sao amostras
+# pra A/B rapido, nao o numero do corpus. Versionar so o completo
+# (ultimo_resultado.json) evita que alguem compare contra uma amostra
+# achando que e o corpus inteiro.
+scriptis_da_ia/metrics/decision_quality_full/parcial_limit*.json
