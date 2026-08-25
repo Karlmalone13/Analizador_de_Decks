@@ -2,6 +2,26 @@
 
 **Última atualização:** 25 de agosto de 2026
 
+> 25/08/2026 (bloco 677, continuação do 676): diagnóstico v3 (com o
+> `all_actions` novo) **desmontou o bucket enganoso "nunca gerada"** —
+> das 503 cartas que o humano jogou e o motor não, só **5,8%** são bug
+> de geração real; **30,6%** viraram ação legal com score real e foram
+> **cortadas antes de disputar a busca Monte Carlo**. Causa estrutural
+> confirmada no código: `include_best_kind('play', 1)` garantia vaga pra
+> UM só `play` (o de maior score) — o resto só entrava se passasse
+> sozinho na janela de score, que `attack` domina (escala 2,1x). A carta
+> do humano era excluída da simulação **por construção**. Fix:
+> `SEARCH_MIN_PLAY_CANDIDATES` = 3, valor **medido** pela distribuição de
+> rank (acumulado até rank 3 = 59,1%), não chutado. `smoke_fast.py` +
+> `smoke_test.py` OK, teste dedicado novo; 1 teste pré-existente da
+> camada barata reescrito (codificava o limite antigo). **PENDENTE:
+> `decision_quality_full.py` ainda rodando no fim da sessão — baseline a
+> bater é play 27,5%/28,1%. Se ficar flat/negativo, REVERTER a constante
+> pra 1** (mantendo diagnóstico e testes). Não citar ganho sem esse
+> número. Achados laterais registrados e NÃO investigados: os 20 casos
+> de bug de geração que "cabiam no DON", e os 11% de rank 1 que são
+> `play` de score negativo (limite maior não resolve). Ver bloco 677.
+
 > 25/08/2026 (bloco 676, pedido repetido "conserte essa diversidade
 > estratégica, quero que seja parecido ou igual ao do humano"): **1
 > mecanismo novo tentado (desempate por banda larga de padrão humano) e

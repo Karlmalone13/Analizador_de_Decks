@@ -10673,6 +10673,7 @@ def main() -> int:
     test_opp_combo_threat_ve_carta_revelada_na_mao_11_08()
     test_cheap_rollout_value_deterministico_e_direcao_correta_11_08()
     test_select_search_candidates_alarga_com_cheap_values_sem_regredir_11_08()
+    test_shortlist_garante_3_plays_bloco_677()
     test_log_turn_planner_decision_registra_cheap_value_pra_auditoria_11_08()
     test_select_action_via_search_generaliza_parada_antecipada_pra_3_candidatas_13_08()
     test_cheap_playout_deltas_encadeia_multiplas_cartas_quando_cabe_no_don_13_08()
@@ -14007,32 +14008,83 @@ def test_select_search_candidates_alarga_com_cheap_values_sem_regredir_11_08() -
     """
     match = OPTCGMatch((real_card("OP11-062"), []), (real_card("OP11-062"), []))
 
-    # 5 acoes: scores bem espacados, so as 2 primeiras entram no shortlist
-    # com min_candidates=2/score_window pequeno (a 3a fica de fora, score
-    # muito abaixo da 1a).
+    # 4 acoes 'play': a1/a2/a3 entram pelo score (min_candidates=2 pega as
+    # 2 primeiras; a3=460 cabe na janela 500-100=400), a4=50 fica MUITO
+    # abaixo da janela e so pode entrar pela camada barata.
+    #
+    # Atualizado no bloco 677 (SEARCH_MIN_PLAY_CANDIDATES 1 -> 3): a versao
+    # anterior usava so 3 acoes e testava a EXCLUSAO da 3a -- com 3 vagas
+    # de 'play' garantidas, essa 3a passa a entrar pela GARANTIA, nao pela
+    # camada barata, e o teste deixaria de exercitar o alargamento (o que
+    # ele existe pra provar). Com 4 acoes, as 3 vagas ficam saturadas por
+    # a1/a2/a3 e a4 volta a isolar exatamente o efeito da camada barata --
+    # mesmo desenho original, so deslocado pra fora da nova garantia.
     a1 = (500.0, 'play', mk("C1", "Carta1", power=5000, cost=3), None, None)
     a2 = (480.0, 'play', mk("C2", "Carta2", power=4000, cost=2), None, None)
-    a3 = (50.0, 'play', mk("C3", "Carta3", power=1000, cost=1), None, None)
-    actions = [a1, a2, a3]
+    a3 = (460.0, 'play', mk("C3", "Carta3", power=3000, cost=2), None, None)
+    a4 = (50.0, 'play', mk("C4", "Carta4", power=1000, cost=1), None, None)
+    actions = [a1, a2, a3, a4]
 
     sem_cheap = match._select_search_candidates(
         actions, top_k=5, priority='DEVELOP', min_candidates=2, score_window=100)
-    check("SEM cheap_values, a3 (score baixo) fica de fora -- comportamento de sempre",
-          a3 not in sem_cheap and a1 in sem_cheap and a2 in sem_cheap)
+    check("SEM cheap_values, a4 (score baixo) fica de fora -- comportamento de sempre",
+          a4 not in sem_cheap and a1 in sem_cheap and a2 in sem_cheap)
 
     com_cheap_baixo = match._select_search_candidates(
         actions, top_k=5, priority='DEVELOP', min_candidates=2, score_window=100,
-        cheap_values={id(a1): 10.0, id(a2): 8.0, id(a3): 5.0})
-    check("COM cheap_values mas SEM destaque pra a3, resultado nao muda (nao forca inclusao a toa)",
-          a3 not in com_cheap_baixo)
+        cheap_values={id(a1): 10.0, id(a2): 8.0, id(a3): 7.0, id(a4): 5.0})
+    check("COM cheap_values mas SEM destaque pra a4, resultado nao muda (nao forca inclusao a toa)",
+          a4 not in com_cheap_baixo)
 
     com_cheap_alto = match._select_search_candidates(
         actions, top_k=5, priority='DEVELOP', min_candidates=2, score_window=100,
-        cheap_values={id(a1): 10.0, id(a2): 8.0, id(a3): 50.0})
-    check("COM cheap_values destacando a3, ela ENTRA no shortlist (alargamento funciona)",
-          a3 in com_cheap_alto)
+        cheap_values={id(a1): 10.0, id(a2): 8.0, id(a3): 7.0, id(a4): 50.0})
+    check("COM cheap_values destacando a4, ela ENTRA no shortlist (alargamento funciona)",
+          a4 in com_cheap_alto)
     check("a1/a2 continuam presentes -- alargamento e ADITIVO, nunca remove o que o score ja garantiu",
           a1 in com_cheap_alto and a2 in com_cheap_alto)
+
+
+def test_shortlist_garante_3_plays_bloco_677() -> None:
+    """
+    Bloco 677: `include_best_kind('play', SEARCH_MIN_PLAY_CANDIDATES)`
+    passou de 1 pra 3 vagas garantidas. Motivo medido (diag v3 + rank,
+    503 cartas que o humano jogou e o motor nao): 30,6% eram acoes legais
+    COM score real que nunca chegaram a disputar a busca Monte Carlo,
+    porque so o 'play' de MAIOR score tinha vaga garantida e a janela de
+    score e dominada por 'attack' (escala 2,1x).
+
+    Este teste fixa a garantia contra o cenario REAL que a motivou: um
+    'attack' de score alto ocupando a janela inteira, com varios 'play'
+    de score modesto atras dele.
+    """
+    match = OPTCGMatch((real_card("OP11-062"), []), (real_card("OP11-062"), []))
+
+    atk = (1000.0, 'attack', mk("A1", "Atacante", power=6000, cost=4), None, None)
+    p1 = (60.0, 'play', mk("P1", "Play1", power=3000, cost=2), None, None)
+    p2 = (55.0, 'play', mk("P2", "Play2", power=2000, cost=2), None, None)
+    p3 = (50.0, 'play', mk("P3", "Play3", power=1000, cost=1), None, None)
+    p4 = (45.0, 'play', mk("P4", "Play4", power=1000, cost=1), None, None)
+    actions = [atk, p1, p2, p3, p4]
+
+    shortlist = match._select_search_candidates(
+        actions, top_k=3, priority='DEVELOP', min_candidates=1, score_window=50)
+    plays = [a for a in shortlist if a[1] == 'play']
+    check("com attack dominando a janela, 3 'play' ainda entram no shortlist "
+          "(garantia do bloco 677 -- antes so 1 entrava)",
+          len(plays) == 3)
+    check("os 3 'play' garantidos sao os de MAIOR score (p1/p2/p3), nao arbitrarios",
+          p1 in plays and p2 in plays and p3 in plays and p4 not in plays)
+    check("o attack continua no shortlist -- a garantia e ADITIVA, nao substitui",
+          atk in shortlist)
+
+    # Score NEGATIVO continua excluido mesmo sendo o unico 'play' -- a
+    # garantia amplia vagas, nao rebaixa o filtro de viabilidade.
+    neg = (-30.0, 'play', mk("PN", "PlayNeg", power=1000, cost=1), None, None)
+    shortlist_neg = match._select_search_candidates(
+        [atk, neg], top_k=3, priority='DEVELOP', min_candidates=1, score_window=50)
+    check("'play' de score NEGATIVO continua fora, mesmo com vaga garantida sobrando",
+          neg not in shortlist_neg)
 
 
 def test_log_turn_planner_decision_registra_cheap_value_pra_auditoria_11_08() -> None:

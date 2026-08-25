@@ -28,6 +28,105 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-25 (677) - Claude (sessao remota web) - Continuacao direta do 676: diagnostico v3 (com `all_actions`) desmonta o bucket enganoso de "nunca gerada" e acha causa ESTRUTURAL real -- so 1 'play' tinha vaga garantida no shortlist da busca. `SEARCH_MIN_PLAY_CANDIDATES` 1 -> 3, medido pelo RANK, nao chutado. **MEDICAO AGREGADA AINDA EM VOO no momento deste registro**
+
+### O diagnostico v3 (agora confiavel, com a instrumentacao do 676)
+
+`diag_play_gap_v3.py` (scratchpad) usa o campo `all_actions` novo pra
+separar 3 casos que a v2 somava num bucket unico e inutil pra decidir
+onde mexer. 503 codigos faltantes (400 turnos, 152 jogos):
+
+| caso | qtd | % |
+|---|---|---|
+| A -- nunca virou acao legal (bug de geracao) | 29 | **5,8%** |
+| B -- gerada com score real, CORTADA antes da busca | 154 | **30,6%** |
+| C -- disputou a busca, perdeu por gap grande | 223 | 44,3% |
+| C -- disputou a busca, quase-empate | 97 | 19,3% |
+
+**O "36,4% nunca gerada" da v2 era falso** -- 30,6 dos 36,4 pontos eram
+o caso B (cortada do shortlist), problema DIFERENTE e com fix
+diferente. Bug de geracao real e so 5,8% (dos quais 20 casos "cabiam no
+DON estimado", os unicos genuinamente suspeitos -- **nao investigados
+ainda, ficam registrados**).
+
+### Causa do caso B, confirmada lendo o codigo
+
+`_select_search_candidates`: `include_best_kind('play', 1)` garante vaga
+pra UM unico 'play' -- o de maior score. Qualquer outro so entra se
+passar sozinho no `top_k`/`SEARCH_SCORE_WINDOW`, que 'attack' domina por
+escala estrutural (`KIND_SCORE_SCALE` 2,1 vs 1,0; blocos 639/640 ja
+descreveram exatamente esse mecanismo -- criaram a garantia, mas com
+limite 1, insuficiente). Ou seja: a carta que o humano jogou era
+excluida da simulacao **por construcao**, nao por ter sido avaliada como
+pior.
+
+Exemplo real confirmado (Nami-BY_x_Imu-B T8): 7 'play' gerados, motor
+escolheu Silvers Rayleigh (score 224,5), humano jogou Nico Robin
+(EB03-055, score 55,0 -- 5o entre os plays). Com 1 vaga so, Nico Robin
+nunca foi simulada.
+
+### O valor 3 foi MEDIDO (`diag_play_rank.py`), nao chutado
+
+Rank da carta do humano entre os 'play' da MESMA decisao, nas 154
+ocorrencias do caso B:
+
+| rank | % | acumulado |
+|---|---|---|
+| 1 | 11,0% | 11,0% |
+| 2 | 28,6% | 39,6% |
+| 3 | 19,5% | **59,1%** |
+| 4 | 20,8% | 79,9% |
+| 5 | 13,6% | 93,5% |
+| 6-8 | 6,5% | 100% |
+
+Escolhido **3** (`SEARCH_MIN_PLAY_CANDIDATES`, constante nova):
+recupera 59,1% do bucket com o menor custo de simulacao extra -- cada
+candidata a mais custa amostras Monte Carlo em TODA decisao de main
+phase, e alargar demais o shortlist JA regrediu o resultado antes
+(blocos 593/594). 4 daria 79,9% mas com custo bem maior; fica como
+variante obvia caso a medicao de 3 pague.
+
+**Achado lateral do rank**: os 11,0% de rank 1 sao cartas cujo 'play' era
+o de MAIOR score e mesmo assim ficou fora -- sao os de score NEGATIVO,
+excluidos pelo filtro `acao[0] < 0` do proprio `include_best_kind`.
+Limite maior NAO resolve esses; e um caso a parte, registrado, nao
+tratado aqui.
+
+### Expectativa honesta, registrada ANTES do resultado
+
+Entrar no shortlist NAO garante vencer a busca -- o bloco 651 mediu que
+'play' costuma perder mesmo quando compete (gap mediano 0,0 mas score
+estatico 22x menor que o vencedor). Este fix remove uma exclusao
+ESTRUTURAL; nao forca escolha nenhuma. Ganho esperado e uma FRACAO dos
+59,1%, nao os 59,1%.
+
+### Validacao
+
+`smoke_fast.py` OK, `smoke_test.py` TODOS OS TESTES PASSARAM. Teste novo
+dedicado (`test_shortlist_garante_3_plays_bloco_677`) fixa a garantia
+contra o cenario real que a motivou (attack de score alto dominando a
+janela, varios 'play' modestos atras) e confirma que score negativo
+continua excluido. Um teste PRE-EXISTENTE da camada barata
+(`test_select_search_candidates_alarga_com_cheap_values_sem_regredir_11_08`)
+quebrou legitimamente -- ele codificava o limite 1 ao testar a EXCLUSAO
+da 3a acao; reescrito com 4 acoes pra saturar as 3 vagas novas e voltar
+a isolar exatamente o efeito da camada barata (mesmo desenho, deslocado
+pra fora da garantia -- nao e teste ajustado pra passar).
+
+### PENDENTE -- ler antes de confiar neste bloco
+
+`decision_quality_full.py --all --workers 4` estava **AINDA RODANDO** no
+momento deste registro. Baseline a bater (estado commitado anterior,
+bloco 675): **play 27,5% exato / 28,1% sobreposicao**, activate 28,5%,
+attach_don 19,4%, attack-quem 55,0%, attack-alvo 69,2%. A proxima
+sessao (ou a continuacao desta) DEVE conferir o resultado e:
+- se pagou: registrar os numeros e o recorte POR LIDER (obrigatorio);
+- se ficou flat/negativo: **REVERTER** `SEARCH_MIN_PLAY_CANDIDATES` pra
+  1 (mesma disciplina que ja reverteu 2 mecanismos nesta sessao e no
+  bloco 652), mantendo o diagnostico e os testes, que valem
+  independente.
+Nao citar ganho deste bloco sem esse numero.
+
 ## 2026-08-25 (676) - Claude (sessao remota web) - Pedido REPETIDO e EXPLICITO do usuario ("conserte essa diversidade estrategica, quero que seja parecido ou igual ao do humano, ja falei diversas vezes"): mecanismo novo de desempate por banda larga TENTADO e REVERTIDO (medido FLAT/levemente negativo) -- diagnostico que motivou tinha 2 erros metodologicos distintos, achados e corrigidos na propria investigacao; `decision_log` ganhou captura completa (candidates sem corte de 8 + `all_actions` novo) pra desbloquear a proxima tentativa com dado confiavel
 
 ### Tentativa 1: desempate por banda larga (`USE_HUMAN_NUDGE_WIDE_BAND`) -- REVERTIDA

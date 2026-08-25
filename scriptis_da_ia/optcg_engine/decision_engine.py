@@ -355,6 +355,12 @@ PREVENT_COMBO_LEADER_ATTACK_BONUS = 150
 # de tempo (recurso), nao politica de decisao.
 SEARCH_MIN_CANDIDATES = 3
 SEARCH_SCORE_WINDOW = 180
+# Bloco 677: quantos 'play' tem vaga GARANTIDA no shortlist da busca
+# (`include_best_kind('play', ...)` em `_select_search_candidates`).
+# Era 1 fixo desde o bloco 639. Ver o comentario extenso no ponto de uso
+# pra a medicao que definiu o valor 3 (distribuicao de rank das 154
+# cartas que o humano jogou e o motor nem chegou a simular).
+SEARCH_MIN_PLAY_CANDIDATES = 3
 
 # Fator de escala por KIND pra normalizar a comparacao cruzada usada por
 # `_select_search_candidates` (bloco 642, pedido do usuario: "individualizar
@@ -16641,7 +16647,37 @@ class OPTCGMatch:
                 seen_candidate_ids.add(id(acao))
                 current += 1
 
-        include_best_kind('play', 1)
+        # Bloco 677 -- MEDIDO, nao chutado (pedido repetido do usuario de
+        # fazer o motor jogar igual ao humano). O diagnostico v3
+        # (`all_actions`, instrumentacao do bloco 676) separou pela 1a vez
+        # o que antes era um bucket unico e enganoso de "nunca gerada":
+        # das 503 cartas que o humano jogou e o motor nao, so 5,8% nunca
+        # viraram acao legal (bug de geracao de verdade) -- mas **30,6%
+        # (154) viraram acao legal COM score real e nunca chegaram a
+        # disputar a busca Monte Carlo**, cortadas aqui. Causa direta:
+        # `limit=1` garante vaga pra UM unico 'play' (o de maior score);
+        # qualquer outro so entra se passar sozinho no top_k/janela, que
+        # 'attack' domina por escala estrutural (mesma razao ja descrita
+        # nos blocos 639/640, que criaram estas garantias -- mas com
+        # limite 1, insuficiente).
+        #
+        # Rank da carta do humano entre os 'play' da MESMA decisao, nas
+        # 154 ocorrencias (medido, `diag_play_rank.py`): rank 1 = 11,0%
+        # (sao os de score NEGATIVO, que o filtro `acao[0] < 0` abaixo
+        # exclui mesmo sendo o melhor 'play' -- caso a parte, nao
+        # resolvido por limite maior), rank 2 = 28,6%, rank 3 = 19,5%,
+        # rank 4 = 20,8%, rank 5 = 13,6%, rank 6+ = 6,5%. Acumulado ate
+        # rank 3 = 59,1%; ate rank 4 = 79,9%.
+        #
+        # Escolhido 3 (nao 4+): recupera a maior parte do bucket com o
+        # menor custo de simulacao adicional -- cada candidata extra
+        # custa amostras Monte Carlo em TODA decisao de main phase, e
+        # aumentar o shortlist ja regrediu o resultado em tentativas
+        # anteriores (blocos 593/594) quando alargou demais. Entrar no
+        # shortlist NAO garante vencer a busca (bloco 651 mediu que
+        # 'play' costuma perder mesmo quando compete) -- isto remove uma
+        # exclusao ESTRUTURAL, nao forca a escolha.
+        include_best_kind('play', SEARCH_MIN_PLAY_CANDIDATES)
         include_best_kind('activate', 1)
         # 'attach_don' (bloco 640, mesmo censo, categoria propria): achado
         # AINDA mais forte que 'play' -- 62,9% dos mismatches de attach_don
