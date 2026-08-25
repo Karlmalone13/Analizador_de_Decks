@@ -10,6 +10,8 @@
     341,
     480
   ],
+  "count_acc_modelo": 0.6558704453441295,
+  "count_acc_motor": 0.582995951417004,
   "n_decisoes": 4420,
   "n_jogos": 202,
   "seed": 42

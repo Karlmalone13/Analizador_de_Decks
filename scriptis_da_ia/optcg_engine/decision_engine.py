@@ -441,6 +441,21 @@ TIEBREAK_EPS = 1e-9
 # busca ou o desempate de DON preferem de verdade.
 USE_TIEBREAK_HUMAN_FREQ = True
 
+# Bloco 681 -- POLITICA DE IMITACAO aprendida (PASSO 2 do roteiro do
+# bloco 653). Dois modelos, dois problemas distintos, ambos medidos em
+# split por PARTIDA (`treinar_policy.py`, artefato em
+# `metrics/policy_train_report.joblib`):
+#   ranker  -- QUAL carta jogar: AUC 0,848 x 0,702 do score estatico;
+#   counter -- QUANTAS cartas jogar: 65,6% x 58,3% do motor.
+# A CONTAGEM importa tanto quanto a selecao: a metrica `play` exige que o
+# CONJUNTO do turno bata exato, entao com a contagem errada o conjunto
+# nao bate por melhor que seja a escolha da carta (medido 25/08 -- o
+# motor acerta a contagem em so 58,3% dos turnos, um teto duro).
+# OFF por padrao, ligada por env var: e artefato treinado e opcional, e
+# precisa ser 1 flag pra permitir A/B honesto (mesma disciplina dos
+# blocos 676/677, que reverteram mudancas por medicao agregada).
+USE_POLICY_MODEL = os.environ.get('OPTCG_USE_POLICY', '') == '1'
+
 # Bloco 656 (analise turno-a-turno de uma vitoria humana, pedido do usuario):
 # ACAO "PASS" -- encerrar o turno agora -- passa a ser uma CANDIDATA que
 # compete na busca, em vez de so acontecer quando NENHUMA acao pontua
@@ -18367,6 +18382,71 @@ class OPTCGMatch:
             return None
         return None
 
+    def _policy_apply(self, p: GameState, opp: GameState, engine, actions: list,
+                      priority: str, plays_feitos: int):
+        """Aplica a politica de imitacao (bloco 681) sobre as acoes geradas.
+
+        Faz DUAS coisas, correspondendo aos dois modelos:
+        1. CONTAGEM -- se o modelo preve que o humano jogaria N cartas
+           neste turno e o motor ja jogou N, remove as acoes `play` das
+           candidatas. Ataca o teto duro medido em 25/08: o motor acerta
+           a contagem em so 58,3% dos turnos, e a metrica `play` exige o
+           CONJUNTO bater exato.
+        2. SELECAO -- reordena as candidatas `play` pelo ranker, para que
+           a vaga garantida de `play` no shortlist
+           (`include_best_kind`) va para a carta que o MODELO prefere, e
+           nao para a de maior score estatico.
+
+        Nao remove acao que nao seja `play`, e nunca esvazia a lista --
+        degradacao graciosa e o principio: sem modelo (ou com qualquer
+        excecao) devolve `actions` intacta e o motor segue como sempre.
+        """
+        from optcg_engine.policy import (load_policy, state_base_features,
+                                         action_features, count_features)
+        bundle = load_policy()
+        if not bundle:
+            return actions
+        try:
+            spec = {'state_num': bundle['state_num'], 'state_cat': bundle['state_cat'],
+                    'cats': bundle['cats'], 'lideres': bundle['lideres'],
+                    'kinds': bundle['kinds']}
+            ctx = self._decision_context(p, opp, engine, priority, len(actions))
+            base = state_base_features(ctx, p.leader.code, spec)
+
+            plays = [a for a in actions if a[1] == 'play']
+
+            # (1) CONTAGEM
+            if plays:
+                custos = [float(getattr(a[2], 'cost', 0) or 0) for a in plays]
+                n_prev = int(bundle['counter'].predict(
+                    [count_features(base, custos, ctx.get('don_available'))])[0])
+                if plays_feitos >= n_prev:
+                    restantes = [a for a in actions if a[1] != 'play']
+                    if restantes:
+                        return restantes
+
+            # (2) SELECAO -- ordena os `play` pela preferencia do modelo.
+            # `actions` tem que continuar ordenada por score (o resto do
+            # pipeline assume isso), entao so trocamos as POSICOES dos
+            # `play` entre si, preservando os slots de score.
+            if len(plays) > 1:
+                feats = []
+                for a in plays:
+                    info = get_card_flags(a[2].code) or {}
+                    info = dict(info)
+                    info.setdefault('cost', getattr(a[2], 'cost', 0))
+                    info.setdefault('power', getattr(a[2], 'power', 0))
+                    info.setdefault('counter', getattr(a[2], 'counter', 0))
+                    feats.append(action_features(base, 'play', a[0], info, spec))
+                probs = bundle['ranker'].predict_proba(feats)[:, 1]
+                ordem = [plays[i] for i in sorted(range(len(plays)),
+                                                   key=lambda i: -probs[i])]
+                it = iter(ordem)
+                actions = [next(it) if a[1] == 'play' else a for a in actions]
+        except Exception:
+            return actions      # nunca derruba o turno por causa do modelo
+        return actions
+
     def main_phase(self, p: GameState, opp: GameState, verbose: bool = False) -> bool:
         """
         Fase principal = LOOP DE PONTUAÇÃO DE JOGADAS (documento pág. 9).
@@ -18383,6 +18463,8 @@ class OPTCGMatch:
             print('  -- Turno (Turn Planner: simula sequências) --')
 
         MAX_ACOES = 30
+        _plays_feitos = 0      # bloco 681: quantas cartas ja foram jogadas
+        # neste turno -- alimenta o modelo de CONTAGEM da politica.
         # simula so as K acoes mais promissoras (custo controlado). Com a busca
         # de resposta do oponente (item 3) LIGADA, cada simulacao agora inclui
         # o turno INTEIRO de resposta dele -- medido 14/07: board cheio late-
@@ -18406,6 +18488,10 @@ class OPTCGMatch:
         while n < MAX_ACOES:
             n += 1
             actions = self._generate_and_score_actions(p, opp, engine)
+            if USE_POLICY_MODEL and actions:
+                actions = self._policy_apply(
+                    p, opp, engine, actions,
+                    engine.analyzer.analysis_priority(), _plays_feitos)
             if not actions or actions[0][0] < 0:
                 # Ultimo recurso ANTES de encerrar o turno: banca DON ocioso
                 # no proprio lider pra um ataque futuro (achado real 17/08,
@@ -18443,6 +18529,8 @@ class OPTCGMatch:
                     p, opp, engine, priority, actions, [melhor_acao],
                     melhor_acao, cv_alone.get(id(melhor_acao)), {}, cheap_values=cv_alone
                 )
+                # bloco 681: alimenta o modelo de CONTAGEM da politica
+                if melhor_acao[1] == 'play': _plays_feitos += 1
                 if self._apply_action(melhor_acao, p, opp, ee, engine, verbose=verbose):
                     return True
                 continue
@@ -18475,6 +18563,8 @@ class OPTCGMatch:
                             p, opp, engine, priority, actions, [top],
                             top, cv_gate.get(id(top)), {}, cheap_values=cv_gate
                         )
+                        # bloco 681: alimenta o modelo de CONTAGEM da politica
+                        if top[1] == 'play': _plays_feitos += 1
                         if self._apply_action(top, p, opp, ee, engine, verbose=verbose):
                             return True
                         continue
@@ -18499,6 +18589,8 @@ class OPTCGMatch:
                 if (_plano['win_con_code'] and _top_card.code == _plano['win_con_code']
                         and _plano['don_target']
                         and p.don_available >= _plano['don_target']):
+                    # bloco 681: alimenta o modelo de CONTAGEM da politica
+                    if actions[0][1] == 'play': _plays_feitos += 1
                     if self._apply_action(actions[0], p, opp, ee, engine, verbose=verbose):
                         return True
                     continue
@@ -18545,6 +18637,8 @@ class OPTCGMatch:
                     p, opp, engine, priority, actions, candidatas,
                     melhor_acao, None, {}, cheap_values=cheap_values
                 )
+                # bloco 681: alimenta o modelo de CONTAGEM da politica
+                if melhor_acao[1] == 'play': _plays_feitos += 1
                 if self._apply_action(melhor_acao, p, opp, ee, engine, verbose=verbose):
                     return True
                 continue
@@ -18602,6 +18696,8 @@ class OPTCGMatch:
                 if verbose:
                     print('  [90mpassa (busca preferiu nao agir)[0m')
                 break
+            # bloco 681: alimenta o modelo de CONTAGEM da politica
+            if melhor_acao[1] == 'play': _plays_feitos += 1
             if self._apply_action(melhor_acao, p, opp, ee, engine, verbose=verbose):
                 return True
 
@@ -19477,6 +19573,38 @@ class OPTCGMatch:
             'target': self._audit_card_brief(target),
         }
 
+    def _decision_context(self, p: GameState, opp: GameState, engine,
+                          priority: str, n_candidates: int) -> dict:
+        """Descricao do ESTADO no instante de uma decisao de main phase.
+
+        FONTE UNICA (bloco 681): usado pelo `decision_log` (auditoria) E
+        pela politica de imitacao (`optcg_engine/policy.py`). Tem que ser
+        o mesmo dict nos dois: o modelo foi TREINADO sobre exatamente
+        estes campos, lidos do decision_log -- se o runtime montasse um
+        dict proprio, o modelo receberia em producao um vetor diferente
+        do que viu no treino e decidiria mal em silencio, sem erro
+        nenhum. Antes deste bloco o dict era construido inline dentro de
+        `_log_turn_planner_decision`.
+        """
+        return {
+            'priority': priority,
+            'posture': engine.posture(),
+            'phase': engine.analyzer.game_phase(),
+            'profile': engine.analyzer.deck_profile_type(),
+            'life': p.life_count(),
+            'opp_life': opp.life_count(),
+            'hand': len(p.hand),
+            'opp_hand': len(opp.hand),
+            'field': len(p.field_chars),
+            'opp_field': len(opp.field_chars),
+            'don_available': p.don_available,
+            'don_rested': p.don_rested,
+            'can_lethal': engine.analyzer.can_lethal_this_turn(),
+            'opp_lethal_threat': round(float(engine.analyzer.opp_lethal_threat()), 3),
+            'opp_combo_threat': engine.analyzer.opp_combo_threat(),
+            'n_candidates': n_candidates,
+        }
+
     def _log_turn_planner_decision(self, p: GameState, opp: GameState, engine,
                                    priority: str, actions: list, candidates: list,
                                    chosen, chosen_value, sim_values: dict,
@@ -19498,29 +19626,14 @@ class OPTCGMatch:
             'card': chosen_card.code if chosen_card else '',
             'name': chosen_card.name if chosen_card else '',
             'reason': f'priority={priority}',
-            'context': {
-                'priority': priority,
-                'posture': engine.posture(),
-                'phase': engine.analyzer.game_phase(),
-                'profile': engine.analyzer.deck_profile_type(),
-                'life': p.life_count(),
-                'opp_life': opp.life_count(),
-                'hand': len(p.hand),
-                'opp_hand': len(opp.hand),
-                'field': len(p.field_chars),
-                'opp_field': len(opp.field_chars),
-                'don_available': p.don_available,
-                'don_rested': p.don_rested,
-                'can_lethal': engine.analyzer.can_lethal_this_turn(),
-                'opp_lethal_threat': round(float(engine.analyzer.opp_lethal_threat()), 3),
-                'opp_combo_threat': engine.analyzer.opp_combo_threat(),
+            'context': dict(
+                self._decision_context(p, opp, engine, priority, len(candidates)),
                 # bloco 508/509: visibilidade agregada da camada barata sem
                 # precisar reconstruir por-candidata -- audit_cheap_layer.py
                 # usa isto pra medir "quanto alargou" ao longo de muitas
-                # partidas.
-                'cheap_layer_active': cheap_values is not None,
-                'n_candidates': len(candidates),
-            },
+                # partidas. Fica SO no log (a politica nao usa).
+                cheap_layer_active=cheap_values is not None,
+            ),
             'chosen': (self._audit_action_brief(chosen, chosen_value, cv.get(id(chosen)),
                                                 id(chosen) in added_ids)
                       if chosen else None),

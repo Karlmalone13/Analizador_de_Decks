@@ -48,9 +48,12 @@ import json
 import os
 from collections import defaultdict
 
+import joblib
 import numpy as np
 
 from optcg_engine.decision_engine import load_cards_db
+from optcg_engine.policy import (state_base_features, action_features,
+                                count_features)
 
 STATE_NUM = ['life', 'opp_life', 'hand', 'opp_hand', 'field', 'opp_field',
              'don_available', 'don_rested', 'opp_lethal_threat', 'n_candidates']
@@ -75,26 +78,17 @@ def _featurize(rows, cats, lideres, cards_db):
     for gi, r in enumerate(rows):
         st = r.get('state') or {}
         stc = r.get('state_cat') or {}
-        base = [float(st.get(k) or 0) for k in STATE_NUM]
-        for k in STATE_CAT:
-            v = str(stc.get(k))
-            base += [1.0 if v == opt else 0.0 for opt in cats[k]]
-        base += [1.0 if r['leader'] == L else 0.0 for L in lideres]
+        # FONTE UNICA: mesma featurizacao que o motor usa em runtime
+        # (optcg_engine/policy.py) -- ver REGRA_SEM_DUPLICACAO aplicada a ML.
+        spec = {'state_num': STATE_NUM, 'state_cat': STATE_CAT,
+                'cats': cats, 'lideres': lideres, 'kinds': KINDS}
+        ctx = dict(st)
+        ctx.update(stc)
+        base = state_base_features(ctx, r['leader'], spec)
 
         for c in r['candidates']:
             info = cards_db.get(c.get('code')) or {}
-            # features da ACAO: tipo, score estatico do motor, e atributos
-            # da carta (custo/poder/counter) -- o modelo precisa saber O QUE
-            # e a carta, nao so que existe uma candidata.
-            feat = list(base)
-            feat += [1.0 if c.get('kind') == k else 0.0 for k in KINDS]
-            feat.append(float(c.get('score') or 0.0))
-            feat.append(float(info.get('cost') or 0))
-            feat.append(float(info.get('power') or 0) / 1000.0)
-            feat.append(float(info.get('counter') or 0) / 1000.0)
-            feat.append(1.0 if info.get('has_blocker') else 0.0)
-            feat.append(1.0 if info.get('has_rush') else 0.0)
-            feat.append(1.0 if info.get('has_trigger') else 0.0)
+            feat = action_features(base, c.get('kind'), c.get('score'), info, spec)
             X.append(feat)
             y.append(1 if c.get('humano_fez') else 0)
             grupos.append(gi)
@@ -119,6 +113,58 @@ def _play_top1(scores, y, grupos, meta):
         melhor = max(idxs, key=lambda i: scores[i])
         ok += int(y[melhor] == 1)
     return ok, tot
+
+
+
+def _featurize_count(rows, cats, lideres, cards_db):
+    """Dataset do modelo de CONTAGEM: uma linha por TURNO.
+
+    Alvo: QUANTAS cartas o humano jogou naquele turno (0,1,2,3+). E o
+    segundo gargalo, medido 25/08 e ate entao nunca atacado: o motor joga
+    o MESMO NUMERO de cartas que o humano em apenas **52,7%** dos turnos
+    (25,0% joga mais, 22,3% menos). Como a metrica `play` exige que o
+    CONJUNTO bata exato, isso e um TETO DURO -- mesmo com selecao de
+    carta perfeita, o conjunto nao pode bater em mais de 52,7% dos
+    turnos. Ranquear melhor QUAL carta (o outro modelo) nao resolve
+    isto; sao dois problemas distintos.
+
+    Features: o estado no INICIO do turno (1a decisao) + lider. Nao usa
+    nada que dependa do que o motor decidiu depois -- senao a politica
+    seria inaplicavel em producao, onde a contagem precisa ser decidida
+    ANTES de jogar.
+    """
+    por_turno = defaultdict(list)
+    for r in rows:
+        por_turno[(r['game_id'], r['turn'])].append(r)
+
+    X, y, jogos = [], [], []
+    for (gid, _turno), decs in por_turno.items():
+        primeiro = decs[0]
+        st = primeiro.get('state') or {}
+        stc = primeiro.get('state_cat') or {}
+        spec = {'state_num': STATE_NUM, 'state_cat': STATE_CAT,
+                'cats': cats, 'lideres': lideres, 'kinds': KINDS}
+        ctx = dict(st)
+        ctx.update(stc)
+        base = state_base_features(ctx, primeiro['leader'], spec)
+
+        # Features de COMPOSICAO DA MAO (achado 25/08): sem elas o modelo
+        # so via o TAMANHO da mao, e quantas cartas cabem no turno depende
+        # dos CUSTOS delas -- o modelo ficava praticamente cego (60,7% x
+        # 58,3% do motor, +2,4pp). As candidatas `play` da 1a decisao SAO
+        # as cartas jogaveis com seus custos, e estao disponiveis no motor
+        # em runtime no mesmo ponto -- entao a politica continua aplicavel.
+        custos = [float((cards_db.get(c.get('code')) or {}).get('cost') or 0)
+                  for c in primeiro['candidates'] if c['kind'] == 'play']
+        feat = count_features(base, custos, st.get('don_available'))
+
+        humano = {c['code'] for d in decs for c in d['candidates']
+                  if c['kind'] == 'play' and c['humano_fez']}
+        motor = sum(1 for d in decs if d['motor_escolheu']['kind'] == 'play')
+        X.append(feat)
+        y.append(min(len(humano), 3))     # 3+ agrupado (cauda rala)
+        jogos.append((gid, min(motor, 3)))
+    return np.array(X, dtype=np.float32), np.array(y), jogos
 
 
 def main():
@@ -184,11 +230,41 @@ def main():
     delta = (ok_mod - ok_base) / max(tot, 1) * 100
     print(f'delta                        : {delta:+.1f}pp')
 
+
+    # ── MODELO DE CONTAGEM (quantas cartas jogar) ────────────────────────
+    Xc, yc, jogos_c = _featurize_count(rows, cats, lideres, cards_db)
+    is_test_c = np.array([g in jogos_test for g, _ in jogos_c])
+    modelo_count = HistGradientBoostingClassifier(
+        max_iter=200, learning_rate=0.08, max_depth=4, l2_regularization=1.0,
+        random_state=args.seed)
+    modelo_count.fit(Xc[~is_test_c], yc[~is_test_c])
+    pred_c = modelo_count.predict(Xc[is_test_c])
+    real_c = yc[is_test_c]
+    motor_c = np.array([m for _, m in jogos_c])[is_test_c]
+    acc_modelo = float((pred_c == real_c).mean())
+    acc_motor = float((motor_c == real_c).mean())
+
+    print()
+    print(f'CONTAGEM (quantas cartas jogar) -- {len(real_c)} turnos de teste')
+    print(f'  acerto MODELO : {acc_modelo*100:.1f}%')
+    print(f'  acerto MOTOR  : {acc_motor*100:.1f}%   (o teto duro de hoje)')
+    print(f'  delta         : {(acc_modelo-acc_motor)*100:+.1f}pp')
+
+    # ── SERIALIZACAO (o motor precisa carregar isto em runtime) ──────────
+    modelo_path = args.out.replace('.json', '.joblib')
+    joblib.dump({
+        'ranker': modelo, 'counter': modelo_count,
+        'cats': cats, 'lideres': lideres,
+        'state_num': STATE_NUM, 'state_cat': STATE_CAT, 'kinds': KINDS,
+    }, modelo_path)
+    print(f'\nmodelos serializados em {modelo_path}')
+
     os.makedirs(os.path.dirname(args.out) or '.', exist_ok=True)
     json.dump({
         'auc_test': auc_test, 'auc_train': auc_train, 'auc_baseline': auc_score,
         'play_top1_modelo': [ok_mod, tot],
         'play_top1_score': [ok_base, tot_b],
+        'count_acc_modelo': acc_modelo, 'count_acc_motor': acc_motor,
         'n_decisoes': len(rows), 'n_jogos': len(jogos), 'seed': args.seed,
     }, open(args.out, 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
     print(f'\nresumo salvo em {args.out}')
