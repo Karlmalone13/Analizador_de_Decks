@@ -28,6 +28,96 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-25 (679) - Claude (sessao remota web) - CORRECAO PEDIDA PELO USUARIO ("voce tem que contar a carta comprada como candidata sim"): a ferramenta de auditoria privava o motor, por ACASO DE ORDENACAO, justamente da carta cuja decisao ela existe pra comparar -- e isso contaminava o diagnostico inteiro de `play`
+
+### O erro DE ANALISE que o usuario pegou (meu, nao do codigo)
+
+Eu tinha classificado 20 de 30 casos de "carta que o humano jogou e o
+motor nem gerou como acao" (66,7%) como **limitacao estrutural**, com o
+argumento "a carta nao estava na mao reconstruida, o humano comprou
+durante o turno, o motor nao tinha como ter". **Errado, e o usuario
+apontou.** A ferramenta JA resolve isso desde 17/08: `_known_gains_
+this_turn` detecta as cartas que entraram na mao durante o turno
+(inclusive as compradas E jogadas no mesmo turno) e as coloca no TOPO
+do deck simulado exatamente pra o motor comprar as mesmas. Eu conferi a
+mao do snapshot ANTERIOR -- lugar errado.
+
+Reclassificando com o criterio certo (na mao **OU** nos ganhos do
+turno), o balde inteiro se inverte:
+
+| classificacao | criterio errado (meu) | criterio certo |
+|---|---|---|
+| carta indisponivel ("limitacao") | 20 (66,7%) | **0 (0,0%)** |
+| DON insuficiente (legitimo) | 9 (30,0%) | 9 (34,6%) |
+| **SUSPEITO REAL** | 1 (3,3%) | **17 (65,4%)** |
+
+Um dos casos que eu tinha descartado como "nao e bug" (ST04-017 com
+lider Kaido) era **exatamente o bug do bloco 678** (`leader_type`
+multi-palavra). Ou seja: a conclusao "a frente de caca-bug em `play`
+esta esgotada", que eu tinha acabado de registrar, **nao se sustentava**.
+
+### O BUG REAL na ferramenta, achado ao investigar os 17
+
+Todos os 17 suspeitos sao `COMPRADA_NO_TURNO`. Investigando um caso a
+fundo (Mihawk OP14-020, T7): o humano ganhou 4 cartas no turno
+[ST32-003, OP07-022, OP12-034, OP14-039] e JOGOU OP12-034 (Perona) --
+mas o motor comprou **Coffin Boat** (OP14-039) e Perona ficou enterrada.
+
+Causa: o motor simulado compra **1 carta** no inicio do turno; as outras
+so chegam se ele disparar os MESMOS efeitos de compra. Qual das N o
+motor recebia nessa unica compra era decidido pela ordem ARBITRARIA de
+`Counter.elements()` em
+`p.deck.extend(_cards_from_codes(list(known_gains_bot.elements()), ...))`.
+
+Efeito: turnos assim apareciam no diagnostico como "motor nao jogou a
+carta" quando o motor **nunca a teve em maos**. Contaminava toda a
+analise de `play` -- e e a causa provavel de parte dos buckets
+"gap grande"/"quase-empate" tambem, nao so do caso A.
+
+### Fix (audit_real_losses.py, ferramenta -- nao mexe no motor)
+
+Ordena os ganhos pela **ORDEM EM QUE O HUMANO OS JOGOU**: o jogado
+primeiro vai por ultimo no `extend` (= topo do deck, convencao `pop()`),
+depois o 2o, etc.; ganhos nao jogados ficam por baixo.
+
+**1a tentativa falhou e fica registrada**: ordenar so por "foi jogada ou
+nao" NAO resolve -- neste mesmo caso o humano jogou Perona E Coffin Boat,
+as duas empatavam e a ordem arbitraria seguia mandando. A ordem de JOGO
+desempata pela informacao certa (a 1a carta jogada e tipicamente a que
+habilita o resto do turno: jogar Perona foi o que comprou ST32-003, e
+Kin'emon comprou mais 2).
+
+Nao inventa carta nenhuma -- todos os codigos continuam sendo ganhos
+REAIS do log. O motor continua LIVRE pra nao jogar a carta (e isso que a
+auditoria mede); o que muda e ele passar a TER a chance.
+
+**Validado no caso real**: pos-fix o motor compra Perona, ela vira
+candidata de verdade (`all_actions`), e ele escolhe outra coisa --
+comparacao de decisao honesta em vez de artefato. `smoke_fast.py` OK.
+
+### ATENCAO -- a BASELINE muda
+
+Isto altera a REGUA, nao o motor: `decision_quality_full.py` medido
+depois deste fix NAO e comparavel com os numeros anteriores (play 27,7%
+/28,2% do bloco 678). Qualquer comparacao "antes/depois" que atravesse
+este commit tem que dizer explicitamente qual regua usou -- mesmo tipo
+de armadilha ja registrada no bloco 675 (a reforma de fidelidade do
+bloco 655 moveu a regua e quase virou "o motor piorou").
+
+Medicao rodando no momento deste registro; numeros no proximo commit.
+
+### Padrao a vigiar (4a vez nesta investigacao)
+
+Este e o **4o erro de medicao meu** na mesma investigacao, e TODOS na
+mesma direcao -- cada filtro construido rapido tinha um vies que
+ENCOLHIA o numero de suspeitos e empurrava pra conclusao "nao tem mais
+bug aqui": (1) v1 comparava contra candidata errada; (2) bucket "nunca
+gerada" contaminado pelo corte de log em top-8; (3) "cabia no DON"
+comparado contra o DON do inicio do turno, nao o do momento da decisao;
+(4) este. Registrado como PADRAO, nao incidente: nesta base, checar o
+vies de um filtro novo ANTES de tirar conclusao agregada dele -- e
+desconfiar especificamente de conclusoes do tipo "esta esgotado".
+
 ## 2026-08-25 (678) - Claude (sessao remota web) - BUG REAL E AMPLO: condicao `leader_type` de MAIS DE UMA PALAVRA nunca era satisfeita (108 das 150 cartas do banco com essa condicao) -- efeito tratado como "nao dispara", e em `_can_play_card` isso EXCLUI a carta da geracao de acoes
 
 ### Como foi achado (persistindo no ultimo caso residual)

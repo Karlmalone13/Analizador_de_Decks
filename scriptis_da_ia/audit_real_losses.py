@@ -784,7 +784,55 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         for code, qty in known_gains_bot.items():
             seen_bot[code] = seen_bot.get(code, 0) + qty
         p.deck = _remaining_deck(bot_deck[1], seen_bot)
-        p.deck.extend(_cards_from_codes(list(known_gains_bot.elements()), cards_db))
+        # ORDEM dos ganhos no topo (achado 25/08, correcao pedida
+        # explicitamente pelo usuario: "voce tem que contar a carta
+        # comprada como candidata sim"): o humano frequentemente ganha
+        # VARIAS cartas num turno (compra padrao + "Draw N" de efeitos),
+        # mas o motor simulado so compra 1 no inicio do turno -- as
+        # outras so chegam se ele disparar os MESMOS efeitos de compra.
+        # Qual das N o motor recebe nessa unica compra era decidido pela
+        # ordem ARBITRARIA de `Counter.elements()`.
+        #
+        # Caso real que expos (Mihawk OP14-020, T7): humano ganhou
+        # [ST32-003, OP07-022, OP12-034, OP14-039] e JOGOU OP12-034
+        # (Perona); `elements()` deixou OP14-039 (Coffin Boat) por
+        # ultimo = topo, entao o motor comprou Coffin Boat e Perona
+        # ficou enterrada -- a carta cuja decisao a auditoria quer
+        # comparar nunca chegou a ser uma opcao. Isso contaminava o
+        # diagnostico inteiro de `play`: turnos assim apareciam como
+        # "motor nao jogou a carta" quando na verdade o motor nunca a
+        # teve em maos, por acaso de ordenacao.
+        #
+        # Fix: ordena os ganhos pela ORDEM EM QUE O HUMANO OS JOGOU --
+        # o jogado PRIMEIRO vai por ultimo no extend (= TOPO do deck,
+        # `pop()`), entao e o primeiro que o motor compra; depois o
+        # jogado em 2o, e assim por diante; ganhos que o humano NAO
+        # jogou ficam por baixo de todos.
+        #
+        # Ordenar so por "foi jogada ou nao" NAO resolve (tentado
+        # primeiro, e falhou neste mesmo caso): o humano jogou Perona E
+        # Coffin Boat no mesmo turno, entao as duas empatavam e a ordem
+        # arbitraria seguia mandando. A ordem de JOGO desempata pela
+        # informacao certa -- a 1a carta jogada e tipicamente a que
+        # habilita o resto do turno (aqui: jogar Perona e que comprou
+        # ST32-003, e Kin'emon comprou mais 2), entao dar ela primeiro
+        # ao motor e o que mais aproxima a simulacao da sequencia real.
+        #
+        # Nao inventa carta nenhuma -- todos os codigos continuam sendo
+        # ganhos REAIS do log. O motor continua LIVRE pra nao jogar a
+        # carta (e exatamente isso que a auditoria mede); o que muda e
+        # ele passar a TER a chance, em vez de ser privado dela por
+        # acaso de ordenacao.
+        _ordem_de_jogo = {}
+        for _idx, _a in enumerate(turn.get('actions', [])):
+            _cod = _a.get('card')
+            if (_cod and _cod not in _ordem_de_jogo
+                    and hist_action_kind(_a, cards_db) == 'play'):
+                _ordem_de_jogo[_cod] = _idx
+        _gains_ordenados = sorted(
+            known_gains_bot.elements(),
+            key=lambda c: (c in _ordem_de_jogo, -_ordem_de_jogo.get(c, 0)))
+        p.deck.extend(_cards_from_codes(_gains_ordenados, cards_db))
         populate_full_deck_knowledge(p, bot_deck[1], bot_deck[0].code)
 
         seen_opp = {}

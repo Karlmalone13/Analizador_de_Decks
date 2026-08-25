@@ -2,6 +2,30 @@
 
 **Última atualização:** 25 de agosto de 2026
 
+> 25/08/2026 (bloco 679, correção pedida pelo usuário: *"você tem que
+> contar a carta comprada como candidata sim"*): **eu tinha errado a
+> análise e ele pegou.** Classifiquei 20 de 30 casos (66,7%) como
+> "limitação estrutural — o motor não tinha a carta", conferindo a mão do
+> snapshot **anterior**. Lugar errado: a ferramenta já põe as cartas
+> compradas no turno no topo do deck (`_known_gains_this_turn`, desde
+> 17/08). Com o critério certo o balde inverte: **0% indisponível, 17
+> suspeitos reais (65,4%)** em vez de 1. Um dos casos que descartei era
+> justamente o bug do bloco 678. **A conclusão "caça-bug em `play` está
+> esgotada" não se sustentava.** **Bug real achado na ferramenta**: o
+> motor compra só 1 carta/turno, mas o humano ganha várias — qual delas
+> o motor recebia era decidido por ordem **arbitrária** de `Counter`.
+> Caso real: humano ganhou 4 cartas e jogou Perona; o motor recebeu
+> Coffin Boat e Perona ficou enterrada — a carta cuja decisão a
+> auditoria quer comparar nunca virou opção. Fix: ordenar os ganhos pela
+> **ordem em que o humano os jogou** (1ª jogada = topo do deck). 1ª
+> tentativa (ordenar por "foi jogada ou não") falhou e está registrada —
+> o humano jogou as duas cartas, empatavam. **ATENÇÃO: isto muda a
+> RÉGUA, não o motor — medições após este commit não são comparáveis com
+> as anteriores (play 27,7%/28,2%).** Medição rodando. **Padrão a
+> vigiar: é o 4º erro de medição meu nesta investigação, todos
+> encolhendo o nº de suspeitos** — desconfiar de conclusões "está
+> esgotado". Ver bloco 679 do HANDOFF.
+
 > 25/08/2026 (bloco 678): **BUG REAL E AMPLO ACHADO E CORRIGIDO** —
 > condição `leader_type` de **mais de uma palavra nunca era satisfeita**.
 > `_effect_conditions_met` quebrava os sub_types do líder num `set` de
