@@ -2,6 +2,29 @@
 
 **Última atualização:** 25 de agosto de 2026
 
+> 25/08/2026 (bloco 680, pedido "27% é muito pouco, tem que subir para
+> 85/90%, sem desculpas de divergência estratégica"): **PASSO 2 do
+> roteiro (bloco 653) finalmente iniciado — imitação-por-POLÍTICA.**
+> Construídos `build_policy_dataset.py` (dataset rotulado: 4420
+> decisões, 202 partidas, 30 líderes, 30.376 pares) e
+> `treinar_policy.py` (split por PARTIDA + baseline no mesmo split).
+> **Resultado de TESTE: modelo COM estado AUC 0,848 vs 0,702 do score
+> atual; play top-1 74,8% vs 71,0%.** Primeira evidência positiva da
+> frente de imitação após 7+ tentativas fracassadas — todas usavam sinal
+> marginal SEM estado (causa comum já diagnosticada no 653, e que eu
+> repeti 3x nesta sessão antes de reler). Destravou porque o
+> `all_actions` do bloco 676 tornou o conjunto de ações legais
+> observável. **ACHADO que reformula o alvo**: em **76,3% dos turnos a
+> carta do humano ESTAVA disponível** e o motor jogou algo — e mesmo
+> assim o modo de falha dominante é **zero cartas em comum (52,7%)**. O
+> gargalo de `play` é **SELEÇÃO**, não geração nem falta de opção —
+> fecha a hipótese de caça-bug nessa categoria. **RESSALVA: os 74,8%
+> NÃO são comparáveis com os 28,2%** (rótulo frouxo, só conta decisões
+> onde a carta estava entre as candidatas) — não citar como progresso
+> rumo aos 85%. **PENDENTE**: ligar o modelo no motor e medir
+> `decision_quality_full.py` de verdade; tratar o overfit (treino 0,962
+> vs teste 0,848). Ver bloco 680 do HANDOFF.
+
 > 25/08/2026 (bloco 679, correção pedida pelo usuário: *"você tem que
 > contar a carta comprada como candidata sim"*): **eu tinha errado a
 > análise e ele pegou.** Classifiquei 20 de 30 casos (66,7%) como

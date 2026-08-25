@@ -28,6 +28,102 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-25 (680) - Claude (sessao remota web) - PASSO 2 do roteiro (bloco 653) FINALMENTE iniciado: imitacao-por-POLITICA. Dataset rotulado + treinador construidos e medidos -- modelo COM ESTADO ranqueia bem melhor que o score atual (AUC 0,848 x 0,702). Diagnostico novo REFORMULA o alvo: o gargalo de `play` e SELECAO, nao geracao
+
+**Pedido do usuario, direto**: "27% e muito pouco ainda, e nao quero
+desculpas de divergencia estrategica... essa porcentagem tem que subir
+la para os 85/90% deixando essa margem de 10% ou 15% de divergencia
+estrategica".
+
+### Por que as tentativas anteriores nao podiam chegar la
+
+Diagnostico ja registrado no bloco 653 e CONFIRMADO na pratica hoje (eu
+repeti o mesmo erro 3x nesta sessao antes de reler aquele bloco): as 7+
+tentativas de imitacao (blocos 641-649, 663, 676, 677) usam estatistica
+MARGINAL e SEM CONTEXTO ("quantas vezes este lider fez este token")
+injetada como BONUS numa funcao de valor. Sinal sem estado nao
+discrimina decisao que DEPENDE do estado. Mexer nos pesos disso nao
+passa de ~30%.
+
+### Por que 85-90% e viavel AQUI (medido, nao otimismo)
+
+Do bloco 653: o alvo e **DETERMINISTICO** (mesmo jogador, mesma mao,
+mesmo board -> mesmo conjunto de cartas em **76 de 76** casos) e o banco
+e essencialmente **UM JOGADOR** (70,9% dos turnos). E aprendizado
+supervisionado sobre uma politica unica e consistente.
+
+### O que destravou agora
+
+Pra treinar uma politica e preciso, POR DECISAO: o conjunto de acoes
+LEGAIS + qual o humano escolheu. O conjunto de acoes legais so ficou
+observavel com o `all_actions` do bloco 676 (antes o log truncava em 8
+candidatos). Sem aquilo, este passo era impossivel.
+
+### Construido
+
+- **`build_policy_dataset.py`** (novo): monta o dataset rotulado.
+  Resultado: **4420 decisoes, 202 partidas, 30 lideres, 30.376 pares
+  candidato-acao** (50,9% positivos). Features do estado = as MESMAS que
+  o motor enxerga (`context` do decision_log) -- de proposito: treinar
+  sobre mais do que o motor ve tornaria a politica inaplicavel em
+  producao. Dataset e gitignorado (regeneravel); o MODELO e que sera
+  versionado, como `human_patterns.json` ja e.
+- **`treinar_policy.py`** (novo): treina e compara contra o baseline no
+  MESMO split. Split por **PARTIDA** (nunca por decisao -- decisoes do
+  mesmo jogo sao correlacionadas e o split por decisao infla o teste).
+
+### Resultado (TESTE, 50 partidas nunca vistas)
+
+| metrica | score atual do motor | modelo COM estado |
+|---|---|---|
+| AUC par-a-par | 0,702 | **0,848** |
+| play top-1 | 71,0% | **74,8%** (+3,8pp) |
+
+Treino 0,962 x teste 0,848 -- **ha overfit visivel**, registrado, a
+tratar antes de ligar no motor.
+
+**1a evidencia positiva da frente de imitacao depois de 7+ fracassos.**
+
+### ACHADO QUE REFORMULA O ALVO (mais importante que o modelo)
+
+Agregando o dataset por turno (1007 turnos):
+
+| situacao | n | % |
+|---|---|---|
+| ambos jogaram, **carta do humano ESTAVA disponivel** | 768 | **76,3%** |
+| carta disponivel, motor preferiu NAO jogar | 103 | 10,2% |
+| carta do humano NUNCA foi candidata | 89 | 8,8% |
+| nenhum dos dois jogou | 47 | 4,7% |
+
+E o modo de falha, por `decision_quality_full.py` (964 turnos): **ZERO
+cartas em comum 52,7%**, bate exato 28,2%, parcial 19,1%.
+
+Ou seja: em 76,3% dos turnos o motor TINHA a carta certa e jogou algo,
+e ainda assim o conjunto quase nunca bate, com o modo dominante sendo
+"zero em comum". **O gargalo de `play` NAO e falta de opcao nem bug de
+geracao -- e SELECAO.** Isso fecha de vez a hipotese de caca-bug nesta
+categoria (que eu persegui a sessao inteira) e aponta a frente de
+politica como a certa.
+
+### RESSALVA que a proxima sessao PRECISA respeitar
+
+`play top-1` (74,8%) **NAO e comparavel** com os 28,2% de
+`decision_quality_full.py`. Rotulo frouxo ("acao esta no CONJUNTO que o
+humano fez no turno"), e so conta decisoes onde a carta do humano
+estava entre as candidatas -- exclui justamente parte do problema. E
+condicao NECESSARIA, nao suficiente. **Nao citar 74,8% como progresso
+rumo aos 85%.**
+
+### PROXIMO PASSO (nao feito)
+
+Ligar o modelo no motor (como prior sobre candidatas e/ou desempate) e
+medir `decision_quality_full.py` de verdade. So esse numero conta. Duas
+coisas a resolver junto: (a) o overfit acima; (b) o modelo vira
+dependencia de runtime do motor, como `human_patterns.json`.
+
+**Baseline vigente pra comparar: play 28,2% exato / 28,5% sobreposicao**
+(bloco 679, regua corrigida).
+
 ## 2026-08-25 (679) - Claude (sessao remota web) - CORRECAO PEDIDA PELO USUARIO ("voce tem que contar a carta comprada como candidata sim"): a ferramenta de auditoria privava o motor, por ACASO DE ORDENACAO, justamente da carta cuja decisao ela existe pra comparar -- e isso contaminava o diagnostico inteiro de `play`
 
 ### O erro DE ANALISE que o usuario pegou (meu, nao do codigo)
