@@ -28,6 +28,75 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-25 (678) - Claude (sessao remota web) - BUG REAL E AMPLO: condicao `leader_type` de MAIS DE UMA PALAVRA nunca era satisfeita (108 das 150 cartas do banco com essa condicao) -- efeito tratado como "nao dispara", e em `_can_play_card` isso EXCLUI a carta da geracao de acoes
+
+### Como foi achado (persistindo no ultimo caso residual)
+
+Depois de os 3 buckets do diagnostico de `play` se dissolverem (ver
+bloco 677 e a secao de erros de medicao abaixo), sobrou **1 unico**
+caso suspeito de verdade em 503 cartas analisadas: ST04-017 (Onigashima
+Island, STAGE custo 3) com lider Kaido ST04-001 -- na mao reconstruida,
+DON real suficiente (8), e mesmo assim NUNCA aparecia em `all_actions`.
+
+### O bug
+
+`DecisionEngine._effect_conditions_met` (~linha 13007):
+
+    leader_types = set(str(me.leader.sub_types).lower().split())
+    ...
+    if str(v).lower() not in ' '.join(leader_types): return False
+
+O `set(...split())` quebra os sub_types em PALAVRAS soltas e destroi a
+ordem; o consumidor rejunta com `' '.join(...)`, produzindo a frase em
+ordem ARBITRARIA (ordem de hash do set). Procurar a frase
+`'animal kingdom pirates'` dentro de `'kingdom animal pirates four
+emperors the'` da **False** -- e da False praticamente sempre, pra
+qualquer tipo de mais de uma palavra.
+
+**Alcance medido no banco inteiro** (gate de auditoria global): 150
+cartas tem condicao `leader_type`; **108 usam tipo multi-palavra** e
+estavam TODAS quebradas. Nao e nicho -- sao os arquetipos centrais:
+Animal Kingdom Pirates (12), Straw Hat Crew (11), Blackbeard Pirates
+(10), Big Mom Pirates (8), Foxy Pirates (6), Red-Haired Pirates (6),
+Water Seven / Land of Wano / Revolutionary Army / East Blue /
+Donquixote Pirates / Thriller Bark Pirates (5 cada), etc. As 42 de tipo
+1 palavra funcionavam POR ACASO (uma palavra sobrevive ao embaralhamento).
+
+Consequencia em cascata: `_can_play_card` usa `_effect_conditions_met`
+como gate -- entao pra essas 108 cartas o efeito nao so "nao disparava"
+como a carta podia sumir da geracao de acoes inteira, exatamente o
+sintoma perseguido.
+
+### O fix (e por que e a 3a implementacao, nao a 1a)
+
+O MESMO arquivo ja checava `leader_type` CORRETAMENTE em outros 2
+pontos (linhas ~2124 e ~5063), os dois usando `_norm_type_text` sobre a
+string CRUA (sem set, sem split). Este ponto era uma 3a implementacao
+divergente -- caso de manual da `REGRA_SEM_DUPLICACAO.md`. Fix passa a
+usar o MESMO `_norm_type_text`, sem criar uma 4a versao.
+
+Validado: ST04-017 volta a `cond_met=True` / `can_play=True`; controle
+negativo (lider SEM o tipo) continua `False` -- o fix nao virou "aceita
+qualquer lider". Teste permanente novo
+(`test_leader_type_multi_palavra_bloco_678`, com o controle negativo
+junto). `smoke_fast.py` OK, `smoke_test.py` TODOS OS TESTES PASSARAM.
+
+### PENDENTE -- nao citar ganho sem este numero
+
+`decision_quality_full.py --all --workers 4` rodando no momento deste
+registro. Baseline a bater (estado commitado, apos a reversao do bloco
+677): **play 27,5% exato / 28,1% sobreposicao**, activate 28,5%,
+attach_don 19,4%, attack-quem 55,0%. Mesma disciplina dos blocos
+676/677: se ficar flat/negativo, **reverter** e registrar como achado
+negativo; se pagar, registrar com o recorte POR LIDER obrigatorio.
+
+Ressalva honesta ja registrada antes de medir: corrigir um bug real
+NAO garante ganho nesta metrica -- a carta destravada ainda precisa
+vencer a busca pra virar acerto de `play`. O precedente favoravel e o
+bloco 661 (condicao `leader_is` que nunca disparava, +6,9pp, maior
+ganho ja registrado); o desfavoravel e o bloco 677 (diagnostico certo,
+ganho zero).
+
 ## 2026-08-25 (677) - Claude (sessao remota web) - Continuacao direta do 676: diagnostico v3 (com `all_actions`) desmonta o bucket enganoso de "nunca gerada" e acha causa ESTRUTURAL real -- so 1 'play' tinha vaga garantida no shortlist da busca. `SEARCH_MIN_PLAY_CANDIDATES` 1 -> 3, medido pelo RANK, nao chutado. **MEDICAO AGREGADA AINDA EM VOO no momento deste registro**
 
 ### O diagnostico v3 (agora confiavel, com a instrumentacao do 676)

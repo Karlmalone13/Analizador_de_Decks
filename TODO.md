@@ -2,6 +2,26 @@
 
 **Última atualização:** 25 de agosto de 2026
 
+> 25/08/2026 (bloco 678): **BUG REAL E AMPLO ACHADO E CORRIGIDO** —
+> condição `leader_type` de **mais de uma palavra nunca era satisfeita**.
+> `_effect_conditions_met` quebrava os sub_types do líder num `set` de
+> palavras soltas e rejuntava em ordem arbitrária, então procurar
+> `'animal kingdom pirates'` dentro de `'kingdom animal pirates four
+> emperors the'` dava sempre False. **108 das 150 cartas** do banco com
+> essa condição estavam quebradas — arquétipos centrais (Straw Hat Crew,
+> Blackbeard Pirates, Big Mom Pirates, Animal Kingdom Pirates, Land of
+> Wano, East Blue...). Pior: `_can_play_card` usa esse gate, então a
+> carta podia sumir da geração de ações inteira. O mesmo arquivo já
+> checava `leader_type` certo em 2 outros pontos via `_norm_type_text` —
+> era uma 3ª implementação divergente (caso de manual da
+> `REGRA_SEM_DUPLICACAO`); fix reusa o helper existente. Achado
+> perseguindo o **único** caso residual suspeito em 503 analisados
+> (ST04-017 com líder Kaido). Teste permanente novo com controle
+> negativo; `smoke_fast.py`/`smoke_test.py` OK. **PENDENTE: medição
+> `decision_quality_full.py` rodando — baseline play 27,5%/28,1%. Se
+> flat/negativo, reverter e registrar como achado negativo.** Ver bloco
+> 678 do HANDOFF.
+
 > 25/08/2026 (bloco 677, continuação do 676): diagnóstico v3 (com o
 > `all_actions` novo) **desmontou o bucket enganoso "nunca gerada"** —
 > das 503 cartas que o humano jogou e o motor não, só **5,8%** são bug

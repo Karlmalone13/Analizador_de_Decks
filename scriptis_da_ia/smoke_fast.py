@@ -10673,6 +10673,7 @@ def main() -> int:
     test_opp_combo_threat_ve_carta_revelada_na_mao_11_08()
     test_cheap_rollout_value_deterministico_e_direcao_correta_11_08()
     test_select_search_candidates_alarga_com_cheap_values_sem_regredir_11_08()
+    test_leader_type_multi_palavra_bloco_678()
     test_shortlist_garante_plays_bloco_677()
     test_log_turn_planner_decision_registra_cheap_value_pra_auditoria_11_08()
     test_select_action_via_search_generaliza_parada_antecipada_pra_3_candidatas_13_08()
@@ -14043,6 +14044,46 @@ def test_select_search_candidates_alarga_com_cheap_values_sem_regredir_11_08() -
           a4 in com_cheap_alto)
     check("a1/a2 continuam presentes -- alargamento e ADITIVO, nunca remove o que o score ja garantiu",
           a1 in com_cheap_alto and a2 in com_cheap_alto)
+
+
+def test_leader_type_multi_palavra_bloco_678() -> None:
+    """
+    Bloco 678: `_effect_conditions_met` quebrava os sub_types do lider em
+    PALAVRAS soltas num SET e o consumidor rejuntava com `' '.join(...)`,
+    produzindo a frase em ordem ARBITRARIA (ordem de hash). Qualquer
+    condicao `leader_type` de MAIS DE UMA PALAVRA deixava de bater --
+    'animal kingdom pirates' procurado dentro de 'kingdom animal pirates
+    four emperors the'. 108 das 150 cartas com essa condicao no banco
+    usam tipo multi-palavra (Straw Hat Crew, Blackbeard Pirates, Big Mom
+    Pirates, ...), todas tratadas como "efeito nao dispara" -- e em
+    `_can_play_card` isso chega a EXCLUIR a carta da geracao de acoes.
+
+    Achado investigando o unico caso residual de "carta que o humano
+    jogou e o motor nem gerou como acao" (ST04-017 Onigashima Island,
+    lider Kaido ST04-001).
+    """
+    # ST04-017 exige leader_type='animal kingdom pirates'; ST04-001 (Kaido)
+    # tem sub_types 'Animal Kingdom Pirates The Four Emperors' -- 3 palavras
+    # dentro de uma cadeia de 6, o caso exato que o bug quebrava.
+    me = GameState(leader=real_card("ST04-001"), turn=8, don_available=8)
+    me.hand = [real_card("ST04-017")]
+    opp = GameState(leader=real_card("OP11-062"), turn=8)
+    eng = DecisionEngine(me, opp)
+    carta = me.hand[0]
+    check("leader_type multi-palavra bate quando o lider TEM o tipo "
+          "(3 palavras dentro de uma cadeia de 6)",
+          eng._effect_conditions_met(carta) is True)
+    check("com a condicao satisfeita, a carta volta a ser JOGAVEL "
+          "(antes sumia da geracao de acoes inteira)",
+          eng._can_play_card(carta) is True)
+
+    # Controle negativo: lider SEM o tipo exigido continua bloqueando --
+    # o fix nao pode virar "aceita qualquer lider".
+    me2 = GameState(leader=real_card("OP11-062"), turn=8, don_available=8)
+    me2.hand = [real_card("ST04-017")]
+    eng2 = DecisionEngine(me2, GameState(leader=real_card("ST04-001"), turn=8))
+    check("lider SEM o tipo exigido continua NAO satisfazendo a condicao",
+          eng2._effect_conditions_met(me2.hand[0]) is False)
 
 
 def test_shortlist_garante_plays_bloco_677() -> None:

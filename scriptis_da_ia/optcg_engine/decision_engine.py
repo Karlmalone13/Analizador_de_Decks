@@ -13004,7 +13004,24 @@ class DecisionEngine:
         my_don   = me.don_available
         my_trash = len(me.trash)
         my_chars = len(me.field_chars)
-        leader_types = set(str(getattr(me.leader, 'sub_types', '')).lower().split())
+        # Bloco 678: era `set(...lower().split())` -- quebrava os sub_types em
+        # PALAVRAS soltas dentro de um SET, e o consumidor (`leader_type`
+        # abaixo) rejuntava com `' '.join(...)`, produzindo a frase em ordem
+        # ARBITRARIA (ordem de hash do set). Qualquer tipo de MAIS DE UMA
+        # PALAVRA deixava de bater: 'animal kingdom pirates' procurado dentro
+        # de 'kingdom animal pirates four emperors the' -> False. 108 das 150
+        # cartas com condicao `leader_type` no banco usam tipo multi-palavra
+        # (Straw Hat Crew, Blackbeard Pirates, Big Mom Pirates, Animal Kingdom
+        # Pirates, ...) -- todas com o efeito condicional tratado como "nao
+        # dispara", o que em `_can_play_card` chega a excluir a carta da
+        # geracao de acoes. Achado 25/08 investigando o unico caso residual de
+        # "carta que o humano jogou e o motor nem gerou" (ST04-017 Onigashima
+        # Island com lider Kaido ST04-001).
+        #
+        # Fix usa `_norm_type_text` -- MESMA funcao que os outros 2 pontos do
+        # arquivo que ja checavam `leader_type` corretamente (linhas ~2124 e
+        # ~5063), em vez de uma 3a implementacao propria (REGRA_SEM_DUPLICACAO).
+        leader_types_text = _norm_type_text(str(getattr(me.leader, 'sub_types', '')))
 
         for k, v in conds.items():
             if k == 'life_lte'  and not (my_life  <= v): return False
@@ -13126,7 +13143,7 @@ class DecisionEngine:
             if k == 'total_chars_cost_gte':
                 if not (sum(c.cost for c in me.field_chars) >= v): return False
             if k == 'leader_type':
-                if str(v).lower() not in ' '.join(leader_types): return False
+                if _norm_type_text(str(v)) not in leader_types_text: return False
             if k == 'leader_is':
                 if not _leader_is_match(v, str(getattr(me.leader, 'name', ''))): return False
         return True
