@@ -28,6 +28,85 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-25 (676) - Claude (sessao remota web) - Pedido REPETIDO e EXPLICITO do usuario ("conserte essa diversidade estrategica, quero que seja parecido ou igual ao do humano, ja falei diversas vezes"): mecanismo novo de desempate por banda larga TENTADO e REVERTIDO (medido FLAT/levemente negativo) -- diagnostico que motivou tinha 2 erros metodologicos distintos, achados e corrigidos na propria investigacao; `decision_log` ganhou captura completa (candidates sem corte de 8 + `all_actions` novo) pra desbloquear a proxima tentativa com dado confiavel
+
+### Tentativa 1: desempate por banda larga (`USE_HUMAN_NUDGE_WIDE_BAND`) -- REVERTIDA
+
+Diagnostico inicial (`diag_play_gap.py`, scratchpad): medindo o gap
+entre a acao ESCOLHIDA e QUALQUER candidata `kind='play'` em QUALQUER
+decisao do turno, achei "93% dos turnos com mismatch de play sao
+quase-empate". Implementado um 3o nivel de desempate (constantes
+`USE_HUMAN_NUDGE_WIDE_BAND`/`TIEBREAK_HUMAN_WIDE_REL=0.05`/
+`HUMAN_NUDGE_MIN_RATIO=2.0` em `decision_engine.py`, `_select_action_
+via_search`): quando `valor` simulado fica dentro de 5% da escala da
+decisao (nao so empate EXATO de 1e-9 como o `_tb`/`_tb_human`
+existentes), prefere a candidata com sinal humano CLARAMENTE dominante
+(>=2x), gate deliberado pra nao repetir o ruido do override aposentado
+(bloco 648/652).
+
+**Medido (`decision_quality_full.py --all --workers 4`) e NAO ajudou**:
+play 27,5% -> 27,2%, attach_don -1,0pp, resto flat. **Revertido**
+(`git checkout` no arquivo, isolado -- unico diff no commit).
+
+### Erro metodologico achado na PROPRIA investigacao (2 partes)
+
+Ao investigar POR QUE nao ajudou, achei que o diagnostico que motivou a
+tentativa estava errado de 2 formas:
+
+1. **v1 do script** comparava o gap contra QUALQUER candidata 'play' de
+   QUALQUER decisao do turno -- incluindo decisoes onde 'play' JA
+   tinha sido a propria escolhida (gap trivial ~0 contra si mesma).
+   Corrigido (`diag_play_gap_v2.py`): so compara a decisao especifica
+   onde o CODIGO EXATO que o humano jogou aparece como candidata
+   'play' e PERDEU. Resultado real, bem menos otimista: de 503 codigos
+   faltantes analisados (400 turnos), **36,4% nunca aparecem como
+   candidata**, **44,3% perdem por gap grande** (dominancia real da
+   busca), so **19,3% sao quase-empate de verdade**.
+
+2. **O bucket "nunca gerada" (36,4%) TAMBEM estava errado**, achado
+   investigando 2 exemplos a fundo (metodologia turno-a-turno de
+   sempre): `decision_log['candidates']` sempre foi truncado em
+   `[:8]` (so LOG, nao decisao) -- um codigo podia estar na lista
+   COMPLETA de acoes geradas (`actions`, nunca logada antes) mas nunca
+   aparecer no log por 2 motivos DIFERENTES: (a) nunca virou acao legal
+   nenhuma (bug de geracao de verdade), ou (b) virou acao legal, foi
+   pontuada, mas nao entrou no shortlist que disputa a busca Monte
+   Carlo cara (`_select_search_candidates`, corte por `top_k` -- design
+   intencional de custo computacional, nao bug). Exemplo real
+   confirmado (Nami-BY_x_Imu-B T8, EB03-055 Nico Robin): aparecia como
+   "nunca gerada" no diagnostico v2, mas com o log expandido (abaixo)
+   ficou claro que ERA candidata 'play' real, score=55,0 -- so perdeu
+   pro shortlist porque Silvers Rayleigh (score=224,5) e outras 3
+   opcoes pontuaram mais alto. Sem essa distincao, qualquer numero
+   agregado sobre "nunca gerada" mistura bug real com design
+   intencional -- proximo pedido do usuario, direto: "aumentar o log
+   pra capturar todos os candidatos".
+
+### Fix aplicado: `decision_log` sem corte + `all_actions` novo
+
+`_log_turn_planner_decision` (decision_engine.py): `candidates[:8]` ->
+`candidates` (sem corte -- o shortlist real que disputa a busca e
+tipicamente pequeno, custo de log baixo). Novo campo `all_actions`:
+lista ENXUTA (`score`/`kind`/`codigo`, sem o dict pesado de
+`_audit_action_brief`) com TODAS as acoes geradas antes de qualquer
+corte de shortlist -- distingue "nunca virou acao legal" de "virou mas
+perdeu o corte do shortlist". Mudanca de INSTRUMENTACAO pura, nao mexe
+em nenhuma decisao real. `smoke_fast.py` OK. Validado reproduzindo o
+exemplo Nico Robin/EB03-055 acima com o log novo -- confirma a
+distincao funciona.
+
+### Pendente (registrado, nao fechado)
+
+Refazer o diagnostico (v3) usando `all_actions` pra separar de verdade
+"nunca gerada" (bug real, candidato pra caca-bug de hoje) de "gerada
+mas fora do shortlist" (candidato pra investigar o PESO/escala do score
+estatico, problema diferente e mais dificil) -- ainda nao feito, fica
+pra continuacao desta sessao ou proxima. O objetivo central do usuario
+(motor jogar identico ao humano) continua sem um mecanismo novo que
+comprovadamente ajude -- 2 tentativas hoje (esta e o
+`_human_dominant_action_override` de 23/08) tentadas e revertidas,
+ambas por medicao real, nao suposicao.
+
 ## 2026-08-24 (675) - Claude (sessao remota web) - Pedido do usuario "ta melhor que as porcentagens de ontem?": rodado `decision_quality_full.py --all --workers 4` (150 logs, 214 validos, 1017 turnos) e investigada a queda aparente 31,5% (fim 23/08, bloco 652) -> 27,5% hoje -- NAO e regressao dos 4 fixes desta sessao
 
 **Numero de hoje**: play 265/965 (27,5%, exato) / 512/1825 (28,1%,

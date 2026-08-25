@@ -19454,10 +19454,32 @@ class OPTCGMatch:
             'top_immediate': (self._audit_action_brief(top_immediate, None, cv.get(id(top_immediate)),
                                                         id(top_immediate) in added_ids)
                               if top_immediate else None),
+            # Achado real 24-25/08 (pedido do usuario, investigando o
+            # bucket "nunca gerada" de decision_quality_full.py): o corte
+            # `[:8]` aqui e SO DE LOG, nao de decisao -- mas escondia se
+            # uma carta que o humano jogou (a) nunca virou acao legal
+            # nenhuma (`actions` vazio pra ela), (b) foi gerada mas nunca
+            # entrou no shortlist que disputa a busca Monte Carlo
+            # (`candidates`), ou (c) entrou no shortlist mas so nao
+            # aparecia no log por estar fora do top-8 -- as 3 causas tem
+            # fix MUITO diferente, e sem essa distincao qualquer
+            # diagnostico de "por que X nunca foi candidata" fica cego.
+            # `candidates` sem corte (o shortlist real que disputa a
+            # busca, tipicamente pequeno -- nao e o `actions` inteiro,
+            # entao o custo de log continua baixo); `all_actions` novo,
+            # formato ENXUTO (score/kind/codigo, sem o dict pesado de
+            # `_audit_action_brief`) cobre a lista COMPLETA de acoes
+            # geradas antes de qualquer corte de shortlist -- resolve (a)
+            # vs (b)/(c) de uma vez.
             'candidates': [
                 self._audit_action_brief(a, sim_values.get(id(a)), cv.get(id(a)),
                                          id(a) in added_ids)
-                for a in candidates[:8]
+                for a in candidates
+            ],
+            'all_actions': [
+                {'score': round(float(a[0]), 2), 'kind': a[1],
+                 'code': getattr(a[2], 'code', None) if a[2] is not None else None}
+                for a in actions
             ],
         })
         # DecisionTrace (ideia 2 do PDF): torna EXPLÍCITO "por que a alternativa

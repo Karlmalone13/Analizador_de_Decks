@@ -1,6 +1,29 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 24 de agosto de 2026
+**Última atualização:** 25 de agosto de 2026
+
+> 25/08/2026 (bloco 676, pedido repetido "conserte essa diversidade
+> estratégica, quero que seja parecido ou igual ao do humano"): **1
+> mecanismo novo tentado (desempate por banda larga de padrão humano) e
+> REVERTIDO** — medido flat/levemente negativo (`play` 27,5%→27,2%).
+> Investigando o porquê, achei **2 erros metodológicos na própria
+> investigação**: (1) o diagnóstico que motivou a tentativa ("93%
+> quase-empate") comparava contra candidatas erradas (incluindo
+> decisões onde `play` já tinha vencido — gap trivial ~0 contra si
+> mesma); corrigido, número real é bem menor (19,3% quase-empate de
+> verdade, 36,4% "nunca gerada", 44,3% gap grande). (2) o bucket "nunca
+> gerada" TAMBÉM estava errado — `decision_log` truncava candidatos em
+> top-8 só no LOG, escondendo se uma carta era candidata real fora do
+> shortlist (design intencional) ou nunca virava ação legal (bug real).
+> **Fix aplicado**: `decision_log` sem corte de 8 + campo novo
+> `all_actions` (todas as ações geradas, antes de qualquer corte) —
+> instrumentação pura, `smoke_fast.py` OK, validado com exemplo real
+> (Nico Robin EB03-055 "nunca gerada" era falso positivo — score 55,0
+> real, só perdeu o shortlist pra Silvers Rayleigh score 224,5).
+> **Pendente**: refazer o diagnóstico (v3) com `all_actions` pra
+> separar de verdade bug-de-geração vs peso-de-score — objetivo central
+> ainda sem mecanismo novo funcionando, 2 tentativas hoje/23-08
+> revertidas por medição real. Ver bloco 676 do HANDOFF.
 
 > 24/08/2026 (bloco 675, pedido "tá melhor que as porcentagens de
 > ontem?"): rodada `decision_quality_full.py --all --workers 4` (150
