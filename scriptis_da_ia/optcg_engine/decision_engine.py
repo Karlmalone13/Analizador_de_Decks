@@ -19599,6 +19599,27 @@ class OPTCGMatch:
             'opp_field': len(opp.field_chars),
             'don_available': p.don_available,
             'don_rested': p.don_rested,
+            # COMPOSICAO DA MAO (bloco 682, pergunta direta do usuario:
+            # "pq so tem quantas cartas tem na mao e nao o que tem nela?").
+            # Ate aqui o contexto so tinha `hand` (o TAMANHO) -- entao a
+            # politica de imitacao sabia "tem 5 cartas" e nao sabia se eram
+            # 5 bombas de custo 9 ou 5 blockers de custo 1, que e
+            # exatamente o que determina quantas e quais jogar. Nao era
+            # limitacao do motor (ele enxerga a mao inteira aqui), era do
+            # dict -- os campos abaixo passam a descrever O QUE tem na mao,
+            # no campo e no campo do oponente, e vao pro decision_log E pra
+            # politica pela mesma fonte unica.
+            'hand_cost_min': min((c.cost for c in p.hand), default=0),
+            'hand_cost_max': max((c.cost for c in p.hand), default=0),
+            'hand_cost_avg': round(sum(c.cost for c in p.hand) / len(p.hand), 2) if p.hand else 0.0,
+            'hand_pagaveis': sum(1 for c in p.hand if c.cost <= p.don_available),
+            'hand_counter_total': sum(getattr(c, 'counter', 0) or 0 for c in p.hand),
+            'hand_blockers': sum(1 for c in p.hand if getattr(c, 'has_blocker', False)),
+            'hand_triggers': sum(1 for c in p.hand if getattr(c, 'has_trigger', False)),
+            'hand_power_max': max((getattr(c, 'power', 0) or 0 for c in p.hand), default=0),
+            'hand_eventos': sum(1 for c in p.hand if c.card_type == 'EVENT'),
+            'board_power_total': sum((getattr(c, 'power', 0) or 0) for c in p.field_chars),
+            'opp_board_power_total': sum((getattr(c, 'power', 0) or 0) for c in opp.field_chars),
             'can_lethal': engine.analyzer.can_lethal_this_turn(),
             'opp_lethal_threat': round(float(engine.analyzer.opp_lethal_threat()), 3),
             'opp_combo_threat': engine.analyzer.opp_combo_threat(),

@@ -55,8 +55,17 @@ from optcg_engine.decision_engine import load_cards_db
 from optcg_engine.policy import (state_base_features, action_features,
                                 count_features)
 
+# Bloco 682: alem das CONTAGENS, a COMPOSICAO da mao/campo. Ate o bloco
+# 681 o modelo so via `hand` (tamanho) -- sabia "tem 5 cartas" e nao se
+# eram 5 bombas caras ou 5 blockers baratos, que e o que decide quantas e
+# quais jogar. Os campos novos vem do MESMO `_decision_context` que o
+# decision_log grava (fonte unica treino/runtime).
 STATE_NUM = ['life', 'opp_life', 'hand', 'opp_hand', 'field', 'opp_field',
-             'don_available', 'don_rested', 'opp_lethal_threat', 'n_candidates']
+             'don_available', 'don_rested', 'opp_lethal_threat', 'n_candidates',
+             'hand_cost_min', 'hand_cost_max', 'hand_cost_avg', 'hand_pagaveis',
+             'hand_counter_total', 'hand_blockers', 'hand_triggers',
+             'hand_power_max', 'hand_eventos',
+             'board_power_total', 'opp_board_power_total']
 STATE_CAT = ['priority', 'posture', 'phase', 'profile']
 KINDS = ['play', 'attack', 'activate', 'attach_don', 'pass']
 

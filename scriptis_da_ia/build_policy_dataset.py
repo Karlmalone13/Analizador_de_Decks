@@ -76,6 +76,12 @@ INDEX_PATH = os.path.join(LOGS_DIR, 'index.json')
 CONTEXT_FEATURES = [
     'life', 'opp_life', 'hand', 'opp_hand', 'field', 'opp_field',
     'don_available', 'don_rested', 'opp_lethal_threat', 'n_candidates',
+    # bloco 682: COMPOSICAO da mao/campo, nao so contagens -- ver
+    # `_decision_context` em decision_engine.py.
+    'hand_cost_min', 'hand_cost_max', 'hand_cost_avg', 'hand_pagaveis',
+    'hand_counter_total', 'hand_blockers', 'hand_triggers',
+    'hand_power_max', 'hand_eventos',
+    'board_power_total', 'opp_board_power_total',
 ]
 CONTEXT_CATEGORICAL = ['priority', 'posture', 'phase', 'profile']
 
