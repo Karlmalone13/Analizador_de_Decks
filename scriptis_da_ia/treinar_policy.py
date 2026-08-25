@@ -41,7 +41,7 @@ certa, que e condicao necessaria, nao suficiente.
 
 Uso:
     python treinar_policy.py [--dataset metrics/policy_dataset.jsonl]
-                             [--out metrics/policy_model.json] [--seed 42]
+                             [--out metrics/policy_train_report.json] [--seed 42]
 """
 import argparse
 import json
@@ -125,7 +125,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--dataset', default='metrics/policy_dataset.jsonl')
-    ap.add_argument('--out', default='metrics/policy_model.json')
+    ap.add_argument('--out', default='metrics/policy_train_report.json')
     ap.add_argument('--seed', type=int, default=42)
     ap.add_argument('--test-frac', type=float, default=0.25)
     args = ap.parse_args()

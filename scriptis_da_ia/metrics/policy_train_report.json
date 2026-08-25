@@ -1,0 +1,16 @@
+{
+  "auc_test": 0.8479165676841584,
+  "auc_train": 0.9624590813238751,
+  "auc_baseline": 0.7021216355239415,
+  "play_top1_modelo": [
+    359,
+    480
+  ],
+  "play_top1_score": [
+    341,
+    480
+  ],
+  "n_decisoes": 4420,
+  "n_jogos": 202,
+  "seed": 42
+}
