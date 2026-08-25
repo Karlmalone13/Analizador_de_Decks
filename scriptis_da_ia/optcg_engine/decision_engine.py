@@ -18402,7 +18402,8 @@ class OPTCGMatch:
         excecao) devolve `actions` intacta e o motor segue como sempre.
         """
         from optcg_engine.policy import (load_policy, state_base_features,
-                                         action_features, count_features)
+                                         action_features, count_features,
+                                         check_dims)
         bundle = load_policy()
         if not bundle:
             return actions
@@ -18414,6 +18415,15 @@ class OPTCGMatch:
             base = state_base_features(ctx, p.leader.code, spec)
 
             plays = [a for a in actions if a[1] == 'play']
+
+            # Guarda de DIMENSAO (bloco 682): se o vetor montado aqui nao
+            # bate com o que o modelo viu no treino, avisa ALTO e desliga
+            # -- nunca segue quieto. Ver `check_dims`.
+            if plays:
+                _amostra_r = action_features(base, 'play', 0.0, {}, spec)
+                _amostra_c = count_features(base, [], ctx.get('don_available'))
+                if not check_dims(bundle, len(_amostra_r), len(_amostra_c)):
+                    return actions
 
             # (1) CONTAGEM
             if plays:

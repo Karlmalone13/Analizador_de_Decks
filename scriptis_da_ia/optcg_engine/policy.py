@@ -14,11 +14,16 @@ E a mesma `REGRA_SEM_DUPLICACAO.md` do projeto aplicada a ML.
 DOIS MODELOS, DOIS PROBLEMAS DISTINTOS (medidos 25/08)
 ------------------------------------------------------
 1. `ranker`  -- QUAL carta jogar. Score atual do motor: AUC 0,702;
-   modelo com estado: 0,848 (teste, split por partida).
+   modelo com estado: **0,851** (teste, split por partida).
 2. `counter` -- QUANTAS cartas jogar no turno. O motor acerta a contagem
-   em 58,3% dos turnos; o modelo, 65,6%. Isso e um TETO DURO da metrica
-   `play` (que exige o CONJUNTO do turno bater exato): com a contagem
-   errada, o conjunto nao bate por melhor que seja a selecao.
+   em 58,3% dos turnos; o modelo, **63,6%**. Isso e um TETO DURO da
+   metrica `play` (que exige o CONJUNTO do turno bater exato): com a
+   contagem errada, o conjunto nao bate por melhor que seja a selecao.
+
+Numeros de TESTE, `treinar_policy.py`. Ressalva de leitura: com 247
+turnos de teste o desvio padrao da contagem e ~3pp e com 480 casos o do
+top-1 e ~2pp -- diferencas menores que isso entre versoes NAO sao
+distinguiveis, e ja levaram a leitura errada uma vez (bloco 682).
 
 DEGRADACAO GRACIOSA: sem o arquivo do modelo, `load_policy()` devolve
 None e o motor segue com o comportamento de sempre. O modelo e um
@@ -32,6 +37,36 @@ MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file
                           'metrics', 'policy_train_report.joblib')
 
 _CACHE: dict = {}
+_AVISOU: set = set()
+
+
+def check_dims(bundle, n_ranker: int, n_counter: int) -> bool:
+    """Confere que os vetores montados em runtime tem o MESMO tamanho que
+    o modelo viu no treino, e AVISA ALTO (stderr, 1x) quando nao tem.
+
+    Existe por causa de uma falha real (25/08): o arquivo do modelo foi
+    re-treinado com features novas ENQUANTO uma medicao rodava, e o
+    `try/except` generico do chamador engolia o `ValueError` de dimensao
+    -- os workers seguiam com a politica DESLIGADA em silencio e a
+    medicao saia parecendo valida. Incompatibilidade de feature entre
+    treino e runtime nunca pode falhar quieta: ou avisa, ou vira um
+    numero errado em que alguem vai acreditar."""
+    ok = True
+    esperado_r = getattr(bundle.get('ranker'), 'n_features_in_', None)
+    esperado_c = getattr(bundle.get('counter'), 'n_features_in_', None)
+    for nome, tem, esperado in (('ranker', n_ranker, esperado_r),
+                                ('counter', n_counter, esperado_c)):
+        if esperado is not None and tem != esperado:
+            ok = False
+            chave = (nome, tem, esperado)
+            if chave not in _AVISOU:
+                _AVISOU.add(chave)
+                import sys
+                print(f'[POLICY] AVISO: {nome} espera {esperado} features, '
+                      f'runtime montou {tem} -- politica DESLIGADA. '
+                      f'Re-treine (treinar_policy.py) ou confira '
+                      f'optcg_engine/policy.py.', file=sys.stderr)
+    return ok
 
 
 def load_policy(path: str | None = None):
@@ -83,9 +118,17 @@ def count_features(base: list, custos_play: list, don_available: float) -> list:
     """Vetor do modelo de CONTAGEM = estado + composicao de custos da mao.
 
     Sem a composicao o modelo so via o TAMANHO da mao e ficava cego
-    (60,7%, quase empatado com os 58,3% do motor); com ela vai a 65,6%.
+    (60,7%, quase empatado com os 58,3% do motor); com ela foi a 65,6%.
     `cabem` (quantas cartas cabem no DON pegando das mais baratas pras
-    mais caras) e o teto FISICO de quantas cartas o turno comporta."""
+    mais caras) e o teto FISICO de quantas cartas o turno comporta.
+
+    NOTA (bloco 682): depois disso o `context` do estado tambem ganhou
+    composicao de mao (custo min/max/medio, pagaveis, counters,
+    blockers...) e o numero foi a 63,6% -- ou seja, as features novas NAO
+    somaram nada distinguivel de ruido (~3pp de desvio padrao com 247
+    turnos de teste), provavelmente por serem redundantes com as daqui.
+    Nao remover estas por achar que as de la substituem: nao foi medido
+    assim."""
     custos = sorted(float(c or 0) for c in custos_play)
     don = float(don_available or 0)
     cabem = 0
