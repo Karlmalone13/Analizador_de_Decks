@@ -454,7 +454,17 @@ USE_TIEBREAK_HUMAN_FREQ = True
 # OFF por padrao, ligada por env var: e artefato treinado e opcional, e
 # precisa ser 1 flag pra permitir A/B honesto (mesma disciplina dos
 # blocos 676/677, que reverteram mudancas por medicao agregada).
-USE_POLICY_MODEL = os.environ.get('OPTCG_USE_POLICY', '') == '1'
+# Valores aceitos em OPTCG_USE_POLICY: '1'/'both' (os dois modelos),
+# 'ranker' (so a SELECAO de qual carta), 'counter' (so a CONTAGEM de
+# quantas). O modo granular existe porque o A/B com os dois juntos deu
+# resultado NEGATIVO (bloco 683: play 26,4% ligada x 29,5% desligada) e
+# "os dois juntos pioram" nao diz QUAL dos dois piora -- o contador e o
+# suspeito principal (acerta 63,6% das contagens, entao ~36% dos turnos
+# ele corta jogadas erradas, e cada corte errado destroi o conjunto).
+POLICY_MODE = os.environ.get('OPTCG_USE_POLICY', '').strip().lower()
+USE_POLICY_MODEL = POLICY_MODE in ('1', 'both', 'ranker', 'counter')
+POLICY_USA_COUNTER = POLICY_MODE in ('1', 'both', 'counter')
+POLICY_USA_RANKER = POLICY_MODE in ('1', 'both', 'ranker')
 
 # Bloco 656 (analise turno-a-turno de uma vitoria humana, pedido do usuario):
 # ACAO "PASS" -- encerrar o turno agora -- passa a ser uma CANDIDATA que
@@ -18426,7 +18436,7 @@ class OPTCGMatch:
                     return actions
 
             # (1) CONTAGEM
-            if plays:
+            if plays and POLICY_USA_COUNTER:
                 custos = [float(getattr(a[2], 'cost', 0) or 0) for a in plays]
                 n_prev = int(bundle['counter'].predict(
                     [count_features(base, custos, ctx.get('don_available'))])[0])
@@ -18439,7 +18449,7 @@ class OPTCGMatch:
             # `actions` tem que continuar ordenada por score (o resto do
             # pipeline assume isso), entao so trocamos as POSICOES dos
             # `play` entre si, preservando os slots de score.
-            if len(plays) > 1:
+            if len(plays) > 1 and POLICY_USA_RANKER:
                 feats = []
                 for a in plays:
                     info = get_card_flags(a[2].code) or {}
