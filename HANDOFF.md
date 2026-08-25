@@ -28,6 +28,72 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-25 (683) - Claude (sessao remota web) - PASSO 2 LIGADO NO MOTOR e MEDIDO: **ACHADO NEGATIVO**. A politica de imitacao NAO melhora a metrica -- os 4 pontos do A/B ordenam monotonicamente do melhor (desligada) pro pior (os dois modelos). Causa provavel identificada: DISTRIBUTION SHIFT de clonagem de comportamento
+
+### O A/B (subconjunto de 70 partidas, MESMAS partidas nos 4 pontos)
+
+| configuracao | play | activate | attach_don | attack-quem |
+|---|---|---|---|---|
+| **DESLIGADA (baseline)** | **29,5%** | **28,6%** | **32,2%** | 45,5% |
+| so ranker (selecao) | 28,3% | 23,8% | 30,3% | 43,8% |
+| so counter (contagem) | 27,3% | 27,4% | 31,8% | 46,4% |
+| os DOIS | 26,4% | 21,4% | 30,3% | 44,6% |
+
+**A hipotese de que o contador era o vilao estava ERRADA** -- os dois
+atrapalham em medida parecida, e o efeito soma.
+
+**Rigor estatistico**: com ~110 turnos cada diferenca isolada cai dentro
+de 1 desvio padrao (+-4,3pp) -- individualmente NENHUMA e conclusiva. O
+que sustenta a leitura e o ORDENAMENTO MONOTONICO nos 4 pontos (mais
+intervencao do modelo = pior), improvavel por acaso. Evidencia fraca
+porem consistente de dano real, nao ganho.
+
+### Por que falhou apesar do AUC bom (0,851 x 0,702)
+
+O modelo foi treinado sobre estados gerados pelo motor BASELINE. Ao
+influenciar as decisoes, o motor passa a visitar estados DIFERENTES dos
+que treinaram o modelo -- ele opina sobre situacoes que nunca viu, e o
+erro se acumula ao longo do turno. E o *distribution shift* classico de
+clonagem de comportamento (o problema que DAgger existe pra resolver).
+**O AUC media a tarefa errada**: ranquear bem num dataset off-policy nao
+implica decidir bem dentro do laco de controle.
+
+Some-se a isso a limitacao ja declarada do rotulo (frouxo, nivel de
+CONJUNTO do turno, nao decisao-a-decisao) -- o modelo aprendeu "esta
+carta aparece no conjunto do turno", nao "esta e a carta a jogar AGORA".
+
+### Estado do codigo
+
+Tudo commitado e **DESLIGADO por padrao** (`OPTCG_USE_POLICY` vazio).
+Modos granulares disponiveis pra quem retomar: `1`/`both`, `ranker`,
+`counter`. O motor em producao esta no comportamento BOM (o baseline).
+
+Infra que FICA e vale independente do resultado negativo:
+`build_policy_dataset.py`, `treinar_policy.py`, `optcg_engine/policy.py`
+(featurizacao em fonte unica treino/runtime), `--limit` em
+`decision_quality_full.py`, e a guarda `check_dims`.
+
+### O QUE NAO REPETIR (8a tentativa de imitacao a falhar)
+
+As 7 anteriores usavam sinal marginal SEM estado. Esta usou COM estado e
+tambem falhou -- entao **"faltava estado no sinal" esta descartado como
+explicacao**. Nao refazer bonus/tiebreak/reranking por padrao humano
+sem atacar antes o distribution shift.
+
+**Se alguem retomar**, o caminho tecnico correto e iterativo (estilo
+DAgger): treinar, rodar o motor COM o modelo, coletar os estados que ELE
+visita, rotular esses estados, re-treinar. Sem esse laco, mais features
+ou mais capacidade de modelo nao resolvem -- foi medido que nao.
+
+### Ressalva sobre a META de 85-90%
+
+Nao foi alcancada e esta frente, como implementada, nao aponta pra la.
+Os numeros honestos hoje: `play` 28,2% no corpus completo (bloco 679,
+regua corrigida). O teto por CONTAGEM continua sendo 52,7% (o motor
+acerta quantas cartas jogar em so 52,7% dos turnos) -- enquanto isso nao
+subir, o conjunto exato nao pode passar disso, e o modelo de contagem
+(63,6% em teste isolado) NAO converteu esse ganho quando aplicado.
+
 ## 2026-08-25 (680) - Claude (sessao remota web) - PASSO 2 do roteiro (bloco 653) FINALMENTE iniciado: imitacao-por-POLITICA. Dataset rotulado + treinador construidos e medidos -- modelo COM ESTADO ranqueia bem melhor que o score atual (AUC 0,848 x 0,702). Diagnostico novo REFORMULA o alvo: o gargalo de `play` e SELECAO, nao geracao
 
 **Pedido do usuario, direto**: "27% e muito pouco ainda, e nao quero

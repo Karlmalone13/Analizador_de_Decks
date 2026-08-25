@@ -2,6 +2,22 @@
 
 **Última atualização:** 25 de agosto de 2026
 
+> 25/08/2026 (bloco 683): **PASSO 2 ligado no motor e MEDIDO — ACHADO
+> NEGATIVO.** A/B de 4 pontos nas mesmas 70 partidas: desligada 29,5% >
+> só ranker 28,3% > só counter 27,3% > os dois 26,4% (`play`).
+> **Nenhum ajuda; os dois somam prejuízo**, e minha hipótese de que o
+> contador era o vilão estava errada. Cada diferença isolada está dentro
+> do ruído (±4,3pp), mas o ordenamento monotônico nos 4 pontos sustenta
+> dano real. **Causa provável: distribution shift** — o modelo treinou
+> em estados do motor baseline e, ao entrar no laço de decisão, opina
+> sobre estados que nunca viu; o AUC alto (0,851) media a tarefa errada.
+> **Descarta "faltava estado no sinal" como explicação das 7 falhas
+> anteriores** — esta tinha estado e falhou igual. Se retomar: laço
+> iterativo estilo DAgger (treinar → rodar com o modelo → coletar os
+> estados que ELE visita → re-rotular → re-treinar); mais features não
+> resolve, foi medido. Código commitado e **DESLIGADO por padrão**
+> (`OPTCG_USE_POLICY`), motor em produção intacto. Ver bloco 683.
+
 > 25/08/2026 (bloco 680, pedido "27% é muito pouco, tem que subir para
 > 85/90%, sem desculpas de divergência estratégica"): **PASSO 2 do
 > roteiro (bloco 653) finalmente iniciado — imitação-por-POLÍTICA.**
