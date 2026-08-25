@@ -104,7 +104,35 @@ este commit tem que dizer explicitamente qual regua usou -- mesmo tipo
 de armadilha ja registrada no bloco 675 (a reforma de fidelidade do
 bloco 655 moveu a regua e quase virou "o motor piorou").
 
-Medicao rodando no momento deste registro; numeros no proximo commit.
+### RESULTADO -- NOVA BASELINE (nao e "o motor melhorou")
+
+`decision_quality_full.py --all --workers 4`, ja com a regua corrigida:
+
+| categoria | regua ANTIGA (bloco 678) | **regua NOVA (baseline)** |
+|---|---|---|
+| play (exato) | 27,7% | **28,2%** |
+| play (sobreposicao) | 28,2% | **28,5%** |
+| activate | 28,3% | 28,5% |
+| attach_don | 19,4% | 19,3% |
+| attack -- quem | 55,0% | 55,1% |
+| attack -- alvo | 69,3% | 69,1% |
+| sequencia (LCS) | 36,2% | 36,3% |
+
+Por lider, o maior movimento: **Xebec OP17-039 31,7% -> 34,9%**
+(+3,2pp); OP13-079 20,1% -> 20,7%. Faz sentido: sao os lideres do
+corpus com mais efeito de compra dentro do turno, os mais afetados pelo
+bug de ordenacao.
+
+**COMO LER**: o motor NAO mudou nesta rodada -- nenhuma linha de
+`decision_engine.py` foi tocada. Os +0,5pp sao a medicao deixando de
+PENALIZAR o motor por cartas que ele nunca teve em maos. O numero novo
+e a baseline CORRETA; o antigo estava artificialmente baixo. **Nao
+citar isto como ganho de qualidade de decisao.**
+
+**Baseline vigente a partir daqui: play 28,2% exato / 28,5%
+sobreposicao**, activate 28,5%, attach_don 19,3%, attack-quem 55,1%.
+Qualquer medicao futura compara contra ESTES numeros, nao contra os
+blocos <= 678.
 
 ### Padrao a vigiar (4a vez nesta investigacao)
 

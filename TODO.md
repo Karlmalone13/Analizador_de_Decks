@@ -24,7 +24,13 @@
 > as anteriores (play 27,7%/28,2%).** Medição rodando. **Padrão a
 > vigiar: é o 4º erro de medição meu nesta investigação, todos
 > encolhendo o nº de suspeitos** — desconfiar de conclusões "está
-> esgotado". Ver bloco 679 do HANDOFF.
+> esgotado". **MEDIDO com a régua corrigida — NOVA BASELINE: play
+> 28,2% exato / 28,5% sobreposição**, activate 28,5%, attach_don 19,3%,
+> attack-quem 55,1%; por líder o maior movimento foi Xebec OP17-039
+> 31,7% → 34,9%. **Não é "o motor melhorou"** — nenhuma linha do motor
+> mudou nessa rodada; é a medição deixando de penalizá-lo por cartas
+> que nunca teve. Medições futuras comparam contra estes números, não
+> contra blocos ≤ 678. Ver bloco 679 do HANDOFF.
 
 > 25/08/2026 (bloco 678): **BUG REAL E AMPLO ACHADO E CORRIGIDO** —
 > condição `leader_type` de **mais de uma palavra nunca era satisfeita**.
