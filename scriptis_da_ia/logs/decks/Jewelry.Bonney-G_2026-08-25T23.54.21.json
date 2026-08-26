@@ -1,0 +1,46 @@
+{
+  "cards": [
+    {
+      "code": "OP05-030",
+      "name": "Donquixote Rosinante",
+      "count": 4
+    },
+    {
+      "code": "EB01-015",
+      "name": "EB01-015",
+      "count": 3
+    },
+    {
+      "code": "OP07-021",
+      "name": "Uroge",
+      "count": 2
+    },
+    {
+      "code": "ST02-007",
+      "name": "Jewelry Bonney",
+      "count": 1
+    },
+    {
+      "code": "OP07-026",
+      "name": "Jewelry Bonney",
+      "count": 1
+    },
+    {
+      "code": "EB01-012",
+      "name": "Cavendish",
+      "count": 1
+    },
+    {
+      "code": "OP07-029",
+      "name": "OP07-029",
+      "count": 1
+    },
+    {
+      "code": "OP01-058",
+      "name": "OP01-058",
+      "count": 1
+    }
+  ],
+  "total_seen": 14,
+  "leader": "OP07-019"
+}

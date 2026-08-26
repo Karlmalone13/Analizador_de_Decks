@@ -662,6 +662,17 @@ class ChooseTargetRequest(BaseModel):
     defenderId: int = 0               # uid do alvo original do ataque (nunca redirecionar p/ ele)
 
 
+class EffectOption(BaseModel):
+    index: int
+    text: str = ""
+
+
+class ChooseEffectOptionRequest(BaseModel):
+    state: GameStateDto
+    options: list[EffectOption] = []
+    actorCode: Optional[str] = None
+
+
 @app.get("/health")
 def health():
     return {"status": "ok", "decisionLog": str(DECISION_LOG_PATH)}
@@ -1155,6 +1166,75 @@ def choose_target(req: ChooseTargetRequest):
         traceback.print_exc()
         # Fallback: ordem original
         return {"orderedIds": [c.id for c in req.candidates]}
+
+
+@app.post("/choose_effect_option")
+def choose_effect_option(req: ChooseEffectOptionRequest):
+    """
+    Escolhe entre OPCOES DE EFEITO da mesma carta -- a tela `V3Choice` do
+    jogo ("Trash 2 Cards" x "Opponent Draws 2 Cards").
+
+    Achado do teste ao vivo (bloco 685/686): o plugin nao tratava essa tela e
+    o motor NEM ERA CONSULTADO -- a partida travava. O plugin continua so
+    olhos/maos: ele le o TEXTO de cada botao e clica; quem escolhe e aqui.
+
+    Heuristica INICIAL e deliberadamente simples, com o texto do botao como
+    unica fonte (o jogo nao expoe a semantica da opcao, so o rotulo): penaliza
+    o que da vantagem ao OPONENTE e o que gasta recurso proprio; premia o que
+    remove/enfraquece o oponente e o que gera vantagem de carta. Empate ->
+    primeira opcao (comportamento estavel e reproduzivel).
+
+    NAO e calibrada -- e um ponto de partida honesto pra destravar a tela.
+    Quando houver volume de partidas com essa decisao registrada, medir e
+    substituir por algo derivado de dado, como o resto do motor.
+    """
+    started = time.perf_counter()
+
+    RUIM_PRO_OPONENTE = ('opponent draws', 'opponent draw', 'oponente compra',
+                         'give ', 'opponent gains', 'return')
+    CUSTO_PROPRIO = ('trash your', 'trash 1 of your', 'discard', 'rest your',
+                     'trash 2 cards', 'trash 1 card')
+    BOM = ('k.o.', 'ko ', 'destroy', 'rest up to', 'rest 1 of your opponent',
+           'draw', 'gain', 'play ', 'add ')
+
+    def pontua(texto: str) -> float:
+        t = (texto or '').strip().lower()
+        if not t:
+            return 0.0
+        v = 0.0
+        for termo in RUIM_PRO_OPONENTE:
+            if termo in t:
+                v -= 40.0
+        for termo in CUSTO_PROPRIO:
+            if termo in t:
+                v -= 15.0
+        for termo in BOM:
+            if termo in t:
+                v += 20.0
+        return v
+
+    try:
+        if not req.options:
+            return {"optionIndex": 0, "decisionId": ""}
+        melhor = max(req.options, key=lambda o: (pontua(o.text), -o.index))
+        print(f"[V3CHOICE] opcoes={[(o.index, o.text) for o in req.options]} "
+              f"-> escolhida {melhor.index} ({melhor.text!r})", flush=True)
+        legal = [{"type": "effect_option", "option_index": o.index,
+                  "text": o.text, "eligible": True} for o in req.options]
+        return _record_aux_decision(
+            "effect_option", _model_dict(req.state), legal,
+            {"type": "effect_option", "option_index": melhor.index,
+             "text": melhor.text},
+            {"optionIndex": melhor.index},
+            phase="effect_option", turn=req.state.turnNumber,
+            actor_code=req.actorCode,
+            latency_ms=round((time.perf_counter() - started) * 1000, 3))
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        # Fallback: primeira opcao -- destravar a tela vale mais que acertar
+        return {"optionIndex": req.options[0].index if req.options else 0,
+                "decisionId": ""}
 
 
 @app.post("/decide")

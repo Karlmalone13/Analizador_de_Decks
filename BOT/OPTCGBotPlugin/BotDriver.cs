@@ -311,6 +311,35 @@ namespace OPTCGBotPlugin
                 // Oferta de "downside cost" com tela dedicada (botoes Cancel /
                 // UseOnPlay|UseV3OnPlay): cliques em cartas sao ignorados ate
                 // decidir.
+                // Escolha entre OPCOES DE EFEITO da mesma carta (bloco 686):
+                // tela V3Choice, ex "Trash 2 Cards" x "Opponent Draws 2
+                // Cards". Achado do teste ao vivo (bloco 685): o plugin nao
+                // tratava e o motor nem era consultado -- a partida TRAVAVA.
+                // Vem ANTES do downside porque as duas telas usam os mesmos
+                // go_ChoiceButton1..4 e esta e mais especifica (identificada
+                // pelo `myType == V3Choice` do proprio botao).
+                if (BotExecutor.IsOfferingV3Choice(gls)
+                    && BotExecutor.PendingActionIsMine(gls, pdBotPs))
+                {
+                    var opcoes = BotExecutor.GetV3Choices(gls);
+                    var dtoV3 = GameStateBuilder.Build(pdBotPs, gls.Lps_Players[1 - BotPlayerIndex], gls);
+                    var lista = new System.Collections.Generic.List<EngineClient.EffectOption>();
+                    foreach (var o in opcoes)
+                        lista.Add(new EngineClient.EffectOption { index = o.Key, text = o.Value });
+                    int? escolha = EngineClient.ChooseEffectOption(
+                        dtoV3, lista, BotExecutor.ActorCode(gls));
+                    // Sem resposta do motor: clica a PRIMEIRA opcao ofertada
+                    // em vez de travar. Destravar a tela vale mais que acertar
+                    // -- travado o jogo nao anda de jeito nenhum.
+                    int idx = escolha ?? (opcoes.Count > 0 ? opcoes[0].Key : 0);
+                    Plugin.Log.LogInfo(
+                        $"[Bot] V3Choice: {opcoes.Count} opcao(oes), escolhida {idx}"
+                        + (escolha == null ? " (FALLBACK: motor nao respondeu)" : ""));
+                    BotExecutor.ClickV3Choice(gls, idx);
+                    _cooldown = 1f;
+                    return;
+                }
+
                 if (BotExecutor.IsOfferingDownside(gls)
                     && BotExecutor.PendingActionIsMine(gls, pdBotPs))
                 {

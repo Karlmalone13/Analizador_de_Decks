@@ -1,0 +1,1595 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Monkey D. Luffy",
+          "code": "OP13-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Jewelry Bonney",
+          "code": "OP07-019"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-040",
+            "OP13-118",
+            "OP16-004",
+            "OP05-038",
+            "OP13-027"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4,
+          "life_cards": [
+            "OP13-118",
+            "OP14-031",
+            "OP15-035",
+            "ST31-005"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "EB01-015",
+            "OP05-030",
+            "ST02-007",
+            "OP07-026",
+            "EB01-015"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "EB01-012",
+            "OP01-051",
+            "OP01-058",
+            "OP04-031",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "ST02-013",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "OP07-021",
+            "OP07-026",
+            "OP07-029",
+            "ST16-004",
+            "ST16-004"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST02-007",
+          "card_name": "Jewelry Bonney",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Jewelry Bonney [\"ST02-007\">ST02-007]",
+            "<b>Reveal and Draw Cavendish [\"EB01-012\">EB01-012]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "EB01-015",
+            "OP05-030",
+            "OP07-026",
+            "EB01-015",
+            "OP07-021",
+            "EB01-012"
+          ],
+          "board": [
+            "ST02-007"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "EB01-012",
+            "OP01-051",
+            "OP01-058",
+            "OP04-031",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "ST02-013",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "OP07-021",
+            "OP07-026",
+            "OP07-029",
+            "ST16-004",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-040",
+            "OP13-118",
+            "OP16-004",
+            "OP05-038",
+            "OP13-027"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "life_cards": [
+            "OP13-118",
+            "OP14-031",
+            "OP15-035",
+            "ST31-005"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB01-015"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-040",
+            "OP13-118",
+            "OP16-004",
+            "OP05-038",
+            "OP13-027",
+            "OP13-118"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4,
+          "life_cards": [
+            "OP13-118",
+            "OP14-031",
+            "OP15-035",
+            "ST31-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "EB01-015",
+            "OP05-030",
+            "OP07-026",
+            "OP07-021",
+            "EB01-012"
+          ],
+          "trash": [
+            "EB01-015"
+          ],
+          "board": [
+            "ST02-007"
+          ],
+          "life": 5,
+          "deck": [
+            "EB01-012",
+            "OP01-051",
+            "OP01-058",
+            "OP04-031",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "ST02-013",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "OP07-021",
+            "OP07-026",
+            "OP07-029",
+            "ST16-004",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-004"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP07-021",
+          "card_name": "Uroge",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "EB01-015",
+            "OP05-030",
+            "OP07-026",
+            "EB01-012",
+            "OP05-030"
+          ],
+          "board": [
+            "ST02-007",
+            "OP07-021"
+          ],
+          "trash": [
+            "EB01-015"
+          ],
+          "life": 5,
+          "deck": [
+            "EB01-012",
+            "OP01-051",
+            "OP01-058",
+            "OP04-031",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "ST02-013",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "OP07-021",
+            "OP07-026",
+            "OP07-029",
+            "ST16-004",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP07-021": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-040",
+            "OP13-118",
+            "OP05-038",
+            "OP13-027",
+            "OP13-118"
+          ],
+          "trash": [
+            "OP16-004"
+          ],
+          "board": [],
+          "life": 4,
+          "life_cards": [
+            "OP13-118",
+            "OP14-031",
+            "OP15-035",
+            "ST31-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-027",
+          "card_name": "Sanji",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-040",
+            "OP13-118",
+            "OP05-038",
+            "OP13-118",
+            "OP15-032"
+          ],
+          "board": [
+            "OP13-027"
+          ],
+          "trash": [
+            "OP16-004"
+          ],
+          "life": 4,
+          "life_cards": [
+            "OP13-118",
+            "OP14-031",
+            "OP15-035",
+            "ST31-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP13-027": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "EB01-015",
+            "OP05-030",
+            "OP07-026",
+            "EB01-012",
+            "OP05-030",
+            "OP07-029"
+          ],
+          "trash": [
+            "EB01-015"
+          ],
+          "board": [
+            "ST02-007",
+            "OP07-021"
+          ],
+          "life": 4,
+          "deck": [
+            "EB01-012",
+            "OP01-051",
+            "OP01-058",
+            "OP04-031",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "ST02-013",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "OP07-021",
+            "OP07-026",
+            "ST16-004",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP07-021": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB01-012",
+          "card_name": "Cavendish",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST02-007",
+          "card_name": "Jewelry Bonney",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Jewelry Bonney [\"ST02-007\">ST02-007]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP07-021",
+          "card_name": "Uroge",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "EB01-015",
+            "OP05-030",
+            "OP07-026",
+            "OP05-030",
+            "OP07-029",
+            "OP05-030"
+          ],
+          "board": [
+            "ST02-007",
+            "OP07-021",
+            "EB01-012"
+          ],
+          "trash": [
+            "EB01-015"
+          ],
+          "life": 4,
+          "deck": [
+            "EB01-012",
+            "OP01-051",
+            "OP01-058",
+            "OP04-031",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "ST02-013",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "OP07-021",
+            "OP07-026",
+            "ST16-004",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "ST02-007": 1,
+            "EB01-012": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-118",
+            "OP05-038",
+            "OP13-118",
+            "OP15-032"
+          ],
+          "trash": [
+            "OP16-004",
+            "OP13-040"
+          ],
+          "board": [
+            "OP13-027"
+          ],
+          "life": 4,
+          "life_cards": [
+            "OP13-118",
+            "OP14-031",
+            "OP15-035",
+            "ST31-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-027": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB01-015"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-032",
+          "card_name": "Brook",
+          "effects": [
+            "Rest Uroge [\"OP07-021\">OP07-021]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-027",
+          "card_name": "Sanji",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-118",
+            "OP05-038",
+            "OP13-118",
+            "OP10-011"
+          ],
+          "board": [
+            "OP13-027",
+            "OP15-032"
+          ],
+          "trash": [
+            "OP16-004",
+            "OP13-040"
+          ],
+          "life": 4,
+          "life_cards": [
+            "OP13-118",
+            "OP14-031",
+            "OP15-035",
+            "ST31-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-032": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP05-030",
+            "OP07-026",
+            "OP05-030",
+            "OP07-029",
+            "OP05-030"
+          ],
+          "trash": [
+            "EB01-015",
+            "EB01-015"
+          ],
+          "board": [
+            "ST02-007",
+            "OP07-021",
+            "EB01-012"
+          ],
+          "life": 4,
+          "deck": [
+            "EB01-012",
+            "OP01-051",
+            "OP01-058",
+            "OP04-031",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "ST02-013",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "OP07-021",
+            "OP07-026",
+            "ST16-004",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 1,
+            "OP07-021": 1,
+            "EB01-012": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-026",
+          "card_name": "Jewelry Bonney",
+          "effects": [
+            "Sanji [\"OP13-027\">OP13-027] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Cavendish",
+          "attacker_code": "EB01-012",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP10-011"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "EB01-012",
+          "card_name": "Cavendish",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST02-007",
+          "card_name": "Jewelry Bonney",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Jewelry Bonney [\"ST02-007\">ST02-007]",
+            "<b>Reveal and Draw Scratchmen Apoo [\"EB01-015\">EB01-015]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP07-021",
+          "card_name": "Uroge",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP05-030",
+            "OP05-030",
+            "OP07-029",
+            "OP05-030",
+            "OP01-058",
+            "EB01-015"
+          ],
+          "board": [
+            "ST02-007",
+            "OP07-021",
+            "EB01-012",
+            "OP07-026"
+          ],
+          "trash": [
+            "EB01-015",
+            "EB01-015"
+          ],
+          "life": 4,
+          "deck": [
+            "EB01-012",
+            "OP01-051",
+            "OP04-031",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "OP07-026",
+            "ST02-007",
+            "ST02-013",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "OP07-021",
+            "OP07-026",
+            "ST16-004",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "ST02-007": 1,
+            "EB01-012": 1,
+            "OP07-026": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-118",
+            "OP05-038",
+            "OP13-118",
+            "OP15-035"
+          ],
+          "trash": [
+            "OP16-004",
+            "OP13-040",
+            "OP10-011"
+          ],
+          "board": [
+            "OP13-027",
+            "OP15-032"
+          ],
+          "life": 3,
+          "life_cards": [
+            "OP13-118",
+            "OP14-031",
+            "ST31-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-032": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-118",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 5 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "EB02-017",
+          "card_name": "Nami",
+          "effects": [
+            "<b>Reveal and Draw Sanji [\"ST21-003\">ST21-003]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST21-003",
+          "card_name": "Sanji",
+          "effects": [
+            "Grant Unblockable to Sanji [\"OP13-027\">OP13-027]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-027",
+          "card_name": "Sanji",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP05-038",
+            "OP13-118",
+            "OP15-035"
+          ],
+          "board": [
+            "OP13-027",
+            "OP15-032",
+            "OP13-118",
+            "EB02-017",
+            "ST21-003"
+          ],
+          "trash": [
+            "OP16-004",
+            "OP13-040",
+            "OP10-011"
+          ],
+          "life": 3,
+          "deck": [
+            "OP01-016",
+            "OP13-040",
+            "OP14-022",
+            "OP14-031"
+          ],
+          "life_cards": [
+            "OP13-118",
+            "OP14-031",
+            "ST31-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP13-118": 1,
+            "EB02-017": 1,
+            "ST21-003": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP05-030",
+            "OP05-030",
+            "OP07-029",
+            "OP05-030",
+            "OP01-058",
+            "EB01-015",
+            "OP07-021"
+          ],
+          "trash": [
+            "EB01-015",
+            "EB01-015"
+          ],
+          "board": [
+            "ST02-007",
+            "OP07-021",
+            "EB01-012",
+            "OP07-026"
+          ],
+          "life": 3,
+          "deck": [
+            "EB01-012",
+            "OP01-051",
+            "OP04-031",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "OP07-026",
+            "ST02-007",
+            "ST02-013",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "OP07-026",
+            "ST16-004",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 1,
+            "EB01-012": 1,
+            "OP07-026": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB01-012",
+          "to_name": "Cavendish",
+          "total": 1
+        },
+        {
+          "type": "play",
+          "card": "OP05-030",
+          "card_name": "Donquixote Rosinante",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Cavendish",
+          "attacker_code": "EB01-012",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "EB01-012",
+          "card_name": "Cavendish",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-026",
+          "to_name": "Jewelry Bonney",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-026",
+          "to_name": "Jewelry Bonney",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-026",
+          "to_name": "Jewelry Bonney",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-026",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP05-030",
+            "OP05-030",
+            "OP07-029",
+            "OP05-030",
+            "OP01-058",
+            "EB01-015",
+            "OP07-021"
+          ],
+          "board": [
+            "ST02-007",
+            "OP07-021",
+            "EB01-012",
+            "OP07-026",
+            "OP05-030"
+          ],
+          "trash": [
+            "EB01-015",
+            "EB01-015"
+          ],
+          "life": 3,
+          "deck": [
+            "EB01-012",
+            "OP01-051",
+            "OP04-031",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "OP07-026",
+            "ST02-007",
+            "ST02-013",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "OP07-026",
+            "ST16-004",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "EB01-012": 1,
+            "OP07-026": 1,
+            "OP05-030": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-118",
+            "OP15-035",
+            "OP13-118",
+            "ST31-005"
+          ],
+          "trash": [
+            "OP16-004",
+            "OP13-040",
+            "OP10-011",
+            "OP05-038"
+          ],
+          "board": [
+            "OP13-027",
+            "OP15-032",
+            "OP13-118",
+            "EB02-017",
+            "ST21-003"
+          ],
+          "life": 1,
+          "deck": [
+            "OP01-016",
+            "OP13-040",
+            "OP14-022",
+            "OP14-031"
+          ],
+          "life_cards": [
+            "OP14-031"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-118": 1,
+            "EB02-017": 1,
+            "ST21-003": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-118",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP07-021",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP05-030"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP14-031",
+          "card_name": "Nami",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "play",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "<b>Reveal and Draw I Know You're Strong... So I'll Go All Out [\"OP13-040\">OP13-040]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "EB02-017",
+          "to_name": "Nami",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Nami",
+          "attacker_code": "EB02-017",
+          "target": "Uroge [\"OP07-021\">OP07-021]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-021"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Brook",
+          "attacker_code": "OP15-032",
+          "target": "Uroge [\"OP07-021\">OP07-021]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB01-015"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-027",
+          "card_name": "Sanji",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-118",
+            "OP15-035",
+            "OP13-118",
+            "OP13-040"
+          ],
+          "board": [
+            "OP13-027",
+            "OP15-032",
+            "OP13-118",
+            "EB02-017",
+            "OP14-031"
+          ],
+          "trash": [
+            "OP16-004",
+            "OP13-040",
+            "OP10-011",
+            "OP05-038",
+            "ST21-003"
+          ],
+          "life": 1,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP05-038",
+            "OP14-022",
+            "OP15-035",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP14-031"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "rested": {
+            "OP15-032": 1,
+            "OP13-118": 1,
+            "EB02-017": 1,
+            "OP14-031": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP05-030",
+            "OP07-029",
+            "OP05-030",
+            "OP01-058"
+          ],
+          "trash": [
+            "EB01-015",
+            "EB01-015",
+            "OP05-030",
+            "OP05-030",
+            "OP07-021",
+            "EB01-015"
+          ],
+          "board": [
+            "ST02-007",
+            "OP07-021",
+            "EB01-012",
+            "OP07-026"
+          ],
+          "life": 3,
+          "deck": [
+            "EB01-012",
+            "OP01-051",
+            "OP04-031",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "OP07-026",
+            "ST02-007",
+            "ST02-013",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "OP07-026",
+            "ST16-004",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB01-012": 1,
+            "OP07-026": 1
+          }
+        }
+      }
+    }
+  ]
+}

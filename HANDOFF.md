@@ -28,6 +28,68 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-26 (687) - Claude (sessao local) - Dialogo V3Choice LIGADO ponta a ponta (destrava a tela que parava a partida) + causa raiz do 2o dialogo achada no log do plugin: contador de alvos em SENTINELA
+
+Pedido do usuario apos o 2o teste ao vivo: "leia o banco, faca as correcoes
+e depois de pushed". Dois relatos novos, ambos da familia "selecao que nao
+fecha": `Choose 2 Friendly Targets` (ativacao do lider Luffy) e
+`Choose 0 Enemy Characters` (Nami, so 1 alvo possivel).
+
+### V3Choice ligado -- a tela que travava agora resolve
+
+Completa o bloco 686 (que so tinha deteccao + cliente, nao ligados):
+
+  - **`/choose_effect_option`** (`server.py`): recebe os TEXTOS das opcoes e
+    devolve o indice. Registra `phase="effect_option"` na telemetria, entao
+    a decisao passa a ser AUDITAVEL como qualquer outra (antes nem existia
+    fase pra ela no decision_log).
+  - **`BotDriver`**: ramo novo ANTES do downside (as duas telas usam os
+    mesmos `go_ChoiceButton1..4`, e o V3Choice e mais especifico -- vem do
+    `myType` do proprio botao). Sem resposta do motor, clica a PRIMEIRA
+    opcao em vez de travar: destravar vale mais que acertar.
+
+**Testado de ponta a ponta** com a tela real do bloco 685: opcoes
+`["Opponent Draws 2 Cards", "Trash 2 Cards"]` -> escolhe **`Trash 2 Cards`**
+(-15 contra -60; dar 2 cartas ao oponente pesa mais que descartar 2), com
+`decisionId` gravado. Plugin compila 0 erros.
+
+**A heuristica NAO e calibrada** e isso esta escrito no docstring: pontua o
+TEXTO do botao (unica coisa que o jogo expoe) penalizando vantagem pro
+oponente/custo proprio e premiando remocao/vantagem de carta. E ponto de
+partida honesto pra destravar; quando houver volume dessas decisoes
+registradas, medir e substituir por algo derivado de dado.
+
+### Causa raiz do 2o dialogo -- achada no LogOutput.log, NAO corrigida
+
+O log do plugin da partida mostra o padrao exato, repetido:
+
+    [Bot] alvo de efeito: OP07-021 (uid=-200, actor=OP13-001, faltavam=99 -> faltam=99)
+    [Bot] clique em OP07-021 NAO consumiu alvo (faltam 99 antes e depois)
+
+`RemainingTargetsToSelect` do jogo devolve **99** -- valor de SENTINELA (o
+proprio jogo usa 999 pra "infinito" em `InfiniteReturnToDeck`/
+`DeclareString`). Com o contador nesse valor, NENHUM clique consome nada: o
+bot percorre todos os candidatos, nao chega a zero, e a tela fica parada.
+
+**Descartado**: nao e laco infinito nem falta de codigo de confirmacao. O
+`BotDriver` tenta cada candidato uma vez, atualiza a lista uma vez e chama
+`ConfirmPendingSelection` -- e o log mostra `confirmar selecao` 21x e
+`confirma selecao PARCIAL` 11x. O codigo do bloco 542 EXISTE e RODA.
+
+**Nao corrigi** porque nao consigo rodar o jogo pra validar, e mexer no
+clique as cegas arrisca quebrar as 21 confirmacoes que funcionam. Em vez
+disso, INSTRUMENTEI: quando o contador nao anda E esta >= 99, o log passa a
+imprimir `targetIdx`, `target.Count` e `actionStep` do step V3. Isso separa
+"alvo errado" de "step sem contagem definida" -- a duvida exata que impediu
+o diagnostico agora -- e o proximo teste ao vivo fecha a causa.
+
+### Estado
+
+Servidor no ar com o endpoint novo. **DLL NAO instalada** -- o jogo estava
+aberto (PID 11668) e sobrescrever com ele rodando e o cenario do bug de DLL
+velha que o CLAUDE.md documenta. Fechar o jogo e rodar `setup_bepinex.ps1`
+antes do proximo teste.
+
 ## 2026-08-25 (686) - Claude (sessao local) - Diálogo V3Choice mapeado ate o clique e METADE implementado (plugin compila, NAO ligado ainda) + 1a partida HUMANA de Bonney no banco, com uma expectativa minha REFUTADA
 
 Pedido do usuario: atacar primeiro os dialogos do bloco 685.

@@ -524,6 +524,26 @@
 > continuar acumulando fixes turno-a-turno primeiro. Ver bloco 657 do
 > HANDOFF pros detalhes turno a turno.
 
+> 26/08/2026 (bloco 687): **V3Choice LIGADO ponta a ponta** — a tela `Trash
+> 2 Cards` × `Opponent Draws 2 Cards` que travava a partida agora resolve.
+> `/choose_effect_option` no servidor (registra `phase="effect_option"`, então
+> a decisão virou auditável) + ramo no `BotDriver` antes do downside, com
+> fallback para a 1ª opção se o motor não responder. Testado de ponta a
+> ponta na tela real: escolhe `Trash 2 Cards`. Heurística **não calibrada**,
+> declarada como tal — pontua o texto do botão, que é o único dado exposto.
+>
+> **Causa raiz do 2º diálogo achada, NÃO corrigida**: o `LogOutput.log`
+> mostra `faltavam=99 -> faltam=99` repetido — `RemainingTargetsToSelect`
+> devolve **99, um valor de sentinela**, e com ele nenhum clique consome
+> alvo. Descartado que fosse laço infinito ou falta de código: o caminho de
+> confirmação do bloco 542 existe e roda (21 `confirmar selecao`, 11
+> `PARCIAL`). Não corrigi porque não consigo rodar o jogo para validar e
+> mexer às cegas arrisca as 21 confirmações que funcionam — **instrumentei**
+> para o próximo teste imprimir `targetIdx`/`target.Count`/`actionStep`.
+>
+> - [ ] **DLL não instalada** (jogo aberto). Fechar e rodar
+>   `setup_bepinex.ps1` antes do próximo teste.
+
 > 25/08/2026 (bloco 686): **diálogo V3Choice mapeado até o clique, metade
 > implementada** (compila, 0 erros, **NÃO ligado** — comportamento ao vivo
 > idêntico ao de hoje). A tela `Trash 2 Cards` × `Opponent Draws 2 Cards` é

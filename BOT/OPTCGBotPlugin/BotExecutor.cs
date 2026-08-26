@@ -691,10 +691,33 @@ namespace OPTCGBotPlugin
                 $"actor={ActorCode(gls)}, faltavam={faltavamAntes} -> " +
                 $"faltam={faltamDepois})");
             if (faltavamAntes >= 0 && faltamDepois == faltavamAntes)
+            {
+                // Bloco 687: quando o contador nao anda E esta num valor de
+                // SENTINELA (o jogo usa 999 pra "infinito"; visto 99 ao vivo
+                // num efeito do lider Luffy OP13-001), o problema NAO e o
+                // alvo escolhido -- e que o step nao tem contagem definida e
+                // nenhum clique vai consumir nada. Sem esses campos no log
+                // nao da pra distinguir "alvo errado" de "step sem
+                // contagem", e foi exatamente essa duvida que impediu o
+                // diagnostico do relato ao vivo de 25/08. Loga o suficiente
+                // pra fechar isso no PROXIMO teste, sem mudar comportamento.
+                string extra = "";
+                if (faltamDepois >= 99)
+                {
+                    try
+                    {
+                        var step = gls.acaActive.V3Step();
+                        extra = $" [SENTINELA: targetIdx={gls.acaActive.iActionTargetIdx}"
+                              + $", targets={step.target.Count}"
+                              + $", actionStep={gls.acaActive.iActionStep}]";
+                    }
+                    catch { extra = " [SENTINELA: sem detalhe do step]"; }
+                }
                 Plugin.Log.LogWarning(
                     $"[Bot] clique em {CodeOf(go)} NAO consumiu alvo " +
                     $"(faltam {faltamDepois} antes e depois) -- jogo pode ter " +
-                    $"recusado a selecao");
+                    $"recusado a selecao{extra}");
+            }
             return true;
         }
 
