@@ -2,6 +2,19 @@
 
 **Última atualização:** 25 de agosto de 2026
 
+> 26/08/2026 (bloco 690): 1º passo da meta — **`attached_don` (zona 9 do
+> RZ1) faltava na reconstrução de DON**. Corrigido: acerto exato **53% →
+> 82%** contra a verdade do log (708 turnos). **Mas o ganho em `play` foi
+> só +1,8pp** (RZ1 27,7% → 29,5%), empatando com o estimador antigo
+> (29,9%) sem superá-lo. **Isso derruba a projeção de ~8pp que eu tinha
+> escrito na seção de meta**: o 29,3% × 21,3% era **correlação, não
+> causa** (turnos com DON fácil de reconstruir são turnos simples, onde
+> bater com o humano já é mais fácil). `CLAUDE.md`/`AGENTS.md` corrigidos
+> com o aviso. **Regra registrada: não projetar ganho a partir de
+> correlação — rodar o A/B com a flag.** Retifica também o bloco 688
+> ("RZ1 ≈ estimador"): aquela medição usava `don_cost` como verdade, e
+> `don_cost` exclui o anexado. Ver bloco 690.
+
 > 26/08/2026 (bloco 689): **META OFICIAL DEFINIDA PELO USUÁRIO e
 > registrada em `CLAUDE.md` + `AGENTS.md`** (seção "META OFICIAL E
 > OBRIGATORIA"): a métrica do projeto passa a ser **`play` (jogar

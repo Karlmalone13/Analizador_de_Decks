@@ -28,6 +28,65 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-26 (690) - Claude (sessao remota web) - 1o passo da meta oficial: **DON anexado (zona 9 do RZ1) faltava na reconstrucao** -- acerto exato 53% -> 82%. Mas o ganho em `play` foi de so **+1,8pp**, e isso DERRUBA a projecao de 8pp que eu mesmo tinha escrito na secao de meta
+
+### O bug
+
+`attached_don` (zona 9 do RZ1) era ignorado: a reconstrucao somava so
+`don_cost`. Pela regra 6-2-3, no refresh do proprio turno TODO o DON
+anexado volta pra area de custo, ATIVO. Sem isso o motor comecava o
+turno com menos DON que o humano tinha -- jogava menos carta por recurso
+que sumiu na reconstrucao, nao por decisao.
+
+A zona ja era decodificada (bloco 684) e ja estava no snapshot parseado;
+so nao era lida em `audit_real_losses.py`.
+
+**Validado contra a verdade do proprio log** (708 turnos; verdade =
+`don_cost + attached_don`, ja que nada sai do sistema):
+**53% -> 82% de acerto EXATO**, erro medio 0,83 -> 0,25.
+
+### RETIFICACAO do bloco 688
+
+A conclusao de la ("RZ1 e o estimador antigo sao equivalentes, ambos
+~35%") **nao vale**: aquela medicao usava `don_cost` como VERDADE, e
+`don_cost` exclui o anexado -- a regua estava errada pelo MESMO motivo
+que o codigo estava. O numero real do metodo em uso era 53%, nao 34%.
+
+### O resultado em `play` -- e o erro de raciocinio que ele expos
+
+A/B (`--only-rz1 --limit 60`, mesmas partidas, unica diferenca a flag):
+
+| | antes do fix | depois do fix |
+|---|---|---|
+| RZ1 (DON real) | 27,7% | **29,5%** |
+| estimador antigo | 29,9% | 29,9% |
+
+O fix recuperou ~1,8pp do caminho RZ1 e o trouxe pra **EMPATE** com o
+estimador -- nao o superou. **Melhorar o acerto do DON de 53% pra 82%
+rendeu +1,8pp em `play`, nao os ~8pp que eu tinha projetado.**
+
+**O erro foi meu e vale nomear**: no bloco 688 medi que `play` e 29,3%
+nos turnos com DON certo contra 21,3% nos com DON errado, e tratei isso
+como se corrigir o DON fosse recuperar esses 8pp. Era **CORRELACAO, nao
+causa** -- turnos em que o DON e facil de reconstruir tendem a ser
+turnos SIMPLES, onde bater com o humano ja e mais facil por outros
+motivos. O experimento controlado desmente a projecao.
+
+`CLAUDE.md` e `AGENTS.md` CORRIGIDOS: a linha do 29,3% x 21,3% agora
+carrega o aviso de que e correlacao, e a recomendacao de ordem nao se
+apoia mais nos 8pp.
+
+### O que isso significa pra meta
+
+Fidelidade de estado **nao converte 1:1** em acerto de decisao -- pelo
+menos nao a de DON. O item mais barato da lista foi feito e rendeu
++1,8pp. **Nao assumir que as lacunas restantes de fidelidade (ordem do
+deck, mao do oponente visivel, mulligan) valem mais que isso sem medir**
+-- e a mesma armadilha, so que com outra variavel.
+
+Regra pratica registrada: **neste projeto, nao projetar ganho a partir
+de correlacao.** Rodar o A/B com a flag e olhar o numero.
+
 ## 2026-08-26 (689) - Claude (sessao remota web) - **META OFICIAL DEFINIDA PELO USUARIO e registrada em CLAUDE.md + AGENTS.md**: `play` (jogar IDENTICO ao humano) de 28,2% pra 85-90%. E o objetivo do projeto a partir de agora
 
 Apresentei ao usuario as DUAS metricas que o projeto tem, lado a lado, e

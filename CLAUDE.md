@@ -306,15 +306,28 @@ zero nem repetir caminho ja reprovado:
 | carta do humano estava DISPONIVEL | **76,3%** dos turnos | nao e bug de geracao, e SELECAO |
 | motor acerta QUANTAS cartas jogar | **52,7%** | **teto duro**: conjunto exato nao passa disso |
 | DON reconstruido ERRADO | **~65%** dos turnos (erro medio 1,4) | a regua esta torta |
-| `play` com DON certo x errado | **29,3% x 21,3%** | ~8pp do gap e ARTEFATO de medicao |
+| `play` com DON certo x errado | 29,3% x 21,3% | **CORRELACAO, NAO CAUSA -- ver aviso abaixo** |
+
+> **AVISO (bloco 690, erro meu corrigido por experimento):** a linha
+> acima ja foi usada pra projetar "~8pp do gap e artefato de medicao".
+> **Isso e FALSO.** Testado de verdade: corrigir a reconstrucao de DON
+> (acerto exato 53% -> 82%, `attached_don` que faltava) rendeu **+1,8pp
+> em `play`**, nao 8pp -- e so trouxe o caminho RZ1 pra EMPATE com o
+> estimador antigo (29,5% x 29,9%), sem supera-lo. Turnos em que o DON e
+> facil de reconstruir tendem a ser turnos SIMPLES, onde bater com o
+> humano ja e mais facil por outros motivos: o 29,3% x 21,3% mede esse
+> confundidor, nao o efeito do DON. **Nao projetar ganho a partir de
+> correlacao neste projeto -- rodar o A/B com a flag (`OPTCG_IGNORE_RZ1`)
+> e olhar o numero.**
 
 ### Ordem de ataque recomendada (por custo/beneficio medido)
 
-1. **Fidelidade de estado** -- DON errado em 65% dos turnos; ordem do
-   deck embaralhada; mao do oponente com informacao COMPLETA (o motor ve
-   mais que o humano via); mulligan nao capturado. E a classe que mais
-   pagou no projeto (bloco 650: **+8,3pp sem tocar em decisao**) e
-   melhora TODAS as metricas de uma vez.
+1. **Fidelidade de estado** -- ordem do deck embaralhada; mao do
+   oponente com informacao COMPLETA (o motor ve mais que o humano via);
+   mulligan nao capturado. Historicamente a classe que mais pagou (bloco
+   650: +8,3pp sem tocar em decisao) -- **mas atencao: o item DON desta
+   lista JA foi feito (bloco 690) e rendeu so +1,8pp**. Nao assumir que
+   as lacunas restantes valem mais que isso sem medir.
 2. **Contagem** (quantas cartas jogar) -- teto duro de 52,7%, nunca
    atacado como problema proprio.
 3. **Selecao** -- o nucleo, e onde 8 tentativas ja falharam.
