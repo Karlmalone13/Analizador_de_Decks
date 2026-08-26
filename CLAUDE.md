@@ -265,6 +265,74 @@ Referências oficiais das regras (manual, playsheet) em
 > `IA_Compendium/RESUMO_ESTRATEGICO.md` acima — o placar dá o "quanto",
 > o catálogo dá o "o que era esperado".
 
+## META OFICIAL E OBRIGATORIA: `play` (jogar IDENTICO ao humano) de 28% pra 85-90%
+
+> **DEFINIDO PELO USUARIO EM 26/08/2026, como OBRIGACAO -- e a meta e o
+> objetivo do projeto a partir de agora.** Citacao direta, depois de eu
+> apresentar duas metricas possiveis e perguntar qual ele queria de
+> fato: *"Se a pergunta e 'o bot joga identico ao humano?' -> 28%, e a
+> meta e muito dificil. Quero isso, registre isso como obrigacao, para
+> gente ter de meta e objetivo a partir de agora, pq o bot ainda ta
+> jogando mal"*.
+>
+> **A METRICA OFICIAL e `play` (mesmas cartas jogadas)** de
+> `decision_quality_full.py --all` -- o CONJUNTO de cartas que o motor
+> joga no turno tem que bater EXATO com o que o humano jogou.
+> **Estado atual: 28,2%** (corpus completo, regua corrigida do bloco
+> 679). **Alvo: 85-90%**, deixando 10-15% de margem.
+>
+> **NAO E RESPOSTA ACEITAVEL** dizer que o resto e "diversidade
+> estrategica" (pedido explicito do usuario: *"nao quero desculpas de
+> divergencia estrategica"*). Se uma sessao concluir que parte do gap e
+> irredutivel, tem que PROVAR com medicao, nao alegar.
+>
+> **A OUTRA metrica NAO substitui esta.** `decision_quality_vs_human.py`
+> (dano >= ao do humano) esta em 80,7% e e tentador citar como se o
+> objetivo estivesse quase cumprido. **Nao esta**: ela mede "jogou tao
+> bem quanto", e o usuario escolheu explicitamente "jogou IGUAL" depois
+> de ver as duas lado a lado. Reportar 80,7% como progresso rumo a esta
+> meta e enganoso -- pode ser citada como contexto, nunca como o numero
+> da meta.
+
+### Onde o gap esta HOJE (medido, nao suposto -- ponto de partida)
+
+Diagnostico de 25-26/08 (blocos 679-688), pra nenhuma sessao comecar do
+zero nem repetir caminho ja reprovado:
+
+| item | numero medido | o que significa |
+|---|---|---|
+| `play` atual | **28,2%** | a meta |
+| modo de falha dominante | **ZERO cartas em comum em 52,7%** dos turnos | nao e acerto parcial |
+| carta do humano estava DISPONIVEL | **76,3%** dos turnos | nao e bug de geracao, e SELECAO |
+| motor acerta QUANTAS cartas jogar | **52,7%** | **teto duro**: conjunto exato nao passa disso |
+| DON reconstruido ERRADO | **~65%** dos turnos (erro medio 1,4) | a regua esta torta |
+| `play` com DON certo x errado | **29,3% x 21,3%** | ~8pp do gap e ARTEFATO de medicao |
+
+### Ordem de ataque recomendada (por custo/beneficio medido)
+
+1. **Fidelidade de estado** -- DON errado em 65% dos turnos; ordem do
+   deck embaralhada; mao do oponente com informacao COMPLETA (o motor ve
+   mais que o humano via); mulligan nao capturado. E a classe que mais
+   pagou no projeto (bloco 650: **+8,3pp sem tocar em decisao**) e
+   melhora TODAS as metricas de uma vez.
+2. **Contagem** (quantas cartas jogar) -- teto duro de 52,7%, nunca
+   atacado como problema proprio.
+3. **Selecao** -- o nucleo, e onde 8 tentativas ja falharam.
+
+### JA TENTADO E REPROVADO POR MEDICAO -- nao refazer sem ler o bloco
+
+- **Imitacao por BONUS/desempate sem estado** (blocos 641-649, 663): 7
+  tentativas, todas nulas ou negativas.
+- **Imitacao por POLITICA aprendida, COM estado** (blocos 680-683):
+  modelo ranqueia melhor isolado (AUC 0,851 x 0,702) e MESMO ASSIM
+  piora a metrica quando ligado. Causa medida: *distribution shift* --
+  treina em estados do motor baseline e degrada no laco de decisao.
+  **Isso descarta "faltava estado no sinal" como explicacao das 7
+  anteriores.** Se retomar: laco iterativo estilo DAgger; mais features
+  NAO resolve (medido).
+- **Alargar o shortlist da busca** (blocos 593/594 e 677): 3 medicoes
+  independentes, todas regrediram.
+
 ## OBJETIVO CENTRAL DO BOT (o usuario repete e as sessoes esquecem)
 
 > **QUALQUER DECK.** O bot tem que ser capaz de jogar bem, e **identico ou

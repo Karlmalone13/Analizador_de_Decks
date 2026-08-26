@@ -28,6 +28,56 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-26 (689) - Claude (sessao remota web) - **META OFICIAL DEFINIDA PELO USUARIO e registrada em CLAUDE.md + AGENTS.md**: `play` (jogar IDENTICO ao humano) de 28,2% pra 85-90%. E o objetivo do projeto a partir de agora
+
+Apresentei ao usuario as DUAS metricas que o projeto tem, lado a lado, e
+perguntei qual ele queria de fato:
+- "o bot joga IDENTICO ao humano?" -> `play` = **28,2%**
+- "o bot joga TAO BEM quanto o humano?" -> dano>=humano = **80,7%**
+
+Resposta dele, literal: *"Se a pergunta e 'o bot joga identico ao
+humano?' -> 28%, e a meta e muito dificil. Quero isso, registre isso
+como obrigacao, para gente ter de meta e objetivo a partir de agora, pq
+o bot ainda ta jogando mal"*.
+
+Registrado como secao propria (**META OFICIAL E OBRIGATORIA**) em
+`CLAUDE.md` E `AGENTS.md` -- espelhado, como a regra do topo dos dois
+exige.
+
+### O que a secao fixa
+
+- **Metrica oficial**: `play` (mesmas cartas jogadas) de
+  `decision_quality_full.py --all`. Atual 28,2%, alvo 85-90%.
+- **"Diversidade estrategica" NAO e resposta aceitavel** (pedido
+  explicito). Se uma sessao concluir que parte do gap e irredutivel,
+  tem que PROVAR com medicao.
+- **Os 80,7% da outra metrica NAO substituem esta** -- e tentador
+  cita-los como se o objetivo estivesse quase cumprido, e seria
+  enganoso: o usuario escolheu "identico" DEPOIS de ver as duas.
+- **O mapa do gap medido** (6 numeros dos blocos 679-688) e a ordem de
+  ataque por custo/beneficio.
+- **A lista do que ja foi REPROVADO por medicao** (imitacao por bonus
+  x7, imitacao por politica x1, alargar shortlist x3) pra ninguem
+  gastar outra sessao redescobrindo.
+
+### Ressalva minha, registrada junto (nao como desculpa, como dado)
+
+Os unicos pares humano-x-humano medidos no banco (bloco 653,
+condicionamento fraco) concordaram em **22,2%** entre si, e os 76/76 de
+determinismo eram o **MESMO jogador**. Entao 85-90% em conjunto EXATO
+equivale a clonar um jogador especifico com precisao quase perfeita.
+Isso NAO invalida a meta -- e o alvo, e o usuario definiu sabendo que e
+dificil ("a meta e muito dificil"). Fica registrado pra que ninguem
+confunda "dificil" com "impossivel" nem use isso como saida.
+
+### Proximo passo (o que a propria secao recomenda)
+
+Comecar pela **fidelidade de estado**: DON errado em ~65% dos turnos, e
+medido nesta sessao que `play` e 29,3% quando o DON esta certo contra
+21,3% quando esta errado -- ~8pp do gap e ARTEFATO de medicao, nao
+decisao ruim do bot. E a classe que mais pagou no projeto e melhora as
+duas metricas de uma vez.
+
 ## 2026-08-26 (688) - Claude (sessao remota web) - Medido o EFEITO do RZ1 (bloco 684) nas metricas: NEUTRO, nao o ganho esperado. E, medindo isso, achado um numero que ninguem tinha: **o DON que o motor recebe esta ERRADO em ~65% dos turnos, pelos DOIS metodos de reconstrucao**
 
 ### Por que eu esperava ganho

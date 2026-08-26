@@ -2,6 +2,21 @@
 
 **Última atualização:** 25 de agosto de 2026
 
+> 26/08/2026 (bloco 689): **META OFICIAL DEFINIDA PELO USUÁRIO e
+> registrada em `CLAUDE.md` + `AGENTS.md`** (seção "META OFICIAL E
+> OBRIGATORIA"): a métrica do projeto passa a ser **`play` (jogar
+> IDÊNTICO ao humano), hoje 28,2%, alvo 85-90%**. Escolhida por ele
+> depois de eu mostrar as duas métricas lado a lado — e ele rejeitou
+> explicitamente a de "joga tão bem quanto" (80,7%), que **não deve ser
+> citada como progresso rumo a esta meta**. "Diversidade estratégica"
+> **não é resposta aceitável**: se parte do gap for irredutível, tem que
+> ser PROVADO com medição. A seção fixa também o mapa do gap medido (6
+> números) e a lista do que já foi reprovado por medição (imitação por
+> bônus ×7, por política ×1, alargar shortlist ×3). **Próximo passo
+> recomendado: fidelidade de estado** — DON errado em ~65% dos turnos, e
+> `play` é 29,3% com DON certo vs 21,3% com errado (~8pp do gap é
+> artefato de medição). Ver bloco 689.
+
 > 26/08/2026 (bloco 688): medido o efeito do RZ1 (bloco 684) nas
 > métricas — **NEUTRO**, não o ganho esperado (A/B em 60 logs com RZ1:
 > `play` 27,7% com RZ1 vs 29,9% sem, tudo dentro de 1 sigma; defesa
