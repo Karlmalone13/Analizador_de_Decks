@@ -28,6 +28,66 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-26 (688) - Claude (sessao remota web) - Medido o EFEITO do RZ1 (bloco 684) nas metricas: NEUTRO, nao o ganho esperado. E, medindo isso, achado um numero que ninguem tinha: **o DON que o motor recebe esta ERRADO em ~65% dos turnos, pelos DOIS metodos de reconstrucao**
+
+### Por que eu esperava ganho
+
+Historico do projeto: correcao de FIDELIDADE sempre rendeu mais que
+heuristica (bloco 650: `play` 21,4% -> 29,7% com 4 fixes de fidelidade e
+ZERO linha de motor). O bloco 684 trouxe DON real, conteudo do LIFE e
+STAGE pro banco -- 68% dos logs. Esperava o mesmo padrao.
+
+### ARMADILHA de medicao (documentada no codigo, pra nao repetir)
+
+1a medicao deu resultado IDENTICO ao do dia anterior, byte a byte. A
+leitura natural ("o RZ1 nao mudou nada") era FALSA: `--limit 70` pega os
+primeiros jobs do indice, que sao os logs mais ANTIGOS, e **ZERO deles
+tem RZ1**. O recorte parecia neutro e correlacionava exatamente com a
+variavel em teste. Criadas 2 flags pra fazer certo:
+`--only-rz1` (so logs COM os campos) e `OPTCG_IGNORE_RZ1=1` (forca o
+caminho antigo nos MESMOS logs).
+
+### A/B correto (60 logs COM RZ1, mesmas partidas nos 2 lados)
+
+| metrica | RZ1 (real) | estimativa antiga |
+|---|---|---|
+| play | 27,7% | 29,9% |
+| attack -- quem | 67,8% | 70,0% |
+| activate | 28,6% | 31,9% |
+| attach_don | 14,7% | 17,6% |
+| defesa (blocker/counter) | 81,2% / 55,8% | IDENTICA |
+
+As 4 ofensivas caem com RZ1 e a defesa (que nao depende de DON) fica
+identica -- padrao que apontava pra DON. **Investiguei e a hipotese NAO
+se sustentou**: comparando as duas reconstrucoes contra a verdade do
+proprio log (708 turnos), RZ1 acerta 34% dos turnos (erro medio 1,38) e o
+estimador antigo 37% (erro medio 1,54) -- **equivalentes**. Sem mecanismo,
+e com cada diferenca dentro de 1 sigma, a leitura honesta e: **o RZ1 e
+NEUTRO pra estas metricas**, nao regressao nem ganho.
+
+(Hipotese minha que morreu no caminho, registrada pra nao ser refeita:
+achei que `don_cost` do RZ1 nao contava o DON ANEXADO em personagens e
+propus reconstruir por `10 - len(don_deck)`. Medido: erro 5,16 e 0% de
+acertos, MUITO pior que os 1,37 do metodo atual. `don_deck` no snapshot
+nao e a contagem que eu supus.)
+
+### O ACHADO QUE IMPORTA (novo, ninguem tinha medido)
+
+**O DON que o motor recebe na reconstrucao esta ERRADO em ~65% dos
+turnos, com erro medio de ~1,4 DON -- pelos DOIS metodos.**
+
+Isso e grande e nunca foi quantificado. O motor decide QUANTAS e QUAIS
+cartas jogar em cima de um recurso que quase nunca bate com o real.
+Explica potencialmente boa parte do teto de `play` (28,2%) e do teto de
+CONTAGEM (52,7%, bloco 681) **sem envolver heuristica nem ML** -- e e
+justamente a classe de problema que mais pagou neste projeto.
+
+**Proximo passo recomendado pra quem seguir**: atacar a reconstrucao de
+DON como problema proprio (as duas fontes erram parecido, entao ha
+espaco real), medindo contra a verdade do log com o script deste bloco
+-- e so depois voltar pra heuristica/politica. NAO comecar por ML: a
+frente de imitacao ja foi medida e reprovada (bloco 683).
+
 ## 2026-08-26 (687) - Claude (sessao local) - Dialogo V3Choice LIGADO ponta a ponta (destrava a tela que parava a partida) + causa raiz do 2o dialogo achada no log do plugin: contador de alvos em SENTINELA
 
 Pedido do usuario apos o 2o teste ao vivo: "leia o banco, faca as correcoes

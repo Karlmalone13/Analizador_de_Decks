@@ -2,6 +2,20 @@
 
 **Última atualização:** 25 de agosto de 2026
 
+> 26/08/2026 (bloco 688): medido o efeito do RZ1 (bloco 684) nas
+> métricas — **NEUTRO**, não o ganho esperado (A/B em 60 logs com RZ1:
+> `play` 27,7% com RZ1 vs 29,9% sem, tudo dentro de 1 sigma; defesa
+> idêntica). **Armadilha registrada**: a 1ª medição deu resultado idêntico
+> byte a byte e parecia "não mudou nada" — na verdade `--limit 70` pega os
+> logs mais ANTIGOS e ZERO deles tem RZ1. Criadas `--only-rz1` e
+> `OPTCG_IGNORE_RZ1=1` pra medir certo. **ACHADO NOVO e grande**: o DON
+> que o motor recebe está **errado em ~65% dos turnos** (erro médio ~1,4
+> DON) pelos DOIS métodos — RZ1 acerta 34%, estimador antigo 37%, em 708
+> turnos. Nunca foi quantificado. Candidato direto a explicar boa parte do
+> teto de `play` e do teto de contagem, **sem heurística nem ML**. Próximo
+> passo recomendado: atacar a reconstrução de DON como problema próprio.
+> Ver bloco 688.
+
 > 25/08/2026 (bloco 683): **PASSO 2 ligado no motor e MEDIDO — ACHADO
 > NEGATIVO.** A/B de 4 pontos nas mesmas 70 partidas: desligada 29,5% >
 > só ranker 28,3% > só counter 27,3% > os dois 26,4% (`play`).
