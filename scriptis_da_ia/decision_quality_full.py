@@ -543,6 +543,12 @@ def main():
     # Nunca usar --limit pra reportar numero ABSOLUTO do corpus; e pra
     # comparacao A/B (mesmo N nos dois lados).
     ap.add_argument('--limit', type=int, help='usa so os N primeiros jobs (A/B rapido)')
+    # Bloco 688: CUIDADO com --limit sozinho -- os primeiros jobs sao os
+    # logs mais ANTIGOS do indice, e nenhum deles tem os campos RZ1 (bloco
+    # 684). Medir efeito de fidelidade com --limit 70 da resultado
+    # IDENTICO por construcao (0 dos 70 tem RZ1) e parece "nao mudou nada".
+    ap.add_argument('--only-rz1', action='store_true',
+                     help='so logs COM os campos RZ1 (don_cost/life_cards)')
     args = ap.parse_args()
 
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -571,6 +577,15 @@ def main():
         if not jobs:
             raise SystemExit('nenhum log encontrado')
 
+    if args.only_rz1:
+        def _tem_rz1(pf):
+            try:
+                d = json.load(open(os.path.join(LOGS_DIR, pf), encoding='utf-8'))
+            except Exception:
+                return False
+            return any('don_cost' in s for t in d.get('turns', [])
+                       for s in (t.get('snapshot') or {}).values())
+        jobs = [j for j in jobs if _tem_rz1(j[0])]
     if args.limit:
         jobs = jobs[:args.limit]
     print(f'{len(jobs)} log(s) a auditar (ofensiva + defesa)...')

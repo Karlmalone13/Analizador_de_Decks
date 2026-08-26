@@ -55,6 +55,12 @@ from optcg_engine.decision_engine import (
 from replay_optcg import ReplayMatch
 import sim_deck_registry
 
+# Bloco 688: permite IGNORAR os campos RZ1 (bloco 684) e cair no caminho
+# de estimativa antigo. Existe pra medir o EFEITO da fidelidade nos MESMOS
+# logs -- sem isso nao da pra separar "o motor melhorou" de "o log
+# melhorou", que e a comparacao que importa depois do bloco 684.
+IGNORAR_RZ1 = os.environ.get('OPTCG_IGNORE_RZ1', '') == '1'
+
 LOGS_DIR = 'logs'
 INDEX_PATH = os.path.join(LOGS_DIR, 'index.json')
 OUT_DIR = os.path.join('metrics', 'real_loss_audits')
@@ -732,7 +738,7 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         p.trash = _cards_from_codes(bot_snap.get('trash', []), cards_db)
         # bloco 684: `stage` vem do RZ1 -- verdade direta, sem inferencia.
         # `_field_stage_at` (bloco 650) fica como fallback pros logs antigos.
-        _stage_rz1 = (bot_snap.get('stage') or [None])[0]
+        _stage_rz1 = None if IGNORAR_RZ1 else (bot_snap.get('stage') or [None])[0]
         _stage_code = _stage_rz1 or _field_stage_at(turns, i, bot_side, cards_db)
         if _stage_code and _stage_code not in (bot_snap.get('trash') or []):
             _st = _cards_from_codes([_stage_code], cards_db)
@@ -742,7 +748,7 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         # de um deck embaralhado, o que errava trigger, o que vai pra mao ao
         # tomar dano, e toda avaliacao que olha Life.
         life_n = bot_snap.get('life', 4)
-        _lc = bot_snap.get('life_cards')
+        _lc = None if IGNORAR_RZ1 else bot_snap.get('life_cards')
         if _lc:
             p.life = _cards_from_codes(list(_lc), cards_db)
         else:
@@ -752,13 +758,13 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         opp.field_chars = _cards_from_codes(opp_snap.get('board', []), cards_db,
                                              opp_snap.get('rested', {}))
         opp.trash = _cards_from_codes(opp_snap.get('trash', []), cards_db)
-        _stage_rz1_opp = (opp_snap.get('stage') or [None])[0]
+        _stage_rz1_opp = None if IGNORAR_RZ1 else (opp_snap.get('stage') or [None])[0]
         _stage_code_opp = _stage_rz1_opp or _field_stage_at(turns, i, opp_side, cards_db)
         if _stage_code_opp and _stage_code_opp not in (opp_snap.get('trash') or []):
             _st_o = _cards_from_codes([_stage_code_opp], cards_db)
             opp.field_stage = _st_o[0] if _st_o else None
         opp_life_n = opp_snap.get('life', 4)
-        _lco = opp_snap.get('life_cards')
+        _lco = None if IGNORAR_RZ1 else opp_snap.get('life_cards')
         if _lco:
             opp.life = _cards_from_codes(list(_lco), cards_db)
         else:
@@ -862,7 +868,7 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         # REAL, nao estimado. O `DonEstimator` continua como fallback pros
         # logs sem RZ1; foi corrigido 2x hoje (regra 6-2-3 no bloco 650, teto
         # no 651) justamente por ser inferencia.
-        _don_cost = bot_snap.get('don_cost')
+        _don_cost = None if IGNORAR_RZ1 else bot_snap.get('don_cost')
         if _don_cost is not None:
             _rest = ((bot_snap.get('rested_rz1') or {}).get('don_cost') or [])
             p.don_available = max(0, len(_don_cost) - len(_rest))
