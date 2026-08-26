@@ -524,6 +524,26 @@
 > continuar acumulando fixes turno-a-turno primeiro. Ver bloco 657 do
 > HANDOFF pros detalhes turno a turno.
 
+> 25/08/2026 (bloco 686): **diálogo V3Choice mapeado até o clique, metade
+> implementada** (compila, 0 erros, **NÃO ligado** — comportamento ao vivo
+> idêntico ao de hoje). A tela `Trash 2 Cards` × `Opponent Draws 2 Cards` é
+> `ButtonChoiceType.V3Choice`; o plugin tratava GoFirst/StartingHand/
+> UseOnPlay mas **não V3Choice**, por isso travava e o motor nem era
+> consultado. Prontos: `BotExecutor.IsOfferingV3Choice/GetV3Choices/
+> ClickV3Choice` e `EngineClient.ChooseEffectOption`.
+>
+> - [ ] **FALTA**: endpoint `/choose_effect_option` no `server.py`, a decisão
+>   no motor, e o ramo no `BotDriver` que detecta e chama.
+> - [ ] **Achado 4 (up to N)**: o código de confirmação parcial **já existe**
+>   (bloco 542) e não disparou — precisa do `LogOutput.log` da partida para
+>   diagnosticar, não dá para chutar.
+>
+> **1ª partida HUMANA de Bonney no banco** (Krieg × Bonney, Bonney venceu).
+> **Expectativa REFUTADA**: eu previ que ela provaria o bug do líder-como-
+> alvo, mas **o humano não usou a habilidade da líder nenhuma vez**. O bug
+> segue real no código, sem evidência de partida. Turno-a-turno (5 turnos):
+> **o motor ataca com tudo todo turno; o humano ataca seletivamente**.
+
 > 25/08/2026 (bloco 685, TESTE AO VIVO humano x bot, Bonney OP07-019, bot
 > perdeu): os 4 achados do usuário **todos confirmados por telemetria**.
 > `gate_status: FAIL`.

@@ -28,6 +28,82 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-25 (686) - Claude (sessao local) - Diálogo V3Choice mapeado ate o clique e METADE implementado (plugin compila, NAO ligado ainda) + 1a partida HUMANA de Bonney no banco, com uma expectativa minha REFUTADA
+
+Pedido do usuario: atacar primeiro os dialogos do bloco 685.
+
+### Mecanismo do dialogo travado, mapeado ate o fim
+
+A tela `Trash 2 Cards` x `Opponent Draws 2 Cards` e o que o jogo chama de
+**V3Choice**. Rastreado na DLL decompilada:
+
+  - `ActV3Choice { ButtonText, JumpToStep }` (ActV3Choice.cs)
+  - `PopulateV3Choice(aca)` -> `AddChoiceWithExtras(n, ButtonChoiceType.
+    V3Choice, i, textoDaOpcao)` (GameplayLogicScript ~30595)
+  - cada `go_ChoiceButton1..4` ganha `ChoiceButtonScript.myType = V3Choice` e
+    `iChoiceInt = indice_da_opcao` (~7033)
+  - o clique e `gls.ChoiceButtonClicked(ButtonChoiceType.V3Choice, indice)`
+    (~28814) -- MESMO contrato que o plugin ja usa pra GoFirst/StartingHand/
+    UseOnPlay
+
+**Causa raiz confirmada**: o plugin trata `GoFirst`, `StartingHand_*`,
+`UseOnPlay`/`UseV3OnPlay`/`Cancel` -- e **NAO trata V3Choice**. Por isso a
+tela travava e o motor nem era consultado (evidencia do bloco 685: nas 196
+linhas do decision_log daquela partida nao existe fase de escolha de efeito).
+
+### Implementado (compila, 0 erros) -- mas NAO LIGADO
+
+  - `BotExecutor.IsOfferingV3Choice/GetV3Choices/ClickV3Choice` -- deteccao
+    reusa o `OfferedButtons()` que ja existia; le o texto de cada opcao por
+    REFLEXAO (a assembly do TextMeshPro nao esta referenciada no csproj e
+    referencia-la so pra ler uma string criaria dependencia de build nova --
+    1a tentativa com `TMPro.TextMeshProUGUI` direto NAO compilou).
+  - `EngineClient.ChooseEffectOption(state, options, actorCode)` ->
+    `POST /choose_effect_option`, mesmo padrao de `ChooseTarget`; retorna
+    null em erro pra o chamador manter o fallback em vez de clicar as cegas.
+
+**FALTA (proxima sessao)**: (1) endpoint `/choose_effect_option` no
+`BOT/engine_server/server.py`; (2) a decisao no motor (qual opcao); (3) o
+ramo no `BotDriver` que detecta e chama. Enquanto isso o comportamento ao
+vivo e IDENTICO ao de hoje -- os metodos novos nao sao chamados por ninguem.
+
+### Achado 4 (up to N com menos de N alvos) -- NAO e falta de codigo
+
+`BotDriver` JA tem caminho de confirmacao parcial (`_pendingConfirmTried` ->
+`ConfirmPendingSelection`), do fix do bloco 542, e `ConfirmPendingSelection`
+clica o finalize que o jogo estiver oferecendo. Ou seja: o codigo existe e
+NAO disparou. Diagnosticar exige o `LogOutput.log` daquela partida --
+chutar aqui seria inventar causa.
+
+### 1a partida HUMANA de Bonney no banco -- e minha expectativa foi REFUTADA
+
+`Krieg-RG_x_Jewelry.Bonney-G_2026-08-25T23.27.44_p2` (humano x humano,
+Bonney VENCEU). Eu tinha dito ao usuario que essa partida provavelmente
+provaria o bug do lider-como-alvo, mostrando o humano restando o LIDER
+adversario com a habilidade da Bonney.
+
+**Nao provou: o humano NAO usou a habilidade da lider nenhuma vez.** O bug
+do bloco 685 (28 cartas perdendo o lider como alvo) continua real -- foi
+verificado no CODIGO (`eligible_cards(opp.field_chars, ...)`, lider fora do
+pool) -- mas NAO ha evidencia de partida de que a jogada muda resultado.
+Registrar assim, sem inflar.
+
+O que o Bonney humano de fato usou: `Carrot OP08-023` 2x (impedir o oponente
+de desvirar) e `Urouge OP07-021` 3x (ativar DON).
+
+### Turno-a-turno (5 turnos do vencedor, 0 erros de reconstrucao)
+
+| turno | humano | motor |
+|---|---|---|
+| t4 | joga Urouge, ataca com a lider | **anexa DON**, ataca, ativa Baby 5, joga **Apoo** |
+| t6 | joga Carrot, **ativa Baby 5**, ataca | ataca, joga Carrot, **ataca tambem com Urouge** |
+| t8 | joga Kid, ataca com **2** | joga **Hody Jones**, ataca com **4** |
+| t10 | joga Doflamingo, ataca com 3 | joga Hody Jones, ataca com **5** |
+
+Padrao: **o motor ataca com TUDO todo turno; o humano ataca seletivamente**
+-- mesmo perfil do jogo ao vivo do bloco 685. Amostra pequena (5 turnos),
+registrado como pista, nao como achado medido.
+
 ## 2026-08-25 (685) - Claude (sessao local) - TESTE AO VIVO humano x bot (Bonney OP07-019, bot PERDEU): 4 achados do usuario TODOS confirmados por telemetria, e o da lider e BUG DE FAMILIA (296 cartas com a gramatica, 28 perdendo o alvo LIDER)
 
 Partida `Jewelry.Bonney-G_x_Rocks.D.Xebec-B_2026-08-25T23.06.05`, bot=p1

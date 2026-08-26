@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP08-023",
+      "name": "Carrot",
+      "count": 2
+    },
+    {
+      "code": "ST02-007",
+      "name": "ST02-007",
+      "count": 2
+    },
+    {
+      "code": "OP07-021",
+      "name": "Uroge",
+      "count": 1
+    },
+    {
+      "code": "OP07-029",
+      "name": "OP07-029",
+      "count": 1
+    },
+    {
+      "code": "OP01-051",
+      "name": "Eustass \"Captain\" Kid",
+      "count": 1
+    },
+    {
+      "code": "OP05-034",
+      "name": "Baby 5",
+      "count": 1
+    },
+    {
+      "code": "EB01-015",
+      "name": "EB01-015",
+      "count": 1
+    },
+    {
+      "code": "OP06-035",
+      "name": "Hody Jones",
+      "count": 1
+    },
+    {
+      "code": "OP05-030",
+      "name": "OP05-030",
+      "count": 1
+    },
+    {
+      "code": "OP07-026",
+      "name": "OP07-026",
+      "count": 1
+    },
+    {
+      "code": "OP04-031",
+      "name": "Donquixote Doflamingo",
+      "count": 1
+    }
+  ],
+  "total_seen": 13,
+  "leader": "OP07-019"
+}

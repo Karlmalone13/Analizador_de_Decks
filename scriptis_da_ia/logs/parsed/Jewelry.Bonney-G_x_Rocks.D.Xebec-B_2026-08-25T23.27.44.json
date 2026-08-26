@@ -1,0 +1,1549 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Jewelry Bonney",
+          "code": "OP07-019"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Rocks D. Xebec",
+          "code": "OP17-039"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST02-007",
+          "card_name": "Jewelry Bonney",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP08-023",
+            "ST02-007",
+            "OP05-030",
+            "OP05-037"
+          ],
+          "board": [
+            "ST02-007"
+          ],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP05-030",
+            "OP07-026",
+            "OP07-029",
+            "OP08-023",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-045",
+            "OP17-118",
+            "OP08-051"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "EB02-030",
+            "OP17-040",
+            "OP17-042",
+            "OP17-046",
+            "OP17-048",
+            "OP17-049",
+            "OP17-055"
+          ],
+          "life_cards": [
+            "OP17-044",
+            "OP17-050",
+            "OP17-054",
+            "OP17-056",
+            "OP17-118"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-045",
+          "card_name": "Kyo",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-118",
+            "OP08-051",
+            "OP17-046",
+            "OP17-054"
+          ],
+          "board": [
+            "OP17-045"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "EB02-030",
+            "OP17-040",
+            "OP17-042",
+            "OP17-048",
+            "OP17-049",
+            "OP17-055"
+          ],
+          "life_cards": [
+            "OP17-044",
+            "OP17-050",
+            "OP17-054",
+            "OP17-056",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-045": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP08-023",
+            "ST02-007",
+            "OP05-030",
+            "OP05-037"
+          ],
+          "trash": [],
+          "board": [
+            "ST02-007"
+          ],
+          "life": 5,
+          "life_cards": [
+            "OP05-030",
+            "OP07-026",
+            "OP07-029",
+            "OP08-023",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP05-034",
+          "card_name": "Baby 5",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP08-023",
+            "ST02-007",
+            "OP05-030",
+            "OP05-037"
+          ],
+          "board": [
+            "ST02-007",
+            "OP05-034"
+          ],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP05-030",
+            "OP07-026",
+            "OP07-029",
+            "OP08-023",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP05-034": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-118",
+            "OP08-051",
+            "OP17-046",
+            "OP17-054",
+            "OP17-056"
+          ],
+          "trash": [],
+          "board": [
+            "OP17-045"
+          ],
+          "life": 4,
+          "deck": [
+            "EB02-030",
+            "OP17-040",
+            "OP17-042",
+            "OP17-048",
+            "OP17-049",
+            "OP17-055"
+          ],
+          "life_cards": [
+            "OP17-044",
+            "OP17-050",
+            "OP17-054",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-045": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-046",
+          "card_name": "Gloriosa",
+          "effects": [
+            "Send Jewelry Bonney [\"ST02-007\">ST02-007] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP05-030"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Buckin [\"OP08-051\">OP08-051]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-118",
+            "OP17-054",
+            "OP17-056",
+            "OP17-055",
+            "OP17-046",
+            "OP17-049"
+          ],
+          "board": [
+            "OP17-045",
+            "OP17-046"
+          ],
+          "trash": [
+            "OP08-051"
+          ],
+          "life": 4,
+          "deck": [
+            "EB02-030",
+            "OP17-040",
+            "OP17-042",
+            "OP17-048"
+          ],
+          "life_cards": [
+            "OP17-044",
+            "OP17-050",
+            "OP17-054",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-046": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP08-023",
+            "ST02-007",
+            "OP05-037"
+          ],
+          "trash": [
+            "OP05-030"
+          ],
+          "board": [
+            "OP05-034"
+          ],
+          "life": 5,
+          "deck": [
+            "ST02-007"
+          ],
+          "life_cards": [
+            "OP05-030",
+            "OP07-026",
+            "OP07-029",
+            "OP08-023",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP05-034": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP17-046",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP05-034",
+          "card_name": "Baby 5",
+          "effects": [
+            "<b>Reveal and Draw Baby 5 [\"OP04-032\">OP04-032]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP08-023",
+            "ST02-007",
+            "OP05-037",
+            "OP06-035",
+            "OP04-032"
+          ],
+          "board": [
+            "OP05-034"
+          ],
+          "trash": [
+            "OP05-030"
+          ],
+          "life": 5,
+          "deck": [
+            "OP04-029",
+            "OP07-021",
+            "ST02-007",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP05-030",
+            "OP07-026",
+            "OP07-029",
+            "OP08-023",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-118",
+            "OP17-054",
+            "OP17-056",
+            "OP17-055",
+            "OP17-046",
+            "OP17-049"
+          ],
+          "trash": [
+            "OP08-051",
+            "OP17-046"
+          ],
+          "board": [
+            "OP17-045"
+          ],
+          "life": 4,
+          "deck": [
+            "EB02-030",
+            "OP17-040",
+            "OP17-042",
+            "OP17-048"
+          ],
+          "life_cards": [
+            "OP17-044",
+            "OP17-050",
+            "OP17-054",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Kyo",
+          "attacker_code": "OP17-045",
+          "target": "Baby 5 [\"OP05-034\">OP05-034]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-049",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP04-032"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Kaido [\"OP17-042\">OP17-042]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-118",
+            "OP17-054",
+            "OP17-056",
+            "OP17-055",
+            "OP17-046",
+            "OP17-055",
+            "OP17-054",
+            "OP17-118",
+            "OP17-040"
+          ],
+          "board": [
+            "OP17-045",
+            "OP17-049"
+          ],
+          "trash": [
+            "OP08-051",
+            "OP17-046",
+            "OP17-042"
+          ],
+          "life": 4,
+          "deck": [
+            "EB02-030",
+            "OP17-048"
+          ],
+          "life_cards": [
+            "OP17-044",
+            "OP17-050",
+            "OP17-054",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP17-045": 1,
+            "OP17-049": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP08-023",
+            "ST02-007",
+            "OP05-037",
+            "OP06-035"
+          ],
+          "trash": [
+            "OP05-030",
+            "OP05-034",
+            "OP04-032"
+          ],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP04-029",
+            "OP07-021",
+            "ST02-007",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP05-030",
+            "OP07-026",
+            "OP07-029",
+            "OP08-023",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP06-035",
+          "card_name": "Hody Jones",
+          "effects": [
+            "Takes Top Life"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Hody Jones",
+          "attacker_code": "OP06-035",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP08-023",
+            "ST02-007",
+            "OP05-037",
+            "OP05-030",
+            "OP05-030"
+          ],
+          "board": [
+            "OP06-035"
+          ],
+          "trash": [
+            "OP05-030",
+            "OP05-034",
+            "OP04-032"
+          ],
+          "life": 4,
+          "deck": [
+            "OP04-029",
+            "OP07-021",
+            "ST02-007",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP07-026",
+            "OP07-029",
+            "OP08-023",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP06-035": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-118",
+            "OP17-054",
+            "OP17-056",
+            "OP17-055",
+            "OP17-055",
+            "OP17-054",
+            "OP17-118",
+            "OP17-040",
+            "OP17-044"
+          ],
+          "trash": [
+            "OP08-051",
+            "OP17-046",
+            "OP17-042",
+            "OP17-046"
+          ],
+          "board": [
+            "OP17-045",
+            "OP17-049"
+          ],
+          "life": 3,
+          "deck": [
+            "EB02-030",
+            "OP17-048"
+          ],
+          "life_cards": [
+            "OP17-050",
+            "OP17-054",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP17-045": 1,
+            "OP17-049": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-049",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST02-007"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Kaido [\"OP17-042\">OP17-042]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-118",
+            "OP17-054",
+            "OP17-056",
+            "OP17-055",
+            "OP17-055",
+            "OP17-118",
+            "OP17-040",
+            "OP17-044",
+            "OP17-049",
+            "OP17-045",
+            "OP17-056"
+          ],
+          "board": [
+            "OP17-045",
+            "OP17-049",
+            "OP17-049",
+            "OP17-054"
+          ],
+          "trash": [
+            "OP08-051",
+            "OP17-046",
+            "OP17-042",
+            "OP17-046",
+            "OP17-042"
+          ],
+          "life": 3,
+          "deck": [
+            "EB02-030",
+            "OP17-048"
+          ],
+          "life_cards": [
+            "OP17-050",
+            "OP17-054",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-049": 2,
+            "OP17-054": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP08-023",
+            "OP05-037",
+            "OP05-030",
+            "OP05-030",
+            "OP07-029"
+          ],
+          "trash": [
+            "OP05-030",
+            "OP05-034",
+            "OP04-032",
+            "ST02-007"
+          ],
+          "board": [
+            "OP06-035"
+          ],
+          "life": 3,
+          "deck": [
+            "OP04-029",
+            "OP07-021",
+            "ST02-007",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP07-026",
+            "OP08-023",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP06-035": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP08-023",
+          "card_name": "Carrot",
+          "effects": [
+            "Charlotte Linlin [\"OP17-049\">OP17-049] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Hody Jones",
+          "attacker_code": "OP06-035",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP05-037",
+            "OP05-030",
+            "OP05-030",
+            "OP07-029",
+            "OP04-031"
+          ],
+          "board": [
+            "OP06-035",
+            "OP08-023"
+          ],
+          "trash": [
+            "OP05-030",
+            "OP05-034",
+            "OP04-032",
+            "ST02-007"
+          ],
+          "life": 3,
+          "deck": [
+            "OP04-029",
+            "OP07-021",
+            "ST02-007",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP07-026",
+            "OP08-023",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP06-035": 1,
+            "OP08-023": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-118",
+            "OP17-118",
+            "OP17-056",
+            "OP17-055",
+            "OP17-055",
+            "OP17-118",
+            "OP17-040",
+            "OP17-044",
+            "OP17-049",
+            "OP17-118"
+          ],
+          "trash": [
+            "OP08-051",
+            "OP17-046",
+            "OP17-042",
+            "OP17-046",
+            "OP17-042",
+            "OP17-045",
+            "OP17-054",
+            "OP17-056",
+            "OP17-056"
+          ],
+          "board": [
+            "OP17-045",
+            "OP17-049",
+            "OP17-049",
+            "OP17-054"
+          ],
+          "life": 2,
+          "deck": [
+            "EB02-030",
+            "OP17-048"
+          ],
+          "life_cards": [
+            "OP17-050",
+            "OP17-054"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-049": 2,
+            "OP17-054": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Stussy",
+          "attacker_code": "OP17-054",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP05-030"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP05-030"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Charlotte Linlin [\"OP17-049\">OP17-049]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-118",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Draw 1 Card",
+            "Deploy Charlotte Linlin [\"OP17-049\">OP17-049]",
+            "Deploy Captain John [\"OP17-044\">OP17-044]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-049",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-044",
+          "card_name": "Captain John",
+          "effects": [
+            "Draw 1 Card",
+            "Rest Captain John [\"OP17-044\">OP17-044]",
+            "Trash Streusen [\"OP17-050\">OP17-050]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-055",
+            "OP17-055",
+            "OP17-118",
+            "OP17-040",
+            "OP17-118",
+            "OP17-045",
+            "OP17-056",
+            "OP17-042",
+            "OP08-051",
+            "OP17-044"
+          ],
+          "board": [
+            "OP17-049",
+            "OP17-049",
+            "OP17-118",
+            "OP17-049",
+            "OP17-044"
+          ],
+          "trash": [
+            "OP08-051",
+            "OP17-046",
+            "OP17-042",
+            "OP17-046",
+            "OP17-042",
+            "OP17-045",
+            "OP17-054",
+            "OP17-056",
+            "OP17-056",
+            "OP17-049",
+            "OP17-045",
+            "OP17-054",
+            "OP17-050"
+          ],
+          "life": 2,
+          "deck": [
+            "EB02-030",
+            "OP17-048"
+          ],
+          "life_cards": [
+            "OP17-050",
+            "OP17-054"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-118": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP05-037",
+            "OP07-029",
+            "OP04-031",
+            "OP08-023"
+          ],
+          "trash": [
+            "OP05-030",
+            "OP05-034",
+            "OP04-032",
+            "ST02-007",
+            "OP05-030",
+            "OP05-030"
+          ],
+          "board": [
+            "OP06-035",
+            "OP08-023"
+          ],
+          "life": 2,
+          "deck": [
+            "OP04-029",
+            "OP07-021",
+            "ST02-007",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP07-026",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP06-035": 1,
+            "OP08-023": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP08-023",
+          "card_name": "Carrot",
+          "effects": [
+            "Captain John [\"OP17-044\">OP17-044] will not Activate during next Refresh",
+            "Captain John [\"OP17-044\">OP17-044] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Hody Jones",
+          "attacker_code": "OP06-035",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Carrot",
+          "attacker_code": "OP08-023",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP05-037",
+            "OP07-029",
+            "OP04-031",
+            "OP07-029"
+          ],
+          "board": [
+            "OP06-035",
+            "OP08-023",
+            "OP08-023"
+          ],
+          "trash": [
+            "OP05-030",
+            "OP05-034",
+            "OP04-032",
+            "ST02-007",
+            "OP05-030",
+            "OP05-030"
+          ],
+          "life": 2,
+          "deck": [
+            "OP04-029",
+            "OP07-021",
+            "ST02-007",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP07-026",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP06-035": 1,
+            "OP08-023": 2
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-118",
+            "OP17-056",
+            "OP17-055",
+            "OP17-055",
+            "OP17-118",
+            "OP17-040",
+            "OP17-118",
+            "OP08-051"
+          ],
+          "trash": [
+            "OP08-051",
+            "OP17-046",
+            "OP17-042",
+            "OP17-046",
+            "OP17-042",
+            "OP17-045",
+            "OP17-054",
+            "OP17-056",
+            "OP17-056",
+            "OP17-049",
+            "OP17-045",
+            "OP17-054",
+            "OP17-050",
+            "OP17-044",
+            "OP17-056",
+            "OP17-045",
+            "OP17-042"
+          ],
+          "board": [
+            "OP17-049",
+            "OP17-049",
+            "OP17-118",
+            "OP17-049",
+            "OP17-044"
+          ],
+          "life": 2,
+          "deck": [
+            "EB02-030",
+            "OP17-048"
+          ],
+          "life_cards": [
+            "OP17-050",
+            "OP17-054"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-118": 1
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,1496 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Krieg",
+          "code": "OP15-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Jewelry Bonney",
+          "code": "OP07-019"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-017",
+            "OP15-023",
+            "OP15-025",
+            "OP15-025",
+            "OP15-025"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4,
+          "life_cards": [
+            "OP15-007",
+            "OP15-008",
+            "OP15-026",
+            "OP15-028"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP07-021",
+            "OP07-029",
+            "OP01-051",
+            "OP08-023",
+            "OP05-034"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "EB01-012",
+            "OP01-058",
+            "OP04-031",
+            "OP04-032",
+            "OP04-119",
+            "OP05-030",
+            "OP05-037",
+            "OP06-035",
+            "OP08-036",
+            "ST02-007",
+            "ST02-013",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP01-033",
+            "OP04-029",
+            "OP07-021",
+            "OP07-026"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP05-034",
+          "card_name": "Baby 5",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP07-021",
+            "OP07-029",
+            "OP01-051",
+            "OP08-023",
+            "OP08-023"
+          ],
+          "board": [
+            "OP05-034"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "EB01-012",
+            "OP01-058",
+            "OP04-031",
+            "OP04-032",
+            "OP04-119",
+            "OP05-030",
+            "OP05-037",
+            "OP06-035",
+            "OP08-036",
+            "ST02-007",
+            "ST02-013",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP01-033",
+            "OP04-029",
+            "OP07-021",
+            "OP07-026"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP05-034": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-017",
+            "OP15-023",
+            "OP15-025",
+            "OP15-025",
+            "OP15-025"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "life_cards": [
+            "OP15-007",
+            "OP15-008",
+            "OP15-026",
+            "OP15-028"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-017",
+            "OP15-023",
+            "OP15-025",
+            "OP15-025",
+            "OP15-025",
+            "OP13-040"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4,
+          "life_cards": [
+            "OP15-007",
+            "OP15-008",
+            "OP15-026",
+            "OP15-028"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP07-021",
+            "OP07-029",
+            "OP01-051",
+            "OP08-023",
+            "OP08-023",
+            "EB01-015"
+          ],
+          "trash": [],
+          "board": [
+            "OP05-034"
+          ],
+          "life": 4,
+          "deck": [
+            "EB01-012",
+            "OP01-058",
+            "OP04-031",
+            "OP04-032",
+            "OP04-119",
+            "OP05-030",
+            "OP05-037",
+            "OP06-035",
+            "OP08-036",
+            "ST02-007",
+            "ST02-013",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP01-033",
+            "OP04-029",
+            "OP07-021",
+            "OP07-026"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP05-034": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-021",
+          "card_name": "Uroge",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-017"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP07-029",
+            "OP01-051",
+            "OP08-023",
+            "OP08-023",
+            "EB01-015",
+            "OP06-035"
+          ],
+          "board": [
+            "OP05-034",
+            "OP07-021"
+          ],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "EB01-012",
+            "OP01-058",
+            "OP04-031",
+            "OP04-032",
+            "OP04-119",
+            "OP05-030",
+            "OP05-037",
+            "OP08-036",
+            "ST02-007",
+            "ST02-013",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP01-033",
+            "OP04-029",
+            "OP07-021",
+            "OP07-026"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP07-021": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-023",
+            "OP15-025",
+            "OP15-025",
+            "OP15-025",
+            "OP13-040"
+          ],
+          "trash": [
+            "OP15-017"
+          ],
+          "board": [],
+          "life": 4,
+          "life_cards": [
+            "OP15-007",
+            "OP15-008",
+            "OP15-026",
+            "OP15-028"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "play",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": [
+            "Attach 1 Rested Don to Uroge [\"OP07-021\">OP07-021]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB01-015"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-025",
+            "OP15-025",
+            "OP15-025",
+            "OP13-040",
+            "OP15-037"
+          ],
+          "board": [
+            "OP15-023"
+          ],
+          "trash": [
+            "OP15-017"
+          ],
+          "life": 4,
+          "life_cards": [
+            "OP15-007",
+            "OP15-008",
+            "OP15-026",
+            "OP15-028"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-023": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP07-029",
+            "OP01-051",
+            "OP08-023",
+            "OP08-023",
+            "OP06-035"
+          ],
+          "trash": [
+            "EB01-015"
+          ],
+          "board": [
+            "OP05-034",
+            "OP07-021"
+          ],
+          "life": 4,
+          "deck": [
+            "EB01-012",
+            "OP01-058",
+            "OP04-031",
+            "OP04-032",
+            "OP04-119",
+            "OP05-030",
+            "OP05-037",
+            "OP08-036",
+            "ST02-007",
+            "ST02-013",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP01-033",
+            "OP04-029",
+            "OP07-021",
+            "OP07-026"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP07-021": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP08-023",
+          "card_name": "Carrot",
+          "effects": [
+            "Arlong [\"OP15-023\">OP15-023] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP05-034",
+          "card_name": "Baby 5",
+          "effects": [
+            "<b>Reveal and Draw Donquixote Rosinante [\"OP05-030\">OP05-030]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP07-021",
+          "card_name": "Uroge",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP07-029",
+            "OP01-051",
+            "OP08-023",
+            "OP06-035",
+            "ST02-007",
+            "OP05-030"
+          ],
+          "board": [
+            "OP05-034",
+            "OP07-021",
+            "OP08-023"
+          ],
+          "trash": [
+            "EB01-015"
+          ],
+          "life": 4,
+          "deck": [
+            "EB01-012",
+            "EB01-015",
+            "OP01-058",
+            "OP04-031",
+            "OP04-032",
+            "OP04-119",
+            "OP05-037",
+            "OP07-026",
+            "OP08-036",
+            "ST02-013",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP01-033",
+            "OP04-029",
+            "OP07-021",
+            "OP07-026"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP08-023": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-025",
+            "OP15-025",
+            "OP15-025",
+            "OP13-040",
+            "OP15-037",
+            "OP15-008"
+          ],
+          "trash": [
+            "OP15-017"
+          ],
+          "board": [
+            "OP15-023"
+          ],
+          "life": 3,
+          "life_cards": [
+            "OP15-007",
+            "OP15-026",
+            "OP15-028"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-023": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP13-040",
+          "card_name": "I Know You're Strong... So I'll Go All Out",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-009",
+          "card_name": "Koby",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-037",
+          "card_name": "The Outcome Will Tell Us Who's Strong and Who's Weak",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Buggy [\"OP15-012\">OP15-012]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-012",
+          "card_name": "Buggy",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-025",
+            "OP15-025",
+            "OP15-025",
+            "OP15-008"
+          ],
+          "board": [
+            "OP15-023",
+            "OP15-009",
+            "OP15-012"
+          ],
+          "trash": [
+            "OP15-017",
+            "OP13-040",
+            "OP15-037"
+          ],
+          "life": 3,
+          "deck": [
+            "OP12-027",
+            "OP15-008",
+            "OP15-017",
+            "OP15-037"
+          ],
+          "life_cards": [
+            "OP15-007",
+            "OP15-026",
+            "OP15-028"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-009": 1,
+            "OP15-012": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP07-029",
+            "OP01-051",
+            "OP08-023",
+            "OP06-035",
+            "ST02-007",
+            "OP05-030",
+            "OP07-026"
+          ],
+          "trash": [
+            "EB01-015"
+          ],
+          "board": [
+            "OP05-034",
+            "OP07-021",
+            "OP08-023"
+          ],
+          "life": 3,
+          "deck": [
+            "EB01-012",
+            "EB01-015",
+            "OP01-058",
+            "OP04-031",
+            "OP04-032",
+            "OP04-119",
+            "OP05-037",
+            "OP07-026",
+            "OP08-036",
+            "ST02-013",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP01-033",
+            "OP04-029",
+            "OP07-021"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP08-023": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP01-051",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Deploy Donquixote Rosinante [\"OP05-030\">OP05-030]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Carrot",
+          "attacker_code": "OP08-023",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP08-023",
+          "card_name": "Carrot",
+          "effects": [
+            "Arlong [\"OP15-023\">OP15-023] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP07-021",
+          "card_name": "Uroge",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP07-029",
+            "OP08-023",
+            "OP06-035",
+            "ST02-007",
+            "OP07-026",
+            "ST02-007"
+          ],
+          "board": [
+            "OP05-034",
+            "OP07-021",
+            "OP08-023",
+            "OP01-051",
+            "OP05-030"
+          ],
+          "trash": [
+            "EB01-015"
+          ],
+          "life": 3,
+          "deck": [
+            "EB01-012",
+            "EB01-015",
+            "OP01-058",
+            "OP04-031",
+            "OP04-032",
+            "OP04-119",
+            "OP05-037",
+            "OP07-026",
+            "OP08-036",
+            "ST02-013",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP01-033",
+            "OP04-029",
+            "OP07-021"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP08-023": 1,
+            "OP01-051": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-025",
+            "OP15-025",
+            "OP15-025",
+            "OP15-008",
+            "OP15-007"
+          ],
+          "trash": [
+            "OP15-017",
+            "OP13-040",
+            "OP15-037"
+          ],
+          "board": [
+            "OP15-023",
+            "OP15-009",
+            "OP15-012"
+          ],
+          "life": 2,
+          "deck": [
+            "OP12-027",
+            "OP15-008",
+            "OP15-017",
+            "OP15-037"
+          ],
+          "life_cards": [
+            "OP15-026",
+            "OP15-028"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-009": 1,
+            "OP15-012": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-025",
+          "card_name": "Kuro",
+          "effects": [
+            "Attach 1 Rested Don to Uroge [\"OP07-021\">OP07-021]",
+            "Attach 1 Rested Don to Uroge [\"OP07-021\">OP07-021]",
+            "Uroge [\"OP07-021\">OP07-021] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-021",
+          "to_name": "Uroge",
+          "total": 2
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Uroge [\"OP07-021\">OP07-021]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Uroge [\"OP07-021\">OP07-021]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST02-007",
+            "ST02-007"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-012",
+          "to_name": "Buggy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Buggy",
+          "attacker_code": "OP15-012",
+          "target": "Uroge [\"OP07-021\">OP07-021]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP05-030",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-012",
+          "card_name": "Buggy",
+          "effects": [
+            "Attach 1 Rested Don to Donquixote Rosinante [\"OP05-030\">OP05-030]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-025",
+            "OP15-025",
+            "OP15-008",
+            "OP15-007",
+            "OP15-025"
+          ],
+          "board": [
+            "OP15-023",
+            "OP15-009",
+            "OP15-012",
+            "OP15-025"
+          ],
+          "trash": [
+            "OP15-017",
+            "OP13-040",
+            "OP15-037"
+          ],
+          "life": 2,
+          "deck": [
+            "OP12-027",
+            "OP15-008",
+            "OP15-017",
+            "OP15-037"
+          ],
+          "life_cards": [
+            "OP15-026",
+            "OP15-028"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP15-012": 1,
+            "OP15-025": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP07-029",
+            "OP08-023",
+            "OP06-035",
+            "OP07-026"
+          ],
+          "trash": [
+            "EB01-015",
+            "ST02-007",
+            "ST02-007",
+            "OP05-030"
+          ],
+          "board": [
+            "OP05-034",
+            "OP07-021",
+            "OP08-023",
+            "OP01-051"
+          ],
+          "life": 3,
+          "deck": [
+            "EB01-012",
+            "EB01-015",
+            "OP01-058",
+            "OP04-031",
+            "OP04-032",
+            "OP04-119",
+            "OP05-037",
+            "OP07-026",
+            "OP08-036",
+            "ST02-013",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP01-033",
+            "OP04-029",
+            "OP07-021"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "attached_don": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP07-021": 1,
+            "OP08-023": 1,
+            "OP01-051": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP04-031",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Arlong [\"OP15-023\">OP15-023] will not Activate during next Refresh",
+            "Krieg [\"OP15-001\">OP15-001] will not Activate during next Refresh",
+            "Buggy [\"OP15-012\">OP15-012] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP01-051",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-025",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Carrot",
+          "attacker_code": "OP08-023",
+          "target": "Buggy [\"OP15-012\">OP15-012]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-007"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP08-023",
+          "card_name": "Carrot",
+          "effects": [
+            "Kuro [\"OP15-025\">OP15-025] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP07-021",
+          "card_name": "Uroge",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP07-029",
+            "OP08-023",
+            "OP06-035",
+            "OP07-026"
+          ],
+          "board": [
+            "OP05-034",
+            "OP07-021",
+            "OP08-023",
+            "OP01-051",
+            "OP04-031"
+          ],
+          "trash": [
+            "EB01-015",
+            "ST02-007",
+            "ST02-007",
+            "OP05-030"
+          ],
+          "life": 3,
+          "deck": [
+            "EB01-012",
+            "EB01-015",
+            "OP01-058",
+            "OP04-032",
+            "OP04-119",
+            "OP05-037",
+            "OP07-026",
+            "OP08-036",
+            "ST02-013",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP01-033",
+            "OP04-029",
+            "OP07-021"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP08-023": 1,
+            "OP01-051": 1,
+            "OP04-031": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-025",
+            "OP15-025",
+            "OP15-008",
+            "OP15-025",
+            "OP15-026"
+          ],
+          "trash": [
+            "OP15-017",
+            "OP13-040",
+            "OP15-037",
+            "OP15-007"
+          ],
+          "board": [
+            "OP15-023",
+            "OP15-009",
+            "OP15-012",
+            "OP15-025"
+          ],
+          "life": 1,
+          "deck": [
+            "OP12-027",
+            "OP15-008",
+            "OP15-017",
+            "OP15-037"
+          ],
+          "life_cards": [
+            "OP15-028"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP15-012": 1,
+            "OP15-025": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-025",
+          "card_name": "Kuro",
+          "effects": [
+            "Attach 1 Rested Don to Donquixote Doflamingo [\"OP04-031\">OP04-031]",
+            "Attach 1 Rested Don to Donquixote Doflamingo [\"OP04-031\">OP04-031]",
+            "Donquixote Doflamingo [\"OP04-031\">OP04-031] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP04-031",
+          "to_name": "Donquixote Doflamingo",
+          "total": 2
+        },
+        {
+          "type": "play",
+          "card": "OP15-012",
+          "card_name": "Buggy",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Donquixote Doflamingo [\"OP04-031\">OP04-031]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-025",
+            "OP15-008",
+            "OP15-025",
+            "OP15-026"
+          ],
+          "board": [
+            "OP15-023",
+            "OP15-012",
+            "OP15-025",
+            "OP15-025",
+            "OP15-012"
+          ],
+          "trash": [
+            "OP15-017",
+            "OP13-040",
+            "OP15-037",
+            "OP15-007",
+            "OP15-009"
+          ],
+          "life": 1,
+          "deck": [
+            "OP12-027",
+            "OP15-008",
+            "OP15-017",
+            "OP15-037"
+          ],
+          "life_cards": [
+            "OP15-028"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-025": 1,
+            "OP15-012": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP07-029",
+            "OP08-023",
+            "OP06-035",
+            "OP07-026"
+          ],
+          "trash": [
+            "EB01-015",
+            "ST02-007",
+            "ST02-007",
+            "OP05-030"
+          ],
+          "board": [
+            "OP05-034",
+            "OP07-021",
+            "OP08-023",
+            "OP01-051",
+            "OP04-031"
+          ],
+          "life": 3,
+          "deck": [
+            "EB01-012",
+            "EB01-015",
+            "OP01-058",
+            "OP04-032",
+            "OP04-119",
+            "OP05-037",
+            "OP07-026",
+            "OP08-036",
+            "ST02-013",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP01-033",
+            "OP04-029",
+            "OP07-021"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP08-023": 1,
+            "OP01-051": 1,
+            "OP04-031": 1
+          }
+        }
+      }
+    }
+  ]
+}

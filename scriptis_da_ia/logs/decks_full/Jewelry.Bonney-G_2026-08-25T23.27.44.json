@@ -1,0 +1,93 @@
+{
+  "leader": "OP07-019",
+  "source_deck": "Bonnie2",
+  "source_dir": "E:\\Games\\OnePieceSimulador\\Builds_Windows\\Decks",
+  "captured_at_ingest": true,
+  "cards": [
+    {
+      "code": "EB01-012",
+      "count": 1
+    },
+    {
+      "code": "EB01-015",
+      "count": 4
+    },
+    {
+      "code": "OP01-033",
+      "count": 1
+    },
+    {
+      "code": "OP01-051",
+      "count": 1
+    },
+    {
+      "code": "OP01-058",
+      "count": 2
+    },
+    {
+      "code": "OP04-029",
+      "count": 3
+    },
+    {
+      "code": "OP04-031",
+      "count": 1
+    },
+    {
+      "code": "OP04-032",
+      "count": 2
+    },
+    {
+      "code": "OP04-119",
+      "count": 1
+    },
+    {
+      "code": "OP05-030",
+      "count": 3
+    },
+    {
+      "code": "OP05-034",
+      "count": 2
+    },
+    {
+      "code": "OP05-037",
+      "count": 3
+    },
+    {
+      "code": "OP06-035",
+      "count": 3
+    },
+    {
+      "code": "OP07-021",
+      "count": 4
+    },
+    {
+      "code": "OP07-026",
+      "count": 3
+    },
+    {
+      "code": "OP07-029",
+      "count": 3
+    },
+    {
+      "code": "OP08-023",
+      "count": 3
+    },
+    {
+      "code": "OP08-036",
+      "count": 2
+    },
+    {
+      "code": "ST02-007",
+      "count": 4
+    },
+    {
+      "code": "ST02-013",
+      "count": 2
+    },
+    {
+      "code": "ST16-004",
+      "count": 2
+    }
+  ],
+  "total": 50
+}

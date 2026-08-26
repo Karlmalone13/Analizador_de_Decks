@@ -727,6 +727,58 @@ namespace OPTCGBotPlugin
             }
         }
 
+        // ── Escolha entre OPCOES DE EFEITO da mesma carta (bloco 686) ──────
+        // O jogo chama isso de V3Choice: `ActV3Choice { ButtonText, JumpToStep }`,
+        // populado por `PopulateV3Choice` -> `AddChoiceWithExtras(..., V3Choice,
+        // i, textoDaOpcao)`. Cada botao carrega o INDICE da opcao em
+        // `iChoiceInt`, e o clique e `ChoiceButtonClicked(V3Choice, indice)`.
+        //
+        // Achado real 25/08 (teste ao vivo, bloco 685): o plugin tratava
+        // GoFirst/StartingHand/UseOnPlay/Cancel mas NAO o V3Choice -- a tela
+        // "Trash 2 Cards" x "Opponent Draws 2 Cards" simplesmente travava, e o
+        // motor NEM ERA CONSULTADO (confirmado: nas 196 linhas do decision_log
+        // da partida nao existe nenhuma fase de escolha entre efeitos).
+        public static bool IsOfferingV3Choice(GameplayLogicScript gls)
+        {
+            foreach (var b in OfferedButtons(gls))
+                if (b.myType == ButtonChoiceType.V3Choice) return true;
+            return false;
+        }
+
+        /// (indice_da_opcao, texto_do_botao) de cada opcao ofertada AGORA.
+        /// O texto e o que o jogador ve ("Trash 2 Cards"), e e o que o motor
+        /// usa pra decidir -- o bot continua so olhos/maos.
+        public static List<KeyValuePair<int, string>> GetV3Choices(GameplayLogicScript gls)
+        {
+            var fora = new List<KeyValuePair<int, string>>();
+            foreach (var b in OfferedButtons(gls))
+            {
+                if (b.myType != ButtonChoiceType.V3Choice) continue;
+                // Le o texto por REFLEXAO: a assembly do TextMeshPro nao esta
+                // referenciada no csproj, e adiciona-la so pra ler uma string
+                // criaria dependencia nova de build por nada.
+                string texto = "";
+                foreach (var comp in b.gameObject.GetComponentsInChildren<Component>())
+                {
+                    if (comp == null) continue;
+                    var tipo = comp.GetType();
+                    if (tipo.Name != "TextMeshProUGUI" && tipo.Name != "Text") continue;
+                    var prop = tipo.GetProperty("text");
+                    if (prop == null) continue;
+                    texto = prop.GetValue(comp, null) as string ?? "";
+                    if (!string.IsNullOrEmpty(texto)) break;
+                }
+                fora.Add(new KeyValuePair<int, string>(b.iChoiceInt, texto));
+            }
+            return fora;
+        }
+
+        public static void ClickV3Choice(GameplayLogicScript gls, int indice)
+        {
+            gls.ChoiceButtonClicked(ButtonChoiceType.V3Choice, indice);
+            Plugin.Log.LogInfo($"[Bot] V3Choice: opcao {indice}");
+        }
+
         // Confirma a selecao atual clicando o botao de finalize CORRETO
         // ofertado pelo jogo (search do topo do deck usa FinalizeTopDeck /
         // ConfirmRevealedCard, que roteiam diferente de SelectTargets).

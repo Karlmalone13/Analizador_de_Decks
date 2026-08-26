@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP15-025",
+      "name": "Kuro",
+      "count": 4
+    },
+    {
+      "code": "OP15-012",
+      "name": "Buggy",
+      "count": 2
+    },
+    {
+      "code": "OP15-017",
+      "name": "OP15-017",
+      "count": 1
+    },
+    {
+      "code": "OP15-023",
+      "name": "Arlong",
+      "count": 1
+    },
+    {
+      "code": "OP13-040",
+      "name": "OP13-040",
+      "count": 1
+    },
+    {
+      "code": "OP15-037",
+      "name": "OP15-037",
+      "count": 1
+    },
+    {
+      "code": "OP15-008",
+      "name": "OP15-008",
+      "count": 1
+    },
+    {
+      "code": "OP15-009",
+      "name": "Koby",
+      "count": 1
+    },
+    {
+      "code": "OP15-007",
+      "name": "OP15-007",
+      "count": 1
+    },
+    {
+      "code": "OP15-026",
+      "name": "OP15-026",
+      "count": 1
+    },
+    {
+      "code": "OP15-028",
+      "name": "OP15-028",
+      "count": 1
+    }
+  ],
+  "total_seen": 15,
+  "leader": "OP15-001"
+}

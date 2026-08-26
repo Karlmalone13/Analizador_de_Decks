@@ -4210,5 +4210,65 @@
       "You": "decks_full/Jewelry.Bonney-G_2026-08-25T23.06.05.json",
       "Opponent": "decks_full/Rocks.D.Xebec-B_2026-08-25T23.06.05.json"
     }
+  },
+  {
+    "id": "2026-08-25T23.27.44",
+    "friendly_name": "Jewelry.Bonney-G_x_Rocks.D.Xebec-B",
+    "date": "2026-08-25",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP07-019",
+      "leader_name": "Jewelry Bonney",
+      "slug": "Jewelry.Bonney-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 11,
+    "winner": "p2",
+    "bot_side": "p1",
+    "log_file": "raw/Jewelry.Bonney-G_x_Rocks.D.Xebec-B_2026-08-25T23.27.44.log",
+    "parsed_file": "parsed/Jewelry.Bonney-G_x_Rocks.D.Xebec-B_2026-08-25T23.27.44.json",
+    "deck_files": {
+      "You": "decks/Jewelry.Bonney-G_2026-08-25T23.27.44.json",
+      "Opponent": "decks/Rocks.D.Xebec-B_2026-08-25T23.27.44.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Jewelry.Bonney-G_2026-08-25T23.27.44.json",
+      "Opponent": "decks_full/Rocks.D.Xebec-B_2026-08-25T23.27.44.json"
+    }
+  },
+  {
+    "id": "2026-08-25T23.27.44_p2",
+    "friendly_name": "Krieg-RG_x_Jewelry.Bonney-G",
+    "date": "2026-08-25",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP07-019",
+      "leader_name": "Jewelry Bonney",
+      "slug": "Jewelry.Bonney-G"
+    },
+    "turns": 11,
+    "winner": "p2",
+    "bot_side": null,
+    "log_file": "raw/Krieg-RG_x_Jewelry.Bonney-G_2026-08-25T23.27.44_p2.log",
+    "parsed_file": "parsed/Krieg-RG_x_Jewelry.Bonney-G_2026-08-25T23.27.44_p2.json",
+    "deck_files": {
+      "You": "decks/Krieg-RG_2026-08-25T23.27.44_p2.json",
+      "Opponent": "decks/Jewelry.Bonney-G_2026-08-25T23.27.44_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Krieg-RG_2026-08-25T23.27.44_p2.json",
+      "Opponent": "decks_full/Jewelry.Bonney-G_2026-08-25T23.27.44_p2.json"
+    }
   }
 ]

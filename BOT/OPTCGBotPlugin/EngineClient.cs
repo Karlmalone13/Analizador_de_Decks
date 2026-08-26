@@ -223,6 +223,18 @@ namespace OPTCGBotPlugin
             public string code = "";   // cardID — engine valora cartas fora do DTO (trash/top deck)
         }
 
+        public class EffectOption
+        {
+            public int index;
+            public string text = "";
+        }
+
+        private class ChooseEffectOptionResponse
+        {
+            public int optionIndex;
+            public string decisionId = "";
+        }
+
         private class ChooseTargetResponse
         {
             public string decisionId = "";
@@ -261,6 +273,45 @@ namespace OPTCGBotPlugin
             catch (Exception ex)
             {
                 Plugin.Log.LogError($"[EngineClient] choose_target: {ex.Message}");
+                return null;
+            }
+        }
+
+        // ── Escolha entre OPCOES DE EFEITO da mesma carta (bloco 686) ─────
+        // A tela V3Choice ("Trash 2 Cards" x "Opponent Draws 2 Cards") travava
+        // o bot porque o plugin nao a tratava e o MOTOR NEM ERA CONSULTADO
+        // (achado do teste ao vivo, bloco 685). Mantem a divisao do projeto:
+        // o plugin so LE os textos das opcoes e CLICA -- quem escolhe e o
+        // motor. Retorna o indice da opcao, ou null em erro (o chamador
+        // mantem o fallback antigo em vez de clicar as cegas).
+        public static int? ChooseEffectOption(
+            GameStateDto state,
+            System.Collections.Generic.List<EffectOption> options,
+            string? actorCode = null,
+            Action<string>? onDecision = null)
+        {
+            try
+            {
+                string json = JsonConvert.SerializeObject(new { state, options, actorCode });
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var resp = _http.PostAsync($"{BASE}/choose_effect_option", content).GetAwaiter().GetResult();
+                if (!resp.IsSuccessStatusCode)
+                    return null;
+                string body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var result = JsonConvert.DeserializeObject<ChooseEffectOptionResponse>(body);
+                if (result == null) return null;
+                onDecision?.Invoke(result.decisionId);
+                return result.optionIndex;
+            }
+            catch (TaskCanceledException)
+            {
+                Plugin.Log.LogError("[EngineClient] /choose_effect_option nao respondeu a tempo");
+                ReportClientTimeout("/choose_effect_option", state.turnNumber);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.LogError($"[EngineClient] choose_effect_option: {ex.Message}");
                 return null;
             }
         }
