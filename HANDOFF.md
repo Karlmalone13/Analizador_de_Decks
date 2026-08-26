@@ -28,6 +28,97 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-25 (685) - Claude (sessao local) - TESTE AO VIVO humano x bot (Bonney OP07-019, bot PERDEU): 4 achados do usuario TODOS confirmados por telemetria, e o da lider e BUG DE FAMILIA (296 cartas com a gramatica, 28 perdendo o alvo LIDER)
+
+Partida `Jewelry.Bonney-G_x_Rocks.D.Xebec-B_2026-08-25T23.06.05`, bot=p1
+(Bonney), humano=p2 (Xebec). Bot perdeu. Log JA no banco pelo usuario --
+primeira ingestao com o registro de decklist do bloco 656 (`deck_full_files`
+gravado pros dois lados) e com as zonas do RZ1 (bloco 684).
+
+Telemetria lida na ORDEM obrigatoria: agregado (`metrics/live_runs/
+live_2026-08-25T23.06.07.json`) primeiro, `decision_summary.py --latest`
+depois.
+
+### Agregado: `gate_status: FAIL`, 3 alertas
+
+  - **bot_confusion (ERRO)**: 1x travado (`sem_acao_suspeito=1`)
+  - **latencia p95 = 3315ms** (gate 3000), **max 4894ms**. Segmentado:
+    `line_search` media **2101ms**, max **4890ms**; `generate_and_score`
+    media 2,3ms. **A demora e a BUSCA, nao o clique.**
+  - 3 decisoes pendentes (1 main, 2 defense) de 66; execucao 100% confirmada
+
+`resource_signals`: **attached_don 11, developed_board 5, spent_field_don 0**.
+
+### Achado 1 do usuario -- "demora muito" -- CONFIRMADO E MEDIDO
+
+Nao e o plugin clicando devagar: `line_search` sozinho tem p95 de 4,2s e
+pico de 4,9s. O dialogo de ordem de deck (`Return Cards to Deck`) E tratado
+-- `phase=target` aparece 9x com `target_order` escolhido -- so demora.
+
+### Achado 2 -- "nao entendeu a lider Bonney" -- BUG REAL, e de FAMILIA
+
+Texto real: `[On Your Opponent's Attack] [Once Per Turn] (1): Rest up to 1 of
+your opponent's **Leader or Character** cards.`
+Parseado: `rest_opp_character` (SO personagem).
+
+E a execucao confirma a perda: o alvo sai de
+`eligible_cards(opp.field_chars, ...)` -- **o lider nao esta no pool**. Ou
+seja, a jogada FORTE da Bonney (restar o lider do oponente pra ele nao atacar)
+e IMPOSSIVEL hoje.
+
+**Varredura global (gate obrigatorio do projeto, feita ANTES de corrigir)**:
+**296 cartas** usam a gramatica "Leader or Character"; **28 delas** geram
+acao so-de-personagem e perdem o lider como alvo (EB03-015, EB04-020,
+OP01-058, OP02-045, OP04-038, OP04-074, OP05-037, OP05-038, OP07-019...).
+Nao e carta isolada, e familia -- o fix tem que ser pela FORMA.
+
+Sintoma medido na partida: `reaction` escolhida **1 unica vez** em 30
+decisoes de defesa, pra uma habilidade ONCE PER TURN que deveria aparecer
+quase todo turno. E `activate` escolhida 1x no jogo inteiro (apareceu 6x
+como alternativa).
+
+### Achado 3 -- "DON no lider em vez de board" -- CONFIRMADO
+
+`resource_signals`: 11 DON anexados contra 5 de board desenvolvido, e
+**spent_field_don = 0**. O `decision_summary` mostra o padrao explicito -- o
+`attach_don` no lider VENCE mesmo com score imediato MUITO menor:
+
+    turno 2: escolhido attach_don OP07-019 (score 100,0)
+       alternativas: attack->leader (390,0) | activate (205,0) | play (149,5)
+    turno 3: escolhido attach_don OP07-019 (score 21,2)
+       alternativas: attack (298,0) | play (205,0) | activate (126,2)
+
+Escolhidas no jogo todo: attack 9, play 5, attach_don 5, **activate 1**.
+Quem escolhe e a busca simulada (o score imediato so ordena o shortlist),
+entao o problema esta na AVALIACAO da linha, nao na geracao.
+
+### Achado 4 -- dialogos que o motor NEM VE
+
+O `decision_log` (196 registros) so tem as fases `mulligan, main, blocker,
+counter, target, trigger, reaction`. **NAO existe fase de "escolher entre
+dois efeitos"** -- entao a tela `Trash 2 Cards` x `Opponent Draws 2 Cards`
+nunca chega ao motor: e dialogo NAO TRATADO no plugin, mesma familia do
+"Choose card effect to activate next" ja registrado (commit 3d3155d, 4o caso
+sem causa raiz).
+
+O `Choose 1 Enemy Characters` com "up to 2" e so 1 alvo valido tambem e
+plugin: a fase `target` existe e funciona (9x), mas o clique nao fecha
+quando o pedido e "ate N" e ha menos de N alvos.
+
+### PENDENTE -- nada foi corrigido nesta sessao
+
+Os 4 achados estao caracterizados com evidencia, NENHUM foi corrigido.
+Ordem sugerida por impacto/risco:
+
+  1. **Lider como alvo** (28 cartas): fix de FORMA no parser + incluir o
+     lider no pool de `eligible_cards` pra essa familia. Exige registro em
+     `parser_audits/` (gate do projeto), smoke + medicao de corpus.
+  2. **Dialogos nao tratados** (plugin C#): `Trash 2 x Opponent Draws 2` nao
+     chega ao motor; `up to N` com menos de N alvos nao fecha.
+  3. **DON no lider x board**: e avaliacao de linha, nao geracao -- mesma
+     familia dos achados de escala dos blocos 651/656.
+  4. **Latencia da busca**: 4,9s de pico e ruim pra jogo ao vivo.
+
 ## 2026-08-25 (684) - Claude (sessao local) - O log JA registrava tudo que faltava: protocolo `RZ1|` decodificado (93,75% validado) -- STAGE, conteudo do LIFE, DON real e restadas entram no banco, RETROATIVAMENTE
 
 Pedido do usuario: "melhore o log para capturar tudo que voce precisa para

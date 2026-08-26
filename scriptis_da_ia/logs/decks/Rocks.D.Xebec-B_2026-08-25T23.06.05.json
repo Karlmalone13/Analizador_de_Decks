@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP17-118",
+      "name": "Rocks D. Xebec",
+      "count": 4
+    },
+    {
+      "code": "OP17-056",
+      "name": "OP17-056",
+      "count": 4
+    },
+    {
+      "code": "OP17-049",
+      "name": "Charlotte Linlin",
+      "count": 4
+    },
+    {
+      "code": "OP17-045",
+      "name": "Kyo",
+      "count": 3
+    },
+    {
+      "code": "OP17-042",
+      "name": "OP17-042",
+      "count": 3
+    },
+    {
+      "code": "OP08-051",
+      "name": "OP08-051",
+      "count": 2
+    },
+    {
+      "code": "OP17-046",
+      "name": "Gloriosa",
+      "count": 2
+    },
+    {
+      "code": "OP17-054",
+      "name": "Stussy",
+      "count": 2
+    },
+    {
+      "code": "OP17-055",
+      "name": "OP17-055",
+      "count": 2
+    },
+    {
+      "code": "OP17-044",
+      "name": "OP17-044",
+      "count": 2
+    },
+    {
+      "code": "OP17-040",
+      "name": "OP17-040",
+      "count": 1
+    },
+    {
+      "code": "OP17-050",
+      "name": "OP17-050",
+      "count": 1
+    }
+  ],
+  "total_seen": 30,
+  "leader": "OP17-039"
+}

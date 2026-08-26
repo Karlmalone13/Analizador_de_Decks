@@ -524,6 +524,29 @@
 > continuar acumulando fixes turno-a-turno primeiro. Ver bloco 657 do
 > HANDOFF pros detalhes turno a turno.
 
+> 25/08/2026 (bloco 685, TESTE AO VIVO humano x bot, Bonney OP07-019, bot
+> perdeu): os 4 achados do usuário **todos confirmados por telemetria**.
+> `gate_status: FAIL`.
+>
+> - [ ] **BUG DE FAMÍLIA — líder some como alvo.** Bonney diz "Rest up to 1
+>   of your opponent's **Leader or Character**" e o parser gera
+>   `rest_opp_character`; a execução busca em `eligible_cards(opp.field_chars)`
+>   — **o líder não está no pool**. Varredura global: **296 cartas** com essa
+>   gramática, **28 perdem o líder**. Sintoma: `reaction` usada **1× em 30
+>   decisões de defesa** para uma habilidade *once per turn*. Fix pela FORMA
+>   + registro em `parser_audits/`.
+> - [ ] **Diálogos que o motor nem vê** (plugin C#): o `decision_log` só tem
+>   as fases mulligan/main/blocker/counter/target/trigger/reaction — **não
+>   existe fase de escolha entre efeitos**, então `Trash 2 Cards` ×
+>   `Opponent Draws 2 Cards` nunca chega ao motor. E `Choose 1 Enemy` com
+>   "up to 2" e 1 alvo não fecha o clique.
+> - [ ] **DON no líder em vez de board**: `attached_don 11 × developed_board
+>   5`, `spent_field_don 0`. O `attach_don` vence com score imediato **muito
+>   menor** (100,0 contra 390,0 do ataque) — é avaliação de linha, não
+>   geração.
+> - [ ] **Latência**: `line_search` p95 **4,2s**, pico **4,9s** (gate 3000ms).
+>   A demora é a busca, não o clique.
+
 > 25/08/2026 (bloco 684, pedido "melhore o log para capturar tudo"): **o log
 > já registrava tudo** — o protocolo `RZ1|` que o simulador escreve em todo
 > combat log é um replay de movimentação carta a carta, com zona de
