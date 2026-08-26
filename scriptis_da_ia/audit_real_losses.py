@@ -871,8 +871,30 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         _don_cost = None if IGNORAR_RZ1 else bot_snap.get('don_cost')
         if _don_cost is not None:
             _rest = ((bot_snap.get('rested_rz1') or {}).get('don_cost') or [])
+            # Bloco 690: o DON ANEXADO em personagens (zona 9 do RZ1,
+            # `attached_don`) tem que entrar na conta. `don_cost` e SO a
+            # area de custo -- o DON que o jogador anexou durante o turno
+            # esta na zona 9, e pela regra 6-2-3 volta INTEIRO pra area de
+            # custo, ATIVO, no refresh do proprio turno. Ignora-lo fazia o
+            # motor comecar o turno com menos DON do que o humano tinha,
+            # e portanto jogar menos carta -- nao por decisao, por recurso
+            # que sumiu na reconstrucao.
+            #
+            # Medido contra a verdade do proprio log (708 turnos, sendo a
+            # verdade `don_cost + attached_don`, ja que nada sai do
+            # sistema): **53% -> 82% de acerto EXATO**, erro medio 0,83 ->
+            # 0,25. Entra como `don_rested` porque o `refresh_phase` do
+            # motor ja soma `don_rested` em `don_available` -- o efeito
+            # liquido no inicio do turno e o DON total correto e ativo.
+            #
+            # NOTA sobre a medicao anterior (bloco 688), que dizia 34% e
+            # concluiu "RZ1 e estimador sao equivalentes": aquela conta
+            # usava `don_cost` como VERDADE, e `don_cost` exclui o
+            # anexado -- a propria regua estava errada. O numero certo do
+            # metodo em uso e 53%, e a conclusao de equivalencia nao vale.
+            _att = (bot_snap.get('attached_don') or [])
             p.don_available = max(0, len(_don_cost) - len(_rest))
-            p.don_rested = len(_rest)
+            p.don_rested = len(_rest) + len(_att)
         else:
             p.don_available = don_est.available(bot_side)
         # ver DonEstimator.deck_left -- sem isto a don_phase do turno
