@@ -46,6 +46,20 @@
           ],
           "trash": [],
           "life": 4,
+          "life_cards": [
+            "OP16-104",
+            "OP16-109",
+            "OP16-115",
+            "OP16-119"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP16-110": 1
           }
@@ -60,7 +74,24 @@
           ],
           "trash": [],
           "board": [],
-          "life": 5
+          "life": 5,
+          "deck": [
+            "OP17-042",
+            "OP17-043",
+            "OP17-044",
+            "OP17-045",
+            "OP17-046",
+            "OP17-048",
+            "OP17-050",
+            "OP17-055"
+          ],
+          "life_cards": [
+            "OP17-040",
+            "OP17-049",
+            "OP17-056",
+            "OP17-057",
+            "OP17-118"
+          ]
         }
       }
     },
@@ -88,7 +119,36 @@
           ],
           "board": [],
           "trash": [],
-          "life": 5
+          "life": 5,
+          "deck": [
+            "OP17-042",
+            "OP17-043",
+            "OP17-044",
+            "OP17-045",
+            "OP17-046",
+            "OP17-048",
+            "OP17-050",
+            "OP17-055"
+          ],
+          "life_cards": [
+            "OP17-040",
+            "OP17-049",
+            "OP17-056",
+            "OP17-057",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP17-057"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
         },
         "You": {
           "hand": [
@@ -102,6 +162,20 @@
             "OP16-110"
           ],
           "life": 4,
+          "life_cards": [
+            "OP16-104",
+            "OP16-109",
+            "OP16-115",
+            "OP16-119"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP16-110": 1
           }
@@ -156,6 +230,17 @@
           ],
           "trash": [],
           "life": 4,
+          "life_cards": [
+            "OP16-104",
+            "OP16-109",
+            "OP16-115",
+            "OP16-119"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
           "rested": {
             "OP16-110": 1
           }
@@ -172,7 +257,35 @@
             "OP17-052"
           ],
           "board": [],
-          "life": 4
+          "life": 4,
+          "deck": [
+            "OP17-042",
+            "OP17-043",
+            "OP17-044",
+            "OP17-045",
+            "OP17-046",
+            "OP17-048",
+            "OP17-050",
+            "OP17-055"
+          ],
+          "life_cards": [
+            "OP17-040",
+            "OP17-049",
+            "OP17-056",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP17-057"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
         }
       }
     },
@@ -235,6 +348,31 @@
             "OP17-057"
           ],
           "life": 4,
+          "deck": [
+            "OP17-042",
+            "OP17-043",
+            "OP17-044",
+            "OP17-046",
+            "OP17-048",
+            "OP17-050"
+          ],
+          "life_cards": [
+            "OP17-040",
+            "OP17-049",
+            "OP17-056",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP17-057"
+          ],
+          "attached_don": [
+            "Don"
+          ],
           "rested": {
             "OP17-054": 1
           }
@@ -253,6 +391,17 @@
             "OP16-110"
           ],
           "life": 4,
+          "life_cards": [
+            "OP16-104",
+            "OP16-109",
+            "OP16-115",
+            "OP16-119"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
           "rested": {
             "OP16-110": 1
           }
@@ -298,6 +447,26 @@
             "OP09-086"
           ],
           "life": 4,
+          "life_cards": [
+            "OP16-104",
+            "OP16-109",
+            "OP16-115",
+            "OP16-119"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
           "rested": {
             "EB04-058": 1
           }
@@ -319,6 +488,31 @@
             "OP17-054"
           ],
           "life": 4,
+          "deck": [
+            "OP17-042",
+            "OP17-043",
+            "OP17-044",
+            "OP17-046",
+            "OP17-048",
+            "OP17-050"
+          ],
+          "life_cards": [
+            "OP17-040",
+            "OP17-049",
+            "OP17-056",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP17-057"
+          ],
+          "attached_don": [
+            "Don"
+          ],
           "rested": {
             "OP17-054": 1
           }
@@ -395,6 +589,35 @@
             "OP17-057"
           ],
           "life": 4,
+          "deck": [
+            "OP17-042",
+            "OP17-043",
+            "OP17-044",
+            "OP17-048",
+            "OP17-050"
+          ],
+          "life_cards": [
+            "OP17-040",
+            "OP17-049",
+            "OP17-056",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP17-057"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP17-054": 1,
             "OP17-040": 1
@@ -415,6 +638,26 @@
             "EB04-058"
           ],
           "life": 4,
+          "life_cards": [
+            "OP16-104",
+            "OP16-109",
+            "OP16-115",
+            "OP16-119"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
           "rested": {
             "EB04-058": 1
           }
@@ -488,6 +731,28 @@
             "EB04-058"
           ],
           "life": 4,
+          "life_cards": [
+            "OP16-104",
+            "OP16-109",
+            "OP16-115",
+            "OP16-119"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP16-110": 2,
             "EB04-058": 1
@@ -515,6 +780,34 @@
             "OP17-040"
           ],
           "life": 3,
+          "deck": [
+            "OP17-042",
+            "OP17-043",
+            "OP17-044",
+            "OP17-048",
+            "OP17-050"
+          ],
+          "life_cards": [
+            "OP17-040",
+            "OP17-049",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP17-057"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP17-054": 1,
             "OP17-040": 1
@@ -633,6 +926,31 @@
             "OP17-044"
           ],
           "life": 3,
+          "deck": [
+            "OP17-042",
+            "OP17-043",
+            "OP17-050"
+          ],
+          "life_cards": [
+            "OP17-040",
+            "OP17-049",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP17-057"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
           "rested": {
             "OP17-054": 1
           }
@@ -656,6 +974,25 @@
             "OP16-110"
           ],
           "life": 1,
+          "life_cards": [
+            "OP16-104"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP16-110": 2,
             "EB04-058": 1
@@ -753,6 +1090,27 @@
             "OP16-115"
           ],
           "life": 1,
+          "life_cards": [
+            "OP16-104"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP16-110": 2,
             "EB04-058": 1
@@ -785,6 +1143,30 @@
             "OP17-040"
           ],
           "life": 2,
+          "deck": [
+            "OP17-042",
+            "OP17-043",
+            "OP17-050"
+          ],
+          "life_cards": [
+            "OP17-040",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP17-057"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
           "rested": {
             "OP17-054": 1
           }

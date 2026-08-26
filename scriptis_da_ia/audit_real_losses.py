@@ -730,23 +730,39 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         p.field_chars = _cards_from_codes(bot_snap.get('board', []), cards_db,
                                            bot_snap.get('rested', {}))
         p.trash = _cards_from_codes(bot_snap.get('trash', []), cards_db)
-        _stage_code = _field_stage_at(turns, i, bot_side, cards_db)
+        # bloco 684: `stage` vem do RZ1 -- verdade direta, sem inferencia.
+        # `_field_stage_at` (bloco 650) fica como fallback pros logs antigos.
+        _stage_rz1 = (bot_snap.get('stage') or [None])[0]
+        _stage_code = _stage_rz1 or _field_stage_at(turns, i, bot_side, cards_db)
         if _stage_code and _stage_code not in (bot_snap.get('trash') or []):
             _st = _cards_from_codes([_stage_code], cards_db)
             p.field_stage = _st[0] if _st else None
+        # bloco 684: `life_cards` vem do protocolo RZ1 do jogo -- e o conteudo
+        # REAL do Life. Antes o Life era preenchido com cartas FALSAS do topo
+        # de um deck embaralhado, o que errava trigger, o que vai pra mao ao
+        # tomar dano, e toda avaliacao que olha Life.
         life_n = bot_snap.get('life', 4)
-        p.life = [deepcopy(c) for c in p.deck[:life_n]] if p.deck else []
+        _lc = bot_snap.get('life_cards')
+        if _lc:
+            p.life = _cards_from_codes(list(_lc), cards_db)
+        else:
+            p.life = [deepcopy(c) for c in p.deck[:life_n]] if p.deck else []
 
         opp.hand = _cards_from_codes(opp_snap.get('hand', []), cards_db)
         opp.field_chars = _cards_from_codes(opp_snap.get('board', []), cards_db,
                                              opp_snap.get('rested', {}))
         opp.trash = _cards_from_codes(opp_snap.get('trash', []), cards_db)
-        _stage_code_opp = _field_stage_at(turns, i, opp_side, cards_db)
+        _stage_rz1_opp = (opp_snap.get('stage') or [None])[0]
+        _stage_code_opp = _stage_rz1_opp or _field_stage_at(turns, i, opp_side, cards_db)
         if _stage_code_opp and _stage_code_opp not in (opp_snap.get('trash') or []):
             _st_o = _cards_from_codes([_stage_code_opp], cards_db)
             opp.field_stage = _st_o[0] if _st_o else None
         opp_life_n = opp_snap.get('life', 4)
-        opp.life = [deepcopy(c) for c in opp.deck[:opp_life_n]] if opp.deck else []
+        _lco = opp_snap.get('life_cards')
+        if _lco:
+            opp.life = _cards_from_codes(list(_lco), cards_db)
+        else:
+            opp.life = [deepcopy(c) for c in opp.deck[:opp_life_n]] if opp.deck else []
 
         # Achado real 15/08 (continuacao do bloco 534/535): fixar
         # random.seed() so uma vez ANTES da chamada inteira de
@@ -842,7 +858,17 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         populate_full_deck_knowledge(opp, opp_deck[1], opp_deck[0].code)
 
         p.turn = bot_turn_count - 1
-        p.don_available = don_est.available(bot_side)
+        # bloco 684: `don_cost` (cost area) e `rested_rz1` vem do RZ1 -- DON
+        # REAL, nao estimado. O `DonEstimator` continua como fallback pros
+        # logs sem RZ1; foi corrigido 2x hoje (regra 6-2-3 no bloco 650, teto
+        # no 651) justamente por ser inferencia.
+        _don_cost = bot_snap.get('don_cost')
+        if _don_cost is not None:
+            _rest = ((bot_snap.get('rested_rz1') or {}).get('don_cost') or [])
+            p.don_available = max(0, len(_don_cost) - len(_rest))
+            p.don_rested = len(_rest)
+        else:
+            p.don_available = don_est.available(bot_side)
         # ver DonEstimator.deck_left -- sem isto a don_phase do turno
         # simulado estoura o teto de 10 DON
         p.don_deck = don_est.deck_left(bot_side)

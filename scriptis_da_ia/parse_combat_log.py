@@ -316,6 +316,7 @@ def parse_log(log_path: str) -> tuple:
                         'player': p0,
                         'lines': current_lines + [line],
                         'snap_lines': _collect_snap(lines, i + 1),
+                        'snap_at': i + 1,   # bloco 684: indice pro replay RZ1
                     })
                     if p0 in players:
                         last_player_idx = players.index(p0)
@@ -333,6 +334,7 @@ def parse_log(log_path: str) -> tuple:
                 'player': current_player,
                 'lines': current_lines,
                 'snap_lines': snap_lines,
+                'snap_at': i + 1,   # bloco 684: indice pro replay RZ1
             })
             if current_player in players:
                 last_player_idx = players.index(current_player)
@@ -361,7 +363,26 @@ def parse_log(log_path: str) -> tuple:
     # 3. Parsear blocos
     parsed_turns = []
     board_state = {p1: [], p2: []}
+    # bloco 684: estado das zonas reconstruido do protocolo `RZ1|` do jogo,
+    # avancado INCREMENTALMENTE bloco a bloco -- precisa ser o estado NAQUELE
+    # ponto do log, nao o final da partida. Ver rz1_replay.py.
+    try:
+        from rz1_replay import replay_por_linha as _rz1_replay, casar_donos as _rz1_casar
+        _rz1_por_linha = _rz1_replay(lines)
+    except Exception:
+        _rz1_por_linha, _rz1_casar = {}, None
+
+    def _rz1_em(inicio, qtd):
+        """Estado RZ1 no FIM do bloco de snapshot que comeca em `inicio`."""
+        if not _rz1_por_linha:
+            return None
+        janela = [k for k in _rz1_por_linha if inicio <= k <= inicio + max(qtd, 1) + 4]
+        if not janela:
+            return None
+        return _rz1_por_linha[max(janela)]
+
     for t_idx, block in enumerate(turn_blocks):
+        _rz1_estado = _rz1_em(block.get('snap_at', -1), len(block.get('snap_lines') or []))
         player  = block['player']
         blines  = block['lines']
         actions = []
@@ -474,6 +495,30 @@ def parse_log(log_path: str) -> tuple:
                      or RE_TRASH.match(l) or RE_LIFE.match(l)]
                     + block['snap_lines'])
         snap = _parse_snap(all_snap, p1, p2, known_codes)
+
+        # bloco 684: enriquece o snapshot com as zonas que o TEXTO do log nao
+        # tem, lidas do protocolo `RZ1|` que o proprio jogo ja escreve --
+        # STAGE, conteudo do LIFE, DON anexado por carta, DON no cost area,
+        # deck restante e quais cartas estao RESTADAS. Ver rz1_replay.py
+        # (validado: 93,75% dos 14400 snapshots do banco batem exatamente com
+        # as linhas de texto, 105 de 120 logs 100%).
+        #
+        # ADITIVO por construcao: so acrescenta chaves novas e NUNCA
+        # sobrescreve `hand`/`board`/`trash`/`life` ja existentes -- se o
+        # casamento de dono falhar, o snapshot fica exatamente como era.
+        if _rz1_estado is not None:
+            try:
+                mapa = _rz1_casar(_rz1_estado,
+                                  {lado: (snap.get(lado, {}).get('hand') or [])
+                                   for lado in (p1, p2)})
+                for lado, dono in mapa.items():
+                    extra = _rz1_estado.snapshot(dono)
+                    destino = snap.setdefault(lado, {})
+                    for chave, valor in extra.items():
+                        if chave not in destino:
+                            destino[chave] = valor
+            except Exception:
+                pass       # nunca deixa o enriquecimento quebrar o parse
 
         # Reconcilia o rastreio active/rested pelo board REAL (autoridade)
         # e anexa `rested` (contagem por code) ao snapshot de cada lado.

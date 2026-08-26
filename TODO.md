@@ -524,6 +524,27 @@
 > continuar acumulando fixes turno-a-turno primeiro. Ver bloco 657 do
 > HANDOFF pros detalhes turno a turno.
 
+> 25/08/2026 (bloco 684, pedido "melhore o log para capturar tudo"): **o log
+> já registrava tudo** — o protocolo `RZ1|` que o simulador escreve em todo
+> combat log é um replay de movimentação carta a carta, com zona de
+> origem/destino e `bTapped`. Decodificado em `rz1_replay.py` e **validado:
+> 13500 de 14400 snapshots batem exatamente (93,75%), 105 de 120 logs 100%**.
+> Retroativo — não precisa de partida nova nem de plugin.
+>
+> Banco enriquecido (aditivo): **life_cards 1967, don_cost 1848, deck 1847,
+> rested_rz1 1402, attached_don 788, stage 699** snapshots. A reconstrução
+> passou a usar **LIFE real** (antes eram cartas falsas de um deck
+> embaralhado), **STAGE direto** (sem a inferência do bloco 650) e **DON
+> real** (substituindo o `DonEstimator`, que precisou de 2 correções hoje
+> por ser inferência).
+>
+> 5 parsed foram **restaurados do git** por perderem turnos no reparse
+> (diferença pré-existente do parser, não do enriquecimento); 100 ficaram
+> enriquecidos; 11 não reparseiam por falha pré-existente.
+>
+> - [ ] **FALTA medir** `decision_quality_full.py --all --workers 4` com
+>   recorte por líder. Life/DON/Stage reais mudam o estado de toda decisão.
+
 > 23/08/2026 (bloco 656): **decklist completo capturado na INGESTAO**
 > (`sim_deck_registry.py`; snapshot versionado em `logs/decks_full/`,
 > `deck_full_files` no index). Retroativo: **276 de 300 lados = 92%**. Mão

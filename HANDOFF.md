@@ -28,6 +28,86 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-25 (684) - Claude (sessao local) - O log JA registrava tudo que faltava: protocolo `RZ1|` decodificado (93,75% validado) -- STAGE, conteudo do LIFE, DON real e restadas entram no banco, RETROATIVAMENTE
+
+Pedido do usuario: "melhore o log para capturar tudo que voce precisa para
+arrumarmos essas porcentagens".
+
+### O log e do JOGO, nao do plugin -- mas ja tinha o que falta
+
+O combat log e escrito pelo proprio simulador (`Version is 1.42c.2`), entao
+mudar o formato nao esta na nossa mao. Mas ao lado das linhas de texto
+existem linhas `RZ1|...` que ninguem no projeto estava lendo. Formato
+confirmado na DLL decompilada (`GameplayLogicScript.cs`,
+`ReplaySync_EmitMove`, ~32865):
+
+    RZ1|seq|dono|cardID|zona_orig|slot|zona_dest|slot|vis|vis|bTapped|dPow|dCost
+
+E os codigos de zona JA estavam portados no repo
+(`_referencias/simulador-oficial/decompiled_python/enums.py`,
+`ReplaySyncZone`): DECK=0 HAND=1 DEPLOY=2 LIFE=3 DON_DECK=4 DON_COST=5
+TRASH=6 **STAGE=7** LEADER=8 **ATTACHED_DON=9**.
+
+E um protocolo de movimentacao carta a carta, com zona de origem/destino e
+`bTapped`. Ou seja: **a fidelidade que faltava sempre esteve no arquivo**, e
+existe nos 120 logs crus JA no banco -- nao precisa de partida nova nem de
+plugin.
+
+### VALIDACAO antes de confiar (nao foi leitura otimista de spec)
+
+Reproduzir os movimentos e comparar contra as proprias linhas
+`Hand:`/`Board:`/`Trash:` do log:
+
+  - **120 de 120 logs crus tem RZ1** (universal)
+  - **13500 de 14400 snapshots batem EXATAMENTE: 93,75%**
+  - **105 de 120 logs 100% corretos**
+
+Decisao de desenho que fez a diferenca: a 1a versao usou `(zona, slot)` como
+chave, seguindo o protocolo ao pe da letra, e deu **65,1%** -- slots colidem
+e sao reaproveitados sem emitir move, entao a carta anterior sumia. Tratar
+zona como MULTISET levou de 65,1% pra 100% no mesmo arquivo.
+
+### O que o banco ganhou (`rz1_replay.py` + parser)
+
+Snapshots enriquecidos, aditivamente: **life_cards 1967, don_cost 1848,
+deck 1847, rested_rz1 1402, attached_don 788, stage 699**.
+
+Chaves que colidiam ganharam nome proprio pra nao sobrescrever consumidor
+existente: `life` (int no texto) -> `life_cards`; `rested` (de
+`_reconcile_board_state`) -> `rested_rz1`.
+
+### O que a reconstrucao passou a USAR (`audit_real_losses.py`)
+
+  - **LIFE REAL**. Antes o Life era preenchido com cartas FALSAS do topo de
+    um deck embaralhado -- errava trigger, errava o que vai pra mao ao tomar
+    dano, errava toda avaliacao que olha Life. Era a maior lacuna que
+    sobrava do catalogo do bloco 653.
+  - **STAGE direto**, sem a inferencia por historico do bloco 650 (que fica
+    como fallback pros logs sem RZ1).
+  - **DON REAL** (`don_cost` menos `rested_rz1`), substituindo o
+    `DonEstimator` -- que precisou de 2 correcoes minhas hoje (regra 6-2-3
+    no bloco 650, teto no 651) justamente por ser inferencia.
+
+### Seguranca do reprocessamento
+
+Verificado ANTES de tocar no banco: reparsear e **puramente aditivo** em 12
+logs testados (zero campos antigos alterados). Depois, comparando os 105
+parsed modificados contra a versao commitada, **5 perderam turnos** (um
+21->9) -- diferenca pre-existente entre o parser de hoje e o que gerou
+aqueles arquivos, nao causada pelo enriquecimento. Esses 5 foram
+**RESTAURADOS do git**; ficaram 100 enriquecidos. Outros 11 logs nem
+reparseiam ("Nao encontrei 2 jogadores no log"), falha pre-existente, e
+mantiveram o parsed antigo.
+
+### Validacao
+
+`smoke_fast.py` 1376 OK / 0 falhas; `audit_one_game` roda sem erro num log
+enriquecido.
+
+**NAO MEDIDO**: o efeito nas porcentagens. Life/DON/Stage reais mudam o
+estado de TODA decisao -- pode subir ou descer a similaridade no curto
+prazo, como ja aconteceu com os fixes de fidelidade dos blocos 650/655.
+Rodar `decision_quality_full.py --all --workers 4` com recorte por lider.
 ## 2026-08-25 (683) - Claude (sessao remota web) - PASSO 2 LIGADO NO MOTOR e MEDIDO: **ACHADO NEGATIVO**. A politica de imitacao NAO melhora a metrica -- os 4 pontos do A/B ordenam monotonicamente do melhor (desligada) pro pior (os dois modelos). Causa provavel identificada: DISTRIBUTION SHIFT de clonagem de comportamento
 
 ### O A/B (subconjunto de 70 partidas, MESMAS partidas nos 4 pontos)
