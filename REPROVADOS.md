@@ -44,6 +44,22 @@ foi medida — e aí não é reprovação, é opinião.
 > tentativas anteriores.** Se retomar: laço iterativo estilo DAgger. Mais
 > features NÃO resolve — foi medido.
 
+## Contagem (quantas cartas jogar por turno)
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| Atacar a contagem por **limiar global de parada** (`ACTION_SCORE_FLOOR`) | **descartado pela propria medicao, antes de implementar**: o erro e SIMETRICO — 22,4% joga a mais, 25,2% a menos. Um numero global sobe um e desce o outro; liquido ~zero | 695 |
+
+> **O que a medicao ensinou** (bloco 695, 987 turnos): media por turno
+> motor 1,18 vs humano 1,23 — praticamente identicas. O motor **nao** e
+> sistematicamente guloso nem timido. Contagem NAO e problema de
+> calibracao: e o mesmo problema de julgamento visto de outro angulo, e
+> nao merece entrada propria na fila de trabalho.
+>
+> O que continua valendo do diagnostico: quando a contagem esta certa, o
+> `play` sobe de 28,9% pra **55,1%**. A contagem e mesmo o gargalo
+> aritmetico — so nao se resolve por limiar.
+
 ## Busca / shortlist
 
 | tentativa | resultado medido | bloco |

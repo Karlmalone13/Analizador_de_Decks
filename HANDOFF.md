@@ -28,6 +28,56 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-27 (695) - Claude (sessao remota web) - a medicao de CONTAGEM saiu e **invalida o plano do item 1**: o erro e SIMETRICO (22,4% a mais / 25,2% a menos), entao limiar global nao resolve. Contagem nao e problema de calibracao
+
+### O numero
+
+987 turnos, corpus completo, config default (`hash=bf21a9e8fbc5` — 1a
+medicao a gravar a propria configuracao, bloco 692):
+
+| | n | % |
+|---|---|---|
+| motor jogou **a MAIS** | 221 | 22,4% |
+| motor jogou **a MENOS** | 249 | 25,2% |
+| contagem IGUAL | 517 | 52,4% |
+
+Media por turno: **motor 1,18 vs humano 1,23** — praticamente identicas.
+
+### Por que isso invalida o plano
+
+O item 1 da fila era atacar a contagem pelo `ACTION_SCORE_FLOOR`, o
+limiar de parada do Turn Planner que eu tinha acabado de expor (bloco
+694). **Nao funciona**: e um numero global, subir corrige os 22,4% e
+piora os 25,2%, descer faz o inverso. Liquido ~zero.
+
+O motor **nao** e sistematicamente guloso nem timido. Ele erra pros dois
+lados em medida quase igual — ou seja, **contagem nao e problema de
+calibracao, e o mesmo problema de julgamento visto de outro angulo**. Nao
+merece entrada propria na fila. Registrado em `REPROVADOS.md` antes de
+ser implementado; custo evitado: um ciclo inteiro.
+
+### O que continua valendo
+
+Quando a contagem esta certa, o `play` sobe de 28,9% pra **55,1%**
+(n=517). A contagem E o gargalo aritmetico do `play` — a conclusao que
+muda e sobre o REMEDIO, nao sobre o diagnostico.
+
+Dispersao por lider segue enorme com o MESMO motor e os MESMOS knobs:
+OP11-021 52,2% e OP14-040 47,8% de um lado; OP15-002 10,0%, ST04-001
+10,5%, OP14-020 14,7% do outro.
+
+### Proximo
+
+Item 2 (sequenciamento/DON) vira o primeiro: e o unico com hipotese
+DIRECIONAL sustentada por medicao — o motor abre turno com `attach_don`
+3,3x mais que o humano (bloco 691) e o knob que governa isso
+(`KIND_SCALE_ATTACH_DON`) esta em 0,5, DOBRANDO seu peso no shortlist.
+
+**Previsao registrada ANTES de rodar** (pra nao racionalizar depois):
+ganho pequeno e positivo subindo a escala, com risco real de perder em
+`attack` — DON anexado mais tarde pode significar ataque mais fraco.
+Rodando: `python sweep.py --knob KIND_SCALE_ATTACH_DON=0.8,1.0`.
+
 ## 2026-08-27 (694) - Claude (sessao remota web) - o sistema agora e controlavel **onde importa**: ORDEM das jogadas e CONTAGEM viraram pontos de controle explicitos. O default de `attach_don` (escala 0,5 = peso DOBRADO) e coerente com o sintoma medido de abrir turno cedo demais
 
 ### Por que este bloco existe

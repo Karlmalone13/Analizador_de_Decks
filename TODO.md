@@ -2,6 +2,17 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 27/08/2026 (bloco 695): **a medicao de CONTAGEM invalidou o plano do
+> item 1.** 987 turnos: o erro e **simetrico** — 22,4% joga a mais, 25,2%
+> a menos, media por turno 1,18 (motor) vs 1,23 (humano). Um limiar
+> global (`ACTION_SCORE_FLOOR`) sobe um lado e desce o outro: liquido
+> ~zero. **Contagem nao e problema de calibracao**, e o mesmo problema de
+> julgamento por outro angulo — sai da fila como item proprio, entra no
+> `REPROVADOS.md` antes de ser implementado. Continua valendo: com a
+> contagem certa o `play` vai de 28,9% pra **55,1%**. Item 2
+> (sequenciamento/`attach_don`) vira o primeiro — unico com hipotese
+> direcional medida. Varredura rodando, previsao registrada antes.
+
 > 27/08/2026 (bloco 694): **o sistema virou controlavel onde importa.** O
 > bloco 692 tinha exposto 10 constantes perifericas; as duas coisas que o
 > diagnostico apontou (ORDEM e CONTAGEM) nao eram knob nenhum. Agora sao:
