@@ -28,6 +28,87 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-27 (697) - Claude (sessao remota web) - **O ORACULO RESPONDE A PERGUNTA DE FUNDO: 85-90% CABE NA ARQUITETURA ATUAL.** A carta certa ja e gerada em 97,4% dos turnos e chega ao shortlist em 80,3% -- o gap inteiro e de ORDENACAO, nao de geracao
+
+### A pergunta e por que ela precisava ser medida
+
+O usuario autorizou o experimento dizendo: *"Pode rodar, mas acho que
+vamos ter que mudar alguma coisa na estrutura para obtermos o resultado
+que queremos"*. A pergunta que ninguem tinha medido: **da pra chegar a
+85% ajustando configuracao, ou o gap e estrutural?** Sem esse numero, a
+escolha entre "expor 40 pesos e varrer" e "reescrever alguma coisa" era
+palpite.
+
+Ferramenta permanente: `scriptis_da_ia/oraculo_teto.py`.
+
+### O numero (987 turnos, corpus completo, config default)
+
+| nivel | play | leitura |
+|---|---|---|
+| **1. REAL** (o motor escolheu) | **28,9%** | onde estamos |
+| **2. ORACULO-BUSCA** (escolha perfeita dentro do shortlist) | **80,3%** | +51,5pp |
+| **3. ORACULO-GERACAO** (escolha perfeita em tudo que virou acao legal) | **97,4%** | +17,0pp |
+| acima de 3 | -- | **so 2,6% inalcancavel** |
+
+**A carta certa JA ESTA LA.** Em 97,4% dos turnos o motor gera como acao
+legal exatamente o conjunto que o humano jogou; em 80,3% ela sobrevive ao
+corte e chega a busca. E mesmo assim ele escolhe outra coisa em 71% dos
+turnos.
+
+**O gap nao e de geracao, nem de conhecimento de carta, nem de cobertura
+de deck. E INTEIRAMENTE de ORDENACAO** -- a funcao de valor prefere a
+opcao errada entre alternativas que ela ja tem na mao.
+
+### A consequencia direta pra meta
+
+**85-90% CABE.** O teto de geracao da arquitetura atual e 97,4%. A meta
+oficial esta dentro do que ela comporta -- nao e preciso reescrever a
+geracao de acoes nem o parser pra chegar la.
+
+### O recorte por lider mata a tese do "lider parado"
+
+No nivel do oraculo a dispersao quase some:
+
+| lider | real | oraculo-busca | oraculo-geracao |
+|---|---|---|---|
+| OP13-079 | 19,5% | 77,5% | 97,6% |
+| OP11-062 | 21,0% | 78,3% | 96,4% |
+| ST04-001 | 10,5% | 73,7% | 100,0% |
+| OP13-002 | 12,5% | 87,5% | 100,0% |
+| OP14-020 | 14,7% | 73,5% | 94,1% |
+
+Lider "parado" **nao tem deck mal coberto nem carta faltando no parser**.
+Tem a MESMA funcao de valor errando. Isso e evidencia forte a favor do
+objetivo central do projeto (jogar bem com QUALQUER deck): o que falta e
+um mecanismo unico, nao 30 correcoes por lider.
+
+### Ressalvas -- explicitas, nao rodape
+
+1. **Sao tetos OTIMISTAS.** Os niveis 2 e 3 usam CONTINENCIA (o conjunto
+   do humano estava disponivel?), sem verificar se o motor teria DON e
+   sequencia pra executar todas. O alcancavel real e menor que 80,3%. O
+   vies e a favor de "da pra chegar la" -- foi desenhado assim de
+   proposito: se o numero viesse BAIXO, a conclusao estrutural seria
+   solida. Veio alto, entao a leitura correta e "o alvo existe", nao "o
+   ganho esta garantido".
+2. **O oraculo tem retrovisor.** Ele conhece a resposta do humano. Os
+   +51,5pp sao o TAMANHO DO ALVO, nunca um ganho prometido.
+3. **Nao ressuscita sozinho a politica aprendida** (reprovada no bloco
+   683 por *distribution shift*). Mas muda o diagnostico daquela falha:
+   o sinal ESTA no conjunto de candidatas -- o problema era o laco de
+   treino, nao ausencia de informacao.
+
+### Reordena a fila inteira
+
+Cai de prioridade: expor 40 pesos e varrer um a um (o alvo e a funcao de
+valor, nao a periferia); itens de fidelidade da regua (+1,8pp medido no
+DON, e o teto de geracao ja e 97,4% -- fidelidade nao e o gargalo).
+
+Sobe: **a funcao de valor / ordenacao das candidatas** e o unico alvo que
+importa. 51,5pp estao la, e mais 17,0pp no criterio de corte do shortlist
+(atencao: **alargar o shortlist ja foi reprovado 3x** -- ver
+`REPROVADOS.md`; o alvo aqui e o CRITERIO do corte, nao o tamanho).
+
 ## 2026-08-27 (696) - Claude (sessao remota web) - 1o experimento no varredor: hipotese do `attach_don` **REPROVADA** (plano, +0,1pp). O gap de sequenciamento e real, mas a alavanca e GLOBAL e o padrao humano e POSICIONAL
 
 ### O resultado

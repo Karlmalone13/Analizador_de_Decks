@@ -2,6 +2,22 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 27/08/2026 (bloco 697): **ORACULO — 85-90% CABE NA ARQUITETURA ATUAL.**
+> 987 turnos: real **28,9%**, oraculo-busca (escolha perfeita no
+> shortlist) **80,3%**, oraculo-geracao (escolha perfeita em tudo que
+> virou acao legal) **97,4%** — so **2,6% inalcancavel por tuning**. A
+> carta certa JA E GERADA e JA CHEGA ao shortlist; o motor escolhe outra
+> coisa em 71% dos turnos. **O gap e inteiramente de ORDENACAO**, nao de
+> geracao/parser/cobertura de deck. No nivel do oraculo a dispersao por
+> lider quase some (OP13-079 19,5%->77,5%, ST04-001 10,5%->73,7%,
+> OP13-002 12,5%->87,5%) — **lider "parado" nao tem deck mal coberto, tem
+> a mesma funcao de valor errando**. Ressalvas: sao tetos OTIMISTAS
+> (continencia, ignora DON/sequencia) e o oraculo tem retrovisor — os
+> +51,5pp sao o TAMANHO DO ALVO, nao ganho prometido. **Reordena a fila**:
+> a funcao de valor/ordenacao vira o unico alvo que importa; expor 40
+> pesos e fidelidade da regua caem de prioridade. Ferramenta permanente:
+> `scriptis_da_ia/oraculo_teto.py`.
+
 > 27/08/2026 (bloco 696): **1o experimento no varredor — hipotese do
 > `attach_don` REPROVADA.** `KIND_SCALE_ATTACH_DON` 0,5->0,8->1,0 deu
 > `play` **plano** (+0,1pp), 18 de 20 lideres sem mexer, e **0,8 e 1,0
