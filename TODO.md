@@ -2,6 +2,22 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 27/08/2026 (bloco 692): **superficie de CONTROLE construida** — pedido
+> do usuario: *"Precisamos criar um sistema controlavel e observavel nao
+> so observavel"*. `optcg_engine/knobs.py` = registro central de
+> parametros ajustaveis (nome/default/tipo/faixa/descricao), com override
+> em runtime por `OPTCG_K_<NOME>=v` ou arquivo `OPTCG_KNOBS=x.json`, sem
+> editar codigo. **10 constantes convertidas com defaults E tipos
+> identicos — zero mudanca de comportamento**, `smoke_fast.py` passa.
+> `decision_quality_full.py` passa a gravar o **fingerprint da config**
+> no resultado (antes, comparar duas medicoes dependia da memoria de quem
+> editou — ja custou a retificacao do bloco 682). `sweep.py` varre N
+> configuracoes em subprocesso e compara com **recorte por lider
+> obrigatorio** (generalizacao vira criterio de aceite, nao so a media).
+> Knob NUNCA cria caminho de decisao novo — parametriza o unico que ja
+> existe (`REGRA_SEM_DUPLICACAO.md`). Pendente: converter as ~30
+> constantes restantes; usar o varredor no sequenciamento/DON.
+
 > 27/08/2026 (bloco 691): **`activate` diagnosticado pela 1a vez** (a
 > analise de bucket do `play` nunca tinha sido repetida pra ativacao).
 > Corpus, 338 turnos: das 158 ativacoes que o humano faz e o motor nao,
