@@ -17,7 +17,13 @@
 > reordenar e o candidato, mas exige A/B antes de aceitar (licao do bloco
 > 690: nao projetar ganho de correlacao). Pendente: confirmar a inversao
 > com a medicao do lado do motor (rodando), e diagnosticar os buckets B
-> (17,7%) e C (40,5%). Ver bloco 691.
+> (17,7%) e C (40,5%). **CONFIRMADO depois**: medicao pareada do lado do
+> motor (400 turnos) — o motor abre o turno com `attach_don` **27,3% vs
+> 8,2%** do humano (3,3x), e `attack -> activate` e a transicao mais comum
+> dele (4,3x o humano) — ativar DEPOIS de atacar e exatamente quando a
+> fonte ja esta restada. `play -> attack` e `play -> activate` batem (1,1x),
+> entao o problema NAO e sequenciamento em geral: e `attach_don` cedo
+> demais e `activate` tarde demais. Ver bloco 691.
 
 > 26/08/2026 (bloco 690): 1º passo da meta — **`attached_don` (zona 9 do
 > RZ1) faltava na reconstrução de DON**. Corrigido: acerto exato **53% →

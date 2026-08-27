@@ -118,10 +118,45 @@ certo pro uso original (`play` vs `activate`), so nao pro meu.
 
 - Instrumentacao commitada e desligada por padrao (`OPTCG_DEBUG_AM`).
   `smoke_fast.py` OK.
-- **Rodando quando este bloco foi escrito**: sequenciamento do lado do
-  MOTOR no mesmo corpus, pareado turno a turno, pra CONFIRMAR a inversao
-  com numero em vez de inferir da partida do Bonney. Sem esse numero, a
-  secao 3 apoia-se em (a) as guardas medidas e (b) uma partida so.
+- **CONFIRMADO** (medicao fechou depois deste bloco ser escrito):
+  sequenciamento do MOTOR no mesmo corpus, 400 turnos, pareado turno a
+  turno com 379 turnos humanos. A inversao e real e grande.
+
+  **Primeira acao do turno (PAREADO, mesmos turnos):**
+
+  | primeira acao | motor | humano |
+  |---|---|---|
+  | `play` | 36,8% | **53,8%** |
+  | `activate` | 11,5% | 16,1% |
+  | **`attach_don`** | **27,3%** | **8,2%** |
+  | `attack` | 24,5% | 21,9% |
+
+  O motor abre o turno anexando DON **3,3x mais** que o humano, e abre
+  jogando carta bem menos.
+
+  **Transicoes, normalizadas por turno** (o motor sai dos 400 turnos
+  pareados; o humano dos 1038 do corpus -- sao TAXAS, comparaveis, mas
+  nao e o mesmo pareamento estrito da tabela acima):
+
+  | transicao | motor/turno | humano/turno | razao |
+  |---|---|---|---|
+  | `attach_don -> play` | 0,113 | 0,006 | **19,5x** |
+  | `attach_don -> activate` | 0,072 | 0,014 | **5,0x** |
+  | `attack -> activate` | 0,443 | 0,103 | **4,3x** |
+  | `attach_don -> attack` | 0,367 | 0,511 | 0,7x |
+  | `play -> attack` | 0,395 | 0,362 | 1,1x |
+  | `play -> activate` | 0,180 | 0,171 | 1,1x |
+
+  O diagnostico fecha por dentro: **`attack -> activate` e a transicao MAIS
+  comum do motor** (0,443/turno, 4,3x o humano) -- ou seja, o motor tenta
+  ativar DEPOIS de atacar, que e exatamente quando a fonte ja esta restada.
+  Isso e a guarda `fonte restada` (23,1% do bucket A) vista do outro lado.
+  E `attach_don -> play`/`-> activate` (19,5x/5,0x) e o DON sendo anexado
+  antes de existir a chance de gasta-lo em custo `rest_don` -- a outra
+  guarda (23,1%). As transicoes onde motor e humano BATEM (`play -> attack`,
+  `play -> activate`, ambas 1,1x) mostram que o problema nao e o
+  sequenciamento em geral: e especificamente `attach_don` cedo demais e
+  `activate` tarde demais.
 - **NAO foi feita nenhuma mudanca de comportamento.** A hipotese "reordenar
   para play/activate antes de attach_don/attack" e o candidato natural,
   mas segue a disciplina desta sessao: **medir com A/B antes de aceitar**,
