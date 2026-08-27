@@ -152,6 +152,13 @@ def descreve() -> str:
 
 
 if __name__ == '__main__':
+    # `python -m optcg_engine.knobs` carrega ESTE arquivo como `__main__`;
+    # quando `decision_engine` faz `from optcg_engine import knobs`, o
+    # Python carrega uma SEGUNDA copia sob o nome canonico. O registro
+    # popula a segunda e a impressao leria a primeira -- saida "0 knobs
+    # registrados", silenciosamente errada. Le sempre pelo nome canonico.
     import optcg_engine.decision_engine  # noqa: F401  (popula o registro)
-    print(descreve())
-    print('\nfingerprint:', json.dumps(fingerprint(), ensure_ascii=False))
+    from optcg_engine import knobs as _canonico
+    print(_canonico.descreve())
+    print('\nfingerprint:',
+          json.dumps(_canonico.fingerprint(), ensure_ascii=False))

@@ -2,6 +2,22 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 27/08/2026 (bloco 694): **o sistema virou controlavel onde importa.** O
+> bloco 692 tinha exposto 10 constantes perifericas; as duas coisas que o
+> diagnostico apontou (ORDEM e CONTAGEM) nao eram knob nenhum. Agora sao:
+> **ORDEM = `KIND_SCORE_SCALE`** (divisor por tipo no shortlist —
+> `attach_don` esta em 0,5, ou seja **peso DOBRADO**, coerente com o
+> sintoma medido de abrir turno com `attach_don` 3,3x mais que o humano);
+> **CONTAGEM = `ACTION_SCORE_FLOOR`**, o limiar de parada do Turn Planner,
+> que era `< 0` cravado. 18 knobs, defaults e tipos identicos, smoke
+> passa, **zero mudanca de comportamento**. Catalogo: `python -m
+> optcg_engine.knobs`. A hipotese do bloco 691 virou uma linha:
+> `python sweep.py --knob KIND_SCALE_ATTACH_DON=0.5,0.8,1.0 --limit 60`.
+> Bug pego: o catalogo imprimia "0 knobs" em silencio (dupla importacao
+> por `-m`). **Regra de processo nova: nao editar o motor com medicao
+> rodando** — errei 2x nesta sessao; workers sobem com o codigo do
+> momento e o resultado mistura versoes.
+
 > 27/08/2026 (bloco 693): **governanca** — a regra do espelho tinha
 > divergido de novo, na regra que quebra em sessao remota: `CLAUDE.md`
 > exigia ler um `MEMORY.md` em caminho Windows **inexistente na nuvem**,

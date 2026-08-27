@@ -28,6 +28,86 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-27 (694) - Claude (sessao remota web) - o sistema agora e controlavel **onde importa**: ORDEM das jogadas e CONTAGEM viraram pontos de controle explicitos. O default de `attach_don` (escala 0,5 = peso DOBRADO) e coerente com o sintoma medido de abrir turno cedo demais
+
+### Por que este bloco existe
+
+O usuario repetiu: *"Temos que deixar esse sistema controlavel"*. Estava
+certo -- o bloco 692 converteu 10 constantes PERIFERICAS (busca, ataque,
+DON) e chamou isso de superficie de controle, mas **as duas coisas que o
+diagnostico do bloco 691 apontou nao eram knob nenhum**: a ORDEM das
+acoes e QUANTAS cartas jogar sao comportamento emergente de score
+espalhado. O sistema nao era controlavel onde importava.
+
+### Onde as duas decisoes realmente acontecem
+
+O docstring de `main_phase` ja dizia, em texto: *"A ordem (jogar
+antes/depois de atacar) **emerge das pontuacoes**... **Para quando nenhuma
+acao tem score acima do limiar**."* Ou seja, os dois pontos existiam --
+so nao estavam expostos:
+
+**ORDEM = `KIND_SCORE_SCALE`.** Divisor por TIPO de acao na normalizacao
+que monta o shortlist (`_norm = score / escala`): escala MENOR => tipo
+FAVORECIDO. Valores em producao:
+
+| tipo | escala | efeito na normalizacao |
+|---|---|---|
+| `attach_don` | **0,5** | **score DOBRADO** |
+| `play` / `activate` | 1,0 | neutro |
+| `attack` | 2,1 | penalizado |
+
+**`attach_don` ja e explicitamente favorecido 2x na selecao** -- e a
+medicao do bloco 691 diz que o motor abre o turno com `attach_don` em
+27,3% dos turnos contra 8,2% do humano (3,3x). **O knob e o sintoma
+batem.** Isso e a hipotese mais forte da fila, e virou um parametro em
+vez de uma reescrita.
+
+**CONTAGEM = o limiar de parada do laco**, que era `actions[0][0] < 0`
+cravado. E o unico ponto de parada do Turn Planner. O motor acerta a
+contagem de cartas em so 52,7% dos turnos, e a contagem e o teto
+aritmetico do `play` -- expor este numero era pre-requisito pra atacar
+aquele.
+
+### Knobs novos (18 no total agora)
+
+`[ordem]` KIND_SCALE_PLAY / ACTIVATE / ATTACH_DON / ATTACK
+`[contagem]` ACTION_SCORE_FLOOR, MAX_ACOES_POR_TURNO
+`[busca]` TOP_K_COM_RESPOSTA, TOP_K_SEM_RESPOSTA
+
+**Defaults e tipos identicos aos valores em producao**, `nao_default()`
+vazio, override validado ponta a ponta, `smoke_fast.py` passa. **Zero
+mudanca de comportamento.** Catalogo completo: `python -m
+optcg_engine.knobs`.
+
+A hipotese do bloco 691 agora e uma linha, sem editar codigo:
+
+    python sweep.py --knob KIND_SCALE_ATTACH_DON=0.5,0.8,1.0 --limit 60
+
+### Bug pego no proprio catalogo
+
+`python -m optcg_engine.knobs` imprimia **"0 knobs registrados"** em
+silencio: rodar como `-m` carrega o arquivo como `__main__` e o import de
+`decision_engine` carrega uma SEGUNDA copia sob o nome canonico -- o
+registro popula uma e a impressao lia a outra. Corrigido lendo sempre
+pelo nome canonico. Registrado porque e exatamente a classe de falha
+silenciosa que ja custou caro aqui (bloco 682).
+
+### REGRA DE PROCESSO NOVA -- errei duas vezes na MESMA sessao
+
+**Nao editar o motor enquanto uma medicao esta rodando.** Workers sobem ao
+longo da corrida e importam o codigo do momento em que sobem: o resultado
+mistura duas versoes. Aconteceu no bloco 692 (reiniciei) e de novo aqui
+(reiniciei de novo). Nao adianta argumentar "os defaults sao identicos,
+conferi" -- e exatamente o que se diz toda vez, e neste projeto ja houve
+o caso em que era falso e a medicao rodou com a politica DESLIGADA sem
+ninguem notar (bloco 682). Ou espera a medicao terminar, ou reinicia
+depois de editar. Nao existe terceira opcao aceitavel.
+
+### Estado
+
+`play` segue em 28,2% -- nada de comportamento mudou. A medicao de
+CONTAGEM foi reiniciada pela 2a vez, agora com o codigo estavel.
+
 ## 2026-08-27 (693) - Claude (sessao remota web) - duas correcoes de GOVERNANCA: a regra do espelho tinha divergido de novo (na regra que quebra em sessao remota), e o registro de "ja reprovado" virou indice (`REPROVADOS.md`). **Arquivar o HANDOFF foi proposto e DESCARTADO** -- o problema nao era tamanho
 
 ### Como comecou

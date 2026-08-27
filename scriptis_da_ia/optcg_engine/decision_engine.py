@@ -514,11 +514,54 @@ POLICY_USA_RANKER = POLICY_MODE in ('1', 'both', 'ranker')
 # em qualquer deck -- por isso o fix e generico, nao amarrado a este lider.
 PASS_ACTION = (0.0, 'pass', None, None, None)
 
+# ── CONTROLE DE ORDEM das jogadas (bloco 694) ──
+# Divisor por TIPO de acao na normalizacao que monta o shortlist da busca
+# (`_norm = score / escala`): escala MENOR => tipo FAVORECIDO. Este e o
+# unico ponto onde a ordem relativa entre jogar / ativar / anexar DON /
+# atacar e controlavel -- o resto emerge dos scores, como diz o docstring
+# de `main_phase`.
+#
+# Medicao que motivou expor isto (bloco 691, corpus, 400 turnos pareados):
+# o motor abre o turno com `attach_don` em **27,3% dos turnos contra 8,2%
+# do humano** (3,3x), e `attack -> activate` e a transicao MAIS comum dele
+# (4,3x o humano) -- ativar DEPOIS de atacar e exatamente quando a fonte ja
+# esta restada e nao pode mais ativar. `attach_don` com escala 0,5 esta
+# sendo DOBRADO na normalizacao: o valor default e coerente com o sintoma.
+#
+# Mexer aqui NAO cria caminho de decisao novo -- parametriza o unico que ja
+# existe (`REGRA_SEM_DUPLICACAO.md`). Testar com:
+#   python sweep.py --knob KIND_SCALE_ATTACH_DON=0.5,0.8,1.0 --limit 60
+_k.registra('KIND_SCALE_PLAY', 1.0, float,
+            'divisor de score de `play` no shortlist (menor = favorecido)',
+            'ordem', 0.1, 10.0)
+_k.registra('KIND_SCALE_ACTIVATE', 1.0, float,
+            'divisor de score de `activate` no shortlist (menor = favorecido)',
+            'ordem', 0.1, 10.0)
+_k.registra('KIND_SCALE_ATTACH_DON', 0.5, float,
+            'divisor de score de `attach_don` (0.5 = DOBRA o peso; suspeito '
+            'pelo bloco 691 de abrir turno cedo demais)',
+            'ordem', 0.1, 10.0)
+_k.registra('KIND_SCALE_ATTACK', 2.1, float,
+            'divisor de score de `attack` no shortlist (menor = favorecido)',
+            'ordem', 0.1, 10.0)
+_k.registra('ACTION_SCORE_FLOOR', 0.0, float,
+            'score minimo pra o Turn Planner executar mais uma acao no turno '
+            '-- CONTROLE DE CONTAGEM: subir para antes, descer age mais',
+            'contagem', -500.0, 500.0)
+_k.registra('MAX_ACOES_POR_TURNO', 30, int,
+            'teto duro de acoes por turno (guarda de loop, nao heuristica)',
+            'contagem', 1, 200)
+_k.registra('TOP_K_COM_RESPOSTA', 5, int,
+            'shortlist da busca com a busca de resposta do oponente ligada',
+            'busca', 1, 30)
+_k.registra('TOP_K_SEM_RESPOSTA', 8, int,
+            'shortlist da busca com a busca de resposta desligada',
+            'busca', 1, 30)
 KIND_SCORE_SCALE = {
-    'play': 1.0,
-    'activate': 1.0,
-    'attach_don': 0.5,
-    'attack': 2.1,
+    'play': _k.get('KIND_SCALE_PLAY'),
+    'activate': _k.get('KIND_SCALE_ACTIVATE'),
+    'attach_don': _k.get('KIND_SCALE_ATTACH_DON'),
+    'attack': _k.get('KIND_SCALE_ATTACK'),
 }
 
 # ── Observabilidade de [Activate: Main] (nao e logica de decisao) ──
@@ -18535,7 +18578,7 @@ class OPTCGMatch:
         if verbose:
             print('  -- Turno (Turn Planner: simula sequências) --')
 
-        MAX_ACOES = 30
+        MAX_ACOES = _k.get('MAX_ACOES_POR_TURNO')
         _plays_feitos = 0      # bloco 681: quantas cartas ja foram jogadas
         # neste turno -- alimenta o modelo de CONTAGEM da politica.
         # simula so as K acoes mais promissoras (custo controlado). Com a busca
@@ -18555,7 +18598,8 @@ class OPTCGMatch:
         # Turn Planner -- caminho AO VIVO usa SEARCH_TOP_K_DEFAULT=2
         # proprio em sim_bridge.py, INTOCADO por este teste) pode estar
         # cortando candidatas boas cedo demais. Teste: alarga pra 5.
-        TOP_K = 5 if USE_OPPONENT_RESPONSE_SEARCH else 8
+        TOP_K = (_k.get('TOP_K_COM_RESPOSTA') if USE_OPPONENT_RESPONSE_SEARCH
+                 else _k.get('TOP_K_SEM_RESPOSTA'))
         n = 0
 
         while n < MAX_ACOES:
@@ -18565,7 +18609,14 @@ class OPTCGMatch:
                 actions = self._policy_apply(
                     p, opp, engine, actions,
                     engine.analyzer.analysis_priority(), _plays_feitos)
-            if not actions or actions[0][0] < 0:
+            # CONTROLE DE CONTAGEM (bloco 694): este limiar decide
+            # QUANTAS acoes o motor faz no turno -- subir = para antes,
+            # descer = age mais. Era `< 0` cravado. O motor acerta a
+            # contagem de cartas jogadas em so 52,7% dos turnos, e a
+            # contagem e o teto aritmetico do `play` (match de conjunto
+            # exato nao passa dela). Este e o unico ponto de parada do
+            # laco -- expor era pre-requisito pra atacar aquele numero.
+            if not actions or actions[0][0] < _k.get('ACTION_SCORE_FLOOR'):
                 # Ultimo recurso ANTES de encerrar o turno: banca DON ocioso
                 # no proprio lider pra um ataque futuro (achado real 17/08,
                 # blocos 592-594). So chega aqui quando `_generate_and_
