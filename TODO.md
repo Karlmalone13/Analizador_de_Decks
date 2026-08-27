@@ -1,6 +1,23 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 25 de agosto de 2026
+**Última atualização:** 27 de agosto de 2026
+
+> 27/08/2026 (bloco 691): **`activate` diagnosticado pela 1a vez** (a
+> analise de bucket do `play` nunca tinha sido repetida pra ativacao).
+> Corpus, 338 turnos: das 158 ativacoes que o humano faz e o motor nao,
+> **41,8% NUNCA viram acao legal** (bucket A) — muito acima do `play`.
+> Instrumentacao nova `OPTCG_DEBUG_AM=1` (observabilidade pura no loop de
+> `[Activate: Main]`) mostra o motivo: **fonte restada 23,1% + custo
+> `rest_don` sem DON disponivel 23,1% = 46% do bucket A**. As duas sao
+> consequencia da **ORDEM das jogadas**: o motor ataca (resta a fonte) e
+> anexa DON (queima o DON do custo) antes de jogar/ativar. Sequenciamento
+> humano medido (1038 turnos): comeca com `play` 65,4%, e
+> `attach_don -> play` acontece **6 vezes no corpus inteiro** — o humano
+> anexa DON por ULTIMO. **Nenhuma mudanca de comportamento foi feita** —
+> reordenar e o candidato, mas exige A/B antes de aceitar (licao do bloco
+> 690: nao projetar ganho de correlacao). Pendente: confirmar a inversao
+> com a medicao do lado do motor (rodando), e diagnosticar os buckets B
+> (17,7%) e C (40,5%). Ver bloco 691.
 
 > 26/08/2026 (bloco 690): 1º passo da meta — **`attached_don` (zona 9 do
 > RZ1) faltava na reconstrução de DON**. Corrigido: acerto exato **53% →

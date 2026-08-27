@@ -493,6 +493,18 @@ KIND_SCORE_SCALE = {
     'attack': 2.1,
 }
 
+# ── Observabilidade de [Activate: Main] (nao e logica de decisao) ──
+# Gated por OPTCG_DEBUG_AM=1. Acumula (codigo, motivo) em memoria pra
+# ferramentas de diagnostico lerem depois. Ver bloco 691 do HANDOFF.
+AM_DEBUG = os.environ.get('OPTCG_DEBUG_AM', '') == '1'
+AM_DEBUG_LOG: list = []
+
+
+def _am_debug(src, motivo: str) -> None:
+    if AM_DEBUG:
+        AM_DEBUG_LOG.append((getattr(src, 'code', '?'), motivo))
+
+
 # ── camada barata / "calibragem dinamica" (bloco 508/509, escala bloco 514) ──
 # Desenho acordado com o usuario 11/08: em vez de resolver o efeito de
 # verdade (caro, precisa do motor de regras completo), `_cheap_rollout_value`
@@ -17231,6 +17243,11 @@ class OPTCGMatch:
                         actions.append((s_char, 'attack', att, 'character', tgt))
 
         # ── Ações de ATIVAR efeitos [Activate:Main] ──
+        # Observabilidade (sem logica de decisao): quando OPTCG_DEBUG_AM=1,
+        # registra QUAL guarda derrubou cada fonte com [Activate: Main].
+        # Nasceu do diagnostico de `activate` (bloco 691): 41,8% das
+        # ativacoes que o humano fez NUNCA viraram acao legal no motor, e
+        # nao havia como saber por que sem isso.
         sources = []
         if p.leader:
             sources.append(p.leader)
@@ -17258,26 +17275,31 @@ class OPTCGMatch:
                 exige_rest_self = any(c.get('type') == 'rest_self'
                                       for c in am.get('costs', []))
                 if exige_rest_self or src is not p.leader:
+                    _am_debug(src, 'fonte_restada')
                     continue
             # Ja usado NESTE turno: rastreado pelo engine na simulacao, ou
             # pelo jogo (lb_ActionsUsed -> actionUsed no DTO) no caminho do
             # bot. Vale para qualquer activate, com ou sem once_per_turn —
             # o estado do jogo e a verdade (loops do Laffitte/Devon 06/07).
             if getattr(src, '_am_used_turn', -1) == p.turn:
+                _am_debug(src, 'ja_usado_neste_turno')
                 continue
             # Instancia especifica cuja ativacao ja foi tentada e o jogo
             # real confirmou SEM efeito este turno (ver docstring acima) --
             # exclui ANTES do dedupe pra 2a copia poder virar candidata.
             if exclude_activate_uids and getattr(src, '_deck_uid', 0) in exclude_activate_uids:
+                _am_debug(src, 'excluido_sem_efeito_no_jogo_real')
                 continue
             # [DON!! xN] e requisito de estado, nao custo pago durante a
             # ativacao. Sem o DON ja anexado, o bot deve primeiro gerar a
             # acao attach_don e so oferecer activate na decisao seguinte.
             don_req = am.get('don_requirement', 0)
             if don_req and getattr(src, 'don_attached', 0) < don_req:
+                _am_debug(src, 'don_requirement_nao_atendido')
                 continue
-            pode, _ = self._should_activate_main(src, am, p, opp)
+            pode, _motivo_am = self._should_activate_main(src, am, p, opp)
             if not pode:
+                _am_debug(src, 'should_activate_main:' + str(_motivo_am))
                 continue
             score = self._score_activate_main(src, am, p, opp, priority, engine=engine)
             score += self._human_pattern_bonus(p, 'activate', src)

@@ -28,6 +28,107 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-27 (691) - Claude (sessao remota web) - `activate` diagnosticado pela 1a vez: **41,8% das ativacoes que o humano faz nunca viram acao legal no motor**, e quase metade disso e consequencia da ORDEM das jogadas, nao de logica de carta
+
+### Por que este bloco existe
+
+O usuario pediu pra comparar sequenciamento de jogadas e ativacao de
+efeitos (partida do Bonney, bot x humano) e depois autorizou investigar
+por que o motor nao ativa mais. A analise de bucket que existia pro
+`play` (blocos 676-681) **nunca tinha sido repetida pro `activate`** --
+2a categoria mais fraca. Rodado no CORPUS, nao num lider so (regra do
+projeto: diagnostico de um lider nao generaliza).
+
+### 1. Onde o motor perde as ativacoes (338 turnos com ativacao humana)
+
+158 ativacoes que o humano fez e o motor NAO fez:
+
+| bucket | n | % |
+|---|---|---|
+| **A -- nunca virou acao legal** | 66 | **41,8%** |
+| B -- gerada, fora do shortlist | 28 | 17,7% |
+| C -- no shortlist, perdeu a busca | 64 | 40,5% |
+
+O bucket A e MUITO maior aqui do que no `play`. E o unico que aponta bug
+de geracao -- os outros dois sao peso de score / competicao real.
+
+### 2. Qual guarda derruba o bucket A (instrumentacao nova)
+
+Adicionado `OPTCG_DEBUG_AM=1` em `decision_engine.py`: observabilidade
+pura no loop de `[Activate: Main]` (registra `(codigo, motivo)` a cada
+`continue`). **Nao e logica de decisao, nao duplica nada** -- antes disso
+nao havia como saber POR QUE uma ativacao nunca aparecia. 147 ocorrencias:
+
+| guarda | % |
+|---|---|
+| **fonte restada** | **23,1%** |
+| ja usado neste turno | 19,0% |
+| **custo `rest_don` sem DON disponivel** (1/2/3 DON somados) | **23,1%** |
+| `play_card`: nada elegivel na mao | 9,5% |
+| condicoes do efeito nao satisfeitas | 8,2% |
+| outros 10 motivos | ~17% |
+
+> **Limitacao honesta da ferramenta**: o script de diagnostico acumula os
+> motivos por PARTIDA, nao por turno -- a atribuicao POR CARTA e
+> aproximada (um motivo do turno 9 pode aparecer colado num caso do turno
+> 5). O agregado sobre as 147 ocorrencias e o numero confiavel. Quem for
+> usar a tabela por carta pra cacar bug, confirme o caso especifico antes.
+
+### 3. A causa comum -- ORDEM das jogadas, e ela e deck-agnostica
+
+`fonte restada` + `sem DON pra restar` = **46% do bucket A**. As duas sao
+consequencia direta de o motor ATACAR e ANEXAR DON antes de jogar/ativar:
+atacar resta a propria fonte (que entao nao pode mais ativar), e anexar
+DON cedo queima exatamente o DON que os custos `rest_don` das ativacoes
+precisam.
+
+Sequenciamento HUMANO medido no corpus (1038 turnos com >=2 acoes):
+
+| primeira acao do turno | % |
+|---|---|
+| `play` | **65,4%** |
+| `attack` | 17,7% |
+| `attach_don` | 8,5% |
+| `activate` | 8,4% |
+
+Transicoes: `attach_don -> attack` 530 · `play -> attack` 376 ·
+`attack -> play` 249 · `play -> activate` 177 … e **`attach_don -> play`
+so 6**, **`attach_don -> activate` so 15**.
+
+Ou seja: o humano desenvolve e ativa PRIMEIRO, anexa DON POR ULTIMO, e so
+entao ataca. Anexar DON e praticamente sempre o passo final antes do
+ataque -- quase nunca acontece antes de jogar/ativar.
+
+Na partida do Bonney (bot x humano) o motor faz o inverso:
+`attach_don > attack > play`, com `activate` 2x contra 6x do humano e
+`attach_don` 6x contra 12x.
+
+### ERRO METODOLOGICO MEU, corrigido no mesmo dia (registrar)
+
+A 1a medicao de sequenciamento humano usou `hist_action_kind()` -- que
+**por desenho so classifica `play`/`activate`** (retorna None pro resto,
+ver docstring dela). Ataque e anexo de DON sumiam do universo, e o
+"82,6% comeca com play" que eu tinha era sobre uma amostra filtrada que
+nao respondia a pergunta. Os numeros acima sao da versao que le o `type`
+cru do log. **Licao**: antes de usar um classificador ja existente numa
+pergunta NOVA, conferir o que ele foi feito pra classificar -- ele estava
+certo pro uso original (`play` vs `activate`), so nao pro meu.
+
+### Estado / o que falta
+
+- Instrumentacao commitada e desligada por padrao (`OPTCG_DEBUG_AM`).
+  `smoke_fast.py` OK.
+- **Rodando quando este bloco foi escrito**: sequenciamento do lado do
+  MOTOR no mesmo corpus, pareado turno a turno, pra CONFIRMAR a inversao
+  com numero em vez de inferir da partida do Bonney. Sem esse numero, a
+  secao 3 apoia-se em (a) as guardas medidas e (b) uma partida so.
+- **NAO foi feita nenhuma mudanca de comportamento.** A hipotese "reordenar
+  para play/activate antes de attach_don/attack" e o candidato natural,
+  mas segue a disciplina desta sessao: **medir com A/B antes de aceitar**,
+  e nao projetar ganho a partir da correlacao (licao do bloco 690).
+- Buckets B (17,7%) e C (40,5%) do `activate` continuam sem diagnostico
+  proprio.
+
 ## 2026-08-26 (690) - Claude (sessao remota web) - 1o passo da meta oficial: **DON anexado (zona 9 do RZ1) faltava na reconstrucao** -- acerto exato 53% -> 82%. Mas o ganho em `play` foi de so **+1,8pp**, e isso DERRUBA a projecao de 8pp que eu mesmo tinha escrito na secao de meta
 
 ### O bug
