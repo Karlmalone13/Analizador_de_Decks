@@ -28,6 +28,86 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-27 (693) - Claude (sessao remota web) - duas correcoes de GOVERNANCA: a regra do espelho tinha divergido de novo (na regra que quebra em sessao remota), e o registro de "ja reprovado" virou indice (`REPROVADOS.md`). **Arquivar o HANDOFF foi proposto e DESCARTADO** -- o problema nao era tamanho
+
+### Como comecou
+
+O usuario perguntou: *"Tem alguma coisa obrigatoria no nosso projeto que
+esta prejudicando?"* -- e depois, sobre a proposta: *"Isso vai ajudar ou
+piorar a gente?"*. As duas perguntas mudaram o resultado, incluindo uma
+recomendacao minha que foi RETIRADA.
+
+### 1. A regra do espelho divergiu de novo -- e justamente onde dava dano
+
+`CLAUDE.md` mandava, como leitura **obrigatoria antes de qualquer
+commit**, um `MEMORY.md` em caminho Windows que **nao existe em sessao
+remota**. O `AGENTS.md` ja tinha corrigido isso ha tempo (documentacao
+versionada como fonte, memoria local como auxiliar) -- a correcao nunca
+foi replicada.
+
+Ou seja: **a regra que existe pra impedir divergencia divergiu**, no item
+que deixava toda sessao remota com um gate incumprivel. Ela nao tem hook,
+ao contrario do HANDOFF/TODO -- nao e auto-aplicavel.
+
+**Fix aplicado nos DOIS arquivos: escopar, nao remover.** Obrigatoria se
+o caminho estiver acessivel (sessao local); em sessao remota a fonte e a
+documentacao versionada e a sessao deve **declarar** que a memoria local
+estava indisponivel (mesmo tratamento ja dado a telemetria gitignored).
+E a regra nova que faltava nos dois: **memoria local nunca e a unica
+fonte de uma regra obrigatoria** -- se uma regra so existe la, esta no
+lugar errado e tem que ser promovida pro repo.
+
+Motivo de escopar em vez de alinhar ao `AGENTS.md` como eu tinha
+proposto: alinhar REMOVERIA um gate que ainda vale pra sessao local. E
+eu **nunca li o `MEMORY.md`** (nao consigo, em sessao remota) -- nao da
+pra recomendar apagar ponteiro pra conteudo que nunca se viu.
+
+### 2. `REPROVADOS.md` -- indice do que ja foi medido e reprovado
+
+O registro existia, espalhado em prosa por **710 blocos** deste arquivo.
+Consequencia real: **alargar o shortlist da busca foi medido TRES vezes**
+em sessoes diferentes (593, 594, 677) por falta de indice.
+
+Cobre imitacao do humano, busca/shortlist, ataque, fidelidade de estado,
+**os erros de MEDICAO ja cometidos** (casos em que a conclusao estava
+errada porque a regua estava torta -- valem tanto quanto mecanismo
+reprovado) e enquadramentos reprovados. Ponteiro obrigatorio adicionado
+em `CLAUDE.md` e `AGENTS.md`.
+
+Regra de manutencao: toda tentativa revertida por medicao entra la, uma
+linha, com numero e ponteiro pro bloco. **Sem numero nao e reprovacao, e
+opiniao.**
+
+### 3. Arquivar o HANDOFF -- PROPOSTO POR MIM E DESCARTADO
+
+Eu propus mover blocos antigos pra um arquivo separado, argumentando que
+2,2 MB / 38,5k linhas nao cabe em contexto nenhum. **Retirei a proposta
+ao ser questionado, e o registro fica pra ninguem re-propor:**
+
+- O acesso real ao arquivo e `grep` + ler o topo. **Os dois funcionam bem
+  em 2,2 MB.** Ninguem le linearmente, entao "nao cabe no contexto" nao e
+  um custo que estejamos pagando.
+- O que seria arquivado e a parte MAIS valiosa: o registro de "ja tentado
+  e reprovado" esta concentrado em blocos ANTIGOS (641-649, 663, 680-683,
+  593/594/677). Um corte por numero de bloco jogaria fora exatamente a
+  memoria que impede desperdicio.
+- **O problema nao era tamanho, era falta de indice** -- resolvido pelo
+  item 2, que ataca a causa sem destruir nada.
+
+### O que NAO foi mexido (avaliado e mantido)
+
+- **Hook `pre-push` exigindo HANDOFF + TODO**: gera prosa quase duplicada
+  a cada push (custo real, pequeno), mas a regra tem motivo -- o `TODO.md`
+  ja ficou 3 dias parado enquanto o HANDOFF avancava. Mantido.
+- **Recorte por lider obrigatorio, gate de auditoria global do parser,
+  `REGRA_SEM_DUPLICACAO`**: nenhum sinal de dano, protegem de verdade.
+
+### Nota de honestidade
+
+Nada deste bloco move `play` (28,2%) na direcao da meta. E reducao de
+atrito, nao progresso -- e foi dito ao usuario nesses termos antes de ser
+feito. A medicao de CONTAGEM (bloco 691, item 1 da fila) segue rodando.
+
 ## 2026-08-27 (692) - Claude (sessao remota web) - **superficie de CONTROLE**: knobs nomeados + fingerprint da configuracao na regua + varredor. Pedido do usuario: *"Precisamos criar um sistema controlavel e observavel nao so observavel"*
 
 ### O diagnostico que motivou

@@ -27,6 +27,24 @@
 > 20-50 partidas. Em partida real, conferir
 > `[AUTO-COLLECT] LOG SALVO NO BANCO` e o recibo em `metrics/live_runs/`.
 
+### Índice de abordagens JÁ REPROVADAS — leitura obrigatória antes de propor mecanismo novo
+
+> [`REPROVADOS.md`](REPROVADOS.md) (criado 27/08/2026). O registro de "já
+> tentei e não funcionou" existia, mas espalhado em prosa por 710 blocos
+> do `HANDOFF.md` — e a mesma ideia (alargar o shortlist da busca) chegou
+> a ser medida **três vezes** em sessões diferentes por falta de índice.
+>
+> **Antes de propor ou implementar qualquer mecanismo, confira se ele já
+> está lá.** Não é proibição eterna: é a exigência de citar o número que
+> já saiu e dizer o que mudou desde então. Cobre imitação do humano
+> (incl. o achado de *distribution shift* que descarta "faltava estado no
+> sinal"), busca/shortlist, ataque, fidelidade de estado, **erros de
+> medição já cometidos** (a régua estava torta, não o motor) e
+> enquadramentos reprovados.
+>
+> **Toda tentativa revertida por medição entra lá**, uma linha, com o
+> número e o ponteiro pro bloco. Sem número não é reprovação, é opinião.
+
 ### Gate obrigatório: auditoria global do parser
 
 Ao encontrar erro em uma carta, busque a mesma gramática em todo o banco
@@ -54,6 +72,17 @@ ativada via `/memories` ou `[features] memories = true` em `config.toml`,
 fica em `C:\Users\arthu\.codex\memories\` nesta máquina; é estado gerado
 automaticamente, não é fonte de regras obrigatórias nem portável entre
 máquinas — nunca depender dela para uma decisão de arquitetura.
+
+> **ESCOPO (espelhado do `CLAUDE.md`, 27/08/2026)**: o mesmo vale pro
+> caminho de memória do Claude Code
+> (`C:\Users\arthu\.claude\projects\...\memory\MEMORY.md`) — leitura
+> obrigatória **se acessível**, mas em sessão **remota/nuvem esse caminho
+> não existe** e a regra fica incumprível. Nesse caso a fonte de regra é
+> a documentação versionada, e a sessão deve **declarar** que a memória
+> local estava indisponível. Memória local **nunca** é a única fonte de
+> uma regra obrigatória: se uma regra só existe lá, tem que ser promovida
+> pra cá. (Esta divergência específica ficou meses sem ser notada — o
+> `AGENTS.md` tinha a versão certa e o `CLAUDE.md` não.)
 
 Regras-chave (resumo — leia o resto deste arquivo):
 

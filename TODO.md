@@ -2,6 +2,22 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 27/08/2026 (bloco 693): **governanca** — a regra do espelho tinha
+> divergido de novo, na regra que quebra em sessao remota: `CLAUDE.md`
+> exigia ler um `MEMORY.md` em caminho Windows **inexistente na nuvem**,
+> enquanto o `AGENTS.md` ja tinha corrigido. Fix nos dois: **escopar, nao
+> remover** — obrigatoria se acessivel, senao a documentacao versionada e
+> a fonte e a sessao **declara** a indisponibilidade; e memoria local
+> **nunca** e a unica fonte de regra obrigatoria. Criado
+> **[`REPROVADOS.md`](REPROVADOS.md)** — indice do que ja foi medido e
+> reprovado (alargar shortlist chegou a ser medido **3x** por falta
+> disso), com ponteiro obrigatorio nos dois arquivos-espelho; inclui os
+> **erros de medicao** ja cometidos. **Arquivar o HANDOFF foi proposto
+> por mim e DESCARTADO**: o acesso e grep+topo (funciona bem em 2,2 MB) e
+> o corte jogaria fora justamente os blocos antigos que registram o que
+> nao repetir — o problema era falta de indice, nao tamanho. Nada disso
+> move `play`; e reducao de atrito.
+
 > 27/08/2026 (bloco 692): **superficie de CONTROLE construida** — pedido
 > do usuario: *"Precisamos criar um sistema controlavel e observavel nao
 > so observavel"*. `optcg_engine/knobs.py` = registro central de
