@@ -89,3 +89,8 @@ next-env.d.ts
 # (ultimo_resultado.json) evita que alguem compare contra uma amostra
 # achando que e o corpus inteiro.
 scriptis_da_ia/metrics/decision_quality_full/parcial_limit*.json
+# bloco 696: dumps por CONFIGURACAO da varredura (~1,4 MB cada, um por
+# valor testado). O resumo comparativo -- que e a evidencia por tras das
+# entradas do REPROVADOS.md -- fica versionado em
+# metrics/sweeps/ultimo_sweep.json.
+scriptis_da_ia/metrics/decision_quality_full/sweep_*.json
