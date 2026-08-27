@@ -24,6 +24,14 @@
 > fonte ja esta restada. `play -> attack` e `play -> activate` batem (1,1x),
 > entao o problema NAO e sequenciamento em geral: e `attach_don` cedo
 > demais e `activate` tarde demais. Ver bloco 691.
+>
+> **Enquadramento corrigido pelo usuario (27/08)**: os 52,7% de CONTAGEM
+> NAO sao teto -- e o motor jogando o numero errado de cartas, trabalho
+> de motor puro. E as limitacoes da regua sao atalhos nossos: a ordem
+> real das compras JA ESTA no banco (`card_drawn` com codigo, 580 turnos
+> / 30,9%), da pra empilhar o deck em vez de embaralhar. Ordem de
+> ataque: (1) contagem, (2) sequenciamento/DON, (3) ordem real do deck,
+> (4) mascarar mao do oponente + mulligan.
 
 > 26/08/2026 (bloco 690): 1º passo da meta — **`attached_don` (zona 9 do
 > RZ1) faltava na reconstrução de DON**. Corrigido: acerto exato **53% →

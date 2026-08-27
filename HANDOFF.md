@@ -157,6 +157,51 @@ certo pro uso original (`play` vs `activate`), so nao pro meu.
   `play -> activate`, ambas 1,1x) mostram que o problema nao e o
   sequenciamento em geral: e especificamente `attach_don` cedo demais e
   `activate` tarde demais.
+
+### 4. CORRECAO DE ENQUADRAMENTO pedida pelo usuario -- "teto" nao e teto
+
+Eu tinha apresentado ao usuario tres coisas juntas sob a palavra "teto",
+e ele corrigiu: *"O teto a gente pode escolher e criar mecanismos para
+que seja alcancavel e nao simplesmente impor um limite igual vc esta
+tentando fazer"*. **Ele esta certo, e o registro fica pra nenhuma sessao
+futura repetir o erro:**
+
+- **Os 52,7% de CONTAGEM nao sao teto de nada.** E o motor jogando o
+  numero errado de cartas em 47,3% dos turnos. Trabalho de motor, puro,
+  sem nenhuma relacao com a regua. Apresentar isso como parede escondeu
+  que e o item de trabalho mais obvio da lista.
+- **As limitacoes da regua sao atalhos escritos por nos**, nao fatos da
+  natureza. `audit_real_losses.py` embaralha o deck restante porque foi
+  escrito assim -- **a ordem real das compras JA ESTA no banco**:
+  `parse_combat_log.py` grava `card_drawn` com o CODIGO, turno a turno.
+  Medido: **580 turnos em 279 jogos (30,9%) tem a compra registrada, em
+  ordem**. Da pra olhar pra frente (o que o jogador comprou em T+2, T+4,
+  T+6) e empilhar o deck nessa ordem exata, em vez de embaralhar.
+  Mascarar a mao do oponente e mudanca de codigo; mulligan e extracao do
+  log. Os tres sao ITENS DE CONSTRUCAO, nao limites.
+
+**Aviso que continua valendo (nao como desculpa, como disciplina):** o
+fix de fidelidade de DON do bloco 690 rendeu **+1,8pp**, nao os ~8pp que
+a correlacao sugeria. Isso NAO diz que os itens de fidelidade nao valem
+-- diz que o ganho de cada um sai de A/B medido, nunca de projecao.
+
+### 5. Regua ganhou a contagem bruta dos dois lados
+
+`decision_quality_full.py` guardava so `play_inter`/`play_union`, que
+**nao distinguem "motor jogou a MENOS" de "jogou a MAIS"**. Adicionados
+`play_n_hum`/`play_n_motor` e `activate_n_hum`/`activate_n_motor`.
+Descobrir a direcao do erro de contagem exigia rodar a regua inteira de
+novo (~1h30); agora sai de graca em qualquer medicao.
+
+### Ordem de ataque acordada, ja sem o enquadramento errado
+
+1. **Contagem** -- maior alavanca isolada, nunca atacada. Rodando
+   `decision_quality_full.py --all` com os campos novos pra saber a
+   DIRECAO do erro antes de mexer.
+2. **Sequenciamento/DON** -- causa medida (secoes 2-3), fix generico:
+   adiar `attach_don`, ativar antes de atacar. **Nao testado ainda.**
+3. **Ordem real do deck na regua** -- dado ja existe (30,9% dos turnos).
+4. **Mascarar mao do oponente / capturar mulligan.**
 - **NAO foi feita nenhuma mudanca de comportamento.** A hipotese "reordenar
   para play/activate antes de attach_don/attack" e o candidato natural,
   mas segue a disciplina desta sessao: **medir com A/B antes de aceitar**,
