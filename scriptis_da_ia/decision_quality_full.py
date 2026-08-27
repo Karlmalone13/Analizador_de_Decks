@@ -375,6 +375,16 @@ def _offense_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
             # reconstruido por fora, cruzando com os logs
             'leader': bot_leader_code,
             'play_inter': play_i, 'play_union': play_u,
+            # bloco 691: a CONTAGEM bruta de cada lado. Sem isto,
+            # `inter`/`union` nao distinguem "motor jogou a MENOS" de
+            # "jogou a MAIS" -- e a contagem e o teto aritmetico do
+            # `play` (acerta quantas cartas jogar em so 52,7% dos
+            # turnos, entao o match exato nao passa disso). Era preciso
+            # rodar a regua inteira de novo so pra descobrir a direcao
+            # do erro; agora sai de graca em qualquer medicao.
+            'play_n_hum': len(hist_play), 'play_n_motor': len(motor_play),
+            'activate_n_hum': len(hist_activate),
+            'activate_n_motor': len(motor_activate),
             'activate_inter': act_i, 'activate_union': act_u,
             'attack_quem_inter': atk_i, 'attack_quem_union': atk_u,
             'don_alvo_inter': don_i, 'don_alvo_union': don_u,
