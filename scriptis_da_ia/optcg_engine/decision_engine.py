@@ -26,6 +26,7 @@ import os
 import random
 import pandas as pd
 from copy import deepcopy as _deepcopy
+from optcg_engine import knobs as _k
 
 # ── evaluate_state v2 (item 1 do PLANO_AVALIACAO_E_BUSCA.md) ──────────────────
 # Régua ÚNICA de avaliação de estado: genéricos + eixos derivados do perfil do
@@ -44,7 +45,10 @@ USE_EVAL_V2 = True    # LIGADA 13/07: validação rigorosa (MC=6, n=50, Imu-v2 v
 # Amostras Monte Carlo do Turn Planner por decisão. 6 no jogo real; a tunagem
 # (tune_weights.py) baixa pra 4 pra acelerar a BUSCA (a validação final volta
 # a 6). Knob global — não muda a régua, só o custo da simulação.
-PLANNER_MC_SAMPLES = 6
+_k.registra('PLANNER_MC_SAMPLES', int(6), int, 
+             'amostras Monte Carlo por candidato no Turn Planner',
+             'busca', 1, 64)
+PLANNER_MC_SAMPLES = _k.get('PLANNER_MC_SAMPLES')
 
 # Amostragem ADAPTATIVA do main_phase (offline: self-play/replay/calibração),
 # quando USE_OPPONENT_RESPONSE_SEARCH=True. Antes disto (blocos 380/477): N
@@ -124,7 +128,10 @@ COUNTER_STAT_VALUE_PER_1000 = 15
 # 400. Confirma que 400 ja e um otimo local pro que essa constante
 # FLAT consegue fazer sozinha -- o residuo de "motor prefere o lider"
 # nao se resolve so ajustando este numero.
-ATTACK_LEADER_BASE_SCORE = 400
+_k.registra('ATTACK_LEADER_BASE_SCORE', int(400), int, 
+             'score base de atacar o lider adversario',
+             'ataque', 0, 2000)
+ATTACK_LEADER_BASE_SCORE = _k.get('ATTACK_LEADER_BASE_SCORE')
 
 # DIAGNOSTICO TEMPORARIO 20/08 (bloco 633) -- zera a contribuicao de
 # `_evaluate_state_v2` na comparacao final entre TOP_K, deixando SO o
@@ -157,7 +164,10 @@ NULLIFY_EVALUATE_STATE_V2 = False
 # 0.5 nao e ajuste fino: e o que faz as faixas se SOBREPOREM em vez de se
 # excluirem, que era o defeito. Continua sendo calibragem -- se o bot passar
 # a descer carta DEMAIS e parar de pressionar, e o primeiro numero a revisar.
-ATTACH_DON_COMBATE_FRACAO = 0.5
+_k.registra('ATTACH_DON_COMBATE_FRACAO', float(0.5), float, 
+             'fracao do DON reservada pra combate ao anexar',
+             'don', 0.0, 1.0)
+ATTACH_DON_COMBATE_FRACAO = _k.get('ATTACH_DON_COMBATE_FRACAO')
 
 # Custo MAXIMO de restar um [Blocker] pra atacar -- ele deixa de estar
 # disponivel pra interceptar no turno do oponente. Multiplicado pela ameaca
@@ -236,7 +246,10 @@ COUNTER_VALOR_VIDA_SCALE = 1.3
 # vitoria, entao NAO foram escolhidos apesar do pico de win rate ruidoso
 # em 0.3 (60%, cercado por vizinhos piores -- sinal de ruido, nao
 # tendencia real).
-ATTACK_MARGIN_DON_FRACTION = 0.7
+_k.registra('ATTACK_MARGIN_DON_FRACTION', float(0.7), float, 
+             'fracao da margem de DON exigida pra comprometer um ataque',
+             'ataque', 0.0, 2.0)
+ATTACK_MARGIN_DON_FRACTION = _k.get('ATTACK_MARGIN_DON_FRACTION')
 
 # Score-base de _score_activate_main pra acao `give_don` (DON RESTADO
 # -- so ajuda a partir do PROXIMO turno, distinto de add_don/
@@ -263,7 +276,10 @@ ATTACK_MARGIN_DON_FRACTION = 0.7
 # de Jinbe-B entre os valores proximos do alvo (60% vs 30% no
 # baseline=60) -- ganha nos dois eixos, sem precisar escolher entre
 # eles. Valor final aplicado.
-GIVE_DON_RESTED_BASE_SCORE = -10
+_k.registra('GIVE_DON_RESTED_BASE_SCORE', int(-10), int, 
+             'score base de dar DON restado ao oponente',
+             'don', -500, 500)
+GIVE_DON_RESTED_BASE_SCORE = _k.get('GIVE_DON_RESTED_BASE_SCORE')
 
 # Bonus somado a _score_play_action quando a carta "habilita ataque"
 # (K.O./remocao/buff/rush/draw/busca/rest_opponent/when_attacking/
@@ -324,7 +340,10 @@ GIVE_DON_RESTED_BASE_SCORE = -10
 # bloco 459 -- aqui 60 efetivamente vence o agregado e a maioria dos
 # matchups individuais). Fecha a pendencia de amostra maior registrada
 # no paragrafo acima.
-HABILITA_ATAQUE_BONUS = 60
+_k.registra('HABILITA_ATAQUE_BONUS', int(60), int, 
+             'bonus por uma jogada habilitar um ataque no mesmo turno',
+             'ataque', 0, 500)
+HABILITA_ATAQUE_BONUS = _k.get('HABILITA_ATAQUE_BONUS')
 
 # ── PREVENT_COMBO (achado 07/07, HANDOFF blocos 99-100/287, TODO "consciência
 # de combos estratégicos do oponente") — extraídos de literais embutidos pra
@@ -353,8 +372,14 @@ PREVENT_COMBO_LEADER_ATTACK_BONUS = 150
 # (que so existia no offline). So o TOP_K (quantas candidatas simular) e o
 # piso/teto de amostras continuam variando por chamador -- isso e orcamento
 # de tempo (recurso), nao politica de decisao.
-SEARCH_MIN_CANDIDATES = 3
-SEARCH_SCORE_WINDOW = 180
+_k.registra('SEARCH_MIN_CANDIDATES', int(3), int, 
+             'quantos candidatos no minimo entram na busca Monte Carlo',
+             'busca', 1, 20)
+SEARCH_MIN_CANDIDATES = _k.get('SEARCH_MIN_CANDIDATES')
+_k.registra('SEARCH_SCORE_WINDOW', int(180), int, 
+             'janela de score abaixo do melhor que ainda entra na busca',
+             'busca', 0, 2000)
+SEARCH_SCORE_WINDOW = _k.get('SEARCH_SCORE_WINDOW')
 # Quantos 'play' tem vaga GARANTIDA no shortlist da busca
 # (`include_best_kind('play', ...)` em `_select_search_candidates`).
 #
@@ -380,7 +405,10 @@ SEARCH_SCORE_WINDOW = 180
 # Nao reabrir sem atacar o outro lado do problema (o gap de score/valor
 # de 'play' vs 'attack', ou o orcamento de amostras) -- mexer so no
 # numero de vagas ja foi testado e nao paga.
-SEARCH_MIN_PLAY_CANDIDATES = 1
+_k.registra('SEARCH_MIN_PLAY_CANDIDATES', int(1), int, 
+             'minimo de acoes `play` garantidas na busca (alargar ja regrediu 3x -- blocos 593/594/677)',
+             'busca', 0, 20)
+SEARCH_MIN_PLAY_CANDIDATES = _k.get('SEARCH_MIN_PLAY_CANDIDATES')
 
 # Fator de escala por KIND pra normalizar a comparacao cruzada usada por
 # `_select_search_candidates` (bloco 642, pedido do usuario: "individualizar
@@ -602,7 +630,10 @@ USE_CHEAP_LAYER_GATE = False
 # imediato de `_generate_and_score_actions` (a camada barata usa os
 # MESMOS termos de EVAL_WEIGHTS, ver `_cheap_rollout_value`). Prior
 # nao calibrado ainda -- ver HANDOFF bloco 522 pro processo de escolha.
-CHEAP_LAYER_GATE_THRESHOLD = 50.0
+_k.registra('CHEAP_LAYER_GATE_THRESHOLD', float(50.0), float, 
+             'limiar do gate da camada barata',
+             'busca', 0, 500)
+CHEAP_LAYER_GATE_THRESHOLD = _k.get('CHEAP_LAYER_GATE_THRESHOLD')
 
 # Calibragem dinamica pro `don_field` (bloco 530, pedido do usuario --
 # "vamos fazer para o motor inteiro"): escala o valor de DON parado no

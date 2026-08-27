@@ -759,7 +759,17 @@ def main():
     nome = (f'parcial_limit{args.limit}.json' if args.limit
             else 'ultimo_resultado.json')
     out_path = os.path.join(OUT_DIR, nome)
-    json.dump({'offense': off_rows, 'defense': def_rows}, open(out_path, 'w', encoding='utf-8'),
+    # bloco 692: a configuracao que PRODUZIU esta medicao vai junto do
+    # resultado. Sem isso, comparar duas medicoes dependia da memoria de
+    # quem editou o codigo entre elas -- e ja custou uma retificacao
+    # (bloco 682, medicao rodada com a politica desligada sem ninguem
+    # notar). `knobs_nao_default` vazio = tudo no default.
+    from optcg_engine import knobs as _k
+    _cfg = _k.fingerprint()
+    print(f"\n  config desta medicao: hash={_cfg['knobs_hash']} "
+          f"nao-default={_cfg['knobs_nao_default'] or '(nenhum)'}")
+    json.dump({'offense': off_rows, 'defense': def_rows, 'config': _cfg},
+              open(out_path, 'w', encoding='utf-8'),
               indent=2, ensure_ascii=False)
     print(f'\nResultado completo salvo em {out_path}')
 

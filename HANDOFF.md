@@ -28,6 +28,74 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-27 (692) - Claude (sessao remota web) - **superficie de CONTROLE**: knobs nomeados + fingerprint da configuracao na regua + varredor. Pedido do usuario: *"Precisamos criar um sistema controlavel e observavel nao so observavel"*
+
+### O diagnostico que motivou
+
+O usuario apontou que tudo que eu vinha entregando era observabilidade
+(bloco 691: `OPTCG_DEBUG_AM`, campos de contagem na regua) e que faltava
+o outro lado. Ele esta certo. O estado ate aqui:
+
+- ~40 constantes de tuning espalhadas como valores fixos de modulo em
+  `decision_engine.py`, so ajustaveis editando codigo.
+- 4 flags de ambiente feitas a mao, cada uma com seu proprio jeito.
+- **A regua nao registrava qual configuracao produziu qual medicao** --
+  comparar "antes/depois" dependia da memoria de quem editou. Isso ja
+  custou uma retificacao real (bloco 682: medicao rodada com a politica
+  DESLIGADA sem ninguem notar, por um except generico).
+- Testar um valor = editar codigo, esperar ~1h30, anotar a mao, lembrar
+  de reverter. Sem varredura, sem atribuicao, sem reproducao.
+
+### O que foi construido
+
+**1. `optcg_engine/knobs.py`** -- registro central. Cada parametro
+declara nome, default, tipo, faixa valida, descricao e categoria.
+Override em runtime sem editar codigo: `OPTCG_K_<NOME>=valor` ou arquivo
+JSON via `OPTCG_KNOBS=caminho`. Precedencia env > arquivo > default.
+Arquivo ilegivel levanta erro ALTO de proposito -- medicao rodada com a
+configuracao silenciosamente ignorada produz numero que parece valido e
+nao e (licao do bloco 682).
+
+**NAO cria caminho de decisao novo.** Um knob parametriza o caminho unico
+que ja existe; nunca vira um segundo jeito de responder a mesma decisao
+(`REGRA_SEM_DUPLICACAO.md`). Se um knob so faz sentido ligando um ramo
+alternativo, ele esta errado.
+
+**2. Primeiro lote: 10 constantes viraram knob** (busca, DON, ataque).
+**Defaults identicos e tipos identicos aos originais** -- conferido valor
+a valor, `nao_default()` vazio, `smoke_fast.py` passa. **Zero mudanca de
+comportamento**, so passaram a ser controlaveis e rastreaveis.
+
+**3. `decision_quality_full.py` grava o fingerprint** (`config` no JSON de
+resultado + linha impressa no fim): hash curto + os knobs nao-default.
+Toda medicao a partir daqui e atribuivel.
+
+**4. `sweep.py`** -- varre N configuracoes e compara. Cada uma roda num
+SUBPROCESSO, porque knobs sao lidos no import do motor: rodar em processo
+reaproveitaria o valor cacheado e mediria a mesma coisa duas vezes (falha
+silenciosa do mesmo tipo do bloco 682). O baseline entra sempre.
+
+**O recorte POR LIDER e obrigatorio no relatorio**, nao opcional: imprime
+quantos lideres melhoraram/pioraram e lista os piores. Um knob que sobe o
+agregado mexendo em 2 lideres NAO generalizou -- o objetivo e jogar bem
+com QUALQUER deck.
+
+### Overfitting: risco assumido, nao ignorado
+
+Varrer knobs contra o corpus aproxima de otimizar nos MESMOS logs que
+validam a metrica. E o mesmo risco ja registrado pro `human_patterns`
+(topo deste arquivo, recomendacao de 22/08) e o usuario ja o aceitou como
+conhecido. O recorte por lider e a defesa: generalizacao vira criterio de
+aceite, nao so a media.
+
+### Estado
+
+Nada de comportamento mudou; `play` segue em 28,2%. A medicao de CONTAGEM
+(bloco 691, item 1 da fila) foi **reiniciada** ao fim deste bloco: a
+primeira corrida foi editada no meio (workers subiriam com codigo novo) e
+uma corrida com duas versoes de codigo nao vale como medicao -- mesmo erro
+que ja aconteceu no bloco 682, desta vez pego antes.
+
 ## 2026-08-27 (691) - Claude (sessao remota web) - `activate` diagnosticado pela 1a vez: **41,8% das ativacoes que o humano faz nunca viram acao legal no motor**, e quase metade disso e consequencia da ORDEM das jogadas, nao de logica de carta
 
 ### Por que este bloco existe
