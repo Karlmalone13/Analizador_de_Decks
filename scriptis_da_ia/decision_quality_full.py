@@ -758,6 +758,16 @@ def main():
     # em arquivo proprio, com o N no nome.
     nome = (f'parcial_limit{args.limit}.json' if args.limit
             else 'ultimo_resultado.json')
+    # bloco 696: MESMA armadilha do bloco 683 por outro caminho -- eu
+    # reintroduzi. O varredor (`sweep.py`) roda N configuracoes e cada uma
+    # sobrescrevia `ultimo_resultado.json`: ao fim da varredura o arquivo
+    # canonico continha a ULTIMA variante, nao o baseline. Aconteceu de
+    # verdade (o canonico ficou com KIND_SCALE_ATTACH_DON=1.0) e uma sessao
+    # futura compararia contra ele achando que era o default. Agora quem
+    # roda uma configuracao NAO-default grava em arquivo proprio.
+    _cfg_nome = os.environ.get('OPTCG_RESULT_NAME', '').strip()
+    if _cfg_nome:
+        nome = _cfg_nome if _cfg_nome.endswith('.json') else _cfg_nome + '.json'
     out_path = os.path.join(OUT_DIR, nome)
     # bloco 692: a configuracao que PRODUZIU esta medicao vai junto do
     # resultado. Sem isso, comparar duas medicoes dependia da memoria de

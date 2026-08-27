@@ -60,6 +60,34 @@ foi medida — e aí não é reprovação, é opinião.
 > `play` sobe de 28,9% pra **55,1%**. A contagem e mesmo o gargalo
 > aritmetico — so nao se resolve por limiar.
 
+## Ordem das jogadas (sequenciamento)
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| `KIND_SCALE_ATTACH_DON` 0,5 -> 0,8 e -> 1,0 (reduzir a prioridade de anexar DON) | **PLANO**: `play` 28,9% -> 28,9% (+0,1pp); `activate` 28,0% -> 27,9%; `don` 18,7% -> 18,3%; 18 de 20 lideres sem mexer. **0,8 e 1,0 deram resultado IDENTICO** | 696 |
+
+> **Por que falhou, e o que isso ensina** (bloco 696): o gap de
+> sequenciamento e REAL e grande (o motor abre o turno com `attach_don`
+> em 27,3% dos turnos contra 8,2% do humano, bloco 691). Mas
+> `KIND_SCORE_SCALE` e um multiplicador **GLOBAL por tipo de acao**, e o
+> padrao humano e **POSICIONAL** -- ele anexa DON *por ultimo no turno*,
+> nao "com peso menor sempre". **Um peso global nao consegue expressar
+> 'faca isto mais tarde'.**
+>
+> Consequencia pra quem retomar: nao adianta varrer mais valores deste
+> knob (0,8 e 1,0 ja deram resultado identico -- ele so mexe em decisoes
+> na margem de entrar no shortlist). Atacar sequenciamento exige um
+> mecanismo POSICIONAL/de fase (ex: o score de `attach_don` depender de
+> ainda haver ataques por fazer no turno), que e mudanca de
+> comportamento, nao parametro.
+>
+> **Nota de metodo:** a previsao ("ganho pequeno e positivo") foi
+> registrada ANTES de rodar e estava ERRADA. O fingerprint da config
+> provou que os 3 subprocessos rodaram com valores distintos
+> (`bf21a9e8fbc5` / `c9d4a5eb2a05` / `4a54f4ccfd1b`), entao o resultado
+> plano e real e nao falha de encanamento -- foi o 1o uso do mecanismo do
+> bloco 692 e ele pagou na estreia.
+
 ## Busca / shortlist
 
 | tentativa | resultado medido | bloco |

@@ -28,6 +28,68 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-27 (696) - Claude (sessao remota web) - 1o experimento no varredor: hipotese do `attach_don` **REPROVADA** (plano, +0,1pp). O gap de sequenciamento e real, mas a alavanca e GLOBAL e o padrao humano e POSICIONAL
+
+### O resultado
+
+`python sweep.py --knob KIND_SCALE_ATTACH_DON=0.8,1.0`, corpus completo:
+
+| config | play | delta | activate | don | seq |
+|---|---|---|---|---|---|
+| BASELINE | 28,9% | -- | 28,0% | 18,7% | 7,2% |
+| ATTACH_DON=0,8 | 28,9% | +0,1pp | 27,9% | 18,3% | 7,0% |
+| ATTACH_DON=1,0 | 28,9% | +0,1pp | 27,9% | 18,3% | 7,0% |
+
+18 de 20 lideres sem mexer. **0,8 e 1,0 deram resultado IDENTICO.**
+
+### Minha previsao estava ERRADA -- e estava registrada antes
+
+O bloco 695 registrou, antes de rodar: *"ganho pequeno e positivo subindo
+a escala, com risco de perder em `attack`"*. Deu **plano**. Registrar a
+previsao antes foi o que impediu racionalizar o resultado depois.
+
+### O fingerprint pagou na estreia
+
+Dois valores diferentes dando numero identico e sinal classico de knob
+que nao chegou no subprocesso. **Nao foi o caso**: os 3 rodaram com
+hashes distintos (`bf21a9e8fbc5` / `c9d4a5eb2a05` / `4a54f4ccfd1b`),
+gravados dentro do proprio resultado. O mecanismo do bloco 692 existia ha
+horas e ja evitou uma investigacao inteira na direcao errada.
+
+### Por que falhou -- e a licao que fica
+
+O gap E real: o motor abre turno com `attach_don` em 27,3% dos turnos
+contra 8,2% do humano (bloco 691). Mas `KIND_SCORE_SCALE` e um
+multiplicador **GLOBAL por tipo de acao**, e o padrao humano e
+**POSICIONAL** -- ele anexa DON *por ultimo no turno*. **Peso global nao
+expressa "faca isto mais tarde".**
+
+Isso confirma por medicao a limitacao que eu ja tinha declarado ao
+usuario ao resumir o estado: o ponto de controle de ordem que expus no
+bloco 694 e grosseiro demais pro padrao que o bloco 691 mediu.
+
+Atacar sequenciamento de verdade exige mecanismo **posicional/de fase**
+(ex: o score de `attach_don` depender de ainda haver ataques por fazer
+neste turno) -- mudanca de comportamento, nao parametro. Nao varrer mais
+valores deste knob: 0,8 e 1,0 ja provaram que ele so mexe na margem do
+shortlist.
+
+### Bug meu, corrigido: o varredor sobrescrevia o resultado canonico
+
+Cada configuracao gravava em `ultimo_resultado.json`. Ao fim da varredura
+o arquivo canonico continha `KIND_SCALE_ATTACH_DON=1.0` em vez do
+baseline -- **aconteceu de verdade**, conferido e restaurado do commit
+472c139. E **exatamente a armadilha do bloco 683** (`--limit`
+sobrescrevendo o corpus inteiro), reintroduzida por outro caminho, por
+mim, no mesmo dia em que li aquele comentario. Corrigido: configuracao
+nao-default grava em `sweep_<slug>.json` via `OPTCG_RESULT_NAME`.
+
+### Estado
+
+`play` 28,9%, inalterado. Duas hipoteses da fila ja caidas por medicao
+hoje (contagem por limiar global, bloco 695; ordem por peso global, este)
+-- ambas registradas em `REPROVADOS.md` com o numero.
+
 ## 2026-08-27 (695) - Claude (sessao remota web) - a medicao de CONTAGEM saiu e **invalida o plano do item 1**: o erro e SIMETRICO (22,4% a mais / 25,2% a menos), entao limiar global nao resolve. Contagem nao e problema de calibracao
 
 ### O numero

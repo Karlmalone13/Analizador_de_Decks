@@ -65,6 +65,15 @@ def roda(env_extra: dict, limit, workers, tag):
     env = dict(os.environ)
     env.update({k: str(v) for k, v in env_extra.items()})
     env['PYTHONDONTWRITEBYTECODE'] = '1'
+    # bloco 696: cada configuracao grava em arquivo PROPRIO. Sem isto a
+    # varredura sobrescrevia `ultimo_resultado.json` a cada rodada e o
+    # arquivo canonico terminava contendo a ULTIMA variante em vez do
+    # baseline -- aconteceu de verdade na 1a varredura. Baseline continua
+    # gravando no nome canonico (env_extra vazio).
+    if env_extra:
+        _slug = '_'.join(f'{k.replace("OPTCG_K_", "")}{v}'
+                         for k, v in sorted(env_extra.items()))
+        env['OPTCG_RESULT_NAME'] = f'sweep_{_slug}'[:120]
     cmd = [sys.executable, 'decision_quality_full.py', '--all']
     if limit:
         cmd += ['--limit', str(limit)]
@@ -75,7 +84,9 @@ def roda(env_extra: dict, limit, workers, tag):
     if p.returncode != 0:
         print(p.stdout[-2000:]); print(p.stderr[-2000:])
         raise SystemExit(f'{tag} falhou (rc={p.returncode})')
-    nome = (f'parcial_limit{limit}.json' if limit else 'ultimo_resultado.json')
+    nome = (env.get('OPTCG_RESULT_NAME', '') + '.json' if env.get('OPTCG_RESULT_NAME')
+            else f'parcial_limit{limit}.json' if limit
+            else 'ultimo_resultado.json')
     return _le_resultado(os.path.join(AQUI, 'metrics',
                                       'decision_quality_full', nome))
 

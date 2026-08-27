@@ -2,6 +2,21 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 27/08/2026 (bloco 696): **1o experimento no varredor — hipotese do
+> `attach_don` REPROVADA.** `KIND_SCALE_ATTACH_DON` 0,5->0,8->1,0 deu
+> `play` **plano** (+0,1pp), 18 de 20 lideres sem mexer, e **0,8 e 1,0
+> identicos**. Minha previsao (registrada antes) estava errada. O
+> fingerprint provou que os 3 subprocessos rodaram com hashes distintos —
+> resultado real, nao falha de encanamento; **o mecanismo do bloco 692
+> pagou na estreia**. Causa: o gap de sequenciamento e real (3,3x), mas
+> `KIND_SCORE_SCALE` e um peso **GLOBAL** e o padrao humano e
+> **POSICIONAL** (anexa DON por ultimo no turno) — peso global nao
+> expressa "faca isto mais tarde". Atacar isso exige mecanismo de FASE,
+> nao parametro. **Bug meu corrigido**: o varredor sobrescrevia
+> `ultimo_resultado.json` a cada config (canonico ficou com a variante;
+> restaurado) — mesma armadilha do bloco 683 reintroduzida por outro
+> caminho.
+
 > 27/08/2026 (bloco 695): **a medicao de CONTAGEM invalidou o plano do
 > item 1.** 987 turnos: o erro e **simetrico** — 22,4% joga a mais, 25,2%
 > a menos, media por turno 1,18 (motor) vs 1,23 (humano). Um limiar
