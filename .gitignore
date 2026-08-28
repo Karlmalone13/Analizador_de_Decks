@@ -70,6 +70,10 @@ scriptis_da_ia/metrics/calibrate_*.json
 # vale versionar desta frente e o MODELO treinado (como human_patterns.
 # json ja e), nao a tabela de treino.
 scriptis_da_ia/metrics/policy_dataset*.jsonl
+# bloco 709: vetores de termo por candidata -- artefato GERADO por
+# `coletar_termos.py` (passada de ~20 min sobre o corpus), mesmo
+# tratamento do policy_dataset. Regenerar, nao versionar.
+scriptis_da_ia/metrics/termos_dataset.jsonl
 
 # scripts de investigacao pura descartaveis (mesma convencao acima, ex:
 # profiling/sweep de tendencias/tempo/bugs em lote -- prefixo "_" de

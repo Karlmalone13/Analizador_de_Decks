@@ -28,6 +28,60 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (709/710) - a decomposicao FUNCIONA: reconstrucao **EXATA em 477/477 candidatas**. Coleta + otimizador conjunto dos 17 pesos construidos
+
+### O que foi ligado
+
+`OPTCG_TERMOS=1` faz o motor gravar, por candidata, o vetor de termos de
+`_evaluate_state_v2` **e o RESIDUO** (o que nao passa pela decomposicao:
+bonus de alinhamento humano e o atalho `SIMULATED_WIN_SCORE`, que retorna
+sem avaliar estado). Com o residuo a igualdade e exata por construcao,
+sem supor que tudo foi decomposto:
+
+    valor_simulado = soma_k  termo_k * W[k]  +  residuo
+
+**Verificado: 477/477 candidatas reconstruidas com erro <= 0,01.**
+
+### Bug achado na propria verificacao (e por que verificar importou)
+
+1a tentativa deu **59,3%**, com os erros concentrados perto de
+`SIMULATED_WIN_SCORE`. Causa: a busca usa **amostragem ADAPTATIVA em
+lotes** (`OFFLINE_MC_SAMPLES_MIN/MAX/BATCH`), entao
+`_simulate_sequence_values` e chamada VARIAS vezes pra a MESMA acao -- eu
+sobrescrevia o vetor a cada lote enquanto o `avg` do log cobre TODOS.
+Corrigido acumulando por lote e dividindo pelo total de amostras: 100%.
+
+Detalhe adicional: `TERMOS_POR_ACAO` e indexado por `id()` de objeto, e
+ids sao reaproveitados apos coleta de lixo -- limpo ao fim de cada
+decisao, senao vetores de acoes diferentes se misturariam.
+
+### Comportamento INTACTO -- verificado 3 vezes
+
+Hash SHA-256 de `(kind, code, simulated_value)` de todas as decisoes de 3
+partidas completas: **identico antes e depois**, apos cada uma das tres
+mudancas. `smoke_fast.py` passa.
+
+(1a tentativa de verificacao foi INUTIL: comparei o `play` do avaliador
+RAPIDO, que le o CACHE e nem executa `_evaluate_state_v2`. Trocada pelo
+teste do motor real.)
+
+### Ferramentas novas
+
+- `coletar_termos.py` -- passada cara (1x) que grava
+  `metrics/termos_dataset.jsonl` (gitignored, regenerar).
+- `otimizar_pesos.py` -- busca CONJUNTA nos 17 pesos por subida de
+  encosta com perturbacao multiplicativa de SUBCONJUNTOS aleatorios.
+  **CV agrupada por lider**, busca **so no treino** de cada fold.
+
+### Por que isto nao e a 12a tentativa de "tunar peso"
+
+As 11 reprovadas mudavam **UM peso por vez, a mao, ~20 min por valor** --
+nessa velocidade o espaco de 17 dimensoes e inexploravel e so se testa um
+eixo isolado. Com a decomposicao, avaliar um vetor e produto escalar
+sobre valores JA simulados: milhares de configuracoes por segundo, espaco
+CONJUNTO. **Metodo diferente, nao repeticao** -- e foi exatamente o que o
+usuario pediu ao recusar minhas objecoes.
+
 ## 2026-08-28 (708) - **A MUDANCA ESTRUTURAL QUE O USUARIO PEDIU**: `_evaluate_state_v2` agora e DECOMPONIVEL em termos -- re-pesar vira produto escalar, e a busca CONJUNTA sobre os 17 pesos fica viavel
 
 ### O pedido, e por que minha objecao anterior nao valia

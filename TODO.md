@@ -2,6 +2,17 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 709/710): **a decomposicao FUNCIONA — reconstrucao
+> EXATA em 477/477 candidatas** (`valor = soma termo*W + residuo`; o
+> residuo absorve alinhamento humano e o atalho de linha vencedora).
+> **Bug achado na verificacao**: a busca usa amostragem ADAPTATIVA em
+> lotes, e eu sobrescrevia o vetor a cada lote — reconstrucao caia pra
+> 59,3%; acumulando por lote foi a 100%. **Comportamento intacto**,
+> conferido 3x por hash de todas as decisoes de 3 partidas. Novos:
+> `coletar_termos.py` (passada cara 1x, saida gitignored) e
+> `otimizar_pesos.py` (busca CONJUNTA nos 17 pesos, CV por lider, busca
+> so no treino de cada fold).
+
 > 28/08/2026 (bloco 708): **MUDANCA ESTRUTURAL PEDIDA PELO USUARIO —
 > `_evaluate_state_v2` virou DECOMPONIVEL.** Ele ja era um modelo linear
 > (`score += termo * W[peso]`, 17 pesos em `EVAL_WEIGHTS`); faltava
