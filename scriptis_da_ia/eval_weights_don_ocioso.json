@@ -1,0 +1,25 @@
+{
+ "dmg": 270.0,
+ "life_mult": 1.0,
+ "board_mine": 1.0,
+ "board_opp": 0.8,
+ "opp_blocker": 16.75,
+ "hand_first": 8.0,
+ "hand_extra": 2.01,
+ "counter_hand": 9.0,
+ "don_field": 6.0,
+ "coverage": 7.0,
+ "ax_trash": 0.05,
+ "ax_reanim": 12.0,
+ "ax_inversion": 0.625,
+ "survival_premium": 22.5,
+ "opp_combo_threat": 0.804,
+ "next_turn_readiness_self": 0.6,
+ "next_turn_readiness_opp_threat": 0.0,
+ "_meta": {
+  "origem": "bloco 718 -- termo don_ocioso do laboratorio",
+  "coef": -115.5,
+  "aviso": "candidato; validar na regua real antes de publicar"
+ },
+ "don_ocioso": -115.5
+}

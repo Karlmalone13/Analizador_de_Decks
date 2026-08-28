@@ -60,6 +60,7 @@ def prepara(linhas):
             'leader': d['leader'],
             'humano': set(d['humano']),
             'humano_don': set(d.get('humano_don') or []),
+            'estado': d.get('estado') or {},
         })
     return chaves, list(por_turno.values())
 

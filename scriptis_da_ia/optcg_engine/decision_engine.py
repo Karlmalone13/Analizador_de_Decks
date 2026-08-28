@@ -742,6 +742,10 @@ EVAL_WEIGHTS = {
     # win-con JOGÁVEL (peça-motor na mão + fuel no trash + DON pro custo):
     # "arma carregada". Prior — a tunagem por self-play (item 5) ajusta.
     'wincon_ready': 20.0,
+    # bloco 718 -- ver `_evaluate_state_v2`. DEFAULT 0.0 de proposito:
+    # o termo existe e e mensuravel, mas so passa a agir quando um
+    # arquivo de pesos o ativa. Coeficiente medido no laboratorio: ~-115.
+    'don_ocioso': 0.0,
     # sobrevivencia ciente do plano: com win-con de combo caro ainda nao
     # disparavel E vida baixa (risco real de morrer antes), premio por ponto
     # de panico (vida<=3). Prior — tunagem (item 5) ajusta.
@@ -18176,6 +18180,24 @@ class OPTCGMatch:
 
         # DON no campo (ramp = chegar na bomba) — leve.
         score += _termo('don_field', p.don_on_field(), W)
+
+        # DON OCIOSO no fim da linha simulada -- termo NOVO (bloco 718).
+        # Nasceu do laboratorio de termos: dos 14 candidatos testados, o
+        # unico que entrega ganho que GENERALIZA e a eficiencia de
+        # recurso ("aproveitei meu DON neste turno?"), +2,6pp de `play`
+        # em 12 lideres que a busca nunca viu. Os outros que passaram
+        # (`custo_vs_don`, `curva_alta_cedo`) sao o MESMO sinal escrito de
+        # outra forma -- somados nao acrescentam nada.
+        #
+        # Por que faltava: os 14 termos originais descrevem o que EXISTE
+        # no estado (dano, board, mao, vida, DON no campo). Nenhum
+        # descreve o que foi DESPERDICADO. O bloco 716 provou que essa
+        # representacao nao carrega a informacao (AUC 0,611); este e o
+        # 1o termo medido que carrega.
+        #
+        # Peso DEFAULT 0.0 -> zero mudanca de comportamento ate ser
+        # publicado em `eval_weights.json`. Ligar via OPTCG_EVAL_WEIGHTS.
+        score += _termo('don_ocioso', getattr(p, 'don_available', 0), W)
 
         # cobertura defensiva: counter na mão vs ataques que o opp faz no
         # próximo turno (líder + chars ativos). min = ter counter além do

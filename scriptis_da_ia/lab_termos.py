@@ -16,14 +16,31 @@ A infraestrutura "controlavel e observavel" aplicada no nivel certo:
 
     termo(estado, propriedades_da_carta, kind) -> float
 
-e o criterio de aceite e objetivo e barato:
+e o criterio de aceite e:
 
-    **o termo sobe o AUC do ajuste direto sobre os 14 atuais?**
+    **o termo sobe o `play` no HOLDOUT?**
 
-Se sobe, ele carrega sinal que os 14 nao tem -- e so entao vale
-implementa-lo no motor. Se nao sobe, foi reprovado em SEGUNDOS, sem
-medicao de 20 minutos e sem risco de confundir ruido com ganho (erro que
-esta sessao cometeu 4 vezes).
+### CRITERIO ERRADO JA USADO AQUI, E CORRIGIDO (bloco 717)
+
+A 1a versao deste arquivo usava **ganho de AUC** como criterio. Ele
+reprovou a si mesmo no 1o uso: `counter_perdido` subiu o AUC do holdout
+de 0,592 pra **0,657** (+0,065) e, com os 3 termos aprovados, o `play` do
+holdout **CAIU de 23,9% pra 20,7%**.
+
+E o MESMO padrao do bloco 683 (AUC 0,851 com metrica real PIOR), repetido
+por mim no mesmo dia em que citei aquele bloco como licao. A causa: **AUC
+mede ordenacao par a par; `play` mede o CONJUNTO exato do turno.** Um
+modelo pode ordenar melhor em media e ainda montar conjuntos errados. E
+ajustar pesos por maxima verossimilhanca otimiza a probabilidade da
+escolha, nao o acerto do conjunto.
+
+**Regra que fica: neste projeto, so `play` medido no holdout aceita ou
+reprova um termo. AUC serve no maximo como pista para gerar candidatos --
+nunca como criterio.**
+
+(Achado colateral que sobrevive: os pesos de PRODUCAO, escritos a mao,
+dao `play` 29,1% no holdout e batem QUALQUER ajuste estatistico testado
+-- 23,9% com 14 termos, 20,7% com 17.)
 
 REGRA MANTIDA: nenhum termo pode usar identidade de carta ou de lider --
 so PROPRIEDADES e relacoes com o estado, senao o motor memoriza e quebra
@@ -191,3 +208,56 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+# ══ CRITERIO CORRETO: `play` no holdout ════════════════════════════════
+def avalia_por_play(nome_termo=None, n_pontos=13):
+    """Aceita/reprova um termo pelo `play` no HOLDOUT -- nao por AUC.
+
+    Mantem os pesos de PRODUCAO fixos (eles batem qualquer ajuste
+    estatistico testado) e varre APENAS o coeficiente do termo novo,
+    escolhendo-o no TREINO. Isola a contribuicao do termo e nao refaz o
+    erro de re-ajustar tudo por verossimilhanca.
+    """
+    import json as _j
+    from collections import defaultdict
+    from optcg_engine.decision_engine import EVAL_WEIGHTS
+    chaves, turnos = prepara(carrega())
+    props = props_das_cartas()
+    hold = set(_j.load(open('metrics/holdout_lideres.json')))
+    tr = [d for d in turnos if d[0]['leader'] not in hold]
+    va = [d for d in turnos if d[0]['leader'] in hold]
+    w0 = np.array([EVAL_WEIGHTS.get(k, 0.0) for k in chaves])
+
+    def play(turnos_, coef):
+        ok = n = 0
+        for dec in turnos_:
+            hum = dec[0]['humano']; esc = set()
+            for d in dec:
+                e = d.get('estado') or {}
+                v = d['M'] @ w0 + d['res']
+                if nome_termo and coef:
+                    f = CANDIDATOS[nome_termo]
+                    v = v + coef * np.array(
+                        [f(e, props.get(c) or {}, k)
+                         for c, k in zip(d['code'], d['kind'])])
+                i = int(np.argmax(v))
+                if d['kind'][i] == 'play' and d['code'][i]:
+                    esc.add(d['code'][i])
+            if hum or esc:
+                n += 1; ok += esc == hum
+        return ok / n if n else 0.0
+
+    base_tr, base_va = play(tr, 0.0), play(va, 0.0)
+    if not nome_termo:
+        return {'termo': '(base)', 'coef': 0.0,
+                'play_tr': base_tr, 'play_va': base_va, 'ganho': 0.0}
+    melhor = (0.0, base_tr)
+    for c in np.concatenate([-np.logspace(-1, 2.5, n_pontos),
+                             np.logspace(-1, 2.5, n_pontos)]):
+        v = play(tr, float(c))
+        if v > melhor[1]:
+            melhor = (float(c), v)
+    coef = melhor[0]
+    return {'termo': nome_termo, 'coef': coef, 'play_tr': melhor[1],
+            'play_va': play(va, coef), 'ganho': play(va, coef) - base_va}
