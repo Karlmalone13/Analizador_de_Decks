@@ -81,6 +81,13 @@ def main():
                         'leader': t.get('leader') or lider, 'turn': t['turn'],
                         'humano': sorted(humano),
                         'humano_don': sorted(humano_don), 'candidates': cands,
+                        # bloco 717: o ESTADO no instante da decisao. Termos
+                        # candidatos novos precisam dele -- os 14 atuais
+                        # descrevem o estado DEPOIS da linha simulada, e a
+                        # prova do bloco 716 (AUC 0,611) e de que isso nao
+                        # basta. E o mesmo `context` que o motor ja grava,
+                        # entao um termo testado aqui e implementavel la.
+                        'estado': d.get('context') or {},
                         'motor': {'kind': ch.get('kind'),
                                   'code': (ch.get('card') or {}).get('code')},
                     }, ensure_ascii=False) + '\n')
