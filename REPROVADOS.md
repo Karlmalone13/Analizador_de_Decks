@@ -153,6 +153,25 @@ foi medida — e aí não é reprovação, é opinião.
 > agrupada por lider**. Split unico nao serve -- os +4,8pp vieram de um
 > split onde 138 de 210 turnos eram de UM lider.
 
+## Otimizacao dos pesos da funcao de valor
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| Busca CONJUNTA nos 17 pesos, **objetivo unico (`play`)** | holdout: `play` **+1,9pp** mas `don_alvo` **-8,0pp**; no treino +8,2pp/-6,4pp | 713 |
+| Reportar o A/B do corpus inteiro como ganho | **+8,5pp era IN-SAMPLE** (vetor buscado nos mesmos logs que a regua mede) | 712 -> 713 |
+
+> **A alavanca FUNCIONA** -- girar os pesos move a metrica de forma
+> medivel, reprodutivel e confirmada FORA da amostra. O problema e o
+> objetivo unico: ela **compra `play` vendendo `don_alvo`**.
+>
+> **O padrao que importa**: o GANHO transfere ~1/4 (+8,2 -> +1,9pp); a
+> REGRESSAO transfere INTEIRA e piora fora da amostra (-6,4 -> -8,0pp).
+> Ao otimizar uma metrica so, esperar que o preco apareca em outra e
+> generalize melhor que o ganho.
+>
+> Nao repetir com objetivo unico. O caminho e multi-objetivo -- e exige
+> rotular as outras categorias no banco de termos.
+
 ## Busca / shortlist
 
 | tentativa | resultado medido | bloco |

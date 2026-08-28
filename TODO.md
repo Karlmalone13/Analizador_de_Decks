@@ -2,6 +2,18 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 713): **O NUMERO HONESTO E +1,9pp** (holdout de 12
+> lideres que a busca nunca viu), nao os +8,5pp in-sample — entre a CV
+> (+0,8pp) e o in-sample, perto da CV. **MAS: o ganho nao generaliza e a
+> regressao sim** — `play` +8,2pp(treino)->+1,9pp(holdout), enquanto
+> `don_alvo` -6,4pp(treino)->**-8,0pp(holdout)**, transferindo inteira e
+> pior fora da amostra. **Trocar 8pp de DON por 1,9pp de play nao e bom
+> negocio: NAO PUBLICAR** nenhum dos dois vetores em producao. Fingerprint
+> corrigido funcionou (variante gravou `9e300f0a17dd` + origem).
+> **Proximo: otimizacao MULTI-OBJETIVO** — maximizar `play` sujeito a nao
+> regredir as outras; falta rotular `attach_don` no banco de termos (hoje
+> so rotula `play`, entao o otimizador nao ENXERGA o que destroi).
+
 > 28/08/2026 (bloco 712): regua real deu **+8,5pp** (play 28,9%->37,4%, 14
 > de 18 lideres melhoram) — **mas IN-SAMPLE**: o vetor foi buscado no
 > MESMO corpus que a regua mede. **Nao e ganho**; a estimativa honesta

@@ -28,6 +28,59 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (713) - **O NUMERO HONESTO: +1,9pp** no holdout (nao os +8,5pp in-sample). Mas **o ganho nao generaliza e a REGRESSAO sim** -- `don_alvo` -8,0pp. **NAO publicar este vetor**
+
+### O experimento honesto
+
+Pesos buscados em 18 lideres; regua real medindo os **12 lideres de
+HOLDOUT** que a busca nunca viu.
+
+| metrica | baseline | otimizado | delta | n |
+|---|---|---|---|---|
+| **play** | 34,4% | 36,3% | **+1,9pp** | 250 |
+| activate | 32,2% | 32,6% | +0,5pp | 143 |
+| attack_quem | 64,9% | 64,0% | -0,9pp | 225 |
+| **don_alvo** | 25,5% | 17,5% | **-8,0pp** | 149 |
+
+Nos lideres de TREINO: `play` +8,2pp. **No holdout: +1,9pp.** O ganho real
+fica entre a CV (+0,8pp) e o in-sample (+8,5pp), muito mais perto da CV.
+
+Por lider no holdout (n>=10): 2 melhoram, 1 piora, 2 iguais. Sinal fraco.
+
+### O ACHADO que decide: a perda transfere e o ganho nao
+
+- `play`: **+8,2pp no treino -> +1,9pp no holdout** (transfere ~1/4)
+- `don_alvo`: **-6,4pp no treino -> -8,0pp no holdout** (transfere
+  INTEIRA, e PIOR fora da amostra)
+
+**Trocar 8 pontos de colocacao de DON por 1,9 de `play` nao e bom
+negocio.** A busca otimizou literalmente UMA metrica e o preco apareceu
+em outra -- previsivel em retrospecto, e exatamente por isso o candidato
+nunca foi pra `eval_weights.json`.
+
+**RECOMENDACAO: nao publicar `eval_weights_otimizado.json` nem
+`eval_weights_holdout.json` em producao.**
+
+### O fingerprint corrigido funcionou
+
+A variante gravou `eval_weights_hash: 9e300f0a17dd` + o arquivo de
+origem. Esta medicao e atribuivel; a do bloco 712 nao era. (O baseline
+ainda mostra "(antigo, sem o campo)" -- foi medido antes do fix.)
+
+### Proximo: otimizacao MULTI-OBJETIVO
+
+Maximizar `play` **sujeito a nao regredir** as outras categorias. Toda a
+maquina existe (termos, avaliador rapido, holdout, fingerprint); falta
+rotular `attach_don` no banco de termos, que hoje so rotula `play` --
+sem esse rotulo o otimizador nao ENXERGA o que esta destruindo.
+
+### Balanco da alavanca que o usuario pediu
+
+Ela existe e funciona: girar os pesos MOVE a metrica de forma medivel e
+reprodutivel, e o efeito foi confirmado fora da amostra. Mas nesta forma
+(objetivo unico) ela **compra `play` vendendo `don_alvo`**. O trabalho
+que falta nao e mais busca -- e dar ao otimizador as OUTRAS metricas.
+
 ## 2026-08-28 (712) - regua real deu **+8,5pp** com os pesos otimizados -- mas o vetor foi buscado NO MESMO CORPUS que a regua mede. **Numero IN-SAMPLE, nao e ganho.** E o fingerprint estava mentindo
 
 ### O A/B (corpus completo)
