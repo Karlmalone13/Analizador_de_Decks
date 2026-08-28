@@ -194,6 +194,23 @@ foi medida — e aí não é reprovação, é opinião.
 > os PESOS (quanto valem). Bate com o bloco 707 (curva satura ->
 > representacao) por caminho independente.
 
+## Criterio de aceite por AUC (bloco 718)
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| Aceitar termo novo por **ganho de AUC** | ranking **INVERTIDO** vs `play`: `counter_perdido` +0,065 de AUC e **-2,5pp** de `play`; os 3 aprovados por AUC derrubaram o holdout de 23,9% pra **20,7%** | 718 |
+| Ajustar os pesos por maxima verossimilhanca (logistica) | holdout 23,9% (14 termos) e 20,7% (17) contra **29,1% dos pesos de PRODUCAO feitos a mao** | 716, 718 |
+
+> **AUC mede ordenacao par a par; `play` mede o CONJUNTO do turno.** Sao
+> objetivos diferentes e neste projeto chegam a se INVERTER. Mesmo padrao
+> do bloco 683 (AUC 0,851 com metrica real pior).
+>
+> **Regra: so `play` medido no HOLDOUT aceita ou reprova um termo.** AUC
+> serve no maximo pra gerar candidatos.
+>
+> **E o holdout offline superestima ~4x** (bloco 718: +2,6pp offline ->
+> +0,6pp na regua real). Nenhuma decisao de publicar sem a regua.
+
 ## Busca / shortlist
 
 | tentativa | resultado medido | bloco |

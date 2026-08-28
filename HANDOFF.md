@@ -28,6 +28,79 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (718) - Laboratorio de TERMOS PLUGAVEIS construido; ele **reprovou o proprio criterio** (AUC invertia o ranking) e achou 1 termo real -- que na regua da so **+0,6pp**, nao os +2,6pp do holdout offline
+
+### O laboratorio (`scriptis_da_ia/lab_termos.py`)
+
+Cada termo candidato e uma funcao pura `f(estado, propriedades, kind) ->
+float`, testada em SEGUNDOS sem tocar no motor. E o "controlavel e
+observavel" no nivel que o bloco 716 provou ser o certo: **termos**, nao
+pesos. Nenhum candidato usa identidade de carta/lider (requisito
+"qualquer deck").
+
+### O criterio ERRADO que eu usei, e que se reprovou no 1o uso
+
+Montei o lab com **ganho de AUC** como criterio de aceite. Resultado:
+
+| termo | AUC dizia | `play` diz |
+|---|---|---|
+| `counter_perdido` | **melhor** (+0,065) | **pior** (-2,5pp) |
+| `remocao_vs_board` | pior (-0,011) | melhor (+3,9pp) |
+| `efeito_com_mao` | 2o pior (-0,009) | melhor (+3,9pp) |
+
+**O ranking do AUC estava praticamente INVERTIDO.** Com os 3 "aprovados"
+por AUC, o `play` do holdout caiu de 23,9% pra 20,7%.
+
+E o MESMO padrao do bloco 683 (AUC 0,851 com metrica real pior),
+repetido por mim no mesmo dia em que citei aquele bloco como licao.
+Causa: AUC mede ordenacao par a par; `play` mede o CONJUNTO do turno.
+
+**Regra registrada no proprio arquivo: so `play` no holdout aceita ou
+reprova um termo. AUC no maximo gera candidatos.**
+
+Achado colateral: os pesos de PRODUCAO (a mao) dao 29,1% no holdout e
+batem QUALQUER ajuste estatistico testado (23,9% / 20,7%).
+
+### O termo que passou
+
+Dos 14 candidatos, selecionando pelo TREINO e olhando o holdout uma vez:
+5 de 9 confirmam ganho, media +1,2pp. **Juntos sao REDUNDANTES** --
+`sobra_don`, `custo_vs_don` e `curva_alta_cedo` sao o mesmo sinal; 1
+termo da +2,6pp e somar mais 5 nao acrescenta nada.
+
+**O sinal: eficiencia de recurso -- "aproveitei meu DON neste turno?".**
+Os 14 termos originais descrevem o que EXISTE no estado (dano, board,
+mao, vida, DON no campo); **nenhum descreve o que foi DESPERDICADO**.
+
+Implementado como `don_ocioso` em `_evaluate_state_v2`, **peso default
+0.0** -> zero mudanca de comportamento (hash das decisoes de 3 partidas
+identico, verificado).
+
+### A REGUA REAL: +0,6pp, nao +2,6pp
+
+| metrica | baseline | don_ocioso | delta |
+|---|---|---|---|
+| play | 28,9% | 29,5% | **+0,6pp** |
+| **don_alvo** | 18,7% | **20,4%** | **+1,7pp** |
+| attack_quem | 54,8% | 53,8% | -1,1pp |
+
+**7 lideres melhoraram / 8 pioraram.**
+
+**O holdout offline superestimou em ~4x** (+2,6pp -> +0,6pp). Mais um
+ponto de calibragem do proxy: ele e otimista, agora quantificado.
+
+**NAO PUBLICADO.** +0,6pp com 7 sobe / 8 desce nao e ganho confirmado.
+
+### O que sobrevive
+
+`don_alvo` **+1,7pp**: um termo sobre nao desperdicar DON melhorou
+justamente a metrica de ONDE o DON vai. E coerencia interna -- o termo
+mede algo real, so nao e o que move `play`.
+
+E a 1a leva de candidatos foi um CHUTE MEU, nao varredura sistematica --
+achar 1 sinal real de primeira sugere que ha outros da mesma familia
+(coisas DESPERDICADAS, nao coisas que existem).
+
 ## 2026-08-28 (716) - **PROVADO: os 14 termos da funcao de valor NAO carregam a informacao.** AUC do melhor ajuste linear = **0,611** (aleatorio = 0,500). Nao e peso errado -- e representacao. Explica os 3 becos sem saida do dia de uma vez
 
 ### O experimento

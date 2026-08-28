@@ -2,6 +2,22 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 718): **laboratorio de TERMOS PLUGAVEIS**
+> (`lab_termos.py`) — termo candidato = funcao pura, testada em segundos
+> sem tocar no motor. **Ele reprovou o PROPRIO criterio**: montei com
+> ganho de AUC e o ranking do AUC estava **invertido** (`counter_perdido`
+> melhor por AUC, **pior** por `play`); os 3 "aprovados" por AUC
+> derrubaram o `play` de 23,9% pra 20,7%. Mesmo padrao do bloco 683,
+> repetido por mim. **Regra: so `play` no holdout aceita/reprova termo.**
+> Achado colateral: os pesos de PRODUCAO batem qualquer ajuste
+> estatistico (29,1% x 23,9% x 20,7%). **Termo aprovado**: eficiencia de
+> recurso (`don_ocioso` — "aproveitei meu DON?"), +2,6pp no holdout; os
+> demais sao o MESMO sinal (redundantes). **Mas a REGUA REAL da so
+> +0,6pp** (7 lideres sobem / 8 descem) — o holdout offline superestimou
+> **~4x**. **NAO publicado.** Sobrevive: `don_alvo` **+1,7pp**, coerencia
+> interna do termo. Implementado com **peso default 0.0** (hash
+> verificado, zero mudanca).
+
 > 28/08/2026 (bloco 716): **PROVADO — os 14 termos NAO carregam a
 > informacao.** Ajustando os pesos DIRETAMENTE ao alvo humano (regressao
 > logistica sobre os proprios termos, nao busca aleatoria): **AUC 0,611**
