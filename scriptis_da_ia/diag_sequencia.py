@@ -65,8 +65,17 @@ def main(max_turnos=400):
             if not raw_t:
                 continue
             sh = [k for k in (hk(a) for a in (raw_t.get('actions') or [])) if k]
-            sm = [(r.get('chosen') or {}).get('kind') for r in t['decisions']]
-            sm = [k for k in sm if k in ('play', 'activate', 'attach_don', 'attack')]
+            # bloco 732: usa `seq_kinds` (ordem real, com o DON de
+            # COMBATE intercalado). A versao anterior lia so
+            # `decisions`, que exclui `attach_don_for_attack` -- entao
+            # comparava as anexacoes-que-habilitam-efeito do motor contra
+            # TODAS as anexacoes do humano. Populacoes diferentes: era o
+            # que produzia o "motor abre com attach_don 26,8% x 7,8%".
+            sm = list(t.get('seq_kinds') or [])
+            if not sm:
+                sm = [k for k in ((r.get('chosen') or {}).get('kind')
+                                  for r in t['decisions'])
+                      if k in ('play', 'activate', 'attach_don', 'attack')]
             if len(sh) < 2 and len(sm) < 2:
                 continue
             n += 1

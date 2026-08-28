@@ -987,6 +987,31 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
                 rec for rec in (eng.decision_log or [])
                 if rec.get('kind') == 'attach_don_for_attack' and rec.get('player') == 'A'
             ]
+            # bloco 732: SEQUENCIA na ordem real, com os dois tipos de
+            # registro INTERCALADOS. As duas listas acima sao filtradas
+            # por tipo e perdem a ordem relativa entre elas -- quem quiser
+            # medir SEQUENCIAMENTO precisa da ordem, e reconstruir a
+            # partir delas e impossivel.
+            #
+            # Sem isto o diagnostico de sequencia comparava mal: no motor,
+            # o DON anexado PRA ATACAR e aplicado dentro da execucao do
+            # ataque e nunca aparece como decisao `attach_don` -- entao a
+            # sequencia do motor so tinha as anexacoes que HABILITAM
+            # efeito, enquanto a do humano tem TODAS. Comparacao entre
+            # populacoes diferentes (achado ao investigar o bloco 731; e o
+            # MESMO erro ja documentado no bloco 589/590 por outro
+            # caminho).
+            _ordem = []
+            for rec in (eng.decision_log or []):
+                if rec.get('player') != 'A':
+                    continue
+                if rec.get('kind') == 'attach_don_for_attack':
+                    _ordem.append('attach_don')
+                elif rec.get('kind') == 'turn_planner':
+                    _k = (rec.get('chosen') or {}).get('kind')
+                    if _k in ('play', 'activate', 'attach_don', 'attack'):
+                        _ordem.append(_k)
+            entry['seq_kinds'] = _ordem
         results.append(entry)
         if verbose:
             print(f'--- turno {turn["turn"]} (real vs motor de hoje) ---')
