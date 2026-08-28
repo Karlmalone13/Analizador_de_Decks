@@ -28,6 +28,64 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (716) - **PROVADO: os 14 termos da funcao de valor NAO carregam a informacao.** AUC do melhor ajuste linear = **0,611** (aleatorio = 0,500). Nao e peso errado -- e representacao. Explica os 3 becos sem saida do dia de uma vez
+
+### O experimento
+
+Em vez de BUSCAR pesos (subida de encosta, que varia com a semente -- foi
+assim que o "+1,9pp" do bloco 713 virou "-2,7pp" no 715), **ajusta os
+pesos DIRETAMENTE ao alvo humano** por regressao logistica sobre os
+proprios termos. Isso estima o TETO desta representacao: se nem o melhor
+ajuste direto separa, o problema **nao pode ser** o valor dos pesos.
+
+`scriptis_da_ia/teto_dos_termos.py`.
+
+### O numero
+
+| | treino | holdout |
+|---|---|---|
+| baseline (pesos de producao) | 23,4% | 29,1% |
+| **pesos AJUSTADOS aos termos** | 21,5% | **23,9%** |
+| oraculo (ordenacao perfeita) | 78,5% | **79,1%** |
+
+**AUC do melhor ajuste linear sobre os 14 termos: 0,611.** Aleatorio =
+0,500.
+
+O ajuste otimo fica **ABAIXO do baseline** (23,9% x 29,1% no holdout),
+enquanto o oraculo mostra **79% disponivel na mesma lista de candidatas**.
+
+### Isso EXPLICA os tres becos sem saida do dia, de uma vez
+
+1. **Busca de pesos dando +-2pp de ruido** (bloco 715) -- nao havia sinal
+   pra encontrar.
+2. **Ranqueador de 59 features saturando em ~26%** (blocos 704-706) --
+   aquelas features tambem nao eram as certas.
+3. **Curva de aprendizado saturando** (bloco 707) -- mais exemplos nao
+   ajudam quando a representacao nao distingue.
+
+Tres investigacoes independentes, **uma causa unica: a representacao nao
+carrega a informacao.** Deixa de ser inferencia (o que era ate o bloco
+715) e vira medicao.
+
+### O que isso FECHA
+
+Nao e ajustar peso. Nao e mais dado humano. Nao e DAgger. Nao e trocar a
+busca Monte Carlo. Todas essas rotas foram medidas e reprovadas hoje, e
+agora ha uma explicacao unica pra por que todas falharam.
+
+**E adicionar TERMOS que carreguem sinal.**
+
+### E redefine onde aplicar "controlavel e observavel"
+
+O pedido do usuario continua valendo, so muda de nivel: em vez de knobs
+sobre 17 pesos que nao informam, **TERMOS PLUGAVEIS** -- cada termo novo
+com contribuicao medivel em segundos (AUC + `play`), pelo mesmo laco
+rapido ja construido (bloco 703).
+
+O criterio de aceite de um termo novo fica objetivo: **sobe o AUC do
+ajuste direto?** Se sim, ele carrega sinal que os 14 atuais nao tem. Isso
+e testavel ANTES de mexer no motor.
+
 ## 2026-08-28 (715) - **A ALAVANCA DE PESOS NAO ENTREGA GANHO CONFIAVEL.** Multi-objetivo contem o estrago mas nada sobe no holdout -- e o +1,9pp do bloco 713 **tambem cai**: o ganho varia de +1,9pp a -2,7pp entre duas buscas quase iguais
 
 ### O resultado

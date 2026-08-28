@@ -2,6 +2,20 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 716): **PROVADO — os 14 termos NAO carregam a
+> informacao.** Ajustando os pesos DIRETAMENTE ao alvo humano (regressao
+> logistica sobre os proprios termos, nao busca aleatoria): **AUC 0,611**
+> (aleatorio 0,500), e o ajuste otimo fica **ABAIXO do baseline** no
+> holdout (23,9% x 29,1%) enquanto o **oraculo mostra 79% disponivel**.
+> **Nao e peso errado, e REPRESENTACAO** — e isso explica de uma vez os
+> 3 becos do dia: busca de pesos so achava ruido (715), ranqueador de 59
+> features saturou (704-706), curva de aprendizado saturou (707).
+> **FECHA**: nao e peso, nao e mais dado, nao e DAgger, nao e a busca.
+> **E adicionar TERMOS.** O pedido de "controlavel e observavel" muda de
+> nivel: **termos PLUGAVEIS**, cada um com contribuicao medivel em
+> segundos. Criterio de aceite objetivo: **sobe o AUC do ajuste direto?**
+> — testavel ANTES de mexer no motor. `teto_dos_termos.py`.
+
 > 28/08/2026 (bloco 715): **A ALAVANCA DE PESOS NAO ENTREGA GANHO
 > CONFIAVEL.** Multi-objetivo no holdout: penalidade 3,0 da `play`
 > **-0,8pp** e `don` **-2,9pp** — contem o estrago (era -11,2pp) mas
