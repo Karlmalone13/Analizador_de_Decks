@@ -322,7 +322,17 @@ def main():
         print()
         print('LEITURA: so trate como efeito REAL a diferenca que sai do IC95 da')
         print('outra rodada. Sobreposicao de intervalo = ruido, nao melhora.')
-        with open(os.path.join(OUT_DIR, 'gauntlet_painel.json'), 'w') as f:
+        # bloco 726: o AGREGADO tambem precisa do sufixo de variante. O
+        # bloco 721 protegeu so os arquivos POR DECK e eu esqueci este --
+        # resultado: a corrida com pesos nao-default sobrescreveu
+        # `gauntlet_painel.json` com os numeros da variante, e o arquivo
+        # versionado passou a mentir. 4a vez que a mesma armadilha aparece
+        # por um caminho diferente (--limit, sweep, gauntlet por deck,
+        # agora o agregado).
+        _v = os.environ.get('OPTCG_EVAL_WEIGHTS', '')
+        _nome = ('gauntlet_painel.json' if not _v else
+                 f'gauntlet_painel_{os.path.splitext(os.path.basename(_v))[0][:40]}.json')
+        with open(os.path.join(OUT_DIR, _nome), 'w') as f:
             json.dump(resumos, f, indent=2)
 
 

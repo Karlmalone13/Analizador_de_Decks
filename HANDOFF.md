@@ -28,6 +28,47 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (726) - 4a aparicao da MESMA armadilha: a corrida variante sobrescreveu `gauntlet_painel.json` e o arquivo versionado passou a mentir
+
+### O que aconteceu
+
+O bloco 721 protegeu os arquivos POR DECK (`gauntlet_<deck>.json`) contra
+sobrescrita por corrida de variante. **Esqueci o AGREGADO.** Resultado: o
+`gauntlet_painel.json` versionado ficou com os numeros da VARIANTE
+(Imu 40,5 / Ace 61,7 / Enel 11,7 / Nami 65,0) em vez do baseline.
+
+Peguei ao conferir o conteudo antes de commitar -- nao pela saida do
+comando, que parecia normal.
+
+**E a 4a vez que a mesma armadilha aparece, sempre por um caminho novo:**
+
+| # | caminho | bloco |
+|---|---|---|
+| 1 | `--limit` sobrescrevendo o corpus inteiro | 683 |
+| 2 | varredor sobrescrevendo o canonico a cada config | 696 |
+| 3 | gauntlet por deck | 721 |
+| 4 | **gauntlet AGREGADO** | 726 |
+
+**Licao**: consertar o caso que apareceu nao fecha a classe. Toda escrita
+em arquivo versionado precisa perguntar "e se isto rodar com configuracao
+nao-default?" -- nao so aquela que quebrou.
+
+### Conserto
+
+`gauntlet_painel.json` agora tambem ganha sufixo quando
+`OPTCG_EVAL_WEIGHTS` esta setado.
+
+`gauntlet_painel.json` **reconstruido do baseline** a partir dos arquivos
+por deck (que estavam corretos, protegidos pelo 721) -- conferido contra
+a saida original: 29,8 / 51,7 / 36,7 / 48,3. Bate exato.
+
+### Nota sobre amostra
+
+`gauntlet_imu.json` volta de 20 seeds (n=140) pra 12 (n=84), porque o
+painel roda seeds iguais nos 4 decks -- conjunto internamente comparavel
+vale mais aqui. O numero de 20 seeds (**27,1%**, n=140) fica registrado
+no bloco 723.
+
 ## 2026-08-28 (725) - **O PAINEL DERRUBA O RESULTADO DO BLOCO 723**: os +11,5pp medidos SO no Imu escondiam um **colapso de -25pp no Enel** -- a unica diferenca estatisticamente clara do painel inteiro
 
 ### O numero (12 seeds x 7 adversarios = 84 partidas por deck, por braco)

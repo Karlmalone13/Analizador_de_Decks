@@ -2,6 +2,16 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 726): **4a aparicao da mesma armadilha** — a corrida
+> variante sobrescreveu `gauntlet_painel.json` e o arquivo versionado
+> passou a mentir (guardava os numeros da VARIANTE). O bloco 721 protegeu
+> os arquivos POR DECK e eu esqueci o AGREGADO. Caminhos ja vistos:
+> `--limit` (683), varredor (696), gauntlet por deck (721), agregado
+> (726). **Licao: consertar o caso que apareceu nao fecha a classe** —
+> toda escrita em arquivo versionado tem que perguntar "e se rodar com
+> configuracao nao-default?". Painel reconstruido do baseline pelos
+> arquivos por deck e conferido contra a saida original (bate exato).
+
 > 28/08/2026 (bloco 725): **O PAINEL DERRUBA O BLOCO 723.** Os +11,5pp
 > medidos so no Imu escondiam **colapso de -25pp no Enel** (36,7% ->
 > 11,7%), **a unica diferenca com IC nao-sobreposto** do painel inteiro —

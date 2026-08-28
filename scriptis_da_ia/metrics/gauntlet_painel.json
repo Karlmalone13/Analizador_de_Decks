@@ -1,54 +1,46 @@
 [
   {
     "deck": "Imu",
-    "partidas": 105,
-    "win_rate": 33.33333333333333,
+    "arquetipo": "controle",
+    "win_rate": 29.8,
     "ic95": [
-      25.04577293800206,
-      42.79740467055937
+      20.0,
+      39.5
     ],
-    "dano_medio": 3.466666666666667,
-    "don_por_ataque": 1.2608850867464312,
-    "ataques_por_turno": 0.7988267039527543,
-    "arquetipo": "controle"
+    "n": 84,
+    "_meta": "BASELINE reconstruido dos arquivos por deck (bloco 726) -- a corrida variante tinha sobrescrito gauntlet_painel.json"
   },
   {
     "deck": "Ace",
-    "partidas": 75,
-    "win_rate": 40.0,
+    "arquetipo": "agressivo",
+    "win_rate": 51.7,
     "ic95": [
-      29.662343078170593,
-      51.312167839923404
+      39.0,
+      64.3
     ],
-    "dano_medio": 4.1466666666666665,
-    "don_por_ataque": 0.9864783734783735,
-    "ataques_por_turno": 0.7547321784968843,
-    "arquetipo": "agressivo"
+    "n": 60,
+    "_meta": "BASELINE reconstruido dos arquivos por deck (bloco 726) -- a corrida variante tinha sobrescrito gauntlet_painel.json"
   },
   {
     "deck": "Enel",
-    "partidas": 75,
-    "win_rate": 65.33333333333333,
+    "arquetipo": "ramp/controle",
+    "win_rate": 36.7,
     "ic95": [
-      54.05453495587379,
-      75.11788163638208
+      24.5,
+      48.9
     ],
-    "dano_medio": 4.773333333333333,
-    "don_por_ataque": 2.0667420703041244,
-    "ataques_por_turno": 1.2660133385133385,
-    "arquetipo": "ramp/controle"
+    "n": 60,
+    "_meta": "BASELINE reconstruido dos arquivos por deck (bloco 726) -- a corrida variante tinha sobrescrito gauntlet_painel.json"
   },
   {
     "deck": "Nami",
-    "partidas": 75,
-    "win_rate": 29.333333333333332,
+    "arquetipo": "tempo",
+    "win_rate": 48.3,
     "ic95": [
-      20.23999721815816,
-      40.44065867923611
+      35.7,
+      61.0
     ],
-    "dano_medio": 2.8266666666666667,
-    "don_por_ataque": 1.310833465983621,
-    "ataques_por_turno": 0.8245023495023496,
-    "arquetipo": "tempo"
+    "n": 60,
+    "_meta": "BASELINE reconstruido dos arquivos por deck (bloco 726) -- a corrida variante tinha sobrescrito gauntlet_painel.json"
   }
 ]
