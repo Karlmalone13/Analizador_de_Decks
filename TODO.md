@@ -2,6 +2,24 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 702): **PLANO APROVADO — aprender a ordenacao em vez
+> de escreve-la a mao.** O usuario recusou meu incremento (+3 a +10pp):
+> a meta exige **+56pp**. Gargalo estrutural = funcao de valor escrita a
+> mao (17 termos). O oraculo ja reduziu o problema a "ordenar ~8
+> candidatas, resposta presente em 80,3%" — aprendizado supervisionado
+> bem posto. **RESTRICAO INEGOCIAVEL (o usuario perguntou antes de
+> aprovar): NENHUM codigo de carta/lider como feature — so PROPRIEDADES;
+> validacao com SPLIT POR LIDER** (treina em uns, valida em lideres nunca
+> vistos). **ACHADO: a tentativa reprovada do bloco 683 tinha one-hot de
+> LIDER (`policy.py:98`) e split por PARTIDA — aquela validacao nunca
+> poderia ter detectado falha de generalizacao.** Plano: **(1)** banco de
+> decisoes em cache + avaliador rapido (hoje 20min/iteracao impede
+> qualquer laco — foi por isso que toda tentativa teve 1 tiro so);
+> **(2)** ranqueador sem identidade, split por lider — **portao: se nao
+> chegar perto de 80,3%, nao e shift, parar antes da fase 3**;
+> **(3)** DAgger; **(4)** self-play pra volume. Reusar
+> `build_policy_dataset.py`, nao reinventar.
+
 > 28/08/2026 (bloco 701): **cirurgia 1 enterrada por um 2o caminho** — no
 > diagnostico SEM VIES (3932 decisoes), quando a busca derruba o topo
 > estatico ela acerta **16,0%** contra **8,6%** do estatico: **+7,4pp

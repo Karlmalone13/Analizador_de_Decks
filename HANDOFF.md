@@ -28,6 +28,91 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (702) - PLANO REGISTRADO E APROVADO PELO USUARIO - rota pra resolver de vez: **aprender a ordenacao** em vez de escreve-la a mao. Com a restricao "QUALQUER DECK" como requisito de 1a classe -- e o achado de que a tentativa anterior tinha a feature que a proibe
+
+### Por que uma rota nova, e nao mais um incremento
+
+Eu tinha proposto reexpressar os termos da funcao de valor (+3 a +10pp).
+O usuario parou: *"quero uma solucao que resolva nosso problema de vez ou
+possibilite que resolvamos. Nem que seja necessario mudar a estrutura"*.
+**Ele esta certo**: a meta exige **+56pp** e reexpressar 17 termos
+escritos a mao nao chega la -- seria a 12a variante da mesma familia que
+falhou 11 vezes.
+
+**O gargalo estrutural: a funcao de valor ser escrita a mao.** 17 termos
+escolhidos por pessoas, pesos ajustados por pessoas, pra ordenar ~8
+candidatas. O oraculo (bloco 697) ja reduziu o problema a sua forma
+minima: **em 80,3% dos turnos a resposta esta entre ~8 candidatas e basta
+ordena-las** -- problema de aprendizado supervisionado bem posto, com
+rotulo pronto (a escolha do humano) e ~4000 exemplos.
+
+### A RESTRICAO INEGOCIAVEL: qualquer deck que o usuario montar
+
+O usuario perguntou explicitamente antes de aprovar. Resposta: **sim, mas
+so como RESTRICAO DE PROJETO, nao consequencia automatica.**
+
+**Nenhum codigo de carta ou de lider pode ser feature.** So PROPRIEDADES
+(custo, poder, blocker, tipo de efeito, relacao com o board, DON
+disponivel, curva) -- que existem pra qualquer carta do
+`card_effects_db.json`, inclusive as nunca vistas. Assim o modelo aprende
+"blocker barato contra board largo", nao "OP13-082 no turno 5". Com
+identidade de carta/lider ele memoriza e quebra no 1o deck novo -- o que
+seria **PIOR que hoje**, ja que a funcao a mao e deck-agnostica por
+construcao.
+
+**Validacao: split por LIDER, nao por partida.** Treina num conjunto de
+lideres, valida em lideres que o modelo NUNCA viu. Mede literalmente
+"joga um deck pro qual nao foi treinado".
+
+### ACHADO: a tentativa anterior tinha exatamente a feature proibida
+
+Auditando `optcg_engine/policy.py` (da tentativa reprovada no bloco 683):
+
+- `action_features` usa **so propriedades** (kind, score, cost, power,
+  counter, blocker, rush, trigger) -- essa metade estava CERTA.
+- `state_base_features` linha 98:
+  `feat += [1.0 if leader_code == L else 0.0 for L in spec['lideres']]`
+  -- **one-hot sobre os LIDERES**. Memorizacao por lider.
+- E o split da validacao era **por PARTIDA**. Com o mesmo lider nos dois
+  lados, o one-hot nao atrapalha a validacao -- **aquela avaliacao nunca
+  poderia ter detectado a falha de generalizacao que o usuario exige.**
+
+Ou seja, o bloco 683 mediu *distribution shift* de verdade, mas a
+montagem tinha um 2o defeito independente que ninguem viu.
+
+### O PLANO
+
+| fase | o que | entrega | portao |
+|---|---|---|---|
+| **1** | Banco de decisoes em CACHE + avaliador rapido | iteracao em SEGUNDOS (hoje: 20 min) | -- |
+| **2** | Ranqueador aprendido sobre as candidatas, **sem identidade**, **split por lider** | numero offline comparavel ao oraculo (80,3%) | **se nao chegar perto, NAO e shift -- parar antes da fase 3** |
+| **3** | Laco DAgger | fecha o *distribution shift* do bloco 683 | A/B na regua real |
+| **4** | Self-play pra volume | escala o dado (279 partidas e pouco) | -- |
+
+### A fase 1 e o que hoje IMPEDE tudo
+
+**Uma medicao custa ~20 minutos. Um laco iterativo precisa de centenas.**
+Por isso toda tentativa anterior teve UM tiro e foi abandonada -- nao por
+falta de ideia, por custo de iteracao. O banco em cache (pontos de
+decisao + candidatas + rotulo humano, extraidos UMA vez) transforma o
+problema de "insolvel na pratica" em "iteravel". A regua completa
+continua existindo como VALIDACAO FINAL, nunca como laco de
+desenvolvimento.
+
+`build_policy_dataset.py` ja produz um JSONL nesse formato (4420
+decisoes, 30376 pares) -- **reusar, nao reinventar**; o que falta e o
+avaliador rapido em cima e a remocao das features de identidade.
+
+### Honestidade sobre o risco
+
+Compromisso de varios dias, nao de uma tarde. **Pode falhar -- a
+tentativa anterior falhou.** A diferenca: agora sabemos que o sinal esta
+presente (oraculo 80,3%), sabemos o modo de falha exato (*shift*, com a
+correcao conhecida) e sabemos do 2o defeito (identidade de lider +
+split por partida) que ninguem tinha visto. E e a unica rota vista com
+ordem de grandeza compativel com +56pp -- horizonte, unidade e peso valem
+poucos pontos cada.
+
 ## 2026-08-28 (701) - Claude (sessao remota web) - cirurgia 1 enterrada por um 2o caminho (a busca e **+7,4pp MELHOR** que o estatico onde intervem). E a funcao de valor e **MIOPE**: um termo a 120 domina 16 termos a <=25
 
 ### O diagnostico SEM VIES (3932 decisoes)

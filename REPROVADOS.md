@@ -31,6 +31,7 @@ foi medida — e aí não é reprovação, é opinião.
 |---|---|---|
 | Imitação por BÔNUS/desempate **sem estado** — 7 variantes | todas nulas ou negativas | 641-649, 663 |
 | Desempate por "banda larga" | `play` 27,5% → 27,2%; `attach_don` −1,0pp | 676 |
+| ↳ **defeito 2, achado só em 28/08**: `policy.py:98` tinha **one-hot de LÍDER** e o split era **por partida** | aquela validação **nunca poderia detectar falha de generalização para deck novo** | 702 |
 | Imitação por **POLÍTICA aprendida, com estado** | ranker 28,3% / counter 27,3% / ambos 26,4% — **todas abaixo** do baseline 29,5% | 680-683 |
 | ↳ mais features de composição de mão no modelo | AUC 0,848 → 0,851 (ruído); contagem 65,6% → 63,6% | 682 |
 | `_HUMAN_PATTERN_MIN_SUPPORT` 2 → 3 | regrediu `play` e `attack-quem` | 615 |
