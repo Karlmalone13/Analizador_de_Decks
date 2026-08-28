@@ -44,6 +44,28 @@ foi medida — e aí não é reprovação, é opinião.
 > tentativas anteriores.** Se retomar: laço iterativo estilo DAgger. Mais
 > features NÃO resolve — foi medido.
 
+## Busca Monte Carlo (o estagio de simulacao)
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| **Remover a busca** (TOP_K=1 + SEARCH_MIN_CANDIDATES=1, decisao cai no score estatico) | **REGREDIU**: `play` 28,9% -> 26,2% (**-2,7pp**); 12 lideres pioraram x 4 melhoraram; piores OP02-093 e OP11-040 -36,4pp | 700 |
+
+> **A busca Monte Carlo e LIQUIDO POSITIVO.** Nao remover, nao gatilhar
+> "pra confiar mais no estatico". Medido de verdade, com ablacao.
+>
+> **O ERRO DE LEITURA que levou ate aqui (bloco 699 -> 700), pra ninguem
+> repetir:** o diagnostico media, entre as decisoes em que o motor JA
+> TINHA ERRADO, quantas vezes o score estatico ja tinha a carta do humano
+> em 1o lugar -> 45%. Numero real, **mas CONDICIONADO AO FRACASSO**. As
+> decisoes em que a busca derruba o estatico e ACERTA ficaram inteiramente
+> fora da amostra -- e a ablacao mostrou que sao mais numerosas.
+>
+> **Regra que fica:** ao apresentar estatistica condicionada a um
+> subconjunto (so os fracassos, so os turnos com X), medir o COMPLEMENTO
+> antes de concluir. Mesma familia do erro de correlacao do bloco 690.
+> `activate` (+0,5pp) e `don` (+2,5pp) ate melhoraram sem a busca -- mas
+> `play`, a metrica oficial, e `seq` cairam.
+
 ## Contagem (quantas cartas jogar por turno)
 
 | tentativa | resultado medido | bloco |

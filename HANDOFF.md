@@ -28,6 +28,65 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (700) - Claude (sessao remota web) - **CIRURGIA 1 REPROVADA**: remover a busca Monte Carlo REGREDIU (-2,7pp, 12 lideres piores x 4). A busca e liquido POSITIVO -- e meu diagnostico do bloco 699 tinha VIES DE SELECAO
+
+### O resultado da ablacao
+
+| config | play | delta | activate | don | seq |
+|---|---|---|---|---|---|
+| BASELINE | 28,9% | -- | 28,0% | 18,7% | 7,2% |
+| TOP_K=1 + SEARCH_MIN_CANDIDATES=1 | **26,2%** | **-2,7pp** | 28,5% | 21,2% | 5,8% |
+
+**12 lideres pioraram / 4 melhoraram / 4 iguais.** Piores: OP02-093
+-36,4pp (n=11), OP11-040 -36,4pp (n=11), OP07-019 -16,7pp (n=18).
+
+Interessante mas nao suficiente: `activate` (+0,5pp) e `don` (+2,5pp)
+MELHORARAM sem a busca. `play` -- a metrica oficial -- e `seq` cairam.
+
+### O erro que me trouxe ate aqui: VIES DE SELECAO
+
+O bloco 699 mediu, entre as decisoes em que o motor **JA TINHA ERRADO**,
+quantas vezes o score estatico ja tinha a carta do humano em 1o lugar:
+45%. **O numero e real, mas condicionado ao FRACASSO.**
+
+**O que eu nunca medi: quantas vezes a busca derruba o estatico e
+ACERTA.** Essas decisoes ficaram inteiramente fora da amostra -- e a
+ablacao provou que sao mais numerosas.
+
+E a mesma familia do erro do bloco 690 (projetar ganho a partir de
+correlacao): estatistica real, lida como se dissesse mais do que diz.
+**Regra que fica: ao apresentar estatistica condicionada a um
+subconjunto, medir o COMPLEMENTO antes de concluir.** Adicionada a secao
+de erros de medicao do `REPROVADOS.md`.
+
+### O que salvou o custo -- e vale como metodo
+
+1. **O criterio estava PRE-REGISTRADO** (bloco 698, commit 8896660) antes
+   do numero sair. Segui um plano em vez de racionalizar o resultado.
+2. **A ablacao custou 40 MINUTOS**, porque "remover a busca" era
+   combinacao de knobs (`TOP_K=1` + `SEARCH_MIN_CANDIDATES=1`) gracas a
+   superficie de controle do bloco 694. Fazer a cirurgia "de verdade"
+   antes de medir teria custado um dia de reescrita pra chegar no mesmo
+   -2,7pp. **Este e o retorno concreto do trabalho de controle.**
+
+### Estado das 3 cirurgias
+
+1. ~~Remover/gatilhar a busca Monte Carlo~~ -- **REPROVADA, medida.**
+2. **Trocar a funcao de valor** (`_evaluate_state_v2`) -- viva.
+3. **Ranqueamento aprendido no laco certo** (DAgger) -- viva, mais cara.
+
+### Proximo passo: a versao SEM VIES do diagnostico
+
+Medir a taxa de acerto da busca nos DOIS lados: quando ela derruba o
+score estatico, com que frequencia o resultado bate com o humano vs com
+que frequencia se afasta. So isso separa "a busca erra" de "a busca acerta
+mais do que erra, mas nao o bastante".
+
+### Estado
+
+`play` 28,9%, inalterado -- a ablacao foi medicao, nao mudanca aceita.
+Nada revertido porque nada de comportamento tinha sido commitado.
+
 ## 2026-08-28 (699) - Claude (sessao remota web) - **A BUSCA MONTE CARLO E A SUSPEITA**: em 45% das decisoes erradas o score ESTATICO ja tinha a carta do humano em 1o lugar e a busca a derrubou -- com margem GRANDE (mediana -117), nao ruido. Criterio pre-registrado do bloco 698 aponta a cirurgia 1
 
 ### O numero (1086 decisoes, corpus completo)

@@ -2,6 +2,19 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 700): **CIRURGIA 1 REPROVADA.** Remover a busca Monte
+> Carlo (TOP_K=1 + SEARCH_MIN_CANDIDATES=1) **regrediu**: `play` 28,9% ->
+> **26,2% (-2,7pp)**, 12 lideres piores x 4 melhores (OP02-093 e OP11-040
+> -36,4pp). **A busca e liquido POSITIVO.** Meu diagnostico do bloco 699
+> tinha **vies de selecao**: os 45% eram medidos so entre decisoes em que
+> o motor JA TINHA ERRADO — as vezes em que a busca derruba o estatico e
+> ACERTA nunca entraram na amostra. Mesma familia do erro de correlacao
+> do bloco 690. **Regra que fica: estatistica condicionada a um
+> subconjunto exige medir o COMPLEMENTO antes de concluir.** Custo: 40min,
+> porque a ablacao era combinacao de knobs — a cirurgia "de verdade" teria
+> sido um dia pro mesmo -2,7pp. Restam as cirurgias **2** (trocar
+> `_evaluate_state_v2`) e **3** (ranqueamento aprendido, DAgger).
+
 > 28/08/2026 (bloco 699): **a BUSCA MONTE CARLO e a suspeita.** 1086
 > decisoes em que a carta do humano estava no shortlist e perdeu: em
 > **45,0%** o score ESTATICO ja a tinha em 1o lugar e a busca a derrubou,
