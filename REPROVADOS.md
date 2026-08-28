@@ -211,6 +211,20 @@ foi medida — e aí não é reprovação, é opinião.
 > **E o holdout offline superestima ~4x** (bloco 718: +2,6pp offline ->
 > +0,6pp na regua real). Nenhuma decisao de publicar sem a regua.
 
+## Termos de INTERACAO carta-a-carta (bloco 720)
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| 10 termos usando o BOARD CONCRETO (supera o maior blocker / morre de graca / gap pra maior ameaca / ativos dele) | **0/2 confirmam no holdout**: -1,8pp e -0,8pp; os outros 8 com coeficiente 0 (nao mudam decisao) | 720 |
+
+> **Dado verificado antes de concluir**: 6949 cartas de board, 89% com
+> poder real, distribuicao coerente. Nao e bug de captura.
+>
+> A hipotese do bloco 719 ("a lacuna e o motor nao ver as cartas na
+> mesa") **NAO se confirmou** -- a informacao passou a existir e nao
+> ajudou. O board concreto no `context` fica como observabilidade util,
+> mas nao e a resposta.
+
 ## Busca / shortlist
 
 | tentativa | resultado medido | bloco |

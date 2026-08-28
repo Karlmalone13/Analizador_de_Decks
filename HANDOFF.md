@@ -28,6 +28,70 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (720) - **A HIPOTESE DO BLOCO 719 NAO SE CONFIRMOU**: com o board concreto disponivel, os termos de INTERACAO nao melhoram nada (0/2 no holdout). E sobra uma anomalia que aponta pra outra direcao
+
+### O que eu afirmei e nao se sustentou
+
+O bloco 719 concluiu, em letras grandes, que a lacuna era **o motor nunca
+saber quais cartas estao na mesa**. A informacao passou a existir. 10
+termos de interacao foram escritos e medidos:
+
+| termo | play holdout |
+|---|---|
+| `i_gap_maior_ameaca` | **-1,8pp** |
+| `i_blocker_supera_todos` | **-0,8pp** |
+| os outros 8 | coeficiente 0 -- nao mudaram decisao nenhuma |
+
+**0/2 confirmam.** Selecao pelo TREINO, holdout olhado uma vez (protocolo
+correto).
+
+**Dado verificado antes de concluir** (licao ja aprendida hoje): 6949
+cartas de board observadas, 89% com poder real, distribuicao coerente
+(5000/2000/8000...). Os 11% de zero sao cartas que REALMENTE tem 0 de
+poder. **Nao e bug de captura -- os termos simplesmente nao ajudam.**
+
+Eu fiz exatamente o que venho criticando: transformei uma hipotese nova
+na explicacao definitiva antes de medi-la. Fica registrado com o mesmo
+peso das outras retratacoes do dia.
+
+### A ANOMALIA que atravessou o dia e ninguem questionou
+
+**Os pesos de PRODUCAO -- ajustados a mao, por coordinate-ascent, pra
+ganhar PARTIDAS (winrate/gauntlet, bloco 495) -- batem QUALQUER ajuste
+estatistico feito pra imitar o humano:**
+
+| | play holdout |
+|---|---|
+| **pesos de producao (alvo = VENCER)** | **29,1%** |
+| ajuste estatistico, 14 termos (alvo = IMITAR) | 23,9% |
+| ajuste estatistico, 17 termos (alvo = IMITAR) | 20,7% |
+
+**Otimizar diretamente "escolher o que o humano escolheu" produz um motor
+que IMITA PIOR do que um motor calibrado pra jogar bem.**
+
+### A hipotese que isso levanta (NAO medida -- registrada, nao afirmada)
+
+**Talvez o caminho pra jogar IGUAL ao humano seja jogar BEM, nao
+imitar.** O humano do banco e um jogador forte; um motor forte
+convergiria naturalmente pras mesmas jogadas. Forcar semelhanca
+diretamente perseguiria o efeito em vez da causa.
+
+E consistente com TUDO que falhou hoje -- todas as tentativas otimizavam
+SEMELHANCA:
+- bonus/desempate por padrao humano (641-649, 663, 676)
+- politica aprendida (680-683)
+- ranqueador e selecao de conjunto (704-706)
+- ajuste de pesos contra `play` (711-715)
+- termos novos contra `play` (718-720)
+
+**Como testar** (o projeto ja tem a ferramenta): `gauntlet_matchup.py` /
+`baseline_metrics.py` medem winrate. Basta calibrar pesos contra WINRATE
+e medir o que acontece com `play`. Se `play` SUBIR ao otimizar forca, a
+hipotese se sustenta e a meta muda de rota inteira.
+
+**NAO afirmar antes de medir** -- errei duas vezes hoje exatamente assim
+(blocos 713 e 719).
+
 ## 2026-08-28 (719) - **A LACUNA ESTRUTURAL, ACHADA**: o motor NUNCA soube quais cartas estao na mesa. O contexto de decisao so tinha CONTAGENS e SOMAS -- por isso nada melhorava
 
 ### A cobranca do usuario que levou ate aqui

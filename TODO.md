@@ -2,6 +2,18 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 720): **a hipotese do 719 NAO se confirmou** — com o
+> board concreto disponivel, os 10 termos de INTERACAO dao **0/2 no
+> holdout** (-1,8pp, -0,8pp; os outros 8 com coeficiente 0). Dado
+> verificado antes de concluir (89% dos poderes reais, nao e bug). **E
+> sobra uma ANOMALIA**: os pesos de PRODUCAO, ajustados pra **VENCER
+> partidas**, dao `play` **29,1%** e batem qualquer ajuste estatistico
+> feito pra **IMITAR** (23,9% / 20,7%). **Hipotese registrada, NAO
+> medida: o caminho pra jogar IGUAL ao humano pode ser jogar BEM, nao
+> imitar** — consistente com TODAS as falhas do dia, que otimizavam
+> semelhanca. Testavel com `gauntlet_matchup.py`: calibrar pesos contra
+> WINRATE e ver o que acontece com `play`.
+
 > 28/08/2026 (bloco 719): **A LACUNA ESTRUTURAL — o motor NUNCA soube
 > quais cartas estao na mesa.** O `context` de cada decisao so tinha
 > `opp_field` (CONTAGEM) e `opp_board_power_total` (SOMA); **qual carta
