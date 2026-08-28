@@ -2,6 +2,19 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 723): **forca e semelhanca NAO sao antagonicas.**
+> Gauntlet Imu, 140 partidas por braco: pesos otimizados p/ `play` dao
+> **38,6% de winrate x 27,1%** do baseline (**+11,5pp**, ICs quase sem
+> sobreposicao) — e os mesmos pesos ja davam **+1,9pp de `play`**. As duas
+> subiram JUNTAS. **Mas a direcao causal que propus (bloco 720: "jogar bem
+> -> imitar melhor") NAO foi a testada** — otimizei SEMELHANCA e ganhei
+> FORCA. **A amostra de 6 seeds era ruido**: o mesmo baseline dava 35,7%
+> com 6 seeds e 27,1% com 20 (8,6pp de diferenca so por amostra, maior que
+> o "sinal" que quase reportei). **Proximo**: o winrate e ~6x mais
+> responsivo (+11,5pp x +1,9pp) — calibrar contra WINRATE e ver se `play`
+> segue. **RESSALVA: um lider so** (Imu); rodar `--painel` antes de tratar
+> como fato geral.
+
 > 28/08/2026 (bloco 722): **instalacao em outra maquina** —
 > `BOT/instalar.bat` (duplo-clique) acha o jogo sozinho (Steam
 > `libraryfolders.vdf` + discos), instala BepInEx, compila o plugin

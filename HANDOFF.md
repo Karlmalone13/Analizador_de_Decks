@@ -28,6 +28,57 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (723) - **FORCA E SEMELHANCA NAO SAO ANTAGONICAS**: o mesmo vetor de pesos deu **+11,5pp de winrate** e **+1,9pp de `play`**. Mas a direcao causal que eu propus NAO foi a testada
+
+### O teste
+
+Gauntlet Imu vs 7 adversarios, **20 seeds (140 partidas por braco)**, mesmas
+seeds, unica diferenca o vetor de pesos:
+
+| pesos | winrate | IC95% | `play` (regua real, holdout) |
+|---|---|---|---|
+| producao (alvo: VENCER) | **27,1%** | [20-35] | 34,4% |
+| otimizados p/ `play` (alvo: IMITAR) | **38,6%** | [31-47] | **36,3%** |
+
+**+11,5pp de winrate**, ICs quase sem sobreposicao. DON/ataque 1,41 ->
+0,93 (mudanca de comportamento grande, nao ajuste marginal).
+
+### A AMOSTRA DE 6 SEEDS ERA RUIDO -- e quase me enganou de novo
+
+O MESMO baseline deu **35,7% com 6 seeds** e **27,1% com 20**. Diferenca
+de **8,6pp so por amostra** -- maior que os +7,2pp que eu quase reportei
+como sinal da hipotese na primeira rodada.
+
+Registrei ANTES de rodar que 6 seeds so serviriam pra diferenca grande.
+Foi o que salvou: seria a 5a conclusao do dia construida sobre ruido.
+
+### O que ficou estabelecido, e o que NAO
+
+**Estabelecido**: as duas metricas **nao sao antagonicas** -- o mesmo
+vetor melhorou winrate E `play`. Isso derruba a preocupacao de que
+perseguir `play` deixasse o bot pior de jogar (o `don_alvo` do bloco 713
+sugeria trade-off).
+
+**NAO estabelecido**: a hipotese que EU formulei no bloco 720 ("o caminho
+pra jogar igual ao humano e jogar BEM, nao imitar"). O que aconteceu foi
+o **inverso**: otimizei SEMELHANCA e ganhei FORCA. A direcao causal que
+propus continua sem teste.
+
+### O desequilibrio que aponta o proximo passo
+
+O mesmo vetor rendeu **+11,5pp de winrate** contra **+1,9pp de `play`**.
+**O winrate e ~6x mais responsivo.** Se as duas correlacionam e uma
+responde muito mais, calibrar contra WINRATE e deixar `play` seguir junto
+vira caminho concreto -- e e exatamente o teste do bloco 720 que ainda
+nao foi feito.
+
+### RESSALVA: um lider so
+
+Isto e **Imu contra 7 adversarios**. A regra do projeto (topo do
+`CLAUDE.md`) e que resultado de um lider NAO generaliza. `--painel` roda
+os 4 arquetipos e e o que decide se o efeito e real ou especifico do Imu.
+**Nao tratar os +11,5pp como fato geral ate isso rodar.**
+
 ## 2026-08-28 (722) - Instalacao em OUTRA MAQUINA: `BOT/instalar.ps1`. O bloqueio real nao era falta de executavel -- era o caminho do jogo CRAVADO em 11 lugares do `.csproj`
 
 ### A pergunta do usuario
