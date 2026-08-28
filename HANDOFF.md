@@ -28,6 +28,82 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (703) - **FASE 1 CONCLUIDA**: avaliador rapido de pe -- uma avaliacao passou de ~20 min pra **0,005s**. Proxy VALIDADO contra a regua real (28,6% x 28,9%), e o teto de um re-ranqueador puro e **94,6%**
+
+### O que foi construido
+
+`scriptis_da_ia/fast_eval.py`, sobre o banco que ja existia
+(`metrics/policy_dataset.jsonl`, 4420 decisoes / 1007 turnos --
+**reusado, nao reinventado**).
+
+| | tempo |
+|---|---|
+| carregar o banco | 0,20s |
+| **UMA avaliacao** | **0,005s** |
+| regua real (`decision_quality_full.py`) | ~1200s |
+
+**Era ISTO que impedia todas as tentativas anteriores de imitacao.** Nao
+falta de ideia: custo de iteracao. Com 20 min por medicao, cada tentativa
+tinha UM tiro e era abandonada. DAgger (fase 3) precisa de centenas de
+iteracoes -- inviavel antes, viavel agora.
+
+### O PROXY FOI VALIDADO -- nao e proxy inventada
+
+A metrica e a MESMA granularidade do `play` oficial (conjunto de cartas
+do turno), nao AUC nem top-1 -- justamente porque o bloco 683 melhorou o
+AUC isolado (0,702 -> 0,851) e PIOROU a metrica real.
+
+| ranqueador | play (offline) |
+|---|---|
+| **motor real (referencia)** | **28,6%** -- regua real da **28,9%** |
+| score estatico sozinho | 19,5% |
+| **oraculo (re-ranqueador)** | **94,6%** |
+
+0,3pp de diferenca na referencia: o proxy reproduz o motor de verdade.
+
+**E os 94,6% respondem a pergunta da fase 2**: um re-ranqueador PURO, sem
+mudar mais nada no motor, tem espaco pra ir de 28,6% ate perto de 94%. O
+alvo cabe dentro de "so ordenar melhor".
+
+### Tres defeitos achados e corrigidos/declarados
+
+1. **Meu `rank_oraculo` estava ERRADO** -- dava 59,3%. Devolvia a
+   PRIMEIRA candidata com `humano_fez` em CADA decisao; quando a mesma
+   carta era candidata em varias decisoes, era escolhida repetidamente e
+   a 2a carta do humano nunca saia. Eu quase registrei 59,3% como "teto
+   do re-ranqueador". Ranqueador precisa de ESTADO (o que ja escolheu no
+   turno) -- virou factory. Corrigido: **94,6%**.
+2. **Denominadores divergentes** (960 / 935 / 871): cada ranqueador
+   pulava turnos diferentes, e as porcentagens nao eram comparaveis entre
+   si. Universo de avaliacao agora e FIXO, por criterio independente do
+   ranqueador testado.
+3. **A continencia do banco e 100% POR CONSTRUCAO** e NAO e comparavel
+   com os 80,3% do oraculo do bloco 697: o conjunto "humano" daqui e
+   DERIVADO das candidatas marcadas `humano_fez`, entao carta que o
+   humano jogou e nunca virou candidata nao existe neste banco (2,6% pela
+   regua real). Declarado no cabecalho do arquivo.
+
+### Split por LIDER ja implementado (requisito do bloco 702)
+
+`split_por_lider()` separa treino/validacao por LIDER, nunca por partida.
+9 lideres ficam de fora do treino: OP04-019, OP07-019, OP11-062,
+OP13-001, OP13-002, OP13-004, OP14-079, OP14-080, ST29-001 (797 turnos
+treino / 210 validacao).
+
+### A limitacao central, no topo do arquivo
+
+Offline o estado NAO se atualiza conforme o ranqueador escolhe diferente:
+um modelo que divergiria no 1o passo continua vendo estados que nunca
+alcancaria. **Isto E o *distribution shift* que reprovou o bloco 683.** O
+numero daqui e OTIMISTA e serve pra ITERAR e FILTRAR hipoteses, **nunca
+pra decidir** -- toda conclusao final continua exigindo
+`decision_quality_full.py` e o A/B com recorte por lider.
+
+### Proximo: fase 2
+
+Ranqueador aprendido sobre as candidatas, **sem identidade de carta ou
+lider**, validado nos 9 lideres que nunca vera.
+
 ## 2026-08-28 (702) - PLANO REGISTRADO E APROVADO PELO USUARIO - rota pra resolver de vez: **aprender a ordenacao** em vez de escreve-la a mao. Com a restricao "QUALQUER DECK" como requisito de 1a classe -- e o achado de que a tentativa anterior tinha a feature que a proibe
 
 ### Por que uma rota nova, e nao mais um incremento

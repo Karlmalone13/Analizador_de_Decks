@@ -2,6 +2,20 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 703): **FASE 1 CONCLUIDA** — `fast_eval.py`: uma
+> avaliacao passou de ~1200s pra **0,005s** (banco reusado,
+> `policy_dataset.jsonl`). **Era isto que impedia as tentativas
+> anteriores** — com 20min/medicao cada uma tinha UM tiro; DAgger precisa
+> de centenas. **Proxy VALIDADO**: reproduzindo o motor real da **28,6%**
+> contra 28,9% da regua (0,3pp). Metrica e o `play` de conjunto, nao AUC
+> (o bloco 683 melhorou AUC e piorou o real). **Teto de um re-ranqueador
+> PURO: 94,6%** — o alvo cabe em "so ordenar melhor". Corrigidos:
+> meu oraculo dava 59,3% por repetir a mesma carta (falta de estado);
+> denominadores divergentes entre ranqueadores (universo agora fixo); e
+> declarado que a continencia do banco e 100% **por construcao** (nao
+> comparar com os 80,3% do bloco 697). Split por lider implementado, 9
+> lideres fora do treino. **Proximo: fase 2**, ranqueador sem identidade.
+
 > 28/08/2026 (bloco 702): **PLANO APROVADO — aprender a ordenacao em vez
 > de escreve-la a mao.** O usuario recusou meu incremento (+3 a +10pp):
 > a meta exige **+56pp**. Gargalo estrutural = funcao de valor escrita a
