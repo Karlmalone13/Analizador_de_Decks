@@ -28,6 +28,76 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (719) - **A LACUNA ESTRUTURAL, ACHADA**: o motor NUNCA soube quais cartas estao na mesa. O contexto de decisao so tinha CONTAGENS e SOMAS -- por isso nada melhorava
+
+### A cobranca do usuario que levou ate aqui
+
+*"O que ta faltando para gente resolver de vez? Toda hora vc vem com uma
+desculpinha diferente sendo que ja liberei para gente mudar a estrutura"*.
+
+**Ele esta certo.** Eu fiz mudancas estruturais reais no dia, mas cada
+medicao voltou perto de zero e eu tratei cada uma como achado em vez de
+perseguir a que resolve. Isso vira desculpa mesmo quando os numeros sao
+verdadeiros.
+
+### O QUE FALTAVA (e agora esta medido, nao suposto)
+
+Inspecionando o `context` que o motor grava em CADA decisao:
+
+    'opp_field': 3              <- CONTAGEM
+    'opp_board_power_total': 15000   <- SOMA
+
+**Qual carta esta no tabuleiro nao existia em lugar nenhum do
+pipeline.** Nem na funcao de valor, nem no decision_log, nem em nenhum
+dataset derivado dele.
+
+Consequencia: `_evaluate_state_v2` soma ~15 escalares AGREGADOS. **Uma
+soma ponderada de agregados nao consegue representar "esta carta responde
+aquela carta".** O bloco 716 mediu exatamente isso sem saber a causa:
+AUC 0,611 no melhor ajuste possivel.
+
+**Isso explica TODOS os fracassos do dia com uma causa unica e
+verificavel:**
+- ajuste de pesos so achava ruido (715) -- nao havia sinal nos agregados
+- ranqueador de 59 features saturou (704-706) -- eram os MESMOS agregados
+- curva de aprendizado saturou (707) -- mais exemplos do mesmo nao ajudam
+- termo novo deu so +0,6pp (718) -- ainda era agregado
+
+Nao era peso errado, nao era termo faltando, nao era falta de dado, nao
+era *distribution shift*: **a informacao nunca chegava.**
+
+### A mudanca
+
+`_decision_context` passa a gravar o BOARD CONCRETO -- `board_meu`,
+`board_opp` (custo, poder atual, counter, restado, DON anexado, blocker,
+rush, recem-jogado por carta) e `mao_props`. **So PROPRIEDADES, nunca o
+codigo** (requisito "qualquer deck", bloco 702).
+
+Verificado: hash das decisoes de 3 partidas **identico**, `smoke_fast`
+passa. **Zero mudanca de comportamento** -- e observabilidade, o motor
+ainda nao usa isso pra decidir.
+
+### 10 termos de INTERACAO em `lab_termos.py`
+
+O que eles expressam e o que nenhum agregado expressa:
+
+| antes (agregado) | agora (interacao) |
+|---|---|
+| "tem blocker" | "supera o MAIOR blocker dele" |
+| "oponente tem 3 cartas" | "quantas dele estao ATIVAS" |
+| "soma de poder 15000" | "entra e MORRE DE GRACA pra qualquer coisa dele" |
+| -- | "meu board JA cobre a maior ameaca -> mais um corpo e redundante" |
+
+Relacoes par a par candidata x cada carta adversaria, agregadas por
+max/soma -- um **DeepSets manual**: captura interacao sem rede neural
+(torch nao existe neste ambiente) e sem identidade de carta.
+
+### Estado
+
+Coleta rodando com o board concreto. Avaliacao pelo criterio CORRETO
+(`play` no holdout, coeficiente escolhido no treino) -- o criterio por
+AUC ja se provou INVERTIDO (bloco 718).
+
 ## 2026-08-28 (718) - Laboratorio de TERMOS PLUGAVEIS construido; ele **reprovou o proprio criterio** (AUC invertia o ranking) e achou 1 termo real -- que na regua da so **+0,6pp**, nao os +2,6pp do holdout offline
 
 ### O laboratorio (`scriptis_da_ia/lab_termos.py`)

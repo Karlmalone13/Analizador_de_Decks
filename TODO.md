@@ -2,6 +2,20 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 719): **A LACUNA ESTRUTURAL — o motor NUNCA soube
+> quais cartas estao na mesa.** O `context` de cada decisao so tinha
+> `opp_field` (CONTAGEM) e `opp_board_power_total` (SOMA); **qual carta
+> esta no tabuleiro nao existia em lugar nenhum do pipeline**. Por isso
+> uma soma ponderada de ~15 agregados nao representa "esta carta responde
+> aquela" — e o AUC 0,611 do bloco 716 era o sintoma. **Explica TODOS os
+> fracassos do dia com uma causa unica**: pesos (715), ranqueador de 59
+> features (704-706), curva saturada (707), termo novo +0,6pp (718) —
+> todos operavam sobre agregados. **`_decision_context` agora grava o
+> BOARD CONCRETO** (so propriedades, nunca codigo — regra "qualquer
+> deck"); hash identico e smoke OK, **zero mudanca de comportamento**.
+> **10 termos de INTERACAO** em `lab_termos.py` (supera o maior blocker /
+> morre de graca / board ja cobre a ameaca / quantas dele estao ativas).
+
 > 28/08/2026 (bloco 718): **laboratorio de TERMOS PLUGAVEIS**
 > (`lab_termos.py`) — termo candidato = funcao pura, testada em segundos
 > sem tocar no motor. **Ele reprovou o PROPRIO criterio**: montei com

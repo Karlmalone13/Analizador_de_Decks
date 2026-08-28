@@ -261,3 +261,92 @@ def avalia_por_play(nome_termo=None, n_pontos=13):
     coef = melhor[0]
     return {'termo': nome_termo, 'coef': coef, 'play_tr': melhor[1],
             'play_va': play(va, coef), 'ganho': play(va, coef) - base_va}
+
+
+# ══ TERMOS DE INTERACAO CARTA-A-CARTA (bloco 719) ══════════════════════
+# A LACUNA ESTRUTURAL. Todos os termos acima -- os 14 do motor e os 14
+# candidatos -- sao AGREGADOS: contagens, somas, medias. Uma soma
+# ponderada de agregados **nao consegue representar "esta carta responde
+# aquela carta"**, e o bloco 716 mediu exatamente isso (AUC 0,611).
+#
+# Estes leem o BOARD CONCRETO (`board_meu`/`board_opp`, que so passaram a
+# existir no bloco 719) e computam relacoes PAR A PAR entre a carta
+# candidata e cada carta adversaria, agregando por max/soma. E um
+# "DeepSets manual": captura interacao sem exigir rede neural (torch nao
+# esta disponivel neste ambiente) e sem usar identidade de carta.
+
+def _op(est):
+    return est.get('board_opp') or []
+
+def _meu(est):
+    return est.get('board_meu') or []
+
+def i_mata_alguem(est, prop, kind):
+    """Meu poder supera o poder ATUAL de alguma carta dele? (remocao real)"""
+    pw = float(prop.get('power', 0)) * 1000.0
+    return 1.0 if any(pw > float(c.get('current_power') or 0) for c in _op(est)) else 0.0
+
+def i_maior_alvo_batido(est, prop, kind):
+    """Poder do MAIOR alvo que este corpo consegue superar."""
+    pw = float(prop.get('power', 0)) * 1000.0
+    alvos = [float(c.get('current_power') or 0) for c in _op(est)
+             if pw > float(c.get('current_power') or 0)]
+    return (max(alvos) / 1000.0) if alvos else 0.0
+
+def i_sobrevive_ao_board(est, prop, kind):
+    """Meu corpo sobrevive a TODOS os ataques dele? (nao morre de graca)"""
+    pw = float(prop.get('power', 0)) * 1000.0
+    return 1.0 if all(pw > float(c.get('current_power') or 0)
+                      for c in _op(est)) and _op(est) else 0.0
+
+def i_morre_de_graca(est, prop, kind):
+    """Entra e morre pra qualquer coisa dele -- o oposto do anterior."""
+    pw = float(prop.get('power', 0)) * 1000.0
+    return 1.0 if _op(est) and all(pw <= float(c.get('current_power') or 0)
+                                   for c in _op(est)) else 0.0
+
+def i_passa_do_blocker(est, prop, kind):
+    """Supera o maior BLOCKER dele -- destrava dano que hoje nao passa."""
+    pw = float(prop.get('power', 0)) * 1000.0
+    bl = [float(c.get('current_power') or 0) for c in _op(est) if c.get('blocker')]
+    return 1.0 if bl and pw > max(bl) else 0.0
+
+def i_gap_maior_ameaca(est, prop, kind):
+    """Distancia entre meu corpo e a MAIOR ameaca dele (negativo = perco)."""
+    pw = float(prop.get('power', 0)) * 1000.0
+    mx = max((float(c.get('current_power') or 0) for c in _op(est)), default=0.0)
+    return (pw - mx) / 1000.0
+
+def i_meu_board_ja_cobre(est, prop, kind):
+    """Meu board JA supera a maior ameaca -- mais um corpo e redundante."""
+    mx_op = max((float(c.get('current_power') or 0) for c in _op(est)), default=0.0)
+    mx_meu = max((float(c.get('current_power') or 0) for c in _meu(est)), default=0.0)
+    return 1.0 if mx_meu > mx_op else 0.0
+
+def i_ativos_dele(est, prop, kind):
+    """Cartas ATIVAS dele (podem bloquear/atacar) -- pressao real, nao contagem."""
+    return float(sum(1 for c in _op(est) if not c.get('rested')))
+
+def i_blocker_supera_todos(est, prop, kind):
+    """Blocker que segura TUDO que ele tem -- muito diferente de 'tem blocker'."""
+    if not prop.get('blocker'):
+        return 0.0
+    pw = float(prop.get('power', 0)) * 1000.0
+    return 1.0 if all(pw > float(c.get('current_power') or 0) for c in _op(est)) else 0.0
+
+def i_don_dele_no_board(est, prop, kind):
+    return float(sum(c.get('don') or 0 for c in _op(est)))
+
+
+CANDIDATOS.update({
+    'i_mata_alguem': i_mata_alguem,
+    'i_maior_alvo_batido': i_maior_alvo_batido,
+    'i_sobrevive_ao_board': i_sobrevive_ao_board,
+    'i_morre_de_graca': i_morre_de_graca,
+    'i_passa_do_blocker': i_passa_do_blocker,
+    'i_gap_maior_ameaca': i_gap_maior_ameaca,
+    'i_meu_board_ja_cobre': i_meu_board_ja_cobre,
+    'i_ativos_dele': i_ativos_dele,
+    'i_blocker_supera_todos': i_blocker_supera_todos,
+    'i_don_dele_no_board': i_don_dele_no_board,
+})

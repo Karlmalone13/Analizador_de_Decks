@@ -19831,11 +19831,50 @@ class OPTCGMatch:
         nenhum. Antes deste bloco o dict era construido inline dentro de
         `_log_turn_planner_decision`.
         """
+        # ── BOARD CONCRETO (bloco 719) ───────────────────────────────
+        # A LACUNA ESTRUTURAL do projeto, achada ao investigar por que
+        # nada melhorava: ate aqui o contexto de decisao so tinha
+        # AGREGADOS -- `opp_field` e uma CONTAGEM, `opp_board_power_total`
+        # e uma SOMA. **Qual carta esta no tabuleiro nao existia em lugar
+        # nenhum do pipeline.**
+        #
+        # Consequencia medida: `_evaluate_state_v2` soma ~15 escalares
+        # agregados, e o melhor ajuste linear possivel sobre eles da
+        # **AUC 0,611** (bloco 716) -- porque uma soma ponderada de
+        # agregados **nao consegue representar "esta carta responde
+        # aquela carta"**. Foi por isso que TUDO falhou hoje: ajuste de
+        # peso (715), ranqueador de 59 features (704-706), curva de
+        # aprendizado (707). Nao era peso errado nem termo faltando: a
+        # informacao nunca chegava.
+        #
+        # So PROPRIEDADES, nunca o codigo -- requisito "qualquer deck"
+        # (bloco 702): com identidade o motor memoriza e quebra no 1o
+        # deck novo.
+        def _carta(c):
+            return {
+                'cost': getattr(c, 'cost', 0),
+                'power': getattr(c, 'power', 0),
+                'current_power': getattr(c, 'current_power', None) or getattr(c, 'power', 0),
+                'counter': getattr(c, 'counter', 0),
+                'rested': bool(getattr(c, 'rested', False)),
+                'don': getattr(c, 'don_attached', 0),
+                'blocker': bool(getattr(c, 'has_blocker', False)),
+                'rush': bool(getattr(c, 'has_rush', False)),
+                'just_played': bool(getattr(c, 'just_played', False)),
+            }
+
         return {
             'priority': priority,
             'posture': engine.posture(),
             'phase': engine.analyzer.game_phase(),
             'profile': engine.analyzer.deck_profile_type(),
+            'board_meu': [_carta(c) for c in p.field_chars],
+            'board_opp': [_carta(c) for c in opp.field_chars],
+            'mao_props': [{'cost': getattr(c, 'cost', 0),
+                           'power': getattr(c, 'power', 0),
+                           'counter': getattr(c, 'counter', 0),
+                           'blocker': bool(getattr(c, 'has_blocker', False))}
+                          for c in p.hand],
             'life': p.life_count(),
             'opp_life': opp.life_count(),
             'hand': len(p.hand),
