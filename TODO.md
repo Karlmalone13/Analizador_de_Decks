@@ -2,6 +2,18 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 698): **o padrao passa a ser mudanca ESTRUTURAL, nao
+> ajuste** (ponto do usuario, aceito: as 11 tentativas reprovadas sao
+> todas parametro DENTRO da mesma arquitetura; nenhuma mexeu nela). Tres
+> cirurgias na mesa: **(1) remover/gatilhar a busca Monte Carlo** —
+> indicio real de uma decisao com score estatico 148,0 vs 14,6 revertido
+> pela busca com **3 amostras**, ou seja a etapa CARA destruindo o que a
+> BARATA acertava (modo `CHEAP_LAYER_DECIDES_ALONE` ja existe);
+> **(2) trocar `_evaluate_state_v2`**; **(3) refazer a selecao como
+> ranqueamento aprendido no laco certo (DAgger)**. **Criterio
+> pre-registrado ANTES do resultado** de `diag_margem.py` — ver bloco 698
+> pro mapeamento numero -> cirurgia.
+
 > 27/08/2026 (bloco 697): **ORACULO — 85-90% CABE NA ARQUITETURA ATUAL.**
 > 987 turnos: real **28,9%**, oraculo-busca (escolha perfeita no
 > shortlist) **80,3%**, oraculo-geracao (escolha perfeita em tudo que

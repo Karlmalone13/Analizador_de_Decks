@@ -28,6 +28,61 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (698) - Claude (sessao remota web) - DECISAO PRE-REGISTRADA: o padrao passa a ser mudanca ESTRUTURAL, nao ajuste. As 3 cirurgias na mesa e o criterio que escolhe entre elas -- escrito ANTES do numero sair
+
+### O ponto do usuario, aceito
+
+*"Se tanta tentativa ja falhou pq nao mexemos na estrutura logo?"*
+
+Ele esta certo, e fica registrado como mudanca de padrao. **As 11
+tentativas reprovadas sao todas do MESMO tipo**: bonus, desempate,
+largura de shortlist, um modelo pendurado por fora. Todas mexeram em
+PARAMETROS dentro da arquitetura
+`gerar -> score estatico -> shortlist -> busca Monte Carlo -> escolher`.
+**Nenhuma mexeu na arquitetura.** Onze resultados nulos nao sao onze
+coincidencias -- e evidencia de que ajuste dentro dessa cadeia nao
+resolve.
+
+**A partir daqui, a hipotese default e estrutural.** Ajuste de parametro
+so se justifica se vier acompanhado do argumento de por que ele nao e a
+12a variante da mesma coisa ja reprovada.
+
+### As 3 cirurgias na mesa (orgaos diferentes, custo muito diferente)
+
+1. **Remover ou gatilhar a busca Monte Carlo.** Indicio real observado
+   numa decisao: score estatico **148,0** pra `play` contra **14,6** pra
+   `attach_don`, e a busca INVERTEU com **3 amostras**. Se for geral, a
+   etapa CARA esta destruindo informacao que a BARATA ja tinha certa.
+   Mais radical (corta um estagio inteiro) e ao mesmo tempo a mais
+   barata de executar -- o modo de ablacao `CHEAP_LAYER_DECIDES_ALONE`
+   ja existe desde o bloco 520.
+2. **Trocar a funcao de valor** (`_evaluate_state_v2`).
+3. **Refazer a selecao como ranqueamento aprendido no laco certo**
+   (estilo DAgger), atacando o *distribution shift* que matou a
+   tentativa do bloco 683.
+
+### CRITERIO PRE-REGISTRADO (escrito antes do resultado)
+
+Rodando: `diag_margem.py` sobre o corpus. Compromisso, pra nao
+racionalizar depois:
+
+- **Se "a busca INVERTEU" (estatico certo + simulado errado) >= ~25%** ->
+  cirurgia **1**. Medir com o modo de ablacao antes de remover nada.
+- **Se a maioria perde por margem PEQUENA (<= 20)** -> problema de
+  RESOLUCAO, nao de valor: 3 amostras e ruido. Cirurgia 1 na variante
+  "gatilhar" (confiar no estatico quando a simulacao nao separa).
+- **Se perde por margem GRANDE e o estatico tambem erra** -> a funcao de
+  valor esta confiantemente errada: cirurgia **2**.
+- **Se nenhum padrao dominar** -> cirurgia **3**, a mais cara, so entao.
+
+### O que NAO muda com o veredito do oraculo
+
+O oraculo (bloco 697) garante que o ALVO existe e cabe (teto de geracao
+97,4%). **Nao** garante que vamos acerta-lo -- ele tem retrovisor. Toda
+mudanca daqui pra frente segue a mesma disciplina do dia: previsao
+registrada antes, A/B medido, recorte por lider, e entrada em
+`REPROVADOS.md` se cair.
+
 ## 2026-08-27 (697) - Claude (sessao remota web) - **O ORACULO RESPONDE A PERGUNTA DE FUNDO: 85-90% CABE NA ARQUITETURA ATUAL.** A carta certa ja e gerada em 97,4% dos turnos e chega ao shortlist em 80,3% -- o gap inteiro e de ORDENACAO, nao de geracao
 
 ### A pergunta e por que ela precisava ser medida
