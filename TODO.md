@@ -2,6 +2,18 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 714): **otimizacao MULTI-OBJETIVO.** `don_alvo` entra
+> no banco de termos (`coletar_termos.py` rotula o alvo do DON, mesma
+> definicao da regua) e no criterio da busca:
+> `objetivo = play - 3.0*max(0, don_base - don)` — **so a QUEDA e punida**
+> (melhorar DON nao rende bonus, evita a troca inversa), e cada ponto de
+> DON perdido exige 3 de `play`. **Teste de sanidade: a troca do bloco 713
+> (-8,0pp DON por +1,9pp play) seria REJEITADA** por este criterio.
+> Diagnostico em 1 frase: o otimizador nao errou, acertou o alvo que eu
+> dei — `don_alvo` nem existia pra ele. **Criterio de aceite definido
+> antes**: so vai pra producao se, NO HOLDOUT, `play` subir E `don_alvo`
+> nao cair. `eval_weights.json` segue intocado.
+
 > 28/08/2026 (bloco 713): **O NUMERO HONESTO E +1,9pp** (holdout de 12
 > lideres que a busca nunca viu), nao os +8,5pp in-sample — entre a CV
 > (+0,8pp) e o in-sample, perto da CV. **MAS: o ganho nao generaliza e a

@@ -59,38 +59,78 @@ def prepara(linhas):
             'code': [c['code'] for c in d['candidates']],
             'leader': d['leader'],
             'humano': set(d['humano']),
+            'humano_don': set(d.get('humano_don') or []),
         })
     return chaves, list(por_turno.values())
 
 
-def play_de(turnos, w):
-    """`play` (conjunto exato) sob o vetor de pesos `w`. Puro produto escalar."""
+def metricas_de(turnos, w):
+    """`play` E `don_alvo` sob o vetor `w`. Puro produto escalar.
+
+    bloco 714: `don_alvo` entrou aqui porque a otimizacao de objetivo
+    UNICO do bloco 713 comprou `play` (+1,9pp no holdout) vendendo
+    `don_alvo` (**-8,0pp**) -- e o otimizador nunca viu o estrago, porque
+    a metrica nao existia pra ele. Ele nao errou: acertou o alvo errado.
+    """
     ok = n = 0
+    ok_don = n_don = 0
     por = defaultdict(lambda: [0, 0])
     for decisoes in turnos:
-        escolhido = set()
+        escolhido, escolhido_don = set(), set()
         for d in decisoes:
             v = d['M'] @ w + d['res']
             i = int(np.argmax(v))
-            if d['kind'][i] == 'play' and d['code'][i]:
-                escolhido.add(d['code'][i])
+            if d['code'][i]:
+                if d['kind'][i] == 'play':
+                    escolhido.add(d['code'][i])
+                elif d['kind'][i] == 'attach_don':
+                    escolhido_don.add(d['code'][i])
         hum = decisoes[0]['humano']
-        if not hum and not escolhido:
-            continue
-        n += 1
-        a = escolhido == hum
-        ok += a
-        p = por[decisoes[0]['leader']]
-        p[0] += a; p[1] += 1
-    return (ok / n if n else 0.0, n,
-            {k: (x / y, y) for k, (x, y) in por.items()})
+        hum_don = decisoes[0].get('humano_don', set())
+        if hum or escolhido:
+            n += 1
+            a = escolhido == hum
+            ok += a
+            p = por[decisoes[0]['leader']]
+            p[0] += a; p[1] += 1
+        if hum_don or escolhido_don:
+            n_don += 1
+            ok_don += escolhido_don == hum_don
+    return {'play': ok / n if n else 0.0, 'n': n,
+            'don': ok_don / n_don if n_don else 0.0, 'n_don': n_don,
+            'por_lider': {k: (x / y, y) for k, (x, y) in por.items()}}
 
 
-def busca(turnos, w0, chaves, n_iter=4000, seed=13):
-    """Subida de encosta com passos aleatorios multiplicativos."""
+def play_de(turnos, w):
+    """Compatibilidade: so o `play` (usado pelos relatorios existentes)."""
+    m = metricas_de(turnos, w)
+    return m['play'], m['n'], m['por_lider']
+
+
+def objetivo(turnos, w, base_don, penalidade=3.0):
+    """MULTI-OBJETIVO: `play` penalizado por REGREDIR `don_alvo`.
+
+    `max(0, base_don - don)` so pune QUEDA -- melhorar `don_alvo` nao
+    rende bonus, entao o otimizador nao troca `play` por DON tambem no
+    sentido inverso. `penalidade=3.0` significa que 1pp perdido em
+    `don_alvo` precisa de 3pp ganhos em `play` pra compensar: a queda do
+    bloco 713 (-8,0pp de DON por +1,9pp de play) seria REJEITADA.
+    """
+    m = metricas_de(turnos, w)
+    return m['play'] - penalidade * max(0.0, base_don - m['don'])
+
+
+def busca(turnos, w0, chaves, n_iter=4000, seed=13, penalidade=3.0):
+    """Subida de encosta com passos aleatorios multiplicativos.
+
+    O criterio e `objetivo()` (multi-objetivo), nao `play` puro -- ver
+    bloco 714. O valor RETORNADO continua sendo o `play`, pra os
+    relatorios seguirem comparaveis com as medicoes anteriores.
+    """
     rng = np.random.RandomState(seed)
     w = w0.copy()
-    melhor = play_de(turnos, w)[0]
+    base_don = metricas_de(turnos, w0)['don']
+    melhor = objetivo(turnos, w, base_don, penalidade)
     escala = 0.6
     sem_ganho = 0
     for it in range(n_iter):
@@ -99,7 +139,7 @@ def busca(turnos, w0, chaves, n_iter=4000, seed=13):
         k = rng.randint(1, max(2, len(w) // 2))
         for i in rng.choice(len(w), size=k, replace=False):
             cand[i] *= float(np.exp(rng.randn() * escala))
-        v = play_de(turnos, cand)[0]
+        v = objetivo(turnos, cand, base_don, penalidade)
         if v > melhor:
             melhor, w, sem_ganho = v, cand, 0
         else:
@@ -109,7 +149,7 @@ def busca(turnos, w0, chaves, n_iter=4000, seed=13):
                 sem_ganho = 0
                 if escala < 0.02:
                     break
-    return w, melhor
+    return w, play_de(turnos, w)[0]
 
 
 def main():

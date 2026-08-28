@@ -52,6 +52,13 @@ def main():
                 humano = {x['card'] for x in (raw_t.get('actions') or [])
                           if x.get('card')
                           and hist_action_kind(x, db) == 'play'}
+                # bloco 714: rotula tambem o ALVO do DON. Sem isto o
+                # otimizador so enxergava `play` e destruiu `don_alvo`
+                # (-8,0pp no holdout do bloco 713) sem nunca ver o
+                # estrago. Mesma definicao de `decision_quality_full.py`
+                # (linha 211): conjunto de cartas que receberam DON.
+                humano_don = {x['to'] for x in (raw_t.get('actions') or [])
+                              if x.get('type') == 'attach_don' and x.get('to')}
                 for d in t['decisions']:
                     cands = []
                     for c in (d.get('candidates') or []):
@@ -63,14 +70,17 @@ def main():
                             'code': (c.get('card') or {}).get('code'),
                             'termos': tv['termos'], 'residuo': tv['residuo'],
                             'humano_fez': (c.get('kind') == 'play' and
-                                           (c.get('card') or {}).get('code') in humano)})
+                                           (c.get('card') or {}).get('code') in humano),
+                            'humano_don': (c.get('kind') == 'attach_don' and
+                                           (c.get('card') or {}).get('code') in humano_don)})
                     if not cands:
                         continue
                     ch = d.get('chosen') or {}
                     fh.write(json.dumps({
                         'game_id': f"{os.path.basename(pf)}_{hum}",
                         'leader': t.get('leader') or lider, 'turn': t['turn'],
-                        'humano': sorted(humano), 'candidates': cands,
+                        'humano': sorted(humano),
+                        'humano_don': sorted(humano_don), 'candidates': cands,
                         'motor': {'kind': ch.get('kind'),
                                   'code': (ch.get('card') or {}).get('code')},
                     }, ensure_ascii=False) + '\n')

@@ -28,6 +28,46 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (714) - otimizacao MULTI-OBJETIVO: `don_alvo` entra no banco de termos e no criterio da busca. **O objetivo novo REPROVA o vetor que a busca anterior escolheu**
+
+### O diagnostico do bloco 713, em uma frase
+
+O otimizador **nao errou**: acertou o alvo que eu dei a ele, e o alvo era
+so um. `don_alvo` **nao existia** no banco de termos -- ele destruiu
+(-8,0pp no holdout) uma metrica que nao conseguia enxergar.
+
+### O que mudou
+
+**1. `coletar_termos.py` passa a rotular o ALVO DO DON.** Mesma
+definicao de `decision_quality_full.py` (linha 211): o conjunto de cartas
+que receberam DON no turno. Antes so `play` era rotulado.
+
+**2. `otimizar_pesos.py` ganha `metricas_de()` (play E don) e um
+objetivo multi-objetivo:**
+
+    objetivo = play - 3.0 * max(0, don_base - don)
+
+- **so a QUEDA e punida** (`max(0, ...)`) -- melhorar `don_alvo` nao
+  rende bonus, entao o otimizador nao passa a trocar `play` por DON no
+  sentido inverso;
+- **fator 3,0**: cada ponto perdido em DON exige 3 ganhos em `play`.
+
+**Calibrado contra o resultado que ja temos**: a troca do bloco 713
+(-8,0pp de DON por +1,9pp de `play`) da objetivo negativo e **seria
+REJEITADA**. O criterio novo reprova explicitamente o vetor que a busca
+anterior escolheu -- e o teste de sanidade do desenho.
+
+### Criterio de aceite, definido ANTES de rodar
+
+Mesmo protocolo honesto do bloco 713 -- busca so nos lideres de TREINO,
+regua real medindo o HOLDOUT. Aceita so se, **no holdout**: `play` sobe
+**E** `don_alvo` nao cai. Qualquer outro resultado nao vai pra producao.
+
+### Nota
+
+Nenhum vetor de pesos foi publicado. `eval_weights.json` (producao)
+segue intocado desde 11/08.
+
 ## 2026-08-28 (713) - **O NUMERO HONESTO: +1,9pp** no holdout (nao os +8,5pp in-sample). Mas **o ganho nao generaliza e a REGRESSAO sim** -- `don_alvo` -8,0pp. **NAO publicar este vetor**
 
 ### O experimento honesto
