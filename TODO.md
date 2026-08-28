@@ -2,6 +2,19 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 727): **REQUISITO — plugin tem que ficar como DLL
+> VERSIONADA pra instalar em varios PCs** (pedido do usuario). Ele **ja e**
+> DLL (BepInEx so carrega DLL, nunca .exe); o problema era ela **nao ser
+> versionada** (`bin/` gitignored), obrigando **.NET SDK** em cada maquina.
+> Agora: `instalar.ps1` usa `BOT\dist\OPTCGBotPlugin.dll` se existir
+> (**sem .NET**), `-Rebuild` forca compilar, quem compila guarda a copia em
+> `dist/`, e o `.gitignore` deixou de ignora-la. **LIMITE**: a DLL e ligada
+> contra as DLLs do JOGO — se o OPTCGSim atualizar, ela para de funcionar e
+> alguem precisa recompilar e recommitar. **PENDENTE (so o usuario pode
+> fazer)**: rodar `BOT\instalar.bat` 1x numa maquina com .NET e commitar
+> `BOT\dist\OPTCGBotPlugin.dll` — **nenhuma sessao remota consegue gerar
+> essa DLL** (exige Windows + .NET + o jogo instalado).
+
 > 28/08/2026 (bloco 726): **4a aparicao da mesma armadilha** — a corrida
 > variante sobrescreveu `gauntlet_painel.json` e o arquivo versionado
 > passou a mentir (guardava os numeros da VARIANTE). O bloco 721 protegeu

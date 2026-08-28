@@ -46,6 +46,35 @@ C:\Projetos_TI\analidador_de_decks_optcg\BOT\setup_bepinex.bat
 `BOT/vendor/`, não precisa internet) + recompila e copia o plugin. Depois
 é só abrir o jogo de novo.
 
+## DLL pre-compilada -- o que torna o bot instalavel em VARIOS PCs
+
+> **Requisito registrado a pedido do usuario (28/08/2026, bloco 727)**:
+> *"registre que temos que deixar ele em Dll para podermos instalar em
+> varios computadores se quisermos"*.
+
+O plugin **e** uma DLL (`OPTCGBotPlugin.dll`) -- o BepInEx so carrega
+DLL, nunca `.exe`. O problema nunca foi o formato: era que a DLL **nao
+era versionada** (`bin/` esta no `.gitignore`), entao cada maquina nova
+precisava de **.NET SDK** pra compilar do zero.
+
+**Fluxo agora:**
+
+1. Numa maquina COM .NET, rode `BOT\instalar.bat`. Alem de instalar, ele
+   guarda a DLL compilada em **`BOT\dist\OPTCGBotPlugin.dll`**.
+2. **Commite esse arquivo.**
+3. Nas OUTRAS maquinas, `BOT\instalar.bat` detecta a DLL pronta e so
+   copia -- **sem .NET SDK, sem compilar**.
+
+Pra forcar recompilacao (jogo atualizou, plugin mudou):
+```
+powershell -ExecutionPolicy Bypass -File BOT\instalar.ps1 -Rebuild
+```
+
+**Limite honesto:** a DLL e ligada contra as DLLs do jogo (`Assembly-CSharp`,
+`UnityEngine`, ...). Se o OPTCGSim atualizar e mudar essas assinaturas, a
+DLL pre-compilada para de funcionar e **e preciso recompilar numa maquina
+com .NET** e recommitar. Sintoma: o bot nao reage a nada no jogo.
+
 ## Instalar em OUTRA maquina
 
 ```

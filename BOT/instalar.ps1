@@ -31,7 +31,8 @@ O QUE ELE FAZ
  5. Gera `iniciar_bot.bat` na raiz, que sobe o servidor do motor.
 #>
 param(
-    [string]$GameDir = ''
+    [string]$GameDir = '',
+    [switch]$Rebuild   # forca recompilar mesmo havendo DLL pronta em BOT\dist\
 )
 $ErrorActionPreference = 'Stop'
 $Raiz = Split-Path -Parent $PSScriptRoot
@@ -91,10 +92,30 @@ if (Test-Path (Join-Path $BepDir 'core\BepInEx.dll')) {
 }
 
 # ── 3. plugin ──────────────────────────────────────────────────────────
-Passo '3/5' 'Compilando o plugin...'
+Passo '3/5' 'Plugin...'
+$PluginsDir = Join-Path $BepDir 'plugins'
+$DllPronta  = Join-Path $PSScriptRoot 'dist\OPTCGBotPlugin.dll'
+
+# CAMINHO RAPIDO (bloco 727, pedido do usuario: "deixar ele em Dll para
+# podermos instalar em varios computadores"): se existe DLL pre-compilada
+# em BOT\dist\, so copia -- a maquina nova NAO precisa de .NET SDK.
+# Compilar so e necessario pra GERAR a DLL (uma vez, numa maquina) ou
+# quando o jogo atualiza e muda as DLLs contra as quais ela foi ligada.
+if ((Test-Path $DllPronta) -and (-not $Rebuild)) {
+    New-Item -ItemType Directory -Force -Path $PluginsDir | Out-Null
+    Copy-Item $DllPronta -Destination $PluginsDir -Force
+    Write-Host "    DLL pre-compilada copiada de BOT\dist\ (sem precisar de .NET)" -ForegroundColor Green
+    Write-Host "    se o bot nao reagir no jogo, rode com -Rebuild (o jogo pode ter atualizado)" -ForegroundColor DarkGray
+    $PulaBuild = $true
+} else {
+    $PulaBuild = $false
+}
+
+if (-not $PulaBuild) {
 if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
     Write-Host '    .NET SDK ausente -- instale de https://dotnet.microsoft.com/download' -ForegroundColor Red
     Write-Host '    (necessario porque o plugin e compilado contra as DLLs DESTE jogo)' -ForegroundColor Red
+    Write-Host '    OU peca a quem ja compilou pra commitar BOT\dist\OPTCGBotPlugin.dll' -ForegroundColor Yellow
     exit 1
 }
 Push-Location (Join-Path $PSScriptRoot 'OPTCGBotPlugin')
@@ -102,7 +123,18 @@ try {
     dotnet build -c Debug -p:GameDir="$GameDir"
     if ($LASTEXITCODE -ne 0) { throw 'falha ao compilar o plugin' }
 } finally { Pop-Location }
-Write-Host "    DLL copiada para $BepDir\plugins" -ForegroundColor Green
+Write-Host "    DLL copiada para $PluginsDir" -ForegroundColor Green
+
+# Guarda a DLL recem-compilada em BOT\dist\ pra OUTRAS maquinas nao
+# precisarem de .NET SDK -- e o que torna o bot instalavel em varios PCs.
+$dist = Join-Path $PSScriptRoot 'dist'
+New-Item -ItemType Directory -Force -Path $dist | Out-Null
+$built = Join-Path $PSScriptRoot 'OPTCGBotPlugin\bin\Debug\net46\OPTCGBotPlugin.dll'
+if (Test-Path $built) {
+    Copy-Item $built -Destination $dist -Force
+    Write-Host "    copia guardada em BOT\dist\ -- commite esse arquivo pra instalar em outros PCs" -ForegroundColor Cyan
+}
+}
 
 # ── 4. Python ──────────────────────────────────────────────────────────
 Passo '4/5' 'Ambiente Python...'

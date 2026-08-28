@@ -28,6 +28,53 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (727) - REQUISITO REGISTRADO: manter o plugin como **DLL versionada** pra instalar em varios PCs. Instalador passa a usar DLL pre-compilada quando existir
+
+### O pedido
+
+*"registre que temos que deixar ele em Dll para podermos instalar em
+varios computadores se quisermos"* -- e o usuario querendo testar na
+maquina dele, com o jogo em
+`C:\Users\ARTHUR.CUNHA\Desktop\Builds_Windows`.
+
+### O esclarecimento
+
+O plugin **ja e** uma DLL -- o BepInEx so carrega DLL, nunca `.exe`. O
+problema nunca foi o formato: **a DLL nao era versionada** (`bin/` esta no
+`.gitignore` do BOT), entao toda maquina nova precisava de **.NET SDK**
+pra compilar do zero. Era isso que impedia "instalar em varios PCs".
+
+### O que foi feito
+
+- `instalar.ps1` ganha **caminho rapido**: se existe
+  `BOT\dist\OPTCGBotPlugin.dll`, apenas copia -- **sem .NET, sem
+  compilar**. Com `-Rebuild` forca a compilacao.
+- Quem compila (maquina com .NET) passa a **guardar a DLL em
+  `BOT\dist\`** automaticamente, pra ser commitada.
+- `BOT/.gitignore` passa a **NAO ignorar** `dist/OPTCGBotPlugin.dll`
+  (continua ignorando `bin/` e `obj/`).
+
+### LIMITE HONESTO -- registrar junto, senao vira armadilha
+
+A DLL e ligada contra as DLLs do JOGO (`Assembly-CSharp`, `UnityEngine`...).
+**Se o OPTCGSim atualizar e mudar essas assinaturas, a DLL pre-compilada
+para de funcionar** e alguem precisa recompilar numa maquina com .NET e
+recommitar. Sintoma: o bot nao reage a nada.
+
+E o mesmo tipo de quebra ja documentada no topo do `BOT/README.md` (o
+Steam apagando a pasta BepInEx inteira ao atualizar) -- so que agora com
+um segundo modo de falha: DLL presente mas incompativel.
+
+### O QUE AINDA FALTA -- a DLL nao existe no repositorio
+
+**Nenhuma sessao remota consegue gerar essa DLL**: compilar exige Windows,
+.NET SDK e as DLLs do jogo instalado. As sessoes de desenvolvimento rodam
+em Linux, sem acesso a maquina do usuario.
+
+**Acao pendente pro usuario**: rodar `BOT\instalar.bat` UMA vez numa
+maquina com .NET SDK e commitar `BOT\dist\OPTCGBotPlugin.dll`. A partir
+dai qualquer PC instala sem .NET.
+
 ## 2026-08-28 (726) - 4a aparicao da MESMA armadilha: a corrida variante sobrescreveu `gauntlet_painel.json` e o arquivo versionado passou a mentir
 
 ### O que aconteceu

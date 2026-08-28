@@ -1,2 +1,8 @@
 OPTCGBotPlugin/bin/
 OPTCGBotPlugin/obj/
+
+# bloco 727: BOT/dist/OPTCGBotPlugin.dll e a DLL PRE-COMPILADA, e DEVE ser
+# versionada -- e ela que permite instalar em varios computadores sem
+# exigir .NET SDK em cada um. Nao ignorar.
+!dist/
+!dist/OPTCGBotPlugin.dll
