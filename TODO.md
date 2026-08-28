@@ -2,6 +2,20 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 708): **MUDANCA ESTRUTURAL PEDIDA PELO USUARIO —
+> `_evaluate_state_v2` virou DECOMPONIVEL.** Ele ja era um modelo linear
+> (`score += termo * W[peso]`, 17 pesos em `EVAL_WEIGHTS`); faltava
+> registrar o VALOR DE CADA TERMO. Agora `score(W) = soma_k termo_k*W[k]`
+> — **re-pesar e produto escalar sobre termos ja calculados, sem
+> re-simular**. Era isso que impedia tunar: mudar peso invalidava o cache
+> e voltava aos 20 min/avaliacao. **Minha objecao "tunar peso ja falhou
+> 11x" nao valia**: aquelas mudavam UM peso por vez, a mao; busca
+> CONJUNTA com avaliacao de 5ms e metodo diferente. **Verificado
+> IDENTICO**: hash das decisoes de 3 partidas completas bate bit a bit
+> com/sem instrumentacao (smoke_fast tambem passa). Abre: coletar vetores
+> de termo -> otimizar W em conjunto -> publicar via `eval_weights.json`
+> (ja lido no import) -> validar na regua com CV por lider.
+
 > 28/08/2026 (bloco 707): **A CURVA SATURA — mais dado humano NAO
 > desbloqueia.** Validacao vai de 24,1% (5 lideres) a **26,4% (24
 > lideres)**, ainda ABAIXO do baseline 28,5%; de 10->24 lideres ganha so

@@ -28,6 +28,67 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (708) - **A MUDANCA ESTRUTURAL QUE O USUARIO PEDIU**: `_evaluate_state_v2` agora e DECOMPONIVEL em termos -- re-pesar vira produto escalar, e a busca CONJUNTA sobre os 17 pesos fica viavel
+
+### O pedido, e por que minha objecao anterior nao valia
+
+Citacao direta: *"a gente nao precisa coletar mais partida, a gente nao
+precisa ficar inventando o jeito de medir o teto e tal, a gente so
+precisa mudar a estrutura do nosso motor para que a gente transforme ele
+em algo controlavel, que ai a gente consegue aumentar ou diminuir os
+parametros pra fazer essas porcentagem subir"*.
+
+Eu vinha respondendo "tunar peso ja falhou 11 vezes". **A objecao nao se
+sustenta**: aquelas tentativas mudavam **UM peso por vez, a mao, com
+medicao de 20 minutos**. Com o avaliador de 5 ms (bloco 703), buscar o
+espaco CONJUNTO de 17+ parametros com centenas de milhares de avaliacoes
+e um metodo DIFERENTE, nao a 12a repeticao.
+
+### A peca que faltava, e era estrutural
+
+O cache guarda o `score` JA CALCULADO. Mudar peso invalidava o cache e
+jogava a avaliacao de volta pros 20 minutos -- **era isso que impedia
+tunar de verdade**, nao a ideia de tunar.
+
+`_evaluate_state_v2` **ja e um modelo linear**: `score += termo * W[peso]`,
+17 pesos nomeados em `EVAL_WEIGHTS`. Faltava registrar o VALOR DE CADA
+TERMO. Com ele:
+
+    score(W) = soma_k  termo_k * W[k]
+
+Avaliar um vetor de pesos NOVO vira **produto escalar sobre termos ja
+calculados, sem re-simular nada**.
+
+### O que foi feito
+
+14 termos instrumentados via `_termo(chave, valor, W)`, que devolve
+exatamente `valor * W[chave]` e registra o valor CRU quando ligado
+(`OPTCG_TERMOS=1`). Custo desligado: um `if` por termo.
+
+### VERIFICACAO: score numericamente IDENTICO
+
+Nao bastava `smoke_fast.py` passar (passou). Comparei o motor de verdade:
+hash SHA-256 de `(kind, code, simulated_value)` de **todas as decisoes de
+3 partidas completas**, com e sem a instrumentacao:
+
+    COM:  517440857318da544c98fada6d09c329a37ab1766965dc5319ba808f108f038a
+    SEM:  517440857318da544c98fada6d09c329a37ab1766965dc5319ba808f108f038a
+
+**Bit a bit iguais.** Zero mudanca de comportamento.
+
+(Nota: minha 1a tentativa de verificacao comparou o `play` do avaliador
+RAPIDO antes/depois -- inutil, porque ele le o CACHE e nao executa
+`_evaluate_state_v2`. Trocado pelo teste do motor real.)
+
+### O caminho que isto abre
+
+1. Coletar os vetores de termo por candidata (1 passada cara, cacheada).
+2. Otimizar `EVAL_WEIGHTS` em CONJUNTO contra `play`, com avaliacao
+   instantanea -- centenas de milhares de configuracoes.
+3. Publicar o melhor vetor: **`eval_weights.json` ja e lido no import**,
+   entao ligar em producao nao exige mudanca de codigo.
+4. Validar na regua real com recorte por lider (CV agrupada, bloco 706).
+
 ## 2026-08-28 (707) - **A CURVA DE APRENDIZADO SATURA**: mais partidas humanas do mesmo tipo NAO desbloqueiam o ranqueador. O gargalo nao e volume (eu errei no bloco 706) -- e REPRESENTACAO
 
 ### Como surgiu

@@ -861,6 +861,45 @@ except Exception:
     pass
 
 
+# ── DECOMPOSICAO do score em TERMOS (bloco 708) ──────────────────────
+# Pedido direto do usuario: *"a gente so precisa mudar a estrutura do
+# nosso motor para que a gente transforme ele em algo controlavel, que ai
+# a gente consegue aumentar ou diminuir os parametros pra fazer essas
+# porcentagem subir"*.
+#
+# `_evaluate_state_v2` JA e um modelo linear: `score += termo * W[peso]`,
+# 17 pesos nomeados em EVAL_WEIGHTS. O que faltava era registrar o VALOR
+# DE CADA TERMO separadamente. Com ele:
+#
+#   score(W) = soma_k  termo_k * W[k]
+#
+# ou seja, avaliar um vetor de pesos NOVO vira um produto escalar sobre
+# termos ja calculados -- **sem re-simular nada**. E isso que torna a
+# busca conjunta sobre os 17 pesos viavel: a avaliacao cai de ~20 minutos
+# (regua real) pra microssegundos.
+#
+# Por que isto NAO e a 12a tentativa de "tunar peso" (reprovada 11x): as
+# anteriores mudavam UM peso por vez, a mao, medindo 20 min por valor.
+# Aqui o espaco e otimizado em CONJUNTO, com centenas de milhares de
+# avaliacoes. Metodo diferente, nao repeticao.
+#
+# Custo quando desligado: um `if` por termo. Ligado por
+# OPTCG_TERMOS=1 ou pelo coletor do dataset.
+TERMOS_ON = os.environ.get('OPTCG_TERMOS', '') == '1'
+TERMOS_BUF: dict = {}
+
+
+def _termo(chave: str, valor: float, W: dict) -> float:
+    """Contribuicao do termo, registrando o valor CRU quando ligado.
+
+    Devolve exatamente `valor * W[chave]` -- o score fica numericamente
+    IDENTICO ao de antes da instrumentacao (conferido termo a termo).
+    """
+    if TERMOS_ON:
+        TERMOS_BUF[chave] = TERMOS_BUF.get(chave, 0.0) + valor
+    return valor * W[chave]
+
+
 class _SimDeck(list):
     """Deck lazy para simulacao do Turn Planner: contem referencias rasas de
     Card (mesmos objetos do deck real), mas faz deepcopy sob demanda quando
@@ -17984,7 +18023,7 @@ class OPTCGMatch:
 
         # dano feito NESTE turno — delta que faz o planner preferir a linha que
         # de fato conecta dano (não só "desenvolve").
-        score += p.dmg_dealt * W['dmg']
+        score += _termo('dmg', p.dmg_dealt, W)
 
         # Valor de Character do OPONENTE morto em COMBATE neste turno
         # (bloco 634, pedido do usuario -- enriquecer a funcao pobre no
@@ -18004,7 +18043,7 @@ class OPTCGMatch:
         # `board_opp`) -- deliberado, pesa mais um kill em COMBATE
         # especificamente do que a mudanca generica de board, e foi o
         # que corrigiu o vies medido do bloco 624.
-        score += p.char_kill_value * W['char_kill_value']
+        score += _termo('char_kill_value', p.char_kill_value, W)
 
         # Custo de oportunidade do DON gasto pra fazer um ataque passar
         # NESTE turno (bloco 640/641, achado real): generalizar a guarda
@@ -18021,11 +18060,11 @@ class OPTCGMatch:
         # pro termo de dano decidir sozinho. So penaliza linhas NAO-
         # vencedoras (lethal sai direto via SIMULATED_WIN_SCORE, antes de
         # chegar aqui).
-        score -= p.don_spent_on_combat * W['don_combat_cost']
+        score += _termo('don_combat_cost', -p.don_spent_on_combat, W)
 
         # vida (curva íngreme).
-        score += self._life_value(p.life_count()) * W['life_mult']
-        score -= self._life_value(opp.life_count()) * W['life_mult']
+        score += _termo('life_mult', self._life_value(p.life_count()), W)
+        score += _termo('life_mult', -self._life_value(opp.life_count()), W)
 
         # SOBREVIVENCIA ciente do game_plan (pedido do usuario 14/07): se a
         # win-con do deck e um combo de CUSTO ALTO que ainda NAO da pra
@@ -18057,7 +18096,7 @@ class OPTCGMatch:
                     _pending = 1.0 - min(1.0, p.don_on_field() / _dt)
                     _panic = max(0, 4 - p.life_count())   # 0 em vida>=4, ate 3 em vida 1
                     if _pending > 0 and _panic > 0:
-                        score += _panic * W['survival_premium'] * _pending
+                        score += _termo('survival_premium', _panic * _pending, W)
         except Exception:
             pass
 
@@ -18084,19 +18123,22 @@ class OPTCGMatch:
             if c.just_played and not (c.has_rush or c.rush_this_turn):
                 v *= 0.5
             return v
-        score += sum(_board_presence(c) for c in p.field_chars) * W['board_mine']
-        score -= sum(_board_presence(c) for c in opp.field_chars) * W['board_opp']
+        score += _termo('board_mine',
+                        sum(_board_presence(c) for c in p.field_chars), W)
+        score += _termo('board_opp',
+                        -sum(_board_presence(c) for c in opp.field_chars), W)
 
         # blockers do oponente vivos travam meu ataque -- obstaculo pro MEU
         # plano de dano.
-        score -= len(opp.blockers_active()) * W['opp_blocker']
+        score += _termo('opp_blocker', -len(opp.blockers_active()), W)
 
         # ameaça de virada por reanimação em massa do trash dele (achado
         # 07/07, PREVENT_COMBO) -- penaliza pelo threat_power ESTIMADO no
         # estado avaliado; se a linha reduziu o combustível qualificado
         # (ex: jogou algo que suja o trash dele) ou gastou o custo da
         # habilidade, recomputa menor aqui e a busca já prefere essa linha.
-        score -= an.opp_combo_threat()['threat_power'] * W['opp_combo_threat']
+        score += _termo('opp_combo_threat',
+                        -an.opp_combo_threat()['threat_power'], W)
 
         # mão: retorno decrescente (as primeiras cartas valem mais).
         # Enriquecido 20/08 (bloco 629, pedido do usuario): antes contava
@@ -18113,19 +18155,20 @@ class OPTCGMatch:
         # que ainda puxa `activate` pra baixo, mesmo apos corrigir o vies
         # de acumulo do human_alignment.
         nh = len(p.hand)
-        score += min(nh, 5) * W['hand_first'] + max(0, nh - 5) * W['hand_extra']
+        score += (_termo('hand_first', min(nh, 5), W)
+                  + _termo('hand_extra', max(0, nh - 5), W))
         # poder de counter na mão = vida futura -- proxy de SOBREVIVENCIA.
-        score += p.counter_in_hand() / 1000 * W['counter_hand']
+        score += _termo('counter_hand', p.counter_in_hand() / 1000, W)
 
         # DON no campo (ramp = chegar na bomba) — leve.
-        score += p.don_on_field() * W['don_field']
+        score += _termo('don_field', p.don_on_field(), W)
 
         # cobertura defensiva: counter na mão vs ataques que o opp faz no
         # próximo turno (líder + chars ativos). min = ter counter além do
         # necessário satura (não vale acumular counter infinito).
         opp_atk = 1 + sum(1 for c in opp.field_chars if not c.rested)
         cobertura = min(p.counter_in_hand(), opp_atk * 2000)
-        score += cobertura / 1000 * W['coverage']
+        score += _termo('coverage', cobertura / 1000, W)
 
         # eixos derivados do perfil (auto-motor: trash/reanimação/inversão)
         score += self._derived_axes_value(p, self._turn_profile_for(p))
