@@ -2,6 +2,17 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 722): **instalacao em outra maquina** —
+> `BOT/instalar.bat` (duplo-clique) acha o jogo sozinho (Steam
+> `libraryfolders.vdf` + discos), instala BepInEx, compila o plugin
+> contra as DLLs daquela maquina, cria venv e gera `iniciar_bot.bat`.
+> **Um .exe unico NAO e possivel**: o plugin TEM que ser DLL do BepInEx
+> compilada contra o jogo; o motor Python so viraria .exe compilando NO
+> Windows (sem cross-compile). **O bloqueio real era outro**: o `.csproj`
+> tinha o caminho do jogo **cravado em 11 lugares** — agora vem de
+> `-p:GameDir=` / `OPTCG_GAME_DIR`. **NAO TESTADO** (sessao roda em Linux,
+> script e PowerShell): sintaxe e XML conferidos, execucao nao.
+
 > 28/08/2026 (bloco 720): **a hipotese do 719 NAO se confirmou** — com o
 > board concreto disponivel, os 10 termos de INTERACAO dao **0/2 no
 > holdout** (-1,8pp, -0,8pp; os outros 8 com coeficiente 0). Dado

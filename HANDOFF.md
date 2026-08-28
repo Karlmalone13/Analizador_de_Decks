@@ -28,6 +28,57 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (722) - Instalacao em OUTRA MAQUINA: `BOT/instalar.ps1`. O bloqueio real nao era falta de executavel -- era o caminho do jogo CRAVADO em 11 lugares do `.csproj`
+
+### A pergunta do usuario
+
+*"Conseguimos gerar um executavel para eu instalar o bot em outra
+maquina?"*
+
+### Resposta honesta: um .exe unico NAO e possivel, e nao e o que falta
+
+- O **plugin** e uma DLL do BepInEx -- por definicao precisa ser DLL, e e
+  compilada contra as DLLs do PROPRIO jogo (mudam por versao/maquina). Um
+  .exe nao seria carregado pelo BepInEx.
+- O **motor** e Python + banco de cartas + parser + engine. Daria pra
+  empacotar com PyInstaller, **mas so compilando NO WINDOWS** -- nao ha
+  cross-compile, e esta sessao roda em Linux. Nao da pra entregar daqui.
+
+### O que REALMENTE bloqueava
+
+`OPTCGBotPlugin.csproj` tinha `E:\Games\OnePieceSimulador\Builds_Windows`
+**cravado em 11 lugares** -- cada `HintPath` aponta pra uma DLL que vive
+na instalacao do jogo. Em outra maquina, nada compila. `setup_bepinex.ps1`
+tinha o mesmo caminho cravado.
+
+E o repositorio **nao tem** DLL pre-compilada (`bin/` e gitignored) nem o
+zip do BepInEx (`vendor/` idem) -- um clone limpo tem so fonte.
+
+### O que foi feito
+
+**`.csproj` parametrizado**: `GameDir` vem de `-p:GameDir=...`, senao de
+`OPTCG_GAME_DIR`, senao o default antigo. XML validado.
+
+**`BOT/instalar.ps1` + `instalar.bat`** (duplo-clique):
+1. **Acha o jogo sozinho** -- parametro > `OPTCG_GAME_DIR` > busca nas
+   bibliotecas Steam (`libraryfolders.vdf`) e nos discos, procurando
+   `OPTCGSim_Data`.
+2. Instala o BepInEx (zip de `vendor/` se existir; senao baixa).
+3. Compila o plugin contra as DLLs DAQUELA maquina e copia.
+4. Cria venv e instala dependencias (inclui `pandas`, que faltava no
+   `requirements.txt` e o engine importa).
+5. Gera `iniciar_bot.bat` na raiz.
+
+Erros sao explicitos quando falta .NET SDK ou Python, com o link.
+
+### LIMITE: nao pude testar
+
+Esta sessao roda em **Linux**; o script e PowerShell/Windows. **Sintaxe e
+XML conferidos, execucao NAO.** A primeira rodada numa maquina Windows
+pode achar detalhe de ambiente -- especialmente a busca automatica do
+jogo, que depende de layout de disco. O caminho manual (`-GameDir`)
+existe justamente como escape.
+
 ## 2026-08-28 (720) - **A HIPOTESE DO BLOCO 719 NAO SE CONFIRMOU**: com o board concreto disponivel, os termos de INTERACAO nao melhoram nada (0/2 no holdout). E sobra uma anomalia que aponta pra outra direcao
 
 ### O que eu afirmei e nao se sustentou

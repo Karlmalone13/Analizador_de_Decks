@@ -10,20 +10,35 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
 
+  <!-- Pasta do JOGO. Estava CRAVADA em todas as referencias ate
+       28/08/2026 (bloco 722), o que impedia instalar em outra maquina:
+       cada HintPath aponta pra uma DLL que vive na instalacao do jogo, e
+       esse caminho muda de maquina pra maquina.
+       Agora vem de fora, nesta ordem de precedencia:
+         1. dotnet build -p:GameDir="D:\Jogos\...\Builds_Windows"
+         2. variavel de ambiente OPTCG_GAME_DIR
+         3. o default abaixo (a maquina original) -->
+  <PropertyGroup>
+    <GameDir Condition="'$(GameDir)' == ''">$(OPTCG_GAME_DIR)</GameDir>
+    <GameDir Condition="'$(GameDir)' == ''">E:\Games\OnePieceSimulador\Builds_Windows</GameDir>
+    <ManagedDir>$(GameDir)\OPTCGSim_Data\Managed</ManagedDir>
+    <BepInExCore>$(GameDir)\BepInEx\core</BepInExCore>
+  </PropertyGroup>
+
   <!-- Copia o .dll final para a pasta de plugins do BepInEx automaticamente -->
   <Target Name="CopyToPlugins" AfterTargets="Build">
     <Copy SourceFiles="$(TargetDir)$(TargetFileName)"
-          DestinationFolder="E:\Games\OnePieceSimulador\Builds_Windows\BepInEx\plugins\" />
+          DestinationFolder="$(GameDir)\BepInEx\plugins\" />
   </Target>
 
   <ItemGroup>
     <!-- BepInEx 5 + Harmony (DLLs locais da instalacao do jogo) -->
     <Reference Include="BepInEx">
-      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\BepInEx\core\BepInEx.dll</HintPath>
+      <HintPath>$(BepInExCore)\BepInEx.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="0Harmony">
-      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\BepInEx\core\0Harmony.dll</HintPath>
+      <HintPath>$(BepInExCore)\0Harmony.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
@@ -31,36 +46,36 @@
   <ItemGroup>
     <!-- DLLs do jogo (nao distribuir, uso apenas local para compilar) -->
     <Reference Include="Assembly-CSharp">
-      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(ManagedDir)\Assembly-CSharp.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>$(ManagedDir)\UnityEngine.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(ManagedDir)\UnityEngine.CoreModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath>$(ManagedDir)\UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>$(ManagedDir)\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\Newtonsoft.Json.dll</HintPath>
+      <HintPath>$(ManagedDir)\Newtonsoft.Json.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <!-- Facades do runtime do jogo (Unity Mono = netstandard 2.1) -->
     <Reference Include="netstandard">
-      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\netstandard.dll</HintPath>
+      <HintPath>$(ManagedDir)\netstandard.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="System.Net.Http">
-      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\System.Net.Http.dll</HintPath>
+      <HintPath>$(ManagedDir)\System.Net.Http.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

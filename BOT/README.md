@@ -46,6 +46,41 @@ C:\Projetos_TI\analidador_de_decks_optcg\BOT\setup_bepinex.bat
 `BOT/vendor/`, não precisa internet) + recompila e copia o plugin. Depois
 é só abrir o jogo de novo.
 
+## Instalar em OUTRA maquina
+
+```
+BOT\instalar.bat        (duplo-clique)
+```
+ou, apontando o jogo na mao:
+```
+powershell -ExecutionPolicy Bypass -File BOT\instalar.ps1 -GameDir "D:\Jogos\OnePieceSimulador\Builds_Windows"
+```
+
+Ele acha o jogo sozinho (bibliotecas Steam + discos), instala o BepInEx,
+compila o plugin contra as DLLs DESSA maquina, cria o venv com as
+dependencias e gera `iniciar_bot.bat` na raiz.
+
+**Por que nao existe um .exe unico** (pergunta do usuario, 28/08/2026):
+o bot tem duas metades e nenhuma vira executavel.
+- O **plugin** e uma DLL do BepInEx -- por definicao precisa ser DLL, e e
+  compilada contra as DLLs do PROPRIO jogo (que mudam por versao e por
+  maquina). Um .exe nao seria carregado.
+- O **motor** e Python e precisa do banco de cartas, do parser de efeitos
+  e do engine inteiro. Daria pra empacotar com PyInstaller, **mas so
+  compilando no Windows** -- nao existe cross-compile, e as sessoes de
+  desenvolvimento remoto rodam em Linux.
+
+**Pre-requisitos na maquina nova** (o instalador avisa se faltar):
+- .NET SDK -- https://dotnet.microsoft.com/download (compilar o plugin)
+- Python 3.10+ com "Add to PATH" -- https://python.org
+- O OPTCGSim instalado
+
+**O que mudou pra isso funcionar** (bloco 722): o `OPTCGBotPlugin.csproj`
+tinha o caminho do jogo CRAVADO em 11 lugares (`E:\Games\...`) -- toda
+referencia aponta pra uma DLL que vive na instalacao do jogo. Agora vem
+de `-p:GameDir=...` ou de `OPTCG_GAME_DIR`, com o caminho antigo so como
+default.
+
 ## Como rodar (Solo vs Self)
 
 1. Servidor do engine (primeiro):
