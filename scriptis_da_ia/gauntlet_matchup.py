@@ -88,6 +88,14 @@ OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'metrics')
 
 
 def _out_path(fixed_label: str) -> str:
+    # bloco 721: corrida com pesos NAO-default grava em arquivo proprio.
+    # Sem isto, um A/B de pesos sobrescrevia o resultado canonico (que e
+    # versionado) com o da variante -- mesma armadilha ja corrigida em
+    # `decision_quality_full.py` (blocos 683 e 696), por um 3o caminho.
+    _var = os.environ.get('OPTCG_EVAL_WEIGHTS', '')
+    if _var:
+        _slug = os.path.splitext(os.path.basename(_var))[0][:40]
+        return os.path.join(OUT_DIR, f'gauntlet_{fixed_label.lower()}_{_slug}.json')
     return os.path.join(OUT_DIR, f'gauntlet_{fixed_label.lower()}.json')
 
 

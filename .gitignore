@@ -102,6 +102,7 @@ scriptis_da_ia/metrics/decision_quality_full/parcial_limit*.json
 # ou `--limit` gera ~1,5 MB, e ja aconteceu 3x nesta sessao de um desses
 # arquivos ficar solto no repositorio. O resumo comparativo (que e a
 # evidencia das entradas do REPROVADOS.md) fica em metrics/sweeps/.
+scriptis_da_ia/metrics/gauntlet_*_eval_weights_*.json
 scriptis_da_ia/metrics/decision_quality_full/*.json
 !scriptis_da_ia/metrics/decision_quality_full/ultimo_resultado.json
 # bloco 712: dumps de A/B nomeados via OPTCG_RESULT_NAME (~1,4 MB cada).
