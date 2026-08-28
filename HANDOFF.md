@@ -28,6 +28,60 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (711) - busca CONJUNTA nos 17 pesos: **+0,8pp na CV por lider** (4 de 5 folds melhoram ou empatam). Pesos viram controlaveis por ambiente. E uma CORRECAO: em producao `dmg` vale **270**, nao 120
+
+### O resultado da otimizacao conjunta
+
+4491 decisoes com vetor de termos, 14 termos ativos, busca por subida de
+encosta com perturbacao multiplicativa de SUBCONJUNTOS aleatorios (busca
+conjunta, nao 1-a-1). **Busca SO no treino de cada fold**; validacao
+olhada uma vez.
+
+| fold | base treino | otim treino | base valid | otim valid |
+|---|---|---|---|---|
+| 0 | 24,4% | 28,2% | 28,1% | **30,5%** |
+| 1 | 27,0% | 32,0% | 18,3% | 18,7% |
+| 2 | 24,1% | 27,0% | 26,6% | **28,7%** |
+| 3 | 25,0% | 29,0% | 24,1% | 24,1% |
+| 4 | 23,9% | 27,1% | 29,1% | 27,6% |
+
+**CV validacao: 24,9% -> 25,6% = +0,8pp.** Treino sobe 3-5pp
+consistentemente; transfere ~1/5 disso.
+
+**Previsao registrada ANTES ("ganho no treino, ganho pequeno na
+validacao") -- confirmada.** E o 1o ganho de TUNING deste projeto medido
+de forma que generaliza pra deck nao visto.
+
+**Comparabilidade**: o baseline aqui e 24,9%, nao os 28,9% oficiais --
+este banco cobre so decisoes cujas candidatas passaram pela simulacao. Os
+numeros valem entre si, NAO contra a regua.
+
+### CORRECAO -- eu citei o peso errado no bloco 701
+
+La escrevi que `dmg` valia **120** e dominava 16 termos <=25, lendo o
+dicionario do CODIGO. **Existe um `eval_weights.json` em producao** (lido
+no import) que sobrescreve: o valor real e **270**. A conclusao (o termo
+de dano domina) fica MAIS forte, mas o numero estava errado.
+
+Esse arquivo veio de calibracao anterior por *coordinate-ascent*
+otimizando **winrate via gauntlet** (bloco 495) -- **objetivo diferente**
+do meu, que e `play` (semelhanca com o humano). **Risco real: subir um
+pode custar o outro.** Antes de publicar, medir winrate.
+
+### Pesos agora sao CONTROLAVEIS por ambiente
+
+`OPTCG_EVAL_WEIGHTS=caminho.json`. Sem isso, testar um vetor exigia
+**sobrescrever o arquivo de producao** -- o A/B so era possivel mexendo
+no que o motor usa de verdade. Agora a variante roda em subprocesso e o
+`sweep.py` alcanca os 17 pesos como alcanca os outros knobs.
+Comportamento default verificado intacto (mesmo hash das 3 partidas).
+
+### Estado
+
+`eval_weights_otimizado.json` versionado como CANDIDATO -- deliberadamente
+**nao** e `eval_weights.json`. A/B na regua real rodando; publicar so
+depois dele **e** de conferir winrate.
+
 ## 2026-08-28 (709/710) - a decomposicao FUNCIONA: reconstrucao **EXATA em 477/477 candidatas**. Coleta + otimizador conjunto dos 17 pesos construidos
 
 ### O que foi ligado

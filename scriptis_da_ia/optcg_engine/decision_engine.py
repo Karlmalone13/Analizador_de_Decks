@@ -851,7 +851,14 @@ EVAL_WEIGHTS = {
     'don_combat_cost': 50.0,
 }
 try:
-    _wpath = os.path.join(os.path.dirname(__file__), '..', 'eval_weights.json')
+    # bloco 711: caminho CONTROLAVEL por ambiente. Sem isto, testar um
+    # vetor de pesos exigia sobrescrever o arquivo de producao -- ou seja,
+    # o A/B so era possivel mexendo no que o motor usa de verdade. Com
+    # `OPTCG_EVAL_WEIGHTS=caminho.json` a variante roda em subprocesso sem
+    # tocar em `eval_weights.json`, e o `sweep.py` passa a alcancar os 17
+    # pesos da funcao de valor como alcanca os outros knobs.
+    _wpath = os.environ.get('OPTCG_EVAL_WEIGHTS') or os.path.join(
+        os.path.dirname(__file__), '..', 'eval_weights.json')
     if os.path.exists(_wpath):
         with open(_wpath, encoding='utf-8') as _f:
             # ignora _meta (camada de confiança: procedência, não é peso)

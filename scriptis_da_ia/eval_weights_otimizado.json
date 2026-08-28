@@ -1,0 +1,29 @@
+{
+ "dmg": 248.11711948975648,
+ "life_mult": 1.0908536657424233,
+ "board_mine": 1.6357014689873148,
+ "board_opp": 0.5314559852248457,
+ "opp_blocker": 47.11289972189153,
+ "hand_first": 33.596938162512714,
+ "hand_extra": 23.426901493489257,
+ "counter_hand": 4.732535514157062,
+ "don_field": 5.183158551489036,
+ "coverage": 6.353529610924941,
+ "ax_trash": 0.05,
+ "ax_reanim": 12.0,
+ "ax_inversion": 0.625,
+ "wincon_ready": 20.0,
+ "survival_premium": 41.397446619187185,
+ "opp_combo_threat": 0.943494904475236,
+ "human_alignment": 8.0,
+ "human_sequence_alignment": 0.0,
+ "char_kill_value": 0.49309356354277173,
+ "don_combat_cost": 186.1649364251441,
+ "next_turn_readiness_self": 0.6,
+ "next_turn_readiness_opp_threat": 0.0,
+ "_meta": {
+  "origem": "otimizar_pesos.py bloco 710",
+  "play_treino": 0.28439425051334705,
+  "aviso": "offline; validar em decision_quality_full.py"
+ }
+}

@@ -2,6 +2,20 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 711): **busca CONJUNTA nos 17 pesos da funcao de
+> valor: +0,8pp na CV por lider** (24,9%->25,6%, 4 de 5 folds melhoram ou
+> empatam; treino sobe 3-5pp e transfere ~1/5). **1o ganho de TUNING do
+> projeto medido de forma que generaliza.** Previsao registrada antes,
+> confirmada. Pesos agora controlaveis por **`OPTCG_EVAL_WEIGHTS`** — sem
+> isso, testar um vetor exigia sobrescrever o arquivo de PRODUCAO.
+> **CORRECAO do bloco 701**: em producao `dmg` vale **270**, nao 120 (eu
+> li o dict do codigo; `eval_weights.json` sobrescreve) — a conclusao da
+> miopia fica mais forte, o numero estava errado. **Aviso**: aquele
+> arquivo foi calibrado pra **winrate** (coordinate-ascent, bloco 495),
+> objetivo DIFERENTE de `play` — medir winrate antes de publicar.
+> Candidato em `eval_weights_otimizado.json`, deliberadamente NAO em
+> producao. A/B na regua real rodando.
+
 > 28/08/2026 (bloco 709/710): **a decomposicao FUNCIONA — reconstrucao
 > EXATA em 477/477 candidatas** (`valor = soma termo*W + residuo`; o
 > residuo absorve alinhamento humano e o atalho de linha vencedora).
