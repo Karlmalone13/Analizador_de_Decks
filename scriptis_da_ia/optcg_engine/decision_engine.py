@@ -887,6 +887,13 @@ except Exception:
 # OPTCG_TERMOS=1 ou pelo coletor do dataset.
 TERMOS_ON = os.environ.get('OPTCG_TERMOS', '') == '1'
 TERMOS_BUF: dict = {}
+# vetor de termos por ACAO candidata (chave: id(first_action)), preenchido
+# em `_simulate_sequence_values`. Guarda a MEDIA dos termos sobre as
+# amostras Monte Carlo e o RESIDUO (o que nao passou por `_termo`:
+# bonus de alinhamento humano e o atalho de linha vencedora). Assim vale
+# exatamente:   valor_medio = soma_k media_termo_k * W[k] + residuo
+# -- reconstrucao exata, sem supor que tudo foi decomposto.
+TERMOS_POR_ACAO: dict = {}
 
 
 def _termo(chave: str, valor: float, W: dict) -> float:
@@ -18295,15 +18302,47 @@ class OPTCGMatch:
         old_suppress = self._suppress_replay_log
         self._suppress_replay_log = True
         try:
-            if not amostras:
-                return [self._simulate_sequence_once(p, opp, first_action, max_steps, amostra=None,
-                                                      extra_own_turn_search=extra_own_turn_search)]
+            lista = amostras if amostras else [None]
+            if not TERMOS_ON:
+                return [self._simulate_sequence_once(
+                    p, opp, first_action, max_steps, amostra=am,
+                    extra_own_turn_search=extra_own_turn_search)
+                    for am in lista]
 
-            return [
-                self._simulate_sequence_once(p, opp, first_action, max_steps, amostra=amostra,
-                                             extra_own_turn_search=extra_own_turn_search)
-                for amostra in amostras
-            ]
+            # bloco 709: captura o vetor de TERMOS por amostra. Limpa o
+            # buffer antes de cada simulacao, soma o que `_termo` gravou, e
+            # guarda o RESIDUO = valor - dot(W, termos) -- que absorve o
+            # bonus de alinhamento humano e o atalho de linha vencedora
+            # (SIMULATED_WIN_SCORE, que retorna sem avaliar estado). Com o
+            # residuo a reconstrucao e EXATA, sem supor decomposicao total.
+            W = getattr(p, 'eval_weights', None) or EVAL_WEIGHTS
+            vals, soma, resid = [], {}, 0.0
+            for am in lista:
+                TERMOS_BUF.clear()
+                v = self._simulate_sequence_once(
+                    p, opp, first_action, max_steps, amostra=am,
+                    extra_own_turn_search=extra_own_turn_search)
+                vals.append(v)
+                dot = 0.0
+                for k, x in TERMOS_BUF.items():
+                    soma[k] = soma.get(k, 0.0) + x
+                    dot += x * W.get(k, 0.0)
+                resid += v - dot
+            # ACUMULA entre LOTES (bug achado na verificacao, bloco 709):
+            # a busca usa amostragem ADAPTATIVA (OFFLINE_MC_SAMPLES_MIN/
+            # MAX/BATCH), entao esta funcao e chamada VARIAS vezes pra a
+            # MESMA acao. A 1a versao sobrescrevia o vetor a cada lote
+            # enquanto o `avg` do log cobre TODOS -- reconstrucao exata caia
+            # pra 59,3%, com os erros concentrados em linhas vencedoras
+            # (onde os lotes divergem mais). Somando por lote e dividindo
+            # pelo total de amostras, a media bate com a do motor.
+            acc = TERMOS_POR_ACAO.setdefault(
+                id(first_action), {'soma': {}, 'residuo': 0.0, 'amostras': 0})
+            for k, x in soma.items():
+                acc['soma'][k] = acc['soma'].get(k, 0.0) + x
+            acc['residuo'] += resid
+            acc['amostras'] += len(vals)
+            return vals
         finally:
             self._suppress_replay_log = old_suppress
 
@@ -19715,8 +19754,18 @@ class OPTCGMatch:
             sim_avg = simulated_value.get('avg')
             sim_wins = simulated_value.get('wins')
             sim_samples = simulated_value.get('samples')
+        # bloco 709: vetor de TERMOS desta candidata (so com OPTCG_TERMOS=1).
+        # E o que permite re-pesar `EVAL_WEIGHTS` por produto escalar, sem
+        # re-simular -- ver `_termo`/`TERMOS_POR_ACAO`.
+        _acc = TERMOS_POR_ACAO.get(id(action)) if TERMOS_ON else None
+        _tv = None
+        if _acc and _acc['amostras']:
+            _n = _acc['amostras']
+            _tv = {'termos': {k: x / _n for k, x in _acc['soma'].items()},
+                   'residuo': _acc['residuo'] / _n, 'amostras': _n}
         return {
             'score': round(float(score), 2),
+            **({'termos': _tv} if _tv else {}),
             'simulated_value': (None if sim_avg is None
                                 else round(float(sim_avg), 2)),
             'simulated_wins': sim_wins,
@@ -19873,6 +19922,12 @@ class OPTCGMatch:
                     c['descartada_porque'] = f'valor esperado {round(chosen_val - cv, 1)} abaixo da escolhida'
 
     # ── Replay logger ────────────────────────────────────────────────────────
+        # bloco 709: `TERMOS_POR_ACAO` e indexado por id() de objeto --
+        # ids sao reaproveitados apos coleta de lixo, entao acumular entre
+        # DECISOES misturaria vetores de acoes diferentes. Limpa aqui, que
+        # e o unico ponto por onde toda decisao passa depois de anexar.
+        if TERMOS_ON:
+            TERMOS_POR_ACAO.clear()
 
     def _log_event(self, p: GameState, event_type: str, card: 'Card' = None,
                    target: 'Card' = None, description: str = '', phase: str = 'main',
