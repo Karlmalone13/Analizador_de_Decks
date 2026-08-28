@@ -273,10 +273,11 @@ def main():
     ap.add_argument('--workers', type=int, default=1,
                     help='processos paralelos (1=sequencial, comportamento de sempre)')
     ap.add_argument('--deck', choices=sorted(PAINEL), default=None,
-                    help='deck FIXO a testar (default: Imu, comportamento de sempre)')
+                    help='testar UM arquetipo so (sem isto roda o PAINEL inteiro, '
+                         'que e o default desde o bloco 724)')
     ap.add_argument('--painel', action='store_true',
-                    help=f'roda TODOS os arquetipos do painel ({", ".join(PAINEL)}) '
-                         f'-- use pra validar mudanca de motor, que pesa diferente por arquetipo')
+                    help='(obsoleto -- o painel virou o DEFAULT no bloco 724; '
+                         'a flag continua aceita e nao faz diferenca)')
     ap.add_argument('--seeds', type=int, default=N_SEEDS,
                     help=f'partidas por matchup (default {N_SEEDS}); menos = mais rapido, IC mais largo')
     args = ap.parse_args()
@@ -285,12 +286,21 @@ def main():
     df_raw = pd.read_csv('decklists_raw.csv')
     urls = df_raw.groupby('deck_url')['deck_name'].first()
 
-    if args.painel:
-        escolhidos = list(PAINEL.items())
-    elif args.deck:
+    # bloco 724: o PAINEL passa a ser o DEFAULT. Antes, rodar sem flag
+    # testava SO o Imu -- e o usuario ja tinha reclamado disso em
+    # 15/08/2026 ("jogar so de imu nao e ruim nao?"), motivo pelo qual o
+    # painel foi criado. O painel existia, mas atras de uma flag: quem
+    # rodasse pelo caminho natural continuava medindo um lider so, e foi
+    # exatamente o que aconteceu de novo em 28/08 (bloco 723).
+    #
+    # Objetivo central do projeto: o bot tem que jogar bem com QUALQUER
+    # deck. Uma ferramenta cujo default mede UM arquetipo empurra a sessao
+    # pro vicio que o projeto proibe. **O comportamento seguro tem que ser
+    # o default; o recorte estreito e que deve exigir flag.**
+    if args.deck:
         escolhidos = [(args.deck, PAINEL[args.deck])]
     else:
-        escolhidos = [('Imu', (FIXED_NAME, 'controle'))]
+        escolhidos = list(PAINEL.items())
 
     resumos = []
     for fixed_label, (fixed_name, arquetipo) in escolhidos:

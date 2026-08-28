@@ -28,6 +28,48 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (724) - Cobranca do usuario: **"pq so faz com o imu? ja pedi para parar com isso"**. O painel existia desde 15/08 mas ATRAS DE UMA FLAG -- virou o DEFAULT
+
+### O erro, e por que ele se repetiu
+
+Rodei o gauntlet do bloco 723 com `--deck Imu` (o default da ferramenta),
+**no mesmo dia em que citei varias vezes a regra "nenhum resultado
+agregado vale sem o recorte por lider"** ao criticar outras coisas.
+
+Pior: **ja tinha acontecido antes.** O proprio `gauntlet_matchup.py`
+guarda a reclamacao do usuario de **15/08/2026** -- *"jogar so de imu nao
+e ruim nao?"* -- e o `--painel` foi criado por causa dela.
+
+**Mas o painel ficou atras de uma flag, com o Imu no default.** Quem
+rodasse pelo caminho natural voltava a medir um lider so. Foi exatamente
+o que aconteceu 13 dias depois.
+
+### O conserto: inverter o default, nao lembrar da flag
+
+Uma regra que depende de a sessao LEMBRAR de passar uma flag nao
+sobrevive -- e a prova esta nas duas reclamacoes do mesmo usuario sobre o
+mesmo vicio.
+
+`gauntlet_matchup.py`: **rodar sem flag agora testa o PAINEL inteiro**
+(Imu/controle, Ace/agressivo, Enel/ramp, Nami/tempo). Testar UM arquetipo
+passou a exigir `--deck` explicito. `--painel` continua aceita e virou
+no-op, pra nao quebrar comando antigo.
+
+**Principio que fica pra outras ferramentas do projeto: o comportamento
+SEGURO tem que ser o default; o recorte estreito e que deve exigir flag.**
+
+### Limitacao que continua e NAO deve ser vendida como resolvida
+
+O painel tem **4 decks fixos**; `decklists_raw.csv` tem **209**. E melhor
+que 1, mas continua estreito. Ampliar o painel (ou sortear decks do banco
+por arquetipo) fica registrado como trabalho seguinte -- nao dizer
+"medimos amplo" com 4 de 209.
+
+### Estado
+
+A/B do bloco 723 (pesos de producao x otimizados) **rodando de novo nos 4
+arquetipos** -- e o que decide se os +11,5pp eram reais ou eram do Imu.
+
 ## 2026-08-28 (723) - **FORCA E SEMELHANCA NAO SAO ANTAGONICAS**: o mesmo vetor de pesos deu **+11,5pp de winrate** e **+1,9pp de `play`**. Mas a direcao causal que eu propus NAO foi a testada
 
 ### O teste

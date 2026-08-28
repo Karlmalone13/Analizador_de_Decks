@@ -2,6 +2,19 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 724): **cobranca do usuario — "pq so faz com o imu?
+> ja pedi para parar com isso".** Ele esta certo e **ja tinha pedido em
+> 15/08** (a reclamacao esta no proprio `gauntlet_matchup.py`, que criou o
+> `--painel` por causa dela). **O painel existia mas atras de uma FLAG,
+> com o Imu no default** — quem rodasse pelo caminho natural voltava a
+> medir um lider so, e foi o que fiz no bloco 723. **Conserto: o PAINEL
+> virou o DEFAULT** (Imu/Ace/Enel/Nami); testar um arquetipo so agora
+> exige `--deck`. **Principio: o comportamento SEGURO tem que ser o
+> default; o recorte estreito e que exige flag** — regra que depende de
+> lembrar de uma flag nao sobrevive. **Limitacao que continua**: o painel
+> tem 4 decks, o banco tem **209** — ampliar fica como trabalho seguinte,
+> nao vender como "medimos amplo".
+
 > 28/08/2026 (bloco 723): **forca e semelhanca NAO sao antagonicas.**
 > Gauntlet Imu, 140 partidas por braco: pesos otimizados p/ `play` dao
 > **38,6% de winrate x 27,1%** do baseline (**+11,5pp**, ICs quase sem
