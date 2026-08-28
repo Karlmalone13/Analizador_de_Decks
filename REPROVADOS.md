@@ -111,6 +111,28 @@ foi medida — e aí não é reprovação, é opinião.
 > plano e real e nao falha de encanamento -- foi o 1o uso do mecanismo do
 > bloco 692 e ele pagou na estreia.
 
+## Ranqueador aprendido (fase 2 do plano do bloco 702)
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| Ranqueador sobre TODAS as candidatas | **51,1% dos rotulos positivos** -> argmax nao discrimina; validacao 20,3% (baseline 21,3%) e treino 20,8% (baseline 30,7%) | 704 |
+| Ranqueador so sobre `play`, com limiar | treino 38,5%, mas **validacao 19,3% com limiar escolhido honestamente** (no treino) -- ABAIXO do baseline 21,3% | 704 |
+
+> **O PORTAO da fase 2 FECHOU**: ~20-24% contra teto de **96,6%**, e isso
+> **offline, onde o *distribution shift* nem entrou em jogo**. Logo o
+> shift **nao e a causa principal** -- o que economizou a fase 3 (DAgger)
+> inteira.
+>
+> **Erro de metodo cometido aqui, registrado**: os "+2,4pp" da validacao
+> vieram de escolher o limiar testando 7 valores NA PROPRIA VALIDACAO.
+> Selecao no conjunto de validacao infla o numero. Com o limiar escolhido
+> no treino, o modelo fica ABAIXO do baseline.
+>
+> Pista pra retomada: o rotulo disponivel e de CONJUNTO ("esta carta esta
+> entre as que o humano jogou no turno"), nao de decisao. O oraculo chega
+> a 96,6% porque enxerga o conjunto inteiro; um modelo que decide UMA
+> acao por vez, nao. Tratar como selecao de CONJUNTO nao foi tentado.
+
 ## Busca / shortlist
 
 | tentativa | resultado medido | bloco |

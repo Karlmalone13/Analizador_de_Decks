@@ -2,6 +2,20 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 704): **PORTAO DA FASE 2 FECHOU — parar antes do
+> DAgger.** Ranqueador sem identidade, split por lider: treino 38,5%, mas
+> **validacao 19,3% com limiar escolhido honestamente** (ABAIXO do
+> baseline 21,3%). Os "+2,4pp" que eu quase reportei vieram de **escolher
+> o limiar na propria validacao** — erro de metodo, registrado. Esta em
+> ~20-24% contra teto de **96,6%**, e isso **offline, onde o
+> *distribution shift* nem entra** — logo **o shift NAO e a causa
+> principal** (era o diagnostico do bloco 683; o portao pre-registrado
+> economizou a fase 3 inteira). Causa provavel: o rotulo e de CONJUNTO
+> ("esta carta esta entre as do turno"), nao de decisao — o oraculo
+> enxerga o conjunto inteiro, um modelo que decide 1 acao por vez nao.
+> **Hipotese nao testada: tratar como selecao de CONJUNTO.** O avaliador
+> rapido pagou: 2 iteracoes com 7 limiares cada em minutos (~4h na regua).
+
 > 28/08/2026 (bloco 703): **FASE 1 CONCLUIDA** — `fast_eval.py`: uma
 > avaliacao passou de ~1200s pra **0,005s** (banco reusado,
 > `policy_dataset.jsonl`). **Era isto que impedia as tentativas

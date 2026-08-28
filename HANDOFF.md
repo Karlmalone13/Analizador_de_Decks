@@ -28,6 +28,88 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (704) - **PORTAO DA FASE 2 FECHOU: PARAR ANTES DO DAGGER.** O ranqueador aprendido fica em ~20-24% contra teto de 96,6% -- **offline, onde o *distribution shift* nem entrou em jogo**. Logo o shift NAO e a causa principal
+
+### O que foi feito
+
+`scriptis_da_ia/treinar_ranqueador.py` -- ranqueador HistGradientBoosting
+sobre as candidatas, **59 features, ZERO de identidade de carta ou
+lider** (requisito do bloco 702), validado com **split por LIDER** (9
+lideres nunca vistos no treino).
+
+### Iteracao 1 -- defeito de montagem, achado e corrigido
+
+Treinando sobre TODAS as candidatas: **51,1% ficavam rotuladas
+positivas**, porque o rotulo e "esta acao esta no CONJUNTO do turno do
+humano", nao "o humano escolheu esta acao NESTA decisao". Com metade
+positiva o argmax nao discrimina -- o modelo escolhia
+`attach_don`/`attack` e deixava o conjunto de `play` VAZIO. Resultado:
+**20,3% na validacao (pior que o baseline 21,3%) e 20,8% no treino (pior
+que ele proprio no dado que viu, 30,7%)** -- sinal claro de montagem
+errada, nao de modelo ruim.
+
+Corrigido restringindo as candidatas a `play` (25,1% positivas) e usando
+politica com limiar + memoria do que ja jogou no turno.
+
+### Iteracao 2 -- e o ERRO DE METODO que eu cometi
+
+| ranqueador | treino | validacao (lideres nunca vistos) |
+|---|---|---|
+| motor real (baseline) | 30,7% | 21,3% |
+| score estatico | 19,9% | 17,9% |
+| **modelo aprendido** | **38,5%** | **23,7%** |
+| oraculo (teto) | 94,0% | **96,6%** |
+
+**Os +2,4pp da validacao sao FALSOS.** Escolhi o limiar testando 7
+valores **na propria validacao** e reportando o melhor -- selecao no
+conjunto de validacao, que infla o numero.
+
+Lido honestamente:
+
+| limiar | treino | validacao |
+|---|---|---|
+| 0,40 (o que o TREINO escolheria) | 47,4% | **19,3%** -- ABAIXO do baseline |
+| 0,50 (neutro) | 46,1% | 22,2% (+0,9pp) |
+| 0,70 (melhor NA validacao) | 38,5% | 23,7% |
+
+Escolhendo o limiar de forma honesta, **o modelo fica ABAIXO do
+baseline**. E a sensibilidade a esse parametro ja e, por si, sinal de
+generalizacao fraca.
+
+### O PORTAO fecha -- e isso e informacao, nao fracasso
+
+O bloco 702 registrou: *"se o ranqueador offline nao chegar perto do
+teto, o problema NAO e shift e paramos antes de gastar a fase 3"*.
+
+Esta em ~20-24% contra teto de **96,6%** -- e **offline, onde o
+*distribution shift* nem entrou em jogo**. O modelo nao ordena bem nem no
+ambiente mais favoravel possivel.
+
+**Conclusao: o *distribution shift* NAO e a causa principal.** Era o
+diagnostico do bloco 683 e eu ia gastar dias corrigindo-o com DAgger. O
+portao pre-registrado economizou isso.
+
+### Onde a causa parece estar
+
+O rotulo e **"esta carta esta no CONJUNTO do turno"**, nao "o humano
+escolheu esta carta NESTA decisao" -- o log humano nao da alinhamento
+decisao-a-decisao (limitacao declarada desde `build_policy_dataset.py`).
+O oraculo contorna isso porque enxerga o conjunto INTEIRO de uma vez; um
+modelo que decide UMA acao por vez, nao.
+
+Hipotese pra proxima sessao (nao medida ainda): tratar a decisao do turno
+como **selecao de CONJUNTO** (quais cartas jogar no turno) em vez de N
+escolhas independentes -- casa com a granularidade do rotulo que
+realmente existe, e com a metrica oficial, que tambem e de conjunto.
+
+### Vale registrar o que NAO falhou
+
+- O split por lider FUNCIONA e revela o que o split por partida escondia
+  (o bloco 683 nao tinha isso -- ver `REPROVADOS.md`).
+- O avaliador rapido pagou: **duas iteracoes completas, com varredura de
+  7 limiares cada, em minutos**. Na regua real teriam sido ~4 horas.
+- Nenhuma mudanca de comportamento foi para producao. `play` segue 28,9%.
+
 ## 2026-08-28 (703) - **FASE 1 CONCLUIDA**: avaliador rapido de pe -- uma avaliacao passou de ~20 min pra **0,005s**. Proxy VALIDADO contra a regua real (28,6% x 28,9%), e o teto de um re-ranqueador puro e **94,6%**
 
 ### O que foi construido
