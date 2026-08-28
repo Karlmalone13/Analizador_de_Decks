@@ -133,6 +133,26 @@ foi medida — e aí não é reprovação, é opinião.
 > a 96,6% porque enxerga o conjunto inteiro; um modelo que decide UMA
 > acao por vez, nao. Tratar como selecao de CONJUNTO nao foi tentado.
 
+## Selecao de conjunto aprendida (fase 2b)
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| Selecao de CONJUNTO do turno por modelo, avaliada em **1 split** de 9 lideres | +4,8pp -- **RETRATADO** | 705 -> 706 |
+| A mesma, sob **GroupKFold por lider (30 lideres)** | **-0,2pp** na melhor config; -1,8pp na config original; 6 lideres melhoram x 8 pioram | 706 |
+| Regularizar pra fechar o overfit | fecha o TREINO (85,5% -> 47,9%) **sem mover a validacao** (~28%, colada no baseline) | 706 |
+
+> **O que ficou de positivo**: a formulacao de CONJUNTO esta certa -- levou
+> o ajuste de TREINO de 38,5% (por decisao) a 86,7% com o mesmo dado. O
+> modelo separa quando conhece os lideres; **nao transfere pra deck novo**
+> com 797 turnos / 30 lideres.
+>
+> **Gargalo atual: VOLUME de dado humano**, nao formulacao nem *shift*.
+> Self-play da volume mas NAO da rotulo humano.
+>
+> **Regra de metodo que fica**: afirmacao sobre generalizacao exige **CV
+> agrupada por lider**. Split unico nao serve -- os +4,8pp vieram de um
+> split onde 138 de 210 turnos eram de UM lider.
+
 ## Busca / shortlist
 
 | tentativa | resultado medido | bloco |

@@ -28,6 +28,68 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (706) - **RETRATACAO: os +4,8pp do bloco 705 NAO existem.** Validacao cruzada por lider (30 lideres) da **-0,2pp na melhor configuracao**. O gargalo nao e formulacao nem *shift* -- e VOLUME de dado humano
+
+### O que mudou na medicao
+
+O bloco 705 usou UM split com 9 lideres, e **138 dos 210 turnos eram de um
+unico lider**. Eu ja tinha sinalizado que era fragil. A CV mostra que era
+pior: era ruido.
+
+Aqui: **GroupKFold por LIDER (k=5, 30 lideres)** -- cada lider e validado
+como deck nunca visto exatamente uma vez, nenhum lider aparece nos dois
+lados do mesmo fold, e o baseline e recomputado NOS MESMOS folds (delta
+pareado). 960 turnos avaliados, contra 210 antes.
+
+| config | treino | CV valid | baseline | delta |
+|---|---|---|---|---|
+| atual (bloco 705) | 85,5% | 26,9% | 28,6% | **-1,8pp** |
+| regularizado | 35,3% | 27,8% | 28,6% | -0,8pp |
+| muito raso | 27,8% | 25,0% | 28,6% | -3,6pp |
+| medio | 47,9% | 28,4% | 28,6% | **-0,2pp** |
+
+**Todas neutras ou negativas.** Por lider: 6 melhoram, 8 pioram.
+
+### A regularizacao CONFIRMA o diagnostico em vez de resolver
+
+Apertar o modelo fecha o buraco de treino (85,5% -> 47,9%) **sem mover a
+validacao**, que fica colada no baseline (~28%). Nao e overfitting
+corrigivel por hiperparametro: **e ausencia de sinal generalizavel nessa
+escala de dado.**
+
+### O que a reformulacao PROVOU, e o que nao
+
+**Provou**: o modelo CONSEGUE separar as decisoes quando conhece os
+lideres -- treino foi de 38,5% (por decisao) a 86,7% (por conjunto) com o
+mesmo dado. A formulacao de conjunto esta certa e casa com o rotulo e com
+a metrica.
+
+**Nao provou**: que isso transfira pra deck novo. Com 797 turnos de
+treino e 30 lideres, nao transfere.
+
+### Onde o gargalo esta agora (mudou de lugar 3 vezes hoje)
+
+1. ~~geracao de acoes~~ -- oraculo: 97,4%, nao e aqui (bloco 697)
+2. ~~a busca Monte Carlo~~ -- e liquido POSITIVO (blocos 700/701)
+3. ~~*distribution shift*~~ -- portao da fase 2: falha ja OFFLINE (704)
+4. ~~formulacao por decisao~~ -- resolvida pela selecao de conjunto (705)
+5. **VOLUME e representatividade de dado HUMANO** <- aqui
+
+**Isso muda o que a fase 4 tem que ser.** Self-play da volume mas **nao da
+rotulo humano** -- nao resolve isto sozinho. As saidas reais sao: mais
+partidas humanas no banco (o projeto ja tem o mecanismo obrigatorio de
+coleta), ou uma formulacao que precise de menos dado por lider.
+
+### Nota de metodo -- 2a vez no dia
+
+E a 2a vez hoje que um numero promissor evapora sob medicao correta (a 1a
+foi o bloco 700, vies de selecao). Nos dois casos o erro foi **medir num
+recorte favoravel e generalizar**. A CV agrupada deve ser o PADRAO daqui
+pra frente pra qualquer afirmacao sobre generalizacao -- split unico nao
+serve, mesmo com a ressalva escrita.
+
+`scriptis_da_ia/cv_conjunto.py`.
+
 ## 2026-08-28 (705) - **A REFORMULACAO FUNCIONA**: decidir o turno como SELECAO DE CONJUNTO leva o treino de 38,5% pra **86,7%** e da o 1o ganho da sessao que GENERALIZA -- **+4,8pp em lideres nunca vistos**, com hiperparametro escolhido so no treino
 
 ### A ideia, e por que ela vem do portao anterior

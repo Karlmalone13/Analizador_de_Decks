@@ -2,6 +2,19 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 706): **RETRATACAO — os +4,8pp do bloco 705 nao
+> existem.** Sob **GroupKFold por LIDER (30 lideres, 960 turnos)** a melhor
+> config da **-0,2pp** (a do bloco 705 da -1,8pp); 6 lideres melhoram x 8
+> pioram. Aquele split tinha 138 de 210 turnos num unico lider. **A
+> regularizacao confirma o diagnostico**: fecha o treino (85,5%->47,9%)
+> sem mover a validacao (~28%, colada no baseline) — nao e overfit
+> corrigivel, e **ausencia de sinal generalizavel nessa escala de dado**.
+> O gargalo mudou de lugar pela 5a vez hoje e agora e **VOLUME de dado
+> HUMANO** (nao geracao, nao busca, nao *shift*, nao formulacao).
+> **Self-play da volume mas NAO da rotulo humano** — a fase 4 precisa ser
+> repensada. **Regra de metodo: afirmacao sobre generalizacao exige CV
+> agrupada por lider**; split unico nao serve. `cv_conjunto.py`.
+
 > 28/08/2026 (bloco 705): **A REFORMULACAO FUNCIONA.** Decidir o turno
 > como **SELECAO DE CONJUNTO** (nao N escolhas gulosas) levou o treino de
 > 38,5% pra **86,7%** com o MESMO dado/features/modelo — a informacao
