@@ -2,6 +2,21 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 699): **a BUSCA MONTE CARLO e a suspeita.** 1086
+> decisoes em que a carta do humano estava no shortlist e perdeu: em
+> **45,0%** o score ESTATICO ja a tinha em 1o lugar e a busca a derrubou,
+> com margem **mediana -117** (so 14,5% dentro do ruido) — **nao e
+> resolucao, e conviccao errada**. Bate o criterio pre-registrado do
+> bloco 698 -> **cirurgia 1**. Isso da uma explicacao UNICA pras 11
+> falhas anteriores (todas atacavam o ranqueamento; o estagio seguinte o
+> derrubava). **Armadilha minha, corrigida**: a 1a versao media "valor
+> simulado preferia o humano = 0,0%", que e **tautologia** (a escolhida e
+> por construcao a de maior valor simulado) — metrica removida,
+> documentada em `diag_margem_busca.py`. Ablacao rodando **sem tocar em
+> codigo**, via knobs do bloco 694 (`TOP_K=1` + `SEARCH_MIN_CANDIDATES=1`).
+> **Nao prova** que a busca seja pior em geral, so que afasta do humano —
+> conferir outras categorias antes de cortar em producao.
+
 > 28/08/2026 (bloco 698): **o padrao passa a ser mudanca ESTRUTURAL, nao
 > ajuste** (ponto do usuario, aceito: as 11 tentativas reprovadas sao
 > todas parametro DENTRO da mesma arquitetura; nenhuma mexeu nela). Tres

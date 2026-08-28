@@ -28,6 +28,81 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (699) - Claude (sessao remota web) - **A BUSCA MONTE CARLO E A SUSPEITA**: em 45% das decisoes erradas o score ESTATICO ja tinha a carta do humano em 1o lugar e a busca a derrubou -- com margem GRANDE (mediana -117), nao ruido. Criterio pre-registrado do bloco 698 aponta a cirurgia 1
+
+### O numero (1086 decisoes, corpus completo)
+
+Decisoes em que a carta do humano ESTAVA no shortlist e mesmo assim
+perdeu:
+
+| | |
+|---|---|
+| **score ESTATICO ja preferia a carta do humano** | **45,0%** (489/1086) |
+| margem mediana pela qual a candidata certa perdeu | **-117,4** |
+| perdeu por margem <= 20 (ruido plausivel) | **so 14,5%** |
+| amostras de simulacao na escolhida | 3 (n=635) ou 6 (n=451) |
+
+### ARMADILHA QUE EU MESMO CAI -- metrica tautologica, removida
+
+A 1a versao do script media tambem *"o valor SIMULADO preferia a carta do
+humano?"* e reportou **0,0%**. **Isso e TAUTOLOGIA, nao achado**: a acao
+escolhida E, por construcao, a de maior `simulated_value` -- nenhuma
+outra candidata pode ter valor maior. Pela mesma razao, "a busca
+inverteu" (estatico certo E simulado errado) saiu quase identico a
+"estatico certo" sozinho: 483 vs 489.
+
+Reportar aquele 0,0% como evidencia teria sido enganoso. Metrica
+removida da ferramenta permanente e a armadilha documentada no docstring
+dela. **A unica comparacao NAO-tautologica aqui e contra o `score`
+ESTATICO**, que independe da escolha da busca.
+
+Ferramenta permanente (ja com o conserto):
+`scriptis_da_ia/diag_margem_busca.py`.
+
+### O veredito contra o criterio PRE-REGISTRADO (bloco 698)
+
+- **NAO e problema de resolucao.** Margens grandes (mediana -117), so
+  14,5% dentro do ruido. A busca nao hesita -- decide diferente com
+  conviccao. Isso DESCARTA a variante "mais amostras".
+- **45% >= o corte de ~25%** -> **cirurgia 1** (remover ou gatilhar a
+  busca Monte Carlo).
+
+### Por que isso reenquadra as 11 falhas anteriores
+
+Todas as 11 tentativas reprovadas atacavam o RANQUEAMENTO das candidatas
+(bonus, desempate, largura de shortlist, politica aprendida). **Se o
+estagio seguinte derruba confiantemente o que o ranqueamento produz,
+melhorar o ranqueamento nao podia mesmo aparecer no resultado final.** E
+uma explicacao unica pra um padrao de 11 resultados nulos -- mais
+economica que 11 explicacoes separadas.
+
+### A ablacao saiu de graca da superficie de controle do bloco 694
+
+"Remover a busca" e expressavel como combinacao de knobs -- `TOP_K=1` +
+`SEARCH_MIN_CANDIDATES=1` deixam a busca sem nada pra escolher, e a
+decisao cai no score estatico. **Cirurgia estrutural testada sem tocar em
+uma linha de codigo.** Rodando:
+
+    python sweep.py --knob TOP_K_SEM_RESPOSTA=1 --knob TOP_K_COM_RESPOSTA=1 \
+                    --knob SEARCH_MIN_CANDIDATES=1
+
+### O que a medicao NAO prova (ler antes de cortar nada)
+
+Ela prova que a busca afasta o motor **do humano**. NAO prova que a busca
+seja pior em geral -- e possivel que ela ganhe partidas e perca
+semelhanca. Como a metrica oficial e jogar IDENTICO ao humano, e o que
+importa pra meta; mas antes de remover o estagio de producao, conferir se
+alguma outra categoria (`attack`, `activate`, defesa) piora junto, e
+considerar winrate/gauntlet.
+
+### Risco de reverter -- posicao do usuario, registrada
+
+*"Nao tem problema mexermos na estrutura pq caso de errado e so baixar o
+push anterior"*. Correto, e cada experimento do dia e um commit separado,
+entao reverter e cirurgico. O unico risco que `git revert` NAO cobre e
+mudar algo e seguir acreditando que ajudou sem ter medido -- por isso o
+A/B continua, nao por timidez.
+
 ## 2026-08-28 (698) - Claude (sessao remota web) - DECISAO PRE-REGISTRADA: o padrao passa a ser mudanca ESTRUTURAL, nao ajuste. As 3 cirurgias na mesa e o criterio que escolhe entre elas -- escrito ANTES do numero sair
 
 ### O ponto do usuario, aceito
