@@ -674,6 +674,28 @@ def main():
     # "quanto das cartas certas o motor acertou", nao so "o turno inteiro
     # bateu". Nao substitui as % acima; existe pra que uma melhora PARCIAL
     # (acertar 2 de 3 em vez de 1 de 3) apareca em algum lugar.
+    # ── METRICA OFICIAL (28/08/2026): ACERTO POR JOGADA ──────────────
+    # O usuario esclareceu que a meta ("85-90% igual ao humano") sempre
+    # foi no sentido de "a cada 8 jogadas, 6 iguais" -- credito PARCIAL
+    # por carta, nao conjunto exato por turno.
+    #
+    # O conjunto exato pune duas vezes o mesmo erro (acertar a carta certa
+    # e jogar uma a mais zera o turno) e tinha teto artificial de 52,7%,
+    # que e a taxa com que o motor acerta QUANTAS cartas jogar. Com
+    # credito parcial esse teto some.
+    _r = [x for x in off_rows if x.get('play_has_data')]
+    _inter = sum(x['play_inter'] for x in _r)
+    _nh = sum(x.get('play_n_hum', 0) for x in _r)
+    _nm = sum(x.get('play_n_motor', 0) for x in _r)
+    print()
+    print('  ================ METRICA OFICIAL ================')
+    print(f'  ACERTO POR JOGADA: {_inter}/{_nh} = '
+          f'{(_inter/_nh*100) if _nh else 0:.1f}%   (meta: 85-90%)')
+    print(f'     das cartas que o HUMANO jogou, quantas o motor tambem jogou')
+    print(f'  precisao: {_inter}/{_nm} = {(_inter/_nm*100) if _nm else 0:.1f}%'
+          f'   (das que o motor jogou, quantas o humano tambem jogou)')
+    print('  ================================================')
+    print()
     print('  -- mesmas categorias, medidas por SOBREPOSICAO (intersecao/uniao, '
           'credita acerto parcial) --')
     for label, ik, uk in [

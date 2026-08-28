@@ -300,6 +300,48 @@ Referências oficiais das regras (manual, playsheet) em
 
 ## META OFICIAL E OBRIGATORIA: `play` (jogar IDENTICO ao humano) de 28% pra 85-90%
 
+### CORRECAO DA METRICA OFICIAL (28/08/2026) -- e ACERTO POR JOGADA, nao conjunto exato
+
+> **O usuario esclareceu o que sempre quis dizer**, depois de eu mostrar
+> os dois numeros lado a lado: *"o bot tem que jogar entre 85 e 90% igual
+> ao humano"*, no sentido de *"se a cada 8 jogadas ele fizer 6 iguais,
+> esta otimo"*.
+>
+> **Isso NAO e o conjunto exato por turno.** A metrica registrada abaixo
+> (`play` exato) e tudo-ou-nada: se o humano jogou 2 cartas e o bot
+> acertou 1 e errou 1, o turno conta ZERO. Ela pune duas vezes o mesmo
+> erro -- acertar a carta certa e jogar uma a mais zera o turno.
+>
+> **METRICA OFICIAL, a partir daqui:**
+>
+> | | valor |
+> |---|---|
+> | **ACERTO POR JOGADA** (das cartas que o humano jogou, quantas o bot tambem jogou) | **43,5%** -> meta **85-90%** |
+> | conjunto exato por turno (secundaria, mantida) | 28,9% |
+> | precisao (das que o bot jogou, quantas o humano tambem jogou) | 45,4% |
+>
+> **Por que a mudanca importa alem do numero**: o conjunto exato tinha um
+> TETO ARTIFICIAL de 52,7% -- o motor acerta *quantas* cartas jogar em so
+> 52,7% dos turnos, e sem credito parcial isso limitava tudo. **Com
+> acerto por jogada esse teto some.**
+>
+> **Onde esta o gap** (medido): nos turnos de UMA carta, que sao 2/3 do
+> total, o bot acerta 310 de 636 = **48,7%**, praticamente cara ou coroa.
+> **E ai que estao os pontos que faltam**, nao nos turnos complexos.
+>
+> Registro honesto: em 26/08 o usuario escolheu `play` exato quando lhe
+> mostrei as duas opcoes, e foi assim que ficou registrado. Em 28/08 ele
+> esclareceu que a intencao sempre foi acerto por jogada. **A meta e dele;
+> a correcao vale a partir daqui, e os blocos antigos continuam validos no
+> que mediram.**
+>
+> **Permissao registrada junto** (28/08): *"vc tem permissao para fazer a
+> modificacao que precisar contanto que mantenha 1 motor (regra nossa)"* --
+> mudanca estrutural esta liberada; a regra do MOTOR UNICO
+> (`REGRA_SEM_DUPLICACAO.md`) continua inegociavel.
+
+
+
 > **DEFINIDO PELO USUARIO EM 26/08/2026, como OBRIGACAO -- e a meta e o
 > objetivo do projeto a partir de agora.** Citacao direta, depois de eu
 > apresentar duas metricas possiveis e perguntar qual ele queria de

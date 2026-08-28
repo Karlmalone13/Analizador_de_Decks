@@ -2,6 +2,19 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 728): **A METRICA OFICIAL ESTAVA ERRADA.** O usuario
+> esclareceu que a meta ("85-90% igual ao humano") sempre foi **ACERTO POR
+> JOGADA** ("a cada 8 jogadas, 6 iguais"), nao conjunto exato por turno.
+> **Estamos em 43,5%** (528/1214), nao 28,9% — nada mudou no motor, mudou
+> a regua. O conjunto exato punia 2x o mesmo erro e tinha **teto
+> artificial de 52,7%** (taxa de acerto da CONTAGEM); com credito parcial
+> esse teto some. **ONDE ESTA O GAP**: nos turnos de UMA carta (2/3 do
+> total) o bot acerta **310/636 = 48,7%, cara ou coroa** — o alvo e a
+> escolha UNICA, nao a montagem de conjunto. `CLAUDE.md`/`AGENTS.md`
+> corrigidos; `decision_quality_full.py` passa a imprimir a metrica (antes
+> ela nao aparecia). Permissao registrada: mudanca estrutural liberada,
+> **motor unico continua inegociavel**.
+
 > 28/08/2026 (bloco 727): **REQUISITO — plugin tem que ficar como DLL
 > VERSIONADA pra instalar em varios PCs** (pedido do usuario). Ele **ja e**
 > DLL (BepInEx so carrega DLL, nunca .exe); o problema era ela **nao ser

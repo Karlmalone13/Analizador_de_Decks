@@ -28,6 +28,71 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (728) - **A METRICA OFICIAL ESTAVA ERRADA**: a meta sempre foi ACERTO POR JOGADA, nao conjunto exato. Estamos em **43,5%**, nao 28,9% -- e o gap esta nos turnos de UMA carta
+
+### O esclarecimento do usuario
+
+*"o bot tem que jogar entre 85 e 90% igual ao humano"*, no sentido que ele
+mesmo deu: *"se a cada 8 jogadas ele fizer 6 iguais, esta otimo"*.
+
+**Isso NAO e o conjunto exato por turno**, que era a metrica registrada
+desde 26/08. Sao coisas diferentes e eu nunca tinha medido a segunda.
+
+### Os numeros (mesmo corpus, mesma corrida -- so a regua muda)
+
+| metrica | valor |
+|---|---|
+| **ACERTO POR JOGADA (oficial a partir daqui)** | **43,5%** (528/1214) |
+| conjunto exato por turno (secundaria) | 28,9% |
+| precisao | 45,4% (528/1162) |
+
+**Nada mudou no motor.** Mudou a regua que descreve o mesmo
+comportamento. Mas mudou o diagnostico.
+
+### Por que a regua antiga atrapalhava
+
+O conjunto exato e tudo-ou-nada: acertar a carta certa E jogar uma a mais
+**zera o turno**. Pune duas vezes o mesmo erro.
+
+E criava **teto artificial**: o motor acerta *quantas* cartas jogar em so
+52,7% dos turnos (bloco 695), o que limitava o conjunto exato a 52,7%
+independentemente da selecao. **Com credito parcial esse teto some.**
+
+### ONDE ESTA O GAP -- achado novo e acionavel
+
+```
+humano jogou 1, bot acertou 0:  326 turnos
+humano jogou 1, bot acertou 1:  310 turnos
+humano jogou 2, bot acertou 0:   93 turnos
+humano jogou 2, bot acertou 1:   98 turnos
+humano jogou 2, bot acertou 2:   44 turnos
+```
+
+**Nos turnos de UMA carta -- 2/3 do total -- o bot acerta 310 de 636 =
+48,7%. Cara ou coroa.** E ai que estao os ~40 pontos que faltam, nao nos
+turnos complexos. Isso reorienta o trabalho: o alvo e a escolha UNICA,
+nao a montagem de conjunto.
+
+### Registro honesto sobre a mudanca de meta
+
+Em 26/08 o usuario escolheu `play` exato quando lhe mostrei as duas
+opcoes lado a lado, e foi assim que ficou registrado. Em 28/08 ele
+esclareceu que a intencao sempre foi acerto por jogada. **A meta e dele.**
+A correcao vale daqui pra frente; os blocos antigos continuam validos no
+que mediram -- so nao sao a meta.
+
+### Permissao registrada
+
+*"vc tem permissao para fazer a modificacao que precisar contanto que
+mantenha 1 motor (regra nossa)"* -- mudanca estrutural liberada; a regra
+do MOTOR UNICO (`REGRA_SEM_DUPLICACAO.md`) continua inegociavel.
+
+### Feito
+
+- `CLAUDE.md` e `AGENTS.md` (espelho) corrigidos com a metrica nova.
+- `decision_quality_full.py` passa a IMPRIMIR o acerto por jogada em
+  destaque -- antes o numero nao aparecia em lugar nenhum.
+
 ## 2026-08-28 (727) - REQUISITO REGISTRADO: manter o plugin como **DLL versionada** pra instalar em varios PCs. Instalador passa a usar DLL pre-compilada quando existir
 
 ### O pedido
