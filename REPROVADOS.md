@@ -225,6 +225,24 @@ foi medida — e aí não é reprovação, é opinião.
 > ajudou. O board concreto no `context` fica como observabilidade util,
 > mas nao e a resposta.
 
+## Vetor de pesos otimizado (`eval_weights_holdout.json`) -- REPROVADO no painel
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| Publicar o vetor otimizado, apoiado em **+11,5pp de winrate no Imu** | **o painel derruba**: Enel **-25,0pp** (36,7% -> 11,7%), unico efeito com IC nao-sobreposto; as 3 "melhoras" (Imu/Ace/Nami) tem IC sobreposto = ruido | 723 -> 725 |
+
+> **A licao vale mais que o vetor**: medir UM lider (Imu) deu +11,5pp e
+> escondia um colapso de 25pp em outro arquetipo. **Nao e preciosismo de
+> processo -- custa conclusao errada.**
+>
+> Causa aparente: o vetor derruba `DON/ataque` em todos os arquetipos, e
+> **ramp (Enel) e justamente o plano que DEPENDE de acumular e gastar
+> DON**. Politica boa pra 3 arquetipos, pessima pra 1.
+>
+> O painel so pegou isso porque virou DEFAULT no bloco 724, apos o usuario
+> cobrar pela 2a vez (a 1a foi 15/08). **Na 1a rodada depois da inversao
+> ja apareceu a regressao.**
+
 ## Busca / shortlist
 
 | tentativa | resultado medido | bloco |

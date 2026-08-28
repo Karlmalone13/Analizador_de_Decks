@@ -28,6 +28,57 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (725) - **O PAINEL DERRUBA O RESULTADO DO BLOCO 723**: os +11,5pp medidos SO no Imu escondiam um **colapso de -25pp no Enel** -- a unica diferenca estatisticamente clara do painel inteiro
+
+### O numero (12 seeds x 7 adversarios = 84 partidas por deck, por braco)
+
+| deck | arquetipo | baseline | variante | delta | ICs |
+|---|---|---|---|---|---|
+| Imu | controle | 29,8% [21-40] | 40,5% [31-51] | +10,7pp | sobrepoem |
+| Ace | agressivo | 51,7% [39-64] | 61,7% [49-73] | +10,0pp | sobrepoem |
+| **Enel** | **ramp/controle** | **36,7% [26-49]** | **11,7% [6-22]** | **-25,0pp** | **NAO sobrepoem** |
+| Nami | tempo | 48,3% [36-61] | 65,0% [52-76] | +16,7pp | quase sobrepoem |
+
+**O UNICO efeito estatisticamente claro e o colapso do Enel.** As tres
+melhoras tem IC sobreposto -- individualmente sao ruido.
+
+### O que isso custa ao bloco 723
+
+Os **+11,5pp medidos so no Imu** (bloco 723) **escondiam uma destruicao
+de 25pp em outro arquetipo**. Sem o painel, a conclusao entregue teria
+sido "o vetor otimizado e mais forte" -- quando ele **aleija um dos 4
+decks testados**.
+
+Nao e sutileza estatistica: e a diferenca entre um vetor publicavel e um
+que quebra um arquetipo inteiro.
+
+### A causa aparece no DON/ataque
+
+| deck | baseline | variante |
+|---|---|---|
+| Imu | 1,51 | 0,98 |
+| Ace | 1,99 | 0,80 |
+| Nami | 0,90 | 0,73 |
+| **Enel** | **1,47** | **1,27** |
+
+O vetor derruba DON/ataque em todos -- mas no Enel MENOS, e mesmo assim
+ele e o unico que colapsa. **Ramp e justamente o arquetipo cujo plano
+DEPENDE de acumular e gastar DON**: a politica que serve pros outros tres
+e pessima pra ele.
+
+### VEREDITO
+
+**`eval_weights_holdout.json` REPROVADO.** Nao publicar. Some aos outros
+vetores ja reprovados hoje (blocos 713, 715).
+
+### O metodo que reprovou so existiu porque o usuario cobrou
+
+O painel virou default no bloco 724, depois da cobranca *"pq so faz com o
+imu? ja pedi para parar com isso"*. **Na primeira rodada apos a inversao,
+ele ja pegou uma regressao catastrofica que o default anterior escondia.**
+Isso e evidencia direta de que o vicio de medir um lider so nao e
+preciosismo de processo -- custa conclusao errada.
+
 ## 2026-08-28 (724) - Cobranca do usuario: **"pq so faz com o imu? ja pedi para parar com isso"**. O painel existia desde 15/08 mas ATRAS DE UMA FLAG -- virou o DEFAULT
 
 ### O erro, e por que ele se repetiu

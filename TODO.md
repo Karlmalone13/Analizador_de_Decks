@@ -2,6 +2,17 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 725): **O PAINEL DERRUBA O BLOCO 723.** Os +11,5pp
+> medidos so no Imu escondiam **colapso de -25pp no Enel** (36,7% ->
+> 11,7%), **a unica diferenca com IC nao-sobreposto** do painel inteiro —
+> as 3 melhoras (Imu +10,7, Ace +10,0, Nami +16,7) tem IC sobreposto e
+> individualmente sao ruido. **`eval_weights_holdout.json` REPROVADO**,
+> nao publicar. Causa aparente: o vetor derruba `DON/ataque` em todos, e
+> **ramp e o arquetipo cujo plano DEPENDE de DON**. **Na 1a rodada depois
+> de o painel virar default (bloco 724) ele ja pegou uma regressao
+> catastrofica que o default anterior escondia** — medir um lider so custa
+> conclusao errada, nao e preciosismo.
+
 > 28/08/2026 (bloco 724): **cobranca do usuario — "pq so faz com o imu?
 > ja pedi para parar com isso".** Ele esta certo e **ja tinha pedido em
 > 15/08** (a reclamacao esta no proprio `gauntlet_matchup.py`, que criou o
