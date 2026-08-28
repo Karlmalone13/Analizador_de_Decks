@@ -97,7 +97,13 @@ scriptis_da_ia/metrics/decision_quality_full/parcial_limit*.json
 # valor testado). O resumo comparativo -- que e a evidencia por tras das
 # entradas do REPROVADOS.md -- fica versionado em
 # metrics/sweeps/ultimo_sweep.json.
-scriptis_da_ia/metrics/decision_quality_full/sweep_*.json
+# bloco 719: TODO dump de variante nesta pasta e ignorado -- so o
+# resultado canonico e versionado. Cada corrida com `OPTCG_RESULT_NAME`
+# ou `--limit` gera ~1,5 MB, e ja aconteceu 3x nesta sessao de um desses
+# arquivos ficar solto no repositorio. O resumo comparativo (que e a
+# evidencia das entradas do REPROVADOS.md) fica em metrics/sweeps/.
+scriptis_da_ia/metrics/decision_quality_full/*.json
+!scriptis_da_ia/metrics/decision_quality_full/ultimo_resultado.json
 # bloco 712: dumps de A/B nomeados via OPTCG_RESULT_NAME (~1,4 MB cada).
 # Mesmo tratamento dos sweeps -- o resumo comparativo vai pro HANDOFF.
 scriptis_da_ia/metrics/decision_quality_full/pesos_*.json
