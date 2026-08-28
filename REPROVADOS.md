@@ -172,6 +172,28 @@ foi medida — e aí não é reprovação, é opinião.
 > Nao repetir com objetivo unico. O caminho e multi-objetivo -- e exige
 > rotular as outras categorias no banco de termos.
 
+## Otimizacao MULTI-OBJETIVO dos pesos (bloco 715)
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| `objetivo = play - 3.0*max(0, don_base - don)` | holdout: `play` **-0,8pp**, `don` **-2,9pp** -- contem o estrago (era -11,2pp) mas **nada sobe** | 715 |
+| penalidade 6.0 | holdout: `play` -1,2pp, `don` -3,7pp | 715 |
+| O "+1,9pp honesto" do bloco 713 | **RETRATADO**: a mesma busca de objetivo unico da **-2,7pp** com 3000 iteracoes em vez de 4000 | 713 -> 715 |
+
+> **VEREDITO: girar os 17 pesos NAO entrega ganho confiavel em `play`.**
+> O ganho varia de +1,9pp a -2,7pp entre buscas quase iguais (ruido de
+> onde a busca pousa); a PERDA em `don_alvo` e consistente nas duas
+> medicoes independentes (-8,0pp regua real, -11,2pp offline).
+> **A perda transfere, o ganho nao.**
+>
+> A alavanca EXISTE e e controlavel -- isso ficou construido (termos
+> decomponiveis, `OPTCG_EVAL_WEIGHTS`, fingerprint com hash dos pesos).
+> O que nao existe e ganho estavel nela.
+>
+> **Implicacao**: o proximo suspeito sao os TERMOS (quais existem), nao
+> os PESOS (quanto valem). Bate com o bloco 707 (curva satura ->
+> representacao) por caminho independente.
+
 ## Busca / shortlist
 
 | tentativa | resultado medido | bloco |

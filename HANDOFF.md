@@ -28,6 +28,64 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (715) - **A ALAVANCA DE PESOS NAO ENTREGA GANHO CONFIAVEL.** Multi-objetivo contem o estrago mas nada sobe no holdout -- e o +1,9pp do bloco 713 **tambem cai**: o ganho varia de +1,9pp a -2,7pp entre duas buscas quase iguais
+
+### O resultado
+
+Baseline holdout (12 lideres que a busca nunca viu): `play` 29,1%,
+`don` 25,4%.
+
+| penalidade | holdout `play` | holdout `don` |
+|---|---|---|
+| 0,0 (objetivo unico, = bloco 713) | **-2,7pp** | **-11,2pp** |
+| 3,0 | -0,8pp | -2,9pp |
+| 6,0 | -1,2pp | -3,7pp |
+
+**Nenhuma configuracao melhora o holdout.** A penalidade FUNCIONA como
+desenhada -- contem o estrago em `don` de -11,2pp pra -2,9pp -- mas
+conter dano nao e ganho.
+
+### O achado que derruba tambem o bloco 713
+
+Com penalidade 0, a busca aqui da `play` **-2,7pp** no holdout. O bloco
+713, com a mesma busca de objetivo unico no MESMO holdout, deu **+1,9pp**
+na regua real.
+
+Os vetores nao sao identicos (4000 x 3000 iteracoes -- a busca pousa em
+pontos diferentes). **E exatamente esse o ponto: o ganho em `play` varia
+de +1,9pp a -2,7pp entre duas buscas praticamente iguais. Nao e robusto,
+esta dentro do ruido de onde a busca aterrissa.**
+
+Enquanto isso a direcao de `don` **concorda** nas duas medicoes (-8,0pp
+na regua real, -11,2pp offline). **A perda e consistente; o ganho nao.**
+
+### Retratacao do bloco 713
+
+O "+1,9pp, o numero honesto" **tambem nao sobrevive**. Desta vez NAO foi
+erro de protocolo -- o protocolo (busca so no treino, holdout por lider,
+regua real) estava certo. **O efeito em si e instavel.**
+
+E a 4a conclusao minha derrubada por medicao posterior nesta sessao.
+Todas retratadas por escrito, nenhuma virou fato aceito.
+
+### Veredito sobre a alavanca
+
+Ela **existe, e controlavel e mensuravel** -- girar os 17 pesos move as
+metricas de forma reprodutivel e atribuivel, o que nao era possivel hoje
+de manha. Mas medida com rigor **nao entrega ganho confiavel em `play`**;
+entrega **perda confiavel em `don_alvo`**.
+
+**Nada publicado.** `eval_weights.json` (producao) intocado desde 11/08.
+
+### O que isso implica
+
+Se mexer nos VALORES dos 17 termos nao produz ganho estavel, o proximo
+suspeito sao os TERMOS -- quais existem, nao quanto pesam. Casa com o
+achado do bloco 707 (a curva de aprendizado satura -> gargalo de
+REPRESENTACAO) por um caminho independente: **duas rotas diferentes
+apontando pra "faltam sinais", nao pra "os sinais estao mal
+ponderados"**.
+
 ## 2026-08-28 (714) - otimizacao MULTI-OBJETIVO: `don_alvo` entra no banco de termos e no criterio da busca. **O objetivo novo REPROVA o vetor que a busca anterior escolheu**
 
 ### O diagnostico do bloco 713, em uma frase

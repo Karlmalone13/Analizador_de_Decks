@@ -2,6 +2,19 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 715): **A ALAVANCA DE PESOS NAO ENTREGA GANHO
+> CONFIAVEL.** Multi-objetivo no holdout: penalidade 3,0 da `play`
+> **-0,8pp** e `don` **-2,9pp** — contem o estrago (era -11,2pp) mas
+> **nada sobe**. E **retrata o bloco 713**: a mesma busca de objetivo
+> unico da **-2,7pp** com 3000 iteracoes em vez de 4000, ou seja o ganho
+> varia de +1,9pp a -2,7pp entre buscas quase iguais — **nao e robusto**.
+> A perda em `don` concorda nas duas medicoes independentes (-8,0pp regua,
+> -11,2pp offline): **a perda transfere, o ganho nao**. 4a conclusao minha
+> derrubada por medicao nesta sessao, todas retratadas. **Nada publicado**;
+> `eval_weights.json` intocado desde 11/08. **Implicacao: o suspeito passa
+> a ser QUAIS TERMOS existem, nao quanto pesam** — bate com o bloco 707
+> (curva satura -> representacao) por caminho independente.
+
 > 28/08/2026 (bloco 714): **otimizacao MULTI-OBJETIVO.** `don_alvo` entra
 > no banco de termos (`coletar_termos.py` rotula o alvo do DON, mesma
 > definicao da regua) e no criterio da busca:
