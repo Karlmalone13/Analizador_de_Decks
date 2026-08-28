@@ -2,6 +2,20 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 707): **A CURVA SATURA — mais dado humano NAO
+> desbloqueia.** Validacao vai de 24,1% (5 lideres) a **26,4% (24
+> lideres)**, ainda ABAIXO do baseline 28,5%; de 10->24 lideres ganha so
+> **+0,6pp**. **Corrige o bloco 706**: o gargalo NAO e volume (aquilo era
+> inferencia) — e **REPRESENTACAO**. Nao pedir coleta de partidas alegando
+> "falta dado" sem olhar a inclinacao. Implementado mesmo assim
+> **`pos_log_novo.sh`** (sugestao do usuario): regenera
+> `human_patterns.json` + smoke + reconstroi o banco de decisoes +
+> re-roda a curva, pra flagrar se a inclinacao mudar. Registrado como
+> regra em `CLAUDE.md`/`AGENTS.md`. **Proximo suspeito (nao medido)**: as
+> 59 features descrevem a CARTA ("tem blocker", "custo 3") mas quase nao
+> descrevem **o que o efeito FAZ no estado atual** — o parser ja extrai
+> essa semantica em `card_effects_db.json` e ela nao chega ao modelo.
+
 > 28/08/2026 (bloco 706): **RETRATACAO — os +4,8pp do bloco 705 nao
 > existem.** Sob **GroupKFold por LIDER (30 lideres, 960 turnos)** a melhor
 > config da **-0,2pp** (a do bloco 705 da -1,8pp); 6 lideres melhoram x 8

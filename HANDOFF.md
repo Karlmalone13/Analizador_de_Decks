@@ -28,6 +28,73 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (707) - **A CURVA DE APRENDIZADO SATURA**: mais partidas humanas do mesmo tipo NAO desbloqueiam o ranqueador. O gargalo nao e volume (eu errei no bloco 706) -- e REPRESENTACAO
+
+### Como surgiu
+
+O bloco 706 concluiu que o gargalo era VOLUME de dado humano. O usuario
+respondeu que **nao consegue acrescentar partidas agora** e sugeriu que,
+*"toda vez que um log entrar no banco para as partidas humanas"*, o
+pipeline rode sozinho.
+
+Antes de aceitar o esforco de coleta, a pergunta honesta: **a curva
+sobe?** Se for plana, pedir coleta seria mandar o usuario trabalhar a
+toa. `scriptis_da_ia/curva_aprendizado.py`.
+
+### O numero
+
+Validacao fixa (6 lideres), variando quantos lideres entram no treino,
+4 amostragens por ponto:
+
+| lideres no treino | turnos | validacao | baseline | delta |
+|---|---|---|---|---|
+| 5 | 154 | 24,1% | 28,5% | -4,4pp |
+| 10 | 262 | 25,8% | 28,5% | -2,6pp |
+| 15 | 379 | 26,1% | 28,5% | -2,3pp |
+| 20 | 665 | 25,7% | 28,5% | -2,8pp |
+| 24 | 766 | 26,4% | 28,5% | **-2,0pp** |
+
+**Sobe e SATURA.** 5->10 lideres: +1,7pp. 10->24: **+0,6pp**. Estabiliza
+em ~26%, ainda ABAIXO do baseline.
+
+### Correcao do bloco 706 -- eu errei
+
+La escrevi que o gargalo era VOLUME. **Era inferencia, nao medicao.** A
+curva mostra que dado adicional do mesmo tipo nao leva nem ao empate com
+o motor atual. **O gargalo e REPRESENTACAO**: com as 59 features de
+propriedade, o modelo satura muito abaixo do necessario.
+
+E a 6a vez no dia que o gargalo muda de lugar -- e a 3a vez que uma
+conclusao minha cai por medicao posterior. Todas as mudancas foram
+medidas; nenhuma foi opiniao.
+
+### O que foi implementado mesmo assim
+
+`scriptis_da_ia/pos_log_novo.sh` -- a sugestao do usuario, porque e barata
+e util por outros motivos:
+
+1. regenera `human_patterns.json` (JA obrigatorio, e calibragem que
+   FUNCIONA -- blocos 613/614)
+2. `smoke_fast.py` (o bonus por padrao humano muda scores)
+3. reconstroi `metrics/policy_dataset.jsonl`
+4. re-roda `curva_aprendizado.py` -- **pra flagrar se a inclinacao mudar**
+
+Registrado como regra em `CLAUDE.md` e `AGENTS.md` (espelho), junto do
+aviso: **nao pedir coleta de partidas alegando "falta dado" sem antes
+olhar a inclinacao.**
+
+### Onde isso deixa a meta
+
+O oraculo (bloco 697) continua garantindo que 85-90% CABE na arquitetura
+(teto de geracao 97,4%). O que caiu hoje foi a rota de chegar la por
+imitacao aprendida com o dado e as features atuais.
+
+Suspeito seguinte, ainda NAO medido: **a representacao**. As 59 features
+descrevem a carta ("tem blocker", "custo 3", "tem on_play") mas quase nao
+descrevem **o que o efeito FAZ no estado atual** -- o parser ja extrai
+essa semantica (`card_effects_db.json`) e ela nao esta chegando ao
+modelo.
+
 ## 2026-08-28 (706) - **RETRATACAO: os +4,8pp do bloco 705 NAO existem.** Validacao cruzada por lider (30 lideres) da **-0,2pp na melhor configuracao**. O gargalo nao e formulacao nem *shift* -- e VOLUME de dado humano
 
 ### O que mudou na medicao

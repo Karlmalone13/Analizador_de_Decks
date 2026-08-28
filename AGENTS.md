@@ -549,6 +549,30 @@ sempre 0) e considerar medir o impacto real via
 `decision_quality_full.py --all` antes de commitar, mesma disciplina
 de "medir antes de aceitar" do resto do projeto.
 
+### Log novo no banco: rode `scriptis_da_ia/pos_log_novo.sh`
+
+> Sugestao do usuario (28/08/2026, bloco 707): *"toda vez que um log
+> entrar no banco para as partidas humanas"*. Reune num comando so o que
+> ja era obrigatorio (regenerar `human_patterns.json` + `smoke_fast.py`)
+> e o que passou a ser util depois da fase 2 (reconstruir
+> `metrics/policy_dataset.jsonl` e re-rodar `curva_aprendizado.py`).
+>
+> ```bash
+> cd scriptis_da_ia && ./pos_log_novo.sh
+> ```
+>
+> **Por que a curva entra aqui**: medido no bloco 707, a validacao do
+> ranqueador aprendido **satura em ~26% entre 10 e 24 lideres**, ABAIXO
+> do baseline (28,5%). Enquanto ela continuar plana, **mais partidas
+> humanas do mesmo tipo NAO desbloqueiam esse caminho** -- o gargalo
+> medido e REPRESENTACAO (as 59 features de propriedade), nao volume.
+> Nao pedir coleta de partidas alegando que "falta dado" sem antes olhar
+> a inclinacao. Se ela passar a subir, o quadro muda -- e o passo existe
+> justamente pra flagrar isso.
+>
+> Os passos de `human_patterns.json` continuam valendo por si: e
+> calibragem que FUNCIONA (blocos 613/614) e ja era obrigatoria.
+
 ### Telemetria de decisão — OBRIGATÓRIO ler quando o log é de partida do bot
 
 Se o log adicionado ao banco veio de uma partida em que o **bot jogou de
