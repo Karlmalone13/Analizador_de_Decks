@@ -2,6 +2,22 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 701): **cirurgia 1 enterrada por um 2o caminho** — no
+> diagnostico SEM VIES (3932 decisoes), quando a busca derruba o topo
+> estatico ela acerta **16,0%** contra **8,6%** do estatico: **+7,4pp
+> MELHOR** onde intervem. Nao gastei a rodada do "estatico puro" (o
+> criterio pre-registrado dizia que so valeria se a busca fosse pior).
+> **Mas as taxas ABSOLUTAS (12,1% / 16,0%) mostram que as DUAS etapas sao
+> fracas** — a carta certa esta no shortlist em 80,3% dos turnos e nenhuma
+> extrai. **ACHADO: `EVAL_WEIGHTS` e MIOPE** — `dmg: 120.0` domina 16
+> termos a <=25, ou seja a funcao de valor e "dano NESTE turno" com
+> correcoes. Isso explica de uma vez atacar cedo, anexar DON cedo, jogar e
+> ativar menos: **os quatro maximizam dano imediato**. **CUIDADO**:
+> `EVAL_WEIGHTS` ja tem override por arquivo (`eval_weights.json`) e tunar
+> termo ja foi tentado varias vezes (bloco 646, pedido do usuario: *"so
+> mudar peso nao resolve"*). **A cirurgia 2 tem que mudar O QUE a funcao
+> MEDE (dar horizonte), nao o peso do que ela ja mede.**
+
 > 28/08/2026 (bloco 700): **CIRURGIA 1 REPROVADA.** Remover a busca Monte
 > Carlo (TOP_K=1 + SEARCH_MIN_CANDIDATES=1) **regrediu**: `play` 28,9% ->
 > **26,2% (-2,7pp)**, 12 lideres piores x 4 melhores (OP02-093 e OP11-040

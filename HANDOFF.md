@@ -28,6 +28,71 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (701) - Claude (sessao remota web) - cirurgia 1 enterrada por um 2o caminho (a busca e **+7,4pp MELHOR** que o estatico onde intervem). E a funcao de valor e **MIOPE**: um termo a 120 domina 16 termos a <=25
+
+### O diagnostico SEM VIES (3932 decisoes)
+
+| | frequencia | acerto |
+|---|---|---|
+| busca **manteve** o topo estatico | 50,7% | 12,1% |
+| busca **derrubou** o topo estatico | 49,3% | **16,0%** |
+| o que o estatico teria acertado ali | -- | **8,6%** |
+
+**Nas decisoes em que intervem, a busca e +7,4pp MELHOR que o estatico**
+-- quase o dobro de acerto. Coerente com a ablacao do bloco 700 e explica
+por que ela regrediu.
+
+Pelo criterio pre-registrado (bloco 699), **nao gastei a rodada extra** do
+"score estatico PURO": eu tinha escrito que so valeria se a busca se
+mostrasse PIOR nas intervencoes. Mostrou-se melhor. **Cirurgia 1
+encerrada por dois caminhos independentes.**
+
+### O que as taxas ABSOLUTAS revelam
+
+12,1% e 16,0%. Mesmo a melhor das duas etapas acerta a carta do humano em
+16% das decisoes -- enquanto o oraculo (bloco 697) mostrou que a carta
+certa esta no shortlist em **80,3% dos turnos**. **O sinal esta
+disponivel e nenhuma das duas etapas o extrai.** Nao e "busca ruim,
+estatico bom" nem o contrario: **as duas sao fracas, a busca e a menos
+fraca.**
+
+### O ACHADO: `EVAL_WEIGHTS` e MIOPE
+
+```
+dmg: 120.0            <-- DOMINANTE
+survival_premium: 25.0   opp_blocker: 25.0
+wincon_ready: 20.0       ax_reanim: 12.0
+hand_first: 8.0          coverage: 7.0
+counter_hand: 6.0        don_field: 4.0
+board_mine: 1.0          board_opp: 0.8
+ax_trash: 0.05           ...
+```
+
+**Um termo a 120 domina dezesseis termos a <=25.** A funcao de valor e,
+na pratica, *"dano feito NESTE turno"* com pequenas correcoes -- um
+objetivo que so enxerga o turno corrente.
+
+**Isso costura TODAS as medicoes do dia.** O motor ataca cedo, anexa DON
+cedo (bloco 691: 3,3x mais que o humano na abertura), joga menos e ativa
+menos -- **os quatro maximizam dano imediato**. O humano desenvolve
+tabuleiro, acumula vantagem de carta e joga pros turnos seguintes, coisas
+que esta funcao quase nao pontua.
+
+### CUIDADO: a cirurgia 2 NAO pode ser "tunar os pesos"
+
+`EVAL_WEIGHTS` **ja tem override por arquivo** (`eval_weights.json`, lido
+no import) -- ja era controlavel, so nao estava no sistema de knobs.
+
+E os comentarios do proprio dicionario registram varias tentativas de
+tunar termos individuais, incluindo o pedido explicito do usuario no
+bloco 646: *"so mudar peso nao resolve, precisamos criar novas
+ferramentas"*. **Tunar peso aqui seria a 12a tentativa da mesma familia
+que o `REPROVADOS.md` existe pra impedir.**
+
+**A cirurgia 2 tem que mudar O QUE A FUNCAO MEDE, nao o peso do que ela
+ja mede.** Concretamente: dar HORIZONTE a um objetivo que hoje so enxerga
+o turno atual.
+
 ## 2026-08-28 (700) - Claude (sessao remota web) - **CIRURGIA 1 REPROVADA**: remover a busca Monte Carlo REGREDIU (-2,7pp, 12 lideres piores x 4). A busca e liquido POSITIVO -- e meu diagnostico do bloco 699 tinha VIES DE SELECAO
 
 ### O resultado da ablacao
