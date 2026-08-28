@@ -38,6 +38,36 @@ $ErrorActionPreference = 'Stop'
 $Raiz = Split-Path -Parent $PSScriptRoot
 $BepZipVer = '5.4.23.2'
 
+# ── 0. este script esta DENTRO do repositorio? ─────────────────────────
+# Falha real (28/08/2026): o usuario recebeu instalar.bat/.ps1 soltos,
+# colocou no Desktop e rodou. Os dois arquivos SOZINHOS nao instalam nada
+# -- o instalador compila o plugin a partir do FONTE e sobe o motor
+# Python, entao precisa da arvore inteira em volta. Sem esta checagem o
+# script quebrava la na frente, com erro confuso.
+$falta = @()
+foreach ($x in @('BOT\OPTCGBotPlugin\OPTCGBotPlugin.csproj',
+                 'BOT\engine_server\server.py',
+                 'scriptis_da_ia\requirements.txt',
+                 'scriptis_da_ia\cards_rows.csv')) {
+    if (-not (Test-Path (Join-Path $Raiz $x))) { $falta += $x }
+}
+if ($falta.Count -gt 0) {
+    Write-Host ''
+    Write-Host 'ESTE SCRIPT PRECISA ESTAR DENTRO DO REPOSITORIO.' -ForegroundColor Red
+    Write-Host "Rodando de: $PSScriptRoot"
+    Write-Host 'Nao encontrei:' -ForegroundColor Yellow
+    foreach ($f in $falta) { Write-Host "   $f" }
+    Write-Host ''
+    Write-Host 'Baixe o projeto inteiro e rode BOT\instalar.bat de dentro dele:' -ForegroundColor Cyan
+    Write-Host '   git clone https://github.com/Karlmalone13/Analizador_de_Decks'
+    Write-Host '   cd Analizador_de_Decks'
+    Write-Host '   BOT\instalar.bat'
+    Write-Host ''
+    Write-Host '(sem git: baixe o ZIP em github.com/Karlmalone13/Analizador_de_Decks -> Code -> Download ZIP,'
+    Write-Host ' extraia, e rode BOT\instalar.bat de dentro da pasta extraida)'
+    exit 1
+}
+
 function Passo($n, $txt) { Write-Host "`n[$n] $txt" -ForegroundColor Cyan }
 
 # ── 1. achar o jogo ────────────────────────────────────────────────────
