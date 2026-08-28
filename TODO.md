@@ -2,6 +2,17 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 729): **a meta cobre TODAS as decisoes**, nao so
+> cartas jogadas (ressalva do usuario: alvos, ativacao, sequenciamento,
+> ataques, DON). **Agregado real: 49,3%** em 14.973 decisoes -> meta
+> 85-90%. **PADRAO**: as 3 piores sao todas de ESCOLHA ESPECIFICA — alvo
+> dentro do efeito **16,4%**, cartas de counter **18,5%**, DON **23,5%** —
+> enquanto O QUE FAZER vai bem (atacar 71,6%, ativar 63,9%, bloquear
+> 85,7%). **O bot sabe o que fazer e erra em quem.** **ERRO DE
+> PRIORIZACAO MEU**: `sequenciamento` tem **4.887 decisoes (1/3 do total)**
+> em 36,4%, e `cartas jogadas` — onde gastei o dia — e so **8%**.
+> Priorizar por volume x gap.
+
 > 28/08/2026 (bloco 728): **A METRICA OFICIAL ESTAVA ERRADA.** O usuario
 > esclareceu que a meta ("85-90% igual ao humano") sempre foi **ACERTO POR
 > JOGADA** ("a cada 8 jogadas, 6 iguais"), nao conjunto exato por turno.

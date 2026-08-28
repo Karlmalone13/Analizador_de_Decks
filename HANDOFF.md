@@ -28,6 +28,54 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (729) - **A META COBRE TODAS AS DECISOES, nao so cartas jogadas.** Agregado real: **49,3%** em 14.973 decisoes -- e o padrao e "sabe O QUE fazer, erra EM QUEM"
+
+### A ressalva do usuario
+
+*"essa porcentagem nao e so de cartas jogadas, mas tb de alvos, ativacao
+de efeitos, sequenciamento, ataques, distribuicao de dons, etc"*.
+
+O bloco 728 corrigiu a metrica de conjunto-exato pra acerto-por-jogada,
+mas ainda so sobre CARTAS JOGADAS. **A meta e o agregado de TUDO que o
+bot decide.** Medido pela 1a vez:
+
+| categoria | acerto | n |
+|---|---|---|
+| bloquear ou nao | 85,7% | 1.326 |
+| quem ataca | 71,6% | 2.024 |
+| alvo do ataque | 69,3% | 1.449 |
+| ativacao de efeitos | 63,9% | 438 |
+| usar counter ou nao | 59,7% | 1.186 |
+| cartas jogadas | 43,5% | 1.214 |
+| sequenciamento (LCS) | 36,4% | 4.887 |
+| **distribuicao de DON** | **23,5%** | 1.055 |
+| **quais cartas de counter** | **18,5%** | 804 |
+| **alvo dentro do efeito** | **16,4%** | 590 |
+| **AGREGADO** | **49,3%** | **14.973** |
+
+### O PADRAO -- e ele e unico, nao dez problemas
+
+**As tres piores categorias sao todas de ESCOLHA ESPECIFICA**: qual alvo
+dentro do efeito (16,4%), quais cartas gastar de counter (18,5%), onde
+colocar o DON (23,5%).
+
+**O bot decide bem O QUE FAZER** -- atacar 71,6%, ativar 63,9%, bloquear
+85,7%. **E decide mal EM QUEM / COM O QUE.**
+
+Isso e uma hipotese muito mais estreita do que "imita mal": a escolha de
+ACAO funciona, a escolha de ALVO/RECURSO nao.
+
+### ERRO DE PRIORIZACAO MEU, medido
+
+- `sequenciamento`: **4.887 decisoes (1/3 do total)**, em 36,4% -- puxa o
+  agregado mais que qualquer outra categoria.
+- `cartas jogadas`: **1.214 (8%)** -- e foi onde a sessao inteira de 28/08
+  foi gasta.
+- `quem ataca`: 2.024 (14%) -- nunca entrou no trabalho.
+
+Gastei o dia otimizando 8% das decisoes. **Priorizar por volume x gap, nao
+por familiaridade com a metrica.** Registrado em `CLAUDE.md`/`AGENTS.md`.
+
 ## 2026-08-28 (728) - **A METRICA OFICIAL ESTAVA ERRADA**: a meta sempre foi ACERTO POR JOGADA, nao conjunto exato. Estamos em **43,5%**, nao 28,9% -- e o gap esta nos turnos de UMA carta
 
 ### O esclarecimento do usuario

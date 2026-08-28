@@ -421,6 +421,44 @@ zero nem repetir caminho ja reprovado:
 - **Alargar o shortlist da busca** (blocos 593/594 e 677): 3 medicoes
   independentes, todas regrediram.
 
+### RESSALVA DO USUARIO (28/08/2026): a meta NAO e so cartas jogadas
+
+> *"essa porcentagem nao e so de cartas jogadas, mas tb de alvos,
+> ativacao de efeitos, sequenciamento, ataques, distribuicao de dons,
+> etc"*.
+>
+> **A METRICA OFICIAL e o AGREGADO de acerto por decisao, em TODAS as
+> categorias.** Medido no corpus completo (14.973 decisoes):
+>
+> | categoria | acerto | n |
+> |---|---|---|
+> | bloquear ou nao | 85,7% | 1.326 |
+> | quem ataca | 71,6% | 2.024 |
+> | alvo do ataque | 69,3% | 1.449 |
+> | ativacao de efeitos | 63,9% | 438 |
+> | usar counter ou nao | 59,7% | 1.186 |
+> | cartas jogadas | 43,5% | 1.214 |
+> | sequenciamento (LCS) | 36,4% | 4.887 |
+> | **distribuicao de DON** | **23,5%** | 1.055 |
+> | **quais cartas de counter** | **18,5%** | 804 |
+> | **alvo dentro do efeito** | **16,4%** | 590 |
+> | **AGREGADO** | **49,3%** | **14.973** |
+>
+> **Estado atual: 49,3% -> meta 85-90%.**
+>
+> **PADRAO ACHADO ao medir isto pela 1a vez**: as tres piores categorias
+> sao todas de ESCOLHA ESPECIFICA (qual alvo, quais cartas, onde o DON) --
+> 16-24%. O bot decide bem O QUE FAZER (atacar 71,6%, ativar 63,9%,
+> bloquear 85,7%) e decide mal **EM QUEM / COM O QUE**. E um padrao unico,
+> nao dez problemas soltos.
+>
+> **Aviso de prioridade** (erro real cometido em 28/08): `sequenciamento`
+> tem o MAIOR volume (4.887 = 1/3 das decisoes) e esta em 36,4% -- puxa o
+> agregado mais que qualquer outra. `cartas jogadas` e so **8%** das
+> decisoes, e foi onde uma sessao inteira foi gasta. **Priorizar por
+> volume x gap, nao por familiaridade.**
+
+
 ## OBJETIVO CENTRAL DO BOT (o usuario repete e as sessoes esquecem)
 
 > **QUALQUER DECK.** O bot tem que ser capaz de jogar bem, e **identico ou
