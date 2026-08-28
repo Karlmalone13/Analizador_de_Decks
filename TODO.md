@@ -14,6 +14,12 @@
 > porque a ablacao era combinacao de knobs — a cirurgia "de verdade" teria
 > sido um dia pro mesmo -2,7pp. Restam as cirurgias **2** (trocar
 > `_evaluate_state_v2`) e **3** (ranqueamento aprendido, DAgger).
+> **Ressalva achada depois**: `TOP_K=1` nao testou "sem busca" puro — o
+> candidato que sobra e o melhor pelo score **NORMALIZADO**
+> (`/KIND_SCORE_SCALE`, que dobra `attach_don` e penaliza `attack`), nao
+> pelo estatico bruto. A ablacao misturou duas mudancas; "score estatico
+> PURO decide" (`TOP_K=1` + todas `KIND_SCALE=1.0`) segue nao testado.
+> Ferramenta nova sem vies: `diag_busca_vs_estatico.py`.
 
 > 28/08/2026 (bloco 699): **a BUSCA MONTE CARLO e a suspeita.** 1086
 > decisoes em que a carta do humano estava no shortlist e perdeu: em

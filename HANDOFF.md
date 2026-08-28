@@ -82,6 +82,33 @@ score estatico, com que frequencia o resultado bate com o humano vs com
 que frequencia se afasta. So isso separa "a busca erra" de "a busca acerta
 mais do que erra, mas nao o bastante".
 
+### RESSALVA sobre a propria ablacao -- achada depois, qualifica a conclusao
+
+**`TOP_K=1` nao testou exatamente "sem busca".** O candidato unico que
+sobra e o melhor pelo score **NORMALIZADO** (`score / KIND_SCORE_SCALE`),
+nao pelo score estatico BRUTO. E a normalizacao distorce bastante: dobra
+o peso de `attach_don` (escala 0,5) e penaliza `attack` (2,1).
+
+Ou seja, a ablacao misturou DUAS mudancas: remover a busca **e** decidir
+por um ranking distorcido. O `-2,7pp` e real e a cirurgia 1 continua
+reprovada **como testada**, mas **"decidir pelo score estatico PURO"
+ainda nao foi testado**: seria `TOP_K=1` junto com todas as
+`KIND_SCALE=1.0`.
+
+Quando vale rodar essa variante: se o diagnostico sem vies
+(`diag_busca_vs_estatico.py`) indicar que a busca e PIOR nas decisoes em
+que intervem, a contradicao com a ablacao provavelmente mora neste
+confundidor, e separar as duas coisas passa a importar. Se indicar que a
+busca e MELHOR, a cirurgia 1 fica enterrada por dois caminhos
+independentes e nao vale gastar a rodada.
+
+### Ferramenta nova
+
+`scriptis_da_ia/diag_busca_vs_estatico.py` -- mede a taxa de acerto da
+busca nos DOIS lados (quando mantem e quando derruba o topo estatico), e
+dentro das derrubadas compara contra o que o estatico teria acertado. E a
+versao sem vies de selecao do diagnostico do bloco 699.
+
 ### Estado
 
 `play` 28,9%, inalterado -- a ablacao foi medicao, nao mudanca aceita.
