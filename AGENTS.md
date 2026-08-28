@@ -417,6 +417,32 @@ zero nem repetir caminho ja reprovado:
 - **Alargar o shortlist da busca** (blocos 593/594 e 677): 3 medicoes
   independentes, todas regrediram.
 
+### REGRA: PERGUNTAR ANTES DE MODIFICAR O MOTOR (28/08/2026)
+
+> Pedido explicito do usuario ao aprovar a metrica: *"tem que me perguntar
+> antes de fazer alguma modificacao no motor"*.
+>
+> **Antes de alterar `decision_engine.py` -- ou qualquer arquivo que
+> mude o COMPORTAMENTO do motor (`sim_bridge.py`, `server.py`,
+> `replay_optcg.py`, `rules_facade.py`, `eval_weights.json`) -- PERGUNTE
+> e espere a resposta.** Nao vale "e so um ajuste", "o default nao muda"
+> ou "da pra reverter com um push".
+>
+> **Vale inclusive pra mudanca com peso/flag em zero.** Em 28/08 varias
+> alteracoes entraram no `decision_engine.py` como "zero mudanca de
+> comportamento, hash identico" (instrumentacao de termos, board no
+> contexto, termo `don_ocioso`). Eram verdadeiras -- e mesmo assim o
+> arquivo que decide o jogo foi mexido varias vezes sem ninguem
+> autorizar. **A regra existe pra isso: quem decide o que entra no motor
+> e o usuario, nao a sessao.**
+>
+> **O que NAO precisa perguntar**: medir, diagnosticar, criar ferramenta
+> de analise nova, mexer em `metrics/`, documentar. Ou seja: **observar e
+> livre; alterar o motor exige autorizacao.**
+>
+> Em caso de duvida sobre a fronteira, pergunte -- e mais barato que um
+> commit indesejado no arquivo mais sensivel do projeto.
+
 ### RESSALVA DO USUARIO (28/08/2026): a meta NAO e so cartas jogadas
 
 > *"essa porcentagem nao e so de cartas jogadas, mas tb de alvos,

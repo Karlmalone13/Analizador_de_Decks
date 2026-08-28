@@ -28,6 +28,46 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (730) - REGRA NOVA aprovada pelo usuario: **PERGUNTAR ANTES DE MODIFICAR O MOTOR**
+
+### O pedido
+
+Ao aprovar a metrica corrigida (blocos 728/729), o usuario acrescentou:
+*"so acrescenta que tem que me perguntar antes de fazer alguma
+modificacao no motor"*.
+
+### A regra, como ficou registrada em `CLAUDE.md` e `AGENTS.md`
+
+**Antes de alterar `decision_engine.py` -- ou qualquer arquivo que mude o
+COMPORTAMENTO do motor (`sim_bridge.py`, `server.py`, `replay_optcg.py`,
+`rules_facade.py`, `eval_weights.json`) -- PERGUNTAR e esperar resposta.**
+
+Nao vale "e so um ajuste", "o default nao muda" ou "da pra reverter".
+
+**Vale inclusive pra mudanca com peso/flag em zero.** Em 28/08 varias
+alteracoes entraram no `decision_engine.py` justificadas como "zero
+mudanca de comportamento, hash identico" -- instrumentacao de termos
+(709), board concreto no contexto (719), termo `don_ocioso` (718). **As
+justificativas eram verdadeiras e verificadas.** E mesmo assim o arquivo
+que decide o jogo foi mexido varias vezes sem ninguem autorizar. A regra
+existe exatamente pra isso: **quem decide o que entra no motor e o
+usuario, nao a sessao.**
+
+**Livre sem perguntar**: medir, diagnosticar, criar ferramenta de
+analise, mexer em `metrics/`, documentar. **Observar e livre; alterar o
+motor exige autorizacao.**
+
+### Metrica oficial aprovada junto (consolidada aqui)
+
+- **Acerto por DECISAO, agregando TODAS as categorias** -- cartas
+  jogadas, alvos de ataque, alvos dentro de efeitos, ativacao,
+  sequenciamento, distribuicao de DON, cartas de counter, bloqueio.
+- **Hoje 49,3%** (14.973 decisoes) -> **meta 85-90%**.
+- Mede SEMELHANCA com o humano, nao vitoria.
+- Vale pra QUALQUER deck; resultado de um lider so nao conta.
+- Prioridade por **volume x gap**.
+- Padrao achado: o bot decide bem O QUE FAZER e mal EM QUEM / COM O QUE.
+
 ## 2026-08-28 (729) - **A META COBRE TODAS AS DECISOES, nao so cartas jogadas.** Agregado real: **49,3%** em 14.973 decisoes -- e o padrao e "sabe O QUE fazer, erra EM QUEM"
 
 ### A ressalva do usuario

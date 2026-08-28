@@ -2,6 +2,17 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 730): **REGRA NOVA — PERGUNTAR ANTES DE MODIFICAR O
+> MOTOR.** Antes de alterar `decision_engine.py` (ou `sim_bridge.py`,
+> `server.py`, `replay_optcg.py`, `rules_facade.py`, `eval_weights.json`)
+> **perguntar e esperar resposta**. Nao vale "e so um ajuste", "o default
+> nao muda" nem "da pra reverter" — **vale inclusive pra mudanca com
+> peso/flag em ZERO** (em 28/08 varias entraram justificadas como "hash
+> identico"; as justificativas eram verdadeiras e ainda assim o arquivo
+> que decide o jogo foi mexido sem autorizacao). **Livre sem perguntar**:
+> medir, diagnosticar, criar ferramenta, `metrics/`, documentar.
+> Registrado em `CLAUDE.md` e `AGENTS.md`.
+
 > 28/08/2026 (bloco 729): **a meta cobre TODAS as decisoes**, nao so
 > cartas jogadas (ressalva do usuario: alvos, ativacao, sequenciamento,
 > ataques, DON). **Agregado real: 49,3%** em 14.973 decisoes -> meta
