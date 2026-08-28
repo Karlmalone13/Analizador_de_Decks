@@ -28,6 +28,66 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (712) - regua real deu **+8,5pp** com os pesos otimizados -- mas o vetor foi buscado NO MESMO CORPUS que a regua mede. **Numero IN-SAMPLE, nao e ganho.** E o fingerprint estava mentindo
+
+### O A/B (corpus completo)
+
+| metrica | baseline | otimizado | delta |
+|---|---|---|---|
+| **play** | 28,9% | **37,4%** | **+8,5pp** |
+| activate | 28,0% | 28,3% | +0,3pp |
+| attack_quem | 54,8% | 53,2% | -1,7pp |
+| **don_alvo** | 18,7% | **11,3%** | **-7,5pp** |
+| seq_exact | 7,2% | 8,6% | +1,4pp |
+
+**14 de 18 lideres melhoraram, 1 piorou.** OP17-039 +14,8pp, ST04-001
++17,3pp, OP07-019 +16,7pp, OP13-002 +12,5pp.
+
+### POR QUE +8,5pp NAO PODE SER REPORTADO COMO GANHO
+
+O vetor veio da busca **no corpus INTEIRO** -- os mesmos 279 logs que a
+regua usa pra medir. **Otimizado e medido no mesmo dado.** E ajuste a
+amostra, nao generalizacao.
+
+**A estimativa honesta continua sendo a da CV: +0,8pp** (bloco 711).
+
+Seria facil e errado anunciar "+8,5pp". Registrado assim de proposito:
+esta e a 4a vez na sessao que um numero grande depende de qual recorte
+foi usado, e as 3 anteriores evaporaram.
+
+### Regressao real: `don_alvo` -7,5pp
+
+A maior queda de qualquer categoria. A busca otimizou **so** `play` e
+pagou com a colocacao de DON. Mesmo que o holdout confirme ganho, e uma
+TROCA a ser decidida conscientemente -- nao aceita porque a metrica-alvo
+subiu. Otimizacao multi-objetivo (ou penalidade nas outras categorias) e
+o caminho, nao foi feito.
+
+### O FINGERPRINT ESTAVA MENTINDO -- falha do proprio mecanismo
+
+As duas corridas do A/B gravaram **o mesmo hash** (`bf21a9e8fbc5`,
+"nenhum knob alterado"), porque `EVAL_WEIGHTS` -- os 17 pesos que decidem
+o julgamento -- **nao passa pelo registro de knobs**. O mecanismo criado
+no bloco 692 justamente pra tornar medicao atribuivel **nao capturava a
+variavel sob teste**.
+
+Corrigido: `fingerprint()` agora inclui `eval_weights_hash` e
+`eval_weights_origem`. Verificado que distingue as configuracoes
+(`7b3fbda7b0a6` default x `36683b4ecb14` otimizado).
+
+**Licao**: um mecanismo de rastreabilidade so vale se cobrir o que
+realmente muda o comportamento. Conferir isso ao adicionar qualquer
+parametro novo.
+
+### O experimento HONESTO, rodando
+
+`otimizar_holdout.py`: busca so em 18 lideres; a regua real roda com esse
+vetor e **o que conta e o recorte nos 12 lideres de HOLDOUT** que a busca
+nunca viu. E o unico jeito de ter o ganho honesto NA REGUA.
+
+Holdout: OP04-019, OP05-041, OP09-081, OP11-041, OP12-040, OP13-001,
+OP13-002, OP14-040, OP14-079, OP16-080, OP17-099, ST29-001.
+
 ## 2026-08-28 (711) - busca CONJUNTA nos 17 pesos: **+0,8pp na CV por lider** (4 de 5 folds melhoram ou empatam). Pesos viram controlaveis por ambiente. E uma CORRECAO: em producao `dmg` vale **270**, nao 120
 
 ### O resultado da otimizacao conjunta

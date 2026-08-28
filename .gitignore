@@ -98,3 +98,6 @@ scriptis_da_ia/metrics/decision_quality_full/parcial_limit*.json
 # entradas do REPROVADOS.md -- fica versionado em
 # metrics/sweeps/ultimo_sweep.json.
 scriptis_da_ia/metrics/decision_quality_full/sweep_*.json
+# bloco 712: dumps de A/B nomeados via OPTCG_RESULT_NAME (~1,4 MB cada).
+# Mesmo tratamento dos sweeps -- o resumo comparativo vai pro HANDOFF.
+scriptis_da_ia/metrics/decision_quality_full/pesos_*.json

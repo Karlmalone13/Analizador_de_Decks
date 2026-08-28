@@ -2,6 +2,19 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 712): regua real deu **+8,5pp** (play 28,9%->37,4%, 14
+> de 18 lideres melhoram) — **mas IN-SAMPLE**: o vetor foi buscado no
+> MESMO corpus que a regua mede. **Nao e ganho**; a estimativa honesta
+> segue sendo a CV, **+0,8pp**. **Regressao real: `don_alvo` -7,5pp** — a
+> busca otimizou so `play` e pagou com a colocacao de DON; troca a ser
+> decidida, nao aceita de graca (multi-objetivo nao foi feito).
+> **O FINGERPRINT ESTAVA MENTINDO**: as 2 corridas gravaram o mesmo hash
+> porque `EVAL_WEIGHTS` nao passava pelo registro de knobs — o mecanismo
+> do bloco 692 nao capturava a variavel sob teste. Corrigido
+> (`eval_weights_hash` + origem). Rodando o experimento **honesto**:
+> `otimizar_holdout.py` busca em 18 lideres e a regua mede os **12 de
+> holdout** que a busca nunca viu.
+
 > 28/08/2026 (bloco 711): **busca CONJUNTA nos 17 pesos da funcao de
 > valor: +0,8pp na CV por lider** (24,9%->25,6%, 4 de 5 folds melhoram ou
 > empatam; treino sobe 3-5pp e transfere ~1/5). **1o ganho de TUNING do

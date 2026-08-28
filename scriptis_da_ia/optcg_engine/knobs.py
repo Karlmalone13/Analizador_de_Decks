@@ -122,14 +122,33 @@ def nao_default() -> dict[str, Any]:
 
 
 def fingerprint() -> dict[str, Any]:
-    """Identidade da configuracao, pra gravar junto de qualquer medicao."""
+    """Identidade da configuracao, pra gravar junto de qualquer medicao.
+
+    FALHA REAL CORRIGIDA AQUI (bloco 712): o A/B dos pesos otimizados
+    gravou o MESMO hash nas duas corridas (`bf21a9e8fbc5`, "nenhum knob
+    alterado") porque `EVAL_WEIGHTS` -- os 17 pesos que decidem o
+    julgamento do motor -- **nao passa pelo registro de knobs**. O
+    mecanismo criado pra tornar medicao atribuivel nao capturava
+    justamente a mudanca sob teste. Agora o fingerprint inclui o hash dos
+    pesos efetivos e o caminho de onde vieram.
+    """
     fora = nao_default()
     bruto = json.dumps(fora, sort_keys=True, ensure_ascii=False)
-    return {
+    out = {
         'knobs_nao_default': fora,
         'knobs_hash': hashlib.sha1(bruto.encode()).hexdigest()[:12],
         'knobs_total_registrados': len(REGISTRO),
     }
+    try:
+        from optcg_engine.decision_engine import EVAL_WEIGHTS
+        wj = json.dumps({k: v for k, v in sorted(EVAL_WEIGHTS.items())
+                         if k != '_meta'}, sort_keys=True)
+        out['eval_weights_hash'] = hashlib.sha1(wj.encode()).hexdigest()[:12]
+        out['eval_weights_origem'] = os.environ.get(
+            'OPTCG_EVAL_WEIGHTS', '(eval_weights.json)')
+    except Exception as e:                                   # pragma: no cover
+        out['eval_weights_hash'] = f'INDISPONIVEL: {e}'
+    return out
 
 
 def descreve() -> str:
