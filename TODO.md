@@ -2,6 +2,20 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 705): **A REFORMULACAO FUNCIONA.** Decidir o turno
+> como **SELECAO DE CONJUNTO** (nao N escolhas gulosas) levou o treino de
+> 38,5% pra **86,7%** com o MESMO dado/features/modelo — a informacao
+> sempre esteve la, a formulacao e que nao casava com o rotulo (que e de
+> conjunto) nem com a metrica (que tambem e). Validacao em **lideres
+> NUNCA vistos: 26,1% x 21,3% do baseline = +4,8pp**, 5 lideres melhores
+> x 1 pior, **hiperparametro escolhido so no TREINO** (disciplina aplicada
+> apos o erro do bloco 704). **RESSALVAS**: (1) o ganho agregado e
+> fragil — o unico lider com n relevante (OP11-062, n=138) subiu
+> **+2,9pp**; o resto vem de n=5..8. O numero honesto e +2,9pp. (2)
+> **overfit enorme** (86,7% x 26,1%) mesmo SEM identidade nas features —
+> e ai que esta o ganho que falta. Ainda e proxy offline; implementar em
+> `main_phase` e confirmar na regua real vem depois. `selecao_conjunto.py`.
+
 > 28/08/2026 (bloco 704): **PORTAO DA FASE 2 FECHOU — parar antes do
 > DAgger.** Ranqueador sem identidade, split por lider: treino 38,5%, mas
 > **validacao 19,3% com limiar escolhido honestamente** (ABAIXO do

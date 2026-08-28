@@ -28,6 +28,77 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (705) - **A REFORMULACAO FUNCIONA**: decidir o turno como SELECAO DE CONJUNTO leva o treino de 38,5% pra **86,7%** e da o 1o ganho da sessao que GENERALIZA -- **+4,8pp em lideres nunca vistos**, com hiperparametro escolhido so no treino
+
+### A ideia, e por que ela vem do portao anterior
+
+O portao do bloco 704 fechou o ranqueador por DECISAO e deixou uma pista:
+**o rotulo disponivel e de CONJUNTO** ("esta carta esta entre as que o
+humano jogou no turno"), nao de decisao. O oraculo chega a 96,6% porque
+enxerga o conjunto INTEIRO; um modelo que compromete UMA acao por vez,
+nao.
+
+`scriptis_da_ia/selecao_conjunto.py`: em vez de N escolhas gulosas,
+seleciona o CONJUNTO de cartas do turno de uma vez. Casa com o rotulo que
+existe **e** com a metrica oficial, que tambem e de conjunto. **E mudanca
+ESTRUTURAL de como a decisao e tomada** -- "planejar o turno" em vez de
+"passo guloso" -- nao mais um ajuste.
+
+### O resultado
+
+| | treino | validacao (lideres NUNCA vistos) |
+|---|---|---|
+| motor real (baseline) | 30,7% | 21,3% |
+| **SELECAO DE CONJUNTO** | **86,7%** | **26,1%** |
+| oraculo (teto) | -- | 96,6% |
+
+**5 lideres melhoraram / 1 piorou.** Hiperparametro (limiar 0,40,
+kmax=2) escolhido **so no TREINO** -- disciplina aplicada depois do erro
+do bloco 704, onde eu escolhi na validacao e quase reportei ganho
+inexistente.
+
+### O que a reformulacao provou
+
+Treino saltou de **38,5% (por decisao) pra 86,7% (por conjunto)** com o
+MESMO dado, as MESMAS features e o MESMO modelo. **A informacao sempre
+esteve la; a formulacao e que nao casava com o rotulo nem com a
+metrica.**
+
+### As duas ressalvas -- ler antes de comemorar
+
+**1. O ganho agregado e FRAGIL.** +4,8pp em 210 turnos sao ~10 turnos. O
+unico lider com amostra relevante (OP11-062, n=138) melhorou **+2,9pp**.
+O resto vem de lideres com n=5..8, onde 1 turno vale 20-25pp. **O numero
+honesto e "+2,9pp onde da pra medir"**, nao +4,8pp.
+
+| lider | baseline | modelo | delta | n |
+|---|---|---|---|---|
+| OP11-062 | 18,1% | 21,0% | **+2,9pp** | **138** |
+| OP04-019 | 37,5% | 62,5% | +25,0pp | 8 |
+| OP07-019 | 50,0% | 75,0% | +25,0pp | 8 |
+| OP13-002 | 12,5% | 25,0% | +12,5pp | 16 |
+| OP13-004 | 0,0% | 20,0% | +20,0pp | 5 |
+| OP13-001 | 25,0% | 12,5% | -12,5pp | 8 |
+
+**2. Overfitting ENORME**: 86,7% treino x 26,1% validacao. **Mesmo sem
+nenhuma identidade de carta ou lider nas features**, o modelo memoriza os
+lideres de treino -- provavelmente via features de estado correlacionadas
+com arquetipo. Fechar esse buraco e onde esta o resto do ganho.
+
+### O que ainda NAO e
+
+Isto roda no proxy OFFLINE. O motor real decide sequencialmente --
+implementar selecao de conjunto exige mudar `main_phase`, e so entao a
+regua real pode confirmar. **A diferenca em relacao a todas as tentativas
+anteriores: agora a mudanca estrutural tem evidencia ANTES de ser feita.**
+
+### Proximo
+
+1. Reduzir o overfit (regularizacao, menos features, mais dado) --
+   e onde esta o ganho que falta.
+2. So depois implementar em `main_phase` e validar na regua real com
+   recorte por lider.
+
 ## 2026-08-28 (704) - **PORTAO DA FASE 2 FECHOU: PARAR ANTES DO DAGGER.** O ranqueador aprendido fica em ~20-24% contra teto de 96,6% -- **offline, onde o *distribution shift* nem entrou em jogo**. Logo o shift NAO e a causa principal
 
 ### O que foi feito
