@@ -140,7 +140,20 @@ def deck_profile(census: dict) -> dict:
     # DEFAULT DESLIGADO: mudar o perfil altera comportamento de producao.
     # Ligar com OPTCG_PERFIL_V2=1 e medir antes de publicar.
     import os as _os
-    if _os.environ.get('OPTCG_PERFIL_V2', '') == '1':
+    _modo = _os.environ.get('OPTCG_PERFIL_V2', '')
+    if _modo == 'neutro':
+        # ABLACAO (bloco 736, pergunta do usuario "sera se esse arquetipo
+        # esta prejudicando nossos stats?"): forca midrange, que zera os
+        # multiplicadores por perfil (todos 1.0). Responde se ter o
+        # arquetipo e MELHOR que nao ter -- diferente de comparar
+        # classificacao certa x errada (que deu -0,0pp).
+        #
+        # Motivo pra suspeitar de dano ATIVO: hoje 87% dos decks viram
+        # 'control' e recebem escala 1.3 -- inclusive os 11 que sao
+        # AGRESSIVOS e deveriam receber 0.7. Multiplicador invertido.
+        profile = 'midrange'
+        reason = f'ABLACAO neutra (medio {avg_cost:.2f})'
+    elif _modo == '1':
         if avg_cost <= 3.68 or n_rush >= 2:
             profile = 'aggressive'
             reason = (f'curva baixa pro meta (médio {avg_cost:.2f} <= 3.68)'
