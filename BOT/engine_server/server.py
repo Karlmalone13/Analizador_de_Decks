@@ -1130,12 +1130,20 @@ def choose_target(req: ChooseTargetRequest):
         # pra achar o episodio acima) -- essa medicao permite pegar o
         # PROXIMO caso ja com aviso na hora, no console/session log.
         tgt_started = time.perf_counter()
-        out = bridge.order_target_candidates(
+        # `with_scores=True`: alem da ordem, a bridge devolve a CHAVE que
+        # ordenou cada candidato. O servidor so repassa (nenhuma heuristica
+        # aqui -- regra "server.py = transporte puro"). Sem isto a
+        # telemetria de `target` registrava o que foi escolhido e nunca o
+        # porque, na categoria mais fraca da regua.
+        marcados = bridge.order_target_candidates(
             gs, opp_gs,
             [{"id": c.id, "zone": c.zone, "code": c.code} for c in req.candidates],
             attacker_power=req.attackerPower,
             defender_uid=req.defenderId,
-            actor_code=req.actorCode)
+            actor_code=req.actorCode,
+            with_scores=True)
+        out = [i for i, _ in marcados]
+        _rank = {i: (pos, chave) for pos, (i, chave) in enumerate(marcados)}
         tgt_ms = round((time.perf_counter() - tgt_started) * 1000, 3)
         zonas = sorted({c.zone for c in req.candidates})
         print(f"[TGT] {len(req.candidates)} candidatos (actor={req.actorCode} "
@@ -1152,8 +1160,18 @@ def choose_target(req: ChooseTargetRequest):
         if req.attackerPower > 0 and req.defenderId and out and out[0] == req.defenderId:
             print(f"[TGT][AVISO] top escolhido == alvo original (defId={req.defenderId}) "
                   f"-- possivel redirect sem efeito (no-op)", flush=True)
+        # `rank`/`rank_key` por candidato: `eligible: True` sozinho nao
+        # distinguia o alvo escolhido do descartado por pouco. Candidato
+        # EXCLUIDO pela bridge (filtro de zona/numerico) nao aparece em
+        # `_rank` -- fica com eligible=False, que ate hoje nunca era
+        # gravado e escondia a diferenca entre "nao foi escolhido" e "nem
+        # podia ser escolhido".
         legal = [{"type": "target", "target_id": c.id, "zone": c.zone,
-                  "card_code": c.code, "eligible": True} for c in req.candidates]
+                  "card_code": c.code,
+                  "eligible": c.id in _rank,
+                  "rank": _rank.get(c.id, (None, None))[0],
+                  "rank_key": _rank.get(c.id, (None, None))[1]}
+                 for c in req.candidates]
         return _record_aux_decision(
             "target", _model_dict(req.state), legal,
             {"type": "target_order", "ordered_ids": out}, {"orderedIds": out},

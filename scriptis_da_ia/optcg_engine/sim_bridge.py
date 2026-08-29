@@ -1793,11 +1793,28 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
     return False
 
 
+def _key_para_log(chave) -> list:
+    """A chave de ordenacao vira JSON. Ela e uma tupla heterogenea (bucket
+    + desempates que podem ser float/bool/None), entao normaliza pra lista
+    de numeros -- o log e lido por ferramenta, nao por olho, e um tipo
+    inesperado ali quebraria o `json.dumps` no meio de uma partida real."""
+    out = []
+    for v in (chave if isinstance(chave, (tuple, list)) else (chave,)):
+        if isinstance(v, bool):
+            out.append(int(v))
+        elif isinstance(v, (int, float)):
+            out.append(round(float(v), 3))
+        else:
+            out.append(0.0)
+    return out
+
+
 def order_target_candidates(gs: GameState, opp_gs: GameState,
                             candidates: list[dict],
                             attacker_power: int = 0,
                             defender_uid: int = 0,
-                            actor_code: str | None = None) -> list[int]:
+                            actor_code: str | None = None,
+                            with_scores: bool = False):
     """
     Ordena candidatos de alvo de um efeito pendente por preferencia.
     candidates: [{'id': uid, 'zone': 'own_hand'|'own_board'|'top_deck'|...,
@@ -2610,7 +2627,22 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
 
         candidates = [c for c in candidates if _bate_filtro(c)]
 
-    return [c.get('id') for c in sorted(candidates, key=sort_key)]
+    ordenados = sorted(candidates, key=sort_key)
+    if with_scores:
+        # A CHAVE DE ORDENACAO e o score -- nao um numero novo inventado
+        # pra auditoria, e literalmente o que decidiu a ordem. Primeiro
+        # elemento e o BUCKET de prioridade (menor = mais cedo), o resto
+        # desempata dentro do bucket.
+        #
+        # POR QUE (29/08): a telemetria ao vivo ja gravava os candidatos de
+        # `target` e a ordem escolhida, mas SEM score -- dava pra ver O QUE
+        # o bot escolheu e nunca POR QUE, nem se a alternativa estava
+        # perto. Justamente na categoria mais fraca da regua (alvo dentro
+        # do efeito, 16,4%), onde o contrafactual e o que mais falta. As
+        # decisoes `main` ja tinham esse dado (`score_components`); as de
+        # `target`, nao.
+        return [(c.get('id'), _key_para_log(sort_key(c))) for c in ordenados]
+    return [c.get('id') for c in ordenados]
 
 
 def get_card_on_play_steps(card_code: str) -> list[dict]:
