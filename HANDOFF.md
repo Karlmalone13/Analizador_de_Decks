@@ -28,6 +28,62 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (732) - Diagnostico de SEQUENCIAMENTO corrigido (eu comparava populacoes diferentes) -- e a divergencia **aumenta**: `attach_don -> play` e **21x** o humano
+
+### Por que o diagnostico anterior estava errado
+
+O bloco 731 mediu a sequencia lendo so `decisions` do relatorio. **No
+motor, o DON anexado PRA ATACAR e aplicado dentro da execucao do ataque
+(`_attach_don_for_attack`) e nunca aparece como decisao `attach_don`** --
+so aparecem as anexacoes que HABILITAM efeito `[DON!! xN]`.
+
+No log humano, `attach_don` e TODA anexacao, inclusive a de combate.
+**Eu comparava anexacoes-que-habilitam do motor contra todas do humano.**
+
+Pior: **esse erro ja estava documentado no bloco 589/590**, num comentario
+a tres linhas de onde escrevi o codigo -- "ferramentas que so leem
+`decisions` subestimam quanto DON o motor de fato investe em ataque". Li
+o comentario e escrevi a ferramenta com o defeito que ele descreve. **2a
+vez no dia que um problema ja registrado reaparece porque tratei o
+registro como contexto, nao como aviso** (a 1a foi a sobrescrita de
+arquivo versionado, que apareceu por 4 caminhos).
+
+### Conserto (na FERRAMENTA, nao no motor)
+
+`audit_real_losses.py` passa a gravar `seq_kinds`: a sequencia do turno na
+ordem REAL, com `turn_planner` e `attach_don_for_attack` **intercalados**.
+As duas listas antigas sao filtradas por tipo e perdem a ordem relativa --
+reconstruir a partir delas era impossivel.
+
+### O resultado corrigido -- a divergencia AUMENTA
+
+`attach_don` a mais: +165 -> **+236**; a menos: -182 -> -140. Liquido vai
+de -17 pra **+96**: contando tudo, **o motor anexa DON MAIS que o humano**,
+nao menos.
+
+| transicao | motor | humano | razao |
+|---|---|---|---|
+| **`attach_don -> play`** | 0,16 | 0,01 | **21x** |
+| **`attach_don -> activate`** | 0,14 | 0,02 | **8x** |
+| `attack -> activate` | 0,37 | 0,15 | 2,5x |
+| `attack -> attach_don` | 0,33 | 0,19 | 1,8x |
+
+Primeira acao do turno: humano `play` 55,8% x motor 36,2%; humano
+`attach_don` 7,8% x motor **26,8%**.
+
+### O que isso faz com a minha objecao anterior
+
+No bloco 731 eu abortei a proposta de restricao de fase argumentando que
+essas anexacoes existem pra habilitar efeito e nao podem ser adiadas.
+**Com o dado corrigido a objecao enfraquece**: se fossem so habilitacoes
+necessarias, a transicao seguinte seria `attach_don -> activate` (usar o
+efeito habilitado). Ela existe (8x), mas a MAIS frequente e
+`attach_don -> play`, que nao habilita nada.
+
+**Ainda NAO e proposta.** Antes de sugerir mexer no motor de novo, abrir
+casos concretos e confirmar que e DON desperdicado -- errei duas vezes
+hoje concluindo do agregado.
+
 ## 2026-08-28 (730) - REGRA NOVA aprovada pelo usuario: **PERGUNTAR ANTES DE MODIFICAR O MOTOR**
 
 ### O pedido

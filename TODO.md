@@ -2,6 +2,18 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 732): **diagnostico de sequenciamento corrigido** — eu
+> comparava populacoes diferentes (no motor o DON de COMBATE nao aparece
+> como decisao `attach_don`, so as anexacoes que HABILITAM efeito; no
+> humano aparece tudo). **Erro ja documentado no bloco 589/590**, num
+> comentario a 3 linhas de onde escrevi o codigo. `audit_real_losses.py`
+> passa a gravar `seq_kinds` (ordem real, tipos intercalados).
+> **Corrigido, a divergencia AUMENTA**: `attach_don` liquido vai de -17
+> pra **+96 a mais**; `attach_don -> play` **21x** o humano (0,16 x 0,01),
+> `attach_don -> activate` **8x**. Abertura: humano `play` 55,8% x motor
+> 36,2%; `attach_don` 7,8% x **26,8%**. Ainda **nao e proposta** — abrir
+> casos concretos antes (errei 2x hoje concluindo do agregado).
+
 > 28/08/2026 (bloco 730): **REGRA NOVA — PERGUNTAR ANTES DE MODIFICAR O
 > MOTOR.** Antes de alterar `decision_engine.py` (ou `sim_bridge.py`,
 > `server.py`, `replay_optcg.py`, `rules_facade.py`, `eval_weights.json`)
