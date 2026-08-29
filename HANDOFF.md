@@ -28,6 +28,90 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (735) - **A HIPOTESE DO USUARIO ESTAVA CERTA: a leitura de ARQUETIPO esta cega.** 39 de 39 decks reais classificam como control/midrange -- **ZERO agressivos**, porque a classe e inalcancavel
+
+### Como chegou aqui
+
+O usuario listou tres suspeitas: *"pode ser leitura de arquetipo, algo com
+peso supervalorizado, ou vc ainda nao mexeu na estrutura do motor"*. Eu
+nao tinha testado nenhuma diretamente.
+
+### Suspeita 2 (peso supervalorizado): REFUTADA -- e corrige afirmacao MINHA
+
+Contribuicao real (|termo x peso| sobre 4.491 decisoes):
+
+| termo | peso | share do sinal |
+|---|---|---|
+| `board_opp` | **0,8** | **24,8%** |
+| `dmg` | **270,0** | 21,4% |
+| `board_mine` | 1,0 | 18,4% |
+| `don_combat_cost` | 50,0 | 10,5% |
+
+`dmg` tem peso 270 e contribui 21,4%; `board_opp` tem peso **0,8** e
+contribui MAIS. **Isso derruba o bloco 701**, onde chamei a funcao de
+"miope, um termo a 120 dominando dezesseis a <=25" -- julguei pela
+MAGNITUDE DO PESO sem medir a contribuicao. Errado.
+
+### Suspeita 1 (leitura de arquetipo): CONFIRMADA
+
+`profile = 'control'` em **100% das 4.491 decisoes**, nos 30 lideres.
+
+Classificando os **39 decks REAIS** do corpus (via `_find_real_deck`, o
+caminho do proprio motor): **31 control, 8 midrange, 0 aggressive**.
+
+**A classe agressiva e INALCANCAVEL.** Ela exige
+`avg_cost <= 2.5 AND pct_cheap >= 0.55`, e a distribuicao real e:
+
+```
+avg_cost   min 3.28  t33 3.68  mediana 3.82  t67 3.93  max 4.70
+pct_cheap  min 0.10  t33 0.27  mediana 0.30  t67 0.34  max 0.48
+```
+
+Nenhum deck real chega perto. Os limiares vieram da descricao no
+docstring ("Red Zoro ~1.7 de custo medio, 85% cartas <=2") -- que **nao
+corresponde aos decks deste banco**: o proprio Roronoa Zoro (OP12-020)
+mede 3,28 / 0,32.
+
+**Achado extra**: `n_rush` e `n_blockers` sao CALCULADOS e devolvidos, e
+**nunca usados** na classificacao -- os sinais de agressividade estao
+comentados como "reforcam a curva" e o `if/elif` decide so por curva.
+
+### Por que importa
+
+O perfil nao e rotulo: `don_field_curve_scale()` ramifica nele e trata
+agressivo e controle de formas **OPOSTAS** (quanto vale DON parado). Com
+87% em `control`, essa calibragem roda sempre no mesmo ramo, pra qualquer
+deck. **O bot pilota 39 decks diferentes achando que 31 sao a mesma
+coisa** -- exatamente a queixa do usuario de que ele nao entende o deck.
+
+### O conserto (DEFAULT DESLIGADO)
+
+Limiares pelos TERCOS da distribuicao real + `rush >= 2` como reforco.
+`OPTCG_PERFIL_V2=1`:
+
+| | aggressive | midrange | control |
+|---|---|---|---|
+| atual | **0** | 8 | 31 |
+| **V2** | **11** | 15 | 13 |
+
+Default desligado porque mudar o perfil altera comportamento de producao
+-- na lista do que e SERIO (bloco 733). Medindo o agregado antes de
+propor publicar.
+
+**Expectativa honesta**: o defeito e real, mas o ganho so aparece se as
+ramificacoes que dependem do perfil pesarem. Ate agora achei UMA.
+
+### Nota de metodo: 5 erros meus nesta investigacao
+
+Reconstruir o caminho do motor por fora falhou 5x seguidas (coluna errada
+do CSV, dict no lugar de objeto, 2 assinaturas chutadas, desempacotamento
+errado). Cada uma produziu resultado que, aceito, viraria conclusao
+invertida -- uma delas diria "o classificador acha que todo deck e
+agressivo", o oposto exato.
+
+**A unica medicao que valeu interceptou o motor POR DENTRO.** Regra que
+fica: medir o motor por dentro, nunca reproduzir o caminho dele por fora.
+
 ## 2026-08-28 (734) - Decomposicao do SEQUENCIAMENTO: **61% da perda e CONTAGEM**. Mas o limiar de parada nao alcanca -- as acoes excedentes tem score ALTO, nao sao marginais
 
 ### 1. Sequenciamento nao e alvo proprio (correcao de priorizacao minha)

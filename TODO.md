@@ -2,6 +2,23 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 735): **A HIPOTESE DO USUARIO ESTAVA CERTA — a leitura
+> de ARQUETIPO esta cega.** Dos **39 decks REAIS** do corpus: 31 control,
+> 8 midrange, **0 aggressive** — a classe agressiva e **INALCANCAVEL**
+> (exige `avg_cost<=2.5 AND pct_cheap>=0.55`; a distribuicao real vai de
+> 3,28 a 4,70 de custo e 0,10 a 0,48 de cheap). Os limiares vieram de uma
+> descricao que nao bate com os decks do banco. **Extra**: `n_rush` e
+> `n_blockers` sao calculados e **nunca usados** na classificacao.
+> **Importa** porque `don_field_curve_scale()` ramifica no perfil e trata
+> agressivo/controle de formas OPOSTAS. **Conserto (default DESLIGADO,
+> `OPTCG_PERFIL_V2=1`)**: tercos da distribuicao real + rush>=2 → 11
+> aggressive / 15 midrange / 13 control. **Suspeita 2 (peso
+> supervalorizado) REFUTADA** e corrige o bloco 701: `dmg` (peso 270)
+> contribui 21,4%, `board_opp` (peso **0,8**) contribui **24,8%** — eu
+> julguei pela magnitude do peso sem medir. **Metodo**: 5 erros meus por
+> reconstruir o caminho do motor por fora; **so valeu interceptar por
+> dentro**.
+
 > 28/08/2026 (bloco 734): **sequenciamento decomposto — 61% da perda e
 > CONTAGEM** (39,2pp), contra 12,4pp de ordem e 12,8pp de carta errada. O
 > motor faz **+0,75 acao/turno** a mais. **CORRECAO**: `seq` usa pares

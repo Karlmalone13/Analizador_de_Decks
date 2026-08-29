@@ -111,8 +111,47 @@ def deck_profile(census: dict) -> dict:
     n_rush = census['rush']['total']
     n_blockers = census['blockers']['total']
 
-    # Classificação por curva (o separador mais forte nos dados reais)
-    if avg_cost <= 2.5 and pct_cheap >= 0.55:
+    # ── LIMIARES RECALIBRADOS (bloco 735) ────────────────────────────
+    # DEFEITO MEDIDO: com os limiares antigos, **39 de 39 decks REAIS do
+    # corpus** classificavam como control (34) ou midrange (5) --
+    # **ZERO agressivos**. A classe 'aggressive' exigia
+    # `avg_cost <= 2.5 AND pct_cheap >= 0.55`, e a distribuicao real e:
+    #
+    #   avg_cost   min 3.28  t33 3.68  mediana 3.82  t67 3.93  max 4.70
+    #   pct_cheap  min 0.10  t33 0.27  mediana 0.30  t67 0.34  max 0.48
+    #
+    # Ou seja: **a classe agressiva era inalcancavel** -- nenhum deck real
+    # chega perto. Os limiares vieram da descricao no docstring ("Red Zoro
+    # ~1.7 de custo medio, 85% cartas <=2"), que nao corresponde aos decks
+    # do meta neste banco (o proprio Roronoa Zoro OP12-020 mede 3.28/0.32).
+    #
+    # POR QUE IMPORTA: o perfil nao e rotulo decorativo --
+    # `don_field_curve_scale()` ramifica nele e trata agressivo e controle
+    # de formas OPOSTAS (quanto vale DON parado). Com 87% em 'control',
+    # essa calibragem roda sempre no mesmo ramo, pra qualquer deck.
+    #
+    # O conserto usa os TERCOS da distribuicao real, entao as tres classes
+    # ficam populadas. `rush` reforca (mediana 0, so alguns decks tem):
+    # 2+ cartas com Rush empurra pra agressivo mesmo com curva no meio.
+    # `n_rush`/`n_blockers` ja eram CALCULADOS e devolvidos aqui, e nunca
+    # eram usados na classificacao -- os sinais de agressividade estavam
+    # comentados como "reforcam a curva" e ignorados pelo if/elif.
+    #
+    # DEFAULT DESLIGADO: mudar o perfil altera comportamento de producao.
+    # Ligar com OPTCG_PERFIL_V2=1 e medir antes de publicar.
+    import os as _os
+    if _os.environ.get('OPTCG_PERFIL_V2', '') == '1':
+        if avg_cost <= 3.68 or n_rush >= 2:
+            profile = 'aggressive'
+            reason = (f'curva baixa pro meta (médio {avg_cost:.2f} <= 3.68)'
+                      if avg_cost <= 3.68 else f'{n_rush} cartas com Rush')
+        elif avg_cost >= 3.93:
+            profile = 'control'
+            reason = f'curva alta pro meta (médio {avg_cost:.2f} >= 3.93)'
+        else:
+            profile = 'midrange'
+            reason = f'curva intermediária (médio {avg_cost:.2f})'
+    elif avg_cost <= 2.5 and pct_cheap >= 0.55:
         profile = 'aggressive'
         reason = f'curva baixa (médio {avg_cost:.1f}, {pct_cheap*100:.0f}% custo<=2)'
     elif avg_cost >= 3.5 or pct_heavy >= 0.15:
