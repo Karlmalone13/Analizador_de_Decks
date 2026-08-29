@@ -2,6 +2,18 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 733): **os casos concretos NAO confirmam
+> desperdicio** — das 22 ocorrencias de `attach_don -> play`, **9 sao
+> habilitacoes DEFENSIVAS** (blocker, gatilho de dano, efeito do turno do
+> oponente) e o motor **continuou jogando cartas caras depois**. **3a vez
+> no dia que a leitura do agregado nao sobrevive a inspecao dos casos** —
+> proposta de restricao de fase suspensa. O que os casos mostram: **a
+> busca derruba score estatico MUITO maior** (509 x 70 num caso) pra
+> escolher a anexacao — diferenca de VALORACAO, nao de ordem. **REGRA DE
+> AUTORIZACAO ATUALIZADA**: livre pra mexer no motor, **exceto no serio**
+> (mudar default de producao, remover estagio, dificil de reverter, tocar
+> a regra do motor unico).
+
 > 28/08/2026 (bloco 732): **diagnostico de sequenciamento corrigido** — eu
 > comparava populacoes diferentes (no motor o DON de COMBATE nao aparece
 > como decisao `attach_don`, so as anexacoes que HABILITAM efeito; no

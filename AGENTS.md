@@ -417,31 +417,38 @@ zero nem repetir caminho ja reprovado:
 - **Alargar o shortlist da busca** (blocos 593/594 e 677): 3 medicoes
   independentes, todas regrediram.
 
-### REGRA: PERGUNTAR ANTES DE MODIFICAR O MOTOR (28/08/2026)
+### REGRA: liberdade pra mexer no motor, EXCETO no que e serio (28/08/2026)
 
-> Pedido explicito do usuario ao aprovar a metrica: *"tem que me perguntar
-> antes de fazer alguma modificacao no motor"*.
+> **Historico da regra, porque ela mudou no mesmo dia:**
+> 1. O usuario pediu *"tem que me perguntar antes de fazer alguma
+>    modificacao no motor"* -- registrado como autorizacao previa pra
+>    TUDO.
+> 2. Poucas horas depois, ao ver o custo disso no ritmo:
+>    *"pode comecar a fazer mudancas sem me perguntar a nao ser que for
+>    algo muito serio"*.
 >
-> **Antes de alterar `decision_engine.py` -- ou qualquer arquivo que
-> mude o COMPORTAMENTO do motor (`sim_bridge.py`, `server.py`,
-> `replay_optcg.py`, `rules_facade.py`, `eval_weights.json`) -- PERGUNTE
-> e espere a resposta.** Nao vale "e so um ajuste", "o default nao muda"
-> ou "da pra reverter com um push".
+> **Regra vigente: mexer no motor e livre; o que e SERIO exige
+> autorizacao.**
 >
-> **Vale inclusive pra mudanca com peso/flag em zero.** Em 28/08 varias
-> alteracoes entraram no `decision_engine.py` como "zero mudanca de
-> comportamento, hash identico" (instrumentacao de termos, board no
-> contexto, termo `don_ocioso`). Eram verdadeiras -- e mesmo assim o
-> arquivo que decide o jogo foi mexido varias vezes sem ninguem
-> autorizar. **A regra existe pra isso: quem decide o que entra no motor
-> e o usuario, nao a sessao.**
+> **E SERIO (pergunte e espere resposta):**
+> - Mudar o COMPORTAMENTO PADRAO de producao -- publicar peso em
+>   `eval_weights.json`, ligar knob por default, alterar heuristica que
+>   passa a valer sem flag.
+> - Remover ou desligar um estagio inteiro (busca Monte Carlo, camada
+>   barata, shortlist).
+> - Mudanca dificil de reverter, ou que atravessa varios arquivos de
+>   decisao ao mesmo tempo.
+> - Qualquer coisa que toque a REGRA DO MOTOR UNICO
+>   (`REGRA_SEM_DUPLICACAO.md`) -- essa continua inegociavel.
 >
-> **O que NAO precisa perguntar**: medir, diagnosticar, criar ferramenta
-> de analise nova, mexer em `metrics/`, documentar. Ou seja: **observar e
-> livre; alterar o motor exige autorizacao.**
+> **NAO e serio (faca, meca e reporte):**
+> - Experimento com default INALTERADO (knob/peso em zero, flag desligada).
+> - Instrumentacao, telemetria, decomposicao de score.
+> - Ferramenta de analise, script de medicao, mexer em `metrics/`.
+> - Correcao de bug com teste que prova o conserto.
 >
-> Em caso de duvida sobre a fronteira, pergunte -- e mais barato que um
-> commit indesejado no arquivo mais sensivel do projeto.
+> **Em todo caso**: A/B medido, recorte por lider, e reverter se nao
+> sustentar. Liberdade pra mexer nao e liberdade pra aceitar sem medir.
 
 ### RESSALVA DO USUARIO (28/08/2026): a meta NAO e so cartas jogadas
 

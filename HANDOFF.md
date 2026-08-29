@@ -28,6 +28,73 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (733) - Casos concretos de `attach_don -> play` **NAO confirmam desperdicio**. E a regra de autorizacao mudou: livre pra mexer, exceto no que e serio
+
+### A verificacao que impediu a 4a proposta errada
+
+O bloco 732 mediu `attach_don -> play` em **21x** o humano e eu quase
+propus (de novo) a restricao de fase. Antes disso, abri 22 casos reais:
+
+| motivo da anexacao | n |
+|---|---|
+| `attack_power` | 13 |
+| `when_damage_or_own_char_ko` | 3 |
+| `on_opp_attack` | 2 |
+| `blocker` | 2 |
+| `opp_turn` | 2 |
+
+**9 das 22 sao habilitacoes DEFENSIVAS** -- DON pra ligar blocker,
+gatilho de "quando sofrer dano", efeito do turno do oponente. Nao e DON
+jogado fora: e DON comprometido com habilidade que vale no turno
+adversario.
+
+E o motor **continuou jogando depois**: OP15-002 T9 anexou DON num
+blocker e jogou carta de custo 7 na sequencia; OP13-002 T10 idem.
+**Nao travou o turno.**
+
+**3a vez no dia que a leitura do agregado nao sobrevive a inspecao dos
+casos.** Proposta suspensa.
+
+### O que os casos mostram de VERDADE
+
+```
+OP05-041 T12:  DON  score= 70  sim=140.87
+               play score=509  sim=112.20   <- a busca escolheu o DON
+OP11-041 T6:   DON  score= 47  sim=258.92
+               play score=159  sim=201.83
+OP13-002 T2:   DON  score= 95  sim=342.34
+               play score=197  sim=162.68
+```
+
+**A busca Monte Carlo derruba sistematicamente um score estatico MUITO
+maior pra escolher a anexacao** -- 509 x 70 no 1o caso, 7x. E diferenca
+de VALORACAO, nao de ordem. E nao da pra dizer daqui que esta errada: a
+busca e liquido positivo no agregado (bloco 701).
+
+### Proximo teste (rodando): anexar cedo CUSTA alguma coisa?
+
+Turnos em que o motor anexa DON ANTES de jogar terminam com mais DON
+ocioso e mais cartas pagaveis na mao? Sobra -> nao custou, hipotese morre.
+Falta -> travou recurso, hipotese vive.
+
+### REGRA DE AUTORIZACAO ATUALIZADA (mesmo dia)
+
+O bloco 730 registrou *"perguntar antes de QUALQUER modificacao"*. Horas
+depois o usuario relaxou: *"pode comecar a fazer mudancas sem me
+perguntar a nao ser que for algo muito serio"*.
+
+**Vigente: mexer no motor e livre; o SERIO exige autorizacao.**
+
+**Serio** = mudar comportamento PADRAO de producao (publicar peso, ligar
+knob por default), remover/desligar estagio inteiro, mudanca dificil de
+reverter, ou tocar a REGRA DO MOTOR UNICO (inegociavel).
+
+**Nao serio** = experimento com default inalterado, instrumentacao,
+ferramenta de analise, correcao de bug com teste.
+
+Em todo caso: A/B medido, recorte por lider, reverter se nao sustentar.
+Registrado em `CLAUDE.md` e `AGENTS.md`, com o historico da mudanca.
+
 ## 2026-08-28 (732) - Diagnostico de SEQUENCIAMENTO corrigido (eu comparava populacoes diferentes) -- e a divergencia **aumenta**: `attach_don -> play` e **21x** o humano
 
 ### Por que o diagnostico anterior estava errado
