@@ -262,6 +262,28 @@ def _clean(line: str) -> str:
 # Parser principal
 # ---------------------------------------------------------------------------
 
+def _leader_name_by_code(code: str) -> str:
+    """Nome do lider a partir do codigo. O RZ1 so carrega o CODIGO, e o
+    resto do pipeline (slug do arquivo, `_find_real_deck`) espera o nome.
+    Tenta o `id` exato e cai pro `card_set_id` -- reprint/alt art tem `id`
+    proprio (OP09-086_p1) com o mesmo `card_set_id`."""
+    db = _load_cards_csv()
+    row = db.get(code)
+    if row is None:
+        for r in db.values():
+            if r.get('card_set_id') == code:
+                row = r
+                break
+    # Devolve o CODIGO quando a linha do CSV nao e de um LEADER. O banco
+    # esta atras da versao do jogo (achado 29/08: `OP17-058` e Kaido em
+    # 1.42c.22 e um Evento azul no CSV), e usar o nome errado contamina o
+    # slug da partida e o `_find_real_deck`. Codigo cru e feio mas honesto,
+    # e o cruzamento por `leader_code` continua funcionando.
+    if row is None or str(row.get('card_type', '')).strip().lower() != 'leader':
+        return code
+    return row.get('card_name') or code
+
+
 def parse_log(log_path: str) -> tuple:
     """
     Retorna (data_dict, raw_lines_cleaned).
@@ -283,8 +305,83 @@ def parse_log(log_path: str) -> tuple:
         if m and m.group(2) == 'First':
             goes_first = m.group(1)
 
+    # ── FALLBACK 1: arquivo COMPANHEIRO (29/08) ───────────────────────
+    # O jogo grava DOIS arquivos por partida, um por cliente: `<ts>.log`
+    # (host) e `<ts>_p2.log` (convidado). Cada um so anuncia
+    # "[X] Leader is ..." do PROPRIO jogador -- nenhum dos dois sozinho
+    # tem os dois lados. Eles sao complementares, entao o par resolve o
+    # cabecalho sem depender do banco de cartas.
+    #
+    # Preferir esta fonte a RZ1 importa: aqui o NOME do lider vem do
+    # proprio jogo. Achado real ao banir estes logs -- `OP17-058` e
+    # **Kaido** no jogo (1.42c.22) e um EVENTO azul no nosso
+    # `cards_rows.csv`, que esta atras da versao do jogo. Resolver o nome
+    # pelo CSV produzia um slug de partida com o nome da carta errada.
+    if len(players) < 2:
+        origem = Path(log_path)
+        nome = origem.stem
+        companheiro = (origem.with_name(nome[:-3] + origem.suffix)
+                       if nome.endswith('_p2')
+                       else origem.with_name(nome + '_p2' + origem.suffix))
+        if companheiro.exists():
+            try:
+                extra = companheiro.read_text(encoding='utf-8',
+                                              errors='replace').splitlines()
+            except OSError:
+                extra = []
+            for line in (_clean(l) for l in extra):
+                m = RE_LEADER.match(line)
+                if m and m.group(1) not in leaders:
+                    players.append(m.group(1))
+                    leaders[m.group(1)] = {'name': m.group(2), 'code': m.group(3)}
+                if goes_first is None:
+                    mc = RE_CHOSE.match(line)
+                    if mc and mc.group(2) == 'First':
+                        goes_first = mc.group(1)
+
+    # ── FALLBACK 2: cabecalho pelo protocolo RZ1 ──────────────────────
+    # Um log gravado pelo CLIENTE so anuncia "[X] Leader is ..." do
+    # PROPRIO jogador -- o adversario nunca aparece nesse formato. Como o
+    # jogo escreve DOIS arquivos por partida (`<ts>.log` e `<ts>_p2.log`,
+    # um por cliente), nenhum dos dois passava no `len(players) < 2` e a
+    # partida inteira era rejeitada. Foi assim que 7 partidas humano-x-
+    # humano ficaram de fora do banco ate hoje.
+    #
+    # O proprio jogo ja escreve os dois jogadores em `RZ1|PLY|<slot>|
+    # <nome>|<codigo_do_lider>` -- mesmo protocolo que o bloco 684 ja
+    # decodifica pras zonas. Aqui ele resolve o cabecalho, e o `slot` da a
+    # ordem (1 = p1, 2 = p2) sem depender de qual cliente gravou.
+    if len(players) < 2:
+        rz1 = {}
+        for line in lines:
+            if not line.startswith('RZ1|PLY|'):
+                continue
+            partes = line.split('|')
+            if len(partes) >= 5 and partes[2].isdigit():
+                rz1[int(partes[2])] = (partes[3].strip(), partes[4].strip())
+        if len(rz1) >= 2:
+            players, leaders = [], {}
+            for slot in sorted(rz1):
+                nome, code = rz1[slot]
+                if nome in leaders:
+                    continue
+                players.append(nome)
+                leaders[nome] = {'name': _leader_name_by_code(code), 'code': code}
+
     if len(players) < 2:
         raise ValueError('Nao encontrei 2 jogadores no log.')
+
+    # "Chose to go Second" identifica o primeiro por eliminacao -- nos logs
+    # de cliente so a escolha do PROPRIO jogador e impressa, entao exigir a
+    # linha "First" deixava `goes_first` vazio em metade dos arquivos.
+    if goes_first is None:
+        for line in lines:
+            m = RE_CHOSE.match(line)
+            if m and m.group(2) == 'Second':
+                outro = [p for p in players if p != m.group(1)]
+                if len(outro) == 1:
+                    goes_first = outro[0]
+                break
 
     p1, p2 = players[0], players[1]
     known_codes = _build_known_codes(lines, p1, p2)
