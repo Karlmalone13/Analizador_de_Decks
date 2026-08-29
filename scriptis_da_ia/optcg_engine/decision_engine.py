@@ -12035,6 +12035,36 @@ class GameAnalyzer:
         5. DEVELOP      — posso/devo desenvolver board
         6. ATTACK       — atacar líder (padrão)
         """
+        # ── PLANO DE JOGO POR ARQUETIPO (bloco 737) ──────────────────
+        # ACHADO QUE MOTIVOU (bloco 736): esta cascata e puramente de
+        # ESTADO DE TABULEIRO -- um deck agressivo e um de controle, no
+        # MESMO board, recebem a MESMA prioridade. Era essa a lacuna: o
+        # motor nao tinha plano de jogo por arquetipo, so 4
+        # multiplicadores escalares (0.7/1.3) que, medidos, **nao mudam
+        # UMA decisao sequer** nem nos decks com o rotulo invertido.
+        #
+        # Prioridade, diferente dos multiplicadores, MUDA decisao: o
+        # decision_log mostra 49% REMOVE_THREAT / 19% DEVELOP / 16%
+        # ATTACK / 14% LETHAL, e cada modo altera o scoring do laco.
+        #
+        # O que o plano muda, e por que:
+        #  - AGRESSIVO corre pro lider. Remover ameaca custa tempo, e o
+        #    plano dele e fechar antes de o jogo ficar longo -- so
+        #    remove se a ameaca de fato ameaca (mantem DEFENSIVE e
+        #    PREVENT_COMBO intactos). E encurta a janela de DEVELOP.
+        #  - CONTROLE desenvolve por mais tempo e prioriza remover: o
+        #    plano dele e sobreviver ate as cartas caras valerem.
+        #  - MIDRANGE mantem o comportamento de sempre.
+        #
+        # LETHAL/DEFENSIVE/PREVENT_COMBO ficam FORA do plano: sao
+        # respostas a perigo imediato, valem pra qualquer deck.
+        #
+        # Default DESLIGADO (`OPTCG_PLANO=1` liga) -- muda comportamento
+        # de producao, que e SERIO pela regra do bloco 733.
+        import os as _os
+        _plano = _os.environ.get('OPTCG_PLANO', '') == '1'
+        _perfil = self.deck_profile_type() if _plano else None
+
         if self.can_lethal_this_turn():
             return 'LETHAL'
         if self.opp_lethal_threat() > 0.6:
@@ -12042,10 +12072,18 @@ class GameAnalyzer:
         if self.opp_combo_threat()['magnitude'] >= PREVENT_COMBO_MAGNITUDE_THRESHOLD:
             return 'PREVENT_COMBO'
         if self.critical_threats():
-            return 'REMOVE_THREAT'
+            # AGRESSIVO ignora ameaca que nao esta perto de mata-lo --
+            # corre pro lider em vez de trocar recurso no board.
+            if not (_perfil == 'aggressive' and self.opp_lethal_threat() < 0.35):
+                return 'REMOVE_THREAT'
         # desenvolver cedo / sem pressão; senão, atacar
         don_total = self.me.don_available + self.me.don_rested
-        if don_total <= 4 and self.me.hand:
+        _teto_develop = 4
+        if _perfil == 'aggressive':
+            _teto_develop = 2      # janela curta: parte pro ataque antes
+        elif _perfil == 'control':
+            _teto_develop = 6      # segura mais: cartas caras precisam de mesa
+        if don_total <= _teto_develop and self.me.hand:
             return 'DEVELOP'
         return 'ATTACK'
 
