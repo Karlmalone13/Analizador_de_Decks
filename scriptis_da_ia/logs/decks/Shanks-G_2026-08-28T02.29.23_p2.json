@@ -1,0 +1,81 @@
+{
+  "cards": [
+    {
+      "code": "OP17-036",
+      "name": "Withdraw Now and Allow Me to Save Face",
+      "count": 4
+    },
+    {
+      "code": "OP17-038",
+      "name": "I Think He's Seen An Ugly Future",
+      "count": 2
+    },
+    {
+      "code": "OP17-021",
+      "name": "Crone Oli",
+      "count": 2
+    },
+    {
+      "code": "OP17-031",
+      "name": "Yasopp",
+      "count": 2
+    },
+    {
+      "code": "OP13-031",
+      "name": "Trafalgar Law",
+      "count": 1
+    },
+    {
+      "code": "ST16-004",
+      "name": "Shanks",
+      "count": 1
+    },
+    {
+      "code": "OP17-034",
+      "name": "Rockstar",
+      "count": 1
+    },
+    {
+      "code": "OP17-022",
+      "name": "Shanks",
+      "count": 1
+    },
+    {
+      "code": "OP06-038",
+      "name": "OP06-038",
+      "count": 1
+    },
+    {
+      "code": "OP17-027",
+      "name": "Benn Beckman",
+      "count": 1
+    },
+    {
+      "code": "OP17-028",
+      "name": "Bonk Punch & Monster",
+      "count": 1
+    },
+    {
+      "code": "OP17-032",
+      "name": "OP17-032",
+      "count": 1
+    },
+    {
+      "code": "OP17-029",
+      "name": "Hongo",
+      "count": 1
+    },
+    {
+      "code": "OP17-033",
+      "name": "Lucky Roux",
+      "count": 1
+    },
+    {
+      "code": "OP08-036",
+      "name": "Electrical Luna",
+      "count": 1
+    }
+  ],
+  "total_seen": 21,
+  "leader": "OP17-020"
+}

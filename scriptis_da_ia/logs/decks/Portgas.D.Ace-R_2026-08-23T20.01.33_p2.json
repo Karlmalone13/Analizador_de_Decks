@@ -1,0 +1,51 @@
+{
+  "cards": [
+    {
+      "code": "OP16-004",
+      "name": "Curiel",
+      "count": 3
+    },
+    {
+      "code": "OP17-005",
+      "name": "Edward Newgate",
+      "count": 2
+    },
+    {
+      "code": "OP17-006",
+      "name": "Kingdew",
+      "count": 2
+    },
+    {
+      "code": "OP16-003",
+      "name": "Edward Newgate",
+      "count": 1
+    },
+    {
+      "code": "EB01-002",
+      "name": "Izou",
+      "count": 1
+    },
+    {
+      "code": "OP17-019",
+      "name": "I Don't Have Time to Chat",
+      "count": 1
+    },
+    {
+      "code": "OP16-017",
+      "name": "LittleOars Jr.",
+      "count": 1
+    },
+    {
+      "code": "OP16-002",
+      "name": "OP16-002",
+      "count": 1
+    },
+    {
+      "code": "OP17-016",
+      "name": "Rakuyo",
+      "count": 1
+    }
+  ],
+  "total_seen": 13,
+  "leader": "OP16-001"
+}

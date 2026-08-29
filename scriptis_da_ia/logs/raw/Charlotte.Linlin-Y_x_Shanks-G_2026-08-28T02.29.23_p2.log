@@ -1,0 +1,1294 @@
+Version is 1.42c.22
+[StrawHatMatt​#6200] Leader is Shanks [<mark><link="OP17-020">OP17-020</link></mark>]
+[BigRato​#5650] Will select turn order
+[BigRato​#5650] Chose to go Second
+RZ1|HDR|1.42c|2|RZ1
+RZ1|PLY|1|BigRato​#5650|OP17-099
+RZ1|PLY|2|StrawHatMatt​#6200|OP17-020
+RZ1|1|1|OP17-117|0|49|0|0|0|0|0|0|0
+RZ1|CHK|1|1|50|0|0|0|10|0|0|0|1|0
+RZ1|2|1|OP17-114|0|33|0|1|0|0|0|0|0
+RZ1|CHK|2|1|50|0|0|0|10|0|0|0|1|0
+RZ1|3|1|OP17-104|0|10|0|2|0|0|0|0|0
+RZ1|CHK|3|1|50|0|0|0|10|0|0|0|1|0
+RZ1|4|1|OP17-116|0|47|0|3|0|0|0|0|0
+RZ1|CHK|4|1|50|0|0|0|10|0|0|0|1|0
+RZ1|5|1|OP17-115|0|47|0|4|0|0|0|0|0
+RZ1|CHK|5|1|50|0|0|0|10|0|0|0|1|0
+RZ1|6|1|OP17-110|0|38|0|5|0|0|0|0|0
+RZ1|CHK|6|1|50|0|0|0|10|0|0|0|1|0
+RZ1|7|1|OP17-103|0|35|0|6|0|0|0|0|0
+RZ1|CHK|7|1|50|0|0|0|10|0|0|0|1|0
+RZ1|8|1|OP17-110|0|39|0|7|0|0|0|0|0
+RZ1|CHK|8|1|50|0|0|0|10|0|0|0|1|0
+RZ1|9|1|EB01-056|0|9|0|8|0|0|0|0|0
+RZ1|CHK|9|1|50|0|0|0|10|0|0|0|1|0
+RZ1|10|1|OP17-112|0|44|0|9|0|0|0|0|0
+RZ1|CHK|10|1|50|0|0|0|10|0|0|0|1|0
+RZ1|11|1|OP17-108|0|21|0|10|0|0|0|0|0
+RZ1|CHK|11|1|50|0|0|0|10|0|0|0|1|0
+RZ1|12|1|OP17-112|0|45|0|11|0|0|0|0|0
+RZ1|CHK|12|1|50|0|0|0|10|0|0|0|1|0
+RZ1|13|1|EB04-058|0|31|0|12|0|0|0|0|0
+RZ1|CHK|13|1|50|0|0|0|10|0|0|0|1|0
+RZ1|14|1|OP17-116|0|48|0|13|0|0|0|0|0
+RZ1|CHK|14|1|50|0|0|0|10|0|0|0|1|0
+RZ1|15|1|OP17-113|0|18|0|14|0|0|0|0|0
+RZ1|CHK|15|1|50|0|0|0|10|0|0|0|1|0
+RZ1|16|1|OP17-104|0|20|0|15|0|0|0|0|0
+RZ1|CHK|16|1|50|0|0|0|10|0|0|0|1|0
+RZ1|17|1|OP17-108|0|25|0|16|0|0|0|0|0
+RZ1|CHK|17|1|50|0|0|0|10|0|0|0|1|0
+RZ1|18|1|OP17-114|0|41|0|17|0|0|0|0|0
+RZ1|CHK|18|1|50|0|0|0|10|0|0|0|1|0
+RZ1|19|1|OP17-109|0|31|0|18|0|0|0|0|0
+RZ1|CHK|19|1|50|0|0|0|10|0|0|0|1|0
+RZ1|20|1|OP17-114|0|42|0|19|0|0|0|0|0
+RZ1|CHK|20|1|50|0|0|0|10|0|0|0|1|0
+RZ1|21|1|OP17-106|0|39|0|20|0|0|0|0|0
+RZ1|CHK|21|1|50|0|0|0|10|0|0|0|1|0
+RZ1|22|1|OP17-102|0|34|0|21|0|0|0|0|0
+RZ1|CHK|22|1|50|0|0|0|10|0|0|0|1|0
+RZ1|23|1|OP17-112|0|46|0|22|0|0|0|0|0
+RZ1|CHK|23|1|50|0|0|0|10|0|0|0|1|0
+RZ1|24|1|OP17-104|0|28|0|23|0|0|0|0|0
+RZ1|CHK|24|1|50|0|0|0|10|0|0|0|1|0
+RZ1|25|1|OP17-113|0|27|0|24|0|0|0|0|0
+RZ1|CHK|25|1|50|0|0|0|10|0|0|0|1|0
+RZ1|26|1|OP17-109|0|33|0|25|0|0|0|0|0
+RZ1|CHK|26|1|50|0|0|0|10|0|0|0|1|0
+RZ1|27|1|OP17-112|0|47|0|26|0|0|0|0|0
+RZ1|CHK|27|1|50|0|0|0|10|0|0|0|1|0
+RZ1|28|1|OP17-110|0|45|0|27|0|0|0|0|0
+RZ1|CHK|28|1|50|0|0|0|10|0|0|0|1|0
+RZ1|29|1|OP17-108|0|35|0|28|0|0|0|0|0
+RZ1|CHK|29|1|50|0|0|0|10|0|0|0|1|0
+RZ1|30|1|OP17-104|0|32|0|29|0|0|0|0|0
+RZ1|CHK|30|1|50|0|0|0|10|0|0|0|1|0
+RZ1|31|1|OP17-106|0|42|0|30|0|0|0|0|0
+RZ1|CHK|31|1|50|0|0|0|10|0|0|0|1|0
+RZ1|32|1|EB04-058|0|42|0|31|0|0|0|0|0
+RZ1|CHK|32|1|50|0|0|0|10|0|0|0|1|0
+RZ1|33|1|OP17-117|0|49|0|32|0|0|0|0|0
+RZ1|CHK|33|1|50|0|0|0|10|0|0|0|1|0
+RZ1|34|1|OP17-103|0|46|0|33|0|0|0|0|0
+RZ1|CHK|34|1|50|0|0|0|10|0|0|0|1|0
+RZ1|35|1|OP17-107|0|38|0|34|0|0|0|0|0
+RZ1|CHK|35|1|50|0|0|0|10|0|0|0|1|0
+RZ1|36|1|OP17-113|0|37|0|35|0|0|0|0|0
+RZ1|CHK|36|1|50|0|0|0|10|0|0|0|1|0
+RZ1|37|1|OP17-115|0|49|0|36|0|0|0|0|0
+RZ1|CHK|37|1|50|0|0|0|10|0|0|0|1|0
+RZ1|38|1|EB04-058|0|45|0|37|0|0|0|0|0
+RZ1|CHK|38|1|50|0|0|0|10|0|0|0|1|0
+RZ1|39|1|OP16-119|0|48|0|38|0|0|0|0|0
+RZ1|CHK|39|1|50|0|0|0|10|0|0|0|1|0
+RZ1|40|1|OP17-109|0|44|0|39|0|0|0|0|0
+RZ1|CHK|40|1|50|0|0|0|10|0|0|0|1|0
+RZ1|41|1|OP17-107|0|42|0|40|0|0|0|0|0
+RZ1|CHK|41|1|50|0|0|0|10|0|0|0|1|0
+RZ1|42|1|OP17-107|0|43|0|41|0|0|0|0|0
+RZ1|CHK|42|1|50|0|0|0|10|0|0|0|1|0
+RZ1|43|1|OP16-119|0|49|0|42|0|0|0|0|0
+RZ1|CHK|43|1|50|0|0|0|10|0|0|0|1|0
+RZ1|44|1|OP17-109|0|45|0|43|0|0|0|0|0
+RZ1|CHK|44|1|50|0|0|0|10|0|0|0|1|0
+RZ1|45|1|OP17-113|0|45|0|44|0|0|0|0|0
+RZ1|CHK|45|1|50|0|0|0|10|0|0|0|1|0
+RZ1|46|1|OP17-102|0|46|0|45|0|0|0|0|0
+RZ1|CHK|46|1|50|0|0|0|10|0|0|0|1|0
+RZ1|47|1|OP17-106|0|48|0|47|0|0|0|0|0
+RZ1|CHK|47|1|50|0|0|0|10|0|0|0|1|0
+RZ1|48|1|OP17-103|0|49|0|48|0|0|0|0|0
+RZ1|CHK|48|1|50|0|0|0|10|0|0|0|1|0
+[BigRato​#5650] Drew card from deck: Borsalino [<mark><link="EB04-058">EB04-058</link></mark>]
+RZ1|49|1|EB04-058|0|49|1|0|1|1|0|0|0
+RZ1|CHK|49|1|49|1|0|0|10|0|0|0|1|0
+[BigRato​#5650] Drew card from deck: Charlotte Katakuri [<mark><link="OP17-103">OP17-103</link></mark>]
+RZ1|50|1|OP17-103|0|48|1|1|1|1|0|0|0
+RZ1|CHK|50|1|48|2|0|0|10|0|0|0|1|0
+[BigRato​#5650] Drew card from deck: Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>]
+RZ1|51|1|OP17-106|0|47|1|2|1|1|0|0|0
+RZ1|CHK|51|1|47|3|0|0|10|0|0|0|1|0
+[BigRato​#5650] Drew card from deck: Charlotte Flampe [<mark><link="EB01-056">EB01-056</link></mark>]
+RZ1|52|1|EB01-056|0|46|1|3|1|1|0|0|0
+RZ1|CHK|52|1|46|4|0|0|10|0|0|0|1|0
+[BigRato​#5650] Drew card from deck: Charlotte Oven [<mark><link="OP17-102">OP17-102</link></mark>]
+RZ1|53|1|OP17-102|0|45|1|4|1|1|0|0|0
+RZ1|CHK|53|1|45|5|0|0|10|0|0|0|1|0
+[BigRato​#5650] Hand before Mulligan: [EB04-058,OP17-103,OP17-106,EB01-056,OP17-102]
+RZ1|54|2|ST16-004|0|30|0|0|0|0|0|0|0
+RZ1|CHK|54|2|50|0|0|0|10|0|0|0|1|0
+RZ1|55|2|OP13-031|0|26|0|1|0|0|0|0|0
+RZ1|CHK|55|2|50|0|0|0|10|0|0|0|1|0
+RZ1|56|2|OP17-031|0|20|0|2|0|0|0|0|0
+RZ1|CHK|56|2|50|0|0|0|10|0|0|0|1|0
+RZ1|57|2|ST16-004|0|31|0|3|0|0|0|0|0
+RZ1|CHK|57|2|50|0|0|0|10|0|0|0|1|0
+RZ1|58|2|OP13-031|0|27|0|4|0|0|0|0|0
+RZ1|CHK|58|2|50|0|0|0|10|0|0|0|1|0
+RZ1|59|2|OP17-029|0|17|0|5|0|0|0|0|0
+RZ1|CHK|59|2|50|0|0|0|10|0|0|0|1|0
+RZ1|60|2|OP17-027|0|31|0|6|0|0|0|0|0
+RZ1|CHK|60|2|50|0|0|0|10|0|0|0|1|0
+RZ1|61|2|OP17-036|0|42|0|7|0|0|0|0|0
+RZ1|CHK|61|2|50|0|0|0|10|0|0|0|1|0
+RZ1|62|2|ST16-004|0|33|0|8|0|0|0|0|0
+RZ1|CHK|62|2|50|0|0|0|10|0|0|0|1|0
+RZ1|63|2|OP17-034|0|30|0|9|0|0|0|0|0
+RZ1|CHK|63|2|50|0|0|0|10|0|0|0|1|0
+RZ1|64|2|OP17-032|0|14|0|10|0|0|0|0|0
+RZ1|CHK|64|2|50|0|0|0|10|0|0|0|1|0
+RZ1|65|2|OP17-038|0|38|0|11|0|0|0|0|0
+RZ1|CHK|65|2|50|0|0|0|10|0|0|0|1|0
+RZ1|66|2|OP10-030|0|27|0|13|0|0|0|0|0
+RZ1|CHK|66|2|50|0|0|0|10|0|0|0|1|0
+RZ1|67|2|OP17-021|0|15|0|14|0|0|0|0|0
+RZ1|CHK|67|2|50|0|0|0|10|0|0|0|1|0
+RZ1|68|2|OP17-033|0|25|0|15|0|0|0|0|0
+RZ1|CHK|68|2|50|0|0|0|10|0|0|0|1|0
+RZ1|69|2|OP17-032|0|20|0|16|0|0|0|0|0
+RZ1|CHK|69|2|50|0|0|0|10|0|0|0|1|0
+RZ1|70|2|OP06-038|0|40|0|17|0|0|0|0|0
+RZ1|CHK|70|2|50|0|0|0|10|0|0|0|1|0
+RZ1|71|2|OP17-037|0|46|0|18|0|0|0|0|0
+RZ1|CHK|71|2|50|0|0|0|10|0|0|0|1|0
+RZ1|72|2|OP17-027|0|35|0|19|0|0|0|0|0
+RZ1|CHK|72|2|50|0|0|0|10|0|0|0|1|0
+RZ1|73|2|OP17-031|0|33|0|20|0|0|0|0|0
+RZ1|CHK|73|2|50|0|0|0|10|0|0|0|1|0
+RZ1|74|2|OP17-038|0|40|0|21|0|0|0|0|0
+RZ1|CHK|74|2|50|0|0|0|10|0|0|0|1|0
+RZ1|75|2|OP17-038|0|41|0|23|0|0|0|0|0
+RZ1|CHK|75|2|50|0|0|0|10|0|0|0|1|0
+RZ1|76|2|OP17-022|0|41|0|24|0|0|0|0|0
+RZ1|CHK|76|2|50|0|0|0|10|0|0|0|1|0
+RZ1|77|2|OP17-036|0|44|0|25|0|0|0|0|0
+RZ1|CHK|77|2|50|0|0|0|10|0|0|0|1|0
+RZ1|78|2|OP17-036|0|43|0|26|0|0|0|0|0
+RZ1|CHK|78|2|50|0|0|0|10|0|0|0|1|0
+RZ1|79|2|OP08-036|0|49|0|27|0|0|0|0|0
+RZ1|CHK|79|2|50|0|0|0|10|0|0|0|1|0
+RZ1|80|2|OP17-028|0|31|0|28|0|0|0|0|0
+RZ1|CHK|80|2|50|0|0|0|10|0|0|0|1|0
+RZ1|81|2|OP17-028|0|32|0|29|0|0|0|0|0
+RZ1|CHK|81|2|50|0|0|0|10|0|0|0|1|0
+RZ1|82|2|OP17-033|0|37|0|30|0|0|0|0|0
+RZ1|CHK|82|2|50|0|0|0|10|0|0|0|1|0
+RZ1|83|2|OP17-027|0|41|0|31|0|0|0|0|0
+RZ1|CHK|83|2|50|0|0|0|10|0|0|0|1|0
+RZ1|84|2|OP17-029|0|36|0|32|0|0|0|0|0
+RZ1|CHK|84|2|50|0|0|0|10|0|0|0|1|0
+RZ1|85|2|OP17-032|0|35|0|33|0|0|0|0|0
+RZ1|CHK|85|2|50|0|0|0|10|0|0|0|1|0
+RZ1|86|2|OP17-037|0|46|0|34|0|0|0|0|0
+RZ1|CHK|86|2|50|0|0|0|10|0|0|0|1|0
+RZ1|87|2|OP17-032|0|36|0|35|0|0|0|0|0
+RZ1|CHK|87|2|50|0|0|0|10|0|0|0|1|0
+RZ1|88|2|OP17-022|0|45|0|36|0|0|0|0|0
+RZ1|CHK|88|2|50|0|0|0|10|0|0|0|1|0
+RZ1|89|2|OP17-027|0|44|0|37|0|0|0|0|0
+RZ1|CHK|89|2|50|0|0|0|10|0|0|0|1|0
+RZ1|90|2|OP17-033|0|40|0|38|0|0|0|0|0
+RZ1|CHK|90|2|50|0|0|0|10|0|0|0|1|0
+RZ1|91|2|OP17-031|0|43|0|39|0|0|0|0|0
+RZ1|CHK|91|2|50|0|0|0|10|0|0|0|1|0
+RZ1|92|2|OP17-037|0|47|0|40|0|0|0|0|0
+RZ1|CHK|92|2|50|0|0|0|10|0|0|0|1|0
+RZ1|93|2|OP17-033|0|43|0|42|0|0|0|0|0
+RZ1|CHK|93|2|50|0|0|0|10|0|0|0|1|0
+RZ1|94|2|OP17-037|0|48|0|43|0|0|0|0|0
+RZ1|CHK|94|2|50|0|0|0|10|0|0|0|1|0
+RZ1|95|2|OP17-036|0|48|0|45|0|0|0|0|0
+RZ1|CHK|95|2|50|0|0|0|10|0|0|0|1|0
+RZ1|96|2|OP17-034|0|47|0|46|0|0|0|0|0
+RZ1|CHK|96|2|50|0|0|0|10|0|0|0|1|0
+RZ1|97|2|OP08-036|0|49|0|47|0|0|0|0|0
+RZ1|CHK|97|2|50|0|0|0|10|0|0|0|1|0
+[StrawHatMatt​#6200] Drew card from deck: Shanks [<mark><link="OP17-022">OP17-022</link></mark>]
+RZ1|98|2|OP17-022|0|49|1|0|0|1|0|0|0
+RZ1|CHK|98|2|49|1|0|0|10|0|0|0|1|0
+[StrawHatMatt​#6200] Drew card from deck: Yasopp [<mark><link="OP17-031">OP17-031</link></mark>]
+RZ1|99|2|OP17-031|0|48|1|1|0|1|0|0|0
+RZ1|CHK|99|2|48|2|0|0|10|0|0|0|1|0
+[StrawHatMatt​#6200] Drew card from deck: Electrical Luna [<mark><link="OP08-036">OP08-036</link></mark>]
+RZ1|100|2|OP08-036|0|47|1|2|0|1|0|0|0
+RZ1|CHK|100|2|47|3|0|0|10|0|0|0|1|0
+[StrawHatMatt​#6200] Drew card from deck: Rockstar [<mark><link="OP17-034">OP17-034</link></mark>]
+RZ1|101|2|OP17-034|0|46|1|3|0|1|0|0|0
+RZ1|CHK|101|2|46|4|0|0|10|0|0|0|1|0
+[StrawHatMatt​#6200] Drew card from deck: Withdraw Now and Allow Me to Save Face [<mark><link="OP17-036">OP17-036</link></mark>]
+RZ1|102|2|OP17-036|0|45|1|4|0|1|0|0|0
+RZ1|CHK|102|2|45|5|0|0|10|0|0|0|1|0
+RZ1|103|1|OP17-113|0|44|3|0|1|0|0|0|0
+RZ1|CHK|103|1|44|5|0|1|10|0|0|0|1|0
+RZ1|104|1|OP17-109|0|43|3|1|1|0|0|0|0
+RZ1|CHK|104|1|43|5|0|2|10|0|0|0|1|0
+RZ1|105|1|OP16-119|0|42|3|2|1|0|0|0|0
+RZ1|CHK|105|1|42|5|0|3|10|0|0|0|1|0
+RZ1|106|1|OP17-107|0|41|3|3|1|0|0|0|0
+RZ1|CHK|106|1|41|5|0|4|10|0|0|0|1|0
+RZ1|107|1|OP17-107|0|40|3|4|1|0|0|0|0
+RZ1|CHK|107|1|40|5|0|5|10|0|0|0|1|0
+RZ1|108|2|OP17-022|1|0|0|45|0|0|0|0|0
+RZ1|CHK|108|2|46|4|0|0|10|0|0|0|1|0
+RZ1|109|2|OP17-031|1|0|0|46|0|0|0|0|0
+RZ1|CHK|109|2|47|3|0|0|10|0|0|0|1|0
+RZ1|110|2|OP08-036|1|0|0|47|0|0|0|0|0
+RZ1|CHK|110|2|48|2|0|0|10|0|0|0|1|0
+RZ1|111|2|OP17-034|1|0|0|48|0|0|0|0|0
+RZ1|CHK|111|2|49|1|0|0|10|0|0|0|1|0
+RZ1|112|2|OP17-036|1|0|0|49|0|0|0|0|0
+RZ1|CHK|112|2|50|0|0|0|10|0|0|0|1|0
+RZ1|113|2|OP13-031|0|1|0|0|0|0|0|0|0
+RZ1|CHK|113|2|50|0|0|0|10|0|0|0|1|0
+RZ1|114|2|OP10-030|0|13|0|1|0|0|0|0|0
+RZ1|CHK|114|2|50|0|0|0|10|0|0|0|1|0
+RZ1|115|2|OP17-037|0|43|0|2|0|0|0|0|0
+RZ1|CHK|115|2|50|0|0|0|10|0|0|0|1|0
+RZ1|116|2|OP17-037|0|41|0|3|0|0|0|0|0
+RZ1|CHK|116|2|50|0|0|0|10|0|0|0|1|0
+RZ1|117|2|OP17-022|0|38|0|4|0|0|0|0|0
+RZ1|CHK|117|2|50|0|0|0|10|0|0|0|1|0
+RZ1|118|2|OP17-033|0|33|0|5|0|0|0|0|0
+RZ1|CHK|118|2|50|0|0|0|10|0|0|0|1|0
+RZ1|119|2|OP17-037|0|22|0|6|0|0|0|0|0
+RZ1|CHK|119|2|50|0|0|0|10|0|0|0|1|0
+RZ1|120|2|OP17-032|0|36|0|7|0|0|0|0|0
+RZ1|CHK|120|2|50|0|0|0|10|0|0|0|1|0
+RZ1|121|2|OP17-027|0|13|0|8|0|0|0|0|0
+RZ1|CHK|121|2|50|0|0|0|10|0|0|0|1|0
+RZ1|122|2|OP17-027|0|39|0|9|0|0|0|0|0
+RZ1|CHK|122|2|50|0|0|0|10|0|0|0|1|0
+RZ1|123|2|OP17-021|0|21|0|10|0|0|0|0|0
+RZ1|CHK|123|2|50|0|0|0|10|0|0|0|1|0
+RZ1|124|2|OP17-033|0|40|0|11|0|0|0|0|0
+RZ1|CHK|124|2|50|0|0|0|10|0|0|0|1|0
+RZ1|125|2|OP08-036|0|47|0|12|0|0|0|0|0
+RZ1|CHK|125|2|50|0|0|0|10|0|0|0|1|0
+RZ1|126|2|OP17-028|0|37|0|13|0|0|0|0|0
+RZ1|CHK|126|2|50|0|0|0|10|0|0|0|1|0
+RZ1|127|2|OP17-027|0|28|0|14|0|0|0|0|0
+RZ1|CHK|127|2|50|0|0|0|10|0|0|0|1|0
+RZ1|128|2|ST16-004|0|21|0|15|0|0|0|0|0
+RZ1|CHK|128|2|50|0|0|0|10|0|0|0|1|0
+RZ1|129|2|OP17-028|0|37|0|16|0|0|0|0|0
+RZ1|CHK|129|2|50|0|0|0|10|0|0|0|1|0
+RZ1|130|2|OP17-031|0|42|0|17|0|0|0|0|0
+RZ1|CHK|130|2|50|0|0|0|10|0|0|0|1|0
+RZ1|131|2|OP17-031|0|47|0|18|0|0|0|0|0
+RZ1|CHK|131|2|50|0|0|0|10|0|0|0|1|0
+RZ1|132|2|OP17-029|0|41|0|19|0|0|0|0|0
+RZ1|CHK|132|2|50|0|0|0|10|0|0|0|1|0
+RZ1|133|2|OP17-032|0|31|0|20|0|0|0|0|0
+RZ1|CHK|133|2|50|0|0|0|10|0|0|0|1|0
+RZ1|134|2|OP17-038|0|34|0|22|0|0|0|0|0
+RZ1|CHK|134|2|50|0|0|0|10|0|0|0|1|0
+RZ1|135|2|OP08-036|0|40|0|23|0|0|0|0|0
+RZ1|CHK|135|2|50|0|0|0|10|0|0|0|1|0
+RZ1|136|2|OP17-032|0|43|0|24|0|0|0|0|0
+RZ1|CHK|136|2|50|0|0|0|10|0|0|0|1|0
+RZ1|137|2|OP17-021|0|44|0|25|0|0|0|0|0
+RZ1|CHK|137|2|50|0|0|0|10|0|0|0|1|0
+RZ1|138|2|OP17-022|0|40|0|26|0|0|0|0|0
+RZ1|CHK|138|2|50|0|0|0|10|0|0|0|1|0
+RZ1|139|2|OP17-033|0|45|0|27|0|0|0|0|0
+RZ1|CHK|139|2|50|0|0|0|10|0|0|0|1|0
+RZ1|140|2|OP17-037|0|45|0|28|0|0|0|0|0
+RZ1|CHK|140|2|50|0|0|0|10|0|0|0|1|0
+RZ1|141|2|OP17-034|0|34|0|29|0|0|0|0|0
+RZ1|CHK|141|2|50|0|0|0|10|0|0|0|1|0
+RZ1|142|2|OP17-033|0|38|0|30|0|0|0|0|0
+RZ1|CHK|142|2|50|0|0|0|10|0|0|0|1|0
+RZ1|143|2|OP17-036|0|49|0|31|0|0|0|0|0
+RZ1|CHK|143|2|50|0|0|0|10|0|0|0|1|0
+RZ1|144|2|OP17-029|0|35|0|32|0|0|0|0|0
+RZ1|CHK|144|2|50|0|0|0|10|0|0|0|1|0
+RZ1|145|2|OP17-027|0|46|0|33|0|0|0|0|0
+RZ1|CHK|145|2|50|0|0|0|10|0|0|0|1|0
+RZ1|146|2|OP17-036|0|46|0|34|0|0|0|0|0
+RZ1|CHK|146|2|50|0|0|0|10|0|0|0|1|0
+RZ1|147|2|OP17-021|0|41|0|35|0|0|0|0|0
+RZ1|CHK|147|2|50|0|0|0|10|0|0|0|1|0
+RZ1|148|2|OP17-022|0|48|0|36|0|0|0|0|0
+RZ1|CHK|148|2|50|0|0|0|10|0|0|0|1|0
+RZ1|149|2|OP17-031|0|44|0|38|0|0|0|0|0
+RZ1|CHK|149|2|50|0|0|0|10|0|0|0|1|0
+RZ1|150|2|OP17-034|0|49|0|39|0|0|0|0|0
+RZ1|CHK|150|2|50|0|0|0|10|0|0|0|1|0
+RZ1|151|2|OP17-036|0|48|0|40|0|0|0|0|0
+RZ1|CHK|151|2|50|0|0|0|10|0|0|0|1|0
+RZ1|152|2|OP17-021|0|47|0|41|0|0|0|0|0
+RZ1|CHK|152|2|50|0|0|0|10|0|0|0|1|0
+RZ1|153|2|OP06-038|0|47|0|42|0|0|0|0|0
+RZ1|CHK|153|2|50|0|0|0|10|0|0|0|1|0
+RZ1|154|2|OP17-032|0|46|0|43|0|0|0|0|0
+RZ1|CHK|154|2|50|0|0|0|10|0|0|0|1|0
+RZ1|155|2|OP17-028|0|49|0|44|0|0|0|0|0
+RZ1|CHK|155|2|50|0|0|0|10|0|0|0|1|0
+RZ1|156|2|OP17-038|0|48|0|45|0|0|0|0|0
+RZ1|CHK|156|2|50|0|0|0|10|0|0|0|1|0
+RZ1|157|2|OP17-036|0|48|0|46|0|0|0|0|0
+RZ1|CHK|157|2|50|0|0|0|10|0|0|0|1|0
+RZ1|158|2|OP17-038|0|49|0|47|0|0|0|0|0
+RZ1|CHK|158|2|50|0|0|0|10|0|0|0|1|0
+[StrawHatMatt​#6200] Drew card from deck: Trafalgar Law [<mark><link="OP13-031">OP13-031</link></mark>]
+RZ1|159|2|OP13-031|0|49|1|0|0|1|0|0|0
+RZ1|CHK|159|2|49|1|0|0|10|0|0|0|1|0
+[StrawHatMatt​#6200] Drew card from deck: Shanks [<mark><link="ST16-004">ST16-004</link></mark>]
+RZ1|160|2|ST16-004|0|48|1|1|0|1|0|0|0
+RZ1|CHK|160|2|48|2|0|0|10|0|0|0|1|0
+[StrawHatMatt​#6200] Drew card from deck: I Think He's Seen An Ugly Future [<mark><link="OP17-038">OP17-038</link></mark>]
+RZ1|161|2|OP17-038|0|47|1|2|0|1|0|0|0
+RZ1|CHK|161|2|47|3|0|0|10|0|0|0|1|0
+[StrawHatMatt​#6200] Drew card from deck: Withdraw Now and Allow Me to Save Face [<mark><link="OP17-036">OP17-036</link></mark>]
+RZ1|162|2|OP17-036|0|46|1|3|0|1|0|0|0
+RZ1|CHK|162|2|46|4|0|0|10|0|0|0|1|0
+[StrawHatMatt​#6200] Drew card from deck: I Think He's Seen An Ugly Future [<mark><link="OP17-038">OP17-038</link></mark>]
+RZ1|163|2|OP17-038|0|45|1|4|0|1|0|0|0
+RZ1|CHK|163|2|45|5|0|0|10|0|0|0|1|0
+RZ1|164|2|OP17-028|0|44|3|0|0|1|0|0|0
+RZ1|CHK|164|2|44|5|0|1|10|0|0|0|1|0
+RZ1|165|2|OP17-032|0|43|3|1|0|1|0|0|0
+RZ1|CHK|165|2|43|5|0|2|10|0|0|0|1|0
+RZ1|166|2|OP06-038|0|42|3|2|0|1|0|0|0
+RZ1|CHK|166|2|42|5|0|3|10|0|0|0|1|0
+RZ1|167|2|OP17-021|0|41|3|3|0|1|0|0|0
+RZ1|CHK|167|2|41|5|0|4|10|0|0|0|1|0
+RZ1|168|2|OP17-036|0|40|3|4|0|1|0|0|0
+RZ1|CHK|168|2|40|5|0|5|10|0|0|0|1|0
+[StrawHatMatt​#6200] Mulligan
+RZ1|169|2|Don|4|9|5|0|1|1|0|0|0
+RZ1|CHK|169|2|40|5|0|5|9|1|0|0|1|0
+[StrawHatMatt​#6200] Draw 1 Don
+[StrawHatMatt​#6200] End Turn
+[BigRato​#5650] Hand: [EB04-058,OP17-103,OP17-106,EB01-056,OP17-102]
+[BigRato​#5650] Board: []
+[BigRato​#5650] Trash: []
+[BigRato​#5650] Life: 5
+[StrawHatMatt​#6200] Hand: [OP13-031,ST16-004,OP17-038,OP17-036,OP17-038]
+[StrawHatMatt​#6200] Trash: []
+[StrawHatMatt​#6200] Board: []
+[StrawHatMatt​#6200] Life: 5
+[BigRato​#5650] Draw 1 Card
+[BigRato​#5650] Drew card from deck: Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>]
+RZ1|170|1|OP17-109|0|39|1|5|1|1|0|0|0
+RZ1|CHK|170|1|39|6|0|5|10|0|0|0|1|0
+RZ1|171|1|Don|4|9|5|0|1|1|0|0|0
+RZ1|CHK|171|1|39|6|0|5|9|1|0|0|1|0
+RZ1|172|1|Don|4|8|5|1|1|1|0|0|0
+RZ1|CHK|172|1|39|6|0|5|8|2|0|0|1|0
+[BigRato​#5650] Draw 2 Don
+RZ1|173|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|173|1|39|6|0|5|8|2|0|0|1|0
+[BigRato​#5650] Deploy Charlotte Flampe [<mark><link="EB01-056">EB01-056</link></mark>]
+RZ1|174|1|EB01-056|1|3|2|0|1|1|0|0|0
+RZ1|CHK|174|1|39|5|1|5|8|2|0|0|1|0
+[BigRato​#5650] Charlotte Flampe [<mark><link="EB01-056">EB01-056</link></mark>]: Takes Top Life
+RZ1|175|1|OP17-107|3|4|1|5|1|1|0|0|0
+RZ1|CHK|175|1|39|6|1|4|8|2|0|0|1|0
+[BigRato​#5650] Drew card from deck: Marshall D. Teach [<mark><link="OP16-119">OP16-119</link></mark>]
+RZ1|176|1|OP16-119|0|38|1|6|1|1|0|0|0
+RZ1|CHK|176|1|38|7|1|4|8|2|0|0|1|0
+[BigRato​#5650] Charlotte Flampe [<mark><link="EB01-056">EB01-056</link></mark>]: Draw 1 Card
+[BigRato​#5650] Hand: [EB04-058,OP17-103,OP17-106,OP17-102,OP17-109,OP17-107,OP16-119]
+[BigRato​#5650] Board: [EB01-056]
+[BigRato​#5650] Trash: []
+[BigRato​#5650] Life: 4
+[StrawHatMatt​#6200] Hand: [OP13-031,ST16-004,OP17-038,OP17-036,OP17-038]
+[StrawHatMatt​#6200] Trash: []
+[StrawHatMatt​#6200] Board: []
+[StrawHatMatt​#6200] Life: 5
+[BigRato​#5650] End Turn
+[StrawHatMatt​#6200] Draw 1 Card
+[StrawHatMatt​#6200] Drew card from deck: Rockstar [<mark><link="OP17-034">OP17-034</link></mark>]
+RZ1|177|2|OP17-034|0|39|1|5|0|1|0|0|0
+RZ1|CHK|177|2|39|6|0|5|9|1|0|0|1|0
+RZ1|178|2|Don|4|8|5|1|1|1|0|0|0
+RZ1|CHK|178|2|39|6|0|5|8|2|0|0|1|0
+RZ1|179|2|Don|4|7|5|2|1|1|0|0|0
+RZ1|CHK|179|2|39|6|0|5|7|3|0|0|1|0
+[StrawHatMatt​#6200] Draw 2 Don
+[StrawHatMatt​#6200] Attach 2 Don to Shanks [<mark><link="OP17-020">OP17-020</link></mark>] (2 Total)
+RZ1|180|2|Don|5|1|9|9900|1|1|0|0|0
+RZ1|CHK|180|2|39|6|0|5|7|2|0|0|1|1
+RZ1|181|2|Don|5|1|9|9901|1|1|0|0|0
+RZ1|CHK|181|2|39|6|0|5|7|1|0|0|1|2
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-020">OP17-020</link></mark>] attacking Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]
+Shanks [<mark><link="OP17-020">OP17-020</link></mark>][7000] vs Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>][5000]
+Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] hit for 1 damage
+RZ1|182|1|OP17-107|3|3|1|7|1|1|0|0|0
+RZ1|CHK|182|1|38|8|1|3|8|2|0|0|1|0
+[BigRato​#5650] Charlotte Daifuku [<mark><link="OP17-107">OP17-107</link></mark>]: Activate Trigger
+RZ1|183|1|OP17-107|1|7|6|0|1|1|0|0|0
+RZ1|CHK|183|1|38|7|1|3|8|2|1|0|1|0
+RZ1|184|1|OP17-107|6|0|2|1|1|1|0|0|0
+RZ1|CHK|184|1|38|7|2|3|8|2|0|0|1|0
+[BigRato​#5650] Charlotte Daifuku [<mark><link="OP17-107">OP17-107</link></mark>]: Deploy Charlotte Daifuku [<mark><link="OP17-107">OP17-107</link></mark>]
+[StrawHatMatt​#6200] End Turn
+[BigRato​#5650] Hand: [EB04-058,OP17-103,OP17-106,OP17-102,OP17-109,OP17-107,OP16-119]
+[BigRato​#5650] Board: [EB01-056,OP17-107]
+[BigRato​#5650] Trash: []
+[BigRato​#5650] Life: 3
+[StrawHatMatt​#6200] Hand: [OP13-031,ST16-004,OP17-038,OP17-036,OP17-038,OP17-034]
+[StrawHatMatt​#6200] Trash: []
+[StrawHatMatt​#6200] Board: []
+[StrawHatMatt​#6200] Life: 5
+[BigRato​#5650] Draw 1 Card
+[BigRato​#5650] Drew card from deck: Borsalino [<mark><link="EB04-058">EB04-058</link></mark>]
+RZ1|185|1|EB04-058|0|37|1|7|1|1|0|0|0
+RZ1|CHK|185|1|37|8|2|3|8|2|0|0|1|0
+RZ1|186|1|Don|4|7|5|2|1|1|0|0|0
+RZ1|CHK|186|1|37|8|2|3|7|3|0|0|1|0
+RZ1|187|1|Don|4|6|5|3|1|1|0|0|0
+RZ1|CHK|187|1|37|8|2|3|6|4|0|0|1|0
+[BigRato​#5650] Draw 2 Don
+RZ1|188|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|188|1|37|8|2|3|6|4|0|0|1|0
+RZ1|189|1|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|189|1|37|8|2|3|6|4|0|0|1|0
+RZ1|190|1|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|190|1|37|8|2|3|6|4|0|0|1|0
+[BigRato​#5650] Deploy Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>]
+RZ1|191|1|OP17-109|1|4|2|2|1|1|0|0|0
+RZ1|CHK|191|1|37|7|3|3|6|4|0|0|1|0
+RZ1|192|1|OP17-102|1|3|6|0|1|1|0|0|0
+RZ1|CHK|192|1|37|6|3|3|6|4|1|0|1|0
+[BigRato​#5650] Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>]: Trash Charlotte Oven [<mark><link="OP17-102">OP17-102</link></mark>]
+[BigRato​#5650] Drew card from deck: There's Still A Code Of Honor? [<mark><link="OP17-115">OP17-115</link></mark>]
+RZ1|193|1|OP17-115|0|36|1|6|1|1|0|0|0
+RZ1|CHK|193|1|36|7|3|3|6|4|1|0|1|0
+[BigRato​#5650] Drew card from deck: Streusen [<mark><link="OP17-113">OP17-113</link></mark>]
+RZ1|194|1|OP17-113|0|35|1|7|1|1|0|0|0
+RZ1|CHK|194|1|35|8|3|3|6|4|1|0|1|0
+[BigRato​#5650] Drew card from deck: Charlotte Daifuku [<mark><link="OP17-107">OP17-107</link></mark>]
+RZ1|195|1|OP17-107|0|34|1|8|1|1|0|0|0
+RZ1|CHK|195|1|34|9|3|3|6|4|1|0|1|0
+[BigRato​#5650] Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>]: Draw 3 Card
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] attacking Shanks [<mark><link="OP17-020">OP17-020</link></mark>]
+RZ1|196|1|OP17-115|1|6|6|1|1|1|0|0|0
+RZ1|CHK|196|1|34|8|3|3|6|4|2|0|1|0
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]: Trash There's Still A Code Of Honor? [<mark><link="OP17-115">OP17-115</link></mark>]
+[BigRato​#5650] Forcing opponent to resolve Card Action!
+[StrawHatMatt​#6200] Forcing opponent to resolve Card Action!
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]: Randomly send I Think He's Seen An Ugly Future [<mark><link="OP17-038">OP17-038</link></mark>] to Trash from Hand
+RZ1|197|2|OP17-038|1|4|6|0|1|1|0|0|0
+RZ1|CHK|197|2|39|5|0|5|7|1|1|0|1|2
+RZ1|198|2|OP17-036|3|4|1|5|0|1|0|0|0
+RZ1|CHK|198|2|39|6|0|4|7|1|1|0|1|2
+Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>][5000] vs Shanks [<mark><link="OP17-020">OP17-020</link></mark>][5000]
+Shanks [<mark><link="OP17-020">OP17-020</link></mark>] hit for 1 damage
+[BigRato​#5650] Attach 1 Don to Charlotte Daifuku [<mark><link="OP17-107">OP17-107</link></mark>] (1 Total)
+RZ1|199|1|Don|5|3|9|100|1|1|0|0|0
+RZ1|CHK|199|1|34|8|3|3|6|3|2|0|1|1
+[BigRato​#5650] Charlotte Daifuku [<mark><link="OP17-107">OP17-107</link></mark>] attacking Shanks [<mark><link="OP17-020">OP17-020</link></mark>]
+RZ1|200|2|OP17-021|3|3|1|6|0|1|0|0|0
+RZ1|CHK|200|2|39|7|0|3|7|1|1|0|1|2
+Charlotte Daifuku [<mark><link="OP17-107">OP17-107</link></mark>][5000] vs Shanks [<mark><link="OP17-020">OP17-020</link></mark>][5000]
+Shanks [<mark><link="OP17-020">OP17-020</link></mark>] hit for 1 damage
+[BigRato​#5650] Hand: [EB04-058,OP17-103,OP17-106,OP17-107,OP16-119,EB04-058,OP17-113,OP17-107]
+[BigRato​#5650] Board: [EB01-056,OP17-107,OP17-109]
+[BigRato​#5650] Trash: [OP17-102,OP17-115]
+[BigRato​#5650] Life: 3
+[StrawHatMatt​#6200] Hand: [OP13-031,ST16-004,OP17-038,OP17-036,OP17-034,OP17-036,OP17-021]
+[StrawHatMatt​#6200] Trash: [OP17-038]
+[StrawHatMatt​#6200] Board: []
+[StrawHatMatt​#6200] Life: 3
+[BigRato​#5650] End Turn
+RZ1|201|2|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|201|2|39|7|0|3|7|2|1|0|1|1
+RZ1|202|2|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|202|2|39|7|0|3|7|3|1|0|1|0
+[StrawHatMatt​#6200] Draw 1 Card
+[StrawHatMatt​#6200] Drew card from deck: Yasopp [<mark><link="OP17-031">OP17-031</link></mark>]
+RZ1|203|2|OP17-031|0|38|1|7|0|1|0|0|0
+RZ1|CHK|203|2|38|8|0|3|7|3|1|0|1|0
+RZ1|204|2|Don|4|6|5|3|1|1|0|0|0
+RZ1|CHK|204|2|38|8|0|3|6|4|1|0|1|0
+RZ1|205|2|Don|4|5|5|4|1|1|0|0|0
+RZ1|CHK|205|2|38|8|0|3|5|5|1|0|1|0
+[StrawHatMatt​#6200] Draw 2 Don
+RZ1|206|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|206|2|38|8|0|3|5|5|1|0|1|0
+RZ1|207|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|207|2|38|8|0|3|5|5|1|0|1|0
+RZ1|208|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|208|2|38|8|0|3|5|5|1|0|1|0
+RZ1|209|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|209|2|38|8|0|3|5|5|1|0|1|0
+RZ1|210|2|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|210|2|38|8|0|3|5|5|1|0|1|0
+[StrawHatMatt​#6200] Deploy Yasopp [<mark><link="OP17-031">OP17-031</link></mark>]
+RZ1|211|2|OP17-031|1|7|2|0|1|1|0|0|0
+RZ1|CHK|211|2|38|7|1|3|5|5|1|0|1|0
+[StrawHatMatt​#6200] Drew card from deck: Yasopp [<mark><link="OP17-031">OP17-031</link></mark>]
+RZ1|212|2|OP17-031|0|37|1|7|0|1|0|0|0
+RZ1|CHK|212|2|37|8|1|3|5|5|1|0|1|0
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>]: Draw 1 Card
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>]: Rest Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>]
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-020">OP17-020</link></mark>] attacking Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>]
+[BigRato​#5650] Discard Charlotte Daifuku [<mark><link="OP17-107">OP17-107</link></mark>] for Counter 2000
+RZ1|213|1|OP17-107|1|3|6|2|1|1|0|0|0
+RZ1|CHK|213|1|34|7|3|3|6|3|3|0|1|1
+Shanks [<mark><link="OP17-020">OP17-020</link></mark>][5000] vs Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>][6000]
+Attack Fails
+RZ1|214|2|OP17-036|1|3|6|1|1|1|0|0|0
+RZ1|CHK|214|2|37|7|1|3|5|5|2|0|1|0
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-020">OP17-020</link></mark>]: Trash Withdraw Now and Allow Me to Save Face [<mark><link="OP17-036">OP17-036</link></mark>]
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-020">OP17-020</link></mark>]: Charlotte Daifuku [<mark><link="OP17-107">OP17-107</link></mark>] will not Activate during next Refresh
+[StrawHatMatt​#6200] End Turn
+[BigRato​#5650] Hand: [EB04-058,OP17-103,OP17-106,OP16-119,EB04-058,OP17-113,OP17-107]
+[BigRato​#5650] Board: [EB01-056,OP17-107,OP17-109]
+[BigRato​#5650] Trash: [OP17-102,OP17-115,OP17-107]
+[BigRato​#5650] Life: 3
+[StrawHatMatt​#6200] Hand: [OP13-031,ST16-004,OP17-038,OP17-034,OP17-036,OP17-021,OP17-031]
+[StrawHatMatt​#6200] Trash: [OP17-038,OP17-036]
+[StrawHatMatt​#6200] Board: [OP17-031]
+[StrawHatMatt​#6200] Life: 3
+RZ1|215|1|Don|9|100|5|0|1|1|1|0|0
+RZ1|CHK|215|1|34|7|3|3|6|4|3|0|1|0
+[BigRato​#5650] Draw 1 Card
+[BigRato​#5650] Drew card from deck: Charlotte Katakuri [<mark><link="OP17-103">OP17-103</link></mark>]
+RZ1|216|1|OP17-103|0|33|1|7|1|1|0|0|0
+RZ1|CHK|216|1|33|8|3|3|6|4|3|0|1|0
+RZ1|217|1|Don|4|5|5|4|1|1|0|0|0
+RZ1|CHK|217|1|33|8|3|3|5|5|3|0|1|0
+RZ1|218|1|Don|4|4|5|5|1|1|0|0|0
+RZ1|CHK|218|1|33|8|3|3|4|6|3|0|1|0
+[BigRato​#5650] Draw 2 Don
+RZ1|219|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|219|1|33|8|3|3|4|6|3|0|1|0
+[BigRato​#5650] Deploy Streusen [<mark><link="OP17-113">OP17-113</link></mark>]
+RZ1|220|1|OP17-113|1|5|2|3|1|1|0|0|0
+RZ1|CHK|220|1|33|7|4|3|4|6|3|0|1|0
+RZ1|221|1|OP17-117|0|32|1|7|1|1|0|0|0
+RZ1|CHK|221|1|32|8|4|3|4|6|3|0|1|0
+[BigRato​#5650] Streusen [<mark><link="OP17-113">OP17-113</link></mark>]: <b>Reveal and Draw Maser Saber [<mark><link="OP17-117">OP17-117</link></mark>]</b>
+[BigRato​#5650] Placing Cards on Bottom of Deck
+RZ1|222|1|EB04-058|0|31|0|0|0|0|0|0|0
+RZ1|CHK|222|1|32|8|4|3|4|6|3|0|1|0
+RZ1|223|1|OP17-106|0|31|0|0|0|0|0|0|0
+RZ1|CHK|223|1|32|8|4|3|4|6|3|0|1|0
+[BigRato​#5650] Attach 1 Don to Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>] (1 Total)
+RZ1|224|1|Don|5|5|9|200|1|1|0|0|0
+RZ1|CHK|224|1|32|8|4|3|4|5|3|0|1|1
+[BigRato​#5650] Attach 1 Don to Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>] (2 Total)
+RZ1|225|1|Don|5|4|9|201|1|1|0|0|0
+RZ1|CHK|225|1|32|8|4|3|4|4|3|0|1|2
+[BigRato​#5650] Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>] attacking Shanks [<mark><link="OP17-020">OP17-020</link></mark>]
+[StrawHatMatt​#6200] Discard Crone Oli [<mark><link="OP17-021">OP17-021</link></mark>] for Counter 2000
+RZ1|226|2|OP17-021|1|5|6|2|1|1|0|0|0
+RZ1|CHK|226|2|37|6|1|3|5|5|3|0|1|0
+Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>][6000] vs Shanks [<mark><link="OP17-020">OP17-020</link></mark>][7000]
+Attack Fails
+[BigRato​#5650] Attach 1 Don to Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] (1 Total)
+RZ1|227|1|Don|5|3|9|9900|1|1|0|0|0
+RZ1|CHK|227|1|32|8|4|3|4|3|3|0|1|3
+[BigRato​#5650] Attach 1 Don to Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] (2 Total)
+RZ1|228|1|Don|5|2|9|9901|1|1|0|0|0
+RZ1|CHK|228|1|32|8|4|3|4|2|3|0|1|4
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] attacking Shanks [<mark><link="OP17-020">OP17-020</link></mark>]
+RZ1|229|1|OP17-103|1|6|6|3|1|1|0|0|0
+RZ1|CHK|229|1|32|7|4|3|4|2|4|0|1|4
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]: Trash Charlotte Katakuri [<mark><link="OP17-103">OP17-103</link></mark>]
+[BigRato​#5650] Forcing opponent to resolve Card Action!
+[StrawHatMatt​#6200] Forcing opponent to resolve Card Action!
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]: Randomly send Rockstar [<mark><link="OP17-034">OP17-034</link></mark>] to Trash from Hand
+RZ1|230|2|OP17-034|1|3|6|3|1|1|0|0|0
+RZ1|CHK|230|2|37|5|1|3|5|5|4|0|1|0
+[StrawHatMatt​#6200] I Think He's Seen An Ugly Future [<mark><link="OP17-038">OP17-038</link></mark>]: Activate Counter
+RZ1|231|2|OP17-038|1|2|6|4|1|1|0|0|0
+RZ1|CHK|231|2|37|4|1|3|5|5|5|0|1|0
+RZ1|232|2|OP13-031|1|0|6|5|1|1|0|0|0
+RZ1|CHK|232|2|37|3|1|3|5|5|6|0|1|0
+[StrawHatMatt​#6200] I Think He's Seen An Ugly Future [<mark><link="OP17-038">OP17-038</link></mark>]: Trash Trafalgar Law [<mark><link="OP13-031">OP13-031</link></mark>]
+[StrawHatMatt​#6200] I Think He's Seen An Ugly Future [<mark><link="OP17-038">OP17-038</link></mark>]: Buff Shanks [<mark><link="OP17-020">OP17-020</link></mark>] 3000 for the Combat
+Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>][7000] vs Shanks [<mark><link="OP17-020">OP17-020</link></mark>][8000]
+Attack Fails
+[BigRato​#5650] Hand: [EB04-058,OP17-103,OP17-106,OP16-119,EB04-058,OP17-107,OP17-117]
+[BigRato​#5650] Board: [EB01-056,OP17-107,OP17-109,OP17-113]
+[BigRato​#5650] Trash: [OP17-102,OP17-115,OP17-107,OP17-103]
+[BigRato​#5650] Life: 3
+[StrawHatMatt​#6200] Hand: [ST16-004,OP17-036,OP17-031]
+[StrawHatMatt​#6200] Trash: [OP17-038,OP17-036,OP17-021,OP17-034,OP17-038,OP13-031]
+[StrawHatMatt​#6200] Board: [OP17-031]
+[StrawHatMatt​#6200] Life: 3
+[BigRato​#5650] End Turn
+[StrawHatMatt​#6200] Draw 1 Card
+[StrawHatMatt​#6200] Drew card from deck: Shanks [<mark><link="OP17-022">OP17-022</link></mark>]
+RZ1|233|2|OP17-022|0|36|1|3|0|1|0|0|0
+RZ1|CHK|233|2|36|4|1|3|5|5|6|0|1|0
+RZ1|234|2|Don|4|4|5|5|1|1|0|0|0
+RZ1|CHK|234|2|36|4|1|3|4|6|6|0|1|0
+RZ1|235|2|Don|4|3|5|6|1|1|0|0|0
+RZ1|CHK|235|2|36|4|1|3|3|7|6|0|1|0
+[StrawHatMatt​#6200] Draw 2 Don
+RZ1|236|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|236|2|36|4|1|3|3|7|6|0|1|0
+RZ1|237|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|237|2|36|4|1|3|3|7|6|0|1|0
+RZ1|238|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|238|2|36|4|1|3|3|7|6|0|1|0
+RZ1|239|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|239|2|36|4|1|3|3|7|6|0|1|0
+RZ1|240|2|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|240|2|36|4|1|3|3|7|6|0|1|0
+[StrawHatMatt​#6200] Deploy Yasopp [<mark><link="OP17-031">OP17-031</link></mark>]
+RZ1|241|2|OP17-031|1|2|2|1|1|1|0|0|0
+RZ1|CHK|241|2|36|3|2|3|3|7|6|0|1|0
+[StrawHatMatt​#6200] Drew card from deck: Crone Oli [<mark><link="OP17-021">OP17-021</link></mark>]
+RZ1|242|2|OP17-021|0|35|1|3|0|1|0|0|0
+RZ1|CHK|242|2|35|4|2|3|3|7|6|0|1|0
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>]: Draw 1 Card
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>]: Rest Charlotte Flampe [<mark><link="EB01-056">EB01-056</link></mark>]
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>] attacking Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>]
+Yasopp [<mark><link="OP17-031">OP17-031</link></mark>][6000] vs Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>][4000]
+[BigRato​#5650] Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>] Destroyed
+RZ1|243|1|Don|9|200|5|0|1|1|1|0|0
+RZ1|CHK|243|1|32|7|4|3|4|3|4|0|1|3
+RZ1|244|1|Don|9|200|5|0|1|1|1|0|0
+RZ1|CHK|244|1|32|7|4|3|4|4|4|0|1|2
+RZ1|245|1|OP17-109|2|2|6|4|1|1|0|0|0
+RZ1|CHK|245|1|32|7|3|3|4|4|5|0|1|2
+[StrawHatMatt​#6200] Attach 1 Don to Shanks [<mark><link="OP17-020">OP17-020</link></mark>] (1 Total)
+RZ1|246|2|Don|5|6|9|9900|1|1|0|0|0
+RZ1|CHK|246|2|35|4|2|3|3|6|6|0|1|1
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-020">OP17-020</link></mark>] attacking Charlotte Daifuku [<mark><link="OP17-107">OP17-107</link></mark>]
+Shanks [<mark><link="OP17-020">OP17-020</link></mark>][6000] vs Charlotte Daifuku [<mark><link="OP17-107">OP17-107</link></mark>][4000]
+[BigRato​#5650] Charlotte Daifuku [<mark><link="OP17-107">OP17-107</link></mark>] Destroyed
+RZ1|247|1|OP17-107|2|1|6|5|1|1|0|0|0
+RZ1|CHK|247|1|32|7|2|3|4|4|6|0|1|2
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>]: Set Yasopp [<mark><link="OP17-031">OP17-031</link></mark>] to Active
+[StrawHatMatt​#6200] End Turn
+[BigRato​#5650] Hand: [EB04-058,OP17-103,OP17-106,OP16-119,EB04-058,OP17-107,OP17-117]
+[BigRato​#5650] Board: [EB01-056,OP17-113]
+[BigRato​#5650] Trash: [OP17-102,OP17-115,OP17-107,OP17-103,OP17-109,OP17-107]
+[BigRato​#5650] Life: 3
+[StrawHatMatt​#6200] Hand: [ST16-004,OP17-036,OP17-022,OP17-021]
+[StrawHatMatt​#6200] Trash: [OP17-038,OP17-036,OP17-021,OP17-034,OP17-038,OP13-031]
+[StrawHatMatt​#6200] Board: [OP17-031,OP17-031]
+[StrawHatMatt​#6200] Life: 3
+RZ1|248|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|248|1|32|7|2|3|4|5|6|0|1|1
+RZ1|249|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|249|1|32|7|2|3|4|6|6|0|1|0
+[BigRato​#5650] Draw 1 Card
+[BigRato​#5650] Drew card from deck: Charlotte Cracker [<mark><link="OP17-104">OP17-104</link></mark>]
+RZ1|250|1|OP17-104|0|31|1|7|1|1|0|0|0
+RZ1|CHK|250|1|31|8|2|3|4|6|6|0|1|0
+RZ1|251|1|Don|4|3|5|6|1|1|0|0|0
+RZ1|CHK|251|1|31|8|2|3|3|7|6|0|1|0
+RZ1|252|1|Don|4|2|5|7|1|1|0|0|0
+RZ1|CHK|252|1|31|8|2|3|2|8|6|0|1|0
+[BigRato​#5650] Draw 2 Don
+RZ1|253|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|253|1|31|8|2|3|2|8|6|0|1|0
+RZ1|254|1|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|254|1|31|8|2|3|2|8|6|0|1|0
+RZ1|255|1|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|255|1|31|8|2|3|2|8|6|0|1|0
+RZ1|256|1|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|256|1|31|8|2|3|2|8|6|0|1|0
+RZ1|257|1|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|257|1|31|8|2|3|2|8|6|0|1|0
+RZ1|258|1|Don|5|5|5|5|1|1|1|0|0
+RZ1|CHK|258|1|31|8|2|3|2|8|6|0|1|0
+RZ1|259|1|Don|5|6|5|6|1|1|1|0|0
+RZ1|CHK|259|1|31|8|2|3|2|8|6|0|1|0
+RZ1|260|1|Don|5|7|5|7|1|1|1|0|0
+RZ1|CHK|260|1|31|8|2|3|2|8|6|0|1|0
+[BigRato​#5650] Deploy Marshall D. Teach [<mark><link="OP16-119">OP16-119</link></mark>]
+RZ1|261|1|OP16-119|1|3|2|2|1|1|0|0|0
+RZ1|CHK|261|1|31|7|3|3|2|8|6|0|1|0
+[BigRato​#5650] Marshall D. Teach [<mark><link="OP16-119">OP16-119</link></mark>]: Added card to top of Life from Hand
+RZ1|262|1|OP17-108|0|30|3|3|1|0|0|0|0
+RZ1|CHK|262|1|30|7|3|4|2|8|6|0|1|0
+[BigRato​#5650] Placing Cards on Bottom of Deck
+RZ1|263|1|OP17-110|0|29|0|0|0|0|0|0|0
+RZ1|CHK|263|1|30|7|3|4|2|8|6|0|1|0
+RZ1|264|1|OP17-112|0|29|0|0|0|0|0|0|0
+RZ1|CHK|264|1|30|7|3|4|2|8|6|0|1|0
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] attacking Shanks [<mark><link="OP17-020">OP17-020</link></mark>]
+RZ1|265|1|EB04-058|1|0|6|6|1|1|0|0|0
+RZ1|CHK|265|1|30|6|3|4|2|8|7|0|1|0
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]: Trash Borsalino [<mark><link="EB04-058">EB04-058</link></mark>]
+[BigRato​#5650] Forcing opponent to resolve Card Action!
+[StrawHatMatt​#6200] Forcing opponent to resolve Card Action!
+RZ1|266|1|OP17-104|1|5|6|7|1|1|0|0|0
+RZ1|CHK|266|1|30|5|3|4|2|8|8|0|1|0
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]: Trash Charlotte Cracker [<mark><link="OP17-104">OP17-104</link></mark>]
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]: Add card to top of Life from Deck
+RZ1|267|1|OP17-109|0|29|3|4|1|0|0|0|0
+RZ1|CHK|267|1|29|5|3|5|2|8|8|0|1|0
+[StrawHatMatt​#6200] Discard Crone Oli [<mark><link="OP17-021">OP17-021</link></mark>] for Counter 2000
+RZ1|268|2|OP17-021|1|3|6|6|1|1|0|0|0
+RZ1|CHK|268|2|35|3|2|3|3|6|7|0|1|1
+Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>][5000] vs Shanks [<mark><link="OP17-020">OP17-020</link></mark>][7000]
+Attack Fails
+[BigRato​#5650] Hand: [OP17-103,OP17-106,EB04-058,OP17-107,OP17-117]
+[BigRato​#5650] Board: [EB01-056,OP17-113,OP16-119]
+[BigRato​#5650] Trash: [OP17-102,OP17-115,OP17-107,OP17-103,OP17-109,OP17-107,EB04-058,OP17-104]
+[BigRato​#5650] Life: 5
+[StrawHatMatt​#6200] Hand: [ST16-004,OP17-036,OP17-022]
+[StrawHatMatt​#6200] Trash: [OP17-038,OP17-036,OP17-021,OP17-034,OP17-038,OP13-031,OP17-021]
+[StrawHatMatt​#6200] Board: [OP17-031,OP17-031]
+[StrawHatMatt​#6200] Life: 3
+[BigRato​#5650] End Turn
+RZ1|269|2|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|269|2|35|3|2|3|3|7|7|0|1|0
+[StrawHatMatt​#6200] Draw 1 Card
+[StrawHatMatt​#6200] Drew card from deck: Withdraw Now and Allow Me to Save Face [<mark><link="OP17-036">OP17-036</link></mark>]
+RZ1|270|2|OP17-036|0|34|1|3|0|1|0|0|0
+RZ1|CHK|270|2|34|4|2|3|3|7|7|0|1|0
+RZ1|271|2|Don|4|2|5|7|1|1|0|0|0
+RZ1|CHK|271|2|34|4|2|3|2|8|7|0|1|0
+RZ1|272|2|Don|4|1|5|8|1|1|0|0|0
+RZ1|CHK|272|2|34|4|2|3|1|9|7|0|1|0
+[StrawHatMatt​#6200] Draw 2 Don
+[StrawHatMatt​#6200] Withdraw Now and Allow Me to Save Face [<mark><link="OP17-036">OP17-036</link></mark>]: Rest 1 Don
+RZ1|273|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|273|2|34|4|2|3|1|9|7|0|1|0
+RZ1|274|2|OP17-036|1|1|6|7|1|1|0|0|0
+RZ1|CHK|274|2|34|3|2|3|1|9|8|0|1|0
+[StrawHatMatt​#6200] Withdraw Now and Allow Me to Save Face [<mark><link="OP17-036">OP17-036</link></mark>]: Rest 6 Don
+RZ1|275|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|275|2|34|3|2|3|1|9|8|0|1|0
+RZ1|276|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|276|2|34|3|2|3|1|9|8|0|1|0
+RZ1|277|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|277|2|34|3|2|3|1|9|8|0|1|0
+RZ1|278|2|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|278|2|34|3|2|3|1|9|8|0|1|0
+RZ1|279|2|Don|5|5|5|5|1|1|1|0|0
+RZ1|CHK|279|2|34|3|2|3|1|9|8|0|1|0
+RZ1|280|2|Don|5|6|5|6|1|1|1|0|0
+RZ1|CHK|280|2|34|3|2|3|1|9|8|0|1|0
+[StrawHatMatt​#6200] Withdraw Now and Allow Me to Save Face [<mark><link="OP17-036">OP17-036</link></mark>]: Rest Marshall D. Teach [<mark><link="OP16-119">OP16-119</link></mark>]
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-020">OP17-020</link></mark>]: Rest Don [<mark><link="Don">Don</link></mark>]
+RZ1|281|2|Don|5|7|5|7|1|1|1|0|0
+RZ1|CHK|281|2|34|3|2|3|1|9|8|0|1|0
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-020">OP17-020</link></mark>]: Marshall D. Teach [<mark><link="OP16-119">OP16-119</link></mark>] will not Activate during next Refresh
+[StrawHatMatt​#6200] End Turn
+[BigRato​#5650] Hand: [OP17-103,OP17-106,EB04-058,OP17-107,OP17-117]
+[BigRato​#5650] Board: [EB01-056,OP17-113,OP16-119]
+[BigRato​#5650] Trash: [OP17-102,OP17-115,OP17-107,OP17-103,OP17-109,OP17-107,EB04-058,OP17-104]
+[BigRato​#5650] Life: 5
+[StrawHatMatt​#6200] Hand: [ST16-004,OP17-022,OP17-036]
+[StrawHatMatt​#6200] Trash: [OP17-038,OP17-036,OP17-021,OP17-034,OP17-038,OP13-031,OP17-021,OP17-036]
+[StrawHatMatt​#6200] Board: [OP17-031,OP17-031]
+[StrawHatMatt​#6200] Life: 3
+[BigRato​#5650] Draw 1 Card
+[BigRato​#5650] Drew card from deck: Streusen [<mark><link="OP17-113">OP17-113</link></mark>]
+RZ1|282|1|OP17-113|0|28|1|5|1|1|0|0|0
+RZ1|CHK|282|1|28|6|3|5|2|8|8|0|1|0
+RZ1|283|1|Don|4|1|5|8|1|1|0|0|0
+RZ1|CHK|283|1|28|6|3|5|1|9|8|0|1|0
+RZ1|284|1|Don|4|0|5|9|1|1|0|0|0
+RZ1|CHK|284|1|28|6|3|5|0|10|8|0|1|0
+[BigRato​#5650] Draw 2 Don
+RZ1|285|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|285|1|28|6|3|5|0|10|8|0|1|0
+RZ1|286|1|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|286|1|28|6|3|5|0|10|8|0|1|0
+RZ1|287|1|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|287|1|28|6|3|5|0|10|8|0|1|0
+RZ1|288|1|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|288|1|28|6|3|5|0|10|8|0|1|0
+RZ1|289|1|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|289|1|28|6|3|5|0|10|8|0|1|0
+[BigRato​#5650] Deploy Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>]
+RZ1|290|1|OP17-106|1|1|2|3|1|1|0|0|0
+RZ1|CHK|290|1|28|5|4|5|0|10|8|0|1|0
+[BigRato​#5650] Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>]: Rest 2 Don
+RZ1|291|1|Don|5|5|5|5|1|1|1|0|0
+RZ1|CHK|291|1|28|5|4|5|0|10|8|0|1|0
+RZ1|292|1|Don|5|6|5|6|1|1|1|0|0
+RZ1|CHK|292|1|28|5|4|5|0|10|8|0|1|0
+[BigRato​#5650] Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>]: Add card to top of Life from Deck
+RZ1|293|1|OP17-104|0|27|3|5|1|0|0|0|0
+RZ1|CHK|293|1|27|5|4|6|0|10|8|0|1|0
+[BigRato​#5650] Forcing opponent to resolve Card Action!
+RZ1|294|2|OP17-036|1|2|6|8|1|1|0|0|0
+RZ1|CHK|294|2|34|2|2|3|1|9|9|0|1|0
+[StrawHatMatt​#6200] Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>]: Trash Withdraw Now and Allow Me to Save Face [<mark><link="OP17-036">OP17-036</link></mark>]
+[BigRato​#5650] Attach 1 Don to Streusen [<mark><link="OP17-113">OP17-113</link></mark>] (1 Total)
+RZ1|295|1|Don|5|9|9|100|1|1|0|0|0
+RZ1|CHK|295|1|27|5|4|6|0|9|8|0|1|1
+[BigRato​#5650] Attach 1 Don to Streusen [<mark><link="OP17-113">OP17-113</link></mark>] (2 Total)
+RZ1|296|1|Don|5|8|9|101|1|1|0|0|0
+RZ1|CHK|296|1|27|5|4|6|0|8|8|0|1|2
+[BigRato​#5650] Attach 1 Don to Streusen [<mark><link="OP17-113">OP17-113</link></mark>] (3 Total)
+RZ1|297|1|Don|5|7|9|102|1|1|0|0|0
+RZ1|CHK|297|1|27|5|4|6|0|7|8|0|1|3
+[BigRato​#5650] Streusen [<mark><link="OP17-113">OP17-113</link></mark>] attacking Shanks [<mark><link="OP17-020">OP17-020</link></mark>]
+RZ1|298|2|OP06-038|3|2|1|2|0|1|0|0|0
+RZ1|CHK|298|2|34|3|2|2|1|9|9|0|1|0
+Streusen [<mark><link="OP17-113">OP17-113</link></mark>][5000] vs Shanks [<mark><link="OP17-020">OP17-020</link></mark>][5000]
+Shanks [<mark><link="OP17-020">OP17-020</link></mark>] hit for 1 damage
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] attacking Shanks [<mark><link="OP17-020">OP17-020</link></mark>]
+RZ1|299|1|OP17-107|1|2|6|8|1|1|0|0|0
+RZ1|CHK|299|1|27|4|4|6|0|7|9|0|1|3
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]: Trash Charlotte Daifuku [<mark><link="OP17-107">OP17-107</link></mark>]
+[BigRato​#5650] Forcing opponent to resolve Card Action!
+[StrawHatMatt​#6200] Forcing opponent to resolve Card Action!
+RZ1|300|1|OP17-103|1|0|6|9|1|1|0|0|0
+RZ1|CHK|300|1|27|3|4|6|0|7|10|0|1|3
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]: Trash Charlotte Katakuri [<mark><link="OP17-103">OP17-103</link></mark>]
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]: Add card to top of Life from Deck
+RZ1|301|1|OP17-112|0|26|3|6|1|0|0|0|0
+RZ1|CHK|301|1|26|3|4|7|0|7|10|0|1|3
+[StrawHatMatt​#6200] Billion-fold World Trichiliocosm [<mark><link="OP06-038">OP06-038</link></mark>]: Activate Counter
+[StrawHatMatt​#6200] Billion-fold World Trichiliocosm [<mark><link="OP06-038">OP06-038</link></mark>]: Rest 1 Don
+RZ1|302|2|Don|5|8|5|8|1|1|1|0|0
+RZ1|CHK|302|2|34|3|2|2|1|9|9|0|1|0
+RZ1|303|2|OP06-038|1|2|6|9|1|1|0|0|0
+RZ1|CHK|303|2|34|2|2|2|1|9|10|0|1|0
+[StrawHatMatt​#6200] Billion-fold World Trichiliocosm [<mark><link="OP06-038">OP06-038</link></mark>]: Buff Shanks [<mark><link="OP17-020">OP17-020</link></mark>] 2000 for the Combat
+[StrawHatMatt​#6200] Billion-fold World Trichiliocosm [<mark><link="OP06-038">OP06-038</link></mark>]: Buff Shanks [<mark><link="OP17-020">OP17-020</link></mark>] 2000 for the Combat
+Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>][5000] vs Shanks [<mark><link="OP17-020">OP17-020</link></mark>][9000]
+Attack Fails
+[BigRato​#5650] Hand: [EB04-058,OP17-117,OP17-113]
+[BigRato​#5650] Board: [EB01-056,OP17-113,OP16-119,OP17-106]
+[BigRato​#5650] Trash: [OP17-102,OP17-115,OP17-107,OP17-103,OP17-109,OP17-107,EB04-058,OP17-104,OP17-107,OP17-103]
+[BigRato​#5650] Life: 7
+[StrawHatMatt​#6200] Hand: [ST16-004,OP17-022]
+[StrawHatMatt​#6200] Trash: [OP17-038,OP17-036,OP17-021,OP17-034,OP17-038,OP13-031,OP17-021,OP17-036,OP17-036,OP06-038]
+[StrawHatMatt​#6200] Board: [OP17-031,OP17-031]
+[StrawHatMatt​#6200] Life: 2
+[BigRato​#5650] End Turn
+[StrawHatMatt​#6200] Draw 1 Card
+[StrawHatMatt​#6200] Drew card from deck: Benn Beckman [<mark><link="OP17-027">OP17-027</link></mark>]
+RZ1|304|2|OP17-027|0|33|1|2|0|1|0|0|0
+RZ1|CHK|304|2|33|3|2|2|1|9|10|0|1|0
+RZ1|305|2|Don|4|0|5|9|1|1|0|0|0
+RZ1|CHK|305|2|33|3|2|2|0|10|10|0|1|0
+[StrawHatMatt​#6200] Draw 2 Don
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>] attacking Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]
+Yasopp [<mark><link="OP17-031">OP17-031</link></mark>][6000] vs Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>][5000]
+Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] hit for 1 damage
+RZ1|306|1|OP17-112|3|6|1|3|1|1|0|0|0
+RZ1|CHK|306|1|26|4|4|6|0|7|10|0|1|3
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-020">OP17-020</link></mark>] attacking Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]
+Shanks [<mark><link="OP17-020">OP17-020</link></mark>][5000] vs Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>][5000]
+Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] hit for 1 damage
+RZ1|307|1|OP17-104|3|5|1|4|1|1|0|0|0
+RZ1|CHK|307|1|26|5|4|5|0|7|10|0|1|3
+[BigRato​#5650] Charlotte Cracker [<mark><link="OP17-104">OP17-104</link></mark>]: Activate Trigger
+RZ1|308|1|OP17-104|1|4|6|10|1|1|0|0|0
+RZ1|CHK|308|1|26|4|4|5|0|7|11|0|1|3
+RZ1|309|1|OP17-104|6|10|2|4|1|1|0|0|0
+RZ1|CHK|309|1|26|4|5|5|0|7|10|0|1|3
+[BigRato​#5650] Charlotte Cracker [<mark><link="OP17-104">OP17-104</link></mark>]: Deploy Charlotte Cracker [<mark><link="OP17-104">OP17-104</link></mark>]
+RZ1|310|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|310|2|33|3|2|2|0|10|10|0|1|0
+RZ1|311|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|311|2|33|3|2|2|0|10|10|0|1|0
+RZ1|312|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|312|2|33|3|2|2|0|10|10|0|1|0
+RZ1|313|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|313|2|33|3|2|2|0|10|10|0|1|0
+RZ1|314|2|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|314|2|33|3|2|2|0|10|10|0|1|0
+RZ1|315|2|Don|5|5|5|5|1|1|1|0|0
+RZ1|CHK|315|2|33|3|2|2|0|10|10|0|1|0
+RZ1|316|2|Don|5|6|5|6|1|1|1|0|0
+RZ1|CHK|316|2|33|3|2|2|0|10|10|0|1|0
+RZ1|317|2|Don|5|7|5|7|1|1|1|0|0
+RZ1|CHK|317|2|33|3|2|2|0|10|10|0|1|0
+RZ1|318|2|Don|5|8|5|8|1|1|1|0|0
+RZ1|CHK|318|2|33|3|2|2|0|10|10|0|1|0
+RZ1|319|2|Don|5|9|5|9|1|1|1|0|0
+RZ1|CHK|319|2|33|3|2|2|0|10|10|0|1|0
+[StrawHatMatt​#6200] Deploy Shanks [<mark><link="OP17-022">OP17-022</link></mark>]
+RZ1|320|2|OP17-022|1|1|2|2|1|1|0|0|0
+RZ1|CHK|320|2|33|2|3|2|0|10|10|0|1|0
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-022">OP17-022</link></mark>]: Activate 1 Don
+RZ1|321|2|Don|5|9|5|9|1|1|0|0|0
+RZ1|CHK|321|2|33|2|3|2|0|10|10|0|1|0
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-022">OP17-022</link></mark>]: Activate 1 Don
+RZ1|322|2|Don|5|8|5|8|1|1|0|0|0
+RZ1|CHK|322|2|33|2|3|2|0|10|10|0|1|0
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-022">OP17-022</link></mark>]: Rest Charlotte Flampe [<mark><link="EB01-056">EB01-056</link></mark>]
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-022">OP17-022</link></mark>]: Rest Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>]
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-022">OP17-022</link></mark>]: Rest Charlotte Cracker [<mark><link="OP17-104">OP17-104</link></mark>]
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>] attacking Charlotte Cracker [<mark><link="OP17-104">OP17-104</link></mark>]
+Yasopp [<mark><link="OP17-031">OP17-031</link></mark>][6000] vs Charlotte Cracker [<mark><link="OP17-104">OP17-104</link></mark>][4000]
+[BigRato​#5650] Charlotte Cracker [<mark><link="OP17-104">OP17-104</link></mark>] Destroyed
+RZ1|323|1|OP17-104|2|4|6|10|1|1|0|0|0
+RZ1|CHK|323|1|26|4|4|5|0|7|11|0|1|3
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-022">OP17-022</link></mark>] attacking Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>]
+Shanks [<mark><link="OP17-022">OP17-022</link></mark>][12000] vs Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>][4000]
+[BigRato​#5650] Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>] Destroyed
+RZ1|324|1|OP17-106|2|3|6|11|1|1|0|0|0
+RZ1|CHK|324|1|26|4|3|5|0|7|12|0|1|3
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-020">OP17-020</link></mark>]: Rest Don [<mark><link="Don">Don</link></mark>]
+RZ1|325|2|Don|5|8|5|8|1|1|1|0|0
+RZ1|CHK|325|2|33|2|3|2|0|10|10|0|1|0
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-020">OP17-020</link></mark>]: Marshall D. Teach [<mark><link="OP16-119">OP16-119</link></mark>] will not Activate during next Refresh
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>]: Set Yasopp [<mark><link="OP17-031">OP17-031</link></mark>] to Active
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>]: Set Yasopp [<mark><link="OP17-031">OP17-031</link></mark>] to Active
+[StrawHatMatt​#6200] End Turn
+[BigRato​#5650] Hand: [EB04-058,OP17-117,OP17-113,OP17-112]
+[BigRato​#5650] Board: [EB01-056,OP17-113,OP16-119]
+[BigRato​#5650] Trash: [OP17-102,OP17-115,OP17-107,OP17-103,OP17-109,OP17-107,EB04-058,OP17-104,OP17-107,OP17-103,OP17-104,OP17-106]
+[BigRato​#5650] Life: 5
+[StrawHatMatt​#6200] Hand: [ST16-004,OP17-027]
+[StrawHatMatt​#6200] Trash: [OP17-038,OP17-036,OP17-021,OP17-034,OP17-038,OP13-031,OP17-021,OP17-036,OP17-036,OP06-038]
+[StrawHatMatt​#6200] Board: [OP17-031,OP17-031,OP17-022]
+[StrawHatMatt​#6200] Life: 2
+RZ1|326|1|Don|9|100|5|0|1|1|1|0|0
+RZ1|CHK|326|1|26|4|3|5|0|8|12|0|1|2
+RZ1|327|1|Don|9|100|5|0|1|1|1|0|0
+RZ1|CHK|327|1|26|4|3|5|0|9|12|0|1|1
+RZ1|328|1|Don|9|100|5|0|1|1|1|0|0
+RZ1|CHK|328|1|26|4|3|5|0|10|12|0|1|0
+[BigRato​#5650] Draw 1 Card
+[BigRato​#5650] Drew card from deck: Charlotte Oven [<mark><link="OP17-102">OP17-102</link></mark>]
+RZ1|329|1|OP17-102|0|25|1|4|1|1|0|0|0
+RZ1|CHK|329|1|25|5|3|5|0|10|12|0|1|0
+RZ1|330|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|330|1|25|5|3|5|0|10|12|0|1|0
+RZ1|331|1|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|331|1|25|5|3|5|0|10|12|0|1|0
+RZ1|332|1|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|332|1|25|5|3|5|0|10|12|0|1|0
+RZ1|333|1|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|333|1|25|5|3|5|0|10|12|0|1|0
+RZ1|334|1|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|334|1|25|5|3|5|0|10|12|0|1|0
+RZ1|335|1|Don|5|5|5|5|1|1|1|0|0
+RZ1|CHK|335|1|25|5|3|5|0|10|12|0|1|0
+RZ1|336|1|Don|5|6|5|6|1|1|1|0|0
+RZ1|CHK|336|1|25|5|3|5|0|10|12|0|1|0
+RZ1|337|1|Don|5|7|5|7|1|1|1|0|0
+RZ1|CHK|337|1|25|5|3|5|0|10|12|0|1|0
+RZ1|338|1|Don|5|8|5|8|1|1|1|0|0
+RZ1|CHK|338|1|25|5|3|5|0|10|12|0|1|0
+RZ1|339|1|Don|5|9|5|9|1|1|1|0|0
+RZ1|CHK|339|1|25|5|3|5|0|10|12|0|1|0
+[BigRato​#5650] Deploy Charlotte Linlin [<mark><link="OP17-112">OP17-112</link></mark>]
+RZ1|340|1|OP17-112|1|3|2|3|1|1|0|0|0
+RZ1|CHK|340|1|25|4|4|5|0|10|12|0|1|0
+[BigRato​#5650] Drew card from deck: Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>]
+RZ1|341|1|OP17-106|0|24|1|4|1|1|0|0|0
+RZ1|CHK|341|1|24|5|4|5|0|10|12|0|1|0
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-112">OP17-112</link></mark>]: Draw 1 Card
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-112">OP17-112</link></mark>]: Send 1 Life to Hand
+RZ1|342|2|OP17-032|3|1|1|2|0|1|0|0|0
+RZ1|CHK|342|2|33|3|3|1|0|10|10|0|1|0
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] attacking Shanks [<mark><link="OP17-020">OP17-020</link></mark>]
+RZ1|343|1|OP17-117|1|1|6|12|1|1|0|0|0
+RZ1|CHK|343|1|24|4|4|5|0|10|13|0|1|0
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]: Trash Maser Saber [<mark><link="OP17-117">OP17-117</link></mark>]
+[BigRato​#5650] Forcing opponent to resolve Card Action!
+[StrawHatMatt​#6200] Forcing opponent to resolve Card Action!
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]: Randomly send Limejuice [<mark><link="OP17-032">OP17-032</link></mark>] to Trash from Hand
+RZ1|344|2|OP17-032|1|2|6|10|1|1|0|0|0
+RZ1|CHK|344|2|33|2|3|1|0|10|11|0|1|0
+RZ1|345|2|OP17-028|3|0|1|2|0|1|0|0|0
+RZ1|CHK|345|2|33|3|3|0|0|10|11|0|1|0
+Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>][5000] vs Shanks [<mark><link="OP17-020">OP17-020</link></mark>][5000]
+Shanks [<mark><link="OP17-020">OP17-020</link></mark>] hit for 1 damage
+[BigRato​#5650] Hand: [EB04-058,OP17-113,OP17-102,OP17-106]
+[BigRato​#5650] Board: [EB01-056,OP17-113,OP16-119,OP17-112]
+[BigRato​#5650] Trash: [OP17-102,OP17-115,OP17-107,OP17-103,OP17-109,OP17-107,EB04-058,OP17-104,OP17-107,OP17-103,OP17-104,OP17-106,OP17-117]
+[BigRato​#5650] Life: 5
+[StrawHatMatt​#6200] Hand: [ST16-004,OP17-027,OP17-028]
+[StrawHatMatt​#6200] Trash: [OP17-038,OP17-036,OP17-021,OP17-034,OP17-038,OP13-031,OP17-021,OP17-036,OP17-036,OP06-038,OP17-032]
+[StrawHatMatt​#6200] Board: [OP17-031,OP17-031,OP17-022]
+[StrawHatMatt​#6200] Life: 0
+[BigRato​#5650] End Turn
+[StrawHatMatt​#6200] Draw 1 Card
+[StrawHatMatt​#6200] Drew card from deck: Hongo [<mark><link="OP17-029">OP17-029</link></mark>]
+RZ1|346|2|OP17-029|0|32|1|3|0|1|0|0|0
+RZ1|CHK|346|2|32|4|3|0|0|10|11|0|1|0
+RZ1|347|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|347|2|32|4|3|0|0|10|11|0|1|0
+RZ1|348|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|348|2|32|4|3|0|0|10|11|0|1|0
+RZ1|349|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|349|2|32|4|3|0|0|10|11|0|1|0
+RZ1|350|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|350|2|32|4|3|0|0|10|11|0|1|0
+[StrawHatMatt​#6200] Deploy Hongo [<mark><link="OP17-029">OP17-029</link></mark>]
+RZ1|351|2|OP17-029|1|3|2|3|1|1|0|0|0
+RZ1|CHK|351|2|32|3|4|0|0|10|11|0|1|0
+[StrawHatMatt​#6200] Hongo [<mark><link="OP17-029">OP17-029</link></mark>]: Activate 1 Don
+RZ1|352|2|Don|5|3|5|3|1|1|0|0|0
+RZ1|CHK|352|2|32|3|4|0|0|10|11|0|1|0
+[StrawHatMatt​#6200] Hongo [<mark><link="OP17-029">OP17-029</link></mark>]: Rest Charlotte Flampe [<mark><link="EB01-056">EB01-056</link></mark>]
+[StrawHatMatt​#6200] Hongo [<mark><link="OP17-029">OP17-029</link></mark>]: Rest Streusen [<mark><link="OP17-113">OP17-113</link></mark>]
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>] attacking Streusen [<mark><link="OP17-113">OP17-113</link></mark>]
+Yasopp [<mark><link="OP17-031">OP17-031</link></mark>][6000] vs Streusen [<mark><link="OP17-113">OP17-113</link></mark>][2000]
+[BigRato​#5650] Streusen [<mark><link="OP17-113">OP17-113</link></mark>] Destroyed
+RZ1|353|1|OP17-113|2|1|6|13|1|1|0|0|0
+RZ1|CHK|353|1|24|4|3|5|0|10|14|0|1|0
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>] attacking Charlotte Flampe [<mark><link="EB01-056">EB01-056</link></mark>]
+Yasopp [<mark><link="OP17-031">OP17-031</link></mark>][6000] vs Charlotte Flampe [<mark><link="EB01-056">EB01-056</link></mark>][1000]
+[BigRato​#5650] Charlotte Flampe [<mark><link="EB01-056">EB01-056</link></mark>] Destroyed
+RZ1|354|1|EB01-056|2|0|6|14|1|1|0|0|0
+RZ1|CHK|354|1|24|4|2|5|0|10|15|0|1|0
+[StrawHatMatt​#6200] Attach 2 Don to Shanks [<mark><link="OP17-022">OP17-022</link></mark>] (2 Total)
+RZ1|355|2|Don|5|9|9|200|1|1|0|0|0
+RZ1|CHK|355|2|32|3|4|0|0|9|11|0|1|1
+RZ1|356|2|Don|5|8|9|201|1|1|0|0|0
+RZ1|CHK|356|2|32|3|4|0|0|8|11|0|1|2
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-022">OP17-022</link></mark>] attacking Marshall D. Teach [<mark><link="OP16-119">OP16-119</link></mark>]
+Shanks [<mark><link="OP17-022">OP17-022</link></mark>][14000] vs Marshall D. Teach [<mark><link="OP16-119">OP16-119</link></mark>][10000]
+[BigRato​#5650] Marshall D. Teach [<mark><link="OP16-119">OP16-119</link></mark>] Destroyed
+RZ1|357|1|OP16-119|2|0|6|15|1|1|0|0|0
+RZ1|CHK|357|1|24|4|1|5|0|10|16|0|1|0
+RZ1|358|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|358|2|32|3|4|0|0|8|11|0|1|2
+RZ1|359|2|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|359|2|32|3|4|0|0|8|11|0|1|2
+RZ1|360|2|Don|5|5|5|5|1|1|1|0|0
+RZ1|CHK|360|2|32|3|4|0|0|8|11|0|1|2
+RZ1|361|2|Don|5|6|5|6|1|1|1|0|0
+RZ1|CHK|361|2|32|3|4|0|0|8|11|0|1|2
+[StrawHatMatt​#6200] Deploy Bonk Punch & Monster [<mark><link="OP17-028">OP17-028</link></mark>]
+RZ1|362|2|OP17-028|1|2|2|4|1|1|0|0|0
+RZ1|CHK|362|2|32|2|5|0|0|8|11|0|1|2
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>]: Set Shanks [<mark><link="OP17-022">OP17-022</link></mark>] to Active
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>]: Set Yasopp [<mark><link="OP17-031">OP17-031</link></mark>] to Active
+[StrawHatMatt​#6200] End Turn
+[BigRato​#5650] Hand: [EB04-058,OP17-113,OP17-102,OP17-106]
+[BigRato​#5650] Board: [OP17-112]
+[BigRato​#5650] Trash: [OP17-102,OP17-115,OP17-107,OP17-103,OP17-109,OP17-107,EB04-058,OP17-104,OP17-107,OP17-103,OP17-104,OP17-106,OP17-117,OP17-113,EB01-056,OP16-119]
+[BigRato​#5650] Life: 5
+[StrawHatMatt​#6200] Hand: [ST16-004,OP17-027]
+[StrawHatMatt​#6200] Trash: [OP17-038,OP17-036,OP17-021,OP17-034,OP17-038,OP13-031,OP17-021,OP17-036,OP17-036,OP06-038,OP17-032]
+[StrawHatMatt​#6200] Board: [OP17-031,OP17-031,OP17-022,OP17-029,OP17-028]
+[StrawHatMatt​#6200] Life: 0
+[BigRato​#5650] Draw 1 Card
+[BigRato​#5650] Drew card from deck: The 3 Sweet Commanders [<mark><link="OP17-114">OP17-114</link></mark>]
+RZ1|363|1|OP17-114|0|23|1|4|1|1|0|0|0
+RZ1|CHK|363|1|23|5|1|5|0|10|16|0|1|0
+RZ1|364|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|364|1|23|5|1|5|0|10|16|0|1|0
+RZ1|365|1|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|365|1|23|5|1|5|0|10|16|0|1|0
+RZ1|366|1|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|366|1|23|5|1|5|0|10|16|0|1|0
+RZ1|367|1|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|367|1|23|5|1|5|0|10|16|0|1|0
+RZ1|368|1|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|368|1|23|5|1|5|0|10|16|0|1|0
+[BigRato​#5650] Deploy Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>]
+RZ1|369|1|OP17-106|1|3|2|1|1|1|0|4000|0
+RZ1|CHK|369|1|23|4|2|5|0|10|16|0|1|0
+[BigRato​#5650] Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>]: Rest 2 Don
+RZ1|370|1|Don|5|5|5|5|1|1|1|0|0
+RZ1|CHK|370|1|23|4|2|5|0|10|16|0|1|0
+RZ1|371|1|Don|5|6|5|6|1|1|1|0|0
+RZ1|CHK|371|1|23|4|2|5|0|10|16|0|1|0
+[BigRato​#5650] Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>]: Add card to top of Life from Deck
+RZ1|372|1|OP17-109|0|22|3|5|1|0|0|0|0
+RZ1|CHK|372|1|22|4|2|6|0|10|16|0|1|0
+[BigRato​#5650] Forcing opponent to resolve Card Action!
+RZ1|373|2|ST16-004|1|0|6|11|1|1|0|0|0
+RZ1|CHK|373|2|32|1|5|0|0|8|12|0|1|2
+[StrawHatMatt​#6200] Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>]: Trash Shanks [<mark><link="ST16-004">ST16-004</link></mark>]
+RZ1|374|1|Don|5|7|5|7|1|1|1|0|0
+RZ1|CHK|374|1|22|4|2|6|0|10|16|0|1|0
+[BigRato​#5650] Deploy Streusen [<mark><link="OP17-113">OP17-113</link></mark>]
+RZ1|375|1|OP17-113|1|1|2|2|1|1|0|0|0
+RZ1|CHK|375|1|22|3|3|6|0|10|16|0|1|0
+RZ1|376|1|OP17-108|0|20|1|3|1|1|0|0|0
+RZ1|CHK|376|1|21|4|3|6|0|10|16|0|1|0
+[BigRato​#5650] Streusen [<mark><link="OP17-113">OP17-113</link></mark>]: <b>Reveal and Draw Charlotte Brulee [<mark><link="OP17-108">OP17-108</link></mark>]</b>
+[BigRato​#5650] Placing Cards on Bottom of Deck
+RZ1|377|1|OP17-114|0|20|0|0|0|0|0|0|0
+RZ1|CHK|377|1|21|4|3|6|0|10|16|0|1|0
+RZ1|378|1|OP17-104|0|20|0|0|0|0|0|0|0
+RZ1|CHK|378|1|21|4|3|6|0|10|16|0|1|0
+[BigRato​#5650] Attach 1 Don to Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] (1 Total)
+RZ1|379|1|Don|5|9|9|9900|1|1|0|0|0
+RZ1|CHK|379|1|21|4|3|6|0|9|16|0|1|1
+[BigRato​#5650] Attach 1 Don to Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] (2 Total)
+RZ1|380|1|Don|5|8|9|9901|1|1|0|0|0
+RZ1|CHK|380|1|21|4|3|6|0|8|16|0|1|2
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] attacking Shanks [<mark><link="OP17-020">OP17-020</link></mark>]
+RZ1|381|1|OP17-102|1|1|6|16|1|1|0|0|0
+RZ1|CHK|381|1|21|3|3|6|0|8|17|0|1|2
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]: Trash Charlotte Oven [<mark><link="OP17-102">OP17-102</link></mark>]
+[BigRato​#5650] Forcing opponent to resolve Card Action!
+[StrawHatMatt​#6200] Forcing opponent to resolve Card Action!
+RZ1|382|1|EB04-058|1|0|6|17|1|1|0|0|0
+RZ1|CHK|382|1|21|2|3|6|0|8|18|0|1|2
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]: Trash Borsalino [<mark><link="EB04-058">EB04-058</link></mark>]
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]: Add card to top of Life from Deck
+RZ1|383|1|OP17-113|0|20|3|6|1|0|0|0|0
+RZ1|CHK|383|1|20|2|3|7|0|8|18|0|1|2
+[StrawHatMatt​#6200] Bonk Punch & Monster [<mark><link="OP17-028">OP17-028</link></mark>] Blocks
+RZ1|384|2|OP17-028|2|4|6|12|1|1|0|0|0
+RZ1|CHK|384|2|32|1|4|0|0|8|13|0|1|2
+Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>][7000] vs Bonk Punch & Monster [<mark><link="OP17-028">OP17-028</link></mark>][3000]
+[StrawHatMatt​#6200] Bonk Punch & Monster [<mark><link="OP17-028">OP17-028</link></mark>] Destroyed
+[BigRato​#5650] Hand: [OP17-114,OP17-108]
+[BigRato​#5650] Board: [OP17-112,OP17-106,OP17-113]
+[BigRato​#5650] Trash: [OP17-102,OP17-115,OP17-107,OP17-103,OP17-109,OP17-107,EB04-058,OP17-104,OP17-107,OP17-103,OP17-104,OP17-106,OP17-117,OP17-113,EB01-056,OP16-119,OP17-102,EB04-058]
+[BigRato​#5650] Life: 7
+[StrawHatMatt​#6200] Hand: [OP17-027]
+[StrawHatMatt​#6200] Trash: [OP17-038,OP17-036,OP17-021,OP17-034,OP17-038,OP13-031,OP17-021,OP17-036,OP17-036,OP06-038,OP17-032,ST16-004,OP17-028]
+[StrawHatMatt​#6200] Board: [OP17-031,OP17-031,OP17-022,OP17-029]
+[StrawHatMatt​#6200] Life: 0
+[BigRato​#5650] End Turn
+RZ1|385|2|Don|9|200|5|0|1|1|1|0|0
+RZ1|CHK|385|2|32|1|4|0|0|9|13|0|1|1
+RZ1|386|2|Don|9|200|5|0|1|1|1|0|0
+RZ1|CHK|386|2|32|1|4|0|0|10|13|0|1|0
+[StrawHatMatt​#6200] Draw 1 Card
+[StrawHatMatt​#6200] Drew card from deck: Withdraw Now and Allow Me to Save Face [<mark><link="OP17-036">OP17-036</link></mark>]
+RZ1|387|2|OP17-036|0|31|1|1|0|1|0|0|0
+RZ1|CHK|387|2|31|2|4|0|0|10|13|0|1|0
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-020">OP17-020</link></mark>] attacking Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]
+Shanks [<mark><link="OP17-020">OP17-020</link></mark>][5000] vs Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>][5000]
+Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] hit for 1 damage
+RZ1|388|1|OP17-113|3|6|1|2|1|1|0|0|0
+RZ1|CHK|388|1|20|3|3|6|0|8|18|0|1|2
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>] attacking Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>]
+Yasopp [<mark><link="OP17-031">OP17-031</link></mark>][6000] vs Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>][5000]
+Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] hit for 1 damage
+RZ1|389|1|OP17-109|3|5|1|3|1|1|0|0|0
+RZ1|CHK|389|1|20|4|3|5|0|8|18|0|1|2
+[BigRato​#5650] Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>]: Activate Trigger
+RZ1|390|1|OP17-109|1|3|6|18|1|1|0|0|0
+RZ1|CHK|390|1|20|3|3|5|0|8|19|0|1|2
+RZ1|391|1|OP17-112|0|15|1|3|1|1|0|0|0
+RZ1|CHK|391|1|19|4|3|5|0|8|19|0|1|2
+[BigRato​#5650] Charlotte Pudding [<mark><link="OP17-109">OP17-109</link></mark>]: <b>Reveal and Draw Charlotte Linlin [<mark><link="OP17-112">OP17-112</link></mark>]</b>
+[BigRato​#5650] Placing Cards on Bottom of Deck
+RZ1|392|1|OP17-116|0|18|0|0|0|0|0|0|0
+RZ1|CHK|392|1|19|4|3|5|0|8|19|0|1|2
+RZ1|393|1|EB04-058|0|18|0|0|0|0|0|0|0
+RZ1|CHK|393|1|19|4|3|5|0|8|19|0|1|2
+RZ1|394|1|OP17-112|0|18|0|0|0|0|0|0|0
+RZ1|CHK|394|1|19|4|3|5|0|8|19|0|1|2
+RZ1|395|1|OP17-108|0|18|0|0|0|0|0|0|0
+RZ1|CHK|395|1|19|4|3|5|0|8|19|0|1|2
+RZ1|396|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|396|2|31|2|4|0|0|10|13|0|1|0
+RZ1|397|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|397|2|31|2|4|0|0|10|13|0|1|0
+RZ1|398|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|398|2|31|2|4|0|0|10|13|0|1|0
+RZ1|399|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|399|2|31|2|4|0|0|10|13|0|1|0
+RZ1|400|2|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|400|2|31|2|4|0|0|10|13|0|1|0
+RZ1|401|2|Don|5|5|5|5|1|1|1|0|0
+RZ1|CHK|401|2|31|2|4|0|0|10|13|0|1|0
+RZ1|402|2|Don|5|6|5|6|1|1|1|0|0
+RZ1|CHK|402|2|31|2|4|0|0|10|13|0|1|0
+[StrawHatMatt​#6200] Deploy Benn Beckman [<mark><link="OP17-027">OP17-027</link></mark>]
+RZ1|403|2|OP17-027|1|0|2|4|1|1|0|0|0
+RZ1|CHK|403|2|31|1|5|0|0|10|13|0|1|0
+[StrawHatMatt​#6200] Drew card from deck: Lucky Roux [<mark><link="OP17-033">OP17-033</link></mark>]
+RZ1|404|2|OP17-033|0|30|1|1|0|1|0|0|0
+RZ1|CHK|404|2|30|2|5|0|0|10|13|0|1|0
+[StrawHatMatt​#6200] Benn Beckman [<mark><link="OP17-027">OP17-027</link></mark>]: Draw 1 Card
+[StrawHatMatt​#6200] Benn Beckman [<mark><link="OP17-027">OP17-027</link></mark>]: Rest Charlotte Linlin [<mark><link="OP17-112">OP17-112</link></mark>]
+[StrawHatMatt​#6200] Benn Beckman [<mark><link="OP17-027">OP17-027</link></mark>]: Rest Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>]
+[StrawHatMatt​#6200] Attach 2 Don to Shanks [<mark><link="OP17-022">OP17-022</link></mark>] (2 Total)
+RZ1|405|2|Don|5|9|9|200|1|1|0|0|0
+RZ1|CHK|405|2|30|2|5|0|0|9|13|0|1|1
+RZ1|406|2|Don|5|8|9|201|1|1|0|0|0
+RZ1|CHK|406|2|30|2|5|0|0|8|13|0|1|2
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-022">OP17-022</link></mark>] attacking Charlotte Linlin [<mark><link="OP17-112">OP17-112</link></mark>]
+[BigRato​#5650] Discard Streusen [<mark><link="OP17-113">OP17-113</link></mark>] for Counter 2000
+RZ1|407|1|OP17-113|1|2|6|19|1|1|0|0|0
+RZ1|CHK|407|1|19|3|3|5|0|8|20|0|1|2
+[BigRato​#5650] Discard Charlotte Brulee [<mark><link="OP17-108">OP17-108</link></mark>] for Counter 1000
+RZ1|408|1|OP17-108|1|1|6|20|1|1|0|0|0
+RZ1|CHK|408|1|19|2|3|5|0|8|21|0|1|2
+Shanks [<mark><link="OP17-022">OP17-022</link></mark>][14000] vs Charlotte Linlin [<mark><link="OP17-112">OP17-112</link></mark>][15000]
+Attack Fails
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>] attacking Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>]
+Yasopp [<mark><link="OP17-031">OP17-031</link></mark>][6000] vs Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>][4000]
+[BigRato​#5650] Charlotte Smoothie [<mark><link="OP17-106">OP17-106</link></mark>] Destroyed
+RZ1|409|1|OP17-106|2|1|6|21|1|1|0|0|0
+RZ1|CHK|409|1|19|2|2|5|0|8|22|0|1|2
+RZ1|410|2|OP17-033|1|1|6|13|1|1|0|0|0
+RZ1|CHK|410|2|30|1|5|0|0|8|14|0|1|2
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-020">OP17-020</link></mark>]: Trash Lucky Roux [<mark><link="OP17-033">OP17-033</link></mark>]
+[StrawHatMatt​#6200] Shanks [<mark><link="OP17-020">OP17-020</link></mark>]: Charlotte Linlin [<mark><link="OP17-112">OP17-112</link></mark>] will not Activate during next Refresh
+[StrawHatMatt​#6200] Yasopp [<mark><link="OP17-031">OP17-031</link></mark>]: Set Shanks [<mark><link="OP17-022">OP17-022</link></mark>] to Active
+[StrawHatMatt​#6200] End Turn
+[BigRato​#5650] Hand: [OP17-114,OP17-112]
+[BigRato​#5650] Board: [OP17-112,OP17-113]
+[BigRato​#5650] Trash: [OP17-102,OP17-115,OP17-107,OP17-103,OP17-109,OP17-107,EB04-058,OP17-104,OP17-107,OP17-103,OP17-104,OP17-106,OP17-117,OP17-113,EB01-056,OP16-119,OP17-102,EB04-058,OP17-109,OP17-113,OP17-108,OP17-106]
+[BigRato​#5650] Life: 5
+[StrawHatMatt​#6200] Hand: [OP17-036]
+[StrawHatMatt​#6200] Trash: [OP17-038,OP17-036,OP17-021,OP17-034,OP17-038,OP13-031,OP17-021,OP17-036,OP17-036,OP06-038,OP17-032,ST16-004,OP17-028,OP17-033]
+[StrawHatMatt​#6200] Board: [OP17-031,OP17-031,OP17-022,OP17-029,OP17-027]
+[StrawHatMatt​#6200] Life: 0
+RZ1|411|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|411|1|19|2|2|5|0|9|22|0|1|1
+RZ1|412|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|412|1|19|2|2|5|0|10|22|0|1|0
+[BigRato​#5650] Draw 1 Card
+[BigRato​#5650] Drew card from deck: Charlotte Flampe [<mark><link="EB01-056">EB01-056</link></mark>]
+RZ1|413|1|EB01-056|0|18|1|2|1|1|0|0|0
+RZ1|CHK|413|1|18|3|2|5|0|10|22|0|1|0
+[BigRato​#5650] Attach 1 Don to Streusen [<mark><link="OP17-113">OP17-113</link></mark>] (1 Total)
+RZ1|414|1|Don|5|9|9|100|1|1|0|0|0
+RZ1|CHK|414|1|18|3|2|5|0|9|22|0|1|1
+[BigRato​#5650] Attach 1 Don to Streusen [<mark><link="OP17-113">OP17-113</link></mark>] (2 Total)
+RZ1|415|1|Don|5|8|9|101|1|1|0|0|0
+RZ1|CHK|415|1|18|3|2|5|0|8|22|0|1|2
+[BigRato​#5650] Attach 1 Don to Streusen [<mark><link="OP17-113">OP17-113</link></mark>] (3 Total)
+RZ1|416|1|Don|5|7|9|102|1|1|0|0|0
+RZ1|CHK|416|1|18|3|2|5|0|7|22|0|1|3
+[BigRato​#5650] Attach 1 Don to Streusen [<mark><link="OP17-113">OP17-113</link></mark>] (4 Total)
+RZ1|417|1|Don|5|6|9|103|1|1|0|0|0
+RZ1|CHK|417|1|18|3|2|5|0|6|22|0|1|4
+[BigRato​#5650] Attach 1 Don to Streusen [<mark><link="OP17-113">OP17-113</link></mark>] (5 Total)
+RZ1|418|1|Don|5|5|9|104|1|1|0|0|0
+RZ1|CHK|418|1|18|3|2|5|0|5|22|0|1|5
+[BigRato​#5650] Streusen [<mark><link="OP17-113">OP17-113</link></mark>] attacking Shanks [<mark><link="OP17-020">OP17-020</link></mark>]
+[StrawHatMatt​#6200] Withdraw Now and Allow Me to Save Face [<mark><link="OP17-036">OP17-036</link></mark>]: Activate Counter
+[StrawHatMatt​#6200] Withdraw Now and Allow Me to Save Face [<mark><link="OP17-036">OP17-036</link></mark>]: Rest 1 Don
+RZ1|419|2|Don|5|7|5|7|1|1|1|0|0
+RZ1|CHK|419|2|30|1|5|0|0|8|14|0|1|2
+RZ1|420|2|OP17-036|1|0|6|14|1|1|0|0|0
+RZ1|CHK|420|2|30|0|5|0|0|8|15|0|1|2
+[StrawHatMatt​#6200] Withdraw Now and Allow Me to Save Face [<mark><link="OP17-036">OP17-036</link></mark>]: Buff Shanks [<mark><link="OP17-020">OP17-020</link></mark>] 4000 for the Combat
+Streusen [<mark><link="OP17-113">OP17-113</link></mark>][7000] vs Shanks [<mark><link="OP17-020">OP17-020</link></mark>][9000]
+Attack Fails
+[BigRato​#5650] Attach 1 Don to Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] (1 Total)
+RZ1|421|1|Don|5|4|9|9900|1|1|0|0|0
+RZ1|CHK|421|1|18|3|2|5|0|4|22|0|1|6
+[BigRato​#5650] Attach 1 Don to Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] (2 Total)
+RZ1|422|1|Don|5|3|9|9901|1|1|0|0|0
+RZ1|CHK|422|1|18|3|2|5|0|3|22|0|1|7
+[BigRato​#5650] Attach 1 Don to Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] (3 Total)
+RZ1|423|1|Don|5|2|9|9902|1|1|0|0|0
+RZ1|CHK|423|1|18|3|2|5|0|2|22|0|1|8
+[BigRato​#5650] Attach 1 Don to Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] (4 Total)
+RZ1|424|1|Don|5|1|9|9903|1|1|0|0|0
+RZ1|CHK|424|1|18|3|2|5|0|1|22|0|1|9
+[BigRato​#5650] Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>] attacking Shanks [<mark><link="OP17-020">OP17-020</link></mark>]
+[StrawHatMatt​#6200] Hongo [<mark><link="OP17-029">OP17-029</link></mark>] Blocks
+RZ1|425|2|OP17-029|2|3|6|15|1|1|0|0|0
+RZ1|CHK|425|2|30|0|4|0|0|8|16|0|1|2
+Charlotte Linlin [<mark><link="OP17-099">OP17-099</link></mark>][9000] vs Hongo [<mark><link="OP17-029">OP17-029</link></mark>][4000]
+[StrawHatMatt​#6200] Hongo [<mark><link="OP17-029">OP17-029</link></mark>] Destroyed
+[BigRato​#5650] Hand: [OP17-114,OP17-112,EB01-056]
+[BigRato​#5650] Board: [OP17-112,OP17-113]
+[BigRato​#5650] Trash: [OP17-102,OP17-115,OP17-107,OP17-103,OP17-109,OP17-107,EB04-058,OP17-104,OP17-107,OP17-103,OP17-104,OP17-106,OP17-117,OP17-113,EB01-056,OP16-119,OP17-102,EB04-058,OP17-109,OP17-113,OP17-108,OP17-106]
+[BigRato​#5650] Life: 5
+[StrawHatMatt​#6200] Hand: []
+[StrawHatMatt​#6200] Trash: [OP17-038,OP17-036,OP17-021,OP17-034,OP17-038,OP13-031,OP17-021,OP17-036,OP17-036,OP06-038,OP17-032,ST16-004,OP17-028,OP17-033,OP17-036,OP17-029]
+[StrawHatMatt​#6200] Board: [OP17-031,OP17-031,OP17-022,OP17-027]
+[StrawHatMatt​#6200] Life: 0
+[BigRato​#5650] End Turn
+RZ1|426|2|Don|9|200|5|0|1|1|1|0|0
+RZ1|CHK|426|2|30|0|4|0|0|9|16|0|1|1
+RZ1|427|2|Don|9|200|5|0|1|1|1|0|0
+RZ1|CHK|427|2|30|0|4|0|0|10|16|0|1|0
+[StrawHatMatt​#6200] Draw 1 Card
+[StrawHatMatt​#6200] Drew card from deck: Rockstar [<mark><link="OP17-034">OP17-034</link></mark>]
+RZ1|428|2|OP17-034|0|29|1|0|0|1|0|0|0
+RZ1|CHK|428|2|29|1|4|0|0|10|16|0|1|0
+[StrawHatMatt​#6200] Concedes!

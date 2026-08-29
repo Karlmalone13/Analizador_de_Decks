@@ -1,0 +1,2187 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "BigRato#5650",
+        "leader": {
+          "name": "Charlotte Linlin",
+          "code": "OP17-099"
+        }
+      },
+      "p2": {
+        "name": "StrawHatMatt#6200",
+        "leader": {
+          "name": "Shanks",
+          "code": "OP17-020"
+        }
+      }
+    },
+    "goes_first": "StrawHatMatt#6200"
+  },
+  "total_turns": 16,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "StrawHatMatt#6200",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "EB04-058",
+            "OP17-103",
+            "OP17-106",
+            "EB01-056",
+            "OP17-102"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP17-104",
+            "OP17-108",
+            "OP17-110",
+            "OP17-112",
+            "OP17-114",
+            "OP17-115",
+            "OP17-116",
+            "OP17-117"
+          ],
+          "life_cards": [
+            "OP16-119",
+            "OP17-107",
+            "OP17-107",
+            "OP17-109",
+            "OP17-113"
+          ]
+        },
+        "StrawHatMatt#6200": {
+          "hand": [
+            "OP13-031",
+            "ST16-004",
+            "OP17-038",
+            "OP17-036",
+            "OP17-038"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP08-036",
+            "OP10-030",
+            "OP17-022",
+            "OP17-027",
+            "OP17-029",
+            "OP17-031",
+            "OP17-033",
+            "OP17-034",
+            "OP17-037"
+          ],
+          "life_cards": [
+            "OP06-038",
+            "OP17-021",
+            "OP17-028",
+            "OP17-032",
+            "OP17-036"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP16-119"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB01-056",
+          "card_name": "Charlotte Flampe",
+          "effects": [
+            "Takes Top Life",
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "EB04-058",
+            "OP17-103",
+            "OP17-106",
+            "OP17-102",
+            "OP17-109",
+            "OP17-107",
+            "OP16-119"
+          ],
+          "board": [
+            "EB01-056"
+          ],
+          "trash": [],
+          "life": 4,
+          "rested": {
+            "EB01-056": 1
+          }
+        },
+        "StrawHatMatt#6200": {
+          "hand": [
+            "OP13-031",
+            "ST16-004",
+            "OP17-038",
+            "OP17-036",
+            "OP17-038"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "StrawHatMatt#6200",
+      "card_drawn": {
+        "name": "Rockstar",
+        "code": "OP17-034"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-020",
+          "to_name": "Shanks",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-020",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "EB04-058",
+            "OP17-103",
+            "OP17-106",
+            "OP17-102",
+            "OP17-109",
+            "OP17-107",
+            "OP16-119"
+          ],
+          "board": [
+            "EB01-056",
+            "OP17-107"
+          ],
+          "trash": [],
+          "life": 3,
+          "deck": [
+            "OP17-104",
+            "OP17-108",
+            "OP17-110",
+            "OP17-112",
+            "OP17-114",
+            "OP17-115",
+            "OP17-116",
+            "OP17-117"
+          ],
+          "life_cards": [
+            "OP16-119",
+            "OP17-109",
+            "OP17-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB01-056": 1
+          }
+        },
+        "StrawHatMatt#6200": {
+          "hand": [
+            "OP13-031",
+            "ST16-004",
+            "OP17-038",
+            "OP17-036",
+            "OP17-038",
+            "OP17-034"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP08-036",
+            "OP10-030",
+            "OP17-022",
+            "OP17-027",
+            "OP17-029",
+            "OP17-031",
+            "OP17-033",
+            "OP17-037"
+          ],
+          "life_cards": [
+            "OP06-038",
+            "OP17-021",
+            "OP17-028",
+            "OP17-032",
+            "OP17-036"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Charlotte Daifuku",
+        "code": "OP17-107"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-109",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "Trash Charlotte Oven [\"OP17-102\">OP17-102]",
+            "Draw 3 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash There's Still A Code Of Honor? [\"OP17-115\">OP17-115]",
+            "Randomly send I Think He's Seen An Ugly Future [\"OP17-038\">OP17-038] to Trash from Hand"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-107",
+          "to_name": "Charlotte Daifuku",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Daifuku",
+          "attacker_code": "OP17-107",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "EB04-058",
+            "OP17-103",
+            "OP17-106",
+            "OP17-107",
+            "OP16-119",
+            "EB04-058",
+            "OP17-113",
+            "OP17-107"
+          ],
+          "board": [
+            "EB01-056",
+            "OP17-107",
+            "OP17-109"
+          ],
+          "trash": [
+            "OP17-102",
+            "OP17-115"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-107": 1,
+            "OP17-109": 1
+          }
+        },
+        "StrawHatMatt#6200": {
+          "hand": [
+            "OP13-031",
+            "ST16-004",
+            "OP17-038",
+            "OP17-036",
+            "OP17-034",
+            "OP17-036",
+            "OP17-021"
+          ],
+          "trash": [
+            "OP17-038"
+          ],
+          "board": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "StrawHatMatt#6200",
+      "card_drawn": {
+        "name": "Yasopp",
+        "code": "OP17-031"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Draw 1 Card",
+            "Rest Charlotte Pudding [\"OP17-109\">OP17-109]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-020",
+          "target": "Charlotte Pudding [\"OP17-109\">OP17-109]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-107"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-020",
+          "card_name": "Shanks",
+          "effects": [
+            "Trash Withdraw Now and Allow Me to Save Face [\"OP17-036\">OP17-036]",
+            "Charlotte Daifuku [\"OP17-107\">OP17-107] will not Activate during next Refresh"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "EB04-058",
+            "OP17-103",
+            "OP17-106",
+            "OP16-119",
+            "EB04-058",
+            "OP17-113",
+            "OP17-107"
+          ],
+          "board": [
+            "EB01-056",
+            "OP17-107",
+            "OP17-109"
+          ],
+          "trash": [
+            "OP17-102",
+            "OP17-115",
+            "OP17-107"
+          ],
+          "life": 3,
+          "deck": [
+            "OP17-104",
+            "OP17-108",
+            "OP17-110",
+            "OP17-112",
+            "OP17-114",
+            "OP17-116",
+            "OP17-117"
+          ],
+          "life_cards": [
+            "OP16-119",
+            "OP17-109",
+            "OP17-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP17-107": 1,
+            "OP17-109": 1
+          }
+        },
+        "StrawHatMatt#6200": {
+          "hand": [
+            "OP13-031",
+            "ST16-004",
+            "OP17-038",
+            "OP17-034",
+            "OP17-036",
+            "OP17-021",
+            "OP17-031"
+          ],
+          "trash": [
+            "OP17-038",
+            "OP17-036"
+          ],
+          "board": [
+            "OP17-031"
+          ],
+          "life": 3,
+          "deck": [
+            "OP08-036",
+            "OP10-030",
+            "OP17-022",
+            "OP17-027",
+            "OP17-029",
+            "OP17-033",
+            "OP17-037"
+          ],
+          "life_cards": [
+            "OP06-038",
+            "OP17-028",
+            "OP17-032"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-031": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Charlotte Katakuri",
+        "code": "OP17-103"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-113",
+          "card_name": "Streusen",
+          "effects": [
+            "<b>Reveal and Draw Maser Saber [\"OP17-117\">OP17-117]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-109",
+          "to_name": "Charlotte Pudding",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-109",
+          "to_name": "Charlotte Pudding",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "OP17-109",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-021"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-099",
+          "to_name": "Charlotte Linlin",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-099",
+          "to_name": "Charlotte Linlin",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Charlotte Katakuri [\"OP17-103\">OP17-103]",
+            "Randomly send Rockstar [\"OP17-034\">OP17-034] to Trash from Hand"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "EB04-058",
+            "OP17-103",
+            "OP17-106",
+            "OP16-119",
+            "EB04-058",
+            "OP17-107",
+            "OP17-117"
+          ],
+          "board": [
+            "EB01-056",
+            "OP17-107",
+            "OP17-109",
+            "OP17-113"
+          ],
+          "trash": [
+            "OP17-102",
+            "OP17-115",
+            "OP17-107",
+            "OP17-103"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-109": 1,
+            "OP17-113": 1
+          }
+        },
+        "StrawHatMatt#6200": {
+          "hand": [
+            "ST16-004",
+            "OP17-036",
+            "OP17-031"
+          ],
+          "trash": [
+            "OP17-038",
+            "OP17-036",
+            "OP17-021",
+            "OP17-034",
+            "OP17-038",
+            "OP13-031"
+          ],
+          "board": [
+            "OP17-031"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-031": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "StrawHatMatt#6200",
+      "card_drawn": {
+        "name": "Crone Oli",
+        "code": "OP17-021"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Draw 1 Card",
+            "Rest Charlotte Flampe [\"EB01-056\">EB01-056]",
+            "Set Yasopp [\"OP17-031\">OP17-031] to Active"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Yasopp",
+          "attacker_code": "OP17-031",
+          "target": "Charlotte Pudding [\"OP17-109\">OP17-109]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-020",
+          "to_name": "Shanks",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-020",
+          "target": "Charlotte Daifuku [\"OP17-107\">OP17-107]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "EB04-058",
+            "OP17-103",
+            "OP17-106",
+            "OP16-119",
+            "EB04-058",
+            "OP17-107",
+            "OP17-117"
+          ],
+          "board": [
+            "EB01-056",
+            "OP17-113"
+          ],
+          "trash": [
+            "OP17-102",
+            "OP17-115",
+            "OP17-107",
+            "OP17-103",
+            "OP17-109",
+            "OP17-107"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-058",
+            "OP17-104",
+            "OP17-106",
+            "OP17-108",
+            "OP17-110",
+            "OP17-112",
+            "OP17-114",
+            "OP17-116"
+          ],
+          "life_cards": [
+            "OP16-119",
+            "OP17-109",
+            "OP17-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB01-056": 1,
+            "OP17-113": 1
+          }
+        },
+        "StrawHatMatt#6200": {
+          "hand": [
+            "ST16-004",
+            "OP17-036",
+            "OP17-022",
+            "OP17-021"
+          ],
+          "trash": [
+            "OP17-038",
+            "OP17-036",
+            "OP17-021",
+            "OP17-034",
+            "OP17-038",
+            "OP13-031"
+          ],
+          "board": [
+            "OP17-031",
+            "OP17-031"
+          ],
+          "life": 3,
+          "deck": [
+            "OP08-036",
+            "OP10-030",
+            "OP17-027",
+            "OP17-029",
+            "OP17-033",
+            "OP17-037"
+          ],
+          "life_cards": [
+            "OP06-038",
+            "OP17-028",
+            "OP17-032"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-031": 2
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Charlotte Cracker",
+        "code": "OP17-104"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Added card to top of Life from Hand"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-021"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Borsalino [\"EB04-058\">EB04-058]",
+            "Trash Charlotte Cracker [\"OP17-104\">OP17-104]",
+            "Add card to top of Life from Deck"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-103",
+            "OP17-106",
+            "EB04-058",
+            "OP17-107",
+            "OP17-117"
+          ],
+          "board": [
+            "EB01-056",
+            "OP17-113",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP17-102",
+            "OP17-115",
+            "OP17-107",
+            "OP17-103",
+            "OP17-109",
+            "OP17-107",
+            "EB04-058",
+            "OP17-104"
+          ],
+          "life": 5,
+          "rested": {
+            "OP16-119": 1
+          }
+        },
+        "StrawHatMatt#6200": {
+          "hand": [
+            "ST16-004",
+            "OP17-036",
+            "OP17-022"
+          ],
+          "trash": [
+            "OP17-038",
+            "OP17-036",
+            "OP17-021",
+            "OP17-034",
+            "OP17-038",
+            "OP13-031",
+            "OP17-021"
+          ],
+          "board": [
+            "OP17-031",
+            "OP17-031"
+          ],
+          "life": 3,
+          "rested": {
+            "OP17-031": 2
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "StrawHatMatt#6200",
+      "card_drawn": {
+        "name": "Withdraw Now and Allow Me to Save Face",
+        "code": "OP17-036"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP17-036",
+          "card_name": "Withdraw Now and Allow Me to Save Face",
+          "effects": [
+            "Rest 1 Don",
+            "Rest 6 Don",
+            "Rest Marshall D. Teach [\"OP16-119\">OP16-119]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-020",
+          "card_name": "Shanks",
+          "effects": [
+            "Rest Don [<link=\"Don\">Don]",
+            "Marshall D. Teach [\"OP16-119\">OP16-119] will not Activate during next Refresh"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-103",
+            "OP17-106",
+            "EB04-058",
+            "OP17-107",
+            "OP17-117"
+          ],
+          "board": [
+            "EB01-056",
+            "OP17-113",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP17-102",
+            "OP17-115",
+            "OP17-107",
+            "OP17-103",
+            "OP17-109",
+            "OP17-107",
+            "EB04-058",
+            "OP17-104"
+          ],
+          "life": 5,
+          "deck": [
+            "EB04-058",
+            "OP17-106",
+            "OP17-110",
+            "OP17-112",
+            "OP17-114",
+            "OP17-116"
+          ],
+          "life_cards": [
+            "OP16-119",
+            "OP17-108",
+            "OP17-109",
+            "OP17-109",
+            "OP17-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-119": 1
+          }
+        },
+        "StrawHatMatt#6200": {
+          "hand": [
+            "ST16-004",
+            "OP17-022",
+            "OP17-036"
+          ],
+          "trash": [
+            "OP17-038",
+            "OP17-036",
+            "OP17-021",
+            "OP17-034",
+            "OP17-038",
+            "OP13-031",
+            "OP17-021",
+            "OP17-036"
+          ],
+          "board": [
+            "OP17-031",
+            "OP17-031"
+          ],
+          "life": 3,
+          "deck": [
+            "OP08-036",
+            "OP10-030",
+            "OP17-027",
+            "OP17-029",
+            "OP17-033",
+            "OP17-037"
+          ],
+          "life_cards": [
+            "OP06-038",
+            "OP17-028",
+            "OP17-032"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Streusen",
+        "code": "OP17-113"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-106",
+          "card_name": "Charlotte Smoothie",
+          "effects": [
+            "Rest 2 Don",
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-113",
+          "to_name": "Streusen",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-113",
+          "to_name": "Streusen",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-113",
+          "to_name": "Streusen",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Streusen",
+          "attacker_code": "OP17-113",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Charlotte Daifuku [\"OP17-107\">OP17-107]",
+            "Trash Charlotte Katakuri [\"OP17-103\">OP17-103]",
+            "Add card to top of Life from Deck"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "EB04-058",
+            "OP17-117",
+            "OP17-113"
+          ],
+          "board": [
+            "EB01-056",
+            "OP17-113",
+            "OP16-119",
+            "OP17-106"
+          ],
+          "trash": [
+            "OP17-102",
+            "OP17-115",
+            "OP17-107",
+            "OP17-103",
+            "OP17-109",
+            "OP17-107",
+            "EB04-058",
+            "OP17-104",
+            "OP17-107",
+            "OP17-103"
+          ],
+          "life": 7,
+          "rested": {
+            "OP17-113": 1,
+            "OP17-106": 1
+          }
+        },
+        "StrawHatMatt#6200": {
+          "hand": [
+            "ST16-004",
+            "OP17-022"
+          ],
+          "trash": [
+            "OP17-038",
+            "OP17-036",
+            "OP17-021",
+            "OP17-034",
+            "OP17-038",
+            "OP13-031",
+            "OP17-021",
+            "OP17-036",
+            "OP17-036",
+            "OP06-038"
+          ],
+          "board": [
+            "OP17-031",
+            "OP17-031"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "StrawHatMatt#6200",
+      "card_drawn": {
+        "name": "Benn Beckman",
+        "code": "OP17-027"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Yasopp",
+          "attacker_code": "OP17-031",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-020",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-022",
+          "card_name": "Shanks",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Rest Charlotte Flampe [\"EB01-056\">EB01-056]",
+            "Rest Charlotte Smoothie [\"OP17-106\">OP17-106]",
+            "Rest Charlotte Cracker [\"OP17-104\">OP17-104]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Yasopp",
+          "attacker_code": "OP17-031",
+          "target": "Charlotte Cracker [\"OP17-104\">OP17-104]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-022",
+          "target": "Charlotte Smoothie [\"OP17-106\">OP17-106]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-020",
+          "card_name": "Shanks",
+          "effects": [
+            "Rest Don [<link=\"Don\">Don]",
+            "Marshall D. Teach [\"OP16-119\">OP16-119] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Set Yasopp [\"OP17-031\">OP17-031] to Active",
+            "Set Yasopp [\"OP17-031\">OP17-031] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "EB04-058",
+            "OP17-117",
+            "OP17-113",
+            "OP17-112"
+          ],
+          "board": [
+            "EB01-056",
+            "OP17-113",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP17-102",
+            "OP17-115",
+            "OP17-107",
+            "OP17-103",
+            "OP17-109",
+            "OP17-107",
+            "EB04-058",
+            "OP17-104",
+            "OP17-107",
+            "OP17-103",
+            "OP17-104",
+            "OP17-106"
+          ],
+          "life": 5,
+          "deck": [
+            "EB04-058",
+            "OP17-106",
+            "OP17-110",
+            "OP17-114",
+            "OP17-116"
+          ],
+          "life_cards": [
+            "OP16-119",
+            "OP17-108",
+            "OP17-109",
+            "OP17-109",
+            "OP17-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB01-056": 1,
+            "OP17-113": 1
+          }
+        },
+        "StrawHatMatt#6200": {
+          "hand": [
+            "ST16-004",
+            "OP17-027"
+          ],
+          "trash": [
+            "OP17-038",
+            "OP17-036",
+            "OP17-021",
+            "OP17-034",
+            "OP17-038",
+            "OP13-031",
+            "OP17-021",
+            "OP17-036",
+            "OP17-036",
+            "OP06-038"
+          ],
+          "board": [
+            "OP17-031",
+            "OP17-031",
+            "OP17-022"
+          ],
+          "life": 2,
+          "deck": [
+            "OP08-036",
+            "OP10-030",
+            "OP17-029",
+            "OP17-033",
+            "OP17-037"
+          ],
+          "life_cards": [
+            "OP17-028",
+            "OP17-032"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-031": 2,
+            "OP17-022": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Charlotte Smoothie",
+        "code": "OP17-106"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-112",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Draw 1 Card",
+            "Send 1 Life to Hand"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Maser Saber [\"OP17-117\">OP17-117]",
+            "Randomly send Limejuice [\"OP17-032\">OP17-032] to Trash from Hand"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "EB04-058",
+            "OP17-113",
+            "OP17-102",
+            "OP17-106"
+          ],
+          "board": [
+            "EB01-056",
+            "OP17-113",
+            "OP16-119",
+            "OP17-112"
+          ],
+          "trash": [
+            "OP17-102",
+            "OP17-115",
+            "OP17-107",
+            "OP17-103",
+            "OP17-109",
+            "OP17-107",
+            "EB04-058",
+            "OP17-104",
+            "OP17-107",
+            "OP17-103",
+            "OP17-104",
+            "OP17-106",
+            "OP17-117"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-112": 1
+          }
+        },
+        "StrawHatMatt#6200": {
+          "hand": [
+            "ST16-004",
+            "OP17-027",
+            "OP17-028"
+          ],
+          "trash": [
+            "OP17-038",
+            "OP17-036",
+            "OP17-021",
+            "OP17-034",
+            "OP17-038",
+            "OP13-031",
+            "OP17-021",
+            "OP17-036",
+            "OP17-036",
+            "OP06-038",
+            "OP17-032"
+          ],
+          "board": [
+            "OP17-031",
+            "OP17-031",
+            "OP17-022"
+          ],
+          "life": 0,
+          "rested": {
+            "OP17-031": 2,
+            "OP17-022": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "StrawHatMatt#6200",
+      "card_drawn": {
+        "name": "Hongo",
+        "code": "OP17-029"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-029",
+          "card_name": "Hongo",
+          "effects": [
+            "Activate 1 Don",
+            "Rest Charlotte Flampe [\"EB01-056\">EB01-056]",
+            "Rest Streusen [\"OP17-113\">OP17-113]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Yasopp",
+          "attacker_code": "OP17-031",
+          "target": "Streusen [\"OP17-113\">OP17-113]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Yasopp",
+          "attacker_code": "OP17-031",
+          "target": "Charlotte Flampe [\"EB01-056\">EB01-056]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-022",
+          "to_name": "Shanks",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-022",
+          "target": "Marshall D. Teach [\"OP16-119\">OP16-119]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-028",
+          "card_name": "Bonk Punch & Monster",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Set Shanks [\"OP17-022\">OP17-022] to Active",
+            "Set Yasopp [\"OP17-031\">OP17-031] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "EB04-058",
+            "OP17-113",
+            "OP17-102",
+            "OP17-106"
+          ],
+          "board": [
+            "OP17-112"
+          ],
+          "trash": [
+            "OP17-102",
+            "OP17-115",
+            "OP17-107",
+            "OP17-103",
+            "OP17-109",
+            "OP17-107",
+            "EB04-058",
+            "OP17-104",
+            "OP17-107",
+            "OP17-103",
+            "OP17-104",
+            "OP17-106",
+            "OP17-117",
+            "OP17-113",
+            "EB01-056",
+            "OP16-119"
+          ],
+          "life": 5,
+          "deck": [
+            "EB04-058",
+            "OP17-110",
+            "OP17-114",
+            "OP17-116"
+          ],
+          "life_cards": [
+            "OP16-119",
+            "OP17-108",
+            "OP17-109",
+            "OP17-109",
+            "OP17-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-112": 1
+          }
+        },
+        "StrawHatMatt#6200": {
+          "hand": [
+            "ST16-004",
+            "OP17-027"
+          ],
+          "trash": [
+            "OP17-038",
+            "OP17-036",
+            "OP17-021",
+            "OP17-034",
+            "OP17-038",
+            "OP13-031",
+            "OP17-021",
+            "OP17-036",
+            "OP17-036",
+            "OP06-038",
+            "OP17-032"
+          ],
+          "board": [
+            "OP17-031",
+            "OP17-031",
+            "OP17-022",
+            "OP17-029",
+            "OP17-028"
+          ],
+          "life": 0,
+          "deck": [
+            "OP08-036",
+            "OP10-030",
+            "OP17-033",
+            "OP17-037"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-031": 2,
+            "OP17-022": 1,
+            "OP17-029": 1,
+            "OP17-028": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "The 3 Sweet Commanders",
+        "code": "OP17-114"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-106",
+          "card_name": "Charlotte Smoothie",
+          "effects": [
+            "Rest 2 Don",
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-113",
+          "card_name": "Streusen",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Brulee [\"OP17-108\">OP17-108]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-099",
+          "to_name": "Charlotte Linlin",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-099",
+          "to_name": "Charlotte Linlin",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP17-028",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Charlotte Oven [\"OP17-102\">OP17-102]",
+            "Trash Borsalino [\"EB04-058\">EB04-058]",
+            "Add card to top of Life from Deck"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-114",
+            "OP17-108"
+          ],
+          "board": [
+            "OP17-112",
+            "OP17-106",
+            "OP17-113"
+          ],
+          "trash": [
+            "OP17-102",
+            "OP17-115",
+            "OP17-107",
+            "OP17-103",
+            "OP17-109",
+            "OP17-107",
+            "EB04-058",
+            "OP17-104",
+            "OP17-107",
+            "OP17-103",
+            "OP17-104",
+            "OP17-106",
+            "OP17-117",
+            "OP17-113",
+            "EB01-056",
+            "OP16-119",
+            "OP17-102",
+            "EB04-058"
+          ],
+          "life": 7,
+          "rested": {
+            "OP17-106": 1,
+            "OP17-113": 1
+          }
+        },
+        "StrawHatMatt#6200": {
+          "hand": [
+            "OP17-027"
+          ],
+          "trash": [
+            "OP17-038",
+            "OP17-036",
+            "OP17-021",
+            "OP17-034",
+            "OP17-038",
+            "OP13-031",
+            "OP17-021",
+            "OP17-036",
+            "OP17-036",
+            "OP06-038",
+            "OP17-032",
+            "ST16-004",
+            "OP17-028"
+          ],
+          "board": [
+            "OP17-031",
+            "OP17-031",
+            "OP17-022",
+            "OP17-029"
+          ],
+          "life": 0,
+          "rested": {
+            "OP17-031": 2,
+            "OP17-022": 1,
+            "OP17-029": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "StrawHatMatt#6200",
+      "card_drawn": {
+        "name": "Lucky Roux",
+        "code": "OP17-033"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-020",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Yasopp",
+          "attacker_code": "OP17-031",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-027",
+          "card_name": "Benn Beckman",
+          "effects": [
+            "Draw 1 Card",
+            "Rest Charlotte Linlin [\"OP17-112\">OP17-112]",
+            "Rest Charlotte Smoothie [\"OP17-106\">OP17-106]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-022",
+          "to_name": "Shanks",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-022",
+          "target": "Charlotte Linlin [\"OP17-112\">OP17-112]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-113",
+            "OP17-108"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Yasopp",
+          "attacker_code": "OP17-031",
+          "target": "Charlotte Smoothie [\"OP17-106\">OP17-106]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-020",
+          "card_name": "Shanks",
+          "effects": [
+            "Trash Lucky Roux [\"OP17-033\">OP17-033]",
+            "Charlotte Linlin [\"OP17-112\">OP17-112] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Set Shanks [\"OP17-022\">OP17-022] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-114",
+            "OP17-112"
+          ],
+          "board": [
+            "OP17-112",
+            "OP17-113"
+          ],
+          "trash": [
+            "OP17-102",
+            "OP17-115",
+            "OP17-107",
+            "OP17-103",
+            "OP17-109",
+            "OP17-107",
+            "EB04-058",
+            "OP17-104",
+            "OP17-107",
+            "OP17-103",
+            "OP17-104",
+            "OP17-106",
+            "OP17-117",
+            "OP17-113",
+            "EB01-056",
+            "OP16-119",
+            "OP17-102",
+            "EB04-058",
+            "OP17-109",
+            "OP17-113",
+            "OP17-108",
+            "OP17-106"
+          ],
+          "life": 5,
+          "deck": [
+            "EB04-058",
+            "OP17-104",
+            "OP17-108",
+            "OP17-110",
+            "OP17-112",
+            "OP17-114",
+            "OP17-116"
+          ],
+          "life_cards": [
+            "OP16-119",
+            "OP17-108",
+            "OP17-109",
+            "OP17-109",
+            "OP17-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-112": 1,
+            "OP17-113": 1
+          }
+        },
+        "StrawHatMatt#6200": {
+          "hand": [
+            "OP17-036"
+          ],
+          "trash": [
+            "OP17-038",
+            "OP17-036",
+            "OP17-021",
+            "OP17-034",
+            "OP17-038",
+            "OP13-031",
+            "OP17-021",
+            "OP17-036",
+            "OP17-036",
+            "OP06-038",
+            "OP17-032",
+            "ST16-004",
+            "OP17-028",
+            "OP17-033"
+          ],
+          "board": [
+            "OP17-031",
+            "OP17-031",
+            "OP17-022",
+            "OP17-029",
+            "OP17-027"
+          ],
+          "life": 0,
+          "deck": [
+            "OP08-036",
+            "OP10-030",
+            "OP17-037"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-031": 2,
+            "OP17-022": 1,
+            "OP17-027": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Charlotte Flampe",
+        "code": "EB01-056"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-113",
+          "to_name": "Streusen",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-113",
+          "to_name": "Streusen",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-113",
+          "to_name": "Streusen",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-113",
+          "to_name": "Streusen",
+          "total": 4
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-113",
+          "to_name": "Streusen",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Streusen",
+          "attacker_code": "OP17-113",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-099",
+          "to_name": "Charlotte Linlin",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-099",
+          "to_name": "Charlotte Linlin",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-099",
+          "to_name": "Charlotte Linlin",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-099",
+          "to_name": "Charlotte Linlin",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP17-029",
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-114",
+            "OP17-112",
+            "EB01-056"
+          ],
+          "board": [
+            "OP17-112",
+            "OP17-113"
+          ],
+          "trash": [
+            "OP17-102",
+            "OP17-115",
+            "OP17-107",
+            "OP17-103",
+            "OP17-109",
+            "OP17-107",
+            "EB04-058",
+            "OP17-104",
+            "OP17-107",
+            "OP17-103",
+            "OP17-104",
+            "OP17-106",
+            "OP17-117",
+            "OP17-113",
+            "EB01-056",
+            "OP16-119",
+            "OP17-102",
+            "EB04-058",
+            "OP17-109",
+            "OP17-113",
+            "OP17-108",
+            "OP17-106"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-113": 1
+          }
+        },
+        "StrawHatMatt#6200": {
+          "hand": [],
+          "trash": [
+            "OP17-038",
+            "OP17-036",
+            "OP17-021",
+            "OP17-034",
+            "OP17-038",
+            "OP13-031",
+            "OP17-021",
+            "OP17-036",
+            "OP17-036",
+            "OP06-038",
+            "OP17-032",
+            "ST16-004",
+            "OP17-028",
+            "OP17-033",
+            "OP17-036",
+            "OP17-029"
+          ],
+          "board": [
+            "OP17-031",
+            "OP17-031",
+            "OP17-022",
+            "OP17-027"
+          ],
+          "life": 0,
+          "rested": {
+            "OP17-031": 2,
+            "OP17-022": 1,
+            "OP17-027": 1
+          }
+        }
+      }
+    }
+  ]
+}

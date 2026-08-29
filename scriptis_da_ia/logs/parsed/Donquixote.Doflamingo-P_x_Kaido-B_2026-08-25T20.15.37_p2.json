@@ -1,0 +1,1511 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "Bruhh#3997",
+        "leader": {
+          "name": "Donquixote Doflamingo",
+          "code": "OP14-060"
+        }
+      },
+      "p2": {
+        "name": "BigRato#5650",
+        "leader": {
+          "name": "Kaido",
+          "code": "OP17-058"
+        }
+      }
+    },
+    "goes_first": "BigRato#5650"
+  },
+  "total_turns": 13,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "BigRato#5650",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-065",
+            "OP08-069",
+            "EB04-030",
+            "OP17-065",
+            "OP17-062"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "Bruhh#3997": {
+          "hand": [
+            "OP07-076",
+            "OP10-071",
+            "OP14-072",
+            "OP14-061",
+            "OP14-063"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Bruhh#3997",
+      "card_drawn": {
+        "name": "Trebol",
+        "code": "OP14-068"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-065",
+            "OP08-069",
+            "EB04-030",
+            "OP17-065",
+            "OP17-062"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "EB04-031",
+            "OP07-076",
+            "OP07-077",
+            "OP09-077",
+            "OP17-060",
+            "OP17-061",
+            "OP17-073",
+            "OP17-074",
+            "OP17-077",
+            "ST18-001",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB04-032",
+            "OP08-069",
+            "OP13-076",
+            "OP17-063",
+            "OP17-073"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        },
+        "Bruhh#3997": {
+          "hand": [
+            "OP07-076",
+            "OP10-071",
+            "OP14-072",
+            "OP14-061",
+            "OP14-063",
+            "OP14-068"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "EB02-040",
+            "OP13-076",
+            "OP14-067",
+            "OP14-069",
+            "ST18-001",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "OP07-076",
+            "OP10-072",
+            "OP14-068",
+            "OP14-074",
+            "OP17-062"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "NoroNoro Beam Sword",
+        "code": "OP07-076"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Donquixote Doflamingo [\"OP14-060\">OP14-060]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-065",
+            "OP08-069",
+            "EB04-030",
+            "OP17-065",
+            "OP17-062",
+            "OP07-076"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "Bruhh#3997": {
+          "hand": [
+            "OP07-076",
+            "OP10-071",
+            "OP14-072",
+            "OP14-061",
+            "OP14-063",
+            "OP14-068",
+            "OP14-068"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Bruhh#3997",
+      "card_drawn": {
+        "name": "BRAND NEW WORLD",
+        "code": "EB02-040"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-072",
+          "card_name": "Baby 5",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-060",
+          "to_name": "Donquixote Doflamingo",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP14-060",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-065",
+            "OP08-069",
+            "EB04-030",
+            "OP17-065",
+            "OP17-062",
+            "OP07-076",
+            "OP17-063"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "EB04-031",
+            "OP07-077",
+            "OP09-077",
+            "OP17-060",
+            "OP17-061",
+            "OP17-073",
+            "OP17-074",
+            "OP17-077",
+            "ST18-001",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB04-032",
+            "OP08-069",
+            "OP13-076",
+            "OP17-073"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Bruhh#3997": {
+          "hand": [
+            "OP07-076",
+            "OP10-071",
+            "OP14-061",
+            "OP14-063",
+            "OP14-068",
+            "OP14-068",
+            "EB02-040"
+          ],
+          "trash": [],
+          "board": [
+            "OP14-072"
+          ],
+          "life": 4,
+          "deck": [
+            "OP13-076",
+            "OP14-067",
+            "OP14-069",
+            "ST18-001",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "OP07-076",
+            "OP10-072",
+            "OP14-074",
+            "OP17-062"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP14-072": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Kaido",
+        "code": "OP17-062"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Donquixote Doflamingo [\"OP14-060\">OP14-060]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-065",
+            "OP08-069",
+            "EB04-030",
+            "OP17-065",
+            "OP17-062",
+            "OP07-076",
+            "OP17-063",
+            "OP17-062"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        },
+        "Bruhh#3997": {
+          "hand": [
+            "OP07-076",
+            "OP10-071",
+            "OP14-061",
+            "OP14-063",
+            "OP14-068",
+            "OP14-068",
+            "EB02-040"
+          ],
+          "trash": [
+            "OP14-072"
+          ],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Bruhh#3997",
+      "card_drawn": {
+        "name": "Donquixote Rosinante",
+        "code": "OP10-072"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-061",
+          "card_name": "Vergo",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP14-060",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-065",
+            "OP08-069",
+            "EB04-030",
+            "OP17-065",
+            "OP17-062",
+            "OP17-063",
+            "OP17-062"
+          ],
+          "board": [],
+          "trash": [
+            "OP07-076"
+          ],
+          "life": 4,
+          "deck": [
+            "EB04-031",
+            "OP07-077",
+            "OP09-077",
+            "OP17-060",
+            "OP17-061",
+            "OP17-073",
+            "OP17-074",
+            "OP17-077",
+            "ST18-001",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB04-032",
+            "OP08-069",
+            "OP13-076",
+            "OP17-073"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        },
+        "Bruhh#3997": {
+          "hand": [
+            "OP07-076",
+            "OP10-071",
+            "OP14-063",
+            "OP14-068",
+            "OP14-068",
+            "EB02-040",
+            "OP10-072"
+          ],
+          "trash": [
+            "OP14-072"
+          ],
+          "board": [
+            "OP14-061"
+          ],
+          "life": 5,
+          "deck": [
+            "OP13-076",
+            "OP14-067",
+            "OP14-069",
+            "ST18-001",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB02-040",
+            "OP07-076",
+            "OP10-072",
+            "OP14-074",
+            "OP17-062"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP14-061": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "NoroNoro Beam Sword",
+        "code": "OP07-076"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 4
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 5
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 6
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Vergo [\"OP14-061\">OP14-061]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-065",
+            "OP08-069",
+            "EB04-030",
+            "OP17-065",
+            "OP17-062",
+            "OP17-063",
+            "OP17-062",
+            "OP07-076"
+          ],
+          "board": [],
+          "trash": [
+            "OP07-076"
+          ],
+          "life": 4
+        },
+        "Bruhh#3997": {
+          "hand": [
+            "OP07-076",
+            "OP10-071",
+            "OP14-063",
+            "OP14-068",
+            "OP14-068",
+            "EB02-040",
+            "OP10-072",
+            "OP10-071"
+          ],
+          "trash": [
+            "OP14-072",
+            "EB02-040"
+          ],
+          "board": [
+            "OP14-061"
+          ],
+          "life": 4,
+          "rested": {
+            "OP14-061": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Bruhh#3997",
+      "card_drawn": {
+        "name": "Vergo",
+        "code": "OP14-061"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-063",
+          "card_name": "Sugar",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "EB02-040",
+          "card_name": "BRAND NEW WORLD",
+          "effects": [
+            "Rest 2 Don",
+            "<b>Reveal and Draw Vergo [\"OP14-061\">OP14-061]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-060",
+          "to_name": "Donquixote Doflamingo",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP14-060",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Vergo",
+          "attacker_code": "OP14-061",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-065",
+            "OP08-069",
+            "EB04-030",
+            "OP17-065",
+            "OP17-062",
+            "OP17-063",
+            "OP17-062",
+            "OP07-076",
+            "EB04-032",
+            "OP08-069"
+          ],
+          "board": [],
+          "trash": [
+            "OP07-076"
+          ],
+          "life": 2,
+          "deck": [
+            "EB04-031",
+            "OP07-077",
+            "OP09-077",
+            "OP17-060",
+            "OP17-061",
+            "OP17-073",
+            "OP17-074",
+            "OP17-077",
+            "ST18-001",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP17-073"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Bruhh#3997": {
+          "hand": [
+            "OP07-076",
+            "OP10-071",
+            "OP14-068",
+            "OP14-068",
+            "OP10-072",
+            "OP10-071",
+            "OP14-061",
+            "OP14-061"
+          ],
+          "trash": [
+            "OP14-072",
+            "EB02-040",
+            "EB02-040"
+          ],
+          "board": [
+            "OP14-061",
+            "OP14-063"
+          ],
+          "life": 4,
+          "deck": [
+            "OP10-071",
+            "OP13-076",
+            "OP14-063",
+            "OP14-067",
+            "OP14-069",
+            "OP14-072",
+            "ST18-001",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "OP07-076",
+            "OP10-072",
+            "OP14-074",
+            "OP17-062"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP14-061": 1,
+            "OP14-063": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Usohachi",
+        "code": "ST18-001"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-032",
+          "card_name": "Queen",
+          "effects": [
+            "Trash Queen [\"OP17-065\">OP17-065]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Donquixote Doflamingo [\"OP14-060\">OP14-060]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "EB04-030",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 2 Don",
+            "Give Kaido [\"EB04-030\">EB04-030] Rush",
+            "Rest Sugar [\"OP14-063\">OP14-063]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "EB04-030",
+          "target": "Sugar [\"OP14-063\">OP14-063]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-065",
+            "OP08-069",
+            "OP17-062",
+            "OP17-063",
+            "OP17-062",
+            "OP07-076",
+            "OP08-069",
+            "OP17-074",
+            "OP17-061",
+            "ST18-001"
+          ],
+          "board": [
+            "EB04-032",
+            "EB04-030"
+          ],
+          "trash": [
+            "OP07-076",
+            "OP17-065"
+          ],
+          "life": 2,
+          "rested": {
+            "EB04-032": 1,
+            "EB04-030": 1
+          }
+        },
+        "Bruhh#3997": {
+          "hand": [
+            "OP07-076",
+            "OP10-071",
+            "OP14-068",
+            "OP14-068",
+            "OP10-072",
+            "OP10-071",
+            "OP14-061",
+            "OP14-061"
+          ],
+          "trash": [
+            "OP14-072",
+            "EB02-040",
+            "EB02-040",
+            "OP14-063"
+          ],
+          "board": [
+            "OP14-061",
+            "OP14-074"
+          ],
+          "life": 3,
+          "rested": {
+            "OP14-061": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Bruhh#3997",
+      "card_drawn": {
+        "name": "Baby 5",
+        "code": "OP14-072"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-071",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Minus 1 Don",
+            "Deploy Donquixote Rosinante [\"OP10-072\">OP10-072]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-072",
+          "card_name": "Donquixote Rosinante",
+          "effects": [
+            "Trash NoroNoro Beam Sword [\"OP07-076\">OP07-076]",
+            "Draw 2 Card",
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monet",
+          "attacker_code": "OP14-074",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST18-001"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Vergo",
+          "attacker_code": "OP14-061",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP14-060",
+          "to_name": "Donquixote Doflamingo",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP14-060",
+          "target": "Kaido [\"EB04-030\">EB04-030]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-065",
+            "OP08-069",
+            "OP17-062",
+            "OP17-063",
+            "OP17-062",
+            "OP07-076",
+            "OP08-069",
+            "OP17-074",
+            "OP17-061",
+            "OP17-073"
+          ],
+          "board": [
+            "EB04-032",
+            "EB04-030"
+          ],
+          "trash": [
+            "OP07-076",
+            "OP17-065",
+            "ST18-001"
+          ],
+          "life": 1,
+          "deck": [
+            "EB04-031",
+            "OP07-077",
+            "OP09-077",
+            "OP17-060",
+            "OP17-073",
+            "OP17-077",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "OP13-076"
+          ],
+          "don_deck": [
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB04-032": 1,
+            "EB04-030": 1
+          }
+        },
+        "Bruhh#3997": {
+          "hand": [
+            "OP10-071",
+            "OP14-068",
+            "OP14-068",
+            "OP14-061",
+            "OP14-061",
+            "OP14-069",
+            "OP14-068",
+            "OP14-072"
+          ],
+          "trash": [
+            "OP14-072",
+            "EB02-040",
+            "EB02-040",
+            "OP14-063",
+            "OP07-076"
+          ],
+          "board": [
+            "OP14-061",
+            "OP14-074",
+            "OP10-071",
+            "OP10-072"
+          ],
+          "life": 3,
+          "deck": [
+            "OP10-071",
+            "OP13-076",
+            "OP14-063",
+            "OP14-067",
+            "ST18-001",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "OP07-076",
+            "OP10-072",
+            "OP17-062"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP14-061": 1,
+            "OP14-074": 1,
+            "OP10-071": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Yamato",
+        "code": "OP17-074"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-074",
+          "card_name": "Yamato",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-074",
+          "card_name": "Yamato",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Donquixote Doflamingo [\"OP14-060\">OP14-060]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-072"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "EB04-030",
+          "target": "Donquixote Doflamingo [\"OP14-060\">OP14-060]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-068"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-065",
+            "OP08-069",
+            "OP17-062",
+            "OP17-063",
+            "OP17-062",
+            "OP07-076",
+            "OP08-069",
+            "OP17-061",
+            "OP17-073"
+          ],
+          "board": [
+            "EB04-032",
+            "EB04-030",
+            "OP17-074",
+            "OP17-074"
+          ],
+          "trash": [
+            "OP07-076",
+            "OP17-065",
+            "ST18-001"
+          ],
+          "life": 1,
+          "rested": {
+            "EB04-030": 1,
+            "OP17-074": 2
+          }
+        },
+        "Bruhh#3997": {
+          "hand": [
+            "OP10-071",
+            "OP14-068",
+            "OP14-068",
+            "OP14-061",
+            "OP14-061",
+            "OP14-069"
+          ],
+          "trash": [
+            "OP14-072",
+            "EB02-040",
+            "EB02-040",
+            "OP14-063",
+            "OP07-076",
+            "OP14-072",
+            "OP14-068"
+          ],
+          "board": [
+            "OP14-061",
+            "OP14-074",
+            "OP10-071",
+            "OP10-072"
+          ],
+          "life": 3,
+          "rested": {
+            "OP14-061": 1,
+            "OP14-074": 1,
+            "OP10-071": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Bruhh#3997",
+      "card_drawn": {
+        "name": "Kaido",
+        "code": "OP17-062"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-069",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Minus 3 Don",
+            "Destroy Yamato [\"OP17-074\">OP17-074]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP10-071",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP17-074",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Vergo",
+          "attacker_code": "OP14-061",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monet",
+          "attacker_code": "OP14-074",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-073"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP14-060",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP10-072",
+          "card_name": "Donquixote Rosinante",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-065",
+            "OP08-069",
+            "OP17-062",
+            "OP17-063",
+            "OP17-062",
+            "OP08-069",
+            "OP17-061",
+            "OP13-076"
+          ],
+          "board": [
+            "EB04-032",
+            "EB04-030"
+          ],
+          "trash": [
+            "OP07-076",
+            "OP17-065",
+            "ST18-001",
+            "OP17-074",
+            "OP17-074",
+            "OP07-076",
+            "OP17-073"
+          ],
+          "life": 0,
+          "deck": [
+            "EB04-031",
+            "OP07-077",
+            "OP09-077",
+            "OP17-060",
+            "OP17-073",
+            "OP17-077",
+            "ST34-004"
+          ],
+          "don_deck": [
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB04-030": 1
+          }
+        },
+        "Bruhh#3997": {
+          "hand": [
+            "OP10-071",
+            "OP14-068",
+            "OP14-068",
+            "OP14-061",
+            "OP14-061",
+            "OP17-062"
+          ],
+          "trash": [
+            "OP14-072",
+            "EB02-040",
+            "EB02-040",
+            "OP14-063",
+            "OP07-076",
+            "OP14-072",
+            "OP14-068"
+          ],
+          "board": [
+            "OP14-061",
+            "OP14-074",
+            "OP10-071",
+            "OP10-072",
+            "OP14-069"
+          ],
+          "life": 3,
+          "deck": [
+            "OP10-071",
+            "OP13-076",
+            "OP14-063",
+            "OP14-067",
+            "ST18-001",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "OP07-076",
+            "OP10-072",
+            "OP17-062"
+          ],
+          "don_deck": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP14-061": 1,
+            "OP14-074": 1,
+            "OP10-071": 1,
+            "OP14-069": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Charlotte Linlin",
+        "code": "ST34-004"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-061",
+          "card_name": "Lead Performers",
+          "effects": [
+            "Minus 1 Don",
+            "Add card to top of Life from Deck",
+            "Trash Lead Performers [\"OP17-061\">OP17-061]",
+            "Deploy Queen [\"OP17-065\">OP17-065]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-065",
+          "card_name": "Queen",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card",
+            "Vergo [\"OP14-061\">OP14-061] can't attack next turn",
+            "Donquixote Rosinante [\"OP10-072\">OP10-072] can't attack next turn"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "EB04-032",
+          "card_name": "Queen",
+          "effects": [
+            "Trash Kaido [\"OP17-062\">OP17-062]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Donquixote Doflamingo [\"OP14-060\">OP14-060]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-068"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "EB04-030",
+          "target": "Donquixote Doflamingo [\"OP14-060\">OP14-060]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP08-069",
+            "OP17-063",
+            "OP17-062",
+            "OP08-069",
+            "OP13-076",
+            "OP17-073",
+            "ST18-001",
+            "ST34-004"
+          ],
+          "board": [
+            "EB04-032",
+            "EB04-030",
+            "OP17-065",
+            "EB04-032"
+          ],
+          "trash": [
+            "OP07-076",
+            "OP17-065",
+            "ST18-001",
+            "OP17-074",
+            "OP17-074",
+            "OP07-076",
+            "OP17-073",
+            "OP17-061",
+            "OP17-062"
+          ],
+          "life": 1,
+          "rested": {
+            "EB04-030": 1,
+            "EB04-032": 1
+          }
+        },
+        "Bruhh#3997": {
+          "hand": [
+            "OP10-071",
+            "OP14-068",
+            "OP14-061",
+            "OP14-061",
+            "OP17-062",
+            "OP17-062"
+          ],
+          "trash": [
+            "OP14-072",
+            "EB02-040",
+            "EB02-040",
+            "OP14-063",
+            "OP07-076",
+            "OP14-072",
+            "OP14-068",
+            "OP14-068"
+          ],
+          "board": [
+            "OP14-061",
+            "OP14-074",
+            "OP10-071",
+            "OP10-072",
+            "OP14-069"
+          ],
+          "life": 2,
+          "rested": {
+            "OP14-061": 1,
+            "OP14-074": 1,
+            "OP10-071": 1,
+            "OP14-069": 1
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP17-074",
+      "name": "Yamato",
+      "count": 4
+    },
+    {
+      "code": "OP17-102",
+      "name": "Charlotte Oven",
+      "count": 3
+    },
+    {
+      "code": "OP09-078",
+      "name": "Gum Gum Giant",
+      "count": 3
+    },
+    {
+      "code": "OP17-113",
+      "name": "Streusen",
+      "count": 3
+    },
+    {
+      "code": "OP17-107",
+      "name": "Charlotte Daifuku",
+      "count": 2
+    },
+    {
+      "code": "OP11-070",
+      "name": "Charlotte Pudding",
+      "count": 2
+    },
+    {
+      "code": "OP17-109",
+      "name": "Charlotte Pudding",
+      "count": 1
+    },
+    {
+      "code": "OP17-110",
+      "name": "OP17-110",
+      "count": 1
+    },
+    {
+      "code": "OP17-114",
+      "name": "The 3 Sweet Commanders",
+      "count": 1
+    },
+    {
+      "code": "OP12-112",
+      "name": "OP12-112",
+      "count": 1
+    },
+    {
+      "code": "OP17-112",
+      "name": "Charlotte Linlin",
+      "count": 1
+    },
+    {
+      "code": "OP17-106",
+      "name": "Charlotte Smoothie",
+      "count": 1
+    }
+  ],
+  "total_seen": 23,
+  "leader": "OP09-062"
+}

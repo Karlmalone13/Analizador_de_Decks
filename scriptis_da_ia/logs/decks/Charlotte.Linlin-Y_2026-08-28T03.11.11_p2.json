@@ -1,0 +1,81 @@
+{
+  "cards": [
+    {
+      "code": "OP17-109",
+      "name": "Charlotte Pudding",
+      "count": 3
+    },
+    {
+      "code": "OP04-108",
+      "name": "Charlotte Moscato",
+      "count": 2
+    },
+    {
+      "code": "OP17-108",
+      "name": "Charlotte Brulee",
+      "count": 2
+    },
+    {
+      "code": "OP03-113",
+      "name": "Charlotte Perospero",
+      "count": 2
+    },
+    {
+      "code": "OP17-104",
+      "name": "Charlotte Cracker",
+      "count": 2
+    },
+    {
+      "code": "OP03-114",
+      "name": "Charlotte Linlin",
+      "count": 1
+    },
+    {
+      "code": "OP17-115",
+      "name": "There's Still A Code Of Honor?",
+      "count": 1
+    },
+    {
+      "code": "OP17-106",
+      "name": "OP17-106",
+      "count": 1
+    },
+    {
+      "code": "OP11-106",
+      "name": "Zeus",
+      "count": 1
+    },
+    {
+      "code": "OP17-117",
+      "name": "Maser Saber",
+      "count": 1
+    },
+    {
+      "code": "OP17-102",
+      "name": "Charlotte Oven",
+      "count": 1
+    },
+    {
+      "code": "OP17-103",
+      "name": "Charlotte Katakuri",
+      "count": 1
+    },
+    {
+      "code": "OP17-113",
+      "name": "Streusen",
+      "count": 1
+    },
+    {
+      "code": "OP17-107",
+      "name": "OP17-107",
+      "count": 1
+    },
+    {
+      "code": "OP17-112",
+      "name": "Charlotte Linlin",
+      "count": 1
+    }
+  ],
+  "total_seen": 21,
+  "leader": "OP17-099"
+}

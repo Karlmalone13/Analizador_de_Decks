@@ -1,0 +1,51 @@
+{
+  "cards": [
+    {
+      "code": "OP17-110",
+      "name": "Charlotte Perospero",
+      "count": 3
+    },
+    {
+      "code": "OP17-106",
+      "name": "Charlotte Smoothie",
+      "count": 2
+    },
+    {
+      "code": "OP17-113",
+      "name": "Streusen",
+      "count": 2
+    },
+    {
+      "code": "OP17-114",
+      "name": "The 3 Sweet Commanders",
+      "count": 2
+    },
+    {
+      "code": "OP17-108",
+      "name": "Charlotte Brulee",
+      "count": 1
+    },
+    {
+      "code": "OP17-107",
+      "name": "Charlotte Daifuku",
+      "count": 1
+    },
+    {
+      "code": "ST20-005",
+      "name": "ST20-005",
+      "count": 1
+    },
+    {
+      "code": "OP17-103",
+      "name": "OP17-103",
+      "count": 1
+    },
+    {
+      "code": "ST20-003",
+      "name": "ST20-003",
+      "count": 1
+    }
+  ],
+  "total_seen": 14,
+  "leader": "OP17-099"
+}

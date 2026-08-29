@@ -1,0 +1,731 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "BigRato#5650",
+        "leader": {
+          "name": "Charlotte Linlin",
+          "code": "OP17-099"
+        }
+      },
+      "p2": {
+        "name": "Eileen#5972",
+        "leader": {
+          "name": "Boa Hancock - OP14-041",
+          "code": "OP14-041"
+        }
+      }
+    },
+    "goes_first": "BigRato#5650"
+  },
+  "total_turns": 7,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "BigRato#5650",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-113",
+          "card_name": "Streusen",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Perospero [\"OP17-110\">OP17-110]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-110",
+            "OP17-108",
+            "OP17-107",
+            "OP17-106",
+            "OP17-110"
+          ],
+          "board": [
+            "OP17-113"
+          ],
+          "trash": [],
+          "life": 5,
+          "rested": {
+            "OP17-113": 1
+          }
+        },
+        "Eileen#5972": {
+          "hand": [
+            "OP16-113",
+            "OP12-119",
+            "OP14-103",
+            "OP16-119",
+            "OP16-119"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Eileen#5972",
+      "card_drawn": {
+        "name": "Boa Hancock",
+        "code": "OP14-112"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-103",
+          "card_name": "Gloriosa (Grandma Nyon)",
+          "effects": [
+            "Takes Top Life",
+            "Added card to top of Life from Hand"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-110",
+            "OP17-108",
+            "OP17-107",
+            "OP17-106",
+            "OP17-110"
+          ],
+          "board": [
+            "OP17-113"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP17-102",
+            "OP17-103",
+            "OP17-107",
+            "OP17-109",
+            "OP17-111",
+            "OP17-112",
+            "OP17-114",
+            "OP17-115"
+          ],
+          "life_cards": [
+            "OP17-104",
+            "OP17-106",
+            "OP17-110",
+            "ST20-003",
+            "ST20-005"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-113": 1
+          }
+        },
+        "Eileen#5972": {
+          "hand": [
+            "OP12-119",
+            "OP16-119",
+            "OP16-119",
+            "OP14-112",
+            "OP15-113"
+          ],
+          "trash": [],
+          "board": [
+            "OP14-103"
+          ],
+          "life": 4,
+          "deck": [
+            "EB04-058",
+            "OP06-058",
+            "OP06-115",
+            "OP07-057",
+            "OP14-105",
+            "OP14-107",
+            "OP14-108",
+            "OP16-111"
+          ],
+          "life_cards": [
+            "OP11-054",
+            "OP14-104",
+            "OP14-114",
+            "OP16-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP14-103": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Streusen",
+        "code": "OP17-113"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Boa Hancock [\"OP14-041\">OP14-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Charlotte Perospero [\"OP17-110\">OP17-110]",
+            "Randomly send Marshall D. Teach [\"OP16-119\">OP16-119] to Trash from Hand"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-108",
+          "card_name": "Charlotte Brulee",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-107",
+            "OP17-106",
+            "OP17-110",
+            "OP17-113"
+          ],
+          "board": [
+            "OP17-113",
+            "OP17-108"
+          ],
+          "trash": [
+            "OP17-110"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-108": 1
+          }
+        },
+        "Eileen#5972": {
+          "hand": [
+            "OP12-119",
+            "OP16-119",
+            "OP14-112",
+            "OP15-113",
+            "OP14-104"
+          ],
+          "trash": [
+            "OP16-119"
+          ],
+          "board": [
+            "OP14-103",
+            "OP16-113"
+          ],
+          "life": 3,
+          "rested": {
+            "OP14-103": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Eileen#5972",
+      "card_drawn": {
+        "name": "You're the one who should disappear!",
+        "code": "OP06-115"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Boa Hancock",
+          "attacker_code": "OP14-041",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-113",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Trash Gecko Moria [\"OP14-104\">OP14-104]",
+            "Add card to top of Life from Deck"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-107",
+            "OP17-106",
+            "OP17-110",
+            "OP17-113",
+            "ST20-005"
+          ],
+          "board": [
+            "OP17-113",
+            "OP17-108"
+          ],
+          "trash": [
+            "OP17-110"
+          ],
+          "life": 4,
+          "deck": [
+            "OP17-102",
+            "OP17-103",
+            "OP17-107",
+            "OP17-109",
+            "OP17-111",
+            "OP17-112",
+            "OP17-114",
+            "OP17-115"
+          ],
+          "life_cards": [
+            "OP17-104",
+            "OP17-106",
+            "OP17-110",
+            "ST20-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-108": 1
+          }
+        },
+        "Eileen#5972": {
+          "hand": [
+            "OP12-119",
+            "OP16-119",
+            "OP14-112",
+            "OP06-115"
+          ],
+          "trash": [
+            "OP16-119",
+            "OP14-104"
+          ],
+          "board": [
+            "OP14-103",
+            "OP16-113",
+            "OP15-113"
+          ],
+          "life": 4,
+          "deck": [
+            "EB04-058",
+            "OP06-058",
+            "OP07-057",
+            "OP14-105",
+            "OP14-108",
+            "OP16-111"
+          ],
+          "life_cards": [
+            "OP11-054",
+            "OP14-104",
+            "OP14-107",
+            "OP14-114"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-113": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "The 3 Sweet Commanders",
+        "code": "OP17-114"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-113",
+          "card_name": "Streusen",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Katakuri [\"OP17-103\">OP17-103]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-107",
+          "card_name": "Charlotte Daifuku",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-099",
+          "to_name": "Charlotte Linlin",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Boa Hancock [\"OP14-041\">OP14-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Charlotte Katakuri [\"OP17-103\">OP17-103]",
+            "Randomly send Bartholomew Kuma [\"OP12-119\">OP12-119] to Trash from Hand"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-106",
+            "OP17-110",
+            "ST20-005",
+            "OP17-114"
+          ],
+          "board": [
+            "OP17-113",
+            "OP17-108",
+            "OP17-113",
+            "OP17-107"
+          ],
+          "trash": [
+            "OP17-110",
+            "OP17-103"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-113": 1,
+            "OP17-107": 1
+          }
+        },
+        "Eileen#5972": {
+          "hand": [
+            "OP16-119",
+            "OP14-112",
+            "OP06-115",
+            "OP15-113"
+          ],
+          "trash": [
+            "OP16-119",
+            "OP14-104",
+            "OP12-119"
+          ],
+          "board": [
+            "OP14-103",
+            "OP16-113",
+            "OP15-113",
+            "OP14-107"
+          ],
+          "life": 3,
+          "rested": {
+            "OP15-113": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Eileen#5972",
+      "card_drawn": {
+        "name": "Boa Hancock",
+        "code": "OP14-112"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-113",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Trash You're the one who should disappear! [\"OP06-115\">OP06-115]",
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shakuyaku",
+          "attacker_code": "OP14-107",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "OP15-113",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP14-041",
+          "to_name": "Boa Hancock",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Boa Hancock",
+          "attacker_code": "OP14-041",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP17-108",
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-106",
+            "OP17-110",
+            "ST20-005",
+            "OP17-114"
+          ],
+          "board": [
+            "OP17-113",
+            "OP17-107",
+            "OP17-106",
+            "OP17-110"
+          ],
+          "trash": [
+            "OP17-110",
+            "OP17-103",
+            "OP17-113",
+            "OP17-108"
+          ],
+          "life": 2,
+          "deck": [
+            "OP17-102",
+            "OP17-104",
+            "OP17-106",
+            "OP17-107",
+            "OP17-109",
+            "OP17-111",
+            "OP17-112",
+            "OP17-115"
+          ],
+          "life_cards": [
+            "OP17-104",
+            "ST20-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP17-113": 1,
+            "OP17-107": 1
+          }
+        },
+        "Eileen#5972": {
+          "hand": [
+            "OP16-119",
+            "OP14-112",
+            "OP14-112"
+          ],
+          "trash": [
+            "OP16-119",
+            "OP14-104",
+            "OP12-119",
+            "OP06-115"
+          ],
+          "board": [
+            "OP14-103",
+            "OP16-113",
+            "OP15-113",
+            "OP14-107",
+            "OP15-113"
+          ],
+          "life": 4,
+          "deck": [
+            "EB04-058",
+            "OP06-058",
+            "OP07-057",
+            "OP14-105",
+            "OP14-108",
+            "OP16-111"
+          ],
+          "life_cards": [
+            "OP11-054",
+            "OP14-104",
+            "OP14-114",
+            "OP15-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP15-113": 2,
+            "OP14-107": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "The 3 Sweet Commanders",
+        "code": "OP17-114"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-110",
+          "card_name": "Charlotte Perospero",
+          "effects": [
+            "Deploy Charlotte Linlin [\"ST20-005\">ST20-005]",
+            "Give Charlotte Perospero [\"OP17-110\">OP17-110] Rush"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST20-005",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash The 3 Sweet Commanders [\"OP17-114\">OP17-114]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Boa Hancock [\"OP14-041\">OP14-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Charlotte Smoothie [\"OP17-106\">OP17-106]",
+            "Randomly send Marshall D. Teach [\"OP16-119\">OP16-119] to Trash from Hand"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-114"
+          ],
+          "board": [
+            "OP17-107",
+            "OP17-106",
+            "OP17-110",
+            "OP17-110",
+            "ST20-005"
+          ],
+          "trash": [
+            "OP17-110",
+            "OP17-103",
+            "OP17-113",
+            "OP17-108",
+            "OP17-113",
+            "OP17-114",
+            "OP17-106"
+          ],
+          "life": 2
+        },
+        "Eileen#5972": {
+          "hand": [
+            "OP14-112",
+            "OP14-112",
+            "OP11-054"
+          ],
+          "trash": [
+            "OP16-119",
+            "OP14-104",
+            "OP12-119",
+            "OP06-115",
+            "OP15-113",
+            "OP16-119"
+          ],
+          "board": [
+            "OP14-103",
+            "OP16-113",
+            "OP15-113",
+            "OP14-107",
+            "OP15-113"
+          ],
+          "life": 2,
+          "rested": {
+            "OP15-113": 2,
+            "OP14-107": 1
+          }
+        }
+      }
+    }
+  ]
+}

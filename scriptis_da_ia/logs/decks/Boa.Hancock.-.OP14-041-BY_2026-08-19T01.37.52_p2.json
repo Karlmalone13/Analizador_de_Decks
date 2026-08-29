@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP15-113",
+      "name": "Roronoa Zoro",
+      "count": 3
+    },
+    {
+      "code": "OP16-119",
+      "name": "Marshall D. Teach",
+      "count": 2
+    },
+    {
+      "code": "OP14-112",
+      "name": "Boa Hancock",
+      "count": 2
+    },
+    {
+      "code": "OP16-113",
+      "name": "Boa Marigold",
+      "count": 1
+    },
+    {
+      "code": "OP12-119",
+      "name": "Bartholomew Kuma",
+      "count": 1
+    },
+    {
+      "code": "OP14-103",
+      "name": "Gloriosa (Grandma Nyon)",
+      "count": 1
+    },
+    {
+      "code": "OP14-104",
+      "name": "Gecko Moria",
+      "count": 1
+    },
+    {
+      "code": "OP06-115",
+      "name": "You're the one who should disappear!",
+      "count": 1
+    },
+    {
+      "code": "OP14-107",
+      "name": "OP14-107",
+      "count": 1
+    },
+    {
+      "code": "OP11-054",
+      "name": "Nami",
+      "count": 1
+    },
+    {
+      "code": "OP14-114",
+      "name": "Ran",
+      "count": 1
+    }
+  ],
+  "total_seen": 15,
+  "leader": "OP14-041"
+}

@@ -4300,5 +4300,198 @@
       "You": "decks_full/Monkey.D.Luffy-RG_2026-08-25T23.54.21.json",
       "Opponent": "decks_full/Jewelry.Bonney-G_2026-08-25T23.54.21.json"
     }
+  },
+  {
+    "id": "2026-08-19T01.37.52_p2",
+    "friendly_name": "Charlotte.Linlin-Y_x_Boa.Hancock.-.OP14-041-BY",
+    "date": "2026-08-19",
+    "p1": {
+      "name": "BigRato#5650",
+      "leader_code": "OP17-099",
+      "leader_name": "Charlotte Linlin",
+      "slug": "Charlotte.Linlin-Y"
+    },
+    "p2": {
+      "name": "Eileen#5972",
+      "leader_code": "OP14-041",
+      "leader_name": "Boa Hancock - OP14-041",
+      "slug": "Boa.Hancock.-.OP14-041-BY"
+    },
+    "turns": 7,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Charlotte.Linlin-Y_x_Boa.Hancock.-.OP14-041-BY_2026-08-19T01.37.52_p2.log",
+    "parsed_file": "parsed/Charlotte.Linlin-Y_x_Boa.Hancock.-.OP14-041-BY_2026-08-19T01.37.52_p2.json",
+    "deck_files": {
+      "BigRato#5650": "decks/Charlotte.Linlin-Y_2026-08-19T01.37.52_p2.json",
+      "Eileen#5972": "decks/Boa.Hancock.-.OP14-041-BY_2026-08-19T01.37.52_p2.json"
+    },
+    "deck_full_files": {}
+  },
+  {
+    "id": "2026-08-23T20.01.33_p2",
+    "friendly_name": "Portgas.D.Ace-R_x_Nico.Robin-PY",
+    "date": "2026-08-23",
+    "p1": {
+      "name": "BigRato#5650",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas.D.Ace (001)",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "p2": {
+      "name": "readingmycards#28205",
+      "leader_code": "OP09-062",
+      "leader_name": "Nico Robin (062)",
+      "slug": "Nico.Robin-PY"
+    },
+    "turns": 8,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Portgas.D.Ace-R_x_Nico.Robin-PY_2026-08-23T20.01.33_p2.log",
+    "parsed_file": "parsed/Portgas.D.Ace-R_x_Nico.Robin-PY_2026-08-23T20.01.33_p2.json",
+    "deck_files": {
+      "BigRato#5650": "decks/Portgas.D.Ace-R_2026-08-23T20.01.33_p2.json",
+      "readingmycards#28205": "decks/Nico.Robin-PY_2026-08-23T20.01.33_p2.json"
+    },
+    "deck_full_files": {
+      "BigRato#5650": "decks_full/Portgas.D.Ace-R_2026-08-23T20.01.33_p2.json"
+    }
+  },
+  {
+    "id": "2026-08-28T02.29.23_p2",
+    "friendly_name": "Charlotte.Linlin-Y_x_Shanks-G",
+    "date": "2026-08-28",
+    "p1": {
+      "name": "BigRato#5650",
+      "leader_code": "OP17-099",
+      "leader_name": "Charlotte Linlin",
+      "slug": "Charlotte.Linlin-Y"
+    },
+    "p2": {
+      "name": "StrawHatMatt#6200",
+      "leader_code": "OP17-020",
+      "leader_name": "Shanks",
+      "slug": "Shanks-G"
+    },
+    "turns": 16,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Charlotte.Linlin-Y_x_Shanks-G_2026-08-28T02.29.23_p2.log",
+    "parsed_file": "parsed/Charlotte.Linlin-Y_x_Shanks-G_2026-08-28T02.29.23_p2.json",
+    "deck_files": {
+      "BigRato#5650": "decks/Charlotte.Linlin-Y_2026-08-28T02.29.23_p2.json",
+      "StrawHatMatt#6200": "decks/Shanks-G_2026-08-28T02.29.23_p2.json"
+    },
+    "deck_full_files": {}
+  },
+  {
+    "id": "2026-08-28T03.11.11_p2",
+    "friendly_name": "Charlotte.Linlin-Y_x_Portgas.D.Ace-R",
+    "date": "2026-08-28",
+    "p1": {
+      "name": "BigRato#5650",
+      "leader_code": "OP17-099",
+      "leader_name": "Charlotte Linlin",
+      "slug": "Charlotte.Linlin-Y"
+    },
+    "p2": {
+      "name": "projj#37649",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas.D.Ace (001)",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "turns": 9,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Charlotte.Linlin-Y_x_Portgas.D.Ace-R_2026-08-28T03.11.11_p2.log",
+    "parsed_file": "parsed/Charlotte.Linlin-Y_x_Portgas.D.Ace-R_2026-08-28T03.11.11_p2.json",
+    "deck_files": {
+      "BigRato#5650": "decks/Charlotte.Linlin-Y_2026-08-28T03.11.11_p2.json",
+      "projj#37649": "decks/Portgas.D.Ace-R_2026-08-28T03.11.11_p2.json"
+    },
+    "deck_full_files": {
+      "projj#37649": "decks_full/Portgas.D.Ace-R_2026-08-28T03.11.11_p2.json"
+    }
+  },
+  {
+    "id": "2026-08-29T00.33.16_p2",
+    "friendly_name": "Charlotte.Linlin-Y_x_Shanks-G",
+    "date": "2026-08-29",
+    "p1": {
+      "name": "BigRato#5650",
+      "leader_code": "OP17-099",
+      "leader_name": "Charlotte Linlin",
+      "slug": "Charlotte.Linlin-Y"
+    },
+    "p2": {
+      "name": "LifeisSoup#5268",
+      "leader_code": "OP17-020",
+      "leader_name": "Shanks",
+      "slug": "Shanks-G"
+    },
+    "turns": 31,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Charlotte.Linlin-Y_x_Shanks-G_2026-08-29T00.33.16_p2.log",
+    "parsed_file": "parsed/Charlotte.Linlin-Y_x_Shanks-G_2026-08-29T00.33.16_p2.json",
+    "deck_files": {
+      "BigRato#5650": "decks/Charlotte.Linlin-Y_2026-08-29T00.33.16_p2.json",
+      "LifeisSoup#5268": "decks/Shanks-G_2026-08-29T00.33.16_p2.json"
+    },
+    "deck_full_files": {}
+  },
+  {
+    "id": "2026-08-28T02.50.38_p2",
+    "friendly_name": "Monkey.D.Luffy-P_x_Charlotte.Linlin-Y",
+    "date": "2026-08-28",
+    "p1": {
+      "name": "Risco#9935",
+      "leader_code": "OP05-060",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-P"
+    },
+    "p2": {
+      "name": "BigRato#5650",
+      "leader_code": "OP17-099",
+      "leader_name": "Charlotte Linlin",
+      "slug": "Charlotte.Linlin-Y"
+    },
+    "turns": 21,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Monkey.D.Luffy-P_x_Charlotte.Linlin-Y_2026-08-28T02.50.38_p2.log",
+    "parsed_file": "parsed/Monkey.D.Luffy-P_x_Charlotte.Linlin-Y_2026-08-28T02.50.38_p2.json",
+    "deck_files": {
+      "Risco#9935": "decks/Monkey.D.Luffy-P_2026-08-28T02.50.38_p2.json",
+      "BigRato#5650": "decks/Charlotte.Linlin-Y_2026-08-28T02.50.38_p2.json"
+    },
+    "deck_full_files": {}
+  },
+  {
+    "id": "2026-08-25T20.15.37_p2",
+    "friendly_name": "Donquixote.Doflamingo-P_x_Kaido-B",
+    "date": "2026-08-25",
+    "p1": {
+      "name": "Bruhh#3997",
+      "leader_code": "OP14-060",
+      "leader_name": "Donquixote Doflamingo",
+      "slug": "Donquixote.Doflamingo-P"
+    },
+    "p2": {
+      "name": "BigRato#5650",
+      "leader_code": "OP17-058",
+      "leader_name": "Kaido",
+      "slug": "Kaido-B"
+    },
+    "turns": 13,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Donquixote.Doflamingo-P_x_Kaido-B_2026-08-25T20.15.37_p2.log",
+    "parsed_file": "parsed/Donquixote.Doflamingo-P_x_Kaido-B_2026-08-25T20.15.37_p2.json",
+    "deck_files": {
+      "Bruhh#3997": "decks/Donquixote.Doflamingo-P_2026-08-25T20.15.37_p2.json",
+      "BigRato#5650": "decks/Kaido-B_2026-08-25T20.15.37_p2.json"
+    },
+    "deck_full_files": {}
   }
 ]

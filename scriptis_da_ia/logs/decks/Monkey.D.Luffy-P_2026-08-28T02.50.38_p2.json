@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "code": "ST18-001",
+      "name": "Usohachi",
+      "count": 4
+    },
+    {
+      "code": "OP07-076",
+      "name": "NoroNoro Beam Sword",
+      "count": 3
+    },
+    {
+      "code": "OP13-061",
+      "name": "Inuarashi",
+      "count": 3
+    },
+    {
+      "code": "EB01-061",
+      "name": "Mr. 2 Bon Clay (Bentham)",
+      "count": 3
+    },
+    {
+      "code": "OP09-078",
+      "name": "Gum Gum Giant",
+      "count": 3
+    },
+    {
+      "code": "OP15-078",
+      "name": "Mamaragan",
+      "count": 2
+    },
+    {
+      "code": "OP07-064",
+      "name": "Sanji",
+      "count": 2
+    },
+    {
+      "code": "OP17-062",
+      "name": "Kaido",
+      "count": 2
+    },
+    {
+      "code": "OP17-074",
+      "name": "Yamato",
+      "count": 2
+    },
+    {
+      "code": "ST34-004",
+      "name": "Charlotte Linlin",
+      "count": 2
+    },
+    {
+      "code": "OP13-076",
+      "name": "OP13-076",
+      "count": 1
+    },
+    {
+      "code": "OP11-067",
+      "name": "Charlotte Katakuri",
+      "count": 1
+    },
+    {
+      "code": "OP05-073",
+      "name": "OP05-073",
+      "count": 1
+    }
+  ],
+  "total_seen": 29,
+  "leader": "OP05-060"
+}

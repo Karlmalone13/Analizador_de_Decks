@@ -1,0 +1,81 @@
+{
+  "cards": [
+    {
+      "code": "OP17-107",
+      "name": "Charlotte Daifuku",
+      "count": 3
+    },
+    {
+      "code": "OP17-113",
+      "name": "Streusen",
+      "count": 3
+    },
+    {
+      "code": "EB04-058",
+      "name": "Borsalino",
+      "count": 2
+    },
+    {
+      "code": "OP17-103",
+      "name": "Charlotte Katakuri",
+      "count": 2
+    },
+    {
+      "code": "OP17-106",
+      "name": "Charlotte Smoothie",
+      "count": 2
+    },
+    {
+      "code": "EB01-056",
+      "name": "Charlotte Flampe",
+      "count": 2
+    },
+    {
+      "code": "OP17-102",
+      "name": "Charlotte Oven",
+      "count": 2
+    },
+    {
+      "code": "OP17-109",
+      "name": "Charlotte Pudding",
+      "count": 2
+    },
+    {
+      "code": "OP17-104",
+      "name": "Charlotte Cracker",
+      "count": 2
+    },
+    {
+      "code": "OP17-112",
+      "name": "Charlotte Linlin",
+      "count": 2
+    },
+    {
+      "code": "OP16-119",
+      "name": "Marshall D. Teach",
+      "count": 1
+    },
+    {
+      "code": "OP17-115",
+      "name": "There's Still A Code Of Honor?",
+      "count": 1
+    },
+    {
+      "code": "OP17-117",
+      "name": "OP17-117",
+      "count": 1
+    },
+    {
+      "code": "OP17-114",
+      "name": "The 3 Sweet Commanders",
+      "count": 1
+    },
+    {
+      "code": "OP17-108",
+      "name": "OP17-108",
+      "count": 1
+    }
+  ],
+  "total_seen": 27,
+  "leader": "OP17-099"
+}

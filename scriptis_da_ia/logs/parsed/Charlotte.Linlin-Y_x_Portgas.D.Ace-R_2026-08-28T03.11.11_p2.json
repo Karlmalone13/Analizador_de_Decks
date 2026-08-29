@@ -1,0 +1,1006 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "BigRato#5650",
+        "leader": {
+          "name": "Charlotte Linlin",
+          "code": "OP17-099"
+        }
+      },
+      "p2": {
+        "name": "projj#37649",
+        "leader": {
+          "name": "Portgas.D.Ace (001)",
+          "code": "OP16-001"
+        }
+      }
+    },
+    "goes_first": "projj#37649"
+  },
+  "total_turns": 9,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "projj#37649",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-021",
+          "card_name": "Moby Dick",
+          "effects": [
+            "Added 1 Cards to Hand"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP04-108",
+            "OP17-109",
+            "OP17-109",
+            "OP03-114",
+            "OP17-115"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "EB01-056",
+            "OP03-112",
+            "OP11-106",
+            "OP16-119",
+            "OP17-102",
+            "OP17-102",
+            "OP17-104",
+            "OP17-107",
+            "OP17-108",
+            "OP17-116",
+            "OP17-117"
+          ],
+          "life_cards": [
+            "OP03-113",
+            "OP17-103",
+            "OP17-106",
+            "OP17-112",
+            "OP17-113"
+          ]
+        },
+        "projj#37649": {
+          "hand": [
+            "OP16-003",
+            "OP16-017",
+            "OP17-006",
+            "ST30-016",
+            "OP16-014"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP13-007",
+            "OP13-016",
+            "OP16-004",
+            "OP16-014",
+            "OP16-015",
+            "OP16-021",
+            "OP16-118",
+            "OP17-005"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-011",
+            "OP16-017",
+            "OP16-020",
+            "OP16-021"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "stage": [
+            "OP16-021"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Charlotte Brulee",
+        "code": "OP17-108"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP04-108",
+            "OP17-109",
+            "OP17-109",
+            "OP03-114",
+            "OP17-115",
+            "OP17-108"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "projj#37649": {
+          "hand": [
+            "OP16-003",
+            "OP16-017",
+            "OP17-006",
+            "ST30-016",
+            "OP16-014"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "projj#37649",
+      "card_drawn": {
+        "name": "Vista",
+        "code": "OP16-011"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP04-108",
+            "OP17-109",
+            "OP17-109",
+            "OP03-114",
+            "OP17-115",
+            "OP17-108"
+          ],
+          "board": [
+            "OP17-106"
+          ],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "EB01-056",
+            "OP03-112",
+            "OP11-106",
+            "OP16-119",
+            "OP17-102",
+            "OP17-102",
+            "OP17-104",
+            "OP17-107",
+            "OP17-116",
+            "OP17-117"
+          ],
+          "life_cards": [
+            "OP03-113",
+            "OP17-103",
+            "OP17-112",
+            "OP17-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        },
+        "projj#37649": {
+          "hand": [
+            "OP16-003",
+            "OP16-017",
+            "OP17-006",
+            "ST30-016",
+            "OP16-014",
+            "OP16-011"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP13-007",
+            "OP13-016",
+            "OP16-004",
+            "OP16-014",
+            "OP16-015",
+            "OP16-021",
+            "OP16-118",
+            "OP17-005"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-011",
+            "OP16-017",
+            "OP16-020",
+            "OP16-021"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP16-021"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Charlotte Perospero",
+        "code": "OP03-113"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-109",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "Trash Charlotte Brulee [\"OP17-108\">OP17-108]",
+            "Draw 3 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-099",
+          "to_name": "Charlotte Linlin",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-006"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Charlotte Perospero [\"OP03-113\">OP03-113]",
+            "Trash Charlotte Moscato [\"OP04-108\">OP04-108]",
+            "Add card to top of Life from Deck"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-109",
+            "OP17-109",
+            "OP03-114",
+            "OP17-115",
+            "OP04-108",
+            "OP11-106"
+          ],
+          "board": [
+            "OP17-106",
+            "OP17-109"
+          ],
+          "trash": [
+            "OP17-108",
+            "OP03-113",
+            "OP04-108"
+          ],
+          "life": 5,
+          "rested": {
+            "OP17-109": 1
+          }
+        },
+        "projj#37649": {
+          "hand": [
+            "OP16-003",
+            "OP16-017",
+            "ST30-016",
+            "OP16-014",
+            "OP16-011"
+          ],
+          "trash": [
+            "OP17-006"
+          ],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "projj#37649",
+      "card_drawn": {
+        "name": "If You're Coming With Me... Kiss Your Lives Goodbye!!",
+        "code": "OP16-020"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-017",
+          "card_name": "LittleOars Jr.",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-109",
+            "OP17-109",
+            "OP03-114",
+            "OP17-115",
+            "OP04-108",
+            "OP11-106"
+          ],
+          "board": [
+            "OP17-106",
+            "OP17-109"
+          ],
+          "trash": [
+            "OP17-108",
+            "OP03-113",
+            "OP04-108",
+            "OP17-108"
+          ],
+          "life": 4,
+          "deck": [
+            "EB01-056",
+            "OP03-112",
+            "OP16-119",
+            "OP17-102",
+            "OP17-102",
+            "OP17-104",
+            "OP17-107",
+            "OP17-116",
+            "OP17-117"
+          ],
+          "life_cards": [
+            "OP03-113",
+            "OP17-103",
+            "OP17-112",
+            "OP17-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP17-109": 1
+          }
+        },
+        "projj#37649": {
+          "hand": [
+            "OP16-003",
+            "ST30-016",
+            "OP16-014",
+            "OP16-011",
+            "OP16-020"
+          ],
+          "trash": [
+            "OP17-006"
+          ],
+          "board": [
+            "OP16-017"
+          ],
+          "life": 5,
+          "deck": [
+            "OP13-007",
+            "OP13-016",
+            "OP16-004",
+            "OP16-014",
+            "OP16-015",
+            "OP16-021",
+            "OP16-118",
+            "OP17-005"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-011",
+            "OP16-017",
+            "OP16-020",
+            "OP16-021"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP16-021"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP16-017": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Charlotte Cracker",
+        "code": "OP17-104"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-109",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "Trash Charlotte Oven [\"OP17-102\">OP17-102]",
+            "Draw 3 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-099",
+          "to_name": "Charlotte Linlin",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-099",
+          "to_name": "Charlotte Linlin",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "LittleOars Jr. [\"OP16-017\">OP16-017]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Charlotte Cracker [\"OP17-104\">OP17-104]",
+            "Randomly send Edward Newgate [\"OP16-003\">OP16-003] to Trash from Hand"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-109",
+            "OP03-114",
+            "OP17-115",
+            "OP04-108",
+            "OP11-106",
+            "OP17-104",
+            "OP17-117"
+          ],
+          "board": [
+            "OP17-106",
+            "OP17-109",
+            "OP17-109"
+          ],
+          "trash": [
+            "OP17-108",
+            "OP03-113",
+            "OP04-108",
+            "OP17-108",
+            "OP17-102",
+            "OP17-104"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-109": 1
+          }
+        },
+        "projj#37649": {
+          "hand": [
+            "ST30-016",
+            "OP16-014",
+            "OP16-011",
+            "OP16-020"
+          ],
+          "trash": [
+            "OP17-006",
+            "OP16-003",
+            "OP16-017"
+          ],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "projj#37649",
+      "card_drawn": {
+        "name": "Edward Newgate",
+        "code": "OP16-003"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-014",
+          "card_name": "Marco",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Marco [\"OP16-014\">OP16-014] Rush"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP16-021",
+          "card_name": "Moby Dick",
+          "effects": [
+            "Trash Moby Dick [\"OP16-021\">OP16-021]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marco",
+          "attacker_code": "OP16-014",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-106"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-109",
+            "OP03-114",
+            "OP17-115",
+            "OP04-108",
+            "OP17-104",
+            "OP17-117"
+          ],
+          "board": [
+            "OP17-106",
+            "OP17-109",
+            "OP17-109",
+            "OP17-103"
+          ],
+          "trash": [
+            "OP17-108",
+            "OP03-113",
+            "OP04-108",
+            "OP17-108",
+            "OP17-102",
+            "OP17-104",
+            "OP11-106"
+          ],
+          "life": 3,
+          "deck": [
+            "EB01-056",
+            "OP03-112",
+            "OP16-119",
+            "OP17-102",
+            "OP17-107",
+            "OP17-116"
+          ],
+          "life_cards": [
+            "OP03-113",
+            "OP17-112",
+            "OP17-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-109": 1
+          }
+        },
+        "projj#37649": {
+          "hand": [
+            "ST30-016",
+            "OP16-011",
+            "OP16-020",
+            "OP16-003"
+          ],
+          "trash": [
+            "OP17-006",
+            "OP16-003",
+            "OP16-017",
+            "OP16-021"
+          ],
+          "board": [
+            "OP16-014"
+          ],
+          "life": 5,
+          "deck": [
+            "OP13-007",
+            "OP13-016",
+            "OP16-004",
+            "OP16-014",
+            "OP16-015",
+            "OP16-021",
+            "OP16-118",
+            "OP17-005"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-011",
+            "OP16-017",
+            "OP16-020",
+            "OP16-021"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP16-014": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Streusen",
+        "code": "OP17-113"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-104",
+          "card_name": "Charlotte Cracker",
+          "effects": [
+            "Rest 2 Don",
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-099",
+          "to_name": "Charlotte Linlin",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-099",
+          "to_name": "Charlotte Linlin",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-099",
+          "to_name": "Charlotte Linlin",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Charlotte Moscato [\"OP04-108\">OP04-108]",
+            "Randomly send Can You Still Fight, Luffy? Of Course!! [\"ST30-016\">ST30-016] to Trash from Hand"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP17-109",
+            "OP03-114",
+            "OP17-115",
+            "OP17-117",
+            "OP17-113"
+          ],
+          "board": [
+            "OP17-106",
+            "OP17-109",
+            "OP17-109",
+            "OP17-103",
+            "OP17-104"
+          ],
+          "trash": [
+            "OP17-108",
+            "OP03-113",
+            "OP04-108",
+            "OP17-108",
+            "OP17-102",
+            "OP17-104",
+            "OP11-106",
+            "OP04-108"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-104": 1
+          }
+        },
+        "projj#37649": {
+          "hand": [
+            "OP16-011",
+            "OP16-020",
+            "OP16-003",
+            "OP16-020"
+          ],
+          "trash": [
+            "OP17-006",
+            "OP16-003",
+            "OP16-017",
+            "OP16-021",
+            "ST30-016"
+          ],
+          "board": [
+            "OP16-014"
+          ],
+          "life": 4,
+          "rested": {
+            "OP16-014": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "projj#37649",
+      "card_drawn": {
+        "name": "LittleOars Jr.",
+        "code": "OP16-017"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-017",
+          "card_name": "LittleOars Jr.",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marco",
+          "attacker_code": "OP16-014",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP03-114",
+            "OP17-115",
+            "OP17-117",
+            "OP17-113",
+            "OP17-107"
+          ],
+          "board": [
+            "OP17-106",
+            "OP17-109",
+            "OP17-103",
+            "OP17-104",
+            "OP03-113"
+          ],
+          "trash": [
+            "OP17-108",
+            "OP03-113",
+            "OP04-108",
+            "OP17-108",
+            "OP17-102",
+            "OP17-104",
+            "OP11-106",
+            "OP04-108",
+            "OP17-109",
+            "OP17-109"
+          ],
+          "life": 2,
+          "deck": [
+            "EB01-056",
+            "OP03-112",
+            "OP16-119",
+            "OP17-102",
+            "OP17-116"
+          ],
+          "life_cards": [
+            "OP17-112",
+            "OP17-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-104": 1
+          }
+        },
+        "projj#37649": {
+          "hand": [
+            "OP16-011",
+            "OP16-003",
+            "OP16-020"
+          ],
+          "trash": [
+            "OP17-006",
+            "OP16-003",
+            "OP16-017",
+            "OP16-021",
+            "ST30-016",
+            "OP16-020"
+          ],
+          "board": [
+            "OP16-014",
+            "OP16-017"
+          ],
+          "life": 4,
+          "deck": [
+            "OP13-007",
+            "OP13-016",
+            "OP16-004",
+            "OP16-014",
+            "OP16-015",
+            "OP16-021",
+            "OP16-118",
+            "OP17-005"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-011",
+            "OP16-017",
+            "OP16-021"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP16-014": 1,
+            "OP16-017": 1
+          }
+        }
+      }
+    }
+  ]
+}

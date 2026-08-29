@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP16-003",
+      "name": "Edward Newgate",
+      "count": 2
+    },
+    {
+      "code": "OP16-017",
+      "name": "LittleOars Jr.",
+      "count": 2
+    },
+    {
+      "code": "OP16-020",
+      "name": "If You're Coming With Me... Kiss Your Lives Goodbye!!",
+      "count": 2
+    },
+    {
+      "code": "OP17-006",
+      "name": "Kingdew",
+      "count": 1
+    },
+    {
+      "code": "ST30-016",
+      "name": "Can You Still Fight, Luffy? Of Course!!",
+      "count": 1
+    },
+    {
+      "code": "OP16-014",
+      "name": "Marco",
+      "count": 1
+    },
+    {
+      "code": "OP16-011",
+      "name": "Vista",
+      "count": 1
+    },
+    {
+      "code": "OP16-021",
+      "name": "Moby Dick",
+      "count": 1
+    },
+    {
+      "code": "OP16-118",
+      "name": "Portgas D. Ace",
+      "count": 1
+    },
+    {
+      "code": "OP16-015",
+      "name": "Monkey D. Luffy",
+      "count": 1
+    },
+    {
+      "code": "OP13-007",
+      "name": "Ace & Sabo & Luffy",
+      "count": 1
+    },
+    {
+      "code": "OP13-016",
+      "name": "Monkey D. Garp",
+      "count": 1
+    }
+  ],
+  "total_seen": 15,
+  "leader": "OP16-001"
+}

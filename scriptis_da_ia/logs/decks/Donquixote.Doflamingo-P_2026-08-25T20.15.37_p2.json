@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP14-061",
+      "name": "Vergo",
+      "count": 3
+    },
+    {
+      "code": "OP14-068",
+      "name": "Trebol",
+      "count": 3
+    },
+    {
+      "code": "OP10-071",
+      "name": "Donquixote Doflamingo",
+      "count": 2
+    },
+    {
+      "code": "OP14-072",
+      "name": "Baby 5",
+      "count": 2
+    },
+    {
+      "code": "EB02-040",
+      "name": "BRAND NEW WORLD",
+      "count": 2
+    },
+    {
+      "code": "OP17-062",
+      "name": "Kaido",
+      "count": 2
+    },
+    {
+      "code": "OP07-076",
+      "name": "NoroNoro Beam Sword",
+      "count": 1
+    },
+    {
+      "code": "OP14-063",
+      "name": "Sugar",
+      "count": 1
+    },
+    {
+      "code": "OP10-072",
+      "name": "Donquixote Rosinante",
+      "count": 1
+    },
+    {
+      "code": "OP14-074",
+      "name": "Monet",
+      "count": 1
+    },
+    {
+      "code": "OP14-069",
+      "name": "Donquixote Doflamingo",
+      "count": 1
+    },
+    {
+      "code": "OP13-076",
+      "name": "Divine Departure",
+      "count": 1
+    }
+  ],
+  "total_seen": 20,
+  "leader": "OP14-060"
+}

@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "code": "OP17-065",
+      "name": "Queen",
+      "count": 2
+    },
+    {
+      "code": "OP08-069",
+      "name": "Charlotte Linlin",
+      "count": 2
+    },
+    {
+      "code": "OP17-062",
+      "name": "Kaido",
+      "count": 2
+    },
+    {
+      "code": "OP07-076",
+      "name": "NoroNoro Beam Sword",
+      "count": 2
+    },
+    {
+      "code": "EB04-032",
+      "name": "Queen",
+      "count": 2
+    },
+    {
+      "code": "OP17-074",
+      "name": "Yamato",
+      "count": 2
+    },
+    {
+      "code": "ST18-001",
+      "name": "Usohachi",
+      "count": 2
+    },
+    {
+      "code": "OP17-073",
+      "name": "Basil Hawkins",
+      "count": 2
+    },
+    {
+      "code": "EB04-030",
+      "name": "Kaido",
+      "count": 1
+    },
+    {
+      "code": "OP17-063",
+      "name": "OP17-063",
+      "count": 1
+    },
+    {
+      "code": "OP17-061",
+      "name": "Lead Performers",
+      "count": 1
+    },
+    {
+      "code": "OP13-076",
+      "name": "Divine Departure",
+      "count": 1
+    },
+    {
+      "code": "ST34-004",
+      "name": "Charlotte Linlin",
+      "count": 1
+    }
+  ],
+  "total_seen": 21,
+  "leader": "OP17-058"
+}
