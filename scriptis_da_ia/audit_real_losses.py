@@ -935,6 +935,14 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
         eng = match._get_engine_match()
         if capture_actions or capture_candidates:
             eng.enable_decision_audit()
+        # Observabilidade de attach_don (29/08): `AD_DEBUG_LOG` e uma lista
+        # GLOBAL que so acumula com OPTCG_DEBUG_AD=1. Zerar aqui e copiar
+        # depois do play_turn e o que da recorte POR TURNO -- sem isso o
+        # motivo da recusa nao da pra cruzar com o alvo que o humano usou
+        # naquele turno especifico. Custo zero com a flag desligada.
+        from optcg_engine.decision_engine import AD_DEBUG, AD_DEBUG_LOG
+        if AD_DEBUG:
+            AD_DEBUG_LOG.clear()
         buf2 = io.StringIO()
         with contextlib.redirect_stdout(buf2):
             try:
@@ -954,6 +962,8 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
             'historical_actions': turn.get('actions', []),
             'engine_hoje_narrativa': engine_log,
         }
+        if AD_DEBUG:
+            entry['ad_debug'] = list(AD_DEBUG_LOG)
         if capture_actions:
             # p e sempre match.state_a (ver acima) -- player_id 'A' em
             # _log_turn_planner_decision. Cada entrada e 1 decisao de main

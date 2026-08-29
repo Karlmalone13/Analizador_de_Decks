@@ -1,0 +1,139 @@
+{
+ "total_alvos": 550,
+ "faltantes": 126,
+ "casos": {
+  "ausente_das_acoes": 28,
+  "campo_podia_atacar": 61,
+  "estava_na_mao": 34,
+  "lider": 2,
+  "campo_outra_acao": 1
+ },
+ "por_qtd": {
+  "2": 23,
+  "1": 50,
+  "3": 35,
+  "4": 18
+ },
+ "por_caso_qtd": {
+  "ausente_das_acoes": {
+   "2": 5,
+   "4": 4,
+   "3": 10,
+   "1": 9
+  },
+  "campo_podia_atacar": {
+   "1": 23,
+   "3": 19,
+   "4": 10,
+   "2": 9
+  },
+  "estava_na_mao": {
+   "1": 18,
+   "2": 9,
+   "3": 3,
+   "4": 4
+  },
+  "lider": {
+   "3": 2
+  },
+  "campo_outra_acao": {
+   "3": 1
+  }
+ },
+ "codigos": {
+  "OP13-080": 13,
+  "OP13-083": 7,
+  "OP11-070": 5,
+  "ST36-002": 4,
+  "OP10-119": 4,
+  "OP10-111": 4,
+  "OP13-079": 4,
+  "OP14-023": 4,
+  "ST34-003": 4,
+  "OP09-084": 3,
+  "OP12-034": 3,
+  "OP13-084": 2,
+  "OP05-004": 2,
+  "OP16-110": 2,
+  "OP13-089": 2,
+  "OP10-112": 2,
+  "OP15-025": 2,
+  "OP15-105": 2,
+  "OP10-099": 2,
+  "OP13-054": 2,
+  "ST32-002": 2,
+  "OP13-016": 2,
+  "OP17-118": 2,
+  "OP15-053": 1,
+  "OP11-040": 1,
+  "P-107": 1,
+  "ST29-001": 1,
+  "OP15-092": 1,
+  "P-105": 1,
+  "OP16-104": 1,
+  "OP16-108": 1,
+  "OP09-093": 1,
+  "OP09-086": 1,
+  "OP06-025": 1,
+  "OP13-091": 1,
+  "OP15-007": 1,
+  "P-088": 1,
+  "OP11-101": 1,
+  "OP15-023": 1,
+  "OP02-096": 1,
+  "OP07-046": 1,
+  "OP14-061": 1,
+  "ST17-003": 1,
+  "ST17-005": 1,
+  "OP15-069": 1,
+  "OP11-028": 1,
+  "OP11-031": 1,
+  "OP15-017": 1,
+  "OP14-033": 1,
+  "ST32-003": 1
+ },
+ "gerou_algum": {
+  "sim": 125,
+  "nao": 1
+ },
+ "motivos": {
+  "<sem_motivo_registrado>": 16,
+  "entrou_ramo_mas_score_nao_positivo": 65,
+  "gap_negativo_don_nao_ocioso": 71,
+  "GERADA_mas_limitada_a_2_don": 7,
+  "sem_don_disponivel": 7,
+  "gap_maior_que_don_disponivel": 25,
+  "nao_pode_atacar_este_turno": 6
+ },
+ "motivo_por_caso": {
+  "ausente_das_acoes": {
+   "<sem_motivo_registrado>": 9,
+   "gap_negativo_don_nao_ocioso": 1,
+   "gap_maior_que_don_disponivel": 10,
+   "entrou_ramo_mas_score_nao_positivo": 12,
+   "sem_don_disponivel": 6,
+   "nao_pode_atacar_este_turno": 6
+  },
+  "campo_podia_atacar": {
+   "entrou_ramo_mas_score_nao_positivo": 37,
+   "gap_negativo_don_nao_ocioso": 49,
+   "gap_maior_que_don_disponivel": 12,
+   "GERADA_mas_limitada_a_2_don": 5
+  },
+  "estava_na_mao": {
+   "<sem_motivo_registrado>": 7,
+   "gap_negativo_don_nao_ocioso": 21,
+   "entrou_ramo_mas_score_nao_positivo": 13,
+   "GERADA_mas_limitada_a_2_don": 1,
+   "gap_maior_que_don_disponivel": 3
+  },
+  "lider": {
+   "entrou_ramo_mas_score_nao_positivo": 2,
+   "GERADA_mas_limitada_a_2_don": 1,
+   "sem_don_disponivel": 1
+  },
+  "campo_outra_acao": {
+   "entrou_ramo_mas_score_nao_positivo": 1
+  }
+ }
+}

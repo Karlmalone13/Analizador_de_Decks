@@ -101,7 +101,12 @@ def get(nome: str) -> Any:
         raise KeyError(f'knob nao registrado: {nome}')
     bruto = os.environ.get(f'OPTCG_K_{nome}')
     if bruto is not None:
-        v = k.valida(k.tipo(bruto))
+        # `bool('0')` e `bool('false')` sao **True** em Python -- um knob
+        # booleano lido por `k.tipo(bruto)` ficaria impossivel de DESLIGAR
+        # pelo ambiente, e pior, em silencio. `_bool` existia aqui desde o
+        # bloco 692 pra isto e nunca chegou a ser ligado (nao havia knob
+        # bool ate 29/08, entao o bug era latente, nao ativo).
+        v = k.valida(_bool(bruto) if k.tipo is bool else k.tipo(bruto))
     elif nome in _ARQUIVO:
         v = k.valida(k.tipo(_ARQUIVO[nome]) if isinstance(_ARQUIVO[nome], str)
                      else _ARQUIVO[nome])

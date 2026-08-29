@@ -576,6 +576,183 @@ def _am_debug(src, motivo: str) -> None:
         AM_DEBUG_LOG.append((getattr(src, 'code', '?'), motivo))
 
 
+# ── Observabilidade de ANEXAR DON (nao e logica de decisao) ──────────
+# Gated por OPTCG_DEBUG_AD=1. MESMO desenho do AM_DEBUG acima -- so
+# acumula (codigo, motivo) em memoria pra ferramenta de diagnostico ler
+# depois; nao existe caminho em que isto mude uma decisao.
+#
+# POR QUE EXISTE (29/08): o oraculo estendido mediu que **22,9% dos
+# alvos de DON do humano nunca viraram acao legal** -- nenhum peso,
+# knob ou busca alcanca esses. `diag_don_nunca_gerada.py` classificou
+# os 126 casos e achou que **48,4% deles estavam EM CAMPO e o motor ja
+# gerava ATAQUE com aquela mesma carta** -- ou seja, a categoria 3 de
+# `_generate_attach_don_actions` era aplicavel e mesmo assim nao
+# produziu a opcao. Algum GATE cortou. Sem esta instrumentacao, saber
+# QUAL exige adivinhar entre 6 condicoes diferentes (gap grande demais,
+# valor<=0, defesa inalcancavel, `don_idle` falso, teto de
+# `min(don_sobra,2)`, score<=0), e adivinhar e exatamente o que este
+# projeto ja pagou caro varias vezes.
+AD_DEBUG = os.environ.get('OPTCG_DEBUG_AD', '') == '1'
+AD_DEBUG_LOG: list = []
+
+
+def _ad_debug(card, motivo: str) -> None:
+    if AD_DEBUG:
+        AD_DEBUG_LOG.append((getattr(card, 'code', '?'), motivo))
+
+
+# ── ALVO DE EFEITO: ponto de costura UNICO ───────────────────────────
+# PROBLEMA ESTRUTURAL que isto abre caminho pra resolver (medido 29/08):
+# o motor decide MUITO bem onde a decisao passa pelo mecanismo dele
+# (gerar candidatas -> pontuar -> shortlist -> busca -> funcao de valor):
+# bloquear 85,7%, quem ataca 91,0%, alvo do ataque 69,3%, ativacao 63,9%.
+# E decide MAL exatamente onde a escolha NAO passa por ele: alvo dentro
+# do efeito **16,4%**, cartas de counter 18,5%, DON 23,5%.
+#
+# Nao e coincidencia -- e a MESMA tarefa (escolher em quem) feita por dois
+# mecanismos. `alvo do ataque` (69,3%) vai na tupla da acao e e avaliado
+# pela busca; `alvo do efeito` (16,4%) e resolvido aqui na execucao por
+# `max(board_value())`, uma escala FIXA e sem contexto (poder//1000 +
+# bonus de keyword), e a busca nunca chega a ver alternativa de alvo --
+# existe um unico estado resultante por acao, entao nao ha o que comparar.
+#
+# E violacao da regra "um motor so" do proprio projeto, aplicada ate hoje
+# so a QUAL CARTA jogar e nunca a EM QUEM.
+#
+# Este seam nao muda decisao nenhuma sozinho: com `_FORCED_EFFECT_TARGET`
+# vazio ele delega pro mesmo `choose_highest_board_value` de sempre. Ele
+# existe pra que a GERACAO de candidatas possa emitir uma acao por alvo
+# e a busca decidir -- sem precisar tocar nos 22 pontos de execucao
+# espalhados por `_execute_step`.
+# LISTA, nao alvo unico: um efeito pode escolher mais de uma vez -- por ter
+# varios steps com alvo, ou um step com `count > 1` ("K.O. ate 2
+# Characters"). Com um alvo so, a busca decidia a 1a escolha e as demais
+# voltavam pra heuristica -- metade da decisao continuava fora do
+# mecanismo. Consumida em ORDEM, e cada entrada so vale no passo em que
+# ela e de fato elegivel.
+_FORCED_EFFECT_TARGETS: list = []
+
+# Alvos de step que representam ESCOLHA real contra o oponente. Sai do
+# schema do `card_effects_db` (campo `target`), nao de lista de cartas:
+# `opp_character` sozinho e 568 steps (ko 298, debuff_power 116,
+# debuff_cost 70). Deliberadamente NAO inclui alvo do proprio lado nesta
+# 1a versao -- escolher quem sacrificar/buffar e outra decisao, com outro
+# criterio, e misturar as duas aqui repetiria o erro de tratar "escolher
+# alvo" como um problema unico.
+_TARGETS_DE_ESCOLHA_OPP = ('opp_character', 'opp_leader_or_character')
+
+_k.registra('ALVO_EFEITO_NA_BUSCA', False, bool,
+            'Gera uma candidata de play por ALVO de efeito, em vez de deixar '
+            'a heuristica fixa escolher na execucao. Default DESLIGADO: muda '
+            'comportamento de producao (regra do bloco 730).')
+_k.registra('ALVO_REGUA_UNIFICADA', False, bool,
+            'Escolha de alvo de efeito passa a usar `char_value_score` (a '
+            'MESMA regua da funcao de valor, ciente de efeito) em vez de '
+            '`board_value` cru. Medido: as duas discordam em 21,3% dos '
+            'boards. Default DESLIGADO (regra do bloco 730).')
+_k.registra('ALVO_EFEITO_MAX_CANDIDATOS', 3, int,
+            'Teto de alvos por carta na geracao. Existe pra o shortlist nao '
+            'ser tomado por variantes da mesma carta -- todas tem o MESMO '
+            'score estatico (o scorer nao olha alvo), entao sem teto elas '
+            'empatam e expulsam cartas diferentes do shortlist.')
+
+
+def _steps_com_alvo(ef) -> list:
+    """Steps de UM efeito que escolhem alvo no oponente, na ordem em que a
+    execucao os percorre. Desce em estruturas aninhadas (choice/then/
+    condicionais) porque varias cartas guardam os steps reais um nivel
+    abaixo -- olhar so o topo perderia o efeito em silencio."""
+    achados = []
+
+    def desce(no):
+        if isinstance(no, dict):
+            for step in (no.get('steps') or []):
+                if isinstance(step, dict):
+                    if step.get('target') in _TARGETS_DE_ESCOLHA_OPP:
+                        achados.append(step)
+                    desce(step)
+            for chave, v in no.items():
+                if chave != 'steps' and isinstance(v, (dict, list)):
+                    desce(v)
+        elif isinstance(no, list):
+            for v in no:
+                desce(v)
+
+    desce(ef)
+    return achados
+
+
+def _alvos_de_efeito(card, opp, gatilho: str):
+    """(elegiveis, n_escolhas) do efeito `gatilho` de `card`.
+
+    `gatilho` e 'on_play' pra acao de play e 'activate_main' pra activate.
+    Ler o efeito ERRADO geraria variante de alvo pra uma carta cuja escolha
+    acontece em outro momento do jogo -- a variante nunca faria diferenca e
+    ainda ocuparia vaga do shortlist.
+
+    `n_escolhas` = quantas vezes o efeito escolhe (soma dos `count` dos
+    steps com alvo). Elegibilidade sai de `_step_matching_list`, a MESMA
+    regra que a execucao aplica.
+    """
+    if not opp.field_chars:
+        return [], 0
+    ef = (get_card_effects(card.code) or {}).get(gatilho)
+    if not isinstance(ef, dict):
+        return [], 0
+    steps = _steps_com_alvo(ef)
+    if not steps:
+        return [], 0
+    elegiveis, n_escolhas = [], 0
+    for step in steps:
+        n_escolhas += max(1, int(step.get('count') or 1))
+        for c in _step_matching_list(step, opp.field_chars):
+            if not any(c is e for e in elegiveis):
+                elegiveis.append(c)
+    # Alvos <= escolhas: o efeito leva todos e nao ha o que decidir -- a
+    # heuristica ja acerta por falta de alternativa.
+    if len(elegiveis) <= n_escolhas:
+        return [], 0
+    return elegiveis, n_escolhas
+
+
+def _variantes_de_alvo(card, opp, gatilho: str) -> list:
+    """Combinacoes de alvo que valem virar candidata propria pro efeito
+    `gatilho` de `card`. Lista vazia = nada muda pra esta carta.
+
+    A combinacao da HEURISTICA fica de fora de proposito: ela ja e a acao
+    base que a geracao emite de qualquer jeito, e serve de piso -- se
+    nenhuma variante for melhor, a busca escolhe a base e o comportamento
+    e o de hoje.
+
+    Enumeracao deliberadamente RASA: as `n` melhores por `board_value`,
+    tomadas `n_escolhas` a `n_escolhas`, ate o teto do knob. Enumerar todo
+    subconjunto explode (C(6,2)=15 candidatas de UMA carta) e afogaria o
+    shortlist -- que tem vaga contada e e disputado por cartas diferentes.
+    """
+    from itertools import combinations
+    elegiveis, n_escolhas = _alvos_de_efeito(card, opp, gatilho)
+    if not elegiveis:
+        return []
+    teto = max(0, int(_k.get('ALVO_EFEITO_MAX_CANDIDATOS')))
+    if teto <= 0:
+        return []
+    ordenados = sorted(elegiveis, key=lambda c: c.board_value(), reverse=True)
+    # A heuristica pega sempre os `n_escolhas` de maior board_value, nessa
+    # mesma ordem -- e essa combinacao que a acao base ja cobre.
+    base = tuple(ordenados[:n_escolhas])
+    # Considera so os melhores + alguns a mais, senao o numero de
+    # combinacoes cresce rapido sem o topo mudar.
+    pool = ordenados[:n_escolhas + teto]
+    out = []
+    for combo in combinations(pool, n_escolhas):
+        if all(a is b for a, b in zip(combo, base)) and len(combo) == len(base):
+            continue                       # e a base, ja emitida
+        out.append(combo)
+        if len(out) >= teto:
+            break
+    return out
+
+
 # ── camada barata / "calibragem dinamica" (bloco 508/509, escala bloco 514) ──
 # Desenho acordado com o usuario 11/08: em vez de resolver o efeito de
 # verdade (caro, precisa do motor de regras completo), `_cheap_rollout_value`
@@ -2791,7 +2968,16 @@ def attackers_available(side: 'GameState',
 def _step_matching_targets(step: dict, chars: list) -> int:
     """Quantos personagens de `chars` passam nos FILTROS do step
     (cost_lte/gte/eq, power_lte/gte, rested_only, filter_type)."""
-    n = 0
+    return len(_step_matching_list(step, chars))
+
+
+def _step_matching_list(step: dict, chars: list) -> list:
+    """QUEM passa nos filtros do step -- mesma regra do contador acima, que
+    agora delega pra ca. A geracao de candidatas por ALVO precisa da LISTA;
+    escrever um segundo filtro com as mesmas condicoes seria exatamente a
+    duplicacao que `REGRA_SEM_DUPLICACAO.md` proibe (e divergiria em
+    silencio no primeiro filtro novo que alguem adicionasse de um lado so)."""
+    out = []
     for c in chars:
         if step.get('cost_lte') is not None and c.cost > step['cost_lte']:
             continue
@@ -2811,8 +2997,8 @@ def _step_matching_targets(step: dict, chars: list) -> int:
             filters = [ft]
         if filters and not any(str(f).lower() in c.sub_types.lower() for f in filters):
             continue
-        n += 1
-    return n
+        out.append(c)
+    return out
 
 
 def _on_ko_play_card_value(step: dict, owner: 'Optional[GameState]') -> float:
@@ -3450,6 +3636,63 @@ class EffectExecutor:
 
     def reset_once_per_turn(self):
         self._once_used.clear()
+
+    def _pick_effect_target(self, candidatos):
+        """Escolhe o alvo de um efeito -- ponto de costura UNICO (23 sitios).
+
+        Honra o alvo EXPLICITO da acao em execucao quando existe; senao,
+        decide pela regua.
+
+        ── A REGUA, e por que ela muda (29/08) ─────────────────────────
+        A escolha de alvo usava `board_value()`: poder//1000 + bonus fixos
+        de keyword. A FUNCAO DE VALOR do motor, que julga o estado
+        resultante, usa `char_value_score()` -- que ja e ciente de efeito
+        (+20 activate_main, +18 remocao, +15 draw/busca, +15
+        when_attacking...). Duas reguas diferentes pra MESMA pergunta
+        ("qual carta do oponente vale mais tirar"), e a mais pobre era a
+        que decidia.
+
+        Medido: em 5.000 boards sorteados do banco real, as duas apontam
+        alvos DIFERENTES em **21,3%** dos casos.
+
+        E o proprio projeto ja fez esta unificacao antes: o bloco 638
+        substituiu `board_value()` cru por `char_value_score` no credito
+        por matar em COMBATE, pelo mesmo motivo ("antes uma 3a formula
+        propria e mais pobre"). Aqui e o mesmo caso, no alvo de EFEITO --
+        que ficou de fora daquela vez.
+
+        Default DESLIGADO: muda comportamento de producao (bloco 730).
+        """
+        if not candidatos:
+            return None
+        # Consome a PRIMEIRA entrada da lista que seja elegivel AQUI.
+        # Percorrer em vez de olhar so a cabeca importa: um efeito com
+        # varios steps tem filtros diferentes por step, e um alvo
+        # escolhido pro step 2 nao e elegivel no step 1 -- travar na
+        # cabeca faria a lista inteira ser ignorada dali em diante.
+        for i, alvo in enumerate(_FORCED_EFFECT_TARGETS):
+            for c in candidatos:
+                if c is alvo:
+                    del _FORCED_EFFECT_TARGETS[i]
+                    return c
+        # A regua unificada vale SO pra escolha no campo do OPONENTE.
+        #
+        # Escopo restringido depois de dois testes do `smoke_fast`
+        # quebrarem (29/08) -- e eles estavam certos: sao escolhas no
+        # PROPRIO lado ("qual aliado ganha Rush", "qual ganha
+        # Unblockable"), e um deles documenta a semantica de board_value no
+        # proprio nome. A pergunta la e outra -- quem melhor APROVEITA o
+        # buff, nao quem vale mais -- e `char_value_score` nao e obviamente
+        # a resposta. O numero que eu medi (21,3% de discordancia) e sobre
+        # "qual carta do oponente vale mais tirar", entao e so ate onde a
+        # evidencia alcanca.
+        if _k.get('ALVO_REGUA_UNIFICADA') and candidatos:
+            campo_opp = self.opp.field_chars
+            if all(any(c is o for o in campo_opp) for c in candidatos):
+                an = self._de().analyzer
+                return max(candidatos, key=an.char_value_score)
+        from optcg_engine.rules_facade import choose_highest_board_value
+        return choose_highest_board_value(candidatos)
 
     def _de(self) -> 'DecisionEngine':
         """
@@ -4877,7 +5120,7 @@ class EffectExecutor:
                 return None
             restados = []
             for _ in range(count):
-                alvo = choose_highest_board_value(candidatos)
+                alvo = self._pick_effect_target(candidatos)
                 alvo.rested = True
                 remove_by_identity(candidatos, alvo)
                 restados.append(alvo.name[:15])
@@ -7365,8 +7608,16 @@ class EffectExecutor:
                 # custo aprovado como "quase gratis" com a melhor carta do
                 # campo. Pra "trash all" (count 99, ex: Five Elders) a
                 # ordem nao muda nada.
+                # `_pick_effect_target` (nao `choose_highest_board_value`
+                # direto) porque este e o caminho de KO -- 298 dos 568 steps
+                # com alvo escolhido no oponente, o caso DOMINANTE. Ele
+                # ficou de fora da 1a conversao dos 22 pontos porque aqui o
+                # seletor e uma REFERENCIA guardada numa variavel, nao uma
+                # chamada; a busca gerava candidata por alvo e a execucao
+                # ignorava o alvo em silencio (medido: 108 acoes com alvo
+                # explicito, ZERO honradas).
                 escolhe = (choose_lowest_board_value if owner is me
-                           else choose_highest_board_value)
+                           else self._pick_effect_target)
                 total_power_used = 0
                 for _ in range(min(count, len(candidates))):
                     target = escolhe(candidates)
@@ -7502,7 +7753,7 @@ class EffectExecutor:
             immune_skipped = []
             for _ in range(min(count, len(candidates))):
                 target = (min(candidates, key=lambda c: c.board_value())
-                          if target_owner is me else choose_highest_board_value(candidates))
+                          if target_owner is me else self._pick_effect_target(candidates))
                 # Bounce é remoção do campo -> respeita imunidade a removal
                 if (target_owner is opp
                         and is_immune(target, 'removal', opp, me, source_is_opp=True)):
@@ -7553,7 +7804,7 @@ class EffectExecutor:
             rested = []
             sub_logs = []
             for _ in range(min(count, len(candidates))):
-                target = choose_highest_board_value(candidates)
+                target = self._pick_effect_target(candidates)
                 # Substituicao de rest (achado 15/07, PRB02-006 Zoro): "If
                 # this Character would be rested by your opponent's
                 # Character's effect, you may rest 1 of your other
@@ -8205,7 +8456,7 @@ class EffectExecutor:
                 if exclude_sel:
                     candidatos = [c for c in candidatos if exclude_sel not in c.name.lower()]
                 if candidatos:
-                    alvo = choose_highest_board_value(candidatos)
+                    alvo = self._pick_effect_target(candidatos)
                     alvo.power_buff += amount
                     self._last_selected = alvo
                     return f'{alvo.name[:18]} selecionado, +{amount} power'
@@ -8250,7 +8501,7 @@ class EffectExecutor:
                 for _ in range(count_own):
                     if not candidatos:
                         break
-                    alvo = choose_highest_board_value(candidatos)
+                    alvo = self._pick_effect_target(candidatos)
                     remove_by_identity(candidatos, alvo)
                     alvo.power_buff += amount
                     alvos.append(alvo.name[:15])
@@ -8320,7 +8571,7 @@ class EffectExecutor:
                 count = step.get('count', 1)
                 alvos = []
                 for _ in range(min(count, len(candidatos))):
-                    alvo = choose_highest_board_value(candidatos)
+                    alvo = self._pick_effect_target(candidatos)
                     alvo.power_buff -= amount
                     remove_by_identity(candidatos, alvo)
                     alvos.append(alvo.name[:15])
@@ -8337,7 +8588,7 @@ class EffectExecutor:
                 count = step.get('count', 1)
                 alvos = []
                 for _ in range(min(count, len(candidatos))):
-                    alvo = choose_highest_board_value(candidatos)
+                    alvo = self._pick_effect_target(candidatos)
                     alvo.power_buff -= amount
                     remove_by_identity(candidatos, alvo)
                     alvos.append(alvo.name[:15])
@@ -8368,7 +8619,7 @@ class EffectExecutor:
                 candidatos = eligible_cards(opp.field_chars, cost_lte=cost_lte)
                 if not candidatos:
                     return None
-                alvo = choose_highest_board_value(candidatos)
+                alvo = self._pick_effect_target(candidatos)
                 alvo.effects_negated_until = dur
                 return alvo
 
@@ -9206,7 +9457,7 @@ class EffectExecutor:
             for _ in range(count):
                 if not candidatos:
                     break
-                melhor = choose_highest_board_value(candidatos)
+                melhor = self._pick_effect_target(candidatos)
                 melhor.rested = False
                 remove_by_identity(candidatos, melhor)
                 ativados.append(melhor.name[:14])
@@ -9242,7 +9493,7 @@ class EffectExecutor:
             immune = []
             for _ in range(min(count, len(cands))):
                 if not cands: break
-                target = choose_highest_board_value(cands)
+                target = self._pick_effect_target(cands)
                 if is_immune(target, 'removal', opp, me, source_is_opp=True):
                     immune.append(target.name[:12])
                     remove_by_identity(cands, target)
@@ -9384,7 +9635,7 @@ class EffectExecutor:
                     )
                     if not candidatos_hand:
                         break
-                    c = choose_highest_board_value(candidatos_hand)
+                    c = self._pick_effect_target(candidatos_hand)
                     remove_by_identity(me.hand, c)
                 elif source == 'trash':
                     from optcg_engine.rules_facade import (
@@ -9399,7 +9650,7 @@ class EffectExecutor:
                     )
                     if not candidatos_trash:
                         break
-                    c = choose_highest_board_value(candidatos_trash)
+                    c = self._pick_effect_target(candidatos_trash)
                     remove_by_identity(me.trash, c)
                 elif source == 'hand_or_trash':
                     # Fonte COMBINADA (achado 16/07, ST13-003): elegiveis
@@ -9417,7 +9668,7 @@ class EffectExecutor:
                     )
                     if not candidatos_ht:
                         break
-                    c = choose_highest_board_value(candidatos_ht)
+                    c = self._pick_effect_target(candidatos_ht)
                     if not remove_by_identity(me.hand, c):
                         remove_by_identity(me.trash, c)
                 elif source == 'own_field':
@@ -9915,7 +10166,7 @@ class EffectExecutor:
             ) if character_needs_rush_character(c)]
             granted = []
             for _ in range(min(count, len(candidates))):
-                target = choose_highest_board_value(candidates)
+                target = self._pick_effect_target(candidates)
                 target.has_rush_character = True
                 if target.just_played:
                     target.rush_character_only_this_turn = True
@@ -9954,7 +10205,7 @@ class EffectExecutor:
             )
             granted = []
             for _ in range(min(count, len(candidates))):
-                target = choose_highest_board_value(candidates)
+                target = self._pick_effect_target(candidates)
                 target.blocker_this_turn = True
                 remove_by_identity(candidates, target)
                 granted.append(target.name[:15])
@@ -10012,7 +10263,7 @@ class EffectExecutor:
                     ]
             granted = []
             for _ in range(min(count, len(candidates))):
-                target = choose_highest_board_value(candidates)
+                target = self._pick_effect_target(candidates)
                 if step.get('duration') == 'this_turn':
                     target.rush_this_turn = True
                 else:
@@ -10030,7 +10281,7 @@ class EffectExecutor:
             candidates = eligible_cards(me.field_chars, name_or_code=step.get('filter_name', ''))
             granted = []
             for _ in range(min(count, len(candidates))):
-                target = choose_highest_board_value(candidates)
+                target = self._pick_effect_target(candidates)
                 if step.get('duration') == 'this_turn':
                     target.banish_this_turn = True
                 else:
@@ -10081,7 +10332,7 @@ class EffectExecutor:
             )
             granted = []
             for _ in range(min(count, len(candidates))):
-                target = choose_highest_board_value(candidates)
+                target = self._pick_effect_target(candidates)
                 if step.get('duration') == 'this_turn':
                     target.double_attack_this_turn = True
                 else:
@@ -10157,7 +10408,7 @@ class EffectExecutor:
                 candidatos.append(me.leader)
             if not candidatos:
                 return ''
-            alvo = choose_highest_board_value(candidatos)
+            alvo = self._pick_effect_target(candidatos)
             alvo.unblockable_this_turn = True
             return f'{alvo.name[:18]} ganhou Unblockable este turno'
 
@@ -10191,7 +10442,7 @@ class EffectExecutor:
                 candidatos.append(me.leader)
             if not candidatos:
                 return ''
-            alvo = choose_highest_board_value(candidatos)
+            alvo = self._pick_effect_target(candidatos)
             alvo.can_attack_active_this_turn = True
             if step.get('allow_played_this_turn'):
                 alvo.rush_character_only_this_turn = True
@@ -16541,9 +16792,21 @@ class OPTCGMatch:
     def _action_dedupe_key(self, action):
         _score, kind, obj, ttype, tgt = action
         if kind == 'play':
-            return (kind, getattr(obj, 'code', ''), getattr(obj, 'name', ''))
+            # O ALVO entra na chave (mesma forma que `attack` ja usa): sem
+            # isto as variantes por alvo da MESMA carta colapsam numa so e
+            # a busca nunca chega a comparar alvo contra alvo -- o dedupe
+            # escolheria uma pelo score estatico, que e IDENTICO entre elas
+            # (o scorer estatico nao olha alvo), ou seja, na pratica ao
+            # acaso. Com `tgt=None` (todo play de hoje) a chave so ganha
+            # dois componentes constantes e nada muda.
+            return (kind, getattr(obj, 'code', ''), getattr(obj, 'name', ''),
+                    ttype, self._card_action_key(tgt))
         if kind == 'activate':
-            return (kind, self._card_action_key(obj))
+            # Alvo na chave pelo mesmo motivo do `play` logo acima: sem
+            # isto as variantes por alvo colapsam e a busca nunca compara
+            # alvo contra alvo.
+            return (kind, self._card_action_key(obj), ttype,
+                    tuple(self._card_action_key(t) for t in (tgt or ())))
         if kind == 'attack':
             return (kind, self._card_action_key(obj), ttype, self._card_action_key(tgt))
         if kind == 'attach_don':
@@ -17245,6 +17508,17 @@ class OPTCGMatch:
             if len(p.hand) <= 3:
                 score -= (4 - len(p.hand)) * 30
             actions.append((score, 'play', card, None, None))
+            # UMA CANDIDATA POR ALVO (ver `_pick_effect_target`). A base
+            # acima FICA -- ela e o comportamento de hoje e serve de piso:
+            # se nenhuma variante por alvo for melhor, a busca escolhe ela
+            # e nada muda. Score estatico identico de proposito: o scorer
+            # nao sabe avaliar alvo; quem separa as variantes e a BUSCA,
+            # simulando o estado resultante de cada uma -- que e o
+            # mecanismo que ja da 69,3% em alvo de ataque contra 16,4%
+            # aqui.
+            if _k.get('ALVO_EFEITO_NA_BUSCA'):
+                for combo in _variantes_de_alvo(card, opp, 'on_play'):
+                    actions.append((score, 'play', card, 'effect_target', combo))
 
         # ── Ações de ATACAR (com risco de trigger descontado) ──
         # Orcamento da linha: um ataque nao pode se declarar alcancavel usando
@@ -17473,6 +17747,11 @@ class OPTCGMatch:
             score = self._score_activate_main(src, am, p, opp, priority, engine=engine)
             score += self._human_pattern_bonus(p, 'activate', src)
             actions.append((score, 'activate', src, None, None))
+            # Mesma estrutura do play (ver `_variantes_de_alvo`): a escolha
+            # de alvo de um [Activate: Main] tambem era 100% heuristica.
+            if _k.get('ALVO_EFEITO_NA_BUSCA'):
+                for combo in _variantes_de_alvo(src, opp, 'activate_main'):
+                    actions.append((score, 'activate', src, 'effect_target', combo))
 
         # ── Ações de ANEXAR DON para ligar efeitos/keywords [DON!! ×N] ──
         actions.extend(self._generate_attach_don_actions(p, opp, engine, priority=priority))
@@ -17491,6 +17770,7 @@ class OPTCGMatch:
         DON_COST = 25
         acts = []
         if p.don_available <= 0:
+            _ad_debug(p.leader, 'sem_don_disponivel')
             return acts
         if priority is None:
             priority = engine.analyzer.analysis_priority()
@@ -17594,6 +17874,13 @@ class OPTCGMatch:
             for att in attackers:
                 atk_now = attack_time_power(att, opp)
                 melhor_score, melhor_falta = 0.0, 0
+                # Observabilidade: acumula o que aconteceu com CADA alvo
+                # candidato deste atacante e emite UM motivo no fim. Sem
+                # isto o diagnostico saia ambiguo -- um mesmo atacante
+                # avalia varios alvos e cada um cai num ramo diferente,
+                # entao "o motivo" virava a lista inteira e nao explicava
+                # nada (medido: os 4 motivos apareciam em 100% dos casos).
+                _mot = []
                 candidatos_alvo = []
                 pode_atacar_leader = (not getattr(att, 'rush_character_only_this_turn', False)
                                       and not p.cannot_attack_leader_this_turn
@@ -17613,6 +17900,7 @@ class OPTCGMatch:
                         falta = -(-gap // 1000)  # ceil division
                         valor = engine.score_attack_target(att, ttype, tgt)
                         if valor <= 0:
+                            _mot.append('valor_zero')
                             continue
                         # `falta` cobre so EMPATAR com o alvo -- e empate ja
                         # basta pra vencer o combate. Mas se a defesa
@@ -17690,8 +17978,15 @@ class OPTCGMatch:
                         # nao o que decide o combate. Nunca usa a reserva
                         # de defesa (don_sobra, nao p.don_available).
                         falta = min(don_sobra, 2)
+                        # Teto de 2 afeta a QUANTIDADE, nao a existencia da
+                        # opcao -- registrado a parte pra nao ser confundido
+                        # com "nunca gerada" (o alvo aparece como acao mesmo
+                        # quando o humano anexou 3+).
+                        if don_sobra > 2:
+                            _mot.append('teto_2_don')
                         valor = engine.score_attack_target(att, ttype, tgt)
                         if valor <= 0:
+                            _mot.append('valor_zero')
                             continue
                         score = valor * 0.3
                     elif gap <= 0 and att is p.leader and p.don_available > 0:
@@ -17735,15 +18030,41 @@ class OPTCGMatch:
                         falta = min(p.don_available, 2)
                         valor = engine.score_attack_target(att, ttype, tgt)
                         if valor <= 0:
+                            _mot.append('valor_zero')
                             continue
                         score = valor * 0.3 - engine.don_opportunity_cost(falta)
                     else:
+                        # Os DOIS jeitos de cair aqui, separados: nao adianta
+                        # saber que "caiu no else" -- o conserto e diferente.
+                        _mot.append('gap_maior_que_don_disponivel'
+                                    if gap > 0 else 'gap_negativo_don_nao_ocioso')
                         continue
                     score += self._human_pattern_bonus(p, 'attach_don', att)
+                    _mot.append('ramo_entrou')
                     if score > melhor_score:
                         melhor_score, melhor_falta = score, falta
                 if melhor_falta:
                     acts.append((melhor_score, 'attach_don', att, melhor_falta, 'attack_power'))
+                    if 'teto_2_don' in _mot:
+                        _ad_debug(att, 'GERADA_mas_limitada_a_2_don')
+                else:
+                    # UM motivo por atacante, em ordem de precedencia: o que
+                    # explica o resultado e o ramo mais "avancado" que ele
+                    # alcancou. Entrou num ramo e mesmo assim nao gerou =>
+                    # o valor nao sobreviveu ao custo de oportunidade; nunca
+                    # entrou => algum gate de gap/DON barrou antes.
+                    if 'ramo_entrou' in _mot:
+                        _ad_debug(att, 'entrou_ramo_mas_score_nao_positivo')
+                    elif 'gap_negativo_don_nao_ocioso' in _mot:
+                        _ad_debug(att, 'gap_negativo_don_nao_ocioso')
+                    elif 'gap_maior_que_don_disponivel' in _mot:
+                        _ad_debug(att, 'gap_maior_que_don_disponivel')
+                    elif 'valor_zero' in _mot:
+                        _ad_debug(att, 'valor_do_ataque_zero')
+                    else:
+                        _ad_debug(att, 'sem_alvo_candidato')
+        else:
+            _ad_debug(p.leader, 'nao_pode_atacar_este_turno')
         return acts
 
     def _keyword_don_value(self, kw, card, p, opp, priority) -> float:
@@ -18284,14 +18605,30 @@ class OPTCGMatch:
         score, kind, obj, ttype, tgt = action
 
         if kind == 'play':
-            self._play_card(obj, p, opp, ee, verbose=verbose)
+            # Alvos EXPLICITOS da candidata (ver `_pick_effect_target`):
+            # valem so pra ESTA execucao e sao limpos no fim, inclusive se
+            # o efeito nem chegar a usar -- deixar vazar contaminaria a
+            # proxima acao, bug que nao aparece em teste isolado.
+            _FORCED_EFFECT_TARGETS[:] = (list(tgt) if ttype == 'effect_target'
+                                         and tgt is not None else [])
+            try:
+                self._play_card(obj, p, opp, ee, verbose=verbose)
+            finally:
+                _FORCED_EFFECT_TARGETS.clear()
 
         elif kind == 'activate':
             src = obj
             am = get_card_effects(src.code).get('activate_main', {})
             src._am_used_turn = p.turn
             self._log_decision(p, src, 'activate_main', 'activate', 'ação no planner')
-            logs = ee.execute(src, 'activate_main')
+            # Mesma coisa do play: [Activate: Main] tambem escolhe alvo, e
+            # ate aqui essa escolha era 100% da heuristica fixa.
+            _FORCED_EFFECT_TARGETS[:] = (list(tgt) if ttype == 'effect_target'
+                                         and tgt is not None else [])
+            try:
+                logs = ee.execute(src, 'activate_main')
+            finally:
+                _FORCED_EFFECT_TARGETS.clear()
             if verbose:
                 print(f'    ⚙ ativou [Activate:Main] de {src.name[:22]}')
                 for log in logs:
@@ -18601,6 +18938,35 @@ class OPTCGMatch:
             return self._evaluate_state_v2(p2, opp2) + bonus_alinhamento
         return self._evaluate_state(p2, opp2) + bonus_alinhamento
 
+    def _remap_effect_targets(self, ttype, tgt, p, p2, opp, opp2):
+        """Traduz a TUPLA de alvos de efeito pro estado clonado.
+
+        A busca simula em copia, entao um alvo guardado na acao aponta pro
+        objeto do estado REAL e nao seria reconhecido por identidade la --
+        a candidata por alvo seria avaliada com o alvo da HEURISTICA e
+        todas as variantes mediriam a mesma coisa (foi exatamente o que
+        aconteceu antes deste remap existir). Mesmo mecanismo de indice que
+        `attack` ja usa pro alvo dele.
+
+        Devolve (None, None) quando nao ha alvo, e (False, False) quando
+        algum alvo nao existe mais na copia -- ai a acao inteira e invalida.
+        """
+        if ttype != 'effect_target' or not tgt:
+            return None, None
+        fora = []
+        for t in tgt:
+            if t in opp.field_chars:
+                fora.append(opp2.field_chars[opp.field_chars.index(t)])
+            elif t in p.field_chars:
+                fora.append(p2.field_chars[p.field_chars.index(t)])
+            elif t is opp.leader:
+                fora.append(opp2.leader)
+            elif t is p.leader:
+                fora.append(p2.leader)
+            else:
+                return False, False
+        return ttype, tuple(fora)
+
     def _remap_action(self, action, p, p2, opp, opp2):
         """Remapeia uma ação do estado real para os objetos da cópia (por índice)."""
         score, kind, obj, ttype, tgt = action
@@ -18608,17 +18974,23 @@ class OPTCGMatch:
             return action
         try:
             if kind == 'activate':
+                tt2, tg2 = self._remap_effect_targets(ttype, tgt, p, p2, opp, opp2)
+                if tt2 is False:
+                    return None
                 # Remapeia source para o objeto equivalente na cópia
                 if obj is p.leader:
-                    return (score, kind, p2.leader, None, None)
+                    return (score, kind, p2.leader, tt2, tg2)
                 if obj is p.field_stage:
-                    return (score, kind, p2.field_stage, None, None)
+                    return (score, kind, p2.field_stage, tt2, tg2)
                 if obj in p.field_chars:
-                    return (score, kind, p2.field_chars[p.field_chars.index(obj)], None, None)
+                    return (score, kind, p2.field_chars[p.field_chars.index(obj)], tt2, tg2)
                 return None
             if kind == 'play':
                 idx = p.hand.index(obj)
-                return (score, kind, p2.hand[idx], None, None)
+                tt2, tg2 = self._remap_effect_targets(ttype, tgt, p, p2, opp, opp2)
+                if tt2 is False:
+                    return None
+                return (score, kind, p2.hand[idx], tt2, tg2)
             if kind == 'attach_don':
                 idx = p.field_chars.index(obj) if obj in p.field_chars else None
                 obj2 = p2.field_chars[idx] if idx is not None else (p2.leader if obj is p.leader else None)
@@ -19433,7 +19805,10 @@ class OPTCGMatch:
                 ee_ko = EffectExecutor(opp, p)
                 koed = []
                 for _ in range(min(count, len(candidatos))):
-                    alvo_ko = choose_highest_board_value(candidatos)
+                    # `ee_ko` (nao `self`): este sitio vive em OPTCGMatch, e
+                    # a costura e do EffectExecutor -- que ja esta
+                    # instanciado logo acima com a perspectiva certa.
+                    alvo_ko = ee_ko._pick_effect_target(candidatos)
                     if is_immune(alvo_ko, 'ko', opp, p, source_is_opp=True, ko_context='effect'):
                         remove_by_identity(candidatos, alvo_ko)
                         continue
