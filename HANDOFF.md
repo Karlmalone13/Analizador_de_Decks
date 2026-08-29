@@ -95,6 +95,59 @@ A hipotese do usuario ("falta plano de jogo por arquetipo") estava
 **estruturalmente certa** -- o motor realmente nao tinha um. Construi-lo
 mostrou que a falta dele nao era o gargalo.
 
+### ADENDO (29/08) -- `OPTCG_PLANO` DEPENDE DE `OPTCG_PERFIL_V2`. Ligar so a primeira mede quase-nada
+
+Nao estava escrito em lugar nenhum, e a redacao acima (`OPTCG_PLANO=1`
+sozinho) induz ao erro. **As duas flags tem que ser ligadas JUNTAS** --
+a linha medida na tabela e "plano + perfil V2", nao "plano".
+
+**Por que**: o plano le `deck_profile_type()`
+(`decision_engine.py:11050`), que delega pra `deck_profile()`
+(`deck_census.py:141`). Com `OPTCG_PERFIL_V2` desligado, a classificacao
+cai no caminho legado, cuja classe `aggressive` exige
+`avg_cost <= 2.5 AND pct_cheap >= 0.55` -- **matematicamente
+inalcancavel** pelos decks reais (bloco 735: a distribuicao vai de 3,28 a
+4,70 de custo medio, e o motor mediu `profile == 'control'` em **100% das
+4.491 decisoes**, nos 30 lideres).
+
+**Consequencia pratica de ligar so `OPTCG_PLANO=1`:**
+
+| ramo do plano | com V2 desligado |
+|---|---|
+| agressivo ignora ameaca (`opp_lethal_threat < 0.35`) | **nunca dispara** -- nenhum deck e `aggressive` |
+| janela de DEVELOP agressiva (`don_total <= 2`) | **nunca dispara** |
+| janela de DEVELOP de controle (`don_total <= 6`) | dispara pra praticamente todo deck |
+
+Sobra **uma** mudanca: a janela de DEVELOP indo de 4 pra 6 em todo mundo.
+O nucleo do mecanismo -- o ramo agressivo, que e a razao de o plano
+existir -- fica **inerte**. Quem testar so `OPTCG_PLANO=1` vai medir
+~nada e concluir a coisa errada sobre o mecanismo.
+
+**Forma certa de reproduzir a medicao do bloco 737:**
+
+```bash
+OPTCG_PLANO=1 OPTCG_PERFIL_V2=1 python decision_quality_full.py --all
+```
+
+### Nota de metodo -- 6a ocorrencia do MESMO erro (bloco 735)
+
+Pra confirmar o adendo acima tentei classificar os decks reais **por
+fora** do motor (script descartavel lendo `decklists_raw.csv` direto).
+Deu **70 de 193 decks como `aggressive`** no caminho default -- o que
+contradiria o "100% control" do bloco 735 e derrubaria o adendo inteiro.
+
+**A minha reconstrucao e que estava errada**: `load_cards_db()` devolve
+**dicts**, e `deck_census()` le atributo (`getattr(c, 'cost', 0)`) --
+carta que nao passa por `_make_card` entra com **custo 0**. Havia 22
+cartas de custo 0 num deck de 51, puxando o `avg_cost` pra 1,51 e
+fabricando decks "agressivos" que nao existem.
+
+E exatamente o que o bloco 735 ja registrava como licao ("5 erros meus
+por reconstruir o caminho do motor por fora; so valeu interceptar por
+dentro"). **Esta e a 6a.** O adendo se apoia na medicao POR DENTRO (4.491
+decisoes com `profile` lido do proprio motor), nao na minha contagem por
+fora, que foi descartada.
+
 ## 2026-08-28 (736) - **O ARQUETIPO E INERTE**: nao prejudica, nao ajuda, e nem nos decks com o rotulo INVERTIDO corrigi-lo muda decisao. O motor NAO TEM plano de jogo por arquetipo -- tem 4 multiplicadores fingindo ser um
 
 ### A pergunta do usuario

@@ -1,6 +1,21 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 27 de agosto de 2026
+**Última atualização:** 29 de agosto de 2026
+
+> 29/08/2026 (adendo ao bloco 737): **`OPTCG_PLANO` NAO FUNCIONA SOZINHO
+> — depende de `OPTCG_PERFIL_V2=1`.** O plano ramifica em
+> `deck_profile_type()`; com o perfil V2 desligado a classificacao cai no
+> caminho legado, onde `aggressive` exige `avg_cost<=2.5 AND
+> pct_cheap>=0.55` e e **inalcancavel** (bloco 735: `profile=='control'`
+> em **100% das 4.491 decisoes**). Resultado de ligar so `OPTCG_PLANO=1`:
+> o **ramo agressivo nunca dispara** (nem o `opp_lethal_threat<0.35`, nem
+> a janela DEVELOP=2) e sobra apenas DEVELOP 4->6 pra todo deck — mede
+> ~nada e induz a conclusao errada sobre o mecanismo. A linha medida na
+> tabela do 737 e **"plano + perfil V2"**, com as duas ligadas.
+> Reproduzir com `OPTCG_PLANO=1 OPTCG_PERFIL_V2=1 python
+> decision_quality_full.py --all`. **Nenhuma mudanca de codigo** — so o
+> registro que faltava. Detalhe e a nota de metodo (6a ocorrencia do erro
+> de reconstruir o motor por fora) no bloco 737 do HANDOFF.
 
 > 28/08/2026 (bloco 737): **PLANO DE JOGO POR ARQUETIPO construido e
 > medido: -0,0pp.** `analysis_priority()` era cascata puramente de BOARD
@@ -14,7 +29,9 @@
 > melhores nem piores, eram DIFERENTES — o modo escolhe a FAMILIA de
 > jogada, e o erro esta na escolha ESPECIFICA dentro dela. **7o caminho
 > independente** apontando "o gap esta em EM QUEM / COM O QUE, nao em O
-> QUE FAZER". **NAO publicado**, default desligado. `OPTCG_PLANO=1`.
+> QUE FAZER". **NAO publicado**, default desligado. **Ligar exige AS
+> DUAS flags: `OPTCG_PLANO=1 OPTCG_PERFIL_V2=1`** — ver a nota de
+> 29/08 acima, `OPTCG_PLANO=1` sozinho deixa o ramo agressivo inerte.
 
 > 28/08/2026 (bloco 736): **O ARQUETIPO E INERTE.** Ablacao no corpus:
 > baseline 49,3% / corrigido 49,2% / **sem arquetipo 49,1%** — nao
