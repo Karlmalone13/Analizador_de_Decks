@@ -262,6 +262,28 @@ foi medida — e aí não é reprovação, é opinião.
 > cobrar pela 2a vez (a 1a foi 15/08). **Na 1a rodada depois da inversao
 > ja apareceu a regressao.**
 
+## Arquetipo: multiplicadores e plano de jogo (blocos 736-737)
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| Corrigir o classificador de arquetipo (a classe agressiva era INALCANCAVEL: 0 de 39 decks reais) | **-0,0pp**; e nos 11 decks com o rotulo INVERTIDO, **5 de 7 nao mudam NADA** (n=174, n=65 entre eles) | 735-736 |
+| Remover o arquetipo por completo (ablacao neutra) | **-0,2pp** -- nao prejudica nem ajuda | 736 |
+| **Plano de jogo por arquetipo** na cascata de prioridade | **-0,0pp**, apesar de mudar **6,5% das decisoes de modo** | 737 |
+
+> **O defeito era real**: a classe `aggressive` exigia
+> `avg_cost<=2.5 AND pct_cheap>=0.55` e a distribuicao real vai de 3,28 a
+> 4,70 -- matematicamente inalcancavel. `n_rush`/`n_blockers` eram
+> calculados e nunca usados. Consertado, **default desligado**.
+>
+> **Mas nao e o gargalo.** O plano de jogo MUDA decisao (1 em 15) e a
+> semelhanca com o humano fica igual: **as decisoes trocadas nao eram
+> melhores nem piores, eram diferentes**. Prioridade escolhe a FAMILIA de
+> jogada; o erro esta na escolha ESPECIFICA dentro dela.
+>
+> Nao retomar por este caminho. O alvo sao as categorias de escolha
+> especifica: alvo do efeito (16,4%), cartas de counter (18,5%), DON
+> (23,5%).
+
 ## Busca / shortlist
 
 | tentativa | resultado medido | bloco |

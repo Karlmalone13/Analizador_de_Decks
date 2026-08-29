@@ -2,6 +2,20 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 737): **PLANO DE JOGO POR ARQUETIPO construido e
+> medido: -0,0pp.** `analysis_priority()` era cascata puramente de BOARD
+> (mesmo estado = mesma prioridade pra qualquer deck); agora agressivo
+> ignora ameaca que nao o mata (`opp_lethal_threat<0.35`) e a janela de
+> DEVELOP varia (agressivo 2 / midrange 4 / controle 6).
+> **FUNCIONA como mecanismo**: `REMOVE_THREAT` 40,5%->35,8%, `ATTACK`
+> 13,6%->**20,1%** — **1 em cada 15 decisoes muda de modo** (os
+> multiplicadores do 736 nao mudavam nenhuma). **E o agregado nao se
+> move**: 49,3% -> 49,2%. **Leitura**: as decisoes trocadas nao eram
+> melhores nem piores, eram DIFERENTES — o modo escolhe a FAMILIA de
+> jogada, e o erro esta na escolha ESPECIFICA dentro dela. **7o caminho
+> independente** apontando "o gap esta em EM QUEM / COM O QUE, nao em O
+> QUE FAZER". **NAO publicado**, default desligado. `OPTCG_PLANO=1`.
+
 > 28/08/2026 (bloco 736): **O ARQUETIPO E INERTE.** Ablacao no corpus:
 > baseline 49,3% / corrigido 49,2% / **sem arquetipo 49,1%** — nao
 > prejudica e nao ajuda. **Teste decisivo nos 11 decks com rotulo

@@ -28,6 +28,73 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (737) - **PLANO DE JOGO POR ARQUETIPO construido e MEDIDO: -0,0pp.** Muda 6,5% das decisoes de modo e a semelhanca com o humano nao se move -- o gap nao esta em O QUE FAZER
+
+### O que foi construido
+
+`analysis_priority()` era uma cascata **puramente de estado de
+tabuleiro**: um deck agressivo e um de controle, no MESMO board, recebiam
+a MESMA prioridade. Era a lacuna estrutural do bloco 736.
+
+O plano (default DESLIGADO, `OPTCG_PLANO=1`):
+- **AGRESSIVO ignora ameaca que nao o esta matando** (`opp_lethal_threat
+  < 0.35`) -- corre pro lider em vez de trocar recurso no board.
+- **Janela de DEVELOP varia por deck**: agressivo `don_total<=2` (parte
+  pro ataque antes), controle `<=6` (segura mais, cartas caras precisam
+  de mesa), midrange fica nos 4 de sempre.
+- **LETHAL/DEFENSIVE/PREVENT_COMBO ficam FORA** -- sao respostas a perigo
+  imediato e valem pra qualquer deck.
+
+### FUNCIONA como mecanismo -- muda decisao de verdade
+
+| prioridade | desligado | ligado | delta |
+|---|---|---|---|
+| **REMOVE_THREAT** | 40,5% | 35,8% | **-4,7pp** |
+| **ATTACK** | 13,6% | 20,1% | **+6,5pp** |
+| DEVELOP | 12,3% | 10,4% | -1,9pp |
+| LETHAL | 31,9% | 32,1% | +0,2 |
+| DEFENSIVE | 1,7% | 1,7% | 0,0 |
+
+**1 em cada 15 decisoes muda de modo.** Diferente dos multiplicadores do
+bloco 736, que nao mexiam UMA escolha sequer.
+
+### E NAO MELHORA NADA
+
+| config | agregado | seq | play | don |
+|---|---|---|---|---|
+| baseline | 49,3% | 36,4 | 43,5 | 23,5 |
+| plano + perfil V2 | **49,2%** (-0,0pp) | 36,1 | 43,3 | 23,5 |
+
+Default verificado intacto (hash das decisoes de 3 partidas identico).
+
+### A LEITURA -- e por que este resultado vale mais que os outros nulos
+
+Os multiplicadores (736) nao mudavam nada, entao dava pra dizer "o sinal
+e fraco demais". **Aqui o motor decidiu DIFERENTE em 6,5% das decisoes e
+a semelhanca com o humano ficou igual.**
+
+Ou seja: **as decisoes que ele trocou nao eram melhores nem piores --
+eram diferentes.** Trocar `REMOVE_THREAT` por `ATTACK` num deck agressivo
+faz o motor atacar mais, mas nao faz ele atacar **como o humano ataca**.
+O modo de prioridade escolhe QUE FAMILIA de jogada considerar; dentro da
+familia, a escolha especifica continua sendo a mesma que erra hoje.
+
+**7o caminho independente chegando na mesma conclusao**: o gap nao esta
+em O QUE FAZER -- esta em **EM QUEM / COM O QUE**. O bot ja acerta 85,7%
+em bloquear e 71,6% em quem ataca; erra 16,4% no alvo do efeito, 18,5%
+em quais cartas de counter, 23,5% em onde colocar o DON. **Plano
+estrategico opera ACIMA da escolha especifica, e e na escolha especifica
+que o erro mora.**
+
+### Status
+
+**NAO publicado** (default desligado). O mecanismo esta correto e
+funciona; simplesmente nao e o que trava a metrica.
+
+A hipotese do usuario ("falta plano de jogo por arquetipo") estava
+**estruturalmente certa** -- o motor realmente nao tinha um. Construi-lo
+mostrou que a falta dele nao era o gargalo.
+
 ## 2026-08-28 (736) - **O ARQUETIPO E INERTE**: nao prejudica, nao ajuda, e nem nos decks com o rotulo INVERTIDO corrigi-lo muda decisao. O motor NAO TEM plano de jogo por arquetipo -- tem 4 multiplicadores fingindo ser um
 
 ### A pergunta do usuario
