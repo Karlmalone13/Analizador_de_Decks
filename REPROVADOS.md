@@ -67,6 +67,25 @@ foi medida — e aí não é reprovação, é opinião.
 > `activate` (+0,5pp) e `don` (+2,5pp) ate melhoraram sem a busca -- mas
 > `play`, a metrica oficial, e `seq` cairam.
 
+## Limiar de parada global (`ACTION_SCORE_FLOOR`) -- 2a reprovacao
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| `ACTION_SCORE_FLOOR` 0 -> 20 -> 50, contra o agregado oficial | **+0,0pp** nas duas; `seq` 36,4 -> 36,4/36,5 | 734 |
+
+> **Por que nao funciona** (medido, nao suposto): as ULTIMAS acoes do
+> turno -- as marginais que um piso cortaria -- tem **mediana de score
+> 119,5**, e so **26,4%** ficam abaixo de 50. **O excesso de acoes do
+> motor nao e composto de acoes marginais: sao acoes que ele valoriza
+> ALTO.** Nenhum limiar de score alcanca isso sem cortar tambem o que ele
+> acerta.
+>
+> Fingerprint confirmou que os knobs entraram (hashes distintos) -- o
+> resultado plano e real.
+>
+> **2a reprovacao independente** do mesmo mecanismo (a 1a: bloco 695, em
+> `play`, onde o erro de contagem e simetrico). Nao retomar.
+
 ## Contagem (quantas cartas jogar por turno)
 
 | tentativa | resultado medido | bloco |

@@ -2,6 +2,19 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 734): **sequenciamento decomposto — 61% da perda e
+> CONTAGEM** (39,2pp), contra 12,4pp de ordem e 12,8pp de carta errada. O
+> motor faz **+0,75 acao/turno** a mais. **CORRECAO**: `seq` usa pares
+> (acao, CARTA) e e **composto** das outras categorias — eu tinha
+> priorizado ele como alvo proprio (44% do ganho), o que **duplicava**
+> `play`/`attack`/`activate`/`don`. **MAS o limiar de parada nao resolve**:
+> `ACTION_SCORE_FLOOR` 0->20->50 da **+0,0pp** no agregado (fingerprint
+> confirma que os knobs entraram). Causa: as ULTIMAS acoes do turno tem
+> **mediana de score 119,5**, so 26,4% abaixo de 50 — **as acoes
+> excedentes NAO sao marginais, o motor as considera BOAS**. 2a morte do
+> limiar global (a 1a foi o bloco 695). Volta pra **VALORACAO**, mesma
+> conclusao do bloco 716 por outro caminho.
+
 > 28/08/2026 (bloco 733): **os casos concretos NAO confirmam
 > desperdicio** — das 22 ocorrencias de `attach_don -> play`, **9 sao
 > habilitacoes DEFENSIVAS** (blocker, gatilho de dano, efeito do turno do

@@ -28,6 +28,64 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (734) - Decomposicao do SEQUENCIAMENTO: **61% da perda e CONTAGEM**. Mas o limiar de parada nao alcanca -- as acoes excedentes tem score ALTO, nao sao marginais
+
+### 1. Sequenciamento nao e alvo proprio (correcao de priorizacao minha)
+
+Os elementos da sequencia sao pares **(acao, CODIGO DA CARTA)** -- o LCS
+exige a mesma carta, na mesma acao, na mesma ordem. Logo `seq` e um
+COMPOSTO das outras categorias.
+
+Eu tinha dito ao usuario pra priorizar sequenciamento (4.887 decisoes,
+44% do ganho necessario). **Errado**: aquilo conta os mesmos acertos que
+`play`/`attack`/`activate`/`don` ja contam. Somar os dois inflava o peso.
+
+### 2. A decomposicao (400 turnos)
+
+| | |
+|---|---|
+| A) LCS (acao, carta) -- metrica oficial | 35,5% |
+| B) LCS so da ACAO -- ordem pura | 48,4% |
+| C) TETO dadas as CONTAGENS (ordem perfeita) | **60,8%** |
+
+| origem da perda | pp |
+|---|---|
+| **CONTAGEM (faz demais/de menos)** | **39,2** |
+| ORDEM (dada a contagem) | 12,4 |
+| CARTA errada | 12,8 |
+
+**Contagem e 61% da perda.** O motor faz **+0,75 acao por turno** a mais
+que o humano (+660 a mais, -359 a menos, em 400 turnos).
+
+### 3. Mas o limiar de parada NAO resolve -- medido
+
+`ACTION_SCORE_FLOOR` 0 -> 20 -> 50, corpus completo, agregado oficial:
+
+| config | agregado | seq | play | don |
+|---|---|---|---|---|
+| baseline | 49,3% | 36,4 | 43,5 | 23,5 |
+| floor=20 | 49,3% (+0,0) | 36,4 | 43,6 | 23,4 |
+| floor=50 | 49,3% (+0,0) | 36,5 | 43,1 | 23,3 |
+
+**Fingerprint confirma que os knobs entraram** (`ACTION_SCORE_FLOOR` 20.0
+e 50.0, hashes distintos) -- nao e falha de encanamento.
+
+**A causa**: as ULTIMAS acoes do turno (as marginais que um piso
+cortaria) tem **mediana de score 119,5**; so 26,4% ficam abaixo de 50.
+
+**As acoes excedentes do motor NAO sao marginais.** Ele nao age demais
+porque o score raspa o zero -- age demais porque **considera essas acoes
+BOAS**, com score na casa das centenas. Limiar de parada nao alcanca isso.
+
+**2a vez que o limiar global morre por medicao**: bloco 695 (em `play`,
+erro simetrico) e agora no agregado. Encerrado como alavanca.
+
+### 4. Volta pra VALORACAO
+
+Se o excesso e de acoes que o motor valoriza alto, o problema nao e ONDE
+ele para -- e O QUE ele valoriza. Mesma conclusao a que a decomposicao de
+termos (bloco 716, AUC 0,611) tinha chegado por outro caminho.
+
 ## 2026-08-28 (733) - Casos concretos de `attach_don -> play` **NAO confirmam desperdicio**. E a regra de autorizacao mudou: livre pra mexer, exceto no que e serio
 
 ### A verificacao que impediu a 4a proposta errada
