@@ -28,6 +28,80 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-28 (736) - **O ARQUETIPO E INERTE**: nao prejudica, nao ajuda, e nem nos decks com o rotulo INVERTIDO corrigi-lo muda decisao. O motor NAO TEM plano de jogo por arquetipo -- tem 4 multiplicadores fingindo ser um
+
+### A pergunta do usuario
+
+*"sera se esse arquetipo esta prejudicando nossos stats?"* -- pergunta
+mais afiada que a minha investigacao. Eu tinha comparado "classificacao
+CERTA x ERRADA" (deu zero) e encerrado. Isso responde se o ROTULO esta
+errado; **nao responde se o MECANISMO presta.**
+
+### A ablacao (corpus completo)
+
+| config | agregado | delta | seq | play | don |
+|---|---|---|---|---|---|
+| baseline (tudo control) | 49,3% | -- | 36,4 | 43,5 | 23,5 |
+| perfil V2 (corrigido) | 49,2% | -0,0pp | 36,2 | 43,9 | 23,5 |
+| **NEUTRO (sem arquetipo)** | **49,1%** | **-0,2pp** | 36,5 | **44,2** | **22,2** |
+
+**Nao prejudica e nao ajuda.** Sem arquetipo, `play` sobe pra 44,2 (o
+melhor dos tres) e `don` cai pra 22,2 -- troca uma coisa pela outra e o
+liquido e ~zero.
+
+### O teste DECISIVO: os 11 decks com o rotulo INVERTIDO
+
+Sob V2, 11 lideres sao `aggressive` -- hoje recebem `control` e portanto
+o multiplicador **oposto** (1.3 onde deveria ser 0.7). Se o mecanismo
+tivesse forca, corrigir esses mudaria alguma coisa:
+
+| lider | base | V2 | delta | n |
+|---|---|---|---|---|
+| OP05-041 | 54,5% | 63,6% | +9,1pp | 11 |
+| **OP14-040** | 60,0% | 50,0% | **-10,0pp** | 30 |
+| OP13-079 | 43,7% | 43,7% | **0,0** | **174** |
+| OP14-020 | 26,8% | 26,8% | **0,0** | 56 |
+| OP15-001 | 40,0% | 40,0% | **0,0** | 65 |
+| OP14-079 | 47,6% | 47,6% | 0,0 | 21 |
+| OP16-001 | 46,2% | 46,2% | 0,0 | 26 |
+| **agregado** | 42,6% | 42,0% | **-0,5pp** | 383 |
+
+**5 de 7 nao mudam NADA** -- incluindo os de maior amostra (174 e 65
+turnos). Os 2 que mexem vao em direcoes opostas, e o de maior n piora.
+
+**Trocar o multiplicador de 1.3 pra 0.7 em quatro termos nao altera UMA
+decisao sequer** naqueles decks. O sinal e fraco demais pra virar escolha
+diferente.
+
+### O ACHADO ESTRUTURAL
+
+Todo o "entendimento de deck" do motor sao **4 multiplicadores
+escalares**:
+
+```
+don_field_curve_scale     aggressive 0.7  control 1.3
+hand_value_curve_scale    aggressive 0.7  control 1.3
+board_value_curve_scale   aggressive 1.3  control 0.7
+life_value_curve_scale    control 1.3
+```
+
+**O motor NAO TEM plano de jogo por arquetipo.** Tem quatro fatores de
+escala fingindo ser um, e eles nao mudam decisao. E a 3a suspeita do
+usuario ("vc ainda nao mexeu na estrutura"), agora quantificada.
+
+### Decisao
+
+**O conserto do classificador fica com default DESLIGADO.** O defeito e
+real (a classe agressiva era matematicamente inalcancavel, 0 de 39
+decks), vale ter consertado, mas publicar mudanca de producao sem ganho
+nao se justifica -- e o unico movimento com amostra decente foi NEGATIVO
+(-10,0pp em OP14-040, n=30).
+
+### Proximo (autorizado pelo usuario): PLANO DE JOGO POR ARQUETIPO
+
+Nao mais multiplicador. Um mecanismo que mude **o que o motor prioriza**,
+nao quanto ele escala termos.
+
 ## 2026-08-28 (735) - **A HIPOTESE DO USUARIO ESTAVA CERTA: a leitura de ARQUETIPO esta cega.** 39 de 39 decks reais classificam como control/midrange -- **ZERO agressivos**, porque a classe e inalcancavel
 
 ### Como chegou aqui

@@ -2,6 +2,20 @@
 
 **Última atualização:** 27 de agosto de 2026
 
+> 28/08/2026 (bloco 736): **O ARQUETIPO E INERTE.** Ablacao no corpus:
+> baseline 49,3% / corrigido 49,2% / **sem arquetipo 49,1%** — nao
+> prejudica e nao ajuda. **Teste decisivo nos 11 decks com rotulo
+> INVERTIDO** (recebem `control` e o multiplicador oposto): **5 de 7 nao
+> mudam NADA** ao corrigir, incluindo os de maior amostra (n=174 e n=65);
+> os 2 que mexem vao em direcoes opostas e o de maior n **piora -10,0pp**.
+> **Trocar 1.3 por 0.7 em quatro termos nao altera uma decisao sequer.**
+> **ACHADO ESTRUTURAL: o motor NAO TEM plano de jogo por arquetipo** — tem
+> 4 multiplicadores escalares fingindo ser um. Conserto do classificador
+> fica **default DESLIGADO** (defeito real, ganho nulo, unico movimento
+> com n decente foi negativo). **Proximo, autorizado: construir plano de
+> jogo por arquetipo** — mecanismo que mude O QUE o motor prioriza, nao
+> quanto ele escala termos.
+
 > 28/08/2026 (bloco 735): **A HIPOTESE DO USUARIO ESTAVA CERTA — a leitura
 > de ARQUETIPO esta cega.** Dos **39 decks REAIS** do corpus: 31 control,
 > 8 midrange, **0 aggressive** — a classe agressiva e **INALCANCAVEL**
