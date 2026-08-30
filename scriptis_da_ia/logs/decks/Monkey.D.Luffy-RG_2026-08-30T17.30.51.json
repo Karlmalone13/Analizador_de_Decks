@@ -1,0 +1,56 @@
+{
+  "cards": [
+    {
+      "code": "OP13-027",
+      "name": "Sanji",
+      "count": 3
+    },
+    {
+      "code": "OP13-040",
+      "name": "OP13-040",
+      "count": 2
+    },
+    {
+      "code": "EB04-007",
+      "name": "Roronoa Zoro",
+      "count": 2
+    },
+    {
+      "code": "OP05-038",
+      "name": "OP05-038",
+      "count": 2
+    },
+    {
+      "code": "OP01-016",
+      "name": "Nami",
+      "count": 1
+    },
+    {
+      "code": "ST21-003",
+      "name": "ST21-003",
+      "count": 1
+    },
+    {
+      "code": "EB02-017",
+      "name": "Nami",
+      "count": 1
+    },
+    {
+      "code": "OP13-037",
+      "name": "OP13-037",
+      "count": 1
+    },
+    {
+      "code": "OP14-031",
+      "name": "Nami",
+      "count": 1
+    },
+    {
+      "code": "OP16-004",
+      "name": "OP16-004",
+      "count": 1
+    }
+  ],
+  "total_seen": 15,
+  "leader": "OP13-001"
+}

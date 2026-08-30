@@ -28,6 +28,90 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-30 (745) - **CAUSA RAIZ do efeito do lider, achada e consertada**: `DonTap` existe em DOIS lugares no jogo, e o custo mora no TRIGGER -- o plugin lia o do EFEITO, sempre zero
+
+**Pedido do usuario:** *"quero que resolva de vez essa questao do bot
+saber usar o efeito do lider"* -- 3a partida seguida com a mesma
+reclamacao.
+
+### 1. O diagnostico do bloco 744 entregou
+
+`OptionalCostWhy()` (heartbeat) devolveu, com `actor=OP13-001` durante
+`Attack_WaitOnCounters`:
+
+    optCost=sem_custo_opcional[TrashCard=False RestSelf=False
+                               TrashSelf=False DonTap=0 DonMinus=0]
+
+**Todas as flags de custo zeradas.** `IsOptionalCostWindow` estava
+CERTA em recusar, pelo que enxergava. O erro era ONDE ela olhava.
+
+### 2. A causa raiz
+
+`DonTap` existe em DOIS lugares no C# do jogo:
+
+    ActV3Effect.DonTap      <- o que o plugin lia
+    ActionTrigger.DonTap    <- onde o custo de fato mora
+
+E o custo de uma habilidade fica no **TRIGGER**, nao no efeito. Isso bate
+exatamente com a regra dos dois-pontos que o projeto ja documenta em
+`CLAUDE.md`: tudo ANTES do `:` e custo. O lider OP13-001 tem
+`[DON!! x1] [On Your Opponent's Attack] (rest 1 DON): +2000` -- o rest do
+DON e trigger, e o `effect.DonTap` fica 0.
+
+Confirmado no `_referencias/simulador-oficial/dnspy-export/`:
+`GameplayLogicScript.ActionHasDownsideCost(CardAction)` (linha 10468) e o
+predicado do PROPRIO JOGO pra "esta acao tem custo/downside", e ele
+enumera ~25 formas -- **do trigger E do efeito**, incluindo
+`actionTrigger.DonTap > 0`.
+
+### 3. O conserto
+
+Em vez de copiar a lista certa (que envelhece a cada carta nova), o
+plugin passa a **chamar o predicado oficial do jogo por reflexao** --
+mesmo mecanismo que ele ja usa pra `HandleMouseClickCardDuringActionState`
+e outros. Novos helpers em `BotExecutor.cs`:
+
+- `ActiveCardAction(gls)` -- `aca -> ActorCLS() -> GetCardActions()[iActionIdx]`
+- `ActionHasCostOficial(gls)` -- invoca `ActionHasDownsideCost`; devolve
+  `null` se a reflexao falhar, e ai o criterio antigo (5 flags + botao
+  Cancel) continua valendo em vez de decidir no escuro.
+
+Quando o jogo diz que HA custo, o botao `Cancel` deixa de ser exigido: o
+custo do lider aparece em `Attack_WaitOnCounters`, que nao tem essa tela.
+O executor nao depende do botao -- se o motor recusa,
+`CancelPendingAction` resolve; se aceita, segue o `HandlePendingAction`
+normal. E `_downsideCheckedFor` ja garante UMA pergunta por acao
+pendente, entao nao ha risco de laco.
+
+`OptionalCostWhy` agora reporta `oficial=SIM/NAO/indisponivel` junto das
+flags e da lista de botoes, e nao retorna mais cedo quando as flags do
+efeito estao zeradas -- era justamente esse retorno que escondia o caso.
+
+### 4. Por que as tentativas anteriores nao pegaram
+
+O bloco 565 adicionou `IsOptionalDonRestCost`, que e um alias direto de
+`IsOptionalCostWindow` -- herdou a MESMA leitura errada do campo. O bloco
+744 instrumentou, mas sem consertar (de proposito: eu ja tinha consertado
+a camada errada duas vezes no mesmo dia). E o diagnostico do 744 que deu
+a resposta em UMA partida.
+
+**Padrao que se repete no projeto**: nao era decisao ruim do motor, era a
+opcao que nunca chegava a existir -- 8a ocorrencia da mesma familia
+(Pekoms, Borsalino, lider fora do loop de attach_don, alvo nomeado do
+Sunny...).
+
+### 5. Estado / o que falta validar
+
+Plugin recompilado (0 erros) e instalado 17:34:55. **Ainda NAO validado
+ao vivo** -- a proxima partida tem que mostrar decisoes de `reaction` no
+decision log (hoje sao ZERO) e `optCost=oficial=SIM` no heartbeat. Se a
+reflexao nao achar o metodo na assembly publicada, o heartbeat dira
+`oficial=indisponivel` e o comportamento volta a ser o de antes, sem
+quebrar nada.
+
+**Pendente, reportado na mesma partida e NAO investigado**: "nao
+desenvolve o board muito bem".
+
 ## 2026-08-30 (744) - Teste ao vivo: 3 reclamacoes, 3 causas DIFERENTES. Uma e empate exato decidido por frequencia humana, outra e defesa CORRETA contra letal, a terceira e o plugin nunca perguntar
 
 **Partida:** `Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-30T16.21.37`

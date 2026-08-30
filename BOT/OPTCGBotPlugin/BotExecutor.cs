@@ -365,6 +365,64 @@ namespace OPTCGBotPlugin
         // Os campos vem de `ActV3Effect` (dnspy-export), todos vizinhos do
         // TrashCard que ja era lido. Custo novo que apareca no jogo so precisa
         // ser somado a esta lista, num lugar so.
+        // ── CUSTO OPCIONAL: pergunta pro PROPRIO JOGO (bloco 745) ──────
+        //
+        // CAUSA RAIZ, achada com o diagnostico do bloco 744. Durante
+        // `Attack_WaitOnCounters` com `actor=OP13-001` (lider Luffy, custo
+        // "rest 1 DON"), o passo V3 que o plugin lia reportava:
+        //
+        //     TrashCard=False RestSelf=False TrashSelf=False
+        //     DonTap=0 DonMinus=0
+        //
+        // TODAS as flags zeradas -- entao `IsOptionalCostWindow` recusava,
+        // certo pelo que via. O erro estava em ONDE olhar: `DonTap` existe
+        // em DOIS lugares no jogo, `ActV3Effect.DonTap` (o que o plugin
+        // lia) e **`ActionTrigger.DonTap`**, e o custo de uma habilidade
+        // mora no TRIGGER. Bate com a regra dos dois-pontos que o projeto
+        // ja documenta: o que vem ANTES do `:` e custo.
+        //
+        // Em vez de copiar a lista certa (que envelhece a cada carta nova),
+        // chama o predicado OFICIAL: `GameplayLogicScript.
+        // ActionHasDownsideCost(CardAction)`, que enumera as ~25 formas de
+        // custo do jogo -- trigger E efeito. E `private`, entao vai por
+        // reflexao, mesmo mecanismo que o plugin ja usa pra
+        // `HandleMouseClickCardDuringActionState` e companhia.
+        //
+        // Sintoma que isso corrige: o efeito reativo do lider NUNCA virava
+        // pergunta pro motor -- ZERO decisoes de `reaction` no decision log,
+        // reportado pelo usuario em 3 partidas seguidas. O bloco 565 tentou
+        // consertar por outro caminho e nao pegou este caso.
+        private static readonly MethodInfo? _miActionHasDownsideCost =
+            AccessTools.Method(typeof(GameplayLogicScript), "ActionHasDownsideCost");
+
+        // A CardAction que esta resolvendo agora (aca -> ator -> acoes[idx]).
+        public static CardAction? ActiveCardAction(GameplayLogicScript gls)
+        {
+            var aca = gls.acaActive;
+            if (aca == null) return null;
+            try
+            {
+                var cls = aca.ActorCLS();
+                var acts = cls != null ? cls.GetCardActions() : null;
+                if (acts == null || aca.iActionIdx < 0 || aca.iActionIdx >= acts.Count)
+                    return null;
+                return acts[aca.iActionIdx];
+            }
+            catch { return null; }
+        }
+
+        // O jogo considera que esta acao tem custo/downside opcional?
+        // Devolve null quando a reflexao nao esta disponivel -- ai o
+        // chamador cai no criterio antigo em vez de decidir no escuro.
+        public static bool? ActionHasCostOficial(GameplayLogicScript gls)
+        {
+            if (_miActionHasDownsideCost == null) return null;
+            var ca = ActiveCardAction(gls);
+            if (ca == null) return null;
+            try { return (bool)_miActionHasDownsideCost.Invoke(gls, new object[] { ca }); }
+            catch { return null; }
+        }
+
         // DIAGNOSTICO (bloco 744): IsOptionalCostWindow abaixo tem TRES
         // portoes e devolve um bool so -- quando ela diz "nao", o log nao
         // dizia QUAL portao barrou, e a sessao seguinte ficava adivinhando.
@@ -389,15 +447,17 @@ namespace OPTCGBotPlugin
                 var ef = gls.acaActive.V3Step().effect;
                 flags = $"TrashCard={ef.TrashCard} RestSelf={ef.RestSelf} "
                       + $"TrashSelf={ef.TrashSelf} DonTap={ef.DonTap} DonMinus={ef.DonMinus}";
-                bool exige = ef.TrashCard || ef.RestSelf || ef.TrashSelf
-                          || ef.DonTap > 0 || ef.DonMinus > 0;
-                if (!exige) return "sem_custo_opcional[" + flags + "]";
+                // bloco 745: NAO retorna cedo aqui. As flags do EFEITO
+                // podem estar todas zeradas e a acao ter custo mesmo
+                // assim (o custo mora no TRIGGER) -- foi exatamente o
+                // caso do lider. Reporta sempre o predicado oficial.
             }
             catch { return "V3Step_excecao"; }
-            foreach (var btn in OfferedButtons(gls))
-                if (btn.myType == ButtonChoiceType.Cancel)
-                    return "OK[" + flags + "]";
-            return "sem_botao_Cancel[" + flags + "|botoes=" + OfferedButtonNames(gls) + "]";
+            string oficial = ActionHasCostOficial(gls) switch
+            {
+                true => "SIM", false => "NAO", _ => "indisponivel"
+            };
+            return $"oficial={oficial}[{flags}|botoes={OfferedButtonNames(gls)}]";
         }
 
         public static bool IsOptionalCostWindow(GameplayLogicScript gls)
@@ -417,6 +477,20 @@ namespace OPTCGBotPlugin
             }
             catch { return false; }
 
+            // bloco 745: o jogo tem a palavra final. Quando ele diz que a
+            // acao TEM custo, nao exigimos mais o botao Cancel -- o custo
+            // do lider aparece em `Attack_WaitOnCounters`, que nao tem essa
+            // tela. O executor nao depende do botao: se o motor recusa,
+            // `CancelPendingAction` resolve; se aceita, segue o fluxo normal
+            // de `HandlePendingAction`. E `_downsideCheckedFor` garante uma
+            // pergunta por acao pendente, sem laco.
+            bool? oficial = ActionHasCostOficial(gls);
+            if (oficial == true)
+                return true;
+            if (oficial == false)
+                return false;
+
+            // Reflexao indisponivel: criterio antigo (5 flags + Cancel).
             if (!exigeCusto)
                 return false;
 

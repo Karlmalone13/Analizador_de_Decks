@@ -2,6 +2,24 @@
 
 **Última atualização:** 30 de agosto de 2026
 
+> 30/08/2026 (bloco 745): **CAUSA RAIZ do efeito do lider ACHADA E
+> CONSERTADA.** O diagnostico do bloco 744 devolveu
+> `optCost=sem_custo_opcional[... DonTap=0 ...]` -- todas as flags de
+> custo zeradas. Motivo: **`DonTap` existe em DOIS lugares no jogo**,
+> `ActV3Effect.DonTap` (que o plugin lia) e **`ActionTrigger.DonTap`**,
+> e o custo de habilidade mora no TRIGGER -- a mesma regra dos
+> dois-pontos do `CLAUDE.md`. O plugin agora chama o predicado OFICIAL
+> do jogo por reflexao (`GameplayLogicScript.ActionHasDownsideCost`, que
+> enumera ~25 formas de custo, trigger E efeito) em vez de reimplementar
+> a lista; cai no criterio antigo se a reflexao falhar. O botao `Cancel`
+> deixa de ser exigido quando o jogo confirma o custo --
+> `Attack_WaitOnCounters` nao tem essa tela.
+> O bloco 565 nao pegou porque `IsOptionalDonRestCost` era alias de
+> `IsOptionalCostWindow` e herdou a leitura errada do campo.
+> **FALTA VALIDAR AO VIVO**: a proxima partida tem que ter decisoes de
+> `reaction` no decision log (hoje ZERO) e `optCost=oficial=SIM`.
+> **Pendente nao investigado:** "nao desenvolve o board muito bem".
+
 > 30/08/2026 (bloco 744): teste ao vivo -- **3 reclamacoes, 3 causas
 > diferentes**.
 > **(1) Anexar em vez de jogar o Stage no turno 1: CONSERTADO.** Os dois
