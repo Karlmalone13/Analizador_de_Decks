@@ -16717,6 +16717,32 @@ class OPTCGMatch:
                 if piso is not None:
                     base = max(base, piso * 3)
 
+        # ── ATIVACAO QUE BUFFA UM ATACANTE SAI ANTES DO ATAQUE ───────────
+        # ACHADO AO VIVO 29/08 (usuario: "ativar o stage depois de atacar
+        # com o lider nao faz sentido"): Thousand Sunny ST31-005
+        # ("[Activate:Main] Rest this stage: Give up to 1 of your 'Monkey
+        # D. Luffy' up to 1 rested DON!!" -- +1000 no lider) era ativada
+        # DEPOIS do ataque do lider. O DON anexado depois nao entra no
+        # combate que ja aconteceu: o buff daquele turno vira zero.
+        #
+        # A regra "sai antes do ataque" JA existia neste metodo, mas so na
+        # categoria de remocao/controle (Teach 10, ~30 linhas acima) -- e
+        # `transfer_don` nao casa com nenhum ramo de base, entao caia no
+        # piso generico (10 x 3 = 30) sem bonus nenhum.
+        #
+        # Aqui a condicao e a FORMA: o efeito AUMENTA o poder de uma
+        # unidade minha, e essa unidade ainda pode atacar neste turno.
+        # Vale pra qualquer carta com esse formato, nao so a Sunny.
+        _BUFFA_ATACANTE = ('transfer_don', 'buff_power', 'buff_power_per_count',
+                           'set_base_power', 'set_active')
+        if any(a in _BUFFA_ATACANTE for a in actions_list):
+            alvos_que_atacam = [c for c in p.field_chars
+                                if character_can_attack_now(c, p, opp)]
+            if character_can_attack_now(p.leader, p, opp):
+                alvos_que_atacam.append(p.leader)
+            if alvos_que_atacam:
+                base += HABILITA_ATAQUE_BONUS
+
         # Custo real: quanto a ativação nos custa (trash de mão, DON, etc.)
         tem_trash_hand = any(c.get('type') in ('trash_from_hand', 'trash_hand', 'trash_char_or_hand',
                                                'trash_typed_hand_or_named_hand_field')
@@ -17907,6 +17933,25 @@ class OPTCGMatch:
         # Vale pra QUALQUER lider com gatilho condicionado a DON (`[DON!! xN]`),
         # nao so o Luffy -- e a categoria (3) logo abaixo ja tratava o lider
         # como atacante, entao ele so faltava aqui.
+        # RESERVA DEFENSIVA vs ANEXACAO (achado ao vivo 29/08): as
+        # categorias 1 e 2 liam `p.don_available` cru e furavam a reserva
+        # que `_don_reserve_for_defense` acabou de calcular -- o bot
+        # drenava o proprio recurso da habilidade reativa pra anexar
+        # poder. Medido: 26 disparos da habilidade do lider na partida, com
+        # ZERO DON ativo em 20 deles.
+        #
+        # Mas negar as duas categorias em bloco seria PIOR: anexar DON pra
+        # satisfazer um `[DON!! xN]` de um gatilho REATIVO e exatamente o
+        # que liga a habilidade que a reserva existe pra proteger. A
+        # distincao e essa -- anexacao que serve a defesa PODE usar a
+        # reserva; anexacao que serve ao ataque, nao.
+        _reserva_def = engine._don_reserve_for_defense()
+
+        def _don_para(card_alvo, trig):
+            if trig in TRIGGERS_NO_TURNO_DO_OPONENTE:
+                return p.don_available          # e a propria defesa
+            return max(0, p.don_available - _reserva_def)
+
         for card in [p.leader, *p.field_chars]:
             if card is None:
                 continue
@@ -17915,7 +17960,7 @@ class OPTCGMatch:
             cond_kw = getattr(card, 'don_cond_keywords', None) or {}
             for kw, req in cond_kw.items():
                 falta = req - card.don_attached
-                if falta <= 0 or falta > p.don_available:
+                if falta <= 0 or falta > _don_para(card, None):
                     continue
                 valor = self._keyword_don_value(kw, card, p, opp, priority)
                 score = valor - falta * DON_COST
@@ -17931,7 +17976,7 @@ class OPTCGMatch:
                 if not req or card.don_attached >= req:
                     continue
                 falta = req - card.don_attached
-                if falta > p.don_available:
+                if falta > _don_para(card, trig):
                     continue
                 # só vale ligar gatilho de ataque se o personagem vai atacar
                 valor = self._trigger_don_value(trig, ef, card, p, opp, priority)

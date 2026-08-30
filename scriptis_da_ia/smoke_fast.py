@@ -1049,6 +1049,13 @@ def test_pudding_anexa_don_antes_de_oferecer_activate_main() -> None:
     pudding._deck_uid = 10
     me = GameState(leader=real_card("OP11-062"), don_available=1, turn=2)
     me.field_chars = [pudding]
+    # VIDA EXPLICITA (29/08): sem cartas de vida o fixture ficava com
+    # life_count()=0 e ameaca 0,95 -- e ai a reserva defensiva legitimamente
+    # segurava o unico DON (o lider Katakuri tem "[On Your Opponent's
+    # Attack] DON!! -1"), fazendo o attach_don em Pudding sumir. Isso e o
+    # comportamento CERTO pra quem esta prestes a morrer; so nao e o que
+    # este teste quer exercitar, que e a ORDEM anexar-antes-de-ativar.
+    me.life = [real_card("OP11-070") for _ in range(4)]
     opp = GameState(leader=real_card("OP14-020"), turn=2)
     match = OPTCGMatch((me.leader, []), (opp.leader, []))
     actions = match._generate_and_score_actions(me, opp, DecisionEngine(me, opp))
