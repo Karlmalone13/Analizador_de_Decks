@@ -130,6 +130,51 @@ foi medida — e aí não é reprovação, é opinião.
 > plano e real e nao falha de encanamento -- foi o 1o uso do mecanismo do
 > bloco 692 e ele pagou na estreia.
 
+### Desempate POSICIONAL com banda estatistica (bloco 738) -- TETO DE +1,6pp
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| `attach_don` categoria 1 com custo de oportunidade em vez de custo fixo | **ZERO**: diagnostico antes/depois saiu IDENTICO byte a byte | 738 |
+| Banda de indiferenca estatistica no desempate (`TIEBREAK_BANDA_Z`), regua de DON do bloco 651 | LCS 47,8% -> 48,7% (Z=1,0) -> **49,4%** (Z=2,0) | 738 |
+| Mesma banda, regua trocada pra DESTRUICAO de opcao (quantas candidatas empatadas a acao inviabiliza) | LCS **49,4%** -- identico a regua de DON | 738 |
+
+> **O teto deste caminho e +1,6pp** (47,8% -> 49,4%), medido em 5
+> configuracoes: epsilon fixo, banda Z=1,0, banda Z=2,0, regua de DON e
+> regua de destruicao. **Nao re-medir sem mudar o mecanismo.**
+>
+> **O que o mecanismo REALMENTE era.** Os desempates dos blocos 651/663
+> estavam certos na direcao, mas presos atras de `TIEBREAK_EPS = 1e-9`:
+> media de Monte Carlo nunca empata nessa casa, entao eles quase nunca
+> disparavam e o motor decidia a ordem do turno por RUIDO DE AMOSTRAGEM.
+> A banda troca o epsilon fixo pelo erro-padrao da diferenca pareada que
+> a busca ja calcula pro criterio de parada -- quando a busca nao
+> consegue separar duas candidatas, ela passa a DECLARAR indiferenca em
+> vez de fingir preferencia. Isso funcionou: `play` como 1a acao do
+> turno foi de 36,5% pra 49,5% (humano 55,8%), +13pp.
+>
+> **Por que mesmo assim empacou.** O desvio dominante do sequenciamento
+> e `attach_don` como 1a acao do turno: **28% do motor contra 7,8% do
+> humano**. Ele NAO se moveu em nenhuma das 5 configuracoes. Isso prova
+> que **abrir o turno anexando DON nao e fenomeno de empate** -- a busca
+> prefere aquilo com valor simulado folgado. Nenhum desempate alcanca
+> isso, por construcao: desempate so age onde a busca ja e indiferente.
+> O alvo restante e a FUNCAO DE VALOR, nao a ordenacao.
+>
+> **Nota de metodo:** as duas previsoes foram registradas ANTES de rodar
+> e as duas acertaram 2 de 4. Na 2a, a explicacao do overshoot de
+> `attack` (1a acao desabou pra 11,2% contra 20,5% do humano) estava
+> ERRADA: culpei a regra de destruicao, mas `attack` perde no desempate
+> SECUNDARIO de DON, onde vale 0 e quase tudo vale mais. Corrigir a
+> regua principal nao recuperou nada (10,8%).
+>
+> **O que SOBREVIVEU e vale por si** (nao e reprovacao): a regua de
+> destruicao conserta `attack -> activate`, de **3,1x pra 1,9x** o
+> humano, consistente em Z=1,0 e Z=2,0. E a besteira que o usuario
+> reportou ao vivo -- "o bot ativar o stage depois de atacar com o
+> lider, nao faz sentido": atacar resta a fonte, e fonte restada nao
+> ativa mais. Ficou ATIVA no default. O que ficou desligado
+> (`TIEBREAK_BANDA_Z=0`) e so a banda.
+
 ## Ranqueador aprendido (fase 2 do plano do bloco 702)
 
 | tentativa | resultado medido | bloco |

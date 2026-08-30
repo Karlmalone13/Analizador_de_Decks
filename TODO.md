@@ -1,6 +1,23 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 29 de agosto de 2026
+**Última atualização:** 30 de agosto de 2026
+
+> 30/08/2026 (bloco 738): **o desempate posicional dos blocos 651/663
+> estava MORTO** -- preso atras de `TIEBREAK_EPS = 1e-9`, que media de
+> Monte Carlo nunca alcanca. Criado `TIEBREAK_BANDA_Z` (default **0.0 =
+> desligado**), que troca o epsilon fixo pelo erro-padrao da diferenca
+> pareada ja calculado pelo criterio de parada. Com a banda ligada,
+> `play` como 1a acao do turno vai de 36,5% pra **49,5%** (humano
+> 55,8%). **Mas o LCS tem teto de +1,6pp** (47,8% -> 49,4%) em 5
+> configuracoes, e o desvio dominante -- `attach_don` de abertura, 28%
+> contra 7,8% do humano -- **nao se move em nenhuma delas**: nao e
+> empate, e a funcao de valor. Ver `REPROVADOS.md`.
+> **Ficou ATIVA no default** a regua nova de desempate (ordena por
+> quantas candidatas empatadas a acao inviabiliza, em vez de por DON
+> consumido): conserta `attack -> activate` de **3,1x pra 1,9x** o
+> humano -- a besteira reportada ao vivo de ativar o stage depois de
+> atacar com o lider. **Ficou DESLIGADA** so a banda.
+> **Proximo alvo:** `attach_don` de abertura na funcao de valor.
 
 > 29/08/2026 (adendo ao bloco 737): **`OPTCG_PLANO` NAO FUNCIONA SOZINHO
 > — depende de `OPTCG_PERFIL_V2=1`.** O plano ramifica em

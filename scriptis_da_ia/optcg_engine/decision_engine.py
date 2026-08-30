@@ -469,6 +469,51 @@ TIEBREAK_EPS = 1e-9
 # busca ou o desempate de DON preferem de verdade.
 USE_TIEBREAK_HUMAN_FREQ = True
 
+# ---------------------------------------------------------------------
+# BANDA DE INDIFERENCA DO DESEMPATE POSICIONAL (bloco 738)
+#
+# POR QUE EXISTE. Os dois desempates acima (DON, bloco 651; frequencia
+# humana, bloco 663) estao CERTOS na direcao -- o proprio bloco 651 ja
+# tinha diagnosticado a causa da sequencia ruim: "a simulacao empata
+# porque a continuacao gulosa executa AS DUAS acoes, so muda a ordem".
+# Mas ambos so disparam quando `abs(valor_a - valor_b) <= TIEBREAK_EPS`,
+# e TIEBREAK_EPS = 1e-9. Media de Monte Carlo praticamente nunca empata
+# nessa casa: o motor le RUIDO DE AMOSTRAGEM como preferencia real e
+# decide a ordem do turno por ele. Resultado medido (bloco 691/737, 400
+# turnos pareados): motor abre o turno com `attach_don` em 26,8% dos
+# turnos contra 7,8% do humano, e a transicao `attach_don -> play` e
+# 21x a taxa humana.
+#
+# POR QUE NAO E MAIS UM PRECO. Ja foi tentado e MEDIDO como inerte no
+# mesmo dia: uniformizar o custo de oportunidade do DON no ramo 1 de
+# `attach_don` (commit a80764e) deu diferenca ZERO -- os arquivos de
+# diagnostico antes/depois sairam identicos byte a byte. Preco nao
+# conserta ordenacao porque, dentro do MESMO turno, jogar-e-depois-
+# anexar e anexar-e-depois-jogar terminam no MESMO estado quando as
+# duas cabem no DON; a funcao de valor e legitimamente indiferente, e
+# nenhum peso global expressa "faca isto DEPOIS" (diagnostico do bloco
+# 696).
+#
+# O QUE ISTO FAZ. Substitui o epsilon fixo por uma banda derivada do
+# ERRO-PADRAO DA DIFERENCA PAREADA que a propria busca ja calcula pra
+# decidir quando parar de amostrar. Se a busca nao consegue separar
+# duas candidatas estatisticamente, ela passa a DECLARAR indiferenca em
+# vez de fingir preferencia -- e ai o desempate posicional que ja
+# existe decide. Nao e constante chutada: e a mesma regra de
+# significancia do criterio de parada (`z_threshold`), reusada no ponto
+# onde a escolha acontece.
+#
+# SEGURANCA. Com 0.0 a banda some e o comportamento volta a ser
+# byte-identico ao de hoje (so empate exato) -- por isso o default
+# nasce DESLIGADO, pra a medicao antes/depois ser limpa. E, mesmo
+# ligado, so pode agir onde a busca ja admitiu nao saber diferenciar:
+# nunca sobrepoe uma linha que a simulacao prefere de verdade.
+_k.registra('TIEBREAK_BANDA_Z', 0.0, float,
+            'banda de indiferenca do desempate posicional, em erros-padrao '
+            'da diferenca pareada (0 = desligado, so empate exato de float)',
+            'ordem', 0.0, 6.0)
+TIEBREAK_BANDA_Z = _k.get('TIEBREAK_BANDA_Z')
+
 # Bloco 681 -- POLITICA DE IMITACAO aprendida (PASSO 2 do roteiro do
 # bloco 653). Dois modelos, dois problemas distintos, ambos medidos em
 # split por PARTIDA (`treinar_policy.py`, artefato em
@@ -17623,27 +17668,117 @@ class OPTCGMatch:
                 return 0.0
             return float(counts.get((kind, code), 0))
 
-        def _tb(acao):
-            """Chave de desempate (bloco 651): quanto DON esta acao consome.
-            Maior vence -- ver comentario em USE_TIEBREAK_PRESERVA_OPCAO.
-            Defensivo: smoke_fast.py exercita esta funcao com `self` dublê e
-            `p=None`."""
-            if not USE_TIEBREAK_PRESERVA_OPCAO or p is None:
-                return 0.0
+        def _resta_ator(acao):
+            """Personagem que FICA RESTADO por causa desta acao, ou None.
+
+            Restar e o unico jeito de uma acao de main phase tornar OUTRA
+            candidata impossivel neste turno -- personagem restado nao
+            ataca nem ativa de novo. Le o custo real da carta, nao uma
+            lista de codigos (regra do deck-agnostico).
+            """
             kind, obj = acao[1], acao[2]
+            if obj is None:
+                return None
+            if kind == 'attack':
+                return obj
+            if kind == 'activate':
+                try:
+                    am = get_card_effects(obj.code).get('activate_main') or {}
+                except Exception:
+                    return None
+                if any(c.get('type') in ('rest_self', 'rest_self_and_trash_hand')
+                       for c in am.get('costs', [])):
+                    return obj
+            return None
+
+        def _destroi(a, b):
+            """Fazer `a` AGORA torna `b` impossivel (ou inutil) neste turno?
+
+            E o teste de dominancia do bloco 651 -- "escolher a acao que
+            preserva a outra" -- generalizado do par play-x-attack, pro
+            qual foi escrito, pros outros pares que ele nunca cobriu.
+            Enquanto o desempate quase nunca disparava (TIEBREAK_EPS=1e-9)
+            esses buracos eram invisiveis; com a banda estatistica do
+            bloco 738 ele passou a decidir de verdade e os dois apareceram
+            medidos de uma vez:
+
+              - `attack` devolvia 0.0 e PERDIA TODO empate. Primeira acao
+                `attack` desabou de 25,0% pra 11,2% contra 20,5% do humano
+                -- trocou um desvio pra cima por um pra baixo.
+              - `attack -> activate` continuou sendo a pior transicao do
+                motor (3,1x o humano) mesmo com a banda ligada: atacar
+                resta a fonte, e a fonte restada nao ativa mais. O
+                desempate por DON nao via isso porque a maioria das
+                ativacoes custa 0 DON, empatando com attack em 0.0.
+
+            Aqui `attack` so perde quando REALMENTE atrapalha alguem --
+            nao por ser gratuita.
+            """
+            ra = _resta_ator(a)
+            if ra is None or b[2] is not ra:
+                return False
+            if b[1] in ('attack', 'activate'):
+                return True         # ator restado nao age de novo
+            # Anexar DON num personagem que ja atacou nao ajuda aquele
+            # ataque: inutil, nao ilegal -- mesma perda de opcao.
+            return b[1] == 'attach_don'
+
+        def _tb(acao, pares=()):
+            """Chave de desempate: (nao destroi ninguem, DON que consome).
+
+            1o criterio (bloco 738): quantas das OUTRAS candidatas
+            empatadas esta acao inviabiliza se for feita agora. Menos
+            destruicao vence -- e a acao que preserva as demais.
+            2o criterio (bloco 651, preservado byte a byte): entre as que
+            nao destroem nada, vence a que consome mais do recurso escasso
+            (DON), porque atacar nao custa DON e continua disponivel
+            depois.
+
+            Defensivo: smoke_fast.py exercita esta funcao com `self` dublê
+            e `p=None`.
+            """
+            if not USE_TIEBREAK_PRESERVA_OPCAO or p is None:
+                return (0.0, 0.0)
+            kind, obj = acao[1], acao[2]
+            destruidas = 0.0
+            try:
+                destruidas = float(sum(1 for outra in pares
+                                       if outra is not acao and _destroi(acao, outra)))
+            except Exception:
+                destruidas = 0.0
             try:
                 if kind == 'play':
-                    return float(effective_hand_play_cost(p, obj, opp))
-                if kind == 'activate':
+                    don = float(effective_hand_play_cost(p, obj, opp))
+                elif kind == 'activate':
                     am = get_card_effects(obj.code).get('activate_main') or {}
-                    return float(sum(c.get('count', 1) for c in am.get('costs', [])
-                                     if c.get('type') == 'rest_don'))
-                if kind == 'attach_don':
-                    return 1.0
+                    don = float(sum(c.get('count', 1) for c in am.get('costs', [])
+                                    if c.get('type') == 'rest_don'))
+                elif kind == 'attach_don':
+                    # `falta` (acao[3]) e quanto DON esta sendo TRANCADO --
+                    # o 1.0 fixo de antes ignorava o tamanho da anexacao.
+                    don = float(acao[3] or 1)
+                else:
+                    don = 0.0       # attack nao custa DON
             except Exception:
-                return 0.0
-            return 0.0          # attack nao custa DON
+                don = 0.0
+            return (-destruidas, don)
 
+        def _stderr_pareado(va, vb):
+            """Erro-padrao da diferenca PAREADA entre duas candidatas.
+
+            Mesmas amostras dos dois lados (CRN), mesma conta do criterio
+            de parada la em cima -- nao e um segundo estimador de ruido,
+            e o mesmo reusado no ponto da escolha.
+            """
+            n = min(len(va), len(vb))
+            if n < 2:
+                return 0.0
+            deltas = [a - b for a, b in zip(va[:n], vb[:n])]
+            m = sum(deltas) / n
+            var = sum((d - m) ** 2 for d in deltas) / (n - 1)
+            return (var / n) ** 0.5
+
+        elegiveis = []
         for i, cand in enumerate(candidatas):
             valores = valores_por_cand[i]
             valor = sum(valores) / len(valores) if valores else -1e9
@@ -17652,40 +17787,46 @@ class OPTCGMatch:
             sim_values[id(cand)] = {'avg': valor, 'wins': wins, 'samples': len(valores)}
             if self._is_unsafe_zero_life_leader_attack(cand, p, opp, engine) and wins == 0:
                 continue
-            # TESTE 20/08 (bloco 631) misturava uma fracao do score
-            # IMEDIATO genérico (`cand[0]`) na comparacao final --
-            # REVERTIDO por pedido do usuario ("nao e tirar peso, e
-            # tornar [a funcao generica] menos importante que a nossa
-            # calibragem dinamica"): misturar o score imediato INTEIRO
-            # trazia o problema errado (`attach_don` tem escala
-            # deliberadamente fracionada pro CONTEXTO de shortlist,
-            # nao comparavel nesse uso novo -- explica a queda real e
-            # nao-proporcional medida em attach_don nos 2 testes). Ver
-            # bloco 632: o alinhamento humano ja entra em `valor`
-            # (dentro de `_simulate_sequence_once`, via `human_
-            # alignment * W['human_alignment']`) -- aumentar ESSE peso
-            # especificamente, nao misturar o score generico aqui.
-            if melhor_valor is None or valor > melhor_valor + TIEBREAK_EPS:
-                melhor_valor = valor
-                melhor = cand
-                melhor_tb = _tb(cand)
-                melhor_tb2 = _tb_human(cand)
-            elif (USE_TIEBREAK_PRESERVA_OPCAO and melhor is not None
-                    and abs(valor - melhor_valor) <= TIEBREAK_EPS):
-                tb = _tb(cand)
-                if tb > melhor_tb:
-                    melhor_valor = valor
-                    melhor = cand
-                    melhor_tb = tb
-                    melhor_tb2 = _tb_human(cand)
-                elif (USE_TIEBREAK_HUMAN_FREQ and abs(tb - melhor_tb) <= TIEBREAK_EPS):
-                    # bloco 663: 2o nivel -- so decide quando `valor` E
-                    # `_tb` (DON) JA empataram entre os dois, ver
-                    # docstring de `_tb_human`.
-                    tb2 = _tb_human(cand)
-                    if tb2 > melhor_tb2:
-                        melhor = cand
-                        melhor_tb2 = tb2
+            elegiveis.append((i, cand, valor))
+
+        if elegiveis:
+            # PASSO 1 -- lider pelo valor simulado, criterio soberano.
+            i_top, cand_top, valor_top = max(elegiveis, key=lambda t: t[2])
+            melhor, melhor_valor = cand_top, valor_top
+
+            # PASSO 2 -- monta o CONJUNTO que a busca nao consegue separar
+            # do lider. Com TIEBREAK_BANDA_Z=0 a banda colapsa em
+            # TIEBREAK_EPS e isto reproduz o empate exato de antes; ver o
+            # bloco de comentario do knob.
+            empatadas = [cand_top]
+            for i, cand, valor in elegiveis:
+                if cand is cand_top:
+                    continue
+                banda = TIEBREAK_EPS
+                if TIEBREAK_BANDA_Z > 0.0:
+                    banda = max(banda, TIEBREAK_BANDA_Z * _stderr_pareado(
+                        valores_por_cand[i], valores_por_cand[i_top]))
+                if abs(valor - valor_top) <= banda:
+                    empatadas.append(cand)
+
+            # PASSO 3 -- desempate posicional DENTRO do conjunto empatado.
+            # `_tb` precisa do conjunto inteiro: o 1o criterio dele e
+            # quantas das OUTRAS empatadas a acao inviabiliza.
+            if USE_TIEBREAK_PRESERVA_OPCAO and len(empatadas) > 1:
+                melhor_tb = _tb(cand_top, empatadas)
+                melhor_tb2 = _tb_human(cand_top)
+                for cand in empatadas:
+                    if cand is cand_top:
+                        continue
+                    tb = _tb(cand, empatadas)
+                    if tb > melhor_tb:
+                        melhor, melhor_tb, melhor_tb2 = cand, tb, _tb_human(cand)
+                    elif USE_TIEBREAK_HUMAN_FREQ and tb == melhor_tb:
+                        # bloco 663: 2o nivel -- so decide quando `valor`
+                        # E `_tb` ja empataram, ver `_tb_human`.
+                        tb2 = _tb_human(cand)
+                        if tb2 > melhor_tb2:
+                            melhor, melhor_tb2 = cand, tb2
         return melhor, melhor_valor, search_records, n_coletadas, sim_values
 
     def _generate_and_score_actions(self, p, opp, engine, exclude_activate_uids=None):

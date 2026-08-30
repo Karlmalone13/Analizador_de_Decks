@@ -28,6 +28,104 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-30 (738) - **O desempate posicional existia e estava MORTO** (`TIEBREAK_EPS=1e-9`). Ressuscitado com banda estatistica: `play` de abertura +13pp, mas **LCS teto em +1,6pp** -- o `attach_don` de abertura NAO e empate, e a funcao de valor
+
+**Pedido do usuario, em sequencia:** "roda a medicao antes/depois" ->
+"ataca o mecanismo posicional" -> "ataca a regua do desempate".
+
+### 1. O fix de preco do bloco anterior deu ZERO (medido, nao suposto)
+
+O commit `a80764e` (categoria 1 de `attach_don` passou de `falta *
+DON_COST` pro custo de oportunidade) foi medido antes/depois com
+`diag_sequencia.py`, usando um worktree isolado em `a80764e^` pra nao
+tocar a arvore de trabalho. **Os dois arquivos sairam identicos byte a
+byte** -- LCS 47,8%, `attach_don -> play` 21,0x, distribuicao de 1a acao
+inalterada. O ramo 1 quase nao e exercido; os ramos 2 e 3 ja usavam
+custo de oportunidade desde o bloco 580. O commit e correto (uniformiza
+os tres ramos) e **inerte**.
+
+Isso descarta preco como causa da ordem ruim, e a razao e estrutural:
+dentro do MESMO turno, jogar-e-anexar e anexar-e-jogar terminam no mesmo
+estado quando as duas cabem no DON. A funcao de valor e legitimamente
+indiferente -- e o bloco 696 ja tinha dito que nenhum peso global
+expressa "faca isto depois".
+
+### 2. O achado: os desempates dos blocos 651/663 nunca disparavam
+
+`_select_action_via_search` decide por valor simulado e so cai no
+desempate quando `abs(valor_a - valor_b) <= TIEBREAK_EPS`, com
+`TIEBREAK_EPS = 1e-9`. **Media de Monte Carlo praticamente nunca empata
+nessa casa.** Ou seja: o mecanismo posicional que o bloco 651 construiu
+(e cujo diagnostico ja estava certo -- "a simulacao empata porque a
+continuacao gulosa executa AS DUAS acoes, so muda a ordem") estava
+efetivamente morto, e a ordem do turno vinha de RUIDO DE AMOSTRAGEM.
+
+### 3. Mecanismo novo: banda de indiferenca estatistica
+
+Knob `TIEBREAK_BANDA_Z` (default **0.0 = desligado**). Substitui o
+epsilon fixo por `Z * erro-padrao da diferenca pareada` -- a MESMA conta
+que o laco de amostragem ja faz pro criterio de parada, reusada no ponto
+da escolha. Nao e constante chutada: quando a busca nao consegue separar
+duas candidatas, ela declara indiferenca em vez de fingir preferencia.
+
+A selecao final foi reescrita de "maximo em streaming" pra tres passos
+(lider -> conjunto empatado -> desempate dentro do conjunto), porque o
+1o criterio da regua nova precisa enxergar o conjunto inteiro.
+**Verificado: com o knob em 0.0 a saida e IDENTICA byte a byte a de
+antes do refactor.**
+
+### 4. Regua nova: DESTRUICAO de opcao, nao quantidade de DON
+
+`_tb` passou a ordenar por **quantas das outras candidatas empatadas a
+acao inviabiliza** (atacar resta o atacante; ativar com `rest_self`
+resta a fonte; anexar DON num personagem que ja atacou e inutil). O
+criterio de DON do bloco 651 virou desempate SECUNDARIO, preservado.
+Corrigido junto um bug pequeno: `attach_don` devolvia `1.0` fixo,
+ignorando quanto DON estava sendo trancado (`falta`).
+
+### 5. Numeros
+
+| | banda OFF | Z=1,0 | Z=2,0 | humano |
+|---|---|---|---|---|
+| LCS | 47,8% | 48,7% | **49,4%** | -- |
+| `play` 1a acao | 36,8% | 42,5% | **49,5%** | 55,8% |
+| `attach_don` 1a acao | 26,8% | 30,2% | 28,0% | 7,8% |
+| `attack` 1a acao | 24,5% | 15,5% | 10,8% | 20,5% |
+| `attack -> activate` | -- | 1,9x | **1,9x** | (era 3,1x) |
+
+### 6. O que ficou provado, e o que NAO
+
+**Provado que funciona:** `play` como abertura de turno foi de 36,5%
+pra 49,5% (+13pp rumo aos 55,8% do humano). E a regua de destruicao
+conserta `attack -> activate` de 3,1x pra 1,9x -- exatamente a besteira
+que o usuario reportou ao vivo ("o bot ativar o stage depois de atacar
+com o lider, nao faz sentido").
+
+**Provado que NAO alcanca:** o LCS ficou em **49,4% nas tres variantes
+de regua**, e o desvio dominante -- `attach_don` como 1a acao, 28%
+contra 7,8% do humano -- **nao se moveu em nenhuma das 5 configuracoes
+testadas**. Isso estabelece que abrir o turno anexando DON **nao e
+fenomeno de empate**: a busca prefere aquilo com valor folgado. Teto do
+caminho: **+1,6pp**. Registrado em `REPROVADOS.md` com o numero, pra
+ninguem re-medir isto pela 4a vez.
+
+### 7. Estado do codigo
+
+- Regua de destruicao: **ATIVA no default** (vale por si, conserta o
+  `attack -> activate`).
+- Banda: **DESLIGADA** (`TIEBREAK_BANDA_Z=0.0`). Nao ligada por default
+  de proposito: +1,6pp nao paga deixar `attack` de abertura em 10,8%
+  contra 20,5% do humano. Ligar seria mudanca de comportamento de
+  producao, que pelo `CLAUDE.md` exige autorizacao -- e nao a pediria
+  com este numero.
+- `smoke_fast.py` passa com a banda ligada e desligada.
+
+### 8. Proximo alvo (ja autorizado pelo usuario)
+
+`attach_don` de abertura na **FUNCAO DE VALOR**, nao no sequenciamento.
+E o unico desvio grande que sobrou e o unico que nenhum desempate
+alcanca.
+
 ## 2026-08-28 (737) - **PLANO DE JOGO POR ARQUETIPO construido e MEDIDO: -0,0pp.** Muda 6,5% das decisoes de modo e a semelhanca com o humano nao se move -- o gap nao esta em O QUE FAZER
 
 ### O que foi construido
