@@ -1,0 +1,51 @@
+{
+  "cards": [
+    {
+      "code": "OP13-027",
+      "name": "Sanji",
+      "count": 2
+    },
+    {
+      "code": "OP15-035",
+      "name": "OP15-035",
+      "count": 2
+    },
+    {
+      "code": "OP13-037",
+      "name": "Roronoa Zoro",
+      "count": 2
+    },
+    {
+      "code": "OP14-022",
+      "name": "OP14-022",
+      "count": 2
+    },
+    {
+      "code": "OP13-118",
+      "name": "Monkey D. Luffy",
+      "count": 2
+    },
+    {
+      "code": "OP01-016",
+      "name": "Nami",
+      "count": 1
+    },
+    {
+      "code": "OP05-038",
+      "name": "OP05-038",
+      "count": 1
+    },
+    {
+      "code": "OP15-032",
+      "name": "OP15-032",
+      "count": 1
+    },
+    {
+      "code": "OP14-031",
+      "name": "Nami",
+      "count": 1
+    }
+  ],
+  "total_seen": 14,
+  "leader": "OP13-001"
+}

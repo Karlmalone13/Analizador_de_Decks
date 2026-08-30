@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP17-049",
+      "name": "Charlotte Linlin",
+      "count": 3
+    },
+    {
+      "code": "OP17-045",
+      "name": "Kyo",
+      "count": 3
+    },
+    {
+      "code": "OP08-051",
+      "name": "OP08-051",
+      "count": 2
+    },
+    {
+      "code": "OP17-118",
+      "name": "Rocks D. Xebec",
+      "count": 2
+    },
+    {
+      "code": "OP17-040",
+      "name": "Edward Newgate",
+      "count": 2
+    },
+    {
+      "code": "OP17-046",
+      "name": "OP17-046",
+      "count": 1
+    },
+    {
+      "code": "OP17-048",
+      "name": "OP17-048",
+      "count": 1
+    },
+    {
+      "code": "OP17-044",
+      "name": "OP17-044",
+      "count": 1
+    },
+    {
+      "code": "OP17-057",
+      "name": "Fullalead",
+      "count": 1
+    },
+    {
+      "code": "OP17-054",
+      "name": "OP17-054",
+      "count": 1
+    },
+    {
+      "code": "OP17-055",
+      "name": "OP17-055",
+      "count": 1
+    },
+    {
+      "code": "OP17-050",
+      "name": "OP17-050",
+      "count": 1
+    }
+  ],
+  "total_seen": 19,
+  "leader": "OP17-039"
+}

@@ -1,0 +1,1572 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Monkey D. Luffy",
+          "code": "OP13-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Rocks D. Xebec",
+          "code": "OP17-039"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-027",
+            "OP15-035",
+            "OP13-037",
+            "OP15-035",
+            "OP14-022"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4,
+          "life_cards": [
+            "EB04-007",
+            "OP01-016",
+            "OP13-027",
+            "OP14-022"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-051",
+            "OP17-043",
+            "OP17-118",
+            "OP17-056",
+            "OP17-118"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP17-040",
+            "OP17-044",
+            "OP17-045",
+            "OP17-048",
+            "OP17-049",
+            "OP17-050"
+          ],
+          "life_cards": [
+            "OP17-042",
+            "OP17-046",
+            "OP17-054",
+            "OP17-055",
+            "OP17-057"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-051",
+            "OP17-043",
+            "OP17-118",
+            "OP17-056",
+            "OP17-118",
+            "OP17-046"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP17-040",
+            "OP17-044",
+            "OP17-045",
+            "OP17-048",
+            "OP17-049",
+            "OP17-050"
+          ],
+          "life_cards": [
+            "OP17-042",
+            "OP17-046",
+            "OP17-054",
+            "OP17-055",
+            "OP17-057"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-027",
+            "OP15-035",
+            "OP13-037",
+            "OP15-035",
+            "OP14-022"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "life_cards": [
+            "EB04-007",
+            "OP01-016",
+            "OP13-027",
+            "OP14-022"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP01-016",
+          "card_name": "Nami",
+          "effects": [
+            "<b>Reveal and Draw Monkey D. Luffy [\"OP13-118\">OP13-118]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-027",
+            "OP15-035",
+            "OP13-037",
+            "OP15-035",
+            "OP14-022",
+            "OP13-118"
+          ],
+          "board": [
+            "OP01-016"
+          ],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "OP01-016",
+            "OP05-038",
+            "OP13-118",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "EB04-007",
+            "OP01-016",
+            "OP13-027",
+            "OP14-022"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP01-016": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-051",
+            "OP17-043",
+            "OP17-118",
+            "OP17-056",
+            "OP17-118",
+            "OP17-046",
+            "OP17-054"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "OP17-040",
+            "OP17-044",
+            "OP17-045",
+            "OP17-048",
+            "OP17-049",
+            "OP17-050"
+          ],
+          "life_cards": [
+            "OP17-042",
+            "OP17-046",
+            "OP17-055",
+            "OP17-057"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-046",
+          "card_name": "Gloriosa",
+          "effects": [
+            "Send Nami [\"OP01-016\">OP01-016] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-022"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Ganzui [\"OP17-043\">OP17-043]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-051",
+            "OP17-118",
+            "OP17-056",
+            "OP17-118",
+            "OP17-054",
+            "OP17-048",
+            "OP17-040",
+            "OP17-049"
+          ],
+          "board": [
+            "OP17-046"
+          ],
+          "trash": [
+            "OP17-043"
+          ],
+          "life": 4,
+          "deck": [
+            "OP17-044",
+            "OP17-045",
+            "OP17-050"
+          ],
+          "life_cards": [
+            "OP17-042",
+            "OP17-046",
+            "OP17-055",
+            "OP17-057"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-046": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-027",
+            "OP15-035",
+            "OP13-037",
+            "OP15-035",
+            "OP13-118"
+          ],
+          "trash": [
+            "OP14-022"
+          ],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "OP01-016",
+            "OP01-016",
+            "OP05-038",
+            "OP13-118",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "EB04-007",
+            "OP01-016",
+            "OP13-027",
+            "OP14-022"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-027",
+          "card_name": "Sanji",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-035",
+            "OP13-037",
+            "OP15-035",
+            "OP13-118",
+            "OP05-038"
+          ],
+          "board": [
+            "OP13-027"
+          ],
+          "trash": [
+            "OP14-022"
+          ],
+          "life": 4,
+          "deck": [
+            "OP01-016",
+            "OP01-016",
+            "OP13-118",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "EB04-007",
+            "OP01-016",
+            "OP13-027",
+            "OP14-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP13-027": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-051",
+            "OP17-118",
+            "OP17-056",
+            "OP17-118",
+            "OP17-054",
+            "OP17-048",
+            "OP17-040",
+            "OP17-049",
+            "OP17-042"
+          ],
+          "trash": [
+            "OP17-043"
+          ],
+          "board": [
+            "OP17-046"
+          ],
+          "life": 3,
+          "deck": [
+            "OP17-044",
+            "OP17-045",
+            "OP17-050"
+          ],
+          "life_cards": [
+            "OP17-046",
+            "OP17-055",
+            "OP17-057"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-046": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "Sanji [\"OP13-027\">OP13-027] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Kaido [\"OP17-042\">OP17-042]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-051",
+            "OP17-118",
+            "OP17-056",
+            "OP17-118",
+            "OP17-048",
+            "OP17-040",
+            "OP17-049",
+            "OP17-048",
+            "OP17-040",
+            "OP17-118"
+          ],
+          "board": [
+            "OP17-046",
+            "OP17-054"
+          ],
+          "trash": [
+            "OP17-043",
+            "OP17-042"
+          ],
+          "life": 3,
+          "deck": [
+            "OP17-044",
+            "OP17-045",
+            "OP17-050"
+          ],
+          "life_cards": [
+            "OP17-046",
+            "OP17-055",
+            "OP17-057"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-054": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-035",
+            "OP13-037",
+            "OP15-035",
+            "OP13-118",
+            "OP05-038",
+            "OP13-027"
+          ],
+          "trash": [
+            "OP14-022"
+          ],
+          "board": [
+            "OP13-027"
+          ],
+          "life": 3,
+          "deck": [
+            "OP01-016",
+            "OP01-016",
+            "OP13-118",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "EB04-007",
+            "OP01-016",
+            "OP14-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP13-027": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP13-027",
+          "card_name": "Sanji",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-035",
+            "OP13-037",
+            "OP15-035",
+            "OP13-118",
+            "OP05-038",
+            "OP13-037"
+          ],
+          "board": [
+            "OP13-027",
+            "OP13-027"
+          ],
+          "trash": [
+            "OP14-022"
+          ],
+          "life": 3,
+          "deck": [
+            "OP01-016",
+            "OP01-016",
+            "OP13-118",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "EB04-007",
+            "OP01-016",
+            "OP14-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP13-027": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-051",
+            "OP17-118",
+            "OP17-118",
+            "OP17-048",
+            "OP17-040",
+            "OP17-049",
+            "OP17-048",
+            "OP17-040",
+            "OP17-118"
+          ],
+          "trash": [
+            "OP17-043",
+            "OP17-042",
+            "OP17-056"
+          ],
+          "board": [
+            "OP17-046",
+            "OP17-054"
+          ],
+          "life": 3,
+          "deck": [
+            "OP17-044",
+            "OP17-045",
+            "OP17-050"
+          ],
+          "life_cards": [
+            "OP17-046",
+            "OP17-055",
+            "OP17-057"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-054": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-049",
+          "card_name": "Charlotte Linlin",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-054",
+          "to_name": "Stussy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Stussy",
+          "attacker_code": "OP17-054",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Shiki [\"OP17-048\">OP17-048]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-051",
+            "OP17-118",
+            "OP17-118",
+            "OP17-048",
+            "OP17-040",
+            "OP17-040",
+            "OP17-118",
+            "OP17-056",
+            "OP17-054",
+            "OP17-056"
+          ],
+          "board": [
+            "OP17-046",
+            "OP17-054",
+            "OP17-049"
+          ],
+          "trash": [
+            "OP17-043",
+            "OP17-042",
+            "OP17-056",
+            "OP17-048"
+          ],
+          "life": 3,
+          "deck": [
+            "OP17-044",
+            "OP17-045",
+            "OP17-050"
+          ],
+          "life_cards": [
+            "OP17-046",
+            "OP17-055",
+            "OP17-057"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-054": 1,
+            "OP17-049": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-037",
+            "OP13-118",
+            "OP13-037",
+            "OP01-016"
+          ],
+          "trash": [
+            "OP14-022",
+            "OP15-035",
+            "OP15-035",
+            "OP05-038"
+          ],
+          "board": [
+            "OP13-027",
+            "OP13-027"
+          ],
+          "life": 2,
+          "deck": [
+            "OP01-016",
+            "OP01-016",
+            "OP13-118",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "EB04-007",
+            "OP14-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-027": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP08-051"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji",
+          "attacker_code": "OP13-027",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji",
+          "attacker_code": "OP13-027",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP13-118",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 5 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "<b>Reveal and Draw Monkey D. Luffy [\"OP13-118\">OP13-118]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-037",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Set Roronoa Zoro [\"OP13-037\">OP13-037] to Active"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP01-016",
+          "card_name": "Nami",
+          "effects": [
+            "<b>Reveal and Draw Brook [\"OP15-032\">OP15-032]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-027",
+          "card_name": "Sanji",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-037",
+            "OP13-118",
+            "OP15-032"
+          ],
+          "board": [
+            "OP13-027",
+            "OP13-027",
+            "OP13-118",
+            "OP13-037",
+            "OP01-016"
+          ],
+          "trash": [
+            "OP14-022",
+            "OP15-035",
+            "OP15-035",
+            "OP05-038"
+          ],
+          "life": 2,
+          "deck": [
+            "EB02-017",
+            "EB04-007",
+            "OP01-016",
+            "OP01-016",
+            "OP13-027",
+            "OP14-022",
+            "OP15-035",
+            "OP16-004",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "EB04-007",
+            "OP14-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "rested": {
+            "OP13-027": 2,
+            "OP13-118": 1,
+            "OP13-037": 1,
+            "OP01-016": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-118",
+            "OP17-118",
+            "OP17-048",
+            "OP17-040",
+            "OP17-040",
+            "OP17-118",
+            "OP17-056",
+            "OP17-054"
+          ],
+          "trash": [
+            "OP17-043",
+            "OP17-042",
+            "OP17-056",
+            "OP17-048",
+            "OP08-051",
+            "OP17-057",
+            "OP17-056"
+          ],
+          "board": [
+            "OP17-046",
+            "OP17-054",
+            "OP17-049"
+          ],
+          "life": 2,
+          "deck": [
+            "OP17-044",
+            "OP17-045",
+            "OP17-050"
+          ],
+          "life_cards": [
+            "OP17-046",
+            "OP17-055"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-054": 1,
+            "OP17-049": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Stussy",
+          "attacker_code": "OP17-054",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-037"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-022"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Streusen [\"OP17-050\">OP17-050]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-118",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Draw 1 Card",
+            "Deploy Edward Newgate [\"OP17-040\">OP17-040]",
+            "Deploy Stussy [\"OP17-054\">OP17-054]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "Monkey D. Luffy [\"OP13-118\">OP13-118] can't attack next turn"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-040",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-118",
+            "OP17-118",
+            "OP17-048",
+            "OP17-040",
+            "OP17-056",
+            "OP17-046",
+            "OP17-046",
+            "OP17-057",
+            "OP17-042"
+          ],
+          "board": [
+            "OP17-046",
+            "OP17-049",
+            "OP17-118",
+            "OP17-040",
+            "OP17-054"
+          ],
+          "trash": [
+            "OP17-043",
+            "OP17-042",
+            "OP17-056",
+            "OP17-048",
+            "OP08-051",
+            "OP17-057",
+            "OP17-056",
+            "OP17-050",
+            "OP17-054"
+          ],
+          "life": 2,
+          "deck": [
+            "OP17-044",
+            "OP17-045"
+          ],
+          "life_cards": [
+            "OP17-046",
+            "OP17-055"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-054": 1,
+            "OP17-049": 1,
+            "OP17-118": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-118",
+            "OP15-032"
+          ],
+          "trash": [
+            "OP14-022",
+            "OP15-035",
+            "OP15-035",
+            "OP05-038",
+            "OP13-037",
+            "OP14-022"
+          ],
+          "board": [
+            "OP13-027",
+            "OP13-027",
+            "OP13-118",
+            "OP13-037",
+            "OP01-016"
+          ],
+          "life": 1,
+          "deck": [
+            "EB02-017",
+            "EB04-007",
+            "OP01-016",
+            "OP01-016",
+            "OP13-027",
+            "OP14-022",
+            "OP15-035",
+            "OP16-004",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "EB04-007"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "rested": {
+            "OP13-027": 2,
+            "OP13-118": 1,
+            "OP13-037": 1,
+            "OP01-016": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-031",
+          "card_name": "Nami",
+          "effects": [
+            "Rest Edward Newgate [\"OP17-040\">OP17-040]",
+            "Rest Gloriosa [\"OP17-046\">OP17-046]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-037",
+          "to_name": "Roronoa Zoro",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-027",
+          "to_name": "Sanji",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji",
+          "attacker_code": "OP13-027",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji",
+          "attacker_code": "OP13-027",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "Rest Thousand Sunny [\"ST31-005\">ST31-005]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP13-118\">OP13-118]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "OP13-037",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-118",
+            "OP17-118"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-037",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Set Roronoa Zoro [\"OP13-037\">OP13-037] to Active"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-027",
+          "card_name": "Sanji",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-118",
+            "OP15-032"
+          ],
+          "board": [
+            "OP13-027",
+            "OP13-027",
+            "OP13-118",
+            "OP13-037",
+            "OP14-031"
+          ],
+          "trash": [
+            "OP14-022",
+            "OP15-035",
+            "OP15-035",
+            "OP05-038",
+            "OP13-037",
+            "OP14-022",
+            "OP01-016"
+          ],
+          "life": 1,
+          "deck": [
+            "EB02-017",
+            "EB04-007",
+            "OP01-016",
+            "OP01-016",
+            "OP13-027",
+            "OP14-022",
+            "OP15-035",
+            "OP16-004",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "EB04-007"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-027": 2,
+            "OP13-037": 1,
+            "OP14-031": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-048",
+            "OP17-040",
+            "OP17-046",
+            "OP17-046",
+            "OP17-046"
+          ],
+          "trash": [
+            "OP17-043",
+            "OP17-042",
+            "OP17-056",
+            "OP17-048",
+            "OP08-051",
+            "OP17-057",
+            "OP17-056",
+            "OP17-050",
+            "OP17-054",
+            "OP17-057",
+            "OP17-042",
+            "OP17-056",
+            "OP17-118",
+            "OP17-118"
+          ],
+          "board": [
+            "OP17-046",
+            "OP17-049",
+            "OP17-118",
+            "OP17-040",
+            "OP17-054"
+          ],
+          "life": 1,
+          "deck": [
+            "OP17-044",
+            "OP17-045"
+          ],
+          "life_cards": [
+            "OP17-055"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-046": 1,
+            "OP17-054": 1,
+            "OP17-049": 1,
+            "OP17-118": 1,
+            "OP17-040": 1
+          }
+        }
+      }
+    }
+  ]
+}
