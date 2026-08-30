@@ -102,10 +102,30 @@ namespace OPTCGBotPlugin
             }
             if (escolhido == null)
             {
+                // ACHADO AO VIVO 29/08: este ramo era "defensivo, nao deveria
+                // acontecer" e NAO CLICAVA NADA -- a partida congelava na tela
+                // "Choose card effect to activate next", repetindo o aviso a
+                // cada frame. Aconteceu de verdade, com 2 opcoes.
+                //
+                // A premissa estava errada: `IsOfferingActionChoiceOrder` so
+                // devolve true quando `iPlayerAction` aponta pro BOT, ou seja,
+                // chegar aqui significa que **o jogo esta pedindo pro bot
+                // ordenar** -- mesmo que `FindCardOwner` nao reconheca
+                // nenhuma das cartas como dele (gatilho de carta do oponente
+                // que o bot tem que ordenar, ou objeto que o lookup nao
+                // resolve).
+                //
+                // Ficar parado e estritamente pior que ordenar: os gatilhos
+                // simultaneos tem efeitos INDEPENDENTES (cada um resolve o
+                // proprio custo/alvo depois), entao a ordem raramente muda o
+                // resultado -- e uma partida congelada muda TUDO. Mesma
+                // politica ja adotada no V3Choice ("destravar a tela vale
+                // mais que acertar").
+                escolhido = choices[0];
                 Plugin.Log.LogWarning(
-                    $"[Bot] ordem de ativacao: iPlayerAction apontou pro bot mas "
-                    + $"nenhuma das {choices.Count} opcoes pertence a ele -- nao clicou em nada");
-                return false;
+                    $"[Bot] ordem de ativacao: nenhuma das {choices.Count} opcoes "
+                    + $"e reconhecida como do bot, mas o jogo esta perguntando pra ele "
+                    + $"-- clicando a PRIMEIRA ({CodeOf(escolhido)}) pra nao travar");
             }
             _mClickActionChoice.Invoke(gls, new object[] { escolhido });
             Plugin.Log.LogInfo(
