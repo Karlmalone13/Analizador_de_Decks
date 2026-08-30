@@ -873,6 +873,25 @@ def _don_cost_da_acao(action: tuple, gs=None, opp_gs=None):
             return int(effective_hand_play_cost(gs, card, opp_gs))
         except Exception:
             return None
+    if kind == 'activate':
+        # [Activate: Main] tambem gasta DON quando o custo tem `rest_don`.
+        # MESMA leitura que `_score_activate_main` faz pra descontar o custo
+        # (`sum(count) dos custos type=='rest_don'`) -- so que la e pra
+        # pontuar e aqui e pra registrar.
+        src = action[2] if len(action) > 2 else None
+        if src is None:
+            return None
+        try:
+            am = (get_card_effects(src.code) or {}).get('activate_main') or {}
+            return int(sum(c.get('count', 0) for c in (am.get('costs') or [])
+                           if isinstance(c, dict) and c.get('type') == 'rest_don'))
+        except Exception:
+            return None
+    # `attack`: o DON que impulsiona um ataque entra por uma acao
+    # `attach_don` PROPRIA no caminho ao vivo (confirmado no decision log:
+    # o DON cai na decisao de attach_don, nao na de attack), e essa ja tem
+    # custo registrado. Aqui fica None de proposito -- declarado, nao zero
+    # silencioso.
     return None
 
 
