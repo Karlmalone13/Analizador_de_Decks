@@ -1906,6 +1906,22 @@ _TARGETS_QUE_INCLUEM_LIDER = (
     'all_allies_and_leader',
 )
 
+# Alvos do PROPRIO lado. Um efeito BENEFICO mirando aqui (buff, dar DON,
+# desvirar) quer o MELHOR alvo -- mas o fallback generico de `own_board`
+# ordena CRESCENTE, semantica de SACRIFICIO ("trash 1 dos seus"), e entrega
+# o pior.
+#
+# ACHADO AO VIVO 30/08: Thousand Sunny ST31-005 ("[Activate:Main] Rest this
+# stage: Give up to 1 of your 'Monkey D. Luffy' up to 1 rested DON!!") caiu
+# nesse fallback -- Zoro(50) rank 9, Luffy(120) rank 13. O usuario viu o
+# DON ir parar num Luffy CONGELADO que nem podia atacar.
+_TARGETS_PROPRIOS = ('own_character', 'own_characters', 'all_allies')
+
+# Acoes que BENEFICIAM o alvo (dao poder/recurso). Distinto de custo.
+_ACOES_BENEFICAS = ('transfer_don', 'give_don_own', 'buff_power',
+                    'buff_power_per_count', 'set_base_power', 'set_active',
+                    'set_don_active')
+
 
 def _delta_do_step(step: dict) -> int:
     """Ganho de poder aproximado de um step que pode mirar o lider.
@@ -2285,6 +2301,13 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                 # nao cair no balde de descarte.
                 if s.get('target') in _TARGETS_QUE_INCLUEM_LIDER:
                     actor_self_power_target = ('delta', _delta_do_step(s))
+                    break
+                # Alvo do PROPRIO lado + acao BENEFICA: mesmo problema, so
+                # que sem o lider na jogada. Sem isto o efeito cai no
+                # fallback de sacrificio e escolhe o pior aliado.
+                if (s.get('target') in _TARGETS_PROPRIOS
+                        and s.get('action') in _ACOES_BENEFICAS):
+                    actor_self_power_target = ('delta', _delta_do_step(s) or 1000)
                     break
             if actor_self_power_target is not None:
                 break
@@ -2684,8 +2707,22 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             # em (3, 0) e a ordem dos candidatos decidia; o DON foi parar
             # na Shalria de 0 poder, cujo ataque buffado continua morrendo
             # pra qualquer corpo, em vez do lider.
-            desperdicado = (getattr(live, 'just_played', False)
-                            or getattr(live, 'rested', False))
+            # `character_can_attack_now` (motor) em vez de checar
+            # `just_played`/`rested` a mao: essa dupla e uma reimplementacao
+            # PARCIAL de "esse corpo consegue agir agora" e nao enxerga
+            # `cannot_attack_until` -- o efeito de TRAVA de ataque
+            # (`lock_opp_character_attack`).
+            #
+            # ACHADO AO VIVO 30/08: o oponente CONGELOU o Monkey D. Luffy
+            # OP13-118 do bot ("Luffy [OP13-118] can't attack next turn",
+            # no proprio log do jogo) e o bot mandou o DON da Thousand Sunny
+            # pra ele -- nao estava restado nem recem-jogado, entao passava
+            # como "aproveita o DON hoje". Nao aproveitava: nao podia atacar.
+            if zone == 'own_leader':
+                desperdicado = not character_can_attack_now(gs.leader, gs, opp_gs)
+            else:
+                desperdicado = not (live is not None
+                                    and character_can_attack_now(live, gs, opp_gs))
             if desperdicado:
                 # Dentro do grupo que nao aproveita o DON HOJE, o valor vira
                 # so investimento PERMANENTE -- prefere o LIDER (ataca
