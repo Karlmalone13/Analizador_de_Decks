@@ -18065,7 +18065,22 @@ class OPTCGMatch:
                 if falta <= 0 or falta > _don_para(card, None):
                     continue
                 valor = self._keyword_don_value(kw, card, p, opp, priority)
-                score = valor - falta * DON_COST
+                # CUSTO DE OPORTUNIDADE, nao custo flat -- 3a e ULTIMA
+                # ocorrencia do mesmo bug nesta funcao. A categoria 2 sempre
+                # usou `don_opportunity_cost`; a categoria 3 foi corrigida
+                # no bloco 580 com o comentario "era o ramo do bug --
+                # justamente o que gasta DON pra empurrar ataque ignorava o
+                # que o DON compraria na mao". Esta ficou pra tras.
+                #
+                # POR QUE IMPORTA PRO SEQUENCIAMENTO (relato do usuario
+                # 30/08, "o sequenciamento ainda esta ruim"): com custo FIXO
+                # de 25, anexar DON parecia barato mesmo quando aquele DON
+                # era exatamente o que faltava pra jogar uma carta da mao.
+                # O bot abria o turno anexando e so DEPOIS desenvolvia --
+                # o inverso da ordem humana. `don_opportunity_cost` enxerga
+                # a melhor carta jogavel que o DON bloquearia, entao a
+                # anexacao passa a competir com o que ela custa de verdade.
+                score = valor - engine.don_opportunity_cost(falta)
                 score += self._human_pattern_bonus(p, 'attach_don', card)
                 if score > 0:
                     acts.append((score, 'attach_don', card, falta, kw))
