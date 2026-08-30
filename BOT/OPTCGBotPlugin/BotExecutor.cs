@@ -411,16 +411,76 @@ namespace OPTCGBotPlugin
             catch { return null; }
         }
 
-        // O jogo considera que esta acao tem custo/downside opcional?
-        // Devolve null quando a reflexao nao esta disponivel -- ai o
-        // chamador cai no criterio antigo em vez de decidir no escuro.
-        public static bool? ActionHasCostOficial(GameplayLogicScript gls)
+        // POR QUE HA DOIS CAMINHOS (bloco 746). A 1a versao dependia SO do
+        // predicado privado por reflexao -- e ao vivo ele devolveu
+        // `indisponivel` em 100% das 40 ocorrencias, entao o conserto do
+        // bloco 745 nao teve efeito nenhum. O nome do metodo ESTA correto
+        // (conferido na assembly publicada: `ActionHasDownsideCost`,
+        // `ActionDownsideIsAutomatic`, `V3ActionDonToTap` e
+        // `GetCardActions` todos presentes), entao a falha esta em outro
+        // ponto da cadeia -- e o diagnostico antigo colapsava os tres
+        // pontos possiveis num "indisponivel" so.
+        //
+        // Licao aplicada: nao fazer um conserto depender de UMA reflexao
+        // dar certo. O caminho B le o custo DIRETO do `ActionTrigger`, que
+        // e onde ele mora (causa raiz do bloco 745) -- campos publicos,
+        // sem metodo privado no meio.
+
+        // Diz QUAL elo da cadeia quebrou, em vez de um bool cego.
+        public static string CostChainStatus(GameplayLogicScript gls)
         {
-            if (_miActionHasDownsideCost == null) return null;
+            if (gls.acaActive == null) return "aca_null";
+            if (_miActionHasDownsideCost == null) return "metodo_nao_resolvido";
+            GameObject? ator;
+            try { ator = gls.acaActive.ActorObject(); }
+            catch { return "ActorObject_excecao"; }
+            if (ator == null) return "ator_null";
+            CardLogicScript? cls;
+            try { cls = ator.GetComponent<CardLogicScript>(); }
+            catch { return "CLS_excecao"; }
+            if (cls == null) return "CLS_null";
+            System.Collections.Generic.List<CardAction>? acts;
+            try { acts = cls.GetCardActions(); }
+            catch { return "GetCardActions_excecao"; }
+            if (acts == null) return "acoes_null";
+            int idx = gls.acaActive.iActionIdx;
+            if (idx < 0 || idx >= acts.Count)
+                return $"idx_fora[{idx}/{acts.Count}]";
+            try { _miActionHasDownsideCost.Invoke(gls, new object[] { acts[idx] }); }
+            catch (System.Exception e) { return "invoke_excecao:" + e.GetType().Name; }
+            return "ok";
+        }
+
+        // CAMINHO B: custo lido direto do ActionTrigger (campos publicos).
+        // Independe do metodo privado -- e onde o custo de habilidade mora.
+        public static bool? TriggerTemCusto(GameplayLogicScript gls)
+        {
             var ca = ActiveCardAction(gls);
             if (ca == null) return null;
-            try { return (bool)_miActionHasDownsideCost.Invoke(gls, new object[] { ca }); }
+            try
+            {
+                // CardAction e STRUCT -- CardAction? e Nullable<CardAction>.
+                var t = ca.Value.actionTrigger;
+                return t.DonTap > 0 || t.DonMinus > 0 || t.TrashX > 0
+                    || t.TrashSelf || t.RestLeader || t.SelfTapAny > 0
+                    || t.SelfTapCharacters > 0 || t.KOAlly
+                    || t.TakeLife > 0 || t.TrashLife > 0 || t.ForceOptional;
+            }
             catch { return null; }
+        }
+
+        // O jogo considera que esta acao tem custo/downside opcional?
+        // Tenta o predicado OFICIAL; se ele nao resolver, cai no
+        // ActionTrigger direto. Null so quando nem um nem outro respondem.
+        public static bool? ActionHasCostOficial(GameplayLogicScript gls)
+        {
+            var ca = ActiveCardAction(gls);
+            if (ca != null && _miActionHasDownsideCost != null)
+            {
+                try { return (bool)_miActionHasDownsideCost.Invoke(gls, new object[] { ca.Value }); }
+                catch { }
+            }
+            return TriggerTemCusto(gls);
         }
 
         // DIAGNOSTICO (bloco 744): IsOptionalCostWindow abaixo tem TRES
@@ -453,11 +513,9 @@ namespace OPTCGBotPlugin
                 // caso do lider. Reporta sempre o predicado oficial.
             }
             catch { return "V3Step_excecao"; }
-            string oficial = ActionHasCostOficial(gls) switch
-            {
-                true => "SIM", false => "NAO", _ => "indisponivel"
-            };
-            return $"oficial={oficial}[{flags}|botoes={OfferedButtonNames(gls)}]";
+            static string B(bool? v) => v switch { true => "SIM", false => "NAO", _ => "?" };
+            return $"oficial={B(ActionHasCostOficial(gls))} trigger={B(TriggerTemCusto(gls))} "
+                 + $"cadeia={CostChainStatus(gls)}[{flags}|botoes={OfferedButtonNames(gls)}]";
         }
 
         public static bool IsOptionalCostWindow(GameplayLogicScript gls)
