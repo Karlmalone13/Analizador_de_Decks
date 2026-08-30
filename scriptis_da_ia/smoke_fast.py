@@ -1659,7 +1659,16 @@ def test_don_reserve_for_defense_nao_guarda_mais_que_o_recurso_precisa() -> None
     # controle: SO counter impresso na mao (nao custa DON nenhum pra usar)
     # -- reserva deve zerar, nao travar DON de ataque a toa.
     counter_impresso = real_card("ST18-001")  # counter 2000, sem [Counter] de evento
-    me2 = GameState(leader=real_card("OP11-062"), don_available=5, turn=5)
+    # LIDER TROCADO 29/08 (OP11-062 -> OP01-001): o teste usava Charlotte
+    # Katakuri, que TEM "[On Your Opponent's Attack] DON!! -1: +1000 e olha o
+    # topo do deck" -- um uso reativo de DON GENUINO. Ele so passava porque
+    # `_has_don_reactive_use`/`_max_don_needed_for_reactive_use` enumeravam
+    # so ('counter','opp_turn') e eram CEGAS pra `on_opp_attack`; com a
+    # cegueira corrigida, reservar 1 DON com aquele lider e o comportamento
+    # CERTO, nao regressao. O invariante que este teste protege ("nao travar
+    # DON de ataque sem uso reativo real") continua valendo -- so precisa de
+    # um lider que de fato nao tenha gatilho reativo.
+    me2 = GameState(leader=real_card("OP01-001"), don_available=5, turn=5)
     me2.hand = [counter_impresso]
     me2.deck = [real_card("ST18-001") for _ in range(10)] + [real_card("OP07-077") for _ in range(20)]
     me2.life = [real_card("OP07-077")]
@@ -10644,6 +10653,7 @@ def main() -> int:
     test_score_attack_target_double_attack_banish_priorizam_a_vida()
     test_order_target_candidates_debuff_on_play_coordena_com_ataque_disponivel()
     test_give_don_prefere_lider_a_character_recem_jogado_sem_uso_hoje()
+    test_reserva_don_para_habilidade_reativa_on_opp_attack()
     test_order_target_candidates_lider_compete_por_ALVO_nao_por_acao()
     test_order_target_candidates_give_don_prefere_lider_ao_vivo()
     test_order_target_candidates_custo_so_de_mao_exclui_outras_zonas()
@@ -12349,6 +12359,47 @@ def test_give_don_prefere_lider_a_character_recem_jogado_sem_uso_hoje() -> None:
     ee.execute(izo, "on_play")
     check("give_don (rested) vai pro lider ja restado, nao pro Character recem-jogado",
           ace.don_attached == 1 and izo.don_attached == 0)
+
+
+def test_reserva_don_para_habilidade_reativa_on_opp_attack() -> None:
+    """A reserva de DON era CEGA pra `on_opp_attack`.
+
+    `_has_don_reactive_use` e `_max_don_needed_for_reactive_use` enumeravam
+    so ('counter', 'opp_turn'). O lider Monkey D. Luffy OP13-001 guarda a
+    habilidade dele em `on_opp_attack` ("[On Your Opponent's Attack] ...
+    rest any number of your DON!!; +2000 de poder por DON restado").
+
+    Consequencia MEDIDA em partida real (29/08, perdida): nenhuma reserva
+    era feita, o bot gastava todo o DON no proprio turno, e em **19 de 27**
+    disparos da habilidade ele tinha ZERO DON ativo -- o custo era
+    impagavel e o buff valia +0. A habilidade central do lider ficou morta
+    a partida inteira por falta de recurso, nao por escolha ruim.
+
+    O teste trava as duas pontas: reserva com ameaca real, e ZERO sem
+    ameaca (a reserva nao pode virar acumulo de DON todo turno) e ZERO pra
+    lider sem gatilho reativo de DON.
+    """
+    def cenario(lider_code, n_board_opp):
+        me = GameState(leader=real_card(lider_code), don_available=6, turn=5)
+        me.field_chars = [real_card("EB02-017")]
+        me.life = [real_card("EB02-017") for _ in range(2)]
+        opp = GameState(leader=real_card("OP17-099"))
+        opp.field_chars = [real_card(c) for c in
+                           ("OP17-118", "OP17-040", "OP17-054")[:n_board_opp]]
+        return DecisionEngine(me, opp)
+
+    e = cenario("OP13-001", 3)
+    check("lider com habilidade que escala por DON restado RESERVA sob ameaca",
+          e.analyzer.opp_lethal_threat() > 0 and e._don_reserve_for_defense() > 0)
+
+    e_sem_ameaca = cenario("OP13-001", 0)
+    check("sem ameaca nenhuma, o mesmo lider NAO reserva DON",
+          e_sem_ameaca._don_reserve_for_defense() == 0)
+
+    e_ctrl = cenario("OP01-001", 3)   # lider sem gatilho reativo nenhum
+    check("lider SEM gatilho reativo de DON continua sem reservar",
+          e_ctrl._max_don_needed_for_reactive_use() == 0
+          and e_ctrl._don_reserve_for_defense() == 0)
 
 
 def test_order_target_candidates_lider_compete_por_ALVO_nao_por_acao() -> None:

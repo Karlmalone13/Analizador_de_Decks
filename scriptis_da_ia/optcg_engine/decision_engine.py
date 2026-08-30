@@ -1946,6 +1946,30 @@ def character_needs_rush_character(c: 'Card') -> bool:
 # verdade). Fonte unica -- nao duplicar esta lista em outro arquivo.
 COMBAT_ONLY_TRIGGERS = {'counter', 'when_attacking', 'on_opp_attack', 'leader_battle_reactive'}
 
+# Gatilhos que resolvem DURANTE O TURNO DO OPONENTE -- os unicos que podem
+# consumir DON que eu deixei ATIVO ao encerrar o meu turno. Distinto de
+# COMBAT_ONLY_TRIGGERS acima, que inclui `when_attacking` (meu turno, DON
+# ainda disponivel de qualquer jeito).
+#
+# ACHADO REAL 29/08 (partida ao vivo perdida): `_has_don_reactive_use`
+# enumerava so ('counter', 'opp_turn') e o lider Monkey D. Luffy OP13-001
+# guarda a habilidade dele em `on_opp_attack` ("[On Your Opponent's Attack]
+# ... rest any number of your DON!!; +2000 por DON restado"). Fora da
+# lista => nenhuma reserva de DON => o bot gastava TUDO no proprio turno.
+# Medido no log: em **19 de 27** disparos da habilidade ele tinha ZERO DON
+# ativo -- o custo era impagavel e o buff valia +0. A habilidade central do
+# lider ficou morta a partida inteira, e nao por escolha ruim: por falta de
+# recurso que ninguem reservou.
+TRIGGERS_NO_TURNO_DO_OPONENTE = {'counter', 'opp_turn', 'on_opp_attack',
+                                 'leader_battle_reactive'}
+
+# Custos que consomem/prendem DON. Um bloco reativo com um destes QUER DON
+# ativo em pe, mesmo sem `don_requirement` -- `rest_any_don` e exatamente
+# esse caso (o DON nao fica "anexado", ele e restado na hora do efeito).
+_COST_TYPES_QUE_USAM_DON = {'don_minus', 'rest_don', 'rest_any_don',
+                            'return_active_don_to_don_deck',
+                            'give_don_own', 'give_don_to_named'}
+
 _HAND_ONLY_COST_TYPES = {'trash_from_hand', 'reveal_from_hand', 'trash_any_from_hand'}
 _ORTHOGONAL_COST_TYPES = {'don_minus', 'rest_don', 'rest_self', 'trash_self'}
 _NO_ZONE_TARGETS = {'self', 'own_play_self', 'this_card'}
@@ -13692,11 +13716,25 @@ class DecisionEngine:
                     return True
 
         for c in list(me.field_chars) + [me.leader]:
+            if c is None:
+                continue
             effects = get_card_effects(c.code)
-            for timing in ('counter', 'opp_turn'):
+            for timing in TRIGGERS_NO_TURNO_DO_OPONENTE:
                 blk = effects.get(timing)
-                if blk and blk.get('don_requirement', 0) > 0:
+                if not isinstance(blk, dict):
+                    continue
+                # `don_requirement` = [DON!! xN] ANEXADO (requisito de
+                # estado). Nao e o unico jeito de um bloco reativo precisar
+                # de DON: o CUSTO pode consumir DON ATIVO na hora
+                # (`rest_any_don`, `don_minus`...), e ai reservar importa
+                # ainda mais -- sem DON ativo o efeito simplesmente nao
+                # acontece. Checar so `don_requirement` deixava esse caso
+                # inteiro de fora.
+                if blk.get('don_requirement', 0) > 0:
                     return True
+                for custo in (blk.get('costs') or []):
+                    if isinstance(custo, dict) and custo.get('type') in _COST_TYPES_QUE_USAM_DON:
+                        return True
 
         pool = me.deck + me.life
         if pool:
@@ -13732,15 +13770,67 @@ class DecisionEngine:
                 maior = max(maior, int(m.group(1)))
 
         for c in list(me.field_chars) + [me.leader]:
+            if c is None:
+                continue
             effects = get_card_effects(c.code)
-            for timing in ('counter', 'opp_turn'):
+            # MESMA lista de `_has_don_reactive_use` (o docstring acima ja
+            # dizia que as duas espelham) -- e as DUAS enumeravam so
+            # ('counter','opp_turn'), deixando `on_opp_attack` de fora.
+            # Corrigir so uma delas nao adianta: esta aqui e o TETO, e
+            # `min(reserva, 0)` zera a reserva da outra.
+            for timing in TRIGGERS_NO_TURNO_DO_OPONENTE:
                 blk = effects.get(timing)
-                if blk:
-                    req = blk.get('don_requirement', 0)
-                    if req > 0:
-                        maior = max(maior, max(0, req - getattr(c, 'don_attached', 0)))
+                if not isinstance(blk, dict):
+                    continue
+                req = blk.get('don_requirement', 0)
+                if req > 0:
+                    maior = max(maior, max(0, req - getattr(c, 'don_attached', 0)))
+                # CUSTO VARIAVEL em DON ("rest ANY NUMBER of your DON!!"):
+                # nao existe custo fixo pra usar de teto -- quanto mais DON
+                # ativo, maior o efeito. O "necessario" aqui e quanto falta
+                # pra ESTE defensor sobreviver a maior ameaca ATIVA do
+                # oponente; sem ameaca que o mate, 1 DON basta pra a
+                # habilidade existir.
+                if any(isinstance(x, dict) and x.get('type') in _COST_TYPES_QUE_USAM_DON
+                       for x in (blk.get('costs') or [])):
+                    maior = max(maior, self._don_para_sobreviver_com(blk, c))
 
         return maior
+
+    # Teto duro da reserva por custo VARIAVEL de DON. Existe pra este ramo
+    # nao virar "guarda o turno inteiro": os blocos 593/594 ja mediram que
+    # dar valor a margem sem limite REGREDIU o resultado real.
+    _MAX_DON_RESERVA_VARIAVEL = 3
+
+    def _don_para_sobreviver_com(self, blk: dict, dono) -> int:
+        """Quantos DON restar pra `dono` sobreviver a maior ameaca ATIVA.
+
+        So faz sentido pra bloco reativo cujo efeito escala com DON restado
+        (`buff_power_per_count` + `source: rested_don_this_effect`, o caso do
+        lider OP13-001). Devolve pelo menos 1 quando o bloco existe -- sem
+        NENHUM DON ativo a habilidade nao acontece, e foi exatamente isso
+        que se viu ao vivo em 19 de 27 disparos.
+        """
+        por_don = 0
+        for s in (blk.get('steps') or []):
+            if isinstance(s, dict) and s.get('action') == 'buff_power_per_count':
+                por_don = int(s.get('amount_per') or 0) * max(1, int(s.get('count_per') or 1))
+                break
+        if por_don <= 0:
+            return 1
+
+        ameacas = [c.power for c in self.opp.field_chars
+                   if not getattr(c, 'rested', False)]
+        if self.opp.leader is not None and not getattr(self.opp.leader, 'rested', False):
+            ameacas.append(self.opp.leader.power)
+        maior_ameaca = max(ameacas, default=0)
+        meu_poder = dono.effective_power(True) if dono is not None else 0
+        # Empate vai pro ATACANTE -- precisa ficar ESTRITAMENTE acima.
+        falta = maior_ameaca - meu_poder + 1
+        if falta <= 0:
+            return 1
+        return max(1, min(self._MAX_DON_RESERVA_VARIAVEL,
+                          -(-falta // por_don)))   # ceil
 
     def _don_reserve_for_defense(self) -> int:
         """
