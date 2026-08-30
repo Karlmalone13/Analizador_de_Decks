@@ -8901,6 +8901,21 @@ def parse_card_effect(card_text, card_type):
     # frases/blocos) para um unico espaco, simplificando os lookbehind de
     # abertura/parada de bloco que assumem exatamente 0 ou 1 espaco.
     t = re.sub(r'[ \t]{2,}', ' ', t)
+    # ATENCAO -- `t_low` NAO e o texto integro do fim ao cabo.
+    #
+    # Ele e CONSUMIDO ao longo do parse: quando um bloco e reconhecido, o
+    # trecho correspondente e RECORTADO daqui (ver o corte de
+    # `on_damage_to_life` mais abaixo) pra nao ser reconhecido de novo por
+    # outro padrao. Sao 65 usos de `t_low` depois desse ponto, e nenhum
+    # deles pode assumir que o texto ainda esta completo.
+    #
+    # Precisa do texto INTEIRO (ex: conferir se uma palavra aparece em
+    # QUALQUER lugar da carta)? Use `full_text_low`, definido perto do fim
+    # da funcao justamente pra isso.
+    #
+    # Aviso escrito em 30/08 depois de perder tempo com isto: a checagem de
+    # "a clausula diz Character?" foi escrita usando `t_low` e falhava em
+    # silencio, porque a clausula ja tinha sido recortada.
     t_low = t.lower()
     # Normaliza "[Rush:Character]" (sem espaco apos o ':') pra
     # "[rush: character]" (COM espaco) -- a convencao que todo o resto do
@@ -8945,6 +8960,8 @@ def parse_card_effect(card_text, card_type):
         if dmg_life_m.group(1):
             dmg_entry['don_requirement'] = int(dmg_life_m.group(1))
         result['on_damage_to_life'] = dmg_entry
+        # RECORTE DESTRUTIVO em `t_low` -- ver o aviso na definicao dele.
+        # Daqui pra frente `t_low` NAO representa mais a carta inteira.
         t_low = (t_low[:dmg_life_m.start()] + ' ' + t_low[dmg_life_m.end():]).strip()
 
     # CASO ESPECIAL: "Apply each of the following effects based on [recurso]:

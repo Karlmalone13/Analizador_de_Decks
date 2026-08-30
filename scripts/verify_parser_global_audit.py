@@ -74,9 +74,41 @@ def validate(path: str) -> list[str]:
     return errors
 
 
+def so_comentario(path: str) -> bool:
+    """O diff staged deste arquivo mexe SO em comentario/linha em branco?
+
+    Adicionado 30/08. O gate tratava qualquer toque em `gerar_effects_db.py`
+    como mudanca de parser -- inclusive escrever um COMENTARIO DE AVISO.
+    Isso empurra pra duas saidas ruins: inventar um registro de auditoria
+    pra uma mudanca que nao alterou parsing nenhum (poluindo o historico de
+    auditorias, que e justamente o que da confianca ao gate), ou usar
+    --no-verify (que desliga o gate inteiro, incluindo o que ele deveria
+    pegar). Nenhuma das duas e aceitavel.
+    """
+    diff = subprocess.run(
+        ["git", "diff", "--cached", "-U0", "--", path],
+        capture_output=True, text=True, check=False).stdout
+    for linha in diff.splitlines():
+        if not linha or linha[0] not in "+-":
+            continue
+        if linha.startswith(("+++", "---")):
+            continue
+        conteudo = linha[1:].strip()
+        if not conteudo or conteudo.startswith("#"):
+            continue
+        return False          # achou linha de CODIGO
+    return True
+
+
 def main() -> int:
     names = staged_names()
-    if not PARSER_TOUCHPOINTS.intersection(names):
+    tocados = PARSER_TOUCHPOINTS.intersection(names)
+    # Arquivo .py tocado so em comentario nao conta como mudanca de parser.
+    # O JSON do banco fica de fora desta isencao de proposito: ele nao tem
+    # comentario, entao qualquer diff nele e dado mudando.
+    tocados = {p for p in tocados
+               if not (p.endswith(".py") and so_comentario(p))}
+    if not tocados:
         return 0
     added = staged_added_names()
     audits = [p for p in names if p in added and p.startswith(AUDIT_PREFIX)

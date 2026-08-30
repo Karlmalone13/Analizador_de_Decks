@@ -10660,6 +10660,7 @@ def main() -> int:
     test_score_attack_target_double_attack_banish_priorizam_a_vida()
     test_order_target_candidates_debuff_on_play_coordena_com_ataque_disponivel()
     test_give_don_prefere_lider_a_character_recem_jogado_sem_uso_hoje()
+    test_nenhum_caractere_de_controle_no_codigo()
     test_reserva_don_para_habilidade_reativa_on_opp_attack()
     test_order_target_candidates_lider_compete_por_ALVO_nao_por_acao()
     test_order_target_candidates_give_don_prefere_lider_ao_vivo()
@@ -12367,6 +12368,32 @@ def test_give_don_prefere_lider_a_character_recem_jogado_sem_uso_hoje() -> None:
     check("give_don (rested) vai pro lider ja restado, nao pro Character recem-jogado",
           ace.don_attached == 1 and izo.don_attached == 0)
 
+
+def test_nenhum_caractere_de_controle_no_codigo() -> None:
+    """Nenhum .py do projeto pode conter caractere de CONTROLE solto.
+
+    Ver `_guarda_controle.py` pro caso real que motivou (um BACKSPACE
+    injetado DENTRO de um regex, que compilava e nunca casava).
+
+    O 2o check e o mais importante: prova que a guarda DETECTA. Sem ele,
+    um bug na varredura faria o teste passar sempre e nao guardar nada.
+    """
+    import _guarda_controle as guarda
+    import os as _os
+    import tempfile as _tmp
+
+    raiz = _os.path.dirname(_os.path.abspath(__file__))
+    achados = guarda.varre(raiz)
+    check("nenhum caractere de controle solto no codigo Python"
+          + (" -- ACHADOS: %s" % achados[:4] if achados else ""),
+          not achados)
+
+    with _tmp.TemporaryDirectory() as d:
+        isca = _os.path.join(d, "isca.py")
+        with open(isca, "w", encoding="utf-8") as fh:
+            fh.write("x = 1" + chr(8) + chr(10))
+        check("a guarda DETECTA um backspace plantado (senao ela nao guarda nada)",
+              len(guarda.varre(d)) == 1)
 
 def test_reserva_don_para_habilidade_reativa_on_opp_attack() -> None:
     """A reserva de DON era CEGA pra `on_opp_attack`.
