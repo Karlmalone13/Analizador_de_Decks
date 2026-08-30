@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1155,6 +1155,67 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Nullify effects of Charlotte Katakuri [\"OP11-062\">OP11-062]",
+            "Charlotte Katakuri [\"ST34-001\">ST34-001] can't attack next turn",
+            "Nullify effects of Charlotte Katakuri [\"ST34-001\">ST34-001] until next turn end!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-069"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jesus Burgess",
+          "attacker_code": "OP09-086",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-119",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

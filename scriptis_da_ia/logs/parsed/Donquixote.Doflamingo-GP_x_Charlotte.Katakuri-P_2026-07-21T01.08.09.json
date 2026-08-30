@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 12,
+  "total_turns": 13,
   "turns": [
     {
       "turn": 1,
@@ -1725,6 +1725,54 @@
           }
         }
       }
+    },
+    {
+      "turn": 13,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP12-037",
+          "card_name": "Demonic Aura Nine-Sword Style Asura Dead Man's Game",
+          "effects": [
+            "Rest 1 Don",
+            "Rest 3 Don",
+            "Rest Charlotte Katakuri [\"OP11-067\">OP11-067]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP04-019",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-005"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 6,
+          "to": "OP04-031",
+          "to_name": "Donquixote Doflamingo",
+          "total": 6
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP04-031",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

@@ -457,6 +457,43 @@ def parse_log(log_path: str) -> tuple:
         current_lines.append(line)
         i += 1
 
+    # ULTIMO TURNO DA PARTIDA (achado 30/08, bloco 739).
+    #
+    # Um bloco de turno so era emitido quando casava `RE_END` (o marcador
+    # de fim de turno). O turno FINAL nao tem esse marcador: a partida
+    # acaba em `GameOver`, e `current_lines` era descartado em silencio.
+    #
+    # Nao e caso de borda raro -- e sistematico e ENVIESADO por tipo de
+    # acao, porque o turno final e o turno letal (voce ataca e anexa DON,
+    # nao desenvolve board). Medido no banco inteiro antes do conserto:
+    #
+    #     attach_don   1328 no log cru -> 1001 parseados   (-24,6%)
+    #     attack       2492 no log cru -> 2114 parseados   (-15,2%)
+    #     play         1461 no log cru -> 1417 parseados   ( -3,0%)
+    #
+    # 98 logs afetados, 327 anexacoes perdidas, **100% delas nos ultimos
+    # 20% do arquivo e ZERO fora do fim** -- o que identificou a causa.
+    #
+    # Por que importa alem da contagem: este corpus alimenta
+    # `human_patterns.json` (calibragem que o motor USA), a metrica
+    # oficial de `decision_quality_full.py`, e as medicoes de
+    # sequenciamento. Com a anexacao humana subcontada em 1/4, o desvio
+    # "motor abre o turno com attach_don 26,8% x 7,8% do humano" estava
+    # medido contra uma regua torta -- a 2a vez que esse mesmo numero
+    # aparece contaminado (a 1a foi o bloco 732, populacoes desiguais).
+    if current_lines and any(not l.startswith('RZ1') and l.strip()
+                             for l in current_lines):
+        p_final = current_player
+        if p_final is None and last_player_idx >= 0 and len(players) == 2:
+            p_final = players[1 - last_player_idx]
+        if p_final in players:
+            turn_blocks.append({
+                'player': p_final,
+                'lines': current_lines,
+                'snap_lines': [],
+                'snap_at': len(lines),
+            })
+
     # 3. Parsear blocos
     parsed_turns = []
     board_state = {p1: [], p2: []}

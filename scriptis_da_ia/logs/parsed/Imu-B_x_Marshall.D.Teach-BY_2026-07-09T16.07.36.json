@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -1463,6 +1463,73 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP13-089",
+          "countered_by": [
+            "OP13-083",
+            "OP13-084"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-084",
+          "to_name": "Catarina Devon",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-084",
+          "to_name": "Catarina Devon",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-084",
+          "to_name": "Catarina Devon",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Catarina Devon",
+          "attacker_code": "OP09-084",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

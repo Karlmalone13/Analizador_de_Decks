@@ -16,9 +16,9 @@
         }
       }
     },
-    "goes_first": null
+    "goes_first": "luny#6381"
   },
-  "total_turns": 12,
+  "total_turns": 13,
   "turns": [
     {
       "turn": 1,
@@ -54,7 +54,12 @@
           ],
           "board": [],
           "trash": [],
-          "life": 4
+          "life": 4,
+          "deck": [
+            "OP15-008",
+            "OP15-009",
+            "OP15-009"
+          ]
         },
         "luny#6381": {
           "hand": [
@@ -74,6 +79,14 @@
             "EB02-017"
           ],
           "life": 4,
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "EB02-017": 1
           }
@@ -231,6 +244,13 @@
             "OP15-081"
           ],
           "life": 4,
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
           "rested": {
             "OP15-081": 1
           }
@@ -620,6 +640,25 @@
             "OP12-027"
           ],
           "life": 3,
+          "deck": [
+            "OP15-009"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don"
+            ]
+          },
           "rested": {
             "OP15-009": 1,
             "OP15-017": 1
@@ -904,6 +943,27 @@
             "OP15-025"
           ],
           "life": 3,
+          "deck": [
+            "OP15-009"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don"
+            ]
+          },
           "rested": {
             "EB04-004": 1,
             "OP15-026": 1
@@ -959,6 +1019,19 @@
             "OP15-032"
           ],
           "life": 3,
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
           "rested": {
             "OP15-088": 1,
             "OP15-092": 1,
@@ -1222,6 +1295,28 @@
             "OP15-025"
           ],
           "life": 3,
+          "deck": [
+            "OP15-009"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "EB04-004": 1,
             "OP15-008": 1
@@ -1480,6 +1575,69 @@
           "life": 0
         }
       }
+    },
+    {
+      "turn": 13,
+      "player": "luny#6381",
+      "card_drawn": {
+        "name": "Nami",
+        "code": "OP15-086"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-086",
+          "card_name": "Nami",
+          "effects": [
+            "Deployed Monkey D. Luffy [\"OP13-118\">OP13-118] from Trash",
+            "Give Monkey D. Luffy [\"OP13-118\">OP13-118] Rush"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-118",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 5 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP15-092",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST30-012",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "Rest 1 Don",
+            "Give Monkey D. Luffy [\"ST30-012\">ST30-012] Rush",
+            "Rest Morgan [\"OP15-017\">OP15-017]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST30-012",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

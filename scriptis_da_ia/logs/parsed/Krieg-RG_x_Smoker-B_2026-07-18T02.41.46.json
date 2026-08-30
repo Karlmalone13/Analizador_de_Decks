@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 13,
+  "total_turns": 14,
   "turns": [
     {
       "turn": 1,
@@ -2070,6 +2070,95 @@
           }
         }
       }
+    },
+    {
+      "turn": 14,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "ST06-017",
+          "card_name": "Marineford",
+          "effects": [
+            "Rest Marineford [\"ST06-017\">ST06-017]",
+            "Kuro [\"OP15-025\">OP15-025] Cost -1"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP02-093",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-025",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST06-008",
+          "to_name": "Hina",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST06-008",
+          "to_name": "Hina",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Hina",
+          "attacker_code": "ST06-008",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-009",
+            "OP15-007"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP03-089",
+          "to_name": "Brannew",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Brannew",
+          "attacker_code": "OP03-089",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "ST19-002",
+          "to_name": "Sengoku",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Sengoku",
+          "attacker_code": "ST19-002",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

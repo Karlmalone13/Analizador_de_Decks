@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -1638,6 +1638,37 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP16-003",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marco",
+          "attacker_code": "OP16-014",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-118"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

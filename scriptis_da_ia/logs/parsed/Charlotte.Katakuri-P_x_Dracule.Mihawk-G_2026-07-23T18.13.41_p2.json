@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 12,
+  "total_turns": 13,
   "turns": [
     {
       "turn": 1,
@@ -1916,6 +1916,66 @@
           }
         }
       }
+    },
+    {
+      "turn": 13,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "PRB02-010",
+          "to_name": "Charlotte Pudding",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "PRB02-010",
+          "to_name": "Charlotte Pudding",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "PRB02-010",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST34-001",
+          "to_name": "Charlotte Katakuri",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "ST34-001",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "ST34-004",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

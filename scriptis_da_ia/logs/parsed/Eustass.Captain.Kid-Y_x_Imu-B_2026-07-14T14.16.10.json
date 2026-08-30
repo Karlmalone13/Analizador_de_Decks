@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 10,
+  "total_turns": 11,
   "turns": [
     {
       "turn": 1,
@@ -1575,6 +1575,42 @@
           }
         }
       }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST36-002",
+          "to_name": "Killer",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Killer",
+          "attacker_code": "ST36-002",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "OP10-119",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

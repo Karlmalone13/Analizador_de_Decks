@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -1544,6 +1544,100 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB04-007",
+          "to_name": "Roronoa Zoro",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "EB04-007",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "PRB02-010",
+            "PRB02-010",
+            "ST34-002",
+            "ST18-001",
+            "ST18-001"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-054",
+          "to_name": "Yamato",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-054",
+          "to_name": "Yamato",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-054",
+          "to_name": "Yamato",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-054",
+          "to_name": "Yamato",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Yamato",
+          "attacker_code": "OP13-054",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-042",
+          "to_name": "Edward Newgate",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP13-042",
+          "to_name": "Edward Newgate",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP13-042",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

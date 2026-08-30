@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 10,
+  "total_turns": 11,
   "turns": [
     {
       "turn": 1,
@@ -1660,6 +1660,73 @@
           }
         }
       }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST24-004",
+          "card_name": "Law & Bepo",
+          "effects": [
+            "Rest Charlotte Cracker [\"ST34-002\">ST34-002]",
+            "Charlotte Cracker [\"ST34-002\">ST34-002] will not Activate during next Refresh",
+            "Grant Dracule Mihawk [\"OP14-020\">OP14-020] 2000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Law & Bepo [\"ST24-004\">ST24-004]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST32-002",
+          "to_name": "Kouzuki Oden",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Kouzuki Oden",
+          "attacker_code": "ST32-002",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "ST32-003",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST32-003",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Shanks [\"ST16-004\">ST16-004]"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

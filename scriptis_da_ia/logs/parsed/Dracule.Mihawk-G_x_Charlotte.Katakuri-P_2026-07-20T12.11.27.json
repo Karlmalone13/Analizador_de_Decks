@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 6,
+  "total_turns": 7,
   "turns": [
     {
       "turn": 1,
@@ -643,6 +643,69 @@
           ]
         }
       }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST32-003",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Deploy Perona [\"OP14-033\">OP14-033]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Perona [\"OP14-033\">OP14-033]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kikunojo",
+          "attacker_code": "OP14-023",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

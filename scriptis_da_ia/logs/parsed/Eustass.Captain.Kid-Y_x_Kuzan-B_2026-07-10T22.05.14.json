@@ -16,9 +16,9 @@
         }
       }
     },
-    "goes_first": null
+    "goes_first": "Karlmalone#2854"
   },
-  "total_turns": 17,
+  "total_turns": 18,
   "turns": [
     {
       "turn": 1,
@@ -90,6 +90,32 @@
           ],
           "trash": [],
           "life": 5,
+          "deck": [
+            "EB04-059",
+            "OP10-109",
+            "OP10-112",
+            "OP10-116",
+            "OP11-101",
+            "OP13-116",
+            "P-088",
+            "ST36-001",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-114",
+            "OP10-119",
+            "OP10-119",
+            "OP12-117",
+            "ST36-005"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP10-111": 1
           }
@@ -105,7 +131,30 @@
           ],
           "trash": [],
           "board": [],
-          "life": 5
+          "life": 5,
+          "deck": [
+            "EB04-028",
+            "OP06-050",
+            "OP06-058",
+            "OP12-043",
+            "OP12-056",
+            "OP12-057",
+            "ST33-001",
+            "ST33-002",
+            "ST33-003",
+            "ST33-005"
+          ],
+          "life_cards": [
+            "EB04-022",
+            "OP06-043",
+            "OP12-044",
+            "OP12-051",
+            "ST33-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
         }
       }
     },
@@ -220,6 +269,34 @@
           ],
           "trash": [],
           "life": 5,
+          "deck": [
+            "EB04-059",
+            "OP10-109",
+            "OP10-112",
+            "OP10-116",
+            "OP11-101",
+            "OP13-116",
+            "P-088",
+            "ST36-001",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-114",
+            "OP10-119",
+            "OP12-117",
+            "OP15-105",
+            "ST36-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP11-101": 1
           }
@@ -239,6 +316,34 @@
             "EB04-026"
           ],
           "life": 4,
+          "deck": [
+            "EB04-028",
+            "OP06-058",
+            "OP12-043",
+            "OP12-056",
+            "OP12-057",
+            "ST33-001",
+            "ST33-002",
+            "ST33-003",
+            "ST33-005"
+          ],
+          "life_cards": [
+            "EB04-022",
+            "OP06-043",
+            "OP12-051",
+            "ST33-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "EB04-026": 1
           }
@@ -427,6 +532,38 @@
             "P-088"
           ],
           "life": 6,
+          "deck": [
+            "EB04-059",
+            "OP10-109",
+            "OP10-116",
+            "OP11-101",
+            "OP11-101",
+            "OP13-116",
+            "ST36-001",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-112",
+            "OP10-114",
+            "OP10-119",
+            "OP12-117",
+            "OP15-105",
+            "ST36-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "ST36-002": 1
           }
@@ -452,6 +589,33 @@
             "ST33-003"
           ],
           "life": 4,
+          "deck": [
+            "OP06-058",
+            "OP12-043",
+            "OP12-047",
+            "OP12-051",
+            "OP12-057",
+            "ST33-001",
+            "ST33-002",
+            "ST33-004",
+            "ST33-005"
+          ],
+          "life_cards": [
+            "EB04-022",
+            "OP06-043",
+            "OP12-051",
+            "ST33-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
           "rested": {
             "EB04-026": 1,
             "OP06-050": 1,
@@ -636,6 +800,43 @@
             "P-088"
           ],
           "life": 6,
+          "deck": [
+            "EB04-059",
+            "OP10-109",
+            "OP10-116",
+            "OP11-101",
+            "OP11-101",
+            "OP13-116",
+            "ST36-001",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-112",
+            "OP10-114",
+            "OP10-119",
+            "OP12-117",
+            "OP15-105",
+            "ST36-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "attached_don": [
+              "Don"
+            ]
+          },
           "rested": {
             "ST36-002": 1,
             "OP10-119": 1
@@ -667,6 +868,36 @@
             "OP06-043"
           ],
           "life": 3,
+          "deck": [
+            "OP06-058",
+            "OP12-043",
+            "OP12-051",
+            "OP12-057",
+            "ST33-001",
+            "ST33-002",
+            "ST33-004"
+          ],
+          "life_cards": [
+            "EB04-022",
+            "OP06-043",
+            "ST33-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
           "rested": {
             "EB04-026": 1,
             "OP12-056": 1
@@ -946,6 +1177,43 @@
             "OP10-109"
           ],
           "life": 7,
+          "deck": [
+            "EB04-059",
+            "OP10-111",
+            "OP10-116",
+            "OP11-101",
+            "OP11-101",
+            "OP13-116",
+            "ST36-001",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-112",
+            "OP10-114",
+            "OP10-119",
+            "OP12-117",
+            "OP15-105",
+            "ST36-002",
+            "ST36-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP10-119": 2
           }
@@ -984,6 +1252,39 @@
             "OP06-050"
           ],
           "life": 1,
+          "deck": [
+            "OP06-050",
+            "OP06-058",
+            "OP12-043",
+            "OP12-051",
+            "OP12-057",
+            "ST33-001",
+            "ST33-002",
+            "ST33-004",
+            "ST33-005"
+          ],
+          "life_cards": [
+            "ST33-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP12-056": 1,
             "OP06-043": 1,
@@ -1181,7 +1482,36 @@
             "ST36-002",
             "OP10-109"
           ],
-          "life": 4
+          "life": 4,
+          "deck": [
+            "EB04-059",
+            "OP10-111",
+            "OP11-101",
+            "OP11-101",
+            "OP13-116",
+            "ST36-001",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-114",
+            "OP10-119",
+            "OP12-117",
+            "ST36-005"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
         },
         "Proxh#4377": {
           "hand": [
@@ -1222,6 +1552,35 @@
             "ST33-004"
           ],
           "life": 0,
+          "deck": [
+            "OP06-050",
+            "OP06-058",
+            "OP12-051",
+            "ST33-001",
+            "ST33-002",
+            "ST33-004",
+            "ST33-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
           "rested": {
             "OP12-056": 1,
             "EB04-026": 1,
@@ -1477,6 +1836,44 @@
             "ST36-002"
           ],
           "life": 3,
+          "deck": [
+            "EB04-059",
+            "OP10-111",
+            "OP11-101",
+            "OP13-116",
+            "ST36-001",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-119",
+            "OP12-117",
+            "ST36-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
           "rested": {
             "OP10-112": 1
           }
@@ -1524,6 +1921,35 @@
             "OP06-043"
           ],
           "life": 0,
+          "deck": [
+            "OP06-050",
+            "OP06-058",
+            "ST33-001",
+            "ST33-002",
+            "ST33-003",
+            "ST33-004",
+            "ST33-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
           "rested": {
             "EB04-026": 1,
             "OP06-043": 1
@@ -1864,6 +2290,39 @@
             "OP15-105"
           ],
           "life": 3,
+          "deck": [
+            "EB04-059",
+            "OP10-111",
+            "OP11-101",
+            "OP11-101",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-119",
+            "OP12-117",
+            "ST36-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
           "rested": {
             "OP10-119": 1,
             "OP10-112": 1
@@ -1920,6 +2379,31 @@
             "ST33-004"
           ],
           "life": 0,
+          "deck": [
+            "OP12-043",
+            "ST33-003",
+            "ST33-004",
+            "ST33-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "EB04-026": 1,
             "OP06-043": 1,
@@ -2124,6 +2608,96 @@
           }
         }
       }
+    },
+    {
+      "turn": 18,
+      "player": "Proxh#4377",
+      "card_drawn": {
+        "name": "Borsalino",
+        "code": "ST33-004"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Bluegrass",
+          "attacker_code": "EB04-026",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "EB04-026",
+          "card_name": "Bluegrass",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Monkey D. Garp [\"ST33-005\">ST33-005]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-040",
+          "card_name": "Kuzan",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP12-040",
+          "to_name": "Kuzan",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP12-040",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST33-004",
+          "to_name": "Borsalino",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Borsalino",
+          "attacker_code": "ST33-004",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP06-043",
+          "to_name": "Aramaki",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Aramaki",
+          "attacker_code": "OP06-043",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

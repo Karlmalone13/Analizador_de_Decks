@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 10,
+  "total_turns": 11,
   "turns": [
     {
       "turn": 1,
@@ -1418,6 +1418,32 @@
           }
         }
       }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 10,
+          "to": "ST32-002",
+          "to_name": "Kouzuki Oden",
+          "total": 10
+        },
+        {
+          "type": "attack",
+          "attacker": "Kouzuki Oden",
+          "attacker_code": "ST32-002",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

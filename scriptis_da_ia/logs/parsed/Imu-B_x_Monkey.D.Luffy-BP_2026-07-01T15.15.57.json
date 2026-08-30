@@ -16,9 +16,9 @@
         }
       }
     },
-    "goes_first": null
+    "goes_first": "Karlmalone#2854"
   },
-  "total_turns": 17,
+  "total_turns": 18,
   "turns": [
     {
       "turn": 1,
@@ -92,7 +92,20 @@
             "OP13-091",
             "OP13-091"
           ],
-          "life": 4
+          "life": 4,
+          "deck": [
+            "OP13-084",
+            "OP13-084",
+            "OP16-093"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
         },
         "Sebs#6211": {
           "hand": [
@@ -105,7 +118,16 @@
           ],
           "trash": [],
           "board": [],
-          "life": 3
+          "life": 3,
+          "deck": [
+            "OP05-067",
+            "ST18-001",
+            "ST18-001"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
         }
       }
     },
@@ -867,6 +889,27 @@
             "OP13-092"
           ],
           "life": 2,
+          "deck": [
+            "OP13-084"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP13-086": 1
           }
@@ -2277,6 +2320,66 @@
           }
         }
       }
+    },
+    {
+      "turn": 18,
+      "player": "Sebs#6211",
+      "card_drawn": {
+        "name": "Gol D. Roger",
+        "code": "P-107"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP11-040",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "<b>Reveal and Draw Sanji [\"OP07-064\">OP07-064]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST18-001",
+          "card_name": "Usohachi",
+          "effects": [
+            "Rest St. Topman Warcury [\"OP13-089\">OP13-089]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-078",
+          "card_name": "Mamaragan",
+          "effects": [
+            "Minus 2 Don",
+            "Draw 1 Card",
+            "Rest St. Marcus Mars [\"OP13-091\">OP13-091]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Gol D. Roger",
+          "attacker_code": "P-107",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-092"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Gol D. Roger",
+          "attacker_code": "P-107",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

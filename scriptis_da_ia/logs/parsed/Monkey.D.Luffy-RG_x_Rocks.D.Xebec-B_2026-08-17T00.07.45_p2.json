@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 10,
+  "total_turns": 11,
   "turns": [
     {
       "turn": 1,
@@ -1524,6 +1524,73 @@
           }
         }
       }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Sanji",
+          "attacker_code": "OP13-027",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP17-046",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 7,
+          "to": "EB04-007",
+          "to_name": "Roronoa Zoro",
+          "total": 7
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "EB04-007",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 10,
+  "total_turns": 11,
   "turns": [
     {
       "turn": 1,
@@ -1445,6 +1445,77 @@
           }
         }
       }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP11-021",
+          "to_name": "Jinbe",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP11-021",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-005",
+            "ST34-005",
+            "ST34-005"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP06-035",
+          "to_name": "Hody Jones",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP06-035",
+          "to_name": "Hody Jones",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Hody Jones",
+          "attacker_code": "OP06-035",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP11-031",
+          "to_name": "Jinbe",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP11-031",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

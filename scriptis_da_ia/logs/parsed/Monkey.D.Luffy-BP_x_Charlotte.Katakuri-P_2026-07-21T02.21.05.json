@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 12,
+  "total_turns": 13,
   "turns": [
     {
       "turn": 1,
@@ -1610,6 +1610,78 @@
           }
         }
       }
+    },
+    {
+      "turn": 13,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP11-040",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "<b>Reveal and Draw Gum Gum Giant [\"OP09-078\">OP09-078]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-067",
+          "to_name": "Charlotte Katakuri",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-067",
+          "to_name": "Charlotte Katakuri",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-067",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP08-069",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-003",
+            "ST18-001",
+            "ST34-002"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 8,
+          "to": "OP11-040",
+          "to_name": "Monkey D. Luffy",
+          "total": 8
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP11-040",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

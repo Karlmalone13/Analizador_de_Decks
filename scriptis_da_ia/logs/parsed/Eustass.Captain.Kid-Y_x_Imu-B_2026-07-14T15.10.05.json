@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1184,6 +1184,88 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-083",
+          "to_name": "St. Jaygarcia Saturn",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-083",
+          "to_name": "St. Jaygarcia Saturn",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-083",
+          "to_name": "St. Jaygarcia Saturn",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-083",
+          "to_name": "St. Jaygarcia Saturn",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-080",
+          "to_name": "St. Ethanbaron V. Nusjuro",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Ethanbaron V. Nusjuro",
+          "attacker_code": "OP13-080",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP13-080",
+          "card_name": "St. Ethanbaron V. Nusjuro",
+          "effects": [
+            "Buff Trafalgar Law [\"OP10-119\">OP10-119] -2000"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

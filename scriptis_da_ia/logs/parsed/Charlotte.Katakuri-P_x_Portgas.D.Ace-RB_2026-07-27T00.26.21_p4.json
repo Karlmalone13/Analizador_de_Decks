@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -1528,6 +1528,53 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Jozu",
+          "attacker_code": "OP08-047",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-003"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP13-042",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-118",
+          "card_name": "Gol D. Roger",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Gol D. Roger",
+          "attacker_code": "OP09-118",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

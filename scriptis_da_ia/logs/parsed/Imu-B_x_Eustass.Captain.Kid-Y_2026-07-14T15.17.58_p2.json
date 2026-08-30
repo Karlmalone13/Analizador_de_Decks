@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 12,
+  "total_turns": 13,
   "turns": [
     {
       "turn": 1,
@@ -1815,6 +1815,49 @@
           }
         }
       }
+    },
+    {
+      "turn": 13,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-083",
+          "to_name": "St. Jaygarcia Saturn",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-091",
+          "to_name": "St. Marcus Mars",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Marcus Mars",
+          "attacker_code": "OP13-091",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

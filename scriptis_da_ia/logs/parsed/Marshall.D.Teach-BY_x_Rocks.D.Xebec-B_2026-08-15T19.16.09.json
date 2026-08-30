@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -1739,6 +1739,42 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-054",
+          "to_name": "Stussy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Stussy",
+          "attacker_code": "OP17-054",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

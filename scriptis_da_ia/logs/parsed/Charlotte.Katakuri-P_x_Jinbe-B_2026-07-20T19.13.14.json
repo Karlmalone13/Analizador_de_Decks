@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1366,6 +1366,94 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-049",
+          "card_name": "Jinbe",
+          "effects": [
+            "Rest 2 Don",
+            "Draw 2 Card",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-040",
+          "card_name": "Jinbe",
+          "effects": [
+            "Trash Boa Hancock [\"EB03-026\">EB03-026]",
+            "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]",
+            "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]",
+            "Trash Jinbe [\"OP14-049\">OP14-049]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-049\">OP14-049]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-049\">OP14-049]",
+            "Trash Jinbe [\"OP14-049\">OP14-049]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Trash Crocodile [\"OP07-040\">OP07-040]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Trash Sanji [\"OP15-047\">OP15-047]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP07-045",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP11-067",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jozu",
+          "attacker_code": "OP08-047",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-005",
+            "ST34-005"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-049",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

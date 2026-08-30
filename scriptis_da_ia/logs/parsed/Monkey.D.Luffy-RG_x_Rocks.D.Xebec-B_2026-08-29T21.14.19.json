@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1211,6 +1211,94 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Kyo",
+          "attacker_code": "OP17-045",
+          "target": "Nami [\"EB02-017\">EB02-017]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP14-031",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP17-040",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-118",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Draw 1 Card",
+            "Deploy Edward Newgate [\"OP17-040\">OP17-040]",
+            "Deploy Stussy [\"OP17-054\">OP17-054]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-040",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Gloriosa [\"OP17-046\">OP17-046]",
+            "Buff Rocks D. Xebec [\"OP17-039\">OP17-039] 3000 for the Combat",
+            "Trash Ganzui [\"OP17-043\">OP17-043]",
+            "Buff Rocks D. Xebec [\"OP17-039\">OP17-039] 3000 for the Combat"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "Nami [\"EB02-017\">EB02-017] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Shiki [\"OP17-048\">OP17-048]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

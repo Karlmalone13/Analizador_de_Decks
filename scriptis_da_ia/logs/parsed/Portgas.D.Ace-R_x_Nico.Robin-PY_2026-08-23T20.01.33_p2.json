@@ -18,7 +18,7 @@
     },
     "goes_first": "BigRato#5650"
   },
-  "total_turns": 8,
+  "total_turns": 9,
   "turns": [
     {
       "turn": 1,
@@ -943,6 +943,70 @@
           }
         }
       }
+    },
+    {
+      "turn": 9,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Rakuyo",
+        "code": "OP17-016"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-005",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Grant Portgas D. Ace [\"OP16-001\">OP16-001] 3000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB01-002",
+          "to_name": "Izou",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "EB01-002",
+          "target": "Nico Robin [\"OP09-062\">OP09-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kingdew",
+          "attacker_code": "OP17-006",
+          "target": "Nico Robin [\"OP09-062\">OP09-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Nico Robin [\"OP09-062\">OP09-062]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

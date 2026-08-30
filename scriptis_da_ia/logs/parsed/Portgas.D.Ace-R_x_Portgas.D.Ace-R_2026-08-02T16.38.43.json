@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1150,6 +1150,81 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-118",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "<b>Reveal and Draw Marco [\"OP16-014\">OP16-014]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-005",
+          "to_name": "Sanji",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-005",
+          "to_name": "Sanji",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji",
+          "attacker_code": "OP10-005",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP16-017",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-005",
+          "to_name": "Sanji",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-005",
+          "to_name": "Sanji",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji",
+          "attacker_code": "OP10-005",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP16-003",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

@@ -18,7 +18,7 @@
     },
     "goes_first": "projj#37649"
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1001,6 +1001,87 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Charlotte Brulee",
+        "code": "OP17-108"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Perospero",
+          "attacker_code": "OP03-113",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-112",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Draw 1 Card",
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Maser Saber [\"OP17-117\">OP17-117]",
+            "Trash There's Still A Code Of Honor? [\"OP17-115\">OP17-115]",
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Cracker",
+          "attacker_code": "OP17-104",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP17-103",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "OP17-109",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

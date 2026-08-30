@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 12,
+  "total_turns": 13,
   "turns": [
     {
       "turn": 1,
@@ -1660,6 +1660,106 @@
           }
         }
       }
+    },
+    {
+      "turn": 13,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP08-074",
+          "to_name": "Black Maria",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP08-074",
+          "to_name": "Black Maria",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP08-074",
+          "to_name": "Black Maria",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Black Maria",
+          "attacker_code": "OP08-074",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP09-093",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST04-003",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-003",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP09-093",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB02-035",
+          "to_name": "Sanji & Pudding",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB02-035",
+          "to_name": "Sanji & Pudding",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji & Pudding",
+          "attacker_code": "EB02-035",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "ST04-001",
+          "to_name": "Kaido",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-109"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

@@ -28,6 +28,97 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-30 (739) - **A REGUA ESTAVA TORTA: o parser descartava o ULTIMO TURNO de toda partida.** 24,6% das anexacoes de DON e 15,2% dos ataques do humano nunca existiram no corpus -- e o desvio de `attack` que eu estava consertando era ARTEFATO
+
+**Pedido do usuario:** "vai atras do attach_don na funcao de valor".
+Fui -- e antes de tocar em qualquer peso, a conferencia da regua achou
+isto.
+
+### 1. O que disparou a conferencia
+
+Um comentario no proprio `diag_sequencia.py` (bloco 732) registra que o
+numero "motor abre com attach_don 26,8% x 7,8% do humano" **ja tinha
+sido, uma vez, artefato de populacao desigual**. Com `REPROVADOS.md`
+tendo uma secao inteira de "a regua estava torta, nao o motor", conferir
+antes de mexer no valor era obrigatorio.
+
+### 2. O bug
+
+`parse_combat_log.py` so emitia um bloco de turno quando casava `RE_END`
+(marcador de fim de turno). **O turno FINAL da partida nao tem esse
+marcador** -- o log acaba em `GameOver` -- entao `current_lines` era
+descartado em silencio.
+
+Nao e caso de borda: o turno final e o turno LETAL, onde se ataca e se
+despeja DON em vez de desenvolver board. A perda e **enviesada por tipo
+de acao**. Medido no banco inteiro ANTES do conserto:
+
+| acao | no log cru | parseado | perdido |
+|---|---|---|---|
+| `attach_don` | 1328 | 1001 | **-24,6%** |
+| `attack` | 2492 | 2114 | **-15,2%** |
+| `play` | 1461 | 1417 | -3,0% |
+
+98 logs afetados, 327 anexacoes perdidas, **100% delas nos ultimos 20%
+do arquivo e ZERO fora do fim** -- foi o que identificou a causa.
+
+### 3. Conserto e reconstrucao do banco
+
+Descarrega o bloco pendente no fim do arquivo (generico: nao depende de
+`GameOver` nem de qual jogador e). Banco inteiro reparseado com
+`reparse_banco.py` (script novo, permanente -- qualquer correcao futura
+na EXTRACAO exige reconstruir tudo, senao convivem logs parseados por
+versoes diferentes do parser):
+
+    134 logs, +130 turnos
+    attach_don  +33,0%   attack +18,3%   activate +7,6%   play +2,9%
+
+`human_patterns.json` regenerado em cima do corpus corrigido (passo
+obrigatorio do `CLAUDE.md`, e agora duplamente: a calibragem estava
+treinada num corpus sem 1/3 das anexacoes). `smoke_fast.py` passa.
+
+### 4. O que isso INVALIDA do bloco 738 (mesmo dia)
+
+| 1a acao do turno | regua torta | **regua consertada** | motor |
+|---|---|---|---|
+| `play` | 55,8% | 53,8% | 38,8% |
+| `activate` | 15,5% | 14,0% | 11,8% |
+| `attach_don` | 7,8% | **9,5%** | 26,2% |
+| `attack` | 20,5% | **22,2%** | **23,0%** |
+
+**O desvio de `attack` NAO EXISTE.** Humano 22,2%, motor 23,0% -- na
+pratica empate. O bloco 738 inteiro tratou "motor ataca demais (25,0% x
+20,5%)" como problema, e depois tratou "motor ataca de menos (11,2% x
+20,5%)" como regressao da banda. **Os dois eram a mesma regua torta.** A
+consequencia pratica: a supressao de `attack` causada pela banda era
+PIOR do que eu reportei, nao melhor.
+
+### 5. O que SOBREVIVE, e mais nitido agora
+
+`attach_don` como 1a acao: **26,2% do motor contra 9,5% do humano**
+(16,7pp). E o unico desvio grande que resiste a regua corrigida.
+
+E aparece um padrao que a regua torta escondia:
+**`attach_don -> attach_don` e humano 0,32 contra motor 0,20** (0,7x).
+Junto com o de cima, descreve o comportamento humano com precisao:
+**o humano anexa TARDE e EM RAJADA; o motor espalha anexacao CEDO.**
+Nao e "anexa demais" -- e "anexa na hora errada, picado".
+
+### 6. Efeito no numero
+
+- Reparse do corpus: LCS 47,8% -> 47,7% (denominador cresceu junto).
+- `human_patterns.json` regenerado: LCS 47,7% -> **47,4%**. Plano.
+
+Nenhum dos dois era pra mover o motor -- consertam a REGUA e a
+calibragem. O valor esta em medir a coisa certa daqui pra frente.
+
+### 7. Proximo alvo, agora com mira limpa
+
+`attach_don` de abertura na funcao de valor, sabendo que o alvo real e
+**agrupar a anexacao no fim do turno**, nao reduzi-la. Pesos estao
+REPROVADOS (`REPROVADOS.md`: girar os 17 da de +1,9pp a -2,7pp, ruido;
+"o proximo suspeito sao os TERMOS, nao os PESOS").
+
 ## 2026-08-30 (738) - **O desempate posicional existia e estava MORTO** (`TIEBREAK_EPS=1e-9`). Ressuscitado com banda estatistica: `play` de abertura +13pp, mas **LCS teto em +1,6pp** -- o `attach_don` de abertura NAO e empate, e a funcao de valor
 
 **Pedido do usuario, em sequencia:** "roda a medicao antes/depois" ->

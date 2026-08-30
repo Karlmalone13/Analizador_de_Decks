@@ -16,9 +16,9 @@
         }
       }
     },
-    "goes_first": null
+    "goes_first": "Karlmalone#2854"
   },
-  "total_turns": 15,
+  "total_turns": 16,
   "turns": [
     {
       "turn": 1,
@@ -2126,6 +2126,79 @@
           }
         }
       }
+    },
+    {
+      "turn": 16,
+      "player": "AcesWife#7970",
+      "card_drawn": {
+        "name": "Charlotte Pudding",
+        "code": "OP17-109"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-099",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-099",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Trash Charlotte Perospero [\"OP17-110\">OP17-110]",
+            "Trash Charlotte Oven [\"OP17-102\">OP17-102]",
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Smoothie",
+          "attacker_code": "OP17-106",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-118"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "OP17-109",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-112",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Draw 1 Card",
+            "Send 1 Life to Hand"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "The 3 Sweet Commanders",
+          "attacker_code": "OP17-114",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

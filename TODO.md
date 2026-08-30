@@ -2,6 +2,24 @@
 
 **Última atualização:** 30 de agosto de 2026
 
+> 30/08/2026 (bloco 739): **A REGUA ESTAVA TORTA.** `parse_combat_log.py`
+> descartava em silencio o **ultimo turno de toda partida** (so emitia
+> bloco ao casar o marcador de fim de turno; o turno final acaba em
+> `GameOver`). Como o turno final e o letal, a perda era enviesada:
+> **-24,6% das anexacoes de DON**, **-15,2% dos ataques**, -3,0% dos
+> `play`, em 98 logs. Consertado de forma generica; banco inteiro
+> reparseado (`reparse_banco.py`, script novo) e `human_patterns.json`
+> regenerado em cima do corpus corrigido.
+> **Consequencia:** o desvio de `attack` **nao existe** -- humano 22,2%
+> x motor 23,0%. O bloco 738 tratou esse desvio como problema em duas
+> direcoes opostas no mesmo dia; era a regua nas duas vezes.
+> **O que sobrevive:** `attach_don` de abertura, 26,2% x 9,5% (16,7pp),
+> e um padrao que a regua escondia -- `attach_don -> attach_don` humano
+> 0,32 x motor 0,20. O humano anexa **tarde e em rajada**; o motor
+> **espalha cedo**. O alvo e AGRUPAR a anexacao, nao reduzi-la.
+> Efeito no numero: LCS 47,8% -> 47,4% (plano; consertam regua e
+> calibragem, nao o motor).
+
 > 30/08/2026 (bloco 738): **o desempate posicional dos blocos 651/663
 > estava MORTO** -- preso atras de `TIEBREAK_EPS = 1e-9`, que media de
 > Monte Carlo nunca alcanca. Criado `TIEBREAK_BANDA_Z` (default **0.0 =

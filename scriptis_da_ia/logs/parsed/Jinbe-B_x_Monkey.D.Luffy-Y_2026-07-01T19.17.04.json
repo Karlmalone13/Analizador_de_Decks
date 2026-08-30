@@ -18,7 +18,7 @@
     },
     "goes_first": "DucK#6354"
   },
-  "total_turns": 10,
+  "total_turns": 11,
   "turns": [
     {
       "turn": 1,
@@ -46,7 +46,13 @@
           ],
           "board": [],
           "trash": [],
-          "life": 5
+          "life": 5,
+          "deck": [
+            "OP07-040",
+            "OP07-040",
+            "OP07-057",
+            "OP15-047"
+          ]
         },
         "DucK#6354": {
           "hand": [
@@ -61,6 +67,14 @@
             "OP13-113"
           ],
           "life": 6,
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP13-113": 1
           }
@@ -178,6 +192,21 @@
             "OP07-045"
           ],
           "life": 5,
+          "deck": [
+            "OP07-040",
+            "OP07-040",
+            "OP07-057",
+            "OP15-047"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP07-046": 1,
             "OP14-042": 1
@@ -197,6 +226,16 @@
             "OP16-107"
           ],
           "life": 6,
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP16-107": 1
           }
@@ -961,6 +1000,68 @@
           }
         }
       }
+    },
+    {
+      "turn": 11,
+      "player": "DucK#6354",
+      "card_drawn": {
+        "name": "Nami",
+        "code": "EB03-053"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-108",
+          "card_name": "Jewelry Bonney",
+          "effects": [
+            "Give Jewelry Bonney [\"OP13-108\">OP13-108] Rush",
+            "Send 1 Life to Hand"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-108",
+          "to_name": "Jewelry Bonney",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP13-108",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-046",
+            "OP07-040",
+            "OP14-046",
+            "ST17-002"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST29-001",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST29-001",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Nico Robin [\"EB03-055\">EB03-055]"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

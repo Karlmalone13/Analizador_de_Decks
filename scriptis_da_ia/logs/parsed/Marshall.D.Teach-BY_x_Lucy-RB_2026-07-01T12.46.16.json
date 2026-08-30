@@ -16,9 +16,9 @@
         }
       }
     },
-    "goes_first": null
+    "goes_first": "kadomaru#5789"
   },
-  "total_turns": 22,
+  "total_turns": 23,
   "turns": [
     {
       "turn": 1,
@@ -61,6 +61,20 @@
             "OP15-053"
           ],
           "life": 4,
+          "deck": [
+            "OP06-058",
+            "OP10-059",
+            "OP10-059",
+            "OP10-060"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP15-053": 1
           }
@@ -2680,6 +2694,96 @@
           }
         }
       }
+    },
+    {
+      "turn": 23,
+      "player": "kadomaru#5789",
+      "card_drawn": {
+        "name": "Gol D. Roger",
+        "code": "OP09-118"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Cavendish",
+          "attacker_code": "OP10-045",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP10-045",
+          "card_name": "Cavendish",
+          "effects": [
+            "Draw 2 Card",
+            "Trash Leo [\"OP15-052\">OP15-052]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP09-118",
+          "card_name": "Gol D. Roger",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP15-046",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP15-046",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP09-093",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP15-046",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Lucy",
+          "attacker_code": "OP15-002",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-002",
+          "card_name": "Lucy",
+          "effects": [
+            "Trash Follow... me... and... I... will... guide... you... all...!!!! [\"OP10-059\">OP10-059]",
+            "Trash Just Watch Me... Ace!!! [\"OP15-021\">OP15-021]",
+            "Trash Just Watch Me... Ace!!! [\"OP15-021\">OP15-021]",
+            "Trash It's a Memento of Him, and No One Else Can Have It [\"OP15-054\">OP15-054]",
+            "Trash Bari-Bari Pistol [\"OP10-060\">OP10-060]",
+            "Buff Lucy [\"OP15-002\">OP15-002] 5000 for the Combat"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

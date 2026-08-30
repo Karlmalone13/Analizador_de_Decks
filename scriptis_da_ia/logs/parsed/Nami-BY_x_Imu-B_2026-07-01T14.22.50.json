@@ -18,7 +18,7 @@
     },
     "goes_first": "Karlmalone#2854"
   },
-  "total_turns": 17,
+  "total_turns": 18,
   "turns": [
     {
       "turn": 1,
@@ -106,6 +106,14 @@
             "OP13-080"
           ],
           "life": 4,
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP13-086": 1
           }
@@ -121,7 +129,13 @@
           ],
           "trash": [],
           "board": [],
-          "life": 4
+          "life": 4,
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ]
         }
       }
     },
@@ -282,6 +296,17 @@
             "OP16-056"
           ],
           "life": 4,
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP16-056": 1
           }
@@ -509,6 +534,21 @@
             "EB03-053"
           ],
           "life": 4,
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
           "rested": {
             "EB03-053": 1
           }
@@ -715,6 +755,23 @@
             "EB03-055"
           ],
           "life": 5,
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "EB03-053": 1,
             "EB03-055": 1
@@ -978,6 +1035,28 @@
             "OP13-042"
           ],
           "life": 5,
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
           "rested": {
             "EB03-055": 1,
             "EB04-058": 1,
@@ -1314,6 +1393,28 @@
             "OP13-042"
           ],
           "life": 5,
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
           "rested": {
             "EB03-055": 1,
             "OP13-042": 2
@@ -1683,6 +1784,26 @@
             "OP16-119"
           ],
           "life": 5,
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
           "rested": {
             "EB03-055": 1,
             "OP13-042": 2,
@@ -2066,6 +2187,25 @@
             "EB03-055"
           ],
           "life": 4,
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "EB03-055": 2,
             "OP13-042": 2,
@@ -2250,6 +2390,96 @@
           }
         }
       }
+    },
+    {
+      "turn": 18,
+      "player": "Jack#5459",
+      "card_drawn": {
+        "name": "Edward Newgate",
+        "code": "OP13-042"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB03-055",
+          "to_name": "Nico Robin",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Nico Robin",
+          "attacker_code": "EB03-055",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP13-089",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB03-055",
+          "to_name": "Nico Robin",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Nico Robin",
+          "attacker_code": "EB03-055",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-080"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-119",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-119",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP13-091",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP13-042",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP13-091",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP13-042",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-083",
+            "OP16-093",
+            "OP13-083",
+            "OP13-091"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

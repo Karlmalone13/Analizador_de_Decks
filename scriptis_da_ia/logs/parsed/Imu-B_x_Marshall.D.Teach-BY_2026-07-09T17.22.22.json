@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -1489,6 +1489,117 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-108",
+          "to_name": "Shiryu",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-108",
+          "to_name": "Shiryu",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-108",
+          "to_name": "Shiryu",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-084"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-093",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-093",
+          "to_name": "Marshall D. Teach",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-093",
+          "to_name": "Marshall D. Teach",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-093",
+          "to_name": "Marshall D. Teach",
+          "total": 4
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-093",
+          "to_name": "Marshall D. Teach",
+          "total": 5
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-093",
+          "to_name": "Marshall D. Teach",
+          "total": 6
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-093",
+          "to_name": "Marshall D. Teach",
+          "total": 7
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP09-093",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

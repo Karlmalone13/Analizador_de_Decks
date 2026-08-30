@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 13,
+  "total_turns": 14,
   "turns": [
     {
       "turn": 1,
@@ -1928,6 +1928,51 @@
           }
         }
       }
+    },
+    {
+      "turn": 14,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP17-040",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-055",
+          "card_name": "There's No Authority in the World",
+          "effects": [
+            "Rest 1 Don",
+            "Grant Unblockable to Rocks D. Xebec [\"OP17-118\">OP17-118]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 9,
+          "to": "OP17-118",
+          "to_name": "Rocks D. Xebec",
+          "total": 9
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-118",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1261,6 +1261,55 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Shiryu [\"OP16-108\">OP16-108]",
+            "<b>Reveal and Draw ZEHAHAHAHA [\"OP16-116\">OP16-116]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP16-116",
+          "card_name": "ZEHAHAHAHA",
+          "effects": [
+            "Rest 8 Don",
+            "Deploy Marshall D. Teach [\"OP09-093\">OP09-093]",
+            "Send 1 Life to Hand"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Nullify effects of Imu [\"OP13-079\">OP13-079]",
+            "St. Topman Warcury [\"OP13-089\">OP13-089] can't attack next turn",
+            "Nullify effects of St. Topman Warcury [\"OP13-089\">OP13-089] until next turn end!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-119",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

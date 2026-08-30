@@ -16,9 +16,9 @@
         }
       }
     },
-    "goes_first": null
+    "goes_first": "BigRato#5650"
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -87,7 +87,10 @@
           ],
           "board": [],
           "trash": [],
-          "life": 4
+          "life": 4,
+          "don_cost": [
+            "Don"
+          ]
         },
         "Pefforza#4027": {
           "hand": [
@@ -102,6 +105,18 @@
             "OP15-009"
           ],
           "life": 4,
+          "deck": [
+            "OP15-009",
+            "OP15-017",
+            "OP15-026",
+            "OP15-037"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
           "rested": {
             "OP15-009": 1
           }
@@ -224,7 +239,12 @@
             "OP16-107",
             "OP14-110"
           ],
-          "life": 5
+          "life": 5,
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ]
         },
         "Pefforza#4027": {
           "hand": [
@@ -390,7 +410,16 @@
             "OP16-108",
             "OP06-090"
           ],
-          "life": 4
+          "life": 4,
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
         },
         "Pefforza#4027": {
           "hand": [
@@ -810,6 +839,112 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Pefforza#4027",
+      "card_drawn": {
+        "name": "Pearl",
+        "code": "OP15-011"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-011",
+          "card_name": "Pearl",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": [
+            "Attach 1 Rested Don to Roronoa Zoro [\"OP15-113\">OP15-113]",
+            "Attach 1 Rested Don to Krieg [\"OP15-001\">OP15-001]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Roronoa Zoro [\"OP15-113\">OP15-113]",
+            "Attach 1 Rested Don to Krieg [\"OP15-001\">OP15-001]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Gin",
+          "attacker_code": "OP15-007",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP15-023",
+          "to_name": "Arlong",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Arlong",
+          "attacker_code": "OP15-023",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-102",
+            "OP15-084"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-008",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP15-017",
+          "to_name": "Morgan",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Morgan",
+          "attacker_code": "OP15-017",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-104",
+            "EB04-058"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

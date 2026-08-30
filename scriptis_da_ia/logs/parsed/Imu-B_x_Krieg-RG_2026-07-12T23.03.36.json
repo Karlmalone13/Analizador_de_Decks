@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1389,6 +1389,82 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Arlong",
+          "attacker_code": "OP15-023",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-092"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-012",
+          "to_name": "Buggy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Buggy",
+          "attacker_code": "OP15-012",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-089"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-093"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP15-025",
+          "to_name": "Kuro",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 7,
+          "to": "OP15-025",
+          "to_name": "Kuro",
+          "total": 9
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuro",
+          "attacker_code": "OP15-025",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

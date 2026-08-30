@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 8,
+  "total_turns": 9,
   "turns": [
     {
       "turn": 1,
@@ -1126,6 +1126,64 @@
           }
         }
       }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-112",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Rest Eustass \"Captain\" Kid [\"OP10-112\">OP10-112]",
+            "Trash 1 Life"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Killer",
+          "attacker_code": "ST36-002",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Killer",
+          "attacker_code": "ST36-002",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-083",
+            "OP13-089"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

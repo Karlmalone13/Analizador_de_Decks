@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1236,6 +1236,102 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "ST04-017",
+          "card_name": "Onigashima Island",
+          "effects": [
+            "Rest Onigashima Island [\"ST04-017\">ST04-017]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP08-074",
+          "to_name": "Black Maria",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP08-074",
+          "to_name": "Black Maria",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP08-074",
+          "to_name": "Black Maria",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Black Maria",
+          "attacker_code": "OP08-074",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-005"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji & Pudding",
+          "attacker_code": "EB02-035",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-003",
+            "ST18-001"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST04-001",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 7 Don",
+            "Trash 1 Life"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST04-001",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST04-001",
+          "to_name": "Kaido",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

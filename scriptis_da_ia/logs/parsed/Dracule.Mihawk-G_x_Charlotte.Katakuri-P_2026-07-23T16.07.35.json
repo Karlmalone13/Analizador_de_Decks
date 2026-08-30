@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 10,
+  "total_turns": 11,
   "turns": [
     {
       "turn": 1,
@@ -1344,6 +1344,140 @@
           }
         }
       }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-119",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-119",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Charlotte Katakuri [\"ST34-001\">ST34-001] can't be rested until next turn ends"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST32-002",
+          "to_name": "Kouzuki Oden",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST32-002",
+          "to_name": "Kouzuki Oden",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST32-002",
+          "to_name": "Kouzuki Oden",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kouzuki Oden",
+          "attacker_code": "ST32-002",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-033",
+          "to_name": "Perona",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-033",
+          "to_name": "Perona",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-033",
+          "to_name": "Perona",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-033",
+          "to_name": "Perona",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Perona",
+          "attacker_code": "OP14-033",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "PRB02-010",
+            "PRB02-010",
+            "PRB02-010",
+            "ST34-002",
+            "ST34-002",
+            "ST34-002"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

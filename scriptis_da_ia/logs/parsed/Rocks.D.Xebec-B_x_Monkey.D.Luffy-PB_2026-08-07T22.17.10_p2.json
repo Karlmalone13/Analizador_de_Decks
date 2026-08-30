@@ -16,9 +16,9 @@
         }
       }
     },
-    "goes_first": null
+    "goes_first": "Karlmalone#2854"
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1008,6 +1008,65 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Drocks99#7236",
+      "card_drawn": {
+        "name": "Roronoa Zoro",
+        "code": "OP17-095"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "PRB02-012",
+          "card_name": "Nami",
+          "effects": [
+            "<b>Reveal and Draw Gum Gum Giant [\"OP09-078\">OP09-078]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-086",
+          "card_name": "Nami",
+          "effects": [
+            "Deployed Monkey D. Luffy [\"OP15-092\">OP15-092] from Trash",
+            "Give Monkey D. Luffy [\"OP15-092\">OP15-092] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP09-061",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Pirate Docking 6",
+          "attacker_code": "OP15-088",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Nami",
+          "attacker_code": "OP15-086",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

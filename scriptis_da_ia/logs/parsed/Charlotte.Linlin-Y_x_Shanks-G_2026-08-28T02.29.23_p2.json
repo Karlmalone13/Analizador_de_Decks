@@ -18,7 +18,7 @@
     },
     "goes_first": "StrawHatMatt#6200"
   },
-  "total_turns": 16,
+  "total_turns": 17,
   "turns": [
     {
       "turn": 1,
@@ -2182,6 +2182,17 @@
           }
         }
       }
+    },
+    {
+      "turn": 17,
+      "player": "StrawHatMatt#6200",
+      "card_drawn": {
+        "name": "Rockstar",
+        "code": "OP17-034"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {}
     }
   ]
 }

@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -1677,6 +1677,148 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST06-006",
+          "to_name": "Tashigi",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Tashigi",
+          "attacker_code": "ST06-006",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-002"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST19-003",
+          "to_name": "Tashigi",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST19-003",
+          "to_name": "Tashigi",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-093",
+          "to_name": "Smoker",
+          "total": 1
+        },
+        {
+          "type": "activate",
+          "card": "OP02-093",
+          "card_name": "Smoker",
+          "effects": [
+            "Charlotte Pudding [\"OP11-070\">OP11-070] Cost -1",
+            "Buff Self 1000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Tashigi",
+          "attacker_code": "ST19-003",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST19-002",
+          "to_name": "Sengoku",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST19-002",
+          "to_name": "Sengoku",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST19-002",
+          "to_name": "Sengoku",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST19-002",
+          "to_name": "Sengoku",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Sengoku",
+          "attacker_code": "ST19-002",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-003"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-093",
+          "to_name": "Smoker",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP02-093",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB02-044",
+          "to_name": "Sengoku",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Sengoku",
+          "attacker_code": "EB02-044",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

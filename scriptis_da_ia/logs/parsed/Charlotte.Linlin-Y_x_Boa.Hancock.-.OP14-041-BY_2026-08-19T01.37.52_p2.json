@@ -18,7 +18,7 @@
     },
     "goes_first": "BigRato#5650"
   },
-  "total_turns": 7,
+  "total_turns": 8,
   "turns": [
     {
       "turn": 1,
@@ -726,6 +726,87 @@
           }
         }
       }
+    },
+    {
+      "turn": 8,
+      "player": "Eileen#5972",
+      "card_drawn": {
+        "name": "Bartholomew Kuma",
+        "code": "OP12-119"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-054",
+          "card_name": "Nami",
+          "effects": [
+            "Draw 3 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shakuyaku",
+          "attacker_code": "OP14-107",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-114"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Boa Marigold",
+          "attacker_code": "OP16-113",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "OP15-113",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST20-003"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "OP15-113",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP14-041",
+          "to_name": "Boa Hancock",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Boa Hancock",
+          "attacker_code": "OP14-041",
+          "target": "Charlotte Linlin [\"OP17-099\">OP17-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

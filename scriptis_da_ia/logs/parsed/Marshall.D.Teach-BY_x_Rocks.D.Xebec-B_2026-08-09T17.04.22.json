@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -1467,6 +1467,82 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Stussy",
+          "attacker_code": "OP17-054",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-112"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP17-040",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Kyo [\"OP17-045\">OP17-045]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-040",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Trash Ganzui [\"OP17-043\">OP17-043]",
+            "Buff Rocks D. Xebec [\"OP17-039\">OP17-039] 3000 for the Combat"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 10,
+          "to": "OP17-052",
+          "to_name": "Don Marlon",
+          "total": 10
+        },
+        {
+          "type": "attack",
+          "attacker": "Don Marlon",
+          "attacker_code": "OP17-052",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

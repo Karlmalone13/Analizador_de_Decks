@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 8,
+  "total_turns": 9,
   "turns": [
     {
       "turn": 1,
@@ -1058,6 +1058,79 @@
           }
         }
       }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-003",
+          "card_name": "Edward Newgate",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 2,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Edward Newgate [\"OP16-003\">OP16-003] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP16-015",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-016",
+            "OP16-118"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "EB01-002",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP16-003",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

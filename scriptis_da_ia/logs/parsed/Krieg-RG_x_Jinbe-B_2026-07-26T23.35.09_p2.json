@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1216,6 +1216,110 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Boa Hancock",
+          "attacker_code": "OP07-051",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB01-023",
+          "to_name": "Edward Weevil",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB01-023",
+          "to_name": "Edward Weevil",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Weevil",
+          "attacker_code": "EB01-023",
+          "target": "Arlong [\"OP15-023\">OP15-023]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-045",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-045",
+          "to_name": "Jinbe",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-045",
+          "to_name": "Jinbe",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP07-045",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-009",
+            "OP15-023"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "ST17-002",
+          "to_name": "Trafalgar Law",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "ST17-002",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

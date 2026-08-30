@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 13,
+  "total_turns": 14,
   "turns": [
     {
       "turn": 1,
@@ -2066,6 +2066,32 @@
           }
         }
       }
+    },
+    {
+      "turn": 14,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 10,
+          "to": "OP14-120",
+          "to_name": "Crocodile",
+          "total": 10
+        },
+        {
+          "type": "attack",
+          "attacker": "Crocodile",
+          "attacker_code": "OP14-120",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

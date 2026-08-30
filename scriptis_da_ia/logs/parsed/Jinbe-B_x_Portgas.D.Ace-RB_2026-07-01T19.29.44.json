@@ -16,9 +16,9 @@
         }
       }
     },
-    "goes_first": null
+    "goes_first": "BigRato#5650"
   },
-  "total_turns": 12,
+  "total_turns": 13,
   "turns": [
     {
       "turn": 1,
@@ -90,7 +90,10 @@
           ],
           "board": [],
           "trash": [],
-          "life": 5
+          "life": 5,
+          "don_cost": [
+            "Don"
+          ]
         },
         "Metalbeard#6700": {
           "hand": [
@@ -108,6 +111,12 @@
             "OP13-043"
           ],
           "life": 3,
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
           "rested": {
             "OP13-043": 1
           }
@@ -1136,6 +1145,126 @@
           }
         }
       }
+    },
+    {
+      "turn": 13,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Sanji",
+        "code": "OP15-047"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP08-047",
+          "card_name": "Jozu",
+          "effects": [
+            "Return Leo [\"OP15-052\">OP15-052] to Hand",
+            "Send Izou [\"ST22-002\">ST22-002] to Hand"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-040",
+          "card_name": "Jinbe",
+          "effects": [
+            "Trash Sanji [\"OP15-047\">OP15-047]",
+            "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]",
+            "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]",
+            "Trash Sanji [\"OP15-047\">OP15-047]",
+            "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]",
+            "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]",
+            "Trash Leo [\"OP15-052\">OP15-052]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-049",
+          "card_name": "Jinbe",
+          "effects": [
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP07-045",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-051",
+          "to_name": "Boa Hancock",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Boa Hancock",
+          "attacker_code": "OP07-051",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-004"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-049",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST22-002",
+            "OP16-004"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

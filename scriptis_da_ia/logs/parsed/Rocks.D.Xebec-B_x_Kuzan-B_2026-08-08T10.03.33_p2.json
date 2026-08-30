@@ -18,7 +18,7 @@
     },
     "goes_first": "Karlmalone#2854"
   },
-  "total_turns": 14,
+  "total_turns": 15,
   "turns": [
     {
       "turn": 1,
@@ -1903,6 +1903,106 @@
           }
         }
       }
+    },
+    {
+      "turn": 15,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Kaido",
+        "code": "OP17-042"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP17-056",
+          "card_name": "Rocks Pirates",
+          "effects": [
+            "Rest 5 Don",
+            "Send Borsalino [\"ST33-004\">ST33-004] to Hand"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Stussy",
+          "attacker_code": "OP17-054",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-051"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-051",
+            "ST33-003",
+            "ST33-001"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "ST33-004",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Fullalead [\"OP17-057\">OP17-057]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-118",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-118",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-118",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

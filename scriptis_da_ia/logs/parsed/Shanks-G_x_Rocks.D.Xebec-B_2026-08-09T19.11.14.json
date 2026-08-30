@@ -18,7 +18,7 @@
     },
     "goes_first": "TomDBomb#22755"
   },
-  "total_turns": 15,
+  "total_turns": 16,
   "turns": [
     {
       "turn": 1,
@@ -2096,6 +2096,56 @@
           }
         }
       }
+    },
+    {
+      "turn": 16,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "There's No Authority in the World",
+        "code": "OP17-055"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP17-055",
+          "card_name": "There's No Authority in the World",
+          "effects": [
+            "Rest 1 Don",
+            "Grant Unblockable to Rocks D. Xebec [\"OP17-118\">OP17-118]",
+            "Rest 1 Don",
+            "Grant Unblockable to Rocks D. Xebec [\"OP17-118\">OP17-118]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-118",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 8,
+          "to": "OP17-118",
+          "to_name": "Rocks D. Xebec",
+          "total": 8
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-118",
+          "target": "Shanks [\"OP17-020\">OP17-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

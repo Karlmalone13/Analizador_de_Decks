@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -1491,6 +1491,87 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP06-035",
+          "card_name": "Hody Jones",
+          "effects": [
+            "Rest Kuro [\"OP15-025\">OP15-025]",
+            "Rest Buggy [\"OP15-012\">OP15-012]",
+            "Takes Top Life"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP08-023",
+          "to_name": "Carrot",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Carrot",
+          "attacker_code": "OP08-023",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-028",
+            "OP15-026"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP08-023",
+          "card_name": "Carrot",
+          "effects": [
+            "Arlong [\"OP15-023\">OP15-023] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP01-051",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP01-051",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

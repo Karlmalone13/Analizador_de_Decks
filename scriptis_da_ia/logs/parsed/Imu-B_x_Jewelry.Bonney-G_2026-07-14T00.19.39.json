@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1328,6 +1328,69 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-026",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-080",
+            "OP13-080"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Hody Jones",
+          "attacker_code": "OP06-035",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1148,6 +1148,108 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-049",
+          "to_name": "Charlotte Linlin",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "EB04-058",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-054",
+          "to_name": "Stussy",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-054",
+          "to_name": "Stussy",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-054",
+          "to_name": "Stussy",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Stussy",
+          "attacker_code": "OP17-054",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 6,
+          "to": "OP17-040",
+          "to_name": "Edward Newgate",
+          "total": 6
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP17-040",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Gloriosa [\"OP17-046\">OP17-046]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-040",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Trash Edward Newgate [\"OP17-040\">OP17-040]",
+            "Buff Rocks D. Xebec [\"OP17-039\">OP17-039] 3000 for the Combat"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

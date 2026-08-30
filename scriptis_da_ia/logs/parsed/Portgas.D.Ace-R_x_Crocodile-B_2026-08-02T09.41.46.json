@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -1662,6 +1662,81 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Mr. 2 Bon Clay (Bentham)",
+          "attacker_code": "OP14-091",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP10-005"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Crocodile",
+          "attacker_code": "OP14-079",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP15-092",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 8,
+          "to": "OP14-087",
+          "to_name": "Miss Valentine (Mikita)",
+          "total": 8
+        },
+        {
+          "type": "attack",
+          "attacker": "Miss Valentine (Mikita)",
+          "attacker_code": "OP14-087",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP14-120",
+          "to_name": "Crocodile",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Crocodile",
+          "attacker_code": "OP14-120",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

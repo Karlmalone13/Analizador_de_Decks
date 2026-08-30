@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 13,
+  "total_turns": 14,
   "turns": [
     {
       "turn": 1,
@@ -2226,6 +2226,56 @@
           }
         }
       }
+    },
+    {
+      "turn": 14,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "St. Shepherd Ju Peter",
+          "attacker_code": "OP13-084",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-079",
+          "to_name": "Imu",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-079",
+          "to_name": "Imu",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 8,
+          "to": "OP13-079",
+          "to_name": "Imu",
+          "total": 10
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

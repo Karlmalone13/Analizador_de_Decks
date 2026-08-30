@@ -16,9 +16,9 @@
         }
       }
     },
-    "goes_first": null
+    "goes_first": "Karlmalone#2854"
   },
-  "total_turns": 12,
+  "total_turns": 13,
   "turns": [
     {
       "turn": 1,
@@ -98,7 +98,15 @@
           "trash": [
             "OP15-037"
           ],
-          "life": 4
+          "life": 4,
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
         },
         "Shichibukai#4335": {
           "hand": [
@@ -114,6 +122,15 @@
             "OP09-095"
           ],
           "life": 5,
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP09-095": 1
           }
@@ -245,6 +262,17 @@
             "OP10-086"
           ],
           "life": 5,
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP10-086": 1
           }
@@ -1107,6 +1135,26 @@
           }
         }
       }
+    },
+    {
+      "turn": 13,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Gin",
+        "code": "OP15-007"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-008",
+          "card_name": "Krieg",
+          "effects": [
+            "Attach 1 Rested Don to Kuzan [\"ST27-003\">ST27-003]"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

@@ -16,9 +16,9 @@
         }
       }
     },
-    "goes_first": null
+    "goes_first": "BigRato#5650"
   },
-  "total_turns": 12,
+  "total_turns": 13,
   "turns": [
     {
       "turn": 1,
@@ -107,6 +107,19 @@
           ],
           "trash": [],
           "life": 5,
+          "deck": [
+            "OP06-058",
+            "OP07-051",
+            "OP15-052"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP07-046": 1
           }
@@ -127,6 +140,19 @@
             "OP06-050"
           ],
           "life": 4,
+          "deck": [
+            "OP05-042",
+            "PRB02-008"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP06-050": 1
           }
@@ -308,6 +334,20 @@
             "PRB02-008"
           ],
           "life": 3,
+          "deck": [
+            "OP05-042"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
           "rested": {
             "OP06-050": 1,
             "PRB02-008": 1
@@ -471,6 +511,19 @@
             "PRB02-008"
           ],
           "life": 3,
+          "deck": [
+            "OP05-042"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
           "rested": {
             "PRB02-008": 1
           }
@@ -894,6 +947,27 @@
             "OP08-082"
           ],
           "life": 2,
+          "deck": [
+            "OP05-042"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
           "rested": {
             "ST06-008": 1,
             "PRB02-008": 1,
@@ -1161,6 +1235,72 @@
           }
         }
       }
+    },
+    {
+      "turn": 13,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Leo",
+        "code": "OP15-052"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-049",
+          "card_name": "Jinbe",
+          "effects": [
+            "Rest 2 Don",
+            "Draw 2 Card",
+            "Send Rebecca [\"OP05-091\">OP05-091] to Hand",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-040",
+          "card_name": "Jinbe",
+          "effects": [
+            "Trash Perfume Femur [\"OP07-057\">OP07-057]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Trash Sengoku [\"OP07-046\">OP07-046]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Trash Trafalgar Law [\"ST17-002\">ST17-002]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-049\">OP14-049]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-049\">OP14-049]",
+            "Trash Jinbe [\"OP07-045\">OP07-045]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-049\">OP14-049]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-049\">OP14-049]",
+            "Trash Trafalgar Law [\"ST17-002\">ST17-002]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Sakazuki [\"OP05-041\">OP05-041]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-090",
+            "OP12-090",
+            "OP05-042"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

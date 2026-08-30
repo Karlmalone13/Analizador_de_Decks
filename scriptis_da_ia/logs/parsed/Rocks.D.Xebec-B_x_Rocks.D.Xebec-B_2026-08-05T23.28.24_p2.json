@@ -16,9 +16,9 @@
         }
       }
     },
-    "goes_first": null
+    "goes_first": "Vius2#16248"
   },
-  "total_turns": 17,
+  "total_turns": 18,
   "turns": [
     {
       "turn": 1,
@@ -2491,6 +2491,35 @@
           }
         }
       }
+    },
+    {
+      "turn": 18,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Charlotte Linlin",
+        "code": "OP17-049"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP17-040",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "OP17-049",
+          "to_name": "Charlotte Linlin",
+          "total": 5
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

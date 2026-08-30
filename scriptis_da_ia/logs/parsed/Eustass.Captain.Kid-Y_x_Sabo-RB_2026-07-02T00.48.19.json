@@ -18,7 +18,7 @@
     },
     "goes_first": "Karlmalone#2854"
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -104,7 +104,20 @@
           "trash": [
             "OP13-116"
           ],
-          "life": 5
+          "life": 5,
+          "deck": [
+            "EB03-062",
+            "OP10-112",
+            "OP10-116"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
         },
         "TaxiCab#9855": {
           "hand": [
@@ -456,6 +469,19 @@
             "OP10-114"
           ],
           "life": 4,
+          "deck": [
+            "OP10-112",
+            "OP10-116"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
           "rested": {
             "OP11-101": 1
           }
@@ -1134,6 +1160,110 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "TaxiCab#9855",
+      "card_drawn": {
+        "name": "Koala",
+        "code": "EB03-042"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-004",
+          "to_name": "Sabo",
+          "total": 1
+        },
+        {
+          "type": "activate",
+          "card": "OP05-021",
+          "card_name": "Revolutionary Army General Headquarters",
+          "effects": [
+            "<b>Reveal and Draw Morley [\"OP12-093\">OP12-093]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP05-005",
+          "to_name": "Karasu",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Karasu",
+          "attacker_code": "OP05-005",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP05-005",
+          "card_name": "Karasu",
+          "effects": [
+            "Give Eustass \"Captain\" Kid [\"OP10-099\">OP10-099] -1000",
+            "Give Eustass \"Captain\" Kid [\"OP10-099\">OP10-099] -1000"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP07-015",
+          "card_name": "Monkey D. Dragon",
+          "effects": [
+            "Attach 1 Rested Don to Karasu [\"OP05-005\">OP05-005]",
+            "Attach 1 Rested Don to Karasu [\"OP05-005\">OP05-005]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Karasu",
+          "attacker_code": "OP05-005",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP10-119",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "P-105",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "P-088"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "P-105",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

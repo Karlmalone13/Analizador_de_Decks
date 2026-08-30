@@ -2,23 +2,23 @@
   "meta": {
     "players": {
       "p1": {
-        "name": "Bruhh#3997",
+        "name": "BigRato#5650",
         "leader": {
-          "name": "Donquixote Doflamingo",
-          "code": "OP14-060"
+          "name": "OP17-058",
+          "code": "OP17-058"
         }
       },
       "p2": {
-        "name": "BigRato#5650",
+        "name": "Bruhh#3997",
         "leader": {
-          "name": "Kaido",
-          "code": "OP17-058"
+          "name": "Donquixote Doflamingo - OP14-060",
+          "code": "OP14-060"
         }
       }
     },
     "goes_first": "BigRato#5650"
   },
-  "total_turns": 13,
+  "total_turns": 14,
   "turns": [
     {
       "turn": 1,
@@ -1506,6 +1506,67 @@
           }
         }
       }
+    },
+    {
+      "turn": 14,
+      "player": "Bruhh#3997",
+      "card_drawn": {
+        "name": "Monet",
+        "code": "OP14-074"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP14-069",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-071",
+          "to_name": "Donquixote Doflamingo",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP10-071",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-073",
+            "OP17-074"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP14-060",
+          "to_name": "Donquixote Doflamingo",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP14-060",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": [
+            "ST18-001"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

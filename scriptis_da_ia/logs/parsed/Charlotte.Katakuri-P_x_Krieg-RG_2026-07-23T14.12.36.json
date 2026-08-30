@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -1706,6 +1706,65 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Charlotte Katakuri [\"OP11-067\">OP11-067]",
+            "Attach 1 Rested Don to Charlotte Katakuri [\"OP11-067\">OP11-067]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": [
+            "Attach 1 Rested Don to Charlotte Cracker [\"ST34-002\">ST34-002]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Charlotte Katakuri [\"OP11-067\">OP11-067]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Zeff",
+          "attacker_code": "EB04-004",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "EB04-004",
+          "card_name": "Zeff",
+          "effects": [
+            "Grant Krieg [\"OP15-001\">OP15-001] 2000 until opponent's next turn end"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

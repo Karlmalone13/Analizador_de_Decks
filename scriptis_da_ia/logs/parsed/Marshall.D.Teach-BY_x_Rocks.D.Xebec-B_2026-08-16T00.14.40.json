@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 10,
+  "total_turns": 11,
   "turns": [
     {
       "turn": 1,
@@ -1428,6 +1428,70 @@
           }
         }
       }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP16-116",
+          "card_name": "ZEHAHAHAHA",
+          "effects": [
+            "Rest 8 Don",
+            "Deploy Marshall D. Teach [\"OP09-093\">OP09-093]",
+            "Send 1 Life to Hand"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Nullify effects of Rocks D. Xebec [\"OP17-039\">OP17-039]",
+            "Captain John [\"OP17-044\">OP17-044] can't attack next turn",
+            "Nullify effects of Captain John [\"OP17-044\">OP17-044] until next turn end!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP17-046",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-104",
+          "to_name": "Catarina Devon",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Catarina Devon",
+          "attacker_code": "OP16-104",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-104",
+          "card_name": "Catarina Devon",
+          "effects": [
+            "Buff Self 3000"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

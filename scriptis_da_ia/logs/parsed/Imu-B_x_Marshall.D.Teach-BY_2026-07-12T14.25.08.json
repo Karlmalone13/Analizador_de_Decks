@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1296,6 +1296,73 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP16-116",
+          "card_name": "ZEHAHAHAHA",
+          "effects": [
+            "Rest 8 Don",
+            "Deploy Marshall D. Teach [\"OP09-093\">OP09-093]",
+            "Send 1 Life to Hand"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Nullify effects of Imu [\"OP13-079\">OP13-079]",
+            "St. Marcus Mars [\"OP13-091\">OP13-091] can't attack next turn",
+            "Nullify effects of St. Marcus Mars [\"OP13-091\">OP13-091] until next turn end!"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-098"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jesus Burgess",
+          "attacker_code": "OP09-086",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-098"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

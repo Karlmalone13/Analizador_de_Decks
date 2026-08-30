@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 10,
+  "total_turns": 11,
   "turns": [
     {
       "turn": 1,
@@ -1429,6 +1429,137 @@
           }
         }
       }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP15-078",
+          "card_name": "Mamaragan",
+          "effects": [
+            "Minus 2 Don",
+            "Draw 1 Card",
+            "Rest LittleOars Jr. [\"OP16-017\">OP16-017]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST34-003",
+          "to_name": "Charlotte Brulee",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST34-003",
+          "to_name": "Charlotte Brulee",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST34-003",
+          "to_name": "Charlotte Brulee",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Brulee",
+          "attacker_code": "ST34-003",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP16-017",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "PRB02-010",
+          "to_name": "Charlotte Pudding",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "PRB02-010",
+          "to_name": "Charlotte Pudding",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "PRB02-010",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-062",
+          "to_name": "Charlotte Katakuri",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-062",
+          "to_name": "Charlotte Katakuri",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "ST34-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-004",
+            "OP16-010"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-067",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP11-073",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

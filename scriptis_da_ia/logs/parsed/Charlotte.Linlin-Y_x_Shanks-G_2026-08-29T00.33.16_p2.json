@@ -18,7 +18,7 @@
     },
     "goes_first": "LifeisSoup#5268"
   },
-  "total_turns": 31,
+  "total_turns": 32,
   "turns": [
     {
       "turn": 1,
@@ -4554,6 +4554,17 @@
           }
         }
       }
+    },
+    {
+      "turn": 32,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Streusen",
+        "code": "OP17-113"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {}
     }
   ]
 }

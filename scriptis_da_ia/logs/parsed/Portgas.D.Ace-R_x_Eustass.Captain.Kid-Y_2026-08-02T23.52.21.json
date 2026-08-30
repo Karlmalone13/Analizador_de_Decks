@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -1513,6 +1513,66 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-112",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Rest Eustass \"Captain\" Kid [\"OP10-112\">OP10-112]",
+            "Trash 1 Life"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Killer",
+          "attacker_code": "ST36-002",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP16-005",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST36-005",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-005"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-112",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

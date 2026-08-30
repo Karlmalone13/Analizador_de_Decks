@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -1602,6 +1602,133 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-049",
+          "to_name": "Charlotte Linlin",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-049",
+          "to_name": "Charlotte Linlin",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-048",
+          "to_name": "Shiki",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-048",
+          "to_name": "Shiki",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-048",
+          "to_name": "Shiki",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-048",
+          "card_name": "Shiki",
+          "effects": [
+            "Trash Gloriosa [\"OP17-046\">OP17-046]",
+            "Buff Marshall D. Teach [\"OP09-093\">OP09-093] -3000"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 4
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Don Marlon [\"OP17-052\">OP17-052]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

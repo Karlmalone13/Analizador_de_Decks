@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1200,6 +1200,101 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-049",
+          "to_name": "Charlotte Linlin",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-049",
+          "to_name": "Charlotte Linlin",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-049",
+          "to_name": "Charlotte Linlin",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-037"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "OP17-050",
+          "to_name": "Streusen",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Streusen",
+          "attacker_code": "OP17-050",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Don Marlon [\"OP17-052\">OP17-052]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 1,
+  "total_turns": 2,
   "turns": [
     {
       "turn": 1,
@@ -83,6 +83,14 @@
           ]
         }
       }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {}
     }
   ]
 }

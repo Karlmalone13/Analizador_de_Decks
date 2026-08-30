@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 10,
+  "total_turns": 11,
   "turns": [
     {
       "turn": 1,
@@ -1553,6 +1553,70 @@
           }
         }
       }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kikunojo",
+          "attacker_code": "OP14-023",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "PRB02-010"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "ST32-001",
+          "to_name": "Kin'emon",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kin'emon",
+          "attacker_code": "ST32-001",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "ST32-003",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST32-003",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Demonic Aura Nine-Sword Style Asura Dead Man's Game [\"OP12-037\">OP12-037]"
+          ]
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

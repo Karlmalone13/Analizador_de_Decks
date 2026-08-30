@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1239,6 +1239,76 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Shiryu [\"OP16-108\">OP16-108]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP12-119",
+          "to_name": "Bartholomew Kuma",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP12-119",
+          "to_name": "Bartholomew Kuma",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Bartholomew Kuma",
+          "attacker_code": "OP12-119",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-119",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

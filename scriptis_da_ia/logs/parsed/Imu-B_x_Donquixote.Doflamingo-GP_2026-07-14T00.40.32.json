@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1406,6 +1406,124 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP04-024",
+          "card_name": "Sugar",
+          "effects": [
+            "Rest St. Topman Warcury [\"OP13-089\">OP13-089]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-072",
+          "to_name": "Donquixote Rosinante",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Rosinante",
+          "attacker_code": "OP10-072",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-072",
+          "to_name": "Donquixote Rosinante",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-072",
+          "to_name": "Donquixote Rosinante",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-072",
+          "to_name": "Donquixote Rosinante",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Rosinante",
+          "attacker_code": "OP10-072",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-092"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP04-029",
+          "to_name": "Dellinger",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Dellinger",
+          "attacker_code": "OP04-029",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP04-019",
+          "to_name": "Donquixote Doflamingo",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP04-019",
+          "to_name": "Donquixote Doflamingo",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP04-019",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP10-071",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

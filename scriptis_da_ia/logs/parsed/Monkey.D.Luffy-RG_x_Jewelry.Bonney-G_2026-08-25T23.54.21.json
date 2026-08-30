@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -1590,6 +1590,113 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB01-012",
+          "to_name": "Cavendish",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB01-012",
+          "to_name": "Cavendish",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB01-012",
+          "to_name": "Cavendish",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Cavendish",
+          "attacker_code": "EB01-012",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP14-031",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-026",
+          "to_name": "Jewelry Bonney",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-026",
+          "to_name": "Jewelry Bonney",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-026",
+          "to_name": "Jewelry Bonney",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-026",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Uroge",
+          "attacker_code": "OP07-021",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-035"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

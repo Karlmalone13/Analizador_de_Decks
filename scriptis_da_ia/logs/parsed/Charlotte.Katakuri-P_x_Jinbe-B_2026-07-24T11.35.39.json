@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 9,
+  "total_turns": 10,
   "turns": [
     {
       "turn": 1,
@@ -1254,6 +1254,118 @@
           }
         }
       }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Boa Hancock",
+          "attacker_code": "OP07-051",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP14-049",
+          "card_name": "Jinbe",
+          "effects": [
+            "Rest 2 Don",
+            "Draw 2 Card",
+            "Return Boa Hancock [\"OP07-051\">OP07-051] to Hand",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-040",
+          "card_name": "Jinbe",
+          "effects": [
+            "Trash Arlong [\"OP14-042\">OP14-042]",
+            "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]",
+            "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]",
+            "Trash Boa Hancock [\"OP07-051\">OP07-051]",
+            "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]",
+            "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]",
+            "Trash Chew [\"OP14-050\">OP14-050]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-049\">OP14-049]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-049\">OP14-049]",
+            "Trash Trafalgar Law [\"ST17-002\">ST17-002]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-049\">OP14-049]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-049\">OP14-049]",
+            "Trash Boa Hancock [\"OP07-051\">OP07-051]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-049\">OP14-049]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-049\">OP14-049]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP07-045",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST18-001",
+            "PRB02-010"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP07-045",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Weevil",
+          "attacker_code": "EB01-023",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-002",
+            "PRB02-010"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-049",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

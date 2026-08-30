@@ -16,9 +16,9 @@
         }
       }
     },
-    "goes_first": null
+    "goes_first": "Zico#6849"
   },
-  "total_turns": 10,
+  "total_turns": 11,
   "turns": [
     {
       "turn": 1,
@@ -1153,6 +1153,70 @@
           }
         }
       }
+    },
+    {
+      "turn": 11,
+      "player": "Zico#6849",
+      "card_drawn": {
+        "name": "Monkey D. Luffy",
+        "code": "OP16-015"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Marco",
+          "attacker_code": "OP16-014",
+          "target": "Captain John [\"OP17-044\">OP17-044]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-005",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Grant Portgas D. Ace [\"OP16-001\">OP16-001] 3000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 2,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-003",
+          "to_name": "Edward Newgate",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP16-003",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

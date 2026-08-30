@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 10,
+  "total_turns": 11,
   "turns": [
     {
       "turn": 1,
@@ -1382,6 +1382,41 @@
           }
         }
       }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-112",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Rest Eustass \"Captain\" Kid [\"OP10-112\">OP10-112]",
+            "Trash 1 Life"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP10-112",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-112",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

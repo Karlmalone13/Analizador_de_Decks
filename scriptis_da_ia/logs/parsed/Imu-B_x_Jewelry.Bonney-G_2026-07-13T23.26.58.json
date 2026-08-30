@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 11,
+  "total_turns": 12,
   "turns": [
     {
       "turn": 1,
@@ -1508,6 +1508,104 @@
           }
         }
       }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST02-013",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP13-091",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-026",
+          "to_name": "Jewelry Bonney",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-026",
+          "to_name": "Jewelry Bonney",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-026",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "ST16-004",
+          "to_name": "Shanks",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "ST16-004",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }

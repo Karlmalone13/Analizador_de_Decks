@@ -18,7 +18,7 @@
     },
     "goes_first": null
   },
-  "total_turns": 8,
+  "total_turns": 9,
   "turns": [
     {
       "turn": 1,
@@ -1066,6 +1066,88 @@
           }
         }
       }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kikunojo",
+          "attacker_code": "OP14-023",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP12-034",
+          "to_name": "Perona",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Perona",
+          "attacker_code": "OP12-034",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kin'emon",
+          "attacker_code": "ST32-001",
+          "target": "Charlotte Pudding [\"OP11-070\">OP11-070]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-070"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP14-033",
+          "to_name": "Perona",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Perona",
+          "attacker_code": "OP14-033",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
     }
   ]
 }
