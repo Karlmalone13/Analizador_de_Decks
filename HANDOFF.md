@@ -28,6 +28,105 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-30 (741) - CONTAGEM remedida na regua corrigida: **`play` NAO tem vies (+0,01)**, o excesso e `attack` (+0,32) e e ASSIMETRICO 3,6:1. Termo do BLOCKER PROPRIO construido (faltava mesmo) e **REFUTADO por medicao**
+
+**Pedido do usuario:** "vai atras da contagem".
+
+### 1. Por que remedir antes de mexer
+
+Todos os numeros de contagem do projeto (blocos 695 e 734) foram
+medidos no corpus ANTES do conserto de regua do bloco 739, que apagava
+**24,6% das anexacoes e 15,2% dos ataques DO HUMANO**. Como o que
+faltava era do lado humano, todo excesso do motor estava inflado por
+construcao. Ferramenta nova: `diag_contagem.py` (vies x dispersao, por
+TIPO, com a distribuicao do erro -- so mede).
+
+### 2. Contagem por tipo, regua corrigida (400 turnos)
+
+| tipo | humano | motor | vies | acerto EXATO |
+|---|---|---|---|---|
+| `play` | 1,10 | 1,12 | **+0,01** | 52,5% |
+| `activate` | 0,64 | 0,87 | +0,23 | 54,0% |
+| `attach_don` | 0,89 | 1,06 | +0,17 | 39,0% |
+| `attack` | 1,66 | 1,98 | **+0,32** | 57,5% |
+| TOTAL | 4,29 | 5,02 | +0,73 | 28,5% |
+
+**`play` nao tem vies de contagem** -- confirma o bloco 695. O excesso
+de +0,73 e `attack`, `activate` e `attach_don`.
+
+**E a assimetria muda o que estava registrado.** O bloco 695 reprovou o
+limiar global argumentando que o erro e SIMETRICO. Isso e verdade em
+`play` (25,0% a mais x 22,5% a menos) -- e **so foi medido la**. Em
+`attack` o erro e **33,2% a mais contra 9,2% a menos (3,6:1)**. A
+conclusao foi generalizada pra contagem inteira sem ter sido medida por
+tipo. (Isso NAO ressuscita `ACTION_SCORE_FLOOR`: o bloco 734 reprovou
+esse mecanismo por outra razao independente -- as acoes excedentes tem
+mediana de score 119,5, nao sao marginais.)
+
+### 3. Hipotese: falta o BLOCKER PROPRIO na funcao de valor
+
+Atacar RESTA o personagem, e personagem restado nao bloqueia no turno do
+oponente. `_evaluate_state_v2` representa `opp_blocker` (peso 16.75,
+negativo) e **nao representa os meus** -- gastar o ultimo blocker num
+ataque custa ZERO na avaliacao. (`_next_turn_readiness_bonus` cobria
+algo parecido e foi removido no bloco 636 como codigo morto.)
+
+Termo novo `blocker_proprio` = `len(p.blockers_active())`, peso default
+**0.0**. Escolhido TERMO e nao peso porque girar os 17 pesos ja e
+reprovado, e a propria conclusao registrada la e "o proximo suspeito sao
+os TERMOS".
+
+### 4. REFUTADO -- previsao registrada antes de rodar
+
+Previ: `attack` cai de 1,98 rumo a 1,66; acerto exato sobe. Escrito
+antes: *"se o peso 150 nao mover `attack`, o termo nao e a alavanca e eu
+abandono"*.
+
+| | controle (w=0) | **w=150** | humano |
+|---|---|---|---|
+| `attack` | 1,98 | **1,94** | 1,66 |
+| `attach_don` | 1,06 | 0,97 | 0,89 |
+| TOTAL | 5,02 | 4,92 | 4,29 |
+| acerto exato TOTAL | 28,5% | **26,8%** | -- |
+
+Peso 150 e implausivelmente alto (mais de meio ponto de dano por
+blocker) e fechou **0,04 de um gap de 0,32 (12%)**, piorando o acerto
+exato de contagem. **A lacuna de representacao e real; a hipotese de que
+ela causa o excesso de ataque e FALSA.**
+
+Termo fica em 0.0 (inerte, documentado) -- mesmo tratamento de
+`human_sequence_alignment`.
+
+### 5. ARMADILHA DE MEDICAO, custou 4 rodadas invalidas
+
+`OPTCG_EVAL_WEIGHTS` **SUBSTITUI** o caminho de `eval_weights.json`, NAO
+faz merge. Um JSON com UMA chave -- o jeito obvio de varrer um peso so --
+descarta os 17 pesos de PRODUCAO e cai nos defaults hardcoded, que sao
+DIFERENTES (`counter_hand` 6.0 x 9.0, `don_field` 4.0 x 6.0). As 3
+primeiras rodadas mediram a TROCA DO VETOR, nao o termo.
+
+O que pegou: a coluna do HUMANO mudou entre rodadas (4,29 -> 4,28), e o
+humano vem do log -- nao podia mudar. Sinal de que a amostra pareada
+diferia, o que so acontece se o motor mudou.
+
+**Como eu quase nao peguei**: minha 1a conferencia foi CIRCULAR --
+comparei o JSON de producao contra `EVAL_WEIGHTS` DEPOIS do import, que
+ja tinha o proprio JSON aplicado. Igualdade garantida por construcao. So
+o controle com peso 0.0 pelo MESMO mecanismo desmascarou (reproduziu as
+rodadas "com peso", nao o baseline).
+
+Conserto: aviso em stderr quando um override parcial deixa faltando
+pesos que existem em `eval_weights.json`. Nao muda a semantica de
+substituicao (que `sweep.py` usa) -- so grita no caso perigoso.
+Verificado que dispara no caso parcial e fica calado no merged.
+
+### 6. Proximo alvo
+
+`activate` (+0,23, assimetrico ~2,2:1) e `attach_don` (+0,17, o mais
+DISPERSO -- so 39,0% de acerto exato, o pior dos quatro). E `attack`
+continua o maior vies com causa NAO identificada -- a hipotese do
+blocker esta descartada.
+
 ## 2026-08-30 (740) - **A DISTRIBUICAO DE 1a ACAO NAO E A ALAVANCA**: movi `attach_don` de 26,2% pra 0,8% (26pp) e o LCS andou 0,1pp. Ordem e 12,4pp de uma perda de 64pp -- o bloco 734 ja tinha dito e eu nao pesei
 
 **Pedido do usuario:** "vai atras do attach_don na funcao de valor" ->

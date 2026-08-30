@@ -23,6 +23,7 @@ Fluxo de efeitos (baseado no DoV3ActionStep das 34k linhas):
 import re
 import json
 import os
+import sys
 import random
 import pandas as pd
 from copy import deepcopy as _deepcopy
@@ -1152,6 +1153,37 @@ EVAL_WEIGHTS = {
     # (ex: 3-gramas, escopo por categoria diferente) em vez de
     # descartar o dado, so o peso atual nao funcionou.
     'human_sequence_alignment': 0.0,
+    # BLOCKER PROPRIO deixado ATIVO no fim do turno (bloco 741).
+    #
+    # O QUE FALTAVA. `_evaluate_state_v2` representa os blockers do
+    # OPONENTE (`opp_blocker`, peso 16.75, negativo) e **nao representa os
+    # MEUS**. Atacar resta o personagem, e personagem restado nao bloqueia
+    # no turno do oponente -- entao gastar o ultimo blocker num ataque
+    # custa a defesa do proximo turno. Na funcao de valor de hoje esse
+    # custo e ZERO: o estado final nao sabe que eu fiquei sem blocker.
+    # (`_next_turn_readiness_bonus` cobria algo parecido e foi REMOVIDO da
+    # avaliacao no bloco 636 como codigo morto.)
+    #
+    # POR QUE ESTE TERMO E NAO OUTRA COISA (medido, regua corrigida do
+    # bloco 739 -- todos os numeros de contagem anteriores estavam num
+    # corpus sem 15,2% dos ataques humanos):
+    #
+    #   acoes por turno    humano  motor   vies
+    #   play                 1,10   1,12  +0,01   <- SEM vies
+    #   activate             0,64   0,87  +0,23
+    #   attach_don           0,89   1,06  +0,17
+    #   attack               1,66   1,98  +0,32   <- o maior
+    #
+    # E o erro de `attack` e ASSIMETRICO -- 33,2% dos turnos com ataque a
+    # MAIS contra 9,2% a menos (3,6:1). Isso importa porque a reprovacao
+    # do limiar global (bloco 695) se apoiava na SIMETRIA do erro... que
+    # foi medida so em `play`, onde de fato e simetrica (25,0% x 22,5%) e
+    # continua sendo. A conclusao foi generalizada pra contagem inteira
+    # sem ter sido medida por tipo.
+    #
+    # Peso DEFAULT 0.0 -> zero mudanca de comportamento ate ser publicado
+    # em `eval_weights.json`. Ligar via OPTCG_EVAL_WEIGHTS.
+    'blocker_proprio': 0.0,
     # Valor de Character do oponente morto em COMBATE (bloco 634) -- ver
     # comentario em `_evaluate_state_v2`/`_execute_attack`. UNIFICADO
     # 22/08 (bloco 638) pra usar `char_value_score` (mesma formula de
@@ -1180,9 +1212,40 @@ try:
         os.path.dirname(__file__), '..', 'eval_weights.json')
     if os.path.exists(_wpath):
         with open(_wpath, encoding='utf-8') as _f:
-            # ignora _meta (camada de confiança: procedência, não é peso)
-            EVAL_WEIGHTS.update({k: v for k, v in json.load(_f).items()
-                                 if k != '_meta'})
+            _novos = {k: v for k, v in json.load(_f).items() if k != '_meta'}
+        # ARMADILHA REAL (bloco 741, custou 4 medicoes invalidas): esta
+        # variavel SUBSTITUI o caminho do arquivo, NAO faz merge com
+        # `eval_weights.json`. Um JSON com UMA chave -- o jeito obvio de
+        # varrer um peso so -- descarta os 17 pesos de PRODUCAO e cai nos
+        # defaults hardcoded, que sao DIFERENTES (ex: `counter_hand` 6.0 x
+        # 9.0, `don_field` 4.0 x 6.0). O resultado parece efeito do peso
+        # varrido e e efeito de ter trocado o vetor inteiro.
+        #
+        # Pior: e facil "conferir" isso de forma CIRCULAR -- comparar o
+        # JSON contra `EVAL_WEIGHTS` DEPOIS do import compara o arquivo
+        # com ele mesmo e da igualdade sempre. Foi o que aconteceu.
+        #
+        # O aviso abaixo so dispara no caso perigoso (override parcial de
+        # um arquivo de producao que existe). Nao muda a semantica de
+        # substituicao, de que `sweep.py` depende.
+        if os.environ.get('OPTCG_EVAL_WEIGHTS'):
+            _prod = os.path.join(os.path.dirname(__file__), '..',
+                                 'eval_weights.json')
+            if os.path.exists(_prod) and os.path.abspath(_prod) != os.path.abspath(_wpath):
+                with open(_prod, encoding='utf-8') as _f2:
+                    _faltando = sorted(k for k in json.load(_f2)
+                                       if k != '_meta' and k not in _novos)
+                if _faltando:
+                    sys.stderr.write(
+                        '[AVISO] OPTCG_EVAL_WEIGHTS SUBSTITUI eval_weights.json '
+                        '(nao faz merge). Faltam ' + str(len(_faltando)) +
+                        ' peso(s) de producao, que voltam pro default '
+                        'hardcoded: ' + ', '.join(_faltando[:6]) +
+                        ('...' if len(_faltando) > 6 else '') +
+                        ' -- a medicao vai medir a TROCA DO VETOR, nao o peso '
+                        'que voce quis varrer. Gere o JSON a partir de '
+                        'eval_weights.json e sobrescreva so a chave alvo.\n')
+        EVAL_WEIGHTS.update(_novos)
 except Exception:
     pass
 
@@ -18990,6 +19053,11 @@ class OPTCGMatch:
         # blockers do oponente vivos travam meu ataque -- obstaculo pro MEU
         # plano de dano.
         score += _termo('opp_blocker', -len(opp.blockers_active()), W)
+        # ...e os MEUS, que ate o bloco 741 nao entravam. Simetrico ao
+        # de cima: blocker do oponente e ruim pra mim, o meu e bom.
+        # Positivo = ter blocker ATIVO no fim do meu turno vale algo,
+        # logo atacar com o ultimo blocker passa a ter preco.
+        score += _termo('blocker_proprio', len(p.blockers_active()), W)
 
         # ameaça de virada por reanimação em massa do trash dele (achado
         # 07/07, PREVENT_COMBO) -- penaliza pelo threat_power ESTIMADO no

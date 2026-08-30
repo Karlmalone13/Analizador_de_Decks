@@ -2,6 +2,26 @@
 
 **Última atualização:** 30 de agosto de 2026
 
+> 30/08/2026 (bloco 741): **contagem remedida na regua corrigida.**
+> `play` **nao tem vies** (+0,01, 52,5% exato) -- o excesso de +0,73
+> acao/turno e `attack` (+0,32), `activate` (+0,23) e `attach_don`
+> (+0,17). Ferramenta nova: `diag_contagem.py`.
+> **Correcao do que estava registrado:** o bloco 695 reprovou limiar
+> global alegando erro SIMETRICO -- isso vale em `play` (25,0% x 22,5%)
+> e so foi medido la. Em `attack` e **33,2% a mais x 9,2% a menos
+> (3,6:1)**. (Nao ressuscita `ACTION_SCORE_FLOOR`, reprovado no 734 por
+> razao independente.)
+> **Termo `blocker_proprio` construido e REFUTADO**: a funcao de valor
+> mesmo nao representa os meus blockers (so os do oponente), mas ligar
+> isso em peso 150 fecha so 12% do gap de ataque e PIORA o acerto exato
+> de contagem (28,5% -> 26,8%). Fica em peso 0.0, inerte.
+> **Armadilha registrada:** `OPTCG_EVAL_WEIGHTS` SUBSTITUI
+> `eval_weights.json`, nao faz merge -- varrer um peso com JSON de uma
+> chave so descarta os 17 de producao e mede outra coisa. Custou 4
+> rodadas. Agora ha aviso em stderr.
+> **Proximo alvo:** causa do excesso de `attack` (blocker descartado) e
+> `attach_don`, o mais disperso (39,0% de acerto exato).
+
 > 30/08/2026 (bloco 740): **a distribuicao de 1a acao NAO e a alavanca.**
 > Criado `ATTACH_ADIADO` (default **0 = desligado**), gate que adia a
 > anexacao de DON de keyword/gatilho enquanto houver `play`/`activate`

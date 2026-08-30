@@ -102,6 +102,22 @@ foi medida — e aí não é reprovação, é opinião.
 > `play` sobe de 28,9% pra **55,1%**. A contagem e mesmo o gargalo
 > aritmetico — so nao se resolve por limiar.
 
+### Termo do BLOCKER PROPRIO na funcao de valor (bloco 741)
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| `blocker_proprio` = `len(p.blockers_active())`, pesos 0 / 150 | `attack` 1,98 -> **1,94** (humano 1,66) -- 12% do gap, com peso implausivel; acerto exato de contagem **28,5% -> 26,8%** | 741 |
+
+> A LACUNA E REAL: `_evaluate_state_v2` representa `opp_blocker` e nao
+> representa os MEUS blockers, entao atacar com o ultimo blocker custa
+> zero na avaliacao. **Mas preencher a lacuna nao reduz a contagem de
+> ataque.** A hipotese "o motor ataca demais porque nao valoriza segurar
+> blocker" esta REFUTADA por medicao.
+>
+> Fica em peso 0.0, inerte e documentado (mesmo tratamento de
+> `human_sequence_alignment`). Se alguem retomar: a causa do +0,32 de
+> ataque por turno continua NAO identificada.
+
 ## Ordem das jogadas (sequenciamento)
 
 | tentativa | resultado medido | bloco |
@@ -367,6 +383,7 @@ errada porque a medição estava. Valem tanto quanto os outros:
 
 | erro | como apareceu | bloco |
 |---|---|---|
+| `OPTCG_EVAL_WEIGHTS` com JSON de UMA chave pra varrer um peso so | **SUBSTITUI `eval_weights.json`, nao faz merge** -- descarta os 17 pesos de producao e cai nos defaults hardcoded, que DIFEREM (`counter_hand` 6.0 x 9.0, `don_field` 4.0 x 6.0). 4 rodadas invalidas. Pior: conferir isso comparando o JSON com `EVAL_WEIGHTS` depois do import e CIRCULAR. Gere o JSON a partir de `eval_weights.json`. Ha aviso em stderr desde o bloco 741 | 741 |
 | Medir acerto de DON contra `don_cost`, que **exclui** o DON anexado | "RZ1 ≈ estimador, ambos ~35%" — falso; o número real era 53% | 688 → retificado no 690 |
 | `--limit N` correlacionado com a variável sob teste | os 70 primeiros jobs são os logs mais antigos e **nenhum tem RZ1** — A/B deu resultado byte-idêntico | 689 |
 | Detectar ataque ao líder pela string `"Leader"` no alvo | o log nunca usa essa palavra — inflou "motor ataca mais" pra quase todo caso e escondeu 44 casos reais de "ataca menos" | auditoria 04/08 |
