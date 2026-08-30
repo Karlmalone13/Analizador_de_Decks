@@ -1222,41 +1222,25 @@ def choose_effect_option(req: ChooseEffectOptionRequest):
     """
     started = time.perf_counter()
 
-    RUIM_PRO_OPONENTE = ('opponent draws', 'opponent draw', 'oponente compra',
-                         'give ', 'opponent gains', 'return')
-    CUSTO_PROPRIO = ('trash your', 'trash 1 of your', 'discard', 'rest your',
-                     'trash 2 cards', 'trash 1 card')
-    BOM = ('k.o.', 'ko ', 'destroy', 'rest up to', 'rest 1 of your opponent',
-           'draw', 'gain', 'play ', 'add ')
-
-    def pontua(texto: str) -> float:
-        t = (texto or '').strip().lower()
-        if not t:
-            return 0.0
-        v = 0.0
-        for termo in RUIM_PRO_OPONENTE:
-            if termo in t:
-                v -= 40.0
-        for termo in CUSTO_PROPRIO:
-            if termo in t:
-                v -= 15.0
-        for termo in BOM:
-            if termo in t:
-                v += 20.0
-        return v
-
     try:
         if not req.options:
             return {"optionIndex": 0, "decisionId": ""}
-        melhor = max(req.options, key=lambda o: (pontua(o.text), -o.index))
+        # A DECISAO vive na bridge (regra do projeto: server.py = transporte
+        # puro). Ate 29/08 estava AQUI como heuristica de texto -- ver o
+        # docstring de `escolher_opcao_de_efeito` pro criterio e pro bug de
+        # substring que ela tinha.
+        gs_opt = _dto_to_gs(req.state.bot, req.state.turnNumber)
+        opp_opt = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
+        idx, motivo = bridge.escolher_opcao_de_efeito(gs_opt, opp_opt, req.options)
+        melhor = next((o for o in req.options if o.index == idx), req.options[0])
         print(f"[V3CHOICE] opcoes={[(o.index, o.text) for o in req.options]} "
-              f"-> escolhida {melhor.index} ({melhor.text!r})", flush=True)
+              f"-> escolhida {melhor.index} ({melhor.text!r}) :: {motivo}", flush=True)
         legal = [{"type": "effect_option", "option_index": o.index,
                   "text": o.text, "eligible": True} for o in req.options]
         return _record_aux_decision(
             "effect_option", _model_dict(req.state), legal,
             {"type": "effect_option", "option_index": melhor.index,
-             "text": melhor.text},
+             "text": melhor.text, "motivo": motivo},
             {"optionIndex": melhor.index},
             phase="effect_option", turn=req.state.turnNumber,
             actor_code=req.actorCode,

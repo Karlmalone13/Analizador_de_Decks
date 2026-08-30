@@ -8,7 +8,7 @@ Responsabilidades:
   4. Expor choose_action(game_state, opp_state) → ação para executar
 """
 from __future__ import annotations
-import os, sys
+import os, re, sys
 from copy import copy, deepcopy
 from pathlib import Path
 from typing import Optional
@@ -1796,6 +1796,26 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
 # Alvos de step em que o LIDER e um alvo legitimo -- e nao um item de
 # segunda classe. Sai do schema do `card_effects_db` (campo `target`), nao
 # de lista de acoes: a acao muda a cada set novo, o alvo nao.
+# Quanto vale, pra mim, uma carta que o OPONENTE compra. Mesma escala de
+# `_trash_value`.
+#
+# MEDIDO, nao escolhido a dedo: e a MEDIANA do `_trash_value` das cartas de
+# mao em 3.025 amostras reais do banco de logs (p10=68, p25=88, MEDIANA=118,
+# p75=176, p90=258). A leitura e direta -- "uma carta que o oponente compra
+# custa o que vale uma carta MEDIANA".
+#
+# E esse ancoramento e o que faz a regra do usuario cair certa sozinha:
+# mao de lixo (stage repetido, vanilla barata: ~53 cada) fica ABAIXO do
+# limiar e o bot aceita trashar; mao com counter/carta cara (~138 cada)
+# fica ACIMA e o bot prefere que o oponente compre. Nao ha caso especial
+# escrito pra nenhum dos dois -- sai da avaliacao.
+#
+# APROXIMACAO conhecida: a carta que ELE compra vale pra ELE, e eu estou
+# medindo na MINHA escala. Sem modelo da mao dele, a mediana e o proxy
+# honesto; se um dia houver dado do valor real pro oponente, e aqui que
+# entra.
+CUSTO_CARTA_PRO_OPONENTE = 118.0
+
 _TARGETS_QUE_INCLUEM_LIDER = (
     'leader_or_own_character', 'leader_or_character', 'leader',
     'all_allies_and_leader',
@@ -1816,6 +1836,77 @@ def _delta_do_step(step: dict) -> int:
     if step.get('amount') is not None:
         return int(step.get('amount') or 0)
     return 0
+
+
+_RE_N = re.compile(r'(\d+)')
+
+
+def _quantidade(texto: str, padrao: int = 1) -> int:
+    m = _RE_N.search(texto or '')
+    try:
+        return max(1, int(m.group(1))) if m else padrao
+    except (TypeError, ValueError):
+        return padrao
+
+
+def escolher_opcao_de_efeito(gs: GameState, opp_gs: GameState,
+                             opcoes: list) -> tuple:
+    """Escolhe entre OPCOES de um mesmo efeito ("Trash 2 Cards" x "Opponent
+    Draws 2 Cards"). Devolve (indice, motivo).
+
+    REGRA (ditada pelo usuario 29/08, e e a leitura certa do jogo):
+      "depende. Se o bot tiver carta crucial na mao que ele vai jogar, ou
+       counter que ele vai usar, entao e melhor o oponente comprar. Agora
+       se tem carta vanila, ou carta repetida, ou carta que nao vai usar,
+       entao e melhor trashar."
+
+    Ou seja, a decisao NAO esta no rotulo do botao -- esta no valor das
+    MINHAS cartas que eu perderia. Isso o motor ja sabe calcular:
+    `_trash_value` e literalmente "valor de manter esta carta na mao"
+    (menor = melhor descarte), a MESMA funcao que `_choose_to_trash` usa.
+    Somar as N piores da o custo real de aceitar o trash.
+
+    Antes disto a escolha vivia no `server.py` como heuristica de TEXTO
+    (procurava 'trash'/'draw' no rotulo), o que violava "server.py =
+    transporte puro" e ainda tinha um bug de substring: 'opponent draws' e
+    'opponent draw' estavam os dois na lista de termos ruins e um contem o
+    outro, entao 'Opponent Draws 2 Cards' levava -40 DUAS vezes. A escolha
+    "certa" da partida de 29/08 saiu desse bug, nao de avaliacao.
+    """
+    from optcg_engine.decision_engine import EffectExecutor
+    ee = EffectExecutor(gs, opp_gs)
+    custos = []
+    for op in opcoes:
+        texto = (getattr(op, 'text', None) or '').strip()
+        t = texto.lower()
+        n = _quantidade(t)
+        if 'opponent draw' in t:
+            # Custo de o OPONENTE comprar N: o valor de uma carta na mao
+            # DELE. Constante explicita e nao um numero escondido -- e o
+            # unico ponto da conta que nao sai do estado real.
+            custo = n * CUSTO_CARTA_PRO_OPONENTE
+            motivo = f'oponente compra {n}'
+        elif 'trash' in t or 'discard' in t:
+            # Custo de EU perder N: as N piores da minha mao, pela mesma
+            # regua de `_choose_to_trash`. Mao curta = perder doi mais.
+            piores = sorted(gs.hand, key=ee._trash_value)[:n]
+            custo = sum(ee._trash_value(c) for c in piores)
+            if len(piores) < n:      # nao tenho N cartas: perco o que tenho
+                custo += (n - len(piores)) * CUSTO_CARTA_PRO_OPONENTE
+            motivo = (f'eu perco {n} (piores: '
+                      + ', '.join(f'{c.code}={ee._trash_value(c):.0f}' for c in piores) + ')')
+        else:
+            custo = None
+            motivo = 'rotulo nao reconhecido'
+        custos.append((custo, motivo, op))
+
+    conhecidos = [c for c in custos if c[0] is not None]
+    if not conhecidos:
+        return (getattr(opcoes[0], 'index', 0) if opcoes else 0,
+                'nenhum rotulo reconhecido -- primeira opcao')
+    melhor = min(conhecidos, key=lambda c: c[0])
+    detalhe = ' | '.join(f'{m}: custo {c:.0f}' for c, m, _ in conhecidos)
+    return getattr(melhor[2], 'index', 0), detalhe
 
 
 def _key_para_log(chave) -> list:
