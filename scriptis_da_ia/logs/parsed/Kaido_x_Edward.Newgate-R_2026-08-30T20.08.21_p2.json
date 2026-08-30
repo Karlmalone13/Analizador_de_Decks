@@ -1,0 +1,1774 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Kaido",
+          "code": "OP17-058"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Edward Newgate",
+          "code": "OP02-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 13,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-076",
+            "OP07-076",
+            "OP07-076",
+            "OP17-073",
+            "OP17-060"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "EB04-032",
+            "OP08-069",
+            "OP08-069",
+            "OP13-076",
+            "OP17-062",
+            "OP17-062",
+            "OP17-074",
+            "OP17-076",
+            "ST18-002",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB04-030",
+            "EB04-031",
+            "EB04-040",
+            "OP07-077",
+            "OP17-060"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "ST01-014",
+            "OP02-004",
+            "OP02-008",
+            "OP02-008",
+            "OP02-018"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 6,
+          "deck": [
+            "OP01-006",
+            "OP01-029",
+            "OP02-003",
+            "OP02-007",
+            "OP02-022"
+          ],
+          "life_cards": [
+            "OP02-013",
+            "OP02-015",
+            "OP02-024",
+            "OP03-003",
+            "OP03-003",
+            "OP03-013"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST01-014",
+            "OP02-004",
+            "OP02-008",
+            "OP02-008",
+            "OP02-018",
+            "OP02-013",
+            "OP02-024"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP01-006",
+            "OP01-029",
+            "OP02-003",
+            "OP02-007",
+            "OP02-022"
+          ],
+          "life_cards": [
+            "OP02-013",
+            "OP02-015",
+            "OP03-003",
+            "OP03-003",
+            "OP03-013"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP07-076",
+            "OP07-076",
+            "OP07-076",
+            "OP17-073",
+            "OP17-060"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "EB04-032",
+            "OP08-069",
+            "OP08-069",
+            "OP13-076",
+            "OP17-062",
+            "OP17-062",
+            "OP17-074",
+            "OP17-076",
+            "ST18-002",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB04-030",
+            "EB04-031",
+            "EB04-040",
+            "OP07-077",
+            "OP17-060"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-032",
+          "card_name": "Queen",
+          "effects": [
+            "Trash Ulti & Page One [\"OP17-060\">OP17-060]",
+            "Draw 2 Card",
+            "Rest 2 Don"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-076",
+            "OP07-076",
+            "OP07-076",
+            "OP17-073",
+            "OP17-076",
+            "OP17-073"
+          ],
+          "board": [
+            "EB04-032"
+          ],
+          "trash": [
+            "OP17-060"
+          ],
+          "life": 5,
+          "deck": [
+            "OP08-069",
+            "OP08-069",
+            "OP13-076",
+            "OP17-062",
+            "OP17-062",
+            "OP17-074",
+            "ST18-002",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB04-030",
+            "EB04-031",
+            "EB04-040",
+            "OP07-077",
+            "OP17-060"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB04-032": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST01-014",
+            "OP02-004",
+            "OP02-008",
+            "OP02-008",
+            "OP02-018",
+            "OP02-013",
+            "OP02-024"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP01-006",
+            "OP01-029",
+            "OP02-003",
+            "OP02-007",
+            "OP02-022"
+          ],
+          "life_cards": [
+            "OP02-013",
+            "OP02-015",
+            "OP03-003",
+            "OP03-003",
+            "OP03-013"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP02-001",
+          "to_name": "Edward Newgate",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP02-001",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP02-024",
+          "card_name": "Moby Dick",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST01-014",
+            "OP02-004",
+            "OP02-008",
+            "OP02-008",
+            "OP02-018",
+            "OP02-013",
+            "OP02-008",
+            "OP03-003"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "OP01-006",
+            "OP01-029",
+            "OP02-003",
+            "OP02-007",
+            "OP02-022"
+          ],
+          "life_cards": [
+            "OP02-013",
+            "OP02-015",
+            "OP03-003",
+            "OP03-013"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP02-024"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        },
+        "You": {
+          "hand": [
+            "OP07-076",
+            "OP07-076",
+            "OP07-076",
+            "OP17-073",
+            "OP17-076",
+            "OP17-073",
+            "OP17-060"
+          ],
+          "trash": [
+            "OP17-060"
+          ],
+          "board": [
+            "EB04-032"
+          ],
+          "life": 4,
+          "deck": [
+            "OP08-069",
+            "OP08-069",
+            "OP13-076",
+            "OP17-062",
+            "OP17-062",
+            "OP17-074",
+            "ST18-002",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB04-030",
+            "EB04-031",
+            "EB04-040",
+            "OP07-077"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB04-032": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "EB04-032",
+          "card_name": "Queen",
+          "effects": [
+            "Rest 2 Don"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-074",
+          "card_name": "Yamato",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP02-008"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-076",
+            "OP07-076",
+            "OP07-076",
+            "OP17-073",
+            "OP17-076",
+            "OP17-073",
+            "OP17-060"
+          ],
+          "board": [
+            "EB04-032",
+            "OP17-074"
+          ],
+          "trash": [
+            "OP17-060"
+          ],
+          "life": 4,
+          "deck": [
+            "OP08-069",
+            "OP08-069",
+            "OP13-076",
+            "OP17-062",
+            "OP17-062",
+            "ST18-002",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB04-030",
+            "EB04-031",
+            "EB04-040",
+            "OP07-077"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-074": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST01-014",
+            "OP02-004",
+            "OP02-008",
+            "OP02-018",
+            "OP02-013",
+            "OP02-008",
+            "OP03-003"
+          ],
+          "trash": [
+            "OP02-008"
+          ],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "OP01-006",
+            "OP01-029",
+            "OP02-003",
+            "OP02-007",
+            "OP02-022"
+          ],
+          "life_cards": [
+            "OP02-013",
+            "OP02-015",
+            "OP03-003",
+            "OP03-013"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP02-024"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP02-001",
+          "to_name": "Edward Newgate",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP02-001",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP03-003",
+          "card_name": "Izou",
+          "effects": [
+            "<b>Reveal and Draw Marco [\"OP03-013\">OP03-013]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP02-022",
+          "card_name": "Whitebeard Pirates",
+          "effects": [
+            "<b>Reveal and Draw Marco [\"OP02-018\">OP02-018]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST01-014",
+            "OP02-004",
+            "OP02-008",
+            "OP02-018",
+            "OP02-013",
+            "OP02-008",
+            "OP03-013",
+            "OP02-018",
+            "OP02-015"
+          ],
+          "board": [
+            "OP03-003"
+          ],
+          "trash": [
+            "OP02-008",
+            "OP02-022"
+          ],
+          "life": 3,
+          "deck": [
+            "OP01-006",
+            "OP01-029",
+            "OP02-003",
+            "OP02-004",
+            "OP02-007",
+            "OP02-022",
+            "OP02-024",
+            "ST01-014"
+          ],
+          "life_cards": [
+            "OP02-013",
+            "OP03-003",
+            "OP03-013"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP02-024"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP03-003": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP07-076",
+            "OP07-076",
+            "OP07-076",
+            "OP17-073",
+            "OP17-076",
+            "OP17-073",
+            "OP17-060",
+            "ST34-004"
+          ],
+          "trash": [
+            "OP17-060",
+            "OP07-077"
+          ],
+          "board": [
+            "EB04-032",
+            "OP17-074"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-032",
+            "OP08-069",
+            "OP08-069",
+            "OP13-076",
+            "OP17-062",
+            "OP17-062",
+            "ST18-002",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB04-030",
+            "EB04-031",
+            "EB04-040"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-074": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-060",
+          "card_name": "Ulti & Page One",
+          "effects": [
+            "Destroy Izou [\"OP03-003\">OP03-003]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP02-008",
+            "OP02-008"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-076",
+            "OP07-076",
+            "OP07-076",
+            "OP17-073",
+            "OP17-076",
+            "OP17-073",
+            "ST34-004",
+            "EB04-040"
+          ],
+          "board": [
+            "EB04-032",
+            "OP17-074",
+            "OP17-060"
+          ],
+          "trash": [
+            "OP17-060",
+            "OP07-077"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-032",
+            "OP08-069",
+            "OP08-069",
+            "OP13-076",
+            "OP17-062",
+            "OP17-062",
+            "ST18-002",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB04-030",
+            "EB04-031",
+            "EB04-040"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-060": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST01-014",
+            "OP02-004",
+            "OP02-018",
+            "OP02-013",
+            "OP03-013",
+            "OP02-018",
+            "OP02-015"
+          ],
+          "trash": [
+            "OP02-008",
+            "OP02-022",
+            "OP03-003",
+            "OP02-008",
+            "OP02-008"
+          ],
+          "board": [],
+          "life": 3,
+          "deck": [
+            "OP01-006",
+            "OP01-029",
+            "OP02-003",
+            "OP02-004",
+            "OP02-007",
+            "OP02-022",
+            "OP02-024",
+            "ST01-014"
+          ],
+          "life_cards": [
+            "OP02-013",
+            "OP03-003",
+            "OP03-013"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP02-024"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP03-013",
+          "card_name": "Marco",
+          "effects": [
+            "Destroy Queen [\"EB04-032\">EB04-032]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP02-015",
+          "card_name": "Makino",
+          "effects": [
+            "Buff Makino [\"OP02-015\">OP02-015] 3000"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-001",
+          "to_name": "Edward Newgate",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP02-001",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP17-074",
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST01-014",
+            "OP02-004",
+            "OP02-018",
+            "OP02-013",
+            "OP02-018",
+            "OP01-029",
+            "OP02-013"
+          ],
+          "board": [
+            "OP03-013",
+            "OP02-015"
+          ],
+          "trash": [
+            "OP02-008",
+            "OP02-022",
+            "OP03-003",
+            "OP02-008",
+            "OP02-008"
+          ],
+          "life": 2,
+          "deck": [
+            "OP01-006",
+            "OP02-003",
+            "OP02-004",
+            "OP02-007",
+            "OP02-022",
+            "OP02-024",
+            "ST01-014"
+          ],
+          "life_cards": [
+            "OP03-003",
+            "OP03-013"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "OP02-024"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP03-013": 1,
+            "OP02-015": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP07-076",
+            "OP07-076",
+            "OP07-076",
+            "OP17-073",
+            "OP17-076",
+            "OP17-073",
+            "ST34-004",
+            "EB04-040"
+          ],
+          "trash": [
+            "OP17-060",
+            "OP07-077",
+            "EB04-032",
+            "OP17-074"
+          ],
+          "board": [
+            "OP17-060"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-032",
+            "OP08-069",
+            "OP08-069",
+            "OP13-076",
+            "OP17-062",
+            "OP17-062",
+            "ST18-002",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB04-030",
+            "EB04-031",
+            "EB04-040"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-060": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Ulti & Page One",
+          "attacker_code": "OP17-060",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP02-018"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST34-004",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Minus 4 Don",
+            "Trash NoroNoro Beam Sword [\"OP07-076\">OP07-076]",
+            "Add card to top of Life from Deck",
+            "Set Marco [\"OP03-013\">OP03-013] Base Power to -6000"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-076",
+            "OP07-076",
+            "OP17-073",
+            "OP17-076",
+            "OP17-073",
+            "EB04-040",
+            "EB04-031"
+          ],
+          "board": [
+            "OP17-060",
+            "ST34-004"
+          ],
+          "trash": [
+            "OP17-060",
+            "OP07-077",
+            "EB04-032",
+            "OP17-074",
+            "OP07-076"
+          ],
+          "life": 4,
+          "deck": [
+            "EB04-032",
+            "OP08-069",
+            "OP08-069",
+            "OP13-076",
+            "OP17-062",
+            "OP17-062",
+            "ST18-002",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB04-030",
+            "EB04-031",
+            "EB04-040",
+            "OP17-074"
+          ],
+          "don_deck": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-060": 1,
+            "ST34-004": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST01-014",
+            "OP02-004",
+            "OP02-013",
+            "OP02-018",
+            "OP02-013"
+          ],
+          "trash": [
+            "OP02-008",
+            "OP02-022",
+            "OP03-003",
+            "OP02-008",
+            "OP02-008",
+            "OP01-029",
+            "OP02-018"
+          ],
+          "board": [
+            "OP03-013",
+            "OP02-015"
+          ],
+          "life": 2,
+          "deck": [
+            "OP01-006",
+            "OP02-003",
+            "OP02-004",
+            "OP02-007",
+            "OP02-022",
+            "OP02-024",
+            "ST01-014"
+          ],
+          "life_cards": [
+            "OP03-003",
+            "OP03-013"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "OP02-024"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP03-013": 1,
+            "OP02-015": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Marco",
+          "attacker_code": "OP03-013",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP02-001",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-073"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP02-013",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Ulti & Page One [\"OP17-060\">OP17-060] -3000",
+            "Give Charlotte Linlin [\"ST34-004\">ST34-004] -3000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP02-013",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP02-015",
+          "card_name": "Makino",
+          "effects": [
+            "Buff Makino [\"OP02-015\">OP02-015] 3000"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST01-014",
+            "OP02-004",
+            "OP02-018",
+            "OP02-013",
+            "OP02-015",
+            "OP03-003"
+          ],
+          "board": [
+            "OP03-013",
+            "OP02-015",
+            "OP02-013"
+          ],
+          "trash": [
+            "OP02-008",
+            "OP02-022",
+            "OP03-003",
+            "OP02-008",
+            "OP02-008",
+            "OP01-029",
+            "OP02-018"
+          ],
+          "life": 1,
+          "deck": [
+            "OP01-006",
+            "OP02-003",
+            "OP02-004",
+            "OP02-007",
+            "OP02-022",
+            "OP02-024",
+            "ST01-014"
+          ],
+          "life_cards": [
+            "OP03-013"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP02-024"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP03-013": 1,
+            "OP02-013": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP07-076",
+            "OP07-076",
+            "OP17-073",
+            "OP17-076",
+            "EB04-040",
+            "EB04-031",
+            "OP17-074"
+          ],
+          "trash": [
+            "OP17-060",
+            "OP07-077",
+            "EB04-032",
+            "OP17-074",
+            "OP07-076",
+            "OP17-073"
+          ],
+          "board": [
+            "OP17-060",
+            "ST34-004"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-032",
+            "OP08-069",
+            "OP08-069",
+            "OP13-076",
+            "OP17-062",
+            "OP17-062",
+            "ST18-002",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB04-030",
+            "EB04-031",
+            "EB04-040"
+          ],
+          "don_deck": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-060": 1,
+            "ST34-004": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-031",
+          "card_name": "King",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Ulti & Page One",
+          "attacker_code": "OP17-060",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP02-015"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "ST34-004",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-076",
+            "OP07-076",
+            "OP17-073",
+            "OP17-076",
+            "EB04-040",
+            "OP17-074",
+            "OP17-062"
+          ],
+          "board": [
+            "OP17-060",
+            "ST34-004",
+            "EB04-031"
+          ],
+          "trash": [
+            "OP17-060",
+            "OP07-077",
+            "EB04-032",
+            "OP17-074",
+            "OP07-076",
+            "OP17-073"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-032",
+            "OP08-069",
+            "OP08-069",
+            "OP13-076",
+            "OP17-062",
+            "ST18-002",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB04-030",
+            "EB04-031",
+            "EB04-040"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-060": 1,
+            "ST34-004": 1,
+            "EB04-031": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP02-004",
+            "OP02-018",
+            "OP02-013",
+            "OP03-003",
+            "OP03-013"
+          ],
+          "trash": [
+            "OP02-008",
+            "OP02-022",
+            "OP03-003",
+            "OP02-008",
+            "OP02-008",
+            "OP01-029",
+            "OP02-018",
+            "ST01-014",
+            "OP02-015"
+          ],
+          "board": [
+            "OP03-013",
+            "OP02-015",
+            "OP02-013"
+          ],
+          "life": 0,
+          "deck": [
+            "OP01-006",
+            "OP02-003",
+            "OP02-004",
+            "OP02-007",
+            "OP02-022",
+            "OP02-024",
+            "ST01-014"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP02-024"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP03-013": 1,
+            "OP02-013": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP02-015",
+          "card_name": "Makino",
+          "effects": [
+            "Buff Makino [\"OP02-015\">OP02-015] 3000"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP03-013",
+          "card_name": "Marco",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP02-018",
+          "card_name": "Marco",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-001",
+          "to_name": "Edward Newgate",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marco",
+          "attacker_code": "OP03-013",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-073"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP02-013",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP02-001",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP02-004",
+            "OP02-013",
+            "OP03-003",
+            "OP01-029"
+          ],
+          "board": [
+            "OP03-013",
+            "OP02-015",
+            "OP02-013",
+            "OP03-013",
+            "OP02-018"
+          ],
+          "trash": [
+            "OP02-008",
+            "OP02-022",
+            "OP03-003",
+            "OP02-008",
+            "OP02-008",
+            "OP01-029",
+            "OP02-018",
+            "ST01-014",
+            "OP02-015"
+          ],
+          "life": 0,
+          "deck": [
+            "OP01-006",
+            "OP02-003",
+            "OP02-004",
+            "OP02-007",
+            "OP02-022",
+            "OP02-024",
+            "ST01-014"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "OP02-024"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP03-013": 2,
+            "OP02-013": 1,
+            "OP02-018": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP07-076",
+            "OP07-076",
+            "OP17-076",
+            "EB04-040",
+            "OP17-074",
+            "OP17-062",
+            "EB04-030",
+            "EB04-040"
+          ],
+          "trash": [
+            "OP17-060",
+            "OP07-077",
+            "EB04-032",
+            "OP17-074",
+            "OP07-076",
+            "OP17-073",
+            "OP17-073"
+          ],
+          "board": [
+            "OP17-060",
+            "ST34-004",
+            "EB04-031"
+          ],
+          "life": 1,
+          "deck": [
+            "EB04-032",
+            "OP08-069",
+            "OP08-069",
+            "OP13-076",
+            "OP17-062",
+            "ST18-002",
+            "ST34-004"
+          ],
+          "life_cards": [
+            "EB04-031"
+          ],
+          "don_deck": [
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-060": 1,
+            "ST34-004": 1,
+            "EB04-031": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-062",
+          "card_name": "Kaido",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Ulti & Page One",
+          "attacker_code": "OP17-060",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP02-018",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "King",
+          "attacker_code": "EB04-031",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

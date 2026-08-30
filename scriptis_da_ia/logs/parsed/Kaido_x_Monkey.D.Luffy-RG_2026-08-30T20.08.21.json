@@ -1,0 +1,1708 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Kaido",
+          "code": "OP17-058"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Monkey D. Luffy",
+          "code": "OP13-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 12,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP07-077",
+          "card_name": "We're Going to Claim the One Piece!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Basil Hawkins [\"OP17-073\">OP17-073]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-076",
+            "ST34-004",
+            "ST18-002",
+            "OP07-077",
+            "OP17-073"
+          ],
+          "board": [],
+          "trash": [
+            "OP07-077"
+          ],
+          "life": 5,
+          "deck": [
+            "EB04-040",
+            "OP07-077",
+            "OP17-062",
+            "ST18-002"
+          ],
+          "life_cards": [
+            "EB04-031",
+            "OP07-076",
+            "OP07-077",
+            "OP17-062",
+            "ST18-002"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST31-005",
+            "ST21-003",
+            "OP10-011",
+            "OP14-022",
+            "OP01-016"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "EB02-017",
+            "EB04-007",
+            "OP05-038",
+            "OP13-037",
+            "OP13-040",
+            "OP14-031",
+            "OP15-032",
+            "OP15-035",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP01-016",
+            "OP13-027",
+            "OP13-118",
+            "OP14-022"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "<b>Reveal and Draw Roronoa Zoro [\"OP13-037\">OP13-037]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP01-016",
+          "card_name": "Nami",
+          "effects": [
+            "<b>Reveal and Draw Roronoa Zoro [\"EB04-007\">EB04-007]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST31-005",
+            "ST21-003",
+            "OP10-011",
+            "OP14-022",
+            "OP13-037",
+            "EB04-007"
+          ],
+          "board": [
+            "OP01-016"
+          ],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "EB02-017",
+            "EB04-007",
+            "OP01-016",
+            "OP05-038",
+            "OP13-037",
+            "OP13-040",
+            "OP14-031",
+            "OP15-032",
+            "OP15-035",
+            "OP16-004",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "OP01-016",
+            "OP13-027",
+            "OP13-118",
+            "OP14-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP01-016": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP07-076",
+            "ST34-004",
+            "ST18-002",
+            "OP07-077",
+            "OP17-073"
+          ],
+          "trash": [
+            "OP07-077"
+          ],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "EB04-040",
+            "OP07-077",
+            "OP17-062",
+            "ST18-002"
+          ],
+          "life_cards": [
+            "EB04-031",
+            "OP07-076",
+            "OP07-077",
+            "OP17-062",
+            "ST18-002"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-058",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 1 Don",
+            "Buff Nami [\"OP01-016\">OP01-016] -2000"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-076",
+            "ST34-004",
+            "ST18-002",
+            "OP07-077",
+            "OP17-073",
+            "EB04-032"
+          ],
+          "board": [],
+          "trash": [
+            "OP07-077"
+          ],
+          "life": 5,
+          "deck": [
+            "EB04-040",
+            "OP07-077",
+            "OP17-062",
+            "ST18-002"
+          ],
+          "life_cards": [
+            "EB04-031",
+            "OP07-076",
+            "OP07-077",
+            "OP17-062",
+            "ST18-002"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "ST31-005",
+            "ST21-003",
+            "OP10-011",
+            "OP14-022",
+            "OP13-037",
+            "EB04-007",
+            "OP14-022"
+          ],
+          "trash": [],
+          "board": [
+            "OP01-016"
+          ],
+          "life": 3,
+          "deck": [
+            "EB02-017",
+            "EB04-007",
+            "OP01-016",
+            "OP05-038",
+            "OP13-037",
+            "OP13-040",
+            "OP14-031",
+            "OP15-032",
+            "OP15-035",
+            "OP16-004",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "OP01-016",
+            "OP13-027",
+            "OP13-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP01-016": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-022",
+          "card_name": "Usopp",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "Rest Thousand Sunny [\"ST31-005\">ST31-005]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP13-001\">OP13-001]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-073"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST31-005",
+            "ST21-003",
+            "OP10-011",
+            "OP13-037",
+            "EB04-007",
+            "OP14-022",
+            "EB02-017"
+          ],
+          "board": [
+            "OP01-016",
+            "OP14-022"
+          ],
+          "trash": [],
+          "life": 3,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP05-038",
+            "OP13-037",
+            "OP13-040",
+            "OP14-031",
+            "OP15-032",
+            "OP15-035",
+            "OP16-004",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "OP01-016",
+            "OP13-027",
+            "OP13-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP14-022": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP07-076",
+            "ST34-004",
+            "ST18-002",
+            "OP07-077",
+            "EB04-032"
+          ],
+          "trash": [
+            "OP07-077",
+            "OP17-073"
+          ],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "EB04-040",
+            "OP07-077",
+            "OP17-062",
+            "ST18-002"
+          ],
+          "life_cards": [
+            "EB04-031",
+            "OP07-076",
+            "OP07-077",
+            "OP17-062",
+            "ST18-002"
+          ],
+          "don_deck": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-058",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 1 Don",
+            "Buff Usopp [\"OP14-022\">OP14-022] -2000"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "EB04-032",
+          "card_name": "Queen",
+          "effects": [
+            "Trash King [\"EB04-031\">EB04-031]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP07-077",
+          "card_name": "We're Going to Claim the One Piece!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Queen [\"EB04-032\">EB04-032]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-076",
+            "ST34-004",
+            "ST18-002",
+            "OP08-069",
+            "OP17-074",
+            "EB04-032"
+          ],
+          "board": [
+            "EB04-032"
+          ],
+          "trash": [
+            "OP07-077",
+            "OP17-073",
+            "EB04-031",
+            "OP07-077"
+          ],
+          "life": 5,
+          "deck": [
+            "EB04-031",
+            "EB04-040",
+            "OP07-077",
+            "OP17-060",
+            "OP17-062",
+            "OP17-074",
+            "ST18-002"
+          ],
+          "life_cards": [
+            "EB04-031",
+            "OP07-076",
+            "OP07-077",
+            "OP17-062",
+            "ST18-002"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB04-032": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST31-005",
+            "ST21-003",
+            "OP10-011",
+            "OP13-037",
+            "EB04-007",
+            "OP14-022",
+            "EB02-017"
+          ],
+          "trash": [],
+          "board": [
+            "OP01-016",
+            "OP14-022"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP05-038",
+            "OP13-037",
+            "OP13-040",
+            "OP14-031",
+            "OP15-032",
+            "OP15-035",
+            "OP16-004",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "OP01-016",
+            "OP13-027",
+            "OP13-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP14-022": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-037",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Set Roronoa Zoro [\"OP13-037\">OP13-037] to Active"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP01-016",
+          "to_name": "Nami",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP01-016",
+          "to_name": "Nami",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP01-016",
+          "to_name": "Nami",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Nami",
+          "attacker_code": "OP01-016",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB04-032"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "Rest Thousand Sunny [\"ST31-005\">ST31-005]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP13-001\">OP13-001]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-022",
+          "card_name": "Usopp",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST31-005",
+            "ST21-003",
+            "OP10-011",
+            "EB04-007",
+            "OP14-022",
+            "EB02-017",
+            "OP13-040"
+          ],
+          "board": [
+            "OP01-016",
+            "OP14-022",
+            "OP13-037"
+          ],
+          "trash": [],
+          "life": 3,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP05-038",
+            "OP13-037",
+            "OP14-031",
+            "OP15-032",
+            "OP15-035",
+            "OP16-004",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "OP01-016",
+            "OP13-027",
+            "OP13-118"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP01-016": 1,
+            "OP13-037": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP07-076",
+            "ST34-004",
+            "ST18-002",
+            "OP08-069",
+            "OP17-074",
+            "EB04-031"
+          ],
+          "trash": [
+            "OP07-077",
+            "OP17-073",
+            "EB04-031",
+            "OP07-077",
+            "EB04-032"
+          ],
+          "board": [
+            "EB04-032"
+          ],
+          "life": 4,
+          "deck": [
+            "EB04-031",
+            "EB04-040",
+            "OP07-077",
+            "OP17-060",
+            "OP17-062",
+            "OP17-074",
+            "ST18-002"
+          ],
+          "life_cards": [
+            "OP07-076",
+            "OP07-077",
+            "OP17-062",
+            "ST18-002"
+          ],
+          "don_deck": [
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested": {
+            "EB04-032": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-058",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 1 Don",
+            "Buff Usopp [\"OP14-022\">OP14-022] -2000"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-076",
+            "ST34-004",
+            "ST18-002",
+            "OP08-069",
+            "OP17-074",
+            "EB04-031",
+            "EB04-030"
+          ],
+          "board": [
+            "EB04-032"
+          ],
+          "trash": [
+            "OP07-077",
+            "OP17-073",
+            "EB04-031",
+            "OP07-077",
+            "EB04-032"
+          ],
+          "life": 4,
+          "deck": [
+            "EB04-031",
+            "EB04-040",
+            "OP07-077",
+            "OP17-060",
+            "OP17-062",
+            "OP17-074",
+            "ST18-002"
+          ],
+          "life_cards": [
+            "OP07-076",
+            "OP07-077",
+            "OP17-062",
+            "ST18-002"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "ST31-005",
+            "ST21-003",
+            "OP10-011",
+            "EB04-007",
+            "OP14-022",
+            "EB02-017",
+            "OP13-040"
+          ],
+          "trash": [],
+          "board": [
+            "OP01-016",
+            "OP14-022",
+            "OP13-037"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP05-038",
+            "OP13-037",
+            "OP14-031",
+            "OP15-032",
+            "OP15-035",
+            "OP16-004",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "OP01-016",
+            "OP13-027",
+            "OP13-118"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP01-016": 1,
+            "OP13-037": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-007",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Grant Monkey D. Luffy [\"OP13-001\">OP13-001] 2000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "Rest Thousand Sunny [\"ST31-005\">ST31-005]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP13-001\">OP13-001]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-022",
+          "to_name": "Usopp",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Usopp",
+          "attacker_code": "OP14-022",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "OP13-037",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST18-002"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-037",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Set Roronoa Zoro [\"OP13-037\">OP13-037] to Active"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-022",
+          "card_name": "Usopp",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST31-005",
+            "ST21-003",
+            "OP10-011",
+            "OP14-022",
+            "EB02-017",
+            "OP13-040",
+            "OP16-004"
+          ],
+          "board": [
+            "OP01-016",
+            "OP14-022",
+            "OP13-037",
+            "EB04-007"
+          ],
+          "trash": [],
+          "life": 3,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP05-038",
+            "OP13-037",
+            "OP14-031",
+            "OP15-032",
+            "OP15-035",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "OP01-016",
+            "OP13-027",
+            "OP13-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ],
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP14-022": 1,
+            "OP13-037": 1,
+            "EB04-007": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP07-076",
+            "ST34-004",
+            "OP08-069",
+            "OP17-074",
+            "EB04-031",
+            "EB04-030",
+            "OP07-076",
+            "ST18-002"
+          ],
+          "trash": [
+            "OP07-077",
+            "OP17-073",
+            "EB04-031",
+            "OP07-077",
+            "EB04-032",
+            "ST18-002"
+          ],
+          "board": [
+            "EB04-032"
+          ],
+          "life": 2,
+          "deck": [
+            "EB04-031",
+            "EB04-040",
+            "OP07-077",
+            "OP17-060",
+            "OP17-062",
+            "OP17-074",
+            "ST18-002"
+          ],
+          "life_cards": [
+            "OP07-077",
+            "OP17-062"
+          ],
+          "don_deck": [
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-074",
+          "card_name": "Yamato",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Usopp [\"OP14-022\">OP14-022]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-058",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 1 Don",
+            "Buff Roronoa Zoro [\"EB04-007\">EB04-007] -2000"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-076",
+            "ST34-004",
+            "OP08-069",
+            "EB04-031",
+            "EB04-030",
+            "OP07-076",
+            "ST18-002",
+            "OP17-060"
+          ],
+          "board": [
+            "EB04-032",
+            "OP17-074"
+          ],
+          "trash": [
+            "OP07-077",
+            "OP17-073",
+            "EB04-031",
+            "OP07-077",
+            "EB04-032",
+            "ST18-002"
+          ],
+          "life": 2,
+          "deck": [
+            "EB04-031",
+            "EB04-040",
+            "OP07-077",
+            "OP17-062",
+            "OP17-074",
+            "ST18-002"
+          ],
+          "life_cards": [
+            "OP07-077",
+            "OP17-062"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-074": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST31-005",
+            "ST21-003",
+            "OP10-011",
+            "OP14-022",
+            "EB02-017",
+            "OP13-040",
+            "OP16-004"
+          ],
+          "trash": [],
+          "board": [
+            "OP01-016",
+            "OP14-022",
+            "OP13-037",
+            "EB04-007"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP05-038",
+            "OP13-037",
+            "OP14-031",
+            "OP15-032",
+            "OP15-035",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "OP01-016",
+            "OP13-027",
+            "OP13-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ],
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP14-022": 1,
+            "OP13-037": 1,
+            "EB04-007": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB02-017",
+          "card_name": "Nami",
+          "effects": [
+            "<b>Reveal and Draw Usopp [\"OP14-022\">OP14-022]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP14-022",
+          "card_name": "Usopp",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "Rest Thousand Sunny [\"ST31-005\">ST31-005]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP13-001\">OP13-001]",
+            "<b>Reveal and Draw Sanji [\"OP13-027\">OP13-027]</b>",
+            "Rest Thousand Sunny [\"ST31-005\">ST31-005]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP13-001\">OP13-001]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "EB04-007",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP17-074",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-037",
+          "to_name": "Roronoa Zoro",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-037",
+          "to_name": "Roronoa Zoro",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "OP13-037",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-022",
+          "to_name": "Usopp",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-022",
+          "to_name": "Usopp",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Usopp",
+          "attacker_code": "OP14-022",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-060",
+            "OP17-060",
+            "ST18-002"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-037",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Set Roronoa Zoro [\"OP13-037\">OP13-037] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST21-003",
+            "OP10-011",
+            "OP14-022",
+            "OP13-040",
+            "OP16-004",
+            "OP05-038",
+            "OP13-027"
+          ],
+          "board": [
+            "OP01-016",
+            "OP14-022",
+            "OP13-037",
+            "EB04-007",
+            "OP14-022"
+          ],
+          "trash": [
+            "EB02-017",
+            "ST31-005"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP13-027",
+            "OP13-037",
+            "OP13-040",
+            "OP14-031",
+            "OP15-032",
+            "OP15-035",
+            "OP16-004",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "OP01-016",
+            "OP13-027",
+            "OP13-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP14-022": 2,
+            "OP13-037": 1,
+            "EB04-007": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP07-076",
+            "ST34-004",
+            "OP08-069",
+            "EB04-031",
+            "EB04-030",
+            "OP07-076",
+            "OP17-062"
+          ],
+          "trash": [
+            "OP07-077",
+            "OP17-073",
+            "EB04-031",
+            "OP07-077",
+            "EB04-032",
+            "ST18-002",
+            "OP17-074",
+            "OP07-077",
+            "OP17-060",
+            "OP17-060",
+            "ST18-002"
+          ],
+          "board": [
+            "EB04-032"
+          ],
+          "life": 0,
+          "deck": [
+            "EB04-030",
+            "EB04-031",
+            "EB04-040",
+            "OP07-076",
+            "OP07-077",
+            "OP17-062",
+            "OP17-074",
+            "ST18-002"
+          ],
+          "don_deck": [
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-058",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 1 Don",
+            "Buff Roronoa Zoro [\"EB04-007\">EB04-007] -2000"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-076",
+            "ST34-004",
+            "OP08-069",
+            "EB04-031",
+            "EB04-030",
+            "OP07-076",
+            "OP17-062",
+            "OP17-076"
+          ],
+          "board": [
+            "EB04-032"
+          ],
+          "trash": [
+            "OP07-077",
+            "OP17-073",
+            "EB04-031",
+            "OP07-077",
+            "EB04-032",
+            "ST18-002",
+            "OP17-074",
+            "OP07-077",
+            "OP17-060",
+            "OP17-060",
+            "ST18-002"
+          ],
+          "life": 0,
+          "deck": [
+            "EB04-030",
+            "EB04-031",
+            "EB04-040",
+            "OP07-076",
+            "OP07-077",
+            "OP17-062",
+            "OP17-074",
+            "ST18-002"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "ST21-003",
+            "OP10-011",
+            "OP14-022",
+            "OP13-040",
+            "OP16-004",
+            "OP05-038",
+            "OP13-027"
+          ],
+          "trash": [
+            "EB02-017",
+            "ST31-005"
+          ],
+          "board": [
+            "OP01-016",
+            "OP14-022",
+            "OP13-037",
+            "EB04-007",
+            "OP14-022"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP13-027",
+            "OP13-037",
+            "OP13-040",
+            "OP14-031",
+            "OP15-032",
+            "OP15-035",
+            "OP16-004",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "OP01-016",
+            "OP13-027",
+            "OP13-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "attached_don": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP14-022": 2,
+            "OP13-037": 1,
+            "EB04-007": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 10,
+          "to": "EB04-007",
+          "to_name": "Roronoa Zoro",
+          "total": 10
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "EB04-007",
+          "target": "Kaido [\"OP17-058\">OP17-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

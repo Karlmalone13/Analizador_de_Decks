@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP07-076",
+      "name": "OP07-076",
+      "count": 3
+    },
+    {
+      "code": "OP17-073",
+      "name": "OP17-073",
+      "count": 2
+    },
+    {
+      "code": "OP17-060",
+      "name": "Ulti & Page One",
+      "count": 2
+    },
+    {
+      "code": "OP17-074",
+      "name": "Yamato",
+      "count": 2
+    },
+    {
+      "code": "EB04-040",
+      "name": "EB04-040",
+      "count": 2
+    },
+    {
+      "code": "OP17-076",
+      "name": "OP17-076",
+      "count": 1
+    },
+    {
+      "code": "EB04-032",
+      "name": "Queen",
+      "count": 1
+    },
+    {
+      "code": "ST34-004",
+      "name": "Charlotte Linlin",
+      "count": 1
+    },
+    {
+      "code": "OP07-077",
+      "name": "OP07-077",
+      "count": 1
+    },
+    {
+      "code": "EB04-031",
+      "name": "King",
+      "count": 1
+    },
+    {
+      "code": "OP17-062",
+      "name": "Kaido",
+      "count": 1
+    },
+    {
+      "code": "EB04-030",
+      "name": "EB04-030",
+      "count": 1
+    }
+  ],
+  "total_seen": 18,
+  "leader": "OP17-058"
+}

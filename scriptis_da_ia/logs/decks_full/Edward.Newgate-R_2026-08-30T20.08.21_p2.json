@@ -1,0 +1,65 @@
+{
+  "leader": "OP02-001",
+  "source_deck": "Barba Branca op17",
+  "source_dir": "E:\\Games\\OnePieceSimulador\\Builds_Windows\\Decks",
+  "captured_at_ingest": true,
+  "cards": [
+    {
+      "code": "OP01-006",
+      "count": 4
+    },
+    {
+      "code": "OP01-029",
+      "count": 4
+    },
+    {
+      "code": "OP02-003",
+      "count": 2
+    },
+    {
+      "code": "OP02-004",
+      "count": 4
+    },
+    {
+      "code": "OP02-007",
+      "count": 2
+    },
+    {
+      "code": "OP02-008",
+      "count": 4
+    },
+    {
+      "code": "OP02-013",
+      "count": 2
+    },
+    {
+      "code": "OP02-015",
+      "count": 4
+    },
+    {
+      "code": "OP02-018",
+      "count": 4
+    },
+    {
+      "code": "OP02-022",
+      "count": 4
+    },
+    {
+      "code": "OP02-024",
+      "count": 4
+    },
+    {
+      "code": "OP03-003",
+      "count": 4
+    },
+    {
+      "code": "OP03-013",
+      "count": 4
+    },
+    {
+      "code": "ST01-014",
+      "count": 4
+    }
+  ],
+  "total": 50
+}

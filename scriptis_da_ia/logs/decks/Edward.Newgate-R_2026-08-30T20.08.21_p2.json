@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP02-008",
+      "name": "OP02-008",
+      "count": 3
+    },
+    {
+      "code": "OP02-018",
+      "name": "Marco",
+      "count": 2
+    },
+    {
+      "code": "OP02-013",
+      "name": "Portgas D. Ace",
+      "count": 2
+    },
+    {
+      "code": "OP03-003",
+      "name": "Izou",
+      "count": 2
+    },
+    {
+      "code": "OP03-013",
+      "name": "Marco",
+      "count": 2
+    },
+    {
+      "code": "OP02-015",
+      "name": "Makino",
+      "count": 2
+    },
+    {
+      "code": "OP01-029",
+      "name": "OP01-029",
+      "count": 2
+    },
+    {
+      "code": "ST01-014",
+      "name": "ST01-014",
+      "count": 1
+    },
+    {
+      "code": "OP02-004",
+      "name": "OP02-004",
+      "count": 1
+    },
+    {
+      "code": "OP02-024",
+      "name": "Moby Dick",
+      "count": 1
+    },
+    {
+      "code": "OP02-022",
+      "name": "OP02-022",
+      "count": 1
+    }
+  ],
+  "total_seen": 19,
+  "leader": "OP02-001"
+}
