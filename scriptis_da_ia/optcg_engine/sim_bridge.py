@@ -28,6 +28,7 @@ from optcg_engine.decision_engine import (
     attack_time_power,
     character_can_attack_now,
     effective_hand_play_cost,
+    fator_esvaziar_mao,
     get_card_effects,
     _load_effects_db,
     _load_analysis_db,
@@ -1893,8 +1894,21 @@ def escolher_opcao_de_efeito(gs: GameState, opp_gs: GameState,
             custo = sum(ee._trash_value(c) for c in piores)
             if len(piores) < n:      # nao tenho N cartas: perco o que tenho
                 custo += (n - len(piores)) * CUSTO_CARTA_PRO_OPONENTE
-            motivo = (f'eu perco {n} (piores: '
-                      + ', '.join(f'{c.code}={ee._trash_value(c):.0f}' for c in piores) + ')')
+            # TAMANHO DA MAO importa, e a soma carta-a-carta nao sabe disso.
+            # Achado ao vivo 29/08 (usuario): "o bot descartou muitas cartas
+            # com o efeito da linlin e acabou ficando SEM CARTA NA MAO" --
+            # cada descarte era barato isoladamente, e somando deu mao vazia.
+            #
+            # O fator sai do PROPRIO modelo do motor (`EVAL_WEIGHTS`), nao de
+            # um numero novo: `hand_first` (8.0) vale bem mais que
+            # `hand_extra` (3.0), ou seja, a 1a carta da mao e muito mais
+            # valiosa que as extras. A razao entre a perda REAL de valor de
+            # mao e a perda "normal" (N extras) da exatamente quanto este
+            # descarte especifico dói a mais.
+            custo *= fator_esvaziar_mao(len(gs.hand), n)
+            motivo = (f'eu perco {n} de {len(gs.hand)} (piores: '
+                      + ', '.join(f'{c.code}={ee._trash_value(c):.0f}' for c in piores)
+                      + f'), fator mao {fator_esvaziar_mao(len(gs.hand), n):.2f}')
         else:
             custo = None
             motivo = 'rotulo nao reconhecido'

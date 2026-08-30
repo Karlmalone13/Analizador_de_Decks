@@ -911,6 +911,51 @@ except Exception:
 # (tune_weights.py) varia estes valores por self-play e escreve o vencedor em
 # eval_weights.json; aqui carregamos esse cache se existir. Defaults = os
 # priors medidos em 13/07 (que regridem Krieg — por isso a tunagem).
+def tiers_de_mao(n_cartas: int) -> tuple:
+    """Como o motor divide a mao em FAIXAS de valor: (quantas contam como
+    `hand_first`, quantas contam como `hand_extra`).
+
+    FONTE UNICA do formato -- `_evaluate_state_v2` usa esta funcao pra
+    montar os termos, e `sim_bridge.escolher_opcao_de_efeito` usa a mesma
+    pra medir quanto DOI perder cartas da mao. Sem isto as duas
+    reimplementavam o modelo, e a 2a implementacao ja nasceu ERRADA
+    (assumiu "1a carta vale hand_first, o resto extra"; o modelo real e
+    "as 5 primeiras valem hand_first"). O hook de pre-commit pegou --
+    exatamente o que a regra `REGRA_SEM_DUPLICACAO.md` existe pra impedir.
+    """
+    return min(n_cartas, 5), max(0, n_cartas - 5)
+
+
+def valor_de_mao(n_cartas: int) -> float:
+    """Valor de ter N cartas na mao, no modelo do proprio motor."""
+    if n_cartas <= 0:
+        return 0.0
+    t1, t2 = tiers_de_mao(n_cartas)
+    return t1 * float(EVAL_WEIGHTS['hand_first']) + t2 * float(EVAL_WEIGHTS['hand_extra'])
+
+
+def fator_esvaziar_mao(tamanho: int, n: int) -> float:
+    """Quanto perder `n` cartas doi A MAIS do que perder `n` cartas 'normais'.
+
+    1.0 enquanto a mao continua confortavel; cresce quando o descarte come
+    a faixa CARA (`hand_first`) -- ou seja, quando comeca a esvaziar.
+
+    POR QUE EXISTE (achado ao vivo 29/08, relato do usuario): "o bot
+    descartou muitas cartas com o efeito da linlin e acabou ficando SEM
+    CARTA NA MAO". Cada descarte era barato avaliado ISOLADAMENTE; somados,
+    esvaziaram a mao. Quem decide isso (`sim_bridge.escolher_opcao_de_efeito`)
+    chama esta funcao em vez de reimplementar -- a 1a tentativa fez a conta
+    la e errou o modelo, e o hook de pre-commit barrou por
+    `REGRA_SEM_DUPLICACAO`. O modelo de mao mora AQUI, com os pesos.
+    """
+    extra = float(EVAL_WEIGHTS['hand_extra']) or 1.0
+    normal = n * extra
+    if not normal:
+        return 1.0
+    real = valor_de_mao(tamanho) - valor_de_mao(max(0, tamanho - n))
+    return max(1.0, real / normal)
+
+
 EVAL_WEIGHTS = {
     'dmg': 120.0, 'life_mult': 1.0, 'board_mine': 1.0, 'board_opp': 0.8,
     'opp_blocker': 25.0, 'hand_first': 8.0, 'hand_extra': 3.0,
@@ -18695,8 +18740,9 @@ class OPTCGMatch:
         # que ainda puxa `activate` pra baixo, mesmo apos corrigir o vies
         # de acumulo do human_alignment.
         nh = len(p.hand)
-        score += (_termo('hand_first', min(nh, 5), W)
-                  + _termo('hand_extra', max(0, nh - 5), W))
+        _t1, _t2 = tiers_de_mao(nh)
+        score += (_termo('hand_first', _t1, W)
+                  + _termo('hand_extra', _t2, W))
         # poder de counter na mão = vida futura -- proxy de SOBREVIVENCIA.
         score += _termo('counter_hand', p.counter_in_hand() / 1000, W)
 
