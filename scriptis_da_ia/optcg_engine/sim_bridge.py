@@ -616,7 +616,7 @@ def choose_action(gs: GameState, opp_gs: GameState,
                                     engine=engine, gs=gs, opp_gs=opp_gs)
                     for a in actions
                 ]
-                trace_out["resource_ledger_before"] = resource_ledger(gs)
+                trace_out["resource_ledger_before"] = resource_ledger(gs, engine)
             print(f"[ENG] {len(actions)} acoes | hand={len(gs.hand)} don={gs.don_available} turn={gs.turn}", flush=True)
             if actions:
                 print(f"[ENG] top3: {[(a[0],a[1]) for a in actions[:3]]}", flush=True)
@@ -891,11 +891,30 @@ def action_to_trace(action: Optional[tuple], allowed_types: Optional[set] = None
     return result
 
 
-def resource_ledger(gs: GameState) -> dict:
-    """Snapshot publico de recursos, reutilizavel na decisao e transicao."""
+def resource_ledger(gs: GameState, engine=None) -> dict:
+    """Snapshot publico de recursos, reutilizavel na decisao e transicao.
+
+    Com `engine`, inclui a CONTABILIDADE DA RESERVA DE DON.
+
+    POR QUE (29/08): duas correcoes seguidas da habilidade reativa do lider
+    (cegueira a `on_opp_attack`; `attach_don` furando a reserva) foram
+    feitas INFERINDO a causa a partir do resultado -- "zero DON ativo na
+    hora do disparo" -- e as duas vezes o comportamento ao vivo nao mudou.
+    O log mostrava o EFEITO e nunca a DECISAO: quanto o motor decidiu
+    reservar, se ele sequer achou que havia uso reativo, e qual teto
+    aplicou. Sem isso, consertar vira chute; foi chute duas vezes.
+
+    Os quatro campos abaixo respondem, por decisao:
+      - reservou quanto (`don_reserva`)
+      - achou que existe uso reativo? (`don_reserva_tem_uso`) -- se False,
+        a reserva e cortada em 0 logo na entrada
+      - qual o teto pelo recurso reativo disponivel (`don_reserva_teto`) --
+        `min(reserva, teto)` zera tudo quando o teto e 0
+      - quanto sobrou pra gastar (`don_usavel`)
+    """
     attached = sum(getattr(c, "don_attached", 0) for c in gs.field_chars)
     attached += getattr(gs.leader, "don_attached", 0) if gs.leader else 0
-    return {
+    out = {
         "active_don": gs.don_available,
         "rested_don": gs.don_rested,
         "attached_don": attached,
@@ -905,6 +924,16 @@ def resource_ledger(gs: GameState) -> dict:
         "board": len(gs.field_chars),
         "life": gs.life_count(),
     }
+    if engine is not None:
+        try:
+            reserva = engine._don_reserve_for_defense()
+            out["don_reserva"] = reserva
+            out["don_reserva_teto"] = engine._max_don_needed_for_reactive_use()
+            out["don_reserva_tem_uso"] = bool(engine._has_don_reactive_use())
+            out["don_usavel"] = max(0, gs.don_available - reserva)
+        except Exception as e:      # telemetria nunca derruba a decisao
+            out["don_reserva_erro"] = str(e)[:80]
+    return out
 
 
 def action_score_components(action: tuple, engine, gs: GameState,

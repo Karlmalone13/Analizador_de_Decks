@@ -283,6 +283,15 @@ def analyze_decision_events(lines) -> dict:
     latencies = []
     latency_segments: dict[str, list[float]] = {}
     main_decisions = 0
+    # CONTABILIDADE DA RESERVA DE DON (29/08). Sem isto o relatorio mostrava
+    # so o EFEITO ("zero DON ativo quando a habilidade disparou") e nunca a
+    # DECISAO que levou ate ele -- e foi inferindo a causa a partir do efeito
+    # que dois consertos seguidos erraram o alvo.
+    don_reserva_amostras = 0
+    don_reserva_soma = 0
+    don_sem_uso_reativo = 0
+    don_teto_zero = 0
+    don_reservou_mas_gastou = 0
     score_component_decisions = 0
     line_search_decisions = 0
     resource_ledger_decisions = 0
@@ -358,6 +367,18 @@ def analyze_decision_events(lines) -> dict:
             line_search_decisions += int(isinstance(decision.get("line_search"), dict))
             resource_ledger_decisions += int(
                 isinstance(decision.get("resource_ledger_before"), dict))
+            _led = decision.get("resource_ledger_before") or {}
+            if "don_reserva" in _led:
+                don_reserva_amostras += 1
+                don_reserva_soma += _led.get("don_reserva") or 0
+                if not _led.get("don_reserva_tem_uso"):
+                    don_sem_uso_reativo += 1
+                elif not (_led.get("don_reserva_teto") or 0):
+                    # tem uso reativo mas o TETO zerou a reserva -- foi
+                    # exatamente esta combinacao que manteve o lider sem DON
+                    don_teto_zero += 1
+                if (_led.get("don_reserva") or 0) > 0 and (_led.get("don_usavel") or 0) == 0:
+                    don_reservou_mas_gastou += 1
             attack_quality = decision.get("attack_quality")
             if isinstance(attack_quality, dict):
                 attack_quality_samples.append(attack_quality)
@@ -635,6 +656,18 @@ def analyze_decision_events(lines) -> dict:
                 _ratio(line_search_decisions, main_decisions, 100)),
             "resource_ledger_coverage_pct": _round(
                 _ratio(resource_ledger_decisions, main_decisions, 100)),
+            "don_reserva": {
+                "amostras": don_reserva_amostras,
+                "media_reservada": _round(
+                    don_reserva_soma / don_reserva_amostras
+                    if don_reserva_amostras else None),
+                "sem_uso_reativo_pct": _round(
+                    _ratio(don_sem_uso_reativo, don_reserva_amostras, 100)),
+                "teto_zerou_a_reserva_pct": _round(
+                    _ratio(don_teto_zero, don_reserva_amostras, 100)),
+                "reservou_e_nada_sobrou_pct": _round(
+                    _ratio(don_reservou_mas_gastou, don_reserva_amostras, 100)),
+            },
             "transition_observation_coverage_pct": _round(
                 _ratio(transition_observations,
                        by_kind.get("main", {}).get("confirmed", 0), 100)),
