@@ -57,6 +57,14 @@ fi
 # `bridge\.` cobre bot_optcgsim.py (varredura retroativa 25/07/2026,
 # bloco 375 -- esse arquivo chama sim_bridge quase sempre via
 # `bridge.metodo(...)`, nao importando DecisionEngine/EffectExecutor
+#
+# 29/08: 4 nomes adicionados a lista. Sao pontos de entrada REAIS do
+# decision_engine que o gate nao conhecia, e por isso barrava telemetria
+# legitima (`don_cost` por acao) e delegacao correta (o modelo de valor de
+# mao, que foi MOVIDO pro motor exatamente por causa deste gate):
+#   effective_hand_play_cost, tiers_de_mao, valor_de_mao, fator_esvaziar_mao
+# Adicionar aqui e diferente de usar --no-verify: o gate continua valendo,
+# so passou a reconhecer chamadas que sempre foram ao motor.
 # direto como sim_bridge.py faz).
 # `actor_effect_is_hand_cost_only`/`actor_step_numeric_filter` adicionados
 # 08/08/2026 (mesclando trabalho de sessao local, blocos 466/2c7400a) --
@@ -65,7 +73,7 @@ fi
 # CHAMA a funcao ja importada (sem repetir a linha de import no mesmo
 # hunk -U0) nao continha nenhum touchpoint conhecido, disparando falso
 # positivo neste exato commit de merge.
-ENGINE_TOUCHPOINTS='DecisionEngine|EffectExecutor|avaliar_carta|_trash_value|should_use_counter|char_value_score|_step_is_viable|_worth_paying_optional_costs|get_card_effects|score_attack_target|_score_activate_main|_should_activate_main|don_needed_for_attack|buff_wins_combat|debuff_flips_attack_in_my_favor|body_provides_defense|would_lose_last_defender|trash_cost_board_perda|_simulate_sequence_values|_generate_and_score_actions|OpponentModel|actor_effect_is_hand_cost_only|actor_step_numeric_filter|bridge\.'
+ENGINE_TOUCHPOINTS='DecisionEngine|EffectExecutor|avaliar_carta|_trash_value|should_use_counter|char_value_score|_step_is_viable|_worth_paying_optional_costs|get_card_effects|score_attack_target|_score_activate_main|_should_activate_main|don_needed_for_attack|buff_wins_combat|debuff_flips_attack_in_my_favor|body_provides_defense|would_lose_last_defender|trash_cost_board_perda|_simulate_sequence_values|_generate_and_score_actions|OpponentModel|actor_effect_is_hand_cost_only|actor_step_numeric_filter|effective_hand_play_cost|fator_esvaziar_mao|valor_de_mao|tiers_de_mao|bridge\.'
 
 # bot_optcgsim.py adicionado apos a varredura retroativa (bloco 375) --
 # antes desta linha, mudancas nesse arquivo nao passavam por NENHUM gate

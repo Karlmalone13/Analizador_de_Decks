@@ -858,6 +858,24 @@ def choose_action(gs: GameState, opp_gs: GameState,
     return result[0]
 
 
+def _don_cost_da_acao(action: tuple, gs=None, opp_gs=None):
+    """Quanto DON esta acao consome. None quando nao da pra saber na
+    geracao (ex: DON anexado durante a execucao de um ataque)."""
+    kind = str(action[1]) if len(action) > 1 else ''
+    if kind == 'attach_don':
+        falta = action[3] if len(action) > 3 else None
+        return int(falta) if isinstance(falta, (int, float)) else None
+    if kind == 'play' and gs is not None:
+        card = action[2] if len(action) > 2 else None
+        if card is None:
+            return None
+        try:
+            return int(effective_hand_play_cost(gs, card, opp_gs))
+        except Exception:
+            return None
+    return None
+
+
 def action_to_trace(action: Optional[tuple], allowed_types: Optional[set] = None,
                     excluded_activate_codes: Optional[set] = None,
                     engine=None, gs=None, opp_gs=None) -> Optional[dict]:
@@ -878,6 +896,18 @@ def action_to_trace(action: Optional[tuple], allowed_types: Optional[set] = None
         "card_code": code,
         "card_uid": getattr(card, "_deck_uid", 0) if card is not None else 0,
         "target_type": target_type if isinstance(target_type, str) else None,
+        # CUSTO EM DON desta acao, explicito (29/08).
+        #
+        # Sem ele, "no que o DON foi gasto?" so dava pra responder
+        # DIFERENCIANDO `active_don` entre decisoes consecutivas -- e o
+        # ledger e `_before`, entao a diferenca aparece na linha SEGUINTE e
+        # a atribuicao sai deslocada em uma acao. Reconstruir assim foi o
+        # que ja me fez errar o alvo duas vezes hoje.
+        #
+        # Pra `attach_don` o dado ja existia e era JOGADO FORA na linha
+        # acima: `target_type` carrega a quantidade (`falta`) como INT, e o
+        # filtro `isinstance(..., str)` descartava.
+        "don_cost": _don_cost_da_acao(action, gs, opp_gs),
         "target_code": getattr(target, "code", None) if target is not None else None,
         "target_uid": getattr(target, "_deck_uid", 0) if target is not None else 0,
         "executor_allowed": executor_allowed,
