@@ -81283,43 +81283,6 @@
       }
     }
   },
-  "OP17-058": {
-    "name": "There's No Authority in the World That Lasts Forever!!!",
-    "type": "EVENT",
-    "cost": 0,
-    "power": 0,
-    "counter": 0,
-    "life": 0,
-    "color": "Blue",
-    "sub_types": "Rocks Pirates",
-    "attribute": "",
-    "effects": {
-      "counter": {
-        "steps": [
-          {
-            "action": "buff_power",
-            "amount": 2000,
-            "target": "leader_or_character",
-            "duration": "battle_only"
-          }
-        ]
-      },
-      "main": {
-        "steps": [
-          {
-            "action": "gain_unblockable",
-            "duration": "this_turn"
-          }
-        ],
-        "costs": [
-          {
-            "type": "rest_don",
-            "count": 1
-          }
-        ]
-      }
-    }
-  },
   "OP17-059": {
     "name": "Kaido",
     "type": "LEADER",
@@ -83230,6 +83193,56 @@
       }
     },
     "alias_de": "ST31-006"
+  },
+  "OP17-058": {
+    "name": "Kaido",
+    "type": "LEADER",
+    "cost": 0,
+    "power": 5000,
+    "counter": 0,
+    "life": 5,
+    "color": "Purple",
+    "sub_types": "The Four Emperors/Animal Kingdom Pirates",
+    "attribute": "Special",
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 2000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ],
+        "once_per_turn": true
+      },
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 2000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ],
+        "once_per_turn": true
+      }
+    },
+    "alias_de": "OP17-059"
   },
   "St22-012": {
     "name": "Marco",

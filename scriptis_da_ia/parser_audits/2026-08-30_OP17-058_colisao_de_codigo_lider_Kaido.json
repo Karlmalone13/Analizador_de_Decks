@@ -1,0 +1,41 @@
+{
+  "trigger_card": "OP17-058",
+  "problem": "COLISAO DE CODIGO, nao erro de gramatica. O jogo (1.42c.22) declara `[You] Leader is Kaido [\"OP17-058\">OP17-058]`, mas o banco tinha nesse codigo um EVENTO -- \"There's No Authority in the World That Lasts Forever!!!\" -- que era uma linha DUPLICADA byte a byte do OP17-055. Essa duplicata deslocou a numeracao e empurrou o lider Kaido de verdade para OP17-059. Resultado ao vivo: o motor jogou a partida inteira achando que o lider tinha `[Main] You may rest 1 of your DON!!: ... gains [Unblockable]`, que NAO tem limite por turno -- ativou em 100% dos seus turnos (3, 5, 7, 9, 11) e ficou sem DON. O usuario reportou como 'o Kaido usa o efeito do lider toda hora e acaba ficando sem don'. NAO era decisao ruim do motor: era a carta errada. O Kaido real e `[When Attacking]/[On Your Opponent's Attack][Once Per Turn] DON!!-1: ate 1 Personagem do oponente ganha -2000`.",
+  "grammar_family": "N/A -- e divergencia de DADO (codigo), nao de gramatica de efeito",
+  "regra_do_jogo": "O banco e indexado pelo codigo IMPRESSO na carta (correto). Quando o simulador usa outro codigo, a ponte e ALIASES_DO_SIMULADOR em gerar_dbs.py -- nunca renumerar o banco.",
+  "queries": [
+    "audit_code_collision.py (ferramenta NOVA nesta sessao): mina `Nome [\"CODIGO\">CODIGO]` de TODOS os combat logs bancados -- o que o jogo afirma em tempo de execucao -- e cruza com cards_rows.csv, procurando (a) codigos que apontam para cartas com nome incompativel e (b) linhas duplicadas dentro do mesmo set",
+    "audit_game_code_divergence.py (ja existia): confirmado que ele NAO acha esta classe -- compara apenas nomes de ARQUIVO de arte, entao ve codigo AUSENTE e numeracao +-1, e nao ve COLISAO"
+  ],
+  "cards_found": [
+    "OP17-058"
+  ],
+  "cards_changed": [
+    "OP17-058"
+  ],
+  "cards_unchanged_by_design": [],
+  "resolution_scope": "isolated_after_global_scan",
+  "resolution_note": "A varredura global de DUPLICATAS (numeros DISTINTOS com nome+tipo+texto identicos no mesmo set) achou exatamente UMA em 2.749 cartas: OP17 [55, 58]. As 17 divergencias de NOME que a varredura reportou foram inspecionadas uma a uma e 16 sao variantes de grafia/localizacao da MESMA carta (Spider's Web/Spiderweb, Zorojuro/Zoro-Juurou, Uroge/Urouge, Viola/Violet, Gear 2/Gear Two, Onami/O-Nami, Pirate Docking 6/Pirates Docking Six, etc.) -- so OP17-058 e carta genuinamente diferente.",
+  "fix": [
+    "1. Removida a linha duplicada OP17-058 de cards_rows.csv (identica byte a byte a OP17-055; assercao no script confirmou card_name E card_text iguais antes de remover). O lider Kaido permanece em OP17-059, que e o codigo IMPRESSO.",
+    "2. Adicionado 'OP17-058': 'OP17-059' a ALIASES_DO_SIMULADOR em gerar_dbs.py -- o mecanismo que o projeto ja usa pra ST31-005 e St22-012. O passo 1 era pre-requisito: aplicar_aliases pula quando a chave alias ja existe como carta real ('o banco manda')."
+  ],
+  "diff_parser": {
+    "GANHOU": 0,
+    "PERDEU": 1,
+    "MUDOU": 4,
+    "nota": "O unico PERDEU e o proprio OP17-058, que deixou de ter os efeitos do EVENTO porque passou a resolver como o LIDER Kaido -- e a mudanca pretendida, nao regressao. Os 4 MUDOU sao do fix de alvo-nomeado-inclui-lider do mesmo dia (parser_audits/2026-08-30_ST31-005_...), ja commitado; o snapshot de referencia estava anterior a ele."
+  },
+  "verificacao": "card_effects_db.json['OP17-058'] agora devolve name=Kaido, type=LEADER, power=5000, alias_de=OP17-059, com when_attacking/on_opp_attack, custo don_minus 1 opcional e once_per_turn=true -- o limite por turno que faltava e que causava o gasto de DON todo turno.",
+  "smoke": "smoke_fast.py OK",
+  "ferramenta_nova": "audit_code_collision.py -- roda depois de cada atualizacao do simulador, junto de audit_game_code_divergence.py. Colisao falha em SILENCIO (motor usa a carta errada a partida inteira); codigo ausente falha ALTO (carta vira copia cega). A primeira e a mais perigosa e nao tinha deteccao nenhuma ate aqui.",
+  "decision": "Corrigir por ALIAS, nao renumerando o banco. O banco e indexado pelo codigo IMPRESSO na carta (OP17-059 para o lider Kaido), que esta correto -- quem diverge e o simulador. Renumerar o banco pro codigo do jogo (tentado e REVERTIDO nesta sessao) quebraria a invariante que o proprio gerar_dbs.py documenta e deixaria o banco refem da numeracao interna do jogo, que muda a cada atualizacao. Duas edicoes, nessa ordem: (1) remover a linha duplicada em OP17-058, que e copia byte a byte do OP17-055 e nao deveria existir -- correta por si so, independente do alias; (2) declarar o alias OP17-058 -> OP17-059. A ordem importa: aplicar_aliases pula quando a chave alias ja existe como carta real ('o banco manda'), entao sem o passo 1 o passo 2 seria silenciosamente ignorado.",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=1, MUDOU=4. O unico PERDEU e o proprio OP17-058, que trocou os efeitos do EVENTO pelos do LIDER -- mudanca pretendida. Os 4 MUDOU sao do fix de alvo-nomeado do mesmo dia, ja commitado, com snapshot anterior a ele.",
+    "smoke_fast.py: OK",
+    "audit_code_collision.py (ferramenta nova): 0 colisoes e 0 duplicatas apos o fix; antes acusava OP17-058 e a duplicata OP17 [55, 58]",
+    "card_effects_db.json['OP17-058'] passou a devolver name=Kaido, type=LEADER, power=5000, alias_de=OP17-059, com once_per_turn=true e custo don_minus 1",
+    "fonte de verdade: 268 declaracoes `Leader is X [\"COD\">COD]` nos combat logs bancados; 267 batiam com o banco e so OP17-058 divergia",
+    "C# decompilado (_referencias/simulador-oficial) nao foi necessario aqui -- a divergencia e de dado, e o proprio log do jogo e autoritativo"
+  ]
+}

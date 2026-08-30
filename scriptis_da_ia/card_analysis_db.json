@@ -118559,50 +118559,6 @@
   "has_banish": false,
   "has_trigger": false
  },
- "OP17-058": {
-  "name": "There's No Authority in the World That Lasts Forever!!!",
-  "type": "EVENT",
-  "cost": 0,
-  "power": 0,
-  "counter": 0,
-  "life": 0,
-  "color": "Blue",
-  "sub_types": "Rocks Pirates",
-  "attribute": "",
-  "effects": [
-   {
-    "action": "buff_power",
-    "trigger": "counter",
-    "target": "leader_or_character"
-   },
-   {
-    "action": "gain_unblockable",
-    "trigger": "main"
-   }
-  ],
-  "synergy_states": {},
-  "text": "[Main] You may rest 1 of your DON!! cards: Up to 1 of your [Rocks.D.Xebec] gains [Unblockable] during this turn.\r\n[Counter] Up to 1 of your Leader with a type including \"Rocks Pirates\" or up to 1 of your Characters with a type including \"Rocks Pirates\" gains +2000 power during this battle.",
-  "is_searcher": false,
-  "draws": false,
-  "has_counter_value": false,
-  "has_counter_event": true,
-  "is_blocker": false,
-  "is_removal": false,
-  "kos": false,
-  "rests_opponent": false,
-  "bounces": false,
-  "gives_don": false,
-  "power_buff": true,
-  "heals": false,
-  "gains_life": false,
-  "attacks_life": false,
-  "trashes_own_life": false,
-  "has_rush": false,
-  "has_double_attack": false,
-  "has_unblockable": true,
-  "has_banish": false,
-  "has_trigger": false
- },
  "OP17-059": {
   "name": "Kaido",
   "type": "LEADER",
@@ -121057,6 +121013,52 @@
   "has_banish": false,
   "has_trigger": false,
   "alias_de": "ST31-006"
+ },
+ "OP17-058": {
+  "name": "Kaido",
+  "type": "LEADER",
+  "cost": 0,
+  "power": 5000,
+  "counter": 0,
+  "life": 5,
+  "color": "Purple",
+  "sub_types": "The Four Emperors/Animal Kingdom Pirates",
+  "attribute": "Special",
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "when_attacking",
+    "target": "opp_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "on_opp_attack",
+    "target": "opp_character"
+   }
+  ],
+  "synergy_states": {},
+  "text": "[When Attacking]/[On Your Opponent's Attack][Once Per Turn] DON!!-1: Up to 1 of your opponent's Characters gain -2000 power during this turn.",
+  "is_searcher": false,
+  "draws": false,
+  "has_counter_value": false,
+  "has_counter_event": false,
+  "is_blocker": false,
+  "is_removal": true,
+  "kos": false,
+  "rests_opponent": false,
+  "bounces": false,
+  "gives_don": false,
+  "power_buff": false,
+  "heals": false,
+  "gains_life": false,
+  "attacks_life": false,
+  "trashes_own_life": false,
+  "has_rush": false,
+  "has_double_attack": false,
+  "has_unblockable": false,
+  "has_banish": false,
+  "has_trigger": false,
+  "alias_de": "OP17-059"
  },
  "St22-012": {
   "name": "Marco",
