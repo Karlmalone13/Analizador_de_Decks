@@ -409,9 +409,23 @@ namespace OPTCGBotPlugin
                             $"'{clicado ?? "nada"}'. Botoes ofertados: " +
                             $"{BotExecutor.OfferedButtonNames(gls)}");
                         _cooldown = 1f;
+                        return;
                     }
-                    // Sem botao na tela ou clique do outro lado: nao e comigo.
-                    return;
+                    // Clique e do OUTRO lado: nao e comigo, sai.
+                    if (!minhaVezDeClicar)
+                        return;
+                    // E COMIGO e nao ha botao na tela => e tela de SELECAO DE
+                    // CARTA, nao de botao. Cai pro HandlePendingAction abaixo.
+                    //
+                    // Achado ao vivo 29/08 (2o travamento seguido): este
+                    // `return` era INCONDICIONAL, entao pra carta do oponente
+                    // o fluxo NUNCA chegava em HandlePendingAction -- corrigir
+                    // a guarda dentro dele (commit anterior) nao adiantou
+                    // nada, porque a funcao nem era chamada. Caso real:
+                    // Charlotte Linlin OP17-049 do oponente manda o bot
+                    // "Trash 2 Cards"; o bot responde o V3Choice certo e
+                    // depois precisa escolher QUAIS 2 -- uma tela de selecao,
+                    // sem botao nenhum. Ficava parado ate o humano clicar.
                 }
 
                 // Custo "trash 1 carta da mao" SEM tela dedicada (ex: redirect
