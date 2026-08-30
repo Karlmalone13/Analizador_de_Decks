@@ -1006,6 +1006,17 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
                 rec for rec in (eng.decision_log or [])
                 if rec.get('kind') == 'attack_outcome' and rec.get('player') == 'A'
             ]
+            # bloco 743: as 4 categorias que ate aqui nao tinham registro
+            # nenhum -- bloquear (85,7%), usar counter (59,7%), QUAIS
+            # cartas de counter (18,5%) e alvo dentro do efeito (16,4%).
+            # Sao 26% da metrica oficial. Guardadas dos DOIS lados: a
+            # defesa acontece no turno do adversario, entao filtrar por
+            # 'A' perderia justamente as decisoes defensivas do motor.
+            entry['decisoes_cegas'] = [
+                rec for rec in (eng.decision_log or [])
+                if rec.get('kind') in ('blocker_choice', 'counter_use',
+                                       'counter_cards', 'effect_target')
+            ]
             # bloco 732: SEQUENCIA na ordem real, com os dois tipos de
             # registro INTERCALADOS. As duas listas acima sao filtradas
             # por tipo e perdem a ordem relativa entre elas -- quem quiser

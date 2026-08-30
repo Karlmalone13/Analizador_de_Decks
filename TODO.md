@@ -2,6 +2,24 @@
 
 **Última atualização:** 30 de agosto de 2026
 
+> 30/08/2026 (bloco 743): **as 4 categorias cegas foram instrumentadas.**
+> `blocker_choice`, `counter_use`, `counter_cards` e `effect_target` no
+> `decision_log`, cada uma com CANDIDATOS + ESCOLHIDO + entradas da
+> decisao -- 26% da metrica oficial deixa de ser inauditavel, incluindo
+> as duas piores (16,4% e 18,5%). Wrapper em cada funcao (elas tem 3 a 7
+> `return`), buffer de modulo `_DEFESA` (as classes nao tem referencia
+> pro match), e a simulacao NAO entra: das 13.057 chamadas de
+> `use_counter` em 25 partidas, 12.920 sao simuladas. Exposto por turno
+> como `decisoes_cegas` em `audit_real_losses.py`, dos dois lados.
+> Verificado: 363/363/137/80 registros em 25 partidas.
+> **Achado lateral NAO consertado:** `audit_one_game` estoura em **30
+> dos 164 logs** (os `_autosaved`, meta com `p1`/`p2` em vez de
+> `players`) e todos os diagnosticos pulam em SILENCIO -- 18% do banco
+> nunca entra em medicao nenhuma. Nao e do reparse do bloco 739.
+> **Proximo passo:** com o dado na mao, perguntar nas duas piores
+> categorias se a escolha do humano chegou a ser CANDIDATA (bug de
+> geracao) ou foi candidata e perdeu (regua).
+
 > 30/08/2026 (bloco 742): **desfecho de ataque instrumentado**
 > (`kind: attack_outcome`, wrapper a prova dos 4 `return` de
 > `_execute_attack`) + `diag_ataque_futil.py`.

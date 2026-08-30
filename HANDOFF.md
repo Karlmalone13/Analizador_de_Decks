@@ -28,6 +28,100 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-30 (743) - As 4 categorias CEGAS instrumentadas: 26% da metrica oficial deixa de ser inauditavel. `blocker_choice`, `counter_use`, `counter_cards`, `effect_target`
+
+**Pedido do usuario:** "sim, instrumenta as 4", depois da auditoria do
+bloco 742.
+
+### 1. O que passou a ser registrado
+
+Quatro `kind` novos no `decision_log`, cada um com CANDIDATOS + ESCOLHIDO
++ as entradas da decisao:
+
+| kind | categoria da meta | acerto | conteudo |
+|---|---|---|---|
+| `blocker_choice` | bloquear ou nao | 85,7% | blockers disponiveis, escolhido, poder do atacante, minha vida |
+| `counter_use` | usar counter ou nao | 59,7% | atk/def power, `falta`, `valor_protegido`, counter na mao, mao inteira |
+| `counter_cards` | QUAIS cartas de counter | 18,5% | counters disponiveis, quais foram gastos, poder somado |
+| `effect_target` | alvo dentro do efeito | 16,4% | candidatos, escolhido, n |
+
+Exemplos reais capturados:
+
+    counter_cards: disponiveis [OP13-089, OP13-092, OP13-083]
+                   -> escolheu [OP13-092] (2000) pra needed=1
+    effect_target: candidatos [OP16-093, OP13-083] -> escolheu OP13-083
+
+E exatamente o que faltava: agora da pra perguntar **"o alvo certo chegou
+a ser candidato?"** e **"por que ESSA carta de counter e nao a outra?"**.
+Antes so dava pra saber CERTO/ERRADO (`decision_quality_full.py` pontua
+re-invocando as funcoes num estado reconstruido), nunca o porque.
+
+`blocker_choice` grava tambem quando `candidatos` esta VAZIO, de
+proposito: separa "nao tinha blocker" de "tinha e recusou", que e a
+distincao diagnostica.
+
+### 2. Como (e por que assim)
+
+**Wrapper em cada uma**, nao instrumentacao espalhada:
+`should_use_blocker` tem 7 `return` em ramos diferentes,
+`_pick_effect_target` tem 3, `_execute_attack` (bloco 742) tem 4.
+Instrumentar ramo a ramo erraria algum -- e como o bloco 736 achou um
+caminho de vitoria sem print nenhum. Cada publica virou wrapper e a
+implementacao virou `_..._inner`; a assinatura publica nao muda, entao
+nenhum chamador foi tocado.
+
+**Buffer de modulo** (`_DEFESA`), mesmo padrao de `TERMOS_BUF`:
+`DecisionEngine`/`EffectExecutor` sao criados ad-hoc (`DecisionEngine(p,
+opp)` aparece em 5 lugares, inclusive DENTRO da simulacao) e **nao tem
+referencia de volta pro OPTCGMatch**. Passar a referencia mudaria a
+assinatura em todos esses pontos.
+
+**Nada de simulacao entra**: `_DEFESA['on']` espelha
+`_suppress_replay_log` (2 sitios, try/finally limpo). Medido: das 13.057
+chamadas de `use_counter` em 25 partidas, **12.920 sao simuladas** e so
+137 sao turno real. Sem essa guarda o log teria 95x mais ruido que sinal.
+
+**Cartas de counter lidas por DIFERENCA da mao** antes/depois --
+observacao, nao reimplementacao da escolha (`REGRA_SEM_DUPLICACAO.md`).
+
+Exposto por turno em `audit_real_losses.py` como `decisoes_cegas`, dos
+DOIS lados (a defesa acontece no turno do adversario -- filtrar por 'A'
+perderia justamente as decisoes defensivas do motor).
+
+Verificado em 25 partidas: 363 `blocker_choice`, 363 `counter_use`,
+137 `counter_cards`, 80 `effect_target`. `smoke_fast.py` passa.
+
+### 3. Erro meu na verificacao, registrado
+
+A 1a verificacao deu `counter_cards` e `effect_target` **AUSENTES**, e
+eu quase reportei bug. Era erro do MEU script: eu lia `_DEFESA['log']`
+depois de `audit_one_game`, e esse ponteiro aponta pro log da ULTIMA
+partida-turno -- `audit_one_game` cria um match POR TURNO. Estava
+amostrando so o ultimo turno de cada jogo.
+
+So contando dentro do proprio `_log_defesa` (que ve todas as escritas) o
+numero apareceu. **Ficou como aviso: `_DEFESA['log']` nao serve pra
+contar nada de fora; leia `decisoes_cegas` por turno.**
+
+### 4. Achado lateral: 30 logs silenciosamente fora de TODA medicao
+
+`audit_one_game` estoura com `KeyError: 'players'` em **30 dos 164 logs
+parseados** -- os `_autosaved`, que usam `p1`/`p2` no meta (importador
+diferente, commit `bec8a90`). Todos os diagnosticos envolvem a chamada em
+`try/except` e **pulam em silencio**. Nao e causado pelo reparse do bloco
+739 (conferido no git: o commit nao tocou esses arquivos).
+
+18% do banco de logs nunca entra em nenhuma medicao do projeto, e nada
+avisa. Nao consertado nesta sessao -- registrado.
+
+### 5. Proximo passo
+
+Agora da pra atacar as duas piores categorias com dado: `effect_target`
+(16,4%) e `counter_cards` (18,5%). A primeira pergunta pra cada uma e a
+mesma que este projeto ja usou pra achar Pekoms/Borsalino/lider-sem-DON:
+**o alvo/carta que o humano escolheu chegou a ser candidato?** Se nao
+chegou, e bug de geracao; se chegou e perdeu, e a regua.
+
 ## 2026-08-30 (742) - Desfecho de ataque instrumentado: os ataques a MAIS do motor sao **LUCRATIVOS, nao futeis** (89 vidas em 186). E a AUDITORIA DA TELEMETRIA: **4 das 10 categorias da meta nao tem registro nenhum de decisao** -- 26% da metrica oficial e cega
 
 **Pedido do usuario:** instrumentar o desfecho do ataque + "confira se

@@ -1285,6 +1285,53 @@ TERMOS_BUF: dict = {}
 TERMOS_POR_ACAO: dict = {}
 
 
+# ── DECISOES CEGAS: defesa e alvo de efeito (bloco 743) ──────────────
+# AUDITORIA que motivou (bloco 742): 4 das 10 categorias da metrica
+# oficial NAO tinham registro nenhum de decisao --
+#
+#   bloquear ou nao          85,7%   should_use_blocker
+#   usar counter ou nao      59,7%   should_use_counter
+#   quais cartas de counter  18,5%   use_counter
+#   alvo dentro do efeito    16,4%   _pick_effect_target
+#
+# **3.906 de 14.973 decisoes = 26% da metrica**, incluindo AS DUAS
+# PIORES. `decision_quality_full.py` PONTUA essas categorias, mas
+# re-invocando as funcoes num estado reconstruido -- da certo/errado e
+# nao da o PORQUE. Sem candidatas registradas nao da pra perguntar "a
+# opcao certa chegou a existir?", que e a pergunta que este projeto ja
+# descobriu ser a decisiva em varios achados (Pekoms, Borsalino, lider
+# fora do loop de attach_don).
+#
+# POR QUE UM BUFFER DE MODULO e nao `self.decision_log`: quem decide
+# essas quatro e `DecisionEngine`/`EffectExecutor`, que sao criados
+# ad-hoc (`DecisionEngine(p, opp)` aparece em 5 lugares, inclusive
+# DENTRO da simulacao) e **nao tem referencia de volta pro OPTCGMatch**.
+# Passar a referencia mudaria a assinatura em todos esses pontos. O
+# projeto ja resolve isso assim -- `TERMOS_BUF`/`TERMOS_POR_ACAO` logo
+# acima sao exatamente o mesmo padrao.
+#
+# `on` espelha `_suppress_replay_log` (so 2 sitios de atribuicao, um
+# try/finally limpo): DESLIGA durante a simulacao Monte Carlo, senao as
+# milhares de batalhas simuladas afogariam o log. `log` aponta pra lista
+# real, setada em `enable_decision_audit`.
+_DEFESA: dict = {'on': False, 'log': None, 'state_a': None}
+
+
+def _log_defesa(rec: dict) -> None:
+    """Registro de decisao cega. Silencioso quando a auditoria esta off."""
+    lg = _DEFESA['log']
+    if _DEFESA['on'] and lg is not None:
+        lg.append(rec)
+
+
+def _lado(gs) -> str:
+    return 'A' if gs is _DEFESA['state_a'] else 'B'
+
+
+def _cods(cards) -> list:
+    return [getattr(c, 'code', None) for c in (cards or [])]
+
+
 def _termo(chave: str, valor: float, W: dict) -> float:
     """Contribuicao do termo, registrando o valor CRU quando ligado.
 
@@ -3863,6 +3910,26 @@ class EffectExecutor:
         self._once_used.clear()
 
     def _pick_effect_target(self, candidatos):
+        """Categoria `alvo dentro do efeito` (16,4%, A PIOR) -- wrapper.
+
+        Registra o CONJUNTO de candidatos e o escolhido. E a categoria
+        com o pior acerto da metrica inteira e ate o bloco 743 nao tinha
+        registro nenhum -- nao dava pra distinguir "escolheu mal" de "o
+        alvo certo nem estava entre os candidatos".
+        """
+        escolhido = self._pick_effect_target_inner(candidatos)
+        if _DEFESA['on'] and candidatos:
+            _log_defesa({
+                'kind': 'effect_target',
+                'player': _lado(self.me),
+                'turn': getattr(self.me, 'global_turn', None),
+                'candidatos': _cods(candidatos),
+                'chosen': getattr(escolhido, 'code', None),
+                'n_candidatos': len(candidatos),
+            })
+        return escolhido
+
+    def _pick_effect_target_inner(self, candidatos):
         """Escolhe o alvo de um efeito -- ponto de costura UNICO (23 sitios).
 
         Honra o alvo EXPLICITO da acao em execucao quando existe; senao,
@@ -14869,6 +14936,26 @@ class DecisionEngine:
         return None
 
     def should_use_blocker(self, attacker_power: int) -> 'Optional[Card]':
+        """Categoria `bloquear ou nao` (85,7%) -- wrapper de registro.
+
+        Wrapper porque a implementacao tem 7 `return` em ramos
+        diferentes; instrumentar um a um erraria algum.
+        """
+        cands = list(self.me.blockers_active())
+        escolhido = self._should_use_blocker_inner(attacker_power)
+        if _DEFESA['on']:
+            _log_defesa({
+                'kind': 'blocker_choice',
+                'player': _lado(self.me),
+                'turn': getattr(self.me, 'global_turn', None),
+                'attacker_power': attacker_power,
+                'minha_vida': self.me.life_count(),
+                'candidatos': _cods(cands),
+                'chosen': getattr(escolhido, 'code', None),
+            })
+        return escolhido
+
+    def _should_use_blocker_inner(self, attacker_power: int) -> 'Optional[Card]':
         """
         Decide se usa blocker e qual usar.
 
@@ -15127,6 +15214,29 @@ class DecisionEngine:
                            counter_avail: int | None = None,
                            gasto: float | None = None,
                            valor_protegido: float | None = None) -> bool:
+        """Categoria `usar counter ou nao` (59,7%) -- wrapper de registro."""
+        usar = self._should_use_counter_inner(
+            atk_power, def_power, counter_avail=counter_avail,
+            gasto=gasto, valor_protegido=valor_protegido)
+        if _DEFESA['on']:
+            _log_defesa({
+                'kind': 'counter_use',
+                'player': _lado(self.me),
+                'turn': getattr(self.me, 'global_turn', None),
+                'atk_power': atk_power,
+                'def_power': def_power,
+                'falta': atk_power - def_power,
+                'valor_protegido': valor_protegido,
+                'counter_na_mao': self.me.counter_in_hand(),
+                'mao': _cods(self.me.hand),
+                'chosen': bool(usar),
+            })
+        return usar
+
+    def _should_use_counter_inner(self, atk_power: int, def_power: int,
+                           counter_avail: int | None = None,
+                           gasto: float | None = None,
+                           valor_protegido: float | None = None) -> bool:
         """
         Decide se countera um ataque no LIDER por GANHO LIQUIDO (regra do
         usuario: caso a caso, nunca threshold fixo por categoria):
@@ -15218,6 +15328,34 @@ class DecisionEngine:
         return gasto < valor_vida
 
     def use_counter(self, needed: int) -> int:
+        """Categoria `quais cartas de counter` (18,5%, a 2a pior) -- wrapper.
+
+        As cartas gastas sao lidas por DIFERENCA da mao antes/depois --
+        observacao, nao reimplementacao da escolha
+        (`REGRA_SEM_DUPLICACAO.md`).
+        """
+        if not _DEFESA['on']:
+            return self._use_counter_inner(needed)
+        antes = _cods(self.me.hand)
+        disp = [c.code for c in self.me.hand if getattr(c, 'counter', 0)]
+        add = self._use_counter_inner(needed)
+        depois = _cods(self.me.hand)
+        gastas = list(antes)
+        for c in depois:
+            if c in gastas:
+                gastas.remove(c)
+        _log_defesa({
+            'kind': 'counter_cards',
+            'player': _lado(self.me),
+            'turn': getattr(self.me, 'global_turn', None),
+            'needed': needed,
+            'disponiveis': disp,
+            'chosen': gastas,
+            'poder_somado': add,
+        })
+        return add
+
+    def _use_counter_inner(self, needed: int) -> int:
         """
         Usa counters cobrindo `needed` com o MENOR valor perdido (mesma
         selecao de pick_counters que should_use_counter usou pra decidir
@@ -19256,6 +19394,10 @@ class OPTCGMatch:
         """
         old_suppress = self._suppress_replay_log
         self._suppress_replay_log = True
+        # bloco 743: as decisoes cegas nao entram no log durante a
+        # simulacao -- so no turno REAL (mesma guarda de _log_decision).
+        _old_defesa = _DEFESA['on']
+        _DEFESA['on'] = False
         try:
             lista = amostras if amostras else [None]
             if not TERMOS_ON:
@@ -19300,6 +19442,7 @@ class OPTCGMatch:
             return vals
         finally:
             self._suppress_replay_log = old_suppress
+            _DEFESA['on'] = _old_defesa
 
     def _simulate_sequence_once(self, p, opp, first_action, max_steps=8, amostra=None,
                                  extra_own_turn_search=False):
@@ -20695,6 +20838,10 @@ class OPTCGMatch:
         """Ativa o log de auditoria de decisão. Chamar antes de setup()/play_turn()."""
         self.decision_log = []
         self._card_count_baseline = {}
+        # bloco 743: aponta o buffer das 4 decisoes cegas pra ESTA lista.
+        _DEFESA['on'] = True
+        _DEFESA['log'] = self.decision_log
+        _DEFESA['state_a'] = self.state_a
 
     def _check_invariants(self, turn: 'int | None' = None) -> None:
         """
