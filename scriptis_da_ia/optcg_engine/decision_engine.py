@@ -12987,8 +12987,36 @@ class DecisionEngine:
                 if step_conds and not ee._check_conditions(step_conds, card):
                     continue
                 vistos.add(action)
-                bonus += self._UNCOVERED_ACTION_VALUE[action]
+                bonus += (self._UNCOVERED_ACTION_VALUE[action]
+                          * self._multiplicador_por_count(action, step))
         return bonus
+
+    # Acoes de RECURSO cujo valor e por UNIDADE: desvirar/ganhar N DON vale
+    # N vezes mais que 1. A tabela acima e um valor FIXO por acao, e o
+    # `count` do step era simplesmente ignorado.
+    #
+    # ACHADO AO VIVO 29/08: Nami OP14-031 ("[On Play] ... set up to **5** of
+    # your DON!! cards as active at the end of this turn") pontuava
+    # `set_don_active` = 15, EXATAMENTE o mesmo que uma carta que desvira 1.
+    # Pior: menos que `add_don` = 20, que da UM DON. Com o lider Monkey D.
+    # Luffy OP13-001 (+2000 de poder por DON restado no turno do oponente),
+    # aqueles 5 DON valiam ate +10000 de defesa -- e o motor jogou a carta
+    # POR ULTIMO no turno, depois de 3 ataques que deram zero.
+    #
+    # Escalar por `count` e correcao de FORMA (efeito por unidade valorado
+    # como constante), nao calibragem: nao ha numero novo escolhido a dedo.
+    # Seguro sem teto porque o banco e limitado -- `set_don_active` vai de
+    # 1 a 5 (64 steps) e `add_don` de 1 a 5 (157 steps).
+    _ACOES_POR_UNIDADE = ('set_don_active', 'add_don')
+
+    @staticmethod
+    def _multiplicador_por_count(action: str, step: dict) -> float:
+        if action not in DecisionEngine._ACOES_POR_UNIDADE:
+            return 1.0
+        try:
+            return float(max(1, int(step.get('count') or 1)))
+        except (TypeError, ValueError):
+            return 1.0
 
     def _own_effect_removes_char_react_bonus(self, card: 'Card') -> float:
         """
