@@ -13905,6 +13905,41 @@ class DecisionEngine:
         return max(1, min(self._MAX_DON_RESERVA_VARIAVEL,
                           -(-falta // por_don)))   # ceil
 
+    def _opp_pode_atacar(self) -> bool:
+        """O oponente tem alguem que possa atacar? Sem isso, um gatilho
+        `[On Your Opponent's Attack]` nunca dispara e reservar e desperdicio."""
+        opp = self.opp
+        if opp.leader is not None and not getattr(opp.leader, 'rested', False):
+            return True
+        return any(not getattr(c, 'rested', False) for c in opp.field_chars)
+
+    def _tem_reativo_que_escala_com_don(self) -> bool:
+        """Tenho habilidade reativa cujo EFEITO cresce com o DON gasto?
+
+        Distinta de contingencia (evento [Counter], que ou usa ou nao usa):
+        aqui cada DON deixado ativo vira valor garantido no proximo ataque
+        sofrido. A deteccao e pela FORMA -- custo que consome DON de
+        quantidade livre + step que escala por contagem -- e nao por nome
+        de carta.
+        """
+        for c in [self.me.leader, *self.me.field_chars]:
+            if c is None:
+                continue
+            efeitos = get_card_effects(c.code) or {}
+            for timing in TRIGGERS_NO_TURNO_DO_OPONENTE:
+                blk = efeitos.get(timing)
+                if not isinstance(blk, dict):
+                    continue
+                custo_don = any(isinstance(x, dict)
+                                and x.get('type') in _COST_TYPES_QUE_USAM_DON
+                                for x in (blk.get('costs') or []))
+                escala = any(isinstance(s, dict)
+                             and s.get('action') == 'buff_power_per_count'
+                             for s in (blk.get('steps') or []))
+                if custo_don and escala:
+                    return True
+        return False
+
     def _don_reserve_for_defense(self) -> int:
         """
         Quantos DON reservar para defesa no turno do oponente.
@@ -13946,11 +13981,33 @@ class DecisionEngine:
         # reservava 1 DON, turno apos turno, so por causa da vida. Os tiers
         # de vida agora exigem `threat > 0` tambem -- vida baixa sozinha,
         # sem NENHUM risco real calculado, nao e motivo pra guardar DON.
+        # ── RECURSO REATIVO QUE ESCALA x CONTINGENCIA ──────────────
+        # Os tiers abaixo sao de CONTINGENCIA ("guarde DON caso precise
+        # counterar"), e por isso exigem `threat > 0`. Uma habilidade que
+        # RENDE A CADA ATAQUE SOFRIDO e outra coisa: o DON tem valor
+        # garantido se o oponente atacar, independente de ele estar perto
+        # do letal.
+        #
+        # ACHADO 30/08, com a contabilidade nova (`don_reserva*` no ledger):
+        # nos turnos 1-5 da partida o log mostrou `reservado=0` com
+        # `uso reativo=True` e `teto>0` -- ou seja, nao era cegueira ao
+        # gatilho nem teto zerado (as duas causas que eu ja tinha
+        # "consertado" as cegas). Era ESTE portao: `opp_lethal_threat()`
+        # media ameaca LETAL e dava 0,00 com 2 personagens do oponente e 3
+        # de vida. O lider Monkey D. Luffy OP13-001 ("+2000 por DON restado
+        # a cada ataque sofrido") ficou a partida inteira sem DON pra usar.
+        #
+        # Nao remove o fix de 24/07 ("nao e necessario reservar don todo
+        # turno"): aquele tirou os tiers de VIDA que disparavam sem risco
+        # nenhum. Aqui a condicao e ter um ATACANTE do outro lado -- sem
+        # ataque, a habilidade nao dispara e nao ha o que reservar.
         reserva = 0
-        if threat > 0.7:                    reserva = 3
-        elif threat > 0.4:                  reserva = 2
-        elif threat > 0 and my_life <= 2:   reserva = 2
-        elif threat > 0 and my_life <= 3:   reserva = 1
+        if self._tem_reativo_que_escala_com_don() and self._opp_pode_atacar():
+            reserva = self._max_don_needed_for_reactive_use()
+        if threat > 0.7:                    reserva = max(reserva, 3)
+        elif threat > 0.4:                  reserva = max(reserva, 2)
+        elif threat > 0 and my_life <= 2:   reserva = max(reserva, 2)
+        elif threat > 0 and my_life <= 3:   reserva = max(reserva, 1)
 
         # Tenho evento counter mas POUCO counter de mão? vale deixar DON p/ o evento
         if threat > 0 and eventos_counter >= 1 and counters_mao <= 1 and my_life <= 3:

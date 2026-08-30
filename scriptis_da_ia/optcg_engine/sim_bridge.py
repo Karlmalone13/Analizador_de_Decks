@@ -854,7 +854,13 @@ def choose_action(gs: GameState, opp_gs: GameState,
     t.join(timeout=timeout)
     if trace_out is not None:
         trace_out["timed_out"] = t.is_alive()
-        trace_out["chosen_action"] = action_to_trace(result[0]) if result[0] else None
+        # `gs`/`opp_gs` aqui NAO sao opcionais: sem eles `don_cost` do
+        # `play` sai None (o custo depende do estado, via
+        # `effective_hand_play_cost`). Achado 30/08 ao ler o primeiro
+        # relatorio de `don_por_turno`: TODA acao de play aparecia com "?"
+        # e o total do turno saia menor que o gasto real.
+        trace_out["chosen_action"] = (
+            action_to_trace(result[0], gs=gs, opp_gs=opp_gs) if result[0] else None)
     return result[0]
 
 

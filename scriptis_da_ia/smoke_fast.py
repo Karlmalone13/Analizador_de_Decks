@@ -12399,9 +12399,23 @@ def test_reserva_don_para_habilidade_reativa_on_opp_attack() -> None:
     check("lider com habilidade que escala por DON restado RESERVA sob ameaca",
           e.analyzer.opp_lethal_threat() > 0 and e._don_reserve_for_defense() > 0)
 
-    e_sem_ameaca = cenario("OP13-001", 0)
-    check("sem ameaca nenhuma, o mesmo lider NAO reserva DON",
-          e_sem_ameaca._don_reserve_for_defense() == 0)
+    # ATUALIZADO 30/08: o caso "sem board do oponente" NAO e mais um caso
+    # de nao-reserva -- o LIDER dele continua ativo e pode atacar, entao o
+    # gatilho `[On Your Opponent's Attack]` dispara e o DON reservado tem
+    # valor garantido. Medido na partida de 30/08: o portao antigo exigia
+    # `opp_lethal_threat() > 0` (ameaca LETAL) e por isso deixou a
+    # habilidade do lider sem DON nos turnos 1-5 inteiros.
+    #
+    # O invariante que este teste protege ("nao acumular DON a toa")
+    # continua valendo -- so que o caso genuino e o oponente NAO PODER
+    # atacar. Aí nao ha gatilho pra alimentar e reservar e desperdicio.
+    e_sem_ataque = cenario("OP13-001", 3)
+    if e_sem_ataque.opp.leader is not None:
+        e_sem_ataque.opp.leader.rested = True
+    for _c in e_sem_ataque.opp.field_chars:
+        _c.rested = True
+    check("oponente sem NINGUEM que possa atacar -- nao reserva DON",
+          e_sem_ataque._don_reserve_for_defense() == 0)
 
     e_ctrl = cenario("OP01-001", 3)   # lider sem gatilho reativo nenhum
     check("lider SEM gatilho reativo de DON continua sem reservar",
