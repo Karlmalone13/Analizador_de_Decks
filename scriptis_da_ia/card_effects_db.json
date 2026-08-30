@@ -15660,7 +15660,7 @@
           {
             "action": "set_active",
             "count": 1,
-            "target": "own_character",
+            "target": "leader_or_own_character",
             "filter_name": "kuro"
           }
         ],
@@ -31368,7 +31368,7 @@
           {
             "action": "set_active",
             "count": 1,
-            "target": "own_character",
+            "target": "leader_or_own_character",
             "filter_name": "foxy"
           }
         ],
@@ -64639,7 +64639,7 @@
           {
             "action": "buff_cost",
             "amount": 20,
-            "target": "own_character",
+            "target": "leader_or_own_character",
             "count": 1,
             "filter_name": "kouzuki momonosuke",
             "duration": "permanent"
@@ -78790,7 +78790,7 @@
           {
             "action": "transfer_don",
             "count": 1,
-            "target": "own_character",
+            "target": "leader_or_own_character",
             "distribution": "free",
             "per_target_max": 1,
             "filter_name": "monkey d. luffy"
@@ -83216,7 +83216,7 @@
           {
             "action": "transfer_don",
             "count": 1,
-            "target": "own_character",
+            "target": "leader_or_own_character",
             "distribution": "free",
             "per_target_max": 1,
             "filter_name": "monkey d. luffy"

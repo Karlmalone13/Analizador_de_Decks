@@ -1,0 +1,42 @@
+{
+  "trigger_card": "ST31-005",
+  "problem": "Alvo por NOME saia como own_character, que exclui o LIDER por construcao. Thousand Sunny (\"Give up to 1 of your 'Monkey D. Luffy' up to 1 rested DON!!\") tinha como unico alvo legal o Character -- e o lider do deck E um Monkey D. Luffy. Achado em partida ao vivo 30/08: o bot mandou o DON pra um Luffy CONGELADO (nao podia atacar) em vez do lider que ia atacar.",
+  "grammar_family": "step com filter_name (alvo por NOME PROPRIO) + target do proprio lado, onde a clausula NAO diz 'Character'",
+  "regra_do_jogo": "Uma carta referida pelo NOME vale pra QUALQUER carta com esse nome, inclusive o Leader. So quando o texto diz 'Character' e que o lider fica de fora.",
+  "queries": [
+    "varredura em card_effects_db.json por steps com filter_name != null E target in (own_character, own_characters)",
+    "para cada carta encontrada, extracao da clausula no texto bruto de cards_rows.csv e checagem da palavra 'Character' logo apos o nome"
+  ],
+  "cards_found": [
+    "ST31-005",
+    "ST31-006",
+    "OP03-036",
+    "OP07-078",
+    "OP16-087",
+    "OP04-111"
+  ],
+  "cards_changed": [
+    "ST31-005",
+    "ST31-006",
+    "OP03-036",
+    "OP07-078",
+    "OP16-087"
+  ],
+  "cards_unchanged_by_design": [
+    "OP04-111"
+  ],
+  "resolution_scope": "global",
+  "decision": "Passada unica de pos-processamento (_promove_alvo_nomeado_pro_lider) no fim de parse_card_effect, em vez de remendar os N sitios que emitem filter_name. Promove own_character -> leader_or_own_character quando o nome NAO e seguido de 'Character'. OP04-111 diz '[Charlotte Linlin] Characters' e por isso NAO foi promovida -- e o controle negativo que prova que a regra discrimina.",
+  "armadilhas_encontradas": [
+    "t_low e MUTILADO durante o parse (trechos consumidos sao recortados); a checagem tem que usar full_text_low, o texto integro",
+    "1a versao casava pelos delimitadores (colchetes/aspas) e promovia OP04-111 por engano -- a versao final olha a janela logo apos o nome, sem depender de delimitador",
+    "um escape de fronteira de palavra escrito via heredoc virou o caractere BACKSPACE (0x08) DENTRO do regex: passava na sintaxe, nunca casava, e so apareceu ao imprimir inspect.getsource da funcao carregada"
+  ],
+  "validated_by": [
+    "diff completo antes/depois do banco: 2749 -> 2749 cartas, PERDEU=0, exatamente as 5 cartas esperadas mudaram",
+    "OP04-111 preservada como own_character (controle negativo)",
+    "smoke_fast",
+    "smoke_test"
+  ],
+  "generalizacao": "por FORMA (a palavra Character na clausula), nao por carta"
+}

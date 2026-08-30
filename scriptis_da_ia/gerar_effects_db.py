@@ -10368,7 +10368,74 @@ def parse_card_effect(card_text, card_type):
         result['on_play'].setdefault('conditions', {})['your_turn_only'] = True
         del result['your_turn']
 
+    # `full_text_low` (nao `t_low`): `t_low` e MUTILADO durante o parse --
+    # trechos ja consumidos sao recortados dele (ver ~linha 8948). Passar o
+    # texto recortado fazia a checagem de "Character" falhar e promover
+    # OP04-111 ("[Charlotte Linlin] Characters") por engano, que e
+    # exatamente o caso que NAO pode ser promovido.
+    _promove_alvo_nomeado_pro_lider(result, full_text_low)
     return result
+
+
+# Alvos proprios que EXCLUEM o lider por construcao.
+_ALVO_PROPRIO_SEM_LIDER = {'own_character', 'own_characters'}
+
+
+def _promove_alvo_nomeado_pro_lider(result: dict, texto: str) -> None:
+    """Alvo por NOME sem a palavra "Character" tambem alcanca o LIDER.
+
+    REGRA DO JOGO: uma carta referida pelo NOME ("1 of your 'Monkey D.
+    Luffy'") vale pra QUALQUER carta com esse nome, inclusive o Leader. So
+    quando o texto diz "Character" e que o lider fica de fora.
+
+    ACHADO AO VIVO 30/08: Thousand Sunny ST31-005 ("[Activate:Main] Rest
+    this stage: Give up to 1 of your 'Monkey D. Luffy' up to 1 rested
+    DON!!") saia com `target: own_character`, que exclui o lider -- e o
+    lider do deck E um Monkey D. Luffy. O unico alvo legal virava o
+    Character, e o bot mandou o DON pra um Luffy CONGELADO em vez do lider
+    que ia atacar.
+
+    A correcao e pela FORMA (a palavra "Character" na clausula), nao pela
+    carta: varredura global do banco achou 6 cartas com essa gramatica --
+    OP03-036 (Kuro), OP07-078 (Foxy), OP16-087 (Kouzuki Momonosuke),
+    ST31-005 e ST31-006 (Monkey D. Luffy) nao dizem "Character" e passam a
+    incluir o lider; OP04-111 diz "[Charlotte Linlin] Characters" e fica
+    como esta, que e o correto.
+    """
+    def visita(no):
+        if isinstance(no, dict):
+            for step in (no.get('steps') or []):
+                if not isinstance(step, dict):
+                    continue
+                nome = step.get('filter_name')
+                if nome and step.get('target') in _ALVO_PROPRIO_SEM_LIDER:
+                    # O nome e seguido de "Character"?
+                    #
+                    # NAO depende dos delimitadores ([ ], " ", { }): o texto
+                    # que chega aqui ja passou por normalizacao do parser e
+                    # os colchetes podem ter sido reescritos -- a 1a versao
+                    # disto casava pelo colchete e promoveu OP04-111
+                    # ("[Charlotte Linlin] Characters") por engano, que e
+                    # justamente o caso que NAO deve ser promovido.
+                    #
+                    # Olha a janela logo DEPOIS de cada ocorrencia do nome:
+                    # se em alguma delas vem "character", a clausula limita a
+                    # Characters e o lider fica de fora.
+                    padrao = re.escape(str(nome).lower())
+                    limita_a_character = any(
+                        re.match(r'[\]}"\s]*characters?', texto[m.end():m.end() + 24])
+                        for m in re.finditer(padrao, texto))
+                    if not limita_a_character:
+                        step['target'] = 'leader_or_own_character'
+                visita(step)
+            for chave, v in no.items():
+                if chave != 'steps' and isinstance(v, (dict, list)):
+                    visita(v)
+        elif isinstance(no, list):
+            for v in no:
+                visita(v)
+
+    visita(result)
 
 
 # ===========================================================================
