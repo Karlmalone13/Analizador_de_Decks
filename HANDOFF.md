@@ -119,7 +119,7 @@ piores** (16,4% e 18,5%).
 
 `decision_quality_full.py` PONTUA essas categorias, mas re-invocando
 `should_use_blocker`/`should_use_counter`/`pick_counters` num estado
-reconstruido -- nao le um tra√ßo do que aconteceu. Da pra saber
+reconstruido -- nao le um traço do que aconteceu. Da pra saber
 CERTO/ERRADO e **nao** da pra perguntar "o que foi considerado e por que
 a errada venceu", que e exatamente o que se precisa pra consertar uma
 categoria de 16%.
