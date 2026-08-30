@@ -2,6 +2,21 @@
 
 **Última atualização:** 30 de agosto de 2026
 
+> 30/08/2026 (bloco 740): **a distribuicao de 1a acao NAO e a alavanca.**
+> Criado `ATTACH_ADIADO` (default **0 = desligado**), gate que adia a
+> anexacao de DON de keyword/gatilho enquanto houver `play`/`activate`
+> valendo no turno. Funciona: `attach_don` de abertura vai de 26,2% pra
+> **0,8%**, `play` de 38,8% pra 49,0%, `activate` pra 15,0% (humano
+> 14,0%). **E o LCS anda 0,1pp** (47,4% -> 47,8%). Seis configuracoes
+> medidas hoje, LCS sempre entre 47,4% e 49,4%. Nao ligar: o `attack` de
+> abertura estoura pra 34,8% x 22,2% do humano.
+> **Erro de priorizacao registrado:** o bloco 734 ja media que CONTAGEM
+> e 39,2pp da perda e ORDEM so 12,4pp (teto de 60,8% mexendo so em
+> ordem). Passei o dia em ordem sem pesar contra essa decomposicao.
+> **Proximo alvo: CONTAGEM** (+0,75 acao por turno a mais que o humano),
+> sabendo que limiar de parada global ja esta descartado por medicao
+> (blocos 695 e 734).
+
 > 30/08/2026 (bloco 739): **A REGUA ESTAVA TORTA.** `parse_combat_log.py`
 > descartava em silencio o **ultimo turno de toda partida** (so emitia
 > bloco ao casar o marcador de fim de turno; o turno final acaba em

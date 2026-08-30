@@ -514,6 +514,54 @@ _k.registra('TIEBREAK_BANDA_Z', 0.0, float,
             'ordem', 0.0, 6.0)
 TIEBREAK_BANDA_Z = _k.get('TIEBREAK_BANDA_Z')
 
+# ---------------------------------------------------------------------
+# ADIAR a anexacao de DON de KEYWORD/GATILHO enquanto ainda ha jogada
+# de mao ou ativacao valendo a pena neste turno (bloco 739).
+#
+# O QUE O DADO DIZ (corpus de 400 turnos, regua CORRIGIDA no bloco 739 --
+# antes dela 24,6% das anexacoes humanas nem existiam):
+#
+#   `attach_don` como 1a acao do turno   motor 26,2%  x  humano  9,5%
+#   transicao `attach_don -> play`       motor  0,17  x  humano  0,01  (22x)
+#   transicao `attach_don -> activate`   motor  0,19  x  humano  0,02  (9,5x)
+#   transicao `attach_don -> attach_don` motor  0,20  x  humano  0,32  (0,7x)
+#
+# Lido junto, isso NAO diz "o motor anexa DON demais" -- as duas ultimas
+# linhas dizem que o humano anexa MAIS vezes seguidas. Diz que o humano
+# anexa **tarde e em rajada** e o motor **espalha cedo, picado**. Anexar
+# e depois jogar uma carta e algo que o humano praticamente nunca faz
+# (0,01 por turno); o motor faz 22x isso.
+#
+# POR QUE UM GATE E NAO UM PESO OU UM TERMO:
+#   - PESO ja e reprovado (`REPROVADOS.md`): girar os 17 pesos da de
+#     +1,9pp a -2,7pp, ruido -- "o proximo suspeito sao os TERMOS".
+#   - TERMO DE ESTADO nao alcanca: a funcao de valor avalia o estado no
+#     FIM do turno, e anexar-depois-jogar termina no MESMO estado de
+#     jogar-depois-anexar quando as duas cabem no DON. Ordem nao aparece
+#     no estado final.
+#   - AMPLIFICAR SEQUENCIA HUMANA ja e reprovado (bloco 647,
+#     `human_sequence_alignment`, hoje em peso 0.0): o 2-grama dominante
+#     do banco e `attach_don:LIDER > attack:LIDER`, quase universal, e
+#     amplifica-lo derrubou `play` em TODOS os pesos testados. A
+#     correcao de regua do bloco 739 so tornou esse vies MAIOR.
+#
+# Sobra a ORDEM como restricao explicita. Isto nao remove a anexacao:
+# ela volta a ser candidata na decisao SEGUINTE do mesmo turno, depois
+# que a jogada foi feita -- e um adiamento, nao um veto. O caso em que
+# a jogada consome o DON e a anexacao deixa de caber e exatamente o
+# trade-off que o humano faz, e que `don_opportunity_cost` ja precifica.
+#
+# ESCOPO: so a anexacao de KEYWORD/GATILHO
+# (`_generate_attach_don_actions`). O top-up de COMBATE
+# (`_attach_don_for_attack`) nao passa por aqui e continua intacto --
+# e justamente a rajada tardia que o humano faz, e que o motor faz de
+# MENOS (0,20 x 0,32).
+_k.registra('ATTACH_ADIADO', 0, int,
+            'adia anexacao de DON de keyword/gatilho enquanto houver play/'
+            'activate com score positivo no mesmo turno (0 = desligado)',
+            'ordem', 0, 1)
+ATTACH_ADIADO = bool(_k.get('ATTACH_ADIADO'))
+
 # Bloco 681 -- POLITICA DE IMITACAO aprendida (PASSO 2 do roteiro do
 # bloco 653). Dois modelos, dois problemas distintos, ambos medidos em
 # split por PARTIDA (`treinar_policy.py`, artefato em
@@ -18141,7 +18189,20 @@ class OPTCGMatch:
                     actions.append((score, 'activate', src, 'effect_target', combo))
 
         # ── Ações de ANEXAR DON para ligar efeitos/keywords [DON!! ×N] ──
-        actions.extend(self._generate_attach_don_actions(p, opp, engine, priority=priority))
+        _anexar = self._generate_attach_don_actions(p, opp, engine, priority=priority)
+        if ATTACH_ADIADO and _anexar:
+            # Ha jogada de mao / ativacao que ainda vale a pena neste
+            # turno? Le a lista que ESTE metodo acabou de montar -- nao
+            # reimplementa elegibilidade nem custo por fora
+            # (`REGRA_SEM_DUPLICACAO.md`); as candidatas ja vem geradas
+            # e pontuadas pelo caminho unico de sempre.
+            #
+            # Se ha, a anexacao de keyword/gatilho espera: ela volta a
+            # ser candidata na decisao seguinte do mesmo turno. Ver o
+            # bloco de comentario de ATTACH_ADIADO.
+            if any(a[0] > 0 and a[1] in ('play', 'activate') for a in actions):
+                _anexar = []
+        actions.extend(_anexar)
 
         actions = self._dedupe_scored_actions(actions)
         actions.sort(key=lambda x: x[0], reverse=True)

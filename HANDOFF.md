@@ -28,6 +28,88 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-30 (740) - **A DISTRIBUICAO DE 1a ACAO NAO E A ALAVANCA**: movi `attach_don` de 26,2% pra 0,8% (26pp) e o LCS andou 0,1pp. Ordem e 12,4pp de uma perda de 64pp -- o bloco 734 ja tinha dito e eu nao pesei
+
+**Pedido do usuario:** "vai atras do attach_don na funcao de valor" ->
+"segue".
+
+### 1. O que foi construido
+
+Knob `ATTACH_ADIADO` (default **0 = desligado**): adia a anexacao de DON
+de KEYWORD/GATILHO enquanto houver `play`/`activate` com score positivo
+no mesmo turno. Nao e veto -- a anexacao volta a ser candidata na
+decisao seguinte do mesmo turno. O top-up de COMBATE
+(`_attach_don_for_attack`) nao passa por aqui e fica intacto.
+
+Escolhido GATE, e nao peso nem termo, por eliminacao medida:
+- PESO: reprovado (`REPROVADOS.md`, +1,9pp a -2,7pp, ruido).
+- TERMO DE ESTADO: nao alcanca -- a funcao de valor avalia o FIM do
+  turno, e anexar-depois-jogar termina no mesmo estado que
+  jogar-depois-anexar quando as duas cabem no DON.
+- AMPLIFICAR SEQUENCIA HUMANA: reprovado no bloco 647
+  (`human_sequence_alignment`, peso 0.0 ate hoje) -- o 2-grama dominante
+  do banco e `attach_don:LIDER > attack:LIDER` e amplifica-lo derruba
+  `play`. A correcao de regua do bloco 739 **aumentou** esse vies.
+
+### 2. O gate funciona -- e nao adianta
+
+| 1a acao | sem gate | **com gate** | humano |
+|---|---|---|---|
+| `play` | 38,8% | **49,0%** | 53,8% |
+| `activate` | 11,8% | **15,0%** | 14,0% |
+| `attach_don` | 26,2% | **0,8%** | 9,5% |
+| `attack` | 23,0% | **34,8%** | 22,2% |
+| **LCS** | 47,4% | **47,8%** | -- |
+
+**Movi a distribuicao em 26pp e o LCS andou 0,1pp.**
+
+Previsao registrada antes de rodar: 2 de 5 certas. `play` subiu e
+`activate` ficou quase exato (15,0% x 14,0%). Errei que a anexacao se
+agruparia em rajada tardia -- `attach_don -> attach_don` **caiu** de
+0,20 pra 0,08 contra 0,32 do humano, o oposto do previsto -- e o
+`attack` de abertura estourou pra 34,8% contra 22,2%.
+
+### 3. O QUE ISTO ESTABELECE (o resultado que importa)
+
+Seis configuracoes medidas hoje, com distribuicoes de 1a acao muito
+diferentes entre si, e **o LCS ficou entre 47,4% e 49,4% em todas**. Com
+a regua ja corrigida, `attach_don` de abertura foi de 27,0% pra 0,8% e o
+LCS foi de 47,7% pra 47,8%.
+
+**Casar a distribuicao marginal de "que acao vem primeiro" NAO produz
+sequencia casada.** O motor pode ter o histograma certo e ainda ordenar
+as acoes concretas daquele turno de outro jeito.
+
+### 4. Erro de priorizacao meu, com o registro que existia
+
+O bloco 734 ja tinha decomposto esta mesma perda:
+
+| origem da perda | pp |
+|---|---|
+| **CONTAGEM** (faz acoes demais/de menos) | **39,2** |
+| ORDEM (dada a contagem) | 12,4 |
+| CARTA errada | 12,8 |
+
+**Ordem e 12,4pp de uma perda de 64pp**, e o teto de mexer so em ordem,
+com as contagens de hoje, e **60,8%**. Passei o dia em ordem. O
+`CLAUDE.md` manda priorizar por volume x gap e o bloco 734 estava no
+HANDOFF -- eu li o sintoma (`attach_don` 3x o humano) e fui atras dele
+sem pesar contra a decomposicao que ja existia.
+
+### 5. Estado do codigo
+
+`ATTACH_ADIADO=0` (desligado). Nao ligar: +0,4pp de LCS nao paga o
+`attack` de abertura em 34,8% contra 22,2% do humano. `smoke_fast.py`
+passa ligado e desligado.
+
+### 6. Proximo alvo
+
+**CONTAGEM**, nao ordem. Com as ressalvas ja medidas: o limiar de parada
+nao alcanca (bloco 734 -- as acoes excedentes tem score ALTO, nao sao
+marginais) e o erro e SIMETRICO (bloco 695 -- 22,4% a mais / 25,2% a
+menos), entao limiar global esta descartado por medicao. O motor faz
+**+0,75 acao por turno** a mais que o humano.
+
 ## 2026-08-30 (739) - **A REGUA ESTAVA TORTA: o parser descartava o ULTIMO TURNO de toda partida.** 24,6% das anexacoes de DON e 15,2% dos ataques do humano nunca existiram no corpus -- e o desvio de `attack` que eu estava consertando era ARTEFATO
 
 **Pedido do usuario:** "vai atras do attach_don na funcao de valor".
