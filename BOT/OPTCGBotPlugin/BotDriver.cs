@@ -145,6 +145,7 @@ namespace OPTCGBotPlugin
             if (gls.e_CurrentState == GameplayState.Start_WaitOnMulliganChoice)
             {
                 _outcomeReported = false;
+                _mulliganWaits = 0;
                 _collectionConfirmationLogged = false;
                 _collectionMessage = "";
                 _collectionState = "";
@@ -239,6 +240,32 @@ namespace OPTCGBotPlugin
                 {
                     var mulBotPs = gls.Lps_Players[BotPlayerIndex];
                     var mulDto = GameStateBuilder.Build(mulBotPs, gls.Lps_Players[1 - BotPlayerIndex], gls);
+                    // CORRIDA DE FRAME (achado ao vivo 29/08): o jogo faz
+                    // `DrawCard(5, ...)` nos dois lados e SO ENTAO chama
+                    // `OfferMulligan()`, mas os GameObjects levam alguns
+                    // frames pra aparecer em `Lgo_MyHand`. Lendo no mesmo
+                    // frame da troca de estado, a mao chega VAZIA -- e o
+                    // servidor tem um fallback explicito ("mao vazia/
+                    // desconhecida -- keep"). Resultado: **o bot nunca
+                    // mulligava, em partida nenhuma**. Medido: 3 de 3
+                    // decisoes de mulligan da sessao com `hand: []`.
+                    //
+                    // Espera a mao materializar. O teto existe pra nao
+                    // travar a partida se algo mudar no jogo -- passou do
+                    // teto, decide com o que tem (comportamento antigo).
+                    if ((mulDto.bot.hand == null || mulDto.bot.hand.Count == 0)
+                        && _mulliganWaits < MaxMulliganWaits)
+                    {
+                        _mulliganWaits++;
+                        if (_mulliganWaits == 1)
+                            Plugin.Log.LogInfo("[Bot] mao inicial ainda vazia -- esperando o jogo popular a mao");
+                        _cooldown = 0.2f;
+                        return;
+                    }
+                    if (mulDto.bot.hand == null || mulDto.bot.hand.Count == 0)
+                        Plugin.Log.LogWarning(
+                            $"[Bot] mao inicial VAZIA apos {_mulliganWaits} tentativas -- " +
+                            "decidindo sem ver a mao (keep por fallback do servidor)");
                     string mulliganDecisionId = "";
                     bool mull = EngineClient.IsAlive() && EngineClient.ShouldMulligan(
                         mulDto.bot.hand, id => mulliganDecisionId = id);
@@ -728,6 +755,11 @@ namespace OPTCGBotPlugin
         private object? _pendingRef;
         private int _pendingStep = -1;
         private System.Collections.Generic.List<int>? _pendingOrder;
+        // Tentativas de esperar a mao inicial materializar (ver o bloco de
+        // mulligan). Zerado ao entrar em Start_WaitOnMulliganChoice.
+        private int _mulliganWaits;
+        private const int MaxMulliganWaits = 25;
+
         private int _pendingAttempt;
         // Contadores da selecao de quantidade LIVRE (ver o bloco em
         // ChooseTarget): quantos cliques o jogo aceitou, e quantas recusas
