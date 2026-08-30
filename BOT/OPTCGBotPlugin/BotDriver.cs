@@ -336,7 +336,7 @@ namespace OPTCGBotPlugin
                 // sinal do PROPRIO JOGO de quem deve responder -- e o mesmo
                 // criterio ja usado na linha ~374 com `HasOfferedButtons`.
                 if (BotExecutor.IsOfferingV3Choice(gls)
-                    && (BotExecutor.PendingActionIsMine(gls, pdBotPs) || minhaVezDeClicar))
+                    && BotExecutor.ShouldBotAnswer(gls, pdBotPs, BotPlayerIndex))
                 {
                     var opcoes = BotExecutor.GetV3Choices(gls);
                     var dtoV3 = GameStateBuilder.Build(pdBotPs, gls.Lps_Players[1 - BotPlayerIndex], gls);
@@ -746,8 +746,14 @@ namespace OPTCGBotPlugin
             var botPs = gls.Lps_Players[BotPlayerIndex];
             var oppPs = gls.Lps_Players[1 - BotPlayerIndex];
 
-            // Efeito do humano? nao toca (ele clica os proprios prompts)
-            if (!BotExecutor.PendingActionIsMine(gls, botPs))
+            // Efeito do humano? nao toca (ele clica os proprios prompts) --
+            // MAS "efeito do humano" nao e a mesma coisa que "nao e comigo".
+            // Achado ao vivo 29/08: Charlotte Linlin OP17-049 do OPONENTE
+            // manda o BOT descartar 2 cartas. O bot respondeu o V3Choice
+            // ("Trash 2 Cards") e travou AQUI, no passo de escolher QUAIS --
+            // a carta e do oponente, entao esta guarda o mandava embora e a
+            // partida parava ate o humano clicar. Ver `ShouldBotAnswer`.
+            if (!BotExecutor.ShouldBotAnswer(gls, botPs, BotPlayerIndex))
                 return;
 
             // Novo prompt (ou novo step do mesmo efeito V3)? refaz a ordem

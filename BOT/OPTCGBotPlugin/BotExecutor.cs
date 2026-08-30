@@ -450,6 +450,30 @@ namespace OPTCGBotPlugin
             catch { return false; }
         }
 
+        // O BOT e quem tem que responder este prompt?
+        //
+        // CRITERIO UNICO -- criado 29/08 depois da SEXTA ocorrencia do mesmo
+        // bug em lugares diferentes. `PendingActionIsMine` responde "a CARTA
+        // e minha?", que NAO e a mesma pergunta. Existe uma classe inteira de
+        // efeito em que o dono e o oponente e quem decide e o bot:
+        // `choice_chooser: "opponent"` -- Charlotte Linlin OP17-049/OP17-099
+        // ("Your opponent chooses one", "opponent trashes 2 cards"), entre
+        // outros. Nesses casos o jogo poe `iPlayerAction` no bot e fica
+        // esperando; quem le so o dono conclui "nao e comigo" e a partida
+        // TRAVA ate o humano clicar.
+        //
+        // Historico das ocorrencias: 15/08 (as guardas de
+        // `resolucaoDoOutroLado`, corrigidas la), 28/08 (ramo V3Choice,
+        // nasceu ja com o bug) e 29/08 (`HandlePendingAction`). Cada uma foi
+        // corrigida isolada. Daqui pra frente, TODO ponto que decide "devo
+        // responder?" usa esta funcao -- nao `PendingActionIsMine` direto.
+        public static bool ShouldBotAnswer(GameplayLogicScript gls, PlayerState botPs, int botIndex)
+        {
+            if (PendingActionIsMine(gls, botPs)) return true;
+            try { return gls.gsv_CurrentGame.iPlayerAction == botIndex; }
+            catch { return false; }
+        }
+
         // Alvos que ainda faltam selecionar num step V3 (<= 0 = pode confirmar)
         private static readonly MethodInfo _mRemainingTargets =
             AccessTools.Method(typeof(GameplayLogicScript), "RemainingTargetsToSelect");
