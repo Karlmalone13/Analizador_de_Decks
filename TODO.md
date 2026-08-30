@@ -2,6 +2,27 @@
 
 **Última atualização:** 30 de agosto de 2026
 
+> 30/08/2026 (bloco 747): **COLISAO DE CODIGO DE CARTA.** O jogo chama o
+> lider Kaido de `OP17-058`; o banco tinha ali um EVENTO **duplicado byte
+> a byte do `OP17-055`**, que deslocou o Kaido real pra `OP17-059`. O
+> Evento e `[Main] resta 1 DON: Unblockable` **sem limite por turno** --
+> por isso o motor ativou o "efeito do lider" em 100% dos turnos e ficou
+> sem DON. **Nao era decisao: era a carta errada.** O Kaido real tem
+> `[Once Per Turn] DON!!-1`.
+> Conserto: remover a duplicata + alias `OP17-058 -> OP17-059` (nesta
+> ordem -- `aplicar_aliases` pula se a chave ja existir). Renumerar o
+> banco foi tentado e REVERTIDO: o banco e indexado pelo codigo IMPRESSO.
+> **Ferramenta nova `audit_code_collision.py`** -- acha COLISAO (falha
+> silenciosa) que `audit_game_code_divergence.py` nao ve (ele so acha
+> codigo ausente, falha alta). Rodar apos cada atualizacao do simulador.
+> **ARMADILHA NOVA:** `_EFFECTS_DB` e cache de PROCESSO -- **regenerar o
+> banco EXIGE reiniciar o engine server**. O teste de validacao do Kaido
+> foi feito com servidor de 16:52 e banco de 19:37: **nao valeu**.
+> **PENDENTE:** validar o Kaido; efeito do lider Luffy (achado: o jogo
+> tem DOIS sistemas de acao, cartas modernas usam **V3** e
+> `ActionHasDownsideCost`/`ActionTrigger` sao do **LEGADO** -- onde mora
+> o custo V3 segue nao localizado); "nao desenvolve bem o board".
+
 > 30/08/2026 (bloco 745): **CAUSA RAIZ do efeito do lider ACHADA E
 > CONSERTADA.** O diagnostico do bloco 744 devolveu
 > `optCost=sem_custo_opcional[... DonTap=0 ...]` -- todas as flags de

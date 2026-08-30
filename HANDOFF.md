@@ -28,6 +28,98 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-30 (747) - **COLISAO DE CODIGO DE CARTA**: o jogo chama o lider Kaido de `OP17-058` e o banco tinha ali um EVENTO duplicado. O motor jogou partidas inteiras com a carta errada -- e o teste de validacao NAO valeu (servidor com o banco velho em memoria)
+
+### 1. O achado
+
+Log do jogo (1.42c.22): `[You] Leader is Kaido ["OP17-058">OP17-058]`.
+
+O banco tinha em `OP17-058` um **EVENTO** -- "There's No Authority in the
+World That Lasts Forever!!!" -- **linha duplicada byte a byte do
+`OP17-055`**. A duplicata deslocou a numeracao e empurrou o lider Kaido
+real pra `OP17-059`.
+
+Texto do Evento: `[Main] You may rest 1 of your DON!!: ... gains
+[Unblockable]` -- **sem limite por turno**. Por isso o motor ativou o
+"efeito do lider" em 100% dos seus turnos (3, 5, 7, 9, 11 na partida
+`Kaido-B_x_Monkey.D.Luffy-RG_2026-08-30T19.28.18`) e ficou sem DON.
+Reportado pelo usuario como "o Kaido usa o efeito do lider toda hora e
+acaba ficando sem don". **Nao era decisao ruim do motor: era a carta
+errada.**
+
+Kaido real: `[When Attacking]/[On Your Opponent's Attack][Once Per Turn]
+DON!!-1: ate 1 Personagem do oponente ganha -2000`. O `Once Per Turn` --
+o limite que faltava -- nao existia no que o motor via.
+
+### 2. O conserto (e o conserto errado que fiz antes)
+
+1a tentativa: renumerei o banco (059 -> 058). **REVERTIDO** ao ler que o
+proprio `gerar_dbs.py` documenta a invariante: o banco e indexado pelo
+codigo **IMPRESSO**, e divergencia do simulador se resolve por
+`ALIASES_DO_SIMULADOR`, "NUNCA de suposicao". Renumerar deixaria o banco
+refem da numeracao interna do jogo, que muda a cada atualizacao.
+
+Conserto correto, dois passos NESTA ordem:
+1. remover a linha duplicada em `OP17-058` (copia byte a byte do
+   `OP17-055`; correta por si so);
+2. `'OP17-058': 'OP17-059'` em `ALIASES_DO_SIMULADOR`.
+
+A ordem importa: `aplicar_aliases` PULA quando a chave alias ja existe
+como carta real ("o banco manda") -- sem o passo 1, o passo 2 seria
+ignorado em silencio.
+
+Verificado: `card_effects_db.json['OP17-058']` = `Kaido | LEADER | 5000 |
+alias_de=OP17-059`, com `once_per_turn=true` e custo `don_minus 1`.
+Registro em `parser_audits/2026-08-30_OP17-058_colisao_de_codigo_lider_Kaido.json`.
+
+### 3. Ferramenta nova: `audit_code_collision.py`
+
+`audit_game_code_divergence.py` (ja existia) compara **nomes de ARQUIVO**
+de arte. Acha codigo AUSENTE (carta vira "copia cega" -- falha ALTA e
+visivel) e numeracao +-1. **Nao acha COLISAO**: codigo presente nos dois
+lados apontando pra cartas diferentes -- falha em **SILENCIO**, com o
+motor raciocinando errado a partida toda. E a classe pior e nao tinha
+deteccao nenhuma.
+
+A ferramenta nova usa fonte melhor: os pares `Nome ["CODIGO">CODIGO]` dos
+combat logs bancados -- o que o jogo afirma em TEMPO DE EXECUCAO, e cobre
+toda carta ja vista em partida.
+
+Varredura global: **1 duplicata em 2.749 cartas** (a do Kaido). Das 17
+divergencias de NOME, 16 sao variantes de grafia/localizacao inspecionadas
+uma a uma (Gear 2/Gear Two, Zorojuro/Zoro-Juurou, Uroge/Urouge,
+Viola/Violet, Onami/O-Nami, Pirate Docking 6/Pirates Docking Six...) --
+so `OP17-058` e carta genuinamente diferente.
+
+**Rodar depois de cada atualizacao do simulador**, junto do script antigo.
+
+### 4. O TESTE DE VALIDACAO NAO VALEU -- armadilha nova, registrada
+
+O usuario rodou uma partida de Kaido pra validar. **Nao vale**:
+`_EFFECTS_DB` e cache de PROCESSO (`if _EFFECTS_DB: return`), e o servidor
+estava no ar desde **16:52** enquanto o banco foi regenerado as **19:37**.
+O processo segurou a carta errada a partida inteira.
+
+**Regra que fica: regenerar `card_effects_db.json` EXIGE reiniciar o
+engine server.** Nada avisa -- nem erro, nem log. Servidor reiniciado
+depois disso; a validacao do Kaido continua PENDENTE.
+
+### 5. Pendencias reais ao encerrar a frente do bot
+
+- **VALIDAR o Kaido** com o servidor novo (nao foi validado).
+- **Efeito reativo do lider Luffy** continua sem funcionar. Progresso de
+  diagnostico real: `cadeia=idx_fora[0/0]` mostrou que `GetCardActions()`
+  volta VAZIA -- porque o jogo tem **dois sistemas de acao** e cartas
+  modernas usam **V3**, enquanto `ActionHasDownsideCost`/`ActionTrigger`
+  sao do sistema **LEGADO**. Eu estava atacando o sistema errado o dia
+  todo. O custo V3 nao esta em `ActV3Effect.DonTap` (zero na leitura ao
+  vivo) nem em `ActV3StepDetails` (so condicoes, "Don Requirements").
+  **Onde o custo V3 mora continua NAO localizado.**
+- "Nao desenvolve bem o board" -- nao investigado.
+- 30 logs `_autosaved` (18% do banco) estouram em `audit_one_game`
+  (`KeyError: players`) e sao pulados em SILENCIO por todo diagnostico
+  (bloco 743).
+
 ## 2026-08-30 (745) - **CAUSA RAIZ do efeito do lider, achada e consertada**: `DonTap` existe em DOIS lugares no jogo, e o custo mora no TRIGGER -- o plugin lia o do EFEITO, sempre zero
 
 **Pedido do usuario:** *"quero que resolva de vez essa questao do bot
