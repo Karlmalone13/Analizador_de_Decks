@@ -4613,5 +4613,35 @@
       "You": "decks_full/Monkey.D.Luffy-RG_2026-08-30T09.23.05.json",
       "Opponent": "decks_full/Rocks.D.Xebec-B_2026-08-30T09.23.05.json"
     }
+  },
+  {
+    "id": "2026-08-30T16.21.37",
+    "friendly_name": "Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B",
+    "date": "2026-08-30",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-001",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-RG"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 10,
+    "winner": "p2",
+    "bot_side": "p1",
+    "log_file": "raw/Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-30T16.21.37.log",
+    "parsed_file": "parsed/Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-30T16.21.37.json",
+    "deck_files": {
+      "You": "decks/Monkey.D.Luffy-RG_2026-08-30T16.21.37.json",
+      "Opponent": "decks/Rocks.D.Xebec-B_2026-08-30T16.21.37.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Monkey.D.Luffy-RG_2026-08-30T16.21.37.json",
+      "Opponent": "decks_full/Rocks.D.Xebec-B_2026-08-30T16.21.37.json"
+    }
   }
 ]

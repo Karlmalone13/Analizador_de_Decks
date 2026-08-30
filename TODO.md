@@ -2,6 +2,33 @@
 
 **Última atualização:** 30 de agosto de 2026
 
+> 30/08/2026 (bloco 744): teste ao vivo -- **3 reclamacoes, 3 causas
+> diferentes**.
+> **(1) Anexar em vez de jogar o Stage no turno 1: CONSERTADO.** Os dois
+> valores simulados eram IDENTICOS (474,4167) -- empate exato -- e quem
+> decidia era a **frequencia humana** (bloco 663), que elege
+> `attach_don` no lider por ser o padrao mais comum do banco. Gastou o
+> unico DON e matou uma jogada de score 8x maior. A simulacao empata
+> porque ST31-005 e Stage (valor esta nos turnos seguintes) e o rollout
+> e de 1 turno. Novo nivel de desempate por SCORE ESTATICO
+> (`TIEBREAK_SCORE_ESTATICO`, default LIGADO), entre DON e frequencia
+> humana. Corpus: LCS 47,4% -> 47,3%, `attach_don` 26,2% -> 26,0% --
+> plano, e conserto de bug, nao ganho de metrica.
+> **(2) Efeito do lider: NAO e decisao, e o PLUGIN.** Zero decisoes de
+> `reaction` no log; `IsOptionalCostWindow` nao reconhece a janela
+> (`downside=False` com `actor=OP13-001 mine=True`). 3a vez reportado, e
+> o bloco 565 ja tinha tentado. **Nao consertei no escuro**: criado
+> `OptionalCostWhy()` (diz QUAL dos 3 portoes barrou + flags de custo +
+> botoes da tela) no heartbeat. Proxima partida responde.
+> **(3) Double Attack no personagem: A BUSCA ESTAVA CERTA.** Valor
+> simulado do ataque ao lider era `-50000` = `-SIMULATED_WIN_SCORE`, a
+> condicao "a resposta dele me mata". **O bot tinha 1 vida.** Matar o
+> OP17-054 removia um atacante. Sem fix.
+> **Sobre "o Monte Carlo atrapalha":** o numero de 85% que eu ia
+> reportar estava INFLADO pela escala de score entre tipos; no mesmo
+> tipo sao 2 de 6, e ambos sao o caso (3). Remover a busca ja e
+> reprovado (bloco 700).
+
 > 30/08/2026 (bloco 743): **as 4 categorias cegas foram instrumentadas.**
 > `blocker_choice`, `counter_use`, `counter_cards` e `effect_target` no
 > `decision_log`, cada uma com CANDIDATOS + ESCOLHIDO + entradas da

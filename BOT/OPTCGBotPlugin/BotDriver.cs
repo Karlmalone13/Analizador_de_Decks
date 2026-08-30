@@ -180,6 +180,11 @@ namespace OPTCGBotPlugin
                              $"mine={(gls.acaActive != null && BotExecutor.PendingActionIsMine(gls, botPsHb))} " +
                              $"actor={BotExecutor.ActorCode(gls) ?? "-"} " +
                              $"oppResolving={gls.bOpponentResolving} forcing={gls.bForcingOpponentAction}";
+                // bloco 744: so quando ha acao pendente -- diz QUAL portao de
+                // IsOptionalCostWindow barrou. E o unico jeito de saber por
+                // que o efeito reativo do lider nunca vira pergunta.
+                if (gls.acaActive != null)
+                    msg += $" optCost={BotExecutor.OptionalCostWhy(gls)}";
                 if (msg != _lastHeartbeatMsg)
                 {
                     _lastHeartbeatMsg = msg;

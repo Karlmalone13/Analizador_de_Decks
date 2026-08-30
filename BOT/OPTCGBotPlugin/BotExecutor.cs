@@ -365,6 +365,41 @@ namespace OPTCGBotPlugin
         // Os campos vem de `ActV3Effect` (dnspy-export), todos vizinhos do
         // TrashCard que ja era lido. Custo novo que apareca no jogo so precisa
         // ser somado a esta lista, num lugar so.
+        // DIAGNOSTICO (bloco 744): IsOptionalCostWindow abaixo tem TRES
+        // portoes e devolve um bool so -- quando ela diz "nao", o log nao
+        // dizia QUAL portao barrou, e a sessao seguinte ficava adivinhando.
+        //
+        // Motivo concreto: o efeito reativo do lider Luffy OP13-001
+        // ([On Your Opponent's Attack], custo `rest_any_don`) continua sem
+        // virar pergunta pro motor -- ZERO decisoes de `reaction` no
+        // decision log da partida de 30/08, pela 3a vez reportado pelo
+        // usuario. O bloco 565 ja tentou consertar isto e nao pegou este
+        // caso. Sem saber qual portao falha, o proximo conserto seria
+        // chute de novo.
+        public static string OptionalCostWhy(GameplayLogicScript gls)
+        {
+            if (gls.acaActive == null) return "sem_aca";
+            bool v3;
+            try { v3 = gls.acaActive.UsesV3(); }
+            catch { return "UsesV3_excecao"; }
+            if (!v3) return "nao_e_V3";
+            string flags;
+            try
+            {
+                var ef = gls.acaActive.V3Step().effect;
+                flags = $"TrashCard={ef.TrashCard} RestSelf={ef.RestSelf} "
+                      + $"TrashSelf={ef.TrashSelf} DonTap={ef.DonTap} DonMinus={ef.DonMinus}";
+                bool exige = ef.TrashCard || ef.RestSelf || ef.TrashSelf
+                          || ef.DonTap > 0 || ef.DonMinus > 0;
+                if (!exige) return "sem_custo_opcional[" + flags + "]";
+            }
+            catch { return "V3Step_excecao"; }
+            foreach (var btn in OfferedButtons(gls))
+                if (btn.myType == ButtonChoiceType.Cancel)
+                    return "OK[" + flags + "]";
+            return "sem_botao_Cancel[" + flags + "|botoes=" + OfferedButtonNames(gls) + "]";
+        }
+
         public static bool IsOptionalCostWindow(GameplayLogicScript gls)
         {
             if (gls.acaActive == null || !gls.acaActive.UsesV3())

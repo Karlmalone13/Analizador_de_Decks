@@ -563,6 +563,45 @@ _k.registra('ATTACH_ADIADO', 0, int,
             'ordem', 0, 1)
 ATTACH_ADIADO = bool(_k.get('ATTACH_ADIADO'))
 
+# ---------------------------------------------------------------------
+# 3o NIVEL DE DESEMPATE: SCORE ESTATICO, antes da frequencia humana
+# (bloco 744) -- nasceu de um caso REAL, nao de teoria.
+#
+# Partida ao vivo 30/08, turno 1, com 1 DON em maos:
+#
+#     play ST31-005   score=215,00  ->  valor simulado = 474,4167
+#     attach_don      score= 26,75  ->  valor simulado = 474,4167
+#
+# **Valores simulados IDENTICOS ate a ultima casa** -- empate exato, que
+# ja cai no desempate mesmo com TIEBREAK_EPS=1e-9. O desempate de DON
+# (bloco 651) tambem empatou (jogar custa 1, anexar tranca 1), entao
+# decidiu o 3o nivel: frequencia humana (bloco 663). `attach_don` no
+# proprio lider e o padrao MAIS COMUM do banco inteiro -- venceu, gastou
+# o unico DON e tornou a jogada de score 8x maior IMPOSSIVEL naquele
+# turno.
+#
+# POR QUE A SIMULACAO EMPATA: ST31-005 e um Stage, e o valor de um Stage
+# esta nos turnos SEGUINTES. O rollout e de um turno, entao os dois
+# estados finais avaliam igual. O score estatico ENXERGA a diferenca
+# (215 x 26,75) e simplesmente nao era consultado.
+#
+# POR QUE ISTO NAO E O TESTE REPROVADO DO BLOCO 631: aquele misturava
+# uma fracao do score imediato dentro do VALOR de TODA decisao, e caiu
+# porque a escala de score e incomparavel entre tipos de acao (bloco
+# 579) -- `attach_don` ja e fracionado de proposito. Aqui o score so e
+# consultado quando a busca E o desempate de DON JA empataram, isto e,
+# quando o motor e comprovadamente indiferente e nao ha nada melhor pra
+# consultar. Nao entra em nenhuma decisao que a busca saiba resolver.
+#
+# Contra a frequencia humana: ela e um PRIOR fraco (nao olha o estado
+# deste turno) e aqui ativamente enganava. Continua existindo como 4o
+# nivel, so deixou de ser o primeiro a ser ouvido.
+_k.registra('TIEBREAK_SCORE_ESTATICO', 1, int,
+            'desempate por score estatico antes da frequencia humana, so '
+            'quando busca e DON ja empataram (0 = desligado)',
+            'ordem', 0, 1)
+USE_TIEBREAK_SCORE = bool(_k.get('TIEBREAK_SCORE_ESTATICO'))
+
 # Bloco 681 -- POLITICA DE IMITACAO aprendida (PASSO 2 do roteiro do
 # bloco 653). Dois modelos, dois problemas distintos, ambos medidos em
 # split por PARTIDA (`treinar_policy.py`, artefato em
@@ -18070,12 +18109,20 @@ class OPTCGMatch:
                     tb = _tb(cand, empatadas)
                     if tb > melhor_tb:
                         melhor, melhor_tb, melhor_tb2 = cand, tb, _tb_human(cand)
-                    elif USE_TIEBREAK_HUMAN_FREQ and tb == melhor_tb:
-                        # bloco 663: 2o nivel -- so decide quando `valor`
-                        # E `_tb` ja empataram, ver `_tb_human`.
-                        tb2 = _tb_human(cand)
-                        if tb2 > melhor_tb2:
-                            melhor, melhor_tb2 = cand, tb2
+                    elif tb == melhor_tb:
+                        # bloco 744: score ESTATICO antes da frequencia
+                        # humana -- ver o comentario de
+                        # TIEBREAK_SCORE_ESTATICO. So chega aqui quem
+                        # empatou na busca E no desempate de DON.
+                        if USE_TIEBREAK_SCORE and abs(cand[0] - melhor[0]) > TIEBREAK_EPS:
+                            if cand[0] > melhor[0]:
+                                melhor, melhor_tb2 = cand, _tb_human(cand)
+                        elif USE_TIEBREAK_HUMAN_FREQ:
+                            # bloco 663: 4o nivel -- so decide quando
+                            # `valor`, `_tb` e o score ja empataram.
+                            tb2 = _tb_human(cand)
+                            if tb2 > melhor_tb2:
+                                melhor, melhor_tb2 = cand, tb2
         return melhor, melhor_valor, search_records, n_coletadas, sim_values
 
     def _generate_and_score_actions(self, p, opp, engine, exclude_activate_uids=None):

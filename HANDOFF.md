@@ -28,6 +28,115 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-30 (744) - Teste ao vivo: 3 reclamacoes, 3 causas DIFERENTES. Uma e empate exato decidido por frequencia humana, outra e defesa CORRETA contra letal, a terceira e o plugin nunca perguntar
+
+**Partida:** `Monkey.D.Luffy-RG_x_Rocks.D.Xebec-B_2026-08-30T16.21.37`
+(bot perdeu). Log bancado, telemetria lida na ordem obrigatoria.
+
+**Hipotese do usuario durante a analise:** *"acho que esse monte carlo
+esta atrapalhando a gente em diversos casos"*. Investigada a fundo --
+resposta: parcialmente, e nao pelo motivo que parecia.
+
+### 1. Turno 1: anexou 1 DON em vez de jogar o Stage -- CAUSA ACHADA
+
+    play ST31-005   score=215,00  ->  valor simulado = 474,4167
+    attach_don      score= 26,75  ->  valor simulado = 474,4167
+
+**Valores simulados IDENTICOS ate a ultima casa.** Empate exato, que cai
+no desempate mesmo com `TIEBREAK_EPS=1e-9`. O desempate de DON (bloco
+651) tambem empatou (jogar custa 1, anexar tranca 1), entao decidiu o
+nivel seguinte: **frequencia humana** (bloco 663). `attach_don` no
+proprio lider e o padrao mais comum do banco inteiro -- venceu, gastou o
+UNICO DON do turno e tornou a jogada de score 8x maior impossivel.
+
+Por que a simulacao empata: ST31-005 e um **Stage**, cujo valor esta nos
+turnos SEGUINTES. O rollout e de um turno, entao os dois estados finais
+avaliam igual. **O score estatico enxerga a diferenca (215 x 26,75) e
+simplesmente nao era consultado.**
+
+**FIX**: novo nivel de desempate por SCORE ESTATICO, entre o de DON e o
+de frequencia humana (`TIEBREAK_SCORE_ESTATICO`, default LIGADO).
+
+Nao e o teste reprovado do bloco 631: aquele misturava o score imediato
+dentro do VALOR de toda decisao e caiu pela escala incomparavel entre
+tipos (bloco 579). Aqui o score so e consultado quando a busca E o
+desempate de DON JA empataram -- ou seja, quando o motor e
+comprovadamente indiferente e nao ha nada melhor pra ouvir. A frequencia
+humana continua existindo, so deixou de ser a primeira consultada: ela e
+um prior fraco (nao olha o estado do turno) e aqui enganava.
+
+**Medido no corpus (400 turnos): LCS 47,4% -> 47,3%, `attach_don` de
+abertura 26,2% -> 26,0%.** Plano -- empate EXATO e raro no agregado.
+Vale como conserto de bug com cadeia causal fechada, nao como ganho de
+metrica. Nao regride.
+
+### 2. Efeito do lider nunca usado -- NAO E DECISAO, E O PLUGIN
+
+OP13-001 tem a habilidade como `on_opp_attack` (reativa), custo
+`rest_any_don` -- gratis, o DON desvira no refresh. O bot gastou uma
+CARTA de +2000 no lugar.
+
+**ZERO decisoes de `reaction` no decision log inteiro.** As opcoes de
+defesa registradas sao so `counter <carta>` / `no_counter` / `blocker`.
+O heartbeat mostra o jogo em `state=Attack_WaitOnCounters actor=OP13-001
+mine=True` -- mas `downside=False`, e `IsOptionalCostWindow` nao
+reconhece a janela. **O motor nao decidiu mal: nao foi PERGUNTADO.**
+
+E a 3a vez que o usuario reporta isto, e o comentario em
+`BotDriver.cs:482` ja descreve este mesmo bug como consertado no bloco
+565 -- nao pegou este caso.
+
+`IsOptionalCostWindow` tem TRES portoes (`UsesV3()`, flag de custo,
+botao Cancel) e devolve um bool so: quando diz "nao", o log nao dizia
+QUAL barrou. **Nao consertei no escuro** (ja consertei a camada errada
+duas vezes hoje). Adicionado `OptionalCostWhy()`, que devolve o motivo
+em texto com as flags de custo e a lista de botoes da tela, impresso no
+heartbeat sempre que ha acao pendente. A proxima partida responde.
+
+### 3. Double Attack no personagem -- A BUSCA ESTAVA CERTA
+
+    attack OP13-118 -> leader     score=344,0   valor simulado = -50000,0
+    attack OP13-118 -> character  score=175,0   valor simulado = normal
+
+`-50000` e `-SIMULATED_WIN_SCORE`, e a condicao e explicita no codigo:
+`if self._play_turn_greedy(opp2, p2): return -SIMULATED_WIN_SCORE  # a
+resposta dele me mata`.
+
+**O bot estava com 1 VIDA.** A busca simulou que atacar o lider deixava
+o oponente com letal, e que matar o OP17-054 removia um atacante e
+salvava o turno. O bonus de +60 do Double Attack pro lider (bloco de
+02/08) FOI aplicado -- e por isso o lider marca 344 x 175. A busca
+derrubou por razao defensiva REAL, nao por ruido.
+
+**Nenhum fix.** A regra geral do usuario ("double attack tem que ser na
+vida") esta certa; neste board, com 1 vida, a excecao tambem esta.
+
+### 4. Sobre "o Monte Carlo esta atrapalhando"
+
+Numero que eu quase reportei e **estava inflado**: "a busca derruba o
+topo do score estatico em 85% das decisoes de main". `attack` tem escala
+estruturalmente maior que os outros tipos (bloco 579), entao o "topo" e
+quase sempre um ataque -- e jogar carta ANTES de atacar e o
+comportamento correto. A maioria dos 17 casos era sequenciamento certo.
+
+Restringindo a alternativas do MESMO tipo (sem confundidor de escala):
+**2 de 6** -- e as duas sao o caso 3 acima, que tem justificativa.
+
+Contraponto obrigatorio: **remover a busca ja foi medido e REGREDIU**
+(bloco 700, `play` 28,9% -> 26,2%, 12 lideres piores x 4). E o
+`REPROVADOS.md` registra que o erro que levou aquela tentativa foi olhar
+so decisoes que ja tinham dado errado -- exatamente o risco da amostra
+de hoje, que sao os turnos que o usuario apontou.
+
+O que resta estabelecido SEM esse vies e o de sempre: no corpus de 400
+turnos, `attach_don` de abertura e 26,0% do motor x 9,5% do humano.
+
+### 5. Estado
+
+Plugin recompilado (`setup_bepinex.ps1`), servidor reiniciado no codigo
+novo. `smoke_fast.py` passa. Knobs experimentais do dia seguem em zero;
+o unico default alterado e `TIEBREAK_SCORE_ESTATICO=1`.
+
 ## 2026-08-30 (743) - As 4 categorias CEGAS instrumentadas: 26% da metrica oficial deixa de ser inauditavel. `blocker_choice`, `counter_use`, `counter_cards`, `effect_target`
 
 **Pedido do usuario:** "sim, instrumenta as 4", depois da auditoria do
