@@ -1205,6 +1205,20 @@ def choose_effect_option(req: ChooseEffectOptionRequest):
     NAO e calibrada -- e um ponto de partida honesto pra destravar a tela.
     Quando houver volume de partidas com essa decisao registrada, medir e
     substituir por algo derivado de dado, como o resto do motor.
+
+    ── ARMADILHA DE PERSPECTIVA (registrada 29/08, ainda NAO tratada) ──
+    Existe uma classe de carta em que quem escolhe **nao e o dono do
+    efeito**: `choice_chooser: "opponent"` (ex: Charlotte Linlin OP17-099,
+    "[When Attacking] ... **Your opponent chooses one**"). Nesses casos o
+    bot e o CHOOSER, mas o TEXTO DOS BOTOES continua escrito da perspectiva
+    do DONO da carta -- "your hand" e a mao do dono, "your opponent's hand"
+    e a do bot.
+    Os termos de `CUSTO_PROPRIO`/`BOM` abaixo assumem que quem le e o dono,
+    entao para essa classe eles estao potencialmente INVERTIDOS.
+    Conferido nas 2 opcoes reais da Linlin: a heuristica escolhe a menos
+    ruim pro bot (+5 x -15), mas por coincidencia, nao por saber de quem e
+    a perspectiva. Antes de calibrar isto com dado, tratar a inversao --
+    e o `choice_chooser` do banco de efeitos ja diz quando ela se aplica.
     """
     started = time.perf_counter()
 

@@ -318,8 +318,25 @@ namespace OPTCGBotPlugin
                 // Vem ANTES do downside porque as duas telas usam os mesmos
                 // go_ChoiceButton1..4 e esta e mais especifica (identificada
                 // pelo `myType == V3Choice` do proprio botao).
+                // `|| minhaVezDeClicar`: ACHADO AO VIVO 29/08 -- e a MESMA
+                // armadilha que o comentario da linha ~286 descreve e que
+                // foi corrigida em 15/08 pras outras guardas. Este ramo
+                // (V3Choice, bloco 686) nasceu DEPOIS e usou so
+                // `PendingActionIsMine`, que le o DONO DA CARTA -- entao
+                // reintroduziu o bug num ramo novo.
+                //
+                // Caso real: Charlotte Linlin OP17-099 "[When Attacking] ...
+                // **Your opponent chooses one**". Quem escolhe e o BOT, mas o
+                // dono da carta e o oponente => `PendingActionIsMine` da
+                // false e a tela ficava parada ate o humano clicar. Medido
+                // na partida de 29/08: ZERO chamadas a /choose_effect_option,
+                // e o usuario teve que escolher pelo bot.
+                //
+                // `minhaVezDeClicar` (`iPlayerAction == BotPlayerIndex`) e o
+                // sinal do PROPRIO JOGO de quem deve responder -- e o mesmo
+                // criterio ja usado na linha ~374 com `HasOfferedButtons`.
                 if (BotExecutor.IsOfferingV3Choice(gls)
-                    && BotExecutor.PendingActionIsMine(gls, pdBotPs))
+                    && (BotExecutor.PendingActionIsMine(gls, pdBotPs) || minhaVezDeClicar))
                 {
                     var opcoes = BotExecutor.GetV3Choices(gls);
                     var dtoV3 = GameStateBuilder.Build(pdBotPs, gls.Lps_Players[1 - BotPlayerIndex], gls);
