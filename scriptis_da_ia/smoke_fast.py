@@ -10644,6 +10644,7 @@ def main() -> int:
     test_score_attack_target_double_attack_banish_priorizam_a_vida()
     test_order_target_candidates_debuff_on_play_coordena_com_ataque_disponivel()
     test_give_don_prefere_lider_a_character_recem_jogado_sem_uso_hoje()
+    test_order_target_candidates_lider_compete_por_ALVO_nao_por_acao()
     test_order_target_candidates_give_don_prefere_lider_ao_vivo()
     test_order_target_candidates_custo_so_de_mao_exclui_outras_zonas()
     test_opp_leader_power_gte_rockstar_05_08()
@@ -12348,6 +12349,51 @@ def test_give_don_prefere_lider_a_character_recem_jogado_sem_uso_hoje() -> None:
     ee.execute(izo, "on_play")
     check("give_don (rested) vai pro lider ja restado, nao pro Character recem-jogado",
           ace.don_attached == 1 and izo.don_attached == 0)
+
+
+def test_order_target_candidates_lider_compete_por_ALVO_nao_por_acao() -> None:
+    """5a ocorrencia do MESMO bug estrutural -- o lider caindo no catch-all
+    (prioridade 6) e perdendo pra qualquer corpo em own_board (prioridade 3),
+    inclusive quando o lider e quem esta LEVANDO o golpe.
+
+    Historico: 08/07 (criou a regra), 12/07 (Never Existed, +4000 no Mars
+    parado), 16/08 (+2000 na Charlotte Linlin fora do combate, lider levou
+    o golpe letal) e 29/08 -- partida real ao vivo, Monkey D. Luffy
+    OP13-001 ("[On Your Opponent's Attack] ... this Leader or up to 1 of
+    your Straw Hat Crew Characters gains +2000 power"). O efeito e
+    `buff_power_per_count`, que NAO estava na lista de acoes reconhecidas:
+    o lider ficou em 8o de 28 candidatos, atras de 2 corpos fora do combate
+    e de 4 personagens do OPONENTE, em 21 decisoes seguidas da mesma
+    partida -- a habilidade defensiva do lider ficou morta o jogo inteiro.
+
+    O teste trava a FORMA da correcao, nao a carta: quem decide se o lider
+    compete e o campo `target` do step, nao o nome da acao. Se alguem voltar
+    a enumerar acoes, este teste quebra.
+    """
+    luffy = real_card("OP13-001")
+    luffy._deck_uid = 1
+    nami = real_card("EB02-017")     # Straw Hat Crew, 2000 de poder
+    nami._deck_uid = 140
+    zoro = real_card("EB04-007")     # Straw Hat Crew, 9000 de poder
+    zoro._deck_uid = 100
+    me = GameState(leader=luffy)
+    me.field_chars = [nami, zoro]
+    opp = GameState(leader=real_card("OP17-099"))
+    opp.field_chars = [real_card("OP17-118")]
+    cands = [{"id": 140, "zone": "own_board", "code": "EB02-017"},
+             {"id": 100, "zone": "own_board", "code": "EB04-007"},
+             {"id": 1, "zone": "own_leader", "code": "OP13-001"}]
+    order = sim_bridge.order_target_candidates(
+        me, opp, cands, attacker_power=11000, defender_uid=1,
+        actor_code="OP13-001")
+    check("buff que pode mirar o lider prioriza o LIDER quando ele e o defensor",
+          bool(order) and order[0] == 1)
+    # E, entre os personagens, o mais FORTE primeiro -- o fallback de
+    # own_board ordenava crescente (semantica de sacrificio) e punha a
+    # Nami de 2000 na frente do Zoro de 9000.
+    resto = [i for i in order if i != 1]
+    check("entre os personagens, o de maior poder vem antes do mais fraco",
+          resto[:2] == [100, 140])
 
 
 def test_order_target_candidates_give_don_prefere_lider_ao_vivo() -> None:

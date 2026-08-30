@@ -1793,6 +1793,31 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
     return False
 
 
+# Alvos de step em que o LIDER e um alvo legitimo -- e nao um item de
+# segunda classe. Sai do schema do `card_effects_db` (campo `target`), nao
+# de lista de acoes: a acao muda a cada set novo, o alvo nao.
+_TARGETS_QUE_INCLUEM_LIDER = (
+    'leader_or_own_character', 'leader_or_character', 'leader',
+    'all_allies_and_leader',
+)
+
+
+def _delta_do_step(step: dict) -> int:
+    """Ganho de poder aproximado de um step que pode mirar o lider.
+
+    Melhor esforco de proposito: serve pra o lider COMPETIR na mesma escala
+    dos personagens, nao pra prever o numero exato. `buff_power_per_count`
+    ("+2000 por DON restado") entra com UMA unidade -- piso conservador,
+    porque quantas unidades o efeito vai render depende de uma escolha que
+    ainda nao foi feita quando esta ordenacao acontece.
+    """
+    if step.get('amount_per') is not None:
+        return int(step.get('amount_per') or 0) * max(1, int(step.get('count_per') or 1))
+    if step.get('amount') is not None:
+        return int(step.get('amount') or 0)
+    return 0
+
+
 def _key_para_log(chave) -> list:
     """A chave de ordenacao vira JSON. Ela e uma tupla heterogenea (bucket
     + desempates que podem ser float/bool/None), entao normaliza pra lista
@@ -2047,6 +2072,30 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                     break
                 if s.get('action') == 'give_don':   # give_don_opp e acao distinta, ja exclusiva
                     actor_self_power_target = ('delta', s.get('count', 1) * 1000)
+                    break
+                # ── FALLBACK PELA FORMA (29/08) ────────────────────────
+                # As tres regras acima casam por NOME DE ACAO. Toda acao
+                # nova que mira o lider precisa ser adicionada a mao, e
+                # esquecer uma faz o lider despencar pro catch-all
+                # (prioridade 6) e perder pra qualquer corpo em own_board
+                # (prioridade 3) -- inclusive quando o lider e quem esta
+                # LEVANDO o golpe.
+                #
+                # Isso ja aconteceu QUATRO vezes: 08/07 (o achado que criou
+                # esta regra), 12/07 (Never Existed, +4000 no Mars parado),
+                # 16/08 (+2000 na Charlotte Linlin fora do combate, lider
+                # levou o golpe letal) e 29/08 -- Monkey D. Luffy OP13-001,
+                # `buff_power_per_count` ("+2000 por DON restado"), que nao
+                # esta na lista: o lider ficou em 8o de 28 candidatos, atras
+                # de 2 corpos fora do combate e 4 personagens do OPONENTE,
+                # em 21 decisoes seguidas da mesma partida.
+                #
+                # O que define o caso NAO e a acao, e o ALVO: se o step pode
+                # mirar o lider, o lider tem que COMPETIR. O quanto ele
+                # ganha e melhor esforco -- o valor exato importa menos que
+                # nao cair no balde de descarte.
+                if s.get('target') in _TARGETS_QUE_INCLUEM_LIDER:
+                    actor_self_power_target = ('delta', _delta_do_step(s))
                     break
             if actor_self_power_target is not None:
                 break
