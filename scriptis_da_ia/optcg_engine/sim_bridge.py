@@ -1915,6 +1915,9 @@ _TARGETS_QUE_INCLUEM_LIDER = (
 # stage: Give up to 1 of your 'Monkey D. Luffy' up to 1 rested DON!!") caiu
 # nesse fallback -- Zoro(50) rank 9, Luffy(120) rank 13. O usuario viu o
 # DON ir parar num Luffy CONGELADO que nem podia atacar.
+_ZONAS_DON_PROPRIAS = {'own_don', 'own_don_rested',
+                       'own_don_attached', 'own_don_attached_used'}
+
 _TARGETS_PROPRIOS = ('own_character', 'own_characters', 'all_allies')
 
 # Acoes que BENEFICIAM o alvo (dao poder/recurso). Distinto de custo.
@@ -2431,6 +2434,25 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     # decision_engine.py -- fonte unica, nao duplicar a regua aqui.
     from optcg_engine.decision_engine import (actor_effect_is_hand_cost_only,
                                               actor_step_numeric_filter)
+    # O efeito do ator mira CARTAS DE DON? Qual estado elas precisam ter?
+    # `set_don_active` desvira DON RESTADO; `rest_don`/`don_minus` consomem
+    # DON ATIVO. Sem isto o alvo cai na heuristica generica de zona e a
+    # zona certa fica no fim da lista (ver o bloco de exclusao mais abaixo).
+    actor_don_target = None
+    for _blk in _relevant_blocks(actor_code, attacker_power > 0):
+        for _s in (_blk.get('steps') or []):
+            if not isinstance(_s, dict):
+                continue
+            _a = _s.get('action')
+            if _a == 'set_don_active':
+                actor_don_target = 'rested'
+            elif _a in ('rest_don', 'return_active_don_to_don_deck'):
+                actor_don_target = 'active'
+            if actor_don_target:
+                break
+        if actor_don_target:
+            break
+
     actor_hand_cost_only = (
         bool(actor_code) and not (actor_opp_only or actor_battlefield_only)
         and actor_effect_is_hand_cost_only(actor_code, attacker_power > 0))
@@ -2875,6 +2897,26 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     }
     if actor_hand_cost_only:
         candidates = [c for c in candidates if c.get('zone') in _HAND_COST_ALLOWED_ZONES]
+
+    # ── EFEITO QUE MIRA DON: so as zonas de DON sobrevivem ────────────
+    # ACHADO AO VIVO 30/08: Nami OP14-031 ("set up to 5 of your DON!! cards
+    # as active") ofereceu 60 candidatos de 12 zonas, e a ordem devolvida
+    # comecou com own_hand, own_hand, own_trash, own_trash... Os 4
+    # candidatos de `own_don_rested` -- os UNICOS legais -- ficaram no fim.
+    # O plugin clicou carta atras de carta, o jogo recusou todas, e a
+    # selecao foi confirmada com ZERO: o bot nao desvirou nenhum DON.
+    #
+    # A regra e a mesma familia de `actor_opp_only`/`actor_hand_cost_only`:
+    # o EFEITO DO ATOR diz qual zona e legal, entao as outras nao sao
+    # "menos prioritarias", sao INVALIDAS. Detectado pela ACAO do step, nao
+    # pela carta.
+    if actor_don_target:
+        zonas_don = ({'own_don_rested'} if actor_don_target == 'rested'
+                     else {'own_don'} if actor_don_target == 'active'
+                     else _ZONAS_DON_PROPRIAS)
+        so_don = [c for c in candidates if c.get('zone') in zonas_don]
+        if so_don:
+            candidates = so_don
 
     # O UNICO step de campo relevante tem filtro numerico (cost_lte/
     # power_lte/power_gte)? Exclusao DURA de quem nao bate, na zona do

@@ -63,6 +63,10 @@ fi
 # legitima (`don_cost` por acao) e delegacao correta (o modelo de valor de
 # mao, que foi MOVIDO pro motor exatamente por causa deste gate):
 #   effective_hand_play_cost, tiers_de_mao, valor_de_mao, fator_esvaziar_mao
+# 30/08: +_relevant_blocks -- e o acessor do proprio sim_bridge sobre
+# `get_card_effects` (ja na lista), usado pelas deteccoes por ATOR
+# (actor_opp_only, actor_hand_cost_only, actor_don_target...). Ler o
+# efeito parseado pra saber QUAL ZONA e legal nao e regua propria.
 # Adicionar aqui e diferente de usar --no-verify: o gate continua valendo,
 # so passou a reconhecer chamadas que sempre foram ao motor.
 # direto como sim_bridge.py faz).
@@ -73,7 +77,7 @@ fi
 # CHAMA a funcao ja importada (sem repetir a linha de import no mesmo
 # hunk -U0) nao continha nenhum touchpoint conhecido, disparando falso
 # positivo neste exato commit de merge.
-ENGINE_TOUCHPOINTS='DecisionEngine|EffectExecutor|avaliar_carta|_trash_value|should_use_counter|char_value_score|_step_is_viable|_worth_paying_optional_costs|get_card_effects|score_attack_target|_score_activate_main|_should_activate_main|don_needed_for_attack|buff_wins_combat|debuff_flips_attack_in_my_favor|body_provides_defense|would_lose_last_defender|trash_cost_board_perda|_simulate_sequence_values|_generate_and_score_actions|OpponentModel|actor_effect_is_hand_cost_only|actor_step_numeric_filter|effective_hand_play_cost|fator_esvaziar_mao|valor_de_mao|tiers_de_mao|bridge\.'
+ENGINE_TOUCHPOINTS='DecisionEngine|EffectExecutor|avaliar_carta|_trash_value|should_use_counter|char_value_score|_step_is_viable|_worth_paying_optional_costs|get_card_effects|score_attack_target|_score_activate_main|_should_activate_main|don_needed_for_attack|buff_wins_combat|debuff_flips_attack_in_my_favor|body_provides_defense|would_lose_last_defender|trash_cost_board_perda|_simulate_sequence_values|_generate_and_score_actions|OpponentModel|actor_effect_is_hand_cost_only|actor_step_numeric_filter|_relevant_blocks|effective_hand_play_cost|fator_esvaziar_mao|valor_de_mao|tiers_de_mao|bridge\.'
 
 # bot_optcgsim.py adicionado apos a varredura retroativa (bloco 375) --
 # antes desta linha, mudancas nesse arquivo nao passavam por NENHUM gate

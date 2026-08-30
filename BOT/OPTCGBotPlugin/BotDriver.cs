@@ -852,7 +852,16 @@ namespace OPTCGBotPlugin
             // Aqui a regra e outra: clica enquanto o jogo CONSOME o clique e
             // para no primeiro que ele recusa -- candidato invalido nao vira
             // motivo pra continuar varrendo. Confirma o que ja entrou.
-            if (_pendingOrder != null && BotExecutor.V3CountIsFree(gls)
+            // `|| _pendingConsumidos > 0`: cobre tambem "up to N" com MENOS
+            // de N alvos disponiveis. Ex real 30/08: Nami OP14-031 ("set up
+            // to 5 of your DON!! cards as active") com so 2 DON restados --
+            // `remaining` fica em 3 pra sempre (nunca chega a 0) e nao e o
+            // sentinela 99, entao nenhuma das duas saidas de confirmacao
+            // disparava. Se ja selecionei alguma coisa e o jogo passou a
+            // recusar, e porque acabaram os alvos validos: confirma o que
+            // entrou em vez de varrer o resto da lista.
+            if (_pendingOrder != null
+                && (BotExecutor.V3CountIsFree(gls) || _pendingConsumidos > 0)
                 && _pendingSemConsumo >= MaxRecusasSeguidasQuantidadeLivre)
             {
                 Plugin.Log.LogInfo(
