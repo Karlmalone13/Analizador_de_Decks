@@ -2,6 +2,27 @@
 
 **Última atualização:** 30 de agosto de 2026
 
+> 30/08/2026 (bloco 742): **desfecho de ataque instrumentado**
+> (`kind: attack_outcome`, wrapper a prova dos 4 `return` de
+> `_execute_attack`) + `diag_ataque_futil.py`.
+> **Resposta: os ataques a MAIS do motor sao LUCRATIVOS, nao futeis.**
+> Futilidade humano 63,1% x motor 62,1% (iguais); os 186 excedentes sao
+> 52,2% futeis (melhores que a media do motor) e tiram **89 vidas**. E o
+> ataque TARDIO e o bom: 1o 70,2% futil, 2o 59,8%, 3o+ 48,7% -- o
+> primeiro gasta o counter do oponente. Hipotese "o motor erra a defesa
+> do oponente" REFUTADA. O humano recusa dano que compensa.
+> Suspeito nao testado: dano no lider da carta pra MAO do oponente, e
+> **nao existe termo pra mao do oponente** na funcao de valor.
+> **AUDITORIA DA TELEMETRIA (buraco real):** `should_use_blocker`,
+> `should_use_counter`, `use_counter` e `EffectExecutor` **nao gravam
+> nada** no `decision_log`. Sao 4 das 10 categorias da meta -- bloquear
+> (85,7%), usar counter (59,7%), quais counter (18,5%) e alvo do efeito
+> (16,4%) -- **3.906 de 14.973 decisoes = 26% da metrica oficial sem
+> registro do que foi considerado**, incluindo as DUAS PIORES.
+> `decision_quality_full.py` pontua re-invocando as funcoes num estado
+> reconstruido: da certo/errado, nao da o porque.
+> **Proximo passo: instrumentar as 4 cegas com candidatas + score.**
+
 > 30/08/2026 (bloco 741): **contagem remedida na regua corrigida.**
 > `play` **nao tem vies** (+0,01, 52,5% exato) -- o excesso de +0,73
 > acao/turno e `attack` (+0,32), `activate` (+0,23) e `attach_don`

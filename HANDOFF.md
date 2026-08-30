@@ -28,6 +28,113 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-08-30 (742) - Desfecho de ataque instrumentado: os ataques a MAIS do motor sao **LUCRATIVOS, nao futeis** (89 vidas em 186). E a AUDITORIA DA TELEMETRIA: **4 das 10 categorias da meta nao tem registro nenhum de decisao** -- 26% da metrica oficial e cega
+
+**Pedido do usuario:** instrumentar o desfecho do ataque + "confira se
+esta faltando na telemetria alguma coisa que nos ajude a coletar dados
+para alcancarmos nosso objetivo".
+
+### 1. Instrumentacao nova: `kind: attack_outcome`
+
+O log registrava a DECISAO de atacar e nunca o RESULTADO -- o log humano
+sempre teve (`hit`/`blocked`/dano). Sem isso nao dava pra saber se os
+ataques a mais do motor (bloco 741: +0,32/turno, assimetrico 3,6:1) eram
+futeis ou lucrativos, que sao consertos sem nenhuma relacao entre si.
+
+Feito como WRAPPER (`_execute_attack` chama `_execute_attack_inner`):
+a funcao tem 4 `return` em caminhos diferentes -- ataque travado por
+efeito, sem alvo valido, cancelado por K.O. reativo, vitoria -- e
+instrumentar um a um erraria algum (foi assim que o bloco 736 achou um
+caminho de vitoria sem print nenhum). Nenhum `return` escapa do wrapper.
+So grava em turno REAL (`_suppress_replay_log` corta as milhares de
+batalhas simuladas).
+
+Ferramenta: `diag_ataque_futil.py`.
+
+### 2. A resposta: LUCRATIVOS
+
+| | humano | motor |
+|---|---|---|
+| ataques que NAO tiram vida | **63,1%** | **62,1%** |
+
+Praticamente identicas -- **os ataques do motor nao sao de qualidade
+pior que os do humano**.
+
+E os EXCEDENTES sao MELHORES que a media do proprio motor:
+
+    144 turnos com ataque a mais, 186 ataques excedentes
+    52,2% futeis (contra 62,1% da media do motor)
+    **89 vidas tiradas** por esses excedentes
+
+**Gradiente inesperado, por posicao no turno:**
+
+    1o ataque   70,2% futil
+    2o ataque   59,8%
+    3o+ ataque  48,7%
+
+Os ataques TARDIOS sao os que conectam -- o primeiro consome o counter
+do oponente e os seguintes passam. Isso inverte a intuicao de "o ataque
+marginal e o ruim".
+
+**Consequencia**: a hipotese "o motor ataca demais porque erra a
+previsao de defesa do oponente" esta REFUTADA. O humano recusa ataques
+que DARIAM dano. A pergunta virou: por que?
+
+### 3. Suspeito imediato (NAO testado ainda)
+
+No OPTCG, dano no lider manda a carta de vida pra **MAO** do oponente
+(mais o trigger). **Nao existe termo pra mao do oponente na funcao de
+valor** -- os unicos termos `opp` sao `board_opp`, `opp_blocker`,
+`opp_combo_threat`, `next_turn_readiness_opp_threat`. O motor avalia o
+dano em +270 (`dmg`) e a carta que ENTREGA em ZERO.
+
+E mecanicamente coerente com tudo acima: o humano recusa dano lucrativo
+porque dano tambem alimenta o oponente. Fica como hipotese registrada --
+depois do termo do blocker (bloco 741, construido e refutado), nao vale
+construir antes de checar.
+
+### 4. AUDITORIA DA TELEMETRIA -- o buraco
+
+| categoria da meta | acerto | tem registro de decisao? |
+|---|---|---|
+| bloquear ou nao | 85,7% | **NAO** |
+| quem ataca | 71,6% | sim (`turn_planner`) |
+| alvo do ataque | 69,3% | sim |
+| ativacao de efeitos | 63,9% | sim |
+| usar counter ou nao | 59,7% | **NAO** |
+| cartas jogadas | 43,5% | sim |
+| sequenciamento | 36,4% | sim (`seq_kinds`) |
+| distribuicao de DON | 23,5% | sim (`attach_don_for_attack`) |
+| quais cartas de counter | 18,5% | **NAO** |
+| alvo dentro do efeito | 16,4% | **NAO** |
+
+`should_use_blocker`, `should_use_counter` e `use_counter` **nao escrevem
+nada** no `decision_log` (conferido: as 2 ocorrencias dentro do range de
+`use_counter` sao a declaracao do atributo, nao logging). `EffectExecutor`
+-- 2.500 linhas -- tem **zero** referencias ao log.
+
+**4 das 10 categorias, 3.906 de 14.973 decisoes = 26% da metrica oficial
+nao tem registro nenhum do que foi considerado.** E inclui **as duas
+piores** (16,4% e 18,5%).
+
+`decision_quality_full.py` PONTUA essas categorias, mas re-invocando
+`should_use_blocker`/`should_use_counter`/`pick_counters` num estado
+reconstruido -- nao le um tra√ßo do que aconteceu. Da pra saber
+CERTO/ERRADO e **nao** da pra perguntar "o que foi considerado e por que
+a errada venceu", que e exatamente o que se precisa pra consertar uma
+categoria de 16%.
+
+E o mesmo padrao ja documentado no projeto por outro caminho: "a opcao
+certa nao perde a votacao, ela nao chega a existir" -- so que aqui nem a
+votacao e registrada.
+
+### 5. Proximo passo recomendado
+
+Instrumentar as 4 categorias cegas com candidatas + score, do MESMO
+jeito que `turn_planner` ja faz. E o que destrava diagnostico em 26% da
+metrica, incluindo as duas piores -- e sem isso qualquer tentativa
+nelas e chute.
+
 ## 2026-08-30 (741) - CONTAGEM remedida na regua corrigida: **`play` NAO tem vies (+0,01)**, o excesso e `attack` (+0,32) e e ASSIMETRICO 3,6:1. Termo do BLOCKER PROPRIO construido (faltava mesmo) e **REFUTADO por medicao**
 
 **Pedido do usuario:** "vai atras da contagem".

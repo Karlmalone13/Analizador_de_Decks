@@ -20174,6 +20174,76 @@ class OPTCGMatch:
                         target: Optional[Card], p: GameState,
                         opp: GameState, engine: DecisionEngine,
                         verbose: bool = False, attached_don: int = 0) -> bool:
+        """DESFECHO do ataque no `decision_log` (bloco 742).
+
+        POR QUE EXISTE. O log de decisao registrava a DECISAO (`turn_
+        planner`, `attach_don_for_attack`) e nunca o RESULTADO. O log
+        humano tem o resultado (`hit`, dano); o do motor nao tinha. Essa
+        assimetria trava a pergunta que decide o alvo da CONTAGEM:
+
+            o motor ataca 1,98 vezes por turno contra 1,66 do humano
+            (+0,32, assimetrico 3,6:1 -- bloco 741). Os ataques a MAIS
+            sao FUTEIS (bloqueados / counterados / 0 de dano) ou
+            LUCRATIVOS (conectam e tiram vida)?
+
+        Futeis => o motor erra a previsao de defesa do oponente, e o
+        alvo e o modelo de oponente. Lucrativos => o humano recusa
+        ataque que COMPENSA, por uma razao que o motor nao modela. Sao
+        consertos sem nenhuma relacao entre si, e hoje nao da pra
+        distinguir. Construir antes de saber e chutar -- foi o que
+        aconteceu com o termo do blocker (bloco 741, refutado).
+
+        E UM WRAPPER, nao instrumentacao espalhada: `_execute_attack_
+        inner` tem 4 pontos de `return` em caminhos diferentes (ataque
+        travado por efeito, sem alvo valido, ataque cancelado por K.O.
+        reativo, vitoria) e instrumentar um por um erraria algum -- foi
+        assim que o bloco 736 descobriu um caminho de vitoria SEM print
+        nenhum. Aqui nenhum `return` escapa.
+
+        So grava em turno REAL: `_suppress_replay_log` fica ligado
+        durante a simulacao Monte Carlo, entao as milhares de batalhas
+        simuladas nao entram (mesma guarda de `_log_decision`).
+        """
+        _obs_on = (self.decision_log is not None
+                   and not self._suppress_replay_log)
+        if not _obs_on:
+            return self._execute_attack_inner(
+                attacker, target_type, target, p, opp, engine,
+                verbose=verbose, attached_don=attached_don)
+
+        obs = {'blocker': None, 'counter_add': 0}
+        self._atk_obs = obs
+        _dmg_antes = p.dmg_dealt
+        _vida_antes = opp.life_count()
+        _alvo_cod = getattr(target, 'code', None)
+        try:
+            resolvido = self._execute_attack_inner(
+                attacker, target_type, target, p, opp, engine,
+                verbose=verbose, attached_don=attached_don)
+        finally:
+            self._atk_obs = None
+
+        self.decision_log.append({
+            'kind': 'attack_outcome',
+            'player': 'A' if p is self.state_a else 'B',
+            'turn': getattr(p, 'global_turn', None),
+            'attacker': getattr(attacker, 'code', None),
+            'target_type': target_type,
+            'target': _alvo_cod,
+            'attached_don': attached_don,
+            # desfecho
+            'blocked_by': obs['blocker'],
+            'counter_add': obs['counter_add'],
+            'dano': p.dmg_dealt - _dmg_antes,
+            'vidas_tiradas': _vida_antes - opp.life_count(),
+            'resolvido': bool(resolvido),
+        })
+        return resolvido
+
+    def _execute_attack_inner(self, attacker: Card, target_type: str,
+                        target: Optional[Card], p: GameState,
+                        opp: GameState, engine: DecisionEngine,
+                        verbose: bool = False, attached_don: int = 0) -> bool:
         """
         Sequência: tap atacante → blocker → counter → damage.
         Com verbose, narra blocker/counter/dano.
@@ -20303,6 +20373,8 @@ class OPTCGMatch:
             target_type = 'character'
             target      = blocker
             blocker.rested = True
+            if getattr(self, '_atk_obs', None) is not None:
+                self._atk_obs['blocker'] = getattr(blocker, 'code', None)
             if verbose:
                 print(f'      🛡 Blocker! {blocker.name[:20]} intercepta')
             # [On Block]: efeito que dispara quando este personagem bloqueia.
@@ -20407,6 +20479,8 @@ class OPTCGMatch:
         if opp_engine.should_use_counter(atk_power, defend_power, valor_protegido=valor_protegido):
             counter_add = opp_engine.use_counter(atk_power - defend_power + 1)
             defend_power += counter_add
+            if getattr(self, '_atk_obs', None) is not None:
+                self._atk_obs['counter_add'] = counter_add
             if verbose and counter_add > 0:
                 print(f'      🛡 Counter! +{counter_add} -> defesa {defend_power}')
 

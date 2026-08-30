@@ -997,6 +997,15 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
                 rec for rec in (eng.decision_log or [])
                 if rec.get('kind') == 'attach_don_for_attack' and rec.get('player') == 'A'
             ]
+            # bloco 742: DESFECHO de cada ataque (bloqueado / counterado /
+            # dano). O log humano ja tem resultado de ataque; o do motor
+            # nao tinha -- e sem isso nao da pra saber se os ataques a MAIS
+            # que o motor faz sao futeis ou lucrativos, que e o que decide
+            # o alvo do excesso de contagem (bloco 741).
+            entry['attack_outcomes'] = [
+                rec for rec in (eng.decision_log or [])
+                if rec.get('kind') == 'attack_outcome' and rec.get('player') == 'A'
+            ]
             # bloco 732: SEQUENCIA na ordem real, com os dois tipos de
             # registro INTERCALADOS. As duas listas acima sao filtradas
             # por tipo e perdem a ordem relativa entre elas -- quem quiser
