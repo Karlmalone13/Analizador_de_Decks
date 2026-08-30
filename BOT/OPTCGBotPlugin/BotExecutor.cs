@@ -717,9 +717,32 @@ namespace OPTCGBotPlugin
                     $"[Bot] clique em {CodeOf(go)} NAO consumiu alvo " +
                     $"(faltam {faltamDepois} antes e depois) -- jogo pode ter " +
                     $"recusado a selecao{extra}");
+                LastClickConsumed = false;
+                return true;
             }
+            LastClickConsumed = true;
             return true;
         }
+
+        // O ultimo ClickTargetCandidate foi de fato CONSUMIDO pelo jogo?
+        // (contador de alvos restantes andou). Antes so existia no log:
+        // quem chamava nao tinha como saber, e o driver seguia clicando
+        // candidato por candidato ate esgotar a lista.
+        public static bool LastClickConsumed { get; private set; }
+
+        // O step atual aceita QUANTIDADE LIVRE de alvos?
+        //
+        // ACHADO 29/08 (partida ao vivo): `RemainingTargetsToSelect` do jogo
+        // devolve `TargetCount - selecionados`, e cartas de quantidade livre
+        // ("rest ANY NUMBER of your DON!!", lider Monkey D. Luffy OP13-001)
+        // trazem TargetCount = 99. **99 nao e sentinela de erro -- e "a
+        // vontade".** O driver so confirmava com `remaining == 0`, que nesse
+        // step NUNCA acontece: ele percorria os 28 candidatos a 0,8s cada
+        // (~22s), esgotava e confirmava com ZERO selecionado. O jogo
+        // reperguntava, e o ciclo repetia -- 21 vezes na mesma partida, com
+        // a habilidade do lider morta o jogo inteiro.
+        public static bool V3CountIsFree(GameplayLogicScript gls)
+            => RemainingV3Targets(gls) >= 99;
 
         private static GameObject? FindAttachedDon(PlayerState player, int deckUniqueId)
         {

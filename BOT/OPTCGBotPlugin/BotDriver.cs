@@ -698,6 +698,12 @@ namespace OPTCGBotPlugin
         private int _pendingStep = -1;
         private System.Collections.Generic.List<int>? _pendingOrder;
         private int _pendingAttempt;
+        // Contadores da selecao de quantidade LIVRE (ver o bloco em
+        // ChooseTarget): quantos cliques o jogo aceitou, e quantas recusas
+        // seguidas -- o criterio de parada quando nao existe contagem-alvo.
+        private int _pendingConsumidos;
+        private int _pendingSemConsumo;
+        private const int MaxRecusasSeguidasQuantidadeLivre = 2;
         private bool _pendingConfirmTried;
         // Achado real 21/07 (partida ao vivo, Charlotte Pudding/Katakuri
         // "peek_opp_deck_top" -- olhar 1 carta do topo do deck do oponente):
@@ -737,6 +743,8 @@ namespace OPTCGBotPlugin
                 _pendingOrder = null;
                 _pendingConfirmTried = false;
                 _pendingRefreshTried = false;
+                _pendingConsumidos = 0;
+                _pendingSemConsumo = 0;
                 FetchPendingCandidates(gls, botPs, oppPs);
             }
 
@@ -764,11 +772,48 @@ namespace OPTCGBotPlugin
                 return;
             }
 
+            // QUANTIDADE LIVRE ("rest any number of your DON!!"): o jogo
+            // devolve remaining=99 e ele NUNCA chega a 0 -- o ramo de
+            // confirmacao acima nao dispara. Sem esta guarda o driver
+            // percorria a lista inteira (28 candidatos x 0,8s = ~22s),
+            // esgotava e confirmava com ZERO selecionado; o jogo
+            // reperguntava e o ciclo repetia. Medido ao vivo 29/08: 21
+            // vezes na mesma partida, habilidade do lider morta o jogo todo.
+            //
+            // Aqui a regra e outra: clica enquanto o jogo CONSOME o clique e
+            // para no primeiro que ele recusa -- candidato invalido nao vira
+            // motivo pra continuar varrendo. Confirma o que ja entrou.
+            if (_pendingOrder != null && BotExecutor.V3CountIsFree(gls)
+                && _pendingSemConsumo >= MaxRecusasSeguidasQuantidadeLivre)
+            {
+                Plugin.Log.LogInfo(
+                    $"[Bot] quantidade LIVRE: {_pendingSemConsumo} recusas seguidas " +
+                    $"-- confirmando com {_pendingConsumidos} alvo(s) selecionado(s)");
+                if (!string.IsNullOrEmpty(_pendingTargetDecisionId))
+                {
+                    TrackAuxDecision(_pendingTargetDecisionId,
+                        GameStateBuilder.Build(botPs, oppPs, gls));
+                    _pendingTargetDecisionId = "";
+                }
+                BotExecutor.ConfirmPendingSelection(gls);
+                _cooldown = 1f;
+                return;
+            }
+
             if (_pendingOrder != null && _pendingAttempt < _pendingOrder.Count)
             {
                 int targetId = _pendingOrder[_pendingAttempt];
                 _pendingAttempt++;
                 BotExecutor.ClickTargetCandidate(gls, botPs, oppPs, targetId);
+                if (BotExecutor.LastClickConsumed)
+                {
+                    _pendingConsumidos++;
+                    _pendingSemConsumo = 0;
+                }
+                else
+                {
+                    _pendingSemConsumo++;
+                }
                 if (!string.IsNullOrEmpty(_pendingTargetDecisionId))
                 {
                     TrackAuxDecision(_pendingTargetDecisionId,
