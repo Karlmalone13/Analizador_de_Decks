@@ -1395,6 +1395,44 @@ linhas) ficou obsoleto por essa atualizacao -- era uma tentativa anterior
 de ingestao parcial do OP17 que nao cobria os codigos que faltavam mesmo.
 Nao apagado nesta sessao (fora de escopo), mas pode ser removido com
 seguranca numa proxima sessao.
+## 2026-08-31 (748) - `requirements.txt` incompleto: faltavam pandas/numpy/requests/joblib/beautifulsoup4, so' quebrava ao rodar o motor de verdade, nao no `pip install`
+
+Setup de sessao local nova numa maquina limpa (sem Python/Node/.NET
+previos, sem admin). `pip install -r requirements.txt` (so tinha
+fastapi/uvicorn/pydantic/asyncpg) reportava sucesso, mas `smoke_fast.py`
+quebrava em `ModuleNotFoundError: No module named 'pandas'` -- porque
+`api.py` so importa `optcg_engine/decision_engine.py` (que puxa pandas)
+DENTRO dos handlers (`/replay/demo`, `/simulate`, etc.), import lazy,
+entao `requirements.txt` nunca foi testado contra um boot real do motor.
+Achado varrendo `import`/`from` em todo `scriptis_da_ia/*.py` e
+`optcg_engine/*.py`: faltavam `pandas`, `numpy`, `requests`, `joblib`,
+`beautifulsoup4` (usados por auditorias/analise/engine, nao so pela API)
+e tambem `Pillow`/`PyAutoGUI`/`pytesseract` (so usados por
+`bot_optcgsim.py`/`calibrar_prompt_bbox.py` -- automacao de tela/OCR,
+sem uso no servidor).
+
+**Fix**: adicionei os 5 primeiros a `requirements.txt` (pinados nas
+versoes que instalei e validei com `smoke_fast.py` OK: pandas==3.0.5,
+numpy==2.5.2, requests==2.34.2, joblib==1.6.0, beautifulsoup4==4.15.0).
+Os 3 de automacao de tela foram pra um `requirements-bot.txt` NOVO
+(mesma pasta) -- separados de proposito pra nao inflar o deploy da API
+no Railway com libs de GUI/OCR que o servidor nunca usa. Instrucao de
+setup em `CLAUDE.md`/`AGENTS.md` atualizada (bloco "API Python local")
+pra citar os dois arquivos e quando usar cada um.
+
+Tambem, na mesma sessao: `BOT/setup_bepinex.ps1` tinha o `$GameDir` da
+maquina de origem CRAVADO (`E:\Games\...`) e nao repassava `GameDir` pro
+`dotnet build`, mesmo o `.csproj` ja aceitando `-p:GameDir=` desde o
+bloco 722 -- o script simplesmente nunca usava esse mecanismo. Corrigido
+pra `param([string]$GameDir = <default local>)` + `dotnet build
+"-p:GameDir=$GameDir"`. Sem isso, o plugin compilava contra as DLLs
+erradas (ou falhava com `UnityEngine`/`GameplayLogicScript` nao
+encontrados) em qualquer maquina que nao fosse a original.
+
+**Pendente**: nao verifiquei se o deploy do Railway (API em producao) ja
+estava quebrado pros endpoints que usam pandas (`/replay/demo`,
+`/simulate`) por causa do MESMO gap no `requirements.txt` -- so testei
+localmente. Proxima sessao com acesso ao Railway deveria confirmar.
 
 ## 2026-08-30 (747) - **COLISAO DE CODIGO DE CARTA**: o jogo chama o lider Kaido de `OP17-058` e o banco tinha ali um EVENTO duplicado. O motor jogou partidas inteiras com a carta errada -- e o teste de validacao NAO valeu (servidor com o banco velho em memoria)
 

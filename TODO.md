@@ -369,6 +369,23 @@
 > imagem da carta (local do jogo confirmado no HANDOFF 748) ou outra
 > fonte. `op17_cards_rows.csv` (raiz de `scriptis_da_ia/`) ficou obsoleto,
 > pode ser removido numa proxima sessao.
+**Última atualização:** 31 de agosto de 2026
+
+> 31/08/2026 (bloco 748): **Setup em máquina nova revelou `requirements.txt`
+> incompleto** — faltavam `pandas`/`numpy`/`requests`/`joblib`/
+> `beautifulsoup4` (import lazy dentro dos handlers de `api.py`, então
+> `pip install -r requirements.txt` nunca acusava a falta até rodar
+> `smoke_fast.py`/`/replay/demo`/`/simulate` de verdade). Corrigido —
+> pinados na versão validada com `smoke_fast.py` OK. Deps de automação de
+> tela do bot (`Pillow`/`PyAutoGUI`/`pytesseract`, usadas só por
+> `bot_optcgsim.py`) foram pra `scriptis_da_ia/requirements-bot.txt`
+> separado, pra não inflar o deploy da API no Railway. **Pendente**:
+> confirmar se o Railway em produção já estava quebrado nos endpoints que
+> usam pandas por causa do mesmo gap — só testei local. Também corrigi
+> `BOT/setup_bepinex.ps1`, que tinha o `$GameDir` da máquina de origem
+> cravado e não repassava `-p:GameDir=` pro `dotnet build` (o `.csproj` já
+> suportava desde o bloco 722, o script é que nunca usava). Ver bloco 748
+> completo em `HANDOFF.md`.
 
 > 30/08/2026 (bloco 747): **COLISAO DE CODIGO DE CARTA.** O jogo chama o
 > lider Kaido de `OP17-058`; o banco tinha ali um EVENTO **duplicado byte

@@ -9,9 +9,12 @@ Uso:
 (ou clique duas vezes em BOT\setup_bepinex.bat)
 #>
 
+param(
+    [string]$GameDir = 'C:\Users\ARTHUR.CUNHA\Desktop\Builds_Windows'
+)
+
 $ErrorActionPreference = 'Stop'
 
-$GameDir    = 'E:\Games\OnePieceSimulador\Builds_Windows'
 $BepInExDir = Join-Path $GameDir 'BepInEx'
 $PluginsDir = Join-Path $BepInExDir 'plugins'
 $ZipPath    = Join-Path $PSScriptRoot 'vendor\BepInEx_win_x64_5.4.23.2.zip'
@@ -39,7 +42,7 @@ New-Item -ItemType Directory -Force -Path $PluginsDir | Out-Null
 Write-Host "[2/3] Recompilando o plugin (dotnet build) ..."
 Push-Location $ProjDir
 try {
-    dotnet build --nologo -v quiet
+    dotnet build --nologo -v quiet "-p:GameDir=$GameDir"
     if ($LASTEXITCODE -ne 0) { throw "dotnet build falhou (exit $LASTEXITCODE)" }
 } finally {
     Pop-Location

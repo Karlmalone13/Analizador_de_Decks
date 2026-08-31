@@ -1,0 +1,9 @@
+# Deps extras do bot local que le a tela do jogo (bot_optcgsim.py,
+# calibrar_prompt_bbox.py) -- so faz sentido na maquina que roda o
+# OPTCGSim ao vivo. Nao instalar no deploy da API (Railway): sao libs
+# de automacao de tela/OCR, sem uso no servidor.
+#
+# Uso: pip install -r requirements.txt -r requirements-bot.txt
+Pillow==12.3.0
+PyAutoGUI==0.9.54
+pytesseract==0.3.13

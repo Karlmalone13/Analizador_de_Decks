@@ -595,7 +595,14 @@ ML só se 1-3 baterem teto).
 - Front: `npm run dev` (porta 3000), `npx eslint`, `npx tsc --noEmit`,
   `npx next build` antes de considerar uma tarefa de front concluída.
 - API Python local: `cd scriptis_da_ia && pip install -r requirements.txt
-  && uvicorn api:app --reload --port 8000`.
+  && uvicorn api:app --reload --port 8000`. `requirements.txt` cobre API +
+  motor de simulação (`pandas`/`numpy`/`requests`/`joblib`/`beautifulsoup4`
+  — achado 31/08/2026, faltavam e só quebravam ao rodar `smoke_fast.py`
+  ou endpoints que importam `optcg_engine/decision_engine.py`, porque o
+  import é lazy dentro dos handlers). Deps do bot que lê a tela do jogo
+  (`Pillow`/`PyAutoGUI`/`pytesseract`) ficam à parte em
+  `scriptis_da_ia/requirements-bot.txt` — só instalar na máquina que roda
+  o OPTCGSim ao vivo: `pip install -r requirements.txt -r requirements-bot.txt`.
 - Chaves Supabase: `.env.local` tem `service_role` exposta — **rotacionar
   antes de deploy público** (pendência de segurança conhecida, ver TODO.md).
 - **Bot parou de responder / `LogOutput.log` sumiu?** O jogo apaga a pasta
