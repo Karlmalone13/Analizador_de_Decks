@@ -1,6 +1,49 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 30 de agosto de 2026
+**Última atualização:** 1 de setembro de 2026
+
+> 01/09/2026 (bloco 749): Os **83 promos `P-` restantes** (pendencia do
+> bloco 748) foram transcritos manualmente via imagem do jogo (agente em
+> background) -> **so P-998 continua ausente** (arte alt de DON!!, fora de
+> escopo por design). Achados: (1) 3 cores erradas corrigidas contra a
+> arte (Miss.Goldenweek/Miss.Valentine/Mr.3 sao Black, nao Red/Yellow/
+> Purple -- Baroque Works); (2) **OUTRA colisao de codigo** (mesma classe
+> do bloco 747): `P-086.jpg` (arquivo do jogo) traz "P-088" impresso, mas
+> `P-088` ja e uma carta REAL diferente no banco -- resolvido mantendo
+> `id=P-086` (o codigo que o jogo manda ao vivo), registrado pra sessao
+> futura nao reabrir do zero; (3) **bug de gramatica generico corrigido**
+> em `gerar_effects_db.py`: `P-085` parseava efeito TOTALMENTE vazio por
+> chave dupla `{{X}}` impressa de verdade na carta + fraseado alternativo
+> de preview ("place...on...their life" em vez de "add...to...the
+> owner's life cards") que nem o gate de pre-filtro reconhecia. Fix
+> generico (normalizacao de chave dupla + regex/gate alargados), nao
+> hardcoded pra essa carta. `smoke_fast.py`/`smoke_test.py` OK. Banco:
+> 2765 -> 2839 cartas, reenviado pro Supabase (paridade com o local).
+> **PENDENTE menor**: condicao secundaria de `P-085` ("vida <= do
+> oponente") nao parseada -- carta ultra-rara, unica copia no banco, gap
+> documentado no parser_audit, nao critico.
+
+> 01/09/2026 (bloco 748): **Atualizacao do banco de cartas** (pedido do
+> usuario: front-end vs motor, "o do bot ta mais completo"). Rodei
+> `/api/sync-cards` (rota do front, ja existia -- puxa optcgapi.com +
+> apitcg.com, upsert em Supabase.cards). 100 codigos ausentes do banco
+> (17 OP17 + 83 promos `P-`) -> **17** (so restam os promos). `OP17-058`
+> (Kaido, bloco 747) e `OP17-059` (Aramaki, carta distinta antes ausente)
+> agora tem DADO REAL, nao so alias.
+> **ALERTA/LICAO:** sobrescrever `cards_rows.csv` cego com o export fresco
+> do Supabase REVERTEU 10 correcoes manuais ja auditadas (sinal `-5000` do
+> `EB03-006`, `[Blocker]` ausente da fonte em 4 cartas do achado 28/07,
+> reformulacao de texto do `ST36-005`/Kid) -- pego pelo `smoke_fast.py`
+> ANTES do commit, nao depois. Conserto: fusao id-a-id (base = CSV
+> anterior, soma so os ids novos, 2 excecoes documentadas no HANDOFF
+> bloco 748) em vez de overwrite. `cards_rows.csv` corrigido foi reenviado
+> pro Supabase (senao o FRONT ficaria com o texto sujo). `P-096` (so
+> existia local, nunca no Supabase) recolocado nos dois lados.
+> **PENDENTE:** os 83 promos `P-` (P-038...P-159, P-998/999) continuam
+> ausentes -- nenhuma API externa cobre. Precisa transcricao manual via
+> imagem da carta (local do jogo confirmado no HANDOFF 748) ou outra
+> fonte. `op17_cards_rows.csv` (raiz de `scriptis_da_ia/`) ficou obsoleto,
+> pode ser removido numa proxima sessao.
 
 > 30/08/2026 (bloco 747): **COLISAO DE CODIGO DE CARTA.** O jogo chama o
 > lider Kaido de `OP17-058`; o banco tinha ali um EVENTO **duplicado byte

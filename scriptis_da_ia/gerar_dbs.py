@@ -31,18 +31,25 @@ CSV = 'cards_rows.csv'
 # atualiza e traz sets novos, entao rode aquele script depois de cada
 # atualizacao do simulador em vez de manter esta lista na mao.
 #
-#   ST31-005 -> ST31-006  divergencia de NUMERO. O arquivo ST31-005.jpg do
-#                         jogo contem a carta impressa "ST31-006" (Thousand
-#                         Sunny); o set inteiro tem 5 cartas nos dois lados,
-#                         so a ultima esta renumerada. ST31-004.jpg confere
-#                         com o impresso, entao nao e o set todo deslocado.
 #   St22-012 -> ST22-012  divergencia de CAIXA ('St' em vez de 'ST'), mesma
 #                         carta (Marco). A busca no banco e case-sensitive.
+#   ST31-005 -> ST31-006  divergencia de NUMERO. O sync com fontes externas
+#                         (01/09/2026) trouxe ST31-005 como entrada nova, mas
+#                         e a MESMA Thousand Sunny ja presente (e auditada) em
+#                         ST31-006 -- a entrada fresca foi descartada na fusao
+#                         pra nao duplicar a carta nem perder a auditoria de
+#                         30/08 (alvo nomeado inclui lider), entao o alias
+#                         continua necessario pro codigo que o jogo usa.
+#
+# OP17-058->OP17-059 foi removido daqui em 01/09/2026: a colisao de codigo do
+# bloco 747 (Kaido) tinha o dado real gravado sob 059 por engano -- o sync
+# trouxe Kaido corretamente sob 058 E Aramaki (carta distinta, antes ausente)
+# sob 059, entao os dois codigos agora sao entradas reais e distintas; alias
+# viraria redundante.
 # ---------------------------------------------------------------------------
 ALIASES_DO_SIMULADOR = {
-    'ST31-005': 'ST31-006',
-    'OP17-058': 'OP17-059',
     'St22-012': 'ST22-012',
+    'ST31-005': 'ST31-006',
 }
 
 

@@ -28,6 +28,191 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-09-01 (749) - Os 83 promos `P-` restantes: transcricao manual via imagem (agente em background), OUTRA colisao de codigo achada (P-086/P-088), e um bug de gramatica novo (`{{chave dupla}}` + fraseado alternativo de preview) que deixava `P-085` com efeito TOTALMENTE vazio
+
+Continuacao direta do bloco 748. Pedido do usuario: "vasculhe na pasta do
+jogo as cartas que estao faltando, pode pegar as imagens delas se
+precisar" -- os 83 promos que sobraram nao existem em NENHUMA API externa,
+so no jogo (imagem local).
+
+### 1. Transcricao em background
+
+Agente `general-purpose` (isolamento `worktree`) leu as 83 imagens em
+`E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\StreamingAssets\Cards\P\`
+e transcreveu nome/texto/custo/poder/cor/etc pro schema do CSV. Resultado:
+82 linhas (excluiu `P-998` corretamente -- e arte alternativa de carta
+DON!!, nao Character/Leader/Event/Stage jogavel).
+
+**IMPORTANTE pra sessoes futuras que usarem `isolation: "worktree"`**: o
+agente escreve no worktree isolado (`.claude/worktrees/agent-<id>/...`),
+NAO no repo principal -- o arquivo de saida teve que ser copiado de la
+manualmente antes de mesclar. Nao esqueca de `git worktree remove` +
+apagar a branch `worktree-agent-<id>` no fim (feito aqui).
+
+### 2. Revisao manual pegou 3 problemas antes de aceitar
+
+1. **3 cores erradas**: o agente marcou incerteza em varias cores de
+   promos "live-action" (template com foto em vez de cor solida) --
+   conferi o circulo de custo na propria arte de cada uma. `P-146`
+   (Miss.Goldenweek), `P-147` (Miss.Valentine) e `P-148` (Mr.3) sao
+   **Black** (Baroque Works no jogo oficial), o agente tinha chutado
+   Red/Yellow/Purple. Crocodile (`P-143`) em si e Purple mesmo -- nao
+   contradiz, personagens da mesma organizacao nao precisam ser
+   monocromaticos.
+2. **P-151 (Smoker)**: so tem nome impresso em japones (`スモーカー`); o
+   agente tratou isso de forma INCONSISTENTE com `P-110` (que traduziu).
+   Normalizado pro ingles nos dois (nome + sub_type), já que o proprio
+   texto de regras da carta ja vem em ingles.
+3. **OUTRA colisao de codigo, mesma classe do bloco 747/748**: `P-086.jpg`
+   (nome do ARQUIVO que o jogo usa) e um Leader Trafalgar Law, mas a arte
+   impressa traz **"P-088"** no canto. O banco ja tem um `P-088` REAL e
+   DIFERENTE (Trafalgar Law Character, Event Pack vol.7). Resolvido do
+   jeito certo: mantive `id=P-086` (o codigo que o JOGO vai mandar pro bot
+   ao vivo), sem tocar no `P-088` existente -- nao apareceu ainda em
+   nenhum combat log real do banco, entao `audit_code_collision.py` nao
+   pegou sozinho; registrado pra sessao futura nao reabrir do zero se
+   aparecer ao vivo.
+
+### 3. Bug de gramatica achado ao mesclar: `P-085` (Jewelry Bonney) parseava vazio
+
+`get_card_effects("P-085")` devolvia `{"effects": {}}` -- nada. Duas
+causas empilhadas:
+1. A carta impressa tem **`{{Supernovas}}` com chave duplicada de
+   verdade** (confirmei abrindo a imagem -- artefato real do print
+   "ONE PIECE DAY" preview, nao erro de transcricao). Corrigido com
+   normalizacao generica `{{X}}` -> `{X}` no mesmo ponto onde `<br>` e
+   `[Rush:Character]` ja sao normalizados (`parse_card_effect`, topo).
+2. Mesmo corrigido (1), continuava vazio: a carta usa fraseado
+   DIFERENTE do template do resto do banco para "mover Character do
+   oponente pra vida" -- **"place ... on the top or bottom of THEIR
+   life"** em vez do "add ... to the top or bottom of THE OWNER'S life
+   cards" que `parse_character_to_owner_life` esperava. Alem da regex
+   interna, o **GATE de pre-filtro** (substring check antes de sequer
+   chamar a funcao, dentro de `parse_block`) exigia literalmente
+   `'add up to'` + `'owner'` no texto -- bloqueava a chamada mesmo depois
+   da regex corrigida.
+
+Fix em 3 pontos de `gerar_effects_db.py`, todos GENERICOS (nao
+hardcoded pra P-085): normalizacao de chave dupla, regex de
+`parse_character_to_owner_life` aceitando `add|place` / `to|on` /
+`the owner's|their` / numero por extenso, e o gate alargado pra
+reconhecer a combinacao `their life` + `place up to N`. Registro em
+`scriptis_da_ia/parser_audits/2026-09-01b_promos_transcritos_e_place_owner_life.json`.
+A condicao secundaria da carta ("seu total de vida <= do oponente") ficou
+sem parsear -- gap conhecido, documentado, nao investido mais tempo
+(carta ultra-rara, unica copia no banco).
+
+### 4. Validado e enviado
+
+`gerar_dbs.py`: 2765 -> **2839** cartas. `smoke_fast.py` OK,
+`smoke_test.py` TODOS OS TESTES PASSARAM (regressao ampla, gerar_effects_db.py
+e area compartilhada). `audit_game_code_divergence.py`: **100 -> 1**
+ausente (so `P-998`, fora de escopo por design). As 82 promos foram
+reenviadas pro Supabase (upsert) pra manter paridade com o local, mesmo
+cuidado do bloco 748.
+
+## 2026-09-01 (748) - Atualizacao do banco de cartas (front-end vs motor): 100 codigos ausentes -> 17 (so restam promos), OP17-058/059 resolvido com DADO REAL (nao so alias), e um alerta: sync cego de API externa reverte correcoes manuais ja auditadas
+
+### 1. Pedido e diagnostico
+
+Usuario pediu pra comparar o banco de cartas do front-end (Supabase,
+`cards_rows.csv`) contra o que o motor/jogo realmente usa -- "o do bot ta
+mais completo". `audit_game_code_divergence.py` confirmou: **100 codigos**
+que o jogo tem e o banco nao (17 do set OP17, incluindo o proprio
+`OP17-058` da colisao do bloco 747; 83 promos `P-`).
+
+### 2. A rota de sync ja existia (front): `/api/sync-cards`
+
+`src/app/api/sync-cards/route.ts` ja puxa `optcgapi.com` (sets/ST/promo/DON)
++ `apitcg.com` e faz `upsert` em `Supabase.cards` por `id`. Rodei via GET
+local: 4400 linhas upsertadas. Resultado real: os 17 do OP17 entraram
+(inclusive `OP17-058` = Kaido de verdade, `OP17-059` = Aramaki -- carta
+distinta, antes ausente, resolvendo a colisao do bloco 747 com DADO REAL em
+vez de so alias). Os 83 promos `P-` continuam ausentes -- nenhuma das duas
+APIs externas os tem.
+
+### 3. O jeito errado de fazer isso (pego a tempo pelo smoke_test)
+
+Exportei o Supabase inteiro de volta pra `cards_rows.csv` (4474 linhas) pra
+alimentar o motor. Regenerei (`gerar_dbs.py`) e rodei `smoke_fast.py`: **10
+falhas**. O texto fresco das APIs reverteu correcoes manuais ja auditadas
+em sessoes anteriores:
+- `EB03-006` (Nami): perdeu o sinal `-5000` de novo (o mesmo bug do achado
+  17/07, `-` some no scrape).
+- `OP10-119`/`ST36-002`/`OP10-109`/`OP15-017`: perderam o prefixo
+  `[Blocker] (reminder text)` que o achado de 28/07 (bloco do smoke
+  `test_blocker_condicional_auditoria_global_28_07`) tinha adicionado
+  porque a fonte simplesmente nao tem o keyword, apesar da carta bloquear
+  de verdade nos logs reais.
+- `ST36-005` (Kid): reformulacao de frase ("[On Opponent's Attack]" ->
+  "[On Your Opponent's Attack]", "Life Cards" -> "Life cards", "one of
+  your" -> "your") quebrou o parse de `turn_life_face_X`/redirect do achado
+  30/07.
+- `OP17-065`: ordem de clausulas mudou no texto fresco.
+
+**Licao**: nunca sobrescrever `cards_rows.csv`/`Supabase.cards` inteiro a
+partir de uma API externa sem comparar id-a-id contra a versao anterior.
+O banco carrega meses de correcao pontual de dado que nenhuma fonte externa
+tem, e `smoke_test.py`/`smoke_fast.py` sao o jeito de PEGAR isso antes do
+commit.
+
+### 4. O conserto: fusao id-a-id, nao overwrite
+
+Base = `cards_rows.csv` anterior (preserva toda correcao ja auditada). Soma
+SO os ids genuinamente novos (115: resto do OP17 + reprints/variantes).
+Duas excecoes:
+- `FORCE_FRESH = {OP17-058, OP17-059}`: o antigo `OP17-059` guardava o
+  texto do Kaido sob o codigo ERRADO (a propria colisao do bloco 747) --
+  o dado fresco separa certo os dois, entao usei o fresco pros dois.
+- `SKIP_NEW = {ST31-005}`: mesma Thousand Sunny ja presente e auditada em
+  `ST31-006` (achado bloco 570) -- nao duplicar.
+
+Achado bonus: `P-096` ("Girl", promo da Nami) so existia no `cards_rows.csv`
+local, nunca tinha ido pro Supabase -- confirma a premissa do usuario
+(motor mais completo que o front nalguns pontos). Recolocado via upsert.
+
+`gerar_dbs.py`: `ALIASES_DO_SIMULADOR` perdeu `'OP17-058'->'OP17-059'`
+(dado real direto agora, alias virou redundante) e MANTEVE
+`'ST31-005'->'ST31-006'` (a fusao descartou a entrada duplicada de
+ST31-005, entao o codigo que o jogo usa ainda precisa do alias).
+
+Depois da fusao certa: `smoke_fast.py` -> OK, `smoke_test.py` -> TODOS OS
+TESTES PASSARAM, `audit_game_code_divergence.py` -> 100 ausentes -> 17 (so
+os promos), `audit_code_collision.py` -> OP17-058/059 nao aparece mais como
+colisao.
+
+### 5. `cards_rows.csv` (local, ja corrigido) foi reenviado pro Supabase
+
+O `/api/sync-cards` cego do passo 2 tinha acabado de gravar o texto sujo
+por cima das correcoes no Supabase -- se eu parasse ali, o FRONT ficaria
+com dado pior que o motor. Reenviei o `cards_rows.csv` fundido inteiro
+(4475 linhas, upsert por id) pro Supabase, e apaguei a linha orfa
+`ST31-005` que o sync cego tinha criado la (nunca referenciada pelo
+`cards_rows.csv` final -- duplicata pura da `ST31-006`).
+
+Registro em `scriptis_da_ia/parser_audits/2026-09-01_sync_cards_supabase_e_op17_promos.json`
+(gate obrigatorio -- `card_effects_db.json` mudou).
+
+### 6. O que falta
+
+Os **83 promos `P-`** (P-038, P-040, P-063...P-159, P-998/999) ainda estao
+ausentes dos dois lados. As APIs externas (optcgapi.com/apitcg.com) nao os
+tem -- precisa de transcricao manual a partir da imagem da carta
+(`E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\StreamingAssets\Cards\P\`,
+confirmado que da pra ler o card_text/custo/poder direto da arte) ou outra
+fonte com cobertura de promos. Nao tentado nesta sessao por escopo (100
+cartas imagem por imagem). `P-998`/`P-999` sao casos especiais: `P-999` e
+um Leader-coringa "treated as a card with all card names/types/attributes
+according to the rules" (nao um lider fixo normal), `P-998` e arte
+alternativa de DON!! -- confirmar se fazem sentido no pipeline de
+Character/Leader/Event/Stage antes de tentar parsear.
+
+`op17_cards_rows.csv` (arquivo solto na raiz de `scriptis_da_ia/`, 103
+linhas) ficou obsoleto por essa atualizacao -- era uma tentativa anterior
+de ingestao parcial do OP17 que nao cobria os codigos que faltavam mesmo.
+Nao apagado nesta sessao (fora de escopo), mas pode ser removido com
+seguranca numa proxima sessao.
+
 ## 2026-08-30 (747) - **COLISAO DE CODIGO DE CARTA**: o jogo chama o lider Kaido de `OP17-058` e o banco tinha ali um EVENTO duplicado. O motor jogou partidas inteiras com a carta errada -- e o teste de validacao NAO valeu (servidor com o banco velho em memoria)
 
 ### 1. O achado

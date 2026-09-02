@@ -5196,9 +5196,17 @@ def parse_character_to_owner_life(text):
     do deck nem cura generica, portanto usa uma action separada.
     """
     t = text.lower()
+    # "up to N" as digit OU por extenso (achado 01/09, P-085 Jewelry Bonney,
+    # promo "ONE PIECE DAY" -- texto de preview com vocabulario diferente do
+    # template oficial do resto do banco: "place ... on the top or bottom of
+    # THEIR life" em vez de "add ... to the top or bottom of the OWNER'S
+    # life cards". Verbo/preposicao/dest tambem aceitam a variante -- fix
+    # generico (nao amarrado a essa carta) pra cobrir qualquer outra
+    # promo/preview com a mesma forma alternativa de fraseado.
+    num_word = {'one': 1, 'two': 2, 'three': 3}
     m = re.search(
-        r'add up to (\d+)\s+(.*?)characters?\s+(.*?)'
-        r'to the (top or bottom|top|bottom) of the owner.?s life cards?'
+        r'(?:add|place) up to (\d+|one|two|three)\s+(.*?)characters?\s+(.*?)'
+        r'(?:to|on) the (top or bottom|top|bottom) of (?:the owner.?s|their) life(?: cards?)?'
         r'(?:\s+face-(up|down))?',
         t)
     if not m:
@@ -5210,7 +5218,7 @@ def parse_character_to_owner_life(text):
     dest_text = m.group(4)
     step = {
         'action': 'character_to_owner_life',
-        'count': int(m.group(1)),
+        'count': num_word.get(m.group(1), int(m.group(1)) if m.group(1).isdigit() else 1),
         'target': target,
         'dest': ('life_top_or_bottom' if 'or bottom' in dest_text
                  else 'life_bottom' if dest_text == 'bottom'
@@ -5218,7 +5226,7 @@ def parse_character_to_owner_life(text):
     }
     if m.group(5):
         step['face'] = m.group(5)
-    cost_m = re.search(r'cost of (\d+) or less', selector)
+    cost_m = re.search(r'cost (?:of )?(\d+) or (?:less|lower)', selector)
     if cost_m:
         step['cost_lte'] = int(cost_m.group(1))
     else:
@@ -8631,8 +8639,12 @@ def parse_block(block_text, trigger_name):
             and ('add up to' in t or re.search(r'place (?:up to )?\d+', t))):
         steps.extend(parse_opp_char_to_opp_life(t))
 
-    if ("owner" in t and 'life' in t and 'character' in t
-            and 'add up to' in t):
+    if ('life' in t and 'character' in t
+            and (('owner' in t and 'add up to' in t)
+                 # variante de preview/promo (achado 01/09, P-085): "place
+                 # up to N/one ... on the top or bottom of THEIR life",
+                 # sem a palavra "owner" nenhuma.
+                 or ('their life' in t and re.search(r'place up to (?:\d+|one|two|three)', t)))):
         steps.extend(parse_character_to_owner_life(t))
 
     # Trigger especial: "Activate this card's [Main] effect"
@@ -8901,6 +8913,16 @@ def parse_card_effect(card_text, card_type):
     # frases/blocos) para um unico espaco, simplificando os lookbehind de
     # abertura/parada de bloco que assumem exatamente 0 ou 1 espaco.
     t = re.sub(r'[ \t]{2,}', ' ', t)
+    # normaliza chave dupla '{{X}}' -> '{X}' -- achado 01/09 (P-085 Jewelry
+    # Bonney, promo "ONE PIECE DAY"): a propria carta impressa traz
+    # "{{Supernovas}} type" com chave duplicada (confirmado na arte, nao e
+    # erro de scrape/transcricao). Toda regex de tag de tipo do parser
+    # espera UMA chave (`[\[{]([^\]}]+)[\]}]`), entao a chave extra quebrava
+    # o bloco inteiro em silencio (efeitos ficavam vazios). Varredura no
+    # banco inteiro achou so essa carta com o padrao -- fix generico aqui
+    # mesmo assim, pra cobrir qualquer carta futura com a mesma variante de
+    # impressao, em vez de hardcodear pra P-085.
+    t = re.sub(r'\{\{([^{}]+)\}\}', r'{\1}', t)
     # ATENCAO -- `t_low` NAO e o texto integro do fim ao cabo.
     #
     # Ele e CONSUMIDO ao longo do parse: quando um bloco e reconhecido, o
