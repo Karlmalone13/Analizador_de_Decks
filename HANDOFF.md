@@ -28,6 +28,361 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-09-05 (750) - Botao "Analisar" ligado ao motor real (`/analyze` ja existia, so precisava do servidor no ar); `/hand-stats` virou assincrono com cache -- achado: uma partida simulada leva ~88s de VERDADE (busca Monte Carlo fazendo o trabalho dela, nao bug), nao os 1-3s que o docstring antigo dizia
+
+### 1. Pedido do usuario e diagnostico
+
+"Quero que a gente pegue nosso motor e o usemos pra calcular as coisas do
+botao Analisar [e simular]". O `/analysis` (front) JA chamava
+`scriptis_da_ia/api.py` (`POST /analyze`) via `NEXT_PUBLIC_ANALYZER_API` --
+so faltava o servidor rodando. Adicionado `analyzer-api` em
+`.claude/launch.json` (`uvicorn --app-dir scriptis_da_ia api:app --port
+8000`) e subido via `preview_start`. Testado direto: `/analyze` calcula
+arquetipo/sinergias/coesao/ratios/curva certo, rapido, sem problema.
+
+### 2. `/hand-stats` (validacao de mao por simulacao real) travava
+
+Testei o segundo bloco da tela (valida o scoring de mao rodando partidas
+reais via `OPTCGMatch`) e o endpoint nunca respondia, nem com `n_games=4`.
+Perfilei 1 partida isolada (`cProfile`, fora do servidor): **86,7s**, 88%
+do tempo em `_generate_and_score_actions` (12.186 chamadas), vindo de
+`_select_action_via_search` -> `_simulate_sequence_values` ->
+`_simulate_sequence_once` -- a busca Monte Carlo do Turn Planner fazendo
+lookahead de verdade pra CADA decisao (40 decisoes "dificeis" na partida x
+~7 sequencias candidatas x ~3 amostras x multiplas sub-decisoes por
+sequencia simulada). **Nao e bug** -- e o motor caro fazendo o que foi
+construido pra fazer (a mesma busca que sustenta a meta de `play`
+85-90%). O docstring do endpoint ("~1-3s/partida") ficou desatualizado
+desde que a busca ficou mais pesada, sessoes anteriores nunca atualizaram.
+
+Perguntei ao usuario como proceder -- **NAO mexi na busca sem
+autorizacao** (regra do CLAUDE.md: "remover ou desligar um estagio inteiro
+da busca Monte Carlo" e SERIO). Ele pediu: cache + simulacao "de certa
+forma rapida".
+
+### 3. Modo rapido opt-in no motor (default 100% inalterado)
+
+`OPTCGMatch.__init__` ganhou `mc_samples_override: tuple[int,int,int] |
+None = None` (mesmo padrao ja existente de `hide_opponent_info`) --
+quando setado, substitui o piso/teto adaptativo
+(`OFFLINE_MC_SAMPLES_MIN/MAX/BATCH`, calibrado em 10/08) por uma tripla
+FIXA, SO no ponto de injecao em `main_phase()`. Default `None` preserva
+100% do comportamento pra QUALQUER chamador existente (nenhum passa esse
+parametro -- `audit_replay.py`, `gauntlet_matchup.py`,
+`decision_quality_*.py`, `simulation_worker.py` etc continuam exatamente
+como sempre). Medido com `(1,1,1)`: **86,7s -> 11,3s** numa partida isolada
+(~7,7x) -- ainda e a busca REAL (nao virou heuristico aproximado), so com
+1 amostra por candidata em vez de 3-6.
+
+`smoke_fast.py` rodado depois da mudanca: **OK** (confirma que o default
+None nao alterou nada).
+
+### 4. Paralelismo + cache -- e a variancia real entre matchups
+
+Com `ProcessPoolExecutor` (mesmo padrao `--workers N` de
+`gauntlet_matchup.py`/`audit_replay.py`, worker reconstroi o deck do zero
+por nome/url em vez de passar objetos do motor pela fila -- picklable) e
+`n_games` reduzido de 80 pra 24: medi o LOTE inteiro (24 jogos contra 8
+decks de meta) em **~6-7 minutos de parede**, bem acima do estimado
+(24/4 x 11,3s =~ 68s) -- a duracao de partida varia MUITO por matchup
+(alguns adversarios geram jogos bem mais longos que o testado
+isoladamente). **Confirma que nem com busca rapida + paralelismo cabe
+numa requisicao HTTP sincrona.**
+
+Por isso `/hand-stats` virou **assincrono com cache em arquivo**
+(`scriptis_da_ia/hand_stats_cache/<hash>.json`, hash = composicao do
+deck -- lider + codigo/qty ordenados, NAO o id do deck salvo no Supabase,
+entao decks iguais compartilham cache mesmo vindo de ids diferentes):
+- cache-hit -> responde na hora, zero simulacao.
+- cache-miss sem calculo rodando -> dispara em `BackgroundTasks` (roda
+  DEPOIS da resposta ser enviada) e responde IMEDIATAMENTE
+  `{"status":"computing",...}`.
+- cache-miss COM calculo ja rodando (marcador `.pending.json`, expira em
+  20min se travado por crash) -> responde `computing` de novo, sem
+  duplicar trabalho.
+
+`asyncio.to_thread` em volta do `ProcessPoolExecutor.map()` -- sem isso o
+processo do uvicorn INTEIRO travava (nem `GET /` respondia) enquanto os
+JOGOS ja rodavam em paralelo em processos separados; o problema era o
+event loop do servidor esperando sincrono pelo resultado, nao os jogos em
+si.
+
+Front (`src/app/analysis/page.tsx`): `.then` so aceita o resultado se
+`data.score_brackets` existir; senao marca `handStatsComputing` e mostra
+"primeira vez com este deck, rodando em segundo plano, reabra depois" --
+distinto do "API indisponivel" (backend fora do ar). Timeout do fetch
+caiu de 120s pra 30s (a resposta agora e sempre rapida, cache-hit ou
+"computing"). `npx eslint`/`npx tsc --noEmit`/`npx next build`: limpos
+(so warnings pre-existentes, zero erro novo).
+
+### 5. Validado
+
+- `smoke_fast.py`: OK (mudanca no motor, default inalterado).
+- `/analyze`: testado direto via curl, resultado correto.
+- `/hand-stats`: testado end-to-end -- deck novo responde `computing` em
+  <0,5s, deck repetido responde igual (sem duplicar o calculo, so 1
+  marcador `.pending`), os 2 decks de teste terminaram em background e
+  ficaram em cache, GET `/` respondeu normalmente DURANTE o calculo em
+  background (prova que o servidor nao trava mais).
+- Front: eslint/tsc/next build limpos.
+
+### 6. O que falta
+
+`hand_stats_cache/` e local ao processo/disco -- em producao (Railway,
+sistema de arquivo efemero a cada deploy) o cache se perde a cada deploy;
+nao investigado nesta sessao (a API de analise hoje roda local, front
+aponta pra `localhost:8000` via `.env.local`). Se/quando essa API for pro
+Railway, considerar cache em tabela do Supabase em vez de arquivo local.
+Front nao faz polling ativo enquanto `computing` -- usuario precisa
+reabrir a pagina manualmente pra ver o resultado pronto (fora de escopo
+desta sessao, mencionado mas nao pedido).
+
+### 7. Botao "Simular" (`/simulate`) tambem estava quebrado -- `DATABASE_URL` nunca configurada nesta maquina
+
+Usuario pediu "e simular" no meio da sessao. Testei `/simulate` (front,
+via `/simulate?id=...`) e caiu em "Erro de conexao com a API de
+simulacao" (alert generico do front, `try/catch` em volta do `fetch`).
+
+Log do servidor mostrou a causa real: `db.py` (camada `asyncpg` que
+`/simulate`/`/simulate/status` usam pra guardar o job) exige
+`DATABASE_URL` (connection string DIRETA do Postgres, DIFERENTE de
+`SUPABASE_SERVICE_ROLE_KEY` -- essa e API REST, aquela e a senha real do
+banco) -- **nunca esteve em `.env.local` nem em variavel de ambiente
+nesta maquina**, nem no processo nem persistida no Windows (conferido
+`[System.Environment]::GetEnvironmentVariable`). Nao e regressao desta
+sessao -- o recurso nunca funcionou localmente aqui.
+
+Causa raiz nao e so a variavel ausente: `db.py` so lia
+`os.environ.get("DATABASE_URL")` puro -- mesmo com a variavel no
+`.env.local`, o processo Python (`uvicorn api:app`) nunca carrega esse
+arquivo sozinho (so o Next.js faz isso automaticamente). Adicionado
+`_load_env_local_fallback()` no topo de `db.py`: parse manual simples
+(sem dependencia nova, sem `python-dotenv`) do `.env.local` da raiz,
+`os.environ.setdefault` (nunca sobrescreve env var real ja setada --
+Railway/producao continua definindo a propria, sem esse arquivo,
+comportamento inalterado la).
+
+Usuario colou a connection string do Supabase (`Connect` no topo do
+dashboard -- o caminho antigo `Settings > Database` sumiu do menu na UI
+nova) mas deixou o placeholder **`[YOUR-PASSWORD]` literal** (colchetes
+e tudo) sem trocar pela senha real -- `asyncpg`/`urllib.parse` tentava
+interpretar `[...]` como notacao de IPv6 e falhava com `ValueError:
+'db.xxx.supabase.co' does not appear to be an IPv4 or IPv6 address`.
+Diagnostiquei inspecionando SO o tamanho/posicao dos colchetes via
+script Python (nunca imprimi a senha em lugar nenhum). Resetada a senha
+do banco (usuario nao lembrava a antiga) e substituido o placeholder --
+`/simulate` passou a criar o job e completar (`status:"done"`) de
+verdade. Win rate 0% no teste foi so por causa do deck de teste
+minusculo (5 cartas) usado pra validar a conexao, nao um resultado real.
+
+### 8. Front: cronometro no modal de progresso + MESMO bug de event loop travado achado em `/simulate` (nao so em `/hand-stats`)
+
+Usuario pediu pra mostrar tempo decorrido + estimativa total embaixo da
+barra de progresso do modal "Simulando partidas..." (`src/app/simulate/
+page.tsx`) -- adicionado `simStartedAt`/`nowTick` (tick a cada 1s via
+`useEffect` enquanto `running`), `formatDuration()`, exibido junto da
+estimativa heuristica que ja existia (`nSimulations * nMetaDecks * 2.5`).
+`useState(Date.now())` direto disparou o lint (`Cannot call impure
+function during render`) -- trocado pro inicializador preguicoso
+`useState(() => Date.now())`.
+
+Testando de verdade, usuario reportou o modal preso em 0% por >1 minuto.
+Investigando: **MESMA causa raiz da secao 4** (`/hand-stats`), achada
+numa rota DIFERENTE que eu nao tinha tocado ainda --
+`simulation_worker.py::run_simulation_job()` chamava `run_single_match()`
+(a partida REAL do motor, mesmo custo de ~11-88s por partida perfilado
+antes) **direto dentro de uma `async def`, sem `asyncio.to_thread`** --
+travava o event loop do uvicorn INTEIRO durante cada partida (nem
+`GET /`, nem `/simulate/status`, nem a conexao com o Postgres
+respondiam -- log cheio de `asyncio.exceptions.CancelledError` tentando
+abrir a conexao SSL do asyncpg no meio do bloqueio). Mesmo fix: `resultado
+= await asyncio.to_thread(run_single_match, ...)`. Testado depois:
+`GET /` responde normalmente DURANTE a simulacao, job completa e
+`progress` atualiza de verdade.
+
+**Nao mudei a busca do motor aqui** (diferente da secao 3, que e opt-in
+e so usada por `/hand-stats`) -- `/simulate` continua com a busca
+PADRAO (mais lenta, mais precisa). Com os defaults do front
+(`nSimulations=5`, `nMetaDecks=10` = 50 partidas reais), o job ainda
+pode demorar bastante no total (nao mais travado, so devagar) -- fica
+pendente perguntar ao usuario se quer o mesmo tratamento de modo rapido/
+cache aplicado aqui tambem, ou se a precisao maxima importa mais nesta
+tela especifica (diferente da validacao estatistica do hand-stats).
+`smoke_fast.py` rodado depois (nao mexe em decision_engine.py, so
+plumbing async) -- OK.
+
+### 9. Modo rapido em `/simulate` + teto de tempo por partida + cancelar/minimizar
+
+Usuario confirmou querer o mesmo modo rapido do `/hand-stats` aplicado
+aqui tambem (pergunta da secao 8). `run_single_match()`
+(`simulation_worker.py`) ganhou `mc_samples_override` com default
+**`SIMULATE_FAST_MC_OVERRIDE = (1, 1, 1)`** -- diferente do `/hand-stats`
+(onde o default do motor continua `None`, so o override e passado
+explicitamente), aqui o parametro de `run_single_match` already vem com
+esse default porque a funcao SO e chamada por `run_simulation_job`
+(unico call site, conferido via grep) -- nao muda comportamento de nenhum
+outro caminho (`audit_replay.py`, `gauntlet_matchup.py`,
+`decision_quality_*.py` usam `OPTCGMatch` direto, nao essa funcao).
+
+Testando com deck real (16 cartas, OP15), uma partida especifica ficou
+rodando **minutos** mesmo no modo rapido (CPU do processo confirmada
+subindo via `Get-Process` -- nao era deadlock, jogo raro/degenerado
+mesmo). Usuario reportou "demorando demais" ao vivo. Adicionado
+`PER_MATCH_TIMEOUT_S = 90`: `asyncio.wait_for()` em volta do
+`asyncio.to_thread(run_single_match, ...)` -- abandona a ESPERA por uma
+partida que estoura o teto (a thread em si continua ate terminar sozinha,
+Python nao mata thread a forca) e conta como pulada, sem travar o lote
+inteiro por causa de 1 matchup ruim.
+
+**Bug real exposto pelo proprio teste**: quando TODAS as partidas de um
+matchup estouram o teto, `aggregate_results([])` devolvia
+`{'n_simulations': 0, 'win_rate': None}` -- SEM a chave `'wins'` -- e
+`sum(b['wins'] for b in breakdown)` quebrava com `KeyError: 'wins'`
+(job foi pra `status='error'`). Corrigido: o branch `n==0` agora devolve
+o MESMO shape do branch normal, so com os numeros zerados/None.
+
+**Cancelar + minimizar** (pedido explicito do usuario): botao "Cancelar"
+no modal chama `POST /simulate/{job_id}/cancel` (endpoint novo, `db.py`
+ganhou `cancel_job()` -- so afeta jobs `pending`/`running`, idempotente).
+`run_simulation_job()` confere o status do job (1 SELECT, barato vs
+~11-90s de 1 partida) ANTES de comecar CADA partida nova -- ve
+`cancelled`, para de disparar partidas novas (a que ja estiver rodando
+naquele instante termina sozinha, nao e interrompida no meio). Migration
+nova `002_add_cancelled_status.sql` (o `CHECK` de `status` em
+`simulation_jobs` so aceitava 4 valores) -- aplicada direto via
+`DATABASE_URL` (autorizado pelo usuario), nao so preparada.
+
+Botao "Continuar navegando" minimiza o modal pra uma pilula flutuante
+(canto inferior direito, nao bloqueia mais a tela) -- o polling ja
+independe da visibilidade do modal (roda via `useEffect([jobId])`), entao
+minimizar e so trocar o que renderiza, o job continua exatamente igual no
+servidor. Nao implementado (fora de escopo pedido): persistir o job
+entre NAVEGACOES de pagina inteiras (sair de `/simulate` e voltar depois)
+-- hoje o estado e perdido se a pagina for desmontada, so cobre "ficar na
+mesma pagina e continuar usando o resto da tela".
+
+Testado ponta a ponta: cancelamento no meio de uma partida real (job
+parou em 1/9, nunca mais progrediu). `smoke_fast.py` OK, `eslint`/`tsc`/
+`next build` limpos (so o 1 erro pre-existente de `any`, nao introduzido
+nesta sessao).
+
+### 10. MODO GULOSO no `/simulate`: 40s -> 1,3s por partida (a tela saiu de ~14min pra 21s)
+
+Usuario nao aceitou o tempo ("50 partidas deveria durar 2 min no maximo")
+e mandou olhar o **Naruto Card Game Simulator**
+(narutocardgamesimulator.com). Olhei: a IA de la roda **100% no
+navegador em JavaScript**, zero chamada ao servidor durante a partida
+(conferido pela aba de rede) -- e a "Abordagem 1" classica (pontuar as
+jogadas legais, escolher a melhor), sem lookahead nenhum. Nosso motor ja
+tem essa camada; a busca Monte Carlo e uma camada EM CIMA dela.
+
+**Correcoes de medicao que eu mesmo tinha errado antes (registrar pra
+ninguem repetir):**
+1. Extrapolei "10,5s/partida" de um job pela METADE. No fim deu 15,9s --
+   partidas variam muito de duracao, media parcial engana. **So medir com
+   o lote inteiro terminado.**
+2. Disse que paralelismo daria 4x. A maquina do usuario tem **2 nucleos
+   FISICOS** (i3-8130U, 4 logicos): com 4 workers o ganho foi ZERO (17,6s
+   x 16,5s sequencial) -- 4 processos CPU-bound disputando 2 nucleos so
+   se atrapalham. `SIMULATE_WORKERS` passou a usar `cpu_count()//2`.
+3. Achei que `TOP_K=1` era "o modo simples". **Nao e**: ele ainda roda a
+   busca (1 candidata + PASS, 8 passos a frente) e medido ficou mais
+   LENTO que o padrao (24,8s x 16,5s).
+
+**Bug meu, achado no caminho:** `run_single_match` tinha
+`mc_samples_override` na assinatura mas **nunca repassava pro
+`OPTCGMatch`** -- o "modo rapido" da secao 9 nunca chegou a valer no
+`/simulate`. Corrigido junto.
+
+**A medicao que valeu** (5 partidas, MESMAS seeds, deck real do usuario):
+
+| config | s/partida | turnos |
+|---|---|---|
+| busca completa | 40,0 | 13,6 |
+| `TOP_K=1` | 39,1 | 16,2 |
+| **guloso (sem busca)** | **1,3** | 14,2 |
+
+As partidas do guloso **nao ficam mais longas** (14,2 x 13,6 turnos), entao
+o ganho e real, nao artefato de partida curta.
+
+Implementado como `search_top_k_override` em `OPTCGMatch` (default None
+preserva tudo; `0` = aplica a acao de maior score estatico direto, sem
+busca) + `SIMULATE_GREEDY_MODE` em `simulation_worker.py` (ligado so no
+simulador do front). **CUSTO DE QUALIDADE ja medido em REPROVADOS.md
+(bloco 700)**: `play` 28,9% -> 26,2% (-2,7pp), 12 lideres piores x 4
+melhores, piores casos -36,4pp. Aceito CONSCIENTEMENTE pelo usuario aqui
+porque nesta tela a pergunta e "qual o winrate do deck", e o ganho
+estatistico de rodar muito mais partidas supera 2,7pp de qualidade de
+jogada (8 partidas dao +-30pp de margem; 200 dao +-6pp). **O bot que joga
+contra humanos NAO foi tocado** -- la a busca e liquido positivo, medido.
+
+Tambem corrigido: `total_steps` era `n_sim * n_meta_decks` calculado na
+CRIACAO do job, mas o banco podia ter menos decklists que o pedido (pediu
+10, tinha 6) -- a barra parava em 60% e pulava pra 100%. Agora
+`run_simulation_job` recalcula e persiste (`db.update_job_total_steps`).
+
+Front: `SECONDS_PER_MATCH_GUESS` 40 -> 1, e o padrao de partidas por
+confronto subiu de 5 pro maximo (10), ja que ficou barato.
+
+### 11. Decklists de meta recoletadas -- e um BUG ANTIGO: decks oponentes com ate 500 cartas
+
+Com a tela rapida, o gargalo virou estatistico: o `/simulate` so tinha
+**6 oponentes**. Achado: os dois caminhos usavam fontes DIFERENTES --
+`/hand-stats` le `decklists_raw.csv` direto (193 decks), `/simulate` le a
+tabela `meta_decklists` do Supabase (6). O dado ja existia, nunca tinha
+sido carregado.
+
+E o `decklists_raw.csv` versionado estava na era **OP15** (banco de cartas
+ja vai ate OP17) -- nao por causa do `FORMATS` hardcoded (esse so afeta os
+winrates do OP Leaderboard; as decklists usam `time=past_year` e sempre
+trazem o periodo corrente), mas simplesmente porque o coletor nao era
+re-executado desde junho. Recoletado: **184 decks, agora era OP16**
+(OP16 = 1064 cartas, o set mais presente). `FORMATS` atualizado tambem
+(+OP16/OP17) pros winrates.
+
+> **O coletor morria antes de coletar** por `UnicodeEncodeError` nos
+> `print` com emoji (console cp1252 no Windows). Rodar com
+> `PYTHONIOENCODING=utf-8`.
+
+**BUG ANTIGO E GRAVE, achado ao carregar:** `build_real_deck` fazia
+`df_raw[df_raw['deck_url'] == deck_url]` e iterava TODAS as linhas -- mas
+o CSV repete a lista inteira **uma vez por `placing`** (o mesmo deck
+colocou em varios torneios; conferido: qty identica em cada copia). Sem
+dedup, cada copia somava de novo:
+
+```
+ 500 cartas no deck oponente  <- Purple Enel by Luka Forjan
+ 150 cartas                   <- Purple Enel by Juan Mendez Casado
+ 100 cartas                   <- Blue/Yellow Nami by Benny
+```
+
+Ou seja, **TODA simulacao do projeto rodou contra decks oponentes
+inflados de 2x a 10x** -- oponente que nunca deckava e probabilidade de
+compra diluida. Vale pra `/hand-stats`, `/simulate`, `gauntlet_matchup`,
+`audit_replay`, `baseline_metrics` -- tudo que monta oponente por
+`build_real_deck`. **O CSV de junho tem o mesmo padrao**, entao o bug e
+antigo, nao veio da recoleta. Corrigido com
+`rows.drop_duplicates(subset='card_code', keep='first')`; depois do fix,
+**os 184 decks dao exatamente 50 cartas** (antes: 50 a 500).
+
+> **CONSEQUENCIA PRA LEITURA DE RESULTADOS ANTIGOS:** qualquer winrate/
+> gauntlet/comparacao de matchup medido ANTES de 05/09/2026 usou oponente
+> com deck errado. Nao comparar numero novo com numero velho sem refazer.
+
+Ferramenta nova: **`carregar_meta_decklists.py`** (le `decklists_raw.csv`,
+separa lider pelo mesmo criterio de `build_real_deck`, insere em
+`meta_decklists`; idempotente por `source_url`, tem `--dry-run`). Rodado:
+**184 decklists inseridas**.
+
+`smoke_fast.py` quebrou na recoleta porque `_ponder_test_match` fixava um
+deck POR NOME ("Purple Enelby Mirko Zanelli") que sumiu na safra nova --
+o proprio docstring do teste diz "qualquer deck real serve", entao virou
+fallback deterministico (1o em ordem alfabetica) quando o nome nao existe.
+
+**Resultado final da tela** (mesmo deck do usuario): 200 partidas contra
+20 decks de meta em **29 segundos** (era ~14min pra 50 partidas com 30
+aproveitadas). `smoke_fast.py` e `smoke_test.py` OK depois de tudo.
+
 ## 2026-09-01 (749) - Os 83 promos `P-` restantes: transcricao manual via imagem (agente em background), OUTRA colisao de codigo achada (P-086/P-088), e um bug de gramatica novo (`{{chave dupla}}` + fraseado alternativo de preview) que deixava `P-085` com efeito TOTALMENTE vazio
 
 Continuacao direta do bloco 748. Pedido do usuario: "vasculhe na pasta do

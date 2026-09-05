@@ -14,16 +14,36 @@ Endpoint:
     body: { "cards": [ {"code": "OP15-001", "qty": 1}, {"code": "OP15-037", "qty": 4}, ... ] }
     resposta: análise completa (arquétipo, sinergias, coesão tribal, ratios, curva)
 """
+import asyncio
+import hashlib
 import json
 import os
+import time
+from concurrent.futures import ProcessPoolExecutor
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 
+import pandas as pd
+
 from deck_analyzer import analyze_deck
 import db
 import simulation_worker
+from simulation_worker import load_deck, DeckLoadError
+from optcg_engine.decision_engine import (
+    OPTCGMatch,
+    build_real_deck,
+    load_cards_db,
+    validar_deck,
+)
+from hand_scorer import (
+    card_to_handcard,
+    deck_to_handcards,
+    detect_archetype,
+    searcher_quality,
+    score_hand as hs_score,
+)
 
 # ── Carrega o card_analysis_db uma vez na inicialização ─────────────────────
 _DB_PATH = os.path.join(os.path.dirname(__file__), 'card_analysis_db.json')
@@ -334,174 +354,295 @@ def leader_stats(leader_name: str):
     return {'total_games': total, 'turns': result_turns}
 
 
-@app.post("/hand-stats")
-async def hand_stats(req: DeckRequest, n_games: int = 80):
+class _HandStatsInstrumentedMatch(OPTCGMatch):
+    """Captura a mao de abertura pos-setup. Modulo-level (nao aninhada na
+    rota) de proposito: ProcessPoolExecutor precisa reimportar a classe por
+    nome em cada worker (spawn no Windows) -- uma classe local dentro de
+    `hand_stats()` nao e picklable."""
+    def setup(self):
+        super().setup()
+        self._opening_hand_a = list(self.state_a.hand)
+        self._opening_hand_b = list(self.state_b.hand)
+
+
+# Cache por PROCESSO worker (nao por task) -- carregar cards_db/decklists_raw
+# custa ~7s sozinho (medido 05/09), e o ProcessPoolExecutor reusa os MESMOS
+# poucos processos worker pra todas as tasks de um `.map()` (nao spawna um
+# processo novo por task). Carregar 1x por worker e reusar nas tasks
+# seguintes roteadas pra ele evita pagar 7s de novo em CADA partida.
+_worker_cards_db = None
+_worker_df_raw = None
+
+
+def _hand_stats_worker_context():
+    global _worker_cards_db, _worker_df_raw
+    if _worker_cards_db is None:
+        base_dir = os.path.dirname(__file__)
+        _worker_cards_db = load_cards_db(os.path.join(base_dir, 'cards_rows.csv'))
+        _worker_df_raw = pd.read_csv(os.path.join(base_dir, 'decklists_raw.csv'))
+    return _worker_cards_db, _worker_df_raw
+
+
+def _run_one_hand_stats_game(task):
+    """Roda 1 partida completa e devolve {score, going_first, won} ou None.
+
+    `task` carrega só primitivos picklable (código/qty, nomes) -- nunca os
+    objetos Card/GameState reconstruídos, mesmo padrão de
+    gauntlet_matchup.py `_run_one_seed` (docstring lá explica o motivo:
+    reconstruir do zero em cada worker é mais barato e sempre picklable,
+    ao contrário de passar os objetos do motor prontos pela fila).
     """
-    Valida a heurística de scoring de mão simulando N partidas reais.
+    (user_cards_raw, opp_name, opp_url, going_first,
+     arq, sq, bomb_code, mc_samples_override) = task
+    try:
+        cards_db, df_raw = _hand_stats_worker_context()
+        user_deck = load_deck(user_cards_raw)
+        built = build_real_deck(opp_name, opp_url, df_raw, cards_db)
+        if not built:
+            return None
+        opp_deck = built
 
-    Para cada partida:
-    - Captura a mão de abertura real de 5 cartas do jogador A (nosso deck)
-    - Pontua com hand_scorer.score_hand()
-    - Registra vitória/derrota
+        if going_first:
+            match = _HandStatsInstrumentedMatch(
+                user_deck, opp_deck, mc_samples_override=mc_samples_override)
+            match.state_a.is_first = True
+            match.state_b.is_first = False
+            result = match.simulate()
+            initial_hand = match._opening_hand_a
+            user_player = 'A'
+        else:
+            match = _HandStatsInstrumentedMatch(
+                opp_deck, user_deck, mc_samples_override=mc_samples_override)
+            match.state_a.is_first = True
+            match.state_b.is_first = False
+            result = match.simulate()
+            initial_hand = match._opening_hand_b
+            user_player = 'B'
 
-    Retorna:
+        hand_hc = [card_to_handcard(c) for c in initial_hand]
+        sc = hs_score(hand_hc, going_first=going_first, arq=arq, sq=sq, bomb_code=bomb_code)
+        won = result.get('winner') == user_player
+        return {'score': sc, 'going_first': going_first, 'won': won}
+    except Exception:
+        return None
+
+
+# Amostras FIXAS e baixas pra busca offline -- so usado aqui (ver docstring
+# de OPTCGMatch.mc_samples_override em decision_engine.py). Medido 05/09:
+# reduz uma partida de ~88s pra ~11s (a busca ainda é REAL, só com 1
+# amostra Monte Carlo por candidata em vez do piso/teto adaptativo 3-6).
+_HAND_STATS_MC_OVERRIDE = (1, 1, 1)
+
+_HAND_STATS_CACHE_DIR = os.path.join(os.path.dirname(__file__), 'hand_stats_cache')
+
+
+def _hand_stats_cache_key(cards: list[CardEntry]) -> str:
+    """Hash estável da COMPOSIÇÃO do deck (líder + código/qty ordenados) --
+    dois decks com o mesmo conteúdo (mesmo vindos de `deck.id` diferentes
+    no Supabase) compartilham o cache."""
+    payload = sorted((c.code, c.qty) for c in cards)
+    raw = json.dumps(payload, sort_keys=True)
+    return hashlib.sha256(raw.encode('utf-8')).hexdigest()[:24]
+
+
+def _hand_stats_pending_path(cache_key: str) -> str:
+    return os.path.join(_HAND_STATS_CACHE_DIR, f'{cache_key}.pending.json')
+
+
+def _compute_and_cache_hand_stats(user_cards_raw: list[dict], cache_key: str,
+                                   n_games: int, workers: int) -> None:
+    """Corpo pesado de `/hand-stats`, rodado em BACKGROUND (ver rota).
+
+    Nunca levanta HTTPException (ninguém está esperando a resposta HTTP
+    quando isto roda) -- em erro, apaga o marcador `.pending` e sai; o
+    próximo GET/POST simplesmente tenta de novo (mesmo efeito de nunca ter
+    ficado pronto, sem marcador travado achando que ainda está calculando).
+    """
+    cache_path = os.path.join(_HAND_STATS_CACHE_DIR, f'{cache_key}.json')
+    pending_path = _hand_stats_pending_path(cache_key)
+    try:
+        user_deck = load_deck(user_cards_raw)
+        user_leader, user_cards, *_ = user_deck
+
+        hand_cards_all = deck_to_handcards(user_cards)
+        arq = detect_archetype(hand_cards_all)
+        sq  = searcher_quality(hand_cards_all)
+
+        bomb_code = None
+        if user_cards:
+            bomb_cand = max(user_cards, key=lambda c: getattr(c, 'cost', 0))
+            if getattr(bomb_cand, 'cost', 0) >= 7:
+                bomb_code = getattr(bomb_cand, 'code', None)
+
+        base_dir = os.path.dirname(__file__)
+        cards_db = load_cards_db(os.path.join(base_dir, 'cards_rows.csv'))
+        df_raw   = pd.read_csv(os.path.join(base_dir, 'decklists_raw.csv'))
+
+        urls = df_raw.groupby('deck_url')['deck_name'].first()
+        opponent_pool = []  # so (name, url) -- cada worker reconstroi o deck
+        for url, name in urls.items():
+            built = build_real_deck(name, url, df_raw, cards_db)
+            if not built:
+                continue
+            opp_leader, opp_cards, opp_stage = built
+            valido, _ = validar_deck(opp_leader, opp_cards, cards_db)
+            if valido and len(opp_cards) >= 40:
+                opponent_pool.append((name, url))
+            if len(opponent_pool) >= 8:
+                break
+
+        if not opponent_pool:
+            return
+
+        n_per_opp = max(1, n_games // len(opponent_pool))
+        tasks = [
+            (user_cards_raw, opp_name, opp_url, (g % 2 == 0),
+             arq, sq, bomb_code, _HAND_STATS_MC_OVERRIDE)
+            for opp_name, opp_url in opponent_pool
+            for g in range(n_per_opp)
+        ]
+
+        if workers <= 1:
+            raw_records = [_run_one_hand_stats_game(t) for t in tasks]
+        else:
+            with ProcessPoolExecutor(max_workers=workers) as ex:
+                raw_records = list(ex.map(_run_one_hand_stats_game, tasks))
+        records = [r for r in raw_records if r is not None]
+        if not records:
+            return
+
+        BRACKETS = [
+            {'label': 'Ruim',            'min': -9999, 'max': 50},
+            {'label': 'Abaixo da média', 'min': 50,    'max': 80},
+            {'label': 'Médio',           'min': 80,    'max': 110},
+            {'label': 'Bom',             'min': 110,   'max': 140},
+            {'label': 'Excelente',       'min': 140,   'max': 9999},
+        ]
+        score_brackets = []
+        for b in BRACKETS:
+            in_bracket = [r for r in records if b['min'] <= r['score'] < b['max']]
+            if not in_bracket:
+                continue
+            wins = sum(1 for r in in_bracket if r['won'])
+            score_brackets.append({
+                'label':     b['label'],
+                'min_score': b['min'] if b['min'] > -9999 else None,
+                'max_score': b['max'] if b['max'] < 9999  else None,
+                'n_games':   len(in_bracket),
+                'wins':      wins,
+                'win_rate':  round(wins / len(in_bracket), 3),
+            })
+
+        mulligan_threshold: int | None = None
+        for b_info in score_brackets:
+            if b_info['win_rate'] < 0.45 and b_info['max_score'] is not None:
+                mulligan_threshold = b_info['max_score']
+                break
+
+        all_scores = [r['score'] for r in records]
+        response = {
+            'archetype':          arq,
+            'n_games_ran':        len(records),
+            'overall_win_rate':   round(sum(1 for r in records if r['won']) / len(records), 3),
+            'avg_hand_score':     round(sum(all_scores) / len(all_scores)),
+            'score_brackets':     score_brackets,
+            'mulligan_threshold': mulligan_threshold,
+            'from_cache':         False,
+        }
+        os.makedirs(_HAND_STATS_CACHE_DIR, exist_ok=True)
+        with open(cache_path, 'w', encoding='utf-8') as f:
+            json.dump(response, f)
+    except Exception as e:
+        print(f'[hand-stats] calculo em background falhou pra {cache_key}: {e}')
+    finally:
+        try:
+            os.remove(pending_path)
+        except OSError:
+            pass
+
+
+@app.post("/hand-stats")
+async def hand_stats(req: DeckRequest, background_tasks: BackgroundTasks,
+                      n_games: int = 24, workers: int = 4):
+    """
+    Valida a heurística de scoring de mão simulando N partidas reais, cada
+    uma jogada de verdade pelo motor (`OPTCGMatch`) contra um pool de decks
+    de meta reais.
+
+    Retorna (quando pronto):
     - score_brackets: win rate por faixa de score
     - mulligan_threshold: score abaixo do qual win rate < 45%
     - archetype: arquétipo detectado
     - n_games_ran: partidas efetivamente simuladas
 
-    Complexidade: ~1-3s por partida. Com 80 jogos espere ~30-60s.
-    """
-    import random
-    import math
-    import pandas as pd
-    from collections import defaultdict
-    from optcg_engine.decision_engine import (
-        OPTCGMatch,
-        build_real_deck,
-        load_cards_db,
-        validar_deck,
-    )
-    from simulation_worker import load_deck, DeckLoadError
-    from hand_scorer import (
-        card_to_handcard,
-        deck_to_handcards,
-        detect_archetype,
-        searcher_quality,
-        score_hand as hs_score,
-    )
+    Assíncrono com cache (achado 05/09): o docstring antigo estimava
+    ~1-3s/partida; medido de verdade, a busca padrão do motor gasta ~88s
+    NUMA partida só (perfilado -- é o custo real da busca Monte Carlo que
+    faz o bot jogar bem, não um bug). Mesmo com amostragem reduzida
+    (`_HAND_STATS_MC_OVERRIDE`, ~11s/partida isolada) + paralelismo
+    (`workers`), o LOTE inteiro (24 jogos contra 8 decks de meta variados)
+    mediu ~6-7 minutos de parede -- variância grande entre matchups, longe
+    de caber numa requisição HTTP síncrona.
 
-    # ── Deck do usuário ────────────────────────────────────────────────────────
+    Por isso o endpoint NUNCA bloqueia esperando o cálculo:
+    - cache-hit (`hand_stats_cache/<hash>.json`, chaveado pela COMPOSIÇÃO
+      do deck -- líder + código/qty ordenados, não pelo id do deck salvo
+      no Supabase) -> responde na hora, sem rodar nada.
+    - cache-miss sem cálculo em andamento -> dispara o cálculo em
+      BACKGROUND (`BackgroundTasks`, roda DEPOIS da resposta ser enviada)
+      e responde imediatamente `{"status": "computing", ...}`.
+    - cache-miss COM cálculo já em andamento (marcador `.pending.json`)
+      -> responde `{"status": "computing", ...}` de novo, sem duplicar o
+      trabalho.
+    O front trata a ausência de `score_brackets` como "ainda não
+    disponível" (mesmo catch que já tratava timeout) -- a run de fundo
+    escreve o cache pronto pra próxima vez que a página for aberta.
+    """
+    cache_key = _hand_stats_cache_key(req.cards)
+    cache_path = os.path.join(_HAND_STATS_CACHE_DIR, f'{cache_key}.json')
+    if os.path.exists(cache_path):
+        with open(cache_path, encoding='utf-8') as f:
+            cached = json.load(f)
+        cached['from_cache'] = True
+        return cached
+
+    # Validação rápida e síncrona do deck ANTES de aceitar a task em
+    # background -- erro de deck malformado tem que voltar 400 na hora,
+    # não silenciosamente sumir dentro de uma background task sem ninguém
+    # ouvindo.
+    user_cards_raw = [{'code': c.code, 'qty': c.qty} for c in req.cards]
     try:
-        user_deck = load_deck([{'code': c.code, 'qty': c.qty} for c in req.cards])
+        load_deck(user_cards_raw)
     except DeckLoadError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=400, detail=f'Erro ao montar deck: {e}')
 
-    user_leader, user_cards, *_ = user_deck
-
-    hand_cards_all = deck_to_handcards(user_cards)
-    arq = detect_archetype(hand_cards_all)
-    sq  = searcher_quality(hand_cards_all)
-
-    # Código da carta mais cara (bomba) para bonus na mão
-    bomb_code = None
-    if user_cards:
-        bomb_cand = max(user_cards, key=lambda c: getattr(c, 'cost', 0))
-        if getattr(bomb_cand, 'cost', 0) >= 7:
-            bomb_code = getattr(bomb_cand, 'code', None)
-
-    # ── Pool de oponentes (decks de meta) ─────────────────────────────────────
-    base_dir = os.path.dirname(__file__)
-    try:
-        cards_db = load_cards_db(os.path.join(base_dir, 'cards_rows.csv'))
-        df_raw   = pd.read_csv(os.path.join(base_dir, 'decklists_raw.csv'))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f'Erro ao carregar base de cartas: {e}')
-
-    urls = df_raw.groupby('deck_url')['deck_name'].first()
-    opponent_pool = []
-    for url, name in urls.items():
-        built = build_real_deck(name, url, df_raw, cards_db)
-        if not built:
-            continue
-        opp_leader, opp_cards, opp_stage = built
-        valido, _ = validar_deck(opp_leader, opp_cards, cards_db)
-        if valido and len(opp_cards) >= 40:
-            opponent_pool.append((name, (opp_leader, opp_cards, opp_stage)))
-        if len(opponent_pool) >= 8:
-            break
-
-    if not opponent_pool:
-        raise HTTPException(status_code=500, detail='Nenhum deck oponente disponível')
-
-    # ── Subclass que captura mão de abertura pós-setup ─────────────────────────
-    class InstrumentedMatch(OPTCGMatch):
-        def setup(self):
-            super().setup()
-            self._opening_hand_a = list(self.state_a.hand)
-            self._opening_hand_b = list(self.state_b.hand)
-
-    # ── Loop de simulação ──────────────────────────────────────────────────────
-    records: list[dict] = []  # {score, going_first, won}
-    n_per_opp = max(1, n_games // len(opponent_pool))
-    rng = random.Random()
-
-    for _opp_name, opp_deck in opponent_pool:
-        for g in range(n_per_opp):
-            going_first = (g % 2 == 0)
-            try:
-                if going_first:
-                    match = InstrumentedMatch(user_deck, opp_deck)
-                    match.state_a.is_first = True
-                    match.state_b.is_first = False
-                    result = match.simulate()
-                    initial_hand = match._opening_hand_a
-                    user_player = 'A'
-                else:
-                    match = InstrumentedMatch(opp_deck, user_deck)
-                    match.state_a.is_first = True
-                    match.state_b.is_first = False
-                    result = match.simulate()
-                    initial_hand = match._opening_hand_b
-                    user_player = 'B'
-
-                hand_hc = [card_to_handcard(c) for c in initial_hand]
-                sc = hs_score(hand_hc, going_first=going_first, arq=arq, sq=sq, bomb_code=bomb_code)
-                won = result.get('winner') == user_player
-                records.append({'score': sc, 'going_first': going_first, 'won': won})
-            except Exception:
-                continue
-
-    if not records:
-        raise HTTPException(status_code=500, detail='Nenhuma partida completou com sucesso')
-
-    # ── Agregar em brackets ────────────────────────────────────────────────────
-    # Brackets fixos; podem aparecer vazios se todos os scores estiverem concentrados
-    BRACKETS = [
-        {'label': 'Ruim',          'min': -9999, 'max': 50},
-        {'label': 'Abaixo da média', 'min': 50,  'max': 80},
-        {'label': 'Médio',         'min': 80,    'max': 110},
-        {'label': 'Bom',           'min': 110,   'max': 140},
-        {'label': 'Excelente',     'min': 140,   'max': 9999},
-    ]
-
-    score_brackets = []
-    for b in BRACKETS:
-        in_bracket = [r for r in records if b['min'] <= r['score'] < b['max']]
-        if not in_bracket:
-            continue
-        wins = sum(1 for r in in_bracket if r['won'])
-        wr = wins / len(in_bracket)
-        score_brackets.append({
-            'label':     b['label'],
-            'min_score': b['min'] if b['min'] > -9999 else None,
-            'max_score': b['max'] if b['max'] < 9999  else None,
-            'n_games':   len(in_bracket),
-            'wins':      wins,
-            'win_rate':  round(wr, 3),
-        })
-
-    # Mulligan threshold: menor score onde win_rate < 45%
-    mulligan_threshold: int | None = None
-    for b_info in score_brackets:
-        if b_info['win_rate'] < 0.45 and b_info['max_score'] is not None:
-            mulligan_threshold = b_info['max_score']
-            break
-
-    # Score médio geral e overall win rate
-    all_scores = [r['score'] for r in records]
-    avg_score  = round(sum(all_scores) / len(all_scores))
-    overall_wr = round(sum(1 for r in records if r['won']) / len(records), 3)
+    # Marcador `.pending` travado (servidor derrubado/reiniciado no meio do
+    # calculo -- o `finally` que apaga o marcador nunca roda) trataria
+    # QUALQUER pedido futuro pra este deck como "já está calculando" pra
+    # sempre. 20 min é generoso sobre o pior caso medido (~7 min o lote
+    # inteiro) -- expira e deixa tentar de novo.
+    pending_path = _hand_stats_pending_path(cache_key)
+    pending_stale = False
+    if os.path.exists(pending_path):
+        try:
+            with open(pending_path, encoding='utf-8') as f:
+                pending_stale = (time.time() - json.load(f).get('started_at', 0)) > 1200
+        except (OSError, ValueError):
+            pending_stale = True
+    if not os.path.exists(pending_path) or pending_stale:
+        os.makedirs(_HAND_STATS_CACHE_DIR, exist_ok=True)
+        with open(pending_path, 'w', encoding='utf-8') as f:
+            json.dump({'started_at': time.time()}, f)
+        background_tasks.add_task(
+            _compute_and_cache_hand_stats, user_cards_raw, cache_key, n_games, workers)
 
     return {
-        'archetype':          arq,
-        'n_games_ran':        len(records),
-        'overall_win_rate':   overall_wr,
-        'avg_hand_score':     avg_score,
-        'score_brackets':     score_brackets,
-        'mulligan_threshold': mulligan_threshold,
+        'status': 'computing',
+        'from_cache': False,
+        'message': 'Simulação rodando em segundo plano (leva alguns minutos na primeira '
+                    'vez para este deck) -- reabra a análise depois.',
     }
 
 
@@ -516,3 +657,20 @@ async def simulate_status(job_id: str):
     if job is None:
         raise HTTPException(status_code=404, detail="job não encontrado")
     return job
+
+
+@app.post("/simulate/{job_id}/cancel")
+async def simulate_cancel(job_id: str):
+    """
+    Cancela um job em andamento (pedido do usuário, 05/09 -- ver
+    `db.cancel_job` e o loop em `simulation_worker.run_simulation_job`
+    pra como isso interrompe as PRÓXIMAS partidas, não a que já estiver
+    rodando naquele instante). Idempotente: chamar de novo num job já
+    'done'/'error'/'cancelled' não faz nada (o UPDATE em `cancel_job` só
+    afeta 'pending'/'running').
+    """
+    job = await db.get_job(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="job não encontrado")
+    await db.cancel_job(job_id)
+    return {"status": "cancelling"}

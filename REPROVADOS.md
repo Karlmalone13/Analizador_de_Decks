@@ -390,6 +390,10 @@ errada porque a medição estava. Valem tanto quanto os outros:
 | Comparar contra QUALQUER candidato em QUALQUER decisão | incluía decisões onde `play` já tinha vencido (gap trivialmente 0) — inflou "93% quase-empate" | 676 |
 | Rodar medição com código editado no meio | workers sobem com versão nova; resultado mistura duas versões | 682, 692 |
 | Rodar medições pesadas em PARALELO | 8 processos em 4 núcleos — atribuí a lentidão a 3 causas erradas antes de achar a real | 682 |
+| Extrapolar tempo de um job pela METADE | "10,5s/partida" virou **15,9s** com o lote inteiro — a duração das partidas varia demais pra média parcial valer. Só medir lote terminado | 750 |
+| Contar núcleos LÓGICOS pra escolher workers | i3-8130U = 2 físicos / 4 lógicos. 4 workers deram ganho **ZERO** (17,6s x 16,5s sequencial). `cpu_count()//2` | 750 |
+| Assumir que "cortar a busca" acelera sempre | `TOP_K=1` ficou **mais LENTO** que o padrão (24,8s x 16,5s): ainda roda a busca (1 candidata + PASS, 8 passos). O que acelera é NÃO chamar a busca (`search_top_k_override=0`: 1,3s) | 750 |
+| Parâmetro na assinatura ≠ parâmetro aplicado | `run_single_match` recebia `mc_samples_override` e **nunca repassava** pro `OPTCGMatch` — o "modo rápido" não valeu nada até ser notado. Conferir o ponto de USO, não só a assinatura | 750 |
 
 ## Enquadramentos reprovados (não são mecanismos, são raciocínios)
 

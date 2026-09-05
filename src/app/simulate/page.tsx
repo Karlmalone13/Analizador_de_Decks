@@ -63,7 +63,7 @@ interface MatchupBreakdown {
 }
 
 interface SimulationJobStatus {
-    status: 'pending' | 'running' | 'done' | 'error'
+    status: 'pending' | 'running' | 'done' | 'error' | 'cancelled'
     progress: number
     total_steps: number
     error_message?: string
@@ -152,12 +152,20 @@ function SimulatePageContent() {
     const [metaCount, setMetaCount] = useState<number | null>(null)
 
     // Configuração + execução da simulação
-    const [nSimulations, setNSimulations] = useState(5)
+    // 10 (o máximo permitido) virou o padrão em 05/09: com o modo guloso o
+    // custo caiu ~30x, e mais partidas = margem de erro menor no winrate
+    // (o gargalo estatístico agora é o nº de decklists de meta cadastradas,
+    // não o tempo de simulação).
+    const [nSimulations, setNSimulations] = useState(MAX_N_SIMULATIONS)
     const [nMetaDecks, setNMetaDecks] = useState(10)
     const [running, setRunning] = useState(false)
     const [jobId, setJobId] = useState<string | null>(null)
     const [jobStatus, setJobStatus] = useState<SimulationJobStatus | null>(null)
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+    const [simStartedAt, setSimStartedAt] = useState<number | null>(null)
+    const [nowTick, setNowTick] = useState(() => Date.now())
+    const [modalMinimized, setModalMinimized] = useState(false)
+    const [cancelling, setCancelling] = useState(false)
 
     // Replay state
     const [replayData, setReplayData] = useState<any | null>(null)
@@ -340,6 +348,9 @@ function SimulatePageContent() {
 
         setRunning(true)
         setJobStatus(null)
+        setSimStartedAt(Date.now())
+        setModalMinimized(false)
+        setCancelling(false)
         try {
             const r = await fetch(`${API_URL}/simulate`, {
                 method: 'POST',
@@ -358,6 +369,19 @@ function SimulatePageContent() {
             alert('Erro de conexão com a API de simulação.')
             setRunning(false)
         }
+    }
+
+    // ── Cancela o job em andamento -- a PRÓXIMA partida não começa, mas a
+    // que já estiver rodando naquele instante termina sozinha (o motor não
+    // é interrompido no meio, só as seguintes não são mais disparadas).
+    async function cancelSimulation() {
+        if (!jobId) return
+        setCancelling(true)
+        try {
+            await fetch(`${API_URL}/simulate/${jobId}/cancel`, { method: 'POST' })
+        } catch { }
+        // o polling já em andamento pega o status='cancelled' sozinho; não
+        // precisa forçar nada aqui além de manter o botão desabilitado.
     }
 
     // ── Replay: roda 1 partida com log detalhado ────────────────────────────
@@ -431,8 +455,9 @@ function SimulatePageContent() {
                 if (!r.ok) return
                 const data = await r.json() as SimulationJobStatus
                 setJobStatus(data)
-                if (data.status === 'done' || data.status === 'error') {
+                if (data.status === 'done' || data.status === 'error' || data.status === 'cancelled') {
                     setRunning(false)
+                    setModalMinimized(false)
                     if (pollRef.current) clearInterval(pollRef.current)
                 }
             } catch { }
@@ -442,7 +467,42 @@ function SimulatePageContent() {
         return () => { if (pollRef.current) clearInterval(pollRef.current) }
     }, [jobId])
 
-    const estimatedSeconds = tab === 'meta' ? nSimulations * nMetaDecks * 2.5 : nSimulations * 2.5
+    // ── Cronômetro do modal de progresso — re-renderiza a cada 1s enquanto a
+    // simulação está rodando, só pra atualizar o "tempo decorrido" (o polling
+    // acima já cobre o progresso real, isto é só o relógio visual).
+    useEffect(() => {
+        if (!running) return
+        const tick = setInterval(() => setNowTick(Date.now()), 1000)
+        return () => clearInterval(tick)
+    }, [running])
+
+    function formatDuration(totalSeconds: number): string {
+        const s = Math.max(0, Math.round(totalSeconds))
+        const m = Math.floor(s / 60)
+        const r = s % 60
+        return `${m}:${r.toString().padStart(2, '0')}`
+    }
+
+    // Estimativa INICIAL (antes de qualquer partida terminar). Medido 05/09
+    // depois de ligar o MODO GULOSO no simulador (`SIMULATE_GREEDY_MODE` em
+    // simulation_worker.py -- sem busca Monte Carlo, ver o comentário lá):
+    // 50 partidas em 11s com 2 workers = ~0,22s/partida efetivo. 1s aqui dá
+    // margem folgada; de todo jeito só vale até a 1ª partida terminar, daí
+    // `projectedSeconds` assume com o ritmo REAL do job.
+    const SECONDS_PER_MATCH_GUESS = 1
+    const totalMatches = tab === 'meta' ? nSimulations * nMetaDecks : nSimulations
+    const elapsedSeconds = simStartedAt ? (nowTick - simStartedAt) / 1000 : 0
+
+    // Projeção auto-corretiva: com N partidas concluídas em T segundos, o
+    // total esperado é T/N * total_steps. Só entra quando há dado real
+    // (progress >= 1); antes disso mostra o chute inicial, marcado como tal.
+    const doneMatches = jobStatus?.progress ?? 0
+    const stepsTotal = jobStatus?.total_steps ?? totalMatches
+    const hasRealRate = doneMatches >= 1 && elapsedSeconds > 0
+    const projectedSeconds = hasRealRate
+        ? (elapsedSeconds / doneMatches) * stepsTotal
+        : totalMatches * SECONDS_PER_MATCH_GUESS
+    const remainingSeconds = Math.max(0, projectedSeconds - elapsedSeconds)
 
     if (loading) return (
         <div className="min-h-screen bg-gray-950 text-white flex flex-col">
@@ -639,7 +699,8 @@ function SimulatePageContent() {
                             className="ml-3 w-20 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white" />
                     </label>
                     <div className="text-xs text-gray-500 mb-4">
-                        Tempo estimado: ~{Math.round(estimatedSeconds)}s ({Math.round(estimatedSeconds / 60 * 10) / 10} min)
+                        {totalMatches} partida(s) no total · tempo estimado ~{formatDuration(totalMatches * SECONDS_PER_MATCH_GUESS)}
+                        <span className="text-gray-600"> (varia bastante por deck — a estimativa se ajusta durante a simulação)</span>
                     </div>
 
                     <div className="flex gap-3">
@@ -715,8 +776,8 @@ function SimulatePageContent() {
                 />
             )}
 
-            {/* Overlay modal de progresso (centro da tela) */}
-            {(running || jobStatus?.status === 'pending' || jobStatus?.status === 'running') && (
+            {/* Overlay modal de progresso (centro da tela) -- só quando NÃO minimizado */}
+            {(running || jobStatus?.status === 'pending' || jobStatus?.status === 'running') && !modalMinimized && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
                     <div className="bg-gray-900 border border-gray-700 rounded-2xl p-8 w-[90%] max-w-md shadow-2xl">
                         <div className="flex items-center gap-3 mb-5">
@@ -735,10 +796,63 @@ function SimulatePageContent() {
                                 style={{ width: `${jobStatus?.total_steps ? (jobStatus.progress / jobStatus.total_steps) * 100 : 5}%` }} />
                         </div>
 
-                        <div className="text-sm text-gray-400 text-center">
+                        <div className="text-sm text-gray-400 text-center mb-3">
                             {jobStatus?.progress ?? 0} de {jobStatus?.total_steps ?? '...'} partidas concluídas
                         </div>
+
+                        <div className="text-xs text-gray-500 mb-5 text-center space-y-1">
+                            <div className="flex items-center justify-center gap-4">
+                                <span>⏱️ decorrido: <span className="text-gray-300 font-mono">{formatDuration(elapsedSeconds)}</span></span>
+                                <span>·</span>
+                                <span>restante: <span className="text-gray-300 font-mono">~{formatDuration(remainingSeconds)}</span></span>
+                            </div>
+                            <div className="text-gray-600">
+                                total estimado ~{formatDuration(projectedSeconds)}
+                                {hasRealRate
+                                    ? <> · {formatDuration(elapsedSeconds / doneMatches)} por partida (ritmo real)</>
+                                    : <> · estimativa inicial, ajusta na 1ª partida</>}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setModalMinimized(true)}
+                                className="flex-1 bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-sm font-medium transition"
+                            >
+                                Continuar navegando
+                            </button>
+                            <button
+                                onClick={cancelSimulation}
+                                disabled={cancelling}
+                                className="flex-1 bg-red-900/60 hover:bg-red-900 disabled:opacity-50 disabled:cursor-not-allowed text-red-200 px-4 py-2 rounded-xl text-sm font-medium transition"
+                            >
+                                {cancelling ? 'Cancelando...' : 'Cancelar'}
+                            </button>
+                        </div>
                     </div>
+                </div>
+            )}
+
+            {/* Pílula flutuante -- quando o modal é minimizado, a simulação continua
+                rodando no servidor (não depende da aba/tela ficar aberta no modal);
+                isto só reabre a visão detalhada. */}
+            {(running || jobStatus?.status === 'pending' || jobStatus?.status === 'running') && modalMinimized && (
+                <button
+                    onClick={() => setModalMinimized(false)}
+                    className="fixed bottom-6 right-6 z-50 bg-gray-900 border border-gray-700 rounded-full shadow-2xl px-5 py-3 flex items-center gap-3 hover:border-orange-500 transition"
+                >
+                    <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-white font-medium">
+                        Simulando... {jobStatus?.total_steps ? Math.round((jobStatus.progress / jobStatus.total_steps) * 100) : 0}%
+                    </span>
+                    <span className="text-xs text-gray-500 font-mono">{formatDuration(elapsedSeconds)}</span>
+                </button>
+            )}
+
+            {/* Aviso de simulação cancelada */}
+            {jobStatus?.status === 'cancelled' && (
+                <div className="fixed bottom-6 right-6 z-50 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl px-5 py-3 text-sm text-gray-300">
+                    Simulação cancelada — {jobStatus.progress} de {jobStatus.total_steps} partidas concluídas antes de parar.
                 </div>
             )}
         </div>

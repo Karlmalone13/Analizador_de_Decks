@@ -14484,15 +14484,22 @@ def _ponder_test_match():
     from optcg_engine.decision_engine import build_real_deck
     df_raw = pd.read_csv("decklists_raw.csv")
     urls = df_raw.groupby("deck_url")["deck_name"].first()
+    # Nome fixo so pra ter DETERMINISMO (o docstring acima e explicito:
+    # "qualquer deck real serve"). Como `decklists_raw.csv` e recoletado de
+    # tempos em tempos (`coletar_dados_optcg.py`, torneios do ultimo ano), o
+    # deck citado pode simplesmente nao estar mais na safra atual -- foi o
+    # que aconteceu na recoleta de 05/09. Fallback: o primeiro deck em ordem
+    # alfabetica, que e igualmente arbitrario e continua deterministico.
     target = "Purple Enelby Mirko Zanelli"
-    for url, name in urls.items():
-        if name == target:
-            leader, hand_cards, stage = build_real_deck(name, url, df_raw, cards)
-            deck_tuple = (leader, hand_cards, stage)
-            m = OPTCGMatch(deck_tuple, deck_tuple)
-            m.setup()
-            return m
-    raise RuntimeError(f"deck de teste nao encontrado: {target}")
+    escolhido = next(((url, name) for url, name in urls.items() if name == target), None)
+    if escolhido is None:
+        escolhido = sorted(urls.items(), key=lambda par: (str(par[1]), str(par[0])))[0]
+    url, name = escolhido
+    leader, hand_cards, stage = build_real_deck(name, url, df_raw, cards)
+    deck_tuple = (leader, hand_cards, stage)
+    m = OPTCGMatch(deck_tuple, deck_tuple)
+    m.setup()
+    return m
 
 
 def _ponder_test_state(ps, turn: int):

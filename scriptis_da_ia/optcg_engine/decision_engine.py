@@ -11547,6 +11547,20 @@ def build_real_deck(deck_name: str, deck_url: str,
     if rows.empty:
         return None
 
+    # DEDUPLICACAO POR CARTA (achado 05/09): o MESMO `deck_url` aparece no
+    # CSV uma vez por `placing` -- a mesma lista colocou em varios torneios,
+    # e o coletor grava uma linha por colocacao, com qty IDENTICA (conferido:
+    # as colunas por placing sao iguais carta a carta). Sem dedup, cada
+    # copia somava de novo e o deck OPONENTE saia com 2x a 10x o tamanho
+    # real (medido: 500, 150, 150, 100 cartas onde deveriam ser ~50).
+    #
+    # Isso valia pra TODA simulacao do projeto (hand-stats, /simulate,
+    # gauntlet, audit_replay) e distorce o jogo inteiro: o oponente nunca
+    # deckava, e a probabilidade de compra de cada carta ficava diluida.
+    # O CSV antigo (commitado em junho) tem o mesmo padrao -- ou seja, o
+    # bug e antigo, nao veio da recoleta.
+    rows = rows.drop_duplicates(subset='card_code', keep='first')
+
     leader = None
     cards  = []
 
@@ -15438,7 +15452,9 @@ class DecisionEngine:
 class OPTCGMatch:
     MAX_TURNS = 15
 
-    def __init__(self, deck_a: tuple, deck_b: tuple, hide_opponent_info: bool = False):
+    def __init__(self, deck_a: tuple, deck_b: tuple, hide_opponent_info: bool = False,
+                 mc_samples_override: tuple[int, int, int] | None = None,
+                 search_top_k_override: int | None = None):
         """
         hide_opponent_info (achado real 10/08, bloco 490 -- fecha a
         pendencia do simulador self x self, TODO bloco 370): quando True,
@@ -15456,6 +15472,38 @@ class OPTCGMatch:
         deterministico pra calibracao). Usado por `simulation_worker.py`
         (API `/simulate` do front-end, o simulador self x self de
         verdade), default True la.
+
+        mc_samples_override (achado 05/09, api.py `/hand-stats`): quando
+        setado, substitui (samples_min, samples_max, batch_size) da busca
+        offline por esta tripla FIXA, em vez do piso/teto adaptativo
+        (OFFLINE_MC_SAMPLES_MIN/MAX/BATCH, ver comentario da constante) --
+        so no ponto de injecao em main_phase() (linha ~20046). Default
+        None preserva 100% do comportamento de sempre pra QUALQUER
+        chamador existente (audit_replay.py, gauntlet_matchup.py,
+        baseline_metrics.py, decision_quality_*.py, simulation_worker.py
+        -- nenhum passa esse parametro). Existe SO pra `/hand-stats`
+        rodar uma partida MUITO mais rapida (perfilado: ~88s/partida com
+        a busca padrao, amostras=1 fixo reduz o maior contribuidor de
+        custo -- ver HANDOFF bloco correspondente) quando o objetivo e
+        validar a heuristica de score de mao estatisticamente, nao jogar
+        com a qualidade maxima de uma partida real -- decisao ainda usa a
+        busca REAL (nao um heuristico aproximado), so com menos amostras
+        por candidata.
+
+        search_top_k_override (achado 05/09, api `/simulate`): quando
+        setado, substitui o TOP_K (quantas candidatas custam simulacao) e
+        o `min_candidates` do shortlist. Default None preserva 100% do
+        comportamento pra qualquer chamador existente.
+
+        `search_top_k_override=1` reproduz EXATAMENTE a ablacao ja medida
+        em REPROVADOS.md ("Remover a busca", bloco 700): decisao cai no
+        score estatico, `play` 28,9% -> 26,2% (-2,7pp), 12 lideres piores
+        x 4 melhores, piores casos -36,4pp. **Por isso continua PROIBIDO
+        no bot de producao** (a busca e liquido positivo la, medido) --
+        existe so pro simulador do front, onde o usuario trocou
+        conscientemente 2,7pp de qualidade de jogada por MUITO mais
+        partidas (margem de erro do winrate cai bem mais do que a
+        qualidade perdida: 8 partidas dao +-30pp, 200 dao +-6pp).
         """
         leader_a, cards_a, stage_a = deck_a if len(deck_a) == 3 else (*deck_a, None)
         leader_b, cards_b, stage_b = deck_b if len(deck_b) == 3 else (*deck_b, None)
@@ -15502,6 +15550,8 @@ class OPTCGMatch:
         # decision_log: lista de registros de auditoria de decisão.
         # None = desligado. Ligado via enable_decision_audit().
         self.decision_log: list | None = None
+        self.mc_samples_override = mc_samples_override
+        self.search_top_k_override = search_top_k_override
 
         # OpponentModel de cada lado: construído a partir da decklist
         # COMPLETA do ADVERSÁRIO (state_a usa o deck de state_b para saber
@@ -19860,8 +19910,11 @@ class OPTCGMatch:
         # Turn Planner -- caminho AO VIVO usa SEARCH_TOP_K_DEFAULT=2
         # proprio em sim_bridge.py, INTOCADO por este teste) pode estar
         # cortando candidatas boas cedo demais. Teste: alarga pra 5.
-        TOP_K = (_k.get('TOP_K_COM_RESPOSTA') if USE_OPPONENT_RESPONSE_SEARCH
-                 else _k.get('TOP_K_SEM_RESPOSTA'))
+        # override de instancia (ver docstring de __init__) checado ANTES
+        # dos knobs globais -- so o simulador do front passa isso.
+        TOP_K = (self.search_top_k_override if self.search_top_k_override is not None
+                 else (_k.get('TOP_K_COM_RESPOSTA') if USE_OPPONENT_RESPONSE_SEARCH
+                       else _k.get('TOP_K_SEM_RESPOSTA')))
         n = 0
 
         while n < MAX_ACOES:
@@ -20004,10 +20057,34 @@ class OPTCGMatch:
             # margem EXATAMENTE zero em TODOS os matchups -- sinal
             # classico desse bug (as duas condicoes rodaram com o mesmo
             # valor de fato).
+            # MODO GULOSO (search_top_k_override == 0): aplica a acao de
+            # maior score estatico DIRETO, sem chamar a busca -- e a
+            # "Abordagem 1" classica de IA de TCG (pontua as jogadas
+            # legais, escolhe a melhor). Existe SO pro simulador do front
+            # (ver docstring de __init__); o bot de producao NUNCA passa
+            # isso, porque a busca la e liquido positivo (REPROVADOS.md,
+            # bloco 700). Curto-circuito ANTES do shortlist/PASS de
+            # proposito: `TOP_K=1` NAO e este modo -- la a busca ainda
+            # roda com 1 candidata + PASS, e medido ficou mais LENTO que o
+            # padrao (24,8s x 16,5s por partida), porque jogar pior alonga
+            # a partida e o total de decisoes sobe.
+            if self.search_top_k_override == 0:
+                melhor_acao = actions[0]
+                if self._is_unsafe_zero_life_leader_attack(melhor_acao, p, opp, engine):
+                    break
+                if melhor_acao[1] == 'play':
+                    _plays_feitos += 1
+                if self._apply_action(melhor_acao, p, opp, ee, engine, verbose=verbose):
+                    return True
+                continue
+
             cheap_values = (self._compute_cheap_values(p, opp, actions, n_samples=CHEAP_LAYER_SAMPLES)
                             if USE_CHEAP_LAYER_SHORTLIST and not USE_CHEAP_LAYER_GATE else None)
             candidatas = self._select_search_candidates(
-                actions, TOP_K, priority, cheap_values=cheap_values)
+                actions, TOP_K, priority, cheap_values=cheap_values,
+                min_candidates=(self.search_top_k_override
+                                if self.search_top_k_override is not None
+                                else SEARCH_MIN_CANDIDATES))
             # bloco 656: "encerrar o turno agora" entra como CANDIDATA e
             # compete na busca -- ver comentario de PASS_ACTION. Nao entra em
             # LETHAL (fechar a partida vem antes de qualquer economia de
@@ -20043,7 +20120,14 @@ class OPTCGMatch:
             # ganhar precisao nas decisoes ambiguas -- ver comentario da
             # constante). Flag desligada continua no N FIXO de sempre
             # (PLANNER_MC_SAMPLES=6, nao investigado nesta sessao).
-            if USE_DEEP_REAL_SEARCH:
+            if self.mc_samples_override is not None:
+                # bloco 05/09: override explicito de instancia (ver
+                # docstring de __init__) -- checado ANTES das flags globais
+                # de proposito, pra `/hand-stats` conseguir uma partida
+                # rapida sem depender de mudar comportamento padrao pra
+                # qualquer outro chamador (todos os outros passam None).
+                samples_min, samples_max, batch_size = self.mc_samples_override
+            elif USE_DEEP_REAL_SEARCH:
                 # Bloco 524: piso/teto bem maiores, MESMA busca real (nao
                 # e um motor novo) -- so pra medicao offline, ver comentario
                 # da constante.

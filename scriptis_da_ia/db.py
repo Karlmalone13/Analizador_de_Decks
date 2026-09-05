@@ -16,6 +16,31 @@ from uuid import UUID
 
 import asyncpg
 
+
+def _load_env_local_fallback() -> None:
+    """Carrega `.env.local` (raiz do projeto) pras variáveis que faltarem no
+    ambiente -- achado 05/09: o front (Next.js) lê `.env.local` sozinho,
+    mas este processo Python (`uvicorn api:app`) não, então `DATABASE_URL`
+    (e qualquer outra chave só definida ali) nunca chegava até aqui, mesmo
+    já estando no arquivo que o resto do projeto usa. `setdefault` nunca
+    sobrescreve uma variável de ambiente já setada de verdade (produção/
+    Railway define as próprias env vars, sem esse arquivo -- comportamento
+    inalterado lá). Sem dependência nova (sem `python-dotenv`): parsing
+    simples, mesmo suficiente pro formato `CHAVE=valor` já usado no resto
+    do projeto (scripts scratch desta sessão já faziam o mesmo parse)."""
+    env_path = os.path.join(os.path.dirname(__file__), '..', '.env.local')
+    if not os.path.isfile(env_path):
+        return
+    with open(env_path, encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+            key, _, value = line.partition('=')
+            os.environ.setdefault(key.strip(), value.strip())
+
+
+_load_env_local_fallback()
 _DATABASE_URL = os.environ.get("DATABASE_URL")
 
 _pool: Optional[asyncpg.Pool] = None
@@ -123,6 +148,33 @@ async def fail_job(job_id: str, error_message: str):
     await pool.execute(
         "UPDATE simulation_jobs SET status = 'error', error_message = $1 WHERE id = $2",
         error_message, UUID(job_id),
+    )
+
+
+async def update_job_total_steps(job_id: str, total_steps: int):
+    """Corrige o total de partidas do job (achado 05/09): a API calcula
+    `n_simulations * n_meta_decks` ao CRIAR o job, mas o numero de
+    decklists de meta realmente disponiveis pode ser menor que o pedido
+    (ex: pediu 10, o banco so tem 6) -- sem isto a barra de progresso
+    parava em 60% e pulava pra 100% no fim, parecendo travada."""
+    pool = await get_pool()
+    await pool.execute(
+        "UPDATE simulation_jobs SET total_steps = $1 WHERE id = $2",
+        total_steps, UUID(job_id),
+    )
+
+
+async def cancel_job(job_id: str):
+    """Marca o job como 'cancelled' -- SO afeta jobs ainda 'pending'/
+    'running' (um job ja 'done'/'error' fica como esta). O loop em
+    `simulation_worker.run_simulation_job` confere esse status entre cada
+    partida e para de iniciar NOVAS partidas ao ver 'cancelled' -- a
+    partida que ja estiver rodando naquele momento nao e interrompida no
+    meio (threads Python nao morrem a forca), so as seguintes."""
+    pool = await get_pool()
+    await pool.execute(
+        "UPDATE simulation_jobs SET status = 'cancelled' WHERE id = $1 AND status IN ('pending', 'running')",
+        UUID(job_id),
     )
 
 

@@ -579,6 +579,7 @@ function AnalysisPageContent() {
 
     const [handStats, setHandStats] = useState<HandStats | null>(null)
     const [handStatsLoading, setHandStatsLoading] = useState(false)
+    const [handStatsComputing, setHandStatsComputing] = useState(false)
 
     useEffect(() => {
         if (!deckId) {
@@ -639,16 +640,24 @@ function AnalysisPageContent() {
             .then(data => setLeaderStats(data))
             .catch(() => setLeaderStats(null))
 
-        // Validação de hand scoring via simulação (#1 e #2)
-        queueMicrotask(() => { setHandStatsLoading(true) })
+        // Validação de hand scoring via simulação (#1 e #2). A rota agora
+        // responde na hora (cache-hit) ou dispara o cálculo em background e
+        // devolve {status:'computing'} (achado 05/09: o lote inteiro de
+        // partidas simuladas mede minutos, longe de caber num timeout de
+        // requisição) — trata os dois casos separado do "indisponível de
+        // verdade" (backend fora do ar / erro).
+        queueMicrotask(() => { setHandStatsLoading(true); setHandStatsComputing(false) })
         fetch(`${API_URL}/hand-stats`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cards }),
-            signal: AbortSignal.timeout(120000),
+            signal: AbortSignal.timeout(30000),
         })
             .then(r => r.ok ? r.json() : Promise.reject(r.status))
-            .then(data => setHandStats(data))
+            .then(data => {
+                if (data && data.score_brackets) setHandStats(data)
+                else setHandStatsComputing(true)
+            })
             .catch(err => console.warn('hand-stats indisponível:', err))
             .finally(() => setHandStatsLoading(false))
     }, [deck])
@@ -1311,7 +1320,17 @@ function AnalysisPageContent() {
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                             </svg>
-                            Simulando partidas vs decks de meta... pode levar ~30s
+                            Consultando simulação...
+                        </div>
+                    )}
+
+                    {!handStatsLoading && handStatsComputing && !handStats && (
+                        <div className="flex items-center gap-3 py-6 text-gray-400 text-sm">
+                            <svg className="animate-spin h-4 w-4 text-orange-400" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                            </svg>
+                            Primeira vez com este deck — rodando as simulações em segundo plano (alguns minutos). Reabra esta análise depois.
                         </div>
                     )}
 
@@ -1376,7 +1395,7 @@ function AnalysisPageContent() {
                         </div>
                     )}
 
-                    {!handStatsLoading && !handStats && (
+                    {!handStatsLoading && !handStatsComputing && !handStats && (
                         <div className="text-xs text-gray-600 py-2">API de simulação indisponível — execute o backend local para ativar.</div>
                     )}
                 </div>

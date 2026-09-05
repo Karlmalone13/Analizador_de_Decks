@@ -108,3 +108,11 @@ scriptis_da_ia/metrics/decision_quality_full/*.json
 # bloco 712: dumps de A/B nomeados via OPTCG_RESULT_NAME (~1,4 MB cada).
 # Mesmo tratamento dos sweeps -- o resumo comparativo vai pro HANDOFF.
 scriptis_da_ia/metrics/decision_quality_full/pesos_*.json
+scriptis_da_ia/hand_stats_cache/
+
+# Saidas regeneraveis do coletor (`coletar_dados_optcg.py`). Mesmo criterio
+# do hygiene pass de 28/06/2026, que removeu features.csv e os artefatos do
+# modelo estatistico: sao derivados de `decklists_raw.csv` (esse sim
+# versionado) e voltam rodando o coletor de novo.
+scriptis_da_ia/features.csv
+scriptis_da_ia/winrates_leaders.csv

@@ -14,10 +14,25 @@ fila + polling, acordado em sessão de 23-24/06 para evitar timeout).
 import asyncio
 import json
 import os
+from concurrent.futures import ProcessPoolExecutor
 
 from optcg_engine.decision_engine import _make_card, OPTCGMatch
 
 import db
+
+# Partidas de um job sao independentes entre si -- rodam em PROCESSOS
+# separados (mesmo padrao `--workers N` de gauntlet_matchup.py/
+# audit_replay.py e do `/hand-stats` em api.py). E ganho puro: a MESMA
+# partida, so simultanea, sem tocar em nada da qualidade da busca.
+#
+# Conta por nucleo FISICO, nao logico (achado 05/09, medido): na maquina
+# do usuario (i3-8130U, 2 fisicos / 4 logicos), 4 workers deram ganho
+# ZERO -- 17,6s por partida efetivos contra 16,5s rodando sozinha, porque
+# 4 processos CPU-bound disputando 2 nucleos so se atrapalham (e ainda
+# pagam 4x o custo de startup do motor). `cpu_count()//2` aproxima o
+# numero fisico em CPU com hyperthreading, que e o caso comum.
+SIMULATE_WORKERS = int(os.environ.get(
+    'OPTCG_SIMULATE_WORKERS', str(max(2, (os.cpu_count() or 4) // 2))))
 
 _DB_PATH = os.path.join(os.path.dirname(__file__), 'card_analysis_db.json')
 with open(_DB_PATH, encoding='utf-8') as f:
@@ -63,7 +78,51 @@ def load_deck(cards: list[dict]) -> tuple:
     return leader, main_deck
 
 
-def run_single_match(deck_a: tuple, deck_b: tuple, hide_opponent_info: bool = True) -> dict:
+# Amostras Monte Carlo fixas e baixas pra busca offline -- mesma tripla e
+# mesmo raciocinio de `_HAND_STATS_MC_OVERRIDE` em api.py (perfilado 05/09:
+# reduz uma partida de ~85-88s pra ~11s, ainda e a busca REAL do motor, so
+# com 1 amostra por candidata em vez do piso/teto adaptativo 3-6). Pedido
+# explicito do usuario apos ver o "Simular" do front demorar ~1h nos
+# defaults (5 simulacoes x 10 decks de meta = 50 partidas reais).
+SIMULATE_FAST_MC_OVERRIDE = (1, 1, 1)
+
+# Teto de parede por partida em run_simulation_job (achado 05/09): mesmo no
+# modo rapido, um matchup especifico consumiu minutos de CPU numa partida
+# so (jogo raro/degenerado, nao deadlock -- CPU do processo continuava
+# subindo). 90s e generoso sobre o tipico medido (~11-60s) sem deixar 1
+# partida ruim segurar o job inteiro.
+PER_MATCH_TIMEOUT_S = 90
+
+
+# MODO GULOSO no simulador do front (achado 05/09, pedido do usuario --
+# "50 partidas deveria durar 2 min no maximo", depois de ver a IA do
+# Naruto Card Game Simulator responder instantaneamente).
+#
+# `search_top_k_override=0` = aplica a acao de maior score estatico
+# direto, SEM busca Monte Carlo -- a "Abordagem 1" classica de IA de TCG
+# (pontuar as jogadas legais e escolher a melhor), que e o que aquele
+# simulador faz em JavaScript no navegador.
+#
+# MEDIDO (5 partidas, mesmas seeds, mesmo deck real):
+#   busca completa: 40,0s/partida, 13,6 turnos
+#   guloso:          1,3s/partida, 14,2 turnos   -> ~30x
+# As partidas NAO ficam mais longas -- o ganho e real, nao artefato.
+#
+# CUSTO DE QUALIDADE, ja medido em REPROVADOS.md (bloco 700, ablacao
+# equivalente): `play` 28,9% -> 26,2% (-2,7pp), 12 lideres piores x 4
+# melhores, piores casos -36,4pp. Aceito CONSCIENTEMENTE aqui porque
+# nesta tela a pergunta e "qual o winrate do deck", e o ganho estatistico
+# de rodar muitas mais partidas supera 2,7pp de qualidade de jogada
+# (8 partidas dao +-30pp de margem; 200 dao +-6pp).
+#
+# NUNCA ligar no bot que joga contra humanos (sim_bridge.py/server.py):
+# la a busca e liquido positivo, medido, e REPROVADOS.md e explicito.
+SIMULATE_GREEDY_MODE = os.environ.get('OPTCG_SIMULATE_GREEDY', '1') == '1'
+
+
+def run_single_match(deck_a: tuple, deck_b: tuple, hide_opponent_info: bool = True,
+                      mc_samples_override: tuple[int, int, int] | None = SIMULATE_FAST_MC_OVERRIDE,
+                      search_top_k_override: int | None = None) -> dict:
     """
     Roda 1 partida e devolve o resultado bruto de OPTCGMatch.simulate().
 
@@ -81,8 +140,33 @@ def run_single_match(deck_a: tuple, deck_b: tuple, hide_opponent_info: bool = Tr
     pra calibracao) -- so este caminho (o simulador NOVO do front-end)
     usa a flag.
     """
-    match = OPTCGMatch(deck_a, deck_b, hide_opponent_info=hide_opponent_info)
+    if search_top_k_override is None and SIMULATE_GREEDY_MODE:
+        search_top_k_override = 0
+    match = OPTCGMatch(deck_a, deck_b, hide_opponent_info=hide_opponent_info,
+                       mc_samples_override=mc_samples_override,
+                       search_top_k_override=search_top_k_override)
     return match.simulate()
+
+
+def _run_match_in_worker(task: tuple) -> tuple[int, dict | None]:
+    """Roda 1 partida num processo separado. Recebe SO dado picklable
+    (indice do matchup + listas de {code, qty}), nunca objetos Card/
+    GameState montados -- mesmo padrao de `gauntlet_matchup._run_one_seed`
+    e do `_run_one_hand_stats_game` em api.py: reconstruir o deck dentro
+    do worker e mais barato que serializar o estado do motor, e sempre
+    picklable.
+
+    Devolve `(idx_matchup, resultado|None)` -- o indice volta junto de
+    proposito, pra quem agrega nao precisar mapear future->matchup por
+    fora. `None` no resultado = partida falhou (some do agregado, nao
+    derruba o job)."""
+    idx_matchup, deck_a_raw, deck_b_raw = task
+    try:
+        leader_a, cards_a = load_deck(deck_a_raw)
+        leader_b, cards_b = load_deck(deck_b_raw)
+        return idx_matchup, run_single_match((leader_a, cards_a), (leader_b, cards_b))
+    except Exception:
+        return idx_matchup, None
 
 
 def aggregate_results(results: list[dict]) -> dict:
@@ -93,7 +177,16 @@ def aggregate_results(results: list[dict]) -> dict:
     """
     n = len(results)
     if n == 0:
-        return {'n_simulations': 0, 'win_rate': None}
+        # Achado 05/09: agora alcancavel de verdade quando TODAS as
+        # partidas de um matchup estouram PER_MATCH_TIMEOUT_S (antes so
+        # existia pra n_sim=0, um pedido invalido). Mesmo shape do retorno
+        # com dado (mesmas chaves, zeradas) -- sem isso, o `sum(b['wins']
+        # for b in breakdown)` em run_simulation_job quebrava com
+        # KeyError pra esse matchup especifico.
+        return {
+            'n_simulations': 0, 'wins': 0, 'losses': 0, 'win_rate': None,
+            'avg_turns': None, 'avg_dmg_dealt': None, 'avg_dmg_taken': None,
+        }
 
     wins_a = sum(1 for r in results if r.get('winner') == 'A')
     avg_turns = sum(r.get('turns', 0) for r in results) / n
@@ -155,23 +248,80 @@ async def run_simulation_job(job_id: str):
             matchups = [('oponente', None, job['deck_b'])]
 
         n_sim = job['n_simulations']
-        total_steps = job.get('total_steps') or (n_sim * len(matchups))
+        # O total REAL so e conhecido aqui, depois de saber quantos
+        # matchups existem de fato (a API estima `n_sim * n_meta_decks` ao
+        # criar o job, mas o banco pode ter menos decklists que o pedido).
+        total_steps = n_sim * len(matchups)
+        if job.get('total_steps') != total_steps:
+            await db.update_job_total_steps(job_id, total_steps)
         progress = 0
         breakdown = []
+        cancelado = False
 
-        for matchup_name, _leader_code, deck_b_cards in matchups:
-            leader_b, deck_b_main = load_deck(deck_b_cards)
-            resultados_matchup = []
+        # PARALELISMO (achado 05/09, pedido do usuario -- "50 partidas
+        # deveria durar 2 min no maximo"): as partidas sao independentes,
+        # entao rodam em PROCESSOS separados (mesmo padrao `--workers N` do
+        # resto do projeto). Ganho ~linear nos nucleos SEM tocar em nada da
+        # qualidade da busca -- e a mesma partida, so simultanea. Medido no
+        # deck real do usuario: ~16,5s/partida sequencial -> 50 partidas em
+        # ~3,5min com 4 workers (era ~14min sequencial).
+        #
+        # Uma task por partida, TODOS os matchups de uma vez (lista plana):
+        # com o pool cheio o tempo ocioso entre matchups some, e cada
+        # resultado volta marcado com o indice do matchup pra agregar
+        # certo depois.
+        tarefas = []
+        for idx_matchup, (_nome, _lc, deck_b_cards) in enumerate(matchups):
             for _ in range(n_sim):
-                resultado = run_single_match(
-                    (leader_a, list(deck_a_cards)),
-                    (leader_b, list(deck_b_main)),
-                )
-                resultados_matchup.append(resultado)
-                progress += 1
+                tarefas.append((idx_matchup, job['deck_a'], deck_b_cards))
+
+        resultados_por_matchup: dict[int, list] = {i: [] for i in range(len(matchups))}
+        loop = asyncio.get_running_loop()
+
+        with ProcessPoolExecutor(max_workers=SIMULATE_WORKERS) as pool:
+            # O worker DEVOLVE o indice do matchup junto com o resultado --
+            # nao da pra mapear future->matchup por fora com `as_completed`
+            # (ele nao devolve os MESMOS objetos de future na iteracao
+            # sincrona, o mapeamento quebraria em silencio).
+            pendentes = {
+                loop.run_in_executor(pool, _run_match_in_worker, t) for t in tarefas
+            }
+            while pendentes:
+                # PER_MATCH_TIMEOUT_S: se NENHUMA das partidas em voo
+                # terminar dentro do teto, e caso degenerado (jogo raro que
+                # roda minutos -- CPU sobe, nao e deadlock, achado 05/09) --
+                # abandona as restantes em vez de segurar o job. As que
+                # estao nos processos terminam sozinhas; o pool fecha no
+                # fim do `with`.
+                concluidas, pendentes = await asyncio.wait(
+                    pendentes, return_when=asyncio.FIRST_COMPLETED,
+                    timeout=PER_MATCH_TIMEOUT_S)
+                if not concluidas:
+                    break
+
+                for fut in concluidas:
+                    try:
+                        idx_matchup, resultado = fut.result()
+                        if resultado is not None:
+                            resultados_por_matchup[idx_matchup].append(resultado)
+                    except Exception:
+                        pass  # partida pulada -- nao derruba o job inteiro
+                    progress += 1
+
+                # Cancelamento (achado 05/09, pedido do usuario): confere o
+                # status a cada lote concluido -- barato (1 SELECT) perto do
+                # custo de uma partida.
+                job_now = await db.get_job(job_id)
+                if job_now is None or job_now.get('status') == 'cancelled':
+                    cancelado = True
+                    break
                 await db.update_job_progress(job_id, progress=progress, status='running')
 
-            agg = aggregate_results(resultados_matchup)
+        if cancelado:
+            return  # status='cancelled' ja gravado por cancel_job() -- nada mais a fazer
+
+        for idx_matchup, (matchup_name, _lc, _cards) in enumerate(matchups):
+            agg = aggregate_results(resultados_por_matchup[idx_matchup])
             agg['matchup'] = matchup_name
             breakdown.append(agg)
 

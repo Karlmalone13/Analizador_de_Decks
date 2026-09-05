@@ -32,7 +32,12 @@ HEADERS = {
 
 BASE_LIMITLESS   = 'https://onepiece.limitlesstcg.com'
 BASE_LEADERBOARD = 'https://op-leaderboard.com'
-FORMATS = ['OP15', 'OP14', 'OP13', 'OP12', 'OP11', 'OP10']
+# Formatos consultados no OP Leaderboard (winrates por lider). NAO afeta a
+# coleta de decklists do Limitless, que usa `time=past_year` e sempre traz o
+# periodo corrente -- achado 05/09: o `decklists_raw.csv` versionado estava na
+# era OP15 so porque o coletor nao era re-executado, nao por causa desta lista.
+# Atualizar quando sair set novo (o banco de cartas ja vai ate OP17).
+FORMATS = ['OP17', 'OP16', 'OP15', 'OP14', 'OP13', 'OP12', 'OP11', 'OP10']
 
 # ── 1. OP Leaderboard ─────────────────────────────────────────────────────────
 
