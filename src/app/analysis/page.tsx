@@ -49,11 +49,36 @@ interface AnaliseSynergy {
     n_exploiters: number
 }
 
+// Classificação POR CARTA vinda do motor (POST /analyze -> `cards`).
+// Substitui a adivinhação por texto que existia aqui em TS: o motor usa os
+// efeitos PARSEADOS, não substring de card_text (achado 05/09 -- a tela
+// mostrava 0% de searcher num deck com 8, porque procurava "look at the top"
+// e as cartas dizem "look at 5 cards from the top").
+interface CardFlags {
+    name: string | null
+    type: string | null
+    cost: number | null
+    power: number | null
+    counter: number | null
+    is_searcher: boolean
+    is_blocker: boolean
+    is_removal: boolean
+    draws: boolean
+    has_rush: boolean
+    has_trigger: boolean
+    has_double_attack: boolean
+    has_unblockable: boolean
+    has_banish: boolean
+    has_counter_event: boolean
+    gives_don: boolean
+}
+
 interface AnaliseResult {
     archetype: { primary: string; label: string; confidence: string }
     issues_count: number
     ratios: AnaliseRatio[]
     synergies: AnaliseSynergy[]
+    cards?: Record<string, CardFlags>
     tribal_cohesion?: {
         leader_type: string
         label: string
@@ -125,24 +150,51 @@ function fisherYates<T>(arr: T[]): T[] {
 }
 
 // ── Helpers de classificação ──────────────────────────────────────────────────
-function isSearcher(dc: DeckCard): boolean {
-    const t = dc.card.card_text?.toLowerCase() || ''
-    return t.includes('search your deck') || (t.includes('look at the top') && t.includes('add')) || t.includes('look at up to')
+// TODA classificação de "o que esta carta faz" vem do MOTOR (POST /analyze ->
+// `cards`), nunca de substring do texto da carta. Motivo (achado 05/09): a
+// versão anterior procurava frases como "look at the top" e as cartas reais
+// dizem "look at 5 cards from the top" -- a tela exibia 0% de searcher na
+// abertura de um deck com 8 deles, e ainda contradizia os Golden Ratios logo
+// acima, calculados pelo motor. O motor não lê texto: usa os efeitos
+// parseados (`look_top_deck`/`add_to_hand`), a gramática auditada do projeto.
+type FlagsMap = Record<string, CardFlags>
+
+function flagsOf(dc: DeckCard, flags: FlagsMap): CardFlags | undefined {
+    return flags[dc.card.card_set_id] ?? flags[dc.card.card_set_id?.split('_')[0]]
 }
 
-function isEventCounter(dc: DeckCard): boolean {
+function isSearcher(dc: DeckCard, flags: FlagsMap): boolean {
+    return !!flagsOf(dc, flags)?.is_searcher
+}
+
+function isBlocker(dc: DeckCard, flags: FlagsMap): boolean {
+    return !!flagsOf(dc, flags)?.is_blocker
+}
+
+function hasRush(dc: DeckCard, flags: FlagsMap): boolean {
+    return !!flagsOf(dc, flags)?.has_rush
+}
+
+function isEventCounter(dc: DeckCard, flags: FlagsMap): boolean {
+    // Evento que serve de counter -- o motor marca `has_counter_event`; o
+    // fallback por tipo+valor cobre carta que o motor não classificou.
+    const f = flagsOf(dc, flags)
+    if (f?.has_counter_event) return true
     return dc.card.card_type?.toUpperCase() === 'EVENT' && parseInt(dc.card.counter_amount || '0') > 0
 }
 
-function isBomb(dc: DeckCard): boolean {
-    // "bomba" = carta de alto impacto — custo alto OU poder muito alto
-    const cost = parseInt(dc.card.card_cost || '0')
-    const power = parseInt(dc.card.card_power || '0')
+function isBomb(dc: DeckCard, flags: FlagsMap): boolean {
+    // "bomba" = carta de alto impacto. Custo/poder são dado objetivo da carta
+    // (não interpretação de texto), então aqui o motor só entra pra garantir
+    // os mesmos números que os Golden Ratios usam.
+    const f = flagsOf(dc, flags)
+    const cost = f?.cost ?? parseInt(dc.card.card_cost || '0')
+    const power = f?.power ?? parseInt(dc.card.card_power || '0')
     return cost >= 7 || power >= 8000
 }
 
 // ── Simulação de mãos ─────────────────────────────────────────────────────────
-function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
+function simularMaos(deckCards: DeckCard[], totalCards: number, flags: FlagsMap, qtd = 10000) {
     const deck: number[] = []
     deckCards.forEach((dc, idx) => {
         for (let q = 0; q < dc.quantity; q++) deck.push(idx)
@@ -150,7 +202,6 @@ function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
 
     let bricks = 0, comSearcher = 0, comCounter2k = 0, comBlocker = 0, comLow2 = 0
     const aparicoes: number[] = new Array(deckCards.length).fill(0)
-    const hasKw = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
 
     for (let i = 0; i < qtd; i++) {
         const shuffled = fisherYates(deck)
@@ -163,11 +214,11 @@ function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
             seenIdx.add(cardIdx)
             const dc = deckCards[cardIdx]
             const cost = parseInt(dc.card.card_cost || '99')
-            if (isSearcher(dc)) temSearcher = true
+            if (isSearcher(dc, flags)) temSearcher = true
             if (dc.card.counter_amount === '2000') { temCounter2k = true; temDefesa = true }
             if (dc.card.counter_amount === '1000') temDefesa = true
-            if (isEventCounter(dc)) temDefesa = true
-            if (hasKw(dc, '[Blocker]')) temBlocker = true
+            if (isEventCounter(dc, flags)) temDefesa = true
+            if (isBlocker(dc, flags)) temBlocker = true
             if (cost <= 2) { temLow2 = true; temT1 = true }
             if (cost >= 3 && cost <= 5) temT2 = true
         })
@@ -199,35 +250,20 @@ function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
 // ── Arquétipo do deck ────────────────────────────────────────────────────────────
 type Arquetipo = 'rush' | 'aggro' | 'control' | 'midrange' | 'ramp'
 
-function detectarArquetipo(deckCards: DeckCard[]): Arquetipo {
-    const hasKw = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
-    const total = deckCards.reduce((s, dc) => s + dc.quantity, 0)
-    if (total === 0) return 'midrange'
-
-    const rushQty  = deckCards.filter(dc => hasKw(dc, '[Rush]')).reduce((s, dc) => s + dc.quantity, 0)
-    const blockerQty = deckCards.filter(dc => hasKw(dc, '[Blocker]')).reduce((s, dc) => s + dc.quantity, 0)
-    // DON ramp: efeitos que adicionam DON extra ao pool
-    const rampQty  = deckCards.filter(dc => {
-        const t = dc.card.card_text?.toLowerCase() || ''
-        return t.includes('add') && t.includes('don') && (t.includes('your don') || t.includes('don!!'))
-    }).reduce((s, dc) => s + dc.quantity, 0)
-
-    const playable = deckCards.filter(dc => dc.card.counter_amount !== '2000' && parseInt(dc.card.card_cost || '0') > 0)
-    const totalPlayable = playable.reduce((s, dc) => s + dc.quantity, 0)
-    const avgCost = totalPlayable > 0
-        ? playable.reduce((s, dc) => s + parseInt(dc.card.card_cost || '0') * dc.quantity, 0) / totalPlayable
-        : 3
-
-    const rushPct    = rushQty    / total
-    const blockerPct = blockerQty / total
-    const rampPct    = rampQty    / total
-
-    if (rampPct >= 0.12) return 'ramp'
-    if (rushPct >= 0.28) return 'rush'
-    if (rushPct >= 0.14 && avgCost <= 3.5) return 'aggro'
-    if (blockerPct >= 0.18 && avgCost >= 4.0) return 'control'
-    if (avgCost >= 4.5) return 'control'
-    return 'midrange'
+// O arquétipo vem do MOTOR (`deck_analyzer.py`, que pondera comportamento das
+// cartas por confiabilidade de gatilho + sinergias). Antes havia uma segunda
+// classificação aqui em TS, por substring de texto -- e as duas se
+// contradiziam NA MESMA TELA (achado 05/09: o topo dizia "Controle 75%" e o
+// bloco de mãos dizia "Midrange"). Aqui só se traduz o rótulo do motor para
+// os pesos de scoring de mão usados abaixo.
+function arquetipoDoMotor(analise: AnaliseResult | null): Arquetipo {
+    switch (analise?.archetype?.primary) {
+        case 'Aggro':         return 'aggro'
+        case 'Controle':      return 'control'
+        case 'Tempo/Ramp':    return 'ramp'
+        case 'Vida/Triggers': return 'control'   // plano defensivo, mesma família de pesos
+        default:              return 'midrange'
+    }
 }
 
 // Modificadores de scoring por arquétipo
@@ -263,8 +299,8 @@ function getArqMod(arq: Arquetipo): ArqMod {
 
 // ── Scoring de mão ─────────────────────────────────────────────────────────────
 // Identifica a "bomba" do deck (carta de maior poder/custo — aquela que o deck quer chegar)
-function getDeckBombId(deckCards: DeckCard[]): string | null {
-    const candidates = deckCards.filter(dc => isBomb(dc))
+function getDeckBombId(deckCards: DeckCard[], flags: FlagsMap): string | null {
+    const candidates = deckCards.filter(dc => isBomb(dc, flags))
     if (!candidates.length) return null
     // prefere a mais cara / mais poderosa com menos cópias (raridade)
     candidates.sort((a, b) => {
@@ -293,8 +329,7 @@ function calcSearcherQuality(deckCards: DeckCard[]): number {
 //   1º jogador: T1=1 DON, T2=3 DON, T3=5 DON, T4=7 DON  (começa com 1, +2/turno)
 //   2º jogador: T1=2 DON, T2=4 DON, T3=6 DON, T4=8 DON  (começa com 2, +2/turno)
 // Custo máximo jogável a cada turno = DON disponível naquele turno
-function avaliarMao(mao: DeckCard[], bombId: string | null = null, goingFirst = true, searcherQuality = 0.7, mod: ArqMod = getArqMod('midrange')): number {
-    const hasKw = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
+function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = null, goingFirst = true, searcherQuality = 0.7, mod: ArqMod = getArqMod('midrange')): number {
 
     let hasT1Play = false  // joga no T1 com o DON disponível
     let hasT2Play = false  // joga no T2
@@ -321,13 +356,13 @@ function avaliarMao(mao: DeckCard[], bombId: string | null = null, goingFirst = 
                 if (cost >= 5 && cost <= 6) hasT3Play = true
             }
         }
-        if (isSearcher(dc)) nSearcher++
+        if (isSearcher(dc, flags)) nSearcher++
         if (is2kCounter) nCounter2k++
         if (dc.card.counter_amount === '1000') nCounter1k++
-        if (isEventCounter(dc)) nEventCounter++
-        if (hasKw(dc, '[Blocker]')) nBlocker++
-        if (hasKw(dc, '[Rush]')) nRush++
-        if (isBomb(dc)) nBomb++
+        if (isEventCounter(dc, flags)) nEventCounter++
+        if (isBlocker(dc, flags)) nBlocker++
+        if (hasRush(dc, flags)) nRush++
+        if (isBomb(dc, flags)) nBomb++
         if (bombId && dc.card.card_set_id === bombId) hasDeckBomb = true
     })
 
@@ -393,10 +428,9 @@ function avaliarMao(mao: DeckCard[], bombId: string | null = null, goingFirst = 
     return score
 }
 
-function gerarMelhoresMaos(deckCards: DeckCard[], qtd = 30000, goingFirst = true): DeckCard[][] {
-    const bombId = getDeckBombId(deckCards)
+function gerarMelhoresMaos(deckCards: DeckCard[], flags: FlagsMap, arq: Arquetipo, qtd = 30000, goingFirst = true): DeckCard[][] {
+    const bombId = getDeckBombId(deckCards, flags)
     const searcherQuality = calcSearcherQuality(deckCards)
-    const arq = detectarArquetipo(deckCards)
     const mod = getArqMod(arq)
     // Ambos os jogadores compram 5 cartas no mulligan — o +1 do 2º é o draw do T1 dele, não da abertura
     const handSize = 5
@@ -409,7 +443,7 @@ function gerarMelhoresMaos(deckCards: DeckCard[], qtd = 30000, goingFirst = true
         const shuffled = fisherYates(deck)
         const maoIdx = shuffled.slice(0, handSize)
         const mao = maoIdx.map(idx => deckCards[idx])
-        melhor.push({ mao: maoIdx, score: avaliarMao(mao, bombId, goingFirst, searcherQuality, mod) })
+        melhor.push({ mao: maoIdx, score: avaliarMao(mao, flags, bombId, goingFirst, searcherQuality, mod) })
     }
     melhor.sort((a, b) => b.score - a.score)
     const unicas: DeckCard[][] = []
@@ -437,8 +471,7 @@ interface PlanoTurno {
     cartas2: DeckCard[]  // cartas ideais para 2º jogador neste turno
 }
 
-function gerarPlano(deckCards: DeckCard[], leader: Card | null, logStats: LeaderStats | null = null): PlanoTurno[] {
-    const hasKw = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
+function gerarPlano(deckCards: DeckCard[], leader: Card | null, flags: FlagsMap, logStats: LeaderStats | null = null): PlanoTurno[] {
 
     const porCusto = (min: number, max: number): DeckCard[] =>
         deckCards
@@ -448,8 +481,8 @@ function gerarPlano(deckCards: DeckCard[], leader: Card | null, logStats: Leader
             })
             .sort((a, b) => parseInt(b.card.card_power || '0') - parseInt(a.card.card_power || '0'))
 
-    const searchers = deckCards.filter(dc => isSearcher(dc))
-    const rushCards = deckCards.filter(dc => hasKw(dc, '[Rush]'))
+    const searchers = deckCards.filter(dc => isSearcher(dc, flags))
+    const rushCards = deckCards.filter(dc => hasRush(dc, flags))
 
     // Prioriza cartas dos logs reais para o turno, filtrando por faixa de custo
     const cartasLog = (turno: number, min: number, max: number): DeckCard[] => {
@@ -598,21 +631,28 @@ function AnalysisPageContent() {
         load()
     }, [deckId])
 
+    // A simulação de mãos SÓ roda depois que a classificação por carta chega
+    // do motor (`analise.cards`) -- sem ela os números sairiam errados, que
+    // era exatamente o bug de 05/09 (0% de searcher num deck com 8). Por isso
+    // o efeito depende de `analise`, não só de `deck`.
+    const cardFlags = analise?.cards ?? {}
     useEffect(() => {
         if (!deck || simDone) return
+        if (!analise?.cards) return
+        const flags = analise.cards
+        const arq = arquetipoDoMotor(analise)
         setTimeout(() => {
             const total = deck.cards.reduce((s, dc) => s + dc.quantity, 0)
-            const result = simularMaos(deck.cards, total, 10000)
-            const arq = detectarArquetipo(deck.cards)
-            const maosP1 = gerarMelhoresMaos(deck.cards, 30000, true)
-            const maosP2 = gerarMelhoresMaos(deck.cards, 30000, false)
+            const result = simularMaos(deck.cards, total, flags, 10000)
+            const maosP1 = gerarMelhoresMaos(deck.cards, flags, arq, 30000, true)
+            const maosP2 = gerarMelhoresMaos(deck.cards, flags, arq, 30000, false)
             setSimResult(result)
             setArqDetectado(arq)
             setMelhoresMaosP1(maosP1)
             setMelhoresMaosP2(maosP2)
             setSimDone(true)
         }, 100)
-    }, [deck])
+    }, [deck, analise])
 
     // Análise de arquétipo/sinergia/coesão via API Python (fonte única)
     useEffect(() => {
@@ -730,19 +770,21 @@ function AnalysisPageContent() {
     })
     const maxCost = Math.max(...Object.values(costDist))
 
-    const hasKeyword = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
-
-    const blockers = allCards.filter(dc => hasKeyword(dc, '[Blocker]'))
-    const rush = allCards.filter(dc => hasKeyword(dc, '[Rush]'))
-    const doubleAtk = allCards.filter(dc => hasKeyword(dc, '[Double Attack]'))
-    const triggers = allCards.filter(dc => hasKeyword(dc, '[Trigger]'))
-    const banish = allCards.filter(dc => hasKeyword(dc, '[Banish]'))
-    const searchers = allCards.filter(dc => hasKeyword(dc, 'look at') || hasKeyword(dc, 'search your deck') || hasKeyword(dc, 'add up to'))
-    const drawPower = allCards.filter(dc => hasKeyword(dc, 'draw 1') || hasKeyword(dc, 'draw 2') || hasKeyword(dc, 'draw 3') || hasKeyword(dc, 'draw 4') || hasKeyword(dc, 'draw 5') || hasKeyword(dc, 'draw a card') || hasKeyword(dc, 'draw cards'))
+    // Todas as contagens abaixo vêm das flags do MOTOR (ver `flagsOf`). A
+    // versão anterior filtrava por substring de `card_text` -- além de errar
+    // (searcher com 0 acerto neste deck), contradizia os Golden Ratios
+    // exibidos logo acima, que já vinham do motor.
+    const blockers = allCards.filter(dc => isBlocker(dc, cardFlags))
+    const rush = allCards.filter(dc => hasRush(dc, cardFlags))
+    const doubleAtk = allCards.filter(dc => !!flagsOf(dc, cardFlags)?.has_double_attack)
+    const triggers = allCards.filter(dc => !!flagsOf(dc, cardFlags)?.has_trigger)
+    const banish = allCards.filter(dc => !!flagsOf(dc, cardFlags)?.has_banish)
+    const searchers = allCards.filter(dc => isSearcher(dc, cardFlags))
+    const drawPower = allCards.filter(dc => !!flagsOf(dc, cardFlags)?.draws)
     const counters = allCards.filter(dc => dc.card.counter_amount && dc.card.counter_amount !== '0')
     const counters2k = allCards.filter(dc => dc.card.counter_amount === '2000')
     const counters1k = allCards.filter(dc => dc.card.counter_amount === '1000')
-    const unblockable = allCards.filter(dc => hasKeyword(dc, '[Unblockable]'))
+    const unblockable = allCards.filter(dc => !!flagsOf(dc, cardFlags)?.has_unblockable)
     const low1Cards = allCards.filter(dc => dc.card.card_cost === '1')
     const low2Cards = allCards.filter(dc => parseInt(dc.card.card_cost || '99') <= 2)
 
@@ -826,7 +868,7 @@ function AnalysisPageContent() {
         pT5: probAteOTurno(deckRestante, kRestante(m.K), drawsT5),
     }))
 
-    const plano = gerarPlano(allCards, deck.leader, leaderStats)
+    const plano = gerarPlano(allCards, deck.leader, cardFlags, leaderStats)
 
     return (
         <div className="min-h-screen bg-gray-950 text-white flex flex-col">

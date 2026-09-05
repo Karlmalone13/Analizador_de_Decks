@@ -110,6 +110,30 @@ def health():
     return {"status": "ok", "cards_loaded": len(CARD_DB)}
 
 
+def _flags_da_carta(info: dict) -> dict:
+    """Recorte das classificacoes que o front precisa pra exibir, direto do
+    `card_analysis_db.json` (gerado pelo pipeline de efeitos parseados).
+    So repassa o que ja existe -- nao calcula nada novo aqui."""
+    return {
+        'name':        info.get('name'),
+        'type':        info.get('type'),
+        'cost':        info.get('cost'),
+        'power':       info.get('power'),
+        'counter':     info.get('counter'),
+        'is_searcher': bool(info.get('is_searcher')),
+        'is_blocker':  bool(info.get('is_blocker')),
+        'is_removal':  bool(info.get('is_removal')),
+        'draws':       bool(info.get('draws')),
+        'has_rush':    bool(info.get('has_rush')),
+        'has_trigger': bool(info.get('has_trigger')),
+        'has_double_attack': bool(info.get('has_double_attack')),
+        'has_unblockable':   bool(info.get('has_unblockable')),
+        'has_banish':        bool(info.get('has_banish')),
+        'has_counter_event': bool(info.get('has_counter_event')),
+        'gives_don':   bool(info.get('gives_don')),
+    }
+
+
 @app.post("/analyze")
 def analyze(req: DeckRequest):
     if not req.cards:
@@ -118,6 +142,7 @@ def analyze(req: DeckRequest):
     leader = None
     main = []
     missing = []
+    por_carta = {}
     for entry in req.cards:
         code = entry.code.split('_')[0]  # normaliza arte alternativa
         info = CARD_DB.get(code)
@@ -128,11 +153,25 @@ def analyze(req: DeckRequest):
             leader = info
         else:
             main.extend([info] * entry.qty)
+        por_carta[entry.code] = _flags_da_carta(info)
 
     if leader is None:
         raise HTTPException(status_code=400, detail="deck sem líder")
 
     result = analyze_deck(leader, main)
+    # Classificacao POR CARTA (achado 05/09): o front reimplementava isso em
+    # TypeScript lendo `card_text` cru -- e errava. Exemplo real: as cartas de
+    # busca deste banco dizem "Look at 5 cards from the top of your deck",
+    # enquanto o TS procurava "look at the top", entao a tela mostrava 0%
+    # de chance de searcher na abertura num deck com 8 deles. O motor nao le
+    # texto: usa os EFEITOS PARSEADOS (`look_top_deck`/`add_to_hand`), a
+    # gramatica construida ao longo de meses de auditorias.
+    #
+    # Devolver as flags aqui deixa o front EXIBIR sem reimplementar (regra do
+    # projeto: "fonte UNICA de verdade: o front chama esta API, nao
+    # reimplementa a logica"). A matematica de maos pode seguir no navegador
+    # -- ela estava certa; o errado era a CLASSIFICACAO que a alimentava.
+    result['cards'] = por_carta
     if missing:
         result['warnings'] = {'cards_nao_encontradas': missing}
     return result

@@ -66,6 +66,43 @@ def _collect_actions(effects: dict) -> set:
     return actions
 
 
+def _collect_referenced_types(effects: dict) -> list:
+    """Tipos (tribos) que a carta CITA nos efeitos ja parseados.
+
+    Achado 05/09: `tribal_cohesion._card_has_tribal_hook` procurava gancho
+    tribal por REGEX no texto cru e so reconhecia as formas "if your leader
+    has X" / "if you control X" -- perdia justamente as buscadoras do tipo
+    ("reveal up to 1 {East Blue} type card and add it to your hand"), que
+    sao das cartas MAIS tribais que existem. Medido num deck East Blue
+    real: 17 copias citavam o tipo, so 9 eram detectadas.
+
+    O parser ja resolve isso e grava o tipo em campos estruturados
+    (`filter_type` nas buscas/alvos, `leader_type` nas condicoes de lider,
+    `only_field_type`, `exclude_type`...). Aqui so juntamos todos eles pra
+    quem consome nao precisar reler texto -- mesma logica de sempre: o
+    front/analisador EXIBE, o parser INTERPRETA.
+    """
+    tipos: set[str] = set()
+
+    def visita(obj):
+        if isinstance(obj, dict):
+            for chave, valor in obj.items():
+                if chave.endswith('_type') or chave.endswith('_types'):
+                    if isinstance(valor, str):
+                        tipos.add(valor.lower())
+                    elif isinstance(valor, list):
+                        tipos.update(str(v).lower() for v in valor if isinstance(v, str))
+                visita(valor)
+        elif isinstance(obj, list):
+            for item in obj:
+                visita(item)
+
+    visita(effects)
+    # `type` sozinho e usado pra OUTRA coisa no parser (tipo de custo, ex
+    # 'trash_self') -- por isso so casamos sufixo '_type'/'_types'.
+    return sorted(tipos)
+
+
 def _effects_with_trigger(effects: dict) -> list:
     """
     Extrai [{action, trigger, ...attrs}] preservando QUAL gatilho dispara cada
@@ -177,6 +214,7 @@ def derive_analysis(card_text: str, card_type: str, counter: int) -> dict:
 
     return {
         'effects': _effects_with_trigger(effects),
+        'referenced_types': _collect_referenced_types(effects),
         'synergy_states': detect_card_states(card_text),
         'text': card_text or '',
         'is_searcher': is_searcher,

@@ -28,6 +28,80 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-09-05 (751) - A tela de analise mentia em DOIS lugares, mesma causa raiz: consumidor reinterpretando `card_text` por substring em vez de usar o efeito PARSEADO
+
+Usuario: "estou com porcentagens erradas, contas antigas e desatualizadas".
+Duas contradicoes **na mesma tela**, ambas provadas com numero:
+
+### 1. Searcher: Golden Ratios diziam 8, simulacao de maos dizia 0,0%
+
+`src/app/analysis/page.tsx` tinha ~500 linhas de heuristica em TypeScript
+duplicando o que o motor ja calcula. O `isSearcher` procurava
+`'look at the top'`; as cartas do banco dizem **"Look at 5 cards from the
+top of your deck"** -- nao casa. Resultado: 0 searchers detectados num
+deck com 8, e um `0.0%` gritante ao lado dos Golden Ratios corretos
+(esses vem da API). Mesma classe de erro em `isBomb`, `isEventCounter`,
+`[Blocker]`, `[Rush]`, `[Trigger]`, draw... e no ARQUETIPO: a tela
+mostrava "Controle (75%)" no topo (API) e "Midrange" embaixo
+(`detectarArquetipo` em TS).
+
+**Fix (escolha do usuario entre 4 opcoes):** `POST /analyze` passou a
+devolver `cards` -- classificacao POR CARTA vinda do
+`card_analysis_db.json` (`_flags_da_carta` em api.py: is_searcher,
+is_blocker, has_rush, has_trigger, draws, cost, power, counter...). O
+front so EXIBE: todas as heuristicas de texto foram apagadas e
+`detectarArquetipo` virou `arquetipoDoMotor()`, que so traduz o rotulo da
+API pros pesos de scoring de mao. A matematica das 10.000 maos continua
+no navegador (ela estava certa -- o errado era a CLASSIFICACAO que a
+alimentava), mas agora **so roda depois que as flags chegam**, senao a
+tela nao exibe numero nenhum em vez de exibir errado.
+
+Verificado: searcher na abertura **0,0% -> 59,9%** (8 searchers em 50
+cartas: `1 - C(42,5)/C(50,5) = 59,9%`), e os contadores de blocker/rush/
+trigger agora batem com os Golden Ratios logo acima.
+
+### 2. Coesao tribal: deck 100% do tipo rotulado "moderadamente focado"
+
+Registro completo em
+`parser_audits/2026-09-05_gancho_tribal_por_efeito_parseado.json`.
+Resumo -- **tres** problemas somados:
+
+1. **Gancho subcontado**: `_card_has_tribal_hook` era regex em texto cru e
+   so via `'if your leader has X'`/`'if you control X'`/`'your X
+   characters'`. Perdia a familia BUSCA-POR-TIPO ("reveal up to 1 {East
+   Blue} type card"), que e das mais tribais que existem. No deck do
+   usuario: 17 copias citavam o tipo, **9** eram contadas.
+2. **Codigo x documentacao divergentes desde a criacao**: o comentario
+   dizia "concentracao de tipo (peso 2) + ganchos (peso 1)"; o codigo
+   fazia `(same*2 + hook*3)/5`.
+3. **Escala inalcancavel**: com peso 3, um deck 100% do tipo so passaria
+   de 70 ("altamente focado") se **metade** das cartas tivesse gancho
+   explicito -- nenhum deck real tem.
+
+Fix: `gerar_card_analysis_db.py` ganhou `referenced_types` por carta
+(junta todo valor de chave com sufixo `_type`/`_types` dos efeitos
+parseados -- `filter_type`, `leader_type`, `only_field_type`...;
+generico por FORMA, nao lista fixa). `tribal_cohesion` usa isso como
+fonte primaria e mantem os regexes so como rede de seguranca. Peso
+alinhado ao 2:1 documentado.
+
+Deck do usuario: ganchos **9 -> 17**, coesao **50,8% -> 78,0%**, rotulo
+"moderadamente focado" -> **"altamente focado em East Blue (tribal)"**.
+Nos 184 decks reais a distribuicao continua espalhada (78 altamente / 61
+moderadamente / 45 good-stuff; min 5,3 mediana 49,3 max 84,0) -- nao
+colapsou pra "tudo tribal".
+
+`card_effects_db.json` NAO mudou (o parser nao foi tocado), so o
+`card_analysis_db.json` ganhou o campo. `smoke_fast.py`, `smoke_test.py`,
+`eslint`, `tsc` e `next build`: limpos.
+
+> **REGRA QUE FICA (as duas metades deste bloco sao a MESMA causa):** se
+> um consumidor precisa saber "o que esta carta faz", o dado sai do
+> PARSER. Se nao estiver estruturado la, conserta-se o parser ou o
+> gerador do analysis_db -- **nunca** se escreve um regex novo no
+> consumidor. Duas implementacoes da mesma pergunta divergem, e foi
+> exatamente o que aconteceu aqui em duas camadas independentes.
+
 ## 2026-09-05 (750) - Botao "Analisar" ligado ao motor real (`/analyze` ja existia, so precisava do servidor no ar); `/hand-stats` virou assincrono com cache -- achado: uma partida simulada leva ~88s de VERDADE (busca Monte Carlo fazendo o trabalho dela, nao bug), nao os 1-3s que o docstring antigo dizia
 
 ### 1. Pedido do usuario e diagnostico

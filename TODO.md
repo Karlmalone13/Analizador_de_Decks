@@ -2,6 +2,28 @@
 
 **Última atualização:** 5 de setembro de 2026
 
+> 05/09/2026 (bloco 751): **Tela de analise mentia em dois lugares, mesma
+> causa raiz** -- consumidor reinterpretando `card_text` por substring em
+> vez de usar o efeito PARSEADO.
+> (1) **Searcher 0,0% num deck com 8**: o TS procurava "look at the top" e
+> as cartas dizem "Look at 5 cards from the top". Idem blocker/rush/
+> trigger/draw/bomba, e o ARQUETIPO aparecia duplicado e divergente na
+> mesma tela ("Controle 75%" do motor x "Midrange" do TS). Fix: `/analyze`
+> passou a devolver `cards` (classificacao por carta do
+> `card_analysis_db.json`) e o front so EXIBE -- heuristicas de texto em TS
+> apagadas. Searcher na abertura: **0,0% -> 59,9%**.
+> (2) **Coesao tribal**: deck 100% do tipo rotulado "moderadamente focado"
+> (50,8%). Tres causas: gancho subcontado (regex perdia as buscadoras de
+> tipo -- 9 de 17), comentario dizendo peso 1 enquanto o codigo usava 3, e
+> escala que exigia 50% das cartas com gancho pra chegar em "altamente
+> focado". Fix: campo `referenced_types` novo no analysis_db (generico por
+> sufixo `_type`/`_types`) + peso alinhado ao 2:1 documentado. Deck do
+> usuario: **50,8% -> 78,0%**, "altamente focado". Nos 184 decks reais a
+> distribuicao segue espalhada (78/61/45).
+> Registro em `parser_audits/2026-09-05_gancho_tribal_por_efeito_parseado.json`.
+> **REGRA**: dado sobre "o que a carta faz" sai do parser; se nao estiver
+> estruturado la, conserta-se o parser -- nunca um regex novo no consumidor.
+
 > 05/09/2026 (bloco 750): Botao **"Analisar"** do front ligado ao motor
 > real (`/analyze` ja existia, so faltava o servidor -- `analyzer-api` novo
 > em `.claude/launch.json`, `uvicorn scriptis_da_ia/api.py --port 8000`).

@@ -1,0 +1,21 @@
+{
+  "trigger_card": "OP15-026",
+  "problem": "Usuario apontou a COESAO TRIBAL errada na tela de analise: um deck com 100% das cartas do tipo do lider (East Blue, lider Krieg OP15-001) era rotulado 'Deck moderadamente focado' com 50,8%. A tela ainda se contradizia -- dizia '100% das cartas sao East Blue' e mesmo assim classificava como moderado.",
+  "grammar_family": "Gancho tribal ('a carta recompensa o tipo do lider?'). `tribal_cohesion._card_has_tribal_hook` procurava por REGEX no texto CRU e so reconhecia tres formas: 'if your leader (has|is|s type includes) X', 'if you (have|control) X' e 'your X characters'. Perdia inteiramente a familia BUSCA-POR-TIPO -- 'Look at N cards from the top of your deck; reveal up to 1 {X} type card and add it to your hand' -- que e das formas MAIS tribais que existem (a carta so funciona porque o deck e daquele tipo). Mesma classe de falha do bug do front no mesmo dia: interpretar texto cru em vez de usar o efeito ja parseado.",
+  "queries": [
+    "deck East Blue real (Krieg OP15-001, 50 cartas): 17 copias CITAM o tipo no texto, so 9 eram contadas como gancho -- OP15-026 (Jango) e OP15-037 (The Outcome...) escapavam, ambas buscadoras de {East Blue}",
+    "card_effects_db.json nas cartas perdidas: `filter_type='east blue'` em OP15-026 e OP15-037; `leader_type='east blue'` em OP15-028/OP15-007 (essas o regex ja pegava) -- ou seja, o parser JA estruturava o tipo, o consumidor e que relia texto",
+    "varredura de chaves de tipo nos efeitos do banco inteiro: familia `*_type`/`*_types` (`filter_type`, `leader_type`, `only_field_type`, `exclude_type`) -- generalizado por SUFIXO, nao lista fixa de chaves. `type` sozinho ficou de fora de proposito (no parser significa tipo de CUSTO, ex 'trash_self', nao tribo)",
+    "distribuicao apos o fix nos 184 decks reais de `decklists_raw.csv`: 78 'altamente focado' / 61 'moderadamente' / 45 'good-stuff', coesao min=5,3 mediana=49,3 max=84,0 -- a metrica continua DISCRIMINANDO, nao virou 'tudo tribal'"
+  ],
+  "cards_found": ["OP15-026", "OP15-037", "OP15-028", "OP15-007", "OP15-011"],
+  "resolution_scope": "global",
+  "decision": "gerar_card_analysis_db.py: campo novo `referenced_types` por carta, juntando TODOS os valores de chaves com sufixo `_type`/`_types` dos efeitos parseados (funcao `_collect_referenced_types`, recursiva) -- generico por FORMA, nao amarrado a `filter_type` nem as cartas deste deck. tribal_cohesion.py: `_card_has_tribal_hook` passa a consultar `referenced_types` como fonte PRIMARIA e mantem os 3 regexes antigos como rede de seguranca (gancho que exista no texto mas o parser ainda nao estruture) -- nunca mais como fonte unica. Corrigido tambem o PESO: o comentario sempre disse 'concentracao de tipo (peso 2) + ganchos (peso 1)' mas o codigo fazia `(same*2 + hook*3)/5` -- codigo e doc divergiam desde a criacao. Com peso 3 a escala era inalcancavel: deck com 100% do tipo precisaria de 50% das cartas com gancho explicito pra passar de 70 ('altamente focado'), o que nenhum deck real tem. Alinhado ao 2:1 documentado.",
+  "validated_by": [
+    "deck do usuario (East Blue/Krieg): ganchos 9 -> 17, coesao 50,8% -> 78,0%, rotulo 'moderadamente focado' -> 'altamente focado em East Blue (tribal)' -- que e o que o deck de fato e (100% do tipo)",
+    "184 decks reais: distribuicao continua espalhada (42%/33%/24% entre os 3 rotulos), nao colapsou pra um lado so",
+    "gerar_dbs.py rodado (unica porta de geracao): card_effects_db.json NAO mudou (o parser nao foi tocado), so card_analysis_db.json ganhou o campo novo",
+    "smoke_fast.py OK; smoke_test.py OK"
+  ],
+  "notes": "Os dois achados do dia (este e o do front, que exibia 0% de searcher num deck com 8) sao a MESMA causa raiz em camadas diferentes: consumidor reinterpretando `card_text` por substring/regex em vez de usar o efeito parseado. Vale como regra pra proximas sessoes -- se um consumidor precisa saber 'o que esta carta faz', o dado tem que sair do parser, e se nao estiver estruturado la, o lugar de consertar e o parser (ou o gerador do analysis_db), nunca um regex novo no consumidor."
+}
