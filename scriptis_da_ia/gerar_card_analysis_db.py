@@ -137,6 +137,27 @@ def derive_analysis(card_text: str, card_type: str, counter: int) -> dict:
     is_searcher = bool(actions & {'look_top_deck', 'add_to_hand', 'add_from_trash'})
     draws = 'draw' in actions
 
+    # `draws_ativo`: compra que o jogador ALCANÇA jogando a carta, separada
+    # da que só acontece se a carta virar das Life Cards num ataque.
+    #
+    # Achado 06/09 (usuário perguntou por que só 1 das 2 buscadoras aparecia
+    # em "Draw Power"): OP15-037 é marcada como draw por causa de
+    # "[Trigger] Draw 1 card", que exige a carta estar na vida E o oponente
+    # atacar. No deck do usuário, as 6 cartas de "Draw Power" eram 4 dessas
+    # + 2 que compram ao morrer -- NENHUMA compra ao ser jogada, e mesmo
+    # assim a tela dizia "Draw Power na mão: 45%", como se abrir com ela
+    # desse compra. Pior: as 4 já eram contadas na linha "Trigger", então o
+    # mesmo efeito aparecia com dois nomes diferentes.
+    #
+    # `draws` (qualquer compra) fica INTOCADO -- é lido em 7 pontos do
+    # decision_engine pra pontuar jogadas, e mudar o significado ali mexeria
+    # no comportamento do bot, que não é o objetivo aqui.
+    draws_ativo = any(
+        s.get('action') == 'draw'
+        for trig, data in effects.items() if trig != 'trigger'
+        for s in _steps_de(data)
+    )
+
     # ── Defesa ──────────────────────────────────────────────────────────
     has_counter_value = counter > 0          # counter impresso (1000/2000)
     has_counter_event = 'counter' in triggers  # evento/efeito [Counter]
@@ -219,6 +240,7 @@ def derive_analysis(card_text: str, card_type: str, counter: int) -> dict:
         'text': card_text or '',
         'is_searcher': is_searcher,
         'draws': draws,
+        'draws_ativo': draws_ativo,
         'has_counter_value': has_counter_value,
         'has_counter_event': has_counter_event,
         'is_blocker': is_blocker,

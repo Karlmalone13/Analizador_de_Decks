@@ -124,6 +124,9 @@ def _flags_da_carta(info: dict) -> dict:
         'is_blocker':  bool(info.get('is_blocker')),
         'is_removal':  bool(info.get('is_removal')),
         'draws':       bool(info.get('draws')),
+        # compra ALCANÇÁVEL jogando a carta (exclui a que só vem do
+        # `[Trigger]` da vida) -- ver comentário em gerar_card_analysis_db.py
+        'draws_ativo': bool(info.get('draws_ativo')),
         'has_rush':    bool(info.get('has_rush')),
         'has_trigger': bool(info.get('has_trigger')),
         'has_double_attack': bool(info.get('has_double_attack')),

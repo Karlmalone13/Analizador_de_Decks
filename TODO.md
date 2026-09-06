@@ -1,6 +1,26 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 5 de setembro de 2026
+**Última atualização:** 6 de setembro de 2026
+
+> 06/09/2026 (bloco 752): **Redundancia da tela de analise + faxina de
+> lint que desenterrou 219 cartas sem imagem.**
+> (1) Funcoes do deck agrupadas em Ofensivo/Defensivo/Consistencia com
+> popup; Custo medio duplicado removido; painel do lider com arte grande.
+> (2) **Draw Power 6 -> 2**: o front contava `draw` de `[Trigger]`, que so
+> dispara ao virar da vida. Fix na FONTE (`draws_ativo` no
+> `gerar_card_analysis_db.py`), nao no consumidor.
+> (3) **`cohesion_pct` REMOVIDO** do `tribal_cohesion.py` -- numero unico
+> misturava concentracao de tipo com ganchos e contradizia a propria tela.
+> Virou 2 eixos com cortes calibrados nos 184 decks reais.
+> (4) **Lint: 51 problemas e 1 erro -> 0.** Correcao: os "11 warnings" que
+> eu havia reportado eram so do `analysis/page.tsx`. O erro (`any` no
+> `/simulate`) foi introduzido por mim na leva anterior.
+> (5) **Achado**: `next/image` lanca em `src` vazio e **219 das 4557
+> cartas nao tem `card_image`** (as promos `P-` transcritas na mao). As 26
+> imagens passaram a usar `src/components/CardImage.tsx`, com placeholder
+> pra `src` vazio e pra 404. `remotePatterns` no `next.config.ts`.
+> **Pendente**: `/analysis` com deck real nao foi aberta (navegador de
+> preview nao logado na conta do usuario); 219 cartas seguem sem arte.
 
 > 05/09/2026 (bloco 751): **Tela de analise mentia em dois lugares, mesma
 > causa raiz** -- consumidor reinterpretando `card_text` por substring em

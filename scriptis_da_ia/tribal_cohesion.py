@@ -79,20 +79,29 @@ def _card_has_tribal_hook(card_text: str, leader_types: set,
 
 def compute_tribal_cohesion(leader_card: dict, main_cards: list) -> dict:
     """
-    Retorna a coesão tribal do deck:
+    Retorna a coesão tribal do deck em DOIS eixos independentes:
       {
         'leader_type': tipo principal do líder,
         'same_type_pct': % de cartas do mesmo tipo do líder,
         'hook_count': nº de cartas com gancho tribal,
-        'cohesion_pct': pontuação geral de coesão (0-100),
-        'label': descrição,
+        'hook_pct': % de cartas com gancho tribal,
+        'label': leitura qualitativa dos dois eixos juntos,
       }
+
+    NAO existe mais um `cohesion_pct` unico (removido 06/09). Ele misturava
+    concentracao de tipo com quantidade de ganchos numa media ponderada, e o
+    resultado nao significava nada verificavel: um deck 100% East Blue com
+    34% de ganchos aparecia como "78%" logo abaixo da frase "100% das cartas
+    sao East Blue" -- contradicao na cara do usuario, que foi quem reclamou.
+    Pior: o peso era arbitrario (mudou de 3 pra 1 no mesmo dia sem nenhum
+    criterio empirico), entao qualquer valor unico so ia empurrar o erro pra
+    outro deck. Os dois eixos medem coisas diferentes e ficam separados.
     """
     leader_types = _leader_types(leader_card)
     if not leader_types or not main_cards:
         return {
             'leader_type': None, 'same_type_pct': 0, 'hook_count': 0,
-            'cohesion_pct': 0, 'label': 'sem dados de tipo',
+            'hook_pct': 0, 'label': 'sem dados de tipo',
         }
 
     n = len(main_cards)
@@ -109,30 +118,29 @@ def compute_tribal_cohesion(leader_card: dict, main_cards: list) -> dict:
     same_type_pct = round(100 * same_type / n, 1)
     hook_pct = round(100 * hooks / n, 1)
 
-    # Coesão = média ponderada: concentração de tipo (peso 2) + ganchos (peso 1).
-    # Ganchos valem como "o deck ATIVAMENTE recompensa o tipo", não só o contém.
-    #
-    # O peso do gancho era 3 (nunca 1, apesar deste comentário sempre dizer 1 --
-    # código e documentação divergiam). Com peso 3 a escala ficava impossível:
-    # um deck com 100% das cartas do tipo do líder só passaria de 70 ("altamente
-    # focado") se METADE das cartas tivesse gancho explícito, o que nenhum deck
-    # real tem. Resultado prático: deck 100% East Blue era rotulado
-    # "moderadamente focado" (50,8%). Alinhado ao 2:1 documentado em 05/09.
-    cohesion = round((same_type_pct * 2 + hook_pct * 1) / 3, 1)
-    cohesion = min(cohesion, 100.0)
+    # Rótulo lido dos DOIS eixos, sem misturá-los num score. Os cortes saem
+    # da distribuição REAL dos 184 decks de torneio em `decklists_raw.csv`
+    # (medido 06/09), não de chute:
+    #   concentração de tipo -> p25=56  mediana=70  p75=94   (corte: 70)
+    #   ganchos              -> p25=8   mediana=28  p75=36   (corte: 25)
+    # Com esses cortes: 83 decks "tribal de verdade", 10 "good-stuff
+    # mono-tipo", 91 "pouca dependência" -- discrimina de verdade, e é
+    # exatamente a distinção que este módulo existe pra fazer (ver README).
+    CORTE_TIPO = 70.0
+    CORTE_GANCHO = 25.0
 
     main_type = sorted(leader_types)[0].title()
-    if cohesion >= 70:
-        label = f'Deck altamente focado em {main_type} (tribal)'
-    elif cohesion >= 40:
-        label = f'Deck moderadamente focado em {main_type}'
+    if same_type_pct >= CORTE_TIPO and hook_pct >= CORTE_GANCHO:
+        label = f'Tribal de verdade — o deck é {main_type} e explora o tipo'
+    elif same_type_pct >= CORTE_TIPO:
+        label = f'Good-stuff mono-tipo — é quase todo {main_type}, mas poucas cartas exploram isso'
     else:
-        label = f'Deck good-stuff (pouca dependência de tipo)'
+        label = 'Pouca dependência de tipo'
 
     return {
         'leader_type': main_type,
         'same_type_pct': same_type_pct,
         'hook_count': hooks,
-        'cohesion_pct': cohesion,
+        'hook_pct': hook_pct,
         'label': label,
     }

@@ -1,9 +1,10 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useState , useMemo} from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
+import CardImage from '@/components/CardImage'
 
 interface Card {
     id: string
@@ -64,6 +65,7 @@ interface CardFlags {
     is_blocker: boolean
     is_removal: boolean
     draws: boolean
+    draws_ativo: boolean
     has_rush: boolean
     has_trigger: boolean
     has_double_attack: boolean
@@ -82,7 +84,7 @@ interface AnaliseResult {
     tribal_cohesion?: {
         leader_type: string
         label: string
-        cohesion_pct: number
+        hook_pct: number
         same_type_pct: number
         hook_count: number
     }
@@ -132,11 +134,15 @@ function classif(p: number, ideal: number): { label: string, color: string, bar:
     return { label: 'Ausente', color: 'text-red-400', bar: 'bg-red-500' }
 }
 
-function diagTexto(label: string, p: number, ideal: number, rec: string): string {
+// `rec` é opcional de propósito: só existe quando o MOTOR tem um ideal
+// publicado pra aquela categoria (Golden Ratios). Sem isso o texto sai sem
+// número recomendado, em vez de inventar um que contradiga a análise.
+function diagTexto(label: string, p: number, ideal: number, rec?: string): string {
+    const sugestao = rec ? ` (recomendado: ${rec})` : ''
     if (p >= ideal) return `✅ ${label} excelente — alta probabilidade de abrir com essa função na mão inicial`
-    if (p >= ideal * 0.75) return `🟡 ${label} bom — probabilidade aceitável, mas pode melhorar (recomendado: ${rec})`
-    if (p > 0) return `🟠 ${label} regular — adicione mais cópias para maior consistência (recomendado: ${rec})`
-    return `🔴 Sem ${label} no deck — vulnerabilidade crítica (recomendado: ${rec})`
+    if (p >= ideal * 0.75) return `🟡 ${label} bom — probabilidade aceitável, mas pode melhorar${sugestao}`
+    if (p > 0) return `🟠 ${label} regular — adicione mais cópias para maior consistência${sugestao}`
+    return `🔴 Sem ${label} no deck — vulnerabilidade crítica${sugestao}`
 }
 
 // ── Fisher-Yates shuffle (matematicamente correto e uniforme) ─────────────────
@@ -194,57 +200,45 @@ function isBomb(dc: DeckCard, flags: FlagsMap): boolean {
 }
 
 // ── Simulação de mãos ─────────────────────────────────────────────────────────
-function simularMaos(deckCards: DeckCard[], totalCards: number, flags: FlagsMap, qtd = 10000) {
-    const deck: number[] = []
-    deckCards.forEach((dc, idx) => {
-        for (let q = 0; q < dc.quantity; q++) deck.push(idx)
-    })
+/**
+ * Risco de MÃO TRAVADA — probabilidade exata (hipergeométrica) de abrir 5
+ * cartas sem nenhuma jogada possível até um dado turno.
+ *
+ * Substituiu (06/09) uma "taxa de brick" que era simulada em 10.000 mãos e
+ * NUNCA saía de 0,0%: ela só contava como brick a mão sem carta ≤2, sem
+ * carta 3-5 E sem counter nenhum. No deck do usuário isso exigia que as 5
+ * cartas viessem de um grupo de apenas 6 -- `C(6,5)/C(50,5) = 0,0003%`.
+ * Media "mão com cinco cartas de custo 6+ sem counter", não "mão ruim".
+ *
+ * Duas correções de fundo:
+ *  - Counter 2000 NÃO conta como jogada. São 7 das 19 cartas de custo 1
+ *    deste deck; contá-las derrubava o brick de 23,7% para 8,0% e escondia
+ *    o risco real (a mão existe, mas você não faz nada com ela no T1).
+ *  - Curva de DON de verdade, por posição: 1º jogador tem 1 DON no T1 e 3
+ *    no T2; 2º jogador tem 2 e 4. Antes era um "custo ≤2" fixo, que não
+ *    corresponde a turno nenhum.
+ *
+ * Exato em vez de simulado: a pergunta é "nenhuma das 5 pertence ao grupo
+ * jogável", que é hipergeométrica pura. Simular só adicionava ruído (o
+ * bloco antigo dava 68,4% onde a fórmula exata da mesma página dava 68,9%).
+ */
+function calcularBrick(deckCards: DeckCard[], totalCards: number) {
+    const jogaveisAte = (donDisponivel: number) =>
+        deckCards.reduce((soma, dc) => {
+            const custo = parseInt(dc.card.card_cost || '99')
+            const ehCounter2k = dc.card.counter_amount === '2000'
+            return soma + (!ehCounter2k && custo >= 1 && custo <= donDisponivel ? dc.quantity : 0)
+        }, 0)
 
-    let bricks = 0, comSearcher = 0, comCounter2k = 0, comBlocker = 0, comLow2 = 0
-    const aparicoes: number[] = new Array(deckCards.length).fill(0)
+    // P(nenhuma das 5 é jogável) = 1 - P(pelo menos 1 jogável)
+    const semJogada = (don: number) => 1 - probPeloMenos1(totalCards, jogaveisAte(don), 5)
 
-    for (let i = 0; i < qtd; i++) {
-        const shuffled = fisherYates(deck)
-        const mao = shuffled.slice(0, 5)
-        let temSearcher = false, temCounter2k = false, temBlocker = false, temLow2 = false
-        let temT1 = false, temT2 = false, temDefesa = false
-
-        const seenIdx = new Set<number>()
-        mao.forEach(cardIdx => {
-            seenIdx.add(cardIdx)
-            const dc = deckCards[cardIdx]
-            const cost = parseInt(dc.card.card_cost || '99')
-            if (isSearcher(dc, flags)) temSearcher = true
-            if (dc.card.counter_amount === '2000') { temCounter2k = true; temDefesa = true }
-            if (dc.card.counter_amount === '1000') temDefesa = true
-            if (isEventCounter(dc, flags)) temDefesa = true
-            if (isBlocker(dc, flags)) temBlocker = true
-            if (cost <= 2) { temLow2 = true; temT1 = true }
-            if (cost >= 3 && cost <= 5) temT2 = true
-        })
-
-        seenIdx.forEach(idx => aparicoes[idx]++)
-
-        if (temSearcher) comSearcher++
-        if (temCounter2k) comCounter2k++
-        if (temBlocker) comBlocker++
-        if (temLow2) comLow2++
-        // brick = sem jogada T1 nem T2-T3, E sem defesa nenhuma (counter ou evento-counter)
-        if (!temT1 && !temT2 && !temDefesa) bricks++
-    }
-
-    const dependencia = deckCards.map((dc, idx) => ({
-        dc, pct: aparicoes[idx] / qtd
-    })).sort((a, b) => b.pct - a.pct)
-
-    return {
-        brickRate: bricks / qtd,
-        searcherRate: comSearcher / qtd,
-        counter2kRate: comCounter2k / qtd,
-        blockerRate: comBlocker / qtd,
-        low2Rate: comLow2 / qtd,
-        dependencia: dependencia.slice(0, 10),
-    }
+    return [
+        { label: 'T1 — indo primeiro', value: semJogada(1), desc: '1 DON disponível' },
+        { label: 'Até o T2 — indo primeiro', value: semJogada(3), desc: '3 DON disponíveis' },
+        { label: 'T1 — indo segundo', value: semJogada(2), desc: '2 DON disponíveis' },
+        { label: 'Até o T2 — indo segundo', value: semJogada(4), desc: '4 DON disponíveis' },
+    ]
 }
 
 // ── Arquétipo do deck ────────────────────────────────────────────────────────────
@@ -593,7 +587,12 @@ export default function AnalysisPage() {
 }
 
 function AnalysisPageContent() {
-    const supabase = createClient()
+    // `useMemo` e o que torna a referencia do client ESTAVEL entre renders.
+    // Sem ele, `createClient()` devolvia um objeto novo a cada render e listar
+    // `supabase` nas dependencias abaixo recarregaria os dados em loop -- era
+    // por isso que os efeitos vinham com a dependencia faltando (10 warnings de
+    // exhaustive-deps). Com a referencia estavel, listar e correto e inocuo.
+    const supabase = useMemo(() => createClient(), [])
     const searchParams = useSearchParams()
     const deckId = searchParams.get('id')
 
@@ -601,8 +600,10 @@ function AnalysisPageContent() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [selectedCard, setSelectedCard] = useState<Card | null>(null)
+    // Popup "quais cartas cumprem esta função" — evita repetir miniaturas em
+    // toda linha da composição só pra mostrar quais cartas entraram na conta.
+    const [funcaoAberta, setFuncaoAberta] = useState<{ label: string; cards: DeckCard[] } | null>(null)
     const [simDone, setSimDone] = useState(false)
-    const [simResult, setSimResult] = useState<ReturnType<typeof simularMaos> | null>(null)
     const [melhoresMaosP1, setMelhoresMaosP1] = useState<DeckCard[][]>([])
     const [melhoresMaosP2, setMelhoresMaosP2] = useState<DeckCard[][]>([])
     const [arqDetectado, setArqDetectado] = useState<Arquetipo>('midrange')
@@ -629,7 +630,7 @@ function AnalysisPageContent() {
             setLoading(false)
         }
         load()
-    }, [deckId])
+    }, [deckId, supabase])
 
     // A simulação de mãos SÓ roda depois que a classificação por carta chega
     // do motor (`analise.cards`) -- sem ela os números sairiam errados, que
@@ -642,17 +643,17 @@ function AnalysisPageContent() {
         const flags = analise.cards
         const arq = arquetipoDoMotor(analise)
         setTimeout(() => {
-            const total = deck.cards.reduce((s, dc) => s + dc.quantity, 0)
-            const result = simularMaos(deck.cards, total, flags, 10000)
             const maosP1 = gerarMelhoresMaos(deck.cards, flags, arq, 30000, true)
             const maosP2 = gerarMelhoresMaos(deck.cards, flags, arq, 30000, false)
-            setSimResult(result)
             setArqDetectado(arq)
             setMelhoresMaosP1(maosP1)
             setMelhoresMaosP2(maosP2)
             setSimDone(true)
         }, 100)
-    }, [deck, analise])
+        // `simDone` entra nas deps de proposito: ele so aparece na guarda de
+        // saida (`if (!deck || simDone) return`), entao reexecutar o efeito
+        // quando ele vira true apenas cai no return -- nao regera as maos.
+    }, [deck, analise, simDone])
 
     // Análise de arquétipo/sinergia/coesão via API Python (fonte única)
     useEffect(() => {
@@ -780,7 +781,10 @@ function AnalysisPageContent() {
     const triggers = allCards.filter(dc => !!flagsOf(dc, cardFlags)?.has_trigger)
     const banish = allCards.filter(dc => !!flagsOf(dc, cardFlags)?.has_banish)
     const searchers = allCards.filter(dc => isSearcher(dc, cardFlags))
-    const drawPower = allCards.filter(dc => !!flagsOf(dc, cardFlags)?.draws)
+    // `draws_ativo`, não `draws`: compra que só acontece pelo [Trigger] da vida
+    // não é draw power (e já é contada na linha Trigger) -- ver o comentário
+    // em gerar_card_analysis_db.py.
+    const drawPower = allCards.filter(dc => !!flagsOf(dc, cardFlags)?.draws_ativo)
     const counters = allCards.filter(dc => dc.card.counter_amount && dc.card.counter_amount !== '0')
     const counters2k = allCards.filter(dc => dc.card.counter_amount === '2000')
     const counters1k = allCards.filter(dc => dc.card.counter_amount === '1000')
@@ -790,20 +794,30 @@ function AnalysisPageContent() {
 
     const countQty = (arr: DeckCard[]) => arr.reduce((s, dc) => s + dc.quantity, 0)
 
-    const offScore = Math.min(100, Math.round((countQty(rush) * 8 + countQty(doubleAtk) * 10 + countQty(banish) * 6) / Math.max(totalCards, 1) * 100 * 2))
-    const defScore = Math.min(100, Math.round((countQty(blockers) * 8 + countQty(counters) * 4) / Math.max(totalCards, 1) * 100 * 2))
-    const conScore = Math.min(100, Math.round((countQty(searchers) * 10 + countQty(drawPower) * 6) / Math.max(totalCards, 1) * 100 * 2))
-    const trigScore = Math.min(100, Math.round(countQty(triggers) / Math.max(totalCards, 1) * 100 * 3))
+    // % do deck que cumpre cada função. Antes eram scores com pesos
+    // inventados (`rush*8 + doubleAtk*10 + banish*6`, tudo dividido pelo
+    // total e multiplicado por 2) e teto em 100 -- e o teto ERA ATINGIDO
+    // por qualquer deck real: neste deck davam 128 / 896 / 464, ou seja, as
+    // três barras apareciam 100% cheias e não distinguiam nada (bastavam 4
+    // cartas com Rush pra encher a de ofensividade).
+    //
+    // Agora é a fração real do deck, sem peso e sem teto artificial -- dá
+    // pra conferir contando as cartas. Distribuição medida nos 184 decks de
+    // torneio de `decklists_raw.csv` (06/09), que mostra por que a escala
+    // antiga escondia tudo:
+    //   ofensividade  mediana 0%   (a maioria dos decks não tem Rush)  máx 14%
+    //   defensividade mediana 78%  (nunca perto de zero)               44-94%
+    //   consistência  mediana 48%                                      16-82%
+    //   triggers      mediana 8%                                        0-76%
+    const pctDoDeck = (n: number) => Math.round(100 * n / Math.max(totalCards, 1))
 
     const leaderColors = deck.leader?.card_color?.split(/[\s\/]/).filter(Boolean) || []
-    const leaderCode = (deck.leader?.card_set_id || '').split('_')[0]
 
     // K valores — Caso 1 (abertura)
     const K_search = countQty(searchers)
     const K_draw = countQty(drawPower)
     const K_blocker = countQty(blockers)
     const K_trigger = countQty(triggers)
-    const K_counter = countQty(counters)
     const K_counter2k = countQty(counters2k)
     const K_counter1k = countQty(counters1k)
     const K_low1 = countQty(low1Cards)
@@ -814,7 +828,6 @@ function AnalysisPageContent() {
     const p_draw = probPeloMenos1(N, K_draw, n)
     const p_blocker = probPeloMenos1(N, K_blocker, n)
     const p_trigger = probPeloMenos1(N, K_trigger, n)
-    const p_counter = probPeloMenos1(N, K_counter, n)
     const p_counter2k = probPeloMenos1(N, K_counter2k, n)
     const p_counter1k = probPeloMenos1(N, K_counter1k, n)
     const p_low1 = probPeloMenos1(N, K_low1, n)
@@ -840,15 +853,31 @@ function AnalysisPageContent() {
     else if (avgCostNum <= 4.5) curvaMsg = '🟠 Curva pesada — pode travar nos turnos iniciais, considere mais cartas baratas'
     else curvaMsg = '🔴 Curva muito pesada — alto risco de mão ruim, adicione cartas de custo 1-2'
 
+    // A recomendação de QUANTAS cópias rodar vem do motor (Golden Ratios,
+    // `analise.ratios`), nunca mais de string fixa aqui. Achado 06/09: o
+    // front dizia "recomendado: 8-12 searchers" enquanto os Golden Ratios
+    // logo acima, na MESMA página, davam ideal 4-8 e marcavam as 8 do deck
+    // como "ok" -- conselhos contraditórios sobre o mesmo deck. Idem
+    // counters (front "8-10", motor 8-12).
+    //
+    // Onde o motor não tem opinião (counter 1k, draw, trigger, custo 1/≤2),
+    // fica SEM recomendação, em vez de inventar uma que pode contradizê-lo
+    // depois. O `ideal` de probabilidade abaixo é só o alvo da barra de
+    // cor, não conselho de deckbuilding.
+    const idealDoMotor = (nome: string) => {
+        const r = analise?.ratios?.find(x => x.name === nome)
+        return r ? `${r.ideal[0]}-${r.ideal[1]} ${nome}` : undefined
+    }
+
     const metricas = [
-        { icon: '🔍', label: 'Searcher na mão', p: p_searcher, K: K_search, ideal: 0.65, rec: '8-12 searchers' },
-        { icon: '🛡️🛡️', label: 'Counter 2000 na mão', p: p_counter2k, K: K_counter2k, ideal: 0.65, rec: '8-10 counters 2k' },
-        { icon: '🛡️', label: 'Counter 1000 na mão', p: p_counter1k, K: K_counter1k, ideal: 0.40, rec: '4-6 counters 1k' },
-        { icon: '🔒', label: 'Blocker na mão', p: p_blocker, K: K_blocker, ideal: 0.40, rec: '4-8 blockers' },
-        { icon: '🃏', label: 'Draw Power na mão', p: p_draw, K: K_draw, ideal: 0.50, rec: '6-8 cartas de compra' },
-        { icon: '⚡', label: 'Trigger na mão', p: p_trigger, K: K_trigger, ideal: 0.40, rec: '4-8 triggers' },
-        { icon: '1️⃣', label: 'Carta custo 1 na mão', p: p_low1, K: K_low1, ideal: 0.40, rec: '4-8 cartas custo 1' },
-        { icon: '2️⃣', label: 'Carta custo ≤2 na mão', p: p_low2, K: K_low2, ideal: 0.65, rec: '8-12 cartas custo ≤2' },
+        { icon: '🔍', label: 'Searcher na mão', p: p_searcher, K: K_search, ideal: 0.65, rec: idealDoMotor('searchers') },
+        { icon: '🛡️🛡️', label: 'Counter 2000 na mão', p: p_counter2k, K: K_counter2k, ideal: 0.65, rec: idealDoMotor('counters') },
+        { icon: '🛡️', label: 'Counter 1000 na mão', p: p_counter1k, K: K_counter1k, ideal: 0.40, rec: undefined },
+        { icon: '🔒', label: 'Blocker na mão', p: p_blocker, K: K_blocker, ideal: 0.40, rec: idealDoMotor('blockers') },
+        { icon: '🃏', label: 'Draw Power na mão', p: p_draw, K: K_draw, ideal: 0.50, rec: undefined },
+        { icon: '⚡', label: 'Trigger na mão', p: p_trigger, K: K_trigger, ideal: 0.40, rec: undefined },
+        { icon: '1️⃣', label: 'Carta custo 1 na mão', p: p_low1, K: K_low1, ideal: 0.40, rec: undefined },
+        { icon: '2️⃣', label: 'Carta custo ≤2 na mão', p: p_low2, K: K_low2, ideal: 0.65, rec: undefined },
     ]
 
     // Probabilidades — Caso 2 (compras futuras)
@@ -868,7 +897,32 @@ function AnalysisPageContent() {
         pT5: probAteOTurno(deckRestante, kRestante(m.K), drawsT5),
     }))
 
+    const brickStats = calcularBrick(allCards, totalCards)
     const plano = gerarPlano(allCards, deck.leader, cardFlags, leaderStats)
+
+    // ── Composição do deck: UMA linha por função ──────────────────────────
+    // Antes isto vivia em três lugares que contavam a mesma coisa: as 4
+    // barras de "Perfil do Deck" (que eram só a SOMA destas: ofensividade =
+    // rush+doubleAtk+banish, defensividade = blockers+counter...), as 9
+    // barras de "Funções do Deck", e as contagens dos Golden Ratios. Some
+    // também a escala arbitrária de lá (`qty/12`, que fazia a barra de
+    // Counter — 36 cartas — bater 300% e travar no teto).
+    // O `ratio` liga cada função ao ideal publicado pelo MOTOR, quando existe.
+    const ratioDe = (nome: string) => analise?.ratios?.find(r => r.name === nome)
+    const funcoes: {
+        label: string; cards: DeckCard[]; color: string; grupo: string; ratio?: AnaliseRatio
+    }[] = [
+        { label: 'Rush', cards: rush, color: 'bg-red-600', grupo: 'Ofensivo' },
+        { label: 'Double Attack', cards: doubleAtk, color: 'bg-orange-600', grupo: 'Ofensivo' },
+        { label: 'Banish', cards: banish, color: 'bg-purple-600', grupo: 'Ofensivo' },
+        { label: 'Unblockable', cards: unblockable, color: 'bg-pink-600', grupo: 'Ofensivo' },
+        { label: 'Blocker', cards: blockers, color: 'bg-blue-600', grupo: 'Defensivo', ratio: ratioDe('blockers') },
+        { label: 'Counter', cards: counters, color: 'bg-sky-600', grupo: 'Defensivo', ratio: ratioDe('counters') },
+        { label: 'Trigger', cards: triggers, color: 'bg-yellow-600', grupo: 'Defensivo' },
+        { label: 'Searcher', cards: searchers, color: 'bg-green-600', grupo: 'Consistência', ratio: ratioDe('searchers') },
+        { label: 'Draw Power', cards: drawPower, color: 'bg-teal-600', grupo: 'Consistência' },
+    ]
+    const gruposFuncao = ['Ofensivo', 'Defensivo', 'Consistência']
 
     return (
         <div className="min-h-screen bg-gray-950 text-white flex flex-col">
@@ -892,25 +946,35 @@ function AnalysisPageContent() {
                                 <div className="flex h-2">
                                     {leaderColors.map((c, i) => <div key={i} className={`flex-1 ${colorClass[c] || 'bg-gray-500'}`} />)}
                                 </div>
-                                <div className="p-5 flex gap-4 items-start">
-                                    <img src={deck.leader.card_image} className="w-36 h-48 object-cover rounded-xl flex-shrink-0 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(deck.leader)} />
-                                    <div className="flex-1">
-                                        <div className="text-xs text-gray-400 mb-1">Leader</div>
-                                        <div className="font-bold text-base leading-tight mb-2">{deck.leader.card_name}</div>
-                                        <div className="flex flex-wrap gap-1 mb-3">
-                                            {leaderColors.map((c, i) => <span key={i} className={`text-xs px-2 py-0.5 rounded text-white ${colorClass[c] || 'bg-gray-600'}`}>{c}</span>)}
+                                {/* Arte grande e `object-contain`: antes era `w-36 h-48
+                                    object-cover`, que além de pequena CORTAVA a arte. Custo
+                                    e poder médios saíram daqui -- são estatísticas do DECK,
+                                    não do líder, e já aparecem nos tiles ao lado (estavam
+                                    duplicados nos dois painéis). */}
+                                <div className="p-5">
+                                    <div className="text-xs text-gray-400 mb-3">Leader</div>
+                                    <CardImage src={deck.leader.card_image} alt={deck.leader.card_name}
+                                        className="w-full h-auto max-w-[280px] mx-auto rounded-xl object-contain cursor-pointer hover:brightness-110 transition"
+                                        onClick={() => setSelectedCard(deck.leader)} />
+                                    <div className="font-bold text-lg leading-tight mt-4 text-center">{deck.leader.card_name}</div>
+                                    <div className="flex flex-wrap gap-1.5 justify-center mt-2">
+                                        {leaderColors.map((c, i) => (
+                                            <span key={i} className={`text-xs px-2.5 py-1 rounded text-white ${colorClass[c] || 'bg-gray-600'}`}>{c}</span>
+                                        ))}
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 mt-4">
+                                        <div className="bg-gray-800 rounded-lg px-3 py-2 text-center">
+                                            <div className="text-xs text-gray-400">Poder</div>
+                                            <div className="font-bold text-white text-lg">{deck.leader.card_power || '—'}</div>
                                         </div>
-                                        <div className="grid grid-cols-1 gap-2">
-                                            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center">
-                                                <div className="text-xs text-gray-400">Custo Médio</div>
-                                                <div className="font-bold text-orange-400 text-lg">{avgCost}</div>
-                                            </div>
-                                            <div className="bg-gray-800 rounded-lg px-3 py-2 text-center">
-                                                <div className="text-xs text-gray-400">Poder Médio</div>
-                                                <div className="font-bold text-blue-400 text-lg">{avgPower > 0 ? avgPower.toLocaleString() : '—'}</div>
-                                            </div>
+                                        <div className="bg-gray-800 rounded-lg px-3 py-2 text-center">
+                                            <div className="text-xs text-gray-400">Life</div>
+                                            <div className="font-bold text-red-400 text-lg">{deck.leader.life || '—'}</div>
                                         </div>
                                     </div>
+                                    {deck.leader.sub_types && (
+                                        <div className="text-xs text-gray-400 text-center mt-3">{deck.leader.sub_types}</div>
+                                    )}
                                 </div>
                             </>
                         ) : <div className="p-6 text-center text-gray-500">Sem Leader definido</div>}
@@ -919,40 +983,100 @@ function AnalysisPageContent() {
                     <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-2xl p-6">
                         <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Perfil do Deck</div>
                         <div className="space-y-4">
-                            {[
-                                { label: 'Ofensividade', value: offScore, color: 'bg-red-500', desc: `Rush ${countQty(rush)} · Double Atk ${countQty(doubleAtk)} · Banish ${countQty(banish)}` },
-                                { label: 'Defensividade', value: defScore, color: 'bg-blue-500', desc: `Blockers ${countQty(blockers)} · Counter ${countQty(counters)}` },
-                                { label: 'Consistência', value: conScore, color: 'bg-green-500', desc: `Searchers ${countQty(searchers)} · Draw ${countQty(drawPower)}` },
-                                { label: 'Triggers', value: trigScore, color: 'bg-yellow-500', desc: `${countQty(triggers)} cartas com Trigger` },
-                            ].map(({ label, value, color, desc }) => (
-                                <div key={label}>
-                                    <div className="flex items-center justify-between mb-1">
-                                        <span className="text-sm font-medium text-white">{label}</span>
-                                        <span className="text-xs text-gray-400">{desc}</span>
+                            {gruposFuncao.map(grupo => {
+                                const doGrupo = funcoes.filter(f => f.grupo === grupo)
+                                const totalGrupo = doGrupo.reduce((s, f) => s + countQty(f.cards), 0)
+                                return (
+                                    <div key={grupo}>
+                                        <div className="flex items-baseline justify-between mb-1.5">
+                                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{grupo}</span>
+                                            <span className="text-xs text-gray-500">{pctDoDeck(totalGrupo)}% do deck</span>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            {doGrupo.map(({ label, cards, color, ratio }) => {
+                                                const qty = countQty(cards)
+                                                const alerta = ratio && ratio.status !== 'ok'
+                                                return (
+                                                    <button key={label}
+                                                        onClick={() => qty > 0 && setFuncaoAberta({ label, cards })}
+                                                        disabled={qty === 0}
+                                                        className={`w-full flex items-center gap-3 rounded-lg px-3 py-1.5 text-left transition ${qty > 0 ? 'bg-gray-800 hover:bg-gray-700 cursor-pointer' : 'bg-gray-800/40 cursor-default'}`}>
+                                                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${qty > 0 ? color : 'bg-gray-700'}`} />
+                                                        <span className={`text-sm flex-1 ${qty > 0 ? 'text-white' : 'text-gray-600'}`}>{label}</span>
+                                                        {ratio && (
+                                                            <span className={`text-xs ${alerta ? 'text-yellow-500' : 'text-gray-600'}`}>
+                                                                ideal {ratio.ideal[0]}-{ratio.ideal[1]}
+                                                            </span>
+                                                        )}
+                                                        <span className={`text-sm font-bold w-7 text-right ${qty === 0 ? 'text-gray-600' : alerta ? 'text-yellow-400' : 'text-white'}`}>{qty}</span>
+                                                    </button>
+                                                )
+                                            })}
+                                        </div>
                                     </div>
-                                    <div className="w-full bg-gray-800 rounded-full h-3">
-                                        <div className={`h-3 rounded-full transition-all ${color}`} style={{ width: `${value}%` }} />
-                                    </div>
-                                </div>
-                            ))}
+                                )
+                            })}
                         </div>
-                        <div className="grid grid-cols-4 gap-3 mt-5">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
                             {[
-                                { label: 'Total de Cartas', value: totalCards, max: 50 },
-                                { label: 'Tipos únicos', value: allCards.length, max: null },
-                                { label: 'Com Counter', value: countQty(counters), max: null },
-                                { label: 'Unblockable', value: countQty(unblockable), max: null },
-                            ].map(({ label, value, max }) => (
+                                { label: 'Total de Cartas', value: `${totalCards}/50`, ok: totalCards === 50 },
+                                { label: 'Cartas distintas', value: String(allCards.length), ok: false },
+                                { label: 'Custo médio', value: avgCost, ok: false },
+                                { label: 'Poder médio', value: avgPower > 0 ? avgPower.toLocaleString() : '—', ok: false },
+                            ].map(({ label, value, ok }) => (
                                 <div key={label} className="bg-gray-800 rounded-xl p-3 text-center">
-                                    <div className={`text-xl font-bold ${max && value === max ? 'text-green-400' : 'text-white'}`}>
-                                        {max ? `${value}/${max}` : value}
-                                    </div>
+                                    <div className={`text-xl font-bold ${ok ? 'text-green-400' : 'text-white'}`}>{value}</div>
                                     <div className="text-xs text-gray-400 mt-0.5">{label}</div>
                                 </div>
                             ))}
                         </div>
                     </div>
                 </div>
+
+                {/* LISTA DO DECK */}
+                <div className="mb-8">
+                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+                        <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">
+                            Lista do Deck <span className="text-gray-600 font-normal">({totalCards}/50)</span>
+                        </div>
+                        <div className="overflow-y-auto card-scroll" style={{ maxHeight: '600px', scrollbarWidth: 'thin', scrollbarColor: '#f97316 #1f2937' }}>
+                            {deck.leader && (
+                                <div className="mb-5">
+                                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Leader</div>
+                                    <div className="flex gap-2">
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className="relative" style={{ width: '90px', height: '126px' }}>
+                                                <CardImage src={deck.leader.card_image} alt={deck.leader.card_name} className="absolute w-full h-full object-cover rounded-lg border-2 border-yellow-500 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(deck.leader)} />
+                                            </div>
+                                            <div className="text-xs text-gray-400 font-mono text-center" style={{ width: '90px' }}>{(deck.leader.card_set_id || '').split('_')[0]}</div>
+                                            <div className="text-xs text-white text-center font-medium leading-tight" style={{ width: '90px' }}>{deck.leader.card_name}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            <div className="text-xs text-gray-500 uppercase tracking-wide mb-3">Main Deck</div>
+                            <div className="flex flex-wrap gap-4">
+                                {allCards.sort((a, b) => parseInt(a.card.card_cost || '0') - parseInt(b.card.card_cost || '0')).map((dc, i) => (
+                                    <div key={i} className="flex flex-col items-center gap-1">
+                                        <span className="text-xs text-gray-400">{dc.card.card_cost ? `Custo ${dc.card.card_cost}` : '—'}</span>
+                                        <div className="relative cursor-pointer" style={{ width: '90px', height: `${120 + (Math.min(dc.quantity, 4) - 1) * 7}px` }} onClick={() => setSelectedCard(dc.card)}>
+                                            {Array.from({ length: Math.min(dc.quantity, 4) }).map((_, idx) => (
+                                                <CardImage key={idx} src={dc.card.card_image} alt={dc.card.card_name} className="absolute object-cover rounded-lg border border-gray-700 hover:brightness-110 transition" style={{ width: '86px', height: '120px', left: `${idx * 3}px`, top: `${idx * 7}px`, zIndex: idx }} />
+                                            ))}
+                                        </div>
+                                        <div className="text-xs text-gray-400 font-mono text-center" style={{ width: '90px' }}>{(dc.card.card_set_id || '').split('_')[0]}</div>
+                                        <div className="text-xs text-white text-center font-medium leading-tight" style={{ width: '90px' }}>{dc.card.card_name}</div>
+                                        <div className="flex items-center gap-1.5 bg-gray-800 border border-gray-700 rounded-lg px-2 py-0.5">
+                                            <div className="flex gap-0.5">{Array.from({ length: dc.quantity }).map((_, idx) => <div key={idx} className="w-2 h-2 rounded-full bg-gray-400" />)}</div>
+                                            <span className="text-xs font-bold text-white ml-1">×{dc.quantity}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
 
                 {/* DISTRIBUIÇÕES */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -1157,25 +1281,32 @@ function AnalysisPageContent() {
                         </div>
                         <div className="mb-2">
                             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📊 Golden Ratios · {analise.issues_count === 0 ? 'tudo dentro do recomendado' : `${analise.issues_count} ponto(s) de atenção`}</div>
+                            {/* Só os pontos de ATENÇÃO. A contagem de cada categoria
+                                (e o ideal) já aparece na Composição do Deck, no topo
+                                da página -- repetir a lista inteira aqui era a 3ª vez
+                                que os mesmos números apareciam. O que só existe aqui
+                                é o CONSELHO do motor para o que está fora da faixa. */}
                             <div className="space-y-2">
-                                {analise.ratios.map((c: AnaliseRatio, i: number) => {
-                                    const statusColor = c.status === 'ok' ? 'text-green-400' : c.status === 'baixo' ? 'text-orange-400' : 'text-yellow-400'
-                                    const barColor = c.status === 'ok' ? 'bg-green-500' : c.status === 'baixo' ? 'bg-orange-500' : 'bg-yellow-500'
+                                {analise.ratios.filter((c: AnaliseRatio) => c.status !== 'ok').map((c: AnaliseRatio, i: number) => {
+                                    const statusColor = c.status === 'baixo' ? 'text-orange-400' : 'text-yellow-400'
                                     const nomePt: Record<string, string> = { counters: 'Counters 2000', searchers: 'Searchers', blockers: 'Blockers', finishers: 'Finishers (8+)', events: 'Eventos' }
-                                    const pctBar = Math.min((c.count / Math.max(c.ideal[1], 1)) * 100, 100)
                                     return (
                                         <div key={i} className="bg-gray-800 rounded-xl px-4 py-2.5">
-                                            <div className="flex items-center justify-between mb-1.5">
+                                            <div className="flex items-center justify-between">
                                                 <span className="text-sm text-white font-medium">{nomePt[c.name] || c.name}</span>
-                                                <span className={`text-sm font-bold ${statusColor}`}>{c.count} <span className="text-xs text-gray-500">(ideal {c.ideal[0]}-{c.ideal[1]})</span></span>
+                                                <span className={`text-sm font-bold ${statusColor}`}>
+                                                    {c.count} <span className="text-xs text-gray-500">(ideal {c.ideal[0]}-{c.ideal[1]})</span>
+                                                </span>
                                             </div>
-                                            <div className="w-full bg-gray-700 rounded-full h-1.5">
-                                                <div className={`h-1.5 rounded-full ${barColor}`} style={{ width: `${pctBar}%` }} />
-                                            </div>
-                                            {c.status !== 'ok' && <div className="text-xs text-gray-400 mt-1.5">{c.advice}</div>}
+                                            <div className="text-xs text-gray-400 mt-1.5">{c.advice}</div>
                                         </div>
                                     )
                                 })}
+                                {analise.issues_count === 0 && (
+                                    <div className="text-sm text-green-400 bg-gray-800 rounded-xl px-4 py-3">
+                                        ✅ Todas as categorias dentro da faixa recomendada.
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -1203,16 +1334,43 @@ function AnalysisPageContent() {
                         {analise.tribal_cohesion && analise.tribal_cohesion.leader_type && (
                             <div className="mt-6 border-t border-gray-800 pt-5">
                                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">🎯 Coesão Tribal</div>
+                                {/* Dois eixos SEPARADOS de propósito: um score único
+                                    misturando os dois não significa nada verificável
+                                    (um deck 100% do tipo aparecia como "78%" logo acima
+                                    da frase "100% das cartas são X"). */}
                                 <div className="bg-gray-800 rounded-xl px-4 py-3">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm text-white font-medium">{analise.tribal_cohesion.label}</span>
-                                        <span className="text-sm font-bold text-purple-400">{analise.tribal_cohesion.cohesion_pct}%</span>
+                                    <div className="text-sm text-white font-medium mb-3">{analise.tribal_cohesion.label}</div>
+
+                                    <div className="mb-3">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="text-xs text-gray-300">Concentração no tipo</span>
+                                            <span className="text-xs font-bold text-purple-400">
+                                                {analise.tribal_cohesion.same_type_pct}%
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-700 rounded-full h-1.5">
+                                            <div className="h-1.5 rounded-full bg-purple-500"
+                                                style={{ width: `${analise.tribal_cohesion.same_type_pct}%` }} />
+                                        </div>
+                                        <div className="text-xs text-gray-500 mt-1">
+                                            cartas com o tipo {analise.tribal_cohesion.leader_type}
+                                        </div>
                                     </div>
-                                    <div className="w-full bg-gray-700 rounded-full h-1.5 mb-2">
-                                        <div className="h-1.5 rounded-full bg-purple-500" style={{ width: `${analise.tribal_cohesion.cohesion_pct}%` }} />
-                                    </div>
-                                    <div className="text-xs text-gray-400">
-                                        {analise.tribal_cohesion.same_type_pct}% das cartas são {analise.tribal_cohesion.leader_type} · {analise.tribal_cohesion.hook_count} cartas reforçam o tipo
+
+                                    <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="text-xs text-gray-300">Cartas que exploram o tipo</span>
+                                            <span className="text-xs font-bold text-cyan-400">
+                                                {analise.tribal_cohesion.hook_pct}%
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-700 rounded-full h-1.5">
+                                            <div className="h-1.5 rounded-full bg-cyan-500"
+                                                style={{ width: `${analise.tribal_cohesion.hook_pct}%` }} />
+                                        </div>
+                                        <div className="text-xs text-gray-500 mt-1">
+                                            {analise.tribal_cohesion.hook_count} cartas citam {analise.tribal_cohesion.leader_type} no efeito
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1220,62 +1378,30 @@ function AnalysisPageContent() {
                     </div>
                 )}
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
-                    <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">🎲 Simulação de 10.000 Mãos</div>
-                    {!simDone ? (
-                        <div className="text-center text-gray-400 py-8">Calculando simulação...</div>
-                    ) : simResult && (
-                        <>
-                            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-                                {[
-                                    { label: 'Taxa de Brick', value: simResult.brickRate, icon: '💀', invert: true, desc: 'Mão sem carta jogável e sem counter' },
-                                    { label: 'Searcher na abertura', value: simResult.searcherRate, icon: '🔍', invert: false, desc: 'Mão com pelo menos 1 searcher' },
-                                    { label: 'Counter 2k na abertura', value: simResult.counter2kRate, icon: '🛡️', invert: false, desc: 'Mão com pelo menos 1 counter 2000' },
-                                    { label: 'Blocker na abertura', value: simResult.blockerRate, icon: '🔒', invert: false, desc: 'Mão com pelo menos 1 blocker' },
-                                    { label: 'Carta ≤2 na abertura', value: simResult.low2Rate, icon: '⚡', invert: false, desc: 'Mão com pelo menos 1 carta custo ≤2' },
-                                ].map(({ label, value, icon, invert, desc }) => {
-                                    const good = invert ? value < 0.15 : value >= 0.5
-                                    const ok = invert ? value < 0.30 : value >= 0.35
-                                    const color = good ? 'text-green-400' : ok ? 'text-yellow-400' : 'text-red-400'
-                                    const bar = good ? 'bg-green-500' : ok ? 'bg-yellow-500' : 'bg-red-500'
-                                    return (
-                                        <div key={label} className="bg-gray-800 rounded-xl p-4 text-center">
-                                            <div className="text-2xl mb-1">{icon}</div>
-                                            <div className={`text-2xl font-black ${color}`}>{pct(value)}</div>
-                                            <div className="w-full bg-gray-700 rounded-full h-1.5 my-2">
-                                                <div className={`h-1.5 rounded-full ${bar}`} style={{ width: `${invert ? (1 - value) * 100 : value * 100}%` }} />
-                                            </div>
-                                            <div className="text-xs font-semibold text-gray-300">{label}</div>
-                                            <div className="text-xs text-gray-500 mt-1">{desc}</div>
+                    <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1">💀 Risco de Mão Travada</div>
+                    <div className="text-xs text-gray-500 mb-4">
+                        Probabilidade exata (hipergeométrica) de abrir 5 cartas sem nenhuma jogada possível.
+                        Counters 2000 não contam como jogada — eles são guardados para defesa.
+                    </div>
+                    {brickStats && (
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            {brickStats.map(({ label, value, desc }) => {
+                                const good = value < 0.10
+                                const ok = value < 0.20
+                                const color = good ? 'text-green-400' : ok ? 'text-yellow-400' : 'text-red-400'
+                                const bar = good ? 'bg-green-500' : ok ? 'bg-yellow-500' : 'bg-red-500'
+                                return (
+                                    <div key={label} className="bg-gray-800 rounded-xl p-4 text-center">
+                                        <div className={`text-2xl font-black ${color}`}>{pct(value)}</div>
+                                        <div className="w-full bg-gray-700 rounded-full h-1.5 my-2">
+                                            <div className={`h-1.5 rounded-full ${bar}`} style={{ width: `${value * 100}%` }} />
                                         </div>
-                                    )
-                                })}
-                            </div>
-                            <div className="border-t border-gray-800 pt-5">
-                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📌 Frequência na Abertura — Cartas mais vistas</div>
-                                <div className="text-xs text-gray-500 mb-3">% das 10.000 mãos simuladas em que esta carta apareceu. Alta frequência = muitas cópias ou carta central do deck.</div>
-                                <div className="space-y-2">
-                                    {simResult.dependencia.slice(0, 8).map(({ dc, pct: p }, i) => {
-                                        const depPct = Math.min(Math.round(p * 100), 100)
-                                        const color = depPct >= 60 ? 'bg-red-500' : depPct >= 40 ? 'bg-orange-500' : 'bg-blue-500'
-                                        return (
-                                            <div key={i} className="flex items-center gap-3 bg-gray-800 rounded-xl px-3 py-2">
-                                                <img src={dc.card.card_image} className="w-8 h-11 object-cover rounded flex-shrink-0 cursor-pointer hover:brightness-110" onClick={() => setSelectedCard(dc.card)} />
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="text-xs text-white truncate font-medium">{dc.card.card_name}</div>
-                                                    <div className="text-xs text-gray-500">{(dc.card.card_set_id || '').split('_')[0]} · ×{dc.quantity}</div>
-                                                </div>
-                                                <div className="flex items-center gap-2 flex-shrink-0">
-                                                    <div className="w-24 bg-gray-700 rounded-full h-2">
-                                                        <div className={`h-2 rounded-full ${color}`} style={{ width: `${Math.min(depPct, 100)}%` }} />
-                                                    </div>
-                                                    <span className={`text-sm font-bold w-10 text-right ${depPct >= 60 ? 'text-red-400' : depPct >= 40 ? 'text-orange-400' : 'text-blue-400'}`}>{depPct}%</span>
-                                                </div>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-                            </div>
-                        </>
+                                        <div className="text-xs font-semibold text-gray-300">{label}</div>
+                                        <div className="text-xs text-gray-500 mt-1">{desc}</div>
+                                    </div>
+                                )
+                            })}
+                        </div>
                     )}
                 </div>
 
@@ -1303,7 +1429,7 @@ function AnalysisPageContent() {
                                         <div className="flex gap-1.5 flex-wrap">
                                             {mao.map((dc, ci) => (
                                                 <div key={ci} className="flex flex-col items-center gap-0.5">
-                                                    <img src={dc.card.card_image} className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
+                                                    <CardImage src={dc.card.card_image} alt={dc.card.card_name} className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
                                                     <span className="text-gray-400 text-center" style={{ width: '56px', fontSize: '9px' }}>
                                                         {dc.card.card_name.length > 10 ? dc.card.card_name.slice(0, 10) + '…' : dc.card.card_name}
                                                     </span>
@@ -1328,7 +1454,7 @@ function AnalysisPageContent() {
                                         <div className="flex gap-1.5 flex-wrap">
                                             {mao.map((dc, ci) => (
                                                 <div key={ci} className="flex flex-col items-center gap-0.5">
-                                                    <img src={dc.card.card_image} className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
+                                                    <CardImage src={dc.card.card_image} alt={dc.card.card_name} className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
                                                     <span className="text-gray-400 text-center" style={{ width: '56px', fontSize: '9px' }}>
                                                         {dc.card.card_name.length > 10 ? dc.card.card_name.slice(0, 10) + '…' : dc.card.card_name}
                                                     </span>
@@ -1475,7 +1601,7 @@ function AnalysisPageContent() {
                                             <div className="text-xs text-gray-300 mb-1.5 leading-snug">{sugestao1}</div>
                                             <div className="flex gap-1 flex-wrap">
                                                 {cartas1.map((dc, i) => (
-                                                    <img key={i} src={dc.card.card_image} className="w-7 h-10 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
+                                                    <CardImage key={i} src={dc.card.card_image} alt={dc.card.card_name} className="w-7 h-10 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
                                                 ))}
                                             </div>
                                         </div>
@@ -1501,7 +1627,7 @@ function AnalysisPageContent() {
                                             <div className="text-xs text-gray-300 mb-1.5 leading-snug">{sugestao2}</div>
                                             <div className="flex gap-1 flex-wrap">
                                                 {cartas2.map((dc, i) => (
-                                                    <img key={i} src={dc.card.card_image} className="w-7 h-10 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
+                                                    <CardImage key={i} src={dc.card.card_image} alt={dc.card.card_name} className="w-7 h-10 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
                                                 ))}
                                             </div>
                                         </div>
@@ -1512,82 +1638,6 @@ function AnalysisPageContent() {
                     </div>
                 </div>
 
-                {/* FUNÇÕES + LISTA */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-                        <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Funções do Deck</div>
-                        <div className="space-y-2">
-                            {[
-                                { label: 'Blocker', qty: countQty(blockers), color: 'bg-blue-600', cards: blockers },
-                                { label: 'Rush', qty: countQty(rush), color: 'bg-red-600', cards: rush },
-                                { label: 'Double Attack', qty: countQty(doubleAtk), color: 'bg-orange-600', cards: doubleAtk },
-                                { label: 'Trigger', qty: countQty(triggers), color: 'bg-yellow-600', cards: triggers },
-                                { label: 'Banish', qty: countQty(banish), color: 'bg-purple-600', cards: banish },
-                                { label: 'Unblockable', qty: countQty(unblockable), color: 'bg-pink-600', cards: unblockable },
-                                { label: 'Searcher', qty: countQty(searchers), color: 'bg-green-600', cards: searchers },
-                                { label: 'Draw Power', qty: countQty(drawPower), color: 'bg-teal-600', cards: drawPower },
-                                { label: 'Counter', qty: countQty(counters), color: 'bg-gray-600', cards: counters },
-                            ].map(({ label, qty, color, cards }) => (
-                                <div key={label} className="flex items-center gap-3 bg-gray-800 rounded-xl px-3 py-2.5">
-                                    <span className={`text-sm px-3 py-1 rounded-full text-white font-bold min-w-[110px] text-center ${color}`}>{label}</span>
-                                    <div className="flex-1">
-                                        <div className="w-full bg-gray-700 rounded-full h-2">
-                                            <div className={`h-2 rounded-full ${color}`} style={{ width: `${Math.min(qty / 12 * 100, 100)}%` }} />
-                                        </div>
-                                    </div>
-                                    <span className="text-base font-bold text-white w-7 text-right">{qty}</span>
-                                    <div className="flex -space-x-2">
-                                        {cards.slice(0, 3).map((dc, i) => (
-                                            <img key={i} src={dc.card.card_image} className="w-9 h-12 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" style={{ zIndex: i }} onClick={() => setSelectedCard(dc.card)} />
-                                        ))}
-                                        {cards.length > 3 && <div className="w-9 h-12 bg-gray-700 rounded border border-gray-600 flex items-center justify-center text-xs text-gray-400 font-bold">+{cards.length - 3}</div>}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-                        <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">
-                            Lista do Deck <span className="text-gray-600 font-normal">({totalCards}/50)</span>
-                        </div>
-                        <div className="overflow-y-auto card-scroll" style={{ maxHeight: '600px', scrollbarWidth: 'thin', scrollbarColor: '#f97316 #1f2937' }}>
-                            {deck.leader && (
-                                <div className="mb-5">
-                                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Leader</div>
-                                    <div className="flex gap-2">
-                                        <div className="flex flex-col items-center gap-1">
-                                            <div className="relative" style={{ width: '90px', height: '126px' }}>
-                                                <img src={deck.leader.card_image} className="absolute w-full h-full object-cover rounded-lg border-2 border-yellow-500 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(deck.leader)} />
-                                            </div>
-                                            <div className="text-xs text-gray-400 font-mono text-center" style={{ width: '90px' }}>{(deck.leader.card_set_id || '').split('_')[0]}</div>
-                                            <div className="text-xs text-white text-center font-medium leading-tight" style={{ width: '90px' }}>{deck.leader.card_name}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            <div className="text-xs text-gray-500 uppercase tracking-wide mb-3">Main Deck</div>
-                            <div className="flex flex-wrap gap-4">
-                                {allCards.sort((a, b) => parseInt(a.card.card_cost || '0') - parseInt(b.card.card_cost || '0')).map((dc, i) => (
-                                    <div key={i} className="flex flex-col items-center gap-1">
-                                        <span className="text-xs text-gray-400">{dc.card.card_cost ? `Custo ${dc.card.card_cost}` : '—'}</span>
-                                        <div className="relative cursor-pointer" style={{ width: '90px', height: `${120 + (Math.min(dc.quantity, 4) - 1) * 7}px` }} onClick={() => setSelectedCard(dc.card)}>
-                                            {Array.from({ length: Math.min(dc.quantity, 4) }).map((_, idx) => (
-                                                <img key={idx} src={dc.card.card_image} className="absolute object-cover rounded-lg border border-gray-700 hover:brightness-110 transition" style={{ width: '86px', height: '120px', left: `${idx * 3}px`, top: `${idx * 7}px`, zIndex: idx }} />
-                                            ))}
-                                        </div>
-                                        <div className="text-xs text-gray-400 font-mono text-center" style={{ width: '90px' }}>{(dc.card.card_set_id || '').split('_')[0]}</div>
-                                        <div className="text-xs text-white text-center font-medium leading-tight" style={{ width: '90px' }}>{dc.card.card_name}</div>
-                                        <div className="flex items-center gap-1.5 bg-gray-800 border border-gray-700 rounded-lg px-2 py-0.5">
-                                            <div className="flex gap-0.5">{Array.from({ length: dc.quantity }).map((_, idx) => <div key={idx} className="w-2 h-2 rounded-full bg-gray-400" />)}</div>
-                                            <span className="text-xs font-bold text-white ml-1">×{dc.quantity}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             {/* CTA: Simular */}
@@ -1598,19 +1648,60 @@ function AnalysisPageContent() {
                 </a>
             </div>
 
+            {/* Popup: cartas de uma função da composição */}
+            {funcaoAberta && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                    onClick={() => setFuncaoAberta(null)}>
+                    <div className="bg-gray-900 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700"
+                        onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between p-6 border-b border-gray-800 sticky top-0 bg-gray-900 z-10">
+                            <div>
+                                <div className="text-2xl font-bold">{funcaoAberta.label}</div>
+                                <div className="text-sm text-gray-400 mt-0.5">
+                                    {funcaoAberta.cards.reduce((s, dc) => s + dc.quantity, 0)} cartas · {funcaoAberta.cards.length} distintas
+                                    <span className="text-gray-600"> · clique numa carta para ver o detalhe</span>
+                                </div>
+                            </div>
+                            <button onClick={() => setFuncaoAberta(null)}
+                                className="text-gray-400 hover:text-white text-3xl leading-none px-2">×</button>
+                        </div>
+                        <div className="p-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {funcaoAberta.cards.map((dc, i) => (
+                                <button key={i} onClick={() => { setSelectedCard(dc.card); setFuncaoAberta(null) }}
+                                    className="bg-gray-800 hover:bg-gray-700 rounded-xl p-3 text-left transition group">
+                                    <div className="relative mb-2">
+                                        <CardImage src={dc.card.card_image} alt={dc.card.card_name}
+                                            className="w-full h-auto rounded-lg object-contain group-hover:brightness-110 transition" />
+                                        <span className="absolute top-1 right-1 bg-black/80 text-white text-sm font-bold px-2 py-0.5 rounded-lg">
+                                            ×{dc.quantity}
+                                        </span>
+                                    </div>
+                                    <div className="text-sm text-white font-medium leading-tight line-clamp-2">{dc.card.card_name}</div>
+                                    <div className="text-xs text-gray-500 mt-0.5">
+                                        {(dc.card.card_set_id || '').split('_')[0]}
+                                        {dc.card.card_cost && <> · custo {dc.card.card_cost}</>}
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Modal */}
             {selectedCard && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedCard(null)}>
-                    <div className="bg-gray-900 rounded-2xl w-full max-w-lg shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
-                        <div className="flex gap-4 p-5">
-                            <img src={selectedCard.card_image} alt={selectedCard.card_name} className="w-36 rounded-xl flex-shrink-0 object-contain" />
+                    <div className="bg-gray-900 rounded-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
+                        <div className="flex flex-col sm:flex-row gap-6 p-6">
+                            <CardImage src={selectedCard.card_image} alt={selectedCard.card_name}
+                                className="w-full sm:w-72 h-auto rounded-xl flex-shrink-0 object-contain self-center" />
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className="text-orange-400 font-mono text-sm">{(selectedCard.card_set_id || '').split('_')[0]}</span>
+                                    <span className="text-orange-400 font-mono text-base">{(selectedCard.card_set_id || '').split('_')[0]}</span>
                                     <span className="text-sm bg-gray-800 px-2 py-0.5 rounded-lg text-gray-300">{selectedCard.rarity}</span>
                                 </div>
-                                <h2 className="text-lg font-bold text-white leading-tight mb-3">{selectedCard.card_name}</h2>
-                                <div className="grid grid-cols-2 gap-2 mb-3">
+                                <h2 className="text-2xl font-bold text-white leading-tight mb-4">{selectedCard.card_name}</h2>
+                                <div className="grid grid-cols-2 gap-3 mb-3">
                                     {[
                                         { label: 'Tipo', value: selectedCard.card_type },
                                         { label: 'Cor', value: selectedCard.card_color },
@@ -1620,21 +1711,21 @@ function AnalysisPageContent() {
                                         { label: 'Counter', value: selectedCard.counter_amount },
                                         { label: 'Atributo', value: selectedCard.attribute },
                                     ].filter(s => s.value).map(stat => (
-                                        <div key={stat.label} className="bg-gray-800 rounded-lg px-2 py-1.5">
+                                        <div key={stat.label} className="bg-gray-800 rounded-lg px-3 py-2">
                                             <div className="text-gray-500 text-xs">{stat.label}</div>
-                                            <div className="font-semibold text-white text-base">{stat.value}</div>
+                                            <div className="font-semibold text-white text-lg">{stat.value}</div>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         </div>
                         {selectedCard.card_text && (
-                            <div className="px-5 pb-3">
-                                <div className="bg-gray-800 rounded-xl p-3 text-sm text-gray-200 leading-relaxed">{selectedCard.card_text}</div>
+                            <div className="px-6 pb-4">
+                                <div className="bg-gray-800 rounded-xl p-4 text-base text-gray-200 leading-relaxed whitespace-pre-line">{selectedCard.card_text}</div>
                             </div>
                         )}
-                        <div className="px-5 pb-5">
-                            <button onClick={() => setSelectedCard(null)} className="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded-xl text-sm font-medium transition">Fechar</button>
+                        <div className="px-6 pb-6">
+                            <button onClick={() => setSelectedCard(null)} className="w-full bg-gray-700 hover:bg-gray-600 py-2.5 rounded-xl text-sm font-medium transition">Fechar</button>
                         </div>
                     </div>
                 </div>

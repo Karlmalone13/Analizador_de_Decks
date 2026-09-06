@@ -28,6 +28,95 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-09-06 (752) - Redundancia da tela de analise, popups maiores, Draw Power certo, e faxina de lint que revelou 219 cartas SEM imagem (o `<Image>` do Next quebra em `src` vazio)
+
+Sessao de front-end, continuacao direta do bloco 751. Duas metades.
+
+### 1. Tela de analise: redundancia, popups e o achado do Draw Power
+
+Usuario, depois de varrer a tela: *"talvez esteja com informacao demais,
+considerar botar botoes para abrir popups"* e depois *"vamos atacar a
+redundancia agora"*.
+
+- Funcoes do deck agrupadas em **Ofensivo / Defensivo / Consistencia**,
+  cada uma abrindo um popup (`funcaoAberta`) em vez de despejar tudo na
+  tela. Popups e imagens de carta aumentados a pedido.
+- **Custo medio estava DUPLICADO** (painel do lider + tiles novos) --
+  duplicacao que eu mesmo introduzi ao criar os tiles. Removida do painel
+  do lider, que virou arte grande `object-contain` (antes `w-36 h-48
+  object-cover`, que alem de pequena CORTAVA a arte).
+- **Draw Power contava 6, deviam ser 2** (usuario: *"vc botou uma das duas
+  cartas do search ali, mas nao as duas, pq?"*). Causa: o front contava
+  qualquer carta com `draw` em QUALQUER gatilho -- inclusive `[Trigger]`,
+  que so dispara ao virar da vida, e nao e draw que o jogador controla.
+  Fix na fonte, nao no consumidor (mesma regra do bloco 751): campo novo
+  `draws_ativo` em `gerar_card_analysis_db.py`, que ignora o gatilho
+  `trigger`, exposto por `_flags_da_carta()` no `/analyze`.
+- **Coesao tribal: `cohesion_pct` REMOVIDO** (`tribal_cohesion.py`). O
+  usuario rejeitou o numero unico duas vezes -- um deck 100% East Blue
+  aparecia como "78%" logo abaixo da frase "100% das cartas sao East
+  Blue". O peso da media tinha mudado de 3 pra 1 no mesmo dia sem
+  criterio empirico: qualquer valor unico so empurraria o erro pra outro
+  deck. Viraram DOIS eixos separados (`same_type_pct` x `hook_pct`) com
+  rotulo lido de cortes calibrados na distribuicao REAL dos 184 decks de
+  torneio (tipo p25/mediana/p75 = 56/70/94 -> corte 70; ganchos 8/28/36
+  -> corte 25). Discrimina 83 "tribal de verdade" / 10 "good-stuff
+  mono-tipo" / 91 "pouca dependencia".
+
+### 2. Faxina de lint -- e o achado que ela desenterrou
+
+Usuario: *"limpa os tres"*. **Correcao registrada**: eu havia reportado
+"17 -> 11 warnings", mas esse numero era **so do `analysis/page.tsx`**. O
+projeto inteiro tinha **51 problemas e 1 ERRO** -- e o erro (`any` no
+`replayData` do `/simulate`) fui eu que introduzi na leva anterior, contra
+a regra do `CLAUDE.md` de "zero erros hoje, nao regredir". Estado final:
+**0 problemas, `tsc --noEmit` limpo, `next build` passa**.
+
+**O achado que quase virou bug em producao**: `next/image` **LANCA** em
+`src` vazio. Varredura do banco inteiro (4557 cartas): **219 cartas com
+`card_image` nulo** -- justamente as promos `P-` transcritas na mao no
+bloco 748, que nunca tiveram URL publica. Uma troca ingenua de `<img>`
+por `<Image>` derrubaria a pagina em QUALQUER deck que usasse uma delas.
+Por isso as 26 imagens passaram por um wrapper unico novo,
+`src/components/CardImage.tsx`, que cai num placeholder com o nome da
+carta quando o `src` e vazio OU quando a URL da 404 (`onError`) -- o
+`<Image>` nunca chega a ser construido no caminho vazio.
+
+Segundo achado, **so visivel rodando**: a primeira versao do placeholder
+COLAPSAVA numa tira fina de uma linha de texto onde o `<img>` original
+usava `w-full h-auto`, porque um `<div>` vazio nao tem altura
+intrinseca. Corrigido com `aspectRatio: 480/671` como default
+sobrescrivivel pelo chamador. Verificado na `/cards` com a P-038.
+
+Tambem: `exhaustive-deps` (10 warnings) nao foi silenciado. A causa real
+era `const supabase = createClient()` no corpo do componente, devolvendo
+referencia nova a cada render -- listar nas deps recarregaria em loop.
+Virou `useMemo(() => createClient(), [])` nos 4 arquivos, e ai listar
+passou a ser correto e inocuo. `loadDecks` do `/meus-decks` virou
+`useCallback([supabase])`.
+
+`next.config.ts` ganhou `remotePatterns` pros dois hosts reais medidos no
+banco (optcgapi.com 4263, en.onepiece-cardgame.com 75) mais o favicon do
+Google do login, e `imageSizes`/`deviceSizes` enxutos pra o optimizer nao
+gerar uma variante por breakpoint padrao em 300+ artes. Confirmado no ar:
+host permitido -> 200, host fora da lista -> 400.
+
+**Verificacao (honesta sobre o que NAO foi coberto)**: `npx eslint` 0
+problemas, `npx tsc --noEmit` limpo, `npx next build` OK,
+`smoke_fast.py` OK, `/cards` `/deck` `/replay-demo` `/meus-decks`
+renderizando com o optimizer e com o placeholder. **A `/analysis` com
+deck real NAO foi aberta**: o navegador de preview desta sessao nao esta
+logado na conta do usuario (RLS -> "Deck nao encontrado") e credencial
+nao e coisa que eu digite. Fica como unico item por conferir no olho.
+
+### Pendente
+
+- Abrir `/analysis` logado e conferir o layout das imagens migradas.
+- 219 cartas sem arte continuam sem arte -- o placeholder e paliativo, nao
+  conserta o dado. As imagens existem na pasta do jogo (bloco 748).
+
+---
+
 ## 2026-09-05 (751) - A tela de analise mentia em DOIS lugares, mesma causa raiz: consumidor reinterpretando `card_text` por substring em vez de usar o efeito PARSEADO
 
 Usuario: "estou com porcentagens erradas, contas antigas e desatualizadas".
