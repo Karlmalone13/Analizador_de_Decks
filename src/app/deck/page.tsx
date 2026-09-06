@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense , useMemo} from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
 import { useSearchParams } from 'next/navigation'
 import { isCardLegal, type Format } from '../../utils/format-legality'
+import CardImage from '@/components/CardImage'
 
 interface Card {
   id: string
@@ -79,7 +80,12 @@ export default function DeckBuilderPage() {
 }
 
 function DeckBuilderPageContent() {
-  const supabase = createClient()
+  // `useMemo` e o que torna a referencia do client ESTAVEL entre renders.
+    // Sem ele, `createClient()` devolvia um objeto novo a cada render e listar
+    // `supabase` nas dependencias abaixo recarregaria os dados em loop -- era
+    // por isso que os efeitos vinham com a dependencia faltando (10 warnings de
+    // exhaustive-deps). Com a referencia estavel, listar e correto e inocuo.
+  const supabase = useMemo(() => createClient(), [])
   const [search, setSearch] = useState('')
   const [results, setResults] = useState<Card[]>([])
   const [showFilters, setShowFilters] = useState(false)
@@ -132,7 +138,7 @@ function DeckBuilderPageContent() {
       setResults([]) // não mostra nada até o usuário buscar
     }
     load()
-  }, [])
+  }, [supabase])
 
   // useEffect novo — carrega deck da URL se vier com ?id=
   const searchParams = useSearchParams()
@@ -154,7 +160,7 @@ function DeckBuilderPageContent() {
       } catch { }
     }
     loadDeckFromUrl()
-  }, [])
+  }, [searchParams, supabase])
 
   function searchCardsWithData(
     cards: Card[],
@@ -596,14 +602,11 @@ function DeckBuilderPageContent() {
                         L
                       </div>
                     )}
-                    <img
+                    <CardImage
                       src={card.card_image}
                       alt={card.card_name}
-                      className="w-full cursor-pointer"
+                      className="w-full h-auto cursor-pointer"
                       onClick={() => addCard(card)}
-                      onError={e => {
-                        e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgZmlsbD0iIzFmMjkzNyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjI0IiBmaWxsPSIjNGI1NTYzIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+8J+Ug8K/PC90ZXh0Pjwvc3ZnPg=='
-                      }}
                     />
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-2 pointer-events-none group-hover:pointer-events-auto">
                       <button onClick={() => addCard(card)} className="bg-orange-600 hover:bg-orange-500 text-white font-bold text-lg w-10 h-10 rounded-full transition">+</button>
@@ -721,8 +724,9 @@ function DeckBuilderPageContent() {
                   </div>
                   <div className="flex items-center gap-3 bg-gray-900 p-2">
                     {/* Imagem do leader maior */}
-                    <img
+                    <CardImage
                       src={deck.leader.card_image}
+                      alt={deck.leader.card_name}
                       className="object-cover rounded-lg flex-shrink-0 cursor-pointer hover:opacity-80 transition border-2 border-yellow-400 shadow-[0_0_8px_2px_rgba(250,204,21,0.5)]"
                       style={{ width: '88px', height: '124px' }}
                       onClick={() => setSelectedCard(deck.leader)}
@@ -776,9 +780,10 @@ function DeckBuilderPageContent() {
                         onClick={() => setSelectedCard(dc.card)}
                       >
                         {Array.from({ length: Math.min(dc.quantity, 4) }).map((_, idx) => (
-                          <img
+                          <CardImage
                             key={idx}
                             src={dc.card.card_image}
+                            alt={dc.card.card_name}
                             className="absolute object-cover rounded-lg border border-gray-700 hover:brightness-110 transition"
                             style={{
                               width: '86px',
@@ -848,7 +853,7 @@ function DeckBuilderPageContent() {
                   return (
                     <div key={d.id} className="flex items-center gap-3 bg-gray-800 rounded-xl p-3 transition">
                       <div className="w-10 h-14 rounded-lg flex-shrink-0 overflow-hidden bg-gray-700">
-                        {leaderImg && <img src={leaderImg} className="w-full h-full object-cover" onError={e => { e.currentTarget.style.display = 'none' }} />}
+                        {leaderImg && <CardImage src={leaderImg} alt={d.name} className="w-full h-full object-cover" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-sm text-white truncate">{d.name}</div>
@@ -911,7 +916,7 @@ function DeckBuilderPageContent() {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedCard(null)}>
           <div className="bg-gray-900 rounded-2xl w-full max-w-lg shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
             <div className="flex gap-4 p-5">
-              <img src={selectedCard.card_image} alt={selectedCard.card_name} className="w-36 rounded-xl flex-shrink-0 object-contain" />
+              <CardImage src={selectedCard.card_image} alt={selectedCard.card_name} className="w-36 h-auto rounded-xl flex-shrink-0 object-contain" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-orange-400 font-mono text-sm">{(selectedCard.card_set_id || '').split('_')[0]}</span>

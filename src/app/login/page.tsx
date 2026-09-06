@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/client'
 import { useState } from 'react'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -67,7 +68,7 @@ export default function LoginPage() {
           onClick={loginWithGoogle}
           className="w-full flex items-center justify-center gap-3 bg-white text-gray-900 font-semibold py-3 px-4 rounded-xl hover:bg-gray-100 transition mb-6"
         >
-          <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="Google" />
+          <Image src="https://www.google.com/favicon.ico" width={20} height={20} className="w-5 h-5" alt="Google" />
           Entrar com Google
         </button>
 

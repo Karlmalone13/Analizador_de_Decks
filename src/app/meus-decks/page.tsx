@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState , useMemo, useCallback} from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
+import CardImage from '@/components/CardImage'
 
 interface DeckSummary {
     id: string
@@ -20,14 +21,19 @@ const colorClass: Record<string, string> = {
 }
 
 export default function MeusDecksPage() {
-    const supabase = createClient()
+    // `useMemo` e o que torna a referencia do client ESTAVEL entre renders.
+    // Sem ele, `createClient()` devolvia um objeto novo a cada render e listar
+    // `supabase` nas dependencias abaixo recarregaria os dados em loop -- era
+    // por isso que os efeitos vinham com a dependencia faltando (10 warnings de
+    // exhaustive-deps). Com a referencia estavel, listar e correto e inocuo.
+    const supabase = useMemo(() => createClient(), [])
     const [decks, setDecks] = useState<DeckSummary[]>([])
     const [loading, setLoading] = useState(true)
     const [deleting, setDeleting] = useState<string | null>(null)
     const [duplicating, setDuplicating] = useState<string | null>(null)
     const [search, setSearch] = useState('')
 
-    async function loadDecks() {
+    const loadDecks = useCallback(async () => {
         setLoading(true)
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) { setLoading(false); return }
@@ -56,11 +62,11 @@ export default function MeusDecksPage() {
             setDecks(summaries)
         }
         setLoading(false)
-    }
+    }, [supabase])
 
     useEffect(() => {
         queueMicrotask(() => { loadDecks() })
-    }, [])
+    }, [loadDecks])
 
     async function deleteDeck(id: string) {
         if (!confirm('Excluir este deck? Esta ação não pode ser desfeita.')) return
@@ -183,11 +189,11 @@ export default function MeusDecksPage() {
                                             {/* Imagem do leader */}
                                             <div className="flex-shrink-0">
                                                 {deck.leader_image ? (
-                                                    <img
+                                                    <CardImage
                                                         src={deck.leader_image}
+                                                        alt={deck.leader_name || deck.name}
                                                         style={{ width: '88px', height: '124px' }}
                                                         className="object-cover rounded-xl border border-gray-700"
-                                                        onError={e => { e.currentTarget.style.display = 'none' }}
                                                     />
                                                 ) : (
                                                     <div style={{ width: '88px', height: '124px' }} className="bg-gray-800 rounded-xl border border-gray-700 flex items-center justify-center text-gray-600 text-2xl">

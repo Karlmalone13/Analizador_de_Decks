@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
+import CardImage from '@/components/CardImage'
 
 const supabase = createClient()
 
@@ -356,13 +357,10 @@ export default function CardsPage() {
               className="cursor-pointer rounded-xl overflow-hidden border border-gray-800 hover:border-orange-500 transition hover:scale-105 group"
             >
               <div className="relative">
-                <img
+                <CardImage
                   src={card.card_image}
                   alt={card.card_name}
-                  className="w-full"
-                  onError={e => {
-                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgZmlsbD0iIzFmMjkzNyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjI0IiBmaWxsPSIjNGI1NTYzIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+8J+Ug8K/PC90ZXh0Pjwvc3ZnPg=='
-                  }}
+                  className="w-full h-auto"
                 />
                 {card.card_cost && (
                   <div className="absolute top-1 left-1 bg-blue-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow">
@@ -391,7 +389,7 @@ export default function CardsPage() {
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelected(null)}>
             <div className="bg-gray-900 rounded-2xl w-full max-w-lg shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
               <div className="flex gap-4 p-5">
-                <img src={selected.card_image} alt={selected.card_name} className="w-36 rounded-xl flex-shrink-0 object-contain" />
+                <CardImage src={selected.card_image} alt={selected.card_name} className="w-36 h-auto rounded-xl flex-shrink-0 object-contain" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-orange-400 font-mono text-sm">{(selected.card_set_id || '').split('_')[0]}</span>

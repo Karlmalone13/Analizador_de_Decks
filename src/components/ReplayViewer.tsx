@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import CardImage from '@/components/CardImage'
 
 interface ReplayCard {
     code: string
@@ -161,7 +162,6 @@ function MiniCard({ children, title, card }: { children: React.ReactNode; title?
 
 function HandCardTile({ card }: { card: ReplayHandCard }) {
     const [hoveredCard, setHoveredCard] = useState<{ card: ReplayCard; x: number; y: number } | null>(null)
-    const [imgError, setImgError] = useState(false)
     const cost = card.effective_cost ?? card.cost
 
     const handleMouseEnter = (e: React.MouseEvent) => {
@@ -178,18 +178,8 @@ function HandCardTile({ card }: { card: ReplayHandCard }) {
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
             >
-                {card.image && !imgError ? (
-                    <img
-                        src={card.image}
-                        alt={card.name}
-                        className="h-full w-full object-contain"
-                        onError={() => setImgError(true)}
-                    />
-                ) : (
-                    <div className="flex h-full items-center justify-center">
-                        <span className="text-[7px] text-gray-500 text-center px-0.5 leading-tight">{card.name}</span>
-                    </div>
-                )}
+                <CardImage src={card.image} alt={card.name}
+                    className="h-full w-full object-contain" />
             </div>
             {hoveredCard && (
                 <CardPopup card={hoveredCard.card} x={hoveredCard.x} y={hoveredCard.y} />
@@ -306,7 +296,6 @@ function TurnStateSummary({ snapshot, nameA, nameB }: { snapshot?: ReplaySnapsho
 }
 
 function CardPopup({ card, x, y }: { card: ReplayCard; x: number; y: number }) {
-    const [imgError, setImgError] = useState(false)
 
     // Adjust position to keep popup on screen
     const left = Math.min(x + 12, window.innerWidth - 200)
@@ -318,18 +307,8 @@ function CardPopup({ card, x, y }: { card: ReplayCard; x: number; y: number }) {
             style={{ left, top }}
         >
             <div className="bg-gray-900 border border-gray-600 rounded-xl shadow-2xl overflow-hidden w-44">
-                {card.image && !imgError ? (
-                    <img
-                        src={card.image}
-                        alt={card.name}
-                        className="w-full object-cover"
-                        onError={() => setImgError(true)}
-                    />
-                ) : (
-                    <div className="h-40 bg-gray-800 flex items-center justify-center text-gray-500 text-xs px-2 text-center">
-                        {card.name}
-                    </div>
-                )}
+                <CardImage src={card.image} alt={card.name}
+                    className="w-full h-auto object-cover" />
                 <div className="p-2">
                     <div className="text-xs font-bold text-white truncate">{card.name}</div>
                     <div className="text-xs text-gray-400">{card.code}</div>

@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback, Suspense } from 'react'
+import { useEffect, useState, useRef, Suspense , useMemo} from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
-import ReplayViewer from '@/components/ReplayViewer'
+import ReplayViewer, { type ReplayResult } from '@/components/ReplayViewer'
+import CardImage from '@/components/CardImage'
 
 interface Card {
     id: string
@@ -107,14 +108,6 @@ function parseDecklistText(text: string): ParsedEntry[] {
     return out
 }
 
-// Reconstrói o mesmo formato "QTYxCODE" para exportação (mesma convenção de entrada)
-function formatDecklistText(leader: Card | null, cards: DeckCard[]): string {
-    const lines: string[] = []
-    if (leader) lines.push(`1x${leader.card_set_id}`)
-    for (const dc of cards) lines.push(`${dc.quantity}x${dc.card.card_set_id}`)
-    return lines.join('\n')
-}
-
 export default function SimulatePage() {
     return (
         <Suspense fallback={null}>
@@ -124,7 +117,12 @@ export default function SimulatePage() {
 }
 
 function SimulatePageContent() {
-    const supabase = createClient()
+    // `useMemo` e o que torna a referencia do client ESTAVEL entre renders.
+    // Sem ele, `createClient()` devolvia um objeto novo a cada render e listar
+    // `supabase` nas dependencias abaixo recarregaria os dados em loop -- era
+    // por isso que os efeitos vinham com a dependencia faltando (10 warnings de
+    // exhaustive-deps). Com a referencia estavel, listar e correto e inocuo.
+    const supabase = useMemo(() => createClient(), [])
     const searchParams = useSearchParams()
     const deckId = searchParams.get('id')
 
@@ -168,7 +166,7 @@ function SimulatePageContent() {
     const [cancelling, setCancelling] = useState(false)
 
     // Replay state
-    const [replayData, setReplayData] = useState<any | null>(null)
+    const [replayData, setReplayData] = useState<ReplayResult | null>(null)
     const [replayLoading, setReplayLoading] = useState(false)
     const [showReplay, setShowReplay] = useState(false)
 
@@ -196,7 +194,7 @@ function SimulatePageContent() {
             setPickerLoading(false)
         }
         loadAll()
-    }, [deckId])
+    }, [deckId, supabase])
 
     function selectDeckFromPicker(d: DeckSummary) {
         // Reconstrói o objeto Deck a partir do summary — precisa de uma busca completa
@@ -224,7 +222,7 @@ function SimulatePageContent() {
             setLoading(false)
         }
         load()
-    }, [deckId])
+    }, [deckId, supabase])
 
     // ── Lista os outros decks do usuário, para a aba "Meus Decks" ──────────
     useEffect(() => {
@@ -252,7 +250,7 @@ function SimulatePageContent() {
             }
         }
         loadOwnDecks()
-    }, [tab, deckId])
+    }, [tab, deckId, supabase])
 
     // ── Conta quantas decklists de meta existem (placeholder informativo) ──
     useEffect(() => {
@@ -262,7 +260,7 @@ function SimulatePageContent() {
             setMetaCount(count ?? 0)
         }
         countMeta()
-    }, [tab])
+    }, [tab, supabase])
 
     // ── Parser + busca de imagens para a decklist colada ───────────────────
     useEffect(() => {
@@ -314,7 +312,7 @@ function SimulatePageContent() {
         }
         resolve()
         return () => { cancelled = true }
-    }, [pastedText, tab])
+    }, [pastedText, tab, supabase])
 
     // ── Inicia a simulação ───────────────────────────────────────────────────
     async function startSimulation() {
@@ -365,7 +363,7 @@ function SimulatePageContent() {
             }
             const data = await r.json() as { job_id: string }
             setJobId(data.job_id)
-        } catch (e) {
+        } catch {
             alert('Erro de conexão com a API de simulação.')
             setRunning(false)
         }
@@ -436,10 +434,10 @@ function SimulatePageContent() {
                 setReplayLoading(false)
                 return
             }
-            const data = await r.json()
+            const data = await r.json() as ReplayResult
             setReplayData(data)
             setShowReplay(true)
-        } catch (e) {
+        } catch {
             alert('Erro de conexão com a API.')
         } finally {
             setReplayLoading(false)
@@ -548,7 +546,7 @@ function SimulatePageContent() {
                                     </div>
                                     <div className="flex gap-4 p-4 items-center">
                                         {d.leader_image
-                                            ? <img src={d.leader_image} className="w-14 h-20 object-cover rounded-lg border border-gray-700 flex-shrink-0" />
+                                            ? <CardImage src={d.leader_image} alt={d.name} className="w-14 h-20 object-cover rounded-lg border border-gray-700 flex-shrink-0" />
                                             : <div className="w-14 h-20 bg-gray-800 rounded-lg border border-gray-700 flex-shrink-0 flex items-center justify-center text-gray-600 text-xl">🃏</div>}
                                         <div className="min-w-0">
                                             <div className="font-bold text-white truncate">{d.name}</div>
@@ -573,7 +571,7 @@ function SimulatePageContent() {
                 {/* Cabeçalho: deck de origem */}
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 mb-6 flex items-center gap-4">
                     {deck.leader && (
-                        <img src={deck.leader.card_image} className="w-16 h-22 object-cover rounded-lg border-2 border-yellow-500" />
+                        <CardImage src={deck.leader.card_image} alt={deck.leader.card_name} className="w-16 h-22 object-cover rounded-lg border-2 border-yellow-500" />
                     )}
                     <div>
                         <div className="text-xs text-gray-500 uppercase tracking-wide">Simulando com</div>
@@ -626,12 +624,12 @@ function SimulatePageContent() {
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {pastedPreview.leader && (
-                                        <img src={pastedPreview.leader.card_image} title={pastedPreview.leader.card_name}
+                                        <CardImage src={pastedPreview.leader.card_image} alt={pastedPreview.leader.card_name} title={pastedPreview.leader.card_name}
                                             className="w-14 h-20 object-cover rounded-lg border-2 border-yellow-500" />
                                     )}
                                     {pastedPreview.cards.map((dc, i) => (
                                         <div key={i} className="relative">
-                                            <img src={dc.card.card_image} title={`${dc.card.card_name} ×${dc.quantity}`}
+                                            <CardImage src={dc.card.card_image} alt={dc.card.card_name} title={`${dc.card.card_name} ×${dc.quantity}`}
                                                 className="w-14 h-20 object-cover rounded-lg border border-gray-700" />
                                             <span className="absolute -bottom-1 -right-1 bg-gray-900 border border-gray-600 rounded-full text-xs px-1.5 font-bold">×{dc.quantity}</span>
                                         </div>
@@ -656,7 +654,7 @@ function SimulatePageContent() {
                                         onClick={() => setSelectedOwnDeckId(d.id)}
                                         className={`flex items-center gap-3 p-3 rounded-xl border transition text-left ${selectedOwnDeckId === d.id ? 'border-orange-500 bg-gray-800' : 'border-gray-800 bg-gray-850 hover:bg-gray-800'}`}
                                     >
-                                        {d.leader_image && <img src={d.leader_image} className="w-10 h-14 object-cover rounded border border-gray-700" />}
+                                        {d.leader_image && <CardImage src={d.leader_image} alt={d.name} className="w-10 h-14 object-cover rounded border border-gray-700" />}
                                         <div className="min-w-0">
                                             <div className="text-sm font-medium text-white truncate">{d.name}</div>
                                             <div className="text-xs text-gray-500">{d.total_cards}/50 cartas</div>

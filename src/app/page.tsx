@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import CardImage from '@/components/CardImage'
 
 interface CardThumb {
   id: string
@@ -103,10 +104,10 @@ export default async function Home() {
             <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
               {(recentCards as CardThumb[]).map((card) => (
                 <a href="/cards" key={card.id} className="rounded-xl overflow-hidden border border-gray-800 hover:border-orange-500 transition hover:scale-105 cursor-pointer">
-                  <img
+                  <CardImage
                     src={card.card_image}
                     alt={card.card_name}
-                    className="w-full"
+                    className="w-full h-auto"
                   />
                 </a>
               ))}
