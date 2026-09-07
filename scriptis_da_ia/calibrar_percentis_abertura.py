@@ -60,6 +60,15 @@ METRICA_CUSTO = 'custo_medio'
 # natural, entao so significam alguma coisa comparados ao meta -- por isso
 # entram na mesma calibracao.
 METRICAS_EIXOS = ['eixo_sinergia', 'eixo_defesa', 'eixo_ataque']
+# Contagem por categoria dos Golden Ratios. Medido 07/09: as faixas fixas de
+# `deck_analyzer.GOLDEN_RATIOS` reprovavam o proprio meta --
+#   finishers 2-6  -> so   6,5% dos 184 decks de torneio ficam dentro
+#   searchers 4-8  -> so  30,4%
+#   events    0-6  -> so  41,8%
+# Uma faixa "ideal" que reprova 93,5% dos decks de torneio nao e ideal, e
+# opiniao. Com p25-p75 do meta, 50% fica dentro por construcao.
+METRICAS_RATIOS = ['ratio_counters', 'ratio_searchers', 'ratio_blockers',
+                   'ratio_finishers', 'ratio_events']
 
 
 def _num(v):
@@ -122,7 +131,7 @@ def main():
         for r in csv.DictReader(f):
             decks[r['deck_url']][r['card_code']] = int(r['qty'])
 
-    dist = {m: [] for m in list(METRICAS) + [METRICA_VIDA, METRICA_CUSTO] + METRICAS_EIXOS}
+    dist = {m: [] for m in list(METRICAS) + [METRICA_VIDA, METRICA_CUSTO] + METRICAS_EIXOS + METRICAS_RATIOS}
     usados = 0
     for _url, d in decks.items():
         main_qty = sum(q for code, q in d.items()
@@ -181,6 +190,26 @@ def main():
                 # conta POR ENTRADA, entao anexar `quantity` aqui e repetir la
                 # dariam numeros diferentes pro mesmo deck.
                 main_info.extend([info] * q)
+        # Contagem por categoria (mesmos criterios de `_count_categories`)
+        cnt = {k: 0 for k in ('counters', 'searchers', 'blockers', 'finishers', 'events')}
+        for code, q in d.items():
+            c = cards.get(code)
+            if not c or (c.get('card_type') or '').lower() == 'leader':
+                continue
+            i = adb.get(code) or {}
+            if _num(c.get('counter_amount')) >= 2000:
+                cnt['counters'] += q
+            if i.get('is_searcher'):
+                cnt['searchers'] += q
+            if i.get('is_blocker'):
+                cnt['blockers'] += q
+            if _num(c.get('card_cost')) >= 8:
+                cnt['finishers'] += q
+            if (c.get('card_type') or '').upper() == 'EVENT':
+                cnt['events'] += q
+        for k, v in cnt.items():
+            dist['ratio_' + k].append(v)
+
         if lider_info and main_info:
             eixos = compute_deck_axes(lider_info, main_info)
             dist['eixo_sinergia'].append(eixos['sinergia']['bruto'])
@@ -188,7 +217,7 @@ def main():
             dist['eixo_ataque'].append(eixos['ataque']['bruto'])
 
     out = {'n_decks': usados, 'fonte': 'decklists_raw.csv', 'metricas': {}}
-    for m in list(METRICAS) + [METRICA_VIDA, METRICA_CUSTO] + METRICAS_EIXOS:
+    for m in list(METRICAS) + [METRICA_VIDA, METRICA_CUSTO] + METRICAS_EIXOS + METRICAS_RATIOS:
         v = sorted(dist[m])
         k = len(v)
         if not k:
@@ -202,11 +231,13 @@ def main():
 
     print(f'{usados} decks de torneio')
     print(f"{'metrica':11s} {'p25':>8s} {'mediana':>8s} {'p75':>8s}")
-    for m in list(METRICAS) + [METRICA_VIDA, METRICA_CUSTO] + METRICAS_EIXOS:
+    for m in list(METRICAS) + [METRICA_VIDA, METRICA_CUSTO] + METRICAS_EIXOS + METRICAS_RATIOS:
         e = out['metricas'][m]
         # custo_medio e CUSTO, nao probabilidade -- imprimir com *100 dava
         # "374,0%" pra um custo medio de 3,74 e confundia a leitura.
-        if m in METRICAS_EIXOS:
+        if m in METRICAS_RATIOS:
+            print(f"{m:15s} {e['p25']:8.0f} {e['mediana']:8.0f} {e['p75']:8.0f}   (copias)")
+        elif m in METRICAS_EIXOS:
             print(f"{m:13s} {e['p25']:8.1f} {e['mediana']:8.1f} {e['p75']:8.1f}   (bruto, nao %)")
         elif m == METRICA_CUSTO:
             print(f"{m:11s} {e['p25']:8.2f} {e['mediana']:8.2f} {e['p75']:8.2f}   (custo, nao %)")

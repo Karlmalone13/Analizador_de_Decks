@@ -61,6 +61,31 @@
       "p25": 59.73,
       "mediana": 64.16,
       "p75": 71.1
+    },
+    "ratio_counters": {
+      "p25": 6,
+      "mediana": 10.0,
+      "p75": 11
+    },
+    "ratio_searchers": {
+      "p25": 4,
+      "mediana": 8.0,
+      "p75": 12
+    },
+    "ratio_blockers": {
+      "p25": 7,
+      "mediana": 8.0,
+      "p75": 9
+    },
+    "ratio_finishers": {
+      "p25": 0,
+      "mediana": 1.0,
+      "p75": 8
+    },
+    "ratio_events": {
+      "p25": 4,
+      "mediana": 7.0,
+      "p75": 12
     }
   }
 }

@@ -256,14 +256,51 @@ def _infer_from_structure(main_cards: list[dict]) -> str:
 # faixas por arquétipo — isso ficaria para a análise por IA (produto pago).
 # ===========================================================================
 
-# (mínimo_ideal, máximo_ideal) por categoria
-GOLDEN_RATIOS = {
-    'counters':  (8, 12),   # cartas com counter 2000 (defesa)
-    'searchers': (4, 8),    # busca (consistência)
-    'blockers':  (4, 8),    # blockers (defesa de vida)
-    'finishers': (2, 4),    # custo alto 8-10 (fechar o jogo)
-    'events':    (0, 6),    # eventos (não sobrecarregar)
+# (mínimo_ideal, máximo_ideal) por categoria.
+#
+# FALLBACK apenas: as faixas reais vêm de `percentis_abertura.json`
+# (p25-p75 dos 184 decks de torneio de `decklists_raw.csv`), carregadas
+# logo abaixo. Estes números fixos ficam só para quando o arquivo de
+# calibração não existir.
+#
+# POR QUE MUDOU (medido 07/09): as faixas fixas reprovavam o PRÓPRIO meta
+# que dizem representar --
+#     finishers 2-4/2-6 -> apenas   6,5% dos 184 decks ficam dentro
+#     searchers 4-8     -> apenas  30,4%   (mediana real: 8)
+#     events    0-6     -> apenas  41,8%   (mediana real: 7)
+# Uma faixa que reprova 93,5% dos decks de torneio não é "consenso de
+# construção competitiva", é opinião. Com p25-p75 do meta, 50% dos decks
+# fica dentro por construção, e ficar fora passa a significar algo.
+GOLDEN_RATIOS_FALLBACK = {
+    'counters':  (8, 12),
+    'searchers': (4, 8),
+    'blockers':  (4, 8),
+    'finishers': (2, 4),
+    'events':    (0, 6),
 }
+
+
+def _carrega_golden_ratios() -> dict:
+    """Faixas p25-p75 medidas no meta; cai no fallback fixo se faltar."""
+    import json as _json
+    import os as _os
+    caminho = _os.path.join(_os.path.dirname(__file__), 'percentis_abertura.json')
+    try:
+        with open(caminho, encoding='utf-8') as f:
+            metricas = _json.load(f).get('metricas', {})
+    except (OSError, ValueError):
+        return dict(GOLDEN_RATIOS_FALLBACK)
+    out = {}
+    for cat, faixa in GOLDEN_RATIOS_FALLBACK.items():
+        e = metricas.get('ratio_' + cat)
+        if e and e.get('p25') is not None and e.get('p75') is not None:
+            out[cat] = (int(round(e['p25'])), int(round(e['p75'])))
+        else:
+            out[cat] = faixa
+    return out
+
+
+GOLDEN_RATIOS = _carrega_golden_ratios()
 
 
 @dataclass

@@ -188,20 +188,27 @@ function metaDiscrimina(b?: Benchmark): boolean {
 
 function classif(p: number, b?: Benchmark): { label: string, color: string, bar: string } {
     if (p <= 0) return { label: 'Ausente', color: 'text-red-400', bar: 'bg-red-500' }
+    // ── Escala de cor ────────────────────────────────────────────────────
+    // Corrigida 07/09 a pedido do usuario ("conserte as cores"). O erro era
+    // de SIGNIFICADO, nao de tom: "Na mediana do meta" saia VERDE, e verde
+    // le-se como "bom" -- mas estar na mediana e ser exatamente a media, o
+    // que e neutro. Agora so passa de amarelo quem esta ACIMA da mediana.
     if (b && !metaDiscrimina(b)) {
         // Meta praticamente constante nesta metrica: so vale a pena avisar se
         // o deck estiver MUITO fora da faixa, nunca premiar por estar dentro.
+        // Azul (informativo), nao cinza: cinza + barra apagada parecia tile
+        // quebrado, quando na verdade o dado esta certo e so nao discrimina.
         const largura = Math.max(b.p75 - b.p25, 0.01)
         if (p < b.p25 - 2 * largura) return { label: 'Bem abaixo do meta', color: 'text-red-400', bar: 'bg-red-500' }
-        return { label: 'Padrão do meta', color: 'text-gray-300', bar: 'bg-gray-500' }
+        return { label: 'Padrão do meta', color: 'text-sky-300', bar: 'bg-sky-700' }
     }
     if (b) {
         if (p >= b.p75) return { label: 'Top 25% do meta', color: 'text-green-400', bar: 'bg-green-500' }
         // Igualdade tratada a parte: com 50 cartas so existem K inteiros, entao
         // as probabilidades sao DISCRETAS e varios decks caem no mesmo valor --
         // ficar exatamente NA mediana e comum (2 dos 8 tiles do deck Krieg).
-        // Chamar isso de "acima da mediana" e falso.
-        if (Math.abs(p - b.mediana) < 0.0005) return { label: 'Na mediana do meta', color: 'text-lime-400', bar: 'bg-lime-500' }
+        // Chamar isso de "acima da mediana" e falso, e pintar de verde tambem.
+        if (Math.abs(p - b.mediana) < 0.0005) return { label: 'Na mediana do meta', color: 'text-yellow-400', bar: 'bg-yellow-500' }
         if (p > b.mediana) return { label: 'Acima da mediana', color: 'text-lime-400', bar: 'bg-lime-500' }
         if (p >= b.p25) return { label: 'Abaixo da mediana', color: 'text-orange-400', bar: 'bg-orange-500' }
         return { label: 'Últimos 25% do meta', color: 'text-red-400', bar: 'bg-red-500' }
@@ -211,7 +218,7 @@ function classif(p: number, b?: Benchmark): { label: string, color: string, bar:
     // '—' cinza aqui, e bastou a API reiniciar no meio do carregamento pra
     // pagina inteira aparecer sem cor nenhuma pro usuario. Degradar != apagar.
     if (p >= 0.70) return { label: 'Alta', color: 'text-green-400', bar: 'bg-green-500' }
-    if (p >= 0.45) return { label: 'Média', color: 'text-lime-400', bar: 'bg-lime-500' }
+    if (p >= 0.45) return { label: 'Média', color: 'text-yellow-400', bar: 'bg-yellow-500' }
     if (p >= 0.20) return { label: 'Baixa', color: 'text-orange-400', bar: 'bg-orange-500' }
     return { label: 'Muito baixa', color: 'text-red-400', bar: 'bg-red-500' }
 }
@@ -937,7 +944,7 @@ function AnalysisPageContent() {
     const custoClass = (() => {
         if (!benchCusto) return { label: '—', color: 'text-gray-300' }
         if (avgCostNum <= benchCusto.p25) return { label: 'Bem mais leve que o meta', color: 'text-green-400' }
-        if (avgCostNum <= benchCusto.mediana) return { label: 'Mais leve que o meta', color: 'text-lime-400' }
+        if (avgCostNum <= benchCusto.mediana) return { label: 'Mais leve que a mediana', color: 'text-lime-400' }
         if (avgCostNum <= benchCusto.p75) return { label: 'Mais pesado que a mediana', color: 'text-yellow-400' }
         return { label: 'Entre os 25% mais pesados', color: 'text-orange-400' }
     })()

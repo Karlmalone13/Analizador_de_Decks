@@ -90,6 +90,16 @@
 > meus de medicao no caminho (bissecao com maquina carregada apontou um
 > commit de front; e declarei a hipotese descartada medindo cedo demais) --
 > os dois em `REPROVADOS.md`.
+> (22) **Golden Ratios calibrados no meta**: as faixas fixas reprovavam o
+> proprio meta -- `finishers 2-4` deixava so **6,5%** dos 184 decks dentro,
+> `searchers 4-8` 30,4%, `events 0-6` 41,8%. Trocadas por p25-p75 real
+> (fixas viraram fallback). Krieg perdeu o falso alerta "eventos demais".
+> (23) **Cores**: "Na mediana do meta" saia VERDE (verde = bom, mas mediana
+> = media) -> amarelo; "Padrao do meta" era cinza com barra apagada,
+> parecendo quebrado -> azul informativo.
+> (24) **A/B fechou a causa das 6 falhas do smoke**: dev server no ar -> 6
+> falhas, parado -> SMOKE FAST OK, repetido nos dois sentidos. REGRA: rodar
+> `smoke_fast.py` com o dev server PARADO.
 > (21) Bloco "Validacao por Simulacao" REMOVIDO a pedido do usuario: quebrava
 > 24 partidas em 5 faixas (2 a 7 partidas por faixa) e o ruido dominava --
 > "Ruim" com 80% de WR e "Abaixo da media" com 20%, ordem INVERTIDA, e ainda

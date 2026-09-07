@@ -375,6 +375,35 @@ OP15-023/017 criando e OP15-038/025 explorando.
 Popup unico e generico (`cartasAbertas`), com imagem grande e clique que
 abre o modal da carta.
 
+### 11. Golden Ratios calibrados no meta, e as cores diziam a coisa errada
+
+Pedido do usuario: *"conserte as cores. e conserte esse outro da segunda
+imagem"* (bloco Arquetipo & Estrutura / Golden Ratios).
+
+**Golden Ratios reprovavam o proprio meta que dizem representar.** Medindo
+as faixas fixas de `deck_analyzer.GOLDEN_RATIOS` contra os 184 decks de
+torneio:
+
+    finishers 2-4  ->  so   6,5% dos decks ficam dentro   (mediana real: 1)
+    searchers 4-8  ->  so  30,4%                          (mediana real: 8)
+    events    0-6  ->  so  41,8%                          (mediana real: 7)
+    counters  8-12 ->      66,8%
+    blockers  4-8  ->      70,1%
+
+Uma faixa "ideal" que reprova **93,5%** dos decks de torneio nao e consenso
+de construcao, e opiniao. Trocadas por p25-p75 do meta
+(`ratio_*` novo em `percentis_abertura.json`), com as fixas viradas
+`GOLDEN_RATIOS_FALLBACK` pra quando o arquivo faltar. Krieg: o alerta
+"eventos demais" SUMIU (8 esta dentro de 4-12, e a mediana do meta e 7);
+"blockers 10" continua alerta contra 7-9, legitimamente. Pontos de atencao
+do deck: 2 -> 1.
+
+**As cores erravam no SIGNIFICADO, nao no tom**: "Na mediana do meta" saia
+VERDE. Verde le-se como "bom", mas estar na mediana e ser exatamente a
+media -- agora e amarelo, e so passa disso quem esta ACIMA. E "Padrao do
+meta" (metrica que nao discrimina) era cinza com a barra apagada,
+parecendo tile quebrado; virou azul informativo.
+
 ### RESOLVIDO (07/09): as 6 falhas do `smoke_fast.py` eram o dev server comendo a CPU
 
 `smoke_fast.py` passou a dar 6 falhas no meio da sessao, todas da familia
@@ -401,9 +430,14 @@ tudo verde (`selection=counterfactual_search`,
 `opponent_model_source=leader_exact_local_deck`, 12 amostras, 3 valores de
 busca). Isso descartou codigo e apontou pro ambiente.
 
-**Pra proxima sessao**: `smoke_fast.py` tem testes sensiveis a carga
-(`timeout=3.0`). Antes de tratar falha dessa familia como regressao,
-conferir se ha dev server/build competindo -- e nunca bissectar sem
+**A/B que fechou a causa (07/09, mesma maquina, mesmo commit, nada mais
+mudado)**: `next-dev` no ar -> 6 falhas; `next-dev` parado -> SMOKE FAST OK.
+Repetido nos dois sentidos. Nao e mais hipotese.
+
+**REGRA PRA PROXIMA SESSAO**: rodar `smoke_fast.py` com o dev server
+PARADO. Os testes dessa familia usam `timeout=3.0` e o Next em dev sozinho
+ja consome os 2 nucleos fisicos desta maquina. Antes de tratar falha ai
+como regressao, parar o dev server e repetir -- e nunca bissectar sem
 reexecutar o commit "bom" pra confirmar que a regua nao mudou.
 
 ### Pendente
