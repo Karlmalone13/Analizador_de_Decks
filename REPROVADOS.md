@@ -399,6 +399,7 @@ errada porque a medição estava. Valem tanto quanto os outros:
 | Calibrar peso de mao com decks DIFERENTES entre si | forca de deck vaza pros coeficientes: `t1` virou **-36,5** e `so_custo1` **+43,9** -- o modelo aprendeu "aggro ganha". Usar partidas-ESPELHO | 752 |
 | Aceitar coeficiente de logistica sem testar estabilidade | com features colineares (`t1_t2 = t1 AND t2`, `sem_nada` ⊂ `sem_t1_t2`) o solver reparte o efeito arbitrariamente: `sem_nada` (mao sem jogada) saiu **+21** com AUC agregada boa. Bootstrap de sinal barrou | 752 |
 | `_is_searcher` por substring `'look at the top'` | 3a vez que esta forma de bug aparece (bloco 751 no front, agora no `hand_scorer`): 0 de 50 cartas detectadas num deck real, contra 12 pelo parser | 752 |
+| Codificar curva de mao com 7 indicadores aninhados | `t1_t2`, `curva_completa`, `sem_t1_t2`, `sem_nada` sao funcao deterministica de `t1/t2/t3` -- o efeito real se reparte e cada pedaco fica instavel (`curva_completa`: bruto 57,0% em 971 pares, REJEITADA a 74%), e o solver empurra sinal pra colunas erradas (`t1` -22,3 com bruto 49,0%). Uma ordinal 0-3 resolveu: AUC 0,6000 -> 0,6040 | 752 |
 
 ## Enquadramentos reprovados (não são mecanismos, são raciocínios)
 

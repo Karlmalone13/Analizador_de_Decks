@@ -90,6 +90,17 @@
 > meus de medicao no caminho (bissecao com maquina carregada apontou um
 > commit de front; e declarei a hipotese descartada medindo cedo demais) --
 > os dois em `REPROVADOS.md`.
+> (34) **A COLINEARIDADE era o problema de fundo** (achado a partir do
+> usuario: "ainda ta faltando carta custo 6"). As 7 colunas de curva viraram
+> UMA ordinal `cobertura_t1_t3` (0-3): AUC do modelo puro 0,6000 -> 0,6040,
+> e com porta+fallback **0,5661 -> 0,5987 (+3,26, 5/5 folds)**. A cobertura
+> passou a ser adotada com **100% de estabilidade e sinal positivo**, e os
+> absurdos (`t1 -22,3`, `sem_nada +21`) sumiram junto com as colunas que os
+> geravam. Efeito BRUTO pareado medido pra todas as features -- e ele mostra
+> que `curva_completa` (57,0% em 971 pares) era forte e estava sendo
+> rejeitada, enquanto `c2k_excesso` (51,7% em 178) recebia peso alto.
+> **SUSPEITO que sobra**: `c2k_excesso +20,1`, amostra pequena com
+> coeficiente grande.
 > (32) **T4/T5: metade da partida estava fora do score de mao** (achado do
 > usuario). A cobertura parava no T3 e uma carta de custo 8 indo em segundo
 > valia ZERO -- "searcher+1+4+6+8" pontuava igual a "searcher+1+4+6+1".

@@ -640,6 +640,53 @@ alguem le no nome do peso, e o mesmo raciocinio serve pra `searcher_excesso
 +24,2` e `c2k_excesso +17,5`. Nao tratar esses tres como "o dado provou que
 o folclore estava errado" sem investigar caso a caso.
 
+### 16. A colinearidade era o problema de fundo -- curva virou UMA coluna
+
+Usuario, vendo as melhores maos indo em segundo: *"ainda ta faltando carta
+custo 6"*. Certo, e a investigacao achou a causa raiz de varias esquisitices
+das rodadas anteriores.
+
+**Efeito BRUTO pareado** (quando um lado tem a feature e o outro nao, quantas
+vezes o que tem venceu) -- sem passar por regressao nenhuma:
+
+    searcher_excesso  61,2% (258 pares)    curva_completa  57,0% (971)
+    searcher1         60,0% (838)          c1k             55,8% (1189)
+    sem_t1_t2         40,1% (401)          rush            55,1% (539)
+    t5                42,9% (399)          t3              52,4% (1155)
+    evento_counter    43,7% (638)          c2k_excesso     51,7% (178)
+    t1                49,0% (343)          t4              50,4% (1102)
+
+Duas leituras que mudam tudo:
+- **`curva_completa` tem efeito bruto FORTE (57,0% em 971 pares) e mesmo
+  assim era rejeitada pela porta a 74%.** A colinearidade repartia o efeito
+  real da curva entre 7 colunas e cada pedaco saia instavel.
+- **`c2k_excesso` tem efeito bruto de 51,7% em so 178 pares** -- praticamente
+  nada -- e a regressao lhe deu +17,5. Sinal empurrado pra coluna errada.
+- `t1` no bruto e 49,0%, ou seja NEUTRO. O -22,3 que a rodada anterior
+  adotou era artefato de efeito parcial, nao "jogada de T1 e ruim".
+
+**Correcao**: as 7 colunas de curva (`t1`, `t2`, `t3`, `t1_t2`,
+`curva_completa`, `sem_t1_t2`, `sem_nada`) viraram UMA ordinal,
+`cobertura_t1_t3` (0-3). Com uma coluna so, o efeito nao tem pra onde se
+repartir.
+
+Resultado medido: AUC do modelo puro fora da amostra **0,6000 -> 0,6040**;
+com a porta de estabilidade e o fallback, **0,5661 -> 0,5987 (+3,26, 5/5
+folds)**. E `cobertura_t1_t3` foi adotada com **100% de estabilidade e sinal
+positivo** -- o oposto do que acontecia com os pedacos dela.
+
+Os absurdos sumiram junto: `t1 -22,3` e `sem_nada +21` nao existem mais
+porque as colunas que os geravam nao existem mais.
+
+**O que ficou por conta do dado, e o usuario deve saber**: cobrir mais um
+turno vale **~10 pontos**; a 3a copia de counter 2000 vale **+20**. Ou seja,
+o modelo AINDA prefere mao com 3 counters a mao com curva -- mas agora isso
+e uma afirmacao mensuravel, nao um acidente de codificacao.
+
+**SUSPEITO que sobra**: `c2k_excesso +20,1` tem 100% de estabilidade mas
+efeito bruto de so 51,7% em 178 pares. E o candidato numero 1 pra proxima
+investigacao -- amostra pequena com coeficiente grande.
+
 ### RESOLVIDO (07/09): as 6 falhas do `smoke_fast.py` eram o dev server comendo a CPU
 
 `smoke_fast.py` passou a dar 6 falhas no meio da sessao, todas da familia

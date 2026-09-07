@@ -146,12 +146,12 @@ def searcher_quality(deck_cards: list[HandCard]) -> float:
 PESOS_FALLBACK = {
     'searcher1': 35.0, 'searcher2': 3.0, 'searcher2_indo_depois': 12.0,
     'searcher_excesso': -20.0,
-    't1': 28.0, 't2': 25.0, 't3': 10.0, 't4': 0.0, 't5': 0.0, 't1_t2': 12.0, 'curva_completa': 5.0,
+    'cobertura_t1_t3': 20.0, 't4': 0.0, 't5': 0.0,
     'c2k': 16.0, 'c2k_indo_depois': 20.0, 'c2k_excesso': -8.0,
     'c1k': 8.0, 'evento_counter': 10.0,
     'blocker': 12.0, 'rush': 7.0,
     'bomba_do_deck': 6.0, 'bomba_excesso': -22.0,
-    'sem_t1_t2': -35.0, 'sem_nada': -20.0, 'so_custo1': -15.0,
+    'so_custo1': -15.0,
     'defesa_sem_ofensiva': -25.0, 'defesa_demais_aggro': -12.0,
 }
 
@@ -246,13 +246,23 @@ def extract_features(
         'searcher2': 1.0 if (n_searcher >= 2 and going_first) else 0.0,
         'searcher2_indo_depois': 1.0 if (n_searcher >= 2 and not going_first) else 0.0,
         'searcher_excesso': float(max(0, n_searcher - 2)),
-        't1': 1.0 if has_t1 else 0.0,
-        't2': 1.0 if has_t2 else 0.0,
-        't3': 1.0 if has_t3 else 0.0,
+        # ── Curva: UMA coluna, nao sete ────────────────────────────────
+        # Ate 07/09 a curva era t1 + t2 + t3 + t1_t2 + curva_completa +
+        # sem_t1_t2 + sem_nada. As quatro ultimas sao FUNCAO DETERMINISTICA
+        # das tres primeiras, e colinearidade assim quebra a calibracao de
+        # duas formas medidas no mesmo dia:
+        #   - o efeito real da curva se REPARTE entre as colunas e cada
+        #     pedaco fica instavel: `curva_completa` tem efeito BRUTO de
+        #     57,0% de vitoria em 971 pares (forte), e mesmo assim foi
+        #     rejeitada pela porta de estabilidade a 74%;
+        #   - e o solver empurra sinal pra colunas erradas (`t1` saiu
+        #     -22,3; `c2k_excesso` saiu +17,5 com efeito bruto de 51,7%).
+        # Com uma coluna ordinal 0-3, o efeito nao tem pra onde se repartir.
+        # Medido: AUC fora da amostra 0,6000 -> 0,6040.
+        'cobertura_t1_t3': float((1 if has_t1 else 0) + (1 if has_t2 else 0)
+                                 + (1 if has_t3 else 0)),
         't4': 1.0 if has_t4 else 0.0,
         't5': 1.0 if has_t5 else 0.0,
-        't1_t2': 1.0 if (has_t1 and has_t2) else 0.0,
-        'curva_completa': 1.0 if (has_t1 and eff_t2 and eff_t3) else 0.0,
         'c2k': float(min(n_c2k, 2)) if going_first else 0.0,
         'c2k_indo_depois': float(min(n_c2k, 2)) if not going_first else 0.0,
         'c2k_excesso': float(max(0, n_c2k - 2)),
@@ -262,8 +272,6 @@ def extract_features(
         'rush': float(min(n_rush, 2)),
         'bomba_do_deck': 1.0 if has_deck_bomb else 0.0,
         'bomba_excesso': float(max(0, n_bomb - 1)),
-        'sem_t1_t2': 1.0 if (not has_t1 and not eff_t2) else 0.0,
-        'sem_nada': 1.0 if (not has_t1 and not eff_t2 and not eff_t3) else 0.0,
         'so_custo1': 1.0 if (only_cost1 and cost1_count >= 3) else 0.0,
         'defesa_sem_ofensiva': 1.0 if (n_def >= 3 and n_off == 0) else 0.0,
         'defesa_demais_aggro': 1.0 if (n_def >= 3 and n_off > 0 and aggro) else 0.0,
@@ -295,8 +303,8 @@ def score_hand(
 
     # Ajustes por arquétipo (não calibrados -- ver docstring)
     if f['searcher1']:  score += mod['search']
-    if f['t1']:         score += mod['t1']
-    if f['t2']:         score += mod['t2']
+    if f['cobertura_t1_t3']:
+        score += (mod['t1'] + mod['t2']) * f['cobertura_t1_t3'] / 3.0
     if f['blocker']:    score += mod['blocker']
     if f['rush']:       score += mod['rush'] * f['rush']
     if f['c2k'] or f['c2k_indo_depois']:
@@ -305,9 +313,9 @@ def score_hand(
         score += base * (mod['c2k'] - 1.0)
     if f['bomba_excesso']:
         score += f['bomba_excesso'] * w.get('bomba_excesso', 0.0) * (mod['bomb'] - 1.0)
-    for k in ('sem_t1_t2', 'defesa_sem_ofensiva'):
-        if f[k]:
-            score += f[k] * w.get(k, 0.0) * (mod['pen'] - 1.0)
+    if f['defesa_sem_ofensiva']:
+        score += (f['defesa_sem_ofensiva'] * w.get('defesa_sem_ofensiva', 0.0)
+                  * (mod['pen'] - 1.0))
 
     return round(score)
 

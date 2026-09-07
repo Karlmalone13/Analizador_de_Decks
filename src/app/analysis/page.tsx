@@ -432,11 +432,11 @@ function calcSearcherQuality(deckCards: DeckCard[]): number {
 type PesosMao = Record<string, number>
 const PESOS_MAO_FALLBACK: PesosMao = {
     searcher1: 35, searcher2: 3, searcher2_indo_depois: 12, searcher_excesso: -20,
-    t1: 28, t2: 25, t3: 10, t4: 0, t5: 0, t1_t2: 12, curva_completa: 5,
+    cobertura_t1_t3: 20, t4: 0, t5: 0,
     c2k: 16, c2k_indo_depois: 20, c2k_excesso: -8,
     c1k: 8, evento_counter: 10, blocker: 12, rush: 7,
     bomba_do_deck: 6, bomba_excesso: -22,
-    sem_t1_t2: -35, sem_nada: -20, so_custo1: -15,
+    so_custo1: -15,
     defesa_sem_ofensiva: -25, defesa_demais_aggro: -12,
 }
 
@@ -489,8 +489,6 @@ function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = nu
     // Searcher compensa peças faltantes na curva — mas escala com qualidade do deck
     // (buscar em deck raso vale menos)
     const searcherValue = W.searcher1 * searcherQuality  // 35 pts se deck cheio de bons alvos
-    const effectiveT2 = hasT2Play || nSearcher >= 1
-    const effectiveT3 = hasT3Play || (nSearcher >= 1 && hasT2Play)
 
     let score = 0
 
@@ -503,13 +501,20 @@ function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = nu
     if (nSearcher >= 3) score += (nSearcher - 2) * W.searcher_excesso  // 3+ trava a mão
 
     // ── Cobertura de turnos (curva de DON correta, ajustada por arquétipo) ──
-    if (hasT1Play) score += W.t1 + mod.t1Bonus
-    if (hasT2Play) score += W.t2 + mod.t2Bonus
-    if (hasT3Play) score += W.t3
+    // ── Curva: UMA coluna ordinal (0-3), não sete indicadores ──────────
+    // Até 07/09 eram t1 + t2 + t3 + t1_t2 + curva_completa + sem_t1_t2 +
+    // sem_nada. As quatro últimas são função determinística das três
+    // primeiras, e essa colinearidade quebrava a calibração: o efeito real
+    // da curva se repartia entre as colunas e cada pedaço saía instável
+    // (`curva_completa` tem efeito BRUTO de 57,0% de vitória em 971 pares e
+    // mesmo assim era rejeitada), enquanto o solver empurrava sinal pra
+    // colunas erradas (`t1` chegou a sair -22,3). Medido: AUC fora da
+    // amostra 0,6000 -> 0,6040 só trocando a codificação.
+    const cobertura = (hasT1Play ? 1 : 0) + (hasT2Play ? 1 : 0) + (hasT3Play ? 1 : 0)
+    score += cobertura * W.cobertura_t1_t3
+    score += cobertura * (mod.t1Bonus + mod.t2Bonus) / 3
     if (hasT4Play) score += W.t4
     if (hasT5Play) score += W.t5
-    if (hasT1Play && hasT2Play) score += W.t1_t2   // curva contínua real
-    if (hasT1Play && effectiveT2 && effectiveT3) score += W.curva_completa  // curva completa (inclui via search)
 
     // ── Counter defensivo (2º jogador vai levar 1º hit; arquétipo também pondera) ──
     const counter2kBase = goingFirst ? W.c2k : W.c2k_indo_depois
@@ -528,8 +533,6 @@ function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = nu
     if (nBomb >= 2) score += Math.round((nBomb - 1) * W.bomba_excesso * mod.bombPenMult)
 
     // ── Punições (severidade ajustada por arquétipo) ──
-    if (!hasT1Play && !effectiveT2) score += Math.round(W.sem_t1_t2 * mod.penT1Mult)
-    if (!hasT1Play && !effectiveT2 && !effectiveT3) score += W.sem_nada
     // Mão toda de custo 1: boa largada mas sem gasolina no mid-game
     if (onlyCost1 && mao.filter(dc => parseInt(dc.card.card_cost || '99') === 1 && counterDe(dc.card) < 2000).length >= 3) score += W.so_custo1
 
