@@ -146,7 +146,7 @@ def searcher_quality(deck_cards: list[HandCard]) -> float:
 PESOS_FALLBACK = {
     'searcher1': 35.0, 'searcher2': 3.0, 'searcher2_indo_depois': 12.0,
     'searcher_excesso': -20.0,
-    't1': 28.0, 't2': 25.0, 't3': 10.0, 't1_t2': 12.0, 'curva_completa': 5.0,
+    't1': 28.0, 't2': 25.0, 't3': 10.0, 't4': 0.0, 't5': 0.0, 't1_t2': 12.0, 'curva_completa': 5.0,
     'c2k': 16.0, 'c2k_indo_depois': 20.0, 'c2k_excesso': -8.0,
     'c1k': 8.0, 'evento_counter': 10.0,
     'blocker': 12.0, 'rush': 7.0,
@@ -190,7 +190,7 @@ def extract_features(
     `score = soma(feature * peso)`, e `calibrar_pesos_mao.py` ajusta só os
     pesos.
     """
-    has_t1 = has_t2 = has_t3 = False
+    has_t1 = has_t2 = has_t3 = has_t4 = has_t5 = False
     only_cost1 = True
     n_searcher = n_c2k = n_c1k = n_ectr = n_blocker = n_rush = n_bomb = 0
     has_deck_bomb = False
@@ -203,14 +203,26 @@ def extract_features(
         if not is2k and c.cost == 1:
             cost1_count += 1
         if not is2k:
+            # DON real: 1o -> T1=1 T2=3 T3=5 T4=7 T5=9
+            #           2o -> T1=2 T2=4 T3=6 T4=8 T5=10
+            #
+            # T4/T5 acrescentados 07/09 por observacao do usuario: a
+            # cobertura parava no T3, entao uma carta de custo 8 numa mao
+            # indo em SEGUNDO nao contava pra NADA -- medido, a mao
+            # "searcher+1+4+6+8" pontuava exatamente igual a
+            # "searcher+1+4+6+1". Metade da partida ficava fora do modelo.
             if going_first:
                 if c.cost <= 1:   has_t1 = True
                 elif c.cost <= 3: has_t2 = True
                 elif c.cost <= 5: has_t3 = True
+                elif c.cost <= 7: has_t4 = True
+                elif c.cost <= 9: has_t5 = True
             else:
                 if c.cost <= 2:   has_t1 = True
                 elif c.cost <= 4: has_t2 = True
                 elif c.cost <= 6: has_t3 = True
+                elif c.cost <= 8: has_t4 = True
+                elif c.cost <= 10: has_t5 = True
 
         if _is_searcher(c):         n_searcher += 1
         if is2k:                    n_c2k += 1
@@ -237,6 +249,8 @@ def extract_features(
         't1': 1.0 if has_t1 else 0.0,
         't2': 1.0 if has_t2 else 0.0,
         't3': 1.0 if has_t3 else 0.0,
+        't4': 1.0 if has_t4 else 0.0,
+        't5': 1.0 if has_t5 else 0.0,
         't1_t2': 1.0 if (has_t1 and has_t2) else 0.0,
         'curva_completa': 1.0 if (has_t1 and eff_t2 and eff_t3) else 0.0,
         'c2k': float(min(n_c2k, 2)) if going_first else 0.0,

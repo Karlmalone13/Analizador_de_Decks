@@ -432,7 +432,7 @@ function calcSearcherQuality(deckCards: DeckCard[]): number {
 type PesosMao = Record<string, number>
 const PESOS_MAO_FALLBACK: PesosMao = {
     searcher1: 35, searcher2: 3, searcher2_indo_depois: 12, searcher_excesso: -20,
-    t1: 28, t2: 25, t3: 10, t1_t2: 12, curva_completa: 5,
+    t1: 28, t2: 25, t3: 10, t4: 0, t5: 0, t1_t2: 12, curva_completa: 5,
     c2k: 16, c2k_indo_depois: 20, c2k_excesso: -8,
     c1k: 8, evento_counter: 10, blocker: 12, rush: 7,
     bomba_do_deck: 6, bomba_excesso: -22,
@@ -445,6 +445,8 @@ function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = nu
     let hasT1Play = false  // joga no T1 com o DON disponível
     let hasT2Play = false  // joga no T2
     let hasT3Play = false  // joga no T3
+    let hasT4Play = false  // joga no T4
+    let hasT5Play = false  // joga no T5
     let onlyCost1 = true   // mão só com custo 1 — sem gasolina pra mid-game
     let nSearcher = 0, nCounter2k = 0, nCounter1k = 0, nEventCounter = 0
     let nBlocker = 0, nRush = 0, nBomb = 0, hasDeckBomb = false
@@ -455,16 +457,23 @@ function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = nu
         if (!is2kCounter && cost > 1) onlyCost1 = false
         // Cartas +2k não contam como jogada de turno — guarda para defesa
         if (!is2kCounter) {
+            // DON real: 1º -> T1=1 T2=3 T3=5 T4=7 T5=9
+            //           2º -> T1=2 T2=4 T3=6 T4=8 T5=10
+            // T4/T5 acrescentados 07/09: a cobertura parava no T3, então uma
+            // carta de custo 8 numa mão indo em SEGUNDO não contava pra nada
+            // -- medido, "searcher+1+4+6+8" pontuava igual a "searcher+1+4+6+1".
             if (goingFirst) {
-                // 1º: T1=custo≤1 (1 DON), T2=custo≤3 (3 DON), T3=custo≤5 (5 DON)
                 if (cost <= 1) hasT1Play = true
                 if (cost >= 2 && cost <= 3) hasT2Play = true
                 if (cost >= 4 && cost <= 5) hasT3Play = true
+                if (cost >= 6 && cost <= 7) hasT4Play = true
+                if (cost >= 8 && cost <= 9) hasT5Play = true
             } else {
-                // 2º: T1=custo≤2 (2 DON), T2=custo≤4 (4 DON), T3=custo≤6 (6 DON)
                 if (cost <= 2) hasT1Play = true
                 if (cost >= 3 && cost <= 4) hasT2Play = true
                 if (cost >= 5 && cost <= 6) hasT3Play = true
+                if (cost >= 7 && cost <= 8) hasT4Play = true
+                if (cost >= 9 && cost <= 10) hasT5Play = true
             }
         }
         if (isSearcher(dc, flags)) nSearcher++
@@ -497,6 +506,8 @@ function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = nu
     if (hasT1Play) score += W.t1 + mod.t1Bonus
     if (hasT2Play) score += W.t2 + mod.t2Bonus
     if (hasT3Play) score += W.t3
+    if (hasT4Play) score += W.t4
+    if (hasT5Play) score += W.t5
     if (hasT1Play && hasT2Play) score += W.t1_t2   // curva contínua real
     if (hasT1Play && effectiveT2 && effectiveT3) score += W.curva_completa  // curva completa (inclui via search)
 
@@ -1417,7 +1428,7 @@ function AnalysisPageContent() {
                     turno, risco de travar. Os três juntos empurravam o resto da
                     página pra baixo e viravam rolagem. Ficam logo ABAIXO do Perfil
                     de Jogo (07/09): o usuário precisa vê-los sem rolar até o fim. */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
                     {[
                         { id: 'brick' as const, icon: '💀', titulo: 'Risco de mão travada',
                           sub: 'chance de abrir sem jogada nos turnos 1 e 2' },
@@ -1425,8 +1436,17 @@ function AnalysisPageContent() {
                           sub: 'top 3 de 30.000 simulações, indo 1º e 2º' },
                         { id: 'plano' as const, icon: '🗺️', titulo: 'Plano de jogo por turno',
                           sub: 'o que jogar em cada turno, nas duas posições' },
+                        // "Chance de tirar a peça" morava DENTRO do Analisador
+                        // Inteligente, no rodapé -- só aparecia depois de rolar os
+                        // 8 tiles. Subiu pra faixa (07/09, pedido do usuário): os
+                        // quatro respondem "me mostra o detalhe", então ficam
+                        // juntos e antes do bloco que eles detalham.
+                        { id: 'compras' as const, icon: '📈', titulo: 'Chance de tirar a peça',
+                          sub: `se não veio na mão · até os turnos 2, 3 e 5` },
                     ].map(b => (
-                        <button key={b.id} onClick={() => setPainelAberto(b.id)}
+                        <button key={b.id} onClick={() => b.id === 'compras'
+                            ? setComprasAberto(true)
+                            : setPainelAberto(b.id as 'brick' | 'maos' | 'plano' | 'lista')}
                             className="flex items-center justify-between gap-3 bg-gray-900 border border-gray-800 hover:border-gray-600 hover:bg-gray-800 rounded-2xl px-5 py-4 text-left transition group">
                             <span>
                                 <span className="block text-base font-semibold text-white leading-tight"><Icone size="text-2xl">{b.icon}</Icone>{b.titulo}</span>
@@ -1528,22 +1548,6 @@ function AnalysisPageContent() {
                         eram 9 frases repetindo em prosa os MESMOS numeros que os 8 tiles
                         acima ja mostram. Redundancia pura. */}
 
-                    {/* Compras futuras: virou POPUP a pedido do usuario (06/09).
-                        Inline, a tabela empurrava o resto da pagina pra baixo e
-                        competia por atencao com os tiles da abertura, que
-                        respondem outra pergunta. */}
-                    <div className="border-t border-gray-800 pt-5 mt-5">
-                        <button onClick={() => setComprasAberto(true)}
-                            className="w-full flex items-center justify-between gap-3 bg-gray-800 hover:bg-gray-700 rounded-xl px-5 py-4 text-left transition group">
-                            <span>
-                                <span className="block text-base font-semibold text-white"><Icone size="text-2xl">📈</Icone>Chance de tirar a peça se não veio na mão</span>
-                                <span className="block text-sm text-gray-400 mt-1">
-                                    Searcher, counters, blocker, compra{bombaDoDeck ? ' e a bomba do deck' : ''} · até os turnos 2, 3 e 5
-                                </span>
-                            </span>
-                            <span className="text-base font-semibold text-orange-300 bg-gray-900 group-hover:bg-orange-600 group-hover:text-white rounded-xl px-4 py-2 flex-shrink-0 transition">abrir ›</span>
-                        </button>
-                    </div>
                 </div>
 
                 {/* ARQUÉTIPO + GOLDEN RATIOS */}
@@ -1600,7 +1604,7 @@ function AnalysisPageContent() {
                                                         sub: `${c.count} cópias no deck · ideal ${c.ideal[0]}-${c.ideal[1]}`,
                                                         grupos: [{ rotulo: 'Cartas que entram nesta contagem', codes: c.codes! }],
                                                     })}
-                                                    className="mt-2 text-xs text-orange-400 hover:text-orange-300 transition">
+                                                    className="mt-2 text-sm font-medium text-orange-400 hover:text-orange-300 transition">
                                                     ver as {c.codes.length} carta(s) ›
                                                 </button>
                                             )}
@@ -1623,10 +1627,10 @@ function AnalysisPageContent() {
                                     {analise.synergies.map((s: AnaliseSynergy, i: number) => (
                                         <div key={i} className="bg-gray-800 rounded-xl px-4 py-2.5">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm text-white font-medium">{s.desc}</span>
-                                                <span className="text-xs font-bold text-blue-400">{s.arquetipo}</span>
+                                                <span className="text-base text-white font-medium">{s.desc}</span>
+                                                <span className="text-sm font-bold text-blue-400 flex-shrink-0 ml-3">{s.arquetipo}</span>
                                             </div>
-                                            <div className="text-xs text-gray-400 mt-1">
+                                            <div className="text-sm text-gray-400 mt-1">
                                                 {s.n_creators} carta(s) criam · {s.n_exploiters} explora(m)
                                             </div>
                                             {((s.creator_codes?.length ?? 0) + (s.exploiter_codes?.length ?? 0)) > 0 && (
@@ -1639,7 +1643,7 @@ function AnalysisPageContent() {
                                                             { rotulo: 'Exploram o estado', codes: s.exploiter_codes ?? [] },
                                                         ],
                                                     })}
-                                                    className="mt-2 text-xs text-blue-400 hover:text-blue-300 transition">
+                                                    className="mt-2 text-sm font-medium text-blue-400 hover:text-blue-300 transition">
                                                     ver as cartas ›
                                                 </button>
                                             )}
@@ -1658,12 +1662,12 @@ function AnalysisPageContent() {
                                     (um deck 100% do tipo aparecia como "78%" logo acima
                                     da frase "100% das cartas são X"). */}
                                 <div className="bg-gray-800 rounded-xl px-4 py-3">
-                                    <div className="text-sm text-white font-medium mb-3">{analise.tribal_cohesion.label}</div>
+                                    <div className="text-base text-white font-medium mb-4">{analise.tribal_cohesion.label}</div>
 
                                     <div className="mb-3">
                                         <div className="flex items-center justify-between mb-1">
-                                            <span className="text-xs text-gray-300">Concentração no tipo</span>
-                                            <span className="text-xs font-bold text-purple-400">
+                                            <span className="text-sm text-gray-300">Concentração no tipo</span>
+                                            <span className="text-base font-bold text-purple-400">
                                                 {analise.tribal_cohesion.same_type_pct}%
                                             </span>
                                         </div>
@@ -1671,15 +1675,15 @@ function AnalysisPageContent() {
                                             <div className="h-1.5 rounded-full bg-purple-500"
                                                 style={{ width: `${analise.tribal_cohesion.same_type_pct}%` }} />
                                         </div>
-                                        <div className="text-xs text-gray-500 mt-1">
+                                        <div className="text-sm text-gray-500 mt-1.5">
                                             cartas com o tipo {analise.tribal_cohesion.leader_type}
                                         </div>
                                     </div>
 
                                     <div>
                                         <div className="flex items-center justify-between mb-1">
-                                            <span className="text-xs text-gray-300">Cartas que exploram o tipo</span>
-                                            <span className="text-xs font-bold text-cyan-400">
+                                            <span className="text-sm text-gray-300">Cartas que exploram o tipo</span>
+                                            <span className="text-base font-bold text-cyan-400">
                                                 {analise.tribal_cohesion.hook_pct}%
                                             </span>
                                         </div>
@@ -1687,7 +1691,7 @@ function AnalysisPageContent() {
                                             <div className="h-1.5 rounded-full bg-cyan-500"
                                                 style={{ width: `${analise.tribal_cohesion.hook_pct}%` }} />
                                         </div>
-                                        <div className="text-xs text-gray-500 mt-1">
+                                        <div className="text-sm text-gray-500 mt-1.5">
                                             {analise.tribal_cohesion.hook_count} cartas citam {analise.tribal_cohesion.leader_type} no efeito
                                         </div>
                                     </div>

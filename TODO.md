@@ -90,6 +90,17 @@
 > meus de medicao no caminho (bissecao com maquina carregada apontou um
 > commit de front; e declarei a hipotese descartada medindo cedo demais) --
 > os dois em `REPROVADOS.md`.
+> (32) **T4/T5: metade da partida estava fora do score de mao** (achado do
+> usuario). A cobertura parava no T3 e uma carta de custo 8 indo em segundo
+> valia ZERO -- "searcher+1+4+6+8" pontuava igual a "searcher+1+4+6+1".
+> Adicionados com fallback 0; a calibracao rejeitou `t4` (60% estab) e
+> adotou `t5` em **-20,3** (100%). Ganho fora da amostra subiu pra **+3,33**.
+> Rigor da porta escolhido por medicao (90% > 95% > 99% fora da amostra).
+> **RESSALVA**: `t1` foi adotado como -22,3 com 92%, e na rodada anterior
+> deu 89% e foi rejeitado -- fica em cima do corte. E efeito PARCIAL, nao
+> marginal; ver HANDOFF antes de concluir que o folclore estava errado.
+> (33) Faixa de botoes virou 4 (entrou "Chance de tirar a peca", que morava
+> no rodape do Analisador) e texto de Sinergias/Coesao Tribal aumentado.
 > (31) **PESOS DO SCORE DE MAO CALIBRADOS** contra winrate simulado:
 > AUC fora da amostra **0,5613 -> 0,5897**, melhor em **5/5 folds**. 11 de 23
 > pesos medidos; 12 mantidos por sinal instavel (porta de bootstrap 90%).

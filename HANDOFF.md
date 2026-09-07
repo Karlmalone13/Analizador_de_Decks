@@ -586,6 +586,60 @@ deckbuilding** -- valem investigacao propria:
 - 12 pesos continuam sendo palpite -- o script diz quais, e o JSON grava a
   taxa de estabilidade de cada um.
 
+### 15. T4/T5: metade da partida estava fora do score de mao (achado do usuario)
+
+Usuario, olhando as maos de abertura: *"indo em segundo, se tivesse um
+search, uma carta custo 4, uma custo 6 e um custo 8, seria uma boa mao"*.
+
+Duas respostas. A primeira: **como agora e enumeracao e nao amostragem**, da
+pra localizar exatamente -- existem **125 maos** com esse formato no deck
+Krieg, e a melhor esta em **#46 de 11.109** (score 190 x 201 da melhor
+geral). Ja estava no topo 0,4%.
+
+A segunda achou um buraco de verdade. A cobertura de curva ia **so ate o
+T3**, e medindo o que a carta de custo 8 contribuia indo em segundo:
+
+    searcher + 1 + 4 + 6 + 8  ->  134
+    searcher + 1 + 4 + 6 + 1  ->  134   <- IDENTICO
+    searcher + 1 + 4 + 8 + 8  ->  114   <- pior, pela penalidade de bomba
+
+**A carta de custo 8 valia exatamente zero.** Turno 4 (8 DON indo em
+segundo) e turno 5 (10 DON) nao existiam no modelo. Adicionados `t4`/`t5`
+com as faixas certas nos dois lados (motor e TS), com peso de fallback
+**ZERO** de proposito -- se a calibracao nao achasse sinal, ficariam
+neutros em vez de eu inventar mais um numero.
+
+**O que a calibracao disse sobre eles:**
+- `t4`: 60% de estabilidade -> REJEITADO, fica em 0. Ter jogada de T4 nao
+  mostra efeito mensuravel.
+- `t5`: **-20,3 com 100% de estabilidade** -> adotado NEGATIVO. Carta de
+  custo 9-10 (ou 8-9 indo primeiro) na mao de abertura pesa contra.
+
+AUC praticamente igual (0,601 -> 0,600), mas o ganho fora da amostra subiu:
+**+3,33 pontos** (0,5613 -> 0,5945), melhor que os +2,85 de antes.
+
+#### Rigor da porta: medido, nao escolhido
+
+    porta 90%: antigos 0,5613  novos 0,5945  ganho +3,33  (11-15 pesos/fold)
+    porta 95%: antigos 0,5613  novos 0,5901  ganho +2,88  ( 7-11 pesos/fold)
+    porta 99%: antigos 0,5613  novos 0,5838  ganho +2,25  ( 5-7  pesos/fold)
+
+90% e o melhor dos tres FORA DA AMOSTRA, entao ficou.
+
+#### RESSALVA que a proxima sessao precisa ler
+
+`t1` (ter jogada no turno 1) foi adotado como **-22,3**, com 92% de
+estabilidade -- e na rodada ANTERIOR ele deu 89% e foi rejeitado. Ou seja,
+ele fica em cima do corte e o veredito muda entre rodadas.
+
+Leitura honesta: coeficiente de logistica e efeito PARCIAL, nao marginal.
+"-22,3 pro t1" nao significa "ter jogada no T1 e ruim"; significa que,
+MANTIDOS fixos t2/t3/searcher/counter, gastar um slot da mao numa carta de
+custo <=1 e pior que a alternativa. Isso e defensavel -- mas nao e o que
+alguem le no nome do peso, e o mesmo raciocinio serve pra `searcher_excesso
++24,2` e `c2k_excesso +17,5`. Nao tratar esses tres como "o dado provou que
+o folclore estava errado" sem investigar caso a caso.
+
 ### RESOLVIDO (07/09): as 6 falhas do `smoke_fast.py` eram o dev server comendo a CPU
 
 `smoke_fast.py` passou a dar 6 falhas no meio da sessao, todas da familia
