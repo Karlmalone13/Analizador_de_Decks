@@ -90,6 +90,12 @@
 > meus de medicao no caminho (bissecao com maquina carregada apontou um
 > commit de front; e declarei a hipotese descartada medindo cedo demais) --
 > os dois em `REPROVADOS.md`.
+> (29) **Os emojis eram o que estava pequeno** (eu tinha lido "icone" como
+> imagem de carta): estavam no MESMO span do texto e herdavam `text-xs`,
+> saindo com ~12px. Componente `Icone` separa num span com tamanho proprio.
+> Junto: `next build` quebrou em `.next/dev/types/routes.d.ts`, arquivo
+> GERADO e truncado ao matar o dev server -- `rm -rf .next` resolve, nao e
+> codigo-fonte.
 > (28) Cartas dos popups aumentadas: Plano de Jogo **28x40 -> 80x112** e
 > Melhores Maos **56x80 -> 96x134** (nome de 9px pra text-xs). Os tamanhos
 > vinham de quando os blocos eram inline e disputavam espaco -- restricao

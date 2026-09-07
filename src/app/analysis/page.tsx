@@ -223,6 +223,18 @@ function classif(p: number, b?: Benchmark): { label: string, color: string, bar:
     return { label: 'Muito baixa', color: 'text-red-400', bar: 'bg-red-500' }
 }
 
+/**
+ * Emoji de secao/tile num tamanho proprio.
+ *
+ * Achado 07/09 (usuario: "os icones ainda estao pequenos"): os emojis
+ * estavam interpolados DENTRO do mesmo `<span>` do texto (`{icon} {label}`),
+ * entao herdavam `text-xs`/`text-sm` e saiam com ~12px. Separar num span
+ * proprio e a unica forma de dimensiona-los sem inchar o texto ao lado.
+ */
+function Icone({ children, size = 'text-xl' }: { children: React.ReactNode; size?: string }) {
+    return <span className={`${size} leading-none mr-1.5 align-middle`}>{children}</span>
+}
+
 // ── Fisher-Yates shuffle (matematicamente correto e uniforme) ─────────────────
 function fisherYates<T>(arr: T[]): T[] {
     const a = [...arr]
@@ -1142,7 +1154,7 @@ function AnalysisPageContent() {
                                     <button onClick={() => setPainelAberto('lista')}
                                         className="w-full mt-4 flex items-center justify-between gap-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-orange-500 rounded-xl px-4 py-3 text-left transition group">
                                         <span>
-                                            <span className="block text-base font-semibold text-white">🃏 Lista do deck</span>
+                                            <span className="block text-base font-semibold text-white"><Icone size="text-2xl">🃏</Icone>Lista do deck</span>
                                             <span className="block text-sm text-gray-400 mt-0.5">as {totalCards} cartas com arte</span>
                                         </span>
                                         <span className="text-base font-semibold text-orange-300 group-hover:text-white flex-shrink-0 transition">abrir ›</span>
@@ -1283,7 +1295,7 @@ function AnalysisPageContent() {
                 {eixos.some(e => e.nota !== null) && (
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                         <div className="flex items-baseline justify-between mb-1">
-                            <div className="text-sm font-semibold text-gray-300 uppercase tracking-wide">⚔️ Perfil de Jogo</div>
+                            <div className="text-sm font-semibold text-gray-300 uppercase tracking-wide"><Icone size="text-2xl">⚔️</Icone>Perfil de Jogo</div>
                             <div className="text-xs text-gray-500">
                                 0-100 = posição entre {analise?.opening_benchmarks?.n_decks ?? 184} decks de torneio · 50 = mediano
                             </div>
@@ -1303,7 +1315,7 @@ function AnalysisPageContent() {
                                 return (
                                     <div key={e.chave} className="bg-gray-800 rounded-xl p-5">
                                         <div className="flex items-baseline justify-between mb-1">
-                                            <span className="text-base font-semibold text-white">{e.icon} {e.label}</span>
+                                            <span className="text-base font-semibold text-white"><Icone size="text-2xl">{e.icon}</Icone>{e.label}</span>
                                             <span className={`text-3xl font-black tabular-nums ${cor}`}>{n}</span>
                                         </div>
                                         <div className="text-xs text-gray-500 mb-2">{e.sub}</div>
@@ -1345,7 +1357,7 @@ function AnalysisPageContent() {
                         <button key={b.id} onClick={() => setPainelAberto(b.id)}
                             className="flex items-center justify-between gap-3 bg-gray-900 border border-gray-800 hover:border-gray-600 hover:bg-gray-800 rounded-2xl px-5 py-4 text-left transition group">
                             <span>
-                                <span className="block text-base font-semibold text-white leading-tight">{b.icon} {b.titulo}</span>
+                                <span className="block text-base font-semibold text-white leading-tight"><Icone size="text-2xl">{b.icon}</Icone>{b.titulo}</span>
                                 <span className="block text-sm text-gray-400 mt-1 leading-snug">{b.sub}</span>
                             </span>
                             <span className="text-base font-semibold text-orange-300 bg-gray-800 group-hover:bg-orange-600 group-hover:text-white rounded-xl px-4 py-2 flex-shrink-0 transition">abrir ›</span>
@@ -1357,7 +1369,7 @@ function AnalysisPageContent() {
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                     <div className="flex items-start justify-between mb-6">
                         <div>
-                            <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide">🧠 Analisador Inteligente</div>
+                            <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide"><Icone size="text-2xl">🧠</Icone>Analisador Inteligente</div>
                             <div className="text-xs text-gray-500 mt-1">
                                 Distribuição Hipergeométrica — mão inicial de {n} cartas (N={N}), trigger sobre as {leaderLife} de vida · comparado a {analise?.opening_benchmarks?.n_decks ?? 184} decks de torneio
                             </div>
@@ -1394,7 +1406,7 @@ function AnalysisPageContent() {
                             return (
                                 <div key={label} className="bg-gray-800 rounded-xl p-4">
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-xs text-gray-400">{icon} {label}</span>
+                                        <span className="text-xs text-gray-400"><Icone size="text-lg">{icon}</Icone>{label}</span>
                                         <span className="text-xs text-gray-500">{K} cóp.</span>
                                     </div>
                                     <div className={`text-2xl font-black mb-1 ${c.color}`}>{pct(p)}</div>
@@ -1452,7 +1464,7 @@ function AnalysisPageContent() {
                         <button onClick={() => setComprasAberto(true)}
                             className="w-full flex items-center justify-between gap-3 bg-gray-800 hover:bg-gray-700 rounded-xl px-5 py-4 text-left transition group">
                             <span>
-                                <span className="block text-base font-semibold text-white">📈 Chance de tirar a peça se não veio na mão</span>
+                                <span className="block text-base font-semibold text-white"><Icone size="text-2xl">📈</Icone>Chance de tirar a peça se não veio na mão</span>
                                 <span className="block text-sm text-gray-400 mt-1">
                                     Searcher, counters, blocker, compra{bombaDoDeck ? ' e a bomba do deck' : ''} · até os turnos 2, 3 e 5
                                 </span>
@@ -1481,7 +1493,7 @@ function AnalysisPageContent() {
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                         <div className="flex items-start justify-between mb-6">
                             <div>
-                                <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide">📐 Arquétipo & Estrutura</div>
+                                <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide"><Icone size="text-2xl">📐</Icone>Arquétipo & Estrutura</div>
                                 <div className="text-xs text-gray-500 mt-1">Baseado no consenso de construção competitiva (Golden Ratios)</div>
                             </div>
                             <div className="text-center bg-gray-800 rounded-2xl px-6 py-3">
@@ -1490,7 +1502,7 @@ function AnalysisPageContent() {
                             </div>
                         </div>
                         <div className="mb-2">
-                            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📊 Golden Ratios · {analise.issues_count === 0 ? 'tudo dentro do recomendado' : `${analise.issues_count} ponto(s) de atenção`}</div>
+                            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"><Icone size="text-2xl">📊</Icone>Golden Ratios · {analise.issues_count === 0 ? 'tudo dentro do recomendado' : `${analise.issues_count} ponto(s) de atenção`}</div>
                             {/* Só os pontos de ATENÇÃO. A contagem de cada categoria
                                 (e o ideal) já aparece na Composição do Deck, no topo
                                 da página -- repetir a lista inteira aqui era a 3ª vez
@@ -1534,7 +1546,7 @@ function AnalysisPageContent() {
                         {/* SINERGIAS */}
                         {analise.synergies && analise.synergies.length > 0 && (
                             <div className="mt-6 border-t border-gray-800 pt-5">
-                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">🔗 Sinergias detectadas</div>
+                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"><Icone size="text-2xl">🔗</Icone>Sinergias detectadas</div>
                                 <div className="space-y-2">
                                     {analise.synergies.map((s: AnaliseSynergy, i: number) => (
                                         <div key={i} className="bg-gray-800 rounded-xl px-4 py-2.5">
@@ -1568,7 +1580,7 @@ function AnalysisPageContent() {
                         {/* COESÃO TRIBAL */}
                         {analise.tribal_cohesion && analise.tribal_cohesion.leader_type && (
                             <div className="mt-6 border-t border-gray-800 pt-5">
-                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">🎯 Coesão Tribal</div>
+                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"><Icone size="text-2xl">🎯</Icone>Coesão Tribal</div>
                                 {/* Dois eixos SEPARADOS de propósito: um score único
                                     misturando os dois não significa nada verificável
                                     (um deck 100% do tipo aparecia como "78%" logo acima
@@ -1680,7 +1692,7 @@ function AnalysisPageContent() {
                         onClick={e => e.stopPropagation()}>
                         <div className="flex items-start justify-between gap-4 p-6 border-b border-gray-800">
                             <div>
-                                <div className="text-lg font-bold text-white">📈 Chance de tirar a peça se não veio na mão</div>
+                                <div className="text-lg font-bold text-white"><Icone size="text-2xl">📈</Icone>Chance de tirar a peça se não veio na mão</div>
                                 <div className="text-sm text-gray-400 mt-1">
                                     {naoVistas} cartas não vistas depois da mão inicial · se a peça{' '}
                                     <strong className="text-gray-300">não veio na abertura</strong>, qual a chance de tirá-la em X compras?
@@ -1704,7 +1716,7 @@ function AnalysisPageContent() {
                                     <tbody>
                                         {metricasCompra.map(({ icon, label, Kr, pT2, pT3, pT5 }) => (
                                             <tr key={label} className="border-b border-gray-800 hover:bg-gray-800/50">
-                                                <td className="py-3 pr-4 text-white font-medium">{icon} {label}</td>
+                                                <td className="py-3 pr-4 text-white font-medium"><Icone size="text-xl">{icon}</Icone>{label}</td>
                                                 <td className="text-center py-3 px-4 text-gray-400 tabular-nums">{Kr} cóp.</td>
                                                 <td className="text-center py-3 px-4 text-lg font-bold tabular-nums">
                                                     <span className={pT2 >= 0.5 ? 'text-green-400' : 'text-gray-300'}>{pct(pT2)}</span>
@@ -1727,7 +1739,7 @@ function AnalysisPageContent() {
                                 {metricasCompra.map(({ icon, label, pT5 }) => (
                                     <div key={label}>
                                         <div className="flex justify-between items-baseline mb-1.5">
-                                            <span className="text-sm text-white">{icon} {label}</span>
+                                            <span className="text-sm text-white"><Icone size="text-xl">{icon}</Icone>{label}</span>
                                             <span className="text-base font-bold text-gray-200 tabular-nums">{pct(pT5)}</span>
                                         </div>
                                         <div className="w-full bg-gray-800 rounded-full h-3">
@@ -1868,7 +1880,7 @@ function AnalysisPageContent() {
                             </>)}
                             {painelAberto === 'brick' && (<>
                             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
-                                <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1">💀 Risco de Mão Travada</div>
+                                <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1"><Icone size="text-2xl">💀</Icone>Risco de Mão Travada</div>
                                 <div className="text-xs text-gray-500 mb-4">
                                     Probabilidade exata (hipergeométrica) de abrir 5 cartas sem nenhuma jogada possível.
                                     Counters 2000 não contam como jogada — eles são guardados para defesa.
@@ -1899,7 +1911,7 @@ function AnalysisPageContent() {
                             {/* MELHOR MÃO */}
                             {simDone && (melhoresMaosP1.length > 0 || melhoresMaosP2.length > 0) && (
                                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
-                                    <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1">🏆 Melhores Mãos de Abertura</div>
+                                    <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1"><Icone size="text-2xl">🏆</Icone>Melhores Mãos de Abertura</div>
                                     <div className="flex items-center gap-3 mb-5">
                                         <span className="text-xs text-gray-500">Top 3 de 30.000 simulações por posição · embaralhamento Fisher-Yates</span>
                                         <span className="text-xs px-2 py-0.5 rounded font-medium bg-gray-700 text-gray-300">
@@ -1963,7 +1975,7 @@ function AnalysisPageContent() {
                             {/* PLANO */}
                             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                                 <div className="flex items-center gap-3 mb-1">
-                                    <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide">🗺️ Plano de Jogo por Turno</div>
+                                    <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide"><Icone size="text-2xl">🗺️</Icone>Plano de Jogo por Turno</div>
                                     {leaderStats && leaderStats.total_games > 0 && (
                                         <span className="text-xs bg-green-900 text-green-300 px-2 py-0.5 rounded font-medium">
                                             ✦ {leaderStats.total_games} partida{leaderStats.total_games > 1 ? 's' : ''} real{leaderStats.total_games > 1 ? 'is' : ''} no banco

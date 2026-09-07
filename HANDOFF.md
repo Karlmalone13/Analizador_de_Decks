@@ -452,6 +452,21 @@ Plano de Jogo: **28x40 -> 80x112** (as cartas eram ilegiveis, praticamente
 um icone). Melhores Maos: **56x80 -> 96x134**, e o nome da carta saiu de
 `fontSize: 9px` truncado em 10 caracteres pra `text-xs` truncado em 18.
 
+**Os EMOJIS eram o que estava pequeno** (usuario: *"os icones ainda estao
+pequenos"*, depois de eu ter aumentado as CARTAS -- eu tinha lido "icone"
+como imagem de carta). Estavam interpolados dentro do MESMO `<span>` do
+texto (`{icon} {label}`), entao herdavam `text-xs`/`text-sm` e saiam com
+~12px. Componente `Icone` novo separa o emoji num span com tamanho proprio
+(`text-2xl` nos titulos e eixos, `text-lg`/`text-xl` nos tiles e tabelas),
+sem inchar o texto ao lado. 17 pontos convertidos.
+
+**Armadilha de build**: depois disso o `next build` quebrou com
+`Type error: An element access expression should take an argument` em
+`.next/dev/types/routes.d.ts:58` -- arquivo GERADO pelo Next, truncado
+porque o dev server foi morto no meio da escrita. `tsc --noEmit` e o
+`eslint` passavam. `rm -rf .next` resolveu. Nao perder tempo caçando isso
+no codigo-fonte: se o erro aponta pra dentro de `.next/`, limpe o cache.
+
 **Deixados inline de proposito**: distribuicoes por tipo/cor e curva de
 custo (compactas e de leitura rapida), Coesao Tribal (compacta).
 
