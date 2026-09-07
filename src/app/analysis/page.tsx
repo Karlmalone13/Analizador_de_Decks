@@ -128,6 +128,26 @@ function probAteOTurno(N: number, K: number, draws: number): number {
 
 function pct(p: number): string { return `${(p * 100).toFixed(1)}%` }
 
+/**
+ * Posicao do deck DENTRO da distribuicao do meta, de 0 a 1, interpolando
+ * entre os quartis. E o que substitui os alvos inventados no Score de
+ * Consistencia: `min(p / 0.65, 1)` dava nota CHEIA pra qualquer valor acima
+ * de 0.65, entao o deck Krieg levava 20 de 20 pontos em `low2` enquanto o
+ * tile logo abaixo, na mesma tela, dizia "Ultimos 25% do meta". `maior_melhor
+ * = false` inverte pra metricas onde menos e melhor (custo medio).
+ */
+function posicaoNoMeta(v: number, b?: Benchmark, maiorMelhor = true): number {
+    if (!b) return 0.5
+    const faixa = (x: number, lo: number, hi: number, base: number, span: number) =>
+        hi <= lo ? base : base + span * Math.min(Math.max((x - lo) / (hi - lo), 0), 1)
+    let q: number
+    if (v <= b.p25) q = faixa(v, 0, b.p25, 0, 0.25)
+    else if (v <= b.mediana) q = faixa(v, b.p25, b.mediana, 0.25, 0.25)
+    else if (v <= b.p75) q = faixa(v, b.mediana, b.p75, 0.50, 0.25)
+    else q = faixa(v, b.p75, Math.max(b.p75 * 1.15, b.p75 + 0.05), 0.75, 0.25)
+    return maiorMelhor ? q : 1 - q
+}
+
 /** Quartis da metrica nos 184 decks de torneio reais (`/analyze` ->
  *  `opening_benchmarks`, gerado por `calibrar_percentis_abertura.py`). */
 interface Benchmark { p25: number; mediana: number; p75: number }
@@ -146,7 +166,12 @@ function classif(p: number, b?: Benchmark): { label: string, color: string, bar:
     if (p <= 0) return { label: 'Ausente', color: 'text-red-400', bar: 'bg-red-500' }
     if (b) {
         if (p >= b.p75) return { label: 'Top 25% do meta', color: 'text-green-400', bar: 'bg-green-500' }
-        if (p >= b.mediana) return { label: 'Acima da mediana', color: 'text-lime-400', bar: 'bg-lime-500' }
+        // Igualdade tratada a parte: com 50 cartas so existem K inteiros, entao
+        // as probabilidades sao DISCRETAS e varios decks caem no mesmo valor --
+        // ficar exatamente NA mediana e comum (2 dos 8 tiles do deck Krieg).
+        // Chamar isso de "acima da mediana" e falso.
+        if (Math.abs(p - b.mediana) < 0.0005) return { label: 'Na mediana do meta', color: 'text-lime-400', bar: 'bg-lime-500' }
+        if (p > b.mediana) return { label: 'Acima da mediana', color: 'text-lime-400', bar: 'bg-lime-500' }
         if (p >= b.p25) return { label: 'Abaixo da mediana', color: 'text-orange-400', bar: 'bg-orange-500' }
         return { label: 'Últimos 25% do meta', color: 'text-red-400', bar: 'bg-red-500' }
     }
@@ -158,20 +183,6 @@ function classif(p: number, b?: Benchmark): { label: string, color: string, bar:
     if (p >= 0.45) return { label: 'Média', color: 'text-lime-400', bar: 'bg-lime-500' }
     if (p >= 0.20) return { label: 'Baixa', color: 'text-orange-400', bar: 'bg-orange-500' }
     return { label: 'Muito baixa', color: 'text-red-400', bar: 'bg-red-500' }
-}
-
-// `rec` é opcional de propósito: só existe quando o MOTOR tem um ideal
-// publicado pra aquela categoria (Golden Ratios). Sem isso o texto sai sem
-// número recomendado, em vez de inventar um que contradiga a análise.
-function diagTexto(label: string, p: number, b?: Benchmark, rec?: string): string {
-    const sugestao = rec ? ` (recomendado: ${rec})` : ''
-    if (p <= 0) return `🔴 Sem ${label} no deck — vulnerabilidade crítica${sugestao}`
-    if (!b) return `${label}: ${(p * 100).toFixed(1)}% de chance na mão inicial (referência do meta indisponível)`
-    const med = `mediana do meta ${(b.mediana * 100).toFixed(0)}%`
-    if (p >= b.p75) return `✅ ${label} no top 25% dos decks de torneio (${med})`
-    if (p >= b.mediana) return `🟢 ${label} acima da mediana do meta (${med})`
-    if (p >= b.p25) return `🟠 ${label} abaixo da mediana do meta (${med})${sugestao}`
-    return `🔴 ${label} nos últimos 25% do meta (${med}) — adicione cópias${sugestao}`
 }
 
 // ── Fisher-Yates shuffle (matematicamente correto e uniforme) ─────────────────
@@ -874,25 +885,40 @@ function AnalysisPageContent() {
     const p_low1 = probPeloMenos1(N, K_low1, n)
     const p_low2 = probPeloMenos1(N, K_low2, n)
 
+    // O `bench` vem do MOTOR (`/analyze` -> `opening_benchmarks`), medido nos
+    // 184 decks de torneio. Nenhum corte inventado aqui.
+    const bench = (nome: string): Benchmark | undefined => analise?.opening_benchmarks?.metricas?.[nome]
     const avgCostNum = parseFloat(avgCost) || 0
-    const curvaScore = avgCostNum <= 2.5 ? 1 : avgCostNum <= 3.5 ? 0.75 : avgCostNum <= 4.5 ? 0.4 : 0.1
 
-    const rawScore =
-        (Math.min(p_searcher / 0.65, 1) * 25) +
-        (Math.min(p_counter2k / 0.65, 1) * 20 + Math.min(p_counter1k / 0.40, 1) * 5) +
-        (Math.min(p_blocker / 0.40, 1) * 15) +
-        (Math.min(p_low2 / 0.65, 1) * 20) +
-        (curvaScore * 15)
-
-    const consistScore = Math.round(rawScore)
-    const scoreLabel = consistScore >= 80 ? 'Excelente' : consistScore >= 60 ? 'Bom' : consistScore >= 40 ? 'Regular' : 'Fraco'
-    const scoreColor = consistScore >= 80 ? 'text-green-400' : consistScore >= 60 ? 'text-yellow-400' : consistScore >= 40 ? 'text-orange-400' : 'text-red-400'
-
-    let curvaMsg = ''
-    if (avgCostNum <= 2.5) curvaMsg = '✅ Curva leve — deck rápido e agressivo, ótimo para primeiros turnos'
-    else if (avgCostNum <= 3.5) curvaMsg = '🟡 Curva equilibrada — boa progressão de turnos, custo médio ideal'
-    else if (avgCostNum <= 4.5) curvaMsg = '🟠 Curva pesada — pode travar nos turnos iniciais, considere mais cartas baratas'
-    else curvaMsg = '🔴 Curva muito pesada — alto risco de mão ruim, adicione cartas de custo 1-2'
+    // ── Score de Consistencia ─────────────────────────────────────────────
+    // Cada componente vale pela POSICAO DO DECK NO META, nao por um alvo
+    // inventado. Achado 06/09 (deck Krieg), e o pior erro desta tela: a
+    // versao anterior usava `min(p / 0.65, 1)` e derivados, entao `low2`
+    // entregava **20 de 20 pontos** enquanto o tile logo abaixo, na MESMA
+    // tela, dizia "Ultimos 25% do meta" em vermelho. Pior: `draw` -- o tile
+    // mais vermelho do deck, 19,2% contra mediana 76,3% -- nao entrava na
+    // conta e valia ZERO. Resultado: 89/100 "Excelente" num deck com dois
+    // tiles no fundo do meta. O score contradizia a propria tela.
+    //
+    // `custo_medio` tambem sai do meta agora: a faixa fixa "ideal <=3.5"
+    // reprovava mais da METADE dos decks de torneio (mediana real: 3,74).
+    const compScore = [
+        { peso: 25, v: posicaoNoMeta(p_searcher, bench('searcher')) },
+        { peso: 20, v: posicaoNoMeta(p_counter2k, bench('counter2k')) },
+        { peso: 5, v: posicaoNoMeta(p_counter1k, bench('counter1k')) },
+        { peso: 15, v: posicaoNoMeta(p_blocker, bench('blocker')) },
+        { peso: 10, v: posicaoNoMeta(p_low2, bench('low2')) },
+        { peso: 10, v: posicaoNoMeta(p_draw, bench('draw')) },
+        { peso: 15, v: posicaoNoMeta(avgCostNum, bench('custo_medio'), false) },
+    ]
+    const consistScore = Math.round(compScore.reduce((acc, c) => acc + c.peso * c.v, 0))
+    // 50 = deck EXATAMENTE mediano do meta em todos os eixos. A escala antiga
+    // ("40-59 Regular") vinha de quando o score media contra alvos inventados;
+    // mantida, ela chamaria metade dos decks de torneio de "regular".
+    const scoreLabel = consistScore >= 75 ? 'Bem acima do meta' : consistScore >= 58 ? 'Acima do meta'
+        : consistScore >= 43 ? 'Na média do meta' : consistScore >= 25 ? 'Abaixo do meta' : 'Bem abaixo do meta'
+    const scoreColor = consistScore >= 75 ? 'text-green-400' : consistScore >= 58 ? 'text-lime-400'
+        : consistScore >= 43 ? 'text-yellow-400' : consistScore >= 25 ? 'text-orange-400' : 'text-red-400'
 
     // A recomendação de QUANTAS cópias rodar vem do motor (Golden Ratios,
     // `analise.ratios`), nunca mais de string fixa aqui. Achado 06/09: o
@@ -910,9 +936,6 @@ function AnalysisPageContent() {
         return r ? `${r.ideal[0]}-${r.ideal[1]} ${nome}` : undefined
     }
 
-    // O `bench` vem do MOTOR (`/analyze` -> `opening_benchmarks`), medido nos
-    // 184 decks de torneio. Nenhum corte inventado aqui.
-    const bench = (nome: string): Benchmark | undefined => analise?.opening_benchmarks?.metricas?.[nome]
     const metricas = [
         { icon: '🔍', label: 'Searcher na mão', p: p_searcher, K: K_search, b: bench('searcher'), rec: idealDoMotor('searchers') },
         { icon: '🛡️🛡️', label: 'Counter 2000 na mão', p: p_counter2k, K: K_counter2k, b: bench('counter2k'), rec: idealDoMotor('counters') },
@@ -920,7 +943,15 @@ function AnalysisPageContent() {
         { icon: '🔒', label: 'Blocker na mão', p: p_blocker, K: K_blocker, b: bench('blocker'), rec: idealDoMotor('blockers') },
         { icon: '🃏', label: 'Draw Power na mão', p: p_draw, K: K_draw, b: bench('draw'), rec: undefined },
         { icon: '⚡', label: `Trigger na vida (${leaderLife} cartas)`, p: p_trigger_vida, K: K_trigger, b: bench('trigger_vida'), rec: undefined },
-        { icon: '1️⃣', label: 'Carta custo 1 na mão', p: p_low1, K: K_low1, b: bench('low1'), rec: undefined },
+        // O tile de custo 1 SOME quando o deck nao tem nenhuma carta de custo 2:
+        // ai `low1` e `low2` contam exatamente as MESMAS cartas, os dois tiles
+        // exibem o mesmo numero e -- como os benchmarks do meta sao diferentes --
+        // um sai VERDE e o outro VERMELHO, lado a lado (deck Krieg, 06/09: 84,7%
+        // 'acima da mediana' colado em 84,7% 'ultimos 25% do meta'). Correto por
+        // dentro, ilegivel na tela.
+        ...(K_low1 === K_low2
+            ? []
+            : [{ icon: '1️⃣', label: 'Carta custo 1 na mão', p: p_low1, K: K_low1, b: bench('low1'), rec: undefined }]),
         { icon: '2️⃣', label: 'Carta custo ≤2 na mão', p: p_low2, K: K_low2, b: bench('low2'), rec: undefined },
     ]
 
@@ -1206,25 +1237,27 @@ function AnalysisPageContent() {
                         <div>
                             <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide">🧠 Analisador Inteligente</div>
                             <div className="text-xs text-gray-500 mt-1">
-                                Distribuição Hipergeométrica — mão inicial de {n} cartas (N={N}) · Leader life: {leaderLife}
+                                Distribuição Hipergeométrica — mão inicial de {n} cartas (N={N}), trigger sobre as {leaderLife} de vida · comparado a {analise?.opening_benchmarks?.n_decks ?? 184} decks de torneio
                             </div>
                         </div>
                         <div className="flex gap-4 items-start">
                             <div className="text-center bg-gray-800 rounded-2xl px-6 py-3">
                                 <div className={`text-5xl font-black ${scoreColor}`}>{consistScore}</div>
                                 <div className={`text-sm font-bold mt-1 ${scoreColor}`}>{scoreLabel}</div>
-                                <div className="text-xs text-gray-500 mt-0.5">Score de Consistência (0-100)</div>
+                                <div className="text-xs text-gray-500 mt-0.5">Posição vs. meta (0-100)</div>
+                                <div className="text-xs text-gray-600 mt-0.5">50 = deck mediano de torneio</div>
                             </div>
                             <div className="bg-gray-800 rounded-2xl px-4 py-3 text-xs space-y-1.5">
                                 <div className="text-gray-400 font-semibold mb-2 uppercase tracking-wide">Índice</div>
                                 {[
-                                    { range: '80 – 100', label: 'Excelente', color: 'text-green-400' },
-                                    { range: '60 – 79', label: 'Bom', color: 'text-yellow-400' },
-                                    { range: '40 – 59', label: 'Regular', color: 'text-orange-400' },
-                                    { range: '0 – 39', label: 'Fraco', color: 'text-red-400' },
+                                    { range: '75 – 100', label: 'Bem acima do meta', color: 'text-green-400' },
+                                    { range: '58 – 74', label: 'Acima do meta', color: 'text-lime-400' },
+                                    { range: '43 – 57', label: 'Na média do meta', color: 'text-yellow-400' },
+                                    { range: '25 – 42', label: 'Abaixo do meta', color: 'text-orange-400' },
+                                    { range: '0 – 24', label: 'Bem abaixo', color: 'text-red-400' },
                                 ].map(({ range, label, color }) => (
                                     <div key={label} className="flex items-center gap-2">
-                                        <span className={`font-bold w-16 ${color}`}>{range}</span>
+                                        <span className={`font-bold w-14 ${color}`}>{range}</span>
                                         <span className={`font-semibold ${color}`}>{label}</span>
                                     </div>
                                 ))}
@@ -1276,20 +1309,11 @@ function AnalysisPageContent() {
                         </div>
                     </div>
 
-                    {/* Diagnóstico */}
-                    <div className="border-t border-gray-800 pt-5">
-                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Diagnóstico Automático</div>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                            {metricas.map(({ label, p, b, rec }) => (
-                                <div key={label} className="text-sm text-gray-300 bg-gray-800 rounded-lg px-4 py-2.5">
-                                    {diagTexto(label, p, b, rec)}
-                                </div>
-                            ))}
-                            <div className="text-sm text-gray-300 bg-gray-800 rounded-lg px-4 py-2.5 lg:col-span-2">{curvaMsg}</div>
-                        </div>
-                    </div>
+                    {/* Bloco Diagnostico Automatico REMOVIDO em 06/09 a pedido do usuario:
+                        eram 9 frases repetindo em prosa os MESMOS numeros que os 8 tiles
+                        acima ja mostram. Redundancia pura. */}
 
-                    {/* ── Probabilidade de Compra ao Longo do Jogo ── */}
+                    {/* Probabilidade de Compra ao Longo do Jogo */}
                     <div className="border-t border-gray-800 pt-5 mt-5">
                         <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">📈 Chance de Tirar a Peça se Não Veio na Mão</div>
                         <div className="text-xs text-gray-500 mb-4">

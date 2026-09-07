@@ -50,6 +50,17 @@
 > `trigger_vida` (mediana do meta 29,1%). Krieg da 40,9%.
 > Conferido tambem que 48,7% para 6 copias esta certo (2M de maos simuladas
 > deram 48,84%) -- contraintuitivo, mas correto.
+> (12) **O Score contradizia os tiles**: usava as constantes ja
+> desacreditadas, entao `low2` dava 20/20 pontos enquanto o tile dizia
+> "Ultimos 25% do meta", e `draw` (o tile mais vermelho) valia ZERO. Cada
+> componente agora vale pela posicao no meta, com `draw` incluido e
+> `custo_medio` calibrado (a faixa "ideal <=3.5" reprovava mais da metade
+> dos decks de torneio -- mediana real **3,74**). Krieg **89 -> 49**, e
+> **50 passou a significar "deck mediano de torneio"** (legenda refeita).
+> (13) Menores: "Acima da mediana" com p == mediana virou "Na mediana";
+> tile de custo 1 some quando conta as mesmas cartas do <=2 (dava 84,7%
+> verde colado em 84,7% vermelho); bloco "Diagnostico Automatico" removido
+> a pedido do usuario (repetia em prosa os 8 tiles).
 > **Pendente**: 219 cartas seguem sem arte (placeholder e paliativo).
 
 > 05/09/2026 (bloco 751): **Tela de analise mentia em dois lugares, mesma

@@ -204,6 +204,46 @@ referencia do meta" em todos os 8 tiles. Degradar nao pode ser apagar --
 sem `opening_benchmarks` o tile agora cai numa escala absoluta que ainda
 tem cor e leitura.
 
+### 6. O Score de Consistencia contradizia os proprios tiles (e o Diagnostico Automatico saiu)
+
+Usuario: *"acho que ainda ta errado, me ajude a melhorar"*. Estava, e o erro
+grosso nao era nos tiles -- era no **89**.
+
+**O score usava as constantes que a secao 4 acabou de desacreditar.** Com
+`min(p / 0.65, 1)`, o componente `low2` entregava **20 de 20 pontos**
+enquanto o tile logo abaixo, na MESMA tela, dizia "Ultimos 25% do meta" em
+vermelho. E `draw` -- o tile mais vermelho do deck, 19,2% contra mediana
+76,3% do meta -- **nao entrava na conta**, valia ZERO. Resultado: 89/100
+"Excelente" num deck com dois eixos no fundo do meta.
+
+Cada componente passou a valer pela POSICAO DO DECK NO META
+(`posicaoNoMeta`, interpolando entre p25/mediana/p75), com `draw` incluido e
+`custo_medio` tambem calibrado -- a faixa fixa "ideal <=3.5" reprovava mais
+da METADE dos decks de torneio (**mediana real 3,74**). Krieg: **89 -> 49**.
+
+A escala mudou de significado, entao a legenda mudou junto: **50 = deck
+exatamente mediano de torneio**. Manter "40-59 Regular" seria chamar metade
+do meta de regular. Virou "Bem acima do meta / Acima / Na media / Abaixo /
+Bem abaixo", e o rotulo do numero virou "Posicao vs. meta (0-100)".
+
+**Mais tres, menores, todos achados na tela real:**
+- **"Acima da mediana" com p == mediana** (2 dos 8 tiles). Com 50 cartas so
+  existem K inteiros, entao as probabilidades sao discretas e cair
+  exatamente na mediana e comum. Agora diz "Na mediana do meta".
+- **Custo 1 e Custo <=2 com o MESMO 84,7%, um verde e outro vermelho**, lado
+  a lado. Acontece quando o deck nao tem carta de custo 2 (o Krieg nao tem):
+  as duas metricas contam as mesmas cartas, mas os benchmarks do meta sao
+  diferentes. O tile de custo 1 agora some quando `K_low1 === K_low2`.
+- **Bloco "Diagnostico Automatico" REMOVIDO** a pedido do usuario ("retire
+  isso"): eram 9 frases repetindo em prosa os mesmos numeros dos 8 tiles
+  logo acima.
+
+**Nota de implementacao pra proxima sessao**: mover o score pra usar `bench`
+exigiu mover a declaracao de `bench` pra ANTES dele -- estava depois, e
+usar antes daria erro de TDZ em runtime (nao pego por `tsc`). E um
+comentario JSX longo com aspas/parenteses quebrou o parser (`'}' expected`)
+sem erro claro; a versao curta passou.
+
 ### Pendente
 
 - ~~Abrir `/analysis` logado~~ FEITO (secao 3) -- imagens OK, 2 bugs de numero achados e corrigidos.

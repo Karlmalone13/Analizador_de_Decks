@@ -51,6 +51,9 @@ N_MAO = 5
 METRICAS = ['searcher', 'counter2k', 'counter1k', 'blocker', 'draw',
             'low1', 'low2']
 METRICA_VIDA = 'trigger_vida'
+# Custo medio do main deck. Entra aqui porque o Score de Consistencia
+# comparava contra faixas fixas (<=2.5 / <=3.5 / <=4.5) tambem inventadas.
+METRICA_CUSTO = 'custo_medio'
 
 
 def _num(v):
@@ -113,7 +116,7 @@ def main():
         for r in csv.DictReader(f):
             decks[r['deck_url']][r['card_code']] = int(r['qty'])
 
-    dist = {m: [] for m in list(METRICAS) + [METRICA_VIDA]}
+    dist = {m: [] for m in list(METRICAS) + [METRICA_VIDA, METRICA_CUSTO]}
     usados = 0
     for _url, d in decks.items():
         main_qty = sum(q for code, q in d.items()
@@ -143,8 +146,19 @@ def main():
                      and pertence('trigger_vida', cards[code], adb.get(code) or {}))
         dist[METRICA_VIDA].append(prob_pelo_menos_1(N_DECK, K_trig, life))
 
+        # Custo medio do main deck (ponderado por copia).
+        soma = qtd = 0
+        for code, q in d.items():
+            c = cards.get(code)
+            if not c or (c.get('card_type') or '').lower() == 'leader':
+                continue
+            soma += _num(c.get('card_cost')) * q
+            qtd += q
+        if qtd:
+            dist[METRICA_CUSTO].append(soma / qtd)
+
     out = {'n_decks': usados, 'fonte': 'decklists_raw.csv', 'metricas': {}}
-    for m in list(METRICAS) + [METRICA_VIDA]:
+    for m in list(METRICAS) + [METRICA_VIDA, METRICA_CUSTO]:
         v = sorted(dist[m])
         k = len(v)
         def q(p):
@@ -155,9 +169,14 @@ def main():
 
     print(f'{usados} decks de torneio')
     print(f"{'metrica':11s} {'p25':>8s} {'mediana':>8s} {'p75':>8s}")
-    for m in list(METRICAS) + [METRICA_VIDA]:
+    for m in list(METRICAS) + [METRICA_VIDA, METRICA_CUSTO]:
         e = out['metricas'][m]
-        print(f"{m:11s} {e['p25']*100:7.1f}% {e['mediana']*100:7.1f}% {e['p75']*100:7.1f}%")
+        # custo_medio e CUSTO, nao probabilidade -- imprimir com *100 dava
+        # "374,0%" pra um custo medio de 3,74 e confundia a leitura.
+        if m == METRICA_CUSTO:
+            print(f"{m:11s} {e['p25']:8.2f} {e['mediana']:8.2f} {e['p75']:8.2f}   (custo, nao %)")
+        else:
+            print(f"{m:11s} {e['p25']*100:7.1f}% {e['mediana']*100:7.1f}% {e['p75']*100:7.1f}%")
 
     if not args.so_print:
         SAIDA.write_text(json.dumps(out, indent=2), encoding='utf-8')
