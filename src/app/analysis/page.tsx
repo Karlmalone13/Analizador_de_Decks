@@ -1314,6 +1314,35 @@ function AnalysisPageContent() {
                     </div>
                 )}
 
+                {/* Blocos de CONSULTA viraram botão + popup (07/09, pedido do
+                    usuário). Critério: fica inline o que responde "meu deck é bom?"
+                    (Perfil de Jogo, Analisador, Arquétipo); vira popup o que se
+                    consulta de vez em quando -- exemplos de mão, plano turno a
+                    turno, risco de travar. Os três juntos empurravam o resto da
+                    página pra baixo e viravam rolagem. Ficam logo ABAIXO do Perfil
+                    de Jogo (07/09): o usuário precisa vê-los sem rolar até o fim. */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+                    {[
+                        { id: 'brick' as const, icon: '💀', titulo: 'Risco de mão travada',
+                          sub: 'chance de abrir sem jogada nos turnos 1 e 2' },
+                        { id: 'maos' as const, icon: '🏆', titulo: 'Melhores mãos de abertura',
+                          sub: 'top 3 de 30.000 simulações, indo 1º e 2º' },
+                        { id: 'plano' as const, icon: '🗺️', titulo: 'Plano de jogo por turno',
+                          sub: 'o que jogar em cada turno, nas duas posições' },
+                        { id: 'lista' as const, icon: '🃏', titulo: 'Lista do deck',
+                          sub: `as ${totalCards} cartas com arte, agrupadas por custo` },
+                    ].map(b => (
+                        <button key={b.id} onClick={() => setPainelAberto(b.id)}
+                            className="flex items-center justify-between gap-3 bg-gray-900 border border-gray-800 hover:border-gray-600 hover:bg-gray-800 rounded-2xl px-5 py-4 text-left transition group">
+                            <span>
+                                <span className="block text-base font-semibold text-white leading-tight">{b.icon} {b.titulo}</span>
+                                <span className="block text-sm text-gray-400 mt-1 leading-snug">{b.sub}</span>
+                            </span>
+                            <span className="text-base font-semibold text-orange-300 bg-gray-800 group-hover:bg-orange-600 group-hover:text-white rounded-xl px-4 py-2 flex-shrink-0 transition">abrir ›</span>
+                        </button>
+                    ))}
+                </div>
+
                 {/* ANALISADOR INTELIGENTE */}
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                     <div className="flex items-start justify-between mb-6">
@@ -1411,14 +1440,14 @@ function AnalysisPageContent() {
                         respondem outra pergunta. */}
                     <div className="border-t border-gray-800 pt-5 mt-5">
                         <button onClick={() => setComprasAberto(true)}
-                            className="w-full flex items-center justify-between gap-3 bg-gray-800 hover:bg-gray-700 rounded-xl px-5 py-4 text-left transition">
+                            className="w-full flex items-center justify-between gap-3 bg-gray-800 hover:bg-gray-700 rounded-xl px-5 py-4 text-left transition group">
                             <span>
-                                <span className="block text-sm font-semibold text-white">📈 Chance de tirar a peça se não veio na mão</span>
-                                <span className="block text-xs text-gray-400 mt-0.5">
+                                <span className="block text-base font-semibold text-white">📈 Chance de tirar a peça se não veio na mão</span>
+                                <span className="block text-sm text-gray-400 mt-1">
                                     Searcher, counters, blocker, compra{bombaDoDeck ? ' e a bomba do deck' : ''} · até os turnos 2, 3 e 5
                                 </span>
                             </span>
-                            <span className="text-xs text-gray-400 bg-gray-900 rounded-lg px-3 py-1.5 flex-shrink-0">abrir ›</span>
+                            <span className="text-base font-semibold text-orange-300 bg-gray-900 group-hover:bg-orange-600 group-hover:text-white rounded-xl px-4 py-2 flex-shrink-0 transition">abrir ›</span>
                         </button>
                     </div>
                 </div>
@@ -1573,34 +1602,6 @@ function AnalysisPageContent() {
                         )}
                     </div>
                 )}
-                {/* Blocos de CONSULTA viraram botão + popup (07/09, pedido do
-                    usuário). Critério: fica inline o que responde "meu deck é bom?"
-                    (Perfil de Jogo, Analisador, Arquétipo); vira popup o que se
-                    consulta de vez em quando -- exemplos de mão, plano turno a
-                    turno, risco de travar. Os três juntos empurravam o resto da
-                    página pra baixo e viravam rolagem. */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-                    {[
-                        { id: 'brick' as const, icon: '💀', titulo: 'Risco de mão travada',
-                          sub: 'chance de abrir sem jogada nos turnos 1 e 2' },
-                        { id: 'maos' as const, icon: '🏆', titulo: 'Melhores mãos de abertura',
-                          sub: 'top 3 de 30.000 simulações, indo 1º e 2º' },
-                        { id: 'plano' as const, icon: '🗺️', titulo: 'Plano de jogo por turno',
-                          sub: 'o que jogar em cada turno, nas duas posições' },
-                        { id: 'lista' as const, icon: '🃏', titulo: 'Lista do deck',
-                          sub: `as ${totalCards} cartas com arte, agrupadas por custo` },
-                    ].map(b => (
-                        <button key={b.id} onClick={() => setPainelAberto(b.id)}
-                            className="flex items-center justify-between gap-3 bg-gray-900 border border-gray-800 hover:border-gray-600 hover:bg-gray-800 rounded-2xl px-5 py-4 text-left transition">
-                            <span>
-                                <span className="block text-sm font-semibold text-white">{b.icon} {b.titulo}</span>
-                                <span className="block text-xs text-gray-400 mt-0.5">{b.sub}</span>
-                            </span>
-                            <span className="text-xs text-gray-400 bg-gray-800 rounded-lg px-3 py-1.5 flex-shrink-0">abrir ›</span>
-                        </button>
-                    ))}
-                </div>
-
                 {/* Bloco "Validação por Simulação" REMOVIDO em 06/09 a pedido do
                     usuário. Ele quebrava 24 partidas em 5 faixas de score de mão e
                     reportava win rate por faixa -- com 2 a 7 partidas por faixa, o

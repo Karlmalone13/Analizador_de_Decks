@@ -429,6 +429,15 @@ tambem"*), virando a 4a da faixa. Dentro do popup ela perdeu o
 `maxHeight: 600px`, que existia justamente pra ela nao dominar a pagina --
 restricao que deixa de valer quando o proprio modal rola.
 
+**Posicao e tamanho corrigidos logo depois** (usuario: *"aumente as letras,
+principalmente o 'abrir', e coloque la para cima, abaixo de perfil de
+jogo"*): a faixa tinha nascido no FIM da pagina, ou seja so aparecia depois
+de rolar tudo -- o que anula o proprio motivo dela existir. Subiu pra logo
+abaixo do Perfil de Jogo. Texto: titulo `text-base`, subtitulo `text-sm`, e
+o "abrir" saiu de `text-xs` cinza (parecia legenda) pra `text-base` laranja
+que acende no hover. Mesmo tratamento no botao de "Chance de tirar a peca",
+que tinha ficado com o estilo antigo.
+
 **Deixados inline de proposito**: distribuicoes por tipo/cor e curva de
 custo (compactas e de leitura rapida), Coesao Tribal (compacta).
 

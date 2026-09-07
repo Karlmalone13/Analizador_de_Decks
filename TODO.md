@@ -90,6 +90,11 @@
 > meus de medicao no caminho (bissecao com maquina carregada apontou um
 > commit de front; e declarei a hipotese descartada medindo cedo demais) --
 > os dois em `REPROVADOS.md`.
+> (26) Faixa dos 4 botoes movida pra logo ABAIXO do Perfil de Jogo (estava
+> no fim da pagina, so aparecia depois de rolar tudo) e com texto maior --
+> titulo `text-base`, subtitulo `text-sm`, e o "abrir" de `text-xs` cinza
+> pra `text-base` laranja que acende no hover. Mesmo tratamento no botao de
+> "Chance de tirar a peca", que tinha ficado com o estilo antigo.
 > (25) **Mais 4 blocos viraram botao + popup** (incl. a Lista do Deck) (Risco de mao travada,
 > Melhores maos, Plano de jogo) -- eram a maior parte da rolagem. Criterio:
 > inline o que responde "meu deck e bom?", popup o que e consulta ocasional.
