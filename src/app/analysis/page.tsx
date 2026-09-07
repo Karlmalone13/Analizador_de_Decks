@@ -863,7 +863,12 @@ function AnalysisPageContent() {
     const p_searcher = probPeloMenos1(N, K_search, n)
     const p_draw = probPeloMenos1(N, K_draw, n)
     const p_blocker = probPeloMenos1(N, K_blocker, n)
-    const p_trigger = probPeloMenos1(N, K_trigger, n)
+    // [Trigger] so dispara virando da VIDA -- na mao a carta e so uma carta
+    // comum. Achado do usuario, 06/09: "ter trigger na mao nao e bom". A tela
+    // media `probPeloMenos1(N, K_trigger, n=5)` e pintava de VERDE ("acima da
+    // mediana") uma coisa que nao ajuda o jogador. A pergunta util e quanto da
+    // sua VIDA vira trigger, entao n = life do lider.
+    const p_trigger_vida = probPeloMenos1(N, K_trigger, leaderLife)
     const p_counter2k = probPeloMenos1(N, K_counter2k, n)
     const p_counter1k = probPeloMenos1(N, K_counter1k, n)
     const p_low1 = probPeloMenos1(N, K_low1, n)
@@ -914,7 +919,7 @@ function AnalysisPageContent() {
         { icon: '🛡️', label: 'Counter 1000 na mão', p: p_counter1k, K: K_counter1k, b: bench('counter1k'), rec: undefined },
         { icon: '🔒', label: 'Blocker na mão', p: p_blocker, K: K_blocker, b: bench('blocker'), rec: idealDoMotor('blockers') },
         { icon: '🃏', label: 'Draw Power na mão', p: p_draw, K: K_draw, b: bench('draw'), rec: undefined },
-        { icon: '⚡', label: 'Trigger na mão', p: p_trigger, K: K_trigger, b: bench('trigger'), rec: undefined },
+        { icon: '⚡', label: `Trigger na vida (${leaderLife} cartas)`, p: p_trigger_vida, K: K_trigger, b: bench('trigger_vida'), rec: undefined },
         { icon: '1️⃣', label: 'Carta custo 1 na mão', p: p_low1, K: K_low1, b: bench('low1'), rec: undefined },
         { icon: '2️⃣', label: 'Carta custo ≤2 na mão', p: p_low2, K: K_low2, b: bench('low2'), rec: undefined },
     ]

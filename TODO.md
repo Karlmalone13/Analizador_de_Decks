@@ -44,6 +44,12 @@
 > CINZA quando `opening_benchmarks` faltava, e bastou a API reiniciar no
 > meio do carregamento pra tela inteira aparecer SEM COR pro usuario.
 > Degradar != apagar -- agora cai numa escala absoluta, ainda colorida.
+> (11) **Trigger na MAO nao e metrica** (achado do usuario): [Trigger] so
+> dispara virando da VIDA, e o tile pintava de verde a chance de te-lo na
+> mao. Trocado por trigger na VIDA (n = life do lider); calibracao nova
+> `trigger_vida` (mediana do meta 29,1%). Krieg da 40,9%.
+> Conferido tambem que 48,7% para 6 copias esta certo (2M de maos simuladas
+> deram 48,84%) -- contraintuitivo, mas correto.
 > **Pendente**: 219 cartas seguem sem arte (placeholder e paliativo).
 
 > 05/09/2026 (bloco 751): **Tela de analise mentia em dois lugares, mesma

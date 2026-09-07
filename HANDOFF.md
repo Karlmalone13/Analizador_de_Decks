@@ -177,6 +177,33 @@ limpos -- por isso o bug nunca apareceu na tela. `deck_analyzer.py:280` ja
 lia numerico (`counter >= 2000`), ou seja a tela e o motor divergiam entre
 si. Corrigido com `parseFloat`.
 
+### 5. Trigger na MAO nao e metrica (achado do usuario) + fallback que apagava a cor
+
+Duas correcoes vindas da conferencia na tela, uma delas conceitual e minha.
+
+**"ter trigger na mao nao e bom"** (usuario, 06/09). Certo, e o tile estava
+pintando de VERDE ("acima da mediana") uma coisa que nao ajuda: `[Trigger]`
+so dispara quando a carta e virada da VIDA -- na mao ela e uma carta comum.
+A tela media `probPeloMenos1(N, K_trigger, n=5)`, ou seja, "chance de ter
+trigger na mao inicial", que nao e uma virtude do deck. Trocado por
+**trigger na VIDA**, com `n = life do lider` (4 ou 5) em vez das 5 cartas da
+mao, e a calibracao passou a medir a mesma coisa nos 184 decks
+(`trigger_vida`: p25 27,6% / mediana 29,1% / p75 91,1%). Krieg, 6 triggers e
+4 de vida: 40,9%, acima da mediana do meta -- agora medindo algo util.
+
+**"nao sei se 6 copias dao 48% na mao"**: a duvida era razoavel, e o numero
+esta CERTO. Conferido com simulacao independente da formula -- 2.000.000 de
+maos deram 48,84% contra 48,74% da hipergeometrica. Registrado aqui porque
+e contraintuitivo e vai voltar: 6 copias em 50 sao 12% do deck, mas sao 5
+saques, entao ~1-(0,88^5).
+
+**Fallback que apagava a cor**: a 1a versao do `classif` sem benchmark
+devolvia um travessao CINZA. Bastou a API reiniciar no meio do carregamento
+da pagina pro usuario ver a tela inteira sem cor nenhuma, com "sem
+referencia do meta" em todos os 8 tiles. Degradar nao pode ser apagar --
+sem `opening_benchmarks` o tile agora cai numa escala absoluta que ainda
+tem cor e leitura.
+
 ### Pendente
 
 - ~~Abrir `/analysis` logado~~ FEITO (secao 3) -- imagens OK, 2 bugs de numero achados e corrigidos.

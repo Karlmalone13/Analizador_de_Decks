@@ -43,8 +43,14 @@ N_MAO = 5
 # Cada metrica é (rotulo, como contar a carta). A contagem tem que bater com
 # a do front -- se divergir, volta o problema do bloco 751 (consumidor
 # medindo uma coisa e exibindo o ideal de outra).
+# `trigger` NAO entra aqui: [Trigger] so dispara quando a carta e virada da
+# VIDA -- na mao ela nao faz nada. Medir "chance de trigger na mao inicial"
+# e medir uma coisa que nao ajuda o jogador (achado do usuario, 06/09: "ter
+# trigger na mao nao e bom"). Ele e medido a parte, em `trigger_vida`, com
+# n = life do lider daquele deck em vez de n = 5 cartas da mao.
 METRICAS = ['searcher', 'counter2k', 'counter1k', 'blocker', 'draw',
-            'trigger', 'low1', 'low2']
+            'low1', 'low2']
+METRICA_VIDA = 'trigger_vida'
 
 
 def _num(v):
@@ -85,6 +91,7 @@ def pertence(metrica, card_row, info):
         'blocker':   bool(info.get('is_blocker')),
         'draw':      bool(info.get('draws_ativo')),
         'trigger':   bool(info.get('has_trigger')),
+        'trigger_vida': bool(info.get('has_trigger')),
         'low1':      custo == 1,
         'low2':      custo <= 2,
     }[metrica]
@@ -106,7 +113,7 @@ def main():
         for r in csv.DictReader(f):
             decks[r['deck_url']][r['card_code']] = int(r['qty'])
 
-    dist = {m: [] for m in METRICAS}
+    dist = {m: [] for m in list(METRICAS) + [METRICA_VIDA]}
     usados = 0
     for _url, d in decks.items():
         main_qty = sum(q for code, q in d.items()
@@ -122,8 +129,22 @@ def main():
                     and pertence(m, cards[code], adb.get(code) or {}))
             dist[m].append(prob_pelo_menos_1(N_DECK, K, N_MAO))
 
+        # Trigger na VIDA: mesma hipergeometrica, mas n = life do lider
+        # DESTE deck (4 ou 5 conforme o lider), nao as 5 cartas da mao.
+        life = 5
+        for code in d:
+            c = cards.get(code)
+            if c and (c.get('card_type') or '').lower() == 'leader':
+                life = int(_num(c.get('life')) or 5)
+                break
+        K_trig = sum(q for code, q in d.items()
+                     if cards.get(code)
+                     and (cards[code].get('card_type') or '').lower() != 'leader'
+                     and pertence('trigger_vida', cards[code], adb.get(code) or {}))
+        dist[METRICA_VIDA].append(prob_pelo_menos_1(N_DECK, K_trig, life))
+
     out = {'n_decks': usados, 'fonte': 'decklists_raw.csv', 'metricas': {}}
-    for m in METRICAS:
+    for m in list(METRICAS) + [METRICA_VIDA]:
         v = sorted(dist[m])
         k = len(v)
         def q(p):
@@ -134,7 +155,7 @@ def main():
 
     print(f'{usados} decks de torneio')
     print(f"{'metrica':11s} {'p25':>8s} {'mediana':>8s} {'p75':>8s}")
-    for m in METRICAS:
+    for m in list(METRICAS) + [METRICA_VIDA]:
         e = out['metricas'][m]
         print(f"{m:11s} {e['p25']*100:7.1f}% {e['mediana']*100:7.1f}% {e['p75']*100:7.1f}%")
 
