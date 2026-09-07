@@ -28,6 +28,20 @@ from typing import Optional
 import pandas as pd
 
 from deck_analyzer import analyze_deck
+
+# Percentis de abertura medidos nos 184 decks de torneio reais
+# (`calibrar_percentis_abertura.py`). Substituem os `ideal` HARDCODED que o
+# front tinha em TypeScript -- medidos contra o meta, quatro daqueles cortes
+# nao discriminavam nada (counter1k passava em 100,0% dos decks, blocker em
+# 97,8%): tiles que so sabiam dizer "Excelente". Ver bloco 752.
+_PERCENTIS_PATH = os.path.join(os.path.dirname(__file__), 'percentis_abertura.json')
+try:
+    with open(_PERCENTIS_PATH, encoding='utf-8') as _f:
+        _PERCENTIS_ABERTURA = json.load(_f)
+except (OSError, ValueError):
+    # Ausente/corrompido nao pode derrubar /analyze: o front trata a chave
+    # ausente caindo no texto sem comparacao com o meta.
+    _PERCENTIS_ABERTURA = None
 import db
 import simulation_worker
 from simulation_worker import load_deck, DeckLoadError
@@ -175,6 +189,8 @@ def analyze(req: DeckRequest):
     # reimplementa a logica"). A matematica de maos pode seguir no navegador
     # -- ela estava certa; o errado era a CLASSIFICACAO que a alimentava.
     result['cards'] = por_carta
+    if _PERCENTIS_ABERTURA:
+        result['opening_benchmarks'] = _PERCENTIS_ABERTURA
     if missing:
         result['warnings'] = {'cards_nao_encontradas': missing}
     return result

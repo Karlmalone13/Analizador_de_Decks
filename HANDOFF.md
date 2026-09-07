@@ -139,6 +139,44 @@ Licao repetida: `next build` + `tsc` + `eslint` limpos nao dizem NADA
 sobre numero errado na tela. Os dois bugs estavam visiveis na primeira
 screenshot da pagina rodando com deck real.
 
+### 4. "Analisador Inteligente": ideais inventados trocados por percentis do meta, e um bug latente de `counter_amount`
+
+Usuario: *"esse analisador inteligente ta bem pobre"*. Medido, e estava --
+mas nao pelo motivo que eu supus primeiro.
+
+**Correcao de um erro meu, registrada:** eu disse que `Draw Power ideal
+>=50%` era MATEMATICAMENTE INALCANCAVEL. Nao e. A mediana dos 184 decks de
+torneio e 76,3% e 92,9% deles passam desse corte -- o Krieg e que tem so 2
+cartas de compra. Falei antes de medir.
+
+**O problema real**: os `ideal` dos 8 tiles eram constantes hardcoded em
+TypeScript. Medidos contra os 184 decks reais, metade nao discriminava:
+
+    counter1k >= 40%  -> 100,0% dos decks passam
+    blocker   >= 40%  ->  97,8%
+    draw      >= 50%  ->  92,9%
+    low2      >= 65%  ->  85,9%
+
+Quatro tiles que so sabiam dizer "Excelente". Trocados por QUARTIS da
+distribuicao real (`calibrar_percentis_abertura.py` -> `percentis_abertura.json`
+-> `/analyze` devolve `opening_benchmarks` -> o front so exibe). Cada faixa
+contem 25% do meta por construcao, entao o rotulo sempre informa. A barra
+tambem virou escala absoluta 0-100% com um risco na mediana do meta; antes
+era `p / ideal`, que enchia em qualquer valor acima do corte.
+
+Krieg depois da troca: Draw Power "Regular" -> **"Ultimos 25% do meta"**;
+Carta <=2 "Excelente" -> **"Abaixo da mediana"**.
+
+**BUG LATENTE achado no caminho** (nao era o que eu procurava): o banco
+guarda `counter_amount` em DOIS formatos -- medido no Supabase, **519
+cartas como `'2000.0'` contra 28 como `'2000'`**, e 1807 como `'1000.0'`
+contra 75 como `'1000'`. O front comparava string exata
+(`=== '2000'`), entao perdia a maioria das cartas de counter de qualquer
+deck montado hoje. O deck Krieg so escapou porque foi salvo com os valores
+limpos -- por isso o bug nunca apareceu na tela. `deck_analyzer.py:280` ja
+lia numerico (`counter >= 2000`), ou seja a tela e o motor divergiam entre
+si. Corrigido com `parseFloat`.
+
 ### Pendente
 
 - ~~Abrir `/analysis` logado~~ FEITO (secao 3) -- imagens OK, 2 bugs de numero achados e corrigidos.

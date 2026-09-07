@@ -81,6 +81,7 @@ interface AnaliseResult {
     ratios: AnaliseRatio[]
     synergies: AnaliseSynergy[]
     cards?: Record<string, CardFlags>
+    opening_benchmarks?: { n_decks: number; metricas: Record<string, Benchmark> }
     tribal_cohesion?: {
         leader_type: string
         label: string
@@ -127,22 +128,41 @@ function probAteOTurno(N: number, K: number, draws: number): number {
 
 function pct(p: number): string { return `${(p * 100).toFixed(1)}%` }
 
-function classif(p: number, ideal: number): { label: string, color: string, bar: string } {
-    if (p >= ideal) return { label: 'Excelente', color: 'text-green-400', bar: 'bg-green-500' }
-    if (p >= ideal * 0.75) return { label: 'Bom', color: 'text-yellow-400', bar: 'bg-yellow-500' }
-    if (p > 0) return { label: 'Regular', color: 'text-orange-400', bar: 'bg-orange-500' }
-    return { label: 'Ausente', color: 'text-red-400', bar: 'bg-red-500' }
+/** Quartis da metrica nos 184 decks de torneio reais (`/analyze` ->
+ *  `opening_benchmarks`, gerado por `calibrar_percentis_abertura.py`). */
+interface Benchmark { p25: number; mediana: number; p75: number }
+
+/**
+ * Situa o deck CONTRA O META, nao contra um numero inventado.
+ *
+ * Achado 06/09: os cortes antigos eram constantes hardcoded aqui (0.65, 0.40,
+ * 0.50...). Medidos contra os 184 decks reais, quatro deles nao
+ * discriminavam nada -- `counter1k >= 40%` passava em **100,0%** dos decks,
+ * `blocker >= 40%` em 97,8%, `draw >= 50%` em 92,9%. Eram tiles que so
+ * sabiam dizer "Excelente", qualquer que fosse o deck. Com quartis, cada
+ * faixa contem 25% do meta por construcao, entao o rotulo sempre informa.
+ */
+function classif(p: number, b?: Benchmark): { label: string, color: string, bar: string } {
+    if (p <= 0) return { label: 'Ausente', color: 'text-red-400', bar: 'bg-red-500' }
+    if (!b) return { label: '—', color: 'text-gray-400', bar: 'bg-gray-500' }
+    if (p >= b.p75) return { label: 'Top 25% do meta', color: 'text-green-400', bar: 'bg-green-500' }
+    if (p >= b.mediana) return { label: 'Acima da mediana', color: 'text-lime-400', bar: 'bg-lime-500' }
+    if (p >= b.p25) return { label: 'Abaixo da mediana', color: 'text-orange-400', bar: 'bg-orange-500' }
+    return { label: 'Últimos 25% do meta', color: 'text-red-400', bar: 'bg-red-500' }
 }
 
 // `rec` é opcional de propósito: só existe quando o MOTOR tem um ideal
 // publicado pra aquela categoria (Golden Ratios). Sem isso o texto sai sem
 // número recomendado, em vez de inventar um que contradiga a análise.
-function diagTexto(label: string, p: number, ideal: number, rec?: string): string {
+function diagTexto(label: string, p: number, b?: Benchmark, rec?: string): string {
     const sugestao = rec ? ` (recomendado: ${rec})` : ''
-    if (p >= ideal) return `✅ ${label} excelente — alta probabilidade de abrir com essa função na mão inicial`
-    if (p >= ideal * 0.75) return `🟡 ${label} bom — probabilidade aceitável, mas pode melhorar${sugestao}`
-    if (p > 0) return `🟠 ${label} regular — adicione mais cópias para maior consistência${sugestao}`
-    return `🔴 Sem ${label} no deck — vulnerabilidade crítica${sugestao}`
+    if (p <= 0) return `🔴 Sem ${label} no deck — vulnerabilidade crítica${sugestao}`
+    if (!b) return `${label}: ${(p * 100).toFixed(1)}% na mão inicial`
+    const med = `mediana do meta ${(b.mediana * 100).toFixed(0)}%`
+    if (p >= b.p75) return `✅ ${label} no top 25% dos decks de torneio (${med})`
+    if (p >= b.mediana) return `🟢 ${label} acima da mediana do meta (${med})`
+    if (p >= b.p25) return `🟠 ${label} abaixo da mediana do meta (${med})${sugestao}`
+    return `🔴 ${label} nos últimos 25% do meta (${med}) — adicione cópias${sugestao}`
 }
 
 // ── Fisher-Yates shuffle (matematicamente correto e uniforme) ─────────────────
@@ -785,8 +805,16 @@ function AnalysisPageContent() {
     // não é draw power (e já é contada na linha Trigger) -- ver o comentário
     // em gerar_card_analysis_db.py.
     const drawPower = allCards.filter(dc => !!flagsOf(dc, cardFlags)?.draws_ativo)
-    const counters2k = allCards.filter(dc => dc.card.counter_amount === '2000')
-    const counters1k = allCards.filter(dc => dc.card.counter_amount === '1000')
+    // Numerico, NUNCA string exata: o banco guarda os dois formatos --
+    // medido 06/09 no Supabase, 519 cartas como '2000.0' contra 28 como
+    // '2000' (e 1807 como '1000.0' contra 75 como '1000'). Comparar
+    // `=== '2000'` perdia a maioria das cartas de counter em qualquer deck
+    // montado hoje; o deck Krieg so escapou porque foi salvo com os valores
+    // limpos. `deck_analyzer.py:280` ja lia numerico (`counter >= 2000`),
+    // entao a tela e o motor tambem divergiam entre si.
+    const counterNum = (dc: DeckCard) => parseFloat(dc.card.counter_amount || '0') || 0
+    const counters2k = allCards.filter(dc => counterNum(dc) >= 2000)
+    const counters1k = allCards.filter(dc => counterNum(dc) === 1000)
     const unblockable = allCards.filter(dc => !!flagsOf(dc, cardFlags)?.has_unblockable)
     const low1Cards = allCards.filter(dc => dc.card.card_cost === '1')
     const low2Cards = allCards.filter(dc => parseInt(dc.card.card_cost || '99') <= 2)
@@ -868,15 +896,18 @@ function AnalysisPageContent() {
         return r ? `${r.ideal[0]}-${r.ideal[1]} ${nome}` : undefined
     }
 
+    // O `bench` vem do MOTOR (`/analyze` -> `opening_benchmarks`), medido nos
+    // 184 decks de torneio. Nenhum corte inventado aqui.
+    const bench = (nome: string): Benchmark | undefined => analise?.opening_benchmarks?.metricas?.[nome]
     const metricas = [
-        { icon: '🔍', label: 'Searcher na mão', p: p_searcher, K: K_search, ideal: 0.65, rec: idealDoMotor('searchers') },
-        { icon: '🛡️🛡️', label: 'Counter 2000 na mão', p: p_counter2k, K: K_counter2k, ideal: 0.65, rec: idealDoMotor('counters') },
-        { icon: '🛡️', label: 'Counter 1000 na mão', p: p_counter1k, K: K_counter1k, ideal: 0.40, rec: undefined },
-        { icon: '🔒', label: 'Blocker na mão', p: p_blocker, K: K_blocker, ideal: 0.40, rec: idealDoMotor('blockers') },
-        { icon: '🃏', label: 'Draw Power na mão', p: p_draw, K: K_draw, ideal: 0.50, rec: undefined },
-        { icon: '⚡', label: 'Trigger na mão', p: p_trigger, K: K_trigger, ideal: 0.40, rec: undefined },
-        { icon: '1️⃣', label: 'Carta custo 1 na mão', p: p_low1, K: K_low1, ideal: 0.40, rec: undefined },
-        { icon: '2️⃣', label: 'Carta custo ≤2 na mão', p: p_low2, K: K_low2, ideal: 0.65, rec: undefined },
+        { icon: '🔍', label: 'Searcher na mão', p: p_searcher, K: K_search, b: bench('searcher'), rec: idealDoMotor('searchers') },
+        { icon: '🛡️🛡️', label: 'Counter 2000 na mão', p: p_counter2k, K: K_counter2k, b: bench('counter2k'), rec: idealDoMotor('counters') },
+        { icon: '🛡️', label: 'Counter 1000 na mão', p: p_counter1k, K: K_counter1k, b: bench('counter1k'), rec: undefined },
+        { icon: '🔒', label: 'Blocker na mão', p: p_blocker, K: K_blocker, b: bench('blocker'), rec: idealDoMotor('blockers') },
+        { icon: '🃏', label: 'Draw Power na mão', p: p_draw, K: K_draw, b: bench('draw'), rec: undefined },
+        { icon: '⚡', label: 'Trigger na mão', p: p_trigger, K: K_trigger, b: bench('trigger'), rec: undefined },
+        { icon: '1️⃣', label: 'Carta custo 1 na mão', p: p_low1, K: K_low1, b: bench('low1'), rec: undefined },
+        { icon: '2️⃣', label: 'Carta custo ≤2 na mão', p: p_low2, K: K_low2, b: bench('low2'), rec: undefined },
     ]
 
     // Probabilidades — Caso 2 (compras futuras)
@@ -1189,8 +1220,8 @@ function AnalysisPageContent() {
 
                     {/* Grid métricas abertura */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-                        {metricas.map(({ icon, label, p, K, ideal }) => {
-                            const c = classif(p, ideal)
+                        {metricas.map(({ icon, label, p, K, b }) => {
+                            const c = classif(p, b)
                             return (
                                 <div key={label} className="bg-gray-800 rounded-xl p-4">
                                     <div className="flex items-center justify-between mb-2">
@@ -1198,11 +1229,21 @@ function AnalysisPageContent() {
                                         <span className="text-xs text-gray-500">{K} cóp.</span>
                                     </div>
                                     <div className={`text-2xl font-black mb-1 ${c.color}`}>{pct(p)}</div>
-                                    <div className="w-full bg-gray-700 rounded-full h-1.5 mb-2">
-                                        <div className={`h-1.5 rounded-full transition-all ${c.bar}`} style={{ width: `${Math.min(p / ideal, 1) * 100}%` }} />
+                                    {/* Barra em escala ABSOLUTA (0-100%), com um risco marcando
+                                        a mediana do meta. Antes era `p / ideal`, que enchia a
+                                        barra em qualquer valor >= ideal e escondia a diferenca
+                                        entre "no limite" e "muito acima". */}
+                                    <div className="relative w-full bg-gray-700 rounded-full h-1.5 mb-2">
+                                        <div className={`h-1.5 rounded-full transition-all ${c.bar}`} style={{ width: `${p * 100}%` }} />
+                                        {b && (
+                                            <div className="absolute top-0 h-1.5 w-px bg-gray-400"
+                                                style={{ left: `${b.mediana * 100}%` }} title={`mediana do meta: ${pct(b.mediana)}`} />
+                                        )}
                                     </div>
                                     <div className={`text-xs font-semibold ${c.color}`}>{c.label}</div>
-                                    <div className="text-xs text-gray-600 mt-0.5">ideal ≥ {pct(ideal)}</div>
+                                    <div className="text-xs text-gray-600 mt-0.5">
+                                        {b ? <>meta: {pct(b.mediana)} mediana</> : 'sem referência do meta'}
+                                    </div>
                                 </div>
                             )
                         })}
@@ -1225,9 +1266,9 @@ function AnalysisPageContent() {
                     <div className="border-t border-gray-800 pt-5">
                         <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Diagnóstico Automático</div>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                            {metricas.map(({ label, p, ideal, rec }) => (
+                            {metricas.map(({ label, p, b, rec }) => (
                                 <div key={label} className="text-sm text-gray-300 bg-gray-800 rounded-lg px-4 py-2.5">
-                                    {diagTexto(label, p, ideal, rec)}
+                                    {diagTexto(label, p, b, rec)}
                                 </div>
                             ))}
                             <div className="text-sm text-gray-300 bg-gray-800 rounded-lg px-4 py-2.5 lg:col-span-2">{curvaMsg}</div>

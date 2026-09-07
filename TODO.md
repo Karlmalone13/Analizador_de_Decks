@@ -29,6 +29,17 @@
 > do ideal**, e 26 de 1000. Virou duas linhas separadas.
 > (7) Numeros do painel aumentados a pedido do usuario (contagem
 > `text-xl` + `tabular-nums`, funcao `text-base`, grupo/ideal `text-sm`).
+> (8) **Analisador Inteligente**: os 8 `ideal >= X%` eram constantes
+> inventadas em TS -- medidos contra os 184 decks reais, 4 deles passavam em
+> ~93-100% dos decks (tiles que so diziam "Excelente"). Trocados por quartis
+> do meta via `calibrar_percentis_abertura.py` ->
+> `/analyze:opening_benchmarks`. Krieg: Draw Power "Regular" -> "Ultimos 25%
+> do meta"; Carta <=2 "Excelente" -> "Abaixo da mediana".
+> (9) **BUG LATENTE**: `counter_amount` tem formato misto no banco (519
+> cartas `'2000.0'` x 28 `'2000'`) e o front comparava string exata --
+> perdia a maioria dos counters em qualquer deck montado hoje. Corrigido
+> com `parseFloat`. Registrada tambem a correcao de um erro meu: eu disse
+> que o ideal de Draw Power era inalcancavel; a mediana do meta e 76,3%.
 > **Pendente**: 219 cartas seguem sem arte (placeholder e paliativo).
 
 > 05/09/2026 (bloco 751): **Tela de analise mentia em dois lugares, mesma
