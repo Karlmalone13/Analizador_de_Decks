@@ -400,6 +400,8 @@ errada porque a medição estava. Valem tanto quanto os outros:
 | Aceitar coeficiente de logistica sem testar estabilidade | com features colineares (`t1_t2 = t1 AND t2`, `sem_nada` ⊂ `sem_t1_t2`) o solver reparte o efeito arbitrariamente: `sem_nada` (mao sem jogada) saiu **+21** com AUC agregada boa. Bootstrap de sinal barrou | 752 |
 | `_is_searcher` por substring `'look at the top'` | 3a vez que esta forma de bug aparece (bloco 751 no front, agora no `hand_scorer`): 0 de 50 cartas detectadas num deck real, contra 12 pelo parser | 752 |
 | Codificar curva de mao com 7 indicadores aninhados | `t1_t2`, `curva_completa`, `sem_t1_t2`, `sem_nada` sao funcao deterministica de `t1/t2/t3` -- o efeito real se reparte e cada pedaco fica instavel (`curva_completa`: bruto 57,0% em 971 pares, REJEITADA a 74%), e o solver empurra sinal pra colunas erradas (`t1` -22,3 com bruto 49,0%). Uma ordinal 0-3 resolveu: AUC 0,6000 -> 0,6040 | 752 |
+| Feature separada por POSICAO em analise pareada | numa partida so um lado vai primeiro, entao `c2k`/`c2k_indo_depois` ficam correlacionadas +0,67/-0,66 com a POSICAO e o coeficiente mede posicao, nao a carta. A assimetria que parecia insight (46,5% x 54,3%) era isso; a interacao `c2k x posicao` deu exatamente ZERO | 752 |
+| Ler peso de feature RARA na escala crua | `c2k_excesso` saiu +20,1 com 100% de estabilidade, mas efeito bruto 51,7% IC95 [44,3; 59,0] em so 356 de 4.938 pares. Padronizado cai pra +0,076, abaixo da cobertura de curva. Coluna rara precisa de coeficiente grande pra mesma influencia -- usar porta de SUPORTE (400 custa 0,03pp; 600 custa 0,9pp) | 752 |
 
 ## Enquadramentos reprovados (não são mecanismos, são raciocínios)
 

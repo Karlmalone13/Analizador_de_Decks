@@ -431,9 +431,9 @@ function calcSearcherQuality(deckCards: DeckCard[]): number {
  */
 type PesosMao = Record<string, number>
 const PESOS_MAO_FALLBACK: PesosMao = {
-    searcher1: 35, searcher2: 3, searcher2_indo_depois: 12, searcher_excesso: -20,
+    searcher1: 35, searcher2: 8, searcher_excesso: -20,
     cobertura_t1_t3: 20, t4: 0, t5: 0,
-    c2k: 16, c2k_indo_depois: 20, c2k_excesso: -8,
+    c2k: 18, c2k_excesso: -8,
     c1k: 8, evento_counter: 10, blocker: 12, rush: 7,
     bomba_do_deck: 6, bomba_excesso: -22,
     so_custo1: -15,
@@ -496,7 +496,7 @@ function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = nu
     if (nSearcher >= 1) score += searcherValue + mod.searcherBonus
     if (nSearcher >= 2) {
         // 2º searcher: bônus extra se 2º jogador (2 DON T1 = pode jogar E buscar)
-        score += goingFirst ? W.searcher2 : W.searcher2_indo_depois
+        score += W.searcher2
     }
     if (nSearcher >= 3) score += (nSearcher - 2) * W.searcher_excesso  // 3+ trava a mão
 
@@ -517,7 +517,12 @@ function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = nu
     if (hasT5Play) score += W.t5
 
     // ── Counter defensivo (2º jogador vai levar 1º hit; arquétipo também pondera) ──
-    const counter2kBase = goingFirst ? W.c2k : W.c2k_indo_depois
+    // Sem separar por POSIÇÃO: numa comparação pareada só um lado vai
+    // primeiro, então uma coluna "só vale indo primeiro" fica correlacionada
+    // com a POSIÇÃO (medido: +0,67 e -0,66) e o coeficiente dela mede
+    // posição, não a carta. A interação `c2k × posição` foi testada e deu
+    // EXATAMENTE zero -- counter não vale mais indo em segundo.
+    const counter2kBase = W.c2k
     const counter2kValue = Math.round(counter2kBase * mod.counter2kMult)
     score += Math.min(nCounter2k, 2) * counter2kValue
     score += Math.max(0, nCounter2k - 2) * W.c2k_excesso

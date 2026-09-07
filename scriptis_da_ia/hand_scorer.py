@@ -144,10 +144,10 @@ def searcher_quality(deck_cards: list[HandCard]) -> float:
 # de avaliarMao()" como única garantia de que não divergissem. Duas cópias de
 # números inventados é o pior dos dois mundos.
 PESOS_FALLBACK = {
-    'searcher1': 35.0, 'searcher2': 3.0, 'searcher2_indo_depois': 12.0,
+    'searcher1': 35.0, 'searcher2': 8.0,
     'searcher_excesso': -20.0,
     'cobertura_t1_t3': 20.0, 't4': 0.0, 't5': 0.0,
-    'c2k': 16.0, 'c2k_indo_depois': 20.0, 'c2k_excesso': -8.0,
+    'c2k': 18.0, 'c2k_excesso': -8.0,
     'c1k': 8.0, 'evento_counter': 10.0,
     'blocker': 12.0, 'rush': 7.0,
     'bomba_do_deck': 6.0, 'bomba_excesso': -22.0,
@@ -243,8 +243,13 @@ def extract_features(
         # `sq` entra aqui (e não no peso): buscar num deck raso vale menos,
         # e isso é propriedade do DECK, não do peso global.
         'searcher1': sq if n_searcher >= 1 else 0.0,
-        'searcher2': 1.0 if (n_searcher >= 2 and going_first) else 0.0,
-        'searcher2_indo_depois': 1.0 if (n_searcher >= 2 and not going_first) else 0.0,
+        # Sem separar por POSICAO: numa comparacao pareada so um lado vai
+        # primeiro, entao uma coluna "so vale indo primeiro" fica
+        # correlacionada com a POSICAO (medido: +0,67 e -0,66) e o
+        # coeficiente dela mede posicao, nao a carta. A interacao
+        # `c2k x posicao` foi testada e deu EXATAMENTE zero -- counter nao
+        # vale mais indo em segundo, aquilo era posicao disfarcada.
+        'searcher2': 1.0 if n_searcher >= 2 else 0.0,
         'searcher_excesso': float(max(0, n_searcher - 2)),
         # ── Curva: UMA coluna, nao sete ────────────────────────────────
         # Ate 07/09 a curva era t1 + t2 + t3 + t1_t2 + curva_completa +
@@ -263,8 +268,7 @@ def extract_features(
                                  + (1 if has_t3 else 0)),
         't4': 1.0 if has_t4 else 0.0,
         't5': 1.0 if has_t5 else 0.0,
-        'c2k': float(min(n_c2k, 2)) if going_first else 0.0,
-        'c2k_indo_depois': float(min(n_c2k, 2)) if not going_first else 0.0,
+        'c2k': float(min(n_c2k, 2)),
         'c2k_excesso': float(max(0, n_c2k - 2)),
         'c1k': float(min(n_c1k, 2)),
         'evento_counter': float(min(n_ectr, 1)),
@@ -307,10 +311,8 @@ def score_hand(
         score += (mod['t1'] + mod['t2']) * f['cobertura_t1_t3'] / 3.0
     if f['blocker']:    score += mod['blocker']
     if f['rush']:       score += mod['rush'] * f['rush']
-    if f['c2k'] or f['c2k_indo_depois']:
-        base = (f['c2k'] * w.get('c2k', 0.0)
-                + f['c2k_indo_depois'] * w.get('c2k_indo_depois', 0.0))
-        score += base * (mod['c2k'] - 1.0)
+    if f['c2k']:
+        score += f['c2k'] * w.get('c2k', 0.0) * (mod['c2k'] - 1.0)
     if f['bomba_excesso']:
         score += f['bomba_excesso'] * w.get('bomba_excesso', 0.0) * (mod['bomb'] - 1.0)
     if f['defesa_sem_ofensiva']:

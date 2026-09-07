@@ -90,6 +90,16 @@
 > meus de medicao no caminho (bissecao com maquina carregada apontou um
 > commit de front; e declarei a hipotese descartada medindo cedo demais) --
 > os dois em `REPROVADOS.md`.
+> (35) **`c2k_excesso` investigado**: efeito bruto 51,7% com IC95 [44,3;
+> 59,0] -- indistinguivel de zero, so 356 de 4.938 pares. Na escala
+> PADRONIZADA cai pra +0,076, abaixo da cobertura de curva. E a investigacao
+> achou um **confundidor de POSICAO**: colunas separadas por posicao
+> (`c2k`/`c2k_indo_depois`) tem correlacao +0,67/-0,66 com quem vai primeiro
+> -- o coeficiente media POSICAO, nao counter; a interacao testada deu ZERO.
+> Colunas unificadas + **porta de suporte minimo (400 pares)**.
+> **Resultado: AUC 0,5666 -> 0,5986 (+3,20, 4/5 folds), e a CURVA passou na
+> frente do counter** (3 turnos = 27,6 contra 21,4 de dois counters; a 3a
+> copia voltou a penalizar). A observacao do usuario estava certa.
 > (34) **A COLINEARIDADE era o problema de fundo** (achado a partir do
 > usuario: "ainda ta faltando carta custo 6"). As 7 colunas de curva viraram
 > UMA ordinal `cobertura_t1_t3` (0-3): AUC do modelo puro 0,6000 -> 0,6040,

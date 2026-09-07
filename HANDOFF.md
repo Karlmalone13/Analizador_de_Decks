@@ -687,6 +687,57 @@ e uma afirmacao mensuravel, nao um acidente de codificacao.
 efeito bruto de so 51,7% em 178 pares. E o candidato numero 1 pra proxima
 investigacao -- amostra pequena com coeficiente grande.
 
+### 17. Investigacao do `c2k_excesso`: era coluna RARA na escala errada, e junto veio um confundidor de POSICAO
+
+Usuario: *"investiga esse c2k_excesso"*. Achados, em ordem.
+
+**1. Efeito bruto indistinguivel de zero.** 51,7% com IC95 **[44,3; 59,0]**
+-- o intervalo atravessa 50% inteiro. Os 356 pares informativos (7,2% da
+amostra) sao poucos demais.
+
+**2. Ele NUNCA e identificavel sozinho.** Zero pares em que o excedente
+difere e o bloco base `min(n,2)` nao. Isso levou ao achado maior:
+
+**3. CONFUNDIDOR DE POSICAO nas colunas separadas por posicao.** `c2k` (so
+vale indo primeiro) e `c2k_indo_depois` (so indo depois) tem correlacao
+**+0,670** e **-0,662** com a posicao. Numa partida so um lado vai primeiro,
+entao `c2k_B = 0` por construcao e a coluna vira "quantos counters tem QUEM
+VAI PRIMEIRO" -- o coeficiente dela media POSICAO, nao counter. Isso
+explicava a assimetria que parecia insight (`c2k` 46,5% x `c2k_indo_depois`
+54,3%). Testada a interacao `c2k x posicao` explicitamente: **exatamente
+zero**. Counter nao vale mais indo em segundo.
+
+**4. A escala crua favorece coluna RARA.** Padronizando (comparavel entre
+features), `c2k_excesso` cai de +0,235 pra **+0,076** -- abaixo de
+`cobertura_t1_t3` (+0,100) e de `c2k` (+0,094). O peso de +20 era artefato:
+coluna rara precisa de coeficiente grande pra ter a mesma influencia, e o
+peso cru nao mostra isso.
+
+**Correcoes aplicadas:**
+- `c2k`/`c2k_indo_depois` unificadas numa coluna; idem
+  `searcher2`/`searcher2_indo_depois`. A separacao por posicao sai do score
+  (nao havia interacao real).
+- **Porta de SUPORTE MINIMO (400 pares)** no `calibrar_pesos_mao.py`.
+  Medido: custa 0,03pp de AUC (0,5989 -> 0,5986) e derruba os mal-
+  suportados; em 600 ja custa 0,9pp, entao 400 e o ponto.
+
+**Resultado final: AUC fora da amostra 0,5666 -> 0,5986 (+3,20, 4/5 folds),
+11 de 17 pesos adotados.** E o quadro mudou pro que o usuario suspeitava:
+
+    cobertura_t1_t3  +9,2  -> cobrir os 3 turnos vale 27,6
+    c2k             +10,7  -> dois counters valem 21,4
+    c2k_excesso      -8,0  (rejeitado por suporte) -> a 3a copia PENALIZA
+
+Ou seja: **curva agora vale mais que counter**, e a 3a copia de counter
+voltou a ser penalidade. A observacao do usuario ("ainda ta faltando carta
+custo 6") estava certa e a causa era metodologica, nao de gosto.
+
+Dois pesos que MUDARAM DE SINAL e continuam adotados, agora com suporte e
+estabilidade: `evento_counter` 10 -> **-9,6** (bruto 43,7%, atrapalha) e
+`searcher_excesso` -20 -> **+20,7** (bruto 61,2% em 516 pares -- 3+
+searchers nao trava a mao). Os dois tem efeito bruto CONSISTENTE com o
+sinal, diferente do que acontecia com o `c2k_excesso`.
+
 ### RESOLVIDO (07/09): as 6 falhas do `smoke_fast.py` eram o dev server comendo a CPU
 
 `smoke_fast.py` passou a dar 6 falhas no meio da sessao, todas da familia

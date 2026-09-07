@@ -97,6 +97,16 @@ AUC_MINIMA = 0.53
 ESTABILIDADE_MINIMA = 0.90
 N_BOOTSTRAP = 200
 
+# Suporte minimo: em quantos pares a feature precisa ser nao-nula pra receber
+# peso proprio. Achado 07/09 investigando `c2k_excesso`: ele saia com +20,1 e
+# 100% de estabilidade, mas o efeito BRUTO era 51,7% com IC95 [44,3; 59,0] --
+# indistinguivel de zero -- porque so aparecia em 356 dos 4.938 pares. Coluna
+# RARA precisa de coeficiente grande pra ter a mesma influencia, e o peso cru
+# nao mostra isso: na escala PADRONIZADA ele caia pra +0,076, abaixo da
+# cobertura de curva (+0,100). Medido: a porta em 400 custa 0,03pp de AUC
+# (0,5989 -> 0,5986) e derruba os mal-suportados; em 600 ja custa 0,9pp.
+SUPORTE_MINIMO = 400
+
 
 def _carregar_pool(pool_size):
     from decision_quality_report import _load_deck_list
@@ -226,7 +236,8 @@ def main():
     print(f'\n{len(y)} comparacoes pareadas (espelho) | vitorias {y.mean()*100:.1f}%')
 
     # colunas constantes nao tem o que aprender
-    varia = X.std(axis=0) > 1e-9
+    suporte = (np.abs(X) > 1e-9).sum(axis=0)
+    varia = (X.std(axis=0) > 1e-9) & (suporte >= SUPORTE_MINIMO)
     if not varia.any():
         print('nenhuma feature varia. Nada gravado.')
         return 1
@@ -283,7 +294,8 @@ def main():
         antes = hs.PESOS_FALLBACK[k]
         if k not in coef:
             pesos[k] = antes
-            print(f'{k:24s} {antes:8.1f} {"--":>8s} {"--":>7s}   mantido (feature nao variou)')
+            print(f'{k:24s} {antes:8.1f} {"--":>8s} {"--":>7s}   '
+                  f'mantido (suporte {int(suporte[nomes.index(k)]) if k in nomes else 0} < {SUPORTE_MINIMO})')
             continue
         medido = round(coef[k] * fator, 2)
         e = estab.get(k, 0.0)
