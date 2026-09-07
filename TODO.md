@@ -27,6 +27,8 @@
 > "ideal 8-12"** -- a linha somava counter 1000+2000 enquanto
 > `deck_analyzer.py:280` conta so >= 2000; o deck tem **10 de 2000, dentro
 > do ideal**, e 26 de 1000. Virou duas linhas separadas.
+> (7) Numeros do painel aumentados a pedido do usuario (contagem
+> `text-xl` + `tabular-nums`, funcao `text-base`, grupo/ideal `text-sm`).
 > **Pendente**: 219 cartas seguem sem arte (placeholder e paliativo).
 
 > 05/09/2026 (bloco 751): **Tela de analise mentia em dois lugares, mesma

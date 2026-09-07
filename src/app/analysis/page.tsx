@@ -1014,8 +1014,8 @@ function AnalysisPageContent() {
                                 return (
                                     <div key={grupo}>
                                         <div className="flex items-baseline justify-between mb-1.5">
-                                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{grupo}</span>
-                                            <span className="text-xs text-gray-500">{pctDoDeck(totalGrupo)}% do deck</span>
+                                            <span className="text-sm font-semibold text-gray-300 uppercase tracking-wide">{grupo}</span>
+                                            <span className="text-sm text-gray-400">{pctDoDeck(totalGrupo)}% do deck</span>
                                         </div>
                                         <div className="space-y-1.5">
                                             {doGrupo.map(({ label, cards, color, ratio }) => {
@@ -1025,15 +1025,15 @@ function AnalysisPageContent() {
                                                     <button key={label}
                                                         onClick={() => qty > 0 && setFuncaoAberta({ label, cards })}
                                                         disabled={qty === 0}
-                                                        className={`w-full flex items-center gap-3 rounded-lg px-3 py-1.5 text-left transition ${qty > 0 ? 'bg-gray-800 hover:bg-gray-700 cursor-pointer' : 'bg-gray-800/40 cursor-default'}`}>
-                                                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${qty > 0 ? color : 'bg-gray-700'}`} />
-                                                        <span className={`text-sm flex-1 ${qty > 0 ? 'text-white' : 'text-gray-600'}`}>{label}</span>
+                                                        className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left transition ${qty > 0 ? 'bg-gray-800 hover:bg-gray-700 cursor-pointer' : 'bg-gray-800/40 cursor-default'}`}>
+                                                        <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${qty > 0 ? color : 'bg-gray-700'}`} />
+                                                        <span className={`text-base flex-1 ${qty > 0 ? 'text-white' : 'text-gray-600'}`}>{label}</span>
                                                         {ratio && (
-                                                            <span className={`text-xs ${alerta ? 'text-yellow-500' : 'text-gray-600'}`}>
+                                                            <span className={`text-sm ${alerta ? 'text-yellow-500' : 'text-gray-500'}`}>
                                                                 ideal {ratio.ideal[0]}-{ratio.ideal[1]}
                                                             </span>
                                                         )}
-                                                        <span className={`text-sm font-bold w-7 text-right ${qty === 0 ? 'text-gray-600' : alerta ? 'text-yellow-400' : 'text-white'}`}>{qty}</span>
+                                                        <span className={`text-xl font-bold w-9 text-right tabular-nums ${qty === 0 ? 'text-gray-600' : alerta ? 'text-yellow-400' : 'text-white'}`}>{qty}</span>
                                                     </button>
                                                 )
                                             })}

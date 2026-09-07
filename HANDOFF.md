@@ -129,6 +129,12 @@ propria screenshot mostrou dois numeros que nao fecham, os dois meus:
   linhas, `Counter 2000` (carrega o ideal do motor) e `Counter 1000`
   (sem ideal, porque o motor nao publica um pra ele).
 
+Depois da confirmacao na tela, a pedido do usuario os numeros do painel
+foram aumentados: contagem `text-sm` -> `text-xl` com `tabular-nums`
+(alinha as colunas de 1 e 2 digitos), nome da funcao `text-sm` ->
+`text-base`, cabecalho do grupo e o `ideal N-M` `text-xs` -> `text-sm`,
+e a linha ganhou `py-2` pra caber.
+
 Licao repetida: `next build` + `tsc` + `eslint` limpos nao dizem NADA
 sobre numero errado na tela. Os dois bugs estavam visiveis na primeira
 screenshot da pagina rodando com deck real.
