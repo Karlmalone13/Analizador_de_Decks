@@ -84,9 +84,17 @@
 > passou a devolver `ratios[].codes` e `synergies[].creator_codes/
 > exploiter_codes` (e `api.py` a anexar `code` nas entradas do analysis_db,
 > que sao indexadas por codigo mas nao o carregavam). O front so exibe.
-> (18) **PENDENCIA**: `smoke_fast.py` da 6 falhas de Monte Carlo/telemetria
-> que **nao sao desta sessao** -- reproduzem no HEAD limpo e num commit que
-> passou minutos antes, entao e estado de maquina, nao codigo. Nao isolado.
+> (18) **RESOLVIDO**: as 6 falhas do `smoke_fast.py` eram o `next-dev` no ar
+> ha 12h com **4269 s de CPU e 2,7 GB**, sufocando testes com `timeout=3.0`
+> num i3 de 2 nucleos. Matando o processo: **SMOKE FAST OK**. Dois erros
+> meus de medicao no caminho (bissecao com maquina carregada apontou um
+> commit de front; e declarei a hipotese descartada medindo cedo demais) --
+> os dois em `REPROVADOS.md`.
+> (21) Bloco "Validacao por Simulacao" REMOVIDO a pedido do usuario: quebrava
+> 24 partidas em 5 faixas (2 a 7 partidas por faixa) e o ruido dominava --
+> "Ruim" com 80% de WR e "Abaixo da media" com 20%, ordem INVERTIDA, e ainda
+> recomendava threshold de mulligan em cima disso. O fetch de `/hand-stats`
+> saiu junto: disparava lote de simulacao de minutos sem consumidor.
 > **Pendente**: 219 cartas seguem sem arte (placeholder e paliativo).
 
 > 05/09/2026 (bloco 751): **Tela de analise mentia em dois lugares, mesma

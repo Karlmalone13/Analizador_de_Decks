@@ -375,22 +375,36 @@ OP15-023/017 criando e OP15-038/025 explorando.
 Popup unico e generico (`cartasAbertas`), com imagem grande e clique que
 abre o modal da carta.
 
-### PENDENCIA ABERTA: 6 falhas no `smoke_fast.py` que NAO sao desta sessao
+### RESOLVIDO (07/09): as 6 falhas do `smoke_fast.py` eram o dev server comendo a CPU
 
-`smoke_fast.py` passava (0 falhas) no inicio da sessao e agora da 6, todas
-da familia contrafactual/Monte Carlo/telemetria
-(`sim_bridge.choose_action(..., timeout=3.0)`).
+`smoke_fast.py` passou a dar 6 falhas no meio da sessao, todas da familia
+contrafactual/Monte Carlo/telemetria (`sim_bridge.choose_action(...,
+timeout=3.0)`). **Causa real: o `next-dev` estava no ar havia 12 horas com
+4269 s de CPU e 2,7 GB de heap** -- num i3-8130U (2 nucleos fisicos) isso
+faz a busca nao completar o piso de 12 amostras dentro dos 3 segundos, e os
+6 checks caem juntos porque todos dependem da mesma busca ter rodado.
+Matando o processo e deixando a maquina assentar: **SMOKE FAST OK**.
 
-**NAO e regressao de codigo, e foi provado**: as mesmas 6 falham no HEAD
-limpo em worktree separado, E falham no commit `742454e` que tinha dado 0
-poucos minutos antes. Uma bissecao apontou `40af981` como culpado, mas esse
-commit so toca front/calibracao/docs -- reexecutar `742454e` depois passou a
-falhar tambem, ou seja **a bissecao estava medindo estado, nao commit**.
-Descartados: diferenca de conteudo (`card_effects_db.json` identico ao
-commitado, so mtime tocado), drive E: ausente (esta montado), env var
-`OPTCG_*` (nenhuma setada). Nao isolado ainda -- proxima sessao deve
-comecar rodando `smoke_fast.py` numa maquina descarregada antes de assumir
-qualquer coisa sobre o motor.
+**Dois erros meus de medicao no caminho, ambos registrados em
+`REPROVADOS.md`:**
+
+1. **Bissectei com a maquina carregada** e apontei `40af981` (commit que so
+   toca front/calibracao/docs) como culpado. Reexecutar `742454e`, que
+   tinha dado 0 minutos antes, passou a dar 6 -- ou seja a bissecao estava
+   medindo ESTADO, nao codigo. Nenhum commit quebrou nada.
+2. **Declarei a hipotese descartada cedo demais**: matei o dev server,
+   rodei o smoke na hora, deu 6 de novo e escrevi "descarto". A hipotese
+   estava certa; a medicao e que foi apressada.
+
+Evidencia que fechou o diagnostico: rodar o cenario do teste ISOLADO dava
+tudo verde (`selection=counterfactual_search`,
+`opponent_model_source=leader_exact_local_deck`, 12 amostras, 3 valores de
+busca). Isso descartou codigo e apontou pro ambiente.
+
+**Pra proxima sessao**: `smoke_fast.py` tem testes sensiveis a carga
+(`timeout=3.0`). Antes de tratar falha dessa familia como regressao,
+conferir se ha dev server/build competindo -- e nunca bissectar sem
+reexecutar o commit "bom" pra confirmar que a regua nao mudou.
 
 ### Pendente
 
