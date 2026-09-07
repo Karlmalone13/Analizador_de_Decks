@@ -40,6 +40,10 @@
 > perdia a maioria dos counters em qualquer deck montado hoje. Corrigido
 > com `parseFloat`. Registrada tambem a correcao de um erro meu: eu disse
 > que o ideal de Draw Power era inalcancavel; a mediana do meta e 76,3%.
+> (10) Fallback do tile sem benchmark: a 1a versao devolvia um travessao
+> CINZA quando `opening_benchmarks` faltava, e bastou a API reiniciar no
+> meio do carregamento pra tela inteira aparecer SEM COR pro usuario.
+> Degradar != apagar -- agora cai numa escala absoluta, ainda colorida.
 > **Pendente**: 219 cartas seguem sem arte (placeholder e paliativo).
 
 > 05/09/2026 (bloco 751): **Tela de analise mentia em dois lugares, mesma

@@ -144,11 +144,20 @@ interface Benchmark { p25: number; mediana: number; p75: number }
  */
 function classif(p: number, b?: Benchmark): { label: string, color: string, bar: string } {
     if (p <= 0) return { label: 'Ausente', color: 'text-red-400', bar: 'bg-red-500' }
-    if (!b) return { label: '—', color: 'text-gray-400', bar: 'bg-gray-500' }
-    if (p >= b.p75) return { label: 'Top 25% do meta', color: 'text-green-400', bar: 'bg-green-500' }
-    if (p >= b.mediana) return { label: 'Acima da mediana', color: 'text-lime-400', bar: 'bg-lime-500' }
-    if (p >= b.p25) return { label: 'Abaixo da mediana', color: 'text-orange-400', bar: 'bg-orange-500' }
-    return { label: 'Últimos 25% do meta', color: 'text-red-400', bar: 'bg-red-500' }
+    if (b) {
+        if (p >= b.p75) return { label: 'Top 25% do meta', color: 'text-green-400', bar: 'bg-green-500' }
+        if (p >= b.mediana) return { label: 'Acima da mediana', color: 'text-lime-400', bar: 'bg-lime-500' }
+        if (p >= b.p25) return { label: 'Abaixo da mediana', color: 'text-orange-400', bar: 'bg-orange-500' }
+        return { label: 'Últimos 25% do meta', color: 'text-red-400', bar: 'bg-red-500' }
+    }
+    // Sem benchmark (API velha, offline, ou `percentis_abertura.json` ausente)
+    // o tile AINDA precisa ter cor e leitura. A primeira versao devolvia um
+    // '—' cinza aqui, e bastou a API reiniciar no meio do carregamento pra
+    // pagina inteira aparecer sem cor nenhuma pro usuario. Degradar != apagar.
+    if (p >= 0.70) return { label: 'Alta', color: 'text-green-400', bar: 'bg-green-500' }
+    if (p >= 0.45) return { label: 'Média', color: 'text-lime-400', bar: 'bg-lime-500' }
+    if (p >= 0.20) return { label: 'Baixa', color: 'text-orange-400', bar: 'bg-orange-500' }
+    return { label: 'Muito baixa', color: 'text-red-400', bar: 'bg-red-500' }
 }
 
 // `rec` é opcional de propósito: só existe quando o MOTOR tem um ideal
@@ -157,7 +166,7 @@ function classif(p: number, b?: Benchmark): { label: string, color: string, bar:
 function diagTexto(label: string, p: number, b?: Benchmark, rec?: string): string {
     const sugestao = rec ? ` (recomendado: ${rec})` : ''
     if (p <= 0) return `🔴 Sem ${label} no deck — vulnerabilidade crítica${sugestao}`
-    if (!b) return `${label}: ${(p * 100).toFixed(1)}% na mão inicial`
+    if (!b) return `${label}: ${(p * 100).toFixed(1)}% de chance na mão inicial (referência do meta indisponível)`
     const med = `mediana do meta ${(b.mediana * 100).toFixed(0)}%`
     if (p >= b.p75) return `✅ ${label} no top 25% dos decks de torneio (${med})`
     if (p >= b.mediana) return `🟢 ${label} acima da mediana do meta (${med})`
@@ -1242,7 +1251,7 @@ function AnalysisPageContent() {
                                     </div>
                                     <div className={`text-xs font-semibold ${c.color}`}>{c.label}</div>
                                     <div className="text-xs text-gray-600 mt-0.5">
-                                        {b ? <>meta: {pct(b.mediana)} mediana</> : 'sem referência do meta'}
+                                        {b ? <>meta: {pct(b.mediana)} mediana</> : <>chance na mão inicial</>}
                                     </div>
                                 </div>
                             )
