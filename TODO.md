@@ -90,6 +90,16 @@
 > meus de medicao no caminho (bissecao com maquina carregada apontou um
 > commit de front; e declarei a hipotese descartada medindo cedo demais) --
 > os dois em `REPROVADOS.md`.
+> (31) **PESOS DO SCORE DE MAO CALIBRADOS** contra winrate simulado:
+> AUC fora da amostra **0,5613 -> 0,5897**, melhor em **5/5 folds**. 11 de 23
+> pesos medidos; 12 mantidos por sinal instavel (porta de bootstrap 90%).
+> Duas tentativas reprovadas antes (decks diferentes -> forca de deck vazou;
+> espelho sem porta -> colinearidade fez `sem_nada` virar +21) -- ambas em
+> REPROVADOS. Desenho final: espelho + pareado + posicao como controle.
+> Achado de brinde: **`_is_searcher` do motor tinha o bug do bloco 751**
+> (substring `'look at the top'`) e detectava 0 de 50 cartas num deck real;
+> agora le o `card_analysis_db` e detecta 12. Duplicacao `hand_scorer` x
+> `avaliarMao` fechada: os PESOS agora moram num lugar so.
 > (30) **Maos de abertura: a escolha era amostragem de 1,4% do espaco** e
 > mudava a cada recarga, com a tela anunciando "Top 3 de 30.000 simulacoes"
 > como fato. Trocada por **enumeracao exata** das 11.109 maos distintas

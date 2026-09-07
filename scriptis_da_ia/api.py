@@ -202,6 +202,15 @@ def analyze(req: DeckRequest):
         result['axes_error'] = str(e)
     if _PERCENTIS_ABERTURA:
         result['opening_benchmarks'] = _PERCENTIS_ABERTURA
+    # Pesos do score de mao, pro front usar os MESMOS numeros do motor.
+    # A formula ainda existe nos dois lados (`avaliarMao` no TS), mas os
+    # pesos deixam de estar duplicados -- que era onde a divergencia
+    # silenciosa podia nascer.
+    try:
+        import hand_scorer as _hs
+        result['hand_weights'] = _hs.PESOS
+    except Exception:
+        pass
     if missing:
         result['warnings'] = {'cards_nao_encontradas': missing}
     return result

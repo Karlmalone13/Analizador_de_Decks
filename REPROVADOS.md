@@ -396,6 +396,9 @@ errada porque a medição estava. Valem tanto quanto os outros:
 | Parâmetro na assinatura ≠ parâmetro aplicado | `run_single_match` recebia `mc_samples_override` e **nunca repassava** pro `OPTCGMatch` — o "modo rápido" não valeu nada até ser notado. Conferir o ponto de USO, não só a assinatura | 750 |
 | Bissectar `smoke_fast` com a maquina carregada | 6 falhas de Monte Carlo apontaram um commit de FRONT como culpado. Reexecutar o commit "bom" depois falhou tambem: a bissecao media ESTADO, nao codigo. Causa real: `next-dev` de 12h com **4269 s de CPU e 2,7 GB** sufocando testes com `timeout=3.0` | 752 |
 | Declarar hipotese descartada medindo cedo demais | matei o dev server, rodei o smoke NA HORA, deu 6 falhas de novo e eu escrevi "descarto". Minutos depois, maquina assentada: **SMOKE FAST OK**. A hipotese estava CERTA -- a medicao e que foi apressada | 752 |
+| Calibrar peso de mao com decks DIFERENTES entre si | forca de deck vaza pros coeficientes: `t1` virou **-36,5** e `so_custo1` **+43,9** -- o modelo aprendeu "aggro ganha". Usar partidas-ESPELHO | 752 |
+| Aceitar coeficiente de logistica sem testar estabilidade | com features colineares (`t1_t2 = t1 AND t2`, `sem_nada` ⊂ `sem_t1_t2`) o solver reparte o efeito arbitrariamente: `sem_nada` (mao sem jogada) saiu **+21** com AUC agregada boa. Bootstrap de sinal barrou | 752 |
+| `_is_searcher` por substring `'look at the top'` | 3a vez que esta forma de bug aparece (bloco 751 no front, agora no `hand_scorer`): 0 de 50 cartas detectadas num deck real, contra 12 pelo parser | 752 |
 
 ## Enquadramentos reprovados (não são mecanismos, são raciocínios)
 

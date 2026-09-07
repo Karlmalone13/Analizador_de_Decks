@@ -21517,6 +21517,13 @@ class OPTCGMatch:
 
     def simulate(self) -> dict:
         self.setup()
+        # Mao de abertura dos dois lados, capturada DEPOIS do setup e antes
+        # do 1o turno. Instrumentacao pura (nenhuma decisao le isto) --
+        # existe pra `calibrar_pesos_mao.py` conseguir ligar "mao inicial"
+        # a "resultado da partida", que e a unica forma de validar os pesos
+        # do `hand_scorer` contra vitoria em vez de escolhe-los a mao.
+        opening_a = [c.code for c in self.state_a.hand]
+        opening_b = [c.code for c in self.state_b.hand]
         winner = None
         total_turns = 0
 
@@ -21549,6 +21556,9 @@ class OPTCGMatch:
         return {
             'winner':      winner or 'DRAW',
             'turns':       total_turns,
+            'opening_a':   opening_a,
+            'opening_b':   opening_b,
+            'first_a':     bool(self.state_a.is_first),
             'dmg_a':       self.state_a.dmg_dealt,
             'dmg_b':       self.state_b.dmg_dealt,
             'life_a':      self.state_a.life_count(),

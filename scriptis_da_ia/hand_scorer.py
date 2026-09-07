@@ -25,16 +25,54 @@ class HandCard:
     attribute: str = ''  # inclui [Rush], [Blocker] etc.
 
 
+# ── Classificacao POR CARTA: vem do PARSER, nao de substring ───────────────
+# Achado 07/09, ao calibrar os pesos: `_is_searcher` procurava a substring
+# `'look at the top'` e devolvia FALSO pra uma carta cujo texto e "Look at 4
+# cards from the top of your deck; reveal up to 1 [Sanji]..." -- e EXATAMENTE
+# o bug do bloco 751, que foi corrigido no front e sobreviveu aqui. Efeito
+# pratico: num deck de torneio real, `is_searcher` ativava em 0 de 50 cartas,
+# e a calibracao dos pesos rodou sobre features mutiladas (o peso do searcher
+# aparecia como "sem variacao na amostra").
+#
+# A fonte certa e `card_analysis_db.json`, o mesmo que `/analyze` ja usa.
+_ADB = None
+
+
+def _adb() -> dict:
+    global _ADB
+    if _ADB is None:
+        import json as _json
+        import os as _os
+        caminho = _os.path.join(_os.path.dirname(__file__), 'card_analysis_db.json')
+        try:
+            with open(caminho, encoding='utf-8') as f:
+                _ADB = _json.load(f)
+        except (OSError, ValueError):
+            _ADB = {}
+    return _ADB
+
+
+def _flag(c: HandCard, nome: str) -> Optional[bool]:
+    """Flag parseada da carta, ou None se ela nao estiver no analysis_db."""
+    e = _adb().get((c.code or '').split('_')[0])
+    return bool(e.get(nome)) if e else None
+
+
 def _is_searcher(c: HandCard) -> bool:
+    f = _flag(c, 'is_searcher')
+    if f is not None:
+        return f
+    # Rede de seguranca pra carta fora do analysis_db -- nunca fonte unica.
     t = c.card_text.lower()
-    return (
-        'search your deck' in t
-        or ('look at the top' in t and 'add' in t)
-        or 'look at up to' in t
-    )
+    return ('search your deck' in t
+            or ('look at' in t and 'top of your deck' in t)
+            or 'look at up to' in t)
 
 
 def _is_event_counter(c: HandCard) -> bool:
+    f = _flag(c, 'has_counter_event')
+    if f is not None:
+        return f
     return c.card_type.upper() == 'EVENT' and c.counter > 0
 
 
@@ -95,100 +133,170 @@ def searcher_quality(deck_cards: list[HandCard]) -> float:
 
 # ── Score principal ────────────────────────────────────────────────────────────
 
+# ── Pesos: MEDIDOS, não escolhidos ─────────────────────────────────────────
+# Os números abaixo são só FALLBACK. Os reais vêm de `pesos_mao.json`,
+# ajustados por regressão logística sobre partidas simuladas de verdade
+# (`calibrar_pesos_mao.py`), ligando mão de abertura -> vitória.
+#
+# POR QUE MUDOU (07/09): os pesos eram inventados à mão -- 28 pro T1, 25 pro
+# T2, 35 pro searcher, 16/20 pro counter... -- e a mesma tabela estava
+# DUPLICADA em `avaliarMao()` no TypeScript, com o comentário "Mesma lógica
+# de avaliarMao()" como única garantia de que não divergissem. Duas cópias de
+# números inventados é o pior dos dois mundos.
+PESOS_FALLBACK = {
+    'searcher1': 35.0, 'searcher2': 3.0, 'searcher2_indo_depois': 12.0,
+    'searcher_excesso': -20.0,
+    't1': 28.0, 't2': 25.0, 't3': 10.0, 't1_t2': 12.0, 'curva_completa': 5.0,
+    'c2k': 16.0, 'c2k_indo_depois': 20.0, 'c2k_excesso': -8.0,
+    'c1k': 8.0, 'evento_counter': 10.0,
+    'blocker': 12.0, 'rush': 7.0,
+    'bomba_do_deck': 6.0, 'bomba_excesso': -22.0,
+    'sem_t1_t2': -35.0, 'sem_nada': -20.0, 'so_custo1': -15.0,
+    'defesa_sem_ofensiva': -25.0, 'defesa_demais_aggro': -12.0,
+}
+
+
+def _carrega_pesos() -> dict:
+    import json as _json
+    import os as _os
+    caminho = _os.path.join(_os.path.dirname(__file__), 'pesos_mao.json')
+    try:
+        with open(caminho, encoding='utf-8') as f:
+            dados = _json.load(f)
+    except (OSError, ValueError):
+        return dict(PESOS_FALLBACK)
+    pesos = dict(PESOS_FALLBACK)
+    pesos.update({k: float(v) for k, v in (dados.get('pesos') or {}).items()
+                  if k in PESOS_FALLBACK})
+    return pesos
+
+
+PESOS = _carrega_pesos()
+
+
+def extract_features(
+    hand: list[HandCard],
+    going_first: bool = True,
+    sq: float = 0.7,
+    bomb_code: Optional[str] = None,
+    aggro: bool = False,
+) -> dict:
+    """
+    Traduz uma mão de 5 cartas nas ATIVAÇÕES de cada termo do score.
+
+    Separado de `score_hand` de propósito (07/09): enquanto features e pesos
+    estavam no mesmo bloco de `if`s, não havia como ajustar os pesos contra
+    dado nenhum -- era preciso reescrever a função. Agora
+    `score = soma(feature * peso)`, e `calibrar_pesos_mao.py` ajusta só os
+    pesos.
+    """
+    has_t1 = has_t2 = has_t3 = False
+    only_cost1 = True
+    n_searcher = n_c2k = n_c1k = n_ectr = n_blocker = n_rush = n_bomb = 0
+    has_deck_bomb = False
+    cost1_count = 0
+
+    for c in hand:
+        is2k = c.counter >= 2000
+        if not is2k and c.cost > 1:
+            only_cost1 = False
+        if not is2k and c.cost == 1:
+            cost1_count += 1
+        if not is2k:
+            if going_first:
+                if c.cost <= 1:   has_t1 = True
+                elif c.cost <= 3: has_t2 = True
+                elif c.cost <= 5: has_t3 = True
+            else:
+                if c.cost <= 2:   has_t1 = True
+                elif c.cost <= 4: has_t2 = True
+                elif c.cost <= 6: has_t3 = True
+
+        if _is_searcher(c):         n_searcher += 1
+        if is2k:                    n_c2k += 1
+        elif c.counter == 1000:     n_c1k += 1
+        if _is_event_counter(c):    n_ectr += 1
+        if _has_kw(c, '[blocker]'): n_blocker += 1
+        if _has_kw(c, '[rush]'):    n_rush += 1
+        if _is_bomb(c):             n_bomb += 1
+        if bomb_code and c.code == bomb_code:
+            has_deck_bomb = True
+
+    eff_t2 = has_t2 or n_searcher >= 1
+    eff_t3 = has_t3 or (n_searcher >= 1 and has_t2)
+    n_def = n_c2k + n_c1k + n_ectr
+    n_off = (1 if has_t1 else 0) + (1 if has_t2 else 0) + n_rush + n_searcher
+
+    return {
+        # `sq` entra aqui (e não no peso): buscar num deck raso vale menos,
+        # e isso é propriedade do DECK, não do peso global.
+        'searcher1': sq if n_searcher >= 1 else 0.0,
+        'searcher2': 1.0 if (n_searcher >= 2 and going_first) else 0.0,
+        'searcher2_indo_depois': 1.0 if (n_searcher >= 2 and not going_first) else 0.0,
+        'searcher_excesso': float(max(0, n_searcher - 2)),
+        't1': 1.0 if has_t1 else 0.0,
+        't2': 1.0 if has_t2 else 0.0,
+        't3': 1.0 if has_t3 else 0.0,
+        't1_t2': 1.0 if (has_t1 and has_t2) else 0.0,
+        'curva_completa': 1.0 if (has_t1 and eff_t2 and eff_t3) else 0.0,
+        'c2k': float(min(n_c2k, 2)) if going_first else 0.0,
+        'c2k_indo_depois': float(min(n_c2k, 2)) if not going_first else 0.0,
+        'c2k_excesso': float(max(0, n_c2k - 2)),
+        'c1k': float(min(n_c1k, 2)),
+        'evento_counter': float(min(n_ectr, 1)),
+        'blocker': float(min(n_blocker, 1)),
+        'rush': float(min(n_rush, 2)),
+        'bomba_do_deck': 1.0 if has_deck_bomb else 0.0,
+        'bomba_excesso': float(max(0, n_bomb - 1)),
+        'sem_t1_t2': 1.0 if (not has_t1 and not eff_t2) else 0.0,
+        'sem_nada': 1.0 if (not has_t1 and not eff_t2 and not eff_t3) else 0.0,
+        'so_custo1': 1.0 if (only_cost1 and cost1_count >= 3) else 0.0,
+        'defesa_sem_ofensiva': 1.0 if (n_def >= 3 and n_off == 0) else 0.0,
+        'defesa_demais_aggro': 1.0 if (n_def >= 3 and n_off > 0 and aggro) else 0.0,
+    }
+
+
 def score_hand(
     hand: list[HandCard],
     going_first: bool = True,
     arq: str = 'midrange',
     sq: float = 0.7,
     bomb_code: Optional[str] = None,
+    pesos: Optional[dict] = None,
 ) -> int:
     """
-    Pontua uma mão de abertura de 5 cartas.
-    Retorna score inteiro (quanto maior, melhor).
-    Mesma lógica de avaliarMao() no TypeScript.
+    Pontua uma mão de abertura de 5 cartas (maior = melhor).
+
+    Agora é `soma(feature * peso)` com os pesos vindos de `pesos_mao.json`.
+    Os modificadores por arquétipo continuam multiplicando/somando por cima,
+    como antes -- eles NÃO foram calibrados (não há amostra por arquétipo que
+    sustente isso), e isso está declarado em `calibrar_pesos_mao.py`.
     """
     mod = _archetype_mod(arq)
+    w = pesos if pesos is not None else PESOS
+    f = extract_features(hand, going_first, sq, bomb_code,
+                         aggro=mod['c2k'] < 1.0)
 
-    has_t1 = has_t2 = has_t3 = False
-    only_cost1 = True
-    n_searcher = n_c2k = n_c1k = n_ectr = n_blocker = n_rush = n_bomb = 0
-    has_deck_bomb = False
+    score = sum(f[k] * w.get(k, 0.0) for k in f)
 
-    for c in hand:
-        is2k = c.counter == 2000
-        if not is2k and c.cost > 1:
-            only_cost1 = False
-        if not is2k:
-            if going_first:
-                if c.cost <= 1:                   has_t1 = True
-                elif c.cost <= 3:                 has_t2 = True
-                elif c.cost <= 5:                 has_t3 = True
-            else:
-                if c.cost <= 2:                   has_t1 = True
-                elif c.cost <= 4:                 has_t2 = True
-                elif c.cost <= 6:                 has_t3 = True
+    # Ajustes por arquétipo (não calibrados -- ver docstring)
+    if f['searcher1']:  score += mod['search']
+    if f['t1']:         score += mod['t1']
+    if f['t2']:         score += mod['t2']
+    if f['blocker']:    score += mod['blocker']
+    if f['rush']:       score += mod['rush'] * f['rush']
+    if f['c2k'] or f['c2k_indo_depois']:
+        base = (f['c2k'] * w.get('c2k', 0.0)
+                + f['c2k_indo_depois'] * w.get('c2k_indo_depois', 0.0))
+        score += base * (mod['c2k'] - 1.0)
+    if f['bomba_excesso']:
+        score += f['bomba_excesso'] * w.get('bomba_excesso', 0.0) * (mod['bomb'] - 1.0)
+    for k in ('sem_t1_t2', 'defesa_sem_ofensiva'):
+        if f[k]:
+            score += f[k] * w.get(k, 0.0) * (mod['pen'] - 1.0)
 
-        if _is_searcher(c):          n_searcher += 1
-        if is2k:                     n_c2k      += 1
-        elif c.counter == 1000:      n_c1k      += 1
-        if _is_event_counter(c):     n_ectr     += 1
-        if _has_kw(c, '[blocker]'):  n_blocker  += 1
-        if _has_kw(c, '[rush]'):     n_rush     += 1
-        if _is_bomb(c):              n_bomb     += 1
-        if bomb_code and c.code == bomb_code:
-            has_deck_bomb = True
+    return round(score)
 
-    eff_t2 = has_t2 or n_searcher >= 1
-    eff_t3 = has_t3 or (n_searcher >= 1 and has_t2)
-
-    sv = round(35 * sq)
-    score = 0
-
-    # Searcher
-    if n_searcher >= 1: score += sv + mod['search']
-    if n_searcher >= 2: score += 12 if not going_first else 3
-    if n_searcher >= 3: score -= (n_searcher - 2) * 20
-
-    # Curva
-    if has_t1: score += 28 + mod['t1']
-    if has_t2: score += 25 + mod['t2']
-    if has_t3: score += 10
-    if has_t1 and has_t2: score += 12
-    if has_t1 and eff_t2 and eff_t3: score += 5
-
-    # Counters
-    c2k_val = round((20 if not going_first else 16) * mod['c2k'])
-    score += min(n_c2k, 2) * c2k_val
-    score -= max(0, n_c2k - 2) * 8
-    score += min(n_c1k, 2) * 8
-    score += min(n_ectr, 1) * 10
-
-    # Blocker / Rush
-    score += min(n_blocker, 1) * (12 + mod['blocker'])
-    score += min(n_rush, 2)    * (7  + mod['rush'])
-
-    # Bomba
-    if has_deck_bomb: score += 6
-    if n_bomb >= 2:   score -= round((n_bomb - 1) * 22 * mod['bomb'])
-
-    # Punições
-    if not has_t1 and not eff_t2:           score -= round(35 * mod['pen'])
-    if not has_t1 and not eff_t2 and not eff_t3: score -= 20
-
-    # Mão toda custo 1 sem gasolina
-    cost1_count = sum(1 for c in hand if c.cost == 1 and c.counter != 2000)
-    if only_cost1 and cost1_count >= 3:     score -= 15
-
-    # Vida como recurso: mão defensiva demais em deck ofensivo
-    n_def = n_c2k + n_c1k + n_ectr
-    n_off = (1 if has_t1 else 0) + (1 if has_t2 else 0) + n_rush + n_searcher
-    if n_def >= 3 and n_off == 0:           score -= round(25 * mod['pen'])
-    elif n_def >= 3 and mod['c2k'] < 1.0:  score -= 12
-
-    return score
-
-
-# ── Utilitário: converter Card do engine → HandCard ───────────────────────────
 
 def card_to_handcard(c) -> HandCard:
     """Converte um objeto Card do OPTCGMatch em HandCard para scoring."""

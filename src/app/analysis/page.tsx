@@ -85,6 +85,7 @@ interface AnaliseResult {
     synergies: AnaliseSynergy[]
     cards?: Record<string, CardFlags>
     opening_benchmarks?: { n_decks: number; metricas: Record<string, Benchmark> }
+    hand_weights?: Record<string, number>
     axes?: Record<string, { bruto: number; detalhes: { tipo: string; desc: string; n?: number; pontos?: number }[] }>
     tribal_cohesion?: {
         leader_type: string
@@ -417,7 +418,29 @@ function calcSearcherQuality(deckCards: DeckCard[]): number {
 //   1º jogador: T1=1 DON, T2=3 DON, T3=5 DON, T4=7 DON  (começa com 1, +2/turno)
 //   2º jogador: T1=2 DON, T2=4 DON, T3=6 DON, T4=8 DON  (começa com 2, +2/turno)
 // Custo máximo jogável a cada turno = DON disponível naquele turno
-function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = null, goingFirst = true, searcherQuality = 0.7, mod: ArqMod = getArqMod('midrange')): number {
+/**
+ * Pesos do score de mão. Chegam do MOTOR via `/analyze -> hand_weights`,
+ * ajustados por regressão logística contra vitória em partidas simuladas
+ * (`calibrar_pesos_mao.py`).
+ *
+ * Estes valores aqui são só FALLBACK pra API offline. Até 07/09 eles eram
+ * a fonte: números escolhidos à mão, DUPLICADOS entre `hand_scorer.py` e
+ * este arquivo, tendo como única garantia de consistência um comentário
+ * dizendo "mesma lógica de avaliarMao()". Duas cópias de números
+ * inventados -- e nada impedia de divergirem em silêncio.
+ */
+type PesosMao = Record<string, number>
+const PESOS_MAO_FALLBACK: PesosMao = {
+    searcher1: 35, searcher2: 3, searcher2_indo_depois: 12, searcher_excesso: -20,
+    t1: 28, t2: 25, t3: 10, t1_t2: 12, curva_completa: 5,
+    c2k: 16, c2k_indo_depois: 20, c2k_excesso: -8,
+    c1k: 8, evento_counter: 10, blocker: 12, rush: 7,
+    bomba_do_deck: 6, bomba_excesso: -22,
+    sem_t1_t2: -35, sem_nada: -20, so_custo1: -15,
+    defesa_sem_ofensiva: -25, defesa_demais_aggro: -12,
+}
+
+function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = null, goingFirst = true, searcherQuality = 0.7, mod: ArqMod = getArqMod('midrange'), W: PesosMao = PESOS_MAO_FALLBACK): number {
 
     let hasT1Play = false  // joga no T1 com o DON disponível
     let hasT2Play = false  // joga no T2
@@ -456,7 +479,7 @@ function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = nu
 
     // Searcher compensa peças faltantes na curva — mas escala com qualidade do deck
     // (buscar em deck raso vale menos)
-    const searcherValue = Math.round(35 * searcherQuality)  // 35 pts se deck cheio de bons alvos
+    const searcherValue = W.searcher1 * searcherQuality  // 35 pts se deck cheio de bons alvos
     const effectiveT2 = hasT2Play || nSearcher >= 1
     const effectiveT3 = hasT3Play || (nSearcher >= 1 && hasT2Play)
 
@@ -466,38 +489,38 @@ function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = nu
     if (nSearcher >= 1) score += searcherValue + mod.searcherBonus
     if (nSearcher >= 2) {
         // 2º searcher: bônus extra se 2º jogador (2 DON T1 = pode jogar E buscar)
-        score += goingFirst ? 3 : 12
+        score += goingFirst ? W.searcher2 : W.searcher2_indo_depois
     }
-    if (nSearcher >= 3) score -= (nSearcher - 2) * 20  // 3+ trava a mão
+    if (nSearcher >= 3) score += (nSearcher - 2) * W.searcher_excesso  // 3+ trava a mão
 
     // ── Cobertura de turnos (curva de DON correta, ajustada por arquétipo) ──
-    if (hasT1Play) score += 28 + mod.t1Bonus
-    if (hasT2Play) score += 25 + mod.t2Bonus
-    if (hasT3Play) score += 10
-    if (hasT1Play && hasT2Play) score += 12   // curva contínua real
-    if (hasT1Play && effectiveT2 && effectiveT3) score += 5  // curva completa (inclui via search)
+    if (hasT1Play) score += W.t1 + mod.t1Bonus
+    if (hasT2Play) score += W.t2 + mod.t2Bonus
+    if (hasT3Play) score += W.t3
+    if (hasT1Play && hasT2Play) score += W.t1_t2   // curva contínua real
+    if (hasT1Play && effectiveT2 && effectiveT3) score += W.curva_completa  // curva completa (inclui via search)
 
     // ── Counter defensivo (2º jogador vai levar 1º hit; arquétipo também pondera) ──
-    const counter2kBase = goingFirst ? 16 : 20
+    const counter2kBase = goingFirst ? W.c2k : W.c2k_indo_depois
     const counter2kValue = Math.round(counter2kBase * mod.counter2kMult)
     score += Math.min(nCounter2k, 2) * counter2kValue
-    score -= Math.max(0, nCounter2k - 2) * 8
-    score += Math.min(nCounter1k, 2) * 8
-    score += Math.min(nEventCounter, 1) * 10  // evento-counter: versatilidade
+    score += Math.max(0, nCounter2k - 2) * W.c2k_excesso
+    score += Math.min(nCounter1k, 2) * W.c1k
+    score += Math.min(nEventCounter, 1) * W.evento_counter  // evento-counter: versatilidade
 
     // ── Blocker / Rush (ponderados por arquétipo) ──
-    score += Math.min(nBlocker, 1) * (12 + mod.blockerBonus)
-    score += Math.min(nRush, 2) * (7 + mod.rushBonus)
+    score += Math.min(nBlocker, 1) * (W.blocker + mod.blockerBonus)
+    score += Math.min(nRush, 2) * (W.rush + mod.rushBonus)
 
     // ── Bomba do deck (arquétipo ramp/control tolera mais peso) ──
-    if (hasDeckBomb) score += 6
-    if (nBomb >= 2) score -= Math.round((nBomb - 1) * 22 * mod.bombPenMult)
+    if (hasDeckBomb) score += W.bomba_do_deck
+    if (nBomb >= 2) score += Math.round((nBomb - 1) * W.bomba_excesso * mod.bombPenMult)
 
     // ── Punições (severidade ajustada por arquétipo) ──
-    if (!hasT1Play && !effectiveT2) score -= Math.round(35 * mod.penT1Mult)
-    if (!hasT1Play && !effectiveT2 && !effectiveT3) score -= 20
+    if (!hasT1Play && !effectiveT2) score += Math.round(W.sem_t1_t2 * mod.penT1Mult)
+    if (!hasT1Play && !effectiveT2 && !effectiveT3) score += W.sem_nada
     // Mão toda de custo 1: boa largada mas sem gasolina no mid-game
-    if (onlyCost1 && mao.filter(dc => parseInt(dc.card.card_cost || '99') === 1 && counterDe(dc.card) < 2000).length >= 3) score -= 15
+    if (onlyCost1 && mao.filter(dc => parseInt(dc.card.card_cost || '99') === 1 && counterDe(dc.card) < 2000).length >= 3) score += W.so_custo1
 
     // ── Regra da vida como recurso (dica #1 de gameplay) ──
     // Mão excessivamente defensiva em deck ofensivo é um problema:
@@ -507,10 +530,10 @@ function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = nu
     const nOfensiva = (hasT1Play ? 1 : 0) + (hasT2Play ? 1 : 0) + nRush + nSearcher
     if (nCounterTotal >= 3 && nOfensiva === 0) {
         // Mão toda de defesa sem nenhuma ofensiva: brick funcional
-        score -= Math.round(25 * mod.penT1Mult)
+        score += Math.round(W.defesa_sem_ofensiva * mod.penT1Mult)
     } else if (nCounterTotal >= 3 && (mod.counter2kMult < 1.0)) {
         // Deck aggro/rush com 3+ counters: excesso de defesa passiva
-        score -= 12
+        score += W.defesa_demais_aggro
     }
 
     return score
@@ -546,7 +569,7 @@ interface MaoAvaliada {
  * aparece 1 vez em 20.000.
  */
 function gerarMelhoresMaos(deckCards: DeckCard[], flags: FlagsMap, arq: Arquetipo,
-                           goingFirst = true): MaoAvaliada[] {
+                           goingFirst = true, W: PesosMao = PESOS_MAO_FALLBACK): MaoAvaliada[] {
     const bombId = getDeckBombId(deckCards, flags)
     const searcherQuality = calcSearcherQuality(deckCards)
     const mod = getArqMod(arq)
@@ -562,7 +585,7 @@ function gerarMelhoresMaos(deckCards: DeckCard[], flags: FlagsMap, arq: Arquetip
     const anda = (inicio: number) => {
         if (atual.length === HAND) {
             const cartas = atual.map(i => deckCards[i])
-            const score = avaliarMao(cartas, flags, bombId, goingFirst, searcherQuality, mod)
+            const score = avaliarMao(cartas, flags, bombId, goingFirst, searcherQuality, mod, W)
             // combinações que produzem exatamente este multiconjunto
             let modos = 1
             let i = 0
@@ -763,10 +786,13 @@ function AnalysisPageContent() {
         if (!deck || simDone) return
         if (!analise?.cards) return
         const flags = analise.cards
+        // Pesos vindos do motor (calibrados); cai no fallback se a API for
+        // antiga ou estiver offline.
+        const pesosMao: PesosMao = { ...PESOS_MAO_FALLBACK, ...(analise.hand_weights || {}) }
         const arq = arquetipoDoMotor(analise)
         setTimeout(() => {
-            const maosP1 = gerarMelhoresMaos(deck.cards, flags, arq, true)
-            const maosP2 = gerarMelhoresMaos(deck.cards, flags, arq, false)
+            const maosP1 = gerarMelhoresMaos(deck.cards, flags, arq, true, pesosMao)
+            const maosP2 = gerarMelhoresMaos(deck.cards, flags, arq, false, pesosMao)
             setArqDetectado(arq)
             setMelhoresMaosP1(maosP1)
             setMelhoresMaosP2(maosP2)

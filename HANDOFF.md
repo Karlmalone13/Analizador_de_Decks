@@ -514,6 +514,78 @@ DON", que e o dado que importa e nao pode divergir do codigo.
 counter 16/20, blocker 12...) continuam escolhidos a mao, sem validacao
 contra vitoria. Mesmo debito ja registrado pros eixos de `deck_axes.py`.
 
+### 14. Pesos do score de mao CALIBRADOS contra winrate simulado (+2,85 AUC, 5/5 folds)
+
+Pedido do usuario: *"vamos calibrar esses pesos contra winrate simulado"*.
+Resultado: **AUC fora da amostra 0,5613 -> 0,5897**, melhor em **5 de 5
+folds**. 11 dos 23 pesos foram medidos; os outros 12 mantiveram o valor
+antigo por falta de sinal (ver porta de estabilidade).
+
+**Achado de tamanho medio no caminho, que valia a sessao sozinho:**
+`hand_scorer._is_searcher` procurava a substring `'look at the top'` e
+devolvia FALSO pra uma carta cujo texto e *"Look at 4 cards from the top of
+your deck; reveal up to 1 [Sanji]"*. E EXATAMENTE o bug do bloco 751 --
+corrigido no front em 05/09 e **sobrevivente aqui**. Num deck de torneio
+real ativava em **0 de 50 cartas**. Corrigido lendo `card_analysis_db.json`:
+o mesmo deck foi de 0 pra **12 searchers**.
+
+**Duplicacao fechada**: `hand_scorer.py` e `avaliarMao()` no TS eram a mesma
+formula com os mesmos pesos, tendo como unica garantia de consistencia um
+comentario ("mesma logica de avaliarMao()"). Agora os PESOS moram num lugar
+so (`pesos_mao.json` -> `/analyze:hand_weights` -> o front usa). A formula
+segue nos dois lados; os numeros, nao.
+
+#### Duas tentativas REPROVADAS antes da que funcionou
+
+1. **Decks diferentes entre si** (AUC 0,579): forca de deck domina o
+   resultado e vazou pros coeficientes. `t1` (ter jogada no T1) virou
+   **-36,5** e `so_custo1` (mao inteira de custo 1) **+43,9** -- o modelo
+   aprendeu "aggro ganha", nao "mao de custo 1 e boa". Rejeitado, JSON
+   removido.
+2. **Espelho + pareado, sem porta de estabilidade** (AUC 0,601): forca de
+   deck controlada, mas OITO pesos trocaram de sinal, incluindo `sem_nada`
+   (mao SEM NENHUMA jogada) virando **+21**. Causa: COLINEARIDADE -- varias
+   features sao funcao deterministica de outras (`t1_t2 = t1 AND t2`,
+   `sem_nada` e subconjunto de `sem_t1_t2`). Com colunas colineares a
+   logistica reparte o efeito arbitrariamente e o sinal individual vira
+   ruido, mesmo com AUC agregada boa. Rejeitado tambem.
+
+#### O desenho que ficou
+
+- **Partidas-ESPELHO** (mesmo deck dos dois lados): forca, arquetipo e
+  matchup cancelam exatamente.
+- **Pareado e simetrico**: `delta = features(A) - features(B)`, cada partida
+  entrando nos dois sentidos, sem intercepto.
+- **Posicao como controle explicito** (`indo_primeiro = +0,102`).
+- **Porta de estabilidade por bootstrap**: 200 reamostragens; o peso so e
+  adotado se o sinal aguentar em >=90% delas. Foi ela que barrou o
+  `sem_nada +21` (79%) e o `t1 -17,5` (89%).
+
+#### O que o dado disse (11 adotados)
+
+    searcher1        35 -> 47,3  (100% estavel)
+    searcher2         3 -> 23,6  (100%)
+    rush              7 -> 25,7  (100%)
+    c1k               8 -> 10,1  (100%)
+    c2k_indo_depois  20 -> 17,8  (100%)
+    sem_t1_t2       -35 -> -27,1 ( 92%)
+    t3               10 ->  9,8  ( 92%)
+    bomba_excesso   -22 -> -10,8 ( 97%)
+
+**Duas trocas de sinal que PASSARAM na porta e contradizem folclore de
+deckbuilding** -- valem investigacao propria:
+    searcher_excesso  -20 -> +25,4 (100%): 3+ searchers NAO trava a mao
+    c2k_excesso        -8 -> +19,4 ( 98%): 3+ counters de 2000 nao e excesso
+
+#### Limites declarados
+
+- AUC ~0,59 e baixa em termos absolutos: **mao de abertura explica pouco de
+  vitoria**. O ganho e relativo e real, o teto e baixo por natureza.
+- Mede "que mao faz ESTE motor ganhar", nao um humano.
+- Os modificadores por arquetipo seguem NAO calibrados.
+- 12 pesos continuam sendo palpite -- o script diz quais, e o JSON grava a
+  taxa de estabilidade de cada um.
+
 ### RESOLVIDO (07/09): as 6 falhas do `smoke_fast.py` eram o dev server comendo a CPU
 
 `smoke_fast.py` passou a dar 6 falhas no meio da sessao, todas da familia
