@@ -244,6 +244,36 @@ usar antes daria erro de TDZ em runtime (nao pego por `tsc`). E um
 comentario JSX longo com aspas/parenteses quebrou o parser (`'}' expected`)
 sem erro claro; a versao curta passou.
 
+### 7. Ranquear contra um meta ESPREMIDO e fabricar sinal (achado do usuario)
+
+Usuario: *"acho que essas porcentagens medidas em meta estao ruins"*. Certo,
+e mediveis: o espalhamento p25->p75 de cada metrica nos 184 decks e
+
+    trigger_vida  63,5pp     searcher  41,0pp     low1  30,1pp
+    counter2k     24,1pp     draw      21,6pp     blocker 10,1pp
+    low2           7,3pp     counter1k  2,4pp   <-- meta quase constante
+
+Em `counter1k` o meta INTEIRO cabe entre 92,0% e 94,4%. Chamar 98% ali de
+"Top 25% do meta" e premiar ruido: todo deck de torneio roda ~26 cartas com
+counter 1000, nao e alavanca de construcao. Em `low2` (7,3pp) era pior --
+o Krieg ficava VERMELHO, "ultimos 25% do meta", por estar 4 pontos abaixo da
+mediana. Agora, com espalhamento < 15pp, o tile so RELATA ("Padrao do meta",
+rodape "meta inteiro entre X e Y") e nao da veredito, exceto se o deck
+estiver muito fora da faixa.
+
+**Tile de Custo medio ficou pra tras**: eu calibrei `custo_medio` pro SCORE
+na secao 6 e esqueci do tile, que continuou com "ideal <=3.5" e "Regular" --
+duas reguas diferentes pro mesmo numero na mesma tela. Agora le contra o
+meta ("Mais pesado que a mediana"), sem o corte inventado que reprovava mais
+da metade dos decks de torneio.
+
+**Sobre o trigger, terceira ida**: o usuario repetiu "trigger na mao nao e
+bom" duas vezes depois de ja estar corrigido -- a duvida real era o NUMERO
+("na vida, acha que 6 cartas dao 48%?"). Os 48,7% eram do tile ANTIGO (mao,
+n=5) e nao existem mais. Na vida (n=4) da 41,1%, conferido com 2.000.000 de
+setups reais simulados (embaralha, 5 pra mao, 4 pra vida): 41,03% contra
+41,05% da formula. Registrado porque a mesma duvida ja voltou duas vezes.
+
 ### Pendente
 
 - ~~Abrir `/analysis` logado~~ FEITO (secao 3) -- imagens OK, 2 bugs de numero achados e corrigidos.

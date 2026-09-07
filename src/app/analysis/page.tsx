@@ -162,8 +162,35 @@ interface Benchmark { p25: number; mediana: number; p75: number }
  * sabiam dizer "Excelente", qualquer que fosse o deck. Com quartis, cada
  * faixa contem 25% do meta por construcao, entao o rotulo sempre informa.
  */
+/**
+ * Ha espalhamento suficiente no meta pra que "top 25%" / "ultimos 25%"
+ * signifiquem alguma coisa?
+ *
+ * Achado 06/09, levantado pelo usuario ("essas porcentagens medidas em meta
+ * estao ruins") e confirmado medindo: em `counter1k` o meta INTEIRO cabe
+ * entre 92,0% e 94,4% -- 2,4 pontos de espalhamento. Chamar 98% de "Top 25%
+ * do meta" ali e fabricar sinal onde nao existe: todo deck de torneio roda
+ * ~26 cartas com counter 1000, nao e uma alavanca de construcao. Em `low2`
+ * (7,3pp) o efeito era pior ainda -- o deck Krieg ficava VERMELHO, "ultimos
+ * 25% do meta", por estar 4 pontos abaixo da mediana.
+ *
+ * Onde a distribuicao e apertada, o tile passa a so RELATAR o valor, sem
+ * veredito. Ranquear ruido e pior que nao ranquear.
+ */
+const ESPALHAMENTO_MINIMO = 0.15
+function metaDiscrimina(b?: Benchmark): boolean {
+    return !!b && (b.p75 - b.p25) >= ESPALHAMENTO_MINIMO
+}
+
 function classif(p: number, b?: Benchmark): { label: string, color: string, bar: string } {
     if (p <= 0) return { label: 'Ausente', color: 'text-red-400', bar: 'bg-red-500' }
+    if (b && !metaDiscrimina(b)) {
+        // Meta praticamente constante nesta metrica: so vale a pena avisar se
+        // o deck estiver MUITO fora da faixa, nunca premiar por estar dentro.
+        const largura = Math.max(b.p75 - b.p25, 0.01)
+        if (p < b.p25 - 2 * largura) return { label: 'Bem abaixo do meta', color: 'text-red-400', bar: 'bg-red-500' }
+        return { label: 'Padrão do meta', color: 'text-gray-300', bar: 'bg-gray-500' }
+    }
     if (b) {
         if (p >= b.p75) return { label: 'Top 25% do meta', color: 'text-green-400', bar: 'bg-green-500' }
         // Igualdade tratada a parte: com 50 cartas so existem K inteiros, entao
@@ -890,6 +917,19 @@ function AnalysisPageContent() {
     const bench = (nome: string): Benchmark | undefined => analise?.opening_benchmarks?.metricas?.[nome]
     const avgCostNum = parseFloat(avgCost) || 0
 
+    // Custo medio tambem lido contra o meta. As faixas fixas (<=2.5 otimo,
+    // <=3.5 ideal, <=4.5 pesado) eram inventadas e REPROVAVAM MAIS DA METADE
+    // dos decks de torneio -- a mediana real e 3,74. Aqui menos e melhor,
+    // entao os quartis entram invertidos.
+    const benchCusto = bench('custo_medio')
+    const custoClass = (() => {
+        if (!benchCusto) return { label: '—', color: 'text-gray-300' }
+        if (avgCostNum <= benchCusto.p25) return { label: 'Bem mais leve que o meta', color: 'text-green-400' }
+        if (avgCostNum <= benchCusto.mediana) return { label: 'Mais leve que o meta', color: 'text-lime-400' }
+        if (avgCostNum <= benchCusto.p75) return { label: 'Mais pesado que a mediana', color: 'text-yellow-400' }
+        return { label: 'Entre os 25% mais pesados', color: 'text-orange-400' }
+    })()
+
     // ── Score de Consistencia ─────────────────────────────────────────────
     // Cada componente vale pela POSICAO DO DECK NO META, nao por um alvo
     // inventado. Achado 06/09 (deck Krieg), e o pior erro desta tela: a
@@ -1289,7 +1329,9 @@ function AnalysisPageContent() {
                                     </div>
                                     <div className={`text-xs font-semibold ${c.color}`}>{c.label}</div>
                                     <div className="text-xs text-gray-600 mt-0.5">
-                                        {b ? <>meta: {pct(b.mediana)} mediana</> : <>chance na mão inicial</>}
+                                        {!b ? <>chance na mão inicial</>
+                                            : metaDiscrimina(b) ? <>meta: {pct(b.mediana)} mediana</>
+                                                : <>meta inteiro entre {pct(b.p25)} e {pct(b.p75)}</>}
                                     </div>
                                 </div>
                             )
@@ -1297,14 +1339,21 @@ function AnalysisPageContent() {
                         <div className="bg-gray-800 rounded-xl p-4">
                             <div className="flex items-center justify-between mb-2">
                                 <span className="text-xs text-gray-400">📊 Custo médio</span>
-                                <span className="text-xs text-gray-500">ideal ≤3.5</span>
+                                {/* O "ideal <=3.5" que ficava aqui era inventado e REPROVAVA MAIS DA
+                                    METADE dos decks de torneio -- a mediana real do meta e 3,74
+                                    (medido 06/09 nos 184 decks). O tile ficou com a regua velha
+                                    quando o score ja tinha migrado pro meta: mesma tela, duas
+                                    reguas diferentes pro mesmo custo medio. */}
+                                <span className="text-xs text-gray-500">
+                                    {benchCusto ? <>meta: {benchCusto.mediana.toFixed(2)} mediana</> : 'sem referência'}
+                                </span>
                             </div>
-                            <div className={`text-2xl font-black mb-1 ${avgCostNum <= 2.5 ? 'text-green-400' : avgCostNum <= 3.5 ? 'text-yellow-400' : avgCostNum <= 4.5 ? 'text-orange-400' : 'text-red-400'}`}>{avgCost}</div>
+                            <div className={`text-2xl font-black mb-1 ${custoClass.color}`}>{avgCost}</div>
                             <div className="w-full bg-gray-700 rounded-full h-1.5 mb-2">
-                                <div className={`h-1.5 rounded-full ${avgCostNum <= 3.5 ? 'bg-green-500' : avgCostNum <= 4.5 ? 'bg-orange-500' : 'bg-red-500'}`} style={{ width: `${Math.min((avgCostNum / 6) * 100, 100)}%` }} />
+                                <div className={`h-1.5 rounded-full ${custoClass.color.replace('text-', 'bg-').replace('-400', '-500')}`} style={{ width: `${Math.min((avgCostNum / 6) * 100, 100)}%` }} />
                             </div>
-                            <div className={`text-xs font-semibold ${avgCostNum <= 2.5 ? 'text-green-400' : avgCostNum <= 3.5 ? 'text-yellow-400' : avgCostNum <= 4.5 ? 'text-orange-400' : 'text-red-400'}`}>
-                                {avgCostNum <= 2.5 ? 'Excelente' : avgCostNum <= 3.5 ? 'Bom' : avgCostNum <= 4.5 ? 'Regular' : 'Pesado'}
+                            <div className={`text-xs font-semibold ${custoClass.color}`}>
+                                {custoClass.label}
                             </div>
                         </div>
                     </div>

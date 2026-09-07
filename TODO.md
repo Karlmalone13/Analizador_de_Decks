@@ -61,6 +61,16 @@
 > tile de custo 1 some quando conta as mesmas cartas do <=2 (dava 84,7%
 > verde colado em 84,7% vermelho); bloco "Diagnostico Automatico" removido
 > a pedido do usuario (repetia em prosa os 8 tiles).
+> (14) **Ranquear contra meta espremido = ruido** (achado do usuario):
+> `counter1k` tem o meta inteiro entre 92,0% e 94,4% (2,4pp) e `low2` 7,3pp
+> -- "Top 25%" e "Ultimos 25%" ali nao significam nada, e o Krieg ficava
+> VERMELHO por 4 pontos abaixo da mediana. Com espalhamento < 15pp o tile so
+> relata ("Padrao do meta"), sem veredito.
+> (15) Tile de **Custo medio** ficou com a regua velha ("ideal <=3.5") quando
+> o score ja tinha migrado pro meta -- duas reguas pro mesmo numero na mesma
+> tela. Corrigido.
+> (16) Trigger na vida com 6 copias = **41,1%**, conferido com 2M de setups
+> reais simulados (41,03%). Os 48,7% eram do tile ANTIGO de mao (n=5).
 > **Pendente**: 219 cartas seguem sem arte (placeholder e paliativo).
 
 > 05/09/2026 (bloco 751): **Tela de analise mentia em dois lugares, mesma
