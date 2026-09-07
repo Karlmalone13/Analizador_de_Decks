@@ -424,11 +424,13 @@ Os tres juntos eram a maior parte da rolagem da pagina. Agora sao uma faixa
 de 3 botoes e UM shell de modal com tres conteudos (nao tres modais
 duplicados).
 
+**A Lista do Deck entrou logo depois** (usuario: *"faz o main deck
+tambem"*), virando a 4a da faixa. Dentro do popup ela perdeu o
+`maxHeight: 600px`, que existia justamente pra ela nao dominar a pagina --
+restricao que deixa de valer quando o proprio modal rola.
+
 **Deixados inline de proposito**: distribuicoes por tipo/cor e curva de
-custo (compactas e de leitura rapida), Coesao Tribal (compacta). A grade do
-**Main Deck** (as 15 cartas com arte) e o bloco mais alto que sobrou --
-nao virou popup porque e o deck em si, mas e o proximo candidato obvio se
-o usuario quiser.
+custo (compactas e de leitura rapida), Coesao Tribal (compacta).
 
 **Armadilha do recorte**: o bloco do Plano terminava ANTES de um `</div>`
 de 12 espacos que fecha o container EXTERNO da pagina -- recortar ate o

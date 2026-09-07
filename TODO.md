@@ -90,11 +90,12 @@
 > meus de medicao no caminho (bissecao com maquina carregada apontou um
 > commit de front; e declarei a hipotese descartada medindo cedo demais) --
 > os dois em `REPROVADOS.md`.
-> (25) **Mais 3 blocos viraram botao + popup** (Risco de mao travada,
+> (25) **Mais 4 blocos viraram botao + popup** (incl. a Lista do Deck) (Risco de mao travada,
 > Melhores maos, Plano de jogo) -- eram a maior parte da rolagem. Criterio:
 > inline o que responde "meu deck e bom?", popup o que e consulta ocasional.
-> Um shell de modal com 3 conteudos, nao 3 modais. Proximo candidato obvio
-> se o usuario quiser: a grade do Main Deck.
+> Um shell de modal com 4 conteudos, nao 4 modais. A Lista do Deck perdeu o
+> `maxHeight: 600px` dentro do popup -- ele existia pra ela nao dominar a
+> pagina, restricao que deixa de valer quando o modal ja rola.
 > (22) **Golden Ratios calibrados no meta**: as faixas fixas reprovavam o
 > proprio meta -- `finishers 2-4` deixava so **6,5%** dos 184 decks dentro,
 > `searchers 4-8` 30,4%, `events 0-6` 41,8%. Trocadas por p25-p75 real

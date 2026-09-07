@@ -663,7 +663,7 @@ function AnalysisPageContent() {
     // Popup "quais cartas cumprem esta função" — evita repetir miniaturas em
     // toda linha da composição só pra mostrar quais cartas entraram na conta.
     const [comprasAberto, setComprasAberto] = useState(false)
-    const [painelAberto, setPainelAberto] = useState<'brick' | 'maos' | 'plano' | null>(null)
+    const [painelAberto, setPainelAberto] = useState<'brick' | 'maos' | 'plano' | 'lista' | null>(null)
     // Popup generico "quais cartas sao essas": alimentado por LISTAS DE CODIGO
     // que o MOTOR devolve (`ratios[].codes`, `synergies[].creator_codes`), nunca
     // por uma reclassificacao feita aqui -- seria reimplementar a deteccao no
@@ -1209,51 +1209,6 @@ function AnalysisPageContent() {
                     </div>
                 </div>
 
-                {/* LISTA DO DECK */}
-                <div className="mb-8">
-                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-                        <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">
-                            Lista do Deck <span className="text-gray-600 font-normal">({totalCards}/50)</span>
-                        </div>
-                        <div className="overflow-y-auto card-scroll" style={{ maxHeight: '600px', scrollbarWidth: 'thin', scrollbarColor: '#f97316 #1f2937' }}>
-                            {deck.leader && (
-                                <div className="mb-5">
-                                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Leader</div>
-                                    <div className="flex gap-2">
-                                        <div className="flex flex-col items-center gap-1">
-                                            <div className="relative" style={{ width: '90px', height: '126px' }}>
-                                                <CardImage src={deck.leader.card_image} alt={deck.leader.card_name} className="absolute w-full h-full object-cover rounded-lg border-2 border-yellow-500 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(deck.leader)} />
-                                            </div>
-                                            <div className="text-xs text-gray-400 font-mono text-center" style={{ width: '90px' }}>{(deck.leader.card_set_id || '').split('_')[0]}</div>
-                                            <div className="text-xs text-white text-center font-medium leading-tight" style={{ width: '90px' }}>{deck.leader.card_name}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            <div className="text-xs text-gray-500 uppercase tracking-wide mb-3">Main Deck</div>
-                            <div className="flex flex-wrap gap-4">
-                                {allCards.sort((a, b) => parseInt(a.card.card_cost || '0') - parseInt(b.card.card_cost || '0')).map((dc, i) => (
-                                    <div key={i} className="flex flex-col items-center gap-1">
-                                        <span className="text-xs text-gray-400">{dc.card.card_cost ? `Custo ${dc.card.card_cost}` : '—'}</span>
-                                        <div className="relative cursor-pointer" style={{ width: '90px', height: `${120 + (Math.min(dc.quantity, 4) - 1) * 7}px` }} onClick={() => setSelectedCard(dc.card)}>
-                                            {Array.from({ length: Math.min(dc.quantity, 4) }).map((_, idx) => (
-                                                <CardImage key={idx} src={dc.card.card_image} alt={dc.card.card_name} className="absolute object-cover rounded-lg border border-gray-700 hover:brightness-110 transition" style={{ width: '86px', height: '120px', left: `${idx * 3}px`, top: `${idx * 7}px`, zIndex: idx }} />
-                                            ))}
-                                        </div>
-                                        <div className="text-xs text-gray-400 font-mono text-center" style={{ width: '90px' }}>{(dc.card.card_set_id || '').split('_')[0]}</div>
-                                        <div className="text-xs text-white text-center font-medium leading-tight" style={{ width: '90px' }}>{dc.card.card_name}</div>
-                                        <div className="flex items-center gap-1.5 bg-gray-800 border border-gray-700 rounded-lg px-2 py-0.5">
-                                            <div className="flex gap-0.5">{Array.from({ length: dc.quantity }).map((_, idx) => <div key={idx} className="w-2 h-2 rounded-full bg-gray-400" />)}</div>
-                                            <span className="text-xs font-bold text-white ml-1">×{dc.quantity}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
                 {/* DISTRIBUIÇÕES */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
@@ -1624,7 +1579,7 @@ function AnalysisPageContent() {
                     consulta de vez em quando -- exemplos de mão, plano turno a
                     turno, risco de travar. Os três juntos empurravam o resto da
                     página pra baixo e viravam rolagem. */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
                     {[
                         { id: 'brick' as const, icon: '💀', titulo: 'Risco de mão travada',
                           sub: 'chance de abrir sem jogada nos turnos 1 e 2' },
@@ -1632,6 +1587,8 @@ function AnalysisPageContent() {
                           sub: 'top 3 de 30.000 simulações, indo 1º e 2º' },
                         { id: 'plano' as const, icon: '🗺️', titulo: 'Plano de jogo por turno',
                           sub: 'o que jogar em cada turno, nas duas posições' },
+                        { id: 'lista' as const, icon: '🃏', titulo: 'Lista do deck',
+                          sub: `as ${totalCards} cartas com arte, agrupadas por custo` },
                     ].map(b => (
                         <button key={b.id} onClick={() => setPainelAberto(b.id)}
                             className="flex items-center justify-between gap-3 bg-gray-900 border border-gray-800 hover:border-gray-600 hover:bg-gray-800 rounded-2xl px-5 py-4 text-left transition">
@@ -1850,6 +1807,54 @@ function AnalysisPageContent() {
                                 className="text-gray-400 hover:text-white text-3xl leading-none">×</button>
                         </div>
                         <div className="px-2 pb-2">
+                            {painelAberto === 'lista' && (<>
+                            {/* LISTA DO DECK */}
+                            <div className="mb-8">
+                                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+                                    <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">
+                                        Lista do Deck <span className="text-gray-600 font-normal">({totalCards}/50)</span>
+                                    </div>
+                                    {/* sem `maxHeight` aqui: o limite de 600px existia pra
+                                lista nao dominar a pagina; dentro do popup o
+                                proprio modal ja rola. */}
+                            <div className="overflow-y-auto card-scroll" style={{ scrollbarWidth: 'thin', scrollbarColor: '#f97316 #1f2937' }}>
+                                        {deck.leader && (
+                                            <div className="mb-5">
+                                                <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Leader</div>
+                                                <div className="flex gap-2">
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        <div className="relative" style={{ width: '90px', height: '126px' }}>
+                                                            <CardImage src={deck.leader.card_image} alt={deck.leader.card_name} className="absolute w-full h-full object-cover rounded-lg border-2 border-yellow-500 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(deck.leader)} />
+                                                        </div>
+                                                        <div className="text-xs text-gray-400 font-mono text-center" style={{ width: '90px' }}>{(deck.leader.card_set_id || '').split('_')[0]}</div>
+                                                        <div className="text-xs text-white text-center font-medium leading-tight" style={{ width: '90px' }}>{deck.leader.card_name}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        <div className="text-xs text-gray-500 uppercase tracking-wide mb-3">Main Deck</div>
+                                        <div className="flex flex-wrap gap-4">
+                                            {allCards.sort((a, b) => parseInt(a.card.card_cost || '0') - parseInt(b.card.card_cost || '0')).map((dc, i) => (
+                                                <div key={i} className="flex flex-col items-center gap-1">
+                                                    <span className="text-xs text-gray-400">{dc.card.card_cost ? `Custo ${dc.card.card_cost}` : '—'}</span>
+                                                    <div className="relative cursor-pointer" style={{ width: '90px', height: `${120 + (Math.min(dc.quantity, 4) - 1) * 7}px` }} onClick={() => setSelectedCard(dc.card)}>
+                                                        {Array.from({ length: Math.min(dc.quantity, 4) }).map((_, idx) => (
+                                                            <CardImage key={idx} src={dc.card.card_image} alt={dc.card.card_name} className="absolute object-cover rounded-lg border border-gray-700 hover:brightness-110 transition" style={{ width: '86px', height: '120px', left: `${idx * 3}px`, top: `${idx * 7}px`, zIndex: idx }} />
+                                                        ))}
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 font-mono text-center" style={{ width: '90px' }}>{(dc.card.card_set_id || '').split('_')[0]}</div>
+                                                    <div className="text-xs text-white text-center font-medium leading-tight" style={{ width: '90px' }}>{dc.card.card_name}</div>
+                                                    <div className="flex items-center gap-1.5 bg-gray-800 border border-gray-700 rounded-lg px-2 py-0.5">
+                                                        <div className="flex gap-0.5">{Array.from({ length: dc.quantity }).map((_, idx) => <div key={idx} className="w-2 h-2 rounded-full bg-gray-400" />)}</div>
+                                                        <span className="text-xs font-bold text-white ml-1">×{dc.quantity}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            </>)}
                             {painelAberto === 'brick' && (<>
                             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                                 <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1">💀 Risco de Mão Travada</div>
