@@ -90,6 +90,16 @@
 > meus de medicao no caminho (bissecao com maquina carregada apontou um
 > commit de front; e declarei a hipotese descartada medindo cedo demais) --
 > os dois em `REPROVADOS.md`.
+> (30) **Maos de abertura: a escolha era amostragem de 1,4% do espaco** e
+> mudava a cada recarga, com a tela anunciando "Top 3 de 30.000 simulacoes"
+> como fato. Trocada por **enumeracao exata** das 11.109 maos distintas
+> (multiconjunto de 5 entre 15 cartas), deterministica, e cada mao mostra a
+> chance real de sair. Junto: o bug do `counter_amount` (formato misto)
+> **sobreviveu em 4 pontos**, incluindo `avaliarMao` -- a pontuacao tratava
+> counter como jogada normal em deck salvo no formato .0. E o rotulo do 1o
+> jogador contradizia o codigo logo abaixo ("T2=custo 2" x codigo 2-3).
+> **Aberto**: os pesos de `avaliarMao` seguem escolhidos a mao, sem
+> validacao contra vitoria (mesmo debito dos eixos).
 > (29) **Os emojis eram o que estava pequeno** (eu tinha lido "icone" como
 > imagem de carta): estavam no MESMO span do texto e herdavam `text-xs`,
 > saindo com ~12px. Componente `Icone` separa num span com tamanho proprio.

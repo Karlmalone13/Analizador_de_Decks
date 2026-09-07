@@ -477,6 +477,43 @@ JSX (`Expected corresponding closing tag for JSX fragment`, sem apontar a
 causa). O patch passou a CONFERIR o balanceamento de `<div>`/`</div>` de
 cada recorte antes de aplicar (9/9, 17/17, 25/25).
 
+### 13. Maos de abertura: escolhidas por AMOSTRAGEM de 1,4% do espaco, e o bug do counter tinha sobrevivido em 4 lugares
+
+Usuario: *"quero que confira essas maos de abertura, principalmente a forma
+de escolher elas"*. Tres achados.
+
+**1. A escolha era amostragem, nao a melhor mao.** `gerarMelhoresMaos`
+sorteava 30.000 maos e mostrava as 3 melhores. Isso cobre **1,4%** das
+C(50,5) = 2.118.760 combinacoes -- a "melhor mao" era a melhor de uma
+amostra pequena. Pior: sendo sorteio, **mudava a cada recarga da pagina**,
+enquanto a tela anunciava "Top 3 de 30.000 simulacoes" como se fosse fato
+reproduzivel.
+
+O espaco REAL e muito menor: a mao e um multiconjunto de 5 cartas entre as
+**15 distintas** do deck, respeitando copias -- no Krieg sao **11.109**
+maos, enumeraveis na hora. Trocado por enumeracao EXATA e deterministica.
+Cada mao agora mostra tambem a chance real de sair (produto de
+C(copias_i, usadas_i) / C(50,5)), pra nao celebrar uma mao perfeita que
+aparece 1 em 20.000.
+
+**2. O bug do `counter_amount` sobreviveu em 4 pontos.** Em 06/09 eu
+corrigi `counters2k`/`counters1k` pra leitura numerica, mas
+`calcularBrick`, `avaliarMao` (2x) e mais um ponto continuavam com
+`=== '2000'`. Como o banco guarda os dois formatos (519 cartas como
+'2000.0' contra 28 como '2000'), a **pontuacao das maos de abertura
+tratava counter como jogada normal** em qualquer deck salvo no formato .0.
+Centralizado num helper `counterDe()`.
+
+**3. O rotulo do 1o jogador contradizia o codigo logo abaixo dele**: dizia
+"T1=custo 1 - T2=custo 2 - T3=custo 3-4", enquanto `avaliarMao` usa
+T2=custo 2-3 e T3=custo 4-5 -- e o DON real indo primeiro e 1/3/5. O do 2o
+jogador estava certo. Trocados os dois por "T1: 1 DON - T2: 3 DON - T3: 5
+DON", que e o dado que importa e nao pode divergir do codigo.
+
+**Ainda em aberto**: os PESOS de `avaliarMao` (searcher 35, T1 28, T2 25,
+counter 16/20, blocker 12...) continuam escolhidos a mao, sem validacao
+contra vitoria. Mesmo debito ja registrado pros eixos de `deck_axes.py`.
+
 ### RESOLVIDO (07/09): as 6 falhas do `smoke_fast.py` eram o dev server comendo a CPU
 
 `smoke_fast.py` passou a dar 6 falhas no meio da sessao, todas da familia

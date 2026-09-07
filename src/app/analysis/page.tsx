@@ -235,14 +235,18 @@ function Icone({ children, size = 'text-xl' }: { children: React.ReactNode; size
     return <span className={`${size} leading-none mr-1.5 align-middle`}>{children}</span>
 }
 
-// ── Fisher-Yates shuffle (matematicamente correto e uniforme) ─────────────────
-function fisherYates<T>(arr: T[]): T[] {
-    const a = [...arr]
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]]
-    }
-    return a
+/**
+ * Counter da carta como NUMERO.
+ *
+ * O banco guarda os dois formatos ('2000' e '2000.0' -- medido 06/09: 519
+ * cartas no formato .0 contra 28 no inteiro). Comparar string exata perdia
+ * a maioria. Isto ja tinha sido corrigido em `counters2k`/`counters1k`, mas
+ * SOBREVIVEU em 4 outros pontos, incluindo o proprio `avaliarMao` -- ou
+ * seja, a pontuacao das maos de abertura tratava counter como jogada normal
+ * em qualquer deck salvo no formato .0 (achado 07/09).
+ */
+function counterDe(card: Card): number {
+    return parseFloat(card.counter_amount || '0') || 0
 }
 
 // ── Helpers de classificação ──────────────────────────────────────────────────
@@ -316,7 +320,7 @@ function calcularBrick(deckCards: DeckCard[], totalCards: number) {
     const jogaveisAte = (donDisponivel: number) =>
         deckCards.reduce((soma, dc) => {
             const custo = parseInt(dc.card.card_cost || '99')
-            const ehCounter2k = dc.card.counter_amount === '2000'
+            const ehCounter2k = counterDe(dc.card) >= 2000
             return soma + (!ehCounter2k && custo >= 1 && custo <= donDisponivel ? dc.quantity : 0)
         }, 0)
 
@@ -402,7 +406,7 @@ function calcSearcherQuality(deckCards: DeckCard[]): number {
     if (total === 0) return 0.5
     const goodTargets = deckCards.reduce((s, dc) => {
         const cost = parseInt(dc.card.card_cost || '0')
-        const is2k = dc.card.counter_amount === '2000'
+        const is2k = counterDe(dc.card) >= 2000
         const isDeadWeight = is2k || cost === 0 || cost >= 8
         return s + (isDeadWeight ? 0 : dc.quantity)
     }, 0)
@@ -424,7 +428,7 @@ function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = nu
 
     mao.forEach(dc => {
         const cost = parseInt(dc.card.card_cost || '99')
-        const is2kCounter = dc.card.counter_amount === '2000'
+        const is2kCounter = counterDe(dc.card) >= 2000
         if (!is2kCounter && cost > 1) onlyCost1 = false
         // Cartas +2k não contam como jogada de turno — guarda para defesa
         if (!is2kCounter) {
@@ -442,7 +446,7 @@ function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = nu
         }
         if (isSearcher(dc, flags)) nSearcher++
         if (is2kCounter) nCounter2k++
-        if (dc.card.counter_amount === '1000') nCounter1k++
+        if (counterDe(dc.card) === 1000) nCounter1k++
         if (isEventCounter(dc, flags)) nEventCounter++
         if (isBlocker(dc, flags)) nBlocker++
         if (hasRush(dc, flags)) nRush++
@@ -493,7 +497,7 @@ function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = nu
     if (!hasT1Play && !effectiveT2) score -= Math.round(35 * mod.penT1Mult)
     if (!hasT1Play && !effectiveT2 && !effectiveT3) score -= 20
     // Mão toda de custo 1: boa largada mas sem gasolina no mid-game
-    if (onlyCost1 && mao.filter(dc => parseInt(dc.card.card_cost || '99') === 1 && dc.card.counter_amount !== '2000').length >= 3) score -= 15
+    if (onlyCost1 && mao.filter(dc => parseInt(dc.card.card_cost || '99') === 1 && counterDe(dc.card) < 2000).length >= 3) score -= 15
 
     // ── Regra da vida como recurso (dica #1 de gameplay) ──
     // Mão excessivamente defensiva em deck ofensivo é um problema:
@@ -512,35 +516,77 @@ function avaliarMao(mao: DeckCard[], flags: FlagsMap, bombId: string | null = nu
     return score
 }
 
-function gerarMelhoresMaos(deckCards: DeckCard[], flags: FlagsMap, arq: Arquetipo, qtd = 30000, goingFirst = true): DeckCard[][] {
+/** Uma mão de abertura avaliada, com a chance real de ela aparecer. */
+interface MaoAvaliada {
+    cartas: DeckCard[]
+    score: number
+    prob: number
+}
+
+/**
+ * Melhores mãos de abertura -- por ENUMERAÇÃO EXATA, não por amostragem.
+ *
+ * A versão anterior sorteava 30.000 mãos e mostrava as 3 melhores. Dois
+ * problemas (achado 07/09, quando o usuário pediu pra conferir "a forma de
+ * escolher"):
+ *
+ *   1. 30.000 sorteios cobrem **1,4%** das C(50,5) = 2.118.760 combinações.
+ *      A "melhor mão" era a melhor de uma amostra pequena, não a melhor.
+ *   2. Sendo sorteio, o resultado MUDAVA A CADA RECARGA da página -- a tela
+ *      apresentava como fato ("Top 3 de 30.000 simulações") algo que não
+ *      reproduzia.
+ *
+ * Mas o espaço REAL é muito menor: a mão é um multiconjunto de 5 cartas
+ * entre as ~15 DISTINTAS do deck, respeitando o número de cópias. No deck
+ * Krieg isso dá **11.109** mãos distintas -- enumerável na hora. O
+ * resultado passa a ser exato e determinístico.
+ *
+ * `prob` é a chance real da mão sair: produto de C(cópias_i, usadas_i)
+ * dividido por C(50,5). Serve pra não celebrar uma mão perfeita que
+ * aparece 1 vez em 20.000.
+ */
+function gerarMelhoresMaos(deckCards: DeckCard[], flags: FlagsMap, arq: Arquetipo,
+                           goingFirst = true): MaoAvaliada[] {
     const bombId = getDeckBombId(deckCards, flags)
     const searcherQuality = calcSearcherQuality(deckCards)
     const mod = getArqMod(arq)
-    // Ambos os jogadores compram 5 cartas no mulligan — o +1 do 2º é o draw do T1 dele, não da abertura
-    const handSize = 5
-    const deck: number[] = []
-    deckCards.forEach((dc, idx) => {
-        for (let q = 0; q < dc.quantity; q++) deck.push(idx)
-    })
-    const melhor: { mao: number[], score: number }[] = []
-    for (let i = 0; i < qtd; i++) {
-        const shuffled = fisherYates(deck)
-        const maoIdx = shuffled.slice(0, handSize)
-        const mao = maoIdx.map(idx => deckCards[idx])
-        melhor.push({ mao: maoIdx, score: avaliarMao(mao, flags, bombId, goingFirst, searcherQuality, mod) })
-    }
-    melhor.sort((a, b) => b.score - a.score)
-    const unicas: DeckCard[][] = []
-    const vistas = new Set<string>()
-    for (const { mao } of melhor) {
-        const key = mao.map(idx => deckCards[idx].card.card_set_id).sort().join(',')
-        if (!vistas.has(key)) {
-            vistas.add(key)
-            unicas.push(mao.map(idx => deckCards[idx]))
-            if (unicas.length >= 3) break
+    const HAND = 5
+    const totalDeck = deckCards.reduce((soma, dc) => soma + dc.quantity, 0)
+    const denom = combinacao(totalDeck, HAND)
+
+    const melhores: MaoAvaliada[] = []
+
+    // Multiconjuntos de 5 índices distintos-ou-repetidos, em ordem não
+    // decrescente, respeitando `quantity` de cada carta.
+    const atual: number[] = []
+    const anda = (inicio: number) => {
+        if (atual.length === HAND) {
+            const cartas = atual.map(i => deckCards[i])
+            const score = avaliarMao(cartas, flags, bombId, goingFirst, searcherQuality, mod)
+            // combinações que produzem exatamente este multiconjunto
+            let modos = 1
+            let i = 0
+            while (i < atual.length) {
+                let j = i
+                while (j < atual.length && atual[j] === atual[i]) j++
+                modos *= combinacao(deckCards[atual[i]].quantity, j - i)
+                i = j
+            }
+            melhores.push({ cartas, score, prob: denom > 0 ? modos / denom : 0 })
+            return
+        }
+        for (let i = inicio; i < deckCards.length; i++) {
+            const usadas = atual.filter(x => x === i).length
+            if (usadas >= deckCards[i].quantity) continue
+            atual.push(i)
+            anda(i)
+            atual.pop()
         }
     }
-    return unicas
+    anda(0)
+
+    melhores.sort((a, b) => b.score - a.score || b.prob - a.prob)
+    return melhores.slice(0, 3)
 }
 
 // DON!! real:  1º → T1=1, T2=3, T3=5, T4=7, T5=9 DON!!
@@ -683,8 +729,8 @@ function AnalysisPageContent() {
     const [cartasAbertas, setCartasAbertas] = useState<{ titulo: string; sub?: string; grupos: { rotulo: string; codes: string[] }[] } | null>(null)
     const [funcaoAberta, setFuncaoAberta] = useState<{ label: string; cards: DeckCard[] } | null>(null)
     const [simDone, setSimDone] = useState(false)
-    const [melhoresMaosP1, setMelhoresMaosP1] = useState<DeckCard[][]>([])
-    const [melhoresMaosP2, setMelhoresMaosP2] = useState<DeckCard[][]>([])
+    const [melhoresMaosP1, setMelhoresMaosP1] = useState<MaoAvaliada[]>([])
+    const [melhoresMaosP2, setMelhoresMaosP2] = useState<MaoAvaliada[]>([])
     const [arqDetectado, setArqDetectado] = useState<Arquetipo>('midrange')
     const [analise, setAnalise] = useState<AnaliseResult | null>(null)
     const [analiseLoading, setAnaliseLoading] = useState(false)
@@ -719,8 +765,8 @@ function AnalysisPageContent() {
         const flags = analise.cards
         const arq = arquetipoDoMotor(analise)
         setTimeout(() => {
-            const maosP1 = gerarMelhoresMaos(deck.cards, flags, arq, 30000, true)
-            const maosP2 = gerarMelhoresMaos(deck.cards, flags, arq, 30000, false)
+            const maosP1 = gerarMelhoresMaos(deck.cards, flags, arq, true)
+            const maosP2 = gerarMelhoresMaos(deck.cards, flags, arq, false)
             setArqDetectado(arq)
             setMelhoresMaosP1(maosP1)
             setMelhoresMaosP2(maosP2)
@@ -1913,7 +1959,7 @@ function AnalysisPageContent() {
                                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                                     <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1"><Icone size="text-2xl">🏆</Icone>Melhores Mãos de Abertura</div>
                                     <div className="flex items-center gap-3 mb-5">
-                                        <span className="text-xs text-gray-500">Top 3 de 30.000 simulações por posição · embaralhamento Fisher-Yates</span>
+                                        <span className="text-xs text-gray-500">As 3 melhores entre TODAS as mãos possíveis do deck · enumeração exata, não amostragem</span>
                                         <span className="text-xs px-2 py-0.5 rounded font-medium bg-gray-700 text-gray-300">
                                             Arquétipo detectado: <span className="text-orange-400 font-bold capitalize">{arqDetectado}</span>
                                         </span>
@@ -1923,14 +1969,21 @@ function AnalysisPageContent() {
                                     <div className="mb-6">
                                         <div className="flex items-center gap-2 mb-3">
                                             <span className="bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded">1º Jogador</span>
-                                            <span className="text-xs text-gray-500">5 cartas · T1=custo 1 · T2=custo 2 · T3=custo 3-4</span>
+                                            <span className="text-xs text-gray-500">5 cartas · T1: 1 DON · T2: 3 DON · T3: 5 DON</span>
                                         </div>
                                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                             {melhoresMaosP1.map((mao, mi) => (
                                                 <div key={mi} className="bg-gray-800 rounded-xl p-4">
-                                                    <div className="text-sm font-bold text-white mb-3">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</div>
+                                                    <div className="flex items-baseline justify-between mb-3">
+                                                        <span className="text-sm font-bold text-white">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</span>
+                                                        {/* chance REAL desta mão sair: serve pra não celebrar uma mão
+                                                            perfeita que aparece 1 vez em 20.000 */}
+                                                        <span className="text-xs text-gray-500" title="chance desta mão exata sair">
+                                                            1 em {mao.prob > 0 ? Math.round(1 / mao.prob).toLocaleString('pt-BR') : '∞'}
+                                                        </span>
+                                                    </div>
                                                     <div className="flex gap-3 flex-wrap">
-                                                        {mao.map((dc, ci) => (
+                                                        {mao.cartas.map((dc, ci) => (
                                                             <div key={ci} className="flex flex-col items-center gap-0.5">
                                                                 <CardImage src={dc.card.card_image} alt={dc.card.card_name} className="w-24 h-[134px] object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
                                                                 <span className="text-gray-400 text-center text-xs leading-tight" style={{ width: '96px' }}>
@@ -1948,14 +2001,21 @@ function AnalysisPageContent() {
                                     <div>
                                         <div className="flex items-center gap-2 mb-3">
                                             <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">2º Jogador</span>
-                                            <span className="text-xs text-gray-500">5 cartas · T1=custo 1-2 · T2=custo 3-4 · T3=custo 5-6</span>
+                                            <span className="text-xs text-gray-500">5 cartas · T1: 2 DON · T2: 4 DON · T3: 6 DON</span>
                                         </div>
                                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                             {melhoresMaosP2.map((mao, mi) => (
                                                 <div key={mi} className="bg-gray-800 rounded-xl p-4">
-                                                    <div className="text-sm font-bold text-white mb-3">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</div>
+                                                    <div className="flex items-baseline justify-between mb-3">
+                                                        <span className="text-sm font-bold text-white">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</span>
+                                                        {/* chance REAL desta mão sair: serve pra não celebrar uma mão
+                                                            perfeita que aparece 1 vez em 20.000 */}
+                                                        <span className="text-xs text-gray-500" title="chance desta mão exata sair">
+                                                            1 em {mao.prob > 0 ? Math.round(1 / mao.prob).toLocaleString('pt-BR') : '∞'}
+                                                        </span>
+                                                    </div>
                                                     <div className="flex gap-3 flex-wrap">
-                                                        {mao.map((dc, ci) => (
+                                                        {mao.cartas.map((dc, ci) => (
                                                             <div key={ci} className="flex flex-col items-center gap-0.5">
                                                                 <CardImage src={dc.card.card_image} alt={dc.card.card_name} className="w-24 h-[134px] object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
                                                                 <span className="text-gray-400 text-center text-xs leading-tight" style={{ width: '96px' }}>
