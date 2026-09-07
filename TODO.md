@@ -19,8 +19,15 @@
 > cartas nao tem `card_image`** (as promos `P-` transcritas na mao). As 26
 > imagens passaram a usar `src/components/CardImage.tsx`, com placeholder
 > pra `src` vazio e pra 404. `remotePatterns` no `next.config.ts`.
-> **Pendente**: `/analysis` com deck real nao foi aberta (navegador de
-> preview nao logado na conta do usuario); 219 cartas seguem sem arte.
+> (6) **Conferido na tela real com o deck Krieg** (usuario logou e mandou
+> screenshot): imagens migradas OK, mas a propria tela revelou 2 bugs meus.
+> **"DEFENSIVO 104% do deck"** -- o `%` do grupo somava funcoes que se
+> SOBREPOEM (10 blocker + 36 counter + 6 trigger = 52 num deck de 50);
+> agora conta cartas distintas, **104% -> 80%**. E **"Counter 36" contra
+> "ideal 8-12"** -- a linha somava counter 1000+2000 enquanto
+> `deck_analyzer.py:280` conta so >= 2000; o deck tem **10 de 2000, dentro
+> do ideal**, e 26 de 1000. Virou duas linhas separadas.
+> **Pendente**: 219 cartas seguem sem arte (placeholder e paliativo).
 
 > 05/09/2026 (bloco 751): **Tela de analise mentia em dois lugares, mesma
 > causa raiz** -- consumidor reinterpretando `card_text` por substring em

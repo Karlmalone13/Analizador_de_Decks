@@ -109,9 +109,33 @@ deck real NAO foi aberta**: o navegador de preview desta sessao nao esta
 logado na conta do usuario (RLS -> "Deck nao encontrado") e credencial
 nao e coisa que eu digite. Fica como unico item por conferir no olho.
 
+### 3. Conferencia na tela real (06/09, depois do push) -- 2 bugs achados
+
+O usuario logou e mandou a screenshot da `/analysis` do deck Krieg. As
+imagens migradas estao CERTAS (arte do lider grande e sem corte, nada
+esticado ou colapsado) e o `draws_ativo` confirmou: Draw Power = 2. Mas a
+propria screenshot mostrou dois numeros que nao fecham, os dois meus:
+
+- **"DEFENSIVO: 104% do deck"**. As funcoes se SOBREPOEM (a mesma carta e
+  Blocker, tem Counter e tem Trigger) e o `%` do grupo somava as linhas:
+  10+36+6 = 52 num deck de 50. Corrigido contando cartas DISTINTAS por
+  grupo (Set de `card.id`): **104% -> 80%**. Ofensivo e Consistencia nao
+  mudaram (8% e 20%) porque suas linhas nao se sobrepoem neste deck.
+- **"Counter 36" ao lado de "ideal 8-12"**. A linha somava counter 1000 +
+  2000, mas `deck_analyzer.py:280` conta **so `counter >= 2000`** nesse
+  ratio. O Krieg tem **10 de 2000 (DENTRO do ideal) e 26 de 1000** -- a
+  tela fazia um deck ok parecer o triplo do teto. Mesma classe do bloco
+  751: consumidor redefinindo o que o motor ja define. Viraram duas
+  linhas, `Counter 2000` (carrega o ideal do motor) e `Counter 1000`
+  (sem ideal, porque o motor nao publica um pra ele).
+
+Licao repetida: `next build` + `tsc` + `eslint` limpos nao dizem NADA
+sobre numero errado na tela. Os dois bugs estavam visiveis na primeira
+screenshot da pagina rodando com deck real.
+
 ### Pendente
 
-- Abrir `/analysis` logado e conferir o layout das imagens migradas.
+- ~~Abrir `/analysis` logado~~ FEITO (secao 3) -- imagens OK, 2 bugs de numero achados e corrigidos.
 - 219 cartas sem arte continuam sem arte -- o placeholder e paliativo, nao
   conserta o dado. As imagens existem na pasta do jogo (bloco 748).
 

@@ -785,7 +785,6 @@ function AnalysisPageContent() {
     // não é draw power (e já é contada na linha Trigger) -- ver o comentário
     // em gerar_card_analysis_db.py.
     const drawPower = allCards.filter(dc => !!flagsOf(dc, cardFlags)?.draws_ativo)
-    const counters = allCards.filter(dc => dc.card.counter_amount && dc.card.counter_amount !== '0')
     const counters2k = allCards.filter(dc => dc.card.counter_amount === '2000')
     const counters1k = allCards.filter(dc => dc.card.counter_amount === '1000')
     const unblockable = allCards.filter(dc => !!flagsOf(dc, cardFlags)?.has_unblockable)
@@ -917,7 +916,17 @@ function AnalysisPageContent() {
         { label: 'Banish', cards: banish, color: 'bg-purple-600', grupo: 'Ofensivo' },
         { label: 'Unblockable', cards: unblockable, color: 'bg-pink-600', grupo: 'Ofensivo' },
         { label: 'Blocker', cards: blockers, color: 'bg-blue-600', grupo: 'Defensivo', ratio: ratioDe('blockers') },
-        { label: 'Counter', cards: counters, color: 'bg-sky-600', grupo: 'Defensivo', ratio: ratioDe('counters') },
+        // Counter SEPARADO por valor, e so o de 2000 carrega o ideal do motor.
+        // Achado 06/09 (deck Krieg): a linha unica somava 1000+2000 e dava 36,
+        // exibido ao lado de "ideal 8-12" -- mas `deck_analyzer.py:280` conta
+        // SO `counter >= 2000` nesse ratio. O deck tem 10 de 2000, ou seja
+        // DENTRO do ideal, e a tela fazia parecer o triplo do teto. Mesma
+        // classe de erro do bloco 751: o consumidor redefinindo o que o motor
+        // ja define. Quem exibe o ideal do motor tem que contar o que o motor
+        // conta; o counter de 1000 vira linha propria, sem ideal (o motor nao
+        // publica um pra ele).
+        { label: 'Counter 2000', cards: counters2k, color: 'bg-sky-600', grupo: 'Defensivo', ratio: ratioDe('counters') },
+        { label: 'Counter 1000', cards: counters1k, color: 'bg-sky-800', grupo: 'Defensivo' },
         { label: 'Trigger', cards: triggers, color: 'bg-yellow-600', grupo: 'Defensivo' },
         { label: 'Searcher', cards: searchers, color: 'bg-green-600', grupo: 'Consistência', ratio: ratioDe('searchers') },
         { label: 'Draw Power', cards: drawPower, color: 'bg-teal-600', grupo: 'Consistência' },
@@ -985,7 +994,23 @@ function AnalysisPageContent() {
                         <div className="space-y-4">
                             {gruposFuncao.map(grupo => {
                                 const doGrupo = funcoes.filter(f => f.grupo === grupo)
-                                const totalGrupo = doGrupo.reduce((s, f) => s + countQty(f.cards), 0)
+                                // Cartas DISTINTAS do grupo, nao a soma das linhas.
+                                // Achado 06/09 (deck Krieg): "DEFENSIVO 104% do
+                                // deck". As funcoes se SOBREPOEM -- a mesma carta
+                                // e Blocker, tem Counter e tem Trigger -- entao
+                                // somar 10+36+6 num deck de 50 passa de 100%.
+                                // Contar cada carta uma vez so mantem a leitura
+                                // "quanto do deck cumpre alguma funcao do grupo",
+                                // que e o que a legenda promete.
+                                const idsGrupo = new Set<string>()
+                                let totalGrupo = 0
+                                for (const f of doGrupo) {
+                                    for (const dc of f.cards) {
+                                        if (idsGrupo.has(dc.card.id)) continue
+                                        idsGrupo.add(dc.card.id)
+                                        totalGrupo += dc.quantity
+                                    }
+                                }
                                 return (
                                     <div key={grupo}>
                                         <div className="flex items-baseline justify-between mb-1.5">
