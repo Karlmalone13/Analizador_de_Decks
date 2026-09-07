@@ -82,6 +82,7 @@ interface AnaliseResult {
     synergies: AnaliseSynergy[]
     cards?: Record<string, CardFlags>
     opening_benchmarks?: { n_decks: number; metricas: Record<string, Benchmark> }
+    axes?: Record<string, { bruto: number; detalhes: { tipo: string; desc: string; n?: number; pontos?: number }[] }>
     tribal_cohesion?: {
         leader_type: string
         label: string
@@ -921,6 +922,29 @@ function AnalysisPageContent() {
     // <=3.5 ideal, <=4.5 pesado) eram inventadas e REPROVAVAM MAIS DA METADE
     // dos decks de torneio -- a mediana real e 3,74. Aqui menos e melhor,
     // entao os quartis entram invertidos.
+    // ── Sinergia / Defesa / Ataque ────────────────────────────────────────
+    // Vem do MOTOR (`/analyze` -> `axes`, ver `deck_axes.py`), calculados dos
+    // efeitos PARSEADOS. O front so posiciona contra o meta e exibe.
+    //
+    // Por que existem (pedido do usuario, 06/09): o painel inteiro media so a
+    // ABERTURA -- todos os 8 tiles respondiam "qual a chance de eu ter isso
+    // nas 5 primeiras cartas?" -- e o Score saia dai. Nao havia nada sobre
+    // INTERACAO entre cartas, e defesa era so "tenho blocker?". O usuario:
+    // "esse 49 tem que ser a sinergia do deck e capacidade de defesa etc".
+    const eixos = [
+        { chave: 'sinergia', bench: 'eixo_sinergia', label: 'Sinergia', icon: '🔗',
+          sub: 'as cartas trabalham juntas?' },
+        { chave: 'defesa', bench: 'eixo_defesa', label: 'Defesa', icon: '🛡️',
+          sub: 'aguenta a pressao?' },
+        { chave: 'ataque', bench: 'eixo_ataque', label: 'Ataque', icon: '⚔️',
+          sub: 'consegue fechar?' },
+    ].map(e => {
+        const dados = analise?.axes?.[e.chave]
+        const b = bench(e.bench)
+        const nota = dados ? Math.round(posicaoNoMeta(dados.bruto, b) * 100) : null
+        return { ...e, bruto: dados?.bruto ?? null, detalhes: dados?.detalhes ?? [], b, nota }
+    })
+
     const benchCusto = bench('custo_medio')
     const custoClass = (() => {
         if (!benchCusto) return { label: '—', color: 'text-gray-300' }
@@ -1271,6 +1295,59 @@ function AnalysisPageContent() {
                     </div>
                 </div>
 
+                {/* ── PERFIL DE JOGO: sinergia / defesa / ataque ────────────────
+                    Substitui o antigo numero unico ("Score de Consistencia"),
+                    que saia SO da mao inicial. Pedido do usuario, 06/09: "esse
+                    49 tem que ser a sinergia do deck e capacidade de defesa
+                    etc". Os tres eixos vem do motor (`deck_axes.py`), dos
+                    efeitos parseados, e a nota 0-100 e a posicao do deck entre
+                    os decks de torneio -- nao um teto inventado. */}
+                {eixos.some(e => e.nota !== null) && (
+                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                        <div className="flex items-baseline justify-between mb-1">
+                            <div className="text-sm font-semibold text-gray-300 uppercase tracking-wide">⚔️ Perfil de Jogo</div>
+                            <div className="text-xs text-gray-500">
+                                0-100 = posição entre {analise?.opening_benchmarks?.n_decks ?? 184} decks de torneio · 50 = mediano
+                            </div>
+                        </div>
+                        <div className="text-xs text-gray-500 mb-5">
+                            Calculado dos efeitos das cartas pelo motor, não da mão inicial.
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            {eixos.map(e => {
+                                const n = e.nota ?? 0
+                                const cor = n >= 75 ? 'text-green-400' : n >= 58 ? 'text-lime-400'
+                                    : n >= 43 ? 'text-yellow-400' : n >= 25 ? 'text-orange-400' : 'text-red-400'
+                                const barra = n >= 75 ? 'bg-green-500' : n >= 58 ? 'bg-lime-500'
+                                    : n >= 43 ? 'bg-yellow-500' : n >= 25 ? 'bg-orange-500' : 'bg-red-500'
+                                const leitura = n >= 75 ? 'Bem acima do meta' : n >= 58 ? 'Acima do meta'
+                                    : n >= 43 ? 'Na média do meta' : n >= 25 ? 'Abaixo do meta' : 'Bem abaixo do meta'
+                                return (
+                                    <div key={e.chave} className="bg-gray-800 rounded-xl p-5">
+                                        <div className="flex items-baseline justify-between mb-1">
+                                            <span className="text-base font-semibold text-white">{e.icon} {e.label}</span>
+                                            <span className={`text-3xl font-black tabular-nums ${cor}`}>{n}</span>
+                                        </div>
+                                        <div className="text-xs text-gray-500 mb-2">{e.sub}</div>
+                                        <div className="w-full bg-gray-700 rounded-full h-2 mb-1.5">
+                                            <div className={`h-2 rounded-full transition-all ${barra}`} style={{ width: `${n}%` }} />
+                                        </div>
+                                        <div className={`text-xs font-semibold mb-3 ${cor}`}>{leitura}</div>
+                                        <ul className="space-y-1">
+                                            {e.detalhes.map((d, i) => (
+                                                <li key={i} className="text-xs text-gray-400 leading-snug flex gap-1.5">
+                                                    <span className="text-gray-600">•</span>
+                                                    <span>{d.desc}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                )}
+
                 {/* ANALISADOR INTELIGENTE */}
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                     <div className="flex items-start justify-between mb-6">
@@ -1284,8 +1361,8 @@ function AnalysisPageContent() {
                             <div className="text-center bg-gray-800 rounded-2xl px-6 py-3">
                                 <div className={`text-5xl font-black ${scoreColor}`}>{consistScore}</div>
                                 <div className={`text-sm font-bold mt-1 ${scoreColor}`}>{scoreLabel}</div>
-                                <div className="text-xs text-gray-500 mt-0.5">Posição vs. meta (0-100)</div>
-                                <div className="text-xs text-gray-600 mt-0.5">50 = deck mediano de torneio</div>
+                                <div className="text-xs text-gray-500 mt-0.5">Consistência da ABERTURA (0-100)</div>
+                                <div className="text-xs text-gray-600 mt-0.5">só a mão inicial · 50 = mediano</div>
                             </div>
                             <div className="bg-gray-800 rounded-2xl px-4 py-3 text-xs space-y-1.5">
                                 <div className="text-gray-400 font-semibold mb-2 uppercase tracking-wide">Índice</div>

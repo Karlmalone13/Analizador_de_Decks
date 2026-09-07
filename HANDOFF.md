@@ -274,6 +274,59 @@ n=5) e nao existem mais. Na vida (n=4) da 41,1%, conferido com 2.000.000 de
 setups reais simulados (embaralha, 5 pra mao, 4 pra vida): 41,03% contra
 41,05% da formula. Registrado porque a mesma duvida ja voltou duas vezes.
 
+### 8. Eixos SINERGIA / DEFESA / ATAQUE (`deck_axes.py`) -- o "49" virou tres numeros
+
+Pedido do usuario depois de eu listar os defeitos do painel: *"comeca por
+sinergia, defesa e ataque"*. Modulo novo `scriptis_da_ia/deck_axes.py`,
+calculado no MOTOR a partir dos efeitos PARSEADOS, exposto em
+`/analyze -> axes`, e o front so exibe.
+
+- **Sinergia**: `detect_deck_synergies` (que ja existia no motor e o painel
+  IGNORAVA) + cobertura de busca (um searcher de {East Blue} num deck sem
+  East Blue e carta morta, e "8 searchers" nao enxerga isso) + gancho tribal
+  via `referenced_types` + payoff de DON.
+- **Defesa**: poder de counter TOTAL (recurso gasto por turno, em vez de
+  "chance de ter pelo menos 1", que satura) + eventos [Counter] + blockers
+  ponderados por poder/custo + remocao + **vida do lider como
+  multiplicador** (4 de vida aguenta 20% menos que 5 -- antes esse numero so
+  servia pro trigger).
+- **Ataque**: poder por custo + Rush/Double/Unblockable/Banish + buff +
+  remocao (tirar blocker da frente e ATAQUE, nao defesa -- por isso entra
+  nos dois eixos, com pesos diferentes).
+
+Calibrados nos mesmos 184 decks (`eixo_sinergia` p25/med/p75 = 30,2/34,8/59,4;
+`defesa` 65,0/70,1/84,5; `ataque` 59,7/64,2/71,1). Krieg: **Sinergia 100,
+Defesa 58, Ataque 90**, e a sinergia alta tem motivo nomeado -- o deck roda
+"DON ao oponente + punir quem tem DON", que e a mecanica do proprio lider.
+
+**Armadilha achada ao calibrar**: `api.py` monta o main deck como lista
+REPETIDA (uma entrada por copia) e eu tinha calibrado com `quantity`
+anexado. `detect_deck_synergies` conta POR ENTRADA, entao as duas convencoes
+davam numeros diferentes pro mesmo deck (mediana de sinergia 27,0 x 34,8).
+Alinhado na convencao do motor.
+
+**Limite declarado no docstring do modulo**: os PESOS continuam escolhidos
+por mim, nao validados contra vitoria. E o mesmo defeito que os cortes
+tinham antes de virarem percentis -- so que agora esta num lugar so e
+declarado. Validar = comparar eixo x winrate simulado dos 184 decks.
+
+### PENDENCIA ABERTA: 6 falhas no `smoke_fast.py` que NAO sao desta sessao
+
+`smoke_fast.py` passava (0 falhas) no inicio da sessao e agora da 6, todas
+da familia contrafactual/Monte Carlo/telemetria
+(`sim_bridge.choose_action(..., timeout=3.0)`).
+
+**NAO e regressao de codigo, e foi provado**: as mesmas 6 falham no HEAD
+limpo em worktree separado, E falham no commit `742454e` que tinha dado 0
+poucos minutos antes. Uma bissecao apontou `40af981` como culpado, mas esse
+commit so toca front/calibracao/docs -- reexecutar `742454e` depois passou a
+falhar tambem, ou seja **a bissecao estava medindo estado, nao commit**.
+Descartados: diferenca de conteudo (`card_effects_db.json` identico ao
+commitado, so mtime tocado), drive E: ausente (esta montado), env var
+`OPTCG_*` (nenhuma setada). Nao isolado ainda -- proxima sessao deve
+comecar rodando `smoke_fast.py` numa maquina descarregada antes de assumir
+qualquer coisa sobre o motor.
+
 ### Pendente
 
 - ~~Abrir `/analysis` logado~~ FEITO (secao 3) -- imagens OK, 2 bugs de numero achados e corrigidos.

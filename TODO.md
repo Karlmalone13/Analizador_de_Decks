@@ -71,6 +71,13 @@
 > tela. Corrigido.
 > (16) Trigger na vida com 6 copias = **41,1%**, conferido com 2M de setups
 > reais simulados (41,03%). Os 48,7% eram do tile ANTIGO de mao (n=5).
+> (17) **Eixos SINERGIA/DEFESA/ATAQUE** (`deck_axes.py`, novo): o numero
+> unico saia so da mao inicial; agora tres eixos saem dos efeitos parseados
+> no motor, calibrados nos 184 decks. Krieg: Sinergia 100, Defesa 58,
+> Ataque 90. Pesos ainda nao validados contra vitoria (declarado no modulo).
+> (18) **PENDENCIA**: `smoke_fast.py` da 6 falhas de Monte Carlo/telemetria
+> que **nao sao desta sessao** -- reproduzem no HEAD limpo e num commit que
+> passou minutos antes, entao e estado de maquina, nao codigo. Nao isolado.
 > **Pendente**: 219 cartas seguem sem arte (placeholder e paliativo).
 
 > 05/09/2026 (bloco 751): **Tela de analise mentia em dois lugares, mesma

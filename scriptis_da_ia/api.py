@@ -28,6 +28,7 @@ from typing import Optional
 import pandas as pd
 
 from deck_analyzer import analyze_deck
+from deck_axes import compute_deck_axes
 
 # Percentis de abertura medidos nos 184 decks de torneio reais
 # (`calibrar_percentis_abertura.py`). Substituem os `ideal` HARDCODED que o
@@ -189,6 +190,12 @@ def analyze(req: DeckRequest):
     # reimplementa a logica"). A matematica de maos pode seguir no navegador
     # -- ela estava certa; o errado era a CLASSIFICACAO que a alimentava.
     result['cards'] = por_carta
+    # Tres eixos (sinergia/defesa/ataque) calculados no MOTOR a partir dos
+    # efeitos parseados -- o front so exibe. Ver `deck_axes.py` pro porque.
+    try:
+        result['axes'] = compute_deck_axes(leader, main)
+    except Exception as e:   # nunca derrubar /analyze por causa dos eixos
+        result['axes_error'] = str(e)
     if _PERCENTIS_ABERTURA:
         result['opening_benchmarks'] = _PERCENTIS_ABERTURA
     if missing:

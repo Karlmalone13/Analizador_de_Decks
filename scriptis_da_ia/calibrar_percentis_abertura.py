@@ -33,6 +33,8 @@ import statistics
 from math import comb
 from pathlib import Path
 
+from deck_axes import compute_deck_axes
+
 AQUI = Path(__file__).parent
 SAIDA = AQUI / 'percentis_abertura.json'
 
@@ -54,6 +56,10 @@ METRICA_VIDA = 'trigger_vida'
 # Custo medio do main deck. Entra aqui porque o Score de Consistencia
 # comparava contra faixas fixas (<=2.5 / <=3.5 / <=4.5) tambem inventadas.
 METRICA_CUSTO = 'custo_medio'
+# Eixos de SINERGIA/DEFESA/ATAQUE (`deck_axes.py`). Sao numeros crus sem teto
+# natural, entao so significam alguma coisa comparados ao meta -- por isso
+# entram na mesma calibracao.
+METRICAS_EIXOS = ['eixo_sinergia', 'eixo_defesa', 'eixo_ataque']
 
 
 def _num(v):
@@ -116,7 +122,7 @@ def main():
         for r in csv.DictReader(f):
             decks[r['deck_url']][r['card_code']] = int(r['qty'])
 
-    dist = {m: [] for m in list(METRICAS) + [METRICA_VIDA, METRICA_CUSTO]}
+    dist = {m: [] for m in list(METRICAS) + [METRICA_VIDA, METRICA_CUSTO] + METRICAS_EIXOS}
     usados = 0
     for _url, d in decks.items():
         main_qty = sum(q for code, q in d.items()
@@ -157,10 +163,37 @@ def main():
         if qtd:
             dist[METRICA_CUSTO].append(soma / qtd)
 
+        # Eixos: precisam das entradas do analysis_db com `quantity` anexado
+        lider_info = None
+        main_info = []
+        for code, q in d.items():
+            c = cards.get(code)
+            if not c:
+                continue
+            info = dict(adb.get(code) or {})
+            if not info:
+                continue
+            if (c.get('card_type') or '').lower() == 'leader':
+                lider_info = info
+            else:
+                # Lista REPETIDA (uma entrada por copia), a mesma convencao que
+                # `api.py`/`deck_analyzer.py` usam -- `detect_deck_synergies`
+                # conta POR ENTRADA, entao anexar `quantity` aqui e repetir la
+                # dariam numeros diferentes pro mesmo deck.
+                main_info.extend([info] * q)
+        if lider_info and main_info:
+            eixos = compute_deck_axes(lider_info, main_info)
+            dist['eixo_sinergia'].append(eixos['sinergia']['bruto'])
+            dist['eixo_defesa'].append(eixos['defesa']['bruto'])
+            dist['eixo_ataque'].append(eixos['ataque']['bruto'])
+
     out = {'n_decks': usados, 'fonte': 'decklists_raw.csv', 'metricas': {}}
-    for m in list(METRICAS) + [METRICA_VIDA, METRICA_CUSTO]:
+    for m in list(METRICAS) + [METRICA_VIDA, METRICA_CUSTO] + METRICAS_EIXOS:
         v = sorted(dist[m])
         k = len(v)
+        if not k:
+            print(f'AVISO: sem amostra para {m}, metrica omitida')
+            continue
         def q(p):
             return round(v[min(k - 1, int(p * k))], 4)
         out['metricas'][m] = {
@@ -169,11 +202,13 @@ def main():
 
     print(f'{usados} decks de torneio')
     print(f"{'metrica':11s} {'p25':>8s} {'mediana':>8s} {'p75':>8s}")
-    for m in list(METRICAS) + [METRICA_VIDA, METRICA_CUSTO]:
+    for m in list(METRICAS) + [METRICA_VIDA, METRICA_CUSTO] + METRICAS_EIXOS:
         e = out['metricas'][m]
         # custo_medio e CUSTO, nao probabilidade -- imprimir com *100 dava
         # "374,0%" pra um custo medio de 3,74 e confundia a leitura.
-        if m == METRICA_CUSTO:
+        if m in METRICAS_EIXOS:
+            print(f"{m:13s} {e['p25']:8.1f} {e['mediana']:8.1f} {e['p75']:8.1f}   (bruto, nao %)")
+        elif m == METRICA_CUSTO:
             print(f"{m:11s} {e['p25']:8.2f} {e['mediana']:8.2f} {e['p75']:8.2f}   (custo, nao %)")
         else:
             print(f"{m:11s} {e['p25']*100:7.1f}% {e['mediana']*100:7.1f}% {e['p75']*100:7.1f}%")
