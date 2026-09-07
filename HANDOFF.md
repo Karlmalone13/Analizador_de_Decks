@@ -444,6 +444,14 @@ painel do LIDER, que sobrava espaco vazio embaixo. Faz sentido alem do
 espaco: a lista e o detalhe natural de quem esta olhando o deck, nao um
 painel de analise. A faixa voltou a ser de 3.
 
+**Cartas dos popups aumentadas** (usuario: *"aumente a imagem de todos
+esses icones aqui, estao bem pequenos"*). Elas tinham sido dimensionadas
+quando os blocos eram INLINE e disputavam espaco na pagina -- restricao que
+morreu junto com a mudanca pra popup, e ninguem tinha revisado os tamanhos.
+Plano de Jogo: **28x40 -> 80x112** (as cartas eram ilegiveis, praticamente
+um icone). Melhores Maos: **56x80 -> 96x134**, e o nome da carta saiu de
+`fontSize: 9px` truncado em 10 caracteres pra `text-xs` truncado em 18.
+
 **Deixados inline de proposito**: distribuicoes por tipo/cor e curva de
 custo (compactas e de leitura rapida), Coesao Tribal (compacta).
 

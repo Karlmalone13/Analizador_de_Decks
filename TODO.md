@@ -90,6 +90,10 @@
 > meus de medicao no caminho (bissecao com maquina carregada apontou um
 > commit de front; e declarei a hipotese descartada medindo cedo demais) --
 > os dois em `REPROVADOS.md`.
+> (28) Cartas dos popups aumentadas: Plano de Jogo **28x40 -> 80x112** e
+> Melhores Maos **56x80 -> 96x134** (nome de 9px pra text-xs). Os tamanhos
+> vinham de quando os blocos eram inline e disputavam espaco -- restricao
+> que morreu na mudanca pra popup e ninguem tinha revisado.
 > (27) Botao "Lista do deck" saiu da faixa e foi pro espaco vazio abaixo do
 > lider, a pedido do usuario. Faixa voltou a 3 botoes.
 > (26) Faixa dos 4 botoes movida pra logo ABAIXO do Perfil de Jogo (estava

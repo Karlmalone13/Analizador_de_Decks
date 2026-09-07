@@ -1917,12 +1917,12 @@ function AnalysisPageContent() {
                                             {melhoresMaosP1.map((mao, mi) => (
                                                 <div key={mi} className="bg-gray-800 rounded-xl p-4">
                                                     <div className="text-sm font-bold text-white mb-3">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</div>
-                                                    <div className="flex gap-1.5 flex-wrap">
+                                                    <div className="flex gap-3 flex-wrap">
                                                         {mao.map((dc, ci) => (
                                                             <div key={ci} className="flex flex-col items-center gap-0.5">
-                                                                <CardImage src={dc.card.card_image} alt={dc.card.card_name} className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
-                                                                <span className="text-gray-400 text-center" style={{ width: '56px', fontSize: '9px' }}>
-                                                                    {dc.card.card_name.length > 10 ? dc.card.card_name.slice(0, 10) + '…' : dc.card.card_name}
+                                                                <CardImage src={dc.card.card_image} alt={dc.card.card_name} className="w-24 h-[134px] object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
+                                                                <span className="text-gray-400 text-center text-xs leading-tight" style={{ width: '96px' }}>
+                                                                    {dc.card.card_name.length > 18 ? dc.card.card_name.slice(0, 18) + '…' : dc.card.card_name}
                                                                 </span>
                                                             </div>
                                                         ))}
@@ -1942,12 +1942,12 @@ function AnalysisPageContent() {
                                             {melhoresMaosP2.map((mao, mi) => (
                                                 <div key={mi} className="bg-gray-800 rounded-xl p-4">
                                                     <div className="text-sm font-bold text-white mb-3">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</div>
-                                                    <div className="flex gap-1.5 flex-wrap">
+                                                    <div className="flex gap-3 flex-wrap">
                                                         {mao.map((dc, ci) => (
                                                             <div key={ci} className="flex flex-col items-center gap-0.5">
-                                                                <CardImage src={dc.card.card_image} alt={dc.card.card_name} className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
-                                                                <span className="text-gray-400 text-center" style={{ width: '56px', fontSize: '9px' }}>
-                                                                    {dc.card.card_name.length > 10 ? dc.card.card_name.slice(0, 10) + '…' : dc.card.card_name}
+                                                                <CardImage src={dc.card.card_image} alt={dc.card.card_name} className="w-24 h-[134px] object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
+                                                                <span className="text-gray-400 text-center text-xs leading-tight" style={{ width: '96px' }}>
+                                                                    {dc.card.card_name.length > 18 ? dc.card.card_name.slice(0, 18) + '…' : dc.card.card_name}
                                                                 </span>
                                                             </div>
                                                         ))}
@@ -1991,9 +1991,9 @@ function AnalysisPageContent() {
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="text-xs text-gray-300 mb-1.5 leading-snug">{sugestao1}</div>
-                                                        <div className="flex gap-1 flex-wrap">
+                                                        <div className="flex gap-2 flex-wrap">
                                                             {cartas1.map((dc, i) => (
-                                                                <CardImage key={i} src={dc.card.card_image} alt={dc.card.card_name} className="w-7 h-10 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
+                                                                <CardImage key={i} src={dc.card.card_image} alt={dc.card.card_name} className="w-20 h-28 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
                                                             ))}
                                                         </div>
                                                     </div>
@@ -2017,9 +2017,9 @@ function AnalysisPageContent() {
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="text-xs text-gray-300 mb-1.5 leading-snug">{sugestao2}</div>
-                                                        <div className="flex gap-1 flex-wrap">
+                                                        <div className="flex gap-2 flex-wrap">
                                                             {cartas2.map((dc, i) => (
-                                                                <CardImage key={i} src={dc.card.card_image} alt={dc.card.card_name} className="w-7 h-10 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
+                                                                <CardImage key={i} src={dc.card.card_image} alt={dc.card.card_name} className="w-20 h-28 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
                                                             ))}
                                                         </div>
                                                     </div>
