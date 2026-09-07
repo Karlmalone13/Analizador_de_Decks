@@ -663,6 +663,7 @@ function AnalysisPageContent() {
     // Popup "quais cartas cumprem esta função" — evita repetir miniaturas em
     // toda linha da composição só pra mostrar quais cartas entraram na conta.
     const [comprasAberto, setComprasAberto] = useState(false)
+    const [painelAberto, setPainelAberto] = useState<'brick' | 'maos' | 'plano' | null>(null)
     // Popup generico "quais cartas sao essas": alimentado por LISTAS DE CODIGO
     // que o MOTOR devolve (`ratios[].codes`, `synergies[].creator_codes`), nunca
     // por uma reclassificacao feita aqui -- seria reimplementar a deteccao no
@@ -1617,96 +1618,31 @@ function AnalysisPageContent() {
                         )}
                     </div>
                 )}
-                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
-                    <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1">💀 Risco de Mão Travada</div>
-                    <div className="text-xs text-gray-500 mb-4">
-                        Probabilidade exata (hipergeométrica) de abrir 5 cartas sem nenhuma jogada possível.
-                        Counters 2000 não contam como jogada — eles são guardados para defesa.
-                    </div>
-                    {brickStats && (
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                            {brickStats.map(({ label, value, desc }) => {
-                                const good = value < 0.10
-                                const ok = value < 0.20
-                                const color = good ? 'text-green-400' : ok ? 'text-yellow-400' : 'text-red-400'
-                                const bar = good ? 'bg-green-500' : ok ? 'bg-yellow-500' : 'bg-red-500'
-                                return (
-                                    <div key={label} className="bg-gray-800 rounded-xl p-4 text-center">
-                                        <div className={`text-2xl font-black ${color}`}>{pct(value)}</div>
-                                        <div className="w-full bg-gray-700 rounded-full h-1.5 my-2">
-                                            <div className={`h-1.5 rounded-full ${bar}`} style={{ width: `${value * 100}%` }} />
-                                        </div>
-                                        <div className="text-xs font-semibold text-gray-300">{label}</div>
-                                        <div className="text-xs text-gray-500 mt-1">{desc}</div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    )}
-                </div>
-
-                {/* MELHOR MÃO */}
-                {simDone && (melhoresMaosP1.length > 0 || melhoresMaosP2.length > 0) && (
-                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
-                        <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1">🏆 Melhores Mãos de Abertura</div>
-                        <div className="flex items-center gap-3 mb-5">
-                            <span className="text-xs text-gray-500">Top 3 de 30.000 simulações por posição · embaralhamento Fisher-Yates</span>
-                            <span className="text-xs px-2 py-0.5 rounded font-medium bg-gray-700 text-gray-300">
-                                Arquétipo detectado: <span className="text-orange-400 font-bold capitalize">{arqDetectado}</span>
+                {/* Blocos de CONSULTA viraram botão + popup (07/09, pedido do
+                    usuário). Critério: fica inline o que responde "meu deck é bom?"
+                    (Perfil de Jogo, Analisador, Arquétipo); vira popup o que se
+                    consulta de vez em quando -- exemplos de mão, plano turno a
+                    turno, risco de travar. Os três juntos empurravam o resto da
+                    página pra baixo e viravam rolagem. */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-8">
+                    {[
+                        { id: 'brick' as const, icon: '💀', titulo: 'Risco de mão travada',
+                          sub: 'chance de abrir sem jogada nos turnos 1 e 2' },
+                        { id: 'maos' as const, icon: '🏆', titulo: 'Melhores mãos de abertura',
+                          sub: 'top 3 de 30.000 simulações, indo 1º e 2º' },
+                        { id: 'plano' as const, icon: '🗺️', titulo: 'Plano de jogo por turno',
+                          sub: 'o que jogar em cada turno, nas duas posições' },
+                    ].map(b => (
+                        <button key={b.id} onClick={() => setPainelAberto(b.id)}
+                            className="flex items-center justify-between gap-3 bg-gray-900 border border-gray-800 hover:border-gray-600 hover:bg-gray-800 rounded-2xl px-5 py-4 text-left transition">
+                            <span>
+                                <span className="block text-sm font-semibold text-white">{b.icon} {b.titulo}</span>
+                                <span className="block text-xs text-gray-400 mt-0.5">{b.sub}</span>
                             </span>
-                        </div>
-
-                        {/* Jogando em 1º */}
-                        <div className="mb-6">
-                            <div className="flex items-center gap-2 mb-3">
-                                <span className="bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded">1º Jogador</span>
-                                <span className="text-xs text-gray-500">5 cartas · T1=custo 1 · T2=custo 2 · T3=custo 3-4</span>
-                            </div>
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                {melhoresMaosP1.map((mao, mi) => (
-                                    <div key={mi} className="bg-gray-800 rounded-xl p-4">
-                                        <div className="text-sm font-bold text-white mb-3">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</div>
-                                        <div className="flex gap-1.5 flex-wrap">
-                                            {mao.map((dc, ci) => (
-                                                <div key={ci} className="flex flex-col items-center gap-0.5">
-                                                    <CardImage src={dc.card.card_image} alt={dc.card.card_name} className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
-                                                    <span className="text-gray-400 text-center" style={{ width: '56px', fontSize: '9px' }}>
-                                                        {dc.card.card_name.length > 10 ? dc.card.card_name.slice(0, 10) + '…' : dc.card.card_name}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Jogando em 2º */}
-                        <div>
-                            <div className="flex items-center gap-2 mb-3">
-                                <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">2º Jogador</span>
-                                <span className="text-xs text-gray-500">5 cartas · T1=custo 1-2 · T2=custo 3-4 · T3=custo 5-6</span>
-                            </div>
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                {melhoresMaosP2.map((mao, mi) => (
-                                    <div key={mi} className="bg-gray-800 rounded-xl p-4">
-                                        <div className="text-sm font-bold text-white mb-3">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</div>
-                                        <div className="flex gap-1.5 flex-wrap">
-                                            {mao.map((dc, ci) => (
-                                                <div key={ci} className="flex flex-col items-center gap-0.5">
-                                                    <CardImage src={dc.card.card_image} alt={dc.card.card_name} className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
-                                                    <span className="text-gray-400 text-center" style={{ width: '56px', fontSize: '9px' }}>
-                                                        {dc.card.card_name.length > 10 ? dc.card.card_name.slice(0, 10) + '…' : dc.card.card_name}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
+                            <span className="text-xs text-gray-400 bg-gray-800 rounded-lg px-3 py-1.5 flex-shrink-0">abrir ›</span>
+                        </button>
+                    ))}
+                </div>
 
                 {/* Bloco "Validação por Simulação" REMOVIDO em 06/09 a pedido do
                     usuário. Ele quebrava 24 partidas em 5 faixas de score de mão e
@@ -1716,76 +1652,6 @@ function AnalysisPageContent() {
                     e ainda assim a tela recomendava um threshold de mulligan em cima
                     disso. Se voltar, precisa de N por faixa que sustente a conclusão.
                     O endpoint `/hand-stats` continua existindo na API. */}
-
-                {/* PLANO */}
-                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
-                    <div className="flex items-center gap-3 mb-1">
-                        <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide">🗺️ Plano de Jogo por Turno</div>
-                        {leaderStats && leaderStats.total_games > 0 && (
-                            <span className="text-xs bg-green-900 text-green-300 px-2 py-0.5 rounded font-medium">
-                                ✦ {leaderStats.total_games} partida{leaderStats.total_games > 1 ? 's' : ''} real{leaderStats.total_games > 1 ? 'is' : ''} no banco
-                            </span>
-                        )}
-                    </div>
-                    <div className="text-xs text-gray-500 mb-5">
-                        Curva real de DON!! · <span className="text-orange-400 font-medium">1º</span>: T1=1 · T2=3 · T3=5 · T4=7 &nbsp;|&nbsp;
-                        <span className="text-blue-400 font-medium">2º</span>: T1=2 · T2=4 · T3=6 · T4=8 DON!!
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        {/* Coluna 1º Jogador */}
-                        <div>
-                            <div className="flex items-center gap-2 mb-3">
-                                <span className="bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded">1º Jogador</span>
-                                <span className="text-xs text-gray-500">Age primeiro, menos DON</span>
-                            </div>
-                            <div className="space-y-2">
-                                {plano.map(({ turno, don1, sugestao1, cartas1 }) => (
-                                    <div key={turno} className="flex gap-3 bg-gray-800 rounded-xl px-3 py-2.5">
-                                        <div className="flex-shrink-0 w-12 bg-orange-600 rounded-lg flex flex-col items-center justify-center py-1">
-                                            <div className="text-white font-black text-sm">T{turno}</div>
-                                            <div className="text-orange-200 text-xs font-bold leading-tight">{don1}</div>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="text-xs text-gray-300 mb-1.5 leading-snug">{sugestao1}</div>
-                                            <div className="flex gap-1 flex-wrap">
-                                                {cartas1.map((dc, i) => (
-                                                    <CardImage key={i} src={dc.card.card_image} alt={dc.card.card_name} className="w-7 h-10 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Coluna 2º Jogador */}
-                        <div>
-                            <div className="flex items-center gap-2 mb-3">
-                                <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">2º Jogador</span>
-                                <span className="text-xs text-gray-500">Leva 1º hit, mais DON</span>
-                            </div>
-                            <div className="space-y-2">
-                                {plano.map(({ turno, don2, sugestao2, cartas2 }) => (
-                                    <div key={turno} className="flex gap-3 bg-gray-800 rounded-xl px-3 py-2.5">
-                                        <div className="flex-shrink-0 w-12 bg-blue-700 rounded-lg flex flex-col items-center justify-center py-1">
-                                            <div className="text-white font-black text-sm">T{turno}</div>
-                                            <div className="text-blue-200 text-xs font-bold leading-tight">{don2}</div>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="text-xs text-gray-300 mb-1.5 leading-snug">{sugestao2}</div>
-                                            <div className="flex gap-1 flex-wrap">
-                                                {cartas2.map((dc, i) => (
-                                                    <CardImage key={i} src={dc.card.card_image} alt={dc.card.card_name} className="w-7 h-10 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
             </div>
 
@@ -1968,6 +1834,186 @@ function AnalysisPageContent() {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Popup dos painéis de consulta -- um shell só, três conteúdos */}
+            {painelAberto && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                    onClick={() => setPainelAberto(null)}>
+                    <div className="bg-gray-900 rounded-2xl w-full max-w-6xl max-h-[92vh] overflow-y-auto shadow-2xl border border-gray-700"
+                        onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-end p-4 pb-0">
+                            <button onClick={() => setPainelAberto(null)}
+                                className="text-gray-400 hover:text-white text-3xl leading-none">×</button>
+                        </div>
+                        <div className="px-2 pb-2">
+                            {painelAberto === 'brick' && (<>
+                            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                                <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1">💀 Risco de Mão Travada</div>
+                                <div className="text-xs text-gray-500 mb-4">
+                                    Probabilidade exata (hipergeométrica) de abrir 5 cartas sem nenhuma jogada possível.
+                                    Counters 2000 não contam como jogada — eles são guardados para defesa.
+                                </div>
+                                {brickStats && (
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                        {brickStats.map(({ label, value, desc }) => {
+                                            const good = value < 0.10
+                                            const ok = value < 0.20
+                                            const color = good ? 'text-green-400' : ok ? 'text-yellow-400' : 'text-red-400'
+                                            const bar = good ? 'bg-green-500' : ok ? 'bg-yellow-500' : 'bg-red-500'
+                                            return (
+                                                <div key={label} className="bg-gray-800 rounded-xl p-4 text-center">
+                                                    <div className={`text-2xl font-black ${color}`}>{pct(value)}</div>
+                                                    <div className="w-full bg-gray-700 rounded-full h-1.5 my-2">
+                                                        <div className={`h-1.5 rounded-full ${bar}`} style={{ width: `${value * 100}%` }} />
+                                                    </div>
+                                                    <div className="text-xs font-semibold text-gray-300">{label}</div>
+                                                    <div className="text-xs text-gray-500 mt-1">{desc}</div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                            </>)}
+                            {painelAberto === 'maos' && (<>
+                            {/* MELHOR MÃO */}
+                            {simDone && (melhoresMaosP1.length > 0 || melhoresMaosP2.length > 0) && (
+                                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                                    <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1">🏆 Melhores Mãos de Abertura</div>
+                                    <div className="flex items-center gap-3 mb-5">
+                                        <span className="text-xs text-gray-500">Top 3 de 30.000 simulações por posição · embaralhamento Fisher-Yates</span>
+                                        <span className="text-xs px-2 py-0.5 rounded font-medium bg-gray-700 text-gray-300">
+                                            Arquétipo detectado: <span className="text-orange-400 font-bold capitalize">{arqDetectado}</span>
+                                        </span>
+                                    </div>
+
+                                    {/* Jogando em 1º */}
+                                    <div className="mb-6">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className="bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded">1º Jogador</span>
+                                            <span className="text-xs text-gray-500">5 cartas · T1=custo 1 · T2=custo 2 · T3=custo 3-4</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                            {melhoresMaosP1.map((mao, mi) => (
+                                                <div key={mi} className="bg-gray-800 rounded-xl p-4">
+                                                    <div className="text-sm font-bold text-white mb-3">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</div>
+                                                    <div className="flex gap-1.5 flex-wrap">
+                                                        {mao.map((dc, ci) => (
+                                                            <div key={ci} className="flex flex-col items-center gap-0.5">
+                                                                <CardImage src={dc.card.card_image} alt={dc.card.card_name} className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
+                                                                <span className="text-gray-400 text-center" style={{ width: '56px', fontSize: '9px' }}>
+                                                                    {dc.card.card_name.length > 10 ? dc.card.card_name.slice(0, 10) + '…' : dc.card.card_name}
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Jogando em 2º */}
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">2º Jogador</span>
+                                            <span className="text-xs text-gray-500">5 cartas · T1=custo 1-2 · T2=custo 3-4 · T3=custo 5-6</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                            {melhoresMaosP2.map((mao, mi) => (
+                                                <div key={mi} className="bg-gray-800 rounded-xl p-4">
+                                                    <div className="text-sm font-bold text-white mb-3">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</div>
+                                                    <div className="flex gap-1.5 flex-wrap">
+                                                        {mao.map((dc, ci) => (
+                                                            <div key={ci} className="flex flex-col items-center gap-0.5">
+                                                                <CardImage src={dc.card.card_image} alt={dc.card.card_name} className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
+                                                                <span className="text-gray-400 text-center" style={{ width: '56px', fontSize: '9px' }}>
+                                                                    {dc.card.card_name.length > 10 ? dc.card.card_name.slice(0, 10) + '…' : dc.card.card_name}
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            </>)}
+                            {painelAberto === 'plano' && (<>
+                            {/* PLANO */}
+                            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                                <div className="flex items-center gap-3 mb-1">
+                                    <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide">🗺️ Plano de Jogo por Turno</div>
+                                    {leaderStats && leaderStats.total_games > 0 && (
+                                        <span className="text-xs bg-green-900 text-green-300 px-2 py-0.5 rounded font-medium">
+                                            ✦ {leaderStats.total_games} partida{leaderStats.total_games > 1 ? 's' : ''} real{leaderStats.total_games > 1 ? 'is' : ''} no banco
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="text-xs text-gray-500 mb-5">
+                                    Curva real de DON!! · <span className="text-orange-400 font-medium">1º</span>: T1=1 · T2=3 · T3=5 · T4=7 &nbsp;|&nbsp;
+                                    <span className="text-blue-400 font-medium">2º</span>: T1=2 · T2=4 · T3=6 · T4=8 DON!!
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    {/* Coluna 1º Jogador */}
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className="bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded">1º Jogador</span>
+                                            <span className="text-xs text-gray-500">Age primeiro, menos DON</span>
+                                        </div>
+                                        <div className="space-y-2">
+                                            {plano.map(({ turno, don1, sugestao1, cartas1 }) => (
+                                                <div key={turno} className="flex gap-3 bg-gray-800 rounded-xl px-3 py-2.5">
+                                                    <div className="flex-shrink-0 w-12 bg-orange-600 rounded-lg flex flex-col items-center justify-center py-1">
+                                                        <div className="text-white font-black text-sm">T{turno}</div>
+                                                        <div className="text-orange-200 text-xs font-bold leading-tight">{don1}</div>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="text-xs text-gray-300 mb-1.5 leading-snug">{sugestao1}</div>
+                                                        <div className="flex gap-1 flex-wrap">
+                                                            {cartas1.map((dc, i) => (
+                                                                <CardImage key={i} src={dc.card.card_image} alt={dc.card.card_name} className="w-7 h-10 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Coluna 2º Jogador */}
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">2º Jogador</span>
+                                            <span className="text-xs text-gray-500">Leva 1º hit, mais DON</span>
+                                        </div>
+                                        <div className="space-y-2">
+                                            {plano.map(({ turno, don2, sugestao2, cartas2 }) => (
+                                                <div key={turno} className="flex gap-3 bg-gray-800 rounded-xl px-3 py-2.5">
+                                                    <div className="flex-shrink-0 w-12 bg-blue-700 rounded-lg flex flex-col items-center justify-center py-1">
+                                                        <div className="text-white font-black text-sm">T{turno}</div>
+                                                        <div className="text-blue-200 text-xs font-bold leading-tight">{don2}</div>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="text-xs text-gray-300 mb-1.5 leading-snug">{sugestao2}</div>
+                                                        <div className="flex gap-1 flex-wrap">
+                                                            {cartas2.map((dc, i) => (
+                                                                <CardImage key={i} src={dc.card.card_image} alt={dc.card.card_name} className="w-7 h-10 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            </>)}
                         </div>
                     </div>
                 </div>

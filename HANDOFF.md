@@ -404,6 +404,39 @@ media -- agora e amarelo, e so passa disso quem esta ACIMA. E "Padrao do
 meta" (metrica que nao discrimina) era cinza com a barra apagada,
 parecendo tile quebrado; virou azul informativo.
 
+### 12. Mais tres blocos viraram botao + popup
+
+Pedido do usuario depois de ver a faixa de "Chance de tirar a peca":
+*"confira na pagina o que mais podemos deixar assim, com botoes para abrir
+popup"*.
+
+**Criterio usado** (registrado porque a proxima sessao vai querer saber):
+fica INLINE o que responde *"meu deck e bom?"* -- Perfil de Jogo,
+Analisador Inteligente, Arquetipo/Golden Ratios/Sinergias, distribuicoes e
+curva. Vira POPUP o que se consulta de vez em quando. Pelos tres:
+
+- **Risco de mao travada** -- 4 numeros que voce olha uma vez.
+- **Melhores maos de abertura** -- 6 maos x 5 cartas com imagem, puro
+  exemplo ilustrativo.
+- **Plano de jogo por turno** -- tabela de referencia das duas posicoes.
+
+Os tres juntos eram a maior parte da rolagem da pagina. Agora sao uma faixa
+de 3 botoes e UM shell de modal com tres conteudos (nao tres modais
+duplicados).
+
+**Deixados inline de proposito**: distribuicoes por tipo/cor e curva de
+custo (compactas e de leitura rapida), Coesao Tribal (compacta). A grade do
+**Main Deck** (as 15 cartas com arte) e o bloco mais alto que sobrou --
+nao virou popup porque e o deck em si, mas e o proximo candidato obvio se
+o usuario quiser.
+
+**Armadilha do recorte**: o bloco do Plano terminava ANTES de um `</div>`
+de 12 espacos que fecha o container EXTERNO da pagina -- recortar ate o
+comentario `{/* CTA: Simular */}` levava esse fechamento junto e quebrava o
+JSX (`Expected corresponding closing tag for JSX fragment`, sem apontar a
+causa). O patch passou a CONFERIR o balanceamento de `<div>`/`</div>` de
+cada recorte antes de aplicar (9/9, 17/17, 25/25).
+
 ### RESOLVIDO (07/09): as 6 falhas do `smoke_fast.py` eram o dev server comendo a CPU
 
 `smoke_fast.py` passou a dar 6 falhas no meio da sessao, todas da familia
