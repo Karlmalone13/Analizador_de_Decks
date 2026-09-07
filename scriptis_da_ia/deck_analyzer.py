@@ -276,6 +276,39 @@ class CategoryCheck:
     advice: str
 
 
+def _codes_por_categoria(main_cards: list[dict]) -> dict[str, list[str]]:
+    """Codigos distintos que entram em cada categoria de ratio.
+
+    Mesmos criterios de `_count_categories` -- se um mudar, o outro muda
+    junto, senao a tela mostra uma contagem e uma lista que discordam.
+    Existe pra tela poder ABRIR a contagem e mostrar as cartas (pedido do
+    usuario, 06/09): "10 blockers" sem dizer quais nao ajuda a cortar nada.
+    """
+    out: dict[str, list[str]] = {
+        'counters': [], 'searchers': [], 'blockers': [], 'finishers': [], 'events': [],
+    }
+    vistos: dict[str, set] = {k: set() for k in out}
+
+    def add(cat, c):
+        code = c.get('code')
+        if code and code not in vistos[cat]:
+            vistos[cat].add(code)
+            out[cat].append(code)
+
+    for c in main_cards:
+        if c.get('counter', 0) >= 2000:
+            add('counters', c)
+        if c.get('is_searcher'):
+            add('searchers', c)
+        if c.get('is_blocker'):
+            add('blockers', c)
+        if c.get('cost', 0) >= 8:
+            add('finishers', c)
+        if (c.get('type', '') or '').upper() == 'EVENT':
+            add('events', c)
+    return out
+
+
 def _count_categories(main_cards: list[dict]) -> dict[str, int]:
     counters  = sum(1 for c in main_cards if c.get('counter', 0) >= 2000)
     searchers = sum(1 for c in main_cards if c.get('is_searcher'))
@@ -370,7 +403,10 @@ def analyze_deck(leader: dict, main_cards: list[dict]) -> dict:
         'ratios': [
             {'name': c.name, 'count': c.count,
              'ideal': [c.ideal_min, c.ideal_max],
-             'status': c.status, 'advice': c.advice}
+             'status': c.status, 'advice': c.advice,
+             # QUAIS cartas entraram na contagem -- "10 blockers" sem dizer
+             # quais nao ajuda a cortar nada (pedido do usuario, 06/09).
+             'codes': _codes_por_categoria(main_cards).get(c.name, [])}
             for c in ratios
         ],
         'curve': curve,

@@ -167,6 +167,10 @@ def analyze(req: DeckRequest):
         if not info:
             missing.append(entry.code)
             continue
+        # Copia rasa com o `code` dentro: as entradas do analysis_db sao
+        # indexadas por codigo mas nao o carregam, e sem isso `ratios` e
+        # `synergies` so conseguem devolver CONTAGEM, nunca QUAIS cartas.
+        info = {**info, 'code': code}
         if info.get('type') == 'LEADER':
             leader = info
         else:

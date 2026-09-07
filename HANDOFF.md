@@ -347,6 +347,34 @@ barras de verdade pro T5.
 invisivel pro `tsc`. Terceira vez nesta sessao; ao mover calculo pra cima
 num arquivo grande, conferir a ordem de declaracao.
 
+### 10. Golden Ratios e Sinergias agora ABREM: quais cartas sao essas?
+
+Pedido do usuario: *"coloque um botao para abrir um popup que mostre as
+cartas descritas nessa imagem"* (Golden Ratios + Sinergias detectadas).
+
+O painel dizia "Blockers 10 (ideal 4-8)" e "8 cartas criam / 8 exploram" --
+numeros sem nome. Pra cortar um blocker ou entender uma sinergia, o jogador
+precisa saber QUAIS cartas.
+
+**Feito na FONTE, nao no consumidor** (regra do bloco 751): o front nao
+reclassifica nada: recebe LISTAS DE CODIGO prontas do motor.
+
+- `api.py`: as entradas do `card_analysis_db` sao indexadas por codigo mas
+  nao carregam o codigo dentro -- sem isso nada consegue dizer QUAIS cartas
+  entraram numa contagem. Passa a anexar `code` numa copia rasa.
+- `deck_analyzer.py`: `_codes_por_categoria()` novo, mesmos criterios de
+  `_count_categories` (se um mudar, o outro muda junto, senao a tela mostra
+  contagem e lista discordando). Exposto em `ratios[].codes`.
+- `synergy_states.py`: Formato A e Formato B passam a devolver
+  `creator_codes` / `exploiter_codes`.
+
+Krieg confere: blockers 10 copias = 3 codigos distintos (OP15-025/011/017),
+eventos 8 = 2 codigos (OP15-037/038); a sinergia do engine Krieg mostra
+OP15-023/017 criando e OP15-038/025 explorando.
+
+Popup unico e generico (`cartasAbertas`), com imagem grande e clique que
+abre o modal da carta.
+
 ### PENDENCIA ABERTA: 6 falhas no `smoke_fast.py` que NAO sao desta sessao
 
 `smoke_fast.py` passava (0 falhas) no inicio da sessao e agora da 6, todas

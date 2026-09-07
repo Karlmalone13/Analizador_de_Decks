@@ -80,6 +80,10 @@
 > exatos. Trocada pela condicional exata `1 - C(45-K,X)/C(45,X)`. Ganhou a
 > linha da BOMBA (Krieg OP15-008 x4: 8,9% / 17,2% / 32,0%) e virou popup
 > com tabela maior e grafico de barras.
+> (20) **Golden Ratios e Sinergias abrem em popup** com as cartas: o motor
+> passou a devolver `ratios[].codes` e `synergies[].creator_codes/
+> exploiter_codes` (e `api.py` a anexar `code` nas entradas do analysis_db,
+> que sao indexadas por codigo mas nao o carregavam). O front so exibe.
 > (18) **PENDENCIA**: `smoke_fast.py` da 6 falhas de Monte Carlo/telemetria
 > que **nao sao desta sessao** -- reproduzem no HEAD limpo e num commit que
 > passou minutos antes, entao e estado de maquina, nao codigo. Nao isolado.

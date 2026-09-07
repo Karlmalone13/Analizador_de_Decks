@@ -120,14 +120,24 @@ def _synergies_format_a(main_cards: list) -> list:
     """Formato A: estado compartilhado (uma carta cria, outra explora)."""
     creators = {s: 0 for s in SYNERGY_STATES}
     exploiters = {s: 0 for s in SYNERGY_STATES}
+    # Codigos DISTINTOS de cada lado, pra tela poder abrir a sinergia e
+    # mostrar as cartas (pedido do usuario, 06/09) -- ate aqui a sinergia so
+    # dizia "8 criam / 8 exploram", sem dizer quais.
+    creator_codes = {s: [] for s in SYNERGY_STATES}
+    exploiter_codes = {s: [] for s in SYNERGY_STATES}
 
     for card in main_cards:
         states = card.get('synergy_states') or detect_card_states(card.get('text', ''))
+        code = card.get('code')
         for state, flags in states.items():
             if flags.get('creates'):
                 creators[state] += 1
+                if code and code not in creator_codes[state]:
+                    creator_codes[state].append(code)
             if flags.get('requires'):
                 exploiters[state] += 1
+                if code and code not in exploiter_codes[state]:
+                    exploiter_codes[state].append(code)
 
     active = []
     for state, cfg in SYNERGY_STATES.items():
@@ -140,6 +150,8 @@ def _synergies_format_a(main_cards: list) -> list:
                 'arquetipo': cfg['arquetipo'],
                 'n_creators': c,
                 'n_exploiters': e,
+                'creator_codes': creator_codes[state],
+                'exploiter_codes': exploiter_codes[state],
                 'score': strength * cfg['peso'],
             })
     return active
@@ -171,12 +183,19 @@ def _synergies_format_b(main_cards: list) -> list:
     active = []
     for key, cfg in FORMAT_B_SYNERGIES.items():
         a = b = 0
+        cod_a: list = []
+        cod_b: list = []
         for card in main_cards:
+            code = card.get('code')
             for eff in card.get('effects', []):
                 if cfg['lado_a'](eff):
                     a += 1
+                    if code and code not in cod_a:
+                        cod_a.append(code)
                 if cfg['lado_b'](eff):
                     b += 1
+                    if code and code not in cod_b:
+                        cod_b.append(code)
         if a >= 1 and b >= 1:
             strength = min(a, b)
             active.append({
@@ -185,6 +204,8 @@ def _synergies_format_b(main_cards: list) -> list:
                 'arquetipo': cfg['arquetipo'],
                 'n_creators': a,
                 'n_exploiters': b,
+                'creator_codes': cod_a,
+                'exploiter_codes': cod_b,
                 'score': strength * cfg['peso'],
             })
     return active

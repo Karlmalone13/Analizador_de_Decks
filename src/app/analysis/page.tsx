@@ -41,9 +41,12 @@ interface AnaliseRatio {
     ideal: [number, number]
     status: string
     advice: string
+    codes?: string[]
 }
 
 interface AnaliseSynergy {
+    creator_codes?: string[]
+    exploiter_codes?: string[]
     desc: string
     arquetipo: string
     n_creators: number
@@ -671,6 +674,11 @@ function AnalysisPageContent() {
     // Popup "quais cartas cumprem esta função" — evita repetir miniaturas em
     // toda linha da composição só pra mostrar quais cartas entraram na conta.
     const [comprasAberto, setComprasAberto] = useState(false)
+    // Popup generico "quais cartas sao essas": alimentado por LISTAS DE CODIGO
+    // que o MOTOR devolve (`ratios[].codes`, `synergies[].creator_codes`), nunca
+    // por uma reclassificacao feita aqui -- seria reimplementar a deteccao no
+    // consumidor, o erro do bloco 751.
+    const [cartasAbertas, setCartasAbertas] = useState<{ titulo: string; sub?: string; grupos: { rotulo: string; codes: string[] }[] } | null>(null)
     const [funcaoAberta, setFuncaoAberta] = useState<{ label: string; cards: DeckCard[] } | null>(null)
     const [simDone, setSimDone] = useState(false)
     const [melhoresMaosP1, setMelhoresMaosP1] = useState<DeckCard[][]>([])
@@ -1062,6 +1070,11 @@ function AnalysisPageContent() {
         pT3: probAteOTurno(naoVistas, m.K, drawsT3),
         pT5: probAteOTurno(naoVistas, m.K, drawsT5),
     }))
+
+    // Resolve codigo do motor -> carta do deck (o codigo vem sem o sufixo de
+    // arte alternativa, entao o match tambem ignora o sufixo).
+    const cartaPorCodigo = (code: string) =>
+        allCards.find(dc => (dc.card.card_set_id || '').split('_')[0] === code) ?? null
 
     const brickStats = calcularBrick(allCards, totalCards)
     const plano = gerarPlano(allCards, deck.leader, cardFlags, leaderStats)
@@ -1531,6 +1544,17 @@ function AnalysisPageContent() {
                                                 </span>
                                             </div>
                                             <div className="text-xs text-gray-400 mt-1.5">{c.advice}</div>
+                                            {c.codes && c.codes.length > 0 && (
+                                                <button
+                                                    onClick={() => setCartasAbertas({
+                                                        titulo: nomePt[c.name] || c.name,
+                                                        sub: `${c.count} cópias no deck · ideal ${c.ideal[0]}-${c.ideal[1]}`,
+                                                        grupos: [{ rotulo: 'Cartas que entram nesta contagem', codes: c.codes! }],
+                                                    })}
+                                                    className="mt-2 text-xs text-orange-400 hover:text-orange-300 transition">
+                                                    ver as {c.codes.length} carta(s) ›
+                                                </button>
+                                            )}
                                         </div>
                                     )
                                 })}
@@ -1556,6 +1580,20 @@ function AnalysisPageContent() {
                                             <div className="text-xs text-gray-400 mt-1">
                                                 {s.n_creators} carta(s) criam · {s.n_exploiters} explora(m)
                                             </div>
+                                            {((s.creator_codes?.length ?? 0) + (s.exploiter_codes?.length ?? 0)) > 0 && (
+                                                <button
+                                                    onClick={() => setCartasAbertas({
+                                                        titulo: s.desc,
+                                                        sub: `${s.n_creators} criam · ${s.n_exploiters} exploram · aponta para ${s.arquetipo}`,
+                                                        grupos: [
+                                                            { rotulo: 'Criam o estado', codes: s.creator_codes ?? [] },
+                                                            { rotulo: 'Exploram o estado', codes: s.exploiter_codes ?? [] },
+                                                        ],
+                                                    })}
+                                                    className="mt-2 text-xs text-blue-400 hover:text-blue-300 transition">
+                                                    ver as cartas ›
+                                                </button>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -1993,6 +2031,64 @@ function AnalysisPageContent() {
                                 <span className="font-mono text-gray-400">1 − C({naoVistas}−K, X) / C({naoVistas}, X)</span>.
                                 A versão anterior encolhia as cópias proporcionalmente e errava até 6,6 pontos.
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+            {/* Popup: quais cartas estao por tras de um numero */}
+            {cartasAbertas && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                    onClick={() => setCartasAbertas(null)}>
+                    <div className="bg-gray-900 rounded-2xl w-full max-w-5xl max-h-[92vh] overflow-y-auto shadow-2xl border border-gray-700"
+                        onClick={e => e.stopPropagation()}>
+                        <div className="flex items-start justify-between gap-4 p-6 border-b border-gray-800">
+                            <div>
+                                <div className="text-lg font-bold text-white">{cartasAbertas.titulo}</div>
+                                {cartasAbertas.sub && <div className="text-sm text-gray-400 mt-1">{cartasAbertas.sub}</div>}
+                            </div>
+                            <button onClick={() => setCartasAbertas(null)}
+                                className="text-gray-400 hover:text-white text-2xl leading-none flex-shrink-0">×</button>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            {cartasAbertas.grupos.filter(g => g.codes.length > 0).map(g => (
+                                <div key={g.rotulo}>
+                                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+                                        {g.rotulo} <span className="text-gray-600">({g.codes.length})</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                        {g.codes.map(code => {
+                                            const dc = cartaPorCodigo(code)
+                                            if (!dc) {
+                                                return (
+                                                    <div key={code} className="bg-gray-800 rounded-xl p-3 text-xs text-gray-500">
+                                                        {code} <span className="block mt-1">(não encontrada no deck)</span>
+                                                    </div>
+                                                )
+                                            }
+                                            return (
+                                                <button key={code}
+                                                    onClick={() => { setSelectedCard(dc.card); setCartasAbertas(null) }}
+                                                    className="bg-gray-800 hover:bg-gray-700 rounded-xl p-3 text-left transition group">
+                                                    <div className="relative mb-2">
+                                                        <CardImage src={dc.card.card_image} alt={dc.card.card_name}
+                                                            className="w-full h-auto rounded-lg object-contain group-hover:brightness-110 transition" />
+                                                        <span className="absolute top-1 right-1 bg-black/80 text-white text-sm font-bold px-2 py-0.5 rounded-lg">
+                                                            ×{dc.quantity}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-sm text-white font-medium leading-tight line-clamp-2">{dc.card.card_name}</div>
+                                                    <div className="text-xs text-gray-500 mt-0.5">
+                                                        {code}
+                                                        {dc.card.card_cost && <> · custo {dc.card.card_cost}</>}
+                                                    </div>
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
