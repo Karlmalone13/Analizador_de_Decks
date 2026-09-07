@@ -75,6 +75,11 @@
 > unico saia so da mao inicial; agora tres eixos saem dos efeitos parseados
 > no motor, calibrados nos 184 decks. Krieg: Sinergia 100, Defesa 58,
 > Ataque 90. Pesos ainda nao validados contra vitoria (declarado no modulo).
+> (19) **Compras futuras**: a conta era enviesada pra baixo (encolhia as
+> copias proporcionalmente) -- Counter 1000 dava 51,2% no T2 contra 57,8%
+> exatos. Trocada pela condicional exata `1 - C(45-K,X)/C(45,X)`. Ganhou a
+> linha da BOMBA (Krieg OP15-008 x4: 8,9% / 17,2% / 32,0%) e virou popup
+> com tabela maior e grafico de barras.
 > (18) **PENDENCIA**: `smoke_fast.py` da 6 falhas de Monte Carlo/telemetria
 > que **nao sao desta sessao** -- reproduzem no HEAD limpo e num commit que
 > passou minutos antes, entao e estado de maquina, nao codigo. Nao isolado.

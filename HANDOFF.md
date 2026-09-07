@@ -310,6 +310,43 @@ por mim, nao validados contra vitoria. E o mesmo defeito que os cortes
 tinham antes de virarem percentis -- so que agora esta num lugar so e
 declarado. Validar = comparar eixo x winrate simulado dos 184 decks.
 
+### 9. Compras futuras: virou popup, ganhou a BOMBA, e a conta estava enviesada
+
+Pedido do usuario: *"coloque isso em um popup, aumente a imagem do grafico,
+e recalcule as chances, incluindo a chance de tirar 1 bomba do deck"*.
+
+**A conta estava errada, nao so "estimada".** O rodape dizia "estimativa
+baseada nas copias proporcionalmente distribuidas", e era literal:
+`kRestante = round(K * (deckRestante / totalCards))` encolhia as copias e
+depois rodava a hipergeometrica no deck encolhido. Vies pra BAIXO, crescendo
+com K -- Counter 1000 (26 copias) dava 51,2% ate o T2 contra **57,8%**
+exatos, e 95,2% ate o T5 contra 97,4%.
+
+A conta certa e a CONDICIONAL, e e exata: se nenhuma copia veio na mao,
+todas as K estao entre as `naoVistas = 50 - 5 = 45` cartas, e as X compras
+seguintes sao um subconjunto uniforme delas (permutabilidade -- as cartas de
+vida entram porque tambem sao desconhecidas). Entao
+
+    P = 1 - C(45 - K, X) / C(45, X)
+
+Sem arredondamento e sem encolher K. Krieg depois da correcao: Searcher
+17,8/32,7/55,7 ; Counter 2000 22,2/39,9/64,9 ; Counter 1000 57,8/82,7/97,4 ;
+Blocker 22,2/39,9/64,9 ; Draw 4,4/8,8/17,2.
+
+**Linha da BOMBA** (`getDeckBombId`, que ja existia e nao era usado aqui):
+a carta que o deck quer CHEGAR era justamente a que faltava -- as outras
+linhas sao recursos genericos, essa e o plano de jogo. Krieg (OP15-008),
+custo 8 / 9000, x4: **8,9% ate o T2, 17,2% ate o T3, 32,0% ate o T5**.
+
+Bloco saiu de inline pra POPUP (empurrava a pagina e competia com os tiles
+da abertura, que respondem outra pergunta), com tabela maior e um grafico de
+barras de verdade pro T5.
+
+**Armadilha repetida**: `bombaDoDeck` foi declarado DEPOIS de
+`metricasCompra`, que o usa -- mesmo TDZ do `bench` na secao 6, e de novo
+invisivel pro `tsc`. Terceira vez nesta sessao; ao mover calculo pra cima
+num arquivo grande, conferir a ordem de declaracao.
+
 ### PENDENCIA ABERTA: 6 falhas no `smoke_fast.py` que NAO sao desta sessao
 
 `smoke_fast.py` passava (0 falhas) no inicio da sessao e agora da 6, todas

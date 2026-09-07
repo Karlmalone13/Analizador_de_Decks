@@ -670,6 +670,7 @@ function AnalysisPageContent() {
     const [selectedCard, setSelectedCard] = useState<Card | null>(null)
     // Popup "quais cartas cumprem esta função" — evita repetir miniaturas em
     // toda linha da composição só pra mostrar quais cartas entraram na conta.
+    const [comprasAberto, setComprasAberto] = useState(false)
     const [funcaoAberta, setFuncaoAberta] = useState<{ label: string; cards: DeckCard[] } | null>(null)
     const [simDone, setSimDone] = useState(false)
     const [melhoresMaosP1, setMelhoresMaosP1] = useState<DeckCard[][]>([])
@@ -803,8 +804,24 @@ function AnalysisPageContent() {
     // ── Caso 2: Compras futuras (após setup) ──────────────────────────────────
     // Deck restante = 50 - 5 (mão) - life (vidas)
     // K restante estimado = K_total × (deck_restante / N)
-    const deckRestante = totalCards - n - leaderLife
-    const kRestante = (K: number) => Math.round(K * (deckRestante / totalCards))
+    // Cartas que o jogador NAO viu depois do mulligan: tudo menos a mao.
+    // As cartas de vida entram aqui de proposito -- elas sao desconhecidas
+    // e, do ponto de vista de quem calcula, as X compras seguintes sao um
+    // subconjunto uniforme dessas nao-vistas (permutabilidade). E o que
+    // permite a conta EXATA abaixo.
+    const naoVistas = totalCards - n
+    // ANTES: `Math.round(K * (deckRestante / totalCards))` -- encolhia as
+    // copias proporcionalmente e chamava o resultado de "estimativa" no
+    // rodape. Era enviesado pra BAIXO e o erro crescia com K: no deck Krieg,
+    // Counter 1000 (26 copias) dava 51,2% ate o T2 quando o valor exato e
+    // 57,8%, e 95,2% ate o T5 contra 97,4%.
+    //
+    // A conta certa e a CONDICIONAL: "dado que nenhuma copia veio na mao,
+    // qual a chance de tirar uma nas proximas X compras?". Se nenhuma das K
+    // veio na mao, todas as K estao entre as `naoVistas`, e a resposta e
+    // 1 - C(naoVistas - K, X) / C(naoVistas, X). Sem arredondamento, sem
+    // estimativa -- as copias no deck continuam sendo K.
+    const kRestante = (K: number) => K
     // Compras acumuladas por turno (1 por turno + draw power médio)
     const drawsT2 = 1   // turno 2: +1 compra
     const drawsT3 = 2   // turno 3: +2 compras acumuladas
@@ -1021,19 +1038,29 @@ function AnalysisPageContent() {
 
     // Probabilidades — Caso 2 (compras futuras)
     // N_restante = deck após mão + vidas, K ajustado proporcionalmente
+    // Carta-bomba do deck, pra linha propria na tabela de compras.
+    const bombaId = getDeckBombId(allCards, cardFlags)
+    const bombaDoDeck = bombaId ? allCards.find(dc => dc.card.card_set_id === bombaId) ?? null : null
+
     const metricasCompra = [
         { icon: '🔍', label: 'Searcher', K: K_search, cor: 'text-blue-400' },
         { icon: '🛡️🛡️', label: 'Counter 2000', K: K_counter2k, cor: 'text-blue-400' },
         { icon: '🛡️', label: 'Counter 1000', K: K_counter1k, cor: 'text-blue-400' },
         { icon: '🔒', label: 'Blocker', K: K_blocker, cor: 'text-blue-400' },
         { icon: '🃏', label: 'Draw Power', K: K_draw, cor: 'text-blue-400' },
+        // A BOMBA e a carta que o deck quer CHEGAR (maior custo/poder, ja
+        // identificada por `getDeckBombId`). Pedido do usuario 06/09: e a
+        // peca cuja chance de aparecer mais importa, e era justamente a que
+        // faltava na tabela -- as outras linhas sao recursos genericos,
+        // essa e o plano de jogo.
+        ...(bombaDoDeck ? [{ icon: '💣', label: `Bomba: ${bombaDoDeck.card.card_name}`, K: bombaDoDeck.quantity, cor: 'text-purple-400' }] : []),
     ].map(m => ({
         ...m,
         // K restante no deck após setup (proporcional)
         Kr: kRestante(m.K),
-        pT2: probAteOTurno(deckRestante, kRestante(m.K), drawsT2),
-        pT3: probAteOTurno(deckRestante, kRestante(m.K), drawsT3),
-        pT5: probAteOTurno(deckRestante, kRestante(m.K), drawsT5),
+        pT2: probAteOTurno(naoVistas, m.K, drawsT2),
+        pT3: probAteOTurno(naoVistas, m.K, drawsT3),
+        pT5: probAteOTurno(naoVistas, m.K, drawsT5),
     }))
 
     const brickStats = calcularBrick(allCards, totalCards)
@@ -1439,46 +1466,21 @@ function AnalysisPageContent() {
                         eram 9 frases repetindo em prosa os MESMOS numeros que os 8 tiles
                         acima ja mostram. Redundancia pura. */}
 
-                    {/* Probabilidade de Compra ao Longo do Jogo */}
+                    {/* Compras futuras: virou POPUP a pedido do usuario (06/09).
+                        Inline, a tabela empurrava o resto da pagina pra baixo e
+                        competia por atencao com os tiles da abertura, que
+                        respondem outra pergunta. */}
                     <div className="border-t border-gray-800 pt-5 mt-5">
-                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">📈 Chance de Tirar a Peça se Não Veio na Mão</div>
-                        <div className="text-xs text-gray-500 mb-4">
-                            Deck restante após setup: {deckRestante} cartas · Se a peça <strong className="text-gray-400">não veio na abertura</strong>, qual a chance de tirá-la em X compras adicionais?
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-xs">
-                                <thead>
-                                    <tr className="border-b border-gray-700">
-                                        <th className="text-left text-gray-400 py-2 pr-4 font-semibold">Peça</th>
-                                        <th className="text-center text-gray-400 py-2 px-3 font-semibold">No deck<br /><span className="text-gray-600 font-normal">(restantes)</span></th>
-                                        <th className="text-center text-gray-400 py-2 px-3 font-semibold">Até T2<br /><span className="text-gray-600 font-normal">+1 compra</span></th>
-                                        <th className="text-center text-gray-400 py-2 px-3 font-semibold">Até T3<br /><span className="text-gray-600 font-normal">+2 compras</span></th>
-                                        <th className="text-center text-gray-400 py-2 px-3 font-semibold">Até T5<br /><span className="text-gray-600 font-normal">+4 compras</span></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {metricasCompra.map(({ icon, label, Kr, pT2, pT3, pT5 }) => {
-                                        const colorT5 = pT5 >= 0.7 ? 'text-green-400' : pT5 >= 0.5 ? 'text-yellow-400' : 'text-orange-400'
-                                        return (
-                                            <tr key={label} className="border-b border-gray-800 hover:bg-gray-800/50">
-                                                <td className="py-2.5 pr-4 text-white font-medium">{icon} {label}</td>
-                                                <td className="text-center py-2.5 px-3 text-gray-400">{Kr} cóp.</td>
-                                                <td className="text-center py-2.5 px-3">
-                                                    <span className={pT2 >= 0.5 ? 'text-green-400' : 'text-gray-400'}>{pct(pT2)}</span>
-                                                </td>
-                                                <td className="text-center py-2.5 px-3">
-                                                    <span className={pT3 >= 0.6 ? 'text-green-400' : pT3 >= 0.4 ? 'text-yellow-400' : 'text-orange-400'}>{pct(pT3)}</span>
-                                                </td>
-                                                <td className="text-center py-2.5 px-3">
-                                                    <span className={colorT5}>{pct(pT5)}</span>
-                                                </td>
-                                            </tr>
-                                        )
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div className="text-xs text-gray-600 mt-2">* Estimativa baseada nas cópias proporcionalmente distribuídas no deck restante após setup</div>
+                        <button onClick={() => setComprasAberto(true)}
+                            className="w-full flex items-center justify-between gap-3 bg-gray-800 hover:bg-gray-700 rounded-xl px-5 py-4 text-left transition">
+                            <span>
+                                <span className="block text-sm font-semibold text-white">📈 Chance de tirar a peça se não veio na mão</span>
+                                <span className="block text-xs text-gray-400 mt-0.5">
+                                    Searcher, counters, blocker, compra{bombaDoDeck ? ' e a bomba do deck' : ''} · até os turnos 2, 3 e 5
+                                </span>
+                            </span>
+                            <span className="text-xs text-gray-400 bg-gray-900 rounded-lg px-3 py-1.5 flex-shrink-0">abrir ›</span>
+                        </button>
                     </div>
                 </div>
 
@@ -1913,6 +1915,84 @@ function AnalysisPageContent() {
                                     </div>
                                 </button>
                             ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+            {/* Popup: compras futuras */}
+            {comprasAberto && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                    onClick={() => setComprasAberto(false)}>
+                    <div className="bg-gray-900 rounded-2xl w-full max-w-5xl max-h-[92vh] overflow-y-auto shadow-2xl border border-gray-700"
+                        onClick={e => e.stopPropagation()}>
+                        <div className="flex items-start justify-between gap-4 p-6 border-b border-gray-800">
+                            <div>
+                                <div className="text-lg font-bold text-white">📈 Chance de tirar a peça se não veio na mão</div>
+                                <div className="text-sm text-gray-400 mt-1">
+                                    {naoVistas} cartas não vistas depois da mão inicial · se a peça{' '}
+                                    <strong className="text-gray-300">não veio na abertura</strong>, qual a chance de tirá-la em X compras?
+                                </div>
+                            </div>
+                            <button onClick={() => setComprasAberto(false)}
+                                className="text-gray-400 hover:text-white text-2xl leading-none flex-shrink-0">×</button>
+                        </div>
+                        <div className="p-6">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="border-b border-gray-700">
+                                            <th className="text-left text-gray-400 py-3 pr-4 font-semibold">Peça</th>
+                                            <th className="text-center text-gray-400 py-3 px-4 font-semibold">No deck</th>
+                                            <th className="text-center text-gray-400 py-3 px-4 font-semibold">Até T2<br /><span className="text-gray-600 font-normal text-xs">+1 compra</span></th>
+                                            <th className="text-center text-gray-400 py-3 px-4 font-semibold">Até T3<br /><span className="text-gray-600 font-normal text-xs">+2 compras</span></th>
+                                            <th className="text-center text-gray-400 py-3 px-4 font-semibold">Até T5<br /><span className="text-gray-600 font-normal text-xs">+4 compras</span></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {metricasCompra.map(({ icon, label, Kr, pT2, pT3, pT5 }) => (
+                                            <tr key={label} className="border-b border-gray-800 hover:bg-gray-800/50">
+                                                <td className="py-3 pr-4 text-white font-medium">{icon} {label}</td>
+                                                <td className="text-center py-3 px-4 text-gray-400 tabular-nums">{Kr} cóp.</td>
+                                                <td className="text-center py-3 px-4 text-lg font-bold tabular-nums">
+                                                    <span className={pT2 >= 0.5 ? 'text-green-400' : 'text-gray-300'}>{pct(pT2)}</span>
+                                                </td>
+                                                <td className="text-center py-3 px-4 text-lg font-bold tabular-nums">
+                                                    <span className={pT3 >= 0.6 ? 'text-green-400' : pT3 >= 0.4 ? 'text-yellow-400' : 'text-orange-400'}>{pct(pT3)}</span>
+                                                </td>
+                                                <td className="text-center py-3 px-4 text-lg font-bold tabular-nums">
+                                                    <span className={pT5 >= 0.7 ? 'text-green-400' : pT5 >= 0.5 ? 'text-yellow-400' : 'text-orange-400'}>{pct(pT5)}</span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Barras por peca -- o "grafico" que estava minusculo na versao inline */}
+                            <div className="mt-8 space-y-4">
+                                <div className="text-sm font-semibold text-gray-300 uppercase tracking-wide">Chance até o T5</div>
+                                {metricasCompra.map(({ icon, label, pT5 }) => (
+                                    <div key={label}>
+                                        <div className="flex justify-between items-baseline mb-1.5">
+                                            <span className="text-sm text-white">{icon} {label}</span>
+                                            <span className="text-base font-bold text-gray-200 tabular-nums">{pct(pT5)}</span>
+                                        </div>
+                                        <div className="w-full bg-gray-800 rounded-full h-3">
+                                            <div className={`h-3 rounded-full transition-all ${pT5 >= 0.7 ? 'bg-green-500' : pT5 >= 0.5 ? 'bg-yellow-500' : 'bg-orange-500'}`}
+                                                style={{ width: `${pT5 * 100}%` }} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="text-xs text-gray-500 mt-6 leading-relaxed">
+                                Conta <strong className="text-gray-400">exata</strong>, não estimativa: se nenhuma cópia veio na mão,
+                                todas as {'{K}'} estão entre as {naoVistas} cartas não vistas, então a chance em X compras é{' '}
+                                <span className="font-mono text-gray-400">1 − C({naoVistas}−K, X) / C({naoVistas}, X)</span>.
+                                A versão anterior encolhia as cópias proporcionalmente e errava até 6,6 pontos.
+                            </div>
                         </div>
                     </div>
                 </div>
