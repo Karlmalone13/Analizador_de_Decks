@@ -1135,6 +1135,18 @@ function AnalysisPageContent() {
                                     {deck.leader.sub_types && (
                                         <div className="text-xs text-gray-400 text-center mt-3">{deck.leader.sub_types}</div>
                                     )}
+                                    {/* A Lista do Deck mora AQUI (07/09, pedido do usuário) em
+                                        vez de na faixa de botões: o painel do líder sobrava
+                                        espaço vazio embaixo, e a lista é o detalhe natural de
+                                        quem está olhando o deck. */}
+                                    <button onClick={() => setPainelAberto('lista')}
+                                        className="w-full mt-4 flex items-center justify-between gap-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-orange-500 rounded-xl px-4 py-3 text-left transition group">
+                                        <span>
+                                            <span className="block text-base font-semibold text-white">🃏 Lista do deck</span>
+                                            <span className="block text-sm text-gray-400 mt-0.5">as {totalCards} cartas com arte</span>
+                                        </span>
+                                        <span className="text-base font-semibold text-orange-300 group-hover:text-white flex-shrink-0 transition">abrir ›</span>
+                                    </button>
                                 </div>
                             </>
                         ) : <div className="p-6 text-center text-gray-500">Sem Leader definido</div>}
@@ -1321,7 +1333,7 @@ function AnalysisPageContent() {
                     turno, risco de travar. Os três juntos empurravam o resto da
                     página pra baixo e viravam rolagem. Ficam logo ABAIXO do Perfil
                     de Jogo (07/09): o usuário precisa vê-los sem rolar até o fim. */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-8">
                     {[
                         { id: 'brick' as const, icon: '💀', titulo: 'Risco de mão travada',
                           sub: 'chance de abrir sem jogada nos turnos 1 e 2' },
@@ -1329,8 +1341,6 @@ function AnalysisPageContent() {
                           sub: 'top 3 de 30.000 simulações, indo 1º e 2º' },
                         { id: 'plano' as const, icon: '🗺️', titulo: 'Plano de jogo por turno',
                           sub: 'o que jogar em cada turno, nas duas posições' },
-                        { id: 'lista' as const, icon: '🃏', titulo: 'Lista do deck',
-                          sub: `as ${totalCards} cartas com arte, agrupadas por custo` },
                     ].map(b => (
                         <button key={b.id} onClick={() => setPainelAberto(b.id)}
                             className="flex items-center justify-between gap-3 bg-gray-900 border border-gray-800 hover:border-gray-600 hover:bg-gray-800 rounded-2xl px-5 py-4 text-left transition group">

@@ -90,6 +90,8 @@
 > meus de medicao no caminho (bissecao com maquina carregada apontou um
 > commit de front; e declarei a hipotese descartada medindo cedo demais) --
 > os dois em `REPROVADOS.md`.
+> (27) Botao "Lista do deck" saiu da faixa e foi pro espaco vazio abaixo do
+> lider, a pedido do usuario. Faixa voltou a 3 botoes.
 > (26) Faixa dos 4 botoes movida pra logo ABAIXO do Perfil de Jogo (estava
 > no fim da pagina, so aparecia depois de rolar tudo) e com texto maior --
 > titulo `text-base`, subtitulo `text-sm`, e o "abrir" de `text-xs` cinza

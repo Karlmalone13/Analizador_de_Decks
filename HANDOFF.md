@@ -438,6 +438,12 @@ o "abrir" saiu de `text-xs` cinza (parecia legenda) pra `text-base` laranja
 que acende no hover. Mesmo tratamento no botao de "Chance de tirar a peca",
 que tinha ficado com o estilo antigo.
 
+**A Lista do Deck saiu da faixa** (usuario: *"quero que coloque esse botao
+de lista do deck nesse espaco abaixo do lider"*) e virou um botao dentro do
+painel do LIDER, que sobrava espaco vazio embaixo. Faz sentido alem do
+espaco: a lista e o detalhe natural de quem esta olhando o deck, nao um
+painel de analise. A faixa voltou a ser de 3.
+
 **Deixados inline de proposito**: distribuicoes por tipo/cor e curva de
 custo (compactas e de leitura rapida), Coesao Tribal (compacta).
 
