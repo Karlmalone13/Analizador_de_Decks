@@ -142,6 +142,30 @@ ATTACK_LEADER_BASE_SCORE = _k.get('ATTACK_LEADER_BASE_SCORE')
 # sequence_once`.
 NULLIFY_EVALUATE_STATE_V2 = False
 
+# ── VALOR APRENDIDO POR AUTO-JOGO (08/09/2026) ──────────────────────────
+# Peso do valor aprendido (`optcg_engine/value_net.py`) na avaliacao final
+# de uma linha simulada. **DEFAULT 0.0 = comportamento de producao
+# IDENTICO ao de hoje** -- o modelo nem e consultado com peso zero, entao
+# ligar isto e um experimento, nao uma mudanca de default (a distincao
+# "e serio / nao e serio" registrada no CLAUDE.md em 28/08).
+#
+# HIBRIDO, decisao do usuario (08/09): o valor aprendido SOMA a
+# `_evaluate_state_v2` e convive com `bonus_alinhamento`. Auto-jogo
+# otimiza GANHAR; a metrica oficial do projeto e SEMELHANCA COM O HUMANO.
+# Manter os tres termos na mesma soma deixa a semelhanca humana agindo
+# como regularizador, e torna o peso relativo um numero MEDIDO.
+#
+# Escala: `win_prob` sai em [0,1] e e centrada em 0,5, entao a
+# contribuicao fica em [-0.5, +0.5] * VALUE_NET_WEIGHT. Pra ter ordem de
+# grandeza comparavel aos termos de `_evaluate_state_v2` (onde `dmg` pesa
+# 120), um peso de ~200 faz o valor aprendido valer no maximo ~100
+# pontos. NAO calibrado ainda -- e exatamente o que o A/B tem que medir.
+_k.registra('VALUE_NET_WEIGHT', float(0.0), float,
+            'peso do valor aprendido por auto-jogo na avaliacao de linha '
+            '(0.0 = desligado, comportamento de producao inalterado)',
+            'avaliacao', 0.0, 2000.0)
+VALUE_NET_WEIGHT = _k.get('VALUE_NET_WEIGHT')
+
 # TESTADO 20/08 (bloco 631, 0.3 e depois 0.15): misturar uma fracao do
 # score IMEDIATO GENERICO da candidata na comparacao final entre as
 # TOP_K. Deu o maior efeito medido do dia (attack-alvo +3,5pp), mas com
@@ -19725,9 +19749,23 @@ class OPTCGMatch:
         # a comparacao entre linhas que NAO fecham o jogo neste turno.
         if NULLIFY_EVALUATE_STATE_V2:
             return bonus_alinhamento
+
+        # VALOR APRENDIDO POR AUTO-JOGO (hibrido, atras de flag -- ver o
+        # comentario de VALUE_NET_WEIGHT no topo do modulo). Peso 0.0
+        # (default) nem consulta o modelo: nenhum custo, nenhuma mudanca.
+        # `win_prob` devolve None quando nao ha modelo treinado/compativel,
+        # e ai a soma segue exatamente como sempre -- degradacao graciosa,
+        # nunca uma dependencia dura.
+        bonus_valor = 0.0
+        if VALUE_NET_WEIGHT:
+            from optcg_engine import value_net
+            pw = value_net.win_prob(p2, opp2)
+            if pw is not None:
+                bonus_valor = (pw - 0.5) * VALUE_NET_WEIGHT
+
         if use_v2:
-            return self._evaluate_state_v2(p2, opp2) + bonus_alinhamento
-        return self._evaluate_state(p2, opp2) + bonus_alinhamento
+            return self._evaluate_state_v2(p2, opp2) + bonus_alinhamento + bonus_valor
+        return self._evaluate_state(p2, opp2) + bonus_alinhamento + bonus_valor
 
     def _remap_effect_targets(self, ttype, tgt, p, p2, opp, opp2):
         """Traduz a TUPLA de alvos de efeito pro estado clonado.

@@ -191,6 +191,37 @@ foi medida — e aí não é reprovação, é opinião.
 > ativa mais. Ficou ATIVA no default. O que ficou desligado
 > (`TIEBREAK_BANDA_Z=0`) e so a banda.
 
+## Funcao de VALOR aprendida por AUTO-JOGO (bloco 753)
+
+Familia DIFERENTE das reprovacoes de imitacao acima -- rotulo = quem
+GANHOU a partida (nao "que carta o humano escolheu"), dado gerado pelo
+proprio motor (nao os 171 logs finitos), sem *distribution shift* por
+construcao. Valia a tentativa; **nao pagou**.
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| Valor aprendido somado a `_evaluate_state_v2`, `VALUE_NET_WEIGHT=200` | `play` 26,6% -> **26,5%**; `seq identica` 5,7 -> **4,7**; `LCS` 35,3 -> 35,1; `attach_don` 17,4 -> 16,8. Por lider: 9 sobem x 9 descem, sem direcao | 753 |
+| O mesmo com `VALUE_NET_WEIGHT=50` (testar se 200 era alto demais) | `play` **26,4%** (pior que os dois); `LCS` 35,1 igual. **Nao e questao de peso** | 753 |
+
+**O modelo em si e BOM** -- AUC fora da amostra **0,7071**, positivo em
+5/5 folds, sob GroupKFold POR LIDER (lideres nunca vistos). Sanidade
+confere (posicao ganha 0,90, perdida 0,04). Ou seja: **nao foi reprovado
+por nao aprender.** Ordenar estado bem nao virou acerto na metrica.
+
+**Duas hipoteses honestas, nenhuma testada ainda** (nao repetir a
+tentativa sem atacar uma delas):
+1. **Redundancia com a busca** -- o Monte Carlo com `_evaluate_state_v2`
+   na folha talvez ja extraia esse sinal; somar os dois nao acrescenta.
+2. **Alvo errado pra esta metrica** -- o modelo preve VITORIA, a metrica
+   mede SEMELHANCA COM O HUMANO. As duas categorias que mais cairam sao
+   de sequenciamento, e "quem ganha" e indiferente a ordem das jogadas
+   dentro do turno, que e exatamente o que o LCS mede.
+
+A infra fica no repo e util: `optcg_engine/value_net.py`,
+`gerar_selfplay_dataset.py`, `treinar_value.py`, knob `VALUE_NET_WEIGHT`
+(**default 0.0**, producao inalterada). Testar a hipotese 2 nao exige
+comecar do zero -- exige trocar o ROTULO, nao o mecanismo.
+
 ## Ranqueador aprendido (fase 2 do plano do bloco 702)
 
 | tentativa | resultado medido | bloco |

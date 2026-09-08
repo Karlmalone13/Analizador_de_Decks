@@ -1,6 +1,44 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 6 de setembro de 2026
+**Última atualização:** 8 de setembro de 2026
+
+> 08/09/2026 (bloco 753): **A MÉTRICA OFICIAL ESTAVA INAUDITÁVEL DESDE
+> 05/09.** `decision_quality_full.py --all` reportava "sem dados (0/0)"
+> em `play`/`activate`/`attack_quem`/`attach_don`/`sequenciamento` —
+> todo turno ofensivo morria em `'OPTCGMatch' object has no attribute
+> 'search_top_k_override'`. Causa: `replay_optcg._get_engine_match()`
+> monta o match via `__new__` com **lista manual** de atributos, e o
+> bloco 750 adicionou o parâmetro ao `__init__` sem atualizar a lista.
+> **Bug reincidente** (o mesmo aconteceu em 24/07) e que falhava em
+> SILÊNCIO — as categorias de defesa continuavam saindo normais.
+> Corrigido de forma **genérica** (preenche todo parâmetro opcional do
+> `__init__` via `inspect`), validado 7 turnos/7 erros → 7/0.
+> **Qualquer medição da métrica oficial feita entre 05/09 e 08/09 por
+> esse caminho mediu zero turnos ofensivos — desconfiar dela.**
+>
+> Junto: **1ª tentativa de ML por AUTO-JOGO** (escolha do usuário:
+> híbrido atrás de flag). Infra nova — `optcg_engine/value_net.py`,
+> `gerar_selfplay_dataset.py`, `treinar_value.py`, knob
+> `VALUE_NET_WEIGHT` (**default 0.0, produção inalterada**). O modelo
+> **aprende bem** (AUC fora da amostra 0,707, 5/5 folds, GroupKFold por
+> líder) e **NÃO paga** no motor: `play` 26,6% → 26,5% (peso 200) e
+> 26,4% (peso 50); `seq idêntica` 5,7 → 4,7; por líder 9 sobem × 9
+> descem. **REPROVADO por medição**, registrado em `REPROVADOS.md`.
+> Diferente das reprovações anteriores, **não** foi por *distribution
+> shift* (não existe aqui) nem por não aprender. Duas hipóteses abertas
+> e não testadas: (a) redundância com a busca Monte Carlo; (b) **alvo
+> errado** — o modelo prevê VITÓRIA e a métrica mede SEMELHANÇA COM O
+> HUMANO, e as categorias que mais caíram são de sequenciamento, ao qual
+> "quem ganha" é indiferente. Testar (b) exige trocar o RÓTULO, não o
+> mecanismo — a infra já está pronta.
+>
+> **Pendências**: `smoke_fast.py` tem 1 falha **pré-existente**
+> (`lider com decklist real do codigo exato (Imu)`), confirmada por
+> `git stash`, não investigada. `scikit-learn` não estava instalado e
+> **não** foi adicionado ao `requirements.txt` (só necessário pra
+> treinar; o runtime só precisa se o knob for ligado) — decidir antes de
+> qualquer deploy que ligue o knob. O `play` desta sessão (26,6%) **não
+> é comparável** aos 28,2% do `CLAUDE.md` (corpus diferente).
 
 > 06/09/2026 (bloco 752): **Redundancia da tela de analise + faxina de
 > lint que desenterrou 219 cartas sem imagem.**

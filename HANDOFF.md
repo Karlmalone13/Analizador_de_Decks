@@ -28,6 +28,145 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-09-08 (753) - **A METRICA OFICIAL ESTAVA INAUDITAVEL DESDE 05/09** (bug reincidente de `__new__` sem `__init__`, falhando em silencio como "sem dados"), achado ao medir o A/B da funcao de valor por AUTO-JOGO -- que treinou bem (AUC 0,707 fora da amostra) e **NAO pagou** no motor
+
+### 0. Contexto: o usuario pediu ML, e tinha razao em desconfiar
+
+O usuario abriu a sessao com *"acho que ja ta na hora de ir para um
+machine learning, porque nao estamos conseguindo evoluir mais"*, e ao
+ouvir que ML ja fora tentado respondeu *"acho que nao, e se for, foi
+feito do jeito errado"*.
+
+**Ele estava certo, e a minha primeira resposta foi imprecisa.** O que
+os blocos 680-706 reprovaram tem nome especifico: **clonagem de
+comportamento** (rotulo = escolha do humano, 171 logs finitos, sem
+nocao de vitoria). A conclusao correta daqueles blocos e "clonagem de
+comportamento com 171 logs nao funciona", **nao** "ML nao funciona" --
+e eu tinha apresentado como a segunda. Verificado por `grep`:
+`reinforc|self.?play|alphazero|policy.?gradient|value.?network` dava
+**ZERO ocorrencias** no projeto. Auto-jogo nunca tinha sido tentado.
+
+Escolha do usuario entre as 3 opcoes apresentadas: **hibrido, atras de
+flag** -- valor aprendido convivendo com a heuristica E com o termo de
+semelhanca humana, que passa a agir como regularizador.
+
+### 1. O ACHADO QUE VALEU A SESSAO (independente de ML)
+
+`decision_quality_full.py --all` vinha reportando **"sem dados (0/0)"**
+em `play`, `activate`, `attack_quem`, `attach_don` e `sequenciamento` --
+ou seja, **a METRICA OFICIAL do projeto estava inauditavel**. Todo turno
+ofensivo morria em:
+
+```
+'OPTCGMatch' object has no attribute 'search_top_k_override'
+```
+
+**Causa raiz**: `replay_optcg.py:_get_engine_match()` monta o
+`OPTCGMatch` via `__new__`, contornando o `__init__`, e seta atributos
+numa **lista manual**. O bloco 750 (commit `9528e67`, 05/09) adicionou
+`search_top_k_override` ao `__init__` e a lista nao acompanhou.
+
+Tres agravantes:
+1. **REINCIDENTE** -- o comentario logo acima da lista ja documenta o
+   MESMO bug em 24/07 (`_suppress_replay_log`/`decision_log`). Foi
+   corrigida a instancia, nao a forma, e voltou.
+2. **Falhou em SILENCIO** -- nenhum erro no agregado, so "sem dados",
+   facil de ler como corpus pequeno. E as categorias de DEFESA
+   continuavam saindo normais (blocker 85,4%, 1.796 decisoes), o que
+   reforcava a impressao de relatorio saudavel.
+3. **Janela: 05/09 ate hoje.** Qualquer medicao da metrica oficial
+   nessa janela, por este caminho, mediu ZERO turnos ofensivos.
+
+**Fix GENERICO** (nao pontual -- a mesma disciplina do gate de auditoria
+global do parser): todo parametro OPCIONAL do `__init__` que vira
+atributo homonimo passa a ser preenchido a partir da propria assinatura
+via `inspect`. Um `foo_override` novo amanha ja e coberto. Validado num
+log real: **7 turnos / 7 erros -> 7 turnos / 0 erros**.
+
+### 2. A funcao de valor por auto-jogo: treinou bem, NAO pagou
+
+Construido (tudo novo, nada duplicado):
+- **`optcg_engine/value_net.py`** -- FONTE UNICA de features (importada
+  pelo gerador E pelo motor), 32 features **genericas**, **sem one-hot
+  de lider** (defeito real do bloco 702) e com `check_dims` avisando
+  alto no stderr (armadilha real do bloco 682).
+- **`gerar_selfplay_dataset.py`** -- auto-jogo em decks REAIS de
+  torneio, 1 deck por lider, `--workers` com seed derivada por indice
+  (convencao do bloco 481). Captura o estado no FIM do meu turno --
+  exatamente o ponto que `_evaluate_state_v2` julga, pra treino e uso
+  ficarem na MESMA distribuicao. Rotulo = quem ganhou.
+- **`treinar_value.py`** -- **GroupKFold POR LIDER**, correcao direta do
+  705->706 (onde +4,8pp num split virou -0,2pp por lider e foi
+  RETRATADO). Reporta treino e fora-da-amostra lado a lado.
+- **Knob `VALUE_NET_WEIGHT`, default 0.0** -- com peso zero o modelo nem
+  e consultado. Producao INALTERADA (confirmado: `nao-default=(nenhum)`).
+
+**O modelo aprendeu de verdade**: 3.453 estados, 16 lideres, AUC treino
+0,9164 / **fora da amostra 0,7071**, positivo em **5/5 folds**, em
+lideres nunca vistos. Sanidade: posicao ganha 0,90, perdida 0,04.
+
+**E NAO CONVERTEU** (corpus completo, recorte por lider conferido):
+
+| categoria | peso 0 | peso 200 | peso 50 |
+|---|---|---|---|
+| **play** (oficial) | 26,6% | 26,5% | **26,4%** |
+| attack -- quem | 49,6% | 50,0% | 49,4% |
+| activate | 28,1% | 28,5% | 27,6% |
+| attach_don -- alvo | 17,4% | 16,8% | 17,2% |
+| **seq -- identica** | 5,7% | **4,7%** | 5,1% |
+| seq -- LCS | 35,3% | 35,1% | 35,1% |
+| blocker / counter | 85,4 / 64,5 | iguais | iguais |
+
+Por lider: **9 sobem x 9 descem**, sem direcao. Peso 50 testado
+justamente pra separar "efeito nulo" de "peso alto demais atropelando a
+heuristica" -- deu PIOR que 200 em `play`. **Nao e questao de peso.**
+
+Medicao VALIDA, conferido contra a armadilha do bloco 682: fingerprint
+gravou `nao-default={'VALUE_NET_WEIGHT': 200.0}` e **zero** avisos de
+modelo desligado.
+
+### 3. O que isto ensina (e o que NAO ensina)
+
+**Nao foi reprovado por nao aprender** -- o modelo ordena estado bem
+(0,707 fora da amostra). Ordenar bem nao virou acerto na metrica, o
+MESMO padrao do bloco 683, mas por motivo diferente: la a causa medida
+era *distribution shift*, e aqui isso nao existe por construcao.
+
+Duas hipoteses honestas, **nenhuma testada** (registradas em
+`REPROVADOS.md` pra nao virar re-tentativa cega):
+1. **Redundancia com a busca** -- o Monte Carlo com `_evaluate_state_v2`
+   na folha talvez ja extraia esse sinal.
+2. **Alvo errado pra esta metrica** -- o modelo preve VITORIA, a metrica
+   mede SEMELHANCA COM O HUMANO. As duas categorias que mais cairam sao
+   de sequenciamento, e "quem ganha" e indiferente a ORDEM das jogadas
+   dentro do turno, que e exatamente o que o LCS mede. Se for isso, o
+   problema nao e o metodo: e que valor-de-vitoria nao e o professor
+   certo pra uma metrica de imitacao. Testar exige trocar o ROTULO, nao
+   o mecanismo -- a infra ja esta pronta.
+
+### 4. Pendencias e ressalvas
+
+- **`smoke_fast.py` tem 1 falha PRE-EXISTENTE**, confirmada por `git
+  stash` (identica com e sem as mudancas desta sessao):
+  `[FALHOU] lider com decklist real do codigo exato (Imu): continua
+  achando deck real, nao generico`. NAO investigada aqui.
+- **`scikit-learn` nao estava instalado** -- mesma classe do bloco 748
+  (dependencia que so quebra ao rodar de verdade). Instalado local
+  (1.9.0). **NAO adicionado ao `requirements.txt`**: so e necessario pra
+  TREINAR, e o runtime so precisa dele se `VALUE_NET_WEIGHT` > 0, que
+  nao e o default. Decidir antes de qualquer deploy que ligue o knob.
+- **Os numeros de `play` desta sessao (26,6%) nao batem com os 28,2%
+  registrados no `CLAUDE.md`** -- corpus diferente (171 logs hoje). Nao
+  investigado; nao tratar os dois como comparaveis.
+- O corpus tem **30 logs de schema antigo sem `meta.players`** que sao
+  excluidos de tudo (60 exclusoes = 30 logs x 2 lados).
+
+### 5. Estado
+
+Producao **inalterada** (`VALUE_NET_WEIGHT=0.0`). O fix do
+`replay_optcg.py` e o unico que muda comportamento -- e ele RESTAURA uma
+medicao que estava morta, nao muda decisao do motor.
+
 ## 2026-09-06 (752) - Redundancia da tela de analise, popups maiores, Draw Power certo, e faxina de lint que revelou 219 cartas SEM imagem (o `<Image>` do Next quebra em `src` vazio)
 
 Sessao de front-end, continuacao direta do bloco 751. Duas metades.

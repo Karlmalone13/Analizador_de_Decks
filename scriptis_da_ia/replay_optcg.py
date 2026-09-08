@@ -259,6 +259,37 @@ class ReplayMatch:
             # Mesmos valores-padrao que OPTCGMatch.__init__ usa.
             self._engine_match._suppress_replay_log = False
             self._engine_match.decision_log = None
+
+            # ── GUARDA GENERICA CONTRA A REINCIDENCIA ACIMA (08/09/2026)
+            # O comentario logo acima descreve o bug de 24/07; ele
+            # ACONTECEU DE NOVO. O bloco 750 (commit 9528e67, 05/09)
+            # adicionou `search_top_k_override` ao `__init__` de
+            # OPTCGMatch, esta lista manual nao acompanhou, e TODO turno
+            # ofensivo passou a morrer em `AttributeError: 'OPTCGMatch'
+            # object has no attribute 'search_top_k_override'`.
+            #
+            # Consequencia medida: `decision_quality_full.py --all`
+            # reportava `play`, `activate`, `attack_quem`, `attach_don` e
+            # `sequenciamento` como **"sem dados (0/0)"** -- ou seja, a
+            # METRICA OFICIAL do projeto ficou inauditavel, e do jeito
+            # mais perigoso: sem erro visivel no agregado, so um "sem
+            # dados" facil de ler como corpus pequeno. As categorias de
+            # DEFESA continuavam saindo normalmente, o que reforcava a
+            # impressao de que o relatorio estava funcionando.
+            #
+            # Corrigir so o nome que faltava repetiria o ciclo pela 3a
+            # vez. Regra do projeto: corrigir a FORMA do problema, nao a
+            # instancia (mesma disciplina do gate de auditoria global do
+            # parser). Todo parametro OPCIONAL do `__init__` que vira
+            # atributo homonimo passa a ser preenchido com o MESMO default
+            # da assinatura -- se amanha entrar um `foo_override` novo,
+            # este caminho ja o recebe.
+            import inspect
+            for nome, par in inspect.signature(OPTCGMatch.__init__).parameters.items():
+                if nome == 'self' or par.default is inspect.Parameter.empty:
+                    continue
+                if not hasattr(self._engine_match, nome):
+                    setattr(self._engine_match, nome, par.default)
         return self._engine_match
 
     def setup(self):
