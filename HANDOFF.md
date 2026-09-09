@@ -28,6 +28,173 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-09-09 (754) - ML por AUTO-JOGO, 2a leva: laco de geracoes, coletor CONTRAFACTUAL, e o achado que reorganiza tudo -- **80% das decisoes do bot NAO mudam quem ganha**. + bug do `filter_type` que matava 14% das partidas em silencio
+
+### 0. O pedido
+
+Usuario: *"quero criar um ML"*, *"uma ML que melhore a jogabilidade com o
+tempo e vai aprendendo com cada partida"*, e depois *"nao quero aumentar
+ou diminuir peso"*. Calibragem de peso esta ENCERRADA por decisao dele.
+
+Escolha registrada entre os 2 desenhos que apresentei: **opcao A --
+rotulo CONTRAFACTUAL real** (jogar os dois ramos ate o fim), em vez da
+destilacao da busca (mais barata, sinal indireto).
+
+### 1. O ACHADO QUE REORGANIZA O PROBLEMA
+
+**80% das decisoes entre irmas NAO mudam quem ganha a partida.** Medido
+de frente com contrafactual real (180 pares, 2 partidas completas cada):
+so 20,6% eram INFORMATIVOS (ramos com vencedores diferentes).
+
+Isso reinterpreta TODOS os resultados nulos da leva anterior de uma vez.
+Nao e que o modelo escolha mal -- e que **a maior parte do que ele
+escolhe nao decide partida**. Tres medicoes independentes que batem:
+
+| medicao | resultado |
+|---|---|
+| taxa de TROCA do termo de valor (peso 200) | **100% das partidas divergem**, mediana na acao 12 de ~82 (12% do jogo) |
+| trocas que mudam o VENCEDOR | 28% |
+| separabilidade gen0 x gen1-3 (distribuicao) | AUC **0,52** -- as politicas visitam os MESMOS estados |
+| winrate do desafiante nos duelos | ~50% (3 geracoes) |
+
+Ou seja: **troca muito, e as trocas sao NEUTRAS.** Ganha umas, perde
+outras, acaba no mesmo lugar.
+
+**Consequencia pro projeto inteiro, alem do ML**: existe um TETO
+estrutural pra qualquer mecanismo que atue na escolha entre irmas --
+inclusive os ja reprovados nos blocos 641-706. Se 80% das decisoes sao
+indiferentes ao desfecho, mexer nelas nao paga por construcao. Isso nao
+tinha sido medido antes; era inferido.
+
+### 2. HIPOTESE MINHA, REFUTADA POR MEDICAO (registrar pra nao repetir)
+
+Eu propus, e ia recomendar, **SUBIR O PESO** -- a teoria era que +-100
+pontos (peso 200) fossem pequenos demais perto dos gaps entre
+candidatas, deixando o termo inerte.
+
+`medir_taxa_troca.py` **refutou**: 100% das partidas divergem, cedo.
+O termo nunca esteve inerte. **Subir o peso nao faz sentido e nao deve
+ser tentado** -- o problema nunca foi forca do sinal.
+
+### 3. BUG DO MOTOR: `filter_type` lista, 14% das partidas mortas em silencio
+
+`_should_activate_main` fazia `(c.get('filter_type') or '').lower()`.
+Mas `filter_type` **pode ser LISTA** -- e o projeto JA SABIA: ha um
+comentario explicito em `_reveal_top` (~linha 4118) desde 19/07 ("pode
+ser uma LISTA (OR de N tipos)") e `smoke_fast.py` testa o caso (Jinbe,
+`['fish-man','merfolk']`). O tratamento certo ficou SO naquele ponto.
+
+Onde doia: a funcao roda dentro de `_generate_and_score_actions`, que
+roda dentro dos ROLLOUTS da busca -- a excecao derrubava a PARTIDA
+inteira. Explica um numero que estava a vista e ninguem investigou:
+**41 de 300 partidas (13,7%)** da geracao do corpus sairam como
+"descartadas por erro", sem causa apurada. Era isto.
+
+**Fix pela FORMA**: helper `_ftypes()` / `_ftype_in()` (aceita string OU
+lista), aplicado nos 5 usos da funcao. Validado: 12/12 partidas rodam
+onde antes quebravam. `smoke_fast` sem regressao nova.
+
+**PENDENTE, e e o mesmo bug**: restam **~9 pontos identicos** com
+`(x.get('filter_type') or '').lower()` -- linhas **3068, 3362, 10960,
+12527, 16330, 16355, 16517, 16775, 17025**. Nao corrigidos porque cada
+um usa o valor de um jeito e nao dava pra testar um a um nesta sessao.
+Sao bombas identicas.
+
+### 4. O QUE FOI CONSTRUIDO
+
+- **`treino_continuo.py`** -- laco de geracoes: GERA (com o campeao
+  ligado) -> TREINA desafiante -> DUELA campeao x desafiante na MESMA
+  partida, lados alternados -> PROMOVE so se passar o portao. Corpus so
+  cresce; historico em `metrics/treino_continuo/historico.json`.
+- **Config POR JOGADOR** (`value_net_weight` / `value_net_path`), mesmo
+  padrao do `use_eval_v2` -- e o que permite campeao x desafiante na
+  mesma partida (sem isso, comparar 2 geracoes exigiria partidas
+  diferentes, medindo sorte junto com motor).
+- **Seam contrafactual** em `_select_action_via_search` -- forca a
+  candidata de rank N numa decisao alvo e captura estado + irmas. NAO e
+  segundo caminho de decisao: e o ponto unico parametrizado (doutrina do
+  `knobs.py`). Desligado por `getattr` -> None: custo zero em producao.
+- **`gerar_pares_contrafactuais.py`** / **`avaliar_pares_contrafactuais.py`**
+- **3 diagnosticos**: `analisar_corpus_valor.py`, `medir_taxa_troca.py`,
+  e o avaliador de pares.
+
+### 5. RESULTADOS DO LACO (3 geracoes, todas DESCARTADAS)
+
+| gen | estados | AUC fora | V-D | winrate | IC95 |
+|---|---|---|---|---|---|
+| 1 | 5.569 | 0,7612 | 27-29 | 48,2% | [35,1; 61,3] |
+| 2 | 6.507 | 0,7645 | 28-29 | 49,1% | [36,1; 62,1] |
+| 3 | 7.413 | 0,7682 | 26-23 | 53,1% | [39,1; 67,0] |
+
+**RESSALVA IMPORTANTE: isto ainda NAO foi iteracao.** Como nada foi
+promovido, as 3 geracoes jogaram com o MESMO campeao -- o dado veio todo
+da mesma politica. O que subiu foi efeito de mais dado, nao do laco. O
+mecanismo que o usuario pediu so comeca a valer depois da 1a promocao.
+
+### 6. TRES ERROS MEUS, CORRIGIDOS NA PROPRIA SESSAO
+
+1. **"AUC subindo monotonicamente / o volume ainda paga"** -- FALSO. A
+   curva de aprendizado ACHATA depois de ~4.000 estados (0,7510 ->
+   0,7682, ganhos dentro do ruido de +-0,005). Gerar mais partidas do
+   mesmo jeito rende pouco.
+2. **"o `value_net` e cego entre irmas por construcao"** -- FALSO. O
+   motor avalia `win_prob(p2, opp2)`, o estado POS-LINHA, que DIFERE
+   entre irmas (`decision_engine.py:19885`). Quem era cego era o meu
+   script de avaliacao, que alimentava o estado PRE-decisao. Os 180
+   pares coletados com aquela versao **nao servem** e serao refeitos.
+3. **"11 horas de simulacao"** -- errado por 2 motivos: (a) a sessao
+   inteira rodou com `--workers 4` numa maquina de **16 nucleos**
+   (~4x de desperdicio, inercia de copiar o exemplo do `CLAUDE.md`);
+   (b) o desenho gastava 2 partidas inteiras pra extrair UMA decisao,
+   e 80% saiam inuteis.
+
+**Tambem corrigido**: a comparacao "gen0 (0,7704) vs tudo (0,7682)" que
+eu usei pra suspeitar que o dado novo piorava era INVALIDA -- misturava
+mudanca de treino com mudanca de conjunto de teste. Com o teste correto
+(mesmos folds, treino diferente): gen0 = 0,7612, tudo = 0,7682,
+**+0,0070 -- o dado novo AJUDOU**.
+
+### 7. AS 3 CORRECOES APLICADAS (codigo pronto, NAO rodado ainda)
+
+1. **workers** -- default agora segue a maquina (`cpu_count()-3` = 13).
+2. **features POS-LINHA** -- o coletor captura o estado que o motor de
+   fato avalia, para as 2 irmas, chamando a MESMA funcao de simulacao da
+   busca (sem reimplementar).
+3. **decisao alvo DISPUTADA** -- em vez de sortear uniforme (20,6% de
+   aproveitamento), forca na primeira decisao "disputada" (vidas com
+   diferenca <=2, turno >=3, ninguem ja ganhou). Criterio GENERICO, sem
+   lider nem carta.
+
+### 8. ONDE INVESTIGAR (o que mudou desde ontem)
+
+Ontem o quadro era "o ML nao funciona e nao sabemos por que". Hoje ha
+uma pergunta unica e testavel, com todo o instrumental pronto:
+
+**O ranker de IRMAS sai de 50%?** Ultima medicao: 54,1%, IC [38,0; 70,1]
+-- inconclusivo por falta de dado, e com o coletor errado. Com o coletor
+corrigido:
+  - **se sair de 50%** -> plugar no ponto de comparacao entre irmas e
+    rodar o laco com portao DUPLO (forca + metrica oficial).
+  - **se continuar cruzando 50%** -> o caminho A morre com numero, e o
+    honesto e ir pra destilacao da busca (opcao B).
+
+Ordem: lote pequeno pra calibrar a taxa real de aproveitamento (a
+estimativa de tempo so vale DEPOIS disso -- ver erro 3 acima), depois o
+lote grande.
+
+### 9. PENDENCIAS
+
+- Os ~9 pontos de `filter_type` (secao 3) -- mesma bomba.
+- `smoke_fast.py` tem 1 falha **pre-existente** (`lider com decklist
+  real do codigo exato (Imu)`), confirmada por `git stash` nas duas
+  levas. Nao investigada.
+- `scikit-learn` instalado local, **fora do `requirements.txt`** (so
+  necessario pra TREINAR; runtime so precisa se o knob for ligado).
+- `metrics/pares_contrafactuais.jsonl` (180 pares) esta commitado mas
+  **OBSOLETO** (sem `pos`) -- serve de historico, nao de treino.
+- Producao **inalterada**: `VALUE_NET_WEIGHT=0.0`, fingerprint sem
+  nao-default.
+
 ## 2026-09-08 (753) - **A METRICA OFICIAL ESTAVA INAUDITAVEL DESDE 05/09** (bug reincidente de `__new__` sem `__init__`, falhando em silencio como "sem dados"), achado ao medir o A/B da funcao de valor por AUTO-JOGO -- que treinou bem (AUC 0,707 fora da amostra) e **NAO pagou** no motor
 
 ### 0. Contexto: o usuario pediu ML, e tinha razao em desconfiar

@@ -1,0 +1,53 @@
+[
+  {
+    "geracao": 1,
+    "quando": "2026-09-08T13:57:44",
+    "partidas_geradas": 80,
+    "estados_corpus": 5569,
+    "auc_fora_amostra": 0.7612388434005666,
+    "peso": 200.0,
+    "portao": 0.55,
+    "vitorias_desafiante": 27,
+    "derrotas_desafiante": 29,
+    "empates": 0,
+    "erros": 4,
+    "decididas": 56,
+    "winrate_desafiante": 0.48214285714285715,
+    "resultado": "descartado (48.2% < 55%)",
+    "promovido": false
+  },
+  {
+    "geracao": 2,
+    "quando": "2026-09-08T14:27:02",
+    "partidas_geradas": 80,
+    "estados_corpus": 6507,
+    "auc_fora_amostra": 0.7644987315019746,
+    "peso": 200.0,
+    "portao": 0.55,
+    "vitorias_desafiante": 28,
+    "derrotas_desafiante": 29,
+    "empates": 0,
+    "erros": 3,
+    "decididas": 57,
+    "winrate_desafiante": 0.49122807017543857,
+    "resultado": "descartado (49.1% < 55%)",
+    "promovido": false
+  },
+  {
+    "geracao": 3,
+    "quando": "2026-09-08T14:55:40",
+    "partidas_geradas": 80,
+    "estados_corpus": 7413,
+    "auc_fora_amostra": 0.7681759386048116,
+    "peso": 200.0,
+    "portao": 0.55,
+    "vitorias_desafiante": 26,
+    "derrotas_desafiante": 23,
+    "empates": 0,
+    "erros": 11,
+    "decididas": 49,
+    "winrate_desafiante": 0.5306122448979592,
+    "resultado": "descartado (53.1% < 55%)",
+    "promovido": false
+  }
+]

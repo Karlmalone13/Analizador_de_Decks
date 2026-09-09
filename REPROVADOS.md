@@ -191,6 +191,35 @@ foi medida — e aí não é reprovação, é opinião.
 > ativa mais. Ficou ATIVA no default. O que ficou desligado
 > (`TIEBREAK_BANDA_Z=0`) e so a banda.
 
+## TETO ESTRUTURAL: 80% das decisoes entre irmas nao mudam o desfecho (bloco 754)
+
+**Nao e uma tentativa reprovada -- e uma MEDICAO que limita familias
+inteiras de tentativa.** Fica aqui porque e o primeiro lugar que uma
+sessao nova consulta antes de propor mecanismo novo.
+
+Contrafactual REAL (180 pares; para cada decisao, os dois ramos jogados
+ate o fim com a mesma seed): **so 20,6% dos pares sao INFORMATIVOS** --
+nos outros 80%, trocar a escolha da MESMA decisao da o MESMO vencedor.
+
+| medicao | resultado | bloco |
+|---|---|---|
+| pares informativos (troca muda o vencedor) | **20,6%** | 754 |
+| taxa de TROCA do valor aprendido (peso 200) | 100% das partidas, mediana a 12% do jogo | 754 |
+| trocas que mudam o vencedor | 28% | 754 |
+| separabilidade das distribuicoes gen0 x gen1-3 | AUC 0,52 | 754 |
+
+**Como usar isto**: antes de propor um mecanismo que atue na ESCOLHA
+entre candidatas de uma mesma decisao, lembre que ~80% dessas escolhas
+sao indiferentes ao desfecho. Ganho ali e limitado por construcao -- o
+que explica, em retrospecto, boa parte dos resultados nulos dos blocos
+641-706 sem precisar de uma causa diferente pra cada um.
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| **SUBIR o peso** do valor aprendido (hipotese: termo inerte) | **REFUTADO antes de implementar**: `medir_taxa_troca.py` mostrou 100% das partidas divergindo, cedo. O termo nunca esteve inerte -- forca do sinal nunca foi o problema | 754 |
+| Laco de geracoes com portao (3 geracoes) | 48,2% / 49,1% / 53,1% de winrate do desafiante, **3 descartes**. RESSALVA: nao foi iteracao -- nada foi promovido, entao as 3 jogaram com o MESMO campeao | 754 |
+| Mais dado de auto-jogo do mesmo regime | curva de aprendizado **ACHATA** apos ~4.000 estados (0,7510 -> 0,7682, ganhos dentro do ruido de +-0,005) | 754 |
+
 ## Funcao de VALOR aprendida por AUTO-JOGO (bloco 753)
 
 Familia DIFERENTE das reprovacoes de imitacao acima -- rotulo = quem

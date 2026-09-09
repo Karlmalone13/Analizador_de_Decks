@@ -1395,6 +1395,38 @@ def _cods(cards) -> list:
     return [getattr(c, 'code', None) for c in (cards or [])]
 
 
+def _descreve_candidata(acao) -> dict:
+    """Descricao NUMERICA de uma candidata, pro coletor contrafactual
+    (bloco 754). Fica no nivel de modulo porque o seam em
+    `_select_action_via_search` roda dentro de um metodo e nao deve
+    carregar logica propria.
+
+    So propriedades GENERICAS lidas da carta (tipo de acao, custo, poder,
+    counter, keywords) -- **nenhum codigo de carta e nenhum lider**. E a
+    mesma disciplina de `value_net.py`: o defeito do bloco 702 foi
+    exatamente um one-hot de lider que fazia o modelo decorar em vez de
+    generalizar, e o objetivo registrado do projeto e jogar bem com
+    QUALQUER deck.
+    """
+    kind = acao[1] if len(acao) > 1 else None
+    obj = acao[2] if len(acao) > 2 else None
+    d = {
+        'score': float(acao[0] or 0.0),
+        'kind': kind,
+        'don': float(acao[3] or 0) if len(acao) > 3 and isinstance(acao[3], (int, float)) else 0.0,
+        'cost': float(getattr(obj, 'cost', 0) or 0),
+        'power': float(getattr(obj, 'power', 0) or 0) / 1000.0,
+        'counter': float(getattr(obj, 'counter', 0) or 0) / 1000.0,
+    }
+    for flag, attr in (('blocker', 'is_blocker'), ('rush', 'is_rush')):
+        try:
+            v = getattr(obj, attr, None)
+            d[flag] = 1.0 if (v() if callable(v) else v) else 0.0
+        except Exception:
+            d[flag] = 0.0
+    return d
+
+
 def _termo(chave: str, valor: float, W: dict) -> float:
     """Contribuicao do termo, registrando o valor CRU quando ligado.
 
@@ -2897,6 +2929,44 @@ def consume_play_cost_reductions(p: GameState, card: Card) -> None:
 def _norm_type_text(text: str) -> str:
     """Normaliza typos conhecidos vindos do texto bruto da base."""
     return (text or '').lower().replace('whitebeard piratess', 'whitebeard pirates')
+
+
+def _ftypes(valor) -> list:
+    """`filter_type` normalizado como LISTA de tipos (semantica de OR).
+
+    ACHADO REAL (08/09/2026, bloco 754): `filter_type` pode vir STRING ou
+    LISTA -- a lista e legitima e o projeto ja sabia disso desde 19/07
+    (ver o comentario em `_reveal_top`, ~linha 4118: "filter_type pode ser
+    uma LISTA (OR de N tipos)"), e `smoke_fast.py` ate testa o caso
+    (Jinbe, `filter_type=['fish-man','merfolk']`). Mas o tratamento certo
+    ficou SO naquele ponto: varios outros consumidores fazem
+    `(c.get('filter_type') or '').lower()`, que **estoura** com lista
+    (`AttributeError: 'list' object has no attribute 'lower'`).
+
+    Onde isso doia: dentro de `_should_activate_main`, chamado por
+    `_generate_and_score_actions`, que roda dentro dos rollouts da busca
+    -- ou seja, a excecao derrubava a PARTIDA inteira. Media real: ~14%
+    das partidas de auto-jogo morriam assim (41 de 300 na geracao do
+    corpus, contadas como "descartadas por erro" sem causa investigada).
+
+    Esta funcao e a FORMA do conserto, nao a instancia: qualquer
+    consumidor novo deve usa-la em vez de assumir string."""
+    if not valor:
+        return []
+    if isinstance(valor, (list, tuple, set)):
+        return [_norm_type_text(str(v)) for v in valor if v]
+    return [_norm_type_text(str(valor))]
+
+
+def _ftype_in(valor, texto: str) -> bool:
+    """`filter_type` (string OU lista) casa com o texto de tipos da carta?
+
+    Sem filtro devolve False -- o chamador decide o que "sem filtro"
+    significa no contexto dele (`not ftypes or _ftype_in(...)` e o padrao
+    usado, que preserva o comportamento anterior de `not ftype or ...`).
+    """
+    alvo = _norm_type_text(texto)
+    return any(f in alvo for f in _ftypes(valor))
 
 
 def _ko_sentence(card: 'Card') -> str:
@@ -16103,7 +16173,11 @@ class OPTCGMatch:
         for c in costs:
             ctype = c.get('type')
             cnt   = c.get('count', 1)
-            ftype = (c.get('filter_type') or '').lower()
+            # `filter_type` pode ser STRING ou LISTA -- ver `_ftypes`
+            # (bloco 754). Antes: `.lower()` direto, que estourava com
+            # lista e derrubava a partida INTEIRA de dentro do rollout.
+            ftypes = _ftypes(c.get('filter_type'))
+            ftype = '/'.join(ftypes)          # so pra mensagem de motivo
 
             if ctype == 'rest_self':
                 if getattr(src, 'rested', False):
@@ -16115,10 +16189,10 @@ class OPTCGMatch:
 
             elif ctype in ('trash_from_hand', 'trash_hand'):
                 color = (c.get('color') or '').lower()
-                if ftype or color or c.get('has_trigger'):
+                if ftypes or color or c.get('has_trigger'):
                     elegíveis = [
                         c2 for c2 in p.hand
-                        if (not ftype or ftype in c2.sub_types.lower())
+                        if (not ftypes or _ftype_in(ftypes, c2.sub_types))
                         and (not color or color in c2.color.lower())
                         and (not c.get('has_trigger') or c2.has_trigger)
                     ]
@@ -16130,7 +16204,7 @@ class OPTCGMatch:
 
             elif ctype == 'trash_typed_hand_or_named_hand_field':
                 named = (c.get('alternate_name') or '').lower()
-                typed = [c2 for c2 in p.hand if ftype in c2.sub_types.lower()]
+                typed = [c2 for c2 in p.hand if _ftype_in(ftypes, c2.sub_types)]
                 named_hand = [c2 for c2 in p.hand if named in c2.name.lower()]
                 named_field = [c2 for c2 in p.field_chars if named in c2.name.lower()]
                 if p.field_stage and named in p.field_stage.name.lower():
@@ -16150,7 +16224,7 @@ class OPTCGMatch:
                 # O filtro de tipo aplica SOMENTE ao personagem de campo.
                 # Qualquer carta da mão qualifica sem restrição de tipo.
                 chars_ok = [c2 for c2 in p.field_chars
-                            if not ftype or ftype in c2.sub_types.lower()]
+                            if not ftypes or _ftype_in(ftypes, c2.sub_types)]
                 hand_ok  = p.hand   # qualquer carta da mão
                 if len(chars_ok) + len(hand_ok) < cnt:
                     return False, (f'custo trash_char_or_hand ({ftype or "qualquer"}): '
@@ -16184,7 +16258,7 @@ class OPTCGMatch:
 
             elif ctype == 'trash_char':
                 chars_ok = [c2 for c2 in p.field_chars
-                            if not ftype or ftype in c2.sub_types.lower()]
+                            if not ftypes or _ftype_in(ftypes, c2.sub_types)]
                 if len(chars_ok) < cnt:
                     return False, (f'custo trash_char ({ftype or "qualquer"}): '
                                    f'só {len(chars_ok)} no campo')
@@ -17889,6 +17963,28 @@ class OPTCGMatch:
 
         return candidatas
 
+    def _cf_disputada(self, p, opp) -> bool:
+        """A partida ainda esta em disputa neste ponto? (coletor do bloco 754)
+
+        Serve pra escolher ONDE forcar o contrafactual. Medido: sorteando a
+        decisao uniformemente, so 20,6% dos pares eram informativos -- em
+        80% deles os dois ramos davam o MESMO vencedor, e duas partidas
+        inteiras eram gastas a toa. Jogo decidido nao muda de dono por
+        causa de uma jogada.
+
+        Criterio GENERICO (sem lider, sem carta, sem codigo): a partida ja
+        andou, ninguem esta em vantagem folgada, e ninguem ja ganhou.
+        """
+        try:
+            vp, vo = p.life_count(), opp.life_count()
+            if vp <= 0 or vo <= 0:
+                return False
+            if abs(vp - vo) > 2:
+                return False
+            return int(getattr(p, 'turn', 0) or 0) >= 3
+        except Exception:
+            return False
+
     def _select_action_via_search(self, p, opp, engine, candidatas, model,
                                    max_steps, extra_own_turn_search,
                                    samples_min, samples_max, batch_size,
@@ -17935,6 +18031,77 @@ class OPTCGMatch:
         (offline: encerra o planejamento do turno; ao vivo: mantém o
         fallback de score imediato já calculado antes desta busca).
         """
+        # ── SEAM DO COLETOR CONTRAFACTUAL (08/09/2026, bloco 754) ───────
+        # Existe pra `gerar_pares_contrafactuais.py` poder responder "e se
+        # o motor tivesse escolhido a OUTRA candidata?" -- a pergunta que
+        # o diagnostico do bloco 754 mostrou ser a que falta: o valor
+        # aprendido troca decisao em 100% das partidas e o resultado nao
+        # muda, sinal de que ele nao distingue IRMAS (as opcoes da mesma
+        # decisao), so estados distantes.
+        #
+        # NAO e um segundo caminho de decisao (`REGRA_SEM_DUPLICACAO.md`):
+        # e o MESMO ponto unico de escolha, parametrizado -- mesma doutrina
+        # do `knobs.py` ("um knob PARAMETRIZA o caminho unico que ja
+        # existe"). Sem os atributos setados, o `getattr` devolve None e
+        # nada acontece: producao intocada, custo zero.
+        idx_decisao = getattr(self, '_cf_contador', None)
+        if idx_decisao is not None:
+            self._cf_contador = idx_decisao + 1
+            alvo = getattr(self, '_cf_forcar_em', None)
+            # DECISAO ALVO = a primeira DISPUTADA a partir do indice `alvo`
+            # (bloco 754, 2a versao). A 1a versao sorteava o indice de forma
+            # uniforme e so 20,6% dos pares saiam INFORMATIVOS -- nos outros
+            # 80% os dois ramos davam o mesmo vencedor e as duas partidas
+            # eram jogadas fora. Forcar numa decisao de jogo ja decidido
+            # (alguem com vida folgada, ou turno 1) quase nunca muda o
+            # desfecho: gasta o mesmo tempo e nao ensina nada.
+            #
+            # "Disputada" e deliberadamente GENERICO (nada de lider/carta):
+            # partida ja andou e as vidas estao perto. Os dois ramos
+            # avaliam o MESMO predicado sobre o MESMO estado ate o ponto de
+            # divergencia, entao ambos param na MESMA decisao -- que e o
+            # que mantem o par comparavel.
+            if alvo is not None and idx_decisao >= alvo and self._cf_forcada is None                     and len(candidatas) >= 2 and self._cf_disputada(p, opp):
+                # Ordena por score estatico (cand[0]) -- ordem estavel e
+                # independente da busca, pra que os dois ramos comparem a
+                # MESMA dupla de candidatas.
+                ordenadas = sorted(candidatas, key=lambda c: c[0], reverse=True)
+                rank = getattr(self, '_cf_rank', 0)
+                if rank < len(ordenadas):
+                    escolhida = ordenadas[rank]
+                    self._cf_forcada = escolhida
+                    # Estado NO MOMENTO da decisao + descricao das duas
+                    # irmas. Capturado aqui porque e o unico ponto que tem
+                    # `p`/`opp` reais e a lista ja recortada -- reconstruir
+                    # isso do lado de fora seria justamente a duplicacao
+                    # que a regra do projeto proibe.
+                    from optcg_engine import value_net as _vn
+                    self._cf_estado = _vn.state_features(p, opp)
+                    self._cf_lider = getattr(p.leader, 'code', None)
+                    self._cf_candidatas = [_descreve_candidata(c) for c in ordenadas[:2]]
+                    # Estado POS-LINHA de cada irma -- o que o motor de
+                    # fato avalia (`value_net.win_prob(p2, opp2)`) e a
+                    # UNICA parte que difere entre elas. Uma simulacao
+                    # determinística por candidata (`amostra=None`), pela
+                    # MESMA funcao que a busca usa: nao ha reimplementacao.
+                    self._cf_pos = []
+                    for _cand in ordenadas[:2]:
+                        _buf = []
+                        self._cf_captura_pos = _buf
+                        try:
+                            self._simulate_sequence_once(
+                                p, opp, _cand, max_steps=max_steps, amostra=None,
+                                extra_own_turn_search=extra_own_turn_search)
+                        except Exception:
+                            pass
+                        finally:
+                            self._cf_captura_pos = None
+                        # Linha que termina em vitoria/derrota sai por
+                        # `return` antes da captura -- ai fica None e o
+                        # gerador descarta o par, em vez de inventar vetor.
+                        self._cf_pos.append(_buf[-1] if _buf else None)
+                    return escolhida, 0.0, [], 0, {}
+
         if model is None:
             # Sem modelo de oponente disponível (só acontece no caminho ao
             # vivo, quando nenhuma camada de fallback de `opponent_model_for_leader`
@@ -19739,6 +19906,26 @@ class OPTCGMatch:
         W = getattr(p, 'eval_weights', None) or EVAL_WEIGHTS
         bonus_alinhamento = (human_alignment * W.get('human_alignment', 0.0)
                             + human_sequence_alignment * W.get('human_sequence_alignment', 0.0))
+
+        # ── CAPTURA DO ESTADO POS-LINHA (bloco 754) ─────────────────────
+        # `p2/opp2` e o estado DEPOIS da linha simulada -- e exatamente o
+        # que `value_net.win_prob` avalia logo abaixo, e o que DIFERE entre
+        # duas irmas da mesma decisao (o estado de ANTES e identico pras
+        # duas).
+        #
+        # Existe por um erro meu, corrigido aqui: a 1a versao do coletor
+        # contrafactual gravava o estado PRE-decisao, igual pras duas
+        # candidatas. Um modelo treinado naquilo nao teria como preferir
+        # uma irma -- e pior, nao era o que o motor consulta. Os 180 pares
+        # coletados com aquela versao nao servem pra treinar e serao
+        # refeitos.
+        #
+        # Desligado por padrao (`getattr` devolve None): custo zero em
+        # producao.
+        _cap = getattr(self, '_cf_captura_pos', None)
+        if _cap is not None:
+            from optcg_engine import value_net as _vn2
+            _cap.append(_vn2.state_features(p2, opp2))
         # DIAGNOSTICO 20/08 (bloco 633, pedido do usuario: "ainda ta
         # influenciando muito? vale manter ou apagar e seguir so com a
         # calibragem dinamica?") -- flag TEMPORARIA pra medir o extremo:
@@ -19756,12 +19943,23 @@ class OPTCGMatch:
         # `win_prob` devolve None quando nao ha modelo treinado/compativel,
         # e ai a soma segue exatamente como sempre -- degradacao graciosa,
         # nunca uma dependencia dura.
+        # Peso e MODELO por JOGADOR (mesmo padrao de `use_eval_v2`/
+        # `eval_weights` logo acima). Existe pro treino continuo poder pos
+        # CAMPEAO contra DESAFIANTE na MESMA partida -- sem isso, comparar
+        # duas geracoes exigiria dois processos com env diferente e
+        # partidas diferentes, o que compara motor+sorte em vez de motor.
+        # None = cai no global (o knob), entao producao nao muda.
+        peso_valor = getattr(p, 'value_net_weight', None)
+        if peso_valor is None:
+            peso_valor = VALUE_NET_WEIGHT
         bonus_valor = 0.0
-        if VALUE_NET_WEIGHT:
+        if peso_valor:
             from optcg_engine import value_net
-            pw = value_net.win_prob(p2, opp2)
+            pw = value_net.win_prob(p2, opp2,
+                                    bundle=value_net.load_value_net(
+                                        getattr(p, 'value_net_path', None)))
             if pw is not None:
-                bonus_valor = (pw - 0.5) * VALUE_NET_WEIGHT
+                bonus_valor = (pw - 0.5) * peso_valor
 
         if use_v2:
             return self._evaluate_state_v2(p2, opp2) + bonus_alinhamento + bonus_valor

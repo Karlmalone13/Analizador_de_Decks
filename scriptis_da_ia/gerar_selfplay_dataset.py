@@ -107,7 +107,7 @@ def _run_one_match(task) -> list:
 
     Cada processo carrega o proprio banco -- sem estado global
     compartilhado, igual `audit_replay._run_one_match`."""
-    i, match_seed = task
+    i, match_seed, peso, modelo_path, geracao = task
     deck_list = _load_deck_list()
     rng = random.Random(match_seed)
     idx_a, idx_b = rng.sample(range(len(deck_list)), 2)
@@ -124,6 +124,18 @@ def _run_one_match(task) -> list:
         match.setup()
     except Exception:
         return []
+
+    # ── O PONTO DA ITERACAO ─────────────────────────────────────────────
+    # As partidas sao jogadas COM o modelo da geracao atual ligado (nos
+    # dois lados). E o que distingue este laco da tentativa de tiro unico
+    # do bloco 753: la o dataset veio de partidas do motor SEM o modelo, e
+    # o modelo foi usado COM ele -- treino e uso em distribuicoes
+    # diferentes. Aqui cada geracao aprende sobre os estados que ela mesma
+    # produz, que e a correcao classica desse problema.
+    if peso:
+        for estado in (match.state_a, match.state_b):
+            estado.value_net_weight = peso
+            estado.value_net_path = modelo_path
 
     amostras = []
     winner = None
@@ -149,6 +161,11 @@ def _run_one_match(task) -> list:
             'side': lado,
             'leader': code_a if lado == 'A' else code_b,
             'turn': turn_num,
+            # `gen` = qual geracao do modelo jogou esta partida. Fica no
+            # dado (nao so no log) porque o treino pode querer pesar as
+            # geracoes recentes, e porque sem isso e impossivel saber
+            # depois de que politica veio cada estado.
+            'gen': geracao,
             'feats': value_net.state_features(p, opp),
         })
 
@@ -171,14 +188,25 @@ def main() -> None:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--n', type=int, default=200, help='partidas de auto-jogo')
     ap.add_argument('--seed', type=int, default=77)
-    ap.add_argument('--workers', type=int, default=1,
+    ap.add_argument('--workers', type=int, default=__import__('multiprocessing').cpu_count() - 3,
                     help='processos paralelos (o projeto EXIGE escolher explicitamente)')
     ap.add_argument('--decks', type=int, default=24, help='quantos lideres distintos')
     ap.add_argument('--out', default=OUT_DEFAULT)
+    ap.add_argument('--weight', type=float, default=0.0,
+                    help='peso do valor aprendido nas partidas GERADAS '
+                         '(0 = motor sem modelo, geracao 0)')
+    ap.add_argument('--model', default=None,
+                    help='modelo usado pra gerar (default: o de value_net.MODEL_PATH)')
+    ap.add_argument('--gen', type=int, default=0, help='numero da geracao, gravado em cada amostra')
+    ap.add_argument('--append', action='store_true',
+                    help='ACRESCENTA ao arquivo em vez de sobrescrever -- '
+                         'o corpus cresce a cada rodada')
     args = ap.parse_args()
 
-    tasks = [(i, args.seed * 1_000_003 + i) for i in range(args.n)]
-    print(f'[selfplay] {args.n} partidas, seed={args.seed}, workers={args.workers}')
+    tasks = [(i, args.seed * 1_000_003 + i, args.weight, args.model, args.gen)
+             for i in range(args.n)]
+    print(f'[selfplay] {args.n} partidas, seed={args.seed}, workers={args.workers}, '
+          f'gen={args.gen}, peso={args.weight}')
 
     resultados = []
     if args.workers > 1:
@@ -205,7 +233,7 @@ def main() -> None:
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    with out.open('w', encoding='utf-8') as fh:
+    with out.open('a' if args.append else 'w', encoding='utf-8') as fh:
         for a in linhas:
             fh.write(json.dumps(a, ensure_ascii=False) + '\n')
 

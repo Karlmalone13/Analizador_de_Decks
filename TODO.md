@@ -1,6 +1,50 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 8 de setembro de 2026
+**Última atualização:** 9 de setembro de 2026
+
+> 09/09/2026 (bloco 754): **80% DAS DECISÕES DO BOT NÃO MUDAM QUEM
+> GANHA.** Medido de frente com contrafactual real (180 pares, 2
+> partidas completas cada — só 20,6% informativos). Isso reinterpreta
+> todos os resultados nulos do ML de uma vez: o termo de valor **troca
+> decisão em 100% das partidas** e muda o vencedor em 28%, mas o winrate
+> fica em ~50% e a distribuição de estados não muda (separabilidade
+> 0,52) — **troca muito, e as trocas são neutras**. Vale além do ML:
+> existe um **teto estrutural** para qualquer mecanismo que atue na
+> escolha entre irmãs, incluindo os já reprovados nos blocos 641-706.
+>
+> **BUG DO MOTOR, corrigido**: `filter_type` pode ser LISTA e
+> `_should_activate_main` fazia `.lower()` direto — a exceção subia pelos
+> rollouts e **matava a partida inteira**. Explica as **41 de 300
+> partidas (13,7%)** que saíam como "descartadas por erro" na geração do
+> corpus, sem causa apurada. Corrigido pela FORMA (`_ftypes`/`_ftype_in`).
+> **PENDENTE — mesma bomba em ~9 pontos**: linhas 3068, 3362, 10960,
+> 12527, 16330, 16355, 16517, 16775, 17025 de `decision_engine.py`.
+>
+> **Construído**: `treino_continuo.py` (laço de gerações com portão
+> campeão × desafiante), config de valor POR JOGADOR, seam contrafactual
+> em `_select_action_via_search`, `gerar_pares_contrafactuais.py`,
+> `avaliar_pares_contrafactuais.py`, `analisar_corpus_valor.py`,
+> `medir_taxa_troca.py`. Produção **inalterada** (`VALUE_NET_WEIGHT=0.0`).
+>
+> **Laço: 3 gerações, 3 descartes** (48,2 / 49,1 / 53,1%). **Ainda não é
+> iteração** — como nada foi promovido, as 3 jogaram com o mesmo campeão.
+>
+> **REFUTADO (hipótese minha)**: "subir o peso" — o termo nunca esteve
+> inerte (100% de divergência). Não tentar.
+>
+> **Erros meus corrigidos na sessão**: (a) a curva de aprendizado
+> **achata** depois de ~4.000 estados, não sobe; (b) o `value_net` **não**
+> é cego entre irmãs (avalia o estado pós-linha) — cego era meu script,
+> e por isso os 180 pares coletados **não servem para treino**; (c) a
+> estimativa de 11h estava errada — a sessão rodou com `--workers 4` numa
+> máquina de **16 núcleos**. Já corrigidos: workers, features pós-linha e
+> escolha de decisão disputada.
+>
+> **PRÓXIMO PASSO, pergunta única**: com o coletor corrigido, **o ranker
+> de irmãs sai de 50%?** (última medição 54,1%, IC [38,0; 70,1] —
+> inconclusivo). Se sair, plugar e rodar o laço com portão duplo (força +
+> métrica oficial). Se continuar cruzando 50%, o caminho contrafactual
+> morre com número e vai-se para a destilação da busca.
 
 > 08/09/2026 (bloco 753): **A MÉTRICA OFICIAL ESTAVA INAUDITÁVEL DESDE
 > 05/09.** `decision_quality_full.py --all` reportava "sem dados (0/0)"

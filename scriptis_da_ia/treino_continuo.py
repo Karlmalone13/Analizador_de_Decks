@@ -1,0 +1,300 @@
+"""
+treino_continuo.py
+==================
+LACO de aprendizado por auto-jogo: o motor joga, aprende com o que jogou,
+e so adota a versao nova se ela PROVAR que e melhor. Roda em geracoes.
+
+Pedido do usuario (08/09/2026): *"o que precisamos fazer e criar uma ML
+que melhore a jogabilidade com o tempo e vai aprendendo com cada
+partida"*.
+
+POR QUE ISTO E DIFERENTE DA TENTATIVA DE TIRO UNICO (bloco 753)
+---------------------------------------------------------------
+No bloco 753 o dataset veio de partidas jogadas pelo motor **sem** o
+modelo, e o modelo foi depois usado **com** ele. Treino e uso em
+distribuicoes diferentes. O modelo aprendeu bem (AUC 0,707 fora da
+amostra) e nao converteu em acerto.
+
+Aqui cada geracao **joga com o modelo da geracao anterior ligado** e
+aprende sobre os estados que ela mesma produz. E a correcao classica
+desse problema, e e o unico caminho de ML que o projeto ainda nao tinha
+testado -- os blocos 680-683 ja mediram que "mais features" NAO resolve.
+
+O CICLO DE UMA GERACAO
+----------------------
+  1. GERA   -- N partidas com o CAMPEAO ligado (peso + modelo atuais).
+               As amostras sao APENDADAS ao corpus, que so cresce.
+  2. TREINA -- reajusta sobre o corpus inteiro, GroupKFold POR LIDER
+               (`treinar_value.py`), num arquivo de DESAFIANTE.
+  3. DUELA  -- campeao x desafiante na MESMA partida, lados alternados
+               (o lado que comeca alterna a cada duelo, senao a vantagem
+               de iniciativa vira "ganho" do modelo).
+  4. PROMOVE se e SO SE o desafiante bater o portao medido. Senao,
+     DESCARTA o desafiante e segue com o campeao -- o corpus fica (o
+     dado nao se perde), so o modelo nao e adotado.
+
+O portao e o ponto todo: sem ele isto vira "treina e reza". Uma geracao
+que nao prova ganho nao entra, e o historico registra as duas coisas.
+
+O QUE ESTE LACO OTIMIZA (e a tensao registrada, nao escondida)
+--------------------------------------------------------------
+O duelo mede FORCA (quem ganha). A metrica OFICIAL do projeto mede
+SEMELHANCA COM O HUMANO. Sao coisas diferentes e podem divergir -- foi
+exatamente por isso que o usuario escolheu o caminho HIBRIDO: o termo de
+alinhamento humano (`human_alignment`) continua na soma da avaliacao e
+age como regularizador.
+
+Por isso `--checar-metrica-oficial` roda `decision_quality_full.py` no
+campeao promovido: forca que sobe as custas de despencar a semelhanca
+humana e um resultado que o usuario precisa VER, nao um detalhe. Nao e
+rodado a cada geracao porque e caro (~10 min).
+
+Uso:
+  python treino_continuo.py --geracoes 5 --partidas 100 --workers 4
+  python treino_continuo.py --geracoes 3 --partidas 60 --workers 4 --duelos 40
+  python treino_continuo.py --status          # so mostra o historico
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import random
+import shutil
+import subprocess
+import sys
+from concurrent.futures import ProcessPoolExecutor
+from datetime import datetime
+from pathlib import Path
+
+if os.environ.get('PYTHONHASHSEED') != '0':
+    os.environ['PYTHONHASHSEED'] = '0'
+    raise SystemExit(subprocess.call([sys.executable] + sys.argv))
+
+sys.path.insert(0, str(Path(__file__).parent))
+
+from optcg_engine.decision_engine import OPTCGMatch
+
+RAIZ = Path(__file__).parent
+CAMPEAO = RAIZ / 'metrics' / 'value_net.joblib'
+DESAFIANTE = RAIZ / 'metrics' / 'value_net_desafiante.joblib'
+CORPUS = RAIZ / 'metrics' / 'selfplay_dataset.jsonl'
+HISTORICO = RAIZ / 'metrics' / 'treino_continuo' / 'historico.json'
+
+
+# ── DUELO: campeao x desafiante ─────────────────────────────────────────
+
+def _duelo(task) -> dict:
+    """1 partida com CONFIGURACOES DIFERENTES nos dois lados.
+
+    `desafiante_e_A` alterna entre duelos: quem joga primeiro tem
+    vantagem estrutural neste jogo, entao sem alternar o resultado
+    mediria iniciativa, nao modelo."""
+    (i, seed, desafiante_e_A, peso_camp, peso_desaf) = task
+    from gerar_selfplay_dataset import _load_deck_list
+
+    deck_list = _load_deck_list()
+    rng = random.Random(seed)
+    idx_a, idx_b = rng.sample(range(len(deck_list)), 2)
+    _code_a, deck_a = deck_list[idx_a]
+    _code_b, deck_b = deck_list[idx_b]
+    random.seed(seed)
+
+    try:
+        match = OPTCGMatch(deck_a, deck_b)
+        match.setup()
+    except Exception:
+        return {'erro': True}
+
+    lado_desaf = match.state_a if desafiante_e_A else match.state_b
+    lado_camp = match.state_b if desafiante_e_A else match.state_a
+    lado_desaf.value_net_weight = peso_desaf
+    lado_desaf.value_net_path = str(DESAFIANTE)
+    lado_camp.value_net_weight = peso_camp
+    lado_camp.value_net_path = str(CAMPEAO) if CAMPEAO.exists() else None
+
+    winner = None
+    try:
+        for turn_num in range(match.MAX_TURNS * 2):
+            p = (match.state_a if match.state_a.is_first else match.state_b) \
+                if turn_num % 2 == 0 \
+                else (match.state_b if match.state_a.is_first else match.state_a)
+            opp = match.state_b if p is match.state_a else match.state_a
+            r = match.play_turn(p, opp)
+            if r:
+                winner = r
+                break
+    except Exception:
+        return {'erro': True}
+
+    if winner is None:
+        return {'empate': True}
+    venceu_desaf = (winner == 'A') == desafiante_e_A
+    return {'desafiante': bool(venceu_desaf)}
+
+
+def duelar(n: int, workers: int, seed: int, peso_camp: float,
+           peso_desaf: float) -> dict:
+    tasks = [(i, seed * 1_000_003 + i, i % 2 == 0, peso_camp, peso_desaf)
+             for i in range(n)]
+    res = []
+    if workers > 1:
+        with ProcessPoolExecutor(max_workers=workers) as ex:
+            res = list(ex.map(_duelo, tasks))
+    else:
+        res = [_duelo(t) for t in tasks]
+
+    vit = sum(1 for r in res if r.get('desafiante') is True)
+    der = sum(1 for r in res if r.get('desafiante') is False)
+    emp = sum(1 for r in res if r.get('empate'))
+    err = sum(1 for r in res if r.get('erro'))
+    decididas = vit + der
+    return {
+        'vitorias_desafiante': vit, 'derrotas_desafiante': der,
+        'empates': emp, 'erros': err, 'decididas': decididas,
+        'winrate_desafiante': (vit / decididas) if decididas else None,
+    }
+
+
+# ── Passos externos (reusam as ferramentas que ja existem) ──────────────
+
+def _rodar(cmd: list, descr: str) -> bool:
+    print(f'  $ {" ".join(str(c) for c in cmd)}')
+    r = subprocess.run([sys.executable] + cmd, cwd=str(RAIZ))
+    if r.returncode != 0:
+        print(f'  [FALHOU] {descr} (codigo {r.returncode})')
+        return False
+    return True
+
+
+def carregar_historico() -> list:
+    if HISTORICO.exists():
+        try:
+            return json.loads(HISTORICO.read_text(encoding='utf-8'))
+        except Exception:
+            return []
+    return []
+
+
+def salvar_historico(h: list) -> None:
+    HISTORICO.parent.mkdir(parents=True, exist_ok=True)
+    HISTORICO.write_text(json.dumps(h, indent=2, ensure_ascii=False), encoding='utf-8')
+
+
+def mostrar_status() -> None:
+    h = carregar_historico()
+    if not h:
+        print('sem historico ainda -- nenhuma geracao rodada.')
+        return
+    print(f'{"gen":>4} | {"estados":>8} | {"AUC fora":>9} | {"winrate":>8} | resultado')
+    print('-----+----------+-----------+----------+----------')
+    for r in h:
+        wr = r.get('winrate_desafiante')
+        wr_s = f'{wr:.1%}' if wr is not None else '   --   '
+        auc = r.get('auc_fora_amostra')
+        auc_s = f'{auc:.4f}' if auc else '   --   '
+        print(f'{r.get("geracao", "?"):>4} | {r.get("estados_corpus", 0):>8} | '
+              f'{auc_s:>9} | {wr_s:>8} | {r.get("resultado", "?")}')
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument('--geracoes', type=int, default=3)
+    ap.add_argument('--partidas', type=int, default=100, help='partidas geradas por geracao')
+    ap.add_argument('--duelos', type=int, default=40, help='partidas do portao campeao x desafiante')
+    ap.add_argument('--workers', type=int, default=__import__('multiprocessing').cpu_count() - 3)
+    ap.add_argument('--peso', type=float, default=200.0,
+                    help='peso do valor aprendido usado ao jogar')
+    ap.add_argument('--portao', type=float, default=0.55,
+                    help='winrate minimo do desafiante pra ser promovido')
+    ap.add_argument('--decks', type=int, default=24)
+    ap.add_argument('--seed', type=int, default=101)
+    ap.add_argument('--status', action='store_true', help='so mostra o historico e sai')
+    args = ap.parse_args()
+
+    if args.status:
+        mostrar_status()
+        return
+
+    historico = carregar_historico()
+    gen_inicial = (historico[-1]['geracao'] + 1) if historico else 1
+
+    for k in range(args.geracoes):
+        gen = gen_inicial + k
+        seed_gen = args.seed + gen * 7919
+        print(f'\n{"="*66}\nGERACAO {gen}\n{"="*66}')
+
+        # Geracao 1 nao tem campeao ainda: joga com peso 0 (motor puro).
+        tem_campeao = CAMPEAO.exists()
+        peso_gerar = args.peso if tem_campeao else 0.0
+        print(f'[1/4] GERA {args.partidas} partidas '
+              f'(campeao {"ligado, peso " + str(peso_gerar) if tem_campeao else "inexistente -- motor puro"})')
+        ok = _rodar(['gerar_selfplay_dataset.py', '--n', str(args.partidas),
+                     '--workers', str(args.workers), '--decks', str(args.decks),
+                     '--seed', str(seed_gen), '--gen', str(gen),
+                     '--weight', str(peso_gerar), '--model', str(CAMPEAO),
+                     '--append', '--out', str(CORPUS)], 'geracao de partidas')
+        if not ok:
+            break
+
+        n_estados = sum(1 for _ in CORPUS.open(encoding='utf-8'))
+        print(f'[2/4] TREINA desafiante sobre {n_estados} estados (corpus acumulado)')
+        ok = _rodar(['treinar_value.py', '--dataset', str(CORPUS),
+                     '--out', str(DESAFIANTE)], 'treino do desafiante')
+        if not ok:
+            break
+        try:
+            import joblib
+            auc = joblib.load(DESAFIANTE).get('auc_fora_amostra')
+        except Exception:
+            auc = None
+
+        registro = {
+            'geracao': gen, 'quando': datetime.now().isoformat(timespec='seconds'),
+            'partidas_geradas': args.partidas, 'estados_corpus': n_estados,
+            'auc_fora_amostra': auc, 'peso': args.peso, 'portao': args.portao,
+        }
+
+        if not tem_campeao:
+            # Sem campeao nao ha duelo possivel: o desafiante VIRA o
+            # campeao inicial. Isso NAO e uma promocao medida, e o marco
+            # zero -- registrado como tal pra ninguem ler o historico
+            # depois achando que a geracao 1 provou alguma coisa.
+            shutil.copyfile(DESAFIANTE, CAMPEAO)
+            registro |= {'resultado': 'marco-zero (sem campeao pra duelar)',
+                         'winrate_desafiante': None, 'promovido': True}
+            print('[3/4] DUELO pulado -- nao havia campeao. Desafiante vira o marco zero.')
+        else:
+            print(f'[3/4] DUELA {args.duelos} partidas (lados alternados)')
+            d = duelar(args.duelos, args.workers, seed_gen + 13, args.peso, args.peso)
+            registro |= d
+            wr = d['winrate_desafiante']
+            print(f'      desafiante {d["vitorias_desafiante"]}-{d["derrotas_desafiante"]} '
+                  f'({"n/d" if wr is None else f"{wr:.1%}"}), '
+                  f'{d["empates"]} empates, {d["erros"]} erros')
+            if wr is not None and wr >= args.portao:
+                shutil.copyfile(DESAFIANTE, CAMPEAO)
+                registro |= {'resultado': f'PROMOVIDO ({wr:.1%} >= {args.portao:.0%})',
+                             'promovido': True}
+                print(f'[4/4] PROMOVIDO -- desafiante vira campeao.')
+            else:
+                registro |= {'resultado': f'descartado ({"n/d" if wr is None else f"{wr:.1%}"} < {args.portao:.0%})',
+                             'promovido': False}
+                print(f'[4/4] DESCARTADO -- campeao mantido. O corpus cresceu mesmo assim.')
+
+        historico.append(registro)
+        salvar_historico(historico)
+
+    print(f'\n{"="*66}\nHISTORICO\n{"="*66}')
+    mostrar_status()
+    print(f'\nhistorico -> {HISTORICO}')
+    print('\nLEMBRETE: o duelo mede FORCA. A metrica OFICIAL mede SEMELHANCA')
+    print('COM O HUMANO. Antes de ligar o knob por default, rodar:')
+    print('  OPTCG_K_VALUE_NET_WEIGHT=<peso> python decision_quality_full.py --all')
+    print('e comparar contra o default -- forca que sobe as custas da')
+    print('semelhanca e uma decisao do usuario, nao um detalhe tecnico.')
+
+
+if __name__ == '__main__':
+    main()
