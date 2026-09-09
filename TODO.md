@@ -2,6 +2,41 @@
 
 **Última atualização:** 9 de setembro de 2026
 
+> 09/09/2026 (bloco 755): **A FUNÇÃO DE VALOR É CEGA EM 58% DAS
+> DECISÕES.** `_simulate_sequence_once` não avalia o estado logo após a
+> ação escolhida — simula **o resto do turno inteiro** e só então chama
+> `_evaluate_state_v2`/`value_net`. Escolher `attack` primeiro ou `play`
+> primeiro leva, na maioria das vezes, ao **mesmo estado de fim de
+> turno** (as duas acabam sendo feitas, em ordem diferente). Medido em 60
+> pares: **35 (58%) têm vetor pós-linha IDÊNTICO** entre as duas irmãs;
+> 20% diferem em 1-7 features; 22% em 8+. Não é bug do coletor —
+> candidatas são ações genuinamente diferentes e `pos != estado_pre` em
+> 60/60.
+>
+> **Fecha o quebra-cabeça dos blocos 753-754 com uma causa única**:
+> `play` parado em 26,6%, separabilidade 0,52, duelos em 50%, os 80% de
+> decisões que não mudam o vencedor, e o paradoxo do AUC 0,77 que nunca
+> virou ganho — o modelo é bom, mas é consultado num ponto onde as
+> alternativas já colapsaram.
+>
+> **MUDANÇA DE RUMO**: o lote grande de pares contrafactuais (~4,5h)
+> está **SUSPENSO** — 58% dos pares nascem sem sinal, por construção.
+> Duas saídas, ambas **SÉRIAS** (exigem autorização, regra de 28/08):
+> (1) avaliar logo após a primeira ação em vez do fim da linha — mata a
+> cegueira na raiz, mas muda o significado da busca inteira; (2) manter a
+> linha e alimentar o modelo com a **descrição da ação** junto do estado
+> — o que a convergência apaga é *qual* foi a primeira ação, e o coletor
+> já grava isso. **Aguardando decisão do usuário.**
+>
+> Dado novo: `metrics/pares_cf_v2.jsonl` (60 pares, coletor corrigido,
+> 60/60 válidos e **zero erros** após o fix do `filter_type`, 26,7%
+> informativos contra 20,6% antes). `pares_contrafactuais.jsonl` (180)
+> segue **obsoleto**, mantido só como histórico.
+>
+> **Correção**: minha afirmação de "4x de desperdício" com `--workers 4`
+> não se confirmou nessa proporção — medição controlada deu 200s (4
+> workers) × 156s (13 workers) = 1,28x, não 3,25x.
+
 > 09/09/2026 (bloco 754): **80% DAS DECISÕES DO BOT NÃO MUDAM QUEM
 > GANHA.** Medido de frente com contrafactual real (180 pares, 2
 > partidas completas cada — só 20,6% informativos). Isso reinterpreta

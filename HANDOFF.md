@@ -28,6 +28,90 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-09-09 (755) - **A FUNCAO DE VALOR E CEGA EM 58% DAS DECISOES** -- a linha simulada converge, e as duas irmas chegam ao MESMO estado de fim de turno. Nao e o modelo: e o PONTO em que ele e consultado
+
+### 1. O achado
+
+Coletor contrafactual corrigido (features POS-LINHA, decisao disputada,
+13 workers), lote de calibragem de 60 pares. Ao conferir o dado antes de
+treinar, os vetores das duas irmas sairam **identicos**:
+
+| estado POS-LINHA das duas irmas | pares |
+|---|---|
+| **IDENTICO (0 de 32 features diferem)** | **35 (58%)** |
+| difere em 1-7 features | 12 (20%) |
+| difere em 8+ features | 13 (22%) |
+
+**Nao e bug do coletor.** Conferido: as candidatas sao acoes genuinamente
+diferentes (`attack` x `play`, scores 268 x 95, custos e poderes
+distintos), e `pos[0] != estado_pre` em 60/60 -- a captura pegou o ponto
+certo.
+
+**A causa e o mecanismo**: `_simulate_sequence_once` NAO avalia o estado
+logo apos a acao escolhida -- ela simula **o resto do turno inteiro**
+(`max_steps=8`) e so entao chama `_evaluate_state_v2` / `value_net`.
+Escolher `attack` primeiro ou `play` primeiro leva, na maioria das vezes,
+ao MESMO estado de fim de turno: as duas acoes acabam sendo feitas, so
+que em ordem diferente. A linha CONVERGE.
+
+Em 58% das decisoes, portanto, a funcao de valor recebe **exatamente o
+mesmo vetor** para as duas opcoes. Nao avalia mal -- nao tem o que
+avaliar. A decisao cai inteira no desempate (`_tb`, alinhamento humano,
+DON).
+
+### 2. ISTO FECHA O QUEBRA-CABECA DOS BLOCOS 753-754
+
+Uma causa unica explica tudo que foi medido e reportado como misterioso:
+
+- `play` nao se move (26,6% -> 26,5%) -- o termo nao tem como preferir
+  uma irma em 58% dos casos;
+- separabilidade gen0 x gen1-3 = 0,52 (distribuicao identica);
+- duelos em ~50%, 3 geracoes descartadas;
+- **80% das decisoes nao mudam o vencedor** (bloco 754) -- se a linha
+  converge pro mesmo estado, o desfecho tende ao mesmo;
+- e o paradoxo central: **AUC 0,77 que nunca virou ganho**. O modelo e
+  bom; esta sendo consultado num ponto onde as alternativas ja
+  colapsaram.
+
+### 3. CONSEQUENCIA PRO PLANO (mudanca de rumo registrada)
+
+**Coletar mais pares contrafactuais NAO resolve.** 58% deles nascem sem
+sinal aproveitavel, por construcao. Eu vinha recomendando o lote grande
+(~4,5h: 60 pares levaram 10m51s com 13 workers, 26,7% informativos) --
+com este numero, seria gastar 4,5h alimentando um modelo num ponto onde
+mais da metade das decisoes nao tem o que distinguir. **Suspenso.**
+
+**Duas saidas, as duas SERIAS (mexem em como a busca avalia -- exigem
+autorizacao, ver a regra de 28/08 no `CLAUDE.md`):**
+
+1. **Avaliar logo apos a PRIMEIRA acao**, nao no fim da linha. Mata a
+   cegueira na raiz, mas muda o significado da busca inteira -- e a
+   mudanca grande e arriscada, e o `SEARCH`/`TOP_K` foi calibrado em
+   cima do comportamento atual.
+2. **Manter a linha, mas dar ao modelo a DIFERENCA que existe**:
+   alimentar a descricao da acao escolhida junto do estado. O que a
+   convergencia apaga e QUAL foi a primeira acao, nao o resultado dela.
+   Menos invasivo, e o coletor ja grava `candidatas` com essa descricao.
+
+### 4. Dado desta sessao
+
+- `metrics/pares_cf_v2.jsonl` -- 60 pares com o coletor CORRIGIDO
+  (60/60 validos, **zero erros** apos o fix do `filter_type`; 26,7%
+  informativos, contra 20,6% da versao com decisao sorteada uniforme).
+- `metrics/pares_contrafactuais.jsonl` (180 pares) continua **OBSOLETO**
+  (sem `pos`), mantido so como historico.
+
+### 5. Sobre `--workers`: minha afirmacao de "4x de desperdicio" NAO se
+confirmou como eu disse
+
+Medicao controlada (13 pares, mesma seed): **4 workers = 200s**,
+**13 workers = 156s** -- 1,28x, nao 3,25x. Esse teste e dominado por
+LATENCIA (13 pares em 13 workers = 1 par por worker, e cada par roda 2
+partidas em sequencia), entao subestima a vazao. No lote de 60 pares o
+paralelismo real apareceu (120 partidas em 651s). Conclusao honesta:
+mais workers ajudam, mas **nao na proporcao que eu afirmei**, e lote
+pequeno nao mede isso.
+
 ## 2026-09-09 (754) - ML por AUTO-JOGO, 2a leva: laco de geracoes, coletor CONTRAFACTUAL, e o achado que reorganiza tudo -- **80% das decisoes do bot NAO mudam quem ganha**. + bug do `filter_type` que matava 14% das partidas em silencio
 
 ### 0. O pedido

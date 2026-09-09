@@ -191,6 +191,34 @@ foi medida — e aí não é reprovação, é opinião.
 > ativa mais. Ficou ATIVA no default. O que ficou desligado
 > (`TIEBREAK_BANDA_Z=0`) e so a banda.
 
+## CAUSA RAIZ: a funcao de valor e CEGA em 58% das decisoes (bloco 755)
+
+**Leia isto antes de propor qualquer mecanismo que atue na funcao de
+valor ou na escolha entre candidatas.** Explica, com uma causa unica,
+por que tanta coisa deu nulo.
+
+`_simulate_sequence_once` avalia o estado no FIM da linha simulada (o
+resto do turno inteiro, `max_steps=8`), nao logo apos a acao escolhida.
+Como as duas irmas costumam acabar fazendo as MESMAS acoes em ordem
+diferente, a linha CONVERGE:
+
+| estado POS-LINHA das duas irmas | pares (de 60) |
+|---|---|
+| **IDENTICO -- 0 de 32 features diferem** | **35 (58%)** |
+| difere em 1-7 features | 12 (20%) |
+| difere em 8+ features | 13 (22%) |
+
+Em 58% das decisoes `_evaluate_state_v2` e o `value_net` recebem o
+**mesmo vetor** para as duas opcoes -- nao avaliam mal, nao tem o que
+avaliar. A decisao cai no desempate (`_tb`, alinhamento humano, DON).
+
+**O que isso torna INUTIL de antemao** (nao repetir):
+- Melhorar o MODELO de valor (mais features, mais dado, outro
+  algoritmo) sem mudar o PONTO de avaliacao. O AUC 0,77 do bloco 753 ja
+  provou que o modelo nao e o gargalo.
+- Coletar mais pares contrafactuais: 58% nascem sem sinal aproveitavel.
+  O lote de ~4,5h foi SUSPENSO por causa deste numero.
+
 ## TETO ESTRUTURAL: 80% das decisoes entre irmas nao mudam o desfecho (bloco 754)
 
 **Nao e uma tentativa reprovada -- e uma MEDICAO que limita familias
