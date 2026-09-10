@@ -12248,6 +12248,27 @@ class GameAnalyzer:
         don_total = max(0, self.me.don_available)
         target_hits = opp_life + 1 if opp_life > 0 else 1
 
+        # PODA DE IMPOSSIBILIDADE (bloco 757) -- provavelmente correta, nao
+        # heuristica: `hits_after_best_defense` devolve a soma dos hits de um
+        # SUBCONJUNTO de `ataques` (unblockable + blockable menos os
+        # n_blockers mais fortes, menos os que o counter segura), entao nunca
+        # passa do teto abaixo. Se `target_hits` ja excede esse teto, NENHUMA
+        # distribuicao de DON fecha o jogo -- DON so muda o PODER de cada
+        # ataque, nunca cria hit novo nem tira blocker. Sem esta porta, a
+        # recursao enumerava as ~530 alocacoes so pra devolver False.
+        #
+        # Ser blockable/unblockable NAO depende do DON, entao o teto e
+        # calculavel uma vez, aqui fora. Pra ser admissivel, descarta os
+        # n_blockers ataques de MENOR hit (o bloqueio real leva os de maior
+        # PODER, que pode ser qualquer um -- descartar os de menor hit da o
+        # maior teto possivel, logo nunca subestima).
+        _hits_unblock = sum(h for _p, u, h in ataques if u)
+        _hits_block = sorted((h for _p, u, h in ataques if not u), reverse=True)
+        _teto_hits = _hits_unblock + sum(_hits_block[:max(0, len(_hits_block) - n_blockers)])
+        if target_hits > _teto_hits:
+            self._lethal_search_cache = (False, None, None)
+            return self._lethal_search_cache
+
         def hits_after_best_defense(powered_attacks):
             unblockable = [a for a in powered_attacks if a[1]]
             bloqueaveis = sorted([a for a in powered_attacks if not a[1]],
@@ -14524,16 +14545,34 @@ class DecisionEngine:
         return penalty
 
     def don_opportunity_cost(self, count: int = 1) -> float:
-        """Custo do DON agora, incluindo a melhor jogada que ele bloquearia."""
+        """Custo do DON agora, incluindo a melhor jogada que ele bloquearia.
+
+        UMA passada sobre a mao (bloco 757). A versao anterior chamava
+        `avaliar_carta` no FILTRO e de novo no `max`, e
+        `effective_hand_play_cost` no FILTRO e de novo no `any` -- perfil de
+        uma partida real: esta funcao sozinha respondia por **91,8% das
+        861.034 chamadas** de `avaliar_carta` (456.933 no filtro + 333.140
+        no `max`), a funcao mais cara do motor inteiro.
+
+        Comportamento IDENTICO: mesmo filtro, mesmos valores, mesma ordem de
+        avaliacao -- inclusive o curto-circuito do `and`, que so avaliava a
+        carta depois de o custo passar (por isso o `continue` vem antes de
+        `avaliar_carta`, nao um filtro em duas etapas).
+        """
         if count <= 0:
             return 0.0
-        playable = [c for c in self.me.hand
-                    if effective_hand_play_cost(self.me, c, self.opp) <= self.me.don_available
-                    and self.avaliar_carta(c) >= 70]
+        don = self.me.don_available
+        jogaveis = []          # (custo, valor) -- cada um calculado UMA vez
+        for c in self.me.hand:
+            custo = effective_hand_play_cost(self.me, c, self.opp)
+            if custo > don:
+                continue
+            valor = self.avaliar_carta(c)
+            if valor >= 70:
+                jogaveis.append((custo, valor))
         base = 25.0 * count
-        if playable and any(effective_hand_play_cost(self.me, c, self.opp)
-                            > self.me.don_available - count for c in playable):
-            base += min(90.0, max(self.avaliar_carta(c) for c in playable) * 0.45)
+        if jogaveis and any(custo > don - count for custo, _v in jogaveis):
+            base += min(90.0, max(v for _c, v in jogaveis) * 0.45)
         return base
 
     def don_return_trigger_value(self, count: int = 1) -> float:

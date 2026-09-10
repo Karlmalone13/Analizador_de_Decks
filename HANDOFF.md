@@ -28,6 +28,104 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-09-09 (757) - Motor 18% mais rapido com DUAS mudancas provadamente sem efeito em decisao -- e uma licao de MEDICAO: o piso de ruido desta maquina e 17%, entao os 3 primeiros percentuais que reportei nao valiam nada
+
+### 1. Contexto: o usuario reclamou que o teste do portao demora demais
+
+Perfil de UMA partida real (`cProfile`, peso 200 dos dois lados) -- e a
+primeira hipotese, que era MINHA e estava ERRADA:
+
+| hipotese | medido | veredito |
+|---|---|---|
+| "o gargalo e o `sklearn` (`predict_proba` de 1 linha custa 2,1ms)" | `win_prob` = **2,0s de 47,5s = 4%** da partida, 786 chamadas | **REFUTADA** -- trocar o modelo por algo mais rapido renderia no maximo 4% |
+
+O custo real e a busca do motor. Topo do perfil, em UMA partida:
+
+| funcao | chamadas | tottime |
+|---|---|---|
+| `avaliar_carta` | **861.034** | 14,1s (81,7s acum.) |
+| `dict.get` | 54.212.647 | 13,1s |
+| `hits_after_best_defense` | 2.878.818 | 9,3s |
+| `search_alloc` (recursiva) | 4.544.872 (de 8.533 de topo) | 32,3s acum. |
+
+### 2. Mudanca 1 -- poda de impossibilidade no lethal search
+
+`search_alloc` enumerava TODAS as distribuicoes de DON entre os ataques
+(~530 nos por chamada de topo) e so no fim descobria que nao fechava.
+Mas `hits_after_best_defense` devolve a soma dos hits de um SUBCONJUNTO
+dos ataques, entao existe um TETO calculavel de fora -- e DON so muda o
+PODER de cada ataque, nunca cria hit novo nem remove blocker. Se
+`target_hits` ja passa do teto, nenhuma alocacao fecha: retorna False sem
+recursao nenhuma. Teto admissivel: hits dos unblockable + hits dos
+blockable descartando os `n_blockers` de MENOR hit (o bloqueio real leva
+os de maior PODER, que pode ser qualquer um -- descartar os de menor hit
+nunca subestima). **Prova, nao heuristica.**
+
+### 3. Mudanca 2 -- `don_opportunity_cost` numa passada so
+
+Contagem por CHAMADOR (nao por funcao) achou o ponto exato:
+**91,8% das 861.034 chamadas de `avaliar_carta` saiam de UMA funcao**,
+`don_opportunity_cost` -- 456.933 no filtro e 333.140 no `max`. Ela
+chamava `avaliar_carta` no FILTRO e DE NOVO no `max`, e
+`effective_hand_play_cost` no FILTRO e DE NOVO no `any`. Virou uma
+passada guardando `(custo, valor)`, preservando o curto-circuito do `and`
+(a carta so e avaliada depois de o custo passar).
+
+Resultado determinístico (nao depende de cronometro):
+**861.034 -> 527.894 chamadas, -38,7%.**
+
+### 4. Comportamento IDENTICO (o que autoriza guardar as duas)
+
+3 seeds (31337, 4242, 909), antes e depois: mesmos vencedores (B/A/B) e
+mesmas contagens de turno (15/16/12). `smoke_fast` OK.
+
+### 5. A LICAO DE MEDICAO -- erro meu, corrigido no meio
+
+Reportei "-11,5%" e depois "-18,3%" de tempo a partir de execucoes
+unicas. Ai a MESMA mudanca, ja validada, deu um tempo MAIOR (132,7s
+contra 105,6s). Medi o piso de ruido: **mesmo codigo, mesma partida, 4
+repeticoes = 17% de variacao no relogio e 14% na CPU** (39,7 -> 33,8s,
+com tendencia de aquecimento de cache). **Os tres percentuais que citei
+estavam DENTRO do ruido.**
+
+Protocolo correto, aplicado depois: 4 repeticoes por versao, comparar o
+MINIMO (menos contaminado).
+
+| rep | baseline | otimizado |
+|---|---|---|
+| 1 | 45,3s | 39,7s |
+| 2 | 41,8s | 35,1s |
+| 3 | 41,5s | 34,4s |
+| 4 | 41,2s | 33,8s |
+
+**As 8 execucoes ficaram perfeitamente separadas** -- a mais lenta das
+otimizadas ainda bate a mais rapida do baseline (rank-sum 4x4 sem
+sobreposicao, p ~ 0,014). **Ganho real: -18,0% no relogio (41,2 ->
+33,8s) e -17,3% na CPU (40,0 -> 33,1s).**
+
+**Regra pra sessoes futuras nesta maquina**: nunca reportar ganho de
+tempo a partir de UMA execucao. O piso e ~15%; abaixo disso so vale
+metrica DETERMINISTICA (contagem de chamadas, nos visitados) ou
+repeticao com comparacao de minimos.
+
+### 6. O que FALTA (proximo passo, ja identificado e NAO feito)
+
+Depois da mudanca 2, **86,6% das chamadas restantes** de `avaliar_carta`
+ainda saem do FILTRO de `don_opportunity_cost` (456.933). A lista
+`jogaveis` **nao depende de `count`** e e identica para todas as
+candidatas pontuadas na mesma decisao (pontuar candidata nao muta
+estado) -- os chamadores em 18819/18836/18970/19051 estao exatamente
+nesse laco.
+
+Memoizar isso e o ganho grande que sobrou, **mas exige carimbo de
+estado**, e ai mora o risco: `avaliar_carta` le board, vida, postura e
+identidade de carta; se o carimbo deixar algo de fora, o cache devolve
+valor velho e o bot passa a decidir diferente EM SILENCIO. Ha precedente
+no proprio motor (`opp_lethal_threat` memoizada por
+`_lethal_threat_stamp`), mas aquele carimbo NAO cobre o que
+`avaliar_carta` le. **Nao fazer sem validar comportamento identico em
+muitos seeds.**
+
 ## 2026-09-09 (756) - A cegueira do bloco 755 e REAL mas INOFENSIVA: 65/65 dos pares convergidos sao a MESMA POSICAO. O que estava quebrado era a REGUA -- o portao de promocao tinha **10,9% de poder estatistico** e descartava melhoria real em 89% das vezes
 
 ### 1. O que o bloco 755 concluiu, e onde ele parou

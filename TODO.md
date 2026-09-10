@@ -2,6 +2,46 @@
 
 **Última atualização:** 9 de setembro de 2026
 
+> 09/09/2026 (bloco 757): **MOTOR 18% MAIS RÁPIDO**, com duas mudanças
+> provadamente sem efeito em decisão (3 seeds: mesmos vencedores B/A/B e
+> mesmos turnos 15/16/12; `smoke_fast` OK). Nasceu da reclamação do
+> usuário de que o teste do portão demora demais.
+>
+> **Minha 1ª hipótese estava ERRADA e foi refutada por medição**: achei
+> que o gargalo fosse o `sklearn` (`predict_proba` de 1 linha custa
+> 2,1 ms) — mas `win_prob` é só **4% da partida** (2,0 s de 47,5 s).
+> Trocar o modelo renderia no máximo 4%.
+>
+> **(1) Poda de impossibilidade no lethal search**: `search_alloc`
+> enumerava todas as ~530 distribuições de DON e só no fim via que não
+> fechava. Como DON só muda o PODER (nunca cria hit nem remove blocker),
+> existe um teto de hits calculável de fora — se `target_hits` já passa
+> dele, retorna False sem recursão. É prova, não heurística.
+> **(2) `don_opportunity_cost` numa passada só**: contagem por CHAMADOR
+> mostrou que **91,8% das 861.034 chamadas de `avaliar_carta` saíam dessa
+> única função** — ela avaliava a carta no filtro E de novo no `max`.
+> Resultado determinístico: **861.034 → 527.894 chamadas (−38,7%)**.
+>
+> **LIÇÃO DE MEDIÇÃO (erro meu, corrigido no meio)**: reportei "−11,5%" e
+> "−18,3%" a partir de execuções únicas, e depois a MESMA mudança deu
+> tempo MAIOR. Medi o piso: **mesmo código, mesma partida, 4 repetições =
+> 17% de variação no relógio e 14% na CPU**. Os três percentuais estavam
+> dentro do ruído. Com protocolo correto (4 reps por versão, comparar
+> mínimos) as 8 execuções ficaram **perfeitamente separadas** (p ≈ 0,014):
+> ganho real **−18,0% no relógio e −17,3% na CPU**.
+> **Regra para esta máquina**: nunca reportar ganho de tempo de UMA
+> execução — o piso é ~15%; abaixo disso, só métrica determinística
+> (contagem de chamadas) ou repetição comparando mínimos.
+>
+> **PENDENTE**: sobraram **86,6% das chamadas** de `avaliar_carta` vindas
+> do FILTRO de `don_opportunity_cost`. A lista `jogaveis` não depende de
+> `count` e é idêntica para todas as candidatas da mesma decisão —
+> memoizar é o ganho grande restante, **mas exige carimbo de estado**, e
+> se ele deixar algo de fora o bot passa a decidir diferente EM SILÊNCIO.
+> Há precedente (`opp_lethal_threat`/`_lethal_threat_stamp`), mas aquele
+> carimbo não cobre o que `avaliar_carta` lê. Não fazer sem validar em
+> muitos seeds.
+
 > 09/09/2026 (bloco 756): **A CEGUEIRA DO 755 É REAL MAS INOFENSIVA — e o
 > que estava quebrado era a RÉGUA.** O 755 perguntou se o vetor pós-linha
 > converge (sim, 58%), mas não perguntou se a **posição** também é a
