@@ -157,6 +157,44 @@ def state_features(p, opp) -> list:
     ]
 
 
+def fingerprint_estado(p, opp) -> dict:
+    """Impressao digital RICA do estado -- diagnostico, nao producao.
+
+    Existe para responder uma pergunta especifica (bloco 756): quando duas
+    irmas da mesma decisao produzem o MESMO vetor de `state_features`, isso
+    e porque a posicao e de fato identica (a linha convergiu, e a diferenca
+    de desfecho e ruido de RNG), ou porque as 32 features -- que sao so
+    contagens e agregados, sem NENHUMA identidade de carta -- achatam duas
+    posicoes realmente diferentes?
+
+    As duas respostas tem correcoes OPOSTAS, entao nao da pra supor.
+    Nao e chamada em producao: so pelo seam `_cf_captura_fp`, que fica
+    None por padrao.
+    """
+    def _cod(cards):
+        return sorted(str(getattr(c, 'code', '?')) for c in cards)
+
+    def _lado(x):
+        chars = _chars(x)
+        return {
+            'mao': _cod(getattr(x, 'hand', []) or []),
+            'campo': sorted(
+                '%s|p=%s|r=%s|d=%s' % (
+                    getattr(c, 'code', '?'),
+                    getattr(c, 'power', 0),
+                    int(bool(getattr(c, 'rested', False))),
+                    len(getattr(c, 'attached_don', []) or []),
+                ) for c in chars),
+            'trash': _cod(getattr(x, 'trash', []) or []),
+            'vida': _num(x.life_count),
+            'n_deck': _num(lambda: len(x.deck)),
+            'don_campo': _num(x.don_on_field),
+            'don_disp': _num(lambda: getattr(x, 'don_available', 0)),
+        }
+
+    return {'eu': _lado(p), 'opp': _lado(opp)}
+
+
 def load_value_net(path: str | None = None):
     """Carrega (com cache) o modelo. None se indisponivel -- sem
     sklearn/joblib, ou sem modelo treinado ainda."""

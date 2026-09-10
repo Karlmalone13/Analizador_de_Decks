@@ -88,7 +88,8 @@ def _workers_padrao() -> int:
         return 4
 
 
-def _um_ramo(deck_a, deck_b, seed: int, decisao_alvo: int, rank: int) -> dict:
+def _um_ramo(deck_a, deck_b, seed: int, decisao_alvo: int, rank: int,
+             quer_fp: bool = False, parar_apos_decisao: bool = False) -> dict:
     """Joga a partida inteira forcando, na decisao `decisao_alvo`, a
     candidata de `rank`. Devolve vencedor + o que foi capturado no seam."""
     random.seed(seed)
@@ -104,6 +105,10 @@ def _um_ramo(deck_a, deck_b, seed: int, decisao_alvo: int, rank: int) -> dict:
     match._cf_lider = None
     match._cf_pos = None
     match._cf_captura_pos = None
+    match._cf_captura_fp = None
+    match._cf_fp = None
+    # Diagnostico (bloco 756): so liga a impressao digital rica quando pedido.
+    match._cf_quer_fp = quer_fp
 
     winner = None
     lado_decisor = None
@@ -119,6 +124,10 @@ def _um_ramo(deck_a, deck_b, seed: int, decisao_alvo: int, rank: int) -> dict:
         if r:
             winner = r
             break
+        # Diagnostico: o fingerprint das duas irmas ja foi capturado no
+        # seam; jogar o resto da partida so gasta tempo.
+        if parar_apos_decisao and match._cf_forcada is not None:
+            break
 
     return {
         'forcou': match._cf_forcada is not None,
@@ -132,6 +141,7 @@ def _um_ramo(deck_a, deck_b, seed: int, decisao_alvo: int, rank: int) -> dict:
         'pos': match._cf_pos,
         'leader': match._cf_lider,
         'decisoes_totais': match._cf_contador,
+        'fp': match._cf_fp,
     }
 
 

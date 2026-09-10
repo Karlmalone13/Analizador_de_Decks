@@ -219,6 +219,73 @@ avaliar. A decisao cai no desempate (`_tb`, alinhamento humano, DON).
 - Coletar mais pares contrafactuais: 58% nascem sem sinal aproveitavel.
   O lote de ~4,5h foi SUSPENSO por causa deste numero.
 
+
+> **RETIFICACAO 09/09 (bloco 756) -- a leitura acima esta CERTA no numero
+> e ERRADA na conclusao.** O 58% e real e reproduziu exato (35/60 na
+> mesma seed). Mas o bloco 755 nao perguntou se a POSICAO tambem e a
+> mesma quando o vetor converge -- e as 32 features sao so contagens e
+> agregados, **sem nenhuma identidade de carta**, entao duas posicoes
+> diferentes colapsariam no mesmo vetor com facilidade. Medido com
+> impressao digital rica (codigos de carta na mao/campo/trash, DON
+> anexado personagem a personagem, vida, deck): **65 de 65 pares
+> convergidos sao a MESMA POSICAO**, em duas amostras independentes
+> (seed 909: 30/30; seed 2001: 35/35). Ferramenta:
+> `diagnostico_convergencia.py` + `value_net.fingerprint_estado()`.
+>
+> **Consequencia: "o modelo esta cego e precisa enxergar" e um
+> ENQUADRAMENTO REPROVADO.** Onde ele esta cego nao ha o que ver -- a
+> decisao e genuinamente indiferente, e fazer o modelo "distinguir" ali
+> seria ensina-lo a preferir uma de duas coisas iguais.
+>
+> | saida proposta pelo bloco 755 | veredito | bloco |
+> |---|---|---|
+> | (1) avaliar logo apos a PRIMEIRA acao em vez do fim da linha | **fora de pauta** -- conserta o lugar errado; a convergencia nao e defeito de ponto de avaliacao, e indiferenca real | 756 |
+> | (2) alimentar o modelo com a DESCRICAO da acao escolhida | **fora de pauta pelo mesmo motivo** -- daria ao modelo um sinal pra separar estados que sao identicos de fato | 756 |
+>
+> **E o dado de treino e pior do que o 755 reportou**: dos 16 pares
+> "informativos" de `pares_cf_v2.jsonl`, **10 tem posicao identica e
+> desfecho diferente** -- so pode ser o fluxo de RNG dessincronizado
+> apos a decisao forcada. **62,5% dos rotulos informativos sao RUIDO.**
+> A taxa real de par util e **~10%**, nao os 26,7% reportados. Isso
+> explica de outro angulo a linha "a curva ACHATA apos ~4.000 estados":
+> mais partidas do mesmo regime injetam mais ruido na mesma proporcao.
+
+## ERRO DE MEDICAO: o portao de promocao tinha 10,9% de poder (bloco 756)
+
+**Nao e uma tentativa reprovada -- e a regua que reprovava as
+tentativas.** Entra aqui pelo mesmo motivo dos outros erros de medicao
+ja registrados: o resultado nulo era da ferramenta, nao do mecanismo.
+
+O portao do `treino_continuo.py` exigia **media >= 55% em ~54 partidas
+decididas**. Para esse portao ter 80% de poder estatistico precisaria de
+**~782 partidas**. Poder real: **10,9%** -- uma geracao genuinamente 55%
+melhor seria DESCARTADA em 89% das vezes.
+
+| geracao | estados | AUC fora | winrate | IC95 |
+|---|---|---|---|---|
+| 1 | 5.569 | 0,7612 | 48,2% | [35,1; 61,3] |
+| 2 | 6.507 | 0,7645 | 49,1% | [36,1; 62,1] |
+| 3 | 7.413 | 0,7682 | 53,1% | [39,1; 67,0] |
+| agregado | | | 50,0% | [42,3; 57,7] |
+
+**As 3 geracoes descartadas sao INCONCLUSIVAS, nao negativas** -- a
+entrada "Laco de geracoes com portao (3 geracoes)" da tabela acima tem
+que ser lida com esta ressalva. O modelo de fato melhora conforme joga
+(AUC +0,69 ponto com corpus +33%); o teste e que nao conseguia ver.
+
+**Corrigido (bloco 756)**: espelho pareado (mesma seed => mesmo par de
+decks e mesmo embaralhamento, lados trocados; so conta quem vence dos
+DOIS lados, par dividido = sem informacao) + portao por **limite
+inferior do IC95 de Wilson** em vez da media, porque o pareamento cria
+um risco novo de n decidido pequeno. Validado por teste A/A: motores
+identicos dao 8 pares TODOS divididos e 0 decididos, como previsto.
+**O ganho de PODER continua NAO MEDIDO** -- o A/A valida correcao, nao
+poder.
+
+**Licao pra sessoes futuras**: antes de registrar um resultado nulo como
+reprovacao, conferir o PODER do teste que produziu esse nulo. Um portao
+sem poder nao reprova mecanismo -- ele so nao mede.
+
 ## TETO ESTRUTURAL: 80% das decisoes entre irmas nao mudam o desfecho (bloco 754)
 
 **Nao e uma tentativa reprovada -- e uma MEDICAO que limita familias

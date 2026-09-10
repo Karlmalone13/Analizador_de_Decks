@@ -134,16 +134,100 @@ def _duelo(task) -> dict:
 
 
 def duelar(n: int, workers: int, seed: int, peso_camp: float,
-           peso_desaf: float) -> dict:
-    tasks = [(i, seed * 1_000_003 + i, i % 2 == 0, peso_camp, peso_desaf)
-             for i in range(n)]
-    res = []
+           peso_desaf: float, pareado: bool = True) -> dict:
+    """Portao campeao x desafiante.
+
+    `pareado=True` (default desde o bloco 756) usa ESPELHO PAREADO: cada
+    par de partidas roda a MESMA seed -- e portanto o MESMO par de decks e
+    o MESMO embaralhamento (`_duelo` deriva os dois da seed) -- uma vez com
+    o desafiante do lado A e outra do lado B. So conta o par em que o mesmo
+    modelo vence dos DOIS lados; par dividido significa que quem decidiu foi
+    o matchup/iniciativa, nao o modelo, e entra como SEM INFORMACAO.
+
+    Por que mudou (medido, bloco 756): o desenho anterior sorteava seed E
+    par de decks novos a cada duelo, entao a variancia somava matchup +
+    embaralhamento + lado. Com ~54 partidas decididas o portao de 55% tinha
+    **10,9% de poder** -- uma geracao genuinamente melhor era descartada em
+    89% das vezes, que e exatamente o que as 3 primeiras geracoes fizeram
+    (48,2% / 49,1% / 53,1%, todas com IC95 de +-13pp incluindo 50%). O
+    portao nao estava reprovando modelo ruim: nao estava conseguindo medir.
+
+    O desenho espelho+pareado e o MESMO que ja tinha resolvido um problema
+    de variancia identico na calibragem do score de mao (commit 41731f5,
+    bloco 752): sem ele a forca de deck vazava pros coeficientes.
+
+    `_duelo` continua sendo a UNICA funcao que roda uma partida de duelo --
+    aqui so muda como as tarefas sao geradas e contadas.
+    """
+    if not pareado:
+        tasks = [(i, seed * 1_000_003 + i, i % 2 == 0, peso_camp, peso_desaf)
+                 for i in range(n)]
+        return _contar_solto(tasks, workers)
+
+    # n partidas => n//2 pares espelhados (mesma seed, lados trocados).
+    n_pares = max(1, n // 2)
+    tasks = []
+    for j in range(n_pares):
+        sj = seed * 1_000_003 + j
+        tasks.append((2 * j, sj, True, peso_camp, peso_desaf))
+        tasks.append((2 * j + 1, sj, False, peso_camp, peso_desaf))
+
+    res = _rodar_tasks(tasks, workers)
+
+    vit = der = div = descartados = 0
+    for j in range(n_pares):
+        a, b = res[2 * j], res[2 * j + 1]
+        if a.get('erro') or b.get('erro') or a.get('empate') or b.get('empate'):
+            descartados += 1
+            continue
+        ga, gb = a['desafiante'], b['desafiante']
+        if ga and gb:
+            vit += 1          # desafiante venceu dos DOIS lados
+        elif (not ga) and (not gb):
+            der += 1          # campeao venceu dos DOIS lados
+        else:
+            div += 1          # dividido: decidiu o matchup/iniciativa
+    decididos = vit + der
+    return {
+        'vitorias_desafiante': vit, 'derrotas_desafiante': der,
+        'empates': div, 'erros': descartados, 'decididas': decididos,
+        'winrate_desafiante': (vit / decididos) if decididos else None,
+        'pareado': True, 'pares_rodados': n_pares,
+        'pares_divididos': div, 'partidas': len(tasks),
+    }
+
+
+def limite_inferior_wilson(vitorias: int, n: int, z: float = 1.96) -> float:
+    """Limite INFERIOR do IC de Wilson pra proporcao.
+
+    Existe por um risco que o espelho pareado CRIA (bloco 756): pares
+    divididos nao contam, entao o n de pares DECIDIDOS pode ficar pequeno --
+    e um portao que olha so a media (`vitorias/n >= 0.55`) promoveria com
+    2 de 3 (66,7%) em cima de ruido puro. O limite inferior resolve os dois
+    lados de uma vez: com n pequeno ele fica bem abaixo da media e barra
+    sozinho, e com n grande converge pra media. Wilson (nao normal simples)
+    porque n pequeno e proporcao perto de 0/1 quebram a aproximacao normal.
+    """
+    if n <= 0:
+        return 0.0
+    p = vitorias / n
+    d = 1.0 + z * z / n
+    centro = (p + z * z / (2 * n)) / d
+    margem = (z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5)) / d
+    return max(0.0, centro - margem)
+
+
+def _rodar_tasks(tasks: list, workers: int) -> list:
     if workers > 1:
         with ProcessPoolExecutor(max_workers=workers) as ex:
-            res = list(ex.map(_duelo, tasks))
-    else:
-        res = [_duelo(t) for t in tasks]
+            return list(ex.map(_duelo, tasks))
+    return [_duelo(t) for t in tasks]
 
+
+def _contar_solto(tasks: list, workers: int) -> dict:
+    """Contagem do desenho ANTIGO (nao pareado), mantida so pra comparacao
+    A/B -- ver o docstring de `duelar`."""
+    res = _rodar_tasks(tasks, workers)
     vit = sum(1 for r in res if r.get('desafiante') is True)
     der = sum(1 for r in res if r.get('desafiante') is False)
     emp = sum(1 for r in res if r.get('empate'))
@@ -206,10 +290,21 @@ def main() -> None:
     ap.add_argument('--workers', type=int, default=__import__('multiprocessing').cpu_count() - 3)
     ap.add_argument('--peso', type=float, default=200.0,
                     help='peso do valor aprendido usado ao jogar')
-    ap.add_argument('--portao', type=float, default=0.55,
-                    help='winrate minimo do desafiante pra ser promovido')
+    ap.add_argument('--portao', type=float, default=0.50,
+                    help='o LIMITE INFERIOR do IC95 do winrate (Wilson) tem que '
+                         'passar deste valor pro desafiante ser promovido. Default '
+                         '0.50 = "melhor que cara-ou-coroa com significancia". '
+                         'Mudou de media>=0.55 no bloco 756: com espelho pareado os '
+                         'pares divididos nao contam, entao o n decidido pode ficar '
+                         'pequeno e uma media alta em 2 de 3 pares e ruido')
+    ap.add_argument('--portao-media', dest='portao_media', action='store_true',
+                    help='volta ao portao ANTIGO (media >= --portao). So pra A/B')
     ap.add_argument('--decks', type=int, default=24)
     ap.add_argument('--seed', type=int, default=101)
+    ap.add_argument('--nao-pareado', dest='nao_pareado', action='store_true',
+                    help='usa o desenho ANTIGO do portao (seed e decks novos a cada '
+                         'duelo). So pra comparacao A/B -- medido com 10,9%% de poder '
+                         'estatistico, ver docstring de duelar() (bloco 756)')
     ap.add_argument('--status', action='store_true', help='so mostra o historico e sai')
     args = ap.parse_args()
 
@@ -254,6 +349,7 @@ def main() -> None:
             'geracao': gen, 'quando': datetime.now().isoformat(timespec='seconds'),
             'partidas_geradas': args.partidas, 'estados_corpus': n_estados,
             'auc_fora_amostra': auc, 'peso': args.peso, 'portao': args.portao,
+            'portao_modo': 'media' if args.portao_media else 'limite_inferior_wilson',
         }
 
         if not tem_campeao:
@@ -267,13 +363,29 @@ def main() -> None:
             print('[3/4] DUELO pulado -- nao havia campeao. Desafiante vira o marco zero.')
         else:
             print(f'[3/4] DUELA {args.duelos} partidas (lados alternados)')
-            d = duelar(args.duelos, args.workers, seed_gen + 13, args.peso, args.peso)
+            d = duelar(args.duelos, args.workers, seed_gen + 13, args.peso,
+                       args.peso, pareado=not args.nao_pareado)
             registro |= d
             wr = d['winrate_desafiante']
-            print(f'      desafiante {d["vitorias_desafiante"]}-{d["derrotas_desafiante"]} '
-                  f'({"n/d" if wr is None else f"{wr:.1%}"}), '
-                  f'{d["empates"]} empates, {d["erros"]} erros')
-            if wr is not None and wr >= args.portao:
+            if d.get('pareado'):
+                print(f'      ESPELHO PAREADO: {d["pares_rodados"]} pares '
+                      f'({d["partidas"]} partidas), desafiante venceu dos DOIS '
+                      f'lados em {d["vitorias_desafiante"]}, perdeu dos dois em '
+                      f'{d["derrotas_desafiante"]}, {d["pares_divididos"]} divididos '
+                      f'(sem informacao), {d["erros"]} descartados')
+                print(f'      winrate sobre pares decididos: '
+                      f'{"n/d" if wr is None else f"{wr:.1%}"} (n={d["decididas"]})')
+            else:
+                print(f'      desafiante {d["vitorias_desafiante"]}-{d["derrotas_desafiante"]} '
+                      f'({"n/d" if wr is None else f"{wr:.1%}"}), '
+                      f'{d["empates"]} empates, {d["erros"]} erros')
+            lim = limite_inferior_wilson(d['vitorias_desafiante'], d['decididas'])
+            if d['decididas']:
+                print(f'      limite inferior do IC95 (Wilson): {lim:.1%} '
+                      f'-- portao exige > {args.portao:.0%}')
+            aprovou = ((wr is not None and wr >= args.portao) if args.portao_media
+                       else (d['decididas'] > 0 and lim > args.portao))
+            if aprovou:
                 shutil.copyfile(DESAFIANTE, CAMPEAO)
                 registro |= {'resultado': f'PROMOVIDO ({wr:.1%} >= {args.portao:.0%})',
                              'promovido': True}

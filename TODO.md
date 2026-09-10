@@ -2,6 +2,81 @@
 
 **Última atualização:** 9 de setembro de 2026
 
+> 09/09/2026 (bloco 756): **A CEGUEIRA DO 755 É REAL MAS INOFENSIVA — e o
+> que estava quebrado era a RÉGUA.** O 755 perguntou se o vetor pós-linha
+> converge (sim, 58%), mas não perguntou se a **posição** também é a
+> mesma. As 32 features são só contagens e agregados, **sem nenhuma
+> identidade de carta** — duas posições diferentes colapsam no mesmo
+> vetor com facilidade, e as duas hipóteses tinham correções OPOSTAS.
+> Medido com impressão digital rica (códigos de carta na mão/campo/trash,
+> DON anexado por personagem, vida, deck): **65 de 65 pares convergidos
+> são a MESMA POSIÇÃO**, em duas amostras independentes (seed 909: 30/30;
+> seed 2001, as mesmas do corpus: 35/35 — reproduzindo o 58,3% do 755).
+> **Quando a linha converge, não há o que ver: a decisão é genuinamente
+> indiferente.** As duas saídas propostas pelo 755 consertariam o lugar
+> errado — a saída (1) ensinaria o modelo a preferir uma de duas coisas
+> iguais. **Ambas saem de pauta**, e o lote grande de pares segue suspenso
+> por outro motivo que não o do 755.
+>
+> **62,5% dos rótulos "informativos" são RUÍDO de RNG** (10 dos 16 pares
+> de `pares_cf_v2.jsonl` têm posição idêntica e desfecho diferente — só
+> pode ser o fluxo aleatório dessincronizado). Casa com `REPROVADOS.md`
+> linha 249 ("a curva ACHATA após ~4.000 estados"): mais partidas do mesmo
+> regime injetam mais ruído na mesma proporção. A taxa real de par útil é
+> **~10%**, não os 26,7% reportados como "informativos".
+>
+> **ACHADO PRINCIPAL — o portão de promoção tinha 10,9% de poder
+> estatístico.** Exigia média ≥ 55% com ~54 partidas decididas; para 80%
+> de poder precisaria de **~782**. Uma geração genuinamente 55% melhor
+> seria **descartada em 89% das vezes**. As 3 gerações rejeitadas
+> (48,2%/49,1%/53,1%, todas com IC95 de ±13pp incluindo 50%) são
+> **inconclusivas, não negativas** — e o modelo de fato melhora conforme
+> joga (AUC 0,7612 → 0,7682 com corpus +33%). Mesma classe de erro que o
+> `REPROVADOS.md` já registra: a régua estava torta, não o motor.
+>
+> **CONSERTADO — espelho pareado + limite inferior de Wilson** (desenho
+> escolhido pelo usuário entre pareado/SPRT/aumentar n; não é mecanismo
+> novo: é o mesmo do commit `41731f5` que resolveu variância idêntica na
+> calibragem do score de mão). Cada par roda a MESMA seed — logo o mesmo
+> par de decks e o mesmo embaralhamento — com os lados trocados; só conta
+> quem vence dos DOIS lados, e par dividido entra como **sem informação**.
+> `_duelo` continua a única função que roda uma partida (motor único
+> intacto). **Validado por teste A/A**: motores idênticos → 8 pares, todos
+> divididos, 0 decididos, exatamente o previsto. O pareamento cria um
+> risco NOVO (n decidido pequeno → média alta em 2 de 3 é ruído), corrigido
+> junto: o portão passou a olhar o **limite inferior do IC95 (Wilson)** em
+> vez da média — 2/3 dá limite 20,8% e barra; 60/100 dá 50,2% e passa.
+> Flags `--nao-pareado` e `--portao-media` preservam o desenho antigo pra
+> A/B.
+>
+> **A/B REAL MEDIDO — o desenho é praticável.** 12 pares / 24 partidas
+> (peso 0 × peso 200): **7 divididos (58%), 5 decididos (42% de
+> aproveitamento)**, zero descartes. O portão recusou promover (2×3,
+> limite de Wilson 11,8%) — coerente com o bloco 753, que já media que
+> peso 200 não paga. Custo: **22,7 s/partida** com 2 workers → 30 pares
+> decididos = 142 partidas = **54 min**, e nesse n o desafiante precisa
+> vencer 21 (70%) para passar.
+>
+> **PENDENTE, não assumir resolvido**: (a) o **ganho de PODER continua não
+> medido** — o A/A valida correção e o A/B mede custo/aproveitamento, mas
+> nenhum dos dois prova que o pareado detecta melhoria real melhor que o
+> desenho antigo para o mesmo número de partidas; exigiria dois motores
+> com diferença de força CONHECIDA, e **não vale afirmar "N vezes melhor"
+> sem esse número**; (b) limpar os rótulos convergidos na coleta é o
+> **próximo passo acordado com o usuário**, depois do portão; (c) nenhuma
+> geração foi rodada com o portão novo ainda.
+>
+> **Achado de ambiente — oversubscription de threads BLAS**: com
+> `peso=200` o `value_net` é consultado em cada simulação e cada processo
+> abria threads próprias de `sklearn`/`numpy` — **1,34 núcleo por worker**
+> numa máquina de 2 núcleos (2 workers pedindo ~2,7). Fixando
+> `OMP/MKL/OPENBLAS/NUMEXPR_NUM_THREADS=1`: **0,93 núcleo por worker**.
+> Pendente fixar isso dentro dos scripts de ML em vez de depender de
+> exportar a variável na mão.
+>
+> **Ambiente**: máquina do usuário é i3-8130U de **2 núcleos** — os
+> exemplos de `--workers 4` do `CLAUDE.md` a travam; usar `--workers 2`.
+
 > 09/09/2026 (bloco 755): **A FUNÇÃO DE VALOR É CEGA EM 58% DAS
 > DECISÕES.** `_simulate_sequence_once` não avalia o estado logo após a
 > ação escolhida — simula **o resto do turno inteiro** e só então chama

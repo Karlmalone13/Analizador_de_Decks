@@ -18085,9 +18085,13 @@ class OPTCGMatch:
                     # determinística por candidata (`amostra=None`), pela
                     # MESMA funcao que a busca usa: nao ha reimplementacao.
                     self._cf_pos = []
+                    self._cf_fp = []
                     for _cand in ordenadas[:2]:
                         _buf = []
+                        _bufp = []
                         self._cf_captura_pos = _buf
+                        if getattr(self, '_cf_quer_fp', False):
+                            self._cf_captura_fp = _bufp
                         try:
                             self._simulate_sequence_once(
                                 p, opp, _cand, max_steps=max_steps, amostra=None,
@@ -18096,10 +18100,12 @@ class OPTCGMatch:
                             pass
                         finally:
                             self._cf_captura_pos = None
+                            self._cf_captura_fp = None
                         # Linha que termina em vitoria/derrota sai por
                         # `return` antes da captura -- ai fica None e o
                         # gerador descarta o par, em vez de inventar vetor.
                         self._cf_pos.append(_buf[-1] if _buf else None)
+                        self._cf_fp.append(_bufp[-1] if _bufp else None)
                     return escolhida, 0.0, [], 0, {}
 
         if model is None:
@@ -19926,6 +19932,14 @@ class OPTCGMatch:
         if _cap is not None:
             from optcg_engine import value_net as _vn2
             _cap.append(_vn2.state_features(p2, opp2))
+        # DIAGNOSTICO (bloco 756): impressao digital RICA do mesmo p2/opp2,
+        # pra distinguir "linha convergiu de verdade" (ruido de RNG) de
+        # "as 32 features acharam duas posicoes diferentes". Default None
+        # => custo zero em producao, mesmo padrao do seam acima.
+        _capfp = getattr(self, '_cf_captura_fp', None)
+        if _capfp is not None:
+            from optcg_engine import value_net as _vn3
+            _capfp.append(_vn3.fingerprint_estado(p2, opp2))
         # DIAGNOSTICO 20/08 (bloco 633, pedido do usuario: "ainda ta
         # influenciando muito? vale manter ou apagar e seguir so com a
         # calibragem dinamica?") -- flag TEMPORARIA pra medir o extremo:

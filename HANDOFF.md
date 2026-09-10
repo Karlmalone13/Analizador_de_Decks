@@ -28,6 +28,160 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-09-09 (756) - A cegueira do bloco 755 e REAL mas INOFENSIVA: 65/65 dos pares convergidos sao a MESMA POSICAO. O que estava quebrado era a REGUA -- o portao de promocao tinha **10,9% de poder estatistico** e descartava melhoria real em 89% das vezes
+
+### 1. O que o bloco 755 concluiu, e onde ele parou
+
+O 755 mediu que em **58% das decisoes** as duas irmas produzem o MESMO
+vetor de `state_features`, porque `_simulate_sequence_once` so avalia no
+FIM do turno e a linha converge. Conclusao dele: "a funcao de valor e
+cega", com duas saidas propostas, ambas classificadas como SERIAS
+(avaliar logo apos a 1a acao, ou alimentar a acao escolhida ao modelo).
+
+**O que ele NAO perguntou**: quando o vetor converge, a POSICAO tambem e
+a mesma? As 32 features sao so contagens e agregados -- vida, tamanho de
+mao, DON, nº de personagens, poder somado, custo somado, blockers,
+counter total, deck/trash, turno -- **sem NENHUMA identidade de carta**.
+Duas posicoes diferentes podem colapsar no mesmo vetor com facilidade.
+
+Isso deixava duas explicacoes com correcoes OPOSTAS:
+- **(A)** a linha convergiu de verdade -> a diferenca de desfecho e ruido
+  de RNG (os ramos dessincronizam o fluxo aleatorio apos a decisao
+  forcada), e esses rotulos ENVENENAM o treino;
+- **(B)** as features acharam posicoes diferentes -> e sinal legitimo, e
+  a correcao e enriquecer FEATURE, nao mexer no ponto de avaliacao.
+
+### 2. Medido: e (A), sem nenhuma duvida -- 65/65
+
+Ferramenta nova: `value_net.fingerprint_estado()` (impressao digital RICA
+-- codigos de carta na mao/campo/trash, DON anexado personagem a
+personagem, vida, tamanho de deck) + seam `_cf_captura_fp` em
+`_simulate_sequence_once`, **desligado por default** (custo zero em
+producao, mesmo padrao do `_cf_captura_pos` que ja existia). Script:
+`diagnostico_convergencia.py`.
+
+| amostra | convergidos | (A) posicao IDENTICA | (B) achatada |
+|---|---|---|---|
+| seed 909 (independente) | 30 de 60 (50,0%) | **30 (100%)** | 0 |
+| seed 2001 (as MESMAS do corpus v2) | 35 de 60 (58,3%) | **35 (100%)** | 0 |
+
+O 58,3% na seed 2001 reproduz exatamente o numero do bloco 755. **Quando
+a linha converge, e literalmente a mesma posicao.** Logo a "cegueira" NAO
+e defeito: nao ha o que distinguir, e a decisao e genuinamente
+indiferente. As duas saidas propostas pelo 755 consertariam o lugar
+errado -- a saida 1 ("avaliar apos a 1a acao") ensinaria o modelo a
+preferir uma de duas coisas iguais.
+
+**Consequencia direta pro treino**: no corpus `pares_cf_v2.jsonl`, dos 16
+pares "informativos" (desfecho difere), **10 tem posicao identica** -- ou
+seja **62,5% dos rotulos informativos sao RUIDO de RNG**, nao sinal. Isso
+casa com o que ja estava em `REPROVADOS.md` linha 249 ("mais dado de
+auto-jogo do mesmo regime: a curva ACHATA apos ~4.000 estados"): mais
+partidas do mesmo tipo injetam mais ruido na mesma proporcao.
+
+Nos 6 pares em que o modelo PODE distinguir, ele acertou 4 (`win_prob`
+separando de verdade, ex. 0,311 x 0,707). n pequeno demais pra concluir,
+mas nao contradiz o AUC 0,77.
+
+### 3. O achado que MUDA O PLANO: o portao tinha 10,9% de poder
+
+Investigando por que o laco de geracoes nunca promove (pedido do usuario:
+*"o ML tem que fazer o bot ir melhorando quanto mais ele joga"*):
+
+| ger | estados | AUC fora | winrate desaf. | IC95 |
+|---|---|---|---|---|
+| 1 | 5.569 | 0,7612 | 48,2% | [35,1; 61,3] |
+| 2 | 6.507 | 0,7645 | 49,1% | [36,1; 62,1] |
+| 3 | 7.413 | 0,7682 | 53,1% | [39,1; 67,0] |
+| **agregado** | | | **50,0%** (81/162) | [42,3; 57,7] |
+
+O modelo MELHORA conforme joga (AUC +0,69 ponto, corpus +33%). A subida
+aparente de 48,2 -> 53,1 e **ruido**: com n~54 o IC e de +-13pp.
+
+**E o portao exigia media >= 55% com ~54 partidas decididas.** Para esse
+portao ter 80% de poder precisaria de **~782 partidas**. Poder real:
+**10,9%** -- uma geracao genuinamente 55% melhor seria DESCARTADA em 89%
+das vezes. As 3 geracoes rejeitadas nao sao evidencia contra o ML: sao um
+experimento **inconclusivo**. Mesma classe de erro que o `REPROVADOS.md`
+ja registra ("a regua estava torta, nao o motor"). `REPROVADOS.md` linha
+248 ja tinha a ressalva de que "nao foi iteracao -- nada foi promovido,
+entao as 3 jogaram com o MESMO campeao"; agora se sabe POR QUE.
+
+### 4. Conserto do portao: ESPELHO PAREADO + limite inferior de Wilson
+
+Escolhido pelo usuario entre 3 opcoes (pareado / SPRT / so aumentar n).
+Nao e mecanismo novo: e o MESMO desenho que ja resolveu variancia
+identica na calibragem do score de mao (commit `41731f5`, bloco 752 --
+"espelho + pareado + posicao como controle").
+
+- `duelar(..., pareado=True)` (novo default): cada par roda a MESMA seed
+  -- e portanto o MESMO par de decks e o MESMO embaralhamento, porque
+  `_duelo` deriva os dois da seed -- uma vez com o desafiante no lado A e
+  outra no lado B. So conta o par em que o mesmo modelo vence dos DOIS
+  lados. Par dividido = quem decidiu foi matchup/iniciativa, entra como
+  SEM INFORMACAO. Remove matchup e lado como fontes de variancia.
+  `_duelo` continua sendo a UNICA funcao que roda uma partida (regra do
+  motor unico intacta -- so mudou a geracao e a contagem das tarefas).
+  `--nao-pareado` preserva o desenho antigo pra A/B.
+- **Validado por TESTE A/A** (motores identicos, peso 0 dos dois lados):
+  16 partidas -> **8 pares, TODOS divididos, 0 decididos, winrate n/d**,
+  exatamente o previsto. Sem diferenca real o portao diz "sem
+  informacao" em vez de gastar amostra num 50% ruidoso.
+- **Risco NOVO que o pareamento cria, e o conserto junto**: pares
+  divididos nao contam, entao o n decidido pode ficar pequeno -- e um
+  portao de media promoveria com 2 de 3 (66,7%) em cima de ruido. Por
+  isso o portao passou a olhar o **limite inferior do IC95 (Wilson)**,
+  nao a media: `limite_inferior_wilson()`. Medido: 2/3 -> limite 20,8%
+  (barra), 60/100 -> limite 50,2% (passa). Default `--portao 0.50`
+  (= "melhor que cara-ou-coroa com significancia"); `--portao-media`
+  volta ao antigo pra A/B.
+
+### 5. O QUE FALTA (nao medido ainda -- nao assumir que esta resolvido)
+
+- **Taxa de divididos num A/B real: MEDIDA, e o desenho e PRATICAVEL.**
+  Campeao sem value_net (peso 0) x desafiante com (peso 200), 12 pares /
+  24 partidas: **7 divididos (58%), 5 DECIDIDOS (42% de aproveitamento)**,
+  zero descartes. O portao funcionou: desafiante 2 x campeao 3, limite
+  inferior de Wilson **11,8%** -> recusou promover. (Coerente com o bloco
+  753, que ja media que peso 200 nao paga -- n minusculo, so nao
+  contradiz.)
+  Custo medido: **22,7s por partida** com 2 workers. Planejamento:
+  20 pares decididos = 96 partidas = 36 min; **30 = 142 partidas = 54
+  min**; 50 = 238 partidas = 1,5h. Com 30 pares decididos o desafiante
+  precisa vencer 21 (70%) pro limite de Wilson passar de 50%.
+- **O ganho de PODER continua NAO MEDIDO.** O A/A valida CORRECAO (motores
+  identicos -> todos divididos) e este A/B mede CUSTO e APROVEITAMENTO --
+  nenhum dos dois mede se o pareado detecta melhoria real melhor que o
+  desenho antigo pro mesmo numero de partidas. Isso exigiria dois motores
+  com diferenca de forca CONHECIDA. Nao afirmar "N vezes melhor" sem esse
+  numero.
+- **Limpar os rotulos convergidos na coleta** foi decidido com o usuario
+  como PROXIMO passo, depois do portao (sem portao que enxerga, nao da
+  pra provar que limpar ajudou). Atencao: a taxa real de par util cai pra
+  ~10%, nao os 26,7% que o bloco 755 reportou como "informativos".
+- Nenhuma geracao foi rodada com o portao novo ainda.
+
+### 6. Nota de ambiente (maquina do usuario)
+
+i3-8130U, **2 nucleos**. Os exemplos de `--workers 4` do `CLAUDE.md`
+travam esta maquina; usar `--workers 2`.
+
+**ACHADO: OVERSUBSCRIPTION de threads BLAS nas rodadas de ML.** Com
+`peso=200` o `value_net` e consultado dentro de CADA simulacao, e cada
+processo do `ProcessPoolExecutor` abria threads proprias de
+`sklearn`/`numpy`. Medido: **1,34 nucleo por worker** (1.444s de CPU em
+1.080s de relogio) x 2 workers = ~2,7 nucleos pedidos numa maquina de 2 --
+os processos brigavam entre si. Com `OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
+OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1`: **0,93 nucleo por worker**
+(210s em 225s), sem disputa. O paralelismo real vem do
+`ProcessPoolExecutor`, nao das threads BLAS. **Pendente**: fixar isso
+DENTRO dos scripts de ML (`treino_continuo.py`,
+`gerar_selfplay_dataset.py`, `gerar_pares_contrafactuais.py`) em vez de
+depender de quem lembra de exportar a variavel. Junto: um `AdobeARM.exe` estava
+preso em loop consumindo 5,4% de CPU continuo (tarefa `Adobe Acrobat
+Update Task` desativada) e 1,82 GB de temp foram limpos -- os picos de
+CPU a 100% sumiram, media 49,5% -> 43,4%.
+
 ## 2026-09-09 (755) - **A FUNCAO DE VALOR E CEGA EM 58% DAS DECISOES** -- a linha simulada converge, e as duas irmas chegam ao MESMO estado de fim de turno. Nao e o modelo: e o PONTO em que ele e consultado
 
 ### 1. O achado
