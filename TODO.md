@@ -27,6 +27,30 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 10/09/2026 (bloco 763): **ALVO na busca MEDIDO pela 1ª vez — 96% dos pares
+> EMPATAM.** O knob `ALVO_EFEITO_NA_BUSCA` (pronto desde 29/08, nunca ligado)
+> foi testado com knob LIGADO no desafiante e DESLIGADO no campeão na mesma
+> partida — o que exigiu costura nova, porque knob é do processo e ligaria
+> para os dois lados (override por jogador `_alvo_efeito_na_busca(p)` +
+> `extras` viajando na tarefa até o SPRT).
+> Resultado: 200 pares / 400 partidas, **193 empates (96%)**, só 7
+> discordantes, **INCONCLUSIVO**. O placar (1×6) não diz nada com n=7 — o
+> número que importa é o empate de 96%, contra 78% do A/B do `value_net`.
+> Ligar alvo na busca quase nunca muda quem ganha.
+> **Sanidade antes do lote**: knob=False gera 0 variantes, knob=True gera 125
+> numa partida — o código funciona, há material para escolher.
+> **HIPÓTESE A TESTAR**: a busca está mesmo escolhendo alvo DIFERENTE da
+> heurística? A avaliação é no fim do turno e as 32 features são CONTAGENS —
+> eliminar o personagem A ou o B com poder parecido deixa tudo quase idêntico,
+> então a régua não distinguiria e escolheria arbitrariamente do mesmo jeito.
+> Se confirmado, o problema não é "alvo fora da busca", é **a régua não
+> enxergar diferença entre alvos** — mesmo erro de forma do bloco 755.
+> Medição barata que decide (NÃO rodada): contar quantas vezes a busca escolhe
+> alvo diferente de `max(board_value)`.
+> **NÃO concluir** que "alvo na busca não funciona": deu inconclusivo, não
+> negativo. E o knob não foi testado COM o `value_net` ligado.
+> `ALVO_REGUA_UNIFICADA` segue sem medição.
+
 > 10/09/2026 (bloco 762): **A PROMOÇÃO DA GERAÇÃO 4 ERA FALSO POSITIVO.**
 > Passou com 11×3 em 14 pares discordantes (Wilson 52,4%); o re-teste por SPRT
 > deu **12×19 em 31 discordantes (38,7%)** e cruzou o limite inferior em 140

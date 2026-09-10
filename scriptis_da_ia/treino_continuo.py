@@ -90,7 +90,14 @@ def _duelo(task) -> dict:
     `desafiante_e_A` alterna entre duelos: quem joga primeiro tem
     vantagem estrutural neste jogo, entao sem alternar o resultado
     mediria iniciativa, nao modelo."""
-    (i, seed, desafiante_e_A, peso_camp, peso_desaf) = task
+    # 6o elemento OPCIONAL (bloco 763): atributos extras por lado, ex.
+    # {'alvo_efeito_na_busca': True}. Viaja na TAREFA porque os workers sao
+    # processos separados (spawn) -- global do pai nao chega neles.
+    if len(task) == 6:
+        (i, seed, desafiante_e_A, peso_camp, peso_desaf, extras) = task
+    else:
+        (i, seed, desafiante_e_A, peso_camp, peso_desaf) = task
+        extras = None
     from gerar_selfplay_dataset import _load_deck_list
 
     deck_list = _load_deck_list()
@@ -112,6 +119,11 @@ def _duelo(task) -> dict:
     lado_desaf.value_net_path = str(DESAFIANTE)
     lado_camp.value_net_weight = peso_camp
     lado_camp.value_net_path = str(CAMPEAO) if CAMPEAO.exists() else None
+    if extras:
+        for k, v in (extras.get('desafiante') or {}).items():
+            setattr(lado_desaf, k, v)
+        for k, v in (extras.get('campeao') or {}).items():
+            setattr(lado_camp, k, v)
 
     winner = None
     try:
@@ -134,7 +146,7 @@ def _duelo(task) -> dict:
 
 
 def duelar(n: int, workers: int, seed: int, peso_camp: float,
-           peso_desaf: float, pareado: bool = True) -> dict:
+           peso_desaf: float, pareado: bool = True, extras: dict = None) -> dict:
     """Portao campeao x desafiante.
 
     `pareado=True` (default desde o bloco 756) usa ESPELHO PAREADO: cada
@@ -169,8 +181,12 @@ def duelar(n: int, workers: int, seed: int, peso_camp: float,
     tasks = []
     for j in range(n_pares):
         sj = seed * 1_000_003 + j
-        tasks.append((2 * j, sj, True, peso_camp, peso_desaf))
-        tasks.append((2 * j + 1, sj, False, peso_camp, peso_desaf))
+        if extras is None:
+            tasks.append((2 * j, sj, True, peso_camp, peso_desaf))
+            tasks.append((2 * j + 1, sj, False, peso_camp, peso_desaf))
+        else:
+            tasks.append((2 * j, sj, True, peso_camp, peso_desaf, extras))
+            tasks.append((2 * j + 1, sj, False, peso_camp, peso_desaf, extras))
 
     res = _rodar_tasks(tasks, workers)
 
@@ -221,7 +237,7 @@ def duelar_sprt(workers: int, seed: int, peso_camp: float, peso_desaf: float,
                 p0: float = 0.50, p1: float = 0.65,
                 alpha: float = 0.05, beta: float = 0.05,
                 pares_por_lote: int = 20, max_pares: int = 200,
-                progresso=None) -> dict:
+                progresso=None, extras: dict = None) -> dict:
     """Portao por PARADA SEQUENCIAL (SPRT de Wald) -- default desde o bloco 762.
 
     POR QUE SUBSTITUIU o portao de Wilson (medido, nao teorico): em 10/09 a
@@ -259,7 +275,7 @@ def duelar_sprt(workers: int, seed: int, peso_camp: float, peso_desaf: float,
         lote += 1
         d = duelar(n=pares_por_lote * 2, workers=workers,
                    seed=seed + lote * 1000, peso_camp=peso_camp,
-                   peso_desaf=peso_desaf, pareado=True)
+                   peso_desaf=peso_desaf, pareado=True, extras=extras)
         vit += d['vitorias_desafiante']
         der += d['derrotas_desafiante']
         div += d['pares_divididos']

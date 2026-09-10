@@ -815,6 +815,19 @@ _k.registra('ALVO_EFEITO_MAX_CANDIDATOS', 3, int,
             'empatam e expulsam cartas diferentes do shortlist.')
 
 
+def _alvo_efeito_na_busca(p) -> bool:
+    """`ALVO_EFEITO_NA_BUSCA` com override POR JOGADOR (bloco 763).
+
+    Mesmo padrao de `value_net_weight`/`use_eval_v2`: `None` cai no knob
+    global, entao producao nao muda. Existe porque o knob e do PROCESSO
+    (env > arquivo > default, com cache) e o duelo precisa dos DOIS LADOS
+    diferentes na MESMA partida -- sem isto, ligar o knob ligaria pros dois
+    e o duelo mediria 50% por construcao, sem dizer nada.
+    """
+    v = getattr(p, 'alvo_efeito_na_busca', None)
+    return _k.get('ALVO_EFEITO_NA_BUSCA') if v is None else bool(v)
+
+
 def _steps_com_alvo(ef) -> list:
     """Steps de UM efeito que escolhem alvo no oponente, na ordem em que a
     execucao os percorre. Desce em estruturas aninhadas (choice/then/
@@ -18524,7 +18537,7 @@ class OPTCGMatch:
             # simulando o estado resultante de cada uma -- que e o
             # mecanismo que ja da 69,3% em alvo de ataque contra 16,4%
             # aqui.
-            if _k.get('ALVO_EFEITO_NA_BUSCA'):
+            if _alvo_efeito_na_busca(p):
                 for combo in _variantes_de_alvo(card, opp, 'on_play'):
                     actions.append((score, 'play', card, 'effect_target', combo))
 
@@ -18757,7 +18770,7 @@ class OPTCGMatch:
             actions.append((score, 'activate', src, None, None))
             # Mesma estrutura do play (ver `_variantes_de_alvo`): a escolha
             # de alvo de um [Activate: Main] tambem era 100% heuristica.
-            if _k.get('ALVO_EFEITO_NA_BUSCA'):
+            if _alvo_efeito_na_busca(p):
                 for combo in _variantes_de_alvo(src, opp, 'activate_main'):
                     actions.append((score, 'activate', src, 'effect_target', combo))
 

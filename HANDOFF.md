@@ -53,6 +53,77 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-10 (763) - ALVO na busca MEDIDO pela 1a vez: **96% dos pares EMPATAM** -- ligar o knob quase nunca muda quem ganha. INCONCLUSIVO com 400 partidas, e a suspeita e que a REGUA nao distingue alvos
+
+### 1. O que foi medido
+
+O knob `ALVO_EFEITO_NA_BUSCA` existe desde 29/08 (commit `3c3f4a0`, 23
+sitios costurados) e **nunca tinha sido ligado nem medido** (bloco 762).
+
+Desenho: knob LIGADO no desafiante, DESLIGADO no campeao, na MESMA
+partida. Isso exigiu costura nova -- os knobs sao do PROCESSO (`env >
+arquivo > default`, com cache), entao ligar o knob ligaria pros DOIS lados
+e o duelo daria 50% por construcao. Criado `_alvo_efeito_na_busca(p)` com
+override POR JOGADOR (mesmo padrao de `value_net_weight`/`use_eval_v2`;
+`None` cai no knob global, producao inalterada) e `extras` viajando na
+TAREFA ate o SPRT (workers sao processos separados -- global do pai nao
+chega neles).
+
+ML DESLIGADO dos dois lados (peso 0) de proposito: mede a mudanca
+ESTRUTURAL sozinha.
+
+**Sanidade antes do lote** (caminho nunca executado): knob=False gera 0
+variantes de alvo, knob=True gera **125 numa partida**. O codigo funciona
+e ha material real pra busca escolher.
+
+### 2. O resultado
+
+```
+pares rodados       : 200 (400 partidas, 10 lotes)
+ALVO-na-busca 2x0   : 1
+heuristica fixa 2x0 : 6
+divididos (empate)  : 193  (96%)
+discordantes        : 7
+LLR                 : -1,878  (sup +2,94 / inf -2,94)
+VEREDITO            : INCONCLUSIVO (teto de 200 pares)
+tempo               : 69 min
+```
+
+**O numero que importa nao e o placar (1x6 com n=7 nao diz nada, e o SPRT
+corretamente se recusou a concluir) -- e os 96% de EMPATE.** Em 193 de 200
+pares, ligar a escolha de alvo na busca **nao mudou quem ganhou**.
+
+Comparacao: o A/B do `value_net` empatou 78% dos pares. Este empata
+**96%**. O efeito e AINDA MENOR.
+
+### 3. Hipotese a testar antes de qualquer veredito
+
+**A busca esta de fato escolhendo alvo DIFERENTE da heuristica?**
+
+A avaliacao acontece no FIM DO TURNO, e as 32 features sao CONTAGENS
+(vida, n de personagens, poder somado, custo somado). Eliminar o
+personagem A ou o B, com poder parecido, deixa essas contagens quase
+IDENTICAS -- a busca teria material pra escolher, mas a regua nao teria
+como distinguir, e acabaria escolhendo arbitrariamente do mesmo jeito.
+
+Se for isso, o diagnostico muda de lugar: o problema **nao** e "alvo fora
+da busca", e sim que **a regua nao enxerga diferenca entre alvos**. Colocar
+alvo na busca seria consertar o cano errado -- mesmo erro de forma do
+bloco 755 (a funcao de valor "cega" onde nao havia o que ver).
+
+**Medicao barata que decide**: contar quantas vezes a busca escolhe alvo
+diferente do que `max(board_value)` escolheria. Se for perto de zero, a
+hipotese esta confirmada. NAO RODADA ainda.
+
+### 4. O que NAO se pode concluir daqui
+
+- **Nao** se pode dizer que "alvo na busca nao funciona". O teste deu
+  INCONCLUSIVO, nao negativo -- com 7 pares discordantes nao ha poder.
+- **Nao** se testou o knob COM o `value_net` ligado. Aqui quem escolhia
+  entre as variantes era a avaliacao escrita a mao. Seria outro teste.
+- `ALVO_REGUA_UNIFICADA` (alvo por `char_value_score` em vez de
+  `board_value`) continua **sem medicao**.
+
 ## 2026-09-10 (762) - **A PROMOCAO DA GERACAO 4 ERA FALSO POSITIVO** (12x19 no re-teste contra 11x3 na promocao). Portao trocado pro SPRT, promocao desfeita -- e o modelo so DECIDE a acao de topo, apesar de VER 32 features
 
 ### 1. O falso positivo, medido
