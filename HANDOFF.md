@@ -28,6 +28,95 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-09-10 (760) - **PRIMEIRA PROMOCAO DO PROJETO** (com o portao consertado) e **A META OFICIAL MUDOU**: de "jogar identico ao humano" para "VENCER O HUMANO"
+
+### 1. O portao novo funcionou -- geracao 4 PROMOVIDA
+
+Primeira promocao em 4 geracoes. As 3 anteriores foram descartadas por um
+portao com 10,9% de poder (bloco 756); esta passou pelo desenho novo:
+
+```
+ESPELHO PAREADO: 71 pares (142 partidas)
+  desafiante venceu dos DOIS lados: 11
+  campeao venceu dos dois:           3
+  divididos (sem informacao):       57
+  pares DECIDIDOS:                  14
+  winrate 78,6%   limite Wilson 52,4%  ->  PROMOVIDO (exige > 50%)
+```
+
+Corpus 8.729 estados, AUC fora da amostra 0,7682 -> **0,7785**.
+
+**TRES RESSALVAS, todas registradas antes de qualquer comemoracao:**
+
+1. **Passagem MARGINAL.** Sensibilidade medida: 11/14 da limite 52,4% e
+   passa; **10/14 daria 45,4% e REPROVARIA**. Uma partida de distancia.
+2. **Meu numero de planejamento errou por 2x.** Previ 58% de divididos
+   (amostra de 12 pares do bloco 756); saiu **80%** (57 de 71). Esperava
+   ~30 pares decididos, vieram 14. Amostra de 12 e pequena demais pra
+   estimar essa taxa -- mesma classe do erro dos percentuais de tempo do
+   bloco 757, em escala menor. **Pra 30 pares decididos sao ~150 pares
+   (300 partidas), nao 71.**
+3. **Producao NAO mudou**: `VALUE_NET_WEIGHT` segue **0.0**. A promocao so
+   trocou o campeao pro proximo ciclo de treino. Ligar por default
+   continua sendo mudanca SERIA.
+
+### 2. A META OFICIAL DO PROJETO MUDOU (decisao do usuario, 10/09/2026)
+
+Ao ser avisado de que ganhar forca pode custar semelhanca com humano:
+*"nao tem problema, eu tinha estipulado essa meta de 85-90% porque a
+gente estava trabalhando com pesos e o bot estava jogando ruim, como
+agora estamos com machine learning, o objetivo muda"*.
+
+Desenho escolhido por ele: *"semelhanca com guarda corpo, como suporte
+para um objetivo maior que e vencer eu, o humano [...] de vez em quando a
+gente testa o bot contra mim"*.
+
+| nivel | o que e | como se mede |
+|---|---|---|
+| **OBJETIVO FINAL** | **vencer o usuario**, humano real | partidas reais no OPTCGSim, periodicamente |
+| **ALVO DE TRABALHO** | cada geracao bate a anterior | duelo espelho pareado + Wilson |
+| **GUARDA-CORPO** | semelhanca com humano | `decision_quality_full.py`, **sem numero a atingir** |
+
+**A meta antiga nao foi abandonada por ser dificil -- deixou de ser
+necessaria.** Os 85-90% eram um SUBSTITUTO pra "jogar bem", escolhido
+quando o mecanismo era peso ajustado a mao e nao havia outra regua. Com
+ML aprendendo por RESULTADO, a regua virou o resultado.
+
+**Ressalva que EU levantei e o usuario resolveu**: em auto-jogo puro e
+classico o bot ficar forte explorando peculiaridades do proprio motor --
+vence a si mesmo cada vez melhor e piora contra gente, sem o duelo
+acusar. A semelhanca era o que detectava isso. **O teste periodico contra
+o usuario fecha esse buraco**, e foi ideia dele -- e o unico teste imune
+a deriva de auto-jogo.
+
+**Como ler o guarda-corpo** (nao e mais veredito): queda pequena ou
+gradual e ESPERADA (o bot joga diferente por ser melhor). So escale se a
+queda for GRANDE, ABRUPTA e acompanhada de outra evidencia de deriva.
+
+### 3. Onde isso foi escrito
+
+- `CLAUDE.md` e `AGENTS.md`: secao "META OFICIAL" reescrita **nos dois,
+  byte-a-byte identica** (regra do espelho). Os numeros da meta antiga
+  ficaram como HISTORICO e LINHA DE BASE do guarda-corpo, nao como alvo.
+- Memoria local: criada `project_meta_vencer_o_humano.md`; **removida**
+  `project_imitar_humano_e_jogar_melhor.md` (contradita pela decisao);
+  `feedback_metrica_e_o_agregado_de_tudo` e
+  `feedback_o_teto_e_escolhido_nao_medido` atualizadas -- a 2a mantem o
+  principio inteiro, so desacoplado do numero 85-90.
+
+### 4. Continua valendo, sem mudanca
+
+QUALQUER DECK, recorte POR LIDER obrigatorio, REGRA DO MOTOR UNICO, e a
+regra do que e SERIO (28/08).
+
+### 5. Proximo passo em aberto
+
+O usuario ainda nao decidiu entre: (a) confirmar o portao com lote maior
+(~150 pares, ~50 min, transforma o marginal em solido), ou (b) medir o
+guarda-corpo agora (`decision_quality_full.py --all` com peso 200 vs 0,
+COM recorte por lider). Com a meta nova, (b) deixou de ser bloqueante --
+e diagnostico, nao aprovacao.
+
 ## 2026-09-10 (759) - `don_opportunity_cost` congelada por ESCOPO EXPLICITO (nao por carimbo de estado) -- +12%, com detector opt-in que transforma a falha silenciosa em erro visivel
 
 ### 1. O problema

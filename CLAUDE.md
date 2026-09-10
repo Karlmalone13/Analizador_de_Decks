@@ -298,199 +298,84 @@ Referências oficiais das regras (manual, playsheet) em
 > `IA_Compendium/RESUMO_ESTRATEGICO.md` acima — o placar dá o "quanto",
 > o catálogo dá o "o que era esperado".
 
-## META OFICIAL E OBRIGATORIA: `play` (jogar IDENTICO ao humano) de 28% pra 85-90%
+## META OFICIAL (SUBSTITUIDA EM 10/09/2026): VENCER O HUMANO, via forca medida, com semelhanca como GUARDA-CORPO
 
-### CORRECAO DA METRICA OFICIAL (28/08/2026) -- e ACERTO POR JOGADA, nao conjunto exato
+> **O usuario TROCOU a meta oficial em 10/09/2026.** Ela era "jogar
+> IDENTICO ao humano, 85-90% de acerto por decisao". **Nao e mais.**
+>
+> Citacao direta, ao ser avisado de que ganhar forca pode custar
+> semelhanca: *"nao tem problema, eu tinha estipulado essa meta de
+> 85-90% porque a gente estava trabalhando com pesos e o bot estava
+> jogando ruim, como agora estamos com machine learning, o objetivo
+> muda"*. E, ao escolher o desenho: *"vamos fazer esse primeiro,
+> semelhanca com guarda corpo, como suporte para um objetivo maior que
+> e vencer eu, o humano, ou seja quero que facamos o metodo 1 e de vez
+> em quando a gente testa o bot contra mim"*.
+>
+> **POR QUE MUDOU (a logica, pra nenhuma sessao futura "restaurar" a
+> meta antiga por engano):** os 85-90% eram um SUBSTITUTO pra "jogar
+> bem", escolhido numa epoca em que o mecanismo era peso ajustado a mao
+> e nao havia outra regua confiavel. Com ML aprendendo por RESULTADO, a
+> regua pode ser o resultado direto. A meta antiga nao foi abandonada
+> por ser dificil -- foi substituida por deixar de ser necessaria.
 
-> **O usuario esclareceu o que sempre quis dizer**, depois de eu mostrar
-> os dois numeros lado a lado: *"o bot tem que jogar entre 85 e 90% igual
-> ao humano"*, no sentido de *"se a cada 8 jogadas ele fizer 6 iguais,
-> esta otimo"*.
->
-> **Isso NAO e o conjunto exato por turno.** A metrica registrada abaixo
-> (`play` exato) e tudo-ou-nada: se o humano jogou 2 cartas e o bot
-> acertou 1 e errou 1, o turno conta ZERO. Ela pune duas vezes o mesmo
-> erro -- acertar a carta certa e jogar uma a mais zera o turno.
->
-> **METRICA OFICIAL, a partir daqui:**
->
-> | | valor |
-> |---|---|
-> | **ACERTO POR JOGADA** (das cartas que o humano jogou, quantas o bot tambem jogou) | **43,5%** -> meta **85-90%** |
-> | conjunto exato por turno (secundaria, mantida) | 28,9% |
-> | precisao (das que o bot jogou, quantas o humano tambem jogou) | 45,4% |
->
-> **Por que a mudanca importa alem do numero**: o conjunto exato tinha um
-> TETO ARTIFICIAL de 52,7% -- o motor acerta *quantas* cartas jogar em so
-> 52,7% dos turnos, e sem credito parcial isso limitava tudo. **Com
-> acerto por jogada esse teto some.**
->
-> **Onde esta o gap** (medido): nos turnos de UMA carta, que sao 2/3 do
-> total, o bot acerta 310 de 636 = **48,7%**, praticamente cara ou coroa.
-> **E ai que estao os pontos que faltam**, nao nos turnos complexos.
->
-> Registro honesto: em 26/08 o usuario escolheu `play` exato quando lhe
-> mostrei as duas opcoes, e foi assim que ficou registrado. Em 28/08 ele
-> esclareceu que a intencao sempre foi acerto por jogada. **A meta e dele;
-> a correcao vale a partir daqui, e os blocos antigos continuam validos no
-> que mediram.**
->
-> **Permissao registrada junto** (28/08): *"vc tem permissao para fazer a
-> modificacao que precisar contanto que mantenha 1 motor (regra nossa)"* --
-> mudanca estrutural esta liberada; a regra do MOTOR UNICO
-> (`REGRA_SEM_DUPLICACAO.md`) continua inegociavel.
+### A meta, em tres niveis
 
-
-
-> **DEFINIDO PELO USUARIO EM 26/08/2026, como OBRIGACAO -- e a meta e o
-> objetivo do projeto a partir de agora.** Citacao direta, depois de eu
-> apresentar duas metricas possiveis e perguntar qual ele queria de
-> fato: *"Se a pergunta e 'o bot joga identico ao humano?' -> 28%, e a
-> meta e muito dificil. Quero isso, registre isso como obrigacao, para
-> gente ter de meta e objetivo a partir de agora, pq o bot ainda ta
-> jogando mal"*.
->
-> **A METRICA OFICIAL e `play` (mesmas cartas jogadas)** de
-> `decision_quality_full.py --all` -- o CONJUNTO de cartas que o motor
-> joga no turno tem que bater EXATO com o que o humano jogou.
-> **Estado atual: 28,2%** (corpus completo, regua corrigida do bloco
-> 679). **Alvo: 85-90%**, deixando 10-15% de margem.
->
-> **NAO E RESPOSTA ACEITAVEL** dizer que o resto e "diversidade
-> estrategica" (pedido explicito do usuario: *"nao quero desculpas de
-> divergencia estrategica"*). Se uma sessao concluir que parte do gap e
-> irredutivel, tem que PROVAR com medicao, nao alegar.
->
-> **A OUTRA metrica NAO substitui esta.** `decision_quality_vs_human.py`
-> (dano >= ao do humano) esta em 80,7% e e tentador citar como se o
-> objetivo estivesse quase cumprido. **Nao esta**: ela mede "jogou tao
-> bem quanto", e o usuario escolheu explicitamente "jogou IGUAL" depois
-> de ver as duas lado a lado. Reportar 80,7% como progresso rumo a esta
-> meta e enganoso -- pode ser citada como contexto, nunca como o numero
-> da meta.
-
-### Onde o gap esta HOJE (medido, nao suposto -- ponto de partida)
-
-Diagnostico de 25-26/08 (blocos 679-688), pra nenhuma sessao comecar do
-zero nem repetir caminho ja reprovado:
-
-| item | numero medido | o que significa |
+| nivel | o que e | como se mede |
 |---|---|---|
-| `play` atual | **28,2%** | a meta |
-| modo de falha dominante | **ZERO cartas em comum em 52,7%** dos turnos | nao e acerto parcial |
-| carta do humano estava DISPONIVEL | **76,3%** dos turnos | nao e bug de geracao, e SELECAO |
-| motor acerta QUANTAS cartas jogar | **52,7%** | **teto duro**: conjunto exato nao passa disso |
-| DON reconstruido ERRADO | **~65%** dos turnos (erro medio 1,4) | a regua esta torta |
-| `play` com DON certo x errado | 29,3% x 21,3% | **CORRELACAO, NAO CAUSA -- ver aviso abaixo** |
+| **OBJETIVO FINAL** | **vencer o usuario**, humano real, no OPTCGSim | partidas de verdade contra ele, de tempos em tempos (pedido explicito dele) |
+| **ALVO DE TRABALHO** | cada geracao do ML tem que bater a anterior | duelo ESPELHO PAREADO + limite inferior de Wilson (`treino_continuo.py`, bloco 756) |
+| **GUARDA-CORPO** | semelhanca com humano | `decision_quality_full.py` -- medida junto, **SEM numero a atingir** |
 
-> **AVISO (bloco 690, erro meu corrigido por experimento):** a linha
-> acima ja foi usada pra projetar "~8pp do gap e artefato de medicao".
-> **Isso e FALSO.** Testado de verdade: corrigir a reconstrucao de DON
-> (acerto exato 53% -> 82%, `attached_don` que faltava) rendeu **+1,8pp
-> em `play`**, nao 8pp -- e so trouxe o caminho RZ1 pra EMPATE com o
-> estimador antigo (29,5% x 29,9%), sem supera-lo. Turnos em que o DON e
-> facil de reconstruir tendem a ser turnos SIMPLES, onde bater com o
-> humano ja e mais facil por outros motivos: o 29,3% x 21,3% mede esse
-> confundidor, nao o efeito do DON. **Nao projetar ganho a partir de
-> correlacao neste projeto -- rodar o A/B com a flag (`OPTCG_IGNORE_RZ1`)
-> e olhar o numero.**
+### O guarda-corpo: o que ele e e o que ele NAO e
 
-### Ordem de ataque recomendada (por custo/beneficio medido)
+`decision_quality_full.py` **continua sendo rodado**, mas mudou de
+funcao: **deixou de ser meta e virou ALARME.** Nao existe mais "alvo de
+85-90%", e uma sessao NAO deve mais otimizar pra esse numero subir.
 
-1. **Fidelidade de estado** -- ordem do deck embaralhada; mao do
-   oponente com informacao COMPLETA (o motor ve mais que o humano via);
-   mulligan nao capturado. Historicamente a classe que mais pagou (bloco
-   650: +8,3pp sem tocar em decisao) -- **mas atencao: o item DON desta
-   lista JA foi feito (bloco 690) e rendeu so +1,8pp**. Nao assumir que
-   as lacunas restantes valem mais que isso sem medir.
-2. **Contagem** (quantas cartas jogar) -- teto duro de 52,7%, nunca
-   atacado como problema proprio.
-3. **Selecao** -- o nucleo, e onde 8 tentativas ja falharam.
+O que ele detecta: em auto-jogo puro, e classico o bot ficar forte
+explorando peculiaridades do PROPRIO motor -- vence a si mesmo cada vez
+melhor e piora contra gente de verdade, sem que o duelo acuse nada.
+Uma queda GRANDE e ABRUPTA na semelhanca e o sintoma disso. Queda
+pequena ou gradual **nao e problema** e nao deve travar nada: o bot
+jogando diferente de humano por ser melhor e o resultado esperado.
 
-### JA TENTADO E REPROVADO POR MEDICAO -- nao refazer sem ler o bloco
+**Regra pratica**: reportar o numero junto de cada promocao, sem
+veredito automatico. So escale se a queda for grande E vier junto de
+alguma outra evidencia de deriva (ex: o bot passa a depender de uma
+jogada que so funciona contra si mesmo).
 
-- **Imitacao por BONUS/desempate sem estado** (blocos 641-649, 663): 7
-  tentativas, todas nulas ou negativas.
-- **Imitacao por POLITICA aprendida, COM estado** (blocos 680-683):
-  modelo ranqueia melhor isolado (AUC 0,851 x 0,702) e MESMO ASSIM
-  piora a metrica quando ligado. Causa medida: *distribution shift* --
-  treina em estados do motor baseline e degrada no laco de decisao.
-  **Isso descarta "faltava estado no sinal" como explicacao das 7
-  anteriores.** Se retomar: laco iterativo estilo DAgger; mais features
-  NAO resolve (medido).
-- **Alargar o shortlist da busca** (blocos 593/594 e 677): 3 medicoes
-  independentes, todas regrediram.
+**A defesa REAL contra deriva e o teste contra o usuario** -- foi ele
+quem pediu ("de vez em quando a gente testa o bot contra mim"), e e o
+unico teste imune a auto-jogo. O guarda-corpo e barato e continuo; o
+teste humano e caro e periodico. Os dois existem porque um cobre o
+buraco do outro.
 
-### REGRA: liberdade pra mexer no motor, EXCETO no que e serio (28/08/2026)
+### Os numeros da meta ANTIGA continuam validos como HISTORICO
 
-> **Historico da regra, porque ela mudou no mesmo dia:**
-> 1. O usuario pediu *"tem que me perguntar antes de fazer alguma
->    modificacao no motor"* -- registrado como autorizacao previa pra
->    TUDO.
-> 2. Poucas horas depois, ao ver o custo disso no ritmo:
->    *"pode comecar a fazer mudancas sem me perguntar a nao ser que for
->    algo muito serio"*.
->
-> **Regra vigente: mexer no motor e livre; o que e SERIO exige
-> autorizacao.**
->
-> **E SERIO (pergunte e espere resposta):**
-> - Mudar o COMPORTAMENTO PADRAO de producao -- publicar peso em
->   `eval_weights.json`, ligar knob por default, alterar heuristica que
->   passa a valer sem flag.
-> - Remover ou desligar um estagio inteiro (busca Monte Carlo, camada
->   barata, shortlist).
-> - Mudanca dificil de reverter, ou que atravessa varios arquivos de
->   decisao ao mesmo tempo.
-> - Qualquer coisa que toque a REGRA DO MOTOR UNICO
->   (`REGRA_SEM_DUPLICACAO.md`) -- essa continua inegociavel.
->
-> **NAO e serio (faca, meca e reporte):**
-> - Experimento com default INALTERADO (knob/peso em zero, flag desligada).
-> - Instrumentacao, telemetria, decomposicao de score.
-> - Ferramenta de analise, script de medicao, mexer em `metrics/`.
-> - Correcao de bug com teste que prova o conserto.
->
-> **Em todo caso**: A/B medido, recorte por lider, e reverter se nao
-> sustentar. Liberdade pra mexer nao e liberdade pra aceitar sem medir.
+Nada do que foi medido sob a meta antiga vira mentira -- muda o que se
+faz com aquilo. Ultimo estado medido (corpus completo, 14.973 decisoes):
+agregado **49,3%**, com `bloquear` 85,7%, `quem ataca` 71,6%, `alvo do
+ataque` 69,3%, `ativacao` 63,9%, `counter` 59,7%, `cartas jogadas`
+43,5%, `sequenciamento` 36,4%, `distribuicao de DON` 23,5%, `quais
+cartas de counter` 18,5%, `alvo dentro do efeito` 16,4%. **Use isso como
+LINHA DE BASE do guarda-corpo** (de onde partiu), nao como alvo.
 
-### RESSALVA DO USUARIO (28/08/2026): a meta NAO e so cartas jogadas
+O achado estrutural daquela fase segue valendo e e util: o bot decide
+bem O QUE FAZER e decide mal EM QUEM / COM O QUE -- as tres piores
+categorias sao todas de escolha especifica de alvo/recurso.
 
-> *"essa porcentagem nao e so de cartas jogadas, mas tb de alvos,
-> ativacao de efeitos, sequenciamento, ataques, distribuicao de dons,
-> etc"*.
->
-> **A METRICA OFICIAL e o AGREGADO de acerto por decisao, em TODAS as
-> categorias.** Medido no corpus completo (14.973 decisoes):
->
-> | categoria | acerto | n |
-> |---|---|---|
-> | bloquear ou nao | 85,7% | 1.326 |
-> | quem ataca | 71,6% | 2.024 |
-> | alvo do ataque | 69,3% | 1.449 |
-> | ativacao de efeitos | 63,9% | 438 |
-> | usar counter ou nao | 59,7% | 1.186 |
-> | cartas jogadas | 43,5% | 1.214 |
-> | sequenciamento (LCS) | 36,4% | 4.887 |
-> | **distribuicao de DON** | **23,5%** | 1.055 |
-> | **quais cartas de counter** | **18,5%** | 804 |
-> | **alvo dentro do efeito** | **16,4%** | 590 |
-> | **AGREGADO** | **49,3%** | **14.973** |
->
-> **Estado atual: 49,3% -> meta 85-90%.**
->
-> **PADRAO ACHADO ao medir isto pela 1a vez**: as tres piores categorias
-> sao todas de ESCOLHA ESPECIFICA (qual alvo, quais cartas, onde o DON) --
-> 16-24%. O bot decide bem O QUE FAZER (atacar 71,6%, ativar 63,9%,
-> bloquear 85,7%) e decide mal **EM QUEM / COM O QUE**. E um padrao unico,
-> nao dez problemas soltos.
->
-> **Aviso de prioridade** (erro real cometido em 28/08): `sequenciamento`
-> tem o MAIOR volume (4.887 = 1/3 das decisoes) e esta em 36,4% -- puxa o
-> agregado mais que qualquer outra. `cartas jogadas` e so **8%** das
-> decisoes, e foi onde uma sessao inteira foi gasta. **Priorizar por
-> volume x gap, nao por familiaridade.**
+### O que NAO mudou
 
+- **QUALQUER DECK** (secao abaixo): continua valendo integralmente. A
+  troca de meta nao autoriza tunar lider por lider.
+- **Recorte POR LIDER** (secao abaixo): continua obrigatorio. Um ganho
+  de forca agregado que so aparece em 2 lideres nao generalizou.
+- **REGRA DO MOTOR UNICO** (`REGRA_SEM_DUPLICACAO.md`): inegociavel.
+- **A regra do que e SERIO** (28/08): ligar o `VALUE_NET_WEIGHT` por
+  default em producao continua sendo mudanca SERIA e exige autorizacao
+  explicita -- promover campeao no laco de treino NAO liga nada em
+  producao (o default segue 0.0).
 
 ## OBJETIVO CENTRAL DO BOT (o usuario repete e as sessoes esquecem)
 

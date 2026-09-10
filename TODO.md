@@ -2,6 +2,31 @@
 
 **Última atualização:** 9 de setembro de 2026
 
+> 10/09/2026 (bloco 760): **A META OFICIAL DO PROJETO MUDOU** — de "jogar
+> IDÊNTICO ao humano (85-90%)" para **VENCER O HUMANO**. Decisão do usuário:
+> *"eu tinha estipulado essa meta de 85-90% porque a gente estava trabalhando
+> com pesos e o bot estava jogando ruim, como agora estamos com machine
+> learning, o objetivo muda"*. Três níveis: **objetivo final** = vencer o
+> usuário em partidas reais (periodicamente); **alvo de trabalho** = cada
+> geração do ML bate a anterior no duelo pareado; **guarda-corpo** =
+> semelhança com humano, medida junto mas **sem número a atingir**.
+> A meta antiga não foi abandonada por ser difícil — **deixou de ser
+> necessária**. Reescrito em `CLAUDE.md` e `AGENTS.md` (espelho byte-a-byte);
+> memória local atualizada.
+>
+> **PRIMEIRA PROMOÇÃO DO PROJETO**: geração 4 passou o portão novo — 71 pares,
+> 11×3 nos decididos, winrate 78,6%, limite de Wilson 52,4%. Corpus 8.729,
+> AUC 0,7682 → 0,7785. **Três ressalvas**: (a) passagem **marginal** — 10/14
+> daria 45,4% e reprovaria, uma partida de distância; (b) **meu planejamento
+> errou por 2x** — previ 58% de divididos e saiu 80%, então para 30 pares
+> decididos são ~150 pares (300 partidas), não 71; (c) **produção não mudou**,
+> `VALUE_NET_WEIGHT` segue 0.0 e ligar por default continua sendo mudança
+> SÉRIA.
+>
+> **Em aberto**: confirmar o portão com lote maior, ou medir o guarda-corpo
+> (`decision_quality_full.py --all`, peso 200 vs 0, com recorte por líder).
+> Com a meta nova, o guarda-corpo é diagnóstico, não aprovação.
+
 > 10/09/2026 (bloco 759): **`don_opportunity_cost` congelada por ESCOPO
 > EXPLÍCITO** — 86,6% das chamadas restantes de `avaliar_carta` (527.894 por
 > partida) saíam do filtro dela, chamada ~88.000 vezes, e a lista `jogaveis`

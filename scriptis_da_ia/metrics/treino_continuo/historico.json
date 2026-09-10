@@ -49,5 +49,27 @@
     "winrate_desafiante": 0.5306122448979592,
     "resultado": "descartado (53.1% < 55%)",
     "promovido": false
+  },
+  {
+    "geracao": 4,
+    "quando": "2026-09-10T08:56:40",
+    "partidas_geradas": 100,
+    "estados_corpus": 8729,
+    "auc_fora_amostra": 0.778495663517772,
+    "peso": 200.0,
+    "portao": 0.5,
+    "portao_modo": "limite_inferior_wilson",
+    "vitorias_desafiante": 11,
+    "derrotas_desafiante": 3,
+    "empates": 57,
+    "erros": 0,
+    "decididas": 14,
+    "winrate_desafiante": 0.7857142857142857,
+    "pareado": true,
+    "pares_rodados": 71,
+    "pares_divididos": 57,
+    "partidas": 142,
+    "resultado": "PROMOVIDO (78.6% >= 50%)",
+    "promovido": true
   }
 ]
