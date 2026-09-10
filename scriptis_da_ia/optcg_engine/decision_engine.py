@@ -26,6 +26,7 @@ import os
 import sys
 import random
 import pandas as pd
+from operator import itemgetter as _itemgetter
 from copy import deepcopy as _deepcopy
 from optcg_engine import knobs as _k
 
@@ -12269,17 +12270,31 @@ class GameAnalyzer:
             self._lethal_search_cache = (False, None, None)
             return self._lethal_search_cache
 
+        # `itemgetter` (C) no lugar de `lambda` (Python) e particao numa
+        # passada so (bloco 758). Perfil de UMA partida: esta funcao e
+        # chamada 2,8 milhoes de vezes pelas folhas de `search_alloc` e faz
+        # DUAS ordenacoes por chamada -- 5,6 milhoes de `sorted` e 27,5
+        # milhoes de chamadas as duas lambdas de chave.
+        #
+        # `sorted(x, key=lambda a: -a[0])` == `sorted(x, key=_p0,
+        # reverse=True)` INCLUSIVE no desempate: `sorted` e estavel e
+        # `reverse=True` preserva a ordem original dos empates (nao inverte
+        # iguais), igual a chave negativa crescente. Semantica identica.
+        _p0 = _itemgetter(0)
+
         def hits_after_best_defense(powered_attacks):
-            unblockable = [a for a in powered_attacks if a[1]]
-            bloqueaveis = sorted([a for a in powered_attacks if not a[1]],
-                                 key=lambda a: -a[0])
+            unblockable = []
+            bloqueaveis = []
+            for a in powered_attacks:
+                (unblockable if a[1] else bloqueaveis).append(a)
+            bloqueaveis.sort(key=_p0, reverse=True)
             candidatos_dano = unblockable + bloqueaveis[n_blockers:]
             if not candidatos_dano:
                 return 0
 
             sobrou_counters = list(counters_base)
             conecta = []
-            for power, _is_unblockable, hits in sorted(candidatos_dano, key=lambda a: a[0]):
+            for power, _is_unblockable, hits in sorted(candidatos_dano, key=_p0):
                 necessario = power - leader_power + 1
                 if necessario <= 0:
                     continue

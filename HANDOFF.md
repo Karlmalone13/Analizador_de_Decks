@@ -28,6 +28,51 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-09-10 (758) - `hits_after_best_defense`: `itemgetter` no lugar de `lambda` + particao numa passada. CORRECAO validada, TEMPO ainda nao medido pelo protocolo
+
+Re-perfil DEPOIS das duas mudancas do bloco 757 (o topo mudou -- por isso
+re-perfilar em vez de supor):
+
+| funcao | chamadas | tottime |
+|---|---|---|
+| `dict.get` | 38.866.417 (era 54,2M) | 8,4s |
+| **`sorted`** | **5.636.128** | **7,8s** |
+| `avaliar_carta` | 527.894 | 7,6s (**45,5s acum.**) |
+| `hits_after_best_defense` | 2.802.844 | 7,5s (21,3s acum.) |
+| `<lambda>` de chave | 15,7M + 11,9M | 3,6s |
+
+A poda do 757 funcionou melhor do que eu sabia: `search_alloc` caiu de
+**8.533 pra 3.362** chamadas de topo (-61%).
+
+**Mudanca**: `hits_after_best_defense` e chamada 2,8 milhoes de vezes pelas
+folhas de `search_alloc` e fazia DUAS ordenacoes por chamada com `lambda`
+como chave -- 5,6M de `sorted` e 27,5M de chamadas Python so pras chaves.
+Trocado por `itemgetter` (C) e particao unblockable/blockable numa passada
+so em vez de duas compreensoes.
+
+**Equivalencia**: `sorted(x, key=lambda a: -a[0])` == `sorted(x, key=_p0,
+reverse=True)` INCLUSIVE no desempate -- `sorted` e estavel e `reverse=True`
+preserva a ordem original dos iguais (nao inverte empates), igual a chave
+negativa crescente.
+
+**Validado**: `smoke_fast` OK + 3 seeds com vencedores (B/A/B) e turnos
+(15/16/12) identicos.
+
+**PENDENTE**: o ganho de TEMPO nao foi medido pelo protocolo do bloco 757
+(4 repeticoes por versao, comparar minimos) -- a medicao ficou rodando.
+Uma execucao unica deu 70,1s contra 105-133s, mas o piso de ruido desta
+maquina e 17%, entao **esse numero NAO vale como ganho** ate a repeticao
+fechar. Nao citar 70,1s como resultado.
+
+**Proximo alvo, ja identificado**: `avaliar_carta` continua com o maior
+custo ACUMULADO (45,5s), e as 527.894 chamadas saem TODAS do filtro de
+`don_opportunity_cost`, que e chamada ~88.000 vezes por partida pelos lacos
+que pontuam candidatas (18819/18836/18970/19051). A lista `jogaveis` nao
+depende de `count` e e identica pra todas as candidatas da mesma decisao.
+Caminho preferido: cache de ESCOPO EXPLICITO (o laco abre e fecha), nao
+carimbo de estado -- `avaliar_carta` le board, vida, postura e identidade
+de carta, e um carimbo incompleto faz o bot decidir diferente EM SILENCIO.
+
 ## 2026-09-09 (757) - Motor 18% mais rapido com DUAS mudancas provadamente sem efeito em decisao -- e uma licao de MEDICAO: o piso de ruido desta maquina e 17%, entao os 3 primeiros percentuais que reportei nao valiam nada
 
 ### 1. Contexto: o usuario reclamou que o teste do portao demora demais

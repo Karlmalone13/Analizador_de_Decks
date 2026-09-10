@@ -2,6 +2,22 @@
 
 **Última atualização:** 9 de setembro de 2026
 
+> 10/09/2026 (bloco 758): **`itemgetter` no lugar de `lambda` em
+> `hits_after_best_defense`** — ela é chamada 2,8 M de vezes pelas folhas de
+> `search_alloc` e fazia DUAS ordenações por chamada, somando 5,6 M de
+> `sorted` e 27,5 M de chamadas Python só para as chaves. Trocado por
+> `itemgetter` (C) + partição numa passada. Equivalência garantida inclusive
+> no desempate (`sorted` é estável e `reverse=True` preserva a ordem dos
+> iguais). **Validado**: `smoke_fast` OK + 3 seeds idênticos (B/A/B,
+> 15/16/12). **PENDENTE: o ganho de TEMPO não foi medido pelo protocolo** —
+> uma execução deu 70,1 s contra 105-133 s, mas o piso de ruído é 17% e
+> **esse número não vale** até as 4 repetições fecharem.
+> Re-perfil mostrou que a poda do 757 cortou `search_alloc` de 8.533 para
+> 3.362 chamadas de topo (−61%). **Próximo alvo**: `avaliar_carta` segue com
+> o maior custo acumulado (45,5 s), todas as 527.894 chamadas vindas do
+> filtro de `don_opportunity_cost` (~88.000 chamadas por partida). Caminho
+> preferido é cache de escopo explícito, não carimbo de estado.
+
 > 09/09/2026 (bloco 757): **MOTOR 18% MAIS RÁPIDO**, com duas mudanças
 > provadamente sem efeito em decisão (3 seeds: mesmos vencedores B/A/B e
 > mesmos turnos 15/16/12; `smoke_fast` OK). Nasceu da reclamação do
