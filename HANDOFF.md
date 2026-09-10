@@ -53,6 +53,90 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-10 (762) - **A PROMOCAO DA GERACAO 4 ERA FALSO POSITIVO** (12x19 no re-teste contra 11x3 na promocao). Portao trocado pro SPRT, promocao desfeita -- e o modelo so DECIDE a acao de topo, apesar de VER 32 features
+
+### 1. O falso positivo, medido
+
+A gen4 foi promovida em 10/09 com 11x3 em **14 pares discordantes**
+(Wilson 52,4% contra corte de 50%) -- passagem por MARGEM, ja registrada
+como ressalva no bloco 760. Re-teste por SPRT, mesmos dois modelos:
+
+```
+lote 1 | discordantes  5 (2x3)   | LLR -0,545
+lote 3 | discordantes 16 (9x7)   | LLR -0,135
+lote 5 | discordantes 24 (11x13) | LLR -1,751
+lote 7 | discordantes 31 (12x19) | LLR -3,628  -> cruzou o limite inferior
+
+VEREDITO: NAO CONFIRMADO (equivalentes) -- winrate 38,7%, Wilson 23,7%
+140 pares / 280 partidas / 60 min
+```
+
+**11x3 (78,6%) virou 12x19 (38,7%) com o dobro do dado.** A promocao era
+sorte de amostra pequena. **O portao novo pegou o proprio erro** -- com o
+portao antigo (10,9% de poder, bloco 756) isso teria passado despercebido.
+
+### 2. Duas correcoes feitas
+
+- **Promocao DESFEITA**: `metrics/value_net.joblib` voltou pro modelo
+  antigo (`1628efa6671e`, o do bloco 753). Manter um campeao promovido por
+  engano envenenaria TODAS as geracoes seguintes, que passariam a ser
+  medidas contra ele. Producao nao muda (`VALUE_NET_WEIGHT` = 0.0).
+- **Portao trocado pro SPRT** (`duelar_sprt`, agora DEFAULT). O Wilson com
+  n pequeno nao errou a conta -- ele nao tem como saber que 14 pares e
+  pouco, e o portao nao exigia minimo. O SPRT so decide quando a evidencia
+  ACUMULADA basta, nos dois sentidos, e os limites ja embutem o custo das
+  checagens repetidas. `--portao-wilson` preserva o antigo pra A/B.
+
+### 3. ACHADO ESTRUTURAL: o modelo VE 32 features mas so DECIDE a acao de topo
+
+O usuario apontou uma contradicao aparente na minha explicacao, e ele
+estava CERTO -- eu tinha misturado duas coisas. Rastreado no codigo:
+`win_prob` e alcancado por **um unico caminho**,
+`_select_action_via_search`.
+
+| | |
+|---|---|
+| o que o modelo VE | 32 features do tabuleiro |
+| o que o modelo DECIDE | so a acao de topo: play / attack / attach_don / activate / pass |
+
+**Fora do alcance dele**: em QUEM o efeito mira (regra fixa
+`max(board_value)`), QUAIS cartas de counter, bloquear ou nao.
+
+Isso explica de uma vez os dois numeros que estavam sem causa: o modelo
+preve bem (AUC 0,7785) e nao vira vitoria, e 78% dos duelos empatam. Ele
+mal toca no que decide a partida.
+
+**Medicao nova (2 partidas, 1.878 chamadas de
+`choose_highest_board_value`)**: 34,1% das chamadas tem 1 candidato so, e
+**65,9% tem escolha real**. Das com escolha, **44,6% tem EMPATE EXATO no
+topo** (1o e 2o com o mesmo `board_value`) -- a regua nao esta
+discordando, esta **CEGA**, e devolve o que estiver primeiro na lista.
+Argumento mais forte que o da sessao de 29/08 (as duas reguas discordam
+em 21,3% dos boards).
+
+### 4. O trabalho de alvo JA EXISTE e nunca foi medido
+
+Ao ir implementar, descobri que a sessao de 29/08 (commit `3c3f4a0`) ja
+costurou isso em **23 sitios** -- alvo na tupla da acao, remap pro clone,
+dedupe por alvo -- atras de knobs DESLIGADOS:
+
+| knob | o que faz | default |
+|---|---|---|
+| `ALVO_EFEITO_NA_BUSCA` | uma candidata de play POR ALVO | False |
+| `ALVO_REGUA_UNIFICADA` | alvo por `char_value_score` em vez de `board_value` cru | False |
+| `ALVO_EFEITO_MAX_CANDIDATOS` | teto de alvos por carta | 3 |
+
+**Nao ha registro de medicao sob esses nomes em `REPROVADOS.md`,
+`HANDOFF.md` nem `TODO.md`** -- lacuna de documentacao. Eu quase
+reimplementei do zero uma coisa pronta.
+
+### 5. Proximo passo
+
+Medir os knobs de alvo, depois a ideia do usuario de encurtar o horizonte
+do rotulo (hoje cada estado e rotulado por "ganhou a PARTIDA", 20 turnos
+depois -- rotulo muito barulhento; avaliar a cada ~2 turnos e a correcao
+classica disso).
+
 ## 2026-09-10 (760) - **PRIMEIRA PROMOCAO DO PROJETO** (com o portao consertado) e **A META OFICIAL MUDOU**: de "jogar identico ao humano" para "VENCER O HUMANO"
 
 ### 1. O portao novo funcionou -- geracao 4 PROMOVIDA

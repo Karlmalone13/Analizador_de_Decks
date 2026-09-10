@@ -27,6 +27,30 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 10/09/2026 (bloco 762): **A PROMOÇÃO DA GERAÇÃO 4 ERA FALSO POSITIVO.**
+> Passou com 11×3 em 14 pares discordantes (Wilson 52,4%); o re-teste por SPRT
+> deu **12×19 em 31 discordantes (38,7%)** e cruzou o limite inferior em 140
+> pares. Era sorte de amostra pequena — e **o portão novo pegou o próprio
+> erro**, o que o antigo (10,9% de poder) jamais faria.
+> **Duas correções**: promoção DESFEITA (`value_net.joblib` voltou ao modelo
+> antigo `1628efa6671e`; manter um campeão promovido por engano envenenaria
+> todas as gerações seguintes) e **portão trocado pelo SPRT** (`duelar_sprt`,
+> agora default; `--portao-wilson` guardado para A/B).
+>
+> **ACHADO ESTRUTURAL** (o usuário apontou a contradição na minha explicação e
+> estava certo): o modelo **vê 32 features mas só DECIDE a ação de topo** —
+> `win_prob` é alcançado por um único caminho, `_select_action_via_search`.
+> Ficam FORA: em quem o efeito mira, quais cartas de counter, bloquear ou não.
+> Isso explica de uma vez o AUC alto que não vira vitória e os 78% de duelos
+> empatados. Medição nova: das escolhas de alvo com 2+ candidatos, **44,6%
+> têm empate EXATO no topo** — a régua não discorda, está cega.
+>
+> **O trabalho de alvo JÁ EXISTE e nunca foi medido**: commit `3c3f4a0`
+> (29/08) costurou 23 sítios atrás dos knobs `ALVO_EFEITO_NA_BUSCA`,
+> `ALVO_REGUA_UNIFICADA` e `ALVO_EFEITO_MAX_CANDIDATOS`, todos desligados e
+> sem registro em nenhum dos três documentos. **Próximo passo**: medir esses
+> knobs, depois encurtar o horizonte do rótulo (ideia do usuário).
+
 > 10/09/2026 (bloco 760): **A META OFICIAL DO PROJETO MUDOU** — de "jogar
 > IDÊNTICO ao humano (85-90%)" para **VENCER O HUMANO**. Decisão do usuário:
 > *"eu tinha estipulado essa meta de 85-90% porque a gente estava trabalhando

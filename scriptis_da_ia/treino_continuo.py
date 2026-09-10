@@ -217,6 +217,78 @@ def limite_inferior_wilson(vitorias: int, n: int, z: float = 1.96) -> float:
     return max(0.0, centro - margem)
 
 
+def duelar_sprt(workers: int, seed: int, peso_camp: float, peso_desaf: float,
+                p0: float = 0.50, p1: float = 0.65,
+                alpha: float = 0.05, beta: float = 0.05,
+                pares_por_lote: int = 20, max_pares: int = 200,
+                progresso=None) -> dict:
+    """Portao por PARADA SEQUENCIAL (SPRT de Wald) -- default desde o bloco 762.
+
+    POR QUE SUBSTITUIU o portao de Wilson (medido, nao teorico): em 10/09 a
+    geracao 4 PASSOU no portao de Wilson com 11x3 em 14 pares discordantes
+    (limite 52,4% contra corte de 50%) e foi promovida. Re-testada com 31
+    pares discordantes, deu **12x19 (38,7%)** -- **a promocao era FALSO
+    POSITIVO**. O Wilson com n pequeno nao errou a conta; o problema e que
+    ele nao tem como saber que 14 pares e pouco, e o portao nao exigia
+    minimo. O SPRT resolve isso por construcao: ele so decide quando a
+    evidencia ACUMULADA basta, nos dois sentidos.
+
+    Roda o MESMO duelo espelho pareado (`duelar`) em lotes, acumulando o log
+    da razao de verossimilhanca sobre os pares DISCORDANTES (os divididos
+    sao empates e nao entram -- teste de McNemar; empate nao diz nada sobre
+    direcao). Cruzar o limite superior ACEITA H1 (desafiante melhor), o
+    inferior ACEITA H0 (equivalentes).
+
+    Nao e "espiar ate dar certo": os limites do SPRT ja embutem o custo das
+    checagens repetidas, ao contrario de olhar o IC a cada lote.
+
+    Bonus medido: para CEDO nos casos claros. Na rodada que pegou o falso
+    positivo, cruzou o limite em 140 pares em vez dos 200 do teto.
+    """
+    import math
+    lim_sup = math.log((1 - beta) / alpha)
+    lim_inf = math.log(beta / (1 - alpha))
+    ganho_vit = math.log(p1 / p0)
+    ganho_der = math.log((1 - p1) / (1 - p0))
+
+    vit = der = div = pares = partidas = erros = 0
+    llr = 0.0
+    veredito, promove = 'INCONCLUSIVO (teto de pares)', False
+    lote = 0
+    while pares < max_pares:
+        lote += 1
+        d = duelar(n=pares_por_lote * 2, workers=workers,
+                   seed=seed + lote * 1000, peso_camp=peso_camp,
+                   peso_desaf=peso_desaf, pareado=True)
+        vit += d['vitorias_desafiante']
+        der += d['derrotas_desafiante']
+        div += d['pares_divididos']
+        erros += d['erros']
+        pares += d['pares_rodados']
+        partidas += d['partidas']
+        llr = vit * ganho_vit + der * ganho_der
+        if progresso:
+            progresso(lote, pares, vit, der, llr, lim_sup, lim_inf)
+        if llr >= lim_sup:
+            veredito, promove = 'PROMOVE (desafiante e melhor)', True
+            break
+        if llr <= lim_inf:
+            veredito = 'DESCARTA (equivalentes)'
+            break
+
+    disc = vit + der
+    return {
+        'vitorias_desafiante': vit, 'derrotas_desafiante': der,
+        'empates': div, 'erros': erros, 'decididas': disc,
+        'winrate_desafiante': (vit / disc) if disc else None,
+        'pareado': True, 'sprt': True, 'llr': llr,
+        'lim_sup': lim_sup, 'lim_inf': lim_inf,
+        'pares_rodados': pares, 'pares_divididos': div,
+        'partidas': partidas, 'lotes': lote,
+        'veredito': veredito, 'promove': promove,
+    }
+
+
 def _rodar_tasks(tasks: list, workers: int) -> list:
     if workers > 1:
         with ProcessPoolExecutor(max_workers=workers) as ex:
@@ -297,6 +369,10 @@ def main() -> None:
                          'Mudou de media>=0.55 no bloco 756: com espelho pareado os '
                          'pares divididos nao contam, entao o n decidido pode ficar '
                          'pequeno e uma media alta em 2 de 3 pares e ruido')
+    ap.add_argument('--portao-wilson', dest='portao_wilson', action='store_true',
+                    help='volta ao portao de Wilson com n fixo (--duelos). So pra '
+                         'A/B: foi ele que aprovou a geracao 4 por FALSO POSITIVO '
+                         'em 10/09 (11x3 em 14 pares; re-teste deu 12x19 em 31)')
     ap.add_argument('--portao-media', dest='portao_media', action='store_true',
                     help='volta ao portao ANTIGO (media >= --portao). So pra A/B')
     ap.add_argument('--decks', type=int, default=24)
@@ -349,7 +425,8 @@ def main() -> None:
             'geracao': gen, 'quando': datetime.now().isoformat(timespec='seconds'),
             'partidas_geradas': args.partidas, 'estados_corpus': n_estados,
             'auc_fora_amostra': auc, 'peso': args.peso, 'portao': args.portao,
-            'portao_modo': 'media' if args.portao_media else 'limite_inferior_wilson',
+            'portao_modo': ('media' if args.portao_media else ('limite_inferior_wilson' if args.portao_wilson else 'sprt')),
+            'llr': d.get('llr'), 'pares_rodados': d.get('pares_rodados'),
         }
 
         if not tem_campeao:
@@ -363,8 +440,18 @@ def main() -> None:
             print('[3/4] DUELO pulado -- nao havia campeao. Desafiante vira o marco zero.')
         else:
             print(f'[3/4] DUELA {args.duelos} partidas (lados alternados)')
-            d = duelar(args.duelos, args.workers, seed_gen + 13, args.peso,
-                       args.peso, pareado=not args.nao_pareado)
+            def _prog(lote, pares, vit, der, llr, sup, inf):
+                print('      lote {:>2} | pares {:>3} | discordantes {:>3} '
+                      '({}x{}) | LLR {:+.3f}  (sup {:+.2f} / inf {:+.2f})'
+                      .format(lote, pares, vit + der, vit, der, llr, sup, inf),
+                      flush=True)
+
+            if args.portao_wilson:
+                d = duelar(args.duelos, args.workers, seed_gen + 13, args.peso,
+                           args.peso, pareado=not args.nao_pareado)
+            else:
+                d = duelar_sprt(args.workers, seed_gen + 13, args.peso,
+                                args.peso, progresso=_prog)
             registro |= d
             wr = d['winrate_desafiante']
             if d.get('pareado'):
@@ -380,11 +467,19 @@ def main() -> None:
                       f'({"n/d" if wr is None else f"{wr:.1%}"}), '
                       f'{d["empates"]} empates, {d["erros"]} erros')
             lim = limite_inferior_wilson(d['vitorias_desafiante'], d['decididas'])
-            if d['decididas']:
-                print(f'      limite inferior do IC95 (Wilson): {lim:.1%} '
-                      f'-- portao exige > {args.portao:.0%}')
-            aprovou = ((wr is not None and wr >= args.portao) if args.portao_media
-                       else (d['decididas'] > 0 and lim > args.portao))
+            if d.get('sprt'):
+                print(f"      SPRT: {d['pares_rodados']} pares "
+                      f"({d['partidas']} partidas, {d['lotes']} lotes), "
+                      f"{d['decididas']} discordantes, LLR {d['llr']:+.3f}")
+                print(f"      -> {d['veredito']}   (Wilson do mesmo dado: {lim:.1%})")
+                aprovou = d['promove']
+            else:
+                if d['decididas']:
+                    print(f'      limite inferior do IC95 (Wilson): {lim:.1%} '
+                          f'-- portao exige > {args.portao:.0%}')
+                aprovou = ((wr is not None and wr >= args.portao)
+                           if args.portao_media
+                           else (d['decididas'] > 0 and lim > args.portao))
             if aprovou:
                 shutil.copyfile(DESAFIANTE, CAMPEAO)
                 registro |= {'resultado': f'PROMOVIDO ({wr:.1%} >= {args.portao:.0%})',
