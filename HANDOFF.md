@@ -53,6 +53,73 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-10 (764) - VISAO RICA: o modelo passa a enxergar QUALIDADE do board, nao so contagem. AUC fora da amostra +1,1 ponto sobre o MESMO corpus -- duelo em curso
+
+### 1. O diagnostico que levou aqui
+
+Bloco 763: ligar alvo na busca empatou **96% dos pares**. Hipotese: as 32
+features sao TODAS contagens e agregados, **sem nocao de quem esta no
+board** -- KOar o personagem A ou o B com poder parecido deixa as 32
+praticamente IDENTICAS, entao a regua nao tem como preferir e escolhe
+arbitrariamente, igual a heuristica fixa fazia. Dar mais DECISOES a quem
+nao ENXERGA nao resolve.
+
+**Decisao do usuario**: melhorar a visao primeiro; se nao bastar, atacar o
+aprendizado (encurtar o horizonte do rotulo) depois.
+
+### 2. As 17 features novas (`FEATURE_NAMES_RICAS`, 32 -> 49)
+
+`power_max` (mine/opp/diff), `cost_max` (mine/opp), `don_attached`
+(mine/opp), `rush`, `double_attack`, `unblockable`, `banish` e
+**`com_efeito`** (quantos personagens TEM habilidade, vs vanilla) --
+mine/opp em cada.
+
+`com_efeito` e a principal: e o que separa "KOar o personagem com
+habilidade" de "KOar o corpo pelado", coisa que NENHUMA das 32 via.
+
+**Sem identidade de carta** (nada de codigo/nome) -- so PROPRIEDADES,
+respeitando o principio do modulo.
+
+### 3. Costura necessaria (e ela vale por si)
+
+- `state_features(p, opp, nomes=None)` calcula o SUPERCONJUNTO e devolve
+  os nomes pedidos, nessa ordem. Default = as 32, entao producao nao muda.
+- `win_prob` passa `bundle['feature_names']`. **Com isso dois modelos com
+  VISOES DIFERENTES duelam no MESMO processo** -- sem isso o A/B seria
+  impossivel: os dois lados calculariam as mesmas features e um dos
+  modelos cairia no `check_dims`.
+- `gerar_selfplay_dataset.py` grava as 49; `treinar_value.py` ganhou
+  `--features basicas|ricas` e RECORTA as colunas. Assim **o mesmo corpus
+  treina os dois lados** e a comparacao isola a VISAO, nao o volume.
+
+### 4. Resultado ate agora
+
+Corpus novo: `metrics/selfplay_ricas.jsonl`, **1.582 estados, 16 lideres,
+0 erros**, 52% de rotulo positivo (120 partidas, peso 0).
+
+| modelo | AUC fora da amostra | AUC treino |
+|---|---|---|
+| basicas (32) | 0,7484 | 0,9572 |
+| **ricas (49)** | **0,7591** | 0,9628 |
+
+**+1,1 ponto fora da amostra, sobre o MESMO corpus.** Modesto, e os dois
+decoram bastante (vao de 0,96 no treino pra 0,75 fora) -- esperado com
+1.582 estados. Mas a direcao e a certa: mais visao melhorou a previsao sem
+piorar a generalizacao.
+
+**RESSALVA**: 1.582 estados e POUCO pra 49 features. Se o duelo der
+negativo, nao da pra separar "visao nao ajuda" de "corpus pequeno demais
+pra 49 colunas" sem um corpus maior.
+
+### 5. EM CURSO / pendente
+
+`ab_visao.py` (duelo SPRT ricas x basicas, ambos peso 200) estava rodando
+ao fim desta anotacao. **AUC nao e ganho no motor** -- os blocos 680-683
+ja mostraram AUC 0,851 piorando quando ligado. So o duelo decide.
+
+Nada foi ligado em producao: `VALUE_NET_WEIGHT` segue 0.0 e o default de
+`state_features` segue as 32.
+
 ## 2026-09-10 (763) - ALVO na busca MEDIDO pela 1a vez: **96% dos pares EMPATAM** -- ligar o knob quase nunca muda quem ganha. INCONCLUSIVO com 400 partidas, e a suspeita e que a REGUA nao distingue alvos
 
 ### 1. O que foi medido

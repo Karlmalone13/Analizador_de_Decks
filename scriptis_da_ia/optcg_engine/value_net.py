@@ -84,6 +84,23 @@ FEATURE_NAMES = [
     'turn',
 ]
 
+# VISAO RICA (bloco 764) -- as 32 acima sao TODAS contagens e agregados, sem
+# nenhuma nocao de QUEM esta no board. Medido no bloco 763: ligar a escolha de
+# alvo na busca empatou 96% dos pares, e a suspeita e justamente esta -- KOar o
+# personagem A ou o B com poder parecido deixa as 32 IDENTICAS, entao a regua
+# nao tem como preferir e escolhe arbitrariamente do mesmo jeito que a
+# heuristica fixa fazia. Estas descrevem QUALIDADE do board, nao so quantidade.
+FEATURE_NAMES_RICAS = FEATURE_NAMES + [
+    'power_max_mine', 'power_max_opp', 'power_max_diff',
+    'cost_max_mine', 'cost_max_opp',
+    'don_attached_mine', 'don_attached_opp',
+    'rush_mine', 'rush_opp',
+    'double_attack_mine', 'double_attack_opp',
+    'unblockable_mine', 'unblockable_opp',
+    'banish_mine', 'banish_opp',
+    'com_efeito_mine', 'com_efeito_opp',
+]
+
 _CACHE: dict = {}
 _AVISOU: set = set()
 
@@ -108,11 +125,18 @@ def _chars(estado) -> list:
         return []
 
 
-def state_features(p, opp) -> list:
+def state_features(p, opp, nomes=None) -> list:
     """Vetor que descreve o estado do ponto de vista de `p`.
 
-    SO quantidades genericas -- nada de identidade de carta/lider (ver o
-    docstring do modulo). Ordem identica a `FEATURE_NAMES`."""
+    Sem identidade de CARTA (nada de codigo ou nome -- ver o docstring do
+    modulo): as features ricas descrevem PROPRIEDADES do board (keywords,
+    DON anexado, quem e o maior), nao qual carta e.
+
+    `nomes` = lista de features a devolver, NESSA ordem. Default: as 32
+    originais. Existe pra o modelo velho (32) e o novo (49) conviverem no
+    MESMO processo -- `win_prob` passa `bundle['feature_names']`, entao o
+    duelo entre duas geracoes com visoes diferentes e possivel. Sem isso, o
+    A/B nao teria como ser feito (bloco 764)."""
     ch_m, ch_o = _chars(p), _chars(opp)
     n_ch_m, n_ch_o = float(len(ch_m)), float(len(ch_o))
 
@@ -135,7 +159,46 @@ def state_features(p, opp) -> list:
     bl_m = _num(lambda: len(p.blockers_active()))
     bl_o = _num(lambda: len(opp.blockers_active()))
 
-    return [
+    def _mx(chars, attr, pad=0.0):
+        return max((float(getattr(c, attr, 0) or 0) for c in chars), default=pad)
+
+    def _conta(chars, *attrs):
+        return float(sum(1 for c in chars
+                         if any(getattr(c, a, False) for a in attrs)))
+
+    def _com_efeito(chars):
+        # Personagem que TEM habilidade vs vanilla -- KOar um ou outro e
+        # decisao muito diferente, e nada nas 32 originais distingue os dois.
+        # Import TARDIO: `decision_engine` importa este modulo, entao um
+        # import no topo seria circular.
+        from optcg_engine.decision_engine import get_card_effects
+        n = 0
+        for c in chars:
+            try:
+                if get_card_effects(getattr(c, 'code', '')):
+                    n += 1
+            except Exception:
+                pass
+        return float(n)
+
+    pw_max_m, pw_max_o = _mx(ch_m, 'power') / 1000.0, _mx(ch_o, 'power') / 1000.0
+    valores = {
+        'power_max_mine': pw_max_m, 'power_max_opp': pw_max_o,
+        'power_max_diff': pw_max_m - pw_max_o,
+        'cost_max_mine': _mx(ch_m, 'cost'), 'cost_max_opp': _mx(ch_o, 'cost'),
+        'don_attached_mine': float(sum(int(getattr(c, 'don_attached', 0) or 0) for c in ch_m)),
+        'don_attached_opp': float(sum(int(getattr(c, 'don_attached', 0) or 0) for c in ch_o)),
+        'rush_mine': _conta(ch_m, 'has_rush', 'rush_this_turn'),
+        'rush_opp': _conta(ch_o, 'has_rush', 'rush_this_turn'),
+        'double_attack_mine': _conta(ch_m, 'has_double_attack'),
+        'double_attack_opp': _conta(ch_o, 'has_double_attack'),
+        'unblockable_mine': _conta(ch_m, 'has_unblockable', 'unblockable_this_turn'),
+        'unblockable_opp': _conta(ch_o, 'has_unblockable', 'unblockable_this_turn'),
+        'banish_mine': _conta(ch_m, 'has_banish'), 'banish_opp': _conta(ch_o, 'has_banish'),
+        'com_efeito_mine': _com_efeito(ch_m), 'com_efeito_opp': _com_efeito(ch_o),
+    }
+
+    base = [
         life_m, life_o, life_m - life_o,
         hand_m, hand_o, hand_m - hand_o,
         don_m, don_o, don_m - don_o,
@@ -155,6 +218,14 @@ def state_features(p, opp) -> list:
         _num(lambda: len(opp.trash)),
         _num(lambda: getattr(p, 'turn', 0)),
     ]
+    if nomes is None or list(nomes) == FEATURE_NAMES:
+        return base
+    por_nome = dict(zip(FEATURE_NAMES, base))
+    por_nome.update(valores)
+    # Nome desconhecido vira 0.0 em vez de estourar: modelo antigo/novo nunca
+    # derruba o motor por causa de feature (mesmo principio do `win_prob`,
+    # que degrada pra None quando o bundle nao bate).
+    return [float(por_nome.get(n, 0.0)) for n in nomes]
 
 
 def fingerprint_estado(p, opp) -> dict:
@@ -246,7 +317,12 @@ def win_prob(p, opp, bundle=None) -> float | None:
     modelo = bundle.get('modelo') if isinstance(bundle, dict) else None
     if modelo is None:
         return None
-    feats = state_features(p, opp)
+    # Cada modelo diz QUAIS features ele quer (bloco 764). Sem isto, um
+    # modelo treinado nas 49 ricas receberia as 32 basicas e cairia no
+    # `check_dims` -- e, pior, dois modelos com visoes diferentes nao
+    # poderiam duelar no mesmo processo, que e justamente o A/B a fazer.
+    nomes = bundle.get('feature_names') if isinstance(bundle, dict) else None
+    feats = state_features(p, opp, nomes=nomes)
     if not check_dims(bundle, len(feats)):
         return None
     try:

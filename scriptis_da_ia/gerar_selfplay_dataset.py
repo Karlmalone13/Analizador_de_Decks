@@ -166,7 +166,12 @@ def _run_one_match(task) -> list:
             # geracoes recentes, e porque sem isso e impossivel saber
             # depois de que politica veio cada estado.
             'gen': geracao,
-            'feats': value_net.state_features(p, opp),
+            # Grava o SUPERCONJUNTO rico (49). O treino escolhe o
+            # subconjunto -- assim o mesmo corpus serve pros dois modelos do
+            # A/B e a comparacao isola a VISAO, nao o volume de dado
+            # (bloco 764).
+            'feats': value_net.state_features(
+                p, opp, nomes=value_net.FEATURE_NAMES_RICAS),
         })
 
         if result:

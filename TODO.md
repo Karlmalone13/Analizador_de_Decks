@@ -27,6 +27,32 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 10/09/2026 (bloco 764): **VISÃO RICA — o modelo passa a enxergar QUALIDADE
+> do board, não só contagem.** Diagnóstico do bloco 763 (alvo na busca empatou
+> 96%): as 32 features são todas contagens, sem noção de *quem* está no board,
+> então KOar o personagem A ou o B com poder parecido deixa tudo idêntico —
+> dar mais decisões a quem não enxerga não resolve. Decisão do usuário: **visão
+> primeiro**, aprendizado depois se não bastar.
+> **17 features novas** (32 → 49): `power_max`, `cost_max`, `don_attached`,
+> `rush`, `double_attack`, `unblockable`, `banish` e **`com_efeito`** (quantos
+> personagens TÊM habilidade vs. corpo pelado) — esta última é a principal, e
+> nenhuma das 32 a via. Sem identidade de carta, só propriedades.
+> **Costura que vale por si**: `state_features` calcula o superconjunto e
+> devolve os nomes pedidos; `win_prob` passa `bundle['feature_names']` — com
+> isso **dois modelos com visões diferentes duelam no mesmo processo**, sem o
+> que o A/B seria impossível. O corpus grava as 49 e `treinar_value.py --features
+> basicas|ricas` recorta, então **o mesmo corpus treina os dois lados** e a
+> comparação isola a visão, não o volume.
+> **Resultado**: corpus novo com 1.582 estados / 16 líderes / 0 erros. AUC fora
+> da amostra **0,7484 (32) → 0,7591 (49), +1,1 ponto**. Modesto, e os dois
+> decoram (0,96 treino × 0,75 fora) — esperado com 1.582 estados.
+> **RESSALVA**: 1.582 é pouco para 49 features; se o duelo der negativo, não dá
+> para separar "visão não ajuda" de "corpus pequeno demais".
+> **EM CURSO**: `ab_visao.py`, duelo SPRT ricas × básicas. **AUC não é ganho no
+> motor** (blocos 680-683: AUC 0,851 piorou ao ser ligado) — só o duelo decide.
+> Nada ligado em produção: `VALUE_NET_WEIGHT` segue 0.0 e o default de
+> `state_features` segue as 32.
+
 > 10/09/2026 (bloco 763): **ALVO na busca MEDIDO pela 1ª vez — 96% dos pares
 > EMPATAM.** O knob `ALVO_EFEITO_NA_BUSCA` (pronto desde 29/08, nunca ligado)
 > foi testado com knob LIGADO no desafiante e DESLIGADO no campeão na mesma

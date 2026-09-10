@@ -48,7 +48,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from optcg_engine.value_net import FEATURE_NAMES, MODEL_PATH
+from optcg_engine.value_net import FEATURE_NAMES, FEATURE_NAMES_RICAS, MODEL_PATH
 
 DATASET_DEFAULT = 'metrics/selfplay_dataset.jsonl'
 
@@ -75,6 +75,12 @@ def main() -> None:
     ap.add_argument('--dataset', default=DATASET_DEFAULT)
     ap.add_argument('--folds', type=int, default=5)
     ap.add_argument('--out', default=MODEL_PATH)
+    ap.add_argument('--features', choices=('basicas', 'ricas'), default='basicas',
+                    help='basicas = as 32 originais (so contagens e agregados); '
+                         'ricas = 32 + 17 de QUALIDADE do board (poder maximo, '
+                         'DON anexado, rush/double/unblockable/banish, quantos '
+                         'personagens TEM efeito). Default basicas pra nao mudar '
+                         'comportamento sem medicao (bloco 764)')
     args = ap.parse_args()
 
     import numpy as np
@@ -90,12 +96,24 @@ def main() -> None:
     grupos = np.array(grupos)
 
     n_lideres = len(set(grupos))
+    # O dataset novo grava o SUPERCONJUNTO rico (49); o antigo tem 32.
+    # Aqui se recorta o que o modelo vai enxergar -- assim o MESMO corpus
+    # treina os dois lados do A/B e a comparacao isola a VISAO (bloco 764).
+    nomes = FEATURE_NAMES_RICAS if args.features == 'ricas' else FEATURE_NAMES
+    if X.shape[1] == len(FEATURE_NAMES_RICAS):
+        idx = [FEATURE_NAMES_RICAS.index(n) for n in nomes]
+        X = X[:, idx]
+    elif X.shape[1] == len(FEATURE_NAMES):
+        if args.features == 'ricas':
+            raise SystemExit(
+                'ERRO: --features ricas exige dataset com as 49 (este tem 32). '
+                'Re-gere com gerar_selfplay_dataset.py.')
+    else:
+        raise SystemExit(f'ERRO: dataset tem {X.shape[1]} features; '
+                         f'esperado {len(FEATURE_NAMES)} ou '
+                         f'{len(FEATURE_NAMES_RICAS)}. Re-gere.')
     print(f'[value] {len(X)} estados | {n_lideres} lideres | '
-          f'{len(FEATURE_NAMES)} features | positivos {y.mean():.1%}')
-    if X.shape[1] != len(FEATURE_NAMES):
-        raise SystemExit(f'ERRO: dataset tem {X.shape[1]} features, '
-                         f'value_net.FEATURE_NAMES tem {len(FEATURE_NAMES)} -- '
-                         f'dataset gerado com outra versao. Re-gere.')
+          f'{len(nomes)} features ({args.features}) | positivos {y.mean():.1%}')
 
     folds = min(args.folds, n_lideres)
     if folds < 2:
@@ -148,7 +166,7 @@ def main() -> None:
     modelo = novo_modelo().fit(X, y)
     bundle = {
         'modelo': modelo,
-        'feature_names': list(FEATURE_NAMES),
+        'feature_names': list(nomes),
         'auc_fora_amostra': auc_val,
         'auc_treino': auc_tr,
         'n_estados': int(len(X)),
