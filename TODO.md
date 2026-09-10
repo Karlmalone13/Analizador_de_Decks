@@ -9,9 +9,14 @@
 > `itemgetter` (C) + partição numa passada. Equivalência garantida inclusive
 > no desempate (`sorted` é estável e `reverse=True` preserva a ordem dos
 > iguais). **Validado**: `smoke_fast` OK + 3 seeds idênticos (B/A/B,
-> 15/16/12). **PENDENTE: o ganho de TEMPO não foi medido pelo protocolo** —
-> uma execução deu 70,1 s contra 105-133 s, mas o piso de ruído é 17% e
-> **esse número não vale** até as 4 repetições fecharem.
+> 15/16/12). **MEDIDO pelo protocolo** de 4 repetições, comparando mínimos:
+> baseline 41,2 s → 757: 33,8 s → **758: 20,7 s**. **O motor está 2x mais
+> rápido** (−49,8% no acumulado), com separação limpa entre as versões — a
+> execução mais lenta desta (22,8 s) fica muito abaixo da mais rápida da
+> anterior (33,8 s). O `itemgetter` sozinho valeu **−38,8%**, muito acima
+> dos 11,4 s que o perfil sugeria: em CPython, cortar 27,5 M de chamadas de
+> função-de-chave vale desproporcionalmente mais que o `tottime` delas
+> indica, porque ele não contabiliza o overhead de despacho por chamada.
 > Re-perfil mostrou que a poda do 757 cortou `search_alloc` de 8.533 para
 > 3.362 chamadas de topo (−61%). **Próximo alvo**: `avaliar_carta` segue com
 > o maior custo acumulado (45,5 s), todas as 527.894 chamadas vindas do

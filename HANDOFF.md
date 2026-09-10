@@ -58,11 +58,24 @@ negativa crescente.
 **Validado**: `smoke_fast` OK + 3 seeds com vencedores (B/A/B) e turnos
 (15/16/12) identicos.
 
-**PENDENTE**: o ganho de TEMPO nao foi medido pelo protocolo do bloco 757
-(4 repeticoes por versao, comparar minimos) -- a medicao ficou rodando.
-Uma execucao unica deu 70,1s contra 105-133s, mas o piso de ruido desta
-maquina e 17%, entao **esse numero NAO vale como ganho** ate a repeticao
-fechar. Nao citar 70,1s como resultado.
+**MEDIDO pelo protocolo** (4 repeticoes, seed 909, comparar minimos --
+todas as versoes pelo MESMO protocolo):
+
+| versao | relogio | CPU |
+|---|---|---|
+| baseline original | 41,2s | 40,0s |
+| + poda + uma passada (757) | 33,8s | 33,1s |
+| **+ itemgetter (758)** | **20,7s** | **20,5s** |
+
+**O motor esta 2x mais rapido: -49,8% no acumulado das tres mudancas.**
+Separacao limpa -- a execucao mais LENTA desta versao (22,8s) fica muito
+abaixo da mais RAPIDA da anterior (33,8s), sem sobreposicao.
+
+O `itemgetter` sozinho valeu **-38,8%** (33,8 -> 20,7s), MUITO acima dos
+11,4s acumulados que eu tinha estimado pelo perfil. Licao: em CPython,
+eliminar chamadas Python de funcao-de-chave em volume (27,5 milhoes) vale
+desproporcionalmente mais do que o `tottime` daquelas lambdas sugere --
+o `tottime` nao contabiliza o overhead de despacho por chamada.
 
 **Proximo alvo, ja identificado**: `avaliar_carta` continua com o maior
 custo ACUMULADO (45,5s), e as 527.894 chamadas saem TODAS do filtro de
