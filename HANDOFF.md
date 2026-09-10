@@ -28,22 +28,30 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
-> **EM CURSO ao fim desta sessao (10/09/2026)**: `confirma_gen4.py` esta
-> rodando a confirmacao da promocao da geracao 4 -- MESMOS dois modelos,
-> 150 pares / 300 partidas (o dobro da rodada que promoveu). Enquanto ele
-> roda, **`metrics/value_net.joblib` no disco contem o modelo ANTIGO**: o
-> script troca os arquivos e restaura no `finally`.
+> **PENDENTE, NAO rodado (10/09/2026)**: a confirmacao da promocao da
+> geracao 4 (`confirma_gen4.py`, 150 pares / 300 partidas com os MESMOS
+> dois modelos) foi disparada e **INTERROMPIDA a pedido do usuario**, que
+> ia sair e nao queria deixar a maquina rodando sem supervisao. **Nao ha
+> resultado.** O campeao foi restaurado a mao e CONFERIDO por hash:
+> `metrics/value_net.joblib` = `1243016abfb3` (gen4), com `git status`
+> limpo.
 >
-> **SE A MAQUINA SUSPENDER OU O PROCESSO MORRER NO MEIO, o `finally` nao
-> executa e o campeao fica ERRADO no disco.** O gen4 esta salvo em tres
-> lugares -- `metrics/value_net_desafiante.joblib`,
-> `metrics/value_net.gen4.bak` e o git (commit `b7c879b`). Recuperar com:
+> **Rodar quando houver ~45 min de maquina livre:**
 >
 > ```
-> git checkout b7c879b -- scriptis_da_ia/metrics/value_net.joblib
+> cd scriptis_da_ia && python confirma_gen4.py
 > ```
 >
-> Conferir sempre pelo hash: gen4 = `1243016abfb3`, antigo = `1628efa6671e`.
+> (com `OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1`, senao
+> os workers disputam os 2 nucleos -- ver bloco 759). Ele troca o campeao
+> pelo antigo e restaura no `finally`; se morrer no meio, recuperar com
+> `git checkout b7c879b -- scriptis_da_ia/metrics/value_net.joblib`.
+> Hashes: gen4 = `1243016abfb3`, antigo = `1628efa6671e`.
+>
+> **Por que importa**: a promocao passou por MARGEM (11x3 em 14 pares
+> decididos, Wilson 52,4% contra portao de 50%; 10x4 teria dado 45,4% e
+> reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
+> sugestiva, nao estabelecida**.
 
 ## 2026-09-10 (760) - **PRIMEIRA PROMOCAO DO PROJETO** (com o portao consertado) e **A META OFICIAL MUDOU**: de "jogar identico ao humano" para "VENCER O HUMANO"
 
