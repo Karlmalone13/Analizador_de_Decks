@@ -24,8 +24,14 @@
 > **Acumulado: 41,2 → 18,4 s, −55,3%, motor 2,2x mais rápido.**
 > **Ideia do usuário (banco estático em cache global)**: já feita em 3 pontos
 > (`_DECK_CACHE`, `_EFFECTS_ENRICHED_CACHE`, `_CACHE` do modelo). Mas a pista
-> tem fundamento — sobram **5.650 `nt.stat` (1,154 s) por partida**, a ~204 µs
-> cada. **Aberto**: `_stat_trace.py` criado para nomear o culpado.
+> **FECHADA por medição** (`_stat_conta.py`, por fase): `_load_deck_list` em
+> cache custa **0,00 s**, e o **`OPTCGMatch` + `setup()` que roda POR PARTIDA
+> no laço de duelo custa 0,04 s com ZERO acesso a disco** — não há o que
+> otimizar. Ressalva de método: meu contador embrulha `os.stat`, mas o
+> `importlib` chama `nt.stat` direto no nível C e escapa dele, então **não
+> provei onde estão os 5.650** — provei, por outro caminho, que o setup por
+> partida é irrelevante e que aquilo é custo único de inicialização de
+> processo, amortizado pelos workers.
 
 > 10/09/2026 (bloco 758): **`itemgetter` no lugar de `lambda` em
 > `hits_after_best_defense`** — ela é chamada 2,8 M de vezes pelas folhas de

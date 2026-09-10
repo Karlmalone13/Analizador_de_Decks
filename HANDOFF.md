@@ -102,12 +102,29 @@ Conferido: **ja esta feito** em tres pontos -- `_DECK_CACHE`
 `ProcessPoolExecutor` reusando workers, esses caches sobrevivem entre
 partidas do mesmo processo.
 
-**MAS a pista dele tem fundamento**: o perfil mostra **5.650 `nt.stat`
-somando 1,154s numa unica partida, a ~204us cada** -- lento demais pra
-stat comum (cheira a antivirus no caminho). Algo ainda toca disco durante
-a partida e nao foi identificado. Rastreador `_stat_trace.py` (instrumenta
-`os.stat`/`os.path.exists` e conta por CHAMADOR) ficou rodando ao fim
-desta sessao. **Nao foi resolvido -- so localizado como pergunta aberta.**
+**FECHADO por medicao** (`_stat_conta.py`, contagem por FASE):
+
+| fase | acessos | tempo |
+|---|---|---|
+| imports | 1 | 2,02s |
+| `_load_deck_list` (1a vez) | 0 | 1,47s |
+| `_load_deck_list` (2a vez, cache) | **0** | **0,00s** |
+| **`OPTCGMatch` + `setup()` (POR PARTIDA)** | **0** | **0,04s** |
+| partida inteira | 1 | 21,96s |
+
+**O setup por partida custa 0,04s e zero acesso a disco** -- e ele que roda
+a cada partida no laco de duelo, entao era o unico ponto onde a suspeita
+teria consequencia pratica. Nao ha o que otimizar ali.
+
+**RESSALVA DE METODO (limitacao real do meu instrumento)**: o contador
+embrulha `os.stat`/`os.path.exists`, mas o `importlib` chama `nt.stat`
+DIRETO no nivel C, driblando o monkeypatch -- por isso conto 2 acessos
+onde o perfil contou 5.650. **Nao provei ONDE estao os 5.650.** O que
+esta provado, por outro caminho, e que o setup por partida leva 0,04s,
+logo os 1,154s de `stat` do perfil sao custo UNICO de inicializacao de
+processo, amortizado em centenas de partidas pelos workers do
+`ProcessPoolExecutor`. A hipotese do usuario estava certa como principio,
+e o codigo ja a implementava.
 
 ## 2026-09-10 (758) - `hits_after_best_defense`: `itemgetter` no lugar de `lambda` + particao numa passada. CORRECAO validada, TEMPO ainda nao medido pelo protocolo
 
