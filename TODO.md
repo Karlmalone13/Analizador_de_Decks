@@ -2,6 +2,23 @@
 
 **Última atualização:** 9 de setembro de 2026
 
+> **EM CURSO ao fim desta sessao (10/09/2026)**: `confirma_gen4.py` esta
+> rodando a confirmacao da promocao da geracao 4 -- MESMOS dois modelos,
+> 150 pares / 300 partidas (o dobro da rodada que promoveu). Enquanto ele
+> roda, **`metrics/value_net.joblib` no disco contem o modelo ANTIGO**: o
+> script troca os arquivos e restaura no `finally`.
+>
+> **SE A MAQUINA SUSPENDER OU O PROCESSO MORRER NO MEIO, o `finally` nao
+> executa e o campeao fica ERRADO no disco.** O gen4 esta salvo em tres
+> lugares -- `metrics/value_net_desafiante.joblib`,
+> `metrics/value_net.gen4.bak` e o git (commit `b7c879b`). Recuperar com:
+>
+> ```
+> git checkout b7c879b -- scriptis_da_ia/metrics/value_net.joblib
+> ```
+>
+> Conferir sempre pelo hash: gen4 = `1243016abfb3`, antigo = `1628efa6671e`.
+
 > 10/09/2026 (bloco 760): **A META OFICIAL DO PROJETO MUDOU** — de "jogar
 > IDÊNTICO ao humano (85-90%)" para **VENCER O HUMANO**. Decisão do usuário:
 > *"eu tinha estipulado essa meta de 85-90% porque a gente estava trabalhando
