@@ -14559,6 +14559,24 @@ class DecisionEngine:
             penalty += max(0, cheap - 2) * 15.0
         return penalty
 
+    def _doc_jogaveis(self, don: float) -> list:
+        """Cartas da mao pagaveis AGORA que valem >= 70, como (custo, valor).
+
+        Extraido de `don_opportunity_cost` (bloco 759) pra poder ser
+        congelado por escopo. Uma passada so: `effective_hand_play_cost` e
+        `avaliar_carta` calculados UMA vez por carta, preservando o
+        curto-circuito (a carta so e avaliada depois de o custo passar).
+        """
+        jogaveis = []
+        for c in self.me.hand:
+            custo = effective_hand_play_cost(self.me, c, self.opp)
+            if custo > don:
+                continue
+            valor = self.avaliar_carta(c)
+            if valor >= 70:
+                jogaveis.append((custo, valor))
+        return jogaveis
+
     def don_opportunity_cost(self, count: int = 1) -> float:
         """Custo do DON agora, incluindo a melhor jogada que ele bloquearia.
 
@@ -14577,14 +14595,20 @@ class DecisionEngine:
         if count <= 0:
             return 0.0
         don = self.me.don_available
-        jogaveis = []          # (custo, valor) -- cada um calculado UMA vez
-        for c in self.me.hand:
-            custo = effective_hand_play_cost(self.me, c, self.opp)
-            if custo > don:
-                continue
-            valor = self.avaliar_carta(c)
-            if valor >= 70:
-                jogaveis.append((custo, valor))
+        # ESCOPO CONGELADO (bloco 759): `jogaveis` NAO depende de `count` --
+        # depende so do estado. `_generate_attach_don_actions` pontua dezenas
+        # de candidatas do MESMO estado, cada uma com um `count` diferente, e
+        # recalculava a lista inteira toda vez. Perfil: 527.894 chamadas de
+        # `avaliar_carta` por partida, TODAS deste filtro (~88.000 chamadas
+        # desta funcao).
+        #
+        # NAO e cache por carimbo de estado (que erraria em silencio se o
+        # carimbo esquecesse um campo que `avaliar_carta` le): o escopo e
+        # ABERTO E FECHADO explicitamente por quem sabe que o estado esta
+        # parado, num `try/finally`, e fora dele a lista e sempre recalculada.
+        jogaveis = getattr(self, '_doc_jogaveis_congelado', None)
+        if jogaveis is None:
+            jogaveis = self._doc_jogaveis(don)
         base = 25.0 * count
         if jogaveis and any(custo > don - count for custo, _v in jogaveis):
             base += min(90.0, max(v for _c, v in jogaveis) * 0.45)
@@ -18758,6 +18782,48 @@ class OPTCGMatch:
         return actions
 
     def _generate_attach_don_actions(self, p, opp, engine, priority=None):
+        """CONGELA `don_opportunity_cost` durante a geracao (bloco 759).
+
+        `_generate_attach_don_actions_inner` so GERA e PONTUA candidatas --
+        nao aplica acao nenhuma, so monta a lista `acts` -- entao o estado
+        esta parado do inicio ao fim dela, e a lista `jogaveis` de
+        `don_opportunity_cost` (que depende do ESTADO, nao de `count`) e a
+        mesma pras dezenas de candidatas pontuadas ali dentro. Sem isto ela
+        era recalculada por candidata: 527.894 chamadas de `avaliar_carta`
+        por partida saiam so desse filtro (~88.000 chamadas da funcao).
+
+        Por que ESCOPO e nao carimbo de estado: um carimbo que esquecesse um
+        campo lido por `avaliar_carta` (board, vida, postura, identidade de
+        carta) faria o bot decidir diferente EM SILENCIO. Aqui o escopo e
+        aberto e fechado por quem sabe que o estado esta parado, e o
+        `finally` garante que ele nao escapa nem se houver excecao -- fora
+        deste bloco a lista volta a ser recalculada sempre.
+        """
+        engine._doc_jogaveis_congelado = engine._doc_jogaveis(
+            engine.me.don_available)
+        try:
+            return self._generate_attach_don_actions_inner(
+                p, opp, engine, priority)
+        finally:
+            # REDE DE SEGURANCA opcional (OPTCG_VERIFICA_ESCOPO=1): recalcula
+            # a lista no fim e compara com a congelada. Se algum dia alguem
+            # mutar estado dentro da geracao, o congelamento passaria a
+            # devolver valor velho EM SILENCIO -- este modo transforma isso
+            # num erro visivel. Fica DESLIGADO por padrao porque recalcular
+            # anula o ganho; ligue ao mexer nesta funcao ou ao investigar
+            # divergencia de decisao.
+            if os.environ.get('OPTCG_VERIFICA_ESCOPO') == '1':
+                _fresco = engine._doc_jogaveis(engine.me.don_available)
+                if _fresco != engine._doc_jogaveis_congelado:
+                    raise RuntimeError(
+                        'ESCOPO CONGELADO VIOLADO em '
+                        '_generate_attach_don_actions_inner: o estado mudou '
+                        'durante a geracao, entao don_opportunity_cost usou '
+                        'lista velha. congelado=%r fresco=%r'
+                        % (engine._doc_jogaveis_congelado, _fresco))
+            engine._doc_jogaveis_congelado = None
+
+    def _generate_attach_don_actions_inner(self, p, opp, engine, priority=None):
         """
         Gera ações de ANEXAR DON para ligar efeitos/keywords [DON!! ×N].
         Avalia cada personagem em campo que tem efeito condicional a DON e ainda

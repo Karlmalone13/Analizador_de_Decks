@@ -2,6 +2,31 @@
 
 **Última atualização:** 9 de setembro de 2026
 
+> 10/09/2026 (bloco 759): **`don_opportunity_cost` congelada por ESCOPO
+> EXPLÍCITO** — 86,6% das chamadas restantes de `avaliar_carta` (527.894 por
+> partida) saíam do filtro dela, chamada ~88.000 vezes, e a lista `jogaveis`
+> não depende de `count`. **Rejeitei o carimbo de estado** (caminho óbvio,
+> igual a `opp_lethal_threat`): `avaliar_carta` lê board, vida, postura e
+> identidade de carta, e um carimbo incompleto faria o bot decidir diferente
+> **em silêncio** — contaminando a métrica oficial sem dar sinal. Em vez
+> disso, wrapper fino que congela, chama a função original (sem reindentar
+> nada) e descongela num `finally`.
+> **Validado por 3 vias**: `smoke_fast` OK; **8 seeds** com assinatura
+> idêntica (dobrei de 3 por ser a mudança mais arriscada da série); e um
+> **detector de violação** (`OPTCG_VERIFICA_ESCOPO=1`) que recalcula e compara
+> a cada geração de ação e **nunca disparou** em 3 partidas completas — essa
+> via testa a PREMISSA, não só o desfecho.
+> **Ganho ~12%** (20,7 → 18,4 s), e o balanço é honesto: **12% pelo maior
+> risco da série**. As anteriores eram provas; esta depende de uma premissa
+> que uma edição futura pode quebrar — por isso o detector. **Ligue
+> `OPTCG_VERIFICA_ESCOPO=1` ao mexer em
+> `_generate_attach_don_actions_inner`.**
+> **Acumulado: 41,2 → 18,4 s, −55,3%, motor 2,2x mais rápido.**
+> **Ideia do usuário (banco estático em cache global)**: já feita em 3 pontos
+> (`_DECK_CACHE`, `_EFFECTS_ENRICHED_CACHE`, `_CACHE` do modelo). Mas a pista
+> tem fundamento — sobram **5.650 `nt.stat` (1,154 s) por partida**, a ~204 µs
+> cada. **Aberto**: `_stat_trace.py` criado para nomear o culpado.
+
 > 10/09/2026 (bloco 758): **`itemgetter` no lugar de `lambda` em
 > `hits_after_best_defense`** — ela é chamada 2,8 M de vezes pelas folhas de
 > `search_alloc` e fazia DUAS ordenações por chamada, somando 5,6 M de

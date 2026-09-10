@@ -28,6 +28,87 @@
 > pediu explicitamente pela segunda opcao como direcao de fundo, mesmo
 > que a execucao imediata de hoje continue sendo caça-bug.
 
+## 2026-09-10 (759) - `don_opportunity_cost` congelada por ESCOPO EXPLICITO (nao por carimbo de estado) -- +12%, com detector opt-in que transforma a falha silenciosa em erro visivel
+
+### 1. O problema
+
+Depois do bloco 758, **86,6% das chamadas restantes de `avaliar_carta`
+(527.894 por partida) saiam do FILTRO de `don_opportunity_cost`**, que e
+chamada ~88.000 vezes por partida. A lista `jogaveis` **nao depende de
+`count`** -- depende so do estado -- e
+`_generate_attach_don_actions` pontua dezenas de candidatas do MESMO
+estado, recalculando a lista inteira pra cada uma.
+
+### 2. Por que ESCOPO e nao carimbo de estado
+
+O caminho obvio seria memoizar por carimbo, como
+`opp_lethal_threat`/`_lethal_threat_stamp` ja faz. **Rejeitado**:
+`avaliar_carta` le board, vida, postura e identidade de carta, e aquele
+carimbo nao cobre nada disso. Um carimbo incompleto faz o bot decidir
+diferente **EM SILENCIO** -- e a metrica oficial do projeto e acerto de
+decisao, entao isso contaminaria toda medicao futura sem dar sinal.
+
+Escolhido: escopo aberto e fechado por quem SABE que o estado esta parado.
+`_generate_attach_don_actions` virou um wrapper fino que congela, chama
+`_generate_attach_don_actions_inner` (a funcao original, sem reindentar
+uma linha) e descongela num `finally`. Fora do bloco, a lista volta a ser
+recalculada sempre.
+
+### 3. Validado por TRES vias independentes
+
+| via | resultado |
+|---|---|
+| `smoke_fast` | OK |
+| **8 seeds** (dobrei de 3, por ser a mudanca mais arriscada da serie) | assinatura IDENTICA ao baseline: `31337:B:15 4242:A:16 909:B:12 777:A:13 2024:A:15 55555:B:16 13:B:16 8080:A:11` |
+| **detector de violacao** (`OPTCG_VERIFICA_ESCOPO=1`) | 3 partidas completas, recalculando e comparando a CADA geracao de acao (milhares de vezes), **nunca disparou** |
+
+A 3a via e a mais forte: testa a PREMISSA (o estado esta parado durante a
+geracao), nao so o desfecho. As 8 seeds provam que nao divergiu naquelas
+partidas; o detector prova que a hipotese vale em alta frequencia.
+
+### 4. Ganho: ~12% (e o balanco honesto)
+
+Protocolo do 757 (4 repeticoes, minimo): **20,7s -> 18,4s de relogio**,
+20,5 -> 18,1s de CPU. O ruido desta rodada foi alto (19%) e as faixas
+brutas se sobrepoem -- mas descartando a repeticao de aquecimento, esta
+versao da 18,4/18,4/18,5 contra 21,0/22,5/22,8 da anterior, sem
+sobreposicao.
+
+**Balanco honesto: 12% pelo MAIOR risco da serie.** As tres mudancas
+anteriores (757/758) eram PROVAS -- poda admissivel, recomputacao
+eliminada, chave de ordenacao equivalente. Esta depende de uma premissa
+sobre o codigo ("a geracao nao muta estado"), que hoje e verdadeira e
+foi verificada, mas que uma edicao futura pode quebrar. Por isso o
+detector existe: **ligue `OPTCG_VERIFICA_ESCOPO=1` ao mexer em
+`_generate_attach_don_actions_inner`** ou ao investigar divergencia de
+decisao.
+
+### 5. Acumulado da serie de otimizacao
+
+| versao | relogio (min de 4 reps) |
+|---|---|
+| baseline original | 41,2s |
+| + poda + uma passada (757) | 33,8s |
+| + itemgetter (758) | 20,7s |
+| **+ escopo congelado (759)** | **18,4s** |
+
+**-55,3% no total: o motor esta 2,2x mais rapido.**
+
+### 6. Sobre a ideia do usuario (banco estatico em cache global)
+
+Conferido: **ja esta feito** em tres pontos -- `_DECK_CACHE`
+(`_load_deck_list`), `_EFFECTS_ENRICHED_CACHE` (`get_card_effects`) e
+`_CACHE` (`load_value_net`, que cacheia inclusive o `None`). Com
+`ProcessPoolExecutor` reusando workers, esses caches sobrevivem entre
+partidas do mesmo processo.
+
+**MAS a pista dele tem fundamento**: o perfil mostra **5.650 `nt.stat`
+somando 1,154s numa unica partida, a ~204us cada** -- lento demais pra
+stat comum (cheira a antivirus no caminho). Algo ainda toca disco durante
+a partida e nao foi identificado. Rastreador `_stat_trace.py` (instrumenta
+`os.stat`/`os.path.exists` e conta por CHAMADOR) ficou rodando ao fim
+desta sessao. **Nao foi resolvido -- so localizado como pergunta aberta.**
+
 ## 2026-09-10 (758) - `hits_after_best_defense`: `itemgetter` no lugar de `lambda` + particao numa passada. CORRECAO validada, TEMPO ainda nao medido pelo protocolo
 
 Re-perfil DEPOIS das duas mudancas do bloco 757 (o topo mudou -- por isso
