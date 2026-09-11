@@ -131,9 +131,15 @@ def main() -> None:
         print(f'  aviso: folds reduzido pra {folds} (so ha {n_lideres} lideres)')
 
     def novo_modelo():
+        # Hiperparametros BUSCADOS (bloco 771), nao mais fixos no chute.
+        # Medido em lideres nunca vistos: AUC fora da amostra 0,7761 ->
+        # 0,7985, e o vao treino-teste caiu de 0,201 pra 0,087 -- o modelo
+        # decorava. `early_stopping` + arvore rasa + folha grande sao o que
+        # segura o sobre-ajuste com corpus pequeno.
         return HistGradientBoostingClassifier(
-            max_iter=200, learning_rate=0.06, max_depth=4,
-            min_samples_leaf=40, l2_regularization=1.0,
+            max_iter=300, learning_rate=0.02, max_depth=3,
+            min_samples_leaf=60, early_stopping=True, validation_fraction=0.15,
+            l2_regularization=1.0,
             random_state=0)
 
     # ── Validacao FORA DA AMOSTRA, por lider ────────────────────────────

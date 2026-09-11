@@ -53,6 +53,88 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-11 (771) - **TERCEIRA medicao dizendo o mesmo: modelo melhor NAO e bot melhor.** Hiperparametros buscados (+0,038 de AUC, sobre-ajuste de 0,201 pra 0,056) e o duelo deu 11x18
+
+### 1. As duas ultimas pendencias do roteiro de ML, fechadas
+
+`tunar_value.py` (novo). Avaliado no MESMO conjunto de teste por LIDER --
+lideres nunca vistos, unico numero honesto aqui.
+
+| configuracao | AUC no TESTE | vao treino-teste |
+|---|---|---|
+| hoje (fixo no chute, 49 feat.) | 0,7761 | **0,201** |
+| + hiperparametros buscados | 0,7985 | 0,087 |
+| **+ selecao (16 features)** | **0,8145** | **0,056** |
+
+**+0,0384 de AUC fora da amostra**, e o sobre-ajuste praticamente
+desapareceu. Parametros adotados em `treinar_value.py`: `max_iter=300,
+learning_rate=0.02, max_depth=3, min_samples_leaf=60, early_stopping=True,
+l2_regularization=1.0` -- arvore RASA, folha GRANDE, parada antecipada.
+
+**Achado que contraria a onda de features de 10/09 (e a minha execucao
+dela)**: **16 features batem 49.** Quanto mais coluna, PIOR. O principio do
+usuario ("o ML nao pode ser cego para nenhuma informacao") nao esta errado
+no limite, mas com **1.582 estados** mais coluna faz decorar em vez de
+aprender -- na pratica ele **exige crescer o corpus primeiro**, senao se
+vira contra o modelo.
+
+### 2. E o duelo REPROVA de novo
+
+```
+TUNADO 11 x 18 nao-tunado | winrate 37,9% | Wilson 22,7% | LLR -3,534
+320 partidas, 82% de empate, 60 min
+```
+
+Ressalva honesta: com n=29, 50% ainda cabe no intervalo -- **"pior" nao
+esta provado; "nao melhor" esta.**
+
+### 3. O PADRAO, agora com TRES medicoes independentes
+
+| quando | o que melhorou | resultado no JOGO |
+|---|---|---|
+| blocos 680-683 | modelo com AUC 0,851 (contra 0,702) | **piorou** |
+| bloco 753 | AUC 0,77 ligado a peso 200 | `play` 26,6% -> 26,5% |
+| **bloco 771** | **+0,038 de AUC, sobre-ajuste tratado** | **11 x 18** |
+
+**Melhorar o modelo pelas metricas padrao de ML nao produz um bot melhor
+nesta arquitetura.** Nao e ruido nem azar: sao tres tentativas
+independentes, com metodos diferentes, mesmo desfecho.
+
+### 4. A sintese desconfortavel -- as DUAS coisas sao verdadeiras
+
+- **Algemado**: o ML e um ajuste de +-100 sobre a heuristica. Modelo melhor,
+  algemado, continua algemado -- e o que os tres resultados acima medem.
+- **Nao sustenta sozinho**: quando as algemas sairam (bloco 769, ML
+  avaliando sem rollout), perdeu **1x9**; cortando so metade da busca
+  (bloco 770), **3x12**.
+
+**O modelo nao consegue se expressar E nao e bom o bastante pra ficar
+sozinho, ao mesmo tempo.** E por isso que nada mexe o ponteiro, e e a
+confirmacao mais forte ate agora da tese do usuario de que **a arquitetura
+e o gargalo, nao a qualidade do modelo**.
+
+### 5. O que sobra: REDE DE POLITICA
+
+Temos rede de VALOR (quanto vale a posicao). Falta a de POLITICA (qual
+jogada fazer). Ela ataca por outro lado: em vez de avaliar melhor, **reduz
+o que precisa ser avaliado** -- menos candidatas, busca mais barata e mais
+funda no que importa. E o mecanismo pelo qual ML de verdade SUBSTITUI
+busca em vez de competir com ela.
+
+**ATENCAO -- ja foi tentado e esta em `REPROVADOS.md`** (blocos 680-683):
+politica aprendida por IMITACAO DO HUMANO, que ranqueava melhor isolada
+(AUC 0,851 x 0,702) e **piorava ao ser ligada**, por *distribution shift*
+(treina em estados do motor baseline e degrada no laco de decisao). O
+proprio registro diz o que fazer se retomar: **laco iterativo estilo
+DAgger**, e que **mais features NAO resolve** (medido).
+
+Diferencas do que se propoe agora, que precisam ser respeitadas pra nao
+repetir: (a) treinar em AUTO-JOGO, nao em imitacao de humano; (b) usar pra
+PODAR o shortlist, nao pra escolher a acao; (c) laco iterativo -- re-treinar
+sobre estados que a POLITICA NOVA visita, que e exatamente o remedio contra
+o *distribution shift* que derrubou a tentativa anterior; (d) a exploracao
+do bloco 767 ja esta implementada e e pre-requisito disso.
+
 ## 2026-09-11 (770) - MEIO-TERMO tambem REPROVA (3x12): a busca esta ganhando o que custa. **Nao da pra comprar velocidade cortando busca** -- e eu errei a leitura do meu proprio teste
 
 ### 1. O teste

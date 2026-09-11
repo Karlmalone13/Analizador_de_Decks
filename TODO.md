@@ -27,6 +27,33 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 11/09/2026 (bloco 771): **TERCEIRA medição dizendo o mesmo — modelo melhor
+> NÃO é bot melhor.** Fechadas as duas últimas pendências do roteiro de ML
+> (`tunar_value.py`): hiperparâmetros buscados levaram o AUC de teste de
+> **0,7761 → 0,8145** e o vão treino-teste de **0,201 → 0,056**. Adotado em
+> `treinar_value.py`: árvore rasa, folha grande, parada antecipada.
+> **Achado que contraria a onda de features de 10/09**: **16 features batem
+> 49** — quanto mais coluna, pior. O princípio "o ML não pode ser cego para
+> nenhuma informação" não está errado no limite, mas com 1.582 estados ele
+> **exige crescer o corpus primeiro**, senão se vira contra o modelo.
+> **E o duelo reprova**: TUNADO **11 × 18**, winrate 37,9%, LLR −3,534 (com
+> n=29, "pior" não está provado; "não melhor" está).
+> **O PADRÃO, agora com 3 medições independentes**: blocos 680-683 (AUC 0,851
+> piorou), bloco 753 (AUC 0,77, `play` 26,6 → 26,5), bloco 771 (+0,038 de AUC,
+> 11 × 18). **Melhorar o modelo pelas métricas padrão de ML não produz um bot
+> melhor nesta arquitetura.**
+> **SÍNTESE — as duas coisas são verdadeiras ao mesmo tempo**: o ML está
+> algemado a ±100 pontos sobre a heurística (modelo melhor, algemado, continua
+> algemado) **e** não sustenta a decisão sozinho (1×9 sem rollout, 3×12
+> cortando metade). É a confirmação mais forte da tese do usuário: **a
+> arquitetura é o gargalo, não a qualidade do modelo**.
+> **PRÓXIMO: REDE DE POLÍTICA** (temos só a de valor) — em vez de avaliar
+> melhor, **reduz o que precisa ser avaliado**. **ATENÇÃO**: já está em
+> `REPROVADOS.md` (680-683) na versão por IMITAÇÃO DO HUMANO, que piorou por
+> *distribution shift*; retomar exige (a) auto-jogo em vez de imitação, (b)
+> PODAR o shortlist em vez de escolher a ação, (c) laço iterativo estilo
+> DAgger, (d) a exploração do bloco 767 como pré-requisito.
+
 > 11/09/2026 (bloco 770): **MEIO-TERMO também REPROVA (3×12) — não dá para
 > comprar velocidade cortando busca.** Cortar só a simulação da resposta do
 > oponente deu **5,1x** (15,3 s → 3,0 s), mais que os ~2x estimados, mas o bot
