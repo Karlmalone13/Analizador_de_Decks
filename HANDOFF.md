@@ -53,6 +53,101 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-10 (768) - EDA feita pela 1a vez e ela REFUTA uma afirmacao MINHA: `com_efeito` tem correlacao **1,000** com a contagem de personagens, e **23 das 49 features nao sao usadas pelo modelo**
+
+### 1. Por que esta analise existe
+
+O usuario trouxe um roteiro padrao de ML e pediu a comparacao com o nosso.
+O resultado apontou quatro buracos que o projeto nunca tinha fechado: **EDA
+nunca feita**, **selecao de atributos nunca medida**, **sem conjunto de
+TESTE separado** (so validacao cruzada -- e como o AUC dela era usado pra
+DECIDIR, deixou de ser imparcial) e **so AUC como metrica**.
+
+Ferramenta nova: `analise_ml.py`. Divisao em TRES por LIDER -- o teste sai
+de lideres que o modelo NUNCA viu, unica forma honesta aqui, porque o
+objetivo registrado e jogar bem com QUALQUER deck. Importancia por
+PERMUTACAO (nao `feature_importances_`, que se ilude com cardinalidade).
+
+### 2. O achado que me CORRIGE
+
+Eu afirmei no bloco 764 que `com_efeito` era **"a principal"** das features
+novas -- a que separaria "KOar o personagem com habilidade" de "KOar o
+corpo pelado". A EDA mediu:
+
+```
++1.000  chars_mine  <->  com_efeito_mine
++1.000  chars_opp   <->  com_efeito_opp
+```
+
+**Correlacao PERFEITA.** Nesses decks praticamente todo personagem tem
+efeito, entao a feature e a contagem de personagens de novo. **Zero
+informacao nova.** A afirmacao era minha, era central pro argumento da
+"visao rica", e estava errada.
+
+Outros 4 pares redundantes: `power <-> cost` (~0,96) nos dois lados e no
+maximo -- poder e custo sao quase a mesma informacao neste jogo.
+
+### 3. 23 das 49 features o modelo NAO usa
+
+Importancia <= 0 por permutacao, no conjunto de teste. E entre elas estao
+**TODAS as keywords que adicionei**: `rush`, `double_attack`,
+`unblockable`, `banish`, `com_efeito` (mine e opp). As sete apresentadas
+como "visao de qualidade do board" **nao contribuem nada** -- ou sao raras
+demais (2 constantes: `banish_mine`/`banish_opp`) ou redundantes.
+
+O que o modelo de fato usa:
+
+| feature | queda de AUC ao embaralhar |
+|---|---|
+| **`life_diff`** | **0,0885** |
+| `power_max_diff` | 0,0219 |
+| `trash_opp` | 0,0195 |
+| `counter_hand_mine` | 0,0176 |
+| `cost_max_mine` | 0,0113 |
+
+`life_diff` vale **4x** a segunda. O modelo e, essencialmente, "quem esta
+com mais vida" -- com ajustes pequenos em cima.
+
+### 4. Metricas completas (teste em 3 lideres nunca vistos)
+
+| metrica | valor |
+|---|---|
+| AUC treino | 0,9771 |
+| AUC validacao cruzada | 0,7623 (desvio 0,047) |
+| **AUC TESTE** | **0,7761** |
+| acuracia | 66,4% |
+| precisao | 75,5% |
+| recall | 61,5% |
+| F1 | 67,8% |
+| Brier | 0,1970 (0 = perfeito, 0,25 = chute) |
+
+**Boa noticia**: teste (0,776) bate com a validacao cruzada (0,762) -- a
+generalizacao e honesta, nao havia vazamento, e o modelo funciona em
+lideres que nunca viu.
+
+**Ponto fraco**: matriz de confusao com **52 falsos negativos contra 27
+falsos positivos** -- o modelo e PESSIMISTA, erra mais prevendo derrota em
+partida que foi vitoria.
+
+### 5. Consequencia pro plano
+
+**Adicionar feature as cegas nao estava funcionando**, e sem esta analise
+eu nao teria descoberto -- teria gerado corpus e duelado por mais uma hora
+pra chegar num resultado nulo cuja causa ficaria invisivel.
+
+Fica um alerta pras ondas 2 e 3 de features: **medir utilidade ANTES de
+duelar**, com `analise_ml.py`, que custa 2 minutos.
+
+### 6. Pendencias que SOBRARAM do roteiro
+
+- **Hiperparametros no chute**: `max_iter=200, learning_rate=0.06,
+  max_depth=4` nunca foram buscados.
+- **Overfitting detectado e NAO tratado**: 0,977 no treino contra 0,776 no
+  teste e um vao grande -- sintoma classico de feature demais pra dado de
+  menos. **Isto importa pra ordem do trabalho**: se o modelo ja sobre-ajusta,
+  adicionar as 29 features da onda 1 tende a PIORAR. Tratar o
+  sobre-ajuste ANTES de adicionar mais visao.
+
 ## 2026-09-10 (766-767) - **EXPLORACAO no auto-jogo** (o laco era FECHADO e por isso nao descobria nada) + visao ONDA 1 (78 features) + estrutura nomeada + memo de `win_prob`
 
 ### 1. O achado estrutural: o auto-jogo nao DESCOBRIA porque nunca TENTAVA

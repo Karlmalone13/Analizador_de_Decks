@@ -27,6 +27,34 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 10/09/2026 (bloco 768): **EDA feita pela 1ª vez, e ela REFUTA uma afirmação
+> MINHA.** O usuário trouxe um roteiro padrão de ML; a comparação apontou 4
+> buracos nunca fechados (EDA, seleção de atributos, conjunto de TESTE, métricas
+> além do AUC). Ferramenta nova: `analise_ml.py`, com teste em líderes **nunca
+> vistos** e importância por **permutação**.
+> **O achado que me corrige**: afirmei no bloco 764 que `com_efeito` era "a
+> principal" das features novas — a EDA mediu **correlação 1,000 com a contagem
+> de personagens**. Nesses decks todo personagem tem efeito, então a feature é a
+> contagem outra vez: **zero informação nova**. Mais 4 pares redundantes
+> (`power ↔ cost`, ~0,96).
+> **23 das 49 features o modelo NÃO usa** (importância ≤ 0), e entre elas estão
+> **TODAS as keywords que adicionei** (`rush`, `double_attack`, `unblockable`,
+> `banish`, `com_efeito`). O que ele usa: **`life_diff` (0,0885)**, que vale 4x
+> a segunda (`power_max_diff`, 0,0219). O modelo é essencialmente "quem tem mais
+> vida".
+> **Métricas completas** (teste em 3 líderes nunca vistos): AUC teste **0,7761**
+> batendo com a validação cruzada 0,7623 — **generalização honesta, sem
+> vazamento**. Acurácia 66,4%, precisão 75,5%, recall 61,5%, F1 67,8%, Brier
+> 0,197. Matriz de confusão mostra **52 falsos negativos × 27 falsos positivos**:
+> o modelo é PESSIMISTA.
+> **CONSEQUÊNCIA**: adicionar feature às cegas não estava funcionando, e sem
+> isso eu teria gasto mais uma hora de duelo para um resultado nulo de causa
+> invisível. **Medir utilidade ANTES de duelar** (2 min) nas ondas 2 e 3.
+> **PENDÊNCIAS que sobraram**: hiperparâmetros no chute; **overfitting detectado
+> e não tratado** (0,977 treino × 0,776 teste) — e isso muda a ORDEM: se já
+> sobre-ajusta, adicionar as 29 features da onda 1 tende a PIORAR. Tratar o
+> sobre-ajuste antes de adicionar mais visão.
+
 > 10/09/2026 (blocos 766-767): **EXPLORAÇÃO no auto-jogo — o laço era FECHADO
 > e por isso o bot nunca descobria nada.** Pedido do usuário: *"tem que ser
 > capaz de aprender e descobrir e não só regular"*. Diagnóstico: o auto-jogo

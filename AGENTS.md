@@ -373,6 +373,57 @@ categorias sao todas de escolha especifica de alvo/recurso.
   explicita -- promover campeao no laco de treino NAO liga nada em
   producao (o default segue 0.0).
 
+## DIAGNOSTICO OBRIGATORIO antes de propor mecanismo: de qual PREMISSA isto depende?
+
+> Adotado em 10/09/2026, do material de Engenharia de Requisitos que o
+> usuario trouxe (Letier, UCL -- *A Theory of Requirements Engineering*).
+> Complementa o `REPROVADOS.md`: ele registra O QUE nao funcionou; isto
+> registra POR QUE, de um jeito que permite testar ANTES de construir.
+
+### O criterio: `R, D |- G`
+
+Requisitos (R) + Premissas de Dominio (D) devem **implicar** os Objetivos
+(G). Disso saem exatamente **tres** tipos de erro:
+
+1. **Objetivo mal entendido** -- G nao descreve o objetivo real.
+2. **Premissa invalida** -- alguma premissa em D nao vale no mundo real.
+3. **Raciocinio insuficiente** -- R nao basta pra satisfazer G mesmo com D
+   verdadeiro.
+
+E a distincao que mais importa aqui:
+
+> **Falha de SISTEMA pode acontecer SEM falha de MAQUINA**: o software
+> satisfaz seus requisitos e mesmo assim nao atende o objetivo.
+
+Exemplo do livro: o A320 em Varsovia (1993) fez exatamente o que foi
+especificado. A premissa "ao pousar, os dois trens tocam o solo e as rodas
+giram" era falsa naquele pouso. Freio nao ativou por 9 segundos.
+
+### Por que isto vale pra ESTE projeto
+
+**O motor nao tem bug.** Ele escolhe corretamente a acao de maior
+pontuacao. E falha de sistema sem falha de maquina -- e os tres tipos ja
+apareceram todos:
+
+| tipo | onde aconteceu |
+|---|---|
+| **1. objetivo mal entendido** | a meta era "jogar IDENTICO ao humano, 85-90%" -- meses de trabalho contra o objetivo errado, corrigido pelo usuario em 10/09 pra "vencer o humano" |
+| **2. premissa invalida** | "o ML ajustando a heuristica muda resultados" (FALSA: 78-96% dos duelos empatam) · "auto-jogo guloso gera dado representativo" (FALSA: laco fechado) · "32 contagens distinguem posicoes" (FALSA: vetores identicos pra alvos diferentes) · "14 pares decididos bastam pra promover" (FALSA: falso positivo comprovado) |
+| **3. raciocinio insuficiente** | o portao de Wilson com n pequeno -- a conta estava certa, o raciocinio sobre quanto bastava nao estava |
+
+Padrao: sessoes inteiras consertando MECANISMO quando o que quebrava eram
+PREMISSAS nunca verificadas.
+
+### A regra pratica
+
+**Antes de propor ou implementar qualquer mecanismo, responda em uma
+linha: de qual PREMISSA ele depende, e como ela seria testada?**
+
+Se a premissa for barata de testar, **teste ANTES de construir**. Custo
+real medido em 10/09: tres experimentos de ~1h cada foram gastos
+descobrindo que "o ML muda resultados" era falsa -- 20 minutos testando a
+premissa teriam levado direto a mudanca de arquitetura.
+
 ## DIRECAO OFICIAL (10/09/2026): SUBSTITUIR a heuristica pelo ML, por partes
 
 > **Decisao do usuario**, ao ver que heuristica e ML sao SOMADAS e nao
