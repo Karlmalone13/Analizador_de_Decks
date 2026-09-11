@@ -53,6 +53,141 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-10 (765) - MAPA AS-IS do fluxo de decisao: **85% do tempo e SIMULAR, 7% e DECIDIR**. E a DIRECAO mudou -- o ML vai SUBSTITUIR a heuristica, nao so corrigi-la
+
+### 1. Por que este mapa existe (metodo, a pedido do usuario)
+
+Ate aqui eu vinha fazendo otimizacao de FUNCAO: perfilar, achar a funcao
+cara, deixa-la barata (blocos 757-759, 2,6x no total). O usuario apontou
+que isso e micro, e pediu o metodo de Sistemas de Informacao: **mapear o
+AS-IS, achar onde o dado trava, priorizar por impacto x esforco
+(Pareto/Lean)**.
+
+Ele estava certo: eu sabia quais FUNCOES custavam, mas nunca tinha medido
+quanto custa cada **ETAPA do fluxo**. Ferramenta: `mapa_fluxo.py`
+(instrumenta por monkeypatch, sem tocar no motor).
+
+### 2. O mapa (1 partida completa, peso 200)
+
+| etapa | % da simulacao |
+|---|---|
+| **4. simular o turno INTEIRO do oponente** | **42,5%** |
+| **3. simular o resto do MEU turno (guloso)** | **42,2%** |
+| clone do estado / remap | 8,4% |
+| 6b. avaliar com o modelo ML | 6,6% |
+| 6a. avaliar com a heuristica | 0,3% |
+
+> **O motor gasta 85% do tempo SIMULANDO e 7% DECIDINDO.**
+
+Volume por partida: **70 decisoes de topo, 747 simulacoes completas
+(10,7 candidatas por decisao), 726 turnos do oponente simulados** -- ou
+seja **~48 turnos do oponente simulados pra cada turno real jogado**.
+
+**Achado de brinde**: a etapa 5 (lookahead do proprio turno) tem **ZERO
+chamadas** no caminho offline -- ela so roda ao vivo. Nao custa nada aqui,
+ao contrario do que eu supunha.
+
+### 3. Priorizacao (Pareto, com numero medido -- nao estimativa no olho)
+
+O gargalo nao e "a simulacao e lenta". E que **TODAS as 10,7 candidatas
+recebem o tratamento caro**, sem triagem. A intervencao obvia e avaliacao
+em DUAS ETAPAS: ranquear barato, e so as finalistas pagam a resposta do
+oponente.
+
+| finalistas | resp/partida | corte da etapa | **ganho total** |
+|---|---|---|---|
+| 2 | 140 | 81% | **34,3%** |
+| **3** | **210** | **71%** | **30,2%** |
+| 4 | 280 | 61% | 26,1% |
+| 5 | 350 | 52% | 22,0% |
+
+Teto de cada frente, se fosse eliminada por completo: resposta do
+oponente 42,5% | continuacao gulosa 42,2% | clone/remap 8,4% | avaliacao
+6,9%.
+
+**Custo/risco de qualidade**: a decisao final so muda se alguma candidata
+FORA do top-3 barato viraria a melhor DEPOIS da resposta do oponente.
+Isso e medivel -- A/B comparando a decisao escolhida. Se der igual, e
+ganho puro.
+
+**Nao ataca a continuacao gulosa (42,2%)**: ela e o que leva o estado ate
+o fim do turno, e cortar muda o que e avaliado.
+
+### 4. O que NAO adianta (pra nao gastar sessao)
+
+- **Trocar o `sklearn`**: 6,6% no experimento, **ZERO em producao** (o
+  `if peso_valor:` nem chama o modelo com peso 0). Ja tinha sido refutado
+  no bloco 757 por outro angulo.
+- **Otimizar a heuristica**: 0,3%.
+- **Micro-otimizacao**: 4 rodadas ja feitas, o perfil hoje e dominado por
+  carga de modulo. Resta 1,2-1,5x.
+
+### 5. Alavancas de FORCA BRUTA (sem perder qualidade), se o processo nao bastar
+
+- **PyPy**: 5-10x, mas **nao instalado** e `pandas`/`sklearn` funcionam
+  mal nele -- serviria so pra GERAR CORPUS (modelo desligado), nao pros
+  duelos. Exige baixar ~100 MB; **usuario ainda nao autorizou**.
+- **Mais nucleos**: 8x sobre os 2 desta maquina.
+- **Busca rasa**: 10x+, mas o usuario vetou explicitamente perder
+  qualidade.
+
+### 6. DIRECAO NOVA registrada no `CLAUDE.md`/`AGENTS.md`
+
+Ao entender que heuristica e ML sao **somadas** (`score = heuristica +
+alinhamento + (win_prob-0.5)*peso`), o usuario decidiu: *"A ideia e ir
+substituindo a heuristica pelo ML pq a heuristica ja se provou complexa e
+de baixa efetividade"*.
+
+Registrado como direcao oficial, **com a ressalva de que nao ha o que
+substituir enquanto o ML nao vencer UM duelo sequer** (bloco 762: unica
+promocao era falso positivo; bloco 764: visao rica 20x11, inconclusivo).
+Substituicao por partes, com portao SPRT a cada pedaco removido.
+
+
+### 7. IDEIA DO USUARIO: aproveitar a heuristica como FEATURE do ML
+
+> *"Ai pegamos o que podemos aproveitar da heuristica e o que aprendemos
+> desenvolvendo ela para enriquecer nosso ML"*
+
+**E o melhor caminho de substituicao que apareceu, e conecta as duas
+direcoes.** A heuristica e literalmente uma soma de termos nomeados:
+
+```python
+score += _termo('dmg', p.dmg_dealt, W)
+score += _termo('char_kill_value', p.char_kill_value, W)
+score += _termo('don_combat_cost', -p.don_spent_on_combat, W)
+score += _termo('life_mult', self._life_value(p.life_count()), W)
+...
+```
+
+isto e, `score = SOMA(valor_i * peso_i)` sobre **16 termos distintos**:
+`dmg`, `char_kill_value`, `don_combat_cost`, `life_mult`,
+`survival_premium`, `opp_combo_threat`, `opp_blocker`, `blocker_proprio`,
+`board_mine`, `board_opp`, `hand_first`, `hand_extra`, `counter_hand`,
+`don_field`, `don_ocioso`, `coverage`.
+
+**A separacao que a ideia do usuario faz:**
+
+| parte | o que e | destino |
+|---|---|---|
+| os VALORES (`valor_i`) | quantidades que alguem identificou como importantes -- conhecimento de jogo real, meses de trabalho | **viram FEATURE do ML** |
+| os PESOS (`peso_i`) | numeros ajustados a mao -- a parte "complexa e de baixa efetividade" | **jogados fora**, o ML aprende |
+
+Ganho adicional: o ML pode aprender **interacoes** que uma soma linear nao
+captura (ex: `dmg` alto so vale se `survival_premium` estiver baixo).
+
+**Achado ao levantar a lista**: varios termos carregam informacao que as
+49 features NAO tem, porque sao de outra natureza -- as features descrevem
+a FOTO do board, e estes sabem **o que ACONTECEU no turno**: `dmg` (dano
+feito), `char_kill_value` (o que morreu em combate), `don_combat_cost`
+(DON queimado), alem de `survival_premium`, `opp_combo_threat`,
+`coverage`, `don_ocioso` e a curva de mao. **O modelo esta cego pra tudo
+isso hoje.**
+
+**Proximo passo concreto**: expor os 16 valores como features (49 -> ~65),
+re-treinar sobre o mesmo corpus e duelar. Mesmo desenho do bloco 764, que
+ja provou isolar a VISAO do volume de dado.
+
 ## 2026-09-10 (764) - VISAO RICA: o modelo passa a enxergar QUALIDADE do board, nao so contagem. AUC fora da amostra +1,1 ponto sobre o MESMO corpus -- duelo em curso
 
 ### 1. O diagnostico que levou aqui

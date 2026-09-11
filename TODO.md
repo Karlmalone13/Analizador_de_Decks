@@ -27,6 +27,43 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 10/09/2026 (bloco 765): **MAPA AS-IS — 85% do tempo é SIMULAR, 7% é
+> DECIDIR.** A pedido do usuário, troquei otimização de *função* por
+> otimização de *processo* (mapear AS-IS, achar onde trava, priorizar por
+> Pareto). Ferramenta: `mapa_fluxo.py`, instrumenta por fora sem tocar no motor.
+> **Repartição**: resposta do oponente **42,5%**, continuação gulosa do próprio
+> turno **42,2%**, clone/remap 8,4%, avaliação (heurística + ML) 6,9%.
+> Volume: **70 decisões, 747 simulações (10,7 candidatas por decisão), 726
+> turnos do oponente por partida — ~48 por turno real jogado**.
+> Brinde: o lookahead do próprio turno tem **ZERO chamadas** offline.
+> **PRIORIZAÇÃO MEDIDA**: o gargalo não é "simulação lenta", é que **todas as
+> 10,7 candidatas recebem o tratamento caro, sem triagem**. Avaliação em duas
+> etapas (resposta do oponente só nas finalistas) dá **34,3% com 2 finalistas,
+> 30,2% com 3, 26,1% com 4**. Risco de qualidade é medível: só muda a decisão
+> se uma candidata fora do top-3 barato virasse a melhor depois da resposta.
+> **NÃO adianta**: trocar `sklearn` (6,6% no experimento, **zero em produção**),
+> otimizar a heurística (0,3%), mais micro-otimização (resta 1,2-1,5x).
+> **Força bruta**, se o processo não bastar: PyPy (5-10x, **não instalado**,
+> só serviria para gerar corpus porque `pandas`/`sklearn` funcionam mal nele,
+> e exige baixar ~100 MB — não autorizado), mais núcleos (8x), busca rasa
+> (vetada pelo usuário por perder qualidade).
+> **DIREÇÃO NOVA** no `CLAUDE.md`/`AGENTS.md`: o ML vai **substituir** a
+> heurística por partes, não só corrigi-la — *"a heurística já se provou
+> complexa e de baixa efetividade"*. Com a ressalva registrada de que **não há
+> o que substituir enquanto o ML não vencer um duelo sequer**.
+
+> **IDEIA DO USUÁRIO (melhor caminho de substituição que apareceu)**: a
+> heurística é literalmente `score = Σ(valor_i × peso_i)` sobre **16 termos**.
+> Separar as duas partes — os **valores** viram FEATURE do ML (conhecimento de
+> jogo real, meses de trabalho), os **pesos** ajustados à mão são jogados fora
+> e o modelo aprende, inclusive as **interações** que a soma linear não captura.
+> Achado ao levantar a lista: vários termos têm informação que as 49 features
+> **não têm**, porque são de outra natureza — as features são a FOTO do board,
+> e `dmg`, `char_kill_value`, `don_combat_cost`, `survival_premium`,
+> `opp_combo_threat`, `coverage` e `don_ocioso` sabem **o que ACONTECEU no
+> turno**. O modelo está cego para tudo isso. **Próximo passo**: expor os 16
+> valores como features (49 → ~65), re-treinar no mesmo corpus e duelar.
+
 > 10/09/2026 (bloco 764): **VISÃO RICA — o modelo passa a enxergar QUALIDADE
 > do board, não só contagem.** Diagnóstico do bloco 763 (alvo na busca empatou
 > 96%): as 32 features são todas contagens, sem noção de *quem* está no board,

@@ -377,6 +377,61 @@ categorias sao todas de escolha especifica de alvo/recurso.
   explicita -- promover campeao no laco de treino NAO liga nada em
   producao (o default segue 0.0).
 
+## DIRECAO OFICIAL (10/09/2026): SUBSTITUIR a heuristica pelo ML, por partes
+
+> **Decisao do usuario**, ao ver que heuristica e ML sao SOMADAS e nao
+> alternativas: *"A ideia e ir substituindo a heuristica pelo ML pq a
+> heuristica ja se provou complexa e de baixa efetividade"*.
+>
+> O diagnostico dele e sustentado pelo historico: a heuristica tem
+> centenas de constantes tunadas ao longo de meses, espalhadas por
+> `decision_engine.py`, e mesmo assim o agregado de qualidade de decisao
+> ficou em 49,3%. Complexidade alta, efetividade baixa.
+
+### O que isso significa na pratica
+
+O desenho de hoje e **somatorio**, nao escolha:
+
+```
+score = _evaluate_state_v2(...)  +  bonus_alinhamento  +  (win_prob - 0.5) * PESO
+            ^ heuristica                                       ^ ML
+```
+
+O ML entra como **correcao** (+-100 pontos) sobre quem realmente decide.
+**A direcao e inverter isso**: o ML passa a decidir, e a heuristica vai
+sendo removida por partes.
+
+### COMO fazer -- por partes e COM PORTAO, nunca de uma vez
+
+**Substituicao nao autorizada em bloco.** O ML ainda **nao venceu nenhum
+duelo** (bloco 762: a unica promocao era falso positivo; bloco 764: visao
+rica ficou em 20x11, inconclusivo). Trocar uma heuristica madura por um
+modelo nao provado regride, e o projeto ja tem o mecanismo pra impedir
+isso: **cada pedaco removido tem que passar no portao SPRT**
+(`duelar_sprt`, bloco 762) contra a versao com o pedaco ainda la.
+
+Ordem sugerida (do mais barato/menos arriscado pro mais):
+1. **Subir o peso do ML** ate ele dominar, medindo a cada passo -- nao
+   exige remover nada, e mede quanto o ML aguenta sozinho.
+2. **Remover termos da heuristica um a um**, do menos importante pro mais,
+   com duelo a cada remocao.
+3. So ao fim, se sobrar pouco, avaliar remover `_evaluate_state_v2`.
+
+**Pre-requisito honesto**: enquanto o ML nao ganhar UM duelo sequer, nao
+ha o que substituir. A prioridade continua sendo fazer o ML ficar bom
+(visao rica, horizonte do rotulo, corpus maior) -- a substituicao e a
+CONSEQUENCIA disso, nao o caminho pra chegar la.
+
+### O que NAO muda
+
+- **Degradacao segura**: `win_prob` devolvendo `None` nunca pode derrubar
+  o motor. Qualquer substituicao tem que preservar isso.
+- **Regra do MOTOR UNICO** (`REGRA_SEM_DUPLICACAO.md`): heuristica e ML
+  hoje somam num score unico, entao sao UMA decisao. Substituir nao pode
+  criar dois caminhos de decisao concorrentes.
+- Ligar/mudar `VALUE_NET_WEIGHT` por default em producao continua sendo
+  mudanca **SERIA** (regra de 28/08): exige autorizacao explicita.
+
 ## OBJETIVO CENTRAL DO BOT (o usuario repete e as sessoes esquecem)
 
 > **QUALQUER DECK.** O bot tem que ser capaz de jogar bem, e **identico ou
