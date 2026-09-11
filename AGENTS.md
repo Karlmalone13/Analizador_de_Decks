@@ -424,6 +424,72 @@ real medido em 10/09: tres experimentos de ~1h cada foram gastos
 descobrindo que "o ML muda resultados" era falsa -- 20 minutos testando a
 premissa teriam levado direto a mudanca de arquitetura.
 
+> ## EXIGENCIA CENTRAL DO USUARIO -- leia isto antes de propor QUALQUER coisa de ML
+>
+> **O ML tem que APRENDER EMPIRICAMENTE. Ele NAO pode ser uma ferramenta da
+> heuristica.**
+>
+> Citacoes diretas, ao longo de 10-11/09/2026, **repetidas porque a sessao
+> nao executava**:
+> - *"quero que o ML faça o bot aprender, já te disse isso inúmeras vezes"*
+> - *"preciso que ML seja um ML e aprenda"*
+> - *"temos que criar um ML de verdade e não só um analizador/regulador"*
+> - *"ele tem que ser capaz de aprender e descobrir e não só regular"*
+> - *"temos que fazer um ML de verdade para o Bot aprender empiricamente e
+>   não fazer o ML ser uma ferramenta da heurística"*
+>
+> ### O que ele cobrou da sessao, e PROCEDE
+>
+> *"Eu peço para migrarmos da heurística para um ML [...] ai vc faz o que,
+> cria uma ferramenta avaliativa e reguladora da heurística"*.
+>
+> A arquitetura de regulador e ANTERIOR a essa sessao, mas o adiamento foi
+> real: o usuario pediu MIGRACAO varias vezes e recebeu portao, cache,
+> features, exploracao, PyPy -- tudo em volta. O argumento *"nao ha o que
+> substituir ate o ML vencer um duelo"* e tecnicamente defensavel e, na
+> pratica, foi adiamento.
+>
+> **Qualquer sessao futura que se pegue propondo melhoria AO REDOR do ML em
+> vez de fazer o ML decidir esta repetindo esse erro.**
+>
+> ### O que "ferramenta da heuristica" significa concretamente
+>
+> Hoje: `score = _evaluate_state_v2(...) + alinhamento + (win_prob-0.5)*peso`.
+> O ML empurra no MAXIMO +-100 pontos. Se a heuristica diz 400 contra 300,
+> ele **nao inverte**, mesmo tendo aprendido que a de 300 e melhor. **Herda
+> o erro dela por construcao.**
+>
+> Precisao necessaria: ele **aprende** (AUC fora da amostra sobe com mais
+> partidas -- aprendizado medido). O que ele nao consegue e **agir** sobre o
+> que aprendeu. O efeito pratico e o que o usuario descreve, e a conclusao e
+> a mesma: **a arquitetura tem que mudar.**
+>
+> ### O que ja foi medido tentando (nao repetir sem ler)
+>
+> | tentativa | resultado |
+> |---|---|
+> | ML avalia logo apos a acao, sem rollout (bloco 769) | **14,8x mais rapido** e **PERDE 1x9** -- AUC cai de 0,76 pra 0,63 porque julga turno pela metade |
+> | Cortar so a resposta do oponente (bloco 770) | 5,1x mais rapido e **PERDE 3x12** |
+>
+> **Conclusao medida**: a busca esta ganhando o que custa. **O ML nao
+> substitui a busca HOJE porque ainda nao e bom o bastante** -- nao porque a
+> direcao esteja errada.
+>
+> ### A ordem correta, que decorre disso
+>
+> 1. **Fazer o modelo ficar bom** -- corpus grande, tratar sobre-ajuste
+>    (0,99 treino x 0,63 teste), features de contexto de turno, exploracao
+>    no auto-jogo (ja implementada, bloco 767).
+> 2. **So entao** a busca pode encolher, porque o modelo passa a fazer o
+>    trabalho dela.
+> 3. E a heuristica sai por partes, cada remocao passando pelo portao SPRT.
+>
+> **Isto nao autoriza adiar de novo.** O passo 1 E o trabalho de ML de
+> verdade -- nao e pre-requisito burocratico pra ele. Se uma sessao esta
+> mexendo em portao, cache, velocidade ou ferramenta de analise e NAO esta
+> tornando o modelo melhor, ela esta fora da direcao.
+
+
 ## DIRECAO OFICIAL (10/09/2026): SUBSTITUIR a heuristica pelo ML, por partes
 
 > **Decisao do usuario**, ao ver que heuristica e ML sao SOMADAS e nao

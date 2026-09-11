@@ -53,6 +53,69 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-11 (770) - MEIO-TERMO tambem REPROVA (3x12): a busca esta ganhando o que custa. **Nao da pra comprar velocidade cortando busca** -- e eu errei a leitura do meu proprio teste
+
+### 1. O teste
+
+Cortar so a simulacao da RESPOSTA DO OPONENTE, mantendo a avaliacao no fim
+do MEU turno (onde o modelo tem AUC 0,76, contra 0,63 no meio do turno).
+Override `resposta_oponente` POR JOGADOR, pro duelo ter os dois lados
+diferentes na MESMA partida.
+
+**Custo medido: 15,3s -> 3,0s por partida, 5,1x** -- mais do que os ~2x que
+eu estimei pelo mapa AS-IS, porque o turno do oponente tambem gera
+candidatas proprias e pesava mais que os 42,5% do perfil.
+
+### 2. O resultado, e o ERRO DE LEITURA que eu cometi
+
+```
+meio-termo 3 x 12 producao | winrate 20% | Wilson 7,0% | LLR -3,493
+VEREDITO do script: DESCARTA (equivalentes)
+```
+
+**Eu tinha cravado, ANTES do teste, que "DESCARTA" seria vitoria pratica.**
+Estava errado, e o erro e do desenho do teste, nao da leitura casual: o
+SPRT montado aqui testa H1 (desafiante MELHOR, p=0,65) contra H0
+(EQUIVALENTE, p=0,50). Cruzar o limite inferior significa **"nao e
+melhor"** -- ele **nao distingue equivalente de PIOR**.
+
+E o dado aponta pior: 20% nos pares decididos, quando equivalente daria
+~50%. Com n=15 o intervalo fica em torno de [7%; 45%], **excluindo 50%**.
+
+**Licao de metodo**: quando a pergunta e *"e tao bom quanto?"*, o
+instrumento certo e teste de EQUIVALENCIA, nao de superioridade. Rotular o
+resultado de "equivalentes" na saida do script e enganoso e deve ser
+corrigido.
+
+### 3. O que as duas tentativas juntas estabelecem
+
+| tentativa | o que cortou | resultado |
+|---|---|---|
+| ML avaliador (769) | as DUAS fontes de nao-quiescencia | **1 x 9** |
+| Meio-termo (770) | so a resposta do oponente | **3 x 12** |
+
+**A profundidade de busca esta ganhando o que custa, e de forma
+proporcional**: quanto mais busca sai, pior o bot joga. O rollout nao e
+gordura -- e o que compensa o modelo ainda ser fraco.
+
+**Consequencia pra discussao de velocidade**: nao da pra tirar velocidade
+de cortar busca. Sobram as alavancas de forca bruta (PyPy, mais nucleos) ou
+a unica que muda o jogo -- **um modelo bom o bastante pra justificar menos
+busca**.
+
+### 4. E isso define a ORDEM do trabalho de ML
+
+O ML nao substitui a busca HOJE porque **ainda nao e bom o bastante** --
+nao porque a direcao esteja errada. Entao: (1) tornar o modelo bom (corpus
+grande, sobre-ajuste de 0,99x0,63, features de contexto de turno,
+exploracao ja implementada); (2) so entao encolher a busca; (3) heuristica
+sai por partes com portao SPRT a cada remocao.
+
+Registrado no `CLAUDE.md`/`AGENTS.md` como EXIGENCIA CENTRAL, com as
+citacoes do usuario e o historico do adiamento -- inclusive o aviso de que
+"tornar o modelo bom" **e** o trabalho de ML de verdade, nao pre-requisito
+burocratico pra adiar de novo.
+
 ## 2026-09-11 (769) - **A ESTRUTURA ERA O PROBLEMA, e o usuario estava certo**: ML como AVALIADOR da 14,8x (17,4s -> 1,2s por partida). Mas PERDE o duelo 1x9 -- direcao certa, PONTO DE AVALIACAO longe demais
 
 ### 0. A cobranca do usuario, e o que ela tinha de razao

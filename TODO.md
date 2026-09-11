@@ -27,6 +27,27 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 11/09/2026 (bloco 770): **MEIO-TERMO também REPROVA (3×12) — não dá para
+> comprar velocidade cortando busca.** Cortar só a simulação da resposta do
+> oponente deu **5,1x** (15,3 s → 3,0 s), mais que os ~2x estimados, mas o bot
+> perdeu: 3 × 12, winrate 20%, Wilson 7,0%.
+> **ERRO DE LEITURA MEU, registrado**: eu tinha cravado antes do teste que
+> "DESCARTA" seria vitória prática. O SPRT aqui testa "é MELHOR?" contra "é
+> equivalente?" — cruzar o limite inferior significa **"não é melhor"**, e não
+> distingue equivalente de PIOR. O dado aponta pior (20% onde equivalente daria
+> ~50%; IC exclui 50%). **Lição**: quando a pergunta é "é tão bom quanto?", o
+> instrumento é teste de EQUIVALÊNCIA, não de superioridade.
+> **As duas tentativas juntas** (ML avaliador 1×9 sem rollout, meio-termo 3×12
+> cortando metade) estabelecem que **a profundidade de busca ganha o que custa,
+> proporcionalmente** — o rollout compensa o modelo ainda ser fraco.
+> **Consequência**: velocidade não sai de cortar busca; sobram força bruta
+> (PyPy, núcleos) ou **um modelo bom o bastante para justificar menos busca**.
+> **ORDEM definida**: (1) tornar o modelo bom — corpus grande, sobre-ajuste
+> (0,99 × 0,63), contexto de turno, exploração; (2) só então encolher a busca;
+> (3) heurística sai por partes com portão SPRT.
+> Registrado no `CLAUDE.md`/`AGENTS.md` como **EXIGÊNCIA CENTRAL** do usuário,
+> com as citações e o histórico do adiamento da sessão.
+
 > 11/09/2026 (bloco 769): **A ESTRUTURA ERA O PROBLEMA — o usuário estava
 > certo.** Cobrança dele: pedi migração da heurística para ML e a sessão
 > entregou portão, cache, features, PyPy — tudo em volta. Procede (a

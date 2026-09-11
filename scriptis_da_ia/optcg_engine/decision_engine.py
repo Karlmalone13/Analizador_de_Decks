@@ -20141,7 +20141,20 @@ class OPTCGMatch:
         # o marco-zero mediu (don_por_atk baixo). `amostra` (mao/vida
         # ficticia de opp2, ja aplicada acima) e a mesma usada na resposta —
         # ficcao interna consistente, nao resorteia.
-        if USE_OPPONENT_RESPONSE_SEARCH:
+        # MEIO-TERMO (bloco 770): simular a resposta do oponente e **42,5% do
+        # custo** (mapa AS-IS, bloco 765). Corta-la mantem a avaliacao no FIM
+        # DO MEU TURNO -- onde o modelo tem AUC 0,76, contra 0,63 no meio do
+        # turno (bloco 769) -- por cerca de metade do preco.
+        #
+        # Nao e o mesmo erro do ML_AVALIADOR: la as DUAS fontes de nao-
+        # quiescencia foram removidas (o resto do meu turno E a resposta dele),
+        # e o modelo passou a julgar turno pela metade, perdendo 1x9. Aqui so
+        # a segunda sai; a posicao continua QUIETA em relacao ao meu turno.
+        #
+        # Override POR JOGADOR (None cai no global) -- sem isso o duelo nao
+        # consegue os dois lados diferentes na MESMA partida.
+        _resp = getattr(p, 'resposta_oponente', None)
+        if USE_OPPONENT_RESPONSE_SEARCH if _resp is None else _resp:
             if self._play_turn_greedy(opp2, p2):
                 return -SIMULATED_WIN_SCORE   # a resposta dele me mata -> linha ruim
 

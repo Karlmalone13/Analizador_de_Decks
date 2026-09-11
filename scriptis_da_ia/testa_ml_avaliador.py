@@ -27,7 +27,10 @@ def uma(seed, ml_avaliador):
     m.setup()
     for lado in (m.state_a, m.state_b):
         lado.value_net_weight = 200.0
-        lado.ml_avaliador = ml_avaliador
+        if ml_avaliador == 'meio':
+            lado.resposta_oponente = False
+        else:
+            lado.ml_avaliador = ml_avaliador
     venc, turnos = None, 0
     t_w, t_c = time.perf_counter(), time.process_time()
     for t in range(m.MAX_TURNS * 2):
@@ -46,7 +49,8 @@ def main():
     print('{:<22}{:>10}{:>9}{:>9}{:>10}'.format(
         'modo', 'relogio', 'CPU', 'turnos', 'vencedor'))
     res = {}
-    for nome, flag in (('rollout (hoje)', False), ('ML avaliador', True)):
+    for nome, flag in (('rollout (hoje)', False), ('meio-termo', 'meio'),
+                       ('ML avaliador', True)):
         tempos = []
         for seed in (909, 4242):
             v, tn, w, c = uma(seed, flag)
@@ -54,11 +58,11 @@ def main():
             print('{:<22}{:>9.1f}s{:>8.1f}s{:>9}{:>10}'.format(
                 nome + ' s' + str(seed), w, c, tn, str(v)))
         res[nome] = min(t[0] for t in tempos)
-    a, b = res['rollout (hoje)'], res['ML avaliador']
+    a = res['rollout (hoje)']
     print('')
-    print('menor tempo  rollout: {:.1f}s | ML avaliador: {:.1f}s'.format(a, b))
-    if b > 0:
-        print('ACELERACAO: {:.1f}x'.format(a / b))
+    for nome in ('meio-termo', 'ML avaliador'):
+        b = res[nome]
+        print('{:<16} {:.1f}s   aceleracao {:.1f}x'.format(nome, b, a / b if b else 0))
     print('')
     print('LEMBRETE: isto mede CUSTO. A QUALIDADE exige retreinar o modelo')
     print('sobre estados POS-ACAO -- o modelo atual viu FIM DE TURNO.')
