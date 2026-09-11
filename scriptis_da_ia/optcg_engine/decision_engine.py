@@ -18233,6 +18233,33 @@ class OPTCGMatch:
             if getattr(self, '_explora_eps', 0.0):
                 melhor, melhor_valor = self._explorar(
                     [(r['action'], r['value']) for r in search_records])
+
+            # CAPTURA PRA REDE DE POLITICA (bloco 772). Grava a posicao, as
+            # candidatas e QUAL a busca escolheu. O rotulo e a escolha da
+            # BUSCA COMPLETA -- isto e destilacao de busca, nao imitacao de
+            # humano (que e o que caiu por *distribution shift* nos blocos
+            # 680-683, ver REPROVADOS.md).
+            #
+            # A politica nao vai ESCOLHER a jogada: vai PODAR o shortlist, e
+            # a busca segue avaliando as sobreviventes. Por isso errar sai
+            # barato -- assimetria que a rede de VALOR nao tinha.
+            #
+            # Default None => custo zero, nada muda.
+            _pol = getattr(self, '_pol_captura', None)
+            if _pol is not None:
+                try:
+                    from optcg_engine import value_net as _vnp
+                    _idx = next((k for k, c in enumerate(candidatas)
+                                 if c is melhor), None)
+                    if _idx is not None and len(candidatas) >= 2:
+                        _pol.append({
+                            'feats': _vnp.state_features(
+                                p, opp, nomes=_vnp.FEATURE_NAMES_V3),
+                            'cands': [_descreve_candidata(c) for c in candidatas],
+                            'escolhida': _idx,
+                        })
+                except Exception:
+                    pass
             return melhor, melhor_valor, search_records, 0, sim_values
 
         valores_por_cand: list = [[] for _ in candidatas]
@@ -18484,6 +18511,33 @@ class OPTCGMatch:
             _cv = [(c, sum(v) / len(v)) for c, v in zip(candidatas, valores_por_cand) if v]
             if _cv:
                 melhor, melhor_valor = self._explorar(_cv)
+
+        # CAPTURA PRA REDE DE POLITICA (bloco 772). Grava a posicao, as
+        # candidatas e QUAL a busca escolheu. O rotulo e a escolha da
+        # BUSCA COMPLETA -- isto e destilacao de busca, nao imitacao de
+        # humano (que e o que caiu por *distribution shift* nos blocos
+        # 680-683, ver REPROVADOS.md).
+        #
+        # A politica nao vai ESCOLHER a jogada: vai PODAR o shortlist, e
+        # a busca segue avaliando as sobreviventes. Por isso errar sai
+        # barato -- assimetria que a rede de VALOR nao tinha.
+        #
+        # Default None => custo zero, nada muda.
+        _pol = getattr(self, '_pol_captura', None)
+        if _pol is not None:
+            try:
+                from optcg_engine import value_net as _vnp
+                _idx = next((k for k, c in enumerate(candidatas)
+                             if c is melhor), None)
+                if _idx is not None and len(candidatas) >= 2:
+                    _pol.append({
+                        'feats': _vnp.state_features(
+                            p, opp, nomes=_vnp.FEATURE_NAMES_V3),
+                        'cands': [_descreve_candidata(c) for c in candidatas],
+                        'escolhida': _idx,
+                    })
+            except Exception:
+                pass
         return melhor, melhor_valor, search_records, n_coletadas, sim_values
 
     def _generate_and_score_actions(self, p, opp, engine, exclude_activate_uids=None):
