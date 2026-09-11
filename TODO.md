@@ -27,6 +27,31 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 11/09/2026 (bloco 772): **REDE DE POLÍTICA REPROVADA OFFLINE em ~30 min** —
+> o baseline que construí para matar a ideia matou. Em vez de ESCOLHER a
+> jogada, a política PODARIA o shortlist (assimetria de erro: se erra, a busca
+> ainda avalia as sobreviventes). Desenho respeitou os 4 pontos que o
+> `REPROVADOS.md` exigia (auto-jogo, podar, destilação de busca, exploração).
+> **Medição offline, 626 decisões, 4 líderes nunca vistos**: política 82,9% no
+> top-3 contra **81,6% do score estático que já é calculado de graça** — ganho
+> de 0,5 a 2,1 pontos, que não justifica um modelo.
+> **CAUSA ESTRUTURAL**: a árvore é **estreita** — 4,5 candidatas por decisão,
+> 31,9% das decisões com ≤3 (podar não faz nada). Podar serve para árvore
+> larga. **A ideia nasceu de um número MEU errado**: o mapa AS-IS dizia "10,7
+> candidatas", mas eram 10,7 SIMULAÇÕES (Monte Carlo simula cada candidata
+> várias vezes) — a oportunidade era 2,4x menor.
+> **Falso achado descartado**: com 56 decisões o score estático parecia pior
+> que o sorteio; com 626 ele ganha com folga. Era ruído, e a ressalva estava
+> escrita antes de medir.
+> **FICA**: `politica.py` + seam `_pol_captura` (default OFF) e **o padrão de
+> teste** — construir o baseline que pode matar a própria ideia e rodar offline
+> antes de gastar duelo: 30 min contra ~1h por experimento antes.
+> **ONDE O ML ESTÁ**: tentadas e medidas — valor somado (nulo 3x), valor
+> substituindo busca (1×9), busca pela metade (3×12), política para podar (sem
+> margem). **O que NÃO foi tentado: corpus muito maior.** Todos os modelos
+> vieram de 1.582-3.614 estados, e o bloco 771 mediu que **menos feature bate
+> mais feature** nesse tamanho — sinal clássico de fome de dado.
+
 > 11/09/2026 (bloco 771): **TERCEIRA medição dizendo o mesmo — modelo melhor
 > NÃO é bot melhor.** Fechadas as duas últimas pendências do roteiro de ML
 > (`tunar_value.py`): hiperparâmetros buscados levaram o AUC de teste de

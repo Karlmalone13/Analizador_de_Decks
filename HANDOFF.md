@@ -53,6 +53,74 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-11 (772) - REDE DE POLITICA **REPROVADA OFFLINE em ~30 min** -- o baseline que eu construi pra matar a ideia matou. E a causa e estrutural: a arvore e ESTREITA (4,5 candidatas), nao ha o que podar
+
+### 1. A ideia e por que ela merecia ser tentada
+
+Depois de tres medicoes dizendo que modelo melhor nao e bot melhor (bloco
+771), a rede de POLITICA atacava por outro lado: em vez de ESCOLHER a
+jogada, **PODAR** o shortlist -- a busca cara avalia so as sobreviventes.
+
+A razao era **assimetria de erro**: a rede de valor COMPETE com a busca (se
+erra, o bot joga errado); a politica ALIMENTA a busca (se erra, as
+sobreviventes ainda sao avaliadas).
+
+Desenho respeitou os 4 pontos que o `REPROVADOS.md` exigia pra retomar
+politica aprendida (blocos 680-683, que cairam por *distribution shift* ao
+imitar humano): auto-jogo em vez de imitacao, PODAR em vez de escolher,
+rotulo = escolha da BUSCA (destilacao), e exploracao como pre-requisito.
+
+### 2. A medicao, e ela e OFFLINE
+
+626 decisoes de teste, 4 lideres nunca vistos:
+
+| top-N | POLITICA | score estatico (de graca) | sorteio |
+|---|---|---|---|
+| 2 | 71,6% | 71,1% | 52,1% |
+| 3 | 82,9% | 81,6% | 71,0% |
+| 4 | 92,2% | 90,4% | 84,8% |
+| 5 | 98,4% | 96,3% | 93,4% |
+
+**A politica ganha por 0,5 a 2,1 pontos do score que o motor ja calcula de
+graca.** Nao justifica um modelo.
+
+### 3. A causa: a arvore e ESTREITA
+
+- **4,5 candidatas** por decisao (min 2, max 9)
+- **31,9% das decisoes tem <=3** -- podar nao faz nada nelas
+- podar pra 4 economiza ~15% e perde 9,6% das escolhas da busca
+
+Podar serve pra arvore LARGA. **A ideia foi proposta em cima de um numero
+MEU que estava errado**: o mapa AS-IS falava "10,7 candidatas por decisao",
+mas eram 10,7 SIMULACOES -- cada candidata e simulada varias vezes por
+Monte Carlo. A oportunidade era 2,4x menor do que eu apresentei.
+
+### 4. Falso achado descartado no caminho
+
+Com amostra pequena (56 decisoes, 1 lider) o score estatico parecia **pior
+que o sorteio** (69,6% x 73,1%) -- teria sido um achado e tanto, "o motor
+ordena candidatas por um numero que nao prediz nada". Com 626 decisoes ele
+bate o sorteio com folga (71,1% x 52,1%). **Era ruido**, e a ressalva de
+amostra pequena estava escrita ANTES de medir, nao depois.
+
+### 5. O que FICA
+
+- `politica.py` (coleta + medicao offline) e o seam `_pol_captura`, ambos
+  default OFF.
+- **O padrao de teste que funcionou**: construir, dentro do proprio
+  experimento, o baseline barato que pode MATAR a ideia -- e rodar offline
+  antes de gastar duelo. **Custo desta reprovacao: ~30 min**, contra ~1h por
+  experimento nas tres tentativas anteriores.
+
+### 6. Onde isso deixa o ML
+
+As avenidas tentadas e medidas ate aqui: valor como termo somado (nulo 3x),
+valor substituindo a busca (1x9), busca pela metade (3x12), politica pra
+podar (sem margem). **O que nao foi tentado e continua de pe: corpus MUITO
+maior.** Todos os modelos desta sessao vieram de 1.582-3.614 estados, e o
+proprio bloco 771 mediu que **menos feature bate mais feature** nesse
+tamanho -- sinal classico de fome de dado, nao de mecanismo errado.
+
 ## 2026-09-11 (771) - **TERCEIRA medicao dizendo o mesmo: modelo melhor NAO e bot melhor.** Hiperparametros buscados (+0,038 de AUC, sobre-ajuste de 0,201 pra 0,056) e o duelo deu 11x18
 
 ### 1. As duas ultimas pendencias do roteiro de ML, fechadas

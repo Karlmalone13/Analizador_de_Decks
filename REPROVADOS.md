@@ -250,6 +250,53 @@ avaliar. A decisao cai no desempate (`_tb`, alinhamento humano, DON).
 > explica de outro angulo a linha "a curva ACHATA apos ~4.000 estados":
 > mais partidas do mesmo regime injetam mais ruido na mesma proporcao.
 
+## REDE DE POLITICA pra PODAR o shortlist -- REPROVADA offline (bloco 772)
+
+**Nao repetir sem citar estes numeros.** Diferente da reprovacao de politica
+por IMITACAO DE HUMANO (blocos 680-683, secao acima), esta era por
+DESTILACAO DE BUSCA -- o rotulo era "qual candidata a busca completa
+escolheu", treinada em auto-jogo, pra PODAR e nao pra escolher. Desenho
+correto, respeitando os 4 pontos que o registro anterior exigia. **E mesmo
+assim nao paga.**
+
+Medicao OFFLINE, 626 decisoes de teste em 4 lideres nunca vistos:
+
+| top-N | POLITICA | score estatico (de graca) | sorteio |
+|---|---|---|---|
+| 2 | 71,6% | 71,1% | 52,1% |
+| 3 | 82,9% | 81,6% | 71,0% |
+| 4 | 92,2% | 90,4% | 84,8% |
+| 5 | 98,4% | 96,3% | 93,4% |
+
+**A politica ganha do score estatico por 0,5 a 2,1 pontos.** O score ja e
+calculado de graca pelo motor e faz praticamente o mesmo trabalho -- um
+modelo nao se justifica por essa margem.
+
+**A CAUSA e estrutural, nao do modelo**: nao ha o que podar.
+
+- media de **4,5 candidatas** por decisao (min 2, max 9)
+- **31,9% das decisoes tem <=3 candidatas** -- podar nao faz nada nelas
+- podar pra 4 economizaria ~15% do custo e perderia 9,6% das escolhas
+
+**Podar serve pra arvore LARGA; a nossa e estreita.** Fator de ramificacao
+de 4,5 nao sustenta o mecanismo.
+
+**CORRECAO DE NUMERO que motivou a ideia**: o mapa AS-IS (bloco 765) dizia
+"10,7 candidatas por decisao" -- eram 10,7 SIMULACOES, porque cada candidata
+e simulada varias vezes (Monte Carlo). A oportunidade era 2,4x menor do que
+parecia, e a ideia foi proposta em cima do numero errado.
+
+**Falso achado descartado no caminho**: com amostra pequena (56 decisoes, 1
+lider) o score estatico parecia PIOR que o sorteio (69,6% x 73,1%), o que
+teria sido um achado e tanto. Com 626 decisoes ele bate o sorteio com folga
+(71,1% x 52,1%). Era ruido -- e a ressalva de amostra pequena estava escrita
+antes de medir.
+
+**O que FICA de util**: `politica.py` (coleta + medicao offline) e o seam
+`_pol_captura`. E o padrao de teste: **construir o baseline que pode matar a
+propria ideia, e rodar offline antes de gastar duelo**. Custo total desta
+reprovacao: ~30 minutos, contra ~3 horas dos experimentos anteriores.
+
 ## ERRO DE MEDICAO: o portao de promocao tinha 10,9% de poder (bloco 756)
 
 **Nao e uma tentativa reprovada -- e a regua que reprovava as
