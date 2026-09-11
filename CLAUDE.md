@@ -496,6 +496,44 @@ premissa teriam levado direto a mudanca de arquitetura.
 >
 > **O ML participa de UMA das seis familias de decisao.** Isso, e nao a
 > qualidade do modelo, e o teto que nenhuma melhoria de treino atravessa.
+>
+> ### INVENTARIO COMPLETO (11/09/2026, a pedido do usuario): **81 decisoes FIXAS em 28 funcoes**
+>
+> Pedido: *"Faca uma busca e verifique tudo que for fixo e exija decisao, o
+> ML tem que treinar"*. Ferramenta: `audita_decisoes_fixas.py` -- procura
+> escolha de UM entre VARIOS por `max`/`min`/`sorted` com chave heuristica,
+> em `decision_engine.py`, `rules_facade.py` e `sim_bridge.py`.
+>
+> | familia | funcoes | ocorrencias |
+> |---|---|---|
+> | **execucao de efeito** | `_execute_step` | **27** |
+> | **pagar custo** (o que sacrificar) | `_pay_costs`, `_pay_substitute_cost` | **16** |
+> | **bot AO VIVO** (responder prompt do jogo) | `resolve_prompt_choice`, `escolher_opcao_de_efeito`, `sort_key` | **9** |
+> | defesa | `_should_use_blocker_inner`, `try_counter_event_debuff` | 4 |
+> | alvo de efeito | `_pick_effect_target_inner` | 2 |
+> | descarte | `_choose_to_trash`, `choose_to_trash`, `_execute_attack_inner` | 3 |
+> | stage inicial | `_place_start_stage` | 2 |
+> | utilitarios da facade | `choose_highest/lowest_board_value` | 5 |
+>
+> **`_execute_step` sozinha tem 27**: toda vez que uma carta FAZ alguma coisa,
+> quem escolhe o alvo/a carta e uma linha de `max`/`min` -- nunca o modelo.
+>
+> **O bot AO VIVO tem 9 proprias**: quando o jogo pergunta algo durante uma
+> partida real contra o usuario, a resposta sai de regra fixa.
+>
+> **E quase todas usam a MESMA chave**: `board_value()` ou `_trash_value`.
+> **Duas funcoes heuristicas escolhem praticamente tudo no jogo.**
+>
+> RESSALVA de metodo: a varredura e heuristica, entao algumas ocorrencias sao
+> ordenacao interna e nao escolha (ex: o `sorted` de `_lethal_search` e o de
+> `_explorar`). O numero exato de decisoes reais e um pouco menor que 81 --
+> mas a ordem de grandeza e essa, e nenhuma delas passa por modelo.
+>
+> **AGENDA que isto define**: o ML nao precisa "melhorar" -- precisa
+> **ALCANCAR**. Enquanto `board_value` e `_trash_value` decidirem tudo, o
+> modelo continua opinando sobre uma fracao pequena do jogo, e nenhuma
+> melhoria de treino atravessa esse teto.
+
 
 
 > ### REGRA OBRIGATORIA E VERIFICAVEL -- declare isto ANTES de rodar qualquer experimento de ML
