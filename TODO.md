@@ -27,6 +27,30 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 11/09/2026 (bloco 769): **A ESTRUTURA ERA O PROBLEMA — o usuário estava
+> certo.** Cobrança dele: pedi migração da heurística para ML e a sessão
+> entregou portão, cache, features, PyPy — tudo em volta. Procede (a
+> arquitetura de regulador é anterior a esta sessão, mas o adiamento foi meu).
+> **`ML_AVALIADOR`** (knob, default OFF): o modelo avalia a posição **logo após
+> a ação**, sem simular turno nenhum — deixa de ser termo somado de ±100 e
+> passa a SER a função de avaliação. **Medido: 17,4 s → 1,2 s por partida,
+> 14,8x.** Nenhum PyPy ou núcleo extra chegaria perto. A cegueira de 58% do
+> bloco 756 some junto (ela existia por avaliar no fim do turno).
+> **Corpus PÓS-AÇÃO** (`--pos-acao`): captura on-policy por wrapper em
+> `_apply_action`; rende **3,4x mais dado por partida** (45 estados contra 13).
+> **MAS PERDE O DUELO: 1 × 9, winrate 10%, LLR −2,948, fechou no primeiro lote
+> em 3,9 min.** Causa medida: o modelo pós-ação prevê muito pior — **AUC 0,6318
+> contra 0,7591** do fim de turno, com sobre-ajuste severo (0,9947 no treino).
+> **O rollout não era desperdício**: fazia trabalho real que o modelo, julgando
+> um turno pela metade, não substitui.
+> **DOIS GANHOS que sobrevivem**: o laço de experimento ficou **18x mais
+> rápido** (3,9 min contra 60-79), e a taxa de empate caiu de 84-96% para
+> **50%** — pela primeira vez um experimento com alto rendimento de informação.
+> **PRÓXIMO PASSO — o meio-termo**: a resposta do oponente é **42,5%** do custo;
+> cortá-la mantém a avaliação no fim do meu turno (onde o AUC é 0,76) por
+> ~metade do preço. Não são 15x, mas é ganho sem perder precisão.
+> Produção intacta: `ML_AVALIADOR` default OFF, nada ligado.
+
 > 10/09/2026 (bloco 768): **EDA feita pela 1ª vez, e ela REFUTA uma afirmação
 > MINHA.** O usuário trouxe um roteiro padrão de ML; a comparação apontou 4
 > buracos nunca fechados (EDA, seleção de atributos, conjunto de TESTE, métricas

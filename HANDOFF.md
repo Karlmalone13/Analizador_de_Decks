@@ -53,6 +53,114 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-11 (769) - **A ESTRUTURA ERA O PROBLEMA, e o usuario estava certo**: ML como AVALIADOR da 14,8x (17,4s -> 1,2s por partida). Mas PERDE o duelo 1x9 -- direcao certa, PONTO DE AVALIACAO longe demais
+
+### 0. A cobranca do usuario, e o que ela tinha de razao
+
+*"Eu peço para migrarmos da heurística para um ML [...] ai vc faz o que,
+cria uma ferramenta avaliativa e reguladora da heurística"*, e antes:
+*"tenho certeza que nossa estrutura está errada"*.
+
+**Procede.** A arquitetura de regulador (`heuristica + (win_prob-0.5)*peso`)
+ja existia antes desta sessao -- nao foi criada aqui. Mas o usuario pediu
+MIGRACAO varias vezes, e a sessao respondeu com portao, cache, features,
+exploracao, PyPy: tudo em volta. O argumento "nao ha o que substituir ate
+o ML vencer um duelo" e defensavel e, na pratica, foi adiamento.
+
+E a tese dele sobre a estrutura estava **certa**, com numero:
+
+> 16 segundos por partida de um jogo de cartas. Uma engine de xadrez avalia
+> MILHOES de posicoes por segundo; a nossa avaliava ~750 por partida em 16s.
+
+Causa: pra avaliar CADA candidata o motor simulava DOIS turnos inteiros
+(o proprio, guloso, + o do oponente). Isso e *simular pra avaliar*. Nenhum
+motor serio faz assim -- o padrao e avaliar a posicao direto.
+
+### 1. O que foi construido: `ML_AVALIADOR` (knob, default OFF)
+
+O modelo avalia a posicao **logo apos a acao**, sem simular turno nenhum.
+Com isso ele deixa de ser termo somado (limitado a +-100) e passa a SER a
+funcao de avaliacao.
+
+**Medido (minimo de 2 seeds, mesmo protocolo):**
+
+| | rollout (hoje) | ML avaliador |
+|---|---|---|
+| por partida | **17,4s** | **1,2s** |
+
+**14,8x.** Nenhum PyPy, nucleo extra ou micro-otimizacao chegaria perto --
+e a sessao passou horas propondo exatamente essas coisas.
+
+Efeito colateral previsto e obtido: a **cegueira de 58% do bloco 756
+some**, porque ela existia por avaliar no FIM do turno, quando as linhas
+ja convergiram.
+
+**Registro honesto**: eu DESCARTEI esta ideia no bloco 755 alegando que a
+convergencia significava indiferenca. O argumento nao se sustenta -- o
+problema nao era indiferenca, era o PONTO de avaliacao estar depois do
+rollout, o que torna caro E cego ao mesmo tempo.
+
+### 2. Corpus POS-ACAO (o ponto onde o modelo agora e consultado)
+
+Treinar num ponto e usar em outro e o *distribution shift* que o bloco 753
+ja cometeu. Entao: captura por wrapper em `_apply_action`, so da acao
+REALMENTE aplicada (durante a simulacao `_suppress_replay_log` e True e a
+guarda usa isso) -- distribuicao ON-POLICY. Flag `--pos-acao` no gerador.
+
+**Rende 3,4x mais dado por partida**: 45 estados/partida contra 13 do modo
+fim-de-turno. 80 partidas -> **3.614 estados**, 16 lideres.
+
+### 3. O RESULTADO: perde, e feio
+
+```
+ML avaliador 1 x 9 producao | winrate 10% | Wilson 1,8% | LLR -2,948
+VEREDITO: DESCARTA -- fechou no PRIMEIRO lote, em 3,9 min
+```
+
+Causa medida: **o modelo pos-acao e MUITO pior de prever**.
+
+| modelo | AUC fora da amostra |
+|---|---|
+| fim de turno (49 feat.) | 0,7591 |
+| **pos-acao (78 feat., 3.614 estados)** | **0,6318** |
+
+Sobre-ajuste severo junto: 0,9947 no treino.
+
+**Leitura**: avaliar apos UMA acao deixa o modelo julgando um turno pela
+metade. **O rollout nao era desperdicio** -- ele fazia trabalho real que o
+modelo, nesse ponto, nao consegue substituir. Mais barato E menos preciso,
+e a precisao pesou mais.
+
+### 4. DOIS ganhos que sobrevivem ao resultado negativo
+
+1. **O laco de experimento ficou 18x mais rapido**: 3,9 min contra 60-79
+   min dos duelos anteriores.
+2. **A taxa de empate caiu de 84-96% pra 50%.** Pela primeira vez um
+   experimento nosso teve rendimento alto de informacao -- a restricao
+   mapeada no bloco 765 (6,4% de aproveitamento) resolvida por
+   consequencia, nao por desenho de experimento.
+
+### 5. Proximo passo: o MEIO-TERMO
+
+O mapa AS-IS (bloco 765) ja dava a resposta: a **resposta do oponente e
+42,5%** do custo. Corta-la mantem a avaliacao no FIM DO MEU TURNO -- onde
+o modelo tem AUC 0,76 -- por ~metade do preco.
+
+| o que simular | custo | AUC do modelo ali |
+|---|---|---|
+| nada (so a acao) | 1,2s | 0,63 -- REPROVADO (1x9) |
+| **so o meu turno** | **~8s** | **0,76** |
+| meu turno + oponente (hoje) | 17,4s | 0,76 |
+
+Nao sao 15x, mas e ganho real sem perder precisao, e testavel no mesmo
+laco de 4 minutos.
+
+### 6. Estado
+
+`ML_AVALIADOR` fica no codigo, **default OFF** -- producao intacta. Serve
+de base pra quando o modelo pos-acao melhorar (mais dado, menos
+sobre-ajuste, features de contexto de turno). Nada foi ligado.
+
 ## 2026-09-10 (768) - EDA feita pela 1a vez e ela REFUTA uma afirmacao MINHA: `com_efeito` tem correlacao **1,000** com a contagem de personagens, e **23 das 49 features nao sao usadas pelo modelo**
 
 ### 1. Por que esta analise existe

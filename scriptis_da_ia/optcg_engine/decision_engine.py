@@ -165,7 +165,20 @@ _k.registra('VALUE_NET_WEIGHT', float(0.0), float,
             'peso do valor aprendido por auto-jogo na avaliacao de linha '
             '(0.0 = desligado, comportamento de producao inalterado)',
             'avaliacao', 0.0, 2000.0)
+_k.registra('ML_AVALIADOR', False, bool,
+            'O MODELO avalia a posicao LOGO APOS a acao, sem simular o resto '
+            'do turno nem o turno do oponente -- o ML vira a funcao de '
+            'avaliacao em vez de um termo somado a heuristica. Default '
+            'DESLIGADO: muda comportamento de producao (bloco 769).')
+_k.registra('ML_AVALIADOR_ESCALA', 1000.0, float,
+            'Escala do valor do ML quando ele e o avaliador. Existe pra a '
+            'faixa ficar comparavel a de _evaluate_state_v2, mantendo '
+            'SIMULATED_WIN_SCORE dominante.')
 VALUE_NET_WEIGHT = _k.get('VALUE_NET_WEIGHT')
+# Bloco 769 -- ver o registro do knob. Lidos aqui pra ficarem disponiveis no
+# modulo, mesmo padrao de VALUE_NET_WEIGHT acima.
+ML_AVALIADOR = bool(_k.get('ML_AVALIADOR'))
+ML_AVALIADOR_ESCALA = float(_k.get('ML_AVALIADOR_ESCALA'))
 
 # TESTADO 20/08 (bloco 631, 0.3 e depois 0.15): misturar uma fracao do
 # score IMEDIATO GENERICO da candidata na comparacao final entre as
@@ -19711,6 +19724,36 @@ class OPTCGMatch:
         return score
 
     def _apply_action(self, action, p, opp, ee, engine, verbose=False):
+        """CAPTURA o estado POS-ACAO quando o coletor pede (bloco 769).
+
+        Com o ML como AVALIADOR, ele julga a posicao logo APOS a acao -- nao
+        mais no fim do turno. Entao o corpus tem que ser gravado nesse mesmo
+        ponto: treinar num ponto e usar em outro e exatamente o erro de
+        *distribution shift* que o bloco 753 ja cometeu (dataset do motor SEM
+        o modelo, modelo usado COM ele).
+
+        Captura so o estado da acao REALMENTE aplicada no jogo -- durante a
+        simulacao `_suppress_replay_log` e True, e a guarda abaixo usa isso
+        pra nao encher o corpus com candidatas descartadas. Distribuicao
+        ON-POLICY: os estados que a politica de fato visita.
+
+        Default: `_ml_captura` e None => custo zero, nada muda.
+        """
+        r = self._apply_action_inner(action, p, opp, ee, engine, verbose)
+        buf = getattr(self, '_ml_captura', None)
+        if buf is not None and not getattr(self, '_suppress_replay_log', False):
+            try:
+                from optcg_engine import value_net as _vnc
+                buf.append({
+                    'lado': 'A' if p is self.state_a else 'B',
+                    'feats': _vnc.state_features(
+                        p, opp, nomes=_vnc.FEATURE_NAMES_V3),
+                })
+            except Exception:
+                pass      # captura nunca pode derrubar a partida
+        return r
+
+    def _apply_action_inner(self, action, p, opp, ee, engine, verbose=False):
         """
         Executa UMA ação no estado dado (real ou cópia). Retorna True se venceu.
         Reúso entre o jogo real e a simulação do planner.
@@ -20018,6 +20061,42 @@ class OPTCGMatch:
             first2, p2, opp2, ee2, eng2, verbose=False)
         if won:
             return SIMULATED_WIN_SCORE   # essa linha vence
+
+        # ── ML COMO AVALIADOR (bloco 769) ───────────────────────────────
+        # Pedido REPETIDO do usuario: migrar da heuristica pro ML, um ML
+        # que DECIDA em vez de regular. Aqui a avaliacao acontece LOGO
+        # APOS a acao -- sem simular o resto do turno nem o turno do
+        # oponente.
+        #
+        # POR QUE ISTO E A MIGRACAO, e nao mais um ajuste:
+        #  1. o modelo passa a SER a funcao de avaliacao (nao um termo
+        #     somado a heuristica, limitado a +-100 pontos);
+        #  2. o custo desaba -- hoje cada candidata paga DOIS turnos
+        #     simulados (42,5% resposta do oponente + 42,2% continuacao
+        #     gulosa, bloco 765); aqui paga UMA consulta ao modelo;
+        #  3. a CEGUEIRA some -- os 58% de convergencia do bloco 756
+        #     existem porque avaliamos no FIM do turno, quando as linhas
+        #     ja se juntaram; logo apos a acao, acoes diferentes dao
+        #     estados diferentes SEMPRE.
+        #
+        # Eu descartei esta ideia no bloco 755 alegando que a convergencia
+        # significava indiferenca. O argumento nao se sustenta: o problema
+        # nao era a indiferenca, era o PONTO de avaliacao estar depois do
+        # rollout -- o que torna caro e cego ao mesmo tempo.
+        #
+        # Atras de flag, default DESLIGADO: producao so muda depois de
+        # medido (regra de 28/08).
+        if getattr(p, 'ml_avaliador', None) or ML_AVALIADOR:
+            from optcg_engine import value_net as _vna
+            _b = _vna.load_value_net(getattr(p, 'value_net_path', None))
+            _pw = _vna.win_prob(p2, opp2, bundle=_b)
+            if _pw is not None:
+                # Escala pra faixa comparavel a de `_evaluate_state_v2`,
+                # pra que `SIMULATED_WIN_SCORE` e os atalhos de vitoria
+                # continuem dominando como sempre.
+                return (_pw - 0.5) * ML_AVALIADOR_ESCALA
+            # Sem modelo compativel: cai no caminho normal em vez de
+            # derrubar o motor (mesma degradacao graciosa de sempre).
 
         # Continua gulosamente até o fim do turno
         # activate_main agora compete como ação no _generate_and_score_actions,

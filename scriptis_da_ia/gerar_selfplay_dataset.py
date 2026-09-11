@@ -108,11 +108,11 @@ def _run_one_match(task) -> list:
     Cada processo carrega o proprio banco -- sem estado global
     compartilhado, igual `audit_replay._run_one_match`."""
     # 6o elemento OPCIONAL (bloco 767): epsilon de EXPLORACAO.
-    if len(task) == 6:
-        i, match_seed, peso, modelo_path, geracao, eps = task
+    if len(task) == 7:
+        i, match_seed, peso, modelo_path, geracao, eps, pos_acao = task
     else:
         i, match_seed, peso, modelo_path, geracao = task
-        eps = 0.0
+        eps, pos_acao = 0.0, False
     deck_list = _load_deck_list()
     rng = random.Random(match_seed)
     idx_a, idx_b = rng.sample(range(len(deck_list)), 2)
@@ -151,6 +151,14 @@ def _run_one_match(task) -> list:
     # preterida era boa.
     if eps:
         match._explora_eps = eps
+
+    # CORPUS POS-ACAO (bloco 769). Com o ML como AVALIADOR ele julga a
+    # posicao logo APOS a acao, nao no fim do turno -- e o corpus tem que ser
+    # gravado nesse MESMO ponto, senao treino e uso ficam em distribuicoes
+    # diferentes (o erro do bloco 753). Rende MUITO mais estado por partida:
+    # varias acoes por turno, contra um estado por turno no modo antigo.
+    if pos_acao:
+        match._ml_captura = []
 
     amostras = []
     winner = None
@@ -198,6 +206,14 @@ def _run_one_match(task) -> list:
         # Contado no resumo pra a taxa ficar visivel, nao escondida.
         return [{'_sem_desfecho': True, 'match': i}]
 
+    if pos_acao:
+        # Troca os estados de FIM DE TURNO pelos estados POS-ACAO que o
+        # `_ml_captura` recolheu -- e o ponto onde o ML avaliador e de fato
+        # consultado. O rotulo continua sendo quem ganhou a PARTIDA.
+        amostras = [{'match': i, 'side': d['lado'],
+                     'leader': code_a if d['lado'] == 'A' else code_b,
+                     'turn': -1, 'gen': geracao, 'feats': d['feats']}
+                    for d in (getattr(match, '_ml_captura', None) or [])]
     for a in amostras:
         a['win'] = 1 if a['side'] == winner else 0
     return amostras
@@ -217,6 +233,11 @@ def main() -> None:
                          '(0 = motor sem modelo, geracao 0)')
     ap.add_argument('--model', default=None,
                     help='modelo usado pra gerar (default: o de value_net.MODEL_PATH)')
+    ap.add_argument('--pos-acao', dest='pos_acao', action='store_true',
+                    help='grava os estados POS-ACAO (o ponto onde o ML '
+                         'AVALIADOR e consultado) em vez do fim do turno. '
+                         'Rende varios estados por turno. Obrigatorio pra '
+                         'treinar o modelo do ML_AVALIADOR (bloco 769)')
     ap.add_argument('--explorar', type=float, default=0.0,
                     help='epsilon de EXPLORACAO (0.0-1.0): em epsilon das '
                          'decisoes joga FORA do topo, pra o dataset conter '
@@ -230,7 +251,7 @@ def main() -> None:
     args = ap.parse_args()
 
     tasks = [(i, args.seed * 1_000_003 + i, args.weight, args.model, args.gen,
-              args.explorar)
+              args.explorar, args.pos_acao)
              for i in range(args.n)]
     print(f'[selfplay] {args.n} partidas, seed={args.seed}, workers={args.workers}, '
           f'gen={args.gen}, peso={args.weight}, explorar={args.explorar}')
