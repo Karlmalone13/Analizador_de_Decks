@@ -529,6 +529,41 @@ premissa teriam levado direto a mudanca de arquitetura.
 > `_explorar`). O numero exato de decisoes reais e um pouco menor que 81 --
 > mas a ordem de grandeza e essa, e nenhuma delas passa por modelo.
 >
+>
+> ### O CAMINHO QUE O INVENTARIO REVELA: nao sao 28 problemas, sao DOIS
+>
+> Observacao do usuario que fecha o raciocinio: *"se nao a gente treina so
+> uma coisa e o bot continua perdendo"*. Correto -- e o inventario mostra o
+> atalho:
+>
+> **Quase todas as 81 decisoes fixas usam as MESMAS duas chaves:
+> `board_value()` e `_trash_value`.** O resto do motor so chama `max`/`min`
+> em cima delas.
+>
+> Entao nao e preciso reescrever 28 funcoes pra consultarem o modelo: basta
+> **trocar a REGUA que as 28 ja usam**. O ML alcanca tudo de uma vez.
+>
+> **E da pra fazer sem treinar nada novo**, usando a rede de valor que ja
+> existe:
+>
+> ```
+> valor(carta) = P(vencer | posicao) - P(vencer | posicao SEM essa carta)
+> ```
+>
+> A carta passa a valer o quanto ela muda a chance de vitoria -- precificada
+> por CONSEQUENCIA MEDIDA, em vez de `power // 1000 + bonus de keyword`
+> escrito a mao.
+>
+> Com isso o ML passa a decidir: qual alvo eliminar, o que sacrificar pra
+> pagar custo, quem bloquear, quais counters gastar, o que buscar no deck,
+> quem reviver do trash, o que descartar. **Todas, porque todas passam pela
+> mesma regua.**
+>
+> **Custo a medir antes de adotar**: cada precificacao vira uma consulta ao
+> modelo (2,1ms, ou cache). Com 81 pontos de decisao isso pode pesar -- e o
+> memo de `win_prob` (bloco 766) ja existe justamente pra isso. **Nao
+> adotado ainda, so desenhado.**
+
 > **AGENDA que isto define**: o ML nao precisa "melhorar" -- precisa
 > **ALCANCAR**. Enquanto `board_value` e `_trash_value` decidirem tudo, o
 > modelo continua opinando sobre uma fracao pequena do jogo, e nenhuma
