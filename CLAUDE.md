@@ -471,6 +471,32 @@ premissa teriam levado direto a mudanca de arquitetura.
 >
 > **Pendente**: levar a decisao defensiva pra dentro da busca/modelo. Nao
 > tentado ainda.
+>
+> **MAIS DUAS, apontadas pelo usuario no mesmo dia e VERIFICADAS no codigo:**
+>
+> | decisao | como escolhe hoje | ML alcanca? |
+> |---|---|---|
+> | carta no SEARCH (procurar no deck) | `max(candidates, key=self._trash_value)` | **nao** |
+> | reviver do TRASH | `sorted(fuel, key=board_value, reverse=True)` | **nao** |
+>
+> Sao decisoes de alto impacto -- buscar a peca errada ou reviver o
+> personagem errado define o turno -- e nenhuma delas passa por busca ou
+> modelo. **Regra fixa de uma linha.**
+>
+> ### O quadro completo do que o ML NAO alcanca
+>
+> | decisao | ML alcanca? |
+> |---|---|
+> | qual acao de topo (jogar / atacar / ativar / anexar DON / passar) | **sim** |
+> | em quem mirar o efeito | nao (`max(board_value)`) |
+> | bloquear ou nao, e com quem | nao |
+> | usar counter, e quais cartas | nao |
+> | **qual carta pegar num search** | **nao** |
+> | **quem reviver do trash** | **nao** |
+>
+> **O ML participa de UMA das seis familias de decisao.** Isso, e nao a
+> qualidade do modelo, e o teto que nenhuma melhoria de treino atravessa.
+
 
 > ### REGRA OBRIGATORIA E VERIFICAVEL -- declare isto ANTES de rodar qualquer experimento de ML
 >
