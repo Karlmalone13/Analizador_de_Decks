@@ -27,6 +27,28 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 11/09/2026 (blocos 773-774): **O ML PARTICIPA DE 1 DE 6 FAMÍLIAS DE
+> DECISÃO.** Três achados do usuário, todos verificados no código: (a) *"o
+> atacante não morre"* — **regra, e eu errei** no exemplo; (b) *"não é só vida,
+> board e mão também sufocam"* — o modelo **já enxerga**, e `trash_opp` foi a
+> 3ª feature mais usada; (c) *"precisamos treinar defesa"* — **buraco real**,
+> `should_use_blocker`/`should_use_counter`/`pick_counters` fazem **zero**
+> consultas ao modelo.
+> **Inventário** (`audita_decisoes_fixas.py`, a pedido dele): **81 escolhas
+> fixas em 28 funções** — `_execute_step` sozinha tem **27** (toda vez que uma
+> carta faz algo, quem escolhe é `max`/`min`), pagar custo 16, **bot AO VIVO 9**
+> (responde prompts do jogo por regra fixa em partida real).
+> **1 de 6 famílias**, e isso explica os 78-96% de empate nos duelos: a maior
+> parte do jogo não passa pelo modelo. **Não é teto de qualidade, é de
+> ALCANCE** — bate com `quais cartas de counter` em 18,5%, uma das três piores
+> categorias.
+> **O CAMINHO — não são 28 problemas, são DOIS**: quase todas usam as mesmas
+> chaves, `board_value()` e `_trash_value`. Basta **trocar a régua**. E dá para
+> fazer **sem treinar nada novo**: `valor(carta) = P(vencer | posição) −
+> P(vencer | posição sem a carta)`, precificando por consequência medida em vez
+> de `power//1000 + keyword`. Custo a medir (2,1 ms por precificação, ou o memo
+> do bloco 766). **Desenhado, não adotado.**
+
 > 11/09/2026 (bloco 772): **REDE DE POLÍTICA REPROVADA OFFLINE em ~30 min** —
 > o baseline que construí para matar a ideia matou. Em vez de ESCOLHER a
 > jogada, a política PODARIA o shortlist (assimetria de erro: se erra, a busca

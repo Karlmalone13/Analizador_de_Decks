@@ -53,6 +53,81 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-11 (773-774) - **O ML PARTICIPA DE 1 DE 6 FAMILIAS DE DECISAO** -- 81 escolhas fixas em 28 funcoes, e **DUAS funcoes heuristicas decidem quase tudo**
+
+### 1. Tres achados do usuario, todos verificados no codigo
+
+| observacao dele | verificacao |
+|---|---|
+| *"o personagem que atacou nao morre"* | **REGRA, e eu errei**: em OPTCG o atacante nunca morre atacando. Confirmado no motor (`if card.power > atk_power: return 0.0` -- sobrevive, golpe anulado). Meu exemplo de ML estava errado na regra |
+| *"nao podemos analisar so vida -- limpar board, esvaziar mao tb sao boas jogadas"* | **o modelo JA enxerga** (`chars_opp`, `hand_opp`, `counter_hand_opp`, `blockers_opp`, `trash_opp`), e `trash_opp` foi a **3a feature mais usada** na medicao do bloco 768 -- ele ja tinha descoberto sozinho que sufocar importa |
+| *"precisamos treinar defesa"* | **BURACO REAL**: `should_use_blocker`, `should_use_counter` e `pick_counters` fazem **ZERO** consultas a busca ou modelo |
+
+### 2. O inventario completo (`audita_decisoes_fixas.py`)
+
+A pedido do usuario (*"verifique tudo que for fixo e exija decisao"*):
+**81 ocorrencias em 28 funcoes**.
+
+| familia | funcoes | ocorrencias |
+|---|---|---|
+| **execucao de efeito** | `_execute_step` | **27** |
+| **pagar custo** | `_pay_costs`, `_pay_substitute_cost` | **16** |
+| **bot AO VIVO** | `resolve_prompt_choice`, `escolher_opcao_de_efeito`, `sort_key` | **9** |
+| defesa | `_should_use_blocker_inner`, `try_counter_event_debuff` | 4 |
+| descarte | `_choose_to_trash`, `choose_to_trash`, `_execute_attack_inner` | 3 |
+| alvo de efeito | `_pick_effect_target_inner` | 2 |
+| stage inicial | `_place_start_stage` | 2 |
+| facade | `choose_highest/lowest_board_value` | 5 |
+
+**`_execute_step` sozinha tem 27**: toda vez que uma carta FAZ algo, quem
+escolhe e uma linha de `max`/`min`. **O bot ao vivo tem 9 proprias** --
+responde os prompts do jogo por regra fixa, em partida real contra o usuario.
+
+RESSALVA: a varredura e heuristica; algumas ocorrencias sao ordenacao
+interna, nao escolha (`_lethal_search`, `_explorar`). O numero real e um
+pouco menor -- a ordem de grandeza nao.
+
+### 3. O quadro que isso fecha
+
+| decisao | ML alcanca? |
+|---|---|
+| qual acao de topo | **sim** |
+| em quem mirar o efeito | nao |
+| bloquear ou nao, e com quem | nao |
+| usar counter, e quais cartas | nao |
+| qual carta pegar num search | nao |
+| quem reviver do trash | nao |
+
+**1 de 6.** E explica de uma vez por que 78-96% dos duelos empatavam: os dois
+lados decidiam igual na maior parte do jogo, porque a maior parte do jogo nao
+passa pelo modelo. **Nao e teto de QUALIDADE, e teto de ALCANCE.**
+
+Bate com a qualidade de decisao ja medida: `quais cartas de counter` em
+**18,5%** e uma das tres piores categorias do projeto -- e agora a causa esta
+identificada.
+
+### 4. O CAMINHO: nao sao 28 problemas, sao DOIS
+
+Observacao do usuario que fecha: *"se nao a gente treina so uma coisa e o bot
+continua perdendo"*.
+
+**Quase todas as 81 usam as MESMAS duas chaves: `board_value()` e
+`_trash_value`.** O resto so chama `max`/`min` em cima delas. Entao basta
+**trocar a REGUA**, nao reescrever 28 funcoes.
+
+E da pra fazer **sem treinar nada novo**, usando a rede de valor existente:
+
+```
+valor(carta) = P(vencer | posicao) - P(vencer | posicao SEM essa carta)
+```
+
+A carta passa a valer o quanto muda a chance de vitoria -- precificada por
+CONSEQUENCIA MEDIDA em vez de `power // 1000 + bonus de keyword`.
+
+**Custo a medir antes de adotar**: cada precificacao vira consulta ao modelo
+(2,1ms, ou o memo do bloco 766). Com 81 pontos isso pode pesar.
+**Desenhado, NAO adotado.**
+
 ## 2026-09-11 (772) - REDE DE POLITICA **REPROVADA OFFLINE em ~30 min** -- o baseline que eu construi pra matar a ideia matou. E a causa e estrutural: a arvore e ESTREITA (4,5 candidatas), nao ha o que podar
 
 ### 1. A ideia e por que ela merecia ser tentada
