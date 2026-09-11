@@ -53,6 +53,72 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-11 (775) - **A FOME ERA REAL**: 23x de corpus levou o ML autonomo de 10% pra 31,8% de winrate e o AUC de 0,632 pra 0,856. Ainda perde -- e a causa restante e ALCANCE, nao qualidade
+
+### 1. O corpus grande
+
+`--ml-avaliador` no gerador (o modo REPROVADO como jogador serve como
+GERADOR: 1,2s por partida contra 16s) + `--pos-acao` + exploracao.
+**2.000 partidas -> 81.645 estados**, 16 lideres, 0 erros, 55,3% positivo.
+~30 min. Com o motor de producao isso teria levado **~9 horas**.
+
+### 2. O modelo: melhor que qualquer um que este projeto ja teve
+
+| corpus | estados | AUC fora da amostra | vao treino-teste |
+|---|---|---|---|
+| pos-acao pequeno | 3.614 | 0,6318 | **0,363** |
+| **grande** | **81.645** | **0,8560** | **0,021** |
+
+**+22 pontos de AUC**, e a decoreba praticamente sumiu (0,363 -> 0,021).
+
+Isto responde a pergunta que ficou pendurada a sessao inteira: **o modelo
+nao era fraco, estava FAMINTO.** O usuario insistiu nisso e estava certo.
+
+Nota: inverte tambem o achado do bloco 771 ("16 features batem 49"). Aquilo
+era sintoma de corpus pequeno, exatamente como registrado la -- com 81 mil
+estados as 78 features treinam sem decorar.
+
+### 3. O teste TIPO A (o ML decidindo SOZINHO, sem heuristica somada)
+
+```
+ML avaliador 7 x 15 producao | winrate 31,8% | Wilson 16,4% | LLR -3,514
+80 pares / 160 partidas / 19,2 min
+```
+
+| | corpus | AUC | winrate | quando fechou |
+|---|---|---|---|---|
+| bloco 769 | 3.614 | 0,632 | **10,0%** (1x9) | 1o lote, 3,9 min |
+| **bloco 775** | **81.645** | **0,856** | **31,8%** (7x15) | 4o lote, 19,2 min |
+
+**De 10% pra 31,8% mudando SO a quantidade de dado.** Ainda perde, mas a
+trajetoria e inequivoca.
+
+### 4. A explicacao do que falta, e ela amarra com o inventario do bloco 774
+
+**Mesmo no modo "ML decide sozinho", ele decide 1 de 6 familias.**
+
+`ML_AVALIADOR` trocou **a AVALIACAO** -- quem julga a posicao resultante.
+Mas as **81 escolhas fixas** (alvo de efeito, o que sacrificar pra pagar
+custo, quem bloquear, quais counters, o que buscar no deck, quem reviver do
+trash) **continuam sendo `max(board_value)`**, identicas a antes.
+
+Ou seja: o teste mediu um modelo MUITO melhor fazendo **a mesma fracao
+pequena do jogo**. Que ele tenha ido de 10% pra 31,8% assim e argumento A
+FAVOR -- o ganho inteiro veio de uma familia so.
+
+### 5. As duas alavancas que restam, com tamanho medido
+
+| alavanca | evidencia |
+|---|---|
+| **mais dado** | 23x de corpus rendeu **+22pp** de winrate |
+| **ALCANCE** (trocar as duas reguas) | **nunca testado** -- atinge as outras 5 familias de uma vez |
+
+A segunda e a que o usuario vinha apontando e a unica ainda nao medida.
+Caminho desenhado no bloco 774: `valor(carta) = P(vencer | posicao) -
+P(vencer | posicao SEM a carta)`, usando a rede de valor que ja existe --
+e agora ela e boa (AUC 0,856), o que torna a precificacao confiavel pela
+primeira vez.
+
 ## 2026-09-11 (773-774) - **O ML PARTICIPA DE 1 DE 6 FAMILIAS DE DECISAO** -- 81 escolhas fixas em 28 funcoes, e **DUAS funcoes heuristicas decidem quase tudo**
 
 ### 1. Tres achados do usuario, todos verificados no codigo

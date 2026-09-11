@@ -1,7 +1,7 @@
 """A/B: ML COMO AVALIADOR x motor de producao (rollout). Bloco 769.
 
 Desafiante: `ml_avaliador=True` com o modelo treinado em estados POS-ACAO
-            (`vn_pos_acao.joblib`) -- avalia a posicao logo apos a acao, sem
+            (`vn_grande.joblib`) -- avalia a posicao logo apos a acao, sem
             simular turno nenhum.
 Campeao   : motor de producao de hoje -- rollout de 2 turnos por candidata,
             heuristica decidindo, ML desligado (peso 0, que e o default).
@@ -22,7 +22,7 @@ from pathlib import Path
 import treino_continuo as tc
 
 RAIZ = Path(__file__).resolve().parent
-MODELO = RAIZ / 'metrics' / 'vn_pos_acao.joblib'
+MODELO = RAIZ / 'metrics' / 'vn_grande.joblib'
 
 
 def main():

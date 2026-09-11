@@ -27,6 +27,27 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 11/09/2026 (bloco 775): **A FOME ERA REAL — o modelo não era fraco, estava
+> faminto.** Corpus de **81.645 estados** (2.000 partidas em ~30 min usando o
+> modo rápido como GERADOR; com o motor de produção teria levado ~9 h).
+> **AUC fora da amostra 0,6318 → 0,8560 (+22 pontos)** e o vão treino-teste de
+> **0,363 → 0,021** — melhor modelo que o projeto já teve. Inverte também o
+> achado do bloco 771 ("16 features batem 49"): aquilo era sintoma de corpus
+> pequeno, e com 81 mil estados as 78 features treinam sem decorar.
+> **Teste TIPO A** (ML decidindo sozinho, sem heurística somada): **7 × 15,
+> winrate 31,8%** — contra **1 × 9 (10,0%)** no bloco 769. **De 10% para 31,8%
+> mudando só a quantidade de dado.** Ainda perde, mas a trajetória é
+> inequívoca.
+> **O QUE FALTA, e amarra com o inventário do 774**: mesmo "decidindo sozinho",
+> o ML decide **1 de 6 famílias** — `ML_AVALIADOR` trocou a AVALIAÇÃO, mas as
+> **81 escolhas fixas** continuam `max(board_value)`. O teste mediu um modelo
+> muito melhor fazendo a mesma fração pequena do jogo; que tenha ido de 10%
+> para 31,8% assim é argumento A FAVOR.
+> **Duas alavancas restantes, com tamanho**: mais dado (23x rendeu +22pp) e
+> **ALCANCE** — trocar as duas réguas, nunca testado, atinge as outras 5
+> famílias de uma vez. Agora a rede de valor é boa (0,856), o que torna a
+> precificação por modelo confiável pela primeira vez.
+
 > 11/09/2026 (blocos 773-774): **O ML PARTICIPA DE 1 DE 6 FAMÍLIAS DE
 > DECISÃO.** Três achados do usuário, todos verificados no código: (a) *"o
 > atacante não morre"* — **regra, e eu errei** no exemplo; (b) *"não é só vida,

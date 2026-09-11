@@ -108,11 +108,12 @@ def _run_one_match(task) -> list:
     Cada processo carrega o proprio banco -- sem estado global
     compartilhado, igual `audit_replay._run_one_match`."""
     # 6o elemento OPCIONAL (bloco 767): epsilon de EXPLORACAO.
-    if len(task) == 7:
-        i, match_seed, peso, modelo_path, geracao, eps, pos_acao = task
+    if len(task) == 8:
+        (i, match_seed, peso, modelo_path, geracao, eps, pos_acao,
+         ml_avaliador) = task
     else:
         i, match_seed, peso, modelo_path, geracao = task
-        eps, pos_acao = 0.0, False
+        eps, pos_acao, ml_avaliador = 0.0, False, False
     deck_list = _load_deck_list()
     rng = random.Random(match_seed)
     idx_a, idx_b = rng.sample(range(len(deck_list)), 2)
@@ -159,6 +160,20 @@ def _run_one_match(task) -> list:
     # varias acoes por turno, contra um estado por turno no modo antigo.
     if pos_acao:
         match._ml_captura = []
+
+    # GERADOR RAPIDO (bloco 773). O modo ML_AVALIADOR foi REPROVADO como
+    # JOGADOR (1x9, bloco 769) mas serve como GERADOR DE DADO: pra aprender a
+    # avaliar posicao o que importa e cobrir muitas posicoes com rotulo de
+    # vitoria correto, nao que o jogador seja otimo -- AlphaZero comeca de jogo
+    # aleatorio. Custa 1,2s por partida contra 16s, entao viabiliza corpus 40x
+    # maior.
+    # RESSALVA: os estados vem de um jogador mais fraco. Mitigacao: exploracao
+    # ligada e rotulo de vitoria REAL.
+    if ml_avaliador:
+        for estado in (match.state_a, match.state_b):
+            estado.ml_avaliador = True
+            if modelo_path:
+                estado.value_net_path = modelo_path
 
     amostras = []
     winner = None
@@ -233,6 +248,11 @@ def main() -> None:
                          '(0 = motor sem modelo, geracao 0)')
     ap.add_argument('--model', default=None,
                     help='modelo usado pra gerar (default: o de value_net.MODEL_PATH)')
+    ap.add_argument('--ml-avaliador', dest='ml_avaliador', action='store_true',
+                    help='gera com o modo ML_AVALIADOR (1,2s por partida em vez '
+                         'de 16s). REPROVADO como jogador (1x9, bloco 769) mas '
+                         'valido como GERADOR: o que importa pro aprendizado e '
+                         'cobrir posicoes com rotulo correto (bloco 773)')
     ap.add_argument('--pos-acao', dest='pos_acao', action='store_true',
                     help='grava os estados POS-ACAO (o ponto onde o ML '
                          'AVALIADOR e consultado) em vez do fim do turno. '
@@ -251,7 +271,7 @@ def main() -> None:
     args = ap.parse_args()
 
     tasks = [(i, args.seed * 1_000_003 + i, args.weight, args.model, args.gen,
-              args.explorar, args.pos_acao)
+              args.explorar, args.pos_acao, args.ml_avaliador)
              for i in range(args.n)]
     print(f'[selfplay] {args.n} partidas, seed={args.seed}, workers={args.workers}, '
           f'gen={args.gen}, peso={args.weight}, explorar={args.explorar}')
