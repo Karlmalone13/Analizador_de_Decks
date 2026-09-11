@@ -442,6 +442,62 @@ premissa teriam levado direto a mudanca de arquitetura.
 > - *"temos que fazer um ML de verdade para o Bot aprender empiricamente e
 >   não fazer o ML ser uma ferramenta da heurística"*
 >
+>
+
+> ### BURACO CONFIRMADO (11/09/2026, achado do usuario): a DEFESA esta 100% FORA do ML
+>
+> Pergunta dele: *"e tb precisamos treinar defesa, quando alguem ataca o
+> bot"*. Verificado no codigo -- `should_use_blocker`, `should_use_counter` e
+> `pick_counters` fazem **ZERO** consultas a busca ou ao modelo. Sao heuristica
+> fixa pura.
+>
+> Bate com a qualidade de decisao ja medida, sem ninguem ter ligado os pontos:
+>
+> | decisao defensiva | acerto contra humano | volume |
+> |---|---|---|
+> | bloquear ou nao | 85,7% | 1.326 |
+> | usar counter ou nao | 59,7% | 1.186 |
+> | **quais cartas de counter** | **18,5%** | 804 |
+>
+> A ultima e uma das **tres piores categorias do projeto inteiro** -- e a causa
+> agora esta identificada: escolhida por regra fixa, sem busca e sem modelo.
+>
+> **3.316 de 14.973 decisoes (22%) estao FORA do alcance do ML**, e sao caras:
+> determinam se o bot toma dano.
+>
+> **Isto reforca a tese do usuario**: o ML nao esta perdendo por ser fraco --
+> esta **impedido de participar** de boa parte do jogo. Um modelo melhor nao
+> muda nada em 22% das decisoes, por construcao.
+>
+> **Pendente**: levar a decisao defensiva pra dentro da busca/modelo. Nao
+> tentado ainda.
+
+> ### REGRA OBRIGATORIA E VERIFICAVEL -- declare isto ANTES de rodar qualquer experimento de ML
+>
+> **Todo experimento de ML tem que declarar, em uma linha, qual dos dois ele e:**
+>
+> | tipo | o que faz | permitido? |
+> |---|---|---|
+> | **A. ML DECIDE** | o modelo escolhe/avalia, a heuristica sai ou nao entra | **SIM -- e a direcao** |
+> | **B. ML CALIBRA** | o modelo e somado a heuristica (`+ (win_prob-0.5)*peso`) | **SO com justificativa explicita** |
+>
+> **Se o experimento e do tipo B, ele precisa dizer POR QUE nao e do tipo A**
+> -- e "porque o modelo ainda nao e bom o bastante" nao basta sozinho: tem que
+> vir com o que aquele experimento faz pra chegar no tipo A.
+>
+> **Motivo desta regra** (usuario, 11/09/2026, ao me pegar escorregando):
+> *"esqueceu do nosso combinado ou tá tentando transformar o ML em calibrador
+> do estatico?"*. Eu tinha acabado de propor gerar um corpus grande sem dizer
+> pra que -- e treinar+ligar a peso 200 seria o calibrador de novo, sem eu
+> perceber. **A deriva pro tipo B e silenciosa e acontece por inercia**, porque
+> e o caminho que o codigo ja oferece pronto.
+>
+> **Exemplo do enquadramento CERTO, do mesmo dia**: corpus grande **nao** pra
+> melhorar o ajuste sobre a heuristica, e sim pra dar ao **ML AUTONOMO** a
+> primeira chance justa -- ele perdeu 1x9 no bloco 769 com AUC 0,63 e apenas
+> 3.614 estados. **O teste seguinte tem que ser o ML DECIDINDO SOZINHO**, nao o
+> ML somado. Sem declarar isso antes, o experimento vira tipo B por inercia.
+
 > ### O que ele cobrou da sessao, e PROCEDE
 >
 > *"Eu peço para migrarmos da heurística para um ML [...] ai vc faz o que,
