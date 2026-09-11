@@ -107,7 +107,12 @@ def _run_one_match(task) -> list:
 
     Cada processo carrega o proprio banco -- sem estado global
     compartilhado, igual `audit_replay._run_one_match`."""
-    i, match_seed, peso, modelo_path, geracao = task
+    # 6o elemento OPCIONAL (bloco 767): epsilon de EXPLORACAO.
+    if len(task) == 6:
+        i, match_seed, peso, modelo_path, geracao, eps = task
+    else:
+        i, match_seed, peso, modelo_path, geracao = task
+        eps = 0.0
     deck_list = _load_deck_list()
     rng = random.Random(match_seed)
     idx_a, idx_b = rng.sample(range(len(deck_list)), 2)
@@ -136,6 +141,16 @@ def _run_one_match(task) -> list:
         for estado in (match.state_a, match.state_b):
             estado.value_net_weight = peso
             estado.value_net_path = modelo_path
+
+    # EXPLORACAO (bloco 767, pedido do usuario: "ele tem que ser capaz de
+    # aprender e descobrir e nao so regular"). Sem isto o auto-jogo e um LACO
+    # FECHADO: joga sempre a linha que ja considera melhor, entao o dataset so
+    # contem o que ele ja fazia e o modelo aprende a prever o resultado das
+    # PROPRIAS escolhas -- reforca, nao descobre. Com eps > 0 ele as vezes
+    # joga fora do topo e VE no que deu, que e como se descobre que uma linha
+    # preterida era boa.
+    if eps:
+        match._explora_eps = eps
 
     amostras = []
     winner = None
@@ -171,7 +186,7 @@ def _run_one_match(task) -> list:
             # A/B e a comparacao isola a VISAO, nao o volume de dado
             # (bloco 764).
             'feats': value_net.state_features(
-                p, opp, nomes=value_net.FEATURE_NAMES_RICAS),
+                p, opp, nomes=value_net.FEATURE_NAMES_V3),
         })
 
         if result:
@@ -202,16 +217,23 @@ def main() -> None:
                          '(0 = motor sem modelo, geracao 0)')
     ap.add_argument('--model', default=None,
                     help='modelo usado pra gerar (default: o de value_net.MODEL_PATH)')
+    ap.add_argument('--explorar', type=float, default=0.0,
+                    help='epsilon de EXPLORACAO (0.0-1.0): em epsilon das '
+                         'decisoes joga FORA do topo, pra o dataset conter '
+                         'linhas que o bot nao escolheria sozinho. Default 0.0 '
+                         '(guloso, comportamento antigo). Tipico: 0.10-0.20. '
+                         'NAO usar em duelo -- la mediria ruido (bloco 767)')
     ap.add_argument('--gen', type=int, default=0, help='numero da geracao, gravado em cada amostra')
     ap.add_argument('--append', action='store_true',
                     help='ACRESCENTA ao arquivo em vez de sobrescrever -- '
                          'o corpus cresce a cada rodada')
     args = ap.parse_args()
 
-    tasks = [(i, args.seed * 1_000_003 + i, args.weight, args.model, args.gen)
+    tasks = [(i, args.seed * 1_000_003 + i, args.weight, args.model, args.gen,
+              args.explorar)
              for i in range(args.n)]
     print(f'[selfplay] {args.n} partidas, seed={args.seed}, workers={args.workers}, '
-          f'gen={args.gen}, peso={args.weight}')
+          f'gen={args.gen}, peso={args.weight}, explorar={args.explorar}')
 
     resultados = []
     if args.workers > 1:

@@ -18217,6 +18217,9 @@ class OPTCGMatch:
                 if melhor_valor is None or valor > melhor_valor:
                     melhor_valor = valor
                     melhor = cand
+            if getattr(self, '_explora_eps', 0.0):
+                melhor, melhor_valor = self._explorar(
+                    [(r['action'], r['value']) for r in search_records])
             return melhor, melhor_valor, search_records, 0, sim_values
 
         valores_por_cand: list = [[] for _ in candidatas]
@@ -18461,6 +18464,13 @@ class OPTCGMatch:
                             tb2 = _tb_human(cand)
                             if tb2 > melhor_tb2:
                                 melhor, melhor_tb2 = cand, tb2
+        # EXPLORACAO (bloco 767) -- aplicada DEPOIS de todo o desempate, sobre
+        # a media Monte Carlo de cada candidata. Default 0.0: nao muda nada em
+        # producao nem em duelo.
+        if getattr(self, '_explora_eps', 0.0):
+            _cv = [(c, sum(v) / len(v)) for c, v in zip(candidatas, valores_por_cand) if v]
+            if _cv:
+                melhor, melhor_valor = self._explorar(_cv)
         return melhor, melhor_valor, search_records, n_coletadas, sim_values
 
     def _generate_and_score_actions(self, p, opp, engine, exclude_activate_uids=None):
@@ -19870,6 +19880,39 @@ class OPTCGMatch:
         finally:
             self._suppress_replay_log = old_suppress
             _DEFESA['on'] = _old_defesa
+
+    def _explorar(self, cand_valor: list):
+        """EXPLORACAO epsilon-gulosa na escolha FINAL (bloco 767).
+
+        Pedido do usuario: *"ele tem que ser capaz de aprender e descobrir e
+        nao so regular"*. O auto-jogo era GULOSO -- sempre jogava a linha que
+        ja considerava melhor. Consequencia: nunca experimentava a jogada
+        estranha pra descobrir se era boa, o dado de treino so continha o que
+        ele ja fazia, e o modelo aprendia a prever o resultado das PROPRIAS
+        escolhas. Laco fechado: nao descobria porque nunca tentava.
+
+        Com `_explora_eps` > 0, em epsilon das decisoes escolhe uma candidata
+        FORA do topo (entre as 3 seguintes), e a partida segue dali. O rotulo
+        continua sendo quem ganhou -- entao o modelo aprende o valor de linhas
+        que ele nao teria escolhido sozinho.
+
+        DEFAULT 0.0: producao e duelo NAO exploram. Isto e pra GERAR CORPUS --
+        explorar durante um duelo mediria ruido, nao forca.
+
+        Usa o `random` global, que o projeto ja semeia por partida -- entao
+        continua reprodutivel por seed, igual ao resto do motor.
+
+        `cand_valor`: lista de (candidata, valor). Devolve (candidata, valor).
+        """
+        ordenados = sorted(cand_valor, key=lambda cv: cv[1], reverse=True)
+        eps = getattr(self, '_explora_eps', 0.0) or 0.0
+        if eps > 0.0 and len(ordenados) >= 2 and random.random() < eps:
+            k = min(len(ordenados) - 1, 3)
+            escolhido = ordenados[1 + random.randrange(k)]
+            self._explora_n = getattr(self, '_explora_n', 0) + 1
+            return escolhido
+        self._explora_greedy_n = getattr(self, '_explora_greedy_n', 0) + 1
+        return ordenados[0]
 
     def _simulate_sequence_once(self, p, opp, first_action, max_steps=8, amostra=None,
                                  extra_own_turn_search=False):

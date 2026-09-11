@@ -418,6 +418,30 @@ ha o que substituir. A prioridade continua sendo fazer o ML ficar bom
 (visao rica, horizonte do rotulo, corpus maior) -- a substituicao e a
 CONSEQUENCIA disso, nao o caminho pra chegar la.
 
+
+> **REFORCO DO USUARIO (10/09, repetido duas vezes)**: *"preciso que ML seja
+> um ML e aprenda"*, *"temos que criar um ML de verdade e nao so um
+> analizador/regulador"*.
+>
+> A critica dele a arquitetura esta CERTA: com
+> `score = heuristica + (win_prob - 0.5) * 200`, o ML empurra no maximo
+> **+-100 pontos** -- se a heuristica diz 400 contra 300, ele **nao consegue
+> inverter**, mesmo tendo aprendido que a de 300 e melhor. Ele herda o erro
+> dela por construcao.
+>
+> Um detalhe onde a leitura precisa ser precisa: ele **aprende** (o AUC fora
+> da amostra sobe com mais partidas -- isso e aprendizado medido). O problema
+> nao e o aprendizado; e que **o aprendizado dele nao consegue se expressar**.
+> Aprende e depois e impedido de agir. O efeito pratico e o que o usuario
+> descreveu, entao a conclusao e a mesma: **a arquitetura tem que mudar**.
+>
+> Duas pecas estruturais faltando pro ML ser "de verdade", ambas registradas
+> em 10/09 e nenhuma resolvivel melhorando o modelo:
+> 1. **EXPLORACAO** (bloco 767) -- sem tentar o que nao escolheria, o
+>    auto-jogo e eco: reforca, nao descobre. IMPLEMENTADO, default desligado.
+> 2. **GERACAO COMPLETA** -- o ML so escolhe entre o que as regras geram;
+>    linha nao gerada e invisivel pra sempre. NAO resolvido.
+
 ### O que NAO muda
 
 - **Degradacao segura**: `win_prob` devolvendo `None` nunca pode derrubar

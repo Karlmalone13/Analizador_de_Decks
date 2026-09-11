@@ -27,6 +27,33 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 10/09/2026 (blocos 766-767): **EXPLORAÇÃO no auto-jogo — o laço era FECHADO
+> e por isso o bot nunca descobria nada.** Pedido do usuário: *"tem que ser
+> capaz de aprender e descobrir e não só regular"*. Diagnóstico: o auto-jogo
+> era **guloso**, sempre jogava a linha que já considerava melhor — então nunca
+> experimentava, o dataset só continha o que ele já fazia, e o modelo aprendia
+> a prever o resultado das próprias escolhas. **Não descobria porque nunca
+> tentava**, e nenhuma melhoria de MODELO resolve isso (é geração de dado).
+> Limite irmão registrado: **o ML só escolhe entre o que as REGRAS geram** —
+> descoberta é limitada pela GERAÇÃO, não pela avaliação.
+> **Implementado** `_explorar` (ε-guloso na escolha final, nos dois caminhos da
+> busca) + `--explorar EPS` no gerador. Default **0.0** — duelo não explora,
+> lá mediria ruído. Medido: ε=0,15 deu 6 de 51 decisões exploradas e **mudou o
+> vencedor**. O projeto já tinha metade disso no coletor contrafactual, isolado
+> fora do laço de aprendizado.
+> **VISÃO ONDA 1 (49 → 78)**: auditoria achou **39 campos em `GameState` e o
+> modelo via derivados de 8**. Entraram eventos do turno, `is_first`, DON
+> completo e restrições. Medido: 17 das 29 variam; 12 ficam em zero (raras de
+> verdade, ficam). **`chars_played` sempre zero é SUSPEITO — não investigado.**
+> **Estrutura nomeada**: fechado o modo de falha silencioso em que inserir uma
+> feature no meio deslocava tudo e o modelo treinava embaralhado sem erro.
+> **Memo de `win_prob`** no lugar do lote: revisei minha própria proposta —
+> lote entre candidatas exige reatribuir resultado por candidata e erraria em
+> silêncio, para ~4% de ganho. Memo é função pura, sem risco: **27,2% de
+> acerto** (previ 58% e saiu menos da metade — aqueles eram das irmãs do topo).
+> **PENDENTE**: investigar `chars_played`; corpus maior com exploração;
+> treinar v3 e duelar; lote de verdade só quando o ML virar avaliador.
+
 > 10/09/2026 (bloco 765): **MAPA AS-IS — 85% do tempo é SIMULAR, 7% é
 > DECIDIR.** A pedido do usuário, troquei otimização de *função* por
 > otimização de *processo* (mapear AS-IS, achar onde trava, priorizar por

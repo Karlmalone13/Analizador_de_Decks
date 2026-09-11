@@ -101,6 +101,41 @@ FEATURE_NAMES_RICAS = FEATURE_NAMES + [
     'com_efeito_mine', 'com_efeito_opp',
 ]
 
+# ONDA 1 (bloco 766) -- principio do usuario: "nosso ML nao pode ser cego para
+# nenhuma informacao". Auditoria de `GameState` achou 39 campos, dos quais o
+# modelo enxergava derivados de 8. Esta onda traz o que FALTAVA de mais
+# gritante, em tres grupos:
+#
+#  a) EVENTOS DO TURNO -- as 49 descrevem a FOTO do board; estes sabem o que
+#     ACONTECEU (quanto dano saiu, o que morreu, quanto DON queimou). E de
+#     onde vem boa parte dos 16 termos da heuristica (ideia do usuario de
+#     aproveitar o conhecimento dela como feature em vez de peso).
+#  b) `is_first` -- vantagem estrutural conhecida neste jogo, e o modelo nao
+#     tinha como saber quem comecou.
+#  c) DON completo e RESTRICOES ativas -- o que esta proibido neste turno
+#     muda o valor de um board identico.
+FEATURE_NAMES_V3 = FEATURE_NAMES_RICAS + [
+    # (a) eventos do turno
+    'dmg_dealt_mine', 'dmg_dealt_opp',
+    'char_kill_value_mine', 'char_kill_value_opp',
+    'don_spent_combat_mine', 'don_spent_combat_opp',
+    'chars_played_mine', 'chars_played_opp',
+    'counters_used_mine', 'counters_used_opp',
+    'searchers_used_mine', 'searchers_used_opp',
+    'triggers_activated_mine', 'triggers_activated_opp',
+    # (b) quem comecou
+    'is_first_mine',
+    # (c) DON completo
+    'don_rested_mine', 'don_rested_opp',
+    'don_deck_mine', 'don_deck_opp',
+    'frozen_don_mine', 'frozen_don_opp',
+    # (c) restricoes ativas
+    'cant_play_hand_mine', 'cant_play_hand_opp',
+    'cant_attack_leader_mine', 'cant_attack_leader_opp',
+    'cant_take_life_mine', 'cant_take_life_opp',
+    'cant_play_cost_gte_mine', 'cant_play_cost_gte_opp',
+]
+
 _CACHE: dict = {}
 _AVISOU: set = set()
 
@@ -198,7 +233,43 @@ def state_features(p, opp, nomes=None) -> list:
         'com_efeito_mine': _com_efeito(ch_m), 'com_efeito_opp': _com_efeito(ch_o),
     }
 
-    base = [
+    def _g(x, campo, pad=0.0):
+        try:
+            v = getattr(x, campo, pad)
+            return float(v) if v is not None else float(pad)
+        except Exception:
+            return float(pad)
+
+    # ONDA 1 (bloco 766). `_g` e tolerante de proposito: campo que sumir numa
+    # versao futura do estado vira 0.0 em vez de derrubar o motor -- mesmo
+    # principio do `win_prob`, que degrada em vez de quebrar.
+    for campo, base_nome in (
+            ('dmg_dealt', 'dmg_dealt'), ('char_kill_value', 'char_kill_value'),
+            ('don_spent_on_combat', 'don_spent_combat'),
+            ('chars_played', 'chars_played'), ('counters_used', 'counters_used'),
+            ('searchers_used', 'searchers_used'),
+            ('triggers_activated', 'triggers_activated'),
+            ('don_rested', 'don_rested'), ('don_deck', 'don_deck'),
+            ('frozen_don_count', 'frozen_don'),
+            ('cant_play_from_hand_this_turn', 'cant_play_hand'),
+            ('cannot_attack_leader_this_turn', 'cant_attack_leader'),
+            ('cant_take_life_this_turn', 'cant_take_life'),
+            ('cant_play_cost_gte', 'cant_play_cost_gte')):
+        valores[base_nome + '_mine'] = _g(p, campo)
+        valores[base_nome + '_opp'] = _g(opp, campo)
+    valores['is_first_mine'] = 1.0 if getattr(p, 'is_first', False) else 0.0
+
+    # ESTRUTURA NOMEADA (bloco 766, pedido do usuario). Antes isto era uma
+    # lista POSICIONAL montada a mao, em paralelo a `FEATURE_NAMES` -- modo de
+    # falha silencioso e grave: inserir uma feature no meio de uma lista e
+    # esquecer da outra DESLOCA tudo (life vira hand, power vira don) e o
+    # modelo treina em dado embaralhado SEM erro nenhum aparecer. Com a
+    # estrutura, nome e valor viajam juntos e o desalinhamento e impossivel.
+    #
+    # A saida antecipada das 32 continua: producao nao pode pagar pelas
+    # features ricas (`_com_efeito` consulta o banco por personagem) que ela
+    # nao usa.
+    base_vals = [
         life_m, life_o, life_m - life_o,
         hand_m, hand_o, hand_m - hand_o,
         don_m, don_o, don_m - don_o,
@@ -218,9 +289,9 @@ def state_features(p, opp, nomes=None) -> list:
         _num(lambda: len(opp.trash)),
         _num(lambda: getattr(p, 'turn', 0)),
     ]
+    por_nome = dict(zip(FEATURE_NAMES, base_vals))
     if nomes is None or list(nomes) == FEATURE_NAMES:
-        return base
-    por_nome = dict(zip(FEATURE_NAMES, base))
+        return [por_nome[n] for n in FEATURE_NAMES]
     por_nome.update(valores)
     # Nome desconhecido vira 0.0 em vez de estourar: modelo antigo/novo nunca
     # derruba o motor por causa de feature (mesmo principio do `win_prob`,
@@ -307,6 +378,17 @@ def check_dims(bundle, n: int) -> bool:
     return True
 
 
+_WP_CACHE: dict = {}
+_WP_STATS = {'hit': 0, 'miss': 0}
+
+
+def limpar_cache_win_prob() -> None:
+    """Zera o memo de `win_prob`. Chamar entre PARTIDAS, nao entre turnos --
+    a chave e o vetor de features + o modelo, entao ela ja distingue estados
+    diferentes; limpar so evita o dict crescer sem fim ao longo de um lote."""
+    _WP_CACHE.clear()
+
+
 def win_prob(p, opp, bundle=None) -> float | None:
     """Probabilidade estimada de `p` VENCER a partida a partir deste
     estado. None quando o modelo nao esta disponivel/compativel -- o
@@ -325,7 +407,24 @@ def win_prob(p, opp, bundle=None) -> float | None:
     feats = state_features(p, opp, nomes=nomes)
     if not check_dims(bundle, len(feats)):
         return None
+    # MEMO por vetor de features (bloco 766). `predict_proba` de UMA linha
+    # custa 2,1ms -- caro e desproporcional (o mesmo modelo faz 0,88ms/linha
+    # em lote). E medimos que **58% das linhas irmas convergem pro MESMO
+    # estado** (bloco 756, 65/65 confirmados): estado igual => features iguais
+    # => o modelo esta sendo consultado duas vezes pra dar a MESMA resposta.
+    #
+    # Funcao PURA de (features, modelo), entao nao ha risco de atribuir
+    # resposta errada -- diferente de adiar a previsao pra fazer lote, que
+    # exigiria reatribuir resultado por candidata e erraria em silencio.
+    chave = (id(modelo), tuple(feats))
+    hit = _WP_CACHE.get(chave)
+    if hit is not None:
+        _WP_STATS['hit'] += 1
+        return hit
     try:
-        return float(modelo.predict_proba([feats])[0][1])
+        v = float(modelo.predict_proba([feats])[0][1])
     except Exception:
         return None
+    _WP_STATS['miss'] += 1
+    _WP_CACHE[chave] = v
+    return v

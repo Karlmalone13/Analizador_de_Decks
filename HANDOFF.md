@@ -53,6 +53,111 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-10 (766-767) - **EXPLORACAO no auto-jogo** (o laco era FECHADO e por isso nao descobria nada) + visao ONDA 1 (78 features) + estrutura nomeada + memo de `win_prob`
+
+### 1. O achado estrutural: o auto-jogo nao DESCOBRIA porque nunca TENTAVA
+
+Pedido do usuario: *"ele tem que perceber novas tecnicas ou novos caminhos,
+ou tb perceber que uma jogada nao e boa [...] tem que ser capaz de aprender
+e descobrir e nao so regular"*.
+
+Diagnostico: **o auto-jogo era GULOSO**. Sempre jogava a linha que ja
+considerava melhor. Consequencia em cadeia:
+- nunca experimentava a jogada estranha pra descobrir se era boa;
+- o dataset so continha o que ele ja fazia;
+- o modelo aprendia a prever o resultado das PROPRIAS escolhas e reforcava
+  o que ja fazia.
+
+**Laco fechado: nao descobria porque nunca tentava.** Nenhuma melhoria de
+MODELO resolve isso -- e problema de GERACAO DE DADO.
+
+Segundo limite, registrado junto: **o ML so escolhe entre as candidatas que
+as REGRAS geram**. Linha que `_generate_and_score_actions` nao produz e
+invisivel pro modelo, sempre. **Descoberta e limitada pela GERACAO, nao pela
+avaliacao.**
+
+### 2. Exploracao epsilon-gulosa (`_explorar`, bloco 767)
+
+Na escolha FINAL (depois de toda a busca e desempate), com probabilidade
+`eps` escolhe uma candidata FORA do topo (entre as 3 seguintes) e a partida
+segue dali. O rotulo continua sendo quem ganhou -- entao o modelo aprende o
+valor de linhas que ele **nao teria escolhido sozinho**.
+
+- Ligado nos DOIS caminhos de `_select_action_via_search` (deterministico e
+  Monte Carlo).
+- `--explorar EPS` em `gerar_selfplay_dataset.py`, viajando na tarefa.
+- **Default 0.0**: producao e DUELO nao exploram -- explorar num duelo
+  mediria ruido, nao forca.
+- Usa o `random` global, que o projeto ja semeia por partida: continua
+  reprodutivel por seed.
+
+**Medido**: eps=0,15 numa partida real deu 6 de 51 decisoes exploradas
+(11,8%) e **mudou o vencedor** -- o bot tomou caminhos que nao tomaria.
+Gerador testado ponta a ponta: 4 partidas, 52 estados, 0 erros.
+
+O projeto ja tinha METADE disso e nao percebeu: o coletor contrafactual
+forca a 2a melhor jogada e joga ate o fim -- isso e exploracao, mas estava
+isolada num script de coleta, FORA do laco de aprendizado.
+
+### 3. Visao ONDA 1: 49 -> 78 features
+
+Auditoria de `GameState` a pedido do usuario (*"nosso ML nao pode ser cego
+para nenhuma informacao"*): **39 campos, e o modelo via derivados de 8**.
+
+Onda 1 traz 29: eventos do turno (`dmg_dealt`, `char_kill_value`,
+`don_spent_combat`, `chars_played`, `counters_used`, `searchers_used`,
+`triggers_activated`), `is_first` (vantagem estrutural que o modelo nao
+tinha como saber), DON completo (`don_rested`, `don_deck`, `frozen_don`) e
+as restricoes ativas do turno.
+
+**Medido em 3 partidas: 17 das 29 variam, 12 ficam sempre em zero.** As
+restricoes e `frozen_don` sao raras DE VERDADE (so disparam com cartas
+especificas) -- ficam, porque quando disparam o board vale outra coisa e o
+modelo hoje nao percebe. **`chars_played` sempre zero e SUSPEITO** e nao foi
+investigado: pode ser zerado no inicio do turno, que e onde eu amostrei.
+
+**Ressalva de execucao registrada**: nao da pra ligar tudo de uma vez com
+corpus pequeno -- 78 features sobre 1.582 estados piora por excesso de
+coluna. O principio implica **corpus crescendo junto**. Ondas 2 (lider,
+stage, composicao da mao) e 3 (trash, vida, informacao revelada) ficam pra
+depois de medir a 1.
+
+### 4. Estrutura nomeada (pedido do usuario)
+
+As features eram uma lista POSICIONAL em paralelo a `FEATURE_NAMES` -- modo
+de falha silencioso e grave: inserir feature no meio de uma lista e esquecer
+da outra DESLOCA tudo (life vira hand) e o modelo treina em dado embaralhado
+**sem erro nenhum aparecer**. Agora nome e valor viajam juntos num dict, e a
+projecao e sempre por nome.
+
+A saida antecipada das 32 foi PRESERVADA: producao nao pode pagar pelas
+features ricas (`_com_efeito` consulta o banco por personagem) que nao usa.
+Verificado: `life_mine` bate com a vida real, as 32 continuam identicas ao
+prefixo das 78.
+
+### 5. Memo de `win_prob` -- e a correcao da minha propria proposta
+
+O usuario pediu LOTE (`predict_proba` de 1 linha custa 2,1ms contra
+0,88ms/linha em lote). **Fui implementar e revisei a recomendacao**: lote
+entre candidatas exige adiar a previsao e REATRIBUIR o resultado por
+candidata -- se errar, as decisoes ficam silenciosamente trocadas, o pior
+bug possivel aqui. E o ganho HOJE e ~4%, porque o modelo e 6,6% do tempo.
+**Risco alto, retorno baixo, e o retorno so cresce depois que o ML virar o
+avaliador.** Otimizacao prematura.
+
+Feito no lugar: **memo por vetor de features** -- funcao PURA de (features,
+modelo), sem risco de atribuicao errada. **Medido: 27,2% de acerto** (189 de
+696 previsoes evitadas por partida, ~2%). Previ 58% com base na convergencia
+do bloco 756 e **saiu menos da metade**: aqueles 58% eram das duas irmas do
+TOPO, e entre todas as ~10,7 candidatas a diversidade e maior.
+
+### 6. Pendente
+
+- `chars_played` sempre zero -- investigar antes de confiar na feature.
+- Corpus maior (com exploracao ligada) + treinar v3 + duelar.
+- Lote de verdade: so depois que o ML virar avaliador, quando deixa de ser
+  4% e vira o gargalo.
+
 ## 2026-09-10 (765) - MAPA AS-IS do fluxo de decisao: **85% do tempo e SIMULAR, 7% e DECIDIR**. E a DIRECAO mudou -- o ML vai SUBSTITUIR a heuristica, nao so corrigi-la
 
 ### 1. Por que este mapa existe (metodo, a pedido do usuario)

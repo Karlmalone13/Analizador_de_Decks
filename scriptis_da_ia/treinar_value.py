@@ -48,7 +48,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from optcg_engine.value_net import FEATURE_NAMES, FEATURE_NAMES_RICAS, MODEL_PATH
+from optcg_engine.value_net import (FEATURE_NAMES, FEATURE_NAMES_RICAS,
+                                    FEATURE_NAMES_V3, MODEL_PATH)
 
 DATASET_DEFAULT = 'metrics/selfplay_dataset.jsonl'
 
@@ -75,7 +76,7 @@ def main() -> None:
     ap.add_argument('--dataset', default=DATASET_DEFAULT)
     ap.add_argument('--folds', type=int, default=5)
     ap.add_argument('--out', default=MODEL_PATH)
-    ap.add_argument('--features', choices=('basicas', 'ricas'), default='basicas',
+    ap.add_argument('--features', choices=('basicas', 'ricas', 'v3'), default='basicas',
                     help='basicas = as 32 originais (so contagens e agregados); '
                          'ricas = 32 + 17 de QUALIDADE do board (poder maximo, '
                          'DON anexado, rush/double/unblockable/banish, quantos '
@@ -99,19 +100,25 @@ def main() -> None:
     # O dataset novo grava o SUPERCONJUNTO rico (49); o antigo tem 32.
     # Aqui se recorta o que o modelo vai enxergar -- assim o MESMO corpus
     # treina os dois lados do A/B e a comparacao isola a VISAO (bloco 764).
-    nomes = FEATURE_NAMES_RICAS if args.features == 'ricas' else FEATURE_NAMES
-    if X.shape[1] == len(FEATURE_NAMES_RICAS):
-        idx = [FEATURE_NAMES_RICAS.index(n) for n in nomes]
-        X = X[:, idx]
-    elif X.shape[1] == len(FEATURE_NAMES):
-        if args.features == 'ricas':
-            raise SystemExit(
-                'ERRO: --features ricas exige dataset com as 49 (este tem 32). '
-                'Re-gere com gerar_selfplay_dataset.py.')
-    else:
-        raise SystemExit(f'ERRO: dataset tem {X.shape[1]} features; '
-                         f'esperado {len(FEATURE_NAMES)} ou '
-                         f'{len(FEATURE_NAMES_RICAS)}. Re-gere.')
+    nomes = {'basicas': FEATURE_NAMES, 'ricas': FEATURE_NAMES_RICAS,
+             'v3': FEATURE_NAMES_V3}[args.features]
+    # O dataset grava o SUPERCONJUNTO mais recente; aqui se recorta o que o
+    # modelo vai enxergar. Assim o MESMO corpus treina todos os lados do A/B
+    # e a comparacao isola a VISAO, nao o volume (bloco 764/766).
+    larguras = {len(FEATURE_NAMES): FEATURE_NAMES,
+                len(FEATURE_NAMES_RICAS): FEATURE_NAMES_RICAS,
+                len(FEATURE_NAMES_V3): FEATURE_NAMES_V3}
+    if X.shape[1] not in larguras:
+        raise SystemExit(f'ERRO: dataset tem {X.shape[1]} features; esperado '
+                         f'{sorted(larguras)}. Re-gere.')
+    do_dataset = larguras[X.shape[1]]
+    faltando = [n for n in nomes if n not in do_dataset]
+    if faltando:
+        raise SystemExit(
+            f'ERRO: --features {args.features} exige {len(nomes)} colunas, mas o '
+            f'dataset ({X.shape[1]}) nao tem {len(faltando)} delas '
+            f'(ex: {faltando[:3]}). Re-gere com gerar_selfplay_dataset.py.')
+    X = X[:, [do_dataset.index(n) for n in nomes]]
     print(f'[value] {len(X)} estados | {n_lideres} lideres | '
           f'{len(nomes)} features ({args.features}) | positivos {y.mean():.1%}')
 
