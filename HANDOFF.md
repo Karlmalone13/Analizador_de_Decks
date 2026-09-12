@@ -53,6 +53,108 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-12 (783) - **AS 4 FASES DO PLANO PROFESSOR/ALUNO CONSTRUIDAS**, sem simulacao. Arvore 4,9 -> 8,1 candidatas. Dois bugs meus pegos na triagem
+
+### 1. O que o MODELO passa a aprender e a decidir
+
+| fase | o que muda pro modelo |
+|---|---|
+| **0 FIDELIDADE** | aprende no mundo em que vai jogar -- `AUTO_JOGO_CEGO` liga a cegueira que ja existia (`hide_opponent_info`, bloco 490) e o pipeline de treino nunca passou |
+| **1 PROFESSOR** | aprende **qualidade de jogada**: alvo de n passos, `(1-lam)*vantagem(t->t+n) + lam*resultado` |
+| **2 ALUNO** | joga com o que aprendeu: **77 features**, todas disponiveis ao vivo |
+| **3 ARVORE** | **decide quanto DON investir** em cada ataque e **ordena as candidatas** pelo estado que cada uma produz |
+
+### 2. Fase 1 -- o rotulo, medido sem rodar partida
+
+```
+rotulo de hoje   : 100,0% da variacao vem da PARTIDA
+                   variancia DENTRO da partida = 0,0000 EXATO
+                   ~18,5 estados por partida com a MESMA etiqueta
+                   correlacao entre melhorar a posicao e o rotulo: +0,21
+alvo do professor: 2 -> 20 valores distintos
+                   variancia dentro da partida 0,0000 -> 0,0076
+```
+
+### 3. Fase 2 -- o aluno
+
+`counter_hand_opp` (= `opp.counter_in_hand()`, soma a mao REAL) era a UNICA
+das 78 features que exige ver a mao do oponente. Removida da visao do aluno.
+
+```
+AUC fora da amostra: 0,8080   (contra 0,8144 do modelo com a feature
+                               privilegiada e o rotulo binario)
+```
+
+Perdeu a informacao privilegiada E ganhou um alvo mais dificil, e preve o
+resultado praticamente igual (-0,006): **a feature nao sustentava a previsao,
+so criava dependencia do que some na hora de jogar.** Avaliacao feita contra
+o resultado REAL de proposito -- trocar a regua junto com o alvo tornaria a
+comparacao inutil.
+
+### 4. Fase 3 -- a arvore
+
+```
+candidatas por decisao      : 4,9  -> 8,1   (max 21 -> 60)
+valores de DON por ataque   : 1,00 -> 2,31  (max 4)
+atacantes com UM so valor   : 100% -> 36,4%
+```
+
+A acao de ataque passou a carregar o DON (6o elemento opcional). E a
+ordenacao passou a ser feita pelo modelo, lendo o estado resultante -- cada
+folha custa uma consulta e nao tira precisao de nenhuma outra, que e o que
+permite a arvore ser larga.
+
+**Quase nao funcionou**: a expansao estava no codigo e era DESFEITA em
+silencio pelo dedupe, cuja chave de `attack` era `(atacante, tipo, alvo)` sem
+o DON -- as variantes colapsavam e a sobrevivente saia pela ordem da lista,
+ja que a pontuacao estatica e identica entre elas.
+
+### 5. DOIS BUGS MEUS, pegos na triagem ANTES de medir
+
+O `smoke_fast` foi de 0 pra 9 falhas. Triado com controle (desligar so a
+ordenacao; depois `git stash` contra o commit anterior) em vez de assumir
+"teste desatualizado":
+
+| bug | consequencia |
+|---|---|
+| **`sim_bridge` desempacotava 5 elementos fixos** | o caminho AO VIVO devolvia `None` -- **o bot ficaria sem acao em partida real contra o usuario** |
+| **ordenacao dentro de `_generate_and_score_actions`** | chamada milhares de vezes por partida; estourou o orcamento de 3s ao vivo (3,07s x 0,10s). Erro de LUGAR, nao de ideia -- movida pro ponto de decisao |
+
+O primeiro e exatamente a regra do bloco 780 (**listar os consumidores antes
+de mexer**) que eu mesmo registrei hoje e nao apliquei ao mudar o formato da
+acao.
+
+`smoke_fast` de volta a **0 falhas**.
+
+### 6. A FASE 3 ESTA PARCIAL -- lembrete do usuario
+
+> *"Lembre-se que nao e so distribuicao de don que temos que melhorar."*
+
+**Procede.** So UMA dimensao foi expandida. As outras que ele listou ao longo
+da sessao continuam com a escolha tomada fora da arvore:
+
+| dimensao | ramifica hoje? | estado |
+|---|---|---|
+| quanto DON por ataque | **SIM** (1,00 -> 2,31) | feito |
+| alvo do efeito | nao | o mecanismo EXISTE (`ALVO_EFEITO_NA_BUSCA`) e esta desligado |
+| bloquear, e com quem | **nao** | fora da arvore por completo |
+| usar counter, e quais cartas | **nao** | fora da arvore por completo |
+| carta do SEARCH | **nao** | escolha de uma linha |
+| reviver do TRASH | **nao** | escolha de uma linha |
+| o que descartar | nao | fora da arvore |
+| o que sacrificar pra pagar custo | nao | nunca medido nem expandido |
+| sequenciamento | parcial | emerge da ordem das acoes, nao e escolhido |
+
+`quais cartas de counter` (18,5%), `alvo dentro do efeito` (16,4%) e
+`sequenciamento` (36,4%) sao as tres piores categorias medidas contra humano
+-- e nenhuma das tres ramifica.
+
+### 7. O que falta
+
+A medicao unica, no fim -- decisao do usuario: *"deixa para simular quando
+todas as fases forem concluídas"*. **Nenhuma das 4 fases foi medida em
+duelo.** Os numeros acima sao de estrutura e de AUC, nao de forca.
+
 ## 2026-09-12 (781) - **Veredito do lethal nas 3 celulas** + o surrogate de meio de turno chega a AUC 0,814 e MESMO ASSIM perde: o problema e o ROTULO. **PLANO OFICIAL professor/aluno aprovado pelo usuario**
 
 ### 1. Lethal: as tres celulas fecham o caso (800 partidas)

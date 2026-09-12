@@ -49,13 +49,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from optcg_engine.value_net import (FEATURE_NAMES, FEATURE_NAMES_RICAS,
-                                    FEATURE_NAMES_V3, MODEL_PATH)
+                                    FEATURE_NAMES_V3,
+                                    FEATURE_NAMES_ALUNO, MODEL_PATH)
 
 DATASET_DEFAULT = 'metrics/selfplay_dataset.jsonl'
 
 
 def carregar(caminho: str):
-    X, y, grupos = [], [], []
+    X, y, grupos, alvo = [], [], [], []
     with open(caminho, encoding='utf-8') as fh:
         for linha in fh:
             linha = linha.strip()
@@ -66,8 +67,12 @@ def carregar(caminho: str):
                 continue
             X.append(d['feats'])
             y.append(int(d['win']))
+            # `alvo` (bloco 783, Fase 1): retorno de n passos gerado por
+            # `rotulo_professor.py`. Ausente nos corpora antigos -- cai no
+            # proprio `win`, entao nada quebra.
+            alvo.append(float(d.get('alvo', d['win'])))
             grupos.append(d.get('leader') or '?')
-    return X, y, grupos
+    return X, y, grupos, alvo
 
 
 def main() -> None:
@@ -76,7 +81,17 @@ def main() -> None:
     ap.add_argument('--dataset', default=DATASET_DEFAULT)
     ap.add_argument('--folds', type=int, default=5)
     ap.add_argument('--out', default=MODEL_PATH)
-    ap.add_argument('--features', choices=('basicas', 'ricas', 'v3'), default='basicas',
+    ap.add_argument('--alvo', choices=('win', 'professor'), default='win',
+                    help="win = o rotulo binario da partida (o de sempre). "
+                         "professor = o alvo continuo de n passos gerado por "
+                         "`rotulo_professor.py` (Fase 1, bloco 783). Medido: "
+                         "com `win`, 100%% da variacao do rotulo vem da PARTIDA "
+                         "e 0,0000 vem da posicao -- os ~18,5 estados de uma "
+                         "partida levam a MESMA etiqueta, entao o modelo nao "
+                         "tem como aprender qualidade de jogada. Com `professor` "
+                         "a variancia dentro da partida vai a 0,0076 e os "
+                         "valores distintos de 2 pra 20. Treina REGRESSOR.")
+    ap.add_argument('--features', choices=('basicas', 'ricas', 'v3', 'aluno'), default='basicas',
                     help='basicas = as 32 originais (so contagens e agregados); '
                          'ricas = 32 + 17 de QUALIDADE do board (poder maximo, '
                          'DON anexado, rush/double/unblockable/banish, quantos '
@@ -85,29 +100,37 @@ def main() -> None:
     args = ap.parse_args()
 
     import numpy as np
-    from sklearn.ensemble import HistGradientBoostingClassifier
+    from sklearn.ensemble import (HistGradientBoostingClassifier,
+                                  HistGradientBoostingRegressor)
     from sklearn.metrics import roc_auc_score
     from sklearn.model_selection import GroupKFold
 
-    X, y, grupos = carregar(args.dataset)
+    X, y, grupos, alvo = carregar(args.dataset)
     if not X:
         raise SystemExit(f'dataset vazio ou sem rotulo: {args.dataset}')
     X = np.array(X, dtype=float)
     y = np.array(y, dtype=int)
     grupos = np.array(grupos)
+    alvo = np.array(alvo, dtype=float)
 
     n_lideres = len(set(grupos))
     # O dataset novo grava o SUPERCONJUNTO rico (49); o antigo tem 32.
     # Aqui se recorta o que o modelo vai enxergar -- assim o MESMO corpus
     # treina os dois lados do A/B e a comparacao isola a VISAO (bloco 764).
     nomes = {'basicas': FEATURE_NAMES, 'ricas': FEATURE_NAMES_RICAS,
-             'v3': FEATURE_NAMES_V3}[args.features]
+             'v3': FEATURE_NAMES_V3,
+             # `aluno` (Fase 2, bloco 783): V3 menos `counter_hand_opp`, a
+             # unica das 78 que exige ver a MAO do oponente. Treinado com
+             # ela, o modelo aprende padroes ancorados num numero que nao
+             # existe na hora de jogar.
+             'aluno': FEATURE_NAMES_ALUNO}[args.features]
     # O dataset grava o SUPERCONJUNTO mais recente; aqui se recorta o que o
     # modelo vai enxergar. Assim o MESMO corpus treina todos os lados do A/B
     # e a comparacao isola a VISAO, nao o volume (bloco 764/766).
     larguras = {len(FEATURE_NAMES): FEATURE_NAMES,
                 len(FEATURE_NAMES_RICAS): FEATURE_NAMES_RICAS,
-                len(FEATURE_NAMES_V3): FEATURE_NAMES_V3}
+                len(FEATURE_NAMES_V3): FEATURE_NAMES_V3,
+                len(FEATURE_NAMES_ALUNO): FEATURE_NAMES_ALUNO}
     if X.shape[1] not in larguras:
         raise SystemExit(f'ERRO: dataset tem {X.shape[1]} features; esperado '
                          f'{sorted(larguras)}. Re-gere.')
@@ -136,7 +159,11 @@ def main() -> None:
         # 0,7985, e o vao treino-teste caiu de 0,201 pra 0,087 -- o modelo
         # decorava. `early_stopping` + arvore rasa + folha grande sao o que
         # segura o sobre-ajuste com corpus pequeno.
-        return HistGradientBoostingClassifier(
+        # Alvo continuo (professor) => REGRESSOR. Mesmos hiperparametros,
+        # pra a comparacao isolar o ALVO e nao a capacidade do modelo.
+        cls = (HistGradientBoostingRegressor if args.alvo == 'professor'
+               else HistGradientBoostingClassifier)
+        return cls(
             max_iter=300, learning_rate=0.02, max_depth=3,
             min_samples_leaf=60, early_stopping=True, validation_fraction=0.15,
             l2_regularization=1.0,
@@ -152,9 +179,16 @@ def main() -> None:
             print(f'   {k:2d}  | {len(set(grupos[i_te])):2d}               '
                   f' |     --     | fold sem as duas classes, pulado')
             continue
-        m = novo_modelo().fit(X[i_tr], y[i_tr])
-        a_tr = roc_auc_score(y[i_tr], m.predict_proba(X[i_tr])[:, 1])
-        a_te = roc_auc_score(y[i_te], m.predict_proba(X[i_te])[:, 1])
+        # TREINA no alvo escolhido; AVALIA sempre contra o resultado REAL
+        # (`y`), pra o AUC continuar comparavel com todas as medicoes
+        # anteriores -- trocar a regua junto com o alvo tornaria a
+        # comparacao inutil.
+        m = novo_modelo().fit(X[i_tr], alvo[i_tr])
+        def _p(Z):
+            return (m.predict_proba(Z)[:, 1] if hasattr(m, 'predict_proba')
+                    else m.predict(Z))
+        a_tr = roc_auc_score(y[i_tr], _p(X[i_tr]))
+        a_te = roc_auc_score(y[i_te], _p(X[i_te]))
         aucs_tr.append(a_tr)
         aucs_val.append(a_te)
         print(f'   {k:2d}  | {len(set(grupos[i_te])):2d}                '

@@ -32,6 +32,33 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 12/09/2026 (bloco 783): **AS 4 FASES DO PLANO PROFESSOR/ALUNO CONSTRUÍDAS**,
+> sem simulação (pedido do usuário).
+> **Fase 1 (rótulo)**, medido só reanalisando o corpus: 100,0% da variação do
+> rótulo vem da PARTIDA, variância dentro dela **0,0000 exato** — os ~18,5
+> estados de uma partida levam a MESMA etiqueta. O alvo do professor vai de 2
+> para **20 valores distintos** e a variância dentro da partida para 0,0076.
+> **Fase 2 (aluno)**: `counter_hand_opp` era a única das 78 features que exige
+> ver a mão do oponente — removida. AUC 0,8080 contra 0,8144 do modelo
+> privilegiado: **a feature não sustentava a previsão**.
+> **Fase 3 (árvore)**: candidatas por decisão **4,9 → 8,1**, valores de DON por
+> ataque **1,00 → 2,31**, atacantes com um só valor 100% → 36,4%. A ação de
+> ataque passou a carregar o DON e o modelo passou a ordenar as candidatas.
+> Quase não funcionou: o dedupe **desfazia a expansão em silêncio**.
+> **DOIS BUGS MEUS pegos na triagem**: (a) `sim_bridge` desempacotava 5
+> elementos fixos → o caminho **AO VIVO devolvia `None`**, o bot ficaria sem
+> ação em partida real; (b) a ordenação estourava o orçamento de 3s ao vivo.
+> `smoke_fast` de volta a **0 falhas**.
+> **FASE 3 ESTÁ PARCIAL** (lembrete do usuário: *"não é só distribuição de don
+> que temos que melhorar"*). Só o DON ramifica. Continuam FORA da árvore:
+> **bloquear e com quem**, **usar counter e quais cartas**, **alvo do efeito**
+> (mecanismo existe e está desligado), **carta do search**, **reviver do
+> trash**, **descarte**, **o que sacrificar pra pagar custo**. As 3 piores
+> categorias medidas contra humano — counter 18,5%, alvo de efeito 16,4%,
+> sequenciamento 36,4% — são justamente famílias que não ramificam.
+> **PENDENTE — e é tudo**: nenhuma das 4 fases foi medida em duelo. Os números
+> são de estrutura e AUC, **não de força**.
+
 > 12/09/2026 (bloco 781): **PLANO OFICIAL professor/aluno aprovado** + veredito
 > do lethal + o achado do dia.
 > **LETHAL, 3 células / 800 partidas**: executor+prova 9x15 · prova com executor

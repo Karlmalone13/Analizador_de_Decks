@@ -52,6 +52,18 @@ def uma(seed, acc):
             acc['tam_lista'].append(len(acts))
             for a in acts:
                 acc['tipo'][a[1]] += 1
+            # FASE 3 (bloco 783): quantas quantidades de DON DISTINTAS o
+            # avaliador recebe por (atacante, alvo). Antes era sempre 1 --
+            # o DON nascia depois da escolha, entao "atacar com 2" e
+            # "atacar com 4" nunca coexistiam como opcoes.
+            import collections as _c
+            por_atk = _c.defaultdict(set)
+            for a in acts:
+                if a[1] == 'attack':
+                    por_atk[(id(a[2]), a[3], id(a[4]))].add(
+                        a[5] if len(a) > 5 else None)
+            for v in por_atk.values():
+                acc.setdefault('don_por_ataque', []).append(len(v))
         return acts
 
     de.OPTCGMatch._generate_and_score_actions = espiao
@@ -109,6 +121,13 @@ def main():
     print('  por tipo de acao          : {}'.format(', '.join(
         '{} {:.0%}'.format(k, v / tot) for k, v in acc['tipo'].most_common())))
 
+    dpa = acc.get('don_por_ataque') or []
+    if dpa:
+        print('')
+        print('  LARGURA EM DON (Fase 3): quantidades distintas por (atacante, alvo)')
+        print('    media {:.2f} | max {} | com 1 so valor: {:.1%}'.format(
+            sum(dpa) / len(dpa), max(dpa),
+            sum(1 for x in dpa if x == 1) / len(dpa)))
     print('')
     print('COMO O TURNO TERMINA  ({} turnos)'.format(acc['turnos']))
     t = acc['turnos'] or 1

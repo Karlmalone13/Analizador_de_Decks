@@ -1,5 +1,52 @@
 # AGENTS.md — guia para qualquer sessão nova (Codex)
 
+> # ⚠️ O QUE ESTE PROJETO ESTA FAZENDO AGORA: **UM MACHINE LEARNING**
+>
+> **Pedido explicito e REPETIDO do usuario (12/09/2026):** *"Deixe como
+> obrigação no projeto que estamos fazendo um machine learning para que vc
+> não esqueça."*
+>
+> **Ele teve que repetir porque as sessoes esquecem.** Nao e sugestao, nao e
+> uma frente entre outras: **e O trabalho.**
+>
+> Toda tarefa desta fase responde a UMA pergunta:
+>
+> > **o que o MODELO passa a APRENDER ou a DECIDIR que hoje ele nao aprende
+> > nem decide?**
+>
+> Se a resposta nao existir, a tarefa esta fora do escopo -- por mais util
+> que pareca. Isso inclui velocidade, cache, portao, ferramenta de analise e
+> qualquer ajuste de regra estatica: sao meios, nunca o objetivo.
+>
+> ### FAZER O QUE O USUARIO PEDE ECONOMIZA TEMPO -- registrado a pedido dele
+>
+> *"Registre tb que se você fizer o que eu peço a gente vai economizar
+> tempo."*
+>
+> **Nao e so obediencia -- e o caminho mais curto, e ha custo medido.** Casos
+> REAIS desta sessao, todos de nao fazer o que foi pedido:
+>
+> | o que ele pediu | o que a sessao fez | custo |
+> |---|---|---|
+> | migrar pra ML | portao, cache, features, exploracao -- tudo ao redor | semanas de adiamento (bloco 776) |
+> | avaliar a cada 2 turnos (11/09) | tratou como refinamento | so em 12/09 se mediu que **100% da variacao do rotulo vem da partida** -- era a causa raiz |
+> | ler as regras antes de simular/commitar | criou uma SECAO NOVA que ninguem pediu | teve que ser removida |
+> | nao usar a regua antiga como referencia | repetiu 3 vezes no mesmo dia | ele teve que pedir 3 vezes |
+>
+> **O padrao**: quando o pedido dele e seguido direto, o caminho e curto.
+> Quando e reinterpretado, "melhorado" ou adiado, o projeto paga em horas de
+> simulacao e em achados que chegam dias depois.
+>
+> Ele conhece o jogo e o historico do projeto melhor que qualquer sessao --
+> varias vezes apontou a causa certa antes da medicao confirmar (a fome de
+> dado, o rotulo, o vicio do auto-jogo, a arvore estreita). **Discordar com
+> numero e legitimo; reinterpretar o pedido nao.**
+
+> Leia, nesta ordem, antes de propor qualquer coisa:
+> **"O QUE EXISTE NAO E SAGRADO"** · **"A HEURISTICA NAO E REFERENCIA"** ·
+> **"PLANO OFICIAL DA MIGRACAO PRA ML -- PROFESSOR/ALUNO"**.
+
+
 > **Espelho**: este arquivo e [`CLAUDE.md`](CLAUDE.md) (lido pelo Claude
 > Code) devem conter as MESMAS regras de projeto — só a moldura muda
 > (nome da ferramenta, caminho da memória local). Se adicionar/editar
@@ -7,47 +54,6 @@
 > dois divergiram por meses sem ninguém notar — sessões Codex ficaram
 > sem várias regras que só entravam no `CLAUDE.md`, sincronizado nesta
 > sessão).
-
-## PARADA OBRIGATORIA: antes de SIMULAR, COMMITAR ou PUSHAR (usuario, 12/09/2026)
-
-> *"Toda vez antes de uma simulação ou commit e push quero que leia as regras
-> e lembre do que estamos fazendo."*
-
-**Motivo (observado nesta propria sessao)**: horas de trabalho correto e
-medido, e mesmo assim a sessao (a) disparou simulacao longa sem declarar o
-que ela decidia, (b) propos comecar por otimizacao de velocidade que a regra
-ja proibia, e (c) enunciou justificativa de ML tendo a heuristica como
-referencia -- **tres vezes**. Nao foi falta de regra: foi falta de PARAR pra
-reler antes de agir. Os tres momentos em que o erro sai caro sao os mesmos
-tres: gastar CPU, gravar historia, publicar.
-
-### O que fazer, nos TRES gatilhos
-
-Antes de **(1)** disparar qualquer simulacao/lote que custe minutos,
-**(2)** `git commit`, **(3)** `git push` -- releia as regras deste arquivo e
-escreva, em ate 3 linhas:
-
-1. **ONDE ESTAMOS** -- que fase do plano (professor/aluno) e o que falta nela.
-2. **O QUE ISTO DECIDE** -- qual pergunta esta acao responde, e o que muda no
-   trabalho dependendo do resultado. Se nao muda nada, **nao faca**.
-3. **A PREMISSA** -- de qual premissa isto depende, e como ela seria testada
-   (criterio `R, D |- G`). Se for barata de testar, teste ANTES de construir.
-
-Para simulacao, some a isto a **declaracao de tipo A/B** que ja e obrigatoria,
-e o **teste da heuristica** (apague a palavra; a frase sobrevive?).
-
-### Por que na hora de SIMULAR e nao so no commit
-
-Simulacao longa e o recurso mais escasso deste projeto -- a maquina tem 2
-nucleos e o usuario reclamou de tempo de simulacao varias vezes. Uma rodada
-disparada sem saber o que ela decide gasta 30-80 minutos e devolve um numero
-que ninguem sabe ler. **A parada custa 30 segundos e protege 60 minutos.**
-
-### Antes de PUSHAR, adicionalmente
-
-Confira que `HANDOFF.md` e `TODO.md` refletem o estado real (o hook de
-`pre-push` bloqueia se nao mudaram, mas ele nao checa se estao CERTOS), e que
-nenhum resultado esta registrado como vitoria sem o portao ter fechado.
 
 ## LEITURA OBRIGATÓRIA ANTES DE QUALQUER COMMIT
 
@@ -785,6 +791,57 @@ os outros sao sobre ESCOLHER melhor; este e sobre **existir** o que escolher.
 > mexendo em portao, cache, velocidade ou ferramenta de analise e NAO esta
 > tornando o modelo melhor, ela esta fora da direcao.
 
+
+## REGRA OBRIGATORIA: **O QUE EXISTE NAO E SAGRADO** -- pode ser QUEBRADO a pedido (usuario, 12/09/2026, bloco 783)
+
+> *"Você esta com mania de querer mudar o que existe, sendo que o que existe
+> está ruim, quero que registre como regra que você pode quebrar algo que já
+> existe se eu pedir."*
+
+**Quando o usuario pede uma mudanca, o comportamento atual nao e restricao --
+e o que esta sendo substituido.**
+
+### O padrao que esta regra corta
+
+A sessao vinha, por reflexo, protegendo o que ja existia **mesmo quando o que
+existia era o problema**. Exemplos REAIS, todos do mesmo dia:
+
+| o que eu fiz | o que isso preserva |
+|---|---|
+| knob novo com **default DESLIGADO** (3 vezes) | o comportamento que deveria sair |
+| tupla de acao "**tolerante**" ao formato de 5 | o formato que impedia comparar variantes de DON |
+| manter `_attach_don_for_attack` recalculando quando nao ha DON fixo | o caminho que a mudanca existia pra substituir |
+
+Em nenhum deles o usuario pediu compatibilidade. Ela foi adicionada por
+inercia, e cada camada de compatibilidade **aumenta** o codigo que o proximo
+passo tera que atravessar.
+
+### O que fazer, entao
+
+Quando o usuario pede algo que exige alterar ou remover comportamento
+existente:
+
+1. **Remova.** Nao crie knob com o comportamento antigo como default.
+2. **Nao mantenha o caminho paralelo** "por seguranca". O git guarda o
+   historico; o codigo nao precisa.
+3. **O default do que for construido a pedido e LIGADO.**
+4. Nao escreva camada de compatibilidade que ninguem pediu.
+
+### ISTO REFORCA a `REGRA_SEM_DUPLICACAO`, nao conflita
+
+Manter o caminho novo E o antigo lado a lado **e exatamente a duplicata que
+aquela regra proibe**: duas funcoes respondendo a MESMA decisao do jogo. A
+compatibilidade por reflexo cria a duplicata que o projeto ja considera o
+erro mais caro dele.
+
+### O que continua valendo
+
+- **Medir depois** que a troca foi feita, pra saber se funcionou. Medir e
+  controle de qualidade, **nao condicao previa** pra atender o pedido.
+- Quebrar a pedido e **deliberado e registrado** -- diferente de quebrar por
+  acidente ou em silencio, que continua sendo bug.
+- Se a remocao tiver consequencia que o usuario provavelmente nao previu,
+  **diga em uma linha e faca assim mesmo** -- a decisao e dele.
 
 ## REGRA OBRIGATORIA: **A HEURISTICA NAO E REFERENCIA** (usuario, 12/09/2026, bloco 783)
 

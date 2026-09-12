@@ -994,7 +994,8 @@ def resource_ledger(gs: GameState, engine=None) -> dict:
 def action_score_components(action: tuple, engine, gs: GameState,
                             opp_gs: GameState) -> dict:
     """Explicacao observavel; nao participa da escolha da acao."""
-    score, kind, card, _ttype, target = action
+    # 6o elemento OPCIONAL = DON fixo do ataque (bloco 783, Fase 3)
+    score, kind, card, _ttype, target = action[:5]
     components = {"final_score": round(float(score), 4), "kind": kind}
     if card is not None:
         components["intrinsic_card_value"] = round(float(engine.avaliar_carta(card)), 4)

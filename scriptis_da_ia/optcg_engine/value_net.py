@@ -114,6 +114,24 @@ FEATURE_NAMES_RICAS = FEATURE_NAMES + [
 #     tinha como saber quem comecou.
 #  c) DON completo e RESTRICOES ativas -- o que esta proibido neste turno
 #     muda o valor de um board identico.
+# ── FASE 2 do plano professor/aluno: a VISAO DO ALUNO (bloco 783) ───────────
+# Auditoria das 78 features: 77 saem de informacao PUBLICA -- vida CONTADA
+# (quantidade, nao identidade), numero de cartas na mao, board, trash, DON,
+# historico. **UMA nao**: `counter_hand_opp` = `opp.counter_in_hand()`, que
+# soma `effective_counter` de toda a mao REAL do oponente.
+#
+# O aluno treinado com ela aprende padroes ancorados num numero que nao
+# existe na hora de jogar -- ao vivo a mao do oponente chega mascarada. O
+# padrao aprendido vira ruido exatamente quando mais importa.
+#
+# `counter_hand_mine` continua: a propria mao e informacao legitima.
+#
+# Uso: treinar com `--features aluno`. A projecao por NOME em
+# `state_features` (bloco 764) faz o resto -- o modelo declara quais features
+# quer e recebe exatamente essas, entao remover uma da lista basta.
+FEATURES_PRIVILEGIADAS = ('counter_hand_opp',)
+
+
 FEATURE_NAMES_V3 = FEATURE_NAMES_RICAS + [
     # (a) eventos do turno
     'dmg_dealt_mine', 'dmg_dealt_opp',
@@ -135,6 +153,10 @@ FEATURE_NAMES_V3 = FEATURE_NAMES_RICAS + [
     'cant_take_life_mine', 'cant_take_life_opp',
     'cant_play_cost_gte_mine', 'cant_play_cost_gte_opp',
 ]
+
+# Visao do ALUNO: V3 menos as features que exigem ver a mao do oponente.
+FEATURE_NAMES_ALUNO = [n for n in FEATURE_NAMES_V3
+                       if n not in FEATURES_PRIVILEGIADAS]
 
 _CACHE: dict = {}
 _AVISOU: set = set()

@@ -1181,6 +1181,30 @@ EXECUTA_LETHAL_CERTIFICADO = (
 AUTO_JOGO_CEGO = (
     os.environ.get('OPTCG_AUTOJOGO_CEGO', '0').strip() == '1')
 
+# ARVORE LARGA (bloco 783, Fase 3): quantas quantidades de DON ACIMA do que
+# empata com o alvo entram como candidatas separadas. Medido antes: 97,6% dos
+# atacantes recebiam UM unico valor, entao o avaliador nunca comparava
+# "atacar com 2" contra "atacar com 4".
+ARVORE_DON_EXTRA = int(os.environ.get('OPTCG_ARVORE_DON_EXTRA', '2') or 2)
+
+# FASE 3C (bloco 783): o MODELO ordena as candidatas, lendo o estado que cada
+# uma produz. Sem isto as variantes de DON da mesma acao chegam com pontuacao
+# identica e se separam pela ordem da lista.
+# `OPTCG_MODELO_ORDENA=0` desliga (so pra isolar o efeito numa medicao).
+MODELO_ORDENA = (
+    os.environ.get('OPTCG_MODELO_ORDENA', '1').strip() != '0')
+# Teto de candidatas que o modelo pontua por decisao -- protege o caso raro
+# de board enorme (medido: max 60 candidatas numa decisao).
+MODELO_ORDENA_TETO = int(os.environ.get('OPTCG_MODELO_ORDENA_TETO', '24') or 24)
+# QUAL modelo ordena. Tem que ser o ALUNO -- treinado no alvo do professor e
+# vendo so features observaveis (Fase 2). Sem isto a ordenacao cai no modelo
+# do caminho padrao, que aprendeu o rotulo de PARTIDA e enxerga uma feature
+# que nao existe ao vivo: seria ordenar com aquilo que o plano substitui.
+MODELO_ORDENA_PATH = os.environ.get(
+    'OPTCG_MODELO_ORDENA_PATH',
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                 'metrics', 'value_net_aluno.joblib'))
+
 # MEDIDO NEUTRO (bloco 781): 12x11 (52,2%) em 160 pares, 137 empatados --
 # sem evidencia de ganho NEM de perda. Fica LIGADO por CORRECAO, nao por
 # ganho: a funcao promete "lethal GARANTIDO" e sem isto a promessa e falsa em
@@ -17797,7 +17821,7 @@ class OPTCGMatch:
         )
 
     def _action_dedupe_key(self, action):
-        _score, kind, obj, ttype, tgt = action
+        _score, kind, obj, ttype, tgt = action[:5]  # 6o elemento OPCIONAL = DON fixo do ataque (bloco 783, Fase 3); tupla de 5 segue valendo
         if kind == 'play':
             # O ALVO entra na chave (mesma forma que `attack` ja usa): sem
             # isto as variantes por alvo da MESMA carta colapsam numa so e
@@ -17815,7 +17839,14 @@ class OPTCGMatch:
             return (kind, self._card_action_key(obj), ttype,
                     tuple(self._card_action_key(t) for t in (tgt or ())))
         if kind == 'attack':
-            return (kind, self._card_action_key(obj), ttype, self._card_action_key(tgt))
+            # O DON entra na chave (bloco 783, Fase 3), mesmo motivo do alvo
+            # no `play` acima: sem isto as variantes de DON do MESMO ataque
+            # colapsam numa so, e o dedupe escolhe pelo score estatico --
+            # que e IDENTICO entre elas. A expansao da arvore existiria no
+            # papel e seria desfeita aqui, em silencio.
+            return (kind, self._card_action_key(obj), ttype,
+                    self._card_action_key(tgt),
+                    action[5] if len(action) > 5 else None)
         if kind == 'attach_don':
             trig = tgt or {}
             trig_key = (
@@ -17840,7 +17871,7 @@ class OPTCGMatch:
     def _is_unsafe_zero_life_leader_attack(self, action, p, opp, engine) -> bool:
         """Ataque ao leader com 0 vidas so deve sair se for lethal garantido
         ou se a simulacao Monte Carlo encontrar alguma linha vencedora."""
-        _score, kind, _obj, target_type, _target = action
+        _score, kind, _obj, target_type, _target = action[:5]  # 6o elemento OPCIONAL = DON fixo do ataque (bloco 783, Fase 3); tupla de 5 segue valendo
         return (
             kind == 'attack'
             and target_type == 'leader'
@@ -17865,7 +17896,7 @@ class OPTCGMatch:
         amostra -- sem isso, cada acao da sequencia contaria o custo
         contra o DON TOTAL original, sempre, nunca esgotando de verdade.
         """
-        score, kind, obj, target_type, target = action
+        score, kind, obj, target_type, target = action[:5]  # 6o elemento OPCIONAL = DON fixo do ataque (bloco 783, Fase 3); tupla de 5 segue valendo
         if don_disponivel is None:
             don_disponivel = p.don_available
         d_board_mine = 0.0    # + = ganho de board_value pro meu lado
@@ -18716,6 +18747,105 @@ class OPTCGMatch:
                 pass
         return melhor, melhor_valor, search_records, n_coletadas, sim_values
 
+    def _ordena_pelo_modelo(self, actions, p, opp, engine):
+        """Ordena as candidatas pelo ESTADO QUE CADA UMA PRODUZ (bloco 783).
+
+        Aplica cada acao numa copia e pergunta ao modelo o valor da posicao
+        resultante. Acoes diferentes produzem estados diferentes, entao o
+        modelo as separa -- inclusive as variantes de DON do MESMO ataque,
+        que sao indistinguiveis por pontuacao estatica (o score nao olha
+        quanto DON foi anexado).
+
+        Custo: uma consulta por candidata (~2ms, com memo). Nao ha orcamento
+        compartilhado, entao uma candidata a mais nao tira precisao das
+        outras -- e o que permite a arvore ser larga.
+
+        Degradacao segura: sem modelo, ou em qualquer excecao, devolve a
+        lista intacta.
+        """
+        if not actions or len(actions) < 2:
+            return actions
+        try:
+            from optcg_engine import value_net as _vn
+            bundle = _vn.load_value_net(
+                getattr(p, 'modelo_ordena_path', None) or MODELO_ORDENA_PATH)
+            if not bundle:
+                return actions
+        except Exception:
+            return actions
+
+        from copy import deepcopy
+        cab = actions[:MODELO_ORDENA_TETO]
+        resto = actions[MODELO_ORDENA_TETO:]
+        pontuadas = []
+        for a in cab:
+            v = None
+            try:
+                _pd, _od = p.deck, opp.deck
+                p.deck, opp.deck = [], []
+                p2, opp2 = deepcopy(p), deepcopy(opp)
+                p.deck, opp.deck = _pd, _od
+                p2.deck, opp2.deck = _SimDeck(_pd), _SimDeck(_od)
+                a2 = self._remap_action(a, p, p2, opp, opp2)
+                if a2 is not None:
+                    eng2 = DecisionEngine(p2, opp2)
+                    ee2 = EffectExecutor(p2, opp2)
+                    _sup = self._suppress_replay_log
+                    self._suppress_replay_log = True
+                    try:
+                        venceu = self._apply_action(a2, p2, opp2, ee2, eng2,
+                                                    verbose=False)
+                    finally:
+                        self._suppress_replay_log = _sup
+                    v = (1.0 if venceu
+                         else _vn.win_prob(p2, opp2, bundle=bundle))
+            except Exception:
+                v = None
+            pontuadas.append((v, a))
+
+        if all(v is None for v, _ in pontuadas):
+            return actions
+        # `None` (acao que nao pode ser avaliada) vai pro fim, preservando a
+        # ordem relativa entre elas.
+        com = [(v, i, a) for i, (v, a) in enumerate(pontuadas) if v is not None]
+        sem = [a for v, a in pontuadas if v is None]
+        com.sort(key=lambda t: (-t[0], t[1]))
+        return [a for _v, _i, a in com] + sem + resto
+
+    def _expande_don_do_ataque(self, base, att, ttype, tgt, p, opp, engine):
+        """Uma candidata por QUANTIDADE DE DON (bloco 783, Fase 3).
+
+        Recebe a candidata `(score, 'attack', att, ttype, tgt)` e devolve a
+        lista de variantes `(..., don)`, uma por valor plausivel de DON.
+
+        Quais valores: 0, o que EMPATA com o alvo, e ate
+        `ARVORE_DON_EXTRA` acima disso -- limitado pelo DON disponivel. Zero
+        entra sempre porque atacar seco e decisao legitima (pressao de graca)
+        e precisa poder ser comparada com investir.
+
+        O score estatico das variantes e o MESMO: quem separa uma da outra e
+        o avaliador olhando o estado resultante. E o ponto -- a variante so
+        existe pra ser comparada por quem enxerga a diferenca.
+        """
+        don_livre = max(0, p.don_available)
+        if don_livre <= 0:
+            return [base]
+        alvo_power = (opp.leader.power + opp.leader.power_buff if ttype == 'leader'
+                      else (tgt.power + tgt.power_buff if tgt is not None else 0))
+        atk = attack_time_power(att, opp)
+        gap = alvo_power - atk
+        empata = max(0, -(-gap // 1000)) if gap > 0 else 0
+
+        vals = {0}
+        if empata <= don_livre:
+            vals.add(empata)
+            for k in range(1, ARVORE_DON_EXTRA + 1):
+                if empata + k <= don_livre:
+                    vals.add(empata + k)
+        else:
+            vals.add(don_livre)     # nao alcanca: a maior aposta possivel
+        return [base + (v,) for v in sorted(vals)]
+
     def _generate_and_score_actions(self, p, opp, engine, exclude_activate_uids=None):
         """
         Gera TODAS as ações possíveis no estado atual e as pontua.
@@ -18916,7 +19046,9 @@ class OPTCGMatch:
                         # (visto em partida real: score -4 → líder ficou parado).
                         if att is p.leader:
                             s_leader = max(s_leader, 15)
-                        actions.append((s_leader, 'attack', att, 'leader', None))
+                        actions.extend(self._expande_don_do_ataque(
+                            (s_leader, 'attack', att, 'leader', None),
+                            att, 'leader', None, p, opp, engine))
                 # alvos personagem
                 cost_lock = getattr(att, 'cannot_attack_opp_chars_cost_lte', -1)
                 for tgt in opp.rested_chars(att):
@@ -18957,7 +19089,9 @@ class OPTCGMatch:
                                          or atk_power + attack_don_budget * 1000 >= tgt.power)
                             if pode_matar:
                                 s_char += min(120.0, a.future_threat_value(tgt))
-                        actions.append((s_char, 'attack', att, 'character', tgt))
+                        actions.extend(self._expande_don_do_ataque(
+                            (s_char, 'attack', att, 'character', tgt),
+                            att, 'character', tgt, p, opp, engine))
 
         # ── Ações de ATIVAR efeitos [Activate:Main] ──
         # Observabilidade (sem logica de decisao): quando OPTCG_DEBUG_AM=1,
@@ -20001,7 +20135,7 @@ class OPTCGMatch:
         """
         if engine is not None and getattr(engine, 'analyzer', None) is not None:
             engine.analyzer._lethal_search_cache = None
-        score, kind, obj, ttype, tgt = action
+        score, kind, obj, ttype, tgt = action[:5]  # 6o elemento OPCIONAL = DON fixo do ataque (bloco 783, Fase 3); tupla de 5 segue valendo
 
         if kind == 'play':
             # Alvos EXPLICITOS da candidata (ver `_pick_effect_target`):
@@ -20058,7 +20192,21 @@ class OPTCGMatch:
             attacker = obj
             if attacker.rested:
                 return False
-            attached = self._attach_don_for_attack(attacker, ttype, tgt, p, opp, engine, verbose)
+            # DON FIXO na acao (bloco 783, Fase 3): quando a candidata diz
+            # com quanto DON atacar, esse numero foi COMPARADO com os outros
+            # na hora de escolher -- recalcula-lo aqui descartaria a escolha
+            # e as variantes de DON voltariam a ser indistinguiveis.
+            _don_fixo = action[5] if len(action) > 5 else None
+            if _don_fixo is not None:
+                _ant = getattr(self, '_lethal_don_forcado', None)
+                self._lethal_don_forcado = {id(attacker): int(_don_fixo)}
+                try:
+                    attached = self._attach_don_for_attack(
+                        attacker, ttype, tgt, p, opp, engine, verbose)
+                finally:
+                    self._lethal_don_forcado = _ant
+            else:
+                attached = self._attach_don_for_attack(attacker, ttype, tgt, p, opp, engine, verbose)
             if verbose:
                 tgt_name = 'Leader' if ttype == 'leader' else (tgt.name[:20] if tgt else '?')
                 print(f'    {attacker.name[:20]} ({attack_time_power(attacker, opp)}pwr) ataca {tgt_name}')
@@ -20508,7 +20656,7 @@ class OPTCGMatch:
 
     def _remap_action(self, action, p, p2, opp, opp2):
         """Remapeia uma ação do estado real para os objetos da cópia (por índice)."""
-        score, kind, obj, ttype, tgt = action
+        score, kind, obj, ttype, tgt = action[:5]  # 6o elemento OPCIONAL = DON fixo do ataque (bloco 783, Fase 3); tupla de 5 segue valendo
         if kind == 'pass':          # bloco 656: nao referencia objeto nenhum
             return action
         try:
@@ -20543,6 +20691,13 @@ class OPTCGMatch:
                     tgt2 = opp2.field_chars[opp.field_chars.index(tgt)]
                 else:
                     tgt2 = None
+                # PRESERVA o DON fixo (bloco 783, Fase 3). Sem isto a linha
+                # SIMULADA avaliaria um ataque com DON recalculado enquanto a
+                # execucao REAL usa o DON escolhido -- as variantes de DON
+                # ficariam indistinguiveis na busca e a escolha viraria
+                # ficcao, em silencio.
+                if len(action) > 5:
+                    return (score, kind, att2, ttype, tgt2, action[5])
                 return (score, kind, att2, ttype, tgt2)
         except (ValueError, IndexError):
             return None
@@ -20667,6 +20822,18 @@ class OPTCGMatch:
 
         while n < MAX_ACOES:
             n += 1
+            # FASE 3C (bloco 783): o MODELO ordena as candidatas -- UMA vez
+            # por acao do turno, aqui no ponto de decisao.
+            #
+            # Estava dentro de `_generate_and_score_actions` e era erro de
+            # lugar, nao de ideia: aquela funcao e chamada milhares de vezes
+            # por partida (continuacao gulosa, turno de resposta do oponente,
+            # camada barata, telemetria), e ordenar em todas pagava uma copia
+            # de estado por candidata em cada uma. Medido: o caminho AO VIVO
+            # estourou o orcamento de 3s (3,07s contra 0,10s) e devolveu
+            # `None` -- o bot ficava sem acao em partida real.
+            _ordenar_pelo_modelo = (MODELO_ORDENA
+                                    and getattr(p, 'modelo_ordena', True))
             # Lethal PROVADO domina qualquer pontuacao (bloco 779). Vem antes
             # de gerar candidatas: jogar carta antes gasta DON e derruba a
             # propria certificacao, que assume `don_available` inteiro.
@@ -20683,6 +20850,8 @@ class OPTCGMatch:
                 # furo na certificacao). Segue o turno normalmente; os
                 # atacantes ja usados estao rested e nao reentram.
             actions = self._generate_and_score_actions(p, opp, engine)
+            if _ordenar_pelo_modelo and actions:
+                actions = self._ordena_pelo_modelo(actions, p, opp, engine)
             if USE_POLICY_MODEL and actions:
                 actions = self._policy_apply(
                     p, opp, engine, actions,
@@ -21928,7 +22097,7 @@ class OPTCGMatch:
 
     def _audit_action_brief(self, action, simulated_value=None, cheap_value=None,
                              added_by_cheap_layer=False):
-        score, kind, obj, target_type, target = action
+        score, kind, obj, target_type, target = action[:5]  # 6o elemento OPCIONAL = DON fixo do ataque (bloco 783, Fase 3); tupla de 5 segue valendo
         sim_avg = simulated_value
         sim_wins = None
         sim_samples = None
