@@ -110,6 +110,62 @@ def estimate_opp_counter(
     }
 
 
+def estimate_opp_counter_chunks(
+    n_unknown: int,
+    deck_counter_1000: int | None = None,
+    deck_counter_2000: int | None = None,
+    cards_seen_total: int = 0,
+) -> list[int]:
+    """Counter ESPERADO das cartas OCULTAS da mao, como LISTA DE CHUNKS.
+
+    POR QUE EXISTE (bloco 779). `estimate_opp_counter` devolve UM valor -- o
+    counter esperado num UNICO bloqueio -- e serve pra decidir se vale anexar
+    DON a um ataque. A prova de lethal (`opp_counter_chunks_for_lethal`)
+    precisa de outra coisa: QUANTAS defesas separadas o oponente consegue
+    montar, porque cada chunk salva um ataque DIFERENTE. Um valor unico nao
+    responde isso.
+
+    Ate aqui a prova de lethal simplesmente ZERAVA as cartas ocultas -- tres
+    docstrings diferentes afirmavam que havia estimativa por tamanho de mao,
+    e o codigo tinha `_ = unknown_hand_size  # reservado para futura
+    estimativa`. Medido no bloco 779, 40 partidas: a prova assumia 460 de
+    counter em media e o oponente gastava 2416 (5,2x), e em 94,5% dos lethals
+    que falharam o counter real passou do assumido.
+
+    Modelo: das `n_unknown` cartas ocultas, uma fracao `densidade` e counter
+    (densidade = counters restantes / populacao de onde a mao saiu, mesma
+    hipergeometrica do resto do modulo). Devolve esse numero esperado de
+    chunks, cada um com o valor MEDIO ponderado entre 1000 e 2000 na mesma
+    proporcao do deck. Usa a decklist REAL do oponente quando conhecida (o
+    produto sempre informa a lista) e cai na densidade tipica de formato
+    quando nao -- deck-agnostico por construcao.
+
+    NAO e o pior caso absoluto (`max_plausible_defense` e quem faz isso): e a
+    defesa ESPERADA. Assumir que as 7 cartas ocultas sao todas counter de 2000
+    tornaria o lethal praticamente incertificavel e desligaria os lethals
+    legitimos junto com os falsos.
+    """
+    if n_unknown <= 0:
+        return []
+    base_1000 = (deck_counter_1000 if deck_counter_1000 is not None
+                 else TYPICAL_COUNTER_1000)
+    base_2000 = (deck_counter_2000 if deck_counter_2000 is not None
+                 else TYPICAL_COUNTER_2000)
+    base_1000, base_2000 = max(0, base_1000), max(0, base_2000)
+    restantes = base_1000 + base_2000
+    if restantes <= 0:
+        return []
+
+    pop = max(n_unknown, DECK_SIZE - max(0, cards_seen_total))
+    densidade = min(1.0, restantes / pop)
+    n_chunks = int(round(n_unknown * densidade))
+    if n_chunks <= 0:
+        return []
+
+    valor = int(round((base_1000 * 1000 + base_2000 * 2000) / restantes))
+    return [valor] * n_chunks
+
+
 # Limites conservadores do banco/motor. Estes valores alimentam uma decisao
 # de IMPOSSIBILIDADE ("nem com tudo salva"), portanto precisam ser teto, nao
 # media tipica: existem counter impresso e EVENT de 3000/4000.

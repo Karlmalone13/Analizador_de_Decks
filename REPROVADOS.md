@@ -547,6 +547,56 @@ comecar do zero -- exige trocar o ROTULO, nao o mecanismo.
 > especifica: alvo do efeito (16,4%), cartas de counter (18,5%), DON
 > (23,5%).
 
+## Lethal certificado -- conserto CERTO que PIOROU o jogo (bloco 779)
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| **Fazer a prova de lethal enxergar a mao OCULTA do oponente** (fix completo: executor + estimativa de counter) | **REPROVADO no portao SPRT: 9x15, winrate 37,5%**, 120 pares / 240 partidas, veredito DESCARTA | 779 |
+
+**O defeito era REAL e continua real.** `opp_counter_chunks_for_lethal`
+contava as cartas nao reveladas da mao do oponente como **zero counter**
+(`_ = unknown_hand_size  # reservado para futura estimativa`), enquanto
+**tres docstrings** afirmavam que a estimativa existia. Medido em 40
+partidas: a prova assumia 460 de counter e o oponente gastava 2.416 (5,2x);
+**94,5%** dos lethals que falhavam eram explicados por isso; a taxa de falha
+caiu de **65,2% pra 35,1%** com o conserto.
+
+**E mesmo assim o bot passou a GANHAR MENOS.**
+
+### A licao, que e o que importa aqui
+
+**`can_lethal_this_turn()` nao e consumida so pra "atacar pra ganhar".** Ela
+alimenta **7 pontos** do motor -- entre eles `FIX_LETHAL_DON_ALLOCATION`
+(19/07), que despeja TODO o DON no ataque quando o lethal esta certificado, e
+que foi medido como BOM na epoca.
+
+Com a prova honesta, as declaracoes de lethal cairam de **113 pra 57**. O
+conserto nao desligou so os lethals falsos: **desligou pela metade um gatilho
+de AGRESSIVIDADE que pagava na media**, mesmo quando a vitoria nao era
+garantida de fato.
+
+> E o caso de livro do `R, D |- G` que o CLAUDE.md ja registra: **falha de
+> sistema sem falha de maquina**, agora ao contrario -- a premissa "a conta
+> esta errada, logo consertar a conta melhora o jogo" e FALSA quando a conta
+> errada esta sendo usada como PROXY de outra coisa.
+
+**Antes de consertar um valor que varios comportamentos consomem, liste os
+consumidores.** Consertar a fonte muda todos eles de uma vez, e o portao so
+devolve o saldo -- nao diz qual consumidor quebrou.
+
+### O que NAO esta reprovado
+
+O fix tem duas metades independentes e o portao testou as duas JUNTAS:
+
+1. **executar a linha certificada** -- `_lethal_search` ja devolvia quais
+   atacantes e quanto DON, e o motor descartava isso, deixando o turno pro
+   guloso (medido: 6 de 6 casos executaram diferente do certificado, com 0
+   DON onde a prova pedia +3/+7). **Nao foi isolado ainda.**
+2. **a prova enxergar a mao oculta** -- e esta que cortou as declaracoes pela
+   metade, entao e a suspeita.
+
+Nao jogar a metade 1 fora citando este numero: ele nao a mede sozinha.
+
 ## Busca / shortlist
 
 | tentativa | resultado medido | bloco |

@@ -1117,6 +1117,49 @@ USE_OPPONENT_RESPONSE_SEARCH = True
 # SEARCH -- liga por padrao, permite desligar pra comparar A/B rapido sem
 # reverter codigo enquanto a validacao de gauntlet nao fecha.
 FIX_LETHAL_DON_ALLOCATION = True
+
+# ── EXECUTOR de lethal certificado (bloco 779) ───────────────────────────────
+# O FIX de 19/07 acima LIBERA o orcamento de DON quando o lethal esta
+# certificado, mas nunca obrigou a execucao a seguir a linha certificada.
+# `_lethal_search` devolve (atacantes, DON por atacante) e o motor JOGAVA FORA
+# essa sequencia -- o turno seguia pelo guloso da heuristica, que recalcula
+# tudo do zero com um modelo de defesa mais fraco.
+#
+# Medido no bloco 779, 6 casos reais rastreados um a um (`rastreia_lethal.py`):
+# em TODOS a execucao divergiu da certificacao -- 2 ataques de 5 certificados,
+# 1 de 4, com 0 DON anexado onde a certificacao exigia +3/+7, e ataque em
+# PERSONAGEM onde a certificacao mira o Leader. O oponente sobreviveu com
+# counter de 1000-4000, exatamente a margem que o DON certificado cobriria.
+#
+# `_lethal_search` e uma PROVA de vitoria forcada no PIOR caso de defesa. Prova
+# nao se compara com pontuacao: se vale, executa-se. Este knob faz a linha
+# provada ser EXECUTADA em vez de recalculada.
+#
+# `OPTCG_EXECUTA_LETHAL=0` desliga (A/B sem reverter codigo, mesmo padrao dos
+# knobs acima).
+# VEREDITO (bloco 781): **REPROVADO, default DESLIGADO.** Tres celulas do
+# portao SPRT, 800 partidas no total:
+#   executor + prova honesta vs nada          ->  9x15 (37,5%)  PERDE
+#   prova honesta, executor nos DOIS lados    -> 19x6  (76,0%)  forte
+#   prova honesta sozinha vs nada             -> 12x11 (52,2%)  empate
+# Lidas juntas: o EXECUTOR e o culpado. Forcar a linha certificada tira do
+# motor a flexibilidade de limpar board, segurar atacante ou gastar DON
+# jogando carta -- e isso custa mais do que fechar o jogo "do jeito provado"
+# rende. O codigo fica, atras do knob, porque o isolamento so foi possivel
+# por ele existir; mas NAO entra em producao.
+EXECUTA_LETHAL_CERTIFICADO = (
+    os.environ.get('OPTCG_EXECUTA_LETHAL', '0').strip() == '1')
+
+# A prova de lethal enxerga a mao OCULTA do oponente (bloco 779). Ver
+# `opp_counter_chunks_for_lethal`. `OPTCG_LETHAL_MAO_OCULTA=0` volta ao
+# comportamento antigo (mao oculta = zero counter) pra A/B.
+# MEDIDO NEUTRO (bloco 781): 12x11 (52,2%) em 160 pares, 137 empatados --
+# sem evidencia de ganho NEM de perda. Fica LIGADO por CORRECAO, nao por
+# ganho: a funcao promete "lethal GARANTIDO" e sem isto a promessa e falsa em
+# 65% dos turnos; as tres docstrings em volta ja afirmavam que a estimativa
+# existia. Reportar sempre como neutro -- nunca como vitoria.
+LETHAL_VE_MAO_OCULTA = (
+    os.environ.get('OPTCG_LETHAL_MAO_OCULTA', '1').strip() != '0')
 try:
     from deck_profile import build_profile_from_codes as _build_profile_from_codes
 except Exception:
@@ -12139,13 +12182,56 @@ class GameAnalyzer:
         # Cartas reveladas: valor real de counter (stat impresso + efeito
         # [Counter] parseado; inclui 0 para cartas sem counter nenhum)
         chunks = [self._card_counter_value(c, ee) for c in known]
-        # Slots desconhecidos: não sabemos o counter — tratamos como 0 para
-        # não inflar a defesa do oponente com suposições. O cálculo de lethal
-        # é sobre o que podemos GARANTIR, não sobre o que o oponente pode ter.
-        # (Se o oponente tiver counters ocultos ele escolherá usar, mas não
-        # sabemos quantos são — ignorar é conservador para o atacante.)
-        # Ignoramos slots ocultos: nenhum chunk adicional.
-        _ = unknown_hand_size  # reservado para futura estimativa probabilística
+        # Slots DESCONHECIDOS (bloco 779). Ate aqui contavam ZERO, com o
+        # comentario "reservado para futura estimativa probabilistica" -- e as
+        # tres docstrings em volta (esta, a de `_lethal_search` passo 4 e a do
+        # topo) afirmavam o contrario, que havia estimativa por tamanho de
+        # mao. O codigo e as docstrings divergiam, e quem estava certo era a
+        # docstring: zerar a mao oculta NAO e conservador PRA QUEM ATACA --
+        # e o oposto. Faz a prova assumir que o oponente nao tem counter
+        # nenhum, e e assim que ela certifica "lethal GARANTIDO" contra uma
+        # defesa que sobrevive.
+        #
+        # Medido em 40 partidas (mede_counter_cego.py): mao do oponente com
+        # 7,5 cartas e apenas 0,56 conhecidas; a prova assumia 460 de counter
+        # e o oponente gastava 2416 (5,2x); em 94,5% dos lethals que falharam
+        # o counter real passou do assumido. Era a causa de 64,6% das
+        # promessas de lethal nao se cumprirem -- nao os triggers.
+        #
+        # A estimativa vem de `counter_estimation`, o MESMO modulo que
+        # `opp_counter_potential` ja usa (REGRA_SEM_DUPLICACAO: duas funcoes
+        # respondendo "quanto counter o oponente tem" com respostas 5x
+        # diferentes era exatamente a duplicata que a regra proibe).
+        # Override por jogador -- ver comentario em `main_phase`
+        # (duelo espelhado roda os dois lados no mesmo processo).
+        if unknown_hand_size > 0 and getattr(
+                self.me, 'lethal_ve_mao_oculta', LETHAL_VE_MAO_OCULTA):
+            try:
+                from optcg_engine.counter_estimation import (
+                    estimate_opp_counter_chunks)
+                from optcg_engine.sim_bridge import deck_cards_for_leader
+                _d1 = _d2 = None
+                _deck = (deck_cards_for_leader(self.opp.leader.code)
+                         if self.opp.leader is not None else None)
+                if _deck:
+                    _d1 = sum(1 for c in _deck if getattr(c, 'counter', 0) == 1000)
+                    _d2 = sum(1 for c in _deck if getattr(c, 'counter', 0) >= 2000)
+                    # Desconta as copias JA VISIVEIS -- nao podem estar na mao.
+                    _vis = list(self.opp.trash) + list(self.opp.field_chars) + list(known)
+                    if getattr(self.opp, 'field_stage', None) is not None:
+                        _vis.append(self.opp.field_stage)
+                    for c in _vis:
+                        _cv = getattr(c, 'counter', 0)
+                        if _cv == 1000 and _d1 > 0:
+                            _d1 -= 1
+                        elif _cv >= 2000 and _d2 > 0:
+                            _d2 -= 1
+                chunks.extend(estimate_opp_counter_chunks(
+                    unknown_hand_size, deck_counter_1000=_d1,
+                    deck_counter_2000=_d2,
+                    cards_seen_total=len(self.opp.trash)))
+            except Exception:
+                pass     # estimativa nunca pode derrubar a partida
         chunks.extend(self.opp_reactive_field_buffs())
         return sorted(chunks)
 
@@ -20549,6 +20635,21 @@ class OPTCGMatch:
 
         while n < MAX_ACOES:
             n += 1
+            # Lethal PROVADO domina qualquer pontuacao (bloco 779). Vem antes
+            # de gerar candidatas: jogar carta antes gasta DON e derruba a
+            # propria certificacao, que assume `don_available` inteiro.
+            # `executa_lethal` por JOGADOR (mesmo padrao de
+            # `resposta_oponente`/`alvo_preco_ml`): o portao SPRT e um duelo
+            # ESPELHADO -- os dois lados rodam no MESMO processo, entao um
+            # knob so global nao consegue por a versao nova contra a velha.
+            if (getattr(p, 'executa_lethal', EXECUTA_LETHAL_CERTIFICADO)
+                    and engine.analyzer.can_lethal_this_turn()):
+                if self._executa_lethal_certificado(p, opp, ee, engine,
+                                                    verbose=verbose):
+                    return True
+                # Nao fechou => a prova falhou (trigger/efeito reativo, ou
+                # furo na certificacao). Segue o turno normalmente; os
+                # atacantes ja usados estao rested e nao reentram.
             actions = self._generate_and_score_actions(p, opp, engine)
             if USE_POLICY_MODEL and actions:
                 actions = self._policy_apply(
@@ -20922,10 +21023,84 @@ class OPTCGMatch:
             planejado, reserva = 0, 0
         return max(0, p.don_available - planejado - reserva - reserva_outros_ataques)
 
+    def _executa_lethal_certificado(self, p, opp, ee, engine, verbose=False):
+        """Executa a linha de ataque que `_lethal_search` PROVOU vencedora.
+
+        POR QUE EXISTE (bloco 779). `can_lethal_this_turn()` nao e uma
+        opiniao: e uma busca exaustiva sobre TODAS as distribuicoes de DON
+        que so devolve True quando a vida do oponente chega a zero mesmo na
+        defesa OTIMA dele (blockers nos ataques mais fortes, counters
+        distribuidos da forma que salva mais ataques). Ela ja devolve QUAIS
+        atacantes e QUANTO DON em cada um -- e ate aqui esse resultado era
+        descartado: so o booleano era lido, e o turno seguia pelo guloso.
+
+        Medido: em 65,2% dos turnos com lethal certificado o jogo NAO
+        terminava, e o rastreamento caso a caso mostrou a causa -- o guloso
+        atacava 1-2 vezes de 4-5 certificadas, com 0 DON no lugar de +3/+7,
+        as vezes em personagem no lugar do Leader.
+
+        NAO e um segundo motor de decisao (REGRA_SEM_DUPLICACAO): nao existe
+        pontuacao nova aqui, nem criterio proprio de escolha. A escolha e a
+        de `_lethal_search`, fonte unica ja usada pelo resto do motor; isto
+        so a EXECUTA, acao por acao, pelo mesmo `_apply_action` de sempre.
+
+        Ordem: a mesma em que `_lethal_search` monta `ataques` (Leader, depois
+        `field_chars` na ordem do board). A prova e contra a defesa OTIMA do
+        oponente, que independe de ordem -- um defensor real so pode se sair
+        igual ou pior. O que a prova ainda NAO cobre e trigger (achado do
+        usuario, registrado no bloco 778): uma vida virada no meio da
+        sequencia pode KOar um atacante que ainda nao atacou. Fica em aberto.
+
+        Retorna True se a partida terminou.
+        """
+        an = engine.analyzer
+        ok, alloc = an.can_lethal_this_turn_alloc()
+        if not ok or not alloc:
+            return False
+
+        # Mesmos predicados de elegibilidade de `_lethal_search` -- se
+        # divergissem, o executor tentaria um ataque que a prova nao assumiu.
+        def _pode(a):
+            if a is p.leader:
+                return (not p.cannot_attack_leader_this_turn
+                        and not p.leader.rested
+                        and not is_attack_locked_self(p.leader, p, opp))
+            return character_can_attack_now(a, p, opp)
+
+        self._lethal_don_forcado = {id(a): d for a, d in alloc}
+        try:
+            for atacante, _don in alloc:
+                if not _pode(atacante):
+                    # Board mudou no meio da sequencia (trigger, efeito
+                    # reativo): a prova foi invalidada. Para e devolve o
+                    # turno pro fluxo normal, que ainda pode salvar algo.
+                    continue
+                if self._apply_action(
+                        (0.0, 'attack', atacante, 'leader', None),
+                        p, opp, ee, engine, verbose=verbose):
+                    return True
+        finally:
+            self._lethal_don_forcado = None
+        return False
+
     def _attach_don_for_attack(self, attacker, ttype, tgt, p, opp, engine, verbose):
-        """Anexa DON a este ataque, se ajudar a passar a defesa."""
-        don_livre = self._don_livre_for_plan(p, opp, engine, exclude_attacker=attacker)
-        need = don_needed_for_attack(attacker, ttype, tgt, p, opp, engine, don_livre=don_livre)
+        """Anexa DON a este ataque, se ajudar a passar a defesa.
+
+        `_lethal_don_forcado` (bloco 779): quando o executor de lethal esta
+        rodando a linha CERTIFICADA, o quanto anexar ja foi provado por
+        `_lethal_search` contra o pior caso de defesa -- `don_needed_for_
+        attack` aqui recalcularia com um modelo de defesa mais fraco e
+        anexaria MENOS (medido: 0 onde a certificacao exigia +3/+7). O
+        override nao cria um segundo caminho de ataque: a acao continua
+        passando por `_apply_action`/`_execute_attack` como qualquer outra,
+        so o NUMERO vem da prova em vez do palpite.
+        """
+        _forcado = getattr(self, '_lethal_don_forcado', None)
+        if _forcado is not None and id(attacker) in _forcado:
+            need = min(_forcado[id(attacker)], p.don_available)
+        else:
+            don_livre = self._don_livre_for_plan(p, opp, engine, exclude_attacker=attacker)
+            need = don_needed_for_attack(attacker, ttype, tgt, p, opp, engine, don_livre=don_livre)
         if need > 0:
             attacker.don_attached += need
             p.don_available -= need

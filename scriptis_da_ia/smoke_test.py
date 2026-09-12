@@ -292,8 +292,15 @@ check('Five Elders entra como candidata mesmo com DON reservado para defesa',
       any(a[1] == 'play' and a[2] is five_elders for a in actions))
 
 # ── 12. can_lethal_this_turn nao espia counter oculto da mao real ──
+# Margem do atacante = 8000 - 5000 + 1 = 3001 (bloco 779). Escolhida de
+# proposito ENTRE os dois regimes: acima da estimativa de mao oculta (3
+# cartas x densidade tipica ~= 1 chunk de 1250) e abaixo dos counters
+# REVELADOS (3 x 2000 = 4000). Assim o teste continua distinguindo
+# "revelado e respeitado" de "oculto e estimado, nunca espiado" -- era
+# 6000 (margem 1001) e a estimativa nova cobria as duas pontas, apagando
+# o contraste que o teste existe pra medir.
 me, opp = me_opp()
-me.leader = mk('LD-ATK', 'Leader atacante', power=6000, card_type='LEADER')
+me.leader = mk('LD-ATK', 'Leader atacante', power=8000, card_type='LEADER')
 me.don_available = 0
 opp.leader = mk('LD-DEF', 'Leader defensor', power=5000, card_type='LEADER')
 opp.life = []
@@ -305,7 +312,7 @@ opp.hand = [
 hidden_counter_result = DecisionEngine(me, opp).analyzer.can_lethal_this_turn()
 
 me2, opp2 = me_opp()
-me2.leader = mk('LD-ATK', 'Leader atacante', power=6000, card_type='LEADER')
+me2.leader = mk('LD-ATK', 'Leader atacante', power=8000, card_type='LEADER')
 me2.don_available = 0
 opp2.leader = mk('LD-DEF', 'Leader defensor', power=5000, card_type='LEADER')
 opp2.life = []

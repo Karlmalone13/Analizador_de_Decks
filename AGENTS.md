@@ -593,15 +593,77 @@ premissa teriam levado direto a mudanca de arquitetura.
 > (zero em 80). Os outros dois sao indicativos. **Nao medidas ainda**: pagar
 > custo, e carta do search / reviver do trash.
 >
+> ### RESSALVA DE ESCOPO -- MUITO MAIOR que a de amostra (12/09/2026, bloco 780)
+>
+> **Achado do usuario, e ele esta certo:** *"o meu receio do bot treinar
+> contra ele mesmo e ele manter vicios -- por exemplo nao fazer combos, nao
+> acertar sequenciamento e nao defender direito, e mesmo assim vencer a
+> partida"*.
+>
+> **Isso limita o que a tabela acima pode afirmar.** `mede_alavanca.py` roda
+> em AUTO-JOGO: um lado decide a familia no aleatorio e o outro e **o mesmo
+> motor**. Entao o que foi medido nao e
+>
+> ~~"escolher mal o blocker nao custa nada"~~
+>
+> e sim
+>
+> **"escolher mal o blocker nao custa nada CONTRA O NOSSO PROPRIO MOTOR"**.
+>
+> Um vicio COMPARTILHADO e invisivel ao auto-jogo por construcao: o
+> adversario so pune o que ele proprio sabe explorar. Chutar o blocker nao
+> perdeu partida porque o outro lado **nao sabe punir bloqueio ruim** -- nao
+> porque bloquear bem seja irrelevante contra gente.
+>
+> **O dado independente aponta o contrario**: as tres piores categorias
+> medidas contra humano sao exatamente os vicios que o usuario nomeou --
+> `sequenciamento` 36,4%, `distribuicao de DON` (combos) 23,5%, `quais cartas
+> de counter` (defesa) 18,5%.
+>
+> **Consequencia pratica**: nenhuma familia de decisao pode ser descartada
+> com base SO em auto-jogo. Pra afirmar "nao paga" e preciso medir contra
+> dado que nao compartilhe o vicio -- banco de logs humanos, ou partida
+> contra o usuario. A tabela acima continua valida para o que mediu, e **nao
+> autoriza** a conclusao mais forte que eu tinha registrado.
+
+### O BURACO ESTRUTURAL que o usuario mandou RESOLVER (12/09/2026)
+
+> *"O modelo escolhe entre o que as regras produzem -- o que nao vira
+> candidato nao existe. Vamos resolver isso tb"*.
+
+Estava registrado como "NAO resolvido" desde 10/09 e nunca foi atacado.
+**Agora esta em escopo, por pedido explicito.**
+
+O ML so pontua o que `_generate_and_score_actions` coloca na lista. Uma linha
+legal pelas regras que nunca vira candidata e **invisivel pra sempre** --
+nenhum modelo melhor, nenhum corpus maior e nenhuma exploracao a alcanca,
+porque exploracao tambem sorteia DENTRO da lista gerada.
+
+E o teto mais duro do sistema, e e diferente de todos os outros ja medidos:
+os outros sao sobre ESCOLHER melhor; este e sobre **existir** o que escolher.
+
+
+>
 > **Onde investir, entao**: o ML ja esta na familia que importa, e la o que
 > mediu progresso foi QUANTIDADE DE DADO -- 23x de corpus rendeu +22pp de
 > winrate (10,0% -> 31,8%, bloco 775). E a unica alavanca com ganho medido e
 > trajetoria clara.
 
-> **AGENDA que isto define**: o ML nao precisa "melhorar" -- precisa
-> **ALCANCAR**. Enquanto `board_value` e `_trash_value` decidirem tudo, o
-> modelo continua opinando sobre uma fracao pequena do jogo, e nenhuma
-> melhoria de treino atravessa esse teto.
+> **AGENDA -- CORRIGIDA em 12/09/2026 (bloco 780).** A versao anterior desta
+> linha dizia *"o ML nao precisa melhorar, precisa ALCANCAR"*. **Isso foi
+> refutado pela medicao logo acima** (`mede_alavanca.py`, bloco 777) e mesmo
+> assim continuava escrito aqui, depois da propria correcao -- quem lesse de
+> cima pra baixo terminava com a conclusao derrubada.
+>
+> **A agenda que vale**: o ML ja esta na familia de decisao que importa (a
+> acao de topo, 72% de empate -- a menor medida). Levar o ML as outras
+> familias **nao paga**: decidi-las no aleatorio quase nao muda o resultado
+> (blocker 100% de empate, zero pares discordantes em 80). A unica alavanca
+> com ganho medido e trajetoria clara e **QUANTIDADE DE DADO** -- 23x de
+> corpus levou o AUC de 0,632 a 0,856 e o ML autonomo de 10,0% a 31,8%.
+>
+> O inventario das 81 decisoes fixas continua correto como FATO. O que caiu
+> foi a inferencia de que elas eram o teto.
 
 
 
@@ -682,6 +744,210 @@ premissa teriam levado direto a mudanca de arquitetura.
 > mexendo em portao, cache, velocidade ou ferramenta de analise e NAO esta
 > tornando o modelo melhor, ela esta fora da direcao.
 
+
+## PLANO OFICIAL DA MIGRACAO PRA ML (12/09/2026, bloco 781) -- PROFESSOR / ALUNO
+
+> Desenhado com o usuario nesta sessao e **aprovado por ele**. Substitui
+> qualquer ordem de trabalho anterior sobre "como o ML toma conta".
+
+### O diagnostico que define o plano
+
+O surrogate de MEIO DE TURNO chegou a **AUC 0,814** (corpus novo de 73.821
+estados pos-acao; a curva foi 0,778 -> 0,834 entre 2,2k e 59k). Ou seja: ele
+**sabe julgar posicao**. E mesmo assim esta PERDENDO o duelo contra o motor.
+
+Isso nao e contradicao -- e o diagnostico:
+
+> **O problema nao e ONDE o modelo avalia. E O QUE ele foi ensinado a
+> prever.**
+
+O rotulo de hoje e *"esta partida terminou em vitoria?"*. Um estado do turno
+4 recebe credito por uma vitoria no turno 22 -- sinal contaminado por 18
+turnos de sorte e de outras decisoes. O modelo aprende a prever **desfecho de
+partida**, nao **qualidade de jogada**.
+
+**O usuario ja tinha apontado isto** em 11/09 (*"esse ML nao seria melhor se
+ao inves de analisar o resultado da partida, ele analisasse tb a cada 2
+turnos?"*) e a sessao tratou como refinamento. **Era a causa raiz.**
+
+### As quatro fases
+
+| fase | o que e | o que o ML ganha |
+|---|---|---|
+| **0. FIDELIDADE** | parar de espiar a mao do oponente em auto-jogo (`self_play_info_hidden`) | aprende o mundo **REAL**, nao um com informacao que nao tera ao vivo |
+| **1. PROFESSOR** | rotulo melhor que "ganhou/perdeu" | aprende a prever **qualidade da jogada**, nao desfecho distante |
+| **2. ALUNO** | surrogate treinado no alvo do professor, vendo **so o observavel** | passa a **poder jogar** com o que aprendeu |
+| **3. ARVORE** | arvore larga (ramifica em todas as etapas), surrogate ordenando | passa a decidir **todas** as familias, nao uma |
+
+### Fase 0 -- e por que o PORTAO NAO SERVE aqui
+
+Hoje o motor e inconsistente: o rollout Monte Carlo **mascara** a mao do
+oponente (`OpponentModel.sample`), mas funcoes fora dele (ex:
+`opp_counter_potential`) **leem a mao real** em auto-jogo. A flag que cegaria
+(`self_play_info_hidden`) **existe e nunca e ligada em lugar nenhum**.
+
+Consequencia: calibramos num mundo e jogamos noutro -- ao vivo a mao chega
+mascarada de verdade (`hidden_information_masked`).
+
+> **ARMADILHA DE MEDICAO, registrada pra nao ser repetida**: o portao SPRT
+> **nao valida a Fase 0**. Bot-que-espia contra bot-que-nao-espia: o que
+> espia GANHA, porque tem mais informacao. O portao diria "reprovado" medindo
+> a coisa errada.
+>
+> **Quem julga a Fase 0 e o BANCO DE LOGS HUMANOS** (171 partidas) e as
+> partidas contra o usuario. E o argumento dele, e procede: **o auto-jogo e
+> cego pra esse erro por construcao**.
+
+### Fase 1 -- a armadilha do professor que ve demais
+
+Se o professor avaliar SABENDO a mao do adversario, ele produz um alvo
+**inalcancavel**: *"esta posicao e vencedora SE voce souber que ele nao tem
+counter"*. O aluno nunca vai saber -- aprenderia um padrao impossivel de
+reproduzir.
+
+**A forma correta**: o professor faz busca **EXATA dentro de cada mundo
+possivel** e tira a **media sobre os mundos**. Ele ganha em PRECISAO (busca
+exata no lugar de amostragem ruidosa), nao em INFORMACAO. A incerteza
+continua -- que e exatamente o que o usuario descreveu: *"ele pensa nas
+jogadas inferindo algumas possibilidades, mas tendo incerteza sobre elas"*.
+
+### O que NAO entra no plano, e por que
+
+**Tabela de transposicao** (58% das linhas convergem pro mesmo estado, bloco
+756) e ganho de velocidade REAL, mas **nao avanca o ML** -- e cai na regra ja
+registrada: *"se uma sessao esta mexendo em portao, cache, velocidade ou
+ferramenta de analise e NAO esta tornando o modelo melhor, ela esta fora da
+direcao"*. Foi proposta como primeiro passo nesta sessao e **retirada pelo
+proprio usuario**, corretamente. Entra como oportunidade se a Fase 3 precisar
+de folego -- nunca como etapa.
+
+**Alpha-beta puro / QMC / quadratura**: ver a tabela da secao seguinte.
+
+### A LEITURA DO OPONENTE: o que existe e o que falta
+
+`opponent_model.py` ja constroi maos plausiveis **so do observavel** (trash,
+board, cartas reveladas, decklist conhecida; vida virada por dano NAO e
+revelada) e sorteia o resto da populacao restante. **Metade do que o usuario
+pediu ja existe.**
+
+**O que falta e a parte humana**: o sorteio e UNIFORME sobre o que sobrou --
+nao aprende com o que o oponente FEZ. Um humano infere *"ele nao counterou
+meu ataque com 4 DON aberto, provavelmente nao tem counter"*. Inferencia
+BAYESIANA a partir do comportamento -- inclusive das jogadas que ele **nao**
+fez, que sao evidencia forte e hoje 100% ignorada. **Nao existe. Ninguem
+tentou.** Fica como Fase 4 candidata.
+
+## A REDE DE VALOR E UM *SURROGATE MODEL* -- o nome certo, dado pelo usuario (12/09/2026)
+
+> *"Acho que estamos indo para (Surrogate Models)"*.
+
+**Esta certo, e nomear isso muda como o projeto raciocina.** Um surrogate
+model (emulador) e uma funcao rapida treinada pra IMITAR um calculo pesado.
+E exatamente o que a rede de valor faz: substitui o rollout Monte Carlo
+(simular o resto do turno + o turno do oponente) por uma consulta de ~2ms.
+
+Isso da a esta linha de trabalho uma literatura e um criterio proprios: a
+pergunta deixa de ser *"o ML esta ajudando?"* e passa a ser **"o emulador
+reproduz o que o simulador caro diria, com erro aceitavel?"**.
+
+### O que o Monte Carlo de hoje E, exatamente
+
+**Monte Carlo PLANO** -- verificado no codigo (bloco 781): nao ha arvore, nao
+ha UCB/UCT. Cada candidata recebe simulacoes independentes e o orcamento e
+DIVIDIDO entre elas (ha parada sequencial, que ajuda, mas nao realoca).
+
+E dai vem a patologia medida: **ramo novo rouba precisao dos ramos antigos**.
+Por isso "alargar o shortlist" regrediu em 3 medicoes independentes (blocos
+593, 594, 677). **Nao e que olhar mais opcoes seja ruim -- e que olhar mais
+custa olhar pior.** Com um surrogate essa penalidade some: cada ramo custa
+~2ms fixos e nao tira nada de ninguem.
+
+### O que se aplica e o que NAO se aplica (pesquisa trazida pelo usuario)
+
+| ferramenta | aplica aqui? |
+|---|---|
+| **Surrogate model / emulador** | **SIM -- e o caminho, ja em teste** |
+| Tabela de transposicao (hash de posicao) | **SIM -- 58% das linhas convergem pro MESMO estado (bloco 756). Trabalho duplicado medido** |
+| Busca exaustiva do PROPRIO turno + rede nas folhas | **SIM -- e o analogo honesto de "alpha-beta + NNUE"; `_lethal_search` JA e isso, so nao saiu de dentro da prova de lethal** |
+| Reducao de variancia | **em parte** -- e ja usamos uma: sementes comuns no duelo pareado (bloco 756) |
+| Alpha-beta puro | **NAO como no xadrez**: poda alfa-beta e provadamente correta so com INFORMACAO PERFEITA. Aqui a mao do oponente e oculta e ha aleatoriedade (compra, trigger) |
+| MCTS / ISMCTS | possivel, mas ganho modesto: arvore de 4,9 candidatas e horizonte de 1 turno. MCTS brilha em arvore profunda e larga |
+| **QMC (Sobol/Halton), quadratura gaussiana, elementos finitos** | **NAO -- outro dominio.** Sao ferramentas de INTEGRACAO NUMERICA e equacoes diferenciais: problemas continuos e suaves. O nosso e combinatorio discreto ("qual carta, em quem, quanto DON") -- nao ha funcao suave pra integrar |
+
+### A ordem recomendada pra SAIR do Monte Carlo
+
+**Nao de uma vez.** Em duas etapas, e a primeira ja entrega a arvore larga:
+
+1. **Surrogate como ORDENADOR** (nao decisor): o modelo pontua TODAS as
+   candidatas; o rollout caro roda so nas 2-3 melhores. **Nao exige que o
+   surrogate ganhe do rollout** -- exige so que ele ordene melhor que a
+   heuristica, que hoje e LITERALMENTE CEGA nas dimensoes novas (da score
+   IDENTICO a variantes de alvo, ver `ALVO_EFEITO_MAX_CANDIDATOS`). E a
+   arquitetura do Stockfish moderno: avaliador rapido ordena, busca confirma.
+2. **Surrogate como DECISOR**: o rollout sai inteiro (~85% do tempo).
+
+> **DISTINCAO OBRIGATORIA de um mecanismo REPROVADO**: a "rede de POLITICA
+> pra podar o shortlist" foi reprovada no bloco 772, e a causa registrada foi
+> *"nao ha o que podar -- a arvore e estreita (4,5 candidatas)"*. A proposta
+> acima e **diferente em especie**: (a) e rede de VALOR avaliando o estado
+> resultante, nao politica prevendo a escolha da busca; (b) o objetivo e
+> ORDENAR uma arvore LARGA, nao podar uma estreita -- ou seja, a premissa que
+> derrubou aquela ideia (arvore estreita) e exatamente o que esta sendo
+> mudado. Citar isto ao propor, conforme a regra do `REPROVADOS.md`.
+
+## DUAS REGRAS DE METODO (12/09/2026, bloco 780) -- as duas custaram caro
+
+### 1. Antes de consertar um valor COMPARTILHADO, liste os consumidores
+
+**Caso real (bloco 779).** `can_lethal_this_turn()` estava errada de um jeito
+grave: contava as cartas nao reveladas da mao do oponente como **zero
+counter**, entao certificava "vitoria GARANTIDA" contra defesas que
+sobreviviam. Medido: errava **2 em cada 3 vezes**. Consertei. A taxa de erro
+caiu de 65,2% pra 35,1%.
+
+**E o bot passou a GANHAR MENOS** -- portao SPRT, 240 partidas, **9x15**.
+
+A causa: aquela flag alimenta **7 pontos** do motor, nao so "atacar pra
+fechar". Um deles e o `FIX_LETHAL_DON_ALLOCATION` (19/07), que despeja TODO o
+DON no ataque quando ha lethal certificado -- e que foi medido como BOM na
+epoca. Com a prova honesta, as declaracoes cairam de 113 pra 57: o conserto
+**desligou pela metade um gatilho de agressividade que pagava**, junto com os
+lethals falsos.
+
+> Premissa falsa, no formato `R, D |- G`: *"a conta esta errada, logo
+> consertar a conta melhora o jogo"*. **Falsa sempre que a conta errada esta
+> servindo de PROXY de outra coisa.**
+
+**A regra**: antes de corrigir um valor que varios comportamentos consomem,
+`grep` os consumidores e diga o que cada um vai fazer diferente. Se forem
+mais de um, **o experimento tem que isolar** -- um portao unico so devolve o
+saldo liquido e nao diz qual consumidor quebrou.
+
+**Confirmado pelo isolamento**: com o executor ligado nos DOIS lados, a prova
+honesta ganha **19x6 (76%)**. Ou seja, a hipotese inicial ("a prova rigorosa
+e a culpada") estava ERRADA -- o culpado era a outra metade. Sem isolar, as
+duas teriam sido descartadas juntas.
+
+### 2. Toda medicao precisa de um CONTROLE que possa falhar
+
+**Caso real (mesmo dia).** Testando se retreinar a cada 3 partidas muda o
+modelo, obtive "mudanca **0,0000**, inclusive com peso por recencia 20x" --
+um numero limpo, coerente e **completamente falso**: o script lia a chave
+errada do rotulo (`venceu` em vez de `win`), treinou um modelo constante, e
+comparou constante com constante.
+
+So nao virou conclusao porque rodei um controle: **embaralhar os rotulos**.
+Se o modelo nao muda com rotulo aleatorio, o instrumento esta cego. Mudou
+0,0000 -- e ai o erro apareceu. Com a chave certa: 1,6% das decisoes mudam
+(corpus acumulado), 7,4% (peso por recencia), 10,7% (janela deslizante).
+
+**A regra**: junto de toda medicao nova, rode um caso que **tem** que dar
+resultado diferente. Se ele nao der, o numero principal nao vale. Vale
+especialmente pra resultado "perfeito" (zero exato, 100%, identico) -- em
+medicao empirica, numero redondo demais e sintoma, nao conquista.
+
+Isto complementa a secao de **erros de medicao ja cometidos** do
+`REPROVADOS.md`, que registra os casos um a um.
 
 ## DIRECAO OFICIAL (10/09/2026): SUBSTITUIR a heuristica pelo ML, por partes
 
@@ -828,6 +1094,16 @@ mecânica conhecidos e priorizados, problemas abertos do replay, dívida
 técnica consciente (sistema de imunidade, etc.), e o roadmap (consertar
 lógica → auditar via replay → tunar heurísticas por volume de simulação →
 ML só se 1-3 baterem teto).
+
+> **ATENCAO -- este roadmap esta SUPERADO (revisado 12/09/2026, bloco 780).**
+> A ordem "tunar heuristicas primeiro, ML so se bater teto" era a de
+> 13/07/2026. **A direcao oficial desde 10/09/2026 e a INVERSA**: substituir
+> a heuristica pelo ML por partes (secao "DIRECAO OFICIAL" acima), por
+> decisao explicita do usuario -- *"a heuristica ja se provou complexa e de
+> baixa efetividade"*. O texto acima fica como registro do que se pensava
+> antes; **nao e mais o plano**. Mesma correcao vale pro "PLANO MESTRE DE
+> EVOLUCAO DO MOTOR" do `TODO.md`, que dizia "ML/MCTS descartados por ora"
+> numa secao marcada LER PRIMEIRO.
 
 ## Workflow / convenções
 ```

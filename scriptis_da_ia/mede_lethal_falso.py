@@ -35,13 +35,23 @@ def uma(seed):
     except Exception:
         return None
 
-    prometeu = {'on': False}
+    prometeu = {'on': False, 'primeira': None}
     orig = de.GameAnalyzer.can_lethal_this_turn
 
     def espiao(self):
         r = orig(self)
-        if r:
-            prometeu['on'] = True
+        # SO conta o estado REAL. `can_lethal_this_turn` e chamada milhares de
+        # vezes por partida DENTRO da simulacao da busca, sobre estados
+        # hipoteticos que nunca aconteceram -- contar aquelas mede ficcao.
+        # `_suppress_replay_log` e True durante a simulacao (mesma guarda que
+        # o projeto ja usa pra distinguir real de simulado).
+        if not getattr(m, '_suppress_replay_log', False):
+            # PRIMEIRA chamada real do turno = estado ANTES de qualquer acao.
+            # Depois que o bot ja atacou, "lethal possivel" pode ter deixado
+            # de ser alcancavel -- contar aquilo confunde "nao cumpriu" com
+            # "deixou de ser possivel".
+            if prometeu['primeira'] is None:
+                prometeu['primeira'] = bool(r)
         return r
 
     de.GameAnalyzer.can_lethal_this_turn = espiao
@@ -51,9 +61,9 @@ def uma(seed):
             p = (m.state_a if m.state_a.is_first else m.state_b) if t % 2 == 0 \
                 else (m.state_b if m.state_a.is_first else m.state_a)
             opp = m.state_b if p is m.state_a else m.state_a
-            prometeu['on'] = False
+            prometeu['primeira'] = None
             r = m.play_turn(p, opp)
-            if prometeu['on']:
+            if prometeu['primeira']:
                 declarados += 1
                 if r:
                     cumpridos += 1

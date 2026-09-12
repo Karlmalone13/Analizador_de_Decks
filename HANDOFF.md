@@ -53,6 +53,364 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-12 (781) - **Veredito do lethal nas 3 celulas** + o surrogate de meio de turno chega a AUC 0,814 e MESMO ASSIM perde: o problema e o ROTULO. **PLANO OFICIAL professor/aluno aprovado pelo usuario**
+
+### 1. Lethal: as tres celulas fecham o caso (800 partidas)
+
+| configuracao | resultado |
+|---|---|
+| executor + prova honesta vs nada | **9x15 (37,5%)** -- perde |
+| prova honesta, executor ligado nos DOIS lados | **19x6 (76,0%)** -- forte |
+| prova honesta sozinha vs nada | **12x11 (52,2%)** -- empate |
+
+Lidas juntas: **o EXECUTOR e o culpado** -- forcar a linha certificada tira do
+motor a flexibilidade de limpar board, segurar atacante ou gastar DON jogando
+carta. **A minha hipotese inicial (a prova rigorosa) estava ERRADA**, e so o
+isolamento mostrou isso -- exatamente a regra de metodo registrada no bloco
+780 (listar os consumidores; um portao unico so devolve o saldo).
+
+**Aplicado**: `EXECUTA_LETHAL_CERTIFICADO` default **DESLIGADO**.
+`LETHAL_VE_MAO_OCULTA` fica **LIGADO por CORRECAO, medido NEUTRO** -- a funcao
+promete "GARANTIDO" e sem isso a promessa era falsa em 65% dos turnos.
+Reportar sempre como neutro, nunca como vitoria.
+
+### 2. O surrogate de meio de turno: era FOME, de novo
+
+Corpus novo: **73.821 estados pos-acao**. Curva (teste fixo, partidas
+separadas):
+
+```
+ 2.253 estados -> AUC 0,778
+ 6.888        -> 0,805
+20.488        -> 0,826
+58.912        -> 0,834
+```
+
+A tese "julgar o meio do turno e intrinsecamente dificil" (bloco 769) **nao
+se sustenta**: era falta de dado de meio de turno. Modelo treinado:
+**AUC 0,8144 fora da amostra**, gap treino-validacao +0,03.
+
+**RESSALVA**: o 0,822 do fim de turno saiu de OUTRO conjunto de teste --
+comparar AUC entre testes diferentes nao vale. O que vale e a curva interna.
+
+### 3. E mesmo assim ele PERDE o duelo -- o achado do dia
+
+Duelo TIPO A (modelo decide sozinho, sem rollout, peso 0 dos dois lados):
+**7x15, winrate 31,8%, DESCARTA** (80 pares, 160 partidas).
+
+**E o placar e IDENTICO ao do bloco 775**, que usou o modelo de FIM de turno
+(AUC 0,856). Verificado que nao e artefato: os dois modelos dao numeros
+diferentes no mesmo estado (0,4157 x 0,3056) e o `value_net_path` por jogador
+e aplicado de fato -- LLR/winrate/Wilson sao todos DERIVADOS de 7 e 15, entao
+a unica coincidencia e o placar.
+
+| modelo | AUC | duelo sozinho |
+|---|---|---|
+| fim de turno (775) | 0,856 | **7x15 (31,8%)** |
+| meio de turno (781) | 0,814 | **7x15 (31,8%)** |
+
+**Dois modelos diferentes, dados diferentes, pontos de avaliacao diferentes --
+mesmo desempenho exato.** Evidencia forte de que **o gargalo NAO e o
+modelo**: melhorar o avaliador nao move o ponteiro.
+
+> **O problema nao e ONDE o modelo avalia. E O QUE ele foi ensinado a prever.**
+
+O rotulo e *"esta partida terminou em vitoria?"* -- um estado do turno 4 leva
+credito por uma vitoria no turno 22. O modelo aprende **desfecho de partida**,
+nao **qualidade de jogada**.
+
+**O usuario ja tinha apontado isso em 11/09** (*"nao seria melhor se ele
+analisasse a cada 2 turnos?"*) e a sessao tratou como refinamento. Era a causa
+raiz.
+
+### 4. Monte Carlo: o que temos e o que existe de melhor
+
+Verificado no codigo: **e Monte Carlo PLANO** -- sem arvore, sem UCB/UCT.
+Orcamento DIVIDIDO entre candidatas, o que explica "alargar o shortlist
+regrediu" 3 vezes (593, 594, 677): **olhar mais custa olhar pior**.
+
+Pesquisa trazida pelo usuario, triada: **surrogate SIM** (e o caminho);
+**transposicao SIM** (58% das linhas convergem, bloco 756); **busca exaustiva
+do proprio turno + rede nas folhas SIM** (`_lethal_search` ja e isso);
+**alpha-beta puro NAO** (poda so e correta com informacao perfeita; aqui a mao
+e oculta); **QMC/quadratura/elementos finitos NAO** (integracao continua,
+outro dominio); MCTS/ISMCTS possivel mas ganho modesto numa arvore de 4,9 e
+horizonte de 1 turno.
+
+### 5. A arvore e ESTREITA -- medido
+
+```
+4,9 candidatas por decisao | 34,2% das decisoes com <= 2 opcoes
+turno para com acao legal na mesa: 9,2% (e o score delas e -820 medio)
+attach_don: 59,1% das decisoes sem NENHUMA candidata de DON
+            97,6% dos atacantes recebem UM unico valor (so "empatar o alvo")
+```
+
+E a acao de ataque **nao carrega DON**: e decidido depois, por regra fixa. A
+busca nunca compara "atacar com 2 DON" contra "atacar com 4". Isso explica
+`distribuicao de DON` ser a 2a pior categoria contra humano (23,5%).
+
+**E o impedimento pra ramificar mais**: a heuristica da score IDENTICO a
+variantes de alvo (ela nao olha alvo), entao ramos novos empatam e tomam o
+shortlist. Ramificar so funciona com quem distinga os ramos -- o modelo.
+
+### 6. PLANO OFICIAL aprovado: professor / aluno
+
+Registrado por inteiro em `CLAUDE.md`/`AGENTS.md`. Quatro fases: **0.
+FIDELIDADE** (parar de espiar) -> **1. PROFESSOR** (rotulo melhor) -> **2.
+ALUNO** (surrogate com features observaveis) -> **3. ARVORE** (larga, modelo
+ordenando).
+
+**Duas armadilhas registradas**: (a) o portao SPRT **nao valida a Fase 0** --
+quem espia ganha por ter mais informacao; quem julga e o banco humano; (b) o
+professor **nao pode ver demais** -- alvo baseado na mao real e inalcancavel
+pelo aluno. Ele faz busca exata POR MUNDO e tira a media: ganha precisao, nao
+informacao.
+
+**Retirado do plano pelo proprio usuario**: comecar por tabela de
+transposicao. Correto -- e velocidade, nao ML, e cai na regra de "melhoria ao
+redor do ML".
+
+### 7. Leitura do oponente: metade ja existe
+
+`opponent_model.py` ja monta maos plausiveis **so do observavel**. **Falta a
+parte humana**: o sorteio e UNIFORME, nao aprende com o que o oponente FEZ --
+nem com o que ele **nao** fez (nao counterar e evidencia forte, hoje
+ignorada). Fase 4 candidata.
+
+## 2026-09-12 (780) - **Revisao das regras a pedido do usuario** + o receio dele sobre AUTO-JOGO corrige o escopo da minha propria medicao de alavanca
+
+### 1. Revisao das regras (pedido: *"revisa o todo e as regras... o que ja nao faz mais sentido e se falta acrescentar"*)
+
+**Tres achados ATIVAMENTE PERIGOSOS** -- nao so desatualizados:
+
+| achado | onde | por que e perigoso |
+|---|---|---|
+| *"ML so se 1-3 baterem teto"* | `CLAUDE.md`/`AGENTS.md` | contradiz a DIRECAO OFICIAL de 10/09 (migrar pro ML) |
+| *"ML/MCTS descartados por ora"* | `TODO.md`, secao marcada **LER PRIMEIRO** | idem, e com destaque maximo |
+| a AGENDA do ALCANCE sobrevivia a propria refutacao | `CLAUDE.md` linha 605, 40 linhas DEPOIS da correcao | quem le de cima pra baixo termina com a conclusao derrubada |
+
+Os tres corrigidos, espelhados nos dois arquivos.
+
+**`TODO.md` voltou a ser LISTA VIVA**: tinha **10.248 linhas**, 48 secoes ja
+fechadas e data do topo de 09/09 com entradas de 12/09 -- na pratica um
+SEGUNDO `HANDOFF.md`. Cortado em 1.139 linhas (setembro/2026, blocos
+748-779); o resto foi pro `TODO_ARQUIVO.md` novo. **Conferido: 379 entradas
+de bloco antes, 379 depois -- nada apagado.** As secoes antigas foram triadas
+uma a uma: **4 seguem abertas**, 6 estavam marcadas 🔴/🟡 com o conteudo todo
+`[x]`, e uma pedia um script que **ja existe** (`compare_vs_human.py`).
+
+**Duas regras de metodo novas**, com o caso real que as gerou (ver
+`CLAUDE.md`): (1) antes de consertar um valor COMPARTILHADO, liste os
+consumidores -- a flag de lethal alimenta 7 pontos e o portao so devolve o
+saldo; (2) toda medicao precisa de um CONTROLE que possa falhar -- produzi
+"mudanca 0,0000" treinando com a chave errada do rotulo, numero limpo e
+falso, pego so pelo controle de rotulo embaralhado.
+
+**Conferido e saudavel**: espelhos `CLAUDE.md`/`AGENTS.md` sincronizados (so
+a moldura difere) e **todos os 17 arquivos/ferramentas citados nas regras
+existem** -- nenhum ponteiro quebrado.
+
+### 2. O receio do usuario sobre AUTO-JOGO, e a correcao que ele forca
+
+> *"meu receio do bot treinar contra ele mesmo e ele manter vicios -- nao
+> fazer combos, nao acertar sequenciamento e nao defender direito, e mesmo
+> assim vencer a partida"*.
+
+**Procede, e limita uma conclusao que eu tinha registrado com confianca
+demais no bloco 777.** `mede_alavanca.py` roda em auto-jogo: o lado que
+decide no aleatorio enfrenta **o mesmo motor**. Entao "chutar o blocker nao
+perdeu nenhuma das 80 partidas" nao significa que bloquear bem e irrelevante
+-- significa que **o nosso motor nao sabe punir bloqueio ruim**. Vicio
+compartilhado e invisivel ao auto-jogo por construcao.
+
+O dado independente aponta o contrario: as tres piores categorias medidas
+contra HUMANO sao exatamente os vicios nomeados -- `sequenciamento` 36,4%,
+`distribuicao de DON` (combos) 23,5%, `quais cartas de counter` (defesa)
+18,5%.
+
+**Registrado nos espelhos como RESSALVA DE ESCOPO**, maior que a de amostra:
+nenhuma familia pode ser descartada com base so em auto-jogo.
+
+### 3. Estado conferido: EXPLORACAO esta DESLIGADA
+
+`gerar_selfplay_dataset.py --explorar` tem **default 0.0**. E o mecanismo
+desenhado justamente pra quebrar vicio compartilhado (fazer o bot tentar o
+que nao escolheria) e nao esta em uso.
+
+### 4. O buraco estrutural entrou em escopo por pedido explicito
+
+> *"o que nao vira candidato nao existe. Vamos resolver isso tb"*.
+
+Registrado como "NAO resolvido" desde 10/09 e nunca atacado. E teto mais duro
+que todos os outros: os demais sao sobre ESCOLHER melhor, este e sobre
+**existir** o que escolher. Exploracao NAO resolve -- ela tambem sorteia
+dentro da lista ja gerada.
+
+### 5. Banco de logs humanos -- tamanho real, medido
+
+```
+171 partidas | 1.518 turnos | ~3.000 decisoes humanas
+134 com vencedor conhecido
+corpus de auto-jogo: 81.645 estados  (27x maior)
+```
+
+70% das aparicoes sao de dois nomes (`You`/`Opponent`). **Como professor nao
+sustenta; como JUIZ e insubstituivel** -- e o unico dado que o auto-jogo nao
+consegue falsificar.
+
+## 2026-09-12 (779) - **A causa do lethal falso NAO era trigger: a prova era calculada como se a mao do oponente estivesse VAZIA.** Mais: o motor calculava a sequencia vencedora e jogava fora
+
+### 1. Ponto de partida (bloco 778)
+
+Em **65,2% dos turnos** com `can_lethal_this_turn() == True` no estado REAL
+e no inicio do turno, a partida nao terminava. O usuario tinha apontado a
+hipotese: `_lethal_search` ignora triggers. **Antes de consertar, medir** --
+um remedio conservador demais desliga lethal legitimo e REGRIDE o jogo.
+
+### 2. Achado 1: a sequencia vencedora era calculada e DESCARTADA
+
+`_lethal_search` nao devolve so um booleano. Devolve **a linha inteira**:
+quais atacantes e quanto DON em cada um (`can_lethal_this_turn_alloc`). Isso
+e exatamente o que o usuario descreveu no bloco 778 -- *"a sequencia exata de
+ataques, distribuicao de dons"*.
+
+**Nada no motor executava essa linha.** Busca no codigo: o unico consumidor
+da alocacao era `diag_lethal_don_alloc.py`, um script de DIAGNOSTICO. O motor
+lia so o `ok` e deixava o turno pro guloso da heuristica, que refazia tudo do
+zero com um modelo de defesa mais fraco.
+
+`rastreia_lethal.py` (novo) rastreou 6 casos reais, ataque por ataque, lendo
+os registros `attack_outcome` (bloco 742). Em **6 de 6** a execucao divergiu:
+
+| certificado | executado |
+|---|---|
+| 5 ataques | 2 |
+| 4 ataques | 1 |
+| `lider +7 DON` | `0 DON` |
+| todos no **Leader** | as vezes em **personagem** |
+
+O oponente sobrevivia com counter de 1000-4000 -- exatamente a margem que o
+DON certificado cobriria.
+
+**Corrigido**: `_executa_lethal_certificado` roda a linha provada, com
+`_lethal_don_forcado` fazendo `_attach_don_for_attack` usar o DON da PROVA em
+vez de recalcular. Nao e um segundo motor de decisao
+(`REGRA_SEM_DUPLICACAO`): nao ha pontuacao nova nem criterio proprio -- a
+escolha continua sendo a de `_lethal_search`, e cada ataque passa pelo
+`_apply_action`/`_execute_attack` de sempre.
+
+### 3. Achado 2 (a causa REAL): a prova supunha o oponente sem counter
+
+Executar a linha certa **nao mudou quase nada**: 65,2% -> 64,6%. Entao o erro
+nao estava na execucao, e sim na propria certificacao.
+
+`opp_counter_chunks_for_lethal` tinha isto:
+
+```python
+_ = unknown_hand_size  # reservado para futura estimativa probabilistica
+```
+
+**As cartas nao reveladas da mao do oponente contavam ZERO.** E
+`known_hand_cards()` so devolve cartas reveladas POR EFEITO -- em partida
+normal, quase sempre vazio.
+
+Pior: **tres docstrings** afirmavam o contrario (*"slots desconhecidos contam
+como possiveis counters de 2000"*, *"slots ocultos usam estimativa por
+tamanho da mao"*, e o passo 4 de `_lethal_search`). Codigo e documentacao
+divergiam, e **a documentacao e que estava certa**. A divergencia escondeu o
+bug: quem lia a docstring concluia que o caso ja estava tratado.
+
+`mede_counter_cego.py` (novo), 40 partidas:
+
+```
+mao do oponente               : 7,5 cartas
+dessas, CONHECIDAS (reveladas): 0,56
+counter que a prova ASSUMIU   : 460
+counter que o oponente GASTOU : 2.416      (5,2x)
+turnos em que o real passou do assumido        : 69,9%
+o mesmo, entre os lethals que FALHARAM         : 94,5%
+```
+
+**94,5% das falhas** sao explicadas por isso. O trigger que o usuario apontou
+e lacuna real, mas responde pela minoria -- fica registrado com o tamanho
+certo, em vez de virar o alvo errado.
+
+**Corrigido** reusando `counter_estimation.py`, o MESMO modulo que
+`opp_counter_potential` ja usava. Eram duas funcoes respondendo "quanto
+counter o oponente tem" com respostas 5x diferentes -- a duplicata que a
+`REGRA_SEM_DUPLICACAO` proibe. `estimate_opp_counter_chunks` (nova) devolve
+LISTA de chunks (a prova precisa saber quantas defesas SEPARADAS ele monta,
+nao um valor unico), usando a densidade real da decklist do lider adversario
+quando conhecida e a tipica de formato quando nao -- **deck-agnostico por
+construcao**, como exige o objetivo QUALQUER DECK.
+
+**Nao e o pior caso absoluto**: supor as 7 cartas ocultas todas counter de
+2000 tornaria o lethal incertificavel e desligaria os legitimos junto com os
+falsos. E a defesa ESPERADA.
+
+### 4. Resultado da medicao apos os dois fixes
+
+```
+promessa de lethal FALHOU em: 35,1% (era 65,2%) -- mas as DECLARACOES cairam de 113 pra 57, ver ressalva   (era 65,2%)
+```
+
+### 5. VEREDITO DO PORTAO: **REPROVADO** (9x15, winrate 37,5%)
+
+SPRT espelhado, 120 pares / 240 partidas, 62,6 min, `peso=0` nos dois lados:
+
+```
+desafiante (com o fix)  9 x 15  campeao (sem o fix)
+veredito                DESCARTA
+```
+
+**O conserto esta certo e PIORA o jogo.** Foi o risco pre-registrado na
+secao abaixo, e ele se realizou.
+
+**Hipotese da causa** (nao confirmada ainda): `can_lethal_this_turn()`
+alimenta **7 pontos** do motor, nao so a decisao de fechar o jogo -- entre
+eles o `FIX_LETHAL_DON_ALLOCATION` de 19/07, que joga TODO o DON no ataque
+quando ha lethal certificado e foi medido como BOM. As declaracoes cairam de
+113 pra 57: o conserto **desligou pela metade um gatilho de agressividade que
+pagava**, junto com os lethals falsos.
+
+**Isolamento em curso** (`--so-mao-oculta`): o fix tem duas metades
+independentes e o portao mediu as duas juntas. Se a visao da mao oculta
+sozinha perder, fica o EXECUTOR e cai a visao -- e a prova honesta volta como
+informacao SEPARADA, sem sequestrar os outros seis consumidores.
+
+Registrado em `REPROVADOS.md`.
+
+### 6. O risco que estava pre-registrado, e se confirmou
+
+Taxa de lethal falso mais baixa **nao e vitoria**. Uma prova mais exigente
+tambem deixa de certificar lethal LEGITIMO, e ai o bot ataca com menos
+agressao e pode perder a janela. **So o duelo decide** -- `ab_lethal.py`
+(novo) roda o portao SPRT espelhado e pareado, com `peso=0` do ML nos dois
+lados (o fix e de REGRA, misturar o modelo so adicionaria ruido), e permite
+isolar cada metade (`--so-executor`, `--so-mao-oculta`).
+
+Risco conhecido a observar no duelo: o executor **contorna**
+`_is_unsafe_zero_life_leader_attack` -- se a prova ainda falhar, o bot fica
+exposto. A visao da mao oculta e justamente o que deve derrubar essa chance.
+
+### 6. Testes
+
+`smoke_fast.py` OK. `smoke_test.py` OK apos ajustar o teste 12, que travava o
+comportamento ANTIGO (afirmava lethal certificado com 3 cartas ocultas e so
++1000 de margem). O ajuste **preserva as duas invariantes** que o teste
+existe pra medir -- a prova nao pode ESPIAR a mao oculta, so o TAMANHO dela;
+e counter REVELADO e respeitado -- subindo a margem do atacante pra 3001,
+entre a estimativa de mao oculta (~1250) e os counters revelados (4000).
+
+### 7. Knobs
+
+`OPTCG_EXECUTA_LETHAL=0` e `OPTCG_LETHAL_MAO_OCULTA=0` voltam ao
+comportamento antigo. Tambem existem como override POR JOGADOR
+(`executa_lethal`, `lethal_ve_mao_oculta`), porque o duelo espelhado roda os
+dois lados no MESMO processo -- knob global sozinho nao consegue por a versao
+nova contra a velha.
+
 ## 2026-09-12 (778) - **BUG DE CORRECAO achado pelo usuario: `_lethal_search` declara "vitoria GARANTIDA" ignorando TRIGGERS.** E a busca gulosa e guiada pela HEURISTICA, nao pelo ML
 
 ### 1. O bug (achado do usuario, confirmado no codigo)

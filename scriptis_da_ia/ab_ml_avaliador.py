@@ -22,7 +22,22 @@ from pathlib import Path
 import treino_continuo as tc
 
 RAIZ = Path(__file__).resolve().parent
-MODELO = RAIZ / 'metrics' / 'vn_grande.joblib'
+# Bloco 781: modelo treinado no corpus GRANDE de MEIO DE TURNO (73.821
+# estados pos-acao). O teste do bloco 769 usou um modelo de 3.614 estados,
+# AUC 0,632, e perdeu 1x9 -- este tem AUC 0,8144 fora da amostra. A curva
+# medida no mesmo corpus: 0,778 (2,2k estados) -> 0,834 (59k).
+#
+# POR QUE NAO E REPETIR EXPERIMENTO REPROVADO: o bloco 769 concluiu que o ML
+# nao substitui o rollout porque "julga turno pela metade". Medido agora, a
+# causa era FOME DE DADO de meio de turno, nao dificuldade intrinseca --
+# mesmo padrao do bloco 775, onde 23x de corpus levou o ML autonomo de 10,0%
+# a 31,8%. Este e o primeiro teste com um modelo de meio de turno DE VERDADE.
+#
+# TIPO DO EXPERIMENTO (regra obrigatoria do CLAUDE.md): **TIPO A** -- o
+# modelo AVALIA sozinho, sem rollout e sem heuristica somada (peso 0 nos
+# dois lados). Se ganhar, o Monte Carlo perde a razao de existir e os ~85%
+# do tempo de simulacao caem junto.
+MODELO = RAIZ / 'metrics' / 'value_net_meio_turno.joblib'
 
 
 def main():
