@@ -469,8 +469,19 @@ def win_prob(p, opp, bundle=None) -> float | None:
     if hit is not None:
         _WP_STATS['hit'] += 1
         return hit
+    # FASE 1 (bloco 783): o alvo do PROFESSOR e continuo -- retorno de
+    # n passos em [0,1] -- entao aquele modelo e REGRESSOR e nao tem
+    # `predict_proba`. Antes, um bundle de regressao caia no `except` e
+    # `win_prob` devolvia None em silencio: o motor seguiria sem modelo
+    # nenhum e o experimento mediria a heuristica pura, achando que mediu o
+    # professor. Erro da familia "parametro na assinatura != parametro
+    # aplicado" (bloco 750).
     try:
-        v = float(modelo.predict_proba([feats])[0][1])
+        if hasattr(modelo, 'predict_proba'):
+            v = float(modelo.predict_proba([feats])[0][1])
+        else:
+            v = float(modelo.predict([feats])[0])
+            v = 0.0 if v < 0.0 else (1.0 if v > 1.0 else v)
     except Exception:
         return None
     _WP_STATS['miss'] += 1

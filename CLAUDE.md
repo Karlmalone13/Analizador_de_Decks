@@ -7,6 +7,47 @@
 > divergiram por meses sem ninguém notar — sessões Codex ficaram sem
 > várias regras que só entravam no `CLAUDE.md`).
 
+## PARADA OBRIGATORIA: antes de SIMULAR, COMMITAR ou PUSHAR (usuario, 12/09/2026)
+
+> *"Toda vez antes de uma simulação ou commit e push quero que leia as regras
+> e lembre do que estamos fazendo."*
+
+**Motivo (observado nesta propria sessao)**: horas de trabalho correto e
+medido, e mesmo assim a sessao (a) disparou simulacao longa sem declarar o
+que ela decidia, (b) propos comecar por otimizacao de velocidade que a regra
+ja proibia, e (c) enunciou justificativa de ML tendo a heuristica como
+referencia -- **tres vezes**. Nao foi falta de regra: foi falta de PARAR pra
+reler antes de agir. Os tres momentos em que o erro sai caro sao os mesmos
+tres: gastar CPU, gravar historia, publicar.
+
+### O que fazer, nos TRES gatilhos
+
+Antes de **(1)** disparar qualquer simulacao/lote que custe minutos,
+**(2)** `git commit`, **(3)** `git push` -- releia as regras deste arquivo e
+escreva, em ate 3 linhas:
+
+1. **ONDE ESTAMOS** -- que fase do plano (professor/aluno) e o que falta nela.
+2. **O QUE ISTO DECIDE** -- qual pergunta esta acao responde, e o que muda no
+   trabalho dependendo do resultado. Se nao muda nada, **nao faca**.
+3. **A PREMISSA** -- de qual premissa isto depende, e como ela seria testada
+   (criterio `R, D |- G`). Se for barata de testar, teste ANTES de construir.
+
+Para simulacao, some a isto a **declaracao de tipo A/B** que ja e obrigatoria,
+e o **teste da heuristica** (apague a palavra; a frase sobrevive?).
+
+### Por que na hora de SIMULAR e nao so no commit
+
+Simulacao longa e o recurso mais escasso deste projeto -- a maquina tem 2
+nucleos e o usuario reclamou de tempo de simulacao varias vezes. Uma rodada
+disparada sem saber o que ela decide gasta 30-80 minutos e devolve um numero
+que ninguem sabe ler. **A parada custa 30 segundos e protege 60 minutos.**
+
+### Antes de PUSHAR, adicionalmente
+
+Confira que `HANDOFF.md` e `TODO.md` refletem o estado real (o hook de
+`pre-push` bloqueia se nao mudaram, mas ele nao checa se estao CERTOS), e que
+nenhum resultado esta registrado como vitoria sem o portao ter fechado.
+
 ## LEITURA OBRIGATÓRIA ANTES DE QUALQUER COMMIT
 
 > **ESTADO ATUAL OBRIGATORIO - proxy/telemetria (18/07/2026):** antes de
@@ -748,6 +789,150 @@ os outros sao sobre ESCOLHER melhor; este e sobre **existir** o que escolher.
 > mexendo em portao, cache, velocidade ou ferramenta de analise e NAO esta
 > tornando o modelo melhor, ela esta fora da direcao.
 
+
+## REGRA OBRIGATORIA: **A HEURISTICA NAO E REFERENCIA** (usuario, 12/09/2026, bloco 783)
+
+> *"Esqueça a heuristica, temos que melhorar nosso ML, ja falei isso várias
+> vezes, deixa isso obrigatorio na regra do projeto já que vc tá esquecendo."*
+
+**Ele repetiu porque a sessao continuava fazendo, inclusive enquanto
+construia ML.** A heuristica e **legado a ser removido**, nao parametro de
+comparacao, nao inspiracao, nao sarrafo.
+
+### O erro e SUTIL: acontece ate quando o trabalho e de ML
+
+Nao e so "propor tunar peso". E qualquer coisa em que a heuristica ocupa o
+**quadro de referencia**. Exemplos REAIS desta sessao, todos meus:
+
+| o que eu escrevi | por que esta errado |
+|---|---|
+| *"o alvo do professor NAO e copiar a heuristica"* | a justificativa do alvo virou uma negacao sobre a heuristica |
+| *"a heuristica e CEGA pro alvo, entao ganhar dela e sarrafo baixo"* | escolheu o que construir a partir do que ela faz mal |
+| *"o modelo ordena melhor QUE A HEURISTICA"* | o ganho foi enunciado em relacao a ela |
+
+Em nenhum desses eu estava propondo mexer na heuristica -- e mesmo assim ela
+era o centro da frase.
+
+### O TESTE VERIFICAVEL
+
+> **Apague a palavra "heuristica" (e `board_value`, `_evaluate_state_v2`,
+> `_trash_value`, "regra fixa", "motor de producao") da frase. Se ela perder
+> o sentido, a proposta esta errada.**
+
+Toda proposta de ML tem que responder, sem citar nenhuma dessas:
+
+- **o que o MODELO passa a aprender que hoje ele nao aprende?**
+- **o que o MODELO passa a decidir que hoje ele nao decide?**
+
+Se a resposta so existe por contraste, o trabalho e sobre a heuristica.
+
+### O QUE CONTINUA PERMITIDO (nao confundir)
+
+**MEDIR contra o motor atual no portao SPRT continua obrigatorio.** Isso nao
+e usar a heuristica como referencia de DESENHO -- e verificar que uma
+substituicao nao REGRIDE. Medir o que ja esta em producao e controle de
+qualidade; desenhar em funcao dela e o erro.
+
+A distincao em uma linha:
+
+> **Medir contra o que existe: SIM. Pensar a partir do que existe: NAO.**
+
+### Reescrita do exemplo, aplicando a regra
+
+O alvo do professor (Fase 1), enunciado ERRADO:
+*"e melhor que a heuristica porque nao copia a pontuacao dela"*.
+
+Enunciado CERTO:
+> O modelo recebia a mesma etiqueta para os ~18,5 estados de uma partida --
+> 100% da variacao do rotulo vinha da partida, 0,0000 de variacao dentro
+> dela. **Ele nao tinha como aprender qualidade de jogada, so quem venceu.**
+> O alvo de n passos faz estados diferentes da mesma partida receberem alvos
+> diferentes (variancia 0,0076), e isso e o que o modelo passa a poder
+> aprender.
+
+Nenhuma mencao a heuristica, e a justificativa fica mais forte.
+
+## O ARGUMENTO QUE JUSTIFICA A MIGRACAO (usuario, 12/09/2026, bloco 782)
+
+> *"Mesmo o bot sabendo a mao e vida etc ele ainda perdia."*
+
+**Isto reorganiza evidencia que ja existia, e descarta uma explicacao
+inteira.** Nao e opiniao -- e uma inferencia sobre numeros ja medidos.
+
+### A premissa que ele derruba
+
+Uma explicacao sempre disponivel pro bot jogar mal e *"ele decide mal porque
+nao sabe o suficiente"* -- mao oculta, deck desconhecido, vida virada. Ela e
+**FALSA aqui**, e agora ha como provar:
+
+Ate 12/09/2026, em auto-jogo, `opp_counter_potential()` lia a **mao REAL** do
+oponente. O bot decidia com informacao que **nenhum bot pode ter ao vivo** (o
+caminho ao vivo recebe a mao mascarada). E mesmo assim:
+
+| categoria | concordancia com humano |
+|---|---|
+| agregado | 49,3% |
+| distribuicao de DON | 23,5% |
+| quais cartas de counter | 18,5% |
+| alvo dentro do efeito | 16,4% |
+
+**Informacao extra nao consertou nada.** Logo, o que esta errado e a REGRA DE
+DECISAO -- que e exatamente a tese da migracao pro ML.
+
+### A camada PIOR, medida no mesmo dia (`mede_espiada.py`)
+
+Nao e so que a heuristica **desperdicava** a informacao privilegiada. Ela
+**usava mal**:
+
+```
+counter previsto ESPIANDO : 5.049
+estimativa honesta        : 1.755      (2,9x)
+```
+
+Ela somava o potencial de counter da mao INTEIRA e tratava como disponivel
+pra CADA ataque -- como se a mesma carta pudesse ser gasta varias vezes.
+Resultado: superestimava a defesa, ficava timida, anexava DON demais e
+atacava de menos.
+
+> **A informacao privilegiada estava deixando o bot PIOR, nao melhor.** Com a
+> mao do adversario na mesa, ele jogava mais medroso do que jogaria sem ela.
+
+E mais forte que o argumento original: nao e *"informacao extra nao bastou"*,
+e *"informacao extra, processada por uma regra ruim, virou erro"*.
+
+### O LIMITE do argumento -- nao apagar esta parte
+
+**Isto prova que a heuristica e o problema. NAO prova que o ML e a solucao.**
+
+O ML decidindo sozinho esta em **31,8%** (7x15) -- perdendo.
+
+> **COMO LER ESSE 31,8% (correcao do usuario, mesmo dia)**: *"ele esta assim
+> pq ainda estamos desenvolvendo"*. **Procede, e e a regra dele que ja estava
+> registrada na memoria do projeto -- "o teto e escolhido, nao medido":
+> "a estrutura atual so da X%" significa TROCAR A ESTRUTURA, nunca aceitar o
+> limite.**
+>
+> O numero e real, mas **nao e uma medida do ML** -- e uma medida do ML sob
+> tres limitacoes ja identificadas e NENHUMA delas corrigida quando ele foi
+> medido:
+>
+> | limitacao | fase do plano |
+> |---|---|
+> | treinado pra prever a pergunta ERRADA ("a partida terminou em vitoria?") | **1** |
+> | decide numa arvore de 4,9 opcoes, com as escolhas que importam ja tomadas por regra fixa | **3** |
+> | aprendeu com dado de um bot que ESPIA a mao do adversario | **0** |
+>
+> Nunca citar 31,8% como teto do ML. Citar como **linha de base dos andaimes
+> atuais** -- e dizer qual fase ataca qual limitacao.
+
+E no mesmo dia mediu-se algo que reforca isso por outro angulo: **dois modelos
+diferentes** (AUC 0,856 de fim de turno e 0,814 de meio de turno), treinados
+em dados diferentes, deram **exatamente o mesmo 7x15**. **O gargalo nao e o
+modelo** -- melhorar o avaliador nao move o ponteiro, e a quantidade de dado
+move (10,0% -> 31,8%). Logo o limite esta na ESTRUTURA.
+
+O ganho real do argumento e de DIRECAO: sabemos onde procurar -- o ROTULO e a
+ARVORE -- em vez de tunar mais constantes ou pedir mais informacao.
 
 ## PLANO OFICIAL DA MIGRACAO PRA ML (12/09/2026, bloco 781) -- PROFESSOR / ALUNO
 

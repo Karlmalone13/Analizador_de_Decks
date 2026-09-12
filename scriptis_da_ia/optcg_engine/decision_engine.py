@@ -1153,6 +1153,34 @@ EXECUTA_LETHAL_CERTIFICADO = (
 # A prova de lethal enxerga a mao OCULTA do oponente (bloco 779). Ver
 # `opp_counter_chunks_for_lethal`. `OPTCG_LETHAL_MAO_OCULTA=0` volta ao
 # comportamento antigo (mao oculta = zero counter) pra A/B.
+# ── FASE 0 do plano professor/aluno: CEGUEIRA DO AUTO-JOGO (bloco 782) ──────
+# O motor e INCONSISTENTE hoje: o rollout Monte Carlo mascara a mao do
+# oponente (`OpponentModel.sample`), mas `opp_counter_potential()` le a mao
+# REAL. A flag que cegaria (`self_play_info_hidden`) existe desde o bloco 490
+# -- criada pro simulador do front -- e o pipeline de TREINO nunca a passou.
+#
+# Resultado medido (`mede_espiada.py`, 2.738 consultas reais):
+#   counter previsto ESPIANDO : 5.049
+#   counter previsto CEGO     : 1.755      (vies +3.294, 2,9x)
+#   consultas que MUDAM       : 85,8%
+#   mudam >= 1 DON inteiro    : 84,7%
+#
+# Ou seja: 85% das decisoes de "quanto DON anexar pra este ataque passar" sao
+# tomadas com uma previsao de defesa que NAO EXISTE em partida real -- ao vivo
+# a mao chega mascarada (`hidden_information_masked`). Calibramos num mundo e
+# jogamos noutro. Casa com `distribuicao de DON` ser a 2a pior categoria
+# contra humano (23,5%).
+#
+# ATENCAO -- ARMADILHA DE MEDICAO (registrada no plano, `CLAUDE.md`): o portao
+# SPRT **NAO valida isto**. Bot-que-espia GANHA de bot-que-nao-espia, porque
+# tem mais informacao; o portao reprovaria medindo a coisa errada. Quem julga
+# a Fase 0 e o BANCO DE LOGS HUMANOS e as partidas contra o usuario -- o
+# auto-jogo e cego pra este erro por construcao.
+#
+# Default DESLIGADO: muda comportamento de producao (regra do bloco 730).
+AUTO_JOGO_CEGO = (
+    os.environ.get('OPTCG_AUTOJOGO_CEGO', '0').strip() == '1')
+
 # MEDIDO NEUTRO (bloco 781): 12x11 (52,2%) em 160 pares, 137 empatados --
 # sem evidencia de ganho NEM de perda. Fica LIGADO por CORRECAO, nao por
 # ganho: a funcao promete "lethal GARANTIDO" e sem isto a promessa e falsa em
@@ -15854,7 +15882,11 @@ class OPTCGMatch:
                                  deck=[deepcopy(c) for c in cards_a])
         self.state_b = GameState(leader=deepcopy(leader_b),
                                  deck=[deepcopy(c) for c in cards_b])
-        if hide_opponent_info:
+        # `AUTO_JOGO_CEGO` (bloco 782, Fase 0) faz o MESMO que o parametro,
+        # so que globalmente -- pra nenhuma das ~20 ferramentas que constroem
+        # partida ficar pra tras por esquecimento e gerar corpus metade cego,
+        # metade espiando. O parametro explicito continua valendo sozinho.
+        if hide_opponent_info or AUTO_JOGO_CEGO:
             self.state_a.self_play_info_hidden = True
             self.state_b.self_play_info_hidden = True
 
