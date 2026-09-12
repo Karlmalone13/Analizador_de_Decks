@@ -53,6 +53,66 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-11 (776) - ALVO precificado pelo MODELO: **96% de empate, 3x4, INCONCLUSIVO**. Duas medicoes independentes dizem que **escolher melhor o alvo nao decide partidas**
+
+### 1. O que foi feito
+
+Primeira fatia do ALCANCE (bloco 774): a regua do alvo de efeito deixou de
+ser `board_value()` e passou a ser o MODELO --
+`delta_remover(carta) = win_prob(sem a carta) - win_prob(agora)`, ou seja a
+carta cuja remocao mais aumenta a chance de vitoria.
+
+Feito com o modelo BOM (AUC 0,856, bloco 775) -- com o de 0,63 anterior
+precificar por ele seria pior que a heuristica. Knob `ALVO_PRECO_ML`,
+default OFF, override por jogador. Experimento **tipo A** pela regra do
+bloco 770: o modelo DECIDE (qual alvo), nao calibra pontuacao.
+
+### 2. Resultado
+
+```
+regua do MODELO 3 x 4 board_value | 96% de empate | 7 discordantes em 200 pares
+LLR -0,640 | VEREDITO: INCONCLUSIVO (teto) | 73,8 min
+```
+
+### 3. O que isso estabelece, junto com o bloco 763
+
+| bloco | mecanismo | empate | placar |
+|---|---|---|---|
+| 763 | alvo entra na BUSCA | 96% | 1x6 |
+| **776** | alvo precificado pelo MODELO | **96%** | 3x4 |
+
+**Dois mecanismos completamente diferentes, mesma familia, o MESMO 96% de
+empate.** Nao e coincidencia:
+
+> **Escolher melhor o alvo nao decide partidas neste jogo.**
+
+### 4. O ERRO DE RACIOCINIO que isso corrige (meu)
+
+Tratei "alvo dentro do efeito" como alavanca grande porque era a **pior
+categoria de concordancia com humano** (16,4%). Mas **concordar com humano e
+MUDAR O RESULTADO sao coisas diferentes** -- o bot pode escolher alvos
+"errados" pelo criterio humano sem que isso custe partidas.
+
+Isso enfraquece a priorizacao por concordancia que vinha sendo usada. As
+outras familias podem ter alavanca diferente -- mas nao da pra assumir que
+tem.
+
+### 5. O INSTRUMENTO que isso revela
+
+A **taxa de empate do duelo pareado E a medida de quanto uma familia
+importa**:
+
+| familia | empate medido | importa? |
+|---|---|---|
+| alvo de efeito | **96%** | quase nada |
+| modelo como avaliador | 72% | **muito** |
+| modelo somado (peso) | 78-82% | pouco |
+
+Da pra **medir a alavanca de cada familia ANTES de construir pra ela** --
+randomizando aquela decisao num lado e vendo quanto o desfecho muda. ~20 min
+por familia, contra horas implementando as quatro restantes pra descobrir
+depois quais nao valiam.
+
 ## 2026-09-11 (775) - **A FOME ERA REAL**: 23x de corpus levou o ML autonomo de 10% pra 31,8% de winrate e o AUC de 0,632 pra 0,856. Ainda perde -- e a causa restante e ALCANCE, nao qualidade
 
 ### 1. O corpus grande

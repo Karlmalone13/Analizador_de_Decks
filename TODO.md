@@ -27,6 +27,23 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 11/09/2026 (bloco 776): **ALVO precificado pelo MODELO — 96% de empate,
+> 3 × 4, INCONCLUSIVO.** Primeira fatia do ALCANCE, com o modelo bom (AUC
+> 0,856): a régua do alvo virou `delta_remover = win_prob(sem a carta) −
+> win_prob(agora)`. Knob `ALVO_PRECO_ML`, default OFF, tipo A.
+> **Junto com o bloco 763** (alvo na busca, também 96% de empate, 1 × 6):
+> **dois mecanismos completamente diferentes, mesma família, o mesmo 96%** —
+> **escolher melhor o alvo não decide partidas neste jogo.**
+> **CORRIGE UM ERRO MEU DE RACIOCÍNIO**: tratei "alvo dentro do efeito" como
+> alavanca grande por ser a pior categoria de concordância com humano (16,4%),
+> mas **concordar com humano e mudar o resultado são coisas diferentes**. Isso
+> enfraquece a priorização por concordância que vinha sendo usada.
+> **INSTRUMENTO que isso revela**: a taxa de empate do duelo pareado **é** a
+> medida de quanto uma família importa (alvo 96% = quase nada; modelo como
+> avaliador 72% = muito). Dá para **medir a alavanca de cada família ANTES de
+> construir para ela**, ~20 min cada, em vez de implementar as quatro restantes
+> e descobrir depois quais não valiam.
+
 > 11/09/2026 (bloco 775): **A FOME ERA REAL — o modelo não era fraco, estava
 > faminto.** Corpus de **81.645 estados** (2.000 partidas em ~30 min usando o
 > modo rápido como GERADOR; com o motor de produção teria levado ~9 h).

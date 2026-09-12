@@ -165,6 +165,12 @@ _k.registra('VALUE_NET_WEIGHT', float(0.0), float,
             'peso do valor aprendido por auto-jogo na avaliacao de linha '
             '(0.0 = desligado, comportamento de producao inalterado)',
             'avaliacao', 0.0, 2000.0)
+_k.registra('ALVO_PRECO_ML', False, bool,
+            'A escolha de ALVO de efeito passa a usar o MODELO como regua '
+            '(quanto a posicao melhora se a carta sumir) em vez de '
+            'board_value(). Primeira fatia do ALCANCE (bloco 776): o ML '
+            'decide 1 de 6 familias, e as outras 5 usam board_value/'
+            '_trash_value. Default DESLIGADO.')
 _k.registra('ML_AVALIADOR', False, bool,
             'O MODELO avalia a posicao LOGO APOS a acao, sem simular o resto '
             'do turno nem o turno do oponente -- o ML vira a funcao de '
@@ -177,6 +183,7 @@ _k.registra('ML_AVALIADOR_ESCALA', 1000.0, float,
 VALUE_NET_WEIGHT = _k.get('VALUE_NET_WEIGHT')
 # Bloco 769 -- ver o registro do knob. Lidos aqui pra ficarem disponiveis no
 # modulo, mesmo padrao de VALUE_NET_WEIGHT acima.
+ALVO_PRECO_ML = bool(_k.get('ALVO_PRECO_ML'))
 ML_AVALIADOR = bool(_k.get('ML_AVALIADOR'))
 ML_AVALIADOR_ESCALA = float(_k.get('ML_AVALIADOR_ESCALA'))
 
@@ -4143,6 +4150,23 @@ class EffectExecutor:
             if all(any(c is o for o in campo_opp) for c in candidatos):
                 an = self._de().analyzer
                 return max(candidatos, key=an.char_value_score)
+        # REGUA PELO MODELO (bloco 776) -- a 1a fatia do ALCANCE. Escolhe o
+        # alvo cuja remocao mais AJUDA quem esta agindo, medido pelo modelo,
+        # em vez de `board_value()` (power//1000 + bonus de keyword).
+        #
+        # Override POR JOGADOR (None cai no knob global) pro duelo ter os
+        # dois lados diferentes na MESMA partida.
+        _preco = getattr(self.me, 'alvo_preco_ml', None)
+        if ALVO_PRECO_ML if _preco is None else _preco:
+            from optcg_engine import value_net as _vnr
+            _b = _vnr.load_value_net(getattr(self.me, 'value_net_path', None))
+            _com_delta = [(c, _vnr.delta_remover(c, self.me, self.opp, bundle=_b))
+                          for c in candidatos]
+            _validos = [(c, d) for c, d in _com_delta if d is not None]
+            if _validos:
+                return max(_validos, key=lambda cd: cd[1])[0]
+            # sem modelo compativel -> cai na heuristica abaixo
+
         from optcg_engine.rules_facade import choose_highest_board_value
         return choose_highest_board_value(candidatos)
 

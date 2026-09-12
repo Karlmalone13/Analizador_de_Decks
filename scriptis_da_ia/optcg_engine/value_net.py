@@ -354,6 +354,54 @@ def load_value_net(path: str | None = None):
     return bundle
 
 
+def delta_remover(card, p, opp, bundle=None) -> float | None:
+    """Quanto a POSICAO melhora pra `p` se esta carta sumir do campo.
+
+    `win_prob(sem a carta) - win_prob(agora)`. Positivo = tirar a carta
+    AJUDA `p`. Serve pras duas pontas da mesma decisao:
+      - remover do OPONENTE  -> escolher o de MAIOR delta (tira o pior pra mim)
+      - sacrificar do PROPRIO -> escolher o de MENOR delta (perde o que menos dói)
+
+    Existe pra substituir `board_value()` como REGUA (bloco 776). O
+    inventario do bloco 774 achou **81 decisoes fixas em 28 funcoes**, e
+    quase todas usam `board_value()` ou `_trash_value` -- duas heuristicas
+    escolhendo quase tudo no jogo. Trocar a REGUA alcanca todas de uma vez,
+    em vez de reescrever 28 funcoes.
+
+    A carta passa a valer **por consequencia medida** (quanto muda a chance
+    de vitoria) em vez de `power // 1000 + bonus de keyword` escrito a mao.
+    Isso so ficou confiavel agora: a rede de valor chegou a AUC 0,856 com o
+    corpus de 81 mil estados (bloco 775); com o modelo de AUC 0,63 anterior,
+    precificar por ele seria pior que a heuristica.
+
+    Remocao TEMPORARIA e reversivel (a lista volta ao estado original no
+    `finally`), nunca uma mutacao que escape daqui.
+
+    None quando nao ha modelo compativel ou a carta nao esta em campo -- o
+    chamador cai na heuristica, degradacao graciosa de sempre.
+    """
+    if bundle is None:
+        bundle = load_value_net()
+    if not bundle:
+        return None
+    base = win_prob(p, opp, bundle=bundle)
+    if base is None:
+        return None
+    for dono in (p, opp):
+        campo = getattr(dono, 'field_chars', None)
+        if not campo:
+            continue
+        for i, c in enumerate(campo):
+            if c is card:
+                removida = campo.pop(i)
+                try:
+                    sem = win_prob(p, opp, bundle=bundle)
+                finally:
+                    campo.insert(i, removida)
+                return None if sem is None else (sem - base)
+    return None
+
+
 def check_dims(bundle, n: int) -> bool:
     """Confere que o vetor de runtime tem o MESMO tamanho que o modelo viu
     no treino, e AVISA ALTO (stderr, 1x) quando nao tem.
