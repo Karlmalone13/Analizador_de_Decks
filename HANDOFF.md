@@ -53,6 +53,93 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-12 (778) - **BUG DE CORRECAO achado pelo usuario: `_lethal_search` declara "vitoria GARANTIDA" ignorando TRIGGERS.** E a busca gulosa e guiada pela HEURISTICA, nao pelo ML
+
+### 1. O bug (achado do usuario, confirmado no codigo)
+
+Pergunta dele sobre o cenario que decide partidas: *"o Bot esta em um turno
+que se ele passar o turno ele perde na volta, e ele tem uma chance de vencer
+se fizer a sequencia exata de ataques, distribuicao de dons, ativacao de
+efeitos, o nosso ML consegue acertar essa combinacao?"*. Ao verificar, ele
+apontou: *"nao pode so considerar distribuicao de dons e defesa possivel,
+tem que considerar tb ativacao de efeitos e possibilidades de triggers"*.
+
+**Confirmado: `_lethal_search` (linhas ~12253-12360) tem ZERO mencoes a
+trigger.**
+
+O que ela considera: atacantes elegiveis, poder no momento do ataque,
+unblockable, double attack (hits=2), **todas** as distribuicoes de DON
+(`search_alloc` enumera exaustivamente), blockers do oponente e counters --
+estes ate de forma conservadora (`opp_counter_chunks_for_lethal` assume que
+carta desconhecida na mao pode ser counter de 2000, pra nao certificar
+lethal contra defesa que sobreviveria).
+
+**O que ela NAO considera:**
+
+| lacuna | consequencia | tipo |
+|---|---|---|
+| **TRIGGERS do oponente** | declara "lethal GARANTIDO" que **nao e garantido** -- ataca com tudo e se expoe | **CORRECAO** |
+| **ATIVACAO de efeitos propria** | **perde vitorias REAIS** que exigem ativar antes de atacar | qualidade |
+
+A primeira e bug de verdade: a funcao existe pra dar uma GARANTIA, e a
+garantia e falsa quando ha trigger na vida do oponente. Mesma categoria dos
+bugs ja corrigidos em `opp_reactive_field_buffs` (bloco 564) e no proprio
+`opp_counter_chunks_for_lethal` (achado 17/08) -- certificar lethal contra
+uma defesa que na verdade sobrevive.
+
+### 2. A busca gulosa e guiada pela HEURISTICA, nao pelo ML
+
+Outro achado do mesmo diagnostico, e responde a pergunta do usuario sobre o
+ML melhorar a busca:
+
+**A continuacao gulosa da busca escolhe cada passo pela pontuacao ESTATICA
+da heuristica.** O modelo so e consultado no FIM, pra julgar a posicao
+resultante.
+
+> O ML julga o DESTINO; quem escolhe o CAMINHO e a heuristica.
+
+Consequencia, exatamente como o usuario descreveu: *"as vezes a jogada mais
+segura pode ser melhor ao longo dos turnos"* -- uma linha que exige uma
+primeira jogada aparentemente ruim **na regua da heuristica** nunca chega a
+ser avaliada pelo modelo.
+
+### 3. O laco de aprendizado atualiza tarde demais
+
+O ciclo hoje: joga 2.000 partidas -> rotula -> treina -> repete. Funciona
+(e o *"fiz isso, nao deu certo, da proxima faco diferente"* que o usuario
+descreveu), **mas so atualiza depois das 2.000**. Das partidas 2 a 2.000 o
+bot joga com o modelo VELHO.
+
+Pedido do usuario, com ressalva dele proprio: atualizar **a cada 3
+partidas** -- *"para ter uma margem de erro"*, em vez de a cada 1.
+
+Ganho esperado nao e so velocidade: as partidas seguintes passam a ser
+jogadas pelo modelo JA corrigido, aproximando treino e uso. Esse
+descasamento (*distribution shift*) e causa medida de fracasso anterior
+neste projeto (blocos 680-683, 753).
+
+### 4. Ordem definida pelo usuario
+
+1. **O bug do lethal** (triggers + ativacoes) -- e correcao, vem primeiro
+2. **Busca guiada pelo ML** em vez da heuristica
+3. **Retreino a cada 3 partidas**
+
+### 5. Medido junto: o corpus NAO e eco
+
+Duvida do usuario: *"se rodar 2000 partidas e ele sempre decidir igual, nao
+variar jogadas, como ele vai aprender?"*. Medido no corpus de 2.000
+partidas:
+
+```
+81.645 posicoes gravadas
+77.797 DISTINTAS (95,3%)
+a mais repetida aparece 10 vezes
+```
+
+**95,3% de posicoes unicas** -- a exploracao do bloco 767 (15% das decisoes
+fora do topo) mais variedade de decks e embaralhamento produzem diversidade
+real. Nao e a mesma partida 2.000 vezes.
+
 ## 2026-09-12 (777) - **A TESE DO ALCANCE CAI POR MEDICAO**: decidir no CHUTE qual blocker defende nao mudou UMA partida em 80 pares. A alavanca esta onde o ML JA atua
 
 ### 1. O instrumento

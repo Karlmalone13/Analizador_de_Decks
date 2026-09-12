@@ -27,6 +27,29 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 12/09/2026 (bloco 778): **BUG DE CORREÇÃO achado pelo usuário —
+> `_lethal_search` declara "vitória GARANTIDA" ignorando TRIGGERS.**
+> Confirmado no código: zero menções a trigger nas linhas ~12253-12360. Ela
+> considera atacantes, poder, unblockable, double attack, **todas** as
+> distribuições de DON, blockers e counters (estes até conservadoramente) — mas
+> **não os triggers da vida do oponente**, que podem anular o ataque. A função
+> existe para dar uma GARANTIA e a garantia é falsa. Mesma categoria dos bugs
+> já corrigidos em `opp_reactive_field_buffs` (564) e
+> `opp_counter_chunks_for_lethal` (17/08).
+> Lacuna irmã, do outro lado: **ativação de efeitos própria** também fica fora
+> — aí o erro é **perder vitórias reais** que exigem ativar antes de atacar.
+> **SEGUNDO ACHADO**: a continuação gulosa da busca escolhe cada passo pela
+> pontuação **estática da heurística**; o modelo só julga a posição final.
+> **O ML julga o destino, a heurística escolhe o caminho** — então a linha que
+> exige uma primeira jogada "ruim pela heurística" nunca chega ao modelo.
+> **TERCEIRO**: o laço só retreina depois de 2.000 partidas; das partidas 2 a
+> 2.000 o bot joga com o modelo velho. Pedido do usuário: retreinar **a cada 3
+> partidas** (ressalva dele: 3 e não 1, "para ter margem de erro").
+> **MEDIDO junto** (dúvida dele sobre eco): das 81.645 posições, **77.797 são
+> distintas (95,3%)** — a exploração do bloco 767 produz diversidade real.
+> **ORDEM definida por ele**: (1) o bug do lethal, (2) busca guiada pelo ML,
+> (3) retreino a cada 3 partidas.
+
 > 12/09/2026 (bloco 777): **A TESE DO ALCANCE CAI POR MEDIÇÃO.** Instrumento
 > novo (`mede_alavanca.py`): um lado decide a família **no aleatório**, o outro
 > pela regra — se o aleatório não perder, decidir bem ali não paga.
