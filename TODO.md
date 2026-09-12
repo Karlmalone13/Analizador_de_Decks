@@ -27,6 +27,28 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 12/09/2026 (bloco 777): **A TESE DO ALCANCE CAI POR MEDIÇÃO.** Instrumento
+> novo (`mede_alavanca.py`): um lado decide a família **no aleatório**, o outro
+> pela regra — se o aleatório não perder, decidir bem ali não paga.
+>
+> | família | empate | pares que decidiram | winrate ALEATÓRIO |
+> |---|---|---|---|
+> | **blocker** | **100%** | **0 de 80** | — |
+> | alvo | 91% | 7 de 80 | 0,0% |
+> | descarte | 81% | 15 de 80 | 40,0% |
+>
+> **Escolher o defensor no chute nunca mudou quem ganhou, em 80 pares.**
+> **CORRIGE a tese do bloco 774** ("o ML participa de 1 de 6 famílias, e isso é
+> o teto"), registrada com destaque no `CLAUDE.md`: o inventário de 81 decisões
+> fixas continua correto como FATO, mas **decidi-las bem quase não muda o
+> resultado** — levar o ML até elas não pagaria. A alavanca está na **ação de
+> topo** (72% de empate, a menor medida), **exatamente onde o ML já atua**.
+> **Onde investir**: quantidade de dado, a única alavanca com ganho medido —
+> 3.614 → 81.645 estados levou o AUC de 0,632 a 0,856 e o ML autônomo de 10,0%
+> a 31,8%.
+> **Ressalvas**: amostras pequenas (7, 0, 15 discordantes); blocker é forte, os
+> outros indicativos. **Não medidas**: pagar custo, search/trash.
+
 > 11/09/2026 (bloco 776): **ALVO precificado pelo MODELO — 96% de empate,
 > 3 × 4, INCONCLUSIVO.** Primeira fatia do ALCANCE, com o modelo bom (AUC
 > 0,856): a régua do alvo virou `delta_remover = win_prob(sem a carta) −

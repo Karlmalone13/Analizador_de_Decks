@@ -560,6 +560,44 @@ premissa teriam levado direto a mudanca de arquitetura.
 > memo de `win_prob` (bloco 766) ja existe justamente pra isso. **Nao
 > adotado ainda, so desenhado.**
 
+>
+> ### CORRECAO MEDIDA (12/09/2026): a tese do ALCANCE esta ENFRAQUECIDA
+>
+> A secao acima concluia que o problema era **alcance** -- o ML participa de
+> 1 de 6 familias, e isso seria o teto. **Medido, e nao se sustenta como
+> estava escrito.**
+>
+> Instrumento (`mede_alavanca.py`, bloco 777): um lado decide a familia no
+> ALEATORIO, o outro pela regra. Se o aleatorio nao perder, a familia nao
+> importa.
+>
+> | familia | empate | pares que decidiram | winrate no ALEATORIO |
+> |---|---|---|---|
+> | **acao de topo** (onde o ML JA atua) | **72%** | -- | -- |
+> | descarte | 81% | 15 de 80 | 40,0% |
+> | alvo | 91% | 7 de 80 | 0,0% |
+> | **blocker** | **100%** | **0 de 80** | -- |
+>
+> **Decidir qual blocker defende no CHUTE nao mudou o resultado de UMA
+> partida em 80 pares.** As tres familias testadas empatam entre 81% e 100%.
+>
+> **A alavanca esta concentrada na ACAO DE TOPO -- exatamente onde o ML ja
+> atua.** Levar o ML as outras familias existe como possibilidade, mas **nao
+> paga**: nem decidir no aleatorio atrapalha.
+>
+> O inventario das 81 decisoes fixas **continua correto como fato** -- elas
+> existem e sao regra fixa. O que caiu foi a INFERENCIA de que elas eram o
+> teto.
+>
+> **Ressalva de amostra**: 7, 0 e 15 pares discordantes. O blocker e forte
+> (zero em 80). Os outros dois sao indicativos. **Nao medidas ainda**: pagar
+> custo, e carta do search / reviver do trash.
+>
+> **Onde investir, entao**: o ML ja esta na familia que importa, e la o que
+> mediu progresso foi QUANTIDADE DE DADO -- 23x de corpus rendeu +22pp de
+> winrate (10,0% -> 31,8%, bloco 775). E a unica alavanca com ganho medido e
+> trajetoria clara.
+
 > **AGENDA que isto define**: o ML nao precisa "melhorar" -- precisa
 > **ALCANCAR**. Enquanto `board_value` e `_trash_value` decidirem tudo, o
 > modelo continua opinando sobre uma fracao pequena do jogo, e nenhuma

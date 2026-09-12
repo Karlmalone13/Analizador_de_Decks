@@ -835,6 +835,30 @@ _k.registra('ALVO_EFEITO_MAX_CANDIDATOS', 3, int,
             'empatam e expulsam cartas diferentes do shortlist.')
 
 
+def _familia_aleatoria(nome: str, dono) -> bool:
+    """Esta familia de decisao deve ser escolhida NO ALEATORIO pra este jogador?
+
+    INSTRUMENTO DE ALAVANCAGEM (bloco 777). Achado do bloco 776: duas
+    tentativas diferentes de melhorar a escolha de ALVO deram o MESMO 96% de
+    empate -- escolher melhor o alvo nao decide partidas. Antes de construir
+    ML pras outras familias, vale MEDIR quanto cada uma importa.
+
+    O teste: um lado decide a familia no ALEATORIO, o outro pela regra
+    normal. Se o lado aleatorio perder feio, a familia importa. Se empatar,
+    nao importa -- e nao vale construir ML pra ela.
+
+    E mais direto que a taxa de empate: mede "quanto custa decidir MAL
+    aqui", que e o teto do que decidir BEM poderia ganhar.
+
+    `dono.familia_aleatoria` = nome da familia (ou conjunto de nomes).
+    Default None => nada muda. So pra MEDICAO, nunca pra producao.
+    """
+    v = getattr(dono, 'familia_aleatoria', None)
+    if not v:
+        return False
+    return nome == v if isinstance(v, str) else nome in v
+
+
 def _alvo_efeito_na_busca(p) -> bool:
     """`ALVO_EFEITO_NA_BUSCA` com override POR JOGADOR (bloco 763).
 
@@ -4156,6 +4180,8 @@ class EffectExecutor:
         #
         # Override POR JOGADOR (None cai no knob global) pro duelo ter os
         # dois lados diferentes na MESMA partida.
+        if _familia_aleatoria('alvo', self.me) and len(candidatos) > 1:
+            return random.choice(candidatos)
         _preco = getattr(self.me, 'alvo_preco_ml', None)
         if ALVO_PRECO_ML if _preco is None else _preco:
             from optcg_engine import value_net as _vnr
@@ -11061,6 +11087,8 @@ class EffectExecutor:
         """Escolhe a carta de menor valor situacional para descartar."""
         if not hand:
             return None
+        if _familia_aleatoria('descarte', self.me) and len(hand) > 1:
+            return random.choice(hand)      # instrumento do bloco 777
         return min(hand, key=self._trash_value)
 
     _SACRIFICE_COST_TYPES = {'trash_from_hand', 'trash_hand', 'trash_char_or_hand',
@@ -15218,6 +15246,12 @@ class DecisionEngine:
         """
         cands = list(self.me.blockers_active())
         escolhido = self._should_use_blocker_inner(attacker_power)
+        # INSTRUMENTO (bloco 777): randomiza QUAL blocker, mantendo a decisao
+        # de BLOQUEAR OU NAO vinda da heuristica -- isola a familia "escolha
+        # especifica", que e a fraca (18,5% em `quais cartas de counter`),
+        # da familia "o que fazer", que ja esta boa (85,7%).
+        if escolhido is not None and len(cands) > 1 and _familia_aleatoria('blocker', self.me):
+            escolhido = random.choice(cands)
         if _DEFESA['on']:
             _log_defesa({
                 'kind': 'blocker_choice',

@@ -53,6 +53,67 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-12 (777) - **A TESE DO ALCANCE CAI POR MEDICAO**: decidir no CHUTE qual blocker defende nao mudou UMA partida em 80 pares. A alavanca esta onde o ML JA atua
+
+### 1. O instrumento
+
+`mede_alavanca.py`: um lado decide a familia no ALEATORIO, o outro pela
+regra normal. Se o lado aleatorio nao perder, **decidir bem ali nao paga** --
+mede o TETO, porque quanto se perde decidindo mal e o maximo que se ganharia
+decidindo bem.
+
+Nasceu do bloco 776: duas tentativas diferentes de melhorar a escolha de
+ALVO deram o MESMO 96% de empate, e eu tinha priorizado aquela familia por
+ser a pior em CONCORDANCIA COM HUMANO -- criterio que se mostrou errado.
+
+### 2. Resultado
+
+| familia | empate | pares que decidiram | winrate ALEATORIO | tempo |
+|---|---|---|---|---|
+| **blocker** | **100%** | **0 de 80** | -- | 27 min |
+| alvo | 91% | 7 de 80 | 0,0% | 31 min |
+| descarte | 81% | 15 de 80 | 40,0% | 25 min |
+
+**Zero pares discordantes no blocker**: escolher o defensor no chute nunca
+mudou quem ganhou, em 80 pares.
+
+### 3. A CORRECAO da minha propria tese de ontem
+
+O bloco 774 concluiu que o problema era **ALCANCE** -- "o ML participa de 1
+de 6 familias, e isso, nao a qualidade do modelo, e o teto". Registrei com
+destaque no `CLAUDE.md`.
+
+**A medicao enfraquece essa inferencia.** As outras familias sao regra fixa
+(o inventario de 81 decisoes continua correto como FATO), mas **decidi-las
+bem quase nao muda o resultado**. Levar o ML ate elas nao pagaria.
+
+| decisao | empate |
+|---|---|
+| **acao de topo** (ML avaliador, blocos 769/775) | **72%** |
+| descarte | 81% |
+| alvo | 91% |
+| blocker | 100% |
+
+**A alavanca esta concentrada na acao de topo -- exatamente onde o ML ja
+atua.**
+
+### 4. Onde investir
+
+O ML ja esta na familia que importa, e la o que mediu progresso foi
+**quantidade de dado**: 3.614 -> 81.645 estados levou o AUC de 0,632 pra
+0,856 e o ML autonomo de 10,0% pra 31,8% (bloco 775). **Unica alavanca com
+ganho medido e trajetoria clara.**
+
+### 5. Ressalvas
+
+- Amostras de pares discordantes pequenas: 7 (alvo), 0 (blocker), 15
+  (descarte). O blocker e forte; os outros dois sao indicativos.
+- **Nao medidas ainda**: pagar custo (o que sacrificar) e carta do search /
+  reviver do trash.
+- A randomizacao isola a escolha ESPECIFICA (qual blocker), mantendo a
+  decisao de bloquear-ou-nao vinda da heuristica -- que ja esta em 85,7% e
+  nao era o alvo do teste.
+
 ## 2026-09-11 (776) - ALVO precificado pelo MODELO: **96% de empate, 3x4, INCONCLUSIVO**. Duas medicoes independentes dizem que **escolher melhor o alvo nao decide partidas**
 
 ### 1. O que foi feito
