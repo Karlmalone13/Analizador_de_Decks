@@ -32,6 +32,29 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 13/09/2026 (bloco 784): **⚠️ PRODUÇÃO MUDOU E NADA FOI MEDIDO.**
+> `MODELO_ORDENA`, `MODELO_SACRIFICIO`, `ALVO_EFEITO_NA_BUSCA` e
+> `ARVORE_DON_EXTRA` estão **LIGADOS por default** e **nenhum passou por
+> duelo**. O motor ficou **lento**: ~34,5s/partida com tudo desligado contra
+> ~16s do baseline — a árvore alargou e o Monte Carlo continua por baixo, com
+> orçamento fixo dividido entre mais candidatas. Com tudo ligado, 55-95s.
+> **Para voltar ao comportamento anterior, desligue os quatro knobs.**
+> **CONSTRUÍDO**: o modelo decide **8 famílias** (topo, DON por ataque, alvo do
+> efeito, blocker, counter, search, trash, descarte); árvore **4,9 → 8,4**
+> candidatas, DON por ataque **1,00 → 2,51**; 3 medidas novas em `value_net`.
+> **SUBSTITUIÇÃO DO MONTE CARLO construída e CUSTO-NEUTRA**: busca
+> determinística no próprio turno + rede na folha + transposição deu **55,1s
+> contra 54,5s**. Falta o **"U" do NNUE** — avaliação incremental; hoje cada
+> consulta clona o estado e recalcula 78 features do zero. **É a próxima
+> tarefa.**
+> **4 bugs meus pegos antes de medir**, incluindo o caminho AO VIVO devolvendo
+> `None` (o bot ficaria sem ação contra o usuário) e a expansão da árvore sendo
+> desfeita em silêncio pelo dedupe. Um quinto, de custo: a precificação rodava
+> dentro da simulação — 18.392 chamadas/partida, corrigido (`win_prob` 38.785 →
+> 19.218).
+> **PRÓXIMO PASSO: MEDIR.** Há muita coisa construída e zero evidência de que
+> alguma ajuda.
+
 > 12/09/2026 (bloco 783): **AS 4 FASES DO PLANO PROFESSOR/ALUNO CONSTRUÍDAS**,
 > sem simulação (pedido do usuário).
 > **Fase 1 (rótulo)**, medido só reanalisando o corpus: 100,0% da variação do

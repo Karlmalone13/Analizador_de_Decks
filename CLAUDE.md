@@ -991,6 +991,65 @@ move (10,0% -> 31,8%). Logo o limite esta na ESTRUTURA.
 O ganho real do argumento e de DIRECAO: sabemos onde procurar -- o ROTULO e a
 ARVORE -- em vez de tunar mais constantes ou pedir mais informacao.
 
+## CATALOGO DE METODOS PRA SUBSTITUIR O MONTE CARLO (trazidos pelo usuario, 12-13/09/2026)
+
+> Registrado a pedido dele. **Nenhum foi implementado ainda** -- e catalogo,
+> nao decisao. A coluna "aplica aqui" e avaliacao minha, e cada uma que virar
+> trabalho precisa da premissa testada antes de construir.
+
+### O que o motor tem HOJE
+
+**Monte Carlo PLANO** -- verificado no codigo (bloco 781): sem arvore, sem
+UCB/UCT. Cada candidata recebe simulacoes independentes e o orcamento e
+DIVIDIDO entre elas. Custa ~85% do tempo de partida (42,5% resposta do
+oponente + 42,2% continuacao gulosa, bloco 765) e e por isso que "alargar o
+shortlist" regrediu 3 vezes: **olhar mais custa olhar pior**.
+
+### Bloco 1 -- alternativas de simulacao numerica
+
+| metodo | o que e | aplica aqui? |
+|---|---|---|
+| **Quase-Monte Carlo (QMC)** | sequencias determinísticas de baixa discrepancia (Sobol, Halton, Faure); converge O(1/N) contra O(1/raiz(N)) | **NAO** -- e integracao CONTINUA. O nosso e combinatorio discreto ("qual carta, em quem, quanto DON"): nao ha funcao suave pra integrar |
+| **Elementos Finitos / Diferencas Finitas** | malha fixa, derivadas viram diferencas discretas | **NAO** -- equacoes diferenciais, outro dominio |
+| **Quadratura Gaussiana** | Gauss-Hermite/Legendre; integral exata pra funcao suave com poucos pontos | **NAO** -- mesmo motivo |
+| **Surrogate Models / Emuladores** | Krigagem, Processos Gaussianos, redes neurais -- funcao rapida que IMITA o modelo pesado | **SIM -- e o caminho.** A rede de valor E isto; nome dado pelo proprio usuario |
+| **Reducao de variancia** | Importance Sampling, Variaveis Antiteticas, Amostragem Estratificada | **EM PARTE** -- e ja usamos uma: sementes comuns no duelo pareado (bloco 756) |
+
+### Bloco 2 -- motores de xadrez (mais rapidos que MCTS)
+
+| metodo | o que e | aplica aqui? |
+|---|---|---|
+| **Minimax + Poda Alfa-Beta** | busca determinística que descarta ramos comprovadamente piores | **NAO como no xadrez**: a poda so e provadamente correta com INFORMACAO PERFEITA. Aqui a mao do oponente e oculta e ha aleatoriedade (compra, trigger) |
+| **NNUE** | rede neural leve na CPU, **atualizada INCREMENTALMENTE** a cada lance; avaliador do Stockfish | **SIM, e e o mais proximo do que falta.** Hoje as 78 features sao recalculadas do zero a cada consulta |
+| **PVS / NegaScout** | janela nula nos lances apos o primeiro | depende de alfa-beta -- mesma ressalva |
+| **Bitboards** | tabuleiro como inteiros de 64 bits, operacoes binarias | nao se traduz: o estado aqui nao e um tabuleiro fixo de 64 casas |
+| **Tabelas de transposicao** | hash de posicoes ja calculadas | **SIM** -- 58% das linhas convergem pro MESMO estado (bloco 756). Trabalho duplicado MEDIDO |
+
+### Bloco 3 -- machine learning aplicado a jogo
+
+| metodo | o que e | aplica aqui? |
+|---|---|---|
+| **DQN (Deep Q-Learning)** | o agente joga contra si mesmo e aprende o **valor Q** -- retorno futuro acumulado de CADA ACAO numa posicao. Arvore de busca pode ser acoplada no fim pra refinar | **SIM, e ja estamos com meio pe dentro**: o alvo do professor (bloco 783) e um **retorno de n passos**, a mesma familia matematica do Q. O que falta e ele DECIDIR por esse valor em vez de por busca |
+| **Algoritmos geneticos** | populacoes de motores com variacoes de peso jogam entre si; vencedores combinam genes | otimiza PESO de regra estatica -- fora da direcao registrada (o objetivo nao e achar pesos melhores) |
+| **NNUE** (detalhado) | avaliacao por rede no lugar de equacao escrita por humano, com atualizacao incremental | ver bloco 2 |
+
+### A leitura que isto organiza
+
+Tres coisas diferentes estao misturadas na palavra "substituir o Monte Carlo":
+
+1. **Trocar o AVALIADOR** (o que da nota a posicao): Surrogate / NNUE / DQN.
+2. **Trocar a BUSCA** (como se percorre as opcoes): Alfa-Beta, PVS, MCTS.
+3. **Baratear o que ja existe**: transposicao, reducao de variancia, bitboards.
+
+**O projeto esta no (1)** -- e onde o ML entra. (3) e velocidade, e cai na
+regra de "melhoria ao redor do ML". (2) esbarra na informacao oculta.
+
+> **CORRECAO REGISTRADA (usuario, 13/09)**: `_lethal_search` **nao** e um
+> exemplo de "busca exaustiva que substitui o rollout", e citá-lo assim foi
+> erro meu. Ele responde uma pergunta TERMINAL e especifica -- *"consigo
+> vencer neste turno?"* -- e enumerar alocacoes de DON pra isso nao e avaliar
+> posicao. Nao confundir as duas coisas.
+
 ## PLANO OFICIAL DA MIGRACAO PRA ML (12/09/2026, bloco 781) -- PROFESSOR / ALUNO
 
 > Desenhado com o usuario nesta sessao e **aprovado por ele**. Substitui

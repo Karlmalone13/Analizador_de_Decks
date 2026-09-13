@@ -376,6 +376,95 @@ def load_value_net(path: str | None = None):
     return bundle
 
 
+def delta_ganhar_na_mao(card, p, opp, bundle=None) -> float | None:
+    """Quanto a posicao de `p` MELHORA se esta carta entrar na MAO dele.
+
+    E a pergunta do SEARCH: entre as cartas que posso puxar do deck, qual
+    muda mais a minha chance de vencer. Positivo = pegar esta ajuda mais.
+
+    Inversa de `delta_gastar_da_mao`. Existe porque escolher o que GANHAR e
+    uma familia inteira que ficava fora do alcance do modelo -- o usuario
+    apontou explicitamente ("precisamos treinar tb na escolha de cartas em um
+    search ou reviver do trash").
+    """
+    if card is None:
+        return None
+    bundle = bundle if bundle is not None else load_value_net()
+    if not bundle:
+        return None
+    mao = getattr(p, 'hand', None)
+    if mao is None:
+        return None
+    base = win_prob(p, opp, bundle=bundle)
+    if base is None:
+        return None
+    p.hand = list(mao) + [card]
+    try:
+        com = win_prob(p, opp, bundle=bundle)
+    finally:
+        p.hand = mao
+    return None if com is None else (com - base)
+
+
+def delta_ganhar_no_campo(card, p, opp, bundle=None) -> float | None:
+    """Quanto a posicao de `p` MELHORA se esta carta entrar no CAMPO dele.
+
+    E a pergunta do REVIVER DO TRASH: entre os corpos no lixo, qual vale mais
+    trazer de volta. Positivo = trazer este ajuda mais.
+    """
+    if card is None:
+        return None
+    bundle = bundle if bundle is not None else load_value_net()
+    if not bundle:
+        return None
+    campo = getattr(p, 'field_chars', None)
+    if campo is None:
+        return None
+    base = win_prob(p, opp, bundle=bundle)
+    if base is None:
+        return None
+    p.field_chars = list(campo) + [card]
+    try:
+        com = win_prob(p, opp, bundle=bundle)
+    finally:
+        p.field_chars = campo
+    return None if com is None else (com - base)
+
+
+def delta_gastar_da_mao(card, p, opp, bundle=None) -> float | None:
+    """Quanto a POSICAO de `p` muda se esta carta sair da MAO dele.
+
+    Irma de `delta_remover`, que so trata carta em CAMPO e devolve `None`
+    pra carta na mao -- e cartas de counter estao justamente na mao.
+
+    Serve pra escolher QUAIS cartas gastar como counter: gasta-se a de menor
+    perda. E o que o modelo passa a decidir numa das tres piores categorias
+    medidas contra humano (`quais cartas de counter`, 18,5%).
+
+    Negativo = perder a carta PIORA a posicao (o caso comum).
+    """
+    if card is None:
+        return None
+    bundle = bundle if bundle is not None else load_value_net()
+    if not bundle:
+        return None
+    mao = getattr(p, 'hand', None)
+    if not mao:
+        return None
+    for i, c in enumerate(mao):
+        if c is card:
+            base = win_prob(p, opp, bundle=bundle)
+            if base is None:
+                return None
+            p.hand = mao[:i] + mao[i + 1:]
+            try:
+                sem = win_prob(p, opp, bundle=bundle)
+            finally:
+                p.hand = mao
+            return None if sem is None else (sem - base)
+    return None
+
+
 def delta_remover(card, p, opp, bundle=None) -> float | None:
     """Quanto a POSICAO melhora pra `p` se esta carta sumir do campo.
 

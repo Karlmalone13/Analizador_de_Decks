@@ -819,20 +819,27 @@ _FORCED_EFFECT_TARGETS: list = []
 # alvo" como um problema unico.
 _TARGETS_DE_ESCOLHA_OPP = ('opp_character', 'opp_leader_or_character')
 
-_k.registra('ALVO_EFEITO_NA_BUSCA', False, bool,
-            'Gera uma candidata de play por ALVO de efeito, em vez de deixar '
-            'a heuristica fixa escolher na execucao. Default DESLIGADO: muda '
-            'comportamento de producao (regra do bloco 730).')
+_k.registra('ALVO_EFEITO_NA_BUSCA', True, bool,
+            'Gera uma candidata de play/activate por ALVO de efeito, em vez '
+            'de a escolha ser feita na execucao, fora da arvore. LIGADO desde '
+            'o bloco 783 (Fase 3): o que o MODELO passa a decidir e EM QUEM '
+            'mirar o efeito -- hoje a 3a pior categoria medida contra humano '
+            '(16,4%). Ficou desligado ate aqui porque as variantes chegavam '
+            'com pontuacao IDENTICA (o scorer nao olha alvo) e se separavam '
+            'pela ordem da lista; agora o modelo as ordena lendo o estado que '
+            'cada uma produz, entao ramificar passa a significar alguma '
+            'coisa.')
 _k.registra('ALVO_REGUA_UNIFICADA', False, bool,
             'Escolha de alvo de efeito passa a usar `char_value_score` (a '
             'MESMA regua da funcao de valor, ciente de efeito) em vez de '
             '`board_value` cru. Medido: as duas discordam em 21,3% dos '
             'boards. Default DESLIGADO (regra do bloco 730).')
-_k.registra('ALVO_EFEITO_MAX_CANDIDATOS', 3, int,
-            'Teto de alvos por carta na geracao. Existe pra o shortlist nao '
-            'ser tomado por variantes da mesma carta -- todas tem o MESMO '
-            'score estatico (o scorer nao olha alvo), entao sem teto elas '
-            'empatam e expulsam cartas diferentes do shortlist.')
+_k.registra('ALVO_EFEITO_MAX_CANDIDATOS', 4, int,
+            'Teto de alvos por carta na geracao. O motivo original do teto '
+            'era que as variantes empatavam em pontuacao e expulsavam cartas '
+            'diferentes do shortlist. Com o modelo ordenando (bloco 783) elas '
+            'deixam de empatar, entao o teto passa a ser so controle de '
+            'CUSTO: cada variante e uma consulta ao modelo.')
 
 
 def _familia_aleatoria(nome: str, dono) -> bool:
@@ -1200,6 +1207,77 @@ MODELO_ORDENA_TETO = int(os.environ.get('OPTCG_MODELO_ORDENA_TETO', '24') or 24)
 # vendo so features observaveis (Fase 2). Sem isto a ordenacao cai no modelo
 # do caminho padrao, que aprendeu o rotulo de PARTIDA e enxerga uma feature
 # que nao existe ao vivo: seria ordenar com aquilo que o plano substitui.
+# FASE 3D (bloco 783): o MODELO precifica QUAL carta sacrificar -- blocker e
+# cartas de counter. `delta_remover` mede quanto a posicao piora sem aquela
+# carta; sacrifica-se a que menos derruba. `OPTCG_MODELO_SACRIFICIO=0` desliga.
+MODELO_SACRIFICIO = (
+    os.environ.get('OPTCG_MODELO_SACRIFICIO', '1').strip() != '0')
+
+
+# Marcador de SIMULACAO, lido pelas funcoes de modulo (bloco 784). O motor ja
+# tem `self._suppress_replay_log` pra isso, mas ele e atributo da PARTIDA e as
+# funcoes de precificacao sao chamadas de classes que nao a enxergam
+# (`EffectExecutor`). Mesmo padrao de `_DEFESA['on']`, que ja existe.
+_EM_SIMULACAO = {'on': False}
+
+
+def _modelo_escolhe_carta(me, opp, cartas, medida):
+    """Escolhe UMA carta entre `cartas` pelo MODELO, pela `medida` dada.
+
+    Funcao de MODULO, nao metodo: as familias que precisam disto vivem em
+    CLASSES DIFERENTES (`EffectExecutor` faz search e descarte, o analisador
+    faz defesa). Nasceu como metodo e quebrou em partida real -- o smoke NAO
+    pegou, so a partida pegou.
+
+    `medida` e o nome da funcao de `value_net` que responde a pergunta desta
+    familia:
+
+      `delta_ganhar_na_mao`   -> qual carta PEGAR num search
+      `delta_ganhar_no_campo` -> quem REVIVER do trash
+      `delta_gastar_da_mao`   -> o que DESCARTAR (a de menor perda)
+
+    Devolve `None` quando nao ha modelo compativel -- o chamador segue com a
+    escolha que ja fazia.
+    """
+    # SO na decisao REAL. Medido (bloco 784, perfil de UMA partida):
+    # `delta_gastar_da_mao` era chamada **18.392 vezes por partida** e
+    # consumia 32% do tempo -- porque o rollout simula descarte e counter
+    # milhares de vezes e cada um disparava o modelo. Nao eram decisoes, era
+    # ficcao interna da busca.
+    if _EM_SIMULACAO['on']:
+        return None
+    if not MODELO_SACRIFICIO or not cartas or len(cartas) < 2:
+        return None
+    try:
+        from optcg_engine import value_net as _vn
+        bundle = _vn.load_value_net(
+            getattr(me, 'modelo_ordena_path', None) or MODELO_ORDENA_PATH)
+        if not bundle:
+            return None
+        fn = getattr(_vn, medida, None)
+        if fn is None:
+            return None
+        melhor, melhor_v = None, None
+        for c in cartas:
+            v = fn(c, me, opp, bundle)
+            if v is None:
+                return None
+            if melhor_v is None or v > melhor_v:
+                melhor, melhor_v = c, float(v)
+        return melhor
+    except Exception:
+        return None
+
+# ── SUBSTITUICAO DO MONTE CARLO (bloco 784) ─────────────────────────────
+# Busca determinística no proprio turno + rede de valor na folha +
+# transposicao. Ver o CATALOGO DE METODOS no CLAUDE.md.
+BUSCA_DETERMINISTA = (
+    os.environ.get('OPTCG_BUSCA_DETERMINISTA', '0').strip() == '1')
+# Profundidade em ACOES do proprio turno (nao em turnos).
+BUSCA_PROFUNDIDADE = int(os.environ.get('OPTCG_BUSCA_PROFUNDIDADE', '3') or 3)
+# Quantas linhas seguem por nivel (best-first, ideia do PVS).
+BUSCA_FEIXE = int(os.environ.get('OPTCG_BUSCA_FEIXE', '3') or 3)
+
 MODELO_ORDENA_PATH = os.environ.get(
     'OPTCG_MODELO_ORDENA_PATH',
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -7641,7 +7719,9 @@ class EffectExecutor:
             # (mill do trash_rest) — e OP13-082 nao e reanimavel (o
             # play_from_trash dela filtra power 5000; a copia milada morre).
             for _ in range(min(count, len(filtered))):
-                best = max(filtered, key=self._trash_value) if filtered else None
+                best = ((_modelo_escolhe_carta(self.me, self.opp, filtered, 'delta_ganhar_na_mao')
+                         or max(filtered, key=self._trash_value))
+                        if filtered else None)
                 if best:
                     taken.append(best)
                     remove_by_identity(filtered, best)
@@ -7713,7 +7793,12 @@ class EffectExecutor:
             count = step.get('count', 1)
             taken = []
             for _ in range(min(count, len(candidates))):
-                best = max(candidates, key=self._trash_value)
+                # FASE 3E (bloco 783): o MODELO escolhe QUAL carta pegar --
+                # familia que o usuario apontou e que nunca passou por
+                # modelo nenhum. Sem modelo compativel, a escolha anterior
+                # segue.
+                best = (_modelo_escolhe_carta(self.me, self.opp, candidates, 'delta_ganhar_na_mao')
+                        or max(candidates, key=self._trash_value))
                 remove_by_identity(candidates, best)
                 # pop_by_identity, nao remove_by_identity -- ver docstring
                 # (respeita deepcopy-on-pop de _SimDeck, achado 03/08).
@@ -11184,6 +11269,12 @@ class EffectExecutor:
             return None
         if _familia_aleatoria('descarte', self.me) and len(hand) > 1:
             return random.choice(hand)      # instrumento do bloco 777
+        # FASE 3E: o MODELO escolhe O QUE DESCARTAR -- a carta cuja saida
+        # da mao menos derruba a posicao (`delta_gastar_da_mao` e negativo
+        # quando doi, entao o MAIOR valor e a menor perda).
+        _esc = _modelo_escolhe_carta(self.me, self.opp, hand, 'delta_gastar_da_mao')
+        if _esc is not None:
+            return _esc
         return min(hand, key=self._trash_value)
 
     _SACRIFICE_COST_TYPES = {'trash_from_hand', 'trash_hand', 'trash_char_or_hand',
@@ -12826,7 +12917,13 @@ class GameAnalyzer:
                                 if tc.name not in vistos and not vistos.add(tc.name)]
                     if not fuel:
                         continue
-                    fuel_ordenado = sorted(fuel, key=lambda tc: tc.board_value(), reverse=True)
+                    # FASE 3E: o MODELO escolhe QUEM reviver. Ordena pela
+                    # melhora medida da posicao; sem modelo, pela ordem
+                    # anterior.
+                    _esc = _modelo_escolhe_carta(self.me, self.opp, fuel, 'delta_ganhar_no_campo')
+                    fuel_ordenado = (
+                        [_esc] + [c for c in fuel if c is not _esc] if _esc
+                        else sorted(fuel, key=lambda tc: tc.board_value(), reverse=True))
                     qualificado = fuel_ordenado[:count]
                     sources.append({
                         'source': c.code,
@@ -15376,6 +15473,40 @@ class DecisionEngine:
             return melhor
         return None
 
+    def _preco_do_sacrificio(self, cartas):
+        """Quanto custa perder cada uma destas cartas, medido pelo MODELO.
+
+        Devolve `{id(carta): custo}`, custo = quanto a posicao PIORA sem ela
+        (`-delta_remover`). Sacrifica-se a de MENOR custo.
+
+        O que o modelo passa a decidir: **qual carta entregar** -- hoje
+        `quais cartas de counter` e a 3a pior categoria medida contra humano
+        (18,5%). Preco por CONSEQUENCIA MEDIDA no lugar de chave fixa.
+
+        Nao cria regra de jogo nova: QUEM decide se bloqueia/counteria
+        continua onde estava. Sem modelo compativel devolve `None` e a
+        ordenacao anterior segue valendo.
+        """
+        if _EM_SIMULACAO['on']:
+            return None
+        if not MODELO_SACRIFICIO or not cartas or len(cartas) < 2:
+            return None
+        try:
+            from optcg_engine import value_net as _vn
+            bundle = _vn.load_value_net(
+                getattr(self.me, 'modelo_ordena_path', None) or MODELO_ORDENA_PATH)
+            if not bundle:
+                return None
+            fora = {}
+            for c in cartas:
+                d = _vn.delta_remover(c, self.me, self.opp, bundle)
+                if d is None:
+                    return None
+                fora[id(c)] = -float(d)
+            return fora
+        except Exception:
+            return None
+
     def should_use_blocker(self, attacker_power: int) -> 'Optional[Card]':
         """Categoria `bloquear ou nao` (85,7%) -- wrapper de registro.
 
@@ -15479,7 +15610,11 @@ class DecisionEngine:
         # None preserva o comportamento antigo (sempre bloqueia, sem
         # check de custo).
         if my_life <= 2:
-            melhor = min(blockers, key=custo_sacrificio)
+            # FASE 3D: o MODELO precifica o sacrificio; `custo_sacrificio`
+            # so ordena quando nao ha modelo compativel.
+            _preco = self._preco_do_sacrificio(blockers)
+            melhor = (min(blockers, key=lambda c: _preco[id(c)]) if _preco
+                      else min(blockers, key=custo_sacrificio))
             if (BLOCK_CRITICAL_LIFE_MAX_COST is None
                     or custo_sacrificio(melhor) <= BLOCK_CRITICAL_LIFE_MAX_COST):
                 return melhor
@@ -15493,7 +15628,11 @@ class DecisionEngine:
         # extensao 52% (26/50) vs SEM extensao 42% (21/50) -- bate o baseline
         # em 4/5 lideres, valor final aplicado.
         if my_life == 3 and attacker_power >= self.me.leader.power:
-            melhor = min(blockers, key=custo_sacrificio)
+            # FASE 3D: o MODELO precifica o sacrificio; `custo_sacrificio`
+            # so ordena quando nao ha modelo compativel.
+            _preco = self._preco_do_sacrificio(blockers)
+            melhor = (min(blockers, key=lambda c: _preco[id(c)]) if _preco
+                      else min(blockers, key=custo_sacrificio))
             if (BLOCK_CRITICAL_LIFE_MAX_COST is None
                     or custo_sacrificio(melhor) <= BLOCK_CRITICAL_LIFE_MAX_COST):
                 return melhor
@@ -15501,7 +15640,11 @@ class DecisionEngine:
 
         # Com 4 vidas e oponente com ≤ 2 vidas: bloqueia apenas atacantes fortes
         if my_life == 4 and opp_life <= 2 and attacker_power >= self.me.leader.power:
-            melhor = min(blockers, key=custo_sacrificio)
+            # FASE 3D: o MODELO precifica o sacrificio; `custo_sacrificio`
+            # so ordena quando nao ha modelo compativel.
+            _preco = self._preco_do_sacrificio(blockers)
+            melhor = (min(blockers, key=lambda c: _preco[id(c)]) if _preco
+                      else min(blockers, key=custo_sacrificio))
             if (BLOCK_CRITICAL_LIFE_MAX_COST is None
                     or custo_sacrificio(melhor) <= BLOCK_CRITICAL_LIFE_MAX_COST):
                 return melhor
@@ -15543,6 +15686,27 @@ class DecisionEngine:
                        - _human_counter_card_bonus(leader_code, c.code))
             for _, c in pool
         }
+        # FASE 3D (bloco 783): o MODELO precifica QUAIS cartas gastar.
+        # `delta_gastar_da_mao` mede quanto a posicao piora sem a carta --
+        # gasta-se a de menor perda. Sem modelo compativel, `custo` segue.
+        _cartas = [c for _, c in pool]
+        if MODELO_SACRIFICIO and len(_cartas) > 1:
+            try:
+                from optcg_engine import value_net as _vnm
+                _b = _vnm.load_value_net(
+                    getattr(self.me, 'modelo_ordena_path', None) or MODELO_ORDENA_PATH)
+                if _b:
+                    _novo = {}
+                    for c in _cartas:
+                        d = _vnm.delta_gastar_da_mao(c, self.me, self.opp, _b)
+                        if d is None:
+                            _novo = None
+                            break
+                        _novo[id(c)] = -float(d)
+                    if _novo:
+                        custo = _novo
+            except Exception:
+                pass
         # pitch menor primeiro; empate = counter maior (cobre mais rapido)
         ordenado = sorted(pool, key=lambda item: (custo[id(item[1])], -item[0]))
         escolha, gasto, total = [], 0.0, 0
@@ -18296,6 +18460,109 @@ class OPTCGMatch:
         except Exception:
             return False
 
+    def _busca_determinista(self, p, opp, engine, candidatas):
+        """Escolhe a melhor candidata por BUSCA DETERMINISTA + rede na folha.
+
+        Substitui o rollout amostrado. Sem sorteio: dentro do proprio turno o
+        estado e conhecido, entao a mesma posicao sempre devolve o mesmo
+        valor -- e isso permite a TABELA DE TRANSPOSICAO, que o Monte Carlo
+        nao permitia (cada amostra dava um numero diferente).
+
+        Medido no projeto: **58% das linhas irmas convergem pro MESMO estado**
+        (bloco 756). A transposicao le o resultado pronto nesses casos.
+
+        Devolve `(acao, valor)` ou `None` quando nao ha modelo compativel --
+        ai o chamador segue com o caminho que ja tinha.
+        """
+        try:
+            from optcg_engine import value_net as _vn
+            bundle = _vn.load_value_net(
+                getattr(p, 'modelo_ordena_path', None) or MODELO_ORDENA_PATH)
+            if not bundle:
+                return None
+        except Exception:
+            return None
+
+        from copy import deepcopy
+        trans = {}
+        self._busca_nos = 0
+        self._busca_hits = 0
+
+        def _chave(pa, oa):
+            try:
+                fp = _vn.fingerprint_estado(pa, oa)
+                return tuple(sorted(fp.items())) if isinstance(fp, dict) else fp
+            except Exception:
+                return None
+
+        def _clona(pa, oa):
+            _pd, _od = pa.deck, oa.deck
+            pa.deck, oa.deck = [], []
+            p2, o2 = deepcopy(pa), deepcopy(oa)
+            pa.deck, oa.deck = _pd, _od
+            p2.deck, o2.deck = _SimDeck(_pd), _SimDeck(_od)
+            return p2, o2
+
+        def _valor(pa, oa, prof):
+            """Melhor valor alcancavel a partir daqui, em `prof` acoes."""
+            ch = _chave(pa, oa)
+            if ch is not None and (ch, prof) in trans:
+                self._busca_hits += 1
+                return trans[(ch, prof)]
+            self._busca_nos += 1
+            v = _vn.win_prob(pa, oa, bundle=bundle)
+            if v is None:
+                return None
+            if prof <= 0:
+                if ch is not None:
+                    trans[(ch, prof)] = v
+                return v
+            eng = DecisionEngine(pa, oa)
+            try:
+                acts = self._generate_and_score_actions(pa, oa, eng)
+            except Exception:
+                acts = []
+            melhor = v          # PASSAR e sempre uma opcao: nunca piora
+            for a in acts[:BUSCA_FEIXE]:
+                try:
+                    p2, o2 = _clona(pa, oa)
+                    a2 = self._remap_action(a, pa, p2, oa, o2)
+                    if a2 is None:
+                        continue
+                    e2 = DecisionEngine(p2, o2)
+                    ee2 = EffectExecutor(p2, o2)
+                    if self._apply_action(a2, p2, o2, ee2, e2, verbose=False):
+                        melhor = 1.0
+                        break
+                    sub = _valor(p2, o2, prof - 1)
+                    if sub is not None and sub > melhor:
+                        melhor = sub
+                except Exception:
+                    continue
+            if ch is not None:
+                trans[(ch, prof)] = melhor
+            return melhor
+
+        melhor_acao, melhor_v = None, None
+        for a in candidatas:
+            try:
+                p2, o2 = _clona(p, opp)
+                a2 = self._remap_action(a, p, p2, opp, o2)
+                if a2 is None:
+                    continue
+                e2 = DecisionEngine(p2, o2)
+                ee2 = EffectExecutor(p2, o2)
+                if self._apply_action(a2, p2, o2, ee2, e2, verbose=False):
+                    return (a, 1.0)
+                v = _valor(p2, o2, BUSCA_PROFUNDIDADE - 1)
+                if v is None:
+                    continue
+                if melhor_v is None or v > melhor_v:
+                    melhor_acao, melhor_v = a, v
+            except Exception:
+                continue
+        return (melhor_acao, melhor_v) if melhor_acao is not None else None
+
     def _select_action_via_search(self, p, opp, engine, candidatas, model,
                                    max_steps, extra_own_turn_search,
                                    samples_min, samples_max, batch_size,
@@ -18418,6 +18685,21 @@ class OPTCGMatch:
                         self._cf_pos.append(_buf[-1] if _buf else None)
                         self._cf_fp.append(_bufp[-1] if _bufp else None)
                     return escolhida, 0.0, [], 0, {}
+
+        # ── SUBSTITUICAO DO MONTE CARLO (bloco 784) ────────────────────
+        # Busca determinística no proprio turno + rede de valor na folha +
+        # tabela de transposicao, no lugar do rollout amostrado. Entra AQUI
+        # porque este e o ponto UNICO de selecao (offline e ao vivo usam o
+        # mesmo) -- plugar em outro lugar criaria dois caminhos de decisao.
+        if BUSCA_DETERMINISTA:
+            _r = self._busca_determinista(p, opp, engine, candidatas)
+            if _r is not None:
+                _a, _v = _r
+                return (_a, _v,
+                        [{"action": c, "value": (_v if c is _a else None)}
+                         for c in candidatas],
+                        getattr(self, '_busca_nos', 0), {})
+            # Sem modelo compativel: cai no caminho amostrado de sempre.
 
         if model is None:
             # Sem modelo de oponente disponível (só acontece no caminho ao
@@ -20252,6 +20534,8 @@ class OPTCGMatch:
         """
         old_suppress = self._suppress_replay_log
         self._suppress_replay_log = True
+        _old_sim = _EM_SIMULACAO['on']
+        _EM_SIMULACAO['on'] = True
         # bloco 743: as decisoes cegas nao entram no log durante a
         # simulacao -- so no turno REAL (mesma guarda de _log_decision).
         _old_defesa = _DEFESA['on']
@@ -20300,6 +20584,7 @@ class OPTCGMatch:
             return vals
         finally:
             self._suppress_replay_log = old_suppress
+            _EM_SIMULACAO['on'] = _old_sim
             _DEFESA['on'] = _old_defesa
 
     def _explorar(self, cand_valor: list):

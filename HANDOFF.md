@@ -53,6 +53,96 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (784) - **ATENCAO: producao mudou e NADA foi medido.** Modelo decide 8 familias, arvore larga, busca determinística construida. Zero duelos
+
+### 0. LEIA ISTO ANTES DE QUALQUER COISA
+
+**Defaults de PRODUCAO foram alterados e nenhuma dessas mudancas passou por
+duelo.** O motor de hoje NAO e o de ontem:
+
+| knob | default | o que faz | medido? |
+|---|---|---|---|
+| `MODELO_ORDENA` | **LIGADO** | o modelo ordena as candidatas | **NAO** |
+| `MODELO_SACRIFICIO` | **LIGADO** | o modelo precifica blocker/counter/search/trash/descarte | **NAO** |
+| `ALVO_EFEITO_NA_BUSCA` | **LIGADO** (era False) | alvo de efeito ramifica | **NAO** |
+| `ARVORE_DON_EXTRA` | **2** | variantes de DON por ataque | **NAO** |
+| `LETHAL_VE_MAO_OCULTA` | LIGADO | prova de lethal honesta | medido NEUTRO (bloco 781) |
+| `AUTO_JOGO_CEGO` | desligado | cegueira do auto-jogo | nao |
+| `BUSCA_DETERMINISTA` | desligado | substituicao do Monte Carlo | custo-neutro |
+| `EXECUTA_LETHAL_CERTIFICADO` | desligado | REPROVADO (bloco 781) | 9x15 |
+
+**E o motor ficou LENTO**: ~34,5s por partida com tudo desligado contra ~16s
+do baseline historico -- porque a arvore alargou e o Monte Carlo continua por
+baixo, com orcamento FIXO dividido entre mais candidatas (o mecanismo ja
+medido 3 vezes nos blocos 593/594/677). Com tudo ligado, 55-95s.
+
+> **Se a proxima sessao precisar do comportamento anterior**, desligue os
+> quatro primeiros knobs. Nada neles foi provado.
+
+### 1. O que foi construido (fases 0-3 do plano professor/aluno)
+
+O modelo passou a decidir **8 familias** que antes eram regra fixa: acao de
+topo (ordenacao), quanto DON por ataque, alvo do efeito, qual blocker
+sacrificar, quais cartas de counter gastar, carta do search, quem reviver do
+trash, o que descartar.
+
+Medidas novas em `value_net.py`, porque as que existiam so respondiam "quanto
+piora ao PERDER": `delta_gastar_da_mao`, `delta_ganhar_na_mao`,
+`delta_ganhar_no_campo`.
+
+Arvore: **4,9 -> 8,4 candidatas** por decisao; DON por ataque **1,00 -> 2,51**.
+
+### 2. Substituicao do Monte Carlo: construida e CUSTO-NEUTRA
+
+`_busca_determinista` -- busca determinística no proprio turno + rede de valor
+na folha + tabela de transposicao, feixe best-first. Desenho tirado do
+catalogo do usuario (Stockfish = Alfa-Beta + NNUE + transposicao), adaptado:
+a poda determinística so vale DENTRO do proprio turno, onde nao ha decisao do
+oponente nem aleatoriedade.
+
+**Medido: 55,1s contra 54,5s do Monte Carlo. Nao acelerou.**
+
+**Por que**: falta o "U" do NNUE -- avaliacao INCREMENTAL. Cada consulta ao
+modelo clona o estado e recalcula as 78 features do zero. O metodo esta
+certo; falta a peca que o torna barato. **Esta e a proxima tarefa.**
+
+### 3. QUATRO bugs meus nesta sessao, todos pegos antes de medir
+
+| bug | consequencia |
+|---|---|
+| `sim_bridge` desempacotava 5 elementos fixos | o caminho **AO VIVO devolvia `None`** -- o bot ficaria sem acao contra o usuario |
+| ordenacao dentro de `_generate_and_score_actions` | estourou o orcamento de 3s ao vivo (3,07s x 0,10s) |
+| dedupe sem o DON na chave | a expansao da arvore era **desfeita em silencio** |
+| `_modelo_escolhe` como metodo de UMA classe | `EffectExecutor` nao tinha -- **o smoke passou e so a partida real pegou** |
+
+E um quinto, de custo: a precificacao rodava DENTRO da simulacao --
+`delta_gastar_da_mao` era chamada **18.392 vezes por partida** (32% do
+tempo). Corrigida: `win_prob` caiu de 38.785 pra 19.218 chamadas.
+
+### 4. MEUS VICIOS -- o usuario apontou e procede
+
+Ele encerrou a sessao dizendo *"acho que vc está com vicios"*. Sao reais e
+estao nas regras novas deste dia, cada uma nascida de eu repetir o erro:
+
+1. **Preservar o que existe por reflexo** -- knob com default antigo, camada
+   de compatibilidade que ninguem pediu. Regra: `O QUE EXISTE NAO E SAGRADO`.
+2. **Usar a regua antiga como quadro de referencia**, ate construindo ML.
+   Regra: `A HEURISTICA NAO E REFERENCIA`, com teste verificavel.
+3. **Reinterpretar o pedido** em vez de executar -- ele pediu pra eu LER as
+   regras antes de agir e eu criei uma SECAO NOVA no projeto; teve que ser
+   removida.
+4. **Otimizar ao redor do ML** -- propus comecar por tabela de transposicao,
+   que a propria regra proibia; ele retirou, corretamente.
+5. **Afirmar com confianca antes de medir** -- a hipotese do executor de
+   lethal estava errada, e so o isolamento em 3 celulas mostrou.
+
+### 5. O QUE FAZER AGORA
+
+**MEDIR.** Ha muita coisa construida e **zero** evidencia de que qualquer uma
+ajuda. A recomendacao que ficou na mesa: rodar o portao com o modelo
+decidindo as 8 familias, mesmo lento -- porque se isso nao joga melhor,
+otimizar a velocidade e otimizar o que nao queremos manter.
+
 ## 2026-09-12 (783) - **AS 4 FASES DO PLANO PROFESSOR/ALUNO CONSTRUIDAS**, sem simulacao. Arvore 4,9 -> 8,1 candidatas. Dois bugs meus pegos na triagem
 
 ### 1. O que o MODELO passa a aprender e a decidir
