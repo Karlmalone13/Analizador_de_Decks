@@ -1348,6 +1348,43 @@ Q_NET_PATH = os.environ.get(
                  'metrics', 'q_net.joblib'))
 USA_Q = os.environ.get('OPTCG_USA_Q', '1').strip() != '0'
 
+# ── COMO O ALVO Q E PRODUZIDO (bloco 799) ──────────────────────────────────
+# 'bootstrap' (default) -- o alvo do DQN de verdade:
+#
+#     Q(estado, acao)  <-  valor do estado que a acao PRODUZ
+#
+# Aplica a acao UMA vez e pergunta ao modelo. Por decisao sao ~8 clones (um
+# por candidata) contra os ~64 da arvore de profundidade 3.
+#
+# 'busca' -- o alvo anterior: o valor que a busca profunda calculou. Melhor
+# alvo no comeco, porque olha a frente de verdade; e 4x mais caro.
+#
+# MEDIDO (bloco 799, com a maquina ocupada, entao leia o RELATIVO):
+#   arvore prof=3 : 8,06 s/partida     <- professor por busca
+#   arvore prof=1 : 1,84 s/partida
+#   Q decidindo   : 2,20 s/partida
+#
+# O usuario cravou o requisito: *"uma partida tem que levar no maximo 1s, se
+# nao nao conseguimos simular milhares de partidas"*. Com busca profunda como
+# professor isso e inalcancavel -- e a troca nao e otimizacao, e usar o metodo
+# que ele escolheu: o DQN nao precisa de busca pra formar alvo.
+#
+# CONTRAPARTIDA declarada: o bootstrap e mais ruidoso no comeco, porque se
+# apoia num modelo ainda ruim. Ele melhora junto com o modelo -- e e por isso
+# que o DQN escala pra milhoes de partidas e destilacao de busca nao escala.
+Q_ALVO_MODO = os.environ.get('OPTCG_Q_ALVO', 'bootstrap').strip()
+
+
+def _tem_q(p) -> bool:
+    """Ha modelo Q compativel pra este jogador? (barato: `load_value_net` e
+    memoizada por caminho.)"""
+    try:
+        from optcg_engine import value_net as _vn
+        b = _vn.load_value_net(getattr(p, 'q_net_path', None) or Q_NET_PATH)
+        return bool(b and b.get('tipo') == 'q')
+    except Exception:
+        return False
+
 # A prova de lethal passa a contar com [Trigger] da vida do oponente (bloco
 # 785; bug de CORRECAO achado pelo usuario no bloco 778). Override POR JOGADOR
 # via `lethal_ve_trigger` -- a prova alimenta 7 pontos do motor e ja houve um
@@ -18991,7 +19028,7 @@ class OPTCGMatch:
         # acima: aqui o professor nao e um rotulo melhor, e a propria busca.
         # Default desligado: `_q_captura` fica None e isto custa zero.
         _cap = getattr(self, '_q_captura', None)
-        if _cap is not None:
+        if _cap is not None and Q_ALVO_MODO == 'busca':
             try:
                 from optcg_engine import value_net as _vnq
                 for _a, _v in pares:
@@ -19007,6 +19044,80 @@ class OPTCGMatch:
             except Exception:
                 pass
         return (melhor_acao, melhor_v, pares)
+
+    def _coleta_bootstrap(self, p, opp, engine, candidatas, cap):
+        """Alvo do DQN: o valor do ESTADO QUE A ACAO PRODUZ (bloco 799).
+
+        Aplica cada candidata UMA vez e pergunta ao modelo -- ~8 clones por
+        decisao, contra ~64 da arvore de profundidade 3. Nao ha busca aqui:
+        o alvo se apoia no proprio modelo, e melhora junto com ele.
+
+        `state_features` sai UMA vez: o estado de partida e o mesmo pra todas
+        as candidatas, so a parte da ACAO muda.
+        """
+        try:
+            from optcg_engine import value_net as _vn
+            _b = _vn.load_value_net(
+                getattr(p, 'modelo_ordena_path', None) or MODELO_ORDENA_PATH)
+            if not _b:
+                return
+            base = _vn.state_features(p, opp, nomes=_vn.FEATURE_NAMES_ALUNO)
+        except Exception:
+            return
+
+        from copy import deepcopy
+        _sim = _EM_SIMULACAO['on']
+        _EM_SIMULACAO['on'] = True
+        estados, acoes = [], []
+        try:
+            for a in candidatas:
+                try:
+                    _pd, _od = p.deck, opp.deck
+                    p.deck, opp.deck = [], []
+                    p2, o2 = deepcopy(p), deepcopy(opp)
+                    p.deck, opp.deck = _pd, _od
+                    p2.deck, o2.deck = _SimDeck(_pd), _SimDeck(_od)
+                    a2 = self._remap_action(a, p, p2, opp, o2)
+                    if a2 is None:
+                        continue
+                    e2 = DecisionEngine(p2, o2)
+                    ee2 = EffectExecutor(p2, o2)
+                    _sup = self._suppress_replay_log
+                    self._suppress_replay_log = True
+                    try:
+                        venceu = self._apply_action(a2, p2, o2, ee2, e2,
+                                                    verbose=False)
+                    finally:
+                        self._suppress_replay_log = _sup
+                    if venceu:
+                        cap.append({'feats': base + _vn.acao_features(a, opp),
+                                    'alvo': 1.0, 'escolhida': False,
+                                    'leader': getattr(getattr(p, 'leader', None),
+                                                      'code', None),
+                                    'turn': int(getattr(p, 'turn', 0) or 0)})
+                        continue
+                    estados.append((p2, o2))
+                    acoes.append(a)
+                except Exception:
+                    continue
+        finally:
+            _EM_SIMULACAO['on'] = _sim
+
+        if not estados:
+            return
+        try:
+            from optcg_engine import value_net as _vn2
+            vals = _vn2.win_prob_lote(estados, bundle=_b)
+        except Exception:
+            return
+        lider = getattr(getattr(p, 'leader', None), 'code', None)
+        turno = int(getattr(p, 'turn', 0) or 0)
+        for a, v in zip(acoes, vals):
+            if v is None:
+                continue
+            cap.append({'feats': base + _vn2.acao_features(a, opp),
+                        'alvo': float(v), 'escolhida': False,
+                        'leader': lider, 'turn': turno})
 
     def _select_action_via_search(self, p, opp, engine, candidatas):
         """
@@ -19150,6 +19261,14 @@ class OPTCGMatch:
         # caia no `except Exception: continue` -- a busca devolvia `None` em
         # 48 de 49 decisoes e o motor voltava pro Monte Carlo. Ela NUNCA tinha
         # rodado; o "custo-neutro" comparou Monte Carlo com Monte Carlo.
+        # COLETA BOOTSTRAP (bloco 799): antes de decidir, grava o valor do
+        # estado que cada candidata produz. E o alvo do DQN, e nao precisa da
+        # arvore -- por isso a coleta deixa de custar 4x o jogo.
+        _capb = getattr(self, '_q_captura', None)
+        if (_capb is not None and Q_ALVO_MODO == 'bootstrap'
+                and len(candidatas) > 1):
+            self._coleta_bootstrap(p, opp, engine, candidatas, _capb)
+
         # ── O Q DECIDE, SE EXISTIR (bloco 796) ──────────────────────────
         # Uma consulta em lote no lugar de ~64 estados materializados. A arvore
         # continua existindo e continua sendo o PROFESSOR (ela gera os alvos em
@@ -21358,8 +21477,21 @@ class OPTCGMatch:
             # de estado por candidata em cada uma. Medido: o caminho AO VIVO
             # estourou o orcamento de 3s (3,07s contra 0,10s) e devolveu
             # `None` -- o bot ficava sem acao em partida real.
+            # A ORDENACAO E SOBRA DA ERA DA ARVORE (bloco 799). Ela existia
+            # pra escolher QUAIS candidatas a busca cara ia avaliar --
+            # materializando ate 24 estados por decisao so pra ordenar. Com o
+            # Q pontuando TODAS de uma vez, essa pre-selecao nao tem funcao.
+            #
+            # Medido: jogar com ela 2,19 s/partida, sem ela 1,53 s -- 30% do
+            # tempo gasto escolhendo o que o Q ja escolhe sozinho.
+            #
+            # Nao e no-op: ela mudava quem entrava no shortlist, entao as
+            # partidas mudam. O ganho e estrutural, nao cosmetico.
+            _q_no_comando = (USA_Q and getattr(p, 'usa_q', True)
+                             and _tem_q(p))
             _ordenar_pelo_modelo = (MODELO_ORDENA
-                                    and getattr(p, 'modelo_ordena', True))
+                                    and getattr(p, 'modelo_ordena', True)
+                                    and not _q_no_comando)
             # Lethal PROVADO domina qualquer pontuacao (bloco 779). Vem antes
             # de gerar candidatas: jogar carta antes gasta DON e derruba a
             # propria certificacao, que assume `don_available` inteiro.

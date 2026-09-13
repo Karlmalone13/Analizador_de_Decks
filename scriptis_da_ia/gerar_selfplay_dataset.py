@@ -204,8 +204,14 @@ def _run_one_match(task) -> list:
         # Entao, quando a partida existe pra COLETAR, o Q sai do comando e a
         # arvore decide. E o padrao de destilacao de busca: a busca gera o
         # dado, o modelo joga com ele.
-        for estado in (match.state_a, match.state_b):
-            estado.usa_q = False
+        # No modo BOOTSTRAP (default, bloco 799) o alvo NAO vem da busca --
+        # vem do estado que a acao produz. Entao o Q pode continuar decidindo
+        # enquanto coleta, e a partida custa o que custa jogar.
+        # So o modo 'busca' precisa da arvore no comando.
+        from optcg_engine import decision_engine as _de_mod
+        if _de_mod.Q_ALVO_MODO == 'busca':
+            for estado in (match.state_a, match.state_b):
+                estado.usa_q = False
         match._q_captura = []
 
     amostras = []
