@@ -742,11 +742,7 @@ def choose_action(gs: GameState, opp_gs: GameState,
                     # 26/07) so importa quando model existe.
                     melhor, melhor_valor, records, n_amostras, _sim_values = (
                         match._select_action_via_search(
-                            gs, opp_gs, engine, candidatos, model,
-                            max_steps=SEARCH_MAX_STEPS, extra_own_turn_search=True,
-                            samples_min=SEARCH_SAMPLES_MIN, samples_max=SEARCH_SAMPLES_MAX,
-                            batch_size=SEARCH_SAMPLES_BATCH, z_threshold=SEARCH_SAMPLES_Z,
-                            rng=random))
+                            gs, opp_gs, engine, candidatos))
                     search_records = [
                         {"action": action_to_trace(rec["action"]), "value": round(rec["value"], 4)}
                         for rec in records

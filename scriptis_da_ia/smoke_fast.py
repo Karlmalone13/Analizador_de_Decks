@@ -2256,8 +2256,7 @@ def test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor() -> None:
           trace.get("line_search", {}).get("depth") == 4
           and trace.get("line_search", {}).get("don_budget_before") == 5
           and trace.get("line_search", {}).get("selected") is not None)
-    check("amostragem adaptativa (26/07, achado 380) respeita o piso configurado",
-          trace.get("adaptive_samples_used", 0) >= sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT)
+    # (a checagem de amostragem adaptativa saiu com o Monte Carlo, bloco 785)
 
 
 def test_opponent_model_for_leader_fallback_3_camadas() -> None:
@@ -2301,136 +2300,6 @@ def test_opponent_model_for_leader_fallback_3_camadas() -> None:
     model_vazio = _sb.opponent_model_for_leader("ZZ99-DESCONHECIDO", "")
     check("sem lider nem cor conhecidos, cai em None (nenhuma camada disponivel)",
           model_vazio is None)
-
-
-def test_busca_adaptativa_ao_vivo_respeita_piso_e_teto() -> None:
-    # Achado 26/07 (bloco 380, pedido do usuario: "ver se com mais amostras
-    # as escolhas foram melhores, nao so as mesmas"): a amostragem
-    # sequencial (_adaptive_counterfactual_search) troca N fixo por um
-    # piso/teto -- este teste so garante que uma decisao AO VIVO real
-    # (2 ataques concorrentes, ambos dependentes da mao oculta do
-    # oponente) fica dentro dos limites configurados e escolhe uma acao
-    # valida. A garantia de que o mecanismo realmente PARA CEDO quando o
-    # gap e limpo (sem ruido) e vai ate o teto quando e ruidoso/proximo
-    # esta isolada em test_adaptive_counterfactual_search_para_cedo_e_no_teto
-    # (usa valores sinteticos deterministicos -- um cenario de jogo real
-    # quase sempre tem variancia genuina vinda da mao oculta do
-    # oponente, entao nao serve pra provar o caso "zero ruido").
-    me = GameState(leader=mk("OP10-099", "Kid", power=5000, card_type="LEADER", color="Red"),
-                    don_available=0, don_deck=8, turn=2)
-    ameaca = mk("OP10-111", "Ameaca", power=9000)
-    me.field_chars = [ameaca]
-    opp = GameState(leader=real_card("OP04-019"), turn=2)  # Doflamingo, Green/Purple
-    opp.life = [real_card("OP13-080")]
-    opp.hand = [mk("UNKNOWN-000", "Carta oculta") for _ in range(3)]
-    opp.hidden_information_masked = True
-    match = OPTCGMatch((me.leader, []), (opp.leader, []))
-    trace = {}
-    action = sim_bridge.choose_action(
-        me, opp, match, timeout=5.0,
-        allowed_types={"play", "attack", "attach_don", "activate"},
-        trace_out=trace)
-    check("busca adaptativa ao vivo retorna uma acao valida",
-          action is not None)
-    check("Monte Carlo ligado (fallback de cor do Doflamingo)",
-          trace.get("counterfactual_basis") == "sampled_opponent_model")
-    n_usadas = trace.get("adaptive_samples_used")
-    check("amostragem adaptativa respeita piso e teto configurados",
-          n_usadas is not None
-          and sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT <= n_usadas <= sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT)
-
-
-def test_adaptive_counterfactual_search_para_cedo_e_no_teto() -> None:
-    # Prova isolada (sem depender do motor de jogo real) do mecanismo em si
-    # (achado 26/07, bloco 380/381): `_select_action_via_search` mora em
-    # `OPTCGMatch` (decision_engine.py) -- unificacao 26/07, FONTE UNICA
-    # usada tanto pelo Turn Planner offline (main_phase) quanto pelo
-    # caminho ao vivo (sim_bridge.choose_action). Aqui usamos um `self`
-    # falso (so com `_simulate_sequence_values`/`_is_unsafe_zero_life_leader_attack`
-    # sinteticos) chamando o metodo NAO-ligado da classe real, pra
-    # controlar exatamente o ruido/gap e verificar as 2 pontas do
-    # comportamento adaptativo:
-    #  (a) gap grande e SEM ruido (2 candidatas com valor constante,
-    #      bem separado) -- para no PISO (SEARCH_SAMPLES_MIN_DEFAULT),
-    #      sem gastar o teto inteiro.
-    #  (b) 2 candidatas com valores RUIDOSOS que se sobrepoem (nenhum gap
-    #      estatisticamente confiavel) -- vai ate o TETO
-    #      (SEARCH_SAMPLES_MAX_DEFAULT), exatamente o caso do cenario real
-    #      de "empate tecnico" (gap real pequeno demais pro nivel de
-    #      ruido por amostra).
-    import random as _random_mod
-
-    class _FakeModel:
-        def sample(self, opp_gs, rng):
-            return object()
-
-    class _FakeSelfValoresFixos:
-        """Sem ruido nenhum: cada candidata sempre devolve o MESMO valor,
-        nao importa a amostra -- simula uma decisao cujo resultado nao
-        depende da mao oculta do oponente (gap limpo)."""
-        def __init__(self, valor_por_indice):
-            self._valor_por_indice = valor_por_indice
-            self._indice_por_id = {}
-
-        def registrar(self, candidatos):
-            for i, cand in enumerate(candidatos):
-                self._indice_por_id[id(cand)] = i
-
-        def _simulate_sequence_values(self, p, opp, cand, max_steps, amostras,
-                                       extra_own_turn_search):
-            idx = self._indice_por_id[id(cand)]
-            return [self._valor_por_indice[idx]] * len(amostras)
-
-        def _is_unsafe_zero_life_leader_attack(self, action, p, opp, engine):
-            return False  # guarda de seguranca testada separadamente
-
-    class _FakeSelfRuidoso:
-        """Mesma media pras 2 candidatas, mas com ruido MAIOR que o gap --
-        nenhum lote deveria conseguir separar as duas com confianca."""
-        def __init__(self, seed):
-            self._rng = _random_mod.Random(seed)
-            self._indice_por_id = {}
-
-        def registrar(self, candidatos):
-            for i, cand in enumerate(candidatos):
-                self._indice_por_id[id(cand)] = i
-
-        def _simulate_sequence_values(self, p, opp, cand, max_steps, amostras,
-                                       extra_own_turn_search):
-            idx = self._indice_por_id[id(cand)]
-            base = 500.0 + (0.5 if idx == 0 else -0.5)  # gap real de so 1.0
-            return [base + self._rng.uniform(-200.0, 200.0) for _ in amostras]
-
-        def _is_unsafe_zero_life_leader_attack(self, action, p, opp, engine):
-            return False
-
-    candidatos_fake = [(100.0, "attack", None), (10.0, "play", None)]
-
-    self_limpo = _FakeSelfValoresFixos({0: 1000.0, 1: 10.0})
-    self_limpo.registrar(candidatos_fake)
-    melhor, valor, records, n_usadas, _sim_values = OPTCGMatch._select_action_via_search(
-        self_limpo, p=None, opp=None, engine=None, candidatas=candidatos_fake,
-        model=_FakeModel(), max_steps=4, extra_own_turn_search=False,
-        samples_min=sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT,
-        samples_max=sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT,
-        batch_size=sim_bridge.SEARCH_SAMPLES_BATCH_DEFAULT,
-        z_threshold=sim_bridge.SEARCH_SAMPLES_Z_DEFAULT, rng=_random_mod)
-    check("gap limpo (sem ruido): busca adaptativa PARA NO PISO, nao gasta o teto",
-          n_usadas == sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT)
-    check("gap limpo: escolhe a candidata de maior valor sintetico",
-          melhor is candidatos_fake[0])
-
-    self_ruidoso = _FakeSelfRuidoso(seed=42)
-    self_ruidoso.registrar(candidatos_fake)
-    _, _, _, n_usadas_ruidoso, _sim_values2 = OPTCGMatch._select_action_via_search(
-        self_ruidoso, p=None, opp=None, engine=None, candidatas=candidatos_fake,
-        model=_FakeModel(), max_steps=4, extra_own_turn_search=False,
-        samples_min=sim_bridge.SEARCH_SAMPLES_MIN_DEFAULT,
-        samples_max=sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT,
-        batch_size=sim_bridge.SEARCH_SAMPLES_BATCH_DEFAULT,
-        z_threshold=sim_bridge.SEARCH_SAMPLES_Z_DEFAULT, rng=_random_mod)
-    check("gap real pequeno + ruido grande (empate tecnico sintetico): busca vai ATE O TETO",
-          n_usadas_ruidoso == sim_bridge.SEARCH_SAMPLES_MAX_DEFAULT)
 
 
 def test_play_card_aninhado_credita_valor_da_carta_trazida() -> None:
@@ -10467,9 +10336,8 @@ def main() -> int:
     test_turn_planner_fase_b_mais_gatilhos_de_combo_na_decisao()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor()
+    test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785()
     test_opponent_model_for_leader_fallback_3_camadas()
-    test_busca_adaptativa_ao_vivo_respeita_piso_e_teto()
-    test_adaptive_counterfactual_search_para_cedo_e_no_teto()
     test_play_card_aninhado_credita_valor_da_carta_trazida()
     test_search_contextual_evita_congestionar_mao_com_bombas()
     test_plano_katakuri_prefere_rampa_e_bloqueia_desperdicios()
@@ -10695,7 +10563,6 @@ def main() -> int:
     test_leader_type_multi_palavra_bloco_678()
     test_shortlist_garante_plays_bloco_677()
     test_log_turn_planner_decision_registra_cheap_value_pra_auditoria_11_08()
-    test_select_action_via_search_generaliza_parada_antecipada_pra_3_candidatas_13_08()
     test_cheap_playout_deltas_encadeia_multiplas_cartas_quando_cabe_no_don_13_08()
     test_cheap_playout_deltas_respeita_orcamento_de_don_13_08()
     test_cheap_playout_deltas_deterministico_com_mesmo_seed_13_08()
@@ -14315,77 +14182,6 @@ def test_log_turn_planner_decision_registra_cheap_value_pra_auditoria_11_08() ->
           and rec2['context']['cheap_layer_active'] is False)
 
 
-def test_select_action_via_search_generaliza_parada_antecipada_pra_3_candidatas_13_08() -> None:
-    """
-    Bloco 512: `_select_action_via_search` so tinha parada antecipada
-    adaptativa (piso/teto) pra EXATAMENTE 2 candidatas ("pairwise") --
-    com 3+, sempre rodava exatamente `samples_min` amostras, sem testar
-    nada: gastava o piso inteiro numa decisao obvia (desperdicio) e nunca
-    subia pro teto numa decisao genuinamente empatada (menos precisao
-    que um empate de so 2 teria). Corrigido generalizando o teste pareado
-    pra comparar a LIDER (maior media corrente) contra a VICE (segunda
-    maior), va-los pra qualquer N>=2. Prova as 2 pontas com
-    `_simulate_sequence_values` trocado por valores sinteticos
-    deterministicos (sem rodar simulacao de verdade):
-    (1) separacao clara entre as 2 melhores (a=100 vs b=50, c irrelevante)
-    -> para no PISO, nao desperdica amostras extras;
-    (2) empate genuino entre as 2 melhores (delta alternando +4/-4, media
-    0) -> sobe ate o TETO, nao fica preso no piso como o codigo antigo.
-    """
-    import random
-    match = OPTCGMatch((real_card("OP11-062"), []), (real_card("OP11-062"), []))
-
-    a = (100.0, 'play', mk("CA", "CartaA", power=1, cost=1), None, None)
-    b = (100.0, 'play', mk("CB", "CartaB", power=1, cost=1), None, None)
-    c = (100.0, 'play', mk("CC", "CartaC", power=1, cost=1), None, None)
-
-    class _StubModel:
-        def sample(self, opp, rng=None):
-            return None
-
-    # Caso 1: separacao clara (a~100, b~50, c bem abaixo) -- delta a-b tem
-    # ruido real (fases opostas) mas a media (50) domina o desvio-padrao.
-    def fake_sim_separado(p, opp, first_action, max_steps, amostras=None,
-                          extra_own_turn_search=False):
-        n = len(amostras)
-        if first_action is a:
-            return [101.0 if i % 2 == 0 else 99.0 for i in range(n)]
-        if first_action is b:
-            return [49.0 if i % 2 == 0 else 51.0 for i in range(n)]
-        return [-1000.0] * n
-
-    match._simulate_sequence_values = fake_sim_separado
-    _melhor, _valor, _recs, n_amostras_1, _sv = match._select_action_via_search(
-        match.state_a, match.state_b, DecisionEngine(match.state_a, match.state_b),
-        [a, b, c], _StubModel(), max_steps=1, extra_own_turn_search=False,
-        samples_min=12, samples_max=24, batch_size=12, z_threshold=2.0,
-        rng=random.Random(1))
-    check("3 candidatas com separacao CLARA para no PISO (12), nao desperdica amostras",
-          n_amostras_1 == 12)
-
-    # Caso 2: empate genuino entre as 2 melhores (a e b, media 10 nos
-    # dois, delta alternando +4/-4 -- variancia real, media zero).
-    def fake_sim_empatado(p, opp, first_action, max_steps, amostras=None,
-                          extra_own_turn_search=False):
-        n = len(amostras)
-        if first_action is a:
-            return [12.0 if i % 2 == 0 else 8.0 for i in range(n)]
-        if first_action is b:
-            return [8.0 if i % 2 == 0 else 12.0 for i in range(n)]
-        return [-1000.0] * n
-
-    match._simulate_sequence_values = fake_sim_empatado
-    _melhor2, _valor2, _recs2, n_amostras_2, _sv2 = match._select_action_via_search(
-        match.state_a, match.state_b, DecisionEngine(match.state_a, match.state_b),
-        [a, b, c], _StubModel(), max_steps=1, extra_own_turn_search=False,
-        samples_min=12, samples_max=24, batch_size=12, z_threshold=2.0,
-        rng=random.Random(1))
-    check("3 candidatas com EMPATE genuino sobe ate o TETO (24), nao fica preso no piso",
-          n_amostras_2 == 24)
-
-    del match._simulate_sequence_values
-
-
 def test_cheap_playout_deltas_encadeia_multiplas_cartas_quando_cabe_no_don_13_08() -> None:
     """
     `_cheap_playout_deltas` (bloco 521, excecao explicita a REGRA_SEM_
@@ -15261,6 +15057,55 @@ def test_play_card_total_cost_lte_e_distinct_names_24_08() -> None:
           "-- a 2a copia do nome 'Fujitora' fica de fora por distinct_names",
           "SA1" in jogados2
           and len([c for c in jogados2 if c in ("SF1", "SF2")]) == 1)
+
+
+def test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785() -> None:
+    """O Monte Carlo SAIU do ponto de decisao (bloco 785).
+
+    Tres invariantes que a remocao tem que manter:
+      1. a assinatura nao aceita mais parametro de amostragem -- se voltar,
+         alguem reintroduziu o rollout;
+      2. a acao escolhida e a que `_busca_determinista` apontou;
+      3. sem modelo compativel (ela devolve None) o motor NAO cai num segundo
+         motor de busca -- decide pela ordem que ja chegou e segue jogando.
+
+    O porque do 3: manter o rollout como rede de protecao seria exatamente a
+    duplicata que `REGRA_SEM_DUPLICACAO.md` proibe -- duas funcoes
+    respondendo "qual acao tomar".
+    """
+    import inspect
+    params = list(inspect.signature(OPTCGMatch._select_action_via_search).parameters)
+    check("assinatura sem parametros de amostragem (samples/batch/z/rng/model)",
+          params == ['self', 'p', 'opp', 'engine', 'candidatas'])
+
+    me = GameState(leader=real_card("OP11-062"), don_available=5, turn=3)
+    opp = GameState(leader=real_card("OP04-019"), turn=3)
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    # tuplas de 5 como as reais (score, tipo, objeto, tipo_alvo, alvo)
+    cands = [(400, 'attack', None, 'leader', None),
+             (10, 'play', None, None, None),
+             (5, 'play', None, None, None)]
+
+    orig = OPTCGMatch._busca_determinista
+    try:
+        OPTCGMatch._busca_determinista = (
+            lambda self, p, o, e, c: (c[1], 0.77, [(x, 0.77 if x is c[1] else 0.10)
+                                                   for x in c]))
+        esc, val, recs, nos, simv = match._select_action_via_search(
+            me, opp, DecisionEngine(me, opp), cands)
+        check("a escolha vem da busca determinista, nao da pontuacao estatica",
+              esc is cands[1])
+        check("o valor devolvido e o da busca", abs(val - 0.77) < 1e-9)
+        check("telemetria tem uma entrada por candidata (era o que o rollout dava)",
+              len(recs) == len(cands) and len(simv) == len(cands))
+
+        OPTCGMatch._busca_determinista = lambda self, p, o, e, c: None
+        esc2, val2, recs2, _n2, _s2 = match._select_action_via_search(
+            me, opp, DecisionEngine(me, opp), cands)
+        check("sem modelo: decide pela ordem recebida, sem segundo motor de busca",
+              esc2 is cands[0] and val2 == 0.0 and len(recs2) == len(cands))
+    finally:
+        OPTCGMatch._busca_determinista = orig
 
 
 if __name__ == "__main__":

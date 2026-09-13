@@ -53,6 +53,110 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (785) - **O MONTE CARLO SAIU.** E o substituto NUNCA tinha rodado: a chave da transposicao levantava TypeError e a busca devolvia None em 48 de 49 decisoes
+
+### 1. O achado que muda a leitura do bloco 784
+
+`_busca_determinista` **nunca executou**. A chave da tabela de transposicao
+era `tuple(sorted(fingerprint_estado(...).items()))` -- e `fingerprint_estado`
+devolve dict ANINHADO com listas dentro, entao guardar levantava
+`TypeError: unhashable type: 'dict'`. A excecao caia no
+`except Exception: continue` do laco de candidatas, TODA candidata era
+descartada e a funcao devolvia `None`. Medido com espiao: **None em 48 de 49
+decisoes**; o motor voltava pro Monte Carlo sempre.
+
+> **O "custo-neutro" do bloco 784 (55,1s x 54,5s) comparou Monte Carlo com
+> Monte Carlo.** A medicao estava certa; a conclusao ("o metodo esta certo,
+> falta avaliacao incremental") foi tirada de um experimento que nunca rodou
+> o metodo.
+
+Corrigido com `_hashavel()` (dict/lista -> tupla, recursivo): 40 de 40.
+
+### 2. O Monte Carlo foi REMOVIDO do ponto de decisao
+
+344 linhas apagadas de `_select_action_via_search`. A busca determinística e o
+caminho, sem knob e **sem fallback pro rollout**: sem modelo compativel, decide
+pela ordem que chegou. Manter os dois seria a duplicata que
+`REGRA_SEM_DUPLICACAO.md` proibe -- duas funcoes respondendo "qual acao tomar".
+
+Junto: assinatura enxuta (morreram `model`, `max_steps`,
+`extra_own_turn_search`, `samples_min/max`, `batch_size`, `z_threshold`,
+`rng`), os dois chamadores atualizados (offline e `sim_bridge` ao vivo), o knob
+`OPTCG_BUSCA_DETERMINISTA` apagado. `_simulate_sequence_*`/`_play_turn_greedy`
+FICAM: deixaram de ser caminho de decisao e seguem servindo a camada barata
+(desligada) e o coletor contrafactual.
+
+### 3. Velocidade: 36,9s -> 8,4s por partida (4,4x)
+
+| etapa | por partida |
+|---|---|
+| defaults como estavam no push do 784 | 36,9s |
+| + parar de precificar DENTRO da simulacao | 21,7s |
+| **sem Monte Carlo (estado atual)** | **8,4s** (4 partidas) |
+
+Abaixo do baseline historico (~16s). Um portao de 240 partidas cai de ~2,5h
+pra **~34 min sequencial / ~17 min com 2 workers**.
+
+O degrau do meio foi vazamento real: `pick_counters` consultava o modelo
+**7.379 vezes por partida** dentro do rollout (19% do tempo). O guard
+`_EM_SIMULACAO` existia em `_modelo_escolhe_carta` e em `_preco_do_sacrificio`
+e SO essa chamada tinha ficado de fora. `_busca_determinista` e
+`_ordena_pelo_modelo` agora tambem marcam que estao simulando.
+
+### 4. A ordenacao pelo modelo era DESFEITA pelo passo seguinte
+
+`_ordena_pelo_modelo` roda no ponto de decisao e a chamada seguinte,
+`_select_search_candidates`, fazia `sorted(actions, key=_norm)` -- pontuacao
+ESTATICA. A ordem do modelo so sobrevivia como desempate entre scores
+identicos (na pratica, as variantes de DON). Mesma classe do bug do dedupe do
+bloco 783: construido e anulado em silencio.
+
+Consertado: `_ordena_pelo_modelo` sinaliza `self._modelo_ordenou`, e o
+shortlist recebe `ordenada_pelo_modelo=` -- o TAMANHO continua vindo da regra
+de orcamento (custo-neutro; alargar ja regrediu 3 vezes, blocos 593/594/677),
+mas QUEM ocupa as vagas passa a ser o modelo. Sem isto o modelo nao conseguia
+promover candidata que a regua estatica pontuou baixo -- exatamente a linha que
+comeca com jogada que parece ruim isolada (achado do usuario, bloco 778).
+
+### 5. Override POR JOGADOR nos dois knobs que nao tinham
+
+`MODELO_SACRIFICIO` e `ARVORE_DON_EXTRA` eram globais. O portao e duelo
+ESPELHADO no mesmo processo: sem override por lado **nao havia como medi-los**.
+Agora os 4 defaults novos do bloco 784 sao isolaveis (`_modelo_sacrificio_ativo`
+e `arvore_don_extra`, mesmo padrao de `executa_lethal`).
+
+### 6. O push do 784 tinha quebrado 3 testes -- eram regressao real
+
+`smoke_fast` estava com 3 falhas, todas causadas por `MODELO_SACRIFICIO`
+(confirmado: com ele desligado, 0). Duas causas:
+
+- `_choose_to_trash` entregava a mao inteira ao modelo, que **descartava o
+  evento [Counter]**. Agora a reserva de defesa e RESTRICAO (no lugar da
+  legalidade, `_e_reserva_de_defesa`): o modelo escolhe dentro do que pode ser
+  gasto, e a reserva so entra sem alternativa.
+- `_worth_paying_optional_costs` perguntava ao modelo QUAL carta descartar e
+  comparava a resposta em `_trash_value` -- duas reguas. A pergunta ali nao e
+  "o que descartar", e "existe carta barata o bastante"; voltou pra regua da
+  propria comparacao, agora via `_carta_mais_barata_da_mao` (fonte unica da
+  expressao, que estava escrita a mao em dois lugares).
+
+### 7. Testes
+
+`smoke_fast.py`: **1420 checagens, 0 falhas**. Removidos 3 testes da amostragem
+adaptativa -- testavam mecanismo que deixou de existir. Adicionado
+`test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785`: assinatura sem
+parametro de amostragem, a escolha vem da busca, e sem modelo nao ha segundo
+motor de busca.
+
+### 8. O QUE FALTA -- a forca continua DESCONHECIDA
+
+**Nenhum duelo rodou.** Esta busca nunca tinha executado antes de hoje: ela e
+rapida e termina partidas (4/4, 8-15 turnos), e **nada diz que decide tao bem
+quanto o rollout**. Os numeros deste bloco sao de estrutura e de TEMPO.
+
+`metrics/value_net_aluno.joblib` entra neste commit: sem Monte Carlo por baixo,
+se o arquivo faltar o motor decide pela ordem estatica em TODA decisao.
+
 ## 2026-09-13 (784) - **ATENCAO: producao mudou e NADA foi medido.** Modelo decide 8 familias, arvore larga, busca determinística construida. Zero duelos
 
 ### 0. LEIA ISTO ANTES DE QUALQUER COISA

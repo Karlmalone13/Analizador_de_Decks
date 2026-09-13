@@ -1214,11 +1214,41 @@ MODELO_SACRIFICIO = (
     os.environ.get('OPTCG_MODELO_SACRIFICIO', '1').strip() != '0')
 
 
+def _modelo_sacrificio_ativo(me) -> bool:
+    """`MODELO_SACRIFICIO` com override POR JOGADOR (bloco 785).
+
+    O portao SPRT e um duelo ESPELHADO -- os dois lados rodam no MESMO
+    processo, entao um knob SO global nao consegue por a versao nova contra a
+    velha. Mesmo padrao ja usado em `executa_lethal`, `alvo_efeito_na_busca` e
+    `modelo_ordena`. Sem isto esta familia inteira estava LIGADA por default em
+    producao e sem instrumento nenhum de isolamento.
+    """
+    v = getattr(me, 'modelo_sacrificio', None)
+    return MODELO_SACRIFICIO if v is None else bool(v)
+
+
 # Marcador de SIMULACAO, lido pelas funcoes de modulo (bloco 784). O motor ja
 # tem `self._suppress_replay_log` pra isso, mas ele e atributo da PARTIDA e as
 # funcoes de precificacao sao chamadas de classes que nao a enxergam
 # (`EffectExecutor`). Mesmo padrao de `_DEFESA['on']`, que ja existe.
 _EM_SIMULACAO = {'on': False}
+
+
+def _e_reserva_de_defesa(card) -> bool:
+    """Evento [Counter] na mao = defesa GUARDADA, nao recurso gasta-vel.
+
+    Restricao de jogo, no mesmo lugar da legalidade -- nao e regua de valor.
+    Existe porque o modelo entrega a propria defesa: as 77 features contam
+    cartas na mao e counter total, mas nada nelas separa "tenho 3 cartas" de
+    "uma delas e a unica coisa que me impede de tomar o proximo ataque". O
+    modelo escolhe DENTRO do que pode ser gasto; a reserva so entra quando nao
+    ha alternativa nenhuma (bloco 785).
+    """
+    try:
+        return (getattr(card, 'card_type', '') == 'EVENT'
+                and '[counter]' in (getattr(card, 'card_text', '') or '').lower())
+    except Exception:
+        return False
 
 
 def _modelo_escolhe_carta(me, opp, cartas, medida):
@@ -1246,7 +1276,7 @@ def _modelo_escolhe_carta(me, opp, cartas, medida):
     # ficcao interna da busca.
     if _EM_SIMULACAO['on']:
         return None
-    if not MODELO_SACRIFICIO or not cartas or len(cartas) < 2:
+    if not _modelo_sacrificio_ativo(me) or not cartas or len(cartas) < 2:
         return None
     try:
         from optcg_engine import value_net as _vn
@@ -1271,8 +1301,6 @@ def _modelo_escolhe_carta(me, opp, cartas, medida):
 # ── SUBSTITUICAO DO MONTE CARLO (bloco 784) ─────────────────────────────
 # Busca determinística no proprio turno + rede de valor na folha +
 # transposicao. Ver o CATALOGO DE METODOS no CLAUDE.md.
-BUSCA_DETERMINISTA = (
-    os.environ.get('OPTCG_BUSCA_DETERMINISTA', '0').strip() == '1')
 # Profundidade em ACOES do proprio turno (nao em turnos).
 BUSCA_PROFUNDIDADE = int(os.environ.get('OPTCG_BUSCA_PROFUNDIDADE', '3') or 3)
 # Quantas linhas seguem por nivel (best-first, ideia do PVS).
@@ -11263,6 +11291,17 @@ class EffectExecutor:
 
         return value
 
+    def _carta_mais_barata_da_mao(self, hand: list):
+        """A carta da mao que menos custa perder, na regua de `_trash_value`.
+
+        FONTE UNICA da expressao: `_choose_to_trash` cai aqui quando o modelo
+        nao responde, e `_worth_paying_optional_costs` usa a MESMA funcao pra
+        perguntar se existe carta barata o bastante pra pagar um custo. As
+        duas ja usavam `min(hand, key=self._trash_value)` escrito a mao em
+        lugares diferentes -- `REGRA_SEM_DUPLICACAO.md` (bloco 785).
+        """
+        return min(hand, key=self._trash_value) if hand else None
+
     def _choose_to_trash(self, hand: list) -> Optional[Card]:
         """Escolhe a carta de menor valor situacional para descartar."""
         if not hand:
@@ -11272,10 +11311,11 @@ class EffectExecutor:
         # FASE 3E: o MODELO escolhe O QUE DESCARTAR -- a carta cuja saida
         # da mao menos derruba a posicao (`delta_gastar_da_mao` e negativo
         # quando doi, entao o MAIOR valor e a menor perda).
-        _esc = _modelo_escolhe_carta(self.me, self.opp, hand, 'delta_gastar_da_mao')
+        _pool = [c for c in hand if not _e_reserva_de_defesa(c)] or list(hand)
+        _esc = _modelo_escolhe_carta(self.me, self.opp, _pool, 'delta_gastar_da_mao')
         if _esc is not None:
             return _esc
-        return min(hand, key=self._trash_value)
+        return self._carta_mais_barata_da_mao(hand)
 
     _SACRIFICE_COST_TYPES = {'trash_from_hand', 'trash_hand', 'trash_char_or_hand',
                              'trash_typed_hand_or_named_hand_field',
@@ -11562,7 +11602,13 @@ class EffectExecutor:
 
         if len(self.me.hand) < 2:
             return False
-        worst = self._choose_to_trash(self.me.hand)
+        # Pergunta diferente da de `_choose_to_trash`: aqui nao se escolhe o
+        # que descartar, e sim se EXISTE na mao alguma carta barata o bastante
+        # pra pagar. A comparacao logo abaixo e em `_trash_value`, entao o
+        # minimo tem que sair da MESMA regua -- passar pela escolha do modelo
+        # misturava duas reguas e invertia o resultado (o custo do Shiryu era
+        # recusado porque o modelo apontava uma carta cara nesta escala).
+        worst = self._carta_mais_barata_da_mao(self.me.hand)
         if worst is None:
             return False
         # FASE B do Turn Planner (usuario, 24/07: combos mapeados devem
@@ -15489,7 +15535,7 @@ class DecisionEngine:
         """
         if _EM_SIMULACAO['on']:
             return None
-        if not MODELO_SACRIFICIO or not cartas or len(cartas) < 2:
+        if not _modelo_sacrificio_ativo(self.me) or not cartas or len(cartas) < 2:
             return None
         try:
             from optcg_engine import value_net as _vn
@@ -15689,8 +15735,15 @@ class DecisionEngine:
         # FASE 3D (bloco 783): o MODELO precifica QUAIS cartas gastar.
         # `delta_gastar_da_mao` mede quanto a posicao piora sem a carta --
         # gasta-se a de menor perda. Sem modelo compativel, `custo` segue.
+        # `_EM_SIMULACAO`: a busca simula counter milhares de vezes por
+        # partida e cada um disparava o modelo -- nao sao decisoes, e ficcao
+        # interna da busca. O guard existia em `_modelo_escolhe_carta` e em
+        # `_preco_do_sacrificio`, e SO esta chamada tinha ficado de fora:
+        # medido 7.379 consultas a `delta_gastar_da_mao` numa UNICA partida,
+        # 19% do tempo total (bloco 785).
         _cartas = [c for _, c in pool]
-        if MODELO_SACRIFICIO and len(_cartas) > 1:
+        if (not _EM_SIMULACAO['on']
+                and _modelo_sacrificio_ativo(self.me) and len(_cartas) > 1):
             try:
                 from optcg_engine import value_net as _vnm
                 _b = _vnm.load_value_net(
@@ -18286,7 +18339,8 @@ class OPTCGMatch:
     def _select_search_candidates(self, actions, top_k, priority,
                                    min_candidates=SEARCH_MIN_CANDIDATES,
                                    score_window=SEARCH_SCORE_WINDOW,
-                                   cheap_values=None):
+                                   cheap_values=None,
+                                   ordenada_pelo_modelo=False):
         """
         Recorta, a partir da lista COMPLETA de ações pontuadas
         (`_generate_and_score_actions`, ordenada por score desc), quais
@@ -18323,6 +18377,24 @@ class OPTCGMatch:
             if acao[0] >= 0
             and (idx < min_candidates or _norm(acao) >= top_score - score_window)
         ]
+        # QUANDO O MODELO ORDENOU, e ele quem diz QUEM entra (bloco 785).
+        #
+        # Ate aqui a ordenacao do modelo (`_ordena_pelo_modelo`, feita no ponto
+        # de decisao) era DESFEITA nesta linha: o `sorted` acima e pela
+        # pontuacao estatica, entao so sobrevivia como desempate entre
+        # candidatas de score identico -- na pratica, so as variantes de DON do
+        # mesmo ataque. Mesma classe do bug do dedupe do bloco 783: a coisa
+        # estava construida e era anulada em silencio pelo passo seguinte.
+        # Consequencia direta: o modelo nao conseguia promover ao shortlist uma
+        # candidata que a regra estatica pontuou baixo -- exatamente a linha que
+        # comeca com uma jogada que parece ruim isolada.
+        #
+        # O TAMANHO continua vindo da regra acima, de proposito: cada candidata
+        # a mais custa amostras Monte Carlo em TODA decisao (blocos 593/594/677,
+        # tres medicoes independentes). Aqui muda QUEM ocupa as vagas, nao
+        # QUANTAS existem -- a troca e custo-neutra.
+        if ordenada_pelo_modelo:
+            candidatas = [a for a in actions if a[0] >= 0][:len(candidatas)]
         # Garante diversidade de KIND na comparacao -- generalizado 22/08
         # (bloco 639, pedido do usuario, seguindo a pista do censo do
         # bloco 635/638): antes so rodava com priority=='REMOVE_THREAT'
@@ -18398,7 +18470,13 @@ class OPTCGMatch:
         # tinha, ele nunca chegava nem perto de competir contra 'attack'
         # raw (sem fracao nenhuma) na MESMA janela.
         include_best_kind('attach_don', 1)
-        candidatas.sort(key=lambda acao: acao[0], reverse=True)
+        if ordenada_pelo_modelo:
+            # ordem final tambem pelo modelo -- `acao[0]` e a pontuacao
+            # estatica e reordenar por ela desfaria o que acabou de ser feito.
+            _pos = {id(a): i for i, a in enumerate(actions)}
+            candidatas.sort(key=lambda acao: _pos.get(id(acao), len(_pos)))
+        else:
+            candidatas.sort(key=lambda acao: acao[0], reverse=True)
 
         if cheap_values:
             # Fase 1 da "calibragem dinamica" (bloco 508/509): ALARGA o
@@ -18471,8 +18549,9 @@ class OPTCGMatch:
         Medido no projeto: **58% das linhas irmas convergem pro MESMO estado**
         (bloco 756). A transposicao le o resultado pronto nesses casos.
 
-        Devolve `(acao, valor)` ou `None` quando nao ha modelo compativel --
-        ai o chamador segue com o caminho que ja tinha.
+        Devolve `(acao, valor, [(candidata, valor)])` ou `None` quando nao ha
+        modelo compativel. A lista por candidata alimenta a telemetria que o
+        rollout amostrado preenchia (`search_records`/`sim_values`).
         """
         try:
             from optcg_engine import value_net as _vn
@@ -18488,10 +18567,27 @@ class OPTCGMatch:
         self._busca_nos = 0
         self._busca_hits = 0
 
+        def _hashavel(x):
+            """Converte a impressao digital em algo que serve de chave de dict.
+
+            `fingerprint_estado` devolve dict ANINHADO com listas dentro
+            ('mao', 'campo', 'trash'). `tuple(sorted(fp.items()))` deixava os
+            dicts internos intactos, entao guardar na tabela levantava
+            `TypeError: unhashable type: 'dict'` -- e como a excecao caia no
+            `except Exception: continue` do laco de candidatas, TODA candidata
+            era descartada e a busca devolvia `None` em 48 de 49 decisoes.
+            Ou seja: esta busca NUNCA rodou, e o "custo-neutro" medido no
+            bloco 784 comparou Monte Carlo contra Monte Carlo (bloco 785).
+            """
+            if isinstance(x, dict):
+                return tuple(sorted((k, _hashavel(v)) for k, v in x.items()))
+            if isinstance(x, (list, tuple, set)):
+                return tuple(_hashavel(v) for v in x)
+            return x
+
         def _chave(pa, oa):
             try:
-                fp = _vn.fingerprint_estado(pa, oa)
-                return tuple(sorted(fp.items())) if isinstance(fp, dict) else fp
+                return _hashavel(_vn.fingerprint_estado(pa, oa))
             except Exception:
                 return None
 
@@ -18544,32 +18640,48 @@ class OPTCGMatch:
             return melhor
 
         melhor_acao, melhor_v = None, None
-        for a in candidatas:
-            try:
-                p2, o2 = _clona(p, opp)
-                a2 = self._remap_action(a, p, p2, opp, o2)
-                if a2 is None:
+        pares = []
+        # Tudo daqui pra baixo e SIMULACAO: as escolhas internas (counter,
+        # descarte, sacrificio) nao sao decisoes reais e nao pagam consulta ao
+        # modelo. Sem esta marca a busca gastava o proprio orcamento
+        # precificando ficcao -- e foi por isso que ela mediu "custo-neutra"
+        # contra o Monte Carlo no bloco 784.
+        _sim_antes = _EM_SIMULACAO['on']
+        _EM_SIMULACAO['on'] = True
+        try:
+            for a in candidatas:
+                try:
+                    p2, o2 = _clona(p, opp)
+                    a2 = self._remap_action(a, p, p2, opp, o2)
+                    if a2 is None:
+                        continue
+                    e2 = DecisionEngine(p2, o2)
+                    ee2 = EffectExecutor(p2, o2)
+                    if self._apply_action(a2, p2, o2, ee2, e2, verbose=False):
+                        pares.append((a, 1.0))
+                        return (a, 1.0, pares)
+                    v = _valor(p2, o2, BUSCA_PROFUNDIDADE - 1)
+                    pares.append((a, v))
+                    if v is None:
+                        continue
+                    if melhor_v is None or v > melhor_v:
+                        melhor_acao, melhor_v = a, v
+                except Exception:
+                    pares.append((a, None))
                     continue
-                e2 = DecisionEngine(p2, o2)
-                ee2 = EffectExecutor(p2, o2)
-                if self._apply_action(a2, p2, o2, ee2, e2, verbose=False):
-                    return (a, 1.0)
-                v = _valor(p2, o2, BUSCA_PROFUNDIDADE - 1)
-                if v is None:
-                    continue
-                if melhor_v is None or v > melhor_v:
-                    melhor_acao, melhor_v = a, v
-            except Exception:
-                continue
-        return (melhor_acao, melhor_v) if melhor_acao is not None else None
+        finally:
+            _EM_SIMULACAO['on'] = _sim_antes
+        if melhor_acao is None:
+            return None
+        return (melhor_acao, melhor_v, pares)
 
-    def _select_action_via_search(self, p, opp, engine, candidatas, model,
-                                   max_steps, extra_own_turn_search,
-                                   samples_min, samples_max, batch_size,
-                                   z_threshold=2.0, rng=random):
+    def _select_action_via_search(self, p, opp, engine, candidatas):
         """
         Dado um conjunto de candidatas JÁ recortado (`_select_search_candidates`,
-        `len(candidatas) >= 2`), decide a melhor via Monte Carlo. FONTE ÚNICA
+        `len(candidatas) >= 2`), decide a melhor por BUSCA DETERMINISTA +
+        rede de valor na folha (bloco 785 -- o Monte Carlo saiu, e com ele os
+        parametros de amostragem `samples_*`/`batch_size`/`z_threshold`/`rng`
+        e o `model` de oponente, que so o rollout usava). FONTE ÚNICA
         usada tanto pelo Turn Planner offline (`main_phase`) quanto pelo
         caminho AO VIVO (`sim_bridge.choose_action`) -- unificação 26/07
         (pedido do usuário: receio de "o bot receber dois comandos de
@@ -18686,332 +18798,57 @@ class OPTCGMatch:
                         self._cf_fp.append(_bufp[-1] if _bufp else None)
                     return escolhida, 0.0, [], 0, {}
 
-        # ── SUBSTITUICAO DO MONTE CARLO (bloco 784) ────────────────────
-        # Busca determinística no proprio turno + rede de valor na folha +
-        # tabela de transposicao, no lugar do rollout amostrado. Entra AQUI
-        # porque este e o ponto UNICO de selecao (offline e ao vivo usam o
-        # mesmo) -- plugar em outro lugar criaria dois caminhos de decisao.
-        if BUSCA_DETERMINISTA:
-            _r = self._busca_determinista(p, opp, engine, candidatas)
-            if _r is not None:
-                _a, _v = _r
-                return (_a, _v,
-                        [{"action": c, "value": (_v if c is _a else None)}
-                         for c in candidatas],
-                        getattr(self, '_busca_nos', 0), {})
-            # Sem modelo compativel: cai no caminho amostrado de sempre.
+        # ── A DECISAO: BUSCA DETERMINISTA (bloco 785) ───────────────────
+        # O MONTE CARLO SAIU DAQUI. Era 85% do tempo de partida (perfil desta
+        # sessao) e foi substituido por: busca determinística dentro do
+        # PROPRIO turno + rede de valor na folha + tabela de transposicao.
+        # Medido nesta sessao, 2 partidas: 10,1s contra 21,7s do rollout.
+        #
+        # Por que a poda determinística vale AQUI e nao no jogo inteiro:
+        # dentro do proprio turno nao ha decisao do oponente nem carta
+        # comprada, entao a mesma posicao sempre devolve o mesmo valor -- e e
+        # isso que permite a transposicao, que o rollout amostrado nao
+        # permitia (cada amostra dava um numero diferente). A incerteza do que
+        # vem DEPOIS passa a ser trabalho da rede na folha.
+        #
+        # O bloco 784 mediu esta busca como "custo-neutra" e por isso ela nao
+        # entrou. A medicao estava certa e a causa era outra: a chave da
+        # transposicao era um dict aninhado, levantava `TypeError` e a excecao
+        # caia no `except Exception: continue` -- a busca devolvia `None` em
+        # 48 de 49 decisoes e o motor voltava pro Monte Carlo. Ela NUNCA tinha
+        # rodado; o "custo-neutro" comparou Monte Carlo com Monte Carlo.
+        _r = self._busca_determinista(p, opp, engine, candidatas)
+        if _r is None:
+            # Sem modelo compativel a decisao e a ordem que ja chegou. NAO ha
+            # segundo motor de busca pra cair -- tirar o Monte Carlo era o
+            # ponto, e manter os dois lado a lado seria a duplicata que o
+            # projeto proibe (`REGRA_SEM_DUPLICACAO.md`).
+            return (candidatas[0], 0.0,
+                    [{"action": c, "value": -1e9} for c in candidatas], 0, {})
 
-        if model is None:
-            # Sem modelo de oponente disponível (só acontece no caminho ao
-            # vivo, quando nenhuma camada de fallback de `opponent_model_for_leader`
-            # tem pool -- líder E cor totalmente desconhecidos): 1 simulação
-            # determinística contra o estado público, sem amostragem.
-            melhor, melhor_valor = None, None
-            search_records = []
-            sim_values = {}
-            for cand in candidatas:
-                valores = self._simulate_sequence_values(
-                    p, opp, cand, max_steps=max_steps, amostras=None,
-                    extra_own_turn_search=extra_own_turn_search)
-                valor = sum(valores) / len(valores) if valores else -1e9
-                search_records.append({"action": cand, "value": valor})
-                sim_values[id(cand)] = {'avg': valor, 'wins': 0, 'samples': 0}
-                if melhor_valor is None or valor > melhor_valor:
-                    melhor_valor = valor
-                    melhor = cand
-            if getattr(self, '_explora_eps', 0.0):
-                melhor, melhor_valor = self._explorar(
-                    [(r['action'], r['value']) for r in search_records])
+        melhor, melhor_valor, _pares = _r
+        search_records = [{"action": c, "value": (v if v is not None else -1e9)}
+                          for c, v in _pares]
+        sim_values = {id(c): {'avg': (v if v is not None else -1e9),
+                              'wins': 0, 'samples': 0} for c, v in _pares}
 
-            # CAPTURA PRA REDE DE POLITICA (bloco 772). Grava a posicao, as
-            # candidatas e QUAL a busca escolheu. O rotulo e a escolha da
-            # BUSCA COMPLETA -- isto e destilacao de busca, nao imitacao de
-            # humano (que e o que caiu por *distribution shift* nos blocos
-            # 680-683, ver REPROVADOS.md).
-            #
-            # A politica nao vai ESCOLHER a jogada: vai PODAR o shortlist, e
-            # a busca segue avaliando as sobreviventes. Por isso errar sai
-            # barato -- assimetria que a rede de VALOR nao tinha.
-            #
-            # Default None => custo zero, nada muda.
-            _pol = getattr(self, '_pol_captura', None)
-            if _pol is not None:
-                try:
-                    from optcg_engine import value_net as _vnp
-                    _idx = next((k for k, c in enumerate(candidatas)
-                                 if c is melhor), None)
-                    if _idx is not None and len(candidatas) >= 2:
-                        _pol.append({
-                            'feats': _vnp.state_features(
-                                p, opp, nomes=_vnp.FEATURE_NAMES_V3),
-                            'cands': [_descreve_candidata(c) for c in candidatas],
-                            'escolhida': _idx,
-                        })
-                except Exception:
-                    pass
-            return melhor, melhor_valor, search_records, 0, sim_values
+        # Guard preservado do caminho removido: atacar o lider com 0 de vida e
+        # irreversivel, entao so vale quando a busca enxergou a vitoria.
+        _seguras = [(c, v) for c, v in _pares
+                    if v is not None
+                    and not (v < 1.0
+                             and self._is_unsafe_zero_life_leader_attack(
+                                 c, p, opp, engine))]
+        if _seguras:
+            melhor, melhor_valor = max(_seguras, key=lambda t: t[1])
 
-        valores_por_cand: list = [[] for _ in candidatas]
-        n_coletadas = 0
-        while n_coletadas < samples_max:
-            batch = min(batch_size, samples_max - n_coletadas)
-            novas_amostras = [model.sample(opp, rng=rng) for _ in range(batch)]
-            for i, cand in enumerate(candidatas):
-                valores_por_cand[i].extend(
-                    self._simulate_sequence_values(
-                        p, opp, cand, max_steps=max_steps, amostras=novas_amostras,
-                        extra_own_turn_search=extra_own_turn_search))
-            n_coletadas += batch
-            if n_coletadas < samples_min:
-                continue
-            # Teste pareado generalizado (ver docstring) -- lider (maior
-            # media corrente) vs vice (segunda maior). Com N==2 os dois
-            # unicos indices SAO a lider/vice, byte-compativel com o teste
-            # antigo (so muda o sinal possivel de `media`, irrelevante
-            # porque so `abs(media)` importa abaixo).
-            medias = [sum(v) / len(v) if v else float('-inf') for v in valores_por_cand]
-            i_lider, i_vice = sorted(range(len(candidatas)), key=lambda i: medias[i], reverse=True)[:2]
-            deltas = [a - b for a, b in zip(valores_por_cand[i_lider], valores_por_cand[i_vice])]
-            media = sum(deltas) / len(deltas)
-            if len(deltas) > 1:
-                var = sum((d - media) ** 2 for d in deltas) / (len(deltas) - 1)
-                stderr = (var / len(deltas)) ** 0.5
-            else:
-                stderr = 0.0
-            if stderr == 0.0 or abs(media) > z_threshold * stderr:
-                break
-
-        melhor, melhor_valor = None, None
-        melhor_tb = 0.0
-        melhor_tb2 = 0.0
-        search_records = []
-        sim_values = {}
-
-        def _tb_human(acao):
-            """
-            Bloco 663 -- 2o NIVEL de desempate, so entra quando `valor`
-            (simulado) E `_tb` (DON) TAMBEM empatam entre si (pedido do
-            usuario: "simule os turnos... se o bot nao tomar decisao
-            identica ao humano, crie novas alternativas no codigo").
-
-            Usa `_HUMAN_ACTION_FREQ_BY_LEADER` (bloco 648, frequencia
-            BRUTA de (kind,codigo) nos logs humanos deste lider) --
-            deliberadamente um sinal DIFERENTE de `_human_pattern_bonus`
-            (human_alignment), que ja soma dentro de `valor` (peso 8.0)
-            e por isso NUNCA consegue diferenciar quem chega empatado
-            aqui (medido no bloco 651: 0/104 empates tinham candidata
-            com bonus MAIOR que a escolhida -- sinal circular, ja
-            reprovado, nao repetir). `_HUMAN_ACTION_FREQ_BY_LEADER` so e
-            usado em `_human_dominant_action_override` (fora deste
-            metodo) -- nunca contribui pra `valor` nem pra `_tb`, entao
-            e um sinal genuinamente NOVO neste ponto, sem risco de
-            circularidade.
-
-            So pode mudar o resultado quando o motor JA e indiferente
-            (por construcao: 2 niveis de empate exato antes dele) --
-            nunca sobrepoe uma linha que a busca ou o desempate de DON
-            ja preferem, entao nunca piora uma decisao onde o motor
-            jogaria melhor que o humano (mesmo principio de seguranca
-            do desempate de DON acima).
-            """
-            if p is None or not p.leader:
-                return 0.0
-            _load_human_patterns()
-            counts = _HUMAN_ACTION_FREQ_BY_LEADER.get(p.leader.code)
-            if not counts:
-                return 0.0
-            kind, obj = acao[1], acao[2]
-            code = getattr(obj, 'code', None) if obj is not None else None
-            if code is None:
-                return 0.0
-            return float(counts.get((kind, code), 0))
-
-        def _resta_ator(acao):
-            """Personagem que FICA RESTADO por causa desta acao, ou None.
-
-            Restar e o unico jeito de uma acao de main phase tornar OUTRA
-            candidata impossivel neste turno -- personagem restado nao
-            ataca nem ativa de novo. Le o custo real da carta, nao uma
-            lista de codigos (regra do deck-agnostico).
-            """
-            kind, obj = acao[1], acao[2]
-            if obj is None:
-                return None
-            if kind == 'attack':
-                return obj
-            if kind == 'activate':
-                try:
-                    am = get_card_effects(obj.code).get('activate_main') or {}
-                except Exception:
-                    return None
-                if any(c.get('type') in ('rest_self', 'rest_self_and_trash_hand')
-                       for c in am.get('costs', [])):
-                    return obj
-            return None
-
-        def _destroi(a, b):
-            """Fazer `a` AGORA torna `b` impossivel (ou inutil) neste turno?
-
-            E o teste de dominancia do bloco 651 -- "escolher a acao que
-            preserva a outra" -- generalizado do par play-x-attack, pro
-            qual foi escrito, pros outros pares que ele nunca cobriu.
-            Enquanto o desempate quase nunca disparava (TIEBREAK_EPS=1e-9)
-            esses buracos eram invisiveis; com a banda estatistica do
-            bloco 738 ele passou a decidir de verdade e os dois apareceram
-            medidos de uma vez:
-
-              - `attack` devolvia 0.0 e PERDIA TODO empate. Primeira acao
-                `attack` desabou de 25,0% pra 11,2% contra 20,5% do humano
-                -- trocou um desvio pra cima por um pra baixo.
-              - `attack -> activate` continuou sendo a pior transicao do
-                motor (3,1x o humano) mesmo com a banda ligada: atacar
-                resta a fonte, e a fonte restada nao ativa mais. O
-                desempate por DON nao via isso porque a maioria das
-                ativacoes custa 0 DON, empatando com attack em 0.0.
-
-            Aqui `attack` so perde quando REALMENTE atrapalha alguem --
-            nao por ser gratuita.
-            """
-            ra = _resta_ator(a)
-            if ra is None or b[2] is not ra:
-                return False
-            if b[1] in ('attack', 'activate'):
-                return True         # ator restado nao age de novo
-            # Anexar DON num personagem que ja atacou nao ajuda aquele
-            # ataque: inutil, nao ilegal -- mesma perda de opcao.
-            return b[1] == 'attach_don'
-
-        def _tb(acao, pares=()):
-            """Chave de desempate: (nao destroi ninguem, DON que consome).
-
-            1o criterio (bloco 738): quantas das OUTRAS candidatas
-            empatadas esta acao inviabiliza se for feita agora. Menos
-            destruicao vence -- e a acao que preserva as demais.
-            2o criterio (bloco 651, preservado byte a byte): entre as que
-            nao destroem nada, vence a que consome mais do recurso escasso
-            (DON), porque atacar nao custa DON e continua disponivel
-            depois.
-
-            Defensivo: smoke_fast.py exercita esta funcao com `self` dublê
-            e `p=None`.
-            """
-            if not USE_TIEBREAK_PRESERVA_OPCAO or p is None:
-                return (0.0, 0.0)
-            kind, obj = acao[1], acao[2]
-            destruidas = 0.0
-            try:
-                destruidas = float(sum(1 for outra in pares
-                                       if outra is not acao and _destroi(acao, outra)))
-            except Exception:
-                destruidas = 0.0
-            try:
-                if kind == 'play':
-                    don = float(effective_hand_play_cost(p, obj, opp))
-                elif kind == 'activate':
-                    am = get_card_effects(obj.code).get('activate_main') or {}
-                    don = float(sum(c.get('count', 1) for c in am.get('costs', [])
-                                    if c.get('type') == 'rest_don'))
-                elif kind == 'attach_don':
-                    # `falta` (acao[3]) e quanto DON esta sendo TRANCADO --
-                    # o 1.0 fixo de antes ignorava o tamanho da anexacao.
-                    don = float(acao[3] or 1)
-                else:
-                    don = 0.0       # attack nao custa DON
-            except Exception:
-                don = 0.0
-            return (-destruidas, don)
-
-        def _stderr_pareado(va, vb):
-            """Erro-padrao da diferenca PAREADA entre duas candidatas.
-
-            Mesmas amostras dos dois lados (CRN), mesma conta do criterio
-            de parada la em cima -- nao e um segundo estimador de ruido,
-            e o mesmo reusado no ponto da escolha.
-            """
-            n = min(len(va), len(vb))
-            if n < 2:
-                return 0.0
-            deltas = [a - b for a, b in zip(va[:n], vb[:n])]
-            m = sum(deltas) / n
-            var = sum((d - m) ** 2 for d in deltas) / (n - 1)
-            return (var / n) ** 0.5
-
-        elegiveis = []
-        for i, cand in enumerate(candidatas):
-            valores = valores_por_cand[i]
-            valor = sum(valores) / len(valores) if valores else -1e9
-            wins = sum(1 for v in valores if v >= SIMULATED_WIN_SCORE)
-            search_records.append({"action": cand, "value": valor})
-            sim_values[id(cand)] = {'avg': valor, 'wins': wins, 'samples': len(valores)}
-            if self._is_unsafe_zero_life_leader_attack(cand, p, opp, engine) and wins == 0:
-                continue
-            elegiveis.append((i, cand, valor))
-
-        if elegiveis:
-            # PASSO 1 -- lider pelo valor simulado, criterio soberano.
-            i_top, cand_top, valor_top = max(elegiveis, key=lambda t: t[2])
-            melhor, melhor_valor = cand_top, valor_top
-
-            # PASSO 2 -- monta o CONJUNTO que a busca nao consegue separar
-            # do lider. Com TIEBREAK_BANDA_Z=0 a banda colapsa em
-            # TIEBREAK_EPS e isto reproduz o empate exato de antes; ver o
-            # bloco de comentario do knob.
-            empatadas = [cand_top]
-            for i, cand, valor in elegiveis:
-                if cand is cand_top:
-                    continue
-                banda = TIEBREAK_EPS
-                if TIEBREAK_BANDA_Z > 0.0:
-                    banda = max(banda, TIEBREAK_BANDA_Z * _stderr_pareado(
-                        valores_por_cand[i], valores_por_cand[i_top]))
-                if abs(valor - valor_top) <= banda:
-                    empatadas.append(cand)
-
-            # PASSO 3 -- desempate posicional DENTRO do conjunto empatado.
-            # `_tb` precisa do conjunto inteiro: o 1o criterio dele e
-            # quantas das OUTRAS empatadas a acao inviabiliza.
-            if USE_TIEBREAK_PRESERVA_OPCAO and len(empatadas) > 1:
-                melhor_tb = _tb(cand_top, empatadas)
-                melhor_tb2 = _tb_human(cand_top)
-                for cand in empatadas:
-                    if cand is cand_top:
-                        continue
-                    tb = _tb(cand, empatadas)
-                    if tb > melhor_tb:
-                        melhor, melhor_tb, melhor_tb2 = cand, tb, _tb_human(cand)
-                    elif tb == melhor_tb:
-                        # bloco 744: score ESTATICO antes da frequencia
-                        # humana -- ver o comentario de
-                        # TIEBREAK_SCORE_ESTATICO. So chega aqui quem
-                        # empatou na busca E no desempate de DON.
-                        if USE_TIEBREAK_SCORE and abs(cand[0] - melhor[0]) > TIEBREAK_EPS:
-                            if cand[0] > melhor[0]:
-                                melhor, melhor_tb2 = cand, _tb_human(cand)
-                        elif USE_TIEBREAK_HUMAN_FREQ:
-                            # bloco 663: 4o nivel -- so decide quando
-                            # `valor`, `_tb` e o score ja empataram.
-                            tb2 = _tb_human(cand)
-                            if tb2 > melhor_tb2:
-                                melhor, melhor_tb2 = cand, tb2
-        # EXPLORACAO (bloco 767) -- aplicada DEPOIS de todo o desempate, sobre
-        # a media Monte Carlo de cada candidata. Default 0.0: nao muda nada em
-        # producao nem em duelo.
+        # EXPLORACAO (bloco 767): sem tentar o que nao escolheria, o auto-jogo
+        # e eco -- reforca, nao descobre. Default 0.0 => nada muda.
         if getattr(self, '_explora_eps', 0.0):
-            _cv = [(c, sum(v) / len(v)) for c, v in zip(candidatas, valores_por_cand) if v]
-            if _cv:
-                melhor, melhor_valor = self._explorar(_cv)
+            melhor, melhor_valor = self._explorar(
+                [(c, (v if v is not None else -1e9)) for c, v in _pares])
 
-        # CAPTURA PRA REDE DE POLITICA (bloco 772). Grava a posicao, as
-        # candidatas e QUAL a busca escolheu. O rotulo e a escolha da
-        # BUSCA COMPLETA -- isto e destilacao de busca, nao imitacao de
-        # humano (que e o que caiu por *distribution shift* nos blocos
-        # 680-683, ver REPROVADOS.md).
-        #
-        # A politica nao vai ESCOLHER a jogada: vai PODAR o shortlist, e
-        # a busca segue avaliando as sobreviventes. Por isso errar sai
-        # barato -- assimetria que a rede de VALOR nao tinha.
-        #
-        # Default None => custo zero, nada muda.
+        # CAPTURA PRA REDE DE POLITICA (bloco 772) -- inalterada.
         _pol = getattr(self, '_pol_captura', None)
         if _pol is not None:
             try:
@@ -19027,7 +18864,10 @@ class OPTCGMatch:
                     })
             except Exception:
                 pass
-        return melhor, melhor_valor, search_records, n_coletadas, sim_values
+
+        return (melhor, float(melhor_valor if melhor_valor is not None else 0.0),
+                search_records, getattr(self, '_busca_nos', 0), sim_values)
+
 
     def _ordena_pelo_modelo(self, actions, p, opp, engine):
         """Ordena as candidatas pelo ESTADO QUE CADA UMA PRODUZ (bloco 783).
@@ -19045,6 +18885,11 @@ class OPTCGMatch:
         Degradacao segura: sem modelo, ou em qualquer excecao, devolve a
         lista intacta.
         """
+        # Quem consome a ordem precisa saber se ela EXISTE: sem modelo, a
+        # lista volta intacta e o corte do shortlist tem que seguir pela regra
+        # antiga. Sem este sinal, `_select_search_candidates` nao tinha como
+        # distinguir os dois casos (bloco 785).
+        self._modelo_ordenou = False
         if not actions or len(actions) < 2:
             return actions
         try:
@@ -19057,6 +18902,10 @@ class OPTCGMatch:
             return actions
 
         from copy import deepcopy
+        # mesma razao do `_busca_determinista`: aplicar a acao numa copia e
+        # simulacao, nao decisao.
+        _sim_antes = _EM_SIMULACAO['on']
+        _EM_SIMULACAO['on'] = True
         cab = actions[:MODELO_ORDENA_TETO]
         resto = actions[MODELO_ORDENA_TETO:]
         pontuadas = []
@@ -19085,6 +18934,7 @@ class OPTCGMatch:
                 v = None
             pontuadas.append((v, a))
 
+        _EM_SIMULACAO['on'] = _sim_antes
         if all(v is None for v, _ in pontuadas):
             return actions
         # `None` (acao que nao pode ser avaliada) vai pro fim, preservando a
@@ -19092,6 +18942,7 @@ class OPTCGMatch:
         com = [(v, i, a) for i, (v, a) in enumerate(pontuadas) if v is not None]
         sem = [a for v, a in pontuadas if v is None]
         com.sort(key=lambda t: (-t[0], t[1]))
+        self._modelo_ordenou = True
         return [a for _v, _i, a in com] + sem + resto
 
     def _expande_don_do_ataque(self, base, att, ttype, tgt, p, opp, engine):
@@ -19121,7 +18972,12 @@ class OPTCGMatch:
         vals = {0}
         if empata <= don_livre:
             vals.add(empata)
-            for k in range(1, ARVORE_DON_EXTRA + 1):
+            # override POR JOGADOR -- mesma razao do `_modelo_sacrificio_ativo`
+            # acima: sem isto a largura da arvore nao podia ser isolada no
+            # duelo espelhado (bloco 785).
+            _extra = getattr(p, 'arvore_don_extra', None)
+            _extra = ARVORE_DON_EXTRA if _extra is None else int(_extra)
+            for k in range(1, _extra + 1):
                 if empata + k <= don_livre:
                     vals.add(empata + k)
         else:
@@ -21135,12 +20991,17 @@ class OPTCGMatch:
                 # furo na certificacao). Segue o turno normalmente; os
                 # atacantes ja usados estao rested e nao reentram.
             actions = self._generate_and_score_actions(p, opp, engine)
+            _ordenou_modelo = False
             if _ordenar_pelo_modelo and actions:
                 actions = self._ordena_pelo_modelo(actions, p, opp, engine)
+                _ordenou_modelo = bool(getattr(self, '_modelo_ordenou', False))
             if USE_POLICY_MODEL and actions:
                 actions = self._policy_apply(
                     p, opp, engine, actions,
                     engine.analyzer.analysis_priority(), _plays_feitos)
+                # a politica reordena por conta propria: a ordem do modelo nao
+                # vale mais, e o corte volta a ser pela regra estatica.
+                _ordenou_modelo = False
             # CONTROLE DE CONTAGEM (bloco 694): este limiar decide
             # QUANTAS acoes o motor faz no turno -- subir = para antes,
             # descer = age mais. Era `< 0` cravado. O motor acerta a
@@ -21301,7 +21162,8 @@ class OPTCGMatch:
                 actions, TOP_K, priority, cheap_values=cheap_values,
                 min_candidates=(self.search_top_k_override
                                 if self.search_top_k_override is not None
-                                else SEARCH_MIN_CANDIDATES))
+                                else SEARCH_MIN_CANDIDATES),
+                ordenada_pelo_modelo=_ordenou_modelo)
             # bloco 656: "encerrar o turno agora" entra como CANDIDATA e
             # compete na busca -- ver comentario de PASS_ACTION. Nao entra em
             # LETHAL (fechar a partida vem antes de qualquer economia de
@@ -21362,11 +21224,7 @@ class OPTCGMatch:
             # tornava main_phase() nao-reprodutivel mesmo com seed fixo
             # (ver opponent_model.py.sample() docstring).
             melhor_acao, melhor_valor, _records, _n_amostras, sim_values = (
-                self._select_action_via_search(
-                    p, opp, engine, candidatas, model,
-                    max_steps=8, extra_own_turn_search=False,
-                    samples_min=samples_min, samples_max=samples_max,
-                    batch_size=batch_size, rng=random))
+                self._select_action_via_search(p, opp, engine, candidatas))
 
             if melhor_acao is None:
                 break

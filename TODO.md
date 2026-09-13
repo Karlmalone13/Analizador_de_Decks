@@ -32,6 +32,31 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 13/09/2026 (bloco 785): **O MONTE CARLO SAIU DO PONTO DE DECISAO** (344
+> linhas), e o achado que reescreve o bloco 784: `_busca_determinista`
+> **nunca tinha rodado** — a chave da transposicao era dict aninhado,
+> levantava `TypeError`, a excecao era engolida e a busca devolvia `None` em
+> **48 de 49 decisoes**. O "custo-neutro" de ontem comparou Monte Carlo com
+> Monte Carlo.
+> **VELOCIDADE: 36,9s → 8,4s por partida (4,4x)**, abaixo do baseline
+> historico (~16s). Portao de 240 partidas: ~2,5h → **~34 min sequencial,
+> ~17 min com 2 workers**. Degrau do meio: `pick_counters` consultava o modelo
+> **7.379x por partida** dentro do rollout — era a unica chamada sem o guard
+> `_EM_SIMULACAO`.
+> **CONSERTADOS**: (a) a ordenacao pelo modelo era desfeita pelo `sorted`
+> estatico do shortlist — so sobrevivia como desempate; (b) `MODELO_SACRIFICIO`
+> e `ARVORE_DON_EXTRA` ganharam override POR JOGADOR, sem o qual o duelo
+> espelhado **nao conseguia medi-los**; (c) as 3 falhas de `smoke_fast` que o
+> push do 784 deixou — o modelo estava **descartando evento [Counter]**; a
+> reserva de defesa virou RESTRICAO e a valoracao de custo parou de misturar
+> duas reguas.
+> `smoke_fast`: **1420 checagens, 0 falhas**. 3 testes da amostragem adaptativa
+> removidos (mecanismo deixou de existir), 1 teste novo trancando os
+> invariantes.
+> **PENDENTE — e continua sendo tudo**: **nenhum duelo rodou**. A busca nova
+> nunca tinha executado antes de hoje; os numeros sao de estrutura e TEMPO,
+> **nao de forca**. Proximo passo: portao SPRT, que agora custa ~17 min.
+
 > 13/09/2026 (bloco 784): **⚠️ PRODUÇÃO MUDOU E NADA FOI MEDIDO.**
 > `MODELO_ORDENA`, `MODELO_SACRIFICIO`, `ALVO_EFEITO_NA_BUSCA` e
 > `ARVORE_DON_EXTRA` estão **LIGADOS por default** e **nenhum passou por
