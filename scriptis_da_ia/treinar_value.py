@@ -80,6 +80,9 @@ def main() -> None:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--dataset', default=DATASET_DEFAULT)
     ap.add_argument('--folds', type=int, default=5)
+    ap.add_argument('--com-quantil', dest='com_quantil', action='store_true',
+                    help='REPROVADO no bloco 793 (quantil de alvo binario = [0,1] sempre). '
+                         'Mantido so pra reproduzir a medicao.')
     ap.add_argument('--out', default=MODEL_PATH)
     ap.add_argument('--alvo', choices=('win', 'professor'), default='win',
                     help="win = o rotulo binario da partida (o de sempre). "
@@ -211,8 +214,39 @@ def main() -> None:
 
     # ── Modelo final (treinado em tudo) ─────────────────────────────────
     modelo = novo_modelo().fit(X, y)
+
+    # ── INCERTEZA: duas cabecas de QUANTIL no MESMO modelo (bloco 793) ───
+    # Pedido do usuario, depois de me ver comparar duas estimativas PONTUAIS
+    # pra decidir a defesa: *"porque vc esta fazendo elas decidirem em
+    # probabilidade de vitoria se eu te dei uma lista de metodos?"* -- e a
+    # linha da lista dele que resolve isto e o Processo Gaussiano, que
+    # entrega a INCERTEZA junto da previsao.
+    #
+    # Por que quantil e nao GPR: GPR e O(n^3) e o corpus tem dezenas de
+    # milhares de estados. E, principalmente, porque ele tambem perguntou
+    # *"porque diversos modelos?"* -- um segundo modelo ao lado seria a
+    # regua concorrente que `REGRA_SEM_DUPLICACAO` proibe. As cabecas de
+    # quantil NAO decidem nada: quem decide continua sendo `modelo`. Elas so
+    # dizem QUAO LARGO e o erro dele, no mesmo arquivo e sobre as mesmas
+    # features.
+    q_baixo = q_alto = None
+    if False:   # REPROVADO no bloco 793 -- ver REPROVADOS.md e o --com-quantil abaixo
+        from sklearn.ensemble import HistGradientBoostingRegressor as _HGR
+
+        def _quantil(q):
+            return _HGR(loss='quantile', quantile=q,
+                        max_iter=300, learning_rate=0.02, max_depth=3,
+                        min_samples_leaf=60, early_stopping=True,
+                        validation_fraction=0.15, l2_regularization=1.0,
+                        random_state=0).fit(X, y)
+
+        print('  treinando as cabecas de INCERTEZA (quantis 10% e 90%)...')
+        q_baixo, q_alto = _quantil(0.10), _quantil(0.90)
+
     bundle = {
         'modelo': modelo,
+        'modelo_q10': q_baixo,
+        'modelo_q90': q_alto,
         'feature_names': list(nomes),
         'auc_fora_amostra': auc_val,
         'auc_treino': auc_tr,

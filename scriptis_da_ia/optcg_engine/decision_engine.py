@@ -15752,6 +15752,17 @@ class DecisionEngine:
                                 _pares.append((_d, _c))
                         if _pares:
                             _custo, _escolhido = max(_pares, key=lambda t: t[0])
+                            # A INCERTEZA POR QUANTIL FOI TENTADA AQUI E
+                            # REPROVADA (bloco 793, ver REPROVADOS.md): deu
+                            # **0,5000 exato em toda posicao**, porque quantil
+                            # de alvo BINARIO e sempre [0, 1]. Ligada, ela
+                            # tornava TODA decisao de defesa um empate.
+                            #
+                            # O erro conceitual foi meu: confundi a dispersao
+                            # do RESULTADO com o erro da ESTIMATIVA. Para o
+                            # segundo e preciso incerteza de MODELO (posterior
+                            # de GPR, ou ensemble/bootstrap) -- nao quantil do
+                            # rotulo.
                             return _escolhido if _custo > _golpe else None
             except Exception:
                 pass

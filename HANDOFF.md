@@ -53,6 +53,63 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (793) - A INCERTEZA POR QUANTIL: construida, medida e **REPROVADA**. 0,5000 exato em toda posicao
+
+### 1. De onde veio
+
+O usuario, ao me ver decidir a defesa comparando duas estimativas PONTUAIS:
+
+> *"Porque vc esta fazendo elas decidirem em probabilidade de vitoria se eu te
+> dei uma lista de metodos?"*
+
+**Procede.** Tudo que construi hoje sai da mesma consulta ao mesmo modelo, e a
+lista dele tem a peca que faltava: o **Processo Gaussiano entrega a INCERTEZA
+junto da previsao**. Eu tinha ate escrito, ao registrar o catalogo, que GPR era
+"o mais subestimado aqui" -- e na hora seguinte construi uma decisao por
+comparacao de pontos sem barra de erro.
+
+E, quando propus GPR + PCE + RSM, ele cortou de novo: *"porque diversos
+modelos?"* -- tambem certo: tres surrogates sao tres reguas concorrentes (o
+"dois motores" que `REGRA_SEM_DUPLICACAO` proibe), e PCE/RSM nem decidem nada,
+sao ferramenta de ANALISE, a armadilha que o projeto ja tem escrita como regra.
+
+### 2. O que foi feito, e o resultado
+
+**Um modelo so**: duas cabecas de QUANTIL (10% e 90%) no MESMO bundle, mesmas
+features, sem decidir nada -- so respondendo "com que largura". Medido em
+posicoes reais:
+
+```
+incerteza : 0,5000 EXATO -- mediana, min e max
+q10 prediz 0,0000 constante | q90 prediz 1,0000 constante
+alvo do corpus: 2 valores distintos, p10=0 p50=1 p90=1
+diferenca que a defesa usa pra decidir: mediana 0,0598
+=> 8 de 8 decisoes viraram "empate"
+```
+
+**Quantil de alvo BINARIO e sempre [0,1].** A medida nao diz nada sobre o erro
+do modelo. Numero redondo demais -- exatamente o sintoma que a regra do bloco
+780 manda tratar como suspeito, e desta vez o controle pegou antes de virar
+comportamento.
+
+### 3. O erro conceitual, que e meu e fica registrado
+
+Confundi a **dispersao do RESULTADO** com o **erro da ESTIMATIVA**. Quantil do
+rotulo responde a primeira. A segunda exige incerteza de MODELO -- posterior de
+GPR, ou ensemble/bootstrap sobre o proprio preditor.
+
+Desligado nos dois lugares (defesa e treino), entrada em `REPROVADOS.md`.
+
+### 4. O que isso deixa
+
+O problema que a ideia ataca **continua real e nao resolvido**: a defesa decide
+comparando deltas da ordem de 0,06 sem nenhuma nocao de erro. O que caiu foi o
+METODO -- e agora **GPR tem fundamento medido**, nao escolha por catalogo, com
+a ressalva conhecida de O(n^3) contra 73.821 estados (subconjunto, GP esparso
+ou bootstrap).
+
+`smoke_fast`: 0 falhas. Modelo retreinado no mesmo AUC (0,8080).
+
 ## 2026-09-13 (792) - AUDITORIA DAS REGRAS a pedido dele: **mais TRES bloqueios**, um deles grave. E a defesa passa a ser decidida pelo MODELO
 
 ### 1. A auditoria que ele pediu

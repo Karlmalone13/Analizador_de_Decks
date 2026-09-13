@@ -669,3 +669,39 @@ errada porque a medição estava. Valem tanto quanto os outros:
 - **"Consertar o líder X" como plano de trabalho** — proibido pelo
   objetivo central do projeto. Um líder parado é sintoma de que um
   mecanismo não generalizou, não item de backlog. Ver `CLAUDE.md`.
+
+### Incerteza do modelo por REGRESSAO QUANTILICA (bloco 793, 13/09/2026)
+
+**Medido: `incerteza` = 0,5000 EXATO em toda posicao. Inutil.**
+
+Nasceu de um pedido legitimo do usuario -- ao me ver decidir a defesa
+comparando duas estimativas PONTUAIS, ele perguntou *"porque vc esta fazendo
+elas decidirem em probabilidade de vitoria se eu te dei uma lista de
+metodos?"*, e a linha da lista que resolve isso e o Processo Gaussiano, que
+entrega a incerteza junto da previsao. Como ele tambem perguntou *"porque
+diversos modelos?"*, a tentativa foi por cabecas de QUANTIL (10% e 90%) no
+MESMO bundle, pra nao criar uma segunda regua.
+
+**Por que falhou, medido:**
+
+```
+q10 prediz 0,0000 constante   (1 valor distinto em 200 entradas)
+q90 prediz 1,0000 constante   (1 valor distinto em 200 entradas)
+alvo do corpus: 2 valores distintos (0 e 1), p10=0 p50=1 p90=1
+```
+
+Quantil de alvo BINARIO e sempre `[0, 1]` -- o intervalo 10-90% de uma
+Bernoulli nao diz nada sobre o erro do modelo. Ligada, a medida tornava **toda**
+decisao de defesa um empate (8 de 8 casos observados).
+
+**O erro conceitual, registrado pra nao repetir:** confundi a **dispersao do
+RESULTADO** com o **erro da ESTIMATIVA**. Quantil do rotulo responde a
+primeira; a segunda exige incerteza de MODELO -- posterior de GPR, ou
+ensemble/bootstrap sobre o proprio preditor.
+
+**O que muda o quadro:** a ideia (decidir sabendo quando NAO se sabe) continua
+valida e o problema que ela ataca e real -- a defesa hoje compara deltas da
+ordem de 0,06 sem nenhuma nocao de erro. O que caiu foi o METODO. GPR passa a
+ter fundamento **medido** aqui, nao escolha por catalogo -- com a ressalva ja
+conhecida de que ele e O(n^3) e o corpus tem 73.821 estados (subconjunto, GP
+esparso ou bootstrap sao os caminhos).

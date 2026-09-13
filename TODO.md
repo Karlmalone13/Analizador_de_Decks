@@ -32,6 +32,26 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 13/09/2026 (bloco 793): **INCERTEZA POR QUANTIL — construida, medida e
+> REPROVADA.** Veio de duas perguntas dele, as duas certas: *"porque vc esta
+> fazendo elas decidirem em probabilidade de vitoria se eu te dei uma lista de
+> metodos?"* (tudo que construi sai da mesma consulta ao mesmo modelo, e a
+> lista tem a peca que falta — GPR entrega a INCERTEZA junto da previsao) e
+> *"porque diversos modelos?"* (tres surrogates = tres reguas concorrentes, o
+> "dois motores" proibido; PCE/RSM nem decidem, sao ferramenta de analise).
+> Tentativa com UM modelo so: cabecas de quantil 10%/90% no mesmo bundle.
+> **RESULTADO: `incerteza` = 0,5000 EXATO em toda posicao** — q10 prediz 0,0
+> constante, q90 prediz 1,0 constante, porque o alvo do corpus tem **2 valores
+> distintos**. Quantil de alvo binario e sempre [0,1]. Ligada, tornava **8 de 8**
+> decisoes de defesa um empate. Desligada nos dois lugares, entrada em
+> `REPROVADOS.md`.
+> **ERRO CONCEITUAL MEU, registrado**: confundi dispersao do RESULTADO com erro
+> da ESTIMATIVA — a segunda exige incerteza de MODELO (posterior de GPR, ou
+> ensemble/bootstrap), nao quantil do rotulo.
+> **O problema segue aberto**: a defesa decide comparando deltas da ordem de
+> 0,06 sem nocao de erro. **GPR agora tem fundamento MEDIDO**, com a ressalva de
+> O(n^3) contra 73.821 estados. `smoke_fast`: 0 falhas.
+
 > 13/09/2026 (bloco 792): **AUDITORIA DAS REGRAS** (pedido dele) — **mais TRES
 > bloqueios** alem do revogado no 791: (1) a **segunda copia** da regra circular
 > ("so entao a busca pode encolher", "a heuristica sai por partes, cada remocao

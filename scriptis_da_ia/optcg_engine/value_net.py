@@ -513,6 +513,46 @@ def delta_remover(card, p, opp, bundle=None) -> float | None:
     return None
 
 
+def incerteza(p, opp, bundle=None) -> float | None:
+    """Quao LARGO e o erro do modelo nesta posicao. None quando o bundle nao
+    traz as cabecas de quantil.
+
+    Por que existe (bloco 793): a decisao de defesa compara duas estimativas
+    PONTUAIS (`delta_remover` contra `delta_perder_vida`). Se a diferenca
+    entre elas for menor que o erro do proprio modelo, o bot esta decidindo no
+    RUIDO -- e nada detectava isso. O usuario apontou que a lista de metodos
+    que ele trouxe tem exatamente a peca que falta: o Processo Gaussiano
+    entrega a incerteza junto da previsao.
+
+    Por que NAO e um segundo modelo: ele perguntou, no mesmo dia, *"porque
+    diversos modelos?"* -- e tinha razao, uma segunda regua ao lado seria a
+    duplicata que `REGRA_SEM_DUPLICACAO` proibe. As cabecas de quantil **nao
+    decidem nada**: quem decide continua sendo `modelo`. Elas vivem no MESMO
+    bundle, sobre as MESMAS features, e so respondem "com que largura".
+
+    Devolve a META-LARGURA do intervalo 10%-90%, na mesma unidade de
+    `win_prob` -- entao da pra comparar direto com uma diferenca de deltas.
+    """
+    if bundle is None:
+        bundle = load_value_net()
+    if not bundle:
+        return None
+    q10 = bundle.get('modelo_q10') if isinstance(bundle, dict) else None
+    q90 = bundle.get('modelo_q90') if isinstance(bundle, dict) else None
+    if q10 is None or q90 is None:
+        return None
+    nomes = bundle.get('feature_names') if isinstance(bundle, dict) else None
+    try:
+        feats = state_features(p, opp, nomes=nomes)
+        if not check_dims(bundle, len(feats)):
+            return None
+        lo = float(q10.predict([feats])[0])
+        hi = float(q90.predict([feats])[0])
+    except Exception:
+        return None
+    return abs(hi - lo) / 2.0
+
+
 def delta_perder_vida(p, opp, bundle=None) -> float | None:
     """Quanto a posicao PIORA pra `p` se ele levar UM golpe na vida.
 
