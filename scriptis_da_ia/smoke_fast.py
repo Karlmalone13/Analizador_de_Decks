@@ -10337,6 +10337,7 @@ def main() -> int:
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor()
     test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785()
+    test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787()
     test_opponent_model_for_leader_fallback_3_camadas()
     test_play_card_aninhado_credita_valor_da_carta_trazida()
     test_search_contextual_evita_congestionar_mao_com_bombas()
@@ -15124,6 +15125,58 @@ def test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785() -> None:
               esc2 is cands[0] and val2 == 0.0 and len(recs2) == len(cands))
     finally:
         OPTCGMatch._busca_determinista = orig
+
+
+def test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787() -> None:
+    """Agrupar as consultas ao modelo nao pode MUDAR nenhuma resposta.
+
+    O ganho e so de custo fixo por chamada -- o AS-IS de 13/09/2026 mediu
+    14,52 ms/linha sozinha contra 0,86 em lote de 6 (16,9x), com o mesmo
+    trabalho util. Se `win_prob_lote` divergir de `win_prob`, a busca passa a
+    ordenar por numeros diferentes e o ganho de tempo vira mudanca silenciosa
+    de comportamento -- o erro exato que o bloco 766 temia ao recusar lote
+    naquela epoca.
+
+    Cobre tambem o contrato posicional (`saidas[i]` e `pares[i]`) e o caminho
+    sem modelo (tudo None, motor segue igual).
+    """
+    import random as _random
+    from optcg_engine import value_net as _vn
+
+    bundle = _vn.load_value_net('metrics/value_net_aluno.joblib')
+    if not bundle:
+        check("modelo do aluno disponivel pro teste de lote", False)
+        return
+
+    deck_a = (real_card("OP11-062"), [real_card("ST34-004") for _ in range(20)])
+    deck_b = (real_card("OP04-019"), [real_card("OP17-050") for _ in range(20)])
+    pares = []
+    for seed in (1, 2, 3, 4, 5):
+        _random.seed(seed)
+        m = OPTCGMatch(deck_a, deck_b)
+        m.setup()
+        pares.append((m.state_a, m.state_b))
+
+    _vn.limpar_cache_win_prob()
+    um_a_um = [_vn.win_prob(p, o, bundle=bundle) for p, o in pares]
+    _vn.limpar_cache_win_prob()
+    em_lote = _vn.win_prob_lote(pares, bundle=bundle)
+
+    check("lote devolve um valor por estado, na MESMA ordem",
+          len(em_lote) == len(pares))
+    check("lote da EXATAMENTE o mesmo valor que uma consulta por vez",
+          all(a is not None and b is not None and abs(a - b) < 1e-12
+              for a, b in zip(um_a_um, em_lote)))
+
+    # com o memo quente o lote nao chama o modelo e continua correto
+    ja_no_memo = _vn.win_prob_lote(pares, bundle=bundle)
+    check("lote com memo quente devolve os mesmos valores",
+          ja_no_memo == em_lote)
+
+    check("lote vazio devolve lista vazia (nao quebra)",
+          _vn.win_prob_lote([], bundle=bundle) == [])
+    check("sem modelo compativel, lote devolve None por posicao",
+          _vn.win_prob_lote(pares, bundle={}) == [None] * len(pares))
 
 
 if __name__ == "__main__":

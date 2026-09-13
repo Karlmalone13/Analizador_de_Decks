@@ -424,6 +424,73 @@ categorias sao todas de escolha especifica de alvo/recurso.
   explicita -- promover campeao no laco de treino NAO liga nada em
   producao (o default segue 0.0).
 
+## AS-IS OBRIGATORIO: meca o processo ATUAL antes de mudar (usuario, 13/09/2026)
+
+> *"lembre-se de fazer o AS-is, deixe como obrigatorio, porque ai sempre vamos
+> ter os tempos computacionais e saber onde estao os gargalos e tals, vamos
+> usar teoria do Sistema de Informacao"*
+
+Disciplina classica de Sistemas de Informacao: **AS-IS -> TO-BE -> AS-IS de
+novo**. Nao se desenha processo novo sem o mapa MEDIDO do processo atual, e
+nao se declara ganho sem remedir. Aqui a ferramenta e
+[`scriptis_da_ia/as_is.py`](scriptis_da_ia/as_is.py).
+
+```bash
+cd scriptis_da_ia
+python as_is.py --n 2 --rotulo <o-que-esta-sendo-testado>
+python as_is.py --n 2 --comparar metrics/as_is/as_is_<anterior>.json
+```
+
+Ele grava um JSON por execucao em `metrics/as_is/`, entao o historico de
+"onde o tempo era gasto" fica versionado e comparavel entre sessoes. Reporta:
+segundos por partida (tempo de PAREDE, sem profiler -- o profiler infla 3x),
+turnos, decisoes, candidatas por decisao, consultas ao modelo e acerto do
+memo, a quebra do tempo POR FAMILIA (tempo proprio, soma 100%) e as funcoes
+mais caras.
+
+### As tres obrigacoes
+
+1. **ANTES de propor ou implementar mudanca justificada por DESEMPENHO**:
+   rode e cite os numeros. Sem AS-IS, a proposta nao tem base.
+2. **ANTES de afirmar onde esta o gargalo**: rode. **Diagnostico herdado de
+   bloco anterior NAO vale como evidencia** -- ver o caso abaixo.
+3. **DEPOIS da mudanca**: rode de novo com `--comparar` e mostre o delta.
+   Ganho declarado sem AS-IS posterior e ganho nao comprovado.
+
+### O CASO REAL que originou a regra (bloco 787)
+
+No bloco 784 o perfil dizia **85% do tempo no rollout Monte Carlo**, e a
+conclusao registrada foi *"o metodo esta certo, falta avaliacao incremental
+(o 'U' do NNUE) -- cada consulta recalcula as 77 features do zero"*.
+
+No bloco 785 o Monte Carlo saiu. **A composicao do tempo virou outra coisa** e
+o diagnostico velho continuou sendo repetido, com confianca, sem remedir. So
+quando o usuario perguntou *"por que ainda esta demorando?"* e o perfil foi
+refeito e que apareceu o gargalo REAL:
+
+```
+consulta ao modelo UMA linha por vez : 14,52 ms/linha
+a mesma consulta em LOTE de 6        :  0,86 ms/linha   (16,9x)
+em LOTE de 200                       :  0,05 ms/linha   (288,8x)
+```
+
+Nao era montar as features. Era percorrer 300 arvores em Python **uma linha de
+cada vez**, milhares de vezes por partida. Agrupar as consultas cortou 34% do
+tempo com decisao BIT-A-BIT identica (mesmos vencedores, mesmos turnos).
+
+> **Um diagnostico de desempenho VENCE quando o sistema muda** -- e o sistema
+> muda toda sessao. Otimizar sem AS-IS e otimizar o gargalo do mes passado.
+
+### Isto NAO autoriza otimizar no lugar de fazer ML
+
+A regra de que *"se uma sessao esta mexendo em portao, cache, velocidade ou
+ferramenta de analise e NAO esta tornando o modelo melhor, ela esta fora da
+direcao"* continua valendo integralmente. O AS-IS **nao e permissao pra
+otimizar**: e a exigencia de medir QUANDO otimizar ja foi decidido, e de nao
+inventar gargalo por memoria. Velocidade continua sendo meio, nunca objetivo
+-- o que ela compra aqui e ciclo de medicao mais curto, que e o que trava o
+aprendizado do modelo.
+
 ## DIAGNOSTICO OBRIGATORIO antes de propor mecanismo: de qual PREMISSA isto depende?
 
 > Adotado em 10/09/2026, do material de Engenharia de Requisitos que o

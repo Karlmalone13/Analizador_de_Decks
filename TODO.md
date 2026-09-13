@@ -32,6 +32,29 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 13/09/2026 (bloco 787): **AS-IS OBRIGATORIO** (pedido do usuario, teoria de
+> Sistemas de Informacao: AS-IS -> TO-BE -> AS-IS de novo). Regra em `CLAUDE.md`
+> **e** `AGENTS.md` (espelho) + ferramenta nova `scriptis_da_ia/as_is.py`, que
+> grava historico versionado em `metrics/as_is/` e compara com `--comparar`.
+> **POR QUE ERA NECESSARIO**: um diagnostico MEU do bloco 784 ("falta avaliacao
+> incremental das features") continuou sendo repetido depois que o Monte Carlo
+> saiu e a composicao do tempo mudou — inclusive pra decidir NAO fazer algo.
+> **O gargalo real, medido**: consulta ao modelo **uma linha por vez**, 14,52
+> ms/linha contra **0,86 em lote de 6** (16,9x) e 0,05 em lote de 200 — 944.100
+> travessias de arvore para 3.147 previsoes.
+> **TO-BE**: `value_net.win_prob_lote`, ligada no feixe da busca (6 filhos -> 1
+> chamada) e na ordenacao das candidatas (ate 24 -> 1), com correspondencia
+> POSICIONAL (nao e o "adiar previsao" recusado no bloco 766).
+> **GANHO MEDIDO**: **17,16s -> 11,27s por partida (-34,3%)**, modelo de 32,9%
+> para 13,9% do tempo; na carga de 4 partidas, **11,3s -> 6,3s** com os MESMOS
+> vencedores e turnos — decisao identica, so mais rapida. Portao de 240
+> partidas: **~13 min com 2 workers** (era ~45 min, e ~2,5h no inicio do 785).
+> Teste permanente novo provando lote == consulta unica. `smoke_fast`: **1426
+> checagens, 0 falhas**.
+> **PROXIMO GARGALO, agora medido**: `__deepcopy__` (clonagem de estado, 14,0%,
+> 229.594 chamadas) + primitivas do interpretador (18,7%). Nao atacado.
+> **PENDENTE — ITEM 1, MEDIR**: nada dos blocos 785/786/787 passou por duelo.
+
 > 13/09/2026 (bloco 786): **os 7 itens da lista de pendencias, feitos** (pedido
 > do usuario: "faca do item 2 ao 8, ai depois a gente faz o 1").
 > **(2) O MODELO ABRE OS RAMOS**: a busca expandia `acts[:BUSCA_FEIXE]`, os 3

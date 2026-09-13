@@ -53,6 +53,119 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (787) - **AS-IS vira obrigatorio** (teoria de Sistemas de Informacao, pedido do usuario) -- e a primeira medicao ja derruba um diagnostico MEU que estava sendo repetido sem prova
+
+### 1. O pedido
+
+> *"lembre-se de fazer o AS-is, deixe como obrigatorio, porque ai sempre vamos
+> ter os tempos computacionais e saber onde estao os gargalos e tals, vamos
+> usar teoria do Sistema de Informacao"*
+
+AS-IS -> TO-BE -> AS-IS de novo. Regra escrita em `CLAUDE.md` **e** `AGENTS.md`
+(espelho) e ferramenta nova: `scriptis_da_ia/as_is.py`, que grava um JSON por
+execucao em `metrics/as_is/` -- o historico de "onde o tempo era gasto" fica
+versionado e comparavel entre sessoes (`--comparar`).
+
+### 2. Por que era necessario: um diagnostico MEU, errado, repetido com confianca
+
+No bloco 784 o perfil dizia **85% do tempo no rollout Monte Carlo** e a
+conclusao registrada foi *"o metodo esta certo, falta avaliacao incremental (o
+'U' do NNUE) -- cada consulta recalcula as 77 features do zero"*.
+
+No bloco 785 o Monte Carlo saiu. **A composicao do tempo virou outra coisa** e
+eu continuei repetindo o diagnostico velho -- inclusive pro usuario, inclusive
+escolhendo NAO fazer avaliacao incremental "porque a necessidade sumiu", sem
+nunca ter remedido a composicao. So quando ele perguntou *"por que 240 partidas
+ainda levam 45 min mesmo tirando o Monte Carlo?"* e o perfil foi refeito.
+
+> **Um diagnostico de desempenho VENCE quando o sistema muda** -- e o sistema
+> muda toda sessao. Otimizar sem AS-IS e otimizar o gargalo do mes passado.
+
+### 3. O AS-IS inicial, e o gargalo REAL
+
+```
+segundos por partida     : 17,16 s        (tempo de parede, seed 101)
+consultas ao modelo      : 8.535  (pagaram previsao: 3.147, memo 63,1%)
+
+ONDE O TEMPO E GASTO (tempo PROPRIO, soma 100%)
+  outros                        34,2%
+  modelo (rede de valor)        32,9%
+  primitivas do interpretador   14,2%
+  clonagem de estado            10,5%
+  prova de lethal                4,8%
+
+TOP: predictor.py:predict -- 10,74s proprio em 944.100 chamadas
+```
+
+944.100 travessias de arvore para 3.147 previsoes: **300 arvores percorridas em
+Python, uma linha por vez**. Medido direto no modelo:
+
+```
+UMA linha por vez : 14,52 ms/linha
+LOTE de 6         :  0,86 ms/linha   (16,9x)
+LOTE de 200       :  0,05 ms/linha   (288,8x)
+```
+
+Nao era montar as features -- era o custo FIXO por chamada, pago milhares de
+vezes por partida.
+
+### 4. TO-BE: `win_prob_lote`
+
+`value_net.win_prob_lote(pares, bundle)` -- uma previsao para varios estados
+numa unica chamada, com o memo continuando a valer por linha (so o que falta
+entra no lote) e **correspondencia POSICIONAL** (`saidas[i]` e `pares[i]`).
+
+Ligada nos dois pontos onde os estados ja sao lista materializada:
+- o **feixe da busca** (`_valor`): 6 filhos por no -> 1 chamada;
+- a **ordenacao das candidatas** (`_ordena_pelo_modelo`): ate 24 -> 1 chamada,
+  reescrita em duas passadas (materializa, depois pontua).
+
+**NAO e o "adiar previsao pra juntar lote"** que o bloco 766 recusou -- aquilo
+exigiria reatribuir resultado por candidata e erraria em silencio. Aqui a
+lista ja existe e o indice e o vinculo.
+
+### 5. AS-IS depois -- o ganho, medido
+
+```
+segundos por partida : 17,16 -> 11,27   (-34,3%)
+modelo (rede de valor)   32,9% -> 13,9%   (-19,0 pp)
+predictor.predict      944.100 -> 269.700 chamadas
+```
+
+E na carga de 4 partidas usada nos blocos anteriores: **11,3s -> 6,3s por
+partida**, com **os MESMOS vencedores e os MESMOS numeros de turno**
+(B/13, A/8, A/9, B/16). Ou seja: o bot decide exatamente igual, so mais rapido.
+
+Portao de 240 partidas: **~25 min sequencial, ~13 min com 2 workers** (era
+~45 min no fim do bloco 786, e ~2,5h no comeco do 785).
+
+### 6. Teste permanente
+
+`test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787`: lote e consulta
+unica tem que dar o MESMO valor (1e-12), ordem preservada, memo quente
+consistente, lista vazia e sem-modelo sem quebrar. Se divergir, o ganho de
+tempo teria virado mudanca silenciosa de comportamento.
+
+`smoke_fast`: **1426 checagens, 0 falhas**.
+
+### 7. O PROXIMO gargalo -- agora medido, nao suposto
+
+Com o modelo em 13,9%, o topo passou a ser:
+
+```
+decision_engine.py:__deepcopy__   4,51s proprio / 229.594 chamadas  (clonagem 14,0%)
+primitivas do interpretador                                          18,7%
+```
+
+Clonar o estado inteiro por filho da arvore. **Nao atacado** -- e o proximo
+candidato se a velocidade voltar a incomodar, e agora existe o AS-IS pra
+provar antes e depois.
+
+### 8. Continua faltando o item 1: MEDIR
+
+Nada dos blocos 785/786/787 passou por duelo. O que mudou e que o portao agora
+custa ~13 min em vez de ~2,5h.
+
 ## 2026-09-13 (786) - Os 7 itens da lista de pendencias, feitos. O modelo passa a ABRIR os ramos, o auto-jogo fica CEGO, o piso estatico para de encerrar o turno e a prova de lethal passa a contar com [Trigger]
 
 Pedido do usuario: *"Quero que faca do item 2 ao 8, ai depois a gente faz o 1"*

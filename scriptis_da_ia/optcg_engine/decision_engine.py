@@ -18729,7 +18729,8 @@ class OPTCGMatch:
             # so o `apply` dos filhos que nao serao recursados: o `win_prob`
             # do filho ja seria pago na primeira linha de `_valor`, e o memo
             # (chave = vetor de features) devolve o mesmo numero.
-            filhos = []
+            estados = []
+            venceu_aqui = False
             for a in acts[:BUSCA_LARGURA]:
                 try:
                     p2, o2 = _clona(pa, oa)
@@ -18739,15 +18740,21 @@ class OPTCGMatch:
                     e2 = DecisionEngine(p2, o2)
                     ee2 = EffectExecutor(p2, o2)
                     if self._apply_action(a2, p2, o2, ee2, e2, verbose=False):
-                        filhos = None       # vitoria: nada supera
+                        venceu_aqui = True      # vitoria: nada supera
                         break
-                    fv = _vn.win_prob(p2, o2, bundle=bundle)
-                    filhos.append((fv if fv is not None else -1.0, p2, o2))
+                    estados.append((p2, o2))
                 except Exception:
                     continue
-            if filhos is None:
+            if venceu_aqui:
                 melhor = 1.0
             else:
+                # UMA chamada ao modelo pra TODOS os filhos deste no (bloco
+                # 787). Correspondencia POSICIONAL: `vals[i]` e `estados[i]`.
+                # Medido no AS-IS: 16,9x mais barato que uma chamada por
+                # filho, com saida identica.
+                vals = _vn.win_prob_lote(estados, bundle=bundle)
+                filhos = [(v if v is not None else -1.0, p2, o2)
+                          for (p2, o2), v in zip(estados, vals)]
                 filhos.sort(key=lambda t: -t[0])
                 for _fv, p2, o2 in filhos[:BUSCA_FEIXE]:
                     try:
@@ -18999,9 +19006,9 @@ class OPTCGMatch:
         que sao indistinguiveis por pontuacao estatica (o score nao olha
         quanto DON foi anexado).
 
-        Custo: uma consulta por candidata (~2ms, com memo). Nao ha orcamento
-        compartilhado, entao uma candidata a mais nao tira precisao das
-        outras -- e o que permite a arvore ser larga.
+        Custo: UMA consulta em lote pra todas as candidatas (bloco 787). Nao
+        ha orcamento compartilhado, entao uma candidata a mais nao tira
+        precisao das outras -- e o que permite a arvore ser larga.
 
         Degradacao segura: sem modelo, ou em qualquer excecao, devolve a
         lista intacta.
@@ -19029,9 +19036,16 @@ class OPTCGMatch:
         _EM_SIMULACAO['on'] = True
         cab = actions[:MODELO_ORDENA_TETO]
         resto = actions[MODELO_ORDENA_TETO:]
-        pontuadas = []
-        for a in cab:
-            v = None
+        # DUAS PASSADAS (bloco 787): primeiro materializa os estados, depois
+        # UMA unica chamada ao modelo pra todos eles. Eram ate 24 chamadas de
+        # uma linha por decisao, e o AS-IS mostrou que o custo FIXO por
+        # chamada domina (14,52 ms/linha sozinha contra 0,86 em lote de 6).
+        # `pendentes` guarda o indice de `pontuadas` que cada estado alimenta,
+        # entao a reatribuicao e posicional e nao por adivinhacao.
+        pontuadas: list = [(None, a) for a in cab]
+        pendentes: list = []
+        estados: list = []
+        for idx, a in enumerate(cab):
             try:
                 _pd, _od = p.deck, opp.deck
                 p.deck, opp.deck = [], []
@@ -19039,21 +19053,29 @@ class OPTCGMatch:
                 p.deck, opp.deck = _pd, _od
                 p2.deck, opp2.deck = _SimDeck(_pd), _SimDeck(_od)
                 a2 = self._remap_action(a, p, p2, opp, opp2)
-                if a2 is not None:
-                    eng2 = DecisionEngine(p2, opp2)
-                    ee2 = EffectExecutor(p2, opp2)
-                    _sup = self._suppress_replay_log
-                    self._suppress_replay_log = True
-                    try:
-                        venceu = self._apply_action(a2, p2, opp2, ee2, eng2,
-                                                    verbose=False)
-                    finally:
-                        self._suppress_replay_log = _sup
-                    v = (1.0 if venceu
-                         else _vn.win_prob(p2, opp2, bundle=bundle))
+                if a2 is None:
+                    continue
+                eng2 = DecisionEngine(p2, opp2)
+                ee2 = EffectExecutor(p2, opp2)
+                _sup = self._suppress_replay_log
+                self._suppress_replay_log = True
+                try:
+                    venceu = self._apply_action(a2, p2, opp2, ee2, eng2,
+                                                verbose=False)
+                finally:
+                    self._suppress_replay_log = _sup
+                if venceu:
+                    pontuadas[idx] = (1.0, a)
+                else:
+                    pendentes.append(idx)
+                    estados.append((p2, opp2))
             except Exception:
-                v = None
-            pontuadas.append((v, a))
+                continue
+
+        if estados:
+            vals = _vn.win_prob_lote(estados, bundle=bundle)
+            for idx, v in zip(pendentes, vals):
+                pontuadas[idx] = (v, cab[idx])
 
         _EM_SIMULACAO['on'] = _sim_antes
         if all(v is None for v, _ in pontuadas):

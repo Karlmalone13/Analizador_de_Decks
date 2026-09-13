@@ -548,6 +548,77 @@ def limpar_cache_win_prob() -> None:
     _WP_CACHE.clear()
 
 
+def win_prob_lote(pares, bundle=None) -> list:
+    """`win_prob` para VARIOS estados numa UNICA chamada ao modelo.
+
+    MEDIDO (AS-IS de 13/09/2026, bloco 787), este modelo nesta maquina:
+
+        uma linha por vez : 14,52 ms/linha
+        lote de 6         :  0,86 ms/linha   (16,9x)
+        lote de 200       :  0,05 ms/linha   (288,8x)
+
+    O trabalho util e o mesmo -- o que sai e o custo FIXO por chamada, pago
+    uma vez por linha em vez de uma vez por lote. Sao 300 arvores percorridas
+    em Python a cada chamada; o AS-IS mostrou 944.100 travessias por 3.147
+    previsoes, e `predictor.predict` como a funcao mais cara do motor.
+
+    NAO e "adiar previsao pra juntar lote" (aquilo foi descartado com razao no
+    bloco 766: exigiria reatribuir resultado por candidata e erraria em
+    silencio). Aqui os estados ja chegam como LISTA MATERIALIZADA e a
+    correspondencia e POSICIONAL -- `saidas[i]` e sempre o estado `pares[i]`.
+
+    O memo continua valendo por linha: o que ja esta em cache nao entra no
+    lote. Devolve `None` na posicao que o modelo nao souber responder, igual
+    `win_prob`.
+    """
+    n = len(pares)
+    if n == 0:
+        return []
+    bundle = bundle if bundle is not None else load_value_net()
+    if not bundle:
+        return [None] * n
+    modelo = bundle.get('modelo') if isinstance(bundle, dict) else None
+    if modelo is None:
+        return [None] * n
+    nomes = bundle.get('feature_names') if isinstance(bundle, dict) else None
+
+    saidas: list = [None] * n
+    pendentes_idx: list = []
+    pendentes_feats: list = []
+    for i, (p, opp) in enumerate(pares):
+        try:
+            feats = state_features(p, opp, nomes=nomes)
+        except Exception:
+            continue
+        if not check_dims(bundle, len(feats)):
+            return [None] * n
+        chave = (id(modelo), tuple(feats))
+        hit = _WP_CACHE.get(chave)
+        if hit is not None:
+            _WP_STATS['hit'] += 1
+            saidas[i] = hit
+        else:
+            pendentes_idx.append((i, chave))
+            pendentes_feats.append(feats)
+
+    if pendentes_feats:
+        try:
+            if hasattr(modelo, 'predict_proba'):
+                vs = [float(v[1]) for v in modelo.predict_proba(pendentes_feats)]
+            else:
+                vs = [float(v) for v in modelo.predict(pendentes_feats)]
+        except Exception:
+            return saidas       # o que veio do memo continua valido
+        if len(vs) != len(pendentes_idx):
+            return saidas       # nunca reatribuir por adivinhacao
+        for (i, chave), v in zip(pendentes_idx, vs):
+            v = 0.0 if v < 0.0 else (1.0 if v > 1.0 else v)
+            _WP_STATS['miss'] += 1
+            _WP_CACHE[chave] = v
+            saidas[i] = v
+    return saidas
+
+
 def win_prob(p, opp, bundle=None) -> float | None:
     """Probabilidade estimada de `p` VENCER a partida a partir deste
     estado. None quando o modelo nao esta disponivel/compativel -- o
