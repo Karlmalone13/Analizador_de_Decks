@@ -21,12 +21,15 @@ Limitações honestas (documentadas, não escondidas):
   REAL do mesmo líder em `decklists_raw.csv`, remove o que já apareceu em
   mão/campo/trash/vida, embaralha o resto — a COMPOSIÇÃO é real, a ORDEM
   não é (não tem como saber a ordem real do deck a partir do log).
-- Mão do oponente é tratada com informação COMPLETA (mesmo padrão que o
-  self-play/gauntlet já usa hoje — `self_play_info_hidden` nunca é ligado
-  em lugar nenhum do projeto ainda), não mascarada como o caminho ao vivo
-  faz. Ou seja: o motor aqui tem mais informação do oponente do que o bot
-  real teve ao vivo — resultado tende a ficar "melhor" que o bot real
-  teria conseguido nessa exata situação, não pior.
+- Mão do oponente: **CORRIGIDO no bloco 802**. Antes, o motor auditava
+  vendo a mão real do adversário — mais informação do que o humano tinha
+  naquela partida —, então qualquer "o motor faria melhor" vinha inflado.
+  Agora `self_play_info_hidden` é ligado nos dois lados logo após o
+  `setup()`, porque `ReplayMatch` não passa pelo caminho que liga a
+  cegueira sozinha (medido: o atributo chegava AUSENTE mesmo com
+  `AUTO_JOGO_CEGO` ligado por default desde o bloco 792).
+  Continua valendo a ressalva de que o deck restante tem ordem
+  embaralhada — essa não tem como ser corrigida a partir do log.
 - Primeiro turno de cada jogador é pulado (não dá pra reconstruir o
   "antes" sem o snapshot da mão inicial, que não é registrado).
 
@@ -714,6 +717,23 @@ def audit_one_game(parsed_path, bot_side, cards_db, df_raw, urls, verbose=False,
             match.setup()
         p = match.state_a
         opp = match.state_b
+
+        # ── INFORMACAO OCULTA (bloco 802) ────────────────────────────────
+        # A pergunta desta auditoria e "o motor de hoje faria igual ou
+        # MELHOR que o humano NAQUELA situacao?". Se o motor enxerga a mao
+        # do oponente e o humano nao enxergava, a comparacao e injusta a
+        # favor do motor -- e a conclusao ("faria melhor") nao vale.
+        #
+        # `ReplayMatch` nao passa pelo caminho que liga a cegueira: medido,
+        # `self_play_info_hidden` chegava AUSENTE nos dois lados, mesmo com
+        # `AUTO_JOGO_CEGO` ligado por default desde o bloco 792.
+        #
+        # E a mesma correcao que o usuario pediu pro auto-jogo em 12/09
+        # ("mesmo o bot sabendo a mao e vida etc ele ainda perdia"), aqui
+        # aplicada a auditoria -- onde o vies e pior, porque contamina a
+        # AVALIACAO e nao so o treino.
+        p.self_play_info_hidden = True
+        opp.self_play_info_hidden = True
         # Achado real 17/08 (pedido do usuario, censo amplo de "jogada
         # nunca gerada como candidata" -- Kyo OP17-045, custo 2, turno 2
         # do jogo, so 1 DON estimado disponivel): is_first ERA fixo em
