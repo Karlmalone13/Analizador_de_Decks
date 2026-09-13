@@ -78,7 +78,12 @@ from optcg_engine.decision_engine import OPTCGMatch
 RAIZ = Path(__file__).parent
 CAMPEAO = RAIZ / 'metrics' / 'value_net.joblib'
 DESAFIANTE = RAIZ / 'metrics' / 'value_net_desafiante.joblib'
-CORPUS = RAIZ / 'metrics' / 'selfplay_dataset.jsonl'
+# CORPUS NOVO desde o bloco 798 (decisao do usuario: *"esquece o antigo como
+# parametro, vamos comecar a treinar a partir de agora"*). O arquivo antigo
+# tinha linhas com LARGURA DE FEATURES diferente da que a arquitetura de hoje
+# produz, e o laco quebrou no meio da geracao 5 com
+# `inhomogeneous shape` -- estava misturando dois formatos no mesmo treino.
+CORPUS = RAIZ / 'metrics' / 'selfplay_v2.jsonl'
 # O modelo que DECIDE (folha da busca determinística, bloco 785). E ele que
 # precisa ser retreinado no meio da geracao -- `CAMPEAO`/`DESAFIANTE` sao do
 # desenho antigo, em que o modelo era somado a pontuacao com um peso.
@@ -392,15 +397,19 @@ def main() -> None:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--geracoes', type=int, default=3)
     ap.add_argument('--partidas', type=int, default=100, help='partidas geradas por geracao')
-    ap.add_argument('--retreino-a-cada', dest='retreino_a_cada', type=int, default=3,
+    ap.add_argument('--retreino-a-cada', dest='retreino_a_cada', type=int, default=0,
                     help='retreina o modelo que DECIDE a cada N partidas geradas '
                          '(pedido do usuario, bloco 778: "a cada 3 partidas", com a '
                          'ressalva dele de que 3 e nao 1 da margem de erro). '
                          '0 = retreina so no fim da geracao, como era ate o bloco 784.')
     ap.add_argument('--duelos', type=int, default=40, help='partidas do portao campeao x desafiante')
     ap.add_argument('--workers', type=int, default=__import__('multiprocessing').cpu_count() - 3)
-    ap.add_argument('--peso', type=float, default=200.0,
-                    help='peso do valor aprendido usado ao jogar')
+    ap.add_argument('--peso', type=float, default=0.0,
+                    help='LEGADO (bloco 797). Era o peso do modelo SOMADO a '
+                         'pontuacao da heuristica -- desenho que saiu nos blocos '
+                         '790-794. Default era 200,0, e com ele a geracao '
+                         'RELIGAVA o termo somado em producao sem ninguem pedir. '
+                         'Zero = desligado; quem decide e o Q.')
     ap.add_argument('--portao', type=float, default=0.50,
                     help='o LIMITE INFERIOR do IC95 do winrate (Wilson) tem que '
                          'passar deste valor pro desafiante ser promovido. Default '
@@ -467,8 +476,20 @@ def main() -> None:
                 break
             feitas += n_fatia
             if feitas < args.partidas:
-                # retreina QUEM DECIDE, nao o desafiante do portao
+                # DESLIGADO POR DEFAULT no bloco 798, e o motivo e um BUG MEU
+                # que so apareceu ao rodar: esta chamada treinava o ALUNO com
+                # a receita ERRADA -- sem `--alvo professor` e sem
+                # `--features aluno`, ou seja, produzia um modelo de 32
+                # features e o gravava POR CIMA do arquivo do aluno, que tem
+                # 77. Retreinar assim no meio da geracao corrompia o modelo
+                # que estava decidindo.
+                #
+                # Alem disso, quem decide hoje e o **Q**, nao o aluno. Refazer
+                # o pedido do bloco 778 ("retreinar a cada 3 partidas") exige
+                # retreinar o Q e faze-lo chegar a geracao em curso -- e isso
+                # e encanamento que ainda nao existe, nao um default.
                 if not _rodar(['treinar_value.py', '--dataset', str(CORPUS),
+                               '--alvo', 'professor', '--features', 'aluno',
                                '--out', str(ALUNO)],
                               f'retreino do modelo que decide ({feitas} partidas)'):
                     ok = False
@@ -489,6 +510,11 @@ def main() -> None:
         except Exception:
             auc = None
 
+        # `d` so nasce no bloco do DUELO, mas `registro` e montado ANTES e ja
+        # le `d.get('llr')`. Na PRIMEIRA geracao de um processo isso estoura
+        # com `UnboundLocalError` -- bug latente que so aparece quando o
+        # processo comeca numa geracao que ainda nao duelou (bloco 798).
+        d = {}
         registro = {
             'geracao': gen, 'quando': datetime.now().isoformat(timespec='seconds'),
             'partidas_geradas': args.partidas, 'estados_corpus': n_estados,

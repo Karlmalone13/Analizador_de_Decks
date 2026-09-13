@@ -193,6 +193,19 @@ def _run_one_match(task) -> list:
     # aprende a devolver SEM simular. A arvore vira o professor; o Q, o aluno.
     # Marcado como lista => `_busca_determinista` passa a gravar.
     if q_out:
+        # COLETAR ALVOS EXIGE O PROFESSOR NO COMANDO (bloco 798).
+        #
+        # Pego rodando: a primeira geracao do laco produziu 541 estados e
+        # **ZERO alvos Q**. Causa: o Q agora DECIDE, entao ele responde antes e
+        # `_busca_determinista` nunca roda -- e e a busca quem calcula o valor
+        # por candidata, que E o alvo. O aluno substituiu o professor, e o
+        # professor parou de ensinar.
+        #
+        # Entao, quando a partida existe pra COLETAR, o Q sai do comando e a
+        # arvore decide. E o padrao de destilacao de busca: a busca gera o
+        # dado, o modelo joga com ele.
+        for estado in (match.state_a, match.state_b):
+            estado.usa_q = False
         match._q_captura = []
 
     amostras = []
