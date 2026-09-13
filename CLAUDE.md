@@ -151,6 +151,17 @@ completos):
   (impresso por inteiro pelo hook `pre-commit`, mesmo tratamento do
   `MEMORY.md`) — tem os casos reais já achados/corrigidos e como caçar
   duplicatas novas antes de aceitar uma função de decisão nova.
+- **O CRITÉRIO EMERGE DO APRENDIZADO — não é para você inventar** (pedido
+  explícito do usuário, 13/09/2026: *"registra isso para vc não esquecer e
+  coloque como obrigação para vc lembrar antes de um commit"*). Leitura
+  obrigatória antes de qualquer commit, **impressa por inteiro pelo hook
+  `pre-commit`**, mesmo tratamento do `MEMORY.md`:
+  [`scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md`](scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md).
+  **O teste**: acabou de remover uma regra fixa e está procurando com o que
+  substituí-la? Pare — a resposta é que o modelo testa as alternativas e o
+  critério surge. Sua tarefa é deixar o modelo ALCANÇAR as alternativas e
+  aprender com o resultado, não escolher por ele. *"O que é LEGAL: regra. O
+  que é BOM: modelo."*
 
 ---
 

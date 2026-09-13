@@ -47,6 +47,21 @@ if [ -f "$REPO_ROOT/scriptis_da_ia/REGRA_SEM_DUPLICACAO.md" ]; then
     echo ""
 fi
 
+# O CRITERIO EMERGE DO APRENDIZADO (bloco 790, pedido explicito do usuario:
+# "registra isso para vc nao esquecer e coloque como obrigacao para vc lembrar
+# antes de um commit"). Mesmo tratamento de MEMORY.md e REGRA_SEM_DUPLICACAO:
+# impresso por inteiro, porque a sessao esqueceu isto repetidas vezes NO MESMO
+# DIA -- toda vez que uma regra fixa e removida, a reacao reflexa e procurar
+# outra regra fixa pra por no lugar, em vez de deixar o modelo aprender.
+if [ -f "$REPO_ROOT/scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md" ]; then
+    echo "=============================================================="
+    echo " OBRIGATORIO: scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md"
+    echo "=============================================================="
+    cat "$REPO_ROOT/scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md"
+    echo "=============================================================="
+    echo ""
+fi
+
 # ── Gate mecanico: "dois motores" ────────────────────────────────────────
 # Pontos de entrada conhecidos do engine unico (decision_engine.py). Se o
 # diff staged de sim_bridge.py/server.py/bot_optcgsim.py adiciona uma
