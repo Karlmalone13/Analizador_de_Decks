@@ -32,6 +32,29 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 13/09/2026 (bloco 792): **AUDITORIA DAS REGRAS** (pedido dele) — **mais TRES
+> bloqueios** alem do revogado no 791: (1) a **segunda copia** da regra circular
+> ("so entao a busca pode encolher", "a heuristica sai por partes, cada remocao
+> passando pelo portao") → **revogada**; (2) `VALUE_NET_WEIGHT` "exige
+> autorizacao" → marcado **legado**; (3) **`--explorar` com default 0.0, a
+> exploracao estava DESLIGADA** → **ligada (0.1)**. O terceiro e grave: ele
+> pediu que o ML fosse testando as alternativas, e o bot **nunca tentava o que
+> nao escolheria** — sem exploracao o auto-jogo e eco e nada emerge.
+> **A DEFESA PASSA A SER DECIDIDA PELO MODELO**: medida nova
+> `delta_perder_vida` (quanto piora ao levar um golpe) — era a ponta que
+> faltava. Bloqueia se `delta_remover(blocker)` doer menos que
+> `delta_perder_vida()`, os dois em probabilidade de vitoria, **sem limiar**.
+> **UM BUG MEU pego por teste antigo**: tratei "o blocker sobrevive" como custo
+> zero olhando so o ataque ATUAL; corrigido pra `_pior_ataque_restante_este_turno`.
+> 3 testes de limiar repontados pra degradacao, com **gap honesto** registrado:
+> `delta_remover` nao dispara o [On K.O.] da carta, entao o modelo ainda nao ve
+> que blocker com On K.O. e mais barato de sacrificar.
+> `smoke_fast`: **1436 checagens, 0 falhas**. Tempo 6,20 s/partida (8,04 no
+> inicio do dia).
+> **AINDA HEURISTICO**: SE counteria (`_should_use_counter_inner` — o conjunto
+> de cartas so e conhecido em `pick_counters`) e `_worth_paying_optional_costs`
+> (precisa medir o BENEFICIO do efeito, que nenhuma medida do `value_net` cobre).
+
 > 13/09/2026 (bloco 791): **A REGRA QUE TRAVAVA O PROJETO, ACHADA E REVOGADA.**
 > Ele perguntou *"tem alguma regra aqui no projeto?"* — tinha: a secao "COMO
 > fazer — por partes e COM PORTAO, nunca de uma vez" (10/09) dizia

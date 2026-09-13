@@ -15710,6 +15710,52 @@ class DecisionEngine:
         if not blockers:
             return None
 
+        # ── O MODELO DECIDE SE BLOQUEIA E COM QUEM (bloco 792) ───────────
+        # A defesa era 100% heuristica (achado do usuario, bloco 774): nem
+        # busca nem modelo entravam aqui, e `quais cartas de counter` e uma
+        # das tres piores categorias medidas contra humano (18,5%).
+        #
+        # Agora a decisao e uma comparacao em PROBABILIDADE DE VITORIA, sem
+        # limiar escrito a mao:
+        #   custo de bloquear  = `delta_remover(blocker)`  (quanto piora sem ele)
+        #   custo de NAO bloquear = `delta_perder_vida()`  (quanto piora o golpe)
+        # Bloqueia se perder o blocker doer MENOS que tomar o golpe, e usa o
+        # blocker que menos doi perder. Blocker que SOBREVIVE ao ataque custa
+        # zero -- isso e fato de jogo (poder maior que o do atacante), nao
+        # regua de valor.
+        if not _EM_SIMULACAO['on']:
+            try:
+                from optcg_engine import value_net as _vn
+                _b = _vn.load_value_net(
+                    getattr(self.me, 'modelo_ordena_path', None)
+                    or MODELO_ORDENA_PATH)
+                if _b:
+                    _golpe = _vn.delta_perder_vida(self.me, self.opp, _b)
+                    if _golpe is not None:
+                        # "Sobrevive" tem que ser contra o PIOR ataque que
+                        # ainda resta neste turno, nao so contra o atual --
+                        # um corpo que aguenta o golpe de agora mas morre no
+                        # proximo nao foi de graca. `_pior_ataque_restante_
+                        # este_turno` ja existe e e a fonte unica disso.
+                        try:
+                            _pior = max(attacker_power,
+                                        self._pior_ataque_restante_este_turno())
+                        except Exception:
+                            _pior = attacker_power
+                        _pares = []
+                        for _c in blockers:
+                            if (_c.power + _c.power_buff) > _pior:
+                                _pares.append((0.0, _c))   # sobrevive: de graca
+                                continue
+                            _d = _vn.delta_remover(_c, self.me, self.opp, _b)
+                            if _d is not None:
+                                _pares.append((_d, _c))
+                        if _pares:
+                            _custo, _escolhido = max(_pares, key=lambda t: t[0])
+                            return _escolhido if _custo > _golpe else None
+            except Exception:
+                pass
+
         # Custo EFETIVO de sacrificar `c` como blocker: char_value_score
         # (quanto vale o corpo) MENOS o proprio [On K.O.] dele (achado
         # 24/07 -- deixar ele morrer nao e perda pura quando o K.O. em si

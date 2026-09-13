@@ -53,6 +53,80 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (792) - AUDITORIA DAS REGRAS a pedido dele: **mais TRES bloqueios**, um deles grave. E a defesa passa a ser decidida pelo MODELO
+
+### 1. A auditoria que ele pediu
+
+> *"quero que revise as regras e me mostre se tem alguma regra que te impeca de
+> fazer o que eu peco"*
+
+Achados alem do revogado no bloco 791:
+
+| # | bloqueio | acao |
+|---|---|---|
+| 1 | **SEGUNDA copia da regra circular**: *"1. fazer o modelo ficar bom, 2. **so entao** a busca pode encolher, 3. a heuristica sai **por partes, cada remocao passando pelo portao SPRT**"* | **REVOGADA** |
+| 2 | `VALUE_NET_WEIGHT` *"exige autorizacao explicita"* | marcado **LEGADO** -- e o desenho somado, que nao decide mais nada |
+| 3 | **`--explorar` com default 0.0** -- a exploracao estava DESLIGADA | **LIGADA (0.1)** |
+
+**O terceiro e o grave.** Ele pediu que *"o ML vai testando as alternativas e
+esse criterio vai surgindo"* -- e o bot **nunca tentava o que ainda nao
+escolheria**. Sem exploracao o auto-jogo e eco: o corpus so contem o que ele ja
+fazia, e nada emerge. A regra estava escrita no `CLAUDE.md` desde o bloco 767
+("IMPLEMENTADO, default desligado") e ninguem tinha ligado.
+
+### 2. A defesa passa a ser decidida pelo MODELO
+
+Era 100% heuristica (achado dele, bloco 774: nem busca nem modelo entravam, e
+`quais cartas de counter` e uma das tres piores categorias contra humano).
+
+Medida nova em `value_net`: **`delta_perder_vida`** -- quanto a posicao piora ao
+levar UM golpe. Era a ponta que faltava: `delta_remover` ja dizia quanto custa
+PERDER uma carta, e nao havia como comparar com o custo de TOMAR o golpe. Sem
+essa comparacao, "bloqueia ou nao" so dava por limiar escrito a mao.
+
+```
+custo de bloquear     = delta_remover(blocker)
+custo de NAO bloquear = delta_perder_vida()
+bloqueia se perder o blocker doer MENOS que tomar o golpe
+```
+
+Os dois em probabilidade de vitoria. **Nenhum numero magico no meio.**
+
+### 3. Um BUG MEU, pego por um teste antigo
+
+Minha primeira versao tratava "o blocker sobrevive" como custo ZERO comparando
+so com o ataque ATUAL. O teste *"ha ameaca de 8000 ainda ativa este turno: NAO
+bloqueia de graca o ataque de 5000"* reprovou -- e com razao: um corpo que
+aguenta o golpe de agora e morre no proximo nao foi de graca. Corrigido pra
+usar `_pior_ataque_restante_este_turno()`, que ja existia. **O teste achou o
+bug antes da partida.**
+
+### 4. Tres testes de LIMIAR repontados, com o gap registrado
+
+`BLOCK_CRITICAL_LIFE_MAX_COST` e companhia trancavam a calibragem da heuristica
+que deixou de decidir. Os tres passam a exercitar a **degradacao** (sem modelo
+compativel), que continua sendo caminho valido.
+
+**GAP HONESTO registrado junto**: `delta_remover` tira a carta do campo e mede,
+mas **nao dispara o [On K.O.] dela** -- entao o modelo ainda nao enxerga que um
+blocker com On K.O. valioso e mais barato de sacrificar. E limitacao da MEDIDA,
+nao motivo pra devolver a decisao pra heuristica: o certo e a medida passar a
+simular o K.O. inteiro.
+
+### 5. Estado
+
+`smoke_fast`: **1436 checagens, 0 falhas**. Tempo: 6,20 s/partida (contra 5,80
+antes da defesa entrar no modelo, dentro da variacao de 25% que a maquina
+mostrou nessa rodada; contra **8,04 no inicio do dia**).
+
+**AINDA HEURISTICO**: (a) **SE counteria** (`_should_use_counter_inner`) -- o
+conjunto de cartas so e conhecido depois, em `pick_counters`, entao decidir
+pelo modelo ali exige passar o conjunto; (b) `_worth_paying_optional_costs`,
+que pergunta se vale pagar um custo -- precisa medir o BENEFICIO do efeito, que
+hoje nenhuma medida do `value_net` cobre.
+
+Nada disto passou por duelo.
+
 ## 2026-09-13 (791) - **A REGRA QUE TRAVAVA O PROJETO, ACHADA E REVOGADA.** E a heuristica sai do ponto de decisao
 
 ### 1. A pergunta dele, e a resposta

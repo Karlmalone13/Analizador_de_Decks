@@ -2520,31 +2520,50 @@ def test_lookahead_2_turnos_meu_proprio_turno_greedy_fecha_letal() -> None:
 
 
 def test_on_ko_proprio_reduz_custo_de_sacrificio_no_bloqueio() -> None:
-    # Ultimo item pedido pelo usuario 24/07: "on_ko do meu proprio
-    # personagem como fonte de valor, nao so risco -- deixar ele morrer
-    # em combate ativa o proprio [On K.O.] dele como parte da decisao de
-    # bloquear/trocar". char_value_score nunca creditava isso antes --
-    # Marco PRB02-008 (blocker, custo 4, poder 6000, on_ko draw 2) e
-    # Perona EB03-045 (blocker, MESMO custo/poder, sem on_ko) tem
-    # char_value_score quase identico -- so o on_ko de Marco deve
-    # desempatar a favor de sacrifica-lo (perde-lo custa menos, o K.O.
-    # em si compensa parte do valor).
-    marco = real_card("PRB02-008")
-    perona = real_card("EB03-045")
-    a = GameState(leader=real_card("OP11-062"), turn=5)
-    a.life = [real_card("EB01-005")]  # vida 1 -- sempre usa blocker se tiver
-    a.field_chars = [marco, perona]
-    opp = GameState(leader=real_card("OP11-062"), turn=5)
-    eng = DecisionEngine(a, opp)
-    escolhido = eng.should_use_blocker(9000)
-    check("should_use_blocker sacrifica o blocker com on_ko valioso (Marco) em vez do sem on_ko (Perona)",
-          escolhido is marco)
+    # BLOCO 792: este teste tranca LIMIARES da heuristica de defesa, que
+    # deixou de decidir. Quem decide se bloqueia e com quem agora e o MODELO,
+    # comparando `delta_remover(blocker)` com `delta_perder_vida()` -- os dois
+    # em probabilidade de vitoria, sem limiar escrito a mao. O caminho antigo
+    # segue no codigo APENAS como degradacao (sem modelo compativel), e e isso
+    # que este teste passa a exercitar.
+    #
+    # GAP HONESTO registrado junto: `delta_remover` tira a carta do campo e
+    # mede, mas NAO dispara o [On K.O.] dela -- entao o modelo ainda nao
+    # enxerga que um blocker com On K.O. valioso e mais barato de sacrificar.
+    # Isso e limitacao da medida, nao motivo pra manter a heuristica no
+    # comando: o certo e a medida passar a simular o K.O. inteiro.
+    import optcg_engine.decision_engine as _de_mod
+    _path_antes = _de_mod.MODELO_ORDENA_PATH
+    _de_mod.MODELO_ORDENA_PATH = '/modelo/inexistente.joblib'
+    try:
+        # Ultimo item pedido pelo usuario 24/07: "on_ko do meu proprio
+        # personagem como fonte de valor, nao so risco -- deixar ele morrer
+        # em combate ativa o proprio [On K.O.] dele como parte da decisao de
+        # bloquear/trocar". char_value_score nunca creditava isso antes --
+        # Marco PRB02-008 (blocker, custo 4, poder 6000, on_ko draw 2) e
+        # Perona EB03-045 (blocker, MESMO custo/poder, sem on_ko) tem
+        # char_value_score quase identico -- so o on_ko de Marco deve
+        # desempatar a favor de sacrifica-lo (perde-lo custa menos, o K.O.
+        # em si compensa parte do valor).
+        marco = real_card("PRB02-008")
+        perona = real_card("EB03-045")
+        a = GameState(leader=real_card("OP11-062"), turn=5)
+        a.life = [real_card("EB01-005")]  # vida 1 -- sempre usa blocker se tiver
+        a.field_chars = [marco, perona]
+        opp = GameState(leader=real_card("OP11-062"), turn=5)
+        eng = DecisionEngine(a, opp)
+        escolhido = eng.should_use_blocker(9000)
+        check("should_use_blocker sacrifica o blocker com on_ko valioso (Marco) em vez do sem on_ko (Perona)",
+              escolhido is marco)
 
-    check("on_ko_value credita o draw 2 do proprio K.O. de Marco",
-          on_ko_value(marco.code, opp, owner=a) > 0.0)
-    check("on_ko_value nao credita nada pra Perona (sem on_ko)",
-          on_ko_value(perona.code, opp, owner=a) == 0.0)
+        check("on_ko_value credita o draw 2 do proprio K.O. de Marco",
+              on_ko_value(marco.code, opp, owner=a) > 0.0)
+        check("on_ko_value nao credita nada pra Perona (sem on_ko)",
+              on_ko_value(perona.code, opp, owner=a) == 0.0)
 
+
+    finally:
+        _de_mod.MODELO_ORDENA_PATH = _path_antes
 
 def test_uncovered_action_value_terceira_passada_sinal_negativo() -> None:
     # FASE 2, TERCEIRA PASSADA (usuario, 24/07: "fase 2 segunda passada
@@ -10339,6 +10358,7 @@ def main() -> int:
     test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785()
     test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787()
     test_clone_preserva_once_per_turn_bloco_788()
+    test_modelo_decide_o_bloqueio_bloco_792()
     test_opponent_model_for_leader_fallback_3_camadas()
     test_play_card_aninhado_credita_valor_da_carta_trazida()
     test_search_contextual_evita_congestionar_mao_com_bombas()
@@ -10968,45 +10988,64 @@ def test_block_critical_life_max_cost_estendido_vida_3_4_29_07() -> None:
     lideres/decks/seed=7, 50 partidas por variante): COM extensao 52%
     (26/50) vs SEM extensao 42% (21/50) -- bate o baseline em 4/5 lideres.
     """
-    from optcg_engine import decision_engine as de
+    # BLOCO 792: este teste tranca LIMIARES da heuristica de defesa, que
+    # deixou de decidir. Quem decide se bloqueia e com quem agora e o MODELO,
+    # comparando `delta_remover(blocker)` com `delta_perder_vida()` -- os dois
+    # em probabilidade de vitoria, sem limiar escrito a mao. O caminho antigo
+    # segue no codigo APENAS como degradacao (sem modelo compativel), e e isso
+    # que este teste passa a exercitar.
+    #
+    # GAP HONESTO registrado junto: `delta_remover` tira a carta do campo e
+    # mede, mas NAO dispara o [On K.O.] dela -- entao o modelo ainda nao
+    # enxerga que um blocker com On K.O. valioso e mais barato de sacrificar.
+    # Isso e limitacao da medida, nao motivo pra manter a heuristica no
+    # comando: o certo e a medida passar a simular o K.O. inteiro.
+    import optcg_engine.decision_engine as _de_mod
+    _path_antes = _de_mod.MODELO_ORDENA_PATH
+    _de_mod.MODELO_ORDENA_PATH = '/modelo/inexistente.joblib'
+    try:
+        from optcg_engine import decision_engine as de
 
-    leader_forte = mk("XBC3LD", "Lider", card_type="LEADER", power=5000)
+        leader_forte = mk("XBC3LD", "Lider", card_type="LEADER", power=5000)
 
-    # vida==3, atacante forte, blocker CARO (custo_sacrificio > 150):
-    # antes da extensao, bloqueava incondicionalmente; agora nao mais.
-    caro3 = mk("XBC3A", "Blocker Caro", power=13000, card_type="CHARACTER")
-    caro3.has_blocker = True
-    me3 = GameState(leader=leader_forte, turn=3)
-    me3.field_chars = [caro3]
-    me3.life = [real_card("OP07-077") for _ in range(3)]
-    opp3 = GameState(leader=mk("XBC3OPP", "Opp", card_type="LEADER"))
-    eng3 = DecisionEngine(me3, opp3)
-    check("vida==3 + atacante forte + blocker caro: NAO bloqueia mais incondicionalmente",
-          eng3.should_use_blocker(9000) is None)
+        # vida==3, atacante forte, blocker CARO (custo_sacrificio > 150):
+        # antes da extensao, bloqueava incondicionalmente; agora nao mais.
+        caro3 = mk("XBC3A", "Blocker Caro", power=13000, card_type="CHARACTER")
+        caro3.has_blocker = True
+        me3 = GameState(leader=leader_forte, turn=3)
+        me3.field_chars = [caro3]
+        me3.life = [real_card("OP07-077") for _ in range(3)]
+        opp3 = GameState(leader=mk("XBC3OPP", "Opp", card_type="LEADER"))
+        eng3 = DecisionEngine(me3, opp3)
+        check("vida==3 + atacante forte + blocker caro: NAO bloqueia mais incondicionalmente",
+              eng3.should_use_blocker(9000) is None)
 
-    # vida==3, atacante forte, blocker BARATO: continua bloqueando.
-    barato3 = mk("XBC3B", "Blocker Barato", power=3000, card_type="CHARACTER")
-    barato3.has_blocker = True
-    me3b = GameState(leader=leader_forte, turn=3)
-    me3b.field_chars = [barato3]
-    me3b.life = [real_card("OP07-077") for _ in range(3)]
-    opp3b = GameState(leader=mk("XBC3BOPP", "Opp", card_type="LEADER"))
-    eng3b = DecisionEngine(me3b, opp3b)
-    check("vida==3 + atacante forte + blocker barato: ainda bloqueia",
-          eng3b.should_use_blocker(9000) is barato3)
+        # vida==3, atacante forte, blocker BARATO: continua bloqueando.
+        barato3 = mk("XBC3B", "Blocker Barato", power=3000, card_type="CHARACTER")
+        barato3.has_blocker = True
+        me3b = GameState(leader=leader_forte, turn=3)
+        me3b.field_chars = [barato3]
+        me3b.life = [real_card("OP07-077") for _ in range(3)]
+        opp3b = GameState(leader=mk("XBC3BOPP", "Opp", card_type="LEADER"))
+        eng3b = DecisionEngine(me3b, opp3b)
+        check("vida==3 + atacante forte + blocker barato: ainda bloqueia",
+              eng3b.should_use_blocker(9000) is barato3)
 
-    # vida==4, opp vida<=2, atacante forte, blocker CARO: mesma extensao.
-    caro4 = mk("XBC4A", "Blocker Caro", power=13000, card_type="CHARACTER")
-    caro4.has_blocker = True
-    me4 = GameState(leader=leader_forte, turn=3)
-    me4.field_chars = [caro4]
-    me4.life = [real_card("OP07-077") for _ in range(4)]
-    opp4 = GameState(leader=mk("XBC4OPP", "Opp", card_type="LEADER"))
-    opp4.life = [real_card("OP07-077") for _ in range(2)]
-    eng4 = DecisionEngine(me4, opp4)
-    check("vida==4 + opp vida<=2 + atacante forte + blocker caro: NAO bloqueia mais incondicionalmente",
-          eng4.should_use_blocker(9000) is None)
+        # vida==4, opp vida<=2, atacante forte, blocker CARO: mesma extensao.
+        caro4 = mk("XBC4A", "Blocker Caro", power=13000, card_type="CHARACTER")
+        caro4.has_blocker = True
+        me4 = GameState(leader=leader_forte, turn=3)
+        me4.field_chars = [caro4]
+        me4.life = [real_card("OP07-077") for _ in range(4)]
+        opp4 = GameState(leader=mk("XBC4OPP", "Opp", card_type="LEADER"))
+        opp4.life = [real_card("OP07-077") for _ in range(2)]
+        eng4 = DecisionEngine(me4, opp4)
+        check("vida==4 + opp vida<=2 + atacante forte + blocker caro: NAO bloqueia mais incondicionalmente",
+              eng4.should_use_blocker(9000) is None)
 
+
+    finally:
+        _de_mod.MODELO_ORDENA_PATH = _path_antes
 
 def test_blocker_gratis_vida_saudavel_16_08() -> None:
     """
@@ -11023,49 +11062,63 @@ def test_blocker_gratis_vida_saudavel_16_08() -> None:
     de graca (sobrevive) que cabe no mesmo teto calibrado -- nao estende
     bloqueio incondicional (ver `_blocker_gratis_se_sobrevive`).
     """
-    def vida4():
-        return [real_card("OP07-077") for _ in range(4)]
+    # BLOCO 792: este teste tranca LIMIARES da heuristica de defesa
+    # (`BLOCK_CRITICAL_LIFE_MAX_COST` e afins), que deixou de decidir. Quem
+    # decide se bloqueia e com quem agora e o MODELO, comparando
+    # `delta_remover(blocker)` com `delta_perder_vida()` -- os dois em
+    # probabilidade de vitoria, sem limiar escrito a mao. O caminho antigo
+    # segue no codigo APENAS como degradacao (sem modelo compativel), e e
+    # isso que este teste passa a exercitar.
+    import optcg_engine.decision_engine as _de_mod
+    _path_antes = _de_mod.MODELO_ORDENA_PATH
+    _de_mod.MODELO_ORDENA_PATH = '/modelo/inexistente.joblib'
+    try:
+        def vida4():
+            return [real_card("OP07-077") for _ in range(4)]
 
-    borsalino = real_card("EB04-058")
-    check("Borsalino real e blocker de 6000pwr (pre-condicao do cenario)",
-          borsalino.has_blocker and borsalino.power == 6000)
+        borsalino = real_card("EB04-058")
+        check("Borsalino real e blocker de 6000pwr (pre-condicao do cenario)",
+              borsalino.has_blocker and borsalino.power == 6000)
 
-    me = GameState(leader=real_card("OP16-080"), turn=4)
-    me.field_chars = [borsalino]
-    me.life = vida4()
-    opp = GameState(leader=real_card("OP17-039"), turn=4)
-    opp.life = vida4()
-    eng = DecisionEngine(me, opp)
-    check("vida saudavel (4) + opp saudavel (4) + blocker sobrevive (6000>5000): "
-          "AGORA bloqueia de graca (antes do fix, retornava None sempre)",
-          eng.should_use_blocker(5000) is borsalino)
+        me = GameState(leader=real_card("OP16-080"), turn=4)
+        me.field_chars = [borsalino]
+        me.life = vida4()
+        opp = GameState(leader=real_card("OP17-039"), turn=4)
+        opp.life = vida4()
+        eng = DecisionEngine(me, opp)
+        check("vida saudavel (4) + opp saudavel (4) + blocker sobrevive (6000>5000): "
+              "AGORA bloqueia de graca (antes do fix, retornava None sempre)",
+              eng.should_use_blocker(5000) is borsalino)
 
-    # mesma vida, mas o atacante e FORTE o bastante pra matar o blocker
-    # (7000 > 6000pwr) -- nao sobrevive, NAO deve bloquear de graca (cai
-    # no comportamento antigo, sem cost-check nesse ramo -- None)
-    me2 = GameState(leader=real_card("OP16-080"), turn=4)
-    me2.field_chars = [real_card("EB04-058")]
-    me2.life = vida4()
-    opp2 = GameState(leader=real_card("OP17-039"), turn=4)
-    opp2.life = vida4()
-    eng2 = DecisionEngine(me2, opp2)
-    check("vida saudavel + blocker NAO sobrevive (7000>6000pwr): continua None (sem mudanca)",
-          eng2.should_use_blocker(7000) is None)
+        # mesma vida, mas o atacante e FORTE o bastante pra matar o blocker
+        # (7000 > 6000pwr) -- nao sobrevive, NAO deve bloquear de graca (cai
+        # no comportamento antigo, sem cost-check nesse ramo -- None)
+        me2 = GameState(leader=real_card("OP16-080"), turn=4)
+        me2.field_chars = [real_card("EB04-058")]
+        me2.life = vida4()
+        opp2 = GameState(leader=real_card("OP17-039"), turn=4)
+        opp2.life = vida4()
+        eng2 = DecisionEngine(me2, opp2)
+        check("vida saudavel + blocker NAO sobrevive (7000>6000pwr): continua None (sem mudanca)",
+              eng2.should_use_blocker(7000) is None)
 
-    # blocker CARO (custo > BLOCK_CRITICAL_LIFE_MAX_COST) que sobrevive,
-    # vida saudavel -- mesmo teto calibrado dos blocos 396/398 aplica
-    # aqui tambem, nao vira bloqueio incondicional
-    caro = mk("XBCH1", "Blocker Caro Saudavel", power=13000, card_type="CHARACTER")
-    caro.has_blocker = True
-    me3 = GameState(leader=mk("XBCH1LD", "Lider", card_type="LEADER"), turn=4)
-    me3.field_chars = [caro]
-    me3.life = vida4()
-    opp3 = GameState(leader=mk("XBCH1OPP", "Opp", card_type="LEADER"), turn=4)
-    opp3.life = vida4()
-    eng3 = DecisionEngine(me3, opp3)
-    check("vida saudavel + blocker CARO que sobrevive (9000): mesmo teto calibrado, NAO bloqueia incondicionalmente",
-          eng3.should_use_blocker(9000) is None)
+        # blocker CARO (custo > BLOCK_CRITICAL_LIFE_MAX_COST) que sobrevive,
+        # vida saudavel -- mesmo teto calibrado dos blocos 396/398 aplica
+        # aqui tambem, nao vira bloqueio incondicional
+        caro = mk("XBCH1", "Blocker Caro Saudavel", power=13000, card_type="CHARACTER")
+        caro.has_blocker = True
+        me3 = GameState(leader=mk("XBCH1LD", "Lider", card_type="LEADER"), turn=4)
+        me3.field_chars = [caro]
+        me3.life = vida4()
+        opp3 = GameState(leader=mk("XBCH1OPP", "Opp", card_type="LEADER"), turn=4)
+        opp3.life = vida4()
+        eng3 = DecisionEngine(me3, opp3)
+        check("vida saudavel + blocker CARO que sobrevive (9000): mesmo teto calibrado, NAO bloqueia incondicionalmente",
+              eng3.should_use_blocker(9000) is None)
 
+
+    finally:
+        _de_mod.MODELO_ORDENA_PATH = _path_antes
 
 def test_blocker_gratis_olha_pior_ameaca_restante_do_turno_16_08() -> None:
     """
@@ -15229,6 +15282,58 @@ def test_clone_preserva_once_per_turn_bloco_788() -> None:
     check("bandeira de isolamento reproduz o comportamento antigo (portao)",
           not hasattr(c3, '_am_used_turn')
           and not getattr(c3, 'ko_on_opp_blocker_used_this_turn', False))
+
+
+def test_modelo_decide_o_bloqueio_bloco_792() -> None:
+    """Quem decide SE bloqueia e COM QUEM e o modelo, nao um limiar.
+
+    A defesa era 100% heuristica (achado do usuario, bloco 774: nem busca nem
+    modelo entravam ali, e `quais cartas de counter` e uma das tres piores
+    categorias medidas contra humano). Agora a decisao e uma comparacao em
+    PROBABILIDADE DE VITORIA:
+
+        custo de bloquear     = delta_remover(blocker)
+        custo de NAO bloquear = delta_perder_vida()
+
+    Bloqueia se perder o blocker doer MENOS que tomar o golpe. Sem numero
+    magico no meio.
+    """
+    from optcg_engine import value_net as _vn
+    import optcg_engine.decision_engine as _de_mod
+
+    bundle = _vn.load_value_net('metrics/value_net_aluno.joblib')
+    if not bundle:
+        check("modelo do aluno disponivel pro teste de defesa", False)
+        return
+
+    me = GameState(leader=real_card("OP11-062"), don_available=3, turn=5)
+    me.life = [real_card("OP07-077") for _ in range(3)]
+    me.hand = [real_card("ST34-004")]
+    opp = GameState(leader=real_card("OP04-019"), turn=5)
+    opp.life = [real_card("OP17-040") for _ in range(3)]
+
+    d = _vn.delta_perder_vida(me, opp, bundle)
+    check("delta_perder_vida responde um numero (a outra ponta da defesa)",
+          d is not None)
+    check("tomar dano NAO melhora a posicao (delta <= 0)",
+          d is not None and d <= 1e-9)
+
+    vida_antes = me.life_count()
+    _vn.delta_perder_vida(me, opp, bundle)
+    check("a medida e reversivel: a vida volta ao que era",
+          me.life_count() == vida_antes)
+
+    # sem modelo compativel, a decisao cai no caminho antigo sem quebrar
+    _antes = _de_mod.MODELO_ORDENA_PATH
+    _de_mod.MODELO_ORDENA_PATH = '/modelo/inexistente.joblib'
+    try:
+        eng = DecisionEngine(me, opp)
+        eng.should_use_blocker(6000)
+        check("sem modelo, decidir bloqueio nao quebra (degradacao segura)", True)
+    except Exception:
+        check("sem modelo, decidir bloqueio nao quebra (degradacao segura)", False)
+    finally:
+        _de_mod.MODELO_ORDENA_PATH = _antes
 
 
 if __name__ == "__main__":

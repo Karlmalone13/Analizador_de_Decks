@@ -859,12 +859,20 @@ os outros sao sobre ESCOLHER melhor; este e sobre **existir** o que escolher.
 >
 > ### A ordem correta, que decorre disso
 >
-> 1. **Fazer o modelo ficar bom** -- corpus grande, tratar sobre-ajuste
->    (0,99 treino x 0,63 teste), features de contexto de turno, exploracao
->    no auto-jogo (ja implementada, bloco 767).
-> 2. **So entao** a busca pode encolher, porque o modelo passa a fazer o
->    trabalho dela.
-> 3. E a heuristica sai por partes, cada remocao passando pelo portao SPRT.
+> **REVOGADO EM 13/09/2026 (bloco 792) -- esta era a SEGUNDA copia da regra
+> circular.** Ela dizia: (1) fazer o modelo ficar bom, (2) **so entao** a busca
+> pode encolher, (3) a heuristica sai **por partes, cada remocao passando pelo
+> portao SPRT**.
+>
+> Mesmo defeito da copia revogada no bloco 791: condiciona tirar a heuristica a
+> o modelo ficar bom primeiro -- e o modelo nao fica bom enquanto a heuristica
+> decide por ele. A ordem correta e a INVERSA, e foi o usuario quem apontou:
+> **a heuristica sai, e ai o ML tem como aprender**, porque so decidindo de
+> verdade ele gera o dado do que decidiu.
+>
+> O que continua valendo desta secao: corpus grande, tratar sobre-ajuste e
+> exploracao no auto-jogo sao trabalho de ML de verdade. O que cai e a ORDEM
+> ("so entao", "por partes", "cada remocao passando pelo portao").
 >
 > **Isto nao autoriza adiar de novo.** O passo 1 E o trabalho de ML de
 > verdade -- nao e pre-requisito burocratico pra ele. Se uma sessao esta
@@ -1501,8 +1509,12 @@ o criterio emergir dos testes (`REGRA_O_CRITERIO_EMERGE.md`).
 - **Regra do MOTOR UNICO** (`REGRA_SEM_DUPLICACAO.md`): heuristica e ML
   hoje somam num score unico, entao sao UMA decisao. Substituir nao pode
   criar dois caminhos de decisao concorrentes.
-- Ligar/mudar `VALUE_NET_WEIGHT` por default em producao continua sendo
-  mudanca **SERIA** (regra de 28/08): exige autorizacao explicita.
+- `VALUE_NET_WEIGHT` e **LEGADO** (bloco 792): era o desenho em que o modelo
+  era SOMADO a pontuacao com um peso. Desde os blocos 790-791 a heuristica nao
+  decide mais nada, entao esse peso nao tem o que calibrar -- default 0,0 e
+  assim fica. A regra de 28/08 ("exige autorizacao explicita") continua valendo
+  **para ligar**, mas ninguem deve querer: ligar seria ressuscitar o desenho
+  que o projeto acabou de remover.
 
 ## OBJETIVO CENTRAL DO BOT (o usuario repete e as sessoes esquecem)
 

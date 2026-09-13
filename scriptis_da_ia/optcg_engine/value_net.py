@@ -513,6 +513,43 @@ def delta_remover(card, p, opp, bundle=None) -> float | None:
     return None
 
 
+def delta_perder_vida(p, opp, bundle=None) -> float | None:
+    """Quanto a posicao PIORA pra `p` se ele levar UM golpe na vida.
+
+    `win_prob(com uma vida a menos) - win_prob(agora)`. Negativo: tomar dano
+    doi. E a outra ponta que faltava pra defesa ser decidida pelo MODELO --
+    `delta_remover` ja dizia quanto custa PERDER uma carta, e nao havia como
+    comparar isso com o custo de TOMAR o golpe. Sem essa comparacao, decidir
+    "bloqueia ou nao" so dava por limiar escrito a mao.
+
+    Com as duas em unidade de PROBABILIDADE DE VITORIA, a decisao vira uma
+    comparacao direta: bloqueia se perder o blocker doer MENOS que tomar o
+    golpe. Nao ha numero magico no meio -- a regua e a mesma do resto do
+    motor (bloco 792).
+
+    Remocao TEMPORARIA e reversivel, igual `delta_remover`.
+
+    None sem modelo compativel ou sem vida pra perder -- o chamador cai no
+    caminho que ja tinha.
+    """
+    if bundle is None:
+        bundle = load_value_net()
+    if not bundle:
+        return None
+    vida = getattr(p, 'life', None)
+    if not vida:
+        return None
+    base = win_prob(p, opp, bundle=bundle)
+    if base is None:
+        return None
+    tirada = vida.pop()
+    try:
+        depois = win_prob(p, opp, bundle=bundle)
+    finally:
+        vida.append(tirada)
+    return None if depois is None else (depois - base)
+
+
 def check_dims(bundle, n: int) -> bool:
     """Confere que o vetor de runtime tem o MESMO tamanho que o modelo viu
     no treino, e AVISA ALTO (stderr, 1x) quando nao tem.

@@ -1,0 +1,121 @@
+{
+  "quando": "2026-09-13T12:32:45",
+  "partidas": 2,
+  "segundos_por_partida_real": 6.2,
+  "voltas_s_por_partida": [
+    6.2,
+    7.17,
+    7.73
+  ],
+  "variacao_da_maquina_pct": 25.0,
+  "segundos_sob_profiler_total": 34.3,
+  "turnos": 26,
+  "decisoes_de_busca": 94,
+  "candidatas_por_decisao": 5.44,
+  "consultas_ao_modelo": 8278,
+  "consultas_que_pagaram_previsao": 3063,
+  "acerto_do_memo_pct": 63.0,
+  "familias_pct": {
+    "outros": 49.8,
+    "modelo (rede de valor)": 23.6,
+    "primitivas do interpretador": 12.3,
+    "clonagem de estado": 8.2,
+    "gerar/pontuar candidatas": 2.6,
+    "executar acao/combate": 1.5,
+    "busca de decisao": 0.9,
+    "prova de lethal": 0.8,
+    "defesa (blocker/counter)": 0.4
+  },
+  "top_funcoes": [
+    {
+      "funcao": "predictor.py:predict",
+      "proprio_s": 4.15,
+      "cumulativo_s": 4.45,
+      "chamadas": 261600
+    },
+    {
+      "funcao": "~:<method 'get' of 'dict' objects>",
+      "proprio_s": 2.61,
+      "cumulativo_s": 2.61,
+      "chamadas": 6825307
+    },
+    {
+      "funcao": "gradient_boosting.py:_predict_iterations",
+      "proprio_s": 2.26,
+      "cumulativo_s": 6.75,
+      "chamadas": 872
+    },
+    {
+      "funcao": "decision_engine.py:effective_counter",
+      "proprio_s": 1.42,
+      "cumulativo_s": 2.34,
+      "chamadas": 135806
+    },
+    {
+      "funcao": "decision_engine.py:apply_conditional_keyword_passives",
+      "proprio_s": 1.33,
+      "cumulativo_s": 2.02,
+      "chamadas": 26201
+    },
+    {
+      "funcao": "value_net.py:state_features",
+      "proprio_s": 1.22,
+      "cumulativo_s": 5.48,
+      "chamadas": 8278
+    },
+    {
+      "funcao": "copy.py:deepcopy",
+      "proprio_s": 1.18,
+      "cumulativo_s": 3.81,
+      "chamadas": 286736
+    },
+    {
+      "funcao": "~:<built-in method builtins.getattr>",
+      "proprio_s": 1.0,
+      "cumulativo_s": 1.27,
+      "chamadas": 2063773
+    },
+    {
+      "funcao": "decision_engine.py:__deepcopy__",
+      "proprio_s": 0.75,
+      "cumulativo_s": 1.02,
+      "chamadas": 231746
+    },
+    {
+      "funcao": "decision_engine.py:avaliar_carta",
+      "proprio_s": 0.63,
+      "cumulativo_s": 5.86,
+      "chamadas": 21401
+    },
+    {
+      "funcao": "decision_engine.py:get_card_effects",
+      "proprio_s": 0.55,
+      "cumulativo_s": 0.55,
+      "chamadas": 1465816
+    },
+    {
+      "funcao": "decision_engine.py:__deepcopy__",
+      "proprio_s": 0.5,
+      "cumulativo_s": 3.65,
+      "chamadas": 11952
+    },
+    {
+      "funcao": "~:<built-in method builtins.sum>",
+      "proprio_s": 0.5,
+      "cumulativo_s": 2.21,
+      "chamadas": 266973
+    },
+    {
+      "funcao": "decision_engine.py:code",
+      "proprio_s": 0.48,
+      "cumulativo_s": 0.48,
+      "chamadas": 1651158
+    },
+    {
+      "funcao": "decision_engine.py:effective_hand_play_cost",
+      "proprio_s": 0.48,
+      "cumulativo_s": 1.13,
+      "chamadas": 76751
+    }
+  ]
+}

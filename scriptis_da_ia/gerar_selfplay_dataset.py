@@ -272,7 +272,12 @@ def main() -> None:
                          'AVALIADOR e consultado) em vez do fim do turno. '
                          'Rende varios estados por turno. Obrigatorio pra '
                          'treinar o modelo do ML_AVALIADOR (bloco 769)')
-    ap.add_argument('--explorar', type=float, default=0.0,
+    # LIGADA POR DEFAULT desde o bloco 792. Estava em 0.0 -- ou seja, o bot
+    # NUNCA tentava o que ainda nao escolheria, e o auto-jogo era eco: o corpus
+    # so continha o que ele ja fazia. Isso contradizia frontalmente o que o
+    # usuario pediu ("o ML vai testando as alternativas e esse criterio vai
+    # surgindo"): sem tentar, nada emerge. 0.1 e o epsilon-guloso padrao.
+    ap.add_argument('--explorar', type=float, default=0.1,
                     help='epsilon de EXPLORACAO (0.0-1.0): em epsilon das '
                          'decisoes joga FORA do topo, pra o dataset conter '
                          'linhas que o bot nao escolheria sozinho. Default 0.0 '
