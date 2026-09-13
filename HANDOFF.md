@@ -53,6 +53,61 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (797) - **O LACO DE TREINO ESTAVA QUEBRADO** e nao promoveria NADA. Religado no artefato que decide
+
+### 1. O bloqueio, achado ao perguntar "ja podemos treinar?"
+
+`treino_continuo._duelo` punha campeao e desafiante lado a lado por
+`value_net_weight` + `value_net_path` -- o desenho **SOMADO**, em que o modelo
+era um peso sobre a pontuacao. Esse caminho **nao decide mais nada**: o peso
+tem default 0,0 e a heuristica que ele corrigia saiu nos blocos 790-794.
+
+**O portao colocaria dois bots IDENTICOS frente a frente.** Todo par empataria,
+o SPRT nunca decidiria, e o laco rodaria a noite inteira **sem promover uma
+geracao**.
+
+### 2. Religado
+
+| antes | agora |
+|---|---|
+| gera corpus de estados | gera tambem os **alvos Q** (`--q-out`) |
+| treina `value_net.joblib` | treina o **Q** (`treinar_q.py`) |
+| duela por PESO | duela trocando o **artefato que decide** (`q_net_path` por lado, via `extras`) |
+| promove o campeao somado | promove o **Q** |
+
+Verificado: Q contra arvore deu **1x1 com 2 pares divididos em 4**. Amostra
+minima, mas antes seria empate total POR CONSTRUCAO.
+
+### 3. Limite de MAQUINA, nao bug
+
+O portao com 2 workers quebra (`BrokenProcessPool`) -- e **nao e o Q**: quebra
+sem ele tambem. Causa: **2,4 GB de RAM livres de 11,9**. Cada worker carrega
+banco de cartas, efeitos e modelos; dois nao cabem. Usar `--workers 1`, que
+hoje da pra engolir: o motor esta em 1,87 s/partida contra 6,20 de manha.
+
+### 4. A curva no corpus NOVO -- NAO decide, e o formato mostra por que
+
+Corpus novo = 120 partidas com exploracao ligada e o modelo decidindo.
+
+```
+ 25% |   414 estados | AUC fora 0,6936
+ 50% |   828 estados | AUC fora 0,6764   <- DESCE
+100% | 1.657 estados | AUC fora 0,7203
+```
+
+O script cravou "APRENDE COM MAIS DADO" (+0,0267 passa do limiar de 0,01).
+**Nao aceito o veredito**, por duas razoes:
+
+1. **A curva nao e monotona** -- o ponto do meio DESCE. Com 414/828/1.657
+   pontos, isso e ruido dominando, nao aprendizado.
+2. **1.657 estados e minusculo** perto dos 18.455 em que o corpus VELHO ja
+   estava saturado (AUC 0,8082). Comparar 0,72 aqui com 0,81 la nao diz nada
+   sobre diversidade -- diz sobre tamanho.
+
+**O que decidiria**: corpus novo ate ~18 mil estados, e comparar o AUC no
+MESMO tamanho contra o velho (0,8082). Sao ~1.300 partidas -- a 1,87 s/partida,
+**~40 min**, contra as horas que isso custaria de manha.
+
 ## 2026-09-13 (796) - **A ARVORE SAI DO CAMINHO DE DECISAO.** O modelo Q responde sem simular: 4x mais rapido, e so 4,3% das decisoes pioram de verdade
 
 ### 1. O pedido e o metodo

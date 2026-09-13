@@ -32,6 +32,25 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 13/09/2026 (bloco 797): **O LACO DE TREINO ESTAVA QUEBRADO** — achado ao
+> perguntar "ja podemos treinar?". `_duelo` punha campeao e desafiante lado a
+> lado por `value_net_weight`, o desenho SOMADO que **nao decide mais nada**
+> (peso 0,0 e a heuristica saiu). O portao colocaria **dois bots IDENTICOS**
+> frente a frente: todo par empata, o SPRT nunca decide, e o laco rodaria a
+> noite inteira **sem promover uma geracao**.
+> **RELIGADO**: gera alvos Q (`--q-out`), treina o Q (`treinar_q.py`), duela
+> trocando o **artefato que decide** (`q_net_path` por lado) e promove o Q.
+> Verificado: Q x arvore deu 1x1 com 2 divididos em 4 pares — antes seria
+> empate total por construcao.
+> **LIMITE DE MAQUINA**: portao com 2 workers quebra (`BrokenProcessPool`), e
+> **nao e o Q** — sao **2,4 GB de RAM livres de 11,9**. Usar `--workers 1`.
+> **A CURVA NO CORPUS NOVO NAO DECIDE**: 414/828/1.657 estados dando
+> 0,6936 → 0,6764 → 0,7203. O script cravou "aprende", **eu nao aceito**: a
+> curva **desce no meio** (ruido) e 1.657 estados e minusculo perto dos 18.455
+> em que o velho ja saturava (0,8082). **O que decidiria**: corpus novo ate ~18
+> mil estados e comparar no MESMO tamanho — ~1.300 partidas, **~40 min** a 1,87
+> s/partida.
+
 > 13/09/2026 (bloco 796): **A ARVORE SAI DO CAMINHO DE DECISAO** — o modelo Q
 > responde sem simular. Veio da pergunta dele (podar perde qualidade? ha
 > alternativa que nao seja arvore?) e do **DQN da lista que ele trouxe**. A

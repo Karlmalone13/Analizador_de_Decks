@@ -83,6 +83,20 @@ CORPUS = RAIZ / 'metrics' / 'selfplay_dataset.jsonl'
 # precisa ser retreinado no meio da geracao -- `CAMPEAO`/`DESAFIANTE` sao do
 # desenho antigo, em que o modelo era somado a pontuacao com um peso.
 ALUNO = RAIZ / 'metrics' / 'value_net_aluno.joblib'
+# ── O QUE O LACO PROMOVE, desde o bloco 797 ────────────────────────────────
+# Quem DECIDE hoje e o modelo Q (bloco 796): ele responde o valor de cada acao
+# sem simular, e a arvore virou professor. Entao e o Q que tem que ser
+# treinado, duelado e promovido.
+#
+# O que estava errado antes: o ciclo treinava e duelava `value_net.joblib` com
+# `value_net_weight` -- o desenho SOMADO, em que o modelo era um peso sobre a
+# pontuacao. Esse caminho nao decide mais nada (peso default 0,0 e a heuristica
+# saiu nos blocos 790-794), entao o portao colocava **dois bots identicos**
+# frente a frente: todo par empatava, o SPRT nunca decidia e NADA era promovido.
+# O laco rodaria a noite inteira sem aprender uma geracao.
+Q_CAMPEAO = RAIZ / 'metrics' / 'q_net.joblib'
+Q_DESAFIANTE = RAIZ / 'metrics' / 'q_net_desafiante.joblib'
+Q_CORPUS = RAIZ / 'metrics' / 'q_alvos.jsonl'
 HISTORICO = RAIZ / 'metrics' / 'treino_continuo' / 'historico.json'
 
 
@@ -422,7 +436,7 @@ def main() -> None:
         print(f'\n{"="*66}\nGERACAO {gen}\n{"="*66}')
 
         # Geracao 1 nao tem campeao ainda: joga com peso 0 (motor puro).
-        tem_campeao = CAMPEAO.exists()
+        tem_campeao = Q_CAMPEAO.exists()
         peso_gerar = args.peso if tem_campeao else 0.0
         print(f'[1/4] GERA {args.partidas} partidas '
               f'(campeao {"ligado, peso " + str(peso_gerar) if tem_campeao else "inexistente -- motor puro"})')
@@ -446,6 +460,7 @@ def main() -> None:
                          '--seed', str(seed_gen + feitas), '--gen', str(gen),
                          '--weight', str(peso_gerar), '--model', str(CAMPEAO),
                          '--modelo-decide', str(ALUNO),
+                         '--q-out', str(Q_CORPUS),
                          '--append', '--out', str(CORPUS)],
                         f'geracao de partidas ({feitas + n_fatia}/{args.partidas})')
             if not ok:
@@ -461,15 +476,16 @@ def main() -> None:
         if not ok:
             break
 
-        n_estados = sum(1 for _ in CORPUS.open(encoding='utf-8'))
-        print(f'[2/4] TREINA desafiante sobre {n_estados} estados (corpus acumulado)')
-        ok = _rodar(['treinar_value.py', '--dataset', str(CORPUS),
-                     '--out', str(DESAFIANTE)], 'treino do desafiante')
+        n_estados = sum(1 for _ in Q_CORPUS.open(encoding='utf-8'))             if Q_CORPUS.exists() else 0
+        print(f'[2/4] TREINA o Q desafiante sobre {n_estados} alvos (acumulado)')
+        ok = _rodar(['treinar_q.py', '--dataset', str(Q_CORPUS),
+                     '--out', str(Q_DESAFIANTE)], 'treino do Q desafiante')
         if not ok:
             break
         try:
             import joblib
-            auc = joblib.load(DESAFIANTE).get('auc_fora_amostra')
+            _bq = joblib.load(Q_DESAFIANTE)
+            auc = _bq.get('ganho_pct')          # % de erro a menos que a media
         except Exception:
             auc = None
 
@@ -486,7 +502,7 @@ def main() -> None:
             # campeao inicial. Isso NAO e uma promocao medida, e o marco
             # zero -- registrado como tal pra ninguem ler o historico
             # depois achando que a geracao 1 provou alguma coisa.
-            shutil.copyfile(DESAFIANTE, CAMPEAO)
+            shutil.copyfile(Q_DESAFIANTE, Q_CAMPEAO)
             registro |= {'resultado': 'marco-zero (sem campeao pra duelar)',
                          'winrate_desafiante': None, 'promovido': True}
             print('[3/4] DUELO pulado -- nao havia campeao. Desafiante vira o marco zero.')
@@ -498,12 +514,18 @@ def main() -> None:
                       .format(lote, pares, vit + der, vit, der, llr, sup, inf),
                       flush=True)
 
+            # O QUE VAI A DUELO (bloco 797): o artefato que DECIDE, um de cada
+            # lado, pelo `extras` que `_duelo` ja repassa com `setattr`. Sem
+            # isto o portao duelava peso sobre heuristica -- nada, hoje.
+            _extras = {'desafiante': {'q_net_path': str(Q_DESAFIANTE)},
+                       'campeao': {'q_net_path': str(Q_CAMPEAO)}}
             if args.portao_wilson:
                 d = duelar(args.duelos, args.workers, seed_gen + 13, args.peso,
-                           args.peso, pareado=not args.nao_pareado)
+                           args.peso, pareado=not args.nao_pareado,
+                           extras=_extras)
             else:
                 d = duelar_sprt(args.workers, seed_gen + 13, args.peso,
-                                args.peso, progresso=_prog)
+                                args.peso, progresso=_prog, extras=_extras)
             registro |= d
             wr = d['winrate_desafiante']
             if d.get('pareado'):
@@ -533,7 +555,7 @@ def main() -> None:
                            if args.portao_media
                            else (d['decididas'] > 0 and lim > args.portao))
             if aprovou:
-                shutil.copyfile(DESAFIANTE, CAMPEAO)
+                shutil.copyfile(Q_DESAFIANTE, Q_CAMPEAO)
                 registro |= {'resultado': f'PROMOVIDO ({wr:.1%} >= {args.portao:.0%})',
                              'promovido': True}
                 print(f'[4/4] PROMOVIDO -- desafiante vira campeao.')
