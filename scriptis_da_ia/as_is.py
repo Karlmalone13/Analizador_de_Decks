@@ -155,13 +155,30 @@ def roda(n: int, seed_base: int):
                     break
             vn.limpar_cache_win_prob()
 
-    # PASSO 1 -- tempo de PAREDE, sem profiler. O profiler infla 3x; reportar
-    # o numero dele como "segundos por partida" seria medir o instrumento.
-    t0 = time.time()
+    # PASSO 0 -- AQUECIMENTO DESCARTADO (bloco 789). Sem isto o AS-IS mede a
+    # fase RAPIDA do processo e sai sistematicamente otimista: a mesma carga,
+    # com resultado identico, foi de 9,60s pra 15,30s ao longo de 4 voltas no
+    # MESMO processo, e processos NOVOS deram 14,6s estaveis. O regime estavel
+    # e o que vale -- e o que o portao vai pagar, partida after partida.
     _partidas()
-    real = time.time() - t0
     contas['turnos'] = contas['decisoes'] = contas['candidatas'] = 0
     vn._WP_STATS['hit'] = vn._WP_STATS['miss'] = 0
+
+    # PASSO 1 -- tempo de PAREDE, sem profiler (o profiler infla 3x), TRES
+    # vezes. Esta maquina varia ate 59% entre execucoes IDENTICAS, com o mesmo
+    # resultado de partida (medido no bloco 789) -- um numero unico ja levou a
+    # conclusao errada duas vezes num dia. Reportamos a MENOR (a menos
+    # contaminada por outro processo) junto do intervalo, pra ninguem comparar
+    # duas medicoes fingindo que 20% de diferenca significa alguma coisa.
+    voltas = []
+    for _ in range(3):
+        t0 = time.time()
+        _partidas()
+        voltas.append((time.time() - t0) / max(1, n))
+        contas['turnos'] = contas['decisoes'] = contas['candidatas'] = 0
+        vn._WP_STATS['hit'] = vn._WP_STATS['miss'] = 0
+    real = min(voltas) * n
+    contas['voltas_s_por_partida'] = [round(v, 2) for v in voltas]
 
     # PASSO 2 -- a MESMA carga sob profiler, so pra quebrar o tempo por familia
     pr = cProfile.Profile()
@@ -191,6 +208,12 @@ def resume(stats: pstats.Stats, contas: dict, n: int) -> dict:
         'quando': datetime.now().isoformat(timespec='seconds'),
         'partidas': n,
         'segundos_por_partida_real': round(contas['segundos_reais'] / max(1, n), 2),
+        'voltas_s_por_partida': contas.get('voltas_s_por_partida'),
+        'variacao_da_maquina_pct': (
+            round(100.0 * (max(contas['voltas_s_por_partida'])
+                           - min(contas['voltas_s_por_partida']))
+                  / max(1e-9, min(contas['voltas_s_por_partida'])), 0)
+            if contas.get('voltas_s_por_partida') else None),
         'segundos_sob_profiler_total': round(total_proprio, 1),
         'turnos': contas['turnos'],
         'decisoes_de_busca': contas['decisoes'],
@@ -217,8 +240,11 @@ def imprime(r: dict, anterior: dict | None = None):
     print('=' * 68)
     print('AS-IS  --  %s  (%d partidas)' % (r['quando'], r['partidas']))
     print('=' * 68)
-    print('  segundos por partida     : %.2f s   (tempo de parede, sem profiler)'
+    print('  segundos por partida     : %.2f s   (MENOR de 3, apos aquecimento)'
           % r['segundos_por_partida_real'])
+    if r.get('voltas_s_por_partida'):
+        print('    as 3 voltas            : %s  -> a maquina varia %.0f%% sozinha'
+              % (r['voltas_s_por_partida'], r['variacao_da_maquina_pct']))
     print('  turnos / decisoes        : %d / %d' % (r['turnos'], r['decisoes_de_busca']))
     print('  candidatas por decisao   : %.2f' % r['candidatas_por_decisao'])
     print('  consultas ao modelo      : %d  (pagaram previsao: %d, memo %.1f%%)'

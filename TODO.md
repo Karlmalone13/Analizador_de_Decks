@@ -32,6 +32,33 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 13/09/2026 (bloco 789): **O USUARIO ESTAVA CERTO — a heuristica cara nunca
+> saiu.** Medido: **13.240 scores estaticos calculados, 480 chegam a uma
+> decisao, 96,4% jogados fora**; `avaliar_carta` e **26,5% do tempo** (34.367
+> chamadas). O modelo foi posto POR CIMA da heuristica e o custo dela continua
+> pago inteiro. **Regra nova**: quando o modelo decide, a heuristica nao deve
+> nem ser CALCULADA — se `avaliar_carta` aparece no topo do perfil, a
+> substituicao nao aconteceu.
+> **DOIS ALVOS MEUS ERRADOS**: a prova de lethal e **6,5% do tempo** (0,16 ms
+> cada) — a transposicao foi construida, deu 81,8% de acerto, **ganho zero** e
+> foi REVERTIDA; construi antes de testar a premissa, contra a regra que eu
+> mesmo escrevi no 787. A clonagem ficou 3,07x mais barata mas e ~6% do tempo.
+> **O INSTRUMENTO ESTAVA MENTINDO**: `as_is.py` cronometrava sem aquecer o
+> processo, e os primeiros ciclos sao MAIS RAPIDOS que o regime estavel (9,60 →
+> 15,30s na mesma carga). **Os "6,3s/partida" e "portao em 13 min" que reportei
+> estao RETIRADOS.** Corrigido: aquecimento descartado, 3 voltas, variacao
+> reportada junto.
+> **CATALOGO DE SURROGATE MODELS registrado** (ele mandou duas vezes): PCE,
+> Processo Gaussiano/Krigagem (da a INCERTEZA da previsao), DNN, RSM, e
+> LHS/Quasi-Monte Carlo. Correcao de escopo: a ressalva "QMC nao se aplica" era
+> sobre o rollout, que saiu no 785 — agora LHS/QMC valem pra escolher QUAIS
+> posicoes simular pra treinar o substituto.
+> **CUSTO DA ARVORE** (processo limpo): 6x3 hoje 10,6-15,5s · 4x3 8,9s · 6x2
+> 4,6s · 4x1 1,7s · **3x3 (antes do item 2) 5,8s** — o item 2 dobrou o custo.
+> **PORTAO NAO RODOU**: interrompido pelo usuario, corretamente.
+> **PROXIMO PASSO**: tirar a heuristica de DENTRO da busca — nao pagar pelo
+> caminho que nao vai ser usado.
+
 > 13/09/2026 (bloco 788): **clonagem 3,07x mais barata** + **BUG DE FIDELIDADE
 > achado na conferencia campo a campo**.
 > `Card.__deepcopy__` listava 36 campos com um `getattr`+`setattr` cada (~8M de

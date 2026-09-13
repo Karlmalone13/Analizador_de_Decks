@@ -53,6 +53,98 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (789) - **O USUARIO ESTAVA CERTO: a heuristica cara nunca saiu.** 96,4% das pontuacoes estaticas sao calculadas e JOGADAS FORA. E o meu instrumento de medicao estava mentindo
+
+### 1. A cobranca dele, e a medicao que a confirma
+
+> *"você ainda não deve ter substituido a heuristica, estando então com
+> simulações caras e com peso fixo, ou algumas funções sendo executadas
+> diversas vezes desnecessariamente"*
+
+```
+scores estaticos CALCULADOS      : 13.240      (2 partidas)
+scores que chegam a UMA decisao  :    480
+NUNCA decidem nada               :  96,4%
+
+avaliar_carta (heuristica)       : 26,5% do tempo, 34.367 chamadas
+_generate_and_score_actions      : 22,4% cumulativo
+_busca_determinista              : 86,1% cumulativo
+```
+
+A pontuacao heuristica e recalculada em CADA no da arvore e descartada, porque
+quem decide e o modelo. **A substituicao da heuristica nao aconteceu: o modelo
+foi posto por CIMA dela, e o custo dela continua sendo pago inteiro.**
+
+**Regra que sai disto** (registrada em `CLAUDE.md`/`AGENTS.md`): quando o
+modelo decide, a heuristica nao deve nem ser CALCULADA. Se o perfil mostra
+`avaliar_carta` no topo, a substituicao nao aconteceu de verdade.
+
+### 2. Dois alvos que eu persegui e que NAO eram o problema
+
+| alvo | o que eu achava | o que a medicao disse |
+|---|---|---|
+| prova de lethal | "65,8 provas COMPLETAS por decisao" | **6,5% do tempo**, 0,16 ms cada -- contagem grande de coisa barata |
+| clonagem | o proximo gargalo | 3,07x mais barata (real), mas so ~6% do tempo |
+
+A transposicao da prova de lethal foi **construida, medida e REVERTIDA**:
+81,8% de acerto, provas completas de 735 -> 325, e **ganho zero** (+8,4%, dentro
+do ruido). Causa: quase toda prova sai pelas portas de saida cedo (taunt, sem
+atacante, poda de impossibilidade) e nunca chega no `search_alloc` que eu tinha
+memoizado. **Eu construi antes de testar a premissa** -- exatamente o que a
+regra do bloco 787 manda nao fazer, escrita por mim no mesmo dia.
+
+### 3. O MEU INSTRUMENTO ESTAVA MENTINDO -- e por isso os numeros dos blocos 785-788 estavam otimistas
+
+`as_is.py` cronometrava sem aquecer o processo. Medido: a MESMA carga, com
+resultado IDENTICO, quatro voltas no mesmo processo --
+
+```
+9,60s -> 11,04s -> 11,91s -> 15,30s        (mesmo processo, sem aquecimento)
+14,64 / 14,66 / 14,29 / 15,27              (processos NOVOS, estavel)
+8,18 / 8,04 / 8,37                         (com aquecimento: varia 4%)
+```
+
+Os primeiros ciclos sao mais RAPIDOS que o regime estavel, e eu cronometrava a
+subida. **Os "6,3s por partida" e o "portao em ~13 min" que eu reportei estao
+RETIRADOS.** O instrumento foi corrigido: descarta um aquecimento, roda 3
+vezes, reporta a MENOR e a variacao junto.
+
+### 4. O catalogo de surrogate models, registrado -- ELE MANDOU DUAS VEZES
+
+Ampliado em `CLAUDE.md`/`AGENTS.md` com o que ele trouxe: **PCE** (avaliacao
+analitica, indices de Sobol), **Processo Gaussiano/Krigagem** (entrega a
+INCERTEZA da previsao -- o mais subestimado aqui), **DNN**, **RSM** como linha
+de base barata, e **LHS / Quasi-Monte Carlo** pra amostragem inteligente.
+
+Com uma correcao de escopo: a ressalva "QMC nao se aplica" era sobre o rollout
+Monte Carlo, que **saiu no bloco 785**. Onde LHS/QMC podem valer agora e na
+escolha de QUAIS posicoes simular pra treinar o substituto -- o problema de
+gerar corpus que o projeto tem.
+
+### 5. O custo da arvore, medido em processo limpo
+
+| largura x profundidade | s/partida |
+|---|---|
+| 6 x 3 (hoje) | 10,6 - 15,5 |
+| 4 x 3 | 8,9 |
+| 6 x 2 | 4,6 |
+| 4 x 1 | 1,7 |
+| **3 x 3 (ANTES do item 2)** | **5,8** |
+
+O item 2 (o modelo abrindo os ramos, largura 3 -> 6) **dobrou o custo**. O
+usuario decidiu NAO podar a arvore -- e tem razao: o caro nao e a arvore, e
+pagar a heuristica em cada no dela.
+
+### 6. Estado
+
+`smoke_fast`: **0 falhas**. O portao de 3 celulas (`portao_bloco789.py`) esta
+escrito e **nao rodou** -- foi interrompido pelo usuario, corretamente, porque
+1h45 pra obter uma evidencia e sintoma, nao custo aceitavel.
+
+**PROXIMO PASSO, e e o que a medicao manda**: tirar a heuristica de dentro da
+busca. Nao "dar mais peso ao ML" -- **nao pagar pelo caminho que nao vai ser
+usado**.
+
 ## 2026-09-13 (788) - A clonagem fica **3,07x mais barata** -- e a conferencia campo a campo acha um BUG DE FIDELIDADE: todo clone PERDIA as guardas de uma-vez-por-turno
 
 ### 1. O que estava caro

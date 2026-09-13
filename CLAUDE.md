@@ -1117,6 +1117,74 @@ regra de "melhoria ao redor do ML". (2) esbarra na informacao oculta.
 > vencer neste turno?"* -- e enumerar alocacoes de DON pra isso nao e avaliar
 > posicao. Nao confundir as duas coisas.
 
+### AMPLIACAO DO CATALOGO -- surrogate models, trazido pelo usuario (13/09/2026)
+
+> Pedido explicito: *"te enviei aí, novamente uma lista de metodos para
+> substituir o monte carlo, por favor registre isso e não esqueça, pq parece
+> que vc esquece que estamos fazendo um ML e fica insistindo em coisas antigas
+> que demandam muito tempo, e com medo de largar o osso e a gente evoluir"*.
+>
+> **Ele mandou DUAS vezes.** Da primeira (12/09) o catalogo entrou como tabela
+> e a sessao seguiu otimizando o que ja existia. Esta e a segunda.
+
+**A ideia central, na definicao dele**: em vez de rodar o modelo original
+complexo dezenas de milhares de vezes, roda-se o modelo original POUCAS vezes
+para coletar dados, treina-se um substituto rapido com esses dados, e as
+previsoes saem em fracao de segundo.
+
+Fontes que ele trouxe: COMSOL (`comsol.com/blogs/surrogate-models-for-faster-
+simulations-and-apps` e `comsol.fr/technologies/surrogate-models`), IOP
+(`iopscience.iop.org/article/10.1088/1681-7575/adb3ab`) e ETH Zurich
+(`research-collection.ethz.ch`).
+
+| metodo | como funciona | inferencia | dado de treino | aplica aqui? |
+|---|---|---|---|---|
+| **PCE** (Expansao de Caos Polinomial) | a resposta vira combinacao linear de polinomios ortogonais as distribuicoes das entradas | instantanea e **analitica** (media, variancia e indices de Sobol sem nova simulacao) | baixo a medio | **parcial** -- exige entradas com distribuicao estocastica bem definida; o nosso estado e combinatorio discreto, mas a ANALISE DE SENSIBILIDADE (quais features realmente movem o resultado) e diretamente util |
+| **Processo Gaussiano / Krigagem (GPR)** | modelo bayesiano nao parametrico | muito rapida | **baixo** (centenas a poucos milhares de pontos) | **SIM, e o mais subestimado aqui** -- entrega a INCERTEZA da propria previsao junto do valor. E o que falta pro bot saber quando NAO confiar no proprio avaliador |
+| **Redes Neurais (DNN)** | treinada sobre tabela gerada pela simulacao de alta fidelidade | instantanea | alto | **SIM** -- e a familia do que ja temos (o aluno e gradient boosting, primo proximo); o caminho se o corpus crescer muito |
+| **RSM** (Superficie de Resposta) | polinomios de 1a/2a ordem por minimos quadrados | instantanea | muito baixo | como linha de base barata, pra saber se algo mais complexo esta ganhando de verdade |
+
+**Alternativa que ele registrou separada** (nao trocar o modelo, e sim fazer a
+amostragem render mais): **Hipercubo Latino (LHS)** e sequencias de baixa
+discrepancia (**Quasi-Monte Carlo**) reduzem o numero de iteracoes em 10 a 100
+vezes sem perder precisao.
+
+> RESSALVA JA REGISTRADA, que continua valendo: QMC/Sobol foi avaliado em
+> 12/09 como **nao aplicavel** ao rollout, porque aquilo e integracao de
+> funcao CONTINUA e o nosso espaco e combinatorio discreto. **Mas a ressalva
+> era sobre o Monte Carlo, que SAIU no bloco 785.** Onde LHS/QMC podem valer
+> agora e na **escolha de quais posicoes simular pra treinar o substituto** --
+> cobrir o espaco de estados de forma espalhada em vez de sortear, que e
+> exatamente o problema de "gerar corpus" que o projeto tem.
+
+### O QUE ISTO COBRA DA SESSAO -- a critica dele, que procede
+
+> *"você ainda não deve ter substituido a heuristica, estando então com
+> simulações caras e com peso fixo, ou algumas funções sendo executadas
+> diversas vezes desnecessariamente, ou até mesmo funções mortas ou sem
+> funcionalidade que consomem tempo."*
+
+**Testado, e ele esta certo** (bloco 789, perfil de 2 partidas):
+
+```
+scores estaticos CALCULADOS      : 13.240
+scores que chegam a UMA decisao  :    480
+NUNCA decidem nada               :  96,4%
+
+avaliar_carta (heuristica)       : 26,5% do tempo, 34.367 chamadas
+_generate_and_score_actions      : 22,4% cumulativo
+```
+
+A pontuacao heuristica e recalculada em cada no da arvore e **jogada fora**,
+porque quem decide e o modelo. Isso e o diagnostico dele, palavra por palavra:
+simulacao cara com peso fixo, funcao executada muitas vezes sem necessidade.
+
+**A regra pratica que sai disto**: quando o modelo decide, a heuristica nao
+deve nem ser CALCULADA. Nao e so "o ML tem prioridade no score" -- e nao pagar
+pelo caminho que nao vai ser usado. Se a sessao esta medindo tempo e o nome
+`avaliar_carta` aparece no topo do perfil, a substituicao nao aconteceu de
+verdade.
+
 ## PLANO OFICIAL DA MIGRACAO PRA ML (12/09/2026, bloco 781) -- PROFESSOR / ALUNO
 
 > Desenhado com o usuario nesta sessao e **aprovado por ele**. Substitui
@@ -1496,6 +1564,16 @@ ML só se 1-3 baterem teto).
   `smoke_test.py` NAO e mais smoke curto: trate como regressao ampla e rode
   so quando mexer em parser, counters, imunidade, substituicao, gramatica de
   efeitos ou outra area compartilhada de alto risco.
+- **AS-IS ANTES e DEPOIS de qualquer mudanca de desempenho** (pedido do
+  usuário, 13/09/2026 — repetido, ver a seção **AS-IS OBRIGATORIO** acima):
+  `cd scriptis_da_ia && python as_is.py --n 2 --rotulo <o-que-mudou>` e, depois
+  da mudança, `--comparar metrics/as_is/<o-anterior>.json`. **Diagnóstico de
+  gargalo herdado de bloco anterior não vale como evidência** — a composição do
+  tempo muda toda vez que o motor muda. Dois casos reais no mesmo dia: o
+  diagnóstico do bloco 784 sobreviveu à remoção do Monte Carlo e apontava o
+  gargalo errado; e no bloco 788 uma otimização de 3x foi lida como "+7,7% mais
+  lento" porque vinha junto de uma correção que alongava as partidas — só o
+  isolamento separou as duas.
 - **Simulação em lote = SEMPRE escolher `--workers N` antes de rodar**
   (pedido do usuário, 10/08/2026): `audit_replay.py`, `gauntlet_matchup.py`
   e `baseline_metrics.py` rodam partidas independentes entre si e suportam
