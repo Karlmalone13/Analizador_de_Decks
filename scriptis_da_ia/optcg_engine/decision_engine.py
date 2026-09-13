@@ -11693,6 +11693,44 @@ class EffectExecutor:
         # so tem os custos em maos) o comportamento antigo fica intacto --
         # peso 0, limiar inalterado.
         limiar += self._benefit_weight(steps, card) * 15
+
+        # ── O LIMIAR DE VALOR SAI (bloco 794) ────────────────────────────
+        # Esta era a ultima decisao de VALOR ainda escrita a mao: pagar ou nao
+        # um custo opcional, decidido por `_trash_value(worst) <= limiar`, com
+        # o limiar montado de constantes (60, +25, +peso*15).
+        #
+        # Por que simplesmente sair, em vez de virar outra formula: a acao que
+        # dispara este custo JA foi avaliada pela busca, que clona o estado,
+        # aplica a acao INTEIRA -- custo e efeito juntos -- e pergunta ao
+        # modelo quanto vale o estado resultante. Ou seja, o preco do custo e o
+        # valor do efeito ja estao medidos ali, na mesma unidade. Este portao
+        # so podia pre-filtrar com informacao PIOR que a que a busca ja tem.
+        #
+        # O que NAO sai: as checagens de VIABILIDADE acima (nao ativar no
+        # vacuo, custo de campo que nao compensa, etc.) -- aquilo e regra de
+        # jogo, define o que e possivel. O que e BOM continua com o modelo.
+        #
+        # Sem modelo compativel, o limiar antigo volta: e o unico julgamento
+        # de valor disponivel ali.
+        # AJUSTADO pelos proprios testes: a primeira versao devolvia True
+        # sempre que houvesse modelo, e dois testes reprovaram -- os dois
+        # casos de **pagar por NADA**: sem `steps` (nenhuma informacao sobre o
+        # efeito) e com o payoff ausente do campo (ex: o watcher Kuroobi nao
+        # esta la). Isso nao e julgamento de valor, e VIABILIDADE: pagar um
+        # custo que nao produz efeito nenhum e perda pura, e a regra de nao
+        # ativar no vacuo ja existe no projeto.
+        #
+        # Entao o modelo assume so quando HA beneficio; o "quanto" e dele, o
+        # "se existe" continua sendo regra.
+        try:
+            from optcg_engine import value_net as _vn
+            if (steps and self._benefit_weight(steps, card) > 0
+                    and _vn.load_value_net(
+                        getattr(self.me, 'modelo_ordena_path', None)
+                        or MODELO_ORDENA_PATH)):
+                return True
+        except Exception:
+            pass
         return self._trash_value(worst) <= limiar
 
 
@@ -16045,14 +16083,14 @@ class DecisionEngine:
             perda += 40            # ultimo defensor real: lider exposto
         return perda
 
-    def should_use_counter(self, atk_power: int, def_power: int,
+    def should_use_counter(self, atk_power: int, def_power: int, alvo=None,
                            counter_avail: int | None = None,
                            gasto: float | None = None,
                            valor_protegido: float | None = None) -> bool:
         """Categoria `usar counter ou nao` (59,7%) -- wrapper de registro."""
         usar = self._should_use_counter_inner(
             atk_power, def_power, counter_avail=counter_avail,
-            gasto=gasto, valor_protegido=valor_protegido)
+            gasto=gasto, valor_protegido=valor_protegido, alvo=alvo)
         if _DEFESA['on']:
             _log_defesa({
                 'kind': 'counter_use',
@@ -16071,7 +16109,8 @@ class DecisionEngine:
     def _should_use_counter_inner(self, atk_power: int, def_power: int,
                            counter_avail: int | None = None,
                            gasto: float | None = None,
-                           valor_protegido: float | None = None) -> bool:
+                           valor_protegido: float | None = None,
+                           alvo=None) -> bool:
         """
         Decide se countera um ataque no LIDER por GANHO LIQUIDO (regra do
         usuario: caso a caso, nunca threshold fixo por categoria):
@@ -16111,6 +16150,43 @@ class DecisionEngine:
 
         if counter_avail < needed:
             return False  # nunca counter parcial
+
+        # ── O MODELO DECIDE SE COUNTERIA (bloco 794) ─────────────────────
+        # Ultima decisao de defesa que ainda era heuristica. `quais cartas de
+        # counter` e a PIOR categoria medida contra humano (18,5%), e "se
+        # counteria" era decidido por `gasto < valor_protegido`, duas reguas
+        # escritas a mao.
+        #
+        # Agora as duas pontas em PROBABILIDADE DE VITORIA:
+        #   custo  = soma de `delta_gastar_da_mao` das cartas que SERAO gastas
+        #   perda  = `delta_remover(alvo)` se defende personagem,
+        #            `delta_perder_vida()` se defende o lider
+        # Counteria se gastar as cartas doer MENOS que deixar o golpe passar.
+        if not _EM_SIMULACAO['on']:
+            try:
+                from optcg_engine import value_net as _vn
+                _b = _vn.load_value_net(
+                    getattr(self.me, 'modelo_ordena_path', None)
+                    or MODELO_ORDENA_PATH)
+                if _b:
+                    _cartas, _g2, _tot = self.pick_counters(needed)
+                    if _cartas and _tot >= needed:
+                        _custo = 0.0
+                        _ok = True
+                        for _c in _cartas:
+                            _d = _vn.delta_gastar_da_mao(_c, self.me, self.opp, _b)
+                            if _d is None:
+                                _ok = False
+                                break
+                            _custo += _d
+                        if _ok:
+                            _perda = (_vn.delta_remover(alvo, self.me, self.opp, _b)
+                                      if alvo is not None
+                                      else _vn.delta_perder_vida(self.me, self.opp, _b))
+                            if _perda is not None:
+                                return _custo > _perda
+            except Exception:
+                pass
 
         # Defendendo um PERSONAGEM (nao o lider) -- decide pelo valor DELE,
         # nao pela tabela de vida (ver docstring acima).
@@ -22140,7 +22216,9 @@ class OPTCGMatch:
             return False
 
         # Counter step
-        if opp_engine.should_use_counter(atk_power, defend_power, valor_protegido=valor_protegido):
+        if opp_engine.should_use_counter(
+                atk_power, defend_power, valor_protegido=valor_protegido,
+                alvo=(target if target_type != 'leader' else None)):
             counter_add = opp_engine.use_counter(atk_power - defend_power + 1)
             defend_power += counter_add
             if getattr(self, '_atk_obs', None) is not None:

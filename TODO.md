@@ -32,6 +32,20 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 13/09/2026 (bloco 794): **AS DUAS ULTIMAS HEURISTICAS DE DECISAO SAIRAM.**
+> **SE counteria**: era `gasto < valor_protegido`; agora compara a soma de
+> `delta_gastar_da_mao` das cartas que serao gastas contra `delta_perder_vida()`
+> (ou `delta_remover(alvo)` defendendo personagem). `alvo` passou a viajar ate a
+> decisao. **Pagar custo opcional**: o limiar de constantes (60, +25, +peso*15)
+> **saiu** — a busca ja avalia a acao INTEIRA, custo e efeito juntos, entao o
+> portao so pre-filtrava com informacao pior. **Corrigido pelos testes**: a 1a
+> versao pagava sempre que houvesse modelo e 2 testes reprovaram, os dois casos
+> de **pagar por NADA** — isso e VIABILIDADE, nao valor. Ficou: **o modelo
+> decide o QUANTO, a regra decide o SE EXISTE**.
+> **ESTADO**: nenhuma decisao de VALOR do motor e mais escrita a mao. O que
+> sobra de heuristica e regra de JOGO e a degradacao sem modelo. `smoke_fast`:
+> **0 falhas**. **Nada passou por duelo.**
+
 > 13/09/2026 (bloco 793): **INCERTEZA POR QUANTIL — construida, medida e
 > REPROVADA.** Veio de duas perguntas dele, as duas certas: *"porque vc esta
 > fazendo elas decidirem em probabilidade de vitoria se eu te dei uma lista de

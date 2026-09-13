@@ -53,6 +53,51 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (794) - **AS DUAS ULTIMAS HEURISTICAS DE DECISAO SAIRAM.** Nenhum julgamento de VALOR e mais escrito a mao
+
+### 1. SE counteria -- `_should_use_counter_inner`
+
+Era `gasto < valor_protegido`, duas reguas a mao. E `quais cartas de counter` e
+a PIOR categoria medida contra humano (18,5%).
+
+Agora as duas pontas em probabilidade de vitoria:
+
+```
+custo = soma de delta_gastar_da_mao das cartas que SERAO gastas
+perda = delta_remover(alvo)      se defende personagem
+        delta_perder_vida()      se defende o lider
+counteria se gastar as cartas doer MENOS que deixar o golpe passar
+```
+
+`alvo` passou a viajar ate a decisao (`should_use_counter(..., alvo=)`) --
+sem ele o modelo nao tinha como precificar o que estava sendo defendido.
+
+### 2. Pagar custo opcional -- `_worth_paying_optional_costs`
+
+Era `_trash_value(worst) <= limiar`, com o limiar montado de constantes (60,
++25, +peso*15). **O limiar saiu.** A acao que dispara o custo JA e avaliada
+pela busca, que clona, aplica a acao INTEIRA -- custo e efeito juntos -- e
+pergunta ao modelo quanto vale o estado resultante. Este portao so podia
+pre-filtrar com informacao PIOR.
+
+**Corrigido pelos proprios testes**: a primeira versao devolvia True sempre que
+houvesse modelo, e dois testes reprovaram -- os dois casos de **pagar por
+NADA** (sem `steps`, e com o payoff ausente do campo). Isso nao e valor, e
+VIABILIDADE. Ficou: **o modelo decide o QUANTO, a regra decide o SE EXISTE.**
+
+### 3. O estado da substituicao
+
+Nenhuma decisao de VALOR do motor e mais escrita a mao: acao de topo, DON por
+ataque, alvo do efeito, ordenacao, sacrificio, search, reanimacao, descarte,
+bloqueio, counter e custo opcional passam todos pelo modelo. O que sobra de
+heuristica e regra de JOGO (legalidade, uma-vez-por-turno, reserva de defesa,
+viabilidade) e a degradacao quando nao ha modelo compativel.
+
+`smoke_fast`: 0 falhas -- com 4 testes de LIMIAR repontados pra exercitar a
+degradacao, ja que o que eles trancavam deixou de decidir.
+
+**Nada disto passou por duelo.**
+
 ## 2026-09-13 (793) - A INCERTEZA POR QUANTIL: construida, medida e **REPROVADA**. 0,5000 exato em toda posicao
 
 ### 1. De onde veio
