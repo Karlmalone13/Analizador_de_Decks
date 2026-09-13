@@ -53,6 +53,89 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (800) - **O METODO ERA PESADO**: 300 arvores viram REDE LEVE -- 85x mais barata e errando MENOS. E um erro de metodo meu que contaminou medicoes o dia inteiro
+
+### 1. O achado do usuario, de novo por pergunta e nao por codigo
+
+Ao ver a coleta em 2,52 s/partida, ele cravou: *"nao pode levar 3:30 para
+simular, uma partida tem que levar no maximo 1s, senao nao conseguimos simular
+milhares"*. E depois: *"nao faz sentido cortar [arvores], isso vai fazer perder
+qualidade, deve ter outra coisa gastando tempo, ou entao **estamos usando um
+metodo pesado**"*.
+
+**Estava.** O perfil mostrou o modelo como 47% do tempo -- 300 arvores
+impulsionadas percorridas em Python, ~10 ms por previsao, 95.700 travessias
+para 319 previsoes.
+
+E eu tinha proposto cortar arvores (300 -> 100), que medido custava 49% de erro
+a mais. Ele recusou a troca e apontou a causa certa.
+
+### 2. A rede leve -- a linha NNUE da lista que ele trouxe
+
+```
+modelo                 erro      vs media    ms sklearn    ms numpy
+ARVORES 300 (antes)  0,0676        67,7%         8,47          -
+rede leve 32         0,0609        71,0%         0,78        0,066
+rede leve 64-32      0,0554        73,6%         0,79        0,100
+```
+
+**Nao ha troca entre qualidade e velocidade**: a rede erra **18% MENOS** e a
+previsao custa **85x menos**. O criterio tinha sido fixado ANTES de ver ("erro
+dentro de ~10% do das arvores = troca boa") -- ela nao empatou, passou.
+
+A diferenca entre 0,79 e 0,100 ms e overhead do sklearn, nao conta: com rede
+pequena, a validacao de entrada da biblioteca custa mais que as duas
+multiplicacoes de matriz. Por isso as duas colunas.
+
+E abre o que faltava da lista dele: **atualizacao incremental do NNUE** so
+existe sobre rede; sobre conjunto de arvores, nunca foi possivel.
+
+### 3. ANTES disso, o alvo tinha trocado para BOOTSTRAP (bloco 799)
+
+O professor era uma busca de profundidade 3 -- e o DQN, o metodo escolhido,
+**nao precisa de busca pra formar alvo**:
+
+```
+Q(estado, acao)  <-  valor do estado que a acao PRODUZ
+```
+
+~8 clones por decisao contra ~64. Medido: coleta de **11,37 -> 3,02 s/partida**
+com os mesmos ~241 alvos. Eu tinha herdado a busca profunda da estrutura do
+bloco 783, que era pro rotulo do ESTADO; ao trocar pra valor por ACAO, o
+professor devia ter mudado junto e nao mudou, por inercia minha.
+
+Junto saiu `_ordena_pelo_modelo` quando o Q decide: ela materializava ate 24
+estados por decisao pra escolher QUAIS candidatas a busca cara avaliaria, e com
+o Q pontuando todas de uma vez perdeu a funcao -- 30% do tempo de jogo.
+
+### 4. ERRO DE METODO MEU, e custou o dia
+
+**`TaskStop` nao para um laco de shell.** `coleta_q_grande.sh` lanca um python
+por fatia; matar o shell nao mata o python em curso, e quando matei os python, o
+laco -- vivo em outro `sh.exe` -- lancou a fatia seguinte.
+
+**Resultado: a coleta rodou durante quase todas as medicoes do dia**, inclusive
+a que eu apresentei ao usuario como "maquina limpa". Os numeros 8,06 / 11,37 /
+2,52 / 1,41 / 2,86 s/partida estao todos inflados por dois coletores disputando
+2 nucleos, e a "variacao de 42% da maquina" que eu atribui a pouca RAM era isso.
+
+**A regra**: depois de parar um processo de fundo, **CONFERIR** que parou --
+`Get-CimInstance Win32_Process` filtrando pela linha de comando, nao confiar no
+retorno do stop. E para laco de shell, matar o SHELL e os filhos.
+
+Efeito colateral bom, mas acidental: o corpus foi de 40.678 para **539.570
+alvos** sem ninguem decidir isso.
+
+### 5. Estado
+
+`treinar_q.py --modelo rede` e o default; `--modelo arvores` fica so pra
+reproduzir a comparacao. Treino da rede nos 539 mil alvos em curso -- parciais
+de 0,0455 e 0,0477 contra 0,2270 e 0,2067 da media.
+
+**PENDENTE, e e o que decide**: (2) concordancia da rede com a arvore nas mesmas
+posicoes -- erro menor NAO garante ordenacao melhor; e (3) tempo real de
+partida, com os processos conferidos antes de cronometrar.
+
 ## 2026-09-13 (797) - **O LACO DE TREINO ESTAVA QUEBRADO** e nao promoveria NADA. Religado no artefato que decide
 
 ### 1. O bloqueio, achado ao perguntar "ja podemos treinar?"

@@ -52,10 +52,18 @@ def main() -> int:
     ap.add_argument('--dataset', default='metrics/q_alvos.jsonl')
     ap.add_argument('--out', default='metrics/q_net.joblib')
     ap.add_argument('--folds', type=int, default=5)
+    ap.add_argument('--modelo', choices=('rede', 'arvores'), default='rede',
+                    help='REDE por default desde o bloco 800: medido em 120 mil '
+                         'alvos, ela erra 18%% MENOS que as 300 arvores (0,0554 '
+                         'x 0,0676) e a previsao custa 0,100 ms contra 8,47 -- '
+                         '85x. Nao ha troca entre qualidade e velocidade aqui.')
     args = ap.parse_args()
 
     import numpy as np
     from sklearn.ensemble import HistGradientBoostingRegressor
+    from sklearn.neural_network import MLPRegressor
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.pipeline import make_pipeline
     from sklearn.model_selection import GroupKFold
 
     caminho = RAIZ / args.dataset
@@ -88,13 +96,22 @@ def main() -> int:
           % (y.mean(), y.std(), len(set(np.round(y, 4).tolist()))))
 
     def novo():
-        # Mesmos hiperparametros do `treinar_value.py`, de proposito: assim a
-        # comparacao entre "avaliar estado" e "avaliar acao" isola O QUE se
-        # preve, nao a capacidade do modelo.
-        return HistGradientBoostingRegressor(
-            max_iter=300, learning_rate=0.02, max_depth=3,
-            min_samples_leaf=60, early_stopping=True, validation_fraction=0.15,
-            l2_regularization=1.0, random_state=0)
+        # REDE LEVE (NNUE-style), default desde o bloco 800. A previsao e duas
+        # multiplicacoes de matriz -- 0,100 ms em numpy puro contra 8,47 ms das
+        # 300 arvores percorridas em Python, e com erro 18% MENOR.
+        #
+        # O `--modelo arvores` fica pra reproduzir a comparacao, nao pra uso.
+        if args.modelo == 'arvores':
+            return HistGradientBoostingRegressor(
+                max_iter=300, learning_rate=0.02, max_depth=3,
+                min_samples_leaf=60, early_stopping=True,
+                validation_fraction=0.15, l2_regularization=1.0, random_state=0)
+        return make_pipeline(
+            StandardScaler(),
+            MLPRegressor(hidden_layer_sizes=(64, 32), activation='relu',
+                         solver='adam', learning_rate_init=3e-3, max_iter=60,
+                         early_stopping=True, n_iter_no_change=5,
+                         random_state=0))
 
     folds = min(args.folds, n_lideres)
     if folds < 2:
@@ -132,6 +149,7 @@ def main() -> int:
     bundle = {
         'modelo': modelo,
         'tipo': 'q',
+        'familia': args.modelo,
         'n_alvos': int(len(X)),
         'n_features': int(X.shape[1]),
         'n_lideres': int(n_lideres),

@@ -32,6 +32,29 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 13/09/2026 (bloco 800): **O METODO ERA PESADO** — achado do usuario: *"nao faz
+> sentido cortar [arvores], isso vai fazer perder qualidade, deve ter outra coisa
+> gastando tempo, ou entao estamos usando um metodo pesado"*. Estava: o modelo era
+> **47% do tempo** (300 arvores em Python, ~10 ms/previsao). Eu tinha proposto
+> cortar arvores, que custava **49% de erro a mais**; ele recusou e apontou a
+> causa certa.
+> **REDE LEVE (a linha NNUE da lista dele)**: erro **0,0554 contra 0,0676** das
+> arvores (**18% MENOS**) e **0,100 ms contra 8,47** (**85x**). Sem troca entre
+> qualidade e velocidade. Criterio fixado ANTES de medir. Abre a atualizacao
+> incremental do NNUE, que so existe sobre rede.
+> **ANTES (bloco 799)**: o alvo virou **BOOTSTRAP** — o DQN nao precisa de busca
+> pra formar alvo, ~8 clones por decisao contra ~64, coleta de **11,37 -> 3,02
+> s/partida**. E `_ordena_pelo_modelo` saiu quando o Q decide (30% do tempo).
+> **⚠️ ERRO DE METODO MEU**: `TaskStop` **nao para um laco de shell** — matei o
+> shell, os python seguiram; matei os python, o laco lancou a fatia seguinte. **A
+> coleta rodou durante quase todas as medicoes do dia**, inclusive a que apresentei
+> como "maquina limpa". Os tempos 8,06 / 11,37 / 2,52 / 1,41 / 2,86 estao inflados.
+> **Regra: CONFERIR que parou, via `Get-CimInstance Win32_Process` pela linha de
+> comando** — nao confiar no retorno do stop. Efeito colateral: corpus de 40.678
+> para **539.570 alvos**, sem ninguem decidir.
+> **PENDENTE**: (2) concordancia da rede com a arvore e (3) tempo real — erro
+> menor NAO garante ordenacao melhor.
+
 > 13/09/2026 (bloco 797): **O LACO DE TREINO ESTAVA QUEBRADO** — achado ao
 > perguntar "ja podemos treinar?". `_duelo` punha campeao e desafiante lado a
 > lado por `value_net_weight`, o desenho SOMADO que **nao decide mais nada**
