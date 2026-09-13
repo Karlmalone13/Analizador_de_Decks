@@ -81,6 +81,85 @@ def cartas_que_o_bot_jogou(caminho) -> set:
         return set()
 
 
+def maos_do_bot(caminho) -> list:
+    """As MAOS que o bot tinha, lidas de `state_before.hand` do decision_log.
+
+    Sinal muito mais forte que as cartas jogadas (bloco 806): 6-7 codigos
+    especificos coincidindo com a mao de um lado nao acontece por acaso.
+    A tentativa anterior cruzava `chosen_action` contra o texto das acoes e
+    recuperou so 3 de 28 -- sinal fraco demais.
+    """
+    try:
+        p = Path(caminho)
+        if not p.is_absolute():
+            p = RAIZ / p
+        if not p.exists():
+            return []
+        maos = []
+        with p.open(encoding='utf-8', errors='replace') as fh:
+            for linha in fh:
+                linha = linha.strip()
+                if not linha:
+                    continue
+                try:
+                    d = json.loads(linha)
+                except Exception:
+                    continue
+                h = (d.get('state_before') or {}).get('hand')
+                if not h or len(h) < 3:
+                    continue
+                # No decision_log a mao e lista de DICTS com `code`; no
+                # snapshot do log da partida e lista de strings. Sem extrair o
+                # codigo, `str(x)` virava o repr do dict e nada casava --
+                # foi o que fez a primeira tentativa recuperar ZERO lados.
+                cods = [x.get('code') if isinstance(x, dict) else str(x)
+                        for x in h]
+                cods = [str(c) for c in cods if c]
+                if len(cods) >= 3:
+                    maos.append(frozenset(cods))
+        return maos
+    except Exception:
+        return []
+
+
+def lado_por_maos(parsed_file, maos_bot) -> str | None:
+    """Qual lado do log tinha as MESMAS maos que o bot registrou.
+
+    Para cada mao do bot, procura o turno do log em que aquele lado tinha
+    exatamente aquelas cartas. Exige coincidencia FORTE (>=4 cartas em comum)
+    e vantagem clara sobre o outro lado -- meia resposta e melhor que lado
+    errado.
+    """
+    if not maos_bot:
+        return None
+    try:
+        p = RAIZ / 'logs' / parsed_file
+        if not p.exists():
+            return None
+        d = json.loads(p.read_text(encoding='utf-8'))
+        pontos = collections.Counter()
+        for t in (d.get('turns') or []):
+            sn = t.get('snapshot') or {}
+            for lado in ('You', 'Opponent'):
+                h = (sn.get(lado) or {}).get('hand')
+                if not h:
+                    continue
+                conj = frozenset(str(x) for x in h)
+                for mb in maos_bot:
+                    comum = len(conj & mb)
+                    if comum >= 4 and comum >= len(mb) - 1:
+                        pontos[lado] += 1
+        if not pontos:
+            return None
+        (lider, n), *resto = pontos.most_common()
+        segundo = resto[0][1] if resto else 0
+        if n < 2 or n <= segundo:
+            return None
+        return {'You': 'p1', 'Opponent': 'p2'}.get(lider)
+    except Exception:
+        return None
+
+
 def lado_por_cartas(parsed_file, codigos_bot) -> str | None:
     """Qual lado do log jogou as cartas que o bot decidiu jogar.
 
@@ -164,7 +243,8 @@ def main() -> int:
         except Exception:
             continue
         alvo = {'recibo': f.name,
-                'cartas': cartas_que_o_bot_jogou(d.get('decision_log') or '')}
+                'cartas': cartas_que_o_bot_jogou(d.get('decision_log') or ''),
+                'maos': maos_do_bot(d.get('decision_log') or '')}
         if d.get('bank_entry_id'):
             por_entrada[str(d['bank_entry_id'])] = alvo
         for chave in ('bank_parsed', 'canonical_name'):
@@ -185,12 +265,15 @@ def main() -> int:
                   or por_parsed.get(Path(str(r.get('parsed_file') or '')).name))
         if not achado:
             sem_recibo += 1
-        elif lado_por_cartas(r.get('parsed_file') or '', achado.get('cartas')):
-            achado['lado'] = lado_por_cartas(r.get('parsed_file') or '',
-                                             achado.get('cartas'))
-            com_lado.append((r, achado))
         else:
-            so_tinha_bot.append((r, achado))
+            pf = r.get('parsed_file') or ''
+            lado = (lado_por_maos(pf, achado.get('maos'))
+                    or lado_por_cartas(pf, achado.get('cartas')))
+            if lado:
+                achado['lado'] = lado
+                com_lado.append((r, achado))
+            else:
+                so_tinha_bot.append((r, achado))
 
     print()
     print('  recibos de partida ao vivo      : %d' % len(recibos))
