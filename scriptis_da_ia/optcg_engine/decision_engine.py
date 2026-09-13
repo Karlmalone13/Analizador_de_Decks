@@ -1346,7 +1346,15 @@ Q_NET_PATH = os.environ.get(
     'OPTCG_Q_NET_PATH',
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                  'metrics', 'q_net.joblib'))
-USA_Q = os.environ.get('OPTCG_USA_Q', '1').strip() != '0'
+# DESLIGADO POR MEDICAO (bloco 801). O portao deu **0x13** do Q contra a arvore
+# de busca -- zero vitorias em 13 pares decididos, SPRT cruzando o limite. O Q e
+# 3,6x mais rapido e joga PIOR; manter ligado seria producao decidida contra a
+# evidencia, que e o erro que o projeto ja registrou duas vezes.
+#
+# O Q NAO foi descartado: ele continua sendo o caminho (0,40 s/partida abre
+# coleta em escala) e volta a ser CANDIDATO ate ganhar um duelo.
+# `OPTCG_USA_Q=1` liga pra medir.
+USA_Q = os.environ.get('OPTCG_USA_Q', '0').strip() != '0'
 
 # ── COMO O ALVO Q E PRODUZIDO (bloco 799) ──────────────────────────────────
 # 'bootstrap' (default) -- o alvo do DQN de verdade:

@@ -894,7 +894,8 @@ def _bot_side_to_p1_p2(bepinex_log_path, p1_name: str, p2_name: str) -> str | No
     return None
 
 
-def add_to_db(log_path: str, data: dict, decks: dict, bepinex_log_path=None):
+def add_to_db(log_path: str, data: dict, decks: dict, bepinex_log_path=None,
+              bot_side=None, sem_bot=False):
     """
     Copia o .log para logs/raw/, salva o JSON em logs/parsed/,
     salva os decks em logs/decks/ e atualiza o index.json.
@@ -992,7 +993,14 @@ def add_to_db(log_path: str, data: dict, decks: dict, bepinex_log_path=None):
                'slug': slug2},
         'turns': data['total_turns'],
         'winner': detectar_vencedor(log_path, p1d['name'], p2d['name']),
-        'bot_side': _bot_side_to_p1_p2(bepinex_log_path, p1d['name'], p2d['name']),
+        # ORDEM DE PRECEDENCIA (bloco 801): declaracao explicita ganha da
+        # deteccao, e `--sem-bot` grava null DE PROPOSITO -- 'nao havia bot'
+        # e uma resposta, diferente de 'ninguem anotou'. O campo `tipo`
+        # preserva essa diferenca pra quem ler o banco depois.
+        'bot_side': (None if sem_bot else
+                     (bot_side or _bot_side_to_p1_p2(
+                         bepinex_log_path, p1d['name'], p2d['name']))),
+        'tipo': ('humano_vs_humano' if sem_bot else 'com_bot'),
         'log_file': f'raw/{friendly_stem}.log',
         'parsed_file': f'parsed/{friendly_stem}.json',
         'deck_files': deck_files,
@@ -1244,6 +1252,14 @@ def main():
                     help='Adicionar esta partida ao banco (logs/)')
     ap.add_argument('--list-db', action='store_true',
                     help='Listar partidas no banco')
+    ap.add_argument('--bot-side', dest='bot_side', choices=('p1', 'p2'),
+                    default=None,
+                    help='De que lado o BOT jogou. Use quando nao houver '
+                         'LogOutput.log do BepInEx pra detectar sozinho.')
+    ap.add_argument('--sem-bot', dest='sem_bot', action='store_true',
+                    help='Partida HUMANO vs HUMANO -- nao ha lado do bot. '
+                         'Grava `bot_side: null` e `tipo: humano_vs_humano`, '
+                         'que e diferente de "ninguem anotou".')
     ap.add_argument('--bepinex-log', default=None,
                     help='Caminho pro LogOutput.log do BepInEx (mesma sessao) -- '
                          'detecta qual lado (You/Opponent) o bot controlava via '
@@ -1251,6 +1267,27 @@ def main():
                          'bot_side fica None (nao assume mais que o usuario '
                          'venceu -- pedido 28/07, bloco HANDOFF 388).')
     args = ap.parse_args()
+
+    # PORTAO DE INGESTAO (bloco 801). Ate aqui `bot_side` era OPCIONAL e
+    # falhava em silencio: quem esquecesse a flag gravava `None`, e depois nao
+    # havia como distinguir "nao havia bot nesta partida" de "ninguem anotou".
+    #
+    # Resultado medido no banco: de 171 partidas, **133 sem bot_side** -- 83
+    # com nomes anonimos (`You`/`Opponent`), em que a informacao pode ser
+    # IRRECUPERAVEL, porque o nome diz de quem e a PERSPECTIVA do log, nao quem
+    # era o bot. Prova: nos 38 que tem `bot_side`, `p1` e sempre `You` e mesmo
+    # assim `bot_side` varia entre p1 e p2 -- ou seja, houve log exportado da
+    # perspectiva do HUMANO, com o bot do outro lado.
+    #
+    # Consertar os 171 de hoje sem fechar a torneira so adia o problema.
+    if args.add_to_db and not (args.bepinex_log or args.bot_side or args.sem_bot):
+        raise SystemExit(
+            'ERRO: adicionar ao banco exige dizer DE QUE LADO O BOT JOGOU.'
+            + chr(10) + '  --bepinex-log <LogOutput.log>   detecta sozinho (preferido)'
+            + chr(10) + '  --bot-side p1|p2                quando voce sabe e nao tem o log'
+            + chr(10) + '  --sem-bot                       partida humano vs humano'
+            + chr(10) + 'Sem isso o registro entra ambiguo e fica inutil pra auditoria'
+            + chr(10) + '(audit_real_losses.py nao sabe quem auditar). Ver bloco 801.')
 
     if args.list_db:
         list_db()
@@ -1280,7 +1317,8 @@ def main():
             print_summary(data, decks)
 
         if args.add_to_db:
-            add_to_db(log_file, data, decks, bepinex_log_path=args.bepinex_log)
+            add_to_db(log_file, data, decks, bepinex_log_path=args.bepinex_log,
+                      bot_side=args.bot_side, sem_bot=args.sem_bot)
 
 
 if __name__ == '__main__':
