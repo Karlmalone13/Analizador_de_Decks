@@ -21169,7 +21169,22 @@ class OPTCGMatch:
                 # Nao fechou => a prova falhou (trigger/efeito reativo, ou
                 # furo na certificacao). Segue o turno normalmente; os
                 # atacantes ja usados estao rested e nao reentram.
-            actions = self._generate_and_score_actions(p, opp, engine)
+            # A HEURISTICA SAI TAMBEM DO PONTO DE DECISAO (bloco 791).
+            # Na arvore ela ja tinha saido (bloco 790); aqui era o ultimo lugar
+            # em que a pontuacao estatica ainda mandava -- ela definia a ordem
+            # que entra no shortlist e o piso que encerra o turno.
+            #
+            # Com `sem_pontuacao`, quem ordena e escolhe e o modelo
+            # (`_ordena_pelo_modelo` + `ordenada_pelo_modelo=` no shortlist), e
+            # quem encerra o turno e a busca competindo contra `PASS_ACTION`
+            # (bloco 785) -- nao mais um limiar escrito a mao.
+            #
+            # A regra que proibia isto ("enquanto o ML nao ganhar UM duelo
+            # sequer, nao ha o que substituir") foi REVOGADA no bloco 791: era
+            # circular, porque o ML nao vence duelo enquanto a heuristica
+            # decide por ele.
+            actions = self._generate_and_score_actions(p, opp, engine,
+                                                       sem_pontuacao=True)
             _ordenou_modelo = False
             if _ordenar_pelo_modelo and actions:
                 actions = self._ordena_pelo_modelo(actions, p, opp, engine)

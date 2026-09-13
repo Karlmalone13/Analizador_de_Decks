@@ -32,6 +32,24 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 13/09/2026 (bloco 791): **A REGRA QUE TRAVAVA O PROJETO, ACHADA E REVOGADA.**
+> Ele perguntou *"tem alguma regra aqui no projeto?"* — tinha: a secao "COMO
+> fazer — por partes e COM PORTAO, nunca de uma vez" (10/09) dizia
+> *"substituicao nao autorizada em bloco"* e *"**enquanto o ML nao ganhar UM
+> duelo sequer, nao ha o que substituir**"*. **Circular: nunca libera**, porque
+> o ML nao vence duelo enquanto a heuristica decide por ele. Contradizia "O QUE
+> EXISTE NAO E SAGRADO" (12/09) no mesmo arquivo. Revogada; no lugar: tirar a
+> heuristica e o TRABALHO, o portao MEDE DEPOIS e nao e pre-requisito.
+> **A HEURISTICA SAIU DO PONTO DE DECISAO**: `main_phase` chama
+> `sem_pontuacao=True`; quem ordena o shortlist e o MODELO e quem encerra o
+> turno e a BUSCA contra `PASS_ACTION`, nao mais o `ACTION_SCORE_FLOOR`.
+> **MEDIDO**: 6,51 → **5,80 s/partida** (−10,9%); acumulado no dia **8,04 →
+> 5,80 (−28%)**. `avaliar_carta` de **26,5% / 34.367 chamadas** para **1,8% /
+> 20.211** (o resto vem de caminhos fora da decisao). A funcao mais cara do
+> motor agora e o **MODELO**. `smoke_fast`: **0 falhas**.
+> **PENDENTE**: nada passou por duelo; o portao segue escrito e nao rodado — e
+> agora ele mede DEPOIS.
+
 > 13/09/2026 (bloco 790): **A HEURISTICA SAI DE DENTRO DA BUSCA.**
 > `_generate_and_score_actions(sem_pontuacao=True)` na arvore — as 4 pontuacoes
 > caras nao sao mais calculadas em cada no. Fundamento: 96,4% dos scores

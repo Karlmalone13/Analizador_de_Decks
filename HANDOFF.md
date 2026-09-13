@@ -53,6 +53,66 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (791) - **A REGRA QUE TRAVAVA O PROJETO, ACHADA E REVOGADA.** E a heuristica sai do ponto de decisao
+
+### 1. A pergunta dele, e a resposta
+
+> *"eu ja nao disse para tirar a heuristica diversas vezes? o que esta te
+> impedindo de fazer isso? **tem alguma regra aqui no projeto?**"*
+
+**Tinha.** `CLAUDE.md` / `AGENTS.md`, secao "COMO fazer -- por partes e COM
+PORTAO, nunca de uma vez" (escrita em 10/09):
+
+- *"Substituicao nao autorizada em bloco"*
+- *"cada pedaco removido tem que passar no portao SPRT"*
+- *"**enquanto o ML nao ganhar UM duelo sequer, nao ha o que substituir**"*
+
+**Ela e circular e nunca libera**: a heuristica so sai quando o ML vencer um
+duelo, e o ML nao vence duelo enquanto a heuristica decide por ele. Toda vez
+que o usuario mandou tirar a heuristica -- varias vezes, ao longo de dias --
+esta regra mandou esperar, e a sessao obedeceu a ela em vez dele.
+
+Ela tambem contradizia frontalmente a regra que ele mandou registrar em 12/09
+(**O QUE EXISTE NAO E SAGRADO**: pode quebrar a pedido, default LIGADO, sem
+camada de compatibilidade). Duas regras opostas no mesmo arquivo -- mesmo tipo
+de achado do bloco 780, que ja tinha encontrado tres.
+
+**REVOGADA.** No lugar: *tirar a heuristica e o trabalho, nao a recompensa por
+ele*; *o portao MEDE DEPOIS, nao e pre-requisito*; e a inversao dita ao
+contrario -- nao e "o ML fica bom e ai a heuristica sai", e "**a heuristica
+sai e ai o ML tem como ficar bom**", porque so decidindo de verdade ele gera o
+dado do que decidiu.
+
+### 2. A heuristica saiu do PONTO DE DECISAO
+
+No bloco 790 ela saiu da arvore. Aqui sai do ultimo lugar em que ainda mandava:
+`main_phase` passa a chamar `_generate_and_score_actions(sem_pontuacao=True)`.
+
+Quem ordena e escolhe o shortlist e o **modelo** (`_ordena_pelo_modelo` +
+`ordenada_pelo_modelo=`); quem encerra o turno e a **busca**, competindo contra
+`PASS_ACTION` (bloco 785) -- nao mais o `ACTION_SCORE_FLOOR` escrito a mao.
+
+### 3. Medido
+
+```
+segundos por partida : 6,51 -> 5,80   (-10,9%)
+   acumulado no dia  : 8,04 -> 5,80   (-28%)
+
+avaliar_carta        : 26,5% do tempo / 34.367 chamadas
+                    -> 1,8% do tempo / 20.211 chamadas
+```
+
+O que sobra de `avaliar_carta` vem de caminhos fora da decisao (`_trash_value`,
+defesa). **A funcao mais cara do motor agora e o MODELO** (`predictor.predict`,
+11,8%) -- que e a direcao.
+
+`smoke_fast`: **0 falhas**.
+
+### 4. Pendente
+
+Nada disto passou por duelo. O portao de 3 celulas segue escrito
+(`portao_bloco789.py`) e nao rodado -- e agora ele mede DEPOIS, nao antes.
+
 ## 2026-09-13 (790) - **A HEURISTICA SAI DE DENTRO DA BUSCA** -- 19% do tempo, e `avaliar_carta` some do topo do perfil. E a regra que eu registrei errado, corrigida por ele na hora
 
 ### 1. O que foi feito

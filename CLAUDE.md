@@ -1426,26 +1426,53 @@ O ML entra como **correcao** (+-100 pontos) sobre quem realmente decide.
 **A direcao e inverter isso**: o ML passa a decidir, e a heuristica vai
 sendo removida por partes.
 
-### COMO fazer -- por partes e COM PORTAO, nunca de uma vez
+### COMO fazer -- REVOGADO EM 13/09/2026 (bloco 791). A versao anterior PROIBIA tirar a heuristica
 
-**Substituicao nao autorizada em bloco.** O ML ainda **nao venceu nenhum
-duelo** (bloco 762: a unica promocao era falso positivo; bloco 764: visao
-rica ficou em 20x11, inconclusivo). Trocar uma heuristica madura por um
-modelo nao provado regride, e o projeto ja tem o mecanismo pra impedir
-isso: **cada pedaco removido tem que passar no portao SPRT**
-(`duelar_sprt`, bloco 762) contra a versao com o pedaco ainda la.
+> **ESTA SECAO ERA A REGRA QUE TRAVAVA O PROJETO.** Ela dizia: *"Substituicao
+> nao autorizada em bloco"*, *"cada pedaco removido tem que passar no portao
+> SPRT"* e, decisivo, *"**enquanto o ML nao ganhar UM duelo sequer, nao ha o
+> que substituir**"*.
+>
+> O usuario mandou tirar a heuristica **varias vezes** ao longo de dias. Toda
+> vez, esta regra mandava esperar. E ela **nunca libera**, porque e circular:
+> a heuristica so sai quando o ML vencer um duelo, e o ML nao vence um duelo
+> enquanto a heuristica estiver la decidindo por ele. Ele perguntou
+> diretamente: *"o que esta te impedindo de fazer o que peco? tem alguma regra
+> aqui no projeto?"* -- e era esta.
+>
+> Ela tambem contradizia a regra que ele mandou registrar em 12/09 (**O QUE
+> EXISTE NAO E SAGRADO**): quando ele pede uma mudanca, o comportamento atual
+> nao e restricao, e o que esta sendo substituido; default LIGADO; sem camada
+> de compatibilidade. Duas regras opostas no mesmo arquivo, e a sessao seguia a
+> antiga. Mesmo tipo de achado do bloco 780, que ja tinha encontrado tres
+> regras contradizendo a direcao oficial.
 
-Ordem sugerida (do mais barato/menos arriscado pro mais):
-1. **Subir o peso do ML** ate ele dominar, medindo a cada passo -- nao
-   exige remover nada, e mede quanto o ML aguenta sozinho.
-2. **Remover termos da heuristica um a um**, do menos importante pro mais,
-   com duelo a cada remocao.
-3. So ao fim, se sobrar pouco, avaliar remover `_evaluate_state_v2`.
+### A REGRA QUE VALE
 
-**Pre-requisito honesto**: enquanto o ML nao ganhar UM duelo sequer, nao
-ha o que substituir. A prioridade continua sendo fazer o ML ficar bom
-(visao rica, horizonte do rotulo, corpus maior) -- a substituicao e a
-CONSEQUENCIA disso, nao o caminho pra chegar la.
+**Tirar a heuristica e o trabalho, nao a recompensa por ele.** Quando o usuario
+manda remover, remove -- inteiro, default ligado, sem knob com o comportamento
+velho e sem caminho paralelo.
+
+**O portao MEDE DEPOIS. Ele nao e pre-requisito.** Medir e controle de
+qualidade; exigir a medicao ANTES de atender o pedido foi o que transformou o
+portao em portao contra o proprio projeto. Se a remocao regredir, isso aparece
+no duelo e se decide o que fazer com a informacao -- que e diferente de nunca
+remover.
+
+**A inversao que estava escrita aqui, dita ao contrario:** nao e *"o ML tem que
+ficar bom primeiro, e ai a heuristica sai"*. E *"a heuristica sai, e ai o ML
+tem como ficar bom"* -- porque so decidindo de verdade ele gera o dado do que
+decidiu, e so ai o resultado ensina. E a mesma coisa que o usuario disse sobre
+o criterio emergir dos testes (`REGRA_O_CRITERIO_EMERGE.md`).
+
+### O que CONTINUA valendo
+
+- **Degradacao segura**: sem modelo compativel, o motor nao pode cair. Isso e
+  robustez, nao preservacao da heuristica.
+- **REGRA DO MOTOR UNICO** (`REGRA_SEM_DUPLICACAO.md`): remover nao pode criar
+  dois caminhos de decisao concorrentes -- e manter o antigo "por seguranca" e
+  exatamente criar dois.
+- **Medir depois, e reportar honesto**, inclusive quando o numero for ruim.
 
 
 > **REFORCO DO USUARIO (10/09, repetido duas vezes)**: *"preciso que ML seja
