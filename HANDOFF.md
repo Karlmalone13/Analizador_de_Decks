@@ -53,6 +53,79 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (796) - **A ARVORE SAI DO CAMINHO DE DECISAO.** O modelo Q responde sem simular: 4x mais rapido, e so 4,3% das decisoes pioram de verdade
+
+### 1. O pedido e o metodo
+
+O usuario perguntou se podar a arvore perderia qualidade e se havia alternativa
+que nao fosse arvore. Havia, e estava na lista que ele mesmo trouxe: **DQN /
+valor Q por acao** -- *"o agente joga contra si mesmo e aprende o valor Q,
+retorno futuro acumulado de CADA ACAO numa posicao"*.
+
+A arvore materializava **~64 estados por decisao** (clonar + aplicar + enumerar
+acoes legais) so pra descobrir aonde cada acao leva -- **77% do tempo de
+partida**. O Q responde direto de (estado, acao), em UMA consulta em lote.
+
+**A arvore nao acabou: virou o PROFESSOR.** Ela ja calculava um valor por
+candidata simulando, e esse valor E o alvo Q. Mesma estrutura professor/aluno
+do bloco 783, um nivel acima -- aplicada a ACAO em vez do estado.
+
+### 2. O que foi construido
+
+| peca | onde |
+|---|---|
+| representacao da acao, 24 features **sem identidade de carta** | `value_net.acao_features` |
+| vetor do Q: estado (77, visao do aluno) + acao (24) | `value_net.q_features` |
+| consulta em lote, `state_features` calculada **uma vez** | `value_net.q_valores` |
+| coletor de alvos (a busca ensinando) | `_busca_determinista` + `--q-out` no gerador |
+| treino com validacao POR LIDER e controle que pode falhar | `treinar_q.py` |
+| decisao pelo Q, caindo na arvore se o Q nao existir | `_select_action_via_search` |
+
+### 3. Medido
+
+```
+corpus        : 31.056 alvos, 120 partidas, 16 lideres
+treino (GroupKFold POR LIDER):
+  erro fora da amostra : 0,0727
+  erro de prever a media: 0,2149
+  => erra 66,2% MENOS que a media
+
+velocidade (mesmas 3 seeds, com aquecimento):
+  arvore decide : 6,61 s/partida
+  Q decide      : 1,65 s/partida     -> 4,00x
+AS-IS: 6,20 -> 1,87 s/partida
+```
+
+### 4. A concordancia, e por que o numero de capa engana
+
+O Q escolhe a MESMA acao que o professor em **49,7%** das decisoes. Sozinho,
+esse numero pareceria ruim. Medi o que as divergencias CUSTAM, na regua do
+proprio professor:
+
+```
+decisoes iguais                        : 72
+divergencias                           : 68
+  perda mediana                        : 0,0090
+  sao EMPATE (perda < 0,01)            : 52,9%
+  sao CARAS (perda > 0,05)             : 8,8%  -> 6 de 140 decisoes
+```
+
+**So 4,3% das decisoes pioram de verdade.** Metade das divergencias sao acoes
+que o professor considera equivalentes. O top-2 do Q contem a escolha do
+professor em 74,5% das vezes.
+
+### 5. Estado e ressalva
+
+`smoke_fast`: 0 falhas -- com o teste da arvore isolando o Q (`USA_Q=False`),
+porque ele e sobre a arvore, que agora e o caminho de fallback.
+
+**O Q nasce ligado sem risco**: enquanto `q_net.joblib` nao existir,
+`load_value_net` devolve None e o motor usa a arvore.
+
+**RESSALVA HONESTA**: isto mede concordancia com o PROFESSOR e velocidade --
+**nao mede FORCA**. O professor nao e um oraculo; o Q pode reproduzi-lo bem e
+os dois jogarem mal. Quem responde isso e o portao, que continua sem rodar.
+
 ## 2026-09-13 (794) - **AS DUAS ULTIMAS HEURISTICAS DE DECISAO SAIRAM.** Nenhum julgamento de VALOR e mais escrito a mao
 
 ### 1. SE counteria -- `_should_use_counter_inner`

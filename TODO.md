@@ -32,6 +32,26 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 13/09/2026 (bloco 796): **A ARVORE SAI DO CAMINHO DE DECISAO** — o modelo Q
+> responde sem simular. Veio da pergunta dele (podar perde qualidade? ha
+> alternativa que nao seja arvore?) e do **DQN da lista que ele trouxe**. A
+> arvore materializava ~64 estados por decisao (77% do tempo); o Q responde de
+> (estado, acao) numa consulta em lote. **A arvore virou o PROFESSOR**: o valor
+> que ela calculava simulando E o alvo Q.
+> **CONSTRUIDO**: `acao_features` (24, sem identidade de carta), `q_features`
+> (77+24), `q_valores` (lote, `state_features` calculada uma vez), coletor via
+> `--q-out`, `treinar_q.py` (GroupKFold POR LIDER + controle que pode falhar),
+> e a decisao pelo Q com queda pra arvore se o Q nao existir.
+> **MEDIDO**: corpus **31.056 alvos / 120 partidas / 16 lideres**; o Q erra
+> **66,2% menos que prever a media** fora da amostra. Velocidade **6,61 → 1,65
+> s/partida (4,00x)**; AS-IS **6,20 → 1,87**.
+> **CONCORDANCIA 49,7%** — e o numero de capa engana: das 68 divergencias,
+> **52,9% sao EMPATE** na regua do professor (perda < 0,01) e so 8,8% sao caras,
+> ou seja **4,3% das decisoes pioram de verdade**. Top-2 do Q contem a escolha
+> do professor em 74,5%.
+> `smoke_fast`: **0 falhas**. **RESSALVA**: isto mede concordancia com o
+> professor e velocidade, **nao mede FORCA** — o portao continua sem rodar.
+
 > 13/09/2026 (bloco 794): **AS DUAS ULTIMAS HEURISTICAS DE DECISAO SAIRAM.**
 > **SE counteria**: era `gasto < valor_protegido`; agora compara a soma de
 > `delta_gastar_da_mao` das cartas que serao gastas contra `delta_perder_vida()`

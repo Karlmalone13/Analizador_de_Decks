@@ -321,6 +321,134 @@ def state_features(p, opp, nomes=None) -> list:
     return [float(por_nome.get(n, 0.0)) for n in nomes]
 
 
+# ── VALOR Q POR ACAO (bloco 796) -- a alternativa a ARVORE ─────────────────
+#
+# Hoje, pra saber aonde cada acao leva, o motor SIMULA: clona o estado, aplica
+# a acao, gera as acoes legais do no e avalia. Sao ~64 estados materializados
+# por decisao, e e de onde vem **77% do tempo de partida** (AS-IS do bloco
+# 795) -- o modelo em si e so 23%.
+#
+# A alternativa esta na lista que o usuario trouxe: **DQN / valor Q** -- "o
+# agente joga contra si mesmo e aprende o valor Q, o retorno futuro acumulado
+# de CADA ACAO numa posicao". Em vez de simular pra descobrir o valor da acao,
+# o modelo **ja sabe**: uma consulta por candidata (~8), sem clone e sem
+# aplicar nada. O que some nao e a consulta -- e os 77%.
+#
+# A busca vira o PROFESSOR: ela ja calcula um valor por candidata
+# (`_busca_determinista` devolve `pares`), e esse valor E o alvo Q. Mesma
+# estrutura professor/aluno que o projeto ja adotou, um nivel acima.
+#
+# SEM IDENTIDADE DE CARTA, pela mesma razao das features de estado (ver o topo
+# do modulo): o objetivo e jogar bem com QUALQUER deck, entao a acao e descrita
+# por PROPRIEDADES -- tipo, custo, poder, palavras-chave, DON, o que ela mira --
+# nunca por codigo ou nome.
+FEATURE_NAMES_ACAO = [
+    'eh_play', 'eh_attack', 'eh_activate', 'eh_attach_don', 'eh_pass', 'eh_outro',
+    'ator_cost', 'ator_power', 'ator_counter',
+    'ator_blocker', 'ator_rush', 'ator_double_attack', 'ator_unblockable',
+    'ator_don_anexado', 'ator_rested',
+    'alvo_eh_leader', 'alvo_eh_character', 'alvo_ausente',
+    'alvo_power', 'alvo_cost', 'alvo_rested', 'alvo_blocker',
+    'don_da_acao', 'vantagem_de_poder',
+]
+
+
+def _prop(c, attr, default=0.0) -> float:
+    try:
+        return float(getattr(c, attr, default) or default)
+    except Exception:
+        return default
+
+
+def acao_features(acao, opp=None) -> list:
+    """Descreve UMA acao por propriedades. Ver `FEATURE_NAMES_ACAO`."""
+    try:
+        kind = acao[1]
+        ator = acao[2] if len(acao) > 2 else None
+        alvo_tipo = acao[3] if len(acao) > 3 else None
+        alvo = acao[4] if len(acao) > 4 else None
+        don = float(acao[5]) if len(acao) > 5 and acao[5] is not None else 0.0
+    except Exception:
+        return [0.0] * len(FEATURE_NAMES_ACAO)
+
+    tipos = ('play', 'attack', 'activate', 'attach_don', 'pass')
+    um_de = [1.0 if kind == t else 0.0 for t in tipos]
+    um_de.append(0.0 if kind in tipos else 1.0)
+
+    ator_power = _prop(ator, 'power') + _prop(ator, 'power_buff')
+    if alvo_tipo == 'leader' and alvo is None and opp is not None:
+        alvo = getattr(opp, 'leader', None)
+    alvo_power = _prop(alvo, 'power') + _prop(alvo, 'power_buff')
+
+    return um_de + [
+        _prop(ator, 'cost'), ator_power / 1000.0, _prop(ator, 'counter') / 1000.0,
+        1.0 if _prop(ator, 'has_blocker') else 0.0,
+        1.0 if _prop(ator, 'has_rush') else 0.0,
+        1.0 if _prop(ator, 'has_double_attack') else 0.0,
+        1.0 if _prop(ator, 'has_unblockable') else 0.0,
+        _prop(ator, 'don_attached'),
+        1.0 if _prop(ator, 'rested') else 0.0,
+        1.0 if alvo_tipo == 'leader' else 0.0,
+        1.0 if alvo_tipo == 'character' else 0.0,
+        1.0 if alvo is None and alvo_tipo != 'leader' else 0.0,
+        alvo_power / 1000.0, _prop(alvo, 'cost'),
+        1.0 if _prop(alvo, 'rested') else 0.0,
+        1.0 if _prop(alvo, 'has_blocker') else 0.0,
+        don,
+        (ator_power + don * 1000.0 - alvo_power) / 1000.0,
+    ]
+
+
+def q_features(p, opp, acao, nomes=None) -> list:
+    """O vetor que o modelo Q recebe: ESTADO + ACAO, sem simular nada.
+
+    Default = a visao do ALUNO (77 features, todas disponiveis ao vivo), nao as
+    32 basicas. Peguei isso na primeira coleta: o vetor saiu com 56 em vez de
+    101, porque `state_features(nomes=None)` cai nas 32 originais -- o Q teria
+    nascido enxergando menos que o modelo que ele vem substituir.
+    """
+    return (state_features(p, opp, nomes=nomes or FEATURE_NAMES_ALUNO)
+            + acao_features(acao, opp))
+
+
+def q_valores(p, opp, acoes, bundle=None) -> list:
+    """Valor de CADA acao, em UMA chamada, sem simular nenhuma delas.
+
+    E o que substitui a arvore no caminho de decisao: em vez de materializar
+    ~64 estados (clone + aplicar + enumerar) pra descobrir aonde cada acao
+    leva, o modelo responde direto.
+
+    Duas economias, nao uma:
+      * `state_features` e calculada UMA VEZ -- o estado e o mesmo pra todas
+        as candidatas, so a parte da ACAO muda;
+      * uma unica chamada ao modelo pro lote inteiro (medido no bloco 787:
+        14,52 ms/linha sozinha contra 0,86 em lote).
+
+    `None` na posicao que nao puder ser avaliada; lista de `None` quando nao ha
+    modelo Q compativel -- ai o chamador cai na arvore, que continua existindo.
+    """
+    n = len(acoes)
+    if n == 0:
+        return []
+    if bundle is None:
+        return [None] * n
+    modelo = bundle.get('modelo') if isinstance(bundle, dict) else None
+    if modelo is None:
+        return [None] * n
+    try:
+        base = state_features(p, opp, nomes=FEATURE_NAMES_ALUNO)
+        linhas = [base + acao_features(a, opp) for a in acoes]
+        esperado = getattr(modelo, 'n_features_in_', None)
+        if esperado is not None and len(linhas[0]) != esperado:
+            return [None] * n
+        vs = modelo.predict(linhas)
+    except Exception:
+        return [None] * n
+    if len(vs) != n:
+        return [None] * n          # nunca reatribuir por adivinhacao
+    return [float(v) for v in vs]
+
+
 def fingerprint_estado(p, opp) -> dict:
     """Impressao digital RICA do estado -- diagnostico, nao producao.
 

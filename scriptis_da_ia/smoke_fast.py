@@ -15166,6 +15166,14 @@ def test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785() -> None:
     check("assinatura sem parametros de amostragem (samples/batch/z/rng/model)",
           params == ['self', 'p', 'opp', 'engine', 'candidatas'])
 
+    # BLOCO 796: o modelo Q decide ANTES da arvore quando `q_net.joblib`
+    # existe -- a arvore virou o PROFESSOR (gera os alvos em auto-jogo) e
+    # continua sendo o caminho quando nao ha Q. Este teste e sobre a ARVORE,
+    # entao desliga o Q; a decisao pelo Q tem teste proprio.
+    import optcg_engine.decision_engine as _de_q
+    _usa_q_antes = _de_q.USA_Q
+    _de_q.USA_Q = False
+
     me = GameState(leader=real_card("OP11-062"), don_available=5, turn=3)
     opp = GameState(leader=real_card("OP04-019"), turn=3)
     match = OPTCGMatch((me.leader, []), (opp.leader, []))
@@ -15194,6 +15202,7 @@ def test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785() -> None:
               esc2 is cands[0] and val2 == 0.0 and len(recs2) == len(cands))
     finally:
         OPTCGMatch._busca_determinista = orig
+        _de_q.USA_Q = _usa_q_antes
 
 
 def test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787() -> None:

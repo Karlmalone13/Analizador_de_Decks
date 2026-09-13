@@ -1334,6 +1334,20 @@ MODELO_ORDENA_PATH = os.environ.get(
 LETHAL_VE_MAO_OCULTA = (
     os.environ.get('OPTCG_LETHAL_MAO_OCULTA', '1').strip() != '0')
 
+# ── O MODELO Q NO LUGAR DA ARVORE (bloco 796) ──────────────────────────────
+# A arvore materializa ~64 estados por decisao pra descobrir aonde cada acao
+# leva -- 77% do tempo de partida (AS-IS, bloco 795). O Q responde direto, a
+# partir de (estado, acao), sem clonar nada.
+#
+# Quando o arquivo NAO existe (ainda nao treinado), `load_value_net` devolve
+# None e o motor cai na arvore. Entao isto nasce ligado sem risco: ou o Q
+# existe e decide, ou nada muda.
+Q_NET_PATH = os.environ.get(
+    'OPTCG_Q_NET_PATH',
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                 'metrics', 'q_net.joblib'))
+USA_Q = os.environ.get('OPTCG_USA_Q', '1').strip() != '0'
+
 # A prova de lethal passa a contar com [Trigger] da vida do oponente (bloco
 # 785; bug de CORRECAO achado pelo usuario no bloco 778). Override POR JOGADOR
 # via `lethal_ve_trigger` -- a prova alimenta 7 pontos do motor e ja houve um
@@ -18966,6 +18980,32 @@ class OPTCGMatch:
             _EM_SIMULACAO['on'] = _sim_antes
         if melhor_acao is None:
             return None
+
+        # ── A BUSCA ENSINA O Q (bloco 796) ──────────────────────────────
+        # `pares` e (candidata, valor) -- o valor que a busca calculou
+        # SIMULANDO aonde cada acao leva. Esse valor E o alvo Q: o modelo Q
+        # aprende a devolver esse numero SEM simular, e ai a arvore sai do
+        # caminho de decisao (77% do tempo de partida, AS-IS do bloco 795).
+        #
+        # Mesma estrutura professor/aluno ja usada no projeto, um nivel
+        # acima: aqui o professor nao e um rotulo melhor, e a propria busca.
+        # Default desligado: `_q_captura` fica None e isto custa zero.
+        _cap = getattr(self, '_q_captura', None)
+        if _cap is not None:
+            try:
+                from optcg_engine import value_net as _vnq
+                for _a, _v in pares:
+                    if _v is None:
+                        continue
+                    _cap.append({
+                        'feats': _vnq.q_features(p, opp, _a),
+                        'alvo': float(_v),
+                        'escolhida': bool(_a is melhor_acao),
+                        'leader': getattr(getattr(p, 'leader', None), 'code', None),
+                        'turn': int(getattr(p, 'turn', 0) or 0),
+                    })
+            except Exception:
+                pass
         return (melhor_acao, melhor_v, pares)
 
     def _select_action_via_search(self, p, opp, engine, candidatas):
@@ -19110,6 +19150,39 @@ class OPTCGMatch:
         # caia no `except Exception: continue` -- a busca devolvia `None` em
         # 48 de 49 decisoes e o motor voltava pro Monte Carlo. Ela NUNCA tinha
         # rodado; o "custo-neutro" comparou Monte Carlo com Monte Carlo.
+        # ── O Q DECIDE, SE EXISTIR (bloco 796) ──────────────────────────
+        # Uma consulta em lote no lugar de ~64 estados materializados. A arvore
+        # continua existindo e continua sendo o PROFESSOR (ela gera os alvos em
+        # auto-jogo); o que ela deixa de fazer e decidir.
+        if USA_Q and getattr(p, 'usa_q', True) and len(candidatas) > 1:
+            try:
+                from optcg_engine import value_net as _vnq
+                _qb = _vnq.load_value_net(
+                    getattr(p, 'q_net_path', None) or Q_NET_PATH)
+                if _qb and _qb.get('tipo') == 'q':
+                    _vals = _vnq.q_valores(p, opp, candidatas, bundle=_qb)
+                    _pares_q = [(c, v) for c, v in zip(candidatas, _vals)
+                                if v is not None]
+                    if _pares_q:
+                        _melhor, _v = max(_pares_q, key=lambda t: t[1])
+                        _segura = [(c, v) for c, v in _pares_q
+                                   if not (v < 1.0
+                                           and self._is_unsafe_zero_life_leader_attack(
+                                               c, p, opp, engine))]
+                        if _segura:
+                            _melhor, _v = max(_segura, key=lambda t: t[1])
+                        if getattr(self, '_explora_eps', 0.0):
+                            _melhor, _v = self._explorar(_pares_q)
+                        return (_melhor, float(_v),
+                                [{"action": c, "value": (v if v is not None else -1e9)}
+                                 for c, v in zip(candidatas, _vals)],
+                                0,
+                                {id(c): {'avg': (v if v is not None else -1e9),
+                                         'wins': 0, 'samples': 0}
+                                 for c, v in zip(candidatas, _vals)})
+            except Exception:
+                pass
+
         _r = self._busca_determinista(p, opp, engine, candidatas)
         if _r is None:
             # Sem modelo compativel a decisao e a ordem que ja chegou. NAO ha

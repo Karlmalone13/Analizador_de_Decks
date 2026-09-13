@@ -111,9 +111,11 @@ def _run_one_match(task) -> list:
     if len(task) == 9:
         (i, match_seed, peso, modelo_path, geracao, eps, pos_acao,
          ml_avaliador, modelo_decide) = task
+        q_out = True
     else:
         i, match_seed, peso, modelo_path, geracao = task
         modelo_decide = None
+        q_out = False
         eps, pos_acao, ml_avaliador = 0.0, False, False
     deck_list = _load_deck_list()
     rng = random.Random(match_seed)
@@ -186,6 +188,13 @@ def _run_one_match(task) -> list:
             if modelo_path:
                 estado.value_net_path = modelo_path
 
+    # COLETOR DE ALVOS Q (bloco 796): a busca calcula um valor por candidata
+    # SIMULANDO aonde cada uma leva -- esse valor e o alvo que o modelo Q
+    # aprende a devolver SEM simular. A arvore vira o professor; o Q, o aluno.
+    # Marcado como lista => `_busca_determinista` passa a gravar.
+    if q_out:
+        match._q_captura = []
+
     amostras = []
     winner = None
     for turn_num in range(match.MAX_TURNS * 2):
@@ -242,7 +251,12 @@ def _run_one_match(task) -> list:
                     for d in (getattr(match, '_ml_captura', None) or [])]
     for a in amostras:
         a['win'] = 1 if a['side'] == winner else 0
-    return amostras
+    if q_out:
+        for linha in (getattr(match, '_q_captura', None) or []):
+            linha['match'] = i
+            linha['gen'] = geracao
+        return amostras, list(getattr(match, '_q_captura', None) or [])
+    return amostras, []
 
 
 def main() -> None:
@@ -257,6 +271,10 @@ def main() -> None:
     ap.add_argument('--weight', type=float, default=0.0,
                     help='peso do valor aprendido nas partidas GERADAS '
                          '(0 = motor sem modelo, geracao 0)')
+    ap.add_argument('--q-out', dest='q_out', default=None,
+                    help='grava tambem os ALVOS Q (estado+acao -> valor da busca) '
+                         'neste arquivo. E o corpus do modelo que substitui a '
+                         'arvore (bloco 796).')
     ap.add_argument('--modelo-decide', dest='modelo_decide', default=None,
                     help='modelo que DECIDE (folha da busca determinística). '
                          'Default: o arquivo global MODELO_ORDENA_PATH.')
@@ -309,14 +327,25 @@ def main() -> None:
                 print(f'  ... {k}/{args.n}')
 
     linhas, sem_desfecho, vazias = [], 0, 0
+    q_linhas = []
     for r in resultados:
-        if not r:
+        if not (r[0] if isinstance(r, tuple) else r):
             vazias += 1
             continue
         if len(r) == 1 and r[0].get('_sem_desfecho'):
             sem_desfecho += 1
             continue
-        linhas.extend(r)
+        linhas.extend(r[0] if isinstance(r, tuple) else r)
+        if args.q_out and isinstance(r, tuple):
+            q_linhas.extend(r[1])
+
+    if args.q_out and q_linhas:
+        qp = Path(args.q_out)
+        qp.parent.mkdir(parents=True, exist_ok=True)
+        with qp.open('a' if args.append else 'w', encoding='utf-8') as fh:
+            for a in q_linhas:
+                fh.write(json.dumps(a, ensure_ascii=False) + chr(10))
+        print(f'[selfplay] {len(q_linhas)} alvos Q -> {qp}')
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
