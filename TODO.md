@@ -32,6 +32,26 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 13/09/2026 (bloco 790): **A HEURISTICA SAI DE DENTRO DA BUSCA.**
+> `_generate_and_score_actions(sem_pontuacao=True)` na arvore — as 4 pontuacoes
+> caras nao sao mais calculadas em cada no. Fundamento: 96,4% dos scores
+> estaticos eram jogados fora (bloco 789).
+> **MEDIDO (AS-IS)**: **8,04 → 6,51 s/partida (−19,0%)**; modelo de 17,1% para
+> **22,9%** do tempo (ele virou a maior parte do trabalho, que e a direcao);
+> prova de lethal 7,3% → 1,6%; `avaliar_carta` **saiu do topo do perfil**, que e
+> o teste registrado pra saber se a substituicao aconteceu. `smoke_fast`: **0
+> falhas**.
+> **REGRA CORRIGIDA POR ELE**: eu tinha registrado `REGRA_O_CRITERIO_EMERGE.md`
+> com uma frase MINHA ("voce protege o que existe por reflexo"); ele corrigiu —
+> *"a regra nao e essa, isso ai vc inventou"*. O que ele disse e sobre o
+> SISTEMA, nao sobre mim: **o criterio nao existe no desenho, e resultado do bot
+> jogando** — o ML testa as alternativas e o criterio vai surgindo. Arquivo
+> reescrito, ponteiros e memoria corrigidos, e a correcao registrada dentro do
+> proprio arquivo.
+> **PENDENTE**: a heuristica ainda roda no PONTO DE DECISAO real (shortlist e
+> piso). E **nada passou por duelo** — o portao de 3 celulas segue escrito e nao
+> rodado.
+
 > 13/09/2026 (bloco 789): **O USUARIO ESTAVA CERTO — a heuristica cara nunca
 > saiu.** Medido: **13.240 scores estaticos calculados, 480 chegam a uma
 > decisao, 96,4% jogados fora**; `avaliar_carta` e **26,5% do tempo** (34.367

@@ -151,17 +151,19 @@ completos):
   (impresso por inteiro pelo hook `pre-commit`, mesmo tratamento do
   `MEMORY.md`) — tem os casos reais já achados/corrigidos e como caçar
   duplicatas novas antes de aceitar uma função de decisão nova.
-- **O CRITÉRIO EMERGE DO APRENDIZADO — não é para você inventar** (pedido
+- **O ML é para o bot IR APRENDENDO — o critério surge dos testes** (pedido
   explícito do usuário, 13/09/2026: *"registra isso para vc não esquecer e
   coloque como obrigação para vc lembrar antes de um commit"*). Leitura
   obrigatória antes de qualquer commit, **impressa por inteiro pelo hook
   `pre-commit`**, mesmo tratamento do `MEMORY.md`:
   [`scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md`](scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md).
-  **O teste**: acabou de remover uma regra fixa e está procurando com o que
-  substituí-la? Pare — a resposta é que o modelo testa as alternativas e o
-  critério surge. Sua tarefa é deixar o modelo ALCANÇAR as alternativas e
-  aprender com o resultado, não escolher por ele. *"O que é LEGAL: regra. O
-  que é BOM: modelo."*
+  Na palavra dele: *"o machine learning é para o Bot ir aprendendo, então o
+  critério para materializar vai surgir com os testes, o ML vai testando as
+  alternativas e esse critério vai surgindo"*. **O critério não existe no
+  momento do desenho — é resultado do bot jogando.** A pergunta certa não é
+  "qual critério?", é "o bot consegue testar as alternativas e aprender com o
+  resultado?". Regra de JOGO (legalidade, uma-vez-por-turno) define o que é
+  possível e não emerge de teste; o que emerge é o julgamento de VALOR.
 
 ---
 

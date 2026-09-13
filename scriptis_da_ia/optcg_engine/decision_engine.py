@@ -18736,7 +18736,19 @@ class OPTCGMatch:
                 return v
             eng = DecisionEngine(pa, oa)
             try:
-                acts = self._generate_and_score_actions(pa, oa, eng)
+                # A HEURISTICA SAI DE DENTRO DA BUSCA (bloco 790). Medido no
+                # bloco 789: dos 13.240 scores estaticos calculados por
+                # partida, **480 chegam a decidir alguma coisa -- 96,4% sao
+                # jogados fora**, porque quem decide aqui e o modelo.
+                # `avaliar_carta` sozinha era 26,5% do tempo.
+                #
+                # Nao e "dar mais peso ao ML": e nao pagar pelo caminho que
+                # nao vai ser usado. Sem pontuacao, os dois portoes de score
+                # da geracao (`s_leader > -500`, `s_char > -500`) deixam MAIS
+                # acoes passarem -- o que e o comportamento certo: parar de
+                # pre-filtrar pela regua velha e deixar o modelo ver e julgar.
+                acts = self._generate_and_score_actions(pa, oa, eng,
+                                                        sem_pontuacao=True)
             except Exception:
                 acts = []
             melhor = v          # PASSAR e sempre uma opcao: nunca piora
@@ -19147,7 +19159,8 @@ class OPTCGMatch:
             vals.add(don_livre)     # nao alcanca: a maior aposta possivel
         return [base + (v,) for v in sorted(vals)]
 
-    def _generate_and_score_actions(self, p, opp, engine, exclude_activate_uids=None):
+    def _generate_and_score_actions(self, p, opp, engine, exclude_activate_uids=None,
+                                    sem_pontuacao=False):
         """
         Gera TODAS as ações possíveis no estado atual e as pontua.
         Retorna lista de (score, tipo, dados) ordenada por score desc.
@@ -19192,7 +19205,7 @@ class OPTCGMatch:
             don_usable = engine._don_usable_for_play(card, don_reserve)
             if not engine._can_play_card(card, don_usable=don_usable):
                 continue
-            score = self._score_play_action(card, engine)
+            score = 0.0 if sem_pontuacao else self._score_play_action(card, engine)
             score += self._human_pattern_bonus(p, 'play', card)
             # Inclinação: desenvolver ganha peso no modo DEVELOP; perde no LETHAL/DEFENSIVE
             if priority == 'DEVELOP':
@@ -19279,7 +19292,8 @@ class OPTCGMatch:
                                       and taunt_alvo is None)
                 # alvo líder
                 if pode_atacar_leader and not p.cannot_attack_leader_this_turn:
-                    s_leader = engine.score_attack_target(att, 'leader', None)
+                    s_leader = (0.0 if sem_pontuacao
+                                else engine.score_attack_target(att, 'leader', None))
                     atk_now = atk_now_for_budget
                     # +power_buff: mesmo achado do bloco 434 (re-check
                     # redundante de score_attack_target, precisa da MESMA
@@ -19362,7 +19376,8 @@ class OPTCGMatch:
                     # Characters do oponente com custo <= N neste turno.
                     if cost_lock >= 0 and tgt.cost <= cost_lock:
                         continue
-                    s_char = engine.score_attack_target(att, 'character', tgt)
+                    s_char = (0.0 if sem_pontuacao
+                              else engine.score_attack_target(att, 'character', tgt))
                     atk_now = atk_now_for_budget
                     # +power_buff: mesmo achado do bloco 434.
                     tgt_power_now = tgt.power + tgt.power_buff
@@ -19453,7 +19468,8 @@ class OPTCGMatch:
             if not pode:
                 _am_debug(src, 'should_activate_main:' + str(_motivo_am))
                 continue
-            score = self._score_activate_main(src, am, p, opp, priority, engine=engine)
+            score = (0.0 if sem_pontuacao else
+                     self._score_activate_main(src, am, p, opp, priority, engine=engine))
             score += self._human_pattern_bonus(p, 'activate', src)
             actions.append((score, 'activate', src, None, None))
             # Mesma estrutura do play (ver `_variantes_de_alvo`): a escolha

@@ -1,4 +1,4 @@
-# O CRITÉRIO EMERGE DO APRENDIZADO — não é para você inventar
+# O ML é para o bot IR APRENDENDO — o critério surge dos testes
 
 **Leitura obrigatória antes de qualquer commit.** Impressa por inteiro pelo
 hook `pre-commit`, mesmo tratamento de `MEMORY.md` e
@@ -12,51 +12,55 @@ hook `pre-commit`, mesmo tratamento de `MEMORY.md` e
 > surgindo."*
 
 Ele disse isso depois de eu perguntar, ao remover a heurística da busca:
-*"sem a ordem estática, preciso de outro critério de qual filho materializar"*.
+*"sem a ordem estática, preciso de outro critério de qual filho
+materializar"*.
 
-**A pergunta estava errada.** Eu estava procurando uma regra nova para escrever
-à mão no lugar da regra velha que estava sendo removida. Isso é trocar uma
-heurística por outra — e é, de novo, exatamente o que o projeto inteiro está
-tentando parar de fazer.
+## O que isso quer dizer
 
-## O TESTE, antes de propor qualquer coisa
+O critério **não existe no momento do desenho**. Ele é um **resultado** do
+bot jogando: o ML testa as alternativas, vê o que dá certo, e o critério vai
+se formando com os testes. Perguntar "qual é o critério?" antes de rodar é
+perguntar por uma resposta que só a partida produz.
 
-> Você acabou de remover uma regra fixa e está procurando **com o que
-> substituí-la**?
->
-> **Pare.** A resposta é: o modelo testa as alternativas e o critério emerge.
-> Sua tarefa é deixar o modelo ALCANÇAR as alternativas e aprender com o
-> resultado — não escolher por ele.
+Consequência direta para qualquer desenho:
 
-Se a proposta contém "critério", "prioridade", "ordem" ou "limiar" seguido de
-um número ou de uma fórmula escrita por você, ela é uma heurística nova. O
-nome não importa.
+- **A pergunta certa não é "qual critério?", é "o bot consegue testar as
+  alternativas e aprender com o resultado?"**
+- Se o modelo só enxerga parte das opções, ele não tem como o critério
+  emergir sobre as que ele nunca viu.
+- Se o bot nunca tenta o que ainda não escolheria, os testes só confirmam o
+  que ele já fazia — e nada emerge. É para isso que a exploração existe
+  (`--explorar`, bloco 767).
+- Se o resultado não volta como sinal de aprendizado, o teste não ensina
+  nada. É o papel do rótulo do professor (bloco 783).
 
-## O que FAZER no lugar
+## O erro que isto corrige
 
-1. **Deixar o modelo ver as alternativas.** Se ele só pontua 6 de 14 opções,
-   o problema é o alcance, não o critério — amplie o que ele enxerga.
-2. **Deixar o modelo tentar o que ele ainda não escolheria.** É para isso que
-   a exploração existe (`--explorar`, bloco 767): sem tentar, o auto-jogo é
-   eco e o corpus só contém o que ele já fazia.
-3. **Deixar o resultado ensinar.** O rótulo do professor (bloco 783) é o que
-   transforma "tentei" em "aprendi".
-4. **Medir depois**, com o AS-IS e com o portão — não antes, e não no lugar.
+Eu tratei "critério" como algo que **eu** precisava fornecer — e, não tendo,
+fui procurar um substituto para escrever à mão. Isso inverte o sentido do
+projeto: o ML não está aqui para executar um critério meu, está aqui **para
+aprender o dele**.
 
-## O que isto NÃO autoriza
+> **Uma coisa óbvia que eu não tinha entendido:** o machine learning é para o
+> bot IR APRENDENDO. O que emerge do aprendizado não precisa ser projetado
+> antes.
 
-Não é "tire todas as regras e veja o que acontece". Regra de **jogo**
-(legalidade, uma-vez-por-turno, reserva de defesa) é restrição, não critério —
-ela define o que é possível, não o que é bom. O que sai são as regras de
-**valor**: qual jogada é melhor, qual alvo vale mais, o que priorizar.
+## O que isto NÃO significa
 
-A distinção em uma linha:
+Não é "tire todas as regras". Regra de **jogo** (legalidade, uma-vez-por-turno,
+reserva de defesa) define o que é **possível** — não é critério, e não emerge
+de teste nenhum. O que emerge é o julgamento de **valor**: qual jogada é
+melhor, qual alvo vale mais, o que priorizar.
 
-> **O que é LEGAL: regra. O que é BOM: modelo.**
+## Por que ficou preso ao hook
 
-## Por que ficou registrado com hook
+Pedido explícito dele: *"registra isso para vc não esquecer e coloque como
+obrigação para vc lembrar antes de um commit"* — depois de ter dito, no mesmo
+dia, que eu *"esqueço que estamos fazendo um ML e fico insistindo em coisas
+antigas"*.
 
-Porque eu esqueci. Repetidamente, no mesmo dia: o usuário teve que dizer
-*"parece que vc esquece que estamos fazendo um ML e fica insistindo em coisas
-antigas"*, e pediu explicitamente que isto virasse obrigação de leitura antes
-de commitar.
+> **Registro de honestidade:** a primeira versão deste arquivo trocou a frase
+> dele por uma regra sobre o meu comportamento ("você protege o que existe por
+> reflexo"). Ele corrigiu na hora: *"a regra não é essa, isso aí vc inventou,
+> leia de novo o que eu escrevi"*. Ficou aqui porque parafrasear o que ele
+> disse já é uma forma de não ouvir.
