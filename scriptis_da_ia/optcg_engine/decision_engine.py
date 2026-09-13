@@ -2427,36 +2427,52 @@ class Card:
     own_effect_negated_this_turn: bool = False
 
     def __deepcopy__(self, memo):
+        """Clone de Card: UMA copia de dict, em C.
+
+        `self.data` continua sendo REFERENCIA compartilhada -- e frozen, copiar
+        seria desperdicio puro (o ganho medido em 24/06, quando 94% do tempo de
+        simulacao era deepcopy). `attack_paywall` idem: e sempre REASSIGNED,
+        nunca mutado in-place.
+
+        POR QUE MUDOU (AS-IS de 13/09/2026, bloco 788): a versao anterior
+        listava 36 campos e fazia um `getattr` + `setattr` para cada um. Com
+        229.594 clones de carta em 2 partidas, isso era ~8 milhoes de chamadas
+        a `getattr`/`setattr` -- as duas funcoes mais chamadas do motor inteiro,
+        e a fatia "primitivas do interpretador" do AS-IS. `dict(self.__dict__)`
+        faz o mesmo trabalho numa unica operacao em C.
+
+        E CORRIGE UM BUG DE FIDELIDADE, achado ao conferir campo a campo: dois
+        atributos EXISTIAM nas cartas reais e nao estavam na lista, entao todo
+        clone os PERDIA --
+
+          `_am_used_turn`                     guarda [Activate: Main] de
+                                              `once_per_turn` (comparado com
+                                              `me.turn`)
+          `ko_on_opp_blocker_used_this_turn`  guarda o [Once Per Turn] de
+                                              "quando o oponente ativa Blocker,
+                                              K.O. ..."
+
+        Perdidos no clone, a linha SIMULADA podia reativar a habilidade que a
+        partida real ja tinha gasto naquele turno -- a busca superestimava
+        exatamente as linhas que dependem dessas cartas. Copiar o `__dict__`
+        inteiro resolve por construcao, e passa a cobrir qualquer campo novo
+        sem precisar lembrar de adicionar na lista.
         """
-        deepcopy customizado: `self.data` é uma REFERÊNCIA compartilhada,
-        NUNCA copiada (é frozen/imutável, copiar seria desperdício puro --
-        este é o ganho de performance real desta refatoração, medido por
-        profiling em 24/06 mostrando 94% do tempo de simulação em
-        deepcopy). Todo o resto (campos mutáveis) é copiado normalmente.
-        """
-        from copy import deepcopy as _dc
         cls = self.__class__
         novo = cls.__new__(cls)
         memo[id(self)] = novo
-        novo.data = self.data  # referência compartilhada, SEM copiar
-        for campo in ('has_rush', 'has_rush_character', 'has_blocker',
-                      'has_double_attack', 'has_banish', 'has_unblockable',
-                      'rested', 'just_played', 'rush_character_only_this_turn',
-                      'don_attached', 'cannot_attack_until', 'cannot_be_rested_until', 'cannot_block_until',
-                      'effects_negated_until',
-                      'unblockable_this_turn', 'rush_this_turn', 'double_attack_this_turn', 'blocker_this_turn',
-                      'banish_this_turn', 'extra_attribute_this_turn',
-                      'can_attack_active', 'can_attack_active_this_turn',
-                      'power_buff', 'base_power_override', 'base_power_override_opp_turn',
-                      'cost_buff', 'cost_buff_permanent', 'frozen_next_refresh',
-                      'life_face_up', 'immunity_ko_until',
-                      'battled_opp_character_this_turn', 'cannot_attack_opp_chars_cost_lte',
-                      'own_effect_negated_this_turn'):
-            setattr(novo, campo, getattr(self, campo))
-        for campo in ('_db_base_power', '_attack_power_override'):
-            if hasattr(self, campo):
-                setattr(novo, campo, getattr(self, campo))
-        novo.attack_paywall = self.attack_paywall  # dict sempre REASSIGNED (nunca mutado in-place), referencia compartilhada e segura
+        d = dict(self.__dict__)
+        # Isolamento pro portao (bloco 788): a correcao de fidelidade viaja
+        # junto com a otimizacao, e MEDIDO ela muda partida -- em 2 de 6 seeds
+        # o jogo ficou mais longo (12->17 e 11->22 turnos), porque a busca
+        # deixou de superestimar linhas que reativavam a habilidade. Pela
+        # licao do bloco 779 (consertar valor COMPARTILHADO ja custou 9x15),
+        # isto precisa poder ser desligado de UM lado so no duelo espelhado --
+        # a bandeira viaja no proprio `memo`, posta por `GameState.__deepcopy__`.
+        if memo.get('__clone_perde_once_per_turn'):
+            d.pop('_am_used_turn', None)
+            d.pop('ko_on_opp_blocker_used_this_turn', None)
+        novo.__dict__ = d
         return novo
 
     # ── Properties de delegação para os campos fixos de CardData ──────────
@@ -2908,6 +2924,10 @@ class GameState:
         cls = self.__class__
         novo = cls.__new__(cls)
         memo[id(self)] = novo
+        # ver `Card.__deepcopy__`: bandeira POR JOGADOR pro portao conseguir
+        # isolar a correcao de fidelidade do clone (bloco 788).
+        if getattr(self, 'clone_perde_once_per_turn', False):
+            memo['__clone_perde_once_per_turn'] = True
 
         novo.leader = _dc(self.leader, memo)
         novo.deck = [_dc(c, memo) for c in self.deck]

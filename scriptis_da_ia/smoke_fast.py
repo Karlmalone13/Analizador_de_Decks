@@ -10338,6 +10338,7 @@ def main() -> int:
     test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor()
     test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785()
     test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787()
+    test_clone_preserva_once_per_turn_bloco_788()
     test_opponent_model_for_leader_fallback_3_camadas()
     test_play_card_aninhado_credita_valor_da_carta_trazida()
     test_search_contextual_evita_congestionar_mao_com_bombas()
@@ -15177,6 +15178,57 @@ def test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787() -> None:
           _vn.win_prob_lote([], bundle=bundle) == [])
     check("sem modelo compativel, lote devolve None por posicao",
           _vn.win_prob_lote(pares, bundle={}) == [None] * len(pares))
+
+
+def test_clone_preserva_once_per_turn_bloco_788() -> None:
+    """O clone da carta nao pode PERDER guarda de uma-vez-por-turno.
+
+    Achado ao trocar `Card.__deepcopy__` por copia de `__dict__` e conferir
+    campo a campo (bloco 788): dois atributos EXISTIAM nas cartas reais e nao
+    estavam na lista de 36 campos que a versao anterior copiava --
+
+      `_am_used_turn`                     [Activate: Main] `once_per_turn`
+      `ko_on_opp_blocker_used_this_turn`  [Once Per Turn] do K.O. em blocker
+
+    Perdidos no clone, a linha SIMULADA podia reativar a habilidade que a
+    partida real ja tinha gasto no mesmo turno -- a busca superestimava
+    exatamente as linhas que dependem dessas cartas. MEDIDO: em 2 de 6 seeds
+    a partida muda de desfecho ao corrigir.
+
+    Cobre tambem a bandeira de isolamento (`clone_perde_once_per_turn`), que
+    existe pro portao poder medir a correcao de UM lado so.
+    """
+    from copy import deepcopy as _dc
+
+    leader = Card(data=CardData(code="SPH-CL1", name="Lider", card_type="LEADER",
+                                color="Red", cost=0, power=5000))
+    st = GameState(leader=leader, don_deck=0)
+    carta = Card(data=CardData(code="SPH-CL2", name="Personagem",
+                               card_type="CHARACTER", color="Red",
+                               cost=3, power=5000))
+    carta._am_used_turn = 7
+    carta.ko_on_opp_blocker_used_this_turn = True
+    st.field_chars = [carta]
+
+    clone = _dc(st)
+    c2 = clone.field_chars[0]
+    check("clone preserva _am_used_turn (habilidade ja gasta continua gasta)",
+          getattr(c2, '_am_used_turn', -1) == 7)
+    check("clone preserva ko_on_opp_blocker_used_this_turn",
+          getattr(c2, 'ko_on_opp_blocker_used_this_turn', False) is True)
+    check("clone continua compartilhando o CardData (nunca copiar o imutavel)",
+          c2.data is carta.data)
+    check("clone e objeto novo, nao a mesma carta",
+          c2 is not carta)
+    c2.rested = not carta.rested
+    check("mutar o clone NAO contamina o original",
+          c2.rested != carta.rested)
+
+    st.clone_perde_once_per_turn = True
+    c3 = _dc(st).field_chars[0]
+    check("bandeira de isolamento reproduz o comportamento antigo (portao)",
+          not hasattr(c3, '_am_used_turn')
+          and not getattr(c3, 'ko_on_opp_blocker_used_this_turn', False))
 
 
 if __name__ == "__main__":

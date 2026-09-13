@@ -32,6 +32,34 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 13/09/2026 (bloco 788): **clonagem 3,07x mais barata** + **BUG DE FIDELIDADE
+> achado na conferencia campo a campo**.
+> `Card.__deepcopy__` listava 36 campos com um `getattr`+`setattr` cada (~8M de
+> chamadas em 2 partidas); virou `dict(self.__dict__)`, uma operacao em C.
+> Micro-benchmark: **0,203 -> 0,066 ms por clone de estado (3,07x)**; no AS-IS,
+> clonagem de **14,0% para 6,1%** e `getattr` de 10,3M para 2,7M chamadas.
+> **O BUG**: dois campos existiam nas cartas e NAO estavam na lista, entao todo
+> clone os perdia — `_am_used_turn` ([Activate: Main] once_per_turn) e
+> `ko_on_opp_blocker_used_this_turn`. **A linha simulada podia reativar a
+> habilidade que a partida real ja tinha gasto no turno**, e a busca
+> superestimava justamente as linhas dessas cartas.
+> **A MEDICAO QUASE FOI LIDA ERRADO**: a primeira leitura deu +7,7% e pareceria
+> "a otimizacao deixou mais lento". Isolando (controle de aquecimento + A/B/A/B
+> em 6 partidas): as **partidas MUDARAM** em 2 das 6 seeds e ficaram mais LONGAS
+> (12->17 e 11->22 turnos). O clone ficou 3x mais barato E o total subiu, sem
+> contradicao — um numero agregado nao conseguia dizer isso. Regras dos blocos
+> 779 e 780 cobrando na mesma mudanca.
+> **ISOLAMENTO**: `clone_perde_once_per_turn`, bandeira por jogador que viaja no
+> `memo` do deepcopy (`Card` nao enxerga o jogador). ⚠️ **o portao TEM que medir
+> esta correcao numa celula propria** — muda partida e e da familia que custou
+> 9x15 no bloco 779.
+> `smoke_fast`: **0 falhas**, teste permanente novo. Tempo: **~6,1-6,4s/partida**
+> (o ganho do clone pagou as partidas mais longas). Portao de 240: ~13 min com 2
+> workers.
+> **PROXIMO se a velocidade voltar a incomodar** (pelo AS-IS): prova de lethal
+> (`hits_after_best_defense` 261.332 chamadas, `search_alloc`) e `state_features`.
+> **PENDENTE — ITEM 1, MEDIR**: blocos 785-788, nenhum duelo.
+
 > 13/09/2026 (bloco 787): **AS-IS OBRIGATORIO** (pedido do usuario, teoria de
 > Sistemas de Informacao: AS-IS -> TO-BE -> AS-IS de novo). Regra em `CLAUDE.md`
 > **e** `AGENTS.md` (espelho) + ferramenta nova `scriptis_da_ia/as_is.py`, que

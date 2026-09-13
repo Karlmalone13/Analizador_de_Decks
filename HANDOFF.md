@@ -53,6 +53,104 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (788) - A clonagem fica **3,07x mais barata** -- e a conferencia campo a campo acha um BUG DE FIDELIDADE: todo clone PERDIA as guardas de uma-vez-por-turno
+
+### 1. O que estava caro
+
+AS-IS do bloco 787 apontava `__deepcopy__` como a funcao mais cara depois do
+modelo: **229.594 clones de carta em 2 partidas**, e a versao antiga listava 36
+campos fazendo um `getattr` + um `setattr` para cada -- ~8 milhoes de chamadas,
+o que explicava a fatia "primitivas do interpretador" (18,7%).
+
+Trocado por `novo.__dict__ = dict(self.__dict__)`: uma operacao em C.
+
+**Micro-benchmark (sem o jogo no meio, 4.000 clones de um estado real de meio
+de partida, melhor de 3):**
+
+```
+clone ANTIGO (36 getattr/setattr) : 0,203 ms por clone de estado
+clone NOVO (dict em C)            : 0,066 ms por clone de estado
+                                    3,07x  (67,4% mais barato)
+```
+
+No AS-IS: clonagem **14,0% -> 6,1%** do tempo, `getattr` de 10,3M para 2,7M
+chamadas.
+
+### 2. O BUG que a conferencia campo a campo achou
+
+Antes de trocar, listei o que as cartas REAIS tem contra o que a lista copiava.
+**Dois atributos existiam e nao estavam na lista** -- entao todo clone os
+perdia:
+
+| campo | o que guarda |
+|---|---|
+| `_am_used_turn` | [Activate: Main] com `once_per_turn` (comparado com `me.turn`) |
+| `ko_on_opp_blocker_used_this_turn` | [Once Per Turn] do "quando o oponente ativa Blocker, K.O. ..." |
+
+Perdidos no clone, **a linha SIMULADA podia reativar a habilidade que a partida
+real ja tinha gasto naquele turno**. A busca superestimava exatamente as linhas
+que dependem dessas cartas -- e nada acusava, porque o clone "funcionava".
+
+Copiar o `__dict__` inteiro resolve por construcao, e passa a cobrir qualquer
+campo novo sem depender de alguem lembrar de adicionar na lista.
+
+### 3. A MEDICAO que quase foi lida errado -- duas mudancas num numero so
+
+Primeira leitura do AS-IS depois da troca: **11,27s -> 12,14s (+7,7%)**. Ou
+seja: "a otimizacao deixou mais lento". **Errado.**
+
+A troca fez DUAS coisas ao mesmo tempo: baratear o clone (custo) e preservar as
+guardas (comportamento). Isolando com o controle de aquecimento ligado (a
+primeira configuracao medida sempre sai inflada -- cache de efeitos, padroes
+humanos, carga do modelo):
+
+```
+6 partidas, alternando A/B/A/B, melhor de cada lado:
+  clone antigo : 5,01 s/partida   B/13 A/15 B/12 A/11 A/14 A/9
+  clone novo   : 6,10 s/partida   B/13 A/15 A/17 B/22 A/14 A/9
+```
+
+**As partidas MUDARAM** -- em 2 das 6 seeds, e ficaram mais LONGAS (12->17 e
+11->22 turnos). O `+21,7%` de tempo total nao e o clone ficando mais caro: e a
+partida durando mais turnos. Faz sentido: sem poder reativar de graca na
+simulacao, a busca para de superestimar a linha agressiva e o jogo se estende.
+
+> **O clone ficou 3x mais barato E o total subiu, ao mesmo tempo, sem
+> contradicao.** Um numero agregado nao conseguia dizer isso.
+
+Isto e literalmente a regra do bloco 779 (consertar valor COMPARTILHADO exige
+isolar) somada a do bloco 780 (toda medicao precisa de um controle que possa
+falhar) -- as duas cobraram nesta mesma mudanca.
+
+### 4. Isolamento pro portao
+
+`clone_perde_once_per_turn`, bandeira POR JOGADOR que reproduz o comportamento
+antigo. Ela viaja no proprio `memo` do deepcopy: `GameState.__deepcopy__` a
+poe, `Card.__deepcopy__` a le -- unico jeito de um lado so do duelo espelhado
+usar o clone antigo, ja que `Card` nao enxerga o jogador.
+
+**O portao TEM que medir esta correcao numa celula propria.** Ela muda partida
+(2 de 6 seeds) e e da mesma familia que ja custou 9x15 no bloco 779.
+
+### 5. Estado
+
+`smoke_fast`: **0 falhas**, com teste permanente novo
+(`test_clone_preserva_once_per_turn_bloco_788`) cobrindo as duas guardas, o
+compartilhamento do `CardData`, o isolamento do clone e a bandeira do portao.
+
+Tempo por partida: **~6,1-6,4s** nas 6 seeds do teste alternado. O ganho do
+clone pagou o custo das partidas mais longas -- o total ficou perto de onde
+estava no fim do bloco 787. Portao de 240 partidas: **~25 min sequencial,
+~13 min com 2 workers**.
+
+### 6. O proximo, se a velocidade voltar a incomodar
+
+Pelo AS-IS atual: `hits_after_best_defense` (261.332 chamadas) e `search_alloc`
+dentro da prova de lethal (7,3%), e `state_features` (8.406 chamadas, 4,38s
+cumulativo). Nenhum atacado.
+
+**E continua faltando o item 1: MEDIR.** Blocos 785-788, nenhum duelo.
+
 ## 2026-09-13 (787) - **AS-IS vira obrigatorio** (teoria de Sistemas de Informacao, pedido do usuario) -- e a primeira medicao ja derruba um diagnostico MEU que estava sendo repetido sem prova
 
 ### 1. O pedido
