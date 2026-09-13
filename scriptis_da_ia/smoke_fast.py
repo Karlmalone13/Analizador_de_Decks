@@ -2237,10 +2237,10 @@ def test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor() -> None:
           action is not None)
     check("contrafactual live registra pelo menos duas alternativas simuladas",
           len(trace.get("search_values", [])) >= 2)
-    check("telemetria identifica que a simulacao usou Monte Carlo (fallback de cor), nao mascarado puro",
-          trace.get("counterfactual_basis") == "sampled_opponent_model")
-    check("com Monte Carlo ligado, a selecao vira busca contrafactual de verdade",
-          trace.get("selection") == "counterfactual_search")
+    check("telemetria diz de onde veio o valor: rede na folha, nao amostragem",
+          trace.get("counterfactual_basis") == "rede_de_valor_na_folha")
+    check("a selecao ao vivo e a busca determinista (bloco 785)",
+          trace.get("selection") == "busca_determinista")
     # Achado 28/07 (merge local): a camada exata depende de dados LOCAIS
     # (E:\...\Decks\*.deck, layer 1, checado ANTES do decklists_raw.csv) --
     # numa sessao local com o jogo instalado, Doflamingo pode ter deck real
@@ -12653,6 +12653,12 @@ def test_lethal_conta_counter_tipo_evento_conhecido_na_mao_17_08() -> None:
     eng_sem_trash = DecisionEngine(me, opp)
     check("Ground Death sem trash_gte satisfeito nao entra nos chunks",
           0 == sum(c for c in eng_sem_trash.analyzer.opp_counter_chunks_for_lethal()))
+    # `lethal_ve_trigger=False` de proposito (bloco 785): este teste mede a
+    # contagem de CHUNKS DE COUNTER, e a prova agora tambem exige folga de 1
+    # hit quando o oponente ainda revela vida e o deck dele e desconhecido
+    # (aqui e sintetico, sem deck). Sem isolar, o teste passaria a medir o
+    # trigger em vez do Ground Death.
+    me.lethal_ve_trigger = False
     check("sem a condicao do Ground Death, lethal e garantido (2 atacantes, sem defesa)",
           eng_sem_trash.analyzer.can_lethal_this_turn())
 
@@ -13852,9 +13858,21 @@ def test_optcgmatch_hide_opponent_info_propaga_e_muda_comportamento_10_08() -> N
     check("__deepcopy__ propaga self_play_info_hidden (Monte Carlo do Turn Planner nao perde a flag)",
           getattr(clone_a, "self_play_info_hidden", False) is True)
 
+    # FASE 0 (bloco 785): o auto-jogo nasce CEGO por default -- `AUTO_JOGO_CEGO`
+    # liga a mesma flag sem ninguem passar `hide_opponent_info`. O motor tem que
+    # aprender no mundo em que vai jogar; ao vivo a mao chega mascarada.
     match_default = OPTCGMatch(deck_a, deck_b)
-    check("default (hide_opponent_info=False) preserva comportamento de sempre -- flag ausente",
-          not getattr(match_default.state_a, "self_play_info_hidden", False))
+    check("default CEGO (AUTO_JOGO_CEGO): auto-jogo nao le a mao do oponente",
+          getattr(match_default.state_a, "self_play_info_hidden", False) is True)
+    import optcg_engine.decision_engine as de_mod
+    _antes = de_mod.AUTO_JOGO_CEGO
+    try:
+        de_mod.AUTO_JOGO_CEGO = False
+        match_vendo = OPTCGMatch(deck_a, deck_b)
+        check("OPTCG_AUTOJOGO_CEGO=0 volta ao comportamento antigo (A/B possivel)",
+              not getattr(match_vendo.state_a, "self_play_info_hidden", False))
+    finally:
+        de_mod.AUTO_JOGO_CEGO = _antes
 
     counter_card = mk("CTX1", "CounterCard", counter=2000, cost=1)
     match.state_b.hand = [counter_card]

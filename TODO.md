@@ -32,6 +32,45 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+> 13/09/2026 (bloco 786): **os 7 itens da lista de pendencias, feitos** (pedido
+> do usuario: "faca do item 2 ao 8, ai depois a gente faz o 1").
+> **(2) O MODELO ABRE OS RAMOS**: a busca expandia `acts[:BUSCA_FEIXE]`, os 3
+> melhores pela pontuacao ESTATICA - era o achado dele no bloco 778 ("o ML julga
+> o DESTINO e a heuristica escolhe o CAMINHO"). Agora materializa 6 filhos,
+> pontua cada um pelo estado que produz e recursa nos 3 melhores. As 4 seeds de
+> teste **mudaram de vencedor**.
+> **(3) FASE 0**: `AUTO_JOGO_CEGO` **LIGADO por default** - o corpus era gerado
+> com o motor lendo a mao do oponente. O portao **nao valida isto**; quem julga e
+> o banco humano.
+> **(6) "O que nao vira candidata nao existe"**: medido em **10,3% dos turnos**
+> (12/116) terminando com acao LEGAL na mesa. Dois portoes estaticos derrubados
+> (o piso nao encerra mais o turno; o shortlist aceita score negativo quando e o
+> que ha) - quem encerra o turno agora e a BUSCA, contra `PASS_ACTION`. Caiu pra
+> 6,5%, e os restantes sao "avaliou e preferiu passar".
+> **(4) LETHAL x [TRIGGER]**: a prova tinha **zero** mencoes a trigger. Agora
+> conta com ele via composicao do deck (`full_deck_codes`), nunca via qual carta
+> esta em qual vida; premissa declarada de **no maximo 1 trigger disruptivo**.
+> Declaracoes caem **1786 -> 1367 (-23%)**. **ITEM MAIS ARRISCADO**: e a mesma
+> familia que no bloco 779 fez o bot GANHAR MENOS (9x15) ao ser consertada -
+> ganhou override por jogador (`lethal_ve_trigger`) e **o portao TEM que
+> isola-lo**.
+> **(5) RETREINO A CADA 3 PARTIDAS**: `--retreino-a-cada` default 3, e o alvo do
+> retreino corrigido para o modelo que REALMENTE decide (`value_net_aluno`, via
+> `--modelo-decide` novo no gerador) - o laco retreinava o campeao do desenho
+> somado, que nao decide mais nada.
+> **(7) RESTOS**: orcamento de amostras apagado; **telemetria ao vivo corrigida**
+> (dizia `counterfactual_search`/`sampled_opponent_model`, uma amostragem que nao
+> existe mais). **Avaliacao incremental NAO feita de proposito** - 11,3s/partida
+> contra 16s do baseline, fazer agora seria otimizar ao redor do ML sem
+> necessidade medida.
+> **(8) `confirma_gen4.py` ENCERRADO por obsolescencia**, nao confirmado: ele
+> duela o desenho somado (peso 200) que nao decide mais nada. Aviso no topo do
+> script.
+> `smoke_fast`: **0 falhas**. Tempo: **11,3s/partida** (portao de 240 ~22 min com
+> 2 workers).
+> **PENDENTE - ITEM 1, MEDIR**: 6 mudancas de comportamento empilhadas, **zero
+> partidas de evidencia**.
+
 > 13/09/2026 (bloco 785): **O MONTE CARLO SAIU DO PONTO DE DECISAO** (344
 > linhas), e o achado que reescreve o bloco 784: `_busca_determinista`
 > **nunca tinha rodado** — a chave da transposicao era dict aninhado,

@@ -53,6 +53,141 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (786) - Os 7 itens da lista de pendencias, feitos. O modelo passa a ABRIR os ramos, o auto-jogo fica CEGO, o piso estatico para de encerrar o turno e a prova de lethal passa a contar com [Trigger]
+
+Pedido do usuario: *"Quero que faca do item 2 ao 8, ai depois a gente faz o 1"*
+-- o item 1 e o portao, que fica pro proximo passo.
+
+### 1. O MODELO abre os ramos da busca (era o achado #2 do usuario no bloco 778)
+
+Dentro de `_busca_determinista`, a expansao era `acts[:BUSCA_FEIXE]` -- **os 3
+melhores pela pontuacao ESTATICA**. O modelo so via a folha. Era literalmente o
+que ele descreveu: *"o ML julga o DESTINO e a heuristica escolhe o CAMINHO"*.
+
+Agora: materializa ate `BUSCA_LARGURA` (6) filhos, pontua **cada um pelo estado
+que produz**, e recursa nos `BUSCA_FEIXE` (3) melhores -- best-first de verdade,
+que e o que a docstring ja dizia e o codigo nao fazia. O custo extra e so o
+`apply` dos filhos que nao serao recursados: o `win_prob` do filho ja seria pago
+na primeira linha de `_valor` e o memo devolve o mesmo numero.
+
+Custo medido: 8,4s -> 11,2s por partida. E as partidas **mudaram de vencedor**
+(A,A,A,A -> B,A,A,B nas mesmas 4 seeds): a decisao mudou de verdade.
+
+### 2. FASE 0: o auto-jogo nasce CEGO (`AUTO_JOGO_CEGO` default LIGADO)
+
+`gerar_selfplay_dataset.py` e `treino_continuo._duelo` criam `OPTCGMatch` sem
+`hide_opponent_info` -- entao o corpus que treinou o aluno foi gerado com o
+motor LENDO a mao do oponente. Com o default ligado, os dois passam a ser cegos
+sem precisar mudar chamada nenhuma. `OPTCG_AUTOJOGO_CEGO=0` faz o A/B.
+
+**O portao NAO valida isto** (armadilha ja registrada): bot-que-espia ganha de
+bot-que-nao-espia. Quem julga e o banco de logs humanos e a partida contra o
+usuario.
+
+### 3. "O que nao vira candidata nao existe" -- medido e atacado
+
+`mede_geracao.py`, 8 partidas, ANTES: **10,3% dos turnos (12/116) terminavam com
+acao LEGAL na mesa**, ja gerada e pontuada, cortada pelo piso estatico
+(`ACTION_SCORE_FLOOR`). Media de 1,2 jogadas deixadas pra tras, tipo play 7x e
+activate 5x. E onde morre o combo cujo primeiro passo parece ruim isolado.
+
+Dois portoes estaticos derrubados: (a) o piso nao encerra mais o turno sozinho,
+as acoes entram no shortlist e competem contra `PASS_ACTION`; (b) o filtro
+`acao[0] >= 0` do shortlist ganhou `permite_score_negativo`, senao a lista
+ficava vazia justamente nesses turnos. Quem encerra o turno agora e a BUSCA.
+
+DEPOIS: 6,5% (7/108) -- e os 7 restantes sao turnos em que a busca **avaliou e
+preferiu passar**, que e o comportamento desejado. A metrica do script nao
+distingue "nunca avaliada" de "avaliada e recusada", entao leia o numero novo
+com essa ressalva.
+
+O `_bank_idle_don_on_leader` (ultimo recurso de DON ocioso, blocos 592-594)
+morava no `break` do piso e foi movido pro ramo do `pass` -- sem isso ele
+sumiria em silencio.
+
+### 4. A prova de lethal passa a contar com [Trigger] -- bug de CORRECAO
+
+`_lethal_search` promete vitoria GARANTIDA e tinha **zero** mencoes a trigger
+(achado do usuario, bloco 778). Um trigger da vida do oponente KOa um atacante
+no meio da sequencia e a garantia cai.
+
+`_opp_trigger_pode_quebrar()`: o oponente ainda revela vida E o deck dele tem
+[Trigger] com acao que quebra a sequencia (`ko`, `bounce`, `trash_character`,
+`gain_life`, ...). Usa a COMPOSICAO do deck (`full_deck_codes`, novo -- decklist
+publicada e informacao legitima), **nunca** qual carta esta em qual vida. Deck
+desconhecido => assume risco: uma prova que se chama garantia nao pode chutar a
+favor de si mesma.
+
+**PREMISSA DECLARADA**: assume-se NO MAXIMO UM trigger disruptivo, custando UM
+hit (`target_hits += 1`). O pior caso real -- um trigger por carta de vida --
+tornaria lethal quase nunca provavel, e a licao do bloco 779 e que excesso de
+conservadorismo aqui TAMBEM custa partidas.
+
+Medido: declaracoes de lethal caem de **1786 pra 1367** (-23%) em 2 partidas.
+
+> **ESTE E O ITEM MAIS ARRISCADO DA LEVA.** E exatamente a familia em que o
+> bloco 779 consertou a conta e o bot passou a GANHAR MENOS (9x15), porque a
+> flag alimenta 7 comportamentos e um deles usava o erro como proxy de
+> agressividade. Por isso ganhou override POR JOGADOR (`lethal_ve_trigger`):
+> **o portao TEM que isolar este item**, nao medir tudo junto.
+
+### 5. Retreino a cada 3 partidas (pedido do bloco 778, item 3 da ordem dele)
+
+`treino_continuo --retreino-a-cada N` (default **3**). A geracao era UM
+subprocesso com o modelo congelado: das partidas 2 a N o bot jogava com o modelo
+velho. Agora e fatiada, e entre as fatias retreina **o modelo que DECIDE**.
+
+Isso exigiu uma correcao de alvo: o laco retreinava `value_net.joblib` (campeao
+do desenho SOMADO, peso 200), mas quem decide desde o bloco 785 e
+`value_net_aluno.joblib`, pela folha da busca. `gerar_selfplay_dataset` ganhou
+`--modelo-decide`, que seta `modelo_ordena_path` por jogador -- sem isso o
+gerador jogava sempre com o arquivo global e retreinar no meio nao mudava nada
+em quem estava jogando.
+
+Custo declarado: cada retreino le o corpus ACUMULADO inteiro. Com corpus grande
+o treino domina. `--retreino-a-cada 0` volta ao comportamento antigo.
+
+### 6. Restos do Monte Carlo e telemetria que mentia
+
+- Apagado o bloco de orcamento de amostras em `main_phase`
+  (`mc_samples_override`, `DEEP_REAL_SEARCH_*`, `OFFLINE_MC_*`,
+  `PLANNER_MC_SAMPLES`): calculado e nao lido por ninguem.
+- **Telemetria ao vivo corrigida**: `selection` dizia `counterfactual_search` e
+  `counterfactual_basis` dizia `sampled_opponent_model` -- descrevendo uma
+  amostragem que nao existe mais. Agora `busca_determinista` e
+  `rede_de_valor_na_folha`. O `OpponentModel` continua sendo construido porque
+  ainda MASCARA a mao do oponente, mas nao decide mais nada.
+- `_simulate_sequence_*`/`_play_turn_greedy` FICAM: deixaram de ser caminho de
+  decisao e ainda servem a camada barata (desligada) e o coletor contrafactual.
+
+**AVALIACAO INCREMENTAL (o "U" do NNUE) NAO foi feita, de proposito.** A
+necessidade medida sumiu: 11,3s por partida contra ~16s do baseline historico e
+36,9s de ontem. Fazer agora seria otimizar ao redor do ML sem necessidade
+medida, que e justamente o que a regra do projeto proibe. Volta pra mesa se
+profundidade/largura crescerem.
+
+### 7. `confirma_gen4.py` ENCERRADO por obsolescencia (nao foi confirmado)
+
+Ele duela `value_net.joblib` com `peso=200` -- o desenho em que o modelo era
+SOMADO a pontuacao. `VALUE_NET_WEIGHT` tem default 0,0 e, desde o bloco 785,
+quem decide e a busca com `value_net_aluno.joblib` na folha. Rodar os ~45 min
+confirmaria um numero que nao influencia o motor de hoje. Aviso escrito no topo
+do proprio script pra ninguem rodar por inercia.
+
+### 8. Estado e o que falta
+
+`smoke_fast`: **0 falhas**. Dois testes foram atualizados porque os defaults que
+eles trancavam mudaram a pedido do usuario -- o auto-jogo cego, e a precondicao
+de lethal do teste do Ground Death (que agora isola `lethal_ve_trigger=False`,
+senao passaria a medir trigger em vez de Ground Death).
+
+Tempo: **11,3s por partida**. Portao de 240 partidas ~45 min sequencial, ~22 min
+com 2 workers.
+
+**FALTA O ITEM 1: MEDIR.** Nada aqui passou por duelo. Sao 6 mudancas de
+comportamento empilhadas sem uma unica partida de evidencia, e uma delas (a do
+lethal) ja regrediu o motor uma vez quando foi consertada sem isolamento.
+
 ## 2026-09-13 (785) - **O MONTE CARLO SAIU.** E o substituto NUNCA tinha rodado: a chave da transposicao levantava TypeError e a busca devolvia None em 48 de 49 decisoes
 
 ### 1. O achado que muda a leitura do bloco 784

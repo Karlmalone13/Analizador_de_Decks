@@ -766,13 +766,17 @@ def choose_action(gs: GameState, opp_gs: GameState,
                         # primeira acao. A base deixa explicito o limite da prova.
                         result[0] = melhor
                         if trace_out is not None:
-                            trace_out["selection"] = (
-                                "counterfactual_search" if model is not None
-                                else "masked_public_line_search")
+                            # TELEMETRIA CORRIGIDA (bloco 785): com o Monte
+                            # Carlo fora, nao ha amostragem e o `model` de
+                            # oponente NAO entra mais na decisao -- continuar
+                            # reportando "counterfactual_search"/
+                            # "sampled_opponent_model" descreveria um mecanismo
+                            # que nao roda mais. A incerteza sobre o oponente
+                            # passou a ser trabalho da rede de valor na folha.
+                            trace_out["selection"] = "busca_determinista"
                             trace_out["search_values"] = search_records
                             trace_out["counterfactual_basis"] = (
-                                "sampled_opponent_model" if model is not None
-                                else "masked_public_state")
+                                "rede_de_valor_na_folha")
                             # Qual camada de fallback do opponent modeling
                             # produziu a amostragem (26/07) -- exposto pra
                             # auditar em partida real se o banco de decks
@@ -781,6 +785,11 @@ def choose_action(gs: GameState, opp_gs: GameState,
                             # pra algum meta especifico, sinal de que vale a
                             # pena enriquecer decklists_raw.csv com mais
                             # decks daquele arquetipo/cor.
+                            # Camada do fallback de opponent modeling. Fica
+                            # exposta porque o modelo ainda e construido e
+                            # usado pra MASCARAR a mao do oponente, mas ele
+                            # nao decide mais nada -- nao confundir esta linha
+                            # com "a busca amostrou o oponente".
                             trace_out["opponent_model_source"] = (
                                 opponent_model_source_for_leader(
                                     getattr(opp_gs.leader, 'code', ''),

@@ -1,4 +1,24 @@
-"""Confirmacao da geracao 4 com PARADA SEQUENCIAL (SPRT) -- bloco 761.
+"""OBSOLETO desde o bloco 785 -- NAO rode sem ler isto.
+
+Este script confirma a promocao da geracao 4 duelando `value_net.joblib` com
+`peso_camp=200`/`peso_desaf=200`, ou seja, no desenho em que o modelo era
+SOMADO a pontuacao com um peso. Esse desenho nao decide mais nada:
+
+  * `VALUE_NET_WEIGHT` tem default 0,0 em producao;
+  * desde o bloco 785 quem decide e a busca determinística com a rede na
+    FOLHA, e o modelo dela e `value_net_aluno.joblib` (`MODELO_ORDENA_PATH`),
+    nao `value_net.joblib`.
+
+Rodar os ~45 min confirmaria um numero que nao influencia o motor de hoje. A
+pendencia fica ENCERRADA por obsolescencia, nao por ter sido confirmada -- a
+geracao 4 nunca passou de evidencia sugestiva, e agora nao ha o que confirmar.
+
+O que substitui: o portao sobre a arquitetura ATUAL (busca determinística +
+aluno), com os knobs por jogador criados nos blocos 785.
+
+--- docstring original abaixo ---
+
+Confirmacao da geracao 4 com PARADA SEQUENCIAL (SPRT) -- bloco 761.
 
 Por que existe: a promocao da gen4 passou por MARGEM (11x3 em 14 pares
 decididos, Wilson 52,4% contra portao de 50%; 10x4 daria 45,4% e

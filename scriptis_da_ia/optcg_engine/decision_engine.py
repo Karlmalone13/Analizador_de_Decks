@@ -1184,9 +1184,17 @@ EXECUTA_LETHAL_CERTIFICADO = (
 # a Fase 0 e o BANCO DE LOGS HUMANOS e as partidas contra o usuario -- o
 # auto-jogo e cego pra este erro por construcao.
 #
-# Default DESLIGADO: muda comportamento de producao (regra do bloco 730).
+# LIGADO por default desde o bloco 785 (pedido do usuario). A Fase 0 existe pra
+# o modelo aprender NO MUNDO EM QUE VAI JOGAR: ao vivo a mao do oponente chega
+# mascarada (`hidden_information_masked`), e treinar num motor que le a mao real
+# e calibrar num mundo e jogar noutro. `OPTCG_AUTOJOGO_CEGO=0` volta ao
+# comportamento antigo -- existe pro A/B, nao como default.
+#
+# ATENCAO -- o portao SPRT NAO valida isto (armadilha registrada no plano):
+# bot-que-espia GANHA de bot-que-nao-espia, porque tem mais informacao. Quem
+# julga a Fase 0 e o banco de logs humanos e a partida contra o usuario.
 AUTO_JOGO_CEGO = (
-    os.environ.get('OPTCG_AUTOJOGO_CEGO', '0').strip() == '1')
+    os.environ.get('OPTCG_AUTOJOGO_CEGO', '1').strip() != '0')
 
 # ARVORE LARGA (bloco 783, Fase 3): quantas quantidades de DON ACIMA do que
 # empata com o alvo entram como candidatas separadas. Medido antes: 97,6% dos
@@ -1303,8 +1311,15 @@ def _modelo_escolhe_carta(me, opp, cartas, medida):
 # transposicao. Ver o CATALOGO DE METODOS no CLAUDE.md.
 # Profundidade em ACOES do proprio turno (nao em turnos).
 BUSCA_PROFUNDIDADE = int(os.environ.get('OPTCG_BUSCA_PROFUNDIDADE', '3') or 3)
-# Quantas linhas seguem por nivel (best-first, ideia do PVS).
+# Quantas linhas seguem por nivel (best-first de verdade desde o bloco 785).
 BUSCA_FEIXE = int(os.environ.get('OPTCG_BUSCA_FEIXE', '3') or 3)
+# Quantos filhos sao MATERIALIZADOS e pontuados PELO MODELO antes de escolher
+# quais `BUSCA_FEIXE` merecem recursao. Era implicito e igual a BUSCA_FEIXE --
+# isto e, os ramos abertos eram os 3 melhores pela pontuacao ESTATICA, e o
+# modelo so opinava na folha. O usuario apontou isso no bloco 778: "o ML julga
+# o DESTINO e a heuristica escolhe o CAMINHO", entao uma linha que comeca com
+# jogada aparentemente ruim nunca chegava a ser avaliada.
+BUSCA_LARGURA = int(os.environ.get('OPTCG_BUSCA_LARGURA', '6') or 6)
 
 MODELO_ORDENA_PATH = os.environ.get(
     'OPTCG_MODELO_ORDENA_PATH',
@@ -1318,6 +1333,14 @@ MODELO_ORDENA_PATH = os.environ.get(
 # existia. Reportar sempre como neutro -- nunca como vitoria.
 LETHAL_VE_MAO_OCULTA = (
     os.environ.get('OPTCG_LETHAL_MAO_OCULTA', '1').strip() != '0')
+
+# A prova de lethal passa a contar com [Trigger] da vida do oponente (bloco
+# 785; bug de CORRECAO achado pelo usuario no bloco 778). Override POR JOGADOR
+# via `lethal_ve_trigger` -- a prova alimenta 7 pontos do motor e ja houve um
+# caso (bloco 779) em que consertar a conta piorou o jogo porque um consumidor
+# usava o erro como proxy de agressividade. Sem override nao da pra isolar.
+LETHAL_VE_TRIGGER = (
+    os.environ.get('OPTCG_LETHAL_TRIGGER', '1').strip() != '0')
 try:
     from deck_profile import build_profile_from_codes as _build_profile_from_codes
 except Exception:
@@ -2197,6 +2220,15 @@ def populate_full_deck_knowledge(state: 'GameState', cards: list, leader_code: s
     QUALQUER deck, inclusive o do oponente durante a simulação do turno de
     resposta dele (USE_OPPONENT_RESPONSE_SEARCH).
     """
+    # CODIGOS do deck completo (bloco 785): composicao, nao ordem nem posicao
+    # -- e o que a prova de lethal precisa pra saber se existe [Trigger] capaz
+    # de quebrar a sequencia. Saber a COMPOSICAO do deck adversario e
+    # informacao legitima (decklist publicada); saber QUAL carta esta em QUAL
+    # vida nao seria, e nao e usado.
+    try:
+        state.full_deck_codes = [getattr(c, 'code', None) for c in cards]
+    except Exception:
+        state.full_deck_codes = None
     state.full_deck_census = deck_census(cards)
     # Achado real 10/08 (auditoria Sanji OP12-041, bloco 484): deck_census()
     # (deck_census.py) não pode importar get_card_flags daqui (import
@@ -12507,6 +12539,49 @@ class GameAnalyzer:
 
     # ── Análise de lethality ─────────────────────────────────────────────────
 
+    # Acoes de [Trigger] que quebram uma sequencia de lethal: ou tiram um
+    # atacante do caminho, ou empurram a vida pra cima.
+    _TRIGGER_QUEBRA_LETHAL = {
+        'ko', 'bounce', 'trash_character', 'place_opp_character_bottom_deck',
+        'place_opp_char_to_opp_life', 'gain_life', 'rest_opp_character',
+    }
+
+    def _opp_trigger_pode_quebrar(self) -> bool:
+        """O oponente ainda revela carta de vida E o deck dele tem [Trigger]
+        capaz de quebrar a sequencia?
+
+        BUG DE CORRECAO, achado pelo usuario (bloco 778): `_lethal_search`
+        promete vitoria GARANTIDA e nao olhava trigger nenhum -- um trigger da
+        vida do oponente KOa um atacante no meio da sequencia e a "garantia"
+        cai. Mesma familia dos bugs ja corrigidos em `opp_reactive_field_buffs`
+        (bloco 564) e em `opp_counter_chunks_for_lethal` (17/08).
+
+        Usa COMPOSICAO do deck (legitima, decklist publicada), nunca qual carta
+        esta em qual vida. Sem conhecer o deck, assume risco -- uma prova que
+        se chama garantia nao pode chutar a favor de si mesma.
+        """
+        try:
+            if self.opp.life_count() <= 0:
+                return False          # nao revela mais vida: trigger nao dispara
+        except Exception:
+            return True
+        codes = getattr(self.opp, 'full_deck_codes', None)
+        if not codes:
+            return True               # deck desconhecido => risco
+        for code in codes:
+            if not code:
+                continue
+            try:
+                ef = (get_card_effects(code) or {}).get('trigger')
+            except Exception:
+                ef = None
+            if not ef:
+                continue
+            for st in (ef.get('steps') or []):
+                if st.get('action') in self._TRIGGER_QUEBRA_LETHAL:
+                    return True
+        return False
+
     def can_lethal_this_turn(self) -> bool:
         ok, _alloc, _refs = self._lethal_search()
         return ok
@@ -12601,6 +12676,25 @@ class GameAnalyzer:
         n_blockers = len(self.opp.blockers_active())
         don_total = max(0, self.me.don_available)
         target_hits = opp_life + 1 if opp_life > 0 else 1
+
+        # [TRIGGER] DA VIDA DO OPONENTE (bloco 785). Cada carta de vida que ele
+        # toma pode virar um trigger que KOa um atacante no meio da sequencia,
+        # e a "garantia" desta funcao ignorava isso por completo -- ZERO
+        # mencoes a trigger no corpo inteiro, achado do usuario (bloco 778).
+        #
+        # PREMISSA DECLARADA, porque ela nao e gratuita: assume-se NO MAXIMO UM
+        # trigger disruptivo na sequencia, e ele custa UM hit. O pior caso
+        # verdadeiro (um trigger por carta de vida revelada) tornaria lethal
+        # quase nunca provavel -- e a licao do bloco 779 e que excesso de
+        # conservadorismo aqui tambem custa partidas, porque a flag alimenta 7
+        # comportamentos, nao so "atacar pra fechar".
+        #
+        # O ultimo hit nao conta: com 0 de vida, tomar dano e derrota e nenhuma
+        # carta de vida e revelada, entao ele nao gera trigger.
+        if (opp_life > 0
+                and getattr(self.me, 'lethal_ve_trigger', LETHAL_VE_TRIGGER)
+                and self._opp_trigger_pode_quebrar()):
+            target_hits += 1
 
         # PODA DE IMPOSSIBILIDADE (bloco 757) -- provavelmente correta, nao
         # heuristica: `hits_after_best_defense` devolve a soma dos hits de um
@@ -18340,7 +18434,8 @@ class OPTCGMatch:
                                    min_candidates=SEARCH_MIN_CANDIDATES,
                                    score_window=SEARCH_SCORE_WINDOW,
                                    cheap_values=None,
-                                   ordenada_pelo_modelo=False):
+                                   ordenada_pelo_modelo=False,
+                                   permite_score_negativo=False):
         """
         Recorta, a partir da lista COMPLETA de ações pontuadas
         (`_generate_and_score_actions`, ordenada por score desc), quais
@@ -18370,11 +18465,16 @@ class OPTCGMatch:
         def _norm(acao):
             return acao[0] / KIND_SCORE_SCALE.get(acao[1], 1.0)
 
+        # `permite_score_negativo` (bloco 785): quando TODAS as acoes do turno
+        # pontuaram abaixo do piso, o filtro `>= 0` esvaziava o shortlist e a
+        # jogada nunca era avaliada. Nesses turnos as negativas entram e
+        # disputam com `PASS_ACTION` -- quem decide passar e a busca.
+        _piso_score = (float('-inf') if permite_score_negativo else 0)
         actions_norm = sorted(actions, key=_norm, reverse=True)
         top_score = _norm(actions_norm[0])
         candidatas = [
             acao for idx, acao in enumerate(actions_norm[:top_k])
-            if acao[0] >= 0
+            if acao[0] >= _piso_score
             and (idx < min_candidates or _norm(acao) >= top_score - score_window)
         ]
         # QUANDO O MODELO ORDENOU, e ele quem diz QUEM entra (bloco 785).
@@ -18394,7 +18494,8 @@ class OPTCGMatch:
         # tres medicoes independentes). Aqui muda QUEM ocupa as vagas, nao
         # QUANTAS existem -- a troca e custo-neutra.
         if ordenada_pelo_modelo:
-            candidatas = [a for a in actions if a[0] >= 0][:len(candidatas)]
+            candidatas = [a for a in actions
+                          if a[0] >= _piso_score][:len(candidatas)]
         # Garante diversidade de KIND na comparacao -- generalizado 22/08
         # (bloco 639, pedido do usuario, seguindo a pista do censo do
         # bloco 635/638): antes so rodava com priority=='REMOVE_THREAT'
@@ -18619,7 +18720,17 @@ class OPTCGMatch:
             except Exception:
                 acts = []
             melhor = v          # PASSAR e sempre uma opcao: nunca piora
-            for a in acts[:BUSCA_FEIXE]:
+            # QUEM ABRE O RAMO E O MODELO (bloco 785). Materializa ate
+            # `BUSCA_LARGURA` filhos, pontua CADA UM pelo estado que ele
+            # produz, e so entao recursa nos `BUSCA_FEIXE` melhores.
+            #
+            # Antes: `acts[:BUSCA_FEIXE]` -- os ramos abertos eram o topo da
+            # pontuacao ESTATICA e o modelo so via a folha. O custo extra e
+            # so o `apply` dos filhos que nao serao recursados: o `win_prob`
+            # do filho ja seria pago na primeira linha de `_valor`, e o memo
+            # (chave = vetor de features) devolve o mesmo numero.
+            filhos = []
+            for a in acts[:BUSCA_LARGURA]:
                 try:
                     p2, o2 = _clona(pa, oa)
                     a2 = self._remap_action(a, pa, p2, oa, o2)
@@ -18628,13 +18739,23 @@ class OPTCGMatch:
                     e2 = DecisionEngine(p2, o2)
                     ee2 = EffectExecutor(p2, o2)
                     if self._apply_action(a2, p2, o2, ee2, e2, verbose=False):
-                        melhor = 1.0
+                        filhos = None       # vitoria: nada supera
                         break
-                    sub = _valor(p2, o2, prof - 1)
-                    if sub is not None and sub > melhor:
-                        melhor = sub
+                    fv = _vn.win_prob(p2, o2, bundle=bundle)
+                    filhos.append((fv if fv is not None else -1.0, p2, o2))
                 except Exception:
                     continue
+            if filhos is None:
+                melhor = 1.0
+            else:
+                filhos.sort(key=lambda t: -t[0])
+                for _fv, p2, o2 in filhos[:BUSCA_FEIXE]:
+                    try:
+                        sub = _valor(p2, o2, prof - 1)
+                        if sub is not None and sub > melhor:
+                            melhor = sub
+                    except Exception:
+                        continue
             if ch is not None:
                 trans[(ch, prof)] = melhor
             return melhor
@@ -21009,7 +21130,20 @@ class OPTCGMatch:
             # contagem e o teto aritmetico do `play` (match de conjunto
             # exato nao passa dela). Este e o unico ponto de parada do
             # laco -- expor era pre-requisito pra atacar aquele numero.
-            if not actions or actions[0][0] < _k.get('ACTION_SCORE_FLOOR'):
+            # BLOCO 785 -- "o que nao vira candidata nao existe" (pedido do
+            # usuario, 12/09). O piso ESTATICO encerrava o turno sozinho:
+            # medido com `mede_geracao.py`, **10,3% dos turnos (12/116)
+            # terminavam com acao LEGAL na mesa**, ja gerada e pontuada, media
+            # de 1,2 jogadas deixadas pra tras (play 7x, activate 5x). E onde
+            # morre o combo cujo primeiro passo parece ruim isolado.
+            #
+            # Agora quem encerra e a BUSCA: essas acoes entram no shortlist e
+            # competem contra `PASS_ACTION`, que ja e candidata desde o bloco
+            # 656. Se o modelo achar que passar e melhor, o turno acaba do
+            # mesmo jeito -- a diferenca e que a jogada chegou a ser AVALIADA.
+            _abaixo_do_piso = bool(actions) and actions[0][0] < _k.get(
+                'ACTION_SCORE_FLOOR')
+            if not actions:
                 # Ultimo recurso ANTES de encerrar o turno: banca DON ocioso
                 # no proprio lider pra um ataque futuro (achado real 17/08,
                 # blocos 592-594). So chega aqui quando `_generate_and_
@@ -21163,13 +21297,16 @@ class OPTCGMatch:
                 min_candidates=(self.search_top_k_override
                                 if self.search_top_k_override is not None
                                 else SEARCH_MIN_CANDIDATES),
-                ordenada_pelo_modelo=_ordenou_modelo)
+                ordenada_pelo_modelo=_ordenou_modelo,
+                permite_score_negativo=_abaixo_do_piso)
             # bloco 656: "encerrar o turno agora" entra como CANDIDATA e
             # compete na busca -- ver comentario de PASS_ACTION. Nao entra em
             # LETHAL (fechar a partida vem antes de qualquer economia de
             # recurso) nem quando a lista ja esta vazia (o `break` de cima ja
             # cobre "nao ha nada a fazer").
             if candidatas and priority != 'LETHAL':
+                candidatas = list(candidatas) + [PASS_ACTION]
+            elif _abaixo_do_piso and candidatas:
                 candidatas = list(candidatas) + [PASS_ACTION]
             if len(candidatas) == 1:
                 melhor_acao = candidatas[0]
@@ -21185,44 +21322,11 @@ class OPTCGMatch:
                     return True
                 continue
 
-            model = self.model_for_a if p is self.state_a else self.model_for_b
-            # mesmo corte de custo do TOP_K acima (ver comentario la): S≈3 com
-            # a busca de resposta ligada, S=6 (ja validado) sem ela.
-            #
-            # Amostragem ADAPTATIVA (piso/teto, ver OFFLINE_MC_SAMPLES_MIN/
-            # MAX/BATCH acima) quando USE_OPPONENT_RESPONSE_SEARCH=True --
-            # mesmo mecanismo de early-stop estatistico (CRN pareado) ja
-            # calibrado no caminho ao vivo, so com piso/teto menores pro
-            # regime de THROUGHPUT do offline (ate 30 sub-decisoes/turno,
-            # muitos turnos, muitas partidas de calibracao). Achado 10/08
-            # (pedido do usuario, custo medido em +7.2% de tempo total pra
-            # ganhar precisao nas decisoes ambiguas -- ver comentario da
-            # constante). Flag desligada continua no N FIXO de sempre
-            # (PLANNER_MC_SAMPLES=6, nao investigado nesta sessao).
-            if self.mc_samples_override is not None:
-                # bloco 05/09: override explicito de instancia (ver
-                # docstring de __init__) -- checado ANTES das flags globais
-                # de proposito, pra `/hand-stats` conseguir uma partida
-                # rapida sem depender de mudar comportamento padrao pra
-                # qualquer outro chamador (todos os outros passam None).
-                samples_min, samples_max, batch_size = self.mc_samples_override
-            elif USE_DEEP_REAL_SEARCH:
-                # Bloco 524: piso/teto bem maiores, MESMA busca real (nao
-                # e um motor novo) -- so pra medicao offline, ver comentario
-                # da constante.
-                samples_min = DEEP_REAL_SEARCH_SAMPLES_MIN
-                samples_max = DEEP_REAL_SEARCH_SAMPLES_MAX
-                batch_size = DEEP_REAL_SEARCH_SAMPLES_BATCH
-            elif USE_OPPONENT_RESPONSE_SEARCH:
-                samples_min = OFFLINE_MC_SAMPLES_MIN
-                samples_max = OFFLINE_MC_SAMPLES_MAX
-                batch_size = OFFLINE_MC_SAMPLES_BATCH
-            else:
-                samples_min = samples_max = batch_size = PLANNER_MC_SAMPLES
-            # rng=random (modulo, nao random.Random() novo) -- achado 26/07:
-            # random.Random() semeia do SO/relogio, ignora random.seed() e
-            # tornava main_phase() nao-reprodutivel mesmo com seed fixo
-            # (ver opponent_model.py.sample() docstring).
+            # O `model` de oponente e todo o orcamento de amostras
+            # (`mc_samples_override`, DEEP_REAL_SEARCH_*, OFFLINE_MC_*,
+            # PLANNER_MC_SAMPLES) sairam com o Monte Carlo no bloco 785 -- a
+            # busca determinística nao amostra nada, entao nao ha piso, teto
+            # nem parada sequencial pra configurar.
             melhor_acao, melhor_valor, _records, _n_amostras, sim_values = (
                 self._select_action_via_search(p, opp, engine, candidatas))
 
@@ -21240,6 +21344,13 @@ class OPTCGMatch:
                 # qualquer acao disponivel -- encerra o turno, nao executa nada
                 if verbose:
                     print('  [90mpassa (busca preferiu nao agir)[0m')
+                # Ultimo recurso ANTES de encerrar (blocos 592-594): banca DON
+                # ocioso no lider pra um ataque futuro. Vivia no `break` do
+                # piso estatico, que deixou de encerrar o turno no bloco 785 --
+                # sem mover pra ca, ele sumiria em silencio nos turnos em que
+                # agora e a busca quem decide parar.
+                if self._bank_idle_don_on_leader(p, opp, engine, verbose=verbose):
+                    continue
                 break
             # bloco 681: alimenta o modelo de CONTAGEM da politica
             if melhor_acao[1] == 'play': _plays_feitos += 1

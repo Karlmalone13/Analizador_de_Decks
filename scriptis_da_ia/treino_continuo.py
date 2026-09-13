@@ -79,6 +79,10 @@ RAIZ = Path(__file__).parent
 CAMPEAO = RAIZ / 'metrics' / 'value_net.joblib'
 DESAFIANTE = RAIZ / 'metrics' / 'value_net_desafiante.joblib'
 CORPUS = RAIZ / 'metrics' / 'selfplay_dataset.jsonl'
+# O modelo que DECIDE (folha da busca determinística, bloco 785). E ele que
+# precisa ser retreinado no meio da geracao -- `CAMPEAO`/`DESAFIANTE` sao do
+# desenho antigo, em que o modelo era somado a pontuacao com um peso.
+ALUNO = RAIZ / 'metrics' / 'value_net_aluno.joblib'
 HISTORICO = RAIZ / 'metrics' / 'treino_continuo' / 'historico.json'
 
 
@@ -374,6 +378,11 @@ def main() -> None:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--geracoes', type=int, default=3)
     ap.add_argument('--partidas', type=int, default=100, help='partidas geradas por geracao')
+    ap.add_argument('--retreino-a-cada', dest='retreino_a_cada', type=int, default=3,
+                    help='retreina o modelo que DECIDE a cada N partidas geradas '
+                         '(pedido do usuario, bloco 778: "a cada 3 partidas", com a '
+                         'ressalva dele de que 3 e nao 1 da margem de erro). '
+                         '0 = retreina so no fim da geracao, como era ate o bloco 784.')
     ap.add_argument('--duelos', type=int, default=40, help='partidas do portao campeao x desafiante')
     ap.add_argument('--workers', type=int, default=__import__('multiprocessing').cpu_count() - 3)
     ap.add_argument('--peso', type=float, default=200.0,
@@ -417,11 +426,38 @@ def main() -> None:
         peso_gerar = args.peso if tem_campeao else 0.0
         print(f'[1/4] GERA {args.partidas} partidas '
               f'(campeao {"ligado, peso " + str(peso_gerar) if tem_campeao else "inexistente -- motor puro"})')
-        ok = _rodar(['gerar_selfplay_dataset.py', '--n', str(args.partidas),
-                     '--workers', str(args.workers), '--decks', str(args.decks),
-                     '--seed', str(seed_gen), '--gen', str(gen),
-                     '--weight', str(peso_gerar), '--model', str(CAMPEAO),
-                     '--append', '--out', str(CORPUS)], 'geracao de partidas')
+        # RETREINO NO MEIO DA GERACAO (bloco 785, pedido do bloco 778). Ate
+        # aqui a geracao inteira era UM subprocesso com o modelo congelado:
+        # das partidas 2 a N o bot jogava com o modelo velho, e so no fim ele
+        # aprendia. Agora a geracao e fatiada e o modelo que DECIDE e
+        # retreinado entre as fatias -- cada fatia joga com o que a anterior
+        # aprendeu.
+        #
+        # CUSTO, pra ninguem se surpreender: cada retreino le o corpus
+        # ACUMULADO inteiro. Com corpus grande o treino domina o tempo da
+        # geracao -- `--retreino-a-cada 0` volta ao comportamento antigo.
+        passo = args.retreino_a_cada if args.retreino_a_cada > 0 else args.partidas
+        feitas = 0
+        ok = True
+        while feitas < args.partidas:
+            n_fatia = min(passo, args.partidas - feitas)
+            ok = _rodar(['gerar_selfplay_dataset.py', '--n', str(n_fatia),
+                         '--workers', str(args.workers), '--decks', str(args.decks),
+                         '--seed', str(seed_gen + feitas), '--gen', str(gen),
+                         '--weight', str(peso_gerar), '--model', str(CAMPEAO),
+                         '--modelo-decide', str(ALUNO),
+                         '--append', '--out', str(CORPUS)],
+                        f'geracao de partidas ({feitas + n_fatia}/{args.partidas})')
+            if not ok:
+                break
+            feitas += n_fatia
+            if feitas < args.partidas:
+                # retreina QUEM DECIDE, nao o desafiante do portao
+                if not _rodar(['treinar_value.py', '--dataset', str(CORPUS),
+                               '--out', str(ALUNO)],
+                              f'retreino do modelo que decide ({feitas} partidas)'):
+                    ok = False
+                    break
         if not ok:
             break
 

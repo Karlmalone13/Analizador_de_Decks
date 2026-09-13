@@ -108,11 +108,12 @@ def _run_one_match(task) -> list:
     Cada processo carrega o proprio banco -- sem estado global
     compartilhado, igual `audit_replay._run_one_match`."""
     # 6o elemento OPCIONAL (bloco 767): epsilon de EXPLORACAO.
-    if len(task) == 8:
+    if len(task) == 9:
         (i, match_seed, peso, modelo_path, geracao, eps, pos_acao,
-         ml_avaliador) = task
+         ml_avaliador, modelo_decide) = task
     else:
         i, match_seed, peso, modelo_path, geracao = task
+        modelo_decide = None
         eps, pos_acao, ml_avaliador = 0.0, False, False
     deck_list = _load_deck_list()
     rng = random.Random(match_seed)
@@ -138,6 +139,16 @@ def _run_one_match(task) -> list:
     # o modelo foi usado COM ele -- treino e uso em distribuicoes
     # diferentes. Aqui cada geracao aprende sobre os estados que ela mesma
     # produz, que e a correcao classica desse problema.
+    # QUAL MODELO DECIDE (bloco 785). Desde que o Monte Carlo saiu, quem
+    # decide e a busca determinística com a rede na folha, e o modelo dela vem
+    # de `modelo_ordena_path` -- NAO de `value_net_path`/`value_net_weight`,
+    # que sao do desenho antigo (modelo somado a pontuacao, peso default 0,0).
+    # Sem passar isto, o gerador jogava sempre com o arquivo global, e
+    # retreinar no meio do laco nao mudava nada em quem estava jogando.
+    if modelo_decide:
+        for estado in (match.state_a, match.state_b):
+            estado.modelo_ordena_path = modelo_decide
+
     if peso:
         for estado in (match.state_a, match.state_b):
             estado.value_net_weight = peso
@@ -246,6 +257,9 @@ def main() -> None:
     ap.add_argument('--weight', type=float, default=0.0,
                     help='peso do valor aprendido nas partidas GERADAS '
                          '(0 = motor sem modelo, geracao 0)')
+    ap.add_argument('--modelo-decide', dest='modelo_decide', default=None,
+                    help='modelo que DECIDE (folha da busca determinística). '
+                         'Default: o arquivo global MODELO_ORDENA_PATH.')
     ap.add_argument('--model', default=None,
                     help='modelo usado pra gerar (default: o de value_net.MODEL_PATH)')
     ap.add_argument('--ml-avaliador', dest='ml_avaliador', action='store_true',
@@ -271,7 +285,7 @@ def main() -> None:
     args = ap.parse_args()
 
     tasks = [(i, args.seed * 1_000_003 + i, args.weight, args.model, args.gen,
-              args.explorar, args.pos_acao, args.ml_avaliador)
+              args.explorar, args.pos_acao, args.ml_avaliador, args.modelo_decide)
              for i in range(args.n)]
     print(f'[selfplay] {args.n} partidas, seed={args.seed}, workers={args.workers}, '
           f'gen={args.gen}, peso={args.weight}, explorar={args.explorar}')
