@@ -163,6 +163,67 @@ visivel**.
 
 ---
 
+## 2026-09-14 (836) - Duas partidas novas: a auditoria rodou SOZINHA e os dois achados REPRODUZIRAM -- deixam de ser suspeita e viram padrao
+
+Primeiro fechamento com tudo ligado. O usuario jogou 2 partidas; nada foi feito
+a mao.
+
+### Funcionou ponta a ponta, sem intervencao
+
+```
+[COLETA-Q] 117 alvos da partida AO VIVO (origem=Arthur_Trabalho_simulador)
+[COLETA-Q] 103 alvos da partida AO VIVO
+[AUTO-COLLECT][ATENCAO] 4 efeito(s) DISPARARAM e NAO concluiram
+[AUTO-COLLECT][ATENCAO] 8 efeito(s) DISPARARAM e NAO concluiram
+```
+
+Corpus: **697.709 -> 698.222** (+513). `Arthur_Trabalho_simulador` em **743**.
+
+### 1. O ENEL REPRODUZIU -- turnos 2, 3 e 4 de novo
+
+```
+P1 turno 2/3/4   OP15-058   activate_main   alvo=sim  -> NAO
+   porque: confirmado, mas NADA mudou no proprio lado
+```
+
+Em partida DIFERENTE, com log diferente, o mesmo padrao: a habilidade do lider
+ativa, o jogo **confirma**, e o estado nao muda. **Reproducao em partida
+independente tira isso do terreno de "suspeita"** -- e bug de comportamento, nao
+coincidencia de uma partida.
+
+### 2. A DEFESA CONTINUA EM ZERO -- e agora o `trigger` tambem
+
+```
+fase          ACEITOU  RECUSOU  sem opcao
+counter             0       36          9
+blocker             0        4         40
+trigger             0       16          0
+reaction           22        7          0
+optional           15        8          0
+```
+
+`counter` **0 de 45** e `blocker` **0 de 44** -- consistente com a sessao
+anterior (0/114 e 0/108). E o `trigger` apareceu agora em **0 de 16**, o que
+antes estava em 8/38: piorou ou e outro matchup, **nao investigado**.
+
+Ja sao duas sessoes independentes dizendo que **o bot nao se defende nunca**.
+Somado ao que o `CLAUDE.md` ja registrava (a defesa e heuristica fixa, zero
+consultas ao modelo), o quadro fecha: nao e o modelo escolhendo mal, e a regra
+fixa nunca aceitando.
+
+### Prioridade que isto estabelece
+
+Sao **22% das decisoes do jogo** e determinam se o bot toma dano. Com
+reproducao em duas sessoes, e o achado mais caro em aberto do projeto --
+acima de qualquer ajuste de treino, porque nenhum modelo melhor alcanca uma
+resposta que nunca e aceita.
+
+**Nenhuma das duas causas foi investigada** (creditos da sessao no fim). As
+duas tem ponto de partida claro: pro Enel, `_execute_step` do `activate_main`
+do OP15-058; pra defesa, `should_use_counter`/`_should_use_blocker_inner`.
+
+---
+
 ## 2026-09-14 (835) - A 3a familia que faltava: os REATIVOS (`on_ko` e cia). O usuario conferiu o banco e estava certo pela TERCEIRA vez
 
 Ele: *"confira no nosso projeto porque tem mais efeitos, 'on ko' etc"*. Conferido

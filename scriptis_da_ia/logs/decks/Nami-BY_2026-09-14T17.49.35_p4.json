@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "code": "EB04-058",
+      "name": "EB04-058",
+      "count": 3
+    },
+    {
+      "code": "OP06-104",
+      "name": "Kikunojo",
+      "count": 2
+    },
+    {
+      "code": "OP06-106",
+      "name": "OP06-106",
+      "count": 2
+    },
+    {
+      "code": "OP16-119",
+      "name": "Marshall D. Teach",
+      "count": 2
+    },
+    {
+      "code": "OP13-042",
+      "name": "Edward Newgate",
+      "count": 1
+    },
+    {
+      "code": "OP11-106",
+      "name": "Zeus",
+      "count": 1
+    },
+    {
+      "code": "OP16-056",
+      "name": "OP16-056",
+      "count": 1
+    },
+    {
+      "code": "OP15-114",
+      "name": "OP15-114",
+      "count": 1
+    },
+    {
+      "code": "OP14-111",
+      "name": "Perona",
+      "count": 1
+    },
+    {
+      "code": "OP14-110",
+      "name": "OP14-110",
+      "count": 1
+    },
+    {
+      "code": "OP14-104",
+      "name": "OP14-104",
+      "count": 1
+    },
+    {
+      "code": "OP14-102",
+      "name": "OP14-102",
+      "count": 1
+    },
+    {
+      "code": "EB03-053",
+      "name": "EB03-053",
+      "count": 1
+    }
+  ],
+  "total_seen": 18,
+  "leader": "OP11-041"
+}

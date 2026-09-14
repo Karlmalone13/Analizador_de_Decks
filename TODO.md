@@ -1,6 +1,6 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 14 de setembro de 2026 (bloco 835)
+**Última atualização:** 14 de setembro de 2026 (bloco 836)
 
 > **Escopo deste arquivo** (revisto em 12/09/2026): lista VIVA — o que
 > está aberto e o fluxo recente (setembro/2026, blocos 748-779). O
@@ -33,6 +33,26 @@
 > CPU x CPU achar o bug do Shiki que o auto-jogo jamais acharia.
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
+
+> **2 PARTIDAS NOVAS -- OS DOIS ACHADOS REPRODUZIRAM (14/09/2026, bloco 836)**:
+> tudo automatico, nada a mao. Corpus 697.709 -> **698.222** (+513, total 743
+> de `Arthur_Trabalho_simulador`). A auditoria de efeitos rodou sozinha e
+> alertou nas duas partidas.
+>
+> **1. O ENEL (OP15-058) reproduziu** em partida DIFERENTE, turnos 2/3/4: ativa,
+> o jogo CONFIRMA, nada muda. Reproducao independente **tira de "suspeita" e
+> torna bug de comportamento**.
+>
+> **2. A defesa segue em ZERO**: `counter` 0/45, `blocker` 0/44 (antes 0/114 e
+> 0/108). E `trigger` apareceu **0 de 16** (antes 8/38) -- piorou ou e outro
+> matchup, NAO investigado. **Duas sessoes independentes** dizendo que o bot
+> nao se defende nunca; somado a defesa ser heuristica fixa sem consulta ao
+> modelo, o quadro fecha.
+>
+> **PRIORIDADE**: 22% das decisoes, define se o bot toma dano. **Achado mais
+> caro em aberto.** Pontos de partida: Enel -> `_execute_step` do
+> `activate_main` de OP15-058; defesa -> `should_use_counter` /
+> `_should_use_blocker_inner`.
 
 > **3a FAMILIA: OS REATIVOS (14/09/2026, bloco 835)**: `on_ko` e cia. O usuario
 > mandou conferir o banco e estava certo -- **30 familias de gatilho**, `on_ko`

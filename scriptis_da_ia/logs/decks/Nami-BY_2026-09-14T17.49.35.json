@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "EB03-055",
+      "name": "EB03-055",
+      "count": 3
+    },
+    {
+      "code": "OP16-056",
+      "name": "Mr. 3 (Galdino)",
+      "count": 3
+    },
+    {
+      "code": "OP06-106",
+      "name": "Kouzuki Hiyori",
+      "count": 2
+    },
+    {
+      "code": "OP14-102",
+      "name": "Kumacy",
+      "count": 2
+    },
+    {
+      "code": "OP14-111",
+      "name": "Perona",
+      "count": 2
+    },
+    {
+      "code": "EB03-053",
+      "name": "Nami",
+      "count": 2
+    },
+    {
+      "code": "OP15-113",
+      "name": "OP15-113",
+      "count": 1
+    },
+    {
+      "code": "OP14-110",
+      "name": "OP14-110",
+      "count": 1
+    },
+    {
+      "code": "OP14-104",
+      "name": "OP14-104",
+      "count": 1
+    },
+    {
+      "code": "PRB02-008",
+      "name": "PRB02-008",
+      "count": 1
+    },
+    {
+      "code": "EB04-058",
+      "name": "EB04-058",
+      "count": 1
+    },
+    {
+      "code": "OP06-058",
+      "name": "OP06-058",
+      "count": 1
+    }
+  ],
+  "total_seen": 20,
+  "leader": "OP11-041"
+}

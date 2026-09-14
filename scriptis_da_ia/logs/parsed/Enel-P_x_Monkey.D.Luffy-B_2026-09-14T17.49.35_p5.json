@@ -1,0 +1,1323 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Enel",
+          "code": "OP15-058"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Monkey D. Luffy",
+          "code": "OP17-079"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 10,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-067",
+          "card_name": "Shura",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-074",
+            "OP15-061",
+            "OP15-061",
+            "OP15-061",
+            "OP15-067"
+          ],
+          "board": [
+            "OP15-067"
+          ],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP12-063",
+            "OP15-066",
+            "OP15-074",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "don_deck": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-074",
+            "OP15-061",
+            "OP15-061",
+            "OP15-061",
+            "OP15-067"
+          ],
+          "trash": [],
+          "board": [
+            "OP15-067"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-080",
+          "card_name": "Usopp",
+          "effects": [
+            "<b>Reveal and Draw Usopp [\"OP17-080\">OP17-080]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-094",
+            "OP17-093",
+            "OP17-098",
+            "OP17-085",
+            "OP17-086",
+            "OP17-080"
+          ],
+          "board": [
+            "OP17-080"
+          ],
+          "trash": [
+            "OP17-089",
+            "OP17-097"
+          ],
+          "life": 5,
+          "deck": [
+            "OP17-081",
+            "OP17-084",
+            "OP17-091",
+            "OP17-095",
+            "OP17-096",
+            "OP17-119"
+          ],
+          "life_cards": [
+            "OP17-086",
+            "OP17-088",
+            "OP17-089",
+            "OP17-094",
+            "OP17-097"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-080": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-074",
+            "OP15-061",
+            "OP15-061",
+            "OP15-061",
+            "OP15-067"
+          ],
+          "trash": [],
+          "board": [
+            "OP15-067"
+          ],
+          "life": 5,
+          "life_cards": [
+            "OP12-063",
+            "OP15-066",
+            "OP15-074",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "don_deck": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Monkey D. Luffy [\"OP17-079\">OP17-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP12-071",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Mamaragan [\"OP15-078\">OP15-078]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-061",
+          "card_name": "Ohm",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-077",
+          "card_name": "Lightning Dragon",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-074",
+            "OP15-061",
+            "OP15-061",
+            "OP15-067",
+            "OP15-078",
+            "OP15-078"
+          ],
+          "board": [
+            "OP15-067",
+            "OP12-071",
+            "OP15-061"
+          ],
+          "trash": [
+            "OP15-077"
+          ],
+          "life": 5,
+          "deck": [
+            "OP15-067",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "life_cards": [
+            "OP12-063",
+            "OP15-066",
+            "OP15-074",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "don_deck": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP12-071": 1,
+            "OP15-061": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-094",
+            "OP17-093",
+            "OP17-098",
+            "OP17-085",
+            "OP17-086",
+            "OP17-080",
+            "OP17-097"
+          ],
+          "trash": [
+            "OP17-089",
+            "OP17-097"
+          ],
+          "board": [
+            "OP17-080"
+          ],
+          "life": 4,
+          "deck": [
+            "OP17-081",
+            "OP17-084",
+            "OP17-091",
+            "OP17-095",
+            "OP17-096",
+            "OP17-119"
+          ],
+          "life_cards": [
+            "OP17-086",
+            "OP17-088",
+            "OP17-089",
+            "OP17-094"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-080": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-086",
+          "card_name": "Nami",
+          "effects": [
+            "Trash Dorry [\"OP17-085\">OP17-085]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP17-079",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-081",
+          "card_name": "Gerd",
+          "effects": [
+            "Trash Instead I'll Feed on this Rage! [\"OP17-097\">OP17-097]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Usopp",
+          "attacker_code": "OP17-080",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-061"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-094",
+            "OP17-093",
+            "OP17-098",
+            "OP17-080",
+            "OP17-093",
+            "OP17-119",
+            "OP17-089"
+          ],
+          "board": [
+            "OP17-080",
+            "OP17-086",
+            "OP17-081"
+          ],
+          "trash": [
+            "OP17-097",
+            "OP17-085",
+            "OP17-097"
+          ],
+          "life": 4,
+          "deck": [
+            "OP17-084",
+            "OP17-091",
+            "OP17-095",
+            "OP17-096"
+          ],
+          "life_cards": [
+            "OP17-086",
+            "OP17-088",
+            "OP17-089",
+            "OP17-094"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-080": 1,
+            "OP17-086": 1,
+            "OP17-081": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-074",
+            "OP15-061",
+            "OP15-067",
+            "OP15-078",
+            "OP15-078",
+            "OP12-063"
+          ],
+          "trash": [
+            "OP15-077",
+            "OP15-061"
+          ],
+          "board": [
+            "OP15-067",
+            "OP12-071",
+            "OP15-061"
+          ],
+          "life": 4,
+          "deck": [
+            "OP15-067",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "life_cards": [
+            "OP15-066",
+            "OP15-074",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "don_deck": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP12-071": 1,
+            "OP15-061": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-067",
+          "card_name": "Shura",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Monkey D. Luffy [\"OP17-079\">OP17-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-061",
+          "to_name": "Ohm",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Ohm",
+          "attacker_code": "OP15-061",
+          "target": "Monkey D. Luffy [\"OP17-079\">OP17-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-061",
+          "card_name": "Ohm",
+          "effects": [
+            "Buff Gerd [\"OP17-081\">OP17-081] -1000"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-074",
+            "OP15-061",
+            "OP15-078",
+            "OP15-078",
+            "OP12-063",
+            "OP12-063",
+            "OP15-077"
+          ],
+          "board": [
+            "OP15-067",
+            "OP12-071",
+            "OP15-061",
+            "OP15-067"
+          ],
+          "trash": [
+            "OP15-077",
+            "OP15-061"
+          ],
+          "life": 4,
+          "deck": [
+            "OP15-067",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "life_cards": [
+            "OP15-066",
+            "OP15-074",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP15-061": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-094",
+            "OP17-093",
+            "OP17-098",
+            "OP17-080",
+            "OP17-093",
+            "OP17-119",
+            "OP17-089",
+            "OP17-089"
+          ],
+          "trash": [
+            "OP17-097",
+            "OP17-085",
+            "OP17-097"
+          ],
+          "board": [
+            "OP17-080",
+            "OP17-086",
+            "OP17-081"
+          ],
+          "life": 3,
+          "deck": [
+            "OP17-084",
+            "OP17-091",
+            "OP17-095",
+            "OP17-096"
+          ],
+          "life_cards": [
+            "OP17-086",
+            "OP17-088",
+            "OP17-094"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-080": 1,
+            "OP17-086": 1,
+            "OP17-081": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-089",
+          "card_name": "Jaguar D. Saul",
+          "effects": [
+            "<b>Reveal and Draw Roronoa Zoro [\"OP17-095\">OP17-095]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Usopp",
+          "attacker_code": "OP17-080",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-061"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP17-079",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-081",
+          "to_name": "Gerd",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Gerd",
+          "attacker_code": "OP17-081",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Nami",
+          "attacker_code": "OP17-086",
+          "target": "Ohm [\"OP15-061\">OP15-061]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-094",
+            "OP17-093",
+            "OP17-098",
+            "OP17-080",
+            "OP17-093",
+            "OP17-119",
+            "OP17-089",
+            "OP17-084",
+            "OP17-095"
+          ],
+          "board": [
+            "OP17-080",
+            "OP17-086",
+            "OP17-081",
+            "OP17-089"
+          ],
+          "trash": [
+            "OP17-097",
+            "OP17-085",
+            "OP17-097",
+            "OP17-096",
+            "OP17-098"
+          ],
+          "life": 3,
+          "deck": [
+            "OP17-091"
+          ],
+          "life_cards": [
+            "OP17-086",
+            "OP17-088",
+            "OP17-094"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-080": 1,
+            "OP17-086": 1,
+            "OP17-081": 1,
+            "OP17-089": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-074",
+            "OP12-063",
+            "OP12-063",
+            "OP15-077",
+            "OP15-074",
+            "OP15-077",
+            "OP15-118"
+          ],
+          "trash": [
+            "OP15-077",
+            "OP15-061",
+            "OP15-061",
+            "OP15-078",
+            "OP15-078"
+          ],
+          "board": [
+            "OP15-067",
+            "OP12-071",
+            "OP15-061",
+            "OP15-067"
+          ],
+          "life": 3,
+          "deck": [
+            "OP15-067",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "life_cards": [
+            "OP15-066",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP15-061": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP15-058",
+          "to_name": "Enel",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Monkey D. Luffy [\"OP17-079\">OP17-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-080",
+            "OP17-094"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-061",
+          "to_name": "Ohm",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Ohm",
+          "attacker_code": "OP15-061",
+          "target": "Monkey D. Luffy [\"OP17-079\">OP17-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-061",
+          "card_name": "Ohm",
+          "effects": [
+            "Buff Jaguar D. Saul [\"OP17-089\">OP17-089] -1000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shura",
+          "attacker_code": "OP15-067",
+          "target": "Nami [\"OP17-086\">OP17-086]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-084"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shura",
+          "attacker_code": "OP15-067",
+          "target": "Nami [\"OP17-086\">OP17-086]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-074",
+            "OP12-063",
+            "OP12-063",
+            "OP15-077",
+            "OP15-074",
+            "OP15-077",
+            "OP15-118",
+            "OP15-074"
+          ],
+          "board": [
+            "OP15-067",
+            "OP12-071",
+            "OP15-061",
+            "OP15-067"
+          ],
+          "trash": [
+            "OP15-077",
+            "OP15-061",
+            "OP15-061",
+            "OP15-078",
+            "OP15-078"
+          ],
+          "life": 3,
+          "deck": [
+            "OP15-067",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "life_cards": [
+            "OP15-066",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP15-067": 2,
+            "OP15-061": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-093",
+            "OP17-098",
+            "OP17-093",
+            "OP17-119",
+            "OP17-089",
+            "OP17-095"
+          ],
+          "trash": [
+            "OP17-097",
+            "OP17-085",
+            "OP17-097",
+            "OP17-096",
+            "OP17-098",
+            "OP17-080",
+            "OP17-094",
+            "OP17-084",
+            "OP17-086"
+          ],
+          "board": [
+            "OP17-080",
+            "OP17-081",
+            "OP17-089"
+          ],
+          "life": 3,
+          "deck": [
+            "OP17-091"
+          ],
+          "life_cards": [
+            "OP17-086",
+            "OP17-088",
+            "OP17-094"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-080": 1,
+            "OP17-081": 1,
+            "OP17-089": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-093",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "Draw 1 Card",
+            "Deployed Usopp [\"OP17-080\">OP17-080] from Trash"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-080",
+          "card_name": "Usopp",
+          "effects": [
+            "<b>Reveal and Draw Jaguar D. Saul [\"OP17-089\">OP17-089]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jaguar D. Saul",
+          "attacker_code": "OP17-089",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Usopp",
+          "attacker_code": "OP17-080",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Gerd",
+          "attacker_code": "OP17-081",
+          "target": "Shura [\"OP15-067\">OP15-067]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-063",
+            "OP12-063"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP17-079",
+          "target": "Shura [\"OP15-067\">OP15-067]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-098",
+            "OP17-093",
+            "OP17-119",
+            "OP17-089",
+            "OP17-095",
+            "OP17-088",
+            "OP17-085",
+            "OP17-089"
+          ],
+          "board": [
+            "OP17-080",
+            "OP17-081",
+            "OP17-089",
+            "OP17-093",
+            "OP17-080"
+          ],
+          "trash": [
+            "OP17-097",
+            "OP17-085",
+            "OP17-097",
+            "OP17-096",
+            "OP17-098",
+            "OP17-094",
+            "OP17-084",
+            "OP17-086",
+            "OP17-096",
+            "OP17-098"
+          ],
+          "life": 3,
+          "deck": [
+            "OP17-091"
+          ],
+          "life_cards": [
+            "OP17-086",
+            "OP17-088",
+            "OP17-094"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-080": 1,
+            "OP17-081": 1,
+            "OP17-089": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-074",
+            "OP15-077",
+            "OP15-074",
+            "OP15-077",
+            "OP15-118",
+            "OP15-074",
+            "OP15-076",
+            "OP15-066"
+          ],
+          "trash": [
+            "OP15-077",
+            "OP15-061",
+            "OP15-061",
+            "OP15-078",
+            "OP15-078",
+            "OP12-063",
+            "OP12-063",
+            "OP15-067"
+          ],
+          "board": [
+            "OP12-071",
+            "OP15-061",
+            "OP15-067"
+          ],
+          "life": 1,
+          "deck": [
+            "OP15-067",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "life_cards": [
+            "OP15-075"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP15-061": 1,
+            "OP15-067": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Monkey D. Luffy [\"OP17-079\">OP17-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-095"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP12-071",
+          "to_name": "Charlotte Pudding",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "OP12-071",
+          "target": "Monkey D. Luffy [\"OP17-079\">OP17-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-088"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-066",
+          "card_name": "Satori",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-061",
+          "to_name": "Ohm",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Ohm",
+          "attacker_code": "OP15-061",
+          "target": "Monkey D. Luffy [\"OP17-079\">OP17-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-061",
+          "card_name": "Ohm",
+          "effects": [
+            "Buff Monkey D. Luffy [\"OP17-093\">OP17-093] -1000"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-074",
+            "OP15-077",
+            "OP15-074",
+            "OP15-077",
+            "OP15-118",
+            "OP15-074",
+            "OP15-066",
+            "OP15-074"
+          ],
+          "board": [
+            "OP12-071",
+            "OP15-061",
+            "OP15-067",
+            "OP15-066"
+          ],
+          "trash": [
+            "OP15-077",
+            "OP15-061",
+            "OP15-061",
+            "OP15-078",
+            "OP15-078",
+            "OP12-063",
+            "OP12-063",
+            "OP15-067",
+            "OP15-076"
+          ],
+          "life": 1,
+          "deck": [
+            "OP15-067",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "life_cards": [
+            "OP15-075"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP12-071": 1,
+            "OP15-061": 1,
+            "OP15-066": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-098",
+            "OP17-093",
+            "OP17-119",
+            "OP17-089",
+            "OP17-085",
+            "OP17-089"
+          ],
+          "trash": [
+            "OP17-097",
+            "OP17-085",
+            "OP17-097",
+            "OP17-096",
+            "OP17-098",
+            "OP17-094",
+            "OP17-084",
+            "OP17-086",
+            "OP17-096",
+            "OP17-098",
+            "OP17-095",
+            "OP17-088"
+          ],
+          "board": [
+            "OP17-080",
+            "OP17-081",
+            "OP17-089",
+            "OP17-093",
+            "OP17-080"
+          ],
+          "life": 3,
+          "deck": [
+            "OP17-091"
+          ],
+          "life_cards": [
+            "OP17-086",
+            "OP17-088",
+            "OP17-094"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-080": 1,
+            "OP17-081": 1,
+            "OP17-089": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-093",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "Draw 1 Card",
+            "Deployed Roronoa Zoro [\"OP17-095\">OP17-095] from Trash"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jaguar D. Saul",
+          "attacker_code": "OP17-089",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP17-093",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}
