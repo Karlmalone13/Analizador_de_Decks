@@ -1,6 +1,6 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 14 de setembro de 2026 (bloco 834)
+**Última atualização:** 14 de setembro de 2026 (bloco 835)
 
 > **Escopo deste arquivo** (revisto em 12/09/2026): lista VIVA — o que
 > está aberto e o fluxo recente (setembro/2026, blocos 748-779). O
@@ -33,6 +33,20 @@
 > CPU x CPU achar o bug do Shiki que o auto-jogo jamais acharia.
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
+
+> **3a FAMILIA: OS REATIVOS (14/09/2026, bloco 835)**: `on_ko` e cia. O usuario
+> mandou conferir o banco e estava certo -- **30 familias de gatilho**, `on_ko`
+> sozinho e **168 cartas**, e o mapa tinha 4. Foi a 3a correcao dele na mesma
+> ferramenta, as tres procedentes.
+>
+> Os reativos GERAM decisao (o jogo pergunta ao bot) e saem com `actor_code`:
+> OP11-041 45x, OP16-109 9x, OP14-111 8x. Novo quadro: `on_opp_attack` 52/24,
+> `trigger` 46/5, `your_turn` 45/0, `on_ko` 23/4, **`opp_turn` 3/21**,
+> **`when_rested` 0/2** -- as duas ultimas sao pontas NAO investigadas.
+>
+> **Cobertura completa**: `main` (4 gatilhos) + `defense` (5 fases) + reativos
+> (por `actor_code`). So ficam de fora `passive`/`game_rules`, que o jogo
+> resolve sem perguntar -- nunca contados como falha.
 
 > **AUDITORIA COBRE TODAS AS FAMILIAS (14/09/2026, bloco 834)**: correcao do
 > usuario (*"nao e so on play"*) -- `counter`/`blocker`/`trigger`/opcional/

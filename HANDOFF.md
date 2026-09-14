@@ -163,6 +163,56 @@ visivel**.
 
 ---
 
+## 2026-09-14 (835) - A 3a familia que faltava: os REATIVOS (`on_ko` e cia). O usuario conferiu o banco e estava certo pela TERCEIRA vez
+
+Ele: *"confira no nosso projeto porque tem mais efeitos, 'on ko' etc"*. Conferido
+no `card_effects_db.json`: **30 familias de gatilho**, e `on_ko` sozinho sao
+**168 cartas**. O `ACAO_DO_GATILHO` mapeava 4.
+
+Foi a terceira correcao dele na mesma ferramenta, e as tres procediam:
+1. a flag `--lider` sugeria escopo de lider (era de qualquer carta)
+2. `counter`/`blocker`/`trigger` vinham de `defense`, que eu nao percorria
+3. os REATIVOS nao vinham de lugar nenhum que eu lia
+
+### Os reativos GERAM decisao -- verificado antes de implementar
+
+O jogo dispara e **pergunta** ao bot, e a decisao sai com o `actor_code` da
+carta dona:
+
+```
+OP11-041  45x  on_opp_attack/your_turn
+OP16-109   9x  on_ko/trigger
+OP14-111   8x  on_ko/on_play/trigger
+```
+
+### O 3o quadro do relatorio
+
+```
+gatilho                 RESPONDEU    NAO
+on_opp_attack                  52     24
+trigger                        46      5
+your_turn                      45      0
+on_ko                          23      4
+opp_turn                        3     21
+when_rested                     0      2
+```
+
+**`opp_turn` 3 de 24** e **`when_rested` 0 de 2** sao as pontas a investigar --
+nao investigadas.
+
+### A cobertura, agora completa
+
+| familia | de onde vem | criterio |
+|---|---|---|
+| `on_play`, `activate_main`, `main`, `when_attacking` | decisao `main` | `execution.status` + delta |
+| `counter`, `blocker`, `trigger`, opcional, reacao | decisao `defense` | foi ACEITO |
+| `on_ko`, `on_opp_attack`, `your_turn`/`opp_turn`, `when_rested`, ... | `target`/`effect_option` por `actor_code` | respondeu a pergunta do jogo |
+
+So ficam de fora `passive`/`game_rules`, que o jogo resolve sem perguntar nada
+-- por construcao nao ha o que auditar, e nunca sao contados como falha.
+
+---
+
 ## 2026-09-14 (834) - A auditoria cobre TODAS as familias -- e no 1o uso completo achou DUAS coisas graves: o Enel ativando sem efeito, e o bot que NUNCA counterou nem bloqueou
 
 Correcao do usuario: *"e tb nao e so on play, eu especifiquei isso"*. **Ele

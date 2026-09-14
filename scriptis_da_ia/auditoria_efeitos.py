@@ -301,6 +301,44 @@ def analisar(regs: list[dict], db: dict, filtro: str = "") -> dict:
             "aceito": aceito, "concluiu": concluiu, "porque": porque,
         })
 
+    # ── REATIVOS: on_ko, on_opp_attack, your_turn/opp_turn, end_of_turn... ──
+    # Nao vem de `main` nem de `defense`: o JOGO dispara e pergunta algo ao bot.
+    # Aparecem como decisao `target`/`effect_option` (ou fase reaction/optional/
+    # trigger) com o `actor_code` da carta dona do efeito. Achado ao conferir a
+    # cobertura a pedido do usuario (*"tem mais efeitos, on ko etc"*): OP16-109
+    # e OP14-111 (on_ko) geraram 9x e 8x, OP11-041 (on_opp_attack) 45x.
+    REATIVOS = {"on_ko", "on_opp_attack", "your_turn", "opp_turn", "end_of_turn",
+                "when_rested", "on_block", "when_don_returned", "on_damage_to_life",
+                "on_own_char_ko", "on_any_char_ko", "on_opp_char_ko",
+                "on_own_char_played", "on_opp_char_played", "on_hand_card_trashed",
+                "on_own_event_activated", "on_opp_event_activated",
+                "on_own_effect_removes_char", "leader_battle_reactive",
+                "on_don_given", "when_damage_or_own_char_ko", "trigger"}
+    reativos = []
+    for r in decisoes:
+        ator = r.get("actor_code")
+        if not ator:
+            continue
+        ehdef = r.get("decision_kind") == "defense"
+        if r.get("decision_kind") not in ("target", "effect_option") and            r.get("phase") not in ("reaction", "optional", "trigger"):
+            continue
+        gats = sorted(_gatilhos(db, ator) & REATIVOS)
+        if not gats:
+            continue
+        ca = r.get("chosen_action") or {}
+        if ehdef:
+            ok = bool(ca.get("accepted"))
+            porque = ("aceito e aplicado" if ok else
+                      "o bot RECUSOU o efeito reativo (escolha, nao falha por si)")
+        else:
+            ok = bool(ca.get("ordered_ids") or ca.get("option_index") is not None)
+            porque = ("o jogo pediu escolha e o bot ESCOLHEU" if ok else
+                      "o jogo pediu escolha e o bot NAO escolheu nada")
+        reativos.append({"match_id": r.get("match_id"), "turn": r.get("turn"),
+                         "ator": ator, "gatilhos": gats,
+                         "tipo": r.get("decision_kind"), "fase": r.get("phase"),
+                         "ok": ok, "porque": porque})
+
     # cartas com gatilho que NUNCA foram escolhidas
     nunca = []
     for mid, cards in tinha.items():
@@ -329,7 +367,11 @@ def analisar(regs: list[dict], db: dict, filtro: str = "") -> dict:
     if filtro:
         defesa = [d for d in defesa if filtro in (d["cartas"] or []) or d["ator"] == filtro]
 
-    return {"linhas": linhas, "defesa": defesa, "nunca_disparou": nunca,
+    if filtro:
+        reativos = [x for x in reativos if x["ator"] == filtro]
+
+    return {"linhas": linhas, "defesa": defesa, "reativos": reativos,
+            "nunca_disparou": nunca,
             "partidas": sorted({r.get("match_id") for r in decisoes if r.get("match_id")})}
 
 
@@ -390,6 +432,27 @@ def imprimir(rel: dict, top: int) -> None:
                 print(f"     {rot.get(d['match_id'],'?'):<3} turno {d['turn']:<3} "
                       f"{d['fase']:<10} opcoes={d['opcoes']:<3} "
                       f"{', '.join(d['cartas'][:4]) if d['cartas'] else ''}")
+        print()
+
+    reativos = rel.get("reativos") or []
+    if reativos:
+        print("== EFEITOS REATIVOS (on_ko, on_opp_attack, your_turn, trigger...) ==")
+        print("   O JOGO dispara e pergunta ao bot -- nao vem de `main` nem de")
+        print("   `defense`. Identificados pelo `actor_code` da carta dona.")
+        agg = defaultdict(lambda: [0, 0])
+        for x in reativos:
+            for g in x["gatilhos"]:
+                agg[g][0 if x["ok"] else 1] += 1
+        print(f"  {'gatilho':<22} {'RESPONDEU':>10} {'NAO':>6}")
+        for g in sorted(agg, key=lambda k: -sum(agg[k])):
+            print(f"  {g:<22} {agg[g][0]:>10} {agg[g][1]:>6}")
+        ruins = [x for x in reativos if not x["ok"]]
+        if ruins:
+            print("")
+            print(f"  -- NAO RESPONDEU ({len(ruins)}):")
+            for x in ruins[:top]:
+                print(f"     {rot.get(x['match_id'],'?'):<3} turno {x['turn']:<3} "
+                      f"{x['ator']:<11} {'/'.join(x['gatilhos']):<24} {x['porque']}")
         print()
 
     if nunca:
