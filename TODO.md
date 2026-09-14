@@ -1,6 +1,6 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 14 de setembro de 2026 (bloco 833)
+**Última atualização:** 14 de setembro de 2026 (bloco 834)
 
 > **Escopo deste arquivo** (revisto em 12/09/2026): lista VIVA — o que
 > está aberto e o fluxo recente (setembro/2026, blocos 748-779). O
@@ -33,6 +33,22 @@
 > CPU x CPU achar o bug do Shiki que o auto-jogo jamais acharia.
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
+
+> **AUDITORIA COBRE TODAS AS FAMILIAS (14/09/2026, bloco 834)**: correcao do
+> usuario (*"nao e so on play"*) -- `counter`/`blocker`/`trigger`/opcional/
+> reacao vem de decisao `defense`, que nao era percorrida (**338 decisoes, zero
+> auditadas**). **DOIS achados graves no 1o uso completo:**
+>
+> **1. O ENEL (OP15-058)**: turnos 2,3,4,5 -- habilidade do lider ativou, o jogo
+> CONFIRMOU, e **nada mudou**. Diferente do Mihawk (jogo RECUSOU): duas causas
+> distintas, so separaveis porque a auditoria distingue estagios.
+>
+> **2. O BOT NUNCA COUNTERA NEM BLOQUEIA**: `counter` **0 aceitos / 94
+> recusados** (20 sem opcao); `blocker` **0 / 13** (95 sem opcao) -- com ate 6
+> counters elegiveis na mao. Isto da MECANISMO ao `quais cartas de counter`
+> 18,5%, uma das 3 piores categorias do projeto. **Causa NAO investigada**
+> (elegibilidade? limiar? caminho ao vivo?). E 22% das decisoes e define se o
+> bot toma dano -- **achado mais caro em aberto**.
 
 > **AUDITORIA DE EFEITOS LIGADA NO AUTO-COLLECT (14/09/2026, bloco 833)**: a
 > pedido do usuario. Roda a cada `/outcome`, best-effort (se quebrar, grava

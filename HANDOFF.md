@@ -163,6 +163,66 @@ visivel**.
 
 ---
 
+## 2026-09-14 (834) - A auditoria cobre TODAS as familias -- e no 1o uso completo achou DUAS coisas graves: o Enel ativando sem efeito, e o bot que NUNCA counterou nem bloqueou
+
+Correcao do usuario: *"e tb nao e so on play, eu especifiquei isso"*. **Ele
+esta certo.** A 1a versao mapeava so 4 gatilhos, todos vindos de decisao `main`
+-- `counter`, `blocker`, `trigger`, opcional e reacao vem de decisao
+`defense`, que eu nao percorria. **338 decisoes, ZERO auditadas.**
+
+### 1. O ENEL, que era o exemplo dele
+
+```
+P10 turno 2/3/4/5   OP15-058   activate_main   alvo=sim  -> NAO
+   porque: confirmado, mas NADA mudou no proprio lado
+           (mao/campo/DON/vida/deck) e o efeito DEVERIA ter mexido
+```
+
+Quatro turnos seguidos: a habilidade do lider ativou, o jogo **confirmou**, e o
+estado nao mudou. E literalmente *"o enel nao conseguiu ativar e executar com
+eficiencia o efeito do lider nenhuma vez"*, agora com turno e criterio.
+Diferente do Mihawk (OP14-020), onde o jogo RECUSOU (`status=failed`): aqui o
+jogo ACEITOU e nada aconteceu -- **duas causas diferentes**, que so aparecem
+separadas porque a auditoria distingue os estagios.
+
+### 2. O BOT NUNCA COUNTERA E NUNCA BLOQUEIA
+
+```
+fase          ACEITOU  RECUSOU  sem opcao
+counter             0       94         20
+blocker             0       13         95
+optional           38        3          0
+trigger             8       30          0
+reaction           16       21          0
+```
+
+**0 de 114 counters. 0 de 108 blockers.** Com ate SEIS cartas de counter
+elegiveis na mao (P10 turno 2: OP12-063, OP15-061, OP15-067, OP15-078...).
+
+Isto da MECANISMO a um numero que o projeto media ha meses sem explicacao: a
+categoria `quais cartas de counter` esta em **18,5%**, uma das tres piores. O
+`CLAUDE.md` ja registrava que a defesa e heuristica fixa, fora do ML
+(`should_use_counter`/`pick_counters`, zero consultas ao modelo). O que faltava
+era saber que, na pratica, ela **nunca aceita**.
+
+**NAO investiguei a causa** -- pode ser bug de elegibilidade, limiar mal
+calibrado, ou o caminho ao vivo nao aplicando a resposta. Fica como o achado
+mais caro em aberto: sao 22% das decisoes do jogo e determinam se o bot toma
+dano.
+
+### O que mudou na ferramenta
+
+| familia | de onde vem | criterio de "concluiu" |
+|---|---|---|
+| `on_play`, `activate_main`, `main`, `when_attacking` | decisao `main` | `execution.status` + delta |
+| `counter`, `blocker`, `trigger`, opcional, reacao | decisao `defense` | foi ACEITO |
+
+Na defesa nao ha `execution` pareado -- a resposta E o ato. E "recusou" e
+ESCOLHA, nao falha por si: vira achado quando ele recusa **tendo opcao boa**,
+que e exatamente o caso acima.
+
+---
+
 ## 2026-09-14 (833) - A auditoria de efeitos fica LIGADA no auto-collect -- e o nome da flag estava mentindo sobre o escopo
 
 Dois pedidos do usuario: *"deixe ativado essa auditoria, tb registre"* e a

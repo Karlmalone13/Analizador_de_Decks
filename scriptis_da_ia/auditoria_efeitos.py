@@ -38,6 +38,18 @@ em tudo** -- o jogo aceitou, e o efeito nao fez nada.
 
 ### LIMITES HONESTOS -- ler antes de tratar uma linha como bug
 
+### O QUE COBRE
+
+| familia | de onde vem | criterio de "concluiu" |
+|---|---|---|
+| `on_play`, `activate_main`, `main`, `when_attacking` | decisao `main` | `execution.status` + delta |
+| `counter`, `blocker`, `trigger`, opcional, reacao | decisao `defense` | foi ACEITO |
+
+**As cinco de defesa ficaram de fora da 1a versao** (corrigido a pedido do
+usuario: *"e tb nao e so on play, eu especifiquei isso"*) -- eram 338 decisoes
+nao auditadas, e e justamente onde a qualidade medida e pior no projeto
+(`quais cartas de counter`: 18,5%).
+
 * **So enxerga o que passou pelo SERVER.** Efeito resolvido inteiramente pelo
   jogo, sem perguntar nada ao bot (trigger automatico, passive), nao aparece --
   nao ha decisao pra registrar. Por isso `passive`/`trigger` saem como
@@ -253,6 +265,42 @@ def analisar(regs: list[dict], db: dict, filtro: str = "") -> dict:
             "delta": (tr or {}).get("delta"),
         })
 
+    # ── DEFESA: counter / blocker / trigger / opcional / reacao ──────────
+    # Nao vem de decisao `main` -- por isso ficaram de fora da 1a versao
+    # (corrigido a pedido do usuario). Aqui nao existe `execution` pareado: a
+    # resposta E o ato, entao o criterio de "concluiu" e `accepted`.
+    defesa = []
+    for r in decisoes:
+        if r.get("decision_kind") != "defense":
+            continue
+        fase = r.get("phase") or "?"
+        ca = r.get("chosen_action") or {}
+        aceito = bool(ca.get("accepted"))
+        opts = r.get("scored_actions") or []
+        # opcoes REAIS (fora as de recusar): sao o que estava disponivel
+        reais = [o for o in opts
+                 if o.get("type") not in ("no_counter", "no_blocker", "decline")]
+        cartas = sorted({o.get("card_code") for o in reais if o.get("card_code")})
+
+        if aceito:
+            concluiu, porque = "SIM", f"{fase} ACEITO e aplicado"
+        elif reais:
+            concluiu, porque = "NAO", (
+                f"havia {len(reais)} opcao(oes) de {fase} disponivel(is) "
+                f"{('(' + ', '.join(cartas) + ') ') if cartas else ''}"
+                f"e o bot RECUSOU -- escolha, nao falha por si")
+        else:
+            concluiu, porque = "?", (
+                f"nenhuma opcao de {fase} disponivel -- nada a concluir "
+                f"(nao e falha)")
+
+        defesa.append({
+            "match_id": r.get("match_id"), "turn": r.get("turn"),
+            "fase": fase, "ator": r.get("actor_code"),
+            "opcoes": len(reais), "cartas": cartas,
+            "aceito": aceito, "concluiu": concluiu, "porque": porque,
+        })
+
     # cartas com gatilho que NUNCA foram escolhidas
     nunca = []
     for mid, cards in tinha.items():
@@ -278,7 +326,10 @@ def analisar(regs: list[dict], db: dict, filtro: str = "") -> dict:
         linhas = [l for l in linhas if l["carta"] == filtro]
         nunca = [n for n in nunca if n["carta"] == filtro]
 
-    return {"linhas": linhas, "nunca_disparou": nunca,
+    if filtro:
+        defesa = [d for d in defesa if filtro in (d["cartas"] or []) or d["ator"] == filtro]
+
+    return {"linhas": linhas, "defesa": defesa, "nunca_disparou": nunca,
             "partidas": sorted({r.get("match_id") for r in decisoes if r.get("match_id")})}
 
 
@@ -317,6 +368,29 @@ def imprimir(rel: dict, top: int) -> None:
                       f"alvo={'sim' if l['alvo_escolhido'] else 'nao'}  -> {l['concluiu']}")
                 print(f"        porque: {l['porque']}")
             print()
+
+    defesa = rel.get("defesa") or []
+    if defesa:
+        print("== DEFESA E EFEITOS DE RESPOSTA (counter / blocker / trigger / opcional) ==")
+        print("   Aqui nao ha `execution` pareado -- a RESPOSTA e o ato, entao o")
+        print("   criterio e se foi ACEITO. 'Recusou' e ESCOLHA do bot, nao falha;")
+        print("   vira achado se ele recusa tendo opcao boa, que e onde a metrica")
+        print("   'quais cartas de counter' (18,5%) esta ruim.")
+        agg = defaultdict(lambda: defaultdict(int))
+        for d in defesa:
+            agg[d["fase"]][d["concluiu"]] += 1
+        print(f"  {'fase':<12} {'ACEITOU':>8} {'RECUSOU':>8} {'sem opcao':>10}")
+        for f in sorted(agg, key=lambda x: -sum(agg[x].values())):
+            print(f"  {f:<12} {agg[f].get('SIM',0):>8} {agg[f].get('NAO',0):>8} "
+                  f"{agg[f].get('?',0):>10}")
+        recusou = [d for d in defesa if d["concluiu"] == "NAO"]
+        if recusou:
+            print(f"\n  -- RECUSOU TENDO OPCAO ({len(recusou)}), as mais caras primeiro:")
+            for d in sorted(recusou, key=lambda x: -x["opcoes"])[:top]:
+                print(f"     {rot.get(d['match_id'],'?'):<3} turno {d['turn']:<3} "
+                      f"{d['fase']:<10} opcoes={d['opcoes']:<3} "
+                      f"{', '.join(d['cartas'][:4]) if d['cartas'] else ''}")
+        print()
 
     if nunca:
         jamais = [n for n in nunca if not n["ofertas"]]
