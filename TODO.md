@@ -1,11 +1,38 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 14 de setembro de 2026 (bloco 830)
+**Última atualização:** 14 de setembro de 2026 (bloco 831)
 
 > **Escopo deste arquivo** (revisto em 12/09/2026): lista VIVA — o que
 > está aberto e o fluxo recente (setembro/2026, blocos 748-779). O
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
+
+> **CPU x CPU PASSA A ALIMENTAR O CORPUS DO Q (14/09/2026, bloco 831)**: pedido
+> do usuario -- *"quero que a cpu x cpu tb seja um treino, so que com um
+> diferencial que eu consigo vizualizar e acompanhar turno a turno"*. Eu tinha
+> respondido *"nao treina"* (bloco 816, argumento de VOLUME) -- **mecanicamente
+> certo e a resposta errada**: ele nao pediu volume, pediu pra nao jogar fora o
+> dado de uma partida que ja esta sendo gerada.
+>
+> **ZERO motor novo.** O captador ja existia e e opt-in (`_q_captura`,
+> `decision_engine.py:19053`); o caminho ao vivo usa o MESMO `OPTCGMatch`.
+> Provado empiricamente antes de codar: `choose_action` com o captador ligado
+> devolveu 2 linhas de **101 feats**, com `alvo` e `escolhida` -- formato
+> identico ao self-play. `REGRA_SEM_DUPLICACAO` intacta.
+>
+> **Construido**: `scriptis_da_ia/coleta_q_ao_vivo.py` + 2 enganches finos no
+> `server.py` (`/decide` capta e drena; `/outcome` grava). **PONDER fica de
+> fora** (especula jogadas que nunca acontecem); **so grava com desfecho**
+> (draw/aborted descartam); `origem` = `<base>_simulador` (bloco 820), pra ser
+> mensuravel e removivel. Desligavel por `OPTCG_COLETA_AO_VIVO=0`.
+> `smoke_fast.py`: **1.430 OK, 0 FALHOU**.
+>
+> **LIMITE HONESTO**: ~dezenas de alvos por partida contra ~72.000 por ciclo de
+> 300 = **~0,1%**. NAO e fonte de volume. O valor e FIDELIDADE (estados
+> adjudicados pelo JOGO, nao pelo nosso codigo) -- a mesma diferenca que fez o
+> CPU x CPU achar o bug do Shiki que o auto-jogo jamais acharia.
+> **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
+> pra medir depois. Nao afirmar ganho antes de medir.
 
 > **VARREDURA DAS FLAGS DE RUNTIME AO VIVO (14/09/2026, bloco 830)**: a tarefa
 > que o bloco 818 deixou explicita (*"vale varrer as outras"*) e ninguem tinha

@@ -792,6 +792,21 @@ def outcome(report: OutcomeReport):
                 state_final=_model_dict(report.stateFinal) if report.stateFinal else None,
                 reason=report.reason, bot_seat=report.botSeat)
     _match_has_outcome = True
+
+    # Fecha a coleta de corpus da partida (bloco 831). So 'win'/'loss' entram --
+    # partida sem desfecho nao tem rotulo, mesma regra do gerador de self-play.
+    try:
+        import coleta_q_ao_vivo as _cq
+        _res_q = _cq.grava(_live_match_id, report.result)
+        if _res_q.get("gravadas"):
+            print(f"[COLETA-Q] {_res_q['gravadas']} alvos da partida AO VIVO "
+                  f"-> {_res_q.get('arquivo')} (origem={_res_q.get('origem')})",
+                  flush=True)
+        elif _res_q.get("motivo"):
+            print(f"[COLETA-Q] nada gravado: {_res_q['motivo']}", flush=True)
+    except Exception as _exc_q:
+        print(f"[COLETA-Q] falhou: {_exc_q}", flush=True)
+
     if os.environ.get("BOT_AUTO_COLLECT", "1") != "0":
         _collection_status.update(status="running", message="salvando log no banco",
                                   report=None, receipt=None)
@@ -1399,12 +1414,24 @@ def decide(state: GameStateDto):
         # real de 10s e reduz quanto a busca (Monte Carlo) cai pro fallback
         # de score imediato por estouro de tempo, sem chegar perto do teto
         # real. `trace_out["timed_out"]` ja audita isso em partida real.
+        # O corpus do Q tambem se alimenta das partidas AO VIVO (bloco 831).
+        # O captador e do MOTOR e ja existia (`_q_captura`, opt-in); aqui so se
+        # liga e se drena -- nenhuma decisao acontece fora do motor. Fica SO no
+        # /decide real: o PONDER especula jogadas que podem nunca acontecer.
+        try:
+            from coleta_q_ao_vivo import abre_captura as _q_abre, drena as _q_drena
+        except Exception:
+            _q_abre = _q_drena = None
+        if _q_abre:
+            _q_abre(match)
         action = bridge.choose_action(gs, opp_gs, match, timeout=5.0,
                                       allowed_types={"play", "attack",
                                                      "attach_don", "activate"},
                                       exclude_activate_codes=excluir,
                                       exclude_failed_actions=excluir_falhas,
                                       trace_out=trace)
+        if _q_drena:
+            trace["q_linhas_capturadas"] = _q_drena(match, _live_match_id)
 
         payload, reason, extra_trace = _package_action(action, gs, opp_gs, match, bridge)
         trace.update(extra_trace)

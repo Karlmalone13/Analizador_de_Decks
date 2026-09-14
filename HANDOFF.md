@@ -53,6 +53,116 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-14 (831) - CPU x CPU passa a ALIMENTAR o corpus do Q: o captador ja existia no motor e so nao era ligado ao vivo -- ZERO motor novo
+
+Pedido do usuario, depois de eu responder estreito duas vezes: *"eu fecho e
+abro, nao tem problema, eu so quero que a cpu x cpu tb seja um treino, so que
+com um diferencial que eu consigo vizualizar e acompanhar turno a turno"*.
+
+### O que eu tinha errado
+
+Respondi *"CPU x CPU nao treina"* citando o bloco 816 (*"bancada de VALIDACAO,
+nao caminho de DADO"*). **Mecanicamente correto e ainda assim a resposta
+errada**: o argumento do 816 e sobre VOLUME (15-30 min por partida contra
+~0,6s no motor -- centenas de partidas seriam dias), e o usuario nunca pediu
+volume. Ele apontou que a partida **ja esta sendo gerada e assistida de
+qualquer jeito**, e jogar o dado de decisao dela fora era perda pura.
+
+Ele esta certo. E o custo de eu nao enxergar isso na primeira resposta foi
+duas rodadas de conversa -- exatamente o padrao que o topo do `CLAUDE.md`
+registra.
+
+### A DESCOBERTA que torna isso barato: o captador JA EXISTE
+
+```python
+# decision_engine.py:19053
+# Default desligado: `_q_captura` fica None e isto custa zero.
+_cap = getattr(self, '_q_captura', None)
+```
+
+A coleta do corpus Q e um **atributo opt-in no `OPTCGMatch`**, e o self-play
+liga com UMA linha (`gerar_selfplay_dataset.py:213`: `match._q_captura = []`).
+
+E o caminho AO VIVO usa o MESMO motor: `_get_match()` mantem um `OPTCGMatch`
+singleton e o `/decide` chama `bridge.choose_action(gs, opp_gs, match, ...)`.
+
+**Provado empiricamente ANTES de escrever qualquer codigo** -- a cadeia
+`choose_action -> _select_action_via_search -> _select_action_via_search_inner`
+alcanca a captacao:
+
+```
+--- COM captador ligado ---
+  LINHAS CAPTURADAS: 2
+  feats: 101 | alvo: 0.8165 | escolhida: False | leader: OP15-058 | turn: 4
+  escolhidas marcadas: 1
+```
+
+**Formato IDENTICO ao do corpus de self-play.** Entao nao ha motor novo, nao
+ha decisao reimplementada e a `REGRA_SEM_DUPLICACAO` fica intacta: quem produz
+o dado e o motor, igual no self-play. O modulo novo so LIGA, junta e grava.
+
+### O que foi construido
+
+`scriptis_da_ia/coleta_q_ao_vivo.py` -- buffer por `match_id` + gravacao.
+O `server.py` ficou fino (e arquivo-ponte), com **2 enganches**:
+
+* **`/decide` real**: `abre_captura(match)` antes, `drena(match, _live_match_id)`
+  depois. O numero de linhas vai pro `trace` como `q_linhas_capturadas`.
+* **`/outcome`**: `grava(_live_match_id, report.result)`, que imprime
+  `[COLETA-Q] N alvos da partida AO VIVO -> ...`.
+
+**Tres cuidados deliberados:**
+
+1. **O PONDER fica de fora.** Ele especula jogadas que podem nunca acontecer --
+   capturar dali poluiria o corpus com estados que o jogo nunca viu. So o
+   `/decide` real alimenta.
+2. **So grava com desfecho.** `draw`/`aborted` descartam o buffer, mesma regra
+   do gerador de self-play (*"Sem desfecho -- sem rotulo, fora do dataset"*).
+3. **`origem` propria**: `<base>_simulador` (ex: `Arthur_Trabalho_simulador`),
+   usando o mecanismo do bloco 820. Sem o sufixo, as linhas ao vivo e as de
+   self-play da MESMA maquina ficariam indistinguiveis -- e sao distribuicoes
+   diferentes. Separadas, da pra medir o efeito delas ou remove-las a qualquer
+   momento.
+
+Desligavel por `OPTCG_COLETA_AO_VIVO=0`.
+
+### Teste ponta a ponta (em arquivo temporario, sem tocar o corpus real)
+
+```
+drenou decisao 1: 2 | drenou decisao 2: 1 | pendentes: 3
+partida ABORTADA  -> {'gravadas': 0, 'descartadas': 3, 'motivo': 'sem desfecho utilizavel (aborted)'}
+partida com WIN   -> {'gravadas': 1, 'origem': 'Arthur_Trabalho_simulador'}
+buffer limpo depois de gravar: 0
+```
+
+Schema conferido contra o corpus: `feats`/`alvo`/`escolhida`/`leader`/`turn`/
+`match`/`gen`/`origem`. `smoke_fast.py`: **1.430 OK, 0 FALHOU**.
+
+### O LIMITE HONESTO -- o bloco 816 continua certo no que ele media
+
+Uma partida ao vivo rende **dezenas** de alvos; um ciclo de 300 partidas rende
+**~72.000**. Ou seja: **~0,1% de um ciclo.** Isto **nao** e uma fonte de
+volume e nao deve ser vendida como tal.
+
+O que ela tem de unico e FIDELIDADE: sao estados adjudicados pelo JOGO DE
+VERDADE, na mesma distribuicao em que o bot realmente joga -- enquanto o
+self-play e adjudicado pelo nosso proprio codigo. E a mesma distincao que fez
+o CPU x CPU achar o bug do Shiki (bloco 818) que o auto-jogo jamais acharia.
+
+**NAO MEDIDO**: se essas linhas ajudam, atrapalham ou sao neutras no treino.
+A `origem` existe exatamente pra que isso seja mensuravel depois -- e pra que
+sejam removiveis se nao pagarem. Nao afirmar ganho antes de medir.
+
+### O "diferencial" que o usuario pediu ja existe
+
+*"com um diferencial que eu consigo vizualizar e acompanhar turno a turno"* --
+e o que o self-play nao tem: a partida roda na tela, e a telemetria
+(`live_runs/`, relatorio de consequencia com o recorte por partida do bloco
+829) sai junto. O ciclo treina as cegas; esta bancada treina **com o jogo
+visivel**.
+
+---
+
 ## 2026-09-14 (830) - A VARREDURA que o bloco 818 mandou fazer e ninguem tinha feito: 10 flags de runtime que o caminho AO VIVO nunca seta -- e o erro delas e o ESPELHO do Shiki (silencioso, nao barulhento)
 
 O usuario corrigiu um enquadramento meu: eu tinha respondido que CPU x CPU
