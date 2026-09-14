@@ -53,6 +53,94 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (809) - A METRICA QUE DECIDE NUNCA FOI CALCULADA: o Q erra 78,5% menos que a media e, no teste piloto, escolhe a mesma acao que o professor +0,4pp ACIMA DO ACASO
+
+**Pedido do usuario**: *"falta alguma coisa na telemetria ainda que vai nos
+ajudar no ML?"* -> *"liga os dois"*.
+
+### O proprio `treinar_q.py` ja dizia qual era o numero que falta
+
+Ultimas linhas que ele imprime, ha blocos:
+
+> *"ISTO E ERRO DE PREVISAO, NAO E GANHO NO MOTOR. O que decide se o Q
+> substitui a arvore e a medicao no jogo: velocidade E **se ele escolhe a mesma
+> acao que o professor escolheria**."*
+
+**Esse numero nao existia em lugar nenhum.** O que ia pro historico era erro
+absoluto -- e **o motor nao decide por valor, decide por ARGMAX**. Erro baixo e
+escolha errada sao perfeitamente compativeis: basta o modelo achatar as
+diferencas entre as candidatas de uma mesma decisao.
+
+### O que impedia de calcular
+
+1. **Nao havia id de decisao.** Agrupar por `(match, turn)` juntava **36,4
+   candidatas** -- varias decisoes no mesmo balaio. Por decisao sao **4,8**.
+2. **No modo BOOTSTRAP, `escolhida` era gravada SEMPRE False.** A coleta
+   acontece ANTES da decisao, e ninguem voltava pra marcar. O professor nao
+   estava no corpus.
+3. **Nao havia a familia da acao.** A tese inteira do projeto e organizada por
+   familia de decisao e o corpus de treino era cego a ela.
+
+### O que foi construido
+
+* `decisao` (id por decisao dentro da partida) e `acao` (a familia, que sai de
+  `acao[1]` -- o MESMO campo que `acao_features` e `_descreve_candidata` ja
+  usam, sem classificacao nova) nos dois coletores.
+* `_q_marca_escolhida`, chamada de um **wrapper fino**
+  (`_select_action_via_search` -> `_select_action_via_search_inner`), e nao nos
+  4 pontos de retorno -- repetir seria a duplicata que `REGRA_SEM_DUPLICACAO`
+  proibe. Mesmo idiomatismo de `_should_use_blocker_inner`.
+* `treinar_q.py` mede a concordancia **fora da amostra**, nos mesmos folds por
+  lider, quebrada por familia, e grava no bundle.
+
+Invariante conferida no corpus piloto: **372 decisoes, 372 escolhidas** -- uma
+por decisao, exatamente.
+
+### O RESULTADO PILOTO, e a ressalva que ele exige
+
+Corpus de teste (6 partidas, 1.799 alvos, 9 lideres):
+
+```
+erro medio FORA DA AMOSTRA : 0,1858   -> "erra 45,0% menos que a media"
+                                         => "APRENDEU a ordenar acao"
+
+CONCORDANCIA TOP-1         : 25,8%
+escolher no ACASO daria    : 25,4%
+                             -------
+                             +0,4 pp
+```
+
+**As duas reguas discordam sobre o mesmo modelo.** Pela primeira ele aprendeu;
+pela segunda ele e **indistinguivel de sortear**.
+
+Por familia: `attach_don` **6,7%**, `attack` 16,8%, `play` 29,5%, `pass` 37,8%,
+`activate` 39,2%. A pior e justamente a familia que o projeto ja media como uma
+das piores contra humano (distribuicao de DON, 23,5%).
+
+> **RESSALVA QUE NAO PODE SER APAGADA**: 1.799 alvos, contra **549.435** do
+> corpus de producao. Isto e um teste do INSTRUMENTO, nao uma medida do Q de
+> producao. O numero real sai no ciclo 2, e pode ser muito melhor -- a curva de
+> dado ja se mostrou a alavanca que move (10,0% -> 31,8% com 23x de corpus).
+
+O que ele ja explica, e barato: **o portao 0x13 do bloco 801 deixa de ser
+misterio.** Um modelo que escolhe quase no acaso perde de 13, e o erro de
+0,0453 nunca teria avisado.
+
+### O CONTROLE, de novo, foi o que deu sentido ao numero
+
+`25,8%` sozinho pareceria razoavel. Com 4,8 candidatas por decisao, **o acaso ja
+da 25,4%** -- e a leitura inverte. Regra do projeto cumprida: toda medicao
+precisa de um caso que pode falhar, e aqui ele quase falhou.
+
+### Estado
+
+`smoke_fast.py` OK (o engine mudou). Ciclo 1 ainda rodando com o codigo
+anterior: sai sem concordancia, sem etapa 5, sem tempo e sem recorte por lider.
+**Tudo isto vale do ciclo 2.** As linhas ja gravadas em `q_alvos.jsonl` nao tem
+`decisao` e ficam fora da concordancia (nao do treino).
+
+---
+
 ## 2026-09-13 (808) - A ANCORA HUMANA ESTAVA DESLIGADA, e o arquivo dizia que nao. Mais o `--limpar-checkpoint` que a saida mandava rodar e nunca existiu, o recorte POR LIDER que faltava no portao, e o AS-IS do proprio laco
 
 **Pedidos do usuario, em ordem**: *"faz o --limpar-checkpoint e roda o ciclo"*,

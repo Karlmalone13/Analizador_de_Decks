@@ -19039,6 +19039,7 @@ class OPTCGMatch:
         if _cap is not None and Q_ALVO_MODO == 'busca':
             try:
                 from optcg_engine import value_net as _vnq
+                _dec = self._q_nova_decisao()
                 for _a, _v in pares:
                     if _v is None:
                         continue
@@ -19046,12 +19047,50 @@ class OPTCGMatch:
                         'feats': _vnq.q_features(p, opp, _a),
                         'alvo': float(_v),
                         'escolhida': bool(_a is melhor_acao),
+                        # Qual DECISAO e qual FAMILIA: sem os dois nao da pra
+                        # medir se o aluno escolhe o mesmo que o professor,
+                        # que e o que decide se o Q substitui a arvore.
+                        'decisao': _dec,
+                        'acao': _a[1] if len(_a) > 1 else None,
                         'leader': getattr(getattr(p, 'leader', None), 'code', None),
                         'turn': int(getattr(p, 'turn', 0) or 0),
                     })
             except Exception:
                 pass
         return (melhor_acao, melhor_v, pares)
+
+    def _q_nova_decisao(self) -> int:
+        """Id da decisao dentro desta partida.
+
+        Candidatas da MESMA decisao competem entre si; candidatas de decisoes
+        diferentes nao. Agrupar por `(match, turn)` nao serve -- um turno tem
+        varias decisoes, e mediu-se 36,4 candidatas por turno contra ~5 por
+        decisao.
+        """
+        n = int(getattr(self, '_q_decisao_n', 0)) + 1
+        self._q_decisao_n = n
+        self._q_pendentes = {}
+        return n
+
+    def _q_registra(self, acao, linha) -> None:
+        """Guarda qual linha do corpus corresponde a qual acao desta decisao,
+        pra que `_q_marca_escolhida` saiba qual marcar depois."""
+        try:
+            self._q_pendentes[id(acao)] = linha
+        except Exception:
+            pass
+
+    def _q_marca_escolhida(self, acao) -> None:
+        """No bootstrap a coleta acontece ANTES da decisao, entao `escolhida`
+        saia sempre False -- e sem ela a concordancia com o professor e
+        incalculavel. Marcada aqui, quando a acao ja foi escolhida."""
+        pend = getattr(self, '_q_pendentes', None)
+        if not pend:
+            return
+        linha = pend.get(id(acao))
+        if linha is not None:
+            linha['escolhida'] = True
+        self._q_pendentes = {}
 
     def _coleta_bootstrap(self, p, opp, engine, candidatas, cap):
         """Alvo do DQN: o valor do ESTADO QUE A ACAO PRODUZ (bloco 799).
@@ -19074,6 +19113,7 @@ class OPTCGMatch:
             return
 
         from copy import deepcopy
+        _dec = self._q_nova_decisao()
         _sim = _EM_SIMULACAO['on']
         _EM_SIMULACAO['on'] = True
         estados, acoes = [], []
@@ -19100,9 +19140,12 @@ class OPTCGMatch:
                     if venceu:
                         cap.append({'feats': base + _vn.acao_features(a, opp),
                                     'alvo': 1.0, 'escolhida': False,
+                                    'decisao': _dec,
+                                    'acao': a[1] if len(a) > 1 else None,
                                     'leader': getattr(getattr(p, 'leader', None),
                                                       'code', None),
                                     'turn': int(getattr(p, 'turn', 0) or 0)})
+                        self._q_registra(a, cap[-1])
                         continue
                     estados.append((p2, o2))
                     acoes.append(a)
@@ -19125,9 +19168,28 @@ class OPTCGMatch:
                 continue
             cap.append({'feats': base + _vn2.acao_features(a, opp),
                         'alvo': float(v), 'escolhida': False,
+                        'decisao': _dec,
+                        'acao': a[1] if len(a) > 1 else None,
                         'leader': lider, 'turn': turno})
+            self._q_registra(a, cap[-1])
 
     def _select_action_via_search(self, p, opp, engine, candidatas):
+        """Fino: delega e marca no corpus QUAL candidata foi escolhida.
+
+        A marcacao mora aqui, e nao nos 4 pontos de retorno de
+        `_select_action_via_search_inner`, porque repeti-la neles seria a
+        duplicata que `REGRA_SEM_DUPLICACAO.md` proibe. Mesmo idiomatismo de
+        `_should_use_blocker_inner`/`_pick_effect_target_inner`.
+        """
+        r = self._select_action_via_search_inner(p, opp, engine, candidatas)
+        try:
+            if r:
+                self._q_marca_escolhida(r[0])
+        except Exception:
+            pass
+        return r
+
+    def _select_action_via_search_inner(self, p, opp, engine, candidatas):
         """
         Dado um conjunto de candidatas JÁ recortado (`_select_search_candidates`,
         `len(candidatas) >= 2`), decide a melhor por BUSCA DETERMINISTA +

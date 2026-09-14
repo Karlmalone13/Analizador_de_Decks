@@ -68,6 +68,7 @@ def main() -> int:
 
     caminho = RAIZ / args.dataset
     X, y, grupos = [], [], []
+    decisoes, escolhidas, familias = [], [], []
     with caminho.open(encoding='utf-8') as fh:
         for linha in fh:
             linha = linha.strip()
@@ -80,6 +81,12 @@ def main() -> int:
             X.append(feats)
             y.append(float(alvo))
             grupos.append(d.get('leader') or '?')
+            # Quais linhas competiram na MESMA decisao, quem o professor
+            # escolheu, e de que familia era a acao. Linhas antigas nao tem
+            # `decisao` e ficam de fora da concordancia (nao do treino).
+            decisoes.append((d.get('match'), d.get('decisao')))
+            escolhidas.append(bool(d.get('escolhida')))
+            familias.append(d.get('acao') or '?')
 
     if len(X) < 500:
         raise SystemExit('corpus pequeno demais (%d alvos) -- gere mais antes'
@@ -87,6 +94,9 @@ def main() -> int:
     X = np.asarray(X, dtype=float)
     y = np.asarray(y, dtype=float)
     grupos = np.asarray(grupos)
+    decisoes = np.asarray([('%s|%s' % dc) for dc in decisoes])
+    escolhidas = np.asarray(escolhidas)
+    familias = np.asarray(familias)
     n_lideres = len(set(grupos.tolist()))
 
     print()
@@ -120,6 +130,15 @@ def main() -> int:
     # BASE DE COMPARACAO: prever sempre a media. Sem isto, um R2 qualquer
     # parece bom -- e a regra do projeto e ter um controle que pode falhar.
     erros_modelo, erros_base = [], []
+    # CONCORDANCIA TOP-1: por decisao, o argmax do aluno bate a escolha do
+    # professor? E o que decide se o Q substitui a arvore -- erro absoluto
+    # mede o VALOR, e quem decide e o ARGMAX.
+    conc_ok = conc_tot = 0
+    conc_fam = {}
+    # CONTROLE QUE PODE FALHAR (regra do projeto): escolher no ACASO entre as
+    # candidatas da decisao. Com ~4,8 candidatas isso ja da ~21%, entao a
+    # concordancia sozinha nao diz nada -- o que informa e a distancia ate aqui.
+    conc_acaso = 0.0
     gkf = GroupKFold(n_splits=folds)
     print()
     print('  fold | lideres no teste | erro medio do MODELO | erro da MEDIA')
@@ -130,6 +149,29 @@ def main() -> int:
         eb = float(np.mean(np.abs(y[tr].mean() - y[te])))
         erros_modelo.append(em)
         erros_base.append(eb)
+
+        # so as decisoes do fold de TESTE, e so as que tem id e escolhida
+        grupos_dec = {}
+        for pos, i in enumerate(te):
+            dec = decisoes[i]
+            if dec.endswith('|None') or dec.startswith('None|'):
+                continue
+            grupos_dec.setdefault(dec, []).append((pos, i))
+        for dec, itens in grupos_dec.items():
+            if len(itens) < 2:
+                continue          # decisao de uma candidata so nao decide nada
+            alvo_prof = [i for _p, i in itens if escolhidas[i]]
+            if len(alvo_prof) != 1:
+                continue          # sem professor marcado, nao ha o que comparar
+            melhor = max(itens, key=lambda t: pred[t[0]])[1]
+            acertou = (melhor == alvo_prof[0])
+            conc_ok += 1 if acertou else 0
+            conc_acaso += 1.0 / len(itens)
+            conc_tot += 1
+            fam = familias[alvo_prof[0]]
+            d2 = conc_fam.setdefault(fam, [0, 0])
+            d2[1] += 1
+            d2[0] += 1 if acertou else 0
         print('  %4d | %16d | %20.4f | %13.4f'
               % (k, len(set(grupos[te].tolist())), em, eb))
 
@@ -145,6 +187,27 @@ def main() -> int:
     else:
         print('  => APRENDEU a ordenar acao. Proximo: ligar e medir no motor.')
 
+    conc = (100.0 * conc_ok / conc_tot) if conc_tot else None
+    print()
+    if conc is None:
+        print('  CONCORDANCIA TOP-1: sem amostra -- o corpus nao tem `decisao`/')
+        print('  `escolhida` (linhas anteriores ao bloco 809). Gere um ciclo novo.')
+    else:
+        acaso = 100.0 * conc_acaso / conc_tot
+        print('  CONCORDANCIA TOP-1 COM O PROFESSOR: %.1f%% (%d decisoes)'
+              % (conc, conc_tot))
+        print('     escolher no ACASO daria %.1f%%  ->  %+.1f pp acima do acaso'
+              % (acaso, conc - acaso))
+        print('     a mesma acao que a arvore escolheria, FORA DA AMOSTRA.')
+        print('     E ISTO, nao o erro acima, que decide se o Q substitui a')
+        print('     arvore: o motor escolhe por argmax, nao por valor.')
+        if conc_fam:
+            print()
+            print('     por familia de acao:')
+            for fam, (ok, tot) in sorted(conc_fam.items(), key=lambda kv: -kv[1][1]):
+                print('       %-12s %5.1f%%  (%d decisoes)'
+                      % (fam, 100.0 * ok / max(1, tot), tot))
+
     modelo = novo().fit(X, y)
     bundle = {
         'modelo': modelo,
@@ -154,6 +217,12 @@ def main() -> int:
         'n_features': int(X.shape[1]),
         'n_lideres': int(n_lideres),
         'erro_fora_amostra': em,
+        'concordancia_top1': conc,
+        'concordancia_acaso': (100.0 * conc_acaso / conc_tot) if conc_tot else None,
+        'concordancia_decisoes': conc_tot,
+        'concordancia_por_familia': {k: {'acerto_pct': round(100.0 * v[0] / max(1, v[1]), 1),
+                                         'decisoes': v[1]}
+                                     for k, v in conc_fam.items()},
         'erro_da_media': eb,
         'ganho_pct': ganho,
         'dataset': args.dataset,

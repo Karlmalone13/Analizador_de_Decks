@@ -7,6 +7,24 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **A METRICA QUE DECIDE PASSOU A EXISTIR (13/09/2026, bloco 809)**: o
+> `treinar_q.py` ja dizia na propria saida que o que decide e *"se ele escolhe a
+> mesma acao que o professor escolheria"* -- e esse numero **nunca foi
+> calculado**. Faltavam tres campos no corpus (`decisao`, `acao`, e a
+> `escolhida` que no modo bootstrap saia SEMPRE False porque a coleta ocorre
+> antes da decisao). Construidos, mais a concordancia top-1 fora da amostra por
+> familia no `treinar_q.py`.
+>
+> **Piloto (1.799 alvos, NAO e o corpus de producao de 549.435)**: erro
+> 0,1858 => "erra 45% menos que a media, APRENDEU"; concordancia **25,8%**
+> contra **25,4% do acaso** = **+0,4pp**. As duas reguas discordam sobre o mesmo
+> modelo. Pior familia: `attach_don` 6,7%. Ja explica o portao 0x13 do bloco
+> 801 -- e o erro de 0,0453 nunca teria avisado.
+>
+> **O numero de producao sai no ciclo 2** (as linhas ja gravadas nao tem
+> `decisao`). Pode ser muito melhor: a quantidade de dado e a alavanca que ja
+> se mediu mover (10,0% -> 31,8% com 23x de corpus).
+
 > **TELEMETRIA DO CICLO FECHADA (13/09/2026, bloco 808)**: quatro buracos, um
 > deles meu. (1) **`avalia_contra_humano.py` nao era chamado por ninguem** --
 > o cabecalho dele afirmava "chamado pelo `ciclo.py` na etapa 4" e era falso;
