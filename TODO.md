@@ -1,11 +1,37 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 14 de setembro de 2026 (bloco 829)
+**Última atualização:** 14 de setembro de 2026 (bloco 830)
 
 > **Escopo deste arquivo** (revisto em 12/09/2026): lista VIVA — o que
 > está aberto e o fluxo recente (setembro/2026, blocos 748-779). O
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
+
+> **VARREDURA DAS FLAGS DE RUNTIME AO VIVO (14/09/2026, bloco 830)**: a tarefa
+> que o bloco 818 deixou explicita (*"vale varrer as outras"*) e ninguem tinha
+> feito. O `_dto_to_gs` seta 11 campos, mas **NAO seta 10 flags**:
+> `rush_this_turn`, `blocker_this_turn`, `double_attack_this_turn`,
+> `unblockable_this_turn`, `banish_this_turn`, `frozen_next_refresh`,
+> `can_attack_active_this_turn`, `own_effect_negated_this_turn`,
+> `ko_on_opp_blocker_used_this_turn`, `battled_opp_character_this_turn`.
+>
+> **O erro e o ESPELHO do Shiki**: la a flag ausente deixava o bot PERMISSIVO
+> demais (jogada ilegal -> travamento, barulhento); aqui deixa RESTRITIVO demais
+> (jogada legal nunca oferecida, **silencioso**). Keyword IMPRESSA funciona (vem
+> de `card.data`); keyword CONCEDIDA por efeito e invisivel ao vivo.
+>
+> **Tamanho medido (nao inflar)**: 35 cartas de 2.839 (**1,2%**) concedem
+> keyword por efeito; nos 11 decks instalados, **3**. Lacuna real mas ESTREITA.
+> As outras 5 flags nao foram dimensionadas -- registradas como NAO-MEDIDAS.
+>
+> **Fix exige o PLUGIN** (o `CardDto` nao tem campo de keyword concedida) = C#.
+> **E .NET 10.0.400 ESTA instalado nesta maquina** -- da pra recompilar aqui,
+> sem depender da Arthur_PC. Nenhum bloco tinha registrado isso.
+>
+> **Confirmado de passagem**: CPU x CPU NAO treina o modelo (so `ciclo.py`,
+> `treinar_q.py` e `treino_continuo.py` escrevem em `q_alvos.jsonl`), mas
+> MELHORA o motor achando o que o auto-jogo nao acha -- porque no auto-jogo quem
+> julga a legalidade e o nosso proprio codigo.
 
 > **`human_patterns.json` PARA DE APRENDER COM O PROPRIO BOT (14/09/2026, bloco
 > 829)**: fecha o achado grave do bloco 827. Criterio confirmado pelo usuario --

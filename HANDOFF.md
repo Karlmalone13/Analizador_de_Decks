@@ -53,6 +53,116 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-14 (830) - A VARREDURA que o bloco 818 mandou fazer e ninguem tinha feito: 10 flags de runtime que o caminho AO VIVO nunca seta -- e o erro delas e o ESPELHO do Shiki (silencioso, nao barulhento)
+
+O usuario corrigiu um enquadramento meu: eu tinha respondido que CPU x CPU
+*"nao treina"* e parei ai. Ele respondeu: *"mas o cpu x cpu serve para gente
+treinar tb e achar falhas de jogabilidade do nosso motor, igual fizemos ontem
+com o shiki"*.
+
+**Ele esta certo, e a minha resposta foi estreita.** Sao dois sentidos de
+"treinar" que eu misturei:
+
+* **treinar o MODELO** (gradiente, `q_alvos.jsonl` -> `q_net.joblib`): CPU x CPU
+  nao faz, e isso continua verdade (conferido: so `ciclo.py`, `treinar_q.py` e
+  `treino_continuo.py` escrevem no corpus; `server.py`/`collect_latest_match.py`
+  nao tem uma referencia sequer).
+* **melhorar o MOTOR**: faz -- e faz o que o auto-jogo **nao consegue**, porque
+  no auto-jogo quem julga a legalidade e o nosso proprio codigo.
+
+### O caso do Shiki prova o ponto melhor do que eu tinha admitido
+
+`rush_character_only_this_turn` e ESTADO DE RUNTIME, marcado nos ~8 pontos onde
+o MOTOR joga uma carta. Ao vivo quem joga e o JOGO, `_dto_to_gs` parava no
+`just_played`, a flag ficava `False`, o lider entrava como alvo legal e o bot
+declarava ataque ilegal -- travando o plugin. **O auto-jogo jamais acharia**:
+la a flag sempre e marcada, porque la quem joga a carta e o motor.
+
+### A VARREDURA -- a tarefa que o bloco 818 deixou explicita e ficou parada
+
+> *"Classe de bug a vigiar: toda flag de runtime que o motor marca ao JOGAR uma
+> carta esta potencialmente ausente ao vivo. `rush_character_only_this_turn` era
+> uma; vale varrer as outras."*
+
+Feita agora. O `_dto_to_gs` seta `just_played`, `rested`, `don_attached`,
+`cannot_attack_until`, `_action_used`, `_am_used_turn`, `data`,
+`_attack_power_override`, `_db_base_power`, `_deck_uid` e
+`rush_character_only_this_turn` (o fix do 818).
+
+**NAO seta nenhuma destas 10:**
+
+```
+unblockable_this_turn      frozen_next_refresh        rush_this_turn
+double_attack_this_turn    blocker_this_turn          banish_this_turn
+can_attack_active_this_turn                  own_effect_negated_this_turn
+ko_on_opp_blocker_used_this_turn             battled_opp_character_this_turn
+```
+
+### Por que o erro e o ESPELHO do Shiki -- e por isso mais dificil de achar
+
+O motor le assim (`decision_engine.py:2620-2633`):
+
+```python
+def is_rush(self):    return self._kw_active('rush', self.has_rush) or self.rush_this_turn
+def is_blocker(self): return self._kw_active('blocker', self.has_blocker) or self.blocker_this_turn
+```
+
+A parte ESTATICA vem de `card.data`, que o ao vivo seta -- **keyword impressa na
+carta funciona**. A parte CONCEDIDA POR EFEITO nao: ao vivo `rush_this_turn` e
+sempre `False`.
+
+| | flag ausente causa | sintoma |
+|---|---|---|
+| **Shiki** (818) | permissivo DEMAIS | jogada ILEGAL -> jogo recusa -> plugin trava (**barulhento**) |
+| **estas 10** | restritivo DEMAIS | jogada legal NUNCA OFERECIDA (**silencioso**) |
+
+Um personagem que o JOGO acabou de ganhar [Rush] por efeito simplesmente nao
+existe como atacante pro motor. Nada quebra, nada trava, nada aparece em log de
+erro -- a jogada so nao acontece.
+
+### TAMANHO, medido antes de virar prioridade
+
+Honestidade sobre a magnitude, pra nao inflar o achado:
+
+```
+cartas que CONCEDEM keyword por efeito (parseadas):
+  rush 12 | unblockable 11 | double_attack 6 | blocker 5 | banish 1
+  TOTAL unico: 35 cartas de 2.839 no banco  (1,2%)
+nos 11 decks instalados neste jogo: 3 cartas (OP17-079, OP17-084, ST01-016)
+```
+
+**E lacuna real, mas ESTREITA.** Nao e prioridade de topo, e seria desonesto
+vende-la como tal. As outras 5 flags da lista (`frozen_next_refresh`,
+`can_attack_active_this_turn`, `own_effect_negated_this_turn`,
+`ko_on_opp_blocker_used_this_turn`, `battled_opp_character_this_turn`) **nao
+foram dimensionadas** -- ficam registradas como nao-medidas, nao como
+descartadas.
+
+### O CAMINHO DO FIX, e uma constatacao que muda o que e possivel aqui
+
+O `CardDto` carrega `code, cost, power, powerAtk, rested, justPlayed,
+deckUniqueId, donAttached, actionUsed, cantAttack` -- **nenhum campo de keyword
+concedida**. Entao o dado nao existe do lado Python: consertar de verdade exige
+o PLUGIN passar a mandar as keywords ativas, o que e C#.
+
+**E .NET 10.0.400 ESTA instalado nesta maquina.** O bloco 819 registrou que a
+DLL pre-compilada de `BOT/dist/` existe justamente pra nao precisar de .NET aqui
+-- mas precisar e poder sao coisas diferentes: **da pra recompilar o plugin
+nesta maquina**, sem depender da `Arthur_PC`. Isso amplia o que esta segunda
+maquina pode fazer, e nenhum bloco tinha registrado.
+
+**Nao mexi no plugin**: o usuario ia jogar, e trocar a DLL exige fechar o jogo.
+
+### Nota de metodo
+
+Este achado saiu de o usuario discordar de uma resposta minha, nao de uma
+medicao. Vale registrar o padrao: eu respondi o que era mecanicamente
+verdadeiro (*"nao escreve no corpus"*) e deixei de fora o que ele estava
+perguntando de fato (*"isso melhora o bot?"*). A resposta estreita estava certa
+e mesmo assim escondia uma tarefa em aberto do bloco 818, parada havia um dia.
+
+---
+
 ## 2026-09-14 (829) - O `human_patterns.json` para de aprender com o PROPRIO BOT: 18,3% das "acoes humanas" eram jogada do bot. E o smoke fica VERDE (1.430/0) pela 1a vez na sessao
 
 Pedido do usuario: *"ajeite o que precisar, depois eu rodo"*, e no meio do
