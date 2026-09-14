@@ -53,6 +53,43 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-14 (823) - As regras das DUAS MAQUINAS viram arquivo obrigatorio, com o passo a passo
+
+Pedido do usuario: *"deixa essas regras registradas e o passo a passo, assim
+evitamos de quebrar ou paralelismo quando iniciarmos novas sessoes"*.
+
+Criado [`REGRA_DUAS_MAQUINAS.md`](REGRA_DUAS_MAQUINAS.md) na raiz, com ponteiro
+em **`CLAUDE.md` E `AGENTS.md`** -- a regra do espelho e explicita e ja divergiu
+por meses antes (achado 25/07).
+
+### Por que num arquivo proprio, e nao mais um bloco de HANDOFF
+
+O HANDOFF e cronologico: quem comeca uma sessao le o topo, e daqui a duas semanas
+isto estara 15 blocos abaixo. A informacao e de **inicio de sessao**, nao de
+historico -- mesmo idioma de `REGRA_SEM_DUPLICACAO.md` e
+`REGRA_O_CRITERIO_EMERGE.md`, que existem exatamente porque regra enterrada em
+prosa nao e lida.
+
+### O que o arquivo tem
+
+* **A regra**: *uma maquina TREINA por vez; todas podem GERAR e JOGAR*, com os
+  tres motivos pelos quais treinar em duas quebra **em silencio** (binario sem
+  merge, portao sem sentido com campeoes divergentes, modelos que nao se fundem).
+* **O token**: `ciclo_estado.json` versionado, a seed saindo de
+  `args.seed + n_ciclo * 101`, e a exigencia de `pull` antes / `push` depois --
+  com o custo ja medido de ignorar isso (os 9.865 alvos 100% repetidos de 13/09).
+* **O que viaja como**: a tabela git x zip e o criterio (merge e historico x
+  cresce sempre), nao tamanho.
+* **Dois passo a passo**: instalar numa maquina nova, e passar a vez.
+* **O que dizer a uma sessao nova** na outra maquina, com os tres pontos a
+  confirmar antes de rodar -- corpus, seed e versao de biblioteca, que sao
+  exatamente onde isso quebra sem erro visivel.
+* **Armadilhas ja pagas**: o `scikit-learn` que faltava no requirements, a DLL
+  ligada contra as DLLs do jogo, e o `du -sh .git` que nao e o tamanho do
+  repositorio.
+
+---
+
 ## 2026-09-14 (822) - O QUE VAI PELO GIT E O QUE VAI ZIPADO -- a divisao, num lugar so
 
 Estava espalhada por tres blocos (819, 820, 821) e uma sessao futura nao acharia.

@@ -161,6 +161,30 @@ Regras-chave (resumo — leia o resto deste arquivo):
   resultado?". Regra de JOGO (legalidade, uma-vez-por-turno) define o que é
   possível e não emerge de teste; o que emerge é o julgamento de VALOR.
 
+
+### DUAS MAQUINAS -- leia ANTES de rodar ciclo, treino, portao ou partida
+
+> **OBRIGATORIO ao INICIAR sessao** (pedido do usuario, 14/09/2026):
+> [`REGRA_DUAS_MAQUINAS.md`](REGRA_DUAS_MAQUINAS.md). O projeto passou a rodar
+> em MAIS DE UMA maquina, e a regra e uma so:
+>
+> > **Uma maquina TREINA por vez. Todas podem GERAR partidas e JOGAR.**
+>
+> Treinar em duas quebra **em silencio**: `q_net.joblib` e binario versionado
+> sem merge (quem empurra depois descarta a geracao do outro sem avisar), o
+> portao deixa de significar "cada geracao bate a anterior" com campeoes
+> divergentes, e modelos nao se fundem -- corpus concatena, rede nao.
+>
+> O token de quem tem a vez e `metrics/ciclo_estado.json`, **versionado**: a
+> seed sai de `args.seed + n_ciclo * 101`, entao quem der `pull` pega o proximo
+> ciclo e nao repete as partidas do anterior. **So funciona com `pull` ANTES e
+> `push` DEPOIS.**
+>
+> O arquivo tem tambem: o que viaja pelo GIT e o que viaja ZIPADO pela sessao (e
+> o criterio, que nao e tamanho), o passo a passo de instalar numa maquina nova,
+> o de passar a vez, o que dizer a uma sessao nova na outra maquina, e as
+> armadilhas ja pagas.
+
 ---
 
 Este arquivo é lido automaticamente no início de cada sessão do Codex.

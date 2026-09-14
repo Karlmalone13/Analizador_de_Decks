@@ -7,6 +7,18 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **REGRA_DUAS_MAQUINAS.md (14/09/2026, bloco 823)**: as regras de trabalhar em
+> mais de uma maquina viraram arquivo OBRIGATORIO de inicio de sessao, com
+> ponteiro no `CLAUDE.md` e no `AGENTS.md` (regra do espelho). Num arquivo
+> proprio e nao em bloco de HANDOFF porque e informacao de INICIO, nao de
+> historico -- mesmo idioma de `REGRA_SEM_DUPLICACAO.md`.
+>
+> Conteudo: a regra (*uma maquina treina por vez; todas geram e jogam*), os tres
+> motivos pelos quais treinar em duas quebra em silencio, o token
+> (`ciclo_estado.json` + `pull` antes / `push` depois), a tabela git x zip com o
+> criterio, os passo a passo de instalar e de passar a vez, o que dizer a uma
+> sessao nova, e as armadilhas ja pagas.
+
 > **GIT x ZIP -- a divisao, num lugar so (14/09/2026, bloco 822)**:
 > **git** = codigo, `HANDOFF`/`TODO`, banco de `logs/`, `q_net.joblib`,
 > `ciclo_estado.json`. **zip pela sessao** = corpus (`q_alvos.jsonl`,
