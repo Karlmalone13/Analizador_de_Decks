@@ -53,6 +53,111 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-14 (829) - O `human_patterns.json` para de aprender com o PROPRIO BOT: 18,3% das "acoes humanas" eram jogada do bot. E o smoke fica VERDE (1.430/0) pela 1a vez na sessao
+
+Pedido do usuario: *"ajeite o que precisar, depois eu rodo"*, e no meio do
+trabalho a confirmacao explicita do criterio: *"isso, tem que separar
+humano_humano de botxhumano de cpu x cpu"*.
+
+### 1. O filtro do `human_patterns.json` -- o achado grave do bloco 827, fechado
+
+`audit_human_patterns.py` varria `logs/parsed/*.json` e extraia padroes dos
+DOIS lados de TODO log, sem olhar `tipo` nem `bot_side`. A calibragem que
+ensina o motor a IMITAR O HUMANO (`_human_pattern_bonus`/
+`_human_counter_card_bonus`) aprendia, em parte, com o proprio bot.
+
+**O filtro e POR LADO, nao por log** -- confirmado pelo usuario. Em `com_bot` o
+lado HUMANO e dado legitimo; jogar o log inteiro fora perderia metade util:
+
+| classe | logs | lados aproveitados |
+|---|---|---|
+| `humano_vs_humano` | 50 | os DOIS |
+| `com_bot` (28 + 41 inferidos por `bot_side`) | 69 | **so o humano** |
+| `cpu_vs_cpu` | 4 | **nenhum** (log pulado inteiro) |
+| indeterminado (sem `tipo` e sem `bot_side`) | 55 | mantidos |
+
+Os 55 indeterminados foram MANTIDOS de proposito: nao da pra provar que sao
+bot, e **40 dos 55 sao anteriores a 1a partida com bot do banco** (18/07),
+entao quase certamente sao humanos. Descarta-los custaria mais que o risco.
+
+**O tamanho da contaminacao, medido com A/B no mesmo banco de 178 logs:**
+
+```
+sem filtro : 178 logs | 2.464 turnos | 7.696 acoes | 1.121 defesas
+COM filtro : 178 logs | 2.091 turnos | 6.286 acoes |   954 defesas
+removido   : 4 logs cpu_vs_cpu + 320 turnos do lado do bot
+             373 turnos (15,1%)  |  1.410 acoes (18,3%)
+```
+
+**18,3% do que o arquivo chamava de "padrao humano" era jogada do bot.**
+
+O arquivo em producao estava ALEM disso defasado: treinado com **165** logs
+contra os 178 do banco. Regenerado com o filtro (a regra do projeto ja obriga
+regenerar quando entram logs novos -- so faltava faze-lo com o filtro certo).
+Copia do anterior guardada fora do repo antes de sobrescrever.
+
+`--sem-filtro-bot` reproduz o comportamento antigo, pra comparacao; imprime
+aviso quando usado. O `meta` do arquivo agora registra `filtro_bot` com quanto
+foi descartado, pra que a proxima sessao veja isso sem precisar medir de novo.
+
+### 2. O relatorio de consequencia passa a dizer DE QUAL PARTIDA
+
+Pendencia do bloco 828. O dado ja existia -- `analisar()` agrupa por `match_id`
+e grava em cada linha -- e so o `imprimir()` descartava. Agora cada linha leva
+`P1`/`P2`..., e quando a sessao tem mais de uma partida sai um aviso no topo
+com o mapa `P<n> = <match_id>`.
+
+**Bug meu no caminho**: o laco de horizontes usa uma variavel `rot` (`'direto'`
+se h=='1'...) que SOMBREAVA a minha `rot` com o mapa -- ela virava string e o
+bloco seguinte estourava com `AttributeError`. Renomeada pra `rotulos`.
+
+**E o teste da correcao achou algo melhor que a correcao**: rodando no log real,
+o aviso NAO apareceu -- o `decision_log` novo tem UMA partida com decisoes
+reais. Cruzando com o combat log (que tinha 2 segmentos), a jogada de Gloriosa
+esta no segmento `_p2`, o de 12 turnos. Ou seja:
+
+> **o splitter numera na ordem do ARQUIVO, e o ULTIMO segmento e a partida MAIS
+> RECENTE** -- o contrario do que a intuicao sugere. O segmento de 14 turnos era
+> uma partida jogada entre 14:00 e 14:19 (durante o restart do server) que nunca
+> tinha sido coletada e so agora entrou no banco.
+
+### 3. O smoke fica VERDE: 1.430 OK, 0 FALHOU
+
+A falha do Imu (pre-existente desde o bloco 824) era o teste de CONTROLE de
+`_find_real_deck` afirmando que a decklist real do Imu (OP13-079) estava no
+banco *"desde o bloco 609"* -- e a recoleta de 184 decks meta OP16 (bloco 750)
+tinha deixado ZERO decks do Imu em `decklists_raw.csv`.
+
+**Corrigido pela FORMA, nao pela instancia**: o controle agora escolhe o lider
+DINAMICAMENTE (o que tem mais decks no CSV -- hoje `OP16-022`, 47 decks), entao
+acompanha a recoleta em vez de apodrecer com ela. Cravar outro codigo so
+adiaria o mesmo problema.
+
+Dois erros meus ate acertar, registrados: usei `c.code`/`card_type` como se
+`cards` fosse dict de OBJETOS, e e dict de **dicts** (chave `type`, valor
+`'LEADER'`); e deixei o `OP13-079` cravado na asserçao depois de tornar a
+escolha dinamica.
+
+**Descoberta lateral**: o docstring de `audit_real_losses.py` diz que Marshall
+D. Teach esta "confirmado ausente" do `decklists_raw.csv` -- **hoje ele tem 21
+decks**. Documentacao envelhecida junto com o dado. Nao corrigi (e prosa, nao
+comportamento), fica registrado.
+
+### Estado -- pronto pra rodar
+
+`smoke_fast.py`: **1.430 OK, 0 FALHOU**. `human_patterns.json` regenerado com
+filtro e 178 logs. Server reiniciado depois de regenerar (a calibragem e lida
+no import -- sem restart, a partida nova rodaria com a versao antiga em
+memoria, mesmo modo de falha do `DEFAULT_AUTOSAVED` no bloco 827).
+
+**O que fica aberto**: o efeito do filtro na QUALIDADE DE JOGO nao foi medido
+(exigiria `decision_quality_full.py`). O fix e de CORRECAO -- tirar do "padrao
+humano" o que nao e humano -- nao de tuning; mas ninguem mediu se paga, e a
+disciplina do projeto e nao afirmar ganho sem medir. A copia pre-filtro esta
+guardada se for preciso comparar.
+
+---
+
 ## 2026-09-14 (828) - O auto-collect VOLTOU A FUNCIONAR (ponta a ponta) -- e o alerta FORTE que ele levantou NAO era bug, mas a auditoria dele expos uma limitacao real do relatorio
 
 Segunda rodada CPU x CPU, depois do fix de caminho do bloco 827. O server foi

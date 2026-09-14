@@ -261,6 +261,21 @@ def _fmt_retorno(r: dict | None) -> str:
             f"board_ganho={r['board_ganho']:+d} mao={r['mao_delta']:+d}")
 
 
+def _rotulos_de_partida(linhas: list[dict]) -> dict:
+    """`match_id` -> "P1"/"P2"..., na ordem em que as partidas aparecem.
+
+    O hex de 32 caracteres nao ajuda ninguem a achar o log certo; o numero da
+    partida dentro da sessao ajuda. O mapa completo e impresso uma vez no topo,
+    pra quem precisar casar com o `match_id` do receipt.
+    """
+    ordem = []
+    for l in linhas:
+        m = l.get('match_id') or 'legacy'
+        if m not in ordem:
+            ordem.append(m)
+    return {m: f"P{i + 1}" for i, m in enumerate(ordem)}
+
+
 def imprimir(rel: dict, top: int) -> None:
     print('== Consequencia por decisao individual ==')
     print(f"  {rel['analisadas']} de {rel['decisoes_main']} decisoes de main analisadas "
@@ -268,6 +283,16 @@ def imprimir(rel: dict, top: int) -> None:
     if not rel['linhas']:
         print('  Nada a reportar -- sem decisoes com estado antes/depois neste log.')
         return
+
+    rotulos = _rotulos_de_partida(rel['linhas'])
+    if len(rotulos) > 1:
+        # A sessao do server cobriu MAIS DE UMA partida: sem isto, o numero do
+        # turno nao identifica a jogada (bloco 828).
+        print(f"  ATENCAO: esta sessao tem {len(rotulos)} partidas -- o turno sozinho")
+        print("           NAO identifica a jogada. Use a coluna da partida:")
+        for m, r in rotulos.items():
+            n = sum(1 for l in rel['linhas'] if (l.get('match_id') or 'legacy') == m)
+            print(f"             {r} = {m}  ({n} decisoes)")
 
     total_don = sum(l['investimento_don'] for l in rel['linhas'])
     persistentes = [l for l in rel['linhas']
@@ -290,7 +315,8 @@ def imprimir(rel: dict, top: int) -> None:
         print('  Nenhuma -- bom sinal.')
     else:
         for l in sorted(persistentes, key=lambda x: -x['investimento_don'])[:top]:
-            print(f"  turno {l['turno']:<3} {str(l['acao']):<11} {l['carta'] or '-':<10} "
+            print(f"  {rotulos.get(l.get('match_id') or 'legacy', '?'):<3} "
+                  f"turno {l['turno']:<3} {str(l['acao']):<11} {l['carta'] or '-':<10} "
                   f"alvo={str(l['alvo'] or '-'):<10} DON={l['investimento_don']:<3} "
                   f"score={l['score']}")
             for h in ('1', '3', '5', 'fim_do_turno'):
@@ -303,7 +329,8 @@ def imprimir(rel: dict, top: int) -> None:
         print('   (tipicamente preparacao: anexar DON nao causa dano sozinho,')
         print('    habilita o ataque seguinte. Normalmente NAO e problema.)')
         for l in sorted(so_direto, key=lambda x: -x['investimento_don'])[:top]:
-            print(f"  turno {l['turno']:<3} {str(l['acao']):<11} {l['carta'] or '-':<10} "
+            print(f"  {rotulos.get(l.get('match_id') or 'legacy', '?'):<3} "
+                  f"turno {l['turno']:<3} {str(l['acao']):<11} {l['carta'] or '-':<10} "
                   f"DON={l['investimento_don']:<3} | depois: "
                   f"{_fmt_retorno(l['retornos']['3'] or l['retornos']['fim_do_turno'])}")
         print()
@@ -312,7 +339,8 @@ def imprimir(rel: dict, top: int) -> None:
     for l in rel['linhas'][:top * 3]:
         marca = ('!!' if l['veredito'] == 'DON_SEM_RETORNO_PERSISTENTE'
                  else ' ?' if l['veredito'] == 'DON_SEM_RETORNO_DIRETO' else '  ')
-        print(f"  {marca} turno {l['turno']:<3} {str(l['acao']):<11} {l['carta'] or '-':<10} "
+        print(f"  {marca} {rotulos.get(l.get('match_id') or 'legacy', '?'):<3} "
+              f"turno {l['turno']:<3} {str(l['acao']):<11} {l['carta'] or '-':<10} "
               f"DON={l['investimento_don']:<3} | {_fmt_retorno(l['retornos']['1'])}")
     print()
 

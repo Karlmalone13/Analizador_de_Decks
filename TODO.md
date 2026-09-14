@@ -1,11 +1,36 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 14 de setembro de 2026 (bloco 828)
+**Última atualização:** 14 de setembro de 2026 (bloco 829)
 
 > **Escopo deste arquivo** (revisto em 12/09/2026): lista VIVA — o que
 > está aberto e o fluxo recente (setembro/2026, blocos 748-779). O
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
+
+> **`human_patterns.json` PARA DE APRENDER COM O PROPRIO BOT (14/09/2026, bloco
+> 829)**: fecha o achado grave do bloco 827. Criterio confirmado pelo usuario --
+> *"tem que separar humano_humano de botxhumano de cpu x cpu"*. Filtro **POR
+> LADO**: `cpu_vs_cpu` pula o log inteiro (4), `com_bot` entra so pelo lado
+> humano (69), `humano_vs_humano` pelos dois (50); os 55 indeterminados foram
+> MANTIDOS (40 deles anteriores a 1a partida com bot).
+>
+> **Contaminacao medida (A/B no mesmo banco)**: 373 turnos (**15,1%**) e 1.410
+> acoes (**18,3%**) eram jogada do bot. O arquivo em producao ainda estava
+> defasado (165 logs contra 178). Regenerado com filtro; `--sem-filtro-bot`
+> reproduz o antigo; o `meta` agora grava quanto foi descartado.
+>
+> **`smoke_fast.py`: 1.430 OK, 0 FALHOU** -- verde pela 1a vez na sessao. A
+> falha do Imu (bloco 824) era teste de controle cravado num lider que a
+> recoleta do bloco 750 tirou do CSV; agora escolhe o lider DINAMICAMENTE
+> (OP16-022 hoje), entao acompanha recoletas futuras.
+>
+> **Relatorio de consequencia** agora diz de qual partida e cada linha (o dado
+> ja existia, o `imprimir()` e que descartava). Achado no teste: **o splitter
+> numera na ordem do ARQUIVO e o ULTIMO segmento e a partida MAIS RECENTE**.
+>
+> **ABERTO**: o efeito do filtro na QUALIDADE DE JOGO nao foi medido (exigiria
+> `decision_quality_full.py`). E correcao, nao tuning -- mas nao afirmar ganho
+> sem medir. Copia pre-filtro guardada pra comparacao.
 
 > **AUTO-COLLECT CONFIRMADO PONTA A PONTA (14/09/2026, bloco 828)**: depois do
 > fix do bloco 827, `[AUTO-COLLECT] OK` e `metrics/live_runs/` nasceu com os 4

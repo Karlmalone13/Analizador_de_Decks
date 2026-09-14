@@ -12028,12 +12028,28 @@ def test_find_real_deck_exige_codigo_exato_do_lider_18_08() -> None:
     check("print errado (Ace OP13-002 no banco, log usa OP16-001): NAO usa o print errado",
           res2 is not None and res2[0].code == "OP16-001")
 
-    # Controle: lider com decklist real do CODIGO EXATO (Imu, OP13-079,
-    # ja confirmado presente no banco desde o bloco 609) continua
+    # Controle: um lider QUE TEM decklist real do CODIGO EXATO continua
     # achando o deck real -- o fix nao quebra o caso que ja funcionava.
-    res3 = _find_real_deck("Imu", cards, df_raw, urls, "OP13-079")
-    check("lider com decklist real do codigo exato (Imu): continua achando deck real, nao generico",
-          res3 is not None and res3[0].code == "OP13-079"
+    #
+    # O lider e escolhido DINAMICAMENTE (o que tem mais decks no CSV), nao
+    # cravado. Antes era "Imu (OP13-079), ja confirmado presente desde o bloco
+    # 609" -- so que a recoleta de 184 decklists meta OP16 (bloco 750) deixou
+    # ZERO decks do Imu em `decklists_raw.csv`, e o teste passou a FALHAR
+    # afirmando um fato que tinha deixado de ser verdade (achado bloco 824,
+    # corrigido no 829). Escolher do proprio CSV faz o controle acompanhar a
+    # recoleta em vez de apodrecer com ela.
+    _primeiros = df_raw.groupby("deck_url")["card_code"].first()
+    # `cards` e dict CODIGO -> dict da carta (chave 'type', valor 'LEADER').
+    _lideres_reais = {cod for cod, d in cards.items()
+                      if str(d.get("type", "")).upper() == "LEADER"}
+    _cand = _primeiros[_primeiros.isin(_lideres_reais)].value_counts()
+    _codigo_controle = _cand.index[0] if len(_cand) else None
+    _nome_controle = (cards[_codigo_controle].get("name", "")
+                      if _codigo_controle in cards else "")
+    res3 = (_find_real_deck(_nome_controle, cards, df_raw, urls, _codigo_controle)
+            if _codigo_controle else None)
+    check(f"lider com decklist real do codigo exato ({_codigo_controle}): continua achando deck real, nao generico",
+          res3 is not None and res3[0].code == _codigo_controle
           and len(set(c.code for c in res3[1])) < 45)
 
 

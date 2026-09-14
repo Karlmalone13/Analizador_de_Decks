@@ -129,7 +129,43 @@ def load_cards_db(path: Path) -> dict:
     return cards
 
 
-def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dict:
+def carregar_lados_do_bot(base: Path) -> dict:
+    """`parsed_file` -> nome do jogador que E o BOT (ou '*' pra pular o log).
+
+    Le `logs/index.json`, a UNICA fonte que sabe quem jogou cada lado:
+      * `tipo == 'cpu_vs_cpu'` -> os dois lados sao bot -> pula o log inteiro.
+      * `bot_side` em {'p1','p2'} -> so as jogadas DAQUELE lado sao descartadas;
+        o lado humano continua valendo (em `com_bot` ele e dado legitimo).
+      * sem nenhum dos dois -> INDETERMINADO, mantido (nao da pra provar que e
+        bot, e 40 dos 55 sao anteriores a 1a partida com bot do banco).
+
+    Devolve {} se o index nao existir -- o script segue funcionando como antes.
+    """
+    import json as _json
+    idx_path = base / 'logs' / 'index.json'
+    if not idx_path.exists():
+        return {}
+    try:
+        idx = _json.loads(idx_path.read_text(encoding='utf-8'))
+    except Exception:
+        return {}
+    regs = idx if isinstance(idx, list) else idx.get('logs', idx)
+    mapa = {}
+    for r in regs:
+        if not isinstance(r, dict):
+            continue
+        nome = Path(str(r.get('parsed_file') or '')).name
+        if not nome:
+            continue
+        if r.get('tipo') == 'cpu_vs_cpu':
+            mapa[nome] = '*'
+        elif r.get('bot_side') in ('p1', 'p2'):
+            mapa[nome] = r['bot_side']
+    return mapa
+
+
+def extract_patterns(paths: list[Path], cards_db: dict, min_support: int,
+                     lados_do_bot: dict | None = None) -> dict:
     by_leader_band: dict[str, Counter] = defaultdict(Counter)
     by_leader_order: dict[str, Counter] = defaultdict(Counter)
     by_leader_ngram2: dict[str, Counter] = defaultdict(Counter)
@@ -153,15 +189,33 @@ def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dic
     total_actions = 0
     total_defenses = 0
 
+    lados_do_bot = lados_do_bot or {}
+    pulados_log = 0
+    pulados_turno = 0
+
     for path in paths:
+        marca = lados_do_bot.get(path.name)
+        if marca == '*':
+            # cpu_vs_cpu: nenhum lado e humano.
+            pulados_log += 1
+            continue
         data = json.loads(path.read_text(encoding='utf-8'))
         meta = data.get('meta', {})
         turns = data.get('turns', [])
+
+        # Nome do jogador que E o bot neste log (None = nenhum a descartar).
+        jogador_bot = None
+        if marca in ('p1', 'p2'):
+            jogador_bot = (meta.get('players', {}).get(marca, {}) or {}).get('name')
 
         for idx, turn in enumerate(turns):
             player = turn.get('player')
             actions = turn.get('actions', []) or []
             if not player:
+                continue
+            if jogador_bot and player == jogador_bot:
+                # Jogada do PROPRIO BOT -- nao e padrao humano (bloco 829).
+                pulados_turno += 1
                 continue
 
             total_turns += 1
@@ -282,6 +336,10 @@ def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dic
             'defense_events': total_defenses,
             'min_support': min_support,
             'note': 'Padroes observados em logs humanos; usar como sinal, nao como regra absoluta.',
+        'filtro_bot': {
+            'logs_cpu_vs_cpu_pulados': pulados_log,
+            'turnos_do_bot_descartados': pulados_turno,
+        },
         },
         'global_action_orders': counter_to_dict(global_action_orders, 30),
         'by_leader_band': nested_counter_to_dict(by_leader_band, 10),
@@ -319,6 +377,10 @@ def extract_patterns(paths: list[Path], cards_db: dict, min_support: int) -> dic
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument('--sem-filtro-bot', action='store_true',
+                        help='NAO filtra as jogadas do proprio bot (comportamento '
+                             'antigo, so pra comparar). Por padrao, logs cpu_vs_cpu '
+                             'sao pulados e os turnos do lado do bot sao descartados.')
     parser.add_argument('--logs-dir', default='logs/parsed',
                         help='Pasta com logs parseados, relativa a scriptis_da_ia ou absoluta')
     parser.add_argument('--output', default='human_patterns.json',
@@ -342,7 +404,12 @@ def main() -> None:
         raise SystemExit(f'Nenhum log parseado encontrado em {logs_dir}')
 
     cards_db = load_cards_db(base / 'cards_rows.csv')
-    result = extract_patterns(paths, cards_db, min_support=args.min_support)
+    lados = {} if args.sem_filtro_bot else carregar_lados_do_bot(base)
+    if args.sem_filtro_bot:
+        print('AVISO: --sem-filtro-bot -- jogadas do PROPRIO BOT entram como '
+              '"padrao humano" (comportamento pre-bloco 829).')
+    result = extract_patterns(paths, cards_db, min_support=args.min_support,
+                              lados_do_bot=lados)
     output.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
 
     print(f'Logs: {result["meta"]["logs"]} | turnos: {result["meta"]["turns"]} | acoes: {result["meta"]["actions"]}')
