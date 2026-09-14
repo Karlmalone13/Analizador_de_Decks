@@ -13,4 +13,15 @@ pandas==3.0.5
 numpy==2.5.2
 requests==2.34.2
 joblib==1.6.0
+# scikit-learn FALTAVA (achado 14/09/2026, ao planejar treinar em outra
+# maquina): treinar_q.py e value_net.py dependem dele, e o import e lazy --
+# mesma armadilha do achado de 31/08 comentado acima, que so aparece quando
+# alguem de fato treina ou carrega um modelo.
+#
+# E FIXAR a versao importa mais aqui que nos outros: `joblib` serializa
+# OBJETOS do sklearn, nao um formato neutro. Modelo salvo numa versao pode
+# avisar ou falhar ao abrir em outra -- e `q_net.joblib` viaja pelo git entre
+# maquinas, entao versao diferente quebra o modelo do outro lado, com um erro
+# dificil de ligar a causa.
+scikit-learn==1.9.0
 beautifulsoup4==4.15.0

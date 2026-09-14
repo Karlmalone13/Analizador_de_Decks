@@ -53,6 +53,74 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-14 (821) - PASSAR A VEZ: como treinar e jogar na OUTRA maquina sem criar duas linhas de trabalho
+
+Pergunta do usuario: *"qual seria o caminho correto para nao dar paralelismo se
+eu treinar e jogar cpu x cpu na outra maquina?"*.
+
+### O mecanismo que evita a colisao JA EXISTE e e versionado
+
+`metrics/ciclo_estado.json` esta no git e guarda o historico dos ciclos. A seed
+sai de:
+
+```python
+seed = args.seed + n_ciclo * 101      # n_ciclo = len(historico) + 1
+```
+
+Com o ciclo 1 registrado, a outra maquina puxa e vira **ciclo 2 -> seed 9202**,
+nao 9101. **Nao colide sozinho** -- desde que ela de `pull` antes e `push`
+depois.
+
+Ou seja: o estado do ciclo e o TOKEN que diz de quem e a vez. Ele ja fazia isso
+sem ninguem ter desenhado pra isso.
+
+### O caminho, entao
+
+1. **Aqui**: commitar e empurrar tudo. Parar de treinar.
+2. **La**: `git pull` -- vem `ciclo_estado.json` (ciclo 1), o campeao
+   `q_net.joblib` e o banco de logs.
+3. **La**: descompactar o corpus recebido pela sessao em
+   `metrics/q_alvos.jsonl` (381 MB; o git nao leva).
+4. **La**: `python ciclo.py --partidas 300 --workers 4` -- sai ciclo 2, seed
+   9202, automatico.
+5. **La**: CPU x CPU a vontade. Os logs entram no banco, que **e versionado** e
+   volta pelo git.
+6. **La**: commitar `ciclo_estado.json` (+ `q_net.joblib` se promover) +
+   `HANDOFF`/`TODO`, e empurrar.
+7. **Aqui**: `git pull` antes de encostar em qualquer coisa.
+
+**A invariante**: em qualquer momento, UMA maquina so e a treinadora, e a
+passagem de bastao e o par pull/push. Gerar partidas as duas podem; treinar,
+nao.
+
+### O que quebra se as duas treinarem
+
+`q_net.joblib` e **binario versionado sem estrategia de merge**
+(`merge: unspecified`). Dois campeoes promovidos = conflito que o git nao sabe
+resolver, e quem empurrar depois escolhe um **descartando a geracao do outro em
+silencio**. Somado a isso, o portao compara campeao contra desafiante: com
+campeoes divergentes ele deixa de significar *"cada geracao bate a anterior"*.
+
+### RISCO REAL ACHADO NO CAMINHO: `scikit-learn` nao estava no requirements
+
+Ele **nao existia** em `requirements.txt`, e `treinar_q.py`/`value_net.py`
+dependem dele. Numa maquina nova o treino quebraria com `ImportError` -- mesma
+armadilha do achado de 31/08 ja comentado no proprio arquivo: **import lazy
+esconde dependencia ate alguem de fato usar**.
+
+E fixar a versao importa mais aqui que nos outros pacotes: `joblib` serializa
+OBJETOS do sklearn, nao um formato neutro. Modelo salvo numa versao pode avisar
+ou falhar ao abrir em outra -- e `q_net.joblib` viaja pelo git ENTRE maquinas,
+entao versao diferente quebra o modelo do outro lado com um erro dificil de
+ligar a causa. Fixado em `scikit-learn==1.9.0`, a versao desta maquina.
+
+> **Divergencia pre-existente, NAO mexida**: `requirements.txt` pede
+> `numpy==2.5.2` e `joblib==1.6.0`, mas o instalado aqui e `numpy 2.2.2` e
+> `joblib 1.5.3`. Nao alinhei porque nao foi pedido e mexer nisso sem medir
+> pode quebrar o que roda hoje -- fica registrado.
+
+---
+
 ## 2026-09-14 (820) - Cada linha do corpus passa a dizer DE QUAL MAQUINA veio, e o corpus viaja FORA do git
 
 Dois pedidos do usuario, ao planejar treinar em duas maquinas.

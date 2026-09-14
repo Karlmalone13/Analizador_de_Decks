@@ -7,6 +7,27 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **PASSAR A VEZ ENTRE MAQUINAS (14/09/2026, bloco 821)**: `ciclo_estado.json`
+> e versionado e a seed sai de `args.seed + n_ciclo * 101`, entao a outra
+> maquina que der `pull` vira ciclo 2 (seed 9202) e **nao colide** com o 9101 ja
+> gerado. O estado do ciclo e o TOKEN de quem tem a vez.
+>
+> FLUXO: aqui push -> la pull -> descompactar o corpus (vem pela sessao, nao
+> pelo git) -> `ciclo.py` -> CPU x CPU -> la commit+push (`ciclo_estado.json`,
+> `q_net.joblib` se promover, HANDOFF/TODO) -> aqui pull.
+> **INVARIANTE: uma maquina so treina por vez.** Gerar partidas as duas podem.
+>
+> SE AS DUAS TREINAREM: `q_net.joblib` e binario sem merge -- conflito que o git
+> nao resolve, e quem empurra depois descarta a geracao do outro em silencio.
+>
+> **`scikit-learn` NAO estava no requirements.txt** e treinar_q/value_net
+> dependem dele (import lazy escondia). Adicionado e FIXADO em 1.9.0: joblib
+> serializa objetos do sklearn, entao versao diferente entre maquinas quebra o
+> `q_net.joblib` que viaja pelo git.
+>
+> PENDENTE: `requirements.txt` pede numpy 2.5.2 / joblib 1.6.0 e o instalado
+> aqui e 2.2.2 / 1.5.3 -- divergencia pre-existente, nao mexida.
+
 > **CORPUS COM `origem` + TREINO EM DUAS MAQUINAS (14/09/2026, bloco 820)**:
 > cada linha do corpus passa a gravar de qual maquina veio
 > (`_origem_padrao()`: `OPTCG_ORIGEM` ou hostname). As 625.361 linhas
