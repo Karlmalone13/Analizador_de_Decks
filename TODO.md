@@ -1,6 +1,6 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 14 de setembro de 2026 (bloco 831)
+**Última atualização:** 14 de setembro de 2026 (bloco 832)
 
 > **Escopo deste arquivo** (revisto em 12/09/2026): lista VIVA — o que
 > está aberto e o fluxo recente (setembro/2026, blocos 748-779). O
@@ -33,6 +33,26 @@
 > CPU x CPU achar o bug do Shiki que o auto-jogo jamais acharia.
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
+
+> **TELEMETRIA DE EFEITO (14/09/2026, bloco 832)**: `auditoria_efeitos.py` --
+> pedido do usuario (*"verifique se um efeito foi disparado e concluido ou nao,
+> e porque"*). Cruza `decision_log` com `card_effects_db` em 4 estagios:
+> OFERECIDO -> ESCOLHIDO -> ALVO -> CONCLUIDO. O dado ja existia
+> (`execution.status` + `transition_observation`); ninguem cruzava com os
+> gatilhos da carta.
+>
+> **1o uso ja achou**: `on_play` 100% concluido, **`activate_main` 45%**,
+> `when_attacking` 75%. E `--lider OP14-020` (Mihawk) da **0%, 4 de 4
+> RECUSADAS pelo jogo** (`status=failed`, turnos 3-6) -- o sintoma que o usuario
+> descreveu no Enel, agora com numero e turno. **Hipotese NAO confirmada**: o
+> motor oferece/paga sem a condicao `board_has_cost_gte: 5` estar satisfeita.
+> **Primeiro alvo da ferramenta.**
+>
+> **Erro meu pego antes de virar achado**: a 1a versao dizia 18% e 3 dos "NAO"
+> eram FALSO POSITIVO -- efeito com mao neutra (OP09-099, e o `deck` nao estava
+> no delta), efeito so no oponente (OP09-093) e efeito so de poder (OP16-104).
+> Corrigido de forma GENERICA (expectativa vinda dos passos parseados; `deck` no
+> delta). 18% -> **45%**, e os NAO restantes sao quase todos o JOGO recusando.
 
 > **NOTA (14/09/2026, fecha o bloco 831)**: os dois untracked que sobraram
 > foram pro `.gitignore` depois de o usuario perguntar se dariam problema entre

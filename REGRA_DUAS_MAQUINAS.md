@@ -140,6 +140,38 @@ corpus faltando, seed colidindo, ou versão de biblioteca que não abre o modelo
 
 ---
 
+## FECHAMENTO DE SESSÃO DE JOGO — o que entregar quando o usuário pedir
+
+> Combinado com o usuário em 14/09/2026: *"eu vou continuar jogando, ai quando
+> eu solicitar você faz o push e me envia os logs em zip e o q_alvos, para
+> evitar problemas"*.
+
+Enquanto ele joga, **não** interromper com push a cada partida. Quando ele
+pedir, entregar **os três**:
+
+1. **`git push`** — leva código, banco de logs (`logs/`), `ciclo_estado.json`
+   e `q_net.joblib` (se promovido). Antes: `git pull`, e os blocos de
+   `HANDOFF.md`/`TODO.md` (o hook de `pre-push` bloqueia sem eles).
+2. **ZIP do banco de logs** — `logs/{raw,parsed,decks,decks_full}` +
+   `index.json`.
+3. **ZIP do `metrics/q_alvos.jsonl`** — ~444 MB crus → ~13 MB comprimidos
+   (medido no bloco 822: 30x). É o que **não** viaja pelo git, por decisão do
+   bloco 820.
+
+Entregar por `SendUserFile`, para ele baixar no dispositivo que estiver usando.
+
+> **O ZIP dos logs é REDUNDANTE com o git, e isso é intencional** — o pedido
+> foi explicitamente *"para evitar problemas"*. Não substituir o push por ele
+> nem vice-versa: o git é quem dá merge e histórico; o zip é a cópia que não
+> depende de nada dar certo. O `q_alvos` é o oposto: o zip é a ÚNICA via.
+
+**Conferir antes de entregar** (os três lugares onde isso quebra em silêncio):
+contagem de linhas do corpus e a quebra por `origem`; que todo log novo entrou
+no `index.json`; e que a telemetria de cada partida do bot foi lida
+(`live_runs/`, na ordem obrigatória).
+
+---
+
 ## Armadilhas já pagas (não repetir)
 
 * **`scikit-learn` não estava no `requirements.txt`** (achado 14/09). O import é

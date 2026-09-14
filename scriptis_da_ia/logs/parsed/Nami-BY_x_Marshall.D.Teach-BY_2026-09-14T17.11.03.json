@@ -1,0 +1,1542 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Nami",
+          "code": "OP11-041"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Marshall D. Teach",
+          "code": "OP16-080"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 12,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-041",
+          "to_name": "Nami",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP06-106",
+            "OP06-106",
+            "EB03-055",
+            "OP16-056",
+            "EB03-055"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4,
+          "life_cards": [
+            "EB03-053",
+            "OP11-106",
+            "OP16-056",
+            "PRB02-008"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-110",
+            "OP16-110",
+            "OP16-109",
+            "OP09-099",
+            "OP16-108"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "OP09-086",
+            "OP09-093",
+            "OP09-096",
+            "OP12-112",
+            "OP16-103",
+            "OP16-104",
+            "OP16-106",
+            "OP16-116",
+            "OP16-119"
+          ],
+          "life_cards": [
+            "EB04-058",
+            "EB04-059",
+            "OP16-108",
+            "OP16-109"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Doc Q [\"OP16-109\">OP16-109]",
+            "<b>Reveal and Draw Doc Q [\"OP16-109\">OP16-109]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-110",
+            "OP16-108",
+            "OP16-109",
+            "OP16-109"
+          ],
+          "board": [
+            "OP16-110"
+          ],
+          "trash": [
+            "OP16-109"
+          ],
+          "life": 4,
+          "deck": [
+            "OP09-086",
+            "OP09-093",
+            "OP09-096",
+            "OP09-099",
+            "OP12-112",
+            "OP16-103",
+            "OP16-104",
+            "OP16-106",
+            "OP16-108",
+            "OP16-116",
+            "OP16-119"
+          ],
+          "life_cards": [
+            "EB04-058",
+            "EB04-059",
+            "OP16-108",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-110": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP06-106",
+            "OP06-106",
+            "EB03-055",
+            "OP16-056",
+            "EB03-055"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "life_cards": [
+            "EB03-053",
+            "OP11-106",
+            "OP16-056",
+            "PRB02-008"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Nami",
+          "attacker_code": "OP11-041",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-041",
+          "card_name": "Nami",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP14-102",
+          "card_name": "Kumacy",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-041",
+          "to_name": "Nami",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP06-106",
+            "OP06-106",
+            "EB03-055",
+            "OP16-056",
+            "EB03-055",
+            "OP15-113"
+          ],
+          "board": [
+            "OP14-102"
+          ],
+          "trash": [],
+          "life": 4,
+          "life_cards": [
+            "EB03-053",
+            "OP11-106",
+            "OP16-056",
+            "PRB02-008"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP14-102": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-110",
+            "OP16-108",
+            "OP16-109",
+            "OP16-109",
+            "EB04-059"
+          ],
+          "trash": [
+            "OP16-109"
+          ],
+          "board": [
+            "OP16-110"
+          ],
+          "life": 3,
+          "deck": [
+            "OP09-086",
+            "OP09-093",
+            "OP09-096",
+            "OP09-099",
+            "OP12-112",
+            "OP16-103",
+            "OP16-104",
+            "OP16-106",
+            "OP16-108",
+            "OP16-116",
+            "OP16-119"
+          ],
+          "life_cards": [
+            "EB04-058",
+            "OP16-108",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-110": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Nami [\"OP11-041\">OP11-041]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Black Rope Dragon Twister [\"EB04-059\">EB04-059]",
+            "<b>Reveal and Draw Marshall D. Teach [\"OP09-093\">OP09-093]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-109",
+          "card_name": "Doc Q",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-109",
+          "card_name": "Doc Q",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-108",
+            "OP12-112",
+            "OP09-093"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-110",
+            "OP16-109",
+            "OP16-109"
+          ],
+          "trash": [
+            "OP16-109",
+            "EB04-059"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-059",
+            "OP09-086",
+            "OP09-096",
+            "OP09-099",
+            "OP16-103",
+            "OP16-104",
+            "OP16-106",
+            "OP16-108",
+            "OP16-116",
+            "OP16-119"
+          ],
+          "life_cards": [
+            "EB04-058",
+            "OP16-108",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-110": 1,
+            "OP16-109": 2
+          }
+        },
+        "You": {
+          "hand": [
+            "OP06-106",
+            "OP06-106",
+            "EB03-055",
+            "OP16-056",
+            "EB03-055"
+          ],
+          "trash": [
+            "OP15-113"
+          ],
+          "board": [
+            "OP14-102"
+          ],
+          "life": 4,
+          "life_cards": [
+            "EB03-053",
+            "OP11-106",
+            "OP16-056",
+            "PRB02-008"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP14-102": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-056",
+          "card_name": "Mr. 3 (Galdino)",
+          "effects": [
+            "Trash Mr. 3 (Galdino) [\"OP16-056\">OP16-056]",
+            "Draw 2 Card",
+            "Vasco Shot [\"OP16-110\">OP16-110] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Nami",
+          "attacker_code": "OP11-041",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-112"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-041",
+          "to_name": "Nami",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP06-106",
+            "OP06-106",
+            "EB03-055",
+            "EB03-055",
+            "OP14-110",
+            "OP16-056",
+            "EB03-055"
+          ],
+          "board": [
+            "OP14-102"
+          ],
+          "trash": [
+            "OP15-113",
+            "OP16-056"
+          ],
+          "life": 4,
+          "life_cards": [
+            "EB03-053",
+            "OP11-106",
+            "OP16-056",
+            "PRB02-008"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-108",
+            "OP09-093"
+          ],
+          "trash": [
+            "OP16-109",
+            "EB04-059",
+            "OP12-112"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-110",
+            "OP16-109",
+            "OP16-109"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-059",
+            "OP09-086",
+            "OP09-096",
+            "OP09-099",
+            "OP16-103",
+            "OP16-104",
+            "OP16-106",
+            "OP16-108",
+            "OP16-116",
+            "OP16-119"
+          ],
+          "life_cards": [
+            "EB04-058",
+            "OP16-108",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-110": 1,
+            "OP16-109": 2
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": [
+            "Trash This is MY AGE!!!! [\"OP09-096\">OP09-096]",
+            "Add Doc Q [\"OP16-109\">OP16-109] to top of Life"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Nami [\"OP11-041\">OP11-041]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP09-093"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-110",
+            "OP16-109",
+            "OP16-109",
+            "OP16-108"
+          ],
+          "trash": [
+            "EB04-059",
+            "OP12-112",
+            "OP09-096"
+          ],
+          "life": 4,
+          "deck": [
+            "EB04-059",
+            "OP09-086",
+            "OP09-099",
+            "OP16-103",
+            "OP16-104",
+            "OP16-106",
+            "OP16-108",
+            "OP16-116",
+            "OP16-119"
+          ],
+          "life_cards": [
+            "EB04-058",
+            "OP16-108",
+            "OP16-109",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-108": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP06-106",
+            "OP06-106",
+            "EB03-055",
+            "EB03-055",
+            "OP16-056",
+            "EB03-055"
+          ],
+          "trash": [
+            "OP15-113",
+            "OP16-056",
+            "OP14-110"
+          ],
+          "board": [
+            "OP14-102"
+          ],
+          "life": 4,
+          "life_cards": [
+            "EB03-053",
+            "OP11-106",
+            "OP16-056",
+            "PRB02-008"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-111",
+          "card_name": "Perona",
+          "effects": [
+            "Vasco Shot [\"OP16-110\">OP16-110] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Nami",
+          "attacker_code": "OP11-041",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-041",
+          "card_name": "Nami",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP06-106",
+          "card_name": "Kouzuki Hiyori",
+          "effects": [
+            "Takes Bottom Life",
+            "Added card to top of Life from Hand"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-041",
+          "to_name": "Nami",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "EB03-055",
+            "EB03-055",
+            "OP16-056",
+            "EB03-055",
+            "OP14-104",
+            "PRB02-008"
+          ],
+          "board": [
+            "OP14-102",
+            "OP14-111",
+            "OP06-106"
+          ],
+          "trash": [
+            "OP15-113",
+            "OP16-056",
+            "OP14-110"
+          ],
+          "life": 4,
+          "life_cards": [
+            "EB03-053",
+            "OP06-106",
+            "OP11-106",
+            "OP16-056"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP14-111": 1,
+            "OP06-106": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP09-093",
+            "OP16-104"
+          ],
+          "trash": [
+            "EB04-059",
+            "OP12-112",
+            "OP09-096",
+            "OP16-109"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-110",
+            "OP16-109",
+            "OP16-109",
+            "OP16-108"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-059",
+            "OP09-086",
+            "OP09-099",
+            "OP16-103",
+            "OP16-106",
+            "OP16-108",
+            "OP16-116",
+            "OP16-119"
+          ],
+          "life_cards": [
+            "EB04-058",
+            "OP16-108",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-108": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": [
+            "Trash Catarina Devon [\"OP16-104\">OP16-104]",
+            "Add Doc Q [\"OP16-109\">OP16-109] to top of Life"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP16-108",
+          "to_name": "Shiryu",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Nami [\"OP11-041\">OP11-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP09-093"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-110",
+            "OP16-109",
+            "OP16-108",
+            "OP16-108"
+          ],
+          "trash": [
+            "EB04-059",
+            "OP12-112",
+            "OP09-096",
+            "OP16-109",
+            "OP16-104"
+          ],
+          "life": 4,
+          "deck": [
+            "EB04-059",
+            "OP09-086",
+            "OP09-099",
+            "OP16-103",
+            "OP16-106",
+            "OP16-116",
+            "OP16-119"
+          ],
+          "life_cards": [
+            "EB04-058",
+            "OP16-108",
+            "OP16-109",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP16-108": 2
+          }
+        },
+        "You": {
+          "hand": [
+            "EB03-055",
+            "EB03-055",
+            "OP16-056",
+            "EB03-055",
+            "OP14-104",
+            "OP06-106"
+          ],
+          "trash": [
+            "OP15-113",
+            "OP16-056",
+            "OP14-110",
+            "PRB02-008"
+          ],
+          "board": [
+            "OP14-102",
+            "OP14-111",
+            "OP06-106"
+          ],
+          "life": 3,
+          "life_cards": [
+            "EB03-053",
+            "OP11-106",
+            "OP16-056"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP14-111": 1,
+            "OP06-106": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB03-053",
+          "card_name": "Nami",
+          "effects": [
+            "Attach 1 Rested Don to Nami [\"OP11-041\">OP11-041]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Nami",
+          "attacker_code": "OP11-041",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-041",
+          "card_name": "Nami",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-056",
+          "card_name": "Mr. 3 (Galdino)",
+          "effects": [
+            "Trash Mr. 3 (Galdino) [\"OP16-056\">OP16-056]",
+            "Draw 2 Card",
+            "Shiryu [\"OP16-108\">OP16-108] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Perona",
+          "attacker_code": "OP14-111",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP09-086"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "EB03-055",
+            "EB03-055",
+            "EB03-055",
+            "OP14-104",
+            "OP06-106",
+            "EB04-058",
+            "EB03-053",
+            "OP14-111"
+          ],
+          "board": [
+            "OP14-102",
+            "OP14-111",
+            "OP06-106",
+            "EB03-053"
+          ],
+          "trash": [
+            "OP15-113",
+            "OP16-056",
+            "OP14-110",
+            "PRB02-008",
+            "OP16-056"
+          ],
+          "life": 3,
+          "life_cards": [
+            "EB03-053",
+            "OP11-106",
+            "OP16-056"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP14-111": 1,
+            "EB03-053": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP09-093"
+          ],
+          "trash": [
+            "EB04-059",
+            "OP12-112",
+            "OP09-096",
+            "OP16-109",
+            "OP16-104",
+            "OP16-109",
+            "OP09-086"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-110",
+            "OP16-109",
+            "OP16-108",
+            "OP16-108"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-059",
+            "OP09-099",
+            "OP16-103",
+            "OP16-106",
+            "OP16-116",
+            "OP16-119"
+          ],
+          "life_cards": [
+            "EB04-058",
+            "OP16-108",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP16-108": 2
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Nullify effects of Nami [\"OP11-041\">OP11-041]",
+            "Perona [\"OP14-111\">OP14-111] can't attack next turn",
+            "Nullify effects of Perona [\"OP14-111\">OP14-111] until next turn end!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Nami [\"OP11-041\">OP11-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Nami [\"OP11-041\">OP11-041]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB04-058"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP09-086"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-110",
+            "OP16-108",
+            "OP16-108",
+            "OP09-093"
+          ],
+          "trash": [
+            "EB04-059",
+            "OP12-112",
+            "OP09-096",
+            "OP16-109",
+            "OP16-104",
+            "OP16-109",
+            "OP09-086",
+            "OP16-109"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-059",
+            "OP09-099",
+            "OP16-103",
+            "OP16-106",
+            "OP16-116",
+            "OP16-119"
+          ],
+          "life_cards": [
+            "EB04-058",
+            "OP16-108",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-108": 1,
+            "OP09-093": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "EB03-055",
+            "EB03-055",
+            "EB03-055",
+            "OP14-104",
+            "OP06-106",
+            "EB03-053",
+            "OP14-111",
+            "OP16-056"
+          ],
+          "trash": [
+            "OP15-113",
+            "OP16-056",
+            "OP14-110",
+            "PRB02-008",
+            "OP16-056",
+            "EB04-058"
+          ],
+          "board": [
+            "OP14-102",
+            "OP14-111",
+            "OP06-106",
+            "EB03-053"
+          ],
+          "life": 2,
+          "life_cards": [
+            "EB03-053",
+            "OP11-106"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP14-111": 1,
+            "EB03-053": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB03-053",
+          "card_name": "Nami",
+          "effects": [
+            "Attach 1 Rested Don to Nami [\"OP11-041\">OP11-041]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP14-111",
+          "card_name": "Perona",
+          "effects": [
+            "Vasco Shot [\"OP16-110\">OP16-110] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-041",
+          "to_name": "Nami",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Nami",
+          "attacker_code": "OP11-041",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP09-093",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Nami",
+          "attacker_code": "EB03-053",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-041",
+          "card_name": "Nami",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "EB03-055",
+            "EB03-055",
+            "EB03-055",
+            "OP14-104",
+            "OP06-106",
+            "OP16-056",
+            "OP06-058",
+            "OP14-102"
+          ],
+          "board": [
+            "OP14-102",
+            "OP14-111",
+            "EB03-053",
+            "EB03-053",
+            "OP14-111"
+          ],
+          "trash": [
+            "OP15-113",
+            "OP16-056",
+            "OP14-110",
+            "PRB02-008",
+            "OP16-056",
+            "EB04-058",
+            "OP06-106"
+          ],
+          "life": 2,
+          "life_cards": [
+            "EB03-053",
+            "OP11-106"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB03-053": 2,
+            "OP14-111": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP09-086",
+            "OP16-108"
+          ],
+          "trash": [
+            "EB04-059",
+            "OP12-112",
+            "OP09-096",
+            "OP16-109",
+            "OP16-104",
+            "OP16-109",
+            "OP09-086",
+            "OP16-109"
+          ],
+          "board": [
+            "OP16-110",
+            "OP16-110",
+            "OP16-108",
+            "OP16-108",
+            "OP09-093"
+          ],
+          "life": 2,
+          "deck": [
+            "EB04-059",
+            "OP09-099",
+            "OP16-103",
+            "OP16-106",
+            "OP16-116",
+            "OP16-119"
+          ],
+          "life_cards": [
+            "EB04-058",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-108": 1,
+            "OP09-093": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-108",
+          "to_name": "Shiryu",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Nami [\"OP11-041\">OP11-041]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-056",
+            "OP06-106"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": [
+            "Trash Jesus Burgess [\"OP09-086\">OP09-086]",
+            "Add Doc Q [\"OP16-109\">OP16-109] to top of Life"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Nami [\"OP11-041\">OP11-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Nami [\"OP11-041\">OP11-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP09-093",
+          "target": "Nami [\"OP11-041\">OP11-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

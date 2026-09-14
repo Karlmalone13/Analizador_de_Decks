@@ -163,6 +163,108 @@ visivel**.
 
 ---
 
+## 2026-09-14 (832) - TELEMETRIA DE EFEITO: disparou? concluiu? POR QUE nao? -- e ja achou o caso que o usuario descreveu: Mihawk ativou 4x e o JOGO RECUSOU as 4
+
+Pedido do usuario: *"quero que adicione na telemetria um script que verifique
+se um efeito foi disparado e concluido ou nao, e porque. When attacking ativou,
+foi concluido? Tinha que selecionar alvo, selecionou? Isso com todos os efeitos
+-- on play, activate main, counter, on ko, when attacking, efeito do lider.
+Assim vamos conseguir monitorar bugs, falhas, e corrigir junto dos treinos."*
+
+Caso concreto que ele deu: *"o enel nao conseguiu ativar e executar com
+eficiencia o efeito do lider nenhuma vez"*.
+
+### A ferramenta: `scriptis_da_ia/auditoria_efeitos.py`
+
+Le o `decision_log` e cruza com `card_effects_db.json`. Separa **quatro
+estagios**, porque falhar em cada um tem causa diferente:
+
+| estagio | pergunta | fonte |
+|---|---|---|
+| 1. OFERECIDO | o motor gerou a acao como candidata? | `scored_actions` |
+| 2. ESCOLHIDO | foi escolhida? | `chosen_action` |
+| 3. ALVO | precisava? selecionou? | decisoes `target`/`effect_option` do mesmo ator |
+| 4. CONCLUIDO | o jogo confirmou E o estado mudou? | `execution.status` + `transition_observation` |
+
+**O dado ja existia inteiro** -- `execution` traz `status`
+(`confirmed`/`failed`/`sent`) e `transition_observation` com `before`/`after`/
+`delta`. Ninguem cruzava com o inventario de gatilhos da carta, entao "o efeito
+disparou e nao fez nada" era invisivel.
+
+### O ACHADO, no primeiro uso
+
+```
+gatilho            SIM   NAO    ?   conclusao
+on_play             50     0    0   100% concluido
+activate_main       10    10    2    45% concluido
+when_attacking       3     0    1    75% concluido
+```
+
+E, filtrando o lider: **`--lider OP14-020` da 0% concluido, 4 de 4**.
+
+```
+P6 turno 3  OP14-020  activate_main  alvo=sim -> NAO
+   porque: jogo recusou (status=failed)
+P6 turno 4/5/6 -- identico
+```
+
+Mihawk ativou a habilidade do lider em quatro turnos seguidos e **o JOGO
+RECUSOU as quatro**. Nao e heuristica nossa dizendo que foi ruim: e o
+simulador dizendo `failed`. E exatamente o sintoma que o usuario descreveu no
+Enel, agora com numero e turno.
+
+Texto da carta: *"[Activate:Main] [Once Per Turn] You may rest 1 of your cards:
+**If there is a Character with a cost of 5 or more**, set up to 3 of your DON!!
+as active"*, parseado com `conditions: {board_has_cost_gte: 5}`. **Hipotese a
+investigar** (nao confirmada): o motor oferece e paga o custo sem a condicao
+estar satisfeita. NAO investigado a fundo -- fica como o primeiro alvo da
+ferramenta.
+
+### ERRO MEU, PEGO ANTES DE VIRAR ACHADO -- a regua estava torta
+
+A 1a versao dizia **`activate_main` 18% concluido**, e eu ia reportar isso.
+Conferi contra casos conhecidos antes (disciplina que o proprio projeto exige,
+e que eu ja tinha furado hoje no bloco 828 com a coluna do CSV). **Tres dos
+"NAO" eram FALSO POSITIVO:**
+
+| carta | o efeito | por que o delta era zero |
+|---|---|---|
+| OP09-099 | trasha 1 da mao E adiciona 1 | mao fica **NEUTRA**; e mexe no DECK, que **nao esta** no `delta` |
+| OP09-093 | nega efeito do LIDER ADVERSARIO | zero no proprio lado, por construcao |
+| OP16-104 | muda o PODER BASE | nao mexe em mao/campo/DON/vida |
+
+Corrigido de forma GENERICA (nao amarrado as tres cartas): o `deck` entrou no
+calculo do delta, e a expectativa passa a sair dos **passos parseados** do
+efeito -- se todo passo so atinge o oponente / so muda poder / so olha cartas,
+`delta zero` vira **INDETERMINADO**, nunca NAO.
+
+O numero honesto subiu de 18% pra **45%** -- e os `NAO` que sobraram sao quase
+todos `status=failed`, que e o JOGO recusando, nao inferencia nossa.
+
+### LIMITES, no topo do proprio arquivo
+
+Efeito que o jogo resolve sozinho (`passive`, `trigger`) nao passa pelo server e
+**nao aparece** -- nunca e contado como falha. `sent` sem `confirmed` pode ser
+fim de partida. O casamento alvo-ator e por `actor_code` + turno (nao ha id
+ligando as duas decisoes), entao duas copias da mesma carta no mesmo turno
+agrupam.
+
+### Como usar
+
+```bash
+cd scriptis_da_ia
+python auditoria_efeitos.py                  # ultimo decision_log
+python auditoria_efeitos.py --lider OP15-058 # so um codigo
+python auditoria_efeitos.py --json saida.json
+```
+
+A secao **TINHAM EFEITO E NUNCA DISPARARAM** separa dois casos que parecem um
+so: *nunca OFERECIDO* (grave -- a acao nao foi nem gerada, e o teto do
+`CLAUDE.md`: *"o que nao vira candidato nao existe"*) e *oferecido e nunca
+escolhido* (competicao normal por score).
+
+---
+
 > **NOTA (14/09/2026, fecha o bloco 831)**: os dois untracked que sobraram
 > foram pro `.gitignore` depois de o usuario perguntar se dariam problema entre
 > as maquinas. **Dariam, se commitados**:
