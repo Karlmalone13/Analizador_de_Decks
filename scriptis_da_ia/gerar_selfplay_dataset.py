@@ -207,11 +207,9 @@ def _run_one_match(task) -> list:
         # No modo BOOTSTRAP (default, bloco 799) o alvo NAO vem da busca --
         # vem do estado que a acao produz. Entao o Q pode continuar decidindo
         # enquanto coleta, e a partida custa o que custa jogar.
-        # So o modo 'busca' precisa da arvore no comando.
-        from optcg_engine import decision_engine as _de_mod
-        if _de_mod.Q_ALVO_MODO == 'busca':
-            for estado in (match.state_a, match.state_b):
-                estado.usa_q = False
+        # Bloco 811: nem o modo 'busca' pede a arvore no comando. Ela roda
+        # pra ENSINAR (produzir o alvo) e quem decide e o Q, sempre -- entao
+        # nao ha mais nada pra desligar aqui.
         match._q_captura = []
 
     amostras = []

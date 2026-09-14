@@ -53,6 +53,128 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (810-811) - "PORQUE TEMOS 2 CEREBROS?" -- o usuario pegou a duplicata numa PERGUNTA MINHA, e a busca saiu de decidir. Mais o bug que fazia o ciclo rodar DUAS VEZES
+
+### Como a duplicata apareceu
+
+Eu perguntei a ele: *"qual cerebro o bot usa na partida contra voce?"*, com as
+opcoes "a busca" e "o Q". Ele respondeu:
+
+> *"esse e o problema e ele inflige a regra do projeto. porque temos 2
+> cerebros?"*
+
+**Ele esta certo, e a pergunta era a prova.** Num projeto cuja regra e UM MOTOR
+SO, essa pergunta nao deveria poder existir.
+
+No codigo: `decision_engine.py:19346` o Q decide e retorna; `:19375` a busca
+decide. Duas funcoes respondendo a MESMA pergunta, no mesmo metodo, separadas
+por um `if` -- e o seletor era
+`USA_Q = os.environ.get('OPTCG_USA_Q', '0')`: **knob novo com o comportamento
+antigo como default**, o padrao que `O QUE EXISTE NAO E SAGRADO` nomeia
+literalmente, com os tres casos que ele ja tinha me pego fazendo.
+
+Minha justificativa estava escrita no proprio arquivo (o Q perdeu 0x13, ligar
+seria "producao decidida contra a evidencia"). O raciocinio nao e falso -- o que
+eu fiz com ele e que foi: **guardei os dois caminhos atras de uma chave** em vez
+de escolher um.
+
+### A distincao que ficou
+
+A busca faz DUAS coisas, e so uma era proibida:
+
+| papel | duplica? |
+|---|---|
+| **decidir** a jogada na partida | **SIM** -- e o que saiu |
+| **ensinar** o Q (simula e os valores viram alvo) | nao -- ensinar offline nao e decidir |
+
+Entao a busca **nao foi apagada**: ela roda quando o corpus esta sendo coletado
+no modo `busca`, produz o alvo e a marca de qual candidata o professor
+escolheria, e **some da hora de jogar**. `USA_Q` e `estado.usa_q` sumiram do
+projeto.
+
+### O que muda, dito ANTES de fazer
+
+**O bot joga pior agora.** O Q perdeu 0x13 e no piloto do bloco 809 ficou
++0,4pp acima do acaso.
+
+E o ponto: enquanto a busca decidia por ele, o Q **nunca gerava dado das
+proprias escolhas** -- so assistia. E a mesma inversao que o usuario ja mandou
+registrar sobre a heuristica: *ela sai, e ai o ML tem como aprender*.
+
+### Efeito colateral que exigiu cuidado: a concordancia viraria circular
+
+Com o Q decidindo, no modo BOOTSTRAP quem marca a `escolhida` passa a ser o
+proprio Q -- e comparar a escolha do Q com o argmax do Q daria **~100% por
+construcao**. Numero redondo demais, que a regra de medicao do projeto manda
+tratar como sintoma.
+
+Resolvido com um campo `escolhida_por` (`'busca'` = professor INDEPENDENTE,
+`'q'` = o proprio decisor). A concordancia so conta as rotuladas por professor
+independente.
+
+### O portao mudou de significado, por consequencia
+
+Era "o Q contra a ARVORE". Sem a arvore decidindo, nao ha com o que duelar --
+um campeao "sem Q" pegaria a primeira candidata da ordem. Virou **geracao
+contra geracao** (`q_net` campeao x `q_net_desafiante`), que e o que o projeto
+sempre registrou como ALVO DE TRABALHO: *"cada geracao do ML tem que bater a
+anterior"*.
+
+### O teste que afirmava o comportamento removido
+
+`smoke_fast.py` tinha `check("a escolha vem da busca determinista", ...)` --
+exatamente o que saiu. **Reescrito, nao adaptado**: agora a busca responde de
+proposito DIFERENTE do Q, e o teste prova que a escolha e a do Q; e prova que
+sem Q a decisao cai na ordem recebida, **sem cair na busca** (cair seria
+recriar os dois decisores). `SMOKE FAST OK`.
+
+---
+
+## O BUG QUE FAZIA O CICLO RODAR DUAS VEZES (bloco 810)
+
+Pergunta dele: *"porque a demora?"*. A resposta honesta era: **o ciclo estava
+rodando duas vezes**, e eu nao tinha visto.
+
+```python
+# treino_continuo.py:70 -- roda no IMPORT
+if os.environ.get('PYTHONHASHSEED') != '0':
+    os.environ['PYTHONHASHSEED'] = '0'
+    raise SystemExit(subprocess.call([sys.executable] + sys.argv))
+```
+
+Esse modulo **re-executa o processo inteiro** quando importado. O `ciclo.py` o
+importa TARDE, dentro de `portao()` -- entao a re-execucao caia no MEIO do ciclo
+e relancava `ciclo.py` do zero. Confirmado por `ParentProcessId`, nao por
+deducao: PID 15144, filho do meu ciclo, criado 21:21:02, exatamente quando o
+portao comecou.
+
+**Dano medido**: 9.865 alvos a mais em `q_alvos.jsonl`, **100% repetindo
+posicao+alvo ja existentes** (mesma seed rodada duas vezes). Eco puro.
+
+**Correcao minha no meio do conserto**: deduplicei o corpus INTEIRO e removi
+39.306 linhas -- errado. Repeticao no MEIO e posicao recorrente legitima (ja se
+mediu 95,3% de posicoes distintas, ou seja ~5% de repeticao real). Restaurei do
+backup e descasquei **so a cauda** re-executada. Corpus de volta a 549.435, o
+ponto exato em que o treino rodou.
+
+**A trava**: a re-execucao passa a acontecer no t=0, no topo do `ciclo.py`, antes
+de qualquer trabalho -- mesmo idiomatismo que `gerar_selfplay_dataset.py` ja
+usa. Verificado: 2 partidas somaram +423 alvos, uma geracao so.
+
+Efeito colateral tambem corrigido: `sys.argv` nao carrega as flags do
+interpretador, entao o `-u` se perdia e a saida do ciclo virava buffer -- o log
+ficava VAZIO ate o fim, num processo de dezenas de minutos.
+
+### Licao generalizavel
+
+**Um modulo que re-executa `sys.argv` no import e uma mina para qualquer
+programa que o importe TARDE.** `gerar_selfplay_dataset.py` tem o mesmo padrao e
+e inofensivo porque re-executa no proprio ponto de entrada. A regra pratica:
+import que tem efeito colateral de processo tem que acontecer no topo do
+programa, nunca dentro de uma funcao chamada no meio.
+
+---
+
 ## 2026-09-13 (809) - A METRICA QUE DECIDE NUNCA FOI CALCULADA: o Q erra 78,5% menos que a media e, no teste piloto, escolhe a mesma acao que o professor +0,4pp ACIMA DO ACASO
 
 **Pedido do usuario**: *"falta alguma coisa na telemetria ainda que vai nos

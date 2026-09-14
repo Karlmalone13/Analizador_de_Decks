@@ -51,10 +51,34 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
 import time
+
+# ── TRAVA CONTRA RE-EXECUCAO (bloco 810) ───────────────────────────────────
+# `treino_continuo.py` re-executa o processo INTEIRO no import quando
+# `PYTHONHASHSEED != '0'` (`subprocess.call([sys.executable] + sys.argv)`),
+# pra garantir duelo reprodutivel. O `ciclo.py` importa esse modulo TARDE,
+# dentro de `portao()` -- entao a re-execucao caia no MEIO do ciclo e
+# relancava `ciclo.py` do inicio: o ciclo rodava DUAS vezes, os dois
+# processos gerando com a MESMA seed e escrevendo no MESMO corpus.
+#
+# Medido quando aconteceu de verdade: 9.865 alvos duplicados em
+# `q_alvos.jsonl`, 100% repetindo posicao+alvo ja existentes -- eco puro,
+# exatamente o que o corpus NAO pode ter.
+#
+# A trava e fazer a re-execucao acontecer AQUI, no t=0, antes de qualquer
+# trabalho. Mesmo idiomatismo que `gerar_selfplay_dataset.py` ja usa.
+if os.environ.get('PYTHONHASHSEED') != '0':
+    os.environ['PYTHONHASHSEED'] = '0'
+    # `sys.argv` NAO carrega as flags do interpretador, entao o `-u` da linha
+    # de comando se perde na re-execucao e a saida do ciclo vira buffer --
+    # o log fica VAZIO ate o fim, justamente num processo que demora dezenas
+    # de minutos e precisa ser acompanhado.
+    os.environ['PYTHONUNBUFFERED'] = '1'
+    raise SystemExit(subprocess.call([sys.executable, '-u'] + sys.argv))
 from datetime import datetime
 from pathlib import Path
 
@@ -180,15 +204,23 @@ def treina() -> dict | None:
 
 
 def portao(seed, max_pares, workers) -> dict:
-    """O Q desafiante contra a ARVORE. Enquanto o aluno perder, ele nao entra."""
+    """O Q DESAFIANTE contra o Q CAMPEAO -- geracao contra geracao.
+
+    Era "o Q contra a ARVORE". Deixou de fazer sentido no bloco 811: a busca
+    saiu de decidir, entao nao ha com o que duelar do outro lado -- um campeao
+    "sem Q" simplesmente pegaria a primeira candidata da ordem.
+
+    E este e o duelo que o projeto sempre registrou como ALVO DE TRABALHO:
+    *"cada geracao do ML tem que bater a anterior"*, espelho pareado + SPRT.
+    """
     import os
     os.environ.setdefault('OMP_NUM_THREADS', '1')
     import treino_continuo as tc
     return tc.duelar_sprt(
         workers=workers, seed=seed, peso_camp=0.0, peso_desaf=0.0,
         max_pares=max_pares,
-        extras={'desafiante': {'usa_q': True, 'q_net_path': str(Q_DESAFIANTE)},
-                'campeao': {'usa_q': False}})
+        extras={'desafiante': {'q_net_path': str(Q_DESAFIANTE)},
+                'campeao': {'q_net_path': str(Q_CAMPEAO)}})
 
 
 def auditoria(limite) -> bool:

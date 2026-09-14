@@ -15166,13 +15166,12 @@ def test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785() -> None:
     check("assinatura sem parametros de amostragem (samples/batch/z/rng/model)",
           params == ['self', 'p', 'opp', 'engine', 'candidatas'])
 
-    # BLOCO 796: o modelo Q decide ANTES da arvore quando `q_net.joblib`
-    # existe -- a arvore virou o PROFESSOR (gera os alvos em auto-jogo) e
-    # continua sendo o caminho quando nao ha Q. Este teste e sobre a ARVORE,
-    # entao desliga o Q; a decisao pelo Q tem teste proprio.
-    import optcg_engine.decision_engine as _de_q
-    _usa_q_antes = _de_q.USA_Q
-    _de_q.USA_Q = False
+    # BLOCO 811: a busca SAIU de decidir. Este teste era "a escolha vem da
+    # busca determinista" -- afirmava exatamente o comportamento removido, e
+    # por isso foi reescrito em vez de adaptado. O que ele passa a provar e a
+    # invariante NOVA: quem decide e o Q, e a busca NAO decide mesmo quando
+    # devolve uma resposta.
+    import optcg_engine.value_net as _vn_q
 
     me = GameState(leader=real_card("OP11-062"), don_available=5, turn=3)
     opp = GameState(leader=real_card("OP04-019"), turn=3)
@@ -15183,26 +15182,35 @@ def test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785() -> None:
              (5, 'play', None, None, None)]
 
     orig = OPTCGMatch._busca_determinista
+    orig_load, orig_q = _vn_q.load_value_net, _vn_q.q_valores
     try:
+        # A busca responde, e responde DIFERENTE do Q de proposito: se ela
+        # ainda decidisse, a escolha seria cands[1].
         OPTCGMatch._busca_determinista = (
             lambda self, p, o, e, c: (c[1], 0.77, [(x, 0.77 if x is c[1] else 0.10)
                                                    for x in c]))
+        _vn_q.load_value_net = lambda *a, **k: {'tipo': 'q'}
+        _vn_q.q_valores = lambda p, o, acoes, bundle=None: [
+            0.9 if x is cands[2] else 0.1 for x in acoes]
+
         esc, val, recs, nos, simv = match._select_action_via_search(
             me, opp, DecisionEngine(me, opp), cands)
-        check("a escolha vem da busca determinista, nao da pontuacao estatica",
-              esc is cands[1])
-        check("o valor devolvido e o da busca", abs(val - 0.77) < 1e-9)
-        check("telemetria tem uma entrada por candidata (era o que o rollout dava)",
+        check("quem decide e o Q -- a busca NAO decide mais (bloco 811)",
+              esc is cands[2])
+        check("o valor devolvido e o do Q", abs(val - 0.9) < 1e-9)
+        check("telemetria tem uma entrada por candidata",
               len(recs) == len(cands) and len(simv) == len(cands))
 
-        OPTCGMatch._busca_determinista = lambda self, p, o, e, c: None
+        # Sem Q utilizavel: NAO pode cair na busca -- isso recriaria os dois
+        # decisores. Decide pela ordem que chegou.
+        _vn_q.load_value_net = lambda *a, **k: None
         esc2, val2, recs2, _n2, _s2 = match._select_action_via_search(
             me, opp, DecisionEngine(me, opp), cands)
-        check("sem modelo: decide pela ordem recebida, sem segundo motor de busca",
+        check("sem Q: decide pela ordem recebida, sem cair na busca",
               esc2 is cands[0] and val2 == 0.0 and len(recs2) == len(cands))
     finally:
         OPTCGMatch._busca_determinista = orig
-        _de_q.USA_Q = _usa_q_antes
+        _vn_q.load_value_net, _vn_q.q_valores = orig_load, orig_q
 
 
 def test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787() -> None:

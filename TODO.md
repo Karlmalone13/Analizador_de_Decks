@@ -7,6 +7,27 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **UM CEREBRO SO (13/09/2026, bloco 811)**: o usuario pegou a duplicata numa
+> pergunta minha (*"qual cerebro o bot usa na partida contra voce?"* -- que num
+> projeto de UM MOTOR SO nao deveria poder existir). Havia duas funcoes
+> decidindo a mesma acao, com `USA_Q` (default = comportamento antigo)
+> escolhendo entre elas. **A busca saiu de decidir**; ela continua como
+> PROFESSOR na coleta. `USA_Q`/`usa_q` removidos do projeto.
+>
+> Consequencias: (a) **o bot joga pior agora** -- o Q perdeu 0x13 e ficou
+> +0,4pp acima do acaso; e o ponto, so decidindo ele gera dado das proprias
+> escolhas; (b) o **portao virou geracao x geracao** (campeao x desafiante),
+> porque sem a arvore decidindo nao ha com o que duelar; (c) a concordancia
+> ganhou `escolhida_por` pra nao virar circular (~100% por construcao) no modo
+> bootstrap; (d) o teste do smoke que afirmava "a escolha vem da busca" foi
+> REESCRITO pra invariante nova. `SMOKE FAST OK`.
+>
+> **CICLO RODAVA DUAS VEZES (bloco 810)**: `treino_continuo.py` re-executa o
+> processo no import (`PYTHONHASHSEED`), e o `ciclo.py` o importa dentro de
+> `portao()` -- a re-execucao relancava o ciclo do zero no meio. 9.865 alvos
+> duplicados (100% repetidos) removidos, corpus de volta a 549.435. Trava no
+> t=0. Licao: import com efeito colateral de processo nao pode ficar no meio.
+
 > **A METRICA QUE DECIDE PASSOU A EXISTIR (13/09/2026, bloco 809)**: o
 > `treinar_q.py` ja dizia na propria saida que o que decide e *"se ele escolhe a
 > mesma acao que o professor escolheria"* -- e esse numero **nunca foi

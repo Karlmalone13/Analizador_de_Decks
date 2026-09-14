@@ -1353,8 +1353,24 @@ Q_NET_PATH = os.environ.get(
 #
 # O Q NAO foi descartado: ele continua sendo o caminho (0,40 s/partida abre
 # coleta em escala) e volta a ser CANDIDATO ate ganhar um duelo.
-# `OPTCG_USA_Q=1` liga pra medir.
-USA_Q = os.environ.get('OPTCG_USA_Q', '0').strip() != '0'
+# ── A BUSCA SAIU DE DECIDIR (bloco 811, pedido do usuario) ────────────────
+# Havia aqui um `USA_Q = os.environ.get('OPTCG_USA_Q','0') != '0'`: uma chave
+# escolhendo QUAL das duas funcoes decidia a acao, com o comportamento antigo
+# (a busca) como default. Isso e a duplicata que `REGRA_SEM_DUPLICACAO.md`
+# proibe -- duas funcoes respondendo a MESMA decisao -- combinada com o
+# "knob novo com default DESLIGADO" que `O QUE EXISTE NAO E SAGRADO` nomeia.
+#
+# O usuario pegou os dois olhando uma pergunta minha ("qual cerebro o bot usa
+# contra voce?"), que num projeto de UM MOTOR SO nao deveria poder existir.
+#
+# Agora: **o Q decide**. A busca continua existindo como PROFESSOR -- no modo
+# de coleta 'busca' ela simula e seus valores viram alvo -- e isso nao duplica
+# decisao, porque ensinar offline nao e decidir em partida.
+#
+# CONSEQUENCIA, dita antes de fazer: o bot joga PIOR agora (o Q perdeu 0x13 e
+# no piloto ficou +0,4pp acima do acaso). E o ponto: enquanto a busca decidia
+# por ele, o Q nunca gerava dado das PROPRIAS escolhas -- so assistia. Mesma
+# inversao que o usuario ja mandou registrar sobre a heuristica.
 
 # ── COMO O ALVO Q E PRODUZIDO (bloco 799) ──────────────────────────────────
 # 'bootstrap' (default) -- o alvo do DQN de verdade:
@@ -19047,6 +19063,7 @@ class OPTCGMatch:
                         'feats': _vnq.q_features(p, opp, _a),
                         'alvo': float(_v),
                         'escolhida': bool(_a is melhor_acao),
+                        'escolhida_por': 'busca',   # professor INDEPENDENTE
                         # Qual DECISAO e qual FAMILIA: sem os dois nao da pra
                         # medir se o aluno escolhe o mesmo que o professor,
                         # que e o que decide se o Q substitui a arvore.
@@ -19090,6 +19107,12 @@ class OPTCGMatch:
         linha = pend.get(id(acao))
         if linha is not None:
             linha['escolhida'] = True
+            # QUEM escolheu. No bootstrap quem escolhe e o proprio Q, entao
+            # comparar a escolha com o argmax do Q seria circular e daria
+            # ~100% por construcao -- numero redondo demais, que a regra de
+            # medicao do projeto manda tratar como sintoma. A concordancia so
+            # conta decisoes rotuladas por um professor INDEPENDENTE.
+            linha['escolhida_por'] = 'q'
         self._q_pendentes = {}
 
     def _coleta_bootstrap(self, p, opp, engine, candidatas, cap):
@@ -19339,11 +19362,10 @@ class OPTCGMatch:
                 and len(candidatas) > 1):
             self._coleta_bootstrap(p, opp, engine, candidatas, _capb)
 
-        # ── O Q DECIDE, SE EXISTIR (bloco 796) ──────────────────────────
-        # Uma consulta em lote no lugar de ~64 estados materializados. A arvore
-        # continua existindo e continua sendo o PROFESSOR (ela gera os alvos em
-        # auto-jogo); o que ela deixa de fazer e decidir.
-        if USA_Q and getattr(p, 'usa_q', True) and len(candidatas) > 1:
+        # ── O Q DECIDE (bloco 811) ──────────────────────────────────────
+        # Uma consulta em lote no lugar de ~64 estados materializados. Sem
+        # chave e sem alternativa: e o unico decisor.
+        if len(candidatas) > 1:
             try:
                 from optcg_engine import value_net as _vnq
                 _qb = _vnq.load_value_net(
@@ -19372,12 +19394,17 @@ class OPTCGMatch:
             except Exception:
                 pass
 
-        _r = self._busca_determinista(p, opp, engine, candidatas)
+        # A BUSCA, DAQUI PRA BAIXO, NAO DECIDE MAIS NADA (bloco 811).
+        # Ela so roda quando o corpus esta sendo coletado no modo 'busca', e o
+        # que ela produz e ALVO: o valor simulado de cada candidata e a marca
+        # de qual o professor escolheria. Quem decide ja decidiu acima.
+        _ensina = (getattr(self, '_q_captura', None) is not None
+                   and Q_ALVO_MODO == 'busca' and len(candidatas) > 1)
+        _r = self._busca_determinista(p, opp, engine, candidatas) if _ensina else None
         if _r is None:
-            # Sem modelo compativel a decisao e a ordem que ja chegou. NAO ha
-            # segundo motor de busca pra cair -- tirar o Monte Carlo era o
-            # ponto, e manter os dois lado a lado seria a duplicata que o
-            # projeto proibe (`REGRA_SEM_DUPLICACAO.md`).
+            # Sem Q utilizavel, a decisao e a ordem que ja chegou. NAO ha
+            # segundo motor pra cair: manter um seria recriar a duplicata que
+            # este bloco acabou de remover.
             return (candidatas[0], 0.0,
                     [{"action": c, "value": -1e9} for c in candidatas], 0, {})
 
@@ -21557,8 +21584,7 @@ class OPTCGMatch:
             #
             # Nao e no-op: ela mudava quem entrava no shortlist, entao as
             # partidas mudam. O ganho e estrutural, nao cosmetico.
-            _q_no_comando = (USA_Q and getattr(p, 'usa_q', True)
-                             and _tem_q(p))
+            _q_no_comando = _tem_q(p)
             _ordenar_pelo_modelo = (MODELO_ORDENA
                                     and getattr(p, 'modelo_ordena', True)
                                     and not _q_no_comando)
