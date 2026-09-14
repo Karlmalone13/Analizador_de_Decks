@@ -146,3 +146,15 @@ scriptis_da_ia/metrics/q_net_desafiante.joblib
 # `BOT\instalar.bat`, que e o passo 2 do REGRA_DUAS_MAQUINAS.md.
 .venv/
 iniciar_bot.bat
+
+# ── Passagem entre processos do ciclo, e config local de editor ──────────────
+# `avaliacao_humana/ultimo.json` e escrito por `avalia_contra_humano.py` e lido
+# pelo `ciclo.py` (linha 249) na MESMA execucao -- os numeros dele ja vao pro
+# `ciclo_estado.json`, que E versionado e guarda o historico por ciclo. Ou seja:
+# versiona-lo nao acrescenta nada E cria o problema das DUAS MAQUINAS (bloco
+# 823): as duas sobrescrevem a cada ciclo, JSON nao tem merge, e quem empurra
+# depois apaga o da outra em silencio. Mesmo modo de falha do `q_net.joblib`,
+# sem o ganho que justifica aquele estar no git.
+scriptis_da_ia/metrics/avaliacao_humana/
+# Config de launch do editor, por maquina.
+.claude/launch.json

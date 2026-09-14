@@ -34,6 +34,18 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **NOTA (14/09/2026, fecha o bloco 831)**: os dois untracked que sobraram
+> foram pro `.gitignore` depois de o usuario perguntar se dariam problema entre
+> as maquinas. **Dariam, se commitados**:
+> `metrics/avaliacao_humana/ultimo.json` e passagem entre `avalia_contra_humano.py`
+> e `ciclo.py` (linha 249) na MESMA execucao, e os numeros dele ja vao pro
+> `ciclo_estado.json` versionado (ciclo 1: 26,9/25,2/0,032; ciclo 2:
+> 22,8/22,0/0,032). Versiona-lo nao acrescenta historico E cria o modo de falha
+> das duas maquinas -- as duas sobrescrevem por ciclo, JSON nao tem merge, quem
+> empurra depois apaga o da outra **em silencio**. Mesmo defeito do
+> `q_net.joblib`, sem o ganho que justifica aquele estar no git.
+> `.claude/launch.json` e config de editor por maquina.
+
 > **VARREDURA DAS FLAGS DE RUNTIME AO VIVO (14/09/2026, bloco 830)**: a tarefa
 > que o bloco 818 deixou explicita (*"vale varrer as outras"*) e ninguem tinha
 > feito. O `_dto_to_gs` seta 11 campos, mas **NAO seta 10 flags**:

@@ -163,6 +163,18 @@ visivel**.
 
 ---
 
+> **NOTA (14/09/2026, fecha o bloco 831)**: os dois untracked que sobraram
+> foram pro `.gitignore` depois de o usuario perguntar se dariam problema entre
+> as maquinas. **Dariam, se commitados**:
+> `metrics/avaliacao_humana/ultimo.json` e passagem entre `avalia_contra_humano.py`
+> e `ciclo.py` (linha 249) na MESMA execucao, e os numeros dele ja vao pro
+> `ciclo_estado.json` versionado (ciclo 1: 26,9/25,2/0,032; ciclo 2:
+> 22,8/22,0/0,032). Versiona-lo nao acrescenta historico E cria o modo de falha
+> das duas maquinas -- as duas sobrescrevem por ciclo, JSON nao tem merge, quem
+> empurra depois apaga o da outra **em silencio**. Mesmo defeito do
+> `q_net.joblib`, sem o ganho que justifica aquele estar no git.
+> `.claude/launch.json` e config de editor por maquina.
+
 ## 2026-09-14 (830) - A VARREDURA que o bloco 818 mandou fazer e ninguem tinha feito: 10 flags de runtime que o caminho AO VIVO nunca seta -- e o erro delas e o ESPELHO do Shiki (silencioso, nao barulhento)
 
 O usuario corrigiu um enquadramento meu: eu tinha respondido que CPU x CPU
