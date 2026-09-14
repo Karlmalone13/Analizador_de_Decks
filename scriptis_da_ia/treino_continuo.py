@@ -130,11 +130,15 @@ def _duelo(task) -> dict:
     _code_b, deck_b = deck_list[idx_b]
     random.seed(seed)
 
+    # Os dois lideres viajam no resultado pro recorte POR LIDER do portao
+    # (regra obrigatoria: agregado sozinho nao prova que um ganho generalizou).
+    lids = {'lider_a': _code_a, 'lider_b': _code_b}
+
     try:
         match = OPTCGMatch(deck_a, deck_b)
         match.setup()
     except Exception:
-        return {'erro': True}
+        return dict(lids, erro=True)
 
     lado_desaf = match.state_a if desafiante_e_A else match.state_b
     lado_camp = match.state_b if desafiante_e_A else match.state_a
@@ -160,12 +164,12 @@ def _duelo(task) -> dict:
                 winner = r
                 break
     except Exception:
-        return {'erro': True}
+        return dict(lids, erro=True)
 
     if winner is None:
-        return {'empate': True}
+        return dict(lids, empate=True)
     venceu_desaf = (winner == 'A') == desafiante_e_A
-    return {'desafiante': bool(venceu_desaf)}
+    return dict(lids, desafiante=bool(venceu_desaf))
 
 
 def duelar(n: int, workers: int, seed: int, peso_camp: float,
@@ -214,6 +218,17 @@ def duelar(n: int, workers: int, seed: int, peso_camp: float,
     res = _rodar_tasks(tasks, workers)
 
     vit = der = div = descartados = 0
+    por_lider = {}
+
+    def _credita(res_par, chave):
+        # Par decidido = o mesmo modelo venceu dos DOIS lados, ou seja
+        # pilotando os DOIS decks. Credita aos dois lideres.
+        for cod in (res_par.get('lider_a'), res_par.get('lider_b')):
+            if not cod:
+                continue
+            d = por_lider.setdefault(cod, {'vit': 0, 'der': 0, 'div': 0})
+            d[chave] += 1
+
     for j in range(n_pares):
         a, b = res[2 * j], res[2 * j + 1]
         if a.get('erro') or b.get('erro') or a.get('empate') or b.get('empate'):
@@ -222,10 +237,13 @@ def duelar(n: int, workers: int, seed: int, peso_camp: float,
         ga, gb = a['desafiante'], b['desafiante']
         if ga and gb:
             vit += 1          # desafiante venceu dos DOIS lados
+            _credita(a, 'vit')
         elif (not ga) and (not gb):
             der += 1          # campeao venceu dos DOIS lados
+            _credita(a, 'der')
         else:
             div += 1          # dividido: decidiu o matchup/iniciativa
+            _credita(a, 'div')
     decididos = vit + der
     return {
         'vitorias_desafiante': vit, 'derrotas_desafiante': der,
@@ -233,6 +251,7 @@ def duelar(n: int, workers: int, seed: int, peso_camp: float,
         'winrate_desafiante': (vit / decididos) if decididos else None,
         'pareado': True, 'pares_rodados': n_pares,
         'pares_divididos': div, 'partidas': len(tasks),
+        'por_lider': por_lider,
     }
 
 
@@ -291,6 +310,7 @@ def duelar_sprt(workers: int, seed: int, peso_camp: float, peso_desaf: float,
     ganho_der = math.log((1 - p1) / (1 - p0))
 
     vit = der = div = pares = partidas = erros = 0
+    por_lider = {}
     llr = 0.0
     veredito, promove = 'INCONCLUSIVO (teto de pares)', False
     lote = 0
@@ -303,6 +323,10 @@ def duelar_sprt(workers: int, seed: int, peso_camp: float, peso_desaf: float,
         der += d['derrotas_desafiante']
         div += d['pares_divididos']
         erros += d['erros']
+        for cod, c in (d.get('por_lider') or {}).items():
+            alvo = por_lider.setdefault(cod, {'vit': 0, 'der': 0, 'div': 0})
+            for k2 in ('vit', 'der', 'div'):
+                alvo[k2] += c.get(k2, 0)
         pares += d['pares_rodados']
         partidas += d['partidas']
         llr = vit * ganho_vit + der * ganho_der
@@ -325,6 +349,7 @@ def duelar_sprt(workers: int, seed: int, peso_camp: float, peso_desaf: float,
         'pares_rodados': pares, 'pares_divididos': div,
         'partidas': partidas, 'lotes': lote,
         'veredito': veredito, 'promove': promove,
+        'por_lider': por_lider,
     }
 
 

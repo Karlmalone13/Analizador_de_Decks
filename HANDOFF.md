@@ -53,6 +53,110 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (808) - A ANCORA HUMANA ESTAVA DESLIGADA, e o arquivo dizia que nao. Mais o `--limpar-checkpoint` que a saida mandava rodar e nunca existiu, o recorte POR LIDER que faltava no portao, e o AS-IS do proprio laco
+
+**Pedidos do usuario, em ordem**: *"faz o --limpar-checkpoint e roda o ciclo"*,
+*"falta mais alguma coisa na telemetria que vai nos ajudar?"*, *"liga os dois
+primeiros"*.
+
+### O achado que importa, e e MEU, da rodada anterior
+
+`avalia_contra_humano.py` diz **no proprio cabecalho**: *"roda em TODO ciclo
+(bloco 805) [...] chamado pelo `ciclo.py` na etapa 4. Nao depende do tempo dele
+e nao pode ser esquecido -- se nao rodar, o ciclo diz."*
+
+**O `ciclo.py` nunca chamou.** A etapa 4 rodava so `audit_real_losses.py`.
+`grep -n "avalia_contra_humano" ciclo.py` -> nada.
+
+O pedido tinha sido *"coloque essas avaliacoes onde a gente nao vai esquecer de
+usa-las"*. Eu as coloquei exatamente onde seriam esquecidas **e escrevi no
+arquivo que nao estavam** -- pior que nao documentar, porque a proxima sessao
+lê a promessa e acredita.
+
+Corrigido: virou **etapa 5**, e o ciclo **le o json e guarda o numero no
+historico**, com a serie entre geracoes impressa no fim. Isso importa mais que
+so rodar: uma medida isolada nao mostra deriva, a serie mostra.
+
+### `--limpar-checkpoint`: citado na saida desde o bloco 804, nunca implementado
+
+Todo ciclo que promove terminava mandando rodar `python ciclo.py
+--limpar-checkpoint` -- um flag **inexistente**. Implementado, com duas
+decisoes deliberadas:
+
+* **Nao valida que as partidas foram jogadas.** Isso e declaracao do usuario,
+  nao medicao. Travar aqui seria inventar criterio, o oposto do que
+  `REGRA_O_CRITERIO_EMERGE.md` diz.
+* **Mas conta o que da pra contar honestamente**: quantos logs com `bot_side`
+  entraram no banco desde que o checkpoint subiu. Se der ZERO, avisa que
+  provavelmente as partidas foram jogadas e os logs nao foram adicionados --
+  caso em que elas nao viram nem dado nem auditoria -- e limpa assim mesmo.
+
+Pra isso o ciclo passou a gravar `checkpoint_desde` no instante em que a
+promocao levanta a flag; antes nao havia marco nenhum pra medir contra.
+
+### O portao nao tinha recorte POR LIDER -- regra OBRIGATORIA do projeto
+
+`duelar_sprt` devolvia `12x8` e nada mais. A regra e explicita: *"nenhum
+resultado agregado vale sem o recorte POR LIDER"*, porque um ganho que so
+aparece em 2 lideres **nao generalizou**.
+
+O irônico: **`_duelo` JA conhecia os dois lideres** -- ele deriva os dois decks
+da seed (`_code_a`, `_code_b`) -- e os descartava na hora de montar o
+resultado. O dado existia e era jogado fora.
+
+Agora viajam no resultado. No espelho pareado um par DECIDIDO significa que o
+mesmo modelo venceu **dos dois lados**, ou seja pilotando os DOIS decks -- entao
+o par credita aos dois lideres, que e a leitura certa: *"com este lider, o
+desafiante ganhou dos dois lados"*.
+
+### AS-IS do proprio laco (etapa 1 dos dois que ele mandou ligar)
+
+O ciclo nao registrava quanto cada etapa custava. `as_is.py` mede a PARTIDA;
+isto mede o CICLO, que e a unidade que decide **quantas geracoes cabem num
+dia** -- exatamente o numero que ele teve que me perguntar na mao (*"quanto
+tempo vai levar?"*). Agora `tempo_s` por etapa e `tempo_total_s` entram no
+historico, com a serie impressa.
+
+### Guarda-corpo de semelhanca (etapa 2 dos dois)
+
+`decision_quality_full.py --all` passa a rodar **quando o portao PROMOVE**, e
+as 10 categorias entram no historico. Tres decisoes:
+
+* **So na promocao**: e caro (replay do banco inteiro) e so tem sentido
+  comparado contra a promocao anterior.
+* **LE a saida em vez de recalcular**: a metrica mora naquele script, e refazer
+  a conta dentro do `ciclo.py` seria a duplicata que a `REGRA_SEM_DUPLICACAO`
+  proibe.
+* **Nao emite veredito**, conforme a regra oficial de 10/09: nao ha numero a
+  atingir, queda pequena ou gradual e o resultado ESPERADO. Ele existe pra
+  pegar queda GRANDE e ABRUPTA -- o sintoma de o bot achar um truque que so
+  funciona contra si mesmo, invisivel ao duelo por construcao.
+
+### O CONTROLE que pegou um bug meu antes de virar numero
+
+Os rotulos de defesa que eu usei no parser (`blocker_sim_nao`,
+`counter_cartas`...) sao os da DOCSTRING do `decision_quality_full.py`, **nao os
+que ele imprime** (`blocker (bloquear ou nao)`, `counter -- MESMO CONJUNTO de
+cartas`...). Com eles, `guarda_corpo()` devolveria `{}` **em silencio** -- o
+mesmo modo de falha do `except` nu do bloco 807, um dia depois.
+
+Pego por testar o parser contra uma amostra do formato REAL antes de confiar
+nele. As 10 categorias saem corretas.
+
+### Tambem: `--workers` estava HARDCODED em 1
+
+`ciclo.py` fixava `--workers 1` nas duas etapas caras (geracao e portao),
+violando a regra de *"SEMPRE escolher --workers N antes de rodar"*. Virou
+parametro, default 4 (a maquina tem 4 nucleos).
+
+### Estado
+
+Ciclo 1 rodando com o `ciclo.py` ANTERIOR a estas mudancas (o processo carregou
+o modulo antes): sai sem etapa 5, sem tempo e sem recorte por lider. **Tudo
+isto vale a partir do ciclo 2.**
+
+---
+
 ## 2026-09-13 (807) - O MODELO DE OPONENTE finalmente FOI MEDIDO: acerta 26,9% da mao -- e o CONTROLE mostra que quase tudo isso vem de conhecer a DECKLIST, nao de observar a partida
 
 **Pedido do usuario**: *"resolve a do modelo de oponente"* -- a medida (1) de

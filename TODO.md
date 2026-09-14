@@ -7,6 +7,25 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **TELEMETRIA DO CICLO FECHADA (13/09/2026, bloco 808)**: quatro buracos, um
+> deles meu. (1) **`avalia_contra_humano.py` nao era chamado por ninguem** --
+> o cabecalho dele afirmava "chamado pelo `ciclo.py` na etapa 4" e era falso;
+> agora e a **etapa 5** e o numero entra no historico, com serie entre
+> geracoes. (2) **`--limpar-checkpoint` nao existia** apesar de a saida de todo
+> ciclo promovido mandar roda-lo; implementado, conta os logs de bot que
+> entraram no banco desde o checkpoint mas NAO trava (declaracao do usuario nao
+> e medicao). (3) **portao sem recorte POR LIDER** -- regra obrigatoria, e
+> `_duelo` ja conhecia os dois lideres e os descartava; agora credita o par
+> decidido aos dois. (4) **AS-IS do laco**: tempo por etapa no historico. Mais
+> o **guarda-corpo** (`decision_quality_full.py`) rodando na promocao, sem
+> veredito automatico, e `--workers` que estava hardcoded em 1.
+>
+> Ciclo 1 rodou com o codigo ANTERIOR -- tudo isto vale do ciclo 2.
+>
+> AINDA FALTA na telemetria: quantos alvos Q vieram de posicoes NOVAS (corpus
+> crescendo com posicao repetida e eco, nao dado -- mediu-se 95,3% distintas
+> uma vez e nunca mais) e POR QUE o par foi dividido (iniciativa ou matchup).
+
 > **MEDIDO 13/09/2026 (bloco 807) -- o modelo de oponente**: `avalia_contra_humano.py`
 > (etapa 4 do `ciclo.py`) passou a rodar de verdade. Ele acerta **26,9%** da mao
 > real do adversario em 149 posicoes contra humano; o controle de **lider errado
