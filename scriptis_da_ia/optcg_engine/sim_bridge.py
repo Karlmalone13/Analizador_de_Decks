@@ -2470,8 +2470,15 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         for _blk in _relevant_blocks(actor_code, attacker_power > 0):
             _nomes = [str(_s.get('action') or '')
                       for _s in (_blk.get('steps') or []) if isinstance(_s, dict)]
-            _nomes += [str(_c.get('type') or '')
-                       for _c in (_blk.get('costs') or []) if isinstance(_c, dict)]
+            # Custo: o TIPO e as FLAGS. `don_allowed` (Kin'emon ST32-001,
+            # "rest 1 of your Leaders OR DON!! cards") marca uma alternancia
+            # em que DON e escolha legal sem o tipo do custo se chamar don --
+            # sem olhar as flags, este filtro esconderia um alvo VALIDO.
+            for _c in (_blk.get('costs') or []):
+                if not isinstance(_c, dict):
+                    continue
+                _nomes.append(str(_c.get('type') or ''))
+                _nomes += [str(_k) for _k, _v in _c.items() if _v]
             if any('don' in _n.lower() for _n in _nomes):
                 actor_mexe_com_don = True
                 break

@@ -7,6 +7,25 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **PARSER: custo com ALTERNANCIA "<X> or DON!! cards" (13/09/2026, bloco 815)**:
+> medindo as 162 recusas em cartas comuns, o Kin'emon ST32-001 saia do parse
+> **sem custo nenhum** ("rest 1 of your (Slash) attribute Leaders **or** DON!!
+> cards:" -- o regex exigia `of your don!!` colado). 78 de 82 cliques recusados
+> numa partida. Censo global: 80 cartas usam a gramatica, 59 ja capturadas, 20
+> sao artes alternativas, **1 carta real faltava**. Corrigido pela FORMA, com
+> `rest_own_card` + `don_allowed` em vez de um tipo inedito (que viraria custo
+> ignorado em silencio). Diff: 1 carta, PERDEU=0.
+>
+> **E o filtro de DON do bloco 814 estava ESCONDENDO UM ALVO VALIDO aqui** -- o
+> custo permite DON, o parse nao mencionava, o filtro removia. Um filtro que le
+> o efeito parseado e tao bom quanto o parse. Fechado: ele passa a ler as FLAGS
+> do custo, nao so o `type`.
+>
+> ABERTO: familia `then_trash` (o descarte da mao nao e um step com alvo, entao
+> a ordenacao nao sabe que a MAO e a zona pedida); Mihawk OP14-020 (127
+> recusas, precisa do plugin dizer QUAL selecao esta aberta); Coffin Boat
+> OP14-039 (92, nao investigado).
+
 > **ALVO EM DON CONSERTADO PELA RAIZ (13/09/2026, bloco 814)**:
 > `order_target_candidates` exclui as zonas de DON quando o efeito do ator nao
 > menciona DON em nenhum step nem custo (detectado pelo vocabulario do parser,

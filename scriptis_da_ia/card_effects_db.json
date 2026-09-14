@@ -84695,6 +84695,13 @@
             "count": 2,
             "then_trash": 1
           }
+        ],
+        "costs": [
+          {
+            "type": "rest_own_card",
+            "count": 1,
+            "don_allowed": true
+          }
         ]
       }
     }

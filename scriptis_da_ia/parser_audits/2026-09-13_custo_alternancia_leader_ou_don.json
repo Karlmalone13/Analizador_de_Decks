@@ -1,0 +1,22 @@
+{
+  "trigger_card": "ST32-001",
+  "problem": "Partida REAL contra o usuario (13/09/2026, log Dracule.Mihawk-G_x_Monkey.D.Luffy-RG_2026-09-13T23.13.00): o jogo RECUSOU 78 de 82 cliques de alvo do Kin'emon ST32-001 -- o bot clicou campo, lider proprio, lider adversario e DON, um por um, e nenhum foi aceito. Causa: o parse da carta saia SEM CUSTO NENHUM, entao o motor nao tinha como saber o que estava sendo pedido. Sintoma visivel pro usuario: bot parado varios segundos clicando em nada (o plugin gasta ~0,8s por clique).",
+  "grammar_family": "Custo de DON com ALTERNANCIA: 'rest N of your <qualificador> or DON!! cards:'. O regex existente (`rest (?:this (?:card|character|stage) and )?(\\d+) of your don!!`) exige `of your don!!` COLADO. Kin'emon diz 'rest 1 of your (Slash) attribute Leaders or DON!! cards:' -- ha um qualificador e um 'or' no meio, entao o custo inteiro era descartado em silencio. A familia e a alternancia em si ('X ou DON'), nao o qualificador 'Slash attribute Leaders' desta carta.",
+  "queries": [
+    "censo global da gramatica 'rest N of your ... DON!! cards:' no cards_rows.csv inteiro: 80 cartas batem",
+    "dessas 80, o parser JA capturava um custo de DON em 59",
+    "das 21 restantes, 20 sao artes alternativas (ids com sufixo _p1/_p2/_p6) que nao existem no card_effects_db.json -- falso positivo do censo, nao lacuna",
+    "sobra exatamente 1 carta REAL sem o custo capturado: ST32-001 (Kin'emon). isolated_after_global_scan",
+    "o que distingue as 59 capturadas: todas dizem 'rest N of your DON!! cards' direto, sem alternancia no meio",
+    "atores das recusas na mesma partida, pra confirmar que o resto tem outra causa: OP14-020 Mihawk 127 (caso estrutural conhecido -- a funcao de ordenacao nao recebe QUAL selecao esta aberta), OP14-039 Coffin Boat 92 (nao investigado), ST32-001 78 (esta correcao)"
+  ],
+  "cards_found": ["ST32-001"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "gerar_effects_db.py: regex novo `rest (\\d+) of your [^:]{1,60}? or don!{0,2}\\s*cards?\\s*:` ANTES do regex antigo, capturando pela FORMA (qualquer qualificador antes do 'or DON!! cards'), nao pelo texto desta carta. O regex antigo passa a ser pulado quando a alternancia casa, pra nao emitir dois custos pela mesma clausula. REPRESENTACAO: `{'type': 'rest_own_card', 'count': N, 'don_allowed': true}` em vez de um tipo de custo inedito -- `rest_own_card` ja significa exatamente 'qualquer carta propria, Character OU Leader, sem filtro' (decision_engine.py:5866), que e a metade da alternancia que o motor sabe pagar hoje; um tipo novo viraria custo IGNORADO em silencio por todos os consumidores, o que e pior que o bug original. A flag `don_allowed` carrega a outra metade sem quebrar ninguem.",
+  "validated_by": [
+    "gerar_dbs.py rodado (unica porta de geracao). Diff do card_effects_db.json contra baseline tirado imediatamente antes do fix: 1 carta mudada, PERDEU=0, GANHOU=1 -- exatamente ST32-001 ganhando `costs: [{type: rest_own_card, count: 1, don_allowed: true}]`, nenhuma outra carta tocada",
+    "sim_bridge.order_target_candidates com as cartas reais da partida: Kin'emon MANTEM o DON como candidato (a alternancia torna DON legal) e a carta da MAO vem em PRIMEIRO -- que e o alvo que o jogo estava pedindo; Yasopp OP17-031 (sem qualquer acao de DON) continua SEM DON. Os dois lados verificados: um filtro cego teria dado o mesmo resultado nos dois",
+    "smoke_fast.py OK"
+  ],
+  "notes": "ACHADO DE SEGUNDA ORDEM, registrado porque muda como o filtro de DON do bloco 814 deve ser lido: aquele filtro (DON so e candidato quando o efeito mexe com DON) e tao bom quanto o PARSE. Nesta carta ele estava ESCONDENDO UM ALVO VALIDO -- o custo permite restar DON, mas como o parse nao mencionava DON, o filtro removia os tokens. A correcao do parser resolve o caso e a leitura das FLAGS do custo (nao so do `type`) fecha a classe: qualquer alternancia futura que marque DON numa flag continua visivel pro filtro. A dependencia parse->filtro nao estava declarada no bloco 814 e agora esta. NAO RESOLVIDO nesta carta: o passo 'trash 1 cards for your hand' continua representado como o campo `then_trash: 1` dentro do step de draw, e nao como um step com alvo -- por isso a ordenacao de alvo nao tem sinal explicito de que uma carta da MAO precisa ser escolhida. Aqui a mao ficou em primeiro por outro caminho (a heuristica de zona), nao porque o motor soubesse. Fica como lacuna conhecida da familia `then_trash`."
+}

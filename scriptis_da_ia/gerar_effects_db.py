@@ -1519,8 +1519,30 @@ def parse_costs(text):
     # padrão COMPOSTO "rest this card and N of your DON!! cards" (ex: Empty
     # Throne OP13-099 -- rest_self + rest 3 DON), onde "rest" não vem colado ao
     # número. O rest_self acima já capturou a 1ª parte; aqui pegamos os DON.
+    # ALTERNANCIA "<X> or DON!! cards" (achado 13/09/2026, partida ao vivo):
+    # Kin'emon ST32-001 -- "rest 1 of your (Slash) attribute Leaders OR DON!!
+    # cards:" -- o regex abaixo exige `of your don!!` colado, entao o custo
+    # INTEIRO sumia e a carta era parseada como se nao tivesse custo.
+    # Consequencia medida: 78 de 82 cliques de alvo recusados pelo jogo numa
+    # unica partida, porque o motor nao sabia o que estava sendo pedido.
+    #
+    # Capturado pela FORMA (qualquer qualificador antes do "or DON!! cards"),
+    # nao pelo texto da carta. Censo global do banco: 80 cartas usam a
+    # gramatica "rest N of your ... DON!! cards:", 59 o parser ja capturava,
+    # 20 sao artes alternativas (fora do banco de efeitos) e **esta e a unica
+    # carta real que faltava** -- isolated_after_global_scan.
+    #
+    # `rest_own_card` + `don_allowed` em vez de um tipo novo: rest_own_card ja
+    # e "qualquer carta propria, Character ou Leader" (a metade que o motor
+    # sabe pagar), e um tipo inedito viraria custo ignorado em silencio.
+    m_alt = re.search(
+        r'rest (\d+) of your [^:]{1,60}? or don!{0,2}\s*cards?\s*:', t)
+    if m_alt:
+        costs.append({'type': 'rest_own_card', 'count': int(m_alt.group(1)),
+                      'don_allowed': True})
+
     m = re.search(r'rest (?:this (?:card|character|stage) and )?(\d+) of your don!!', t)
-    if m:
+    if m and not m_alt:
         costs.append({'type': 'rest_don', 'count': int(m.group(1))})
         # Ordem INVERTIDA do composto do comentario acima: "rest N of your
         # DON!! cards AND this Character/Card/Stage" (self-rest depois do

@@ -53,6 +53,104 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (815) - As 162 recusas MEDIDAS: um custo que o parser descartava em silencio -- e o filtro de DON de uma hora antes estava ESCONDENDO UM ALVO VALIDO
+
+Pedido do usuario: *"mede o que esta causando as 162 recusas"*, depois
+*"conserta o parser do Kin'emon"*.
+
+### O que a medicao achou
+
+Partida nova, depois do fix de DON: **309 cliques de alvo recusados** pelo jogo,
+sendo 86 em DON (era 154) e **162 em cartas comuns**. Por ator: Mihawk OP14-020
+127, Coffin Boat OP14-039 92, Kin'emon ST32-001 78.
+
+O Kin'emon foi o que se deixou medir ate o fim: **78 de 82 cliques recusados**.
+
+### A causa: o custo sumia do parse
+
+```
+TEXTO : [On Play] You may rest 1 of your (Slash) attribute Leaders
+        or DON!! cards: Draw 2 cards and trash 1 cards for your hand.
+
+PARSE : {"on_play": {"steps": [{"action": "draw", "count": 2, "then_trash": 1}]}}
+                                                        ^ sem custo nenhum
+```
+
+O regex exigia `of your don!!` **colado**. Com o qualificador e o `or` no meio,
+a clausula inteira era descartada -- e o motor decidia sobre uma carta que, pra
+ele, nao tinha custo.
+
+**Conferido, e foi o que separou causa de sintoma**: o bot chegou a clicar no
+PROPRIO Mihawk (uid=1), que e Slash e seria alvo valido DO CUSTO -- e o jogo
+recusou nas 4 vezes. Logo a selecao pendente nao era o custo. Era o descarte da
+mao, e o motor tambem nao sabia disso (ver a lacuna do `then_trash` abaixo).
+
+### Auditoria global ANTES de corrigir (gate obrigatorio)
+
+| | |
+|---|---|
+| cartas com a gramatica `rest N of your ... DON!! cards:` | **80** |
+| o parser ja capturava | 59 |
+| artes alternativas (`_p1`/`_p2`), fora do banco de efeitos | 20 |
+| **cartas REAIS faltando** | **1 -- ST32-001** |
+
+`isolated_after_global_scan`. O que distingue as 59: todas dizem "rest N of your
+DON!! cards" direto, sem alternancia.
+
+### O conserto, e por que NAO um tipo de custo novo
+
+Regex novo pela FORMA (`rest (\d+) of your [^:]{1,60}? or don!{0,2}\s*cards?\s*:`),
+emitindo `{'type': 'rest_own_card', 'count': 1, 'don_allowed': true}`.
+
+`rest_own_card` ja significa exatamente *"qualquer carta propria, Character OU
+Leader, sem filtro"* -- e a metade da alternancia que o motor sabe pagar hoje. Um
+tipo inedito viraria **custo ignorado em silencio** por todos os consumidores, o
+que e pior que o bug original. A flag carrega a outra metade sem quebrar
+ninguem.
+
+**Diff contra baseline tirado imediatamente antes do fix: 1 carta mudada,
+PERDEU=0, GANHOU=1.** O snapshot versionado e de 25/08 e ja acumulava
+divergencia de outras sessoes, entao ele nao servia de linha de base -- tirei a
+minha na hora pra isolar so o efeito desta mudanca.
+
+### O ACHADO QUE IMPORTA MAIS: o filtro de DON dependia do parse, e eu nao disse
+
+O filtro do bloco 814 (DON so e candidato quando o efeito mexe com DON) **estava
+escondendo um alvo VALIDO nesta carta**: o custo do Kin'emon permite restar DON,
+mas como o parse nao mencionava DON, o filtro removia os tokens.
+
+> **Um filtro que le o efeito parseado e tao bom quanto o parse.** Onde o parse
+> esta incompleto, ele deixa de ser conservador e passa a esconder alvo legitimo.
+
+Nao e motivo pra reverter -- ele eliminou 146 cliques mortos e as 86 recusas de
+DON que sobraram sao todas de cartas que o parse reconhece. Mas a dependencia
+agora esta declarada, e a classe foi fechada: o filtro passa a ler as **FLAGS**
+do custo, nao so o `type`. Qualquer alternancia futura que marque DON numa flag
+continua visivel.
+
+Verificado nos dois sentidos (o controle que podia falhar): Kin'emon **mantem**
+o DON e poe a carta da MAO em primeiro; Yasopp OP17-031 continua **sem** DON.
+
+### Lacuna conhecida que fica registrada
+
+O passo *"trash 1 cards for your hand"* continua representado como o campo
+`then_trash: 1` DENTRO do step de draw, nao como um step com alvo. Por isso a
+ordenacao de alvo nao tem sinal explicito de que uma carta da MAO precisa ser
+escolhida -- nesta carta a mao acabou em primeiro pela heuristica de zona, nao
+porque o motor soubesse. Familia `then_trash`, nao atacada.
+
+### Ainda abertos, da mesma partida
+
+* **Mihawk OP14-020, 127 recusas** -- a funcao de ordenacao nao recebe QUAL
+  selecao esta aberta; na mesma carta "rest 1 of your cards" e "set up to 3
+  DON!! active" sao indistinguiveis. Exige o plugin informar o passo.
+* **Coffin Boat OP14-039, 92** -- nao investigado.
+
+`smoke_fast.py` OK. Registro em
+`parser_audits/2026-09-13_custo_alternancia_leader_ou_don.json`.
+
+---
+
 ## 2026-09-13 (814) - O ALVO EM DON, CONSERTADO PELA RAIZ -- e era a QUARTA vez que este mesmo bug era remendado
 
 Pedido do usuario, depois de jogar: *"conserta o alvo em DON"*.
