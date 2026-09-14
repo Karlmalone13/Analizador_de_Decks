@@ -7,6 +7,20 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **BOT EM OUTRA MAQUINA (14/09/2026, bloco 819)**: `BOT/dist/OPTCGBotPlugin.dll`
+> commitada pela primeira vez. O fluxo existia desde o bloco 727 e o
+> `BOT/.gitignore` ja tinha a excecao, mas o arquivo nunca foi gerado -- entao
+> toda maquina nova ainda exigia .NET SDK. Agora: `BOT\instalar.bat` na outra
+> maquina copia a DLL pronta, cria o venv e gera `iniciar_bot.bat`.
+>
+> LIMITE: a DLL e ligada contra as DLLs do JOGO -- se a outra maquina tiver outra
+> versao do OPTCGSim (ou o jogo atualizar), e preciso recompilar numa maquina com
+> .NET e recommitar. Sintoma: o bot nao reage a nada.
+>
+> A outra maquina serve pra JOGAR e COLETAR (o banco de logs e versionado e
+> volta pelo git), **nao pra treinar**: o corpus (`q_alvos.jsonl`,
+> `selfplay_v2.jsonl`) e a telemetria (`live_runs/`) estao fora do git.
+
 > **[Rush:Character] ATACANDO O LIDER -- jogada ILEGAL corrigida (14/09/2026, bloco 818)**:
 > o travamento do CPU x CPU em `Attack_SelectingTarget` era o motor propondo
 > ataque ilegal. Shiki OP17-048 (`[Rush:Character]`, so pode atacar Personagem

@@ -53,6 +53,45 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-14 (819) - A DLL DISTRIBUIVEL, que o README prometia e nunca existiu
+
+Pedido do usuario: *"preciso rodar o bot na outra maquina tb, como fazemos?"*.
+
+O caminho ja estava desenhado desde o bloco 727 (*"temos que deixar ele em Dll
+pra podermos instalar em varios computadores"*): `BOT\instalar.bat` detecta uma
+DLL pronta em `BOT\dist\` e so copia -- a maquina nova **nao precisa de .NET
+SDK**. O `BOT/.gitignore` ate tem a excecao explicita
+(`!dist/OPTCGBotPlugin.dll`).
+
+**So que `BOT/dist/` nunca foi criado.** O passo 2 do fluxo documentado
+("commite esse arquivo") nunca foi executado, entao na pratica toda maquina nova
+ainda precisava de .NET. Gerado agora, com a build atual (CPU x CPU, `[DIAG]`,
+flag pegajosa, 69.632 bytes) -- MD5 conferido contra a DLL instalada no jogo:
+identicas.
+
+### O limite honesto, que o proprio README ja registra
+
+A DLL e ligada contra as DLLs do JOGO (`Assembly-CSharp`, `UnityEngine`). Se a
+outra maquina tiver uma versao diferente do OPTCGSim, ou se o jogo atualizar, a
+DLL pre-compilada **para de funcionar** e e preciso recompilar numa maquina com
+.NET e recommitar. Sintoma: o bot nao reage a nada.
+
+### O que a outra maquina AINDA nao tem
+
+Rodar o bot la funciona (codigo, banco de cartas, parser e o modelo `q_net.joblib`
+sao versionados). O que NAO viaja pelo git, e portanto nao existe la:
+
+* `metrics/q_alvos.jsonl` e `selfplay_v2.jsonl` -- o corpus de treino (625 mil
+  linhas). **Treinar la nao da**, so jogar.
+* `metrics/live_runs/` e `BOT/engine_server/logs/` -- telemetria, gitignored e
+  local-only por decisao do projeto.
+
+Ou seja: a outra maquina serve pra JOGAR e COLETAR log (que entra no banco
+versionado e volta pelo git), nao pra treinar nem pra auditar telemetria de
+partidas feitas aqui.
+
+---
+
 ## 2026-09-14 (818) - O TRAVAMENTO ERA JOGADA ILEGAL: [Rush:Character] atacando o LIDER. A bancada CPU x CPU achou em 2 partidas o que uma noite de partidas do usuario nao revelou
 
 O `[Bot][DIAG]` do bloco 816 rodou na primeira CPU x CPU de verdade e entregou
