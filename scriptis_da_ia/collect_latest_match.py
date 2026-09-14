@@ -203,6 +203,37 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
         print(f"[AUTO-COLLECT] consequencia por decisao falhou (log ja bancado, "
               f"nada perdido): {exc}", flush=True)
 
+    # AUDITORIA DE EFEITOS (bloco 833) -- ligada por pedido do usuario:
+    # *"deixe ativado essa auditoria"*. Mesmo desenho best-effort da
+    # consequencia acima: bancar o log e o trabalho critico e ja foi feito;
+    # se este relatorio quebrar, a partida NAO se perde junto.
+    efeitos_json = output_dir / f"efeitos_{stamp}.json"
+    efeitos_txt = output_dir / f"efeitos_{stamp}.txt"
+    efeitos_error = None
+    efeitos_nao_concluidos = None
+    try:
+        run_ef = subprocess.run(
+            [sys.executable, str(ROOT / "auditoria_efeitos.py"),
+             "--file", str(decision_log), "--json", str(efeitos_json)],
+            cwd=ROOT, text=True, capture_output=True,
+            env={**os.environ, "PYTHONIOENCODING": "utf-8"})
+        if run_ef.returncode:
+            raise RuntimeError(run_ef.stderr or run_ef.stdout)
+        efeitos_txt.write_text(run_ef.stdout, encoding="utf-8")
+        dados_ef = json.loads(efeitos_json.read_text(encoding="utf-8"))
+        efeitos_nao_concluidos = sum(1 for l in dados_ef.get("linhas", [])
+                                     if l.get("concluiu") == "NAO")
+        if efeitos_nao_concluidos:
+            print(f"[AUTO-COLLECT][ATENCAO] {efeitos_nao_concluidos} efeito(s) "
+                  f"DISPARARAM e NAO concluiram -- ver {efeitos_txt}", flush=True)
+        else:
+            print("[AUTO-COLLECT] efeitos: todos os disparados concluiram "
+                  "(bom sinal)", flush=True)
+    except Exception as exc:            # noqa: BLE001 - ver comentario acima
+        efeitos_error = str(exc)
+        print(f"[AUTO-COLLECT] auditoria de efeitos falhou (log ja bancado, "
+              f"nada perdido): {exc}", flush=True)
+
     receipt = {
         "schema": 1,
         "match_id": match_id or None,
@@ -221,6 +252,10 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
                              else None),
         "consequence_strong_findings": suspeitas_fortes,
         "consequence_error": consequence_error,
+        "efeitos_report": str(efeitos_json) if efeitos_error is None else None,
+        "efeitos_text": str(efeitos_txt) if efeitos_error is None else None,
+        "efeitos_nao_concluidos": efeitos_nao_concluidos,
+        "efeitos_error": efeitos_error,
     }
     receipt_path = output_dir / f"receipt_{stamp}.json"
     receipt_path.write_text(json.dumps(receipt, indent=2, ensure_ascii=False) + "\n",

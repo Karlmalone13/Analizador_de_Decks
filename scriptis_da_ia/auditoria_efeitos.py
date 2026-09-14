@@ -54,7 +54,12 @@ em tudo** -- o jogo aceitou, e o efeito nao fez nada.
 Uso:
     python auditoria_efeitos.py                 # ultimo decision_log
     python auditoria_efeitos.py --file <.jsonl>
-    python auditoria_efeitos.py --lider OP15-058   # so o que envolve esse codigo
+    python auditoria_efeitos.py --codigo OP15-058  # filtra UMA carta (qualquer uma)
+
+NAO e auditoria "do lider": cobre QUALQUER carta com efeito -- personagem,
+evento, stage e lider. Na 1a medicao, 50 dos 76 disparos auditados eram
+`on_play` de PERSONAGEM. A flag chamava `--lider` e sugeria o contrario
+(corrigido a pedido do usuario, mesmo dia).
     python auditoria_efeitos.py --json saida.json
 """
 from __future__ import annotations
@@ -336,7 +341,8 @@ def imprimir(rel: dict, top: int) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--file", help="caminho do decision_log .jsonl")
-    ap.add_argument("--lider", default="", help="filtra por um CODIGO de carta")
+    ap.add_argument("--codigo", default="", help="filtra UMA carta por codigo "
+                    "(qualquer uma -- personagem, evento, stage ou lider)")
     ap.add_argument("--top", type=int, default=15)
     ap.add_argument("--json", dest="json_out", help="grava o relatorio em JSON")
     args = ap.parse_args()
@@ -347,7 +353,7 @@ def main() -> int:
         return 1
     print(f"Lendo {p}\n")
 
-    rel = analisar(_carrega(p), _efeitos_db(), filtro=args.lider)
+    rel = analisar(_carrega(p), _efeitos_db(), filtro=args.codigo)
     imprimir(rel, args.top)
     if args.json_out:
         Path(args.json_out).write_text(json.dumps(rel, ensure_ascii=False, indent=2),

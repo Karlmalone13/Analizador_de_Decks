@@ -163,6 +163,44 @@ visivel**.
 
 ---
 
+## 2026-09-14 (833) - A auditoria de efeitos fica LIGADA no auto-collect -- e o nome da flag estava mentindo sobre o escopo
+
+Dois pedidos do usuario: *"deixe ativado essa auditoria, tb registre"* e a
+correcao *"detalhe, nao e auditoria so para efeito de lider, e para qualquer
+efeito"*.
+
+### A correcao de escopo -- ele esta certo, e o erro era MEU no nome
+
+A ferramenta SEMPRE auditou qualquer carta com efeito (personagem, evento,
+stage e lider). Na 1a medicao, **50 dos 76 disparos eram `on_play` de
+PERSONAGEM** -- so 4 eram do lider. Mas a flag se chamava `--lider`, e um nome
+errado vira documentacao errada: quem lesse `--help` concluiria que a auditoria
+e do lider. Renomeada pra **`--codigo`**, e o docstring agora diz explicitamente
+que cobre qualquer carta.
+
+### LIGADA no automatico
+
+`collect_latest_match.py` passa a rodar `auditoria_efeitos.py` a cada
+`/outcome`, no MESMO desenho best-effort do relatorio de consequencia: bancar o
+log e o trabalho critico e ja aconteceu antes; se a auditoria quebrar, ela grava
+`efeitos_error` no recibo e **a partida nao se perde junto**.
+
+Saida por partida, ao lado do resto da telemetria:
+`metrics/live_runs/efeitos_<ts>.json` e `.txt`, com `efeitos_report`,
+`efeitos_text` e `efeitos_nao_concluidos` no `receipt_<ts>.json`.
+
+E imprime no stdout do server, como os outros alertas:
+
+```
+[AUTO-COLLECT][ATENCAO] N efeito(s) DISPARARAM e NAO concluiram -- ver <arquivo>
+[AUTO-COLLECT] efeitos: todos os disparados concluiram (bom sinal)
+```
+
+Validado no log real da sessao: 76 disparos, **10 nao concluiram**, 65 cartas
+com efeito nunca dispararam.
+
+---
+
 ## 2026-09-14 (832) - TELEMETRIA DE EFEITO: disparou? concluiu? POR QUE nao? -- e ja achou o caso que o usuario descreveu: Mihawk ativou 4x e o JOGO RECUSOU as 4
 
 Pedido do usuario: *"quero que adicione na telemetria um script que verifique

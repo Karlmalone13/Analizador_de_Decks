@@ -1,6 +1,6 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 14 de setembro de 2026 (bloco 832)
+**Última atualização:** 14 de setembro de 2026 (bloco 833)
 
 > **Escopo deste arquivo** (revisto em 12/09/2026): lista VIVA — o que
 > está aberto e o fluxo recente (setembro/2026, blocos 748-779). O
@@ -33,6 +33,17 @@
 > CPU x CPU achar o bug do Shiki que o auto-jogo jamais acharia.
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
+
+> **AUDITORIA DE EFEITOS LIGADA NO AUTO-COLLECT (14/09/2026, bloco 833)**: a
+> pedido do usuario. Roda a cada `/outcome`, best-effort (se quebrar, grava
+> `efeitos_error` e a partida NAO se perde). Saida em
+> `metrics/live_runs/efeitos_<ts>.json`/`.txt`, com `efeitos_nao_concluidos` no
+> recibo, e alerta no stdout igual aos outros.
+>
+> **Correcao de ESCOPO (dele)**: *"nao e auditoria so para efeito de lider, e
+> para qualquer efeito"*. Sempre foi -- 50 dos 76 disparos da 1a medicao eram
+> `on_play` de PERSONAGEM, so 4 do lider -- mas a flag `--lider` dizia o
+> contrario. Renomeada pra **`--codigo`**. Nome errado e documentacao errada.
 
 > **TELEMETRIA DE EFEITO (14/09/2026, bloco 832)**: `auditoria_efeitos.py` --
 > pedido do usuario (*"verifique se um efeito foi disparado e concluido ou nao,
