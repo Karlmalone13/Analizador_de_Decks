@@ -1456,8 +1456,13 @@ def test_own_don_nao_e_prioritario_sem_custo_de_don() -> None:
         {"zone": "opp_leader", "id": -1, "code": "OP17-039"},
     ]
     order = sim_bridge.order_target_candidates(me, opp, candidates, actor_code="OP16-109")
-    check("Streusen (alvo de verdade do K.O.) vem ANTES de qualquer token de DON",
-          order.index(-30) < order.index(10005))
+    # BLOCO 814: a garantia subiu de "DON depois do alvo" pra "DON NEM
+    # APARECE". Doc Q nao tem UMA acao de DON, entao todo clique em DON era
+    # desperdicio garantido -- e esta e a TERCEIRA vez que este mesmo bug e
+    # remendado (21/07 prioridade, 13/08 de-prioridade). Medido na partida
+    # ao vivo de 13/09: 248 cliques recusados pelo jogo, 62% em DON.
+    check("nenhum token de DON sobra pra um efeito que nao mexe com DON",
+          not [i for i in order if i in (10005, 10006, 10007, -10004)])
     check("Streusen e o PRIMEIRO candidato da lista (unico alvo valido: custo<=1)",
           order[0] == -30)
 
@@ -12480,8 +12485,12 @@ def test_order_target_candidates_custo_so_de_mao_exclui_outras_zonas() -> None:
     ]
     order = sim_bridge.order_target_candidates(
         me, opp, cands, attacker_power=5000, actor_code="OP16-015")
-    check("custo so-de-mao (Luffy) exclui campo/trash/deck, mantem so mao+DON",
-          set(order) == {1, 2, 7})
+    # BLOCO 814: o `7` (own_don) saiu do esperado. Luffy OP16-015 nao tem
+    # UMA acao de DON -- manter o token de DON na lista era a permissividade
+    # que sobrou do fix anterior, e o proprio nome do check registrava isso
+    # ("mantem so mao+DON"). Agora so a mao sobra, que e o que o efeito pede.
+    check("custo so-de-mao (Luffy) exclui campo/trash/deck E DON, mantem so a mao",
+          set(order) == {1, 2})
 
     # Newgate (OP16-003) tem custo de mao JUNTO com um target de campo
     # (debuff_power target=opp_character) -- NAO pode excluir opp_board,

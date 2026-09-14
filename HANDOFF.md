@@ -53,6 +53,79 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (814) - O ALVO EM DON, CONSERTADO PELA RAIZ -- e era a QUARTA vez que este mesmo bug era remendado
+
+Pedido do usuario, depois de jogar: *"conserta o alvo em DON"*.
+
+### O conserto
+
+`order_target_candidates` (`sim_bridge.py`) passa a **excluir as zonas de DON
+quando o efeito do ator nao menciona DON em nenhum step nem custo**. Detectado
+pelo VOCABULARIO do parser -- qualquer acao/custo com `don` no nome
+(`set_don_active`, `rest_don`, `give_don`, `opp_don_minus`, `transfer_don`,
+`lock_opp_don`, ...) -- e nao por lista de cartas. Mesma disciplina de "corrija
+pela FORMA" do gate de auditoria do parser.
+
+E o **espelho exato** de um bloco que ja existia bem ali: o fix de 30/08 (Nami
+OP14-031) trata "o efeito MIRA DON, entao so DON serve". Faltava o caso oposto,
+que e o comum.
+
+### CONSERVADOR de proposito, e o que fica de fora
+
+So exclui quando o ator **nao menciona DON em lugar nenhum**. Quem menciona
+(Mihawk OP14-020, OP13-040) mantem tudo como antes.
+
+**O caso do Mihawk continua aberto**, e a causa e estrutural: a funcao **nao
+recebe QUAL selecao do efeito esta em aberto**. Na mesma carta, "rest 1 of your
+cards" (o custo, onde DON e invalido) e "set up to 3 of your DON!! cards as
+active" (onde so DON serve) sao indistinguiveis pra ela. Resolver isso exige o
+plugin dizer qual passo esta pedindo alvo -- nao tentado.
+
+### ERA A QUARTA VEZ
+
+Este mesmo bug ja tinha sido remendado tres vezes, sempre mexendo em
+PRIORIDADE em vez de VALIDADE:
+
+| quando | caso | o que se fez |
+|---|---|---|
+| 21/07 | (achado original) | DON ganhou prioridade incondicional |
+| 02/08 | Luffy OP16-015, 65-73 candidatos, ~27-31s de atraso por decisao | excluiu campo/trash/deck, **manteve mao+DON** |
+| 13/08 | Doc Q OP16-109, *"~8s clicando em nada"* | DON deixou de ser prioritario, mas **continuou na lista** |
+| **13/09** | **248 cliques recusados numa partida, 62% em DON** | **DON sai da lista** |
+
+Os dois testes do smoke que quebraram eram justamente os dos casos de 02/08 e
+13/08 -- e os dois codificavam a permissividade: um esperava `{mao + DON}` (o
+proprio nome do check dizia *"mantem so mao+DON"*), o outro so exigia que o DON
+viesse DEPOIS do alvo. **Reescritos pra garantia mais forte**, nao adaptados:
+agora afirmam que DON **nao aparece**. `SMOKE FAST OK`.
+
+> Licao de metodo: tres remendos seguidos mexendo na ORDEM eram o sinal de que
+> o problema nao era ordem. Quando o mesmo bug volta pela terceira vez, a
+> pergunta deixa de ser "como priorizar melhor" e passa a ser "por que isto
+> esta na lista".
+
+### Controle que podia falhar
+
+Testado com as cartas REAIS da partida: Yasopp OP17-031 e OP06-038 (sem acao de
+DON) perdem todos os tokens de DON; **Mihawk OP14-020 e OP13-040 (custo
+`rest_don`) MANTEM** -- se o filtro fosse cego, esses dois teriam perdido
+tambem e o teste nao acusaria nada.
+
+### Impacto esperado
+
+Dos 248 cliques recusados da partida 1, **146 eram de atores sem nenhuma acao
+de DON** (Yasopp 102, OP06-038 36, OP17-039 5, OP17-118 3). Esses deixam de
+existir. Os 44 do Mihawk continuam ate a selecao ganhar contexto.
+
+### Junto, a pedido dele
+
+A linha de atalhos voltou pra popup do bot (`Shift+B` / `Shift+P`). Eu a tinha
+escondido com o bot ligado por conta propria -- *"voce retirou os comando que
+tinha na janelinha do bot"* -- e ele esta certo: a caixa existe pra conferir de
+relance, e conferir inclui lembrar o atalho. DLL recompilada.
+
+---
+
 ## 2026-09-13 (813) - 248 CLIQUES DE ALVO RECUSADOS PELO JOGO NUMA PARTIDA, 62% DELES EM DON. Os 5 alertas eram a ponta
 
 Pedido do usuario: *"olha esses 5 casos enquanto eu reabro o jogo"* -- os 5

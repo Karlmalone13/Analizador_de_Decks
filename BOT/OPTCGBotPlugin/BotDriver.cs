@@ -1165,11 +1165,16 @@ namespace OPTCGBotPlugin
             string lado = $"P{BotPlayerIndex + 1}";
             string estado = _botEnabled ? "ATIVADO" : "DESATIVADO";
             bool temMsg = !string.IsNullOrEmpty(_collectionMessage);
-            bool temAjuda = !_botEnabled;
+            // A linha de atalhos volta a ser SEMPRE visivel: eu a tinha
+            // escondido com o bot ligado ("quem esta jogando ja sabe"), o
+            // usuario reclamou na hora ("voce retirou os comando que tinha na
+            // janelinha do bot") e ele esta certo -- a caixa existe pra ele
+            // conferir de relance, e conferir inclui lembrar o atalho.
+            bool temAjuda = true;
 
             float linhas = 1f + (temAjuda ? 1f : 0f) + (temMsg ? 1f : 0f);
             float boxHeight = 6 + linhas * 13;
-            float boxWidth = temMsg ? 460 : 170;
+            float boxWidth = temMsg ? 460 : 215;   // 215 cabe a linha de atalhos na fonte 10
             Color corAntes = GUI.color;
 
             GUI.Box(new Rect(4, 2, boxWidth, boxHeight), "");

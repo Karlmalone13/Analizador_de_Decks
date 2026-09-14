@@ -7,6 +7,22 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **ALVO EM DON CONSERTADO PELA RAIZ (13/09/2026, bloco 814)**:
+> `order_target_candidates` exclui as zonas de DON quando o efeito do ator nao
+> menciona DON em nenhum step nem custo (detectado pelo vocabulario do parser,
+> nao por lista de cartas). Espelho do fix de 30/08 (Nami), que ja tratava o
+> caso oposto. **Era a QUARTA vez que o mesmo bug era remendado** (21/07, 02/08
+> Luffy, 13/08 Doc Q) -- as tres anteriores mexeram em PRIORIDADE; esta mexe em
+> VALIDADE. Dois testes do smoke codificavam a permissividade antiga e foram
+> reescritos pra garantia mais forte. `SMOKE FAST OK`.
+>
+> Cobre 146 dos 248 cliques recusados da partida. **ABERTO**: os 44 do Mihawk
+> OP14-020 -- na mesma carta, "rest 1 of your cards" (DON invalido) e "set up to
+> 3 DON!! active" (so DON serve) sao indistinguiveis, porque a funcao nao recebe
+> QUAL selecao esta em aberto. Exige o plugin informar o passo. Nao tentado.
+>
+> Tambem: a linha de atalhos voltou pra popup do bot, a pedido do usuario.
+
 > **ABERTO -- 248 CLIQUES DE ALVO RECUSADOS NUMA PARTIDA (13/09/2026, bloco 813)**:
 > investigando os 5 `execucao falhou` da primeira partida ao vivo, o log do
 > plugin mostrou **248 cliques de alvo recusados pelo jogo, 154 deles (62%) em

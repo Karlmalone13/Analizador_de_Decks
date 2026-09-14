@@ -25,10 +25,7 @@
     },
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Imu-B_2026-07-01T14.22.50.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-07-01T12.46.16",
@@ -56,10 +53,7 @@
     },
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Marshall.D.Teach-BY_2026-07-01T12.46.16.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-07-01T15.15.57",
@@ -88,10 +82,7 @@
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Imu-B_2026-07-01T15.15.57.json",
       "Sebs#6211": "decks_full/Monkey.D.Luffy-BP_2026-07-01T15.15.57.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-07-01T18.46.59",
@@ -120,10 +111,7 @@
     "deck_full_files": {
       "BigRato#5650": "decks_full/Gecko.Moria-BY_2026-07-01T18.46.59.json",
       "Pefforza#4027": "decks_full/Krieg-RG_2026-07-01T18.46.59.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-07-01T19.08.01",
@@ -152,10 +140,7 @@
     "deck_full_files": {
       "BigRato#5650": "decks_full/Jinbe-B_2026-07-01T19.08.01.json",
       "SnufkinDM#6827": "decks_full/Sakazuki-BB_2026-07-01T19.08.01.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-07-01T19.17.04",
@@ -183,10 +168,7 @@
     },
     "deck_full_files": {
       "BigRato#5650": "decks_full/Jinbe-B_2026-07-01T19.17.04.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-07-01T19.29.44",
@@ -215,10 +197,7 @@
     "deck_full_files": {
       "BigRato#5650": "decks_full/Jinbe-B_2026-07-01T19.29.44.json",
       "Metalbeard#6700": "decks_full/Portgas.D.Ace-RB_2026-07-01T19.29.44.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-07-02T00.16.32",
@@ -247,10 +226,7 @@
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Krieg-RG_2026-07-02T00.16.32.json",
       "Shichibukai#4335": "decks_full/Marshall.D.Teach-B_2026-07-02T00.16.32.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-07-02T00.33.15",
@@ -278,10 +254,7 @@
     },
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Krieg-RG_2026-07-02T00.33.15.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-07-02T00.48.19",
@@ -309,10 +282,7 @@
     },
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Eustass.Captain.Kid-Y_2026-07-02T00.48.19.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-16T01.57.48.log",
@@ -335,10 +305,7 @@
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json",
       "ORANGE#6948": "decks_full/ORANGE_6948_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-22T17.14.18.log",
@@ -360,10 +327,7 @@
     "total_turns": 16,
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-22T17.37.59.log",
@@ -386,10 +350,7 @@
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json",
       "Vince3#4219": "decks_full/Vince3_4219_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-23T00.45.00.log",
@@ -412,10 +373,7 @@
     "deck_full_files": {
       "LaoDJ#2305": "decks_full/LaoDJ_2305_autosaved.json",
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-23T01.20.25.log",
@@ -437,10 +395,7 @@
     "total_turns": 23,
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-23T01.45.26.log",
@@ -462,10 +417,7 @@
     "total_turns": 26,
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-23T11.49.36.log",
@@ -487,10 +439,7 @@
     "total_turns": 29,
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-27T19.58.09.log",
@@ -512,10 +461,7 @@
     "total_turns": 27,
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-27T20.15.38.log",
@@ -537,10 +483,7 @@
     "total_turns": 36,
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-27T23.13.47.log",
@@ -562,10 +505,7 @@
     "total_turns": 36,
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-27T23.48.47.log",
@@ -588,10 +528,7 @@
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json",
       "rong#1667": "decks_full/rong_1667_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-28T00.15.46.log",
@@ -614,10 +551,7 @@
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json",
       "CatalinaWineMixr#4883": "decks_full/CatalinaWineMixr_4883_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-28T00.46.41.log",
@@ -639,10 +573,7 @@
     "total_turns": 27,
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-28T01.10.14.log",
@@ -665,10 +596,7 @@
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json",
       "Zakerga#4479": "decks_full/Zakerga_4479_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-28T01.27.26.log",
@@ -691,10 +619,7 @@
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json",
       "Tmart17#68886": "decks_full/Tmart17_68886_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-29T02.08.03.log",
@@ -716,10 +641,7 @@
     "total_turns": 47,
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-29T02.43.18.log",
@@ -742,10 +664,7 @@
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json",
       "Thorfinn#3951": "decks_full/Thorfinn_3951_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-06-30T23.13.15.log",
@@ -768,10 +687,7 @@
     "deck_full_files": {
       "Estarock#2024": "decks_full/Estarock_2024_autosaved.json",
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-07-01T00.13.44.log",
@@ -794,10 +710,7 @@
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json",
       "harrytat#4060": "decks_full/harrytat_4060_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-07-01T12.45.42.log",
@@ -819,10 +732,7 @@
     "total_turns": 44,
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-07-01T14.00.11.log",
@@ -844,10 +754,7 @@
     "total_turns": 17,
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-07-01T14.22.36.log",
@@ -869,10 +776,7 @@
     "total_turns": 35,
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-07-01T15.15.55.log",
@@ -895,10 +799,7 @@
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json",
       "Sebs#6211": "decks_full/Sebs_6211_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-07-02T00.16.23.log",
@@ -921,10 +822,7 @@
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json",
       "Shichibukai#4335": "decks_full/Shichibukai_4335_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-07-02T00.33.08.log",
@@ -946,10 +844,7 @@
     "total_turns": 24,
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-07-02T00.48.17.log",
@@ -971,10 +866,7 @@
     "total_turns": 24,
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Karlmalone_2854_autosaved.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "original_file": "2026-07-02T15.09.38.log",
@@ -1384,10 +1276,7 @@
     },
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Eustass.Captain.Kid-Y_2026-07-10T22.05.14.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-07-10T22.32.09",
@@ -2170,10 +2059,7 @@
     "deck_full_files": {
       "You": "decks_full/Eustass.Captain.Kid-Y_2026-07-18T02.08.40.json",
       "Opponent": "decks_full/Jinbe-G_2026-07-18T02.08.40.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-18T02.10.55.json",
-    "bot_side": "p1"
+    }
   },
   {
     "id": "2026-07-18T02.41.46",
@@ -2202,10 +2088,7 @@
     "deck_full_files": {
       "You": "decks_full/Krieg-RG_2026-07-18T02.41.46.json",
       "Opponent": "decks_full/Smoker-B_2026-07-18T02.41.46.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-18T02.41.49.json",
-    "bot_side": "p1"
+    }
   },
   {
     "id": "2026-07-20T12.11.27",
@@ -2234,9 +2117,7 @@
     "deck_full_files": {
       "You": "decks_full/Dracule.Mihawk-G_2026-07-20T12.11.27.json",
       "Opponent": "decks_full/Charlotte.Katakuri-P_2026-07-20T12.11.27.json"
-    },
-    "bot_side": "p1",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-20T12.11.30.json"
+    }
   },
   {
     "id": "2026-07-20T12.11.27_p2",
@@ -2294,10 +2175,7 @@
     "deck_full_files": {
       "You": "decks_full/Dracule.Mihawk-G_2026-07-20T12.31.57.json",
       "Opponent": "decks_full/Charlotte.Katakuri-P_2026-07-20T12.31.57.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-20T12.31.59.json",
-    "bot_side": "p2"
+    }
   },
   {
     "id": "2026-07-20T13.57.47",
@@ -2326,9 +2204,7 @@
     "deck_full_files": {
       "You": "decks_full/Dracule.Mihawk-G_2026-07-20T13.57.47.json",
       "Opponent": "decks_full/Charlotte.Katakuri-P_2026-07-20T13.57.47.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-20T13.57.50.json"
+    }
   },
   {
     "id": "2026-07-20T17.01.09",
@@ -2357,9 +2233,7 @@
     "deck_full_files": {
       "You": "decks_full/Dracule.Mihawk-G_2026-07-20T17.01.09.json",
       "Opponent": "decks_full/Charlotte.Katakuri-P_2026-07-20T17.01.09.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-20T17.01.12.json"
+    }
   },
   {
     "id": "2026-07-20T19.13.14",
@@ -2388,10 +2262,7 @@
     "deck_full_files": {
       "You": "decks_full/Charlotte.Katakuri-P_2026-07-20T19.13.14.json",
       "Opponent": "decks_full/Jinbe-B_2026-07-20T19.13.14.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-20T19.13.16.json",
-    "bot_side": "p1"
+    }
   },
   {
     "id": "2026-07-21T01.08.09",
@@ -2420,10 +2291,7 @@
     "deck_full_files": {
       "You": "decks_full/Donquixote.Doflamingo-GP_2026-07-21T01.08.09.json",
       "Opponent": "decks_full/Charlotte.Katakuri-P_2026-07-21T01.08.09.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-21T01.08.12.json",
-    "bot_side": "p2"
+    }
   },
   {
     "id": "2026-07-21T02.21.05",
@@ -2452,9 +2320,7 @@
     "deck_full_files": {
       "You": "decks_full/Monkey.D.Luffy-BP_2026-07-21T02.21.05.json",
       "Opponent": "decks_full/Charlotte.Katakuri-P_2026-07-21T02.21.05.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-21T02.21.08.json"
+    }
   },
   {
     "id": "2026-07-22T15.25.14",
@@ -2483,10 +2349,7 @@
     "deck_full_files": {
       "You": "decks_full/Eustass.Captain.Kid-Y_2026-07-22T15.25.14.json",
       "Opponent": "decks_full/Charlotte.Katakuri-P_2026-07-22T15.25.14.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-22T15.25.16.json",
-    "bot_side": "p2"
+    }
   },
   {
     "id": "2026-07-22T21.44.06",
@@ -2515,9 +2378,7 @@
     "deck_full_files": {
       "You": "decks_full/Eustass.Captain.Kid-Y_2026-07-22T21.44.06.json",
       "Opponent": "decks_full/Charlotte.Katakuri-P_2026-07-22T21.44.06.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-22T21.44.08.json"
+    }
   },
   {
     "id": "2026-07-22T22.30.34",
@@ -2546,10 +2407,7 @@
     "deck_full_files": {
       "You": "decks_full/Charlotte.Katakuri-P_2026-07-22T22.30.34.json",
       "Opponent": "decks_full/Kaido-P_2026-07-22T22.30.34.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-22T22.30.37.json",
-    "bot_side": "p1"
+    }
   },
   {
     "id": "2026-07-22T23.07.07",
@@ -2578,9 +2436,7 @@
     "deck_full_files": {
       "You": "decks_full/Charlotte.Katakuri-P_2026-07-22T23.07.07.json",
       "Opponent": "decks_full/Smoker-B_2026-07-22T23.07.07.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-22T23.07.10.json"
+    }
   },
   {
     "id": "2026-07-22T23.07.07_p2",
@@ -2638,10 +2494,7 @@
     "deck_full_files": {
       "You": "decks_full/Charlotte.Katakuri-P_2026-07-22T23.55.21.json",
       "Opponent": "decks_full/Portgas.D.Ace-RB_2026-07-22T23.55.21.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-22T23.55.24.json",
-    "bot_side": "p1"
+    }
   },
   {
     "id": "2026-07-23T13.26.50",
@@ -2670,9 +2523,7 @@
     "deck_full_files": {
       "You": "decks_full/Charlotte.Katakuri-P_2026-07-23T13.26.50.json",
       "Opponent": "decks_full/Jinbe-G_2026-07-23T13.26.50.json"
-    },
-    "bot_side": "p1",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-23T13.26.53.json"
+    }
   },
   {
     "id": "2026-07-23T14.12.36",
@@ -2701,10 +2552,7 @@
     "deck_full_files": {
       "You": "decks_full/Charlotte.Katakuri-P_2026-07-23T14.12.36.json",
       "Opponent": "decks_full/Krieg-RG_2026-07-23T14.12.36.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-23T14.12.39.json",
-    "bot_side": "p1"
+    }
   },
   {
     "id": "2026-07-23T16.07.35",
@@ -2733,9 +2581,7 @@
     "deck_full_files": {
       "You": "decks_full/Dracule.Mihawk-G_2026-07-23T16.07.35.json",
       "Opponent": "decks_full/Charlotte.Katakuri-P_2026-07-23T16.07.35.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-23T16.07.38.json"
+    }
   },
   {
     "id": "2026-07-23T16.54.39",
@@ -2764,10 +2610,7 @@
     "deck_full_files": {
       "You": "decks_full/Dracule.Mihawk-G_2026-07-23T16.54.39.json",
       "Opponent": "decks_full/Charlotte.Katakuri-P_2026-07-23T16.54.39.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-23T16.54.42.json",
-    "bot_side": "p2"
+    }
   },
   {
     "id": "2026-07-23T17.54.33",
@@ -2796,9 +2639,7 @@
     "deck_full_files": {
       "You": "decks_full/Dracule.Mihawk-G_2026-07-23T17.54.33.json",
       "Opponent": "decks_full/Charlotte.Katakuri-P_2026-07-23T17.54.33.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-23T17.54.35.json"
+    }
   },
   {
     "id": "2026-07-23T18.13.41_p2",
@@ -2856,9 +2697,7 @@
     "deck_full_files": {
       "You": "decks_full/Charlotte.Katakuri-P_2026-07-23T22.14.26.json",
       "Opponent": "decks_full/Marshall.D.Teach-BY_2026-07-23T22.14.26.json"
-    },
-    "bot_side": "p1",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-23T22.14.33.json"
+    }
   },
   {
     "id": "2026-07-23T23.12.17",
@@ -2887,9 +2726,7 @@
     "deck_full_files": {
       "You": "decks_full/Charlotte.Katakuri-P_2026-07-23T23.12.17.json",
       "Opponent": "decks_full/Kaido-P_2026-07-23T23.12.17.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-23T23.12.20.json"
+    }
   },
   {
     "id": "2026-07-24T11.35.39",
@@ -2918,10 +2755,7 @@
     "deck_full_files": {
       "You": "decks_full/Charlotte.Katakuri-P_2026-07-24T11.35.39.json",
       "Opponent": "decks_full/Jinbe-B_2026-07-24T11.35.39.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-24T11.35.42.json",
-    "bot_side": "p1"
+    }
   },
   {
     "id": "2026-07-26T21.54.29",
@@ -2950,10 +2784,7 @@
     "deck_full_files": {
       "You": "decks_full/Charlotte.Katakuri-P_2026-07-26T21.54.29.json",
       "Opponent": "decks_full/Marshall.D.Teach-BY_2026-07-26T21.54.29.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-26T21.54.32.json",
-    "bot_side": "p1"
+    }
   },
   {
     "id": "2026-07-26T22.10.06",
@@ -2982,10 +2813,7 @@
     "deck_full_files": {
       "You": "decks_full/Charlotte.Katakuri-P_2026-07-26T22.10.06.json",
       "Opponent": "decks_full/Marshall.D.Teach-BY_2026-07-26T22.10.06.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-26T22.10.09.json",
-    "bot_side": "p1"
+    }
   },
   {
     "id": "2026-07-26T22.10.06_p2",
@@ -3043,10 +2871,7 @@
     "deck_full_files": {
       "You": "decks_full/Charlotte.Katakuri-P_2026-07-26T22.24.06.json",
       "Opponent": "decks_full/Marshall.D.Teach-BY_2026-07-26T22.24.06.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-26T22.24.11.json",
-    "bot_side": "p1"
+    }
   },
   {
     "id": "2026-07-26T22.24.06_p2",
@@ -3133,9 +2958,7 @@
     "deck_full_files": {
       "You": "decks_full/Krieg-RG_2026-07-26T23.35.09.json",
       "Opponent": "decks_full/Jinbe-B_2026-07-26T23.35.09.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-26T23.35.12.json"
+    }
   },
   {
     "id": "2026-07-26T23.35.09_p2",
@@ -3193,9 +3016,7 @@
     "deck_full_files": {
       "You": "decks_full/Charlotte.Katakuri-P_2026-07-27T00.26.21.json",
       "Opponent": "decks_full/Portgas.D.Ace-RB_2026-07-27T00.26.21.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-27T00.26.24.json"
+    }
   },
   {
     "id": "2026-07-27T00.26.21_p2",
@@ -3302,7 +3123,7 @@
     },
     "turns": 10,
     "winner": "p1",
-    "bot_side": "p2",
+    "bot_side": null,
     "log_file": "raw/Charlotte.Katakuri-P_x_Portgas.D.Ace-R_2026-08-01T23.56.56.log",
     "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-R_2026-08-01T23.56.56.json",
     "deck_files": {
@@ -3312,9 +3133,7 @@
     "deck_full_files": {
       "You": "decks_full/Charlotte.Katakuri-P_2026-08-01T23.56.56.json",
       "Opponent": "decks_full/Portgas.D.Ace-R_2026-08-01T23.56.56.json"
-    },
-    "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-08-01T23.56.59.json"
+    }
   },
   {
     "id": "2026-08-02T00.53.44",
@@ -3553,9 +3372,7 @@
     },
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Rocks.D.Xebec-B_2026-08-07T22.17.10_p2.json"
-    },
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-08-08T10.03.33_p2",
@@ -3584,9 +3401,7 @@
     },
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Rocks.D.Xebec-B_2026-08-08T10.03.33_p2.json"
-    },
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-08-05T23.28.24_p2",
@@ -3616,9 +3431,7 @@
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.json",
       "Vius2#16248": "decks_full/Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.json"
-    },
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-08-08T10.55.01",
@@ -3798,9 +3611,7 @@
     "deck_full_files": {
       "Zico#6849": "decks_full/Portgas.D.Ace-R_2026-08-09T18.48.47.json",
       "Karlmalone#2854": "decks_full/Rocks.D.Xebec-B_2026-08-09T18.48.47.json"
-    },
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-08-09T19.11.14",
@@ -3829,9 +3640,7 @@
     },
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Rocks.D.Xebec-B_2026-08-09T19.11.14.json"
-    },
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "karlmalone_x_aceswife_2026-08-12",
@@ -3860,9 +3669,7 @@
     },
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Rocks.D.Xebec-B_karlmalone_x_aceswife_2026-08-12.json"
-    },
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-08-13T22.23.56",
@@ -4519,9 +4326,7 @@
       "BigRato#5650": "decks/Charlotte.Linlin-Y_2026-08-19T01.37.52_p2.json",
       "Eileen#5972": "decks/Boa.Hancock.-.OP14-041-BY_2026-08-19T01.37.52_p2.json"
     },
-    "deck_full_files": {},
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    "deck_full_files": {}
   },
   {
     "id": "2026-08-23T20.01.33_p2",
@@ -4550,9 +4355,7 @@
     },
     "deck_full_files": {
       "BigRato#5650": "decks_full/Portgas.D.Ace-R_2026-08-23T20.01.33_p2.json"
-    },
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-08-28T02.29.23_p2",
@@ -4579,9 +4382,7 @@
       "BigRato#5650": "decks/Charlotte.Linlin-Y_2026-08-28T02.29.23_p2.json",
       "StrawHatMatt#6200": "decks/Shanks-G_2026-08-28T02.29.23_p2.json"
     },
-    "deck_full_files": {},
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    "deck_full_files": {}
   },
   {
     "id": "2026-08-28T03.11.11_p2",
@@ -4610,9 +4411,7 @@
     },
     "deck_full_files": {
       "projj#37649": "decks_full/Portgas.D.Ace-R_2026-08-28T03.11.11_p2.json"
-    },
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    }
   },
   {
     "id": "2026-08-29T00.33.16_p2",
@@ -4639,9 +4438,7 @@
       "BigRato#5650": "decks/Charlotte.Linlin-Y_2026-08-29T00.33.16_p2.json",
       "LifeisSoup#5268": "decks/Shanks-G_2026-08-29T00.33.16_p2.json"
     },
-    "deck_full_files": {},
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    "deck_full_files": {}
   },
   {
     "id": "2026-08-28T02.50.38_p2",
@@ -4668,9 +4465,7 @@
       "Risco#9935": "decks/Monkey.D.Luffy-P_2026-08-28T02.50.38_p2.json",
       "BigRato#5650": "decks/Charlotte.Linlin-Y_2026-08-28T02.50.38_p2.json"
     },
-    "deck_full_files": {},
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    "deck_full_files": {}
   },
   {
     "id": "2026-08-25T20.15.37_p2",
@@ -4697,9 +4492,7 @@
       "Bruhh#3997": "decks/Donquixote.Doflamingo-P_2026-08-25T20.15.37_p2.json",
       "BigRato#5650": "decks/Kaido-B_2026-08-25T20.15.37_p2.json"
     },
-    "deck_full_files": {},
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+    "deck_full_files": {}
   },
   {
     "id": "2026-08-29T21.14.19",
@@ -4999,68 +4792,6 @@
     "deck_full_files": {
       "You": "decks_full/Kaido_2026-08-30T20.08.21_p2.json",
       "Opponent": "decks_full/Edward.Newgate-R_2026-08-30T20.08.21_p2.json"
-    }
-  },
-  {
-    "id": "2026-09-13T22.16.03",
-    "friendly_name": "Dracule.Mihawk-G_x_Rocks.D.Xebec-B",
-    "date": "2026-09-13",
-    "p1": {
-      "name": "You",
-      "leader_code": "OP14-020",
-      "leader_name": "Dracule Mihawk",
-      "slug": "Dracule.Mihawk-G"
-    },
-    "p2": {
-      "name": "Opponent",
-      "leader_code": "OP17-039",
-      "leader_name": "Rocks D. Xebec",
-      "slug": "Rocks.D.Xebec-B"
-    },
-    "turns": 12,
-    "winner": "p2",
-    "bot_side": "p1",
-    "tipo": "com_bot",
-    "log_file": "raw/Dracule.Mihawk-G_x_Rocks.D.Xebec-B_2026-09-13T22.16.03.log",
-    "parsed_file": "parsed/Dracule.Mihawk-G_x_Rocks.D.Xebec-B_2026-09-13T22.16.03.json",
-    "deck_files": {
-      "You": "decks/Dracule.Mihawk-G_2026-09-13T22.16.03.json",
-      "Opponent": "decks/Rocks.D.Xebec-B_2026-09-13T22.16.03.json"
-    },
-    "deck_full_files": {
-      "You": "decks_full/Dracule.Mihawk-G_2026-09-13T22.16.03.json",
-      "Opponent": "decks_full/Rocks.D.Xebec-B_2026-09-13T22.16.03.json"
-    }
-  },
-  {
-    "id": "2026-09-13T22.43.47",
-    "friendly_name": "Rocks.D.Xebec-B_x_Dracule.Mihawk-G",
-    "date": "2026-09-13",
-    "p1": {
-      "name": "You",
-      "leader_code": "OP17-039",
-      "leader_name": "Rocks D. Xebec",
-      "slug": "Rocks.D.Xebec-B"
-    },
-    "p2": {
-      "name": "Opponent",
-      "leader_code": "OP14-020",
-      "leader_name": "Dracule Mihawk",
-      "slug": "Dracule.Mihawk-G"
-    },
-    "turns": 13,
-    "winner": "p1",
-    "bot_side": "p2",
-    "tipo": "com_bot",
-    "log_file": "raw/Rocks.D.Xebec-B_x_Dracule.Mihawk-G_2026-09-13T22.43.47.log",
-    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Dracule.Mihawk-G_2026-09-13T22.43.47.json",
-    "deck_files": {
-      "You": "decks/Rocks.D.Xebec-B_2026-09-13T22.43.47.json",
-      "Opponent": "decks/Dracule.Mihawk-G_2026-09-13T22.43.47.json"
-    },
-    "deck_full_files": {
-      "You": "decks_full/Rocks.D.Xebec-B_2026-09-13T22.43.47.json",
-      "Opponent": "decks_full/Dracule.Mihawk-G_2026-09-13T22.43.47.json"
     }
   }
 ]

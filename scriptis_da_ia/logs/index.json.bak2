@@ -2172,8 +2172,7 @@
       "Opponent": "decks_full/Jinbe-G_2026-07-18T02.08.40.json"
     },
     "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-18T02.10.55.json",
-    "bot_side": "p1"
+    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-18T02.10.55.json"
   },
   {
     "id": "2026-07-18T02.41.46",
@@ -2204,8 +2203,7 @@
       "Opponent": "decks_full/Smoker-B_2026-07-18T02.41.46.json"
     },
     "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-18T02.41.49.json",
-    "bot_side": "p1"
+    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-18T02.41.49.json"
   },
   {
     "id": "2026-07-20T12.11.27",
@@ -2296,8 +2294,7 @@
       "Opponent": "decks_full/Charlotte.Katakuri-P_2026-07-20T12.31.57.json"
     },
     "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-20T12.31.59.json",
-    "bot_side": "p2"
+    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-20T12.31.59.json"
   },
   {
     "id": "2026-07-20T13.57.47",
@@ -2390,8 +2387,7 @@
       "Opponent": "decks_full/Jinbe-B_2026-07-20T19.13.14.json"
     },
     "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-20T19.13.16.json",
-    "bot_side": "p1"
+    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-20T19.13.16.json"
   },
   {
     "id": "2026-07-21T01.08.09",
@@ -2422,8 +2418,7 @@
       "Opponent": "decks_full/Charlotte.Katakuri-P_2026-07-21T01.08.09.json"
     },
     "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-21T01.08.12.json",
-    "bot_side": "p2"
+    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-21T01.08.12.json"
   },
   {
     "id": "2026-07-21T02.21.05",
@@ -2485,8 +2480,7 @@
       "Opponent": "decks_full/Charlotte.Katakuri-P_2026-07-22T15.25.14.json"
     },
     "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-22T15.25.16.json",
-    "bot_side": "p2"
+    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-22T15.25.16.json"
   },
   {
     "id": "2026-07-22T21.44.06",
@@ -2548,8 +2542,7 @@
       "Opponent": "decks_full/Kaido-P_2026-07-22T22.30.34.json"
     },
     "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-22T22.30.37.json",
-    "bot_side": "p1"
+    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-22T22.30.37.json"
   },
   {
     "id": "2026-07-22T23.07.07",
@@ -2640,8 +2633,7 @@
       "Opponent": "decks_full/Portgas.D.Ace-RB_2026-07-22T23.55.21.json"
     },
     "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-22T23.55.24.json",
-    "bot_side": "p1"
+    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-22T23.55.24.json"
   },
   {
     "id": "2026-07-23T13.26.50",
@@ -2703,8 +2695,7 @@
       "Opponent": "decks_full/Krieg-RG_2026-07-23T14.12.36.json"
     },
     "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-23T14.12.39.json",
-    "bot_side": "p1"
+    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-23T14.12.39.json"
   },
   {
     "id": "2026-07-23T16.07.35",
@@ -2766,8 +2757,7 @@
       "Opponent": "decks_full/Charlotte.Katakuri-P_2026-07-23T16.54.39.json"
     },
     "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-23T16.54.42.json",
-    "bot_side": "p2"
+    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-23T16.54.42.json"
   },
   {
     "id": "2026-07-23T17.54.33",
@@ -2920,8 +2910,7 @@
       "Opponent": "decks_full/Jinbe-B_2026-07-24T11.35.39.json"
     },
     "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-24T11.35.42.json",
-    "bot_side": "p1"
+    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-24T11.35.42.json"
   },
   {
     "id": "2026-07-26T21.54.29",
@@ -2952,8 +2941,7 @@
       "Opponent": "decks_full/Marshall.D.Teach-BY_2026-07-26T21.54.29.json"
     },
     "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-26T21.54.32.json",
-    "bot_side": "p1"
+    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-26T21.54.32.json"
   },
   {
     "id": "2026-07-26T22.10.06",
@@ -2984,8 +2972,7 @@
       "Opponent": "decks_full/Marshall.D.Teach-BY_2026-07-26T22.10.06.json"
     },
     "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-26T22.10.09.json",
-    "bot_side": "p1"
+    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-26T22.10.09.json"
   },
   {
     "id": "2026-07-26T22.10.06_p2",
@@ -3045,8 +3032,7 @@
       "Opponent": "decks_full/Marshall.D.Teach-BY_2026-07-26T22.24.06.json"
     },
     "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-07-26T22.24.11.json",
-    "bot_side": "p1"
+    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-07-26T22.24.11.json"
   },
   {
     "id": "2026-07-26T22.24.06_p2",
@@ -3302,7 +3288,7 @@
     },
     "turns": 10,
     "winner": "p1",
-    "bot_side": "p2",
+    "bot_side": null,
     "log_file": "raw/Charlotte.Katakuri-P_x_Portgas.D.Ace-R_2026-08-01T23.56.56.log",
     "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-R_2026-08-01T23.56.56.json",
     "deck_files": {
@@ -3314,7 +3300,7 @@
       "Opponent": "decks_full/Portgas.D.Ace-R_2026-08-01T23.56.56.json"
     },
     "tipo": "com_bot",
-    "bot_side_origem": "recibo_live_run:receipt_2026-08-01T23.56.59.json"
+    "bot_side_origem": "recibo_live_run (lado nao recuperado):receipt_2026-08-01T23.56.59.json"
   },
   {
     "id": "2026-08-02T00.53.44",
@@ -4999,68 +4985,6 @@
     "deck_full_files": {
       "You": "decks_full/Kaido_2026-08-30T20.08.21_p2.json",
       "Opponent": "decks_full/Edward.Newgate-R_2026-08-30T20.08.21_p2.json"
-    }
-  },
-  {
-    "id": "2026-09-13T22.16.03",
-    "friendly_name": "Dracule.Mihawk-G_x_Rocks.D.Xebec-B",
-    "date": "2026-09-13",
-    "p1": {
-      "name": "You",
-      "leader_code": "OP14-020",
-      "leader_name": "Dracule Mihawk",
-      "slug": "Dracule.Mihawk-G"
-    },
-    "p2": {
-      "name": "Opponent",
-      "leader_code": "OP17-039",
-      "leader_name": "Rocks D. Xebec",
-      "slug": "Rocks.D.Xebec-B"
-    },
-    "turns": 12,
-    "winner": "p2",
-    "bot_side": "p1",
-    "tipo": "com_bot",
-    "log_file": "raw/Dracule.Mihawk-G_x_Rocks.D.Xebec-B_2026-09-13T22.16.03.log",
-    "parsed_file": "parsed/Dracule.Mihawk-G_x_Rocks.D.Xebec-B_2026-09-13T22.16.03.json",
-    "deck_files": {
-      "You": "decks/Dracule.Mihawk-G_2026-09-13T22.16.03.json",
-      "Opponent": "decks/Rocks.D.Xebec-B_2026-09-13T22.16.03.json"
-    },
-    "deck_full_files": {
-      "You": "decks_full/Dracule.Mihawk-G_2026-09-13T22.16.03.json",
-      "Opponent": "decks_full/Rocks.D.Xebec-B_2026-09-13T22.16.03.json"
-    }
-  },
-  {
-    "id": "2026-09-13T22.43.47",
-    "friendly_name": "Rocks.D.Xebec-B_x_Dracule.Mihawk-G",
-    "date": "2026-09-13",
-    "p1": {
-      "name": "You",
-      "leader_code": "OP17-039",
-      "leader_name": "Rocks D. Xebec",
-      "slug": "Rocks.D.Xebec-B"
-    },
-    "p2": {
-      "name": "Opponent",
-      "leader_code": "OP14-020",
-      "leader_name": "Dracule Mihawk",
-      "slug": "Dracule.Mihawk-G"
-    },
-    "turns": 13,
-    "winner": "p1",
-    "bot_side": "p2",
-    "tipo": "com_bot",
-    "log_file": "raw/Rocks.D.Xebec-B_x_Dracule.Mihawk-G_2026-09-13T22.43.47.log",
-    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Dracule.Mihawk-G_2026-09-13T22.43.47.json",
-    "deck_files": {
-      "You": "decks/Rocks.D.Xebec-B_2026-09-13T22.43.47.json",
-      "Opponent": "decks/Dracule.Mihawk-G_2026-09-13T22.43.47.json"
-    },
-    "deck_full_files": {
-      "You": "decks_full/Rocks.D.Xebec-B_2026-09-13T22.43.47.json",
-      "Opponent": "decks_full/Dracule.Mihawk-G_2026-09-13T22.43.47.json"
     }
   }
 ]

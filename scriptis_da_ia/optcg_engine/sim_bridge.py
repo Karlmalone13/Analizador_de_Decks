@@ -2459,6 +2459,23 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if actor_don_target:
             break
 
+    # O ator MENCIONA DON em algum lugar (acao ou custo)? Se nao menciona,
+    # nenhum clique em DON pode ser valido -- ver o bloco de exclusao no fim.
+    # Detectado pelo VOCABULARIO do parser ('don' no nome da acao/custo:
+    # set_don_active, rest_don, give_don, opp_don_minus, transfer_don,
+    # lock_opp_don, ...), nao por lista de cartas: e a mesma disciplina de
+    # "corrija pela FORMA" do gate de auditoria do parser.
+    actor_mexe_com_don = False
+    if actor_code:
+        for _blk in _relevant_blocks(actor_code, attacker_power > 0):
+            _nomes = [str(_s.get('action') or '')
+                      for _s in (_blk.get('steps') or []) if isinstance(_s, dict)]
+            _nomes += [str(_c.get('type') or '')
+                       for _c in (_blk.get('costs') or []) if isinstance(_c, dict)]
+            if any('don' in _n.lower() for _n in _nomes):
+                actor_mexe_com_don = True
+                break
+
     actor_hand_cost_only = (
         bool(actor_code) and not (actor_opp_only or actor_battlefield_only)
         and actor_effect_is_hand_cost_only(actor_code, attacker_power > 0))
@@ -2923,6 +2940,37 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         so_don = [c for c in candidates if c.get('zone') in zonas_don]
         if so_don:
             candidates = so_don
+
+    # ── ESPELHO DO BLOCO ACIMA: efeito que NAO mexe com DON ────────────
+    # ACHADO AO VIVO 13/09, partida contra o usuario: numa unica partida o
+    # jogo RECUSOU 248 cliques de alvo (340 na seguinte), **62% deles em
+    # cartas de DON**, e duas selecoes foram confirmadas com ZERO alvos --
+    # o efeito ia embora sem fazer nada. Log do plugin:
+    #
+    #     [Bot] alvo de efeito: Don (uid=-10009, actor=OP17-031, faltavam=1 -> faltam=1)
+    #     [Bot] clique em Don NAO consumiu alvo -- jogo pode ter recusado
+    #     ... (o bloco inteiro de DON, um por um)
+    #     [Bot] confirmar selecao: SelectFriendlyTargets (0)
+    #
+    # O plugin manda TODAS as zonas como candidatas -- own_don, opp_don,
+    # anexado, restado -- porque algumas cartas REALMENTE miram DON. Quem
+    # tem que saber se ESTE efeito mira e o motor. O bloco acima ja trata
+    # "mira DON, so DON serve"; faltava o caso oposto, que e o comum:
+    # **Yasopp OP17-031 (102 recusas), OP06-038 (36), OP17-039 (5),
+    # OP17-118 (3) nao tem UMA acao de DON** -- todo clique em DON era
+    # desperdicio garantido.
+    #
+    # CONSERVADOR de proposito: so exclui quando o ator nao menciona DON em
+    # NENHUM step nem custo. Quem menciona (Mihawk OP14-020, OP13-040)
+    # mantem tudo como antes -- ali o clique errado vem de outra causa (a
+    # funcao nao recebe QUAL das selecoes do efeito esta em aberto, entao
+    # nao da pra distinguir "restar 1 carta sua" de "ativar ate 3 DON"
+    # dentro da MESMA carta). Esse caso continua aberto.
+    if actor_code and not actor_mexe_com_don:
+        _zonas_don_todas = _ZONAS_DON_PROPRIAS | {'opp_don'}
+        _sem_don = [c for c in candidates if c.get('zone') not in _zonas_don_todas]
+        if _sem_don:
+            candidates = _sem_don
 
     # O UNICO step de campo relevante tem filtro numerico (cost_lte/
     # power_lte/power_gte)? Exclusao DURA de quem nao bate, na zona do
