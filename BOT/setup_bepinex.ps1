@@ -10,8 +10,31 @@ Uso:
 #>
 
 param(
-    [string]$GameDir = 'C:\Users\ARTHUR.CUNHA\Desktop\Builds_Windows'
+    # Sem -GameDir, PROCURA o jogo. O default fixo anterior apontava pra uma
+    # instalacao que nao existe mais (C:\Users\ARTHUR.CUNHA\Desktop) e o
+    # script morria com "Pasta do jogo nao encontrada" exatamente na hora em
+    # que ele e necessario: depois de uma atualizacao do jogo apagar o
+    # BepInEx. Achado ao vivo em 13/09/2026, com o usuario esperando pra
+    # jogar.
+    [string]$GameDir = ''
 )
+
+if (-not $GameDir) {
+    $candidatos = @(
+        'E:\Games\OnePieceSimulador\Builds_Windows',
+        "$env:USERPROFILE\Desktop\Builds_Windows",
+        'C:\Users\ARTHUR.CUNHA\Desktop\Builds_Windows'
+    )
+    foreach ($c in $candidatos) {
+        if (Test-Path (Join-Path $c 'OPTCGSim.exe')) { $GameDir = $c; break }
+    }
+    if (-not $GameDir) {
+        Write-Error ("Jogo nao encontrado nos caminhos conhecidos:`n  " +
+                     ($candidatos -join "`n  ") +
+                     "`nRode com -GameDir '<caminho ate Builds_Windows>'.")
+    }
+    Write-Host "Jogo encontrado em $GameDir"
+}
 
 $ErrorActionPreference = 'Stop'
 

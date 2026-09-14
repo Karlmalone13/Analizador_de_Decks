@@ -1231,6 +1231,7 @@ def choose_effect_option(req: ChooseEffectOptionRequest):
         # substring que ela tinha.
         gs_opt = _dto_to_gs(req.state.bot, req.state.turnNumber)
         opp_opt = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
+        bridge = _get_bridge()
         idx, motivo = bridge.escolher_opcao_de_efeito(gs_opt, opp_opt, req.options)
         melhor = next((o for o in req.options if o.index == idx), req.options[0])
         print(f"[V3CHOICE] opcoes={[(o.index, o.text) for o in req.options]} "

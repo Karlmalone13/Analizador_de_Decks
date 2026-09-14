@@ -117,6 +117,10 @@ def _apply_winner(index: list, entry_id: str, result: str,
 def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
                    match_id: str = "", result: str = "",
                    bot_seat: str = "p1") -> dict:
+    # `--bot-side` so aceita p1/p2: normaliza ANTES de virar argumento, senao
+    # um valor inesperado do plugin derruba a coleta inteira no argparse.
+    if bot_seat not in {"p1", "p2"}:
+        bot_seat = "p1"
     combat_log = _latest_log(autosaved_dir)
     _wait_stable(combat_log)
     if not decision_log.exists():
@@ -127,8 +131,14 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
     output_dir.mkdir(parents=True, exist_ok=True)
     report_path = output_dir / f"live_{stamp}.json"
 
+    # `--bot-side` e OBRIGATORIO desde a trava de ingestao: nenhum log entra
+    # no banco sem dizer de que lado o bot jogou (sem isso `bot_side` fica
+    # ausente e ninguem consegue auditar a partida depois). O caminho
+    # automatico JA tem esse dado -- `bot_seat` vem do plugin, autoritativo --
+    # e simplesmente nao o repassava, entao a trava derrubava TODA coleta ao
+    # vivo com "adicionar ao banco exige dizer DE QUE LADO O BOT JOGOU".
     parse_cmd = [sys.executable, str(ROOT / "parse_combat_log.py"),
-                 str(combat_log), "--add-to-db"]
+                 str(combat_log), "--add-to-db", "--bot-side", bot_seat]
     report_cmd = [sys.executable, str(ROOT / "bot_efficiency_report.py"),
                   "--decision-log", str(decision_log),
                   "--json", str(report_path)]

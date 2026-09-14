@@ -7,6 +7,22 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **CAMINHO AO VIVO CONSERTADO (13/09/2026, bloco 812)**: o usuario foi jogar e
+> nada funcionava. (1) `BepInEx/` tinha sumido do jogo; (2) `setup_bepinex.ps1`
+> tinha caminho FIXO pra uma maquina antiga e morria justamente quando era
+> necessario -- agora PROCURA o jogo; (3) **regressao minha**: a trava de
+> ingestao (`--bot-side` obrigatorio) derrubava TODA coleta ao vivo, porque
+> `collect_latest_match.py` nao repassava o lado que ele **ja tinha**; (4)
+> `NameError: bridge` fazia todo `/choose_effect_option` estourar 500 ao vivo;
+> (5) popup do bot encolhida a pedido dele.
+>
+> Partida salva no banco a mao: `Dracule.Mihawk-G_x_Rocks.D.Xebec-B_2026-09-13T22.16.03`.
+>
+> PENDENTE: 5x `execucao falhou: estado inalterado` na partida (Q escolhendo
+> mal ou bug de execucao -- nao investigado); `pos_log_novo.sh`/
+> `human_patterns.json`; telemetria da partida nao lida (log entrou a mao,
+> sem recibo automatico).
+
 > **UM CEREBRO SO (13/09/2026, bloco 811)**: o usuario pegou a duplicata numa
 > pergunta minha (*"qual cerebro o bot usa na partida contra voce?"* -- que num
 > projeto de UM MOTOR SO nao deveria poder existir). Havia duas funcoes

@@ -1143,22 +1143,53 @@ namespace OPTCGBotPlugin
         // IMGUI simples (GUI.Label), sem dependencia nova; nao intercepta clique
         // (nao ha botao real na tela, so texto) — zero risco de atrapalhar os
         // cliques do proprio bot (BotExecutor) ou do jogador.
+        // Estilo compacto -- criado UMA vez (OnGUI roda varias vezes por frame;
+        // alocar GUIStyle aqui dentro a cada chamada e desperdicio classico).
+        private GUIStyle _estiloCompacto;
+
         private void OnGUI()
         {
+            // 13/09/2026, pedido do usuario: a caixa (520x46 na origem 8,8)
+            // cobria as cartas da mao dele durante a partida. Encolhida pra
+            // ~260 de largura, duas linhas de fonte 10 coladas no topo, e a
+            // linha de ajuda so aparece quando o bot esta DESLIGADO -- quem
+            // esta jogando ja sabe os atalhos; quem acabou de desligar sem
+            // querer e que precisa da dica.
+            if (_estiloCompacto == null)
+            {
+                _estiloCompacto = new GUIStyle(GUI.skin.label);
+                _estiloCompacto.fontSize = 10;
+                _estiloCompacto.padding = new RectOffset(0, 0, 0, 0);
+            }
+
             string lado = $"P{BotPlayerIndex + 1}";
             string estado = _botEnabled ? "ATIVADO" : "DESATIVADO";
+            bool temMsg = !string.IsNullOrEmpty(_collectionMessage);
+            bool temAjuda = !_botEnabled;
+
+            float linhas = 1f + (temAjuda ? 1f : 0f) + (temMsg ? 1f : 0f);
+            float boxHeight = 6 + linhas * 13;
+            float boxWidth = temMsg ? 460 : 170;
             Color corAntes = GUI.color;
+
+            GUI.Box(new Rect(4, 2, boxWidth, boxHeight), "");
+
+            float y = 4;
             GUI.color = _botEnabled ? Color.green : Color.red;
-            float boxHeight = string.IsNullOrEmpty(_collectionMessage) ? 46 : 70;
-            GUI.Box(new Rect(8, 8, 520, boxHeight), "");
-            GUI.Label(new Rect(14, 10, 200, 20), $"[Bot] {lado} — {estado}");
-            GUI.color = Color.white;
-            GUI.Label(new Rect(14, 28, 220, 20), "Shift+B liga/desliga · Shift+P troca lado");
-            if (!string.IsNullOrEmpty(_collectionMessage))
+            GUI.Label(new Rect(9, y, boxWidth - 10, 13), $"[Bot] {lado} — {estado}", _estiloCompacto);
+            y += 13;
+            if (temAjuda)
+            {
+                GUI.color = Color.white;
+                GUI.Label(new Rect(9, y, boxWidth - 10, 13),
+                          "Shift+B liga/desliga · Shift+P troca lado", _estiloCompacto);
+                y += 13;
+            }
+            if (temMsg)
             {
                 GUI.color = _collectionState == "success" ? Color.green
                           : _collectionState == "failed" ? Color.red : Color.yellow;
-                GUI.Label(new Rect(14, 48, 500, 20), _collectionMessage);
+                GUI.Label(new Rect(9, y, boxWidth - 10, 13), _collectionMessage, _estiloCompacto);
             }
             GUI.color = corAntes;
         }

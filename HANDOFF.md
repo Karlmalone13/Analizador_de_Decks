@@ -53,6 +53,81 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (812) - PRIMEIRA PARTIDA AO VIVO COM O Q DECIDINDO -- e tres coisas quebradas no caminho, uma delas regressao minha desta sessao
+
+O usuario foi jogar contra o bot. O caminho ao vivo nao estava inteiro.
+
+### 1. O plugin nao existia mais no jogo
+
+`BepInEx/` tinha sumido da instalacao -- a falha que o proprio `BOT/README.md`
+previu que voltaria a acontecer. Sintoma: servidor no ar e **zero requisicoes**.
+Nao era o bot decidindo mal, era o bot nao existindo dentro do jogo.
+
+### 2. O instalador apontava pra uma maquina que nao existe mais
+
+`setup_bepinex.ps1` tinha `$GameDir` FIXO em
+`C:\Users\ARTHUR.CUNHA\Desktop\Builds_Windows`. O jogo esta em
+`E:\Games\OnePieceSimulador\Builds_Windows`.
+
+O script morria com "Pasta do jogo nao encontrada" **exatamente na hora em que
+ele e necessario** -- depois de uma atualizacao apagar o BepInEx, com o usuario
+esperando pra jogar. Agora ele PROCURA o jogo (E:, Desktop do usuario atual, o
+caminho antigo) e so exige `-GameDir` se nao achar nenhum.
+
+### 3. REGRESSAO MINHA: a trava de ingestao derrubou TODA coleta ao vivo
+
+```
+[AUTO-COLLECT] falhou: parse_combat_log falhou:
+ERRO: adicionar ao banco exige dizer DE QUE LADO O BOT JOGOU.
+```
+
+A trava que EU adicionei nesta sessao (`--bot-side`/`--bepinex-log`/`--sem-bot`
+obrigatorios) nao foi propagada pro chamador automatico:
+`collect_latest_match.py` roda `parse_combat_log.py --add-to-db` **sem** o lado.
+
+O detalhe que torna isso pior: **ele JA TINHA o dado**. `bot_seat` chega como
+parametro, vem do plugin e e autoritativo -- so nao era repassado. Ou seja, a
+trava existia pra impedir log sem lado e o que ela impediu foi o unico caminho
+que sabia o lado.
+
+Consequencia real: **toda partida ao vivo deixava de entrar no banco**, que e o
+objetivo registrado do bot ("captar logs contra humanos"). Corrigido, com
+normalizacao antes de virar argumento.
+
+A partida do usuario foi salva a mao e esta no banco:
+`Dracule.Mihawk-G_x_Rocks.D.Xebec-B_2026-09-13T22.16.03` (bot = p1, 12 turnos).
+
+### 4. `NameError` ao vivo: o bot perdia toda escolha de opcao de efeito
+
+```
+File "server.py", line 1234, in choose_effect_option
+    idx, motivo = bridge.escolher_opcao_de_efeito(...)
+NameError: name 'bridge' is not defined. Did you mean: '_bridge'?
+```
+
+`bridge = _get_bridge()` faltava nesse handler (os outros dois tem). Toda vez
+que uma carta pedia "escolha uma opcao", o endpoint estourava 500. Corrigido.
+
+### 5. A popup cobria as cartas da mao dele
+
+Pedido: *"deixar essa popup do bot um pouco menor e mais para cima"*. Era uma
+caixa de 520x46 na origem (8,8). Agora: 170 de largura, fonte 10, colada no
+topo (4,2), e a linha de atalhos so aparece quando o bot esta DESLIGADO -- quem
+esta jogando ja sabe os atalhos; quem desligou sem querer e que precisa da dica.
+A caixa so cresce (460) quando ha mensagem de coleta pra mostrar.
+
+### O que ficou pendente
+
+* `[ALERTA] execucao falhou (... ) estado inalterado no proximo main state
+  estavel` x5 na partida -- o bot escolheu acoes que nao mudaram o estado do
+  jogo. Pode ser o Q escolhendo mal (esperado, ele esta em +0,4pp acima do
+  acaso) ou bug de execucao. **Nao investigado.**
+* `human_patterns.json` e `pos_log_novo.sh` pendentes pro log novo.
+* A telemetria da partida (live_run + `decision_summary.py`) **nao foi lida** --
+  o log entrou no banco a mao, entao o recibo automatico nao existe.
+
+---
+
 ## 2026-09-13 (810-811) - "PORQUE TEMOS 2 CEREBROS?" -- o usuario pegou a duplicata numa PERGUNTA MINHA, e a busca saiu de decidir. Mais o bug que fazia o ciclo rodar DUAS VEZES
 
 ### Como a duplicata apareceu
