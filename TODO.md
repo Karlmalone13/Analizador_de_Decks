@@ -7,6 +7,30 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **CICLO DE 300 PARTIDAS (14/09/2026, bloco 817)**: concordancia top-1 do Q
+> saltou de **+0,4pp** (piloto, 1.799 alvos) pra **+31,7pp acima do acaso**
+> (56,1% contra 24,4%, em 15.210 decisoes, corpus de 625.361). Pior familia
+> segue `attach_don` (23,5%) -- que e exatamente o que se viu ao vivo (o bot
+> anexou DON no lider 4x seguidas sem tirar dano).
+>
+> **Portao NAO promoveu**: 5x12 em 17 pares, 30 divididos, "DESCARTA
+> (equivalentes)". Concordancia alta com forca nao comprovada nao e
+> contradicao -- a concordancia mede "escolhe o que a busca escolheria", e a
+> busca nunca foi provada otima.
+>
+> **AS-IS do laco**: 30,0 min por ciclo, e o **treino e 74% disso** (1324s de
+> 1800s) porque roda sobre o corpus inteiro a cada geracao. Proximo gargalo
+> obvio, agora com numero em vez de sensacao.
+>
+> **PENDENTE -- nomes legado no banco**: os logs de setembro estao 100% no
+> padrao e o indice tem 0 ponteiros quebrados. Fora do padrao ha ~40 arquivos
+> LEGADO: 33 `parsed/` de junho (`<timestamp>_autosaved.json`, anteriores a
+> convencao) e 7 em `raw/`/`decks/` com nome de jogador ou sem sufixo de cor.
+> NAO renomeados: exigiria atualizar `index.json`, os recibos de
+> `metrics/live_runs/` e relatorios de auditoria que citam nomes -- risco de
+> quebrar referencia por estetica. Fazer so com backup e reconferindo ponteiros.
+> (O sufixo `_pN` NAO e desvio: e desempate de timestamp igual.)
+
 > **CPU x CPU NO SIMULADOR -- Shift+C (13/09/2026, bloco 816, ideia do usuario)**:
 > o plugin so roda em `GameStyle.SoloVSelf` (um cliente, dois assentos) e todo o
 > driver decide a vez por `iPlayerAction == BotPlayerIndex` -- entao CPU x CPU e

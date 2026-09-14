@@ -1,0 +1,119 @@
+{
+  "ciclos": [
+    {
+      "ciclo": 1,
+      "quando": "2026-09-13T23:57:05",
+      "partidas": 300,
+      "alvos_corpus": 625361,
+      "erro_q": 0.043815581671296455,
+      "ganho_pct": 79.48261148888614,
+      "portao": {
+        "vitorias_desafiante": 5,
+        "derrotas_desafiante": 12,
+        "decididas": 17,
+        "pares_divididos": 30,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -2.968278004927334
+      },
+      "promovido": false,
+      "winrate": 0.29411764705882354,
+      "portao_por_lider": {
+        "OP16-080": {
+          "vit": 1,
+          "der": 3,
+          "div": 3
+        },
+        "OP16-001": {
+          "vit": 0,
+          "der": 3,
+          "div": 4
+        },
+        "EB02-010": {
+          "vit": 4,
+          "der": 0,
+          "div": 4
+        },
+        "OP11-041": {
+          "vit": 0,
+          "der": 1,
+          "div": 5
+        },
+        "OP13-002": {
+          "vit": 0,
+          "der": 5,
+          "div": 3
+        },
+        "OP14-041": {
+          "vit": 1,
+          "der": 2,
+          "div": 2
+        },
+        "OP11-001": {
+          "vit": 0,
+          "der": 1,
+          "div": 4
+        },
+        "OP15-002": {
+          "vit": 0,
+          "der": 2,
+          "div": 5
+        },
+        "OP16-060": {
+          "vit": 2,
+          "der": 1,
+          "div": 9
+        },
+        "OP16-022": {
+          "vit": 0,
+          "der": 0,
+          "div": 5
+        },
+        "OP16-079": {
+          "vit": 0,
+          "der": 2,
+          "div": 2
+        },
+        "OP13-001": {
+          "vit": 0,
+          "der": 0,
+          "div": 1
+        },
+        "OP15-058": {
+          "vit": 0,
+          "der": 2,
+          "div": 5
+        },
+        "OP14-020": {
+          "vit": 1,
+          "der": 0,
+          "div": 2
+        },
+        "OP15-098": {
+          "vit": 1,
+          "der": 1,
+          "div": 3
+        },
+        "OP12-061": {
+          "vit": 0,
+          "der": 1,
+          "div": 3
+        }
+      },
+      "tempo_s": {
+        "gera": 387.7,
+        "treina": 1324.1,
+        "portao": 70.7,
+        "auditoria": 8.2,
+        "ancora": 8.7
+      },
+      "tempo_total_s": 1799.4,
+      "guarda_corpo": {},
+      "ancora_humana": {
+        "modelo_oponente": 26.9,
+        "modelo_oponente_sem_observar": 25.2,
+        "custo_incerteza": 0.032
+      }
+    }
+  ],
+  "checkpoint_humano_pendente": false
+}

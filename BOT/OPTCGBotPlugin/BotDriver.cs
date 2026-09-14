@@ -54,6 +54,15 @@ namespace OPTCGBotPlugin
         private const KeyCode CpuVsCpuKey = KeyCode.C;
         public static bool CpuVsCpu = false;
 
+        // ROTULO DO BANCO: quem decide se a partida FOI cpu x cpu nao pode ser
+        // o valor do flag no instante do GameOver. Caso real (13/09): o bot
+        // travou num dialogo nao tratado, o usuario apertou Shift+C pra
+        // destravar, e a partida -- jogada quase inteira com os dois lados
+        // automatizados -- seria gravada como partida normal do bot, com um
+        // `bot_side` FALSO. Fica pegajoso: uma vez ligado na partida, o log
+        // sai como cpu_vs_cpu. Resetado no inicio de cada partida.
+        private bool _cpuVsCpuNestaPartida = false;
+
         private const float ActionCooldown = 1.0f;
         private const int   MaxActionsPerTurn = 25;
 
@@ -104,6 +113,7 @@ namespace OPTCGBotPlugin
             if (shiftHeld && Input.GetKeyDown(CpuVsCpuKey))
             {
                 CpuVsCpu = !CpuVsCpu;
+                if (CpuVsCpu) _cpuVsCpuNestaPartida = true;
                 Plugin.Log.LogWarning($"[Bot] CPU x CPU {(CpuVsCpu ? "LIGADO -- o bot joga os DOIS lados" : "DESLIGADO")} (Shift+{CpuVsCpuKey})");
             }
 
@@ -154,10 +164,10 @@ namespace OPTCGBotPlugin
                 // de 13/09 pra limpar. Vai como `cpu_vs_cpu`, e quem le
                 // decide o que fazer com isso.
                 EngineClient.ReportOutcome(botWon ? "win" : "loss", finalDto,
-                                           CpuVsCpu
+                                           _cpuVsCpuNestaPartida
                                              ? "GameOver; CPU x CPU (os dois lados sao o bot)"
                                              : $"GameOver; bot=P{BotPlayerIndex + 1}",
-                                           CpuVsCpu
+                                           _cpuVsCpuNestaPartida
                                              ? "cpu_vs_cpu"
                                              : (BotPlayerIndex == 0 ? "p1" : "p2"));
                 _collectionMessage = "Salvando log no banco...";
@@ -191,6 +201,10 @@ namespace OPTCGBotPlugin
             if (gls.e_CurrentState == GameplayState.Start_WaitOnMulliganChoice)
             {
                 _outcomeReported = false;
+                // Partida NOVA: o rotulo cpu_vs_cpu vale por partida, nao pela
+                // sessao do jogo -- senao a primeira CPU x CPU contaminaria
+                // todas as seguintes.
+                _cpuVsCpuNestaPartida = CpuVsCpu;
                 _mulliganWaits = 0;
                 _collectionConfirmationLogged = false;
                 _collectionMessage = "";
@@ -659,6 +673,43 @@ namespace OPTCGBotPlugin
                         $"actor={BotExecutor.ActorCode(gls) ?? "-"}. " +
                         $"Nenhuma acao tomada -- so diagnostico, pra achar a causa " +
                         $"exata na proxima ocorrencia sem depender de print do usuario.");
+
+                    // O QUE O JOGO OFERECE nesse estado (13/09/2026, pedido do
+                    // usuario ao ver o CPU x CPU travar em
+                    // Attack_SelectingTarget). Sem isso o conserto seria as
+                    // cegas: nao da pra saber se o estado espera um CLIQUE em
+                    // alvo, ou se a resposta certa e NAO SELECIONAR NINGUEM --
+                    // ressalva dele, e ela muda o fix inteiro.
+                    //
+                    // Continua SEM CLICAR EM NADA. Só descreve.
+                    try
+                    {
+                        var diagBot = gls.Lps_Players[BotPlayerIndex];
+                        var diagOpp = gls.Lps_Players[1 - BotPlayerIndex];
+                        int faltam = BotExecutor.RemainingV3Targets(gls);
+                        bool livre = BotExecutor.V3CountIsFree(gls);
+                        var lista = BotExecutor.CollectTargetCandidates(diagBot, diagOpp, gls);
+                        Plugin.Log.LogWarning(
+                            $"[Bot][DIAG] alvos que faltam={faltam} " +
+                            $"quantidadeLivre={livre} candidatos={lista.Count}. " +
+                            $"faltam=0 com quantidadeLivre=true e o caso 'pode nao " +
+                            $"selecionar ninguem' -- a resposta certa ai e confirmar/cancelar, " +
+                            $"nao clicar.");
+                        int mostrados = 0;
+                        foreach (var cand in lista)
+                        {
+                            if (mostrados++ >= 40) break;
+                            Plugin.Log.LogWarning(
+                                $"[Bot][DIAG]   cand zone={cand.zone} id={cand.id} code={cand.code}");
+                        }
+                        if (lista.Count > mostrados)
+                            Plugin.Log.LogWarning(
+                                $"[Bot][DIAG]   ... e mais {lista.Count - mostrados}");
+                    }
+                    catch (Exception exDiag)
+                    {
+                        Plugin.Log.LogWarning($"[Bot][DIAG] falhou: {exDiag.Message}");
+                    }
                 }
             }
 

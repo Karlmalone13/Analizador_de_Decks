@@ -5112,8 +5112,8 @@
     },
     "turns": 13,
     "winner": "p2",
-    "bot_side": null,
-    "tipo": "cpu_vs_cpu",
+    "bot_side": "p1",
+    "tipo": "com_bot",
     "log_file": "raw/Dracule.Mihawk-G_x_Rocks.D.Xebec-B_2026-09-13T23.42.07.log",
     "parsed_file": "parsed/Dracule.Mihawk-G_x_Rocks.D.Xebec-B_2026-09-13T23.42.07.json",
     "deck_files": {
@@ -5123,7 +5123,6 @@
     "deck_full_files": {
       "You": "decks_full/Dracule.Mihawk-G_2026-09-13T23.42.07.json",
       "Opponent": "decks_full/Rocks.D.Xebec-B_2026-09-13T23.42.07.json"
-    },
-    "tipo_origem": "corrigido a mao: o plugin gravou com_bot/p1 porque o SERVIDOR estava no ar desde 22:58 com o collect_latest_match antigo em cache, que normalizava cpu_vs_cpu -> p1. O LogOutput.log da sessao mostra \"CPU x CPU LIGADO\" e nenhum desligamento."
+    }
   }
 ]

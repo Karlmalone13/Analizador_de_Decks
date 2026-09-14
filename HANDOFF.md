@@ -53,6 +53,114 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-14 (817) - CICLO DE 300 PARTIDAS: a concordancia salta de +0,4pp pra **+31,7pp acima do acaso** -- e mesmo assim o portao NAO promove
+
+Primeiro ciclo completo com as 5 etapas ligadas (bloco 808) e a metrica de
+concordancia existindo (bloco 809).
+
+### O numero que faltava
+
+| | piloto (bloco 809) | agora |
+|---|---|---|
+| alvos | 1.799 | **625.361** |
+| decisoes medidas | 372 | **15.210** |
+| **concordancia top-1** | 25,8% | **56,1%** |
+| acaso | 25,4% | 24,4% |
+| **acima do acaso** | **+0,4 pp** | **+31,7 pp** |
+
+O piloto media o INSTRUMENTO, nao o Q -- e a ressalva registrada la (*"pode ser
+muito melhor, a curva de dado ja se mostrou a alavanca que move"*) se confirmou.
+**O Q aprendeu a escolher a mesma acao que a busca escolheria em 56% das
+decisoes, fora da amostra, validado por lider.**
+
+Por familia:
+
+| familia | concordancia | decisoes |
+|---|---|---|
+| play | 66,9% | 3.356 |
+| attack | 59,1% | 6.310 |
+| pass | 52,5% | 3.254 |
+| activate | 43,4% | 1.621 |
+| **attach_don** | **23,5%** | 669 |
+
+`attach_don` continua sendo a pior, e **isso bate com o que se viu ao vivo**: na
+partida contra o usuario o bot anexou DON no lider QUATRO vezes seguidas no
+turno 4 e nao tirou dano. O numero e o comportamento sao a mesma coisa vista de
+dois angulos.
+
+### E o portao NAO promoveu
+
+```
+5x12 em 17 pares decididos (30 divididos) | DESCARTA (equivalentes)
+```
+
+Leitura honesta: o desafiante **perdeu** (5 de 17), e o SPRT cruzou o limite
+inferior concluindo equivalencia. **30 dos 47 pares foram divididos** -- os dois
+modelos jogam parecido demais pra se separarem, o que era de esperar: campeao e
+desafiante sao ambos Q, treinados em corpora que se sobrepoem.
+
+> Concordancia ALTA com forca NAO comprovada nao e contradicao: a concordancia
+> mede "escolhe o que a busca escolheria", e a busca nunca foi provada otima.
+> Ela e indicador ANTECEDENTE, nao veredito.
+
+### AS-IS do laco (a etapa nova do bloco 808 ja pagou)
+
+```
+TEMPO DO CICLO: 30,0 min
+gera 388s | treina 1324s | portao 71s | auditoria 8s | ancora 9s
+```
+
+**O treino e 74% do ciclo** (22 dos 30 min) e cresce a cada geracao, porque roda
+sobre o corpus INTEIRO. Antes isso era sensacao ("por que esta demorando?");
+agora e numero na serie. E o proximo gargalo obvio do laco, e nao precisa de
+palpite pra ser identificado.
+
+### Ancora humana, rodando em TODO ciclo como desenhado
+
+Modelo de oponente 26,9% (sem observar 25,2%, lider errado 0,5%), custo da
+incerteza 0,0320 de mediana. Estavel em relacao ao bloco 807 -- que e o
+esperado, nada mudou nessa frente.
+
+---
+
+## PENDENCIA REGISTRADA: nomes fora do padrao no banco (pedido do usuario)
+
+Auditoria completa do banco a pedido dele (*"confira se os logs estao sendo
+salvos no nosso padrao de nome"*):
+
+**Os logs de HOJE estao todos no padrao.** As 4 partidas, seus `parsed/` e os 8
+arquivos de deck seguem
+`{LiderSlug-Cores}_x_{LiderSlugOponente-Cores}_{timestamp}` e
+`{LiderSlug-Cores}_{timestamp}`. **Zero desvios em setembro.** Indice integro:
+175 registros, **0 ponteiros quebrados**.
+
+O sufixo `_pN` (`..._p2.log`) **nao e desvio** -- e o desempate do parser quando
+dois logs caem no mesmo timestamp. Contando-o como violacao a primeira varredura
+acusou 28 arquivos; tolerando-o, sobram 3.
+
+**O que esta fora e tudo LEGADO:**
+
+| onde | quantos | forma |
+|---|---|---|
+| `parsed/` | 33 | `2026-06-16T01.57.48_autosaved.json` -- junho, antes da convencao existir |
+| `raw/` | 3 | `..._karlmalone_x_aceswife_2026-08-12.log` (nome de jogador no lugar do timestamp), `Kaido_...` sem sufixo de cor |
+| `decks/` | 4 | mesma origem |
+
+**NAO renomeados de proposito**: mexer em ~40 arquivos historicos exigiria
+atualizar `index.json`, os ponteiros dos recibos em `metrics/live_runs/` e os
+relatorios de auditoria que citam nomes. Risco real de quebrar referencia pra
+arrumar estetica de arquivo que ninguem le por nome. Se for feito, tem que ser
+com backup e reconferindo os ponteiros depois.
+
+> **Correcao de um erro meu no meio da auditoria**: reportei "290 ponteiros
+> quebrados" antes de olhar a estrutura. `deck_files` e um DICIONARIO
+> `jogador -> caminho`, e eu iterava as CHAVES (nomes como `Jack#5459`) como se
+> fossem caminhos. Com a estrutura certa: **0 quebrados**. Conferir o formato
+> antes de reportar um agregado -- a mesma licao ja registrada na retificacao de
+> 04/08.
+
+---
+
 ## 2026-09-13 (816) - CPU x CPU no SIMULADOR (Shift+C), ideia do usuario -- e a distincao que ela obriga: bancada de VALIDACAO, nao caminho de DADO
 
 Pergunta dele: *"conseguimos rodar algumas centenas de partidas antes de eu
