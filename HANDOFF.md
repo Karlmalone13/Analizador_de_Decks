@@ -53,6 +53,96 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (807) - O MODELO DE OPONENTE finalmente FOI MEDIDO: acerta 26,9% da mao -- e o CONTROLE mostra que quase tudo isso vem de conhecer a DECKLIST, nao de observar a partida
+
+**Pedido do usuario**: *"resolve a do modelo de oponente"* -- a medida (1) de
+`avalia_contra_humano.py`, que vinha imprimindo "sem amostra (modelo de
+oponente indisponivel)".
+
+### O diagnostico estava ERRADO, e o erro estava escondido por um `except` nu
+
+Eu havia reportado que `opponent_model_for_leader` devolvia `None` pra todos
+os lideres. **Nao devolvia.** O modelo carrega normalmente. O que quebrava era
+a minha CHAMADA:
+
+```
+sample(self, opp: 'GameState', rng=None) -> tuple[list, list]
+```
+
+Ele recebe o **ESTADO** do oponente e devolve **(mao, vida)**. Eu passava
+`modelo.sample(len(mao_real), rng=random)` -- um inteiro. O
+`AttributeError: 'int' object has no attribute 'known_hand_cards'` era
+engolido por um `except Exception: continue`, e a medida reportava "sem
+amostra" como se fosse falta de modelo. Segundo erro meu no mesmo ponto:
+passei `leader_name` onde o parametro e `leader_color`.
+
+**Licao, que e a mesma ja registrada nas duas regras de metodo do bloco 780**:
+`except` nu em volta de uma medicao transforma BUG em RESULTADO NULO, e
+resultado nulo vira diagnostico errado no relato. Removido.
+
+### A medida so vale porque o vazamento foi CONFERIDO no codigo, nao suposto
+
+Pra montar o estado do oponente eu preciso entregar a mao (o modelo precisa do
+tamanho dela). Antes de acreditar em qualquer numero, conferi se isso vaza a
+resposta:
+
+* `sample` le de `opp.hand` apenas o TAMANHO --
+  `len(opp.hand) - len(known_hand_cards())`;
+* `known_hand_cards()` filtra por `revealed_to_opponent`, que nasce vazio num
+  `GameState` novo;
+* `_known_population_excluded` exclui trash, board, stage e mao **REVELADA** --
+  **nao** a mao. As cartas certas continuam na populacao de sorteio.
+
+Ou seja: o modelo enxerga so o observavel (trash, board, vida, tamanho da mao).
+**Se qualquer uma dessas tres coisas fosse diferente, o numero seria fraude** --
+e nenhuma delas era obvia de fora.
+
+### Os numeros (149 posicoes reais contra humano, 8 sorteios por posicao)
+
+| medida | acerto |
+|---|---|
+| **modelo, observando a partida** | **26,9%** (1,57 de 5,8 cartas) |
+| controle -- mesmo modelo SEM observar trash/board/vida | 25,2% |
+| controle -- modelo do **LIDER ERRADO** | **0,5%** |
+
+Camada de fallback: 100% das posicoes cairam em `leader_exact_local_deck`, a
+melhor -- entao **isto nao e um numero de fallback pobre**, e o teto da camada
+boa.
+
+### A leitura, que e mais util que o 26,9%
+
+**O controle do lider errado despenca pra 0,5%** -- o instrumento mede leitura
+de oponente de verdade, nao coincidencia entre cartas comuns. Foi ele que
+autorizou ler o resto.
+
+**E o resto e ruim**: observar a partida inteira -- trash, board, vida --
+agrega **+1,7pp** sobre simplesmente sortear da decklist do lider. Quase todo o
+acerto vem de **conhecer o deck**, praticamente nada vem de **ter assistido a
+partida**.
+
+Isso da nome ao que ja estava registrado como Fase 4 candidata (bloco 781, "a
+leitura do oponente: o que existe e o que falta"): o sorteio e UNIFORME sobre o
+que sobrou e **nao aprende com o que o oponente FEZ**. Ate hoje isso era uma
+observacao sobre o codigo. **Agora e um numero: +1,7pp.**
+
+### O que NAO da pra concluir daqui
+
+Nao da pra dizer que o modelo de oponente e o gargalo. A medida (2) do mesmo
+script, rodada junto, diz que abrir a mao inteira do adversario move a
+avaliacao em **0,0320 de mediana** (150 posicoes reais) -- ou seja, ate uma
+leitura PERFEITA teria pouco a ganhar nessa regua. As duas medidas juntas
+sugerem que melhorar o modelo de oponente e barato-e-pequeno, nao caro-e-
+decisivo. Fica registrado como candidato com tamanho conhecido, nao como
+prioridade.
+
+### Onde isto mora, pra nao ser esquecido
+
+`scriptis_da_ia/avalia_contra_humano.py`, chamado pela etapa 4 do `ciclo.py` --
+a ancora barata que roda em TODO ciclo, ao lado da ancora cara (jogar contra o
+usuario), que so e pedida quando o portao promove.
+
+---
+
 ## 2026-09-13 (800) - **O METODO ERA PESADO**: 300 arvores viram REDE LEVE -- 85x mais barata e errando MENOS. E um erro de metodo meu que contaminou medicoes o dia inteiro
 
 ### 1. O achado do usuario, de novo por pergunta e nao por codigo

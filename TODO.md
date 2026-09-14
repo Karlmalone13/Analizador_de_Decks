@@ -7,6 +7,20 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **MEDIDO 13/09/2026 (bloco 807) -- o modelo de oponente**: `avalia_contra_humano.py`
+> (etapa 4 do `ciclo.py`) passou a rodar de verdade. Ele acerta **26,9%** da mao
+> real do adversario em 149 posicoes contra humano; o controle de **lider errado
+> cai pra 0,5%** (o instrumento e real) e o controle **sem observar** fica em
+> **25,2%** -- ou seja, assistir a partida agrega so **+1,7pp** sobre conhecer a
+> decklist. O sorteio uniforme que ignora o comportamento do oponente (Fase 4
+> candidata, bloco 781) deixou de ser observacao sobre o codigo e virou numero.
+> **Nao promovido a prioridade**: a medida irma diz que abrir a mao inteira move
+> a avaliacao so 0,0320 de mediana, entao ate a leitura perfeita renderia pouco.
+>
+> PENDENTE no mesmo arquivo/ciclo: `ciclo.py --limpar-checkpoint` e citado na
+> saida e **nao existe**; o Q segue candidato (perdeu 0x13 pra arvore); 58
+> registros tem as duas maos e lado desconhecido.
+
 > **PENDENTE, NAO rodado (10/09/2026)**: a confirmacao da promocao da
 > geracao 4 (`confirma_gen4.py`, 150 pares / 300 partidas com os MESMOS
 > dois modelos) foi disparada e **INTERROMPIDA a pedido do usuario**, que

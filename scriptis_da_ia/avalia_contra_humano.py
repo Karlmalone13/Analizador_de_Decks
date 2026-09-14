@@ -90,41 +90,140 @@ def posicoes_utilizaveis(limite=None):
     return saida
 
 
-def mede_modelo_oponente(posicoes) -> dict:
-    """Das cartas que o modelo SORTEIA, quantas o adversario de fato tinha?"""
-    from optcg_engine.sim_bridge import opponent_model_for_leader
+def mede_modelo_oponente(posicoes, rodadas=8, seed=4242) -> dict:
+    """Das cartas que o modelo SORTEIA pra mao do adversario, quantas ele
+    de fato tinha?
 
-    acertos, totais, amostras = [], [], 0
+    `opponent_model.sample(opp, rng)` recebe o ESTADO do oponente (nao uma
+    contagem) e devolve `(mao_sorteada, vida_sorteada)`. **Conferido no
+    codigo antes de acreditar no numero**: de `opp.hand` ele le apenas o
+    TAMANHO (`len(opp.hand) - len(known_hand_cards())`), e
+    `known_hand_cards()` filtra por `revealed_to_opponent`, que aqui nasce
+    vazio. As cartas da mao tambem NAO saem da populacao de sorteio --
+    `_known_population_excluded` exclui trash, board, stage e mao
+    REVELADA, nao a mao. Ou seja: entregar a mao real nao vaza nada, e o
+    que o modelo enxerga e so o observavel (trash, board, vida, tamanho da
+    mao).
+
+    Acerto e contado como MULTICONJUNTO (`Counter &`): um deck e cheio de
+    4-ofs, e `set` diria "acertou Nami" uma vez quando o adversario tinha
+    tres.
+
+    ## Os dois controles (regra do projeto: toda medicao precisa de um que
+    POSSA falhar)
+
+      * **sem observar** -- o MESMO modelo com trash/board/vida vazios.
+        Isola o que a OBSERVACAO agrega sobre so conhecer a decklist. Se
+        empatar com o numero principal, condicionar no observavel nao esta
+        fazendo nada.
+      * **lider errado** -- o modelo de OUTRO lider do corpus. **Tem que
+        despencar.** Se nao despencar, o instrumento esta medindo
+        coincidencia entre cartas comuns, nao leitura de oponente.
+    """
+    import random as _r
+    from collections import Counter
+    from optcg_engine.sim_bridge import (opponent_model_for_leader,
+                                         opponent_model_source_for_leader)
+    from optcg_engine.decision_engine import GameState, _make_card, load_cards_db
+
+    db = load_cards_db(str(RAIZ / 'cards_rows.csv'))
+    rng = _r.Random(seed)
+
+    def carta(cod):
+        d = db.get(str(cod))
+        return _make_card(str(cod), d) if d else None
+
+    def cartas(lista):
+        return [c for c in (carta(x) for x in (lista or [])) if c]
+
+    def estado(sn, lider_code, observavel=True):
+        lider = carta(lider_code)
+        if lider is None:
+            return None
+        st = GameState(leader=lider)
+        st.hand = cartas(sn.get('hand'))          # so o TAMANHO e lido
+        if observavel:
+            st.field_chars = cartas(sn.get('board'))
+            st.trash = cartas(sn.get('trash'))
+            st.life = cartas(sn.get('life_cards'))
+        return st
+
+    def acerto(mao_sorteada, real_cnt):
+        cods = Counter(getattr(c, 'code', str(c)) for c in (mao_sorteada or []))
+        return sum((cods & real_cnt).values())
+
+    # lideres presentes no corpus, pro controle de lider ERRADO
+    lideres = []
+    for r, _t in posicoes:
+        od = r.get('p2' if r['bot_side'] == 'p1' else 'p1') or {}
+        lc = od.get('leader_code')
+        if lc and lc not in lideres:
+            lideres.append(lc)
+
+    tot = {'modelo': 0.0, 'cego': 0.0, 'errado': 0.0}
+    cartas_totais, amostras = 0, 0
+    por_camada = {}
     for r, t in posicoes:
-        lado_bot = r['bot_side']
-        lado_log = 'You' if lado_bot == 'p1' else 'Opponent'
-        lado_opp = 'Opponent' if lado_bot == 'p1' else 'You'
-        sn = t.get('snapshot') or {}
-        mao_real = [str(x) for x in ((sn.get(lado_opp) or {}).get('hand') or [])]
-        if not mao_real:
+        lado_opp = 'Opponent' if r['bot_side'] == 'p1' else 'You'
+        sn = (t.get('snapshot') or {}).get(lado_opp) or {}
+        mao_real = [str(x) for x in (sn.get('hand') or [])]
+        if len(mao_real) < 2:
             continue
-        pdata = r.get('p2' if lado_bot == 'p1' else 'p1') or {}
-        modelo = opponent_model_for_leader(pdata.get('leader_code', ''),
-                                           pdata.get('leader_name', ''))
+        od = r.get('p2' if r['bot_side'] == 'p1' else 'p1') or {}
+        lc = od.get('leader_code') or ''
+        modelo = opponent_model_for_leader(lc, '')
         if modelo is None:
             continue
-        try:
-            sorteada = modelo.sample(len(mao_real), rng=random)
-        except Exception:
+        est = estado(sn, lc, observavel=True)
+        cego = estado(sn, lc, observavel=False)
+        if est is None or cego is None:
             continue
-        cods = [getattr(c, 'code', str(c)) for c in (sorteada or [])]
-        if not cods:
+        outro = next((x for x in lideres if x != lc), None)
+        m_errado = opponent_model_for_leader(outro, '') if outro else None
+
+        real_cnt = Counter(mao_real)
+        parcial = {'modelo': 0, 'cego': 0, 'errado': 0}
+        n_ok = 0
+        for _ in range(rodadas):
+            try:
+                mao, _v = modelo.sample(est, rng=rng)
+                parcial['modelo'] += acerto(mao, real_cnt)
+                mao_c, _v = modelo.sample(cego, rng=rng)
+                parcial['cego'] += acerto(mao_c, real_cnt)
+                if m_errado is not None:
+                    mao_e, _v = m_errado.sample(est, rng=rng)
+                    parcial['errado'] += acerto(mao_e, real_cnt)
+                n_ok += 1
+            except Exception:
+                break
+        if not n_ok:
             continue
-        acerto = len(set(cods) & set(mao_real))
-        acertos.append(acerto)
-        totais.append(len(mao_real))
+        for k in tot:
+            tot[k] += parcial[k] / float(n_ok)
+        cartas_totais += len(mao_real)
         amostras += 1
+        cam = opponent_model_source_for_leader(lc, '')
+        d = por_camada.setdefault(cam, {'acertos': 0.0, 'cartas': 0, 'n': 0})
+        d['acertos'] += parcial['modelo'] / float(n_ok)
+        d['cartas'] += len(mao_real)
+        d['n'] += 1
+
     if not amostras:
         return {'amostras': 0}
-    taxa = 100.0 * sum(acertos) / max(1, sum(totais))
-    return {'amostras': amostras, 'acerto_pct': round(taxa, 1),
-            'acertos_medios': round(statistics.mean(acertos), 2),
-            'cartas_por_mao': round(statistics.mean(totais), 1)}
+
+    def pct(x):
+        return round(100.0 * x / max(1, cartas_totais), 1)
+
+    return {'amostras': amostras,
+            'rodadas_por_posicao': rodadas,
+            'cartas_por_mao': round(cartas_totais / float(amostras), 1),
+            'acerto_pct': pct(tot['modelo']),
+            'acerto_pct_sem_observar': pct(tot['cego']),
+            'acerto_pct_lider_errado': pct(tot['errado']),
+            'acertos_medios': round(tot['modelo'] / amostras, 2),
+            'por_camada': {k: {'acerto_pct': round(100.0 * v['acertos'] / max(1, v['cartas']), 1),
+                               'posicoes': v['n']}
+                           for k, v in sorted(por_camada.items())}}
 
 
 def mede_custo_da_incerteza(posicoes) -> dict:
@@ -204,8 +303,21 @@ def main() -> int:
     if m.get('amostras'):
         print('      das cartas sorteadas, %.1f%% estavam MESMO na mao'
               % m['acerto_pct'])
-        print('      %.2f acertos por mao de %.1f cartas, em %d posicoes'
-              % (m['acertos_medios'], m['cartas_por_mao'], m['amostras']))
+        print('      %.2f acertos por mao de %.1f cartas, em %d posicoes (%dx cada)'
+              % (m['acertos_medios'], m['cartas_por_mao'], m['amostras'],
+                 m['rodadas_por_posicao']))
+        print()
+        print('      CONTROLES (sozinho, o numero acima nao diria nada):')
+        print('        sem observar trash/board/vida : %.1f%%'
+              % m['acerto_pct_sem_observar'])
+        print('        modelo do LIDER ERRADO        : %.1f%%  <- tem que despencar'
+              % m['acerto_pct_lider_errado'])
+        if m.get('por_camada'):
+            print()
+            print('      por camada de fallback:')
+            for cam, d in m['por_camada'].items():
+                print('        %-28s %5.1f%%  (%d posicoes)'
+                      % (cam, d['acerto_pct'], d['posicoes']))
     else:
         print('      sem amostra (modelo de oponente indisponivel)')
 
