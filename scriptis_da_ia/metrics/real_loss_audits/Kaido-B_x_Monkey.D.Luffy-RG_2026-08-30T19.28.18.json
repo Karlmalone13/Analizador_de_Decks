@@ -1,0 +1,191 @@
+{
+  "parsed_file": "Kaido-B_x_Monkey.D.Luffy-RG_2026-08-30T19.28.18.json",
+  "bot_side": "You",
+  "bot_leader": "Kaido",
+  "opp_leader": "Monkey D. Luffy",
+  "turnos_auditados": 5,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-058",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 1 Don",
+            "Buff Nami [\"OP01-016\">OP01-016] -2000"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Queen\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  Banco de cartas: 2839 cartas carregadas\n    Kaido (058) (Alterna (5000pwr) ataca Leader\n      ↳ [when attacking] custo: devolveu 1 DON ao deck\n      ↳ [when attacking] -2000 power em: Nami\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > gastou 1 DON -> Joga: Queen (1000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Animal Kingdom Pirates} type card from your hand: Draw 2 cards....\u001b[0m\n    ↳ [Queen] custo: trashou da mão: Basil Hawkins\n    ↳ [Queen] comprou: Wo Ro Ro Ro , Yamato\n  > gastou 1 DON -> Joga: We're Going to Claim the One P (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the [Animal Kingdom Pirates] or [Big Mom Pirates] type, look at ...\u001b[0m\n    ↳ [We're Going to Claim] olhou 5 do topo -> pegou: Queen\n    ↳ [We're Going to Claim] 4 carta(s) no fundo do deck\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 3,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-058",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 1 Don",
+            "Buff Usopp [\"OP14-022\">OP14-022] -2000"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "EB04-032",
+          "card_name": "Queen",
+          "effects": [
+            "Trash King [\"EB04-031\">EB04-031]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP07-077",
+          "card_name": "We're Going to Claim the One Piece!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Queen [\"EB04-032\">EB04-032]</b>"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Queen\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Kaido (058) (Alterna\n    Kaido (058) (Alterna (7000pwr) ataca Usopp\n      ↳ [when attacking] custo: devolveu 1 DON ao deck\n      ↳ [when attacking] -2000 power em: Nami\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 1 DON -> Joga: We're Going to Claim the One P (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] If your Leader has the [Animal Kingdom Pirates] or [Big Mom Pirates] type, look at ...\u001b[0m\n    ↳ [We're Going to Claim] olhou 5 do topo -> pegou: Basil Hawkins\n    ↳ [We're Going to Claim] 4 carta(s) no fundo do deck\n  > gastou 1 DON -> Joga: Queen (1000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Animal Kingdom Pirates} type card from your hand: Draw 2 cards....\u001b[0m\n    ↳ [Queen] custo: trashou da mão: Queen\n    ↳ [Queen] comprou: Ulti & Page , Queen\n  > gastou 1 DON -> Joga: Queen (1000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 {Animal Kingdom Pirates} type card from your hand: Draw 2 cards....\u001b[0m\n    ↳ [Queen] custo: trashou da mão: Ulti & Page One\n    ↳ [Queen] comprou: Basil Hawkin, O-Nami (Repr\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-058",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 1 Don",
+            "Buff Usopp [\"OP14-022\">OP14-022] -2000"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Kaido\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Kaido (058) (Alterna\n    Kaido (058) (Alterna (7000pwr) ataca Roronoa Zoro (OP13-0\n      ↳ [when attacking] custo: devolveu 1 DON ao deck\n      ↳ [when attacking] -2000 power em: Usopp\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n    anexou 1 DON em Queen\n    Queen (2000pwr) ataca Nami\n      💀 Nami foi KO!\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP17-074",
+          "card_name": "Yamato",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Usopp [\"OP14-022\">OP14-022]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-058",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 1 Don",
+            "Buff Roronoa Zoro [\"EB04-007\">EB04-007] -2000"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Ulti & Page One\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 3 DON -> Joga: Yamato (1000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] [On Play] Add up to 1 DON!! card as rested from your DON!! deck.\u001b[0m\n    ↳ [Yamato] adicionou 1 DON ativo\n    Kaido (058) (Alterna (5000pwr) ataca Usopp\n      ↳ [when attacking] custo: devolveu 1 DON ao deck\n      ↳ [when attacking] -2000 power em: Nami\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    ⚡ anexou 1 DON em Kaido (058) (Alterna (banking -- nada mais pra fazer este turno)\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-058",
+          "to_name": "Kaido",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-058",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-058",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 1 Don",
+            "Buff Roronoa Zoro [\"EB04-007\">EB04-007] -2000"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Wo Ro Ro Ro Ro... I Think I've\u001b[0m\n  \u001b[93mDON!! +1 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    }
+  ]
+}

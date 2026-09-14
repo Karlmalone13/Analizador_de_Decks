@@ -53,6 +53,98 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-14 (818) - O TRAVAMENTO ERA JOGADA ILEGAL: [Rush:Character] atacando o LIDER. A bancada CPU x CPU achou em 2 partidas o que uma noite de partidas do usuario nao revelou
+
+O `[Bot][DIAG]` do bloco 816 rodou na primeira CPU x CPU de verdade e entregou
+o numero que decidia tudo:
+
+```
+state=Attack_SelectingTarget botoes=Cancel
+alvos que faltam=-1  quantidadeLivre=False  candidatos=39
+```
+
+**`-1` significa `acaActive == null`** -- nao ha efeito resolvendo. Entao
+`Attack_SelectingTarget` **nunca foi selecao de alvo de efeito**, e os 39
+candidatos listados eram irrelevantes: e a declaracao de ataque. Sem esse
+numero eu teria implementado o clique no fluxo errado.
+
+### A jogada ilegal
+
+```
+[Bot] play: OP17-048
+[Bot] attach_don: 1/1 DON em OP17-048
+[Bot] attack: OP17-048 -> OP14-020        <- OP14-020 e o LIDER
+```
+
+`OP17-048` e o **Shiki**, e o texto dele e **`[Rush:Character]`**: pode atacar
+no turno em que entra, mas **so Personagem, NUNCA o Lider**. Esta na lista
+"Regras de jogo (NUNCA quebrar)" do `CLAUDE.md` -- *"Rush != Rush:Character"*.
+
+O jogo recusou o clique e o plugin ficou pendurado. **O travamento que parecia
+bug de plugin era o motor propondo jogada ilegal.**
+
+### A causa raiz: uma linha faltando na reconstrucao AO VIVO
+
+O motor modela a regra corretamente -- `_generate_and_score_actions` faz
+`pode_atacar_leader = not rush_character_only_this_turn` (linha 19713, e de novo
+em 20121 pro attach_don).
+
+Mas `rush_character_only_this_turn` e **ESTADO DE RUNTIME**: e marcada nos ~8
+pontos onde o MOTOR joga uma carta na propria simulacao. No caminho AO VIVO quem
+jogou a carta foi o **JOGO**, e `_dto_to_gs` copiava `just_played` do DTO e
+parava ai. A flag ficava `False`, o lider entrava como alvo legal, e o bot
+declarava o ataque ilegal.
+
+Corrigido em `server.py`, junto do `just_played`:
+
+```python
+if card.just_played and not card.is_rush():
+    card.rush_character_only_this_turn = card.is_rush_character()
+```
+
+> **Classe de bug a vigiar**: toda flag de runtime que o motor marca ao JOGAR
+> uma carta esta potencialmente ausente ao vivo, porque ao vivo ninguem passa
+> por aqueles pontos. `rush_character_only_this_turn` era uma; vale varrer as
+> outras.
+
+### O CONTROLE QUE QUASE ME FEZ DESCARTAR O PROPRIO FIX
+
+Primeiro teste: flag `False` e flag `True` deram **o mesmo resultado** -- eu ia
+concluir que a correcao nao servia.
+
+**O teste e que estava errado.** O atacante gerado era o LIDER, nao o Shiki, e o
+Shiki nem aparecia: o unico personagem adversario estava ATIVO, logo nao
+atacavel, entao ele nao tinha alvo legal nenhum e sumia da lista por completo.
+
+Com um personagem **RESTADO** em campo, a diferenca aparece:
+
+```
+flag=False -> alvos oferecidos ao SHIKI: ['character', 'leader']   <- ilegal
+flag=True  -> alvos oferecidos ao SHIKI: ['character']             <- correto
+```
+
+Licao de metodo: **um controle que nao separa os dois casos pode estar medindo
+uma situacao onde nenhum dos dois se aplica** -- nao confirma nem refuta. Antes
+de aceitar "deu igual, entao nao muda nada", conferir se o caso foi de fato
+exercitado.
+
+### O que isto prova sobre a bancada (bloco 816)
+
+Em **duas partidas** CPU x CPU apareceu uma violacao de regra que **uma noite
+inteira de partidas do usuario nao revelou** -- porque quando ele jogava, era
+ele quem clicava e desempacava sem ninguem notar. Era exatamente o argumento
+registrado pra bancada existir, e se confirmou mais rapido do que o esperado.
+
+### Sobre o modelo em producao (registro honesto)
+
+`metrics/q_net.joblib` esta com 539.570 alvos / erro 0,0453, sobrescrito as
+19:58 de 13/09 por um treino DIRETO -- **nao por promocao de portao**. O
+desafiante de hoje (625.361 alvos, erro 0,0438, concordancia 56,1%) **perdeu o
+portao 5x12** e por isso NAO entrou. Fica dito pra ninguem ler o arquivo
+versionado como "campeao promovido".
+
+---
+
 ## 2026-09-14 (817) - CICLO DE 300 PARTIDAS: a concordancia salta de +0,4pp pra **+31,7pp acima do acaso** -- e mesmo assim o portao NAO promove
 
 Primeiro ciclo completo com as 5 etapas ligadas (bloco 808) e a metrica de

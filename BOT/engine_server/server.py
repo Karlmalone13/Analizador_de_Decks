@@ -432,6 +432,23 @@ def _make(dto: CardDto):
                 card._db_base_power = card.data.power
         card.rested       = dto.rested
         card.just_played  = dto.justPlayed
+        # [Rush: Character] -- "so pode atacar Characters no turno em que
+        # entra, NUNCA o Leader" (regra da lista "NUNCA quebrar" do projeto).
+        #
+        # O motor decide isso por `rush_character_only_this_turn`
+        # (`pode_atacar_leader = not rush_character_only_this_turn`), e essa
+        # flag e ESTADO DE RUNTIME: ela e marcada quando o motor joga a carta
+        # na propria simulacao. No caminho AO VIVO quem jogou a carta foi o
+        # JOGO, entao ninguem a marcava -- a flag ficava False, o lider
+        # entrava como alvo legal e o bot declarava um ataque ILEGAL.
+        #
+        # Achado ao vivo 14/09/2026, CPU x CPU: Shiki OP17-048
+        # ([Rush:Character]) jogado e mandado atacar o Leader OP14-020. O jogo
+        # RECUSOU o clique e o plugin ficou pendurado em
+        # `Attack_SelectingTarget` -- o travamento que parecia bug de plugin
+        # era o motor propondo jogada ilegal.
+        if card.just_played and not card.is_rush():
+            card.rush_character_only_this_turn = card.is_rush_character()
         card.don_attached = dto.donAttached
         card._deck_uid    = dto.deckUniqueId
         card._action_used = dto.actionUsed

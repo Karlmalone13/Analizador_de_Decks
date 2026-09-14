@@ -7,6 +7,26 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **[Rush:Character] ATACANDO O LIDER -- jogada ILEGAL corrigida (14/09/2026, bloco 818)**:
+> o travamento do CPU x CPU em `Attack_SelectingTarget` era o motor propondo
+> ataque ilegal. Shiki OP17-048 (`[Rush:Character]`, so pode atacar Personagem
+> no turno em que entra) foi mandado atacar o Lider; o jogo recusou e o plugin
+> ficou pendurado. O `[DIAG]` deu a pista: `faltam=-1` = `acaActive == null`,
+> ou seja nao era selecao de alvo de EFEITO.
+>
+> CAUSA: `rush_character_only_this_turn` e estado de RUNTIME, marcado onde o
+> MOTOR joga a carta. Ao vivo quem joga e o JOGO, e `_dto_to_gs` so copiava
+> `just_played` -- a flag ficava False e o lider virava alvo legal. Uma linha em
+> `server.py`. `SMOKE FAST OK`.
+>
+> **CLASSE A VARRER**: toda flag de runtime marcada ao JOGAR uma carta pode
+> estar ausente no caminho ao vivo pelo mesmo motivo. Esta foi achada por
+> acidente; as outras nao foram procuradas.
+>
+> **PRODUCAO**: `q_net.joblib` (539.570 alvos) foi sobrescrito por treino
+> DIRETO em 13/09 19:58, nao por promocao. O desafiante de hoje perdeu o portao
+> 5x12 e NAO entrou.
+
 > **CICLO DE 300 PARTIDAS (14/09/2026, bloco 817)**: concordancia top-1 do Q
 > saltou de **+0,4pp** (piloto, 1.799 alvos) pra **+31,7pp acima do acaso**
 > (56,1% contra 24,4%, em 15.210 decisoes, corpus de 625.361). Pior familia
