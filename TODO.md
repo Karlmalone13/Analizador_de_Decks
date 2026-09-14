@@ -7,6 +7,26 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **ABERTO -- 248 CLIQUES DE ALVO RECUSADOS NUMA PARTIDA (13/09/2026, bloco 813)**:
+> investigando os 5 `execucao falhou` da primeira partida ao vivo, o log do
+> plugin mostrou **248 cliques de alvo recusados pelo jogo, 154 deles (62%) em
+> cartas de DON**, e 2 confirmacoes com ZERO alvos. Os 5 alertas eram so a
+> ponta. Atores: Yasopp OP17-031 (102), Mihawk OP14-020 (44), OP06-038 (36),
+> OP13-040 (16), OP17-039 (5), OP17-118 (3).
+>
+> CAUSA: o plugin manda TODAS as zonas como candidatas (incl. `own_don`,
+> `opp_don`) porque algumas cartas miram DON; quem filtra deveria ser
+> `order_target_candidates` (`sim_bridge.py`) e ela nao filtra. Agravante:
+> `BotDriver.cs` desiste apos 2 recusas seguidas e confirma com zero alvos
+> quando a contagem e livre.
+>
+> **NAO CORRIGIDO a pedido do usuario** ("eu jogo depois vc conserta"). Conserto
+> pela FORMA do efeito, nao amarrado as 6 cartas que apareceram.
+>
+> (O parse do Mihawk NAO esta errado: o texto e "rest 1 of your cards" + "if
+> there is a Character with a cost of 5 or more" -- condicao de tabuleiro, nao
+> filtro da carta a restar.)
+
 > **CAMINHO AO VIVO CONSERTADO (13/09/2026, bloco 812)**: o usuario foi jogar e
 > nada funcionava. (1) `BepInEx/` tinha sumido do jogo; (2) `setup_bepinex.ps1`
 > tinha caminho FIXO pra uma maquina antiga e morria justamente quando era

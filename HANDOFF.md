@@ -53,6 +53,83 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (813) - 248 CLIQUES DE ALVO RECUSADOS PELO JOGO NUMA PARTIDA, 62% DELES EM DON. Os 5 alertas eram a ponta
+
+Pedido do usuario: *"olha esses 5 casos enquanto eu reabro o jogo"* -- os 5
+`[ALERTA] execucao falhou: estado inalterado no proximo main state estavel` da
+primeira partida ao vivo com o Q decidindo.
+
+**Nao sao 5 casos. Sao 248, e os 5 sao so as vezes em que o desperdicio foi
+grande o bastante pra nada mudar no estado.**
+
+### A prova, no log do PLUGIN (nao no do servidor)
+
+```
+[Bot] alvo de efeito: Don (uid=-10009, actor=OP17-031, faltavam=1 -> faltam=1)
+[Bot] clique em Don NAO consumiu alvo -- jogo pode ter recusado a selecao
+[Bot] alvo de efeito: Don (uid=-10008, ...)   <- recusado
+[Bot] alvo de efeito: Don (uid=-10007, ...)   <- recusado
+... (bloco inteiro de DON)
+[Bot] confirmar selecao: SelectFriendlyTargets (0)
+```
+
+`faltavam=1 -> faltam=1`: o jogo continuava pedindo o alvo depois de cada
+clique. No fim o plugin **confirmou com ZERO alvos** e o efeito foi embora sem
+fazer nada.
+
+| medida, uma partida | valor |
+|---|---|
+| cliques de alvo recusados pelo jogo | **248** |
+| deles, em cartas de **DON** | **154 (62%)** |
+| confirmacoes com ZERO alvos | 2 |
+
+Por ator: `OP17-031` (Yasopp) **102**, `OP14-020` (Mihawk, o lider) 44,
+`OP06-038` 36, `OP13-040` 16, `OP17-039` 5, `OP17-118` 3. **Nao e uma carta, e
+uma familia inteira de efeitos.**
+
+### A causa
+
+O plugin manda **todas as zonas** como candidatas -- `own_don`,
+`own_don_rested`, `own_don_attached_used`, `opp_don` incluidas -- porque algumas
+cartas REALMENTE miram DON (efeitos tipo Krieg). Quem tem que filtrar por "este
+efeito pode mirar DON?" e o motor, em `order_target_candidates`
+(`sim_bridge.py`).
+
+**Ele nao filtra.** Ordena DON no topo para efeitos que nao podem mirar DON, e o
+plugin percorre o bloco inteiro de DON antes de chegar a um alvo valido -- se
+chegar.
+
+**Agravante no plugin** (`BotDriver.cs`, `MaxRecusasSeguidasQuantidadeLivre=2`):
+quando a contagem de alvos e LIVRE, ele desiste apos 2 recusas seguidas e
+confirma com o que tiver -- **inclusive nada**. A condicao
+`(V3CountIsFree || _pendingConsumidos > 0)` permite confirmar com zero
+consumido, o que transforma ordenacao ruim em efeito perdido.
+
+### Correcao do usuario sobre o Mihawk, que muda o que e bug
+
+Ele leu a carta como *"restar 1 carta propria com custo >=5"*. O texto real e:
+
+> *"You may rest **1 of your cards**: **If there is** a Character with a cost of
+> 5 or more, set up to 3 of your DON!! cards as active."*
+
+O "custo 5 ou mais" e **condicao do tabuleiro**, nao filtro da carta a restar.
+**O parse esta correto** (`costs: rest_own_card count 1` +
+`conditions: board_has_cost_gte 5`) -- o defeito e so a escolha do alvo. Sem
+essa checagem eu teria "consertado" um parser que nao estava errado.
+
+### NAO CORRIGIDO -- decisao do usuario
+
+*"eu jogo depois vc conserta"*. O conserto e no motor de decisao, em cima da
+hora de uma partida ao vivo. Fica para depois da partida dele.
+
+**O conserto certo, quando for feito**: `order_target_candidates` descarta as
+zonas de DON quando o efeito do ator nao mira DON -- generico, pela FORMA do
+efeito, nao amarrado as 6 cartas que apareceram (mesma disciplina do gate de
+auditoria global do parser). O agravante do plugin (confirmar com zero
+consumido) e o segundo item.
+
+---
+
 ## 2026-09-13 (812) - PRIMEIRA PARTIDA AO VIVO COM O Q DECIDINDO -- e tres coisas quebradas no caminho, uma delas regressao minha desta sessao
 
 O usuario foi jogar contra o bot. O caminho ao vivo nao estava inteiro.
