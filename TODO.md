@@ -1,11 +1,30 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 14 de setembro de 2026 (bloco 827)
+**Última atualização:** 14 de setembro de 2026 (bloco 828)
 
 > **Escopo deste arquivo** (revisto em 12/09/2026): lista VIVA — o que
 > está aberto e o fluxo recente (setembro/2026, blocos 748-779). O
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
+
+> **AUTO-COLLECT CONFIRMADO PONTA A PONTA (14/09/2026, bloco 828)**: depois do
+> fix do bloco 827, `[AUTO-COLLECT] OK` e `metrics/live_runs/` nasceu com os 4
+> arquivos. Coletou o log certo (nao o residuo de 14:00). **Banco 176 -> 178**:
+> o download trouxe DUAS partidas e o `split_multigame_log` separou -- **nao e
+> duplicata** (md5 diferente do log de 13:57). *Armadilha*: `_p2` significa duas
+> coisas no codigo (arquivo companheiro do JOGO x sufixo do SPLITTER).
+>
+> **Telemetria**: cobertura **98,1%** (51/52 decisoes de main), contra 67,1% na
+> sessao anterior. DON comprometido 63, 4 (6,3%) nunca pagaram. O alerta FORTE
+> (Gloriosa OP17-046, DON=4, retorno zero) foi auditado no combat log e **NAO e
+> bug**: o `[On Play]` disparou (devolveu personagem ao fundo do deck) e a carta
+> bloqueou depois.
+>
+> **ABERTO -- relatorio de consequencia nao recorta por partida**: ele le o
+> `decision_log` da SESSAO inteira (2 partidas aqui) e numera turnos sem dizer
+> de qual. "turno 2" fica ambiguo justamente no passo que o relatorio exige
+> (conferir a jogada no combat log) -- procurei na partida errada por causa
+> disso. O `match_id` ja esta em todo registro, so nao e usado no recorte.
 
 > **LOG NAO SALVO = CAMINHO CRAVADO, PELA 11a VEZ (14/09/2026, bloco 827)**: a
 > 1a partida CPU x CPU da 2a maquina nao foi pro banco --

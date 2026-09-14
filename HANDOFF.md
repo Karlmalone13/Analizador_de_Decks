@@ -53,6 +53,105 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-14 (828) - O auto-collect VOLTOU A FUNCIONAR (ponta a ponta) -- e o alerta FORTE que ele levantou NAO era bug, mas a auditoria dele expos uma limitacao real do relatorio
+
+Segunda rodada CPU x CPU, depois do fix de caminho do bloco 827. O server foi
+reiniciado (o jogo NAO precisou: o plugin ja era o novo -- foi com ele que a
+partida anterior rodou; quem tinha codigo velho em memoria era o server, porque
+`DEFAULT_AUTOSAVED` e constante de MODULO, calculada no import).
+
+### O fix confirmado ponta a ponta
+
+```
+[AUTO-COLLECT] OK -> metrics/live_runs/live_2026-09-14T14.23.57.json
+```
+
+`metrics/live_runs/` nasceu com os 4 arquivos (`receipt`, `live`,
+`consequence` .json e .txt). O coletor pegou o log CERTO (14:23:53) e **nao** o
+residuo de 14:00 que estava na pasta -- o risco que eu tinha sinalizado nao se
+materializou porque a partida nova gerou log mais recente, como previsto.
+
+### DUAS partidas no mesmo download -- e por que isso NAO e duplicata
+
+O banco foi de 176 pra **178**, e as entradas novas sao:
+
+```
+2026-09-14T14.23.53      cpu_vs_cpu  winner=p2  14 turnos
+2026-09-14T14.23.53_p2   cpu_vs_cpu  winner=p2  12 turnos
+```
+
+**Investigado antes de chamar de bug.** O `split_multigame_log` detecta
+`"Version is"` (1x no inicio de cada partida) e, ao separar, **sobrescreve o
+arquivo original com a 1a partida** e escreve a 2a em `_p2.log` -- por isso os
+dois tem 1 `"Version is"` cada DEPOIS da coleta, e por isso o CLI bancou as
+duas no mesmo laco. Sao partidas DIFERENTES: `md5` do log de 13:57 difere do de
+14:23 (mesmo com 1168 linhas em ambos -- decks iguais, jogos distintos).
+
+**Armadilha de leitura registrada**: `_p2` significa DUAS coisas neste codigo --
+o arquivo companheiro que o JOGO grava (visao do cliente P2, comentario na
+linha ~310 de `parse_combat_log.py`) e o sufixo do SPLITTER de multipartida.
+Confundir os dois leva a "duplicata no banco" que nao existe.
+
+### Telemetria (ordem obrigatoria cumprida)
+
+**1. Agregado** (`live_`/`consequence_`): cobertura **51 de 52** decisoes de
+main (**98,1%**), contra 67,1% da sessao anterior. DON total comprometido 63;
+**4 (6,3%)** nunca pagaram em nenhum horizonte.
+
+**2. O alerta FORTE, auditado ate o fim -- e NAO e bug:**
+
+```
+turno 2  play OP17-046 (Gloriosa)  DON=4  score=205,0
+   direto: dano=+0 board_rem=+0 board_ganho=+0 mao=-1
+```
+
+Conferido no combat log, como o proprio relatorio manda:
+
+```
+[Opponent] Deploy Gloriosa ["OP17-046">OP17-046]
+[Opponent] Gloriosa: Return Streusen ["OP17-050">OP17-050] to Deck Bottom
+[Opponent] Gloriosa Blocks -> vs Teach [5000] -> Gloriosa Destroyed
+```
+
+O `[On Play]` **disparou** (devolveu um personagem do outro lado ao fundo do
+deck) e a carta ainda **bloqueou** depois. E exatamente o caso que o relatorio
+avisa cair no alerta sem ser problema. **Nao virou achado.**
+
+### A LIMITACAO REAL que a auditoria expos
+
+Pra achar essa jogada eu procurei no log da partida errada: Gloriosa aparece
+so como *revealed/drawn* na de 14 turnos. **A jogada estava na OUTRA partida.**
+
+Causa: `consequence_por_decisao` le o `decision_log` da SESSAO INTEIRA do
+server, que cobriu **duas partidas**, e numera turnos sem dizer de qual. "turno
+2" fica ambiguo exatamente quando mais importa -- na hora de conferir a jogada
+no combat log, que e o passo que o proprio relatorio exige. O dado pra
+desambiguar JA EXISTE (`match_id` esta em todo registro do `decision_log`) e so
+nao e usado no recorte.
+
+**Pendencia**: recortar o relatorio de consequencia por `match_id` (ou ao menos
+imprimir o `match_id` em cada linha). Nao mexi -- muda saida de ferramenta de
+analise e o usuario estava jogando.
+
+### Erro meu, registrado
+
+Ao medir cobertura do banco de cartas eu li `cards_rows.csv` com o nome de
+coluna errado (`code` em vez de `card_set_id`) e o script disse **"0 cartas no
+CSV"** e "30 codigos AUSENTES" -- eu estava a um passo de reportar "o motor nao
+conhece nenhuma carta OP17" como achado. A coluna certa mostra **2.845 codigos,
+119 de OP17, e as 30 cartas da partida presentes COM efeito parseado**. Nenhuma
+lacuna de banco. Vale como lembrete do padrao ja registrado no bloco 827:
+conferir a ferramenta de medicao contra um caso conhecido antes de acreditar
+num agregado que confirma a suspeita.
+
+### Estado
+
+2 partidas bancadas (banco em **178**), telemetria lida e auditada, auto-collect
+operacional. `human_patterns.json` segue **intocado** (a pendencia do bloco 827
+continua aberta e e decisao do usuario).
+
+---
+
 ## 2026-09-14 (827) - "o log nao foi salvo": era o caminho do jogo CRAVADO pela 11a vez -- e ao varrer o projeto inteiro, o `human_patterns.json` esta sendo treinado com partidas do PROPRIO BOT
 
 Relato do usuario: *"terminou a partida, mas o log nao foi salvo"*. Primeira
