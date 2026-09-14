@@ -7,6 +7,22 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **GIT x ZIP -- a divisao, num lugar so (14/09/2026, bloco 822)**:
+> **git** = codigo, `HANDOFF`/`TODO`, banco de `logs/`, `q_net.joblib`,
+> `ciclo_estado.json`. **zip pela sessao** = corpus (`q_alvos.jsonl`,
+> `selfplay_v2.jsonl`), telemetria (`live_runs/`, `engine_server/logs/`).
+>
+> CRITERIO, e nao e tamanho: git pra o que precisa de MERGE e HISTORICO; zip pra
+> o que cresce sempre e nao tem semantica de merge. O corpus fica fora porque
+> cresce a cada ciclo e gz nao faz delta -- 13 MB permanentes por ciclo. O
+> codigo fica dentro porque **zip nao funde**: quem descompacta por ultimo
+> sobrescreve o outro em silencio.
+>
+> **CORRECAO**: eu vinha dizendo que o `.git` tinha 1,1 GB e usei isso como
+> argumento. Errado -- eram objetos SOLTOS. `size-pack` real: 28 MB, e
+> `git gc --prune=now` levou a pasta de 1,1 GB pra **47 MB** em 31s. `du -sh
+> .git` nao e o tamanho do repositorio; o numero e `git count-objects -vH`.
+
 > **PASSAR A VEZ ENTRE MAQUINAS (14/09/2026, bloco 821)**: `ciclo_estado.json`
 > e versionado e a seed sai de `args.seed + n_ciclo * 101`, entao a outra
 > maquina que der `pull` vira ciclo 2 (seed 9202) e **nao colide** com o 9101 ja

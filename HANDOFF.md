@@ -53,6 +53,67 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-14 (822) - O QUE VAI PELO GIT E O QUE VAI ZIPADO -- a divisao, num lugar so
+
+Estava espalhada por tres blocos (819, 820, 821) e uma sessao futura nao acharia.
+Ideia do usuario: *"nao precisamos subir tudo para o git, a gente pode mandar
+arquivo zipado entre as sessoes, ai consigo trabalhar das duas maquinas"*.
+
+### A divisao
+
+| vai pelo **GIT** | vai **ZIPADO pela sessao** |
+|---|---|
+| codigo, motor, parser | corpus (`metrics/q_alvos.jsonl`, 381 MB) |
+| `HANDOFF.md`, `TODO.md` | `metrics/selfplay_v2.jsonl` |
+| banco de logs (`logs/`) | telemetria (`metrics/live_runs/`, `BOT/engine_server/logs/`) |
+| `q_net.joblib` (219 KB) | qualquer coisa grande E regeneravel |
+| `metrics/ciclo_estado.json` | |
+
+### O CRITERIO -- e nao e tamanho
+
+**Git**: coisas que precisam de MERGE e de HISTORICO.
+**Zip**: coisas que crescem sempre e nao tem semantica de merge.
+
+O corpus nao fica fora do git por ser grande -- ele **cresce a cada ciclo**, e um
+`.gz` nao faz delta entre versoes: cada commit guardaria uma copia inteira nova,
+permanente. 13 MB por ciclo, pra sempre, sem poder remover do historico.
+
+O codigo fica no git porque **zip nao funde**: quem descompactar por ultimo
+sobrescreve o trabalho do outro **em silencio**. E a mesma falha ja descrita pro
+`q_net.joblib` binario (bloco 821), aplicada a tudo. E `HANDOFF.md` e a UNICA
+memoria compartilhada entre sessoes -- nenhuma sessao ve o historico da outra, so
+o estado dos arquivos.
+
+### CORRECAO DE UM NUMERO MEU, que eu tinha usado como argumento
+
+Eu vinha dizendo que o `.git` estava em **1,1 GB** e usei isso pra argumentar
+contra commitar dado. **O numero estava errado**:
+
+```
+size       : 1005,21 MiB   <- 8.977 objetos SOLTOS, sem compactar
+size-pack  :   28,28 MiB   <- o repositorio de verdade
+```
+
+`git gc --prune=now` em 31 segundos: **1,1 GB -> 47 MB**. Era faxina pendente,
+nao conteudo. Os dois maiores arquivos do historico sao os PDFs das regras do
+jogo (23,4 MB + 7,3 MB), commitados uma vez.
+
+**O argumento contra commitar o corpus continua valendo** -- mas pelo motivo
+certo (cresce a cada ciclo, nao faz delta), nao pelo que eu tinha dito. Guardar
+codigo no git custa praticamente nada.
+
+> Licao de metodo, a mesma do bloco 817: `du -sh .git` NAO e o tamanho do
+> repositorio. O numero que vale e `git count-objects -vH | grep size-pack`.
+
+### Trabalhar das duas maquinas
+
+Funciona, com a invariante do bloco 821: **uma maquina treina por vez**, com
+`pull` antes e `push` depois (`ciclo_estado.json` e o token de quem tem a vez).
+Gerar partidas e jogar CPU x CPU as duas podem, a vontade -- os logs entram no
+banco versionado e voltam pelo git sozinhos.
+
+---
+
 ## 2026-09-14 (821) - PASSAR A VEZ: como treinar e jogar na OUTRA maquina sem criar duas linhas de trabalho
 
 Pergunta do usuario: *"qual seria o caminho correto para nao dar paralelismo se
