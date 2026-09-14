@@ -137,8 +137,14 @@ def _duelo(task) -> dict:
     try:
         match = OPTCGMatch(deck_a, deck_b)
         match.setup()
-    except Exception:
-        return dict(lids, erro=True)
+    except Exception as e:
+        # A excecao era ENGOLIDA sem registro (achado 14/09/2026, bloco 825):
+        # 31 partidas de 800 morriam e nao havia como saber por que. Mesmo modo
+        # de falha do bloco 754, onde o `filter_type` lista matava 14% das
+        # partidas em silencio. Registrar o motivo nao muda o duelo -- so para
+        # de esconder bug.
+        return dict(lids, erro=True, erro_fase='setup',
+                    erro_msg=f'{type(e).__name__}: {e}')
 
     lado_desaf = match.state_a if desafiante_e_A else match.state_b
     lado_camp = match.state_b if desafiante_e_A else match.state_a
@@ -163,8 +169,9 @@ def _duelo(task) -> dict:
             if r:
                 winner = r
                 break
-    except Exception:
-        return dict(lids, erro=True)
+    except Exception as e:
+        return dict(lids, erro=True, erro_fase='turno',
+                    erro_msg=f'{type(e).__name__}: {e}')
 
     if winner is None:
         return dict(lids, empate=True)
@@ -218,6 +225,13 @@ def duelar(n: int, workers: int, seed: int, peso_camp: float,
     res = _rodar_tasks(tasks, workers)
 
     vit = der = div = descartados = 0
+    # `descartados` sempre somou par com ERRO **e** par com EMPATE, e era
+    # devolvido na chave 'erros' -- entao "31 erros" podia ser 31 crashes, 31
+    # partidas que bateram o teto de turnos, ou qualquer mistura. Contados
+    # separados agora (bloco 825); a chave 'erros' segue com o total pra nao
+    # quebrar quem ja lia ela.
+    n_erro = n_empate = 0
+    motivos = {}
     por_lider = {}
 
     def _credita(res_par, chave):
@@ -233,6 +247,15 @@ def duelar(n: int, workers: int, seed: int, peso_camp: float,
         a, b = res[2 * j], res[2 * j + 1]
         if a.get('erro') or b.get('erro') or a.get('empate') or b.get('empate'):
             descartados += 1
+            if a.get('erro') or b.get('erro'):
+                n_erro += 1
+                for lado in (a, b):
+                    if lado.get('erro'):
+                        chave = (f"{lado.get('erro_fase', '?')}: "
+                                 f"{lado.get('erro_msg', 'sem mensagem')}")
+                        motivos[chave] = motivos.get(chave, 0) + 1
+            else:
+                n_empate += 1
             continue
         ga, gb = a['desafiante'], b['desafiante']
         if ga and gb:
@@ -248,6 +271,8 @@ def duelar(n: int, workers: int, seed: int, peso_camp: float,
     return {
         'vitorias_desafiante': vit, 'derrotas_desafiante': der,
         'empates': div, 'erros': descartados, 'decididas': decididos,
+        'pares_com_erro': n_erro, 'pares_com_empate': n_empate,
+        'motivos_erro': motivos,
         'winrate_desafiante': (vit / decididos) if decididos else None,
         'pareado': True, 'pares_rodados': n_pares,
         'pares_divididos': div, 'partidas': len(tasks),

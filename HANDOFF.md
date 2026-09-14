@@ -53,6 +53,125 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-14 (825) - O PORTAO DO CICLO 2, DECIDIDO ATE ONDE DA: o desafiante E melhor que o campeao (p=0,026), so nao pelos 65% que o teste exige -- e os "31 erros" nunca foram erros
+
+Continuacao do portao que o bloco 824 deixou em cima do muro. Rodado com
+`--max-pares 400` (o ciclo usa 60), mesma seed 9215. **NAO promove nada** --
+promover muda comportamento PADRAO de producao e isso exige autorizacao.
+
+### A continuacao e legitima, e da pra provar
+
+`duelar_sprt` roda lotes de 20 pares com `seed + lote * 1000`. Os lotes 1-3
+sairam **identicos** aos do ciclo (5x2 -> 9x5 -> 12x7, LLR +0,652) e so entao
+seguiram pra pares NOVOS. E continuacao do teste sequencial, nao re-sorteio --
+e o SPRT ja embute o custo das checagens repetidas, entao tambem nao e
+"espiar ate dar certo".
+
+### O resultado, e a distincao que muda a leitura
+
+```
+66x42 em 108 decididos | 261 divididos | 400 pares | LLR +2,336
+VEREDITO: INCONCLUSIVO (teto de pares)   promove=False
+```
+
+O SPRT nao promoveu. **Mas ele responde uma pergunta especifica**: *"o
+desafiante ganha 65% dos pares decididos?"* (H1 = 0,65). A pergunta *"ele e
+melhor que o campeao?"* e OUTRA, e tem resposta:
+
+| | |
+|---|---|
+| taxa entre decididos | **61,1%** |
+| binomial bicaudal contra 50% | **p = 0,0264** |
+| IC95 | **[51,3% ; 70,3%]** |
+| 50% dentro do IC? | **NAO** |
+| 65% dentro do IC? | **SIM** |
+
+**O desafiante e melhor que o campeao com significancia convencional.** O que
+o portao nao consegue afirmar e que a margem chega aos 65% -- o IC cobre tanto
+61% quanto 65%, entao o SPRT fica sem poder decidir e bate o teto. Isso **nao
+e o portao falhando**: ele foi calibrado em 0,65 de proposito depois do falso
+positivo do bloco 762. Esta funcionando como desenhado, e o desenho e
+conservador.
+
+**NAO LER COMO "quase promoveu"**: o LLR oscilou o tempo todo (+0,58 -> +1,44
+-> +0,85 -> +2,71 -> +2,34), nunca encostou no limite com tendencia.
+
+### O recorte POR LIDER: ganho REAL, mas NAO uniforme
+
+| melhora | piora |
+|---|---|
+| OP13-002 83% (24) - OP14-020 75% (8) - OP15-002 73% (15) - OP16-079 72% (18) - OP11-001 71% (17) - EB02-010 67% (15) - OP13-001 64% (14) - OP11-041 62% (13) - OP16-080 61% (18) - OP12-061 58% (12) - OP16-060 57% (7) | **OP15-058 22% (9)** - **OP14-041 25% (4)** - **OP16-001 40% (15)** - OP15-098 44% (16) - OP16-022 45% (11) |
+
+11 lideres melhoram, **5 pioram**. Pela regra do projeto (*"qualquer deck"*, o
+bot tem que jogar bem com QUALQUER lider), 5 lideres piorando e o dado que
+mais pesa contra promover -- nao o veredito agregado.
+
+### OS "31 ERROS" NUNCA FORAM ERROS -- e ninguem tinha como saber
+
+A saida do portao dizia `erros=31`. Investigado:
+
+**1. A chave estava MAL NOMEADA.** Em `duelar`, `descartados` soma par com
+`erro` **E** par com `empate`, e voltava na chave `'erros'`. "31 erros" podia
+ser 31 crashes, 31 partidas batendo o teto de turnos, ou qualquer mistura --
+indistinguivel de fora.
+
+**2. A excecao era ENGOLIDA.** Os dois `except Exception` de `_duelo` (setup e
+turno) faziam `return dict(lids, erro=True)` e **descartavam a excecao**. Mesmo
+modo de falha do bloco 754, onde o `filter_type` lista matava 14% das partidas
+em silencio.
+
+**Instrumentado** (`erro_fase` + `erro_msg` capturados; `pares_com_erro`,
+`pares_com_empate` e `motivos_erro` separados na volta; a chave `'erros'`
+mantida com o total pra nao quebrar quem ja lia). Re-rodado nos MESMOS 400
+pares:
+
+```
+descartados : 31
+  CRASH     : 0
+  EMPATE    : 31   (bateu o teto de turnos, nao e bug)
+```
+
+**Nenhum bug escondido** -- e o total bate exato com o do portao, o que prova
+que a reproducao foi deterministica. O valor aqui nao foi achar bug: foi
+transformar uma pergunta impossivel de responder numa linha de saida.
+
+### DOIS DESCOMPASSOS DE CONFIGURACAO (nao mexidos -- mudam default)
+
+**1. O teto do ciclo nao bate com o do teste.** `duelar_sprt` tem
+`max_pares=200` na assinatura; `ciclo.py` passa `--max-pares` default **60**. O
+proprio docstring registra que a rodada que pegou o falso positivo so cruzou o
+limite em **140 pares** -- acima do teto do ciclo. Com 60, o portao do ciclo
+tende a INCONCLUSIVO por construcao. Subir o default e mudanca de
+comportamento padrao: **decisao do usuario**.
+
+**2. 8 workers estouram a memoria NO PORTAO.** `BrokenProcessPool` ao vivo. A
+maquina tem **16 nucleos logicos mas 15,7 GB de RAM** (3,5 GB livres): no
+portao cada worker carrega DOIS modelos (campeao + desafiante) alem do banco de
+cartas, bem mais pesado que a geracao -- que rodou com 8 sem problema. **Aqui
+quem limita e RAM, nao nucleo.** Com 4 workers: 400 pares em 223s.
+
+### Armadilha de Windows (custou uma rodada)
+
+Script de diagnostico proprio precisa de `if __name__ == '__main__':`. O
+`ProcessPoolExecutor` usa **spawn** no Windows e RE-IMPORTA o arquivo em cada
+worker -- sem o guard, o duelo inteiro recomeca dentro de cada filho (visto ao
+vivo: 8 copias do cabecalho e traceback em cascata).
+
+### Estado / a decisao que sobra
+
+Nada promovido, `q_net.joblib` **inalterado**. `smoke_fast.py`: 1.429 OK, 1
+FALHOU (a do Imu, pre-existente do bloco 824 -- sem regressao).
+
+**A decisao e do usuario**, e as duas leituras sao defensaveis:
+
+* **Nao promover** (o que o portao diz): 5 lideres pioram, e a regra do projeto
+  e "qualquer deck".
+* **Promover**: e melhor que o campeao com p=0,026, e segurar geracao boa por
+  um limiar conservador trava o laco -- o bloco 756 ja registrou o oposto
+  (portao sem poder descartando geracao genuinamente melhor em 89% das vezes).
+
+---
+
 ## 2026-09-14 (824) - A SEGUNDA MAQUINA ASSUME: ciclo 2 rodado em Arthur_Trabalho, 2,6x mais rapido, e o portao VIRA de lado -- mas nao decide. Mais o corpus de 444 MB que estava a um `git add` de entrar no historico
 
 Primeira execucao real do `REGRA_DUAS_MAQUINAS.md` (bloco 823). A maquina

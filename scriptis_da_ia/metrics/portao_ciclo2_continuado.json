@@ -1,0 +1,101 @@
+{
+  "vitorias_desafiante": 66,
+  "derrotas_desafiante": 42,
+  "empates": 261,
+  "erros": 31,
+  "decididas": 108,
+  "winrate_desafiante": 0.6111111111111112,
+  "pareado": true,
+  "sprt": true,
+  "llr": 2.3356938094276476,
+  "lim_sup": 2.9444389791664403,
+  "lim_inf": -2.9444389791664403,
+  "pares_rodados": 400,
+  "pares_divididos": 261,
+  "partidas": 800,
+  "lotes": 20,
+  "veredito": "INCONCLUSIVO (teto de pares)",
+  "promove": false,
+  "por_lider": {
+    "OP15-098": {
+      "vit": 7,
+      "der": 9,
+      "div": 30
+    },
+    "OP15-002": {
+      "vit": 11,
+      "der": 4,
+      "div": 28
+    },
+    "OP16-079": {
+      "vit": 13,
+      "der": 5,
+      "div": 33
+    },
+    "OP15-058": {
+      "vit": 2,
+      "der": 7,
+      "div": 34
+    },
+    "OP13-002": {
+      "vit": 20,
+      "der": 4,
+      "div": 28
+    },
+    "OP11-001": {
+      "vit": 12,
+      "der": 5,
+      "div": 25
+    },
+    "OP16-080": {
+      "vit": 11,
+      "der": 7,
+      "div": 39
+    },
+    "OP14-020": {
+      "vit": 6,
+      "der": 2,
+      "div": 31
+    },
+    "EB02-010": {
+      "vit": 10,
+      "der": 5,
+      "div": 26
+    },
+    "OP16-060": {
+      "vit": 4,
+      "der": 3,
+      "div": 30
+    },
+    "OP14-041": {
+      "vit": 1,
+      "der": 3,
+      "div": 41
+    },
+    "OP12-061": {
+      "vit": 7,
+      "der": 5,
+      "div": 33
+    },
+    "OP16-001": {
+      "vit": 6,
+      "der": 9,
+      "div": 35
+    },
+    "OP13-001": {
+      "vit": 9,
+      "der": 5,
+      "div": 39
+    },
+    "OP16-022": {
+      "vit": 5,
+      "der": 6,
+      "div": 27
+    },
+    "OP11-041": {
+      "vit": 8,
+      "der": 5,
+      "div": 43
+    }
+  }
+}

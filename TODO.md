@@ -1,11 +1,40 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 14 de setembro de 2026 (bloco 824)
+**Última atualização:** 14 de setembro de 2026 (bloco 825)
 
 > **Escopo deste arquivo** (revisto em 12/09/2026): lista VIVA — o que
 > está aberto e o fluxo recente (setembro/2026, blocos 748-779). O
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
+
+> **PORTAO DO CICLO 2 DECIDIDO ATE ONDE DA (14/09/2026, bloco 825)**: rodado
+> com `--max-pares 400` (ciclo usa 60), mesma seed -- lotes 1-3 identicos, logo
+> e continuacao do SPRT e nao re-sorteio. **66x42 em 108 decididos, LLR +2,336,
+> `INCONCLUSIVO` no teto.**
+>
+> **A distincao que importa**: o SPRT testa H1=65% e nao consegue afirmar essa
+> margem. Mas contra 50% o desafiante **e melhor com significancia**: 61,1%,
+> binomial **p=0,0264**, IC95 **[51,3%; 70,3%]** (50% fora, 65% dentro). Nao e
+> "quase promoveu" -- o LLR oscilou o tempo todo.
+>
+> **Recorte por lider**: 11 melhoram, **5 PIORAM** (OP15-058 22%, OP14-041 25%,
+> OP16-001 40%, OP15-098 44%, OP16-022 45%). Pela regra "qualquer deck", esse e
+> o dado que mais pesa contra promover.
+>
+> **DECISAO ABERTA (do usuario)**: promover o desafiante ou nao. Nada foi
+> promovido; `q_net.joblib` inalterado.
+>
+> **RESOLVIDO -- os "31 erros" nao eram erros**: a chave `'erros'` de `duelar`
+> somava par com ERRO **e** par com EMPATE, e os dois `except Exception` de
+> `_duelo` DESCARTAVAM a excecao (mesmo modo de falha do bloco 754). Separados
+> e instrumentados: **0 crash, 31 empate**. Sem bug escondido.
+>
+> **ABERTO -- dois descompassos de configuracao** (mudam default, nao mexidos):
+> (a) `duelar_sprt` tem `max_pares=200` mas `ciclo.py` passa **60**, e o
+> docstring registra rodada que so decidiu em 140 -- o portao do ciclo tende a
+> INCONCLUSIVO por construcao; (b) **8 workers estouram a RAM no portao**
+> (`BrokenProcessPool`): 16 nucleos mas 15,7 GB, e o portao carrega DOIS
+> modelos por worker. Usar **4** no portao (400 pares em 223s).
 
 > **CICLO 2 RODADO NA 2a MAQUINA (14/09/2026, bloco 824)**: primeira execucao
 > real do `REGRA_DUAS_MAQUINAS.md`. `Arthur_Trabalho` assumiu como treinadora,
