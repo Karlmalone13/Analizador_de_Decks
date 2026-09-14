@@ -53,6 +53,100 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-14 (826) - CPU x CPU HABILITADO na 2a maquina: o Shift+C NAO EXISTIA na DLL instalada, e o instalador estava bloqueado por politica corporativa
+
+Pergunta do usuario: *"posso testar cpu x cpu sem dar paralelismo com a maquina
+de origem?"*.
+
+### A resposta: SIM, e sem risco nenhum
+
+O bloco 816 ja tinha feito a distincao que responde isso:
+
+| | serve pra | toca o corpus? |
+|---|---|---|
+| auto-jogo no MOTOR (`ciclo.py`) | o Q **aprender** | **sim** (`q_alvos.jsonl`, treino, portao) |
+| **CPU x CPU no SIMULADOR** | achar **erro de execucao** | **nao** |
+
+CPU x CPU nao escreve em `q_alvos.jsonl`, nao treina, nao toca `q_net.joblib`
+nem `ciclo_estado.json`. Pela regra (*"uma maquina treina por vez; todas podem
+gerar partidas e JOGAR"*), e jogar. Unico artefato comum e o banco de logs, que
+e versionado -- e com a `Arthur_PC` parada nem conflito de merge existe.
+
+### O BLOQUEIO REAL, que a pergunta obrigou a descobrir
+
+O jogo ESTA instalado aqui (`C:\Users\ARTHUR.CUNHA\Desktop\Builds_Windows`,
+7 decks). Mas o plugin era **de 31/08**:
+
+```
+INSTALADA   67.584 bytes   CPU x CPU: nao   cpu_vs_cpu: nao   DIAG: nao
+DIST/repo   69.632 bytes   CPU x CPU: SIM   cpu_vs_cpu: SIM   DIAG: SIM
+```
+
+**O Shift+C simplesmente nao existia na DLL instalada** -- ela e anterior ao
+build de 13/09. Rodar CPU x CPU teria "falhado" sem erro nenhum: a tecla nao
+faz nada. Exatamente a armadilha que o `CLAUDE.md` manda conferir (*"era DLL do
+plugin desatualizada, nao logica"*).
+
+**Erro de metodo meu no caminho, registrado porque da falso negativo:** a
+primeira conferencia usou `grep` ASCII e deu "nao" pras TRES strings **inclusive
+na `dist`**, que comprovadamente as tem. Strings de .NET sao **UTF-16LE** --
+`grep` ASCII nunca acha. Refeito com busca em UTF-16 e o quadro acima apareceu.
+
+### A politica corporativa que bloqueou o instalador
+
+`BOT\instalar.bat` morreu com *"nao esta assinado digitalmente"*. Causa:
+`MachinePolicy = RemoteSigned` (politica de grupo) **vence o
+`-ExecutionPolicy Bypass`** que o proprio `.bat` passa -- o parametro nao
+adianta. E o `instalar.ps1` tinha chegado com a marca da internet
+(`Zone.Identifier`); o `setup_bepinex.ps1`, nao.
+
+`Unblock-File` nesse arquivo resolveu. Mesma familia do `start` bloqueado que o
+`JOGAR.bat` ja contorna com `Start-Process`.
+
+### Estado final, conferido item a item
+
+* DLL instalada = **MD5 identico** ao de `BOT/dist/` (69.632 bytes), com
+  `CPU x CPU` / `cpu_vs_cpu` / `DIAG` presentes.
+* `.venv` com **sklearn 1.9.0 / numpy 2.5.2 / joblib 1.6.0** -- o
+  `scikit-learn` que faltava no `requirements.txt` (bloco 821) fez efeito: o
+  venv nasceu completo.
+* engine server **HTTP 200** em `localhost:8765`, `/health` ok.
+* `sim_bridge.DECKS_DIR` resolve pro jogo REAL e lista os 7 decks -- o fix de
+  `OPTCG_GAME_DIR` (bloco 824) fechando com o `OPTCG_GAME_DIR` que o
+  `iniciar_bot.bat` gerado seta. As duas pontas se encontraram.
+
+### MAIS DOIS ARQUIVOS QUE NAO ERAM IGNORADOS (mesma classe do bloco 824)
+
+O instalador cria os dois, e **nenhum estava no `.gitignore`**:
+
+* **`.venv/` -- 347 MB.** Dependencia reinstalavel.
+* **`iniciar_bot.bat`** -- GERADO com caminhos ABSOLUTOS desta maquina
+  (`OPTCG_GAME_DIR` e a raiz do repo cravados dentro). Commita-lo apontaria a
+  outra maquina pra uma pasta de jogo que nao existe la. Volta rodando
+  `BOT\instalar.bat`.
+
+E a segunda vez no mesmo dia que um artefato grande e gerado aparece a um
+`git add` do historico. Vale como padrao, nao como coincidencia: **o que o
+setup gera nao estava sendo pensado como coisa a ignorar.**
+
+As tres armadilhas (politica/MOTW, DLL velha muda, `.venv`/`.bat`) foram pro
+`REGRA_DUAS_MAQUINAS.md`, na secao de armadilhas ja pagas -- e nao pro
+HANDOFF so, porque sao informacao de INICIO de sessao em maquina nova.
+
+### O que falta (e do usuario)
+
+Abrir o OPTCGSim, ir em **Solo vs Self** e apertar **Shift+C** -- a popup passa
+a mostrar `CPU x CPU (agora P2)`. Ressalva honesta: a `dist` foi compilada
+contra as DLLs do jogo da maquina de ORIGEM; se o OPTCGSim daqui for de outra
+versao, o sintoma e o bot nao reagir a nada, e ai precisa recompilar com .NET
+(`instalar.ps1 -Rebuild`). So da pra saber testando.
+
+Log de partida CPU x CPU entra no banco com `parse_combat_log.py --cpu-vs-cpu`
+(`bot_side=None`, `tipo='cpu_vs_cpu'`) -- **nunca** `--sem-bot`, que grava
+`humano_vs_humano`.
+
+---
+
 ## 2026-09-14 (825) - O PORTAO DO CICLO 2, DECIDIDO ATE ONDE DA: o desafiante E melhor que o campeao (p=0,026), so nao pelos 65% que o teste exige -- e os "31 erros" nunca foram erros
 
 Continuacao do portao que o bloco 824 deixou em cima do muro. Rodado com

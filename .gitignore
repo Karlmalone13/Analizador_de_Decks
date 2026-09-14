@@ -134,3 +134,15 @@ scriptis_da_ia/metrics/selfplay_v2.jsonl
 # O DESAFIANTE e regenerado a cada ciclo e so vira campeao se o portao
 # promover -- ai quem viaja pelo git e `q_net.joblib` (219 KB, versionado).
 scriptis_da_ia/metrics/q_net_desafiante.joblib
+
+# ── Ambiente e atalho gerados por BOT\instalar.ps1 (por MAQUINA) ─────────────
+# Achado 14/09/2026 (bloco 826), mesma classe do corpus logo acima: o
+# instalador cria os dois e NENHUM era ignorado.
+#
+# `.venv/` sao centenas de MB de dependencia reinstalavel -- nunca vai pro git.
+# `iniciar_bot.bat` e GERADO com caminhos ABSOLUTOS daquela maquina
+# (`OPTCG_GAME_DIR` e a raiz do repo cravados dentro); commita-lo apontaria a
+# outra maquina pra uma pasta de jogo que nao existe la. Ele volta rodando
+# `BOT\instalar.bat`, que e o passo 2 do REGRA_DUAS_MAQUINAS.md.
+.venv/
+iniciar_bot.bat

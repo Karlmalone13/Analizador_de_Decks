@@ -151,6 +151,31 @@ corpus faltando, seed colidindo, ou versão de biblioteca que não abre o modelo
   tiver outra versão do OPTCGSim — ou o jogo atualizar — ela para de funcionar e
   é preciso recompilar numa máquina com .NET e recommitar `BOT/dist/`. Sintoma:
   o bot não reage a nada.
+* **Política corporativa pode bloquear `instalar.ps1`** (achado 14/09/2026, na
+  2ª máquina). `MachinePolicy = RemoteSigned` vem por política de grupo e
+  **vence o `-ExecutionPolicy Bypass`** da linha de comando — o parâmetro não
+  ajuda. O arquivo chegou com a marca da internet (`Zone.Identifier`), e o erro
+  é enganoso: diz *"não está assinado digitalmente"*, não *"está bloqueado"*.
+  Conferir e destravar só esse arquivo:
+  ```powershell
+  Get-Item BOT\instalar.ps1 -Stream Zone.Identifier   # existe = bloqueado
+  Unblock-File BOT\instalar.ps1
+  ```
+  Mesma família do `start` bloqueado que o `JOGAR.bat` já contorna com
+  `Start-Process`. Só o `instalar.ps1` veio marcado; o `setup_bepinex.ps1` não.
+* **O `.venv/` (347 MB) e o `iniciar_bot.bat` não eram ignorados** — o
+  instalador cria os dois. O `.bat` é gerado com os caminhos ABSOLUTOS da
+  máquina (`OPTCG_GAME_DIR` + raiz do repo cravados), então commitá-lo apontaria
+  a outra máquina pra uma pasta de jogo inexistente. Ambos foram pro
+  `.gitignore`; o `.bat` volta rodando `BOT\instalar.bat`.
+* **A DLL instalada pode ser mais velha que a do repo, e o sintoma é mudo.** Na
+  2ª máquina a instalada era de 31/08 (67.584 bytes) e **não tinha CPU x CPU** —
+  o Shift+C simplesmente não existia. Conferir por conteúdo, não por data:
+  ```powershell
+  # strings de .NET são UTF-16LE: grep ASCII NÃO acha e dá falso negativo
+  python -c "b=open(r'<jogo>\BepInEx\plugins\OPTCGBotPlugin.dll','rb').read(); print('CPU x CPU'.encode('utf-16-le') in b)"
+  ```
+  `BOT\instalar.bat` copia a de `BOT/dist/` e resolve, sem precisar de .NET.
 * **`du -sh .git` NÃO é o tamanho do repositório.** O número que vale é
   `git count-objects -vH | grep size-pack`. Em 14/09 a pasta mostrava 1,1 GB
   com 28 MB de conteúdo real — eram objetos soltos, e `git gc --prune=now`

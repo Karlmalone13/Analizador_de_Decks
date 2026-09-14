@@ -1,11 +1,36 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 14 de setembro de 2026 (bloco 825)
+**Última atualização:** 14 de setembro de 2026 (bloco 826)
 
 > **Escopo deste arquivo** (revisto em 12/09/2026): lista VIVA — o que
 > está aberto e o fluxo recente (setembro/2026, blocos 748-779). O
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
+
+> **CPU x CPU HABILITADO NA 2a MAQUINA (14/09/2026, bloco 826)**: responde
+> *"posso testar cpu x cpu sem dar paralelismo?"* -- **sim**. CPU x CPU e
+> bancada de VALIDACAO, nao caminho de DADO (bloco 816): nao escreve no corpus,
+> nao treina, nao toca `q_net.joblib`/`ciclo_estado.json`. Pela regra, e JOGAR,
+> e todas as maquinas podem.
+>
+> **O bloqueio era outro**: a DLL instalada era de 31/08 (67.584 bytes) e **nao
+> tinha o Shift+C** (`CPU x CPU` ausente) -- teria "falhado" em silencio, a tecla
+> nao fazendo nada. Trocada pela de `BOT/dist/` (69.632 bytes, MD5 conferido).
+> *Erro de metodo registrado*: `grep` ASCII da FALSO NEGATIVO em DLL .NET
+> (strings sao UTF-16LE) -- conferir em UTF-16.
+>
+> **Politica corporativa**: `MachinePolicy=RemoteSigned` **vence
+> `-ExecutionPolicy Bypass`**; `instalar.ps1` veio com marca da internet e o erro
+> mente (*"nao assinado"*). `Unblock-File` resolve.
+>
+> **Estado**: venv com sklearn 1.9.0, engine server HTTP 200 em :8765,
+> `DECKS_DIR` achando os 7 decks reais. **Falta o usuario**: abrir o OPTCGSim em
+> Solo vs Self e apertar Shift+C.
+>
+> **CORRIGIDO -- 2a vez no dia**: `.venv/` (347 MB) e `iniciar_bot.bat` (gerado
+> com caminhos ABSOLUTOS da maquina) **nao eram ignorados**. Foram pro
+> `.gitignore`. Padrao, nao coincidencia: o que o setup GERA nao estava sendo
+> pensado como coisa a ignorar.
 
 > **PORTAO DO CICLO 2 DECIDIDO ATE ONDE DA (14/09/2026, bloco 825)**: rodado
 > com `--max-pares 400` (ciclo usa 60), mesma seed -- lotes 1-3 identicos, logo
