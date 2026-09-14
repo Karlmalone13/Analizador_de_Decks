@@ -53,6 +53,74 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-14 (820) - Cada linha do corpus passa a dizer DE QUAL MAQUINA veio, e o corpus viaja FORA do git
+
+Dois pedidos do usuario, ao planejar treinar em duas maquinas.
+
+### 1. O campo `origem`
+
+O registro gravava `gen`, `match`, `leader`, `turn` -- **nao de onde veio**. Com
+uma maquina so isso nunca doeu; com duas, uma duplicata futura seria
+**indiagnosticavel**: da pra ver que a posicao repete, nao qual origem
+contaminou.
+
+Nao e hipotese. Em 13/09 o ciclo se re-executou sozinho e entraram **9.865 alvos
+que eram 100% repeticao**; so deu pra separar porque havia UMA origem e o corte
+era o fim do arquivo. **Com duas maquinas escrevendo, esse corte nao existe.**
+
+O risco concreto do paralelismo esta na derivacao da seed:
+
+```
+seed * 1_000_003 + i
+```
+
+Duas maquinas com a MESMA `--seed` geram as MESMAS partidas. Concatenar ai nao
+soma dado, duplica -- e sem `origem` ninguem descobre.
+
+**Implementacao**: `_origem_padrao()` le `OPTCG_ORIGEM` e cai no hostname, entao
+funciona sem ninguem configurar nada. Carimbado UMA vez por partida, e lido do
+ambiente em vez de viajar na task -- a tupla de task e checada por TAMANHO
+(`len(task) == 9`) e estende-la quebraria o outro caminho em silencio.
+
+**Corpus existente carimbado**: as 625.361 linhas ganharam
+`origem='Arthur_PC'`, porque sabemos que vieram todas daqui. Deixar o campo
+vazio no historico criaria um buraco permanente exatamente na hora em que ele
+passa a importar.
+
+### 2. O corpus viaja FORA do git -- ideia do usuario
+
+> *"vc nao precisa subir o treino para o git, voce pode enviar o arquivo zipado
+> aqui nessa sessao e eu so baixo"*
+
+**Melhor que a minha proposta.** Eu tinha oferecido commitar o `.gz` de 12,7 MB;
+o problema e que o corpus CRESCE a cada ciclo e um `.gz` nao faz delta entre
+versoes -- cada commit guardaria uma copia inteira nova, ~13 MB permanentes por
+ciclo, num `.git` que ja esta em **1,1 GB**.
+
+Numeros: 381 MB crus -> **12,7 MB** comprimidos (30x, em 4,6s). Integridade
+conferida: 625.361 linhas voltam no descompactar.
+
+### A arquitetura pra duas maquinas, e o que ela protege
+
+| | onde |
+|---|---|
+| gerar partidas | **as duas** (faixas de seed distintas) |
+| treinar + portao | **uma so** |
+| modelo promovido | pelo git (`q_net.joblib`, 219 KB) |
+
+**Modelos nao se fundem.** Media de duas redes treinadas em separado nao produz
+um terceiro modelo valido -- e o corpus, sendo JSON por linha, concatena
+trivialmente. Por isso paraleliza-se o DADO e centraliza-se o TREINO: e o
+padrao de RL distribuido (varios geradores, um treinador).
+
+E ha uma razao de PROJETO, nao so tecnica, pra uma maquina so treinar: o portao
+compara campeao contra desafiante. Com duas treinando, cada uma teria o seu
+campeao e as geracoes nunca se mediriam entre si -- o portao deixaria de
+significar *"cada geracao bate a anterior"*, que e o ALVO DE TRABALHO registrado
+do projeto.
+
+---
+
 ## 2026-09-14 (819) - A DLL DISTRIBUIVEL, que o README prometia e nunca existiu
 
 Pedido do usuario: *"preciso rodar o bot na outra maquina tb, como fazemos?"*.

@@ -7,6 +7,26 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **CORPUS COM `origem` + TREINO EM DUAS MAQUINAS (14/09/2026, bloco 820)**:
+> cada linha do corpus passa a gravar de qual maquina veio
+> (`_origem_padrao()`: `OPTCG_ORIGEM` ou hostname). As 625.361 linhas
+> existentes foram carimbadas com `Arthur_PC`. Sem isso, duplicata gerada por
+> duas maquinas seria indiagnosticavel -- e o custo ja foi medido em 13/09
+> (9.865 alvos 100% repetidos, separaveis so porque havia uma origem so).
+>
+> **ARMADILHA do paralelismo**: a seed de cada partida e `seed * 1_000_003 + i`
+> -- duas maquinas com a MESMA `--seed` geram as MESMAS partidas. Usar faixas
+> distintas (ex: A=9000+, B=500000+).
+>
+> **ARQUITETURA**: paraleliza o DADO (as duas geram), centraliza o TREINO (uma
+> so). Modelos NAO se fundem; corpus concatena trivialmente. E o portao so
+> significa "cada geracao bate a anterior" se houver UM campeao.
+>
+> **O corpus viaja FORA do git** (ideia do usuario): 381 MB -> 12,7 MB em gz,
+> enviado pela sessao. Commitar o gz seria pior -- ele cresce a cada ciclo e nao
+> faz delta entre versoes, somando ~13 MB permanentes por ciclo num `.git` que
+> ja tem 1,1 GB.
+
 > **BOT EM OUTRA MAQUINA (14/09/2026, bloco 819)**: `BOT/dist/OPTCGBotPlugin.dll`
 > commitada pela primeira vez. O fluxo existia desde o bloco 727 e o
 > `BOT/.gitignore` ja tinha a excecao, mas o arquivo nunca foi gerado -- entao

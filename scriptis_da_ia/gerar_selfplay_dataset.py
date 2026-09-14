@@ -269,11 +269,44 @@ def _run_one_match(task) -> list:
     for a in amostras:
         a['win'] = 1 if a['side'] == winner else 0
     if q_out:
+        # Uma vez por PARTIDA, nao por linha. Vem do ambiente/hostname em vez
+        # de viajar na task: a tupla e checada por TAMANHO (`len(task) == 9`) e
+        # estender isso quebraria o outro caminho em silencio. Workers sao
+        # processos filhos e herdam `os.environ`, entao o valor chega igual.
+        _org = _origem_padrao()
         for linha in (getattr(match, '_q_captura', None) or []):
             linha['match'] = i
             linha['gen'] = geracao
+            # DE QUAL MAQUINA veio esta linha (bloco 820, pedido do usuario ao
+            # planejar gerar corpus em DUAS maquinas em paralelo).
+            #
+            # Sem isso, uma duplicata futura e INDIAGNOSTICAVEL: da pra ver que
+            # a posicao repete, nao de onde veio a copia. Custo real ja medido:
+            # em 13/09 o ciclo se re-executou sozinho e entraram 9.865 alvos
+            # que eram 100% repeticao -- so deu pra separar porque havia UMA
+            # origem e o corte era o fim do arquivo. Com duas maquinas
+            # escrevendo, esse corte nao existe.
+            #
+            # O risco concreto do paralelismo: a seed de cada partida e
+            # `seed * 1_000_003 + i`, entao duas maquinas com a MESMA --seed
+            # geram as MESMAS partidas. Concatenar ai nao soma dado, duplica.
+            linha['origem'] = _org
         return amostras, list(getattr(match, '_q_captura', None) or [])
     return amostras, []
+
+
+def _origem_padrao() -> str:
+    """Identidade desta maquina no corpus. `OPTCG_ORIGEM` manda; senao o
+    hostname, que ja distingue as maquinas sem ninguem precisar configurar."""
+    import os as _os
+    import socket as _socket
+    marca = (_os.environ.get('OPTCG_ORIGEM') or '').strip()
+    if marca:
+        return marca
+    try:
+        return _socket.gethostname() or 'desconhecida'
+    except Exception:
+        return 'desconhecida'
 
 
 def main() -> None:
