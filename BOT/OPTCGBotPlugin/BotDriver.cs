@@ -36,6 +36,24 @@ namespace OPTCGBotPlugin
         // BotPlayerIndex fresco todo frame, nao ha estado preso ao indice antigo).
         private const KeyCode SwapSideKey = KeyCode.P;
 
+        // CPU x CPU (ideia do usuario, 13/09/2026): o bot pilota OS DOIS
+        // lados. Possivel porque o plugin so opera em `GameStyle.SoloVSelf`
+        // -- o modo em que UM cliente controla os dois assentos -- e porque
+        // todo o driver ja decide "e minha vez?" por UMA comparacao,
+        // `iPlayerAction == BotPlayerIndex`. Entao basta o bot assumir
+        // sempre quem o jogo mandar agir.
+        //
+        // PRA QUE SERVE, e pra que NAO serve: nao e caminho de DADO. Uma
+        // partida aqui leva 15-30 min de relogio (~0,8s por clique + as
+        // animacoes), contra ~0,6s no motor -- centenas de partidas seriam
+        // dias. O valor e ser BANCADA DE VALIDACAO: no auto-jogo do motor
+        // quem julga a legalidade e o nosso proprio codigo, e aqui quem
+        // recusa e o JOGO. Todos os bugs de 13/09 (309 cliques de alvo
+        // recusados, custo que sumia do parse, NameError ao vivo) eram
+        // invisiveis ao auto-jogo por construcao.
+        private const KeyCode CpuVsCpuKey = KeyCode.C;
+        public static bool CpuVsCpu = false;
+
         private const float ActionCooldown = 1.0f;
         private const int   MaxActionsPerTurn = 25;
 
@@ -83,12 +101,30 @@ namespace OPTCGBotPlugin
                 BotPlayerIndex = 1 - BotPlayerIndex;
                 Plugin.Log.LogWarning($"[Bot] agora controla P{BotPlayerIndex + 1} (Shift+{SwapSideKey})");
             }
+            if (shiftHeld && Input.GetKeyDown(CpuVsCpuKey))
+            {
+                CpuVsCpu = !CpuVsCpu;
+                Plugin.Log.LogWarning($"[Bot] CPU x CPU {(CpuVsCpu ? "LIGADO -- o bot joga os DOIS lados" : "DESLIGADO")} (Shift+{CpuVsCpuKey})");
+            }
 
             var gls = FindGls();
             if (gls == null || gls.e_GameStyle != GameStyle.SoloVSelf)
             {
                 _cooldown = 1f;
                 return;
+            }
+
+            // CPU x CPU: assume quem o JOGO mandar agir. Feito aqui, uma vez
+            // por frame e ANTES de qualquer decisao, porque todo o resto do
+            // driver compara contra `BotPlayerIndex` -- mudar o indice num
+            // ponto so mantem a regra de "o jogo diz de quem e o clique
+            // agora" valendo para mulligan, alvo, defesa e main phase de uma
+            // vez, sem espalhar condicional nenhuma.
+            if (CpuVsCpu && gls.gsv_CurrentGame != null
+                && gls.gsv_CurrentGame.iPlayerAction != BotPlayerIndex
+                && gls.e_CurrentState != GameplayState.GameOver)
+            {
+                BotPlayerIndex = gls.gsv_CurrentGame.iPlayerAction;
             }
 
             if (gls.e_CurrentState == GameplayState.GameOver && !_outcomeReported)
@@ -111,9 +147,19 @@ namespace OPTCGBotPlugin
                 bool botWon = BotPlayerIndex == 0 ? youWon : !youWon;
                 var finalDto = GameStateBuilder.Build(
                     gls.Lps_Players[BotPlayerIndex], gls.Lps_Players[1 - BotPlayerIndex], gls);
+                // Em CPU x CPU os DOIS lados sao o bot, entao "quem ganhou"
+                // e "de que lado o bot estava" deixam de ser perguntas com
+                // resposta. Marcar um lado ai poluiria o banco com rotulo
+                // FALSO -- exatamente o tipo de dado sujo que custou a noite
+                // de 13/09 pra limpar. Vai como `cpu_vs_cpu`, e quem le
+                // decide o que fazer com isso.
                 EngineClient.ReportOutcome(botWon ? "win" : "loss", finalDto,
-                                           $"GameOver; bot=P{BotPlayerIndex + 1}",
-                                           BotPlayerIndex == 0 ? "p1" : "p2");
+                                           CpuVsCpu
+                                             ? "GameOver; CPU x CPU (os dois lados sao o bot)"
+                                             : $"GameOver; bot=P{BotPlayerIndex + 1}",
+                                           CpuVsCpu
+                                             ? "cpu_vs_cpu"
+                                             : (BotPlayerIndex == 0 ? "p1" : "p2"));
                 _collectionMessage = "Salvando log no banco...";
                 _collectionState = "running";
                 return;
@@ -1162,7 +1208,8 @@ namespace OPTCGBotPlugin
                 _estiloCompacto.padding = new RectOffset(0, 0, 0, 0);
             }
 
-            string lado = $"P{BotPlayerIndex + 1}";
+            string lado = CpuVsCpu ? $"CPU x CPU (agora P{BotPlayerIndex + 1})"
+                                   : $"P{BotPlayerIndex + 1}";
             string estado = _botEnabled ? "ATIVADO" : "DESATIVADO";
             bool temMsg = !string.IsNullOrEmpty(_collectionMessage);
             // A linha de atalhos volta a ser SEMPRE visivel: eu a tinha
@@ -1174,7 +1221,7 @@ namespace OPTCGBotPlugin
 
             float linhas = 1f + (temAjuda ? 1f : 0f) + (temMsg ? 1f : 0f);
             float boxHeight = 6 + linhas * 13;
-            float boxWidth = temMsg ? 460 : 215;   // 215 cabe a linha de atalhos na fonte 10
+            float boxWidth = temMsg ? 460 : 300;   // cabe a linha de atalhos na fonte 10
             Color corAntes = GUI.color;
 
             GUI.Box(new Rect(4, 2, boxWidth, boxHeight), "");
@@ -1187,7 +1234,8 @@ namespace OPTCGBotPlugin
             {
                 GUI.color = Color.white;
                 GUI.Label(new Rect(9, y, boxWidth - 10, 13),
-                          "Shift+B liga/desliga · Shift+P troca lado", _estiloCompacto);
+                          "Shift+B liga/desliga · Shift+P troca lado · Shift+C CPU x CPU",
+                          _estiloCompacto);
                 y += 13;
             }
             if (temMsg)

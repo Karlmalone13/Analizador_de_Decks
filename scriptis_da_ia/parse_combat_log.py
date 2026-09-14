@@ -895,7 +895,7 @@ def _bot_side_to_p1_p2(bepinex_log_path, p1_name: str, p2_name: str) -> str | No
 
 
 def add_to_db(log_path: str, data: dict, decks: dict, bepinex_log_path=None,
-              bot_side=None, sem_bot=False):
+              bot_side=None, sem_bot=False, cpu_vs_cpu=False):
     """
     Copia o .log para logs/raw/, salva o JSON em logs/parsed/,
     salva os decks em logs/decks/ e atualiza o index.json.
@@ -997,10 +997,17 @@ def add_to_db(log_path: str, data: dict, decks: dict, bepinex_log_path=None,
         # deteccao, e `--sem-bot` grava null DE PROPOSITO -- 'nao havia bot'
         # e uma resposta, diferente de 'ninguem anotou'. O campo `tipo`
         # preserva essa diferenca pra quem ler o banco depois.
-        'bot_side': (None if sem_bot else
+        # CPU x CPU (bloco 816): os DOIS lados sao o bot, entao `bot_side`
+        # nao tem resposta -- e marcar um seria rotulo FALSO. Nao e
+        # `humano_vs_humano` (nao ha humano nenhum) nem `com_bot` (que
+        # pressupoe UM lado), entao ganha `tipo` proprio. Quem ler o banco
+        # decide: pra medir forca contra humano isto NAO serve, pra caçar
+        # erro de execucao contra o juiz real serve melhor que tudo.
+        'bot_side': (None if (sem_bot or cpu_vs_cpu) else
                      (bot_side or _bot_side_to_p1_p2(
                          bepinex_log_path, p1d['name'], p2d['name']))),
-        'tipo': ('humano_vs_humano' if sem_bot else 'com_bot'),
+        'tipo': ('cpu_vs_cpu' if cpu_vs_cpu
+                 else 'humano_vs_humano' if sem_bot else 'com_bot'),
         'log_file': f'raw/{friendly_stem}.log',
         'parsed_file': f'parsed/{friendly_stem}.json',
         'deck_files': deck_files,
@@ -1256,6 +1263,9 @@ def main():
                     default=None,
                     help='De que lado o BOT jogou. Use quando nao houver '
                          'LogOutput.log do BepInEx pra detectar sozinho.')
+    ap.add_argument('--cpu-vs-cpu', dest='cpu_vs_cpu', action='store_true',
+                    help='os DOIS lados sao o bot (Shift+C no plugin). Grava '
+                         'bot_side=None e tipo=cpu_vs_cpu -- nao inventa lado.')
     ap.add_argument('--sem-bot', dest='sem_bot', action='store_true',
                     help='Partida HUMANO vs HUMANO -- nao ha lado do bot. '
                          'Grava `bot_side: null` e `tipo: humano_vs_humano`, '
@@ -1280,7 +1290,8 @@ def main():
     # perspectiva do HUMANO, com o bot do outro lado.
     #
     # Consertar os 171 de hoje sem fechar a torneira so adia o problema.
-    if args.add_to_db and not (args.bepinex_log or args.bot_side or args.sem_bot):
+    if args.add_to_db and not (args.bepinex_log or args.bot_side
+                               or args.sem_bot or args.cpu_vs_cpu):
         raise SystemExit(
             'ERRO: adicionar ao banco exige dizer DE QUE LADO O BOT JOGOU.'
             + chr(10) + '  --bepinex-log <LogOutput.log>   detecta sozinho (preferido)'
@@ -1318,7 +1329,7 @@ def main():
 
         if args.add_to_db:
             add_to_db(log_file, data, decks, bepinex_log_path=args.bepinex_log,
-                      bot_side=args.bot_side, sem_bot=args.sem_bot)
+                      bot_side=args.bot_side, sem_bot=args.sem_bot, cpu_vs_cpu=args.cpu_vs_cpu)
 
 
 if __name__ == '__main__':

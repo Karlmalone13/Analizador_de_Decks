@@ -53,6 +53,74 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-13 (816) - CPU x CPU no SIMULADOR (Shift+C), ideia do usuario -- e a distincao que ela obriga: bancada de VALIDACAO, nao caminho de DADO
+
+Pergunta dele: *"conseguimos rodar algumas centenas de partidas antes de eu
+jogar de novo? ou entao colocar o bot para jogar contra ele mesmo no simulador?
+ai colocariamos um botao para ativar e desativar cpu x cpu"*.
+
+### Por que e possivel, e por que e barato
+
+O plugin **so opera em `GameStyle.SoloVSelf`** (`BotDriver.cs:88`) -- o modo em
+que UM cliente controla os DOIS assentos. E o driver inteiro decide "e minha
+vez?" por **uma** comparacao: `iPlayerAction == BotPlayerIndex`.
+
+Entao CPU x CPU e uma linha: **o bot assume sempre quem o jogo mandar agir**.
+Feito uma vez por frame, antes de qualquer decisao, o que faz mulligan, alvo,
+defesa e main phase seguirem juntos sem espalhar condicional nenhuma.
+
+Atalho: **Shift+C**. A popup passa a mostrar `CPU x CPU (agora P2)`.
+
+### A DISTINCAO que a ideia obriga a fazer -- e que vale mais que o botao
+
+| | para que serve | custo real |
+|---|---|---|
+| auto-jogo no MOTOR (`ciclo.py`) | o Q **aprender** | **~0,6s** por partida |
+| CPU x CPU no SIMULADOR | achar **erro de execucao** | **15-30 min** por partida |
+
+As duas partidas do usuario hoje levaram ~15 e ~30 minutos de relogio (~0,8s por
+clique mais animacao). **Centenas de partidas no simulador seriam dias.** Nao e
+caminho de dado, e nao deve ser vendido como tal.
+
+O valor e outro, e a noite de 13/09 e a prova:
+
+> **Todo bug achado hoje era invisivel ao auto-jogo do motor.** 248/340/309
+> cliques de alvo recusados, o custo do Kin'emon que sumia do parse, o
+> `NameError` no `/choose_effect_option` -- nada disso aparece quando o motor
+> joga contra si mesmo, porque la quem julga a legalidade e o NOSSO codigo.
+
+**O simulador e o juiz que o motor nao tem.** CPU x CPU transforma "achar erro
+de execucao" de algo que custa a noite do usuario em algo que roda sozinho.
+
+### O rotulo do banco, que era a parte perigosa
+
+Com os dois lados sendo o bot, `bot_side` **deixa de ter resposta** -- e marcar
+um lado poluiria o banco com rotulo FALSO, exatamente o dado sujo que esta
+sessao passou a noite limpando.
+
+Pior: a normalizacao que eu mesmo tinha escrito uma hora antes
+(`if bot_seat not in {p1,p2}: bot_seat = "p1"`) transformaria `cpu_vs_cpu` em
+**p1** silenciosamente. Pego antes de rodar.
+
+Resolvido com rotulo PROPRIO em vez de reaproveitar um existente:
+
+* `parse_combat_log.py --cpu-vs-cpu` -> `bot_side=None`, `tipo='cpu_vs_cpu'`,
+  e satisfaz a trava de ingestao.
+* **Nao** e `--sem-bot`: aquele grava `humano_vs_humano`, e aqui nao ha humano
+  nenhum. Nem `com_bot`, que pressupoe UM lado.
+* `collect_latest_match.py` desvia da normalizacao e nao sobrescreve o indice.
+
+Quem ler o banco decide: pra medir forca contra humano isto **nao** serve; pra
+caçar erro de execucao contra o juiz real serve melhor que qualquer coisa que
+temos.
+
+### Rodando em paralelo
+
+300 partidas no motor disparadas (`ciclo.py --partidas 300 --workers 4`),
+enquanto o botao era construido. Plugin recompilado, 0 erros.
+
+---
+
 ## 2026-09-13 (815) - As 162 recusas MEDIDAS: um custo que o parser descartava em silencio -- e o filtro de DON de uma hora antes estava ESCONDENDO UM ALVO VALIDO
 
 Pedido do usuario: *"mede o que esta causando as 162 recusas"*, depois

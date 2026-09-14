@@ -7,6 +7,25 @@
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
 
+> **CPU x CPU NO SIMULADOR -- Shift+C (13/09/2026, bloco 816, ideia do usuario)**:
+> o plugin so roda em `GameStyle.SoloVSelf` (um cliente, dois assentos) e todo o
+> driver decide a vez por `iPlayerAction == BotPlayerIndex` -- entao CPU x CPU e
+> o bot assumir sempre quem o jogo mandar agir.
+>
+> **Nao e caminho de DADO**: uma partida no simulador leva 15-30 min de relogio
+> contra ~0,6s no motor; centenas seriam dias. E **bancada de VALIDACAO** -- todo
+> bug de 13/09 (309 cliques recusados, o custo que sumia do parse, o NameError
+> ao vivo) era invisivel ao auto-jogo, porque la quem julga legalidade e o nosso
+> proprio codigo. O simulador e o juiz que o motor nao tem.
+>
+> Banco: rotulo PROPRIO `tipo='cpu_vs_cpu'` com `bot_side=None`
+> (`parse_combat_log.py --cpu-vs-cpu`). Nao reusa `--sem-bot`, que gravaria
+> `humano_vs_humano`. A normalizacao do `collect_latest_match.py` (escrita 1h
+> antes) transformaria `cpu_vs_cpu` em `p1` silenciosamente -- pego antes de rodar.
+>
+> PENDENTE: rodar de fato uma partida CPU x CPU e conferir que os dois lados
+> alternam sem travar, e que o log entra no banco com o tipo certo.
+
 > **PARSER: custo com ALTERNANCIA "<X> or DON!! cards" (13/09/2026, bloco 815)**:
 > medindo as 162 recusas em cartas comuns, o Kin'emon ST32-001 saia do parse
 > **sem custo nenhum** ("rest 1 of your (Slash) attribute Leaders **or** DON!!

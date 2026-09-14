@@ -103,6 +103,12 @@ def _apply_winner(index: list, entry_id: str, result: str,
     /outcome, BOT_AUTO_COLLECT=1, o caminho padrao) ja sai com `bot_side`
     correto, sem esse requisito.
     """
+    if bot_seat == "cpu_vs_cpu":
+        # Os dois lados sao o bot: `parse_combat_log` ja gravou
+        # tipo=cpu_vs_cpu e bot_side=None. Nao ha o que sobrescrever aqui --
+        # "quem ganhou" continua valendo (o log traz), mas "o bot ganhou?"
+        # nao e pergunta com resposta.
+        return
     if bot_seat not in {"p1", "p2"}:
         bot_seat = "p1"
     opp_seat = "p2" if bot_seat == "p1" else "p1"
@@ -117,9 +123,12 @@ def _apply_winner(index: list, entry_id: str, result: str,
 def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
                    match_id: str = "", result: str = "",
                    bot_seat: str = "p1") -> dict:
-    # `--bot-side` so aceita p1/p2: normaliza ANTES de virar argumento, senao
-    # um valor inesperado do plugin derruba a coleta inteira no argparse.
-    if bot_seat not in {"p1", "p2"}:
+    # `cpu_vs_cpu` vem do plugin quando o bot esta pilotando OS DOIS lados
+    # (Shift+C). NAO pode cair na normalizacao abaixo: virar "p1" gravaria um
+    # lado FALSO no banco, que e o oposto do que a trava de ingestao existe
+    # pra impedir.
+    modo_cpu = (bot_seat == "cpu_vs_cpu")
+    if not modo_cpu and bot_seat not in {"p1", "p2"}:
         bot_seat = "p1"
     combat_log = _latest_log(autosaved_dir)
     _wait_stable(combat_log)
@@ -138,7 +147,8 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
     # e simplesmente nao o repassava, entao a trava derrubava TODA coleta ao
     # vivo com "adicionar ao banco exige dizer DE QUE LADO O BOT JOGOU".
     parse_cmd = [sys.executable, str(ROOT / "parse_combat_log.py"),
-                 str(combat_log), "--add-to-db", "--bot-side", bot_seat]
+                 str(combat_log), "--add-to-db"]
+    parse_cmd += (["--cpu-vs-cpu"] if modo_cpu else ["--bot-side", bot_seat])
     report_cmd = [sys.executable, str(ROOT / "bot_efficiency_report.py"),
                   "--decision-log", str(decision_log),
                   "--json", str(report_path)]
