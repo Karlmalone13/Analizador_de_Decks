@@ -28,12 +28,15 @@ DB_INDEX = DB_ROOT / "index.json"
 # UI) -- por isso a pasta default mudou daqui pra frente. Mantem o nome da
 # env var por compatibilidade (quem ja tinha ela setada testando AutoSaved
 # pode apontar pra qualquer uma das duas).
-DEFAULT_AUTOSAVED = Path(
-    os.environ.get(
-        "OPTCGSIM_AUTOSAVED_DIR",
-        r"E:\Games\OnePieceSimulador\Builds_Windows\CombatLogs",
-    )
-)
+# O default era CRAVADO em `E:\Games\...` e fez a PRIMEIRA partida CPU x CPU
+# da 2a maquina nao ser salva (bloco 827): `[AUTO-COLLECT] falhou: nenhum .log
+# encontrado em E:\Games\...` enquanto o log estava na pasta certa o tempo
+# todo. `OPTCGSIM_AUTOSAVED_DIR` continua tendo precedencia (compatibilidade
+# com quem ja a tinha setada); sem ela, resolve pela fonte unica.
+from game_paths import combat_logs_dir
+
+_env_autosaved = os.environ.get("OPTCGSIM_AUTOSAVED_DIR")
+DEFAULT_AUTOSAVED = Path(_env_autosaved) if _env_autosaved else combat_logs_dir()
 
 
 def _latest_log(directory: Path, max_age_seconds: int = 1800) -> Path:

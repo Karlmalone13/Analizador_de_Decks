@@ -48,8 +48,9 @@ CSV_PADRAO = Path(__file__).with_name('cards_rows.csv')
 
 # Caminho tipico da instalacao do usuario. E so um DEFAULT -- o script nao
 # depende dele (e nem roda em sessao remota/nuvem, onde o jogo nao existe).
-CARDS_DIR_PADRAO = (r'E:\Games\OnePieceSimulador\Builds_Windows'
-                    r'\OPTCGSim_Data\StreamingAssets\Cards')
+from game_paths import cards_assets_dir
+
+CARDS_DIR_PADRAO = str(cards_assets_dir())   # fonte unica -- game_paths.py (bloco 827)
 
 # Nome de arquivo que corresponde a uma carta de verdade. Exclui as
 # miniaturas (`_small`), o verso, os DON e qualquer outro asset solto.

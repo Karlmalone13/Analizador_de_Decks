@@ -53,6 +53,138 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-14 (827) - "o log nao foi salvo": era o caminho do jogo CRAVADO pela 11a vez -- e ao varrer o projeto inteiro, o `human_patterns.json` esta sendo treinado com partidas do PROPRIO BOT
+
+Relato do usuario: *"terminou a partida, mas o log nao foi salvo"*. Primeira
+partida CPU x CPU da 2a maquina.
+
+### O bot JOGOU -- quem falhou foi a coleta
+
+782 decisoes gravadas, 8,3 MB, `/outcome` chamado. A causa estava no stdout do
+server, numa linha so:
+
+```
+[AUTO-COLLECT] falhou: nenhum .log encontrado em E:\Games\OnePieceSimulador\Builds_Windows\CombatLogs
+```
+
+`collect_latest_match.DEFAULT_AUTOSAVED` cravado na maquina ORIGINAL. O log
+estava na pasta certa desta maquina o tempo todo -- **nada foi perdido**.
+
+### A VARREDURA GLOBAL, que e o que faltou nas 3 vezes anteriores
+
+Este bug ja tinha sido remendado tres vezes, cada uma amarrada ao arquivo que o
+revelou: bloco 722 (`.csproj`), bloco 748 (`sim_bridge.DECKS_DIR`), bloco 824
+(`sim_bridge.DECKS_DIR` DE NOVO). O projeto tem regra explicita pra isso --
+*"corrija de forma GENERICA, nao amarrada a carta que revelou o bug"* -- e ela
+nunca tinha sido aplicada a CAMINHO.
+
+Aplicada agora. `grep -rn OnePieceSimulador --include=*.py` achou **11 copias
+em 10 arquivos**, nao 1:
+
+| arquivo | o que cravava |
+|---|---|
+| `collect_latest_match.py` | `DEFAULT_AUTOSAVED` (o bug de hoje) |
+| `bot_optcgsim.py` | `COMBAT_LOG_DIR` + o `--importar` |
+| `optcg_engine/sim_bridge.py` | `DECKS_DIR` |
+| `audit_game_code_divergence.py` | `CARDS_DIR_PADRAO` |
+| `audit_parser_coverage.py` | `_DECKS_DIR` |
+| `audit_real_losses.py` | `_SIM_DECKS_DIR` |
+| `deck_profile.py` | `_DECKS_DIR` |
+| `game_decks.py` | `DEFAULT_DECKS_DIR` |
+| `sim_deck_registry.py` | `SIM_DECKS_DIR` |
+| `smoke_fast.py` | 3 caminhos de deck de teste |
+
+**Registro honesto de erro meu**: depois de ligar os 4 primeiros eu escrevi
+*"nenhum caminho cravado fora de game_paths.py"* -- e a varredura seguinte
+mostrou 8 arquivos ainda cravados. Declarei conclusao antes de medir; so nao
+virou afirmacao falsa registrada porque a varredura veio junto.
+
+### O fix da FORMA: `scriptis_da_ia/game_paths.py`
+
+Um lugar responde "onde esta o jogo"; quem precisa de subpasta pede
+(`decks_dir()`, `combat_logs_dir()`, `autosaved_dir()`, `cards_assets_dir()`).
+Ordem de resolucao **igual a do `BOT\instalar.ps1`** pra nao divergirem:
+`OPTCG_GAME_DIR` -> candidatos validados pelo marcador `OPTCGSim_Data/` ->
+caminho historico da maquina original (ultimo recurso, pra nao mudar o
+comportamento de quem ja funcionava). Envs especificas ja existentes
+(`OPTCGSIM_AUTOSAVED_DIR`, `OPTCG_SIM_DECKS_DIR`) mantiveram precedencia.
+
+Os dois caminhos testados: com a env (resolve por ela) e com `env -u` (acha
+pelo marcador). `smoke_fast.py`: **1.429 OK, 1 FALHOU** -- a mesma falha
+pre-existente do Imu (bloco 824), sem regressao. Os 4 SKIP sao corretos: esta
+maquina tem 7 decks e `Imu.deck`/`Kid.deck` nao estao entre eles.
+
+### O log, bancado (obrigacao do projeto)
+
+`Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-09-14T13.57.01`, `tipo=cpu_vs_cpu`,
+`bot_side=None`, `winner=p2`, 14 turnos. Banco em **176 logs**.
+
+Havia DOIS `.log` (13:57 e 14:00): mesma partida, o de 14:00 identico com uma
+linha `Downloaded the Combat Log!` a mais. **Bancado so um** -- dois teriam
+duplicado a partida no banco.
+
+### Telemetria (Step 3 do skill) -- com uma ressalva que tem que ser dita
+
+**O recibo agregado NAO EXISTE pra esta partida**: `metrics/live_runs/` nem
+chegou a ser criada, porque o auto-collect morreu antes. `decision_summary.py`
+depende dele, entao tambem nao roda. **Nao e limitacao de sessao remota** (esta
+e local) -- e consequencia do bug acima. Pro proximo jogo funciona.
+
+Lido direto do `decision_log`:
+
+* **Cobertura de instrumentacao: 67,1%** das decisoes `main` (49/73) tem
+  `line_search`/`counterfactual`. **Um terco das decisoes da partida nao tem
+  dado gravado pra auditar** -- exatamente o que o `CLAUDE.md` manda olhar.
+* **1 `engine_error`**: *"estado inalterado no proximo main state estavel"*.
+* Latencia: mediana 4ms, p95 25ms, **max 3.932ms** (uma decisao `main`).
+* **Dois `match_id` -- e NAO e violacao da invariante.** O primeiro tem ciclo
+  completo proprio (`mulligan -> execution -> execution -> outcome`, 4
+  registros): partida iniciada e encerrada na hora. O segundo e a partida de 14
+  turnos. Cada um nasceu no mulligan e morreu no outcome, como a regra exige.
+* `audit_real_losses.py` **nao se aplica**: em `cpu_vs_cpu` nao ha lado do bot
+  (`bot_side=None`) pra auditar como derrota.
+
+### ACHADO GRAVE, saido da varredura: o `human_patterns.json` treina com o PROPRIO BOT
+
+`audit_human_patterns.py` -- que gera a calibragem lida por
+`_human_pattern_bonus`/`_human_counter_card_bonus` em `decision_engine.py` --
+faz `logs_dir.glob('*.json')` e extrai padroes dos **DOIS lados de TODO log**,
+**sem olhar `tipo` nem `bot_side`**. Nao ha filtro nenhum.
+
+O banco, medido hoje:
+
+| tipo | logs |
+|---|---|
+| `humano_vs_humano` | **50** |
+| `com_bot` | 28 |
+| `cpu_vs_cpu` | 2 |
+| (sem tipo, entradas antigas) | 96 |
+| **total** | **176** |
+
+**59 logs tem `bot_side` definido.** Ou seja: a calibragem que ensina o motor a
+imitar o HUMANO esta aprendendo, em parte, com jogadas do proprio bot -- e
+chamando isso de padrao humano. E o mesmo modo de falha de ECO que o bloco 820
+identificou no corpus, num lugar onde ninguem tinha olhado.
+
+**NAO regenerei o arquivo** de proposito. A regra do projeto manda regenerar
+quando entra log novo, mas regenerar AGORA adicionaria a partida CPU x CPU
+recem-bancada e deixaria a contaminacao PIOR. E corrigir o filtro muda o
+conteudo de `human_patterns.json`, que e comportamento PADRAO de producao --
+decisao do usuario, nao minha.
+
+**Pendencia registrada**, com as perguntas que precisam de resposta antes do
+fix: em partida `com_bot`, o lado HUMANO e dado legitimo (jogar fora os 28 logs
+inteiros perderia metade util) -- o filtro certo provavelmente e POR LADO, nao
+por log; e as 96 entradas sem `tipo` precisam ser classificadas antes, senao o
+filtro nao tem o que ler.
+
+### Estado
+
+Log bancado, caminho consertado globalmente, `smoke_fast` sem regressao. Server
+no ar em :8765. Nada de `human_patterns.json` tocado.
+
+---
+
 ## 2026-09-14 (826) - CPU x CPU HABILITADO na 2a maquina: o Shift+C NAO EXISTIA na DLL instalada, e o instalador estava bloqueado por politica corporativa
 
 Pergunta do usuario: *"posso testar cpu x cpu sem dar paralelismo com a maquina

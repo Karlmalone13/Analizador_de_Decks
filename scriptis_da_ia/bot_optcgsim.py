@@ -20,6 +20,9 @@ Coordenadas: resolucao 1366x768, janela maximizada.
 from __future__ import annotations
 import time, sys, re, json, argparse, subprocess
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from game_paths import autosaved_dir, combat_logs_dir
 from typing import Optional
 
 try:
@@ -143,7 +146,7 @@ def _badge_bbox(hover_x: int, hover_y: int) -> tuple:
     return (x - 25, y - 20, x + 25, y + 20)
 
 # -- Leitura direta do arquivo de log do OPTCGSim --------------------------------
-COMBAT_LOG_DIR = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\CombatLogs")
+COMBAT_LOG_DIR = combat_logs_dir()   # fonte unica -- ver game_paths.py (bloco 827)
 
 # Regex para parsear codes no formato do arquivo: <link="CODE">CODE</link>
 # Formato real do log: ["OP13-043">OP13-043] — tambem aceita <link=> e [CODE] legado
@@ -1728,7 +1731,7 @@ def main() -> None:
     print(f"\nConcluido: {ok}/{args.partidas} partidas.")
 
     if args.importar:
-        autosaved = r"E:\Games\OnePieceSimulador\Builds_Windows\CombatLogs\AutoSaved"
+        autosaved = str(autosaved_dir())   # fonte unica -- ver game_paths.py
         script    = _SCRIPTS_DIR / "importar_logs_autosaved.py"
         print("Importando logs...")
         subprocess.run([sys.executable, str(script), autosaved], check=False)

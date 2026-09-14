@@ -35,8 +35,9 @@ RECONSTRUIDOS do que apareceu na partida -- parciais, mediana de 15 cartas de
 
 FONTE
 -----
-`E:\\Games\\OnePieceSimulador\\Builds_Windows\\Decks` (override por
-`OPTCG_SIM_DECKS_DIR`). Formato `NxCODIGO` por linha, PRIMEIRA carta = o
+A pasta `Decks/` da instalacao do jogo, resolvida por
+`game_paths.decks_dir()` (override por `OPTCG_SIM_DECKS_DIR`; antes era
+um caminho cravado da maquina original -- bloco 827). Formato `NxCODIGO` por linha, PRIMEIRA carta = o
 lider. Medido em 23/08: 39 arquivos, 38 completos (51 linhas-carta = lider +
 50), cobrindo 30 lideres distintos = **92% dos 300 lados de partida do
 banco**.
@@ -50,9 +51,9 @@ import re
 from collections import Counter
 from pathlib import Path
 
-SIM_DECKS_DIR = os.environ.get(
-    'OPTCG_SIM_DECKS_DIR',
-    r'E:\Games\OnePieceSimulador\Builds_Windows\Decks')
+from game_paths import decks_dir
+
+SIM_DECKS_DIR = os.environ.get('OPTCG_SIM_DECKS_DIR') or str(decks_dir())   # fonte unica -- game_paths.py (bloco 827)
 
 _LINHA_RE = re.compile(r'^\s*(\d+)x([A-Za-z0-9\-]+)')
 _cache = None

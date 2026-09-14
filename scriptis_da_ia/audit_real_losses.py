@@ -195,9 +195,9 @@ def _field_stage_at(turns, upto_index, side, cards_db):
 #
 # Pasta e LOCAL, nao versionada: sessao remota nao tem acesso e cai no
 # fallback antigo em silencio (por isso o retorno None nao e erro).
-_SIM_DECKS_DIR = os.environ.get(
-    'OPTCG_SIM_DECKS_DIR',
-    r'E:\Games\OnePieceSimulador\Builds_Windows\Decks')
+from game_paths import decks_dir
+
+_SIM_DECKS_DIR = os.environ.get('OPTCG_SIM_DECKS_DIR') or str(decks_dir())   # fonte unica -- game_paths.py (bloco 827)
 _SIM_DECK_RE = re.compile(r'^\s*(\d+)x([A-Za-z0-9\-]+)')
 _SIM_DECKS_CACHE = None
 

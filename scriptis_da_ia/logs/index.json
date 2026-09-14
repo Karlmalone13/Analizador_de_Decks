@@ -5125,5 +5125,33 @@
       "Opponent": "decks_full/Rocks.D.Xebec-B_2026-09-13T23.42.07.json"
     },
     "tipo_origem": "corrigido a mao: o plugin gravou com_bot/p1 porque o SERVIDOR estava no ar desde 22:58 com o collect_latest_match antigo em cache, que normalizava cpu_vs_cpu -> p1. O LogOutput.log da sessao mostra \"CPU x CPU LIGADO\" e nenhum desligamento."
+  },
+  {
+    "id": "2026-09-14T13.57.01",
+    "friendly_name": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B",
+    "date": "2026-09-14",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 14,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-09-14T13.57.01.log",
+    "parsed_file": "parsed/Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-09-14T13.57.01.json",
+    "deck_files": {
+      "You": "decks/Marshall.D.Teach-BY_2026-09-14T13.57.01.json",
+      "Opponent": "decks/Rocks.D.Xebec-B_2026-09-14T13.57.01.json"
+    },
+    "deck_full_files": {}
   }
 ]

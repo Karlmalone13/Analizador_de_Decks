@@ -1,11 +1,41 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 14 de setembro de 2026 (bloco 826)
+**Última atualização:** 14 de setembro de 2026 (bloco 827)
 
 > **Escopo deste arquivo** (revisto em 12/09/2026): lista VIVA — o que
 > está aberto e o fluxo recente (setembro/2026, blocos 748-779). O
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
+
+> **LOG NAO SALVO = CAMINHO CRAVADO, PELA 11a VEZ (14/09/2026, bloco 827)**: a
+> 1a partida CPU x CPU da 2a maquina nao foi pro banco --
+> `[AUTO-COLLECT] falhou: nenhum .log encontrado em E:\Games\...`, com o log na
+> pasta certa o tempo todo. **Nada perdido**; bancado como
+> `Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-09-14T13.57.01` (`cpu_vs_cpu`,
+> `winner=p2`, 14 turnos, banco em 176).
+>
+> **Varredura global** (o que faltou nos blocos 722/748/824, que remendaram o
+> MESMO bug 3x amarrado ao arquivo que o revelou): **11 copias em 10 arquivos**.
+> Fix da FORMA em `scriptis_da_ia/game_paths.py` -- fonte unica, mesma ordem de
+> resolucao do `instalar.ps1`. `smoke_fast`: 1.429 OK, 1 FALHOU (a do Imu,
+> pre-existente), sem regressao.
+>
+> **Telemetria**: recibo agregado NAO existe pra esta partida (`live_runs/` nem
+> foi criada -- consequencia do bug, nao de sessao remota). Do `decision_log`:
+> **cobertura de 67,1%** das decisoes `main` (49/73) -- 1/3 sem dado pra
+> auditar; 1 `engine_error`; latencia max 3.932ms. Os 2 `match_id` **nao** violam
+> a invariante (cada um com mulligan->outcome proprio).
+>
+> **ABERTO E GRAVE -- `human_patterns.json` treina com o PROPRIO BOT**:
+> `audit_human_patterns.py` varre `logs/parsed/*.json` e extrai padroes dos DOIS
+> lados de TODO log, **sem filtrar `tipo` nem `bot_side`**. Do banco: so **50 de
+> 176** sao `humano_vs_humano` (28 `com_bot`, 2 `cpu_vs_cpu`, 96 sem tipo); **59
+> tem `bot_side`**. A calibragem que ensina a imitar o humano aprende em parte
+> com o proprio bot -- eco, mesmo modo de falha do bloco 820.
+> **NAO regenerei** (pioraria, e muda comportamento padrao). **Decisao do
+> usuario.** Perguntas a resolver antes: o filtro deve ser POR LADO (em
+> `com_bot` o lado humano e dado legitimo), e as 96 entradas sem `tipo`
+> precisam ser classificadas primeiro.
 
 > **CPU x CPU HABILITADO NA 2a MAQUINA (14/09/2026, bloco 826)**: responde
 > *"posso testar cpu x cpu sem dar paralelismo?"* -- **sim**. CPU x CPU e

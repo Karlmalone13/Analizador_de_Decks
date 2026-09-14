@@ -58,6 +58,14 @@ from optcg_engine.counter_estimation import max_plausible_defense  # noqa: E402
 FAIL = 0
 
 
+def _decks_dir():
+    # Os testes de deck apontavam pro `E:\Games\...` da maquina original e so
+    # davam SKIP em qualquer outra (bloco 827). Agora resolvem pela fonte unica
+    # -- continuam dando SKIP onde o jogo nao existe, mas RODAM onde existe.
+    from game_paths import decks_dir
+    return decks_dir()
+
+
 def check(label: str, cond: bool) -> None:
     global FAIL
     status = "OK" if cond else "FALHOU"
@@ -120,7 +128,7 @@ def test_hidden_info_honesta_e_teto_counter_real() -> None:
 
 
 def test_turn_order_imu_prefers_second() -> None:
-    deck_path = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks\Imu.deck")
+    deck_path = _decks_dir() / "Imu.deck"   # fonte unica -- game_paths.py (bloco 827)
     if not deck_path.exists():
         print("[SKIP] deck Imu.deck nao encontrado")
         return
@@ -262,7 +270,7 @@ def test_shalria_na_mao_protegida_enquanto_precisa_de_trash() -> None:
     # Shalria da MAO enche o trash no on-play (trash_rest/trash_from_hand);
     # enquanto o trash < alvo do game_plan (7 no Imu) ela deve ser PROTEGIDA de
     # ser trashada como custo (guardar pra JOGAR). Pedido do usuario 14/07.
-    deck_path = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks\Imu.deck")
+    deck_path = _decks_dir() / "Imu.deck"   # fonte unica -- game_paths.py (bloco 827)
     if not deck_path.exists():
         print("[SKIP] deck Imu.deck nao encontrado")
         return
@@ -2204,7 +2212,7 @@ def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
     # alimenta o OpponentModel que o offline sempre teve. Kid.deck precisa
     # existir no banco de decks pra este check ter sentido.
-    deck_path = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks\Kid.deck")
+    deck_path = _decks_dir() / "Kid.deck"   # fonte unica -- game_paths.py (bloco 827)
     if not deck_path.exists():
         print("[SKIP] deck Kid.deck nao encontrado")
         return

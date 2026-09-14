@@ -46,7 +46,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 _CSV_PATH = Path(__file__).parent / 'cards_rows.csv'
 _EFFECTS_DB_PATH = Path(__file__).parent / 'card_effects_db.json'
-_DECKS_DIR = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks")
+from game_paths import decks_dir
+
+_DECKS_DIR = decks_dir()   # fonte unica -- game_paths.py (bloco 827)
 
 # Sufixos de reprint/parallel/alt-art -- textos idênticos entre eles na
 # grande maioria dos casos, reportar 1x por texto único evita triplicar

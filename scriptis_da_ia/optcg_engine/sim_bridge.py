@@ -44,9 +44,9 @@ from optcg_engine.opponent_model import OpponentModel
 # (achado 31/08/2026, bloco 748 -- server respondia 500 em toda decisao com
 # "Nenhum .deck encontrado" porque a pasta simplesmente nao existe la).
 # Mesma variavel OPTCG_GAME_DIR setada pelo JOGAR.bat antes de subir o server.
-DECKS_DIR = Path(os.environ.get(
-    "OPTCG_GAME_DIR", r"E:\Games\OnePieceSimulador\Builds_Windows"
-)) / "Decks"
+from game_paths import decks_dir
+
+DECKS_DIR = decks_dir()
 CSV_PATH  = _SCRIPTS_DIR / "cards_rows.csv"
 
 # ── Parametros da busca contrafactual de choose_action (item 3 do plano) ──────

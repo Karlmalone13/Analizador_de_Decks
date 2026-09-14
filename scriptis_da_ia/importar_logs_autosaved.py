@@ -8,7 +8,7 @@ Uso:
     python importar_logs_autosaved.py <pasta_autosaved> [--dry-run]
 
 Exemplo:
-    python importar_logs_autosaved.py "E:/Games/OnePieceSimulador/Builds_Windows/CombatLogs/AutoSaved"
+    python importar_logs_autosaved.py "$(python -c 'import game_paths;print(game_paths.autosaved_dir())')"
 
 Formato de saída (logs/parsed/<timestamp>.json):
 {

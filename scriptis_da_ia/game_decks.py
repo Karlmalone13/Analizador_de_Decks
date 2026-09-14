@@ -26,7 +26,9 @@ from __future__ import annotations
 import os
 import re
 
-DEFAULT_DECKS_DIR = r'E:\Games\OnePieceSimulador\Builds_Windows\Decks'
+from game_paths import decks_dir
+
+DEFAULT_DECKS_DIR = str(decks_dir())   # fonte unica -- game_paths.py (bloco 827)
 
 _LINHA = re.compile(r'^\s*(\d+)\s*x\s*([A-Za-z0-9\-_]+)\s*$', re.I)
 

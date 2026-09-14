@@ -43,7 +43,9 @@ from card_taxonomy import (
 )
 
 _DB_PATH = Path(__file__).parent / 'card_effects_db.json'
-_DECKS_DIR = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks")
+from game_paths import decks_dir
+
+_DECKS_DIR = decks_dir()   # fonte unica -- game_paths.py (bloco 827)
 # _DISRUPTION_ACTIONS/_ACTION_MAGNITUDE/_ROLE_BY_ACTION/_INVERSION_CONDS/
 # _RESOURCE_CONDS agora vêm de card_taxonomy (import no topo) — vocabulário único.
 
