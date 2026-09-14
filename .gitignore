@@ -116,3 +116,21 @@ scriptis_da_ia/hand_stats_cache/
 # versionado) e voltam rodando o coletor de novo.
 scriptis_da_ia/features.csv
 scriptis_da_ia/winrates_leaders.csv
+
+# ── Corpus de treino do Q e artefatos do ciclo (REGRA_DUAS_MAQUINAS.md) ──────
+# O `REGRA_DUAS_MAQUINAS.md` (bloco 823) decide que o corpus viaja ZIPADO
+# pela sessao, FORA do git: ele CRESCE a cada ciclo e `.gz` nao faz delta
+# entre versoes -- cada commit guardaria uma copia inteira nova (~13 MB
+# permanentes por ciclo, num `.git` que o bloco 822 ja mediu).
+#
+# So que a regra estava escrita e NAO ENFORCADA: em 14/09/2026 (ciclo 2, na
+# 2a maquina) o `q_alvos.jsonl` de **444 MB** aparecia como untracked comum
+# no `git status`, a um `git add` de distancia de entrar no historico PRA
+# SEMPRE. A regra do projeto de nunca usar `git add -A` era a UNICA coisa
+# entre o repo e esse commit -- disciplina humana segurando o que o
+# .gitignore devia segurar.
+scriptis_da_ia/metrics/q_alvos.jsonl
+scriptis_da_ia/metrics/selfplay_v2.jsonl
+# O DESAFIANTE e regenerado a cada ciclo e so vira campeao se o portao
+# promover -- ai quem viaja pelo git e `q_net.joblib` (219 KB, versionado).
+scriptis_da_ia/metrics/q_net_desafiante.joblib

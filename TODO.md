@@ -1,11 +1,45 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 12 de setembro de 2026 (bloco 780)
+**Última atualização:** 14 de setembro de 2026 (bloco 824)
 
 > **Escopo deste arquivo** (revisto em 12/09/2026): lista VIVA — o que
 > está aberto e o fluxo recente (setembro/2026, blocos 748-779). O
 > histórico de julho/agosto e as seções já concluídas foram para
 > [`TODO_ARQUIVO.md`](TODO_ARQUIVO.md).
+
+> **CICLO 2 RODADO NA 2a MAQUINA (14/09/2026, bloco 824)**: primeira execucao
+> real do `REGRA_DUAS_MAQUINAS.md`. `Arthur_Trabalho` assumiu como treinadora,
+> seed 9202 (sem colisao), corpus 625.361 -> **697.479** alvos, todos com
+> `origem` (625.361 `Arthur_PC` + 72.118 `Arthur_Trabalho`).
+>
+> **Numeros**: erro fora da amostra 0,0438 -> **0,0423**; ganho 79,5% ->
+> **80,2%**; concordancia top-1 com o professor **55,1%** (+30,7pp acima do
+> acaso); ciclo em **11,5 min** contra 30,0 (mas 8 workers x 4, maquina
+> diferente -- **nao mede o laco**, mede hardware).
+>
+> **PORTAO VIROU DE LADO E NAO DECIDIU**: 5x12 `DESCARTA` (LLR -2,97) ->
+> **12x7 `INCONCLUSIVO` (LLR +0,65)**. Parou por **teto de pares** (19
+> decididos de 52), nao por limiar -- **nao e promocao**. Nada promovido,
+> `q_net.joblib` inalterado. Recorte por lider mostra sinal MISTO (100% pro
+> desafiante em OP16-080/OP16-079/EB02-010/OP12-061/OP14-020; 0% em OP14-041).
+> **Proximo passo obvio**: repetir com `--max-pares` maior pra decidir.
+>
+> **ABERTO -- teste obsoleto no `smoke_fast.py`** (1 falha em 1.430; conferida
+> como PRE-EXISTENTE no `HEAD` limpo): o teste do Imu (OP13-079) afirma que a
+> decklist real esta no banco desde o bloco 609, mas a recoleta de 184 decks
+> meta OP16 (bloco 750) deixou **ZERO** decks do Imu em `decklists_raw.csv`.
+> Afeta `audit_real_losses.py`, nao o treino. Decidir: recolher a decklist ou
+> atualizar o teste.
+>
+> **CORRIGIDO -- a regra do corpus fora do git nao estava enforcada**: o
+> `q_alvos.jsonl` de **444 MB** (e `selfplay_v2.jsonl`, `q_net_desafiante.joblib`)
+> aparecia como untracked comum, a um `git add` de entrar no historico pra
+> sempre. So a disciplina de nunca usar `git add -A` segurava. Os tres foram
+> pro `.gitignore`; `q_net.joblib` (campeao) segue rastreado.
+>
+> **Portabilidade**: `sim_bridge.py` ainda tinha `DECKS_DIR` cravado em
+> `E:\Games\...` no remoto -- agora respeita `OPTCG_GAME_DIR`, mesmo padrao do
+> `.csproj` (bloco 722) e do `setup_bepinex.ps1`.
 
 > **REGRA_DUAS_MAQUINAS.md (14/09/2026, bloco 823)**: as regras de trabalhar em
 > mais de uma maquina viraram arquivo OBRIGATORIO de inicio de sessao, com

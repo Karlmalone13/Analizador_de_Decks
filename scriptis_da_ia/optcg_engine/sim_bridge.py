@@ -38,7 +38,15 @@ from optcg_engine.rules_facade import (choose_highest_board_value,
                                         choose_lowest_board_value, eligible_cards)
 from optcg_engine.opponent_model import OpponentModel
 
-DECKS_DIR = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks")
+# Pasta do JOGO -- mesmo problema e mesma solucao do .csproj do plugin C#
+# (BOT/OPTCGBotPlugin/*.csproj, bloco 722) e do setup_bepinex.ps1: estava
+# CRAVADA na maquina original, impedindo achar decks em qualquer outra
+# (achado 31/08/2026, bloco 748 -- server respondia 500 em toda decisao com
+# "Nenhum .deck encontrado" porque a pasta simplesmente nao existe la).
+# Mesma variavel OPTCG_GAME_DIR setada pelo JOGAR.bat antes de subir o server.
+DECKS_DIR = Path(os.environ.get(
+    "OPTCG_GAME_DIR", r"E:\Games\OnePieceSimulador\Builds_Windows"
+)) / "Decks"
 CSV_PATH  = _SCRIPTS_DIR / "cards_rows.csv"
 
 # ── Parametros da busca contrafactual de choose_action (item 3 do plano) ──────

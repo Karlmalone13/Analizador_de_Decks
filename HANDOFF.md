@@ -53,6 +53,144 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-14 (824) - A SEGUNDA MAQUINA ASSUME: ciclo 2 rodado em Arthur_Trabalho, 2,6x mais rapido, e o portao VIRA de lado -- mas nao decide. Mais o corpus de 444 MB que estava a um `git add` de entrar no historico
+
+Primeira execucao real do `REGRA_DUAS_MAQUINAS.md` (bloco 823). A maquina
+entrando e `Arthur_Trabalho` (hostname `PR7008177`); a `Arthur_PC` parou.
+
+### A regra funcionou -- e os tres pontos de conferencia pegaram coisa
+
+Os tres nao eram burocracia. **Um deles pegou erro de verdade**:
+
+1. **Corpus**: as 625.361 linhas conferem, todas com `origem='Arthur_PC'`.
+   **Mas o arquivo estava na RAIZ do repo**, nao em
+   `scriptis_da_ia/metrics/q_alvos.jsonl`. Rodar sem conferir teria comecado
+   o treino do ZERO, em silencio, perdendo as 625 mil posicoes -- exatamente
+   o modo de falha que o passo 3 existe pra pegar.
+2. **Seed**: `ciclo_estado.json` trazia so o ciclo 1 -> a saida real disse
+   `CICLO 2 ... seed=9202`. Nao colidiu com o 9101. O token funciona.
+3. **Biblioteca**: `scikit-learn 1.9.0`, `numpy 2.5.2`, `joblib 1.6.0` --
+   batem EXATO com o `requirements.txt`, sem a divergencia que o bloco 821
+   registrou na `Arthur_PC` (numpy 2.2.2 / joblib 1.5.3). `q_net.joblib`
+   abriu em 4,12s com **zero aviso de versao**.
+
+### O campo `origem` (bloco 820) exercitado pela primeira vez com DUAS origens
+
+```
+linhas: 697.479   (625.361 -> +72.118)
+sem origem: 0
+   Arthur_PC       : 625.361
+   Arthur_Trabalho :  72.118
+```
+
+O que o bloco 820 previu aconteceu: as linhas novas sao separaveis **por
+campo**, nao por "corte no fim do arquivo" -- que era o unico jeito em 13/09
+e deixou de existir agora que ha duas origens escrevendo.
+
+### Os numeros do ciclo 2
+
+| | ciclo 1 (Arthur_PC) | ciclo 2 (Arthur_Trabalho) |
+|---|---|---|
+| alvos | 625.361 | **697.479** |
+| erro fora da amostra | 0,0438 | **0,0423** |
+| ganho sobre a media | 79,5% | **80,2%** |
+| concordancia top-1 | +31,7pp acaso | **55,1% (+30,7pp acaso)** |
+| portao | 5x12 `DESCARTA` | **12x7 `INCONCLUSIVO`** |
+| LLR | **-2,97** | **+0,65** |
+| promovido | nao | **nao** |
+| tempo | 30,0 min | **11,5 min** |
+
+**O portao VIROU DE LADO mas NAO DECIDIU.** De 5x12 contra o desafiante pra
+12x7 a favor, LLR de -2,97 pra +0,65. **Isso nao e promocao e nao deve ser
+lido como uma**: parou por **teto de pares** (19 decididos de 52; 33
+divididos), nao por ter alcancado o limiar. Com `--max-pares` maior o ciclo
+tinha continuado a acumular evidencia em vez de parar em cima do muro.
+
+O recorte POR LIDER (obrigatorio, e o agregado sozinho nao prova nada)
+mostra que o 12x7 **nao e uniforme**: `OP16-080`, `OP16-079`, `EB02-010`,
+`OP12-061` e `OP14-020` deram 100% pro desafiante, enquanto `OP15-098` e
+`OP15-058` deram 25% e `OP14-041` deu **0%**. Sinal misto, nao ganho geral.
+
+### O tempo: 2,6x mais rapido, e a comparacao NAO e limpa
+
+11,5 min contra 30,0 min. Mas foram **8 workers aqui contra 4 la**, em
+maquina diferente -- entao isso **nao mede o laco**, mede hardware +
+paralelismo. O treino (490s de 690s) e a parte que menos paraleliza e segue
+dominando o ciclo.
+
+### A ancora humana CAIU -- e provavelmente e ruido, nao regressao
+
+| ciclo | oponente | sem observar | delta |
+|---|---|---|---|
+| 1 | 26,9% | 25,2% | +1,7pp |
+| 2 | **22,8%** | **22,0%** | **+0,8pp** |
+
+**O campeao nao mudou** (nada foi promovido), entao o modelo e literalmente
+o mesmo -- a queda vem de amostrar posicoes diferentes com outra seed. Fica
+registrado como **provavel ruido de amostragem**, nao como perda medida;
+mas o delta observar-x-nao-observar encolheu pra +0,8pp, o que reforca o
+achado do bloco 807: quase tudo vem de conhecer a DECKLIST, nao de observar
+a partida. O controle do lider errado seguiu em 0,0%, como tem que ser.
+
+### ACHADO GRAVE E CORRIGIDO: a regra do corpus fora do git NAO ESTAVA ENFORCADA
+
+O `REGRA_DUAS_MAQUINAS.md` decide que o corpus viaja zipado, FORA do git. Mas
+`.gitignore` **nao cobria nenhum dos arquivos**:
+
+```
+scriptis_da_ia/metrics/q_alvos.jsonl            444 MB   >>> NAO IGNORADO <<<
+scriptis_da_ia/metrics/selfplay_v2.jsonl        2,2 MB   >>> NAO IGNORADO <<<
+scriptis_da_ia/metrics/q_net_desafiante.joblib  216 KB   >>> NAO IGNORADO <<<
+```
+
+Apareciam como untracked comum no `git status`, **a um `git add` de entrar
+no historico pra sempre** -- num `.git` que o bloco 822 ja tinha medido. A
+regra do projeto de nunca usar `git add -A` era a UNICA coisa segurando
+isso: disciplina humana no lugar do que o `.gitignore` devia garantir.
+Regra escrita nao e regra enforcada. Os tres entraram no `.gitignore`, com o
+porque; `q_net.joblib` (campeao, 219 KB) **continua rastreado**, conferido.
+
+### Dois consertos de portabilidade reaplicados (a `Arthur_PC` nao os tem)
+
+A maquina estava **71 commits atras** (`95a9f82`, nao `ead12ff`). Ao puxar,
+tres arquivos tinham mudanca local:
+
+* `setup_bepinex.ps1` -- **descartado**, o remoto ficou melhor (agora
+  PROCURA o jogo em vez do default cravado).
+* `sim_bridge.py` -- **reaplicado sobre a base nova**: o remoto AINDA tem
+  `DECKS_DIR = E:\Games\OnePieceSimulador\...` cravado, que nao existe
+  fora da maquina original. Agora respeita `OPTCG_GAME_DIR`, mesmo padrao ja
+  usado no `.csproj` do plugin (bloco 722) e no `setup_bepinex.ps1`.
+* `JOGAR.bat` -- reaplicado (PATH, `OPTCG_GAME_DIR`, `Start-Process` no lugar
+  do `start` bloqueado por politica corporativa, espera ativa pela porta).
+
+### PENDENCIA NOVA: teste obsoleto no `smoke_fast.py` (1 de 1.430)
+
+`smoke_fast.py`: **1.429 OK, 1 FALHOU**. Conferido revertendo minha mudanca
+e rodando no `HEAD` limpo: **a falha ja existia**, nao e desta sessao e nao
+e desta maquina.
+
+O teste *"lider com decklist real do codigo exato (Imu): continua achando
+deck real, nao generico"* afirma que a decklist do Imu (OP13-079) esta no
+banco *"desde o bloco 609"*. **Nao esta mais**: a recoleta de 184 decklists
+meta OP16 (bloco 750) deixou **ZERO** decks do Imu em `decklists_raw.csv`
+(conferido: `deck_name` contendo "Imu" = 0, em 3.834 linhas / 184 decks).
+
+Afeta `audit_real_losses.py` (o Imu cai no deck generico), nao o treino.
+**Decidir**: recolher a decklist do Imu, ou atualizar o teste pro que o banco
+tem hoje. Nao mexi -- os dois lados sao mudanca de escopo proprio.
+
+### Estado / proximo passo
+
+Nada promovido -> `q_net.joblib` **inalterado**. `Arthur_Trabalho` e a
+treinadora; a `Arthur_PC` deve dar `pull` antes de encostar em qualquer
+coisa. Proximo ciclo sai **3, seed 9303**, automatico.
+
+O passo obvio e **decidir o portao que ficou em cima do muro**: repetir com
+`--max-pares` maior, ja que ele parou por teto e nao por limiar.
+
+---
+
 ## 2026-09-14 (823) - As regras das DUAS MAQUINAS viram arquivo obrigatorio, com o passo a passo
 
 Pedido do usuario: *"deixa essas regras registradas e o passo a passo, assim
