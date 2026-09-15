@@ -82,6 +82,26 @@ iniciado pela sessao restrita nao podia criar o parse ao lado do combat log em
 `E:`. Com permissao elevada, o raw/parse/decks/JSONL foram bancados; os
 relatorios manuais estao em `metrics/live_runs/*_2026-09-15T00.21.43_manual`.
 
+## 2026-09-15 (839) - Auditoria de efeitos agora mostra quando o OPTCGSim recusou os alvos
+
+O JSONL do servidor confirma que o motor escolheu e enviou uma decisao, mas nao
+carrega o resultado de cada clique de alvo da UI. O `LogOutput.log` do BepInEx
+ja registra esse fato (`faltavam=N -> M` e `NAO consumiu alvo`), porem
+`auditoria_efeitos.py` o ignorava; por isso a auditoria anterior podia dizer
+que uma acao foi escolhida sem revelar que o jogo recusou sua execucao.
+
+O script ganhou `--bepinex-log <LogOutput.log>`. Ele resume tentativas de
+alvo, aceites, recusas, alvos nao encontrados e cancelamentos, por carta
+atuante, e emite alerta quando ha recusas. Na sessao que revelou o problema,
+foram 710 tentativas, 4 aceites e 706 recusas: o motor estava sendo consultado
+pelos dois lados; o gargalo real era o plugin varrendo alvos que a UI recusava.
+
+Limite mantido explicito no texto e JSON: o LogOutput atual nao leva
+`decision_id`, logo o cruzamento prova a falha na sessao, mas nao atribui cada
+clique a uma decisao individual. Proximo passo, se for preciso apontar a linha
+exata, e levar o `decisionId` da resposta `/choose_target` ate a telemetria do
+plugin; nao inventar essa atribuicao no relatorio.
+
 ## 2026-09-15 (837) - O banco passa a preservar o `decision_log` que torna a auditoria de efeitos reproduzivel
 
 Ao receber `q_alvos.jsonl.gz` e `banco_de_logs.tar.gz` depois dos achados

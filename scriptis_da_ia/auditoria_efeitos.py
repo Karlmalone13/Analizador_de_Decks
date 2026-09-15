@@ -78,11 +78,24 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from collections import defaultdict
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent
 LOGS = RAIZ.parent / "BOT" / "engine_server" / "logs" / "decisions"
+
+# O JSONL do servidor sabe o que o motor escolheu; o BepInEx sabe se o
+# OPTCGSim aceitou o clique. Eles ainda nao compartilham um id por clique, por
+# isso esta leitura e deliberadamente apresentada como evidencia do PLUGIN da
+# sessao, nunca como uma atribuicao exata a uma unica decision_id.
+_PLUGIN_TARGET = re.compile(
+    r"\[Bot\] alvo de efeito: (?P<target>.+?) \(uid=.*?, actor=(?P<actor>.*?), "
+    r"faltavam=(?P<before>-?\d+) -> faltam=(?P<after>-?\d+)\)"
+)
+_PLUGIN_REJECTED = re.compile(r"\[Bot\] clique em .+? NAO consumiu alvo")
+_PLUGIN_MISSING = re.compile(r"\[Bot\] alvo de efeito NAO ENCONTRADO .*?actor=(?P<actor>[^)]+)")
+_PLUGIN_CANCEL = re.compile(r"\[Bot\] efeito pendente sem alvo viavel .+?actor=(?P<actor>[^,)]*)")
 
 # Gatilhos que EXIGEM decisao do bot -- sao os auditaveis por este caminho.
 # `passive`/`trigger`/`game_rules` o jogo resolve sozinho: viram `sem_dado`.
@@ -124,6 +137,62 @@ def _efeitos_db() -> dict:
         return json.loads((RAIZ / "card_effects_db.json").read_text(encoding="utf-8"))
     except Exception:
         return {}
+
+
+def _auditar_plugin(path: Path | None, atores: set[str]) -> dict | None:
+    """Resume a aceitacao de cliques no OPTCGSim a partir do LogOutput.
+
+    A linha de recusa nao repete actor/decision_id; ela vem imediatamente apos
+    a tentativa correspondente. Mantemos essa associacao local e restringimos
+    aos atores vistos no JSONL, quando houver, para nao misturar partida antiga
+    acumulada no LogOutput com a auditoria atual.
+    """
+    if not path or not path.exists():
+        return None
+    tentativas = aceitos = recusados = nao_encontrados = cancelados = 0
+    por_ator = defaultdict(lambda: {"tentativas": 0, "aceitos": 0,
+                                    "recusados": 0, "nao_encontrados": 0,
+                                    "cancelados": 0})
+    ultimo_ator = ""
+    for linha in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        achou = _PLUGIN_TARGET.search(linha)
+        if achou:
+            ator = achou.group("actor").strip()
+            ultimo_ator = ator
+            if atores and ator not in atores:
+                continue
+            tentativas += 1
+            por_ator[ator]["tentativas"] += 1
+            if int(achou.group("after")) < int(achou.group("before")):
+                aceitos += 1
+                por_ator[ator]["aceitos"] += 1
+            continue
+        if _PLUGIN_REJECTED.search(linha) and ultimo_ator and (not atores or ultimo_ator in atores):
+            recusados += 1
+            por_ator[ultimo_ator]["recusados"] += 1
+            continue
+        achou = _PLUGIN_MISSING.search(linha)
+        if achou:
+            ator = achou.group("actor").strip()
+            if not atores or ator in atores:
+                nao_encontrados += 1
+                por_ator[ator]["nao_encontrados"] += 1
+            continue
+        achou = _PLUGIN_CANCEL.search(linha)
+        if achou:
+            ator = achou.group("actor").strip()
+            if not atores or ator in atores:
+                cancelados += 1
+                por_ator[ator]["cancelados"] += 1
+    return {
+        "fonte": str(path), "tentativas": tentativas, "aceitos": aceitos,
+        "recusados": recusados, "nao_encontrados": nao_encontrados,
+        "cancelados_sem_alvo": cancelados,
+        "por_ator": dict(sorted(por_ator.items())),
+        "limite": ("LogOutput nao traz decision_id: os totais confirmam a falha "
+                   "de execucao da sessao, mas nao atribuem cada clique a uma "
+                   "decisao individual."),
+    }
 
 
 def _gatilhos(db: dict, code: str) -> set:
@@ -191,7 +260,8 @@ def _efeito_e_observavel(db: dict, code: str, gatilhos: list) -> bool:
     return False
 
 
-def analisar(regs: list[dict], db: dict, filtro: str = "") -> dict:
+def analisar(regs: list[dict], db: dict, filtro: str = "",
+             bepinex_log: Path | None = None) -> dict:
     execucoes = {r.get("decision_id"): r for r in regs if r.get("event") == "execution"}
     decisoes = [r for r in regs if r.get("event") == "decision"]
 
@@ -370,9 +440,11 @@ def analisar(regs: list[dict], db: dict, filtro: str = "") -> dict:
     if filtro:
         reativos = [x for x in reativos if x["ator"] == filtro]
 
+    atores = {r.get("actor_code") for r in decisoes if r.get("actor_code")}
     return {"linhas": linhas, "defesa": defesa, "reativos": reativos,
             "nunca_disparou": nunca,
-            "partidas": sorted({r.get("match_id") for r in decisoes if r.get("match_id")})}
+            "partidas": sorted({r.get("match_id") for r in decisoes if r.get("match_id")}),
+            "execucao_plugin": _auditar_plugin(bepinex_log, atores)}
 
 
 def imprimir(rel: dict, top: int) -> None:
@@ -399,6 +471,24 @@ def imprimir(rel: dict, top: int) -> None:
             s, n, q = por[g].get("SIM", 0), por[g].get("NAO", 0), por[g].get("?", 0)
             tot = s + n + q
             print(f"  {g:<16} {s:>5} {n:>5} {q:>4}   {s/tot:.0%} concluido" if tot else "")
+        print()
+
+    plugin = rel.get("execucao_plugin")
+    if plugin:
+        print("== EXECUCAO NO OPTCGSIM (BepInEx) ==")
+        print(f"  tentativas de alvo: {plugin['tentativas']} | aceitas: {plugin['aceitos']} | "
+              f"recusadas: {plugin['recusados']} | nao encontradas: {plugin['nao_encontrados']} | "
+              f"canceladas: {plugin['cancelados_sem_alvo']}")
+        if plugin["recusados"]:
+            taxa = plugin["recusados"] / max(plugin["tentativas"], 1)
+            print(f"  ALERTA: {taxa:.0%} das tentativas de alvo foram recusadas pelo jogo; "
+                  "o motor decidiu, mas o plugin nao conseguiu executar.")
+        for ator, dados in plugin["por_ator"].items():
+            if dados["recusados"] or dados["nao_encontrados"] or dados["cancelados"]:
+                print(f"    {ator or '?'}: {dados['recusados']} recusada(s), "
+                      f"{dados['nao_encontrados']} nao encontrada(s), "
+                      f"{dados['cancelados']} cancelamento(s)")
+        print(f"  limite: {plugin['limite']}")
         print()
 
         ruins = [l for l in linhas if l["concluiu"] != "SIM"]
@@ -482,6 +572,8 @@ def main() -> int:
                     "(qualquer uma -- personagem, evento, stage ou lider)")
     ap.add_argument("--top", type=int, default=15)
     ap.add_argument("--json", dest="json_out", help="grava o relatorio em JSON")
+    ap.add_argument("--bepinex-log", help="LogOutput.log da MESMA sessao; cruza aceitacao "
+                    "real de alvo pelo OPTCGSim")
     args = ap.parse_args()
 
     p = Path(args.file) if args.file else _ultimo_log()
@@ -490,7 +582,9 @@ def main() -> int:
         return 1
     print(f"Lendo {p}\n")
 
-    rel = analisar(_carrega(p), _efeitos_db(), filtro=args.codigo)
+    bepinex = Path(args.bepinex_log) if args.bepinex_log else None
+    rel = analisar(_carrega(p), _efeitos_db(), filtro=args.codigo,
+                   bepinex_log=bepinex)
     imprimir(rel, args.top)
     if args.json_out:
         Path(args.json_out).write_text(json.dumps(rel, ensure_ascii=False, indent=2),
