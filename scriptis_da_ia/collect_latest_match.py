@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -163,10 +164,27 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
     # usando o schema/nome oficial produzido por parse_combat_log.add_to_db.
     index = json.loads(DB_INDEX.read_text(encoding="utf-8")) if DB_INDEX.exists() else []
     bank_entry, canonical_stem = _validate_bank_entry(combat_log, index)
+
+    # O banco precisa preservar tambem o decision_log que produziu os
+    # relatorios. O combat log/parse explica o que o jogo fez; a auditoria de
+    # efeitos depende dos eventos decision/execution para explicar por que o
+    # bot escolheu (ou o jogo recusou) uma acao. Antes, o recibo guardava so um
+    # caminho para o arquivo efemero do server, e um export de logs perdia essa
+    # evidencia. Usa o id da partida, nao o timestamp do processo, para o
+    # vinculo permanecer estavel mesmo quando o servidor reinicia.
+    bank_decision_dir = DB_ROOT / "decisions"
+    bank_decision_dir.mkdir(parents=True, exist_ok=True)
+    bank_decision_log = bank_decision_dir / f"decisions_{bank_entry['id']}.jsonl"
+    shutil.copy2(decision_log, bank_decision_log)
+    bank_entry["decision_log_file"] = bank_decision_log.relative_to(DB_ROOT).as_posix()
+
     if result:
         _apply_winner(index, bank_entry["id"], result, bot_seat=bot_seat)
-        DB_INDEX.write_text(json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
-        bank_entry = next(item for item in index if item.get("id") == bank_entry["id"])
+    # A copia do decision_log e o seu ponteiro precisam sobreviver mesmo no
+    # fallback manual (sem /outcome), por isso a escrita nao pode depender de
+    # `result`.
+    DB_INDEX.write_text(json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
+    bank_entry = next(item for item in index if item.get("id") == bank_entry["id"])
     reported = subprocess.run(report_cmd, cwd=ROOT, text=True, capture_output=True)
     if reported.returncode:
         raise RuntimeError(f"bot_efficiency_report falhou: {reported.stderr or reported.stdout}")
@@ -243,6 +261,7 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
         "bank_entry_id": bank_entry["id"],
         "bank_log": str(DB_ROOT / bank_entry["log_file"]),
         "bank_parsed": str(DB_ROOT / bank_entry["parsed_file"]),
+        "bank_decision_log": str(DB_ROOT / bank_entry["decision_log_file"]),
         "bank_decks": [str(DB_ROOT / rel) for rel in (bank_entry.get("deck_files") or {}).values()],
         "canonical_name": canonical_stem,
         "collected_at": stamp,

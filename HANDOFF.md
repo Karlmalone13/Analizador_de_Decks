@@ -53,6 +53,39 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-15 (837) - O banco passa a preservar o `decision_log` que torna a auditoria de efeitos reproduzivel
+
+Ao receber `q_alvos.jsonl.gz` e `banco_de_logs.tar.gz` depois dos achados
+dos blocos 832-836, foi conferido que o banco continha o combat log, parse e
+decks recentes (inclusive partidas de 14/09), mas NAO os JSONLs do servidor.
+Isso impede reproduzir `auditoria_efeitos.py`: ela depende dos eventos
+`decision`/`execution`, que nao podem ser reconstruidos a partir do combat
+log. O arquivo `q_alvos` tambem nao os contem -- so tem exemplos de treino Q.
+
+Correcao em `collect_latest_match.py`: depois de validar o banco, copia o
+`decision_log` para `scriptis_da_ia/logs/decisions/decisions_<match_id>.jsonl`,
+grava o caminho relativo `decision_log_file` na entrada de `logs/index.json` e
+o caminho absoluto `bank_decision_log` no recibo. O id e o da partida do
+combat log, nao o timestamp do processo; logo continua ligado ao mesmo raw e
+parse mesmo apos reinicio do server. A escrita do index agora ocorre tambem no
+fallback manual sem `/outcome`, para a evidencia nunca depender do resultado.
+
+Nao houve mudanca em `auditoria_efeitos.py`: a reproducao disponivel do log
+de 13/09 confirmou 26 execucoes `confirmed` com `transition_observation` e
+nenhum caso de `confirmed` sem observacao. Mudar o veredito sem o
+`decision_log` das partidas de 14/09 seria especulacao. Proxima CPU x CPU
+deve gerar o banco completo automaticamente; ao exportar `scriptis_da_ia/logs/`,
+o arquivo `logs/decisions/...` deve estar presente e permite rodar:
+
+```
+cd scriptis_da_ia
+python auditoria_efeitos.py --file logs/decisions/decisions_<match_id>.jsonl
+```
+
+Validacao feita: `python -m py_compile` nos dois scripts, `git diff --check`,
+e teste isolado do coletor com parser/subprocess mockados confirmou igualdade
+byte a byte da copia, ponteiro no index e ponteiro no recibo.
+
 ## 2026-09-14 (831) - CPU x CPU passa a ALIMENTAR o corpus do Q: o captador ja existia no motor e so nao era ligado ao vivo -- ZERO motor novo
 
 Pedido do usuario, depois de eu responder estreito duas vezes: *"eu fecho e
