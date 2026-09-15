@@ -297,6 +297,10 @@ def main() -> int:
         if not logs:
             raise FileNotFoundError("nenhum decision JSONL encontrado")
         decision_log = max(logs, key=lambda p: p.stat().st_mtime)
+    # Os relatorios filhos rodam com cwd=scriptis_da_ia. Normaliza logo na
+    # fronteira da CLI para um `--decision-log` relativo continuar apontando
+    # para o mesmo arquivo tambem dentro desses subprocessos.
+    decision_log = decision_log.resolve()
     receipt = collect_latest(decision_log, args.autosaved_dir, result=args.result or "")
     print(json.dumps(receipt, indent=2, ensure_ascii=False))
     return 0

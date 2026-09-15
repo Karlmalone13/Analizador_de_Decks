@@ -1,0 +1,3343 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Dracule Mihawk",
+          "code": "OP14-020"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Enel",
+          "code": "OP15-058"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 37,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP05-077",
+            "OP09-072",
+            "OP10-067",
+            "OP15-061",
+            "OP15-066",
+            "OP15-075",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP05-077",
+            "OP09-072",
+            "OP10-067",
+            "OP15-061",
+            "OP15-066",
+            "OP15-075",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP05-077",
+            "OP09-072",
+            "OP10-067",
+            "OP15-061",
+            "OP15-066",
+            "OP15-075",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP05-077",
+            "OP09-072",
+            "OP10-067",
+            "OP15-061",
+            "OP15-066",
+            "OP15-075",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP05-077",
+            "OP09-072",
+            "OP10-067",
+            "OP15-061",
+            "OP15-066",
+            "OP15-075",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP05-077",
+            "OP09-072",
+            "OP10-067",
+            "OP15-066",
+            "OP15-075",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP05-077",
+            "OP09-072",
+            "OP10-067",
+            "OP15-066",
+            "OP15-075",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP09-072",
+            "OP10-067",
+            "OP15-066",
+            "OP15-075",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP09-072",
+            "OP10-067",
+            "OP15-075",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP09-072",
+            "OP10-067",
+            "OP15-075",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP09-072",
+            "OP10-067",
+            "OP15-075",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 17,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 18,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP09-072",
+            "OP10-067",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 19,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033",
+            "OP06-038"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP09-072",
+            "OP10-067",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033",
+            "OP06-038"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 21,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033",
+            "OP06-038",
+            "OP13-040"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 22,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074",
+            "OP15-066"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP09-072",
+            "OP10-067",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033",
+            "OP06-038",
+            "OP13-040"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033",
+            "OP06-038",
+            "OP13-040",
+            "OP13-031"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074",
+            "OP15-066"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 24,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074",
+            "OP15-066",
+            "OP15-066"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP09-072",
+            "OP10-067",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033",
+            "OP06-038",
+            "OP13-040",
+            "OP13-031"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 25,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033",
+            "OP06-038",
+            "OP13-040",
+            "OP13-031",
+            "OP06-038"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074",
+            "OP15-066",
+            "OP15-066"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 26,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074",
+            "OP15-066",
+            "OP15-066",
+            "OP15-077"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP09-072",
+            "OP10-067",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033",
+            "OP06-038",
+            "OP13-040",
+            "OP13-031",
+            "OP06-038"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 27,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033",
+            "OP06-038",
+            "OP13-040",
+            "OP13-031",
+            "OP06-038",
+            "OP14-023"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074",
+            "OP15-066",
+            "OP15-066",
+            "OP15-077"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 28,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074",
+            "OP15-066",
+            "OP15-066",
+            "OP15-077",
+            "OP15-077"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP09-072",
+            "OP10-067",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033",
+            "OP06-038",
+            "OP13-040",
+            "OP13-031",
+            "OP06-038",
+            "OP14-023"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 29,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033",
+            "OP06-038",
+            "OP13-040",
+            "OP13-031",
+            "OP06-038",
+            "OP14-023",
+            "OP06-033"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074",
+            "OP15-066",
+            "OP15-066",
+            "OP15-077",
+            "OP15-077"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 30,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074",
+            "OP15-066",
+            "OP15-066",
+            "OP15-077",
+            "OP15-077",
+            "OP10-067"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP09-072",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "OP15-076",
+            "OP15-076",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "OP12-023",
+            "ST32-001",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033",
+            "OP06-038",
+            "OP13-040",
+            "OP13-031",
+            "OP06-038",
+            "OP14-023",
+            "OP06-033"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 31,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-022",
+          "card_name": "Shanks",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-022",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP07-022",
+          "card_name": "Otama",
+          "effects": [
+            "<b>Reveal and Draw You Can Be My Samurai!!! [\"OP01-055\">OP01-055]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST32-001",
+          "card_name": "Kin'emon",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-031",
+            "ST32-002",
+            "OP12-023",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033",
+            "OP06-038",
+            "OP13-040",
+            "OP13-031",
+            "OP06-038",
+            "OP14-023",
+            "OP06-033",
+            "OP06-033",
+            "OP01-055"
+          ],
+          "board": [
+            "OP17-022",
+            "OP07-022",
+            "ST32-001"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP13-040",
+            "OP17-022",
+            "OP17-031",
+            "ST32-003"
+          ],
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-022": 1,
+            "OP07-022": 1,
+            "ST32-001": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074",
+            "OP15-066",
+            "OP15-066",
+            "OP15-077",
+            "OP15-077",
+            "OP10-067",
+            "OP15-076",
+            "OP15-076"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 3,
+          "deck": [
+            "OP09-072",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-067",
+          "card_name": "Senor Pink",
+          "effects": [
+            "Minus 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP15-058",
+          "to_name": "Enel",
+          "total": 2
+        },
+        {
+          "type": "activate",
+          "card": "OP15-058",
+          "card_name": "Enel",
+          "effects": [
+            "Attach 1 Rested Don to Senor Pink [\"OP10-067\">OP10-067]",
+            "Attach 1 Rested Don to Senor Pink [\"OP10-067\">OP10-067]",
+            "Attach 1 Rested Don to Senor Pink [\"OP10-067\">OP10-067]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-023",
+            "OP07-022"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074",
+            "OP15-066",
+            "OP15-066",
+            "OP15-077",
+            "OP15-077",
+            "OP15-076",
+            "OP15-076",
+            "OP15-078"
+          ],
+          "board": [
+            "OP10-067"
+          ],
+          "trash": [],
+          "life": 3,
+          "deck": [
+            "OP09-072",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP13-076",
+            "OP15-067",
+            "ST10-010"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP10-067": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "ST32-002",
+            "OP01-055",
+            "OP17-031",
+            "OP06-033",
+            "OP13-040",
+            "ST32-001",
+            "OP06-033",
+            "OP06-038",
+            "OP13-040",
+            "OP13-031",
+            "OP06-038",
+            "OP14-023",
+            "OP06-033",
+            "OP06-033",
+            "OP01-055"
+          ],
+          "trash": [
+            "OP12-023",
+            "OP07-022"
+          ],
+          "board": [
+            "OP17-022",
+            "OP07-022",
+            "ST32-001"
+          ],
+          "life": 5,
+          "deck": [
+            "OP13-040",
+            "OP17-022",
+            "OP17-031",
+            "ST32-003"
+          ],
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-022": 1,
+            "OP07-022": 1,
+            "ST32-001": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 33,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-031",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Return Otama [\"OP07-022\">OP07-022] to Hand",
+            "Deploy Yasopp [\"OP17-031\">OP17-031]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Draw 1 Card",
+            "Rest Senor Pink [\"OP10-067\">OP10-067]",
+            "Set Shanks [\"OP17-022\">OP17-022] to Active"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-022",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP07-022",
+          "card_name": "Otama",
+          "effects": [
+            "<b>Reveal and Draw Kin'emon [\"ST32-001\">ST32-001]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST32-001",
+          "card_name": "Kin'emon",
+          "effects": [
+            "Rest Don [\"Don\">Don]",
+            "Draw 2 Card",
+            "Trash Kouzuki Oden [\"ST32-002\">ST32-002]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP01-055",
+          "card_name": "You Can Be My Samurai!!!",
+          "effects": [
+            "Rest Kin'emon [\"ST32-001\">ST32-001]",
+            "Rest Kin'emon [\"ST32-001\">ST32-001]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP06-033",
+            "OP13-040",
+            "OP06-033",
+            "OP06-038",
+            "OP13-040",
+            "OP13-031",
+            "OP06-038",
+            "OP14-023",
+            "OP06-033",
+            "OP06-033",
+            "OP01-055",
+            "OP06-038",
+            "OP17-022",
+            "ST32-001",
+            "ST32-002",
+            "OP07-022",
+            "ST32-002",
+            "OP12-034"
+          ],
+          "board": [
+            "OP17-022",
+            "ST32-001",
+            "OP13-031",
+            "OP17-031",
+            "ST32-001"
+          ],
+          "trash": [
+            "OP12-023",
+            "OP07-022",
+            "OP07-022",
+            "ST32-002",
+            "OP01-055"
+          ],
+          "life": 5,
+          "deck": [
+            "OP12-023",
+            "OP13-031",
+            "OP13-040",
+            "OP14-039",
+            "OP17-031",
+            "ST32-003"
+          ],
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP14-039",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "board": [
+              "OP17-031"
+            ]
+          },
+          "rested": {
+            "OP17-022": 1,
+            "ST32-001": 2,
+            "OP13-031": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "ST10-010",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074",
+            "OP15-066",
+            "OP15-066",
+            "OP15-077",
+            "OP15-077",
+            "OP15-076",
+            "OP15-076",
+            "OP15-078",
+            "OP15-067",
+            "OP13-076"
+          ],
+          "trash": [],
+          "board": [
+            "OP10-067"
+          ],
+          "life": 1,
+          "deck": [
+            "OP09-072",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "ST10-010"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP10-067": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 34,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST10-010",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Minus 1 Don",
+            "Randomly send Vander Decken IX [\"OP06-033\">OP06-033] to Trash from Hand",
+            "Randomly send Kin'emon [\"ST32-001\">ST32-001] to Trash from Hand"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP15-058",
+          "to_name": "Enel",
+          "total": 2
+        },
+        {
+          "type": "activate",
+          "card": "OP15-058",
+          "card_name": "Enel",
+          "effects": [
+            "Attach 1 Rested Don to Senor Pink [\"OP10-067\">OP10-067]",
+            "Attach 1 Rested Don to Senor Pink [\"OP10-067\">OP10-067]",
+            "Attach 1 Rested Don to Senor Pink [\"OP10-067\">OP10-067]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Senor Pink",
+          "attacker_code": "OP10-067",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Yasopp [\"OP17-031\">OP17-031]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-023"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074",
+            "OP15-066",
+            "OP15-066",
+            "OP15-077",
+            "OP15-077",
+            "OP15-076",
+            "OP15-076",
+            "OP15-078",
+            "OP15-067",
+            "OP13-076",
+            "OP15-078"
+          ],
+          "board": [
+            "OP10-067",
+            "ST10-010"
+          ],
+          "trash": [],
+          "life": 1,
+          "deck": [
+            "OP09-072",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "ST10-010"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP10-067": 1,
+            "ST10-010": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP06-033",
+            "OP13-040",
+            "OP06-033",
+            "OP06-038",
+            "OP13-040",
+            "OP13-031",
+            "OP06-038",
+            "OP06-033",
+            "OP01-055",
+            "OP06-038",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "ST32-002",
+            "OP12-034",
+            "OP14-039"
+          ],
+          "trash": [
+            "OP12-023",
+            "OP07-022",
+            "OP07-022",
+            "ST32-002",
+            "OP01-055",
+            "OP06-033",
+            "ST32-001",
+            "OP14-023"
+          ],
+          "board": [
+            "OP17-022",
+            "ST32-001",
+            "OP13-031",
+            "OP17-031",
+            "ST32-001"
+          ],
+          "life": 4,
+          "rested": {
+            "OP17-022": 1,
+            "ST32-001": 2,
+            "OP13-031": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 35,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP06-033",
+            "OP13-040",
+            "OP06-033",
+            "OP06-038",
+            "OP13-040",
+            "OP13-031",
+            "OP06-038",
+            "OP06-033",
+            "OP01-055",
+            "OP06-038",
+            "OP17-022",
+            "ST32-002",
+            "OP07-022",
+            "ST32-002",
+            "OP12-034",
+            "OP14-039",
+            "OP12-034"
+          ],
+          "board": [
+            "OP17-022",
+            "ST32-001",
+            "OP13-031",
+            "OP17-031",
+            "ST32-001"
+          ],
+          "trash": [
+            "OP12-023",
+            "OP07-022",
+            "OP07-022",
+            "ST32-002",
+            "OP01-055",
+            "OP06-033",
+            "ST32-001",
+            "OP14-023"
+          ],
+          "life": 4,
+          "deck": [
+            "OP12-023",
+            "OP13-031",
+            "OP13-040",
+            "OP14-039",
+            "OP17-031",
+            "ST32-003"
+          ],
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "board": [
+              "OP17-031"
+            ]
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-074",
+            "OP15-066",
+            "OP15-066",
+            "OP15-077",
+            "OP15-077",
+            "OP15-076",
+            "OP15-076",
+            "OP15-078",
+            "OP15-067",
+            "OP13-076",
+            "OP15-078"
+          ],
+          "trash": [],
+          "board": [
+            "OP10-067",
+            "ST10-010"
+          ],
+          "life": 1,
+          "deck": [
+            "OP09-072",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "ST10-010"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP10-067": 1,
+            "ST10-010": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 36,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Senor Pink",
+          "attacker_code": "OP10-067",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-118",
+          "card_name": "Enel",
+          "effects": [
+            "Minus 1 Don",
+            "Added 1 Cards to Hand",
+            "Trash Ohm [\"OP15-061\">OP15-061]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-058",
+          "card_name": "Enel",
+          "effects": [
+            "Attach 1 Rested Don to Trafalgar Law [\"ST10-010\">ST10-010]",
+            "Attach 1 Rested Don to Trafalgar Law [\"ST10-010\">ST10-010]",
+            "Attach 1 Rested Don to Trafalgar Law [\"ST10-010\">ST10-010]",
+            "Attach 1 Rested Don to Trafalgar Law [\"ST10-010\">ST10-010]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "ST10-010",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-022"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-076",
+          "card_name": "Lightning Beast Kiten",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card",
+            "Buff Trafalgar Law [\"OP13-031\">OP13-031] -1000",
+            "Minus 1 Don",
+            "Draw 1 Card",
+            "Buff Yasopp [\"OP17-031\">OP17-031] -1000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-077",
+            "OP09-077",
+            "OP15-074",
+            "OP15-077",
+            "OP09-077",
+            "OP15-061",
+            "OP05-077",
+            "OP15-066",
+            "OP15-067",
+            "OP15-074",
+            "OP15-074",
+            "OP15-066",
+            "OP15-066",
+            "OP15-077",
+            "OP15-077",
+            "OP15-078",
+            "OP15-067",
+            "OP13-076",
+            "OP15-078",
+            "OP05-077",
+            "ST10-010",
+            "OP10-067"
+          ],
+          "board": [
+            "OP10-067",
+            "ST10-010",
+            "OP15-118"
+          ],
+          "trash": [
+            "OP15-061",
+            "OP15-075",
+            "OP15-076",
+            "OP15-076",
+            "OP15-076"
+          ],
+          "life": 1,
+          "deck": [
+            "OP09-072",
+            "OP12-071",
+            "OP15-061",
+            "OP15-067",
+            "OP15-075"
+          ],
+          "life_cards": [
+            "ST10-010"
+          ],
+          "don_deck": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP10-067": 1,
+            "ST10-010": 1,
+            "OP15-118": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP06-033",
+            "OP06-033",
+            "OP13-031",
+            "OP06-038",
+            "OP06-033",
+            "OP01-055",
+            "OP06-038",
+            "OP17-022",
+            "ST32-002",
+            "ST32-002",
+            "OP12-034",
+            "OP14-039",
+            "OP12-034"
+          ],
+          "trash": [
+            "OP12-023",
+            "OP07-022",
+            "OP07-022",
+            "ST32-002",
+            "OP01-055",
+            "OP06-033",
+            "ST32-001",
+            "OP14-023",
+            "OP13-040",
+            "OP13-040",
+            "OP07-022",
+            "OP06-038"
+          ],
+          "board": [
+            "OP17-022",
+            "ST32-001",
+            "OP13-031",
+            "OP17-031",
+            "ST32-001"
+          ],
+          "life": 4,
+          "deck": [
+            "OP12-023",
+            "OP13-031",
+            "OP13-040",
+            "OP14-039",
+            "OP17-031",
+            "ST32-003"
+          ],
+          "life_cards": [
+            "OP01-055",
+            "OP06-038",
+            "OP07-022",
+            "OP17-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "board": [
+              "OP17-031"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 37,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-022",
+          "card_name": "Shanks",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Rest Enel [\"OP15-118\">OP15-118]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP14-039",
+          "card_name": "Coffin Boat",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-022",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-061",
+            "OP15-066",
+            "OP15-067",
+            "OP15-066",
+            "OP15-066",
+            "OP15-067",
+            "ST10-010",
+            "ST10-010"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "OP13-031",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Yasopp",
+          "attacker_code": "OP17-031",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

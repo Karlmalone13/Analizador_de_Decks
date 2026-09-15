@@ -1,0 +1,76 @@
+{
+  "cards": [
+    {
+      "code": "OP06-033",
+      "name": "OP06-033",
+      "count": 4
+    },
+    {
+      "code": "ST32-002",
+      "name": "ST32-002",
+      "count": 3
+    },
+    {
+      "code": "OP07-022",
+      "name": "Otama",
+      "count": 3
+    },
+    {
+      "code": "ST32-001",
+      "name": "Kin'emon",
+      "count": 3
+    },
+    {
+      "code": "OP06-038",
+      "name": "OP06-038",
+      "count": 3
+    },
+    {
+      "code": "OP13-031",
+      "name": "Trafalgar Law",
+      "count": 2
+    },
+    {
+      "code": "OP17-022",
+      "name": "Shanks",
+      "count": 2
+    },
+    {
+      "code": "OP01-055",
+      "name": "OP01-055",
+      "count": 2
+    },
+    {
+      "code": "OP13-040",
+      "name": "OP13-040",
+      "count": 2
+    },
+    {
+      "code": "OP12-034",
+      "name": "OP12-034",
+      "count": 2
+    },
+    {
+      "code": "OP12-023",
+      "name": "OP12-023",
+      "count": 1
+    },
+    {
+      "code": "OP17-031",
+      "name": "OP17-031",
+      "count": 1
+    },
+    {
+      "code": "OP14-023",
+      "name": "OP14-023",
+      "count": 1
+    },
+    {
+      "code": "OP14-039",
+      "name": "Coffin Boat",
+      "count": 1
+    }
+  ],
+  "total_seen": 30,
+  "leader": "OP14-020"
+}

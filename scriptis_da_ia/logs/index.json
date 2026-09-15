@@ -6083,5 +6083,37 @@
       "You": "decks_full/Enel-P_2026-09-14T17.58.01_p7.json",
       "Opponent": "decks_full/Rocks.D.Xebec-B_2026-09-14T17.58.01_p7.json"
     }
+  },
+  {
+    "id": "2026-09-15T00.21.43",
+    "friendly_name": "Dracule.Mihawk-G_x_Enel-P",
+    "date": "2026-09-15",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "turns": 37,
+    "winner": "p1",
+    "bot_side": "p1",
+    "tipo": "com_bot",
+    "log_file": "raw/Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.21.43.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.21.43.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-09-15T00.21.43.json",
+      "Opponent": "decks/Enel-P_2026-09-15T00.21.43.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-09-15T00.21.43.json",
+      "Opponent": "decks_full/Enel-P_2026-09-15T00.21.43.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-09-15T00.21.43.jsonl"
   }
 ]

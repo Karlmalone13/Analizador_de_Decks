@@ -53,6 +53,35 @@
 > reprovado). Ate esta confirmacao rodar, **a geracao 4 e evidencia
 > sugestiva, nao estabelecida**.
 
+## 2026-09-15 (838) - CPU x CPU recuperada: servidor offline era o "passar turno"; partida agora bancou o JSONL junto do combat log
+
+O plugin registrou explicitamente `Servidor Python offline -- passando turno`;
+nao era uma decisao do motor. A porta 8765 estava sem listener. Ao iniciar o
+server do checkout atual, a mesma partida passou a chamar `/decide`,
+`/defense`, `/choose_target` e `/execution` normalmente. Partida bancada:
+`Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.21.43`, 37 turnos, vencedor p1.
+
+O coletor ja copiou o JSONL para
+`logs/decisions/decisions_2026-09-15T00.21.43.jsonl` e o index aponta para
+ele. A primeira chamada manual revelou um detalhe de CLI: `--decision-log`
+relativo quebrava `bot_efficiency_report.py`, pois este subprocesso roda com
+`cwd=scriptis_da_ia`. Corrigido normalizando o argumento com `resolve()` antes
+dos subprocessos; o caminho automatico ja era absoluto e nao muda.
+
+Relatorio da partida: execucao confirmada 98,387%, estado posterior 95,588%,
+1 timeout de decisao (1,471%); gate `fail` por pendentes/timeout. A auditoria
+viu Enel OP15-058 concluir 1/1 `activate_main`; Mihawk OP14-020 foi recusado
+1x pelo jogo. Defesa continua achado aberto: counter aceito 0, recusado 11
+tendo opcoes em varios casos. O seletor de V3Choice tambem mostrou limite:
+rotulos `Gain 0/1/Max Don` ainda caem no fallback de rotulo desconhecido,
+mas esta partida nao marcou a ativacao do Enel como nao concluida; NAO mudar
+sem separar a semantica dessa tela no codigo do jogo.
+
+Nota operacional: o auto-collect falhou inicialmente porque o processo Python
+iniciado pela sessao restrita nao podia criar o parse ao lado do combat log em
+`E:`. Com permissao elevada, o raw/parse/decks/JSONL foram bancados; os
+relatorios manuais estao em `metrics/live_runs/*_2026-09-15T00.21.43_manual`.
+
 ## 2026-09-15 (837) - O banco passa a preservar o `decision_log` que torna a auditoria de efeitos reproduzivel
 
 Ao receber `q_alvos.jsonl.gz` e `banco_de_logs.tar.gz` depois dos achados
