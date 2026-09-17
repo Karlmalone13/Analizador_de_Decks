@@ -163,6 +163,80 @@ visivel**.
 
 ---
 
+## 2026-09-17 (838) - CAUSA RAIZ DO ENEL: o bot escolhia **"Gain 0 Active Don"** -- 27 de 27 menus de opcao caiam em "rotulo nao reconhecido -> primeira opcao"
+
+O usuario mandou atacar o Enel depois da retratacao do bloco 837. **Aqui ha bug
+de verdade, e ele e maior que o Enel.**
+
+### O caminho ate a causa
+
+1. Enel `activate_main`: `status=confirmed`, estado byte-a-byte IDENTICO --
+   inclusive mao, vida e deck.
+2. O combat log mostra a habilidade FUNCIONANDO:
+   `[You] Enel: Attach 1 Rested Don to Ohm ["OP15-061"]`. Entao nao esta
+   quebrada.
+3. **CONTROLE** (o passo que eu tinha pulado duas vezes): estado identico apos
+   execucao confirmada, por tipo -- `play` 0%, `attach_don` 0%, `attack` 81%,
+   `activate` 50%. O `attack` alto NAO e defeito: atacar o lider adversario
+   legitimamente nao muda nada do lado proprio. Mas o Enel dando **50/50 na
+   MESMA carta** nao se explica por isso.
+4. A resposta estava nas decisoes `effect_option`.
+
+### A causa
+
+```
+opcoes : ['Gain 0 Active Don', 'Gain 1 Active Don', 'Gain Max Don']
+ESCOLHEU idx=0 -> 'Gain 0 Active Don'
+motivo : 'nenhum rotulo reconhecido -- primeira opcao'
+```
+
+`escolher_opcao_de_efeito` (`sim_bridge.py`) so reconhecia `'opponent draw'`,
+`'trash'` e `'discard'`. Qualquer outro rotulo caia no fallback **"primeira
+opcao"** -- e nos menus de QUANTIDADE a primeira e sempre o **ZERO**.
+
+**27 de 27 decisoes de opcao (100%) cairam nesse fallback.** Nao e so o Enel:
+`Start Placing on Bottom` (em vez de Top) 5x e `Confirm Revealed Card` 4x pelo
+mesmo caminho.
+
+E havia um 2o bug ao lado: `_quantidade` faz `max(1, ...)`, entao leria
+`"Gain 0"` como **1**. So nao aparecia porque o ramo nem existia.
+
+### O fix -- pela FORMA, nao pelo Enel
+
+`_ganho_por_quantidade(t)`: detecta rotulo de GANHO por verbo
+(`gain`/`add`/`draw`/`set`/`return`/`rest`), exclui `'opponent'` (ai e custo,
+nao ganho), entende `'max'` como 99 e le o numero com regex proprio -- **nao**
+usa `_quantidade`, justamente por causa do `max(1,...)`. O custo vira
+NEGATIVO (beneficio), entao o `min` ja existente escolhe o maior ganho.
+
+Vale pra QUALQUER menu de quantidade, nao so o do Enel.
+
+Medido com os menus reais:
+
+| menu | antes | agora |
+|---|---|---|
+| `Gain 0/1/Max Active Don` | Gain **0** | **Gain Max Don** |
+| `Gain 0/1 Rested Don` | Gain **0** | **Gain 1 Rested Don** |
+| `Trash 2` x `Opponent Draws 2` | (ja funcionava) | **inalterado** |
+| `Start Placing on Bottom/Top` | primeira | **ainda nao reconhecido** |
+
+`smoke_fast.py`: **1.430 OK, 0 FALHOU**.
+
+### O QUE FICA ABERTO -- e uma ressalva que NAO deve ser esquecida
+
+1. **"Max" nem sempre e otimo pro Enel.** O proprio lider diz *"your DON!! deck
+   consists of 6 cards"* -- DON finito. Pegar o maximo cedo pode esgotar.
+   **Zero nunca e certo**, e por isso o fix e uma melhora segura; mas a escolha
+   fina (1 x Max) e julgamento de VALOR e deveria vir do modelo, nao de
+   `max()`. Entra na fila do que o ML deve decidir.
+2. **`Start Placing on Bottom/Top` e `Confirm Revealed Card` seguem no
+   fallback cego.** Nao sao menus de quantidade; precisam de tratamento
+   proprio. **NAO corrigidos.**
+3. O efeito real do fix em partida **nao foi medido** -- precisa de CPU x CPU
+   novo com o Enel.
+
+---
+
 ## 2026-09-17 (837) - RETRATACAO: "o bot nunca aceita counter nem blocker" era ERRO DA MINHA REGUA, nao bug do motor
 
 O usuario mandou investigar a causa. **A causa era a medicao.**

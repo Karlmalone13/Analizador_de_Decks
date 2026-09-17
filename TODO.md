@@ -34,6 +34,26 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **CAUSA RAIZ DO ENEL ACHADA (17/09/2026, bloco 838)**: o bot escolhia
+> **"Gain 0 Active Don"**. `escolher_opcao_de_efeito` so reconhecia
+> `opponent draw`/`trash`/`discard`; todo outro rotulo caia em "primeira
+> opcao", e em menu de QUANTIDADE a primeira e sempre o ZERO. **27 de 27
+> decisoes de opcao (100%) nesse fallback** -- nao so o Enel (`Start Placing on
+> Bottom` 5x, `Confirm Revealed Card` 4x). 2o bug ao lado: `_quantidade` tem
+> `max(1,...)` e leria "Gain 0" como 1.
+>
+> **Fix pela FORMA**: `_ganho_por_quantidade` detecta ganho por verbo, exclui
+> `opponent`, entende `max`, e o custo negativo faz o `min` existente pegar o
+> maior. Vale pra qualquer menu de quantidade. Medido: `Gain 0/1/Max` -> **Max**;
+> `Trash x Opponent Draws` inalterado. `smoke_fast`: 1.430 OK, 0 FALHOU.
+>
+> **ABERTO**: (a) **"Max" nem sempre e otimo** -- o Enel tem DON deck de **6
+> cartas**, entao pegar o maximo cedo pode esgotar; zero nunca e certo, mas a
+> escolha fina (1 x Max) e julgamento de VALOR e deveria vir do MODELO; (b)
+> `Start Placing on Bottom/Top` e `Confirm Revealed Card` seguem no fallback
+> cego, NAO corrigidos; (c) efeito real em partida **nao medido** -- precisa de
+> CPU x CPU novo com o Enel.
+
 > **RETRATACAO -- "o bot nunca se defende" era ERRO DE MEDICAO (17/09/2026,
 > bloco 837)**: reportado em DOIS commits (834 e 836) como o achado mais caro em
 > aberto, e era **falso**. `auditoria_efeitos.py` julgava todas as fases por

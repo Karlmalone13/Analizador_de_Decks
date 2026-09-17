@@ -1967,6 +1967,30 @@ def _quantidade(texto: str, padrao: int = 1) -> int:
         return padrao
 
 
+# Verbos de GANHO: o menu oferece N de um recurso e N=0 nunca e a resposta
+# certa. Generico de proposito -- pega "Gain N Active Don", "Add N Cards",
+# "Draw N", e nao so o menu do Enel que revelou o problema.
+_VERBOS_GANHO = ('gain', 'add', 'draw', 'set ', 'return', 'rest ')
+
+
+def _ganho_por_quantidade(t: str):
+    """Quantidade de recurso que ESTE rotulo concede, ou None se nao for isso.
+
+    'max' vira um numero grande pra vencer qualquer N explicito. NAO usa
+    `_quantidade`, que tem `max(1, ...)` e leria "Gain 0" como 1 -- o valor
+    zero e justamente o que precisa ser distinguido aqui.
+    """
+    if not any(v in t for v in _VERBOS_GANHO):
+        return None
+    if 'opponent' in t:          # "Opponent Draws N" e custo, nao ganho
+        return None
+    if 'max' in t:
+        return 99
+    import re as _re
+    m = _re.search(r'(\d+)', t)
+    return int(m.group(1)) if m else None
+
+
 def escolher_opcao_de_efeito(gs: GameState, opp_gs: GameState,
                              opcoes: list) -> tuple:
     """Escolhe entre OPCOES de um mesmo efeito ("Trash 2 Cards" x "Opponent
@@ -2027,8 +2051,20 @@ def escolher_opcao_de_efeito(gs: GameState, opp_gs: GameState,
                       + ', '.join(f'{c.code}={ee._trash_value(c):.0f}' for c in piores)
                       + f'), fator mao {fator_esvaziar_mao(len(gs.hand), n):.2f}')
         else:
-            custo = None
-            motivo = 'rotulo nao reconhecido'
+            ganho = _ganho_por_quantidade(t)
+            if ganho is not None:
+                # GANHO DE RECURSO por quantidade ("Gain 0/1/Max Active Don").
+                # Custo NEGATIVO = beneficio, entao o `min` abaixo escolhe o
+                # MAIOR ganho. Sem este ramo o rotulo caia em "nao
+                # reconhecido" e a funcao pegava a PRIMEIRA opcao -- que
+                # nestes menus e sempre o ZERO (achado 17/09/2026, bloco 838:
+                # o Enel ativava a habilidade do lider e escolhia "Gain 0
+                # Active Don" em 100% das vezes).
+                custo = -float(ganho)
+                motivo = f'ganho de {ganho} (mais e melhor)'
+            else:
+                custo = None
+                motivo = 'rotulo nao reconhecido'
         custos.append((custo, motivo, op))
 
     conhecidos = [c for c in custos if c[0] is not None]
