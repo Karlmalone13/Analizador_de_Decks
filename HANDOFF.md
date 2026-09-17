@@ -163,6 +163,90 @@ visivel**.
 
 ---
 
+## 2026-09-17 (847) - MIHAWK CORRIGIDO: o filtro de DON apagava os candidatos do CUSTO -- 33 entravam, 5 saiam, todos invalidos
+
+Pedido do usuario: atacar isto antes do ciclo 3. **Corrigido, e a causa nao era
+nenhuma das minhas hipoteses anteriores.**
+
+### O caminho ate o bug -- e as duas hipoteses que cairam antes
+
+1. **Bloco 838**: *"o motor oferece sem a condicao `board_has_cost_gte: 5`"*.
+   **FALSA** -- o `state_before` mostrou `OP12-031(c5)` em campo nos dois turnos.
+2. **Bloco 844**: *"o motor manda o alvo do EFEITO onde o jogo pede o do
+   CUSTO"*. Certo na descricao do sintoma, mas eu supunha problema de
+   ORDENACAO. **Nao era ordenacao.**
+
+### A causa REAL, reproduzida isoladamente
+
+O plugin manda TODOS os candidatos e o motor so ORDENA. Chamando
+`order_target_candidates` com os 33 candidatos exatos da partida:
+
+```
+ENTRARAM 33 candidatos -> SAIRAM 5
+  0: Don@own_don_rested chave=[9.0, 0.0]
+  ... (os 5 DON, todos com chave 9.0 = "NUNCA e alvo valido")
+```
+
+**A funcao DESCARTA 28 de 33** e devolve so os DON -- que ela mesma ja marcou
+como invalidos. O bot nao tinha mais nada pra clicar.
+
+O culpado e o filtro `actor_don_target` (linha ~3035), criado em 30/08 por um
+achado legitimo (Nami OP14-031, *"set up to 5 of your DON!! as active"*: so DON
+e alvo legal, e as outras zonas atrapalhavam):
+
+```python
+if actor_don_target:
+    so_don = [c for c in candidates if c.get('zone') in zonas_don]
+    if so_don:
+        candidates = so_don      # apaga TODO o resto
+```
+
+O efeito do Mihawk **tambem** e `set_don_active`, entao o filtro disparou. Mas o
+**CUSTO** dele e *"You may rest 1 of your cards"* -- o jogo pede uma CARTA, e as
+cartas tinham acabado de ser apagadas.
+
+> **Efeito e custo sao perguntas DIFERENTES, e o jogo faz as duas.** Filtrar
+> pelas zonas do EFEITO nao pode apagar as zonas do CUSTO.
+
+### O fix -- pela FORMA, com tabela de tipo de custo
+
+`_CUSTO_ZONAS` mapeia TIPO de custo -> zonas que ele pode exigir
+(`rest_own_card` -> campo/lider/stage, `trash_from_hand` -> mao,
+`place_from_trash_bottom_deck` -> trash, ...). As zonas do custo entram JUNTO
+das de DON no filtro. Vale pras **28 cartas** do bloco 845, nao so o Mihawk.
+
+**A ordenacao ja resolve a prioridade sozinha** -- nao precisou de regra nova:
+quando o efeito nao aceita DON como alvo real, o DON carrega a chave 9.0 e as
+cartas do custo vem na frente naturalmente.
+
+### Medido, com o caso que NAO podia regredir
+
+```
+Mihawk (efeito DON + custo rest_own_card):  33 -> 9
+   0: OP12-034@own_board   chave=[3.0, 35.0]    <- personagem PRIMEIRO
+   1: EB01-015@own_board
+   2: OP12-031@own_board
+   3: OP14-020@own_leader
+   4: Don@own_don_rested   chave=[9.0]          <- DON por ULTIMO
+
+Nami OP14-031 (efeito DON, SEM custo):  5 -> 2, so DON  [SEM REGRESSAO]
+```
+
+`smoke_fast.py`: **1.430 OK, 0 FALHOU**.
+
+### O que isto NAO resolve
+
+A auditoria continua **sem conseguir dizer se o alvo foi o MELHOR** (bloco 846):
+falta id ligando a decisao de alvo ao PASSO do efeito. Este fix conserta o
+COMPORTAMENTO (o bot agora tem o candidato certo pra clicar); a MEDICAO de
+qualidade de alvo continua dependendo do `step_index`/`purpose` no
+`/choose_target`. **Sao dois trabalhos, e so um foi feito.**
+
+**NAO validado em partida** -- proxima CPU x CPU com o Mihawk deve mostrar
+`activate_main` concluindo. As outras 27 cartas do bloco 845 seguem sem teste.
+
+---
+
 ## 2026-09-17 (846) - "foi no alvo certo?" -- a telemetria de HOJE NAO consegue responder, e o motivo e estrutural. Mais dois erros MEUS pegos no caminho
 
 Pedido do usuario: *"avaliando os efeitos e qualidade deles tb, se foi no alvo

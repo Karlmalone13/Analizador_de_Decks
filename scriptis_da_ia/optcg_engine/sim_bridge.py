@@ -2551,6 +2551,40 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if actor_don_target:
             break
 
+    # ZONAS que o CUSTO do ator pode exigir, e que NAO sao DON.
+    # ACHADO AO VIVO 17/09 (blocos 843-846, Dracule Mihawk OP14-020): o filtro
+    # `actor_don_target` mais abaixo mantinha SO as zonas de DON porque o
+    # EFEITO e `set_don_active` -- e apagava os 28 outros candidatos, entre eles
+    # os personagens do proprio campo. Mas o CUSTO da carta e *"You may rest 1
+    # of your cards"*: o jogo pede uma CARTA, o bot so tinha DON pra clicar, e
+    # a ativacao nunca completava. Medido: 33 candidatos entravam, **5 saiam**,
+    # todos DON e todos ja marcados como "nunca e alvo valido" (chave 9.0).
+    #
+    # Efeito e custo sao perguntas DIFERENTES e o jogo faz as duas. Filtrar
+    # pelas zonas do efeito nao pode apagar as zonas do custo.
+    #
+    # Generico pelo TIPO do custo (mesma disciplina de "corrija pela FORMA"):
+    # sao 28 cartas no banco com custo de restar carta propria + efeito mirando
+    # outra coisa (bloco 845); so o Mihawk tinha sido visto em partida.
+    _CUSTO_ZONAS = {
+        'rest_own_card': {'own_board', 'own_leader', 'own_stage'},
+        'rest_own_character': {'own_board'},
+        'rest_own_leader_or_stage': {'own_leader', 'own_stage'},
+        'trash_own_character': {'own_board'},
+        'ko_own_character': {'own_board'},
+        'return_own_character_to_hand': {'own_board'},
+        'trash_from_hand': {'own_hand'},
+        'trash_any_from_hand': {'own_hand'},
+        'reveal_from_hand': {'own_hand'},
+        'place_from_trash_bottom_deck': {'own_trash'},
+    }
+    actor_zonas_de_custo = set()
+    if actor_code:
+        for _blk in _relevant_blocks(actor_code, attacker_power > 0):
+            for _c in (_blk.get('costs') or []):
+                if isinstance(_c, dict):
+                    actor_zonas_de_custo |= _CUSTO_ZONAS.get(_c.get('type') or '', set())
+
     # O ator MENCIONA DON em algum lugar (acao ou custo)? Se nao menciona,
     # nenhum clique em DON pode ser valido -- ver o bloco de exclusao no fim.
     # Detectado pelo VOCABULARIO do parser ('don' no nome da acao/custo:
@@ -3036,7 +3070,13 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         zonas_don = ({'own_don_rested'} if actor_don_target == 'rested'
                      else {'own_don'} if actor_don_target == 'active'
                      else _ZONAS_DON_PROPRIAS)
-        so_don = [c for c in candidates if c.get('zone') in zonas_don]
+        # As zonas que o CUSTO exige entram JUNTO (bloco 847): o jogo pergunta
+        # o custo e o efeito separadamente, e apagar as do custo trava a
+        # ativacao inteira. A ordenacao ja resolve a prioridade -- quando o
+        # efeito nao aceita DON como alvo real, o DON carrega a chave 9.0
+        # ("nunca valido") e as cartas do custo vem na frente naturalmente.
+        zonas_ok = zonas_don | actor_zonas_de_custo
+        so_don = [c for c in candidates if c.get('zone') in zonas_ok]
         if so_don:
             candidates = so_don
 

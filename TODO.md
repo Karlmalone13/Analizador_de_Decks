@@ -34,6 +34,27 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **MIHAWK CORRIGIDO (17/09/2026, bloco 847)**: a causa nao era nenhuma das 2
+> hipoteses anteriores. Reproduzido isoladamente: `order_target_candidates`
+> **descartava 28 de 33 candidatos** e devolvia so os 5 DON -- que ela mesma ja
+> marcava como "nunca e alvo valido" (chave 9.0). O bot nao tinha o que clicar.
+>
+> **Culpado**: o filtro `actor_don_target` (criado em 30/08 por achado legitimo
+> da Nami OP14-031) mantem SO zonas de DON quando o efeito e `set_don_active`.
+> O Mihawk tem esse efeito **e** um CUSTO (`rest_own_card`) que pede uma CARTA
+> -- apagada pelo filtro. **Efeito e custo sao perguntas diferentes.**
+>
+> **Fix pela FORMA**: `_CUSTO_ZONAS` (tipo de custo -> zonas exigidas) entra
+> junto no filtro; vale pras **28 cartas** do bloco 845. A ordenacao ja resolve
+> a prioridade sozinha (DON tem chave 9.0, custo vem na frente).
+>
+> **Medido**: Mihawk 33 -> 9 com personagem em 1o e DON em ultimo; **Nami 5 -> 2,
+> so DON, SEM REGRESSAO**. `smoke_fast`: 1.430 OK, 0 FALHOU.
+>
+> **NAO resolve** a medicao de qualidade de alvo (bloco 846) -- falta o
+> `step_index`/`purpose` no `/choose_target`. **NAO validado em partida**: a
+> proxima CPU x CPU com Mihawk deve mostrar `activate_main` concluindo.
+
 > **"FOI NO ALVO CERTO?" -- NAO DA PRA RESPONDER HOJE (17/09/2026, bloco 846)**:
 > pedido do usuario. Resultado honesto: **nenhum bug de alvo estabelecido**, e o
 > motivo de nao dar pra responder e ESTRUTURAL.
