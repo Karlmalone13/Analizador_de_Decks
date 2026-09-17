@@ -1846,6 +1846,13 @@ o usuário pediu explicitamente pra telemetria agregada vir primeiro):
 
    Filtrar uma carta: `python auditoria_efeitos.py --codigo <CODIGO>`.
 
+   > **PENDENCIA OBRIGATORIA (17/09/2026)**: esta auditoria diz se o efeito
+   > CONCLUIU e QUAL alvo foi escolhido, mas **nao consegue dizer se foi o
+   > MELHOR alvo** -- falta `step_index`/`purpose` no `/choose_target` ligando a
+   > decisao ao PASSO do efeito. Ver a secao "MEDIR A QUALIDADE DO ALVO" no
+   > `TODO.md`. Nao dar o assunto por encerrado sem isto.
+
+
    > **O `server_stdout.log` é TRUNCADO a cada restart do server** (achado
    > 17/09). Os alertas `[AUTO-COLLECT][ATENCAO]`/`[COLETA-Q]` sobrevivem em
    > `BOT/engine_server/logs/session_<ts>.log`, um por sessão, e os relatórios

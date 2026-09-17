@@ -163,6 +163,41 @@ visivel**.
 
 ---
 
+## 2026-09-17 (848) - A MEDICAO de qualidade de alvo vira pendencia OBRIGATORIA registrada
+
+Pedido do usuario: *"registra que a medicao de qualidade deve ser feita"*. Nao
+e "seria bom ter" -- fica como trabalho DEVIDO, e nenhuma sessao deve dar o
+assunto por encerrado sem isto.
+
+### Por que precisa estar escrito
+
+O bloco 847 corrigiu o COMPORTAMENTO (o bot voltou a receber o candidato certo
+pra clicar). E facil uma sessao futura ler aquilo como "resolvido" e seguir --
+mas a MEDICAO continua impossivel, e sao dois trabalhos distintos.
+
+### O que falta, em uma linha
+
+`/choose_target` loga `actor_code` mas **nao diz de qual PASSO de qual efeito o
+pedido veio**. O campo que resolve: **`step_index` + `purpose` (`custo` x
+`efeito`)** no request e no `decision_log`.
+
+Sem ele o casamento e por `(ator, turno)`, e num turno cabem anexar DON, pagar
+custo e alvos de gatilhos DIFERENTES da mesma carta -- foi exatamente isso que
+produziu **2 falsos positivos** no bloco 846 (OP17-054 e OP15-061, os dois
+dissolvidos ao conferir o combat log).
+
+### O que destrava
+
+* dizer se o alvo foi o **MELHOR**, e nao so se foi do **LADO** certo (hoje:
+  36 de 39 coerentes com o lado, e nada alem disso);
+* atacar com dado a familia `alvo dentro do efeito` -- **16,4%**, a PIOR
+  categoria medida do projeto.
+
+Registrado no `TODO.md` como secao propria e com ponteiro no **3o passo da
+telemetria obrigatoria**, nos dois espelhos (`CLAUDE.md` + `AGENTS.md`).
+
+---
+
 ## 2026-09-17 (847) - MIHAWK CORRIGIDO: o filtro de DON apagava os candidatos do CUSTO -- 33 entravam, 5 saiam, todos invalidos
 
 Pedido do usuario: atacar isto antes do ciclo 3. **Corrigido, e a causa nao era

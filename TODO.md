@@ -34,6 +34,31 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> ## PENDENCIA ABERTA E OBRIGATORIA: MEDIR A QUALIDADE DO ALVO
+>
+> **Registrado a pedido do usuario (17/09/2026)**: *"registra que a medicao de
+> qualidade deve ser feita"*. Nao e "seria bom ter" -- fica como trabalho
+> devido, e nenhuma sessao deve dar o assunto por encerrado sem isto.
+>
+> **O QUE FALTA, concretamente**: o `/choose_target` recebe e loga `actor_code`,
+> mas **nao diz DE QUAL PASSO de qual efeito** aquele pedido veio. Sem isso o
+> casamento possivel e por `(ator, turno)` -- e num turno cabem anexar DON,
+> pagar custo, e alvos de gatilhos DIFERENTES da mesma carta. Foi exatamente
+> isso que produziu 2 falsos positivos no bloco 846.
+>
+> **O campo que resolve**: `step_index` + `purpose` (`custo` x `efeito`) no
+> request e no `decision_log`.
+>
+> **O que isso DESTRAVA**:
+> * dizer se o alvo foi o **MELHOR**, nao so se foi do LADO certo (hoje: 36 de
+>   39 coerentes com o lado, e nada alem disso);
+> * atacar com dado a familia `alvo dentro do efeito` -- **16,4%**, a PIOR
+>   categoria medida do projeto.
+>
+> **Estado**: o bloco 847 corrigiu o COMPORTAMENTO (o bot agora recebe o
+> candidato certo pra clicar). A MEDICAO continua impossivel. **Sao dois
+> trabalhos e so um foi feito.**
+
 > **MIHAWK CORRIGIDO (17/09/2026, bloco 847)**: a causa nao era nenhuma das 2
 > hipoteses anteriores. Reproduzido isoladamente: `order_target_candidates`
 > **descartava 28 de 33 candidatos** e devolvia so os 5 DON -- que ela mesma ja
