@@ -210,6 +210,17 @@ def _detalhe_do_alvo(decisoes_alvo: list) -> dict | None:
     escolheram algo. "Escolher nenhum alvo" nao acontece neste caminho, entao
     `alvo vazio` nao e um desfecho a esperar aqui.
     """
+    # ATRIBUICAO CORRIGIDA (bloco 846): pegar a PRIMEIRA decisao do turno estava
+    # errado. Um mesmo (ator, turno) pode ter VARIAS decisoes de alvo -- anexar
+    # DON pro ataque, custo, e o alvo do efeito -- e a primeira costuma ser a de
+    # DON. Isso produzia "suspeitos" falsos: OP15-061 (`debuff_power`) aparecia
+    # mirando `own_don_rested` quando nas outras decisoes do MESMO turno ele
+    # mirava `opp_leader`/`opp_board` corretamente.
+    #
+    # Agora devolve TODAS as decisoes do turno e marca qual delas e COERENTE com
+    # o lado que o efeito deveria atingir. Sem id ligando decisao a passo, isto
+    # e o mais honesto: mostrar o conjunto, nao fingir que ha uma so.
+    todas = []
     for d in decisoes_alvo or []:
         ca = d.get("chosen_action") or {}
         ids = ca.get("ordered_ids") or []
@@ -218,21 +229,28 @@ def _detalhe_do_alvo(decisoes_alvo: list) -> dict | None:
             continue
         por_id = {c.get("target_id"): c for c in cands}
         esc = por_id.get(ids[0]) or {}
+        todas.append({"carta": esc.get("card_code"), "zona": esc.get("zone"),
+                      "rank": esc.get("rank"), "n": len(cands)})
         outros = [c for c in cands if c.get("target_id") != ids[0]]
         # Ordena do MAIS PROXIMO pro mais distante: pra entender "por que este
         # e nao aquele", quem importa e o VICE, nao o pior da lista. A 1a
         # versao ordenava ao contrario e mostrava os 3 piores candidatos, que
         # nao explicam nada.
         outros.sort(key=lambda c: (c.get("rank") if c.get("rank") is not None else 10**6))
-        return {
+        primeiro = {
             "carta": esc.get("card_code"), "zona": esc.get("zone"),
             "rank": esc.get("rank"), "rank_key": esc.get("rank_key"),
             "n_candidatos": len(cands),
             "descartados": [{"carta": c.get("card_code"), "zona": c.get("zone"),
                              "rank": c.get("rank")} for c in outros[:3]],
             "ordem_completa": len(ids),
+            "todas_do_turno": todas,
         }
-    return None
+        break
+    else:
+        return None
+    primeiro["todas_do_turno"] = todas
+    return primeiro
 
 
 def analisar(regs: list[dict], db: dict, filtro: str = "") -> dict:

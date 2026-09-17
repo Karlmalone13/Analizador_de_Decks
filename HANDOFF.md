@@ -163,6 +163,86 @@ visivel**.
 
 ---
 
+## 2026-09-17 (846) - "foi no alvo certo?" -- a telemetria de HOJE NAO consegue responder, e o motivo e estrutural. Mais dois erros MEUS pegos no caminho
+
+Pedido do usuario: *"avaliando os efeitos e qualidade deles tb, se foi no alvo
+certo ou nao"*. **Resultado honesto: nao da pra responder com confianca hoje, e
+agora se sabe exatamente o que falta.**
+
+### Erro meu #1 -- a atribuicao de alvo estava ERRADA (corrigida)
+
+`_detalhe_do_alvo` pegava a **PRIMEIRA** decisao de alvo do (ator, turno). Mas o
+mesmo par pode ter VARIAS: anexar DON pro ataque, custo, e o alvo do efeito --
+e a primeira costuma ser a de DON.
+
+Isso produzia suspeitos falsos. O OP15-061 aparecia mirando `own_don_rested`
+num efeito de `debuff_power`, quando no MESMO turno havia:
+
+```
+turno 3: Don@own_don_rested, OP17-039@opp_leader, OP17-039@opp_leader
+turno 4: OP17-079@opp_leader, Don@own_don_rested
+```
+
+Ele mirava o oponente corretamente -- eu e que lia a decisao errada. Corrigido:
+agora devolve **todas** as decisoes do turno (`todas_do_turno`), em vez de
+fingir que ha uma so.
+
+### A medicao, ja com a correcao
+
+```
+efeitos com alvo COERENTE com o lado esperado : 36
+efeitos INCOERENTES                            :  3
+sem regra / sem registro de alvo               : 15
+```
+
+### Erro meu #2 -- os 3 "incoerentes" NAO sao bug
+
+Conferidos no combat log, um a um, antes de reportar:
+
+| carta | o que eu ia reportar | o que o JOGO registrou |
+|---|---|---|
+| **OP17-054** (Stussy) | mirou `own_don_rested` num `lock_opp_character_attack` | `Stussy: Enel ["OP15-118"] can't attack next turn` -- **FUNCIONOU, acertou o oponente** |
+| **OP15-061** (Ohm) | mirou `own_don_rested` num `debuff_power` | `Ohm: Minus 1 Don` / `Ohm: Draw 1 Card` -- o alvo em DON e coerente com ESSE efeito; eu cruzei o `when_attacking` com o alvo do `on_play` da MESMA carta |
+| OP12-031 | mirou `own_hand` num `rest_opp_character` | sem linha de efeito no log -- **inconclusivo** |
+
+**Dois de tres eram artefato da minha analise.** Nenhum bug de alvo foi
+estabelecido nesta investigacao.
+
+### O LIMITE ESTRUTURAL -- e a resposta a pergunta do usuario
+
+> **A telemetria registra que UM alvo foi escolhido, mas nao registra a QUAL
+> PASSO de qual efeito aquele alvo pertence.**
+
+Nao ha id ligando `decision_kind=target` ao passo do efeito. O casamento
+possivel hoje e por `(ator, turno)`, e num turno cabem: anexar DON, pagar
+custo, e um ou mais alvos de efeito -- de gatilhos DIFERENTES da mesma carta
+(foi o que me pegou no OP15-061).
+
+Entao "foi no alvo certo?" so tem resposta confiavel quando a carta tem UM
+gatilho, UM passo e nenhum custo. Para o resto, o que da pra afirmar hoje e
+fraco: **36 de 39 coerentes com o LADO esperado (92%)**, sem conseguir dizer se
+foi o MELHOR alvo daquele lado.
+
+### O que falta, concretamente
+
+O `/choose_target` precisaria receber (e o log gravar) **de qual passo do efeito
+aquele pedido veio** -- algo como `step_index`/`purpose` (`custo` x `efeito`).
+E a MESMA lacuna que causa o bug do Mihawk (bloco 844): la o bot responde o
+prompt do custo com o alvo do efeito; aqui a auditoria nao consegue separar os
+dois depois do fato. **Uma correcao resolve os dois.**
+
+Ate isso existir, avaliar QUALIDADE de alvo depende de leitura manual do combat
+log, caso a caso -- que foi o que esta investigacao fez, e por isso so cobriu 3.
+
+### Metodo
+
+Terceira vez na semana em que um "achado" dissolveu ao ser conferido contra a
+verdade do jogo (blocos 837, 843, e este). O padrao ja e claro o bastante pra
+virar reflexo: **numero agregado da auditoria e ponto de partida; o combat log
+e o juiz.**
+
+---
+
 ## 2026-09-17 (845) - O ALCANCE MEDIDO: nao sao 144 cartas, sao **28** -- e o tipo de custo DOMINANTE funciona 20 de 20
 
 Consulta pedida pelo usuario depois do bloco 844, pra decidir se o bug do

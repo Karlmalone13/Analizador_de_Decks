@@ -34,6 +34,30 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **"FOI NO ALVO CERTO?" -- NAO DA PRA RESPONDER HOJE (17/09/2026, bloco 846)**:
+> pedido do usuario. Resultado honesto: **nenhum bug de alvo estabelecido**, e o
+> motivo de nao dar pra responder e ESTRUTURAL.
+>
+> **Erro meu #1 (corrigido)**: `_detalhe_do_alvo` pegava a PRIMEIRA decisao de
+> alvo do (ator,turno) -- mas cabem varias (anexar DON, custo, efeito), e a 1a
+> costuma ser DON. Gerava suspeitos falsos. Agora devolve `todas_do_turno`.
+>
+> **Medicao corrigida**: 36 coerentes, 3 incoerentes, 15 sem regra.
+>
+> **Erro meu #2**: os 3 incoerentes NAO sao bug -- conferidos no combat log,
+> **OP17-054 FUNCIONOU** (`Stussy: Enel can't attack next turn`), **OP15-061** eu
+> cruzei o `when_attacking` com o alvo do `on_play` da MESMA carta, e OP12-031
+> ficou inconclusivo.
+>
+> **O LIMITE**: a telemetria grava QUE um alvo foi escolhido, nao a QUAL PASSO de
+> qual efeito ele pertence -- o casamento e por `(ator,turno)` e num turno cabem
+> DON, custo e varios gatilhos. **O que falta**: `/choose_target` receber e logar
+> `step_index`/`purpose` (custo x efeito). **E a MESMA lacuna do bug do Mihawk
+> (bloco 844) -- uma correcao resolve os dois.**
+>
+> Ate la: da pra afirmar **36 de 39 coerentes com o LADO (92%)**, nao se foi o
+> MELHOR alvo daquele lado.
+
 > **ALCANCE MEDIDO: 28 cartas, nao 144 (17/09/2026, bloco 845)**: consulta
 > pedida pelo usuario. Exposicao ESTRUTURAL da 144 cartas com custo escolhivel
 > + efeito que mira algo (`trash_from_hand` sozinho = 100). **Mas cruzando com
