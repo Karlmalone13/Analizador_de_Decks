@@ -163,6 +163,71 @@ visivel**.
 
 ---
 
+## 2026-09-17 (840) - O ultimo menu cego, fechado -- e o outro NAO precisava de fix
+
+Pedido do usuario: fechar `Start Placing on Bottom/Top` e `Confirm Revealed
+Card`, os dois que sobraram do bloco 838.
+
+### Correcao da minha propria recomendacao: sao UM, nao dois
+
+Varridos todos os logs, 23 ocorrencias. **`Confirm Revealed Card` tem UMA
+opcao so** (`['Confirm Revealed Card']`) -- nao ha escolha a fazer, e pegar a
+primeira esta CERTO. Nao era bug. Eu tinha listado como bug sem olhar as
+opcoes.
+
+### O menu real: Streusen (OP17-050)
+
+> *"[On Play] Look at 2 cards from the top of your deck, sort them in any order
+> and place them at the top or bottom of your deck. Then, draw 1 card."*
+
+Topo = compra uma das 2 que acabou de ver. Fundo = enterra as duas e compra as
+cegas. **O bot escolhia Fundo em 100% das vezes**, pelo mesmo fallback.
+
+### A informacao que NAO existe -- e o que fazer com isso
+
+Conferido no `decision_log`: a decisao chega com **so os dois rotulos**. Nenhum
+dado sobre QUAIS cartas estao sendo posicionadas. Entao avaliar as cartas esta
+fora de alcance -- o plugin nao manda isso.
+
+O que da pra usar e o **efeito parseado do ator**: se ha passo de COMPRA depois
+do posicionamento, topo entrega carta ja vista. Streusen parseado:
+`look_top_deck(2) -> add_to_hand(1) -> deck_reorder_rest -> draw(1)`.
+
+`_posicionamento_preferido(actor_code)` le o banco de efeitos e devolve `'top'`
+so quando ha posicionamento + `draw`. **Sem `draw`, devolve None** -- nao ha
+base pra preferir um lado, e chutar seria inventar criterio.
+
+**Alcance honesto**: dos 393 efeitos com passo de posicionamento, so **8** tem
+`draw` depois. A regra e generica na FORMA (sai do banco, nao do codigo da
+carta), mas atinge poucas cartas. Dizer que "resolve posicionamento" seria
+exagero.
+
+### O `actorCode` ja vinha e nao era usado
+
+`ChooseEffectOptionRequest.actorCode` existe no modelo desde antes (linha 690)
+e o `/choose_effect_option` **nao repassava** pra bridge. Uma linha.
+
+### Medido, com os casos que NAO podiam regredir
+
+| caso | resultado |
+|---|---|
+| Streusen + ator | **'Start Placing on Top'** (era Bottom) |
+| mesmo menu SEM ator | cai no fallback, honesto |
+| Enel `Gain 0/1/Max` | **'Gain Max Don'** -- sem regressao |
+| `Trash 2` x `Opponent Draws 2` | inalterado -- sem regressao |
+| `Confirm Revealed Card` (1 opcao) | escolhe a unica |
+
+`smoke_fast.py`: **1.430 OK, 0 FALHOU**.
+
+### Estado
+
+Os tres menus que apareceram em partida estao tratados ou dispensados. O que
+continua aberto e a escolha de VALOR (`1 x Max` do Enel, e qual das 2 cartas o
+Streusen deveria priorizar) -- essa depende de dado que o plugin nao manda, e e
+julgamento que deveria vir do MODELO.
+
+---
+
 ## 2026-09-17 (839) - O FIX DO ENEL VALIDADO EM PARTIDA: 0% -> 80%, e o DON entra em campo de verdade
 
 Partida CPU x CPU rodada pelo usuario logo apos o fix do bloco 838, com o server

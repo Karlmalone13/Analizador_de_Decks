@@ -34,6 +34,23 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **ULTIMO MENU CEGO FECHADO (17/09/2026, bloco 840)**: eram **um**, nao dois --
+> `Confirm Revealed Card` tem **opcao unica**, nao ha escolha e pegar a primeira
+> esta certo (eu tinha listado como bug sem olhar as opcoes).
+>
+> **Streusen OP17-050**: *olha 2, posiciona topo/fundo, DEPOIS compra 1*. O bot
+> escolhia Fundo em 100% -- enterrava as duas e comprava as cegas. A decisao
+> chega **sem dizer quais cartas sao** (o plugin nao manda), entao a regra sai do
+> **efeito parseado do ator**: ha posicionamento + `draw` -> topo entrega carta ja
+> vista. Sem `draw` devolve None (chutar seria inventar criterio).
+>
+> **Alcance honesto**: dos 393 efeitos com posicionamento, so **8** tem `draw`.
+> Generico na FORMA, estreito no alcance.
+>
+> `actorCode` ja vinha no request e nao era repassado -- uma linha no server.
+> Medido sem regressao: Streusen -> **Top**; Enel -> **Max**; `Trash x Opponent
+> Draws` inalterado. `smoke_fast`: 1.430 OK, 0 FALHOU.
+
 > **FIX DO ENEL VALIDADO EM PARTIDA (17/09/2026, bloco 839)**: os dois testes
 > definidos antes de rodar passaram. **(1)** 4 de 4 decisoes de opcao escolheram
 > `Gain Max Don` com motivo `'ganho de N (mais e melhor)'` -- o fallback cego

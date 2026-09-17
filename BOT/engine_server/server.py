@@ -1264,7 +1264,11 @@ def choose_effect_option(req: ChooseEffectOptionRequest):
         gs_opt = _dto_to_gs(req.state.bot, req.state.turnNumber)
         opp_opt = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
         bridge = _get_bridge()
-        idx, motivo = bridge.escolher_opcao_de_efeito(gs_opt, opp_opt, req.options)
+        # `actorCode` ja vinha no request e nao era repassado -- sem ele a
+        # bridge nao tem como consultar o efeito parseado do ator, que e o
+        # que decide topo x fundo (bloco 840).
+        idx, motivo = bridge.escolher_opcao_de_efeito(
+            gs_opt, opp_opt, req.options, actor_code=req.actorCode)
         melhor = next((o for o in req.options if o.index == idx), req.options[0])
         print(f"[V3CHOICE] opcoes={[(o.index, o.text) for o in req.options]} "
               f"-> escolhida {melhor.index} ({melhor.text!r}) :: {motivo}", flush=True)
