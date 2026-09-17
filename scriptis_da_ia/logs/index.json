@@ -6269,5 +6269,284 @@
       "You": "decks_full/Enel-P_2026-09-17T16.44.41_p3.json",
       "Opponent": "decks_full/Rocks.D.Xebec-B_2026-09-17T16.44.41_p3.json"
     }
+  },
+  {
+    "id": "2026-09-17T17.11.16",
+    "friendly_name": "Enel-P_x_Marshall.D.Teach-BY",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T17.11.16.log",
+    "parsed_file": "parsed/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T17.11.16.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T17.11.16.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-09-17T17.11.16.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T17.11.16.json",
+      "Opponent": "decks_full/Marshall.D.Teach-BY_2026-09-17T17.11.16.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.11.16_p2",
+    "friendly_name": "Enel-P_x_Dracule.Mihawk-G",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "turns": 9,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Dracule.Mihawk-G_2026-09-17T17.11.16_p2.log",
+    "parsed_file": "parsed/Enel-P_x_Dracule.Mihawk-G_2026-09-17T17.11.16_p2.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T17.11.16_p2.json",
+      "Opponent": "decks/Dracule.Mihawk-G_2026-09-17T17.11.16_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T17.11.16_p2.json",
+      "Opponent": "decks_full/Dracule.Mihawk-G_2026-09-17T17.11.16_p2.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.11.16_p3",
+    "friendly_name": "Enel-P_x_Rocks.D.Xebec-B",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Rocks.D.Xebec-B_2026-09-17T17.11.16_p3.log",
+    "parsed_file": "parsed/Enel-P_x_Rocks.D.Xebec-B_2026-09-17T17.11.16_p3.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T17.11.16_p3.json",
+      "Opponent": "decks/Rocks.D.Xebec-B_2026-09-17T17.11.16_p3.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T17.11.16_p3.json",
+      "Opponent": "decks_full/Rocks.D.Xebec-B_2026-09-17T17.11.16_p3.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.11.16_p4",
+    "friendly_name": "Rocks.D.Xebec-B_x_Monkey.D.Luffy-B",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-079",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-B"
+    },
+    "turns": 10,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Rocks.D.Xebec-B_x_Monkey.D.Luffy-B_2026-09-17T17.11.16_p4.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Monkey.D.Luffy-B_2026-09-17T17.11.16_p4.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-09-17T17.11.16_p4.json",
+      "Opponent": "decks/Monkey.D.Luffy-B_2026-09-17T17.11.16_p4.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Rocks.D.Xebec-B_2026-09-17T17.11.16_p4.json",
+      "Opponent": "decks_full/Monkey.D.Luffy-B_2026-09-17T17.11.16_p4.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.34.51",
+    "friendly_name": "Enel-P_x_Marshall.D.Teach-BY",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T17.34.51.log",
+    "parsed_file": "parsed/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T17.34.51.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T17.34.51.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-09-17T17.34.51.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T17.34.51.json",
+      "Opponent": "decks_full/Marshall.D.Teach-BY_2026-09-17T17.34.51.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.34.51_p2",
+    "friendly_name": "Enel-P_x_Dracule.Mihawk-G",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "turns": 9,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Dracule.Mihawk-G_2026-09-17T17.34.51_p2.log",
+    "parsed_file": "parsed/Enel-P_x_Dracule.Mihawk-G_2026-09-17T17.34.51_p2.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T17.34.51_p2.json",
+      "Opponent": "decks/Dracule.Mihawk-G_2026-09-17T17.34.51_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T17.34.51_p2.json",
+      "Opponent": "decks_full/Dracule.Mihawk-G_2026-09-17T17.34.51_p2.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.34.51_p3",
+    "friendly_name": "Enel-P_x_Rocks.D.Xebec-B",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Rocks.D.Xebec-B_2026-09-17T17.34.51_p3.log",
+    "parsed_file": "parsed/Enel-P_x_Rocks.D.Xebec-B_2026-09-17T17.34.51_p3.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T17.34.51_p3.json",
+      "Opponent": "decks/Rocks.D.Xebec-B_2026-09-17T17.34.51_p3.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T17.34.51_p3.json",
+      "Opponent": "decks_full/Rocks.D.Xebec-B_2026-09-17T17.34.51_p3.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.34.51_p4",
+    "friendly_name": "Rocks.D.Xebec-B_x_Monkey.D.Luffy-B",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-079",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-B"
+    },
+    "turns": 10,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Rocks.D.Xebec-B_x_Monkey.D.Luffy-B_2026-09-17T17.34.51_p4.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Monkey.D.Luffy-B_2026-09-17T17.34.51_p4.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-09-17T17.34.51_p4.json",
+      "Opponent": "decks/Monkey.D.Luffy-B_2026-09-17T17.34.51_p4.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Rocks.D.Xebec-B_2026-09-17T17.34.51_p4.json",
+      "Opponent": "decks_full/Monkey.D.Luffy-B_2026-09-17T17.34.51_p4.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.34.51_p5",
+    "friendly_name": "Rocks.D.Xebec-B_x_Dracule.Mihawk-G",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "turns": 14,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Rocks.D.Xebec-B_x_Dracule.Mihawk-G_2026-09-17T17.34.51_p5.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Dracule.Mihawk-G_2026-09-17T17.34.51_p5.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-09-17T17.34.51_p5.json",
+      "Opponent": "decks/Dracule.Mihawk-G_2026-09-17T17.34.51_p5.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Rocks.D.Xebec-B_2026-09-17T17.34.51_p5.json",
+      "Opponent": "decks_full/Dracule.Mihawk-G_2026-09-17T17.34.51_p5.json"
+    }
   }
 ]

@@ -34,6 +34,25 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **FIX DO MIHAWK VALIDADO EM PARTIDA (17/09/2026, bloco 849)**: `activate_main`
+> **0% -> 67%**, e confirmado pelo ESTADO: `ativo 0->3 | restado 10->7` nos
+> turnos 5 e 6 -- exatamente os 3 DON que a carta promete. A "falha" do t3 NAO e
+> falha (`restado 0->0`, nao havia DON pra ativar). Cliques: antes **12, todos
+> `Don`, 0 sucessos**; agora 24 espalhados por personagens, **2 de 3 funcionando**.
+>
+> **ERRO MEU corrigido antes de virar "regressao"**: eu ia reportar cliques
+> recusados subindo 687 -> 990. **O `LogOutput.log` e CUMULATIVO** -- comparei o
+> mesmo arquivo crescendo. Por trecho normalizado: **30,5% antes x 31,5%
+> depois** = **sem regressao**.
+>
+> **Propriedade a nao esquecer**: `LogOutput.log` ACUMULA entre sessoes; o
+> `server_stdout.log` e TRUNCADO a cada restart (bloco 841). Comportam-se ao
+> CONTRARIO e confundi-los da comparacao falsa nos dois sentidos.
+>
+> Coleta: +94 alvos, corpus **698.724**, simulador **1.245**, `efeitos_error=None`.
+> **ABERTO**: as outras 27 cartas do bloco 845 sem teste, e a MEDICAO de
+> qualidade de alvo (bloco 848) continua impossivel.
+
 > ## PENDENCIA ABERTA E OBRIGATORIA: MEDIR A QUALIDADE DO ALVO
 >
 > **Registrado a pedido do usuario (17/09/2026)**: *"registra que a medicao de

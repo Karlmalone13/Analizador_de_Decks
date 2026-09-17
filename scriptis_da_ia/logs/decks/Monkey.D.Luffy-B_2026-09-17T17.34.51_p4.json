@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP17-093",
+      "name": "Monkey D. Luffy",
+      "count": 3
+    },
+    {
+      "code": "OP17-081",
+      "name": "Gerd",
+      "count": 3
+    },
+    {
+      "code": "OP17-080",
+      "name": "Usopp",
+      "count": 2
+    },
+    {
+      "code": "OP17-096",
+      "name": "OP17-096",
+      "count": 2
+    },
+    {
+      "code": "OP17-089",
+      "name": "Jaguar D. Saul",
+      "count": 2
+    },
+    {
+      "code": "OP17-094",
+      "name": "OP17-094",
+      "count": 1
+    },
+    {
+      "code": "OP17-084",
+      "name": "OP17-084",
+      "count": 1
+    },
+    {
+      "code": "OP17-095",
+      "name": "OP17-095",
+      "count": 1
+    },
+    {
+      "code": "OP17-085",
+      "name": "OP17-085",
+      "count": 1
+    },
+    {
+      "code": "OP17-086",
+      "name": "OP17-086",
+      "count": 1
+    },
+    {
+      "code": "OP17-098",
+      "name": "OP17-098",
+      "count": 1
+    },
+    {
+      "code": "OP17-091",
+      "name": "OP17-091",
+      "count": 1
+    }
+  ],
+  "total_seen": 19,
+  "leader": "OP17-079"
+}

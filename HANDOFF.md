@@ -163,6 +163,74 @@ visivel**.
 
 ---
 
+## 2026-09-17 (849) - FIX DO MIHAWK VALIDADO EM PARTIDA: 0% -> 67%, e os 3 DON entram de verdade
+
+Partida CPU x CPU com o server subido 22s depois do commit do fix (`2c5a442`
+as 17:23:36, server as 17:23:58).
+
+### O resultado, confirmado pelo ESTADO e nao pela contagem
+
+```
+t5  status=confirmed  ativo 0 -> 3 | restado 10 -> 7
+t6  status=confirmed  ativo 0 -> 3 | restado 10 -> 7
+t3  status=confirmed  ativo 6 -> 6 | restado  0 ->  0
+```
+
+*"Set up to 3 of your DON!! cards as active"* -- **exatamente 3 DON desvirados**
+nos turnos 5 e 6. `activate_main` do Mihawk: **0% -> 67%**.
+
+E a "falha" do t3 **nao e falha**: `restado 0 -> 0`, nao havia DON restado pra
+ativar. Mesma classe do teto do Enel (bloco 839) e do mesmo refinamento
+pendente da auditoria (`"up to N"` com N disponivel = 0 deveria sair `?`).
+
+### O que mudou nos cliques
+
+| | antes | depois |
+|---|---|---|
+| o que o bot clicava | **12 cliques, TODOS `Don`** | 24 cliques: `Don`(4), `EB01-015`(3), `OP14-020`(4), `OP14-032`(2), `OP14-039`(4), `ST02-007`(2), `ST24-004`(5) |
+| ativacoes que funcionaram | **0** | **2 de 3** |
+
+Os personagens entraram na lista de candidatos, que era exatamente o que o
+filtro apagava.
+
+### ERRO MEU de leitura, corrigido antes de virar "regressao"
+
+Eu ia reportar que os cliques recusados subiram de **687 para 990** -- +44%, o
+custo previsto do fix. **Errado: o `LogOutput.log` do BepInEx e CUMULATIVO.** As
+ativacoes antigas (linhas 1209 e 1441, as de so-DON que diagnostiquei no bloco
+844) continuam no arquivo; as novas estao em 2503+. Eu comparei o mesmo arquivo
+crescendo.
+
+Medido por trecho, e normalizado:
+
+| trecho | linhas | recusas | taxa |
+|---|---|---|---|
+| antes do fix (1-2400) | 2.400 | 733 | **30,5%** |
+| depois do fix (2401-fim) | 815 | 257 | **31,5%** |
+
+**Sem regressao.** A taxa ficou praticamente igual -- o fix nao pagou o custo
+que eu temia.
+
+> **Registrar a propriedade do arquivo, porque ela engana**: `LogOutput.log`
+> ACUMULA entre sessoes do jogo (3 inicios de plugin no mesmo arquivo), ao
+> contrario do `server_stdout.log`, que e TRUNCADO a cada restart do server
+> (bloco 841). Os dois se comportam ao CONTRARIO um do outro, e confundi-los
+> produz comparacao falsa nos dois sentidos.
+
+### Coleta
+
+`[COLETA-Q] 94 alvos`. Corpus 698.630 -> **698.724**; simulador em **1.245**.
+`efeitos_error=None`.
+
+### O que continua aberto
+
+* As outras **27 cartas** do bloco 845 (custo de restar carta propria) seguem
+  **sem teste em partida**.
+* A **MEDICAO de qualidade de alvo** (bloco 848) continua impossivel -- este
+  fix e de COMPORTAMENTO. Falta `step_index`/`purpose` no `/choose_target`.
+
+---
+
 ## 2026-09-17 (848) - A MEDICAO de qualidade de alvo vira pendencia OBRIGATORIA registrada
 
 Pedido do usuario: *"registra que a medicao de qualidade deve ser feita"*. Nao
