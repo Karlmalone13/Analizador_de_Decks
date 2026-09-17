@@ -34,6 +34,28 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **2 PARTIDAS: ENEL CONFIRMADO, MIHAWK E O ACHADO ABERTO (17/09/2026, bloco
+> 843)**: coleta 100% automatica, `efeitos_error=None` nas duas, corpus
+> 698.352 -> **698.567** (+215; simulador em 1.088).
+>
+> **ENEL funcionando** -- confirmado pelo ESTADO: `DON campo 1->6, 5->6, 5->6`.
+> As 2 "falhas" sao `6->6`, com o DON no TETO (DON deck de 6 cartas): e o
+> esgotamento previsto no bloco 839, nao bug. O rotulo deveria ser `?` e nao
+> `NAO` -- refinamento ja registrado como pendente.
+>
+> **MIHAWK OP14-020 = achado REAL**, 2 `status=failed` em partida nova (+4 no
+> bloco 832 = 6 ocorrencias independentes). **Minha hipotese anterior esta
+> DESMENTIDA**: eu tinha escrito que o motor oferecia sem a condicao
+> `board_has_cost_gte: 5`; conferido no `state_before`, `OP12-031(c5)` estava em
+> campo nos DOIS turnos -- **a condicao estava satisfeita**.
+>
+> **ESTABELECIDO**: o bot escolheu alvo coerente (`Don` em `own_don_rested`), o
+> estado nao mudou (`ativo 1->1` com 5 DON restados), e o **combat log NAO tem
+> nenhuma linha da habilidade disparando** (o Enel tem) -- a ativacao nunca
+> chegou ao jogo. **NAO estabelecido**: o custo e *"rest 1 of your cards"* e nao
+> ha registro de escolha de qual carta RESTAR -- pista, nao diagnostico.
+> **Proximo passo**: `LogOutput.log` do BepInEx, que tem a sequencia de cliques.
+
 > **AUDITORIA DIZ QUAL ALVO E POR QUE (17/09/2026, bloco 842)**: pedido do
 > usuario. O dado sempre esteve no `decision_log` (`card_code`, `zone`, `rank`,
 > **`rank_key`** por candidato) e nao era lido -- a auditoria so dizia

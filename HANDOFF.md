@@ -163,6 +163,86 @@ visivel**.
 
 ---
 
+## 2026-09-17 (843) - Duas partidas: o ENEL CONFIRMADO funcionando, e o MIHAWK vira o achado aberto -- com a minha hipotese anterior DESMENTIDA
+
+Duas partidas CPU x CPU depois dos fixes dos blocos 838/840. Telemetria lida na
+ordem obrigatoria dos TRES passos (bloco 841).
+
+### Coleta: tudo automatico, `efeitos_error=None` nas duas
+
+```
+[COLETA-Q]  92 alvos | [COLETA-Q] 123 alvos   (origem=Arthur_Trabalho_simulador)
+[AUTO-COLLECT][ATENCAO] 2 e 4 efeito(s) DISPARARAM e NAO concluiram
+```
+
+Corpus: 698.352 -> **698.567** (+215). Simulador acumula **1.088** linhas.
+
+### 1. O ENEL ESTA FUNCIONANDO -- confirmado pelo estado, nao pela contagem
+
+```
+t2  DON campo 1 -> 6 | ativo 0 -> 1
+t3  DON campo 5 -> 6 | ativo 0 -> 1
+t4  DON campo 5 -> 6 | ativo 0 -> 1
+t5  DON campo 5 -> 6 | ativo 2 -> 3
+```
+
+O fix do bloco 838 se sustenta em partida nova. **As duas "falhas" que a
+auditoria acusou sao `6 -> 6`**: DON ja no TETO de 6 (o lider tem DON deck de 6
+cartas). Nao e bug -- e o esgotamento previsto no bloco 839, e o caso "up to N
+com N disponivel = 0" que ja estava registrado como refinamento pendente da
+auditoria. **A ferramenta acusou corretamente algo que nao e falha**; o rotulo
+e que deveria ser `?` e nao `NAO`.
+
+### 2. O MIHAWK (OP14-020) e o achado REAL -- e minha hipotese estava ERRADA
+
+Dois `activate_main` com `status=failed`, em partida NOVA. Ja tinham sido **4
+na sessao do bloco 832**, entao sao 6 ocorrencias em sessoes independentes.
+
+**A hipotese que eu tinha registrado esta DESMENTIDA.** No bloco 838 escrevi:
+*"o motor oferece e paga o custo sem a condicao `board_has_cost_gte: 5` estar
+satisfeita"*. Conferido no `state_before` das duas ativacoes:
+
+```
+turno 3: OP12-034(c1) EB01-015(c1) OP12-031(c5)  -> tem custo>=5? SIM
+turno 4: OP12-034(c1) EB01-015(c1) OP12-031(c5) EB01-015(c1) -> SIM
+```
+
+**A condicao ESTAVA satisfeita nas duas.** A causa e outra.
+
+### O que esta ESTABELECIDO
+
+* O bot escolheu alvo: `Don` em `own_don_rested` -- o alvo do EFEITO ("set up
+  to 3 of your DON!! as active"), coerente.
+* O estado nao mudou: `ativo 1 -> 1`, com 5 DON restados disponiveis em t3.
+* O `error` e do PLUGIN, nao do jogo: *"estado inalterado no proximo main state
+  estavel"* -- e deteccao por ausencia de mudanca, nao recusa explicita.
+* **O combat log NAO tem nenhuma linha da habilidade disparando.** Compare com
+  o Enel, que aparece como `[You] Enel: Attach 1 Rested Don to Ohm`. **A
+  ativacao nunca aconteceu no jogo.**
+
+### O que NAO esta estabelecido -- e nao vou afirmar
+
+O texto da carta e *"**You may rest 1 of your cards**: If there is a Character
+with a cost of 5 or more, set up to 3 of your DON!! cards as active"*. O
+**CUSTO** e restar 1 carta propria, e as duas decisoes de alvo registradas
+escolheram DON (o alvo do efeito) -- **nao ha registro de escolha de qual carta
+RESTAR**. Isso e uma pista, nao um diagnostico: nao sei se o jogo chegou a
+pedir essa escolha, se o bot errou o clique, ou se e outra coisa.
+
+**Proximo passo concreto**: o log do BepInEx (`LogOutput.log`) mostra a
+sequencia de cliques do plugin -- e onde daria pra ver se o prompt de custo
+apareceu e o que foi respondido. Nao investigado nesta sessao.
+
+### Metodo -- o que esta investigacao fez diferente
+
+Conferi a condicao ANTES de repetir a hipotese, e ela caiu. E conferi o combat
+log ANTES de concluir, o que separou "o motor decidiu errado" de "a ativacao
+nao chegou ao jogo". Depois dos tres erros de regua desta semana (blocos 828,
+832, 837), o padrao que funciona e sempre o mesmo: **cruzar a telemetria com a
+verdade do jogo antes de nomear a causa.**
+
+---
+
 ## 2026-09-17 (842) - A auditoria passa a dizer QUAL alvo, POR QUE e com que DESFECHO -- turno a turno
 
 Pedido do usuario: *"a gente precisa avaliar se ele foi ativado e concluido, ou
