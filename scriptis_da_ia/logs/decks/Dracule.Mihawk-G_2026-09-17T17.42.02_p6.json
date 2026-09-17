@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "code": "OP12-034",
+      "name": "Perona",
+      "count": 2
+    },
+    {
+      "code": "OP08-036",
+      "name": "OP08-036",
+      "count": 2
+    },
+    {
+      "code": "OP12-118",
+      "name": "Jewelry Bonney",
+      "count": 2
+    },
+    {
+      "code": "ST24-002",
+      "name": "Kid & Killer",
+      "count": 2
+    },
+    {
+      "code": "OP14-032",
+      "name": "Humandrill",
+      "count": 2
+    },
+    {
+      "code": "OP06-038",
+      "name": "OP06-038",
+      "count": 2
+    },
+    {
+      "code": "OP07-026",
+      "name": "Jewelry Bonney",
+      "count": 1
+    },
+    {
+      "code": "OP14-033",
+      "name": "OP14-033",
+      "count": 1
+    },
+    {
+      "code": "PRB02-006",
+      "name": "PRB02-006",
+      "count": 1
+    },
+    {
+      "code": "OP12-037",
+      "name": "OP12-037",
+      "count": 1
+    },
+    {
+      "code": "EB01-015",
+      "name": "EB01-015",
+      "count": 1
+    },
+    {
+      "code": "ST02-007",
+      "name": "ST02-007",
+      "count": 1
+    },
+    {
+      "code": "OP14-039",
+      "name": "OP14-039",
+      "count": 1
+    }
+  ],
+  "total_seen": 19,
+  "leader": "OP14-020"
+}

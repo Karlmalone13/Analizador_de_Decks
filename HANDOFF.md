@@ -163,6 +163,99 @@ visivel**.
 
 ---
 
+## 2026-09-17 (850) - O FIX DESTRAVOU UM SEGUNDO BUG: a habilidade do Mihawk PROIBE jogar Personagens no turno, e o motor nao sabe disso ao vivo -- 6 de 6 plays recusados
+
+Partida nova, com o log do plugin medido so no trecho novo (o usuario zerou a
+acumulacao a proposito depois do achado do bloco 849).
+
+### O sinal: um modo de falha que TROCOU
+
+```
+ANTES do fix (17:23)            DEPOIS
+16:37  ExecuteOne=0  inalt=2     17:34  ExecuteOne=2  inalt=0
+16:44  ExecuteOne=0  inalt=2     17:42  ExecuteOne=4  inalt=0
+17:11  ExecuteOne=0  inalt=2
+```
+
+A falha SILENCIOSA (`estado inalterado`) sumiu e virou erro EXPLICITO
+(`BotExecutor.ExecuteOne retornou false`). Mas o total subiu de 2 pra 4, e
+**OP12-034 saiu de 3/3 sucessos pra maioria falhando** -- parecia regressao
+minha.
+
+### NAO e regressao -- e consequencia do fix FUNCIONAR
+
+Primeiro sinal contra a minha culpa: as falhas sao `on_play` com **`alvo=nao`**
+-- sem decisao de alvo, e o fix do bloco 847 so mexe em filtro de CANDIDATOS a
+alvo. Se nao ha alvo, `order_target_candidates` nem e chamada.
+
+O log do plugin diz o que de fato aconteceu:
+
+```
+[Bot] play: jogo recusou OP12-034 (custo? restricao?)
+```
+
+O jogo recusou **JOGAR A CARTA**. E o efeito do Mihawk, parseado, e:
+
+```json
+"steps": [{"action": "self_cant_play", "scope": "chars"},
+          {"action": "set_don_active", "count": 3, "up_to": true}]
+```
+
+**A habilidade proibe jogar Personagens naquele turno.** Enquanto ela nunca
+completava (blocos 843-847), a restricao nunca existia. Agora que funciona, ela
+vale -- e o motor continua tentando jogar personagens.
+
+**Correlacao perfeita, 6 de 6:**
+
+```
+Mihawk ativado: partida e3667600 turnos [3,5,6] | partida ab8d986e turnos [3,4,5,6]
+
+plays recusados:
+  e3667600 t3: OP14-033   <<< mesmo turno
+  e3667600 t6: OP12-034   <<< mesmo turno
+  e3667600 t6: OP14-032   <<< mesmo turno
+  ab8d986e t4: EB01-015   <<< mesmo turno
+  ab8d986e t6: OP12-034   <<< mesmo turno
+  ab8d986e t6: ST02-007   <<< mesmo turno
+```
+
+Nenhum play recusado fora de turno com Mihawk ativado.
+
+### A causa, e ela ja tem nome no projeto
+
+```
+decision_engine.py:2887   cant_play_chars_this_turn: bool = False
+server.py                 ocorrencias de "cant_play": 0
+```
+
+**O motor MODELA a restricao e o caminho AO VIVO nunca a preenche.** E
+exatamente a classe do bloco 830 ("10 flags de runtime que o `_dto_to_gs` nunca
+seta"), desta vez numa flag de GameState em vez de flag de carta -- e a terceira
+vez na semana que o mesmo padrao aparece: **estado que so existe quando o MOTOR
+executa, e que ao vivo quem executa e o JOGO.**
+
+### O caminho do fix (NAO feito)
+
+Quando o bot ativa um efeito com `self_cant_play`, o ao vivo precisa marcar
+`cant_play_chars_this_turn` -- e ela tem que SOBREVIVER entre chamadas, porque
+`_dto_to_gs` reconstroi o estado do zero a cada decisao. Exige memoria por
+`(match_id, turno)` no server, nao so um `setattr`.
+
+**Custo medido de nao fazer**: 6 plays recusados na sessao, todos desperdicio
+garantido (~0,8s de clique cada) e nenhum efeito.
+
+### Resto da telemetria
+
+`[COLETA-Q] 114 alvos`; corpus **698.838**; `efeitos_error=None`.
+Recusas de clique no trecho NOVO: 271 em 716 linhas (**37,8%**, contra 30,5% e
+31,5% dos trechos anteriores) -- subiu, e os 6 plays recusados acima explicam
+parte. Nao medido quanto.
+
+Mihawk: `activate_main` 71% (5 SIM, 2 NAO). As 2 falhas sao do tipo
+`restado 0 -> 0` (sem DON pra ativar), nao bug -- mesmo caso do bloco 849.
+
+---
+
 ## 2026-09-17 (849) - FIX DO MIHAWK VALIDADO EM PARTIDA: 0% -> 67%, e os 3 DON entram de verdade
 
 Partida CPU x CPU com o server subido 22s depois do commit do fix (`2c5a442`

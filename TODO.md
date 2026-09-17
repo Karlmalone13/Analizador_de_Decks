@@ -34,6 +34,29 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **O FIX DESTRAVOU UM SEGUNDO BUG (17/09/2026, bloco 850)**: a habilidade do
+> Mihawk tem `self_cant_play(chars)` -- **proibe jogar Personagens no turno**.
+> Enquanto ela nunca completava, a restricao nunca existia; agora que funciona,
+> vale -- e o motor continua tentando jogar personagens. **6 de 6 plays
+> recusados estao no MESMO turno de uma ativacao do Mihawk.**
+>
+> **NAO e regressao do fix**: as falhas sao `on_play` com `alvo=nao` (sem
+> decisao de alvo), e o bloco 847 so mexe em filtro de candidatos a ALVO. O log
+> do plugin diz `play: jogo recusou OP12-034 (custo? restricao?)`.
+>
+> **Causa**: `decision_engine.py:2887` tem `cant_play_chars_this_turn`; o
+> `server.py` seta isso **0 vezes**. Mesma classe do bloco 830 (flags de runtime
+> que o ao vivo nunca preenche), 3a vez na semana.
+>
+> **Fix NAO feito**: exige memoria por `(match_id, turno)` no server -- o
+> `_dto_to_gs` reconstroi o estado a cada decisao, entao um `setattr` nao
+> sobrevive. **Custo medido**: 6 plays recusados/sessao, desperdicio garantido.
+>
+> Telemetria: +114 alvos, corpus **698.838**, `efeitos_error=None`. Recusas de
+> clique no trecho novo: **37,8%** (contra 30,5%/31,5%) -- subiu, e os 6 plays
+> explicam parte; quanto, nao medido. Mihawk `activate_main` 71%, com as 2
+> falhas do tipo `restado 0->0` (sem DON), nao bug.
+
 > **FIX DO MIHAWK VALIDADO EM PARTIDA (17/09/2026, bloco 849)**: `activate_main`
 > **0% -> 67%**, e confirmado pelo ESTADO: `ativo 0->3 | restado 10->7` nos
 > turnos 5 e 6 -- exatamente os 3 DON que a carta promete. A "falha" do t3 NAO e
