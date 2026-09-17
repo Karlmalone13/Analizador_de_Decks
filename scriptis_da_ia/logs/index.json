@@ -6083,5 +6083,36 @@
       "You": "decks_full/Enel-P_2026-09-14T17.58.01_p7.json",
       "Opponent": "decks_full/Rocks.D.Xebec-B_2026-09-14T17.58.01_p7.json"
     }
+  },
+  {
+    "id": "2026-09-17T14.04.39",
+    "friendly_name": "Enel-P_x_Marshall.D.Teach-BY",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T14.04.39.log",
+    "parsed_file": "parsed/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T14.04.39.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T14.04.39.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-09-17T14.04.39.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T14.04.39.json",
+      "Opponent": "decks_full/Marshall.D.Teach-BY_2026-09-17T14.04.39.json"
+    }
   }
 ]

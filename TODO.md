@@ -34,6 +34,24 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **FIX DO ENEL VALIDADO EM PARTIDA (17/09/2026, bloco 839)**: os dois testes
+> definidos antes de rodar passaram. **(1)** 4 de 4 decisoes de opcao escolheram
+> `Gain Max Don` com motivo `'ganho de N (mais e melhor)'` -- o fallback cego
+> sumiu. **(2)** `activate_main` do Enel **0% -> 80%**; geral 45% -> **89%**.
+>
+> **Verdade do estado** (nao so a contagem): turno 2 o DON no campo vai de
+> **2 pra 6** e **3 DON sao anexados a um personagem**; turnos 3-5 idem.
+>
+> **A unica "falha" NAO e falha**: turno 6 com DON ja em 6, que e o TETO (o
+> lider tem DON deck de 6 cartas) -- a habilidade nao tinha mais o que dar.
+> Isso **confirma a ressalva do bloco 838**: `Max` esgota o DON deck no turno 6,
+> entao a escolha fina (1 x Max, e QUANDO) e julgamento de VALOR e deveria vir
+> do MODELO. Fila do ML, agora com evidencia de partida.
+>
+> **Refinamento menor NAO feito**: "up to N" com N disponivel = 0 deveria sair
+> `?` e nao `NAO` na auditoria. **Seguem abertos**: `Start Placing on
+> Bottom/Top` e `Confirm Revealed Card` no fallback cego.
+
 > **CAUSA RAIZ DO ENEL ACHADA (17/09/2026, bloco 838)**: o bot escolhia
 > **"Gain 0 Active Don"**. `escolher_opcao_de_efeito` so reconhecia
 > `opponent draw`/`trash`/`discard`; todo outro rotulo caia em "primeira

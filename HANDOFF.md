@@ -163,6 +163,68 @@ visivel**.
 
 ---
 
+## 2026-09-17 (839) - O FIX DO ENEL VALIDADO EM PARTIDA: 0% -> 80%, e o DON entra em campo de verdade
+
+Partida CPU x CPU rodada pelo usuario logo apos o fix do bloco 838, com o server
+reiniciado (sem isso o `sim_bridge` velho ficaria em memoria -- mesma armadilha
+ja paga tres vezes nesta semana).
+
+### Os dois testes que eu tinha definido ANTES de rodar
+
+**1. A escolha mudou?** SIM -- 4 de 4 decisoes de opcao:
+
+```
+antes : idx=0 'Gain 0 Active Don'  motivo: 'nenhum rotulo reconhecido -- primeira opcao'
+agora : 'Gain Max Don'             motivo: 'ganho de N (mais e melhor)'
+```
+
+**2. O efeito conclui?** SIM:
+
+| | antes | agora |
+|---|---|---|
+| `activate_main` do Enel | **0%** | **80%** (4 de 5) |
+| `activate_main` geral | 45% | **89%** |
+
+### A VERDADE DO ESTADO -- o DON entra mesmo
+
+Nao ficou na contagem da auditoria; conferido no `transition_observation`:
+
+```
+turno 2: DON no campo 2 -> 6 | ativo 2->3 | anexado 0->3
+turno 3: DON 5 -> 6 | ativo 1->2 | anexado 1->4
+turno 4: DON 5 -> 6 | ativo 0->1 | anexado 0->4
+turno 5: DON 5 -> 6 | ativo 0->1 | anexado 0->4
+```
+
+No turno 2 o DON salta de 2 pra **6** e **3 DON sao anexados a um personagem**.
+E exatamente o texto da carta funcionando.
+
+### A UNICA "falha" NAO e falha -- e o teto do DON deck
+
+```
+turno 6: DON 6 -> 6 | ativo 6->6 | nada muda
+```
+
+O DON ja estava em **6**, que e o maximo: o proprio lider diz *"your DON!!
+deck consists of 6 cards"*. **A habilidade nao tinha mais o que dar.**
+
+Isso **confirma a ressalva registrada no bloco 838**: pegar `Max` esgota o DON
+deck la pelo turno 6. Zero nunca era certo, e Max tambem nao e obviamente
+certo -- a escolha fina (1 x Max, e QUANDO) e julgamento de VALOR e deveria vir
+do modelo. Fica na fila do ML, agora com evidencia de partida.
+
+**Refinamento menor da auditoria** (nao feito): "up to N" com N disponivel = 0
+deveria sair como `?`, nao `NAO` -- mesma familia do falso positivo do bloco
+832. So aparece quando o recurso esgota, entao e raro.
+
+### Estado
+
+Fix validado ponta a ponta: escolha, execucao e estado. `smoke_fast`: 1.430 OK,
+0 FALHOU (bloco 838). Os dois outros menus (`Start Placing on Bottom/Top`,
+`Confirm Revealed Card`) seguem no fallback cego, **nao corrigidos**.
+
+---
+
 ## 2026-09-17 (838) - CAUSA RAIZ DO ENEL: o bot escolhia **"Gain 0 Active Don"** -- 27 de 27 menus de opcao caiam em "rotulo nao reconhecido -> primeira opcao"
 
 O usuario mandou atacar o Enel depois da retratacao do bloco 837. **Aqui ha bug
