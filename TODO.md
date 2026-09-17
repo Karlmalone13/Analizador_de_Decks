@@ -34,6 +34,23 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **PASSAGEM DE BASTAO -> Arthur_PC (17/09/2026, bloco 851)**: a
+> `Arthur_Trabalho` PARA de treinar. **O passo que quebra em silencio**: o
+> corpus NAO viaja pelo git -- aqui tem **698.838** linhas, a Arthur_PC tem
+> **625.361**. Sem descompactar o `.gz` enviado, ela treina 10,5% menor e joga
+> fora 73.477 linhas SEM ERRO NENHUM.
+>
+> **Ao chegar**: `git pull` -> descompactar `q_alvos.jsonl.gz` em
+> `metrics/q_alvos.jsonl` -> conferir os 3 pontos (corpus 698.838 com 3 origens;
+> `ciclo_estado` com 2 ciclos, proximo e o **3, seed 9303**; sklearn 1.9.0 +
+> `q_net.joblib` abrindo) -> so entao rodar.
+>
+> **FECHADO e validado em partida**: Enel (0->80%), Mihawk (0->71%), Streusen.
+> **ABERTO por custo**: (1) `cant_play_chars_this_turn` nunca setada ao vivo --
+> 6 de 6 plays recusados (bloco 850); (2) MEDICAO de qualidade de alvo
+> (obrigatoria, bloco 848); (3) 27 das 28 cartas do bloco 845 sem teste; (4)
+> ciclo 3 nunca rodado.
+
 > **O FIX DESTRAVOU UM SEGUNDO BUG (17/09/2026, bloco 850)**: a habilidade do
 > Mihawk tem `self_cant_play(chars)` -- **proibe jogar Personagens no turno**.
 > Enquanto ela nunca completava, a restricao nunca existia; agora que funciona,

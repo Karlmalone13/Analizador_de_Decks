@@ -163,6 +163,79 @@ visivel**.
 
 ---
 
+## 2026-09-17 (851) - PASSAGEM DE BASTAO: Arthur_Trabalho -> Arthur_PC. O que fazer AO CHEGAR, e o que NAO viaja pelo git
+
+Pedido do usuario: *"registre, comite e de o push para quando eu chegar em casa
+eu baixar na maquina de origem e continuar os testes"*.
+
+Procedimento do `REGRA_DUAS_MAQUINAS.md`, secao "PASSAR A VEZ". **A
+`Arthur_Trabalho` para de treinar a partir daqui.**
+
+### O RISCO, e e o unico passo que quebra em silencio
+
+```
+corpus AQUI            : 698.838 linhas
+corpus na Arthur_PC    : 625.361  (o estado dela desde 14/09)
+diferenca              :  73.477 linhas que NAO viajam pelo git
+```
+
+**`git pull` NAO traz o corpus.** Se a Arthur_PC rodar o ciclo sem
+descompactar o `.gz`, ela treina num corpus 10,5% menor e joga fora tudo que a
+`Arthur_Trabalho` gerou -- e o pior, sem erro nenhum: o ciclo roda, o numero sai,
+e ninguem percebe.
+
+Composicao do que se perderia:
+* `Arthur_Trabalho`: **72.118** (ciclo 2, auto-jogo no motor)
+* `Arthur_Trabalho_simulador`: **1.359** (CPU x CPU ao vivo, bloco 831)
+
+### PASSO A PASSO ao chegar na Arthur_PC
+
+1. **`git pull`** -- traz codigo, banco de logs, `ciclo_estado.json` e todos os
+   blocos 823-850.
+2. **Descompactar o `q_alvos.jsonl.gz`** (enviado pela sessao) em
+   `scriptis_da_ia/metrics/q_alvos.jsonl`. **Este e o passo que nao pode ser
+   pulado.**
+3. **Conferir antes de rodar qualquer coisa** (os tres pontos da regra):
+   * corpus com **698.838** linhas e 3 origens (`Arthur_PC` 625.361,
+     `Arthur_Trabalho` 72.118, `Arthur_Trabalho_simulador` 1.359);
+   * `ciclo_estado.json` com **2 ciclos** -> o proximo e o **3, seed 9303**;
+   * `scikit-learn 1.9.0` e `q_net.joblib` abrindo sem aviso.
+4. Ai sim: rodar o ciclo, ou jogar.
+
+### ESTADO DO TRABALHO -- o que esta fechado e o que esta aberto
+
+**FECHADO E VALIDADO EM PARTIDA:**
+* Enel OP15-058 (blocos 838/839): escolhia `"Gain 0 Active Don"` em 100% dos
+  menus; corrigido pela FORMA, `activate_main` 0% -> 80%, DON entra de verdade.
+* Mihawk OP14-020 (blocos 844/847/849): o filtro `actor_don_target` apagava os
+  candidatos do CUSTO -- 33 entravam, 5 saiam, todos invalidos. Corrigido,
+  0% -> 71%, `ativo 0->3` confirmado no estado.
+* Streusen OP17-050 (bloco 840): enterrava as 2 cartas que acabou de ver.
+
+**ABERTO, em ordem de custo medido:**
+1. **`cant_play_chars_this_turn` nunca setada ao vivo** (bloco 850) -- a
+   habilidade do Mihawk proibe jogar Personagens no turno, o motor modela a
+   flag (`decision_engine.py:2887`) e o `server.py` seta **0 vezes**. **6 de 6
+   plays recusados** na ultima sessao. Fix exige memoria por `(match_id,turno)`.
+2. **MEDICAO de qualidade de alvo** (bloco 848, pendencia OBRIGATORIA
+   registrada) -- falta `step_index`/`purpose` no `/choose_target`. Sem isso nao
+   da pra dizer se o alvo foi o MELHOR, so se foi do LADO certo.
+3. **27 das 28 cartas** com custo de restar carta propria (bloco 845) seguem
+   **sem teste em partida** -- so o Mihawk foi validado.
+4. **Ciclo 3 nunca rodado** -- seed 9303, e o ciclo 2 ficou `INCONCLUSIVO`.
+
+### ARMADILHAS DE LEITURA registradas nesta leva (custaram erro meu)
+
+* **`LogOutput.log` ACUMULA** entre sessoes do jogo; **`server_stdout.log` e
+  TRUNCADO** a cada restart do server. Comportam-se ao CONTRARIO -- comparar
+  contagem bruta entre sessoes da resultado falso nos dois sentidos (blocos
+  841 e 849).
+* **Numero grande costuma ser exposicao estrutural, nao defeito medido.** Duas
+  vezes no mesmo dia: "144 cartas afetadas" virou 28, e "o bot nunca se defende"
+  virou erro de regua (blocos 845 e 837).
+
+---
+
 ## 2026-09-17 (850) - O FIX DESTRAVOU UM SEGUNDO BUG: a habilidade do Mihawk PROIBE jogar Personagens no turno, e o motor nao sabe disso ao vivo -- 6 de 6 plays recusados
 
 Partida nova, com o log do plugin medido so no trecho novo (o usuario zerou a
