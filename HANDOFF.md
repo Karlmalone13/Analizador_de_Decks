@@ -163,6 +163,55 @@ visivel**.
 
 ---
 
+## 2026-09-17 (841) - A auditoria de efeitos vira 3o PASSO OBRIGATORIO da telemetria, nos dois espelhos
+
+Pergunta do usuario: *"os scripts que fizemos para avaliar os efeitos estao
+rodando tb?"* e, em seguida, a exigencia: *"eles tem que rodar como obrigacao,
+se nao vamos perder dados"*.
+
+### Conferido: esta rodando, e o dado NAO se perde
+
+Prova, nao afirmacao: `metrics/live_runs/efeitos_2026-09-17T14.04.42.json/.txt`
+foi gerado sozinho na partida de hoje, e o alerta esta nos session logs:
+
+```
+[AUTO-COLLECT][ATENCAO] 1 efeito(s) DISPARARAM e NAO concluiram -- ver .../efeitos_2026-09-17T14.04.42.txt
+```
+
+### O SUSTO, e o que ele revelou
+
+O `grep` de `AUTO-COLLECT.*efeito` no `server_stdout.log` voltou **VAZIO**,
+mesmo com o arquivo existindo. Causa: **o `server_stdout.log` e TRUNCADO a cada
+restart do server** (`RedirectStandardOutput` sobrescreve), e eu tinha
+reiniciado depois daquela partida.
+
+**Nenhum dado se perde** -- os relatorios em `metrics/live_runs/` persistem, e
+os alertas ficam em `BOT/engine_server/logs/session_<ts>.log`, um por sessao.
+Mas quem procurar historico no `server_stdout.log` vai achar so a sessao atual
+e pode concluir que nao rodou. Fica registrado.
+
+### A distincao que o usuario cobrou, e ela e correta
+
+**Rodar sozinha e SER LIDA sao coisas diferentes.** A auditoria estava ligada
+no auto-collect desde o bloco 833, mas a ordem obrigatoria de telemetria do
+`CLAUDE.md` tinha **dois** passos (`live_runs/live_*.json` e
+`decision_summary.py`). Uma sessao podia cumprir a regra inteira e nunca abrir
+o relatorio de efeitos -- exatamente onde os dois ultimos bugs reais foram
+achados (Enel e Streusen), e nenhum dos dois aparece nos passos 1 e 2.
+
+Registrado como **3o passo** em `CLAUDE.md` E `AGENTS.md` (regra do espelho),
+com:
+
+* o que ele responde que os outros nao respondem (o efeito chegou ao fim?);
+* **conferir `efeitos_error` no recibo** -- a auditoria e best-effort de
+  proposito (bancar o log e o trabalho critico e nao pode ser perdido junto),
+  entao campo preenchido = **nao rodou naquela partida**, e isso tem que ser
+  dito em vez de passar em silencio;
+* `efeitos_nao_concluidos` como a contagem, e `--codigo` pra filtrar carta;
+* a nota do `server_stdout.log` truncado.
+
+---
+
 ## 2026-09-17 (840) - O ultimo menu cego, fechado -- e o outro NAO precisava de fix
 
 Pedido do usuario: fechar `Start Placing on Bottom/Top` e `Confirm Revealed

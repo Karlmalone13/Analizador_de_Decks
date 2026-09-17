@@ -34,6 +34,23 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **AUDITORIA DE EFEITOS = 3o PASSO OBRIGATORIO (17/09/2026, bloco 841)**:
+> exigencia do usuario (*"eles tem que rodar como obrigacao, se nao vamos perder
+> dados"*). Conferido que JA roda sozinha (prova: `efeitos_2026-09-17T14.04.42`
+> gerado na partida de hoje) -- mas **rodar e SER LIDA sao coisas diferentes**: a
+> ordem obrigatoria do `CLAUDE.md` tinha 2 passos e uma sessao podia cumpri-la
+> sem nunca abrir o relatorio de efeitos, que e onde o Enel e o Streusen foram
+> achados.
+>
+> Registrado nos DOIS espelhos (`CLAUDE.md` + `AGENTS.md`), com a exigencia de
+> **conferir `efeitos_error` no recibo** -- a auditoria e best-effort, entao
+> campo preenchido = NAO rodou, e isso tem que ser reportado.
+>
+> **Achado de operacao**: o `server_stdout.log` e **TRUNCADO a cada restart do
+> server**. Nenhum dado se perde (os relatorios em `live_runs/` persistem e os
+> alertas ficam nos `session_<ts>.log`), mas quem buscar historico ali vai achar
+> so a sessao atual.
+
 > **ULTIMO MENU CEGO FECHADO (17/09/2026, bloco 840)**: eram **um**, nao dois --
 > `Confirm Revealed Card` tem **opcao unica**, nao ha escolha e pegar a primeira
 > esta certo (eu tinha listado como bug sem olhar as opcoes).
