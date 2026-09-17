@@ -163,6 +163,17 @@ visivel**.
 
 ---
 
+> **NOTA (17/09/2026, fecha o bloco 836)**: ao conferir o ultimo push a pedido
+> do usuario, o push estava integro (local == remoto, arvore limpa) mas o
+> **docstring do `auditoria_efeitos.py` estava embaralhado** -- editado em tres
+> camadas (blocos 832/833/835), a secao `O QUE COBRE` tinha caido DENTRO de
+> `LIMITES HONESTOS`, a linha `--json` ficou orfa fora do bloco "Uso:", e a
+> tabela de cobertura listava **2 familias quando ja eram 3** (faltavam os
+> REATIVOS do bloco 835). A ferramenta rodava normal -- era documentacao errada,
+> que neste projeto e problema por si ("nome errado e documentacao errada",
+> commit do bloco 833). Reescrito inteiro, com as 3 familias, os limites num
+> lugar so e o registro do falso positivo que custou o 18% -> 45%.
+
 ## 2026-09-14 (836) - Duas partidas novas: a auditoria rodou SOZINHA e os dois achados REPRODUZIRAM -- deixam de ser suspeita e viram padrao
 
 Primeiro fechamento com tudo ligado. O usuario jogou 2 partidas; nada foi feito

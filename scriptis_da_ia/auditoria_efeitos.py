@@ -1,78 +1,84 @@
 #!/usr/bin/env python3
 """CICLO DE VIDA DE CADA EFEITO numa partida: disparou? concluiu? POR QUE nao?
 
-POR QUE EXISTE (pedido do usuario, 14/09/2026, bloco 832): *"quero que adicione
-na telemetria um script que verifique se um efeito foi disparado e concluido ou
-nao, e porque. Por exemplo, when attacking ativou, foi concluido? sim ou nao e
-porque. Tinha que selecionar alvo, selecionou? sim ou nao e porque. Isso com
-todos os efeitos, on play, activate main, counter, on ko, when attacking, efeito
-do lider etc. Assim vamos conseguir monitorar bugs, falhas, e conseguir corrigir
-e melhorar junto dos treinos."*
+POR QUE EXISTE (pedido do usuario, 14/09/2026, blocos 832-835): *"quero que
+adicione na telemetria um script que verifique se um efeito foi disparado e
+concluido ou nao, e porque. When attacking ativou, foi concluido? Tinha que
+selecionar alvo, selecionou? Isso com todos os efeitos -- on play, activate
+main, counter, on ko, when attacking, efeito do lider etc. Assim vamos
+conseguir monitorar bugs, falhas, e corrigir junto dos treinos."*
 
-O caso concreto que ele deu: *"esse ultimo log da partida do enel, o enel nao
-conseguiu ativar e executar com eficiencia o efeito do lider nenhuma vez"*.
+O caso concreto que ele deu: *"o enel nao conseguiu ativar e executar com
+eficiencia o efeito do lider nenhuma vez"* -- reproduzido pela ferramenta em
+duas partidas independentes (bloco 836).
 
 ### O QUE ISTO RESPONDE, QUE NADA MAIS RESPONDIA
 
-A telemetria ja dizia o que o bot ESCOLHEU (`decision_summary.py`) e quanto DON
-foi gasto sem retorno (`decision_consequence_report.py`). Nenhuma das duas diz
-se o EFEITO de uma carta chegou ao fim -- e e ai que mora a classe de bug que o
-usuario quer cacar: a carta e jogada, o efeito dispara, e **nao acontece nada**,
-sem erro, sem log, sem alerta.
+`decision_summary.py` diz o que o bot ESCOLHEU; `decision_consequence_report.py`
+diz quanto DON foi gasto sem retorno. Nenhuma das duas diz se o EFEITO chegou ao
+fim -- e e ai que mora a classe de bug que o usuario quer cacar: a carta e
+jogada, o efeito dispara, e **nao acontece nada**, sem erro, sem log, sem alerta.
 
 Distingue QUATRO estagios, porque falhar em cada um tem causa diferente:
 
 | estagio | pergunta | onde o dado esta |
 |---|---|---|
-| **1. OFERECIDO** | o motor chegou a gerar a acao como candidata? | `scored_actions` da decisao |
-| **2. ESCOLHIDO** | foi a acao escolhida? | `chosen_action` |
-| **3. ALVO** | precisava de alvo? escolheu? | decisoes `target`/`effect_option` do mesmo ator |
-| **4. CONCLUIDO** | o jogo confirmou, e o estado MUDOU? | `execution.status` + `transition_observation.delta` |
+| **1. OFERECIDO** | o motor gerou a acao como candidata? | `scored_actions` |
+| **2. ESCOLHIDO** | foi escolhida? | `chosen_action` |
+| **3. ALVO** | precisava de alvo? selecionou? | `target`/`effect_option` do mesmo ator |
+| **4. CONCLUIDO** | o jogo confirmou E o estado mudou? | `execution.status` + `transition_observation` |
 
 **Nunca ser OFERECIDO e o pior caso e o mais invisivel** -- e o teto que o
-`CLAUDE.md` registra: *"o que nao vira candidato nao existe"*. Nenhum modelo
-melhor alcanca uma acao que a geracao nunca produziu.
+`CLAUDE.md` registra: *"o que nao vira candidato nao existe"*.
 
-E o estagio 4 pega o caso mais traicoeiro: `status=confirmed` com **delta zero
-em tudo** -- o jogo aceitou, e o efeito nao fez nada.
+E o estagio 4 pega o mais traicoeiro: `status=confirmed` com **delta zero** -- o
+jogo aceitou e o efeito nao fez nada. Foi assim que o Enel apareceu.
 
-### LIMITES HONESTOS -- ler antes de tratar uma linha como bug
-
-### O QUE COBRE
+### O QUE COBRE -- as TRES familias
 
 | familia | de onde vem | criterio de "concluiu" |
 |---|---|---|
 | `on_play`, `activate_main`, `main`, `when_attacking` | decisao `main` | `execution.status` + delta |
 | `counter`, `blocker`, `trigger`, opcional, reacao | decisao `defense` | foi ACEITO |
+| `on_ko`, `on_opp_attack`, `your_turn`/`opp_turn`, `when_rested`... | `target`/`effect_option` por `actor_code` | respondeu a pergunta do jogo |
 
-**As cinco de defesa ficaram de fora da 1a versao** (corrigido a pedido do
-usuario: *"e tb nao e so on play, eu especifiquei isso"*) -- eram 338 decisoes
-nao auditadas, e e justamente onde a qualidade medida e pior no projeto
-(`quais cartas de counter`: 18,5%).
+As duas ultimas ficaram de fora das primeiras versoes, e o usuario pegou as
+duas: *"nao e so on play, eu especifiquei isso"* (as 5 de `defense` -- eram 338
+decisoes nao auditadas) e *"confira no nosso projeto porque tem mais efeitos,
+'on ko' etc"* (o banco tem 30 familias de gatilho; `on_ko` sozinho sao 168
+cartas, e o mapa tinha 4).
 
-* **So enxerga o que passou pelo SERVER.** Efeito resolvido inteiramente pelo
-  jogo, sem perguntar nada ao bot (trigger automatico, passive), nao aparece --
-  nao ha decisao pra registrar. Por isso `passive`/`trigger` saem como
-  `sem_dado`, nunca como falha.
-* **O delta e do PROPRIO lado.** Efeito que so mexe no campo do oponente pode
-  aparecer com delta proprio zero sem ser falha. A coluna diz `delta_zero`, que
-  e PISTA, nao veredito -- mesma disciplina do `[FORTE]` do relatorio de
-  consequencia.
-* **`sent` sem `confirmed`** significa que o jogo nao devolveu confirmacao ate o
-  fim do log -- pode ser fim de partida, nao necessariamente falha.
-* Casamento de alvo com ator e por `actor_code` + turno (nao ha id ligando as
-  duas decisoes). Em turno com duas copias da mesma carta, pode agrupar junto.
+So ficam de fora `passive` e `game_rules`: o jogo resolve sem perguntar nada ao
+bot, entao nao ha decisao pra auditar -- e **nunca sao contados como falha**.
+
+### LIMITES HONESTOS -- ler antes de tratar uma linha como bug
+
+* **So enxerga o que passou pelo SERVER.** Efeito que o jogo resolve sozinho nao
+  aparece.
+* **O delta e do PROPRIO lado.** Efeito que so mexe no oponente ou so muda poder
+  da delta zero sem ser falha -- por isso a expectativa sai dos PASSOS PARSEADOS
+  (`_efeito_e_observavel`) e esses casos saem como `?`, nunca como `NAO`. Sem
+  isso ha falso positivo REAL: a 1a versao acusava OP09-099 (trasha 1 e adiciona
+  1 -> mao neutra), OP09-093 (nega efeito do lider adversario) e OP16-104 (muda
+  poder base), e dizia 18% quando o numero honesto era 45%.
+* **`sent` sem `confirmed`** pode ser fim de partida, nao necessariamente falha.
+* Casamento alvo-ator e por `actor_code` + turno (nao ha id ligando as duas
+  decisoes): duas copias da mesma carta no mesmo turno agrupam.
+* Na DEFESA nao ha `execution` pareado -- a resposta E o ato. "Recusou" e
+  ESCOLHA do bot, nao falha por si; vira achado quando ele recusa TENDO opcao.
 
 Uso:
-    python auditoria_efeitos.py                 # ultimo decision_log
+    python auditoria_efeitos.py                    # ultimo decision_log
     python auditoria_efeitos.py --file <.jsonl>
-    python auditoria_efeitos.py --codigo OP15-058  # filtra UMA carta (qualquer uma)
+    python auditoria_efeitos.py --codigo OP15-058  # UMA carta (qualquer uma)
+    python auditoria_efeitos.py --json saida.json
 
 NAO e auditoria "do lider": cobre QUALQUER carta com efeito -- personagem,
-evento, stage e lider. Na 1a medicao, 50 dos 76 disparos auditados eram
-`on_play` de PERSONAGEM. A flag chamava `--lider` e sugeria o contrario
-(corrigido a pedido do usuario, mesmo dia).
-    python auditoria_efeitos.py --json saida.json
+evento, stage e lider. Na 1a medicao, 50 dos 76 disparos eram `on_play` de
+PERSONAGEM e so 4 do lider.
+
+Roda AUTOMATICO a cada `/outcome` (ligada no `collect_latest_match.py`, bloco
+833): grava `metrics/live_runs/efeitos_<ts>.json`/`.txt` e alerta no stdout.
 """
 from __future__ import annotations
 
