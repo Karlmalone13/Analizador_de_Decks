@@ -163,6 +163,87 @@ visivel**.
 
 ---
 
+## 2026-09-17 (844) - CAUSA RAIZ DO MIHAWK: o bot responde o prompt do CUSTO com o alvo do EFEITO -- 12 cliques, todos em DON, para uma habilidade que pede uma CARTA
+
+Investigado o `LogOutput.log` do BepInEx, como o bloco 843 apontou. **A causa
+esta estabelecida, e e diferente de tudo que eu tinha suposto antes.**
+
+### O que o plugin registrou
+
+```
+[Bot] activate: OP14-020 (acao 1)
+[Bot] alvo de efeito: Don (uid=-10008, actor=OP14-020, faltavam=1 -> faltam=1)
+[Bot] clique em Don NAO consumiu alvo -- jogo pode ter recusado a selecao
+[Bot] alvo de efeito: Don (uid=-10009, ...) -> recusado
+[Bot] alvo de efeito: Don (uid=-10007, ...) -> recusado
+... percorre TODOS os DON, todos recusados
+```
+
+O jogo pede **1 alvo** (`faltavam=1`) e o bot clica DON, um por um, ate acabar.
+`faltam` nunca desce.
+
+### O DISCRIMINANTE -- o que separa isto de ruido
+
+A sessao teve **687 cliques recusados**, entao clique recusado sozinho NAO
+prova falha. O ator dominante e o **Enel com 328** -- e o Enel FUNCIONA. Foi
+preciso achar o que distingue:
+
+| ator | o que o bot clicou |
+|---|---|
+| **OP14-020 (falha)** | **12 cliques, TODOS `Don`** -- nunca tentou um personagem |
+| OP15-058 (funciona) | varia entre cartas REAIS: OP05-077, OP09-072, OP10-067, OP12-063... |
+
+**O Mihawk fica travado em DON.** O Enel varia, erra varias e acerta.
+
+### A causa
+
+Texto: *"[Activate:Main] [Once Per Turn] **You may rest 1 of your cards**: If
+there is a Character with a cost of 5 or more, set up to 3 of your DON!! cards
+as active"*.
+
+E o efeito parseado ja separa as duas coisas corretamente:
+
+```json
+"costs": [{"type": "rest_own_card", "count": 1}],
+"steps": [{"action": "self_cant_play", ...},
+          {"action": "set_don_active", "count": 3, "up_to": true}]
+```
+
+O jogo, naquele instante, pede o alvo do **CUSTO** (qual CARTA restar). O motor
+manda o alvo do **EFEITO** (qual DON ativar) -- confirmado no `decision_log`:
+*"escolheu Don zona=own_don_rested de 33 candidatos"*.
+
+> **O bot esta respondendo o prompt errado.** Nao e alvo mal escolhido dentro de
+> uma lista certa: e a LISTA que e da pergunta errada.
+
+### Por que o Enel nao sofre disto
+
+O efeito do Enel e `add_don`/`give_don` -- DON **e** o alvo legitimo, e o custo
+nao exige restar carta. Por isso as duas coisas coincidem e funciona.
+
+### O que fica ABERTO -- e o tamanho honesto
+
+**Nao corrigido.** O fix exige o caminho ao vivo distinguir alvo de CUSTO de
+alvo de EFEITO, e o `decision_log` mostra que hoje ha uma lista so. E mudanca
+no fluxo de alvo, nao um ajuste local.
+
+**Alcance a medir antes de priorizar**: quantas cartas do banco tem `costs`
+com alvo proprio (`rest_own_card`, `trash_own_card`, etc.) E efeito com alvo
+diferente. So depois disso da pra dizer se isto e um caso ou uma familia.
+
+**Os 687 cliques recusados sao um sinal separado e nao investigado** -- mesma
+classe do bloco 813 (248 recusas numa partida). O Enel acerta "por
+insistencia": varre candidatos ate um funcionar. Custa tempo de partida e
+polui a telemetria, mesmo quando termina certo.
+
+### Metodo
+
+Registro do que quase me fez errar: os 687 cliques recusados pareciam a causa
+obvia, e **nao sao** -- o Enel tem o dobro deles e funciona. O que resolveu foi
+comparar o QUE cada ator clicou, nao quantas vezes falhou.
+
+---
+
 ## 2026-09-17 (843) - Duas partidas: o ENEL CONFIRMADO funcionando, e o MIHAWK vira o achado aberto -- com a minha hipotese anterior DESMENTIDA
 
 Duas partidas CPU x CPU depois dos fixes dos blocos 838/840. Telemetria lida na

@@ -34,6 +34,27 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **CAUSA RAIZ DO MIHAWK ACHADA (17/09/2026, bloco 844)**: investigado o
+> `LogOutput.log` do BepInEx. O bot ativa, o jogo pede **1 alvo**, e ele clica
+> **DON um por um, 12 vezes, todos recusados**.
+>
+> **Causa**: o custo da carta e *"You may rest 1 of your **cards**"* e o efeito
+> parseado JA separa (`costs:[{rest_own_card}]` x `steps:[set_don_active]`). O
+> jogo pede o alvo do **CUSTO** (qual CARTA restar); o motor manda o alvo do
+> **EFEITO** (qual DON ativar). **O bot responde o prompt errado** -- nao e alvo
+> mal escolhido, e a LISTA da pergunta errada.
+>
+> **Discriminante** (687 cliques recusados na sessao, entao recusa sozinha nao
+> prova nada -- o Enel tem **328** e FUNCIONA): o Mihawk clicou **12 de 12 em
+> `Don`**, nunca um personagem; o Enel varia entre cartas reais. O Enel nao
+> sofre porque o efeito dele E sobre DON, entao custo e efeito coincidem.
+>
+> **ABERTO, nao corrigido**: o fix exige o caminho ao vivo distinguir alvo de
+> CUSTO de alvo de EFEITO -- hoje ha uma lista so. **Medir antes de priorizar**:
+> quantas cartas tem `costs` com alvo proprio E efeito com alvo diferente.
+> **Sinal separado**: os 687 cliques recusados (classe do bloco 813) -- o Enel
+> acerta "por insistencia", varrendo candidatos. Nao investigado.
+
 > **2 PARTIDAS: ENEL CONFIRMADO, MIHAWK E O ACHADO ABERTO (17/09/2026, bloco
 > 843)**: coleta 100% automatica, `efeitos_error=None` nas duas, corpus
 > 698.352 -> **698.567** (+215; simulador em 1.088).
