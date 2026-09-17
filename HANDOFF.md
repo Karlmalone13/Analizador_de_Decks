@@ -163,6 +163,61 @@ visivel**.
 
 ---
 
+## 2026-09-17 (842) - A auditoria passa a dizer QUAL alvo, POR QUE e com que DESFECHO -- turno a turno
+
+Pedido do usuario: *"a gente precisa avaliar se ele foi ativado e concluido, ou
+ativado e cancelado, se era para dar alvo, qual alvo ele escolheu e porque, em
+qual turno, etc. assim iremos ir melhorando"*.
+
+### O dado SEMPRE esteve la e nao era lido
+
+Cada candidato a alvo no `decision_log` ja traz `card_code`, `zone`,
+`eligible`, **`rank`** e **`rank_key`** -- e o `rank_key` E a razao da escolha:
+a chave de ordenacao que o motor usou. A auditoria so dizia `alvo=sim/nao`.
+
+**Medido antes de construir**: **461 de 461** decisoes de alvo ao vivo
+escolheram algo. "Escolher nenhum alvo" nao existe neste caminho, entao
+`alvo vazio` nao e um desfecho a esperar -- o "cancelado" vem de outros sinais.
+
+### Desfechos, agora distintos (era so SIM/NAO/?)
+
+| desfecho | o que significa |
+|---|---|
+| `ATIVADO E CONCLUIDO` | confirmado e o estado mudou |
+| `ATIVADO E CANCELADO PELO JOGO` | `status=failed` -- o jogo recusou |
+| `ATIVADO E NAO SURTIU EFEITO` | confirmado, nada mudou, e DEVERIA ter mudado |
+| `CONCLUIU (efeito invisivel do proprio lado)` | delta zero legitimo (so oponente / so poder) |
+| `ENVIADO, SEM CONFIRMACAO` / `SEM EXECUCAO PAREADA` | sem desfecho no log |
+
+### A saida nova
+
+```
+P1  turno 2   OP15-058    activate_main    ATIVADO E CONCLUIDO
+      ALVO: OP15-058 em own_leader | rank 0 de 27 candidatos | chave [-1.0, 0.0]
+      vice: OP09-072(r1), OP10-067(r2), OP15-118(r3)
+```
+
+Turno, carta, gatilho, desfecho, alvo escolhido, zona, o rank e a chave que
+decidiram, e **quem ficou em segundo**.
+
+**Erro meu corrigido no caminho**: a 1a versao ordenava os descartados do pior
+pro melhor e mostrava `Don(r26), Don(r25), Don(r24)` -- os tres PIORES
+candidatos, que nao explicam nada. Pra responder *"por que este e nao aquele"*
+quem importa e o **VICE**. Invertida a ordenacao.
+
+Cobertura na partida de hoje: **17 de 18** disparos com detalhe de alvo.
+
+`smoke_fast.py`: 1.430 OK, 0 FALHOU.
+
+### O que isto destrava
+
+Ate aqui a auditoria dizia SE o efeito completou. Agora diz **em quem** e
+**por que aquele** -- que e a familia de decisao que o projeto mede como a
+pior (`alvo dentro do efeito`: 16,4%). Com o `rank_key` visivel, dá pra
+comparar a escolha do motor contra o que fazia sentido, caso a caso.
+
+---
+
 ## 2026-09-17 (841) - A auditoria de efeitos vira 3o PASSO OBRIGATORIO da telemetria, nos dois espelhos
 
 Pergunta do usuario: *"os scripts que fizemos para avaliar os efeitos estao

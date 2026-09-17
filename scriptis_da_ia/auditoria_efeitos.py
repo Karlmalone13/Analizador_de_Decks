@@ -197,6 +197,44 @@ def _efeito_e_observavel(db: dict, code: str, gatilhos: list) -> bool:
     return False
 
 
+def _detalhe_do_alvo(decisoes_alvo: list) -> dict | None:
+    """QUAL alvo o bot escolheu, de que zona, e POR QUE (o rank que decidiu).
+
+    Pedido do usuario (17/09/2026): *"se era para dar alvo, qual alvo ele
+    escolheu e porque, em qual turno"*. O dado sempre esteve no
+    `decision_log` e nao era lido: cada candidato traz `card_code`, `zone`,
+    `eligible`, `rank` e `rank_key` -- o `rank_key` E a razao da escolha, e a
+    chave de ordenacao que o motor usou.
+
+    Medido antes de construir: **461 de 461** decisoes de alvo ao vivo
+    escolheram algo. "Escolher nenhum alvo" nao acontece neste caminho, entao
+    `alvo vazio` nao e um desfecho a esperar aqui.
+    """
+    for d in decisoes_alvo or []:
+        ca = d.get("chosen_action") or {}
+        ids = ca.get("ordered_ids") or []
+        cands = d.get("scored_actions") or []
+        if not ids or not cands:
+            continue
+        por_id = {c.get("target_id"): c for c in cands}
+        esc = por_id.get(ids[0]) or {}
+        outros = [c for c in cands if c.get("target_id") != ids[0]]
+        # Ordena do MAIS PROXIMO pro mais distante: pra entender "por que este
+        # e nao aquele", quem importa e o VICE, nao o pior da lista. A 1a
+        # versao ordenava ao contrario e mostrava os 3 piores candidatos, que
+        # nao explicam nada.
+        outros.sort(key=lambda c: (c.get("rank") if c.get("rank") is not None else 10**6))
+        return {
+            "carta": esc.get("card_code"), "zona": esc.get("zone"),
+            "rank": esc.get("rank"), "rank_key": esc.get("rank_key"),
+            "n_candidatos": len(cands),
+            "descartados": [{"carta": c.get("card_code"), "zona": c.get("zone"),
+                             "rank": c.get("rank")} for c in outros[:3]],
+            "ordem_completa": len(ids),
+        }
+    return None
+
+
 def analisar(regs: list[dict], db: dict, filtro: str = "") -> dict:
     execucoes = {r.get("decision_id"): r for r in regs if r.get("event") == "execution"}
     decisoes = [r for r in regs if r.get("event") == "decision"]
@@ -243,23 +281,31 @@ def analisar(regs: list[dict], db: dict, filtro: str = "") -> dict:
         chave = (mid, r.get("turn"), cod)
         tem_alvo = bool(alvos.get(chave))
 
+        det_alvo = _detalhe_do_alvo(alvos.get(chave))
         status = ex.get("status") or "sem_execucao"
         if status == "failed":
-            concluiu, porque = "NAO", f"jogo recusou (status=failed{'; ' + str(ex.get('error')) if ex.get('error') else ''})"
+            concluiu = "NAO"
+            desfecho = "ATIVADO E CANCELADO PELO JOGO"
+            porque = f"jogo recusou (status=failed{'; ' + str(ex.get('error')) if ex.get('error') else ''})"
         elif status == "sem_execucao":
+            desfecho = "SEM EXECUCAO PAREADA"
             concluiu, porque = "?", "nenhum evento de execucao pareado"
         elif status == "sent":
+            desfecho = "ENVIADO, SEM CONFIRMACAO"
             concluiu, porque = "?", "enviado, jogo nao confirmou ate o fim do log"
         elif _delta_nulo(tr):
             if _efeito_e_observavel(db, cod, disparados):
+                desfecho = "ATIVADO E NAO SURTIU EFEITO"
                 concluiu, porque = "NAO", ("confirmado, mas NADA mudou no proprio lado "
                                            "(mao/campo/DON/vida/deck) e o efeito DEVERIA "
                                            "ter mexido -- efeito sem efeito")
             else:
+                desfecho = "CONCLUIU (efeito invisivel do proprio lado)"
                 concluiu, porque = "?", ("confirmado; delta proprio zero, mas o efeito so "
                                          "atinge o oponente / so muda poder -- a telemetria "
                                          "do proprio lado NAO enxerga (nao e evidencia de falha)")
         else:
+            desfecho = "ATIVADO E CONCLUIDO"
             concluiu, porque = "SIM", "confirmado e o estado mudou"
 
         linhas.append({
@@ -268,6 +314,7 @@ def analisar(regs: list[dict], db: dict, filtro: str = "") -> dict:
             "alvo_necessario": tem_alvo,
             "alvo_escolhido": tem_alvo,
             "status": status, "concluiu": concluiu, "porque": porque,
+            "desfecho": desfecho, "alvo": det_alvo,
             "delta": (tr or {}).get("delta"),
         })
 
@@ -428,6 +475,27 @@ def imprimir(rel: dict, top: int) -> None:
                       f"alvo={'sim' if l['alvo_escolhido'] else 'nao'}  -> {l['concluiu']}")
                 print(f"        porque: {l['porque']}")
             print()
+
+    # ── DETALHE turno a turno: desfecho + QUAL alvo e POR QUE ───────────
+    if linhas:
+        print("== CADA DISPARO, TURNO A TURNO ==")
+        print("   desfecho | se deu alvo: QUAL carta, de que zona, e o RANK que")
+        print("   decidiu (o `rank_key` e a chave de ordenacao do motor).")
+        for l in sorted(linhas, key=lambda x: (str(x.get("match_id")), x.get("turn") or 0))[:top * 2]:
+            a = l.get("alvo")
+            print(f"  {rot.get(l.get('match_id') or 'legacy','?'):<3} "
+                  f"turno {l['turn']:<3} {l['carta']:<11} "
+                  f"{'/'.join(l['gatilhos']):<16} {l.get('desfecho','?')}")
+            if a:
+                dk = ', '.join(f"{d['carta']}(r{d['rank']})" for d in a.get("descartados") or [])
+                print(f"        ALVO: {a['carta']} em {a['zona']} "
+                      f"| rank {a['rank']} de {a['n_candidatos']} candidatos "
+                      f"| chave {a['rank_key']}")
+                if dk:
+                    print(f"        vice: {dk}")
+            elif l.get("alvo_necessario"):
+                print("        ALVO: houve decisao de alvo, mas sem detalhe legivel")
+        print()
 
     defesa = rel.get("defesa") or []
     if defesa:

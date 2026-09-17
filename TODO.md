@@ -34,6 +34,27 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **AUDITORIA DIZ QUAL ALVO E POR QUE (17/09/2026, bloco 842)**: pedido do
+> usuario. O dado sempre esteve no `decision_log` (`card_code`, `zone`, `rank`,
+> **`rank_key`** por candidato) e nao era lido -- a auditoria so dizia
+> `alvo=sim/nao`.
+>
+> **Desfechos agora distintos**: `ATIVADO E CONCLUIDO`, `ATIVADO E CANCELADO
+> PELO JOGO` (status=failed), `ATIVADO E NAO SURTIU EFEITO`, `CONCLUIU (efeito
+> invisivel do proprio lado)`, `ENVIADO SEM CONFIRMACAO`.
+>
+> **Saida nova**: turno, carta, gatilho, desfecho, alvo escolhido + zona + rank
+> + a chave que decidiu, e **quem ficou em segundo**. *Erro meu corrigido*: a 1a
+> versao mostrava os 3 PIORES descartados; pra explicar a escolha quem importa e
+> o VICE.
+>
+> **Medido antes de construir**: 461 de 461 decisoes de alvo escolheram algo --
+> "nenhum alvo" nao existe no caminho ao vivo. Cobertura: 17 de 18 disparos com
+> detalhe. `smoke_fast`: 1.430 OK, 0 FALHOU.
+>
+> **Destrava**: a familia `alvo dentro do efeito` e a PIOR do projeto (16,4%) --
+> agora da pra ver em quem mirou e por que, caso a caso.
+
 > **AUDITORIA DE EFEITOS = 3o PASSO OBRIGATORIO (17/09/2026, bloco 841)**:
 > exigencia do usuario (*"eles tem que rodar como obrigacao, se nao vamos perder
 > dados"*). Conferido que JA roda sozinha (prova: `efeitos_2026-09-17T14.04.42`
