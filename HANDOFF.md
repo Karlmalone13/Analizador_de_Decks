@@ -163,6 +163,88 @@ visivel**.
 
 ---
 
+## 2026-09-17 (845) - O ALCANCE MEDIDO: nao sao 144 cartas, sao **28** -- e o tipo de custo DOMINANTE funciona 20 de 20
+
+Consulta pedida pelo usuario depois do bloco 844, pra decidir se o bug do
+Mihawk e caso isolado ou familia. **A medicao estreitou muito o achado, e isso
+muda a prioridade.**
+
+### Passo 1 -- exposicao ESTRUTURAL (o numero grande, e enganoso)
+
+848 das 2.839 cartas tem algum custo. Separando os que abrem PROMPT de escolha
+(o jogador escolhe QUAL carta) dos automaticos (`don_minus`, `rest_self`,
+`trash_self`, `rest_don`...):
+
+```
+cartas com custo ESCOLHIVEL + efeito que tambem mira algo: 144
+  trash_from_hand                  100   <- dominante
+  place_from_trash_bottom_deck      20
+  rest_own_character                 6
+  reveal_from_hand                   6
+  rest_own_card                      5
+```
+
+**144 parece uma familia enorme. Nao e o numero que importa.**
+
+### Passo 2 -- o que REALMENTE quebra em partida
+
+Cruzando com as auditorias de efeito ja gravadas em `metrics/live_runs/`:
+
+| carta | custo | SIM | NAO |
+|---|---|---|---|
+| OP17-039 | `trash_from_hand` | **8** | 0 |
+| OP17-081 | `trash_from_hand` | **4** | 0 |
+| OP09-099 | `trash_from_hand` | **4** | 0 |
+| OP17-040 | `trash_from_hand` | **2** | 0 |
+| OP17-042 | `reveal_from_hand` | **2** | 0 |
+| OP09-072 | `trash_from_hand` | **1** | 0 |
+| OP16-108 | `trash_from_hand` | **1** | 0 |
+| **OP14-020** | **`rest_own_card`** | **0** | **4** |
+
+> **`trash_from_hand` conclui 20 de 20.** O tipo de custo que responde por 100
+> das 144 cartas **FUNCIONA**. So o `rest_own_card` falha, 0 de 4.
+
+**Exposicao estrutural nao e defeito.** Se eu tivesse parado no passo 1, teria
+reportado "144 cartas afetadas" -- 7x maior que o real, e apontando pra familia
+errada.
+
+**A explicacao plausivel** (nao verificada): `trash_from_hand` pede carta da
+MAO, e a lista de alvos do motor ja inclui a mao (visto no `decision_log`:
+`zona=own_hand`). `rest_own_card` pede carta do CAMPO/lider, e o motor manda
+DON.
+
+### O escopo REAL: 28 cartas
+
+Efeitos com custo de RESTAR carta propria (`rest_own_card`,
+`rest_own_character`, `rest_own_leader_or_stage`) **e** efeito que mira outra
+coisa: **29 efeitos em 28 cartas**. A lista completa esta no commit; os padroes
+que mais aparecem:
+
+* `rest_own_leader_or_stage` -> `bounce`/`ko` (OP10-044/048/056/081/095) -- 6
+* `rest_own_character` -> `set_active`/`ko`/`buff_power` -- 11
+* `rest_own_card` -> `set_don_active`/`draw`/`buff_power`/`ko` -- 12
+
+**Nenhuma delas foi testada em partida** exceto o Mihawk. Sao a lista do que
+conferir quando o fix sair -- e tambem os decks que valeria jogar pra
+reproduzir antes de consertar.
+
+### O que isto muda na prioridade
+
+O bug e **real e confirmado** (Mihawk, 6 ocorrencias em 3 sessoes), mas o
+alcance e **28 cartas de 2.839 (1,0%)**, nao 144. Nenhuma delas e das mais
+jogadas do banco. Continua valendo corrigir -- o fluxo de alvo nao distinguir
+CUSTO de EFEITO e defeito de arquitetura, nao so desta carta -- mas **nao e
+emergencia**, e nao deve passar na frente do laco de ML.
+
+### Metodo
+
+Segundo caso no mesmo dia em que o numero grande era exposicao estrutural e
+nao defeito medido (o outro foi o "bot nunca se defende", bloco 837). O
+padrao que funciona: **contar quantos PODEM quebrar, depois olhar quantos
+QUEBRARAM.** Os dois numeros quase nunca sao o mesmo.
+
+---
+
 ## 2026-09-17 (844) - CAUSA RAIZ DO MIHAWK: o bot responde o prompt do CUSTO com o alvo do EFEITO -- 12 cliques, todos em DON, para uma habilidade que pede uma CARTA
 
 Investigado o `LogOutput.log` do BepInEx, como o bloco 843 apontou. **A causa

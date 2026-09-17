@@ -34,6 +34,26 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **ALCANCE MEDIDO: 28 cartas, nao 144 (17/09/2026, bloco 845)**: consulta
+> pedida pelo usuario. Exposicao ESTRUTURAL da 144 cartas com custo escolhivel
+> + efeito que mira algo (`trash_from_hand` sozinho = 100). **Mas cruzando com
+> as auditorias reais: `trash_from_hand` conclui 20 de 20** -- o tipo dominante
+> FUNCIONA. So `rest_own_card` falha (**Mihawk, 0 de 4**).
+>
+> **Escopo real**: 29 efeitos em **28 cartas** (1,0% do banco) com custo de
+> RESTAR carta propria + efeito mirando outra coisa -- `rest_own_leader_or_stage
+> -> bounce/ko` (6), `rest_own_character -> set_active/ko/buff` (11),
+> `rest_own_card -> set_don_active/draw/ko` (12). **So o Mihawk foi testado**;
+> as outras 27 sao a lista pra conferir quando o fix sair.
+>
+> **Prioridade**: bug real e confirmado (6 ocorrencias em 3 sessoes), mas 1,0%
+> do banco e nenhuma das mais jogadas -- **nao e emergencia**, nao passa na
+> frente do laco de ML.
+>
+> **Metodo**: 2o caso no MESMO DIA de numero grande que era exposicao
+> estrutural, nao defeito medido (o outro foi "o bot nunca se defende", bloco
+> 837). Contar quantos PODEM quebrar, depois olhar quantos QUEBRARAM.
+
 > **CAUSA RAIZ DO MIHAWK ACHADA (17/09/2026, bloco 844)**: investigado o
 > `LogOutput.log` do BepInEx. O bot ativa, o jogo pede **1 alvo**, e ele clica
 > **DON um por um, 12 vezes, todos recusados**.
