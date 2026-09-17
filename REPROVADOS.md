@@ -297,6 +297,46 @@ antes de medir.
 propria ideia, e rodar offline antes de gastar duelo**. Custo total desta
 reprovacao: ~30 minutos, contra ~3 horas dos experimentos anteriores.
 
+## ERRO DE MEDICAO: "o bot nunca aceita counter nem blocker" era A REGUA (bloco 837)
+
+**Reportado como o achado mais caro em aberto do projeto, em DOIS commits
+(blocos 834 e 836), e era FALSO.**
+
+`auditoria_efeitos.py` julgava todas as fases de defesa por
+`chosen_action.accepted`. Esse campo **so e preenchido em
+`optional`/`trigger`/`reaction`**. Em `counter` a resposta e `counter_ids`, em
+`blocker` e `blocker_id` -- com `accepted` os dois davam **sempre zero**.
+
+| | reportado | REAL |
+|---|---|---|
+| counter | 0 aceitos | **56 de 144 com opcao (39%)** |
+| blocker | 0 aceitos | **11 de 21 com opcao (52%)** |
+
+**A evidencia que desmentia estava no MESMO arquivo de log o tempo todo**: o
+stdout do server imprime `[DEF] counter atk=8000 def=5000 -> 4 cartas` e
+`[DEF] blocker ... -> <nome>`. Bastava ler os proprios prints do endpoint.
+
+**O que enganou**: o numero batia com uma expectativa pre-existente. O
+`CLAUDE.md` ja registrava que a defesa e heuristica fixa sem consulta ao
+modelo, e que `quais cartas de counter` e uma das 3 piores categorias (18,5%).
+"Zero" encaixou nessa historia e passou por confirmacao em vez de checagem --
+inclusive por MIM, que tinha acabado de me queimar com o mesmo tipo de erro no
+bloco 832 (o `delta zero` que dizia 18% quando era 45%).
+
+**A licao, que ja era regra do projeto e foi furada de novo**: *"toda medicao
+precisa de um CONTROLE que possa falhar"* (bloco 780) e *"conferir a logica de
+deteccao contra um caso conhecido manualmente antes de reportar um percentual
+agregado"* (retificacao de 04/08). Um resultado REDONDO -- zero exato, duas
+sessoes seguidas -- e sintoma, nao conquista.
+
+**O que SOBREVIVE da investigacao** (medido com a regua certa):
+* `blocker`: **149 de 170 decisoes nao tinham blocker nenhum em campo** (88%).
+  Isso e composicao de deck/tabuleiro, nao decisao.
+* `trigger`: 11 aceitos de 51 (22%), com uma sessao em **0 de 16** -- essa
+  ponta continua real e NAO investigada.
+
+---
+
 ## ERRO DE MEDICAO: o portao de promocao tinha 10,9% de poder (bloco 756)
 
 **Nao e uma tentativa reprovada -- e a regua que reprovava as

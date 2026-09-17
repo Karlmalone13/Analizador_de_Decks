@@ -279,9 +279,21 @@ def analisar(regs: list[dict], db: dict, filtro: str = "") -> dict:
     for r in decisoes:
         if r.get("decision_kind") != "defense":
             continue
-        fase = r.get("phase") or "?"
         ca = r.get("chosen_action") or {}
-        aceito = bool(ca.get("accepted"))
+        # ERRO DE MEDICAO CORRIGIDO (17/09/2026, bloco 837): eu usava
+        # `accepted` pra TODAS as fases, mas ele so e preenchido em
+        # optional/trigger/reaction. Em `counter` a resposta e `counter_ids`
+        # e em `blocker` e `blocker_id` -- com `accepted` os dois davam SEMPRE
+        # zero, e eu reportei "o bot nunca se defende" como achado grave, duas
+        # vezes. O motor de fato contra-atacava: o proprio stdout do server
+        # dizia `[DEF] counter ... -> 4 cartas`.
+        fase_ = fase = r.get("phase") or "?"
+        if fase_ == "counter":
+            aceito = bool(ca.get("counter_ids"))
+        elif fase_ == "blocker":
+            aceito = bool(ca.get("blocker_id"))
+        else:
+            aceito = bool(ca.get("accepted"))
         opts = r.get("scored_actions") or []
         # opcoes REAIS (fora as de recusar): sao o que estava disponivel
         reais = [o for o in opts

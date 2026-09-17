@@ -34,6 +34,26 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **RETRATACAO -- "o bot nunca se defende" era ERRO DE MEDICAO (17/09/2026,
+> bloco 837)**: reportado em DOIS commits (834 e 836) como o achado mais caro em
+> aberto, e era **falso**. `auditoria_efeitos.py` julgava todas as fases por
+> `chosen_action.accepted`, que **so existe em optional/trigger/reaction** -- em
+> `counter` a resposta e `counter_ids` e em `blocker` e `blocker_id`, entao os
+> dois davam zero por construcao.
+>
+> **REAL**: counter **56 de 144 com opcao (39%)**, blocker **11 de 21 (52%)**. A
+> evidencia estava no mesmo log o tempo todo (`[DEF] counter ... -> 4 cartas`).
+>
+> **Por que passou**: o numero batia com a expectativa registrada no `CLAUDE.md`
+> (defesa e heuristica fixa; `quais cartas de counter` 18,5%), e eu tratei como
+> confirmacao em vez de checar -- depois de ter me queimado com o MESMO erro
+> duas vezes no mesmo dia (blocos 828 e 832).
+>
+> **SOBREVIVE**: (a) `blocker` -- **149 de 170 decisoes sem blocker em campo**
+> (88%), problema de COMPOSICAO, nao de decisao; (b) `trigger` **0 de 16** numa
+> sessao (22% no total), ponta real NAO investigada; (c) o **Enel OP15-058**
+> segue de pe (vem de `execution.status` + delta, caminho diferente).
+
 > **NOTA (17/09/2026, fecha o bloco 836)**: ao conferir o ultimo push a pedido
 > do usuario, o push estava integro (local == remoto, arvore limpa) mas o
 > **docstring do `auditoria_efeitos.py` estava embaralhado** -- editado em tres

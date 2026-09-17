@@ -163,6 +163,83 @@ visivel**.
 
 ---
 
+## 2026-09-17 (837) - RETRATACAO: "o bot nunca aceita counter nem blocker" era ERRO DA MINHA REGUA, nao bug do motor
+
+O usuario mandou investigar a causa. **A causa era a medicao.**
+
+### O que eu tinha reportado, em dois commits
+
+Blocos 834 e 836: *"o bot NUNCA countera (0 de 114) nem bloqueia (0 de 108)"*,
+classificado como **o achado mais caro em aberto do projeto** e reproduzido em
+"duas sessoes independentes".
+
+### O que realmente acontece
+
+Primeira coisa que olhei foi o caminho real do endpoint `/defense` -- e ele
+imprime o resultado de cada decisao. **A evidencia estava no mesmo arquivo de
+log o tempo todo:**
+
+```
+[DEF] counter atk=8000 def=5000 -> 4 cartas
+[DEF] blocker atk=8000 -> NAO bloqueia
+```
+
+Agregado dos prints: 44 decisoes de blocker, **42** "NAO bloqueia" -- ou seja
+**2 bloquearam**. E counter: 35 com zero cartas, mas 7 com 1, e uma com 2, 3 e
+4 cartas -- **10 devolveram counters**.
+
+### A causa: campo errado, por fase
+
+`auditoria_efeitos.py` julgava TODAS as fases por `chosen_action.accepted`.
+Esse campo so e preenchido em `optional`/`trigger`/`reaction`. Em `counter` a
+resposta e `counter_ids`; em `blocker`, `blocker_id`. Com `accepted`, os dois
+davam **sempre zero, por construcao**.
+
+Corrigido, nas tres sessoes:
+
+| sessao | counter (aceitou/recusou/sem opcao) | blocker |
+|---|---|---|
+| 14:19 | 4 / 10 / 6 | 2 / 2 / 14 |
+| 16:41 | 42 / 52 / 20 | 7 / 6 / 95 |
+| 17:49 | 10 / 26 / 9 | 2 / 2 / 40 |
+| **total** | **56 / 88 / 35 -> 39% com opcao** | **11 / 10 / 149 -> 52%** |
+
+### POR QUE PASSOU -- e isto e o que importa registrar
+
+O numero **batia com uma expectativa que o projeto ja tinha**: o `CLAUDE.md`
+diz que a defesa e heuristica fixa sem consulta ao modelo, e que `quais cartas
+de counter` e uma das 3 piores categorias (18,5%). "Zero" encaixou na historia
+e eu tratei como confirmacao em vez de checar.
+
+Pior: eu tinha acabado de me queimar com o MESMO tipo de erro duas vezes no
+mesmo dia -- o `delta zero` que dizia 18% quando era 45% (bloco 832) e a coluna
+errada do CSV que dizia "0 cartas no banco" (bloco 828). Nos dois eu conferi
+contra um caso conhecido antes de reportar. Aqui **nao conferi**, porque o
+resultado era o que eu esperava.
+
+> **Resultado redondo -- zero exato, duas sessoes seguidas -- e sintoma, nao
+> conquista.** Ja era regra escrita (bloco 780: *"toda medicao precisa de um
+> CONTROLE que possa falhar"*).
+
+### O QUE SOBREVIVE, com a regua certa
+
+1. **`blocker`: 149 de 170 decisoes (88%) nao tinham blocker nenhum em campo.**
+   Quando tem, usa em 52%. O "problema" do blocker e de COMPOSICAO -- o bot
+   raramente tem blocker no tabuleiro -- e nao de decisao.
+2. **`trigger`: 0 de 16 numa sessao** (11/51 = 22% no total). Essa ponta e real
+   e continua **NAO investigada**.
+3. O **ENEL (OP15-058)** continua de pe e reproduzido: ativa, o jogo CONFIRMA,
+   nada muda. Esse achado NAO dependia do campo `accepted` -- vem de
+   `execution.status` + delta, caminho diferente.
+
+### Estado
+
+`REPROVADOS.md` ganhou a entrada na secao de erros de medicao, como a regra do
+projeto exige. Os blocos 834 e 836 **continuam no historico** com o que
+mediram; esta retratacao e o que vale.
+
+---
+
 > **NOTA (17/09/2026, fecha o bloco 836)**: ao conferir o ultimo push a pedido
 > do usuario, o push estava integro (local == remoto, arvore limpa) mas o
 > **docstring do `auditoria_efeitos.py` estava embaralhado** -- editado em tres
