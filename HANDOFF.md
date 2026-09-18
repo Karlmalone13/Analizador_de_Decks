@@ -245,6 +245,81 @@ visivel**.
 
 ---
 
+## 2026-09-18 (869) - Flag por jogador + duelo: 52x2 a favor, e por que esse numero AINDA NAO VALE
+
+Pedido do usuario: *"monta o flag e roda o duelo"*.
+
+### O QUE FOI CONSTRUIDO
+
+`shortlist_sem_corte` por JOGADOR em `decision_engine.py`, mesmo padrao de
+`modelo_ordena`/`value_net_weight`/`resposta_oponente`. **Default True = o
+comportamento NOVO** -- nao e knob de compatibilidade (o antigo nao volta por
+default), e o instrumento que permite derrota-lo com numero, que e o unico
+jeito de rodar espelho pareado (os dois lados no MESMO processo).
+
+`duela_shortlist.py`: usa o `duelar()` que ja existe, com `extras` por lado.
+Mesmo `q_net` nos dois e `value_net_weight=0.0` nos dois -- **a unica diferenca
+e o flag**, senao o duelo mediria modelo.
+
+### O RESULTADO, E POR QUE ELE NAO VALE AINDA
+
+```
+pares DECIDIDOS : 54     sem corte 52  x  2 com corte
+pares DIVIDIDOS : 44
+taxa 96,3%   Wilson (limite inferior) 87,5%
+```
+
+**52x2 e grande demais pra aceitar de primeira.** Todo portao anterior deste
+projeto ficou perto de cara-ou-coroa (5x12, 12x7, 9x15, 7x15). Pela regra do
+bloco 780 -- *"numero redondo demais e sintoma, nao conquista"* -- rodei o
+controle A/A, os dois lados com o MESMO flag.
+
+Deu **exatamente o mesmo**: 52x2, 54 decididos, 44 divididos, 96,3%. Numero por
+numero.
+
+### O ERRO FOI MEU, E A LICAO E DIFERENTE DA QUE EU IA REGISTRAR
+
+Eu ia registrar "o controle reprovou, o instrumento esta quebrado". **Errado.**
+
+```python
+'campeao': {'shortlist_sem_corte': not args.controle_aa}   # INVERTIDO
+```
+
+Na execucao normal isso da `not False` = **True** -- os dois lados iguais. As
+duas rodadas eram a MESMA configuracao, e por isso sairam identicas. **O
+controle A/A nunca rodou.**
+
+Entao o 52x2 nao esta refutado: esta **NAO VERIFICADO**. Sao coisas diferentes
+e a distincao importa -- eu quase registrei um achado falso em cada direcao
+(primeiro "ganhou com folga", depois "o instrumento esta cego").
+
+Corrigido no script: `'shortlist_sem_corte': args.controle_aa`.
+
+### O QUE ESTA VERIFICADO
+
+Diagnostico direto no `_duelo`:
+
+```
+sem_corte=True nas chamadas  : 14
+sem_corte=False nas chamadas :  6      <- o flag CHEGA e diferencia os lados
+_tem_q (Q no comando)        : 26 sim, 0 nao
+valores do flag no __init__  : <AUSENTE>   (esperado: `_duelo` seta DEPOIS)
+```
+
+### PENDENCIA, UMA LINHA
+
+```bash
+cd scriptis_da_ia && python duela_shortlist.py --n 200 --workers 4 --controle-aa
+```
+
+Tem que dar **~50%**. Se der 96% de novo, o instrumento esta cego e o 52x2 nao
+vale. **So depois disso o resultado pode ser reportado** -- e so entao se pode
+dizer se tirar a heuristica do shortlist (bloco 868) melhorou o jogo, ou so fez
+o modelo enxergar mais.
+
+Custo: ~2 minutos (200 partidas, 4 workers).
+
+
 ## 2026-09-18 (868) - A HEURISTICA SAI DO SHORTLIST: 69,1% das jogadas geradas nunca chegavam ao modelo
 
 Pedido do usuario: *"tira a heuristica do shortlist"*. Fecha o buraco

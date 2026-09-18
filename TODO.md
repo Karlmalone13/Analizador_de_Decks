@@ -1,6 +1,29 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 18 de setembro de 2026 (bloco 868)
+**Última atualização:** 18 de setembro de 2026 (bloco 869)
+
+> **DUELO DO SHORTLIST: flag por jogador pronto, resultado NAO VERIFICADO
+> (18/09/2026, bloco 869)** -- `shortlist_sem_corte` por JOGADOR (padrao de
+> `modelo_ordena`/`value_net_weight`), default True = comportamento novo. NAO e
+> knob de compatibilidade: e o instrumento pra derrotar o antigo com numero.
+>
+> **O duelo deu 52x2 (96,3%, Wilson 87,5%) a favor de tirar o corte -- e esse
+> numero NAO pode ser citado como validacao ainda.**
+>
+> Motivo: o controle A/A **nunca rodou**. Minha flag do controle estava
+> invertida (`not args.controle_aa`), entao as duas execucoes rodaram a MESMA
+> configuracao e sairam identicas, numero por numero. Eu li isso como "o
+> instrumento esta quebrado"; na verdade o controle e que nao existia.
+> **Bug ja corrigido no script**; o A/A continua PENDENTE.
+>
+> O que ESTA verificado: o flag chega de verdade (diagnostico: 14 chamadas com
+> `sem_corte=True` e 6 com `False` na mesma partida) e o Q esta no comando em
+> 100% das decisoes (26 de 26).
+>
+> **PROXIMO PASSO, uma linha:**
+> `cd scriptis_da_ia && python duela_shortlist.py --n 200 --workers 4 --controle-aa`
+> Tem que dar ~50%. Se der 96% de novo, o instrumento esta cego e o 52x2 nao
+> vale. So depois disso o resultado pode ser reportado.
 
 > **A HEURISTICA SAIU DO SHORTLIST (18/09/2026, bloco 868)** -- pedido do
 > usuario, *"tira a heuristica do shortlist"*. Fecha o buraco estrutural que

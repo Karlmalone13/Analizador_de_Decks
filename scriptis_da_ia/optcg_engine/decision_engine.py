@@ -21905,7 +21905,17 @@ class OPTCGMatch:
                 # Ele e o unico decisor e pontua tudo em lote -- deixar a
                 # pontuacao estatica escolher os finalistas era o teto que
                 # nenhum modelo melhor atravessava.
-                sem_corte=_q_no_comando)
+                #
+                # `shortlist_sem_corte` por JOGADOR (bloco 869), mesmo padrao
+                # de `modelo_ordena`/`value_net_weight`/`resposta_oponente`:
+                # o portao e um duelo ESPELHADO, os dois lados rodam no MESMO
+                # processo, entao a unica forma de medir a troca e um lado
+                # com e outro sem. **Default True = comportamento novo** --
+                # isto NAO e knob de compatibilidade (o antigo nao volta por
+                # default), e o instrumento que permite derrotar o antigo com
+                # numero.
+                sem_corte=(_q_no_comando
+                           and getattr(p, 'shortlist_sem_corte', True)))
             # bloco 656: "encerrar o turno agora" entra como CANDIDATA e
             # compete na busca -- ver comentario de PASS_ACTION. Nao entra em
             # LETHAL (fechar a partida vem antes de qualquer economia de
