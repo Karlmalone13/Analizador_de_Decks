@@ -435,8 +435,18 @@ namespace OPTCGBotPlugin
                     var lista = new System.Collections.Generic.List<EngineClient.EffectOption>();
                     foreach (var o in opcoes)
                         lista.Add(new EngineClient.EffectOption { index = o.Key, text = o.Value });
+                    // Bloco 860: `effect_option` era a UNICA familia de decisao
+                    // sem NENHUM registro de execucao -- 48 de 48 em todas as
+                    // sessoes (as outras ficam em 0-3%). O bot escolhia a opcao
+                    // e nada gravava se o jogo aceitou. Custou antes: o Enel
+                    // escolhendo "Gain 0 Active Don" em 100% dos menus (bloco
+                    // 838) so apareceu por outra ferramenta, porque por aqui era
+                    // invisivel. O callback ja existia no EngineClient e nunca
+                    // foi usado.
+                    string? idDecisaoV3 = null;
                     int? escolha = EngineClient.ChooseEffectOption(
-                        dtoV3, lista, BotExecutor.ActorCode(gls));
+                        dtoV3, lista, BotExecutor.ActorCode(gls),
+                        id => idDecisaoV3 = id);
                     // Sem resposta do motor: clica a PRIMEIRA opcao ofertada
                     // em vez de travar. Destravar a tela vale mais que acertar
                     // -- travado o jogo nao anda de jeito nenhum.
@@ -445,6 +455,8 @@ namespace OPTCGBotPlugin
                         $"[Bot] V3Choice: {opcoes.Count} opcao(oes), escolhida {idx}"
                         + (escolha == null ? " (FALLBACK: motor nao respondeu)" : ""));
                     BotExecutor.ClickV3Choice(gls, idx);
+                    if (idDecisaoV3 != null)
+                        TrackAuxDecision(idDecisaoV3, dtoV3);
                     _cooldown = 1f;
                     return;
                 }

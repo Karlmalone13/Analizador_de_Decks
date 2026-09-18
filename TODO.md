@@ -2,6 +2,25 @@
 
 **Última atualização:** 14 de setembro de 2026 (bloco 836)
 
+> **REGUA E `effect_option` (18/09/2026, bloco 860)**: a 13a falha semantica
+> tambem era regua -- o `state_after` da ULTIMA acao de uma partida e capturado
+> na abertura da SEGUINTE (turno 6 -> turno 1, outro lider, tudo vazio), e os
+> `match_id` provam. 1 caso em 667, ou seja 1 ERROR por partida pra sempre.
+> Agora transicao entre partidas diferentes e INDISPONIVEL, nao falha:
+> **`semantic_transition_failed` 13 -> 0**, 98 de 98 passando.
+> (Hipotese do uid negativo DESCARTADA por medicao: 17.974 negativos contra
+> 16.029 positivos -- e o proprio jogo que numera assim.)
+>
+> **`effect_option` nao registrava execucao em 48 de 48 (100%)** -- as outras
+> familias ficam em 0-3%. O bot escolhia a opcao e nada gravava se o jogo
+> aceitou; ja custou o achado do Enel (bloco 838), que so apareceu por outra
+> ferramenta. O callback `onDecision` ja existia e o BotDriver nunca usava.
+> Corrigido com `TrackAuxDecision`, o mecanismo das outras familias.
+>
+> **NAO mexer no detector de `purpose` antes de medir o bloco 858** -- seriam
+> duas mudancas no mesmo caminho e a medicao nao diria qual pegou (licao do
+> bloco 788). Esta entra porque so REPORTA, nao muda decisao nem clique.
+
 > **OS TRES ALERTAS DA TELEMETRIA -- ATACADOS (18/09/2026, bloco 859)**:
 > 1. `semantic_transition_failed` **13 -> 1**: era REGUA TORTA. 12 eram
 >    `end_turn` com `turnNumber` inalterado -- e o end_turn tinha funcionado

@@ -466,8 +466,18 @@ def analyze_decision_events(lines) -> dict:
                 value = (observation.get("utility_signals") or {}).get(key)
                 if isinstance(value, (int, float)):
                     resource_signal_totals[key] += value
+        # A ULTIMA acao de uma partida tem o `state_after` capturado ja na
+        # ABERTURA da seguinte (bloco 860): medido, o atacante "sumia do
+        # board" porque o estado posterior era de outro jogo -- turno 6 ->
+        # turno 1, outro lider, tudo vazio. Comparar as duas nao responde
+        # nada sobre a acao, entao a transicao e INDISPONIVEL, nao falha.
+        # 1 caso em 667 neste arquivo; sem isto, 1 ERROR por partida.
+        mesma_partida = (not terminal or not decision.get("match_id")
+                         or not terminal.get("match_id")
+                         or decision.get("match_id") == terminal.get("match_id"))
         semantic_result = (main_transition_ok(decision, terminal_state)
                            if terminal and terminal.get("status") == "confirmed"
+                              and mesma_partida
                            else None)
         if semantic_result is None:
             semantic["unavailable"] += 1

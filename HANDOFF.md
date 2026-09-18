@@ -245,6 +245,78 @@ visivel**.
 
 ---
 
+## 2026-09-18 (860) - A 13a falha semantica tambem era REGUA (comparava DUAS PARTIDAS), e `effect_option` nao registrava execucao em 48 de 48
+
+Continuacao do bloco 859, atacando o que sobrou sem tocar o caminho de decisao
+ao vivo -- as duas partidas de medicao precisam medir o bloco 858 LIMPO, sem
+outra mudanca junto (a licao do bloco 788).
+
+### A falha semantica que sobrava: o estado posterior era de OUTRO JOGO
+
+O atacante `OP12-023` (uid -180) estava no board antes e nao aparecia em zona
+nenhuma depois. Nao sumiu -- o `state_after` era da partida SEGUINTE:
+
+```
+ANTES : turno 6, lider OP14-020, board com 5 personagens
+DEPOIS: turno 1, lider OP13-001, board [], trash [], tudo vazio
+```
+
+E a ULTIMA acao de uma partida: quando a execucao foi confirmada, o proximo
+"main state estavel" ja era a abertura do jogo seguinte. Os `match_id`
+confirmam (`dbda3a15...` contra `2875187c...`), e ha exatamente **1 caso em
+667** execucoes com `state_after` -- ou seja, 1 ERROR por partida, pra sempre.
+
+Comparar estados de partidas diferentes nao responde nada sobre a acao: agora
+a transicao e INDISPONIVEL, nao falha.
+
+> **Descartada de saida a hipotese do uid negativo.** O uid do atacante era
+> -180 e a tentacao era culpar um identificador sintetico. Medido: **17.974
+> uids negativos contra 16.029 positivos**, em todas as zonas dos dois lados
+> -- e o proprio jogo que numera assim ("a costas da carta", diz o comentario
+> do `_hidden_placeholder`). Nao era isso.
+
+**`semantic_transition_failed` 13 -> 1 -> 0**, com 98 de 98 conferidas
+passando. O alerta some.
+
+### `effect_option`: a unica familia sem NENHUM registro de execucao
+
+Recortando `pending_decisions` por tipo, em TODAS as sessoes do banco:
+
+| familia | decisoes | sem execucao |
+|---|---|---|
+| mulligan | 24 | 0% |
+| main | 712 | 1% |
+| target | 580 | 2% |
+| defense | 723 | 3% |
+| **effect_option** | **48** | **100%** |
+
+O bot escolhia uma opcao de efeito e **nada** gravava se o jogo aceitou. Mesma
+classe do buraco da defesa fechado no bloco 857: a decisao acontece e o
+resultado nao existe.
+
+**Ja custou**: o Enel escolhendo `"Gain 0 Active Don"` em 100% dos menus
+(bloco 838) so foi achado por OUTRA ferramenta (auditoria de efeitos), porque
+por este caminho era invisivel.
+
+O conserto e de uma linha: o callback `onDecision` **ja existia** no
+`EngineClient.ChooseEffectOption` e o `BotDriver` nunca o usava. Agora usa e
+chama `TrackAuxDecision`, o mesmo mecanismo das outras familias.
+
+> **Por que esta mudanca pode entrar antes da medicao e a do `purpose` nao**:
+> esta so REPORTA uma acao que ja acontecia -- nao muda decisao nem clique. A
+> do detector de `purpose` mudaria o que o motor recebe, e confundiria a
+> medicao do bloco 858.
+
+Restante da sessao 22.41.07 depois destes dois: `bot_confusion` 7 (ja
+recortado no bloco 859 -- 2 benignos, 2 de cartas so com bloco
+`counter`/`trigger`, o resto aberto) e `pending_decisions`, que agora deve
+cair pros 5 de cauda (as ultimas decisoes de cada arquivo, cuja execucao chega
+depois do log fechar).
+
+`smoke_fast` OK, plugin recompilado (0 erros).
+
+---
+
 ## 2026-09-18 (859) - Os TRES alertas da telemetria: 12 de 13 eram REGUA TORTA, 2 de 7 eram o fix funcionando, e o timeout nao era a busca
 
 Pedido do usuario: atacar os tres alertas que sobraram do bloco 858.
