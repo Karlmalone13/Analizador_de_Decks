@@ -486,6 +486,11 @@ def main() -> None:
         mostrar_status()
         return
 
+    # PORTAO OBRIGATORIO (18/09/2026): ver `corpus_git.py`. `--status` passa
+    # antes porque so LE -- o portao vale para quem vai treinar de verdade.
+    from corpus_git import exige_sincronizado
+    exige_sincronizado('o treino continuo')
+
     historico = carregar_historico()
     gen_inicial = (historico[-1]['geracao'] + 1) if historico else 1
 

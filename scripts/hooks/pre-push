@@ -3,11 +3,21 @@
 # ja esta no remoto. Garante que toda sessao (Claude ou Codex) deixe registro
 # (HANDOFF) e mantenha o estado vivo (TODO) antes de entregar o trabalho para
 # a proxima sessao.
+#
+# Desde 18/09/2026 chama tambem `verifica_push.py`, que cobre o que quebra EM
+# SILENCIO entre as duas maquinas: corpus nao exportado, `logs/index.json`
+# apontando para arquivo fora do git, e `q_net.joblib` sem token de ciclo.
+# NO PUSH e nao no commit, por decisao do usuario: o commit e local e barato,
+# o push e onde o dado atravessa.
 
 remote="$1"
 url="$2"
 
-while read local_ref local_sha remote_ref remote_sha; do
+# As refs chegam pela stdin e so podem ser lidas UMA vez. Guarda para poder
+# entregar as mesmas linhas ao verificador Python depois do laco.
+REFS=$(cat)
+
+echo "$REFS" | while read local_ref local_sha remote_ref remote_sha; do
     # Ignora delecao de branch (local_sha all-zero)
     case "$local_sha" in
         0000000000000000000000000000000000000000) continue ;;
@@ -42,5 +52,18 @@ while read local_ref local_sha remote_ref remote_sha; do
         exit 1
     fi
 done
+
+# O `while` acima roda em SUBSHELL por vir depois de um pipe, entao o `exit 1`
+# de dentro dele NAO encerra este script -- ele vira o status da pipeline, que
+# e o que se testa aqui. Sem esta linha o hook nao bloquearia nada.
+status=$?
+if [ "$status" -ne 0 ]; then
+    exit "$status"
+fi
+
+verificador="$(git rev-parse --show-toplevel)/scripts/hooks/verifica_push.py"
+if [ -f "$verificador" ]; then
+    echo "$REFS" | python "$verificador" || exit 1
+fi
 
 exit 0

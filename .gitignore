@@ -129,7 +129,17 @@ scriptis_da_ia/winrates_leaders.csv
 # SEMPRE. A regra do projeto de nunca usar `git add -A` era a UNICA coisa
 # entre o repo e esse commit -- disciplina humana segurando o que o
 # .gitignore devia segurar.
+#
+# DESDE 18/09/2026 ELE E DERIVADO, NAO MAIS "o corpus". O corpus de verdade
+# passou a viver em `metrics/q_alvos/*.jsonl.gz` -- fatias VERSIONADAS, cada
+# uma escrita uma vez e nunca reescrita (ver `scriptis_da_ia/corpus_git.py`).
+# Este .jsonl e so a materializacao local delas, remontavel com
+# `python corpus_git.py importa`. Continua ignorado pelo mesmo motivo de antes
+# (465 MB), e agora tambem por ser regeneravel a partir do git.
 scriptis_da_ia/metrics/q_alvos.jsonl
+# Livro local de quais fatias ja entraram neste .jsonl. E por MAQUINA: versionar
+# faria o estado de uma virar o da outra.
+scriptis_da_ia/metrics/q_alvos_fatias.json
 scriptis_da_ia/metrics/selfplay_v2.jsonl
 # O DESAFIANTE e regenerado a cada ciclo e so vira campeao se o portao
 # promover -- ai quem viaja pelo git e `q_net.joblib` (219 KB, versionado).

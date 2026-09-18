@@ -245,6 +245,129 @@ visivel**.
 
 ---
 
+## 2026-09-18 (863) - O CORPUS PASSA A VIAJAR PELO GIT, em fatias: o zip acabou, e o portao para de verdade
+
+**Pedido do usuario, e nasceu de um custo pago hoje**: ele pediu na sessao da
+maquina de origem para continuar pelo celular e deixar a maquina aberta, nao
+deu certo, e ele chegou ao trabalho **sem conexao com a Arthur_PC**. O corpus
+so existia como zip de uma conversa daquela maquina. Meia sessao parada por um
+arquivo que nao atravessou.
+
+    "Preciso que criemos um jeito de eu conseguir trabalhar nas duas maquinas
+     sem ficar tendo que enviar o zip com os logs, de modo a facilitar o nosso
+     trabalho e evitar paralelismo e duplicatas"
+
+### A MEDICAO QUE DERRUBOU A PREMISSA DA REGRA ANTIGA
+
+A `REGRA_DUAS_MAQUINAS.md` ja tinha avaliado git e **recusado**, assim:
+
+> "O corpus fica fora porque cresce a cada ciclo e .gz nao faz delta entre
+>  versoes -- cada commit guardaria uma copia inteira nova, ~13 MB permanentes
+>  por ciclo."
+
+**O argumento esta CERTO -- para um zip UNICO regerado a cada ciclo.** Medido
+hoje nesta maquina:
+
+    amostra de 20.000 linhas : 13,1 MB -> 0,35 MB gz   (fator 37,4x)
+    corpus de 698.838 linhas : 465 MB  -> 12,9 MB gz
+    incremento de 1 ciclo    :  47 MB  ->  1,3 MB gz
+
+O corpus e JSONL de vetores repetidos: comprime 37,4x. O que estava fora do git
+por "465 MB" cabe em 12,9 MB. **Fatiado**, cada ciclo custa 1,3 MB permanentes
+em vez de 13 MB, porque cada fatia e escrita UMA vez e nunca reescrita.
+
+### O QUE FOI FEITO
+
+`scriptis_da_ia/corpus_git.py` -- `status` / `importa` / `exporta`. O corpus
+vira `metrics/q_alvos/<origem>_<timestamp>.jsonl.gz`, VERSIONADO e imutavel.
+Duas maquinas geram nomes diferentes: **o git funde sozinho, porque concatenar
+E a operacao de merge quando os arquivos sao separados** -- exatamente o que um
+zip unico nao permite (binario sem merge, o mesmo modo de falha do
+`q_net.joblib`).
+
+`metrics/q_alvos.jsonl` continua gitignored, mas mudou de natureza: virou
+DERIVADO, remontavel com `importa`. **Os tres leitores (`ciclo.py`,
+`treinar_q.py`, `treino_continuo.py`) nao foram tocados** -- leem o mesmo
+caminho fixo de sempre. Foi o encaixe que tornou a mudanca barata.
+
+OBRIGATORIO em dois pontos, porque o modo de falha e SILENCIOSO (treinar com
+corpus menor nao da erro, so da modelo pior):
+
+1. `ciclo.py` e `treino_continuo.py` **se recusam a rodar** com fatia pendente.
+2. `scripts/hooks/verifica_push.py`, chamado pelo `pre-push`, **bloqueia** o
+   push com linha gerada aqui fora do git.
+
+**NO PUSH E NAO NO COMMIT, por decisao do usuario** (*"acho que nao precisa ser
+em cada comite, pode ser no push so"*): o commit e local e barato; o push e
+onde o dado atravessa.
+
+### DOIS ERROS MEUS, os dois pegos por teste ANTES de estragar dado
+
+**1. Deduplicar por hash de linha teria descartado 3,7% do corpus.** Era a
+primeira versao, copiando a disciplina do `impressao` do banco de logs (bloco
+856). O teste mostrou: das 698.838 linhas, 672.992 sao distintas -- **25.846
+repetidas**. Investigadas: sao ADJACENTES (distancia 1-2), mesmo `match`, mesmo
+`turn`. Nao sao eco de re-execucao, sao **candidatos identicos dentro da MESMA
+decisao** (duas copias da mesma carta como alvo). Dado legitimo, com peso no
+treino. A identidade virou **posicional por `origem`**, que preserva repeticao.
+
+**2. A fatia saia com CRLF e o corpus tem LF.** Mesma contagem de linhas, hash
+diferente -- o Python traduz `
+` -> `
+` na escrita no Windows. Corrigido com
+`newline=''` nos dois lados. **Achado embutido**: o corpus ja tem fim de linha
+MISTURADO -- 73.477 linhas CRLF, que sao exatamente as 73.477 desta maquina
+(72.118 + 1.359). A Arthur_PC grava LF, a Arthur_Trabalho CRLF.
+
+Os dois so apareceram porque o teste exige **round-trip byte a byte**, nao
+"parece certo". Prova final: corpus e fatia com o mesmo sha256 sobre 698.838
+linhas.
+
+`teste_corpus_git.py` ficou PERMANENTE, com o controle que REPROVA a versao
+antiga (`a linha REPETIDA sobreviveu`). Sem ele, o round-trip passaria igual e
+o estrago apareceria como "o modelo ficou um pouco pior" semanas depois.
+
+### O BUG DOS 13 ARQUIVOS, achado e agora impedido
+
+`logs/index.json` tem 195 entradas e 2 apontavam para `parsed` que **nunca
+foram adicionados em ref nenhum** -- partidas CPU x CPU de 17/09 22:48 que
+ficaram so no disco da Arthur_PC. Somando `raw`, `decks`, `decks_full` e
+`decisions`, sao **13 arquivos**. O index viaja e eles nao: a outra maquina
+recebe ponteiro para o vazio.
+
+O `verifica_push.py` cobre isso -- e distingue DOIS casos, correcao feita
+depois que a primeira versao me bloqueou por arquivo que eu nao tinha como
+consertar:
+
+- esta no DISCO e fora do git -> **BLOQUEIA** (um `git add` resolve);
+- nao esta nem no disco       -> **AVISA** (ficou na outra maquina).
+
+O terceiro portao: `q_net.joblib` mexido sem `ciclo_estado.json` junto bloqueia
+-- modelo binario sem merge e geracao orfa.
+
+Corrigido tambem um bug que eu ia introduzir no proprio hook: o `while` depois
+de um pipe roda em SUBSHELL, entao o `exit 1` de dentro nao encerraria o script.
+Sem testar o status da pipeline, o hook nao bloquearia NADA.
+
+### ESTADO
+
+`smoke_fast` OK. `teste_corpus_git.py` 7/7. Fatia de backfill criada com as
+698.838 linhas (12,9 MB), round-trip provado byte a byte.
+
+**ABERTO**: os 13 arquivos continuam faltando -- so a Arthur_PC pode versiona-los
+(`git add "scriptis_da_ia/logs/**/*2026-09-17T22.48.19*"`, junto de um bloco de
+HANDOFF, senao o hook barra). E o **ciclo 3 nunca foi rodado** por nenhuma das
+duas maquinas; o token segue em 2 ciclos.
+
+### REGISTRADO A PEDIDO: as fatias SAEM do git quando o projeto terminar
+
+*"deixe registrado que quando finalizarmos o projeto, a gente retira do git
+esses zips"*. Sao andaime de desenvolvimento, nao entregavel. Exige reescrita de
+historico (`git filter-repo`) -- apagar num commit novo nao recupera espaco --
+e o corpus salvo fora antes. Operacao destrutiva e combinada: **nunca por
+iniciativa de sessao**.
+
+
 ## 2026-09-18 (862) - A zona legal do alvo passa a FILTRAR: o lider Ace sai de 0%, e o smoke derrubou DUAS versoes minhas antes de passar
 
 Implementa o achado do bloco 861, a pedido do usuario. **A pedido dele tambem

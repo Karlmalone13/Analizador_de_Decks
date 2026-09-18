@@ -188,6 +188,40 @@ completos):
 > o criterio, que nao e tamanho), o passo a passo de instalar numa maquina nova,
 > o de passar a vez, o que dizer a uma sessao nova na outra maquina, e as
 > armadilhas ja pagas.
+>
+> ### O CORPUS VIAJA PELO GIT desde 18/09/2026 -- nao ha mais zip
+>
+> **O `.zip` do `q_alvos.jsonl` ACABOU.** Ele era a unica via do corpus, e foi
+> exatamente isso que quebrou: o usuario chegou ao trabalho sem conexao com a
+> maquina de casa e o arquivo nao existia deste lado -- meio dia parado.
+>
+> O corpus agora sao **fatias** `metrics/q_alvos/<origem>_<timestamp>.jsonl.gz`,
+> versionadas, cada uma escrita UMA vez e nunca reescrita. Duas maquinas geram
+> nomes diferentes: o git funde sozinho, porque concatenar E o merge quando os
+> arquivos sao separados. Medido: 465 MB -> 12,9 MB (37,4x); um ciclo inteiro
+> custa 1,3 MB.
+>
+> ```bash
+> cd scriptis_da_ia
+> python corpus_git.py status      # o que falta importar/exportar
+> python corpus_git.py importa     # depois de todo `git pull`
+> python corpus_git.py exporta     # antes de todo `git push`
+> ```
+>
+> **E OBRIGATORIO e para de verdade** (o modo de falha e silencioso -- treinar
+> com corpus menor nao da erro, so da modelo pior):
+> - `ciclo.py` e `treino_continuo.py` **se recusam a rodar** com fatia pendente;
+> - o `pre-push` **bloqueia** o push com linha gerada aqui fora do git, e
+>   tambem quando o `logs/index.json` aponta pra arquivo que esta no seu disco
+>   e fora do git (achado 18/09: 13 arquivos ficaram so numa das maquinas).
+>
+> `metrics/q_alvos.jsonl` continua gitignored -- virou **derivado**, remontavel
+> com `importa`. Os leitores (`ciclo.py`, `treinar_q.py`, `treino_continuo.py`)
+> nao foram tocados.
+>
+> **AO TERMINAR O PROJETO, as fatias saem do git** (pedido do usuario, 18/09):
+> sao andaime, nao entregavel. Exige reescrita de historico e o corpus salvo
+> fora antes -- operacao combinada, nunca por iniciativa de sessao.
 
 ---
 

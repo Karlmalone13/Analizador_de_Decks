@@ -338,6 +338,12 @@ def main() -> int:
                          'contra o bot (nao roda ciclo)')
     args = ap.parse_args()
 
+    # PORTAO OBRIGATORIO (18/09/2026): o corpus viaja pelo git em fatias, e
+    # rodar um ciclo com fatia pendente treinaria com um corpus MENOR sem erro
+    # nenhum -- o modo de falha silencioso do bloco 851.
+    from corpus_git import exige_sincronizado
+    exige_sincronizado('o ciclo')
+
     estado = {}
     if ESTADO.exists():
         try:

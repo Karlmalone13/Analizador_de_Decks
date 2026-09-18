@@ -1,6 +1,35 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 14 de setembro de 2026 (bloco 836)
+**Última atualização:** 18 de setembro de 2026 (bloco 863)
+
+> **O CORPUS PASSA A VIAJAR PELO GIT, EM FATIAS (18/09/2026, bloco 863)** --
+> pedido do usuario, depois de perder meia sessao: ele chegou ao trabalho sem
+> conexao com a Arthur_PC e o corpus so existia como zip de uma conversa
+> daquela maquina. **O zip do `q_alvos` acabou.**
+>
+> A regra antiga recusava git com um argumento CERTO -- "cada commit guardaria
+> uma copia inteira nova, ~13 MB por ciclo" -- que vale para um zip UNICO.
+> Medido hoje: o corpus comprime **37,4x** (465 MB -> 12,9 MB) e, FATIADO, um
+> ciclo custa **1,3 MB** permanentes, porque cada fatia e escrita uma vez e
+> nunca reescrita.
+>
+> `scriptis_da_ia/corpus_git.py` (`status`/`importa`/`exporta`). Os tres
+> leitores nao foram tocados. **OBRIGATORIO**: `ciclo.py` e `treino_continuo.py`
+> se recusam a rodar com fatia pendente; o `pre-push` bloqueia push com linha
+> fora do git. No PUSH e nao no commit, por decisao do usuario.
+>
+> **Dois erros meus pegos por teste antes de estragar dado**: deduplicar por
+> hash de linha teria descartado 25.846 linhas legitimas (3,7% -- candidatos
+> identicos na MESMA decisao); e a fatia saia com CRLF contra o LF do corpus.
+> `teste_corpus_git.py` e permanente e tem o controle que reprova a v1.
+>
+> **ABERTO**: 13 arquivos referenciados pelo `logs/index.json` estao so no disco
+> da Arthur_PC -- so ela pode versiona-los. O `pre-push` agora avisa (nao
+> bloqueia quem nao tem como consertar). E o **ciclo 3 segue sem ser rodado**.
+>
+> **REGISTRADO A PEDIDO**: quando o projeto terminar, as fatias saem do git.
+> Exige reescrita de historico e corpus salvo fora antes -- nunca por
+> iniciativa de sessao.
 
 > **A ZONA DO ALVO PASSA A FILTRAR (18/09/2026, bloco 862)** -- implementa o
 > achado do bloco 861, a pedido do usuario. `_ALVO_ZONAS` em

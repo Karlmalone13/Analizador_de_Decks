@@ -1,0 +1,10 @@
+# As fatias do corpus sao binarias e NUNCA podem passar por conversao de fim
+# de linha. O repo roda com core.autocrlf=true e nao tinha .gitattributes: a
+# protecao dependia so da deteccao automatica do git. Explicito porque o modo
+# de falha seria corromper o .gz em silencio -- e o corpus e justamente o que
+# esta ferramenta existe para nao perder (bloco 863).
+*.jsonl.gz binary
+*.joblib   binary
+
+# Hooks sao shell script: com CRLF o `#!/bin/sh` quebra com "bad interpreter".
+scripts/hooks/pre-push text eol=lf

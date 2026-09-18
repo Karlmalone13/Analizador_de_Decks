@@ -63,19 +63,79 @@ isso cada linha agora grava o campo `origem` (bloco 820).
 
 | vai pelo **GIT** | vai **ZIPADO pela sessão** |
 |---|---|
-| código, motor, parser | `metrics/q_alvos.jsonl` (381 MB → 12,7 MB) |
-| `HANDOFF.md`, `TODO.md` | `metrics/selfplay_v2.jsonl` |
-| banco de logs (`logs/`) | `metrics/live_runs/`, `BOT/engine_server/logs/` |
-| `q_net.joblib` (219 KB) | qualquer coisa grande **e** regenerável |
+| código, motor, parser | `metrics/selfplay_v2.jsonl` |
+| `HANDOFF.md`, `TODO.md` | `metrics/live_runs/`, `BOT/engine_server/logs/` |
+| banco de logs (`logs/`) | qualquer coisa grande **e** regenerável |
+| `q_net.joblib` (219 KB) | |
 | `metrics/ciclo_estado.json` | |
+| **o corpus, em fatias `.gz`** | |
 
 **O critério não é tamanho**: git para o que precisa de MERGE e HISTÓRICO; zip
 para o que cresce sempre e não tem semântica de merge.
 
-O corpus fica fora porque **cresce a cada ciclo** e `.gz` não faz delta entre
-versões — cada commit guardaria uma cópia inteira nova, ~13 MB permanentes por
-ciclo. O código fica dentro porque **zip não funde**: quem descompactar por
-último sobrescreve o trabalho do outro em silêncio.
+### O CORPUS MUDOU DE LADO em 18/09/2026 — e por quê
+
+Esta seção dizia, até 18/09:
+
+> "O corpus fica fora porque **cresce a cada ciclo** e `.gz` não faz delta
+> entre versões — cada commit guardaria uma cópia inteira nova, ~13 MB
+> permanentes por ciclo."
+
+**O argumento estava CERTO, e continua certo — para um zip ÚNICO regerado a
+cada ciclo.** O que mudou foi o formato, não o argumento: o corpus virou **N
+fatias**, cada uma escrita uma vez e **nunca reescrita**. Um ciclo novo
+acrescenta só as suas próprias linhas, não uma cópia nova de tudo. O custo
+permanente por ciclo cai de ~13 MB para **~1,3 MB**.
+
+O que forçou a mudança foi o custo REAL pago em 18/09: o usuário chegou ao
+trabalho sem conexão com a máquina de casa e **o zip não existia deste lado**.
+Meio dia de trabalho parado por um arquivo que não atravessou.
+
+Medido nesta máquina no mesmo dia:
+
+```
+amostra de 20.000 linhas : 13,1 MB -> 0,35 MB gz   (fator 37,4x)
+corpus de 698.838 linhas : 465 MB  -> 12,9 MB gz
+incremento de 1 ciclo    :  47 MB  ->  1,3 MB gz
+```
+
+A ferramenta é [`scriptis_da_ia/corpus_git.py`](scriptis_da_ia/corpus_git.py):
+
+```bash
+cd scriptis_da_ia
+python corpus_git.py status      # o que falta importar/exportar
+python corpus_git.py importa     # aplica as fatias do git no .jsonl local
+python corpus_git.py exporta     # cria a fatia com o que só existe aqui
+```
+
+`metrics/q_alvos.jsonl` **continua gitignored** — mudou de "o corpus" para
+"materialização local das fatias", remontável a qualquer momento com
+`importa`. Os três leitores (`ciclo.py`, `treinar_q.py`, `treino_continuo.py`)
+não foram tocados: continuam lendo o mesmo caminho fixo.
+
+**É OBRIGATÓRIO, não opcional**, e em dois pontos que param de verdade:
+
+1. `ciclo.py` e `treino_continuo.py` **se recusam a rodar** com fatia pendente.
+2. O `pre-push` **bloqueia** o push se houver linha gerada aqui fora do git.
+
+Os dois existem porque o modo de falha é silencioso: treinar com o corpus
+menor não dá erro, só produz um modelo pior que ninguém relaciona à causa.
+
+### QUANDO O PROJETO TERMINAR, ISTO SAI DO GIT
+
+> Registrado a pedido explícito do usuário, 18/09/2026: *"deixe registrado que
+> quando finalizarmos o projeto, a gente retira do git esses zips"*.
+
+As fatias são **andaime de desenvolvimento**, não entregável. Enquanto houver
+duas máquinas treinando, elas pagam o próprio custo. Terminado o projeto, o
+histórico do git fica carregando dezenas de MB de corpus intermediário que não
+serve a mais ninguém.
+
+**A remoção exige reescrita de histórico** (`git filter-repo` ou equivalente) —
+apagar os arquivos num commit novo não recupera espaço nenhum, porque as fatias
+continuam em todos os commits anteriores. É operação destrutiva e combinada:
+não fazer por iniciativa de sessão, e não fazer sem o corpus final salvo fora
+do git antes.
 
 ---
 
@@ -87,9 +147,14 @@ ciclo. O código fica dentro porque **zip não funde**: quem descompactar por
    `iniciar_bot.bat`.
    Se não achar o jogo:
    `powershell -ExecutionPolicy Bypass -File BOT\instalar.ps1 -GameDir "<caminho>\Builds_Windows"`
-3. Descompactar o corpus recebido em `scriptis_da_ia/metrics/q_alvos.jsonl`.
-   Sem isso o treino começa do zero e perde as centenas de milhares de posições
-   já acumuladas.
+3. Montar o corpus a partir das fatias que vieram no `clone` (desde 18/09/2026
+   ele viaja pelo git — **não há mais zip para pedir a ninguém**):
+   ```bash
+   cd scriptis_da_ia && python corpus_git.py importa
+   ```
+   Sem isso o treino começaria do zero e perderia as centenas de milhares de
+   posições já acumuladas — mas agora ele **não deixa**: `ciclo.py` e
+   `treino_continuo.py` se recusam a rodar com fatia pendente.
 
 **Pré-requisitos**: Python 3.10+ com "Add to PATH" e o OPTCGSim instalado.
 .NET **não** é necessário enquanto `BOT/dist/OPTCGBotPlugin.dll` estiver
@@ -123,12 +188,14 @@ como:
 Leia o HANDOFF.md (blocos 819 a 822) e o TODO.md antes de mexer em qualquer coisa.
 
 Contexto: esta é a SEGUNDA máquina do projeto. A outra gerou o corpus atual e
-está parada. Eu trouxe metrics/q_alvos.jsonl por fora do git.
+está parada. O corpus vem pelo git, em fatias: rode
+`cd scriptis_da_ia && python corpus_git.py importa`.
 
 Quero treinar e jogar CPU x CPU aqui.
 
 Antes de começar, confirme:
 1. o corpus tem o volume esperado e todas as linhas têm o campo "origem"
+   (`python corpus_git.py status` mostra a quebra por origem)
 2. qual a seed do próximo ciclo (ciclo_estado.json)
 3. scikit-learn na versão do requirements.txt e q_net.joblib carrega sem erro
 
@@ -149,21 +216,23 @@ corpus faltando, seed colidindo, ou versão de biblioteca que não abre o modelo
 Enquanto ele joga, **não** interromper com push a cada partida. Quando ele
 pedir, entregar **os três**:
 
-1. **`git push`** — leva código, banco de logs (`logs/`), `ciclo_estado.json`
-   e `q_net.joblib` (se promovido). Antes: `git pull`, e os blocos de
-   `HANDOFF.md`/`TODO.md` (o hook de `pre-push` bloqueia sem eles).
-2. **ZIP do banco de logs** — `logs/{raw,parsed,decks,decks_full}` +
-   `index.json`.
-3. **ZIP do `metrics/q_alvos.jsonl`** — ~444 MB crus → ~13 MB comprimidos
-   (medido no bloco 822: 30x). É o que **não** viaja pelo git, por decisão do
-   bloco 820.
+1. **`python corpus_git.py exporta`** — transforma em fatia `.gz` o que foi
+   gerado nesta máquina. **Antes do push**, senão o `pre-push` bloqueia.
+2. **`git push`** — leva código, banco de logs (`logs/`), `ciclo_estado.json`,
+   `q_net.joblib` (se promovido) **e agora o corpus, nas fatias**. Antes:
+   `git pull`, e os blocos de `HANDOFF.md`/`TODO.md` (o hook bloqueia sem eles).
+3. **ZIP do banco de logs** — `logs/{raw,parsed,decks,decks_full}` +
+   `index.json`. Entregar por `SendUserFile`.
 
-Entregar por `SendUserFile`, para ele baixar no dispositivo que estiver usando.
-
-> **O ZIP dos logs é REDUNDANTE com o git, e isso é intencional** — o pedido
-> foi explicitamente *"para evitar problemas"*. Não substituir o push por ele
-> nem vice-versa: o git é quem dá merge e histórico; o zip é a cópia que não
-> depende de nada dar certo. O `q_alvos` é o oposto: o zip é a ÚNICA via.
+> **O passo 3 é REDUNDANTE com o git, e isso é intencional** — o pedido foi
+> explicitamente *"para evitar problemas"*. Não substituir o push por ele nem
+> vice-versa: o git é quem dá merge e histórico; o zip é a cópia que não
+> depende de nada dar certo.
+>
+> **O ZIP do `q_alvos` SAIU da lista em 18/09/2026.** Ele era a ÚNICA via do
+> corpus, e foi exatamente isso que quebrou: o usuário chegou ao trabalho sem
+> conexão com a outra máquina e o zip não existia deste lado. Agora o corpus
+> viaja pelo git em fatias e **ninguém precisa pedir arquivo a ninguém**.
 
 **Conferir antes de entregar** (os três lugares onde isso quebra em silêncio):
 contagem de linhas do corpus e a quebra por `origem`; que todo log novo entrou
@@ -234,9 +303,14 @@ As sessões do Claude Code são **locais de cada máquina** — verificado:
 arquivos que uma sessão envia são cartões **dentro daquela conversa**; sem abrir
 aquela conversa, não há de onde baixar.
 
-Na prática isso quase não dói, porque o git leva o banco de logs, o código, o
-`q_net.joblib` e o `ciclo_estado.json`. **O único que depende do zip é o
-corpus** — e se a máquina já recebeu um zip recente, o que falta é só o delta.
+**Isto deixou de doer em 18/09/2026.** Até então o corpus era o único que
+dependia do zip — e por isso a sessão que o recebeu virava um ponto único de
+falha: sem abrir *aquela* conversa, *naquela* máquina, não havia de onde
+baixar. Foi o que travou o trabalho em 18/09.
+
+Agora o git leva **tudo** que importa: banco de logs, código, `q_net.joblib`,
+`ciclo_estado.json` e o corpus em fatias. Nenhum arquivo depende mais de uma
+conversa específica estar acessível.
 
 ### Ao unir `logs/index.json`, chaveie por `parsed_file`
 
