@@ -1346,6 +1346,58 @@ Q_NET_PATH = os.environ.get(
     'OPTCG_Q_NET_PATH',
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                  'metrics', 'q_net.joblib'))
+
+
+# ── O FALLBACK DO Q DEIXA DE SER SILENCIOSO (18/09/2026, bloco 866) ────────
+# Achado ao revisar a doc contra o codigo: a decisao do Q vivia dentro de um
+# `try:` terminado em `except Exception: pass`. Quando ela falhava -- modelo
+# ausente, incompativel, ou erro em qualquer feature -- o motor caia em
+# `candidatas[0]`, **o primeiro da ordenacao estatica, sem avaliacao nenhuma**,
+# sem log e sem aviso.
+#
+# Nao e "cair na heuristica": e jogar o topo de uma lista ordenada por score
+# estatico, sem busca e sem modelo. E era indistinguivel de tudo funcionando.
+#
+# A degradacao continua GRACIOSA (o motor nao pode cair -- regra permanente),
+# mas deixa de ser MUDA: cada motivo e contado e avisado uma vez por processo.
+# `q_fallback_resumo()` expoe os numeros pra telemetria e pro treino.
+_Q_FALLBACK = {}
+_Q_FALLBACK_AVISADO = set()
+_Q_FALLBACK_MOTIVOS = {
+    'sem_modelo': 'nenhum q_net.joblib utilizavel (bundle ausente ou tipo != "q")',
+    'erro': 'EXCECAO ao consultar o modelo',
+    'sem_valor': 'o modelo respondeu, mas todos os valores vieram None',
+    'primeiro_candidato': 'decisao caiu em candidatas[0] -- SEM avaliacao',
+}
+
+
+def _nota_fallback_q(motivo: str, detalhe: str = '') -> None:
+    """Conta e avisa. NUNCA levanta: derrubar o motor seria trocar uma falha
+    silenciosa por uma pior."""
+    try:
+        _Q_FALLBACK[motivo] = _Q_FALLBACK.get(motivo, 0) + 1
+        if motivo in _Q_FALLBACK_AVISADO:
+            return
+        _Q_FALLBACK_AVISADO.add(motivo)
+        desc = _Q_FALLBACK_MOTIVOS.get(motivo, motivo)
+        print(f'[Q][FALLBACK] {desc}'
+              + (f' -- {detalhe}' if detalhe else ''), file=sys.stderr)
+        print('[Q][FALLBACK] a decisao NAO esta vindo do modelo. '
+              'Avisado 1x por processo; o total sai em q_fallback_resumo().',
+              file=sys.stderr)
+    except Exception:
+        pass
+
+
+def q_fallback_resumo() -> dict:
+    """Quantas vezes a decisao NAO veio do modelo, por motivo. Vazio = o Q
+    decidiu sempre."""
+    return dict(_Q_FALLBACK)
+
+
+def q_fallback_zera() -> None:
+    _Q_FALLBACK.clear()
+    _Q_FALLBACK_AVISADO.clear()
 # DESLIGADO POR MEDICAO (bloco 801). O portao deu **0x13** do Q contra a arvore
 # de busca -- zero vitorias em 13 pares decididos, SPRT cruzando o limite. O Q e
 # 3,6x mais rapido e joga PIOR; manter ligado seria producao decidida contra a
@@ -12584,8 +12636,8 @@ class GameAnalyzer:
                     unknown_hand_size, deck_counter_1000=_d1,
                     deck_counter_2000=_d2,
                     cards_seen_total=len(self.opp.trash)))
-            except Exception:
-                pass     # estimativa nunca pode derrubar a partida
+            except Exception as _exc_q:
+                _nota_fallback_q('erro', f'{type(_exc_q).__name__}: {_exc_q}')     # estimativa nunca pode derrubar a partida
         chunks.extend(self.opp_reactive_field_buffs())
         return sorted(chunks)
 
@@ -19370,10 +19422,18 @@ class OPTCGMatch:
                 from optcg_engine import value_net as _vnq
                 _qb = _vnq.load_value_net(
                     getattr(p, 'q_net_path', None) or Q_NET_PATH)
+                if not (_qb and _qb.get('tipo') == 'q'):
+                    _nota_fallback_q(
+                        'sem_modelo',
+                        f'tipo={_qb.get("tipo") if _qb else None} '
+                        f'path={getattr(p, "q_net_path", None) or Q_NET_PATH}')
                 if _qb and _qb.get('tipo') == 'q':
                     _vals = _vnq.q_valores(p, opp, candidatas, bundle=_qb)
                     _pares_q = [(c, v) for c, v in zip(candidatas, _vals)
                                 if v is not None]
+                    if not _pares_q:
+                        _nota_fallback_q('sem_valor',
+                                         f'{len(candidatas)} candidatas')
                     if _pares_q:
                         _melhor, _v = max(_pares_q, key=lambda t: t[1])
                         _segura = [(c, v) for c, v in _pares_q
@@ -19405,6 +19465,12 @@ class OPTCGMatch:
             # Sem Q utilizavel, a decisao e a ordem que ja chegou. NAO ha
             # segundo motor pra cair: manter um seria recriar a duplicata que
             # este bloco acabou de remover.
+            #
+            # Mas isto NAO e uma decisao: e jogar o topo de uma lista ordenada
+            # por score estatico, sem avaliacao. Contabilizado desde o bloco
+            # 866 -- antes era indistinguivel de tudo funcionando.
+            if len(candidatas) > 1:
+                _nota_fallback_q('primeiro_candidato')
             return (candidatas[0], 0.0,
                     [{"action": c, "value": -1e9} for c in candidatas], 0, {})
 

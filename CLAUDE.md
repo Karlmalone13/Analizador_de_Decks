@@ -307,8 +307,8 @@ Simula partidas turno a turno entre dois decks. Peças principais:
   verdade das regras** — qualquer lógica de jogo deve viver aqui, não
   duplicada em scripts de replay/visualização.
 - `replay_optcg.py` — visualizador/auditor de partidas; delega tudo
-  (`_place_start_stage`, `refresh_phase`, `main_phase`) ao `OPTCGMatch`, não
-  reimplementa regra própria.
+  (`_place_start_stage`, `refresh_phase`, `main_phase`, `play_turn`) ao
+  `OPTCGMatch`, não reimplementa regra própria.
 - `rules_facade.py` — funções utilitárias compartilhadas (`eligible_cards`,
   `card_matches_filter`, `choose_highest_board_value`, etc.) usadas via
   import local dentro de `_execute_step`. **Cuidado**: imports locais
@@ -689,6 +689,23 @@ ESCOLHER melhor; este e sobre **existir** o que escolher.
 > de acao e e ordenado pelo **score estatico**. Ou seja, a heuristica deixou
 > de escolher o vencedor mas **continua escolhendo os finalistas** que o
 > modelo tem permissao de considerar. Ver a pendencia no `TODO.md`.
+>
+> **MEDIDO, e e a evidencia disso** (bloco 789, perfil de 2 partidas):
+>
+> ```
+> scores estaticos CALCULADOS      : 13.240
+> scores que chegam a UMA decisao  :    480
+> NUNCA decidem nada               :  96,4%
+> avaliar_carta                    : 26,5% do tempo, 34.367 chamadas
+> ```
+>
+> A pontuacao estatica e recalculada em cada no e **jogada fora**, porque quem
+> decide e o modelo -- mas ela ainda ORDENA o shortlist. Entao nao e so
+> desperdicio de tempo: e o mecanismo pelo qual ela escolhe os finalistas.
+>
+> **Regra pratica**: quando o modelo decide, a pontuacao estatica nao deve nem
+> ser CALCULADA. Se uma sessao esta medindo tempo e `avaliar_carta` aparece no
+> topo do perfil, a substituicao nao aconteceu de verdade.
 
 #### A ORDEM: a heuristica sai PRIMEIRO -- a regra circular foi revogada
 

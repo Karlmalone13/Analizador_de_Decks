@@ -245,6 +245,86 @@ visivel**.
 
 ---
 
+## 2026-09-18 (866) - O fallback do Q deixa de ser MUDO, e o espelho estava sem a disciplina de sessao
+
+### O FALLBACK ERA PIOR DO QUE EU REPORTEI NO BLOCO 865
+
+Eu tinha escrito "cai na heuristica". **Errado.** Lendo o codigo ao consertar:
+
+```python
+if _r is None:
+    return (candidatas[0], 0.0, ...)
+```
+
+Cai em **`candidatas[0]`** -- o primeiro da ordenacao estatica, **sem busca e
+sem avaliacao**. Nao e heuristica decidindo; e jogar o topo de uma lista.
+
+E era indistinguivel de tudo funcionando: `except Exception: pass`, zero log.
+
+### O CONSERTO
+
+`_nota_fallback_q(motivo, detalhe)` conta e avisa 1x por processo, com quatro
+motivos SEPARADOS -- antes todos eram o mesmo silencio:
+
+| motivo | o que aconteceu |
+|---|---|
+| `sem_modelo` | nao ha `q_net.joblib` utilizavel (ausente ou `tipo != "q"`) |
+| `erro` | EXCECAO ao consultar o modelo (traz tipo e mensagem) |
+| `sem_valor` | o modelo respondeu e todos os valores vieram `None` |
+| `primeiro_candidato` | a decisao caiu em `candidatas[0]`, sem avaliacao |
+
+`q_fallback_resumo()` expoe os totais; `q_fallback_zera()` reseta.
+
+**A degradacao continua GRACIOSA** -- o motor nao pode cair, e regra
+permanente. O que mudou e que ela deixou de ser MUDA.
+
+### MEDIDO, com controle que pode falhar
+
+| cenario | resultado |
+|---|---|
+| modelo BOM, 1 partida real | `{}` -- **o Q decidiu sempre** (producao saudavel) |
+| modelo QUEBRADO (`OPTCG_Q_NET_PATH` inexistente) | avisa 2 motivos e conta **`sem_modelo: 180, primeiro_candidato: 180`** |
+
+**180 decisoes sem avaliacao em UMA partida**, e nenhuma delas dava sinal.
+O controle tem assert: se o resumo vier vazio com modelo quebrado, falha.
+
+`smoke_fast` OK depois da mudanca.
+
+### PENDENCIA
+
+Ligar `q_fallback_resumo()` no `live_<ts>.json`, pra uma partida ao vivo
+denunciar a queda sem ninguem precisar ler stderr.
+
+### O ESPELHO ESTAVA QUEBRADO -- de novo, e no mesmo modo de falha
+
+Revisao do `AGENTS.md` secao a secao contra o `CLAUDE.md` (70 em comum). Cinco
+divergiam; quatro eram moldura legitima. **Uma era buraco real:**
+
+O `AGENTS.md` estava sem a **disciplina inteira de passagem de sessao** --
+commitar antes de parar, escrever o bloco do HANDOFF, espelhar no TODO, ler
+`HANDOFF`+`TODO`+`git log`+`git status` antes de editar -- **e sem a instrucao
+de instalar os hooks** (`sh scripts/setup-git-hooks.sh`).
+
+Consequencia: num clone novo, uma sessao Codex ficaria **sem o `pre-push`
+inteiro** -- que hoje inclui as checagens de corpus e de `index.json`. Mesmo
+modo de falha do achado de 25/07/2026, que a regra do espelho existe pra
+impedir. Sincronizado. Tambem sincronizado um gap menor no sentido inverso
+(`play_turn` na lista de delegacoes do replay, que so o `AGENTS.md` tinha).
+
+### DOIS CONSERTOS NO ENXUGAMENTO DE ONTEM (bloco 865)
+
+**1. Eu tinha movido um achado ATIVO por engano.** O perfil do bloco 789 --
+`scores calculados 13.240, que decidem 480, NUNCA decidem 96,4%`,
+`avaliar_carta 26,5% do tempo` -- foi pro arquivo junto com o catalogo. Ele e
+a EVIDENCIA do shortlist ordenado por score estatico, que e a pendencia
+aberta. **Trazido de volta** pros dois espelhos, ao lado da correcao.
+
+**2. O arquivo morto podia ser lido como regra viva.** Tres secoes arquivadas
+mantinham "OBRIGATORIO" no titulo -- um `grep` por OBRIGATORIO cairia la e
+pareceria vigente. As 17 secoes de `REGRAS_HISTORICO.md` levaram marca
+`[ARQUIVO]` dizendo que a regra vigente e a do `CLAUDE.md`.
+
+
 ## 2026-09-18 (865) - ENXUGAMENTO do CLAUDE.md (-29%) e a revisao que achou a heuristica ainda no comando do shortlist
 
 **Pedido do usuario**: o `CLAUDE.md` consumia ~25k tokens no inicio de TODA

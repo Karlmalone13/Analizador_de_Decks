@@ -1,0 +1,121 @@
+{
+  "quando": "2026-09-18T14:24:21",
+  "partidas": 2,
+  "segundos_por_partida_real": 0.61,
+  "voltas_s_por_partida": [
+    0.62,
+    0.61,
+    0.64
+  ],
+  "variacao_da_maquina_pct": 5.0,
+  "segundos_sob_profiler_total": 2.5,
+  "turnos": 45,
+  "decisoes_de_busca": 136,
+  "candidatas_por_decisao": 5.16,
+  "consultas_ao_modelo": 698,
+  "consultas_que_pagaram_previsao": 181,
+  "acerto_do_memo_pct": 74.1,
+  "familias_pct": {
+    "outros": 35.0,
+    "modelo (rede de valor)": 32.9,
+    "prova de lethal": 18.5,
+    "primitivas do interpretador": 11.5,
+    "gerar/pontuar candidatas": 1.2,
+    "executar acao/combate": 0.3,
+    "clonagem de estado": 0.3,
+    "busca de decisao": 0.2,
+    "defesa (blocker/counter)": 0.1
+  },
+  "top_funcoes": [
+    {
+      "funcao": "predictor.py:predict",
+      "proprio_s": 0.39,
+      "cumulativo_s": 0.42,
+      "chamadas": 54300
+    },
+    {
+      "funcao": "decision_engine.py:hits_after_best_defense",
+      "proprio_s": 0.34,
+      "cumulativo_s": 0.6,
+      "chamadas": 59952
+    },
+    {
+      "funcao": "gradient_boosting.py:_predict_iterations",
+      "proprio_s": 0.26,
+      "cumulativo_s": 0.69,
+      "chamadas": 181
+    },
+    {
+      "funcao": "~:<method 'append' of 'list' objects>",
+      "proprio_s": 0.12,
+      "cumulativo_s": 0.12,
+      "chamadas": 620951
+    },
+    {
+      "funcao": "decision_engine.py:search_alloc",
+      "proprio_s": 0.12,
+      "cumulativo_s": 0.73,
+      "chamadas": 91304
+    },
+    {
+      "funcao": "~:<method 'get' of 'dict' objects>",
+      "proprio_s": 0.09,
+      "cumulativo_s": 0.09,
+      "chamadas": 394212
+    },
+    {
+      "funcao": "decision_engine.py:effective_counter",
+      "proprio_s": 0.07,
+      "cumulativo_s": 0.12,
+      "chamadas": 9892
+    },
+    {
+      "funcao": "value_net.py:state_features",
+      "proprio_s": 0.06,
+      "cumulativo_s": 0.36,
+      "chamadas": 834
+    },
+    {
+      "funcao": "~:<built-in method builtins.sum>",
+      "proprio_s": 0.05,
+      "cumulativo_s": 0.16,
+      "chamadas": 80602
+    },
+    {
+      "funcao": "~:<method 'remove' of 'list' objects>",
+      "proprio_s": 0.05,
+      "cumulativo_s": 0.05,
+      "chamadas": 210835
+    },
+    {
+      "funcao": "~:<built-in method builtins.getattr>",
+      "proprio_s": 0.05,
+      "cumulativo_s": 0.06,
+      "chamadas": 189893
+    },
+    {
+      "funcao": "~:<built-in method numpy.empty>",
+      "proprio_s": 0.03,
+      "cumulativo_s": 0.03,
+      "chamadas": 54300
+    },
+    {
+      "funcao": "~:<built-in method builtins.sorted>",
+      "proprio_s": 0.03,
+      "cumulativo_s": 0.03,
+      "chamadas": 61331
+    },
+    {
+      "funcao": "~:<method 'sort' of 'list' objects>",
+      "proprio_s": 0.03,
+      "cumulativo_s": 0.03,
+      "chamadas": 60864
+    },
+    {
+      "funcao": "decision_engine.py:get_card_effects",
+      "proprio_s": 0.02,
+      "cumulativo_s": 0.02,
+      "chamadas": 111643
+    }
+  ]
+}

@@ -685,6 +685,23 @@ ESCOLHER melhor; este e sobre **existir** o que escolher.
 > de acao e e ordenado pelo **score estatico**. Ou seja, a heuristica deixou
 > de escolher o vencedor mas **continua escolhendo os finalistas** que o
 > modelo tem permissao de considerar. Ver a pendencia no `TODO.md`.
+>
+> **MEDIDO, e e a evidencia disso** (bloco 789, perfil de 2 partidas):
+>
+> ```
+> scores estaticos CALCULADOS      : 13.240
+> scores que chegam a UMA decisao  :    480
+> NUNCA decidem nada               :  96,4%
+> avaliar_carta                    : 26,5% do tempo, 34.367 chamadas
+> ```
+>
+> A pontuacao estatica e recalculada em cada no e **jogada fora**, porque quem
+> decide e o modelo -- mas ela ainda ORDENA o shortlist. Entao nao e so
+> desperdicio de tempo: e o mecanismo pelo qual ela escolhe os finalistas.
+>
+> **Regra pratica**: quando o modelo decide, a pontuacao estatica nao deve nem
+> ser CALCULADA. Se uma sessao esta medindo tempo e `avaliar_carta` aparece no
+> topo do perfil, a substituicao nao aconteceu de verdade.
 
 #### A ORDEM: a heuristica sai PRIMEIRO -- a regra circular foi revogada
 
@@ -1471,6 +1488,27 @@ rodar, senão o relatório sai baseado em partidas antigas e engana. Métricas
 que mais importam pra ineficiência: `dano_por_jogo` (dano total por
 partida) e `don_observado_por_ataque` (quanto DON em média está anexado
 quando o bot ataca — baixo = sintoma de curva/ramp ruim, não só de sorte).
+Nenhuma sessão vê o histórico de conversa da outra — só o estado dos
+arquivos. Por isso:
+1. Sempre commitar antes de parar (créditos, fim de sessão).
+2. Sempre escrever um bloco novo no topo do [HANDOFF.md](HANDOFF.md) antes
+   de parar: o que foi feito, estado atual, o que falta.
+3. Sempre refletir o mesmo delta no topo do [TODO.md](TODO.md) (versão
+   resumida do bloco do HANDOFF — o que foi fechado, o que ficou pendente
+   de validação, o que mudou de prioridade). `TODO.md` não pode ficar
+   parado enquanto o `HANDOFF.md` avança (achado 24/07: `TODO.md` ficou 3
+   dias desatualizado enquanto o `HANDOFF.md` já tinha 4 blocos novos).
+4. Ao assumir uma sessão, ler `HANDOFF.md` + `TODO.md` +
+   `git log --oneline -10` + `git status` antes de qualquer edição.
+
+Isso é reforçado por um **hook de `pre-push`** (`scripts/hooks/pre-push`):
+bloqueia o `git push` se `HANDOFF.md` **ou** `TODO.md` não tiverem sido
+alterados nos commits sendo enviados. `.git/hooks/` não é versionado pelo
+git, então em cada clone/máquina nova é preciso instalar uma vez:
+```bash
+sh scripts/setup-git-hooks.sh
+```
+Para pular a checagem numa emergência (não recomendado): `git push --no-verify`.
 
 ## Trabalhando junto com outra IA (Claude ou outra sessão Codex)
 Nenhuma sessão vê o histórico de conversa da outra — só o estado dos

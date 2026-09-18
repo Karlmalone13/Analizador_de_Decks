@@ -1,6 +1,30 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 18 de setembro de 2026 (bloco 865)
+**Última atualização:** 18 de setembro de 2026 (bloco 866)
+
+> **O FALLBACK SILENCIOSO FOI CONSERTADO (18/09/2026, bloco 866)** -- e era
+> PIOR do que o bloco 865 reportou. Nao caia "na heuristica": caia em
+> `candidatas[0]`, o primeiro da ordenacao estatica, **sem avaliacao nenhuma**.
+> Medido no controle: **180 quedas numa UNICA partida** com modelo quebrado, e
+> nenhuma delas produzia qualquer sinal.
+>
+> Agora `_nota_fallback_q` conta e avisa, por motivo (`sem_modelo`, `erro`,
+> `sem_valor`, `primeiro_candidato`), 1 aviso por processo;
+> `q_fallback_resumo()` expoe os totais. **A degradacao continua graciosa** --
+> o motor nao pode cair, regra permanente -- mas deixou de ser muda.
+> Verificado: com o modelo bom o resumo vem **vazio** (o Q decide sempre).
+>
+> **PENDENCIA AINDA ABERTA**: ligar `q_fallback_resumo()` no
+> `live_<ts>.json`, pra que uma partida ao vivo denuncie a queda sem ninguem
+> ler stderr.
+>
+> **DIVERGENCIA DE ESPELHO ACHADA E CORRIGIDA**: o `AGENTS.md` estava sem a
+> **disciplina inteira de passagem de sessao** (commitar antes de parar,
+> escrever HANDOFF, espelhar no TODO, ler antes de editar) **e sem a instrucao
+> de instalar os hooks** (`sh scripts/setup-git-hooks.sh`). Num clone novo uma
+> sessao Codex ficaria sem o `pre-push` inteiro -- hoje isso inclui as
+> checagens de corpus e de index. E o mesmo modo de falha do achado de
+> 25/07/2026, que a regra do espelho existe pra impedir.
 
 > **DUAS PENDENCIAS NOVAS, achadas ao revisar o CLAUDE.md contra o CODIGO
 > (18/09/2026, bloco 865)** -- as duas sao do tipo que o projeto mais paga:

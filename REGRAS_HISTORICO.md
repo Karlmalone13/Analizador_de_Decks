@@ -15,11 +15,17 @@
 
 ## CATALOGO DE METODOS PRA SUBSTITUIR O MONTE CARLO (trazidos pelo usuario, 12-13/09/2026)
 
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
+
 > Registrado a pedido dele. **Nenhum foi implementado ainda** -- e catalogo,
 > nao decisao. A coluna "aplica aqui" e avaliacao minha, e cada uma que virar
 > trabalho precisa da premissa testada antes de construir.
 
 ### O que o motor tem HOJE
+
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
 
 **Monte Carlo PLANO** -- verificado no codigo (bloco 781): sem arvore, sem
 UCB/UCT. Cada candidata recebe simulacoes independentes e o orcamento e
@@ -28,6 +34,9 @@ oponente + 42,2% continuacao gulosa, bloco 765) e e por isso que "alargar o
 shortlist" regrediu 3 vezes: **olhar mais custa olhar pior**.
 
 ### Bloco 1 -- alternativas de simulacao numerica
+
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
 
 | metodo | o que e | aplica aqui? |
 |---|---|---|
@@ -39,6 +48,9 @@ shortlist" regrediu 3 vezes: **olhar mais custa olhar pior**.
 
 ### Bloco 2 -- motores de xadrez (mais rapidos que MCTS)
 
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
+
 | metodo | o que e | aplica aqui? |
 |---|---|---|
 | **Minimax + Poda Alfa-Beta** | busca determinística que descarta ramos comprovadamente piores | **NAO como no xadrez**: a poda so e provadamente correta com INFORMACAO PERFEITA. Aqui a mao do oponente e oculta e ha aleatoriedade (compra, trigger) |
@@ -49,6 +61,9 @@ shortlist" regrediu 3 vezes: **olhar mais custa olhar pior**.
 
 ### Bloco 3 -- machine learning aplicado a jogo
 
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
+
 | metodo | o que e | aplica aqui? |
 |---|---|---|
 | **DQN (Deep Q-Learning)** | o agente joga contra si mesmo e aprende o **valor Q** -- retorno futuro acumulado de CADA ACAO numa posicao. Arvore de busca pode ser acoplada no fim pra refinar | **SIM, e ja estamos com meio pe dentro**: o alvo do professor (bloco 783) e um **retorno de n passos**, a mesma familia matematica do Q. O que falta e ele DECIDIR por esse valor em vez de por busca |
@@ -56,6 +71,9 @@ shortlist" regrediu 3 vezes: **olhar mais custa olhar pior**.
 | **NNUE** (detalhado) | avaliacao por rede no lugar de equacao escrita por humano, com atualizacao incremental | ver bloco 2 |
 
 ### A leitura que isto organiza
+
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
 
 Tres coisas diferentes estao misturadas na palavra "substituir o Monte Carlo":
 
@@ -73,6 +91,9 @@ regra de "melhoria ao redor do ML". (2) esbarra na informacao oculta.
 > posicao. Nao confundir as duas coisas.
 
 ### AMPLIACAO DO CATALOGO -- surrogate models, trazido pelo usuario (13/09/2026)
+
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
 
 > Pedido explicito: *"te enviei aí, novamente uma lista de metodos para
 > substituir o monte carlo, por favor registre isso e não esqueça, pq parece
@@ -114,6 +135,9 @@ vezes sem perder precisao.
 
 ### O QUE ISTO COBRA DA SESSAO -- a critica dele, que procede
 
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
+
 > *"você ainda não deve ter substituido a heuristica, estando então com
 > simulações caras e com peso fixo, ou algumas funções sendo executadas
 > diversas vezes desnecessariamente, ou até mesmo funções mortas ou sem
@@ -144,6 +168,9 @@ verdade.
 
 ## A REDE DE VALOR E UM *SURROGATE MODEL* -- o nome certo, dado pelo usuario (12/09/2026)
 
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
+
 > *"Acho que estamos indo para (Surrogate Models)"*.
 
 **Esta certo, e nomear isso muda como o projeto raciocina.** Um surrogate
@@ -157,6 +184,9 @@ reproduz o que o simulador caro diria, com erro aceitavel?"**.
 
 ### O que o Monte Carlo de hoje E, exatamente
 
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
+
 **Monte Carlo PLANO** -- verificado no codigo (bloco 781): nao ha arvore, nao
 ha UCB/UCT. Cada candidata recebe simulacoes independentes e o orcamento e
 DIVIDIDO entre elas (ha parada sequencial, que ajuda, mas nao realoca).
@@ -169,6 +199,9 @@ custa olhar pior.** Com um surrogate essa penalidade some: cada ramo custa
 
 ### O que se aplica e o que NAO se aplica (pesquisa trazida pelo usuario)
 
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
+
 | ferramenta | aplica aqui? |
 |---|---|
 | **Surrogate model / emulador** | **SIM -- e o caminho, ja em teste** |
@@ -180,6 +213,9 @@ custa olhar pior.** Com um surrogate essa penalidade some: cada ramo custa
 | **QMC (Sobol/Halton), quadratura gaussiana, elementos finitos** | **NAO -- outro dominio.** Sao ferramentas de INTEGRACAO NUMERICA e equacoes diferenciais: problemas continuos e suaves. O nosso e combinatorio discreto ("qual carta, em quem, quanto DON") -- nao ha funcao suave pra integrar |
 
 ### A ordem recomendada pra SAIR do Monte Carlo
+
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
 
 **Nao de uma vez.** Em duas etapas, e a primeira ja entrega a arvore larga:
 
@@ -203,6 +239,9 @@ custa olhar pior.** Com um surrogate essa penalidade some: cada ramo custa
 ---
 
 ### A regra pratica
+
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
 
 **Antes de propor ou implementar qualquer mecanismo, responda em uma
 linha: de qual PREMISSA ele depende, e como ela seria testada?**
@@ -418,6 +457,9 @@ premissa teriam levado direto a mudanca de arquitetura.
 
 ### O BURACO ESTRUTURAL que o usuario mandou RESOLVER (12/09/2026)
 
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
+
 > *"O modelo escolhe entre o que as regras produzem -- o que nao vira
 > candidato nao existe. Vamos resolver isso tb"*.
 
@@ -546,6 +588,9 @@ os outros sao sobre ESCOLHER melhor; este e sobre **existir** o que escolher.
 
 ## Placar de qualidade de decisão por líder — OBRIGATÓRIO antes de avaliar se o bot "sabe jogar" um deck
 
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
+
 > **OBRIGATÓRIO** (pedido explícito do usuário, 10/08/2026, bloco 485):
 > sempre que a avaliação for "o bot sabe jogar com este líder/deck?" —
 > não "quem ganha mais" — rode primeiro
@@ -612,6 +657,9 @@ os outros sao sobre ESCOLHER melhor; este e sobre **existir** o que escolher.
 ---
 
 ### Telemetria de decisão — OBRIGATÓRIO ler quando o log é de partida do bot
+
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
 
 Se o log adicionado ao banco veio de uma partida em que o **bot jogou de
 verdade** (não humano vs humano), a tarefa só termina depois de ler o
@@ -707,6 +755,9 @@ investigada.
 ---
 
 ## Auditoria de derrotas reais contra humano — ferramenta permanente
+
+> `[ARQUIVO]` -- versao LONGA do que ja foi resumido no `CLAUDE.md`. A regra
+> vigente e a de la. Isto aqui nao obriga ninguem a nada.
 
 > **Registro obrigatório de existência** (pedido do usuário, 04/08/2026):
 > ferramenta criada nesta sessão, `scriptis_da_ia/audit_real_losses.py`.
