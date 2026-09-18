@@ -245,6 +245,84 @@ visivel**.
 
 ---
 
+## 2026-09-18 (858) - REGRESSAO MINHA: o `purpose` do bloco 854 quebrou a habilidade do Mihawk. 26 ativacoes com 0 falhas viraram 16 com 8
+
+Achado ao ler a telemetria dos adversarios do Mihawk, a pedido do usuario
+(*"esta cheio de coisa para consertar"*). Estava.
+
+### O NUMERO
+
+Todas as 6 falhas de execucao das partidas de 17/09 sao do lado Mihawk, e
+**5 de 10 ativacoes do proprio lider falharam** -- "estado inalterado no
+proximo main state estavel". Recortando por SESSAO:
+
+```
+13-15/09 (antes dos fixes)      : 46 ativacoes, ~42% de falha
+17/09 21.49 e 22.15 (bloco 853) : 26 ativacoes, **0 falhas**
+17/09 22.41 e 23.34 (bloco 854) : 16 ativacoes, **8 falhas (50%)**
+```
+
+O fix do bloco 853 tinha ZERADO o problema. **Eu reintroduzi.**
+
+### A CAUSA, e o erro de raciocinio por tras
+
+`TargetPurpose` fazia `IsOptionalCostWindow(gls) ? "cost" : "effect"` --
+tratando **ausencia de evidencia de custo como evidencia de efeito**. Sao
+perguntas diferentes: `IsOptionalCostWindow` responde *"e uma janela de custo
+OPCIONAL, que eu devo perguntar ao motor se vale pagar?"*, e conhece 5 formas
+(`TrashCard/RestSelf/TrashSelf/DonTap/DonMinus`) contra as 10 que
+`_CUSTO_ZONAS` mapeia.
+
+O lider Mihawk pede *"You may rest 1 of your cards"* -- `rest_own_card`, fora
+das 5. `RestSelf` e restar a PROPRIA carta, outra coisa.
+
+Entao o plugin afirmava `effect`, e o motor -- corretamente, dado o que lhe foi
+dito -- executava o que EU tinha escrito no bloco 854:
+
+```python
+zonas_ok = zonas_don | (set() if purpose == 'effect' else actor_zonas_de_custo)
+```
+
+removendo `own_board`/`own_leader`/`own_stage` da lista. **A carta a restar
+sumia dos candidatos** e a ativacao morria. Confirmado no log da sessao:
+
+```
+actor=OP14-020 purpose=effect   10x   <- o custo, rotulado como efeito
+actor=OP17-039 purpose=cost      5x   <- o detector funciona pra outras
+```
+
+### A CORRECAO DO DIAGNOSTICO DO BLOCO 854
+
+Aquele bloco registrou que o `purpose` "nao pagou" (1o clique 59% -> 55%,
+nunca-acerta 34% -> 40%) e atribuiu a causa a **cobertura**: so 9 de 105
+requisicoes chegavam como `cost`. **A atribuicao estava errada.** A cobertura
+baixa sozinha seria inofensiva -- `unknown` cai no comportamento anterior. O
+que piorou os numeros foi o `effect` FALSO apagando candidatos validos.
+
+> Licao: "o mecanismo nao pagou" e "o mecanismo fez estrago" produzem o mesmo
+> numero agregado pior, e nao sao a mesma coisa. Sem o recorte por carta eu
+> fechei o bloco com a causa errada e seis horas depois ela ainda estava
+> quebrando a habilidade do lider.
+
+### O CONSERTO
+
+`TargetPurpose` passa a devolver **so `cost` ou `unknown`** -- nunca `effect`.
+So se afirma o que se sabe positivamente; `unknown` cai no comportamento
+anterior (uniao das zonas, sem filtrar), que nao e otimo mas nao apaga a
+resposta certa.
+
+### A LACUNA DE TELEMETRIA QUE ESCONDEU ISSO POR DUAS SESSOES
+
+O evento de `target` **nao gravava** `purpose`/`step_index` -- so o print
+`[TGT]` no stdout. Entao nao dava pra ligar uma execucao que FALHOU ao
+proposito da janela que a produziu; eu tive que cruzar o log de sessao na mao.
+Corrigido: os quatro campos agora vao no evento.
+
+`smoke_fast` OK, plugin recompilado (0 erros), servidor reiniciado.
+**Falta medir**: a expectativa e voltar a 0 falhas em ~26 ativacoes.
+
+---
+
 ## 2026-09-17 (857) - A RECUSA de counter era MUDA, e a telemetria vale para os DOIS lados no CPU x CPU
 
 Dois pedidos do usuario no mesmo passo: *"a telemetria tem que funcionar dos

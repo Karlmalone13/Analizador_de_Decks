@@ -1427,6 +1427,13 @@ def choose_target(req: ChooseTargetRequest):
             {"type": "target_order", "ordered_ids": out}, {"orderedIds": out},
             phase="target", turn=req.state.turnNumber, actor_code=req.actorCode,
             attacker_power=req.attackerPower, defender_id=req.defenderId,
+            # Bloco 858: o evento NAO gravava isto, so o print `[TGT]` no
+            # stdout -- entao nao dava pra ligar uma execucao que FALHOU ao
+            # proposito da janela que a produziu. Foi o que escondeu a
+            # regressao do bloco 854 (purpose=effect afirmado sem evidencia
+            # apagava os candidatos do custo) por duas sessoes inteiras.
+            purpose=req.purpose, step_index=req.stepIndex,
+            action_index=req.actionIndex, target_index=req.targetIndex,
             latency_ms=round((time.perf_counter() - started) * 1000, 3))
 
     except Exception as e:

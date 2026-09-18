@@ -2,6 +2,27 @@
 
 **Última atualização:** 14 de setembro de 2026 (bloco 836)
 
+> **REGRESSAO DO BLOCO 854 -- CORRIGIDA (18/09/2026, bloco 858)**: o `purpose`
+> quebrou a habilidade do lider Mihawk. `TargetPurpose` fazia
+> `IsOptionalCostWindow ? "cost" : "effect"`, tratando ausencia de evidencia de
+> custo como evidencia de efeito -- e o Mihawk pede `rest_own_card`, fora das 5
+> formas que o plugin conhece. O motor entao removia as zonas de custo dos
+> candidatos e a ativacao morria com "estado inalterado".
+>
+> ```
+> 17/09 21.49 e 22.15 (bloco 853) : 26 ativacoes, 0 falhas
+> 17/09 22.41 e 23.34 (bloco 854) : 16 ativacoes, 8 falhas (50%)
+> ```
+>
+> **CORRIGE o diagnostico do bloco 854**: ele atribuiu o "nao pagou" a
+> COBERTURA (9 de 105 como `cost`). Errado -- cobertura baixa e inofensiva
+> (`unknown` = comportamento anterior); o estrago foi o `effect` FALSO apagando
+> candidatos validos. `TargetPurpose` agora so devolve `cost` ou `unknown`.
+>
+> **Lacuna fechada**: o evento de `target` nao gravava `purpose`/`step_index`
+> (so o stdout), entao nao dava pra ligar execucao FALHADA ao proposito da
+> janela. Agora grava. **PENDENTE: medir** (esperado voltar a 0 falhas).
+
 > **RECUSA DE COUNTER ERA MUDA -- CORRIGIDO (17/09/2026, bloco 857)**:
 > `select_counter_cards` tem 4 saidas e so a ultima registrava. O bot recusava
 > com `[Counter]` na mao e o log saia VAZIO -- o buraco de "46 janelas com

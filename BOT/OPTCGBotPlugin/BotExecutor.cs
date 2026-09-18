@@ -565,7 +565,30 @@ namespace OPTCGBotPlugin
         {
             if (gls == null || gls.acaActive == null) return "unknown";
             if (!gls.acaActive.UsesV3()) return "unknown";
-            return IsOptionalCostWindow(gls) ? "cost" : "effect";
+
+            // NUNCA devolve "effect" -- so "cost" ou "unknown" (bloco 858).
+            //
+            // A versao do bloco 854 fazia `IsOptionalCostWindow(gls) ? "cost"
+            // : "effect"`, tratando a ausencia de evidencia de custo como
+            // evidencia de efeito. **Sao perguntas diferentes**:
+            // `IsOptionalCostWindow` responde "e uma janela de custo OPCIONAL
+            // que eu devo perguntar ao motor se vale pagar?", e ela conhece
+            // 5 formas (TrashCard/RestSelf/TrashSelf/DonTap/DonMinus)
+            // enquanto o motor mapeia 10 em `_CUSTO_ZONAS`.
+            //
+            // O estrago era REAL e medido: o lider Mihawk (OP14-020) pede
+            // "reste 1 das suas cartas" (`rest_own_card`, fora das 5), o
+            // plugin afirmava `effect`, e o motor -- corretamente, dado o que
+            // lhe foi dito -- REMOVIA as zonas de custo (own_board,
+            // own_leader, own_stage) da lista. A carta a restar sumia dos
+            // candidatos e a ativacao morria com "estado inalterado":
+            //
+            //   sessoes 21.49 e 22.15 (sem purpose) : 26 ativacoes, 0 falhas
+            //   sessoes 22.41 e 23.34 (com purpose) : 16 ativacoes, 8 falhas
+            //
+            // `unknown` cai no comportamento anterior (uniao das zonas, sem
+            // filtrar) -- que nao e otimo, mas nao apaga a resposta certa.
+            return IsOptionalCostWindow(gls) ? "cost" : "unknown";
         }
 
         public static bool IsOptionalCostWindow(GameplayLogicScript gls)
