@@ -18715,7 +18715,8 @@ class OPTCGMatch:
                                    score_window=SEARCH_SCORE_WINDOW,
                                    cheap_values=None,
                                    ordenada_pelo_modelo=False,
-                                   permite_score_negativo=False):
+                                   permite_score_negativo=False,
+                                   sem_corte=False):
         """
         Recorta, a partir da lista COMPLETA de ações pontuadas
         (`_generate_and_score_actions`, ordenada por score desc), quais
@@ -18736,6 +18737,34 @@ class OPTCGMatch:
         """
         if not actions:
             return []
+
+        # ── A REGUA ESTATICA SAI DO PORTAO (18/09/2026, bloco 868) ──────
+        # Pedido do usuario: "tira a heuristica do shortlist".
+        #
+        # MEDIDO ANTES (2 partidas, 505 decisoes): 12,1 acoes geradas por
+        # decisao e so 3,7 chegavam ao Q -- **69,1% descartadas** (4.220 de
+        # 6.110). E o modelo ordenava o shortlist em **0 de 505** chamadas:
+        # quem escolhia os finalistas era a pontuacao estatica, sozinha.
+        #
+        # Era o "buraco estrutural" registrado: o que nao vira candidato nao
+        # existe pro modelo -- nem exploracao alcanca, porque ela tambem
+        # sorteia DENTRO da lista ja cortada.
+        #
+        # POR QUE O CORTE EXISTIA, E POR QUE NAO EXISTE MAIS: "cada candidata
+        # a mais custa amostras Monte Carlo em TODA decisao" (blocos
+        # 593/594/677, tres medicoes). **O Monte Carlo SAIU no bloco 785.**
+        # O Q pontua a lista inteira numa consulta em LOTE (0,05 ms/linha em
+        # lote grande, bloco 787): uma candidata a mais nao tira precisao de
+        # nenhuma outra. A justificativa do corte morreu junto com o rollout,
+        # e o corte sobreviveu a ela.
+        # O PISO SAI JUNTO. Medido: so tirar o corte levou o descarte de 69,1%
+        # pra 21,9%, e o resto era o filtro `score estatico >= 0`. Ele e
+        # julgamento de VALOR ("esta acao nao vale a pena"), e valor e o que o
+        # modelo decide -- `REGRA_O_CRITERIO_EMERGE`: o que e LEGAL e regra, o
+        # que e BOM e modelo. Legalidade ja foi aplicada na GERACAO; aqui
+        # sobrava so a opiniao da regua antiga sobre o que merece ser olhado.
+        if sem_corte:
+            return list(actions)
         # Normalizacao de escala por kind (bloco 642) SO pra decidir QUEM
         # entra no shortlist -- `actions` (a lista original, score CRU) fica
         # intocada pra qualquer outro consumidor (bypass do win-con em
@@ -21871,7 +21900,12 @@ class OPTCGMatch:
                                 if self.search_top_k_override is not None
                                 else SEARCH_MIN_CANDIDATES),
                 ordenada_pelo_modelo=_ordenou_modelo,
-                permite_score_negativo=_abaixo_do_piso)
+                permite_score_negativo=_abaixo_do_piso,
+                # Com o Q no comando, a lista INTEIRA vai pra ele (bloco 868).
+                # Ele e o unico decisor e pontua tudo em lote -- deixar a
+                # pontuacao estatica escolher os finalistas era o teto que
+                # nenhum modelo melhor atravessava.
+                sem_corte=_q_no_comando)
             # bloco 656: "encerrar o turno agora" entra como CANDIDATA e
             # compete na busca -- ver comentario de PASS_ACTION. Nao entra em
             # LETHAL (fechar a partida vem antes de qualquer economia de

@@ -245,6 +245,86 @@ visivel**.
 
 ---
 
+## 2026-09-18 (868) - A HEURISTICA SAI DO SHORTLIST: 69,1% das jogadas geradas nunca chegavam ao modelo
+
+Pedido do usuario: *"tira a heuristica do shortlist"*. Fecha o buraco
+estrutural que ele mandou resolver em 12/09 -- *"o modelo escolhe entre o que
+as regras produzem; o que nao vira candidato nao existe"*.
+
+**Tipo do experimento: A (ML DECIDE).** Premissa da qual depende: que o Q
+consiga pontuar TODAS as candidatas a custo aceitavel -- testavel antes de
+construir, e ja medida (lote grande: 0,05 ms/linha, bloco 787).
+
+### MEDIDO ANTES (2 partidas, 505 decisoes)
+
+```
+acoes GERADAS por decisao      : media 12,1   max 51
+candidatas que chegam ao Q     : media  3,7   max  7
+TOTAL 6.110 geradas -> 1.890 ao Q   (4.220 DESCARTADAS, 69,1%)
+shortlist ordenado pelo MODELO : 0 de 505 chamadas
+```
+
+**Duas coisas que o codigo sugeria e a medicao decidiu:**
+
+1. `_ordenar_pelo_modelo = MODELO_ORDENA and ... **and not _q_no_comando**` --
+   com o Q no comando, a ordenacao pelo modelo e DESLIGADA. Confirmado: **0
+   de 505**. O mecanismo do bloco 785 existia e nunca rodava em producao.
+2. `sem_pontuacao=True` NAO zera tudo: 4.180 scores nao-zero contra 1.930
+   zerados. A pontuacao estatica era calculada e ORDENAVA o corte.
+
+### O QUE FOI REMOVIDO
+
+Com o Q no comando (`sem_corte=_q_no_comando`), a lista INTEIRA vai pro
+modelo. Sairam:
+
+- o corte por `TOP_K` (5 ou 8) e pela janela de score;
+- as cotas por tipo de acao;
+- **o piso `score estatico >= 0`** -- julgamento de VALOR por regra fixa.
+  `REGRA_O_CRITERIO_EMERGE`: o que e LEGAL e regra, o que e BOM e modelo.
+  Legalidade ja foi aplicada na GERACAO; ali sobrava so a opiniao da regua
+  antiga sobre o que merece ser olhado.
+
+Sem knob com o comportamento antigo e sem caminho paralelo
+(**O QUE EXISTE NAO E SAGRADO**).
+
+### POR QUE O CORTE PODIA SAIR -- a justificativa tinha morrido
+
+O corte existia porque *"cada candidata a mais custa amostras Monte Carlo em
+TODA decisao"* (blocos 593/594/677, TRES medicoes independentes). **O Monte
+Carlo saiu no bloco 785.** O Q pontua a lista inteira numa consulta em LOTE:
+uma candidata a mais nao tira precisao de nenhuma outra.
+
+**A justificativa morreu e o corte sobreviveu a ela por um mes.** Mesmo padrao
+do diagnostico herdado do bloco 787 -- um mecanismo continua valendo depois
+que a razao dele acabou, porque ninguem remede.
+
+### MEDIDO DEPOIS
+
+```
+TOTAL 5.220 geradas -> 5.220 ao Q   (0 DESCARTADAS, 0,0%)
+candidatas por decisao : 13,6  (3,7x mais larga)
+```
+
+Custo NAO explodiu: `gerar/pontuar candidatas` = 1,3% do tempo, modelo 53,5%.
+
+> **RESSALVA HONESTA sobre o tempo**: o AS-IS deu 0,49 s/partida contra 0,61
+> antes, **mas as partidas MUDARAM** (29 turnos contra 45) -- as decisoes sao
+> outras. **Isso NAO e ganho de velocidade comparavel** e nao deve ser citado
+> como tal.
+
+`smoke_fast` OK.
+
+### O QUE NAO FOI MEDIDO -- nao dar como validado
+
+**Se isto GANHA.** O duelo pareado exige flag por jogador (padrao de
+`modelo_ordena`/`executa_lethal`) pra rodar os dois lados no mesmo processo, e
+nao foi feito. O portao mede DEPOIS e nao e pre-requisito -- mas ate rodar,
+o que se pode afirmar e que **o modelo passou a enxergar 100% do que as regras
+produzem**, nao que o jogo melhorou.
+
+Proximo passo natural: o flag por jogador e o duelo.
+
+
 ## 2026-09-18 (867) - `q_fallback` no `live_<ts>.json`: o passo 1 da telemetria passa a dizer se o MODELO decidiu
 
 Fecha a pendencia aberta no bloco 866. Pedido do usuario: *"liga o

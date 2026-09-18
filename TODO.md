@@ -1,6 +1,35 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 18 de setembro de 2026 (bloco 867)
+**Última atualização:** 18 de setembro de 2026 (bloco 868)
+
+> **A HEURISTICA SAIU DO SHORTLIST (18/09/2026, bloco 868)** -- pedido do
+> usuario, *"tira a heuristica do shortlist"*. Fecha o buraco estrutural que
+> ele mandou resolver em 12/09 (*"o que nao vira candidato nao existe"*).
+>
+> | | antes | depois |
+> |---|---|---|
+> | acoes geradas por decisao | 12,1 | 13,6 |
+> | chegam ao modelo | **3,7** | **13,6** |
+> | DESCARTADAS | **69,1%** | **0,0%** |
+> | shortlist ordenado pelo modelo | 0 de 505 | n/a (nao ha corte) |
+>
+> Sairam o corte por `TOP_K`/janela **e** o piso `score estatico >= 0`. O piso
+> era julgamento de VALOR por regra fixa -- `REGRA_O_CRITERIO_EMERGE`: o que e
+> LEGAL e regra, o que e BOM e modelo.
+>
+> **Por que pode sair**: o corte existia porque "cada candidata a mais custa
+> amostras Monte Carlo" (blocos 593/594/677) -- e **o Monte Carlo saiu no bloco
+> 785**. O Q pontua tudo em lote. A justificativa morreu e o corte sobreviveu a
+> ela por um mes.
+>
+> **PENDENCIA PRINCIPAL: nao foi medido se GANHA.** O duelo pareado exige flag
+> por jogador (padrao de `modelo_ordena`/`executa_lethal`) e nao foi rodado. O
+> portao mede DEPOIS e nao e pre-requisito, mas ate rodar ninguem pode dizer que
+> a troca melhorou o jogo -- so que o modelo passou a enxergar tudo.
+>
+> Custo NAO explodiu: `gerar/pontuar candidatas` = 1,3% do tempo, modelo 53,5%.
+> (O s/partida caiu de 0,61 pra 0,49, mas as PARTIDAS mudaram -- 45 turnos
+> contra 29 -- entao isso NAO e ganho de velocidade comparavel.)
 
 > **`q_fallback` LIGADO NO `live_<ts>.json` (18/09/2026, bloco 867)** -- fecha a
 > pendencia aberta no bloco 866. O passo 1 da telemetria agora responde

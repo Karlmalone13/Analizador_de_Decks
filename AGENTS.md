@@ -680,11 +680,28 @@ porque exploracao tambem sorteia DENTRO da lista gerada.
 E o teto mais duro do sistema, e e diferente dos outros: os outros sao sobre
 ESCOLHER melhor; este e sobre **existir** o que escolher.
 
-> **CONFIRMADO NO CODIGO (18/09/2026)** -- e mais grave do que estava
-> registrado. Nao e so *geracao*: o **shortlist** da busca tem cota por tipo
-> de acao e e ordenado pelo **score estatico**. Ou seja, a heuristica deixou
-> de escolher o vencedor mas **continua escolhendo os finalistas** que o
-> modelo tem permissao de considerar. Ver a pendencia no `TODO.md`.
+> **RESOLVIDO EM 18/09/2026 (bloco 868), a pedido do usuario** -- *"tira a
+> heuristica do shortlist"*.
+>
+> MEDIDO ANTES (2 partidas, 505 decisoes): 12,1 acoes geradas por decisao e
+> **so 3,7 chegavam ao modelo -- 69,1% descartadas** (4.220 de 6.110). E o
+> modelo ordenava o shortlist em **0 de 505** chamadas: quem escolhia os
+> finalistas era a pontuacao estatica, sozinha.
+>
+> Com o Q no comando, a lista INTEIRA passa a ir pra ele: o corte por
+> `TOP_K`/janela E o piso `score >= 0` sairam. **MEDIDO DEPOIS: 0,0%
+> descartadas**, 13,6 candidatas por decisao (3,7x mais larga).
+>
+> **Por que o corte podia sair**: ele existia porque "cada candidata a mais
+> custa amostras Monte Carlo" (blocos 593/594/677). **O Monte Carlo saiu no
+> bloco 785** -- o Q pontua tudo em LOTE e uma candidata a mais nao tira
+> precisao de nenhuma outra. A justificativa morreu e o corte sobreviveu a
+> ela por um mes.
+>
+> **NAO MEDIDO AINDA**: se isto GANHA. O duelo pareado exige flag por jogador
+> e nao foi rodado. O portao mede DEPOIS e nao e pre-requisito -- mas
+> enquanto nao rodar, ninguem pode dizer que a troca melhorou o jogo, so que
+> o modelo passou a enxergar tudo.
 >
 > **MEDIDO, e e a evidencia disso** (bloco 789, perfil de 2 partidas):
 >
@@ -1216,10 +1233,9 @@ o criterio emergir dos testes (`REGRA_O_CRITERIO_EMERGE.md`).
   > *"desde os blocos 790-791 a heuristica nao decide mais nada"*. **Esta
   > pela metade.** O Q e mesmo o unico decisor da ACAO DE TOPO
   > (`decision_engine.py`, "Sem chave e sem alternativa: e o unico decisor").
-  > Mas `NULLIFY_EVALUATE_STATE_V2 = False` e o **shortlist continua ordenado
-  > pelo score estatico, com cota por tipo de acao** -- a heuristica deixou de
-  > escolher o vencedor e continua escolhendo os FINALISTAS. Ver as pendencias
-  > abertas no `TODO.md`. A regra de 28/08 ("exige autorizacao explicita") continua valendo
+  > `NULLIFY_EVALUATE_STATE_V2 = False` continua, mas o **shortlist deixou de
+  > ser dela no bloco 868**: com o Q no comando a lista inteira vai pro modelo
+  > (0,0% descartadas, contra 69,1% antes). A regra de 28/08 ("exige autorizacao explicita") continua valendo
   **para ligar**, mas ninguem deve querer: ligar seria ressuscitar o desenho
   que o projeto acabou de remover.
 
