@@ -245,6 +245,81 @@ visivel**.
 
 ---
 
+## 2026-09-18 (864) - UM COMANDO DE CADA LADO: `sincroniza entrega` / `chega` cobre corpus E logs
+
+**Pedido do usuario, em duas mensagens que juntas definem o requisito real:**
+
+    "eu queria que o log tb fosse"
+    "a ideia e pegar os treinos de uma maquina e os logs, e quando a outra
+     maquina for atualizar, tb atualizar os logs e os treinos"
+
+### A PRIMEIRA LEITURA ERA ZIPAR OS LOGS. A MEDICAO DESCARTOU.
+
+    logs/ em disco (working tree) : 27,0 MB
+    logs/ dentro do .git          :  1,7 MB
+    tar.gz dos mesmos arquivos    :  1,7 MB
+
+**O git ja comprime os logs na MESMA taxa que o zip daria.** Comprimir nao
+economizaria um byte, e custaria: **11 ferramentas** leem `logs/parsed/*.json`
+direto (`parse_combat_log`, `audit_human_patterns`, `audit_real_losses`,
+`decision_quality_vs_human`, ate o `decision_engine`), todas quebrariam, e se
+perderia diff, grep e merge por arquivo.
+
+O corpus precisou de fatias por ser UM arquivo de 465 MB. Os logs ja sao muitos
+arquivos pequenos -- o formato em que o git e bom. **A solucao para os logs nao
+era formato, era AUTOMACAO.**
+
+### O PROBLEMA REAL: completude, nao transporte
+
+Sempre faltava um pedaco, e sempre em silencio:
+
+- o corpus nao viajava (zip a mao; quebrou hoje sem conexao com a outra maquina);
+- os logs viajavam, mas so os que alguem lembrou de `git add` (os 13 de 17/09);
+- e quem puxava nao tinha passo obrigatorio que dissesse "faltou isto".
+
+`scriptis_da_ia/sincroniza.py`, dois verbos, cada um cobrindo **os dois**:
+
+| verbo | o que faz |
+|---|---|
+| `entrega` | exporta a fatia do corpus + **versiona todo log que o `index.json` referencia e o git nao tem** |
+| `chega` | `git pull --ff-only` + importa as fatias + confere se todo log referenciado chegou |
+
+**NAO commita nem empurra, de proposito**: o `pre-push` exige bloco de
+HANDOFF/TODO, e isso e trabalho de sessao. Prepara e diz o que falta.
+
+### A CAUSA RAIZ dos 13 arquivos, fechada
+
+Nao era falta de disciplina: a ferramenta que banca o log escreve os arquivos e
+atualiza o `index.json`, mas **nunca versionou nada**. O `pre-push` do bloco 863
+so RECLAMAVA; agora `entrega` CORRIGE.
+
+### REGRA_SEM_DUPLICACAO aplicada
+
+A pergunta "quais arquivos do index estao fora do git" passou a ter UMA fonte:
+`sincroniza.logs_referenciados_fora_do_git`. O hook `verifica_push.py`
+**importa** dela em vez de reimplementar -- eu tinha escrito a mesma varredura
+nos dois lugares no bloco 863. Removido do hook: a funcao `_rastreados`, a
+leitura propria do index e o `import json`, todos mortos depois da troca.
+
+### CONTROLE QUE PODE FALHAR
+
+Os dois verbos passaram primeiro pelo caminho "nada a fazer", que nao prova
+nada. Fabriquei o caso que importa -- um log referenciado pelo index, presente
+no disco e fora do git:
+
+    criado    -> `entrega` detectou, versionou, stage com 1 arquivo
+    contagem  -> as referencias orfas cairam de 13 para 12
+    limpeza   -> estado restaurado
+
+### ESTADO
+
+`smoke_fast` OK. `teste_corpus_git.py` 7/7. Hook re-testado apos a refatoracao.
+
+**ABERTO, sem mudanca**: os 13 arquivos continuam so na Arthur_PC -- mas agora
+basta rodar `python sincroniza.py entrega` la, sem `git add` a mao. E o **ciclo
+3 segue sem ser rodado** por nenhuma das duas maquinas.
+
+
 ## 2026-09-18 (863) - O CORPUS PASSA A VIAJAR PELO GIT, em fatias: o zip acabou, e o portao para de verdade
 
 **Pedido do usuario, e nasceu de um custo pago hoje**: ele pediu na sessao da
@@ -313,7 +388,8 @@ treino. A identidade virou **posicional por `origem`**, que preserva repeticao.
 
 **2. A fatia saia com CRLF e o corpus tem LF.** Mesma contagem de linhas, hash
 diferente -- o Python traduz `
-` -> `
+` -> `
+
 ` na escrita no Windows. Corrigido com
 `newline=''` nos dois lados. **Achado embutido**: o corpus ja tem fim de linha
 MISTURADO -- 73.477 linhas CRLF, que sao exatamente as 73.477 desta maquina

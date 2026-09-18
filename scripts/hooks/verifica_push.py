@@ -24,7 +24,6 @@ Para pular numa emergencia: `git push --no-verify` (nao recomendado).
 """
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
@@ -41,42 +40,20 @@ def _bloqueia(titulo: str, linhas: list[str]) -> None:
         print(f'  {ln}')
 
 
-def _rastreados() -> set[str]:
-    saida = subprocess.run(['git', 'ls-files'], cwd=RAIZ, capture_output=True,
-                           text=True, check=True).stdout
-    return set(saida.splitlines())
-
-
 def checa_index_de_logs() -> None:
-    idx = RAIZ / 'scriptis_da_ia' / 'logs' / 'index.json'
-    if not idx.exists():
-        return
-    try:
-        entradas = json.loads(idx.read_text(encoding='utf-8'))
-    except Exception as exc:
-        _bloqueia('logs/index.json ilegivel', [str(exc)])
-        return
-
-    rastreados = _rastreados()
     # DOIS casos diferentes, e confundi-los faz o hook punir quem nao pode
     # consertar (erro pego ao testar, 18/09):
     #   - esta no DISCO e fora do git -> BLOQUEIA. E seu, e um `git add` resolve.
     #   - nao esta nem no disco       -> AVISA. Ficou na outra maquina; daqui
     #                                    nao ha o que versionar.
-    por_versionar: list[str] = []
-    so_na_outra: list[str] = []
-    for e in entradas:
-        refs: list[str] = []
-        for chave in ('parsed_file', 'log_file', 'decision_log_file'):
-            if e.get(chave):
-                refs.append(e[chave])
-        for chave in ('deck_files', 'deck_full_files'):
-            refs += [v for v in (e.get(chave) or {}).values() if v]
-        for r in refs:
-            caminho = f'scriptis_da_ia/logs/{r}'
-            if caminho in rastreados:
-                continue
-            (por_versionar if (RAIZ / caminho).exists() else so_na_outra).append(caminho)
+    #
+    # A pergunta "quais arquivos do index estao fora do git" tem UMA fonte:
+    # `sincroniza.logs_referenciados_fora_do_git`. O hook CONFERE e o
+    # `sincroniza entrega` CORRIGE -- reimplementar aqui seria a duplicata que
+    # a REGRA_SEM_DUPLICACAO proibe.
+    sys.path.insert(0, str(RAIZ / 'scriptis_da_ia'))
+    from sincroniza import logs_referenciados_fora_do_git
+    por_versionar, so_na_outra = logs_referenciados_fora_do_git()
 
     if por_versionar:
         _bloqueia(

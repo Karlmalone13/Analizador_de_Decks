@@ -197,12 +197,33 @@ Regras-chave (resumo — leia o resto deste arquivo):
 > arquivos sao separados. Medido: 465 MB -> 12,9 MB (37,4x); um ciclo inteiro
 > custa 1,3 MB.
 >
+> **UM COMANDO DE CADA LADO** -- pedido do usuario no mesmo dia: *"a ideia e
+> pegar os treinos de uma maquina e os logs, e quando a outra maquina for
+> atualizar, tb atualizar os logs e os treinos"*. Cada verbo cobre **corpus E
+> logs**, que era onde sempre faltava um pedaco:
+>
 > ```bash
 > cd scriptis_da_ia
-> python corpus_git.py status      # o que falta importar/exportar
-> python corpus_git.py importa     # depois de todo `git pull`
-> python corpus_git.py exporta     # antes de todo `git push`
+> python sincroniza.py entrega     # antes de passar a vez: exporta corpus + versiona logs novos
+> python sincroniza.py chega       # ao sentar na outra maquina: pull + importa corpus + confere logs
 > ```
+>
+> `entrega` NAO commita nem empurra de proposito -- o `pre-push` exige bloco de
+> HANDOFF/TODO, e isso e trabalho de sessao. Ele prepara e diz o que falta.
+>
+> Por baixo, para uso avulso:
+> ```bash
+> python corpus_git.py status      # o que falta importar/exportar
+> python corpus_git.py importa     # so o corpus
+> python corpus_git.py exporta     # so o corpus
+> ```
+>
+> **OS LOGS NAO SAO ZIPADOS, e a medicao explica** (18/09): `logs/` tem 27,0 MB
+> em disco e **1,7 MB dentro do .git** -- exatamente o que um `tar.gz` daria. O
+> git ja comprime na mesma taxa. Zipar nao economizaria um byte e quebraria as
+> 11 ferramentas que leem `logs/parsed/*.json` direto, alem de custar diff,
+> grep e merge por arquivo. O corpus precisou de fatias por ser UM arquivo de
+> 465 MB; os logs ja sao muitos arquivos pequenos, o formato que o git faz bem.
 >
 > **E OBRIGATORIO e para de verdade** (o modo de falha e silencioso -- treinar
 > com corpus menor nao da erro, so da modelo pior):

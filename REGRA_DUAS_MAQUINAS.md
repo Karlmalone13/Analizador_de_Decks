@@ -99,14 +99,59 @@ corpus de 698.838 linhas : 465 MB  -> 12,9 MB gz
 incremento de 1 ciclo    :  47 MB  ->  1,3 MB gz
 ```
 
-A ferramenta é [`scriptis_da_ia/corpus_git.py`](scriptis_da_ia/corpus_git.py):
+### UM COMANDO DE CADA LADO — corpus **e** logs juntos
+
+> Pedido do usuário no mesmo dia: *"a ideia é pegar os treinos de uma maquina e
+> os logs, e quando a outra maquina for atualizar, tb atualizar os logs e os
+> treinos"*.
+
+O problema nunca foi transporte de UM arquivo — foi **completude**. Sempre
+faltava um pedaço, e sempre em silêncio: o corpus não viajava; os logs viajavam
+mas só os que alguém lembrou de `git add`; e quem puxava não tinha um passo que
+dissesse "faltou isto". [`scriptis_da_ia/sincroniza.py`](scriptis_da_ia/sincroniza.py)
+cobre os dois de uma vez:
 
 ```bash
 cd scriptis_da_ia
+python sincroniza.py entrega   # antes de passar a vez
+python sincroniza.py chega     # ao sentar na outra máquina
+```
+
+| verbo | o que faz |
+|---|---|
+| `entrega` | exporta a fatia do corpus + **versiona todo log que o `index.json` referencia e o git não tem** |
+| `chega` | `git pull --ff-only` + importa as fatias + confere se todo log referenciado chegou |
+
+`entrega` **não commita nem empurra**, de propósito: o `pre-push` exige bloco de
+`HANDOFF.md`/`TODO.md`, e isso é trabalho de sessão. Ele prepara e diz o que falta.
+
+A ferramenta de baixo nível, para uso avulso, é
+[`scriptis_da_ia/corpus_git.py`](scriptis_da_ia/corpus_git.py):
+
+```bash
 python corpus_git.py status      # o que falta importar/exportar
 python corpus_git.py importa     # aplica as fatias do git no .jsonl local
 python corpus_git.py exporta     # cria a fatia com o que só existe aqui
 ```
+
+### OS LOGS NÃO SÃO ZIPADOS — e a medição é o motivo
+
+```
+logs/ em disco (working tree) : 27,0 MB
+logs/ dentro do .git          :  1,7 MB
+tar.gz dos mesmos arquivos    :  1,7 MB
+```
+
+**O git já comprime os logs exatamente na taxa que o zip daria.** Comprimir não
+economizaria um byte, e custaria: **11 ferramentas** leem `logs/parsed/*.json`
+direto (`parse_combat_log`, `audit_human_patterns`, `audit_real_losses`,
+`decision_quality_vs_human`, até o `decision_engine`), e todas quebrariam —
+além de perder diff, grep e merge por arquivo.
+
+O corpus precisou de fatias por ser **um arquivo de 465 MB**. Os logs já são
+muitos arquivos pequenos, que é o formato em que o git é bom. **A solução para
+os logs não era formato, era automação** — ninguém mais precisa lembrar do
+`git add`.
 
 `metrics/q_alvos.jsonl` **continua gitignored** — mudou de "o corpus" para
 "materialização local das fatias", remontável a qualquer momento com
@@ -147,10 +192,10 @@ do git antes.
    `iniciar_bot.bat`.
    Se não achar o jogo:
    `powershell -ExecutionPolicy Bypass -File BOT\instalar.ps1 -GameDir "<caminho>\Builds_Windows"`
-3. Montar o corpus a partir das fatias que vieram no `clone` (desde 18/09/2026
-   ele viaja pelo git — **não há mais zip para pedir a ninguém**):
+3. Trazer corpus e logs (desde 18/09/2026 os dois viajam pelo git — **não há
+   mais zip para pedir a ninguém**):
    ```bash
-   cd scriptis_da_ia && python corpus_git.py importa
+   cd scriptis_da_ia && python sincroniza.py chega
    ```
    Sem isso o treino começaria do zero e perderia as centenas de milhares de
    posições já acumuladas — mas agora ele **não deixa**: `ciclo.py` e
@@ -216,8 +261,9 @@ corpus faltando, seed colidindo, ou versão de biblioteca que não abre o modelo
 Enquanto ele joga, **não** interromper com push a cada partida. Quando ele
 pedir, entregar **os três**:
 
-1. **`python corpus_git.py exporta`** — transforma em fatia `.gz` o que foi
-   gerado nesta máquina. **Antes do push**, senão o `pre-push` bloqueia.
+1. **`python sincroniza.py entrega`** — exporta em fatia `.gz` o corpus gerado
+   nesta máquina E versiona os logs novos. **Antes do push**, senão o
+   `pre-push` bloqueia.
 2. **`git push`** — leva código, banco de logs (`logs/`), `ciclo_estado.json`,
    `q_net.joblib` (se promovido) **e agora o corpus, nas fatias**. Antes:
    `git pull`, e os blocos de `HANDOFF.md`/`TODO.md` (o hook bloqueia sem eles).

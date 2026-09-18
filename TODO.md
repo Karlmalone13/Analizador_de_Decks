@@ -1,6 +1,21 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 18 de setembro de 2026 (bloco 863)
+**Última atualização:** 18 de setembro de 2026 (bloco 864)
+
+> **UM COMANDO DE CADA LADO (18/09/2026, bloco 864)** -- `sincroniza.py entrega`
+> / `chega` cobre **corpus E logs** juntos, a pedido do usuario: *"a ideia e
+> pegar os treinos de uma maquina e os logs, e quando a outra maquina for
+> atualizar, tb atualizar os logs e os treinos"*.
+>
+> **Zipar os logs foi DESCARTADO por medicao**: eles tem 27,0 MB em disco e
+> **1,7 MB dentro do .git** -- exatamente o que um `tar.gz` daria. O git ja
+> comprime na mesma taxa; zipar nao economizaria um byte e quebraria as 11
+> ferramentas que leem `logs/parsed/*.json` direto. **A solucao para os logs
+> nao era formato, era automacao.**
+>
+> Fecha a causa raiz dos 13 arquivos: a ferramenta que banca o log nunca
+> versionava nada, e o hook do bloco 863 so reclamava. Agora `entrega` corrige.
+> `verifica_push.py` passou a IMPORTAR a varredura em vez de duplicar.
 
 > **O CORPUS PASSA A VIAJAR PELO GIT, EM FATIAS (18/09/2026, bloco 863)** --
 > pedido do usuario, depois de perder meia sessao: ele chegou ao trabalho sem
