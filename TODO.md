@@ -34,6 +34,322 @@
 > **NAO MEDIDO** se ajuda, atrapalha ou e neutro no treino; a `origem` existe
 > pra medir depois. Nao afirmar ganho antes de medir.
 
+> **PASSAGEM DE BASTAO -> Arthur_PC (17/09/2026, bloco 851)**: a
+> `Arthur_Trabalho` PARA de treinar. **O passo que quebra em silencio**: o
+> corpus NAO viaja pelo git -- aqui tem **698.838** linhas, a Arthur_PC tem
+> **625.361**. Sem descompactar o `.gz` enviado, ela treina 10,5% menor e joga
+> fora 73.477 linhas SEM ERRO NENHUM.
+>
+> **Ao chegar**: `git pull` -> descompactar `q_alvos.jsonl.gz` em
+> `metrics/q_alvos.jsonl` -> conferir os 3 pontos (corpus 698.838 com 3 origens;
+> `ciclo_estado` com 2 ciclos, proximo e o **3, seed 9303**; sklearn 1.9.0 +
+> `q_net.joblib` abrindo) -> so entao rodar.
+>
+> **FECHADO e validado em partida**: Enel (0->80%), Mihawk (0->71%), Streusen.
+> **ABERTO por custo**: (1) `cant_play_chars_this_turn` nunca setada ao vivo --
+> 6 de 6 plays recusados (bloco 850); (2) MEDICAO de qualidade de alvo
+> (obrigatoria, bloco 848); (3) 27 das 28 cartas do bloco 845 sem teste; (4)
+> ciclo 3 nunca rodado.
+
+> **O FIX DESTRAVOU UM SEGUNDO BUG (17/09/2026, bloco 850)**: a habilidade do
+> Mihawk tem `self_cant_play(chars)` -- **proibe jogar Personagens no turno**.
+> Enquanto ela nunca completava, a restricao nunca existia; agora que funciona,
+> vale -- e o motor continua tentando jogar personagens. **6 de 6 plays
+> recusados estao no MESMO turno de uma ativacao do Mihawk.**
+>
+> **NAO e regressao do fix**: as falhas sao `on_play` com `alvo=nao` (sem
+> decisao de alvo), e o bloco 847 so mexe em filtro de candidatos a ALVO. O log
+> do plugin diz `play: jogo recusou OP12-034 (custo? restricao?)`.
+>
+> **Causa**: `decision_engine.py:2887` tem `cant_play_chars_this_turn`; o
+> `server.py` seta isso **0 vezes**. Mesma classe do bloco 830 (flags de runtime
+> que o ao vivo nunca preenche), 3a vez na semana.
+>
+> **Fix NAO feito**: exige memoria por `(match_id, turno)` no server -- o
+> `_dto_to_gs` reconstroi o estado a cada decisao, entao um `setattr` nao
+> sobrevive. **Custo medido**: 6 plays recusados/sessao, desperdicio garantido.
+>
+> Telemetria: +114 alvos, corpus **698.838**, `efeitos_error=None`. Recusas de
+> clique no trecho novo: **37,8%** (contra 30,5%/31,5%) -- subiu, e os 6 plays
+> explicam parte; quanto, nao medido. Mihawk `activate_main` 71%, com as 2
+> falhas do tipo `restado 0->0` (sem DON), nao bug.
+
+> **FIX DO MIHAWK VALIDADO EM PARTIDA (17/09/2026, bloco 849)**: `activate_main`
+> **0% -> 67%**, e confirmado pelo ESTADO: `ativo 0->3 | restado 10->7` nos
+> turnos 5 e 6 -- exatamente os 3 DON que a carta promete. A "falha" do t3 NAO e
+> falha (`restado 0->0`, nao havia DON pra ativar). Cliques: antes **12, todos
+> `Don`, 0 sucessos**; agora 24 espalhados por personagens, **2 de 3 funcionando**.
+>
+> **ERRO MEU corrigido antes de virar "regressao"**: eu ia reportar cliques
+> recusados subindo 687 -> 990. **O `LogOutput.log` e CUMULATIVO** -- comparei o
+> mesmo arquivo crescendo. Por trecho normalizado: **30,5% antes x 31,5%
+> depois** = **sem regressao**.
+>
+> **Propriedade a nao esquecer**: `LogOutput.log` ACUMULA entre sessoes; o
+> `server_stdout.log` e TRUNCADO a cada restart (bloco 841). Comportam-se ao
+> CONTRARIO e confundi-los da comparacao falsa nos dois sentidos.
+>
+> Coleta: +94 alvos, corpus **698.724**, simulador **1.245**, `efeitos_error=None`.
+> **ABERTO**: as outras 27 cartas do bloco 845 sem teste, e a MEDICAO de
+> qualidade de alvo (bloco 848) continua impossivel.
+
+> ## PENDENCIA ABERTA E OBRIGATORIA: MEDIR A QUALIDADE DO ALVO
+>
+> **Registrado a pedido do usuario (17/09/2026)**: *"registra que a medicao de
+> qualidade deve ser feita"*. Nao e "seria bom ter" -- fica como trabalho
+> devido, e nenhuma sessao deve dar o assunto por encerrado sem isto.
+>
+> **O QUE FALTA, concretamente**: o `/choose_target` recebe e loga `actor_code`,
+> mas **nao diz DE QUAL PASSO de qual efeito** aquele pedido veio. Sem isso o
+> casamento possivel e por `(ator, turno)` -- e num turno cabem anexar DON,
+> pagar custo, e alvos de gatilhos DIFERENTES da mesma carta. Foi exatamente
+> isso que produziu 2 falsos positivos no bloco 846.
+>
+> **O campo que resolve**: `step_index` + `purpose` (`custo` x `efeito`) no
+> request e no `decision_log`.
+>
+> **O que isso DESTRAVA**:
+> * dizer se o alvo foi o **MELHOR**, nao so se foi do LADO certo (hoje: 36 de
+>   39 coerentes com o lado, e nada alem disso);
+> * atacar com dado a familia `alvo dentro do efeito` -- **16,4%**, a PIOR
+>   categoria medida do projeto.
+>
+> **Estado**: o bloco 847 corrigiu o COMPORTAMENTO (o bot agora recebe o
+> candidato certo pra clicar). A MEDICAO continua impossivel. **Sao dois
+> trabalhos e so um foi feito.**
+
+> **MIHAWK CORRIGIDO (17/09/2026, bloco 847)**: a causa nao era nenhuma das 2
+> hipoteses anteriores. Reproduzido isoladamente: `order_target_candidates`
+> **descartava 28 de 33 candidatos** e devolvia so os 5 DON -- que ela mesma ja
+> marcava como "nunca e alvo valido" (chave 9.0). O bot nao tinha o que clicar.
+>
+> **Culpado**: o filtro `actor_don_target` (criado em 30/08 por achado legitimo
+> da Nami OP14-031) mantem SO zonas de DON quando o efeito e `set_don_active`.
+> O Mihawk tem esse efeito **e** um CUSTO (`rest_own_card`) que pede uma CARTA
+> -- apagada pelo filtro. **Efeito e custo sao perguntas diferentes.**
+>
+> **Fix pela FORMA**: `_CUSTO_ZONAS` (tipo de custo -> zonas exigidas) entra
+> junto no filtro; vale pras **28 cartas** do bloco 845. A ordenacao ja resolve
+> a prioridade sozinha (DON tem chave 9.0, custo vem na frente).
+>
+> **Medido**: Mihawk 33 -> 9 com personagem em 1o e DON em ultimo; **Nami 5 -> 2,
+> so DON, SEM REGRESSAO**. `smoke_fast`: 1.430 OK, 0 FALHOU.
+>
+> **NAO resolve** a medicao de qualidade de alvo (bloco 846) -- falta o
+> `step_index`/`purpose` no `/choose_target`. **NAO validado em partida**: a
+> proxima CPU x CPU com Mihawk deve mostrar `activate_main` concluindo.
+
+> **"FOI NO ALVO CERTO?" -- NAO DA PRA RESPONDER HOJE (17/09/2026, bloco 846)**:
+> pedido do usuario. Resultado honesto: **nenhum bug de alvo estabelecido**, e o
+> motivo de nao dar pra responder e ESTRUTURAL.
+>
+> **Erro meu #1 (corrigido)**: `_detalhe_do_alvo` pegava a PRIMEIRA decisao de
+> alvo do (ator,turno) -- mas cabem varias (anexar DON, custo, efeito), e a 1a
+> costuma ser DON. Gerava suspeitos falsos. Agora devolve `todas_do_turno`.
+>
+> **Medicao corrigida**: 36 coerentes, 3 incoerentes, 15 sem regra.
+>
+> **Erro meu #2**: os 3 incoerentes NAO sao bug -- conferidos no combat log,
+> **OP17-054 FUNCIONOU** (`Stussy: Enel can't attack next turn`), **OP15-061** eu
+> cruzei o `when_attacking` com o alvo do `on_play` da MESMA carta, e OP12-031
+> ficou inconclusivo.
+>
+> **O LIMITE**: a telemetria grava QUE um alvo foi escolhido, nao a QUAL PASSO de
+> qual efeito ele pertence -- o casamento e por `(ator,turno)` e num turno cabem
+> DON, custo e varios gatilhos. **O que falta**: `/choose_target` receber e logar
+> `step_index`/`purpose` (custo x efeito). **E a MESMA lacuna do bug do Mihawk
+> (bloco 844) -- uma correcao resolve os dois.**
+>
+> Ate la: da pra afirmar **36 de 39 coerentes com o LADO (92%)**, nao se foi o
+> MELHOR alvo daquele lado.
+
+> **ALCANCE MEDIDO: 28 cartas, nao 144 (17/09/2026, bloco 845)**: consulta
+> pedida pelo usuario. Exposicao ESTRUTURAL da 144 cartas com custo escolhivel
+> + efeito que mira algo (`trash_from_hand` sozinho = 100). **Mas cruzando com
+> as auditorias reais: `trash_from_hand` conclui 20 de 20** -- o tipo dominante
+> FUNCIONA. So `rest_own_card` falha (**Mihawk, 0 de 4**).
+>
+> **Escopo real**: 29 efeitos em **28 cartas** (1,0% do banco) com custo de
+> RESTAR carta propria + efeito mirando outra coisa -- `rest_own_leader_or_stage
+> -> bounce/ko` (6), `rest_own_character -> set_active/ko/buff` (11),
+> `rest_own_card -> set_don_active/draw/ko` (12). **So o Mihawk foi testado**;
+> as outras 27 sao a lista pra conferir quando o fix sair.
+>
+> **Prioridade**: bug real e confirmado (6 ocorrencias em 3 sessoes), mas 1,0%
+> do banco e nenhuma das mais jogadas -- **nao e emergencia**, nao passa na
+> frente do laco de ML.
+>
+> **Metodo**: 2o caso no MESMO DIA de numero grande que era exposicao
+> estrutural, nao defeito medido (o outro foi "o bot nunca se defende", bloco
+> 837). Contar quantos PODEM quebrar, depois olhar quantos QUEBRARAM.
+
+> **CAUSA RAIZ DO MIHAWK ACHADA (17/09/2026, bloco 844)**: investigado o
+> `LogOutput.log` do BepInEx. O bot ativa, o jogo pede **1 alvo**, e ele clica
+> **DON um por um, 12 vezes, todos recusados**.
+>
+> **Causa**: o custo da carta e *"You may rest 1 of your **cards**"* e o efeito
+> parseado JA separa (`costs:[{rest_own_card}]` x `steps:[set_don_active]`). O
+> jogo pede o alvo do **CUSTO** (qual CARTA restar); o motor manda o alvo do
+> **EFEITO** (qual DON ativar). **O bot responde o prompt errado** -- nao e alvo
+> mal escolhido, e a LISTA da pergunta errada.
+>
+> **Discriminante** (687 cliques recusados na sessao, entao recusa sozinha nao
+> prova nada -- o Enel tem **328** e FUNCIONA): o Mihawk clicou **12 de 12 em
+> `Don`**, nunca um personagem; o Enel varia entre cartas reais. O Enel nao
+> sofre porque o efeito dele E sobre DON, entao custo e efeito coincidem.
+>
+> **ABERTO, nao corrigido**: o fix exige o caminho ao vivo distinguir alvo de
+> CUSTO de alvo de EFEITO -- hoje ha uma lista so. **Medir antes de priorizar**:
+> quantas cartas tem `costs` com alvo proprio E efeito com alvo diferente.
+> **Sinal separado**: os 687 cliques recusados (classe do bloco 813) -- o Enel
+> acerta "por insistencia", varrendo candidatos. Nao investigado.
+
+> **2 PARTIDAS: ENEL CONFIRMADO, MIHAWK E O ACHADO ABERTO (17/09/2026, bloco
+> 843)**: coleta 100% automatica, `efeitos_error=None` nas duas, corpus
+> 698.352 -> **698.567** (+215; simulador em 1.088).
+>
+> **ENEL funcionando** -- confirmado pelo ESTADO: `DON campo 1->6, 5->6, 5->6`.
+> As 2 "falhas" sao `6->6`, com o DON no TETO (DON deck de 6 cartas): e o
+> esgotamento previsto no bloco 839, nao bug. O rotulo deveria ser `?` e nao
+> `NAO` -- refinamento ja registrado como pendente.
+>
+> **MIHAWK OP14-020 = achado REAL**, 2 `status=failed` em partida nova (+4 no
+> bloco 832 = 6 ocorrencias independentes). **Minha hipotese anterior esta
+> DESMENTIDA**: eu tinha escrito que o motor oferecia sem a condicao
+> `board_has_cost_gte: 5`; conferido no `state_before`, `OP12-031(c5)` estava em
+> campo nos DOIS turnos -- **a condicao estava satisfeita**.
+>
+> **ESTABELECIDO**: o bot escolheu alvo coerente (`Don` em `own_don_rested`), o
+> estado nao mudou (`ativo 1->1` com 5 DON restados), e o **combat log NAO tem
+> nenhuma linha da habilidade disparando** (o Enel tem) -- a ativacao nunca
+> chegou ao jogo. **NAO estabelecido**: o custo e *"rest 1 of your cards"* e nao
+> ha registro de escolha de qual carta RESTAR -- pista, nao diagnostico.
+> **Proximo passo**: `LogOutput.log` do BepInEx, que tem a sequencia de cliques.
+
+> **AUDITORIA DIZ QUAL ALVO E POR QUE (17/09/2026, bloco 842)**: pedido do
+> usuario. O dado sempre esteve no `decision_log` (`card_code`, `zone`, `rank`,
+> **`rank_key`** por candidato) e nao era lido -- a auditoria so dizia
+> `alvo=sim/nao`.
+>
+> **Desfechos agora distintos**: `ATIVADO E CONCLUIDO`, `ATIVADO E CANCELADO
+> PELO JOGO` (status=failed), `ATIVADO E NAO SURTIU EFEITO`, `CONCLUIU (efeito
+> invisivel do proprio lado)`, `ENVIADO SEM CONFIRMACAO`.
+>
+> **Saida nova**: turno, carta, gatilho, desfecho, alvo escolhido + zona + rank
+> + a chave que decidiu, e **quem ficou em segundo**. *Erro meu corrigido*: a 1a
+> versao mostrava os 3 PIORES descartados; pra explicar a escolha quem importa e
+> o VICE.
+>
+> **Medido antes de construir**: 461 de 461 decisoes de alvo escolheram algo --
+> "nenhum alvo" nao existe no caminho ao vivo. Cobertura: 17 de 18 disparos com
+> detalhe. `smoke_fast`: 1.430 OK, 0 FALHOU.
+>
+> **Destrava**: a familia `alvo dentro do efeito` e a PIOR do projeto (16,4%) --
+> agora da pra ver em quem mirou e por que, caso a caso.
+
+> **AUDITORIA DE EFEITOS = 3o PASSO OBRIGATORIO (17/09/2026, bloco 841)**:
+> exigencia do usuario (*"eles tem que rodar como obrigacao, se nao vamos perder
+> dados"*). Conferido que JA roda sozinha (prova: `efeitos_2026-09-17T14.04.42`
+> gerado na partida de hoje) -- mas **rodar e SER LIDA sao coisas diferentes**: a
+> ordem obrigatoria do `CLAUDE.md` tinha 2 passos e uma sessao podia cumpri-la
+> sem nunca abrir o relatorio de efeitos, que e onde o Enel e o Streusen foram
+> achados.
+>
+> Registrado nos DOIS espelhos (`CLAUDE.md` + `AGENTS.md`), com a exigencia de
+> **conferir `efeitos_error` no recibo** -- a auditoria e best-effort, entao
+> campo preenchido = NAO rodou, e isso tem que ser reportado.
+>
+> **Achado de operacao**: o `server_stdout.log` e **TRUNCADO a cada restart do
+> server**. Nenhum dado se perde (os relatorios em `live_runs/` persistem e os
+> alertas ficam nos `session_<ts>.log`), mas quem buscar historico ali vai achar
+> so a sessao atual.
+
+> **ULTIMO MENU CEGO FECHADO (17/09/2026, bloco 840)**: eram **um**, nao dois --
+> `Confirm Revealed Card` tem **opcao unica**, nao ha escolha e pegar a primeira
+> esta certo (eu tinha listado como bug sem olhar as opcoes).
+>
+> **Streusen OP17-050**: *olha 2, posiciona topo/fundo, DEPOIS compra 1*. O bot
+> escolhia Fundo em 100% -- enterrava as duas e comprava as cegas. A decisao
+> chega **sem dizer quais cartas sao** (o plugin nao manda), entao a regra sai do
+> **efeito parseado do ator**: ha posicionamento + `draw` -> topo entrega carta ja
+> vista. Sem `draw` devolve None (chutar seria inventar criterio).
+>
+> **Alcance honesto**: dos 393 efeitos com posicionamento, so **8** tem `draw`.
+> Generico na FORMA, estreito no alcance.
+>
+> `actorCode` ja vinha no request e nao era repassado -- uma linha no server.
+> Medido sem regressao: Streusen -> **Top**; Enel -> **Max**; `Trash x Opponent
+> Draws` inalterado. `smoke_fast`: 1.430 OK, 0 FALHOU.
+
+> **FIX DO ENEL VALIDADO EM PARTIDA (17/09/2026, bloco 839)**: os dois testes
+> definidos antes de rodar passaram. **(1)** 4 de 4 decisoes de opcao escolheram
+> `Gain Max Don` com motivo `'ganho de N (mais e melhor)'` -- o fallback cego
+> sumiu. **(2)** `activate_main` do Enel **0% -> 80%**; geral 45% -> **89%**.
+>
+> **Verdade do estado** (nao so a contagem): turno 2 o DON no campo vai de
+> **2 pra 6** e **3 DON sao anexados a um personagem**; turnos 3-5 idem.
+>
+> **A unica "falha" NAO e falha**: turno 6 com DON ja em 6, que e o TETO (o
+> lider tem DON deck de 6 cartas) -- a habilidade nao tinha mais o que dar.
+> Isso **confirma a ressalva do bloco 838**: `Max` esgota o DON deck no turno 6,
+> entao a escolha fina (1 x Max, e QUANDO) e julgamento de VALOR e deveria vir
+> do MODELO. Fila do ML, agora com evidencia de partida.
+>
+> **Refinamento menor NAO feito**: "up to N" com N disponivel = 0 deveria sair
+> `?` e nao `NAO` na auditoria. **Seguem abertos**: `Start Placing on
+> Bottom/Top` e `Confirm Revealed Card` no fallback cego.
+
+> **CAUSA RAIZ DO ENEL ACHADA (17/09/2026, bloco 838)**: o bot escolhia
+> **"Gain 0 Active Don"**. `escolher_opcao_de_efeito` so reconhecia
+> `opponent draw`/`trash`/`discard`; todo outro rotulo caia em "primeira
+> opcao", e em menu de QUANTIDADE a primeira e sempre o ZERO. **27 de 27
+> decisoes de opcao (100%) nesse fallback** -- nao so o Enel (`Start Placing on
+> Bottom` 5x, `Confirm Revealed Card` 4x). 2o bug ao lado: `_quantidade` tem
+> `max(1,...)` e leria "Gain 0" como 1.
+>
+> **Fix pela FORMA**: `_ganho_por_quantidade` detecta ganho por verbo, exclui
+> `opponent`, entende `max`, e o custo negativo faz o `min` existente pegar o
+> maior. Vale pra qualquer menu de quantidade. Medido: `Gain 0/1/Max` -> **Max**;
+> `Trash x Opponent Draws` inalterado. `smoke_fast`: 1.430 OK, 0 FALHOU.
+>
+> **ABERTO**: (a) **"Max" nem sempre e otimo** -- o Enel tem DON deck de **6
+> cartas**, entao pegar o maximo cedo pode esgotar; zero nunca e certo, mas a
+> escolha fina (1 x Max) e julgamento de VALOR e deveria vir do MODELO; (b)
+> `Start Placing on Bottom/Top` e `Confirm Revealed Card` seguem no fallback
+> cego, NAO corrigidos; (c) efeito real em partida **nao medido** -- precisa de
+> CPU x CPU novo com o Enel.
+
+> **RETRATACAO -- "o bot nunca se defende" era ERRO DE MEDICAO (17/09/2026,
+> bloco 837)**: reportado em DOIS commits (834 e 836) como o achado mais caro em
+> aberto, e era **falso**. `auditoria_efeitos.py` julgava todas as fases por
+> `chosen_action.accepted`, que **so existe em optional/trigger/reaction** -- em
+> `counter` a resposta e `counter_ids` e em `blocker` e `blocker_id`, entao os
+> dois davam zero por construcao.
+>
+> **REAL**: counter **56 de 144 com opcao (39%)**, blocker **11 de 21 (52%)**. A
+> evidencia estava no mesmo log o tempo todo (`[DEF] counter ... -> 4 cartas`).
+>
+> **Por que passou**: o numero batia com a expectativa registrada no `CLAUDE.md`
+> (defesa e heuristica fixa; `quais cartas de counter` 18,5%), e eu tratei como
+> confirmacao em vez de checar -- depois de ter me queimado com o MESMO erro
+> duas vezes no mesmo dia (blocos 828 e 832).
+>
+> **SOBREVIVE**: (a) `blocker` -- **149 de 170 decisoes sem blocker em campo**
+> (88%), problema de COMPOSICAO, nao de decisao; (b) `trigger` **0 de 16** numa
+> sessao (22% no total), ponta real NAO investigada; (c) o **Enel OP15-058**
+> segue de pe (vem de `execution.status` + delta, caminho diferente).
+
+> **NOTA (17/09/2026, fecha o bloco 836)**: ao conferir o ultimo push a pedido
+> do usuario, o push estava integro (local == remoto, arvore limpa) mas o
+> **docstring do `auditoria_efeitos.py` estava embaralhado** -- editado em tres
+> camadas (blocos 832/833/835), a secao `O QUE COBRE` tinha caido DENTRO de
+> `LIMITES HONESTOS`, a linha `--json` ficou orfa fora do bloco "Uso:", e a
+> tabela de cobertura listava **2 familias quando ja eram 3** (faltavam os
+> REATIVOS do bloco 835). A ferramenta rodava normal -- era documentacao errada,
+> que neste projeto e problema por si ("nome errado e documentacao errada",
+> commit do bloco 833). Reescrito inteiro, com as 3 familias, os limites num
+> lugar so e o registro do falso positivo que custou o 18% -> 45%.
+
 > **2 PARTIDAS NOVAS -- OS DOIS ACHADOS REPRODUZIRAM (14/09/2026, bloco 836)**:
 > tudo automatico, nada a mao. Corpus 697.709 -> **698.222** (+513, total 743
 > de `Arthur_Trabalho_simulador`). A auditoria de efeitos rodou sozinha e

@@ -1,0 +1,1301 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Enel",
+          "code": "OP15-058"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Dracule Mihawk",
+          "code": "OP14-020"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 9,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-118",
+            "OP13-076",
+            "OP15-076",
+            "OP15-118",
+            "OP15-074"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP05-077",
+            "OP09-072",
+            "OP12-063",
+            "OP15-066",
+            "OP15-067",
+            "OP15-077",
+            "OP15-078"
+          ],
+          "life_cards": [
+            "OP10-067",
+            "OP12-071",
+            "OP15-061",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP12-037",
+            "OP13-040",
+            "OP12-031",
+            "OP12-034",
+            "OP06-038"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP07-026",
+            "OP08-036",
+            "OP13-031",
+            "OP14-032",
+            "OP14-033",
+            "OP14-039",
+            "OP14-119",
+            "PRB02-006",
+            "ST02-007",
+            "ST24-004"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "EB01-015",
+            "OP12-118",
+            "OP13-040",
+            "ST24-002"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP12-034",
+          "card_name": "Perona",
+          "effects": [
+            "<b>Reveal and Draw Billion-fold World Trichiliocosm [\"OP06-038\">OP06-038]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP12-037",
+            "OP13-040",
+            "OP12-031",
+            "OP06-038",
+            "OP12-118",
+            "OP06-038"
+          ],
+          "board": [
+            "OP12-034"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP07-026",
+            "OP08-036",
+            "OP12-031",
+            "OP12-118",
+            "OP13-031",
+            "OP13-040",
+            "OP14-032",
+            "OP14-033",
+            "OP14-039",
+            "OP14-119",
+            "PRB02-006",
+            "ST02-007",
+            "ST24-004"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "EB01-015",
+            "OP12-118",
+            "OP13-040",
+            "ST24-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP12-034": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-118",
+            "OP13-076",
+            "OP15-076",
+            "OP15-118",
+            "OP15-074"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP05-077",
+            "OP09-072",
+            "OP12-063",
+            "OP15-066",
+            "OP15-067",
+            "OP15-077",
+            "OP15-078"
+          ],
+          "life_cards": [
+            "OP10-067",
+            "OP12-071",
+            "OP15-061",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-058",
+          "to_name": "Enel",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-061",
+          "card_name": "Ohm",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-067",
+          "card_name": "Shura",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-058",
+          "card_name": "Enel",
+          "effects": [
+            "Attach 1 Rested Don to Shura [\"OP15-067\">OP15-067]",
+            "Attach 1 Rested Don to Shura [\"OP15-067\">OP15-067]",
+            "Attach 1 Rested Don to Shura [\"OP15-067\">OP15-067]",
+            "Attach 1 Rested Don to Shura [\"OP15-067\">OP15-067]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shura",
+          "attacker_code": "OP15-067",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-118",
+            "OP13-076",
+            "OP15-118",
+            "OP15-074"
+          ],
+          "board": [
+            "OP15-061",
+            "OP15-067"
+          ],
+          "trash": [
+            "OP15-076",
+            "OP15-078"
+          ],
+          "life": 5,
+          "deck": [
+            "OP05-077",
+            "OP09-072",
+            "OP12-063",
+            "OP15-066",
+            "OP15-077"
+          ],
+          "life_cards": [
+            "OP10-067",
+            "OP12-071",
+            "OP15-061",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-061": 1,
+            "OP15-067": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-040",
+            "OP12-031",
+            "OP06-038",
+            "OP12-118",
+            "OP06-038",
+            "EB01-015"
+          ],
+          "trash": [
+            "OP12-037"
+          ],
+          "board": [
+            "OP12-034"
+          ],
+          "life": 4,
+          "deck": [
+            "OP07-026",
+            "OP08-036",
+            "OP12-031",
+            "OP12-118",
+            "OP13-031",
+            "OP13-040",
+            "OP14-032",
+            "OP14-033",
+            "OP14-039",
+            "OP14-119",
+            "PRB02-006",
+            "ST02-007",
+            "ST24-004"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP12-118",
+            "OP13-040",
+            "ST24-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP12-034": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Perona",
+          "attacker_code": "OP12-034",
+          "target": "Shura [\"OP15-067\">OP15-067]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-061"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "EB01-015",
+          "card_name": "Scratchmen Apoo",
+          "effects": [
+            "Rest Ohm [\"OP15-061\">OP15-061]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-040",
+            "OP12-031",
+            "OP06-038",
+            "OP12-118",
+            "OP06-038",
+            "OP14-119"
+          ],
+          "board": [
+            "OP12-034",
+            "EB01-015"
+          ],
+          "trash": [
+            "OP12-037"
+          ],
+          "life": 4,
+          "deck": [
+            "OP07-026",
+            "OP08-036",
+            "OP12-031",
+            "OP12-118",
+            "OP13-031",
+            "OP13-040",
+            "OP14-032",
+            "OP14-033",
+            "OP14-039",
+            "PRB02-006",
+            "ST02-007",
+            "ST24-004"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP12-118",
+            "OP13-040",
+            "ST24-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP12-034": 1,
+            "EB01-015": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-118",
+            "OP15-118",
+            "OP15-074"
+          ],
+          "trash": [
+            "OP15-076",
+            "OP15-078",
+            "OP13-076",
+            "OP15-061"
+          ],
+          "board": [
+            "OP15-061",
+            "OP15-067"
+          ],
+          "life": 4,
+          "deck": [
+            "OP05-077",
+            "OP09-072",
+            "OP12-063",
+            "OP15-066",
+            "OP15-077"
+          ],
+          "life_cards": [
+            "OP10-067",
+            "OP12-071",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-061": 1,
+            "OP15-067": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-118",
+          "card_name": "Enel",
+          "effects": [
+            "Minus 1 Don",
+            "Added 1 Cards to Hand",
+            "Trash Franky [\"OP09-072\">OP09-072]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-058",
+          "card_name": "Enel",
+          "effects": [
+            "Attach 1 Rested Don to Ohm [\"OP15-061\">OP15-061]",
+            "Attach 1 Rested Don to Ohm [\"OP15-061\">OP15-061]",
+            "Attach 1 Rested Don to Ohm [\"OP15-061\">OP15-061]",
+            "Attach 1 Rested Don to Ohm [\"OP15-061\">OP15-061]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Ohm",
+          "attacker_code": "OP15-061",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-061",
+          "card_name": "Ohm",
+          "effects": [
+            "Buff Scratchmen Apoo [\"EB01-015\">EB01-015] -1000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shura",
+          "attacker_code": "OP15-067",
+          "target": "Perona [\"OP12-034\">OP12-034]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-118"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP12-071",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Varie [\"OP15-074\">OP15-074]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-118",
+            "OP15-074",
+            "OP15-074"
+          ],
+          "board": [
+            "OP15-061",
+            "OP15-067",
+            "OP15-118",
+            "OP12-071"
+          ],
+          "trash": [
+            "OP15-076",
+            "OP15-078",
+            "OP13-076",
+            "OP15-061",
+            "OP09-072"
+          ],
+          "life": 4,
+          "deck": [
+            "OP05-077",
+            "OP12-063",
+            "OP15-061",
+            "OP15-066",
+            "OP15-076",
+            "OP15-077",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP10-067",
+            "OP12-071",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-061": 1,
+            "OP15-067": 1,
+            "OP15-118": 1,
+            "OP12-071": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP12-031",
+            "OP06-038",
+            "OP06-038",
+            "OP14-119",
+            "OP12-118"
+          ],
+          "trash": [
+            "OP12-037",
+            "OP13-040",
+            "OP12-118"
+          ],
+          "board": [
+            "OP12-034",
+            "EB01-015"
+          ],
+          "life": 3,
+          "deck": [
+            "OP07-026",
+            "OP08-036",
+            "OP12-031",
+            "OP12-118",
+            "OP13-031",
+            "OP13-040",
+            "OP14-032",
+            "OP14-033",
+            "OP14-039",
+            "PRB02-006",
+            "ST02-007",
+            "ST24-004"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP13-040",
+            "ST24-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP12-034": 1,
+            "EB01-015": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP12-031",
+          "card_name": "Tashigi",
+          "effects": [
+            "Rest Enel [\"OP15-118\">OP15-118]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Perona",
+          "attacker_code": "OP12-034",
+          "target": "Shura [\"OP15-067\">OP15-067]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP06-038",
+            "OP06-038",
+            "OP14-119",
+            "OP12-118",
+            "OP07-026"
+          ],
+          "board": [
+            "OP12-034",
+            "EB01-015",
+            "OP12-031"
+          ],
+          "trash": [
+            "OP12-037",
+            "OP13-040",
+            "OP12-118"
+          ],
+          "life": 3,
+          "deck": [
+            "OP08-036",
+            "OP12-031",
+            "OP12-118",
+            "OP13-031",
+            "OP13-040",
+            "OP14-032",
+            "OP14-033",
+            "OP14-039",
+            "PRB02-006",
+            "ST02-007",
+            "ST24-004"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP13-040",
+            "ST24-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP12-034": 1,
+            "OP12-031": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-118",
+            "OP15-074",
+            "OP15-074",
+            "OP15-075"
+          ],
+          "trash": [
+            "OP15-076",
+            "OP15-078",
+            "OP13-076",
+            "OP15-061",
+            "OP09-072",
+            "OP15-067"
+          ],
+          "board": [
+            "OP15-061",
+            "OP15-118",
+            "OP12-071"
+          ],
+          "life": 3,
+          "deck": [
+            "OP05-077",
+            "OP12-063",
+            "OP15-061",
+            "OP15-066",
+            "OP15-076",
+            "OP15-077",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP10-067",
+            "OP12-071",
+            "OP15-076"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-061": 1,
+            "OP15-118": 1,
+            "OP12-071": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-118",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-118",
+          "card_name": "Enel",
+          "effects": [
+            "Minus 1 Don",
+            "Added 1 Cards to Hand",
+            "Trash Vinsmoke Reiju [\"OP12-063\">OP12-063]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Ohm",
+          "attacker_code": "OP15-061",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-061",
+          "card_name": "Ohm",
+          "effects": [
+            "Buff Tashigi [\"OP12-031\">OP12-031] -1000"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-058",
+          "card_name": "Enel",
+          "effects": [
+            "Attach 1 Rested Don to Charlotte Pudding [\"OP12-071\">OP12-071]",
+            "Attach 1 Rested Don to Charlotte Pudding [\"OP12-071\">OP12-071]",
+            "Attach 1 Rested Don to Charlotte Pudding [\"OP12-071\">OP12-071]",
+            "Attach 1 Rested Don to Charlotte Pudding [\"OP12-071\">OP12-071]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "OP12-071",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-074",
+            "OP15-074",
+            "OP09-072"
+          ],
+          "board": [
+            "OP15-061",
+            "OP15-118",
+            "OP12-071",
+            "OP15-118"
+          ],
+          "trash": [
+            "OP15-076",
+            "OP15-078",
+            "OP13-076",
+            "OP15-061",
+            "OP09-072",
+            "OP15-067",
+            "OP12-063",
+            "OP15-075"
+          ],
+          "life": 3,
+          "deck": [
+            "OP05-077",
+            "OP12-063",
+            "OP15-061",
+            "OP15-066",
+            "OP15-067",
+            "OP15-075",
+            "OP15-076",
+            "OP15-077",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP10-067",
+            "OP12-071",
+            "OP15-076"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-061": 1,
+            "OP15-118": 2,
+            "OP12-071": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP06-038",
+            "OP06-038",
+            "OP14-119",
+            "OP12-118",
+            "OP07-026",
+            "EB01-015",
+            "ST24-002",
+            "OP13-040"
+          ],
+          "trash": [
+            "OP12-037",
+            "OP13-040",
+            "OP12-118"
+          ],
+          "board": [
+            "OP12-034",
+            "EB01-015",
+            "OP12-031"
+          ],
+          "life": 0,
+          "deck": [
+            "OP08-036",
+            "OP12-031",
+            "OP12-118",
+            "OP13-031",
+            "OP13-040",
+            "OP14-032",
+            "OP14-033",
+            "OP14-039",
+            "PRB02-006",
+            "ST02-007",
+            "ST24-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP12-034": 1,
+            "OP12-031": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 4
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 6
+        },
+        {
+          "type": "play",
+          "card": "EB01-015",
+          "card_name": "Scratchmen Apoo",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Tashigi",
+          "attacker_code": "OP12-031",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Perona",
+          "attacker_code": "OP12-034",
+          "target": "Ohm [\"OP15-061\">OP15-061]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP09-072"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB01-015",
+          "to_name": "Scratchmen Apoo",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Scratchmen Apoo",
+          "attacker_code": "EB01-015",
+          "target": "Ohm [\"OP15-061\">OP15-061]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-071"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP06-038",
+            "OP06-038",
+            "OP14-119",
+            "OP12-118",
+            "OP07-026",
+            "ST24-002",
+            "OP13-040",
+            "ST24-002"
+          ],
+          "board": [
+            "OP12-034",
+            "EB01-015",
+            "OP12-031",
+            "EB01-015"
+          ],
+          "trash": [
+            "OP12-037",
+            "OP13-040",
+            "OP12-118"
+          ],
+          "life": 0,
+          "deck": [
+            "OP08-036",
+            "OP12-031",
+            "OP12-118",
+            "OP13-031",
+            "OP13-040",
+            "OP14-032",
+            "OP14-033",
+            "OP14-039",
+            "PRB02-006",
+            "ST02-007",
+            "ST24-004"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP12-034": 1,
+            "EB01-015": 2,
+            "OP12-031": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-074",
+            "OP15-074",
+            "OP10-067"
+          ],
+          "trash": [
+            "OP15-076",
+            "OP15-078",
+            "OP13-076",
+            "OP15-061",
+            "OP09-072",
+            "OP15-067",
+            "OP12-063",
+            "OP15-075",
+            "OP09-072",
+            "OP12-071"
+          ],
+          "board": [
+            "OP15-061",
+            "OP15-118",
+            "OP12-071",
+            "OP15-118"
+          ],
+          "life": 1,
+          "deck": [
+            "OP05-077",
+            "OP12-063",
+            "OP15-061",
+            "OP15-066",
+            "OP15-067",
+            "OP15-075",
+            "OP15-076",
+            "OP15-077",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP15-076"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-061": 1,
+            "OP15-118": 2,
+            "OP12-071": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-118",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

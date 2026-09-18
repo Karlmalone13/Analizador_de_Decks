@@ -1820,7 +1820,42 @@ o usuário pediu explicitamente pra telemetria agregada vir primeiro):
    porque a alternativa certa nem foi gerada como candidata) ficam
    visíveis sem vasculhar o `.jsonl` na mão.
 
-Leia os dois inteiros, NESSA ORDEM, antes de reportar a partida como
+3. **`metrics/live_runs/efeitos_<ts>.txt`** — a AUDITORIA DE EFEITOS, o
+   terceiro passo obrigatório (pedido do usuário, 17/09/2026: *"eles tem que
+   rodar como obrigação, se não vamos perder dados"*). Já é gerada
+   AUTOMATICAMENTE pelo auto-collect a cada `/outcome` (bloco 833) — rodar
+   sozinha e **ser lida** são coisas diferentes, e é a leitura que é
+   obrigatória.
+
+   Responde o que os dois de cima NÃO respondem: **cada efeito disparado
+   chegou ao fim?** Estágios OFERECIDO → ESCOLHIDO → ALVO → CONCLUÍDO, nas
+   três famílias (`main`, `defense`, reativos por `actor_code`). Foi assim
+   que se achou o Enel escolhendo `"Gain 0 Active Don"` em 100% dos menus
+   (blocos 838/839) e o Streusen enterrando as 2 cartas que acabou de ver
+   (bloco 840) — nenhum dos dois aparecia nos passos 1 e 2.
+
+   **CONFIRA `efeitos_error` no `receipt_<ts>.json`.** A auditoria é
+   best-effort de propósito (bancar o log é o trabalho crítico e não pode ser
+   perdido junto), então se ela quebrar ela grava o erro e segue. Campo
+   preenchido = **a auditoria NÃO rodou nessa partida**, e isso tem que ser
+   dito, não passar em silêncio. `efeitos_nao_concluidos` traz a contagem.
+
+   Filtrar uma carta: `python auditoria_efeitos.py --codigo <CODIGO>`.
+
+   > **PENDENCIA OBRIGATORIA (17/09/2026)**: esta auditoria diz se o efeito
+   > CONCLUIU e QUAL alvo foi escolhido, mas **nao consegue dizer se foi o
+   > MELHOR alvo** -- falta `step_index`/`purpose` no `/choose_target` ligando a
+   > decisao ao PASSO do efeito. Ver a secao "MEDIR A QUALIDADE DO ALVO" no
+   > `TODO.md`. Nao dar o assunto por encerrado sem isto.
+
+
+   > **O `server_stdout.log` é TRUNCADO a cada restart do server** (achado
+   > 17/09). Os alertas `[AUTO-COLLECT][ATENCAO]`/`[COLETA-Q]` sobrevivem em
+   > `BOT/engine_server/logs/session_<ts>.log`, um por sessão, e os relatórios
+   > em `metrics/live_runs/` persistem sempre. Nenhum dado se perde — mas não
+   > procure o histórico no `server_stdout.log`, que é só a sessão atual.
+
+Leia os TRÊS inteiros, NESSA ORDEM, antes de reportar a partida como
 investigada.
 
 ### Eficiência agregada — OBRIGATÓRIO mostrar números, não só prosa

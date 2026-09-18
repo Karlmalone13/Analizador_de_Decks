@@ -1,320 +1,5 @@
 [
   {
-    "id": "2026-07-01T14.22.50",
-    "friendly_name": "Nami-BY_x_Imu-B",
-    "date": "2026-07-01",
-    "p1": {
-      "name": "Jack#5459",
-      "leader_code": "OP11-041",
-      "leader_name": "Nami",
-      "slug": "Nami-BY"
-    },
-    "p2": {
-      "name": "Karlmalone#2854",
-      "leader_code": "OP13-079",
-      "leader_name": "Imu",
-      "slug": "Imu-B"
-    },
-    "turns": 17,
-    "winner": null,
-    "log_file": "raw/Nami-BY_x_Imu-B_2026-07-01T14.22.50.log",
-    "parsed_file": "parsed/Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
-    "deck_files": {
-      "Jack#5459": "decks/Nami-BY_2026-07-01T14.22.50.json",
-      "Karlmalone#2854": "decks/Imu-B_2026-07-01T14.22.50.json"
-    },
-    "deck_full_files": {
-      "Karlmalone#2854": "decks_full/Imu-B_2026-07-01T14.22.50.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
-    "id": "2026-07-01T12.46.16",
-    "friendly_name": "Marshall.D.Teach-BY_x_Lucy-RB",
-    "date": "2026-07-01",
-    "p1": {
-      "name": "Karlmalone#2854",
-      "leader_code": "OP16-080",
-      "leader_name": "Marshall D. Teach",
-      "slug": "Marshall.D.Teach-BY"
-    },
-    "p2": {
-      "name": "kadomaru#5789",
-      "leader_code": "OP15-002",
-      "leader_name": "Lucy",
-      "slug": "Lucy-RB"
-    },
-    "turns": 22,
-    "winner": null,
-    "log_file": "raw/Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.log",
-    "parsed_file": "parsed/Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
-    "deck_files": {
-      "Karlmalone#2854": "decks/Marshall.D.Teach-BY_2026-07-01T12.46.16.json",
-      "kadomaru#5789": "decks/Lucy-RB_2026-07-01T12.46.16.json"
-    },
-    "deck_full_files": {
-      "Karlmalone#2854": "decks_full/Marshall.D.Teach-BY_2026-07-01T12.46.16.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
-    "id": "2026-07-01T15.15.57",
-    "friendly_name": "Imu-B_x_Monkey.D.Luffy-BP",
-    "date": "2026-07-01",
-    "p1": {
-      "name": "Karlmalone#2854",
-      "leader_code": "OP13-079",
-      "leader_name": "Imu",
-      "slug": "Imu-B"
-    },
-    "p2": {
-      "name": "Sebs#6211",
-      "leader_code": "OP11-040",
-      "leader_name": "Monkey D. Luffy",
-      "slug": "Monkey.D.Luffy-BP"
-    },
-    "turns": 17,
-    "winner": null,
-    "log_file": "raw/Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.log",
-    "parsed_file": "parsed/Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
-    "deck_files": {
-      "Karlmalone#2854": "decks/Imu-B_2026-07-01T15.15.57.json",
-      "Sebs#6211": "decks/Monkey.D.Luffy-BP_2026-07-01T15.15.57.json"
-    },
-    "deck_full_files": {
-      "Karlmalone#2854": "decks_full/Imu-B_2026-07-01T15.15.57.json",
-      "Sebs#6211": "decks_full/Monkey.D.Luffy-BP_2026-07-01T15.15.57.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
-    "id": "2026-07-01T18.46.59",
-    "friendly_name": "Gecko.Moria-BY_x_Krieg-RG",
-    "date": "2026-07-01",
-    "p1": {
-      "name": "BigRato#5650",
-      "leader_code": "OP14-080",
-      "leader_name": "Gecko Moria",
-      "slug": "Gecko.Moria-BY"
-    },
-    "p2": {
-      "name": "Pefforza#4027",
-      "leader_code": "OP15-001",
-      "leader_name": "Krieg",
-      "slug": "Krieg-RG"
-    },
-    "turns": 9,
-    "winner": null,
-    "log_file": "raw/Gecko.Moria-BY_x_Krieg-RG_2026-07-01T18.46.59.log",
-    "parsed_file": "parsed/Gecko.Moria-BY_x_Krieg-RG_2026-07-01T18.46.59.json",
-    "deck_files": {
-      "BigRato#5650": "decks/Gecko.Moria-BY_2026-07-01T18.46.59.json",
-      "Pefforza#4027": "decks/Krieg-RG_2026-07-01T18.46.59.json"
-    },
-    "deck_full_files": {
-      "BigRato#5650": "decks_full/Gecko.Moria-BY_2026-07-01T18.46.59.json",
-      "Pefforza#4027": "decks_full/Krieg-RG_2026-07-01T18.46.59.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
-    "id": "2026-07-01T19.08.01",
-    "friendly_name": "Jinbe-B_x_Sakazuki-BB",
-    "date": "2026-07-01",
-    "p1": {
-      "name": "BigRato#5650",
-      "leader_code": "OP14-040",
-      "leader_name": "Jinbe",
-      "slug": "Jinbe-B"
-    },
-    "p2": {
-      "name": "SnufkinDM#6827",
-      "leader_code": "OP05-041",
-      "leader_name": "Sakazuki",
-      "slug": "Sakazuki-BB"
-    },
-    "turns": 12,
-    "winner": null,
-    "log_file": "raw/Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.log",
-    "parsed_file": "parsed/Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.json",
-    "deck_files": {
-      "BigRato#5650": "decks/Jinbe-B_2026-07-01T19.08.01.json",
-      "SnufkinDM#6827": "decks/Sakazuki-BB_2026-07-01T19.08.01.json"
-    },
-    "deck_full_files": {
-      "BigRato#5650": "decks_full/Jinbe-B_2026-07-01T19.08.01.json",
-      "SnufkinDM#6827": "decks_full/Sakazuki-BB_2026-07-01T19.08.01.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
-    "id": "2026-07-01T19.17.04",
-    "friendly_name": "Jinbe-B_x_Monkey.D.Luffy-Y",
-    "date": "2026-07-01",
-    "p1": {
-      "name": "BigRato#5650",
-      "leader_code": "OP14-040",
-      "leader_name": "Jinbe",
-      "slug": "Jinbe-B"
-    },
-    "p2": {
-      "name": "DucK#6354",
-      "leader_code": "ST29-001",
-      "leader_name": "Monkey D. Luffy",
-      "slug": "Monkey.D.Luffy-Y"
-    },
-    "turns": 10,
-    "winner": null,
-    "log_file": "raw/Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.log",
-    "parsed_file": "parsed/Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.json",
-    "deck_files": {
-      "BigRato#5650": "decks/Jinbe-B_2026-07-01T19.17.04.json",
-      "DucK#6354": "decks/Monkey.D.Luffy-Y_2026-07-01T19.17.04.json"
-    },
-    "deck_full_files": {
-      "BigRato#5650": "decks_full/Jinbe-B_2026-07-01T19.17.04.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
-    "id": "2026-07-01T19.29.44",
-    "friendly_name": "Jinbe-B_x_Portgas.D.Ace-RB",
-    "date": "2026-07-01",
-    "p1": {
-      "name": "BigRato#5650",
-      "leader_code": "OP14-040",
-      "leader_name": "Jinbe",
-      "slug": "Jinbe-B"
-    },
-    "p2": {
-      "name": "Metalbeard#6700",
-      "leader_code": "OP13-002",
-      "leader_name": "Portgas D. Ace",
-      "slug": "Portgas.D.Ace-RB"
-    },
-    "turns": 12,
-    "winner": null,
-    "log_file": "raw/Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.log",
-    "parsed_file": "parsed/Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.json",
-    "deck_files": {
-      "BigRato#5650": "decks/Jinbe-B_2026-07-01T19.29.44.json",
-      "Metalbeard#6700": "decks/Portgas.D.Ace-RB_2026-07-01T19.29.44.json"
-    },
-    "deck_full_files": {
-      "BigRato#5650": "decks_full/Jinbe-B_2026-07-01T19.29.44.json",
-      "Metalbeard#6700": "decks_full/Portgas.D.Ace-RB_2026-07-01T19.29.44.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
-    "id": "2026-07-02T00.16.32",
-    "friendly_name": "Krieg-RG_x_Marshall.D.Teach-B",
-    "date": "2026-07-02",
-    "p1": {
-      "name": "Karlmalone#2854",
-      "leader_code": "OP15-001",
-      "leader_name": "Krieg",
-      "slug": "Krieg-RG"
-    },
-    "p2": {
-      "name": "Shichibukai#4335",
-      "leader_code": "OP09-081",
-      "leader_name": "Marshall D. Teach",
-      "slug": "Marshall.D.Teach-B"
-    },
-    "turns": 12,
-    "winner": null,
-    "log_file": "raw/Krieg-RG_x_Marshall.D.Teach-B_2026-07-02T00.16.32.log",
-    "parsed_file": "parsed/Krieg-RG_x_Marshall.D.Teach-B_2026-07-02T00.16.32.json",
-    "deck_files": {
-      "Karlmalone#2854": "decks/Krieg-RG_2026-07-02T00.16.32.json",
-      "Shichibukai#4335": "decks/Marshall.D.Teach-B_2026-07-02T00.16.32.json"
-    },
-    "deck_full_files": {
-      "Karlmalone#2854": "decks_full/Krieg-RG_2026-07-02T00.16.32.json",
-      "Shichibukai#4335": "decks_full/Marshall.D.Teach-B_2026-07-02T00.16.32.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
-    "id": "2026-07-02T00.33.15",
-    "friendly_name": "Krieg-RG_x_Brook-GB",
-    "date": "2026-07-02",
-    "p1": {
-      "name": "Karlmalone#2854",
-      "leader_code": "OP15-001",
-      "leader_name": "Krieg",
-      "slug": "Krieg-RG"
-    },
-    "p2": {
-      "name": "luny#6381",
-      "leader_code": "OP15-022",
-      "leader_name": "Brook",
-      "slug": "Brook-GB"
-    },
-    "turns": 12,
-    "winner": null,
-    "log_file": "raw/Krieg-RG_x_Brook-GB_2026-07-02T00.33.15.log",
-    "parsed_file": "parsed/Krieg-RG_x_Brook-GB_2026-07-02T00.33.15.json",
-    "deck_files": {
-      "Karlmalone#2854": "decks/Krieg-RG_2026-07-02T00.33.15.json",
-      "luny#6381": "decks/Brook-GB_2026-07-02T00.33.15.json"
-    },
-    "deck_full_files": {
-      "Karlmalone#2854": "decks_full/Krieg-RG_2026-07-02T00.33.15.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
-    "id": "2026-07-02T00.48.19",
-    "friendly_name": "Eustass.Captain.Kid-Y_x_Sabo-RB",
-    "date": "2026-07-02",
-    "p1": {
-      "name": "Karlmalone#2854",
-      "leader_code": "OP10-099",
-      "leader_name": "Eustass \"Captain\" Kid",
-      "slug": "Eustass.Captain.Kid-Y"
-    },
-    "p2": {
-      "name": "TaxiCab#9855",
-      "leader_code": "OP13-004",
-      "leader_name": "Sabo",
-      "slug": "Sabo-RB"
-    },
-    "turns": 11,
-    "winner": null,
-    "log_file": "raw/Eustass.Captain.Kid-Y_x_Sabo-RB_2026-07-02T00.48.19.log",
-    "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Sabo-RB_2026-07-02T00.48.19.json",
-    "deck_files": {
-      "Karlmalone#2854": "decks/Eustass.Captain.Kid-Y_2026-07-02T00.48.19.json",
-      "TaxiCab#9855": "decks/Sabo-RB_2026-07-02T00.48.19.json"
-    },
-    "deck_full_files": {
-      "Karlmalone#2854": "decks_full/Eustass.Captain.Kid-Y_2026-07-02T00.48.19.json"
-    },
-    "bot_side": null,
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
     "original_file": "2026-06-16T01.57.48.log",
     "parsed_file": "parsed/2026-06-16T01.57.48_autosaved.json",
     "source": "autosaved_log",
@@ -1069,6 +754,321 @@
     }
   },
   {
+    "id": "2026-07-01T12.46.16",
+    "friendly_name": "Marshall.D.Teach-BY_x_Lucy-RB",
+    "date": "2026-07-01",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "p2": {
+      "name": "kadomaru#5789",
+      "leader_code": "OP15-002",
+      "leader_name": "Lucy",
+      "slug": "Lucy-RB"
+    },
+    "turns": 22,
+    "winner": null,
+    "log_file": "raw/Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.log",
+    "parsed_file": "parsed/Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+    "deck_files": {
+      "Karlmalone#2854": "decks/Marshall.D.Teach-BY_2026-07-01T12.46.16.json",
+      "kadomaru#5789": "decks/Lucy-RB_2026-07-01T12.46.16.json"
+    },
+    "deck_full_files": {
+      "Karlmalone#2854": "decks_full/Marshall.D.Teach-BY_2026-07-01T12.46.16.json"
+    },
+    "bot_side": null,
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
+    "id": "2026-07-01T14.22.50",
+    "friendly_name": "Nami-BY_x_Imu-B",
+    "date": "2026-07-01",
+    "p1": {
+      "name": "Jack#5459",
+      "leader_code": "OP11-041",
+      "leader_name": "Nami",
+      "slug": "Nami-BY"
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "turns": 17,
+    "winner": null,
+    "log_file": "raw/Nami-BY_x_Imu-B_2026-07-01T14.22.50.log",
+    "parsed_file": "parsed/Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
+    "deck_files": {
+      "Jack#5459": "decks/Nami-BY_2026-07-01T14.22.50.json",
+      "Karlmalone#2854": "decks/Imu-B_2026-07-01T14.22.50.json"
+    },
+    "deck_full_files": {
+      "Karlmalone#2854": "decks_full/Imu-B_2026-07-01T14.22.50.json"
+    },
+    "bot_side": null,
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
+    "id": "2026-07-01T15.15.57",
+    "friendly_name": "Imu-B_x_Monkey.D.Luffy-BP",
+    "date": "2026-07-01",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Sebs#6211",
+      "leader_code": "OP11-040",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-BP"
+    },
+    "turns": 17,
+    "winner": null,
+    "log_file": "raw/Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.log",
+    "parsed_file": "parsed/Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+    "deck_files": {
+      "Karlmalone#2854": "decks/Imu-B_2026-07-01T15.15.57.json",
+      "Sebs#6211": "decks/Monkey.D.Luffy-BP_2026-07-01T15.15.57.json"
+    },
+    "deck_full_files": {
+      "Karlmalone#2854": "decks_full/Imu-B_2026-07-01T15.15.57.json",
+      "Sebs#6211": "decks_full/Monkey.D.Luffy-BP_2026-07-01T15.15.57.json"
+    },
+    "bot_side": null,
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
+    "id": "2026-07-01T18.46.59",
+    "friendly_name": "Gecko.Moria-BY_x_Krieg-RG",
+    "date": "2026-07-01",
+    "p1": {
+      "name": "BigRato#5650",
+      "leader_code": "OP14-080",
+      "leader_name": "Gecko Moria",
+      "slug": "Gecko.Moria-BY"
+    },
+    "p2": {
+      "name": "Pefforza#4027",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "turns": 9,
+    "winner": null,
+    "log_file": "raw/Gecko.Moria-BY_x_Krieg-RG_2026-07-01T18.46.59.log",
+    "parsed_file": "parsed/Gecko.Moria-BY_x_Krieg-RG_2026-07-01T18.46.59.json",
+    "deck_files": {
+      "BigRato#5650": "decks/Gecko.Moria-BY_2026-07-01T18.46.59.json",
+      "Pefforza#4027": "decks/Krieg-RG_2026-07-01T18.46.59.json"
+    },
+    "deck_full_files": {
+      "BigRato#5650": "decks_full/Gecko.Moria-BY_2026-07-01T18.46.59.json",
+      "Pefforza#4027": "decks_full/Krieg-RG_2026-07-01T18.46.59.json"
+    },
+    "bot_side": null,
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
+    "id": "2026-07-01T19.08.01",
+    "friendly_name": "Jinbe-B_x_Sakazuki-BB",
+    "date": "2026-07-01",
+    "p1": {
+      "name": "BigRato#5650",
+      "leader_code": "OP14-040",
+      "leader_name": "Jinbe",
+      "slug": "Jinbe-B"
+    },
+    "p2": {
+      "name": "SnufkinDM#6827",
+      "leader_code": "OP05-041",
+      "leader_name": "Sakazuki",
+      "slug": "Sakazuki-BB"
+    },
+    "turns": 12,
+    "winner": null,
+    "log_file": "raw/Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.log",
+    "parsed_file": "parsed/Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.json",
+    "deck_files": {
+      "BigRato#5650": "decks/Jinbe-B_2026-07-01T19.08.01.json",
+      "SnufkinDM#6827": "decks/Sakazuki-BB_2026-07-01T19.08.01.json"
+    },
+    "deck_full_files": {
+      "BigRato#5650": "decks_full/Jinbe-B_2026-07-01T19.08.01.json",
+      "SnufkinDM#6827": "decks_full/Sakazuki-BB_2026-07-01T19.08.01.json"
+    },
+    "bot_side": null,
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
+    "id": "2026-07-01T19.17.04",
+    "friendly_name": "Jinbe-B_x_Monkey.D.Luffy-Y",
+    "date": "2026-07-01",
+    "p1": {
+      "name": "BigRato#5650",
+      "leader_code": "OP14-040",
+      "leader_name": "Jinbe",
+      "slug": "Jinbe-B"
+    },
+    "p2": {
+      "name": "DucK#6354",
+      "leader_code": "ST29-001",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-Y"
+    },
+    "turns": 10,
+    "winner": null,
+    "log_file": "raw/Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.log",
+    "parsed_file": "parsed/Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.json",
+    "deck_files": {
+      "BigRato#5650": "decks/Jinbe-B_2026-07-01T19.17.04.json",
+      "DucK#6354": "decks/Monkey.D.Luffy-Y_2026-07-01T19.17.04.json"
+    },
+    "deck_full_files": {
+      "BigRato#5650": "decks_full/Jinbe-B_2026-07-01T19.17.04.json"
+    },
+    "bot_side": null,
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
+    "id": "2026-07-01T19.29.44",
+    "friendly_name": "Jinbe-B_x_Portgas.D.Ace-RB",
+    "date": "2026-07-01",
+    "p1": {
+      "name": "BigRato#5650",
+      "leader_code": "OP14-040",
+      "leader_name": "Jinbe",
+      "slug": "Jinbe-B"
+    },
+    "p2": {
+      "name": "Metalbeard#6700",
+      "leader_code": "OP13-002",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-RB"
+    },
+    "turns": 12,
+    "winner": null,
+    "log_file": "raw/Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.log",
+    "parsed_file": "parsed/Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.json",
+    "deck_files": {
+      "BigRato#5650": "decks/Jinbe-B_2026-07-01T19.29.44.json",
+      "Metalbeard#6700": "decks/Portgas.D.Ace-RB_2026-07-01T19.29.44.json"
+    },
+    "deck_full_files": {
+      "BigRato#5650": "decks_full/Jinbe-B_2026-07-01T19.29.44.json",
+      "Metalbeard#6700": "decks_full/Portgas.D.Ace-RB_2026-07-01T19.29.44.json"
+    },
+    "bot_side": null,
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
+    "id": "2026-07-02T00.16.32",
+    "friendly_name": "Krieg-RG_x_Marshall.D.Teach-B",
+    "date": "2026-07-02",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "p2": {
+      "name": "Shichibukai#4335",
+      "leader_code": "OP09-081",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-B"
+    },
+    "turns": 12,
+    "winner": null,
+    "log_file": "raw/Krieg-RG_x_Marshall.D.Teach-B_2026-07-02T00.16.32.log",
+    "parsed_file": "parsed/Krieg-RG_x_Marshall.D.Teach-B_2026-07-02T00.16.32.json",
+    "deck_files": {
+      "Karlmalone#2854": "decks/Krieg-RG_2026-07-02T00.16.32.json",
+      "Shichibukai#4335": "decks/Marshall.D.Teach-B_2026-07-02T00.16.32.json"
+    },
+    "deck_full_files": {
+      "Karlmalone#2854": "decks_full/Krieg-RG_2026-07-02T00.16.32.json",
+      "Shichibukai#4335": "decks_full/Marshall.D.Teach-B_2026-07-02T00.16.32.json"
+    },
+    "bot_side": null,
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
+    "id": "2026-07-02T00.33.15",
+    "friendly_name": "Krieg-RG_x_Brook-GB",
+    "date": "2026-07-02",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "p2": {
+      "name": "luny#6381",
+      "leader_code": "OP15-022",
+      "leader_name": "Brook",
+      "slug": "Brook-GB"
+    },
+    "turns": 12,
+    "winner": null,
+    "log_file": "raw/Krieg-RG_x_Brook-GB_2026-07-02T00.33.15.log",
+    "parsed_file": "parsed/Krieg-RG_x_Brook-GB_2026-07-02T00.33.15.json",
+    "deck_files": {
+      "Karlmalone#2854": "decks/Krieg-RG_2026-07-02T00.33.15.json",
+      "luny#6381": "decks/Brook-GB_2026-07-02T00.33.15.json"
+    },
+    "deck_full_files": {
+      "Karlmalone#2854": "decks_full/Krieg-RG_2026-07-02T00.33.15.json"
+    },
+    "bot_side": null,
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
+    "id": "2026-07-02T00.48.19",
+    "friendly_name": "Eustass.Captain.Kid-Y_x_Sabo-RB",
+    "date": "2026-07-02",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP10-099",
+      "leader_name": "Eustass \"Captain\" Kid",
+      "slug": "Eustass.Captain.Kid-Y"
+    },
+    "p2": {
+      "name": "TaxiCab#9855",
+      "leader_code": "OP13-004",
+      "leader_name": "Sabo",
+      "slug": "Sabo-RB"
+    },
+    "turns": 11,
+    "winner": null,
+    "log_file": "raw/Eustass.Captain.Kid-Y_x_Sabo-RB_2026-07-02T00.48.19.log",
+    "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Sabo-RB_2026-07-02T00.48.19.json",
+    "deck_files": {
+      "Karlmalone#2854": "decks/Eustass.Captain.Kid-Y_2026-07-02T00.48.19.json",
+      "TaxiCab#9855": "decks/Sabo-RB_2026-07-02T00.48.19.json"
+    },
+    "deck_full_files": {
+      "Karlmalone#2854": "decks_full/Eustass.Captain.Kid-Y_2026-07-02T00.48.19.json"
+    },
+    "bot_side": null,
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
     "id": "2026-07-09T16.07.36",
     "friendly_name": "Imu-B_x_Marshall.D.Teach-BY",
     "date": "2026-07-09",
@@ -1535,35 +1535,6 @@
     }
   },
   {
-    "id": "2026-07-12T14.30.52",
-    "friendly_name": "Imu-B_x_Marshall.D.Teach-BY",
-    "date": "2026-07-12",
-    "p1": {
-      "name": "You",
-      "leader_code": "OP13-079",
-      "leader_name": "Imu",
-      "slug": "Imu-B"
-    },
-    "p2": {
-      "name": "Opponent",
-      "leader_code": "OP16-080",
-      "leader_name": "Marshall D. Teach",
-      "slug": "Marshall.D.Teach-BY"
-    },
-    "turns": 18,
-    "winner": "p2",
-    "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.log",
-    "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
-    "deck_files": {
-      "You": "decks/Imu-B_2026-07-12T14.30.52.json",
-      "Opponent": "decks/Marshall.D.Teach-BY_2026-07-12T14.30.52.json"
-    },
-    "deck_full_files": {
-      "You": "decks_full/Imu-B_2026-07-12T14.30.52.json",
-      "Opponent": "decks_full/Marshall.D.Teach-BY_2026-07-12T14.30.52.json"
-    }
-  },
-  {
     "id": "2026-07-12T14.25.08",
     "friendly_name": "Imu-B_x_Marshall.D.Teach-BY",
     "date": "2026-07-12",
@@ -1590,6 +1561,35 @@
     "deck_full_files": {
       "You": "decks_full/Imu-B_2026-07-12T14.25.08.json",
       "Opponent": "decks_full/Marshall.D.Teach-BY_2026-07-12T14.25.08.json"
+    }
+  },
+  {
+    "id": "2026-07-12T14.30.52",
+    "friendly_name": "Imu-B_x_Marshall.D.Teach-BY",
+    "date": "2026-07-12",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 18,
+    "winner": "p2",
+    "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.log",
+    "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.30.52.json",
+    "deck_files": {
+      "You": "decks/Imu-B_2026-07-12T14.30.52.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-07-12T14.30.52.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Imu-B_2026-07-12T14.30.52.json",
+      "Opponent": "decks_full/Marshall.D.Teach-BY_2026-07-12T14.30.52.json"
     }
   },
   {
@@ -3527,6 +3527,38 @@
     }
   },
   {
+    "id": "2026-08-05T23.28.24_p2",
+    "friendly_name": "Rocks.D.Xebec-B_x_Rocks.D.Xebec-B",
+    "date": "2026-08-05",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Vius2#16248",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 17,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Rocks.D.Xebec-B_x_Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.json",
+    "deck_files": {
+      "Karlmalone#2854": "decks/Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.json",
+      "Vius2#16248": "decks/Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.json"
+    },
+    "deck_full_files": {
+      "Karlmalone#2854": "decks_full/Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.json",
+      "Vius2#16248": "decks_full/Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.json"
+    },
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
     "id": "2026-08-07T22.17.10_p2",
     "friendly_name": "Rocks.D.Xebec-B_x_Monkey.D.Luffy-PB",
     "date": "2026-08-07",
@@ -3584,38 +3616,6 @@
     },
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Rocks.D.Xebec-B_2026-08-08T10.03.33_p2.json"
-    },
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
-    "id": "2026-08-05T23.28.24_p2",
-    "friendly_name": "Rocks.D.Xebec-B_x_Rocks.D.Xebec-B",
-    "date": "2026-08-05",
-    "p1": {
-      "name": "Karlmalone#2854",
-      "leader_code": "OP17-039",
-      "leader_name": "Rocks D. Xebec",
-      "slug": "Rocks.D.Xebec-B"
-    },
-    "p2": {
-      "name": "Vius2#16248",
-      "leader_code": "OP17-039",
-      "leader_name": "Rocks D. Xebec",
-      "slug": "Rocks.D.Xebec-B"
-    },
-    "turns": 17,
-    "winner": null,
-    "bot_side": null,
-    "log_file": "raw/Rocks.D.Xebec-B_x_Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.log",
-    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.json",
-    "deck_files": {
-      "Karlmalone#2854": "decks/Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.json",
-      "Vius2#16248": "decks/Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.json"
-    },
-    "deck_full_files": {
-      "Karlmalone#2854": "decks_full/Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.json",
-      "Vius2#16248": "decks_full/Rocks.D.Xebec-B_2026-08-05T23.28.24_p2.json"
     },
     "tipo": "humano_vs_humano",
     "tipo_origem": "inferido: os dois lados tem nome de conta real"
@@ -3829,37 +3829,6 @@
     },
     "deck_full_files": {
       "Karlmalone#2854": "decks_full/Rocks.D.Xebec-B_2026-08-09T19.11.14.json"
-    },
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
-    "id": "karlmalone_x_aceswife_2026-08-12",
-    "friendly_name": "Charlotte.Linlin-Y_x_Rocks.D.Xebec-B",
-    "date": "karlmalone",
-    "p1": {
-      "name": "AcesWife#7970",
-      "leader_code": "OP17-099",
-      "leader_name": "Charlotte Linlin",
-      "slug": "Charlotte.Linlin-Y"
-    },
-    "p2": {
-      "name": "Karlmalone#2854",
-      "leader_code": "OP17-039",
-      "leader_name": "Rocks D. Xebec",
-      "slug": "Rocks.D.Xebec-B"
-    },
-    "turns": 15,
-    "winner": null,
-    "bot_side": null,
-    "log_file": "raw/Charlotte.Linlin-Y_x_Rocks.D.Xebec-B_karlmalone_x_aceswife_2026-08-12.log",
-    "parsed_file": "parsed/Charlotte.Linlin-Y_x_Rocks.D.Xebec-B_karlmalone_x_aceswife_2026-08-12.json",
-    "deck_files": {
-      "AcesWife#7970": "decks/Charlotte.Linlin-Y_karlmalone_x_aceswife_2026-08-12.json",
-      "Karlmalone#2854": "decks/Rocks.D.Xebec-B_karlmalone_x_aceswife_2026-08-12.json"
-    },
-    "deck_full_files": {
-      "Karlmalone#2854": "decks_full/Rocks.D.Xebec-B_karlmalone_x_aceswife_2026-08-12.json"
     },
     "tipo": "humano_vs_humano",
     "tipo_origem": "inferido: os dois lados tem nome de conta real"
@@ -4375,6 +4344,95 @@
     }
   },
   {
+    "id": "2026-08-19T01.37.52_p2",
+    "friendly_name": "Charlotte.Linlin-Y_x_Boa.Hancock.-.OP14-041-BY",
+    "date": "2026-08-19",
+    "p1": {
+      "name": "BigRato#5650",
+      "leader_code": "OP17-099",
+      "leader_name": "Charlotte Linlin",
+      "slug": "Charlotte.Linlin-Y"
+    },
+    "p2": {
+      "name": "Eileen#5972",
+      "leader_code": "OP14-041",
+      "leader_name": "Boa Hancock - OP14-041",
+      "slug": "Boa.Hancock.-.OP14-041-BY"
+    },
+    "turns": 7,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Charlotte.Linlin-Y_x_Boa.Hancock.-.OP14-041-BY_2026-08-19T01.37.52_p2.log",
+    "parsed_file": "parsed/Charlotte.Linlin-Y_x_Boa.Hancock.-.OP14-041-BY_2026-08-19T01.37.52_p2.json",
+    "deck_files": {
+      "BigRato#5650": "decks/Charlotte.Linlin-Y_2026-08-19T01.37.52_p2.json",
+      "Eileen#5972": "decks/Boa.Hancock.-.OP14-041-BY_2026-08-19T01.37.52_p2.json"
+    },
+    "deck_full_files": {},
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
+    "id": "2026-08-23T20.01.33_p2",
+    "friendly_name": "Portgas.D.Ace-R_x_Nico.Robin-PY",
+    "date": "2026-08-23",
+    "p1": {
+      "name": "BigRato#5650",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas.D.Ace (001)",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "p2": {
+      "name": "readingmycards#28205",
+      "leader_code": "OP09-062",
+      "leader_name": "Nico Robin (062)",
+      "slug": "Nico.Robin-PY"
+    },
+    "turns": 8,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Portgas.D.Ace-R_x_Nico.Robin-PY_2026-08-23T20.01.33_p2.log",
+    "parsed_file": "parsed/Portgas.D.Ace-R_x_Nico.Robin-PY_2026-08-23T20.01.33_p2.json",
+    "deck_files": {
+      "BigRato#5650": "decks/Portgas.D.Ace-R_2026-08-23T20.01.33_p2.json",
+      "readingmycards#28205": "decks/Nico.Robin-PY_2026-08-23T20.01.33_p2.json"
+    },
+    "deck_full_files": {
+      "BigRato#5650": "decks_full/Portgas.D.Ace-R_2026-08-23T20.01.33_p2.json"
+    },
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
+    "id": "2026-08-25T20.15.37_p2",
+    "friendly_name": "Donquixote.Doflamingo-P_x_Kaido-B",
+    "date": "2026-08-25",
+    "p1": {
+      "name": "Bruhh#3997",
+      "leader_code": "OP14-060",
+      "leader_name": "Donquixote Doflamingo",
+      "slug": "Donquixote.Doflamingo-P"
+    },
+    "p2": {
+      "name": "BigRato#5650",
+      "leader_code": "OP17-058",
+      "leader_name": "Kaido",
+      "slug": "Kaido-B"
+    },
+    "turns": 13,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Donquixote.Doflamingo-P_x_Kaido-B_2026-08-25T20.15.37_p2.log",
+    "parsed_file": "parsed/Donquixote.Doflamingo-P_x_Kaido-B_2026-08-25T20.15.37_p2.json",
+    "deck_files": {
+      "Bruhh#3997": "decks/Donquixote.Doflamingo-P_2026-08-25T20.15.37_p2.json",
+      "BigRato#5650": "decks/Kaido-B_2026-08-25T20.15.37_p2.json"
+    },
+    "deck_full_files": {},
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
     "id": "2026-08-25T23.06.05",
     "friendly_name": "Jewelry.Bonney-G_x_Rocks.D.Xebec-B",
     "date": "2026-08-25",
@@ -4495,66 +4553,6 @@
     }
   },
   {
-    "id": "2026-08-19T01.37.52_p2",
-    "friendly_name": "Charlotte.Linlin-Y_x_Boa.Hancock.-.OP14-041-BY",
-    "date": "2026-08-19",
-    "p1": {
-      "name": "BigRato#5650",
-      "leader_code": "OP17-099",
-      "leader_name": "Charlotte Linlin",
-      "slug": "Charlotte.Linlin-Y"
-    },
-    "p2": {
-      "name": "Eileen#5972",
-      "leader_code": "OP14-041",
-      "leader_name": "Boa Hancock - OP14-041",
-      "slug": "Boa.Hancock.-.OP14-041-BY"
-    },
-    "turns": 7,
-    "winner": null,
-    "bot_side": null,
-    "log_file": "raw/Charlotte.Linlin-Y_x_Boa.Hancock.-.OP14-041-BY_2026-08-19T01.37.52_p2.log",
-    "parsed_file": "parsed/Charlotte.Linlin-Y_x_Boa.Hancock.-.OP14-041-BY_2026-08-19T01.37.52_p2.json",
-    "deck_files": {
-      "BigRato#5650": "decks/Charlotte.Linlin-Y_2026-08-19T01.37.52_p2.json",
-      "Eileen#5972": "decks/Boa.Hancock.-.OP14-041-BY_2026-08-19T01.37.52_p2.json"
-    },
-    "deck_full_files": {},
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
-    "id": "2026-08-23T20.01.33_p2",
-    "friendly_name": "Portgas.D.Ace-R_x_Nico.Robin-PY",
-    "date": "2026-08-23",
-    "p1": {
-      "name": "BigRato#5650",
-      "leader_code": "OP16-001",
-      "leader_name": "Portgas.D.Ace (001)",
-      "slug": "Portgas.D.Ace-R"
-    },
-    "p2": {
-      "name": "readingmycards#28205",
-      "leader_code": "OP09-062",
-      "leader_name": "Nico Robin (062)",
-      "slug": "Nico.Robin-PY"
-    },
-    "turns": 8,
-    "winner": null,
-    "bot_side": null,
-    "log_file": "raw/Portgas.D.Ace-R_x_Nico.Robin-PY_2026-08-23T20.01.33_p2.log",
-    "parsed_file": "parsed/Portgas.D.Ace-R_x_Nico.Robin-PY_2026-08-23T20.01.33_p2.json",
-    "deck_files": {
-      "BigRato#5650": "decks/Portgas.D.Ace-R_2026-08-23T20.01.33_p2.json",
-      "readingmycards#28205": "decks/Nico.Robin-PY_2026-08-23T20.01.33_p2.json"
-    },
-    "deck_full_files": {
-      "BigRato#5650": "decks_full/Portgas.D.Ace-R_2026-08-23T20.01.33_p2.json"
-    },
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
     "id": "2026-08-28T02.29.23_p2",
     "friendly_name": "Charlotte.Linlin-Y_x_Shanks-G",
     "date": "2026-08-28",
@@ -4578,6 +4576,35 @@
     "deck_files": {
       "BigRato#5650": "decks/Charlotte.Linlin-Y_2026-08-28T02.29.23_p2.json",
       "StrawHatMatt#6200": "decks/Shanks-G_2026-08-28T02.29.23_p2.json"
+    },
+    "deck_full_files": {},
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
+    "id": "2026-08-28T02.50.38_p2",
+    "friendly_name": "Monkey.D.Luffy-P_x_Charlotte.Linlin-Y",
+    "date": "2026-08-28",
+    "p1": {
+      "name": "Risco#9935",
+      "leader_code": "OP05-060",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-P"
+    },
+    "p2": {
+      "name": "BigRato#5650",
+      "leader_code": "OP17-099",
+      "leader_name": "Charlotte Linlin",
+      "slug": "Charlotte.Linlin-Y"
+    },
+    "turns": 21,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Monkey.D.Luffy-P_x_Charlotte.Linlin-Y_2026-08-28T02.50.38_p2.log",
+    "parsed_file": "parsed/Monkey.D.Luffy-P_x_Charlotte.Linlin-Y_2026-08-28T02.50.38_p2.json",
+    "deck_files": {
+      "Risco#9935": "decks/Monkey.D.Luffy-P_2026-08-28T02.50.38_p2.json",
+      "BigRato#5650": "decks/Charlotte.Linlin-Y_2026-08-28T02.50.38_p2.json"
     },
     "deck_full_files": {},
     "tipo": "humano_vs_humano",
@@ -4638,64 +4665,6 @@
     "deck_files": {
       "BigRato#5650": "decks/Charlotte.Linlin-Y_2026-08-29T00.33.16_p2.json",
       "LifeisSoup#5268": "decks/Shanks-G_2026-08-29T00.33.16_p2.json"
-    },
-    "deck_full_files": {},
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
-    "id": "2026-08-28T02.50.38_p2",
-    "friendly_name": "Monkey.D.Luffy-P_x_Charlotte.Linlin-Y",
-    "date": "2026-08-28",
-    "p1": {
-      "name": "Risco#9935",
-      "leader_code": "OP05-060",
-      "leader_name": "Monkey D. Luffy",
-      "slug": "Monkey.D.Luffy-P"
-    },
-    "p2": {
-      "name": "BigRato#5650",
-      "leader_code": "OP17-099",
-      "leader_name": "Charlotte Linlin",
-      "slug": "Charlotte.Linlin-Y"
-    },
-    "turns": 21,
-    "winner": null,
-    "bot_side": null,
-    "log_file": "raw/Monkey.D.Luffy-P_x_Charlotte.Linlin-Y_2026-08-28T02.50.38_p2.log",
-    "parsed_file": "parsed/Monkey.D.Luffy-P_x_Charlotte.Linlin-Y_2026-08-28T02.50.38_p2.json",
-    "deck_files": {
-      "Risco#9935": "decks/Monkey.D.Luffy-P_2026-08-28T02.50.38_p2.json",
-      "BigRato#5650": "decks/Charlotte.Linlin-Y_2026-08-28T02.50.38_p2.json"
-    },
-    "deck_full_files": {},
-    "tipo": "humano_vs_humano",
-    "tipo_origem": "inferido: os dois lados tem nome de conta real"
-  },
-  {
-    "id": "2026-08-25T20.15.37_p2",
-    "friendly_name": "Donquixote.Doflamingo-P_x_Kaido-B",
-    "date": "2026-08-25",
-    "p1": {
-      "name": "Bruhh#3997",
-      "leader_code": "OP14-060",
-      "leader_name": "Donquixote Doflamingo",
-      "slug": "Donquixote.Doflamingo-P"
-    },
-    "p2": {
-      "name": "BigRato#5650",
-      "leader_code": "OP17-058",
-      "leader_name": "Kaido",
-      "slug": "Kaido-B"
-    },
-    "turns": 13,
-    "winner": null,
-    "bot_side": null,
-    "log_file": "raw/Donquixote.Doflamingo-P_x_Kaido-B_2026-08-25T20.15.37_p2.log",
-    "parsed_file": "parsed/Donquixote.Doflamingo-P_x_Kaido-B_2026-08-25T20.15.37_p2.json",
-    "deck_files": {
-      "Bruhh#3997": "decks/Donquixote.Doflamingo-P_2026-08-25T20.15.37_p2.json",
-      "BigRato#5650": "decks/Kaido-B_2026-08-25T20.15.37_p2.json"
     },
     "deck_full_files": {},
     "tipo": "humano_vs_humano",
@@ -6115,5 +6084,687 @@
       "Opponent": "decks_full/Enel-P_2026-09-15T00.21.43.json"
     },
     "decision_log_file": "decisions/decisions_2026-09-15T00.21.43.jsonl"
+  },
+  {
+    "id": "2026-09-17T14.04.39",
+    "friendly_name": "Enel-P_x_Marshall.D.Teach-BY",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T14.04.39.log",
+    "parsed_file": "parsed/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T14.04.39.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T14.04.39.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-09-17T14.04.39.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T14.04.39.json",
+      "Opponent": "decks_full/Marshall.D.Teach-BY_2026-09-17T14.04.39.json"
+    }
+  },
+  {
+    "id": "2026-09-17T16.37.54",
+    "friendly_name": "Enel-P_x_Marshall.D.Teach-BY",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T16.37.54.log",
+    "parsed_file": "parsed/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T16.37.54.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T16.37.54.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-09-17T16.37.54.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T16.37.54.json",
+      "Opponent": "decks_full/Marshall.D.Teach-BY_2026-09-17T16.37.54.json"
+    }
+  },
+  {
+    "id": "2026-09-17T16.37.54_p2",
+    "friendly_name": "Enel-P_x_Dracule.Mihawk-G",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "turns": 9,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Dracule.Mihawk-G_2026-09-17T16.37.54_p2.log",
+    "parsed_file": "parsed/Enel-P_x_Dracule.Mihawk-G_2026-09-17T16.37.54_p2.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T16.37.54_p2.json",
+      "Opponent": "decks/Dracule.Mihawk-G_2026-09-17T16.37.54_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T16.37.54_p2.json",
+      "Opponent": "decks_full/Dracule.Mihawk-G_2026-09-17T16.37.54_p2.json"
+    }
+  },
+  {
+    "id": "2026-09-17T16.44.41",
+    "friendly_name": "Enel-P_x_Marshall.D.Teach-BY",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T16.44.41.log",
+    "parsed_file": "parsed/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T16.44.41.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T16.44.41.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-09-17T16.44.41.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T16.44.41.json",
+      "Opponent": "decks_full/Marshall.D.Teach-BY_2026-09-17T16.44.41.json"
+    }
+  },
+  {
+    "id": "2026-09-17T16.44.41_p2",
+    "friendly_name": "Enel-P_x_Dracule.Mihawk-G",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "turns": 9,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Dracule.Mihawk-G_2026-09-17T16.44.41_p2.log",
+    "parsed_file": "parsed/Enel-P_x_Dracule.Mihawk-G_2026-09-17T16.44.41_p2.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T16.44.41_p2.json",
+      "Opponent": "decks/Dracule.Mihawk-G_2026-09-17T16.44.41_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T16.44.41_p2.json",
+      "Opponent": "decks_full/Dracule.Mihawk-G_2026-09-17T16.44.41_p2.json"
+    }
+  },
+  {
+    "id": "2026-09-17T16.44.41_p3",
+    "friendly_name": "Enel-P_x_Rocks.D.Xebec-B",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Rocks.D.Xebec-B_2026-09-17T16.44.41_p3.log",
+    "parsed_file": "parsed/Enel-P_x_Rocks.D.Xebec-B_2026-09-17T16.44.41_p3.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T16.44.41_p3.json",
+      "Opponent": "decks/Rocks.D.Xebec-B_2026-09-17T16.44.41_p3.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T16.44.41_p3.json",
+      "Opponent": "decks_full/Rocks.D.Xebec-B_2026-09-17T16.44.41_p3.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.11.16",
+    "friendly_name": "Enel-P_x_Marshall.D.Teach-BY",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T17.11.16.log",
+    "parsed_file": "parsed/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T17.11.16.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T17.11.16.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-09-17T17.11.16.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T17.11.16.json",
+      "Opponent": "decks_full/Marshall.D.Teach-BY_2026-09-17T17.11.16.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.11.16_p2",
+    "friendly_name": "Enel-P_x_Dracule.Mihawk-G",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "turns": 9,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Dracule.Mihawk-G_2026-09-17T17.11.16_p2.log",
+    "parsed_file": "parsed/Enel-P_x_Dracule.Mihawk-G_2026-09-17T17.11.16_p2.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T17.11.16_p2.json",
+      "Opponent": "decks/Dracule.Mihawk-G_2026-09-17T17.11.16_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T17.11.16_p2.json",
+      "Opponent": "decks_full/Dracule.Mihawk-G_2026-09-17T17.11.16_p2.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.11.16_p3",
+    "friendly_name": "Enel-P_x_Rocks.D.Xebec-B",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Rocks.D.Xebec-B_2026-09-17T17.11.16_p3.log",
+    "parsed_file": "parsed/Enel-P_x_Rocks.D.Xebec-B_2026-09-17T17.11.16_p3.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T17.11.16_p3.json",
+      "Opponent": "decks/Rocks.D.Xebec-B_2026-09-17T17.11.16_p3.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T17.11.16_p3.json",
+      "Opponent": "decks_full/Rocks.D.Xebec-B_2026-09-17T17.11.16_p3.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.11.16_p4",
+    "friendly_name": "Rocks.D.Xebec-B_x_Monkey.D.Luffy-B",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-079",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-B"
+    },
+    "turns": 10,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Rocks.D.Xebec-B_x_Monkey.D.Luffy-B_2026-09-17T17.11.16_p4.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Monkey.D.Luffy-B_2026-09-17T17.11.16_p4.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-09-17T17.11.16_p4.json",
+      "Opponent": "decks/Monkey.D.Luffy-B_2026-09-17T17.11.16_p4.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Rocks.D.Xebec-B_2026-09-17T17.11.16_p4.json",
+      "Opponent": "decks_full/Monkey.D.Luffy-B_2026-09-17T17.11.16_p4.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.34.51",
+    "friendly_name": "Enel-P_x_Marshall.D.Teach-BY",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T17.34.51.log",
+    "parsed_file": "parsed/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T17.34.51.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T17.34.51.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-09-17T17.34.51.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T17.34.51.json",
+      "Opponent": "decks_full/Marshall.D.Teach-BY_2026-09-17T17.34.51.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.34.51_p2",
+    "friendly_name": "Enel-P_x_Dracule.Mihawk-G",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "turns": 9,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Dracule.Mihawk-G_2026-09-17T17.34.51_p2.log",
+    "parsed_file": "parsed/Enel-P_x_Dracule.Mihawk-G_2026-09-17T17.34.51_p2.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T17.34.51_p2.json",
+      "Opponent": "decks/Dracule.Mihawk-G_2026-09-17T17.34.51_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T17.34.51_p2.json",
+      "Opponent": "decks_full/Dracule.Mihawk-G_2026-09-17T17.34.51_p2.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.34.51_p3",
+    "friendly_name": "Enel-P_x_Rocks.D.Xebec-B",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Rocks.D.Xebec-B_2026-09-17T17.34.51_p3.log",
+    "parsed_file": "parsed/Enel-P_x_Rocks.D.Xebec-B_2026-09-17T17.34.51_p3.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T17.34.51_p3.json",
+      "Opponent": "decks/Rocks.D.Xebec-B_2026-09-17T17.34.51_p3.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T17.34.51_p3.json",
+      "Opponent": "decks_full/Rocks.D.Xebec-B_2026-09-17T17.34.51_p3.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.34.51_p4",
+    "friendly_name": "Rocks.D.Xebec-B_x_Monkey.D.Luffy-B",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-079",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-B"
+    },
+    "turns": 10,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Rocks.D.Xebec-B_x_Monkey.D.Luffy-B_2026-09-17T17.34.51_p4.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Monkey.D.Luffy-B_2026-09-17T17.34.51_p4.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-09-17T17.34.51_p4.json",
+      "Opponent": "decks/Monkey.D.Luffy-B_2026-09-17T17.34.51_p4.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Rocks.D.Xebec-B_2026-09-17T17.34.51_p4.json",
+      "Opponent": "decks_full/Monkey.D.Luffy-B_2026-09-17T17.34.51_p4.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.34.51_p5",
+    "friendly_name": "Rocks.D.Xebec-B_x_Dracule.Mihawk-G",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "turns": 14,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Rocks.D.Xebec-B_x_Dracule.Mihawk-G_2026-09-17T17.34.51_p5.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Dracule.Mihawk-G_2026-09-17T17.34.51_p5.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-09-17T17.34.51_p5.json",
+      "Opponent": "decks/Dracule.Mihawk-G_2026-09-17T17.34.51_p5.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Rocks.D.Xebec-B_2026-09-17T17.34.51_p5.json",
+      "Opponent": "decks_full/Dracule.Mihawk-G_2026-09-17T17.34.51_p5.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.42.02",
+    "friendly_name": "Enel-P_x_Marshall.D.Teach-BY",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T17.42.02.log",
+    "parsed_file": "parsed/Enel-P_x_Marshall.D.Teach-BY_2026-09-17T17.42.02.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T17.42.02.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-09-17T17.42.02.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T17.42.02.json",
+      "Opponent": "decks_full/Marshall.D.Teach-BY_2026-09-17T17.42.02.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.42.02_p2",
+    "friendly_name": "Enel-P_x_Dracule.Mihawk-G",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "turns": 9,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Dracule.Mihawk-G_2026-09-17T17.42.02_p2.log",
+    "parsed_file": "parsed/Enel-P_x_Dracule.Mihawk-G_2026-09-17T17.42.02_p2.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T17.42.02_p2.json",
+      "Opponent": "decks/Dracule.Mihawk-G_2026-09-17T17.42.02_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T17.42.02_p2.json",
+      "Opponent": "decks_full/Dracule.Mihawk-G_2026-09-17T17.42.02_p2.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.42.02_p3",
+    "friendly_name": "Enel-P_x_Rocks.D.Xebec-B",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Rocks.D.Xebec-B_2026-09-17T17.42.02_p3.log",
+    "parsed_file": "parsed/Enel-P_x_Rocks.D.Xebec-B_2026-09-17T17.42.02_p3.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-17T17.42.02_p3.json",
+      "Opponent": "decks/Rocks.D.Xebec-B_2026-09-17T17.42.02_p3.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-17T17.42.02_p3.json",
+      "Opponent": "decks_full/Rocks.D.Xebec-B_2026-09-17T17.42.02_p3.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.42.02_p4",
+    "friendly_name": "Rocks.D.Xebec-B_x_Monkey.D.Luffy-B",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-079",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-B"
+    },
+    "turns": 10,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Rocks.D.Xebec-B_x_Monkey.D.Luffy-B_2026-09-17T17.42.02_p4.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Monkey.D.Luffy-B_2026-09-17T17.42.02_p4.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-09-17T17.42.02_p4.json",
+      "Opponent": "decks/Monkey.D.Luffy-B_2026-09-17T17.42.02_p4.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Rocks.D.Xebec-B_2026-09-17T17.42.02_p4.json",
+      "Opponent": "decks_full/Monkey.D.Luffy-B_2026-09-17T17.42.02_p4.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.42.02_p5",
+    "friendly_name": "Rocks.D.Xebec-B_x_Dracule.Mihawk-G",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "turns": 14,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Rocks.D.Xebec-B_x_Dracule.Mihawk-G_2026-09-17T17.42.02_p5.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Dracule.Mihawk-G_2026-09-17T17.42.02_p5.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-09-17T17.42.02_p5.json",
+      "Opponent": "decks/Dracule.Mihawk-G_2026-09-17T17.42.02_p5.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Rocks.D.Xebec-B_2026-09-17T17.42.02_p5.json",
+      "Opponent": "decks_full/Dracule.Mihawk-G_2026-09-17T17.42.02_p5.json"
+    }
+  },
+  {
+    "id": "2026-09-17T17.42.02_p6",
+    "friendly_name": "Rocks.D.Xebec-B_x_Dracule.Mihawk-G",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "turns": 13,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Rocks.D.Xebec-B_x_Dracule.Mihawk-G_2026-09-17T17.42.02_p6.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Dracule.Mihawk-G_2026-09-17T17.42.02_p6.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-09-17T17.42.02_p6.json",
+      "Opponent": "decks/Dracule.Mihawk-G_2026-09-17T17.42.02_p6.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Rocks.D.Xebec-B_2026-09-17T17.42.02_p6.json",
+      "Opponent": "decks_full/Dracule.Mihawk-G_2026-09-17T17.42.02_p6.json"
+    }
+  },
+  {
+    "id": "karlmalone_x_aceswife_2026-08-12",
+    "friendly_name": "Charlotte.Linlin-Y_x_Rocks.D.Xebec-B",
+    "date": "karlmalone",
+    "p1": {
+      "name": "AcesWife#7970",
+      "leader_code": "OP17-099",
+      "leader_name": "Charlotte Linlin",
+      "slug": "Charlotte.Linlin-Y"
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 15,
+    "winner": null,
+    "bot_side": null,
+    "log_file": "raw/Charlotte.Linlin-Y_x_Rocks.D.Xebec-B_karlmalone_x_aceswife_2026-08-12.log",
+    "parsed_file": "parsed/Charlotte.Linlin-Y_x_Rocks.D.Xebec-B_karlmalone_x_aceswife_2026-08-12.json",
+    "deck_files": {
+      "AcesWife#7970": "decks/Charlotte.Linlin-Y_karlmalone_x_aceswife_2026-08-12.json",
+      "Karlmalone#2854": "decks/Rocks.D.Xebec-B_karlmalone_x_aceswife_2026-08-12.json"
+    },
+    "deck_full_files": {
+      "Karlmalone#2854": "decks_full/Rocks.D.Xebec-B_karlmalone_x_aceswife_2026-08-12.json"
+    },
+    "tipo": "humano_vs_humano",
+    "tipo_origem": "inferido: os dois lados tem nome de conta real"
   }
 ]

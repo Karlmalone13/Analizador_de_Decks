@@ -1967,8 +1967,66 @@ def _quantidade(texto: str, padrao: int = 1) -> int:
         return padrao
 
 
+# Verbos de GANHO: o menu oferece N de um recurso e N=0 nunca e a resposta
+# certa. Generico de proposito -- pega "Gain N Active Don", "Add N Cards",
+# "Draw N", e nao so o menu do Enel que revelou o problema.
+_VERBOS_GANHO = ('gain', 'add', 'draw', 'set ', 'return', 'rest ')
+
+
+def _ganho_por_quantidade(t: str):
+    """Quantidade de recurso que ESTE rotulo concede, ou None se nao for isso.
+
+    'max' vira um numero grande pra vencer qualquer N explicito. NAO usa
+    `_quantidade`, que tem `max(1, ...)` e leria "Gain 0" como 1 -- o valor
+    zero e justamente o que precisa ser distinguido aqui.
+    """
+    if not any(v in t for v in _VERBOS_GANHO):
+        return None
+    if 'opponent' in t:          # "Opponent Draws N" e custo, nao ganho
+        return None
+    if 'max' in t:
+        return 99
+    import re as _re
+    m = _re.search(r'(\d+)', t)
+    return int(m.group(1)) if m else None
+
+
+def _posicionamento_preferido(actor_code: str):
+    """Topo ou fundo, decidido pelo EFEITO PARSEADO do ator -- ou None.
+
+    O menu "Start Placing on Top/Bottom" chega SEM dizer quais cartas estao
+    sendo posicionadas (conferido no decision_log: so os dois rotulos). Entao
+    nao da pra avaliar as cartas -- mas da pra olhar o que o EFEITO faz depois.
+
+    Se ha um passo de COMPRA depois do posicionamento, por no TOPO entrega uma
+    carta que o bot acabou de ver; por no fundo enterra as duas e compra as
+    cegas. Ex: Streusen OP17-050 -- `look_top_deck(2) -> add_to_hand(1) ->
+    deck_reorder_rest -> draw(1)`.
+
+    Generico de proposito (sai do banco de efeitos, nao do codigo da carta),
+    mas honesto quanto ao alcance: dos 393 efeitos com passo de
+    posicionamento, so **8** tem `draw` depois. Sem `draw`, devolve None --
+    nao ha base pra preferir um lado, e chutar seria inventar criterio.
+    """
+    if not actor_code:
+        return None
+    try:
+        from optcg_engine.decision_engine import get_card_effects
+        efs = get_card_effects(actor_code) or {}
+    except Exception:
+        return None
+    for _gat, e in (efs.items() if isinstance(efs, dict) else []):
+        passos = (e or {}).get('steps') or []
+        acoes = [str(st.get('action') or '') for st in passos]
+        tem_pos = any(('top' in a or 'bottom' in a or 'reorder' in a) for a in acoes)
+        tem_draw = any('draw' in a for a in acoes)
+        if tem_pos and tem_draw:
+            return 'top'
+    return None
+
+
 def escolher_opcao_de_efeito(gs: GameState, opp_gs: GameState,
-                             opcoes: list) -> tuple:
+                             opcoes: list, actor_code: str = None) -> tuple:
     """Escolhe entre OPCOES de um mesmo efeito ("Trash 2 Cards" x "Opponent
     Draws 2 Cards"). Devolve (indice, motivo).
 
@@ -2027,8 +2085,34 @@ def escolher_opcao_de_efeito(gs: GameState, opp_gs: GameState,
                       + ', '.join(f'{c.code}={ee._trash_value(c):.0f}' for c in piores)
                       + f'), fator mao {fator_esvaziar_mao(len(gs.hand), n):.2f}')
         else:
-            custo = None
-            motivo = 'rotulo nao reconhecido'
+            lado = None
+            if 'placing' in t or ('top' in t and 'bottom' not in t) or 'bottom' in t:
+                lado = _posicionamento_preferido(actor_code)
+            if lado is not None:
+                # POSICIONAMENTO topo x fundo (bloco 840). Custo negativo pro
+                # lado preferido, positivo pro outro -- o `min` ja existente
+                # resolve. Antes disto o menu caia em "primeira opcao", que no
+                # jogo e sempre "Bottom": o bot olhava 2 cartas e enterrava as
+                # duas antes de comprar as cegas.
+                escolhe_topo = ('top' in t)
+                custo = -10.0 if (escolhe_topo == (lado == 'top')) else 10.0
+                motivo = (f'posicionamento: o efeito COMPRA depois, '
+                          f'entao {lado} entrega carta ja vista')
+            else:
+                ganho = _ganho_por_quantidade(t)
+            if lado is None and ganho is not None:
+                # GANHO DE RECURSO por quantidade ("Gain 0/1/Max Active Don").
+                # Custo NEGATIVO = beneficio, entao o `min` abaixo escolhe o
+                # MAIOR ganho. Sem este ramo o rotulo caia em "nao
+                # reconhecido" e a funcao pegava a PRIMEIRA opcao -- que
+                # nestes menus e sempre o ZERO (achado 17/09/2026, bloco 838:
+                # o Enel ativava a habilidade do lider e escolhia "Gain 0
+                # Active Don" em 100% das vezes).
+                custo = -float(ganho)
+                motivo = f'ganho de {ganho} (mais e melhor)'
+            elif lado is None:
+                custo = None
+                motivo = 'rotulo nao reconhecido'
         custos.append((custo, motivo, op))
 
     conhecidos = [c for c in custos if c[0] is not None]
@@ -2466,6 +2550,40 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                 break
         if actor_don_target:
             break
+
+    # ZONAS que o CUSTO do ator pode exigir, e que NAO sao DON.
+    # ACHADO AO VIVO 17/09 (blocos 843-846, Dracule Mihawk OP14-020): o filtro
+    # `actor_don_target` mais abaixo mantinha SO as zonas de DON porque o
+    # EFEITO e `set_don_active` -- e apagava os 28 outros candidatos, entre eles
+    # os personagens do proprio campo. Mas o CUSTO da carta e *"You may rest 1
+    # of your cards"*: o jogo pede uma CARTA, o bot so tinha DON pra clicar, e
+    # a ativacao nunca completava. Medido: 33 candidatos entravam, **5 saiam**,
+    # todos DON e todos ja marcados como "nunca e alvo valido" (chave 9.0).
+    #
+    # Efeito e custo sao perguntas DIFERENTES e o jogo faz as duas. Filtrar
+    # pelas zonas do efeito nao pode apagar as zonas do custo.
+    #
+    # Generico pelo TIPO do custo (mesma disciplina de "corrija pela FORMA"):
+    # sao 28 cartas no banco com custo de restar carta propria + efeito mirando
+    # outra coisa (bloco 845); so o Mihawk tinha sido visto em partida.
+    _CUSTO_ZONAS = {
+        'rest_own_card': {'own_board', 'own_leader', 'own_stage'},
+        'rest_own_character': {'own_board'},
+        'rest_own_leader_or_stage': {'own_leader', 'own_stage'},
+        'trash_own_character': {'own_board'},
+        'ko_own_character': {'own_board'},
+        'return_own_character_to_hand': {'own_board'},
+        'trash_from_hand': {'own_hand'},
+        'trash_any_from_hand': {'own_hand'},
+        'reveal_from_hand': {'own_hand'},
+        'place_from_trash_bottom_deck': {'own_trash'},
+    }
+    actor_zonas_de_custo = set()
+    if actor_code:
+        for _blk in _relevant_blocks(actor_code, attacker_power > 0):
+            for _c in (_blk.get('costs') or []):
+                if isinstance(_c, dict):
+                    actor_zonas_de_custo |= _CUSTO_ZONAS.get(_c.get('type') or '', set())
 
     # O ator MENCIONA DON em algum lugar (acao ou custo)? Se nao menciona,
     # nenhum clique em DON pode ser valido -- ver o bloco de exclusao no fim.
@@ -2952,7 +3070,13 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         zonas_don = ({'own_don_rested'} if actor_don_target == 'rested'
                      else {'own_don'} if actor_don_target == 'active'
                      else _ZONAS_DON_PROPRIAS)
-        so_don = [c for c in candidates if c.get('zone') in zonas_don]
+        # As zonas que o CUSTO exige entram JUNTO (bloco 847): o jogo pergunta
+        # o custo e o efeito separadamente, e apagar as do custo trava a
+        # ativacao inteira. A ordenacao ja resolve a prioridade -- quando o
+        # efeito nao aceita DON como alvo real, o DON carrega a chave 9.0
+        # ("nunca valido") e as cartas do custo vem na frente naturalmente.
+        zonas_ok = zonas_don | actor_zonas_de_custo
+        so_don = [c for c in candidates if c.get('zone') in zonas_ok]
         if so_don:
             candidates = so_don
 
