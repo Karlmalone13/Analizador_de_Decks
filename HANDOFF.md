@@ -245,6 +245,81 @@ visivel**.
 
 ---
 
+## 2026-09-17 (852) - A PASSAGEM DE BASTAO QUEBROU: historicos DIVERGIRAM, e o `id` do banco de logs NAO e unico
+
+Chegada da Arthur_PC depois do bastao do bloco 851. O `git pull --ff-only`
+**falhou**: `Not possible to fast-forward`.
+
+### O que tinha de cada lado
+
+| lado | commits | o que era |
+|---|---|---|
+| **Arthur_PC** (aqui) | **3, nunca empurrados** | a partida Mihawk x Enel de 15/09 + `bepinex_log` na auditoria + coleta do decision log |
+| **Arthur_Trabalho** | 10 | os fixes do Mihawk/Enel, a auditoria de alvo, e o proprio bastao |
+
+**A regra do bastao nao previu isto.** Ela diz *"pull ANTES, push DEPOIS"*, e
+supoe que quem sai empurrou tudo. Aqui a Arthur_PC tinha commitado e **nao
+empurrado** antes de a outra maquina assumir -- entao as duas avancaram da mesma
+base. O token (`ciclo_estado.json`) protege a SEED, nao o historico.
+
+Resolvido por merge, com `backup-arthurpc-2026-09-17` criado antes de encostar.
+
+### A ARMADILHA QUE QUASE APAGOU DADO EM SILENCIO
+
+`logs/index.json` conflitou -- os dois lados adicionaram partidas. A uniao
+parecia trivial ate os numeros nao fecharem:
+
+```
+nossas 207 entradas | deles 227 | "em comum" 177
+177 + 1 = 178  !=  207        <- nao fecha
+```
+
+**Causa: o campo `id` NAO e unico.** As partidas de um mesmo lote (`_p2`, `_p3`,
+... `_p7`) compartilham o timestamp, entao varias entradas tem o MESMO `id`.
+Unir por `id` teria **descartado entradas sem erro nenhum**.
+
+Com `parsed_file` (unico de verdade): **206 comuns + 1 nossa + 21 deles = 228**,
+e fecha. Banco final com 228 registros, JSON valido.
+
+> Vale como regra pra qualquer script que percorra o banco: **chaveie por
+> `parsed_file`, nunca por `id`.** Codigo antigo que agrupa por `id` esta
+> silenciosamente juntando partidas diferentes.
+
+### O outro conflito nao era conflito
+
+`auditoria_efeitos.py`: nos adicionamos o parametro `bepinex_log` na assinatura
+de `analisar`, eles adicionaram a funcao `_detalhe_do_alvo` logo acima. O git
+marcou como conflito por adjacencia -- **os dois ficaram**, nao havia o que
+escolher. `--help` roda, `smoke_fast` 0 falhas.
+
+### POR QUE OS ZIPS DA OUTRA MAQUINA NAO CHEGARAM
+
+Pergunta do usuario: *"a sessao que eu tinha aberto na outra maquina do trabalho
+enviou os zips na conversa, mas aqui na maquina origem nao estou achando"*.
+
+**As sessoes do Claude Code sao LOCAIS de cada maquina.** Verificado, nao
+deduzido: `list_sessions` com `include_archived` nesta maquina devolve **"No
+other sessions found"**. A conversa do trabalho vive no disco DAQUELA maquina, e
+os arquivos enviados sao cartoes DENTRO dela -- sem abrir aquela conversa, nao ha
+de onde baixar.
+
+**Consequencia pratica, e ela e boa**: quase tudo que os zips levavam **veio pelo
+git** (banco de logs, codigo, `q_net.joblib`, `ciclo_estado.json`). O unico
+faltante e o corpus: aqui **698.455**, la **698.838** -- **383 linhas, 0,05%**.
+Desprezivel; nao vale caçar o arquivo.
+
+> O bloco 851 avisou que o corpus nao viaja pelo git e estimou o prejuizo em
+> 73.477 linhas (10,5%). **O numero real e 383**, porque a Arthur_PC ja tinha
+> recebido o corpus de 14/09 por zip. O aviso continua correto como MECANISMO;
+> so a magnitude era outra.
+
+### Estado
+
+`smoke_fast` OK, merge fechado, 228 registros no banco, corpus 698.455. Ciclo 3
+continua sem rodar (seed 9303).
+
+---
+
 ## 2026-09-17 (851) - PASSAGEM DE BASTAO: Arthur_Trabalho -> Arthur_PC. O que fazer AO CHEGAR, e o que NAO viaja pelo git
 
 Pedido do usuario: *"registre, comite e de o push para quando eu chegar em casa

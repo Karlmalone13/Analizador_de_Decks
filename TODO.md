@@ -2,6 +2,22 @@
 
 **Última atualização:** 14 de setembro de 2026 (bloco 836)
 
+> **MERGE DE HISTORICOS DIVERGENTES + `id` NAO E UNICO (17/09/2026, bloco 852)**:
+> a Arthur_PC tinha **3 commits nunca empurrados** quando a Arthur_Trabalho
+> assumiu o bastao, entao as duas avancaram da mesma base e o `pull --ff-only`
+> falhou. A regra do bastao protege a SEED (`ciclo_estado.json`), **nao o
+> historico** -- quem sai tem que empurrar ANTES. Resolvido por merge, com
+> backup em `backup-arthurpc-2026-09-17`.
+>
+> **ARMADILHA**: unir `logs/index.json` por `id` APAGA entradas em silencio --
+> partidas do mesmo lote (`_p2`, `_p3`...) compartilham o timestamp. Chavear
+> sempre por `parsed_file`. Banco final: 228 registros.
+>
+> **Os zips da outra maquina nao chegam aqui**: sessoes do Claude Code sao
+> LOCAIS (`list_sessions` devolve vazio nesta maquina). Mas quase tudo viaja
+> pelo git; falta so o corpus, e sao **383 linhas (0,05%)**, nao as 73.477 que o
+> bloco 851 estimou -- ele nao contava que a Arthur_PC ja tinha o zip de 14/09.
+
 > **Escopo deste arquivo** (revisto em 12/09/2026): lista VIVA — o que
 > está aberto e o fluxo recente (setembro/2026, blocos 748-779). O
 > histórico de julho/agosto e as seções já concluídas foram para

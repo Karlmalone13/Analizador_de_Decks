@@ -212,3 +212,33 @@ no `index.json`; e que a telemetria de cada partida do bot foi lida
   `git count-objects -vH | grep size-pack`. Em 14/09 a pasta mostrava 1,1 GB
   com 28 MB de conteúdo real — eram objetos soltos, e `git gc --prune=now`
   resolveu em 31 segundos.
+
+---
+
+## O QUE O TOKEN **NÃO** PROTEGE (achado 17/09/2026, bloco 852)
+
+`ciclo_estado.json` protege a **seed**. Ele não protege o **histórico do git**.
+
+Caso real: a Arthur_PC tinha **3 commits nunca empurrados** quando a
+Arthur_Trabalho assumiu. As duas avançaram da mesma base, e o `pull --ff-only`
+falhou com `Not possible to fast-forward`. Resolver exigiu merge com resolução
+manual de conflito.
+
+> **Quem SAI empurra antes de sair. Quem ENTRA confere que não tem commit local
+> pendente** (`git log --oneline origin/main..HEAD` tem que vir vazio).
+
+### Os zips ficam na máquina que os recebeu
+
+As sessões do Claude Code são **locais de cada máquina** — verificado:
+`list_sessions` numa máquina não vê as sessões da outra, nem arquivadas. Os
+arquivos que uma sessão envia são cartões **dentro daquela conversa**; sem abrir
+aquela conversa, não há de onde baixar.
+
+Na prática isso quase não dói, porque o git leva o banco de logs, o código, o
+`q_net.joblib` e o `ciclo_estado.json`. **O único que depende do zip é o
+corpus** — e se a máquina já recebeu um zip recente, o que falta é só o delta.
+
+### Ao unir `logs/index.json`, chaveie por `parsed_file`
+
+O campo **`id` NÃO é único**: partidas do mesmo lote (`_p2`, `_p3`, …)
+compartilham o timestamp. Unir por `id` descarta entradas **sem erro nenhum**.
