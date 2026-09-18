@@ -245,6 +245,86 @@ visivel**.
 
 ---
 
+## 2026-09-18 (865) - ENXUGAMENTO do CLAUDE.md (-29%) e a revisao que achou a heuristica ainda no comando do shortlist
+
+**Pedido do usuario**: o `CLAUDE.md` consumia ~25k tokens no inicio de TODA
+sessao. Ele autorizou o corte E mexer no hook, mas pediu antes: *"revise esse
+claude.md e hook e confira se ainda tem coisas da heuristicas que nao usamos
+mais, e ou algo que atrapalhe nosso desenvolvimento com o ML"*.
+
+**A revisao foi feita contra o CODIGO, nao contra o que a doc afirma** -- e foi
+ela que rendeu, nao o corte.
+
+### O QUE A REVISAO ACHOU (4 itens, 2 serios)
+
+**1. A afirmacao central do arquivo estava PELA METADE.** Ele dizia "desde os
+blocos 790-791 a heuristica nao decide mais nada". O Q e mesmo o unico decisor
+da ACAO DE TOPO. Mas `NULLIFY_EVALUATE_STATE_V2 = False` e o **shortlist tem
+cota por tipo de acao, ordenada pelo score estatico**: a heuristica deixou de
+escolher o vencedor e **continua escolhendo os finalistas**. E o buraco que o
+usuario mandou resolver em 12/09, com o mecanismo agora localizado. Uma sessao
+nova lendo o texto antigo concluia que estava resolvido.
+
+**2. FALLBACK SILENCIOSO.** A decisao do Q esta num `try:` com
+`except Exception: pass`. Modelo que nao carrega = motor na heuristica, **sem
+log e sem aviso**. Dado o historico do projeto (corpus 10,5% menor, 13 arquivos
+perdidos), e o modo de falha mais caro daqui.
+
+**3. O GATE DO `pre-commit` EMPURRAVA CONTRA O ML.** `ENGINE_TOUCHPOINTS` so
+listava funcao HEURISTICA (`avaliar_carta`, `_trash_value`, `char_value_score`
+...). Levar o MODELO pro caminho ao vivo -- o passo que falta pra defesa,
+search e reviver sairem da regra fixa -- seria **barrado como "segundo
+motor"**, e pra passar o codigo novo teria que citar a heuristica. CORRIGIDO:
++`value_net|q_valores|win_prob|q_net|load_value_net`.
+
+**4. `human_patterns.json`** premia PARECER com humano e alimenta a ordenacao
+do shortlist, enquanto a meta desde 10/09 e VENCER o humano com semelhanca so
+como guarda-corpo. **O usuario decidiu: deixa de ser obrigatorio, vira opcao.**
+
+### A META DE AGORA, registrada no topo dos dois espelhos
+
+> *"a meta atual e gerar logs de cpu x cpu, para investigar bugs, nao execucao
+> de efeitos, analisar qualidade das decisoes para ajudar nos treinos e evoluir
+> nosso ML para ele ganhar de um humano"*
+
+Quatro itens que passam a ser o filtro de escopo do dia a dia.
+
+### O ENXUGAMENTO
+
+**18.310 -> 12.983 palavras (-29%)**, ~25k -> ~18k tokens por sessao. Replicado
+no `AGENTS.md` (12.972), cabecalhos conferidos um a um: so diferem na moldura.
+
+**NADA foi apagado -- foi MOVIDO** pra `REGRAS_HISTORICO.md` (7.675 palavras),
+versionado e apontado. Cada item deixou **lapide de uma linha**, que preserva a
+unica funcao real do texto longo: impedir que uma sessao restaure por engano
+uma regra revogada.
+
+O que saiu: catalogos de metodos (nada implementado), a derivacao do inventario
+das 81 decisoes com suas tres camadas de correcao, e as listas longas de 3
+manuais de ferramenta -- que ja estao no docstring de cada script.
+
+O que NAO saiu: QUALQUER DECK, a heuristica nao e referencia, o que existe nao
+e sagrado, o ML tem que aprender, AS-IS, recorte por lider, duas maquinas, a
+regra do tipo A/B, as falas repetidas do usuario.
+
+### O HOOK
+
+Os tres arquivos (`MEMORY.md`, `REGRA_SEM_DUPLICACAO`, `REGRA_O_CRITERIO_
+EMERGE`) eram impressos POR INTEIRO a cada commit, ~1.200 palavras. Agora saem
+resumidos + caminho.
+
+**Registrado o defeito de projeto**: o mecanismo dispara no COMMIT, ou seja
+DEPOIS do trabalho pronto -- tarde demais pra mudar a decisao que deveria
+guiar. As tres ja estao apontadas no `CLAUDE.md`, que carrega no INICIO da
+sessao, que e onde mordem.
+
+### ESTADO
+
+Sem mudanca em codigo de motor nesta leva (documentacao + hook), entao
+`smoke_fast` nao foi re-rodado -- ja passou no bloco 864, na ultima mudanca de
+`.py` de engine.
+
+
 ## 2026-09-18 (864) - UM COMANDO DE CADA LADO: `sincroniza entrega` / `chega` cobre corpus E logs
 
 **Pedido do usuario, em duas mensagens que juntas definem o requisito real:**

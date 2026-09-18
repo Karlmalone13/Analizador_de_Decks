@@ -1,6 +1,36 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 18 de setembro de 2026 (bloco 864)
+**Última atualização:** 18 de setembro de 2026 (bloco 865)
+
+> **DUAS PENDENCIAS NOVAS, achadas ao revisar o CLAUDE.md contra o CODIGO
+> (18/09/2026, bloco 865)** -- as duas sao do tipo que o projeto mais paga:
+> falha silenciosa.
+>
+> **1. FALLBACK SILENCIOSO PRA HEURISTICA.** A decisao do Q
+> (`decision_engine.py`, "Sem chave e sem alternativa: e o unico decisor")
+> esta dentro de um `try:` que termina em `except Exception: pass`. Se o
+> modelo nao carregar, for incompativel ou errar em qualquer feature, o motor
+> **cai na heuristica sem emitir nada** -- sem log, sem aviso. Degradacao
+> graciosa e desejada; **silenciosa nao**. Pode-se estar rodando na heuristica
+> sem ninguem saber. Minimo: contar as quedas e reportar no `live_<ts>.json`.
+>
+> **2. O SHORTLIST AINDA E ORDENADO PELA HEURISTICA.** O `CLAUDE.md` afirmava
+> que "desde os blocos 790-791 a heuristica nao decide mais nada" -- **esta
+> pela metade** e o texto ja foi corrigido. O Q decide o VENCEDOR da acao de
+> topo, mas `NULLIFY_EVALUATE_STATE_V2 = False` e o shortlist tem cota por
+> tipo de acao ordenada pelo score estatico: **a heuristica escolhe os
+> FINALISTAS que o modelo tem permissao de considerar**. E exatamente o buraco
+> que o usuario mandou resolver em 12/09 (*"o que nao vira candidato nao
+> existe"*), agora com o mecanismo localizado.
+>
+> Corrigido no mesmo bloco: a lista `ENGINE_TOUCHPOINTS` do gate `pre-commit`
+> so tinha nomes de funcao HEURISTICA -- levar o MODELO pro caminho ao vivo
+> seria **barrado como "segundo motor"**. Somados `value_net|q_valores|
+> win_prob|q_net|load_value_net`.
+>
+> **`human_patterns.json` deixou de ser OBRIGATORIO** (decisao do usuario): ele
+> premia PARECER com humano e alimenta a ordenacao do shortlist, enquanto a
+> meta desde 10/09 e VENCER o humano, com semelhanca so como guarda-corpo.
 
 > **UM COMANDO DE CADA LADO (18/09/2026, bloco 864)** -- `sincroniza.py entrega`
 > / `chega` cobre **corpus E logs** juntos, a pedido do usuario: *"a ideia e

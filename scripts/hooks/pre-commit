@@ -1,4 +1,10 @@
 #!/bin/sh
+# 18/09/2026: os tres arquivos eram impressos POR INTEIRO a cada commit (~1.200
+# palavras). Passaram a sair resumidos + caminho, a pedido do usuario (custo de
+# contexto). O mecanismo nasceu porque as sessoes esqueciam as regras -- mas
+# ele dispara no COMMIT, ou seja, DEPOIS do trabalho pronto, tarde demais pra
+# mudar a decisao que deveria guiar. As tres regras ja estao apontadas no
+# CLAUDE.md, que carrega no INICIO da sessao, que e onde elas mordem.
 # Imprime as regras de memoria do projeto em TODO commit (lembrete, nao
 # bloqueia sozinho) E bloqueia de verdade se o diff staged de sim_bridge.py
 # ou server.py cheira a uma SEGUNDA decisao reimplementada fora do engine
@@ -19,7 +25,8 @@ echo " REGRAS DO PROJETO (memory) — leia antes de finalizar o commit"
 echo "=============================================================="
 
 if [ -f "$MEMORY_DIR/MEMORY.md" ]; then
-    cat "$MEMORY_DIR/MEMORY.md"
+    head -n 20 "$MEMORY_DIR/MEMORY.md"
+    echo "    [...] indice completo: $MEMORY_DIR/MEMORY.md"
     echo "--------------------------------------------------------------"
 fi
 
@@ -42,7 +49,8 @@ if [ -f "$REPO_ROOT/scriptis_da_ia/REGRA_SEM_DUPLICACAO.md" ]; then
     echo "=============================================================="
     echo " OBRIGATORIO: scriptis_da_ia/REGRA_SEM_DUPLICACAO.md"
     echo "=============================================================="
-    cat "$REPO_ROOT/scriptis_da_ia/REGRA_SEM_DUPLICACAO.md"
+    head -n 12 "$REPO_ROOT/scriptis_da_ia/REGRA_SEM_DUPLICACAO.md"
+    echo "    [...] arquivo completo: scriptis_da_ia/REGRA_SEM_DUPLICACAO.md"
     echo "=============================================================="
     echo ""
 fi
@@ -57,7 +65,8 @@ if [ -f "$REPO_ROOT/scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md" ]; then
     echo "=============================================================="
     echo " OBRIGATORIO: scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md"
     echo "=============================================================="
-    cat "$REPO_ROOT/scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md"
+    head -n 12 "$REPO_ROOT/scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md"
+    echo "    [...] arquivo completo: scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md"
     echo "=============================================================="
     echo ""
 fi
@@ -85,6 +94,12 @@ fi
 # Adicionar aqui e diferente de usar --no-verify: o gate continua valendo,
 # so passou a reconhecer chamadas que sempre foram ao motor.
 # direto como sim_bridge.py faz).
+# 18/09: +value_net|q_valores|win_prob|q_net|load_value_net. A lista so tinha
+# nomes de funcao HEURISTICA, entao pra passar no gate um codigo novo precisava
+# citar a heuristica -- e levar o MODELO pro caminho ao vivo (o passo que falta
+# pra defesa/search/reviver sairem da regra fixa) seria BARRADO como "segundo
+# motor". O gate continua valendo: consultar o modelo unico do projeto nao e
+# reimplementar regua propria, e exatamente o oposto.
 # `actor_effect_is_hand_cost_only`/`actor_step_numeric_filter` adicionados
 # 08/08/2026 (mesclando trabalho de sessao local, blocos 466/2c7400a) --
 # ambos sao funcoes de decision_engine.py importadas por sim_bridge.py
@@ -92,7 +107,7 @@ fi
 # CHAMA a funcao ja importada (sem repetir a linha de import no mesmo
 # hunk -U0) nao continha nenhum touchpoint conhecido, disparando falso
 # positivo neste exato commit de merge.
-ENGINE_TOUCHPOINTS='DecisionEngine|EffectExecutor|avaliar_carta|_trash_value|should_use_counter|char_value_score|_step_is_viable|_worth_paying_optional_costs|get_card_effects|score_attack_target|_score_activate_main|_should_activate_main|don_needed_for_attack|buff_wins_combat|debuff_flips_attack_in_my_favor|body_provides_defense|would_lose_last_defender|trash_cost_board_perda|_simulate_sequence_values|_generate_and_score_actions|OpponentModel|actor_effect_is_hand_cost_only|actor_step_numeric_filter|_relevant_blocks|effective_hand_play_cost|fator_esvaziar_mao|valor_de_mao|tiers_de_mao|bridge\.'
+ENGINE_TOUCHPOINTS='DecisionEngine|EffectExecutor|avaliar_carta|_trash_value|should_use_counter|char_value_score|_step_is_viable|_worth_paying_optional_costs|get_card_effects|score_attack_target|_score_activate_main|_should_activate_main|don_needed_for_attack|buff_wins_combat|debuff_flips_attack_in_my_favor|body_provides_defense|would_lose_last_defender|trash_cost_board_perda|_simulate_sequence_values|_generate_and_score_actions|OpponentModel|actor_effect_is_hand_cost_only|actor_step_numeric_filter|_relevant_blocks|effective_hand_play_cost|fator_esvaziar_mao|valor_de_mao|tiers_de_mao|bridge\.|value_net|q_valores|win_prob|q_net|load_value_net'
 
 # bot_optcgsim.py adicionado apos a varredura retroativa (bloco 375) --
 # antes desta linha, mudancas nesse arquivo nao passavam por NENHUM gate
