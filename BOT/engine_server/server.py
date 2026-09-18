@@ -225,6 +225,39 @@ def _aplica_auto_restricao(gs, turn, lider: str) -> None:
             if gte:
                 gs.cant_play_cost_gte = gte
 _live_match_id = new_decision_id()
+
+# ── QUANTAS DECISOES NAO VIERAM DO MODELO (bloco 867) ─────────────────────
+# O contador vive no PROCESSO -- e o server e longo, atravessa varias
+# partidas -- entao o numero da partida e um DELTA: retrato no mulligan,
+# diferenca no outcome. Sem isso, a segunda partida herdaria os fallbacks da
+# primeira e ninguem saberia de qual foi.
+_q_fallback_inicio: dict = {}
+_q_fallback_erro: Optional[str] = None
+
+
+def _q_fallback(desde: dict | None = None) -> dict:
+    """Le `q_fallback_resumo()` do motor: sem `desde`, o retrato; com `desde`,
+    o DELTA desta partida.
+
+    Uma funcao so, e de proposito -- o contador e a subtracao tem que ficar no
+    mesmo lugar. Separadas, o gate "sem dois motores" do pre-commit barrava o
+    hunk da subtracao por nao ver nenhuma chamada ao motor nele, e o gate
+    estava certo: a comparacao numerica ficava orfa da fonte do numero.
+
+    Best-effort, igual a auditoria de efeitos: bancar o log e o trabalho
+    critico e nao pode cair junto -- mas o erro e GRAVADO, nunca engolido.
+    """
+    global _q_fallback_erro
+    try:
+        from optcg_engine.decision_engine import q_fallback_resumo
+        agora = dict(q_fallback_resumo())
+    except Exception as exc:
+        _q_fallback_erro = f"{type(exc).__name__}: {exc}"
+        return {}
+    if desde is None:
+        return agora
+    return {k: v - desde.get(k, 0) for k, v in agora.items()
+            if v - desde.get(k, 0) > 0}
 _match_has_decisions = False
 _match_has_outcome = False
 _decision_context: dict[str, dict] = {}
@@ -920,9 +953,16 @@ def outcome(report: OutcomeReport):
         def _collect() -> None:
             try:
                 from collect_latest_match import collect_latest
+                _qfb = _q_fallback(_q_fallback_inicio)
                 receipt = collect_latest(DECISION_LOG_PATH, match_id=_live_match_id,
                                           result=report.result,
-                                          bot_seat=report.botSeat)
+                                          bot_seat=report.botSeat,
+                                          q_fallback=_qfb,
+                                          q_fallback_error=_q_fallback_erro)
+                if _qfb:
+                    print(f"[AUTO-COLLECT][ATENCAO] {sum(_qfb.values())} decisao(oes) "
+                          f"NAO vieram do modelo nesta partida: {_qfb}. "
+                          "Ver q_fallback no live_<ts>.json.", flush=True)
                 _collection_status.update(
                     status="success", message="log capturado e salvo no banco",
                     report=receipt.get("report"), receipt=receipt.get("receipt"))
@@ -1114,6 +1154,8 @@ def mulligan(req: MulliganRequest):
                         result="aborted", state_final=None,
                         reason="nova partida iniciou antes de outcome")
         _live_match_id = new_decision_id()
+        global _q_fallback_inicio
+        _q_fallback_inicio = _q_fallback()
         _match_has_decisions = False
         _match_has_outcome = False
         _decision_context.clear()

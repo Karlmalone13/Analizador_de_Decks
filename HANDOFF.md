@@ -245,6 +245,62 @@ visivel**.
 
 ---
 
+## 2026-09-18 (867) - `q_fallback` no `live_<ts>.json`: o passo 1 da telemetria passa a dizer se o MODELO decidiu
+
+Fecha a pendencia aberta no bloco 866. Pedido do usuario: *"liga o
+q_fallback_resumo no live_<ts>.json"*.
+
+### A ARMADILHA QUE QUASE FEZ ISTO NASCER INUTIL
+
+O caminho obvio era o `bot_efficiency_report.py` ler `q_fallback_resumo()` --
+**e teria dado `{}` SEMPRE.** Ele roda em SUBPROCESSO (`collect_latest_match.py`
+o chama via `sys.executable`), com estado de modulo zerado. O contador vive no
+processo que DECIDE, que e o do servidor.
+
+Pior: `{}` significa "o modelo decidiu em todas". O campo teria nascido
+mentindo "esta tudo bem" justamente nas partidas doentes -- trocando uma falha
+silenciosa por outra, com aparencia de conserto.
+
+### COMO FICOU
+
+Medido no processo do SERVIDOR e passado adiante:
+
+- **retrato no mulligan** (`_q_fallback_inicio`), **delta no `/outcome`**. O
+  server e longo e atravessa varias partidas: sem o delta, a segunda herdaria
+  os fallbacks da primeira e ninguem saberia de qual foi.
+- `collect_latest(..., q_fallback=, q_fallback_error=)` -> `grava_q_fallback()`
+  poe o campo DENTRO do `live_<ts>.json` e do `receipt_<ts>.json`.
+- alerta `[AUTO-COLLECT][ATENCAO]` no stdout quando houver queda.
+
+O campo sai **sempre**, inclusive com `total: 0` -- ausencia nao pode ser lida
+como saude. E carrega `significado` em texto, pra nao depender de quem le
+lembrar o que zero quer dizer.
+
+`erro_ao_medir` segue a disciplina do `efeitos_error`: best-effort, porque
+bancar o log e o trabalho critico e nao pode cair junto -- mas o erro e
+GRAVADO, nunca engolido.
+
+### TESTADO, com controle que tem que falhar
+
+`teste_q_fallback.py`, permanente, **9/9**:
+
+| caso | o que prova |
+|---|---|
+| partida sa | campo presente com `total: 0`, e o relatorio existente intacto |
+| partida doente | soma 360 e preserva a quebra por motivo |
+| **relatorio ilegivel** | **devolve ERRO** -- se passasse calado, seria a mesma falha de novo |
+| delta | `{sem_modelo: 5}` -> `{sem_modelo: 12, erro: 3}` da `{sem_modelo: 7, erro: 3}` |
+
+`smoke_fast` OK.
+
+### GATE DO `pre-commit` ATUALIZADO DE NOVO
+
+`q_fallback_resumo` entrou em `ENGINE_TOUCHPOINTS`. Sem isso o gate bloquearia
+este proprio commit: `server.py` e arquivo vigiado, e o delta usa comparacao
+numerica (`> 0`). E o mesmo tipo de manutencao do bloco 865 -- a lista envelhece
+junto com a arquitetura, e consultar o motor unico nao e reimplementar regua.
+
+
 ## 2026-09-18 (866) - O fallback do Q deixa de ser MUDO, e o espelho estava sem a disciplina de sessao
 
 ### O FALLBACK ERA PIOR DO QUE EU REPORTEI NO BLOCO 865

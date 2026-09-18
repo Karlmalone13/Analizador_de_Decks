@@ -124,9 +124,51 @@ def _apply_winner(index: list, entry_id: str, result: str,
             return
 
 
+
+def grava_q_fallback(report_path: Path, q_fb: dict,
+                     erro: str | None) -> str | None:
+    """Poe o `q_fallback` DENTRO do `live_<ts>.json`.
+
+    O `live_<ts>.json` e o passo 1 OBRIGATORIO da telemetria -- e onde a
+    sessao olha ANTES de investigar decisao por decisao. Sem isto, uma partida
+    inteira decidida por `candidatas[0]` (sem avaliacao nenhuma) chegaria ali
+    indistinguivel de uma decidida pelo modelo.
+
+    Devolve o erro (novo ou acumulado). NUNCA levanta: bancar o log e o
+    trabalho critico e nao pode ser perdido junto -- mesma disciplina do
+    `efeitos_error`.
+    """
+    try:
+        relatorio = json.loads(report_path.read_text(encoding="utf-8"))
+        relatorio["q_fallback"] = {
+            "total": sum(q_fb.values()),
+            "por_motivo": q_fb,
+            "erro_ao_medir": erro,
+            "significado": ("vazio = o modelo decidiu em TODAS as decisoes; "
+                            "qualquer numero = decisao SEM o modelo"),
+        }
+        report_path.write_text(
+            json.dumps(relatorio, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8")
+        return erro
+    except Exception as exc:
+        return f"{erro or ''} | gravar no relatorio: {exc}".strip(" |")
+
+
 def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
                    match_id: str = "", result: str = "",
-                   bot_seat: str = "p1") -> dict:
+                   bot_seat: str = "p1",
+                   q_fallback: dict | None = None,
+                   q_fallback_error: str | None = None) -> dict:
+    """Banca a partida e monta o relatorio + o recibo.
+
+    `q_fallback` (bloco 867): quantas decisoes NAO vieram do modelo nesta
+    partida, por motivo. **Tem que ser medido NO PROCESSO DO SERVIDOR e
+    passado pra ca** -- `bot_efficiency_report.py` roda em SUBPROCESSO, com
+    estado de modulo zerado, e enxergaria sempre `{}`. Um contador vazio
+    pareceria "esta tudo bem", que e exatamente a falha silenciosa que o
+    bloco 866 acabou de consertar.
+    """
     # `cpu_vs_cpu` vem do plugin quando o bot esta pilotando OS DOIS lados
     # (Shift+C). NAO pode cair na normalizacao abaixo: virar "p1" gravaria um
     # lado FALSO no banco, que e o oposto do que a trava de ingestao existe
@@ -252,8 +294,19 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
         print(f"[AUTO-COLLECT] auditoria de efeitos falhou (log ja bancado, "
               f"nada perdido): {exc}", flush=True)
 
+    # ── O FALLBACK DO Q ENTRA NO RELATORIO (bloco 867) ────────────────────
+    # O `live_<ts>.json` e o passo 1 OBRIGATORIO da telemetria -- e onde a
+    # sessao olha ANTES de investigar decisao por decisao. Sem isto, uma
+    # partida inteira decidida por `candidatas[0]` (sem avaliacao) chegaria
+    # ali indistinguivel de uma partida decidida pelo modelo.
+    q_fb = dict(q_fallback or {})
+    q_fallback_error = grava_q_fallback(report_path, q_fb, q_fallback_error)
+
     receipt = {
         "schema": 1,
+        "q_fallback_total": sum(q_fb.values()),
+        "q_fallback": q_fb,
+        "q_fallback_error": q_fallback_error,
         "match_id": match_id or None,
         "combat_log": str(combat_log),
         "decision_log": str(decision_log),

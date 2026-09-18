@@ -1,6 +1,20 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 18 de setembro de 2026 (bloco 866)
+**Última atualização:** 18 de setembro de 2026 (bloco 867)
+
+> **`q_fallback` LIGADO NO `live_<ts>.json` (18/09/2026, bloco 867)** -- fecha a
+> pendencia aberta no bloco 866. O passo 1 da telemetria agora responde
+> **"esta partida foi decidida pelo modelo?"**: `total: 0` = sim; qualquer
+> numero = decisao SEM o modelo, com a quebra por motivo.
+>
+> **A armadilha que isto teve que contornar**: `bot_efficiency_report.py` roda
+> em SUBPROCESSO, com estado de modulo zerado -- ele enxergaria `{}` SEMPRE, e
+> um contador vazio pareceria "esta tudo bem". A medicao e feita no processo do
+> SERVIDOR (retrato no mulligan, delta no `/outcome`) e passada adiante, entao
+> o numero e POR PARTIDA e nao herda o da anterior.
+>
+> Alerta tambem no stdout (`[AUTO-COLLECT][ATENCAO]`) e no
+> `receipt_<ts>.json`. `teste_q_fallback.py` permanente, 9/9.
 
 > **O FALLBACK SILENCIOSO FOI CONSERTADO (18/09/2026, bloco 866)** -- e era
 > PIOR do que o bloco 865 reportou. Nao caia "na heuristica": caia em

@@ -1451,7 +1451,16 @@ bot pelo combat log cru e reportar como investigacao completa.
 
 **NESSA ORDEM, nunca pular pro segundo:**
 
-1. **`metrics/live_runs/live_<ts>.json`** -- o QUANTO/ONDE OLHAR. `gate_status`,
+1. **`metrics/live_runs/live_<ts>.json`** -- o QUANTO/ONDE OLHAR.
+   **CONFIRA `q_fallback` PRIMEIRO** (bloco 867): `total: 0` = o modelo decidiu
+   em todas; **qualquer numero = decisao SEM o modelo**, e ai o resto do
+   relatorio nao mede o que voce pensa que mede. A quebra vem por motivo
+   (`sem_modelo`, `erro`, `sem_valor`, `primeiro_candidato`). Se
+   `erro_ao_medir` estiver preenchido, a medicao NAO rodou -- diga isso em vez
+   de assumir que esta tudo bem. Ordem de grandeza: com modelo quebrado deram
+   **180 quedas numa unica partida**. Tambem sai como
+   `[AUTO-COLLECT][ATENCAO]` no stdout do server.
+   Depois: `gate_status`,
    `bot_confusion`, `attack_quality`, e principalmente
    `score_components_coverage_pct`/`line_search_coverage_pct`: abaixo de 100%,
    uma fracao das decisoes **nao tem dado gravado pra auditar**.
