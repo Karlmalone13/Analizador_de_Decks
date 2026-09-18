@@ -2,6 +2,30 @@
 
 **Última atualização:** 14 de setembro de 2026 (bloco 836)
 
+> **BANCO DE LOGS RE-BANCAVA A MESMA PARTIDA -- FECHADO (17/09/2026, bloco
+> 856)**: `LogOutput.log` acumula, o auto-collect re-parseia o arquivo INTEIRO
+> a cada `/outcome` e re-bancava as partidas anteriores com nome novo. A trava
+> comparava o `id` (timestamp da COLETA, novo a cada vez) e nunca disparava --
+> Enel x Teach estava no banco **6 vezes**. Agora a trava usa
+> `impressao_da_partida` (md5 dos TURNOS), gravada no index como `impressao` e
+> retroalimentada nas 195 entradas.
+>
+> **271 arquivos removidos, index 241 -> 195** (184 partidas distintas).
+> `human_patterns.json` regenerado (acoes 6.286 -> 6.227), `smoke_fast` OK.
+>
+> **CORRECAO DO USUARIO que evitou perda de dado**: *"eu jogo partidas
+> repetidas com os mesmos lideres"* -- e o controle confirma (Teach x Xebec:
+> 16 arquivos, 16 conteudos DISTINTOS). Par de lideres repetido NAO e
+> duplicata; so conteudo de turnos identico e. O `.log` cru tambem nao serve
+> de identidade: a fatia capturada CRESCE a cada coleta (43.644 -> 44.118 B na
+> mesma partida).
+>
+> **ABERTO -- 4 partidas com rotulo contraditorio**: copias da mesma partida
+> (conferido a mao) com `winner`/`bot_side` TROCADOS entre si -- Katakuri x
+> Ace, Katakuri x Teach, Kaido x Luffy, Luffy x Xebec. Nao deduplicadas de
+> proposito: escolher a copia seria escolher qual rotulo virar verdade.
+> Precisa de decisao/conferencia antes de limpar.
+
 > **TELEMETRIA DE DEFESA AO VIVO -- LIGADA (17/09/2026, bloco 855)**: o motor
 > JA raciocinava sobre defesa e JA sabia registrar (`_log_defesa`), mas a
 > auditoria so era ligada no AUTO-JOGO -- ao vivo o raciocinio era calculado e

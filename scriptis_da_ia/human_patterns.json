@@ -1,24 +1,24 @@
 {
   "meta": {
-    "logs": 178,
-    "turns": 2091,
-    "actions": 6286,
-    "defense_events": 954,
+    "logs": 195,
+    "turns": 2092,
+    "actions": 6227,
+    "defense_events": 946,
     "min_support": 2,
     "note": "Padroes observados em logs humanos; usar como sinal, nao como regra absoluta.",
     "filtro_bot": {
-      "logs_cpu_vs_cpu_pulados": 4,
-      "turnos_do_bot_descartados": 320
+      "logs_cpu_vs_cpu_pulados": 22,
+      "turnos_do_bot_descartados": 333
     }
   },
   "global_action_orders": [
     {
       "pattern": "pass",
-      "count": 488
+      "count": 503
     },
     {
       "pattern": "play",
-      "count": 328
+      "count": 327
     },
     {
       "pattern": "play > play",
@@ -26,7 +26,7 @@
     },
     {
       "pattern": "play > activate",
-      "count": 33
+      "count": 31
     },
     {
       "pattern": "activate",
@@ -34,7 +34,7 @@
     },
     {
       "pattern": "play > attack_hit",
-      "count": 23
+      "count": 22
     },
     {
       "pattern": "play > attack_countered",
@@ -46,7 +46,7 @@
     },
     {
       "pattern": "play > attach_don > attack_hit > activate",
-      "count": 17
+      "count": 16
     },
     {
       "pattern": "play > activate > attack_hit",
@@ -89,15 +89,15 @@
       "count": 8
     },
     {
-      "pattern": "play > attack_countered > activate",
-      "count": 8
-    },
-    {
       "pattern": "activate > play",
       "count": 7
     },
     {
       "pattern": "play > attach_don > attack_countered > activate",
+      "count": 7
+    },
+    {
+      "pattern": "play > attack_countered > activate",
       "count": 7
     },
     {
@@ -647,22 +647,14 @@
     "OP11-021|Jinbe|early": [
       {
         "pattern": "play > activate",
-        "count": 5
+        "count": 4
       },
       {
         "pattern": "attach_don > attack_hit > play > activate",
-        "count": 2
+        "count": 1
       }
     ],
     "OP11-021|Jinbe|late": [
-      {
-        "pattern": "play > attack_hit > attach_don > attach_don > attack_hit > attack_hit > activate",
-        "count": 2
-      },
-      {
-        "pattern": "attach_don > attack_countered > attach_don > attach_don > attack_hit > attach_don > attack_hit",
-        "count": 2
-      },
       {
         "pattern": "attack_hit > attack_blocked > play > play > attack_hit > activate",
         "count": 1
@@ -686,16 +678,20 @@
       {
         "pattern": "activate > attach_don > attack_blocked_by_blocker > attack_blocked > attach_don > attack_hit > attach_don > attach_don > attack_hit",
         "count": 1
+      },
+      {
+        "pattern": "play > attack_hit > attach_don > attach_don > attack_hit > attack_hit > activate",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don > attack_countered > attach_don > attach_don > attack_hit > attach_don > attack_hit",
+        "count": 1
       }
     ],
     "OP11-021|Jinbe|mid": [
       {
         "pattern": "play > attach_don > attack_hit > activate",
-        "count": 4
-      },
-      {
-        "pattern": "play > attack_blocked > attach_don > attach_don > attack_hit > activate",
-        "count": 2
+        "count": 3
       },
       {
         "pattern": "play > attack_hit > activate",
@@ -723,6 +719,10 @@
       },
       {
         "pattern": "play > attack_countered > attach_don > attack_countered > attack_hit > activate",
+        "count": 1
+      },
+      {
+        "pattern": "play > attack_blocked > attach_don > attach_don > attack_hit > activate",
         "count": 1
       }
     ],
@@ -852,12 +852,12 @@
         "count": 3
       },
       {
-        "pattern": "play > activate",
+        "pattern": "play > play",
         "count": 3
       },
       {
-        "pattern": "play > play",
-        "count": 3
+        "pattern": "play > activate",
+        "count": 2
       },
       {
         "pattern": "play > attach_don > attach_don > attack_hit",
@@ -890,10 +890,6 @@
         "count": 2
       },
       {
-        "pattern": "attack_hit > attack_countered > attach_don > attack_countered > play",
-        "count": 2
-      },
-      {
         "pattern": "play > play > attack_blocked > attach_don > attack_blocked > attach_don > attack_hit > activate > attack_countered > activate",
         "count": 1
       },
@@ -920,6 +916,10 @@
       {
         "pattern": "activate > attach_don > attach_don > attach_don > attack_blocked_by_blocker > attach_don > attach_don > attack_hit > attach_don > attach_don > attack_hit > attack_countered > attack_hit > attack_hit",
         "count": 1
+      },
+      {
+        "pattern": "play > attack_blocked > activate",
+        "count": 1
       }
     ],
     "OP11-062|Charlotte Katakuri|mid": [
@@ -936,10 +936,6 @@
         "count": 3
       },
       {
-        "pattern": "play > attack_hit",
-        "count": 3
-      },
-      {
         "pattern": "pass",
         "count": 2
       },
@@ -948,11 +944,7 @@
         "count": 2
       },
       {
-        "pattern": "play > play > play > attack_hit",
-        "count": 2
-      },
-      {
-        "pattern": "play > attack_blocked_by_blocker > attack_hit",
+        "pattern": "play > attack_hit",
         "count": 2
       },
       {
@@ -961,6 +953,14 @@
       },
       {
         "pattern": "activate > play > attack_countered > attach_don > attack_blocked > activate > play",
+        "count": 1
+      },
+      {
+        "pattern": "play > attach_don > attack_countered",
+        "count": 1
+      },
+      {
+        "pattern": "play > attack_hit > activate",
         "count": 1
       }
     ],
@@ -1956,6 +1956,36 @@
         "count": 1
       }
     ],
+    "OP15-058|Enel|early": [
+      {
+        "pattern": "pass",
+        "count": 1
+      }
+    ],
+    "OP15-058|Enel|late": [
+      {
+        "pattern": "pass",
+        "count": 11
+      },
+      {
+        "pattern": "play > attach_don > activate > attack_countered",
+        "count": 1
+      },
+      {
+        "pattern": "play > attach_don > activate > attack_hit > attack_countered",
+        "count": 1
+      },
+      {
+        "pattern": "attack_blocked > play > activate > attack_countered > activate > attack_blocked",
+        "count": 1
+      }
+    ],
+    "OP15-058|Enel|mid": [
+      {
+        "pattern": "pass",
+        "count": 3
+      }
+    ],
     "OP16-001|Portgas D. Ace|early": [
       {
         "pattern": "play",
@@ -2299,7 +2329,7 @@
     "OP17-039|Rocks D. Xebec|early": [
       {
         "pattern": "play",
-        "count": 26
+        "count": 25
       },
       {
         "pattern": "pass",
@@ -2341,10 +2371,6 @@
     "OP17-039|Rocks D. Xebec|late": [
       {
         "pattern": "attack_countered > attack_hit > attack_countered > activate > play > activate > activate",
-        "count": 3
-      },
-      {
-        "pattern": "attack_hit > attack_blocked > attach_don > attack_hit > attach_don > attack_hit > activate",
         "count": 2
       },
       {
@@ -2376,6 +2402,10 @@
         "count": 1
       },
       {
+        "pattern": "attack_hit > attack_blocked > attach_don > attack_hit > attach_don > attack_hit > activate",
+        "count": 1
+      },
+      {
         "pattern": "attach_don > attach_don > attack_hit > attack_hit > attach_don > attack_hit > attach_don > attack_hit > activate > activate",
         "count": 1
       }
@@ -2392,14 +2422,6 @@
       {
         "pattern": "play > attach_don > attack_hit > activate",
         "count": 4
-      },
-      {
-        "pattern": "play > attack_countered > activate",
-        "count": 3
-      },
-      {
-        "pattern": "play > play > attack_hit > attack_countered > activate",
-        "count": 3
       },
       {
         "pattern": "attack_blocked > activate > play",
@@ -2419,6 +2441,14 @@
       },
       {
         "pattern": "play > attack_blocked > activate",
+        "count": 2
+      },
+      {
+        "pattern": "play > attack_countered > activate",
+        "count": 2
+      },
+      {
+        "pattern": "play > play > attack_hit > attack_countered > activate",
         "count": 2
       }
     ],
@@ -3107,26 +3137,10 @@
     "OP11-021|Jinbe": [
       {
         "pattern": "play:OP11-031 > attach_don:OP11-021 > attack:OP11-021 > activate:OP11-021",
-        "count": 3
+        "count": 2
       },
       {
         "pattern": "play:OP06-025 > activate:OP11-021",
-        "count": 3
-      },
-      {
-        "pattern": "attach_don:OP11-021 > attack:OP11-021 > play:OP06-032 > activate:OP11-021",
-        "count": 2
-      },
-      {
-        "pattern": "play:OP11-029 > attack:OP06-025 > attach_don:OP11-021 > attach_don:OP11-021 > attack:OP11-021 > activate:OP11-021",
-        "count": 2
-      },
-      {
-        "pattern": "play:OP06-035 > attack:OP06-035 > attach_don:OP11-021 > attach_don:OP11-021 > attack:OP11-021 > attack:OP11-031 > activate:OP11-021",
-        "count": 2
-      },
-      {
-        "pattern": "attach_don:OP11-021 > attack:OP11-021 > attach_don:OP06-035 > attach_don:OP06-035 > attack:OP06-035 > attach_don:OP11-031 > attack:OP11-031",
         "count": 2
       },
       {
@@ -3143,6 +3157,22 @@
       },
       {
         "pattern": "attack:OP11-031 > attack:OP11-021 > play:OP15-032 > play:OP11-028 > attack:OP11-031 > activate:OP11-021",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP06-033 > attach_don:OP11-028 > attach_don:OP11-028 > attach_don:OP11-028 > attack:OP11-028 > attach_don:OP11-031 > attack:OP11-031 > attach_don:OP11-021 > attach_don:OP11-021 > attach_don:OP11-021 > attach_don:OP11-021 > attack:OP11-021 > activate:OP11-021",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP11-031 > attach_don:OP11-028 > attach_don:OP11-028 > attach_don:OP11-028 > attack:OP11-028 > attach_don:OP11-021 > attack:OP11-021",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP11-030 > activate:OP11-021",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-023 > attack:OP11-021",
         "count": 1
       }
     ],
@@ -3232,15 +3262,11 @@
         "count": 6
       },
       {
-        "pattern": "play:ST34-002 > attack:OP11-062",
-        "count": 4
-      },
-      {
-        "pattern": "play:OP11-070 > activate:OP07-077",
+        "pattern": "attach_don:OP11-062 > attack:OP11-062",
         "count": 3
       },
       {
-        "pattern": "attach_don:OP11-062 > attack:OP11-062",
+        "pattern": "play:ST34-002 > attack:OP11-062",
         "count": 3
       },
       {
@@ -3253,6 +3279,10 @@
       },
       {
         "pattern": "attach_don:ST34-003 > attack:ST34-003 > attack:OP11-062",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP11-070 > activate:OP07-077",
         "count": 2
       },
       {
@@ -3798,6 +3828,24 @@
         "count": 1
       }
     ],
+    "OP15-058|Enel": [
+      {
+        "pattern": "pass",
+        "count": 15
+      },
+      {
+        "pattern": "play:OP10-067 > attach_don:OP15-058 > activate:OP15-058 > attack:OP15-058",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST10-010 > attach_don:OP15-058 > activate:OP15-058 > attack:OP10-067 > attack:OP15-058",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP10-067 > play:OP15-118 > activate:OP15-058 > attack:ST10-010 > activate:OP15-076 > attack:OP15-058",
+        "count": 1
+      }
+    ],
     "OP16-001|Portgas D. Ace": [
       {
         "pattern": "play:OP13-016",
@@ -3981,7 +4029,7 @@
       },
       {
         "pattern": "play:OP17-045",
-        "count": 7
+        "count": 6
       },
       {
         "pattern": "play:OP17-054 > attach_don:OP17-039 > attack:OP17-039 > activate:OP17-039",
@@ -3989,10 +4037,6 @@
       },
       {
         "pattern": "play:OP17-049 > attack:OP17-039 > activate:OP17-039",
-        "count": 3
-      },
-      {
-        "pattern": "play:OP17-046 > attack:OP17-039 > activate:OP17-039",
         "count": 3
       },
       {
@@ -4006,6 +4050,10 @@
       {
         "pattern": "play:OP17-045 > attach_don:OP17-039 > attack:OP17-039 > activate:OP17-039",
         "count": 3
+      },
+      {
+        "pattern": "play:OP17-044 > attack:OP17-039 > activate:OP17-039",
+        "count": 2
       }
     ],
     "OP17-058|Kaido": [
@@ -5173,54 +5221,42 @@
     "OP11-021|Jinbe": [
       {
         "pattern": "attach_don:OP11-021",
-        "count": 27
+        "count": 20
       },
       {
         "pattern": "attack:OP11-021",
-        "count": 24
+        "count": 19
       },
       {
         "pattern": "activate:OP11-021",
-        "count": 22
+        "count": 17
       },
       {
         "pattern": "attack:OP11-031",
-        "count": 12
-      },
-      {
-        "pattern": "attack:OP06-035",
-        "count": 8
-      },
-      {
-        "pattern": "attach_don:OP06-035",
-        "count": 7
+        "count": 10
       },
       {
         "pattern": "attach_don:OP11-028",
         "count": 6
       },
       {
-        "pattern": "play:OP11-031",
+        "pattern": "attack:OP06-035",
+        "count": 6
+      },
+      {
+        "pattern": "attach_don:OP06-035",
         "count": 5
       },
       {
-        "pattern": "play:OP11-029",
+        "pattern": "play:OP11-031",
         "count": 4
+      },
+      {
+        "pattern": "play:OP11-029",
+        "count": 3
       },
       {
         "pattern": "attach_don:OP11-031",
-        "count": 4
-      },
-      {
-        "pattern": "play:OP06-035",
-        "count": 4
-      },
-      {
-        "pattern": "attack:OP06-025",
-        "count": 4
-      },
-      {
-        "pattern": "play:OP06-032",
         "count": 3
       },
       {
@@ -5228,8 +5264,16 @@
         "count": 3
       },
       {
-        "pattern": "play:OP06-025",
+        "pattern": "play:OP06-035",
         "count": 3
+      },
+      {
+        "pattern": "attack:OP06-025",
+        "count": 3
+      },
+      {
+        "pattern": "play:OP06-032",
+        "count": 2
       },
       {
         "pattern": "play:OP11-030",
@@ -5237,6 +5281,10 @@
       },
       {
         "pattern": "attack:OP11-028",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP06-025",
         "count": 2
       },
       {
@@ -5463,11 +5511,11 @@
     "OP11-062|Charlotte Katakuri": [
       {
         "pattern": "attack:OP11-062",
-        "count": 57
+        "count": 53
       },
       {
         "pattern": "play:OP11-070",
-        "count": 21
+        "count": 20
       },
       {
         "pattern": "attach_don:OP11-062",
@@ -5479,26 +5527,22 @@
       },
       {
         "pattern": "play:ST34-003",
-        "count": 15
-      },
-      {
-        "pattern": "play:ST34-002",
-        "count": 11
+        "count": 14
       },
       {
         "pattern": "activate:OP07-077",
-        "count": 11
-      },
-      {
-        "pattern": "attack:ST34-003",
         "count": 10
       },
       {
-        "pattern": "attach_don:ST34-005",
+        "pattern": "attack:ST34-003",
+        "count": 9
+      },
+      {
+        "pattern": "play:ST34-002",
         "count": 8
       },
       {
-        "pattern": "attach_don:ST34-003",
+        "pattern": "attach_don:ST34-005",
         "count": 8
       },
       {
@@ -5506,12 +5550,16 @@
         "count": 8
       },
       {
-        "pattern": "play:OP15-069",
+        "pattern": "play:ST34-005",
         "count": 7
       },
       {
-        "pattern": "play:ST34-005",
+        "pattern": "attach_don:ST34-003",
         "count": 7
+      },
+      {
+        "pattern": "play:OP15-069",
+        "count": 6
       },
       {
         "pattern": "attack:ST34-005",
@@ -5523,10 +5571,6 @@
       },
       {
         "pattern": "attack:PRB02-010",
-        "count": 5
-      },
-      {
-        "pattern": "play:ST34-004",
         "count": 5
       },
       {
@@ -5542,11 +5586,11 @@
         "count": 4
       },
       {
-        "pattern": "attack:ST34-002",
+        "pattern": "activate:OP11-067",
         "count": 4
       },
       {
-        "pattern": "activate:OP11-067",
+        "pattern": "play:ST34-004",
         "count": 4
       },
       {
@@ -5558,6 +5602,10 @@
         "count": 4
       },
       {
+        "pattern": "attack:ST34-002",
+        "count": 3
+      },
+      {
         "pattern": "attack:OP11-067",
         "count": 3
       },
@@ -5566,12 +5614,12 @@
         "count": 3
       },
       {
-        "pattern": "attack:ST34-004",
+        "pattern": "activate:OP11-070",
         "count": 3
       },
       {
-        "pattern": "activate:OP11-070",
-        "count": 3
+        "pattern": "attack:ST34-004",
+        "count": 2
       },
       {
         "pattern": "attack:OP11-073",
@@ -7104,6 +7152,44 @@
         "count": 1
       }
     ],
+    "OP15-058|Enel": [
+      {
+        "pattern": "activate:OP15-058",
+        "count": 3
+      },
+      {
+        "pattern": "attack:OP15-058",
+        "count": 3
+      },
+      {
+        "pattern": "attach_don:OP15-058",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP10-067",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP10-067",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST10-010",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-118",
+        "count": 1
+      },
+      {
+        "pattern": "attack:ST10-010",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-076",
+        "count": 1
+      }
+    ],
     "OP16-001|Portgas D. Ace": [
       {
         "pattern": "attack:OP16-001",
@@ -7583,39 +7669,39 @@
     "OP17-039|Rocks D. Xebec": [
       {
         "pattern": "attack:OP17-039",
-        "count": 171
+        "count": 166
       },
       {
         "pattern": "activate:OP17-039",
-        "count": 165
+        "count": 160
       },
       {
         "pattern": "attach_don:OP17-039",
-        "count": 105
+        "count": 103
       },
       {
         "pattern": "attack:OP17-049",
-        "count": 50
+        "count": 46
       },
       {
         "pattern": "attack:OP17-054",
-        "count": 40
+        "count": 39
       },
       {
         "pattern": "attack:OP17-048",
         "count": 35
       },
       {
-        "pattern": "play:OP17-049",
-        "count": 31
-      },
-      {
         "pattern": "attach_don:OP17-045",
         "count": 31
       },
       {
+        "pattern": "play:OP17-049",
+        "count": 29
+      },
+      {
         "pattern": "play:OP17-054",
-        "count": 30
+        "count": 29
       },
       {
         "pattern": "attach_don:OP17-054",
@@ -7631,7 +7717,7 @@
       },
       {
         "pattern": "play:OP17-118",
-        "count": 27
+        "count": 26
       },
       {
         "pattern": "attack:OP17-040",
@@ -7639,7 +7725,7 @@
       },
       {
         "pattern": "attack:OP17-118",
-        "count": 25
+        "count": 24
       },
       {
         "pattern": "play:OP17-050",
@@ -7647,27 +7733,27 @@
       },
       {
         "pattern": "attack:OP17-045",
-        "count": 23
+        "count": 22
       },
       {
         "pattern": "play:OP17-046",
-        "count": 21
+        "count": 20
       },
       {
         "pattern": "attack:OP17-050",
         "count": 18
       },
       {
-        "pattern": "play:OP17-045",
-        "count": 15
-      },
-      {
         "pattern": "play:OP17-048",
         "count": 14
       },
       {
-        "pattern": "attach_don:OP17-049",
+        "pattern": "play:OP17-045",
         "count": 14
+      },
+      {
+        "pattern": "attach_don:OP17-049",
+        "count": 13
       },
       {
         "pattern": "play:OP17-040",
@@ -7706,15 +7792,11 @@
         "count": 7
       },
       {
-        "pattern": "activate:OP17-049",
-        "count": 6
-      },
-      {
         "pattern": "play:OP17-044",
         "count": 6
       },
       {
-        "pattern": "activate:OP17-044",
+        "pattern": "activate:OP17-049",
         "count": 5
       },
       {
@@ -7724,6 +7806,10 @@
       {
         "pattern": "play:OP17-043",
         "count": 5
+      },
+      {
+        "pattern": "activate:OP17-044",
+        "count": 4
       },
       {
         "pattern": "attack:OP17-052",
@@ -9283,15 +9369,15 @@
     "OP11-021|Jinbe": [
       {
         "pattern": "attach_don:OP11-021 > attack:OP11-021",
-        "count": 19
+        "count": 14
       },
       {
         "pattern": "attack:OP11-021 > activate:OP11-021",
-        "count": 11
+        "count": 9
       },
       {
         "pattern": "attach_don:OP11-021 > attach_don:OP11-021",
-        "count": 8
+        "count": 6
       },
       {
         "pattern": "attach_don:OP11-028 > attach_don:OP11-028",
@@ -9299,22 +9385,6 @@
       },
       {
         "pattern": "attach_don:OP11-031 > attack:OP11-031",
-        "count": 4
-      },
-      {
-        "pattern": "attach_don:OP06-035 > attack:OP06-035",
-        "count": 4
-      },
-      {
-        "pattern": "play:OP06-032 > activate:OP11-021",
-        "count": 3
-      },
-      {
-        "pattern": "play:OP11-031 > attach_don:OP11-021",
-        "count": 3
-      },
-      {
-        "pattern": "attack:OP11-031 > activate:OP11-021",
         "count": 3
       },
       {
@@ -9322,12 +9392,28 @@
         "count": 3
       },
       {
-        "pattern": "attack:OP06-035 > attach_don:OP11-031",
+        "pattern": "attach_don:OP06-035 > attack:OP06-035",
         "count": 3
       },
       {
-        "pattern": "play:OP06-025 > activate:OP11-021",
-        "count": 3
+        "pattern": "play:OP06-032 > activate:OP11-021",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP11-031 > attach_don:OP11-021",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP11-031 > activate:OP11-021",
+        "count": 2
+      },
+      {
+        "pattern": "attach_don:OP11-028 > attack:OP11-028",
+        "count": 2
+      },
+      {
+        "pattern": "activate:OP11-030 > attach_don:OP11-021",
+        "count": 2
       }
     ],
     "OP11-040|Monkey D. Luffy": [
@@ -9444,23 +9530,11 @@
         "count": 6
       },
       {
-        "pattern": "attach_don:ST34-003 > attack:ST34-003",
-        "count": 6
-      },
-      {
         "pattern": "attack:ST34-003 > attack:OP11-062",
         "count": 5
       },
       {
-        "pattern": "play:OP11-070 > activate:OP07-077",
-        "count": 5
-      },
-      {
-        "pattern": "play:OP15-069 > attack:OP11-062",
-        "count": 5
-      },
-      {
-        "pattern": "play:ST34-002 > attack:OP11-062",
+        "pattern": "attach_don:ST34-003 > attack:ST34-003",
         "count": 5
       },
       {
@@ -9469,6 +9543,18 @@
       },
       {
         "pattern": "play:OP11-070 > attack:OP11-062",
+        "count": 4
+      },
+      {
+        "pattern": "play:OP11-070 > activate:OP07-077",
+        "count": 4
+      },
+      {
+        "pattern": "play:OP15-069 > attack:OP11-062",
+        "count": 4
+      },
+      {
+        "pattern": "play:ST34-002 > attack:OP11-062",
         "count": 4
       },
       {
@@ -10210,6 +10296,52 @@
         "count": 1
       }
     ],
+    "OP15-058|Enel": [
+      {
+        "pattern": "attach_don:OP15-058 > activate:OP15-058",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP10-067 > attach_don:OP15-058",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-058 > attack:OP15-058",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST10-010 > attach_don:OP15-058",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-058 > attack:OP10-067",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP10-067 > attack:OP15-058",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP10-067 > play:OP15-118",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-118 > activate:OP15-058",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-058 > attack:ST10-010",
+        "count": 1
+      },
+      {
+        "pattern": "attack:ST10-010 > activate:OP15-076",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-076 > attack:OP15-058",
+        "count": 1
+      }
+    ],
     "OP16-001|Portgas D. Ace": [
       {
         "pattern": "attach_don:OP16-001 > attack:OP16-001",
@@ -10413,11 +10545,11 @@
     "OP17-039|Rocks D. Xebec": [
       {
         "pattern": "attack:OP17-039 > activate:OP17-039",
-        "count": 153
+        "count": 148
       },
       {
         "pattern": "attach_don:OP17-039 > attack:OP17-039",
-        "count": 70
+        "count": 68
       },
       {
         "pattern": "attach_don:OP17-039 > attach_don:OP17-039",
@@ -10448,16 +10580,16 @@
         "count": 12
       },
       {
-        "pattern": "activate:OP17-039 > play:OP17-118",
+        "pattern": "play:OP17-048 > attack:OP17-048",
         "count": 11
+      },
+      {
+        "pattern": "activate:OP17-039 > play:OP17-118",
+        "count": 10
       },
       {
         "pattern": "attack:OP17-049 > attach_don:OP17-039",
-        "count": 11
-      },
-      {
-        "pattern": "play:OP17-048 > attack:OP17-048",
-        "count": 11
+        "count": 10
       }
     ],
     "OP17-058|Kaido": [
@@ -11225,35 +11357,15 @@
     "OP11-021|Jinbe": [
       {
         "pattern": "attach_don:OP11-021 > attack:OP11-021 > activate:OP11-021",
-        "count": 9
+        "count": 7
       },
       {
         "pattern": "attach_don:OP11-021 > attach_don:OP11-021 > attack:OP11-021",
-        "count": 6
+        "count": 4
       },
       {
         "pattern": "play:OP11-031 > attach_don:OP11-021 > attack:OP11-021",
-        "count": 3
-      },
-      {
-        "pattern": "attach_don:OP06-035 > attack:OP06-035 > attach_don:OP11-031",
-        "count": 3
-      },
-      {
-        "pattern": "attack:OP06-035 > attach_don:OP11-031 > attack:OP11-031",
-        "count": 3
-      },
-      {
-        "pattern": "attach_don:OP11-021 > attack:OP11-021 > attach_don:OP06-035",
-        "count": 3
-      },
-      {
-        "pattern": "attack:OP11-021 > attach_don:OP06-035 > attach_don:OP06-035",
-        "count": 3
-      },
-      {
-        "pattern": "attach_don:OP06-035 > attach_don:OP06-035 > attack:OP06-035",
-        "count": 3
+        "count": 2
       },
       {
         "pattern": "attach_don:OP11-028 > attach_don:OP11-028 > attach_don:OP11-028",
@@ -11269,6 +11381,26 @@
       },
       {
         "pattern": "attach_don:OP11-021 > attack:OP11-021 > attack:OP06-035",
+        "count": 2
+      },
+      {
+        "pattern": "attach_don:OP06-035 > attack:OP06-035 > attach_don:OP11-031",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP06-035 > attach_don:OP11-031 > attack:OP11-031",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP11-031 > attach_don:OP11-021 > attack:OP11-021",
+        "count": 2
+      },
+      {
+        "pattern": "attach_don:OP11-021 > attack:OP11-021 > attach_don:OP06-035",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP11-021 > attach_don:OP06-035 > attach_don:OP06-035",
         "count": 2
       }
     ],
@@ -11398,10 +11530,6 @@
         "count": 3
       },
       {
-        "pattern": "play:ST34-003 > play:OP15-069 > attack:OP11-062",
-        "count": 3
-      },
-      {
         "pattern": "attach_don:OP11-062 > attach_don:OP11-062 > attack:OP11-062",
         "count": 2
       },
@@ -11419,6 +11547,10 @@
       },
       {
         "pattern": "activate:OP07-077 > play:ST34-003 > attack:OP11-062",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP11-062 > activate:OP11-062 > activate:OP15-078",
         "count": 2
       }
     ],
@@ -12144,6 +12276,44 @@
         "count": 1
       }
     ],
+    "OP15-058|Enel": [
+      {
+        "pattern": "play:OP10-067 > attach_don:OP15-058 > activate:OP15-058",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP15-058 > activate:OP15-058 > attack:OP15-058",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST10-010 > attach_don:OP15-058 > activate:OP15-058",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP15-058 > activate:OP15-058 > attack:OP10-067",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-058 > attack:OP10-067 > attack:OP15-058",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP10-067 > play:OP15-118 > activate:OP15-058",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-118 > activate:OP15-058 > attack:ST10-010",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-058 > attack:ST10-010 > activate:OP15-076",
+        "count": 1
+      },
+      {
+        "pattern": "attack:ST10-010 > activate:OP15-076 > attack:OP15-058",
+        "count": 1
+      }
+    ],
     "OP16-001|Portgas D. Ace": [
       {
         "pattern": "attach_don:OP10-005 > attach_don:OP10-005 > attack:OP10-005",
@@ -12347,7 +12517,7 @@
     "OP17-039|Rocks D. Xebec": [
       {
         "pattern": "attach_don:OP17-039 > attack:OP17-039 > activate:OP17-039",
-        "count": 59
+        "count": 57
       },
       {
         "pattern": "attach_don:OP17-039 > attach_don:OP17-039 > attack:OP17-039",
@@ -12358,15 +12528,11 @@
         "count": 12
       },
       {
-        "pattern": "attack:OP17-039 > activate:OP17-039 > play:OP17-118",
-        "count": 11
-      },
-      {
         "pattern": "attach_don:OP17-039 > attach_don:OP17-039 > attach_don:OP17-039",
         "count": 10
       },
       {
-        "pattern": "attack:OP17-049 > attach_don:OP17-039 > attack:OP17-039",
+        "pattern": "attack:OP17-039 > activate:OP17-039 > play:OP17-118",
         "count": 10
       },
       {
@@ -12374,7 +12540,7 @@
         "count": 10
       },
       {
-        "pattern": "attack:OP17-049 > attack:OP17-039 > activate:OP17-039",
+        "pattern": "attack:OP17-049 > attach_don:OP17-039 > attack:OP17-039",
         "count": 9
       },
       {
@@ -12382,8 +12548,8 @@
         "count": 8
       },
       {
-        "pattern": "play:OP17-049 > attach_don:OP17-039 > attack:OP17-039",
-        "count": 6
+        "pattern": "attack:OP17-049 > attack:OP17-039 > activate:OP17-039",
+        "count": 7
       },
       {
         "pattern": "attack:OP17-039 > activate:OP17-039 > activate:OP17-040",
@@ -12391,6 +12557,10 @@
       },
       {
         "pattern": "attach_don:OP17-045 > attach_don:OP17-045 > attack:OP17-045",
+        "count": 6
+      },
+      {
+        "pattern": "play:OP17-054 > attack:OP17-039 > activate:OP17-039",
         "count": 6
       }
     ],
@@ -12946,23 +13116,15 @@
     ],
     "OP11-021|Jinbe": [
       {
-        "pattern": "attach_don:OP11-021 > attack:OP11-021",
-        "count": 4
-      },
-      {
         "pattern": "play:OP11-031 > attach_don:OP11-021 > attack:OP11-021",
-        "count": 3
+        "count": 2
       },
       {
         "pattern": "attack:OP11-031",
         "count": 2
       },
       {
-        "pattern": "play:OP11-029 > attack:OP06-025",
-        "count": 2
-      },
-      {
-        "pattern": "play:OP06-035 > attack:OP06-035",
+        "pattern": "attach_don:OP11-021 > attack:OP11-021",
         "count": 2
       },
       {
@@ -12991,6 +13153,14 @@
       },
       {
         "pattern": "play:OP06-035 > activate:OP11-030 > attach_don:OP11-021 > attach_don:OP11-021 > attack:OP11-021",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP06-035 > attack:OP06-035",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP06-025 > attack:OP06-025",
         "count": 1
       }
     ],
@@ -13076,11 +13246,11 @@
     ],
     "OP11-062|Charlotte Katakuri": [
       {
-        "pattern": "play:ST34-002 > attack:OP11-062",
-        "count": 5
+        "pattern": "attach_don:OP11-062 > attack:OP11-062",
+        "count": 4
       },
       {
-        "pattern": "attach_don:OP11-062 > attack:OP11-062",
+        "pattern": "play:ST34-002 > attack:OP11-062",
         "count": 4
       },
       {
@@ -13108,19 +13278,19 @@
         "count": 2
       },
       {
-        "pattern": "play:ST34-002 > play:ST34-003 > play:OP15-069 > attack:OP11-062",
-        "count": 2
-      },
-      {
-        "pattern": "play:ST34-004 > attack:OP11-062",
-        "count": 2
-      },
-      {
-        "pattern": "attack:ST34-004",
-        "count": 2
-      },
-      {
         "pattern": "play:ST34-003 > attach_don:OP11-062 > attach_don:OP11-062 > attack:OP11-062",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST34-002 > activate:OP07-077 > attack:OP11-062",
+        "count": 1
+      },
+      {
+        "pattern": "play:PRB02-010 > attack:ST34-003",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP11-070 > play:ST34-001 > attack:ST34-002",
         "count": 1
       }
     ],
@@ -13662,6 +13832,20 @@
         "count": 1
       }
     ],
+    "OP15-058|Enel": [
+      {
+        "pattern": "play:OP10-067 > attach_don:OP15-058 > activate:OP15-058 > attack:OP15-058",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST10-010 > attach_don:OP15-058 > activate:OP15-058 > attack:OP10-067",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP10-067",
+        "count": 1
+      }
+    ],
     "OP16-001|Portgas D. Ace": [
       {
         "pattern": "attack:OP16-001",
@@ -13857,7 +14041,7 @@
       },
       {
         "pattern": "attack:OP17-054",
-        "count": 8
+        "count": 7
       },
       {
         "pattern": "attach_don:OP17-054 > attach_don:OP17-054 > attack:OP17-054",
@@ -13872,24 +14056,24 @@
         "count": 4
       },
       {
-        "pattern": "play:OP17-046 > attack:OP17-039",
-        "count": 4
-      },
-      {
-        "pattern": "attack:OP17-045",
-        "count": 4
-      },
-      {
-        "pattern": "attack:OP17-118",
-        "count": 4
-      },
-      {
         "pattern": "attack:OP17-050",
         "count": 4
       },
       {
         "pattern": "play:OP17-049 > attach_don:OP17-039 > attack:OP17-039",
         "count": 4
+      },
+      {
+        "pattern": "play:OP17-044 > attack:OP17-039",
+        "count": 3
+      },
+      {
+        "pattern": "play:OP17-046 > attack:OP17-039",
+        "count": 3
+      },
+      {
+        "pattern": "attack:OP17-045",
+        "count": 3
       }
     ],
     "OP17-058|Kaido": [
@@ -14159,11 +14343,11 @@
     "OP07-019|Jewelry Bonney": [
       {
         "pattern": "counter:OP05-030",
-        "count": 9
+        "count": 6
       },
       {
         "pattern": "counter:ST02-007",
-        "count": 4
+        "count": 3
       },
       {
         "pattern": "counter:OP07-021",
@@ -14178,11 +14362,11 @@
         "count": 2
       },
       {
-        "pattern": "counter:OP04-032",
-        "count": 2
+        "pattern": "counter:OP05-034",
+        "count": 1
       },
       {
-        "pattern": "counter:OP05-034",
+        "pattern": "counter:OP04-032",
         "count": 1
       }
     ],
@@ -14292,27 +14476,27 @@
         "count": 2
       },
       {
-        "pattern": "blocker:OP11-029",
-        "count": 2
-      },
-      {
-        "pattern": "counter:EB04-018",
-        "count": 2
-      },
-      {
-        "pattern": "counter:OP11-029",
-        "count": 2
-      },
-      {
-        "pattern": "counter:OP06-033",
-        "count": 2
-      },
-      {
         "pattern": "counter:P-063",
         "count": 1
       },
       {
         "pattern": "counter:OP15-032",
+        "count": 1
+      },
+      {
+        "pattern": "blocker:OP11-029",
+        "count": 1
+      },
+      {
+        "pattern": "counter:EB04-018",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP11-029",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP06-033",
         "count": 1
       }
     ],
@@ -14383,7 +14567,7 @@
       },
       {
         "pattern": "counter:ST34-005",
-        "count": 19
+        "count": 16
       },
       {
         "pattern": "counter:ST18-001",
@@ -14593,18 +14777,18 @@
     "OP14-020|Dracule Mihawk": [
       {
         "pattern": "counter:OP07-022",
-        "count": 5
+        "count": 7
       },
       {
         "pattern": "counter:OP12-023",
+        "count": 6
+      },
+      {
+        "pattern": "counter:OP14-023",
         "count": 5
       },
       {
         "pattern": "counter:ST32-002",
-        "count": 4
-      },
-      {
-        "pattern": "counter:OP14-023",
         "count": 4
       },
       {
@@ -15329,6 +15513,10 @@
       },
       {
         "pattern": "OP07-022>ST32-002",
+        "count": 1
+      },
+      {
+        "pattern": "OP12-023>OP07-022",
         "count": 1
       },
       {
@@ -17459,7 +17647,7 @@
         ]
       },
       {
-        "log": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.10.06_p2.json",
+        "log": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.24.06_p2.json",
         "turn": 1,
         "context": {
           "my_life": 5,
@@ -17477,7 +17665,7 @@
         ]
       },
       {
-        "log": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.10.06_p2.json",
+        "log": "Jinbe-G_x_Charlotte.Katakuri-P_2026-07-26T22.24.06_p2.json",
         "turn": 3,
         "context": {
           "my_life": 5,
@@ -21773,6 +21961,165 @@
         ]
       }
     ],
+    "OP15-058|Enel|early": [
+      {
+        "log": "Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.21.43.json",
+        "turn": 2,
+        "context": {
+          "my_life": 5,
+          "opp_life": 5,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "pass"
+        ]
+      }
+    ],
+    "OP15-058|Enel|late": [
+      {
+        "log": "Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.21.43.json",
+        "turn": 10,
+        "context": {
+          "my_life": 5,
+          "opp_life": 5,
+          "my_hand": 9,
+          "opp_hand": 9,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "pass"
+        ]
+      },
+      {
+        "log": "Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.21.43.json",
+        "turn": 12,
+        "context": {
+          "my_life": 5,
+          "opp_life": 5,
+          "my_hand": 10,
+          "opp_hand": 10,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "pass"
+        ]
+      },
+      {
+        "log": "Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.21.43.json",
+        "turn": 14,
+        "context": {
+          "my_life": 5,
+          "opp_life": 5,
+          "my_hand": 11,
+          "opp_hand": 11,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "pass"
+        ]
+      },
+      {
+        "log": "Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.21.43.json",
+        "turn": 16,
+        "context": {
+          "my_life": 5,
+          "opp_life": 5,
+          "my_hand": 12,
+          "opp_hand": 12,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "pass"
+        ]
+      },
+      {
+        "log": "Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.21.43.json",
+        "turn": 18,
+        "context": {
+          "my_life": 5,
+          "opp_life": 5,
+          "my_hand": 13,
+          "opp_hand": 13,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "pass"
+        ]
+      }
+    ],
+    "OP15-058|Enel|mid": [
+      {
+        "log": "Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.21.43.json",
+        "turn": 4,
+        "context": {
+          "my_life": 5,
+          "opp_life": 5,
+          "my_hand": 6,
+          "opp_hand": 6,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "pass"
+        ]
+      },
+      {
+        "log": "Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.21.43.json",
+        "turn": 6,
+        "context": {
+          "my_life": 5,
+          "opp_life": 5,
+          "my_hand": 7,
+          "opp_hand": 7,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "pass"
+        ]
+      },
+      {
+        "log": "Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.21.43.json",
+        "turn": 8,
+        "context": {
+          "my_life": 5,
+          "opp_life": 5,
+          "my_hand": 8,
+          "opp_hand": 8,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "pass"
+        ]
+      }
+    ],
     "OP16-001|Portgas D. Ace|early": [
       {
         "log": "Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-08-02T12.30.45.json",
@@ -22931,7 +23278,7 @@
         ]
       },
       {
-        "log": "Jewelry.Bonney-G_x_Rocks.D.Xebec-B_2026-08-25T23.06.05.json",
+        "log": "Jewelry.Bonney-G_x_Rocks.D.Xebec-B_2026-08-25T23.27.44.json",
         "turn": 2,
         "context": {
           "my_life": 5,
@@ -22948,20 +23295,21 @@
         ]
       },
       {
-        "log": "Jewelry.Bonney-G_x_Rocks.D.Xebec-B_2026-08-25T23.27.44.json",
+        "log": "Marshall.D.Teach-BY_x_Rocks.D.Xebec-B_2026-08-09T10.23.52.json",
         "turn": 2,
         "context": {
           "my_life": 5,
-          "opp_life": 5,
+          "opp_life": 4,
           "my_hand": 5,
-          "opp_hand": 4,
+          "opp_hand": 5,
           "my_board": 0,
-          "opp_board": 1,
+          "opp_board": 0,
           "my_trash": 0,
           "opp_trash": 0
         },
         "sequence": [
-          "play:OP17-045"
+          "play:OP17-057",
+          "play:OP17-050"
         ]
       }
     ],
@@ -24594,19 +24942,19 @@
       "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "attack:OP17-039 > activate:OP17-039",
-      "count": 153
+      "count": 148
     },
     {
       "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "attach_don:OP17-039 > attack:OP17-039",
-      "count": 70
+      "count": 68
     },
     {
       "type": "sequence_3",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "attach_don:OP17-039 > attack:OP17-039 > activate:OP17-039",
-      "count": 59
+      "count": 57
     },
     {
       "type": "sequence_2",
@@ -24712,12 +25060,6 @@
     },
     {
       "type": "sequence_2",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attach_don:OP11-021 > attack:OP11-021",
-      "count": 19
-    },
-    {
-      "type": "sequence_2",
       "leader": "OP13-079|Imu",
       "pattern": "attach_don:OP13-083 > attack:OP13-083",
       "count": 18
@@ -24793,6 +25135,12 @@
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "attach_don:OP17-054 > attack:OP17-054",
       "count": 15
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-021|Jinbe",
+      "pattern": "attach_don:OP11-021 > attack:OP11-021",
+      "count": 14
     },
     {
       "type": "sequence_2",
@@ -24886,32 +25234,8 @@
     },
     {
       "type": "sequence_2",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attack:OP11-021 > activate:OP11-021",
-      "count": 11
-    },
-    {
-      "type": "sequence_2",
       "leader": "OP16-080|Marshall D. Teach",
       "pattern": "activate:OP16-116 > activate:OP09-093",
-      "count": 11
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "activate:OP17-039 > play:OP17-118",
-      "count": 11
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-039 > activate:OP17-039 > play:OP17-118",
-      "count": 11
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-049 > attach_don:OP17-039",
       "count": 11
     },
     {
@@ -24975,15 +25299,15 @@
       "count": 10
     },
     {
-      "type": "sequence_3",
+      "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attach_don:OP17-039 > attach_don:OP17-039 > attach_don:OP17-039",
+      "pattern": "activate:OP17-039 > play:OP17-118",
       "count": 10
     },
     {
-      "type": "sequence_2",
+      "type": "sequence_3",
       "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attach_don:OP17-049 > attack:OP17-049",
+      "pattern": "attach_don:OP17-039 > attach_don:OP17-039 > attach_don:OP17-039",
       "count": 10
     },
     {
@@ -24995,13 +25319,13 @@
     {
       "type": "sequence_3",
       "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-049 > attach_don:OP17-039 > attack:OP17-039",
+      "pattern": "attack:OP17-039 > activate:OP17-039 > play:OP17-118",
       "count": 10
     },
     {
       "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-054 > attack:OP17-049",
+      "pattern": "attack:OP17-049 > attach_don:OP17-039",
       "count": 10
     },
     {
@@ -25023,9 +25347,9 @@
       "count": 9
     },
     {
-      "type": "sequence_3",
+      "type": "sequence_2",
       "leader": "OP11-021|Jinbe",
-      "pattern": "attach_don:OP11-021 > attack:OP11-021 > activate:OP11-021",
+      "pattern": "attack:OP11-021 > activate:OP11-021",
       "count": 9
     },
     {
@@ -25091,6 +25415,12 @@
     {
       "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
+      "pattern": "attach_don:OP17-049 > attack:OP17-049",
+      "count": 9
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "attach_don:OP17-118 > attack:OP17-118",
       "count": 9
     },
@@ -25101,15 +25431,15 @@
       "count": 9
     },
     {
-      "type": "sequence_2",
+      "type": "sequence_3",
       "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-049 > attack:OP17-039",
+      "pattern": "attack:OP17-049 > attach_don:OP17-039 > attack:OP17-039",
       "count": 9
     },
     {
-      "type": "sequence_3",
+      "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-049 > attack:OP17-039 > activate:OP17-039",
+      "pattern": "attack:OP17-054 > attack:OP17-049",
       "count": 9
     },
     {
@@ -25134,12 +25464,6 @@
       "type": "before_attack",
       "leader": "OP10-099|Eustass \"Captain\" Kid",
       "pattern": "attack:OP10-099",
-      "count": 8
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attach_don:OP11-021 > attach_don:OP11-021",
       "count": 8
     },
     {
@@ -25227,22 +25551,16 @@
       "count": 8
     },
     {
-      "type": "before_attack",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-054",
-      "count": 8
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "play:OP17-049 > attach_don:OP17-039",
-      "count": 8
-    },
-    {
       "type": "sequence_2",
       "leader": "ST04-001|Kaido",
       "pattern": "attach_don:ST04-001 > attack:ST04-001",
       "count": 8
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP11-021|Jinbe",
+      "pattern": "attach_don:OP11-021 > attack:OP11-021 > activate:OP11-021",
+      "count": 7
     },
     {
       "type": "sequence_2",
@@ -25325,6 +25643,30 @@
     {
       "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
+      "pattern": "attack:OP17-049 > attack:OP17-039",
+      "count": 7
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP17-039|Rocks D. Xebec",
+      "pattern": "attack:OP17-049 > attack:OP17-039 > activate:OP17-039",
+      "count": 7
+    },
+    {
+      "type": "before_attack",
+      "leader": "OP17-039|Rocks D. Xebec",
+      "pattern": "attack:OP17-054",
+      "count": 7
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP17-039|Rocks D. Xebec",
+      "pattern": "play:OP17-049 > attach_don:OP17-039",
+      "count": 7
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "play:OP17-118 > activate:OP17-054",
       "count": 7
     },
@@ -25365,15 +25707,9 @@
       "count": 6
     },
     {
-      "type": "sequence_3",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attach_don:OP11-021 > attach_don:OP11-021 > attack:OP11-021",
-      "count": 6
-    },
-    {
       "type": "sequence_2",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "attach_don:ST34-003 > attack:ST34-003",
+      "leader": "OP11-021|Jinbe",
+      "pattern": "attach_don:OP11-021 > attach_don:OP11-021",
       "count": 6
     },
     {
@@ -25551,12 +25887,6 @@
       "count": 6
     },
     {
-      "type": "sequence_3",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "play:OP17-049 > attach_don:OP17-039 > attack:OP17-039",
-      "count": 6
-    },
-    {
       "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "play:OP17-054 > attach_don:OP17-039",
@@ -25655,31 +25985,13 @@
     {
       "type": "sequence_2",
       "leader": "OP11-062|Charlotte Katakuri",
+      "pattern": "attach_don:ST34-003 > attack:ST34-003",
+      "count": 5
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-062|Charlotte Katakuri",
       "pattern": "attack:ST34-003 > attack:OP11-062",
-      "count": 5
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "play:OP11-070 > activate:OP07-077",
-      "count": 5
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "play:OP15-069 > attack:OP11-062",
-      "count": 5
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "play:ST34-002 > attack:OP11-062",
-      "count": 5
-    },
-    {
-      "type": "before_attack",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "play:ST34-002 > attack:OP11-062",
       "count": 5
     },
     {
@@ -25929,15 +26241,9 @@
       "count": 5
     },
     {
-      "type": "sequence_2",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "play:OP17-046 > attack:OP17-039",
-      "count": 5
-    },
-    {
       "type": "sequence_3",
       "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "play:OP17-046 > attack:OP17-039 > activate:OP17-039",
+      "pattern": "play:OP17-049 > attach_don:OP17-039 > attack:OP17-039",
       "count": 5
     },
     {
@@ -25962,12 +26268,6 @@
       "type": "before_attack",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "play:OP17-054 > attach_don:OP17-039 > attack:OP17-039",
-      "count": 5
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "play:OP17-118 > activate:OP17-049",
       "count": 5
     },
     {
@@ -26085,27 +26385,15 @@
       "count": 4
     },
     {
-      "type": "sequence_2",
+      "type": "sequence_3",
       "leader": "OP11-021|Jinbe",
-      "pattern": "attach_don:OP06-035 > attack:OP06-035",
-      "count": 4
-    },
-    {
-      "type": "before_attack",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attach_don:OP11-021 > attack:OP11-021",
+      "pattern": "attach_don:OP11-021 > attach_don:OP11-021 > attack:OP11-021",
       "count": 4
     },
     {
       "type": "sequence_2",
       "leader": "OP11-021|Jinbe",
       "pattern": "attach_don:OP11-028 > attach_don:OP11-028",
-      "count": 4
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attach_don:OP11-031 > attack:OP11-031",
       "count": 4
     },
     {
@@ -26141,7 +26429,31 @@
     {
       "type": "sequence_2",
       "leader": "OP11-062|Charlotte Katakuri",
+      "pattern": "play:OP11-070 > activate:OP07-077",
+      "count": 4
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-062|Charlotte Katakuri",
       "pattern": "play:OP11-070 > attack:OP11-062",
+      "count": 4
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-062|Charlotte Katakuri",
+      "pattern": "play:OP15-069 > attack:OP11-062",
+      "count": 4
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-062|Charlotte Katakuri",
+      "pattern": "play:ST34-002 > attack:OP11-062",
+      "count": 4
+    },
+    {
+      "type": "before_attack",
+      "leader": "OP11-062|Charlotte Katakuri",
+      "pattern": "play:ST34-002 > attack:OP11-062",
       "count": 4
     },
     {
@@ -26547,18 +26859,6 @@
       "count": 4
     },
     {
-      "type": "sequence_3",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "activate:OP17-039 > play:OP17-118 > activate:OP17-049",
-      "count": 4
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "activate:OP17-049 > activate:OP17-044",
-      "count": 4
-    },
-    {
       "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "activate:OP17-054 > activate:OP17-040",
@@ -26579,12 +26879,6 @@
     {
       "type": "sequence_3",
       "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attach_don:OP17-049 > attack:OP17-049 > attach_don:OP17-039",
-      "count": 4
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "attack:OP17-039 > activate:OP17-039 > attack:OP17-049",
       "count": 4
     },
@@ -26592,12 +26886,6 @@
       "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "attack:OP17-044 > attack:OP17-039",
-      "count": 4
-    },
-    {
-      "type": "before_attack",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-045",
       "count": 4
     },
     {
@@ -26673,18 +26961,6 @@
       "count": 4
     },
     {
-      "type": "sequence_3",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-054 > attack:OP17-049 > attack:OP17-039",
-      "count": 4
-    },
-    {
-      "type": "before_attack",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-118",
-      "count": 4
-    },
-    {
       "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "attack:OP17-118 > play:OP17-118",
@@ -26697,9 +26973,15 @@
       "count": 4
     },
     {
-      "type": "before_attack",
+      "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "play:OP17-046 > attack:OP17-039",
+      "count": 4
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP17-039|Rocks D. Xebec",
+      "pattern": "play:OP17-046 > attack:OP17-039 > activate:OP17-039",
       "count": 4
     },
     {
@@ -26727,9 +27009,9 @@
       "count": 4
     },
     {
-      "type": "sequence_3",
+      "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "play:OP17-118 > activate:OP17-049 > activate:OP17-044",
+      "pattern": "play:OP17-118 > activate:OP17-049",
       "count": 4
     },
     {
@@ -26909,97 +27191,19 @@
     {
       "type": "sequence_2",
       "leader": "OP11-021|Jinbe",
-      "pattern": "attach_don:OP06-035 > attach_don:OP06-035",
-      "count": 3
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attach_don:OP06-035 > attach_don:OP06-035 > attack:OP06-035",
-      "count": 3
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attach_don:OP06-035 > attack:OP06-035 > attach_don:OP11-031",
-      "count": 3
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attach_don:OP11-021 > attack:OP11-021 > attach_don:OP06-035",
+      "pattern": "attach_don:OP06-035 > attack:OP06-035",
       "count": 3
     },
     {
       "type": "sequence_2",
       "leader": "OP11-021|Jinbe",
-      "pattern": "attack:OP06-025 > attach_don:OP11-021",
-      "count": 3
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attack:OP06-035 > attach_don:OP11-031",
-      "count": 3
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attack:OP06-035 > attach_don:OP11-031 > attack:OP11-031",
-      "count": 3
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attack:OP11-021 > attach_don:OP06-035",
-      "count": 3
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attack:OP11-021 > attach_don:OP06-035 > attach_don:OP06-035",
-      "count": 3
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attack:OP11-031 > activate:OP11-021",
+      "pattern": "attach_don:OP11-031 > attack:OP11-031",
       "count": 3
     },
     {
       "type": "sequence_2",
       "leader": "OP11-021|Jinbe",
       "pattern": "attack:OP11-031 > attach_don:OP11-021",
-      "count": 3
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "play:OP06-025 > activate:OP11-021",
-      "count": 3
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "play:OP06-032 > activate:OP11-021",
-      "count": 3
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "play:OP11-031 > attach_don:OP11-021",
-      "count": 3
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "play:OP11-031 > attach_don:OP11-021 > attack:OP11-021",
-      "count": 3
-    },
-    {
-      "type": "before_attack",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "play:OP11-031 > attach_don:OP11-021 > attack:OP11-021",
       "count": 3
     },
     {
@@ -27078,18 +27282,6 @@
       "type": "sequence_3",
       "leader": "OP11-062|Charlotte Katakuri",
       "pattern": "play:OP11-070 > attack:OP11-062 > activate:OP11-062",
-      "count": 3
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "play:ST34-003 > play:OP15-069",
-      "count": 3
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "play:ST34-003 > play:OP15-069 > attack:OP11-062",
       "count": 3
     },
     {
@@ -28019,7 +28211,19 @@
     {
       "type": "sequence_3",
       "leader": "OP17-039|Rocks D. Xebec",
+      "pattern": "activate:OP17-039 > play:OP17-118 > activate:OP17-049",
+      "count": 3
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "activate:OP17-039 > play:OP17-118 > activate:OP17-054",
+      "count": 3
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP17-039|Rocks D. Xebec",
+      "pattern": "activate:OP17-049 > activate:OP17-044",
       "count": 3
     },
     {
@@ -28038,6 +28242,12 @@
       "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "attach_don:OP17-049 > attach_don:OP17-049",
+      "count": 3
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP17-039|Rocks D. Xebec",
+      "pattern": "attach_don:OP17-049 > attack:OP17-049 > attach_don:OP17-039",
       "count": 3
     },
     {
@@ -28107,6 +28317,12 @@
       "count": 3
     },
     {
+      "type": "before_attack",
+      "leader": "OP17-039|Rocks D. Xebec",
+      "pattern": "attack:OP17-045",
+      "count": 3
+    },
+    {
       "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "attack:OP17-045 > attach_don:OP17-039",
@@ -28140,6 +28356,18 @@
       "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "attack:OP17-054 > attack:OP17-040",
+      "count": 3
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP17-039|Rocks D. Xebec",
+      "pattern": "attack:OP17-054 > attack:OP17-049 > attack:OP17-039",
+      "count": 3
+    },
+    {
+      "type": "before_attack",
+      "leader": "OP17-039|Rocks D. Xebec",
+      "pattern": "attack:OP17-118",
       "count": 3
     },
     {
@@ -28197,6 +28425,12 @@
       "count": 3
     },
     {
+      "type": "before_attack",
+      "leader": "OP17-039|Rocks D. Xebec",
+      "pattern": "play:OP17-046 > attack:OP17-039",
+      "count": 3
+    },
+    {
       "type": "sequence_3",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "play:OP17-048 > attack:OP17-048 > attack:OP17-049",
@@ -28215,12 +28449,6 @@
       "count": 3
     },
     {
-      "type": "sequence_2",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "play:OP17-049 > play:OP17-054",
-      "count": 3
-    },
-    {
       "type": "sequence_3",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "play:OP17-050 > attach_don:OP17-039 > attack:OP17-039",
@@ -28229,13 +28457,13 @@
     {
       "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "play:OP17-054 > attack:OP17-049",
+      "pattern": "play:OP17-057 > play:OP17-050",
       "count": 3
     },
     {
-      "type": "sequence_2",
+      "type": "sequence_3",
       "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "play:OP17-057 > play:OP17-050",
+      "pattern": "play:OP17-118 > activate:OP17-049 > activate:OP17-044",
       "count": 3
     },
     {
@@ -28923,27 +29151,45 @@
       "count": 2
     },
     {
+      "type": "sequence_2",
+      "leader": "OP11-021|Jinbe",
+      "pattern": "attach_don:OP06-035 > attach_don:OP06-035",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP11-021|Jinbe",
+      "pattern": "attach_don:OP06-035 > attach_don:OP06-035 > attack:OP06-035",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP11-021|Jinbe",
+      "pattern": "attach_don:OP06-035 > attack:OP06-035 > attach_don:OP11-031",
+      "count": 2
+    },
+    {
       "type": "sequence_3",
       "leader": "OP11-021|Jinbe",
       "pattern": "attach_don:OP11-021 > attach_don:OP11-021 > attach_don:OP11-021",
       "count": 2
     },
     {
+      "type": "before_attack",
+      "leader": "OP11-021|Jinbe",
+      "pattern": "attach_don:OP11-021 > attack:OP11-021",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP11-021|Jinbe",
+      "pattern": "attach_don:OP11-021 > attack:OP11-021 > attach_don:OP06-035",
+      "count": 2
+    },
+    {
       "type": "sequence_3",
       "leader": "OP11-021|Jinbe",
       "pattern": "attach_don:OP11-021 > attack:OP11-021 > attack:OP06-035",
-      "count": 2
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attach_don:OP11-021 > attack:OP11-021 > attack:OP11-031",
-      "count": 2
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attach_don:OP11-021 > attack:OP11-021 > play:OP06-032",
       "count": 2
     },
     {
@@ -28965,21 +29211,33 @@
       "count": 2
     },
     {
-      "type": "sequence_3",
+      "type": "sequence_2",
       "leader": "OP11-021|Jinbe",
-      "pattern": "attack:OP06-025 > attach_don:OP11-021 > attach_don:OP11-021",
+      "pattern": "attack:OP06-025 > attach_don:OP11-021",
       "count": 2
     },
     {
       "type": "sequence_2",
       "leader": "OP11-021|Jinbe",
-      "pattern": "attack:OP06-035 > attach_don:OP11-021",
+      "pattern": "attack:OP06-035 > attach_don:OP11-031",
       "count": 2
     },
     {
       "type": "sequence_3",
       "leader": "OP11-021|Jinbe",
-      "pattern": "attack:OP06-035 > attach_don:OP11-021 > attach_don:OP11-021",
+      "pattern": "attack:OP06-035 > attach_don:OP11-031 > attack:OP11-031",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-021|Jinbe",
+      "pattern": "attack:OP11-021 > attach_don:OP06-035",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP11-021|Jinbe",
+      "pattern": "attack:OP11-021 > attach_don:OP06-035 > attach_don:OP06-035",
       "count": 2
     },
     {
@@ -28989,33 +29247,15 @@
       "count": 2
     },
     {
-      "type": "sequence_2",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attack:OP11-021 > attack:OP11-031",
-      "count": 2
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attack:OP11-021 > attack:OP11-031 > activate:OP11-021",
-      "count": 2
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attack:OP11-021 > play:OP06-032",
-      "count": 2
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "attack:OP11-021 > play:OP06-032 > activate:OP11-021",
-      "count": 2
-    },
-    {
       "type": "before_attack",
       "leader": "OP11-021|Jinbe",
       "pattern": "attack:OP11-031",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-021|Jinbe",
+      "pattern": "attack:OP11-031 > activate:OP11-021",
       "count": 2
     },
     {
@@ -29027,37 +29267,31 @@
     {
       "type": "sequence_2",
       "leader": "OP11-021|Jinbe",
-      "pattern": "play:OP06-035 > attack:OP06-035",
-      "count": 2
-    },
-    {
-      "type": "before_attack",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "play:OP06-035 > attack:OP06-035",
-      "count": 2
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP11-021|Jinbe",
-      "pattern": "play:OP06-035 > attack:OP06-035 > attach_don:OP11-021",
+      "pattern": "play:OP06-025 > activate:OP11-021",
       "count": 2
     },
     {
       "type": "sequence_2",
       "leader": "OP11-021|Jinbe",
-      "pattern": "play:OP11-029 > attack:OP06-025",
+      "pattern": "play:OP06-032 > activate:OP11-021",
       "count": 2
     },
     {
-      "type": "before_attack",
+      "type": "sequence_2",
       "leader": "OP11-021|Jinbe",
-      "pattern": "play:OP11-029 > attack:OP06-025",
+      "pattern": "play:OP11-031 > attach_don:OP11-021",
       "count": 2
     },
     {
       "type": "sequence_3",
       "leader": "OP11-021|Jinbe",
-      "pattern": "play:OP11-029 > attack:OP06-025 > attach_don:OP11-021",
+      "pattern": "play:OP11-031 > attach_don:OP11-021 > attack:OP11-021",
+      "count": 2
+    },
+    {
+      "type": "before_attack",
+      "leader": "OP11-021|Jinbe",
+      "pattern": "play:OP11-031 > attach_don:OP11-021 > attack:OP11-021",
       "count": 2
     },
     {
@@ -29229,12 +29463,6 @@
       "count": 2
     },
     {
-      "type": "sequence_3",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "attach_don:ST34-003 > attack:ST34-003 > play:ST34-002",
-      "count": 2
-    },
-    {
       "type": "sequence_2",
       "leader": "OP11-062|Charlotte Katakuri",
       "pattern": "attach_don:ST34-005 > attack:OP11-062",
@@ -29250,24 +29478,6 @@
       "type": "sequence_3",
       "leader": "OP11-062|Charlotte Katakuri",
       "pattern": "attack:OP11-062 > activate:OP11-062 > attach_don:ST34-005",
-      "count": 2
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "attack:OP11-062 > attach_don:ST34-003",
-      "count": 2
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "attack:OP11-062 > attach_don:ST34-003 > attack:ST34-003",
-      "count": 2
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "attack:OP11-062 > attack:ST34-002",
       "count": 2
     },
     {
@@ -29292,30 +29502,6 @@
       "type": "sequence_2",
       "leader": "OP11-062|Charlotte Katakuri",
       "pattern": "attack:PRB02-010 > attach_don:OP11-062",
-      "count": 2
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "attack:ST34-003 > play:ST34-002",
-      "count": 2
-    },
-    {
-      "type": "before_attack",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "attack:ST34-004",
-      "count": 2
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "attack:ST34-004 > attack:OP11-062",
-      "count": 2
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "attack:ST34-004 > attack:OP11-062 > attach_don:ST34-003",
       "count": 2
     },
     {
@@ -29351,24 +29537,6 @@
     {
       "type": "sequence_2",
       "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "play:ST34-002 > play:ST34-003",
-      "count": 2
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "play:ST34-002 > play:ST34-003 > play:OP15-069",
-      "count": 2
-    },
-    {
-      "type": "before_attack",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "play:ST34-002 > play:ST34-003 > play:OP15-069 > attack:OP11-062",
-      "count": 2
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP11-062|Charlotte Katakuri",
       "pattern": "play:ST34-003 > attach_don:ST34-005",
       "count": 2
     },
@@ -29387,19 +29555,13 @@
     {
       "type": "sequence_2",
       "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "play:ST34-004 > attack:OP11-062",
-      "count": 2
-    },
-    {
-      "type": "before_attack",
-      "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "play:ST34-004 > attack:OP11-062",
+      "pattern": "play:ST34-003 > play:OP15-069",
       "count": 2
     },
     {
       "type": "sequence_3",
       "leader": "OP11-062|Charlotte Katakuri",
-      "pattern": "play:ST34-004 > attack:OP11-062 > attack:ST34-002",
+      "pattern": "play:ST34-003 > play:OP15-069 > attack:OP11-062",
       "count": 2
     },
     {
@@ -30982,6 +31144,12 @@
     },
     {
       "type": "sequence_2",
+      "leader": "OP15-058|Enel",
+      "pattern": "attach_don:OP15-058 > activate:OP15-058",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
       "leader": "OP16-001|Portgas D. Ace",
       "pattern": "activate:OP16-001 > attack:OP16-003",
       "count": 2
@@ -31911,18 +32079,6 @@
       "count": 2
     },
     {
-      "type": "sequence_2",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-045 > play:OP17-049",
-      "count": 2
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-045 > play:OP17-049 > attach_don:OP17-039",
-      "count": 2
-    },
-    {
       "type": "sequence_3",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "attack:OP17-048 > activate:OP17-048 > attach_don:OP17-039",
@@ -31950,18 +32106,6 @@
       "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "attack:OP17-048 > attack:OP17-054",
-      "count": 2
-    },
-    {
-      "type": "sequence_2",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-049 > attach_don:OP17-049",
-      "count": 2
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-049 > attach_don:OP17-049 > attack:OP17-049",
       "count": 2
     },
     {
@@ -32079,18 +32223,6 @@
       "count": 2
     },
     {
-      "type": "sequence_2",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-118 > attack:OP17-049",
-      "count": 2
-    },
-    {
-      "type": "sequence_3",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "attack:OP17-118 > attack:OP17-049 > attach_don:OP17-049",
-      "count": 2
-    },
-    {
       "type": "sequence_3",
       "leader": "OP17-039|Rocks D. Xebec",
       "pattern": "play:OP17-040 > attach_don:OP17-045 > attack:OP17-045",
@@ -32181,15 +32313,9 @@
       "count": 2
     },
     {
-      "type": "sequence_3",
+      "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "play:OP17-049 > play:OP17-054 > attack:OP17-049",
-      "count": 2
-    },
-    {
-      "type": "before_attack",
-      "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "play:OP17-049 > play:OP17-054 > attack:OP17-049",
+      "pattern": "play:OP17-049 > play:OP17-054",
       "count": 2
     },
     {
@@ -32229,9 +32355,9 @@
       "count": 2
     },
     {
-      "type": "sequence_3",
+      "type": "sequence_2",
       "leader": "OP17-039|Rocks D. Xebec",
-      "pattern": "play:OP17-054 > attack:OP17-049 > attack:OP17-039",
+      "pattern": "play:OP17-054 > attack:OP17-049",
       "count": 2
     },
     {
@@ -32590,7 +32716,6 @@
     "OP10-119": "",
     "OP11-021": "",
     "OP11-028": "",
-    "OP11-029": "",
     "OP11-030": "",
     "OP11-031": "",
     "OP11-040": "",
@@ -32656,6 +32781,7 @@
     "OP15-037": "",
     "OP15-046": "",
     "OP15-053": "",
+    "OP15-058": "",
     "OP15-069": "",
     "OP15-078": "",
     "OP15-092": "",
@@ -32729,7 +32855,6 @@
     "ST32-003": "",
     "ST34-002": "",
     "ST34-003": "",
-    "ST34-004": "",
     "ST34-005": "",
     "ST36-001": "",
     "ST36-002": "",

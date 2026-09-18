@@ -245,6 +245,102 @@ visivel**.
 
 ---
 
+## 2026-09-17 (856) - O BANCO estava RE-BANCANDO a mesma partida: 241 arquivos eram 195. Trava passa a olhar a PARTIDA, nao o nome do arquivo
+
+Achado ao conferir, a pedido do usuario, quem tinha enfrentado o Mihawk.
+
+### A CAUSA
+
+O jogo escreve tudo num `LogOutput.log` que **ACUMULA** enquanto a sessao
+esta aberta. A cada `/outcome` o auto-collect re-parseia o arquivo **INTEIRO**
+e banca tudo que encontra -- inclusive as partidas anteriores, que continuam
+la dentro:
+
+```
+partida 1 termina -> banca a 1
+partida 2 termina -> le tudo de novo -> banca a 1 (OUTRA VEZ) e a 2
+partida 3 termina -> banca a 1, a 2 (de novo) e a 3
+```
+
+A trava de duplicata existia e **nunca disparou**: ela comparava
+`e.get('id') == timestamp`, e o `timestamp` sai do nome do arquivo temporario
+da COLETA -- novo a cada vez. Enel x Teach entrou **6 vezes**.
+
+### A CORRECAO DO USUARIO QUE QUASE ME FEZ APAGAR DADO BOM
+
+Eu ia tratar "mesmo par de lideres" como sintoma. Ele cortou: *"mas eu jogo
+partidas repetidas com os mesmos lideres"*. **Certo, e o controle confirma:**
+
+```
+Marshall D. Teach x Xebec : 16 arquivos -> 16 conteudos DISTINTOS
+Imu x Teach               : 15 arquivos -> 15 conteudos DISTINTOS
+Nami x Teach              : 13 arquivos ->  4 conteudos   <- duplicata real
+```
+
+**Partida repetida com o mesmo lider nunca colide.** So colide re-bancagem.
+Sem essa correcao o criterio teria sido "par de lideres repetido" e teria
+apagado 16 partidas legitimas do matchup de maior volume do banco.
+
+### E O MEU "byte a byte identico" ESTAVA ERRADO
+
+Eu afirmei que os `.log` crus eram identicos. Eu tinha comparado os
+**primeiros 2.000 bytes** de DOIS arquivos que por acaso batiam. No grupo
+inteiro os tamanhos DIFEREM (43.644 B -> 44.118 B na mesma partida): a fatia
+capturada do log acumulado **cresce** a cada coleta.
+
+Consequencia de metodo: **o `.log` cru nao serve de identidade** -- compara-lo
+daria "diferente" pra mesma partida. O que identifica e o conteudo dos TURNOS.
+
+### A TRAVA NOVA
+
+`impressao_da_partida(data)` = md5 do conteudo dos turnos, gravado no index
+como `impressao`. Retroalimentado nas 195 entradas existentes.
+
+Testada nos DOIS sentidos, e o segundo e o que podia falhar:
+
+| teste | esperado | resultado |
+|---|---|---|
+| re-bancar log ja no banco | RECUSAR | recusou, banco nao cresceu |
+| bancar partida com conteudo diferente | ACEITAR | aceitou, 195 -> 196 |
+
+> **A primeira tentativa de controle NAO valeu**: eu acrescentei um espaco a
+> uma linha do log achando que criava "outra partida". O parser normaliza, a
+> impressao ficou igual e a trava recusou -- **corretamente**. Um controle que
+> nao muda o que devia mudar nao testa nada; so o corte de 30 linhas (partida
+> mais curta) produziu conteudo de fato diferente.
+
+### A LIMPEZA -- e os 4 grupos que NAO foram tocados
+
+**271 arquivos removidos** (parsed + raw + decks + decks_full + decisions),
+index **241 -> 195 entradas**, 184 partidas distintas.
+
+**18 grupos** tinham copias que concordavam em tudo -- reduzidos a uma, ficando
+a mais completa (com `decision_log_file`, `winner`, `tipo`, maior raw).
+
+**4 grupos NAO foram tocados** porque as copias **se contradizem**:
+
+```
+Kaido x Luffy  30/08 19.28  winner=p2  bot_side=p1
+Kaido x Luffy  30/08 20.08  winner=p1  bot_side=p2
+```
+
+Conferido a mao: e a MESMA partida (turno 1 identico ate o snapshot da mao, 40
+primeiras linhas do log cru batem). Entao **um dos dois rotulos esta errado** --
+e escolher qual copia apagar seria escolher qual rotulo virar verdade. Fica
+como achado ABERTO: `winner`/`bot_side` divergentes em 4 partidas
+(Katakuri x Ace, Katakuri x Teach, Kaido x Luffy, Luffy x Xebec).
+
+### Impacto na calibragem
+
+`human_patterns.json` regenerado: acoes **6.286 -> 6.227**, eventos de defesa
+954 -> 946. Pequeno, e agora honesto. **Ressalva**: o arquivo anterior era de
+14/09 (178 logs), entao o delta mistura a deduplicacao com os logs novos desde
+entao -- nao e um antes/depois isolado.
+
+`smoke_fast` OK.
+
+---
+
 ## 2026-09-17 (855) - A TELEMETRIA DE DEFESA passa a existir AO VIVO: o motor ja raciocinava e jogava fora
 
 Pedido do usuario: *"liga a telemetria de defesa, alem do que vc falou

@@ -894,6 +894,33 @@ def _bot_side_to_p1_p2(bepinex_log_path, p1_name: str, p2_name: str) -> str | No
     return None
 
 
+def impressao_da_partida(data: dict) -> str:
+    """Identidade de uma PARTIDA, pelo que aconteceu nela.
+
+    Existe porque a trava por `timestamp` nao segurava o caso real (bloco
+    856): o jogo escreve tudo num `LogOutput.log` que ACUMULA enquanto a
+    sessao esta aberta, entao cada coleta re-parseia o arquivo INTEIRO e
+    re-banca as partidas anteriores -- cada vez com um nome novo, porque o
+    timestamp e o do momento da COLETA, nao o da partida. Medido: 241
+    arquivos no banco eram 195 partidas; o Enel x Teach estava la 6 vezes.
+
+    O nome do arquivo nao serve de identidade e o `.log` cru tambem nao: a
+    fatia capturada CRESCE a cada coleta (43.644 B -> 44.118 B na mesma
+    partida), entao comparar bytes daria "diferente" pra mesma partida.
+
+    O que identifica e o conteudo dos TURNOS. CONTROLE que valida isso, e
+    que podia ter falhado: pares de lideres que o usuario jogou varias
+    vezes de verdade dao conteudos DISTINTOS -- `Teach x Xebec`, 16
+    arquivos, 16 impressoes diferentes. Partida repetida com o mesmo lider
+    nunca colide; so colide re-bancagem da mesma partida.
+    """
+    import hashlib
+    return hashlib.md5(
+        json.dumps(data.get('turns'), sort_keys=True,
+                   ensure_ascii=False).encode('utf-8')
+    ).hexdigest()
+
+
 def add_to_db(log_path: str, data: dict, decks: dict, bepinex_log_path=None,
               bot_side=None, sem_bot=False, cpu_vs_cpu=False):
     """
@@ -924,6 +951,17 @@ def add_to_db(log_path: str, data: dict, decks: dict, bepinex_log_path=None,
     idx = _load_index()
     if any(e.get('id') == timestamp for e in idx):
         print(f'  [aviso] {timestamp} ja esta no banco — ignorado.')
+        return
+
+    # E a MESMA PARTIDA ja bancada com outro nome? (bloco 856) O timestamp
+    # acima e o da COLETA; ele muda a cada re-parse do log acumulado e por
+    # isso nunca pegou a re-bancagem. A impressao digital pega.
+    digital = impressao_da_partida(data)
+    ja = next((e for e in idx if e.get('impressao') == digital), None)
+    if ja is not None:
+        print(f'  [aviso] esta partida ja esta no banco como '
+              f'{ja.get("parsed_file") or ja.get("id")} — ignorado '
+              f'(mesmo conteudo de turnos).')
         return
 
     # Monta slugs dos lideres para nome amigavel
@@ -981,6 +1019,7 @@ def add_to_db(log_path: str, data: dict, decks: dict, bepinex_log_path=None,
     # Entrada no index
     entry = {
         'id': timestamp,
+        'impressao': digital,
         'friendly_name': match_slug,
         'date': timestamp[:10],
         'p1': {'name': p1d['name'],
