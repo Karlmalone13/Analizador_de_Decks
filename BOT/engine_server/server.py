@@ -950,6 +950,35 @@ def outcome(report: OutcomeReport):
     return {"ok": True}
 
 
+def _contexto_sem_acao(state, gs) -> dict:
+    """Por que nao havia acao: a mao, o custo de cada carta e as restricoes
+    em vigor. SO DESCREVE -- nao decide nada e nao reimplementa elegibilidade
+    (isso e do motor, `REGRA_SEM_DUPLICACAO`)."""
+    try:
+        from optcg_engine.sim_bridge import get_card_effects
+        mao = []
+        for c in (state.bot.hand or []):
+            ef = get_card_effects(c.code) or {}
+            mao.append({
+                "code": c.code,
+                "cost": c.cost,
+                # blocos PARSEADOS da carta: uma carta cujos unicos blocos sao
+                # `counter`/`trigger` nao e jogavel na main phase, e recusa-la
+                # e CERTO -- sem isto o alerta lia "tinha carta e nao jogou".
+                "blocos": sorted(ef.keys()),
+            })
+        return {
+            "don_ativo": state.bot.activeDon,
+            "don_restado": state.bot.restedDon,
+            "restricao_chars": bool(getattr(gs, "cant_play_chars_this_turn", False)),
+            "restricao_hand": bool(getattr(gs, "cant_play_from_hand_this_turn", False)),
+            "restricao_cost_gte": getattr(gs, "cant_play_cost_gte", 0),
+            "mao": mao,
+        }
+    except Exception as exc:
+        return {"erro": str(exc)}
+
+
 def _record_aux_decision(kind: str, state_before: dict, legal_actions: list,
                          chosen_action: dict, response: dict, **context) -> dict:
     """Envelope comum para decisoes fora da Main Phase; nao decide nada."""
@@ -1547,6 +1576,17 @@ def decide(state: GameStateDto):
             attack_quality=trace.get("attack_quality"),
             counterfactual_basis=trace.get("counterfactual_basis"),
             selection=trace.get("selection", reason),
+            # Bloco 859: quando NAO ha acao elegivel, o evento so dizia
+            # "no_eligible_action" -- sem o porque. Investigar os 7 casos de
+            # uma sessao exigiu cruzar mao, custo, tipo da carta e o banco de
+            # efeitos na mao; 2 eram benignos (nenhuma carta cabia no DON; a
+            # auto-restricao barrando o unico Personagem pagavel) e o alerta
+            # nao tinha como saber. Isto e OBSERVACAO, nao decisao: so
+            # descreve o estado que o motor ja usou, pra proxima medicao ser
+            # conclusiva sem arqueologia.
+            sem_acao_contexto=(_contexto_sem_acao(state, trace.get("_gs"))
+                               if trace.get("selection") == "no_eligible_action"
+                               else None),
             timed_out=trace.get("timed_out", False),
             priority=trace.get("priority"),
             can_lethal=trace.get("can_lethal"),
@@ -1618,6 +1658,10 @@ def decide(state: GameStateDto):
         # carrega (bloco 853). Sem isto o motor reoferece Personagem num turno
         # em que o JOGO ja proibiu -- medido em 6 de 6 plays recusados.
         _aplica_auto_restricao(gs, state.turnNumber, _lider_do_lado(state.bot))
+        # `finish` e fechado ANTES do gs existir; o trace ja e o canal de tudo
+        # que ele precisa ler, entao o estado reconstruido vai por ali (usado
+        # so pelo contexto do `no_eligible_action`).
+        trace["_gs"] = gs
         # GameState.is_active_turn tem default True (classe pura, sem saber
         # de HTTP) -- achado real 27/07 (bloco HANDOFF 374, Katakuri
         # OP11-062 pagando don_minus toda vez que o oponente ataca, mesmo
@@ -1686,5 +1730,39 @@ def decide(state: GameStateDto):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+def _aquece_motor() -> None:
+    """Paga a carga preguicosa ANTES da partida comecar (bloco 859).
+
+    MEDIDO: a 1a decisao `main` de uma partida levou **5.018 ms** e ESTOUROU o
+    timeout -- com 4 candidatas, mao de 6 e board VAZIO, e
+    `latency_segments_ms` nulo (o tempo foi gasto ANTES de a busca comecar).
+    A 2a mais lenta foi o mulligan, 2.326 ms, tambem 1a chamada. As demais
+    ficaram em 36-108 ms.
+
+    Nao e a busca: e importar o motor, ler as 2.839 cartas, montar o registro
+    de decks e carregar o modelo -- tudo na primeira chamada, que por azar e
+    uma decisao de verdade. Quando estoura o timeout o bot cai no fallback,
+    entao isto NAO e afinacao de desempenho: e uma decisao real perdida no
+    turno 1, e um alerta `decision_timeouts` em toda partida.
+    """
+    import threading, time as _t
+
+    def _trabalho():
+        ini = _t.perf_counter()
+        try:
+            _get_bridge()
+            _get_match()
+            print(f"[AQUECIMENTO] motor pronto em "
+                  f"{(_t.perf_counter()-ini)*1000:.0f} ms", flush=True)
+        except Exception as exc:   # nunca derruba o servidor
+            print(f"[AQUECIMENTO] falhou ({exc}) -- a 1a decisao paga a carga",
+                  flush=True)
+
+    # Em thread: o servidor ja aceita conexao enquanto aquece, e o plugin so
+    # decide depois do mulligan de qualquer jeito.
+    threading.Thread(target=_trabalho, daemon=True).start()
+
+
 if __name__ == "__main__":
+    _aquece_motor()
     uvicorn.run(app, host="127.0.0.1", port=8765, log_level="info")

@@ -351,7 +351,21 @@ def analyze_decision_events(lines) -> dict:
                 return True
             return bool(after_card and after_card.get("actionUsed"))
         if action == "end_turn":
-            return after.get("turnNumber") != before.get("turnNumber")
+            # A REGUA ESTAVA TORTA (bloco 859). Exigir `turnNumber` diferente
+            # acusava 12 falhas semanticas em 13 numa sessao -- e o end_turn
+            # tinha funcionado: o lider do lado que age virou de OP17-039 pra
+            # OP14-020 em todas elas. Neste jogo o `turnNumber` cobre os DOIS
+            # jogadores, entao passar a vez NAO o incrementa; em CPU x CPU o
+            # proximo main state estavel e o do outro lado, mesmo numero.
+            #
+            # O sinal certo e "deixou de ser a minha vez", que aparece de
+            # UMA das duas formas -- por isso as duas contam:
+            if after.get("turnNumber") != before.get("turnNumber"):
+                return True
+            lider_antes = (before.get("bot") or {}).get("leader") or {}
+            lider_depois = (after.get("bot") or {}).get("leader") or {}
+            return bool(lider_antes.get("code") and lider_depois.get("code")
+                        and lider_antes["code"] != lider_depois["code"])
         return None
     for decision_id, decision in decisions.items():
         eligible = [a for a in decision.get("scored_actions", []) if a.get("eligible")]

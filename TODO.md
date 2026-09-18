@@ -2,6 +2,28 @@
 
 **Última atualização:** 14 de setembro de 2026 (bloco 836)
 
+> **OS TRES ALERTAS DA TELEMETRIA -- ATACADOS (18/09/2026, bloco 859)**:
+> 1. `semantic_transition_failed` **13 -> 1**: era REGUA TORTA. 12 eram
+>    `end_turn` com `turnNumber` inalterado -- e o end_turn tinha funcionado
+>    (o lider do lado que age mudou). Neste jogo o `turnNumber` cobre os DOIS
+>    jogadores. A regua aceita as duas formas do sinal agora. A 1 que sobra e
+>    real (`attack` com OP12-023 sem restar o atacante) e fica ABERTA.
+> 2. `bot_confusion` 7x: **2 benignos** (nenhuma carta cabia no DON; a
+>    auto-restricao do bloco 853 barrando o unico Personagem) + 2 cujas cartas
+>    so tem bloco `counter`/`trigger` (nao jogaveis na main). Os restantes sao
+>    reais e ficam ABERTOS. O conserto de fundo: `/decide` passa a gravar
+>    `sem_acao_contexto` (DON, restricoes em vigor, mao com custo e blocos
+>    parseados) -- investigar isso exigia arqueologia.
+> 3. `decision_timeouts`: **nao era a busca**. Turno 1, 4 candidatas, board
+>    vazio, `latency_segments_ms` nulo -- carga preguicosa na 1a chamada.
+>    Quando estoura, o bot cai no FALLBACK: decisao real perdida todo turno 1.
+>    `_aquece_motor()` no startup, medido em **2.442 ms** pagos fora da
+>    partida.
+>
+> **ABERTO, nao e desta leva**: `test_bot_efficiency_report` tem 2 baselines
+> falhando (2.031 vs 2.143) -- ja falhavam antes desta sessao (o `live_*.json`
+> das 22:48 de 17/09 ja trazia 2.143) e os arquivos do cohort existem.
+
 > **REGRESSAO DO BLOCO 854 -- CORRIGIDA (18/09/2026, bloco 858)**: o `purpose`
 > quebrou a habilidade do lider Mihawk. `TargetPurpose` fazia
 > `IsOptionalCostWindow ? "cost" : "effect"`, tratando ausencia de evidencia de

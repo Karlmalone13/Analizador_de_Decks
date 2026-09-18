@@ -245,6 +245,72 @@ visivel**.
 
 ---
 
+## 2026-09-18 (859) - Os TRES alertas da telemetria: 12 de 13 eram REGUA TORTA, 2 de 7 eram o fix funcionando, e o timeout nao era a busca
+
+Pedido do usuario: atacar os tres alertas que sobraram do bloco 858.
+
+### 1. `semantic_transition_failed` 13 -> 1  (a REGUA estava torta)
+
+12 das 13 eram `end_turn` com `turnNumber` inalterado. **O end_turn tinha
+funcionado**: em todas elas o lider do lado que age virou de OP17-039 pra
+OP14-020 -- o turno PASSOU. Neste jogo o `turnNumber` cobre os DOIS jogadores,
+entao passar a vez nao o incrementa, e em CPU x CPU o proximo main state
+estavel e o do outro lado, com o mesmo numero.
+
+`main_transition_ok` agora aceita as duas formas do sinal "deixou de ser a
+minha vez": `turnNumber` mudou **ou** o lider do lado que age mudou.
+
+Remedido na mesma sessao: **13 -> 1**. A que sobra e real (um `attack` com
+OP12-023 em que o atacante nao ficou restado) e fica ABERTA.
+
+> Mesma familia do achado ja catalogado em `REPROVADOS.md`: *a regua estava
+> torta, nao o motor*. O alerta era ERROR e derrubava o gate em toda partida.
+
+### 2. `bot_confusion` 7x -- 2 sao BENIGNOS e o alerta nao tinha como saber
+
+Recortado caso a caso:
+
+| caso | veredito |
+|---|---|
+| turno 1, OP17-039, 1 DON | **benigno** -- nenhuma carta da mao cabia no DON |
+| turno 6, OP13-001, restricao ATIVA, so cabia 1 Personagem | **benigno -- e o fix do bloco 853 FUNCIONANDO** |
+| 2 casos com `OP13-040`/`OP06-038` pagaveis | **benignos** -- os unicos blocos dessas cartas sao `counter`/`trigger`; nao sao jogaveis na main phase |
+| restantes (Personagem custo 1 pagavel, sem restricao) | **reais, ABERTOS** |
+
+**O problema de fundo nao e o numero, e que descobrir isso exigiu
+ARQUEOLOGIA**: cruzar mao, custo, tipo e banco de efeitos a mao. O evento so
+dizia `no_eligible_action`.
+
+Corrigido: `/decide` grava `sem_acao_contexto` -- DON ativo/restado, as tres
+flags de restricao em vigor, e a mao com custo e **blocos parseados** de cada
+carta. E OBSERVACAO, nao decisao: descreve o estado que o motor ja usou, sem
+reimplementar elegibilidade (`REGRA_SEM_DUPLICACAO`).
+
+### 3. O timeout de 5s NAO era a busca
+
+A decisao que estourou: **turno 1**, primeira `main` da partida, **4
+candidatas**, mao de 6, **board vazio** -- e `latency_segments_ms` NULO, ou
+seja o tempo foi gasto ANTES de a busca comecar. A 2a mais lenta foi o
+mulligan (2.326 ms), tambem primeira chamada. Todas as outras: 36-108 ms.
+
+E carga preguicosa: importar o motor, ler 2.839 cartas, montar o registro de
+decks, carregar o modelo -- tudo na primeira chamada, que por azar e uma
+decisao de verdade. **Quando estoura, o bot cai no fallback**: nao e afinacao
+de desempenho, e uma decisao real perdida no turno 1 de toda partida.
+
+`_aquece_motor()` no startup, em thread (o servidor ja aceita conexao
+enquanto aquece). Medido ao vivo: **2.442 ms pagos no startup**.
+
+### Achado lateral, NAO e desta leva
+
+`test_bot_efficiency_report` tem 2 testes de baseline falhando
+(`atk_por_turno` 2.031 esperado vs 2.143). **Ja falhavam antes desta sessao**:
+o `live_*.json` gerado as 22:48 de 17/09, antes de eu tocar em qualquer coisa,
+ja registrava 2.143. Os arquivos do cohort existem (a deduplicacao do bloco
+856 nao apagou nenhum deles -- conferido). Fica ABERTO.
+
+---
+
 ## 2026-09-18 (858) - REGRESSAO MINHA: o `purpose` do bloco 854 quebrou a habilidade do Mihawk. 26 ativacoes com 0 falhas viraram 16 com 8
 
 Achado ao ler a telemetria dos adversarios do Mihawk, a pedido do usuario
