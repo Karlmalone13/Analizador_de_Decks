@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "EB04-058",
+      "name": "Borsalino",
+      "count": 3
+    },
+    {
+      "code": "OP14-105",
+      "name": "OP14-105",
+      "count": 2
+    },
+    {
+      "code": "OP14-112",
+      "name": "OP14-112",
+      "count": 2
+    },
+    {
+      "code": "OP14-104",
+      "name": "OP14-104",
+      "count": 2
+    },
+    {
+      "code": "OP15-113",
+      "name": "Roronoa Zoro",
+      "count": 1
+    },
+    {
+      "code": "OP06-058",
+      "name": "OP06-058",
+      "count": 1
+    },
+    {
+      "code": "ST17-004",
+      "name": "Boa Hancock",
+      "count": 1
+    },
+    {
+      "code": "OP17-109",
+      "name": "Charlotte Pudding",
+      "count": 1
+    },
+    {
+      "code": "OP16-119",
+      "name": "OP16-119",
+      "count": 1
+    },
+    {
+      "code": "OP06-115",
+      "name": "OP06-115",
+      "count": 1
+    },
+    {
+      "code": "OP14-108",
+      "name": "OP14-108",
+      "count": 1
+    },
+    {
+      "code": "OP14-114",
+      "name": "Ran",
+      "count": 1
+    }
+  ],
+  "total_seen": 17,
+  "leader": "OP14-041"
+}

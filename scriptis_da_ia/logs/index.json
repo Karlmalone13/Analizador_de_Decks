@@ -6766,5 +6766,319 @@
     },
     "tipo": "humano_vs_humano",
     "tipo_origem": "inferido: os dois lados tem nome de conta real"
+  },
+  {
+    "id": "2026-09-17T21.56.03",
+    "friendly_name": "Dracule.Mihawk-G_x_Portgas.D.Ace-R",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Portgas.D.Ace-R_2026-09-17T21.56.03.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Portgas.D.Ace-R_2026-09-17T21.56.03.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-09-17T21.56.03.json",
+      "Opponent": "decks/Portgas.D.Ace-R_2026-09-17T21.56.03.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-09-17T21.56.03.json",
+      "Opponent": "decks_full/Portgas.D.Ace-R_2026-09-17T21.56.03.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-09-17T21.56.03.jsonl"
+  },
+  {
+    "id": "2026-09-17T22.00.57",
+    "friendly_name": "Dracule.Mihawk-G_x_Portgas.D.Ace-R",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Portgas.D.Ace-R_2026-09-17T22.00.57.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Portgas.D.Ace-R_2026-09-17T22.00.57.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-09-17T22.00.57.json",
+      "Opponent": "decks/Portgas.D.Ace-R_2026-09-17T22.00.57.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-09-17T22.00.57.json",
+      "Opponent": "decks_full/Portgas.D.Ace-R_2026-09-17T22.00.57.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-09-17T22.00.57.jsonl"
+  },
+  {
+    "id": "2026-09-17T22.00.57_p2",
+    "friendly_name": "Dracule.Mihawk-G_x_Boa.Hancock-BY",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-041",
+      "leader_name": "Boa Hancock",
+      "slug": "Boa.Hancock-BY"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Boa.Hancock-BY_2026-09-17T22.00.57_p2.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Boa.Hancock-BY_2026-09-17T22.00.57_p2.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-09-17T22.00.57_p2.json",
+      "Opponent": "decks/Boa.Hancock-BY_2026-09-17T22.00.57_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-09-17T22.00.57_p2.json",
+      "Opponent": "decks_full/Boa.Hancock-BY_2026-09-17T22.00.57_p2.json"
+    }
+  },
+  {
+    "id": "2026-09-17T22.19.37",
+    "friendly_name": "Dracule.Mihawk-G_x_Portgas.D.Ace-R",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Portgas.D.Ace-R_2026-09-17T22.19.37.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Portgas.D.Ace-R_2026-09-17T22.19.37.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-09-17T22.19.37.json",
+      "Opponent": "decks/Portgas.D.Ace-R_2026-09-17T22.19.37.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-09-17T22.19.37.json",
+      "Opponent": "decks_full/Portgas.D.Ace-R_2026-09-17T22.19.37.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-09-17T22.19.37.jsonl"
+  },
+  {
+    "id": "2026-09-17T22.19.37_p2",
+    "friendly_name": "Dracule.Mihawk-G_x_Boa.Hancock-BY",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-041",
+      "leader_name": "Boa Hancock",
+      "slug": "Boa.Hancock-BY"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Boa.Hancock-BY_2026-09-17T22.19.37_p2.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Boa.Hancock-BY_2026-09-17T22.19.37_p2.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-09-17T22.19.37_p2.json",
+      "Opponent": "decks/Boa.Hancock-BY_2026-09-17T22.19.37_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-09-17T22.19.37_p2.json",
+      "Opponent": "decks_full/Boa.Hancock-BY_2026-09-17T22.19.37_p2.json"
+    }
+  },
+  {
+    "id": "2026-09-17T22.19.37_p3",
+    "friendly_name": "Dracule.Mihawk-G_x_Krieg-RG",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Krieg-RG_2026-09-17T22.19.37_p3.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Krieg-RG_2026-09-17T22.19.37_p3.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-09-17T22.19.37_p3.json",
+      "Opponent": "decks/Krieg-RG_2026-09-17T22.19.37_p3.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-09-17T22.19.37_p3.json",
+      "Opponent": "decks_full/Krieg-RG_2026-09-17T22.19.37_p3.json"
+    }
+  },
+  {
+    "id": "2026-09-17T22.21.50",
+    "friendly_name": "Dracule.Mihawk-G_x_Portgas.D.Ace-R",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Portgas.D.Ace-R_2026-09-17T22.21.50.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Portgas.D.Ace-R_2026-09-17T22.21.50.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-09-17T22.21.50.json",
+      "Opponent": "decks/Portgas.D.Ace-R_2026-09-17T22.21.50.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-09-17T22.21.50.json",
+      "Opponent": "decks_full/Portgas.D.Ace-R_2026-09-17T22.21.50.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-09-17T22.21.50.jsonl"
+  },
+  {
+    "id": "2026-09-17T22.21.50_p2",
+    "friendly_name": "Dracule.Mihawk-G_x_Boa.Hancock-BY",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-041",
+      "leader_name": "Boa Hancock",
+      "slug": "Boa.Hancock-BY"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Boa.Hancock-BY_2026-09-17T22.21.50_p2.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Boa.Hancock-BY_2026-09-17T22.21.50_p2.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-09-17T22.21.50_p2.json",
+      "Opponent": "decks/Boa.Hancock-BY_2026-09-17T22.21.50_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-09-17T22.21.50_p2.json",
+      "Opponent": "decks_full/Boa.Hancock-BY_2026-09-17T22.21.50_p2.json"
+    }
+  },
+  {
+    "id": "2026-09-17T22.21.50_p3",
+    "friendly_name": "Dracule.Mihawk-G_x_Krieg-RG",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Krieg-RG_2026-09-17T22.21.50_p3.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Krieg-RG_2026-09-17T22.21.50_p3.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-09-17T22.21.50_p3.json",
+      "Opponent": "decks/Krieg-RG_2026-09-17T22.21.50_p3.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-09-17T22.21.50_p3.json",
+      "Opponent": "decks_full/Krieg-RG_2026-09-17T22.21.50_p3.json"
+    }
+  },
+  {
+    "id": "2026-09-17T22.21.50_p4",
+    "friendly_name": "Dracule.Mihawk-G_x_Monkey.D.Luffy-RG",
+    "date": "2026-09-17",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-001",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-RG"
+    },
+    "turns": 15,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Monkey.D.Luffy-RG_2026-09-17T22.21.50_p4.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Monkey.D.Luffy-RG_2026-09-17T22.21.50_p4.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-09-17T22.21.50_p4.json",
+      "Opponent": "decks/Monkey.D.Luffy-RG_2026-09-17T22.21.50_p4.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-09-17T22.21.50_p4.json",
+      "Opponent": "decks_full/Monkey.D.Luffy-RG_2026-09-17T22.21.50_p4.json"
+    }
   }
 ]

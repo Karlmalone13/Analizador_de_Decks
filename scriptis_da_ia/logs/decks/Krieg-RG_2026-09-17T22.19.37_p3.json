@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "code": "OP15-023",
+      "name": "Arlong",
+      "count": 2
+    },
+    {
+      "code": "OP17-030",
+      "name": "Monkey D. Luffy",
+      "count": 2
+    },
+    {
+      "code": "OP15-008",
+      "name": "OP15-008",
+      "count": 2
+    },
+    {
+      "code": "OP15-026",
+      "name": "Jango",
+      "count": 1
+    },
+    {
+      "code": "OP15-037",
+      "name": "OP15-037",
+      "count": 1
+    },
+    {
+      "code": "EB04-004",
+      "name": "EB04-004",
+      "count": 1
+    },
+    {
+      "code": "OP14-037",
+      "name": "OP14-037",
+      "count": 1
+    },
+    {
+      "code": "OP15-025",
+      "name": "OP15-025",
+      "count": 1
+    },
+    {
+      "code": "OP05-037",
+      "name": "OP05-037",
+      "count": 1
+    },
+    {
+      "code": "OP17-023",
+      "name": "OP17-023",
+      "count": 1
+    },
+    {
+      "code": "OP15-009",
+      "name": "OP15-009",
+      "count": 1
+    },
+    {
+      "code": "OP15-007",
+      "name": "OP15-007",
+      "count": 1
+    },
+    {
+      "code": "OP15-003",
+      "name": "OP15-003",
+      "count": 1
+    }
+  ],
+  "total_seen": 16,
+  "leader": "OP15-001"
+}

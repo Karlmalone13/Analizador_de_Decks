@@ -2,6 +2,29 @@
 
 **Última atualização:** 14 de setembro de 2026 (bloco 836)
 
+> **AUTO-RESTRICAO "cannot play this turn" AO VIVO -- FECHADO (17/09/2026, bloco 853)**:
+> o achado aberto do bloco 850. Medido por lado: o lado do Mihawk fez 16 plays
+> antes de ativar (16 ok) e **6 depois (6 recusados, 100%)** -- e o plugin
+> encerra o turno apos 2 falhas seguidas, entao o bot **abandonava o resto do
+> turno**.
+>
+> O motor JA tinha as 3 flags, JA as setava offline e JA as lia; **so o caminho
+> ao vivo nunca setava** (`_dto_to_gs` reconstroi o estado a cada `/decide`).
+> Corrigido no `server.py` com o idioma de memoria por turno que ja existia,
+> GENERICO pela forma (`self_cant_play` do efeito parseado): 8 cartas com
+> `scope=chars` + 1 com `scope=hand`. Ao vivo pegou sozinho uma 2a carta
+> (`OP13-118`).
+>
+> **VALIDADO em 2 partidas**: recusas 6 -> **0**, "2 falhas seguidas" -> **0**,
+> e o controle que podia falhar: 3 Events jogados apos a ativacao, todos
+> aceitos (a restricao so proibe Personagem) e o adversario nao bloqueado.
+>
+> **BUG DENTRO DO FIX, corrigido**: usei `cardId` (nome do campo no
+> decision_log) onde o `CardDto` usa `code` -- a chave `(turno, lider)` ficava
+> `(turno, "")` e a restricao de um lado valia pro outro. **O meu teste nao
+> pegou porque o duble repetia a mesma suposicao errada do codigo** -- onde o
+> valor vem de DTO externo, testar contra o schema real.
+
 > **MERGE DE HISTORICOS DIVERGENTES + `id` NAO E UNICO (17/09/2026, bloco 852)**:
 > a Arthur_PC tinha **3 commits nunca empurrados** quando a Arthur_Trabalho
 > assumiu o bastao, entao as duas avancaram da mesma base e o `pull --ff-only`

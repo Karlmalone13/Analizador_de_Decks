@@ -245,6 +245,117 @@ visivel**.
 
 ---
 
+## 2026-09-17 (853) - A AUTO-RESTRICAO "cannot play this turn" passa a existir AO VIVO -- 6 de 6 plays recusados viram 0, e o bot para de abandonar o turno
+
+Fecha o achado que a Arthur_Trabalho deixou aberto no bloco 850. O usuario
+jogou 2 partidas pra medir, eu diagnostiquei, corrigi, e ele jogou mais 2 pra
+validar.
+
+### O DIAGNOSTICO, e o erro que cometi no meio dele
+
+Separando as decisoes POR LADO (que e o que eu nao tinha feito):
+
+```
+lado MIHAWK, ANTES de ativar  : 16 plays, 16 ok      (100%)
+lado MIHAWK, DEPOIS de ativar :  6 plays,  6 FALHAM  (100%)
+o OUTRO lado                  : 11 plays, 11 ok
+```
+
+**Eu cheguei a declarar a hipotese do bloco 850 REFUTADA**, porque via
+Personagens concluindo depois da ativacao. Estava errado: aqueles plays eram
+**do outro jogador**. Em CPU x CPU os dois lados sao o bot, e eu li as duas
+sequencias como se fossem uma. Mesma classe de erro dos blocos 846 e 849 --
+atribuir a um ator o que era de outro contexto -- e so apareceu porque fui
+separar por lider antes de fechar.
+
+Confirmado no log do plugin:
+
+```
+[Bot] alvo de efeito: Don (actor=OP14-020, faltavam=3 -> 2 -> 1 -> -1)
+[Bot] play: jogo recusou ST32-001 (custo? restricao?)
+[Bot] play: jogo recusou OP12-034 (custo? restricao?)
+[Bot] 2 falhas seguidas - end turn seguro
+```
+
+**O prejuizo nao eram as 6 jogadas.** O plugin encerra o turno apos 2 falhas
+seguidas -- o bot abandonava **o resto do turno**.
+
+### Por que so agora
+
+A habilidade diz *"Then, you cannot play character cards during this turn"*.
+Enquanto ela **nunca completava** (bug do bloco 844, corrigido no 847), a
+restricao nunca existia. O fix do Mihawk a fez valer -- e o motor nao sabia.
+
+### O CONSERTO: o motor ja tinha tudo
+
+`decision_engine.py` ja tem as TRES flags (`cant_play_chars_this_turn`,
+`cant_play_from_hand_this_turn`, `cant_play_cost_gte`), ja as seta no caminho
+offline (`_execute_step`, acao `self_cant_play`) e ja as le na hora de jogar
+(linha 14704). **So o caminho AO VIVO nunca setava**: `_dto_to_gs` reconstroi o
+GameState do zero a cada `/decide`, entao uma flag "por este turno" nao
+sobrevive de uma chamada pra seguinte.
+
+Seguido o idioma que o servidor JA usava pra memoria por turno
+(`_failed_actions_this_turn`, `_declined_optional`) em vez de criar uma
+estrutura paralela -- a `MatchMemory` foi avaliada e e de outra coisa
+(identidade revelada por uid, resetada no mulligan).
+
+**Generico pela FORMA**: le `self_cant_play` do efeito PARSEADO do bloco que
+disparou (`activate` -> activate_main, `play` -> on_play), nao o codigo da
+carta. Censo do banco: **8 cartas** com `scope=chars` (EB03-024, OP12-030,
+OP13-023, OP13-118, OP14-020, OP14-024, ...) e 1 com `scope=hand` (OP13-028).
+
+**Prova de que e generico**: ao vivo o fix pegou sozinho uma SEGUNDA carta que
+eu nem tinha olhado -- `OP13-118` (Monkey.D.Luffy), por `on_play`.
+
+### A CHAVE, e o detalhe que eu teria errado
+
+`(turno, lider do lado que agiu)`. **O turno sozinho NAO serve**: em CPU x CPU
+os dois lados agem sob o MESMO `turnNumber` -- medido, o turno 3 tem jogadas do
+`OP14-020` e do `OP16-001`. Chavear so por turno faria a restricao de um lado
+**bloquear o outro**.
+
+### O BUG DENTRO DO PROPRIO FIX, e por que o meu teste nao pegou
+
+O log saiu com `proibe jogar chars no turno 4 do lider ?` -- **o lider vinha
+VAZIO**. Eu usei `cardId`, que e o nome do campo no `decision_log`; no
+`CardDto` do plugin o campo e **`code`**.
+
+Com o nome errado as duas metades da chave ficavam `""` e batiam sempre: **a
+restricao de um lado valia pro outro**, exatamente o que a chave existe pra
+impedir. Nas 2 partidas de validacao isso nao causou dano visivel, mas por
+sorte, nao por desenho.
+
+> **O teste que eu escrevi NAO pegou, e o motivo importa**: eu construi os
+> objetos falsos com `cardId` -- o mesmo nome errado do codigo. **Duble que
+> repete a suposicao do codigo nao testa nada**; ele confirma a suposicao, nao
+> a realidade. Onde o valor vem de um DTO externo, o teste tem que usar o
+> SCHEMA real (ou o proprio objeto).
+
+Corrigido e verificado: `OP14-020 -> True`, `OP16-001 -> False`.
+
+### VALIDACAO em 2 partidas novas (trecho NOVO do log, marco de 1.092 linhas)
+
+| medida | antes | depois |
+|---|---|---|
+| recusas de `play` | **6 de 6 (100%)** | **0** |
+| `2 falhas seguidas - end turn` | acontecia | **0** |
+| Personagem apos ativacao | oferecido e recusado | **nenhum oferecido** |
+| Event/Stage apos ativacao | -- | **3, todos aceitos** |
+
+O ultimo numero e o controle que podia falhar: o bot parou de tentar o que o
+jogo proibe **sem** parar de jogar o que e permitido (os 3 foram `OP01-055`,
+Event). E o adversario nao foi bloqueado.
+
+> **ARMADILHA DE MEDICAO evitada**: o `LogOutput.log` ACUMULA. Marquei o numero
+> de linhas ANTES das partidas e contei so o trecho novo -- sem isso eu estaria
+> comparando o mesmo arquivo crescendo contra ele mesmo, que foi o falso
+> "regressao" do bloco 849.
+
+`smoke_fast` OK nas duas rodadas, servidor reiniciado com a correcao.
+
+---
+
 ## 2026-09-17 (852) - A PASSAGEM DE BASTAO QUEBROU: historicos DIVERGIRAM, e o `id` do banco de logs NAO e unico
 
 Chegada da Arthur_PC depois do bastao do bloco 851. O `git pull --ff-only`

@@ -145,6 +145,85 @@ _declined_optional: set[tuple[str, int]] = set()
 # target_uid, turno) -- inclui card_uid porque o bug real era a 2ª cópia da
 # mesma carta (uid diferente) nunca chegar a ser tentada.
 _failed_actions_this_turn: set[tuple] = set()
+
+# AUTO-RESTRICAO "Then, you cannot play character cards during this turn"
+# (achado ao vivo 17/09/2026, bloco 853).
+#
+# O motor JA tem as tres flags (`cant_play_chars_this_turn`,
+# `cant_play_from_hand_this_turn`, `cant_play_cost_gte`), JA as seta no
+# caminho offline (`_execute_step`, acao `self_cant_play`) e JA as le na hora
+# de jogar. **So o caminho AO VIVO nunca setava**: `_dto_to_gs` reconstroi o
+# GameState do zero a cada `/decide`, entao uma flag que vale "por este turno"
+# nao sobrevive de uma chamada pra seguinte.
+#
+# MEDIDO nas 3 partidas de 17/09, separando por lado: o lado do Mihawk fez
+# **16 plays antes de ativar, 16 OK; e 6 plays depois de ativar, 6 RECUSADOS
+# pelo jogo** -- 100% dos dois lados. Pior que o desperdicio: o plugin encerra
+# o turno apos 2 falhas seguidas ("2 falhas seguidas - end turn seguro"), entao
+# o bot perde o RESTO do turno, nao so a jogada.
+#
+# CHAVE = (turno, lider do lado que agiu). O turno sozinho NAO serve: em
+# CPU x CPU os dois lados agem sob o MESMO `turnNumber` (medido: turno 3 tem
+# jogadas do OP14-020 e do OP16-001), e chavear so por turno faria a restricao
+# de um lado bloquear o outro.
+#
+# Generico pela FORMA: le `self_cant_play` do efeito PARSEADO, nao o codigo da
+# carta. Censo do banco: 8 cartas com scope=chars (EB03-024, OP12-030,
+# OP13-023, OP13-118, OP14-020, OP14-024, ...) e 1 com scope=hand (OP13-028).
+_auto_restricao_turno: set[tuple] = set()   # (turno, lider, scope, cost_gte)
+
+
+def _lider_do_lado(player) -> str:
+    """Codigo do lider do lado que agiu -- a metade da chave que separa os
+    dois jogadores dentro do mesmo turnNumber."""
+    try:
+        lid = getattr(player, "leader", None)
+        # O campo do CardDto e `code` (o `cardId` que eu tinha usado e o nome
+        # no decision_log, outro esquema) -- com o nome errado isto devolvia
+        # sempre "", as duas metades da chave batiam e a restricao de um lado
+        # valia pro OUTRO, que e exatamente o que a chave existe pra impedir.
+        return str(getattr(lid, "code", "") or "") if lid is not None else ""
+    except Exception:
+        return ""
+
+
+def _registra_auto_restricao(card_code: str, tipo: str, turn, lider: str) -> None:
+    """A carta que acabou de resolver impoe "nao pode jogar este turno"?
+
+    Lido do efeito PARSEADO do bloco que disparou (`activate` -> activate_main,
+    `play` -> on_play), entao vale pras 8 cartas da familia sem citar nenhuma.
+    """
+    if turn is None or not card_code:
+        return
+    try:
+        from optcg_engine.sim_bridge import get_card_effects
+        blocos = get_card_effects(card_code) or {}
+    except Exception:
+        return
+    nome_bloco = "activate_main" if tipo == "activate" else "on_play"
+    bloco = blocos.get(nome_bloco) or {}
+    for step in (bloco.get("steps") or []):
+        if not isinstance(step, dict):
+            continue
+        if str(step.get("action") or "") != "self_cant_play":
+            continue
+        scope = step.get("scope") or "chars"
+        _auto_restricao_turno.add((turn, lider, scope, int(step.get("cost_gte") or 0)))
+        print(f"[RESTRICAO] {card_code} ({nome_bloco}) proibe jogar "
+              f"{scope} no turno {turn} do lider {lider or '?'}", flush=True)
+
+
+def _aplica_auto_restricao(gs, turn, lider: str) -> None:
+    """Devolve ao GameState reconstruido o que o DTO nao carrega."""
+    for (t, l, scope, gte) in _auto_restricao_turno:
+        if t != turn or l != lider:
+            continue
+        if scope == "hand":
+            gs.cant_play_from_hand_this_turn = True
+        else:
+            gs.cant_play_chars_this_turn = True
+            if gte:
+                gs.cant_play_cost_gte = gte
 _live_match_id = new_decision_id()
 _match_has_decisions = False
 _match_has_outcome = False
@@ -734,6 +813,13 @@ def execution(report: ExecutionReport):
         attack_quality=context.get("attack_quality"),
         error=report.error,
     )
+    if report.status == "confirmed":
+        # A restricao so passa a valer quando o JOGO confirma -- antes do fix
+        # do Mihawk (bloco 847) a habilidade nunca completava, entao ela nunca
+        # existia e ninguem sentiu falta.
+        _ca = context.get("chosen_action") or {}
+        _registra_auto_restricao(_ca.get("card_code") or "", _ca.get("type") or "",
+                                 context.get("turn"), context.get("lider") or "")
     if report.status in {"confirmed", "failed"}:
         _decision_context.pop(report.decisionId, None)
     if report.status == "failed":
@@ -987,6 +1073,7 @@ def mulligan(req: MulliganRequest):
         # processo (o set e chaveado por (codigo, turno), sem nocao de jogo).
         _declined_optional.clear()
         _failed_actions_this_turn.clear()
+        _auto_restricao_turno.clear()
         _match_memory.reset()  # reveals sao por partida
         # Pondering (design bloco 478, ponto 6): partida nova invalida
         # qualquer resultado/job em voo da partida ANTERIOR -- bump de
@@ -1338,6 +1425,10 @@ def decide(state: GameStateDto):
             "chosen_action": trace.get("chosen_action"),
             "attack_quality": trace.get("attack_quality"),
             "turn": state.turnNumber,
+            # Lider do lado que AGIU: a outra metade da chave da
+            # auto-restricao. Em CPU x CPU os dois lados agem sob o mesmo
+            # turnNumber, entao sem isto a restricao de um bloquearia o outro.
+            "lider": _lider_do_lado(state.bot),
         }
         # Marcadores AO VIVO (19/07): antes so apareciam rodando
         # bot_efficiency_report.py depois da partida. "sem acao elegivel"
@@ -1385,6 +1476,10 @@ def decide(state: GameStateDto):
 
         gs     = _dto_to_gs(state.bot, state.turnNumber)
         opp_gs = _dto_to_gs(state.opp, state.turnNumber, hide_hidden=True)
+        # Devolve ao estado reconstruido a auto-restricao que o DTO nao
+        # carrega (bloco 853). Sem isto o motor reoferece Personagem num turno
+        # em que o JOGO ja proibiu -- medido em 6 de 6 plays recusados.
+        _aplica_auto_restricao(gs, state.turnNumber, _lider_do_lado(state.bot))
         # GameState.is_active_turn tem default True (classe pura, sem saber
         # de HTTP) -- achado real 27/07 (bloco HANDOFF 374, Katakuri
         # OP11-062 pagando don_minus toda vez que o oponente ataca, mesmo
