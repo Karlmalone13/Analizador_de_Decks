@@ -245,6 +245,89 @@ visivel**.
 
 ---
 
+## 2026-09-18 (861) - AUDITORIA DE EFEITOS dos adversarios: o motor JA TEM a zona legal do alvo em 1.417 steps e NAO a usa
+
+Pedido do usuario: *"investigue afora os adversarios do mihawk com a telemetria
+para ver se as habilidades foram feitas certas"*. Investigacao pura -- nenhuma
+mudanca de codigo, porque as 2 partidas precisam medir o bloco 858 sozinho.
+
+### O placar, agregando TODOS os relatorios `efeitos_*.txt` do banco
+
+| carta | tipo | gatilho | n | ok | cancelou | s/efeito | taxa |
+|---|---|---|---|---|---|---|---|
+| **OP16-001** Portgas D. Ace | **LIDER** | activate_main | 2 | 0 | 0 | **2** | **0%** |
+| OP14-020 Mihawk | LIDER | activate_main | 25 | 15 | 10 | 0 | 60% |
+| OP07-022 Otama | CHARACTER | on_play | 11 | 6 | 5 | 0 | 54% |
+| ST31-005 Thousand Sunny | STAGE | activate_main | 5 | 3 | 0 | 2 | 60% |
+| OP12-034 Perona | CHARACTER | on_play | 9 | 8 | 1 | 0 | 88% |
+| **OP17-039 Xebec** | **LIDER** | when_attacking | 9 | 9 | 0 | 0 | **100%** |
+| OP13-031 · OP17-022 · ST32-001 · OP13-016 · OP06-033 · OP17-031 | | on_play | 5-14 cada | | | | **100%** |
+
+> **Correcao de metodo no meio da propria medicao**: a primeira agregacao que
+> fiz capturava linhas de MENU (listas de carta) como se fossem desfecho, e
+> produziu varias familias "0% concluido" que nao existiam. Os desfechos reais
+> sao cinco (`ATIVADO E CONCLUIDO`, `CANCELADO PELO JOGO`, `NAO SURTIU EFEITO`,
+> `CONCLUIU (efeito invisivel)`, `o bot RECUSOU o efeito reativo`). A tabela
+> acima e a refeita.
+
+### O ACHADO: a zona legal do alvo esta PARSEADA e o motor nao a usa
+
+**Portgas D. Ace (OP16-001), lider adversario, 0%.** A habilidade e *"Up to 1
+of your [Monkey.D.Luffy] Characters ... gains [Rush] during this turn"* -- da
+Rush a um Personagem **em campo**. O bot escolheu:
+
+```
+ALVO: ST23-001 em own_hand | rank 0 de 33 candidatos
+```
+
+Rush numa carta da MAO nao faz nada: "ativado e nao surtiu efeito".
+
+**Thousand Sunny (ST31-005)** e mais revelador ainda, porque o dado existe:
+o step e `transfer_don` com **`target: "leader_or_own_character"`** -- e o bot
+mirou `OP15-035 em own_hand`. A zona legal estava escrita no efeito parseado e
+foi ignorada.
+
+### O tamanho: 1.417 steps
+
+`order_target_candidates` ja restringe zona para tres familias, cada uma
+adicionada depois de um achado ao vivo proprio: efeito que mira DON (bloco
+830), efeito que NAO mira DON (13/09), custo (bloco 847/854). **Falta a regra
+geral**, e ela e a mesma FORMA: `target` -> zonas legais, exatamente como
+`_CUSTO_ZONAS` faz para custo.
+
+```
+opp_character            581      leader                   105
+self                     264      own_character             88
+leader_or_character      167      opp_leader_or_character   32
+...                               leader_or_own_character    6
+                       TOTAL: 1.417 steps com `target` parseado
+```
+
+**Metade do problema e do parser**, nao do motor: a familia `select_grant_*`
+(*"select"* = o jogador escolhe) **nunca** traz `target` --
+`select_grant_rush` (6 cartas, incl. 6 LIDERES: EB03-001, OP04-001, OP12-007,
+OP16-001, OP17-004, PRB01-001), `select_grant_can_attack_active_turn` (8),
+`select_grant_double_attack` (5), `select_grant_blocker` (3),
+`select_grant_rush_character` (3). Sem o campo, nao ha o que o motor consulte.
+
+### Por que isto NAO foi implementado agora
+
+Duas mudancas no mesmo caminho e a medicao nao diz qual pegou (licao do bloco
+788). O bloco 858 (regressao do `purpose`) espera 2 partidas para ser
+confirmado -- ativacoes do Mihawk de 8/16 falhas para 0.
+
+**E provavelmente maior que completar o detector de `purpose`**, que era o
+proximo item combinado: 1.417 steps contra uma janela de custo. Decidir a
+ordem com o usuario depois da medicao.
+
+### O que esta CERTO, e importa dizer
+
+`OP17-039` (Xebec, o adversario de maior volume) fecha **9 de 9** em
+`when_attacking`. Oito cartas diferentes fecham 100%. O problema nao e amplo --
+e concentrado em efeitos que pedem alvo em campo.
+
+---
+
 ## 2026-09-18 (860) - A 13a falha semantica tambem era REGUA (comparava DUAS PARTIDAS), e `effect_option` nao registrava execucao em 48 de 48
 
 Continuacao do bloco 859, atacando o que sobrou sem tocar o caminho de decisao

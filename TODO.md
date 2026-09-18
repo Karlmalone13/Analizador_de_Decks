@@ -2,6 +2,32 @@
 
 **Última atualização:** 14 de setembro de 2026 (bloco 836)
 
+> **ACHADO ABERTO -- a zona legal do alvo esta PARSEADA e o motor nao usa
+> (18/09/2026, bloco 861)**: auditoria de efeitos dos adversarios do Mihawk.
+> **Portgas D. Ace (OP16-001), lider, 0%** -- a habilidade da Rush a um
+> Personagem EM CAMPO e o bot mirou `ST23-001 em own_hand`. O Thousand Sunny
+> (ST31-005) e pior: o step tem **`target: leader_or_own_character`** escrito
+> no efeito parseado e o bot mirou a MAO assim mesmo.
+>
+> `order_target_candidates` restringe zona para 3 familias (mira DON, nao mira
+> DON, custo), cada uma adicionada apos um achado ao vivo. **Falta a regra
+> geral `target -> zonas`, a mesma FORMA do `_CUSTO_ZONAS`**: sao **1.417
+> steps** com `target` ja parseado (`opp_character` 581, `leader_or_character`
+> 167, `leader` 105, `own_character` 88...).
+>
+> Metade e do PARSER: a familia `select_grant_*` nunca traz `target` --
+> `select_grant_rush` sozinho afeta **6 lideres**. Sem o campo nao ha o que
+> consultar.
+>
+> **NAO implementado de proposito**: seriam 2 mudancas no mesmo caminho antes
+> de medir o bloco 858. Provavelmente MAIOR que completar o detector de
+> `purpose` (1.417 steps contra uma janela de custo) -- decidir a ordem depois
+> da medicao.
+>
+> O que esta certo: **Xebec OP17-039 fecha 9 de 9** em `when_attacking`, e 8
+> cartas fecham 100%. O problema e concentrado em efeitos que pedem alvo em
+> campo, nao amplo.
+
 > **REGUA E `effect_option` (18/09/2026, bloco 860)**: a 13a falha semantica
 > tambem era regua -- o `state_after` da ULTIMA acao de uma partida e capturado
 > na abertura da SEGUINTE (turno 6 -> turno 1, outro lider, tudo vazio), e os
