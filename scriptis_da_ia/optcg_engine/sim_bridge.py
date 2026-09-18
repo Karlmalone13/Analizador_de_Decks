@@ -2145,7 +2145,8 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                             attacker_power: int = 0,
                             defender_uid: int = 0,
                             actor_code: str | None = None,
-                            with_scores: bool = False):
+                            with_scores: bool = False,
+                            purpose: str = "unknown"):
     """
     Ordena candidatos de alvo de um efeito pendente por preferencia.
     candidates: [{'id': uid, 'zone': 'own_hand'|'own_board'|'top_deck'|...,
@@ -2584,6 +2585,23 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             for _c in (_blk.get('costs') or []):
                 if isinstance(_c, dict):
                     actor_zonas_de_custo |= _CUSTO_ZONAS.get(_c.get('type') or '', set())
+
+    # ── O JOGO DIZ PRA QUE ESTA PEDINDO (bloco 854) ────────────────────────
+    # Ate aqui esta funcao so recebia o SACO de candidatos: nao sabia se a
+    # pergunta era "qual carta PAGA o custo" ou "qual e o ALVO do efeito", e as
+    # duas sao perguntas diferentes que o jogo faz separadamente. Sem saber, o
+    # unico conserto possivel (bloco 847) foi SOMAR as zonas dos dois -- o que
+    # evita apagar a resposta certa, mas deixa a errada na lista.
+    #
+    # Com `purpose` da pra ESCOLHER. Quando o jogo pede o CUSTO, so as zonas
+    # do custo servem; o alvo do efeito ali e clique garantidamente recusado.
+    #
+    # `unknown` = plugin antigo (ou janela que nao usa V3): cai no
+    # comportamento anterior, sem regressao.
+    if purpose == 'cost' and actor_zonas_de_custo:
+        _so_custo = [c for c in candidates if c.get('zone') in actor_zonas_de_custo]
+        if _so_custo:
+            candidates = _so_custo
 
     # O ator MENCIONA DON em algum lugar (acao ou custo)? Se nao menciona,
     # nenhum clique em DON pode ser valido -- ver o bloco de exclusao no fim.
@@ -3075,7 +3093,10 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         # ativacao inteira. A ordenacao ja resolve a prioridade -- quando o
         # efeito nao aceita DON como alvo real, o DON carrega a chave 9.0
         # ("nunca valido") e as cartas do custo vem na frente naturalmente.
-        zonas_ok = zonas_don | actor_zonas_de_custo
+        # Com o proposito conhecido, o alvo do EFEITO nao precisa carregar as
+        # zonas do custo junto -- elas so estavam ali porque a funcao nao
+        # sabia qual das duas perguntas estava respondendo.
+        zonas_ok = zonas_don | (set() if purpose == 'effect' else actor_zonas_de_custo)
         so_don = [c for c in candidates if c.get('zone') in zonas_ok]
         if so_don:
             candidates = so_don

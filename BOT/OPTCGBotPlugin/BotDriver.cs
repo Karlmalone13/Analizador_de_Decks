@@ -842,7 +842,8 @@ namespace OPTCGBotPlugin
             // trashou carta da mao pro Mars sem nenhum alvo elegivel pro K.O.).
             string? actorCode = BotExecutor.ActorCode(gls);
             var resp = EngineClient.IsAlive()
-                ? EngineClient.Defense(dto, duringAttack ? "reaction" : "optional", atkP, defP, actorCode, defId)
+                ? EngineClient.Defense(dto, duringAttack ? "reaction" : "optional", atkP, defP, actorCode, defId,
+                                          BotExecutor.UidOf(attacker!), BotExecutor.CodeOf(attacker))
                 : null;
             if (resp != null)
                 TrackAuxDecision(resp.decisionId, dto);
@@ -1112,7 +1113,9 @@ namespace OPTCGBotPlugin
 
             _pendingOrder = EngineClient.ChooseTarget(
                 dto, candidates, BotExecutor.ActorCode(gls), atkPower, defenderId,
-                id => _pendingTargetDecisionId = id);
+                id => _pendingTargetDecisionId = id,
+                BotExecutor.StepIndex(gls), BotExecutor.ActionIndex(gls),
+                BotExecutor.TargetIndex(gls), BotExecutor.TargetPurpose(gls));
         }
 
         // Defesa quando o HUMANO ataca o bot. Durante o blocker/counter step o
@@ -1147,7 +1150,8 @@ namespace OPTCGBotPlugin
 
                 var dto = GameStateBuilder.Build(botPs, oppPs, gls);
                 var resp = EngineClient.IsAlive()
-                    ? EngineClient.Defense(dto, "blocker", atkPower, defPower)
+                    ? EngineClient.Defense(dto, "blocker", atkPower, defPower, null, 0,
+                                          BotExecutor.UidOf(attacker!), BotExecutor.CodeOf(attacker))
                     : null;
 
                 if (resp != null && resp.blockerId != 0 && !_blockerTried)
@@ -1180,7 +1184,8 @@ namespace OPTCGBotPlugin
 
                 var dto = GameStateBuilder.Build(botPs, oppPs, gls);
                 var resp = EngineClient.IsAlive()
-                    ? EngineClient.Defense(dto, "counter", atkPower, defPower, null, defId)
+                    ? EngineClient.Defense(dto, "counter", atkPower, defPower, null, defId,
+                                          BotExecutor.UidOf(attacker!), BotExecutor.CodeOf(attacker))
                     : null;
 
                 BotExecutor.PlayCounters(gls, botPs,

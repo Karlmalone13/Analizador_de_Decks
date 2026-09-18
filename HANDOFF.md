@@ -245,6 +245,122 @@ visivel**.
 
 ---
 
+## 2026-09-17 (855) - A TELEMETRIA DE DEFESA passa a existir AO VIVO: o motor ja raciocinava e jogava fora
+
+Pedido do usuario: *"liga a telemetria de defesa, alem do que vc falou
+acrescente, quem atacou, o board na hora do ataque, se ativou efeito durante o
+ataque, quem defendeu, se tinha efeito para ativar durante a defesa, ou depois
+(on ko)"*.
+
+### O ACHADO: nao faltava logica, faltava LIGAR
+
+`decision_engine.py` ja tem `_log_defesa` gravando `blocker_choice`,
+`counter_use`, `counter_cards` e `effect_target` -- com `atk_power`,
+`def_power`, `falta`, `valor_protegido`, `counter_na_mao`, a mao inteira e o
+escolhido. **Mas a auditoria so era ligada no auto-jogo**
+(`decision_engine.py:22742`). Ao vivo, contra o humano -- que e exatamente onde
+o dado nao pode ser refeito -- o raciocinio era calculado e descartado.
+
+Entao NADA foi reimplementado (`REGRA_SEM_DUPLICACAO`): o `/defense` liga a
+auditoria do motor em volta da chamada, **drena** o que ele escreveu, e junta o
+contexto que so o servidor tem.
+
+### O QUE FALTAVA PRA JULGAR (e por que a medicao de hoje nao conseguia)
+
+Medido nas 2 partidas de validacao do bloco 853: **54 decisoes de counter, 46
+com counter real na mao, 0 aceitas** -- e o bot foi de 5 pra 0/1 de vida em 4
+partidas. Parece erro grosseiro, **e nao dava pra afirmar**: o evento nao
+guardava contra QUEM, entao "recusou e estava certo" (nao ia salvar nada) era
+indistinguivel de "recusou e tomou dano a toa".
+
+O `DefenseRequest` recebia `attackerPower` -- **um numero, sem a carta**. E o
+plugin JA tinha o atacante em maos (`BotExecutor.Attacker(gls)`, usado nas
+mesmas 3 linhas pra calcular o poder) e simplesmente descartava.
+
+Agora cada decisao de defesa grava:
+
+| campo | pra que serve |
+|---|---|
+| `attacker_id` / `attacker_code` | **quem atacou** -- o que faltava pra comparar |
+| `defender_code` | **quem defendeu** (o plugin manda uid; o log precisa do codigo) |
+| `board_no_ataque` | os DOIS lados: lider, vida, DON ativo/restado, mao, board carta a carta (poder/custo/counter/restado), stage |
+| `efeitos_na_defesa` | o que havia pra ativar NA JANELA: `on_opp_attack`, `counter`, `on_block`, `opp_turn` |
+| `efeitos_pos_ko` | o que dispararia DEPOIS, se a carta morresse -- recusar counter com `[On K.O.]` esperando e outra decisao |
+| `raciocinio_defesa` | o log do PROPRIO motor, drenado |
+
+**Generico pela FORMA**: os efeitos saem do bloco PARSEADO
+(`_BLOCOS_NA_DEFESA` / `_BLOCOS_POS_KO`), nunca de codigo de carta. Censo do
+banco: 168 cartas com `on_ko`, 199 com `counter`, 61 com `on_opp_attack`, 14
+com `on_block`.
+
+### Detalhes que teriam estragado a medicao
+
+- **O retrato do board sai ANTES da decisao.** Decidir ja gasta counter da mao;
+  um retrato depois nao e mais o estado em que a escolha foi feita.
+- **`try/finally` no dreno.** Uma excecao no meio da defesa deixaria a
+  auditoria ligada vazando pro proximo pedido -- e o `/defense` tem justamente
+  um `except` largo que devolve defesa conservadora.
+- **`state_a = gs`**, pra `_lado()` marcar o bot como 'A'.
+
+### Controle que PODIA falhar
+
+O detector de efeitos foi testado nos dois sentidos: `EB01-036` (tem `on_ko`)
+-> detecta; `EB01-005` (sem efeito nenhum) -> lista **vazia**. Um detector que
+so diz "sim" passaria no primeiro e falharia neste.
+
+`smoke_fast` OK, plugin compila (0 erros), servidor reiniciado. **Falta medir**:
+o jogo estava aberto, entao a DLL nova so vale no proximo start.
+
+---
+
+## 2026-09-17 (854) - `step_index` + `purpose`: CONSTRUIDO, MEDIDO, **NAO PAGOU** -- e o motivo esta no plugin
+
+Pergunta do usuario que reenquadrou o problema: *"se o motor sabe onde esta
+cada carta no board, porque ele sai clicando igual doido?"*. Resposta medida: o
+motor **nao sabia** pra que o jogo estava pedindo o alvo.
+
+O `/choose_target` mandava o SACO de candidatos. O motor so podia ORDENAR; o
+plugin clicava na ordem ate o jogo aceitar. Medido em 2 partidas, 164
+episodios: **59% acertam no 1o clique, 34% NAO acertam NUNCA** (55 efeitos
+perdidos), pior episodio com **64 cliques** (~50s). E BIMODAL -- ou acerta de
+cara ou nao acerta nunca, o que descarta "ordenacao levemente errada" e aponta
+pra lista sem o alvo valido.
+
+O jogo EXPOE o que faltava (`gls.acaActive`): `iActionIdx` (qual habilidade),
+`iActionStep` (qual passo), `iActionTargetIdx` (qual alvo), e as flags que
+separam CUSTO de EFEITO. Implementado ponta a ponta -- plugin envia,
+`order_target_candidates` FILTRA (nao so ordena) quando o proposito e conhecido,
+`unknown` cai no comportamento anterior sem regressao.
+
+### E NAO PAGOU. Medido depois, em 2 partidas novas:
+
+| medida | antes | depois |
+|---|---|---|
+| acerta no 1o clique | 59% | **55%** |
+| nunca acerta | 34% | **40%** |
+| pior episodio | 64 cliques | 34 |
+
+**A causa esta identificada e e do lado do plugin**: das 105 requisicoes
+carimbadas, **so 9 chegaram como `cost`**. `IsOptionalCostWindow` reconhece
+**5 formas** de custo (`TrashCard`, `RestSelf`, `TrashSelf`, `DonTap`,
+`DonMinus`) enquanto `_CUSTO_ZONAS` no motor mapeia **10** -- o "devolva 1
+Personagem seu" do Trafalgar Law, por exemplo, nao esta la. Com o proposito
+chegando `unknown` em 91% dos casos, o mecanismo simplesmente nao roda.
+
+**Fica no codigo** (correto, testado, retrocompativel) e o proximo passo e
+completar o detector -- pedido do usuario: *"vai na defesa, depois completa"*.
+
+### CORRECAO ao bloco 849: `LogOutput.log` **RESETA** quando o jogo reinicia
+
+O bloco 849 registrou que ele ACUMULA. Acumula **dentro de uma sessao do
+jogo** -- ao reiniciar, volta do zero. Marquei 2.296 linhas antes; depois do
+restart do usuario o arquivo tinha **1.207**. Se eu tivesse lido a partir da
+linha 2.297 por inercia, teria encontrado nada e reportado "zero recusas =
+sucesso total". **Conferir o TAMANHO do arquivo contra a marca antes de
+confiar nela.**
+
+---
+
 ## 2026-09-17 (853) - A AUTO-RESTRICAO "cannot play this turn" passa a existir AO VIVO -- 6 de 6 plays recusados viram 0, e o bot para de abandonar o turno
 
 Fecha o achado que a Arthur_Trabalho deixou aberto no bloco 850. O usuario

@@ -250,11 +250,21 @@ namespace OPTCGBotPlugin
             string? actorCode = null,
             int attackerPower = 0,
             int defenderId = 0,
-            Action<string>? onDecision = null)
+            Action<string>? onDecision = null,
+            // Bloco 854: DE QUAL passo e PRA QUE. Sem isto o motor so podia
+            // ordenar um saco de candidatos; com isto ele filtra pro que
+            // aquele passo pode de fato mirar.
+            int stepIndex = -1,
+            int actionIndex = -1,
+            int targetIndex = -1,
+            string purpose = "unknown")
         {
             try
             {
-                string json = JsonConvert.SerializeObject(new { state, candidates, actorCode, attackerPower, defenderId });
+                string json = JsonConvert.SerializeObject(new { state, candidates, actorCode,
+                                                               attackerPower, defenderId,
+                                                               stepIndex, actionIndex,
+                                                               targetIndex, purpose });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var resp = _http.PostAsync($"{BASE}/choose_target", content).GetAwaiter().GetResult();
                 if (!resp.IsSuccessStatusCode)
@@ -322,13 +332,21 @@ namespace OPTCGBotPlugin
         public static DefenseResponse? Defense(GameStateDto state, string phase,
                                                int attackerPower, int defenderPower,
                                                string? triggerCode = null,
-                                               int defenderId = 0)
+                                               int defenderId = 0,
+                                               // Bloco 855: QUEM atacou. O plugin JA tinha o
+                                               // atacante em maos (BotExecutor.Attacker) e mandava
+                                               // so o PODER -- sem a carta, a telemetria de defesa
+                                               // nao consegue dizer se recusar o counter foi certo
+                                               // ou errado, porque nao ha contra o que comparar.
+                                               int attackerId = 0,
+                                               string? attackerCode = null)
         {
             try
             {
                 string json = JsonConvert.SerializeObject(new
                 {
-                    state, phase, attackerPower, defenderPower, defenderId, triggerCode
+                    state, phase, attackerPower, defenderPower, defenderId, triggerCode,
+                    attackerId, attackerCode
                 });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var resp = _http.PostAsync($"{BASE}/defense", content).GetAwaiter().GetResult();

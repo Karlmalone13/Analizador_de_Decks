@@ -741,6 +741,14 @@ class DefenseRequest(BaseModel):
     defenderPower: int = 0
     defenderId: int = 0           # uid do alvo atual do ataque (contexto p/ redirect)
     triggerCode: Optional[str] = None
+    # Bloco 855: QUEM atacou. O plugin JA sabia (BotExecutor.Attacker) e mandava
+    # so o PODER. Sem a carta, a telemetria de defesa nao consegue separar
+    # "recusou o counter e estava certo" de "recusou e tomou dano a toa" --
+    # medido nas 2 partidas de 17/09: 54 decisoes de counter, 46 com counter
+    # real na mao, **0 aceitas**, e o bot foi de 5 pra 0/1 de vida em 4
+    # partidas. Nao havia contra o que comparar.
+    attackerId: int = 0
+    attackerCode: Optional[str] = None
 
 
 class TargetCandidate(BaseModel):
@@ -753,9 +761,22 @@ class TargetCandidate(BaseModel):
 class ChooseTargetRequest(BaseModel):
     state: GameStateDto
     candidates: list[TargetCandidate] = []
-    actorCode: Optional[str] = None   # carta cujo efeito esta resolvendo (debug/futuro)
+    actorCode: Optional[str] = None   # carta cujo efeito esta resolvendo
     attackerPower: int = 0            # > 0 = efeito resolvendo durante um ataque (redirect)
     defenderId: int = 0               # uid do alvo original do ataque (nunca redirecionar p/ ele)
+    # DE QUAL PASSO e PRA QUE (bloco 854). Ate aqui o motor recebia so o saco
+    # de candidatos e o `actorCode` -- marcado no proprio campo como
+    # "debug/futuro" -- entao so dava pra ORDENAR por preferencia e o plugin
+    # clicava na ordem ate o jogo aceitar. Medido em 164 episodios: 59%
+    # acertam no 1o clique e **34% nunca acertam** (55 efeitos perdidos).
+    #
+    # `purpose` e o que separava o bug do Mihawk (bloco 844): o jogo pedia o
+    # alvo do CUSTO e o motor mandava o alvo do EFEITO. Default "unknown"
+    # mantem o plugin ANTIGO funcionando (ordena como antes).
+    stepIndex: int = -1               # qual PASSO dentro da habilidade
+    actionIndex: int = -1             # qual HABILIDADE da carta
+    targetIndex: int = -1             # qual ALVO dentro do passo
+    purpose: str = "unknown"          # "cost" | "effect" | "unknown"
 
 
 class EffectOption(BaseModel):
@@ -1099,6 +1120,78 @@ def mulligan(req: MulliganRequest):
         return {"mulligan": False, "reason": f"erro: {e} — keep por seguranca"}
 
 
+# ── TELEMETRIA DE DEFESA (bloco 855) ──────────────────────────────────────
+#
+# O motor JA raciocina sobre defesa e JA sabe registrar: `_log_defesa` grava
+# `blocker_choice`, `counter_use`, `counter_cards` e `effect_target` com
+# atk_power, def_power, falta, counter_na_mao e o escolhido. **So que
+# `_DEFESA['on']` so era ligado no auto-jogo** (decision_engine.py:22742) --
+# ao vivo, contra o humano, o raciocinio era calculado e jogado fora.
+#
+# Entao aqui NAO se reimplementa nada (REGRA_SEM_DUPLICACAO): liga-se a
+# auditoria do motor em volta da chamada, DRENA-SE o que ele escreveu, e
+# junta-se o contexto que so o servidor tem (quem atacou, o board dos dois
+# lados, que efeitos havia pra ativar na janela e depois do K.O.).
+
+_BLOCOS_NA_DEFESA = ('on_opp_attack', 'counter', 'on_block', 'opp_turn')
+_BLOCOS_POS_KO    = ('on_ko',)
+
+
+def _efeitos_disponiveis(cards, blocos) -> list:
+    """Que cartas tinham efeito ativavel desta familia -- pela FORMA (bloco
+    parseado), nunca por codigo de carta."""
+    try:
+        from optcg_engine.sim_bridge import get_card_effects
+    except Exception:
+        return []
+    out = []
+    for c in (cards or []):
+        code = getattr(c, 'code', '') or ''
+        if not code:
+            continue
+        ef = get_card_effects(code) or {}
+        tem = [b for b in blocos if ef.get(b)]
+        if tem:
+            out.append({'code': code, 'uid': getattr(c, '_deck_uid', 0), 'blocos': tem})
+    return out
+
+
+def _uid_para_code(gs, uid: int):
+    """QUEM defendeu -- o plugin manda o uid, o log precisa do codigo."""
+    if not uid:
+        return None
+    for c in ([gs.leader] if getattr(gs, 'leader', None) else []) +              list(getattr(gs, 'field_chars', []) or []):
+        if getattr(c, '_deck_uid', 0) == uid:
+            return getattr(c, 'code', None)
+    return None
+
+
+def _snapshot_lado(gs) -> dict:
+    """O board na hora do ataque. Sem isso, "recusou o counter" e um numero
+    solto: nao da pra saber se havia blocker, DON ou vida pra gastar."""
+    def _c(card):
+        return {
+            'code': getattr(card, 'code', None),
+            'uid': getattr(card, '_deck_uid', 0),
+            'power': getattr(card, 'power', 0),
+            'cost': getattr(card, 'cost', 0),
+            'counter': getattr(card, 'counter', 0),
+            'rested': bool(getattr(card, 'is_rested', False)),
+        }
+    try:
+        return {
+            'leader': getattr(getattr(gs, 'leader', None), 'code', None),
+            'vida': len(getattr(gs, 'life', []) or []),
+            'don_ativo': getattr(gs, 'don_available', 0),
+            'don_restado': getattr(gs, 'don_rested', 0),
+            'mao': len(getattr(gs, 'hand', []) or []),
+            'board': [_c(c) for c in (getattr(gs, 'field_chars', []) or [])],
+            'stage': getattr(getattr(gs, 'field_stage', None), 'code', None),
+        }
+    except Exception:
+        return {}
+
+
 @app.post("/defense")
 def defense(req: DefenseRequest):
     """
@@ -1108,10 +1201,28 @@ def defense(req: DefenseRequest):
     """
     started = time.perf_counter()
     try:
-        from optcg_engine.decision_engine import DecisionEngine
+        from optcg_engine.decision_engine import DecisionEngine, _DEFESA
         bridge = _get_bridge()
         gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
         opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
+
+        # O board NA HORA DO ATAQUE -- tirado ANTES da decisao, porque decidir
+        # ja gasta counter da mao e o retrato depois nao e mais o estado em que
+        # a escolha foi feita.
+        _antes = {
+            'defensor': _snapshot_lado(gs),
+            'atacante': _snapshot_lado(opp_gs),
+            # O que havia pra ativar NA JANELA (mao + board + lider) e o que
+            # dispararia DEPOIS, se a carta morresse. Um counter recusado com
+            # [On K.O.] esperando e uma decisao diferente de um sem.
+            'efeitos_na_defesa': _efeitos_disponiveis(
+                list(getattr(gs, 'hand', []) or []) +
+                list(getattr(gs, 'field_chars', []) or []) +
+                ([gs.leader] if getattr(gs, 'leader', None) else []),
+                _BLOCOS_NA_DEFESA),
+            'efeitos_pos_ko': _efeitos_disponiveis(
+                getattr(gs, 'field_chars', []), _BLOCOS_POS_KO),
+        }
         # is_active_turn (ver /decide acima pro achado completo): blocker/
         # counter/trigger so existem quando o OPONENTE ataca (nunca meu
         # turno); optional e "custo no proprio turno do bot" (docstring da
@@ -1135,61 +1246,73 @@ def defense(req: DefenseRequest):
         out = {"blockerId": 0, "counterIds": [], "useTrigger": False, "useReaction": False}
         decision_trace = {}
 
-        if req.phase == "blocker":
-            engine = DecisionEngine(gs, opp_gs)
-            blocker = engine.should_use_blocker(req.attackerPower)
-            if blocker is not None:
-                out["blockerId"] = getattr(blocker, '_deck_uid', 0)
-            print(f"[DEF] blocker atk={req.attackerPower} -> "
-                  f"{blocker.name if blocker else 'NAO bloqueia'}", flush=True)
-            # Telemetria 24/07 (usuario: "preparar o rastreamento pra
-            # medir tambem as coisas que fizemos hoje"). O caminho
-            # OFFLINE (decision_log de OPTCGMatch) nunca logou blocker/
-            # counter (achado na fase C desta sessao) -- este endpoint
-            # AO VIVO ja logava via _record_aux_decision, mas sem o
-            # detalhe de custo/on_ko que decide QUAL blocker sacrificar.
-            # Expoe char_value_score vs custo efetivo (com on_ko_value
-            # descontado, fase B 24/07) por candidato -- permite medir
-            # se/quando o credito do proprio [On K.O.] de fato mudou a
-            # escolha numa partida real. on_ko_value e a MESMA funcao
-            # reusada por should_use_blocker (decision_engine.py) --
-            # nunca duplicar a conta aqui.
-            from optcg_engine.decision_engine import on_ko_value
-            decision_trace["blocker_candidates"] = [
-                {
-                    "card_uid": getattr(c, '_deck_uid', 0),
-                    "card_code": c.code,
-                    "char_value_score": round(float(engine.analyzer.char_value_score(c)), 4),
-                    "on_ko_value": round(float(on_ko_value(c.code, opp_gs, owner=gs)), 4),
-                }
-                for c in gs.blockers_active()
-            ]
+        # Liga a auditoria de defesa do MOTOR (bloco 855). `state_a = gs` faz
+        # `_lado()` marcar as linhas do bot como 'A'. Drenado no finally, pra
+        # que uma excecao no meio da decisao nao deixe a auditoria ligada
+        # vazando pro proximo pedido.
+        _raciocinio = []
+        _de_old = (_DEFESA['on'], _DEFESA['log'], _DEFESA['state_a'])
+        _DEFESA['on'], _DEFESA['log'], _DEFESA['state_a'] = True, _raciocinio, gs
+        try:
 
-        elif req.phase == "counter":
-            out["counterIds"] = bridge.select_counter_cards(
-                gs, req.attackerPower, req.defenderPower, opp_gs=opp_gs,
-                defender_uid=req.defenderId, trace_out=decision_trace)
-            print(f"[DEF] counter atk={req.attackerPower} def={req.defenderPower} "
-                  f"-> {len(out['counterIds'])} cartas", flush=True)
+            if req.phase == "blocker":
+                engine = DecisionEngine(gs, opp_gs)
+                blocker = engine.should_use_blocker(req.attackerPower)
+                if blocker is not None:
+                    out["blockerId"] = getattr(blocker, '_deck_uid', 0)
+                print(f"[DEF] blocker {req.attackerCode or '?'} atk={req.attackerPower} -> "
+                      f"{blocker.name if blocker else 'NAO bloqueia'}", flush=True)
+                # Telemetria 24/07 (usuario: "preparar o rastreamento pra
+                # medir tambem as coisas que fizemos hoje"). O caminho
+                # OFFLINE (decision_log de OPTCGMatch) nunca logou blocker/
+                # counter (achado na fase C desta sessao) -- este endpoint
+                # AO VIVO ja logava via _record_aux_decision, mas sem o
+                # detalhe de custo/on_ko que decide QUAL blocker sacrificar.
+                # Expoe char_value_score vs custo efetivo (com on_ko_value
+                # descontado, fase B 24/07) por candidato -- permite medir
+                # se/quando o credito do proprio [On K.O.] de fato mudou a
+                # escolha numa partida real. on_ko_value e a MESMA funcao
+                # reusada por should_use_blocker (decision_engine.py) --
+                # nunca duplicar a conta aqui.
+                from optcg_engine.decision_engine import on_ko_value
+                decision_trace["blocker_candidates"] = [
+                    {
+                        "card_uid": getattr(c, '_deck_uid', 0),
+                        "card_code": c.code,
+                        "char_value_score": round(float(engine.analyzer.char_value_score(c)), 4),
+                        "on_ko_value": round(float(on_ko_value(c.code, opp_gs, owner=gs)), 4),
+                    }
+                    for c in gs.blockers_active()
+                ]
 
-        elif req.phase == "trigger":
-            out["useTrigger"] = bool(bridge.resolve_trigger_choice(gs, req.triggerCode, opp_gs))
-            print(f"[DEF] trigger {req.triggerCode} -> {out['useTrigger']}", flush=True)
+            elif req.phase == "counter":
+                out["counterIds"] = bridge.select_counter_cards(
+                    gs, req.attackerPower, req.defenderPower, opp_gs=opp_gs,
+                    defender_uid=req.defenderId, trace_out=decision_trace)
+                print(f"[DEF] counter {req.attackerCode or '?'} atk={req.attackerPower} def={req.defenderPower} "
+                      f"-> {len(out['counterIds'])} cartas", flush=True)
 
-        elif req.phase == "reaction":
-            out["useReaction"] = bridge.resolve_reaction(
-                gs, opp_gs, req.attackerPower, req.defenderPower,
-                defender_uid=req.defenderId, actor_code=req.triggerCode)
-            print(f"[DEF] reaction atk={req.attackerPower} def={req.defenderPower} "
-                  f"defId={req.defenderId} -> {out['useReaction']}", flush=True)
+            elif req.phase == "trigger":
+                out["useTrigger"] = bool(bridge.resolve_trigger_choice(gs, req.triggerCode, opp_gs))
+                print(f"[DEF] trigger {req.triggerCode} -> {out['useTrigger']}", flush=True)
 
-        elif req.phase == "optional":
-            # Efeito opcional com custo no proprio turno do bot
-            out["useReaction"] = bridge.resolve_optional_effect(
-                gs, opp_gs, actor_code=req.triggerCode)
-            if not out["useReaction"] and req.triggerCode:
-                _declined_optional.add((req.triggerCode, req.state.turnNumber))
-            print(f"[DEF] optional -> {out['useReaction']}", flush=True)
+            elif req.phase == "reaction":
+                out["useReaction"] = bridge.resolve_reaction(
+                    gs, opp_gs, req.attackerPower, req.defenderPower,
+                    defender_uid=req.defenderId, actor_code=req.triggerCode)
+                print(f"[DEF] reaction atk={req.attackerPower} def={req.defenderPower} "
+                      f"defId={req.defenderId} -> {out['useReaction']}", flush=True)
+
+            elif req.phase == "optional":
+                # Efeito opcional com custo no proprio turno do bot
+                out["useReaction"] = bridge.resolve_optional_effect(
+                    gs, opp_gs, actor_code=req.triggerCode)
+                if not out["useReaction"] and req.triggerCode:
+                    _declined_optional.add((req.triggerCode, req.state.turnNumber))
+                print(f"[DEF] optional -> {out['useReaction']}", flush=True)
+
+        finally:
+            _DEFESA['on'], _DEFESA['log'], _DEFESA['state_a'] = _de_old
 
         if req.phase == "blocker":
             legal = [{"type": "no_blocker", "eligible": True}] + [
@@ -1211,6 +1334,12 @@ def defense(req: DefenseRequest):
             attacker_power=req.attackerPower, defender_power=req.defenderPower,
             defender_id=req.defenderId, actor_code=req.triggerCode,
             blocker_candidates=decision_trace.get("blocker_candidates", []),
+            # Bloco 855 -- o que faltava pra julgar a defesa depois:
+            attacker_id=req.attackerId, attacker_code=req.attackerCode,
+            defender_code=_uid_para_code(gs, req.defenderId),
+            board_no_ataque=_antes,
+            # O raciocinio do PROPRIO motor, drenado; nao recalculado aqui.
+            raciocinio_defesa=_raciocinio,
             latency_ms=round((time.perf_counter() - started) * 1000, 3))
 
     except Exception as e:
@@ -1260,12 +1389,14 @@ def choose_target(req: ChooseTargetRequest):
             attacker_power=req.attackerPower,
             defender_uid=req.defenderId,
             actor_code=req.actorCode,
+            purpose=req.purpose,
             with_scores=True)
         out = [i for i, _ in marcados]
         _rank = {i: (pos, chave) for pos, (i, chave) in enumerate(marcados)}
         tgt_ms = round((time.perf_counter() - tgt_started) * 1000, 3)
         zonas = sorted({c.zone for c in req.candidates})
         print(f"[TGT] {len(req.candidates)} candidatos (actor={req.actorCode} "
+              f"purpose={req.purpose} passo={req.stepIndex}/{req.actionIndex} "
               f"atk={req.attackerPower} def={req.defenderId} zonas={zonas}) -> ordem {out[:5]}",
               flush=True)
         if tgt_ms > 2000:

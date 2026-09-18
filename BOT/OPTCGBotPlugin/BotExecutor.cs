@@ -518,6 +518,56 @@ namespace OPTCGBotPlugin
                  + $"cadeia={CostChainStatus(gls)}[{flags}|botoes={OfferedButtonNames(gls)}]";
         }
 
+        // ── QUAL PASSO e PRA QUE o jogo esta pedindo alvo (bloco 854) ──────
+        //
+        // O `/choose_target` mandava o SACO de candidatos e so o `actorCode` --
+        // que o proprio campo marcava como "debug/futuro". O motor recebia
+        // "o jogo quer 1 alvo, aqui estao 39 cartas" e nao era informado de
+        // QUAL efeito, de QUAL passo, nem PRA QUE. So dava pra ORDENAR por
+        // preferencia; o plugin clicava na ordem ate o jogo aceitar.
+        //
+        // Custo medido (2 partidas, 164 episodios de selecao): 59% acertam no
+        // 1o clique, **34% NAO acertam NUNCA** (55 efeitos perdidos), e o pior
+        // episodio gastou 64 cliques -- ~50 segundos a 0,8s por clique. E
+        // BIMODAL: ou acerta de cara, ou nao acerta -- o que descarta
+        // "ordenacao levemente errada" e aponta pra lista sem o alvo valido.
+        //
+        // O jogo EXPOE o que faltava, e o plugin ja lia partes disso:
+        //   iActionIdx       -> qual HABILIDADE da carta
+        //   iActionStep      -> qual PASSO dentro dela
+        //   iActionTargetIdx -> qual ALVO dentro do passo
+        //   V3Step().effect  -> as flags que distinguem CUSTO de EFEITO
+        public static int StepIndex(GameplayLogicScript gls)
+        {
+            try { return gls.acaActive == null ? -1 : gls.acaActive.iActionStep; }
+            catch { return -1; }
+        }
+
+        public static int ActionIndex(GameplayLogicScript gls)
+        {
+            try { return gls.acaActive == null ? -1 : gls.acaActive.iActionIdx; }
+            catch { return -1; }
+        }
+
+        public static int TargetIndex(GameplayLogicScript gls)
+        {
+            try { return gls.acaActive == null ? -1 : gls.acaActive.iActionTargetIdx; }
+            catch { return -1; }
+        }
+
+        /// "cost" = o jogo pede a carta que PAGA; "effect" = o alvo do efeito.
+        /// Reusa o MESMO predicado de `IsOptionalCostWindow` (as flags de custo
+        /// no passo corrente) em vez de reimplementar -- era o que distinguia
+        /// os dois casos e o motor nunca recebia. Foi exatamente o bug do
+        /// Mihawk (bloco 844): o jogo pedia o alvo do CUSTO e o motor mandava
+        /// o alvo do EFEITO.
+        public static string TargetPurpose(GameplayLogicScript gls)
+        {
+            if (gls == null || gls.acaActive == null) return "unknown";
+            if (!gls.acaActive.UsesV3()) return "unknown";
+            return IsOptionalCostWindow(gls) ? "cost" : "effect";
+        }
+
         public static bool IsOptionalCostWindow(GameplayLogicScript gls)
         {
             if (gls.acaActive == null || !gls.acaActive.UsesV3())
@@ -1363,9 +1413,12 @@ namespace OPTCGBotPlugin
             return null;
         }
 
-        private static string CodeOf(GameObject go)
+        // Publico e null-safe desde o bloco 855: a telemetria de defesa precisa
+        // dizer QUEM atacou, e o atacante pode nao existir na janela. Reusa esta
+        // funcao em vez de criar uma segunda que le a mesma coisa.
+        public static string CodeOf(GameObject? go)
         {
-            var cls = go.GetComponent<CardLogicScript>();
+            var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
             return cls != null && cls.myCard.cardDef != null ? cls.myCard.cardDef.cardID : "?";
         }
     }

@@ -2,6 +2,38 @@
 
 **Última atualização:** 14 de setembro de 2026 (bloco 836)
 
+> **TELEMETRIA DE DEFESA AO VIVO -- LIGADA (17/09/2026, bloco 855)**: o motor
+> JA raciocinava sobre defesa e JA sabia registrar (`_log_defesa`), mas a
+> auditoria so era ligada no AUTO-JOGO -- ao vivo o raciocinio era calculado e
+> jogado fora. O `/defense` agora liga a auditoria do motor em volta da chamada
+> e DRENA (nada reimplementado), somando o contexto do servidor: **quem
+> atacou** (`attacker_code` -- o plugin ja tinha o atacante e mandava so o
+> PODER), **quem defendeu**, o **board dos dois lados na hora do ataque**
+> (tirado ANTES da decisao), e os efeitos ativaveis **na janela**
+> (`on_opp_attack`/`counter`/`on_block`/`opp_turn`) e **depois** (`on_ko`) --
+> lidos do bloco PARSEADO, nunca por codigo de carta.
+>
+> **POR QUE**: 54 decisoes de counter, 46 com counter real na mao, **0
+> aceitas**, e o bot indo de 5 pra 0/1 de vida -- e sem o atacante no evento
+> nao dava pra separar "recusou e estava certo" de "recusou e tomou dano a
+> toa". **PENDENTE: medir** (2 partidas; a DLL nova so vale no proximo start
+> do jogo).
+
+> **`step_index` + `purpose` -- CONSTRUIDO e NAO PAGOU (17/09/2026, bloco
+> 854)**: primeiro clique 59% -> **55%**, nunca-acerta 34% -> **40%** (pior
+> episodio caiu de 64 pra 34 cliques). Causa medida e do lado do PLUGIN: das
+> 105 requisicoes carimbadas so **9 chegaram como `cost`** --
+> `IsOptionalCostWindow` reconhece **5 formas** de custo e `_CUSTO_ZONAS`
+> mapeia **10** (falta "devolva 1 Personagem seu" do Law, entre outras). O
+> mecanismo fica no codigo (correto, testado, `unknown` = comportamento
+> anterior); **proximo passo: completar o detector**.
+>
+> **CORRECAO ao bloco 849**: `LogOutput.log` **RESETA quando o jogo
+> reinicia** -- acumula so dentro de uma sessao. Conferir o TAMANHO do
+> arquivo contra a marca antes de confiar nela (marca 2.296, arquivo 1.207
+> depois do restart -- ler a partir da marca teria reportado "zero recusas =
+> sucesso").
+
 > **AUTO-RESTRICAO "cannot play this turn" AO VIVO -- FECHADO (17/09/2026, bloco 853)**:
 > o achado aberto do bloco 850. Medido por lado: o lado do Mihawk fez 16 plays
 > antes de ativar (16 ok) e **6 depois (6 recusados, 100%)** -- e o plugin
