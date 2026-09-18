@@ -2620,6 +2620,68 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     # Generico pelo TIPO do custo (mesma disciplina de "corrija pela FORMA"):
     # sao 28 cartas no banco com custo de restar carta propria + efeito mirando
     # outra coisa (bloco 845); so o Mihawk tinha sido visto em partida.
+    # ── A ZONA LEGAL DO ALVO JA ESTA PARSEADA (bloco 862) ──────────────
+    # Espelho exato do `_CUSTO_ZONAS` logo abaixo, para o lado do EFEITO.
+    #
+    # ACHADO (bloco 861, auditoria dos adversarios do Mihawk): Portgas D. Ace
+    # OP16-001, lider, **0% de conclusao** -- a habilidade da Rush a um
+    # Personagem EM CAMPO e o bot escolheu `ST23-001 em own_hand`. Rush numa
+    # carta da mao nao faz nada. E o Thousand Sunny ST31-005 e pior, porque o
+    # dado existia: o step e `transfer_don` com `target:
+    # "leader_or_own_character"` e o bot mirou a MAO assim mesmo.
+    #
+    # Ate aqui a funcao restringia zona para TRES familias, cada uma
+    # acrescentada depois de um achado ao vivo proprio: efeito que mira DON
+    # (bloco 830), efeito que NAO mira DON (13/09), custo (blocos 847/854).
+    # Faltava a regra GERAL -- e sao **1.417 steps** com `target` ja no banco
+    # (`opp_character` 581, `leader_or_character` 167, `leader` 105,
+    # `own_character` 88...).
+    #
+    # CONSERVADOR DE PROPOSITO: so entram os valores cuja zona e CERTA.
+    # `select_filtered`, `selected`, `any`, `opponent` e a familia `own_play_*`
+    # ficam de fora -- nao filtrar e pior que filtrar errado, porque apagar a
+    # resposta certa trava a acao inteira (foi exatamente o estrago do bloco
+    # 858).
+    _ALVO_ZONAS = {
+        'opp_character':           {'opp_board'},
+        'all_opp_characters':      {'opp_board'},
+        'own_character':           {'own_board'},
+        'own_characters':          {'own_board'},
+        'all_allies':              {'own_board'},
+        'all_allies_and_leader':   {'own_board', 'own_leader'},
+        'all_character':           {'own_board', 'opp_board'},
+        'leader_or_own_character': {'own_board', 'own_leader'},
+        'opp_leader_or_character': {'opp_board', 'opp_leader'},
+        'leader_or_character':     {'own_board', 'own_leader',
+                                    'opp_board', 'opp_leader'},
+        # `leader` sozinho nao diz de QUEM; as duas zonas de lider ja excluem
+        # mao/trash/deck, que e o ganho que importa.
+        'leader':                  {'own_leader', 'opp_leader'},
+        'opp_stage':               {'opp_stage'},
+        # o ATOR mirando a si mesmo: esta em campo, nunca na mao.
+        'self':                    {'own_board', 'own_leader', 'own_stage'},
+    }
+
+    # A familia `select_grant_*` NUNCA traz `target` -- 32 ocorrencias no
+    # banco, entre elas 6 LIDERES so no `select_grant_rush` (EB03-001,
+    # OP04-001, OP12-007, OP16-001, OP17-004, PRB01-001). E o "select" e a
+    # propria semantica: o jogador ESCOLHE uma carta SUA em campo.
+    #
+    # Mapeada pela ACAO, que e o idioma que esta funcao ja usa -- o
+    # `actor_don_target` faz exatamente isso, e o `_CUSTO_ZONAS` mapeia pelo
+    # TIPO do custo. Nao exige regerar o banco de efeitos.
+    #
+    # DISTINTO da familia `gain_*` (225 ocorrencias): la a carta concede o
+    # keyword A SI MESMA, sem selecao, entao nao ha alvo a filtrar.
+    # `select_grant_unblockable_turn` fica FORA: e a unica que ja traz
+    # `target` proprio em parte dos casos (`selected`, `leader_only`,
+    # `don_recipient`) e a semantica dela e outra.
+    _ACAO_ZONAS_SELECAO = {
+        'select_grant_rush', 'select_grant_rush_character',
+        'select_grant_can_attack_active_turn', 'select_grant_double_attack',
+        'select_grant_blocker', 'select_grant_banish',
+    }
+
     _CUSTO_ZONAS = {
         'rest_own_card': {'own_board', 'own_leader', 'own_stage'},
         'rest_own_character': {'own_board'},
@@ -2632,6 +2694,55 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         'reveal_from_hand': {'own_hand'},
         'place_from_trash_bottom_deck': {'own_trash'},
     }
+    # Zonas que o ALVO do efeito declara (bloco 862). Uniao entre os steps:
+    # uma carta com dois alvos diferentes aceita as zonas dos dois.
+    actor_zonas_de_alvo = set()
+    _alvo_desconhecido = False
+    if actor_code:
+        for _blk in _relevant_blocks(actor_code, attacker_power > 0):
+            for _s in (_blk.get('steps') or []):
+                if not isinstance(_s, dict):
+                    continue
+                # `target` e onde o efeito CAI; `source` e o que o jogador
+                # SELECIONA -- e as duas divergem. A Catarina Devon
+                # (OP16-104) tem `target: "self"` com
+                # `source: "selected_opp_character"`: o alvo e ela mesma, mas
+                # quem se escolhe e um Personagem do OPONENTE. Filtrar pelo
+                # `target` apagava os candidatos certos, e o `smoke_test`
+                # pegou. Sao 308 steps com `source` e 23 valores diferentes
+                # (deck_top, hand, trash, life_top...), entao qualquer
+                # `source` desliga o filtro: reduz alcance, nunca apaga a
+                # resposta certa.
+                if _s.get('source'):
+                    _alvo_desconhecido = True
+                    continue
+                _t = _s.get('target')
+                if not _t:
+                    # Sem `target`: so a familia de SELECAO diz a zona
+                    # sozinha, pela acao.
+                    if _s.get('action') in _ACAO_ZONAS_SELECAO:
+                        actor_zonas_de_alvo |= {'own_board'}
+                        if _s.get('include_leader'):
+                            actor_zonas_de_alvo |= {'own_leader'}
+                        continue
+                    # Qualquer OUTRO step sem `target` desliga o filtro da
+                    # carta inteira. Ele pode precisar de uma zona que nao
+                    # esta em `target` nenhum -- `look_top_deck` quer
+                    # `top_deck`, `add_to_hand` quer `own_hand`, e o custo
+                    # em DON quer as zonas de DON. Foi exatamente isto que
+                    # o `smoke_fast` pegou na 1a versao deste bloco: 3
+                    # testes vermelhos (Teach 119 com top_deck e own_hand
+                    # vazios, e o candidato exclusivo do custo `DON!! -N`).
+                    _alvo_desconhecido = True
+                    continue
+                if _t in _ALVO_ZONAS:
+                    actor_zonas_de_alvo |= _ALVO_ZONAS[_t]
+                else:
+                    # Um unico step com alvo que nao sei mapear desliga o
+                    # filtro da carta inteira -- o step nao mapeado pode ser
+                    # justamente o que o jogo esta perguntando agora.
+                    _alvo_desconhecido = True
+
     actor_zonas_de_custo = set()
     if actor_code:
         for _blk in _relevant_blocks(actor_code, attacker_power > 0):
@@ -3153,6 +3264,21 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         so_don = [c for c in candidates if c.get('zone') in zonas_ok]
         if so_don:
             candidates = so_don
+
+    # ── A ZONA DO ALVO FILTRA (bloco 862) ──────────────────────────────
+    # Nao roda quando `actor_don_target` ja decidiu (aquele filtro e mais
+    # especifico) nem quando algum step tem alvo que nao sei mapear.
+    if (actor_zonas_de_alvo and not _alvo_desconhecido
+            and not actor_don_target and purpose != 'cost'):
+        # As zonas do CUSTO entram junto: o jogo pergunta o custo e o efeito
+        # separadamente, e apagar as do custo trava a ativacao inteira --
+        # o estrago medido no bloco 858.
+        _zonas = actor_zonas_de_alvo | actor_zonas_de_custo
+        _so_alvo = [c for c in candidates if c.get('zone') in _zonas]
+        # A guarda que impede o desastre: se o filtro esvazia a lista, ele
+        # esta errado sobre esta janela e nao se aplica.
+        if _so_alvo:
+            candidates = _so_alvo
 
     # ── ESPELHO DO BLOCO ACIMA: efeito que NAO mexe com DON ────────────
     # ACHADO AO VIVO 13/09, partida contra o usuario: numa unica partida o

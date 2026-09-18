@@ -2,6 +2,34 @@
 
 **Última atualização:** 14 de setembro de 2026 (bloco 836)
 
+> **A ZONA DO ALVO PASSA A FILTRAR (18/09/2026, bloco 862)** -- implementa o
+> achado do bloco 861, a pedido do usuario. `_ALVO_ZONAS` em
+> `order_target_candidates`, espelho do `_CUSTO_ZONAS`, mais a familia
+> `select_grant_*` mapeada pela ACAO (nunca traz `target`; evitou regerar o
+> banco). **Lider Ace OP16-001 sai de 6 zonas com `own_hand` escolhida para
+> `['own_board']`** -- era o 0% de conclusao.
+>
+> **O smoke derrubou DUAS versoes minhas**, as duas por premissa errada, e as
+> duas da MESMA classe do bloco 858 (afirmar zona com base em algo que nao
+> responde a pergunta): (1) pular steps sem `target` -- mas `look_top_deck`
+> quer `top_deck`; (2) **`target` e onde o efeito CAI, `source` e o que o
+> jogador SELECIONA** -- a Devon OP16-104 tem `target:self` com
+> `source:selected_opp_character`. Sao 308 steps com `source`; qualquer um
+> desliga o filtro.
+>
+> **ALCANCE: 939 de 3.632 blocos (25%), 830 cartas** -- menor que os 1.417
+> steps estimados porque `_relevant_blocks` junta todos os blocos nao-combate:
+> um `look_top_deck` no `on_play` desliga o `activate_main` da mesma carta. O
+> **Thousand Sunny ST31-005 fica ABERTO** por isso.
+>
+> **ABERTO**: mapear zona para as acoes SEM `target` (`look_top_deck`,
+> `add_to_hand`, `play_from_trash`...) alcancaria os outros 75% -- nao feito
+> porque cada acao nao mapeada e uma chance de apagar a resposta certa.
+>
+> **CUIDADO NA MEDICAO**: o bloco 858 nao sera mais medido sozinho. O que
+> separa: o Mihawk usa `set_don_active`, que cai no filtro `actor_don_target`
+> e nao no novo.
+
 > **ACHADO ABERTO -- a zona legal do alvo esta PARSEADA e o motor nao usa
 > (18/09/2026, bloco 861)**: auditoria de efeitos dos adversarios do Mihawk.
 > **Portgas D. Ace (OP16-001), lider, 0%** -- a habilidade da Rush a um

@@ -245,6 +245,86 @@ visivel**.
 
 ---
 
+## 2026-09-18 (862) - A zona legal do alvo passa a FILTRAR: o lider Ace sai de 0%, e o smoke derrubou DUAS versoes minhas antes de passar
+
+Implementa o achado do bloco 861, a pedido do usuario. **A pedido dele tambem
+entra antes da medicao do bloco 858** -- eu tinha recomendado esperar; ele
+decidiu, e a consequencia esta registrada no fim.
+
+### O QUE FOI FEITO
+
+`_ALVO_ZONAS` em `order_target_candidates`, espelho exato do `_CUSTO_ZONAS`
+que ja existia para o lado do CUSTO. Mapeia os valores de `target` cuja zona e
+CERTA (`opp_character` -> `opp_board`, `leader_or_own_character` ->
+`own_board`+`own_leader`, etc.) e deixa de fora os ambiguos
+(`select_filtered`, `selected`, `any`, `opponent`, familia `own_play_*`).
+
+Mais a familia `select_grant_*`, mapeada pela ACAO -- o mesmo idioma que
+`actor_don_target` ja usa -- porque ela **nunca** traz `target` no banco. Isso
+evitou regerar o `card_effects_db.json`. Distinta da familia `gain_*` (225
+ocorrencias), onde a carta concede o keyword A SI MESMA e nao ha alvo.
+
+Resultado no caso reportado:
+
+```
+OP16-001 (Ace)  antes: 6 zonas, escolhia ST23-001 em own_hand -> 0% de conclusao
+                depois: ['own_board']
+```
+
+### AS DUAS VERSOES QUE O SMOKE DERRUBOU -- e as duas eram erro de premissa meu
+
+**1a versao, 3 testes vermelhos no `smoke_fast`** (Teach 119 com `top_deck` e
+`own_hand` vazios; candidato exclusivo do custo `DON!! -N`). Causa: eu pulava
+os steps SEM `target`, mas um step sem target ainda pode exigir zona --
+`look_top_deck` quer `top_deck`, `add_to_hand` quer `own_hand`. Corrigido com
+a regra estrita: **qualquer** step sem zona conhecida desliga o filtro da
+carta inteira.
+
+**2a versao, 1 teste vermelho no `smoke_test`** (Catarina Devon OP16-104).
+Causa mais funda: o step e
+
+```json
+{"action": "set_base_power", "target": "self", "source": "selected_opp_character"}
+```
+
+**`target` e onde o efeito CAI; `source` e o que o jogador SELECIONA**, e as
+duas divergem. Filtrar pelo `target` apagava os candidatos certos -- o alvo e
+a propria Devon, mas quem se escolhe e um Personagem do OPONENTE. Sao **308
+steps com `source`, 23 valores diferentes** (deck_top, hand, trash, life_top,
+own_field...). Qualquer `source` passa a desligar o filtro.
+
+> **Os dois erros sao a MESMA classe do bloco 858**: afirmar uma zona com base
+> em informacao que nao responde a pergunta feita. La foi "ausencia de custo =
+> efeito"; aqui foi "target = o que se seleciona". A diferenca e que desta vez
+> o smoke pegou antes de chegar ao jogo -- no 858 so apareceu depois de duas
+> sessoes ao vivo.
+
+### ALCANCE MEDIDO, e por que e menor do que os 1.417 steps do bloco 861
+
+**939 de 3.632 blocos de efeito (25%), em 830 cartas.** Menos que o estimado
+porque `_relevant_blocks` devolve TODOS os blocos nao-combate JUNTOS: um
+`look_top_deck` no `on_play` desliga o filtro do `activate_main` da mesma
+carta. O Thousand Sunny (ST31-005), um dos dois casos do bloco 861, cai
+justamente ai e **continua sem filtro** -- fica ABERTO.
+
+O caminho para os outros 75% e mapear zona tambem para as acoes SEM `target`
+(`look_top_deck` -> top_deck, `add_to_hand` -> own_hand, `play_from_trash` ->
+own_trash...). Nao feito: cada acao nao mapeada seria uma chance de apagar a
+resposta certa, e o custo desse erro ja esta medido no 858.
+
+### CONSEQUENCIA PARA A MEDICAO -- dizer na hora de ler as 2 partidas
+
+O bloco 858 (regressao do `purpose`) **nao sera mais medido sozinho**. Se as
+ativacoes do Mihawk nao voltarem a 0 falhas, as duas mudancas sao suspeitas.
+O que ainda separa as duas: o Mihawk usa `set_don_active`, que cai no filtro
+`actor_don_target` e **nao** no novo -- entao o novo filtro nao deveria tocar
+o caso do Mihawk. Verificavel no log pelo `[TGT]`.
+
+`smoke_fast` OK. `smoke_test`: 1 falha, `deck_reorder_rest`, **pre-existente**
+-- confirmado com `git stash` (falha igual sem a mudanca).
+
+---
+
 ## 2026-09-18 (861) - AUDITORIA DE EFEITOS dos adversarios: o motor JA TEM a zona legal do alvo em 1.417 steps e NAO a usa
 
 Pedido do usuario: *"investigue afora os adversarios do mihawk com a telemetria
